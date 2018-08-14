@@ -1,0 +1,50 @@
+{
+  "name": "airgap-coin-lib",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "sonar-scanner": "sonar-scanner",
+    "build": "npm run tslint && tsc",
+    "tslint": "tslint -c ./tslint.json --project ./tsconfig.json --format stylish",
+    "lint-ci": "tslint -t json -o lintReport.json --project . || true",
+    "test": "tsc && mocha --timeout 40000",
+    "test-ci": "tsc && nyc --reporter=lcov mocha --timeout 40000"
+  },
+  "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
+  "dependencies": {
+    "axios": "^0.18.0",
+    "bignumber.js": "^7.0.1",
+    "bip39": "^2.5.0",
+    "bitcoinjs-lib": "^3.3.2",
+    "bitcoinjs-lib-zcash": "^3.3.2",
+    "cryptocompare": "^0.5.0",
+    "elliptic": "^6.4.0",
+    "es6-promise-plugin": "^4.2.2",
+    "ethereumjs-tx": "^1.3.4",
+    "ethereumjs-util": "^5.2.0",
+    "hdkey": "^0.8.0",
+    "js-sha3": "^0.7.0",
+    "web3": "^1.0.0-beta.34"
+  },
+  "devDependencies": {
+    "@types/assert": "0.0.31",
+    "@types/bignumber.js": "^5.0.0",
+    "@types/bip39": "^2.4.0",
+    "@types/bitcoinjs-lib": "^3.4.0",
+    "@types/ethereumjs-util": "^5.1.1",
+    "@types/jasmine": "^2.8.8",
+    "@types/node": "^10.5.0",
+    "@types/underscore": "^1.8.8",
+    "chai": "^4.1.2",
+    "mocha": "^5.1.1",
+    "node-fetch": "^2.2.0",
+    "nyc": "^12.0.2",
+    "sonarqube-scanner": "^2.1.0",
+    "tslint": "^5.10.0",
+    "tslint-config-standard": "github:papers-ch/tslint-config-standard",
+    "typescript": "^2.8.3",
+    "websocket": "^1.0.26"
+  }
+}
