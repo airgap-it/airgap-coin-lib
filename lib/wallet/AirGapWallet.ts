@@ -65,4 +65,10 @@ export class AirGapWallet implements IAirGapWallet {
     }
   }
 
+  toJSON(): any {
+    let json = Object.assign({}, this)
+    delete json.coinProtocol
+    return json
+  }
+
 }
