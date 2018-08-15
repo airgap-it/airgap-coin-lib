@@ -67,6 +67,11 @@ var AirGapWallet = /** @class */ (function () {
             return this.coinProtocol.prepareTransactionFromPublicKey(this.publicKey, recipients, values, fee);
         }
     };
+    AirGapWallet.prototype.toJSON = function () {
+        var json = Object.assign({}, this);
+        delete json.coinProtocol;
+        return json;
+    };
     return AirGapWallet;
 }());
 exports.AirGapWallet = AirGapWallet;
