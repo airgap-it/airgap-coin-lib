@@ -36,6 +36,7 @@ export declare class EthereumProtocol implements ICoinProtocol {
     signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: any): Promise<string>;
     signWithPrivateKey(extendedPrivateKey: Buffer, transaction: any): Promise<string>;
     getTransactionDetails(transaction: any): IAirGapTransaction;
+    getTransactionDetailsFromRaw(transaction: any, rawTx: any): IAirGapTransaction;
     getBalanceOfPublicKey(publicKey: string): Promise<BigNumber>;
     getBalanceOfExtendedPublicKey(extendedPublicKey: string, offset?: number): Promise<BigNumber>;
     prepareTransactionFromExtendedPublicKey(extendedPublicKey: string, offset: number, recipients: string[], values: BigNumber[], fee: BigNumber): Promise<any>;

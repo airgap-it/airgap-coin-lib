@@ -161,6 +161,19 @@ export class BitcoinProtocol implements ICoinProtocol {
     }
   }
 
+  getTransactionDetailsFromRaw(transaction: any, rawTx: any): IAirGapTransaction {
+    let tx = this.getTransactionDetails(transaction)
+    tx.to = []
+
+    const bitcoinTx = this.bitcoinJSLib.Transaction.fromHex(rawTx)
+    bitcoinTx.outs.forEach(output => {
+      let address = this.bitcoinJSLib.address.fromOutputScript(output.script, this.network)
+      tx.to.push(address)
+    })
+
+    return tx
+  }
+
   getBalanceOfAddresses(addresses: string[]): Promise<BigNumber> {
     return new Promise((resolve, reject) => {
       axios.get(this.baseApiUrl + '/api/addrs/' + addresses.join(',') + '/utxo', { responseType: 'json' }).then(response => {

@@ -118,6 +118,24 @@ export class EthereumProtocol implements ICoinProtocol {
     }
   }
 
+  getTransactionDetailsFromRaw(transaction: any, rawTx: any): IAirGapTransaction {
+    const ethTx = new EthereumTransaction(rawTx)
+
+    return {
+      from: ['0x' + ethTx.from.toString('hex')],
+      to: ['0x' + ethTx.to.toString('hex')],
+      amount: new BigNumber(parseInt(ethTx.value.toString('hex'), 16)),
+      fee: new BigNumber(parseInt(ethTx.gasLimit.toString('hex'), 16)).multipliedBy(new BigNumber(parseInt(ethTx.gasPrice.toString('hex'), 16))),
+      protocolIdentifier: this.identifier,
+      isInbound: ethTx.toCreationAddress(),
+      hash: ethTx.hash,
+      meta: {
+        nonce: parseInt(ethTx.nonce.toString('hex'), 16)
+      },
+      data: '0x' + ethTx.data.toString('hex')
+    }
+  }
+
   getBalanceOfPublicKey(publicKey: string): Promise<BigNumber> {
     const address = this.getAddressFromPublicKey(publicKey)
     return this.getBalanceOfAddresses([address])

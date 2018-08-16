@@ -121,6 +121,17 @@ var BitcoinProtocol = /** @class */ (function () {
             timestamp: transaction.timestamp
         };
     };
+    BitcoinProtocol.prototype.getTransactionDetailsFromRaw = function (transaction, rawTx) {
+        var _this = this;
+        var tx = this.getTransactionDetails(transaction);
+        tx.to = [];
+        var bitcoinTx = this.bitcoinJSLib.Transaction.fromHex(rawTx);
+        bitcoinTx.outs.forEach(function (output) {
+            var address = _this.bitcoinJSLib.address.fromOutputScript(output.script, _this.network);
+            tx.to.push(address);
+        });
+        return tx;
+    };
     BitcoinProtocol.prototype.getBalanceOfAddresses = function (addresses) {
         var _this = this;
         return new Promise(function (resolve, reject) {
