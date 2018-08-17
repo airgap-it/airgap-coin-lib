@@ -7,7 +7,7 @@ export interface IAirGapTransaction {
   isInbound: boolean
   amount: BigNumber
   fee: BigNumber
-  timestamp: number
+  timestamp?: number
 
   protocolIdentifier: string
 

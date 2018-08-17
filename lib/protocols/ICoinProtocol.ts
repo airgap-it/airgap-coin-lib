@@ -37,6 +37,7 @@ export interface ICoinProtocol {
   signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: any): Promise<string> // broadcaster proxies this operation
   signWithPrivateKey(extendedPrivateKey: Buffer, transaction: any): Promise<string> // broadcaster proxies this operation
   getTransactionDetails(transaction: any): IAirGapTransaction // out of public information (both broadcaster and signer)
+  getTransactionDetailsFromRaw(transaction: any, rawTx: any): IAirGapTransaction // out of raw TX
 
   getBalanceOfAddresses(addresses: string[]): Promise<BigNumber>
   getBalanceOfPublicKey(publicKey: string): Promise<BigNumber>

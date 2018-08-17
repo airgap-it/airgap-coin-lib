@@ -15,6 +15,7 @@ var ethUtil = require("ethereumjs-util");
 var axios_1 = require("axios");
 var bignumber_js_1 = require("bignumber.js");
 var assert_1 = require("assert");
+var abiDecoder = require("abi-decoder");
 var EthereumTransaction = require('ethereumjs-tx');
 var AUTH_TOKEN_ABI = [
     {
@@ -58,6 +59,7 @@ var AUTH_TOKEN_ABI = [
         'type': 'function'
     }
 ];
+abiDecoder.addABI(AUTH_TOKEN_ABI);
 var GenericERC20 = /** @class */ (function (_super) {
     __extends(GenericERC20, _super);
     function GenericERC20(contractAddress, jsonRPCAPI, infoAPI, chainId) {
@@ -185,6 +187,13 @@ var GenericERC20 = /** @class */ (function (_super) {
                 overallResolve([].concat.apply([], values));
             }).catch(assert_1.rejects);
         });
+    };
+    GenericERC20.prototype.getTransactionDetailsFromRaw = function (transaction, rawTx) {
+        var ethTx = _super.prototype.getTransactionDetailsFromRaw.call(this, transaction, rawTx);
+        var tokenTransferDetails = abiDecoder.decodeMethod(ethTx.data);
+        ethTx.to = [tokenTransferDetails.params[0].value];
+        ethTx.amount = new bignumber_js_1.default(tokenTransferDetails.params[1].value);
+        return ethTx;
     };
     return GenericERC20;
 }(EthereumProtocol_1.EthereumProtocol));

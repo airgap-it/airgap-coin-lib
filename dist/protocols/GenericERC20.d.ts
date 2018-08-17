@@ -10,4 +10,5 @@ export declare class GenericERC20 extends EthereumProtocol {
     signWithPrivateKey(extendedPrivateKey: Buffer, transaction: any): Promise<string>;
     prepareTransactionFromPublicKey(publicKey: string, recipients: string[], values: BigNumber[], fee: BigNumber): Promise<any>;
     getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]>;
+    getTransactionDetailsFromRaw(transaction: any, rawTx: any): IAirGapTransaction;
 }

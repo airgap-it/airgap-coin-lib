@@ -98,6 +98,22 @@ var EthereumProtocol = /** @class */ (function () {
             timestamp: parseInt(transaction.timestamp, 10)
         };
     };
+    EthereumProtocol.prototype.getTransactionDetailsFromRaw = function (transaction, rawTx) {
+        var ethTx = new EthereumTransaction(rawTx);
+        return {
+            from: ['0x' + ethTx.from.toString('hex')],
+            to: ['0x' + ethTx.to.toString('hex')],
+            amount: new bignumber_js_1.BigNumber(parseInt(ethTx.value.toString('hex'), 16)),
+            fee: new bignumber_js_1.BigNumber(parseInt(ethTx.gasLimit.toString('hex'), 16)).multipliedBy(new bignumber_js_1.BigNumber(parseInt(ethTx.gasPrice.toString('hex'), 16))),
+            protocolIdentifier: this.identifier,
+            isInbound: ethTx.toCreationAddress(),
+            hash: ethTx.hash,
+            meta: {
+                nonce: parseInt(ethTx.nonce.toString('hex'), 16)
+            },
+            data: '0x' + ethTx.data.toString('hex')
+        };
+    };
     EthereumProtocol.prototype.getBalanceOfPublicKey = function (publicKey) {
         var address = this.getAddressFromPublicKey(publicKey);
         return this.getBalanceOfAddresses([address]);

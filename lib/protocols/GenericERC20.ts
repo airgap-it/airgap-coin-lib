@@ -4,6 +4,7 @@ import axios from 'axios'
 import BigNumber from 'bignumber.js'
 import { IAirGapTransaction } from '../interfaces/IAirGapTransaction'
 import { rejects } from 'assert'
+import * as abiDecoder from 'abi-decoder'
 
 const EthereumTransaction = require('ethereumjs-tx')
 
@@ -49,6 +50,8 @@ const AUTH_TOKEN_ABI = [
     'type': 'function'
   }
 ]
+
+abiDecoder.addABI(AUTH_TOKEN_ABI)
 
 export class GenericERC20 extends EthereumProtocol {
   tokenContract: any
@@ -177,5 +180,15 @@ export class GenericERC20 extends EthereumProtocol {
         overallResolve([].concat.apply([], values))
       }).catch(rejects)
     })
+  }
+
+  getTransactionDetailsFromRaw(transaction: any, rawTx: any): IAirGapTransaction {
+    let ethTx = super.getTransactionDetailsFromRaw(transaction, rawTx)
+    let tokenTransferDetails = abiDecoder.decodeMethod(ethTx.data)
+
+    ethTx.to = [tokenTransferDetails.params[0].value]
+    ethTx.amount = new BigNumber(tokenTransferDetails.params[1].value)
+
+    return ethTx
   }
 }

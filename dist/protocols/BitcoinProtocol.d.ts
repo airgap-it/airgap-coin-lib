@@ -36,6 +36,7 @@ export declare class BitcoinProtocol implements ICoinProtocol {
     signWithPrivateKey(privateKey: Buffer, transaction: any): Promise<string>;
     signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: any): Promise<string>;
     getTransactionDetails(transaction: any): IAirGapTransaction;
+    getTransactionDetailsFromRaw(transaction: any, rawTx: any): IAirGapTransaction;
     getBalanceOfAddresses(addresses: string[]): Promise<BigNumber>;
     getBalanceOfPublicKey(publicKey: string): Promise<BigNumber>;
     getBalanceOfExtendedPublicKey(extendedPublicKey: string, offset?: number): Promise<BigNumber>;
