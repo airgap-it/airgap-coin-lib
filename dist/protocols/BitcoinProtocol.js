@@ -13,9 +13,9 @@ var BitcoinProtocol = /** @class */ (function () {
         this.name = 'Bitcoin';
         this.feeSymbol = 'btc';
         this.feeDefaults = {
-            low: new bignumber_js_1.default('0.00000006'),
-            medium: new bignumber_js_1.default('0.00000008'),
-            high: new bignumber_js_1.default('0.00000015')
+            low: new bignumber_js_1.default('0.00002'),
+            medium: new bignumber_js_1.default('0.00004'),
+            high: new bignumber_js_1.default('0.00005')
         };
         this.decimals = 8;
         this.feeDecimals = 8;

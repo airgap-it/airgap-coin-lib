@@ -32,9 +32,9 @@ export class BitcoinProtocol implements ICoinProtocol {
   name = 'Bitcoin'
   feeSymbol = 'btc'
   feeDefaults = {
-    low: new BigNumber('0.00000006'),
-    medium: new BigNumber('0.00000008'),
-    high: new BigNumber('0.00000015')
+    low: new BigNumber('0.00002'),
+    medium: new BigNumber('0.00004'),
+    high: new BigNumber('0.00005')
   }
   decimals = 8
   feeDecimals = 8
