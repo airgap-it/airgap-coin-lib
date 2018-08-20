@@ -14,7 +14,7 @@
   },
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
-    "abi-decoder": "^1.2.0",
+    "abi-decoder": "https://github.com/laurentjacob/abi-decoder.git#a4b60b35d12af863026d6d723bec73b172c4e5b7",
     "axios": "^0.18.0",
     "bignumber.js": "^7.0.1",
     "bip39": "^2.5.0",
