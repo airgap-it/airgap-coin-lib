@@ -22,7 +22,7 @@ export class AirGapWallet implements IAirGapWallet {
     return this.addresses[0]
   }
 
-  deriveAddresses(amount: number = 20): string[] {
+  deriveAddresses(amount: number = 50): string[] {
     if (this.isExtendedPublicKey) {
       const parts = this.derivationPath.split('/')
       let offset = 0
@@ -31,7 +31,7 @@ export class AirGapWallet implements IAirGapWallet {
         offset = Number.parseInt(parts[parts.length - 1], 10)
       }
 
-      return this.coinProtocol.getAddressesFromExtendedPublicKey(this.publicKey, 0, amount, offset)
+      return [...this.coinProtocol.getAddressesFromExtendedPublicKey(this.publicKey, 0, amount, offset), ...this.coinProtocol.getAddressesFromExtendedPublicKey(this.publicKey, 1, amount, offset)]
     } else {
       return [this.coinProtocol.getAddressFromPublicKey(this.publicKey)]
     }

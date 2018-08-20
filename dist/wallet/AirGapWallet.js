@@ -24,14 +24,14 @@ var AirGapWallet = /** @class */ (function () {
         configurable: true
     });
     AirGapWallet.prototype.deriveAddresses = function (amount) {
-        if (amount === void 0) { amount = 20; }
+        if (amount === void 0) { amount = 50; }
         if (this.isExtendedPublicKey) {
             var parts = this.derivationPath.split('/');
             var offset = 0;
             if (!parts[parts.length - 1].endsWith('\'')) {
                 offset = Number.parseInt(parts[parts.length - 1], 10);
             }
-            return this.coinProtocol.getAddressesFromExtendedPublicKey(this.publicKey, 0, amount, offset);
+            return this.coinProtocol.getAddressesFromExtendedPublicKey(this.publicKey, 0, amount, offset).concat(this.coinProtocol.getAddressesFromExtendedPublicKey(this.publicKey, 1, amount, offset));
         }
         else {
             return [this.coinProtocol.getAddressFromPublicKey(this.publicKey)];
