@@ -321,7 +321,9 @@ var BitcoinProtocol = /** @class */ (function () {
     BitcoinProtocol.prototype.broadcastTransaction = function (rawTransaction) {
         var _this = this;
         return new Promise(function (resolve, reject) {
-            axios_1.default.post(_this.baseApiUrl + '/api/tx/send', { form: { rawtx: rawTransaction } }).then(function (response) {
+            var params = new URLSearchParams(); // Fix for axios content-type
+            params.append('rawtx', rawTransaction);
+            axios_1.default.post(_this.baseApiUrl + '/api/tx/send', params).then(function (response) {
                 var payload = response.data;
                 resolve(payload.txid);
             }).catch(reject);
