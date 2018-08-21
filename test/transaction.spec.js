@@ -36,10 +36,9 @@ describe('Transaction', function () {
   })
 
   it('should be able to extract an IAirGapTranscation from a Raw BTC TX', function () {
-    let rawTx = '01000000027bcda7b76bc47ab562a79cb36198cefe364b66cf913426b7932e84120822108a000000006a47304402206b39f01d5cc19190847f9f52e9bd8f273f4b00abdd7262502af6781d61ed49cc022062f8e88eb4b2aad20c74238c3b3594902442c7d69c85796d63ad36e9c7e937600121024fd3380540fcc9ca541259ecbdf1b6c649d2be04f76d17d685ab63a8e75c4b0effffffff7bcda7b76bc47ab562a79cb36198cefe364b66cf913426b7932e84120822108a010000006b483045022100ed15ce553bb3b05dd8813976b18993543bce285d738890e1175a515aa78a583202206112e5f47ae8eb3555d410df2f8b979107b40a613564b0a44e5a7b3875483ada01210289981f75958ad5c0d08b6bed961d38530cb804ea68212aac9dde08aa37170a6fffffffff020a000000000000001976a9141b6d966bb9c605b984151da9bed896145698c44288ac0d74e001000000001976a914692f5e2bc021dedf966e9ba9298df7ad9ae9697988ac00000000'
     let coinlib = new CoinLib.BitcoinTestnetProtocol()
 
-    let tx = coinlib.getTransactionDetailsFromRaw({
+    let btcTx = {
       ins:
         [{
           txId: '8a10220812842e93b7263491cf664b36fece9861b39ca762b57ac46bb7a7cd7b',
@@ -66,15 +65,23 @@ describe('Transaction', function () {
           isChange: true,
           value: 31486989
         }]
+    }
+
+    // derived from btxTX above
+    let rawTx = '01000000027bcda7b76bc47ab562a79cb36198cefe364b66cf913426b7932e84120822108a000000006a47304402206b39f01d5cc19190847f9f52e9bd8f273f4b00abdd7262502af6781d61ed49cc022062f8e88eb4b2aad20c74238c3b3594902442c7d69c85796d63ad36e9c7e937600121024fd3380540fcc9ca541259ecbdf1b6c649d2be04f76d17d685ab63a8e75c4b0effffffff7bcda7b76bc47ab562a79cb36198cefe364b66cf913426b7932e84120822108a010000006b483045022100ed15ce553bb3b05dd8813976b18993543bce285d738890e1175a515aa78a583202206112e5f47ae8eb3555d410df2f8b979107b40a613564b0a44e5a7b3875483ada01210289981f75958ad5c0d08b6bed961d38530cb804ea68212aac9dde08aa37170a6fffffffff020a000000000000001976a9141b6d966bb9c605b984151da9bed896145698c44288ac0d74e001000000001976a914692f5e2bc021dedf966e9ba9298df7ad9ae9697988ac00000000'
+
+    let tx = coinlib.getTransactionDetailsFromRaw({
+      from: ['mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k'],
+      to: ['mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k'],
+      fee: '27000',
+      amount: '10'
     }, rawTx)
 
     // check inputs
     expect(tx.from[0]).to.equal('mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k')
-    expect(tx.from[1]).to.equal('n2ktv2WJNSzjFxanmtHVxD3SHsQD4VvSSh')
 
     // check outputs
     expect(tx.to[0]).to.equal('mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k')
-    expect(tx.to[1]).to.equal('mq77zNZHofNkKB58moumyNqVSLCG4kG1at')
 
     expect(tx.fee.toString()).to.equal('27000')
     expect(tx.amount.toString()).to.equal('10')

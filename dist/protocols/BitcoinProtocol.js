@@ -123,8 +123,14 @@ var BitcoinProtocol = /** @class */ (function () {
     };
     BitcoinProtocol.prototype.getTransactionDetailsFromRaw = function (transaction, rawTx) {
         var _this = this;
-        var tx = this.getTransactionDetails(transaction);
-        tx.to = [];
+        var tx = {
+            to: [],
+            from: transaction.from,
+            amount: transaction.amount,
+            fee: transaction.fee,
+            protocolIdentifier: this.identifier,
+            isInbound: false
+        };
         var bitcoinTx = this.bitcoinJSLib.Transaction.fromHex(rawTx);
         bitcoinTx.outs.forEach(function (output) {
             var address = _this.bitcoinJSLib.address.fromOutputScript(output.script, _this.network);
