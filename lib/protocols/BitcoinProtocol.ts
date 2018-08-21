@@ -360,7 +360,9 @@ export class BitcoinProtocol implements ICoinProtocol {
 
   broadcastTransaction(rawTransaction: string): Promise<any> {
     return new Promise((resolve, reject) => {
-      axios.post(this.baseApiUrl + '/api/tx/send', { form: { rawtx: rawTransaction } }).then(response => {
+      let params = new URLSearchParams() // Fix for axios content-type
+      params.append('rawtx', rawTransaction)
+      axios.post(this.baseApiUrl + '/api/tx/send', params).then(response => {
         const payload = response.data
         resolve(payload.txid)
       }).catch(reject)
