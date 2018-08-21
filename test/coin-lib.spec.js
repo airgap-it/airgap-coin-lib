@@ -160,7 +160,6 @@ describe('Raw Transaction Prepare', function () {
     const extendedPrivateKey = bitcoinTestnetHdNode.derivePath('m/44\'/1\'/0\'').toBase58()
     const extendedPublicKey = bitcoinTestnetHdNode.derivePath('m/44\'/1\'/0\'').neutered().toBase58()
     const bitcointestnet = new CoinLib.BitcoinTestnetProtocol()
-    console.log(extendedPublicKey.toString('hex'))
     bitcointestnet.prepareTransactionFromExtendedPublicKey(extendedPublicKey, 0, ['mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k'], [new BigNumber(10)], new BigNumber(27000)).then(transaction => {
       bitcointestnet.signWithExtendedPrivateKey(extendedPrivateKey, transaction).then(rawTransaction => {
         done()

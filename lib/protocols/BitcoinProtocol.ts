@@ -162,8 +162,14 @@ export class BitcoinProtocol implements ICoinProtocol {
   }
 
   getTransactionDetailsFromRaw(transaction: any, rawTx: any): IAirGapTransaction {
-    let tx = this.getTransactionDetails(transaction)
-    tx.to = []
+    let tx = {
+      to: [] as string[],
+      from: transaction.from,
+      amount: transaction.amount,
+      fee: transaction.fee,
+      protocolIdentifier: this.identifier,
+      isInbound: false
+    }
 
     const bitcoinTx = this.bitcoinJSLib.Transaction.fromHex(rawTx)
     bitcoinTx.outs.forEach(output => {
