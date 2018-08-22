@@ -403,16 +403,17 @@ export class BitcoinProtocol implements ICoinProtocol {
             }
           }
 
-          const airGapTransaction = {
+          const airGapTransaction: IAirGapTransaction = {
             hash: transaction.txid,
             from: tempAirGapTransactionFrom,
             to: tempAirGapTransactionTo,
             isInbound: tempAirGapTransactionIsInbound,
             amount: amount,
+            fee: new BigNumber(transaction.fees).shiftedBy(-1 * this.feeDecimals),
             blockHeight: transaction.blockheight,
             protocolIdentifier: this.identifier,
             timestamp: transaction.time
-          } as IAirGapTransaction
+          }
 
           airGapTransactions.push(airGapTransaction)
         }
@@ -462,14 +463,26 @@ export class BitcoinProtocol implements ICoinProtocol {
             }
           }
 
-          const airGapTransaction = {
+          let tempAirGapTransactionIsInbound: boolean = true
+
+          for (let vin of transaction.vin) {
+            if (addresses.indexOf(vin.addr) > -1) {
+              tempAirGapTransactionIsInbound = false
+            }
+          }
+
+          const airGapTransaction: IAirGapTransaction = {
             hash: transaction.txid,
             from: tempAirGapTransactionFrom,
             to: tempAirGapTransactionTo,
             amount: amount,
             blockHeight: transaction.blockheight,
-            timestamp: transaction.time
-          } as IAirGapTransaction
+            timestamp: transaction.time,
+            fee:  new BigNumber(transaction.fees).shiftedBy(-1 * this.feeDecimals),
+            isInbound: tempAirGapTransactionIsInbound,
+            protocolIdentifier: this.identifier
+          }
+
           airGapTransactions.push(airGapTransaction)
         }
         resolve(airGapTransactions)

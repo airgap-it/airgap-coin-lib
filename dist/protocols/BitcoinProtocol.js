@@ -369,6 +369,7 @@ var BitcoinProtocol = /** @class */ (function () {
                         to: tempAirGapTransactionTo,
                         isInbound: tempAirGapTransactionIsInbound,
                         amount: amount,
+                        fee: new bignumber_js_1.default(transaction.fees).shiftedBy(-1 * _this.feeDecimals),
                         blockHeight: transaction.blockheight,
                         protocolIdentifier: _this.identifier,
                         timestamp: transaction.time
@@ -420,13 +421,23 @@ var BitcoinProtocol = /** @class */ (function () {
                             }
                         }
                     }
+                    var tempAirGapTransactionIsInbound = true;
+                    for (var _f = 0, _g = transaction.vin; _f < _g.length; _f++) {
+                        var vin = _g[_f];
+                        if (addresses.indexOf(vin.addr) > -1) {
+                            tempAirGapTransactionIsInbound = false;
+                        }
+                    }
                     var airGapTransaction = {
                         hash: transaction.txid,
                         from: tempAirGapTransactionFrom,
                         to: tempAirGapTransactionTo,
                         amount: amount,
                         blockHeight: transaction.blockheight,
-                        timestamp: transaction.time
+                        timestamp: transaction.time,
+                        fee: new bignumber_js_1.default(transaction.fees).shiftedBy(-1 * _this.feeDecimals),
+                        isInbound: tempAirGapTransactionIsInbound,
+                        protocolIdentifier: _this.identifier
                     };
                     airGapTransactions.push(airGapTransaction);
                 }
