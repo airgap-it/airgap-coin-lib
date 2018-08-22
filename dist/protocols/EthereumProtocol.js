@@ -100,16 +100,20 @@ var EthereumProtocol = /** @class */ (function () {
     };
     EthereumProtocol.prototype.getTransactionDetailsFromRaw = function (transaction, rawTx) {
         var ethTx = new EthereumTransaction(rawTx);
+        var hexValue = ethTx.value.toString('hex') || '0x0';
+        var hexGasPrice = ethTx.gasPrice.toString('hex') || '0x0';
+        var hexGasLimit = ethTx.gasLimit.toString('hex') || '0x0';
+        var hexNonce = ethTx.nonce.toString('hex') || '0x0';
         return {
             from: ['0x' + ethTx.from.toString('hex')],
             to: ['0x' + ethTx.to.toString('hex')],
-            amount: new bignumber_js_1.BigNumber(parseInt(ethTx.value.toString('hex'), 16)),
-            fee: new bignumber_js_1.BigNumber(parseInt(ethTx.gasLimit.toString('hex'), 16)).multipliedBy(new bignumber_js_1.BigNumber(parseInt(ethTx.gasPrice.toString('hex'), 16))),
+            amount: new bignumber_js_1.BigNumber(parseInt(hexValue, 16)),
+            fee: new bignumber_js_1.BigNumber(parseInt(hexGasLimit, 16)).multipliedBy(new bignumber_js_1.BigNumber(parseInt(hexGasPrice, 16))),
             protocolIdentifier: this.identifier,
             isInbound: ethTx.toCreationAddress(),
             hash: ethTx.hash,
             meta: {
-                nonce: parseInt(ethTx.nonce.toString('hex'), 16)
+                nonce: parseInt(hexNonce, 16)
             },
             data: '0x' + ethTx.data.toString('hex')
         };

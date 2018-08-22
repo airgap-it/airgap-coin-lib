@@ -21,6 +21,20 @@ describe('Transaction', function () {
     expect(tx.meta.nonce).to.equal(80)
   })
 
+  it('should be able to extract an IAirGapTranscation from a Raw Etheruem TX with 0 Amount and 0 Fee', function () {
+    let rawTx = '0xf85f8080825208944a1e1d37462a422873bfccb1e705b05cc4bd922e808025a07890f18f9527b450c0a05e546cdc2bcea787996047fff283c4de7adfd697fdfea0378186598e3ba1b0ec5dac34b55649f8e9544edf08a9126066eb56ffa4139c19'
+    let coinlib = new CoinLib.EthereumRopstenProtocol()
+
+    let tx = coinlib.getTransactionDetailsFromRaw(null, rawTx)
+
+    expect(tx.from[0]).to.equal('0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e'.toLowerCase())
+    expect(tx.to[0]).to.equal('0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e'.toLowerCase())
+    expect(tx.amount.toString()).to.equal('0')
+    expect(tx.fee.toString()).to.equal('0')
+    expect(tx.protocolIdentifier).to.equal('eth')
+    expect(tx.meta.nonce).to.equal(0)
+  })
+
   it('should be able to extract an IAirGapTranscation from a Raw ERC20-Token Etheruem TX', function () {
     let rawTx = '0xf8a950843b9aca00830249f0942dd847af80418d280b7078888b6a6133083001c980b844a9059cbb0000000000000000000000004a1e1d37462a422873bfccb1e705b05cc4bd922e0000000000000000000000000000000000000000000000008ac7230489e800002aa078a1df17bfdffceda235a9e3ffed79b9a6585619244249a234cd4f25d75e3066a047b8fafbfc06346c09e1ec4db1690f9fc261ebfc7aa2d7cdd5db55cd87db4bf4'
     let coinlib = new CoinLib.HOPTokenProtocol()
