@@ -230,16 +230,18 @@ export class EthereumProtocol implements ICoinProtocol {
             axios.get(this.infoAPI + 'transactions?address=' + address + '&page=' + (offset / limit) + '&limit=' + limit + '&filterContractInteraction=true').then(response => {
               const transactionResponse = response.data
               for (let transaction of transactionResponse.docs) {
-                const airGapTransaction = {
+                const fee = new BigNumber(transaction.gasUsed).times(new BigNumber(transaction.gasPrice))
+                const airGapTransaction: IAirGapTransaction = {
                   hash: transaction.id,
                   from: [transaction.from],
                   to: [transaction.to],
                   isInbound: transaction.to.toLowerCase() === address.toLowerCase(),
                   amount: new BigNumber(transaction.value),
+                  fee: fee,
                   blockHeight: transaction.blockNumber,
                   protocolIdentifier: this.identifier,
                   timestamp: parseInt(transaction.timeStamp, 10)
-                } as IAirGapTransaction // Add fee?
+                }
 
                 airGapTransactions.push(airGapTransaction)
               }
