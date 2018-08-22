@@ -204,16 +204,18 @@ var EthereumProtocol = /** @class */ (function () {
                         var transactionResponse = response.data;
                         for (var _i = 0, _a = transactionResponse.docs; _i < _a.length; _i++) {
                             var transaction = _a[_i];
+                            var fee = new bignumber_js_1.BigNumber(transaction.gasUsed).times(new bignumber_js_1.BigNumber(transaction.gasPrice));
                             var airGapTransaction = {
                                 hash: transaction.id,
                                 from: [transaction.from],
                                 to: [transaction.to],
                                 isInbound: transaction.to.toLowerCase() === address.toLowerCase(),
                                 amount: new bignumber_js_1.BigNumber(transaction.value),
+                                fee: fee,
                                 blockHeight: transaction.blockNumber,
                                 protocolIdentifier: _this.identifier,
                                 timestamp: parseInt(transaction.timeStamp, 10)
-                            }; // Add fee?
+                            };
                             airGapTransactions.push(airGapTransaction);
                         }
                         resolve(airGapTransactions);
