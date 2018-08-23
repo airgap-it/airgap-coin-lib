@@ -8,7 +8,7 @@ var Web3 = require('web3'); // tslint:disable-line
 var EthereumTransaction = require('ethereumjs-tx');
 var EthereumProtocol = /** @class */ (function () {
     function EthereumProtocol(jsonRPCAPI, infoAPI, chainId) {
-        if (jsonRPCAPI === void 0) { jsonRPCAPI = 'https://mainnet.infura.io/'; }
+        if (jsonRPCAPI === void 0) { jsonRPCAPI = 'https://eth-rpc-proxy.kubernetes.papers.tech/'; }
         if (infoAPI === void 0) { infoAPI = 'https://api.trustwalletapp.com/'; }
         if (chainId === void 0) { chainId = 1; }
         this.symbol = 'ETH';
