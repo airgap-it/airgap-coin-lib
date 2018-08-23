@@ -160,7 +160,7 @@ var GenericERC20 = /** @class */ (function (_super) {
                             var transaction = _a[_i];
                             if (transaction.operations.length >= 1) {
                                 var transactionPayload = transaction.operations[0];
-                                var fee = new bignumber_js_1.default(transactionPayload.gasUsed).times(new bignumber_js_1.default(transactionPayload.gasPrice));
+                                var fee = new bignumber_js_1.default(transaction.gasUsed).times(new bignumber_js_1.default(transaction.gasPrice));
                                 var airGapTransaction = {
                                     hash: transaction.id,
                                     from: [transactionPayload.from],
