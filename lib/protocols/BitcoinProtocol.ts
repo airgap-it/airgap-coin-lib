@@ -478,7 +478,7 @@ export class BitcoinProtocol implements ICoinProtocol {
             amount: amount,
             blockHeight: transaction.blockheight,
             timestamp: transaction.time,
-            fee:  new BigNumber(transaction.fees).shiftedBy(-1 * this.feeDecimals),
+            fee: new BigNumber(transaction.fees).shiftedBy(-1 * this.feeDecimals),
             isInbound: tempAirGapTransactionIsInbound,
             protocolIdentifier: this.identifier
           }
