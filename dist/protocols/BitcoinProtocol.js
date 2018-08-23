@@ -369,7 +369,7 @@ var BitcoinProtocol = /** @class */ (function () {
                         to: tempAirGapTransactionTo,
                         isInbound: tempAirGapTransactionIsInbound,
                         amount: amount,
-                        fee: new bignumber_js_1.default(transaction.fees).shiftedBy(-1 * _this.feeDecimals),
+                        fee: new bignumber_js_1.default(transaction.fees).shiftedBy(_this.feeDecimals),
                         blockHeight: transaction.blockheight,
                         protocolIdentifier: _this.identifier,
                         timestamp: transaction.time
@@ -435,7 +435,7 @@ var BitcoinProtocol = /** @class */ (function () {
                         amount: amount,
                         blockHeight: transaction.blockheight,
                         timestamp: transaction.time,
-                        fee: new bignumber_js_1.default(transaction.fees).shiftedBy(-1 * _this.feeDecimals),
+                        fee: new bignumber_js_1.default(transaction.fees).shiftedBy(_this.feeDecimals),
                         isInbound: tempAirGapTransactionIsInbound,
                         protocolIdentifier: _this.identifier
                     };
