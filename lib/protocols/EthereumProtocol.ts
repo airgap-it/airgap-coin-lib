@@ -43,7 +43,7 @@ export class EthereumProtocol implements ICoinProtocol {
   chainId: number
   infoAPI: string
 
-  constructor(jsonRPCAPI = 'https://mainnet.infura.io/', infoAPI = 'https://api.trustwalletapp.com/', chainId = 1) {
+  constructor(jsonRPCAPI = 'https://eth-rpc-proxy.kubernetes.papers.tech/', infoAPI = 'https://api.trustwalletapp.com/', chainId = 1) {
     this.infoAPI = infoAPI
     this.web3 = new Web3(new Web3.providers.HttpProvider(jsonRPCAPI))
     this.network = bitcoinJS.networks.bitcoin
