@@ -154,7 +154,7 @@ export class GenericERC20 extends EthereumProtocol {
               for (let transaction of transactionResponse.docs) {
                 if (transaction.operations.length >= 1) {
                   const transactionPayload = transaction.operations[0]
-                  const fee = new BigNumber(transactionPayload.gasUsed).times(new BigNumber(transactionPayload.gasPrice))
+                  const fee = new BigNumber(transaction.gasUsed).times(new BigNumber(transaction.gasPrice))
                   const airGapTransaction: IAirGapTransaction = {
                     hash: transaction.id,
                     from: [transactionPayload.from],
