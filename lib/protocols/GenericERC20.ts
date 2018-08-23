@@ -56,7 +56,7 @@ abiDecoder.addABI(AUTH_TOKEN_ABI)
 export class GenericERC20 extends EthereumProtocol {
   tokenContract: any
 
-  constructor(contractAddress, jsonRPCAPI = 'https://eth-rpc-proxy.kubernetes.papers.tech/', infoAPI = 'https://api.trustwalletapp.com/', chainId = 1) {
+  constructor(contractAddress, jsonRPCAPI = 'https://mainnet.infura.io/', infoAPI = 'https://api.trustwalletapp.com/', chainId = 1) {
     super(jsonRPCAPI, infoAPI, chainId) // we probably need another network here, explorer is ok
     this.tokenContract = new this.web3.eth.Contract(AUTH_TOKEN_ABI, contractAddress)
   }

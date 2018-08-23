@@ -63,7 +63,7 @@ abiDecoder.addABI(AUTH_TOKEN_ABI);
 var GenericERC20 = /** @class */ (function (_super) {
     __extends(GenericERC20, _super);
     function GenericERC20(contractAddress, jsonRPCAPI, infoAPI, chainId) {
-        if (jsonRPCAPI === void 0) { jsonRPCAPI = 'https://eth-rpc-proxy.kubernetes.papers.tech/'; }
+        if (jsonRPCAPI === void 0) { jsonRPCAPI = 'https://mainnet.infura.io/'; }
         if (infoAPI === void 0) { infoAPI = 'https://api.trustwalletapp.com/'; }
         if (chainId === void 0) { chainId = 1; }
         var _this = _super.call(this, jsonRPCAPI, infoAPI, chainId) // we probably need another network here, explorer is ok
