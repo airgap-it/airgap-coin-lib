@@ -28,15 +28,8 @@ Adding a new ERC20-like Coin means:
 Currently supported are:
 
 - Bitcoin
-- Bitcoin Testnet
-- Litecoin
-- Zcash
-- Zcash Testnet
 - Ethereum
-- Ethereum Ropsten
-- Ethereum Classic
 - Aeternity Token
-- HOP ERC20 Token on Ropsten
 
 ## Features
 
