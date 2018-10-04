@@ -10,23 +10,30 @@
     "tslint": "tslint -c ./tslint.json --project ./tsconfig.json --format stylish",
     "lint-ci": "tslint -t json -o lintReport.json --project . || true",
     "test": "tsc && mocha --timeout 40000",
-    "test-ci": "tsc && nyc --reporter=lcov mocha --timeout 40000"
+    "test-ci": "tsc && nyc --reporter=lcov mocha --timeout 40000",
+    "test-tsc": "npm run test -- \"./test/**/**.spec.ts\" -r ts-node/register"
   },
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
-    "abi-decoder": "https://github.com/laurentjacob/abi-decoder.git#a4b60b35d12af863026d6d723bec73b172c4e5b7",
+    "@aeternity/hd-wallet": "github:aeternity/hd-wallet-js",
+    "abi-decoder": "github:laurentjacob/abi-decoder#a4b60b35d12af863026d6d723bec73b172c4e5b7",
     "axios": "^0.18.0",
     "bignumber.js": "^7.0.1",
     "bip39": "^2.5.0",
     "bitcoinjs-lib": "^3.3.2",
     "bitcoinjs-lib-zcash": "^3.3.2",
+    "bs58": "^4.0.1",
+    "bs58check": "^2.1.2",
     "cryptocompare": "^0.5.0",
+    "ed25519-hd-key": "^1.0.0",
     "elliptic": "^6.4.0",
     "es6-promise-plugin": "^4.2.2",
     "ethereumjs-tx": "^1.3.4",
     "ethereumjs-util": "^5.2.0",
     "hdkey": "^0.8.0",
     "js-sha3": "^0.7.0",
+    "rlp": "^2.1.0",
+    "tweetnacl": "^1.0.0",
     "web3": "^1.0.0-beta.34"
   },
   "devDependencies": {
@@ -39,13 +46,24 @@
     "@types/node": "^10.5.0",
     "@types/underscore": "^1.8.8",
     "chai": "^4.1.2",
+    "husky": "^1.0.0-rc.14",
     "mocha": "^5.1.1",
     "node-fetch": "^2.2.0",
     "nyc": "^12.0.2",
+    "prettier": "1.14.2",
+    "pretty-quick": "^1.6.0",
+    "sinon": "^6.3.5",
     "sonarqube-scanner": "^2.1.0",
+    "ts-node": "^7.0.1",
     "tslint": "^5.10.0",
+    "tslint-config-prettier": "^1.15.0",
     "tslint-config-standard": "github:papers-ch/tslint-config-standard",
     "typescript": "^2.8.3",
     "websocket": "^1.0.26"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "pretty-quick --staged"
+    }
   }
 }

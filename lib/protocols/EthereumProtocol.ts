@@ -23,16 +23,20 @@ export class EthereumProtocol implements ICoinProtocol {
   feeDecimals = 18
   identifier = 'eth'
 
-  units = [{
-    unitSymbol: 'ETH',
-    factor: new BigNumber(1)
-  }, {
-    unitSymbol: 'GWEI',
-    factor: new BigNumber(1).shiftedBy(-9)
-  }, {
-    unitSymbol: 'WEI',
-    factor: new BigNumber(1).shiftedBy(-18)
-  }]
+  units = [
+    {
+      unitSymbol: 'ETH',
+      factor: new BigNumber(1)
+    },
+    {
+      unitSymbol: 'GWEI',
+      factor: new BigNumber(1).shiftedBy(-9)
+    },
+    {
+      unitSymbol: 'WEI',
+      factor: new BigNumber(1).shiftedBy(-18)
+    }
+  ]
 
   supportsHD = false
   standardDerivationPath = `m/44'/60'/0'/0/0`
@@ -52,7 +56,11 @@ export class EthereumProtocol implements ICoinProtocol {
 
   getPublicKeyFromHexSecret(secret: string, derivationPath: string): string {
     const ethereumNode = bitcoinJS.HDNode.fromSeedHex(secret, this.network as bitcoinJS.Network)
-    return ethereumNode.derivePath(derivationPath).neutered().getPublicKeyBuffer().toString('hex')
+    return ethereumNode
+      .derivePath(derivationPath)
+      .neutered()
+      .getPublicKeyBuffer()
+      .toString('hex')
   }
 
   getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Buffer {
@@ -61,7 +69,7 @@ export class EthereumProtocol implements ICoinProtocol {
   }
 
   getExtendedPrivateKeyFromHexSecret(secret: string, derivationPath: string): string {
-    throw (new Error('extended private key support for ether not implemented'))
+    throw new Error('extended private key support for ether not implemented')
   }
 
   getAddressFromPublicKey(publicKey: string | Buffer): string {
@@ -73,13 +81,32 @@ export class EthereumProtocol implements ICoinProtocol {
   }
 
   getAddressFromExtendedPublicKey(extendedPublicKey: string, visibilityDerivationIndex: number, addressDerivationIndex: number): string {
-    return this.getAddressFromPublicKey(bitcoinJS.HDNode.fromBase58(extendedPublicKey, this.network as bitcoinJS.Network).derive(visibilityDerivationIndex).derive(addressDerivationIndex).getPublicKeyBuffer().toString('hex'))
+    return this.getAddressFromPublicKey(
+      bitcoinJS.HDNode.fromBase58(extendedPublicKey, this.network as bitcoinJS.Network)
+        .derive(visibilityDerivationIndex)
+        .derive(addressDerivationIndex)
+        .getPublicKeyBuffer()
+        .toString('hex')
+    )
   }
 
-  getAddressesFromExtendedPublicKey(extendedPublicKey: string, visibilityDerivationIndex: number, addressCount: number, offset: number): string[] {
+  getAddressesFromExtendedPublicKey(
+    extendedPublicKey: string,
+    visibilityDerivationIndex: number,
+    addressCount: number,
+    offset: number
+  ): string[] {
     const node = bitcoinJS.HDNode.fromBase58(extendedPublicKey, this.network as bitcoinJS.Network)
     const generatorArray = [addressCount].map((x, i) => i + offset)
-    return generatorArray.map(x => this.getAddressFromPublicKey(node.derive(visibilityDerivationIndex).derive(x).getPublicKeyBuffer().toString('hex')))
+    return generatorArray.map(x =>
+      this.getAddressFromPublicKey(
+        node
+          .derive(visibilityDerivationIndex)
+          .derive(x)
+          .getPublicKeyBuffer()
+          .toString('hex')
+      )
+    )
   }
 
   signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: any): Promise<string> {
@@ -87,7 +114,9 @@ export class EthereumProtocol implements ICoinProtocol {
   }
 
   signWithPrivateKey(extendedPrivateKey: Buffer, transaction: any): Promise<string> {
-    if (transaction.from !== ethUtil.toChecksumAddress((ethUtil.privateToAddress(Buffer.from(extendedPrivateKey)) as Buffer).toString('hex'))) {
+    if (
+      transaction.from !== ethUtil.toChecksumAddress((ethUtil.privateToAddress(Buffer.from(extendedPrivateKey)) as Buffer).toString('hex'))
+    ) {
       return Promise.reject('from property and private-key do not match')
     }
 
@@ -150,7 +179,13 @@ export class EthereumProtocol implements ICoinProtocol {
     return Promise.reject('extended public balance for ether not implemented')
   }
 
-  prepareTransactionFromExtendedPublicKey(extendedPublicKey: string, offset: number, recipients: string[], values: BigNumber[], fee: BigNumber): Promise<any> {
+  prepareTransactionFromExtendedPublicKey(
+    extendedPublicKey: string,
+    offset: number,
+    recipients: string[],
+    values: BigNumber[],
+    fee: BigNumber
+  ): Promise<any> {
     return Promise.reject('extended public tx for ether not implemented')
   }
 
@@ -166,36 +201,41 @@ export class EthereumProtocol implements ICoinProtocol {
     }
 
     return new Promise((resolve, reject) => {
-      this.getBalanceOfAddresses([address]).then(balance => {
-        const gasLimit = 21000
-        const gasPrice = fee.div(gasLimit).integerValue(BigNumber.ROUND_CEIL)
-        if (new BigNumber(balance).gte(new BigNumber(values[0].plus(fee)))) {
-          this.web3.eth.getTransactionCount(address).then(txCount => {
-            const transaction = {
-              nonce: txCount,
-              gasLimit: gasLimit,
-              gasPrice: gasPrice, // 10 Gwei
-              to: recipients[0],
-              from: address,
-              value: values[0],
-              chainId: this.chainId
-            }
-            resolve(transaction)
-          })
-        } else {
-          reject('not enough balance')
-        }
-      }).catch(reject)
+      this.getBalanceOfAddresses([address])
+        .then(balance => {
+          const gasLimit = 21000
+          const gasPrice = fee.div(gasLimit).integerValue(BigNumber.ROUND_CEIL)
+          if (new BigNumber(balance).gte(new BigNumber(values[0].plus(fee)))) {
+            this.web3.eth.getTransactionCount(address).then(txCount => {
+              const transaction = {
+                nonce: txCount,
+                gasLimit: gasLimit,
+                gasPrice: gasPrice, // 10 Gwei
+                to: recipients[0],
+                from: address,
+                value: values[0],
+                chainId: this.chainId
+              }
+              resolve(transaction)
+            })
+          } else {
+            reject('not enough balance')
+          }
+        })
+        .catch(reject)
     })
   }
 
   broadcastTransaction(rawTransaction: string): Promise<any> {
     return new Promise((resolve, reject) => {
-      this.web3.eth.sendSignedTransaction('0x' + rawTransaction).then(receipt => {
-        resolve(receipt.transactionHash)
-      }).catch(err => {
-        reject(err)
-      })
+      this.web3.eth
+        .sendSignedTransaction('0x' + rawTransaction)
+        .then(receipt => {
+          resolve(receipt.transactionHash)
+        })
+        .catch(err => {
+          reject(err)
+        })
     })
   }
 
@@ -214,9 +254,11 @@ export class EthereumProtocol implements ICoinProtocol {
       promises.push(this.web3.eth.getBalance(address))
     }
     return new Promise((resolve, reject) => {
-      Promise.all(promises).then((values) => {
-        resolve(values.map(obj => new BigNumber(obj)).reduce((a, b) => a.plus(b)))
-      }).catch(reject)
+      Promise.all(promises)
+        .then(values => {
+          resolve(values.map(obj => new BigNumber(obj)).reduce((a, b) => a.plus(b)))
+        })
+        .catch(reject)
     })
   }
 
@@ -227,33 +269,45 @@ export class EthereumProtocol implements ICoinProtocol {
       for (let address of addresses) {
         promises.push(
           new Promise((resolve, reject) => {
-            axios.get(this.infoAPI + 'transactions?address=' + address + '&page=' + (offset / limit) + '&limit=' + limit + '&filterContractInteraction=true').then(response => {
-              const transactionResponse = response.data
-              for (let transaction of transactionResponse.docs) {
-                const fee = new BigNumber(transaction.gasUsed).times(new BigNumber(transaction.gasPrice))
-                const airGapTransaction: IAirGapTransaction = {
-                  hash: transaction.id,
-                  from: [transaction.from],
-                  to: [transaction.to],
-                  isInbound: transaction.to.toLowerCase() === address.toLowerCase(),
-                  amount: new BigNumber(transaction.value),
-                  fee: fee,
-                  blockHeight: transaction.blockNumber,
-                  protocolIdentifier: this.identifier,
-                  timestamp: parseInt(transaction.timeStamp, 10)
+            axios
+              .get(
+                this.infoAPI +
+                  'transactions?address=' +
+                  address +
+                  '&page=' +
+                  offset / limit +
+                  '&limit=' +
+                  limit +
+                  '&filterContractInteraction=true'
+              )
+              .then(response => {
+                const transactionResponse = response.data
+                for (let transaction of transactionResponse.docs) {
+                  const airGapTransaction = {
+                    hash: transaction.id,
+                    from: [transaction.from],
+                    to: [transaction.to],
+                    isInbound: transaction.to.toLowerCase() === address.toLowerCase(),
+                    amount: new BigNumber(transaction.value),
+                    blockHeight: transaction.blockNumber,
+                    protocolIdentifier: this.identifier,
+                    timestamp: parseInt(transaction.timeStamp, 10)
+                  } as IAirGapTransaction // Add fee?
+
+                  airGapTransactions.push(airGapTransaction)
                 }
 
-                airGapTransactions.push(airGapTransaction)
-              }
-
-              resolve(airGapTransactions)
-            }).catch(reject)
+                resolve(airGapTransactions)
+              })
+              .catch(reject)
           })
         )
       }
-      Promise.all(promises).then((values) => {
-        overallResolve([].concat.apply([], values))
-      }).catch(overallReject)
+      Promise.all(promises)
+        .then(values => {
+          overallResolve([].concat.apply([], values))
+        })
+        .catch(overallReject)
     })
   }
 }

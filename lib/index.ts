@@ -9,17 +9,18 @@ import { EthereumClassicProtocol } from './protocols/EthereumClassicProtocol'
 import { GenericERC20 } from './protocols/GenericERC20'
 import { HOPTokenProtocol } from './protocols/HOPTokenProtocol'
 import { AETokenProtocol } from './protocols/AETokenProtocol'
+import { AEProtocol } from './protocols/AEProtocol'
 import { AirGapWallet } from './wallet/AirGapWallet'
 import { AirGapMarketWallet } from './wallet/AirGapMarketWallet'
 import { IAirGapWallet } from './interfaces/IAirGapWallet'
 import { IAirGapTransaction } from './interfaces/IAirGapTransaction'
 import { ICoinProtocol } from './protocols/ICoinProtocol'
 
-const supportedProtocols = function (): ICoinProtocol[] {
+const supportedProtocols = function(): ICoinProtocol[] {
   return [new BitcoinProtocol(), new EthereumProtocol(), new AETokenProtocol()]
 }
 
-const getProtocolByIdentifier = function (identifier: string) {
+const getProtocolByIdentifier = function(identifier: string) {
   for (let coinProtocol of supportedProtocols()) {
     if (coinProtocol.identifier === identifier) {
       return coinProtocol
@@ -28,22 +29,23 @@ const getProtocolByIdentifier = function (identifier: string) {
 }
 
 export {
-    getProtocolByIdentifier,
-    supportedProtocols,
-    AirGapWallet,
-    AirGapMarketWallet,
-    IAirGapWallet,
-    IAirGapTransaction,
-    ICoinProtocol,
-    BitcoinProtocol,
-    BitcoinTestnetProtocol,
-    LitecoinProtocol,
-    ZCashProtocol,
-    ZCashTestnetProtocol,
-    EthereumProtocol,
-    EthereumRopstenProtocol,
-    EthereumClassicProtocol,
-    GenericERC20,
-    HOPTokenProtocol,
-    AETokenProtocol
+  getProtocolByIdentifier,
+  supportedProtocols,
+  AirGapWallet,
+  AirGapMarketWallet,
+  IAirGapWallet,
+  IAirGapTransaction,
+  ICoinProtocol,
+  BitcoinProtocol,
+  BitcoinTestnetProtocol,
+  LitecoinProtocol,
+  ZCashProtocol,
+  ZCashTestnetProtocol,
+  EthereumProtocol,
+  EthereumRopstenProtocol,
+  EthereumClassicProtocol,
+  GenericERC20,
+  HOPTokenProtocol,
+  AETokenProtocol,
+  AEProtocol
 }
