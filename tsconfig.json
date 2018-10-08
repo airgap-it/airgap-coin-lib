@@ -1,23 +1,13 @@
 {
-	"compilerOptions": {
-		"target": "es5",
-		"lib": [
-			"es2015",
-			"dom"
-		],
-		"module": "commonjs",
-		"declaration": true,
-		"outDir": "./dist",
-		"typeRoots": [
-			"./node_modules/@types"
-		],
-		"types": [
-			"jasmine",
-			"node"
-		],
-		"strictNullChecks": true
-	},
-	"include": [
-		"lib/**/*.ts"
-	],
+  "compilerOptions": {
+    "target": "es5",
+    "lib": ["es2015", "es2017.string", "dom"],
+    "module": "commonjs",
+    "declaration": true,
+    "outDir": "./dist",
+    "typeRoots": ["./node_modules/@types"],
+    "types": ["jasmine", "node"],
+    "strictNullChecks": true
+  },
+  "include": ["lib/**/*.ts"]
 }

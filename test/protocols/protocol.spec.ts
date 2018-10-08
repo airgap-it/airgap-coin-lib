@@ -1,7 +1,14 @@
 import { expect } from 'chai'
+import { seed, TestProtocolSpec } from './implementations'
+import * as sinon from 'sinon'
 import 'mocha'
-import { protocols, seed, TestProtocolSpec } from './implementations'
-import BigNumber from 'bignumber.js'
+import { IAirGapTransaction } from '../../dist'
+import { aeProtocol } from './specs/ae'
+import { ethereumProtocol } from './specs/ethereum'
+import { ethereumRopstenProtocol } from './specs/ethereum-ropsten'
+import { ethereumClassicProtocol } from './specs/ethereum-classic'
+
+const protocols = [aeProtocol, ethereumProtocol, ethereumRopstenProtocol, ethereumClassicProtocol]
 
 protocols.forEach((protocol: TestProtocolSpec) => {
   describe(`ICoinProtocol ${protocol.name}`, () => {
@@ -28,15 +35,34 @@ protocols.forEach((protocol: TestProtocolSpec) => {
       })
     })
 
-    describe(`Create Transaction`, () => {
+    describe(`Prepare Transaction`, () => {
+      beforeEach(() => {
+        protocol.stub.registerStub(protocol, protocol.lib)
+      })
+
+      afterEach(() => {
+        sinon.restore()
+      })
+
       it('prepareTransactionFromPublicKey - Is able to prepare a transaction using its public key', async function() {
         let tx = await protocol.lib.prepareTransactionFromPublicKey(
           protocol.wallet.publicKey,
           [protocol.wallet.address],
-          [new BigNumber(10)],
-          new BigNumber(10)
+          [protocol.wallet.tx.amount],
+          protocol.wallet.tx.fee
         )
-        expect(tx).to.equal(protocol.txs[0].unsignedTx)
+
+        expect(tx).to.deep.equal(protocol.txs[0].unsignedTx)
+      })
+    })
+
+    describe(`Sign Transaction`, () => {
+      beforeEach(() => {
+        protocol.stub.registerStub(protocol, protocol.lib)
+      })
+
+      afterEach(() => {
+        sinon.restore()
       })
 
       it('signWithPrivateKey - Is able to sign a transaction using a PrivateKey', async function() {
@@ -52,6 +78,39 @@ protocols.forEach((protocol: TestProtocolSpec) => {
 
         txs.forEach((tx, index) => {
           expect(tx).to.equal(protocol.txs[index].signedTx)
+        })
+      })
+    })
+
+    describe(`Extract TX`, () => {
+      it('getTransactionDetails - Is able to extract all necessary properties from a TX', async function() {
+        protocol.txs.forEach(tx => {
+          const airgapTx: IAirGapTransaction = protocol.lib.getTransactionDetails(tx.unsignedTx)
+
+          expect(airgapTx.to).to.deep.equal([protocol.wallet.address])
+          expect(airgapTx.from).to.deep.equal([protocol.wallet.address])
+
+          expect(airgapTx.amount).to.deep.equal(protocol.wallet.tx.amount)
+          expect(airgapTx.fee).to.deep.equal(protocol.wallet.tx.fee)
+
+          expect(airgapTx.protocolIdentifier).to.equal(protocol.lib.identifier)
+        })
+      })
+
+      it('getTransactionDetailsFromRaw - Is able to extract all necessary properties form a TX', async function() {
+        protocol.txs.forEach(tx => {
+          const airgapTx: IAirGapTransaction = protocol.lib.getTransactionDetailsFromRaw(
+            tx.unsignedTx,
+            JSON.parse(JSON.stringify(tx.signedTx))
+          )
+
+          expect(airgapTx.to.map(obj => obj.toLowerCase())).to.deep.equal([protocol.wallet.address].map(obj => obj.toLowerCase()))
+          expect(airgapTx.from.map(obj => obj.toLowerCase())).to.deep.equal([protocol.wallet.address].map(obj => obj.toLowerCase()))
+
+          expect(airgapTx.amount).to.deep.equal(protocol.wallet.tx.amount)
+          expect(airgapTx.fee).to.deep.equal(protocol.wallet.tx.fee)
+
+          expect(airgapTx.protocolIdentifier).to.equal(protocol.lib.identifier)
         })
       })
     })
