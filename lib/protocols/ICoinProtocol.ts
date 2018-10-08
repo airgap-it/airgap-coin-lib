@@ -6,16 +6,17 @@ export interface ICoinProtocol {
   name: string // Name of the currency, eg. "Bitcoin", "Aeternity"
 
   feeSymbol: string
-  feeDefaults: { // This should be replaced with fees from an API
-    low: BigNumber,
-    medium: BigNumber,
+  feeDefaults: {
+    // This should be replaced with fees from an API
+    low: BigNumber
+    medium: BigNumber
     high: BigNumber
   }
   decimals: number
   feeDecimals: number
   identifier: string
 
-  units: Array<{ unitSymbol: string, factor: BigNumber }>
+  units: Array<{ unitSymbol: string; factor: BigNumber }>
 
   supportsHD: boolean
   standardDerivationPath: string
@@ -27,8 +28,13 @@ export interface ICoinProtocol {
 
   getExtendedPrivateKeyFromHexSecret(secret: string, derivationPath: string): string
   getAddressFromPublicKey(publicKey: string): string // broadcaster knows this (both broadcaster and signer)
-  getAddressFromExtendedPublicKey(extendedPublicKey: string, visibilityDerivationIndex: number, addressDerivationIndex: number): string// broadcaster knows this (both broadcaster and signer)
-  getAddressesFromExtendedPublicKey(extendedPublicKey: string, visibilityDerivationIndex: number, addressCount: number, offset: number): string[] // broadcaster knows this (both broadcaster and signer)
+  getAddressFromExtendedPublicKey(extendedPublicKey: string, visibilityDerivationIndex: number, addressDerivationIndex: number): string // broadcaster knows this (both broadcaster and signer)
+  getAddressesFromExtendedPublicKey(
+    extendedPublicKey: string,
+    visibilityDerivationIndex: number,
+    addressCount: number,
+    offset: number
+  ): string[] // broadcaster knows this (both broadcaster and signer)
 
   getTransactionsFromPublicKey(publicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]>
   getTransactionsFromExtendedPublicKey(extendedPublicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]>
@@ -43,7 +49,13 @@ export interface ICoinProtocol {
   getBalanceOfPublicKey(publicKey: string): Promise<BigNumber>
   getBalanceOfExtendedPublicKey(extendedPublicKey: string, offset: number): Promise<BigNumber>
 
-  prepareTransactionFromExtendedPublicKey(extendedPublicKey: string, offset: number, recipients: string[], values: BigNumber[], fee: BigNumber): Promise<any> // only broadcaster
+  prepareTransactionFromExtendedPublicKey(
+    extendedPublicKey: string,
+    offset: number,
+    recipients: string[],
+    values: BigNumber[],
+    fee: BigNumber
+  ): Promise<any> // only broadcaster
   prepareTransactionFromPublicKey(publicKey: string, recipients: string[], values: BigNumber[], fee: BigNumber): Promise<any> // only broadcaster
 
   broadcastTransaction(rawTransaction: string): Promise<any>

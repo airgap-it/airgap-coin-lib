@@ -34,8 +34,7 @@ export class AEProtocol implements ICoinProtocol {
   standardDerivationPath = `m/44h/457h`
   addressValidationPattern = '^ak_+[1-9A-Za-z][^OIl]{48}$'
 
-  constructor(private epochRPC = 'https://sdk-edgenet.aepps.com') {}
-
+  constructor(public epochRPC = 'https://sdk-edgenet.aepps.com') {}
   /**
    * Returns the PublicKey as String, derived from a supplied hex-string
    * @param secret HEX-Secret from BIP39
@@ -78,8 +77,8 @@ export class AEProtocol implements ICoinProtocol {
     const signature = nacl.sign.detached(rawTx, privateKey)
 
     const txObj = {
-      tag: Buffer.from([11]),
-      version: Buffer.from([1]),
+      tag: this.toHexBuffer(11),
+      version: this.toHexBuffer(1),
       signatures: [Buffer.from(signature)],
       transaction: rawTx
     }
@@ -93,25 +92,26 @@ export class AEProtocol implements ICoinProtocol {
   }
 
   getTransactionDetails(transaction: any): IAirGapTransaction {
-    const rlpEncodedTx = bs58check.decode(transaction, 'hex')
-    const rlpDecodedTx = rlp.decode(rlpEncodedTx.slice(0, rlp.getLength(rlpEncodedTx)))
+    const rlpEncodedTx = bs58check.decode(transaction.replace('tx_', ''), 'hex')
+    const rlpDecodedTx = rlp.decode(rlpEncodedTx)
 
     const airgapTx: IAirGapTransaction = {
       amount: new BigNumber(parseInt(rlpDecodedTx[4].toString('hex'), 16)),
       fee: new BigNumber(parseInt(rlpDecodedTx[5].toString('hex'), 16)),
-      from: [rlpDecodedTx[2].toString('hex')],
+      from: [this.getAddressFromPublicKey(rlpDecodedTx[2].slice(1).toString('hex'))],
       isInbound: false,
       protocolIdentifier: this.identifier,
-      to: [rlpDecodedTx[3].toString('hex')]
+      to: [this.getAddressFromPublicKey(rlpDecodedTx[3].slice(1).toString('hex'))]
     }
 
     return airgapTx
   }
 
   getTransactionDetailsFromRaw(transaction: any, rawTx: any): IAirGapTransaction {
-    const rlpEncodedTawTx = bs58check.decode(rawTx, 'hex')
-    const rlpDecodedRawTx = rlp.decode(rlpEncodedTawTx.slice(0, rlp.getLength(rlpEncodedTawTx)))
-    return this.getTransactionDetails(rlpDecodedRawTx[3])
+    const rlpEncodedTx = bs58check.decode(rawTx.replace('tx_', ''), 'hex')
+    const rlpDecodedTx = rlp.decode(rlpEncodedTx)
+
+    return this.getTransactionDetails('tx_' + bs58check.encode(rlpDecodedTx[3]).toString('hex'))
   }
 
   async getBalanceOfAddresses(addresses: string[]): Promise<BigNumber> {
@@ -132,39 +132,39 @@ export class AEProtocol implements ICoinProtocol {
     return this.getBalanceOfAddresses([address])
   }
 
-  prepareTransactionFromPublicKey(publicKey: string, recipients: string[], values: BigNumber[], fee: BigNumber): Promise<any> {
-    return new Promise((resolve, reject) => {
-      axios
-        .get(`${this.epochRPC}/v2/accounts/${this.getAddressFromPublicKey(publicKey)}`)
-        .then(({ data }) => {
-          const sender = publicKey
-          const recipient = bs58check.decode(recipients[0].replace('ak_', ''))
+  async prepareTransactionFromPublicKey(publicKey: string, recipients: string[], values: BigNumber[], fee: BigNumber): Promise<any> {
+    const { data: accountResponse } = await axios.get(`${this.epochRPC}/v2/accounts/${this.getAddressFromPublicKey(publicKey)}`)
+    // const { data: blocksResponse } = await axios.get(`${this.epochRPC}/v2/blocks/top`)
 
-          const txObj = {
-            tag: Buffer.from([12]),
-            version: Buffer.from([1]),
-            sender_id: Buffer.concat([Buffer.from([1]), Buffer.from(sender, 'hex')]),
-            recipient_id: Buffer.concat([Buffer.from([1]), recipient]),
-            amount: Buffer.from([values[0].toNumber()]),
-            fee: Buffer.from([fee.toNumber()]),
-            ttl: Buffer.from([60]),
-            nonce: Buffer.from([data.nonce + 1]),
-            payload: Buffer.from('')
-          }
+    const sender = publicKey
+    const recipient = bs58check.decode(recipients[0].replace('ak_', ''))
 
-          const txArray = Object.keys(txObj).map(a => txObj[a])
-          const rlpEncodedTx = rlp.encode(txArray)
-          const preparedTx = 'tx_' + bs58check.encode(rlpEncodedTx)
+    const txObj = {
+      tag: this.toHexBuffer(12),
+      version: this.toHexBuffer(1),
+      sender_id: Buffer.concat([this.toHexBuffer(1), Buffer.from(sender, 'hex')]),
+      recipient_id: Buffer.concat([this.toHexBuffer(1), recipient]),
+      amount: this.toHexBuffer(values[0]),
+      fee: this.toHexBuffer(fee),
+      ttl: this.toHexBuffer(10000),
+      nonce: this.toHexBuffer(accountResponse.nonce + 1),
+      payload: Buffer.from('')
+    }
 
-          resolve(preparedTx)
-        })
-        .catch(reject)
-    })
+    const txArray = Object.keys(txObj).map(a => txObj[a])
+    const rlpEncodedTx = rlp.encode(txArray)
+    const preparedTx = 'tx_' + bs58check.encode(rlpEncodedTx)
+
+    return preparedTx
   }
 
   async broadcastTransaction(rawTransaction: string): Promise<any> {
     const { data } = await axios.post(`${this.epochRPC}/v2/transactions`, { tx: rawTransaction })
-    return Promise.resolve(data)
+    return data.tx_hash
+  }
+
+  private toHexBuffer(value: number | BigNumber): Buffer {
+    return Buffer.from(value.toString(16).padStart(2, '0'), 'hex')
   }
 
   // Unsupported Functionality for Aeternity

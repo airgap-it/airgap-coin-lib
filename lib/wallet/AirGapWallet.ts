@@ -5,11 +5,15 @@ import { getProtocolByIdentifier } from '..'
 import { IAirGapWallet } from '../interfaces/IAirGapWallet'
 
 export class AirGapWallet implements IAirGapWallet {
-
   public addresses: string[] = [] // used for cache
   public coinProtocol: ICoinProtocol
 
-  constructor(public protocolIdentifier: string, public publicKey: string, public isExtendedPublicKey: boolean, public derivationPath: string) {
+  constructor(
+    public protocolIdentifier: string,
+    public publicKey: string,
+    public isExtendedPublicKey: boolean,
+    public derivationPath: string
+  ) {
     let coinProtocol = getProtocolByIdentifier(this.protocolIdentifier)
     if (coinProtocol) {
       this.coinProtocol = coinProtocol
@@ -27,11 +31,14 @@ export class AirGapWallet implements IAirGapWallet {
       const parts = this.derivationPath.split('/')
       let offset = 0
 
-      if (!parts[parts.length - 1].endsWith('\'')) {
+      if (!parts[parts.length - 1].endsWith("'")) {
         offset = Number.parseInt(parts[parts.length - 1], 10)
       }
 
-      return [...this.coinProtocol.getAddressesFromExtendedPublicKey(this.publicKey, 0, amount, offset), ...this.coinProtocol.getAddressesFromExtendedPublicKey(this.publicKey, 1, amount, offset)]
+      return [
+        ...this.coinProtocol.getAddressesFromExtendedPublicKey(this.publicKey, 0, amount, offset),
+        ...this.coinProtocol.getAddressesFromExtendedPublicKey(this.publicKey, 1, amount, offset)
+      ]
     } else {
       return [this.coinProtocol.getAddressFromPublicKey(this.publicKey)]
     }
@@ -70,5 +77,4 @@ export class AirGapWallet implements IAirGapWallet {
     delete json.coinProtocol
     return json
   }
-
 }

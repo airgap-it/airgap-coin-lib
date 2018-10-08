@@ -12,8 +12,7 @@
     "test": "tsc && mocha --timeout 40000",
     "test-ci": "tsc && nyc --reporter=lcov mocha --timeout 40000",
     "test-tsc": "npm run test -- \"./test/**/**.spec.ts\" -r ts-node/register",
-    "postpublish": "npm run build",
-    "postinstall": "postinstall-build --only-as-dependency dist"
+    "prepare": "npm run build"
   },
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
@@ -33,7 +32,6 @@
     "ethereumjs-tx": "^1.3.4",
     "ethereumjs-util": "^5.2.0",
     "hdkey": "^0.8.0",
-    "postinstall-build": "^5.0.3",
     "js-sha3": "^0.7.0",
     "rlp": "^2.1.0",
     "tweetnacl": "^1.0.0",

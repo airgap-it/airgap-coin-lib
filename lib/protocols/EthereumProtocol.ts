@@ -14,11 +14,13 @@ export class EthereumProtocol implements ICoinProtocol {
   symbol = 'ETH'
   name = 'Ethereum'
   feeSymbol = 'eth'
+
   feeDefaults = {
     low: new BigNumber('0.00021'), // 21000 Gas * 2 Gwei
     medium: new BigNumber('0.000315'), // 21000 Gas * 15 Gwei
     high: new BigNumber('0.00084') // 21000 Gas * 40 Gwei
   }
+
   decimals = 18
   feeDecimals = 18
   identifier = 'eth'
@@ -47,7 +49,7 @@ export class EthereumProtocol implements ICoinProtocol {
   chainId: number
   infoAPI: string
 
-  constructor(jsonRPCAPI = 'https://mainnet.infura.io/', infoAPI = 'https://api.trustwalletapp.com/', chainId = 1) {
+  constructor(public jsonRPCAPI = 'https://mainnet.infura.io/', infoAPI = 'https://api.trustwalletapp.com/', chainId = 1) {
     this.infoAPI = infoAPI
     this.web3 = new Web3(new Web3.providers.HttpProvider(jsonRPCAPI))
     this.network = bitcoinJS.networks.bitcoin
@@ -113,10 +115,8 @@ export class EthereumProtocol implements ICoinProtocol {
     return Promise.reject('extended private key signing for ether not implemented')
   }
 
-  signWithPrivateKey(extendedPrivateKey: Buffer, transaction: any): Promise<string> {
-    if (
-      transaction.from !== ethUtil.toChecksumAddress((ethUtil.privateToAddress(Buffer.from(extendedPrivateKey)) as Buffer).toString('hex'))
-    ) {
+  signWithPrivateKey(privateKey: Buffer, transaction: any): Promise<string> {
+    if (transaction.from !== ethUtil.toChecksumAddress((ethUtil.privateToAddress(Buffer.from(privateKey)) as Buffer).toString('hex'))) {
       return Promise.reject('from property and private-key do not match')
     }
 
@@ -130,7 +130,7 @@ export class EthereumProtocol implements ICoinProtocol {
     }
 
     const tx = new EthereumTransaction(txParams)
-    tx.sign(extendedPrivateKey)
+    tx.sign(privateKey)
 
     return Promise.resolve(tx.serialize().toString('hex'))
   }
@@ -283,16 +283,18 @@ export class EthereumProtocol implements ICoinProtocol {
               .then(response => {
                 const transactionResponse = response.data
                 for (let transaction of transactionResponse.docs) {
-                  const airGapTransaction = {
+                  const fee = new BigNumber(transaction.gasUsed).times(new BigNumber(transaction.gasPrice))
+                  const airGapTransaction: IAirGapTransaction = {
                     hash: transaction.id,
                     from: [transaction.from],
                     to: [transaction.to],
                     isInbound: transaction.to.toLowerCase() === address.toLowerCase(),
                     amount: new BigNumber(transaction.value),
+                    fee: fee,
                     blockHeight: transaction.blockNumber,
                     protocolIdentifier: this.identifier,
                     timestamp: parseInt(transaction.timeStamp, 10)
-                  } as IAirGapTransaction // Add fee?
+                  }
 
                   airGapTransactions.push(airGapTransaction)
                 }
