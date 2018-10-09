@@ -21,7 +21,7 @@ import { UnsignedTransaction } from './serializer/unsigned-transaction.serialize
 import { SignedTransaction } from './serializer/signed-transaction.serializer'
 
 const supportedProtocols = function(): ICoinProtocol[] {
-  return [new BitcoinProtocol(), new EthereumProtocol(), new AETokenProtocol()]
+  return [new BitcoinProtocol(), new EthereumProtocol(), new AETokenProtocol(), new AEProtocol()]
 }
 
 const getProtocolByIdentifier = function(identifier: string) {
