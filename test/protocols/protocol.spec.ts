@@ -1,8 +1,9 @@
-import { expect } from 'chai'
-import { seed, TestProtocolSpec } from './implementations'
 import * as sinon from 'sinon'
 import 'mocha'
-import { IAirGapTransaction } from '../../dist'
+
+import { expect } from 'chai'
+import { seed, TestProtocolSpec } from './implementations'
+import { IAirGapTransaction } from '../../lib'
 import { aeProtocol } from './specs/ae'
 import { ethereumProtocol } from './specs/ethereum'
 import { ethereumRopstenProtocol } from './specs/ethereum-ropsten'
