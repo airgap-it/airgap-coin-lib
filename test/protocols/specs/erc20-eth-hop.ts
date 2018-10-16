@@ -21,7 +21,7 @@ const erc20HopTokenProtocol = {
         from: '0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e',
         nonce: 50,
         gasPrice: new BigNumber('25446834293'),
-        gasLimit: new BigNumber('37505'),
+        gasLimit: new BigNumber('420000000000000'),
         to: '0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e',
         value: new BigNumber('0xde0b6b3a7640000'),
         chainId: 3
