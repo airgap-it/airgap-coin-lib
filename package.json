@@ -33,6 +33,7 @@
     "js-sha3": "^0.7.0",
     "rlp": "^2.1.0",
     "tweetnacl": "^1.0.0",
+    "validator": "^10.8.0",
     "web3": "^1.0.0-beta.34"
   },
   "devDependencies": {
