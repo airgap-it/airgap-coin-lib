@@ -114,7 +114,7 @@ export class GenericERC20 extends EthereumProtocol {
     return new Promise((resolve, reject) => {
       this.getBalanceOfPublicKey(publicKey)
         .then(balance => {
-          if (balance >= values[0]) {
+          if (balance.isGreaterThanOrEqualTo(values[0])) {
             super
               .getBalanceOfPublicKey(publicKey)
               .then(ethBalance => {
@@ -128,11 +128,11 @@ export class GenericERC20 extends EthereumProtocol {
                     this.web3.eth.getTransactionCount(address).then(txCount => {
                       const transaction = {
                         nonce: txCount,
-                        gasLimit: gasLimit,
-                        gasPrice: fee.div(gasAmount).integerValue(BigNumber.ROUND_CEIL),
+                        gasLimit: this.web3.utils.toHex(gasLimit.toString()),
+                        gasPrice: this.web3.utils.toHex(fee.div(gasAmount).integerValue(BigNumber.ROUND_CEIL)),
                         to: recipients[0],
                         from: address,
-                        value: values[0],
+                        value: this.web3.utils.toHex(values[0].toString()),
                         chainId: this.chainId
                       }
                       resolve(transaction)
