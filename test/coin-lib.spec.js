@@ -195,7 +195,7 @@ describe('Balance Of', function() {
     bitcoin
       .getBalanceOfAddresses([address])
       .then(value => {
-        assert.equal(value.toString(10), '545454690560')
+        assert.equal(value.toString(10), '545454691115')
         done()
       })
       .catch(done)
