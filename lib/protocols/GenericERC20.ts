@@ -119,28 +119,30 @@ export class GenericERC20 extends EthereumProtocol {
               .getBalanceOfPublicKey(publicKey)
               .then(ethBalance => {
                 const address = this.getAddressFromPublicKey(publicKey)
-                this.tokenContract.methods.transfer(recipients[0], values[0]).estimateGas({ from: address }, (error, gasAmount) => {
-                  if (error) {
-                    reject(error)
-                  }
-                  const gasLimit = new BigNumber(gasAmount).plus(21000) // unsure about this calculation
-                  if (ethBalance.gte(fee)) {
-                    this.web3.eth.getTransactionCount(address).then(txCount => {
-                      const transaction = {
-                        nonce: txCount,
-                        gasLimit: this.web3.utils.toHex(gasLimit.toString()),
-                        gasPrice: this.web3.utils.toHex(fee.div(gasAmount).integerValue(BigNumber.ROUND_CEIL)),
-                        to: recipients[0],
-                        from: address,
-                        value: this.web3.utils.toHex(values[0].toString()),
-                        chainId: this.chainId
-                      }
-                      resolve(transaction)
-                    })
-                  } else {
-                    reject('not enough ETH balance')
-                  }
-                })
+                this.tokenContract.methods
+                  .transfer(recipients[0], this.web3.utils.toHex(values[0]).toString())
+                  .estimateGas({ from: address }, (error, gasAmount) => {
+                    if (error) {
+                      reject(error)
+                    }
+                    const gasLimit = new BigNumber(gasAmount).plus(21000) // unsure about this calculation
+                    if (ethBalance.isGreaterThanOrEqualTo(fee)) {
+                      this.web3.eth.getTransactionCount(address).then(txCount => {
+                        const transaction = {
+                          nonce: txCount,
+                          gasLimit: this.web3.utils.toHex(gasLimit.toString()),
+                          gasPrice: this.web3.utils.toHex(fee.div(gasAmount).integerValue(BigNumber.ROUND_CEIL)),
+                          to: recipients[0],
+                          from: address,
+                          value: this.web3.utils.toHex(values[0].toString()),
+                          chainId: this.chainId
+                        }
+                        resolve(transaction)
+                      })
+                    } else {
+                      reject('not enough ETH balance')
+                    }
+                  })
               })
               .catch(reject)
           } else {
