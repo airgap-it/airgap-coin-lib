@@ -92,7 +92,7 @@ export class GenericERC20 extends EthereumProtocol {
       gasPrice: this.web3.utils.toHex(transaction.gasPrice),
       gasLimit: this.web3.utils.toHex(transaction.gasLimit),
       to: this.tokenContract.options.address,
-      data: this.tokenContract.methods.transfer(transaction.to, transaction.value).encodeABI(),
+      data: transaction.data || this.tokenContract.methods.transfer(transaction.to, transaction.value).encodeABI(), // backwards-compatible fix
       chainId: this.web3.utils.toHex(this.chainId)
     }
 
