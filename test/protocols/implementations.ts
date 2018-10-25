@@ -23,6 +23,7 @@ interface TestProtocolSpec {
     }
   }
   txs: {
+    properties?: string[]
     unsignedTx: any
     signedTx: string
   }[]

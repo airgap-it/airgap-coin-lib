@@ -58,15 +58,20 @@ protocols.forEach((protocol: TestProtocolSpec) => {
       })
 
       it('prepareTransactionFromPublicKey - Is able to prepare a transaction using its public key', async function() {
-        let tx = await protocol.lib.prepareTransactionFromPublicKey(
+        let preparedTx = await protocol.lib.prepareTransactionFromPublicKey(
           protocol.wallet.publicKey,
           [protocol.wallet.address],
           [protocol.wallet.tx.amount],
           protocol.wallet.tx.fee
         )
 
-        protocol.txs.forEach(({ unsignedTx }) => {
-          expect(tx).to.deep.equal(unsignedTx)
+        protocol.txs.forEach(tx => {
+          if (tx.properties) {
+            tx.properties.forEach(property => {
+              expect(preparedTx).to.have.property(property)
+            })
+          }
+          expect(preparedTx).to.deep.include(tx.unsignedTx)
         })
       })
     })

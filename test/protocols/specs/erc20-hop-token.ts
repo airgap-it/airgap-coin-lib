@@ -17,6 +17,7 @@ const erc20HopRopstenToken = {
   },
   txs: [
     {
+      mandatoryProperties: ['from', 'nonce', 'gasPrice', 'gasLimit', 'to', 'value', 'chainId'],
       unsignedTx: {
         from: '0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e',
         nonce: 80,
@@ -33,6 +34,7 @@ const erc20HopRopstenToken = {
     },
     // second tx without data property, for backwards compatibility
     {
+      mandatoryProperties: ['from', 'nonce', 'gasPrice', 'gasLimit', 'to', 'value', 'chainId'],
       unsignedTx: {
         from: '0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e',
         nonce: 80,

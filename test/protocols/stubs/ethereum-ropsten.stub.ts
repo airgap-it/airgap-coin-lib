@@ -11,6 +11,6 @@ export class EthereumRopstenProtocolStub implements ProtocolHTTPStub {
     sinon
       .stub(protocol.web3.eth, 'getBalance')
       .withArgs(protocol.getAddressFromPublicKey(testProtocolSpec.wallet.publicKey))
-      .returns(Promise.resolve(100000000000000000000))
+      .returns(Promise.resolve('100000000000000000000'))
   }
 }
