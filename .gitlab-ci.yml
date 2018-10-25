@@ -27,7 +27,9 @@ unit:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
   script:
     - docker run --name unit-$CI_COMMIT_SHA $IMAGE_TAG_CURRENT npm run test
+    - docker run --name unit-legacy-$CI_COMMIT_SHA $IMAGE_TAG_CURRENT npm run test-legacy
   after_script:
     - docker rm unit-$CI_COMMIT_SHA
+    - docker rm unit-legacy-$CI_COMMIT_SHA
   tags:
     - docker

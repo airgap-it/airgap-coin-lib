@@ -65,7 +65,9 @@ protocols.forEach((protocol: TestProtocolSpec) => {
           protocol.wallet.tx.fee
         )
 
-        expect(tx).to.deep.equal(protocol.txs[0].unsignedTx)
+        protocol.txs.forEach(({ unsignedTx }) => {
+          expect(tx).to.deep.equal(unsignedTx)
+        })
       })
     })
 
