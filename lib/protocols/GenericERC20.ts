@@ -125,17 +125,17 @@ export class GenericERC20 extends EthereumProtocol {
                     if (error) {
                       reject(error)
                     }
-                    const gasLimit = new BigNumber(gasAmount).plus(21000) // unsure about this calculation
                     if (ethBalance.isGreaterThanOrEqualTo(fee)) {
                       this.web3.eth.getTransactionCount(address).then(txCount => {
                         const transaction = {
                           nonce: txCount,
-                          gasLimit: this.web3.utils.toHex(gasLimit.toString()),
-                          gasPrice: this.web3.utils.toHex(fee.div(gasAmount).integerValue(BigNumber.ROUND_CEIL)),
+                          gasLimit: new BigNumber(gasAmount),
+                          gasPrice: fee.isEqualTo(0) ? new BigNumber(0) : fee.div(gasAmount).integerValue(BigNumber.ROUND_CEIL),
                           to: recipients[0],
                           from: address,
-                          value: this.web3.utils.toHex(values[0].toString()),
-                          chainId: this.chainId
+                          value: values[0],
+                          chainId: this.chainId,
+                          data: this.tokenContract.methods.transfer(recipients[0], this.web3.utils.toHex(values[0]).toString()).encodeABI()
                         }
                         resolve(transaction)
                       })

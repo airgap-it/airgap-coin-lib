@@ -7,8 +7,21 @@ import { aeProtocol } from './specs/ae'
 import { ethereumProtocol } from './specs/ethereum'
 import { ethereumRopstenProtocol } from './specs/ethereum-ropsten'
 import { ethereumClassicProtocol } from './specs/ethereum-classic'
+import { erc20HopRopstenToken } from './specs/erc20-hop-token'
 
-const protocols = [aeProtocol, ethereumProtocol, ethereumRopstenProtocol, ethereumClassicProtocol]
+/**
+ * We currently test the following ICoinProtocol methods
+ *
+ * - getPublicKeyFromHexSecret
+ * - getPrivateKeyFromHexSecret
+ * - getAddressFromPublicKey
+ * - prepareTransactionFromPublicKey
+ * - signWithPrivateKey
+ * - getTransactionDetails
+ * - getTransactionDetailsFromRaw
+ */
+
+const protocols = [erc20HopRopstenToken, aeProtocol, ethereumProtocol, ethereumRopstenProtocol, ethereumClassicProtocol]
 
 protocols.forEach((protocol: TestProtocolSpec) => {
   describe(`ICoinProtocol ${protocol.name}`, () => {

@@ -203,7 +203,7 @@ export class EthereumProtocol implements ICoinProtocol {
     return new Promise((resolve, reject) => {
       this.getBalanceOfAddresses([address])
         .then(balance => {
-          const gasLimit = 21000
+          const gasLimit = new BigNumber(21000)
           const gasPrice = fee.div(gasLimit).integerValue(BigNumber.ROUND_CEIL)
           if (new BigNumber(balance).gte(new BigNumber(values[0].plus(fee)))) {
             this.web3.eth.getTransactionCount(address).then(txCount => {
