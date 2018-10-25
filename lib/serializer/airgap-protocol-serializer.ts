@@ -20,8 +20,8 @@ abstract class TransactionSerializer {
   public abstract deserialize(serializedTx: string): IAirGapTransaction
 }
 
-type UnsignedEthereumTransaction = [number, string, string, string, string, string, string]
-type UnsignedTransaction = UnsignedEthereumTransaction
+export type UnsignedEthereumTransaction = [string, string, string, string, string, string]
+export type UnsignedTransaction = UnsignedEthereumTransaction
 
 export enum TransactionKeys {
   VERSION,
@@ -71,7 +71,7 @@ export class EthereumUnsignedTransactionSerializer extends TransactionSerializer
 
   public deserialize(serializedTx: string): IAirGapTransaction {
     const base64DecodedBuffer = Buffer.from(serializedTx, 'base64')
-    const rlpDecodedTx: SerializedTransaction = rlp.decode(base64DecodedBuffer) as SerializedTransaction
+    const rlpDecodedTx: SerializedTransaction = (rlp.decode(base64DecodedBuffer as any) as unknown) as SerializedTransaction
 
     const airgapTx: IAirGapTransaction = {
       amount: new BigNumber(rlpDecodedTx[TransactionKeys.AMOUNT][0]),
