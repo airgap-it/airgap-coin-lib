@@ -6,8 +6,9 @@
     "declaration": true,
     "outDir": "./dist",
     "typeRoots": ["./node_modules/@types"],
-    "types": ["jasmine", "node"],
-    "strictNullChecks": true
+    "types": ["node"],
+    "strictNullChecks": true,
+    "sourceMap": true
   },
   "include": ["lib/**/*.ts"]
 }

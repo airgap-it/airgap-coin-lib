@@ -7,8 +7,21 @@ import { aeProtocol } from './specs/ae'
 import { ethereumProtocol } from './specs/ethereum'
 import { ethereumRopstenProtocol } from './specs/ethereum-ropsten'
 import { ethereumClassicProtocol } from './specs/ethereum-classic'
+import { erc20HopRopstenToken } from './specs/erc20-hop-token'
 
-const protocols = [aeProtocol, ethereumProtocol, ethereumRopstenProtocol, ethereumClassicProtocol]
+/**
+ * We currently test the following ICoinProtocol methods
+ *
+ * - getPublicKeyFromHexSecret
+ * - getPrivateKeyFromHexSecret
+ * - getAddressFromPublicKey
+ * - prepareTransactionFromPublicKey
+ * - signWithPrivateKey
+ * - getTransactionDetails
+ * - getTransactionDetailsFromRaw
+ */
+
+const protocols = [erc20HopRopstenToken, aeProtocol, ethereumProtocol, ethereumRopstenProtocol, ethereumClassicProtocol]
 
 protocols.forEach((protocol: TestProtocolSpec) => {
   describe(`ICoinProtocol ${protocol.name}`, () => {
@@ -45,14 +58,21 @@ protocols.forEach((protocol: TestProtocolSpec) => {
       })
 
       it('prepareTransactionFromPublicKey - Is able to prepare a transaction using its public key', async function() {
-        let tx = await protocol.lib.prepareTransactionFromPublicKey(
+        let preparedTx = await protocol.lib.prepareTransactionFromPublicKey(
           protocol.wallet.publicKey,
           [protocol.wallet.address],
           [protocol.wallet.tx.amount],
           protocol.wallet.tx.fee
         )
 
-        expect(tx).to.deep.equal(protocol.txs[0].unsignedTx)
+        protocol.txs.forEach(tx => {
+          if (tx.properties) {
+            tx.properties.forEach(property => {
+              expect(preparedTx).to.have.property(property)
+            })
+          }
+          expect(preparedTx).to.deep.include(tx.unsignedTx)
+        })
       })
     })
 

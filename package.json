@@ -5,13 +5,11 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "sonar-scanner": "sonar-scanner",
     "build": "tsc",
     "tslint": "tslint -c ./tslint.json --project ./tsconfig.json --format stylish",
     "lint-ci": "tslint -t json -o lintReport.json --project . || true",
-    "test": "tsc && mocha --timeout 40000",
-    "test-ci": "tsc && nyc --reporter=lcov mocha --timeout 40000",
-    "test-tsc": "npm run test -- \"./test/**/**.spec.ts\" -r ts-node/register",
+    "test": "nyc mocha --require ts-node/register --require source-map-support/register --full-trace --timeout 40000 ./test/**/**.spec.ts",
+    "test-legacy": "npm run build && mocha --full-trace --timeout 40000 ./test/**/**.spec.js",
     "prepare": "npm run build"
   },
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
@@ -42,12 +40,14 @@
     "@types/bignumber.js": "^5.0.0",
     "@types/bip39": "^2.4.0",
     "@types/bitcoinjs-lib": "^3.4.0",
+    "@types/chai": "^4.1.6",
     "@types/ethereumjs-util": "^5.1.1",
-    "@types/jasmine": "^2.8.8",
+    "@types/mocha": "^5.2.5",
     "@types/node": "^10.5.0",
     "@types/underscore": "^1.8.8",
     "chai": "^4.1.2",
     "husky": "^1.0.0-rc.14",
+    "istanbul": "^0.4.5",
     "mocha": "^5.1.1",
     "node-fetch": "^2.2.0",
     "nyc": "^12.0.2",
@@ -55,12 +55,33 @@
     "pretty-quick": "^1.6.0",
     "sinon": "^6.3.5",
     "sonarqube-scanner": "^2.1.0",
+    "source-map-support": "^0.5.9",
     "ts-node": "^7.0.1",
     "tslint": "^5.10.0",
     "tslint-config-prettier": "^1.15.0",
     "tslint-config-standard": "github:papers-ch/tslint-config-standard",
     "typescript": "^2.8.3",
     "websocket": "^1.0.26"
+  },
+  "nyc": {
+    "include": [
+      "lib/**/*.ts"
+    ],
+    "exclude": [
+      "test/**/*.spec.ts"
+    ],
+    "extension": [
+      ".ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ],
+    "reporter": [
+      "text",
+      "text-summary"
+    ],
+    "sourceMap": true,
+    "instrument": true
   },
   "husky": {
     "hooks": {
