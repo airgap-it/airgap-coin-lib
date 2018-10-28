@@ -10,11 +10,13 @@
     "lint-ci": "tslint -t json -o lintReport.json --project . || true",
     "test": "nyc mocha --require ts-node/register --require source-map-support/register --full-trace --timeout 40000 ./test/**/**.spec.ts",
     "test-legacy": "npm run build && mocha --full-trace --timeout 40000 ./test/**/**.spec.js",
+    "test-ledger": "npm run build && mocha --full-trace --timeout 40000 ./test/**/ledger-update.spec.js",
     "prepare": "npm run build"
   },
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
     "@aeternity/hd-wallet": "github:aeternity/hd-wallet-js",
+    "@types/socket.io-client": "^1.4.32",
     "abi-decoder": "github:laurentjacob/abi-decoder#a4b60b35d12af863026d6d723bec73b172c4e5b7",
     "axios": "^0.18.0",
     "bignumber.js": "^7.0.1",
@@ -32,6 +34,7 @@
     "hdkey": "^0.8.0",
     "js-sha3": "^0.7.0",
     "rlp": "^2.1.0",
+    "socket.io-client": "^2.1.1",
     "tweetnacl": "^1.0.0",
     "web3": "^1.0.0-beta.34"
   },

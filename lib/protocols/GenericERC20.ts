@@ -48,6 +48,28 @@ const AUTH_TOKEN_ABI = [
     ],
     payable: false,
     type: 'function'
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        name: 'from',
+        type: 'address'
+      },
+      {
+        indexed: true,
+        name: 'to',
+        type: 'address'
+      },
+      {
+        indexed: false,
+        name: 'value',
+        type: 'uint256'
+      }
+    ],
+    name: 'Transfer',
+    type: 'event'
   }
 ]
 
@@ -55,10 +77,14 @@ abiDecoder.addABI(AUTH_TOKEN_ABI)
 
 export class GenericERC20 extends EthereumProtocol {
   tokenContract: any
+  private readonly tokenTransferSubscription: any
 
-  constructor(contractAddress, jsonRPCAPI = 'https://mainnet.infura.io/', infoAPI = 'https://api.trustwalletapp.com/', chainId = 1) {
+  constructor(contractAddress, jsonRPCAPI = 'wss://mainnet.infura.io/ws', infoAPI = 'https://api.trustwalletapp.com/', chainId = 1) {
     super(jsonRPCAPI, infoAPI, chainId) // we probably need another network here, explorer is ok
     this.tokenContract = new this.web3.eth.Contract(AUTH_TOKEN_ABI, contractAddress)
+    this.tokenTransferSubscription = this.tokenContract.events.Transfer({
+      fromBlock: 'latest'
+    })
   }
 
   getBalanceOfPublicKey(publicKey: string): Promise<BigNumber> {
@@ -216,5 +242,36 @@ export class GenericERC20 extends EthereumProtocol {
     ethTx.amount = new BigNumber(tokenTransferDetails.params[1].value)
 
     return ethTx
+  }
+
+  startLedgerWatcher() {
+    this.tokenTransferSubscription.on('data', event => {
+      setTimeout(() => {
+        this.web3.eth
+          .getTransaction(event.transactionHash)
+          .then(transaction => {
+            const fee = new BigNumber(transaction.gas).times(new BigNumber(transaction.gasPrice))
+            const airGapTransaction: IAirGapTransaction = {
+              hash: event.transactionHash,
+              from: [event.returnValues.from],
+              to: [event.returnValues.to],
+              isInbound: false, // TODO isInbound needs more state to be defined...
+              blockHeight: event.blockNumber,
+              protocolIdentifier: this.identifier,
+              amount: new BigNumber(event.returnValues.value),
+              fee: fee,
+              timestamp: new Date().getTime()
+            }
+            for (let onLedgerUpdateListener of this.onLedgerUpdateListeners) {
+              onLedgerUpdateListener.onNewTransactions([airGapTransaction])
+            }
+          })
+          .catch(console.log)
+      }, 1000)
+    })
+  }
+
+  stopLedgerWatcher() {
+    this.tokenTransferSubscription.unsubscribe()
   }
 }

@@ -1,5 +1,6 @@
 import { IAirGapTransaction } from '../interfaces/IAirGapTransaction'
 import BigNumber from 'bignumber.js'
+import { IOnLedgerUpdateListener } from '../interfaces/IOnLedgerUpdateListener'
 
 export interface ICoinProtocol {
   symbol: string // This will be used in the UI, eg. "ETH", "BTC", "AE"
@@ -18,15 +19,19 @@ export interface ICoinProtocol {
 
   units: Array<{ unitSymbol: string; factor: BigNumber }>
 
+  onLedgerUpdateListeners: Array<IOnLedgerUpdateListener>
+
   supportsHD: boolean
   standardDerivationPath: string
 
   addressValidationPattern: string
 
   getPublicKeyFromHexSecret(secret: string, derivationPath: string): string
+
   getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Buffer
 
   getExtendedPrivateKeyFromHexSecret(secret: string, derivationPath: string): string
+
   getAddressFromPublicKey(publicKey: string): string // broadcaster knows this (both broadcaster and signer)
   getAddressFromExtendedPublicKey(extendedPublicKey: string, visibilityDerivationIndex: number, addressDerivationIndex: number): string // broadcaster knows this (both broadcaster and signer)
   getAddressesFromExtendedPublicKey(
@@ -37,7 +42,9 @@ export interface ICoinProtocol {
   ): string[] // broadcaster knows this (both broadcaster and signer)
 
   getTransactionsFromPublicKey(publicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]>
+
   getTransactionsFromExtendedPublicKey(extendedPublicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]>
+
   getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]>
 
   signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: any): Promise<string> // broadcaster proxies this operation
@@ -46,7 +53,9 @@ export interface ICoinProtocol {
   getTransactionDetailsFromRaw(transaction: any, rawTx: any): IAirGapTransaction // out of raw TX
 
   getBalanceOfAddresses(addresses: string[]): Promise<BigNumber>
+
   getBalanceOfPublicKey(publicKey: string): Promise<BigNumber>
+
   getBalanceOfExtendedPublicKey(extendedPublicKey: string, offset: number): Promise<BigNumber>
 
   prepareTransactionFromExtendedPublicKey(
@@ -59,4 +68,8 @@ export interface ICoinProtocol {
   prepareTransactionFromPublicKey(publicKey: string, recipients: string[], values: BigNumber[], fee: BigNumber): Promise<any> // only broadcaster
 
   broadcastTransaction(rawTransaction: string): Promise<any>
+
+  startLedgerWatcher()
+
+  stopLedgerWatcher()
 }

@@ -6,6 +6,7 @@ import { BigNumber } from 'bignumber.js'
 import * as ethUtil from 'ethereumjs-util'
 import { IAirGapTransaction } from '../interfaces/IAirGapTransaction'
 import axios from 'axios'
+import { IOnLedgerUpdateListener } from '../interfaces/IOnLedgerUpdateListener'
 
 const Web3 = require('web3') // tslint:disable-line
 const EthereumTransaction = require('ethereumjs-tx')
@@ -49,11 +50,15 @@ export class EthereumProtocol implements ICoinProtocol {
   chainId: number
   infoAPI: string
 
-  constructor(public jsonRPCAPI = 'https://mainnet.infura.io/', infoAPI = 'https://api.trustwalletapp.com/', chainId = 1) {
+  onLedgerUpdateListeners: Array<IOnLedgerUpdateListener> = []
+  private readonly ledgerWatcherSubscription
+
+  constructor(public jsonRPCAPI = 'wss://mainnet.infura.io/ws', infoAPI = 'https://api.trustwalletapp.com/', chainId = 1) {
     this.infoAPI = infoAPI
-    this.web3 = new Web3(new Web3.providers.HttpProvider(jsonRPCAPI))
+    this.web3 = new Web3(new Web3.providers.WebsocketProvider(jsonRPCAPI))
     this.network = bitcoinJS.networks.bitcoin
     this.chainId = chainId
+    this.ledgerWatcherSubscription = this.web3.eth.subscribe('newBlockHeaders')
   }
 
   getPublicKeyFromHexSecret(secret: string, derivationPath: string): string {
@@ -311,5 +316,43 @@ export class EthereumProtocol implements ICoinProtocol {
         })
         .catch(overallReject)
     })
+  }
+
+  startLedgerWatcher() {
+    this.ledgerWatcherSubscription.on('data', blockHeader => {
+      if (blockHeader.number) {
+        setTimeout(() => {
+          this.web3.eth
+            .getBlock(blockHeader.number - 1, true)
+            .then(block => {
+              const airGapTransactions: IAirGapTransaction[] = []
+              for (let transaction of block.transactions) {
+                const fee = new BigNumber(transaction.gas).times(new BigNumber(transaction.gasPrice))
+                const airGapTransaction: IAirGapTransaction = {
+                  hash: transaction.hash,
+                  from: [transaction.from],
+                  to: [transaction.to],
+                  isInbound: false, // TODO isInbound needs more state to be defined...
+                  amount: new BigNumber(transaction.value),
+                  fee: fee,
+                  blockHeight: transaction.blockNumber,
+                  protocolIdentifier: this.identifier,
+                  timestamp: parseInt(block.timestamp, 10)
+                }
+                airGapTransactions.push(airGapTransaction)
+              }
+
+              for (let onLedgerUpdateListener of this.onLedgerUpdateListeners) {
+                onLedgerUpdateListener.onNewTransactions(airGapTransactions)
+              }
+            })
+            .catch(console.log)
+        }, 1000)
+      }
+    })
+  }
+
+  stopLedgerWatcher() {
+    this.ledgerWatcherSubscription.unsubscribe()
   }
 }

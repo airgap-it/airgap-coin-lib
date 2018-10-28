@@ -7,6 +7,7 @@ import { generateHDWallet, getHDWalletAccounts } from '@aeternity/hd-wallet'
 import axios from 'axios'
 import * as rlp from 'rlp'
 import * as bs58check from 'bs58check'
+import { IOnLedgerUpdateListener } from '../interfaces/IOnLedgerUpdateListener'
 
 export class AEProtocol implements ICoinProtocol {
   symbol = 'AE'
@@ -34,7 +35,10 @@ export class AEProtocol implements ICoinProtocol {
   standardDerivationPath = `m/44h/457h`
   addressValidationPattern = '^ak_+[1-9A-Za-z][^OIl]{48}$'
 
+  onLedgerUpdateListeners: Array<IOnLedgerUpdateListener> = []
+
   constructor(public epochRPC = 'https://sdk-edgenet.aepps.com') {}
+
   /**
    * Returns the PublicKey as String, derived from a supplied hex-string
    * @param secret HEX-Secret from BIP39
@@ -205,5 +209,37 @@ export class AEProtocol implements ICoinProtocol {
     fee: BigNumber
   ): Promise<any> {
     return Promise.reject('extended public tx for aeternity not implemented')
+  }
+
+  private nextGenerationHeight: number = 0
+  private timeoutIdentifier: any
+
+  private recursiveChainTopPolling() {
+    axios
+      .get(`${this.epochRPC}/v2/generations/height/${this.nextGenerationHeight}`)
+      .then(response => {
+        let currentGeneration = response.data
+        if (response.data.micro_blocks) {
+          console.log('new block found!')
+          this.nextGenerationHeight++
+
+          // TODO use /micro-blocks/hash/{hash}/transactions in order to get transactions
+        }
+        this.timeoutIdentifier = setTimeout(this.recursiveChainTopPolling, 12000)
+      })
+      .catch(() => {
+        this.timeoutIdentifier = setTimeout(this.recursiveChainTopPolling, 12000)
+      })
+  }
+
+  startLedgerWatcher() {
+    axios.get(`${this.epochRPC}/v2/generations/current`).then(response => {
+      this.nextGenerationHeight = response.data.key_block.height + 1
+      this.recursiveChainTopPolling()
+    })
+  }
+
+  stopLedgerWatcher() {
+    clearTimeout(this.timeoutIdentifier)
   }
 }
