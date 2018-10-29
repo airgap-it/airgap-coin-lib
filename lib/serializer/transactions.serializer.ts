@@ -1,13 +1,34 @@
-import { IAirGapTransaction } from '..'
-import { Serializer, EncodedType } from './serializer'
-import { UnsignedEthereumTransaction } from './transactions/ethereum-transactions.serializer'
+import { EncodedType } from './serializer'
+import {
+  SerializedUnsignedEthereumTransaction,
+  EthereumUnsignedTransactionSerializer,
+  RawEthereumTransaction
+} from './transactions/ethereum-transactions.serializer'
+import BigNumber from 'bignumber.js'
 
-export abstract class TransactionSerializer extends Serializer {
-  public abstract serialize(...args: any): string
-  public abstract deserialize(serializedTx: string): IAirGapTransaction
+const implementedSerializers = {
+  eth: new EthereumUnsignedTransactionSerializer()
 }
 
-export type UnsignedTransaction = UnsignedEthereumTransaction
+export abstract class TransactionSerializer {
+  public abstract serialize(...args: any): string
+  public abstract deserialize(serializedTx: SerializedSyncProtocolTransaction): UnsignedTransaction
+
+  static serializerByProtocolIdentifier(protocolIdentifier: string): TransactionSerializer {
+    return implementedSerializers[protocolIdentifier]
+  }
+}
+
+export interface UnsignedTransaction {
+  transaction: RawEthereumTransaction
+  from: string
+  to: string
+  amount: BigNumber
+  fee: BigNumber
+  publicKey: string
+}
+
+export type SerializedUnsignedTransaction = SerializedUnsignedEthereumTransaction
 
 export enum SyncProtocolUnsignedTransactionKeys {
   UNSIGNED_TRANSACTION,
@@ -18,8 +39,9 @@ export enum SyncProtocolUnsignedTransactionKeys {
   PUBLIC_KEY
 }
 
-export interface SerializedSyncProtocolTransaction extends Array<boolean | number | UnsignedTransaction | string | EncodedType | string[]> {
-  [SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION]: UnsignedTransaction
+export interface SerializedSyncProtocolTransaction
+  extends Array<boolean | number | SerializedUnsignedTransaction | string | EncodedType | string[]> {
+  [SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION]: SerializedUnsignedTransaction
   [SyncProtocolUnsignedTransactionKeys.FROM]: string
   [SyncProtocolUnsignedTransactionKeys.TO]: string[]
   [SyncProtocolUnsignedTransactionKeys.AMOUNT]: string[]

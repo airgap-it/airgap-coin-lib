@@ -1,16 +1,39 @@
-import { TransactionSerializer, SerializedSyncProtocolTransaction, SyncProtocolUnsignedTransactionKeys } from '../transactions.serializer'
+import {
+  TransactionSerializer,
+  SerializedSyncProtocolTransaction,
+  SyncProtocolUnsignedTransactionKeys,
+  UnsignedTransaction
+} from '../transactions.serializer'
 import BigNumber from 'bignumber.js'
-import { SerializedSyncProtocol, EncodedType, SyncProtocolKeys } from '../serializer'
+import { SerializedSyncProtocol, EncodedType } from '../serializer'
 import Web3 from 'web3'
 import * as rlp from 'rlp'
-import { IAirGapTransaction } from '../..'
 
 const localWeb3: Web3 = new Web3()
 
-export type UnsignedEthereumTransaction = [string, string, string, string, string, string]
+export type SerializedUnsignedEthereumTransaction = [string, string, string, string, string, string]
+
+export interface RawEthereumTransaction {
+  nonce: string
+  gasPrice: string
+  gasLimit: string
+  to: string
+  value: string
+  chainId: string
+}
+
+export interface UnsignedEthereumTransaction extends UnsignedTransaction {
+  transaction: RawEthereumTransaction
+}
 
 export class EthereumUnsignedTransactionSerializer extends TransactionSerializer {
-  public serialize(from: string, fee: BigNumber, amount: BigNumber, publicKey: string, transaction: UnsignedEthereumTransaction): string {
+  public serialize(
+    from: string,
+    fee: BigNumber,
+    amount: BigNumber,
+    publicKey: string,
+    transaction: SerializedUnsignedEthereumTransaction
+  ): string {
     const serializedTx: SerializedSyncProtocol = [
       1, // version
       EncodedType.UNSIGNED_TRANSACTION,
@@ -29,20 +52,23 @@ export class EthereumUnsignedTransactionSerializer extends TransactionSerializer
     return rlp.encode(serializedTx as any).toString('base64')
   }
 
-  public deserialize(serializedTx: string): IAirGapTransaction {
-    const base64DecodedBuffer = Buffer.from(serializedTx, 'base64')
-    const rlpDecodedTx: SerializedSyncProtocol = (rlp.decode(base64DecodedBuffer as any) as unknown) as SerializedSyncProtocol
-    const payload: SerializedSyncProtocolTransaction = rlpDecodedTx[SyncProtocolKeys.PAYLOAD] as SerializedSyncProtocolTransaction
-
-    const airgapTx: IAirGapTransaction = {
-      amount: new BigNumber(payload[SyncProtocolUnsignedTransactionKeys.AMOUNT][0]),
-      fee: new BigNumber(payload[SyncProtocolUnsignedTransactionKeys.FEE]),
-      from: [payload[SyncProtocolUnsignedTransactionKeys.FROM]],
-      to: [''], // ToDo
-      isInbound: true, // ToDo
-      protocolIdentifier: rlpDecodedTx[SyncProtocolKeys.PROTOCOL]
+  public deserialize(serializedTx: SerializedSyncProtocolTransaction): UnsignedEthereumTransaction {
+    return {
+      from: serializedTx[SyncProtocolUnsignedTransactionKeys.FROM][0],
+      to: serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION][3],
+      amount: new BigNumber(serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION][4]),
+      fee: new BigNumber(serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION][1]).multipliedBy(
+        new BigNumber(serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION][2])
+      ),
+      publicKey: serializedTx[SyncProtocolUnsignedTransactionKeys.PUBLIC_KEY],
+      transaction: {
+        nonce: serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION][0],
+        gasPrice: serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION][1],
+        gasLimit: serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION][2],
+        to: serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION][3],
+        value: serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION][4],
+        chainId: serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION][5]
+      }
     }
-
-    return airgapTx
   }
 }

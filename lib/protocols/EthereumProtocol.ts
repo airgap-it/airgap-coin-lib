@@ -6,6 +6,7 @@ import { BigNumber } from 'bignumber.js'
 import * as ethUtil from 'ethereumjs-util'
 import { IAirGapTransaction } from '../interfaces/IAirGapTransaction'
 import axios from 'axios'
+import { RawEthereumTransaction } from '../serializer/transactions/ethereum-transactions.serializer'
 
 const Web3 = require('web3') // tslint:disable-line
 const EthereumTransaction = require('ethereumjs-tx')
@@ -115,23 +116,9 @@ export class EthereumProtocol implements ICoinProtocol {
     return Promise.reject('extended private key signing for ether not implemented')
   }
 
-  signWithPrivateKey(privateKey: Buffer, transaction: any): Promise<string> {
-    if (transaction.from !== ethUtil.toChecksumAddress((ethUtil.privateToAddress(Buffer.from(privateKey)) as Buffer).toString('hex'))) {
-      return Promise.reject('from property and private-key do not match')
-    }
-
-    const txParams = {
-      nonce: this.web3.utils.toHex(transaction.nonce),
-      gasPrice: this.web3.utils.toHex(transaction.gasPrice),
-      gasLimit: this.web3.utils.toHex(transaction.gasLimit),
-      to: transaction.to,
-      value: this.web3.utils.toHex(new BigNumber(transaction.value)),
-      chainId: this.web3.utils.toHex(this.chainId)
-    }
-
-    const tx = new EthereumTransaction(txParams)
+  signWithPrivateKey(privateKey: Buffer, transaction: RawEthereumTransaction): Promise<string> {
+    const tx = new EthereumTransaction(transaction)
     tx.sign(privateKey)
-
     return Promise.resolve(tx.serialize().toString('hex'))
   }
 
@@ -189,7 +176,12 @@ export class EthereumProtocol implements ICoinProtocol {
     return Promise.reject('extended public tx for ether not implemented')
   }
 
-  prepareTransactionFromPublicKey(publicKey: string, recipients: string[], values: BigNumber[], fee: BigNumber): Promise<any> {
+  prepareTransactionFromPublicKey(
+    publicKey: string,
+    recipients: string[],
+    values: BigNumber[],
+    fee: BigNumber
+  ): Promise<RawEthereumTransaction> {
     const address = this.getAddressFromPublicKey(publicKey)
 
     if (recipients.length !== values.length) {
@@ -208,14 +200,14 @@ export class EthereumProtocol implements ICoinProtocol {
           if (new BigNumber(balance).gte(new BigNumber(values[0].plus(fee)))) {
             this.web3.eth.getTransactionCount(address).then(txCount => {
               const transaction = {
-                nonce: txCount,
-                gasLimit: gasLimit,
-                gasPrice: gasPrice, // 10 Gwei
+                nonce: this.web3.toHex(txCount),
+                gasLimit: this.web3.toHex(gasLimit),
+                gasPrice: this.web3.toHex(gasPrice.toString()), // 10 Gwei
                 to: recipients[0],
-                from: address,
-                value: values[0],
-                chainId: this.chainId
+                value: this.web3.toHex(values[0].toString()),
+                chainId: this.web3.toHex(this.chainId)
               }
+
               resolve(transaction)
             })
           } else {
