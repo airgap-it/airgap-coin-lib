@@ -1,7 +1,5 @@
 import { SyncProtocolUtils, EncodedType, DeserializedSyncProtocol } from './serializer'
 import { getProtocolByIdentifier, EthereumProtocol } from '..'
-import { EthereumUnsignedTransactionSerializer } from './transactions/ethereum-transactions.serializer'
-import BigNumber from 'bignumber.js'
 
 const syncProtocol = new SyncProtocolUtils()
 ;(async () => {

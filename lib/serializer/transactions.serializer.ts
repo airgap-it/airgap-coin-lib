@@ -32,6 +32,7 @@ export interface UnsignedTransaction {
   amount: BigNumber
   fee: BigNumber
   publicKey: string
+  callback: string
 }
 
 export type SerializedUnsignedTransaction = SerializedUnsignedEthereumTransaction
@@ -42,7 +43,8 @@ export enum SyncProtocolUnsignedTransactionKeys {
   TO,
   AMOUNT,
   FEE,
-  PUBLIC_KEY
+  PUBLIC_KEY,
+  CALLBACK
 }
 
 export interface SerializedSyncProtocolTransaction
@@ -53,4 +55,5 @@ export interface SerializedSyncProtocolTransaction
   [SyncProtocolUnsignedTransactionKeys.AMOUNT]: string[]
   [SyncProtocolUnsignedTransactionKeys.FEE]: string
   [SyncProtocolUnsignedTransactionKeys.PUBLIC_KEY]: string
+  [SyncProtocolUnsignedTransactionKeys.CALLBACK]: string
 }

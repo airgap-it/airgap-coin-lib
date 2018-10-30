@@ -17,7 +17,8 @@ protocols.forEach((protocol: TestProtocolSpec) => {
         gasPrice: '0x5208',
         to: protocol.wallet.address,
         value: '0x8ac7230489e80000',
-        chainId: '0x'
+        chainId: '0x',
+        data: '0x'
       })
       console.log(serializedTx)
     })
