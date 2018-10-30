@@ -5,9 +5,8 @@ import {
   UnsignedTransaction
 } from '../transactions.serializer'
 import BigNumber from 'bignumber.js'
-import { SerializedSyncProtocol, EncodedType } from '../serializer'
-import Web3 from 'web3'
-import * as rlp from 'rlp'
+import * as Web3 from 'web3'
+import * as ethUtil from 'ethereumjs-util'
 
 const localWeb3: Web3 = new Web3()
 
@@ -27,29 +26,20 @@ export interface UnsignedEthereumTransaction extends UnsignedTransaction {
 }
 
 export class EthereumUnsignedTransactionSerializer extends TransactionSerializer {
-  public serialize(
-    from: string,
-    fee: BigNumber,
-    amount: BigNumber,
-    publicKey: string,
-    transaction: SerializedUnsignedEthereumTransaction
-  ): string {
-    const serializedTx: SerializedSyncProtocol = [
-      1, // version
-      EncodedType.UNSIGNED_TRANSACTION,
-      'eth', // protocol identifier
-      [
-        transaction,
-        from, // from
-        [], // to
-        [localWeb3.utils.stringToHex(amount.toString())], // amount
-        localWeb3.utils.stringToHex(fee.toString()), // fee
-        publicKey // publicKey
-      ]
+  public serialize(publicKey: string, transaction: RawEthereumTransaction): SerializedSyncProtocolTransaction {
+    const address = ethUtil.toChecksumAddress((ethUtil.pubToAddress(Buffer.from(publicKey, 'hex'), true) as Buffer).toString('hex'))
+
+    const serializedTx: SerializedSyncProtocolTransaction = [
+      [transaction.nonce, transaction.gasPrice, transaction.gasLimit, transaction.to, transaction.value, transaction.chainId],
+      address, // from
+      [transaction.to], // to
+      [localWeb3.utils.stringToHex(transaction.value.toString())], // amount
+      localWeb3.utils.stringToHex(new BigNumber(transaction.gasPrice).multipliedBy(new BigNumber(transaction.gasLimit)).toString()), // fee
+      publicKey // publicKey
     ]
 
     // as any is necessary due to https://github.com/ethereumjs/rlp/issues/35
-    return rlp.encode(serializedTx as any).toString('base64')
+    return serializedTx
   }
 
   public deserialize(serializedTx: SerializedSyncProtocolTransaction): UnsignedEthereumTransaction {

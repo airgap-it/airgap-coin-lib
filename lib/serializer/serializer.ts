@@ -1,5 +1,10 @@
 import { IAirGapWallet } from '../interfaces/IAirGapWallet'
-import { SerializedSyncProtocolTransaction, UnsignedTransaction, TransactionSerializer } from './transactions.serializer'
+import {
+  SerializedSyncProtocolTransaction,
+  UnsignedTransaction,
+  TransactionSerializer,
+  serializerByProtocolIdentifier
+} from './transactions.serializer'
 import { SerializedSyncProtocolWalletSync } from './wallet-sync.serializer'
 import * as rlp from 'rlp'
 
@@ -45,10 +50,23 @@ export class SyncProtocolUtils {
     [EncodedType.WALLET_SYNC]: 'airgap-wallet://?d='
   }
 
-  public async toURLScheme(serializedSyncProtocol: string): Promise<string> {
-    const base64DecodedBuffer = Buffer.from(serializedSyncProtocol, 'base64')
-    const rlpDecodedTx: SerializedSyncProtocol = (rlp.decode(base64DecodedBuffer as any) as unknown) as SerializedSyncProtocol
-    return this.urlPrefixPerType[rlpDecodedTx[SyncProtocolKeys.TYPE]] + serializedSyncProtocol
+  public async toURLScheme(deserializedSyncProtocol: DeserializedSyncProtocol): Promise<string> {
+    const version = deserializedSyncProtocol.version
+    const type = deserializedSyncProtocol.type
+    const protocol = deserializedSyncProtocol.protocol
+    const typedPayload = deserializedSyncProtocol.payload
+
+    let untypedPayload
+
+    switch (type) {
+      case EncodedType.UNSIGNED_TRANSACTION:
+        untypedPayload = serializerByProtocolIdentifier(protocol).serialize(typedPayload)
+    }
+
+    const serializedTx: SerializedSyncProtocol = [version, type, protocol, untypedPayload]
+
+    // as any is necessary due to https://github.com/ethereumjs/rlp/issues/35
+    return rlp.encode(serializedTx as any).toString('base64')
   }
 
   public async fromURLScheme(url: string): Promise<DeserializedSyncProtocol> {
@@ -66,10 +84,10 @@ export class SyncProtocolUtils {
 
     let typedPayload
 
-    switch (rlpDecodedTx[SyncProtocolKeys.TYPE]) {
+    switch (type) {
       case EncodedType.UNSIGNED_TRANSACTION:
         const payload = rlpDecodedTx[SyncProtocolKeys.PAYLOAD] as SerializedSyncProtocolTransaction
-        typedPayload = TransactionSerializer.serializerByProtocolIdentifier(protocol).deserialize(payload)
+        typedPayload = serializerByProtocolIdentifier(protocol).deserialize(payload)
     }
 
     return {

@@ -7,8 +7,8 @@ import * as ethUtil from 'ethereumjs-util'
 import { IAirGapTransaction } from '../interfaces/IAirGapTransaction'
 import axios from 'axios'
 import { RawEthereumTransaction } from '../serializer/transactions/ethereum-transactions.serializer'
+import * as Web3 from 'web3'
 
-const Web3 = require('web3') // tslint:disable-line
 const EthereumTransaction = require('ethereumjs-tx')
 
 export class EthereumProtocol implements ICoinProtocol {
@@ -200,12 +200,12 @@ export class EthereumProtocol implements ICoinProtocol {
           if (new BigNumber(balance).gte(new BigNumber(values[0].plus(fee)))) {
             this.web3.eth.getTransactionCount(address).then(txCount => {
               const transaction = {
-                nonce: this.web3.toHex(txCount),
-                gasLimit: this.web3.toHex(gasLimit),
-                gasPrice: this.web3.toHex(gasPrice.toString()), // 10 Gwei
+                nonce: this.web3.utils.toHex(txCount),
+                gasLimit: this.web3.utils.toHex(gasLimit),
+                gasPrice: this.web3.utils.toHex(gasPrice.toString()), // 10 Gwei
                 to: recipients[0],
-                value: this.web3.toHex(values[0].toString()),
-                chainId: this.web3.toHex(this.chainId)
+                value: this.web3.utils.toHex(values[0].toString()),
+                chainId: this.web3.utils.toHex(this.chainId)
               }
 
               resolve(transaction)

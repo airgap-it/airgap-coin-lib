@@ -7,16 +7,22 @@ import {
 import BigNumber from 'bignumber.js'
 
 const implementedSerializers = {
-  eth: new EthereumUnsignedTransactionSerializer()
+  eth: EthereumUnsignedTransactionSerializer
+}
+
+export function serializerByProtocolIdentifier(protocolIdentifier: string): TransactionSerializer {
+  const protocol = Object.keys(implementedSerializers).find(protocol => protocol.startsWith(protocolIdentifier))
+
+  if (!protocol) {
+    throw Error('no compatible protocol registered.')
+  }
+
+  return new implementedSerializers[protocol]()
 }
 
 export abstract class TransactionSerializer {
-  public abstract serialize(...args: any): string
+  public abstract serialize(...args: any): SerializedSyncProtocolTransaction
   public abstract deserialize(serializedTx: SerializedSyncProtocolTransaction): UnsignedTransaction
-
-  static serializerByProtocolIdentifier(protocolIdentifier: string): TransactionSerializer {
-    return implementedSerializers[protocolIdentifier]
-  }
 }
 
 export interface UnsignedTransaction {

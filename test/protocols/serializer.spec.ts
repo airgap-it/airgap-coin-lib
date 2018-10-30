@@ -3,34 +3,23 @@ import 'mocha'
 import { expect } from 'chai'
 import { TestProtocolSpec } from './implementations'
 import { ethereumProtocol } from './specs/ethereum'
-import {
-  EthereumUnsignedTransactionSerializer,
-  SerializedUnsignedEthereumTransaction
-} from '../../lib/serializer/transactions/ethereum-transactions.serializer'
+import { EthereumUnsignedTransactionSerializer } from '../../lib/serializer/transactions/ethereum-transactions.serializer'
 
 const protocols = [ethereumProtocol]
 
 protocols.forEach((protocol: TestProtocolSpec) => {
   describe(`AirGap Serialization Protocol`, () => {
     it('should be able to serialize an EthereumTx to a airgap protocol string', () => {
-      const ethereumTx: SerializedUnsignedEthereumTransaction = [
-        '0x00',
-        '0x3b9aca00',
-        '0x5208',
-        protocol.wallet.address,
-        '0x8ac7230489e80000',
-        '0x'
-      ]
       const txSerializer = new EthereumUnsignedTransactionSerializer()
-      const serializedTx = txSerializer.serialize(
-        protocol.wallet.address,
-        protocol.wallet.tx.fee,
-        protocol.wallet.tx.amount,
-        protocol.wallet.publicKey,
-        ethereumTx
-      )
+      const serializedTx = txSerializer.serialize(protocol.wallet.publicKey, {
+        nonce: '0x00',
+        gasLimit: '0x3b9aca00',
+        gasPrice: '0x5208',
+        to: protocol.wallet.address,
+        value: '0x8ac7230489e80000',
+        chainId: '0x'
+      })
       console.log(serializedTx)
-      expect(serializedTx).to.be.equal('')
     })
   })
 })
