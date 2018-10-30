@@ -112,7 +112,7 @@ export class EthereumProtocol implements ICoinProtocol {
     )
   }
 
-  signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: any): Promise<string> {
+  signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: RawEthereumTransaction): Promise<string> {
     return Promise.reject('extended private key signing for ether not implemented')
   }
 
@@ -172,7 +172,7 @@ export class EthereumProtocol implements ICoinProtocol {
     recipients: string[],
     values: BigNumber[],
     fee: BigNumber
-  ): Promise<any> {
+  ): Promise<RawEthereumTransaction> {
     return Promise.reject('extended public tx for ether not implemented')
   }
 
@@ -199,13 +199,14 @@ export class EthereumProtocol implements ICoinProtocol {
           const gasPrice = fee.div(gasLimit).integerValue(BigNumber.ROUND_CEIL)
           if (new BigNumber(balance).gte(new BigNumber(values[0].plus(fee)))) {
             this.web3.eth.getTransactionCount(address).then(txCount => {
-              const transaction = {
+              const transaction: RawEthereumTransaction = {
                 nonce: this.web3.utils.toHex(txCount),
                 gasLimit: this.web3.utils.toHex(gasLimit),
                 gasPrice: this.web3.utils.toHex(gasPrice.toString()), // 10 Gwei
                 to: recipients[0],
                 value: this.web3.utils.toHex(values[0].toString()),
-                chainId: this.web3.utils.toHex(this.chainId)
+                chainId: this.web3.utils.toHex(this.chainId),
+                data: '0x'
               }
 
               resolve(transaction)

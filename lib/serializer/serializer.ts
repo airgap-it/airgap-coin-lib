@@ -1,12 +1,9 @@
-import { IAirGapWallet } from '../interfaces/IAirGapWallet'
-import {
-  SerializedSyncProtocolTransaction,
-  UnsignedTransaction,
-  TransactionSerializer,
-  serializerByProtocolIdentifier
-} from './transactions.serializer'
+import { SerializedSyncProtocolTransaction, UnsignedTransaction } from './transactions.serializer'
 import { SerializedSyncProtocolWalletSync } from './wallet-sync.serializer'
 import * as rlp from 'rlp'
+import { serializerByProtocolIdentifier, protocolVersion } from '.'
+import { toHexString } from './utils/toHex'
+import { toBuffer } from './utils/toBuffer'
 
 export enum SyncProtocolKeys {
   VERSION,
@@ -21,18 +18,12 @@ export enum EncodedType {
   WALLET_SYNC = 2
 }
 
-export enum EncodedProtocol {
-  'ETH',
-  'ETH-ERC20'
-}
-
 export type SerializedSyncProtocolPayload = SerializedSyncProtocolTransaction | SerializedSyncProtocolWalletSync
 
-export interface SerializedSyncProtocol
-  extends Array<boolean | number | UnsignedTransaction | string | EncodedType | string[] | SerializedSyncProtocolPayload> {
-  [SyncProtocolKeys.VERSION]: number
-  [SyncProtocolKeys.TYPE]: EncodedType
-  [SyncProtocolKeys.PROTOCOL]: string
+export interface SerializedSyncProtocol extends Array<Buffer | SerializedSyncProtocolPayload> {
+  [SyncProtocolKeys.VERSION]: Buffer
+  [SyncProtocolKeys.TYPE]: Buffer
+  [SyncProtocolKeys.PROTOCOL]: Buffer
   [SyncProtocolKeys.PAYLOAD]: SerializedSyncProtocolPayload
 }
 
@@ -44,62 +35,48 @@ export interface DeserializedSyncProtocol {
 }
 
 export class SyncProtocolUtils {
-  private urlPrefixPerType = {
-    [EncodedType.SIGNED_TRANSACTION]: 'airgap-wallet://?d=',
-    [EncodedType.UNSIGNED_TRANSACTION]: 'airgap-vault://?d=',
-    [EncodedType.WALLET_SYNC]: 'airgap-wallet://?d='
-  }
-
-  public async toURLScheme(deserializedSyncProtocol: DeserializedSyncProtocol): Promise<string> {
-    const version = deserializedSyncProtocol.version
-    const type = deserializedSyncProtocol.type
-    const protocol = deserializedSyncProtocol.protocol
+  public async serialize(deserializedSyncProtocol: DeserializedSyncProtocol): Promise<string> {
+    const version = toBuffer(protocolVersion.toString())
+    const type = toBuffer(deserializedSyncProtocol.type.toString())
+    const protocol = toBuffer(deserializedSyncProtocol.protocol)
     const typedPayload = deserializedSyncProtocol.payload
 
     let untypedPayload
 
-    switch (type) {
+    switch (deserializedSyncProtocol.type) {
       case EncodedType.UNSIGNED_TRANSACTION:
         untypedPayload = serializerByProtocolIdentifier(protocol).serialize(typedPayload)
     }
 
-    const serializedTx: SerializedSyncProtocol = [version, type, protocol, untypedPayload]
+    const rlpEncoded = rlp.encode([version, type, protocol, untypedPayload] as any)
+
+    console.log([version, type, protocol, untypedPayload])
 
     // as any is necessary due to https://github.com/ethereumjs/rlp/issues/35
-    return rlp.encode(serializedTx as any).toString('base64')
+    return rlpEncoded.toString('base64')
   }
 
-  public async fromURLScheme(url: string): Promise<DeserializedSyncProtocol> {
-    const urlScheme = Object.keys(this.urlPrefixPerType).find(type => url.startsWith(this.urlPrefixPerType[type]))
-    if (!urlScheme) {
-      throw new Error(`No matching URL Schemes found`)
-    }
-
-    const deserializedTx = url.slice(url.indexOf(urlScheme))
-    const base64DecodedBuffer = Buffer.from(deserializedTx, 'base64')
+  public async deserialize(serializedSyncProtocol: string): Promise<DeserializedSyncProtocol> {
+    const base64DecodedBuffer = Buffer.from(serializedSyncProtocol, 'base64')
     const rlpDecodedTx: SerializedSyncProtocol = (rlp.decode(base64DecodedBuffer as any) as unknown) as SerializedSyncProtocol
 
-    const type = rlpDecodedTx[SyncProtocolKeys.TYPE]
-    const protocol = rlpDecodedTx[SyncProtocolKeys.PROTOCOL]
+    const version = parseInt(rlpDecodedTx[SyncProtocolKeys.VERSION].toString(), 2)
+    const type = parseInt(rlpDecodedTx[SyncProtocolKeys.TYPE].toString(), 2)
+    const protocol = rlpDecodedTx[SyncProtocolKeys.PROTOCOL].toString()
+    const payload = rlpDecodedTx[SyncProtocolKeys.PAYLOAD] as SerializedSyncProtocolTransaction
 
     let typedPayload
 
     switch (type) {
       case EncodedType.UNSIGNED_TRANSACTION:
-        const payload = rlpDecodedTx[SyncProtocolKeys.PAYLOAD] as SerializedSyncProtocolTransaction
         typedPayload = serializerByProtocolIdentifier(protocol).deserialize(payload)
     }
 
     return {
-      version: rlpDecodedTx[SyncProtocolKeys.VERSION],
+      version: version,
       type: type,
       protocol: protocol,
       payload: typedPayload
     }
   }
-}
-
-export abstract class Serializer {
-  public abstract serialize(...args: any): string
-  public abstract deserialize(serializedContent: string): UnsignedTransaction | IAirGapWallet
 }
