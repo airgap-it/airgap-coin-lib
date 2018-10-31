@@ -1,8 +1,8 @@
-import { EncodedType, Serializer } from './serializer'
+import { EncodedType } from './serializer'
 import { IAirGapWallet } from '../interfaces/IAirGapWallet'
 
-export abstract class WalletSerializer extends Serializer {
-  public abstract serialize(...args: any): string
+export abstract class WalletSerializer {
+  public abstract serialize(...args: any[]): string
   public abstract deserialize(serializedTx: string): IAirGapWallet
 }
 
