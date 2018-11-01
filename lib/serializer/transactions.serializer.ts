@@ -1,39 +1,28 @@
-import { EncodedType } from './serializer'
 import { SerializedUnsignedEthereumTransaction, RawEthereumTransaction } from './transactions/ethereum-transactions.serializer'
-import BigNumber from 'bignumber.js'
+import { RawBitcoinTransaction, SerializedUnsignedBitcoinTransaction } from './transactions/bitcoin-transactions.serializer'
 export abstract class TransactionSerializer {
-  public abstract serialize(...args: any[]): SerializedSyncProtocolTransaction
+  public abstract serialize(unsignedTx: UnsignedTransaction): SerializedSyncProtocolTransaction
   public abstract deserialize(serializedTx: SerializedSyncProtocolTransaction): UnsignedTransaction
+  // public abstract validateInput(unsignedTx: UnsignedTransaction)
+  // public abstract validateOutput(serializedTx: SerializedSyncProtocolTransaction)
 }
 
 export interface UnsignedTransaction {
-  transaction: RawEthereumTransaction
-  from?: string
-  to?: string
-  amount?: BigNumber
-  fee?: BigNumber
+  transaction: RawEthereumTransaction | RawBitcoinTransaction
   publicKey: string
   callback?: string
 }
 
-export type SerializedUnsignedTransaction = SerializedUnsignedEthereumTransaction
+export type SerializedUnsignedTransaction = SerializedUnsignedEthereumTransaction | SerializedUnsignedBitcoinTransaction
 
 export enum SyncProtocolUnsignedTransactionKeys {
   UNSIGNED_TRANSACTION,
-  FROM,
-  TO,
-  AMOUNT,
-  FEE,
   PUBLIC_KEY,
   CALLBACK
 }
 
 export interface SerializedSyncProtocolTransaction extends Array<SerializedUnsignedTransaction | Buffer | Buffer[]> {
   [SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION]: SerializedUnsignedTransaction
-  [SyncProtocolUnsignedTransactionKeys.FROM]: Buffer[]
-  [SyncProtocolUnsignedTransactionKeys.TO]: Buffer[]
-  [SyncProtocolUnsignedTransactionKeys.AMOUNT]: Buffer[]
-  [SyncProtocolUnsignedTransactionKeys.FEE]: Buffer
   [SyncProtocolUnsignedTransactionKeys.PUBLIC_KEY]: Buffer
   [SyncProtocolUnsignedTransactionKeys.CALLBACK]: Buffer
 }

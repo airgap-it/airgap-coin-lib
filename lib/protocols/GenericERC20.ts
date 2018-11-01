@@ -4,7 +4,9 @@ import BigNumber from 'bignumber.js'
 import { IAirGapTransaction } from '../interfaces/IAirGapTransaction'
 import { rejects } from 'assert'
 import * as abiDecoder from 'abi-decoder'
-import { RawEthereumTransaction } from '../serializer/transactions/ethereum-transactions.serializer'
+import { RawEthereumTransaction, UnsignedEthereumTransaction } from '../serializer/transactions/ethereum-transactions.serializer'
+import { UnsignedTransaction } from '../serializer/transactions.serializer'
+import * as ethUtil from 'ethereumjs-util'
 
 const AUTH_TOKEN_ABI = [
   {
@@ -121,9 +123,9 @@ export class GenericERC20 extends EthereumProtocol {
                           nonce: this.web3.utils.toHex(txCount),
                           gasLimit: this.web3.utils.toHex(gasAmount),
                           gasPrice: this.web3.utils.toHex(gasPrice.toString()),
-                          to: recipients[0],
-                          value: this.web3.utils.toHex(values[0].toString()),
-                          chainId: this.web3.utils.toHex(this.chainId),
+                          to: this.tokenContract._address,
+                          value: this.web3.utils.toHex(new BigNumber(0).toString()),
+                          chainId: this.chainId,
                           data: this.tokenContract.methods.transfer(recipients[0], this.web3.utils.toHex(values[0]).toString()).encodeABI()
                         }
                         resolve(transaction)
@@ -163,7 +165,7 @@ export class GenericERC20 extends EthereumProtocol {
               )
               .then(response => {
                 const transactionResponse = response.data
-                for (let transaction of transactionResponse.docs) {
+                for (const transaction of transactionResponse.docs) {
                   if (transaction.operations.length >= 1) {
                     const transactionPayload = transaction.operations[0]
                     const fee = new BigNumber(transaction.gasUsed).times(new BigNumber(transaction.gasPrice))
@@ -197,11 +199,25 @@ export class GenericERC20 extends EthereumProtocol {
     })
   }
 
-  getTransactionDetailsFromRaw(transaction: any, rawTx: any): IAirGapTransaction {
-    let ethTx = super.getTransactionDetailsFromRaw(transaction, rawTx)
-    let tokenTransferDetails = abiDecoder.decodeMethod(ethTx.data)
+  getTransactionDetailsFromRaw(unsignedTx: UnsignedEthereumTransaction, rawTx: any): IAirGapTransaction {
+    const unsignedEthereumTx = unsignedTx as UnsignedEthereumTransaction
+    const ethTx = super.getTransactionDetailsFromRaw(unsignedEthereumTx.transaction, rawTx)
 
-    ethTx.to = [tokenTransferDetails.params[0].value]
+    const tokenTransferDetails = abiDecoder.decodeMethod(unsignedEthereumTx.transaction.data)
+
+    ethTx.to = [ethUtil.toChecksumAddress(tokenTransferDetails.params[0].value)]
+    ethTx.amount = new BigNumber(tokenTransferDetails.params[1].value)
+
+    return ethTx
+  }
+
+  getTransactionDetails(unsignedTx: UnsignedTransaction): IAirGapTransaction {
+    const unsignedEthereumTx = unsignedTx as UnsignedEthereumTransaction
+    const ethTx = super.getTransactionDetails(unsignedEthereumTx)
+
+    const tokenTransferDetails = abiDecoder.decodeMethod(unsignedEthereumTx.transaction.data)
+
+    ethTx.to = [ethUtil.toChecksumAddress(tokenTransferDetails.params[0].value)]
     ethTx.amount = new BigNumber(tokenTransferDetails.params[1].value)
 
     return ethTx

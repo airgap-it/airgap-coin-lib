@@ -7,6 +7,7 @@ import { generateHDWallet, getHDWalletAccounts } from '@aeternity/hd-wallet'
 import axios from 'axios'
 import * as rlp from 'rlp'
 import * as bs58check from 'bs58check'
+import { UnsignedTransaction } from '../serializer/transactions.serializer'
 
 export class AEProtocol implements ICoinProtocol {
   symbol = 'AE'
@@ -91,7 +92,8 @@ export class AEProtocol implements ICoinProtocol {
     return Promise.resolve(signedEncodedTx)
   }
 
-  getTransactionDetails(transaction: any): IAirGapTransaction {
+  getTransactionDetails(unsignedTx: UnsignedTransaction): IAirGapTransaction {
+    const transaction = unsignedTx.transaction as any // TODO Introduce UnsignedAeternityTransaction
     const rlpEncodedTx = bs58check.decode(transaction.replace('tx_', ''), 'hex')
     const rlpDecodedTx = rlp.decode(rlpEncodedTx)
 
@@ -107,11 +109,11 @@ export class AEProtocol implements ICoinProtocol {
     return airgapTx
   }
 
-  getTransactionDetailsFromRaw(transaction: any, rawTx: any): IAirGapTransaction {
+  getTransactionDetailsFromRaw(unsignedTx: UnsignedTransaction, rawTx: any): IAirGapTransaction {
     const rlpEncodedTx = bs58check.decode(rawTx.replace('tx_', ''), 'hex')
     const rlpDecodedTx = rlp.decode(rlpEncodedTx)
 
-    return this.getTransactionDetails('tx_' + bs58check.encode(rlpDecodedTx[3]).toString('hex'))
+    return this.getTransactionDetails({ transaction: 'tx_' + bs58check.encode(rlpDecodedTx[3]).toString('hex') } as any) // TODO Introduce UnsignedAeternityTransaction
   }
 
   async getBalanceOfAddresses(addresses: string[]): Promise<BigNumber> {
