@@ -18,13 +18,13 @@ const ethereumProtocol = {
   txs: [
     {
       unsignedTx: {
-        from: '0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e',
-        nonce: 0,
-        gasPrice: new BigNumber('0x4a817c800'),
-        gasLimit: new BigNumber('0x5208', 16),
+        nonce: '0x0',
+        gasPrice: '0x4a817c800',
+        gasLimit: '0x5208',
         to: '0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e',
-        value: new BigNumber('0xde0b6b3a7640000'),
-        chainId: 1
+        value: '0xde0b6b3a7640000',
+        chainId: 1,
+        data: '0x'
       },
       signedTx:
         'f86c808504a817c800825208944a1e1d37462a422873bfccb1e705b05cc4bd922e880de0b6b3a76400008026a00678aaa8f8fd478952bf46044589f5489e809c5ae5717dfe6893490b1f98b441a06a82b82dad7c3232968ec3aa2bba32879b3ecdb877934915d7e65e095fe53d5d'

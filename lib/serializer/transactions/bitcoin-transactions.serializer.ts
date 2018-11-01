@@ -1,0 +1,80 @@
+import {
+  TransactionSerializer,
+  SerializedSyncProtocolTransaction,
+  SyncProtocolUnsignedTransactionKeys,
+  UnsignedTransaction
+} from '../transactions.serializer'
+import BigNumber from 'bignumber.js'
+import { toBuffer } from '../utils/toBuffer'
+
+export type SerializedUnsignedBitcoinTransaction = [[[Buffer, Buffer, Buffer, Buffer, Buffer]], [[Buffer, Buffer, Buffer]]]
+
+export interface IInTransaction {
+  txId: string
+  value: BigNumber
+  vout: string
+  address: string
+  derivationPath?: string
+}
+
+export interface IOutTransaction {
+  recipient: string
+  isChange: boolean
+  value: BigNumber
+}
+
+export interface RawBitcoinTransaction {
+  ins: IInTransaction[]
+  outs: IOutTransaction[]
+}
+
+export interface UnsignedBitcoinTransaction extends UnsignedTransaction {
+  transaction: RawBitcoinTransaction
+}
+
+export class BitcoinUnsignedTransactionSerializer extends TransactionSerializer {
+  public serialize(unsignedTx: UnsignedBitcoinTransaction): SerializedSyncProtocolTransaction {
+    const serializedTx: SerializedSyncProtocolTransaction = toBuffer([
+      [
+        [...unsignedTx.transaction.ins.map(input => [input.txId, input.value, input.vout, input.address, input.derivationPath])],
+        [...unsignedTx.transaction.outs.map(output => [output.isChange, output.recipient, output.value])]
+      ],
+      unsignedTx.publicKey, // publicKey
+      unsignedTx.callback ? unsignedTx.callback : 'airgap-vault://?d=' // callback-scheme
+    ])
+
+    // as any is necessary due to https://github.com/ethereumjs/rlp/issues/35
+    return serializedTx
+  }
+
+  public deserialize(serializedTx: SerializedSyncProtocolTransaction): UnsignedBitcoinTransaction {
+    const bitcoinTx = serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION] as SerializedUnsignedBitcoinTransaction
+    const inputs = bitcoinTx[0]
+    const outputs = bitcoinTx[1]
+
+    return {
+      transaction: {
+        ins: inputs.map(val => {
+          const input: IInTransaction = {
+            txId: val[0].toString(),
+            value: new BigNumber(val[1].toString()),
+            vout: val[2].toString(),
+            address: val[3].toString(),
+            derivationPath: val[4].toString()
+          }
+          return input
+        }),
+        outs: outputs.map(val => {
+          const output: IOutTransaction = {
+            isChange: val[0].toString() === '0' ? false : true,
+            recipient: val[1].toString(),
+            value: new BigNumber(val[2].toString())
+          }
+          return output
+        })
+      },
+      publicKey: serializedTx[SyncProtocolUnsignedTransactionKeys.PUBLIC_KEY].toString(),
+      callback: serializedTx[SyncProtocolUnsignedTransactionKeys.CALLBACK].toString()
+    }
+  }
+}

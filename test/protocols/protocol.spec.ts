@@ -106,7 +106,10 @@ protocols.forEach((protocol: TestProtocolSpec) => {
     describe(`Extract TX`, () => {
       it('getTransactionDetails - Is able to extract all necessary properties from a TX', async function() {
         protocol.txs.forEach(tx => {
-          const airgapTx: IAirGapTransaction = protocol.lib.getTransactionDetails(tx.unsignedTx)
+          const airgapTx: IAirGapTransaction = protocol.lib.getTransactionDetails({
+            publicKey: protocol.wallet.publicKey,
+            transaction: tx.unsignedTx
+          })
 
           expect(airgapTx.to).to.deep.equal([protocol.wallet.address])
           expect(airgapTx.from).to.deep.equal([protocol.wallet.address])
@@ -121,7 +124,10 @@ protocols.forEach((protocol: TestProtocolSpec) => {
       it('getTransactionDetailsFromRaw - Is able to extract all necessary properties form a TX', async function() {
         protocol.txs.forEach(tx => {
           const airgapTx: IAirGapTransaction = protocol.lib.getTransactionDetailsFromRaw(
-            tx.unsignedTx,
+            {
+              publicKey: protocol.wallet.publicKey,
+              transaction: tx.unsignedTx
+            },
             JSON.parse(JSON.stringify(tx.signedTx))
           )
 

@@ -2,7 +2,6 @@ import { SerializedSyncProtocolTransaction, UnsignedTransaction } from './transa
 import { SerializedSyncProtocolWalletSync } from './wallet-sync.serializer'
 import * as rlp from 'rlp'
 import { serializerByProtocolIdentifier, protocolVersion } from '.'
-import { toHexString } from './utils/toHex'
 import { toBuffer } from './utils/toBuffer'
 
 export enum SyncProtocolKeys {
@@ -49,8 +48,6 @@ export class SyncProtocolUtils {
     }
 
     const rlpEncoded = rlp.encode([version, type, protocol, untypedPayload] as any)
-
-    console.log([version, type, protocol, untypedPayload])
 
     // as any is necessary due to https://github.com/ethereumjs/rlp/issues/35
     return rlpEncoded.toString('base64')

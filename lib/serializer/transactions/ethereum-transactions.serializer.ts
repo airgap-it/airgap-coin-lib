@@ -4,9 +4,6 @@ import {
   SyncProtocolUnsignedTransactionKeys,
   UnsignedTransaction
 } from '../transactions.serializer'
-import BigNumber from 'bignumber.js'
-import * as ethUtil from 'ethereumjs-util'
-import { toHexString } from '../utils/toHex'
 import { toBuffer } from '../utils/toBuffer'
 
 export type SerializedUnsignedEthereumTransaction = [Buffer, Buffer, Buffer, Buffer, Buffer, Buffer, Buffer]
@@ -17,7 +14,7 @@ export interface RawEthereumTransaction {
   gasLimit: string
   to: string
   value: string
-  chainId: string
+  chainId: number
   data: string
 }
 
@@ -27,10 +24,6 @@ export interface UnsignedEthereumTransaction extends UnsignedTransaction {
 
 export class EthereumUnsignedTransactionSerializer extends TransactionSerializer {
   public serialize(transaction: UnsignedEthereumTransaction): SerializedSyncProtocolTransaction {
-    const address = ethUtil.toChecksumAddress(
-      (ethUtil.pubToAddress(Buffer.from(transaction.publicKey, 'hex'), true) as Buffer).toString('hex')
-    )
-
     const serializedTx: SerializedSyncProtocolTransaction = toBuffer([
       [
         transaction.transaction.nonce,
@@ -39,12 +32,8 @@ export class EthereumUnsignedTransactionSerializer extends TransactionSerializer
         transaction.transaction.to,
         transaction.transaction.value,
         transaction.transaction.chainId,
-        transaction.transaction.data
+        transaction.transaction.data ? transaction.transaction.data : '0x' // data is optional, include empty if necessary
       ],
-      [address], // from
-      [transaction.transaction.to], // to
-      [transaction.transaction.value], // amount
-      toHexString(new BigNumber(transaction.transaction.gasPrice).multipliedBy(new BigNumber(transaction.transaction.gasLimit))),
       transaction.publicKey, // publicKey
       transaction.callback ? transaction.callback : 'airgap-vault://?d=' // callback-scheme
     ])
@@ -54,8 +43,7 @@ export class EthereumUnsignedTransactionSerializer extends TransactionSerializer
   }
 
   public deserialize(serializedTx: SerializedSyncProtocolTransaction): UnsignedEthereumTransaction {
-    return {
-      from: serializedTx[SyncProtocolUnsignedTransactionKeys.FROM][0].toString(),
+    const unsignedEthereumTx: UnsignedEthereumTransaction = {
       publicKey: serializedTx[SyncProtocolUnsignedTransactionKeys.PUBLIC_KEY].toString(),
       transaction: {
         nonce: serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION][0].toString(),
@@ -63,10 +51,12 @@ export class EthereumUnsignedTransactionSerializer extends TransactionSerializer
         gasLimit: serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION][2].toString(),
         to: serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION][3].toString(),
         value: serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION][4].toString(),
-        chainId: serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION][5].toString(),
+        chainId: parseInt(serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION][5].toString(), 2),
         data: serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION][6].toString()
       },
       callback: serializedTx[SyncProtocolUnsignedTransactionKeys.CALLBACK].toString()
     }
+
+    return unsignedEthereumTx
   }
 }

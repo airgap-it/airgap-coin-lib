@@ -8,6 +8,7 @@ import { IAirGapTransaction } from '../interfaces/IAirGapTransaction'
 import axios from 'axios'
 import { RawEthereumTransaction } from '../serializer/transactions/ethereum-transactions.serializer'
 import * as Web3 from 'web3'
+import { UnsignedTransaction } from '../serializer/transactions.serializer'
 
 const EthereumTransaction = require('ethereumjs-tx')
 
@@ -122,15 +123,15 @@ export class EthereumProtocol implements ICoinProtocol {
     return Promise.resolve(tx.serialize().toString('hex'))
   }
 
-  getTransactionDetails(transaction: any): IAirGapTransaction {
+  getTransactionDetails(unsignedTx: UnsignedTransaction): IAirGapTransaction {
+    const transaction = unsignedTx.transaction as RawEthereumTransaction
     return {
-      from: transaction.from ? [transaction.from] : [],
+      from: [this.getAddressFromPublicKey(unsignedTx.publicKey)],
       to: [transaction.to],
       amount: new BigNumber(transaction.value),
       fee: new BigNumber(transaction.gasLimit).multipliedBy(new BigNumber(transaction.gasPrice)),
       protocolIdentifier: this.identifier,
-      isInbound: false,
-      timestamp: parseInt(transaction.timestamp, 10)
+      isInbound: false
     }
   }
 
@@ -143,8 +144,8 @@ export class EthereumProtocol implements ICoinProtocol {
     let hexNonce = ethTx.nonce.toString('hex') || '0x0'
 
     return {
-      from: ['0x' + ethTx.from.toString('hex')],
-      to: ['0x' + ethTx.to.toString('hex')],
+      from: [ethUtil.toChecksumAddress('0x' + ethTx.from.toString('hex'))],
+      to: [ethUtil.toChecksumAddress('0x' + ethTx.to.toString('hex'))],
       amount: new BigNumber(parseInt(hexValue, 16)),
       fee: new BigNumber(parseInt(hexGasLimit, 16)).multipliedBy(new BigNumber(parseInt(hexGasPrice, 16))),
       protocolIdentifier: this.identifier,
@@ -205,7 +206,7 @@ export class EthereumProtocol implements ICoinProtocol {
                 gasPrice: this.web3.utils.toHex(gasPrice.toString()), // 10 Gwei
                 to: recipients[0],
                 value: this.web3.utils.toHex(values[0].toString()),
-                chainId: this.web3.utils.toHex(this.chainId),
+                chainId: this.chainId,
                 data: '0x'
               }
 

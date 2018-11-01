@@ -18,12 +18,11 @@ const ethereumRopstenProtocol = {
   txs: [
     {
       unsignedTx: {
-        from: '0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e',
-        nonce: 80,
-        gasPrice: new BigNumber('0x4a817c800'),
-        gasLimit: new BigNumber('0x5208', 16),
+        nonce: '0x50',
+        gasPrice: '0x4a817c800',
+        gasLimit: '0x5208',
         to: '0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e',
-        value: new BigNumber('0xde0b6b3a7640000'),
+        value: '0xde0b6b3a7640000',
         chainId: 3
       },
       signedTx:
