@@ -581,7 +581,6 @@ describe('List Transactions', function() {
 describe('Transaction Detail Logic', function() {
   it('should correctly give details to an ethereum tx', function() {
     const tx = {
-      from: '0x7461531f581A662C5dF140FD6eA1317641fFcad2',
       nonce: '0x00',
       gasPrice: '0x04a817c800',
       gasLimit: '0x5208',
@@ -592,9 +591,12 @@ describe('Transaction Detail Logic', function() {
     }
     const ethereum = new CoinLib.EthereumProtocol()
 
-    const airGapTx = ethereum.getTransactionDetails(tx)
+    const airGapTx = ethereum.getTransactionDetails({
+      publicKey: '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
+      transaction: tx
+    })
 
-    assert.deepEqual(airGapTx.from, ['0x7461531f581A662C5dF140FD6eA1317641fFcad2'], 'from-addresses were not properly extracted')
+    assert.deepEqual(airGapTx.from, ['0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e'], 'from-addresses were not properly extracted')
     assert.deepEqual(airGapTx.to, ['0xf5E54317822EBA2568236EFa7b08065eF15C5d42'], 'to-addresses were not properly extracted')
     assert.equal(airGapTx.fee, '420000000000000', 'fee was not properly extracted')
     assert.equal(airGapTx.amount, '1000000000000000000', 'amount was not properly extracted')
@@ -634,7 +636,9 @@ describe('Transaction Detail Logic', function() {
 
     const bitcoin = new CoinLib.BitcoinProtocol()
 
-    const airGapTx = bitcoin.getTransactionDetails(tx)
+    const airGapTx = bitcoin.getTransactionDetails({
+      transaction: tx
+    })
 
     assert.deepEqual(
       airGapTx.from,

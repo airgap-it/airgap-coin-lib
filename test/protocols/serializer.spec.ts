@@ -3,10 +3,11 @@ import 'mocha'
 import { expect } from 'chai'
 import { TestProtocolSpec } from './implementations'
 import { ethereumProtocol } from './specs/ethereum'
+import { bitcoinProtocol } from './specs/bitcoin'
 import { SyncProtocolUtils, DeserializedSyncProtocol, EncodedType } from '../../lib/serializer/serializer'
 import BigNumber from 'bignumber.js'
 
-const protocols = [ethereumProtocol]
+const protocols = [ethereumProtocol, bitcoinProtocol]
 
 protocols.forEach((protocol: TestProtocolSpec) => {
   const txSerializer = new SyncProtocolUtils()
@@ -21,15 +22,15 @@ protocols.forEach((protocol: TestProtocolSpec) => {
     }
   }
 
-  describe(`AirGap Serialization Protocol`, () => {
-    it('should be able to serialize an EthereumTx to a airgap protocol string', async () => {
+  describe(`Serialization Protocol for ${protocol.name}`, () => {
+    it(`should be able to serialize an transaction to a airgap protocol string`, async () => {
       const serializedTx = await txSerializer.serialize(deserializedTxSigningRequest)
       const deserializedTx = await txSerializer.deserialize(serializedTx)
 
       expect(deserializedTxSigningRequest).to.deep.include(deserializedTx)
     })
 
-    it('should be able to properly extract amount/fee using getTransactionDetails in combination with the coin-lib', async () => {
+    it(`should be able to properly extract amount/fee using getTransactionDetails in combination with the coin-lib`, async () => {
       const serializedTx = await txSerializer.serialize(deserializedTxSigningRequest)
       const deserializedTx = await txSerializer.deserialize(serializedTx)
 
