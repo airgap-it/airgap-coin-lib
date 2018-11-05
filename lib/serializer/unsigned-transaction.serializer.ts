@@ -1,10 +1,9 @@
-import { SerializedUnsignedEthereumTransaction, RawEthereumTransaction } from './transactions/ethereum-transactions.serializer'
-import { RawBitcoinTransaction, SerializedUnsignedBitcoinTransaction } from './transactions/bitcoin-transactions.serializer'
-export abstract class TransactionSerializer {
+import { SerializedUnsignedEthereumTransaction, RawEthereumTransaction } from './unsigned-transactions/ethereum-transactions.serializer'
+import { RawBitcoinTransaction, SerializedUnsignedBitcoinTransaction } from './unsigned-transactions/bitcoin-transactions.serializer'
+
+export abstract class UnsignedTransactionSerializer {
   public abstract serialize(unsignedTx: UnsignedTransaction): SerializedSyncProtocolTransaction
   public abstract deserialize(serializedTx: SerializedSyncProtocolTransaction): UnsignedTransaction
-  // public abstract validateInput(unsignedTx: UnsignedTransaction)
-  // public abstract validateOutput(serializedTx: SerializedSyncProtocolTransaction)
 }
 
 export interface UnsignedTransaction {

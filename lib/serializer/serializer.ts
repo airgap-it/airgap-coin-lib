@@ -1,9 +1,10 @@
-import { SerializedSyncProtocolTransaction, UnsignedTransaction } from './transactions.serializer'
+import { SerializedSyncProtocolTransaction, UnsignedTransaction } from './unsigned-transaction.serializer'
 import { SerializedSyncProtocolWalletSync, SyncWalletRequest, WalletSerializer } from './wallet-sync.serializer'
 import * as rlp from 'rlp'
-import { protocolVersion, transactionSerializerByProtocolIdentifier } from '.'
+import { protocolVersion, unsignedTransactionSerializerByProtocolIdentifier, signedTransactionSerializerByProtocolIdentifier } from '.'
 import { toBuffer } from './utils/toBuffer'
 import * as bs58check from 'bs58check'
+import { SignedTransaction, SerializedSyncProtocolSignedTransaction } from './signed-transaction.serializer'
 
 export enum SyncProtocolKeys {
   VERSION,
@@ -18,7 +19,10 @@ export enum EncodedType {
   WALLET_SYNC = 2
 }
 
-export type SerializedSyncProtocolPayload = SerializedSyncProtocolTransaction | SerializedSyncProtocolWalletSync
+export type SerializedSyncProtocolPayload =
+  | SerializedSyncProtocolTransaction
+  | SerializedSyncProtocolWalletSync
+  | SerializedSyncProtocolSignedTransaction
 
 export interface SerializedSyncProtocol extends Array<Buffer | SerializedSyncProtocolPayload> {
   [SyncProtocolKeys.VERSION]: Buffer
@@ -31,7 +35,7 @@ export interface DeserializedSyncProtocol {
   version: number
   type: EncodedType
   protocol: string
-  payload: UnsignedTransaction | SyncWalletRequest
+  payload: UnsignedTransaction | SyncWalletRequest | SignedTransaction
 }
 
 export class SyncProtocolUtils {
@@ -45,7 +49,10 @@ export class SyncProtocolUtils {
 
     switch (deserializedSyncProtocol.type) {
       case EncodedType.UNSIGNED_TRANSACTION:
-        untypedPayload = transactionSerializerByProtocolIdentifier(protocol).serialize(typedPayload as UnsignedTransaction)
+        untypedPayload = unsignedTransactionSerializerByProtocolIdentifier(protocol).serialize(typedPayload as UnsignedTransaction)
+        break
+      case EncodedType.SIGNED_TRANSACTION:
+        untypedPayload = signedTransactionSerializerByProtocolIdentifier(protocol).serialize(typedPayload as SignedTransaction)
         break
       case EncodedType.WALLET_SYNC:
         untypedPayload = new WalletSerializer().serialize(typedPayload as SyncWalletRequest)
@@ -71,7 +78,12 @@ export class SyncProtocolUtils {
 
     switch (type) {
       case EncodedType.UNSIGNED_TRANSACTION:
-        typedPayload = transactionSerializerByProtocolIdentifier(protocol).deserialize(payload as SerializedSyncProtocolTransaction)
+        typedPayload = unsignedTransactionSerializerByProtocolIdentifier(protocol).deserialize(payload as SerializedSyncProtocolTransaction)
+        break
+      case EncodedType.SIGNED_TRANSACTION:
+        typedPayload = signedTransactionSerializerByProtocolIdentifier(protocol).deserialize(
+          payload as SerializedSyncProtocolSignedTransaction
+        )
         break
       case EncodedType.WALLET_SYNC:
         typedPayload = new WalletSerializer().deserialize(payload as SerializedSyncProtocolWalletSync)

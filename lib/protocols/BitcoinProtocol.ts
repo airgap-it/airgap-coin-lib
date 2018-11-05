@@ -7,8 +7,8 @@ import BigNumber from 'bignumber.js'
 import { IAirGapTransaction } from '../interfaces/IAirGapTransaction'
 import { INetwork } from '../networks'
 import { ICoinProtocol } from './ICoinProtocol'
-import { UnsignedTransaction } from '../serializer/transactions.serializer'
-import { RawBitcoinTransaction } from '../serializer/transactions/bitcoin-transactions.serializer'
+import { UnsignedTransaction } from '../serializer/unsigned-transaction.serializer'
+import { RawBitcoinTransaction } from '../serializer/unsigned-transactions/bitcoin-transactions.serializer'
 
 interface IInTransaction {
   txId: string
@@ -123,7 +123,7 @@ export class BitcoinProtocol implements ICoinProtocol {
       }
 
       for (let output of transaction.outs) {
-        transactionBuilder.addOutput(output.recipient, output.value)
+        transactionBuilder.addOutput(output.recipient, output.value.toString())
       }
 
       for (let i = 0; i < transaction.ins.length; i++) {

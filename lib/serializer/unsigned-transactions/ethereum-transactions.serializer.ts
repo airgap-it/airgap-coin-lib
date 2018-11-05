@@ -1,9 +1,9 @@
 import {
-  TransactionSerializer,
   SerializedSyncProtocolTransaction,
   SyncProtocolUnsignedTransactionKeys,
-  UnsignedTransaction
-} from '../transactions.serializer'
+  UnsignedTransaction,
+  UnsignedTransactionSerializer
+} from '../unsigned-transaction.serializer'
 import { toBuffer } from '../utils/toBuffer'
 
 export type SerializedUnsignedEthereumTransaction = [Buffer, Buffer, Buffer, Buffer, Buffer, Buffer, Buffer]
@@ -22,7 +22,7 @@ export interface UnsignedEthereumTransaction extends UnsignedTransaction {
   transaction: RawEthereumTransaction
 }
 
-export class EthereumUnsignedTransactionSerializer extends TransactionSerializer {
+export class EthereumUnsignedTransactionSerializer extends UnsignedTransactionSerializer {
   public serialize(transaction: UnsignedEthereumTransaction): SerializedSyncProtocolTransaction {
     const serializedTx: SerializedSyncProtocolTransaction = toBuffer([
       [

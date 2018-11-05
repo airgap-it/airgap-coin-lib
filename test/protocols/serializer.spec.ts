@@ -32,6 +32,16 @@ protocols.forEach((protocol: TestProtocolSpec) => {
     }
   }
 
+  const deserializedSignedTxRequest: DeserializedSyncProtocol = {
+    version: 1,
+    protocol: protocol.lib.identifier,
+    type: EncodedType.WALLET_SYNC,
+    payload: {
+      publicKey: protocol.wallet.publicKey,
+      transaction: protocol.txs[0].signedTx
+    }
+  }
+
   describe(`Serialization Protocol for ${protocol.name}`, () => {
     it(`should be able to serialize an transaction to a airgap protocol string`, async () => {
       const serializedTx = await syncProtocol.serialize(deserializedTxSigningRequest)
@@ -53,9 +63,16 @@ protocols.forEach((protocol: TestProtocolSpec) => {
 
     it(`should be able to serialize and deserialize a sync-wallet request`, async () => {
       const serializedWalletRequest = await syncProtocol.serialize(deserializedSyncWalletRequest)
-      const deserializedWalletRequest = await syncProtocol.serialize(deserializedSyncWalletRequest)
+      const deserializedWalletRequest = await syncProtocol.deserialize(serializedWalletRequest)
 
-      expect(deserializedWalletRequest).to.deep.include(serializedWalletRequest)
+      expect(deserializedTxSigningRequest).to.deep.include(deserializedWalletRequest)
+    })
+
+    it(`should be able to serialize and deserialize a signed-tx request`, async () => {
+      const serializedSignedTx = await syncProtocol.serialize(deserializedSignedTxRequest)
+      const deserializedTx = await syncProtocol.deserialize(serializedSignedTx)
+
+      expect(deserializedSignedTxRequest).to.deep.include(deserializedTx)
     })
   })
 })

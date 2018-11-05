@@ -6,9 +6,9 @@ import { BigNumber } from 'bignumber.js'
 import * as ethUtil from 'ethereumjs-util'
 import { IAirGapTransaction } from '../interfaces/IAirGapTransaction'
 import axios from 'axios'
-import { RawEthereumTransaction } from '../serializer/transactions/ethereum-transactions.serializer'
+import { RawEthereumTransaction } from '../serializer/unsigned-transactions/ethereum-transactions.serializer'
 import * as Web3 from 'web3'
-import { UnsignedTransaction } from '../serializer/transactions.serializer'
+import { UnsignedTransaction } from '../serializer/unsigned-transaction.serializer'
 
 const EthereumTransaction = require('ethereumjs-tx')
 
