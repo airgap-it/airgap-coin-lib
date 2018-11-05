@@ -1,9 +1,32 @@
-import { EncodedType } from './serializer'
-import { IAirGapWallet } from '../interfaces/IAirGapWallet'
+import { toBuffer } from './utils/toBuffer'
 
-export abstract class WalletSerializer {
-  public abstract serialize(...args: any[]): string
-  public abstract deserialize(serializedTx: string): IAirGapWallet
+export class WalletSerializer {
+  public serialize(syncWalletRequest: SyncWalletRequest): SerializedSyncProtocolWalletSync {
+    const toSerialize: any[] = []
+
+    toSerialize[SyncProtocolWalletSync.PUBLIC_KEY] = syncWalletRequest.publicKey
+    toSerialize[SyncProtocolWalletSync.DERIVATION_PATH] = syncWalletRequest.derivationPath
+    toSerialize[SyncProtocolWalletSync.IS_EXTENDED_PUBLIC_KEY] = syncWalletRequest.isExtendedPublicKey
+
+    const serializedBuffer: SerializedSyncProtocolWalletSync = toBuffer(toSerialize)
+
+    return serializedBuffer
+  }
+
+  public deserialize(serializedWalletRequest: SerializedSyncProtocolWalletSync): SyncWalletRequest {
+    const syncWalletRequest: SyncWalletRequest = {
+      publicKey: serializedWalletRequest[SyncProtocolWalletSync.PUBLIC_KEY].toString(),
+      derivationPath: serializedWalletRequest[SyncProtocolWalletSync.DERIVATION_PATH].toString(),
+      isExtendedPublicKey: serializedWalletRequest[SyncProtocolWalletSync.IS_EXTENDED_PUBLIC_KEY].toString() === '0' ? false : true
+    }
+    return syncWalletRequest
+  }
+}
+
+export interface SyncWalletRequest {
+  publicKey: string
+  derivationPath: string
+  isExtendedPublicKey: boolean
 }
 
 export enum SyncProtocolWalletSync {
@@ -12,8 +35,8 @@ export enum SyncProtocolWalletSync {
   IS_EXTENDED_PUBLIC_KEY
 }
 
-export interface SerializedSyncProtocolWalletSync extends Array<boolean | number | string | EncodedType | string[]> {
-  [SyncProtocolWalletSync.PUBLIC_KEY]: string
-  [SyncProtocolWalletSync.DERIVATION_PATH]: string
-  [SyncProtocolWalletSync.IS_EXTENDED_PUBLIC_KEY]: boolean
+export interface SerializedSyncProtocolWalletSync extends Array<Buffer> {
+  [SyncProtocolWalletSync.PUBLIC_KEY]: Buffer
+  [SyncProtocolWalletSync.DERIVATION_PATH]: Buffer
+  [SyncProtocolWalletSync.IS_EXTENDED_PUBLIC_KEY]: Buffer
 }

@@ -1,9 +1,9 @@
 import {
-  TransactionSerializer,
   SerializedSyncProtocolTransaction,
   SyncProtocolUnsignedTransactionKeys,
-  UnsignedTransaction
-} from '../transactions.serializer'
+  UnsignedTransaction,
+  UnsignedTransactionSerializer
+} from '../unsigned-transaction.serializer'
 import BigNumber from 'bignumber.js'
 import { toBuffer } from '../utils/toBuffer'
 
@@ -32,7 +32,7 @@ export interface UnsignedBitcoinTransaction extends UnsignedTransaction {
   transaction: RawBitcoinTransaction
 }
 
-export class BitcoinUnsignedTransactionSerializer extends TransactionSerializer {
+export class BitcoinUnsignedTransactionSerializer extends UnsignedTransactionSerializer {
   public serialize(unsignedTx: UnsignedBitcoinTransaction): SerializedSyncProtocolTransaction {
     const toSerialize = [
       [
@@ -59,7 +59,7 @@ export class BitcoinUnsignedTransactionSerializer extends TransactionSerializer 
           const input: IInTransaction = {
             txId: val[0].toString(),
             value: new BigNumber(val[1].toString()),
-            vout: parseInt(val[2].toString(), 2),
+            vout: parseInt(val[2].toString(), 10),
             address: val[3].toString(),
             derivationPath: val[4].toString()
           }

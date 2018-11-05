@@ -4,8 +4,8 @@ import BigNumber from 'bignumber.js'
 import { IAirGapTransaction } from '../interfaces/IAirGapTransaction'
 import { rejects } from 'assert'
 import * as abiDecoder from 'abi-decoder'
-import { RawEthereumTransaction, UnsignedEthereumTransaction } from '../serializer/transactions/ethereum-transactions.serializer'
-import { UnsignedTransaction } from '../serializer/transactions.serializer'
+import { RawEthereumTransaction, UnsignedEthereumTransaction } from '../serializer/unsigned-transactions/ethereum-transactions.serializer'
+import { UnsignedTransaction } from '../serializer/unsigned-transaction.serializer'
 import * as ethUtil from 'ethereumjs-util'
 const EthereumTransaction = require('ethereumjs-tx')
 
