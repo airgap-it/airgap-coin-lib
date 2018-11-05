@@ -45,7 +45,7 @@ protocols.forEach((protocol: TestProtocolSpec) => {
 
         // check if address format matches
         expect(address.match(new RegExp(protocol.lib.addressValidationPattern))).not.to.equal(null)
-        expect(address).to.equal(protocol.wallet.address, 'address does not match')
+        expect(address).to.equal(protocol.wallet.addresses[0], 'address does not match')
       })
     })
 
@@ -61,7 +61,7 @@ protocols.forEach((protocol: TestProtocolSpec) => {
       it('prepareTransactionFromPublicKey - Is able to prepare a transaction using its public key', async function() {
         let preparedTx = await protocol.lib.prepareTransactionFromPublicKey(
           protocol.wallet.publicKey,
-          [protocol.wallet.address],
+          protocol.wallet.addresses,
           [protocol.wallet.tx.amount],
           protocol.wallet.tx.fee
         )
@@ -111,8 +111,8 @@ protocols.forEach((protocol: TestProtocolSpec) => {
             transaction: tx.unsignedTx
           })
 
-          expect(airgapTx.to).to.deep.equal([protocol.wallet.address])
-          expect(airgapTx.from).to.deep.equal([protocol.wallet.address])
+          expect(airgapTx.to).to.deep.equal(protocol.wallet.addresses)
+          expect(airgapTx.from).to.deep.equal(protocol.wallet.addresses)
 
           expect(airgapTx.amount).to.deep.equal(protocol.wallet.tx.amount)
           expect(airgapTx.fee).to.deep.equal(protocol.wallet.tx.fee)
@@ -131,8 +131,8 @@ protocols.forEach((protocol: TestProtocolSpec) => {
             JSON.parse(JSON.stringify(tx.signedTx))
           )
 
-          expect(airgapTx.to.map(obj => obj.toLowerCase())).to.deep.equal([protocol.wallet.address].map(obj => obj.toLowerCase()))
-          expect(airgapTx.from.map(obj => obj.toLowerCase())).to.deep.equal([protocol.wallet.address].map(obj => obj.toLowerCase()))
+          expect(airgapTx.to.map(obj => obj.toLowerCase())).to.deep.equal(protocol.wallet.addresses.map(obj => obj.toLowerCase()))
+          expect(airgapTx.from.map(obj => obj.toLowerCase())).to.deep.equal(protocol.wallet.addresses.map(obj => obj.toLowerCase()))
 
           expect(airgapTx.amount).to.deep.equal(protocol.wallet.tx.amount)
           expect(airgapTx.fee).to.deep.equal(protocol.wallet.tx.fee)

@@ -7,5 +7,9 @@ export function toBuffer(rlpArray: any): any {
     return Buffer.from(rlpArray.toString())
   }
 
+  if (typeof rlpArray === 'boolean') {
+    return Buffer.from(rlpArray ? '1' : '0')
+  }
+
   return Buffer.from(rlpArray)
 }

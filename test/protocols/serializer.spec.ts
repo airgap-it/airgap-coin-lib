@@ -10,10 +10,10 @@ import BigNumber from 'bignumber.js'
 const protocols = [ethereumProtocol, bitcoinProtocol]
 
 protocols.forEach((protocol: TestProtocolSpec) => {
-  const txSerializer = new SyncProtocolUtils()
+  const syncProtocol = new SyncProtocolUtils()
   const deserializedTxSigningRequest: DeserializedSyncProtocol = {
     version: 1,
-    protocol: 'eth',
+    protocol: protocol.lib.identifier,
     type: EncodedType.UNSIGNED_TRANSACTION,
     payload: {
       publicKey: protocol.wallet.publicKey,
@@ -24,21 +24,21 @@ protocols.forEach((protocol: TestProtocolSpec) => {
 
   describe(`Serialization Protocol for ${protocol.name}`, () => {
     it(`should be able to serialize an transaction to a airgap protocol string`, async () => {
-      const serializedTx = await txSerializer.serialize(deserializedTxSigningRequest)
-      const deserializedTx = await txSerializer.deserialize(serializedTx)
+      const serializedTx = await syncProtocol.serialize(deserializedTxSigningRequest)
+      const deserializedTx = await syncProtocol.deserialize(serializedTx)
 
       expect(deserializedTxSigningRequest).to.deep.include(deserializedTx)
     })
 
     it(`should be able to properly extract amount/fee using getTransactionDetails in combination with the coin-lib`, async () => {
-      const serializedTx = await txSerializer.serialize(deserializedTxSigningRequest)
-      const deserializedTx = await txSerializer.deserialize(serializedTx)
+      const serializedTx = await syncProtocol.serialize(deserializedTxSigningRequest)
+      const deserializedTx = await syncProtocol.deserialize(serializedTx)
 
       const airGapTx = protocol.lib.getTransactionDetails(deserializedTx.payload)
 
-      expect(airGapTx.from[0]).to.deep.equal(protocol.wallet.address)
-      expect(airGapTx.amount).to.deep.equal(new BigNumber('0x0de0b6b3a7640000'))
-      expect(airGapTx.fee).to.deep.equal(new BigNumber('0x04a817c800').multipliedBy(new BigNumber('0x5208')))
+      expect(airGapTx.from).to.deep.equal(protocol.wallet.addresses)
+      expect(airGapTx.amount).to.deep.equal(protocol.wallet.tx.amount)
+      expect(airGapTx.fee).to.deep.equal(protocol.wallet.tx.fee)
     })
   })
 })

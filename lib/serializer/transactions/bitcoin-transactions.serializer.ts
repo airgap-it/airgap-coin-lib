@@ -12,7 +12,7 @@ export type SerializedUnsignedBitcoinTransaction = [[[Buffer, Buffer, Buffer, Bu
 export interface IInTransaction {
   txId: string
   value: BigNumber
-  vout: string
+  vout: number
   address: string
   derivationPath?: string
 }
@@ -34,14 +34,15 @@ export interface UnsignedBitcoinTransaction extends UnsignedTransaction {
 
 export class BitcoinUnsignedTransactionSerializer extends TransactionSerializer {
   public serialize(unsignedTx: UnsignedBitcoinTransaction): SerializedSyncProtocolTransaction {
-    const serializedTx: SerializedSyncProtocolTransaction = toBuffer([
+    const toSerialize = [
       [
         [...unsignedTx.transaction.ins.map(input => [input.txId, input.value, input.vout, input.address, input.derivationPath])],
         [...unsignedTx.transaction.outs.map(output => [output.isChange, output.recipient, output.value])]
       ],
       unsignedTx.publicKey, // publicKey
       unsignedTx.callback ? unsignedTx.callback : 'airgap-vault://?d=' // callback-scheme
-    ])
+    ]
+    const serializedTx: SerializedSyncProtocolTransaction = toBuffer(toSerialize)
 
     // as any is necessary due to https://github.com/ethereumjs/rlp/issues/35
     return serializedTx
@@ -58,7 +59,7 @@ export class BitcoinUnsignedTransactionSerializer extends TransactionSerializer 
           const input: IInTransaction = {
             txId: val[0].toString(),
             value: new BigNumber(val[1].toString()),
-            vout: val[2].toString(),
+            vout: parseInt(val[2].toString(), 2),
             address: val[3].toString(),
             derivationPath: val[4].toString()
           }
