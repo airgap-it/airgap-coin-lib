@@ -15,6 +15,7 @@ import { AirGapMarketWallet } from './wallet/AirGapMarketWallet'
 import { IAirGapWallet } from './interfaces/IAirGapWallet'
 import { IAirGapTransaction } from './interfaces/IAirGapTransaction'
 import { ICoinProtocol } from './protocols/ICoinProtocol'
+import { SyncProtocolUtils } from './serializer/serializer'
 
 const supportedProtocols = function(): ICoinProtocol[] {
   return [new BitcoinProtocol(), new EthereumProtocol(), new AETokenProtocol()]
@@ -47,5 +48,6 @@ export {
   GenericERC20,
   HOPTokenProtocol,
   AETokenProtocol,
-  AEProtocol
+  AEProtocol,
+  SyncProtocolUtils
 }
