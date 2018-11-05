@@ -9,7 +9,7 @@ const bitcoinProtocol = {
   wallet: {
     privateKey: '832d58a77ad222b8d9b75322e66d97e46b7dcfab3f25f6c1dd79ec13e046c7bc',
     publicKey: '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
-    address: '0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e',
+    addresses: ['mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k', 'mtb2Yx8rPUhYxdqPsH9nzT375QtWZ9XJcX'],
     tx: {
       from: ['mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k', 'mtb2Yx8rPUhYxdqPsH9nzT375QtWZ9XJcX'],
       to: ['mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k'],
@@ -23,14 +23,14 @@ const bitcoinProtocol = {
         ins: [
           {
             txId: 'cc69b832b6d922a04bf9653bbd12335a78f82fc09be7536f2378bbad8554039d',
-            value: 10,
+            value: new BigNumber('10'),
             vout: 0,
             address: 'mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k',
             derivationPath: '0/0'
           },
           {
             txId: 'cc69b832b6d922a04bf9653bbd12335a78f82fc09be7536f2378bbad8554039d',
-            value: 32418989,
+            value: new BigNumber('32418989'),
             vout: 1,
             address: 'mtb2Yx8rPUhYxdqPsH9nzT375QtWZ9XJcX',
             derivationPath: '1/3'
@@ -40,12 +40,12 @@ const bitcoinProtocol = {
           {
             recipient: 'mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k',
             isChange: false,
-            value: 10
+            value: new BigNumber('10')
           },
           {
             recipient: 'miiQwEJY9fCG6GD1BFtnVuWRS6zaTnNafq',
             isChange: true,
-            value: 32391989
+            value: new BigNumber('32391989')
           }
         ]
       },

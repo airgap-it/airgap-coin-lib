@@ -1,4 +1,5 @@
 import { EthereumUnsignedTransactionSerializer } from './transactions/ethereum-transactions.serializer'
+import { BitcoinUnsignedTransactionSerializer } from './transactions/bitcoin-transactions.serializer'
 import { TransactionSerializer } from './transactions.serializer'
 
 const protocolVersion = 1
@@ -7,7 +8,8 @@ export { protocolVersion }
 
 export function serializerByProtocolIdentifier(protocolIdentifier: string): TransactionSerializer {
   const implementedSerializers = {
-    eth: EthereumUnsignedTransactionSerializer
+    eth: EthereumUnsignedTransactionSerializer,
+    btc: BitcoinUnsignedTransactionSerializer
   }
 
   const protocol = Object.keys(implementedSerializers).find(protocol => protocol.startsWith(protocolIdentifier))

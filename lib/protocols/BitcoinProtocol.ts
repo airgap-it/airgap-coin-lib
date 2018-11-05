@@ -174,7 +174,7 @@ export class BitcoinProtocol implements ICoinProtocol {
       to: transaction.outs.filter(obj => obj.isChange === false).map(obj => obj.recipient),
       amount: transaction.outs
         .filter(obj => obj.isChange === false)
-        .map(obj => new BigNumber(obj.value))
+        .map(obj => obj.value)
         .reduce((accumulator, currentValue) => accumulator.plus(currentValue)),
       fee: feeCalculator,
       protocolIdentifier: this.identifier,
@@ -310,7 +310,7 @@ export class BitcoinProtocol implements ICoinProtocol {
                 transaction.outs.push({
                   recipient: recipients[i],
                   isChange: false,
-                  value: values[i].toNumber()
+                  value: values[i]
                 })
                 valueAccumulator = valueAccumulator.minus(values[i])
                 // tx.addOutput(recipients[i], values[i])
@@ -330,7 +330,7 @@ export class BitcoinProtocol implements ICoinProtocol {
                   transaction.outs.push({
                     recipient: internalAddresses[maxIndex + 1],
                     isChange: true,
-                    value: valueAccumulator.minus(fee).toNumber()
+                    value: valueAccumulator.minus(fee)
                   })
                   // tx.addOutput(internalAddresses[maxIndex + 1], valueAccumulator - fee) //this is why we sliced the arrays earlier
                   resolve(transaction)
@@ -389,7 +389,7 @@ export class BitcoinProtocol implements ICoinProtocol {
                 transaction.outs.push({
                   recipient: recipients[i],
                   isChange: false,
-                  value: values[i].toNumber()
+                  value: values[i]
                 })
                 valueAccumulator = valueAccumulator.minus(values[i])
                 // tx.addOutput(recipients[i], values[i])

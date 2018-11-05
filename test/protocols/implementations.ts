@@ -16,7 +16,7 @@ interface TestProtocolSpec {
   wallet: {
     privateKey: string
     publicKey: string
-    address: string
+    addresses: string[]
     tx: {
       amount: BigNumber
       fee: BigNumber
