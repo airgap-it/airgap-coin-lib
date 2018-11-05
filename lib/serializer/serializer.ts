@@ -3,6 +3,7 @@ import { SerializedSyncProtocolWalletSync } from './wallet-sync.serializer'
 import * as rlp from 'rlp'
 import { serializerByProtocolIdentifier, protocolVersion } from '.'
 import { toBuffer } from './utils/toBuffer'
+import * as bs58check from 'bs58check'
 
 export enum SyncProtocolKeys {
   VERSION,
@@ -50,12 +51,12 @@ export class SyncProtocolUtils {
     const rlpEncoded = rlp.encode([version, type, protocol, untypedPayload] as any)
 
     // as any is necessary due to https://github.com/ethereumjs/rlp/issues/35
-    return rlpEncoded.toString('base64')
+    return bs58check.encode(rlpEncoded)
   }
 
   public async deserialize(serializedSyncProtocol: string): Promise<DeserializedSyncProtocol> {
-    const base64DecodedBuffer = Buffer.from(serializedSyncProtocol, 'base64')
-    const rlpDecodedTx: SerializedSyncProtocol = (rlp.decode(base64DecodedBuffer as any) as unknown) as SerializedSyncProtocol
+    const base58Decoded = bs58check.decode(serializedSyncProtocol)
+    const rlpDecodedTx: SerializedSyncProtocol = (rlp.decode(base58Decoded as any) as unknown) as SerializedSyncProtocol
 
     const version = parseInt(rlpDecodedTx[SyncProtocolKeys.VERSION].toString(), 2)
     const type = parseInt(rlpDecodedTx[SyncProtocolKeys.TYPE].toString(), 2)

@@ -5,7 +5,6 @@ import { TestProtocolSpec } from './implementations'
 import { ethereumProtocol } from './specs/ethereum'
 import { bitcoinProtocol } from './specs/bitcoin'
 import { SyncProtocolUtils, DeserializedSyncProtocol, EncodedType } from '../../lib/serializer/serializer'
-import BigNumber from 'bignumber.js'
 
 const protocols = [ethereumProtocol, bitcoinProtocol]
 
