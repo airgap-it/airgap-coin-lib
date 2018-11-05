@@ -1,7 +1,7 @@
 import { SerializedSyncProtocolTransaction, UnsignedTransaction } from './transactions.serializer'
-import { SerializedSyncProtocolWalletSync } from './wallet-sync.serializer'
+import { SerializedSyncProtocolWalletSync, SyncWalletRequest, WalletSerializer } from './wallet-sync.serializer'
 import * as rlp from 'rlp'
-import { serializerByProtocolIdentifier, protocolVersion } from '.'
+import { protocolVersion, transactionSerializerByProtocolIdentifier } from '.'
 import { toBuffer } from './utils/toBuffer'
 import * as bs58check from 'bs58check'
 
@@ -31,7 +31,7 @@ export interface DeserializedSyncProtocol {
   version: number
   type: EncodedType
   protocol: string
-  payload: UnsignedTransaction
+  payload: UnsignedTransaction | SyncWalletRequest
 }
 
 export class SyncProtocolUtils {
@@ -45,7 +45,11 @@ export class SyncProtocolUtils {
 
     switch (deserializedSyncProtocol.type) {
       case EncodedType.UNSIGNED_TRANSACTION:
-        untypedPayload = serializerByProtocolIdentifier(protocol).serialize(typedPayload)
+        untypedPayload = transactionSerializerByProtocolIdentifier(protocol).serialize(typedPayload as UnsignedTransaction)
+        break
+      case EncodedType.WALLET_SYNC:
+        untypedPayload = new WalletSerializer().serialize(typedPayload as SyncWalletRequest)
+        break
     }
 
     const rlpEncoded = rlp.encode([version, type, protocol, untypedPayload] as any)
@@ -56,18 +60,22 @@ export class SyncProtocolUtils {
 
   public async deserialize(serializedSyncProtocol: string): Promise<DeserializedSyncProtocol> {
     const base58Decoded = bs58check.decode(serializedSyncProtocol)
-    const rlpDecodedTx: SerializedSyncProtocol = (rlp.decode(base58Decoded as any) as unknown) as SerializedSyncProtocol
+    const rlpDecodedTx: SerializedSyncProtocol = (rlp.decode(base58Decoded as any) as {}) as SerializedSyncProtocol
 
     const version = parseInt(rlpDecodedTx[SyncProtocolKeys.VERSION].toString(), 2)
     const type = parseInt(rlpDecodedTx[SyncProtocolKeys.TYPE].toString(), 2)
     const protocol = rlpDecodedTx[SyncProtocolKeys.PROTOCOL].toString()
-    const payload = rlpDecodedTx[SyncProtocolKeys.PAYLOAD] as SerializedSyncProtocolTransaction
+    const payload = rlpDecodedTx[SyncProtocolKeys.PAYLOAD]
 
     let typedPayload
 
     switch (type) {
       case EncodedType.UNSIGNED_TRANSACTION:
-        typedPayload = serializerByProtocolIdentifier(protocol).deserialize(payload)
+        typedPayload = transactionSerializerByProtocolIdentifier(protocol).deserialize(payload as SerializedSyncProtocolTransaction)
+        break
+      case EncodedType.WALLET_SYNC:
+        typedPayload = new WalletSerializer().deserialize(payload as SerializedSyncProtocolWalletSync)
+        break
     }
 
     return {

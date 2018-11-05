@@ -21,6 +21,17 @@ protocols.forEach((protocol: TestProtocolSpec) => {
     }
   }
 
+  const deserializedSyncWalletRequest: DeserializedSyncProtocol = {
+    version: 1,
+    protocol: protocol.lib.identifier,
+    type: EncodedType.WALLET_SYNC,
+    payload: {
+      publicKey: protocol.wallet.publicKey,
+      isExtendedPublicKey: protocol.lib.supportsHD,
+      derivationPath: protocol.lib.standardDerivationPath
+    }
+  }
+
   describe(`Serialization Protocol for ${protocol.name}`, () => {
     it(`should be able to serialize an transaction to a airgap protocol string`, async () => {
       const serializedTx = await syncProtocol.serialize(deserializedTxSigningRequest)
@@ -38,6 +49,13 @@ protocols.forEach((protocol: TestProtocolSpec) => {
       expect(airGapTx.from).to.deep.equal(protocol.wallet.addresses)
       expect(airGapTx.amount).to.deep.equal(protocol.wallet.tx.amount)
       expect(airGapTx.fee).to.deep.equal(protocol.wallet.tx.fee)
+    })
+
+    it(`should be able to serialize and deserialize a sync-wallet request`, async () => {
+      const serializedWalletRequest = await syncProtocol.serialize(deserializedSyncWalletRequest)
+      const deserializedWalletRequest = await syncProtocol.serialize(deserializedSyncWalletRequest)
+
+      expect(deserializedWalletRequest).to.deep.include(serializedWalletRequest)
     })
   })
 })

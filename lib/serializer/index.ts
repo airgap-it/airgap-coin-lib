@@ -6,7 +6,7 @@ const protocolVersion = 1
 
 export { protocolVersion }
 
-export function serializerByProtocolIdentifier(protocolIdentifier: string): TransactionSerializer {
+export function transactionSerializerByProtocolIdentifier(protocolIdentifier: string): TransactionSerializer {
   const implementedSerializers = {
     eth: EthereumUnsignedTransactionSerializer,
     btc: BitcoinUnsignedTransactionSerializer
