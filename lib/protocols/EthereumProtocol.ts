@@ -9,6 +9,7 @@ import axios from 'axios'
 import { RawEthereumTransaction } from '../serializer/unsigned-transactions/ethereum-transactions.serializer'
 import * as Web3 from 'web3'
 import { UnsignedTransaction } from '../serializer/unsigned-transaction.serializer'
+import { SignedEthereumTransaction } from '../serializer/signed-transactions/ethereum-transactions.serializer'
 
 const EthereumTransaction = require('ethereumjs-tx')
 
@@ -135,8 +136,8 @@ export class EthereumProtocol implements ICoinProtocol {
     }
   }
 
-  getTransactionDetailsFromRaw(transaction: any, rawTx: any): IAirGapTransaction {
-    const ethTx = new EthereumTransaction(rawTx)
+  getTransactionDetailsFromSigned(transaction: SignedEthereumTransaction): IAirGapTransaction {
+    const ethTx = new EthereumTransaction(transaction.transaction)
 
     let hexValue = ethTx.value.toString('hex') || '0x0'
     let hexGasPrice = ethTx.gasPrice.toString('hex') || '0x0'

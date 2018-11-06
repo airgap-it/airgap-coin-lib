@@ -1,12 +1,13 @@
 import BigNumber from 'bignumber.js'
-import { BitcoinProtocol } from '../../../dist'
+import { BitcoinProtocol, DeserializedSyncProtocol, SignedTransaction } from '../../../lib'
 import { BitcoinProtocolStub } from '../stubs/bitcoin.stub'
+import { TestProtocolSpec } from '../implementations'
 
-const bitcoinProtocol = {
-  name: 'Bitcoin',
-  lib: new BitcoinProtocol(),
-  stub: new BitcoinProtocolStub(),
-  wallet: {
+export class BitcoinTestProtocolSpec extends TestProtocolSpec {
+  name = 'Bitcoin'
+  lib = new BitcoinProtocol()
+  stub = new BitcoinProtocolStub()
+  wallet = {
     privateKey: '832d58a77ad222b8d9b75322e66d97e46b7dcfab3f25f6c1dd79ec13e046c7bc',
     publicKey: '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
     addresses: ['mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k', 'mtb2Yx8rPUhYxdqPsH9nzT375QtWZ9XJcX'],
@@ -16,8 +17,8 @@ const bitcoinProtocol = {
       amount: new BigNumber('10'),
       fee: new BigNumber('27000')
     }
-  },
-  txs: [
+  }
+  txs = [
     {
       unsignedTx: {
         ins: [
@@ -53,6 +54,13 @@ const bitcoinProtocol = {
         'f86c808504a817c800825208944a1e1d37462a422873bfccb1e705b05cc4bd922e880de0b6b3a76400008026a00678aaa8f8fd478952bf46044589f5489e809c5ae5717dfe6893490b1f98b441a06a82b82dad7c3232968ec3aa2bba32879b3ecdb877934915d7e65e095fe53d5d'
     }
   ]
-}
 
-export { bitcoinProtocol }
+  signedTransaction(tx: any): DeserializedSyncProtocol {
+    const protocol: DeserializedSyncProtocol = super.signedTransaction(tx)
+    const payload = protocol.payload as SignedTransaction
+    payload.amount = this.wallet.tx.amount
+    payload.fee = this.wallet.tx.fee
+    payload.from = this.wallet.addresses
+    return protocol
+  }
+}
