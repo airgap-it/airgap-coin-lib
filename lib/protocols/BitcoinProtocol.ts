@@ -9,6 +9,7 @@ import { INetwork } from '../networks'
 import { ICoinProtocol } from './ICoinProtocol'
 import { UnsignedTransaction } from '../serializer/unsigned-transaction.serializer'
 import { RawBitcoinTransaction } from '../serializer/unsigned-transactions/bitcoin-transactions.serializer'
+import { SignedBitcoinTransaction } from '../serializer/signed-transactions/bitcoin-transactions.serializer'
 
 interface IInTransaction {
   txId: string
@@ -182,17 +183,17 @@ export class BitcoinProtocol implements ICoinProtocol {
     }
   }
 
-  getTransactionDetailsFromRaw(transaction: any, rawTx: any): IAirGapTransaction {
+  getTransactionDetailsFromSigned(signedTx: SignedBitcoinTransaction): IAirGapTransaction {
     let tx = {
       to: [] as string[],
-      from: transaction.from,
-      amount: transaction.amount,
-      fee: transaction.fee,
+      from: signedTx.from,
+      amount: signedTx.amount,
+      fee: signedTx.fee,
       protocolIdentifier: this.identifier,
       isInbound: false
     }
 
-    const bitcoinTx = this.bitcoinJSLib.Transaction.fromHex(rawTx)
+    const bitcoinTx = this.bitcoinJSLib.Transaction.fromHex(signedTx.transaction)
     bitcoinTx.outs.forEach(output => {
       let address = this.bitcoinJSLib.address.fromOutputScript(output.script, this.network)
       tx.to.push(address)

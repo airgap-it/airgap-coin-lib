@@ -7,6 +7,7 @@ import * as abiDecoder from 'abi-decoder'
 import { RawEthereumTransaction, UnsignedEthereumTransaction } from '../serializer/unsigned-transactions/ethereum-transactions.serializer'
 import { UnsignedTransaction } from '../serializer/unsigned-transaction.serializer'
 import * as ethUtil from 'ethereumjs-util'
+import { SignedEthereumTransaction } from '../serializer/signed-transactions/ethereum-transactions.serializer'
 const EthereumTransaction = require('ethereumjs-tx')
 
 const AUTH_TOKEN_ABI = [
@@ -200,10 +201,10 @@ export class GenericERC20 extends EthereumProtocol {
     })
   }
 
-  getTransactionDetailsFromRaw(unsignedTx: UnsignedEthereumTransaction, rawTx: any): IAirGapTransaction {
-    const ethTx = super.getTransactionDetailsFromRaw(unsignedTx, rawTx)
+  getTransactionDetailsFromSigned(signedTx: SignedEthereumTransaction): IAirGapTransaction {
+    const ethTx = super.getTransactionDetailsFromSigned(signedTx)
 
-    const extractedTx = new EthereumTransaction(rawTx)
+    const extractedTx = new EthereumTransaction(signedTx.transaction)
     const tokenTransferDetails = abiDecoder.decodeMethod('0x' + extractedTx.data.toString('hex'))
     ethTx.to = [ethUtil.toChecksumAddress(tokenTransferDetails.params[0].value)]
     ethTx.amount = new BigNumber(tokenTransferDetails.params[1].value)

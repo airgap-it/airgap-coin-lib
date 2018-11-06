@@ -1,4 +1,3 @@
-import { SerializedSyncProtocolTransaction } from '../unsigned-transaction.serializer'
 import { toBuffer } from '../utils/toBuffer'
 import {
   SignedTransaction,

@@ -1,12 +1,13 @@
 import BigNumber from 'bignumber.js'
 import { EthereumProtocolStub } from '../stubs/ethereum.stub'
 import { EthereumProtocol } from '../../../lib'
+import { TestProtocolSpec } from '../implementations'
 
-const ethereumProtocol = {
-  name: 'Ethereum',
-  lib: new EthereumProtocol(),
-  stub: new EthereumProtocolStub(),
-  wallet: {
+export class EthereumTestProtocolSpec extends TestProtocolSpec {
+  name = 'Ethereum'
+  lib = new EthereumProtocol()
+  stub = new EthereumProtocolStub()
+  wallet = {
     privateKey: '832d58a77ad222b8d9b75322e66d97e46b7dcfab3f25f6c1dd79ec13e046c7bc',
     publicKey: '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
     addresses: ['0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e'],
@@ -14,8 +15,8 @@ const ethereumProtocol = {
       amount: new BigNumber('1000000000000000000'),
       fee: new BigNumber('420000000000000')
     }
-  },
-  txs: [
+  }
+  txs = [
     {
       unsignedTx: {
         nonce: '0x0',
@@ -31,5 +32,3 @@ const ethereumProtocol = {
     }
   ]
 }
-
-export { ethereumProtocol }

@@ -4,11 +4,12 @@ import 'mocha'
 import { expect } from 'chai'
 import { seed, TestProtocolSpec } from './implementations'
 import { IAirGapTransaction } from '../../lib'
-import { aeProtocol } from './specs/ae'
-import { ethereumProtocol } from './specs/ethereum'
-import { ethereumRopstenProtocol } from './specs/ethereum-ropsten'
-import { ethereumClassicProtocol } from './specs/ethereum-classic'
-import { erc20HopRopstenToken } from './specs/erc20-hop-token'
+import { AETestProtocolSpec } from './specs/ae'
+import { EthereumTestProtocolSpec } from './specs/ethereum'
+import { EthereumRopstenTestProtocolSpec } from './specs/ethereum-ropsten'
+import { EthereumClassicTestProtocolSpec } from './specs/ethereum-classic'
+import { ERC20HOPTokenTestProtocolSpec } from './specs/erc20-hop-token'
+import { BitcoinTestProtocolSpec } from './specs/bitcoin'
 
 /**
  * We currently test the following ICoinProtocol methods
@@ -22,7 +23,13 @@ import { erc20HopRopstenToken } from './specs/erc20-hop-token'
  * - getTransactionDetailsFromRaw
  */
 
-const protocols = [erc20HopRopstenToken, aeProtocol, ethereumProtocol, ethereumRopstenProtocol, ethereumClassicProtocol]
+const protocols = [
+  new ERC20HOPTokenTestProtocolSpec(),
+  new EthereumTestProtocolSpec(),
+  new EthereumClassicTestProtocolSpec(),
+  new EthereumRopstenTestProtocolSpec(),
+  new AETestProtocolSpec()
+]
 
 protocols.forEach((protocol: TestProtocolSpec) => {
   describe(`ICoinProtocol ${protocol.name}`, () => {
@@ -121,15 +128,15 @@ protocols.forEach((protocol: TestProtocolSpec) => {
         })
       })
 
-      it('getTransactionDetailsFromRaw - Is able to extract all necessary properties form a TX', async function() {
+      it('getTransactionDetailsFromSigned - Is able to extract all necessary properties form a TX', async function() {
         protocol.txs.forEach(tx => {
-          const airgapTx: IAirGapTransaction = protocol.lib.getTransactionDetailsFromRaw(
-            {
-              publicKey: protocol.wallet.publicKey,
-              transaction: tx.unsignedTx
-            },
-            JSON.parse(JSON.stringify(tx.signedTx))
-          )
+          const airgapTx: IAirGapTransaction = protocol.lib.getTransactionDetailsFromSigned({
+            publicKey: protocol.wallet.publicKey,
+            from: protocol.wallet.addresses,
+            amount: protocol.wallet.tx.amount,
+            fee: protocol.wallet.tx.fee,
+            transaction: tx.signedTx
+          })
 
           expect(airgapTx.to.map(obj => obj.toLowerCase())).to.deep.equal(protocol.wallet.addresses.map(obj => obj.toLowerCase()))
           expect(airgapTx.from.map(obj => obj.toLowerCase())).to.deep.equal(protocol.wallet.addresses.map(obj => obj.toLowerCase()))

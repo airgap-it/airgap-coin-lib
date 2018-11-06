@@ -1,6 +1,6 @@
 import { ICoinProtocol } from './ICoinProtocol'
 import BigNumber from 'bignumber.js'
-import { IAirGapTransaction } from '..'
+import { IAirGapTransaction, SignedTransaction } from '..'
 
 import * as nacl from 'tweetnacl'
 import { generateHDWallet, getHDWalletAccounts } from '@aeternity/hd-wallet'
@@ -109,8 +109,8 @@ export class AEProtocol implements ICoinProtocol {
     return airgapTx
   }
 
-  getTransactionDetailsFromRaw(unsignedTx: UnsignedTransaction, rawTx: any): IAirGapTransaction {
-    const rlpEncodedTx = bs58check.decode(rawTx.replace('tx_', ''), 'hex')
+  getTransactionDetailsFromSigned(signedTx: SignedTransaction): IAirGapTransaction {
+    const rlpEncodedTx = bs58check.decode(signedTx.transaction.replace('tx_', ''), 'hex')
     const rlpDecodedTx = rlp.decode(rlpEncodedTx)
 
     return this.getTransactionDetails({ transaction: 'tx_' + bs58check.encode(rlpDecodedTx[3]).toString('hex') } as any) // TODO Introduce UnsignedAeternityTransaction

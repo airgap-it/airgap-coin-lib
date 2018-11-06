@@ -1,12 +1,13 @@
 import BigNumber from 'bignumber.js'
 import { AEProtocol } from '../../../lib'
 import { AEProtocolStub } from '../stubs/ae.stub'
+import { TestProtocolSpec } from '../implementations'
 
-const aeProtocol = {
-  name: 'Aeternity',
-  lib: new AEProtocol(),
-  stub: new AEProtocolStub(),
-  wallet: {
+export class AETestProtocolSpec extends TestProtocolSpec {
+  name = 'Aeternity'
+  lib = new AEProtocol()
+  stub = new AEProtocolStub()
+  wallet = {
     privateKey:
       '7c9a774cf8855c0a89a00df3312cb1a3fb47d47829d3c92840e6a31b21434fa72d451a8abe91b3990b958097587de30216ceeb0e08102a4fe77c6ecb1cf9b42a',
     publicKey: '2d451a8abe91b3990b958097587de30216ceeb0e08102a4fe77c6ecb1cf9b42a',
@@ -15,8 +16,8 @@ const aeProtocol = {
       amount: new BigNumber('10'),
       fee: new BigNumber('1')
     }
-  },
-  txs: [
+  }
+  txs = [
     {
       /*
         HEX of Unsigned TX includes:
@@ -33,5 +34,3 @@ const aeProtocol = {
     }
   ]
 }
-
-export { aeProtocol }
