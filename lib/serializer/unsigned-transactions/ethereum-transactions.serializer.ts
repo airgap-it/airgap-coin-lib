@@ -51,7 +51,7 @@ export class EthereumUnsignedTransactionSerializer extends UnsignedTransactionSe
         gasLimit: serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION][2].toString(),
         to: serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION][3].toString(),
         value: serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION][4].toString(),
-        chainId: parseInt(serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION][5].toString(), 2),
+        chainId: parseInt(serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION][5].toString(), 10),
         data: serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION][6].toString()
       },
       callback: serializedTx[SyncProtocolUnsignedTransactionKeys.CALLBACK].toString()

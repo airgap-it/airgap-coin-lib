@@ -14,11 +14,12 @@ export class WalletSerializer {
   }
 
   public deserialize(serializedWalletRequest: SerializedSyncProtocolWalletSync): SyncWalletRequest {
-    return {
+    const syncWalletRequest: SyncWalletRequest = {
       publicKey: serializedWalletRequest[SyncProtocolWalletSync.PUBLIC_KEY].toString(),
       derivationPath: serializedWalletRequest[SyncProtocolWalletSync.DERIVATION_PATH].toString(),
-      isExtendedPublicKey: serializedWalletRequest[SyncProtocolWalletSync.IS_EXTENDED_PUBLIC_KEY].toString() === '0' ? true : false
+      isExtendedPublicKey: serializedWalletRequest[SyncProtocolWalletSync.IS_EXTENDED_PUBLIC_KEY].toString() === '0' ? false : true
     }
+    return syncWalletRequest
   }
 }
 

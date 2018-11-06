@@ -59,7 +59,7 @@ export class BitcoinUnsignedTransactionSerializer extends UnsignedTransactionSer
           const input: IInTransaction = {
             txId: val[0].toString(),
             value: new BigNumber(val[1].toString()),
-            vout: parseInt(val[2].toString(), 2),
+            vout: parseInt(val[2].toString(), 10),
             address: val[3].toString(),
             derivationPath: val[4].toString()
           }

@@ -14,9 +14,9 @@ export enum SyncProtocolKeys {
 }
 
 export enum EncodedType {
-  UNSIGNED_TRANSACTION = 0,
-  SIGNED_TRANSACTION = 1,
-  WALLET_SYNC = 2
+  UNSIGNED_TRANSACTION,
+  SIGNED_TRANSACTION,
+  WALLET_SYNC
 }
 
 export type SerializedSyncProtocolPayload =
@@ -69,8 +69,8 @@ export class SyncProtocolUtils {
     const base58Decoded = bs58check.decode(serializedSyncProtocol)
     const rlpDecodedTx: SerializedSyncProtocol = (rlp.decode(base58Decoded as any) as {}) as SerializedSyncProtocol
 
-    const version = parseInt(rlpDecodedTx[SyncProtocolKeys.VERSION].toString(), 2)
-    const type = parseInt(rlpDecodedTx[SyncProtocolKeys.TYPE].toString(), 2)
+    const version = parseInt(rlpDecodedTx[SyncProtocolKeys.VERSION].toString(), 10)
+    const type = parseInt(rlpDecodedTx[SyncProtocolKeys.TYPE].toString(), 10)
     const protocol = rlpDecodedTx[SyncProtocolKeys.PROTOCOL].toString()
     const payload = rlpDecodedTx[SyncProtocolKeys.PAYLOAD]
 
