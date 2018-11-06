@@ -7,7 +7,7 @@ import { generateHDWallet, getHDWalletAccounts } from '@aeternity/hd-wallet'
 import axios from 'axios'
 import * as rlp from 'rlp'
 import * as bs58check from 'bs58check'
-import { UnsignedTransaction } from '../serializer/transactions.serializer'
+import { UnsignedTransaction } from '../serializer/unsigned-transaction.serializer'
 
 export class AEProtocol implements ICoinProtocol {
   symbol = 'AE'
