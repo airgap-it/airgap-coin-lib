@@ -17,7 +17,7 @@ import { IAirGapTransaction } from './interfaces/IAirGapTransaction'
 import { ICoinProtocol } from './protocols/ICoinProtocol'
 import { SyncProtocolUtils, DeserializedSyncProtocol, EncodedType } from './serializer/serializer'
 import { SyncWalletRequest } from './serializer/wallet-sync.serializer'
-import { UnsignedTransaction } from './serializer/transactions.serializer'
+import { UnsignedTransaction } from './serializer/unsigned-transaction.serializer'
 
 const supportedProtocols = function(): ICoinProtocol[] {
   return [new BitcoinProtocol(), new EthereumProtocol(), new AETokenProtocol()]
