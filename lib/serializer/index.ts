@@ -6,10 +6,7 @@ import { EthereumSignedTransactionSerializer } from './signed-transactions/ether
 import { SignedTransactionSerializer } from './signed-transaction.serializer'
 import { AeternitySignedTransactionSerializer } from './signed-transactions/aeternity-transactions.serializer'
 import { AeternityUnsignedTransactionSerializer } from './unsigned-transactions/aeternity-transactions.serializer'
-
-const protocolVersion = 1
-
-export { protocolVersion }
+import { ProtocolNotSupported } from './errors'
 
 export function unsignedTransactionSerializerByProtocolIdentifier(protocolIdentifier: string): UnsignedTransactionSerializer {
   const implementedSerializers = {
@@ -21,7 +18,7 @@ export function unsignedTransactionSerializerByProtocolIdentifier(protocolIdenti
   const protocol = Object.keys(implementedSerializers).find(protocol => protocol.startsWith(protocolIdentifier))
 
   if (!protocol) {
-    throw Error('no compatible protocol registered.')
+    throw new ProtocolNotSupported()
   }
 
   return new implementedSerializers[protocol]()
@@ -37,7 +34,7 @@ export function signedTransactionSerializerByProtocolIdentifier(protocolIdentifi
   const protocol = Object.keys(implementedSerializers).find(protocol => protocol.startsWith(protocolIdentifier))
 
   if (!protocol) {
-    throw Error('no compatible protocol registered.')
+    throw new ProtocolNotSupported()
   }
 
   return new implementedSerializers[protocol]()
