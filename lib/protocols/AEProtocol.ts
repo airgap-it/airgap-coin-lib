@@ -1,7 +1,6 @@
 import { ICoinProtocol } from './ICoinProtocol'
 import BigNumber from 'bignumber.js'
 import { IAirGapTransaction, SignedTransaction } from '..'
-
 import * as nacl from 'tweetnacl'
 import { generateHDWallet, getHDWalletAccounts } from '@aeternity/hd-wallet'
 import axios from 'axios'
@@ -34,6 +33,9 @@ export class AEProtocol implements ICoinProtocol {
   supportsHD = false
   standardDerivationPath = `m/44h/457h`
   addressValidationPattern = '^ak_+[1-9A-Za-z][^OIl]{48}$'
+
+  // ae specifics
+  defaultNetworkId = 'ae_mainnet'
 
   constructor(public epochRPC = 'https://sdk-edgenet.aepps.com') {}
   /**
@@ -75,7 +77,7 @@ export class AEProtocol implements ICoinProtocol {
   signWithPrivateKey(privateKey: Buffer, transaction: any): Promise<string> {
     // sign and cut off first byte ('ae')
     const rawTx = bs58check.decode(transaction.slice(3))
-    const signature = nacl.sign.detached(rawTx, privateKey)
+    const signature = nacl.sign.detached(Buffer.concat([Buffer.from(this.defaultNetworkId), rawTx]), privateKey)
 
     const txObj = {
       tag: this.toHexBuffer(11),
@@ -136,7 +138,6 @@ export class AEProtocol implements ICoinProtocol {
 
   async prepareTransactionFromPublicKey(publicKey: string, recipients: string[], values: BigNumber[], fee: BigNumber): Promise<any> {
     const { data: accountResponse } = await axios.get(`${this.epochRPC}/v2/accounts/${this.getAddressFromPublicKey(publicKey)}`)
-    // const { data: blocksResponse } = await axios.get(`${this.epochRPC}/v2/blocks/top`)
 
     const sender = publicKey
     const recipient = bs58check.decode(recipients[0].replace('ak_', ''))

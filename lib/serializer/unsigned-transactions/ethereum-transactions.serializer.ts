@@ -38,7 +38,6 @@ export class EthereumUnsignedTransactionSerializer extends UnsignedTransactionSe
       transaction.callback ? transaction.callback : 'airgap-vault://?d=' // callback-scheme
     ])
 
-    // as any is necessary due to https://github.com/ethereumjs/rlp/issues/35
     return serializedTx
   }
 

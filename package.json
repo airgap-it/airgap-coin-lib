@@ -14,7 +14,7 @@
   },
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
-    "@aeternity/hd-wallet": "github:aeternity/hd-wallet-js",
+    "@aeternity/hd-wallet": "github:aeternity/hd-wallet-js#39d914cdcbf14649a3d4c64720e784b2e2598fc1",
     "abi-decoder": "github:laurentjacob/abi-decoder#a4b60b35d12af863026d6d723bec73b172c4e5b7",
     "axios": "^0.18.0",
     "bignumber.js": "^7.0.1",
