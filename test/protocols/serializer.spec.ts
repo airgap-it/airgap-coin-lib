@@ -15,21 +15,25 @@ protocols.forEach((protocol: TestProtocolSpec) => {
 
   describe(`Serialization Protocol for ${protocol.name}`, () => {
     it(`should be able to serialize an transaction to a airgap protocol string`, async () => {
-      const serializedTx = await syncProtocol.serialize(protocol.unsignedTransaction(protocol.txs[0]))
-      const deserializedTx = await syncProtocol.deserialize(serializedTx)
+      for (let tx of protocol.txs) {
+        const serializedTx = await syncProtocol.serialize(protocol.unsignedTransaction(tx))
+        const deserializedTx = await syncProtocol.deserialize(serializedTx)
 
-      expect(protocol.unsignedTransaction(protocol.txs[0])).to.deep.include(deserializedTx)
+        expect(protocol.unsignedTransaction(tx)).to.deep.include(deserializedTx)
+      }
     })
 
     it(`should be able to properly extract amount/fee using getTransactionDetails in combination with the coin-lib`, async () => {
-      const serializedTx = await syncProtocol.serialize(protocol.unsignedTransaction(protocol.txs[0]))
-      const deserializedTx = await syncProtocol.deserialize(serializedTx)
+      for (let tx of protocol.txs) {
+        const serializedTx = await syncProtocol.serialize(protocol.unsignedTransaction(tx))
+        const deserializedTx = await syncProtocol.deserialize(serializedTx)
 
-      const airGapTx = protocol.lib.getTransactionDetails(deserializedTx.payload as UnsignedTransaction)
+        const airGapTx = protocol.lib.getTransactionDetails(deserializedTx.payload as UnsignedTransaction)
 
-      expect(airGapTx.from).to.deep.equal(protocol.wallet.addresses)
-      expect(airGapTx.amount).to.deep.equal(protocol.wallet.tx.amount)
-      expect(airGapTx.fee).to.deep.equal(protocol.wallet.tx.fee)
+        expect(airGapTx.from).to.deep.equal(protocol.wallet.addresses)
+        expect(airGapTx.amount).to.deep.equal(protocol.wallet.tx.amount)
+        expect(airGapTx.fee).to.deep.equal(protocol.wallet.tx.fee)
+      }
     })
 
     it(`should be able to properly extract amount/fee using from signedTx in combination with the coin-lib`, async () => {
@@ -39,28 +43,34 @@ protocols.forEach((protocol: TestProtocolSpec) => {
         return
       }
 
-      const serializedTx = await syncProtocol.serialize(protocol.signedTransaction(protocol.txs[0]))
-      const deserializedTx = await syncProtocol.deserialize(serializedTx)
+      for (let tx of protocol.txs) {
+        const serializedTx = await syncProtocol.serialize(protocol.signedTransaction(tx))
+        const deserializedTx = await syncProtocol.deserialize(serializedTx)
 
-      const airGapTx = protocol.lib.getTransactionDetailsFromSigned(deserializedTx.payload as SignedTransaction)
+        const airGapTx = protocol.lib.getTransactionDetailsFromSigned(deserializedTx.payload as SignedTransaction)
 
-      expect(airGapTx.from).to.deep.equal(protocol.wallet.addresses)
-      expect(airGapTx.amount).to.deep.equal(protocol.wallet.tx.amount)
-      expect(airGapTx.fee).to.deep.equal(protocol.wallet.tx.fee)
+        expect(airGapTx.from).to.deep.equal(protocol.wallet.addresses)
+        expect(airGapTx.amount).to.deep.equal(protocol.wallet.tx.amount)
+        expect(airGapTx.fee).to.deep.equal(protocol.wallet.tx.fee)
+      }
     })
 
     it(`should be able to serialize and deserialize a sync-wallet request`, async () => {
-      const serializedWalletRequest = await syncProtocol.serialize(protocol.signedTransaction(protocol.txs[0]))
-      const deserializedWalletRequest = await syncProtocol.deserialize(serializedWalletRequest)
+      for (let tx of protocol.txs) {
+        const serializedWalletRequest = await syncProtocol.serialize(protocol.signedTransaction(tx))
+        const deserializedWalletRequest = await syncProtocol.deserialize(serializedWalletRequest)
 
-      expect(protocol.signedTransaction(protocol.txs[0])).to.deep.include(deserializedWalletRequest)
+        expect(protocol.signedTransaction(tx)).to.deep.include(deserializedWalletRequest)
+      }
     })
 
     it(`should be able to serialize and deserialize a signed-tx request`, async () => {
-      const serializedSignedTx = await syncProtocol.serialize(protocol.signedTransaction(protocol.txs[0]))
-      const deserializedTx = await syncProtocol.deserialize(serializedSignedTx)
+      for (let tx of protocol.txs) {
+        const serializedSignedTx = await syncProtocol.serialize(protocol.signedTransaction(tx))
+        const deserializedTx = await syncProtocol.deserialize(serializedSignedTx)
 
-      expect(protocol.signedTransaction(protocol.txs[0])).to.deep.include(deserializedTx)
+        expect(protocol.signedTransaction(tx)).to.deep.include(deserializedTx)
+      }
     })
   })
 })
