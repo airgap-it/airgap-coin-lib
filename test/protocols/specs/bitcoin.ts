@@ -52,24 +52,6 @@ export class BitcoinTestProtocolSpec extends TestProtocolSpec {
       },
       signedTx:
         'f86c808504a817c800825208944a1e1d37462a422873bfccb1e705b05cc4bd922e880de0b6b3a76400008026a00678aaa8f8fd478952bf46044589f5489e809c5ae5717dfe6893490b1f98b441a06a82b82dad7c3232968ec3aa2bba32879b3ecdb877934915d7e65e095fe53d5d'
-    },
-    {
-      unsignedTx: {
-        ins: [
-          {
-            txId: '8e5fdee34907d25b16041c9caf1771f77359314ffa966cb348aaaabcce755aa3',
-            value: new BigNumber('10000'),
-            vout: 0,
-            address: '1JQkRgFPe52LpC9RvakKtxgwpBumeUWj4m',
-            derivationPath: '0/0'
-          }
-        ],
-        outs: [
-          { recipient: '1JQkRgFPe52LpC9RvakKtxgwpBumeUWj4m', isChange: false, value: new BigNumber('1000') },
-          { recipient: '1H9JQCWnpYJZknaMqt215eR8m7wem9pbfY', isChange: true, value: new BigNumber('7000') }
-        ]
-      },
-      signedTx: ''
     }
   ]
 

@@ -28,7 +28,11 @@ export class AETestProtocolSpec extends TestProtocolSpec {
         ttl: 60,
         payload: ''
       */
-      unsignedTx: 'tx_51fEeKes4anDaKtLCXfJBhhQZS51o6YzfuypLsz2gkcqkzM9h6J9zBgcCt7HtUfWKNh2u85wgzP2HaL48KqznLNma4jKcjYu6QPAzggtEups6HPdf2',
+      unsignedTx: {
+        transaction:
+          'tx_51fEeKes4anDaKtLCXfJBhhQZS51o6YzfuypLsz2gkcqkzM9h6J9zBgcCt7HtUfWKNh2u85wgzP2HaL48KqznLNma4jKcjYu6QPAzggtEups6HPdf2',
+        networkId: 'ae_mainnet'
+      },
       signedTx:
         'tx_66dpehQZhw1ptmWdjiWXB1u1Yo7JdEEXshXVkWXYk25ve9bJ2cd7oKVV3qwv3sQoXWnLsEa9yLRo8aK9YZxv86eEHQTqjuAYFYSMgT69aUrgwduHp7uc7Lu7x7VPgpaDbWLzKB3vGm42QDHCwEnw2C3CHADbTK9W5mKeqHHrkwjWLPN8RbvyjMz1TBSS1KQV2ZTgF6CW8qt7pVLA4ALFeBf'
     }

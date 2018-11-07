@@ -11,25 +11,6 @@ import { UnsignedTransaction } from '../serializer/unsigned-transaction.serializ
 import { RawBitcoinTransaction } from '../serializer/unsigned-transactions/bitcoin-transactions.serializer'
 import { SignedBitcoinTransaction } from '../serializer/signed-transactions/bitcoin-transactions.serializer'
 
-interface IInTransaction {
-  txId: string
-  value: BigNumber
-  vout: string
-  address: string
-  derivationPath?: string
-}
-
-interface IOutTransaction {
-  recipient: string
-  isChange: boolean
-  value: BigNumber
-}
-
-interface IInOutTransaction {
-  ins: IInTransaction[]
-  outs: IOutTransaction[]
-}
-
 export class BitcoinProtocol implements ICoinProtocol {
   symbol = 'BTC'
   name = 'Bitcoin'
@@ -268,8 +249,8 @@ export class BitcoinProtocol implements ICoinProtocol {
     recipients: string[],
     values: BigNumber[],
     fee: BigNumber
-  ): Promise<any> {
-    const transaction: IInOutTransaction = {
+  ): Promise<RawBitcoinTransaction> {
+    const transaction: RawBitcoinTransaction = {
       ins: [],
       outs: []
     }
@@ -345,11 +326,10 @@ export class BitcoinProtocol implements ICoinProtocol {
               .get(this.baseApiUrl + '/api/addrs/' + internalAddresses.join(',') + '/txs?from=0&to=1', { responseType: 'json' })
               .then(response => {
                 const transactions = response.data
-                if (transactions.items.length > 0) {
-                  return this.prepareTransactionFromExtendedPublicKey(extendedPublicKey, offset + 10, recipients, values, fee) // recursion needed to navigate through HD wallet
-                } else {
-                  reject('not enough balance') // no transactions found on those addresses, probably won't find anything in the next ones
+                if (transactions.items.length <= 0) {
+                  return reject('not enough balance') // no transactions found on those addresses, probably won't find anything in the next ones
                 }
+                resolve(this.prepareTransactionFromExtendedPublicKey(extendedPublicKey, offset + 10, recipients, values, fee)) // recursion needed to navigate through HD wallet
               })
               .catch(reject)
           }
@@ -358,8 +338,13 @@ export class BitcoinProtocol implements ICoinProtocol {
     })
   }
 
-  prepareTransactionFromPublicKey(publicKey: string, recipients: string[], values: BigNumber[], fee: BigNumber): Promise<any> {
-    const transaction: IInOutTransaction = {
+  prepareTransactionFromPublicKey(
+    publicKey: string,
+    recipients: string[],
+    values: BigNumber[],
+    fee: BigNumber
+  ): Promise<RawBitcoinTransaction> {
+    const transaction: RawBitcoinTransaction = {
       ins: [],
       outs: []
     }

@@ -9,7 +9,6 @@ import { EthereumTestProtocolSpec } from './specs/ethereum'
 import { EthereumRopstenTestProtocolSpec } from './specs/ethereum-ropsten'
 import { EthereumClassicTestProtocolSpec } from './specs/ethereum-classic'
 import { ERC20HOPTokenTestProtocolSpec } from './specs/erc20-hop-token'
-import { BitcoinTestProtocolSpec } from './specs/bitcoin'
 
 /**
  * We currently test the following ICoinProtocol methods

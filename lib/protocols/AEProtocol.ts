@@ -2,11 +2,16 @@ import { ICoinProtocol } from './ICoinProtocol'
 import BigNumber from 'bignumber.js'
 import { IAirGapTransaction, SignedTransaction } from '..'
 import * as nacl from 'tweetnacl'
-import { generateHDWallet, getHDWalletAccounts } from '@aeternity/hd-wallet'
+import { generateWalletUsingDerivationPath } from '@aeternity/hd-wallet'
 import axios from 'axios'
 import * as rlp from 'rlp'
 import * as bs58check from 'bs58check'
 import { UnsignedTransaction } from '../serializer/unsigned-transaction.serializer'
+import {
+  RawAeternityTransaction,
+  UnsignedAeternityTransaction
+} from '../serializer/unsigned-transactions/aeternity-transactions.serializer'
+import { SignedAeternityTransaction } from '../serializer/signed-transactions/aeternity-transactions.serializer'
 
 export class AEProtocol implements ICoinProtocol {
   symbol = 'AE'
@@ -31,7 +36,7 @@ export class AEProtocol implements ICoinProtocol {
   ]
 
   supportsHD = false
-  standardDerivationPath = `m/44h/457h`
+  standardDerivationPath = `m/44h/457h/0h/0h/0h`
   addressValidationPattern = '^ak_+[1-9A-Za-z][^OIl]{48}$'
 
   // ae specifics
@@ -44,7 +49,7 @@ export class AEProtocol implements ICoinProtocol {
    * @param derivationPath DerivationPath for Key
    */
   getPublicKeyFromHexSecret(secret: string, derivationPath: string): string {
-    const { publicKey } = getHDWalletAccounts(generateHDWallet(secret), 1)[0]
+    const { publicKey } = generateWalletUsingDerivationPath(Buffer.from(secret, 'hex'), derivationPath)
     return Buffer.from(publicKey).toString('hex')
   }
 
@@ -54,7 +59,7 @@ export class AEProtocol implements ICoinProtocol {
    * @param derivationPath DerivationPath for Key
    */
   getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Buffer {
-    const { secretKey } = getHDWalletAccounts(generateHDWallet(secret), 1)[0]
+    const { secretKey } = generateWalletUsingDerivationPath(Buffer.from(secret, 'hex'), derivationPath)
     return Buffer.from(secretKey)
   }
 
@@ -74,10 +79,10 @@ export class AEProtocol implements ICoinProtocol {
     return Promise.resolve([{} as IAirGapTransaction])
   }
 
-  signWithPrivateKey(privateKey: Buffer, transaction: any): Promise<string> {
+  signWithPrivateKey(privateKey: Buffer, transaction: RawAeternityTransaction): Promise<string> {
     // sign and cut off first byte ('ae')
-    const rawTx = bs58check.decode(transaction.slice(3))
-    const signature = nacl.sign.detached(Buffer.concat([Buffer.from(this.defaultNetworkId), rawTx]), privateKey)
+    const rawTx = bs58check.decode(transaction.transaction.slice(3))
+    const signature = nacl.sign.detached(Buffer.concat([Buffer.from(transaction.networkId), rawTx]), privateKey)
 
     const txObj = {
       tag: this.toHexBuffer(11),
@@ -94,8 +99,8 @@ export class AEProtocol implements ICoinProtocol {
     return Promise.resolve(signedEncodedTx)
   }
 
-  getTransactionDetails(unsignedTx: UnsignedTransaction): IAirGapTransaction {
-    const transaction = unsignedTx.transaction as any // TODO Introduce UnsignedAeternityTransaction
+  getTransactionDetails(unsignedTx: UnsignedAeternityTransaction): IAirGapTransaction {
+    const transaction = unsignedTx.transaction.transaction
     const rlpEncodedTx = bs58check.decode(transaction.replace('tx_', ''), 'hex')
     const rlpDecodedTx = rlp.decode(rlpEncodedTx)
 
@@ -111,11 +116,20 @@ export class AEProtocol implements ICoinProtocol {
     return airgapTx
   }
 
-  getTransactionDetailsFromSigned(signedTx: SignedTransaction): IAirGapTransaction {
+  getTransactionDetailsFromSigned(signedTx: SignedAeternityTransaction): IAirGapTransaction {
     const rlpEncodedTx = bs58check.decode(signedTx.transaction.replace('tx_', ''), 'hex')
     const rlpDecodedTx = rlp.decode(rlpEncodedTx)
 
-    return this.getTransactionDetails({ transaction: 'tx_' + bs58check.encode(rlpDecodedTx[3]).toString('hex') } as any) // TODO Introduce UnsignedAeternityTransaction
+    const unsignedAeternityTransaction: UnsignedAeternityTransaction = {
+      publicKey: '',
+      callback: '',
+      transaction: {
+        networkId: 'ae_mainnet',
+        transaction: 'tx_' + bs58check.encode(rlpDecodedTx[3]).toString('hex')
+      }
+    }
+
+    return this.getTransactionDetails(unsignedAeternityTransaction)
   }
 
   async getBalanceOfAddresses(addresses: string[]): Promise<BigNumber> {
@@ -123,8 +137,17 @@ export class AEProtocol implements ICoinProtocol {
 
     await Promise.all(
       addresses.map(async address => {
-        const { data } = await axios.get(`${this.epochRPC}/v2/accounts/${address}`)
-        balance.plus(new BigNumber(data.balance))
+        try {
+          const { data } = await axios.get(`${this.epochRPC}/v2/accounts/${address}`)
+          balance.plus(new BigNumber(data.balance))
+        } catch (error) {
+          // if node returns 404 (which means 'no account found'), go with 0 balance
+          if (error.response.status === 404) {
+            return
+          }
+
+          throw error
+        }
       })
     )
 
@@ -136,7 +159,12 @@ export class AEProtocol implements ICoinProtocol {
     return this.getBalanceOfAddresses([address])
   }
 
-  async prepareTransactionFromPublicKey(publicKey: string, recipients: string[], values: BigNumber[], fee: BigNumber): Promise<any> {
+  async prepareTransactionFromPublicKey(
+    publicKey: string,
+    recipients: string[],
+    values: BigNumber[],
+    fee: BigNumber
+  ): Promise<RawAeternityTransaction> {
     const { data: accountResponse } = await axios.get(`${this.epochRPC}/v2/accounts/${this.getAddressFromPublicKey(publicKey)}`)
 
     const sender = publicKey
@@ -158,7 +186,10 @@ export class AEProtocol implements ICoinProtocol {
     const rlpEncodedTx = rlp.encode(txArray)
     const preparedTx = 'tx_' + bs58check.encode(rlpEncodedTx)
 
-    return preparedTx
+    return {
+      transaction: preparedTx,
+      networkId: this.defaultNetworkId
+    }
   }
 
   async broadcastTransaction(rawTransaction: string): Promise<any> {
@@ -206,7 +237,7 @@ export class AEProtocol implements ICoinProtocol {
     recipients: string[],
     values: BigNumber[],
     fee: BigNumber
-  ): Promise<any> {
+  ): Promise<RawAeternityTransaction> {
     return Promise.reject('extended public tx for aeternity not implemented')
   }
 }
