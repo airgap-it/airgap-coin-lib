@@ -6,8 +6,9 @@ import { SyncProtocolUtils } from '../../lib/serializer/serializer'
 import { SignedTransaction, UnsignedTransaction } from '../../lib'
 import { EthereumTestProtocolSpec } from './specs/ethereum'
 import { BitcoinTestProtocolSpec } from './specs/bitcoin'
+import { AETestProtocolSpec } from './specs/ae'
 
-const protocols = [new EthereumTestProtocolSpec(), new BitcoinTestProtocolSpec()]
+const protocols = [new EthereumTestProtocolSpec(), new BitcoinTestProtocolSpec(), new AETestProtocolSpec()]
 
 protocols.forEach((protocol: TestProtocolSpec) => {
   const syncProtocol = new SyncProtocolUtils()

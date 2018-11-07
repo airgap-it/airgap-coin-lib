@@ -1,5 +1,6 @@
 import { SerializedUnsignedEthereumTransaction, RawEthereumTransaction } from './unsigned-transactions/ethereum-transactions.serializer'
 import { RawBitcoinTransaction, SerializedUnsignedBitcoinTransaction } from './unsigned-transactions/bitcoin-transactions.serializer'
+import { RawAeternityTransaction } from './unsigned-transactions/aeternity-transactions.serializer'
 
 export abstract class UnsignedTransactionSerializer {
   public abstract serialize(unsignedTx: UnsignedTransaction): SerializedSyncProtocolTransaction
@@ -7,7 +8,7 @@ export abstract class UnsignedTransactionSerializer {
 }
 
 export interface UnsignedTransaction {
-  transaction: RawEthereumTransaction | RawBitcoinTransaction
+  transaction: RawEthereumTransaction | RawBitcoinTransaction | RawAeternityTransaction
   publicKey: string
   callback?: string
 }

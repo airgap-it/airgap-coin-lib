@@ -44,7 +44,6 @@ export class BitcoinUnsignedTransactionSerializer extends UnsignedTransactionSer
     ]
     const serializedTx: SerializedSyncProtocolTransaction = toBuffer(toSerialize)
 
-    // as any is necessary due to https://github.com/ethereumjs/rlp/issues/35
     return serializedTx
   }
 

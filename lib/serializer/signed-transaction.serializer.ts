@@ -1,6 +1,7 @@
 import { SerializedSignedEthereumTransaction } from './signed-transactions/ethereum-transactions.serializer'
 import { SerializedSignedBitcoinTransaction } from './signed-transactions/bitcoin-transactions.serializer'
 import BigNumber from 'bignumber.js'
+import { SerializedSignedAeternityTransaction } from './signed-transactions/aeternity-transactions.serializer'
 
 export abstract class SignedTransactionSerializer {
   public abstract serialize(unsignedTx: SignedTransaction): SerializedSyncProtocolSignedTransaction
@@ -15,7 +16,10 @@ export interface SignedTransaction {
   fee?: BigNumber
 }
 
-export type SerializedSignedTransaction = SerializedSignedEthereumTransaction | SerializedSignedBitcoinTransaction
+export type SerializedSignedTransaction =
+  | SerializedSignedEthereumTransaction
+  | SerializedSignedBitcoinTransaction
+  | SerializedSignedAeternityTransaction
 
 export enum SyncProtocolSignedTransactionKeys {
   SIGNED_TRANSACTION,
