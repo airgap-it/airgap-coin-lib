@@ -19,6 +19,7 @@ import { SyncProtocolUtils, DeserializedSyncProtocol, EncodedType } from './seri
 import { SyncWalletRequest } from './serializer/wallet-sync.serializer'
 import { UnsignedTransaction } from './serializer/unsigned-transaction.serializer'
 import { SignedTransaction } from './serializer/signed-transaction.serializer'
+import { TypeNotSupported, SerializerVersionMismatch, ProtocolNotSupported, ProtocolVersionMismatch } from './serializer/errors'
 
 const supportedProtocols = function(): ICoinProtocol[] {
   return [new BitcoinProtocol(), new EthereumProtocol(), new AETokenProtocol(), new AEProtocol()]
@@ -58,5 +59,9 @@ export {
   SyncWalletRequest,
   UnsignedTransaction,
   SignedTransaction,
-  EncodedType
+  EncodedType,
+  TypeNotSupported,
+  SerializerVersionMismatch,
+  ProtocolNotSupported,
+  ProtocolVersionMismatch
 }
