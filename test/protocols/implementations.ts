@@ -1,6 +1,7 @@
 import * as BIP39 from 'bip39'
 import { ICoinProtocol, EncodedType, DeserializedSyncProtocol } from '../../lib'
 import BigNumber from 'bignumber.js'
+import { SERIALIZER_VERSION } from '../../lib/serializer/constants'
 
 const mnemonic = 'spell device they juice trial skirt amazing boat badge steak usage february virus art survey' // this is what the user writes down and what is saved by secure storage?
 const seed = BIP39.mnemonicToSeedHex(mnemonic)
@@ -30,7 +31,7 @@ abstract class TestProtocolSpec {
 
   unsignedTransaction(tx: any): DeserializedSyncProtocol {
     return {
-      version: 1,
+      version: SERIALIZER_VERSION,
       protocol: this.lib.identifier,
       type: EncodedType.UNSIGNED_TRANSACTION,
       payload: {
@@ -43,7 +44,7 @@ abstract class TestProtocolSpec {
 
   signedTransaction(tx: any): DeserializedSyncProtocol {
     return {
-      version: 1,
+      version: SERIALIZER_VERSION,
       protocol: this.lib.identifier,
       type: EncodedType.SIGNED_TRANSACTION,
       payload: {
@@ -55,7 +56,7 @@ abstract class TestProtocolSpec {
 
   syncWallet(): DeserializedSyncProtocol {
     return {
-      version: 1,
+      version: SERIALIZER_VERSION,
       protocol: this.lib.identifier,
       type: EncodedType.WALLET_SYNC,
       payload: {

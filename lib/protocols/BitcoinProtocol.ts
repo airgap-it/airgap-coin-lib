@@ -13,7 +13,7 @@ import { SignedBitcoinTransaction } from '../serializer/signed-transactions/bitc
 
 interface IInTransaction {
   txId: string
-  value: number
+  value: BigNumber
   vout: string
   address: string
   derivationPath?: string
@@ -22,7 +22,7 @@ interface IInTransaction {
 interface IOutTransaction {
   recipient: string
   isChange: boolean
-  value: number | BigNumber
+  value: BigNumber
 }
 
 interface IInOutTransaction {
@@ -124,7 +124,7 @@ export class BitcoinProtocol implements ICoinProtocol {
       }
 
       for (let output of transaction.outs) {
-        transactionBuilder.addOutput(output.recipient, output.value.toString())
+        transactionBuilder.addOutput(output.recipient, output.value.toNumber())
       }
 
       for (let i = 0; i < transaction.ins.length; i++) {
@@ -210,7 +210,7 @@ export class BitcoinProtocol implements ICoinProtocol {
           const utxos = response.data
           let valueAccumulator = new BigNumber(0)
           for (let utxo of utxos) {
-            valueAccumulator = valueAccumulator.plus(utxo.satoshis)
+            valueAccumulator = valueAccumulator.plus(new BigNumber(utxo.satoshis))
           }
           resolve(valueAccumulator)
         })
@@ -292,11 +292,11 @@ export class BitcoinProtocol implements ICoinProtocol {
           const totalRequiredBalance = values.reduce((accumulator, currentValue) => accumulator.plus(currentValue)).plus(fee)
           let valueAccumulator = new BigNumber(0)
           for (let utxo of utxos) {
-            valueAccumulator = valueAccumulator.plus(utxo.satoshis)
+            valueAccumulator = valueAccumulator.plus(new BigNumber(utxo.satoshis))
             if (derivedAddresses.indexOf(utxo.address) >= 0) {
               transaction.ins.push({
                 txId: utxo.txid,
-                value: utxo.satoshis,
+                value: new BigNumber(utxo.satoshis),
                 vout: utxo.vout,
                 address: utxo.address,
                 derivationPath:
@@ -375,11 +375,11 @@ export class BitcoinProtocol implements ICoinProtocol {
           const totalRequiredBalance = values.reduce((accumulator, currentValue) => accumulator.plus(currentValue)).plus(fee)
           let valueAccumulator = new BigNumber(0)
           for (let utxo of utxos) {
-            valueAccumulator = valueAccumulator.plus(utxo.satoshis)
+            valueAccumulator = valueAccumulator.plus(new BigNumber(utxo.satoshis))
             if (address === utxo.address) {
               transaction.ins.push({
                 txId: utxo.txid,
-                value: utxo.satoshis,
+                value: new BigNumber(utxo.satoshis),
                 vout: utxo.vout,
                 address: utxo.address
               })
@@ -403,7 +403,7 @@ export class BitcoinProtocol implements ICoinProtocol {
               })
               resolve(transaction)
             } else {
-              reject('not enough balance')
+              reject(`Not enough Balance, having ${valueAccumulator.toString()} of ${totalRequiredBalance.toString()}`)
             }
           }
         })
