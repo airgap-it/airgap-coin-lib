@@ -22,7 +22,7 @@ export class AeternityUnsignedTransactionSerializer extends UnsignedTransactionS
     const serializedTx: SerializedSyncProtocolTransaction = toBuffer([
       [transaction.transaction.networkId, transaction.transaction.transaction],
       transaction.publicKey, // publicKey
-      transaction.callback ? transaction.callback : 'airgap-vault://?d=' // callback-scheme
+      transaction.callback ? transaction.callback : 'airgap-wallet://?d=' // callback-scheme
     ])
 
     return serializedTx
