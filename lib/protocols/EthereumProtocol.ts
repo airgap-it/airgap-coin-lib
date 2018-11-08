@@ -204,9 +204,9 @@ export class EthereumProtocol implements ICoinProtocol {
               const transaction: RawEthereumTransaction = {
                 nonce: this.web3.utils.toHex(txCount),
                 gasLimit: this.web3.utils.toHex(gasLimit),
-                gasPrice: this.web3.utils.toHex(gasPrice.toString()), // 10 Gwei
+                gasPrice: this.web3.utils.toHex(gasPrice.toFixed()), // 10 Gwei
                 to: recipients[0],
-                value: this.web3.utils.toHex(values[0].toString()),
+                value: this.web3.utils.toHex(values[0].toFixed()),
                 chainId: this.chainId,
                 data: '0x'
               }
