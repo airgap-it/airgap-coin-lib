@@ -2,7 +2,6 @@ import { EthereumProtocol } from './EthereumProtocol'
 import axios from 'axios'
 import BigNumber from 'bignumber.js'
 import { IAirGapTransaction } from '../interfaces/IAirGapTransaction'
-import { rejects } from 'assert'
 import * as abiDecoder from 'abi-decoder'
 import { RawEthereumTransaction, UnsignedEthereumTransaction } from '../serializer/unsigned-transactions/ethereum-transactions.serializer'
 import { UnsignedTransaction } from '../serializer/unsigned-transaction.serializer'
@@ -197,7 +196,7 @@ export class GenericERC20 extends EthereumProtocol {
         .then(values => {
           overallResolve([].concat.apply([], values))
         })
-        .catch(rejects)
+        .catch(overallReject)
     })
   }
 
