@@ -2,7 +2,7 @@ import { GenericERC20 } from './GenericERC20'
 
 export class AETokenProtocol extends GenericERC20 {
   symbol = 'AE-ERC20'
-  name = 'Aeternity ERC20'
+  name = 'æternity Ethereum Token'
   identifier = 'eth-erc20-ae'
 
   constructor() {

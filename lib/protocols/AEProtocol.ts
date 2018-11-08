@@ -15,7 +15,7 @@ import * as Web3 from 'web3'
 
 export class AEProtocol implements ICoinProtocol {
   symbol = 'AE'
-  name = 'Aeternity'
+  name = 'æternity'
   feeSymbol = 'ae'
 
   decimals = 18
@@ -135,19 +135,17 @@ export class AEProtocol implements ICoinProtocol {
   async getBalanceOfAddresses(addresses: string[]): Promise<BigNumber> {
     let balance = new BigNumber(0)
 
-    await Promise.all(
-      addresses.map(async address => {
-        try {
-          const { data } = await axios.get(`${this.epochRPC}/v2/accounts/${address}`)
-          balance.plus(new BigNumber(data.balance))
-        } catch (error) {
-          // if node returns 404 (which means 'no account found'), go with 0 balance
-          if (error.response.status !== 404) {
-            throw error
-          }
+    for (let address of addresses) {
+      try {
+        const { data } = await axios.get(`${this.epochRPC}/v2/accounts/${address}`)
+        balance = balance.plus(new BigNumber(data.balance))
+      } catch (error) {
+        // if node returns 404 (which means 'no account found'), go with 0 balance
+        if (error.response.status !== 404) {
+          throw error
         }
-      })
-    )
+      }
+    }
 
     return balance
   }
