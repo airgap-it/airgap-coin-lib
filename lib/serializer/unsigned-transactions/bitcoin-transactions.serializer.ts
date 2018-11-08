@@ -40,7 +40,7 @@ export class BitcoinUnsignedTransactionSerializer extends UnsignedTransactionSer
         [...unsignedTx.transaction.outs.map(output => [output.isChange, output.recipient, output.value])]
       ],
       unsignedTx.publicKey, // publicKey
-      unsignedTx.callback ? unsignedTx.callback : 'airgap-vault://?d=' // callback-scheme
+      unsignedTx.callback ? unsignedTx.callback : 'airgap-wallet://?d=' // callback-scheme
     ]
     const serializedTx: SerializedSyncProtocolTransaction = toBuffer(toSerialize)
 
