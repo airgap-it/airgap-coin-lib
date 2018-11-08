@@ -210,13 +210,8 @@ export class AEProtocol implements ICoinProtocol {
   }
 
   private toHexBuffer(value: number | BigNumber): Buffer {
-    return Buffer.from(
-      Web3.utils
-        .toHex(value)
-        .substr(2)
-        .padStart(2, '0'),
-      'hex'
-    )
+    const hexString = Web3.utils.toHex(value).substr(2)
+    return Buffer.from(hexString.padStart(hexString.length % 2 === 0 ? hexString.length : hexString.length + 1, '0'), 'hex')
   }
 
   // Unsupported Functionality for Aeternity
