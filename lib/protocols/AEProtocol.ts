@@ -142,11 +142,9 @@ export class AEProtocol implements ICoinProtocol {
           balance.plus(new BigNumber(data.balance))
         } catch (error) {
           // if node returns 404 (which means 'no account found'), go with 0 balance
-          if (error.response.status === 404) {
-            return
+          if (error.response.status !== 404) {
+            throw error
           }
-
-          throw error
         }
       })
     )
@@ -165,7 +163,17 @@ export class AEProtocol implements ICoinProtocol {
     values: BigNumber[],
     fee: BigNumber
   ): Promise<RawAeternityTransaction> {
-    const { data: accountResponse } = await axios.get(`${this.epochRPC}/v2/accounts/${this.getAddressFromPublicKey(publicKey)}`)
+    let nonce = 0
+
+    try {
+      const { data: accountResponse } = await axios.get(`${this.epochRPC}/v2/accounts/${this.getAddressFromPublicKey(publicKey)}`)
+      nonce = accountResponse.nonce
+    } catch (error) {
+      // if node returns 404 (which means 'no account found'), go with nonce 0
+      if (error.response.status !== 404) {
+        throw error
+      }
+    }
 
     const sender = publicKey
     const recipient = bs58check.decode(recipients[0].replace('ak_', ''))
@@ -178,7 +186,7 @@ export class AEProtocol implements ICoinProtocol {
       amount: this.toHexBuffer(values[0]),
       fee: this.toHexBuffer(fee),
       ttl: this.toHexBuffer(10000),
-      nonce: this.toHexBuffer(accountResponse.nonce + 1),
+      nonce: this.toHexBuffer(nonce),
       payload: Buffer.from('')
     }
 
