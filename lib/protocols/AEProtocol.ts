@@ -11,6 +11,7 @@ import {
   UnsignedAeternityTransaction
 } from '../serializer/unsigned-transactions/aeternity-transactions.serializer'
 import { SignedAeternityTransaction } from '../serializer/signed-transactions/aeternity-transactions.serializer'
+import * as Web3 from 'web3'
 
 export class AEProtocol implements ICoinProtocol {
   symbol = 'AE'
@@ -209,10 +210,13 @@ export class AEProtocol implements ICoinProtocol {
   }
 
   private toHexBuffer(value: number | BigNumber): Buffer {
-    if (BigNumber.isBigNumber(value)) {
-      return Buffer.from(value.toFixed(16).padStart(2, '0'), 'hex')
-    }
-    return Buffer.from(value.toString(16).padStart(2, '0'), 'hex')
+    return Buffer.from(
+      Web3.utils
+        .toHex(value)
+        .substr(2)
+        .padStart(2, '0'),
+      'hex'
+    )
   }
 
   // Unsupported Functionality for Aeternity
