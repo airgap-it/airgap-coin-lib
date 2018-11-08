@@ -138,7 +138,7 @@ export class AEProtocol implements ICoinProtocol {
     for (let address of addresses) {
       try {
         const { data } = await axios.get(`${this.epochRPC}/v2/accounts/${address}`)
-        balance.plus(new BigNumber(data.balance))
+        balance = balance.plus(new BigNumber(data.balance))
       } catch (error) {
         // if node returns 404 (which means 'no account found'), go with 0 balance
         if (error.response.status !== 404) {
