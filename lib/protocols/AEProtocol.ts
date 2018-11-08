@@ -209,9 +209,6 @@ export class AEProtocol implements ICoinProtocol {
   }
 
   private toHexBuffer(value: number | BigNumber): Buffer {
-    if (BigNumber.isBigNumber(value)) {
-      return Buffer.from(value.toFixed(16).padStart(2, '0'), 'hex')
-    }
     return Buffer.from(value.toString(16).padStart(2, '0'), 'hex')
   }
 
