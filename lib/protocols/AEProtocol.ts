@@ -72,11 +72,11 @@ export class AEProtocol implements ICoinProtocol {
   }
 
   getTransactionsFromPublicKey(publicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]> {
-    return Promise.resolve([{} as IAirGapTransaction])
+    return Promise.resolve([])
   }
 
   getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
-    return Promise.resolve([{} as IAirGapTransaction])
+    return Promise.resolve([])
   }
 
   signWithPrivateKey(privateKey: Buffer, transaction: RawAeternityTransaction): Promise<string> {
