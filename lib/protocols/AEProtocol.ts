@@ -201,7 +201,11 @@ export class AEProtocol implements ICoinProtocol {
   }
 
   async broadcastTransaction(rawTransaction: string): Promise<any> {
-    const { data } = await axios.post(`${this.epochRPC}/v2/transactions`, { tx: rawTransaction })
+    const { data } = await axios.post(
+      `${this.epochRPC}/v2/transactions`,
+      { tx: rawTransaction },
+      { headers: { 'Content-Type': 'application/json' } }
+    )
     return data.tx_hash
   }
 
