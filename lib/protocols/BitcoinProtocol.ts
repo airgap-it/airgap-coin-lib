@@ -96,7 +96,7 @@ export class BitcoinProtocol implements ICoinProtocol {
     )
   }
 
-  signWithPrivateKey(privateKey: Buffer, transaction: any): Promise<string> {
+  signWithPrivateKey(privateKey: Buffer, transaction: RawBitcoinTransaction): Promise<string> {
     return new Promise((resolve, reject) => {
       const transactionBuilder = new this.bitcoinJSLib.TransactionBuilder(this.network)
 
@@ -116,7 +116,7 @@ export class BitcoinProtocol implements ICoinProtocol {
     })
   }
 
-  signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: any): Promise<string> {
+  signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: RawBitcoinTransaction): Promise<string> {
     return new Promise((resolve, reject) => {
       const transactionBuilder = new this.bitcoinJSLib.TransactionBuilder(this.network)
       const node = this.bitcoinJSLib.HDNode.fromBase58(extendedPrivateKey, this.network)
@@ -126,7 +126,7 @@ export class BitcoinProtocol implements ICoinProtocol {
       }
 
       for (let output of transaction.outs) {
-        transactionBuilder.addOutput(output.recipient, output.value)
+        transactionBuilder.addOutput(output.recipient, output.value.toNumber())
       }
 
       for (let i = 0; i < transaction.ins.length; i++) {

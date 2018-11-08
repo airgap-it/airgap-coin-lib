@@ -1,12 +1,11 @@
 import { ICoinProtocol } from './ICoinProtocol'
 import BigNumber from 'bignumber.js'
-import { IAirGapTransaction, SignedTransaction } from '..'
+import { IAirGapTransaction } from '..'
 import * as nacl from 'tweetnacl'
 import { generateWalletUsingDerivationPath } from '@aeternity/hd-wallet'
 import axios from 'axios'
 import * as rlp from 'rlp'
 import * as bs58check from 'bs58check'
-import { UnsignedTransaction } from '../serializer/unsigned-transaction.serializer'
 import {
   RawAeternityTransaction,
   UnsignedAeternityTransaction
@@ -167,7 +166,7 @@ export class AEProtocol implements ICoinProtocol {
 
     try {
       const { data: accountResponse } = await axios.get(`${this.epochRPC}/v2/accounts/${this.getAddressFromPublicKey(publicKey)}`)
-      nonce = accountResponse.nonce
+      nonce = accountResponse.nonce + 1
     } catch (error) {
       // if node returns 404 (which means 'no account found'), go with nonce 0
       if (error.response.status !== 404) {
