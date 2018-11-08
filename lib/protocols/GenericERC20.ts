@@ -124,9 +124,9 @@ export class GenericERC20 extends EthereumProtocol {
                         const transaction: RawEthereumTransaction = {
                           nonce: this.web3.utils.toHex(txCount),
                           gasLimit: this.web3.utils.toHex(gasAmount),
-                          gasPrice: this.web3.utils.toHex(gasPrice.toString()),
+                          gasPrice: this.web3.utils.toHex(gasPrice.toFixed()),
                           to: this.tokenContract._address,
-                          value: this.web3.utils.toHex(new BigNumber(0).toString()),
+                          value: this.web3.utils.toHex(new BigNumber(0).toFixed()),
                           chainId: this.chainId,
                           data: this.tokenContract.methods.transfer(recipients[0], this.web3.utils.toHex(values[0]).toString()).encodeABI()
                         }

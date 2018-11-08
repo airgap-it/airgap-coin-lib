@@ -14,7 +14,7 @@ export function toBuffer(rlpArray: any): any {
   }
 
   if (BigNumber.isBigNumber(rlpArray)) {
-    return Buffer.from(rlpArray.toString())
+    return Buffer.from(rlpArray.toFixed())
   }
 
   return Buffer.from(rlpArray)

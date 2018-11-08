@@ -388,7 +388,7 @@ export class BitcoinProtocol implements ICoinProtocol {
               })
               resolve(transaction)
             } else {
-              reject(`Not enough Balance, having ${valueAccumulator.toString()} of ${totalRequiredBalance.toString()}`)
+              reject(`Not enough Balance, having ${valueAccumulator.toFixed()} of ${totalRequiredBalance.toFixed()}`)
             }
           }
         })
