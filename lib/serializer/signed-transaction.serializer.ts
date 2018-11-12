@@ -10,7 +10,7 @@ export abstract class SignedTransactionSerializer {
 
 export interface SignedTransaction {
   transaction: string
-  publicKey: string
+  accountIdentifier: string
   from?: string[]
   amount?: BigNumber
   fee?: BigNumber
@@ -23,7 +23,7 @@ export type SerializedSignedTransaction =
 
 export enum SyncProtocolSignedTransactionKeys {
   SIGNED_TRANSACTION,
-  PUBLIC_KEY,
+  ACCOUNT_IDENTIFIER,
   FROM,
   FEE,
   AMOUNT
@@ -31,7 +31,7 @@ export enum SyncProtocolSignedTransactionKeys {
 
 export interface SerializedSyncProtocolSignedTransaction extends Array<SerializedSignedTransaction | Buffer | Buffer[]> {
   [SyncProtocolSignedTransactionKeys.SIGNED_TRANSACTION]: SerializedSignedTransaction
-  [SyncProtocolSignedTransactionKeys.PUBLIC_KEY]: Buffer
+  [SyncProtocolSignedTransactionKeys.ACCOUNT_IDENTIFIER]: Buffer
   [SyncProtocolSignedTransactionKeys.FROM]: Buffer[]
   [SyncProtocolSignedTransactionKeys.FEE]: Buffer
   [SyncProtocolSignedTransactionKeys.AMOUNT]: Buffer

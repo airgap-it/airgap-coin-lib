@@ -13,7 +13,7 @@ export interface SignedBitcoinTransaction extends SignedTransaction {
   from: string[]
   amount: BigNumber
   fee: BigNumber
-  publicKey: string
+  accountIdentifier: string
   transaction: string
 }
 
@@ -21,7 +21,7 @@ export class BitcoinSignedTransactionSerializer extends SignedTransactionSeriali
   public serialize(transaction: SignedBitcoinTransaction): SerializedSyncProtocolSignedTransaction {
     const toSerialize: any[] = []
 
-    toSerialize[SyncProtocolSignedTransactionKeys.PUBLIC_KEY] = transaction.publicKey
+    toSerialize[SyncProtocolSignedTransactionKeys.ACCOUNT_IDENTIFIER] = transaction.accountIdentifier.substr(-6)
     toSerialize[SyncProtocolSignedTransactionKeys.SIGNED_TRANSACTION] = transaction.transaction
     toSerialize[SyncProtocolSignedTransactionKeys.FROM] = transaction.from
     toSerialize[SyncProtocolSignedTransactionKeys.AMOUNT] = transaction.amount.toFixed()
@@ -34,7 +34,7 @@ export class BitcoinSignedTransactionSerializer extends SignedTransactionSeriali
 
   public deserialize(serializedTx: SerializedSyncProtocolSignedTransaction): SignedBitcoinTransaction {
     return {
-      publicKey: serializedTx[SyncProtocolSignedTransactionKeys.PUBLIC_KEY].toString(),
+      accountIdentifier: serializedTx[SyncProtocolSignedTransactionKeys.ACCOUNT_IDENTIFIER].toString(),
       transaction: serializedTx[SyncProtocolSignedTransactionKeys.SIGNED_TRANSACTION].toString(),
       from: serializedTx[SyncProtocolSignedTransactionKeys.FROM].map(obj => obj.toString()),
       amount: new BigNumber(serializedTx[SyncProtocolSignedTransactionKeys.AMOUNT].toString()),

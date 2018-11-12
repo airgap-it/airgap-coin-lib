@@ -9,7 +9,7 @@ import {
 export type SerializedSignedAeternityTransaction = [Buffer]
 
 export interface SignedAeternityTransaction extends SignedTransaction {
-  publicKey: string
+  accountIdentifier: string
   transaction: string
 }
 
@@ -17,7 +17,7 @@ export class AeternitySignedTransactionSerializer extends SignedTransactionSeria
   public serialize(transaction: SignedAeternityTransaction): SerializedSyncProtocolSignedTransaction {
     const toSerialize: any[] = []
 
-    toSerialize[SyncProtocolSignedTransactionKeys.PUBLIC_KEY] = transaction.publicKey
+    toSerialize[SyncProtocolSignedTransactionKeys.ACCOUNT_IDENTIFIER] = transaction.accountIdentifier.substr(-6)
     toSerialize[SyncProtocolSignedTransactionKeys.SIGNED_TRANSACTION] = transaction.transaction
 
     const serializedBuffer: SerializedSyncProtocolSignedTransaction = toBuffer(toSerialize)
@@ -27,7 +27,7 @@ export class AeternitySignedTransactionSerializer extends SignedTransactionSeria
 
   public deserialize(serializedTx: SerializedSyncProtocolSignedTransaction): SignedAeternityTransaction {
     return {
-      publicKey: serializedTx[SyncProtocolSignedTransactionKeys.PUBLIC_KEY].toString(),
+      accountIdentifier: serializedTx[SyncProtocolSignedTransactionKeys.ACCOUNT_IDENTIFIER].toString(),
       transaction: serializedTx[SyncProtocolSignedTransactionKeys.SIGNED_TRANSACTION].toString()
     }
   }
