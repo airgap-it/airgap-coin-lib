@@ -17,7 +17,7 @@ export class EthereumSignedTransactionSerializer extends SignedTransactionSerial
   public serialize(transaction: SignedEthereumTransaction): SerializedSyncProtocolSignedTransaction {
     const toSerialize: any[] = []
 
-    toSerialize[SyncProtocolSignedTransactionKeys.ACCOUNT_IDENTIFIER] = transaction.accountIdentifier.substr(-6)
+    toSerialize[SyncProtocolSignedTransactionKeys.ACCOUNT_IDENTIFIER] = transaction.accountIdentifier
     toSerialize[SyncProtocolSignedTransactionKeys.SIGNED_TRANSACTION] = transaction.transaction
 
     const serializedBuffer: SerializedSyncProtocolSignedTransaction = toBuffer(toSerialize)

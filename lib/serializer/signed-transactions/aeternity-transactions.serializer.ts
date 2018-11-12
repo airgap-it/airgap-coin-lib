@@ -17,7 +17,7 @@ export class AeternitySignedTransactionSerializer extends SignedTransactionSeria
   public serialize(transaction: SignedAeternityTransaction): SerializedSyncProtocolSignedTransaction {
     const toSerialize: any[] = []
 
-    toSerialize[SyncProtocolSignedTransactionKeys.ACCOUNT_IDENTIFIER] = transaction.accountIdentifier.substr(-6)
+    toSerialize[SyncProtocolSignedTransactionKeys.ACCOUNT_IDENTIFIER] = transaction.accountIdentifier
     toSerialize[SyncProtocolSignedTransactionKeys.SIGNED_TRANSACTION] = transaction.transaction
 
     const serializedBuffer: SerializedSyncProtocolSignedTransaction = toBuffer(toSerialize)

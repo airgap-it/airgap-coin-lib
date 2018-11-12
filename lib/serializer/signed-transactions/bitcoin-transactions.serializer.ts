@@ -21,7 +21,7 @@ export class BitcoinSignedTransactionSerializer extends SignedTransactionSeriali
   public serialize(transaction: SignedBitcoinTransaction): SerializedSyncProtocolSignedTransaction {
     const toSerialize: any[] = []
 
-    toSerialize[SyncProtocolSignedTransactionKeys.ACCOUNT_IDENTIFIER] = transaction.accountIdentifier.substr(-6)
+    toSerialize[SyncProtocolSignedTransactionKeys.ACCOUNT_IDENTIFIER] = transaction.accountIdentifier
     toSerialize[SyncProtocolSignedTransactionKeys.SIGNED_TRANSACTION] = transaction.transaction
     toSerialize[SyncProtocolSignedTransactionKeys.FROM] = transaction.from
     toSerialize[SyncProtocolSignedTransactionKeys.AMOUNT] = transaction.amount.toFixed()
