@@ -51,10 +51,14 @@ export class SyncProtocolUtils {
 
     switch (deserializedSyncProtocol.type) {
       case EncodedType.UNSIGNED_TRANSACTION:
-        untypedPayload = unsignedTransactionSerializerByProtocolIdentifier(protocol).serialize(typedPayload as UnsignedTransaction)
+        untypedPayload = unsignedTransactionSerializerByProtocolIdentifier(deserializedSyncProtocol.protocol).serialize(
+          typedPayload as UnsignedTransaction
+        )
         break
       case EncodedType.SIGNED_TRANSACTION:
-        untypedPayload = signedTransactionSerializerByProtocolIdentifier(protocol).serialize(typedPayload as SignedTransaction)
+        untypedPayload = signedTransactionSerializerByProtocolIdentifier(deserializedSyncProtocol.protocol).serialize(
+          typedPayload as SignedTransaction
+        )
         break
       case EncodedType.WALLET_SYNC:
         untypedPayload = new WalletSerializer().serialize(typedPayload as SyncWalletRequest)
