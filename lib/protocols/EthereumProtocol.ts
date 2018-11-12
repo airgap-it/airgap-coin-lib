@@ -16,6 +16,8 @@ const EthereumTransaction = require('ethereumjs-tx')
 export class EthereumProtocol implements ICoinProtocol {
   symbol = 'ETH'
   name = 'Ethereum'
+  marketSymbol = 'eth'
+
   feeSymbol = 'eth'
 
   feeDefaults = {

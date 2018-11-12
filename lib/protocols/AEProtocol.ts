@@ -16,6 +16,8 @@ import * as Web3 from 'web3'
 export class AEProtocol implements ICoinProtocol {
   symbol = 'AE'
   name = 'æternity'
+  marketSymbol = 'ae'
+
   feeSymbol = 'ae'
 
   decimals = 18

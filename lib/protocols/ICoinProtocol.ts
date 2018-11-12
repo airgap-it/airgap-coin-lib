@@ -6,6 +6,7 @@ import { SignedTransaction } from '../serializer/signed-transaction.serializer'
 export interface ICoinProtocol {
   symbol: string // This will be used in the UI, eg. "ETH", "BTC", "AE"
   name: string // Name of the currency, eg. "Bitcoin", "Aeternity"
+  marketSymbol: string // Symbol that is most commonly used by other services such as coinmarketcap or cryptocompare.
 
   feeSymbol: string
   feeDefaults: {

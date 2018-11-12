@@ -14,7 +14,10 @@ import { SignedBitcoinTransaction } from '../serializer/signed-transactions/bitc
 export class BitcoinProtocol implements ICoinProtocol {
   symbol = 'BTC'
   name = 'Bitcoin'
+  marketSymbol = 'btc'
+
   feeSymbol = 'btc'
+
   feeDefaults = {
     low: new BigNumber('0.00002'),
     medium: new BigNumber('0.00004'),
