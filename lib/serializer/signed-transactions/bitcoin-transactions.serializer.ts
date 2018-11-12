@@ -27,7 +27,7 @@ export class BitcoinSignedTransactionSerializer extends SignedTransactionSeriali
     toSerialize[SyncProtocolSignedTransactionKeys.AMOUNT] = transaction.amount.toFixed()
     toSerialize[SyncProtocolSignedTransactionKeys.FEE] = transaction.fee.toFixed()
 
-    const serializedBuffer: SerializedSyncProtocolSignedTransaction = toBuffer(toSerialize)
+    const serializedBuffer: SerializedSyncProtocolSignedTransaction = toBuffer(toSerialize) as SerializedSyncProtocolSignedTransaction
 
     return serializedBuffer
   }

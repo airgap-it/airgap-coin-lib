@@ -36,7 +36,7 @@ export class EthereumUnsignedTransactionSerializer extends UnsignedTransactionSe
       ],
       transaction.publicKey, // publicKey
       transaction.callback ? transaction.callback : 'airgap-wallet://?d=' // callback-scheme
-    ])
+    ]) as SerializedSyncProtocolTransaction
 
     return serializedTx
   }

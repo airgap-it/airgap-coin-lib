@@ -23,7 +23,7 @@ export class AeternityUnsignedTransactionSerializer extends UnsignedTransactionS
       [transaction.transaction.networkId, transaction.transaction.transaction],
       transaction.publicKey, // publicKey
       transaction.callback ? transaction.callback : 'airgap-wallet://?d=' // callback-scheme
-    ])
+    ]) as SerializedSyncProtocolTransaction
 
     return serializedTx
   }

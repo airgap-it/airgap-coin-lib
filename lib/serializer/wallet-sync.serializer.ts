@@ -8,7 +8,7 @@ export class WalletSerializer {
     toSerialize[SyncProtocolWalletSync.DERIVATION_PATH] = syncWalletRequest.derivationPath
     toSerialize[SyncProtocolWalletSync.IS_EXTENDED_PUBLIC_KEY] = syncWalletRequest.isExtendedPublicKey
 
-    const serializedBuffer: SerializedSyncProtocolWalletSync = toBuffer(toSerialize)
+    const serializedBuffer: SerializedSyncProtocolWalletSync = toBuffer(toSerialize) as SerializedSyncProtocolWalletSync
 
     return serializedBuffer
   }
