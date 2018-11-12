@@ -7,8 +7,14 @@ import { SignedTransaction, UnsignedTransaction } from '../../lib'
 import { EthereumTestProtocolSpec } from './specs/ethereum'
 import { BitcoinTestProtocolSpec } from './specs/bitcoin'
 import { AETestProtocolSpec } from './specs/ae'
+import { ERC20HOPTokenTestProtocolSpec } from './specs/erc20-hop-token'
 
-const protocols = [new EthereumTestProtocolSpec(), new BitcoinTestProtocolSpec(), new AETestProtocolSpec()]
+const protocols = [
+  new EthereumTestProtocolSpec(),
+  new BitcoinTestProtocolSpec(),
+  new AETestProtocolSpec(),
+  new ERC20HOPTokenTestProtocolSpec()
+]
 
 protocols.forEach((protocol: TestProtocolSpec) => {
   const syncProtocol = new SyncProtocolUtils()

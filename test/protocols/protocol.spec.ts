@@ -2,7 +2,7 @@ import * as sinon from 'sinon'
 import 'mocha'
 
 import { expect } from 'chai'
-import { seed, TestProtocolSpec } from './implementations'
+import { TestProtocolSpec } from './implementations'
 import { IAirGapTransaction } from '../../lib'
 import { AETestProtocolSpec } from './specs/ae'
 import { EthereumTestProtocolSpec } from './specs/ethereum'
@@ -34,19 +34,19 @@ protocols.forEach((protocol: TestProtocolSpec) => {
   describe(`ICoinProtocol ${protocol.name}`, () => {
     describe(`Public/Private KeyPair`, () => {
       it('getPublicKeyFromHexSecret - should be able to create a public key from a corresponding hex secret', () => {
-        const publicKey = protocol.lib.getPublicKeyFromHexSecret(seed, protocol.lib.standardDerivationPath)
+        const publicKey = protocol.lib.getPublicKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
         expect(publicKey).to.equal(protocol.wallet.publicKey)
       })
 
       it('getPrivateKeyFromHexSecret - should be able to create a private key from a corresponding hex secret', () => {
-        const privateKey = protocol.lib.getPrivateKeyFromHexSecret(seed, protocol.lib.standardDerivationPath)
+        const privateKey = protocol.lib.getPrivateKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
 
         // check if privateKey is a Buffer
         expect(privateKey).to.be.instanceof(Buffer)
       })
 
       it('getAddressFromPublicKey - should be able to create a valid address from a supplied publicKey', () => {
-        const publicKey = protocol.lib.getPublicKeyFromHexSecret(seed, protocol.lib.standardDerivationPath)
+        const publicKey = protocol.lib.getPublicKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
         const address = protocol.lib.getAddressFromPublicKey(publicKey)
 
         // check if address format matches
@@ -93,7 +93,7 @@ protocols.forEach((protocol: TestProtocolSpec) => {
       })
 
       it('signWithPrivateKey - Is able to sign a transaction using a PrivateKey', async function() {
-        const privateKey = protocol.lib.getPrivateKeyFromHexSecret(seed, protocol.lib.standardDerivationPath)
+        const privateKey = protocol.lib.getPrivateKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
         const txs: string[] = []
 
         await Promise.all(
@@ -130,7 +130,7 @@ protocols.forEach((protocol: TestProtocolSpec) => {
       it('getTransactionDetailsFromSigned - Is able to extract all necessary properties form a TX', async function() {
         protocol.txs.forEach(tx => {
           const airgapTx: IAirGapTransaction = protocol.lib.getTransactionDetailsFromSigned({
-            publicKey: protocol.wallet.publicKey,
+            accountIdentifier: protocol.wallet.publicKey.substr(-6),
             from: protocol.wallet.addresses,
             amount: protocol.wallet.tx.amount,
             fee: protocol.wallet.tx.fee,

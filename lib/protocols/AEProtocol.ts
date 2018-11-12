@@ -39,7 +39,7 @@ export class AEProtocol implements ICoinProtocol {
 
   supportsHD = false
   standardDerivationPath = `m/44h/457h/0h/0h/0h`
-  addressValidationPattern = '^ak_+[1-9A-Za-z][^OIl]{48}$'
+  addressValidationPattern = '^ak_+[1-9A-Za-z]{50}$'
 
   // ae specifics
   defaultNetworkId = 'ae_mainnet'

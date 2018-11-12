@@ -8,7 +8,7 @@ export class AEProtocolStub implements ProtocolHTTPStub {
     sinon
       .stub(axios, 'get')
       .withArgs(`${protocol.epochRPC}/v2/accounts/${testProtocolSpec.wallet.addresses[0]}`)
-      .returns(Promise.resolve({ data: { balance: 1000, nonce: 0 } }))
+      .returns(Promise.resolve({ data: { balance: 1000, nonce: -1 } }))
     sinon
       .stub(axios, 'post')
       .withArgs(`/v2/transactions`)

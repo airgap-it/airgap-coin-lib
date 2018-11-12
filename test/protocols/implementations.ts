@@ -4,7 +4,6 @@ import BigNumber from 'bignumber.js'
 import { SERIALIZER_VERSION } from '../../lib/serializer/constants'
 
 const mnemonic = 'spell device they juice trial skirt amazing boat badge steak usage february virus art survey' // this is what the user writes down and what is saved by secure storage?
-const seed = BIP39.mnemonicToSeedHex(mnemonic)
 
 interface ProtocolHTTPStub {
   registerStub(testProtocolSpec: TestProtocolSpec, protocol: ICoinProtocol)
@@ -29,13 +28,17 @@ abstract class TestProtocolSpec {
     signedTx: string
   }[]
 
+  seed() {
+    return BIP39.mnemonicToSeedHex(mnemonic)
+  }
+
   unsignedTransaction(tx: any): DeserializedSyncProtocol {
     return {
       version: SERIALIZER_VERSION,
       protocol: this.lib.identifier,
       type: EncodedType.UNSIGNED_TRANSACTION,
       payload: {
-        accountIdentifier: this.wallet.publicKey,
+        publicKey: this.wallet.publicKey,
         callback: 'airgap-wallet://?d=',
         transaction: tx.unsignedTx
       }
@@ -60,7 +63,7 @@ abstract class TestProtocolSpec {
       protocol: this.lib.identifier,
       type: EncodedType.WALLET_SYNC,
       payload: {
-        accountIdentifier: this.wallet.publicKey,
+        publicKey: this.wallet.publicKey,
         isExtendedPublicKey: this.lib.supportsHD,
         derivationPath: this.lib.standardDerivationPath
       }
@@ -68,4 +71,4 @@ abstract class TestProtocolSpec {
   }
 }
 
-export { mnemonic, seed, TestProtocolSpec, ProtocolHTTPStub }
+export { mnemonic, TestProtocolSpec, ProtocolHTTPStub }
