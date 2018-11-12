@@ -1,37 +1,51 @@
 import BigNumber from 'bignumber.js'
 import { AEProtocol } from '../../../lib'
 import { AEProtocolStub } from '../stubs/ae.stub'
+import { TestProtocolSpec } from '../implementations'
 
-const aeProtocol = {
-  name: 'Aeternity',
-  lib: new AEProtocol(),
-  stub: new AEProtocolStub(),
-  wallet: {
+// Test Mnemonic:
+// mango club state husband keen fiber float jelly major include horse infant square spike equip caught version must pen swim setup right poem economy
+// Entropy: 8725875337f79aab564bbe866e4db739ad37a3930923f2d24289edfc4973a9c2
+// Private Key: 65093ac9899ced07211b56eaef83c2fdfef11ecea77a665d2d59cf93c40e5196
+// Public Key: d64f61ec56519e7f10f35908c40f7b3288fb3ebdc0f6c504aa95ec780e3c7ff9
+// HEX Seed: a109e38f00824ea80107cd7ccbac4e7afe7abe588eeac9191d71adf98fb1fba73311182c010a0182e20e67f4daa45bf1cbbbecab8ff407f33e50045d7d516e0c
+
+export class AETestProtocolSpec extends TestProtocolSpec {
+  name = 'Aeternity'
+  lib = new AEProtocol()
+  stub = new AEProtocolStub()
+  wallet = {
     privateKey:
-      '7c9a774cf8855c0a89a00df3312cb1a3fb47d47829d3c92840e6a31b21434fa72d451a8abe91b3990b958097587de30216ceeb0e08102a4fe77c6ecb1cf9b42a',
-    publicKey: '2d451a8abe91b3990b958097587de30216ceeb0e08102a4fe77c6ecb1cf9b42a',
-    address: 'ak_LwMsF36UntQgAiQ21UeSuvNw8kbtfAec9C1FW15GQEFLL5pq1',
+      '65093ac9899ced07211b56eaef83c2fdfef11ecea77a665d2d59cf93c40e5196d64f61ec56519e7f10f35908c40f7b3288fb3ebdc0f6c504aa95ec780e3c7ff9',
+    publicKey: 'd64f61ec56519e7f10f35908c40f7b3288fb3ebdc0f6c504aa95ec780e3c7ff9',
+    addresses: ['ak_2dPGHd5dZgKwR234uqPZcAXXcCyxr3TbWwgV8NSnNincth4Lf7'],
     tx: {
-      amount: new BigNumber('10'),
-      fee: new BigNumber('1')
+      amount: new BigNumber('10000000000000000000'),
+      fee: new BigNumber('1000000000000000000')
     }
-  },
-  txs: [
+  }
+  txs = [
     {
       /*
         HEX of Unsigned TX includes:
-        sender_id: 'ak_LwMsF36UntQgAiQ21UeSuvNw8kbtfAec9C1FW15GQEFLL5pq1',
-        recipient_id: 'ak_LwMsF36UntQgAiQ21UeSuvNw8kbtfAec9C1FW15GQEFLL5pq1',
+        sender_id: 'ak_2dPGHd5dZgKwR234uqPZcAXXcCyxr3TbWwgV8NSnNincth4Lf7',
+        recipient_id: 'ak_2eid5UDLCVxNvqL95p9UtHmHQKbiFQahRfoo839DeQuBo8A3Qc',
         amount: 10,
         fee: 1,
-        ttl: 60,
+        ttl: ? (maybe 1000),
         payload: ''
       */
-      unsignedTx: 'tx_51fEeKes4anDaKtLCXfJBhhQZS51o6YzfuypLsz2gkcqkzM9h6J9zBgcCt7HtUfWKNh2u85wgzP2HaL48KqznLNma4jKcjYu6QPAzggtEups6HPdf2',
+      unsignedTx: {
+        transaction:
+          'tx_3BqfkeqNiTz3RAYHkjSzVXMcRYXV7gX7UxQ9mbVsQvEwq4U7rVLAjFt38VdTcwZkBxp7B8rE4Vu3yZZvXW7wNaFrRDdgQY5Lj6uGc5WZfbijFcEL477X376wYm6TCDGZ5LSESscJ',
+        networkId: 'ae_mainnet'
+      },
       signedTx:
-        'tx_66dpehQZhw1ptmWdjiWXB1u1Yo7JdEEXshXVkWXYk25ve9bJ2cd7oKVV3qwv3sQoXWnLsEa9yLRo8aK9YZxv86eEHQTqjuAYFYSMgT69aUrgwduHp7uc7Lu7x7VPgpaDbWLzKB3vGm42QDHCwEnw2C3CHADbTK9W5mKeqHHrkwjWLPN8RbvyjMz1TBSS1KQV2ZTgF6CW8qt7pVLA4ALFeBf'
+        'tx_3nAx7VwmuafNTfcC7AaSpm3MNLUwEKMhfwRWmkR42RFGyckE9cAHGjJGXp5ZwuTDycTjvhAUcLPh6kpe7SQcVQ4JyVxxQ6ULFYXJ8L1g8mvF3GYJVKVHkTHrZjjeJ9LSgpvTNgBbq2FR8BaKbStY4qAhY7haXnBgWbeyPgv9fUyZ32eLotwM1ifutCFJDXzQLTNGfJ6PvUHiiPAdEpyY3FSwN8UwaBfRRvPf72KAMdo5Q'
     }
   ]
-}
 
-export { aeProtocol }
+  seed() {
+    return 'a109e38f00824ea80107cd7ccbac4e7afe7abe588eeac9191d71adf98fb1fba73311182c010a0182e20e67f4daa45bf1cbbbecab8ff407f33e50045d7d516e0c'
+  }
+}

@@ -6,13 +6,18 @@ import { BigNumber } from 'bignumber.js'
 import * as ethUtil from 'ethereumjs-util'
 import { IAirGapTransaction } from '../interfaces/IAirGapTransaction'
 import axios from 'axios'
+import { RawEthereumTransaction } from '../serializer/unsigned-transactions/ethereum-transactions.serializer'
+import * as Web3 from 'web3'
+import { UnsignedTransaction } from '../serializer/unsigned-transaction.serializer'
+import { SignedEthereumTransaction } from '../serializer/signed-transactions/ethereum-transactions.serializer'
 
-const Web3 = require('web3') // tslint:disable-line
 const EthereumTransaction = require('ethereumjs-tx')
 
 export class EthereumProtocol implements ICoinProtocol {
   symbol = 'ETH'
   name = 'Ethereum'
+  marketSymbol = 'eth'
+
   feeSymbol = 'eth'
 
   feeDefaults = {
@@ -111,44 +116,30 @@ export class EthereumProtocol implements ICoinProtocol {
     )
   }
 
-  signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: any): Promise<string> {
+  signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: RawEthereumTransaction): Promise<string> {
     return Promise.reject('extended private key signing for ether not implemented')
   }
 
-  signWithPrivateKey(privateKey: Buffer, transaction: any): Promise<string> {
-    if (transaction.from !== ethUtil.toChecksumAddress((ethUtil.privateToAddress(Buffer.from(privateKey)) as Buffer).toString('hex'))) {
-      return Promise.reject('from property and private-key do not match')
-    }
-
-    const txParams = {
-      nonce: this.web3.utils.toHex(transaction.nonce),
-      gasPrice: this.web3.utils.toHex(transaction.gasPrice),
-      gasLimit: this.web3.utils.toHex(transaction.gasLimit),
-      to: transaction.to,
-      value: this.web3.utils.toHex(new BigNumber(transaction.value)),
-      chainId: this.web3.utils.toHex(this.chainId)
-    }
-
-    const tx = new EthereumTransaction(txParams)
+  signWithPrivateKey(privateKey: Buffer, transaction: RawEthereumTransaction): Promise<string> {
+    const tx = new EthereumTransaction(transaction)
     tx.sign(privateKey)
-
     return Promise.resolve(tx.serialize().toString('hex'))
   }
 
-  getTransactionDetails(transaction: any): IAirGapTransaction {
+  getTransactionDetails(unsignedTx: UnsignedTransaction): IAirGapTransaction {
+    const transaction = unsignedTx.transaction as RawEthereumTransaction
     return {
-      from: transaction.from ? [transaction.from] : [],
+      from: [this.getAddressFromPublicKey(unsignedTx.publicKey)],
       to: [transaction.to],
       amount: new BigNumber(transaction.value),
       fee: new BigNumber(transaction.gasLimit).multipliedBy(new BigNumber(transaction.gasPrice)),
       protocolIdentifier: this.identifier,
-      isInbound: false,
-      timestamp: parseInt(transaction.timestamp, 10)
+      isInbound: false
     }
   }
 
-  getTransactionDetailsFromRaw(transaction: any, rawTx: any): IAirGapTransaction {
-    const ethTx = new EthereumTransaction(rawTx)
+  getTransactionDetailsFromSigned(transaction: SignedEthereumTransaction): IAirGapTransaction {
+    const ethTx = new EthereumTransaction(transaction.transaction)
 
     let hexValue = ethTx.value.toString('hex') || '0x0'
     let hexGasPrice = ethTx.gasPrice.toString('hex') || '0x0'
@@ -156,8 +147,8 @@ export class EthereumProtocol implements ICoinProtocol {
     let hexNonce = ethTx.nonce.toString('hex') || '0x0'
 
     return {
-      from: ['0x' + ethTx.from.toString('hex')],
-      to: ['0x' + ethTx.to.toString('hex')],
+      from: [ethUtil.toChecksumAddress('0x' + ethTx.from.toString('hex'))],
+      to: [ethUtil.toChecksumAddress('0x' + ethTx.to.toString('hex'))],
       amount: new BigNumber(parseInt(hexValue, 16)),
       fee: new BigNumber(parseInt(hexGasLimit, 16)).multipliedBy(new BigNumber(parseInt(hexGasPrice, 16))),
       protocolIdentifier: this.identifier,
@@ -185,11 +176,16 @@ export class EthereumProtocol implements ICoinProtocol {
     recipients: string[],
     values: BigNumber[],
     fee: BigNumber
-  ): Promise<any> {
+  ): Promise<RawEthereumTransaction> {
     return Promise.reject('extended public tx for ether not implemented')
   }
 
-  prepareTransactionFromPublicKey(publicKey: string, recipients: string[], values: BigNumber[], fee: BigNumber): Promise<any> {
+  prepareTransactionFromPublicKey(
+    publicKey: string,
+    recipients: string[],
+    values: BigNumber[],
+    fee: BigNumber
+  ): Promise<RawEthereumTransaction> {
     const address = this.getAddressFromPublicKey(publicKey)
 
     if (recipients.length !== values.length) {
@@ -207,15 +203,16 @@ export class EthereumProtocol implements ICoinProtocol {
           const gasPrice = fee.div(gasLimit).integerValue(BigNumber.ROUND_CEIL)
           if (new BigNumber(balance).gte(new BigNumber(values[0].plus(fee)))) {
             this.web3.eth.getTransactionCount(address).then(txCount => {
-              const transaction = {
-                nonce: txCount,
-                gasLimit: gasLimit,
-                gasPrice: gasPrice, // 10 Gwei
+              const transaction: RawEthereumTransaction = {
+                nonce: this.web3.utils.toHex(txCount),
+                gasLimit: this.web3.utils.toHex(gasLimit),
+                gasPrice: this.web3.utils.toHex(gasPrice.toFixed()), // 10 Gwei
                 to: recipients[0],
-                from: address,
-                value: values[0],
-                chainId: this.chainId
+                value: this.web3.utils.toHex(values[0].toFixed()),
+                chainId: this.chainId,
+                data: '0x'
               }
+
               resolve(transaction)
             })
           } else {

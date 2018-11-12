@@ -1,11 +1,12 @@
 import { EthereumProtocol } from './EthereumProtocol'
-import * as ethUtil from 'ethereumjs-util'
 import axios from 'axios'
 import BigNumber from 'bignumber.js'
 import { IAirGapTransaction } from '../interfaces/IAirGapTransaction'
-import { rejects } from 'assert'
 import * as abiDecoder from 'abi-decoder'
-
+import { RawEthereumTransaction, UnsignedEthereumTransaction } from '../serializer/unsigned-transactions/ethereum-transactions.serializer'
+import { UnsignedTransaction } from '../serializer/unsigned-transaction.serializer'
+import * as ethUtil from 'ethereumjs-util'
+import { SignedEthereumTransaction } from '../serializer/signed-transactions/ethereum-transactions.serializer'
 const EthereumTransaction = require('ethereumjs-tx')
 
 const AUTH_TOKEN_ABI = [
@@ -80,29 +81,20 @@ export class GenericERC20 extends EthereumProtocol {
     })
   }
 
-  signWithPrivateKey(extendedPrivateKey: Buffer, transaction: any): Promise<string> {
-    if (
-      transaction.from !== ethUtil.toChecksumAddress((ethUtil.privateToAddress(Buffer.from(extendedPrivateKey)) as Buffer).toString('hex'))
-    ) {
-      return Promise.reject('from property and private-key do not match')
+  signWithPrivateKey(privateKey: Buffer, transaction: RawEthereumTransaction): Promise<string> {
+    if (!transaction.data || transaction.data === '0x') {
+      transaction.data = this.tokenContract.methods.transfer(transaction.to, transaction.value).encodeABI() // backwards-compatible fix
     }
 
-    const txParams = {
-      nonce: this.web3.utils.toHex(transaction.nonce),
-      gasPrice: this.web3.utils.toHex(transaction.gasPrice),
-      gasLimit: this.web3.utils.toHex(transaction.gasLimit),
-      to: this.tokenContract.options.address,
-      data: transaction.data || this.tokenContract.methods.transfer(transaction.to, transaction.value).encodeABI(), // backwards-compatible fix
-      chainId: this.web3.utils.toHex(this.chainId)
-    }
-
-    const tx = new EthereumTransaction(txParams)
-    tx.sign(extendedPrivateKey)
-
-    return Promise.resolve(tx.serialize().toString('hex'))
+    return super.signWithPrivateKey(privateKey, transaction)
   }
 
-  prepareTransactionFromPublicKey(publicKey: string, recipients: string[], values: BigNumber[], fee: BigNumber): Promise<any> {
+  prepareTransactionFromPublicKey(
+    publicKey: string,
+    recipients: string[],
+    values: BigNumber[],
+    fee: BigNumber
+  ): Promise<RawEthereumTransaction> {
     if (recipients.length !== values.length) {
       return Promise.reject('recipients length does not match with values')
     }
@@ -127,13 +119,13 @@ export class GenericERC20 extends EthereumProtocol {
                     }
                     if (ethBalance.isGreaterThanOrEqualTo(fee)) {
                       this.web3.eth.getTransactionCount(address).then(txCount => {
-                        const transaction = {
-                          nonce: txCount,
-                          gasLimit: new BigNumber(gasAmount),
-                          gasPrice: fee.isEqualTo(0) ? new BigNumber(0) : fee.div(gasAmount).integerValue(BigNumber.ROUND_CEIL),
-                          to: recipients[0],
-                          from: address,
-                          value: values[0],
+                        const gasPrice = fee.isEqualTo(0) ? new BigNumber(0) : fee.div(gasAmount).integerValue(BigNumber.ROUND_CEIL)
+                        const transaction: RawEthereumTransaction = {
+                          nonce: this.web3.utils.toHex(txCount),
+                          gasLimit: this.web3.utils.toHex(gasAmount),
+                          gasPrice: this.web3.utils.toHex(gasPrice.toFixed()),
+                          to: this.tokenContract._address,
+                          value: this.web3.utils.toHex(new BigNumber(0).toFixed()),
                           chainId: this.chainId,
                           data: this.tokenContract.methods.transfer(recipients[0], this.web3.utils.toHex(values[0]).toString()).encodeABI()
                         }
@@ -174,7 +166,7 @@ export class GenericERC20 extends EthereumProtocol {
               )
               .then(response => {
                 const transactionResponse = response.data
-                for (let transaction of transactionResponse.docs) {
+                for (const transaction of transactionResponse.docs) {
                   if (transaction.operations.length >= 1) {
                     const transactionPayload = transaction.operations[0]
                     const fee = new BigNumber(transaction.gasUsed).times(new BigNumber(transaction.gasPrice))
@@ -204,15 +196,28 @@ export class GenericERC20 extends EthereumProtocol {
         .then(values => {
           overallResolve([].concat.apply([], values))
         })
-        .catch(rejects)
+        .catch(overallReject)
     })
   }
 
-  getTransactionDetailsFromRaw(transaction: any, rawTx: any): IAirGapTransaction {
-    let ethTx = super.getTransactionDetailsFromRaw(transaction, rawTx)
-    let tokenTransferDetails = abiDecoder.decodeMethod(ethTx.data)
+  getTransactionDetailsFromSigned(signedTx: SignedEthereumTransaction): IAirGapTransaction {
+    const ethTx = super.getTransactionDetailsFromSigned(signedTx)
 
-    ethTx.to = [tokenTransferDetails.params[0].value]
+    const extractedTx = new EthereumTransaction(signedTx.transaction)
+    const tokenTransferDetails = abiDecoder.decodeMethod('0x' + extractedTx.data.toString('hex'))
+    ethTx.to = [ethUtil.toChecksumAddress(tokenTransferDetails.params[0].value)]
+    ethTx.amount = new BigNumber(tokenTransferDetails.params[1].value)
+
+    return ethTx
+  }
+
+  getTransactionDetails(unsignedTx: UnsignedTransaction): IAirGapTransaction {
+    const unsignedEthereumTx = unsignedTx as UnsignedEthereumTransaction
+    const ethTx = super.getTransactionDetails(unsignedEthereumTx)
+
+    const tokenTransferDetails = abiDecoder.decodeMethod(unsignedEthereumTx.transaction.data)
+
+    ethTx.to = [ethUtil.toChecksumAddress(tokenTransferDetails.params[0].value)]
     ethTx.amount = new BigNumber(tokenTransferDetails.params[1].value)
 
     return ethTx

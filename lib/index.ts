@@ -15,9 +15,14 @@ import { AirGapMarketWallet } from './wallet/AirGapMarketWallet'
 import { IAirGapWallet } from './interfaces/IAirGapWallet'
 import { IAirGapTransaction } from './interfaces/IAirGapTransaction'
 import { ICoinProtocol } from './protocols/ICoinProtocol'
+import { SyncProtocolUtils, DeserializedSyncProtocol, EncodedType } from './serializer/serializer'
+import { SyncWalletRequest } from './serializer/wallet-sync.serializer'
+import { UnsignedTransaction } from './serializer/unsigned-transaction.serializer'
+import { SignedTransaction } from './serializer/signed-transaction.serializer'
+import { TypeNotSupported, SerializerVersionMismatch, ProtocolNotSupported, ProtocolVersionMismatch } from './serializer/errors'
 
 const supportedProtocols = function(): ICoinProtocol[] {
-  return [new BitcoinProtocol(), new EthereumProtocol(), new AETokenProtocol()]
+  return [new BitcoinProtocol(), new EthereumProtocol(), new AETokenProtocol(), new AEProtocol()]
 }
 
 const getProtocolByIdentifier = function(identifier: string) {
@@ -47,5 +52,16 @@ export {
   GenericERC20,
   HOPTokenProtocol,
   AETokenProtocol,
-  AEProtocol
+  AEProtocol,
+  // sync protocol
+  SyncProtocolUtils,
+  DeserializedSyncProtocol,
+  SyncWalletRequest,
+  UnsignedTransaction,
+  SignedTransaction,
+  EncodedType,
+  TypeNotSupported,
+  SerializerVersionMismatch,
+  ProtocolNotSupported,
+  ProtocolVersionMismatch
 }

@@ -1,13 +1,14 @@
-import { expect } from 'chai'
-import { seed, TestProtocolSpec } from './implementations'
 import * as sinon from 'sinon'
 import 'mocha'
-import { IAirGapTransaction } from '../../dist'
-import { aeProtocol } from './specs/ae'
-import { ethereumProtocol } from './specs/ethereum'
-import { ethereumRopstenProtocol } from './specs/ethereum-ropsten'
-import { ethereumClassicProtocol } from './specs/ethereum-classic'
-import { erc20HopRopstenToken } from './specs/erc20-hop-token'
+
+import { expect } from 'chai'
+import { TestProtocolSpec } from './implementations'
+import { IAirGapTransaction } from '../../lib'
+import { AETestProtocolSpec } from './specs/ae'
+import { EthereumTestProtocolSpec } from './specs/ethereum'
+import { EthereumRopstenTestProtocolSpec } from './specs/ethereum-ropsten'
+import { EthereumClassicTestProtocolSpec } from './specs/ethereum-classic'
+import { ERC20HOPTokenTestProtocolSpec } from './specs/erc20-hop-token'
 
 /**
  * We currently test the following ICoinProtocol methods
@@ -21,30 +22,36 @@ import { erc20HopRopstenToken } from './specs/erc20-hop-token'
  * - getTransactionDetailsFromRaw
  */
 
-const protocols = [erc20HopRopstenToken, aeProtocol, ethereumProtocol, ethereumRopstenProtocol, ethereumClassicProtocol]
+const protocols = [
+  new ERC20HOPTokenTestProtocolSpec(),
+  new EthereumTestProtocolSpec(),
+  new EthereumClassicTestProtocolSpec(),
+  new EthereumRopstenTestProtocolSpec(),
+  new AETestProtocolSpec()
+]
 
 protocols.forEach((protocol: TestProtocolSpec) => {
   describe(`ICoinProtocol ${protocol.name}`, () => {
     describe(`Public/Private KeyPair`, () => {
       it('getPublicKeyFromHexSecret - should be able to create a public key from a corresponding hex secret', () => {
-        const publicKey = protocol.lib.getPublicKeyFromHexSecret(seed, protocol.lib.standardDerivationPath)
+        const publicKey = protocol.lib.getPublicKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
         expect(publicKey).to.equal(protocol.wallet.publicKey)
       })
 
       it('getPrivateKeyFromHexSecret - should be able to create a private key from a corresponding hex secret', () => {
-        const privateKey = protocol.lib.getPrivateKeyFromHexSecret(seed, protocol.lib.standardDerivationPath)
+        const privateKey = protocol.lib.getPrivateKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
 
         // check if privateKey is a Buffer
         expect(privateKey).to.be.instanceof(Buffer)
       })
 
       it('getAddressFromPublicKey - should be able to create a valid address from a supplied publicKey', () => {
-        const publicKey = protocol.lib.getPublicKeyFromHexSecret(seed, protocol.lib.standardDerivationPath)
+        const publicKey = protocol.lib.getPublicKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
         const address = protocol.lib.getAddressFromPublicKey(publicKey)
 
         // check if address format matches
         expect(address.match(new RegExp(protocol.lib.addressValidationPattern))).not.to.equal(null)
-        expect(address).to.equal(protocol.wallet.address, 'address does not match')
+        expect(address).to.equal(protocol.wallet.addresses[0], 'address does not match')
       })
     })
 
@@ -60,7 +67,7 @@ protocols.forEach((protocol: TestProtocolSpec) => {
       it('prepareTransactionFromPublicKey - Is able to prepare a transaction using its public key', async function() {
         let preparedTx = await protocol.lib.prepareTransactionFromPublicKey(
           protocol.wallet.publicKey,
-          [protocol.wallet.address],
+          protocol.wallet.addresses,
           [protocol.wallet.tx.amount],
           protocol.wallet.tx.fee
         )
@@ -86,7 +93,7 @@ protocols.forEach((protocol: TestProtocolSpec) => {
       })
 
       it('signWithPrivateKey - Is able to sign a transaction using a PrivateKey', async function() {
-        const privateKey = protocol.lib.getPrivateKeyFromHexSecret(seed, protocol.lib.standardDerivationPath)
+        const privateKey = protocol.lib.getPrivateKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
         const txs: string[] = []
 
         await Promise.all(
@@ -105,10 +112,13 @@ protocols.forEach((protocol: TestProtocolSpec) => {
     describe(`Extract TX`, () => {
       it('getTransactionDetails - Is able to extract all necessary properties from a TX', async function() {
         protocol.txs.forEach(tx => {
-          const airgapTx: IAirGapTransaction = protocol.lib.getTransactionDetails(tx.unsignedTx)
+          const airgapTx: IAirGapTransaction = protocol.lib.getTransactionDetails({
+            publicKey: protocol.wallet.publicKey,
+            transaction: tx.unsignedTx
+          })
 
-          expect(airgapTx.to).to.deep.equal([protocol.wallet.address])
-          expect(airgapTx.from).to.deep.equal([protocol.wallet.address])
+          expect(airgapTx.to).to.deep.equal(protocol.wallet.addresses)
+          expect(airgapTx.from).to.deep.equal(protocol.wallet.addresses)
 
           expect(airgapTx.amount).to.deep.equal(protocol.wallet.tx.amount)
           expect(airgapTx.fee).to.deep.equal(protocol.wallet.tx.fee)
@@ -117,15 +127,18 @@ protocols.forEach((protocol: TestProtocolSpec) => {
         })
       })
 
-      it('getTransactionDetailsFromRaw - Is able to extract all necessary properties form a TX', async function() {
+      it('getTransactionDetailsFromSigned - Is able to extract all necessary properties form a TX', async function() {
         protocol.txs.forEach(tx => {
-          const airgapTx: IAirGapTransaction = protocol.lib.getTransactionDetailsFromRaw(
-            tx.unsignedTx,
-            JSON.parse(JSON.stringify(tx.signedTx))
-          )
+          const airgapTx: IAirGapTransaction = protocol.lib.getTransactionDetailsFromSigned({
+            accountIdentifier: protocol.wallet.publicKey.substr(-6),
+            from: protocol.wallet.addresses,
+            amount: protocol.wallet.tx.amount,
+            fee: protocol.wallet.tx.fee,
+            transaction: tx.signedTx
+          })
 
-          expect(airgapTx.to.map(obj => obj.toLowerCase())).to.deep.equal([protocol.wallet.address].map(obj => obj.toLowerCase()))
-          expect(airgapTx.from.map(obj => obj.toLowerCase())).to.deep.equal([protocol.wallet.address].map(obj => obj.toLowerCase()))
+          expect(airgapTx.to.map(obj => obj.toLowerCase())).to.deep.equal(protocol.wallet.addresses.map(obj => obj.toLowerCase()))
+          expect(airgapTx.from.map(obj => obj.toLowerCase())).to.deep.equal(protocol.wallet.addresses.map(obj => obj.toLowerCase()))
 
           expect(airgapTx.amount).to.deep.equal(protocol.wallet.tx.amount)
           expect(airgapTx.fee).to.deep.equal(protocol.wallet.tx.fee)

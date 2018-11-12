@@ -1,29 +1,29 @@
 import BigNumber from 'bignumber.js'
 import { EthereumProtocolStub } from '../stubs/ethereum.stub'
 import { EthereumClassicProtocol } from '../../../lib'
+import { TestProtocolSpec } from '../implementations'
 
-const ethereumClassicProtocol = {
-  name: 'EthereumClassic',
-  lib: new EthereumClassicProtocol(),
-  stub: new EthereumProtocolStub(),
-  wallet: {
+export class EthereumClassicTestProtocolSpec extends TestProtocolSpec {
+  name = 'EthereumClassic'
+  lib = new EthereumClassicProtocol()
+  stub = new EthereumProtocolStub()
+  wallet = {
     privateKey: '832d58a77ad222b8d9b75322e66d97e46b7dcfab3f25f6c1dd79ec13e046c7bc',
     publicKey: '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
-    address: '0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e',
+    addresses: ['0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e'],
     tx: {
       amount: new BigNumber('1000000000000000000'),
       fee: new BigNumber('420000000000000')
     }
-  },
-  txs: [
+  }
+  txs = [
     {
       unsignedTx: {
-        from: '0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e',
-        nonce: 0,
-        gasPrice: new BigNumber('0x4a817c800'),
-        gasLimit: new BigNumber('0x5208', 16),
+        nonce: '0x0',
+        gasPrice: '0x4a817c800',
+        gasLimit: '0x5208',
         to: '0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e',
-        value: new BigNumber('0xde0b6b3a7640000'),
+        value: '0xde0b6b3a7640000',
         chainId: 61
       },
       signedTx:
@@ -31,5 +31,3 @@ const ethereumClassicProtocol = {
     }
   ]
 }
-
-export { ethereumClassicProtocol }

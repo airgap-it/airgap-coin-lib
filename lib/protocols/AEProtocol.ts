@@ -1,16 +1,23 @@
 import { ICoinProtocol } from './ICoinProtocol'
 import BigNumber from 'bignumber.js'
 import { IAirGapTransaction } from '..'
-
 import * as nacl from 'tweetnacl'
-import { generateHDWallet, getHDWalletAccounts } from '@aeternity/hd-wallet'
+import { generateWalletUsingDerivationPath } from '@aeternity/hd-wallet'
 import axios from 'axios'
 import * as rlp from 'rlp'
 import * as bs58check from 'bs58check'
+import {
+  RawAeternityTransaction,
+  UnsignedAeternityTransaction
+} from '../serializer/unsigned-transactions/aeternity-transactions.serializer'
+import { SignedAeternityTransaction } from '../serializer/signed-transactions/aeternity-transactions.serializer'
+import * as Web3 from 'web3'
 
 export class AEProtocol implements ICoinProtocol {
   symbol = 'AE'
-  name = 'Aeternity'
+  name = 'æternity'
+  marketSymbol = 'ae'
+
   feeSymbol = 'ae'
 
   decimals = 18
@@ -31,8 +38,11 @@ export class AEProtocol implements ICoinProtocol {
   ]
 
   supportsHD = false
-  standardDerivationPath = `m/44h/457h`
-  addressValidationPattern = '^ak_+[1-9A-Za-z][^OIl]{48}$'
+  standardDerivationPath = `m/44h/457h/0h/0h/0h`
+  addressValidationPattern = '^ak_+[1-9A-Za-z]{50}$'
+
+  // ae specifics
+  defaultNetworkId = 'ae_mainnet'
 
   constructor(public epochRPC = 'https://sdk-edgenet.aepps.com') {}
   /**
@@ -41,7 +51,7 @@ export class AEProtocol implements ICoinProtocol {
    * @param derivationPath DerivationPath for Key
    */
   getPublicKeyFromHexSecret(secret: string, derivationPath: string): string {
-    const { publicKey } = getHDWalletAccounts(generateHDWallet(secret), 1)[0]
+    const { publicKey } = generateWalletUsingDerivationPath(Buffer.from(secret, 'hex'), derivationPath)
     return Buffer.from(publicKey).toString('hex')
   }
 
@@ -51,7 +61,7 @@ export class AEProtocol implements ICoinProtocol {
    * @param derivationPath DerivationPath for Key
    */
   getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Buffer {
-    const { secretKey } = getHDWalletAccounts(generateHDWallet(secret), 1)[0]
+    const { secretKey } = generateWalletUsingDerivationPath(Buffer.from(secret, 'hex'), derivationPath)
     return Buffer.from(secretKey)
   }
 
@@ -64,17 +74,17 @@ export class AEProtocol implements ICoinProtocol {
   }
 
   getTransactionsFromPublicKey(publicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]> {
-    return Promise.resolve([{} as IAirGapTransaction])
+    return Promise.resolve([])
   }
 
   getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
-    return Promise.resolve([{} as IAirGapTransaction])
+    return Promise.resolve([])
   }
 
-  signWithPrivateKey(privateKey: Buffer, transaction: any): Promise<string> {
+  signWithPrivateKey(privateKey: Buffer, transaction: RawAeternityTransaction): Promise<string> {
     // sign and cut off first byte ('ae')
-    const rawTx = bs58check.decode(transaction.slice(3))
-    const signature = nacl.sign.detached(rawTx, privateKey)
+    const rawTx = bs58check.decode(transaction.transaction.slice(3))
+    const signature = nacl.sign.detached(Buffer.concat([Buffer.from(transaction.networkId), rawTx]), privateKey)
 
     const txObj = {
       tag: this.toHexBuffer(11),
@@ -91,7 +101,8 @@ export class AEProtocol implements ICoinProtocol {
     return Promise.resolve(signedEncodedTx)
   }
 
-  getTransactionDetails(transaction: any): IAirGapTransaction {
+  getTransactionDetails(unsignedTx: UnsignedAeternityTransaction): IAirGapTransaction {
+    const transaction = unsignedTx.transaction.transaction
     const rlpEncodedTx = bs58check.decode(transaction.replace('tx_', ''), 'hex')
     const rlpDecodedTx = rlp.decode(rlpEncodedTx)
 
@@ -107,22 +118,36 @@ export class AEProtocol implements ICoinProtocol {
     return airgapTx
   }
 
-  getTransactionDetailsFromRaw(transaction: any, rawTx: any): IAirGapTransaction {
-    const rlpEncodedTx = bs58check.decode(rawTx.replace('tx_', ''), 'hex')
+  getTransactionDetailsFromSigned(signedTx: SignedAeternityTransaction): IAirGapTransaction {
+    const rlpEncodedTx = bs58check.decode(signedTx.transaction.replace('tx_', ''), 'hex')
     const rlpDecodedTx = rlp.decode(rlpEncodedTx)
 
-    return this.getTransactionDetails('tx_' + bs58check.encode(rlpDecodedTx[3]).toString('hex'))
+    const unsignedAeternityTransaction: UnsignedAeternityTransaction = {
+      publicKey: '',
+      callback: '',
+      transaction: {
+        networkId: 'ae_mainnet',
+        transaction: 'tx_' + bs58check.encode(rlpDecodedTx[3]).toString('hex')
+      }
+    }
+
+    return this.getTransactionDetails(unsignedAeternityTransaction)
   }
 
   async getBalanceOfAddresses(addresses: string[]): Promise<BigNumber> {
     let balance = new BigNumber(0)
 
-    await Promise.all(
-      addresses.map(async address => {
+    for (let address of addresses) {
+      try {
         const { data } = await axios.get(`${this.epochRPC}/v2/accounts/${address}`)
-        balance.plus(new BigNumber(data.balance))
-      })
-    )
+        balance = balance.plus(new BigNumber(data.balance))
+      } catch (error) {
+        // if node returns 404 (which means 'no account found'), go with 0 balance
+        if (error.response.status !== 404) {
+          throw error
+        }
+      }
+    }
 
     return balance
   }
@@ -132,9 +157,23 @@ export class AEProtocol implements ICoinProtocol {
     return this.getBalanceOfAddresses([address])
   }
 
-  async prepareTransactionFromPublicKey(publicKey: string, recipients: string[], values: BigNumber[], fee: BigNumber): Promise<any> {
-    const { data: accountResponse } = await axios.get(`${this.epochRPC}/v2/accounts/${this.getAddressFromPublicKey(publicKey)}`)
-    // const { data: blocksResponse } = await axios.get(`${this.epochRPC}/v2/blocks/top`)
+  async prepareTransactionFromPublicKey(
+    publicKey: string,
+    recipients: string[],
+    values: BigNumber[],
+    fee: BigNumber
+  ): Promise<RawAeternityTransaction> {
+    let nonce = 0
+
+    try {
+      const { data: accountResponse } = await axios.get(`${this.epochRPC}/v2/accounts/${this.getAddressFromPublicKey(publicKey)}`)
+      nonce = accountResponse.nonce + 1
+    } catch (error) {
+      // if node returns 404 (which means 'no account found'), go with nonce 0
+      if (error.response.status !== 404) {
+        throw error
+      }
+    }
 
     const sender = publicKey
     const recipient = bs58check.decode(recipients[0].replace('ak_', ''))
@@ -147,7 +186,7 @@ export class AEProtocol implements ICoinProtocol {
       amount: this.toHexBuffer(values[0]),
       fee: this.toHexBuffer(fee),
       ttl: this.toHexBuffer(10000),
-      nonce: this.toHexBuffer(accountResponse.nonce + 1),
+      nonce: this.toHexBuffer(nonce),
       payload: Buffer.from('')
     }
 
@@ -155,16 +194,24 @@ export class AEProtocol implements ICoinProtocol {
     const rlpEncodedTx = rlp.encode(txArray)
     const preparedTx = 'tx_' + bs58check.encode(rlpEncodedTx)
 
-    return preparedTx
+    return {
+      transaction: preparedTx,
+      networkId: this.defaultNetworkId
+    }
   }
 
   async broadcastTransaction(rawTransaction: string): Promise<any> {
-    const { data } = await axios.post(`${this.epochRPC}/v2/transactions`, { tx: rawTransaction })
+    const { data } = await axios.post(
+      `${this.epochRPC}/v2/transactions`,
+      { tx: rawTransaction },
+      { headers: { 'Content-Type': 'application/json' } }
+    )
     return data.tx_hash
   }
 
   private toHexBuffer(value: number | BigNumber): Buffer {
-    return Buffer.from(value.toString(16).padStart(2, '0'), 'hex')
+    const hexString = Web3.utils.toHex(value).substr(2)
+    return Buffer.from(hexString.padStart(hexString.length % 2 === 0 ? hexString.length : hexString.length + 1, '0'), 'hex')
   }
 
   // Unsupported Functionality for Aeternity
@@ -203,7 +250,7 @@ export class AEProtocol implements ICoinProtocol {
     recipients: string[],
     values: BigNumber[],
     fee: BigNumber
-  ): Promise<any> {
+  ): Promise<RawAeternityTransaction> {
     return Promise.reject('extended public tx for aeternity not implemented')
   }
 }
