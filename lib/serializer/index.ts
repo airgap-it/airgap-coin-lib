@@ -15,7 +15,7 @@ export function unsignedTransactionSerializerByProtocolIdentifier(protocolIdenti
     ae: AeternityUnsignedTransactionSerializer
   }
 
-  const protocol = Object.keys(implementedSerializers).find(protocol => protocol.startsWith(protocolIdentifier))
+  const protocol = Object.keys(implementedSerializers).find(protocol => protocolIdentifier.startsWith(protocol))
 
   if (!protocol) {
     throw new ProtocolNotSupported()
@@ -31,7 +31,7 @@ export function signedTransactionSerializerByProtocolIdentifier(protocolIdentifi
     ae: AeternitySignedTransactionSerializer
   }
 
-  const protocol = Object.keys(implementedSerializers).find(protocol => protocol.startsWith(protocolIdentifier))
+  const protocol = Object.keys(implementedSerializers).find(protocol => protocolIdentifier.startsWith(protocol))
 
   if (!protocol) {
     throw new ProtocolNotSupported()
