@@ -163,7 +163,7 @@ export class AEProtocol implements ICoinProtocol {
     values: BigNumber[],
     fee: BigNumber
   ): Promise<RawAeternityTransaction> {
-    let nonce = 0
+    let nonce = 1
 
     try {
       const { data: accountResponse } = await axios.get(`${this.epochRPC}/v2/accounts/${this.getAddressFromPublicKey(publicKey)}`)
