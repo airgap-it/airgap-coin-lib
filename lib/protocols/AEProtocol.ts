@@ -44,7 +44,7 @@ export class AEProtocol implements ICoinProtocol {
   // ae specifics
   defaultNetworkId = 'ae_mainnet'
 
-  constructor(public epochRPC = 'https://sdk-edgenet.aepps.com') {}
+  constructor(public epochRPC = 'https://ae-epoch-rpc-proxy.gke.papers.tech') {}
   /**
    * Returns the PublicKey as String, derived from a supplied hex-string
    * @param secret HEX-Secret from BIP39
