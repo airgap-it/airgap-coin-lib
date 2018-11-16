@@ -1,9 +1,21 @@
 {
   "name": "airgap-coin-lib",
-  "version": "1.0.0",
-  "description": "",
+  "version": "0.1.2",
+  "description": "The airgap-coin-lib is setup in a way that prepare, signing and broadcasting are willingfully separated.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "keywords": [
+    "airgap",
+    "bitcoin",
+    "ethereum",
+    "aeternity",
+    "crypto"
+  ],
+  "homepage": "https://www.airgap.it",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/airgap-it/airgap-coin-lib"
+  },
   "scripts": {
     "build": "tsc",
     "tslint": "tslint -c ./tslint.json --project ./tsconfig.json --format stylish",

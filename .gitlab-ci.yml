@@ -8,6 +8,7 @@ stages:
   - build
   - test
   - qa
+  - publish
 
 build:
   stage: build
@@ -28,6 +29,21 @@ unit:
   script:
     - docker run --name unit-$CI_COMMIT_SHA $IMAGE_TAG_CURRENT npm run test
     - docker run --name unit-legacy-$CI_COMMIT_SHA $IMAGE_TAG_CURRENT npm run test-legacy
+  after_script:
+    - docker rm unit-$CI_COMMIT_SHA
+    - docker rm unit-legacy-$CI_COMMIT_SHA
+  tags:
+    - docker
+
+publish:
+  stage: publish
+  only:
+    - master
+  when: manual
+  before_script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+  script:
+    - docker run --env NPM_AUTH_TOKEN --name unit-$CI_COMMIT_SHA $IMAGE_TAG_CURRENT ./npm-ci-publish.sh
   after_script:
     - docker rm unit-$CI_COMMIT_SHA
     - docker rm unit-legacy-$CI_COMMIT_SHA
