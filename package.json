@@ -29,7 +29,7 @@
     "@aeternity/hd-wallet": "github:dschoeni/hd-wallet-js#b216450e56954a6e82ace0aade9474673de5d9d5",
     "abi-decoder": "github:laurentjacob/abi-decoder#a4b60b35d12af863026d6d723bec73b172c4e5b7",
     "axios": "^0.18.0",
-    "bignumber.js": "^7.0.1",
+    "bignumber.js": "^8.0.0",
     "bip39": "^2.5.0",
     "bitcoinjs-lib": "^3.3.2",
     "bitcoinjs-lib-zcash": "^3.5.2",
@@ -50,7 +50,6 @@
   },
   "devDependencies": {
     "@types/assert": "0.0.31",
-    "@types/bignumber.js": "^5.0.0",
     "@types/bip39": "^2.4.0",
     "@types/bitcoinjs-lib": "^3.4.0",
     "@types/chai": "^4.1.6",
