@@ -16,9 +16,9 @@ export interface UnsignedTransaction {
 export type SerializedUnsignedTransaction = SerializedUnsignedEthereumTransaction | SerializedUnsignedBitcoinTransaction
 
 export enum SyncProtocolUnsignedTransactionKeys {
-  UNSIGNED_TRANSACTION,
-  PUBLIC_KEY,
-  CALLBACK
+  UNSIGNED_TRANSACTION = 0,
+  PUBLIC_KEY = 1,
+  CALLBACK = 2
 }
 
 export interface SerializedSyncProtocolTransaction extends Array<SerializedUnsignedTransaction | Buffer | Buffer[]> {
