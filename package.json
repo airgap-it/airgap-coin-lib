@@ -73,7 +73,7 @@
     "tslint": "^5.10.0",
     "tslint-config-prettier": "^1.15.0",
     "tslint-config-standard": "github:papers-ch/tslint-config-standard",
-    "typescript": "^2.7.2",
+    "typescript": "2.4.2",
     "typestrict": "^1.0.1",
     "websocket": "^1.0.28"
   },

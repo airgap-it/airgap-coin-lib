@@ -22,17 +22,17 @@ export type SerializedSignedTransaction =
   | SerializedSignedAeternityTransaction
 
 export enum SyncProtocolSignedTransactionKeys {
-  SIGNED_TRANSACTION,
-  ACCOUNT_IDENTIFIER,
-  FROM,
-  FEE,
-  AMOUNT
+  SIGNED_TRANSACTION = 0,
+  ACCOUNT_IDENTIFIER = 1,
+  FROM = 2,
+  FEE = 3,
+  AMOUNT = 4
 }
 
 export interface SerializedSyncProtocolSignedTransaction extends Array<SerializedSignedTransaction | Buffer | Buffer[]> {
-  [SyncProtocolSignedTransactionKeys.SIGNED_TRANSACTION]: SerializedSignedTransaction
-  [SyncProtocolSignedTransactionKeys.ACCOUNT_IDENTIFIER]: Buffer
-  [SyncProtocolSignedTransactionKeys.FROM]: Buffer[]
-  [SyncProtocolSignedTransactionKeys.FEE]: Buffer
-  [SyncProtocolSignedTransactionKeys.AMOUNT]: Buffer
+  [0]: SerializedSignedTransaction // SyncProtocolSignedTransactionKeys.SIGNED_TRANSACTION
+  [1]: Buffer // SyncProtocolSignedTransactionKeys.ACCOUNT_IDENTIFIER
+  [2]: Buffer[] // SyncProtocolSignedTransactionKeys.FROM
+  [3]: Buffer // SyncProtocolSignedTransactionKeys.FEE
+  [4]: Buffer // SyncProtocolSignedTransactionKeys.AMOUNT
 }

@@ -30,13 +30,13 @@ export interface SyncWalletRequest {
 }
 
 export enum SyncProtocolWalletSync {
-  PUBLIC_KEY,
-  DERIVATION_PATH,
-  IS_EXTENDED_PUBLIC_KEY
+  PUBLIC_KEY = 0,
+  DERIVATION_PATH = 1,
+  IS_EXTENDED_PUBLIC_KEY = 2
 }
 
 export interface SerializedSyncProtocolWalletSync extends Array<Buffer> {
-  [SyncProtocolWalletSync.PUBLIC_KEY]: Buffer
-  [SyncProtocolWalletSync.DERIVATION_PATH]: Buffer
-  [SyncProtocolWalletSync.IS_EXTENDED_PUBLIC_KEY]: Buffer
+  [0]: Buffer // SyncProtocolWalletSync.PUBLIC_KEY
+  [1]: Buffer // SyncProtocolWalletSync.DERIVATION_PATH
+  [2]: Buffer // SyncProtocolWalletSync.IS_EXTENDED_PUBLIC_KEY
 }
