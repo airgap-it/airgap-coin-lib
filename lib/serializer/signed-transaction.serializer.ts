@@ -30,9 +30,9 @@ export enum SyncProtocolSignedTransactionKeys {
 }
 
 export interface SerializedSyncProtocolSignedTransaction extends Array<SerializedSignedTransaction | Buffer | Buffer[]> {
-  [SyncProtocolSignedTransactionKeys.SIGNED_TRANSACTION]: SerializedSignedTransaction
-  [SyncProtocolSignedTransactionKeys.ACCOUNT_IDENTIFIER]: Buffer
-  [SyncProtocolSignedTransactionKeys.FROM]: Buffer[]
-  [SyncProtocolSignedTransactionKeys.FEE]: Buffer
-  [SyncProtocolSignedTransactionKeys.AMOUNT]: Buffer
+  [0]: SerializedSignedTransaction // SyncProtocolSignedTransactionKeys.SIGNED_TRANSACTION
+  [1]: Buffer // SyncProtocolSignedTransactionKeys.ACCOUNT_IDENTIFIER
+  [2]: Buffer[] // SyncProtocolSignedTransactionKeys.FROM
+  [3]: Buffer // SyncProtocolSignedTransactionKeys.FEE
+  [4]: Buffer // SyncProtocolSignedTransactionKeys.AMOUNT
 }

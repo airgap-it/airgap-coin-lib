@@ -22,7 +22,7 @@ export enum SyncProtocolUnsignedTransactionKeys {
 }
 
 export interface SerializedSyncProtocolTransaction extends Array<SerializedUnsignedTransaction | Buffer | Buffer[]> {
-  [SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION]: SerializedUnsignedTransaction
-  [SyncProtocolUnsignedTransactionKeys.PUBLIC_KEY]: Buffer
-  [SyncProtocolUnsignedTransactionKeys.CALLBACK]: Buffer
+  [0]: SerializedUnsignedTransaction // SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION
+  [1]: Buffer // SyncProtocolUnsignedTransactionKeys.PUBLIC_KEY
+  [2]: Buffer // SyncProtocolUnsignedTransactionKeys.CALLBACK
 }

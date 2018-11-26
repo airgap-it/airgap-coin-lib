@@ -36,7 +36,7 @@ export enum SyncProtocolWalletSync {
 }
 
 export interface SerializedSyncProtocolWalletSync extends Array<Buffer> {
-  [SyncProtocolWalletSync.PUBLIC_KEY]: Buffer
-  [SyncProtocolWalletSync.DERIVATION_PATH]: Buffer
-  [SyncProtocolWalletSync.IS_EXTENDED_PUBLIC_KEY]: Buffer
+  [0]: Buffer // SyncProtocolWalletSync.PUBLIC_KEY
+  [1]: Buffer // SyncProtocolWalletSync.DERIVATION_PATH
+  [2]: Buffer // SyncProtocolWalletSync.IS_EXTENDED_PUBLIC_KEY
 }

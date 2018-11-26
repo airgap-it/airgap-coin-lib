@@ -27,10 +27,10 @@ export type SerializedSyncProtocolPayload =
   | SerializedSyncProtocolSignedTransaction
 
 export interface SerializedSyncProtocol extends Array<Buffer | SerializedSyncProtocolPayload> {
-  [SyncProtocolKeys.VERSION]: Buffer
-  [SyncProtocolKeys.TYPE]: Buffer
-  [SyncProtocolKeys.PROTOCOL]: Buffer
-  [SyncProtocolKeys.PAYLOAD]: SerializedSyncProtocolPayload
+  [0]: Buffer // SyncProtocolKeys.VERSION
+  [1]: Buffer // SyncProtocolKeys.TYPE
+  [2]: Buffer // SyncProtocolKeys.PROTOCOL
+  [3]: SerializedSyncProtocolPayload // SyncProtocolKeys.PAYLOAD
 }
 
 export interface DeserializedSyncProtocol {
