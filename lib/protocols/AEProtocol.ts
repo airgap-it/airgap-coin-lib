@@ -44,6 +44,8 @@ export class AEProtocol implements ICoinProtocol {
   // ae specifics
   defaultNetworkId = 'ae_mainnet'
 
+  epochMiddleware = 'https://ae-epoch-rpc-proxy.gke.papers.tech'
+
   constructor(public epochRPC = 'https://ae-epoch-rpc-proxy.gke.papers.tech') {}
   /**
    * Returns the PublicKey as String, derived from a supplied hex-string
@@ -73,12 +75,35 @@ export class AEProtocol implements ICoinProtocol {
     return 'ak_' + base58
   }
 
-  getTransactionsFromPublicKey(publicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]> {
-    return Promise.resolve([])
+  async getTransactionsFromPublicKey(publicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]> {
+    return this.getTransactionsFromAddresses([this.getAddressFromPublicKey(publicKey)], limit, offset)
   }
 
-  getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
-    return Promise.resolve([])
+  async getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
+    const allTransactions = await Promise.all(
+      addresses.map(address => {
+        return axios.get(`${this.epochMiddleware}/middleware/transactions/account/${address}`)
+      })
+    )
+
+    const transactions: any[] = [].concat(
+      ...allTransactions.map(axiosData => {
+        return axiosData.data.transactions
+      })
+    )
+
+    return transactions.map(obj => {
+      const airGapTx: IAirGapTransaction = {
+        amount: new BigNumber(obj.tx.amount),
+        fee: new BigNumber(obj.tx.fee),
+        from: [obj.tx.sender_id],
+        isInbound: addresses.indexOf(obj.tx.sender_id) !== -1,
+        protocolIdentifier: this.identifier,
+        to: [obj.tx.recipient_id]
+      }
+
+      return airGapTx
+    })
   }
 
   signWithPrivateKey(privateKey: Buffer, transaction: RawAeternityTransaction): Promise<string> {
