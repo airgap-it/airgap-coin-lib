@@ -195,9 +195,15 @@ export class AEProtocol implements ICoinProtocol {
       nonce = accountResponse.nonce + 1
     } catch (error) {
       // if node returns 404 (which means 'no account found'), go with nonce 0
-      if (error.response.status !== 404) {
+      if (error.response && error.response.status !== 404) {
         throw error
       }
+    }
+
+    const balance = await this.getBalanceOfPublicKey(publicKey)
+
+    if (balance.isLessThan(fee)) {
+      throw new Error('not enough balance')
     }
 
     const sender = publicKey

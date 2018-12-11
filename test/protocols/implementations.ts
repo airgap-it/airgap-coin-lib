@@ -7,6 +7,7 @@ const mnemonic = 'spell device they juice trial skirt amazing boat badge steak u
 
 interface ProtocolHTTPStub {
   registerStub(testProtocolSpec: TestProtocolSpec, protocol: ICoinProtocol)
+  noBalanceStub(testProtocolSpec: TestProtocolSpec, protocol: ICoinProtocol)
 }
 
 abstract class TestProtocolSpec {

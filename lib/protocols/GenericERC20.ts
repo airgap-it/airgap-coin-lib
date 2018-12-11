@@ -160,7 +160,8 @@ export class GenericERC20 extends EthereumProtocol {
                   '&contract=' +
                   this.tokenContract.options.address +
                   '&page=' +
-                  offset / limit +
+                  Math.floor(offset / limit) +
+                  1 +
                   '&limit=' +
                   limit
               )

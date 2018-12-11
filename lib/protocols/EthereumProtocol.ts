@@ -197,7 +197,7 @@ export class EthereumProtocol implements ICoinProtocol {
     }
 
     return new Promise((resolve, reject) => {
-      this.getBalanceOfAddresses([address])
+      this.getBalanceOfPublicKey(publicKey)
         .then(balance => {
           const gasLimit = new BigNumber(21000)
           const gasPrice = fee.div(gasLimit).integerValue(BigNumber.ROUND_CEIL)
@@ -272,7 +272,8 @@ export class EthereumProtocol implements ICoinProtocol {
                   'transactions?address=' +
                   address +
                   '&page=' +
-                  offset / limit +
+                  Math.floor(offset / limit) +
+                  1 +
                   '&limit=' +
                   limit +
                   '&filterContractInteraction=true'
