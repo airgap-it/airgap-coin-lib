@@ -1,7 +1,7 @@
 import * as sinon from 'sinon'
 import 'mocha'
-
-import { expect } from 'chai'
+import * as chai from 'chai'
+import * as chaiAsPromised from 'chai-as-promised'
 import { TestProtocolSpec } from './implementations'
 import { IAirGapTransaction } from '../../lib'
 import { AETestProtocolSpec } from './specs/ae'
@@ -9,6 +9,12 @@ import { EthereumTestProtocolSpec } from './specs/ethereum'
 import { EthereumRopstenTestProtocolSpec } from './specs/ethereum-ropsten'
 import { EthereumClassicTestProtocolSpec } from './specs/ethereum-classic'
 import { ERC20HOPTokenTestProtocolSpec } from './specs/erc20-hop-token'
+import BigNumber from 'bignumber.js'
+import { EthereumProtocol, GenericERC20, HOPTokenProtocol } from '../../dist'
+
+// use chai-as-promised plugin
+chai.use(chaiAsPromised)
+const expect = chai.expect
 
 /**
  * We currently test the following ICoinProtocol methods
@@ -56,11 +62,11 @@ protocols.forEach((protocol: TestProtocolSpec) => {
     })
 
     describe(`Prepare Transaction`, () => {
-      beforeEach(() => {
+      beforeEach(async () => {
         protocol.stub.registerStub(protocol, protocol.lib)
       })
 
-      afterEach(() => {
+      afterEach(async () => {
         sinon.restore()
       })
 
@@ -80,6 +86,36 @@ protocols.forEach((protocol: TestProtocolSpec) => {
           }
           expect(preparedTx).to.deep.include(tx.unsignedTx)
         })
+      })
+
+      it('prepareTransactionFromPublicKey - Is able to prepare a transaction with amount 0', async () => {
+        // should not throw an exception when trying to create a 0 TX, given enough funds are available for the gas
+        try {
+          await protocol.lib.prepareTransactionFromPublicKey(
+            protocol.wallet.publicKey,
+            protocol.wallet.addresses,
+            [new BigNumber(0)],
+            protocol.wallet.tx.fee
+          )
+        } catch (error) {
+          throw error
+        }
+
+        // restore stubs
+        sinon.restore()
+        protocol.stub.noBalanceStub(protocol, protocol.lib)
+
+        try {
+          await protocol.lib.prepareTransactionFromPublicKey(
+            protocol.wallet.publicKey,
+            protocol.wallet.addresses,
+            [new BigNumber(0)],
+            protocol.wallet.tx.fee
+          )
+          throw new Error(`should have failed`)
+        } catch (error) {
+          expect(error.toString()).to.contain('balance')
+        }
       })
     })
 
