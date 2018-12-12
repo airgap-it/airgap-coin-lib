@@ -469,6 +469,9 @@ export class BitcoinProtocol implements ICoinProtocol {
               }
             }
 
+            // deduct fee from amount
+            amount = amount.minus(new BigNumber(transaction.fees).shiftedBy(this.feeDecimals))
+
             const airGapTransaction: IAirGapTransaction = {
               hash: transaction.txid,
               from: tempAirGapTransactionFrom,
