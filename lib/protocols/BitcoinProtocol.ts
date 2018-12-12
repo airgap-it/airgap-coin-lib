@@ -413,81 +413,17 @@ export class BitcoinProtocol implements ICoinProtocol {
     })
   }
 
-  getTransactionsFromExtendedPublicKey(
+  async getTransactionsFromExtendedPublicKey(
     extendedPublicKey: string,
     limit: number,
     offset: number,
     addressOffset = 0
   ): Promise<IAirGapTransaction[]> {
-    return new Promise((resolve, reject) => {
-      const derivedAddresses: string[] = []
-      derivedAddresses.push(...this.getAddressesFromExtendedPublicKey(extendedPublicKey, 1, 100, addressOffset))
-      derivedAddresses.push(...this.getAddressesFromExtendedPublicKey(extendedPublicKey, 0, 100, addressOffset))
+    const derivedAddresses: string[] = []
+    derivedAddresses.push(...this.getAddressesFromExtendedPublicKey(extendedPublicKey, 1, 100, addressOffset))
+    derivedAddresses.push(...this.getAddressesFromExtendedPublicKey(extendedPublicKey, 0, 100, addressOffset))
 
-      const airGapTransactions: IAirGapTransaction[] = []
-      axios
-        .get(this.baseApiUrl + '/api/addrs/' + derivedAddresses.join(',') + '/txs?from=' + offset + '&to=' + (offset + limit), {
-          responseType: 'json'
-        })
-        .then(response => {
-          const transactionResponse = response.data
-          for (let transaction of transactionResponse.items) {
-            let tempAirGapTransactionFrom: string[] = []
-            let tempAirGapTransactionTo: string[] = []
-            let tempAirGapTransactionIsInbound: boolean = true
-
-            let amount = new BigNumber(0)
-
-            for (let vin of transaction.vin) {
-              if (derivedAddresses.indexOf(vin.addr) > -1) {
-                tempAirGapTransactionIsInbound = false
-              }
-              tempAirGapTransactionFrom.push(vin.addr)
-              amount.plus(vin.valueSat)
-            }
-
-            for (let vout of transaction.vout) {
-              tempAirGapTransactionTo.push(...vout.scriptPubKey.addresses)
-              if (this.containsSome(vout.scriptPubKey.addresses, derivedAddresses) && !tempAirGapTransactionIsInbound) {
-                // remove only if related to this address
-                amount = amount.minus(new BigNumber(vout.value).multipliedBy(10 ** 8))
-              } else if (!this.containsSome(vout.scriptPubKey.addresses, derivedAddresses) && tempAirGapTransactionIsInbound) {
-                amount = amount.minus(new BigNumber(vout.value).multipliedBy(10 ** 8))
-              }
-            }
-
-            const airGapTransaction: IAirGapTransaction = {
-              hash: transaction.txid,
-              from: tempAirGapTransactionFrom,
-              to: tempAirGapTransactionTo,
-              isInbound: tempAirGapTransactionIsInbound,
-              amount: amount,
-              fee: new BigNumber(transaction.fees).shiftedBy(this.feeDecimals),
-              blockHeight: transaction.blockheight,
-              protocolIdentifier: this.identifier,
-              timestamp: transaction.time
-            }
-
-            airGapTransactions.push(airGapTransaction)
-          }
-
-          if (airGapTransactions.length < limit) {
-            if (airGapTransactions.length > 0) {
-              this.getTransactionsFromExtendedPublicKey(extendedPublicKey, 0, limit - airGapTransactions.length, addressOffset + 100)
-                .then(transactions => {
-                  airGapTransactions.push(...transactions)
-                  resolve(airGapTransactions)
-                })
-                .catch(reject)
-            } else {
-              resolve(airGapTransactions)
-            }
-          } else {
-            resolve(airGapTransactions)
-          }
-        })
-        .catch(reject)
-    })
+    return this.getTransactionsFromAddresses(derivedAddresses, limit, offset)
   }
 
   getTransactionsFromPublicKey(publicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]> {
@@ -506,29 +442,30 @@ export class BitcoinProtocol implements ICoinProtocol {
           for (let transaction of transactions.items) {
             let tempAirGapTransactionFrom: string[] = []
             let tempAirGapTransactionTo: string[] = []
+            let tempAirGapTransactionIsInbound: boolean = true
 
             let amount = new BigNumber(0)
 
             for (let vin of transaction.vin) {
+              if (addresses.indexOf(vin.addr) > -1) {
+                tempAirGapTransactionIsInbound = false
+              }
               tempAirGapTransactionFrom.push(vin.addr)
-              amount.plus(vin.valueSat)
+              amount = amount.plus(vin.valueSat)
             }
 
             for (let vout of transaction.vout) {
               if (vout.scriptPubKey.addresses) {
                 tempAirGapTransactionTo.push(...vout.scriptPubKey.addresses)
-                if (this.containsSome(addresses, vout.scriptPubKey.addresses)) {
+                // If receiving address is our address, and transaction is outbound => our change
+                if (this.containsSome(vout.scriptPubKey.addresses, addresses) && !tempAirGapTransactionIsInbound) {
                   // remove only if related to this address
-                  amount.minus(new BigNumber(vout.value).multipliedBy(10 ** 8))
+                  amount = amount.minus(new BigNumber(vout.value).shiftedBy(this.decimals))
                 }
-              }
-            }
-
-            let tempAirGapTransactionIsInbound: boolean = true
-
-            for (let vin of transaction.vin) {
-              if (addresses.indexOf(vin.addr) > -1) {
-                tempAirGapTransactionIsInbound = false
+                // If receiving address is not ours, and transaction isbound => senders change
+                if (!this.containsSome(vout.scriptPubKey.addresses, addresses) && tempAirGapTransactionIsInbound) {
+                  amount = amount.minus(new BigNumber(vout.value).shiftedBy(this.decimals))
+                }
               }
             }
 
@@ -536,12 +473,12 @@ export class BitcoinProtocol implements ICoinProtocol {
               hash: transaction.txid,
               from: tempAirGapTransactionFrom,
               to: tempAirGapTransactionTo,
-              amount: amount,
-              blockHeight: transaction.blockheight,
-              timestamp: transaction.time,
-              fee: new BigNumber(transaction.fees).shiftedBy(this.feeDecimals),
               isInbound: tempAirGapTransactionIsInbound,
-              protocolIdentifier: this.identifier
+              amount: amount,
+              fee: new BigNumber(transaction.fees).shiftedBy(this.feeDecimals),
+              blockHeight: transaction.blockheight,
+              protocolIdentifier: this.identifier,
+              timestamp: transaction.time
             }
 
             airGapTransactions.push(airGapTransaction)
