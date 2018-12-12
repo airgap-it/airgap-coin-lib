@@ -152,18 +152,10 @@ export class GenericERC20 extends EthereumProtocol {
       for (let address of addresses) {
         promises.push(
           new Promise((resolve, reject) => {
+            let page = Math.ceil(offset / limit)
             axios
               .get(
-                this.infoAPI +
-                  'transactions?address=' +
-                  address +
-                  '&contract=' +
-                  this.tokenContract.options.address +
-                  '&page=' +
-                  Math.floor(offset / limit) +
-                  1 +
-                  '&limit=' +
-                  limit
+                `${this.infoAPI}transactions?address=${address}&contract=${this.tokenContract.options.address}&page=${page}&limit=${limit}`
               )
               .then(response => {
                 const transactionResponse = response.data

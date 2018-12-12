@@ -266,17 +266,10 @@ export class EthereumProtocol implements ICoinProtocol {
       for (let address of addresses) {
         promises.push(
           new Promise((resolve, reject) => {
+            let page = Math.ceil(offset / limit)
             axios
               .get(
-                this.infoAPI +
-                  'transactions?address=' +
-                  address +
-                  '&page=' +
-                  Math.floor(offset / limit) +
-                  1 +
-                  '&limit=' +
-                  limit +
-                  '&filterContractInteraction=true'
+                this.infoAPI + 'transactions?address=' + address + '&page=' + page + '&limit=' + limit + '&filterContractInteraction=true'
               )
               .then(response => {
                 const transactionResponse = response.data
