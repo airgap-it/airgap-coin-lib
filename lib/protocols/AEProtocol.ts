@@ -97,7 +97,7 @@ export class AEProtocol implements ICoinProtocol {
         amount: new BigNumber(obj.tx.amount),
         fee: new BigNumber(obj.tx.fee),
         from: [obj.tx.sender_id],
-        isInbound: addresses.indexOf(obj.tx.sender_id) !== -1,
+        isInbound: addresses.indexOf(obj.tx.recipient_id) !== -1,
         protocolIdentifier: this.identifier,
         to: [obj.tx.recipient_id],
         hash: obj.hash,
