@@ -56,7 +56,9 @@ describe(`ICoinProtocol Aeternity - Custom Tests`, () => {
         from: aeProtocolSpec.wallet.addresses,
         isInbound: true,
         protocolIdentifier: aeLib.identifier,
-        to: aeProtocolSpec.wallet.addresses
+        to: aeProtocolSpec.wallet.addresses,
+        hash: 'th_z8bNzdugQdpiRUVXUmQbxoy5dLLEFLG6StBY95jF1KdXrRxiq',
+        blockHeight: 443
       }
     ])
   })
