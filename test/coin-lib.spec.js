@@ -178,12 +178,12 @@ describe('Balance Of', function() {
   })
 
   it('should return the correct ethereum balance given an address', function(done) {
-    const address = '0x5ffc99b5b23c5ab8f463f6090342879c286a29be'
+    const address = '0x2B6eD29A95753C3Ad948348e3e7b1A251080Ffb9'
     const ethereum = new CoinLib.EthereumProtocol()
     ethereum
       .getBalanceOfAddresses([address])
       .then(value => {
-        assert.equal(value.toString(10), '552124155366522618683042')
+        assert.equal(value.toString(10), '250000000010000000000000')
         done()
       })
       .catch(done)
@@ -318,18 +318,6 @@ describe('Balance Of', function() {
       .then(value => {
         assert.equal(value.toString(10), '545454692003')
         sinon.restore()
-        done()
-      })
-      .catch(done)
-  })
-
-  it('should return the correct ae balance given an address', function(done) {
-    const address = '0x73494bcb0865a72fd03cb3242e4c7b48688c0feb'
-    const aeToken = new CoinLib.AETokenProtocol()
-    aeToken
-      .getBalanceOfAddresses([address])
-      .then(value => {
-        assert.equal(value.toString(10), '1000000000000000000')
         done()
       })
       .catch(done)
