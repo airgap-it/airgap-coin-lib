@@ -99,7 +99,9 @@ export class AEProtocol implements ICoinProtocol {
         from: [obj.tx.sender_id],
         isInbound: addresses.indexOf(obj.tx.sender_id) !== -1,
         protocolIdentifier: this.identifier,
-        to: [obj.tx.recipient_id]
+        to: [obj.tx.recipient_id],
+        hash: obj.hash,
+        blockHeight: obj.block_height
       }
 
       return airGapTx
