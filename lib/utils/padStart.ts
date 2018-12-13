@@ -1,7 +1,6 @@
 export function padStart(targetString: string, targetLength: number, padString: string) {
   // truncate if number, or convert non-number to 0
   targetLength = targetLength >> 0
-  padString = String(typeof padString !== 'undefined' ? padString : ' ')
 
   if (targetString.length >= targetLength) {
     return targetString
