@@ -6,5 +6,5 @@ export function toHexBuffer(value: number | BigNumber): Buffer {
 }
 
 export function toHexString(value: number | BigNumber): string {
-  return padStart('0x' + value.toString(16), 2, '0')
+  return '0x' + padStart(value.toString(16), 2, '0')
 }
