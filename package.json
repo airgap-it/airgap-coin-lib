@@ -1,6 +1,6 @@
 {
   "name": "airgap-coin-lib",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "The airgap-coin-lib is setup in a way that prepare, signing and broadcasting are willingfully separated.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -22,7 +22,7 @@
     "lint-ci": "tslint -t json -o lintReport.json --project . || true",
     "test": "nyc mocha --require ts-node/register --require source-map-support/register --full-trace --timeout 40000 ./test/**/**.spec.ts",
     "test-legacy": "npm run build && mocha --full-trace --timeout 40000 ./test/**/**.spec.js",
-    "prepare": "npm run build"
+    "prepublishOnly": "npm run build"
   },
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
