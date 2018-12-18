@@ -10,7 +10,7 @@ import { EthereumRopstenTestProtocolSpec } from './specs/ethereum-ropsten'
 import { EthereumClassicTestProtocolSpec } from './specs/ethereum-classic'
 import { ERC20HOPTokenTestProtocolSpec } from './specs/erc20-hop-token'
 import BigNumber from 'bignumber.js'
-import { EthereumProtocol, GenericERC20, HOPTokenProtocol } from '../../dist'
+import { TezosTestProtocolSpec } from './specs/tezos'
 
 // use chai-as-promised plugin
 chai.use(chaiAsPromised)
@@ -33,7 +33,8 @@ const protocols = [
   new EthereumTestProtocolSpec(),
   new EthereumClassicTestProtocolSpec(),
   new EthereumRopstenTestProtocolSpec(),
-  new AETestProtocolSpec()
+  new AETestProtocolSpec(),
+  new TezosTestProtocolSpec()
 ]
 
 protocols.forEach((protocol: TestProtocolSpec) => {
