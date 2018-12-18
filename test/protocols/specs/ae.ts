@@ -37,11 +37,11 @@ export class AETestProtocolSpec extends TestProtocolSpec {
       */
       unsignedTx: {
         transaction:
-          'tx_3BqfkeqNiTz3RAYHkjSzVXMcRYXV7gX7UxQ9mbVsQvEwq4U7rVLAjFt38VdTcwZkBxp7B8rE4Vu3yZZvXW7wNaFrRDdgQY5Lj6uGc5WZfbijFcEL477X376wYm6TCDGZ5LSESscJ',
+          'tx_7WcPFuQ1mXzeHhN6jzxNUzz82bRN64RAocAamXGYuhV4NgQCF8tve1nGx8wm8XFy2UhkKzJ93LGXFtVZtYhVwgJBYRDNqztPA77dpdFx6fCs1gLJxBevJytJyJLns6AMNpbHR',
         networkId: 'ae_mainnet'
       },
       signedTx:
-        'tx_3nAx7VwmuafNTfcC7AaSpm3MNLUwEKMhfwRWmkR42RFGyckE9cAHGjJGXp5ZwuTDycTjvhAUcLPh6kpe7SQcVQ4JyVxxQ6ULFYXJ8L1g8mvF3GYJVKVHkTHrZjjeJ9LSgpvTNgBbq2FR8BaKbStY4qAhY7haXnBgWbeyPgv9fUyZ32eLotwM1ifutCFJDXzQLTNGfJ6PvUHiiPAdEpyY3FSwN8UwaBfRRvPf72KAMdo5Q'
+        'tx_9GpbAwTPYqiT1oQrhPgF6j8UudBbN6dAgdYGRPoVfqjfM2PwX3r34E67MCm9UMvaCjt4Hf5iHENPWgSEjMLAKdHDPVgeCdEJ9dWWhttXobXqWjXpf7xNcUg5ojVGCUYLyM5Lc7yU7fQpCZNwu76jnpDGRbaFnYV9SLPWpN82u1DkUsEmggMtPAku6kq5RYNJBvmKn315yCzgxwzQZtKkxdxnekZzvsCktfmaTMPupM'
     }
   ]
 
