@@ -7,6 +7,7 @@ import axios from 'axios'
 import * as bs58check from 'bs58check'
 import { RawTezosTransaction, UnsignedTezosTransaction } from '../serializer/unsigned-transactions/tezos-transactions.serializer'
 import { SignedTezosTransaction } from '../serializer/signed-transactions/tezos-transactions.serializer'
+import { IAirGapSignedTransaction, TezosTransaction } from '../interfaces/IAirGapSignedTransaction'
 
 export enum TezosOperationType {
   TRANSACTION = 'transaction'
@@ -54,7 +55,7 @@ export class TezosProtocol implements ICoinProtocol {
   ]
 
   supportsHD = false
-  standardDerivationPath = `m/44h/1729h/0h/0h/0`
+  standardDerivationPath = `m/44h/1729h/0h/0h/0h`
   addressValidationPattern = '^tz1[1-9A-Za-z]{33}$'
 
   // Tezos
@@ -143,27 +144,29 @@ export class TezosProtocol implements ICoinProtocol {
   }
 
   // TODO Not implemented yet, see https://github.com/kukai-wallet/kukai/blob/master/src/app/services/operation.service.ts line 462 it requires libsodium
-  signWithPrivateKey(privateKey: Buffer, transaction: RawTezosTransaction): Promise<string> {
-    // sign and cut off first byte ('ae')
+  signWithPrivateKey(privateKey: Buffer, transaction: RawTezosTransaction): Promise<IAirGapSignedTransaction> {
+    const watermark = '03'
+    const watermarkedForgedOperationBytesHex: string = watermark + transaction.binaryTransaction
+    const watermarkedForgedOperationBytes: Buffer = Buffer.from(watermarkedForgedOperationBytesHex, 'hex')
+    const hashedWatermarkedOpBytes: Buffer = Buffer.from(nacl.hash(watermarkedForgedOperationBytes).slice(0, 32))
 
-    /*
-    const rawTx = bs58check.decode(transaction.transaction.slice(3))
-    const signature = nacl.sign.detached(Buffer.concat([Buffer.from(transaction.networkId), rawTx]), privateKey)
+    const opSignature = nacl.sign.detached(hashedWatermarkedOpBytes, privateKey)
 
-    const txObj = {
-      //tag: this.toHexBuffer(11),
-      //version: this.toHexBuffer(1),
-      signatures: [Buffer.from(signature)],
-      transaction: rawTx
+    const prefix = Buffer.from('edsig')
+    const n = new Uint8Array(prefix.length + opSignature.length)
+    n.set(prefix)
+    n.set(opSignature, prefix.length)
+    const hexSignature = bs58check.encode(Buffer.from(n))
+
+    const signedOpBytes: Buffer = Buffer.concat([Buffer.from(transaction.binaryTransaction, 'hex'), opSignature])
+
+    const tezosSignature: TezosTransaction = {
+      transaction: transaction.jsonTransaction,
+      bytes: signedOpBytes,
+      signature: hexSignature.toString()
     }
 
-    const txArray = Object.keys(txObj).map(a => txObj[a])
-
-    const rlpEncodedTx = rlp.encode(txArray)
-    const signedEncodedTx = 'tx_' + bs58check.encode(rlpEncodedTx)
-    */
-
-    return Promise.resolve('signedTezos')
+    return Promise.resolve(tezosSignature)
   }
 
   // TODO Not implemented yet. The only difference between signed and unsigned is the "signature" property in the json object, see https://github.com/kukai-wallet/kukai/blob/master/src/app/services/operation.service.ts line 61

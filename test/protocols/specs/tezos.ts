@@ -1,5 +1,4 @@
 import BigNumber from 'bignumber.js'
-import { AEProtocolStub } from '../stubs/ae.stub'
 import { TestProtocolSpec } from '../implementations'
 import { TezosProtocol } from '../../../lib/protocols/TezosProtocol'
 import { TezosProtocolStub } from '../stubs/tezos.stub'

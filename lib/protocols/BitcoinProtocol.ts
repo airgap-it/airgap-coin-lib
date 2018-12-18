@@ -10,6 +10,7 @@ import { ICoinProtocol } from './ICoinProtocol'
 import { UnsignedTransaction } from '../serializer/unsigned-transaction.serializer'
 import { RawBitcoinTransaction } from '../serializer/unsigned-transactions/bitcoin-transactions.serializer'
 import { SignedBitcoinTransaction } from '../serializer/signed-transactions/bitcoin-transactions.serializer'
+import { IAirGapSignedTransaction } from '../interfaces/IAirGapSignedTransaction'
 
 export class BitcoinProtocol implements ICoinProtocol {
   symbol = 'BTC'
@@ -100,7 +101,7 @@ export class BitcoinProtocol implements ICoinProtocol {
     )
   }
 
-  signWithPrivateKey(privateKey: Buffer, transaction: RawBitcoinTransaction): Promise<string> {
+  signWithPrivateKey(privateKey: Buffer, transaction: RawBitcoinTransaction): Promise<IAirGapSignedTransaction> {
     return new Promise((resolve, reject) => {
       const transactionBuilder = new this.bitcoinJSLib.TransactionBuilder(this.network)
 

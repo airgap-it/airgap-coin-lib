@@ -13,6 +13,7 @@ import {
 import { SignedAeternityTransaction } from '../serializer/signed-transactions/aeternity-transactions.serializer'
 import * as Web3 from 'web3'
 import { padStart } from '../utils/padStart'
+import { IAirGapSignedTransaction } from '../interfaces/IAirGapSignedTransaction'
 
 export class AEProtocol implements ICoinProtocol {
   symbol = 'AE'
@@ -110,7 +111,7 @@ export class AEProtocol implements ICoinProtocol {
     })
   }
 
-  signWithPrivateKey(privateKey: Buffer, transaction: RawAeternityTransaction): Promise<string> {
+  signWithPrivateKey(privateKey: Buffer, transaction: RawAeternityTransaction): Promise<IAirGapSignedTransaction> {
     // sign and cut off first byte ('ae')
     const rawTx = bs58check.decode(transaction.transaction.slice(3))
     const signature = nacl.sign.detached(Buffer.concat([Buffer.from(transaction.networkId), rawTx]), privateKey)

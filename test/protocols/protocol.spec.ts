@@ -50,6 +50,9 @@ protocols.forEach((protocol: TestProtocolSpec) => {
 
         // check if privateKey is a Buffer
         expect(privateKey).to.be.instanceof(Buffer)
+
+        // check if privateKey matches to supplied one
+        expect(privateKey.toString('hex')).to.equal(protocol.wallet.privateKey)
       })
 
       it('getAddressFromPublicKey - should be able to create a valid address from a supplied publicKey', () => {
@@ -58,6 +61,8 @@ protocols.forEach((protocol: TestProtocolSpec) => {
 
         // check if address format matches
         expect(address.match(new RegExp(protocol.lib.addressValidationPattern))).not.to.equal(null)
+
+        // check if address matches to supplied one
         expect(address).to.equal(protocol.wallet.addresses[0], 'address does not match')
       })
     })
