@@ -219,7 +219,7 @@ export class AEProtocol implements ICoinProtocol {
       recipient_id: Buffer.concat([this.toHexBuffer(1), recipient]),
       amount: this.toHexBuffer(values[0]),
       fee: this.toHexBuffer(fee),
-      ttl: this.toHexBuffer(10000),
+      ttl: this.toHexBuffer(0),
       nonce: this.toHexBuffer(nonce),
       payload: Buffer.from('')
     }
