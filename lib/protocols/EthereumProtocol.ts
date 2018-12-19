@@ -48,6 +48,7 @@ export class EthereumProtocol implements ICoinProtocol {
   supportsHD = false
   standardDerivationPath = `m/44'/60'/0'/0/0`
   addressValidationPattern = '^0x[a-fA-F0-9]{40}$'
+  addressPlaceholder = '0xabc...'
 
   web3: any
   network: INetwork

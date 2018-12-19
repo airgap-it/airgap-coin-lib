@@ -25,6 +25,7 @@ export interface ICoinProtocol {
   standardDerivationPath: string
 
   addressValidationPattern: string
+  addressPlaceholder: string
 
   getPublicKeyFromHexSecret(secret: string, derivationPath: string): string
   getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Buffer
