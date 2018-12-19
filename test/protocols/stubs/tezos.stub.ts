@@ -5,12 +5,12 @@ import * as sinon from 'sinon'
 
 export class TezosProtocolStub implements ProtocolHTTPStub {
   registerStub(testProtocolSpec: TestProtocolSpec, protocol: AEProtocol) {
-    sinon
-      .stub(axios, 'get')
+    const stub = sinon.stub(axios, 'get')
+
+    stub
       .withArgs(`${protocol.epochRPC}/chains/main/blocks/head/context/contracts/${testProtocolSpec.wallet.addresses[0]}/counter`)
       .returns(Promise.resolve({ data: 10000000 }))
-    sinon
-      .stub(axios, 'get')
+    stub
       .withArgs(`${protocol.epochRPC}/chains/main/blocks/head/hash`)
       .returns(Promise.resolve({ data: 'BMHBtAaUv59LipV1czwZ5iQkxEktPJDE7A9sYXPkPeRzbBasNY8' }))
   }
