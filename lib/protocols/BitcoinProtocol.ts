@@ -45,6 +45,7 @@ export class BitcoinProtocol implements ICoinProtocol {
 
   standardDerivationPath = `m/44'/0'/0'`
   addressValidationPattern = '\bbc(0([ac-hj-np-z02-9]{39}|[ac-hj-np-z02-9]{59})|1[ac-hj-np-z02-9]{8,87})\b'
+  addressPlaceholder = '1ABC...'
 
   network: any // TODO: fix type definition
   baseApiUrl: string
