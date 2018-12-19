@@ -2,11 +2,17 @@ import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
 import axios from 'axios'
 import { AEProtocol } from '../../../lib'
 import * as sinon from 'sinon'
-import BigNumber from 'bignumber.js'
 
 export class TezosProtocolStub implements ProtocolHTTPStub {
   registerStub(testProtocolSpec: TestProtocolSpec, protocol: AEProtocol) {
-    //
+    sinon
+      .stub(axios, 'get')
+      .withArgs(`${protocol.epochRPC}/chains/main/blocks/head/context/contracts/${testProtocolSpec.wallet.addresses[0]}/counter`)
+      .returns(Promise.resolve({ data: 10000000 }))
+    sinon
+      .stub(axios, 'get')
+      .withArgs(`${protocol.epochRPC}/chains/main/blocks/head/hash`)
+      .returns(Promise.resolve({ data: 'BMHBtAaUv59LipV1czwZ5iQkxEktPJDE7A9sYXPkPeRzbBasNY8' }))
   }
   noBalanceStub(testProtocolSpec: TestProtocolSpec, protocol: AEProtocol) {
     //

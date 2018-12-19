@@ -7,12 +7,15 @@ import { SignedTransactionSerializer } from './signed-transaction.serializer'
 import { AeternitySignedTransactionSerializer } from './signed-transactions/aeternity-transactions.serializer'
 import { AeternityUnsignedTransactionSerializer } from './unsigned-transactions/aeternity-transactions.serializer'
 import { ProtocolNotSupported } from './errors'
+import { TezosUnsignedTransactionSerializer } from './unsigned-transactions/tezos-transactions.serializer'
+import { TezosSignedTransactionSerializer } from './signed-transactions/tezos-transactions.serializer'
 
 export function unsignedTransactionSerializerByProtocolIdentifier(protocolIdentifier: string): UnsignedTransactionSerializer {
   const implementedSerializers = {
     eth: EthereumUnsignedTransactionSerializer,
     btc: BitcoinUnsignedTransactionSerializer,
-    ae: AeternityUnsignedTransactionSerializer
+    ae: AeternityUnsignedTransactionSerializer,
+    xtz: TezosUnsignedTransactionSerializer
   }
 
   const protocol = Object.keys(implementedSerializers).find(protocol => protocolIdentifier.startsWith(protocol))
@@ -28,7 +31,8 @@ export function signedTransactionSerializerByProtocolIdentifier(protocolIdentifi
   const implementedSerializers = {
     eth: EthereumSignedTransactionSerializer,
     btc: BitcoinSignedTransactionSerializer,
-    ae: AeternitySignedTransactionSerializer
+    ae: AeternitySignedTransactionSerializer,
+    xtz: TezosSignedTransactionSerializer
   }
 
   const protocol = Object.keys(implementedSerializers).find(protocol => protocolIdentifier.startsWith(protocol))

@@ -7,10 +7,7 @@ import {
 import { toBuffer } from '../utils/toBuffer'
 import { TezosOperationType, TezosWrappedOperation } from '../../protocols/TezosProtocol'
 
-export type SerializedUnsignedTezosTransaction = [
-  [Buffer, [Buffer, Buffer, Buffer, Buffer, Buffer, Buffer, Buffer, Buffer, Buffer]],
-  Buffer
-]
+export type SerializedUnsignedTezosTransaction = [[Buffer, Buffer[][]], Buffer]
 
 export interface RawTezosTransaction {
   jsonTransaction: TezosWrappedOperation
@@ -28,19 +25,16 @@ export class TezosUnsignedTransactionSerializer extends UnsignedTransactionSeria
         [
           transaction.transaction.jsonTransaction.branch,
           [
-            transaction.transaction.jsonTransaction.contents.map(obj => {
-              return [
-                obj.amount,
-                obj.counter,
-                obj.destination,
-                obj.fee,
-                obj.gas_limit,
-                obj.kind,
-                obj.protocol,
-                obj.source,
-                obj.storage_limit
-              ]
-            })
+            transaction.transaction.jsonTransaction.contents.map(obj => [
+              obj.amount,
+              obj.counter,
+              obj.destination,
+              obj.fee,
+              obj.gas_limit,
+              obj.kind,
+              obj.source,
+              obj.storage_limit
+            ])
           ]
         ],
         transaction.transaction.binaryTransaction
@@ -64,15 +58,14 @@ export class TezosUnsignedTransactionSerializer extends UnsignedTransactionSeria
           branch: serializedUnsignedTezosTx[0][0].toString(),
           contents: serializedUnsignedTezosTx[0][1].map(obj => {
             return {
-              amount: obj[0].toString(),
-              counter: obj[1].toString(),
-              destination: obj[2].toString(),
-              fee: obj[3].toString(),
-              gas_limit: obj[4].toString(),
-              kind: obj[5].toString() as TezosOperationType,
-              protocol: obj[6].toString(),
-              source: obj[7].toString(),
-              storage_limit: obj[8].toString()
+              amount: obj[0][0].toString(),
+              counter: obj[0][1].toString(),
+              destination: obj[0][2].toString(),
+              fee: obj[0][3].toString(),
+              gas_limit: obj[0][4].toString(),
+              kind: obj[0][5].toString() as TezosOperationType,
+              source: obj[0][6].toString(),
+              storage_limit: obj[0][7].toString()
             }
           })
         },

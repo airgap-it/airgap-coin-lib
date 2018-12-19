@@ -26,7 +26,6 @@ export interface TezosOperation {
   counter: string
   fee: string
   source: string
-  protocol: string
   kind: TezosOperationType
 }
 
@@ -65,7 +64,7 @@ export class TezosProtocol implements ICoinProtocol {
     tz3: new Uint8Array([6, 161, 164])
   }
 
-  private tezosChainId = 'PsddFKi32cMJ2qPjf43Qv5GDWLDPZb3T3bF6fLKiF5HtvHNU7aP'
+  protected tezosChainId = 'PsddFKi32cMJ2qPjf43Qv5GDWLDPZb3T3bF6fLKiF5HtvHNU7aP'
 
   /**
    * Tezos Implemention of ICoinProtocol
@@ -254,7 +253,6 @@ export class TezosProtocol implements ICoinProtocol {
       storage_limit: '0', // taken from eztz
       amount: values[0].toFixed(),
       counter: counter.toFixed(),
-      protocol: this.tezosChainId,
       destination: recipients[0],
       source: this.getAddressFromPublicKey(publicKey)
     }

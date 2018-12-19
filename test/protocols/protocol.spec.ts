@@ -136,7 +136,7 @@ protocols.forEach((protocol: TestProtocolSpec) => {
 
       it('signWithPrivateKey - Is able to sign a transaction using a PrivateKey', async function() {
         const privateKey = protocol.lib.getPrivateKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
-        const txs: string[] = []
+        const txs: any[] = []
 
         await Promise.all(
           protocol.txs.map(async ({ unsignedTx }) => {
