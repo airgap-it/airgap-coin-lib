@@ -1,25 +1,25 @@
 import BigNumber from 'bignumber.js'
-import { BitcoinProtocol, DeserializedSyncProtocol, SignedTransaction } from '../../../lib'
+import { DeserializedSyncProtocol, SignedTransaction, BitcoinTestnetProtocol } from '../../../lib'
 import { BitcoinProtocolStub } from '../stubs/bitcoin.stub'
 import { TestProtocolSpec } from '../implementations'
 
 export class BitcoinTestProtocolSpec extends TestProtocolSpec {
   name = 'Bitcoin'
-  lib = new BitcoinProtocol()
+  lib = new BitcoinTestnetProtocol()
   stub = new BitcoinProtocolStub()
   wallet = {
-    privateKey: '832d58a77ad222b8d9b75322e66d97e46b7dcfab3f25f6c1dd79ec13e046c7bc',
-    publicKey: '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
+    privateKey: 'tprv8fmGMwHA9QVZZzFAR77eLN6bursxXG4Jb59YnZKFyR8WG48s1JbpLuurf7LiRW3NEkkxR1mNmPcY9sWfrYMwFVDQKzJwhirzw8YpmFCYgEq',
+    publicKey: 'tpubDCTJWMKQHnBETTGxJknEjmkiUtPtgbFDANkL55MZPgvu6YPddhRQXQXiqHZdfHwcoVNwTaHmS6DuNjcaYPRqVFkDogJdWSMLpSWSC4pNa3r',
     addresses: ['mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k', 'mtb2Yx8rPUhYxdqPsH9nzT375QtWZ9XJcX'],
     tx: {
-      from: ['mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k', 'mtb2Yx8rPUhYxdqPsH9nzT375QtWZ9XJcX'],
-      to: ['mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k'],
       amount: new BigNumber('10'),
       fee: new BigNumber('27000')
     }
   }
   txs = [
     {
+      from: ['mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k', 'mtb2Yx8rPUhYxdqPsH9nzT375QtWZ9XJcX'],
+      to: ['mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k'],
       unsignedTx: {
         ins: [
           {
@@ -50,8 +50,7 @@ export class BitcoinTestProtocolSpec extends TestProtocolSpec {
           }
         ]
       },
-      signedTx:
-        'f86c808504a817c800825208944a1e1d37462a422873bfccb1e705b05cc4bd922e880de0b6b3a76400008026a00678aaa8f8fd478952bf46044589f5489e809c5ae5717dfe6893490b1f98b441a06a82b82dad7c3232968ec3aa2bba32879b3ecdb877934915d7e65e095fe53d5d'
+      signedTx: `01000000029d035485adbb78236f53e79bc02ff8785a3312bd3b65f94ba022d9b632b869cc000000006b483045022100b77ccca6c6d18e9e7a56a256f4a8c3269dd84985350dcce1d6a2a08e1aa47c4b02201cf2072aa0e242d4c89852d9a452d92aab79e7b2d955b2d065464a1ce7bc51600121024fd3380540fcc9ca541259ecbdf1b6c649d2be04f76d17d685ab63a8e75c4b0effffffff9d035485adbb78236f53e79bc02ff8785a3312bd3b65f94ba022d9b632b869cc010000006a47304402203b3ad8fd4b2666c0e9f4696334e8c389b23a72d361989a73597d93c8cdf2563d022026ca52833000725509fe1b942d8eab4c0f730a29d271e4d7fe6db5b300e07a8b012102f75fcf06cbe5726214e6199dd7720230083fd3c4f5a984c209373684b1e010feffffffff020a000000000000001976a9141b6d966bb9c605b984151da9bed896145698c44288ac3543ee01000000001976a91423133112acbd2276071912231a1c08874cfedbd688ac00000000`
     }
   ]
 

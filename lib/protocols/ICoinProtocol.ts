@@ -62,5 +62,5 @@ export interface ICoinProtocol {
     fee: BigNumber
   ): Promise<any> // only broadcaster
   prepareTransactionFromPublicKey(publicKey: string, recipients: string[], values: BigNumber[], fee: BigNumber): Promise<any> // only broadcaster
-  broadcastTransaction(rawTransaction: any): Promise<any>
+  broadcastTransaction(rawTransaction: any): Promise<string>
 }

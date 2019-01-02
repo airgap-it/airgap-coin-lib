@@ -24,6 +24,8 @@ export class TezosTestProtocolSpec extends TestProtocolSpec {
   }
   txs = [
     {
+      to: ['tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'],
+      from: ['tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'],
       unsignedTx: {
         jsonTransaction: {
           branch: 'BMHBtAaUv59LipV1czwZ5iQkxEktPJDE7A9sYXPkPeRzbBasNY8',

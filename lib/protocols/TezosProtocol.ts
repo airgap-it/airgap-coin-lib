@@ -274,7 +274,7 @@ export class TezosProtocol implements ICoinProtocol {
     }
   }
 
-  async broadcastTransaction(rawTransaction: TezosTransaction): Promise<any> {
+  async broadcastTransaction(rawTransaction: TezosTransaction): Promise<string> {
     try {
       const { data: preApplyResponse } = await axios.post(`${this.jsonRPCAPI}/chains/main/blocks/head/helpers/preapply/operations`, [
         rawTransaction.bytes
@@ -315,7 +315,7 @@ export class TezosProtocol implements ICoinProtocol {
   }
 
   getTransactionsFromExtendedPublicKey(extendedPublicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]> {
-    return Promise.resolve([{} as IAirGapTransaction])
+    return Promise.reject('fetching txs using extended public key for tezos not implemented')
   }
 
   prepareTransactionFromExtendedPublicKey(
@@ -325,6 +325,6 @@ export class TezosProtocol implements ICoinProtocol {
     values: BigNumber[],
     fee: BigNumber
   ): Promise<RawTezosTransaction> {
-    return Promise.reject('extended public tx for aeternity not implemented')
+    return Promise.reject('extended public key tx for tezos not implemented')
   }
 }

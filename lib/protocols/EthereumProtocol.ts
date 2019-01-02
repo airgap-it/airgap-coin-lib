@@ -225,7 +225,7 @@ export class EthereumProtocol implements ICoinProtocol {
     })
   }
 
-  broadcastTransaction(rawTransaction: string): Promise<any> {
+  broadcastTransaction(rawTransaction: string): Promise<string> {
     return new Promise((resolve, reject) => {
       this.web3.eth
         .sendSignedTransaction('0x' + rawTransaction)

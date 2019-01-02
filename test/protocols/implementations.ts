@@ -24,6 +24,8 @@ abstract class TestProtocolSpec {
     }
   }
   txs: {
+    to: string[]
+    from: string[]
     properties?: string[]
     unsignedTx: any
     signedTx: any

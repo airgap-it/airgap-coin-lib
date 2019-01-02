@@ -45,7 +45,7 @@ export class BitcoinProtocol implements ICoinProtocol {
   supportsHD = true
 
   standardDerivationPath = `m/44'/0'/0'`
-  addressValidationPattern = '\bbc(0([ac-hj-np-z02-9]{39}|[ac-hj-np-z02-9]{59})|1[ac-hj-np-z02-9]{8,87})\b'
+  addressValidationPattern = '^..[13][a-km-zA-HJ-NP-Z1-9]{25,34}$'
   addressPlaceholder = '1ABC...'
 
   network: any // TODO: fix type definition
@@ -401,7 +401,7 @@ export class BitcoinProtocol implements ICoinProtocol {
     })
   }
 
-  broadcastTransaction(rawTransaction: string): Promise<any> {
+  broadcastTransaction(rawTransaction: string): Promise<string> {
     return new Promise((resolve, reject) => {
       let params = new URLSearchParams() // Fix for axios content-type
       params.append('rawtx', rawTransaction)
