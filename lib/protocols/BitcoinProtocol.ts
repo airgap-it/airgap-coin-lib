@@ -182,7 +182,10 @@ export class BitcoinProtocol implements ICoinProtocol {
     const bitcoinTx = this.bitcoinJSLib.Transaction.fromHex(signedTx.transaction)
     bitcoinTx.outs.forEach(output => {
       let address = this.bitcoinJSLib.address.fromOutputScript(output.script, this.network)
-      tx.to.push(address)
+      // only works if one output is target and rest is change, but this way we can filter out change addresses
+      if (new BigNumber(output.value).isEqualTo(signedTx.amount)) {
+        tx.to.push(address)
+      }
     })
 
     return tx

@@ -5,10 +5,11 @@ import { TestProtocolSpec } from './implementations'
 import { SyncProtocolUtils } from '../../lib/serializer/serializer'
 import { SignedTransaction, UnsignedTransaction } from '../../lib'
 import { EthereumTestProtocolSpec } from './specs/ethereum'
-import { BitcoinTestProtocolSpec } from './specs/bitcoin'
 import { AETestProtocolSpec } from './specs/ae'
 import { ERC20HOPTokenTestProtocolSpec } from './specs/erc20-hop-token'
 import { TezosTestProtocolSpec } from './specs/tezos'
+import { BitcoinTestProtocolSpec } from './specs/bitcoin-test'
+import { BitcoinProtocolSpec } from './specs/bitcoin'
 
 const protocols = [
   new EthereumTestProtocolSpec(),
@@ -16,6 +17,7 @@ const protocols = [
   new AETestProtocolSpec(),
   new ERC20HOPTokenTestProtocolSpec(),
   new TezosTestProtocolSpec()
+  // new BitcoinProtocolSpec()
 ]
 
 protocols.forEach((protocol: TestProtocolSpec) => {
@@ -45,19 +47,13 @@ protocols.forEach((protocol: TestProtocolSpec) => {
     })
 
     it(`should be able to properly extract amount/fee using from signedTx in combination with the coin-lib`, async () => {
-      // TODO: Fix this
-      if (protocol.lib.identifier === 'btc') {
-        console.warn('skipping btc')
-        return
-      }
-
       for (let tx of protocol.txs) {
         const serializedTx = await syncProtocol.serialize(protocol.signedTransaction(tx))
         const deserializedTx = await syncProtocol.deserialize(serializedTx)
 
         const airGapTx = protocol.lib.getTransactionDetailsFromSigned(deserializedTx.payload as SignedTransaction)
 
-        expect(airGapTx.from).to.deep.equal(protocol.wallet.addresses)
+        expect(airGapTx.from).to.deep.equal(tx.from)
         expect(airGapTx.amount).to.deep.equal(protocol.wallet.tx.amount)
         expect(airGapTx.fee).to.deep.equal(protocol.wallet.tx.fee)
       }

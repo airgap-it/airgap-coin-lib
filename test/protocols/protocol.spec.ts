@@ -11,7 +11,8 @@ import { EthereumClassicTestProtocolSpec } from './specs/ethereum-classic'
 import { ERC20HOPTokenTestProtocolSpec } from './specs/erc20-hop-token'
 import BigNumber from 'bignumber.js'
 import { TezosTestProtocolSpec } from './specs/tezos'
-import { BitcoinTestProtocolSpec } from './specs/bitcoin'
+import { BitcoinProtocolSpec } from './specs/bitcoin'
+import { BitcoinTestProtocolSpec } from './specs/bitcoin-test'
 
 // use chai-as-promised plugin
 chai.use(chaiAsPromised)
@@ -37,6 +38,7 @@ const protocols = [
   new AETestProtocolSpec(),
   new TezosTestProtocolSpec(),
   new BitcoinTestProtocolSpec()
+  // new BitcoinProtocolSpec()
 ]
 
 const itIf = (condition, title, test) => {

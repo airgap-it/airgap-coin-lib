@@ -1,16 +1,16 @@
 import BigNumber from 'bignumber.js'
-import { DeserializedSyncProtocol, SignedTransaction, BitcoinTestnetProtocol } from '../../../lib'
+import { DeserializedSyncProtocol, SignedTransaction, BitcoinProtocol } from '../../../lib'
 import { BitcoinProtocolStub } from '../stubs/bitcoin.stub'
 import { TestProtocolSpec } from '../implementations'
 
-export class BitcoinTestProtocolSpec extends TestProtocolSpec {
+export class BitcoinProtocolSpec extends TestProtocolSpec {
   name = 'Bitcoin'
-  lib = new BitcoinTestnetProtocol()
+  lib = new BitcoinProtocol()
   stub = new BitcoinProtocolStub()
   wallet = {
-    privateKey: 'tprv8fmGMwHA9QVZZzFAR77eLN6bursxXG4Jb59YnZKFyR8WG48s1JbpLuurf7LiRW3NEkkxR1mNmPcY9sWfrYMwFVDQKzJwhirzw8YpmFCYgEq',
-    publicKey: 'tpubDCTJWMKQHnBETTGxJknEjmkiUtPtgbFDANkL55MZPgvu6YPddhRQXQXiqHZdfHwcoVNwTaHmS6DuNjcaYPRqVFkDogJdWSMLpSWSC4pNa3r',
-    addresses: ['mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k', 'mtb2Yx8rPUhYxdqPsH9nzT375QtWZ9XJcX'],
+    privateKey: 'xprv9yzvjXeHEDMMM2x8H6btZjyVaB9YBpvR7wdqQhGAEQbsvjrQejHhPdqdMRcAE3MqdZcfrSkCGk96YVqPhFHwJqY7VxgPgmMWMehcmHdQJ5h',
+    publicKey: 'xpub6CzH93BB4aueZX2bP88tvsvE8Cz2bHeGVAZSD5fmnk8roYBZCGbwwSA7ChiRr65jncuPH8qBQA9nBwi2Qtz1Uqt8wuHvof9SAcPpFxpe1GV',
+    addresses: ['15B2gX2x1eqFKgR44nCe1i33ursGKP4Qpi', '1QKqr9wjki9K9tF9NxigbwgHeLXHT682sc'],
     tx: {
       amount: new BigNumber('10'),
       fee: new BigNumber('27000')
@@ -18,33 +18,33 @@ export class BitcoinTestProtocolSpec extends TestProtocolSpec {
   }
   txs = [
     {
-      from: ['mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k', 'mtb2Yx8rPUhYxdqPsH9nzT375QtWZ9XJcX'],
-      to: ['mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k'],
+      from: ['15B2gX2x1eqFKgR44nCe1i33ursGKP4Qpi', '1QKqr9wjki9K9tF9NxigbwgHeLXHT682sc'],
+      to: ['15B2gX2x1eqFKgR44nCe1i33ursGKP4Qpi'],
       unsignedTx: {
         ins: [
           {
             txId: 'cc69b832b6d922a04bf9653bbd12335a78f82fc09be7536f2378bbad8554039d',
             value: new BigNumber('10'),
             vout: 0,
-            address: 'mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k',
+            address: '15B2gX2x1eqFKgR44nCe1i33ursGKP4Qpi',
             derivationPath: '0/0'
           },
           {
             txId: 'cc69b832b6d922a04bf9653bbd12335a78f82fc09be7536f2378bbad8554039d',
             value: new BigNumber('32418989'),
             vout: 1,
-            address: 'mtb2Yx8rPUhYxdqPsH9nzT375QtWZ9XJcX',
+            address: '15B2gX2x1eqFKgR44nCe1i33ursGKP4Qpi',
             derivationPath: '1/3'
           }
         ],
         outs: [
           {
-            recipient: 'mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k',
+            recipient: '15B2gX2x1eqFKgR44nCe1i33ursGKP4Qpi',
             isChange: false,
             value: new BigNumber('10')
           },
           {
-            recipient: 'miiQwEJY9fCG6GD1BFtnVuWRS6zaTnNafq',
+            recipient: '1QKqr9wjki9K9tF9NxigbwgHeLXHT682sc',
             isChange: true,
             value: new BigNumber('32391989')
           }
