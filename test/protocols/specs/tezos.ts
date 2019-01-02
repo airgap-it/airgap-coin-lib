@@ -2,21 +2,21 @@ import BigNumber from 'bignumber.js'
 import { TestProtocolSpec } from '../implementations'
 import { TezosProtocolStub } from '../stubs/tezos.stub'
 import { DeserializedSyncProtocol, SignedTransaction } from '../../../lib'
-import { TezosAlphaProtocol } from '../../../lib/protocols/TezosAlphaProtocol'
+import { TezosProtocol } from '../../../lib/protocols/TezosProtocol'
 
-// Test Mnemonic:
-// cannon volume define column midnight uncover cute math ridge torch smooth mask still lumber night
-// Address: tz1d9oQZ51E9hRozKPEwSVg9xZCK9JAZrJy5
+// Test Mnemonic from using Ledger, 44'/1729'/0'/0'
+// leopard crouch simple blind castle they elder enact slow rate mad blanket saddle tail silk fury quarter obscure interest exact veteran volcano fabric cherry
+// Address: tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L
 
 export class TezosTestProtocolSpec extends TestProtocolSpec {
   name = 'Tezos'
-  lib = new TezosAlphaProtocol()
+  lib = new TezosProtocol()
   stub = new TezosProtocolStub()
   wallet = {
     privateKey:
-      '65093ac9899ced07211b56eaef83c2fdfef11ecea77a665d2d59cf93c40e5196d64f61ec56519e7f10f35908c40f7b3288fb3ebdc0f6c504aa95ec780e3c7ff9',
-    publicKey: 'd64f61ec56519e7f10f35908c40f7b3288fb3ebdc0f6c504aa95ec780e3c7ff9',
-    addresses: ['tz1d9oQZ51E9hRozKPEwSVg9xZCK9JAZrJy5'],
+      '2f243e474992bb96b49b2fa7b2c1cba7a804257f0cf13dceb640cf3210d54838cdbc0c3449784bd53907c3c7a06060cf12087e492a7b937f044c6a73b522a234',
+    publicKey: 'cdbc0c3449784bd53907c3c7a06060cf12087e492a7b937f044c6a73b522a234',
+    addresses: ['tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'],
     tx: {
       amount: new BigNumber('100000000'),
       fee: new BigNumber('50000')
@@ -26,35 +26,36 @@ export class TezosTestProtocolSpec extends TestProtocolSpec {
     {
       unsignedTx: {
         jsonTransaction: {
-          branch: 'BLyypN89WuTQyLtExGP6PEuZiu5WFDxys3GTUf7Vz4KvgKcvo2E',
+          branch: 'BMHBtAaUv59LipV1czwZ5iQkxEktPJDE7A9sYXPkPeRzbBasNY8',
           contents: [
             {
               kind: 'transaction',
-              source: 'tz1d9oQZ51E9hRozKPEwSVg9xZCK9JAZrJy5',
+              source: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L',
               fee: '50000',
               counter: '3',
-              gas_limit: '200',
+              gas_limit: '10100',
               storage_limit: '0',
               amount: '100000000',
-              destination: 'tz1d9oQZ51E9hRozKPEwSVg9xZCK9JAZrJy5'
+              destination: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'
             }
           ]
         },
-        binaryTransaction: ''
+        binaryTransaction:
+          'ce69c5713dac3537254e7be59759cf59c15abd530d10501ccf9028a5786314cf08000091a9d2b003f19cf5a1f38f04f1000ab482d33176d0860303f44e0080c2d72f000091a9d2b003f19cf5a1f38f04f1000ab482d3317600'
       },
       signedTx: {
         transaction: {
-          branch: 'BLyypN89WuTQyLtExGP6PEuZiu5WFDxys3GTUf7Vz4KvgKcvo2E',
+          branch: 'BMHBtAaUv59LipV1czwZ5iQkxEktPJDE7A9sYXPkPeRzbBasNY8',
           contents: [
             {
               kind: 'transaction',
-              source: 'tz1d9oQZ51E9hRozKPEwSVg9xZCK9JAZrJy5',
+              source: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L',
               fee: '50000',
               counter: '3',
-              gas_limit: '200',
+              gas_limit: '10100',
               storage_limit: '0',
               amount: '100000000',
-              destination: 'tz1d9oQZ51E9hRozKPEwSVg9xZCK9JAZrJy5'
+              destination: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'
             }
           ]
         },
@@ -76,6 +77,6 @@ export class TezosTestProtocolSpec extends TestProtocolSpec {
   }
 
   seed() {
-    return '19a55a6cb7196defac577bd172f92ce401fbac3223b0ba84831507a4d8ccf2b38afbb40b4e46892dc38554908aeec63a611a10c82d50b56bb3a71efa4be94395'
+    return '5b72ef2589b7bd6e35c349ce682cb574f09726e171f2ea166982bf66a1a815fabb9dcbed182b50a3468f8af7ce1f6a3ca739dbde4241b8b674c25b9b2cc5489c'
   }
 }

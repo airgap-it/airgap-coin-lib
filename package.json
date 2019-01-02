@@ -44,6 +44,7 @@
     "ethereumjs-util": "^5.2.0",
     "hdkey": "^0.8.0",
     "js-sha3": "^0.7.0",
+    "libsodium-wrappers": "^0.7.3",
     "rlp": "^2.1.0",
     "tweetnacl": "^1.0.0",
     "validate.js": "^0.12.0",

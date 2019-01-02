@@ -8,6 +8,7 @@ import * as bs58check from 'bs58check'
 import { RawTezosTransaction, UnsignedTezosTransaction } from '../serializer/unsigned-transactions/tezos-transactions.serializer'
 import { SignedTezosTransaction } from '../serializer/signed-transactions/tezos-transactions.serializer'
 import { IAirGapSignedTransaction, TezosTransaction } from '../interfaces/IAirGapSignedTransaction'
+import * as sodium from 'libsodium-wrappers'
 
 export enum TezosOperationType {
   TRANSACTION = 'transaction'
@@ -54,14 +55,17 @@ export class TezosProtocol implements ICoinProtocol {
   ]
 
   supportsHD = false
-  standardDerivationPath = `m/44h/1729h/0h/0h/0h`
+  standardDerivationPath = `m/44h/1729h/0h/0h`
   addressValidationPattern = '^tz1[1-9A-Za-z]{33}$'
 
   // Tezos
   private tezosPrefixes = {
     tz1: new Uint8Array([6, 161, 159]),
     tz2: new Uint8Array([6, 161, 161]),
-    tz3: new Uint8Array([6, 161, 164])
+    tz3: new Uint8Array([6, 161, 164]),
+    edpk: new Uint8Array([13, 15, 37, 217]),
+    edsk: new Uint8Array([43, 246, 78, 7]),
+    edsig: new Uint8Array([9, 245, 205, 134, 18])
   }
 
   protected tezosChainId = 'PsddFKi32cMJ2qPjf43Qv5GDWLDPZb3T3bF6fLKiF5HtvHNU7aP'
@@ -96,14 +100,11 @@ export class TezosProtocol implements ICoinProtocol {
   }
 
   getAddressFromPublicKey(publicKey: string): string {
-    // potentially identical to sodium.crypto_generichash(20, Buffer.from(publicKey, 'hex')), taken from https://github.com/TezTech/eztz/blob/master/src/main.js line 66
-    const payload = nacl.hash(Buffer.from(publicKey, 'hex')).slice(0, 20)
+    // using libsodium for now
+    const payload = sodium.crypto_generichash(20, Buffer.from(publicKey, 'hex'))
+    const address = bs58check.encode(Buffer.concat([this.tezosPrefixes.tz1, payload]))
 
-    const n = new Uint8Array(this.tezosPrefixes.tz1.length + payload.length)
-    n.set(this.tezosPrefixes.tz1)
-    n.set(payload, this.tezosPrefixes.tz1.length)
-
-    return bs58check.encode(Buffer.from(n))
+    return address
   }
 
   async getTransactionsFromPublicKey(publicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]> {
@@ -147,22 +148,16 @@ export class TezosProtocol implements ICoinProtocol {
     const watermark = '03'
     const watermarkedForgedOperationBytesHex: string = watermark + transaction.binaryTransaction
     const watermarkedForgedOperationBytes: Buffer = Buffer.from(watermarkedForgedOperationBytesHex, 'hex')
-    const hashedWatermarkedOpBytes: Buffer = Buffer.from(nacl.hash(watermarkedForgedOperationBytes).slice(0, 32))
+    const hashedWatermarkedOpBytes: Buffer = sodium.crypto_generichash(32, watermarkedForgedOperationBytes)
 
     const opSignature = nacl.sign.detached(hashedWatermarkedOpBytes, privateKey)
-
-    const prefix = Buffer.from('edsig')
-    const n = new Uint8Array(prefix.length + opSignature.length)
-    n.set(prefix)
-    n.set(opSignature, prefix.length)
-    const hexSignature = bs58check.encode(Buffer.from(n))
-
+    const hexSignature = bs58check.encode(Buffer.concat([this.tezosPrefixes.edsig, Buffer.from(opSignature)]))
     const signedOpBytes: Buffer = Buffer.concat([Buffer.from(transaction.binaryTransaction, 'hex'), opSignature])
 
     const tezosSignature: TezosTransaction = {
       transaction: transaction.jsonTransaction,
       bytes: signedOpBytes,
-      signature: hexSignature.toString()
+      signature: hexSignature
     }
 
     return Promise.resolve(tezosSignature)
@@ -219,7 +214,6 @@ export class TezosProtocol implements ICoinProtocol {
     return this.getBalanceOfAddresses([address])
   }
 
-  // TODO RawAeternityTransaction needs to be adapted to the proper tezos version
   async prepareTransactionFromPublicKey(
     publicKey: string,
     recipients: string[],
@@ -234,6 +228,7 @@ export class TezosProtocol implements ICoinProtocol {
         axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${this.getAddressFromPublicKey(publicKey)}/counter`),
         axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/hash`)
       ])
+
       counter = new BigNumber(results[0].data).plus(1)
       branch = results[1].data
     } catch (error) {
@@ -258,35 +253,40 @@ export class TezosProtocol implements ICoinProtocol {
     }
 
     try {
-      const { data: forgedOperation } = await axios.post(`${this.jsonRPCAPI}/chains/main/blocks/head/helpers/forge/operations`)
+      const jsonTransaction = {
+        branch: branch,
+        contents: [operation]
+      }
+      const { data: forgedOperation } = await axios.post(
+        `${this.jsonRPCAPI}/chains/main/blocks/head/helpers/forge/operations`,
+        jsonTransaction,
+        {
+          headers: { 'Content-Type': 'application/json' }
+        }
+      )
       return {
-        jsonTransaction: {
-          branch: branch,
-          contents: [operation]
-        },
+        jsonTransaction: jsonTransaction,
         binaryTransaction: forgedOperation
       }
     } catch (error) {
+      console.warn(error.message)
       throw new Error('Forging Tezos TX failed.')
     }
   }
 
-  async broadcastTransaction(rawTransaction: string): Promise<any> {
-    /*
-    const { header } = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/header`)
-    const { data } = await axios.post(
-      `${this.jsonRPCAPI}/chains/${this.tezosChainId}/blocks/${header}/helpers/forge/operations`,
-      {
-        branch: header,
-        contents: JSON.parse(rawTransaction) // tezos uses json based txs...
-      },
-      { headers: { 'Content-Type': 'application/json' } }
-    )
+  async broadcastTransaction(rawTransaction: TezosTransaction): Promise<any> {
+    try {
+      const { data: preApplyResponse } = await axios.post(`${this.jsonRPCAPI}/chains/main/blocks/head/helpers/preapply/operations`, [
+        rawTransaction.bytes
+      ])
+      const { data: injectionResponse } = await axios.post(`${this.jsonRPCAPI}/injection/operation`, rawTransaction.signature)
 
-    node.query('/chains/' + head.chain_id + '/blocks/' + head.hash + '/helpers/forge/operations', opOb)
-    return data.tx_hash
-    */
-    return Promise.resolve()
+      // returns hash if successful
+      return injectionResponse
+    } catch (err) {
+      console.warn(err)
+      throw new Error('broadcasting failed')
+    }
   }
 
   getExtendedPrivateKeyFromHexSecret(secret: string, derivationPath: string): string {
