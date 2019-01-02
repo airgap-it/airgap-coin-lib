@@ -276,11 +276,10 @@ export class TezosProtocol implements ICoinProtocol {
 
   async broadcastTransaction(rawTransaction: TezosTransaction): Promise<string> {
     try {
-      const { data: preApplyResponse } = await axios.post(`${this.jsonRPCAPI}/chains/main/blocks/head/helpers/preapply/operations`, [
-        rawTransaction.bytes
-      ])
-      const { data: injectionResponse } = await axios.post(`${this.jsonRPCAPI}/injection/operation`, rawTransaction.signature)
-
+      const { data: injectionResponse } = await axios.post(
+        `${this.jsonRPCAPI}/injection/operation`,
+        rawTransaction.bytes.toString('hex') + rawTransaction.signature
+      )
       // returns hash if successful
       return injectionResponse
     } catch (err) {
