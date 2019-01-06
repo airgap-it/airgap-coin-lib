@@ -65,7 +65,8 @@ export class TezosProtocol implements ICoinProtocol {
     tz3: new Uint8Array([6, 161, 164]),
     edpk: new Uint8Array([13, 15, 37, 217]),
     edsk: new Uint8Array([43, 246, 78, 7]),
-    edsig: new Uint8Array([9, 245, 205, 134, 18])
+    edsig: new Uint8Array([9, 245, 205, 134, 18]),
+    branch: new Uint8Array([1, 52])
   }
 
   protected tezosChainId = 'PsddFKi32cMJ2qPjf43Qv5GDWLDPZb3T3bF6fLKiF5HtvHNU7aP'
@@ -253,20 +254,14 @@ export class TezosProtocol implements ICoinProtocol {
     }
 
     try {
-      const jsonTransaction = {
+      const tezosWrappedOperation: TezosWrappedOperation = {
         branch: branch,
         contents: [operation]
       }
-      const { data: forgedOperation } = await axios.post(
-        `${this.jsonRPCAPI}/chains/main/blocks/head/helpers/forge/operations`,
-        jsonTransaction,
-        {
-          headers: { 'Content-Type': 'application/json' }
-        }
-      )
+
       return {
-        jsonTransaction: jsonTransaction,
-        binaryTransaction: forgedOperation
+        jsonTransaction: tezosWrappedOperation,
+        binaryTransaction: this.forgeTezosOperation(tezosWrappedOperation)
       }
     } catch (error) {
       console.warn(error.message)
@@ -325,5 +320,95 @@ export class TezosProtocol implements ICoinProtocol {
     fee: BigNumber
   ): Promise<RawTezosTransaction> {
     return Promise.reject('extended public key tx for tezos not implemented')
+  }
+
+  checkAndRemovePrefixToHex(base58CheckEncodedPayload: string, tezosPrefix: Uint8Array) {
+    const prefixHex = Buffer.from(tezosPrefix).toString('hex')
+    const payload = bs58check.decode(base58CheckEncodedPayload).toString('hex')
+    if (payload.startsWith(prefixHex)) {
+      return payload.substring(tezosPrefix.length)
+    } else {
+      throw new Error('payload did not match prefix: ' + tezosPrefix)
+    }
+  }
+
+  forgeTezosOperation(tezosWrappedOperation: TezosWrappedOperation) {
+    // taken from http://tezos.gitlab.io/mainnet/api/p2p.html
+    if (tezosWrappedOperation.contents[0].kind === TezosOperationType.TRANSACTION) {
+      const branchPrefixHex = Buffer.from(this.tezosPrefixes.branch).toString('hex')
+
+      let cleanedBranch = this.checkAndRemovePrefixToHex(tezosWrappedOperation.branch, this.tezosPrefixes.branch) // ignore the tezos prefix
+      if (cleanedBranch.length !== 64) {
+        // must be 32 bytes
+        throw new Error('provided branch is invalid')
+      }
+
+      let resultHexString = cleanedBranch // ignore the tezos prefix
+      resultHexString += '08' // because this is a transaction operation
+
+      let cleanedSource = this.checkAndRemovePrefixToHex(tezosWrappedOperation.contents[0].source, this.tezosPrefixes.tz1) // currently we only support tz1 addresses
+      if (cleanedSource.length > 44) {
+        // must be less or equal 22 bytes
+        throw new Error('provided source is invalid')
+      }
+
+      while (cleanedSource.length !== 44) {
+        // fill up with 0s to match 22bytes
+        cleanedSource = '0' + cleanedSource
+      }
+
+      resultHexString += cleanedSource
+      resultHexString += this.bigNumberToZarith(new BigNumber(tezosWrappedOperation.contents[0].fee))
+      resultHexString += this.bigNumberToZarith(new BigNumber(tezosWrappedOperation.contents[0].counter))
+      resultHexString += this.bigNumberToZarith(new BigNumber(tezosWrappedOperation.contents[0].gas_limit))
+      resultHexString += this.bigNumberToZarith(new BigNumber(tezosWrappedOperation.contents[0].storage_limit))
+      resultHexString += this.bigNumberToZarith(new BigNumber(tezosWrappedOperation.contents[0].amount))
+
+      let cleanedDestination = this.checkAndRemovePrefixToHex(tezosWrappedOperation.contents[0].destination, this.tezosPrefixes.tz1)
+
+      if (cleanedDestination.length > 44) {
+        // must be less or equal 22 bytes
+        throw new Error('provided destination is invalid')
+      }
+
+      while (cleanedDestination.length !== 44) {
+        // fill up with 0s to match 22bytes
+        cleanedDestination = '0' + cleanedDestination
+      }
+
+      resultHexString += cleanedDestination
+      resultHexString += '00' // because we have no additional parameters
+      return resultHexString
+    } else {
+      throw new Error("operation kind other than 'transaction' currently not supported")
+    }
+  }
+
+  bigNumberToZarith(inputNumber: BigNumber) {
+    let bitString = inputNumber.toString(2)
+    while (bitString.length % 7 !== 0) {
+      bitString = '0' + bitString // fill up with leading '0'
+    }
+
+    let resultHexString = ''
+    // because it's little endian we start from behind...
+    for (let i = bitString.length; i > 0; i -= 7) {
+      let bitStringSection = bitString.substring(i - 7, i)
+      if (i === 7) {
+        // the last byte will show it's the last with a leading '0'
+        bitStringSection = '0' + bitStringSection
+      } else {
+        // the others will show more will come with a leading '1'
+        bitStringSection = '1' + bitStringSection
+      }
+      let hexStringSection = parseInt(bitStringSection, 2).toString(16)
+
+      if (hexStringSection.length % 2) {
+        hexStringSection = '0' + hexStringSection
+      }
+
+      resultHexString += hexStringSection
+    }
+    return resultHexString
   }
 }
