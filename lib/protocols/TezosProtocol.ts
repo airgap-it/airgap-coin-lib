@@ -326,7 +326,7 @@ export class TezosProtocol implements ICoinProtocol {
     const prefixHex = Buffer.from(tezosPrefix).toString('hex')
     const payload = bs58check.decode(base58CheckEncodedPayload).toString('hex')
     if (payload.startsWith(prefixHex)) {
-      return payload.substring(tezosPrefix.length)
+      return payload.substring(tezosPrefix.length * 2)
     } else {
       throw new Error('payload did not match prefix: ' + tezosPrefix)
     }
@@ -335,9 +335,7 @@ export class TezosProtocol implements ICoinProtocol {
   forgeTezosOperation(tezosWrappedOperation: TezosWrappedOperation) {
     // taken from http://tezos.gitlab.io/mainnet/api/p2p.html
     if (tezosWrappedOperation.contents[0].kind === TezosOperationType.TRANSACTION) {
-      const branchPrefixHex = Buffer.from(this.tezosPrefixes.branch).toString('hex')
-
-      let cleanedBranch = this.checkAndRemovePrefixToHex(tezosWrappedOperation.branch, this.tezosPrefixes.branch) // ignore the tezos prefix
+      const cleanedBranch = this.checkAndRemovePrefixToHex(tezosWrappedOperation.branch, this.tezosPrefixes.branch) // ignore the tezos prefix
       if (cleanedBranch.length !== 64) {
         // must be 32 bytes
         throw new Error('provided branch is invalid')
