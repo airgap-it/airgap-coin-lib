@@ -5,9 +5,9 @@ import {
   UnsignedTransactionSerializer
 } from '../unsigned-transaction.serializer'
 import { toBuffer } from '../utils/toBuffer'
-import { TezosOperationType, TezosWrappedOperation } from '../../protocols/TezosProtocol'
+import { TezosOperationType, TezosWrappedOperation, TezosSpendOperation } from '../../protocols/TezosProtocol'
 
-export type SerializedUnsignedTezosTransaction = [[Buffer, Buffer[][]], Buffer]
+export type SerializedUnsignedTezosTransaction = [Buffer, Buffer, [Buffer, Buffer, Buffer, Buffer, Buffer, Buffer, Buffer, Buffer]]
 
 export interface RawTezosTransaction {
   jsonTransaction: TezosWrappedOperation
@@ -19,61 +19,61 @@ export interface UnsignedTezosTransaction extends UnsignedTransaction {
 }
 
 export class TezosUnsignedTransactionSerializer extends UnsignedTransactionSerializer {
-  public serialize(transaction: UnsignedTezosTransaction): SerializedSyncProtocolTransaction {
-    const serializedTx: SerializedSyncProtocolTransaction = toBuffer([
+  public serialize(unsignedTx: UnsignedTezosTransaction): SerializedSyncProtocolTransaction {
+    const spendOperation = unsignedTx.transaction.jsonTransaction.contents[
+      Math.max(unsignedTx.transaction.jsonTransaction.contents.length - 1, 0)
+    ] as TezosSpendOperation
+
+    const toSerialize = [
       [
+        unsignedTx.transaction.binaryTransaction,
+        unsignedTx.transaction.jsonTransaction.branch,
         [
-          transaction.transaction.jsonTransaction.branch,
-          [
-            transaction.transaction.jsonTransaction.contents.map(obj => [
-              obj.amount,
-              obj.counter,
-              obj.destination,
-              obj.fee,
-              obj.gas_limit,
-              obj.kind,
-              obj.source,
-              obj.storage_limit
-            ])
-          ]
-        ],
-        transaction.transaction.binaryTransaction
+          spendOperation.amount,
+          spendOperation.counter,
+          spendOperation.destination,
+          spendOperation.fee,
+          spendOperation.gas_limit,
+          spendOperation.kind,
+          spendOperation.source,
+          spendOperation.storage_limit
+        ]
       ],
-      transaction.publicKey, // publicKey
-      transaction.callback ? transaction.callback : 'airgap-wallet://?d=' // callback-scheme
-    ]) as SerializedSyncProtocolTransaction
+      unsignedTx.publicKey, // publicKey
+      unsignedTx.callback ? unsignedTx.callback : 'airgap-wallet://?d=' // callback-scheme
+    ]
+    const serializedTx: SerializedSyncProtocolTransaction = toBuffer(toSerialize) as SerializedSyncProtocolTransaction
 
     return serializedTx
   }
 
   public deserialize(serializedTx: SerializedSyncProtocolTransaction): UnsignedTezosTransaction {
-    const serializedUnsignedTezosTx = serializedTx[
-      SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION
-    ] as SerializedUnsignedTezosTransaction
+    const tezosTx = serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION] as SerializedUnsignedTezosTransaction
+    const binaryTx = tezosTx[0]
+    const branch = tezosTx[1]
+    const jsonTx = tezosTx[2]
 
-    const unsignedTezosTx: UnsignedTezosTransaction = {
-      publicKey: serializedTx[SyncProtocolUnsignedTransactionKeys.PUBLIC_KEY].toString(),
+    return {
       transaction: {
+        binaryTransaction: binaryTx.toString(),
         jsonTransaction: {
-          branch: serializedUnsignedTezosTx[0][0].toString(),
-          contents: serializedUnsignedTezosTx[0][1].map(obj => {
-            return {
-              amount: obj[0][0].toString(),
-              counter: obj[0][1].toString(),
-              destination: obj[0][2].toString(),
-              fee: obj[0][3].toString(),
-              gas_limit: obj[0][4].toString(),
-              kind: obj[0][5].toString() as TezosOperationType,
-              source: obj[0][6].toString(),
-              storage_limit: obj[0][7].toString()
-            }
-          })
-        },
-        binaryTransaction: serializedUnsignedTezosTx[1].toString()
+          branch: branch.toString(),
+          contents: [
+            {
+              amount: jsonTx[0].toString(),
+              counter: jsonTx[1].toString(),
+              destination: jsonTx[2].toString(),
+              fee: jsonTx[3].toString(),
+              gas_limit: jsonTx[4].toString(),
+              kind: jsonTx[5].toString() as TezosOperationType,
+              source: jsonTx[6].toString(),
+              storage_limit: jsonTx[7].toString()
+            } as TezosSpendOperation
+          ]
+        }
       },
+      publicKey: serializedTx[SyncProtocolUnsignedTransactionKeys.PUBLIC_KEY].toString(),
       callback: serializedTx[SyncProtocolUnsignedTransactionKeys.CALLBACK].toString()
     }
-
-    return unsignedTezosTx
   }
 }

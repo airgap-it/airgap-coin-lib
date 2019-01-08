@@ -10,6 +10,7 @@ import { GenericERC20 } from './protocols/GenericERC20'
 import { HOPTokenProtocol } from './protocols/HOPTokenProtocol'
 import { AETokenProtocol } from './protocols/AETokenProtocol'
 import { AEProtocol } from './protocols/AEProtocol'
+import { TezosProtocol } from './protocols/TezosProtocol'
 import { AirGapWallet } from './wallet/AirGapWallet'
 import { AirGapMarketWallet } from './wallet/AirGapMarketWallet'
 import { IAirGapWallet } from './interfaces/IAirGapWallet'
@@ -53,6 +54,7 @@ export {
   HOPTokenProtocol,
   AETokenProtocol,
   AEProtocol,
+  TezosProtocol,
   // sync protocol
   SyncProtocolUtils,
   DeserializedSyncProtocol,

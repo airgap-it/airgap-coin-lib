@@ -14,6 +14,7 @@ export interface SignedTransaction {
   accountIdentifier: string
   from?: string[]
   amount?: BigNumber
+  to?: string[]
   fee?: BigNumber
 }
 
@@ -28,7 +29,8 @@ export enum SyncProtocolSignedTransactionKeys {
   ACCOUNT_IDENTIFIER = 1,
   FROM = 2,
   FEE = 3,
-  AMOUNT = 4
+  AMOUNT = 4,
+  TO = 5
 }
 
 export interface SerializedSyncProtocolSignedTransaction extends Array<SerializedSignedTransaction | Buffer | Buffer[]> {
@@ -37,4 +39,5 @@ export interface SerializedSyncProtocolSignedTransaction extends Array<Serialize
   [2]: Buffer[] // SyncProtocolSignedTransactionKeys.FROM
   [3]: Buffer // SyncProtocolSignedTransactionKeys.FEE
   [4]: Buffer // SyncProtocolSignedTransactionKeys.AMOUNT
+  [5]: Buffer[] // SyncProtocolSignedTransactionKeys.TO
 }

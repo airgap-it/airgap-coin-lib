@@ -18,8 +18,8 @@ export class TezosTestProtocolSpec extends TestProtocolSpec {
     publicKey: 'cdbc0c3449784bd53907c3c7a06060cf12087e492a7b937f044c6a73b522a234',
     addresses: ['tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'],
     tx: {
-      amount: new BigNumber('100000000'),
-      fee: new BigNumber('50000')
+      amount: new BigNumber('1000000'),
+      fee: new BigNumber('1420')
     }
   }
   txs = [
@@ -28,44 +28,25 @@ export class TezosTestProtocolSpec extends TestProtocolSpec {
       from: ['tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'],
       unsignedTx: {
         jsonTransaction: {
-          branch: 'BMHBtAaUv59LipV1czwZ5iQkxEktPJDE7A9sYXPkPeRzbBasNY8',
+          branch: 'BMJyc7ga9kLV3vH4kbn6GXbBNjRkLEJVSyovoXyY84Er1zMmKKT',
           contents: [
             {
               kind: 'transaction',
-              source: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L',
-              fee: '50000',
-              counter: '3',
+              fee: '1420',
               gas_limit: '10100',
               storage_limit: '0',
-              amount: '100000000',
-              destination: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'
+              amount: '1000000',
+              counter: '917316',
+              destination: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L',
+              source: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'
             }
           ]
         },
         binaryTransaction:
-          'ce69c5713dac3537254e7be59759cf59c15abd530d10501ccf9028a5786314cf08000091a9d2b003f19cf5a1f38f04f1000ab482d33176d0860303f44e0080c2d72f000091a9d2b003f19cf5a1f38f04f1000ab482d3317600'
+          'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb95508000091a9d2b003f19cf5a1f38f04f1000ab482d331768c0bc4fe37f44e00c0843d000091a9d2b003f19cf5a1f38f04f1000ab482d3317600'
       },
-      signedTx: {
-        transaction: {
-          branch: 'BMHBtAaUv59LipV1czwZ5iQkxEktPJDE7A9sYXPkPeRzbBasNY8',
-          contents: [
-            {
-              kind: 'transaction',
-              source: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L',
-              fee: '50000',
-              counter: '3',
-              gas_limit: '10100',
-              storage_limit: '0',
-              amount: '100000000',
-              destination: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'
-            }
-          ]
-        },
-        bytes: Buffer.from(
-          'ce69c5713dac3537254e7be59759cf59c15abd530d10501ccf9028a5786314cf08000002298c03ed7d454a101eb7022bc95f7e5f41ac78d0860303c8010080c2d72f0000e7670f32038107a59a2b9cfefae36ea21f5aa63c00'
-        ),
-        signature: 'edsigu5Cb8WEmUZzoeGSL3sbSuswNFZoqRPq5nXA18Pg4RHbhnFqshL2Rw5QJBM94UxdWntQjmY7W5MqBDMhugLgqrRAWHyH5hD'
-      }
+      signedTx:
+        'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb95508000091a9d2b003f19cf5a1f38f04f1000ab482d331768c0bc4fe37f44e00c0843d000091a9d2b003f19cf5a1f38f04f1000ab482d3317600266fcf757017eef2b68c5f482f64d13cbd9f027b1886fe90e03d5ef449df968b1f5f58675532cae0020b1f10bbd18ad5f0a00672da7a26cddd75ea847d0e1b09'
     }
   ]
 
@@ -75,6 +56,7 @@ export class TezosTestProtocolSpec extends TestProtocolSpec {
     payload.amount = this.wallet.tx.amount
     payload.fee = this.wallet.tx.fee
     payload.from = this.wallet.addresses
+    payload.to = this.wallet.addresses
     return protocol
   }
 
