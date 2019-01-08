@@ -89,15 +89,15 @@ export class TezosProtocol implements ICoinProtocol {
   standardDerivationPath = `m/44h/1729h/0h/0h`
   addressValidationPattern = '^tz1[1-9A-Za-z]{33}$'
 
-  // Tezos
+  // Tezos - We need to wrap these in Buffer due to non-compatible browser polyfills
   private tezosPrefixes = {
-    tz1: new Uint8Array([6, 161, 159]),
-    tz2: new Uint8Array([6, 161, 161]),
-    tz3: new Uint8Array([6, 161, 164]),
-    edpk: new Uint8Array([13, 15, 37, 217]),
-    edsk: new Uint8Array([43, 246, 78, 7]),
-    edsig: new Uint8Array([9, 245, 205, 134, 18]),
-    branch: new Uint8Array([1, 52])
+    tz1: Buffer.from(new Uint8Array([6, 161, 159])),
+    tz2: Buffer.from(new Uint8Array([6, 161, 161])),
+    tz3: Buffer.from(new Uint8Array([6, 161, 164])),
+    edpk: Buffer.from(new Uint8Array([13, 15, 37, 217])),
+    edsk: Buffer.from(new Uint8Array([43, 246, 78, 7])),
+    edsig: Buffer.from(new Uint8Array([9, 245, 205, 134, 18])),
+    branch: Buffer.from(new Uint8Array([1, 52]))
   }
 
   protected tezosChainId = 'PsddFKi32cMJ2qPjf43Qv5GDWLDPZb3T3bF6fLKiF5HtvHNU7aP'
@@ -134,7 +134,7 @@ export class TezosProtocol implements ICoinProtocol {
   getAddressFromPublicKey(publicKey: string): string {
     // using libsodium for now
     const payload = sodium.crypto_generichash(20, Buffer.from(publicKey, 'hex'))
-    const address = bs58check.encode(Buffer.concat([this.tezosPrefixes.tz1, payload]))
+    const address = bs58check.encode(Buffer.concat([this.tezosPrefixes.tz1, Buffer.from(payload)]))
 
     return address
   }
@@ -183,7 +183,7 @@ export class TezosProtocol implements ICoinProtocol {
     const hashedWatermarkedOpBytes: Buffer = sodium.crypto_generichash(32, watermarkedForgedOperationBytes)
 
     const opSignature = nacl.sign.detached(hashedWatermarkedOpBytes, privateKey)
-    const signedOpBytes: Buffer = Buffer.concat([Buffer.from(transaction.binaryTransaction, 'hex'), opSignature])
+    const signedOpBytes: Buffer = Buffer.concat([Buffer.from(transaction.binaryTransaction, 'hex'), Buffer.from(opSignature)])
 
     return Promise.resolve(signedOpBytes.toString('hex'))
   }
