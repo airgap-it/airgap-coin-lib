@@ -23,7 +23,7 @@ import { SignedTransaction } from './serializer/signed-transaction.serializer'
 import { TypeNotSupported, SerializerVersionMismatch, ProtocolNotSupported, ProtocolVersionMismatch } from './serializer/errors'
 
 const supportedProtocols = function(): ICoinProtocol[] {
-  return [new BitcoinProtocol(), new EthereumProtocol(), new AETokenProtocol(), new AEProtocol()]
+  return [new BitcoinProtocol(), new EthereumProtocol(), new AETokenProtocol(), new AEProtocol(), new TezosProtocol()]
 }
 
 const getProtocolByIdentifier = function(identifier: string) {
