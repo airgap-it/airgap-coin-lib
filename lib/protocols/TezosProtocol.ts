@@ -107,7 +107,7 @@ export class TezosProtocol implements ICoinProtocol {
    * @param jsonRPCAPI
    * @param baseApiUrl
    */
-  constructor(public jsonRPCAPI = 'https://rpc.tezrpc.me', public baseApiUrl = 'https://api5.tzscan.io') {}
+  constructor(public jsonRPCAPI = 'https://rpc.tezrpc.me', public baseApiUrl = 'https://api6.tzscan.io') {}
 
   /**
    * Returns the PublicKey as String, derived from a supplied hex-string
@@ -144,10 +144,11 @@ export class TezosProtocol implements ICoinProtocol {
   }
 
   async getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
-    /*
+    const page = Math.ceil(offset / limit)
+
     const allTransactions = await Promise.all(
       addresses.map(address => {
-        return axios.get(`${this.baseApiUrl}/v1/operations/${address}?type=Transaction&p=${offset}&number=${limit}`)
+        return axios.get(`${this.baseApiUrl}/v3/operations/${address}?type=Transaction&p=${page}&number=${limit}`)
       })
     )
 
@@ -157,22 +158,27 @@ export class TezosProtocol implements ICoinProtocol {
       })
     )
 
-    return transactions.map(obj => {
-      const airGapTx: IAirGapTransaction = {
-        amount: new BigNumber(obj.operations.amount),
-        fee: new BigNumber(obj.operations.fee),
-        from: [obj.operations.source.tz],
-        isInbound: addresses.indexOf(obj.operations.destination.tz) !== -1,
-        protocolIdentifier: this.identifier,
-        to: [obj.operations.destination.tz],
-        hash: obj.hash,
-        blockHeight: obj.operations.op_level // TODO show correct height
-      }
+    return transactions
+      .map(obj => {
+        return obj.type.operations.filter(operation => !operation.failed).map(operation => {
+          const airGapTx: IAirGapTransaction = {
+            amount: new BigNumber(operation.amount),
+            fee: new BigNumber(operation.fee),
+            from: [operation.src.tz],
+            isInbound: addresses.indexOf(operation.destination.tz) !== -1,
+            protocolIdentifier: this.identifier,
+            to: [operation.destination.tz],
+            hash: obj.hash,
+            timestamp: new Date(operation.timestamp).getTime(),
+            blockHeight: operation.op_level // TODO show correct height
+          }
 
-      return airGapTx
-    })
-    */
-    return Promise.resolve([])
+          return airGapTx
+        })
+      })
+      .reduce((previous: any[], current: any[]) => {
+        return previous.push(...current)
+      })
   }
 
   // TODO Not implemented yet, see https://github.com/kukai-wallet/kukai/blob/master/src/app/services/operation.service.ts line 462 it requires libsodium
