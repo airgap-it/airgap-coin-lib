@@ -169,7 +169,7 @@ export class TezosProtocol implements ICoinProtocol {
             protocolIdentifier: this.identifier,
             to: [operation.destination.tz],
             hash: obj.hash,
-            timestamp: new Date(operation.timestamp).getTime(),
+            timestamp: new Date(operation.timestamp).getTime() / 1000, // make sure its a unix timestamp
             blockHeight: operation.op_level // TODO show correct height
           }
 
