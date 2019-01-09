@@ -143,8 +143,15 @@ export class TezosProtocol implements ICoinProtocol {
     return this.getTransactionsFromAddresses([this.getAddressFromPublicKey(publicKey)], limit, offset)
   }
 
+  private getPageNumber(limit: number, offset: number): number {
+    if (limit <= 0 || offset < 0) {
+      return 0
+    }
+    return Math.floor(offset / limit) // we need +1 here because pages start at 1
+  }
+
   async getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
-    const page = Math.ceil(offset / limit)
+    const page = this.getPageNumber(limit, offset)
 
     const allTransactions = await Promise.all(
       addresses.map(address => {
