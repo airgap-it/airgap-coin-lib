@@ -520,7 +520,7 @@ describe('List Transactions', function() {
       .withArgs(
         `https://ropsten.trustwalletapp.com/transactions?address=${ethereumRopsten.getAddressFromPublicKey(
           publicKey
-        )}&page=0&limit=20&filterContractInteraction=true`
+        )}&page=1&limit=20&filterContractInteraction=true`
       )
       .returns(Promise.resolve({ data: { docs: [] } }))
 
