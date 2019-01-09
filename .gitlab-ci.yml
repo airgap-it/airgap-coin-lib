@@ -29,11 +29,33 @@ unit:
     - docker rm -f unit-$CI_COMMIT_SHA || true
     - docker rm -f unit-legacy-$CI_COMMIT_SHA || true
   script:
-    - docker run --name unit-$CI_COMMIT_SHA $IMAGE_TAG_CURRENT npm run test
+    - docker run --name unit-$CI_COMMIT_SHA $IMAGE_TAG_CURRENT npm run test-ci
     - docker run --name unit-legacy-$CI_COMMIT_SHA $IMAGE_TAG_CURRENT npm run test-legacy
+    - docker run --name lint-$CI_COMMIT_SHA $IMAGE_TAG_CURRENT npm run lint-ci
+    - docker cp unit-$CI_COMMIT_SHA:/app/coverage/lcov.info lcov.info
+    - docker cp lint-$CI_COMMIT_SHA:/app/lintReport.json lintReport.json
   after_script:
     - docker rm -f unit-$CI_COMMIT_SHA || true
     - docker rm -f unit-legacy-$CI_COMMIT_SHA || true
+    - docker rm -f lint-$CI_COMMIT_SHA || true
+  tags:
+    - docker
+  artifacts:
+    paths:
+      - lcov.info
+      - lintReport.json
+
+qa:
+  stage: qa
+  before_script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+  script:
+    - docker create --name qa-$CI_PIPELINE_ID $IMAGE_TAG_CURRENT npm run sonar-scanner -- -X -Dsonar.typescript.lcov.reportPaths=lcov.info -Dsonar.typescript.tslint.reportPaths=lintReport.json -Dsonar.test.inclusions=**/*.spec.ts -Dsonar.tests=src/ -Dsonar.exclusions=**/node_modules/**,**/*.spec.ts,src/assets/libs/** -Dsonar.sources=src/ -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_LOGIN -Dsonar.gitlab.commit_sha=$CI_COMMIT_SHA -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.gitlab.project_id=$CI_PROJECT_ID
+    - docker cp lcov.info qa-$CI_PIPELINE_ID:/app/lcov.info
+    - docker cp lintReport.json qa-$CI_PIPELINE_ID:/app/lintReport.json
+    - docker start -a qa-$CI_PIPELINE_ID
+  after_script:
+    - docker rm -f qa-$CI_PIPELINE_ID || true
   tags:
     - docker
 
