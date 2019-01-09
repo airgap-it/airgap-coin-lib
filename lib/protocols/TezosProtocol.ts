@@ -9,6 +9,7 @@ import { RawTezosTransaction, UnsignedTezosTransaction } from '../serializer/uns
 import { SignedTezosTransaction } from '../serializer/signed-transactions/tezos-transactions.serializer'
 import * as sodium from 'libsodium-wrappers'
 import { IAirGapSignedTransaction } from '../interfaces/IAirGapSignedTransaction'
+import { NonExtendedProtocol } from './NonExtendedProtocol'
 
 export enum TezosOperationType {
   TRANSACTION = 'transaction',
@@ -61,7 +62,7 @@ export interface TezosRevealOperation extends TezosOperation {
   kind: TezosOperationType.REVEAL
 }
 
-export class TezosProtocol implements ICoinProtocol {
+export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol {
   symbol = 'XTZ'
   name = 'Tezos'
   marketSymbol = 'xtz'
@@ -108,7 +109,9 @@ export class TezosProtocol implements ICoinProtocol {
    * @param jsonRPCAPI
    * @param baseApiUrl
    */
-  constructor(public jsonRPCAPI = 'https://rpc.tezrpc.me', public baseApiUrl = 'https://api6.tzscan.io') {}
+  constructor(public jsonRPCAPI = 'https://rpc.tezrpc.me', public baseApiUrl = 'https://api6.tzscan.io') {
+    super()
+  }
 
   /**
    * Returns the PublicKey as String, derived from a supplied hex-string
@@ -339,45 +342,6 @@ export class TezosProtocol implements ICoinProtocol {
       console.warn((err as AxiosError).message, ((err as AxiosError).response as AxiosResponse).statusText)
       throw new Error('broadcasting failed')
     }
-  }
-
-  getExtendedPrivateKeyFromHexSecret(secret: string, derivationPath: string): string {
-    throw new Error('extended private key support for Tezos not implemented')
-  }
-
-  getBalanceOfExtendedPublicKey(extendedPublicKey: string, offset: number): Promise<BigNumber> {
-    return Promise.reject('extended public balance for Tezos not implemented')
-  }
-
-  signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: any): Promise<string> {
-    return Promise.reject('extended private key signing for Tezos not implemented')
-  }
-
-  getAddressFromExtendedPublicKey(extendedPublicKey: string, visibilityDerivationIndex: number, addressDerivationIndex: number): string {
-    return ''
-  }
-
-  getAddressesFromExtendedPublicKey(
-    extendedPublicKey: string,
-    visibilityDerivationIndex: number,
-    addressCount: number,
-    offset: number
-  ): string[] {
-    return []
-  }
-
-  getTransactionsFromExtendedPublicKey(extendedPublicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]> {
-    return Promise.reject('fetching txs using extended public key for tezos not implemented')
-  }
-
-  prepareTransactionFromExtendedPublicKey(
-    extendedPublicKey: string,
-    offset: number,
-    recipients: string[],
-    values: BigNumber[],
-    fee: BigNumber
-  ): Promise<RawTezosTransaction> {
-    return Promise.reject('extended public key tx for tezos not implemented')
   }
 
   checkAndRemovePrefixToHex(base58CheckEncodedPayload: string, tezosPrefix: Uint8Array) {
