@@ -21,7 +21,9 @@
     "tslint": "tslint -c ./tslint.json --project ./tsconfig.json --format stylish",
     "lint-ci": "tslint -t json -o lintReport.json --project . || true",
     "test": "nyc mocha --require ts-node/register --require source-map-support/register --full-trace --timeout 40000 ./test/**/**.spec.ts",
+    "test-ci": "nyc --reporter=lcov npm test",
     "test-legacy": "npm run build && mocha --full-trace --timeout 40000 ./test/**/**.spec.js",
+    "sonar-scanner": "sonar-scanner",
     "prepublishOnly": "npm run build"
   },
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
