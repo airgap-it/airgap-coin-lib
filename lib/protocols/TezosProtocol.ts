@@ -88,6 +88,7 @@ export class TezosProtocol implements ICoinProtocol {
   supportsHD = false
   standardDerivationPath = `m/44h/1729h/0h/0h`
   addressValidationPattern = '^tz1[1-9A-Za-z]{33}$'
+  addressPlaceholder = 'tz1...'
 
   // Tezos - We need to wrap these in Buffer due to non-compatible browser polyfills
   private tezosPrefixes = {
