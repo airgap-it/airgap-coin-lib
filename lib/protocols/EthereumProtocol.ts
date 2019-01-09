@@ -260,6 +260,13 @@ export class EthereumProtocol implements ICoinProtocol {
     })
   }
 
+  private getPageNumber(limit: number, offset: number): number {
+    if (limit <= 0 || offset < 0) {
+      return 1
+    }
+    return 1 + Math.floor(offset / limit) // We need +1 here because pages start at 1
+  }
+
   getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
     const airGapTransactions: IAirGapTransaction[] = []
     return new Promise((overallResolve, overallReject) => {
@@ -267,7 +274,7 @@ export class EthereumProtocol implements ICoinProtocol {
       for (let address of addresses) {
         promises.push(
           new Promise((resolve, reject) => {
-            let page = Math.ceil(offset / limit)
+            let page = this.getPageNumber(limit, offset)
             axios
               .get(
                 this.infoAPI + 'transactions?address=' + address + '&page=' + page + '&limit=' + limit + '&filterContractInteraction=true'
