@@ -177,8 +177,9 @@ export class TezosProtocol implements ICoinProtocol {
         })
       })
       .reduce((previous: any[], current: any[]) => {
-        return previous.push(...current)
-      })
+        previous.push(...current)
+        return previous
+      }, [])
   }
 
   // TODO Not implemented yet, see https://github.com/kukai-wallet/kukai/blob/master/src/app/services/operation.service.ts line 462 it requires libsodium

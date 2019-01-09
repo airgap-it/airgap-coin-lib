@@ -49,6 +49,38 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
                   }
                 ]
               }
+            },
+            {
+              hash: 'ooNNmftGhsUriHVWYgHGq6AE3F2sHZFYaCq41NQZSeUdm1UZEAP',
+              block_hash: 'BMVuKQVUh2hxdgAf7mnXUQuf82BcMxuZjoLNxCi7YSJ4Mzvk7Qe',
+              network_hash: 'NetXdQprcVkpaWU',
+              type: {
+                kind: 'manager',
+                source: {
+                  tz: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'
+                },
+                operations: [
+                  {
+                    kind: 'transaction',
+                    src: {
+                      tz: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'
+                    },
+                    amount: 1000000,
+                    destination: {
+                      tz: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'
+                    },
+                    failed: false,
+                    internal: false,
+                    burn: 0,
+                    counter: 917316,
+                    fee: 1420,
+                    gas_limit: '10100',
+                    storage_limit: '0',
+                    op_level: 261513,
+                    timestamp: '2019-01-08T10:02:15Z'
+                  }
+                ]
+              }
             }
           ]
         })
@@ -63,6 +95,17 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
     const transactions = await tezosLib.getTransactionsFromAddresses(tezosProtocolSpec.wallet.addresses, 20, 0)
 
     expect(transactions).to.deep.equal([
+      {
+        amount: new BigNumber(1000000),
+        fee: new BigNumber(1420),
+        from: ['tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'],
+        isInbound: true,
+        timestamp: 1546941735000,
+        protocolIdentifier: tezosLib.identifier,
+        to: ['tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'],
+        hash: 'ooNNmftGhsUriHVWYgHGq6AE3F2sHZFYaCq41NQZSeUdm1UZEAP',
+        blockHeight: 261513
+      },
       {
         amount: new BigNumber(1000000),
         fee: new BigNumber(1420),
