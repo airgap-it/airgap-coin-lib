@@ -21,6 +21,7 @@ import { SyncWalletRequest } from './serializer/wallet-sync.serializer'
 import { UnsignedTransaction } from './serializer/unsigned-transaction.serializer'
 import { SignedTransaction } from './serializer/signed-transaction.serializer'
 import { TypeNotSupported, SerializerVersionMismatch, ProtocolNotSupported, ProtocolVersionMismatch } from './serializer/errors'
+import * as sodium from 'libsodium-wrappers'
 
 const supportedProtocols = function(): ICoinProtocol[] {
   return [new BitcoinProtocol(), new EthereumProtocol(), new AETokenProtocol(), new AEProtocol(), new TezosProtocol()]
@@ -32,6 +33,10 @@ const getProtocolByIdentifier = function(identifier: string) {
       return coinProtocol
     }
   }
+}
+
+const isCoinlibReady = function() {
+  return sodium.ready
 }
 
 export {
@@ -65,5 +70,7 @@ export {
   TypeNotSupported,
   SerializerVersionMismatch,
   ProtocolNotSupported,
-  ProtocolVersionMismatch
+  ProtocolVersionMismatch,
+  // libsodium ready
+  isCoinlibReady
 }
