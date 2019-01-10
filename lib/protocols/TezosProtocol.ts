@@ -72,11 +72,11 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   feeDecimals = 6 // micro tez is the smallest, 1000000 microtez is 1 tez
   identifier = 'xtz'
 
-  // TODO this is just copied from another protocol, needs to be implemented with some "real" values.
+  // tezbox default
   feeDefaults = {
-    low: new BigNumber('0.00021'), // 21000 Gas * 2 Gwei
-    medium: new BigNumber('0.000315'), // 21000 Gas * 15 Gwei
-    high: new BigNumber('0.00084') // 21000 Gas * 40 Gwei
+    low: new BigNumber('0.001420'),
+    medium: new BigNumber('0.001520'),
+    high: new BigNumber('0.003000')
   }
 
   units = [
