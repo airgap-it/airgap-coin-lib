@@ -28,7 +28,7 @@ abstract class TestProtocolSpec {
     from: string[]
     properties?: string[]
     unsignedTx: any
-    signedTx: any
+    signedTx: string
   }[]
 
   seed() {

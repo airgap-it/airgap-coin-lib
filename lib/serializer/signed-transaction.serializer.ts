@@ -10,7 +10,7 @@ export abstract class SignedTransactionSerializer {
 }
 
 export interface SignedTransaction {
-  transaction: any
+  transaction: string
   accountIdentifier: string
   from?: string[]
   amount?: BigNumber
