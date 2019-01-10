@@ -91,6 +91,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   addressValidationPattern = '^tz1[1-9A-Za-z]{33}$'
   addressPlaceholder = 'tz1...'
 
+  private addressInitializationFee = new BigNumber('0.257').shiftedBy(this.decimals)
+
   // Tezos - We need to wrap these in Buffer due to non-compatible browser polyfills
   private tezosPrefixes = {
     tz1: Buffer.from(new Uint8Array([6, 161, 159])),
@@ -119,7 +121,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
    * @param derivationPath DerivationPath for Key
    */
   getPublicKeyFromHexSecret(secret: string, derivationPath: string): string {
-    // TODO both AE and tezos use the same ECC curves (ed25519), probably using the same derivation method should work. This needs to be tested with ledger nano S. Also in the tezos world in general there is no concept of derivation path, maybe providing no path, should result in the same address like all other "standard" tezos clients out there.
+    // both AE and Tezos use the same ECC curves (ed25519)
     const { publicKey } = generateWalletUsingDerivationPath(Buffer.from(secret, 'hex'), derivationPath)
     return Buffer.from(publicKey).toString('hex')
   }
@@ -130,7 +132,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
    * @param derivationPath DerivationPath for Key
    */
   getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Buffer {
-    // TODO both AE and tezos use the same ECC curves (ed25519), probably using the same derivation method should work. This needs to be tested with ledger nano S. Also in the tezos world in general there is no concept of derivation path, maybe providing no path, should result in the same address like all other "standard" tezos clients out there.
+    // both AE and Tezos use the same ECC curves (ed25519)
     const { secretKey } = generateWalletUsingDerivationPath(Buffer.from(secret, 'hex'), derivationPath)
     return Buffer.from(secretKey)
   }
@@ -193,7 +195,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       }, [])
   }
 
-  // TODO Not implemented yet, see https://github.com/kukai-wallet/kukai/blob/master/src/app/services/operation.service.ts line 462 it requires libsodium
   signWithPrivateKey(privateKey: Buffer, transaction: RawTezosTransaction): Promise<IAirGapSignedTransaction> {
     const watermark = '03'
     const watermarkedForgedOperationBytesHex: string = watermark + transaction.binaryTransaction
@@ -206,7 +207,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     return Promise.resolve(signedOpBytes.toString('hex'))
   }
 
-  // TODO Not implemented yet. The only difference between signed and unsigned is the "signature" property in the json object, see https://github.com/kukai-wallet/kukai/blob/master/src/app/services/operation.service.ts line 61
+  // TODO should basically extract all details from the forged TX, but we are not able to do this yet
   getTransactionDetails(unsignedTx: UnsignedTezosTransaction): IAirGapTransaction {
     // always take last operation, as operation 0 might be reveal - we should fix this properly
     const spendOperation = unsignedTx.transaction.jsonTransaction.contents[
@@ -225,15 +226,15 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     return airgapTx
   }
 
-  // TODO Not implemented yet. The only difference between signed and unsigned is the "signature" property in the json object, see https://github.com/kukai-wallet/kukai/blob/master/src/app/services/operation.service.ts line 61
+  // TODO should basically extract all details from the forged TX, but we are not able to do this yet
   getTransactionDetailsFromSigned(signedTx: SignedTezosTransaction): IAirGapTransaction {
     const airgapTx: IAirGapTransaction = {
-      to: signedTx.from!, // TODO: Fix this
+      to: signedTx.to,
       protocolIdentifier: this.identifier,
-      amount: signedTx.amount!,
-      fee: signedTx.fee!,
-      from: signedTx.from!,
-      isInbound: true // TODO: Fix this
+      amount: signedTx.amount,
+      fee: signedTx.fee,
+      from: signedTx.from,
+      isInbound: signedTx.to[0] === signedTx.from[0]
     }
 
     return airgapTx
@@ -295,6 +296,17 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     }
 
     const balance = await this.getBalanceOfPublicKey(publicKey)
+    const receivingBalance = await this.getBalanceOfAddresses(recipients)
+
+    // if our receiver has 0 balance, the account is not activated yet.
+    if (receivingBalance.isZero()) {
+      // We have to supply an additional 0.257 XTZ Fee which gets automatically deducted from the sender so we just have to make sure enough balance is around
+      // check whether the sender has enough to cover the amount to send + fee + initialization
+      if (balance.isLessThan(values[0].plus(fee).plus(this.addressInitializationFee))) {
+        // if not, make room for the init fee
+        values[0] = values[0].minus(this.addressInitializationFee) // deduct fee from balance
+      }
+    }
 
     if (balance.isLessThan(fee.plus(values[0]))) {
       throw new Error('not enough balance')

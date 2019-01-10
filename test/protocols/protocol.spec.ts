@@ -218,6 +218,7 @@ protocols.forEach((protocol: TestProtocolSpec) => {
             from: protocol.wallet.addresses,
             amount: protocol.wallet.tx.amount,
             fee: protocol.wallet.tx.fee,
+            to: protocol.wallet.addresses,
             transaction: tx.signedTx
           })
 
