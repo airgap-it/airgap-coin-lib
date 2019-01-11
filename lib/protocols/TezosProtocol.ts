@@ -64,7 +64,7 @@ export interface TezosRevealOperation extends TezosOperation {
 
 export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol {
   symbol = 'XTZ'
-  name = 'Tezos'
+  name = 'Tezos (Beta)'
   marketSymbol = 'xtz'
   feeSymbol = 'xtz'
 
