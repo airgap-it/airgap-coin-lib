@@ -13,8 +13,10 @@ import {
 import { SignedAeternityTransaction } from '../serializer/signed-transactions/aeternity-transactions.serializer'
 import * as Web3 from 'web3'
 import { padStart } from '../utils/padStart'
+import { IAirGapSignedTransaction } from '../interfaces/IAirGapSignedTransaction'
+import { NonExtendedProtocol } from './NonExtendedProtocol'
 
-export class AEProtocol implements ICoinProtocol {
+export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
   symbol = 'AE'
   name = 'æternity'
   marketSymbol = 'ae'
@@ -48,7 +50,9 @@ export class AEProtocol implements ICoinProtocol {
 
   epochMiddleware = 'https://ae-epoch-rpc-proxy.gke.papers.tech'
 
-  constructor(public epochRPC = 'https://ae-epoch-rpc-proxy.gke.papers.tech') {}
+  constructor(public epochRPC = 'https://ae-epoch-rpc-proxy.gke.papers.tech') {
+    super()
+  }
   /**
    * Returns the PublicKey as String, derived from a supplied hex-string
    * @param secret HEX-Secret from BIP39
@@ -110,7 +114,7 @@ export class AEProtocol implements ICoinProtocol {
     })
   }
 
-  signWithPrivateKey(privateKey: Buffer, transaction: RawAeternityTransaction): Promise<string> {
+  signWithPrivateKey(privateKey: Buffer, transaction: RawAeternityTransaction): Promise<IAirGapSignedTransaction> {
     // sign and cut off first byte ('ae')
     const rawTx = bs58check.decode(transaction.transaction.slice(3))
     const signature = nacl.sign.detached(Buffer.concat([Buffer.from(transaction.networkId), rawTx]), privateKey)
@@ -235,7 +239,7 @@ export class AEProtocol implements ICoinProtocol {
     }
   }
 
-  async broadcastTransaction(rawTransaction: string): Promise<any> {
+  async broadcastTransaction(rawTransaction: string): Promise<string> {
     const { data } = await axios.post(
       `${this.epochRPC}/v2/transactions`,
       { tx: rawTransaction },
@@ -247,45 +251,5 @@ export class AEProtocol implements ICoinProtocol {
   private toHexBuffer(value: number | BigNumber): Buffer {
     const hexString = Web3.utils.toHex(value).substr(2)
     return Buffer.from(padStart(hexString, hexString.length % 2 === 0 ? hexString.length : hexString.length + 1, '0'), 'hex')
-  }
-
-  // Unsupported Functionality for Aeternity
-  getExtendedPrivateKeyFromHexSecret(secret: string, derivationPath: string): string {
-    throw new Error('extended private key support for aeternity not implemented')
-  }
-
-  getBalanceOfExtendedPublicKey(extendedPublicKey: string, offset: number): Promise<BigNumber> {
-    return Promise.reject('extended public balance for aeternity not implemented')
-  }
-
-  signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: any): Promise<string> {
-    return Promise.reject('extended private key signing for aeternity not implemented')
-  }
-
-  getAddressFromExtendedPublicKey(extendedPublicKey: string, visibilityDerivationIndex: number, addressDerivationIndex: number): string {
-    return ''
-  }
-
-  getAddressesFromExtendedPublicKey(
-    extendedPublicKey: string,
-    visibilityDerivationIndex: number,
-    addressCount: number,
-    offset: number
-  ): string[] {
-    return []
-  }
-
-  getTransactionsFromExtendedPublicKey(extendedPublicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]> {
-    return Promise.resolve([{} as IAirGapTransaction])
-  }
-
-  prepareTransactionFromExtendedPublicKey(
-    extendedPublicKey: string,
-    offset: number,
-    recipients: string[],
-    values: BigNumber[],
-    fee: BigNumber
-  ): Promise<RawAeternityTransaction> {
-    return Promise.reject('extended public tx for aeternity not implemented')
   }
 }

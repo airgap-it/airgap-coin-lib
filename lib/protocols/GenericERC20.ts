@@ -7,6 +7,7 @@ import { RawEthereumTransaction, UnsignedEthereumTransaction } from '../serializ
 import { UnsignedTransaction } from '../serializer/unsigned-transaction.serializer'
 import * as ethUtil from 'ethereumjs-util'
 import { SignedEthereumTransaction } from '../serializer/signed-transactions/ethereum-transactions.serializer'
+import { IAirGapSignedTransaction } from '../interfaces/IAirGapSignedTransaction'
 const EthereumTransaction = require('ethereumjs-tx')
 
 const AUTH_TOKEN_ABI = [
@@ -81,7 +82,7 @@ export class GenericERC20 extends EthereumProtocol {
     })
   }
 
-  signWithPrivateKey(privateKey: Buffer, transaction: RawEthereumTransaction): Promise<string> {
+  signWithPrivateKey(privateKey: Buffer, transaction: RawEthereumTransaction): Promise<IAirGapSignedTransaction> {
     if (!transaction.data || transaction.data === '0x') {
       transaction.data = this.tokenContract.methods.transfer(transaction.to, transaction.value).encodeABI() // backwards-compatible fix
     }

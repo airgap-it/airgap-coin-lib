@@ -2,6 +2,7 @@ import { IAirGapTransaction } from '../interfaces/IAirGapTransaction'
 import BigNumber from 'bignumber.js'
 import { UnsignedTransaction } from '..'
 import { SignedTransaction } from '../serializer/signed-transaction.serializer'
+import { IAirGapSignedTransaction } from '../interfaces/IAirGapSignedTransaction'
 
 export interface ICoinProtocol {
   symbol: string // This will be used in the UI, eg. "ETH", "BTC", "AE"
@@ -44,8 +45,8 @@ export interface ICoinProtocol {
   getTransactionsFromExtendedPublicKey(extendedPublicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]>
   getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]>
 
-  signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: any): Promise<string> // broadcaster proxies this operation
-  signWithPrivateKey(extendedPrivateKey: Buffer, transaction: any): Promise<string> // broadcaster proxies this operation
+  signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: any): Promise<IAirGapSignedTransaction> // broadcaster proxies this operation
+  signWithPrivateKey(extendedPrivateKey: Buffer, transaction: any): Promise<IAirGapSignedTransaction> // broadcaster proxies this operation
   getTransactionDetails(transaction: UnsignedTransaction): IAirGapTransaction // out of unsigned transaction
   getTransactionDetailsFromSigned(transaction: SignedTransaction): IAirGapTransaction // out of signed transaction
 
@@ -61,6 +62,5 @@ export interface ICoinProtocol {
     fee: BigNumber
   ): Promise<any> // only broadcaster
   prepareTransactionFromPublicKey(publicKey: string, recipients: string[], values: BigNumber[], fee: BigNumber): Promise<any> // only broadcaster
-
-  broadcastTransaction(rawTransaction: string): Promise<any>
+  broadcastTransaction(rawTransaction: any): Promise<string>
 }

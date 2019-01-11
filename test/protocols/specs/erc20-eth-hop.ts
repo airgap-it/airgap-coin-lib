@@ -18,6 +18,8 @@ export class ERC20RopstenTestProtocolSpec extends TestProtocolSpec {
   }
   txs = [
     {
+      to: ['0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e'],
+      from: ['0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e'],
       unsignedTx: {
         nonce: '0x32',
         gasPrice: '0x04a817c800',

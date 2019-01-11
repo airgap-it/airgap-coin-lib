@@ -10,6 +10,7 @@ import { RawEthereumTransaction } from '../serializer/unsigned-transactions/ethe
 import * as Web3 from 'web3'
 import { UnsignedTransaction } from '../serializer/unsigned-transaction.serializer'
 import { SignedEthereumTransaction } from '../serializer/signed-transactions/ethereum-transactions.serializer'
+import { IAirGapSignedTransaction } from '../interfaces/IAirGapSignedTransaction'
 
 const EthereumTransaction = require('ethereumjs-tx')
 
@@ -117,11 +118,11 @@ export class EthereumProtocol implements ICoinProtocol {
     )
   }
 
-  signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: RawEthereumTransaction): Promise<string> {
+  signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: RawEthereumTransaction): Promise<IAirGapSignedTransaction> {
     return Promise.reject('extended private key signing for ether not implemented')
   }
 
-  signWithPrivateKey(privateKey: Buffer, transaction: RawEthereumTransaction): Promise<string> {
+  signWithPrivateKey(privateKey: Buffer, transaction: RawEthereumTransaction): Promise<IAirGapSignedTransaction> {
     const tx = new EthereumTransaction(transaction)
     tx.sign(privateKey)
     return Promise.resolve(tx.serialize().toString('hex'))
@@ -224,7 +225,7 @@ export class EthereumProtocol implements ICoinProtocol {
     })
   }
 
-  broadcastTransaction(rawTransaction: string): Promise<any> {
+  broadcastTransaction(rawTransaction: string): Promise<string> {
     return new Promise((resolve, reject) => {
       this.web3.eth
         .sendSignedTransaction('0x' + rawTransaction)

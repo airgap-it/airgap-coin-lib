@@ -10,6 +10,7 @@ import { GenericERC20 } from './protocols/GenericERC20'
 import { HOPTokenProtocol } from './protocols/HOPTokenProtocol'
 import { AETokenProtocol } from './protocols/AETokenProtocol'
 import { AEProtocol } from './protocols/AEProtocol'
+import { TezosProtocol } from './protocols/TezosProtocol'
 import { AirGapWallet } from './wallet/AirGapWallet'
 import { AirGapMarketWallet } from './wallet/AirGapMarketWallet'
 import { IAirGapWallet } from './interfaces/IAirGapWallet'
@@ -20,9 +21,10 @@ import { SyncWalletRequest } from './serializer/wallet-sync.serializer'
 import { UnsignedTransaction } from './serializer/unsigned-transaction.serializer'
 import { SignedTransaction } from './serializer/signed-transaction.serializer'
 import { TypeNotSupported, SerializerVersionMismatch, ProtocolNotSupported, ProtocolVersionMismatch } from './serializer/errors'
+import * as sodium from 'libsodium-wrappers'
 
 const supportedProtocols = function(): ICoinProtocol[] {
-  return [new BitcoinProtocol(), new EthereumProtocol(), new AETokenProtocol(), new AEProtocol()]
+  return [new BitcoinProtocol(), new EthereumProtocol(), new AETokenProtocol(), new AEProtocol(), new TezosProtocol()]
 }
 
 const getProtocolByIdentifier = function(identifier: string) {
@@ -31,6 +33,10 @@ const getProtocolByIdentifier = function(identifier: string) {
       return coinProtocol
     }
   }
+}
+
+const isCoinlibReady = function() {
+  return sodium.ready
 }
 
 export {
@@ -53,6 +59,7 @@ export {
   HOPTokenProtocol,
   AETokenProtocol,
   AEProtocol,
+  TezosProtocol,
   // sync protocol
   SyncProtocolUtils,
   DeserializedSyncProtocol,
@@ -63,5 +70,7 @@ export {
   TypeNotSupported,
   SerializerVersionMismatch,
   ProtocolNotSupported,
-  ProtocolVersionMismatch
+  ProtocolVersionMismatch,
+  // libsodium ready
+  isCoinlibReady
 }

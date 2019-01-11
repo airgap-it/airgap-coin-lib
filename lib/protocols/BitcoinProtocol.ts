@@ -10,6 +10,7 @@ import { ICoinProtocol } from './ICoinProtocol'
 import { UnsignedTransaction } from '../serializer/unsigned-transaction.serializer'
 import { RawBitcoinTransaction } from '../serializer/unsigned-transactions/bitcoin-transactions.serializer'
 import { SignedBitcoinTransaction } from '../serializer/signed-transactions/bitcoin-transactions.serializer'
+import { IAirGapSignedTransaction } from '../interfaces/IAirGapSignedTransaction'
 
 export class BitcoinProtocol implements ICoinProtocol {
   symbol = 'BTC'
@@ -44,7 +45,7 @@ export class BitcoinProtocol implements ICoinProtocol {
   supportsHD = true
 
   standardDerivationPath = `m/44'/0'/0'`
-  addressValidationPattern = '\bbc(0([ac-hj-np-z02-9]{39}|[ac-hj-np-z02-9]{59})|1[ac-hj-np-z02-9]{8,87})\b'
+  addressValidationPattern = '^..[13][a-km-zA-HJ-NP-Z1-9]{25,34}$'
   addressPlaceholder = '1ABC...'
 
   network: any // TODO: fix type definition
@@ -100,7 +101,7 @@ export class BitcoinProtocol implements ICoinProtocol {
     )
   }
 
-  signWithPrivateKey(privateKey: Buffer, transaction: RawBitcoinTransaction): Promise<string> {
+  signWithPrivateKey(privateKey: Buffer, transaction: RawBitcoinTransaction): Promise<IAirGapSignedTransaction> {
     return new Promise((resolve, reject) => {
       const transactionBuilder = new this.bitcoinJSLib.TransactionBuilder(this.network)
 
@@ -181,7 +182,10 @@ export class BitcoinProtocol implements ICoinProtocol {
     const bitcoinTx = this.bitcoinJSLib.Transaction.fromHex(signedTx.transaction)
     bitcoinTx.outs.forEach(output => {
       let address = this.bitcoinJSLib.address.fromOutputScript(output.script, this.network)
-      tx.to.push(address)
+      // only works if one output is target and rest is change, but this way we can filter out change addresses
+      if (new BigNumber(output.value).isEqualTo(signedTx.amount)) {
+        tx.to.push(address)
+      }
     })
 
     return tx
@@ -400,7 +404,7 @@ export class BitcoinProtocol implements ICoinProtocol {
     })
   }
 
-  broadcastTransaction(rawTransaction: string): Promise<any> {
+  broadcastTransaction(rawTransaction: string): Promise<string> {
     return new Promise((resolve, reject) => {
       let params = new URLSearchParams() // Fix for axios content-type
       params.append('rawtx', rawTransaction)
