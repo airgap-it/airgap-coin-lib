@@ -300,7 +300,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
     // if our receiver has 0 balance, the account is not activated yet.
     if (receivingBalance.isZero()) {
-      // We have to supply an additional 0.257 XTZ Fee which gets automatically deducted from the sender so we just have to make sure enough balance is around
+      // We have to supply an additional 0.257 XTZ fee for storage_limit costs, which gets automatically deducted from the sender so we just have to make sure enough balance is around
       // check whether the sender has enough to cover the amount to send + fee + initialization
       if (balance.isLessThan(values[0].plus(fee).plus(this.addressInitializationFee))) {
         // if not, make room for the init fee
@@ -308,7 +308,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       }
     }
 
-    if (balance.isLessThan(fee.plus(values[0]))) {
+    if (balance.isLessThan(values[0].plus(fee))) {
       throw new Error('not enough balance')
     }
 
@@ -316,7 +316,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       kind: TezosOperationType.TRANSACTION,
       fee: fee.toFixed(),
       gas_limit: '10100', // taken from eztz
-      storage_limit: '0', // taken from eztz
+      storage_limit: receivingBalance.isZero() ? '300' : '0', // taken from eztz
       amount: values[0].toFixed(),
       counter: counter.toFixed(),
       destination: recipients[0],

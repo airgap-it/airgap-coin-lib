@@ -140,6 +140,9 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/tz1bgWdfd9YS7pTkNgZTNs26c33nBHwSYW6S/balance`)
         .returns(Promise.resolve({ data: 0 }))
       stub
+        .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/tz1d75oB6T4zUMexzkr5WscGktZ1Nss1JrT7/balance`)
+        .returns(Promise.resolve({ data: 0.1 }))
+      stub
         .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${tezosProtocolSpec.wallet.addresses[0]}/manager_key`)
         .returns(Promise.resolve({ data: { key: 'test-key' } }))
     })
@@ -153,6 +156,9 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       )
       const airGapTx = tezosLib.getTransactionDetails({ transaction: rawTezosTx, publicKey: tezosProtocolSpec.wallet.publicKey })
 
+      // check that storage is properly set
+      expect(rawTezosTx.jsonTransaction.contents[0].storage_limit).to.equal('300')
+
       expect(airGapTx.amount.toFixed()).to.equal('643000')
       expect(airGapTx.fee.toFixed()).to.equal('100000')
     })
@@ -161,12 +167,31 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       const rawTezosTx = await tezosLib.prepareTransactionFromPublicKey(
         tezosProtocolSpec.wallet.publicKey,
         ['tz1bgWdfd9YS7pTkNgZTNs26c33nBHwSYW6S'],
-        [new BigNumber(100000)], // send only 1/10 of funds, so it should
+        [new BigNumber(100000)], // send only 1/10 of funds, so it should not deduct anything
         new BigNumber(100000)
       )
       const airGapTx = tezosLib.getTransactionDetails({ transaction: rawTezosTx, publicKey: tezosProtocolSpec.wallet.publicKey })
 
+      // check that storage is properly set
+      expect(rawTezosTx.jsonTransaction.contents[0].storage_limit).to.equal('300')
+
       expect(airGapTx.amount.toFixed()).to.equal('100000') // amount should be correct
+      expect(airGapTx.fee.toFixed()).to.equal('100000')
+    })
+
+    it('will not mess with anything, given the receiving account has balance already', async () => {
+      const rawTezosTx = await tezosLib.prepareTransactionFromPublicKey(
+        tezosProtocolSpec.wallet.publicKey,
+        ['tz1d75oB6T4zUMexzkr5WscGktZ1Nss1JrT7'],
+        [new BigNumber(900000)], // send so much funds that it should deduct, given it is a 0-balance receiver (which it is not)
+        new BigNumber(100000)
+      )
+      const airGapTx = tezosLib.getTransactionDetails({ transaction: rawTezosTx, publicKey: tezosProtocolSpec.wallet.publicKey })
+
+      // check that storage is properly set
+      expect(rawTezosTx.jsonTransaction.contents[0].storage_limit).to.equal('0')
+
+      expect(airGapTx.amount.toFixed()).to.equal('900000') // amount should be correct
       expect(airGapTx.fee.toFixed()).to.equal('100000')
     })
   })
