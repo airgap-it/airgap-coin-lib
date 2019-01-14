@@ -167,7 +167,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       const rawTezosTx = await tezosLib.prepareTransactionFromPublicKey(
         tezosProtocolSpec.wallet.publicKey,
         ['tz1bgWdfd9YS7pTkNgZTNs26c33nBHwSYW6S'],
-        [new BigNumber(100000)], // send only 1/10 of funds, so it should
+        [new BigNumber(100000)], // send only 1/10 of funds, so it should not deduct anything
         new BigNumber(100000)
       )
       const airGapTx = tezosLib.getTransactionDetails({ transaction: rawTezosTx, publicKey: tezosProtocolSpec.wallet.publicKey })
@@ -183,7 +183,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       const rawTezosTx = await tezosLib.prepareTransactionFromPublicKey(
         tezosProtocolSpec.wallet.publicKey,
         ['tz1d75oB6T4zUMexzkr5WscGktZ1Nss1JrT7'],
-        [new BigNumber(900000)], // send only 1/10 of funds, so it should
+        [new BigNumber(900000)], // send so much funds that it should deduct, given it is a 0-balance receiver (which it is not)
         new BigNumber(100000)
       )
       const airGapTx = tezosLib.getTransactionDetails({ transaction: rawTezosTx, publicKey: tezosProtocolSpec.wallet.publicKey })
