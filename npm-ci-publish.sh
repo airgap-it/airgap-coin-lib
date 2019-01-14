@@ -1,13 +1,14 @@
 #!/bin/bash
 echo "//registry.npmjs.org/:_authToken=$NPM_AUTH_TOKEN" > .npmrc
 
-$VERSION = "$(node -pe 'JSON.parse(process.argv[1]).version' \"$(cat package.json)\")"
+VERSION=$(node -pe 'JSON.parse(process.argv[1]).version.indexOf("beta")' "$(cat package.json)")
 
-if [[ $VERSION == *"beta"* ]]; then
-  npm publish --tag next
-else
+if [ "$VERSION" = "-1" ]
+then
   npm publish
+else
+  echo "version is beta, using --tag next"
+  npm publish --tag next
 fi
 
-npm publish 
 rm .npmrc
