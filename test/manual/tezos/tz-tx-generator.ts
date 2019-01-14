@@ -16,13 +16,15 @@ const promise = async () => {
   const privateKey =
     '2f243e474992bb96b49b2fa7b2c1cba7a804257f0cf13dceb640cf3210d54838cdbc0c3449784bd53907c3c7a06060cf12087e492a7b937f044c6a73b522a234'
   const publicKey = 'cdbc0c3449784bd53907c3c7a06060cf12087e492a7b937f044c6a73b522a234'
-  const destination = 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'
+  const destination = process.argv[2] || 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'
+  const amount = new BigNumber(process.argv[3]) || new BigNumber('1')
+  const fee = new BigNumber(process.argv[4]) || new BigNumber('0.001420')
 
   const rawTezosTx = await tezos.prepareTransactionFromPublicKey(
     publicKey,
     [destination],
-    [new BigNumber('1').shiftedBy(tezos.decimals)],
-    new BigNumber('0.001420').shiftedBy(tezos.feeDecimals)
+    [amount.shiftedBy(tezos.decimals)],
+    fee.shiftedBy(tezos.feeDecimals)
   )
 
   console.log('Raw TX', rawTezosTx)
