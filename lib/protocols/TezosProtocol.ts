@@ -211,17 +211,22 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   // TODO should basically extract all details from the forged TX, but we are not able to do this yet
   getTransactionDetails(unsignedTx: UnsignedTezosTransaction): IAirGapTransaction {
     // always take last operation, as operation 0 might be reveal - we should fix this properly
-    const spendOperation = unsignedTx.transaction.jsonTransaction.contents[
-      unsignedTx.transaction.jsonTransaction.contents.length - 1
-    ] as TezosSpendOperation
+    const binaryTransaction = unsignedTx.transaction.binaryTransaction
+    const wrappedOperations = this.unforgeUnsignedTezosWrappedOperation(binaryTransaction)
+
+    const spendOperation = wrappedOperations.contents.find(content => content.kind === TezosOperationType.TRANSACTION)
+    if (!spendOperation) {
+      throw new Error('No spend transaction found')
+    }
+    const spendTransaction: TezosSpendOperation = spendOperation as TezosSpendOperation
 
     const airgapTx: IAirGapTransaction = {
-      amount: new BigNumber(spendOperation.amount),
-      fee: new BigNumber(spendOperation.fee),
-      from: [spendOperation.source],
-      isInbound: false,
+      amount: new BigNumber(spendTransaction.amount),
+      fee: new BigNumber(spendTransaction.fee),
+      from: [spendTransaction.source],
+      isInbound: false, // TODO: calculate this
       protocolIdentifier: this.identifier,
-      to: [spendOperation.destination]
+      to: [spendTransaction.destination]
     }
 
     return airgapTx
@@ -332,10 +337,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         contents: operations
       }
 
-      return {
-        jsonTransaction: tezosWrappedOperation,
-        binaryTransaction: this.forgeTezosOperation(tezosWrappedOperation)
-      }
+      const binaryTx = this.forgeTezosOperation(tezosWrappedOperation)
+
+      return { binaryTransaction: binaryTx }
     } catch (error) {
       console.warn(error.message)
       throw new Error('Forging Tezos TX failed.')
@@ -413,10 +417,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     let { result, rest } = this.splitAndReturnRest(hexString, 64)
     const branch = this.prefixAndBase58CheckEncode(result, this.tezosPrefixes.branch)
 
-    let tezosWrappedOperation: TezosWrappedOperation = new class implements TezosWrappedOperation {
-      branch: string = branch
-      contents: TezosOperation[] = []
-    }()
+    let tezosWrappedOperation: TezosWrappedOperation = {
+      branch: branch,
+      contents: []
+    }
 
     while (rest.length > 0) {
       ;({ result, rest } = this.splitAndReturnRest(rest, 2))
@@ -452,15 +456,15 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     const publicKey = this.parsePublicKey(result)
 
     return {
-      tezosRevealOperation: new class implements TezosRevealOperation {
-        counter: string = counter.toFixed()
-        fee: string = fee.toFixed()
-        gas_limit: string = gasLimit.toFixed()
-        kind: TezosOperationType.REVEAL
-        public_key: string = publicKey
-        source: string = source
-        storage_limit: string = storageLimit.toFixed()
-      }(),
+      tezosRevealOperation: {
+        kind: TezosOperationType.REVEAL,
+        fee: fee.toFixed(),
+        gas_limit: gasLimit.toFixed(),
+        storage_limit: storageLimit.toFixed(),
+        counter: counter.toFixed(),
+        public_key: publicKey,
+        source: source
+      },
       rest: rest
     }
   }
@@ -490,16 +494,16 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     }
 
     return {
-      tezosSpendOperation: new class implements TezosSpendOperation {
-        amount: string = amount.toFixed()
-        counter: string = counter.toFixed()
-        destination: string = destination
-        fee: string = fee.toFixed()
-        gas_limit: string = gasLimit.toFixed()
-        kind: TezosOperationType.TRANSACTION
-        source: string = source
-        storage_limit: string = storageLimit.toFixed()
-      }(),
+      tezosSpendOperation: {
+        kind: TezosOperationType.TRANSACTION,
+        fee: fee.toFixed(),
+        gas_limit: gasLimit.toFixed(),
+        storage_limit: storageLimit.toFixed(),
+        amount: amount.toFixed(),
+        counter: counter.toFixed(),
+        destination: destination,
+        source: source
+      },
       rest: rest
     }
   }

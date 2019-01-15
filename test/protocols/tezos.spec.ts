@@ -4,12 +4,12 @@ import { expect } from 'chai'
 import BigNumber from 'bignumber.js'
 import * as sinon from 'sinon'
 import axios from 'axios'
-import { isCoinlibReady, TezosProtocol } from '../../lib'
+import { isCoinlibReady } from '../../lib'
 import { TezosTestProtocolSpec } from '../protocols/specs/tezos'
 import { TezosOperationType, TezosRevealOperation, TezosSpendOperation } from '../../lib/protocols/TezosProtocol'
 
 const tezosProtocolSpec = new TezosTestProtocolSpec()
-const tezosLib = tezosProtocolSpec.lib as TezosProtocol
+const tezosLib = tezosProtocolSpec.lib
 
 describe(`ICoinProtocol Tezos - Custom Tests`, () => {
   afterEach(() => {
@@ -296,7 +296,15 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         publicKey: tezosProtocolSpec.wallet.publicKey
       })
 
-      expect(rawTezosTx.jsonTransaction.contents[0].storage_limit).to.equal('300')
+      const unforgedTransaction = tezosLib.unforgeUnsignedTezosWrappedOperation(rawTezosTx.binaryTransaction)
+
+      const spendOperation = unforgedTransaction.contents.find(content => content.kind === TezosOperationType.TRANSACTION)
+      if (!spendOperation) {
+        throw new Error('No spend transaction found')
+      }
+      const spendTransaction: TezosSpendOperation = spendOperation as TezosSpendOperation
+
+      expect(spendTransaction.storage_limit).to.equal('300')
       expect(airGapTx.amount.toFixed()).to.equal('100000')
       expect(airGapTx.fee.toFixed()).to.equal('1420')
       expect(rawTezosTx.binaryTransaction).to.equal(
@@ -306,21 +314,6 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
 
     it('will properly sign a TX to a KT1 address', async () => {
       const signedTezosTx = await tezosLib.signWithPrivateKey(Buffer.from(tezosProtocolSpec.wallet.privateKey, 'hex'), {
-        jsonTransaction: {
-          branch: 'BMT1dwxYkLbssY34irU2LbSHEAYBZ3KfqtYCixaZoMoaarhx3Ko',
-          contents: [
-            {
-              kind: TezosOperationType.TRANSACTION,
-              fee: '1420',
-              gas_limit: '10100',
-              storage_limit: '300',
-              amount: '100000',
-              counter: '917327',
-              destination: 'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy',
-              source: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'
-            } as TezosSpendOperation
-          ]
-        },
         binaryTransaction:
           'e4b7e31c04d23e3a10ea20e11bd0ebb4bde16f632c1d94779fd5849a34ec42a308000091a9d2b003f19cf5a1f38f04f1000ab482d331768c0bcffe37f44eac02a08d0601ba4e7349ac25dc5eb2df5a43fceacc58963df4f50000'
       })
@@ -368,8 +361,16 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         publicKey: tezosProtocolSpec.wallet.publicKey
       })
 
+      const unforgedTransaction = tezosLib.unforgeUnsignedTezosWrappedOperation(rawTezosTx.binaryTransaction)
+
+      const spendOperation = unforgedTransaction.contents.find(content => content.kind === TezosOperationType.TRANSACTION)
+      if (!spendOperation) {
+        throw new Error('No spend transaction found')
+      }
+      const spendTransaction: TezosSpendOperation = spendOperation as TezosSpendOperation
+
       // check that storage is properly set
-      expect(rawTezosTx.jsonTransaction.contents[0].storage_limit).to.equal('300')
+      expect(spendTransaction.storage_limit).to.equal('300')
 
       expect(airGapTx.amount.toFixed()).to.equal('643000')
       expect(airGapTx.fee.toFixed()).to.equal('100000')
@@ -387,8 +388,16 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         publicKey: tezosProtocolSpec.wallet.publicKey
       })
 
+      const unforgedTransaction = tezosLib.unforgeUnsignedTezosWrappedOperation(rawTezosTx.binaryTransaction)
+
+      const spendOperation = unforgedTransaction.contents.find(content => content.kind === TezosOperationType.TRANSACTION)
+      if (!spendOperation) {
+        throw new Error('No spend transaction found')
+      }
+      const spendTransaction: TezosSpendOperation = spendOperation as TezosSpendOperation
+
       // check that storage is properly set
-      expect(rawTezosTx.jsonTransaction.contents[0].storage_limit).to.equal('300')
+      expect(spendTransaction.storage_limit).to.equal('300')
 
       expect(airGapTx.amount.toFixed()).to.equal('100000') // amount should be correct
       expect(airGapTx.fee.toFixed()).to.equal('100000')
@@ -406,8 +415,16 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         publicKey: tezosProtocolSpec.wallet.publicKey
       })
 
+      const unforgedTransaction = tezosLib.unforgeUnsignedTezosWrappedOperation(rawTezosTx.binaryTransaction)
+
+      const spendOperation = unforgedTransaction.contents.find(content => content.kind === TezosOperationType.TRANSACTION)
+      if (!spendOperation) {
+        throw new Error('No spend transaction found')
+      }
+      const spendTransaction: TezosSpendOperation = spendOperation as TezosSpendOperation
+
       // check that storage is properly set
-      expect(rawTezosTx.jsonTransaction.contents[0].storage_limit).to.equal('0')
+      expect(spendTransaction.storage_limit).to.equal('0')
 
       expect(airGapTx.amount.toFixed()).to.equal('900000') // amount should be correct
       expect(airGapTx.fee.toFixed()).to.equal('100000')
