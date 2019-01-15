@@ -19,15 +19,8 @@ export class TezosSignedTransactionSerializer extends SignedTransactionSerialize
   public serialize(transaction: SignedTezosTransaction): SerializedSyncProtocolSignedTransaction {
     const toSerialize: any[] = []
 
-    // TODO: Find Solution to "unforge" Tezos TX in order to be able to skip supplying all the additional data here
     toSerialize[SyncProtocolSignedTransactionKeys.SIGNED_TRANSACTION] = transaction.transaction
     toSerialize[SyncProtocolSignedTransactionKeys.ACCOUNT_IDENTIFIER] = transaction.accountIdentifier
-    /*
-    toSerialize[SyncProtocolSignedTransactionKeys.FROM] = transaction.from
-    toSerialize[SyncProtocolSignedTransactionKeys.FEE] = transaction.fee.toFixed()
-    toSerialize[SyncProtocolSignedTransactionKeys.AMOUNT] = transaction.amount.toFixed()
-    toSerialize[SyncProtocolSignedTransactionKeys.TO] = transaction.to
-    */
 
     const serializedBuffer: SerializedSyncProtocolSignedTransaction = toBuffer(toSerialize) as SerializedSyncProtocolSignedTransaction
 
