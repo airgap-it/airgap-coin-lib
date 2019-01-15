@@ -208,12 +208,21 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     return Promise.resolve(signedOpBytes.toString('hex'))
   }
 
-  // TODO should basically extract all details from the forged TX, but we are not able to do this yet
   getTransactionDetails(unsignedTx: UnsignedTezosTransaction): IAirGapTransaction {
-    // always take last operation, as operation 0 might be reveal - we should fix this properly
     const binaryTransaction = unsignedTx.transaction.binaryTransaction
     const wrappedOperations = this.unforgeUnsignedTezosWrappedOperation(binaryTransaction)
 
+    return this.getAirGapTxFromWrappedOperations(wrappedOperations)
+  }
+
+  getTransactionDetailsFromSigned(signedTx: SignedTezosTransaction): IAirGapTransaction {
+    const binaryTransaction = signedTx.transaction
+    const wrappedOperations = this.unforgeSignedTezosWrappedOperation(binaryTransaction)
+
+    return this.getAirGapTxFromWrappedOperations(wrappedOperations)
+  }
+
+  private getAirGapTxFromWrappedOperations(wrappedOperations: TezosWrappedOperation) {
     const spendOperation = wrappedOperations.contents.find(content => content.kind === TezosOperationType.TRANSACTION)
     if (!spendOperation) {
       throw new Error('No spend transaction found')
@@ -224,23 +233,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       amount: new BigNumber(spendTransaction.amount),
       fee: new BigNumber(spendTransaction.fee),
       from: [spendTransaction.source],
-      isInbound: false, // TODO: calculate this
+      isInbound: false,
       protocolIdentifier: this.identifier,
       to: [spendTransaction.destination]
-    }
-
-    return airgapTx
-  }
-
-  // TODO should basically extract all details from the forged TX, but we are not able to do this yet
-  getTransactionDetailsFromSigned(signedTx: SignedTezosTransaction): IAirGapTransaction {
-    const airgapTx: IAirGapTransaction = {
-      to: signedTx.to,
-      protocolIdentifier: this.identifier,
-      amount: signedTx.amount,
-      fee: signedTx.fee,
-      from: signedTx.from,
-      isInbound: signedTx.to[0] === signedTx.from[0]
     }
 
     return airgapTx
@@ -411,6 +406,13 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     } else {
       throw new Error('public key format not supported')
     }
+  }
+
+  unforgeSignedTezosWrappedOperation(hexString: string): TezosWrappedOperation {
+    if (hexString.length <= 128) {
+      throw new Error('Not a valid signed transaction')
+    }
+    return this.unforgeUnsignedTezosWrappedOperation(hexString.substring(0, hexString.length - 128))
   }
 
   unforgeUnsignedTezosWrappedOperation(hexString: string): TezosWrappedOperation {

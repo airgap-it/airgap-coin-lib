@@ -35,16 +35,6 @@ export class TezosTestProtocolSpec extends TestProtocolSpec {
     }
   ]
 
-  signedTransaction(tx: any): DeserializedSyncProtocol {
-    const protocol: DeserializedSyncProtocol = super.signedTransaction(tx)
-    const payload = protocol.payload as SignedTransaction
-    payload.amount = this.wallet.tx.amount
-    payload.fee = this.wallet.tx.fee
-    payload.from = this.wallet.addresses
-    payload.to = this.wallet.addresses
-    return protocol
-  }
-
   seed() {
     return '5b72ef2589b7bd6e35c349ce682cb574f09726e171f2ea166982bf66a1a815fabb9dcbed182b50a3468f8af7ce1f6a3ca739dbde4241b8b674c25b9b2cc5489c'
   }
