@@ -208,34 +208,34 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     return Promise.resolve(signedOpBytes.toString('hex'))
   }
 
-  // TODO should basically extract all details from the forged TX, but we are not able to do this yet
   getTransactionDetails(unsignedTx: UnsignedTezosTransaction): IAirGapTransaction {
-    // always take last operation, as operation 0 might be reveal - we should fix this properly
-    const spendOperation = unsignedTx.transaction.jsonTransaction.contents[
-      unsignedTx.transaction.jsonTransaction.contents.length - 1
-    ] as TezosSpendOperation
+    const binaryTransaction = unsignedTx.transaction.binaryTransaction
+    const wrappedOperations = this.unforgeUnsignedTezosWrappedOperation(binaryTransaction)
 
-    const airgapTx: IAirGapTransaction = {
-      amount: new BigNumber(spendOperation.amount),
-      fee: new BigNumber(spendOperation.fee),
-      from: [spendOperation.source],
-      isInbound: false,
-      protocolIdentifier: this.identifier,
-      to: [spendOperation.destination]
-    }
-
-    return airgapTx
+    return this.getAirGapTxFromWrappedOperations(wrappedOperations)
   }
 
-  // TODO should basically extract all details from the forged TX, but we are not able to do this yet
   getTransactionDetailsFromSigned(signedTx: SignedTezosTransaction): IAirGapTransaction {
+    const binaryTransaction = signedTx.transaction
+    const wrappedOperations = this.unforgeSignedTezosWrappedOperation(binaryTransaction)
+
+    return this.getAirGapTxFromWrappedOperations(wrappedOperations)
+  }
+
+  private getAirGapTxFromWrappedOperations(wrappedOperations: TezosWrappedOperation) {
+    const spendOperation = wrappedOperations.contents.find(content => content.kind === TezosOperationType.TRANSACTION)
+    if (!spendOperation) {
+      throw new Error('No spend transaction found')
+    }
+    const spendTransaction: TezosSpendOperation = spendOperation as TezosSpendOperation
+
     const airgapTx: IAirGapTransaction = {
-      to: signedTx.to,
+      amount: new BigNumber(spendTransaction.amount),
+      fee: new BigNumber(spendTransaction.fee),
+      from: [spendTransaction.source],
+      isInbound: false,
       protocolIdentifier: this.identifier,
-      amount: signedTx.amount,
-      fee: signedTx.fee,
-      from: signedTx.from,
-      isInbound: signedTx.to[0] === signedTx.from[0]
+      to: [spendTransaction.destination]
     }
 
     return airgapTx
@@ -332,10 +332,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         contents: operations
       }
 
-      return {
-        jsonTransaction: tezosWrappedOperation,
-        binaryTransaction: this.forgeTezosOperation(tezosWrappedOperation)
-      }
+      const binaryTx = this.forgeTezosOperation(tezosWrappedOperation)
+
+      return { binaryTransaction: binaryTx }
     } catch (error) {
       console.warn(error.message)
       throw new Error('Forging Tezos TX failed.')
@@ -357,13 +356,157 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     }
   }
 
-  checkAndRemovePrefixToHex(base58CheckEncodedPayload: string, tezosPrefix: Uint8Array) {
+  checkAndRemovePrefixToHex(base58CheckEncodedPayload: string, tezosPrefix: Uint8Array): string {
     const prefixHex = Buffer.from(tezosPrefix).toString('hex')
     const payload = bs58check.decode(base58CheckEncodedPayload).toString('hex')
     if (payload.startsWith(prefixHex)) {
       return payload.substring(tezosPrefix.length * 2)
     } else {
       throw new Error('payload did not match prefix: ' + prefixHex)
+    }
+  }
+
+  prefixAndBase58CheckEncode(hexStringPayload: string, tezosPrefix: Uint8Array): string {
+    const prefixHex = Buffer.from(tezosPrefix).toString('hex')
+    return bs58check.encode(new Buffer(prefixHex + hexStringPayload, 'hex'))
+  }
+
+  splitAndReturnRest(payload: string, length: number): { result: string; rest: string } {
+    const result = payload.substr(0, length)
+    const rest = payload.substr(length, payload.length - length)
+    return { result: result, rest: rest }
+  }
+
+  parseAddress(rawHexAddress: string): string {
+    let { result, rest } = this.splitAndReturnRest(rawHexAddress, 2)
+    const contractIdTag = result
+    if (contractIdTag === '00') {
+      // tz1 address
+      ;({ result, rest } = this.splitAndReturnRest(rest, 2))
+      const publicKeyHashTag = result
+      if (publicKeyHashTag === '00') {
+        return this.prefixAndBase58CheckEncode(rest, this.tezosPrefixes.tz1)
+      } else {
+        throw new Error('address format not supported')
+      }
+    } else if (contractIdTag === '01') {
+      // kt address
+      return this.prefixAndBase58CheckEncode(rest.slice(0, -2), this.tezosPrefixes.kt)
+    } else {
+      throw new Error('address format not supported')
+    }
+  }
+
+  parsePublicKey(rawHexPublicKey: string): string {
+    let { result, rest } = this.splitAndReturnRest(rawHexPublicKey, 2)
+    const tag = result
+    if (tag === '00') {
+      // tz1 address
+      return this.prefixAndBase58CheckEncode(rest, this.tezosPrefixes.edpk)
+    } else {
+      throw new Error('public key format not supported')
+    }
+  }
+
+  unforgeSignedTezosWrappedOperation(hexString: string): TezosWrappedOperation {
+    if (hexString.length <= 128) {
+      throw new Error('Not a valid signed transaction')
+    }
+    return this.unforgeUnsignedTezosWrappedOperation(hexString.substring(0, hexString.length - 128))
+  }
+
+  unforgeUnsignedTezosWrappedOperation(hexString: string): TezosWrappedOperation {
+    let { result, rest } = this.splitAndReturnRest(hexString, 64)
+    const branch = this.prefixAndBase58CheckEncode(result, this.tezosPrefixes.branch)
+
+    let tezosWrappedOperation: TezosWrappedOperation = {
+      branch: branch,
+      contents: []
+    }
+
+    while (rest.length > 0) {
+      ;({ result, rest } = this.splitAndReturnRest(rest, 2))
+      const kindHexString = result
+      if (kindHexString === '08') {
+        let tezosSpendOperation: TezosSpendOperation
+        ;({ tezosSpendOperation, rest } = this.unforgeSpendOperation(rest))
+        tezosWrappedOperation.contents.push(tezosSpendOperation)
+      } else if (kindHexString === '07') {
+        let tezosRevealOperation: TezosRevealOperation
+        ;({ tezosRevealOperation, rest } = this.unforgeRevealOperation(rest))
+        tezosWrappedOperation.contents.push(tezosRevealOperation)
+      } else {
+        throw new Error('transaction operation unknown')
+      }
+    }
+    return tezosWrappedOperation
+  }
+
+  unforgeRevealOperation(hexString: string): { tezosRevealOperation: TezosRevealOperation; rest: string } {
+    let { result, rest } = this.splitAndReturnRest(hexString, 44)
+    const source = this.parseAddress(result)
+    // fee, counter, gas_limit, storage_limit
+    ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
+    const fee = this.zarithToBigNumber(result)
+    ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
+    const counter = this.zarithToBigNumber(result)
+    ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
+    const gasLimit = this.zarithToBigNumber(result)
+    ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
+    const storageLimit = this.zarithToBigNumber(result)
+    ;({ result, rest } = this.splitAndReturnRest(rest, 66))
+    const publicKey = this.parsePublicKey(result)
+
+    return {
+      tezosRevealOperation: {
+        kind: TezosOperationType.REVEAL,
+        fee: fee.toFixed(),
+        gas_limit: gasLimit.toFixed(),
+        storage_limit: storageLimit.toFixed(),
+        counter: counter.toFixed(),
+        public_key: publicKey,
+        source: source
+      },
+      rest: rest
+    }
+  }
+
+  unforgeSpendOperation(hexString: string): { tezosSpendOperation: TezosSpendOperation; rest: string } {
+    let { result, rest } = this.splitAndReturnRest(hexString, 44)
+    const source = this.parseAddress(result)
+
+    // fee, counter, gas_limit, storage_limit, amount
+    ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
+    const fee = this.zarithToBigNumber(result)
+    ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
+    const counter = this.zarithToBigNumber(result)
+    ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
+    const gasLimit = this.zarithToBigNumber(result)
+    ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
+    const storageLimit = this.zarithToBigNumber(result)
+    ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
+    const amount = this.zarithToBigNumber(result)
+    ;({ result, rest } = this.splitAndReturnRest(rest, 44))
+    const destination = this.parseAddress(result)
+    ;({ result, rest } = this.splitAndReturnRest(rest, 2))
+    const hasParameters = result
+
+    if (hasParameters !== '00') {
+      throw new Error('spend transaction parser does not support parameters yet')
+    }
+
+    return {
+      tezosSpendOperation: {
+        kind: TezosOperationType.TRANSACTION,
+        fee: fee.toFixed(),
+        gas_limit: gasLimit.toFixed(),
+        storage_limit: storageLimit.toFixed(),
+        amount: amount.toFixed(),
+        counter: counter.toFixed(),
+        destination: destination,
+        source: source
+      },
+      rest: rest
     }
   }
 
@@ -476,6 +619,26 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       resultHexString += hexStringSection
     }
     return resultHexString
+  }
+
+  findZarithEndIndex(hexString: string) {
+    for (let i = 0; i < hexString.length; i += 2) {
+      const byteSection = hexString.substr(i, 2)
+      if (parseInt(byteSection, 16).toString(2).length !== 8) {
+        return i + 2
+      }
+    }
+    throw new Error('provided hex string is not Zarith encoded')
+  }
+
+  zarithToBigNumber(hexString: string) {
+    let bitString = ''
+    for (let i = 0; i < hexString.length; i += 2) {
+      const byteSection = hexString.substr(i, 2)
+      const bitSection = ('00000000' + parseInt(byteSection, 16).toString(2)).substr(-7)
+      bitString = bitSection + bitString
+    }
+    return new BigNumber(bitString, 2)
   }
 
   private createRevealOperation(counter: BigNumber, publicKey: string): TezosRevealOperation {

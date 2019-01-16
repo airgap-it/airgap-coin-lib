@@ -27,21 +27,6 @@ export class TezosTestProtocolSpec extends TestProtocolSpec {
       to: ['tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'],
       from: ['tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'],
       unsignedTx: {
-        jsonTransaction: {
-          branch: 'BMJyc7ga9kLV3vH4kbn6GXbBNjRkLEJVSyovoXyY84Er1zMmKKT',
-          contents: [
-            {
-              kind: 'transaction',
-              fee: '1420',
-              gas_limit: '10100',
-              storage_limit: '0',
-              amount: '1000000',
-              counter: '917316',
-              destination: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L',
-              source: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'
-            }
-          ]
-        },
         binaryTransaction:
           'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb95508000091a9d2b003f19cf5a1f38f04f1000ab482d331768c0bc4fe37f44e00c0843d000091a9d2b003f19cf5a1f38f04f1000ab482d3317600'
       },
@@ -49,16 +34,6 @@ export class TezosTestProtocolSpec extends TestProtocolSpec {
         'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb95508000091a9d2b003f19cf5a1f38f04f1000ab482d331768c0bc4fe37f44e00c0843d000091a9d2b003f19cf5a1f38f04f1000ab482d3317600266fcf757017eef2b68c5f482f64d13cbd9f027b1886fe90e03d5ef449df968b1f5f58675532cae0020b1f10bbd18ad5f0a00672da7a26cddd75ea847d0e1b09'
     }
   ]
-
-  signedTransaction(tx: any): DeserializedSyncProtocol {
-    const protocol: DeserializedSyncProtocol = super.signedTransaction(tx)
-    const payload = protocol.payload as SignedTransaction
-    payload.amount = this.wallet.tx.amount
-    payload.fee = this.wallet.tx.fee
-    payload.from = this.wallet.addresses
-    payload.to = this.wallet.addresses
-    return protocol
-  }
 
   seed() {
     return '5b72ef2589b7bd6e35c349ce682cb574f09726e171f2ea166982bf66a1a815fabb9dcbed182b50a3468f8af7ce1f6a3ca739dbde4241b8b674c25b9b2cc5489c'
