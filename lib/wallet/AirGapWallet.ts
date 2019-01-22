@@ -1,8 +1,8 @@
 import { ICoinProtocol } from '../protocols/ICoinProtocol'
 import BigNumber from 'bignumber.js'
 import { IAirGapTransaction } from '../interfaces/IAirGapTransaction'
-import { getProtocolByIdentifier } from '..'
 import { IAirGapWallet } from '../interfaces/IAirGapWallet'
+import { getProtocolByIdentifier } from '../utils/protocolsByIdentifier'
 
 export class AirGapWallet implements IAirGapWallet {
   public addresses: string[] = [] // used for cache

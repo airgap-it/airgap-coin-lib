@@ -1,20 +1,21 @@
-import { ICoinProtocol } from './ICoinProtocol'
-import { INetwork } from '../networks'
+import { ICoinProtocol } from '../ICoinProtocol'
+import { INetwork } from '../../networks'
 
 import * as bitcoinJS from 'bitcoinjs-lib'
 import { BigNumber } from 'bignumber.js'
 import * as ethUtil from 'ethereumjs-util'
-import { IAirGapTransaction } from '../interfaces/IAirGapTransaction'
+import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 import axios from 'axios'
-import { RawEthereumTransaction } from '../serializer/unsigned-transactions/ethereum-transactions.serializer'
+import { RawEthereumTransaction } from '../../serializer/unsigned-transactions/ethereum-transactions.serializer'
 import * as Web3 from 'web3'
-import { UnsignedTransaction } from '../serializer/unsigned-transaction.serializer'
-import { SignedEthereumTransaction } from '../serializer/signed-transactions/ethereum-transactions.serializer'
-import { IAirGapSignedTransaction } from '../interfaces/IAirGapSignedTransaction'
+import { UnsignedTransaction } from '../../serializer/unsigned-transaction.serializer'
+import { SignedEthereumTransaction } from '../../serializer/signed-transactions/ethereum-transactions.serializer'
+import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
+import { getSubProtocolByIdentifier } from '../../utils/subProtocols'
 
 const EthereumTransaction = require('ethereumjs-tx')
 
-export class EthereumProtocol implements ICoinProtocol {
+export abstract class BaseEthereumProtocol implements ICoinProtocol {
   symbol = 'ETH'
   name = 'Ethereum'
   marketSymbol = 'eth'
@@ -55,6 +56,10 @@ export class EthereumProtocol implements ICoinProtocol {
   network: INetwork
   chainId: number
   infoAPI: string
+
+  get subProtocols() {
+    return getSubProtocolByIdentifier(this.identifier)
+  }
 
   constructor(public jsonRPCAPI = 'https://mainnet.infura.io/', infoAPI = 'https://api.trustwalletapp.com/', chainId = 1) {
     this.infoAPI = infoAPI

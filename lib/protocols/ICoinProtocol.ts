@@ -1,8 +1,9 @@
 import { IAirGapTransaction } from '../interfaces/IAirGapTransaction'
 import BigNumber from 'bignumber.js'
-import { UnsignedTransaction } from '..'
+import { UnsignedTransaction } from './../serializer/unsigned-transaction.serializer'
 import { SignedTransaction } from '../serializer/signed-transaction.serializer'
 import { IAirGapSignedTransaction } from '../interfaces/IAirGapSignedTransaction'
+import { ICoinSubProtocol } from './ICoinSubProtocol'
 
 export interface ICoinProtocol {
   symbol: string // This will be used in the UI, eg. "ETH", "BTC", "AE"
@@ -27,6 +28,9 @@ export interface ICoinProtocol {
 
   addressValidationPattern: string
   addressPlaceholder: string
+
+  // can have sub-protocols defined
+  subProtocols?: (ICoinProtocol & ICoinSubProtocol)[]
 
   getPublicKeyFromHexSecret(secret: string, derivationPath: string): string
   getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Buffer

@@ -1,18 +1,18 @@
 import BigNumber from 'bignumber.js'
-import { HOPTokenProtocol } from '../../../lib'
+import { HOPTokenProtocol } from '../../../lib/protocols/ethereum/erc20/HopRopstenToken'
 import { ERC20ProtocolStub } from '../stubs/erc20.stub'
 import { TestProtocolSpec } from '../implementations'
 
 export class ERC20HOPTokenTestProtocolSpec extends TestProtocolSpec {
   name = 'HOP Token ERC20'
-  lib = new HOPTokenProtocol()
+  lib = HOPTokenProtocol
   stub = new ERC20ProtocolStub()
   wallet = {
     privateKey: '832d58a77ad222b8d9b75322e66d97e46b7dcfab3f25f6c1dd79ec13e046c7bc',
     publicKey: '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
     addresses: ['0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e'],
     tx: {
-      amount: new BigNumber('5').shiftedBy(new HOPTokenProtocol().decimals),
+      amount: new BigNumber('5').shiftedBy(HOPTokenProtocol.decimals),
       fee: new BigNumber('31705000000000')
     }
   }

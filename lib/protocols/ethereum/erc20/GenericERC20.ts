@@ -1,13 +1,17 @@
-import { EthereumProtocol } from './EthereumProtocol'
 import axios from 'axios'
 import BigNumber from 'bignumber.js'
-import { IAirGapTransaction } from '../interfaces/IAirGapTransaction'
+import { ICoinSubProtocol, SubProtocolType } from '../../ICoinSubProtocol'
+import { IAirGapTransaction } from '../../../interfaces/IAirGapTransaction'
 import * as abiDecoder from 'abi-decoder'
-import { RawEthereumTransaction, UnsignedEthereumTransaction } from '../serializer/unsigned-transactions/ethereum-transactions.serializer'
-import { UnsignedTransaction } from '../serializer/unsigned-transaction.serializer'
+import {
+  RawEthereumTransaction,
+  UnsignedEthereumTransaction
+} from '../../../serializer/unsigned-transactions/ethereum-transactions.serializer'
+import { UnsignedTransaction } from '../../../serializer/unsigned-transaction.serializer'
 import * as ethUtil from 'ethereumjs-util'
-import { SignedEthereumTransaction } from '../serializer/signed-transactions/ethereum-transactions.serializer'
-import { IAirGapSignedTransaction } from '../interfaces/IAirGapSignedTransaction'
+import { SignedEthereumTransaction } from '../../../serializer/signed-transactions/ethereum-transactions.serializer'
+import { IAirGapSignedTransaction } from '../../../interfaces/IAirGapSignedTransaction'
+import { BaseEthereumProtocol } from '../BaseEthereumProtocol'
 const EthereumTransaction = require('ethereumjs-tx')
 
 const AUTH_TOKEN_ABI = [
@@ -55,12 +59,27 @@ const AUTH_TOKEN_ABI = [
 
 abiDecoder.addABI(AUTH_TOKEN_ABI)
 
-export class GenericERC20 extends EthereumProtocol {
+export class GenericERC20 extends BaseEthereumProtocol implements ICoinSubProtocol {
   tokenContract: any
+  isSubProtocol = true
+  subProtocolType = SubProtocolType.TOKEN
 
-  constructor(contractAddress, jsonRPCAPI = 'https://mainnet.infura.io/', infoAPI = 'https://api.trustwalletapp.com/', chainId = 1) {
+  constructor(
+    symbol: string,
+    name: string,
+    marketSymbol: string,
+    identifier: string,
+    contractAddress,
+    jsonRPCAPI = 'https://mainnet.infura.io/',
+    infoAPI = 'https://api.trustwalletapp.com/',
+    chainId = 1
+  ) {
     super(jsonRPCAPI, infoAPI, chainId) // we probably need another network here, explorer is ok
     this.tokenContract = new this.web3.eth.Contract(AUTH_TOKEN_ABI, contractAddress)
+    this.symbol = symbol
+    this.name = name
+    this.marketSymbol = marketSymbol
+    this.identifier = identifier
   }
 
   getBalanceOfPublicKey(publicKey: string): Promise<BigNumber> {

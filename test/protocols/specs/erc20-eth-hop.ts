@@ -1,11 +1,11 @@
 import BigNumber from 'bignumber.js'
-import { HOPTokenProtocol } from '../../../lib'
+import { HOPTokenProtocol } from '../../../lib/protocols/ethereum/erc20/HopRopstenToken'
 import { HOPTokenProtocolStub } from '../stubs/erc20-eth-hop.stub'
 import { TestProtocolSpec } from '../implementations'
 
 export class ERC20RopstenTestProtocolSpec extends TestProtocolSpec {
   name = 'ERC20 Hop-Token on Ropsten'
-  lib = new HOPTokenProtocol()
+  lib = HOPTokenProtocol
   stub = new HOPTokenProtocolStub()
   wallet = {
     privateKey: '832d58a77ad222b8d9b75322e66d97e46b7dcfab3f25f6c1dd79ec13e046c7bc',

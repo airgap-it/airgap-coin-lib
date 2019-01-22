@@ -1,16 +1,14 @@
-import { BitcoinProtocol } from './protocols/BitcoinProtocol'
-import { BitcoinTestnetProtocol } from './protocols/BitcoinTestnetProtocol'
-import { LitecoinProtocol } from './protocols/LitecoinProtocol'
-import { ZCashProtocol } from './protocols/ZCashProtocol'
-import { ZCashTestnetProtocol } from './protocols/ZCashTestnetProtocol'
-import { EthereumProtocol } from './protocols/EthereumProtocol'
-import { EthereumRopstenProtocol } from './protocols/EthereumRopstenProtocol'
-import { EthereumClassicProtocol } from './protocols/EthereumClassicProtocol'
-import { GenericERC20 } from './protocols/GenericERC20'
-import { HOPTokenProtocol } from './protocols/HOPTokenProtocol'
-import { AETokenProtocol } from './protocols/AETokenProtocol'
-import { AEProtocol } from './protocols/AEProtocol'
-import { TezosProtocol } from './protocols/TezosProtocol'
+import { BitcoinProtocol } from './protocols/bitcoin/BitcoinProtocol'
+import { BitcoinTestnetProtocol } from './protocols/bitcoin/BitcoinTestnetProtocol'
+import { LitecoinProtocol } from './protocols/litecoin/LitecoinProtocol'
+import { ZCashProtocol } from './protocols/zcash/ZCashProtocol'
+import { ZCashTestnetProtocol } from './protocols/zcash/ZCashTestnetProtocol'
+import { EthereumProtocol } from './protocols/ethereum/EthereumProtocol'
+import { EthereumRopstenProtocol } from './protocols/ethereum/EthereumRopstenProtocol'
+import { EthereumClassicProtocol } from './protocols/ethereum/EthereumClassicProtocol'
+import { GenericERC20 } from './protocols/ethereum/erc20/GenericERC20'
+import { AEProtocol } from './protocols/aeternity/AEProtocol'
+import { TezosProtocol } from './protocols/tezos/TezosProtocol'
 import { AirGapWallet } from './wallet/AirGapWallet'
 import { AirGapMarketWallet } from './wallet/AirGapMarketWallet'
 import { IAirGapWallet } from './interfaces/IAirGapWallet'
@@ -21,26 +19,14 @@ import { SyncWalletRequest } from './serializer/wallet-sync.serializer'
 import { UnsignedTransaction } from './serializer/unsigned-transaction.serializer'
 import { SignedTransaction } from './serializer/signed-transaction.serializer'
 import { TypeNotSupported, SerializerVersionMismatch, ProtocolNotSupported, ProtocolVersionMismatch } from './serializer/errors'
-import * as sodium from 'libsodium-wrappers'
-
-const supportedProtocols = function(): ICoinProtocol[] {
-  return [new BitcoinProtocol(), new EthereumProtocol(), new AETokenProtocol(), new AEProtocol(), new TezosProtocol()]
-}
-
-const getProtocolByIdentifier = function(identifier: string) {
-  for (let coinProtocol of supportedProtocols()) {
-    if (coinProtocol.identifier === identifier) {
-      return coinProtocol
-    }
-  }
-}
-
-const isCoinlibReady = function() {
-  return sodium.ready
-}
+import { getProtocolByIdentifier } from './utils/protocolsByIdentifier'
+import { supportedProtocols } from './utils/supportedProtocols'
+import { isCoinlibReady } from './utils/coinlibReady'
+import { addSubProtocol, getSubProtocolByIdentifier } from './utils/subProtocols'
 
 export {
   getProtocolByIdentifier,
+  getSubProtocolByIdentifier,
   supportedProtocols,
   AirGapWallet,
   AirGapMarketWallet,
@@ -56,8 +42,6 @@ export {
   EthereumRopstenProtocol,
   EthereumClassicProtocol,
   GenericERC20,
-  HOPTokenProtocol,
-  AETokenProtocol,
   AEProtocol,
   TezosProtocol,
   // sync protocol
@@ -72,5 +56,7 @@ export {
   ProtocolNotSupported,
   ProtocolVersionMismatch,
   // libsodium ready
-  isCoinlibReady
+  isCoinlibReady,
+  // sub-protocols
+  addSubProtocol
 }

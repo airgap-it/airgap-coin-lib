@@ -1,6 +1,6 @@
-import { BitcoinProtocol } from './BitcoinProtocol'
+import { BitcoinProtocol } from '../bitcoin/BitcoinProtocol'
 const zcashJS = require('bitcoinjs-lib-zcash')
-import { networks } from '../networks'
+import { networks } from '../../networks'
 
 export class ZCashTestnetProtocol extends BitcoinProtocol {
   constructor() {

@@ -4,13 +4,13 @@ import * as bitcoinJS from 'bitcoinjs-lib'
 import axios from 'axios'
 import BigNumber from 'bignumber.js'
 
-import { IAirGapTransaction } from '../interfaces/IAirGapTransaction'
-import { INetwork } from '../networks'
-import { ICoinProtocol } from './ICoinProtocol'
-import { UnsignedTransaction } from '../serializer/unsigned-transaction.serializer'
-import { RawBitcoinTransaction } from '../serializer/unsigned-transactions/bitcoin-transactions.serializer'
-import { SignedBitcoinTransaction } from '../serializer/signed-transactions/bitcoin-transactions.serializer'
-import { IAirGapSignedTransaction } from '../interfaces/IAirGapSignedTransaction'
+import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
+import { INetwork } from '../../networks'
+import { ICoinProtocol } from '../ICoinProtocol'
+import { UnsignedTransaction } from '../../serializer/unsigned-transaction.serializer'
+import { RawBitcoinTransaction } from '../../serializer/unsigned-transactions/bitcoin-transactions.serializer'
+import { SignedBitcoinTransaction } from '../../serializer/signed-transactions/bitcoin-transactions.serializer'
+import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
 
 export class BitcoinProtocol implements ICoinProtocol {
   symbol = 'BTC'
@@ -18,6 +18,8 @@ export class BitcoinProtocol implements ICoinProtocol {
   marketSymbol = 'btc'
 
   feeSymbol = 'btc'
+
+  subProtocols = []
 
   feeDefaults = {
     low: new BigNumber('0.00002'),

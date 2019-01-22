@@ -6,7 +6,7 @@ import * as sinon from 'sinon'
 import axios from 'axios'
 import { isCoinlibReady } from '../../lib'
 import { TezosTestProtocolSpec } from '../protocols/specs/tezos'
-import { TezosOperationType, TezosRevealOperation, TezosSpendOperation } from '../../lib/protocols/TezosProtocol'
+import { TezosOperationType, TezosRevealOperation, TezosSpendOperation } from '../../lib/protocols/tezos/TezosProtocol'
 
 const tezosProtocolSpec = new TezosTestProtocolSpec()
 const tezosLib = tezosProtocolSpec.lib

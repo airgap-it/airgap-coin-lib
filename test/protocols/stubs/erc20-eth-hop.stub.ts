@@ -1,10 +1,10 @@
 import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
-import { GenericERC20, HOPTokenProtocol } from '../../../lib'
+import { GenericERC20 } from '../../../lib/protocols/ethereum/erc20/GenericERC20'
 import * as sinon from 'sinon'
 import BigNumber from 'bignumber.js'
 
 export class HOPTokenProtocolStub implements ProtocolHTTPStub {
-  registerStub(testProtocolSpec: TestProtocolSpec, protocol: HOPTokenProtocol) {
+  registerStub(testProtocolSpec: TestProtocolSpec, protocol: GenericERC20) {
     sinon
       .stub(Object.getPrototypeOf(Object.getPrototypeOf(Object.getPrototypeOf(protocol))), 'getBalanceOfPublicKey')
       .withArgs(sinon.match.any)
@@ -33,11 +33,11 @@ export class HOPTokenProtocolStub implements ProtocolHTTPStub {
           cb(null, 16505)
         },
         encodeABI: () => {
-          return new GenericERC20(protocol.tokenContract.address).tokenContract.methods.transfer.encodeABI
+          return new GenericERC20('', '', '', '', protocol.tokenContract.address).tokenContract.methods.transfer.encodeABI
         }
       })
   }
-  noBalanceStub(testProtocolSpec: TestProtocolSpec, protocol: HOPTokenProtocol) {
+  noBalanceStub(testProtocolSpec: TestProtocolSpec, protocol: GenericERC20) {
     sinon
       .stub(Object.getPrototypeOf(Object.getPrototypeOf(Object.getPrototypeOf(protocol))), 'getBalanceOfPublicKey')
       .withArgs(sinon.match.any)
