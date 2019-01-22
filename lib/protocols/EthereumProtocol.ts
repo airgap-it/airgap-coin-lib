@@ -136,7 +136,8 @@ export class EthereumProtocol implements ICoinProtocol {
       amount: new BigNumber(transaction.value),
       fee: new BigNumber(transaction.gasLimit).multipliedBy(new BigNumber(transaction.gasPrice)),
       protocolIdentifier: this.identifier,
-      isInbound: false
+      isInbound: false,
+      data: transaction.data
     }
   }
 
@@ -186,7 +187,8 @@ export class EthereumProtocol implements ICoinProtocol {
     publicKey: string,
     recipients: string[],
     values: BigNumber[],
-    fee: BigNumber
+    fee: BigNumber,
+    data?: any
   ): Promise<RawEthereumTransaction> {
     const address = this.getAddressFromPublicKey(publicKey)
 
@@ -212,7 +214,7 @@ export class EthereumProtocol implements ICoinProtocol {
                 to: recipients[0],
                 value: this.web3.utils.toHex(values[0].toFixed()),
                 chainId: this.chainId,
-                data: '0x'
+                data: data ? data : '0x'
               }
 
               resolve(transaction)
