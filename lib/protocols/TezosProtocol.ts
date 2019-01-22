@@ -368,7 +368,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
   prefixAndBase58CheckEncode(hexStringPayload: string, tezosPrefix: Uint8Array): string {
     const prefixHex = Buffer.from(tezosPrefix).toString('hex')
-    return bs58check.encode(new Buffer(prefixHex + hexStringPayload, 'hex'))
+    return bs58check.encode(Buffer.from(prefixHex + hexStringPayload, 'hex'))
   }
 
   splitAndReturnRest(payload: string, length: number): { result: string; rest: string } {
