@@ -1,5 +1,23 @@
 import { toBuffer } from './utils/toBuffer'
 
+export interface SyncWalletRequest {
+  publicKey: string
+  derivationPath: string
+  isExtendedPublicKey: boolean
+}
+
+export enum SyncProtocolWalletSync {
+  PUBLIC_KEY = 0,
+  DERIVATION_PATH = 1,
+  IS_EXTENDED_PUBLIC_KEY = 2
+}
+
+export interface SerializedSyncProtocolWalletSync extends Array<Buffer> {
+  [0]: Buffer // SyncProtocolWalletSync.PUBLIC_KEY
+  [1]: Buffer // SyncProtocolWalletSync.DERIVATION_PATH
+  [2]: Buffer // SyncProtocolWalletSync.IS_EXTENDED_PUBLIC_KEY
+}
+
 export class WalletSerializer {
   public serialize(syncWalletRequest: SyncWalletRequest): SerializedSyncProtocolWalletSync {
     const toSerialize: any[] = []
@@ -21,22 +39,4 @@ export class WalletSerializer {
     }
     return syncWalletRequest
   }
-}
-
-export interface SyncWalletRequest {
-  publicKey: string
-  derivationPath: string
-  isExtendedPublicKey: boolean
-}
-
-export enum SyncProtocolWalletSync {
-  PUBLIC_KEY = 0,
-  DERIVATION_PATH = 1,
-  IS_EXTENDED_PUBLIC_KEY = 2
-}
-
-export interface SerializedSyncProtocolWalletSync extends Array<Buffer> {
-  [0]: Buffer // SyncProtocolWalletSync.PUBLIC_KEY
-  [1]: Buffer // SyncProtocolWalletSync.DERIVATION_PATH
-  [2]: Buffer // SyncProtocolWalletSync.IS_EXTENDED_PUBLIC_KEY
 }

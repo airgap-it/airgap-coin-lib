@@ -78,7 +78,7 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
    */
   getAddressFromPublicKey(publicKey: string): string {
     const base58 = bs58check.encode(Buffer.from(publicKey, 'hex'))
-    return 'ak_' + base58
+    return `ak_${base58}`
   }
 
   async getTransactionsFromPublicKey(publicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]> {
@@ -129,7 +129,7 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
     const txArray = Object.keys(txObj).map(a => txObj[a])
 
     const rlpEncodedTx = rlp.encode(txArray)
-    const signedEncodedTx = 'tx_' + bs58check.encode(rlpEncodedTx)
+    const signedEncodedTx = `tx_${bs58check.encode(rlpEncodedTx)}`
 
     return Promise.resolve(signedEncodedTx)
   }
@@ -160,7 +160,7 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
       callback: '',
       transaction: {
         networkId: 'ae_mainnet',
-        transaction: 'tx_' + bs58check.encode(rlpDecodedTx[3]).toString('hex')
+        transaction: `tx_${bs58check.encode(rlpDecodedTx[3]).toString('hex')}`
       }
     }
 
@@ -200,7 +200,7 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
 
     try {
       const { data: accountResponse } = await axios.get(`${this.epochRPC}/v2/accounts/${this.getAddressFromPublicKey(publicKey)}`)
-      nonce = accountResponse.nonce + 1
+      nonce = (accountResponse.nonce as number) + 1
     } catch (error) {
       // if node returns 404 (which means 'no account found'), go with nonce 0
       if (error.response && error.response.status !== 404) {
@@ -231,7 +231,7 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
 
     const txArray = Object.keys(txObj).map(a => txObj[a])
     const rlpEncodedTx = rlp.encode(txArray)
-    const preparedTx = 'tx_' + bs58check.encode(rlpEncodedTx)
+    const preparedTx = `tx_${bs58check.encode(rlpEncodedTx)}`
 
     return {
       transaction: preparedTx,
@@ -249,7 +249,7 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
   }
 
   private toHexBuffer(value: number | BigNumber): Buffer {
-    const hexString = Web3.utils.toHex(value).substr(2)
+    const hexString: string = Web3.utils.toHex(value).substr(2)
     return Buffer.from(padStart(hexString, hexString.length % 2 === 0 ? hexString.length : hexString.length + 1, '0'), 'hex')
   }
 }

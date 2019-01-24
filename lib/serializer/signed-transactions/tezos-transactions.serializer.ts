@@ -5,7 +5,6 @@ import {
   SerializedSyncProtocolSignedTransaction,
   SyncProtocolSignedTransactionKeys
 } from '../signed-transaction.serializer'
-import BigNumber from 'bignumber.js'
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
 
 export interface SignedTezosTransaction extends SignedTransaction {

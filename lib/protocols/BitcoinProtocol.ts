@@ -89,7 +89,12 @@ export class BitcoinProtocol implements ICoinProtocol {
       .getAddress()
   }
 
-  getAddressesFromExtendedPublicKey(extendedPublicKey: string, visibilityDerivationIndex, addressCount, offset): string[] {
+  getAddressesFromExtendedPublicKey(
+    extendedPublicKey: string,
+    visibilityDerivationIndex: number,
+    addressCount: number,
+    offset: number
+  ): string[] {
     // broadcaster knows this (both broadcaster and signer)
     const node = this.bitcoinJSLib.HDNode.fromBase58(extendedPublicKey, this.network)
     const generatorArray = Array.from(new Array(addressCount), (x, i) => i + offset)
@@ -194,7 +199,7 @@ export class BitcoinProtocol implements ICoinProtocol {
   getBalanceOfAddresses(addresses: string[]): Promise<BigNumber> {
     return new Promise((resolve, reject) => {
       axios
-        .get(this.baseApiUrl + '/api/addrs/' + addresses.join(',') + '/utxo', { responseType: 'json' })
+        .get(`${this.baseApiUrl}/api/addrs/${addresses.join(',')}/utxo`, { responseType: 'json' })
         .then(response => {
           const utxos = response.data
           let valueAccumulator = new BigNumber(0)
@@ -221,7 +226,7 @@ export class BitcoinProtocol implements ICoinProtocol {
       derivedAddresses.push(externalAddresses) // we don't add the last one to make change address possible
 
       axios
-        .get(this.baseApiUrl + '/api/addrs/' + derivedAddresses.join(',') + '/utxo', { responseType: 'json' })
+        .get(`${this.baseApiUrl}/api/addrs/${derivedAddresses.join(',')}/utxo`, { responseType: 'json' })
         .then(response => {
           const utxos = response.data
           let valueAccumulator = new BigNumber(0)
@@ -230,7 +235,7 @@ export class BitcoinProtocol implements ICoinProtocol {
           }
 
           axios
-            .get(this.baseApiUrl + '/api/addrs/' + derivedAddresses.join(',') + '/txs?from=0&to=1', { responseType: 'json' })
+            .get(`${this.baseApiUrl}/api/addrs/${derivedAddresses.join(',')}/txs?from=0&to=1`, { responseType: 'json' })
             .then(response => {
               const transactions = response.data
               if (transactions.items.length > 0) {
@@ -290,8 +295,8 @@ export class BitcoinProtocol implements ICoinProtocol {
                 address: utxo.address,
                 derivationPath:
                   externalAddresses.indexOf(utxo.address) >= 0
-                    ? '0/' + (externalAddresses.indexOf(utxo.address) + offset)
-                    : '1/' + (internalAddresses.indexOf(utxo.address) + offset)
+                    ? `0/${externalAddresses.indexOf(utxo.address) + offset}`
+                    : `1/${internalAddresses.indexOf(utxo.address) + offset}`
               })
             }
             // tx.addInput(utxo.txid, utxo.vout)
@@ -362,7 +367,7 @@ export class BitcoinProtocol implements ICoinProtocol {
 
     return new Promise((resolve, reject) => {
       axios
-        .get(this.baseApiUrl + '/api/addrs/' + address + '/utxo', { responseType: 'json' })
+        .get(`${this.baseApiUrl}/api/addrs/${address}/utxo`, { responseType: 'json' })
         .then(response => {
           const utxos = response.data
           const totalRequiredBalance = values.reduce((accumulator, currentValue) => accumulator.plus(currentValue)).plus(fee)
@@ -439,7 +444,7 @@ export class BitcoinProtocol implements ICoinProtocol {
     return new Promise((resolve, reject) => {
       const airGapTransactions: IAirGapTransaction[] = []
       axios
-        .get(this.baseApiUrl + '/api/addrs/' + addresses.join(',') + '/txs?from=' + offset + '&to=' + (offset + limit), {
+        .get(`${this.baseApiUrl}/api/addrs/${addresses.join(',')}/txs?from=${offset}&to=${offset + limit}`, {
           responseType: 'json'
         })
         .then(response => {

@@ -198,7 +198,7 @@ export class GenericERC20 extends EthereumProtocol {
     const ethTx = super.getTransactionDetailsFromSigned(signedTx)
 
     const extractedTx = new EthereumTransaction(signedTx.transaction)
-    const tokenTransferDetails = abiDecoder.decodeMethod('0x' + extractedTx.data.toString('hex'))
+    const tokenTransferDetails = abiDecoder.decodeMethod(`0x${extractedTx.data.toString('hex')}`)
     ethTx.to = [ethUtil.toChecksumAddress(tokenTransferDetails.params[0].value)]
     ethTx.amount = new BigNumber(tokenTransferDetails.params[1].value)
 

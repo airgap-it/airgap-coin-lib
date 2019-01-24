@@ -150,8 +150,8 @@ export class EthereumProtocol implements ICoinProtocol {
     let hexNonce = ethTx.nonce.toString('hex') || '0x0'
 
     return {
-      from: [ethUtil.toChecksumAddress('0x' + ethTx.from.toString('hex'))],
-      to: [ethUtil.toChecksumAddress('0x' + ethTx.to.toString('hex'))],
+      from: [ethUtil.toChecksumAddress(`0x${ethTx.from.toString('hex')}`)],
+      to: [ethUtil.toChecksumAddress(`0x${ethTx.to.toString('hex')}`)],
       amount: new BigNumber(parseInt(hexValue, 16)),
       fee: new BigNumber(parseInt(hexGasLimit, 16)).multipliedBy(new BigNumber(parseInt(hexGasPrice, 16))),
       protocolIdentifier: this.identifier,
@@ -160,7 +160,7 @@ export class EthereumProtocol implements ICoinProtocol {
       meta: {
         nonce: parseInt(hexNonce, 16)
       },
-      data: '0x' + ethTx.data.toString('hex')
+      data: `0x${ethTx.data.toString('hex')}`
     }
   }
 
@@ -230,7 +230,7 @@ export class EthereumProtocol implements ICoinProtocol {
   broadcastTransaction(rawTransaction: string): Promise<string> {
     return new Promise((resolve, reject) => {
       this.web3.eth
-        .sendSignedTransaction('0x' + rawTransaction)
+        .sendSignedTransaction(`0x${rawTransaction}`)
         .then(receipt => {
           resolve(receipt.transactionHash)
         })
@@ -279,9 +279,7 @@ export class EthereumProtocol implements ICoinProtocol {
           new Promise((resolve, reject) => {
             let page = this.getPageNumber(limit, offset)
             axios
-              .get(
-                this.infoAPI + 'transactions?address=' + address + '&page=' + page + '&limit=' + limit + '&filterContractInteraction=true'
-              )
+              .get(`${this.infoAPI}transactions?address=${address}&page=${page}&limit=${limit}&filterContractInteraction=true`)
               .then(response => {
                 const transactionResponse = response.data
                 for (let transaction of transactionResponse.docs) {
