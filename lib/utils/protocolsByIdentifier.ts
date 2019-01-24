@@ -6,6 +6,13 @@ const getProtocolByIdentifier = function(identifier: string): ICoinProtocol {
     if (coinProtocol.identifier === identifier) {
       return coinProtocol
     }
+
+    if (coinProtocol.subProtocols) {
+      let foundProtocol = coinProtocol.subProtocols.find(protocol => protocol.identifier === identifier)
+      if (foundProtocol) {
+        return foundProtocol
+      }
+    }
   }
   throw new Error('protocol not supported')
 }
