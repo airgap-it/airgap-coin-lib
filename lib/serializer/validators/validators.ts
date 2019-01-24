@@ -14,9 +14,9 @@ validators.type = function(value, options, key, attributes) {
   }
   */
   if (!validators.type.checks[options]) {
-    throw new Error('Could not find validator for type ' + options)
+    throw new Error(`Could not find validator for type ${options}`)
   }
-  return validators.type.checks[options](value) ? null : 'is not of type "' + options + '"'
+  return validators.type.checks[options](value) ? null : `is not of type "${options}"`
 }
 
 validators.type.checks = {
@@ -79,6 +79,7 @@ export async function validateSyncScheme(syncScheme) {
   return validate(syncScheme, constraints)
 }
 
+// tslint:disable-next-line
 function validateSerializationInput(from: string, fee: BigNumber, amount: BigNumber, publicKey: string, transaction: any) {
   const constraints = {
     from: {

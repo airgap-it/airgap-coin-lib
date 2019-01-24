@@ -37,6 +37,15 @@ export interface TezosBlockHeader {
   signature: string
 }
 
+export interface TezosOperation {
+  storage_limit: string
+  gas_limit: string
+  counter: string
+  fee: string
+  source: string
+  kind: TezosOperationType
+}
+
 export interface TezosWrappedOperation {
   branch: string
   contents: TezosOperation[]
@@ -46,15 +55,6 @@ export interface TezosSpendOperation extends TezosOperation {
   destination: string
   amount: string
   kind: TezosOperationType.TRANSACTION
-}
-
-export interface TezosOperation {
-  storage_limit: string
-  gas_limit: string
-  counter: string
-  fee: string
-  source: string
-  kind: TezosOperationType
 }
 
 export interface TezosRevealOperation extends TezosOperation {
@@ -523,7 +523,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     const forgedOperation = tezosWrappedOperation.contents.map(operation => {
       let resultHexString = ''
       if (operation.kind !== TezosOperationType.TRANSACTION && operation.kind !== TezosOperationType.REVEAL) {
-        throw new Error('currently unsupported operation type supplied ' + operation.kind)
+        throw new Error(`currently unsupported operation type supplied ${operation.kind}`)
       }
 
       if (operation.kind === TezosOperationType.TRANSACTION) {
@@ -552,7 +552,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       if (operation.kind === TezosOperationType.TRANSACTION) {
         resultHexString += this.bigNumberToZarith(new BigNumber((operation as TezosSpendOperation).amount))
 
-        let cleanedDestination
+        let cleanedDestination: string
 
         if ((operation as TezosSpendOperation).destination.toLowerCase().startsWith('kt')) {
           cleanedDestination =
@@ -594,7 +594,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   }
 
   bigNumberToZarith(inputNumber: BigNumber) {
-    let bitString = inputNumber.toString(2)
+    let bitString: string = inputNumber.toString(2)
     while (bitString.length % 7 !== 0) {
       bitString = '0' + bitString // fill up with leading '0'
     }
@@ -602,7 +602,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     let resultHexString = ''
     // because it's little endian we start from behind...
     for (let i = bitString.length; i > 0; i -= 7) {
-      let bitStringSection = bitString.substring(i - 7, i)
+      let bitStringSection: string = bitString.substring(i - 7, i)
       if (i === 7) {
         // the last byte will show it's the last with a leading '0'
         bitStringSection = '0' + bitStringSection
