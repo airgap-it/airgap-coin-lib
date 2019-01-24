@@ -1,7 +1,7 @@
 - Getting Started
 
-  - [Quick Start](readme.md#getting-started)
-  - [Supported Protocols](readme.md#supported-protocols)
+  - [Quick Start](README.md#getting-started)
+  - [Supported Protocols](README.md#supported-protocols)
 
 - Serialization / QR Sync
 
