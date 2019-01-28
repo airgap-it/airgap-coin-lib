@@ -6,6 +6,8 @@ const HOPTokenProtocol = new GenericERC20(
   'hop',
   'eth-erc20-hops-ropsten',
   '0x2dd847af80418D280B7078888B6A6133083001C9',
+  18,
+  18,
   'https://ropsten.infura.io/',
   'https://ropsten.trustwalletapp.com/',
   3

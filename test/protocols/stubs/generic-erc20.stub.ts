@@ -3,10 +3,10 @@ import { EthereumProtocol } from '../../../lib/protocols/ethereum/EthereumProtoc
 import * as sinon from 'sinon'
 import BigNumber from 'bignumber.js'
 
-export class ERC20ProtocolStub implements ProtocolHTTPStub {
+export class GenericERC20ProtocolStub implements ProtocolHTTPStub {
   registerStub(testProtocolSpec: TestProtocolSpec, protocol: EthereumProtocol) {
     sinon
-      .stub(Object.getPrototypeOf(Object.getPrototypeOf(Object.getPrototypeOf(protocol))), 'getBalanceOfPublicKey')
+      .stub(Object.getPrototypeOf(Object.getPrototypeOf(protocol)), 'getBalanceOfPublicKey')
       .withArgs(sinon.match.any)
       .returns(Promise.resolve(new BigNumber(100000000000000000000)))
 
@@ -26,7 +26,7 @@ export class ERC20ProtocolStub implements ProtocolHTTPStub {
   }
   noBalanceStub(testProtocolSpec: TestProtocolSpec, protocol: EthereumProtocol) {
     sinon
-      .stub(Object.getPrototypeOf(Object.getPrototypeOf(Object.getPrototypeOf(protocol))), 'getBalanceOfPublicKey')
+      .stub(Object.getPrototypeOf(Object.getPrototypeOf(protocol)), 'getBalanceOfPublicKey')
       .withArgs(sinon.match.any)
       .returns(Promise.resolve(new BigNumber(0)))
 

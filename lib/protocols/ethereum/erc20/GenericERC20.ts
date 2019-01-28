@@ -69,7 +69,9 @@ export class GenericERC20 extends BaseEthereumProtocol implements ICoinSubProtoc
     name: string,
     marketSymbol: string,
     identifier: string,
-    contractAddress,
+    contractAddress: string,
+    decimals = 18,
+    feeDecimals = 18,
     jsonRPCAPI = 'https://mainnet.infura.io/',
     infoAPI = 'https://api.trustwalletapp.com/',
     chainId = 1
@@ -80,6 +82,8 @@ export class GenericERC20 extends BaseEthereumProtocol implements ICoinSubProtoc
     this.name = name
     this.marketSymbol = marketSymbol
     this.identifier = identifier
+    this.decimals = decimals
+    this.feeDecimals = feeDecimals
   }
 
   getBalanceOfPublicKey(publicKey: string): Promise<BigNumber> {
