@@ -1,5 +1,8 @@
 # AirGap Coin Library
 
+[![npm](https://img.shields.io/npm/v/airgap-coin-lib.svg?colorB=brightgreen)](https://www.npmjs.com/package/airgap-coin-lib)
+[![documentation](https://img.shields.io/badge/documentation-online-brightgreen.svg)](https://airgap-it.github.io/airgap-coin-lib/)
+
 The `airgap-coin-lib` is a protocol-agnostic library that allows easy handling of the most important tasks relating cryptocurrencies and blockchains.
 
 It implements operations such as preparing, signing and broadcasting transactions for a range of protocols.
