@@ -11,7 +11,7 @@ import * as Web3 from 'web3'
 import { UnsignedTransaction } from '../../serializer/unsigned-transaction.serializer'
 import { SignedEthereumTransaction } from '../../serializer/signed-transactions/ethereum-transactions.serializer'
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
-import { getSubProtocolByIdentifier } from '../../utils/subProtocols'
+import { getSubProtocolsByIdentifier } from '../../utils/subProtocols'
 
 const EthereumTransaction = require('ethereumjs-tx')
 
@@ -58,7 +58,7 @@ export abstract class BaseEthereumProtocol implements ICoinProtocol {
   infoAPI: string
 
   get subProtocols() {
-    return getSubProtocolByIdentifier(this.identifier)
+    return getSubProtocolsByIdentifier(this.identifier)
   }
 
   constructor(public jsonRPCAPI = 'https://mainnet.infura.io/', infoAPI = 'https://api.trustwalletapp.com/', chainId = 1) {

@@ -4,7 +4,7 @@ import { ICoinProtocol } from '../protocols/ICoinProtocol'
 
 const subProtocolMapper = {}
 
-const getSubProtocolByIdentifier = (identifier: string) => {
+const getSubProtocolsByIdentifier = (identifier: string) => {
   if (subProtocolMapper[identifier]) {
     return subProtocolMapper[identifier]
   }
@@ -18,11 +18,15 @@ const addSubProtocol = (identifier: string, subProtocol: ICoinProtocol & ICoinSu
     throw new Error(`subprotocol ${subProtocol.name} is not supported for protocol ${protocol.identifier}`)
   }
 
+  // make sure we can add subprotocols for this identifier
   if (!subProtocolMapper[identifier]) {
     subProtocolMapper[identifier] = []
   }
 
-  subProtocolMapper[identifier].push(subProtocol)
+  // only add sub-protocol if it doesn't exist yet
+  if (subProtocolMapper[identifier].findIndex(sub => sub.identifier === subProtocol.identifier) !== -1) {
+    subProtocolMapper[identifier].push(subProtocol)
+  }
 }
 
-export { addSubProtocol, getSubProtocolByIdentifier }
+export { addSubProtocol, getSubProtocolsByIdentifier }

@@ -9,6 +9,7 @@ import { EthereumClassicProtocol } from './protocols/ethereum/EthereumClassicPro
 import { GenericERC20 } from './protocols/ethereum/erc20/GenericERC20'
 import { AEProtocol } from './protocols/aeternity/AEProtocol'
 import { TezosProtocol } from './protocols/tezos/TezosProtocol'
+import { TezosKtProtocol } from './protocols/tezos/kt/TezosKtProtocol'
 import { AirGapWallet } from './wallet/AirGapWallet'
 import { AirGapMarketWallet } from './wallet/AirGapMarketWallet'
 import { IAirGapWallet } from './interfaces/IAirGapWallet'
@@ -22,11 +23,11 @@ import { TypeNotSupported, SerializerVersionMismatch, ProtocolNotSupported, Prot
 import { getProtocolByIdentifier } from './utils/protocolsByIdentifier'
 import { supportedProtocols } from './utils/supportedProtocols'
 import { isCoinlibReady } from './utils/coinlibReady'
-import { addSubProtocol, getSubProtocolByIdentifier } from './utils/subProtocols'
+import { addSubProtocol, getSubProtocolsByIdentifier } from './utils/subProtocols'
 
 export {
   getProtocolByIdentifier,
-  getSubProtocolByIdentifier,
+  getSubProtocolsByIdentifier,
   supportedProtocols,
   AirGapWallet,
   AirGapMarketWallet,
@@ -44,6 +45,7 @@ export {
   GenericERC20,
   AEProtocol,
   TezosProtocol,
+  TezosKtProtocol,
   // sync protocol
   SyncProtocolUtils,
   DeserializedSyncProtocol,

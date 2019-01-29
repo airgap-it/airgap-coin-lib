@@ -59,31 +59,36 @@ const AUTH_TOKEN_ABI = [
 
 abiDecoder.addABI(AUTH_TOKEN_ABI)
 
+export interface GenericERC20Configuration {
+  symbol: string
+  name: string
+  marketSymbol: string
+  identifier: string
+  contractAddress: string
+  decimals?: number
+  jsonRPCAPI?: string
+  infoAPI?: string
+  chainId?: number
+}
+
 export class GenericERC20 extends BaseEthereumProtocol implements ICoinSubProtocol {
   tokenContract: any
   isSubProtocol = true
   subProtocolType = SubProtocolType.TOKEN
 
-  constructor(
-    symbol: string,
-    name: string,
-    marketSymbol: string,
-    identifier: string,
-    contractAddress: string,
-    decimals = 18,
-    feeDecimals = 18,
-    jsonRPCAPI = 'https://mainnet.infura.io/',
-    infoAPI = 'https://api.trustwalletapp.com/',
-    chainId = 1
-  ) {
-    super(jsonRPCAPI, infoAPI, chainId) // we probably need another network here, explorer is ok
-    this.tokenContract = new this.web3.eth.Contract(AUTH_TOKEN_ABI, contractAddress)
-    this.symbol = symbol
-    this.name = name
-    this.marketSymbol = marketSymbol
-    this.identifier = identifier
-    this.decimals = decimals
-    this.feeDecimals = feeDecimals
+  subProtocolConfiguration: GenericERC20Configuration
+
+  constructor(config: GenericERC20Configuration) {
+    super(config.jsonRPCAPI, config.infoAPI, config.chainId || 1) // we probably need another network here, explorer is ok
+
+    this.tokenContract = new this.web3.eth.Contract(AUTH_TOKEN_ABI, config.contractAddress)
+    this.symbol = config.symbol
+    this.name = config.name
+    this.marketSymbol = config.marketSymbol
+    this.identifier = config.identifier
+    this.decimals = config.decimals || this.decimals
+
+    this.subProtocolConfiguration = config
   }
 
   getBalanceOfPublicKey(publicKey: string): Promise<BigNumber> {

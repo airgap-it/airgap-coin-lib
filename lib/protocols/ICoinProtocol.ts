@@ -50,7 +50,7 @@ export interface ICoinProtocol {
   getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]>
 
   signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: any): Promise<IAirGapSignedTransaction> // broadcaster proxies this operation
-  signWithPrivateKey(extendedPrivateKey: Buffer, transaction: any): Promise<IAirGapSignedTransaction> // broadcaster proxies this operation
+  signWithPrivateKey(privateKey: Buffer, transaction: any): Promise<IAirGapSignedTransaction> // broadcaster proxies this operation
   getTransactionDetails(transaction: UnsignedTransaction): IAirGapTransaction // out of unsigned transaction
   getTransactionDetailsFromSigned(transaction: SignedTransaction): IAirGapTransaction // out of signed transaction
 

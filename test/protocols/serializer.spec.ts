@@ -9,13 +9,16 @@ import { AETestProtocolSpec } from './specs/ae'
 import { ERC20HOPTokenTestProtocolSpec } from './specs/erc20-hop-token'
 import { TezosTestProtocolSpec } from './specs/tezos'
 import { BitcoinTestProtocolSpec } from './specs/bitcoin-test'
+import { GenericERC20TokenTestProtocolSpec } from './specs/generic-erc20-token'
+import { getProtocolByIdentifier } from '../../lib/utils/protocolsByIdentifier'
 
 const protocols = [
   new EthereumTestProtocolSpec(),
   new BitcoinTestProtocolSpec(),
   new AETestProtocolSpec(),
   new ERC20HOPTokenTestProtocolSpec(),
-  new TezosTestProtocolSpec()
+  new TezosTestProtocolSpec(),
+  new GenericERC20TokenTestProtocolSpec()
 ]
 
 protocols.forEach((protocol: TestProtocolSpec) => {
@@ -72,6 +75,17 @@ protocols.forEach((protocol: TestProtocolSpec) => {
         const deserializedTx = await syncProtocol.deserialize(serializedSignedTx)
 
         expect(protocol.signedTransaction(tx)).to.deep.include(deserializedTx)
+      }
+    })
+
+    it(`should be able to properly construct the protocol from a unsigned tx`, async () => {
+      for (let tx of protocol.txs) {
+        const serializedTx = await syncProtocol.serialize(protocol.unsignedTransaction(tx))
+        const deserializedTx = await syncProtocol.deserialize(serializedTx)
+
+        const reConstructedProtocol = getProtocolByIdentifier(deserializedTx.protocol)
+
+        expect(protocol.lib.identifier).to.equal(reConstructedProtocol.identifier)
       }
     })
   })

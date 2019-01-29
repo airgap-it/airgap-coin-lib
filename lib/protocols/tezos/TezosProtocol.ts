@@ -370,7 +370,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
   prefixAndBase58CheckEncode(hexStringPayload: string, tezosPrefix: Uint8Array): string {
     const prefixHex = Buffer.from(tezosPrefix).toString('hex')
-    return bs58check.encode(new Buffer(prefixHex + hexStringPayload, 'hex'))
+    return bs58check.encode(Buffer.from(prefixHex + hexStringPayload, 'hex'))
   }
 
   splitAndReturnRest(payload: string, length: number): { result: string; rest: string } {
@@ -534,7 +534,14 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         resultHexString += '07' // because this is a reveal operation
       }
 
-      let cleanedSource = this.checkAndRemovePrefixToHex(operation.source, this.tezosPrefixes.tz1) // currently we only support tz1 addresses
+      let cleanedSource: string
+
+      if ((operation as TezosSpendOperation).source.toLowerCase().startsWith('kt')) {
+        cleanedSource = this.checkAndRemovePrefixToHex(operation.source, this.tezosPrefixes.kt) // currently we only support tz1 addresses
+      } else {
+        cleanedSource = this.checkAndRemovePrefixToHex(operation.source, this.tezosPrefixes.tz1) // currently we only support tz1 addresses
+      }
+
       if (cleanedSource.length > 44) {
         // must be less or equal 22 bytes
         throw new Error('provided source is invalid')

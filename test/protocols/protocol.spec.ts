@@ -11,8 +11,9 @@ import { EthereumClassicTestProtocolSpec } from './specs/ethereum-classic'
 import { ERC20HOPTokenTestProtocolSpec } from './specs/erc20-hop-token'
 import BigNumber from 'bignumber.js'
 import { TezosTestProtocolSpec } from './specs/tezos'
-import { BitcoinProtocolSpec } from './specs/bitcoin'
 import { BitcoinTestProtocolSpec } from './specs/bitcoin-test'
+import { GenericERC20TokenTestProtocolSpec } from './specs/generic-erc20-token'
+import { KtTezosTestProtocolSpec } from './specs/kt-tezos'
 
 // use chai-as-promised plugin
 chai.use(chaiAsPromised)
@@ -37,8 +38,9 @@ const protocols = [
   new EthereumRopstenTestProtocolSpec(),
   new AETestProtocolSpec(),
   new TezosTestProtocolSpec(),
-  new BitcoinTestProtocolSpec()
-  // new BitcoinProtocolSpec()
+  new KtTezosTestProtocolSpec(),
+  new BitcoinTestProtocolSpec(),
+  new GenericERC20TokenTestProtocolSpec()
 ]
 
 const itIf = (condition, title, test) => {
@@ -151,6 +153,7 @@ protocols.forEach((protocol: TestProtocolSpec) => {
           )
           throw new Error(`should have failed`)
         } catch (error) {
+          console.log(error.message)
           expect(error.toString()).to.contain('balance')
         }
       })
