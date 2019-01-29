@@ -11,6 +11,7 @@ const mnemonicPhrase = 'spell device they juice trial skirt amazing boat badge s
 const masterSeed = BIP39.mnemonicToSeed(mnemonicPhrase)
 
 const CoinLib = require('../dist/index')
+const hopTokenProtocol = require('../dist/protocols/ethereum/erc20/HopRopstenToken').HOPTokenProtocol
 
 const validateTxHelper = require('./helpers/validate-tx')
 
@@ -167,8 +168,7 @@ describe('Balance Of', function() {
       .derivePath("m/44'/60'/0'/0/0")
       .neutered()
       .getPublicKeyBuffer()
-    const hopRopsten = new CoinLib.HOPTokenProtocol()
-    hopRopsten
+    hopTokenProtocol
       .getBalanceOfPublicKey(publicKey)
       .then(value => {
         assert.equal(value.toString(10), '11999999999999999420')
@@ -382,7 +382,6 @@ describe('Raw Transaction Prepare', function() {
       .neutered()
       .getPublicKeyBuffer()
     const privateKey = ethereumRopstenNode.derivePath("m/44'/60'/0'/0/0").keyPair.d.toBuffer(32)
-    const hopTokenProtocol = new CoinLib.HOPTokenProtocol()
     hopTokenProtocol
       .prepareTransactionFromPublicKey(
         publicKey,
@@ -545,18 +544,17 @@ describe('List Transactions', function() {
       .derivePath("m/44'/60'/0'/0/0")
       .neutered()
       .getPublicKeyBuffer()
-    const hopToken = new CoinLib.HOPTokenProtocol()
 
     sinon
       .stub(axios, 'get')
       .withArgs(
-        `https://ropsten.trustwalletapp.com/transactions?address=${hopToken.getAddressFromPublicKey(publicKey)}&contract=${
-          hopToken.tokenContract.options.address
+        `https://ropsten.trustwalletapp.com/transactions?address=${hopTokenProtocol.getAddressFromPublicKey(publicKey)}&contract=${
+          hopTokenProtocol.tokenContract.options.address
         }&page=0&limit=20`
       )
       .returns(Promise.resolve({ data: { docs: [] } }))
 
-    hopToken
+    hopTokenProtocol
       .getTransactionsFromPublicKey(publicKey, 20, 0)
       .then(transactions => {
         sinon.restore()
