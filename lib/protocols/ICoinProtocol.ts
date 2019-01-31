@@ -36,14 +36,19 @@ export interface ICoinProtocol {
   getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Buffer
 
   getExtendedPrivateKeyFromHexSecret(secret: string, derivationPath: string): string
-  getAddressFromPublicKey(publicKey: string): string // broadcaster knows this (both broadcaster and signer)
-  getAddressFromExtendedPublicKey(extendedPublicKey: string, visibilityDerivationIndex: number, addressDerivationIndex: number): string // broadcaster knows this (both broadcaster and signer)
+  getAddressFromPublicKey(publicKey: string): Promise<string>
+  getAddressesFromPublicKey(publicKey: string): Promise<string[]> // broadcaster knows this (both broadcaster and signer)
+  getAddressFromExtendedPublicKey(
+    extendedPublicKey: string,
+    visibilityDerivationIndex: number,
+    addressDerivationIndex: number
+  ): Promise<string> // broadcaster knows this (both broadcaster and signer)
   getAddressesFromExtendedPublicKey(
     extendedPublicKey: string,
     visibilityDerivationIndex: number,
     addressCount: number,
     offset: number
-  ): string[] // broadcaster knows this (both broadcaster and signer)
+  ): Promise<string[]> // broadcaster knows this (both broadcaster and signer)
 
   getTransactionsFromPublicKey(publicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]>
   getTransactionsFromExtendedPublicKey(extendedPublicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]>
@@ -51,8 +56,8 @@ export interface ICoinProtocol {
 
   signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: any): Promise<IAirGapSignedTransaction> // broadcaster proxies this operation
   signWithPrivateKey(privateKey: Buffer, transaction: any): Promise<IAirGapSignedTransaction> // broadcaster proxies this operation
-  getTransactionDetails(transaction: UnsignedTransaction): IAirGapTransaction // out of unsigned transaction
-  getTransactionDetailsFromSigned(transaction: SignedTransaction): IAirGapTransaction // out of signed transaction
+  getTransactionDetails(transaction: UnsignedTransaction): Promise<IAirGapTransaction> // out of unsigned transaction
+  getTransactionDetailsFromSigned(transaction: SignedTransaction): Promise<IAirGapTransaction> // out of signed transaction
 
   getBalanceOfAddresses(addresses: string[]): Promise<BigNumber>
   getBalanceOfPublicKey(publicKey: string): Promise<BigNumber>

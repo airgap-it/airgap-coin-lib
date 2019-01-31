@@ -6,7 +6,7 @@ import { ZCashTestnetProtocol } from './protocols/zcash/ZCashTestnetProtocol'
 import { EthereumProtocol } from './protocols/ethereum/EthereumProtocol'
 import { EthereumRopstenProtocol } from './protocols/ethereum/EthereumRopstenProtocol'
 import { EthereumClassicProtocol } from './protocols/ethereum/EthereumClassicProtocol'
-import { GenericERC20 } from './protocols/ethereum/erc20/GenericERC20'
+import { GenericERC20, GenericERC20Configuration } from './protocols/ethereum/erc20/GenericERC20'
 import { AEProtocol } from './protocols/aeternity/AEProtocol'
 import { TezosProtocol } from './protocols/tezos/TezosProtocol'
 import { TezosKtProtocol } from './protocols/tezos/kt/TezosKtProtocol'
@@ -15,6 +15,7 @@ import { AirGapMarketWallet } from './wallet/AirGapMarketWallet'
 import { IAirGapWallet } from './interfaces/IAirGapWallet'
 import { IAirGapTransaction } from './interfaces/IAirGapTransaction'
 import { ICoinProtocol } from './protocols/ICoinProtocol'
+import { ICoinSubProtocol } from './protocols/ICoinSubProtocol'
 import { SyncProtocolUtils, DeserializedSyncProtocol, EncodedType } from './serializer/serializer'
 import { SyncWalletRequest } from './serializer/wallet-sync.serializer'
 import { UnsignedTransaction } from './serializer/unsigned-transaction.serializer'
@@ -34,6 +35,7 @@ export {
   IAirGapWallet,
   IAirGapTransaction,
   ICoinProtocol,
+  ICoinSubProtocol,
   BitcoinProtocol,
   BitcoinTestnetProtocol,
   LitecoinProtocol,
@@ -46,6 +48,8 @@ export {
   AEProtocol,
   TezosProtocol,
   TezosKtProtocol,
+  // sub protocols configs,
+  GenericERC20Configuration,
   // sync protocol
   SyncProtocolUtils,
   DeserializedSyncProtocol,

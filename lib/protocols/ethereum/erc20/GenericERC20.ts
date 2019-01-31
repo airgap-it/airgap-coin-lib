@@ -58,7 +58,6 @@ const AUTH_TOKEN_ABI = [
 ]
 
 abiDecoder.addABI(AUTH_TOKEN_ABI)
-
 export interface GenericERC20Configuration {
   symbol: string
   name: string
@@ -76,38 +75,29 @@ export class GenericERC20 extends BaseEthereumProtocol implements ICoinSubProtoc
   isSubProtocol = true
   subProtocolType = SubProtocolType.TOKEN
 
-  subProtocolConfiguration: GenericERC20Configuration
-
   constructor(config: GenericERC20Configuration) {
     super(config.jsonRPCAPI, config.infoAPI, config.chainId || 1) // we probably need another network here, explorer is ok
 
-    this.tokenContract = new this.web3.eth.Contract(AUTH_TOKEN_ABI, config.contractAddress)
+    this.tokenContract = new this.web3.eth.Contract(AUTH_TOKEN_ABI as any, config.contractAddress) // todo: check whether the auth_token_abi conversion here is okay
     this.symbol = config.symbol
     this.name = config.name
     this.marketSymbol = config.marketSymbol
     this.identifier = config.identifier
     this.decimals = config.decimals || this.decimals
-
-    this.subProtocolConfiguration = config
   }
 
-  getBalanceOfPublicKey(publicKey: string): Promise<BigNumber> {
-    const address = this.getAddressFromPublicKey(publicKey)
+  async getBalanceOfPublicKey(publicKey: string): Promise<BigNumber> {
+    const address = await this.getAddressFromPublicKey(publicKey)
     return this.getBalanceOfAddresses([address])
   }
 
-  getBalanceOfAddresses(addresses: string[]): Promise<BigNumber> {
-    const promises: Promise<any>[] = []
-    for (let address of addresses) {
-      promises.push(this.tokenContract.methods.balanceOf(address).call())
-    }
-    return new Promise((resolve, reject) => {
-      Promise.all(promises)
-        .then(values => {
-          resolve(values.map(obj => new BigNumber(obj)).reduce((a, b) => a.plus(b)))
-        })
-        .catch(reject)
-    })
+  async getBalanceOfAddresses(addresses: string[]): Promise<BigNumber> {
+    const balances = await Promise.all(
+      addresses.map(address => {
+        return this.tokenContract.methods.balanceOf(address).call()
+      })
+    )
+    return balances.map(obj => new BigNumber(obj)).reduce((a, b) => a.plus(b))
   }
 
   signWithPrivateKey(privateKey: Buffer, transaction: RawEthereumTransaction): Promise<IAirGapSignedTransaction> {
@@ -118,60 +108,52 @@ export class GenericERC20 extends BaseEthereumProtocol implements ICoinSubProtoc
     return super.signWithPrivateKey(privateKey, transaction)
   }
 
-  prepareTransactionFromPublicKey(
+  async prepareTransactionFromPublicKey(
     publicKey: string,
     recipients: string[],
     values: BigNumber[],
     fee: BigNumber
   ): Promise<RawEthereumTransaction> {
     if (recipients.length !== values.length) {
-      return Promise.reject('recipients length does not match with values')
+      throw new Error('recipients length does not match with values')
     }
 
     if (recipients.length !== 1) {
-      return Promise.reject('you cannot have 0 recipients')
+      throw new Error('you cannot have 0 recipients')
     }
 
-    return new Promise((resolve, reject) => {
-      this.getBalanceOfPublicKey(publicKey)
-        .then(balance => {
-          if (balance.isGreaterThanOrEqualTo(values[0])) {
-            super
-              .getBalanceOfPublicKey(publicKey)
-              .then(ethBalance => {
-                const address = this.getAddressFromPublicKey(publicKey)
-                this.tokenContract.methods
-                  .transfer(recipients[0], this.web3.utils.toHex(values[0]).toString())
-                  .estimateGas({ from: address }, (error, gasAmount) => {
-                    if (error) {
-                      reject(error)
-                    }
-                    if (ethBalance.isGreaterThanOrEqualTo(fee)) {
-                      this.web3.eth.getTransactionCount(address).then(txCount => {
-                        const gasPrice = fee.isEqualTo(0) ? new BigNumber(0) : fee.div(gasAmount).integerValue(BigNumber.ROUND_CEIL)
-                        const transaction: RawEthereumTransaction = {
-                          nonce: this.web3.utils.toHex(txCount),
-                          gasLimit: this.web3.utils.toHex(gasAmount),
-                          gasPrice: this.web3.utils.toHex(gasPrice.toFixed()),
-                          to: this.tokenContract._address,
-                          value: this.web3.utils.toHex(new BigNumber(0).toFixed()),
-                          chainId: this.chainId,
-                          data: this.tokenContract.methods.transfer(recipients[0], this.web3.utils.toHex(values[0]).toString()).encodeABI()
-                        }
-                        resolve(transaction)
-                      })
-                    } else {
-                      reject('not enough ETH balance')
-                    }
-                  })
-              })
-              .catch(reject)
-          } else {
-            reject('not enough token balance')
-          }
-        })
-        .catch(reject)
-    })
+    const balance = await this.getBalanceOfPublicKey(publicKey)
+
+    if (balance.isGreaterThanOrEqualTo(values[0])) {
+      const ethBalance = await super.getBalanceOfPublicKey(publicKey)
+      const address = await this.getAddressFromPublicKey(publicKey)
+
+      const gasAmountWeb3: any = await this.tokenContract.methods
+        .transfer(recipients[0], this.web3.utils.toHex(values[0].toFixed()).toString())
+        .estimateGas({ from: address })
+
+      // re-cast to our own big-number
+      const gasAmount = new BigNumber(gasAmountWeb3.toFixed())
+
+      if (ethBalance.isGreaterThanOrEqualTo(fee)) {
+        const txCount = await this.web3.eth.getTransactionCount(address)
+        const gasPrice = fee.isEqualTo(0) ? new BigNumber(0) : fee.div(gasAmount).integerValue(BigNumber.ROUND_CEIL)
+        const transaction: RawEthereumTransaction = {
+          nonce: this.web3.utils.toHex(txCount),
+          gasLimit: this.web3.utils.toHex(gasAmount.toFixed()),
+          gasPrice: this.web3.utils.toHex(gasPrice.toFixed()),
+          to: this.tokenContract.options.address,
+          value: this.web3.utils.toHex(new BigNumber(0).toFixed()),
+          chainId: this.chainId,
+          data: this.tokenContract.methods.transfer(recipients[0], this.web3.utils.toHex(values[0].toFixed()).toString()).encodeABI()
+        }
+        return transaction
+      } else {
+        throw new Error('not enough ETH balance')
+      }
+    } else {
+      throw new Error('not enough token balance')
+    }
   }
 
   getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
@@ -222,8 +204,8 @@ export class GenericERC20 extends BaseEthereumProtocol implements ICoinSubProtoc
     })
   }
 
-  getTransactionDetailsFromSigned(signedTx: SignedEthereumTransaction): IAirGapTransaction {
-    const ethTx = super.getTransactionDetailsFromSigned(signedTx)
+  async getTransactionDetailsFromSigned(signedTx: SignedEthereumTransaction): Promise<IAirGapTransaction> {
+    const ethTx = await super.getTransactionDetailsFromSigned(signedTx)
 
     const extractedTx = new EthereumTransaction(signedTx.transaction)
     const tokenTransferDetails = abiDecoder.decodeMethod(`0x${extractedTx.data.toString('hex')}`)
@@ -233,9 +215,9 @@ export class GenericERC20 extends BaseEthereumProtocol implements ICoinSubProtoc
     return ethTx
   }
 
-  getTransactionDetails(unsignedTx: UnsignedTransaction): IAirGapTransaction {
+  async getTransactionDetails(unsignedTx: UnsignedTransaction): Promise<IAirGapTransaction> {
     const unsignedEthereumTx = unsignedTx as UnsignedEthereumTransaction
-    const ethTx = super.getTransactionDetails(unsignedEthereumTx)
+    const ethTx = await super.getTransactionDetails(unsignedEthereumTx)
 
     const tokenTransferDetails = abiDecoder.decodeMethod(unsignedEthereumTx.transaction.data)
 

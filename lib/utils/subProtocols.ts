@@ -6,7 +6,7 @@ const subProtocolMapper = {}
 
 const getSubProtocolsByIdentifier = (identifier: string) => {
   if (subProtocolMapper[identifier]) {
-    return subProtocolMapper[identifier]
+    return Object.keys(subProtocolMapper[identifier]).map(key => subProtocolMapper[identifier][key])
   }
   return []
 }
@@ -20,13 +20,10 @@ const addSubProtocol = (identifier: string, subProtocol: ICoinProtocol & ICoinSu
 
   // make sure we can add subprotocols for this identifier
   if (!subProtocolMapper[identifier]) {
-    subProtocolMapper[identifier] = []
+    subProtocolMapper[identifier] = {}
   }
 
-  // only add sub-protocol if it doesn't exist yet
-  if (subProtocolMapper[identifier].findIndex(sub => sub.identifier === subProtocol.identifier) !== -1) {
-    subProtocolMapper[identifier].push(subProtocol)
-  }
+  subProtocolMapper[identifier][subProtocol.identifier] = subProtocol
 }
 
 export { addSubProtocol, getSubProtocolsByIdentifier }

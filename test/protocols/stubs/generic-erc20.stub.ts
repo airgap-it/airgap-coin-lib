@@ -21,7 +21,7 @@ export class GenericERC20ProtocolStub implements ProtocolHTTPStub {
       .returns(Promise.resolve(80))
     sinon
       .stub(protocol.web3.eth, 'getBalance')
-      .withArgs(protocol.getAddressFromPublicKey(testProtocolSpec.wallet.publicKey))
+      .withArgs(testProtocolSpec.wallet.addresses[0])
       .returns(Promise.resolve('100000000000000000000'))
   }
   noBalanceStub(testProtocolSpec: TestProtocolSpec, protocol: EthereumProtocol) {

@@ -2,7 +2,11 @@ import BigNumber from 'bignumber.js'
 import { HOPTokenProtocol } from '../../../lib/protocols/ethereum/erc20/HopRopstenToken'
 import { GenericERC20ProtocolStub } from '../stubs/generic-erc20.stub'
 import { TestProtocolSpec } from '../implementations'
+import { addSubProtocol } from '../../../lib'
 
+const protocol = HOPTokenProtocol
+
+addSubProtocol('eth', protocol)
 export class ERC20HOPTokenTestProtocolSpec extends TestProtocolSpec {
   name = 'HOP Token ERC20'
   lib = HOPTokenProtocol

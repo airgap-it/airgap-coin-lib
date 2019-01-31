@@ -14,8 +14,12 @@ export abstract class NonExtendedProtocol {
     return Promise.reject('extended private key signing for not implemented')
   }
 
-  getAddressFromExtendedPublicKey(extendedPublicKey: string, visibilityDerivationIndex: number, addressDerivationIndex: number): string {
-    return ''
+  getAddressFromExtendedPublicKey(
+    extendedPublicKey: string,
+    visibilityDerivationIndex: number,
+    addressDerivationIndex: number
+  ): Promise<string> {
+    return Promise.resolve('')
   }
 
   getAddressesFromExtendedPublicKey(
@@ -23,8 +27,8 @@ export abstract class NonExtendedProtocol {
     visibilityDerivationIndex: number,
     addressCount: number,
     offset: number
-  ): string[] {
-    return []
+  ): Promise<string[]> {
+    return Promise.resolve([])
   }
 
   getTransactionsFromExtendedPublicKey(extendedPublicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]> {

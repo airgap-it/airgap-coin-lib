@@ -140,7 +140,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     return Buffer.from(secretKey)
   }
 
-  getAddressFromPublicKey(publicKey: string): string {
+  async getAddressFromPublicKey(publicKey: string): Promise<string> {
     // using libsodium for now
     const payload = sodium.crypto_generichash(20, Buffer.from(publicKey, 'hex'))
     const address = bs58check.encode(Buffer.concat([this.tezosPrefixes.tz1, Buffer.from(payload)]))
@@ -148,8 +148,14 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     return address
   }
 
+  async getAddressesFromPublicKey(publicKey: string): Promise<string[]> {
+    const address = await this.getAddressFromPublicKey(publicKey)
+    return [address]
+  }
+
   async getTransactionsFromPublicKey(publicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]> {
-    return this.getTransactionsFromAddresses([this.getAddressFromPublicKey(publicKey)], limit, offset)
+    const addresses = await this.getAddressesFromPublicKey(publicKey)
+    return this.getTransactionsFromAddresses(addresses, limit, offset)
   }
 
   private getPageNumber(limit: number, offset: number): number {
@@ -198,7 +204,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       }, [])
   }
 
-  signWithPrivateKey(privateKey: Buffer, transaction: RawTezosTransaction): Promise<IAirGapSignedTransaction> {
+  async signWithPrivateKey(privateKey: Buffer, transaction: RawTezosTransaction): Promise<IAirGapSignedTransaction> {
     const watermark = '03'
     const watermarkedForgedOperationBytesHex: string = watermark + transaction.binaryTransaction
     const watermarkedForgedOperationBytes: Buffer = Buffer.from(watermarkedForgedOperationBytesHex, 'hex')
@@ -207,17 +213,17 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     const opSignature = nacl.sign.detached(hashedWatermarkedOpBytes, privateKey)
     const signedOpBytes: Buffer = Buffer.concat([Buffer.from(transaction.binaryTransaction, 'hex'), Buffer.from(opSignature)])
 
-    return Promise.resolve(signedOpBytes.toString('hex'))
+    return signedOpBytes.toString('hex')
   }
 
-  getTransactionDetails(unsignedTx: UnsignedTezosTransaction): IAirGapTransaction {
+  async getTransactionDetails(unsignedTx: UnsignedTezosTransaction): Promise<IAirGapTransaction> {
     const binaryTransaction = unsignedTx.transaction.binaryTransaction
     const wrappedOperations = this.unforgeUnsignedTezosWrappedOperation(binaryTransaction)
 
     return this.getAirGapTxFromWrappedOperations(wrappedOperations)
   }
 
-  getTransactionDetailsFromSigned(signedTx: SignedTezosTransaction): IAirGapTransaction {
+  async getTransactionDetailsFromSigned(signedTx: SignedTezosTransaction): Promise<IAirGapTransaction> {
     const binaryTransaction = signedTx.transaction
     const wrappedOperations = this.unforgeSignedTezosWrappedOperation(binaryTransaction)
 
@@ -261,8 +267,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     return balance
   }
 
-  getBalanceOfPublicKey(publicKey: string): Promise<BigNumber> {
-    const address = this.getAddressFromPublicKey(publicKey)
+  async getBalanceOfPublicKey(publicKey: string): Promise<BigNumber> {
+    const address = await this.getAddressFromPublicKey(publicKey)
     return this.getBalanceOfAddresses([address])
   }
 
@@ -278,10 +284,12 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     const operations: TezosOperation[] = []
 
     try {
+      const address = await this.getAddressFromPublicKey(publicKey)
+
       const results = await Promise.all([
-        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${this.getAddressFromPublicKey(publicKey)}/counter`),
+        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/counter`),
         axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/hash`),
-        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${this.getAddressFromPublicKey(publicKey)}/manager_key`)
+        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/manager_key`)
       ])
 
       counter = new BigNumber(results[0].data).plus(1)
@@ -291,7 +299,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
       // check if we have revealed the key already
       if (!accountManager.key) {
-        operations.push(this.createRevealOperation(counter, publicKey))
+        operations.push(await this.createRevealOperation(counter, publicKey))
         counter = counter.plus(1)
       }
     } catch (error) {
@@ -323,7 +331,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       amount: values[0].toFixed(),
       counter: counter.toFixed(),
       destination: recipients[0],
-      source: this.getAddressFromPublicKey(publicKey)
+      source: await this.getAddressFromPublicKey(publicKey)
     }
 
     operations.push(spendOperation)
@@ -650,7 +658,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     return new BigNumber(bitString, 2)
   }
 
-  private createRevealOperation(counter: BigNumber, publicKey: string): TezosRevealOperation {
+  private async createRevealOperation(counter: BigNumber, publicKey: string): Promise<TezosRevealOperation> {
     const operation: TezosRevealOperation = {
       kind: TezosOperationType.REVEAL,
       fee: '1300',
@@ -658,7 +666,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       storage_limit: '0', // taken from conseiljs
       counter: counter.toFixed(),
       public_key: bs58check.encode(Buffer.concat([this.tezosPrefixes.edpk, Buffer.from(publicKey, 'hex')])),
-      source: this.getAddressFromPublicKey(publicKey)
+      source: await this.getAddressFromPublicKey(publicKey)
     }
     return operation
   }

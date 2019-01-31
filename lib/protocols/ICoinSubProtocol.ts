@@ -6,5 +6,4 @@ export enum SubProtocolType {
 export interface ICoinSubProtocol {
   isSubProtocol: boolean
   subProtocolType: SubProtocolType
-  subProtocolConfiguration: Object
 }

@@ -32,8 +32,8 @@ export class AeternityUnsignedTransactionSerializer extends UnsignedTransactionS
     const unsignedAeternityTx: UnsignedAeternityTransaction = {
       publicKey: serializedTx[SyncProtocolUnsignedTransactionKeys.PUBLIC_KEY].toString(),
       transaction: {
-        networkId: serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION][0].toString(),
-        transaction: serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION][1].toString()
+        networkId: (serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION][0] as Buffer).toString(),
+        transaction: (serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION][1] as Buffer).toString()
       },
       callback: serializedTx[SyncProtocolUnsignedTransactionKeys.CALLBACK].toString()
     }

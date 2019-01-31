@@ -12,7 +12,8 @@ export class AirGapWallet implements IAirGapWallet {
     public protocolIdentifier: string,
     public publicKey: string,
     public isExtendedPublicKey: boolean,
-    public derivationPath: string
+    public derivationPath: string,
+    public addressIndex: number = 0
   ) {
     let coinProtocol = getProtocolByIdentifier(this.protocolIdentifier)
     if (coinProtocol) {
@@ -23,10 +24,10 @@ export class AirGapWallet implements IAirGapWallet {
   }
 
   get receivingPublicAddress(): string {
-    return this.addresses[0]
+    return this.addresses[this.addressIndex]
   }
 
-  deriveAddresses(amount: number = 50): string[] {
+  async deriveAddresses(amount: number = 50): Promise<string[]> {
     if (this.isExtendedPublicKey) {
       const parts = this.derivationPath.split('/')
       let offset = 0
@@ -36,15 +37,15 @@ export class AirGapWallet implements IAirGapWallet {
       }
 
       return [
-        ...this.coinProtocol.getAddressesFromExtendedPublicKey(this.publicKey, 0, amount, offset),
-        ...this.coinProtocol.getAddressesFromExtendedPublicKey(this.publicKey, 1, amount, offset)
+        ...(await this.coinProtocol.getAddressesFromExtendedPublicKey(this.publicKey, 0, amount, offset)),
+        ...(await this.coinProtocol.getAddressesFromExtendedPublicKey(this.publicKey, 1, amount, offset))
       ]
     } else {
-      return [this.coinProtocol.getAddressFromPublicKey(this.publicKey)]
+      return this.coinProtocol.getAddressesFromPublicKey(this.publicKey)
     }
   }
 
-  balanceOf(): Promise<BigNumber> {
+  async balanceOf(): Promise<BigNumber> {
     if (this.addresses.length > 0) {
       return this.coinProtocol.getBalanceOfAddresses(this.addresses)
     } else if (this.isExtendedPublicKey) {

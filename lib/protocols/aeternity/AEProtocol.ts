@@ -6,7 +6,7 @@ import { generateWalletUsingDerivationPath } from '@aeternity/hd-wallet'
 import axios from 'axios'
 import * as rlp from 'rlp'
 import * as bs58check from 'bs58check'
-import bs64check from '../utils/base64Check'
+import bs64check from '../../utils/base64Check'
 import {
   RawAeternityTransaction,
   UnsignedAeternityTransaction
@@ -77,13 +77,18 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
   /**
    * Currently, the AE Address is just the Public Key. Address Format tbd
    */
-  getAddressFromPublicKey(publicKey: string): string {
+  async getAddressFromPublicKey(publicKey: string): Promise<string> {
     const base58 = bs58check.encode(Buffer.from(publicKey, 'hex'))
     return `ak_${base58}`
   }
 
+  async getAddressesFromPublicKey(publicKey: string): Promise<string[]> {
+    const address = await this.getAddressFromPublicKey(publicKey)
+    return [address]
+  }
+
   async getTransactionsFromPublicKey(publicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]> {
-    return this.getTransactionsFromAddresses([this.getAddressFromPublicKey(publicKey)], limit, offset)
+    return this.getTransactionsFromAddresses([await this.getAddressFromPublicKey(publicKey)], limit, offset)
   }
 
   async getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
@@ -156,7 +161,7 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
     throw new Error('invalid TX-encoding')
   }
 
-  getTransactionDetails(unsignedTx: UnsignedAeternityTransaction): IAirGapTransaction {
+  async getTransactionDetails(unsignedTx: UnsignedAeternityTransaction): Promise<IAirGapTransaction> {
     const transaction = unsignedTx.transaction.transaction
     const rlpEncodedTx = this.decodeTx(transaction)
     const rlpDecodedTx = rlp.decode(rlpEncodedTx)
@@ -164,17 +169,17 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
     const airgapTx: IAirGapTransaction = {
       amount: new BigNumber(parseInt(rlpDecodedTx[4].toString('hex'), 16)),
       fee: new BigNumber(parseInt(rlpDecodedTx[5].toString('hex'), 16)),
-      from: [this.getAddressFromPublicKey(rlpDecodedTx[2].slice(1).toString('hex'))],
+      from: [await this.getAddressFromPublicKey(rlpDecodedTx[2].slice(1).toString('hex'))],
       isInbound: false,
       protocolIdentifier: this.identifier,
-      to: [this.getAddressFromPublicKey(rlpDecodedTx[3].slice(1).toString('hex'))]
+      to: [await this.getAddressFromPublicKey(rlpDecodedTx[3].slice(1).toString('hex'))]
     }
 
     return airgapTx
   }
 
-  getTransactionDetailsFromSigned(signedTx: SignedAeternityTransaction): IAirGapTransaction {
-    const rlpEncodedTx = this.decodeTx(signedTx.transaction)
+  async getTransactionDetailsFromSigned(signedTx: SignedAeternityTransaction): Promise<IAirGapTransaction> {
+    const rlpEncodedTx = bs58check.decode(signedTx.transaction.replace('tx_', ''), 'hex')
     const rlpDecodedTx = rlp.decode(rlpEncodedTx)
 
     const unsignedAeternityTransaction: UnsignedAeternityTransaction = {
@@ -207,8 +212,8 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
     return balance
   }
 
-  getBalanceOfPublicKey(publicKey: string): Promise<BigNumber> {
-    const address = this.getAddressFromPublicKey(publicKey)
+  async getBalanceOfPublicKey(publicKey: string): Promise<BigNumber> {
+    const address = await this.getAddressFromPublicKey(publicKey)
     return this.getBalanceOfAddresses([address])
   }
 
@@ -220,9 +225,11 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
   ): Promise<RawAeternityTransaction> {
     let nonce = 1
 
+    const address: string = await this.getAddressFromPublicKey(publicKey)
+
     try {
-      const { data: accountResponse } = await axios.get(`${this.epochRPC}/v2/accounts/${this.getAddressFromPublicKey(publicKey)}`)
-      nonce = (accountResponse.nonce as number) + 1
+      const { data: accountResponse } = await axios.get(`${this.epochRPC}/v2/accounts/${address}`)
+      nonce = accountResponse.nonce + 1
     } catch (error) {
       // if node returns 404 (which means 'no account found'), go with nonce 0
       if (error.response && error.response.status !== 404) {
