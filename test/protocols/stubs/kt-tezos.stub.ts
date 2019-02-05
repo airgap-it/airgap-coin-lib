@@ -32,6 +32,10 @@ export class KtTezosProtocolStub implements ProtocolHTTPStub {
       .withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy/balance`)
       .returns(Promise.resolve({ data: 100000000 }))
 
+    stub
+      .withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L/balance`)
+      .returns(Promise.resolve({ data: 100000000 }))
+
     stub.withArgs(`${protocol.baseApiUrl}/v3/operations/tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L?type=Origination`).returns(
       Promise.resolve({
         data: [

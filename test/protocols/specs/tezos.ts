@@ -15,14 +15,12 @@ export class TezosTestProtocolSpec extends TestProtocolSpec {
     privateKey:
       '2f243e474992bb96b49b2fa7b2c1cba7a804257f0cf13dceb640cf3210d54838cdbc0c3449784bd53907c3c7a06060cf12087e492a7b937f044c6a73b522a234',
     publicKey: 'cdbc0c3449784bd53907c3c7a06060cf12087e492a7b937f044c6a73b522a234',
-    addresses: ['tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'],
-    tx: {
-      amount: new BigNumber('1000000'),
-      fee: new BigNumber('1420')
-    }
+    addresses: ['tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L']
   }
   txs = [
     {
+      amount: new BigNumber('1000000'),
+      fee: new BigNumber('1420'),
       to: ['tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'],
       from: ['tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'],
       unsignedTx: {

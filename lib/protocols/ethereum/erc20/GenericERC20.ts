@@ -108,6 +108,11 @@ export class GenericERC20 extends BaseEthereumProtocol implements ICoinSubProtoc
     return super.signWithPrivateKey(privateKey, transaction)
   }
 
+  private async estimateGas(recipient: string, hexValue: string, params: any): Promise<string> {
+    const gasEstimate = await this.tokenContract.methods.transfer(recipient, hexValue).estimateGas(params)
+    return gasEstimate.toFixed()
+  }
+
   async prepareTransactionFromPublicKey(
     publicKey: string,
     recipients: string[],
@@ -128,12 +133,12 @@ export class GenericERC20 extends BaseEthereumProtocol implements ICoinSubProtoc
       const ethBalance = await super.getBalanceOfPublicKey(publicKey)
       const address = await this.getAddressFromPublicKey(publicKey)
 
-      const gasAmountWeb3: any = await this.tokenContract.methods
-        .transfer(recipients[0], this.web3.utils.toHex(values[0].toFixed()).toString())
-        .estimateGas({ from: address })
+      const gasAmountWeb3: string = await this.estimateGas(recipients[0], this.web3.utils.toHex(values[0].toFixed()).toString(), {
+        from: address
+      })
 
       // re-cast to our own big-number
-      const gasAmount = new BigNumber(gasAmountWeb3.toFixed())
+      const gasAmount = new BigNumber(gasAmountWeb3)
 
       if (ethBalance.isGreaterThanOrEqualTo(fee)) {
         const txCount = await this.web3.eth.getTransactionCount(address)

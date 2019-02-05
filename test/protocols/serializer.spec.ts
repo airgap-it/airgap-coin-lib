@@ -42,8 +42,8 @@ protocols.forEach((protocol: TestProtocolSpec) => {
         const airGapTx = await protocol.lib.getTransactionDetails(deserializedTx.payload as UnsignedTransaction)
 
         expect(airGapTx.from).to.deep.equal(protocol.wallet.addresses)
-        expect(airGapTx.amount).to.deep.equal(protocol.wallet.tx.amount)
-        expect(airGapTx.fee).to.deep.equal(protocol.wallet.tx.fee)
+        expect(airGapTx.amount).to.deep.equal(tx.amount)
+        expect(airGapTx.fee).to.deep.equal(tx.fee)
       }
     })
 
@@ -55,8 +55,8 @@ protocols.forEach((protocol: TestProtocolSpec) => {
         const airGapTx = await protocol.lib.getTransactionDetailsFromSigned(deserializedTx.payload as SignedTransaction)
 
         expect(airGapTx.from).to.deep.equal(tx.from)
-        expect(airGapTx.amount).to.deep.equal(protocol.wallet.tx.amount)
-        expect(airGapTx.fee).to.deep.equal(protocol.wallet.tx.fee)
+        expect(airGapTx.amount).to.deep.equal(tx.amount)
+        expect(airGapTx.fee).to.deep.equal(tx.fee)
       }
     })
 

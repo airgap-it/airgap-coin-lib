@@ -5,8 +5,9 @@ const genericConfig: GenericERC20Configuration = {
   name: 'Unknown Ethereum ERC20-Token',
   marketSymbol: 'erc20',
   identifier: 'eth-erc20',
-  contractAddress: '0x5ca9a71b1d01849c0a95490cc00559717fcf0d1d',
-  decimals: 18
+  contractAddress: '0x2dd847af80418D280B7078888B6A6133083001C9',
+  decimals: 18,
+  chainId: 3
 }
 
 const ERC20Token = new GenericERC20(genericConfig)

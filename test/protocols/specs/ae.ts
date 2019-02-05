@@ -18,11 +18,7 @@ export class AETestProtocolSpec extends TestProtocolSpec {
     privateKey:
       '65093ac9899ced07211b56eaef83c2fdfef11ecea77a665d2d59cf93c40e5196d64f61ec56519e7f10f35908c40f7b3288fb3ebdc0f6c504aa95ec780e3c7ff9',
     publicKey: 'd64f61ec56519e7f10f35908c40f7b3288fb3ebdc0f6c504aa95ec780e3c7ff9',
-    addresses: ['ak_2dPGHd5dZgKwR234uqPZcAXXcCyxr3TbWwgV8NSnNincth4Lf7'],
-    tx: {
-      amount: new BigNumber('10000000000000000000'),
-      fee: new BigNumber('1000000000000000000')
-    }
+    addresses: ['ak_2dPGHd5dZgKwR234uqPZcAXXcCyxr3TbWwgV8NSnNincth4Lf7']
   }
   txs = [
     {
@@ -37,6 +33,8 @@ export class AETestProtocolSpec extends TestProtocolSpec {
       */
       to: ['ak_2dPGHd5dZgKwR234uqPZcAXXcCyxr3TbWwgV8NSnNincth4Lf7'],
       from: ['ak_2dPGHd5dZgKwR234uqPZcAXXcCyxr3TbWwgV8NSnNincth4Lf7'],
+      amount: new BigNumber('10000000000000000000'),
+      fee: new BigNumber('1000000000000000000'),
       unsignedTx: {
         transaction:
           'tx_7WcPFuQ1mXzeHhN6jzxNUzz82bRN64RAocAamXGYuhV4NgQCF8tve1nGx8wm8XFy2UhkKzJ93LGXFtVZtYhVwgJBYRDNqztPA77dpdFx6fCs1gLJxBevJytJyJLns6AMNpbHR',

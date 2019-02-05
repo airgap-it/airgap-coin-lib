@@ -310,7 +310,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     const receivingBalance = await this.getBalanceOfAddresses(recipients)
 
     // if our receiver has 0 balance, the account is not activated yet.
-    if (receivingBalance.isZero()) {
+    if (receivingBalance.isZero() && recipients[0].toLowerCase().startsWith('tz')) {
       // We have to supply an additional 0.257 XTZ fee for storage_limit costs, which gets automatically deducted from the sender so we just have to make sure enough balance is around
       // check whether the sender has enough to cover the amount to send + fee + initialization
       if (balance.isLessThan(values[0].plus(fee).plus(this.addressInitializationFee))) {
@@ -327,7 +327,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       kind: TezosOperationType.TRANSACTION,
       fee: fee.toFixed(),
       gas_limit: '10100', // taken from eztz
-      storage_limit: receivingBalance.isZero() ? '300' : '0', // taken from eztz
+      storage_limit: receivingBalance.isZero() && recipients[0].toLowerCase().startsWith('tz') ? '300' : '0', // taken from eztz
       amount: values[0].toFixed(),
       counter: counter.toFixed(),
       destination: recipients[0],
@@ -545,9 +545,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       let cleanedSource: string
 
       if ((operation as TezosSpendOperation).source.toLowerCase().startsWith('kt')) {
-        cleanedSource = this.checkAndRemovePrefixToHex(operation.source, this.tezosPrefixes.kt) // currently we only support tz1 addresses
+        cleanedSource = '01' + this.checkAndRemovePrefixToHex(operation.source, this.tezosPrefixes.kt) + '00'
       } else {
-        cleanedSource = this.checkAndRemovePrefixToHex(operation.source, this.tezosPrefixes.tz1) // currently we only support tz1 addresses
+        cleanedSource = this.checkAndRemovePrefixToHex(operation.source, this.tezosPrefixes.tz1)
       }
 
       if (cleanedSource.length > 44) {

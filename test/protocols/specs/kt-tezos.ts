@@ -15,22 +15,20 @@ export class KtTezosTestProtocolSpec extends TestProtocolSpec {
     privateKey:
       '2f243e474992bb96b49b2fa7b2c1cba7a804257f0cf13dceb640cf3210d54838cdbc0c3449784bd53907c3c7a06060cf12087e492a7b937f044c6a73b522a234',
     publicKey: 'cdbc0c3449784bd53907c3c7a06060cf12087e492a7b937f044c6a73b522a234',
-    addresses: ['KT1HncyWvnY9FcoW8A2KYuauEe5qM1U2ntX8', 'KT1RBMUbb7QSD46VXhAvaMiyVSoys6QZiTxN', 'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy'],
-    tx: {
-      amount: new BigNumber('1000000'),
-      fee: new BigNumber('1420')
-    }
+    addresses: ['KT1HncyWvnY9FcoW8A2KYuauEe5qM1U2ntX8', 'KT1RBMUbb7QSD46VXhAvaMiyVSoys6QZiTxN', 'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy']
   }
   txs = [
     {
+      amount: new BigNumber('1000000'),
+      fee: new BigNumber('1420'),
       to: ['tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'],
-      from: ['tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'],
+      from: ['KT1HncyWvnY9FcoW8A2KYuauEe5qM1U2ntX8'],
       unsignedTx: {
         binaryTransaction:
-          'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb95508000091a9d2b003f19cf5a1f38f04f1000ab482d331768c0bc4fe37f44e00c0843d000091a9d2b003f19cf5a1f38f04f1000ab482d3317600'
+          'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb955080164f6f3de7129aa65bdfb6198f6a94a11b2de63eb008c0bc4fe37f44e00c0843d000091a9d2b003f19cf5a1f38f04f1000ab482d3317600'
       },
       signedTx:
-        'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb95508000091a9d2b003f19cf5a1f38f04f1000ab482d331768c0bc4fe37f44e00c0843d000091a9d2b003f19cf5a1f38f04f1000ab482d3317600266fcf757017eef2b68c5f482f64d13cbd9f027b1886fe90e03d5ef449df968b1f5f58675532cae0020b1f10bbd18ad5f0a00672da7a26cddd75ea847d0e1b09'
+        'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb955080164f6f3de7129aa65bdfb6198f6a94a11b2de63eb008c0bc4fe37f44e00c0843d000091a9d2b003f19cf5a1f38f04f1000ab482d3317600c58d4ca297bc411a260ad1f8e557d3cead252f3c2172359750611367763140c8381f42ead086c9f448de1eba6e7fac8872ff9ba110d66fd4e39c83e5db14bf0b'
     }
   ]
 

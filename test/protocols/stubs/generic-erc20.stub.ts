@@ -19,10 +19,16 @@ export class GenericERC20ProtocolStub implements ProtocolHTTPStub {
       .stub(protocol.web3.eth, 'getTransactionCount')
       .withArgs(testProtocolSpec.wallet.addresses[0])
       .returns(Promise.resolve(80))
+
     sinon
       .stub(protocol.web3.eth, 'getBalance')
       .withArgs(testProtocolSpec.wallet.addresses[0])
       .returns(Promise.resolve('100000000000000000000'))
+
+    sinon
+      .stub(protocol, 'estimateGas')
+      .withArgs(sinon.match.any)
+      .returns(Promise.resolve('31705'))
   }
   noBalanceStub(testProtocolSpec: TestProtocolSpec, protocol: EthereumProtocol) {
     sinon
