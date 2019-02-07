@@ -10,6 +10,7 @@ import { SignedTezosTransaction } from '../../serializer/signed-transactions/tez
 import * as sodium from 'libsodium-wrappers'
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
+import { getSubProtocolsByIdentifier } from '../../utils/subProtocols'
 
 export enum TezosOperationType {
   TRANSACTION = 'transaction',
@@ -72,7 +73,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   feeDecimals = 6 // micro tez is the smallest, 1000000 microtez is 1 tez
   identifier = 'xtz'
 
-  subProtocols = []
+  get subProtocols() {
+    return getSubProtocolsByIdentifier(this.identifier)
+  }
 
   // tezbox default
   feeDefaults = {

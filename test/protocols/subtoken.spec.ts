@@ -1,7 +1,7 @@
 import 'mocha'
 
 import { expect } from 'chai'
-import { EthereumProtocol, addSubProtocol, GenericERC20, GenericERC20Configuration } from '../../lib'
+import { EthereumProtocol, addSubProtocol, GenericERC20, GenericERC20Configuration, TezosProtocol, TezosKtProtocol } from '../../lib'
 
 describe(`SubTokens`, () => {
   it('should be able to add a GenericERC20 Sub-Token to Ethereum', async () => {
@@ -23,5 +23,17 @@ describe(`SubTokens`, () => {
 
     // no subtokens should be registered by default
     expect(ethereum.subProtocols.length).to.equal(currentSubtokenLength + 1)
+  })
+
+  it('should be able to add a Sub-Token to Tezos', async () => {
+    const tezos = new TezosProtocol()
+
+    // no subtokens should be registered by default
+    const currentSubtokenLength = tezos.subProtocols.length
+
+    addSubProtocol(tezos.identifier, new TezosKtProtocol())
+
+    // no subtokens should be registered by default
+    expect(tezos.subProtocols.length).to.equal(currentSubtokenLength + 1)
   })
 })
