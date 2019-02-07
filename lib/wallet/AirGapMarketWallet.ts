@@ -32,7 +32,7 @@ export class AirGapMarketWallet extends AirGapWallet {
     public publicKey: string,
     public isExtendedPublicKey: boolean,
     public derivationPath: string,
-    public addressIndex: number = 0
+    public addressIndex?: number
   ) {
     super(protocolIdentifier, publicKey, isExtendedPublicKey, derivationPath, addressIndex)
   }
