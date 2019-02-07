@@ -3,6 +3,7 @@ import { SubProtocolType, ICoinSubProtocol } from '../../ICoinSubProtocol'
 import axios from 'axios'
 
 export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
+  identifier = 'xtz-kt'
   isSubProtocol = true
   subProtocolType = SubProtocolType.ACCOUNT
   addressValidationPattern = '^KT1[1-9A-Za-z]{33}$'
