@@ -14,7 +14,8 @@ import { getSubProtocolsByIdentifier } from '../../utils/subProtocols'
 
 export enum TezosOperationType {
   TRANSACTION = 'transaction',
-  REVEAL = 'reveal'
+  REVEAL = 'reveal',
+  ORIGINATION = 'origination'
 }
 
 export interface TezosBlockMetadata {
@@ -49,6 +50,23 @@ export interface TezosSpendOperation extends TezosOperation {
   kind: TezosOperationType.TRANSACTION
 }
 
+export interface TezosOriginationOperation extends TezosOperation {
+  kind: TezosOperationType.ORIGINATION
+  balance: string
+  counter: string
+  delegatable: boolean
+  fee: string
+  gas_limit: string
+  managerPubkey: string
+  source: string
+  spendable: boolean
+  storage_limit: string
+}
+export interface TezosRevealOperation extends TezosOperation {
+  public_key: string
+  kind: TezosOperationType.REVEAL
+}
+
 export interface TezosOperation {
   storage_limit: string
   gas_limit: string
@@ -56,11 +74,6 @@ export interface TezosOperation {
   fee: string
   source: string
   kind: TezosOperationType
-}
-
-export interface TezosRevealOperation extends TezosOperation {
-  public_key: string
-  kind: TezosOperationType.REVEAL
 }
 
 export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol {
@@ -369,7 +382,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     }
   }
 
-  checkAndRemovePrefixToHex(base58CheckEncodedPayload: string, tezosPrefix: Uint8Array): string {
+  protected checkAndRemovePrefixToHex(base58CheckEncodedPayload: string, tezosPrefix: Uint8Array): string {
     const prefixHex = Buffer.from(tezosPrefix).toString('hex')
     const payload = bs58check.decode(base58CheckEncodedPayload).toString('hex')
     if (payload.startsWith(prefixHex)) {
@@ -379,18 +392,18 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     }
   }
 
-  prefixAndBase58CheckEncode(hexStringPayload: string, tezosPrefix: Uint8Array): string {
+  protected prefixAndBase58CheckEncode(hexStringPayload: string, tezosPrefix: Uint8Array): string {
     const prefixHex = Buffer.from(tezosPrefix).toString('hex')
     return bs58check.encode(Buffer.from(prefixHex + hexStringPayload, 'hex'))
   }
 
-  splitAndReturnRest(payload: string, length: number): { result: string; rest: string } {
+  protected splitAndReturnRest(payload: string, length: number): { result: string; rest: string } {
     const result = payload.substr(0, length)
     const rest = payload.substr(length, payload.length - length)
     return { result: result, rest: rest }
   }
 
-  parseAddress(rawHexAddress: string): string {
+  protected parseAddress(rawHexAddress: string): string {
     let { result, rest } = this.splitAndReturnRest(rawHexAddress, 2)
     const contractIdTag = result
     if (contractIdTag === '00') {
@@ -410,7 +423,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     }
   }
 
-  parsePublicKey(rawHexPublicKey: string): string {
+  protected parsePublicKey(rawHexPublicKey: string): string {
     let { result, rest } = this.splitAndReturnRest(rawHexPublicKey, 2)
     const tag = result
     if (tag === '00') {
@@ -535,7 +548,12 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
     const forgedOperation = tezosWrappedOperation.contents.map(operation => {
       let resultHexString = ''
-      if (operation.kind !== TezosOperationType.TRANSACTION && operation.kind !== TezosOperationType.REVEAL) {
+
+      if (
+        operation.kind !== TezosOperationType.TRANSACTION &&
+        operation.kind !== TezosOperationType.REVEAL &&
+        operation.kind !== TezosOperationType.ORIGINATION
+      ) {
         throw new Error('currently unsupported operation type supplied ' + operation.kind)
       }
 
@@ -543,6 +561,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         resultHexString += '08' // because this is a transaction operation
       } else if (operation.kind === TezosOperationType.REVEAL) {
         resultHexString += '07' // because this is a reveal operation
+      } else if (operation.kind === TezosOperationType.ORIGINATION) {
+        resultHexString += '09' // because this is a reveal operation
       }
 
       let cleanedSource: string
@@ -607,6 +627,23 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         resultHexString += '00' + cleanedPublicKey
       }
 
+      if (operation.kind === TezosOperationType.ORIGINATION) {
+        const originationOperation = operation as TezosOriginationOperation
+
+        let cleanedPublicKey = this.checkAndRemovePrefixToHex(originationOperation.managerPubkey, this.tezosPrefixes.tz1)
+
+        if (cleanedPublicKey.length === 32) {
+          // must be equal 32 bytes
+          throw new Error('provided public key is invalid')
+        }
+
+        resultHexString += '00' + cleanedPublicKey
+
+        resultHexString += this.bigNumberToZarith(new BigNumber(originationOperation.balance))
+        resultHexString += originationOperation.spendable ? '00ff' : '0000'
+        resultHexString += originationOperation.delegatable ? '00ff' : '0000'
+      }
+
       return resultHexString
     })
 
@@ -661,7 +698,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     return new BigNumber(bitString, 2)
   }
 
-  private async createRevealOperation(counter: BigNumber, publicKey: string): Promise<TezosRevealOperation> {
+  async createRevealOperation(counter: BigNumber, publicKey: string): Promise<TezosRevealOperation> {
     const operation: TezosRevealOperation = {
       kind: TezosOperationType.REVEAL,
       fee: '1300',
