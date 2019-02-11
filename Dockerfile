@@ -16,6 +16,9 @@ RUN npm install
 # Bundle app source
 COPY . /app
 
+RUN chmod +x ./npm-ci-publish-beta-only.sh
+RUN chmod +x ./npm-ci-publish.sh
+
 # set to production
 RUN export NODE_ENV=production
 
