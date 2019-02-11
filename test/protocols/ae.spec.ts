@@ -1,11 +1,17 @@
 import 'mocha'
 
-import { expect } from 'chai'
+import * as chai from 'chai'
+import * as chaiAsPromised from 'chai-as-promised'
 import { AETestProtocolSpec } from './specs/ae'
 import { AEProtocol } from '../../lib'
 import BigNumber from 'bignumber.js'
 import * as sinon from 'sinon'
 import axios from 'axios'
+import { RawAeternityTransaction } from '../../lib/serializer/unsigned-transactions/aeternity-transactions.serializer'
+
+// use chai-as-promised plugin
+chai.use(chaiAsPromised)
+const expect = chai.expect
 
 const aeProtocolSpec = new AETestProtocolSpec()
 const aeLib = aeProtocolSpec.lib as AEProtocol
@@ -61,5 +67,71 @@ describe(`ICoinProtocol Aeternity - Custom Tests`, () => {
         blockHeight: 443
       }
     ])
+  })
+
+  it('can convert a b64 encoded TX back to b58', async () => {
+    const b58tx = aeLib.convertTxToBase58({
+      transaction:
+        '+FsMAaEB1k9h7FZRnn8Q81kIxA97Moj7Pr3A9sUEqpXseA48f/mhAdZPYexWUZ5/EPNZCMQPezKI+z69wPbFBKqV7HgOPH/5iIrHIwSJ6AAAiA3gtrOnZAAAAACAQCdXaA==',
+      networkId: 'ae_mainnet'
+    })
+
+    expect(b58tx).to.deep.equal({
+      transaction:
+        '7WcPFuQ1mXzeHhN6jzxNUzz82bRN64RAocAamXGYuhV4NgQCF8tve1nGx8wm8XFy2UhkKzJ93LGXFtVZtYhVwgJBYRDNqztPA77dpdFx6fCs1gLJxBevJytJyJLns6AMNpbHR',
+      networkId: 'ae_mainnet'
+    })
+  })
+
+  it('can sign both, b58 and b64 of a supplied TX', async () => {
+    const privateKey = aeLib.getPrivateKeyFromHexSecret(aeProtocolSpec.seed(), aeLib.standardDerivationPath)
+
+    const rawAeTxBase58: RawAeternityTransaction = {
+      transaction:
+        'tx_7WcPFuQ1mXzeHhN6jzxNUzz82bRN64RAocAamXGYuhV4NgQCF8tve1nGx8wm8XFy2UhkKzJ93LGXFtVZtYhVwgJBYRDNqztPA77dpdFx6fCs1gLJxBevJytJyJLns6AMNpbHR',
+      networkId: 'ae_mainnet'
+    }
+
+    const rawAeTxBase64: RawAeternityTransaction = {
+      transaction:
+        'tx_+FsMAaEB1k9h7FZRnn8Q81kIxA97Moj7Pr3A9sUEqpXseA48f/mhAdZPYexWUZ5/EPNZCMQPezKI+z69wPbFBKqV7HgOPH/5iIrHIwSJ6AAAiA3gtrOnZAAAAACAQCdXaA==',
+      networkId: 'ae_mainnet'
+    }
+
+    const signedAeTxBase58 = await aeLib.signWithPrivateKey(privateKey, rawAeTxBase58)
+    const signedAeTxBase64 = await aeLib.signWithPrivateKey(privateKey, rawAeTxBase64)
+
+    expect(signedAeTxBase58).to.equal(aeProtocolSpec.txs[0].signedTx)
+    expect(signedAeTxBase64).to.equal(aeProtocolSpec.txs[0].signedTx)
+
+    expect(signedAeTxBase58).to.equal(signedAeTxBase64)
+  })
+
+  it('can sign neither invalid TXs', async () => {
+    const privateKey = aeLib.getPrivateKeyFromHexSecret(aeProtocolSpec.seed(), aeLib.standardDerivationPath)
+
+    const rawAeTxBase58: RawAeternityTransaction = {
+      transaction:
+        'tx_7WcPFuQ1mXzeHhN6jzxNUzz82bRN64RdocAamXGYuhV4NgQCF8tve1nGx8wm8XFy2UhkKzJ93LGXFtVZtYhVwgJBYRDNqztPA77dpdFx6fCs1gLJxBevJytJyJLns6AMNpbHR',
+      networkId: 'ae_mainnet'
+    }
+
+    const rawAeTxBase64: RawAeternityTransaction = {
+      transaction:
+        'tx_+FsMAaEB1k9h7FZRnn8Q81kIxA97Moj7Pr3A9fUEqpXseA48f/mhAdZPYexWUZ5/EPNZCMQPezKI+z69wPbFBKqV7HgOPH/5iIrHIwSJ6AAAiA3gtrOnZAAAAACAQCdXaA==',
+      networkId: 'ae_mainnet'
+    }
+
+    try {
+      await aeLib.signWithPrivateKey(privateKey, rawAeTxBase58)
+    } catch (error) {
+      expect(error.toString()).to.contain('invalid TX-encoding')
+    }
+
+    try {
+      await aeLib.signWithPrivateKey(privateKey, rawAeTxBase64)
+    } catch (error) {
+      expect(error.toString()).to.contain('invalid TX-encoding')
+    }
   })
 })

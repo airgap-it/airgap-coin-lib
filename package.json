@@ -1,6 +1,6 @@
 {
   "name": "airgap-coin-lib",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "The airgap-coin-lib is setup in a way that prepare, signing and broadcasting are willingfully separated.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -36,6 +36,7 @@
     "bitcoinjs-lib": "^3.3.2",
     "bitcoinjs-lib-zcash": "^3.5.2",
     "bs58check": "^2.1.2",
+    "create-hash": "^1.2.0",
     "cryptocompare": "^0.5.0",
     "ed25519-hd-key": "^1.0.0",
     "elliptic": "^6.4.0",
