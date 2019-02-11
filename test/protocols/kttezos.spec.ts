@@ -32,7 +32,7 @@ describe(`ICoinProtocol KtTezos - Custom Tests`, () => {
     it('should be able to forge a origination TX', async () => {
       const tz = await ktTezosLib.originate(tezosProtocolSpec.wallet.publicKey)
       expect(tz.binaryTransaction).to.equal(
-        'bfaed5702d6c50c8f9142eb96fd7106b9581a4a6eb1457b677de5c6384b9158909000091a9d2b003f19cf5a1f38f04f1000ab482d33176f80ad3fe37904e81020091a9d2b003f19cf5a1f38f04f1000ab482d331760000000000'
+        'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb95509000091a9d2b003f19cf5a1f38f04f1000ab482d33176f80ac4fe37904e81020091a9d2b003f19cf5a1f38f04f1000ab482d3317600ffff0000'
       )
     })
 

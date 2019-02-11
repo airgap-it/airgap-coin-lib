@@ -640,8 +640,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         resultHexString += '00' + cleanedPublicKey
 
         resultHexString += this.bigNumberToZarith(new BigNumber(originationOperation.balance))
-        resultHexString += originationOperation.spendable ? '00ff' : '0000'
-        resultHexString += originationOperation.delegatable ? '00ff' : '0000'
+        resultHexString += originationOperation.spendable ? 'ff' : '00'
+        resultHexString += originationOperation.delegatable ? 'ff' : '00'
+
+        resultHexString += '0000'
       }
 
       return resultHexString

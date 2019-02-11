@@ -56,7 +56,8 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
       throw error
     }
 
-    const balance = await this.getBalanceOfPublicKey(publicKey)
+    const balance = await this.getBalanceOfAddresses([address])
+
     const fee = new BigNumber(1400)
 
     if (balance.isLessThan(fee)) {
