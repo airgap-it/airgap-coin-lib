@@ -36,6 +36,20 @@ describe(`ICoinProtocol KtTezos - Custom Tests`, () => {
       )
     })
 
+    it('should be able to forge a delegation TX', async () => {
+      const tz = await ktTezosLib.delegate(tezosProtocolSpec.wallet.publicKey, 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
+      expect(tz.binaryTransaction).to.equal(
+        'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb9550a000091a9d2b003f19cf5a1f38f04f1000ab482d33176f80ac4fe37904e00ff0091a9d2b003f19cf5a1f38f04f1000ab482d33176'
+      )
+    })
+
+    it('should be able to forge a un-delegation TX', async () => {
+      const tz = await ktTezosLib.undelegate(tezosProtocolSpec.wallet.publicKey)
+      expect(tz.binaryTransaction).to.equal(
+        'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb9550a000091a9d2b003f19cf5a1f38f04f1000ab482d33176f80ac4fe37904e0000'
+      )
+    })
+
     after(async () => {
       sinon.restore()
     })

@@ -15,7 +15,8 @@ import { getSubProtocolsByIdentifier } from '../../utils/subProtocols'
 export enum TezosOperationType {
   TRANSACTION = 'transaction',
   REVEAL = 'reveal',
-  ORIGINATION = 'origination'
+  ORIGINATION = 'origination',
+  DELEGATION = 'delegation'
 }
 
 export interface TezosBlockMetadata {
@@ -50,6 +51,15 @@ export interface TezosSpendOperation extends TezosOperation {
   kind: TezosOperationType.TRANSACTION
 }
 
+export interface TezosDelegationOperation extends TezosOperation {
+  kind: TezosOperationType.DELEGATION
+  source: string
+  fee: string
+  counter: string
+  gas_limit: string
+  storage_limit: string
+  delegate?: string
+}
 export interface TezosOriginationOperation extends TezosOperation {
   kind: TezosOperationType.ORIGINATION
   balance: string
@@ -552,7 +562,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       if (
         operation.kind !== TezosOperationType.TRANSACTION &&
         operation.kind !== TezosOperationType.REVEAL &&
-        operation.kind !== TezosOperationType.ORIGINATION
+        operation.kind !== TezosOperationType.ORIGINATION &&
+        operation.kind !== TezosOperationType.DELEGATION
       ) {
         throw new Error('currently unsupported operation type supplied ' + operation.kind)
       }
@@ -563,6 +574,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         resultHexString += '07' // because this is a reveal operation
       } else if (operation.kind === TezosOperationType.ORIGINATION) {
         resultHexString += '09' // because this is a reveal operation
+      } else if (operation.kind === TezosOperationType.DELEGATION) {
+        resultHexString += '0a' // because this is a reveal operation
       }
 
       let cleanedSource: string
@@ -644,6 +657,33 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         resultHexString += originationOperation.delegatable ? 'ff' : '00'
 
         resultHexString += '0000'
+      }
+
+      if (operation.kind === TezosOperationType.DELEGATION) {
+        const delegationOperation = operation as TezosDelegationOperation
+        if (delegationOperation.delegate) {
+          resultHexString += 'ff'
+
+          let cleanedDestination
+
+          if (delegationOperation.delegate.toLowerCase().startsWith('tz1')) {
+            cleanedDestination = this.checkAndRemovePrefixToHex(delegationOperation.delegate, this.tezosPrefixes.tz1)
+          }
+
+          if (!cleanedDestination || cleanedDestination.length > 42) {
+            // must be less or equal 21 bytes
+            throw new Error('provided destination is invalid')
+          }
+
+          while (cleanedDestination.length !== 42) {
+            // fill up with 0s to match 21 bytes
+            cleanedDestination = '0' + cleanedDestination
+          }
+
+          resultHexString += cleanedDestination
+        } else {
+          resultHexString += '00'
+        }
       }
 
       return resultHexString
