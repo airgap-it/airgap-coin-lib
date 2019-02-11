@@ -40,10 +40,11 @@ export class AETestProtocolSpec extends TestProtocolSpec {
       unsignedTx: {
         transaction:
           'tx_7WcPFuQ1mXzeHhN6jzxNUzz82bRN64RAocAamXGYuhV4NgQCF8tve1nGx8wm8XFy2UhkKzJ93LGXFtVZtYhVwgJBYRDNqztPA77dpdFx6fCs1gLJxBevJytJyJLns6AMNpbHR',
+        // TODO: b64 post 0.3.0 > 'tx_+FsMAaEB1k9h7FZRnn8Q81kIxA97Moj7Pr3A9sUEqpXseA48f/mhAdZPYexWUZ5/EPNZCMQPezKI+z69wPbFBKqV7HgOPH/5iIrHIwSJ6AAAiA3gtrOnZAAAAACAQCdXaA==
         networkId: 'ae_mainnet'
       },
       signedTx:
-        'tx_9GpbAwTPYqiT1oQrhPgF6j8UudBbN6dAgdYGRPoVfqjfM2PwX3r34E67MCm9UMvaCjt4Hf5iHENPWgSEjMLAKdHDPVgeCdEJ9dWWhttXobXqWjXpf7xNcUg5ojVGCUYLyM5Lc7yU7fQpCZNwu76jnpDGRbaFnYV9SLPWpN82u1DkUsEmggMtPAku6kq5RYNJBvmKn315yCzgxwzQZtKkxdxnekZzvsCktfmaTMPupM'
+        'tx_+KULAfhCuEBokDCnOXkU2G+pwrNXVQetMO1+2fQsnOeJKGcRl1S5toQAJRldCQb1VSkmF2yumQl11kmF2H6LpAH1npP71i0OuF34WwwBoQHWT2HsVlGefxDzWQjED3syiPs+vcD2xQSqlex4Djx/+aEB1k9h7FZRnn8Q81kIxA97Moj7Pr3A9sUEqpXseA48f/mIiscjBInoAACIDeC2s6dkAAAAAIAxkWE6'
     }
   ]
 

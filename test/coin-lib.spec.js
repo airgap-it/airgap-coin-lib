@@ -177,6 +177,8 @@ describe('Balance Of', function() {
       .catch(done)
   })
 
+  /*
+  @deprecated: flaky test that fails given the address balance changes, done in new set of tests anyway
   it('should return the correct ethereum balance given an address', function(done) {
     const address = '0x2B6eD29A95753C3Ad948348e3e7b1A251080Ffb9'
     const ethereum = new CoinLib.EthereumProtocol()
@@ -188,6 +190,7 @@ describe('Balance Of', function() {
       })
       .catch(done)
   })
+  */
 
   it('should return the correct bitcoin balance given an address', function(done) {
     const address = '122zHqVVaY21SEjSPeHqVVs9qFDwTV3duS'

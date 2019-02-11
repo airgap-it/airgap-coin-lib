@@ -6,6 +6,7 @@ import { generateWalletUsingDerivationPath } from '@aeternity/hd-wallet'
 import axios from 'axios'
 import * as rlp from 'rlp'
 import * as bs58check from 'bs58check'
+import bs64check from '../utils/base64Check'
 import {
   RawAeternityTransaction,
   UnsignedAeternityTransaction
@@ -116,7 +117,8 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
 
   signWithPrivateKey(privateKey: Buffer, transaction: RawAeternityTransaction): Promise<IAirGapSignedTransaction> {
     // sign and cut off first byte ('ae')
-    const rawTx = bs58check.decode(transaction.transaction.slice(3))
+    const rawTx = this.decodeTx(transaction.transaction)
+
     const signature = nacl.sign.detached(Buffer.concat([Buffer.from(transaction.networkId), rawTx]), privateKey)
 
     const txObj = {
@@ -129,14 +131,34 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
     const txArray = Object.keys(txObj).map(a => txObj[a])
 
     const rlpEncodedTx = rlp.encode(txArray)
-    const signedEncodedTx = `tx_${bs58check.encode(rlpEncodedTx)}`
+    const signedEncodedTx = `tx_${bs64check.encode(rlpEncodedTx)}`
 
     return Promise.resolve(signedEncodedTx)
   }
 
+  private decodeTx(transaction: string): any {
+    let rawTx: any
+
+    try {
+      rawTx = bs64check.decode(transaction.replace('tx_', ''))
+      return rawTx
+    } catch (error) {
+      //
+    }
+
+    try {
+      rawTx = bs58check.decode(transaction.replace('tx_', ''))
+      return rawTx
+    } catch (error) {
+      //
+    }
+
+    throw new Error('invalid TX-encoding')
+  }
+
   getTransactionDetails(unsignedTx: UnsignedAeternityTransaction): IAirGapTransaction {
     const transaction = unsignedTx.transaction.transaction
-    const rlpEncodedTx = bs58check.decode(transaction.replace('tx_', ''), 'hex')
+    const rlpEncodedTx = this.decodeTx(transaction)
     const rlpDecodedTx = rlp.decode(rlpEncodedTx)
 
     const airgapTx: IAirGapTransaction = {
@@ -152,7 +174,7 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
   }
 
   getTransactionDetailsFromSigned(signedTx: SignedAeternityTransaction): IAirGapTransaction {
-    const rlpEncodedTx = bs58check.decode(signedTx.transaction.replace('tx_', ''), 'hex')
+    const rlpEncodedTx = this.decodeTx(signedTx.transaction)
     const rlpDecodedTx = rlp.decode(rlpEncodedTx)
 
     const unsignedAeternityTransaction: UnsignedAeternityTransaction = {
@@ -160,7 +182,7 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
       callback: '',
       transaction: {
         networkId: 'ae_mainnet',
-        transaction: `tx_${bs58check.encode(rlpDecodedTx[3]).toString('hex')}`
+        transaction: `tx_${bs64check.encode(rlpDecodedTx[3])}`
       }
     }
 
@@ -231,11 +253,24 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
 
     const txArray = Object.keys(txObj).map(a => txObj[a])
     const rlpEncodedTx = rlp.encode(txArray)
-    const preparedTx = `tx_${bs58check.encode(rlpEncodedTx)}`
+    const preparedTx = `tx_${bs58check.encode(rlpEncodedTx)}` // TODO: in 0.3.0, introduce bs64check here
 
     return {
       transaction: preparedTx,
       networkId: this.defaultNetworkId
+    }
+  }
+
+  /**
+   * This is a function that we only use to fix incompatibilitis with old vault versions that are unable to understand b64 encoded Txs.
+   *
+   * @deprecated
+   * @param preparedTx
+   */
+  convertTxToBase58(preparedTx: RawAeternityTransaction): RawAeternityTransaction {
+    return {
+      transaction: bs58check.encode(bs64check.decode(preparedTx.transaction)),
+      networkId: preparedTx.networkId
     }
   }
 
