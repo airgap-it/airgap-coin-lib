@@ -232,6 +232,8 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       expect((tezosWrappedOperation.contents[2] as TezosSpendOperation).destination).to.equal('KT1J5mFAxxzAYDLjYeVXkLcyEzNGRZ3kuFGq')
     })
 
+    it('can unforge a delegation TX', async () => {})
+
     it('can give a list of transactions from TZScan API', async () => {
       const transactions = await tezosLib.getTransactionsFromAddresses(tezosProtocolSpec.wallet.addresses, 20, 0)
 
