@@ -45,7 +45,7 @@
     "tweetnacl": "^1.0.0",
     "validate.js": "^0.12.0",
     "validator": "^10.8.0",
-    "web3": "^1.0.0-beta.36"
+    "web3": "1.0.0-beta.36"
   },
   "devDependencies": {
     "@types/assert": "0.0.31",
