@@ -257,19 +257,30 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   }
 
   private getAirGapTxFromWrappedOperations(wrappedOperations: TezosWrappedOperation) {
-    const spendOperation = wrappedOperations.contents.find(content => content.kind === TezosOperationType.TRANSACTION)
-    if (!spendOperation) {
-      throw new Error('No spend transaction found')
+    const tezosOperation: TezosOperation = wrappedOperations.contents[wrappedOperations.contents.length - 1]
+
+    let amount = new BigNumber(0)
+    let to = ['']
+
+    if (tezosOperation.kind === TezosOperationType.TRANSACTION) {
+      amount = new BigNumber((tezosOperation as TezosSpendOperation).amount)
+      to = [(tezosOperation as TezosSpendOperation).destination]
+    } else if (tezosOperation.kind === TezosOperationType.ORIGINATION) {
+      to = ['Origination']
+    } else if (tezosOperation.kind === TezosOperationType.DELEGATION) {
+      let delegate = (tezosOperation as TezosDelegationOperation).delegate
+      to = [delegate ? delegate : 'Undelegate']
+    } else {
+      throw new Error('no operation to unforge found')
     }
-    const spendTransaction: TezosSpendOperation = spendOperation as TezosSpendOperation
 
     const airgapTx: IAirGapTransaction = {
-      amount: new BigNumber(spendTransaction.amount),
-      fee: new BigNumber(spendTransaction.fee),
-      from: [spendTransaction.source],
+      amount: amount,
+      fee: new BigNumber(tezosOperation.fee),
+      from: [tezosOperation.source],
       isInbound: false,
       protocolIdentifier: this.identifier,
-      to: [spendTransaction.destination]
+      to: to
     }
 
     return airgapTx
