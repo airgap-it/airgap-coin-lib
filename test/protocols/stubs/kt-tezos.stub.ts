@@ -40,35 +40,6 @@ export class KtTezosProtocolStub implements ProtocolHTTPStub {
       Promise.resolve({
         data: [
           {
-            hash: 'op1AT5tSAD5PP5c5rSH4B27bQ5uHPqspKetmpCmHbVhSbGqoM5a',
-            block_hash: 'BLF7yz2gZsaXJgmk1XRZc3to1LFueU1vA24RRPAdwGNeR3xxg8G',
-            network_hash: 'NetXdQprcVkpaWU',
-            type: {
-              kind: 'manager',
-              source: { tz: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L' },
-              operations: [
-                {
-                  kind: 'origination',
-                  src: { tz: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L' },
-                  managerPubkey: { tz: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L' },
-                  balance: 0,
-                  spendable: false,
-                  delegatable: false,
-                  tz1: { tz: 'KT1HncyWvnY9FcoW8A2KYuauEe5qM1U2ntX8' },
-                  failed: false,
-                  internal: false,
-                  burn_tez: 257000,
-                  counter: 917322,
-                  fee: 1400,
-                  gas_limit: '10000',
-                  storage_limit: '257',
-                  op_level: 264235,
-                  timestamp: '2019-01-10T09:40:47Z'
-                }
-              ]
-            }
-          },
-          {
             hash: 'oortkWqdRGi8wTFBnG5Dk8md9DNt8zFEYTXf8whXYBnqbkU3xK9',
             block_hash: 'BKsWTFKmzYtZxE514X2st55aujd3VAfQBrj5DsTePGe6vtsZQQV',
             network_hash: 'NetXdQprcVkpaWU',
@@ -122,6 +93,35 @@ export class KtTezosProtocolStub implements ProtocolHTTPStub {
                   storage_limit: '257',
                   op_level: 263229,
                   timestamp: '2019-01-09T16:11:16Z'
+                }
+              ]
+            }
+          },
+          {
+            hash: 'op1AT5tSAD5PP5c5rSH4B27bQ5uHPqspKetmpCmHbVhSbGqoM5a',
+            block_hash: 'BLF7yz2gZsaXJgmk1XRZc3to1LFueU1vA24RRPAdwGNeR3xxg8G',
+            network_hash: 'NetXdQprcVkpaWU',
+            type: {
+              kind: 'manager',
+              source: { tz: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L' },
+              operations: [
+                {
+                  kind: 'origination',
+                  src: { tz: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L' },
+                  managerPubkey: { tz: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L' },
+                  balance: 0,
+                  spendable: false,
+                  delegatable: false,
+                  tz1: { tz: 'KT1HncyWvnY9FcoW8A2KYuauEe5qM1U2ntX8' },
+                  failed: false,
+                  internal: false,
+                  burn_tez: 257000,
+                  counter: 917322,
+                  fee: 1400,
+                  gas_limit: '10000',
+                  storage_limit: '257',
+                  op_level: 264235,
+                  timestamp: '2019-01-10T09:40:47Z'
                 }
               ]
             }

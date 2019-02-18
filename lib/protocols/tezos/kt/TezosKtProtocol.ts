@@ -24,7 +24,8 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
   async getAddressesFromPublicKey(publicKey: string): Promise<string[]> {
     const tz1address = await super.getAddressFromPublicKey(publicKey)
     const { data } = await axios.get(`${this.baseApiUrl}/v3/operations/${tz1address}?type=Origination`)
-    const ktAddresses = [].concat.apply(
+
+    const ktAddresses: string[] = [].concat.apply(
       [],
       data.map((origination: { type: { operations: [{ tz1: { tz: string } }] } }) => {
         return origination.type.operations.map(operation => {
@@ -33,7 +34,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
       })
     )
 
-    return ktAddresses
+    return ktAddresses.reverse()
   }
 
   async originate(publicKey: string): Promise<RawTezosTransaction> {

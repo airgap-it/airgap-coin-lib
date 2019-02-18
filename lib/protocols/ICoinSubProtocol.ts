@@ -1,6 +1,6 @@
 export enum SubProtocolType {
-  ACCOUNT,
-  TOKEN
+  ACCOUNT = 'account',
+  TOKEN = 'token'
 }
 
 export interface ICoinSubProtocol {

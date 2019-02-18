@@ -50,6 +50,14 @@ const itIf = (condition, title, test) => {
 protocols.forEach(async (protocol: TestProtocolSpec) => {
   describe(`ICoinProtocol ${protocol.name}`, () => {
     describe(`Public/Private KeyPair`, () => {
+      beforeEach(async () => {
+        protocol.stub.registerStub(protocol, protocol.lib)
+      })
+
+      afterEach(async () => {
+        sinon.restore()
+      })
+
       it('getPublicKeyFromHexSecret - should be able to create a public key from a corresponding hex secret', async () => {
         const publicKey = protocol.lib.getPublicKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
         expect(publicKey).to.equal(protocol.wallet.publicKey)
