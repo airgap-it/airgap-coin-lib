@@ -103,6 +103,16 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     }
   }
 
+  async isAddressDelegated(ktAddress: string): Promise<{ isDelegated: boolean; setable: boolean; value?: string }> {
+    const { data } = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${ktAddress}`)
+
+    return {
+      isDelegated: data.delegate.value ? true : false,
+      setable: data.delegate.setable,
+      value: data.delegate.value
+    }
+  }
+
   async undelegate(publicKey: string, ktAddress?: string): Promise<RawTezosTransaction> {
     return this.delegate(publicKey, ktAddress)
   }

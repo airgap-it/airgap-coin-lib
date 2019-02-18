@@ -28,6 +28,25 @@ describe(`ICoinProtocol KtTezos - Custom Tests`, () => {
       stub
         .withArgs(`${ktTezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L/manager_key`)
         .returns(Promise.resolve({ data: { key: 'test-key' } }))
+      stub.withArgs(`${ktTezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/KT1RBMUbb7QSD46VXhAvaMiyVSoys6QZiTxN`).returns(
+        Promise.resolve({
+          data: {
+            delegate: {
+              setable: true
+            }
+          }
+        })
+      )
+      stub.withArgs(`${ktTezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy`).returns(
+        Promise.resolve({
+          data: {
+            delegate: {
+              setable: true,
+              value: 'tz1cX93Q3KsiTADpCC4f12TBvAmS5tw7CW19'
+            }
+          }
+        })
+      )
     })
 
     it('should be able to forge and unforge an origination TX', async () => {
@@ -106,6 +125,20 @@ describe(`ICoinProtocol KtTezos - Custom Tests`, () => {
       expect(tz.binaryTransaction).to.equal(
         'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb9550a000091a9d2b003f19cf5a1f38f04f1000ab482d331768c0bc4fe37904e0000'
       )
+    })
+
+    it('should be able to check the delegation state of an KT address', async () => {
+      const delegatedState = await ktTezosLib.isAddressDelegated('KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy')
+
+      expect(delegatedState.isDelegated).to.equal(true)
+      expect(delegatedState.setable).to.equal(true)
+      expect(delegatedState.value).to.equal('tz1cX93Q3KsiTADpCC4f12TBvAmS5tw7CW19')
+
+      const undelegatedState = await ktTezosLib.isAddressDelegated('KT1RBMUbb7QSD46VXhAvaMiyVSoys6QZiTxN')
+
+      expect(undelegatedState.isDelegated).to.equal(false)
+      expect(undelegatedState.setable).to.equal(true)
+      expect(undelegatedState.value).to.equal(undefined)
     })
 
     after(async () => {
