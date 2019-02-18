@@ -103,11 +103,11 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     }
   }
 
-  async undelegate(publicKey: string): Promise<RawTezosTransaction> {
-    return this.delegate(publicKey)
+  async undelegate(publicKey: string, ktAddress?: string): Promise<RawTezosTransaction> {
+    return this.delegate(publicKey, ktAddress)
   }
 
-  async delegate(publicKey: string, delegate?: string): Promise<RawTezosTransaction> {
+  async delegate(publicKey: string, ktAddress?: string, delegate?: string): Promise<RawTezosTransaction> {
     let counter = new BigNumber(1)
     let branch: string
 
@@ -137,7 +137,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
 
     const balance = await this.getBalanceOfAddresses([address])
 
-    const fee = new BigNumber(1400)
+    const fee = new BigNumber(1420)
 
     if (balance.isLessThan(fee)) {
       throw new Error('not enough balance')
@@ -145,7 +145,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
 
     const delegationOperation: TezosDelegationOperation = {
       kind: TezosOperationType.DELEGATION,
-      source: address,
+      source: ktAddress || address,
       fee: fee.toFixed(),
       counter: counter.toFixed(),
       gas_limit: '10000', // taken from eztz

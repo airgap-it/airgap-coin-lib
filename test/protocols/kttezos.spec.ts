@@ -52,26 +52,59 @@ describe(`ICoinProtocol KtTezos - Custom Tests`, () => {
     })
 
     it('should be able to forge and unforge a delegation TX', async () => {
-      const tz = await ktTezosLib.delegate(tezosProtocolSpec.wallet.publicKey, 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
-      expect(tz.binaryTransaction).to.equal(
-        'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb9550a000091a9d2b003f19cf5a1f38f04f1000ab482d33176f80ac4fe37904e00ff0091a9d2b003f19cf5a1f38f04f1000ab482d33176'
+      /**
+       * Delegate KT1 -> TZ1
+       */
+      const tz = await ktTezosLib.delegate(
+        tezosProtocolSpec.wallet.publicKey,
+        'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy',
+        'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'
       )
 
       const tezosWrappedOperation = ktTezosLib.unforgeUnsignedTezosWrappedOperation(tz.binaryTransaction)
       const tezosDelegationOperation = tezosWrappedOperation.contents[0] as TezosDelegationOperation
 
       expect(tezosDelegationOperation.kind, 'kind').to.equal(TezosOperationType.DELEGATION)
-      expect(tezosDelegationOperation.source, 'source').to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
-      expect(tezosDelegationOperation.fee, 'fee').to.equal('1400')
+      expect(tezosDelegationOperation.source, 'source').to.equal('KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy')
+      expect(tezosDelegationOperation.fee, 'fee').to.equal('1420')
       expect(tezosDelegationOperation.counter, 'counter').to.equal('917316')
       expect(tezosDelegationOperation.gas_limit, 'gas_limit').to.equal('10000')
       expect(tezosDelegationOperation.storage_limit, 'storage_limit').to.equal('0')
+      expect(tezosDelegationOperation.delegate, 'delegate').to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
+
+      expect(tz.binaryTransaction).to.equal(
+        'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb9550a01ba4e7349ac25dc5eb2df5a43fceacc58963df4f5008c0bc4fe37904e00ff0091a9d2b003f19cf5a1f38f04f1000ab482d33176'
+      )
+
+      /**
+       * Delegate TZ1 -> TZ1
+       */
+      const tz2 = await ktTezosLib.delegate(
+        tezosProtocolSpec.wallet.publicKey,
+        'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L',
+        'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'
+      )
+
+      const tezosWrappedOperation2 = ktTezosLib.unforgeUnsignedTezosWrappedOperation(tz2.binaryTransaction)
+      const tezosDelegationOperation2 = tezosWrappedOperation2.contents[0] as TezosDelegationOperation
+
+      expect(tezosDelegationOperation2.kind, 'kind').to.equal(TezosOperationType.DELEGATION)
+      expect(tezosDelegationOperation2.source, 'source').to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
+      expect(tezosDelegationOperation2.fee, 'fee').to.equal('1420')
+      expect(tezosDelegationOperation2.counter, 'counter').to.equal('917316')
+      expect(tezosDelegationOperation2.gas_limit, 'gas_limit').to.equal('10000')
+      expect(tezosDelegationOperation2.storage_limit, 'storage_limit').to.equal('0')
+      expect(tezosDelegationOperation2.delegate, 'delegate').to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
+
+      expect(tz2.binaryTransaction).to.equal(
+        'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb9550a000091a9d2b003f19cf5a1f38f04f1000ab482d331768c0bc4fe37904e00ff0091a9d2b003f19cf5a1f38f04f1000ab482d33176'
+      )
     })
 
     it('should be able to forge a un-delegation TX', async () => {
       const tz = await ktTezosLib.undelegate(tezosProtocolSpec.wallet.publicKey)
       expect(tz.binaryTransaction).to.equal(
-        'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb9550a000091a9d2b003f19cf5a1f38f04f1000ab482d33176f80ac4fe37904e0000'
+        'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb9550a000091a9d2b003f19cf5a1f38f04f1000ab482d331768c0bc4fe37904e0000'
       )
     })
 

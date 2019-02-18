@@ -611,9 +611,12 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     const storageLimit = this.zarithToBigNumber(result)
 
     let delegate
-    if (rest.length > 2) {
-      ;({ result, rest } = this.splitAndReturnRest(rest.slice(2), 42))
-      delegate = this.prefixAndBase58CheckEncode(result, this.tezosPrefixes.tz1)
+    if (rest.length === 42) {
+      ;({ result, rest } = this.splitAndReturnRest('01' + rest.slice(2), 42))
+      delegate = this.parseAddress(result)
+    } else if (rest.length > 42) {
+      ;({ result, rest } = this.splitAndReturnRest('00' + rest.slice(2), 44))
+      delegate = this.parseAddress(result)
     }
 
     return {
@@ -752,6 +755,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
           if (delegationOperation.delegate.toLowerCase().startsWith('tz1')) {
             cleanedDestination = this.checkAndRemovePrefixToHex(delegationOperation.delegate, this.tezosPrefixes.tz1)
+          } else if (delegationOperation.delegate.toLowerCase().startsWith('kt1')) {
+            cleanedDestination = this.checkAndRemovePrefixToHex(delegationOperation.delegate, this.tezosPrefixes.kt)
           }
 
           if (!cleanedDestination || cleanedDestination.length > 42) {
