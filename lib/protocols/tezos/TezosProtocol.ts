@@ -628,6 +628,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     } else if (rest.length > 42) {
       ;({ result, rest } = this.splitAndReturnRest('00' + rest.slice(2), 44))
       delegate = this.parseAddress(result)
+    } else if (rest.length === 2 && rest === '00') {
+      rest = ''
     }
 
     return {
