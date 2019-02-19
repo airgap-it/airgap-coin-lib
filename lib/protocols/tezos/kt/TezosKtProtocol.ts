@@ -103,8 +103,8 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     }
   }
 
-  async isAddressDelegated(ktAddress: string): Promise<{ isDelegated: boolean; setable: boolean; value?: string }> {
-    const { data } = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${ktAddress}`)
+  async isAddressDelegated(delegatedAddress: string): Promise<{ isDelegated: boolean; setable: boolean; value?: string }> {
+    const { data } = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${delegatedAddress}`)
 
     return {
       isDelegated: data.delegate.value ? true : false,
@@ -113,11 +113,11 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     }
   }
 
-  async undelegate(publicKey: string, ktAddress?: string): Promise<RawTezosTransaction> {
-    return this.delegate(publicKey, ktAddress)
+  async undelegate(publicKey: string, delegatedAddress: string): Promise<RawTezosTransaction> {
+    return this.delegate(publicKey, delegatedAddress)
   }
 
-  async delegate(publicKey: string, ktAddress?: string, delegate?: string): Promise<RawTezosTransaction> {
+  async delegate(publicKey: string, delegatedAddress: string, delegate?: string): Promise<RawTezosTransaction> {
     let counter = new BigNumber(1)
     let branch: string
 
@@ -126,26 +126,17 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
 
     try {
       const results = await Promise.all([
-        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/counter`),
-        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/hash`),
-        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/manager_key`)
+        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${delegatedAddress}/counter`),
+        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/hash`)
       ])
 
       counter = new BigNumber(results[0].data).plus(1)
       branch = results[1].data
-
-      const accountManager = results[2].data
-
-      // check if we have revealed the key already
-      if (!accountManager.key) {
-        operations.push(await super.createRevealOperation(counter, publicKey))
-        counter = counter.plus(1)
-      }
     } catch (error) {
       throw error
     }
 
-    const balance = await this.getBalanceOfAddresses([address])
+    const balance = await this.getBalanceOfAddresses([delegatedAddress])
 
     const fee = new BigNumber(1420)
 
@@ -155,7 +146,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
 
     const delegationOperation: TezosDelegationOperation = {
       kind: TezosOperationType.DELEGATION,
-      source: ktAddress || address,
+      source: delegatedAddress || address,
       fee: fee.toFixed(),
       counter: counter.toFixed(),
       gas_limit: '10000', // taken from eztz
