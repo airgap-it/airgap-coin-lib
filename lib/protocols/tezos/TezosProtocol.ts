@@ -630,8 +630,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       delegate = this.parseAddress(result)
     }
 
-    console.log(rest)
-
     return {
       tezosDelegationOperation: {
         source: source,
