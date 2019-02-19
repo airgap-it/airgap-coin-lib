@@ -74,9 +74,6 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
     return Buffer.from(secretKey)
   }
 
-  /**
-   * Currently, the AE Address is just the Public Key. Address Format tbd
-   */
   async getAddressFromPublicKey(publicKey: string): Promise<string> {
     const base58 = bs58check.encode(Buffer.from(publicKey, 'hex'))
     return `ak_${base58}`
@@ -260,7 +257,7 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
 
     const txArray = Object.keys(txObj).map(a => txObj[a])
     const rlpEncodedTx = rlp.encode(txArray)
-    const preparedTx = `tx_${bs58check.encode(rlpEncodedTx)}` // TODO: in 0.3.0, introduce bs64check here
+    const preparedTx = `tx_${bs64check.encode(rlpEncodedTx)}` // TODO: in 0.3.0, introduce bs64check here
 
     return {
       transaction: preparedTx,
