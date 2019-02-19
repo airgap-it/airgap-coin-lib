@@ -179,7 +179,7 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
   }
 
   async getTransactionDetailsFromSigned(signedTx: SignedAeternityTransaction): Promise<IAirGapTransaction> {
-    const rlpEncodedTx = bs58check.decode(signedTx.transaction.replace('tx_', ''), 'hex')
+    const rlpEncodedTx = this.decodeTx(signedTx.transaction)
     const rlpDecodedTx = rlp.decode(rlpEncodedTx)
 
     const unsignedAeternityTransaction: UnsignedAeternityTransaction = {
