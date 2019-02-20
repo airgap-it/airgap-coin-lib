@@ -117,7 +117,7 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
     })
   }
 
-  signWithPrivateKey(privateKey: Buffer, transaction: RawAeternityTransaction): Promise<IAirGapSignedTransaction> {
+  async signWithPrivateKey(privateKey: Buffer, transaction: RawAeternityTransaction): Promise<IAirGapSignedTransaction> {
     // sign and cut off first byte ('ae')
     const rawTx = this.decodeTx(transaction.transaction)
 
@@ -135,7 +135,7 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
     const rlpEncodedTx = rlp.encode(txArray)
     const signedEncodedTx = `tx_${bs64check.encode(rlpEncodedTx)}`
 
-    return Promise.resolve(signedEncodedTx)
+    return signedEncodedTx
   }
 
   private decodeTx(transaction: string): any {
@@ -257,7 +257,7 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
 
     const txArray = Object.keys(txObj).map(a => txObj[a])
     const rlpEncodedTx = rlp.encode(txArray)
-    const preparedTx = `tx_${bs64check.encode(rlpEncodedTx)}` // TODO: in 0.3.0, introduce bs64check here
+    const preparedTx = `tx_${bs64check.encode(rlpEncodedTx)}`
 
     return {
       transaction: preparedTx,

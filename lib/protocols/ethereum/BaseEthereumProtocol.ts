@@ -99,19 +99,17 @@ export abstract class BaseEthereumProtocol implements ICoinProtocol {
     return [address]
   }
 
-  getAddressFromExtendedPublicKey(
+  async getAddressFromExtendedPublicKey(
     extendedPublicKey: string,
     visibilityDerivationIndex: number,
     addressDerivationIndex: number
   ): Promise<string> {
-    return Promise.resolve(
-      this.getAddressFromPublicKey(
-        bitcoinJS.HDNode.fromBase58(extendedPublicKey, this.network as bitcoinJS.Network)
-          .derive(visibilityDerivationIndex)
-          .derive(addressDerivationIndex)
-          .getPublicKeyBuffer()
-          .toString('hex')
-      )
+    return this.getAddressFromPublicKey(
+      bitcoinJS.HDNode.fromBase58(extendedPublicKey, this.network as bitcoinJS.Network)
+        .derive(visibilityDerivationIndex)
+        .derive(addressDerivationIndex)
+        .getPublicKeyBuffer()
+        .toString('hex')
     )
   }
 
@@ -140,10 +138,10 @@ export abstract class BaseEthereumProtocol implements ICoinProtocol {
     return Promise.reject('extended private key signing for ether not implemented')
   }
 
-  signWithPrivateKey(privateKey: Buffer, transaction: RawEthereumTransaction): Promise<IAirGapSignedTransaction> {
+  async signWithPrivateKey(privateKey: Buffer, transaction: RawEthereumTransaction): Promise<IAirGapSignedTransaction> {
     const tx = new EthereumTransaction(transaction)
     tx.sign(privateKey)
-    return Promise.resolve(tx.serialize().toString('hex'))
+    return tx.serialize().toString('hex')
   }
 
   async getTransactionDetails(unsignedTx: UnsignedTransaction): Promise<IAirGapTransaction> {
@@ -159,7 +157,7 @@ export abstract class BaseEthereumProtocol implements ICoinProtocol {
     }
   }
 
-  getTransactionDetailsFromSigned(transaction: SignedEthereumTransaction): Promise<IAirGapTransaction> {
+  async getTransactionDetailsFromSigned(transaction: SignedEthereumTransaction): Promise<IAirGapTransaction> {
     const ethTx = new EthereumTransaction(transaction.transaction)
 
     let hexValue = ethTx.value.toString('hex') || '0x0'
@@ -167,7 +165,7 @@ export abstract class BaseEthereumProtocol implements ICoinProtocol {
     let hexGasLimit = ethTx.gasLimit.toString('hex') || '0x0'
     let hexNonce = ethTx.nonce.toString('hex') || '0x0'
 
-    return Promise.resolve({
+    return {
       from: [ethUtil.toChecksumAddress('0x' + ethTx.from.toString('hex'))],
       to: [ethUtil.toChecksumAddress('0x' + ethTx.to.toString('hex'))],
       amount: new BigNumber(parseInt(hexValue, 16)),
@@ -179,7 +177,7 @@ export abstract class BaseEthereumProtocol implements ICoinProtocol {
         nonce: parseInt(hexNonce, 16)
       },
       data: `0x${ethTx.data.toString('hex')}`
-    })
+    }
   }
 
   async getBalanceOfPublicKey(publicKey: string): Promise<BigNumber> {

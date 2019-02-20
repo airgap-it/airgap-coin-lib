@@ -78,9 +78,9 @@ export class BitcoinProtocol implements ICoinProtocol {
     return bitcoinNode.derivePath(derivationPath).toBase58()
   }
 
-  getAddressFromPublicKey(publicKey: string): Promise<string> {
+  async getAddressFromPublicKey(publicKey: string): Promise<string> {
     // broadcaster knows this (both broadcaster and signer)
-    return Promise.resolve(this.bitcoinJSLib.HDNode.fromBase58(publicKey, this.network).getAddress())
+    return this.bitcoinJSLib.HDNode.fromBase58(publicKey, this.network).getAddress()
   }
 
   async getAddressesFromPublicKey(publicKey: string): Promise<string[]> {
@@ -95,7 +95,12 @@ export class BitcoinProtocol implements ICoinProtocol {
       .getAddress()
   }
 
-  getAddressesFromExtendedPublicKey(extendedPublicKey: string, visibilityDerivationIndex, addressCount, offset): Promise<string[]> {
+  getAddressesFromExtendedPublicKey(
+    extendedPublicKey: string,
+    visibilityDerivationIndex: number,
+    addressCount: number,
+    offset: number
+  ): Promise<string[]> {
     // broadcaster knows this (both broadcaster and signer)
     const node = this.bitcoinJSLib.HDNode.fromBase58(extendedPublicKey, this.network)
     const generatorArray = Array.from(new Array(addressCount), (x, i) => i + offset)
@@ -150,7 +155,7 @@ export class BitcoinProtocol implements ICoinProtocol {
     })
   }
 
-  getTransactionDetails(unsignedTx: UnsignedTransaction): Promise<IAirGapTransaction> {
+  async getTransactionDetails(unsignedTx: UnsignedTransaction): Promise<IAirGapTransaction> {
     // out of public information (both broadcaster and signer)
     const transaction = unsignedTx.transaction as RawBitcoinTransaction
 
@@ -164,7 +169,7 @@ export class BitcoinProtocol implements ICoinProtocol {
       feeCalculator = feeCalculator.minus(new BigNumber(txOut.value))
     }
 
-    return Promise.resolve({
+    return {
       from: transaction.ins.map(obj => obj.address),
       to: transaction.outs.filter(obj => obj.isChange === false).map(obj => obj.recipient),
       amount: transaction.outs
@@ -174,10 +179,10 @@ export class BitcoinProtocol implements ICoinProtocol {
       fee: feeCalculator,
       protocolIdentifier: this.identifier,
       isInbound: false
-    })
+    }
   }
 
-  getTransactionDetailsFromSigned(signedTx: SignedBitcoinTransaction): Promise<IAirGapTransaction> {
+  async getTransactionDetailsFromSigned(signedTx: SignedBitcoinTransaction): Promise<IAirGapTransaction> {
     let tx = {
       to: [] as string[],
       from: signedTx.from,
@@ -196,7 +201,7 @@ export class BitcoinProtocol implements ICoinProtocol {
       }
     })
 
-    return Promise.resolve(tx)
+    return tx
   }
 
   getBalanceOfAddresses(addresses: string[]): Promise<BigNumber> {
