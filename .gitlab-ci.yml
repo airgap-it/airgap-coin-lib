@@ -59,6 +59,16 @@ qa:
   tags:
     - docker
 
+publish_beta:
+  stage: publish
+  when: manual
+  before_script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+  script:
+    - docker run --env NPM_AUTH_TOKEN --name unit-$CI_COMMIT_SHA $IMAGE_TAG_CURRENT ./npm-ci-publish-beta-only.sh
+  tags:
+    - docker
+
 publish:
   stage: publish
   only:

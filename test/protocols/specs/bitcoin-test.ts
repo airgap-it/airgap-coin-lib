@@ -10,16 +10,14 @@ export class BitcoinTestProtocolSpec extends TestProtocolSpec {
   wallet = {
     privateKey: 'tprv8fmGMwHA9QVZZzFAR77eLN6bursxXG4Jb59YnZKFyR8WG48s1JbpLuurf7LiRW3NEkkxR1mNmPcY9sWfrYMwFVDQKzJwhirzw8YpmFCYgEq',
     publicKey: 'tpubDCTJWMKQHnBETTGxJknEjmkiUtPtgbFDANkL55MZPgvu6YPddhRQXQXiqHZdfHwcoVNwTaHmS6DuNjcaYPRqVFkDogJdWSMLpSWSC4pNa3r',
-    addresses: ['mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k', 'mtb2Yx8rPUhYxdqPsH9nzT375QtWZ9XJcX'],
-    tx: {
-      amount: new BigNumber('10'),
-      fee: new BigNumber('27000')
-    }
+    addresses: ['mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k', 'mtb2Yx8rPUhYxdqPsH9nzT375QtWZ9XJcX']
   }
   txs = [
     {
       from: ['mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k', 'mtb2Yx8rPUhYxdqPsH9nzT375QtWZ9XJcX'],
       to: ['mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k'],
+      amount: new BigNumber('10'),
+      fee: new BigNumber('27000'),
       unsignedTx: {
         ins: [
           {
@@ -57,8 +55,8 @@ export class BitcoinTestProtocolSpec extends TestProtocolSpec {
   signedTransaction(tx: any): DeserializedSyncProtocol {
     const protocol: DeserializedSyncProtocol = super.signedTransaction(tx)
     const payload = protocol.payload as SignedTransaction
-    payload.amount = this.wallet.tx.amount
-    payload.fee = this.wallet.tx.fee
+    payload.amount = this.txs[0].amount
+    payload.fee = this.txs[0].fee
     payload.from = this.wallet.addresses
     return protocol
   }

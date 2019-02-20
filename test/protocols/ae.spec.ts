@@ -31,8 +31,8 @@ describe(`ICoinProtocol Aeternity - Custom Tests`, () => {
                 hash: 'th_z8bNzdugQdpiRUVXUmQbxoy5dLLEFLG6StBY95jF1KdXrRxiq',
                 signatures: ['sg_JTXgD5WaKbDeVeDQXt9w7MyHXdxFdTqqzUvKFwoYsQZENc2zivckavGhBpX2h2a5QajiewuvsEgc3o7FxEB57oHTEn153'],
                 tx: {
-                  amount: aeProtocolSpec.wallet.tx.amount.toFixed(),
-                  fee: aeProtocolSpec.wallet.tx.fee.toFixed(),
+                  amount: aeProtocolSpec.txs[0].amount.toFixed(),
+                  fee: aeProtocolSpec.txs[0].fee.toFixed(),
                   nonce: 1,
                   payload: '"create account" 1',
                   recipient_id: aeProtocolSpec.wallet.addresses[0],
@@ -57,8 +57,8 @@ describe(`ICoinProtocol Aeternity - Custom Tests`, () => {
 
     expect(transactions).to.deep.equal([
       {
-        amount: new BigNumber(aeProtocolSpec.wallet.tx.amount),
-        fee: new BigNumber(aeProtocolSpec.wallet.tx.fee),
+        amount: new BigNumber(aeProtocolSpec.txs[0].amount),
+        fee: new BigNumber(aeProtocolSpec.txs[0].fee),
         from: aeProtocolSpec.wallet.addresses,
         isInbound: true,
         protocolIdentifier: aeLib.identifier,

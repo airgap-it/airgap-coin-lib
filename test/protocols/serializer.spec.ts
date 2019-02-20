@@ -9,15 +9,16 @@ import { AETestProtocolSpec } from './specs/ae'
 import { ERC20HOPTokenTestProtocolSpec } from './specs/erc20-hop-token'
 import { TezosTestProtocolSpec } from './specs/tezos'
 import { BitcoinTestProtocolSpec } from './specs/bitcoin-test'
-import { BitcoinProtocolSpec } from './specs/bitcoin'
+import { GenericERC20TokenTestProtocolSpec } from './specs/generic-erc20-token'
+import { getProtocolByIdentifier } from '../../lib/utils/protocolsByIdentifier'
 
 const protocols = [
   new EthereumTestProtocolSpec(),
   new BitcoinTestProtocolSpec(),
   new AETestProtocolSpec(),
   new ERC20HOPTokenTestProtocolSpec(),
-  new TezosTestProtocolSpec()
-  // new BitcoinProtocolSpec()
+  new TezosTestProtocolSpec(),
+  new GenericERC20TokenTestProtocolSpec()
 ]
 
 protocols.forEach((protocol: TestProtocolSpec) => {
@@ -38,11 +39,11 @@ protocols.forEach((protocol: TestProtocolSpec) => {
         const serializedTx = await syncProtocol.serialize(protocol.unsignedTransaction(tx))
         const deserializedTx = await syncProtocol.deserialize(serializedTx)
 
-        const airGapTx = protocol.lib.getTransactionDetails(deserializedTx.payload as UnsignedTransaction)
+        const airGapTx = await protocol.lib.getTransactionDetails(deserializedTx.payload as UnsignedTransaction)
 
         expect(airGapTx.from).to.deep.equal(protocol.wallet.addresses)
-        expect(airGapTx.amount).to.deep.equal(protocol.wallet.tx.amount)
-        expect(airGapTx.fee).to.deep.equal(protocol.wallet.tx.fee)
+        expect(airGapTx.amount).to.deep.equal(tx.amount)
+        expect(airGapTx.fee).to.deep.equal(tx.fee)
       }
     })
 
@@ -51,11 +52,11 @@ protocols.forEach((protocol: TestProtocolSpec) => {
         const serializedTx = await syncProtocol.serialize(protocol.signedTransaction(tx))
         const deserializedTx = await syncProtocol.deserialize(serializedTx)
 
-        const airGapTx = protocol.lib.getTransactionDetailsFromSigned(deserializedTx.payload as SignedTransaction)
+        const airGapTx = await protocol.lib.getTransactionDetailsFromSigned(deserializedTx.payload as SignedTransaction)
 
         expect(airGapTx.from).to.deep.equal(tx.from)
-        expect(airGapTx.amount).to.deep.equal(protocol.wallet.tx.amount)
-        expect(airGapTx.fee).to.deep.equal(protocol.wallet.tx.fee)
+        expect(airGapTx.amount).to.deep.equal(tx.amount)
+        expect(airGapTx.fee).to.deep.equal(tx.fee)
       }
     })
 
@@ -74,6 +75,17 @@ protocols.forEach((protocol: TestProtocolSpec) => {
         const deserializedTx = await syncProtocol.deserialize(serializedSignedTx)
 
         expect(protocol.signedTransaction(tx)).to.deep.include(deserializedTx)
+      }
+    })
+
+    it(`should be able to properly construct the protocol from a unsigned tx`, async () => {
+      for (let tx of protocol.txs) {
+        const serializedTx = await syncProtocol.serialize(protocol.unsignedTransaction(tx))
+        const deserializedTx = await syncProtocol.deserialize(serializedTx)
+
+        const reConstructedProtocol = getProtocolByIdentifier(deserializedTx.protocol)
+
+        expect(protocol.lib.identifier).to.equal(reConstructedProtocol.identifier)
       }
     })
   })

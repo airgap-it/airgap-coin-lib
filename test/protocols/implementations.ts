@@ -18,14 +18,12 @@ abstract class TestProtocolSpec {
     privateKey: string
     publicKey: string
     addresses: string[]
-    tx: {
-      amount: BigNumber
-      fee: BigNumber
-    }
   }
   txs: {
     to: string[]
     from: string[]
+    amount: BigNumber
+    fee: BigNumber
     properties?: string[]
     unsignedTx: any
     signedTx: string

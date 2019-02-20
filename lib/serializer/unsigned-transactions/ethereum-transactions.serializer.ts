@@ -46,12 +46,12 @@ export class EthereumUnsignedTransactionSerializer extends UnsignedTransactionSe
       publicKey: serializedTx[SyncProtocolUnsignedTransactionKeys.PUBLIC_KEY].toString(),
       transaction: {
         nonce: serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION][0].toString(),
-        gasPrice: serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION][1].toString(),
-        gasLimit: serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION][2].toString(),
-        to: serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION][3].toString(),
-        value: serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION][4].toString(),
-        chainId: parseInt(serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION][5].toString(), 10),
-        data: serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION][6].toString()
+        gasPrice: (serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION][1] as Buffer).toString(),
+        gasLimit: (serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION][2] as Buffer).toString(),
+        to: (serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION][3] as Buffer).toString(),
+        value: (serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION][4] as Buffer).toString(),
+        chainId: parseInt((serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION][5] as Buffer).toString(), 10),
+        data: (serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION][6] as Buffer).toString()
       },
       callback: serializedTx[SyncProtocolUnsignedTransactionKeys.CALLBACK].toString()
     }

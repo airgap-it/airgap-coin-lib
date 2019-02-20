@@ -1,5 +1,5 @@
 import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
-import { EthereumProtocol } from '../../../lib'
+import { EthereumProtocol } from '../../../lib/protocols/ethereum/EthereumProtocol'
 import * as sinon from 'sinon'
 import BigNumber from 'bignumber.js'
 
@@ -11,7 +11,7 @@ export class EthereumRopstenProtocolStub implements ProtocolHTTPStub {
       .returns(Promise.resolve(80))
     sinon
       .stub(protocol.web3.eth, 'getBalance')
-      .withArgs(protocol.getAddressFromPublicKey(testProtocolSpec.wallet.publicKey))
+      .withArgs(testProtocolSpec.wallet.addresses[0])
       .returns(Promise.resolve('100000000000000000000'))
   }
   noBalanceStub(testProtocolSpec: TestProtocolSpec, protocol: EthereumProtocol) {

@@ -31,9 +31,10 @@ export class AirGapMarketWallet extends AirGapWallet {
     public protocolIdentifier: string,
     public publicKey: string,
     public isExtendedPublicKey: boolean,
-    public derivationPath: string
+    public derivationPath: string,
+    public addressIndex?: number
   ) {
-    super(protocolIdentifier, publicKey, isExtendedPublicKey, derivationPath)
+    super(protocolIdentifier, publicKey, isExtendedPublicKey, derivationPath, addressIndex)
   }
 
   public synchronize(): Promise<void> {

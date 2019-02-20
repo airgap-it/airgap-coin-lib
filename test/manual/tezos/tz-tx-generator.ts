@@ -1,17 +1,16 @@
-import { TezosProtocol, SyncProtocolUtils, EncodedType } from '../../../lib/index'
+import { TezosProtocol, SyncProtocolUtils, EncodedType, isCoinlibReady, TezosKtProtocol } from '../../../lib/index'
 import BigNumber from 'bignumber.js'
-import * as sodium from 'libsodium-wrappers'
 import * as readline from 'readline'
 import * as qrcode from 'qrcode-terminal'
 import { SERIALIZER_VERSION } from '../../../lib/serializer/constants'
 
 // prepare, sign and do a TX
 const promise = async () => {
-  await sodium.ready
+  await isCoinlibReady()
 
   console.log('Preparing Tezos TX...')
 
-  const tezos = new TezosProtocol()
+  const tezos = new TezosKtProtocol()
 
   const privateKey =
     '2f243e474992bb96b49b2fa7b2c1cba7a804257f0cf13dceb640cf3210d54838cdbc0c3449784bd53907c3c7a06060cf12087e492a7b937f044c6a73b522a234'
@@ -28,7 +27,7 @@ const promise = async () => {
   )
 
   console.log('Raw TX', rawTezosTx)
-  console.log('JSON for Forging', JSON.stringify(rawTezosTx.jsonTransaction))
+  console.log('JSON for Forging', JSON.stringify(rawTezosTx))
   console.log('Signing Tezos TX...')
 
   const signedTx = await tezos.signWithPrivateKey(Buffer.from(privateKey, 'hex'), rawTezosTx)

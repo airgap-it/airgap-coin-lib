@@ -1,7 +1,6 @@
 import BigNumber from 'bignumber.js'
 
 export interface IAirGapTransaction {
-
   from: string[]
   to: string[]
   isInbound: boolean
@@ -15,8 +14,5 @@ export interface IAirGapTransaction {
   blockHeight?: string
   data?: string
 
-  meta?: {
-
-  }
-
+  meta?: {}
 }

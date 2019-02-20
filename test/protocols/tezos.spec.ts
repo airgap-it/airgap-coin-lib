@@ -6,7 +6,7 @@ import * as sinon from 'sinon'
 import axios from 'axios'
 import { isCoinlibReady } from '../../lib'
 import { TezosTestProtocolSpec } from '../protocols/specs/tezos'
-import { TezosOperationType, TezosRevealOperation, TezosSpendOperation } from '../../lib/protocols/TezosProtocol'
+import { TezosOperationType, TezosRevealOperation, TezosSpendOperation } from '../../lib/protocols/tezos/TezosProtocol'
 
 const tezosProtocolSpec = new TezosTestProtocolSpec()
 const tezosLib = tezosProtocolSpec.lib
@@ -232,6 +232,8 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       expect((tezosWrappedOperation.contents[2] as TezosSpendOperation).destination).to.equal('KT1J5mFAxxzAYDLjYeVXkLcyEzNGRZ3kuFGq')
     })
 
+    it('can unforge a delegation TX', async () => {})
+
     it('can give a list of transactions from TZScan API', async () => {
       const transactions = await tezosLib.getTransactionsFromAddresses(tezosProtocolSpec.wallet.addresses, 20, 0)
 
@@ -291,7 +293,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         [new BigNumber(100000)],
         new BigNumber(1420)
       )
-      const airGapTx = tezosLib.getTransactionDetails({
+      const airGapTx = await tezosLib.getTransactionDetails({
         transaction: rawTezosTx,
         publicKey: tezosProtocolSpec.wallet.publicKey
       })
@@ -304,11 +306,11 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       }
       const spendTransaction: TezosSpendOperation = spendOperation as TezosSpendOperation
 
-      expect(spendTransaction.storage_limit).to.equal('300')
+      expect(spendTransaction.storage_limit).to.equal('0') // kt addresses do not need to get funed, they are originated :)
       expect(airGapTx.amount.toFixed()).to.equal('100000')
       expect(airGapTx.fee.toFixed()).to.equal('1420')
       expect(rawTezosTx.binaryTransaction).to.equal(
-        'e4b7e31c04d23e3a10ea20e11bd0ebb4bde16f632c1d94779fd5849a34ec42a308000091a9d2b003f19cf5a1f38f04f1000ab482d331768c0bcffe37f44eac02a08d0601ba4e7349ac25dc5eb2df5a43fceacc58963df4f50000'
+        'e4b7e31c04d23e3a10ea20e11bd0ebb4bde16f632c1d94779fd5849a34ec42a308000091a9d2b003f19cf5a1f38f04f1000ab482d331768c0bcffe37f44e00a08d0601ba4e7349ac25dc5eb2df5a43fceacc58963df4f50000'
       )
     })
 
@@ -356,7 +358,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         [new BigNumber(900000)],
         new BigNumber(100000)
       )
-      const airGapTx = tezosLib.getTransactionDetails({
+      const airGapTx = await tezosLib.getTransactionDetails({
         transaction: rawTezosTx,
         publicKey: tezosProtocolSpec.wallet.publicKey
       })
@@ -383,7 +385,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         [new BigNumber(100000)], // send only 1/10 of funds, so it should not deduct anything
         new BigNumber(100000)
       )
-      const airGapTx = tezosLib.getTransactionDetails({
+      const airGapTx = await tezosLib.getTransactionDetails({
         transaction: rawTezosTx,
         publicKey: tezosProtocolSpec.wallet.publicKey
       })
@@ -410,7 +412,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         [new BigNumber(900000)], // send so much funds that it should deduct, given it is a 0-balance receiver (which it is not)
         new BigNumber(100000)
       )
-      const airGapTx = tezosLib.getTransactionDetails({
+      const airGapTx = await tezosLib.getTransactionDetails({
         transaction: rawTezosTx,
         publicKey: tezosProtocolSpec.wallet.publicKey
       })
