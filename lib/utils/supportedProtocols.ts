@@ -4,8 +4,18 @@ import { EthereumProtocol } from '../protocols/ethereum/EthereumProtocol'
 import { AEProtocol } from '../protocols/aeternity/AEProtocol'
 import { TezosProtocol } from '../protocols/tezos/TezosProtocol'
 
+const protocols: ICoinProtocol[] = [new BitcoinProtocol(), new EthereumProtocol(), new AEProtocol(), new TezosProtocol()]
+
 const supportedProtocols = function(): ICoinProtocol[] {
-  return [new BitcoinProtocol(), new EthereumProtocol(), new AEProtocol(), new TezosProtocol()]
+  return protocols
 }
 
-export { supportedProtocols }
+const addSupportedProtocol = function(newProtocol: ICoinProtocol): void {
+  if (protocols.find(protocol => protocol.identifier === newProtocol.identifier)) {
+    throw new Error(`protocol ${newProtocol.name} already exists`)
+  }
+
+  protocols.push(newProtocol)
+}
+
+export { addSupportedProtocol, supportedProtocols }
