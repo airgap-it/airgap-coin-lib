@@ -11,6 +11,7 @@
     "aeternity",
     "crypto"
   ],
+  "license": "MIT",
   "homepage": "https://www.airgap.it",
   "repository": {
     "type": "git",
