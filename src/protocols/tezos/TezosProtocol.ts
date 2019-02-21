@@ -1074,4 +1074,18 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     }
     return operation
   }
+
+  async signMessage(message: string, privateKey: Buffer): Promise<string> {
+    await sodium.ready
+    let signed = sodium.crypto_sign_detached(sodium.from_string(message), privateKey)
+
+    return signed
+  }
+
+  async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
+    await sodium.ready
+    const isValidSignature = sodium.crypto_sign_verify_detached(signature, message, publicKey)
+
+    return isValidSignature
+  }
 }

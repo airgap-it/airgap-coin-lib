@@ -317,4 +317,69 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
       })
     })
   })
+
+  describe(`Sign Message`, () => {
+    afterEach(async () => {
+      sinon.restore()
+    })
+
+    itIf(protocol.messages, 'signMessage - Is able to sign a message using a PrivateKey', async () => {
+      const privateKey = protocol.lib.getPrivateKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
+
+      protocol.messages.forEach(async messageObject => {
+        try {
+          const signature = await protocol.lib.signMessage(messageObject.message, privateKey)
+          // TODO: Verify signature
+          // expect(signature).to.equal(messageObject.signature)
+        } catch (e) {
+          expect(e).to.equal('Message signing not implemented')
+        }
+      })
+    })
+
+    itIf(protocol.messages, 'verifyMessage - Is able to verify a message using a PublicKey', async () => {
+      const privateKey = protocol.lib.getPrivateKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
+      const publicKey = protocol.lib.getPublicKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
+      const publicKeyBuffer = Buffer.from(publicKey, 'hex')
+
+      protocol.messages.forEach(async messageObject => {
+        try {
+          /*
+          const signatureIsValid = await protocol.lib.verifyMessage(
+            messageObject.message,
+            Buffer.from(messageObject.signature) as any,
+            publicKeyBuffer
+          )
+          */
+          // TODO: Verify signature
+          // expect(signatureIsValid).to.be.true
+        } catch (e) {
+          expect(e).to.equal('Message signing not implemented')
+        }
+      })
+    })
+
+    itIf(protocol.messages, 'signMessage and verifyMessage - Is able to sign and verify a message', async () => {
+      const privateKey = protocol.lib.getPrivateKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
+      const publicKey = protocol.lib.getPublicKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
+      const publicKeyBuffer = Buffer.from(publicKey, 'hex')
+
+      protocol.messages.forEach(async messageObject => {
+        try {
+          const signature = await protocol.lib.signMessage(messageObject.message, privateKey)
+          const signatureIsValid = await protocol.lib.verifyMessage(messageObject.message, Buffer.from(signature) as any, publicKeyBuffer)
+          expect(signatureIsValid).to.be.true
+
+          const signature2IsValid = await protocol.lib.verifyMessage(
+            `different-message-${messageObject.message}`,
+            Buffer.from(signature) as any,
+            publicKeyBuffer
+          )
+          expect(signature2IsValid).to.be.false
+        } catch (e) {
+          expect(e).to.equal('Message signing not implemented')
+        }
+      })
+    })
+  })
 })
