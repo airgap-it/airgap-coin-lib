@@ -36,6 +36,7 @@ abstract class TestProtocolSpec {
     unsignedTx: any
     signedTx: string
   }[] = []
+  messages = [{ message: 'test', signature: '' }]
 
   public seed(): string {
     return BIP39.mnemonicToSeedHex(mnemonic)

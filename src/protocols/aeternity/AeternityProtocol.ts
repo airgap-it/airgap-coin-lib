@@ -325,4 +325,12 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
 
     return Buffer.from(padStart(hexString, hexString.length % 2 === 0 ? hexString.length : hexString.length + 1, '0'), 'hex')
   }
+
+  async signMessage(message: string, privateKey: Buffer): Promise<string> {
+    return Promise.reject('Message signing not implemented')
+  }
+
+  async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
+    return Promise.reject('Message verification not implemented')
+  }
 }
