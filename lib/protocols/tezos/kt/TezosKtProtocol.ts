@@ -22,11 +22,14 @@ export interface BakerInfo {
   bakingActive: boolean
   selfBond: BigNumber
   bakerCapacity: BigNumber
+  bakerUsage: BigNumber
 }
 
 export interface DelegationInfo {
   cycle: number
   reward: BigNumber
+  totalRewards: BigNumber
+  totalFees: BigNumber
   payout: Date
 }
 
@@ -219,7 +222,8 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
       stakingBalance: stakingBalance,
       bakingActive: isBakingActive,
       selfBond: selfBond,
-      bakerCapacity: stakingCapacity
+      bakerCapacity: stakingBalance.div(stakingCapacity),
+      bakerUsage: stakingCapacity
     }
 
     return bakerInfo
@@ -259,6 +263,8 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
 
         return {
           cycle: obj.cycle,
+          totalRewards: new BigNumber(obj.rewards),
+          totalFees: new BigNumber(obj.fees),
           reward: new BigNumber(obj.rewards).plus(obj.fees).multipliedBy(new BigNumber(delegatedBalanceAtCycle).div(stakingBalanceAtCycle)),
           payout: new Date(timestamp.getTime() + (obj.cycle - lastConfirmedCycle) * BLOCK_PER_CYCLE * 60 * 1000)
         }
