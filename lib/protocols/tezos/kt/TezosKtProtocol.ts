@@ -7,9 +7,28 @@ import {
   TezosDelegationOperation
 } from '../TezosProtocol'
 import { SubProtocolType, ICoinSubProtocol } from '../../ICoinSubProtocol'
-import axios from 'axios'
+import axios, { AxiosResponse } from 'axios'
 import BigNumber from 'bignumber.js'
 import { RawTezosTransaction } from '../../../serializer/unsigned-transactions/tezos-transactions.serializer'
+
+// 8.25%
+const SELF_BOND_REQUIREMENT = 0.0825
+const BLOCK_PER_CYCLE = 4096
+
+export interface BakerInfo {
+  balance: BigNumber
+  delegatedBalance: BigNumber
+  stakingBalance: BigNumber
+  bakingActive: boolean
+  selfBond: BigNumber
+  bakerCapacity: BigNumber
+}
+
+export interface DelegationInfo {
+  cycle: number
+  reward: BigNumber
+  payout: Date
+}
 
 export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
   identifier = 'xtz-kt'
@@ -169,5 +188,83 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
       console.warn(error)
       throw new Error('Forging Tezos TX failed.')
     }
+  }
+
+  async bakerInfo(tzAddress: string): Promise<BakerInfo> {
+    if (!tzAddress.toLowerCase().startsWith('tz1')) {
+      throw new Error('non tz1-address supplied')
+    }
+
+    const results = await Promise.all([
+      axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/delegates/${tzAddress}/balance`),
+      axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/delegates/${tzAddress}/delegated_balance`),
+      axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/delegates/${tzAddress}/staking_balance`),
+      axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/delegates/${tzAddress}/deactivated`)
+    ])
+
+    const tzBalance = new BigNumber(results[0].data)
+    const delegatedBalance = new BigNumber(results[1].data)
+    const stakingBalance = new BigNumber(results[2].data)
+    const isBakingActive: boolean = !results[3].data // we need to negate as the query is "deactivated"
+
+    // calculate the self bond of the baker
+    const selfBond = stakingBalance.minus(delegatedBalance)
+
+    // check what capacity is staked relatively to the self-bond
+    const stakingCapacity = stakingBalance.div(selfBond.div(SELF_BOND_REQUIREMENT))
+
+    const bakerInfo: BakerInfo = {
+      balance: tzBalance,
+      delegatedBalance: delegatedBalance,
+      stakingBalance: stakingBalance,
+      bakingActive: isBakingActive,
+      selfBond: selfBond,
+      bakerCapacity: stakingCapacity
+    }
+
+    return bakerInfo
+  }
+
+  async delegationInfo(ktAddress: string): Promise<DelegationInfo[]> {
+    if (!ktAddress.toLowerCase().startsWith('kt')) {
+      throw new Error('non kt-address supplied')
+    }
+
+    const status = await this.isAddressDelegated(ktAddress)
+
+    if (!status.isDelegated) {
+      throw new Error('address not delegated')
+    }
+
+    // level has to be cycle we want + 1
+    const { data: frozenBalance }: AxiosResponse<[{ cycle: number; deposit: string; fees: string; rewards: string }]> = await axios.get(
+      `${this.jsonRPCAPI}/chains/main/blocks/head/context/delegates/${status!.value}/frozen_balance_by_cycle`
+    )
+
+    const lastConfirmedCycle = frozenBalance[0].cycle - 1
+    const mostRecentCycle = frozenBalance[frozenBalance.length - 1].cycle
+
+    const { data: mostRecentBlock } = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/${mostRecentCycle * BLOCK_PER_CYCLE}`)
+    const timestamp: Date = new Date(mostRecentBlock.header.timestamp)
+
+    const delegationInfo: DelegationInfo[] = await Promise.all(
+      frozenBalance.map(async obj => {
+        const { data: delegatedBalanceAtCycle } = await axios.get(
+          `${this.jsonRPCAPI}/chains/main/blocks/${(obj.cycle - 6) * BLOCK_PER_CYCLE}/context/contracts/${ktAddress}/balance`
+        )
+
+        const { data: stakingBalanceAtCycle } = await axios.get(
+          `${this.jsonRPCAPI}/chains/main/blocks/${(obj.cycle - 6) * BLOCK_PER_CYCLE}/context/delegates/${status!.value}/staking_balance`
+        )
+
+        return {
+          cycle: obj.cycle,
+          reward: new BigNumber(obj.rewards).plus(obj.fees).multipliedBy(new BigNumber(delegatedBalanceAtCycle).div(stakingBalanceAtCycle)),
+          payout: new Date(timestamp.getTime() + (obj.cycle - lastConfirmedCycle) * BLOCK_PER_CYCLE * 60 * 1000)
+        }
+      })
+    )
+
+    return delegationInfo
   }
 }
