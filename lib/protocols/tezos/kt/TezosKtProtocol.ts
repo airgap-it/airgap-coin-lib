@@ -28,6 +28,7 @@ export interface BakerInfo {
 export interface DelegationInfo {
   cycle: number
   reward: BigNumber
+  deposit: BigNumber
   delegatedBalance: BigNumber
   stakingBalance: BigNumber
   totalRewards: BigNumber
@@ -231,7 +232,6 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     return bakerInfo
   }
 
-  // ToDo: test-case needed
   async delegationInfo(ktAddress: string): Promise<DelegationInfo[]> {
     if (!ktAddress.toLowerCase().startsWith('kt')) {
       throw new Error('non kt-address supplied')
@@ -246,7 +246,6 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     return this.delegationRewards(status.value, ktAddress)
   }
 
-  // ToDo: test-case needed
   async delegationRewards(tzAddress: string, ktAddress?: string): Promise<DelegationInfo[]> {
     const { data: frozenBalance }: AxiosResponse<[{ cycle: number; deposit: string; fees: string; rewards: string }]> = await axios.get(
       `${this.jsonRPCAPI}/chains/main/blocks/head/context/delegates/${tzAddress}/frozen_balance_by_cycle`

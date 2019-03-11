@@ -6,6 +6,7 @@ import { TezosTestProtocolSpec } from './specs/tezos'
 import { TezosKtProtocol, isCoinlibReady } from '../../lib'
 import axios from 'axios'
 import { TezosOperationType, TezosDelegationOperation, TezosOriginationOperation } from '../../lib/protocols/tezos/TezosProtocol'
+import BigNumber from 'bignumber.js'
 
 const tezosProtocolSpec = new TezosTestProtocolSpec()
 const ktTezosLib = new TezosKtProtocol()
@@ -69,6 +70,78 @@ describe(`ICoinProtocol KtTezos - Custom Tests`, () => {
       stub
         .withArgs(`${ktTezosLib.jsonRPCAPI}/chains/main/blocks/head/context/delegates/tz1cX93Q3KsiTADpCC4f12TBvAmS5tw7CW20/deactivated`)
         .returns(Promise.resolve({ data: false }))
+
+      // delegationInfo stubs
+      stub
+        .withArgs(
+          `${ktTezosLib.jsonRPCAPI}/chains/main/blocks/head/context/delegates/tz1cX93Q3KsiTADpCC4f12TBvAmS5tw7CW19/frozen_balance_by_cycle`
+        )
+        .returns(
+          Promise.resolve({
+            data: [
+              { cycle: 79, deposit: '10000', fees: '10', rewards: '100' },
+              { cycle: 80, deposit: '10000', fees: '10', rewards: '100' },
+              { cycle: 81, deposit: '10000', fees: '10', rewards: '100' },
+              { cycle: 82, deposit: '10000', fees: '10', rewards: '100' },
+              { cycle: 83, deposit: '10000', fees: '10', rewards: '100' },
+              { cycle: 84, deposit: '10000', fees: '10', rewards: '100' }
+            ]
+          })
+        )
+
+      stub
+        .withArgs(`${ktTezosLib.jsonRPCAPI}/chains/main/blocks/${84 * 4096}`)
+        .returns(Promise.resolve({ data: { header: { timestamp: '2019-03-08T18:59:14Z' } } }))
+
+      stub
+        .withArgs(`${ktTezosLib.jsonRPCAPI}/chains/main/blocks/299008/context/contracts/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy/balance`)
+        .returns(Promise.resolve({ data: '1000' }))
+      stub
+        .withArgs(`${ktTezosLib.jsonRPCAPI}/chains/main/blocks/303104/context/contracts/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy/balance`)
+        .returns(Promise.resolve({ data: '1000' }))
+      stub
+        .withArgs(`${ktTezosLib.jsonRPCAPI}/chains/main/blocks/307200/context/contracts/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy/balance`)
+        .returns(Promise.resolve({ data: '1000' }))
+      stub
+        .withArgs(`${ktTezosLib.jsonRPCAPI}/chains/main/blocks/311296/context/contracts/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy/balance`)
+        .returns(Promise.resolve({ data: '1000' }))
+      stub
+        .withArgs(`${ktTezosLib.jsonRPCAPI}/chains/main/blocks/315392/context/contracts/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy/balance`)
+        .returns(Promise.resolve({ data: '1000' }))
+      stub
+        .withArgs(`${ktTezosLib.jsonRPCAPI}/chains/main/blocks/319488/context/contracts/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy/balance`)
+        .returns(Promise.resolve({ data: '1000' }))
+
+      stub
+        .withArgs(
+          `${ktTezosLib.jsonRPCAPI}/chains/main/blocks/299008/context/delegates/tz1cX93Q3KsiTADpCC4f12TBvAmS5tw7CW19/staking_balance`
+        )
+        .returns(Promise.resolve({ data: '50000' }))
+      stub
+        .withArgs(
+          `${ktTezosLib.jsonRPCAPI}/chains/main/blocks/303104/context/delegates/tz1cX93Q3KsiTADpCC4f12TBvAmS5tw7CW19/staking_balance`
+        )
+        .returns(Promise.resolve({ data: '50000' }))
+      stub
+        .withArgs(
+          `${ktTezosLib.jsonRPCAPI}/chains/main/blocks/307200/context/delegates/tz1cX93Q3KsiTADpCC4f12TBvAmS5tw7CW19/staking_balance`
+        )
+        .returns(Promise.resolve({ data: '50000' }))
+      stub
+        .withArgs(
+          `${ktTezosLib.jsonRPCAPI}/chains/main/blocks/311296/context/delegates/tz1cX93Q3KsiTADpCC4f12TBvAmS5tw7CW19/staking_balance`
+        )
+        .returns(Promise.resolve({ data: '50000' }))
+      stub
+        .withArgs(
+          `${ktTezosLib.jsonRPCAPI}/chains/main/blocks/315392/context/delegates/tz1cX93Q3KsiTADpCC4f12TBvAmS5tw7CW19/staking_balance`
+        )
+        .returns(Promise.resolve({ data: '50000' }))
+      stub
+        .withArgs(
+          `${ktTezosLib.jsonRPCAPI}/chains/main/blocks/319488/context/delegates/tz1cX93Q3KsiTADpCC4f12TBvAmS5tw7CW19/staking_balance`
+        )
+        .returns(Promise.resolve({ data: '50000' }))
     })
 
     it('should be able to forge and unforge an origination TX', async () => {
@@ -185,6 +258,26 @@ describe(`ICoinProtocol KtTezos - Custom Tests`, () => {
       expect(bakerInfo.selfBond.toFixed()).to.equal(`${10 - 5}`)
       expect(bakerInfo.bakerCapacity.toFixed()).to.equal('60.60606060606060606061')
       expect(bakerInfo.bakerUsage.toFixed()).to.equal('0.165')
+    })
+
+    it('should correctly report payout/rewards for the last cycles', async () => {
+      const delegationInfo = await ktTezosLib.delegationInfo('KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy')
+
+      expect(delegationInfo[0].cycle).to.equal(79)
+      expect(delegationInfo[1].cycle).to.equal(80)
+      expect(delegationInfo[2].cycle).to.equal(81)
+      expect(delegationInfo[3].cycle).to.equal(82)
+      expect(delegationInfo[4].cycle).to.equal(83)
+      expect(delegationInfo[5].cycle).to.equal(84)
+
+      delegationInfo.forEach(info => {
+        expect(info.totalRewards.toFixed()).to.equal('100')
+        expect(info.totalFees.toFixed()).to.equal('10')
+        expect(info.delegatedBalance.toFixed()).to.equal('1000')
+        expect(info.deposit.toFixed()).to.equal('10000')
+        expect(info.stakingBalance.toFixed()).to.equal('50000')
+        expect(info.reward.toFixed()).to.equal('2.2')
+      })
     })
 
     after(async () => {
