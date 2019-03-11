@@ -28,6 +28,8 @@ export interface BakerInfo {
 export interface DelegationInfo {
   cycle: number
   reward: BigNumber
+  delegatedBalance: BigNumber
+  stakingBalance: BigNumber
   totalRewards: BigNumber
   totalFees: BigNumber
   payout: Date
@@ -229,6 +231,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     return bakerInfo
   }
 
+  // ToDo: test-case needed
   async delegationInfo(ktAddress: string): Promise<DelegationInfo[]> {
     if (!ktAddress.toLowerCase().startsWith('kt')) {
       throw new Error('non kt-address supplied')
@@ -236,13 +239,17 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
 
     const status = await this.isAddressDelegated(ktAddress)
 
-    if (!status.isDelegated) {
+    if (!status.isDelegated || !status.value) {
       throw new Error('address not delegated')
     }
 
-    // level has to be cycle we want + 1
+    return this.delegationRewards(status.value, ktAddress)
+  }
+
+  // ToDo: test-case needed
+  async delegationRewards(tzAddress: string, ktAddress?: string): Promise<DelegationInfo[]> {
     const { data: frozenBalance }: AxiosResponse<[{ cycle: number; deposit: string; fees: string; rewards: string }]> = await axios.get(
-      `${this.jsonRPCAPI}/chains/main/blocks/head/context/delegates/${status!.value}/frozen_balance_by_cycle`
+      `${this.jsonRPCAPI}/chains/main/blocks/head/context/delegates/${tzAddress}/frozen_balance_by_cycle`
     )
 
     const lastConfirmedCycle = frozenBalance[0].cycle - 1
@@ -254,17 +261,22 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     const delegationInfo: DelegationInfo[] = await Promise.all(
       frozenBalance.map(async obj => {
         const { data: delegatedBalanceAtCycle } = await axios.get(
-          `${this.jsonRPCAPI}/chains/main/blocks/${(obj.cycle - 6) * BLOCK_PER_CYCLE}/context/contracts/${ktAddress}/balance`
+          `${this.jsonRPCAPI}/chains/main/blocks/${(obj.cycle - 6) * BLOCK_PER_CYCLE}/context/contracts/${
+            ktAddress ? ktAddress : tzAddress
+          }/balance`
         )
 
         const { data: stakingBalanceAtCycle } = await axios.get(
-          `${this.jsonRPCAPI}/chains/main/blocks/${(obj.cycle - 6) * BLOCK_PER_CYCLE}/context/delegates/${status!.value}/staking_balance`
+          `${this.jsonRPCAPI}/chains/main/blocks/${(obj.cycle - 6) * BLOCK_PER_CYCLE}/context/delegates/${tzAddress}/staking_balance`
         )
 
         return {
           cycle: obj.cycle,
           totalRewards: new BigNumber(obj.rewards),
           totalFees: new BigNumber(obj.fees),
+          deposit: new BigNumber(obj.deposit),
+          delegatedBalance: new BigNumber(delegatedBalanceAtCycle),
+          stakingBalance: new BigNumber(stakingBalanceAtCycle),
           reward: new BigNumber(obj.rewards).plus(obj.fees).multipliedBy(new BigNumber(delegatedBalanceAtCycle).div(stakingBalanceAtCycle)),
           payout: new Date(timestamp.getTime() + (obj.cycle - lastConfirmedCycle) * BLOCK_PER_CYCLE * 60 * 1000)
         }

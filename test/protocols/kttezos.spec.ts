@@ -53,6 +53,22 @@ describe(`ICoinProtocol KtTezos - Custom Tests`, () => {
           }
         })
       )
+
+      // bakerInfo stubs
+      stub
+        .withArgs(`${ktTezosLib.jsonRPCAPI}/chains/main/blocks/head/context/delegates/tz1cX93Q3KsiTADpCC4f12TBvAmS5tw7CW20/balance`)
+        .returns(Promise.resolve({ data: 3 }))
+      stub
+        .withArgs(
+          `${ktTezosLib.jsonRPCAPI}/chains/main/blocks/head/context/delegates/tz1cX93Q3KsiTADpCC4f12TBvAmS5tw7CW20/delegated_balance`
+        )
+        .returns(Promise.resolve({ data: 5 }))
+      stub
+        .withArgs(`${ktTezosLib.jsonRPCAPI}/chains/main/blocks/head/context/delegates/tz1cX93Q3KsiTADpCC4f12TBvAmS5tw7CW20/staking_balance`)
+        .returns(Promise.resolve({ data: 10 }))
+      stub
+        .withArgs(`${ktTezosLib.jsonRPCAPI}/chains/main/blocks/head/context/delegates/tz1cX93Q3KsiTADpCC4f12TBvAmS5tw7CW20/deactivated`)
+        .returns(Promise.resolve({ data: false }))
     })
 
     it('should be able to forge and unforge an origination TX', async () => {
@@ -157,6 +173,18 @@ describe(`ICoinProtocol KtTezos - Custom Tests`, () => {
       expect(undelegatedState.isDelegated).to.equal(false)
       expect(undelegatedState.setable).to.equal(true)
       expect(undelegatedState.value).to.equal(undefined)
+    })
+
+    it('should correctly report the stats of a baker', async () => {
+      const bakerInfo = await ktTezosLib.bakerInfo('tz1cX93Q3KsiTADpCC4f12TBvAmS5tw7CW20')
+
+      expect(bakerInfo.balance.toFixed()).to.equal('3')
+      expect(bakerInfo.delegatedBalance.toFixed()).to.equal('5')
+      expect(bakerInfo.stakingBalance.toFixed()).to.equal('10')
+      expect(bakerInfo.bakingActive).to.equal(true)
+      expect(bakerInfo.selfBond.toFixed()).to.equal(`${10 - 5}`)
+      expect(bakerInfo.bakerCapacity.toFixed()).to.equal('60.60606060606060606061')
+      expect(bakerInfo.bakerUsage.toFixed()).to.equal('0.165')
     })
 
     after(async () => {
