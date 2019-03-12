@@ -9,7 +9,7 @@ import { EthereumClassicProtocol } from './protocols/ethereum/EthereumClassicPro
 import { GenericERC20, GenericERC20Configuration } from './protocols/ethereum/erc20/GenericERC20'
 import { AEProtocol } from './protocols/aeternity/AEProtocol'
 import { TezosProtocol } from './protocols/tezos/TezosProtocol'
-import { TezosKtProtocol } from './protocols/tezos/kt/TezosKtProtocol'
+import { TezosKtProtocol, BakerInfo, DelegationInfo } from './protocols/tezos/kt/TezosKtProtocol'
 import { AirGapWallet } from './wallet/AirGapWallet'
 import { AirGapMarketWallet } from './wallet/AirGapMarketWallet'
 import { IAirGapWallet } from './interfaces/IAirGapWallet'
@@ -48,6 +48,9 @@ export {
   AEProtocol,
   TezosProtocol,
   TezosKtProtocol,
+  // tezos-specific configuration
+  BakerInfo,
+  DelegationInfo,
   // sub protocols configs,
   GenericERC20Configuration,
   // sync protocol
