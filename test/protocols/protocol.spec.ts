@@ -11,6 +11,7 @@ import { EthereumClassicTestProtocolSpec } from './specs/ethereum-classic'
 import { ERC20HOPTokenTestProtocolSpec } from './specs/erc20-hop-token'
 import BigNumber from 'bignumber.js'
 import { TezosTestProtocolSpec } from './specs/tezos'
+import { BitcoinProtocolSpec } from './specs/bitcoin'
 import { BitcoinTestProtocolSpec } from './specs/bitcoin-test'
 import { GenericERC20TokenTestProtocolSpec } from './specs/generic-erc20-token'
 import { KtTezosTestProtocolSpec } from './specs/kt-tezos'
@@ -39,6 +40,7 @@ const protocols = [
   new AETestProtocolSpec(),
   new TezosTestProtocolSpec(),
   new KtTezosTestProtocolSpec(),
+  // new BitcoinProtocolSpec(),
   new BitcoinTestProtocolSpec(),
   new GenericERC20TokenTestProtocolSpec()
 ]
@@ -247,6 +249,14 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
           expect(airgapTx.fee).to.deep.equal(protocol.txs[0].fee)
 
           expect(airgapTx.protocolIdentifier).to.equal(protocol.lib.identifier)
+        }
+      })
+
+      it('should match all valid addresses', async () => {
+        for (let address of protocol.validAddresses) {
+          const match = address.match(protocol.lib.addressValidationPattern)
+
+          expect(match && match.length > 0, `address: ${address}`).to.be.true
         }
       })
     })

@@ -47,7 +47,7 @@ export class BitcoinProtocol implements ICoinProtocol {
   supportsHD = true
 
   standardDerivationPath = `m/44'/0'/0'`
-  addressValidationPattern = '^..[13][a-km-zA-HJ-NP-Z1-9]{25,34}$'
+  addressValidationPattern = '^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$'
   addressPlaceholder = '1ABC...'
 
   network: any // TODO: fix type definition

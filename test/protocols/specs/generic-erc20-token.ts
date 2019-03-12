@@ -12,6 +12,7 @@ export class GenericERC20TokenTestProtocolSpec extends TestProtocolSpec {
   name = 'Generic ERC20 Token'
   lib = protocol
   stub = new GenericERC20ProtocolStub()
+  validAddresses = []
   wallet = {
     privateKey: '832d58a77ad222b8d9b75322e66d97e46b7dcfab3f25f6c1dd79ec13e046c7bc',
     publicKey: '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',

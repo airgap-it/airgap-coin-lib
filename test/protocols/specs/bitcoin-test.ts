@@ -7,6 +7,7 @@ export class BitcoinTestProtocolSpec extends TestProtocolSpec {
   name = 'Bitcoin Testnet'
   lib = new BitcoinTestnetProtocol()
   stub = new BitcoinProtocolStub()
+  validAddresses = []
   wallet = {
     privateKey: 'tprv8fmGMwHA9QVZZzFAR77eLN6bursxXG4Jb59YnZKFyR8WG48s1JbpLuurf7LiRW3NEkkxR1mNmPcY9sWfrYMwFVDQKzJwhirzw8YpmFCYgEq',
     publicKey: 'tpubDCTJWMKQHnBETTGxJknEjmkiUtPtgbFDANkL55MZPgvu6YPddhRQXQXiqHZdfHwcoVNwTaHmS6DuNjcaYPRqVFkDogJdWSMLpSWSC4pNa3r',

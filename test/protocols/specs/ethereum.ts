@@ -7,6 +7,18 @@ export class EthereumTestProtocolSpec extends TestProtocolSpec {
   name = 'Ethereum'
   lib = new EthereumProtocol()
   stub = new EthereumProtocolStub()
+  validAddresses = [
+    '0x8743Dc4A423E33Cb2f5808c0039E56D764b03257',
+    '0xEC7eF91eFB3737fc2749c0107fd428F6a878884c',
+    '0xE8911B6Ad03Fc76A3248F1eA9babe85E5Cde086c',
+    '0x14D8fB603edCb2d4038Aab0d0fa224E0c4D9c6f9',
+    '0xF3f22E4740ade5DEB34bAff34c60d5FE33a8dA74',
+    '0xcE25b34847A7Ac1d302cAf0633f74192A984118C',
+    '0xD1279A75b8C106F4c478E8f63ffCa18d4b3D0A13',
+    '0x967A77444DAE9e1Fa24FAb9D358ec32a69eb0684',
+    '0x9f5B6fbFf7512c449cCF206Ac1cb3C2Aa5D71957',
+    '0xEFC23d847a3297eFF70832429BDEc4986C3d8175'
+  ]
   wallet = {
     privateKey: '832d58a77ad222b8d9b75322e66d97e46b7dcfab3f25f6c1dd79ec13e046c7bc',
     publicKey: '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',

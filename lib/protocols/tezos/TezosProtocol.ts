@@ -116,7 +116,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
   supportsHD = false
   standardDerivationPath = `m/44h/1729h/0h/0h`
-  addressValidationPattern = '^tz1[1-9A-Za-z]{33}$'
+  addressValidationPattern = '^(tz1|KT1)[1-9A-Za-z]{33}$'
   addressPlaceholder = 'tz1...'
 
   private addressInitializationFee = new BigNumber('0.257').shiftedBy(this.decimals)
