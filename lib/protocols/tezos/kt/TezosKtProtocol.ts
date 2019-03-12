@@ -15,7 +15,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
   identifier = 'xtz-kt'
   isSubProtocol = true
   subProtocolType = SubProtocolType.ACCOUNT
-  addressValidationPattern = '^KT1[1-9A-Za-z]{33}$'
+  addressValidationPattern = '^(tz1|KT1)[1-9A-Za-z]{33}$'
 
   async getAddressFromPublicKey(publicKey: string): Promise<string> {
     return (await this.getAddressesFromPublicKey(publicKey))[0]

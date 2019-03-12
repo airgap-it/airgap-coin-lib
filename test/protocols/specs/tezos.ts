@@ -11,6 +11,18 @@ export class TezosTestProtocolSpec extends TestProtocolSpec {
   name = 'Tezos'
   lib = new TezosProtocol()
   stub = new TezosProtocolStub()
+  validAddresses = [
+    'tz1MecudVJnFZN5FSrriu8ULz2d6dDTR7KaM',
+    'tz1awXW7wuXy21c66vBudMXQVAPgRnqqwgTH',
+    'tz1Yju7jmmsaUiG9qQLoYv35v5pHgnWoLWbt',
+    'tz1Xsrfv6hn86fp88YfRs6xcKwt2nTqxVZYM',
+    'tz1NpWrAyDL9k2Lmnyxcgr9xuJakbBxdq7FB',
+    'KT1B3vuScLjXeesTAYo19LdnnLgGqyYZtgae',
+    'KT1U7Gj8F3B6A7oLyxY8xoXhrXPRv8KcLx7s',
+    'KT1TRyLb6E1YT5GUnq5F4BtL3hBFeQcQL6wT',
+    'KT1DwFCbxes79DxMeuBzAzW82z6eBVTnYjoN',
+    'KT1Ux1JNNVhVVfdDXF1qiyGpS4ZZgDa9MbvH'
+  ]
   wallet = {
     privateKey:
       '2f243e474992bb96b49b2fa7b2c1cba7a804257f0cf13dceb640cf3210d54838cdbc0c3449784bd53907c3c7a06060cf12087e492a7b937f044c6a73b522a234',

@@ -43,7 +43,7 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
 
   supportsHD = false
   standardDerivationPath = `m/44h/457h/0h/0h/0h`
-  addressValidationPattern = '^ak_+[1-9A-Za-z]{50}$'
+  addressValidationPattern = '^ak_+[1-9A-Za-z]{49,50}$'
   addressPlaceholder = 'ak_abc...'
 
   // ae specifics

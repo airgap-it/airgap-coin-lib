@@ -14,6 +14,7 @@ abstract class TestProtocolSpec {
   name: string
   lib: ICoinProtocol
   stub: ProtocolHTTPStub
+  validAddresses: string[]
   wallet: {
     privateKey: string
     publicKey: string

@@ -7,6 +7,12 @@ export class BitcoinProtocolSpec extends TestProtocolSpec {
   name = 'Bitcoin'
   lib = new BitcoinProtocol()
   stub = new BitcoinProtocolStub()
+  validAddresses = [
+    '1NVqzkVsgWhiQmjXKmEvRiJLmyR17yFCwd',
+    '19165VoETh1ZAcwNN5pjeXgMCJbmt4rbUB',
+    '3JcJdozCssqB1RUGhhZPCSCFeSAE21sep9',
+    '3CzQRvFBARhR14mfL6Dcm1XgzTRnvLwhjs'
+  ]
   wallet = {
     privateKey: 'xprv9yzvjXeHEDMMM2x8H6btZjyVaB9YBpvR7wdqQhGAEQbsvjrQejHhPdqdMRcAE3MqdZcfrSkCGk96YVqPhFHwJqY7VxgPgmMWMehcmHdQJ5h',
     publicKey: 'xpub6CzH93BB4aueZX2bP88tvsvE8Cz2bHeGVAZSD5fmnk8roYBZCGbwwSA7ChiRr65jncuPH8qBQA9nBwi2Qtz1Uqt8wuHvof9SAcPpFxpe1GV',
