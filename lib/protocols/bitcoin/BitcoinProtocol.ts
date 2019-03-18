@@ -296,38 +296,10 @@ export class BitcoinProtocol implements ICoinProtocol {
               : '1/' + (internalAddresses.indexOf(utxo.address) + offset)
         })
       }
-    }
 
-    // tx.addInput(utxo.txid, utxo.vout)
-    if (valueAccumulator.isGreaterThanOrEqualTo(totalRequiredBalance)) {
-      for (let i = 0; i < recipients.length; i++) {
-        transaction.outs.push({
-          recipient: recipients[i],
-          isChange: false,
-          value: values[i]
-        })
-        valueAccumulator = valueAccumulator.minus(values[i])
-        // tx.addOutput(recipients[i], values[i])
+      if (valueAccumulator.isGreaterThanOrEqualTo(totalRequiredBalance)) {
+        break
       }
-
-      const { data: transactions } = await axios.get(this.baseApiUrl + '/api/addrs/' + internalAddresses.join(',') + '/txs', {
-        responseType: 'json'
-      })
-
-      let maxIndex = -1
-      for (let transaction of transactions.items) {
-        for (let vout of transaction.vout) {
-          for (let address of vout.scriptPubKey.addresses) {
-            maxIndex = Math.max(maxIndex, internalAddresses.indexOf(address))
-          }
-        }
-      }
-      transaction.outs.push({
-        recipient: internalAddresses[maxIndex + 1],
-        isChange: true,
-        value: valueAccumulator.minus(fee)
-      })
-      // tx.addOutput(internalAddresses[maxIndex + 1], valueAccumulator - fee) //this is why we sliced the arrays earlier
     }
 
     if (valueAccumulator.isLessThan(totalRequiredBalance)) {
@@ -340,6 +312,36 @@ export class BitcoinProtocol implements ICoinProtocol {
 
       return this.prepareTransactionFromExtendedPublicKey(extendedPublicKey, offset + 10, recipients, values, fee) // recursion needed to navigate through HD wallet
     }
+
+    // tx.addInput(utxo.txid, utxo.vout)
+    for (let i = 0; i < recipients.length; i++) {
+      transaction.outs.push({
+        recipient: recipients[i],
+        isChange: false,
+        value: values[i]
+      })
+      valueAccumulator = valueAccumulator.minus(values[i])
+      // tx.addOutput(recipients[i], values[i])
+    }
+
+    const { data: transactions } = await axios.get(this.baseApiUrl + '/api/addrs/' + internalAddresses.join(',') + '/txs', {
+      responseType: 'json'
+    })
+
+    let maxIndex = -1
+    for (let transaction of transactions.items) {
+      for (let vout of transaction.vout) {
+        for (let address of vout.scriptPubKey.addresses) {
+          maxIndex = Math.max(maxIndex, internalAddresses.indexOf(address))
+        }
+      }
+    }
+    transaction.outs.push({
+      recipient: internalAddresses[maxIndex + 1],
+      isChange: true,
+      value: valueAccumulator.minus(fee)
+    })
+    // tx.addOutput(internalAddresses[maxIndex + 1], valueAccumulator - fee) //this is why we sliced the arrays earlier
 
     return transaction
   }
@@ -371,28 +373,32 @@ export class BitcoinProtocol implements ICoinProtocol {
           address: utxo.address
         })
       }
+
+      if (valueAccumulator.isGreaterThanOrEqualTo(totalRequiredBalance)) {
+        break
+      }
+    }
+
+    if (valueAccumulator.isLessThan(totalRequiredBalance)) {
+      throw new Error(`Not enough Balance, having ${valueAccumulator.toFixed()} of ${totalRequiredBalance.toFixed()}`)
     }
 
     // tx.addInput(utxo.txid, utxo.vout)
-    if (valueAccumulator.isGreaterThanOrEqualTo(totalRequiredBalance)) {
-      for (let i = 0; i < recipients.length; i++) {
-        transaction.outs.push({
-          recipient: recipients[i],
-          isChange: false,
-          value: values[i]
-        })
-        valueAccumulator = valueAccumulator.minus(values[i])
-        // tx.addOutput(recipients[i], values[i])
-      }
-
+    for (let i = 0; i < recipients.length; i++) {
       transaction.outs.push({
-        recipient: address,
-        isChange: true,
-        value: valueAccumulator.minus(fee)
+        recipient: recipients[i],
+        isChange: false,
+        value: values[i]
       })
-    } else {
-      throw new Error(`Not enough Balance, having ${valueAccumulator.toFixed()} of ${totalRequiredBalance.toFixed()}`)
+      valueAccumulator = valueAccumulator.minus(values[i])
+      // tx.addOutput(recipients[i], values[i])
     }
+
+    transaction.outs.push({
+      recipient: address,
+      isChange: true,
+      value: valueAccumulator.minus(fee)
+    })
 
     return transaction
   }
