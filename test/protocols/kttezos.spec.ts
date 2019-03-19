@@ -450,7 +450,7 @@ describe(`ICoinProtocol KtTezos - Custom Tests`, () => {
           tezosProtocolSpec.txs[0].fee,
           { addressIndex: 50 }
         )
-      ).to.eventually.be.rejectedWith('')
+      ).to.eventually.be.rejectedWith('no kt-address with this index exists')
     })
 
     after(async () => {
