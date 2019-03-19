@@ -83,7 +83,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
 
       // check if we have revealed the key already
       if (!accountManager.key) {
-        operations.push(await super.createRevealOperation(counter, publicKey))
+        operations.push(await super.createRevealOperation(counter, publicKey, address))
         counter = counter.plus(1)
       }
     } catch (error) {
