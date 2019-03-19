@@ -74,7 +74,8 @@ export class AirGapWallet implements IAirGapWallet {
     if (this.isExtendedPublicKey) {
       return this.coinProtocol.prepareTransactionFromExtendedPublicKey(this.publicKey, 0, recipients, values, fee)
     } else {
-      return this.coinProtocol.prepareTransactionFromPublicKey(this.publicKey, recipients, values, fee)
+      const data = this.addressIndex ? { addressIndex: this.addressIndex } : undefined
+      return this.coinProtocol.prepareTransactionFromPublicKey(this.publicKey, recipients, values, fee, data)
     }
   }
 
