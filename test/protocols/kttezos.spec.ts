@@ -5,7 +5,12 @@ import * as sinon from 'sinon'
 import { TezosTestProtocolSpec } from './specs/tezos'
 import { TezosKtProtocol, isCoinlibReady } from '../../lib'
 import axios from 'axios'
-import { TezosOperationType, TezosDelegationOperation, TezosOriginationOperation } from '../../lib/protocols/tezos/TezosProtocol'
+import {
+  TezosOperationType,
+  TezosDelegationOperation,
+  TezosOriginationOperation,
+  TezosSpendOperation
+} from '../../lib/protocols/tezos/TezosProtocol'
 import BigNumber from 'bignumber.js'
 
 const tezosProtocolSpec = new TezosTestProtocolSpec()
@@ -17,6 +22,128 @@ describe(`ICoinProtocol KtTezos - Custom Tests`, () => {
       await isCoinlibReady()
       const stub = sinon.stub(axios, 'get')
 
+      // standard stubs for prepareTx
+      stub
+        .withArgs(`${ktTezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/KT1HncyWvnY9FcoW8A2KYuauEe5qM1U2ntX8/counter`)
+        .returns(Promise.resolve({ data: 917315 }))
+      stub
+        .withArgs(`${ktTezosLib.jsonRPCAPI}/chains/main/blocks/head/hash`)
+        .returns(Promise.resolve({ data: 'BMJyc7ga9kLV3vH4kbn6GXbBNjRkLEJVSyovoXyY84Er1zMmKKT' }))
+      stub
+        .withArgs(`${ktTezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/KT1HncyWvnY9FcoW8A2KYuauEe5qM1U2ntX8/balance`)
+        .returns(Promise.resolve({ data: 100000000 }))
+      stub
+        .withArgs(`${ktTezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/KT1HncyWvnY9FcoW8A2KYuauEe5qM1U2ntX8/manager_key`)
+        .returns(Promise.resolve({ data: { key: 'test-key' } }))
+
+      stub
+        .withArgs(`${ktTezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy/counter`)
+        .returns(Promise.resolve({ data: 917315 }))
+      stub
+        .withArgs(`${ktTezosLib.jsonRPCAPI}/chains/main/blocks/head/hash`)
+        .returns(Promise.resolve({ data: 'BMJyc7ga9kLV3vH4kbn6GXbBNjRkLEJVSyovoXyY84Er1zMmKKT' }))
+      stub
+        .withArgs(`${ktTezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy/balance`)
+        .returns(Promise.resolve({ data: 100000000 }))
+      stub
+        .withArgs(`${ktTezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy/manager_key`)
+        .returns(Promise.resolve({ data: { key: 'test-key' } }))
+
+      stub.withArgs(`${ktTezosLib.baseApiUrl}/v3/operations/tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L?type=Origination`).returns(
+        Promise.resolve({
+          data: [
+            {
+              hash: 'oortkWqdRGi8wTFBnG5Dk8md9DNt8zFEYTXf8whXYBnqbkU3xK9',
+              block_hash: 'BKsWTFKmzYtZxE514X2st55aujd3VAfQBrj5DsTePGe6vtsZQQV',
+              network_hash: 'NetXdQprcVkpaWU',
+              type: {
+                kind: 'manager',
+                source: { tz: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L' },
+                operations: [
+                  {
+                    kind: 'origination',
+                    src: { tz: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L' },
+                    managerPubkey: { tz: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L' },
+                    balance: 0,
+                    spendable: false,
+                    delegatable: false,
+                    tz1: { tz: 'KT1RBMUbb7QSD46VXhAvaMiyVSoys6QZiTxN' },
+                    failed: false,
+                    internal: false,
+                    burn_tez: 257000,
+                    counter: 917320,
+                    fee: 1400,
+                    gas_limit: '10000',
+                    storage_limit: '257',
+                    op_level: 263268,
+                    timestamp: '2019-01-09T16:52:46Z'
+                  }
+                ]
+              }
+            },
+            {
+              hash: 'ooqg6smMbXwVoVrLgwJjJbHi4gFUB49DZSPiCox7mqmSAuo9CJz',
+              block_hash: 'BMFmVehT2vFpbKNPsYtpzjAFaZeXwm9igiRJp3gaBEywAoAJ67d',
+              network_hash: 'NetXdQprcVkpaWU',
+              type: {
+                kind: 'manager',
+                source: { tz: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L' },
+                operations: [
+                  {
+                    kind: 'origination',
+                    src: { tz: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L' },
+                    managerPubkey: { tz: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L' },
+                    balance: 0,
+                    spendable: false,
+                    delegatable: false,
+                    tz1: { tz: 'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy' },
+                    failed: false,
+                    internal: false,
+                    burn_tez: 257000,
+                    counter: 917318,
+                    fee: 1400,
+                    gas_limit: '10000',
+                    storage_limit: '257',
+                    op_level: 263229,
+                    timestamp: '2019-01-09T16:11:16Z'
+                  }
+                ]
+              }
+            },
+            {
+              hash: 'op1AT5tSAD5PP5c5rSH4B27bQ5uHPqspKetmpCmHbVhSbGqoM5a',
+              block_hash: 'BLF7yz2gZsaXJgmk1XRZc3to1LFueU1vA24RRPAdwGNeR3xxg8G',
+              network_hash: 'NetXdQprcVkpaWU',
+              type: {
+                kind: 'manager',
+                source: { tz: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L' },
+                operations: [
+                  {
+                    kind: 'origination',
+                    src: { tz: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L' },
+                    managerPubkey: { tz: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L' },
+                    balance: 0,
+                    spendable: false,
+                    delegatable: false,
+                    tz1: { tz: 'KT1HncyWvnY9FcoW8A2KYuauEe5qM1U2ntX8' },
+                    failed: false,
+                    internal: false,
+                    burn_tez: 257000,
+                    counter: 917322,
+                    fee: 1400,
+                    gas_limit: '10000',
+                    storage_limit: '257',
+                    op_level: 264235,
+                    timestamp: '2019-01-10T09:40:47Z'
+                  }
+                ]
+              }
+            }
+          ]
+        })
+      )
+
+      // kt specific stubs
       stub
         .withArgs(`${ktTezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy/counter`)
         .returns(Promise.resolve({ data: 917315 }))
@@ -278,6 +405,34 @@ describe(`ICoinProtocol KtTezos - Custom Tests`, () => {
         expect(info.stakingBalance.toFixed()).to.equal('50000')
         expect(info.reward.toFixed()).to.equal('2.2')
       })
+    })
+
+    it('should be able to prepare a standard send', async () => {
+      const preparedTxIndex0 = await ktTezosLib.prepareTransactionFromPublicKey(
+        tezosProtocolSpec.wallet.publicKey,
+        tezosProtocolSpec.txs[0].to,
+        [tezosProtocolSpec.txs[0].amount],
+        tezosProtocolSpec.txs[0].fee,
+        { addressIndex: 0 }
+      )
+
+      const tezosWrappedOperation0 = ktTezosLib.unforgeUnsignedTezosWrappedOperation(preparedTxIndex0.binaryTransaction)
+      const tezosSpendOperationIndex0 = tezosWrappedOperation0.contents[0] as TezosSpendOperation
+
+      expect(tezosSpendOperationIndex0.source, 'source').to.equal('KT1HncyWvnY9FcoW8A2KYuauEe5qM1U2ntX8')
+
+      const preparedTxIndex1 = await ktTezosLib.prepareTransactionFromPublicKey(
+        tezosProtocolSpec.wallet.publicKey,
+        tezosProtocolSpec.txs[0].to,
+        [tezosProtocolSpec.txs[0].amount],
+        tezosProtocolSpec.txs[0].fee,
+        { addressIndex: 1 }
+      )
+
+      const tezosWrappedOperation1 = ktTezosLib.unforgeUnsignedTezosWrappedOperation(preparedTxIndex1.binaryTransaction)
+      const tezosSpendOperationIndex1 = tezosWrappedOperation1.contents[0] as TezosSpendOperation
+
+      expect(tezosSpendOperationIndex1.source, 'source').to.equal('KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy')
     })
 
     after(async () => {

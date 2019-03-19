@@ -320,8 +320,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     let branch: string
 
     const operations: TezosOperation[] = []
-    const addressIndex = data ? data.addressIndex : 0
-    const address = await this.getAddressesFromPublicKey(publicKey)[addressIndex]
+
+    // check if we got an address-index
+    const addressIndex = data && data.addressIndex ? data.addressIndex : 0
+    const address = (await this.getAddressesFromPublicKey(publicKey))[addressIndex]
 
     try {
       const results = await Promise.all([
