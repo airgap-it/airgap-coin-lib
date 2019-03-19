@@ -345,7 +345,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
       // check if we have revealed the key already
       if (!accountManager.key) {
-        operations.push(await this.createRevealOperation(counter, publicKey))
+        operations.push(await this.createRevealOperation(counter, publicKey, address))
         counter = counter.plus(1)
       }
     } catch (error) {
@@ -851,7 +851,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     return new BigNumber(bitString, 2)
   }
 
-  async createRevealOperation(counter: BigNumber, publicKey: string): Promise<TezosRevealOperation> {
+  async createRevealOperation(counter: BigNumber, publicKey: string, address: string): Promise<TezosRevealOperation> {
     const operation: TezosRevealOperation = {
       kind: TezosOperationType.REVEAL,
       fee: '1300',
@@ -859,7 +859,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       storage_limit: '0', // taken from conseiljs
       counter: counter.toFixed(),
       public_key: bs58check.encode(Buffer.concat([this.tezosPrefixes.edpk, Buffer.from(publicKey, 'hex')])),
-      source: await this.getAddressFromPublicKey(publicKey)
+      source: address
     }
     return operation
   }
