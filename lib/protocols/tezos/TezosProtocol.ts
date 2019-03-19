@@ -323,7 +323,13 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
     // check if we got an address-index
     const addressIndex = data && data.addressIndex ? data.addressIndex : 0
-    const address = (await this.getAddressesFromPublicKey(publicKey))[addressIndex]
+    const addresses = await this.getAddressesFromPublicKey(publicKey)
+
+    if (!addresses[addressIndex]) {
+      throw new Error('no kt-address with this index exists')
+    }
+
+    const address = addresses[addressIndex]
 
     try {
       const results = await Promise.all([

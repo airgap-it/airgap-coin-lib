@@ -1,6 +1,8 @@
 import 'mocha'
 
-import { expect } from 'chai'
+import * as chai from 'chai'
+import * as chaiAsPromised from 'chai-as-promised'
+
 import * as sinon from 'sinon'
 import { TezosTestProtocolSpec } from './specs/tezos'
 import { TezosKtProtocol, isCoinlibReady } from '../../lib'
@@ -12,6 +14,10 @@ import {
   TezosSpendOperation
 } from '../../lib/protocols/tezos/TezosProtocol'
 import BigNumber from 'bignumber.js'
+
+// use chai-as-promised plugin
+chai.use(chaiAsPromised)
+const expect = chai.expect
 
 const tezosProtocolSpec = new TezosTestProtocolSpec()
 const ktTezosLib = new TezosKtProtocol()
@@ -433,6 +439,18 @@ describe(`ICoinProtocol KtTezos - Custom Tests`, () => {
       const tezosSpendOperationIndex1 = tezosWrappedOperation1.contents[0] as TezosSpendOperation
 
       expect(tezosSpendOperationIndex1.source, 'source').to.equal('KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy')
+    })
+
+    it('should throw if the address-index is out of bounds', async () => {
+      expect(
+        ktTezosLib.prepareTransactionFromPublicKey(
+          tezosProtocolSpec.wallet.publicKey,
+          tezosProtocolSpec.txs[0].to,
+          [tezosProtocolSpec.txs[0].amount],
+          tezosProtocolSpec.txs[0].fee,
+          { addressIndex: 50 }
+        )
+      ).to.eventually.be.rejectedWith('')
     })
 
     after(async () => {
