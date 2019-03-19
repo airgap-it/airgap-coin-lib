@@ -313,16 +313,17 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     publicKey: string,
     recipients: string[],
     values: BigNumber[],
-    fee: BigNumber
+    fee: BigNumber,
+    data?: { addressIndex: number }
   ): Promise<RawTezosTransaction> {
     let counter = new BigNumber(1)
     let branch: string
 
     const operations: TezosOperation[] = []
+    const addressIndex = data ? data.addressIndex : 0
+    const address = await this.getAddressesFromPublicKey(publicKey)[addressIndex]
 
     try {
-      const address = await this.getAddressFromPublicKey(publicKey)
-
       const results = await Promise.all([
         axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/counter`),
         axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/hash`),
@@ -368,7 +369,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       amount: values[0].toFixed(),
       counter: counter.toFixed(),
       destination: recipients[0],
-      source: await this.getAddressFromPublicKey(publicKey)
+      source: address
     }
 
     operations.push(spendOperation)
