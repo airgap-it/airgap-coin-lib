@@ -36,6 +36,14 @@ export interface DelegationInfo {
   payout: Date
 }
 
+export interface DelegationStat {
+  isDelegated: boolean
+  setable: boolean
+  value?: string
+  delegatedOpLevel?: number
+  delegatedDate?: Date
+}
+
 export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
   identifier = 'xtz-kt'
   isSubProtocol = true
@@ -128,13 +136,28 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     }
   }
 
-  async isAddressDelegated(delegatedAddress: string): Promise<{ isDelegated: boolean; setable: boolean; value?: string }> {
+  async isAddressDelegated(delegatedAddress: string): Promise<DelegationStat> {
     const { data } = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${delegatedAddress}`)
+
+    let delegatedOpLevel: number | undefined
+    let delegatedDate: Date | undefined
+
+    // if the address is delegated, check since when
+    if (data.delegate.value) {
+      const { data: delegationData } = await axios.get(`${this.baseApiUrl}/v3/operations/${delegatedAddress}?type=Delegation`)
+
+      const mostRecentDelegation = delegationData[0]
+
+      delegatedDate = new Date(mostRecentDelegation.type.operations[0].timestamp)
+      delegatedOpLevel = mostRecentDelegation.type.operations[0].op_level
+    }
 
     return {
       isDelegated: data.delegate.value ? true : false,
       setable: data.delegate.setable,
-      value: data.delegate.value
+      value: data.delegate.value,
+      delegatedDate: delegatedDate,
+      delegatedOpLevel: delegatedOpLevel
     }
   }
 

@@ -55,6 +55,36 @@ describe(`ICoinProtocol KtTezos - Custom Tests`, () => {
         .withArgs(`${ktTezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy/manager_key`)
         .returns(Promise.resolve({ data: { key: 'test-key' } }))
 
+      stub.withArgs(`${ktTezosLib.baseApiUrl}/v3/operations/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy?type=Delegation`).returns(
+        Promise.resolve({
+          data: [
+            {
+              hash: 'onuvKtTfAjeEnG3iVSARTtVhLF3PVpsoRsWFpXdCGWsb2ucrZ1L',
+              block_hash: 'BL3JYQiDH111cp6vZdbsjwYJCEuyQ8RtdpqNyPLmUwgV8ZtQC3n',
+              network_hash: 'NetXdQprcVkpaWU',
+              type: {
+                kind: 'manager',
+                source: { tz: 'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy' },
+                operations: [
+                  {
+                    kind: 'delegation',
+                    src: { tz: 'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy' },
+                    counter: 9,
+                    fee: 1420,
+                    gas_limit: '10000',
+                    storage_limit: '0',
+                    failed: false,
+                    internal: false,
+                    op_level: 358990,
+                    timestamp: '2019-03-19T12:39:37Z'
+                  }
+                ]
+              }
+            }
+          ]
+        })
+      )
+
       stub.withArgs(`${ktTezosLib.baseApiUrl}/v3/operations/tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L?type=Origination`).returns(
         Promise.resolve({
           data: [
@@ -374,11 +404,16 @@ describe(`ICoinProtocol KtTezos - Custom Tests`, () => {
       expect(delegatedState.setable).to.equal(true)
       expect(delegatedState.value).to.equal('tz1cX93Q3KsiTADpCC4f12TBvAmS5tw7CW19')
 
+      expect(delegatedState.delegatedDate!.getTime()).to.equal(new Date('2019-03-19T12:39:37Z').getTime())
+      expect(delegatedState.delegatedOpLevel!).to.equal(358990)
+
       const undelegatedState = await ktTezosLib.isAddressDelegated('KT1RBMUbb7QSD46VXhAvaMiyVSoys6QZiTxN')
 
       expect(undelegatedState.isDelegated).to.equal(false)
       expect(undelegatedState.setable).to.equal(true)
       expect(undelegatedState.value).to.equal(undefined)
+      expect(undelegatedState.delegatedDate).to.equal(undefined)
+      expect(undelegatedState.delegatedOpLevel).to.equal(undefined)
     })
 
     it('should correctly report the stats of a baker', async () => {
