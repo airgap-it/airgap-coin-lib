@@ -25,7 +25,7 @@ export interface BakerInfo {
   bakerUsage: BigNumber
 }
 
-export interface DelegationInfo {
+export interface DelegationRewardInfo {
   cycle: number
   reward: BigNumber
   deposit: BigNumber
@@ -34,6 +34,14 @@ export interface DelegationInfo {
   totalRewards: BigNumber
   totalFees: BigNumber
   payout: Date
+}
+
+export interface DelegationInfo {
+  isDelegated: boolean
+  setable: boolean
+  value?: string
+  delegatedOpLevel?: number
+  delegatedDate?: Date
 }
 
 export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
@@ -128,13 +136,28 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     }
   }
 
-  async isAddressDelegated(delegatedAddress: string): Promise<{ isDelegated: boolean; setable: boolean; value?: string }> {
+  async isAddressDelegated(delegatedAddress: string): Promise<DelegationInfo> {
     const { data } = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${delegatedAddress}`)
+
+    let delegatedOpLevel: number | undefined
+    let delegatedDate: Date | undefined
+
+    // if the address is delegated, check since when
+    if (data.delegate.value) {
+      const { data: delegationData } = await axios.get(`${this.baseApiUrl}/v3/operations/${delegatedAddress}?type=Delegation`)
+
+      const mostRecentDelegation = delegationData[0]
+
+      delegatedDate = new Date(mostRecentDelegation.type.operations[0].timestamp)
+      delegatedOpLevel = mostRecentDelegation.type.operations[0].op_level
+    }
 
     return {
       isDelegated: data.delegate.value ? true : false,
       setable: data.delegate.setable,
-      value: data.delegate.value
+      value: data.delegate.value,
+      delegatedDate: delegatedDate,
+      delegatedOpLevel: delegatedOpLevel
     }
   }
 
@@ -232,7 +255,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     return bakerInfo
   }
 
-  async delegationInfo(ktAddress: string): Promise<DelegationInfo[]> {
+  async delegationInfo(ktAddress: string): Promise<DelegationRewardInfo[]> {
     if (!ktAddress.toLowerCase().startsWith('kt')) {
       throw new Error('non kt-address supplied')
     }
@@ -246,7 +269,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     return this.delegationRewards(status.value, ktAddress)
   }
 
-  async delegationRewards(tzAddress: string, ktAddress?: string): Promise<DelegationInfo[]> {
+  async delegationRewards(tzAddress: string, ktAddress?: string): Promise<DelegationRewardInfo[]> {
     const { data: frozenBalance }: AxiosResponse<[{ cycle: number; deposit: string; fees: string; rewards: string }]> = await axios.get(
       `${this.jsonRPCAPI}/chains/main/blocks/head/context/delegates/${tzAddress}/frozen_balance_by_cycle`
     )
@@ -257,7 +280,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     const { data: mostRecentBlock } = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/${mostRecentCycle * BLOCK_PER_CYCLE}`)
     const timestamp: Date = new Date(mostRecentBlock.header.timestamp)
 
-    const delegationInfo: DelegationInfo[] = await Promise.all(
+    const delegationInfo: DelegationRewardInfo[] = await Promise.all(
       frozenBalance.map(async obj => {
         const { data: delegatedBalanceAtCycle } = await axios.get(
           `${this.jsonRPCAPI}/chains/main/blocks/${(obj.cycle - 6) * BLOCK_PER_CYCLE}/context/contracts/${
