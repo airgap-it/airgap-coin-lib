@@ -61,7 +61,11 @@ export abstract class BaseEthereumProtocol implements ICoinProtocol {
     return getSubProtocolsByIdentifier(this.identifier)
   }
 
-  constructor(public jsonRPCAPI = 'https://mainnet.infura.io/', infoAPI = 'https://api.trustwalletapp.com/', chainId = 1) {
+  constructor(
+    public jsonRPCAPI = 'https://eth-rpc-proxy.airgap.prod.gke.papers.tech/',
+    infoAPI = 'https://api.trustwalletapp.com/',
+    chainId = 1
+  ) {
     this.infoAPI = infoAPI
     this.web3 = new Web3(new Web3.providers.HttpProvider(jsonRPCAPI))
     this.network = bitcoinJS.networks.bitcoin
