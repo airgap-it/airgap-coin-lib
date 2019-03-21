@@ -12,6 +12,8 @@ import { RawBitcoinTransaction } from '../../serializer/unsigned-transactions/bi
 import { SignedBitcoinTransaction } from '../../serializer/signed-transactions/bitcoin-transactions.serializer'
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
 
+const DUST_AMOUNT = 50
+
 export class BitcoinProtocol implements ICoinProtocol {
   symbol = 'BTC'
   name = 'Bitcoin'
@@ -336,11 +338,18 @@ export class BitcoinProtocol implements ICoinProtocol {
         }
       }
     }
-    transaction.outs.push({
-      recipient: internalAddresses[maxIndex + 1],
-      isChange: true,
-      value: valueAccumulator.minus(fee)
-    })
+
+    // If the change is considered dust, the transaction will fail.
+    // Dust is a variable value around 300-600 satoshis, depending on the configuration.
+    // We set a low fee here to not block any transactions, but it might still fail due to "dust".
+    const changeValue = valueAccumulator.minus(fee)
+    if (changeValue.isGreaterThan(new BigNumber(DUST_AMOUNT))) {
+      transaction.outs.push({
+        recipient: internalAddresses[maxIndex + 1],
+        isChange: true,
+        value: changeValue
+      })
+    }
     // tx.addOutput(internalAddresses[maxIndex + 1], valueAccumulator - fee) //this is why we sliced the arrays earlier
 
     return transaction
@@ -394,11 +403,17 @@ export class BitcoinProtocol implements ICoinProtocol {
       // tx.addOutput(recipients[i], values[i])
     }
 
-    transaction.outs.push({
-      recipient: address,
-      isChange: true,
-      value: valueAccumulator.minus(fee)
-    })
+    // If the change is considered dust, the transaction will fail.
+    // Dust is a variable value around 300-600 satoshis, depending on the configuration.
+    // We set a low fee here to not block any transactions, but it might still fail due to "dust".
+    const changeValue = valueAccumulator.minus(fee)
+    if (changeValue.isGreaterThan(new BigNumber(DUST_AMOUNT))) {
+      transaction.outs.push({
+        recipient: address,
+        isChange: true,
+        value: changeValue
+      })
+    }
 
     return transaction
   }
