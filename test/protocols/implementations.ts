@@ -3,7 +3,7 @@ import { ICoinProtocol, EncodedType, DeserializedSyncProtocol } from '../../lib'
 import BigNumber from 'bignumber.js'
 import { SERIALIZER_VERSION } from '../../lib/serializer/constants'
 
-const mnemonic = 'spell device they juice trial skirt amazing boat badge steak usage february virus art survey' // this is what the user writes down and what is saved by secure storage?
+const mnemonic = 'spell device they juice trial skirt amazing boat badge steak usage february virus art survey'
 
 interface ProtocolHTTPStub {
   registerStub(testProtocolSpec: TestProtocolSpec, protocol: ICoinProtocol)
