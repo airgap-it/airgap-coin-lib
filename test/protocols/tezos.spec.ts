@@ -455,7 +455,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       // check that storage is properly set
       expect(spendTransaction.storage_limit).to.equal('0')
 
-      expect(airGapTx.amount.toFixed()).to.equal('899999') // amount should be correct
+      expect(airGapTx.amount.toFixed()).to.equal('899999') // amount should be 1 less
       expect(airGapTx.fee.toFixed()).to.equal('100000')
     })
   })
