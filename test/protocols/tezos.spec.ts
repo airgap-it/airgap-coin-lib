@@ -409,6 +409,33 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       const rawTezosTx = await tezosLib.prepareTransactionFromPublicKey(
         tezosProtocolSpec.wallet.publicKey,
         ['tz1d75oB6T4zUMexzkr5WscGktZ1Nss1JrT7'],
+        [new BigNumber(899999)], // send so much funds that it should deduct, given it is a 0-balance receiver (which it is not)
+        new BigNumber(100000)
+      )
+      const airGapTx = await tezosLib.getTransactionDetails({
+        transaction: rawTezosTx,
+        publicKey: tezosProtocolSpec.wallet.publicKey
+      })
+
+      const unforgedTransaction = tezosLib.unforgeUnsignedTezosWrappedOperation(rawTezosTx.binaryTransaction)
+
+      const spendOperation = unforgedTransaction.contents.find(content => content.kind === TezosOperationType.TRANSACTION)
+      if (!spendOperation) {
+        throw new Error('No spend transaction found')
+      }
+      const spendTransaction: TezosSpendOperation = spendOperation as TezosSpendOperation
+
+      // check that storage is properly set
+      expect(spendTransaction.storage_limit).to.equal('0')
+
+      expect(airGapTx.amount.toFixed()).to.equal('899999') // amount should be correct
+      expect(airGapTx.fee.toFixed()).to.equal('100000')
+    })
+
+    it('will leave 1 mutez behind if we try to send the full balance', async () => {
+      const rawTezosTx = await tezosLib.prepareTransactionFromPublicKey(
+        tezosProtocolSpec.wallet.publicKey,
+        ['tz1d75oB6T4zUMexzkr5WscGktZ1Nss1JrT7'],
         [new BigNumber(900000)], // send so much funds that it should deduct, given it is a 0-balance receiver (which it is not)
         new BigNumber(100000)
       )
@@ -428,7 +455,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       // check that storage is properly set
       expect(spendTransaction.storage_limit).to.equal('0')
 
-      expect(airGapTx.amount.toFixed()).to.equal('900000') // amount should be correct
+      expect(airGapTx.amount.toFixed()).to.equal('899999') // amount should be correct
       expect(airGapTx.fee.toFixed()).to.equal('100000')
     })
   })
