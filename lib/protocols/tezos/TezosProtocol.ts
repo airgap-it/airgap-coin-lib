@@ -365,7 +365,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       }
     }
 
-    if (balance.isLessThan(values[0].plus(fee))) {
+    if (balance.isEqualTo(values[0].plus(fee))) {
+      // Tezos accounts can never be empty. If user tries to send everything, we must leave 1 mutez behind.
+      values[0] = values[0].minus(1)
+    } else if (balance.isLessThan(values[0].plus(fee))) {
       throw new Error('not enough balance')
     }
 
