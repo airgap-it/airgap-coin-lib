@@ -1,5 +1,7 @@
 import { BitcoinProtocol } from './protocols/bitcoin/BitcoinProtocol'
 import { BitcoinTestnetProtocol } from './protocols/bitcoin/BitcoinTestnetProtocol'
+import { GroestlcoinProtocol } from './protocols/groestlcoin/GroestlcoinProtocol'
+import { GroestlcoinTestnetProtocol } from './protocols/groestlcoin/GroestlcoinTestnetProtocol'
 import { LitecoinProtocol } from './protocols/litecoin/LitecoinProtocol'
 import { ZCashProtocol } from './protocols/zcash/ZCashProtocol'
 import { ZCashTestnetProtocol } from './protocols/zcash/ZCashTestnetProtocol'
@@ -38,6 +40,8 @@ export {
   ICoinSubProtocol,
   BitcoinProtocol,
   BitcoinTestnetProtocol,
+  GroestlcoinProtocol,
+  GroestlcoinTestnetProtocol,
   LitecoinProtocol,
   ZCashProtocol,
   ZCashTestnetProtocol,

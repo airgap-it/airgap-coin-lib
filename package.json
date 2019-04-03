@@ -36,6 +36,7 @@
     "bip39": "^2.5.0",
     "bitcoinjs-lib": "^3.3.2",
     "bitcoinjs-lib-zcash": "^3.5.2",
+    "bitgo-utxo-lib": "git+https://github.com/Groestlcoin/bitgo-utxo-lib.git#5d91049fd7a988382df81c8260e244ee56d57aac",
     "bs58check": "^2.1.2",
     "create-hash": "^1.2.0",
     "cryptocompare": "^0.5.0",

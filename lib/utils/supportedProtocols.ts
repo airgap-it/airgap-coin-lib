@@ -1,5 +1,6 @@
 import { ICoinProtocol } from '../protocols/ICoinProtocol'
 import { BitcoinProtocol } from '../protocols/bitcoin/BitcoinProtocol'
+import { GroestlcoinProtocol } from '../protocols/groestlcoin/GroestlcoinProtocol'
 import { EthereumProtocol } from '../protocols/ethereum/EthereumProtocol'
 import { AEProtocol } from '../protocols/aeternity/AEProtocol'
 import { TezosProtocol } from '../protocols/tezos/TezosProtocol'
@@ -10,7 +11,7 @@ const supportedProtocols = function(): ICoinProtocol[] {
   if (protocols.length === 0) {
     // We cannot assign the protocols outside a function because the compiler complains
     // The reason is that we have a circular dependency in the EthereumProtocol.
-    protocols.push(new BitcoinProtocol(), new EthereumProtocol(), new AEProtocol(), new TezosProtocol())
+    protocols.push(new BitcoinProtocol(), new GroestlcoinProtocol(), new EthereumProtocol(), new AEProtocol(), new TezosProtocol())
   }
 
   return protocols

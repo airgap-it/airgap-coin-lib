@@ -15,6 +15,7 @@ import { BitcoinProtocolSpec } from './specs/bitcoin'
 import { BitcoinTestProtocolSpec } from './specs/bitcoin-test'
 import { GenericERC20TokenTestProtocolSpec } from './specs/generic-erc20-token'
 import { KtTezosTestProtocolSpec } from './specs/kt-tezos'
+import { GroestlcoinProtocolSpec } from './specs/groestl'
 
 // use chai-as-promised plugin
 chai.use(chaiAsPromised)
@@ -42,7 +43,8 @@ const protocols = [
   new KtTezosTestProtocolSpec(),
   new BitcoinProtocolSpec(),
   new BitcoinTestProtocolSpec(),
-  new GenericERC20TokenTestProtocolSpec()
+  new GenericERC20TokenTestProtocolSpec(),
+  new GroestlcoinProtocolSpec()
 ]
 
 const itIf = (condition, title, test) => {
