@@ -51,6 +51,35 @@ const itIf = (condition, title, test) => {
 
 protocols.forEach(async (protocol: TestProtocolSpec) => {
   describe(`ICoinProtocol ${protocol.name}`, () => {
+    describe(`Blockexplorer`, () => {
+      const address = 'LOOK_AT_MY_HORSE'
+      const txId = 'MY_HORSE_IS_AMAZING'
+
+      const blockExplorerLinkAddress = protocol.lib.getBlockExplorerLinkForAddress(address)
+      const blockExplorerLinkTxId = protocol.lib.getBlockExplorerLinkForTxId(txId)
+
+      it('should replace address', async () => {
+        expect(blockExplorerLinkAddress).to.contain(address)
+      })
+
+      it('should replace txId', async () => {
+        expect(blockExplorerLinkTxId).to.contain(txId)
+      })
+
+      it('should contain blockexplorer url', async () => {
+        expect(blockExplorerLinkAddress).to.contain(protocol.lib.blockExplorer)
+        expect(blockExplorerLinkTxId).to.contain(protocol.lib.blockExplorer)
+      })
+
+      it('should not contain placeholder brackets', async () => {
+        // Placeholders should be replaced
+        expect(blockExplorerLinkAddress).to.not.contain('{{')
+        expect(blockExplorerLinkAddress).to.not.contain('}}')
+        expect(blockExplorerLinkTxId).to.not.contain('{{')
+        expect(blockExplorerLinkTxId).to.not.contain('}}')
+      })
+    })
+
     describe(`Public/Private KeyPair`, () => {
       beforeEach(async () => {
         protocol.stub.registerStub(protocol, protocol.lib)

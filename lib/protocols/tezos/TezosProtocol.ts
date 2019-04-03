@@ -119,6 +119,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   addressValidationPattern = '^(tz1|KT1)[1-9A-Za-z]{33}$'
   addressPlaceholder = 'tz1...'
 
+  blockExplorer = 'https://tzscan.io'
+
   private addressInitializationFee = new BigNumber('0.257').shiftedBy(this.decimals)
 
   // Tezos - We need to wrap these in Buffer due to non-compatible browser polyfills
@@ -142,6 +144,14 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
    */
   constructor(public jsonRPCAPI = 'https://rpc.tezrpc.me', public baseApiUrl = 'https://api6.tzscan.io') {
     super()
+  }
+
+  getBlockExplorerLinkForAddress(address: string): string {
+    return `${this.blockExplorer}/{{address}}`.replace('{{address}}', address)
+  }
+
+  getBlockExplorerLinkForTxId(txId: string): string {
+    return `${this.blockExplorer}/{{txId}}`.replace('{{txId}}', txId)
   }
 
   /**

@@ -29,8 +29,13 @@ export interface ICoinProtocol {
   addressValidationPattern: string
   addressPlaceholder: string
 
+  blockExplorer: string
+
   // can have sub-protocols defined
   subProtocols?: (ICoinProtocol & ICoinSubProtocol)[]
+
+  getBlockExplorerLinkForAddress(address: string): string
+  getBlockExplorerLinkForTxId(txId: string): string
 
   getPublicKeyFromHexSecret(secret: string, derivationPath: string): string
   getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Buffer

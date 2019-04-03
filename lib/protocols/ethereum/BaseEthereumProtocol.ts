@@ -52,6 +52,8 @@ export abstract class BaseEthereumProtocol implements ICoinProtocol {
   addressValidationPattern = '^0x[a-fA-F0-9]{40}$'
   addressPlaceholder = '0xabc...'
 
+  blockExplorer = 'https://etherscan.io'
+
   web3: any
   network: INetwork
   chainId: number
@@ -70,6 +72,14 @@ export abstract class BaseEthereumProtocol implements ICoinProtocol {
     this.web3 = new Web3(new Web3.providers.HttpProvider(jsonRPCAPI))
     this.network = bitcoinJS.networks.bitcoin
     this.chainId = chainId
+  }
+
+  getBlockExplorerLinkForAddress(address: string): string {
+    return `${this.blockExplorer}/address/{{address}}`.replace('{{address}}', address)
+  }
+
+  getBlockExplorerLinkForTxId(txId: string): string {
+    return `${this.blockExplorer}/tx/{{txId}}`.replace('{{txId}}', txId)
   }
 
   getPublicKeyFromHexSecret(secret: string, derivationPath: string): string {
