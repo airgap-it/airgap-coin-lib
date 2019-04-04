@@ -8,7 +8,7 @@ export class GroestlcoinProtocolStub implements ProtocolHTTPStub {
     const stub = sinon.stub(axios, 'get')
     stub
       .withArgs(
-        `https://blockbook.groestlcoin.org/api/v2/utxo/xpub6D4xGrPgUpGHMmapDu9dWAyoZxM5agTYw5KaxZGGLA4DFV4XeQWSB2Sacmpf4KA2QoEuU2JDtDscuEGeELXEaQE2qXnMHEoyiEBaYmiTTUs`
+        `https://cors-proxy.airgap.prod.gke.papers.tech/proxy?url=https://blockbook.groestlcoin.org/api/v2/utxo/xpub6D4xGrPgUpGHMmapDu9dWAyoZxM5agTYw5KaxZGGLA4DFV4XeQWSB2Sacmpf4KA2QoEuU2JDtDscuEGeELXEaQE2qXnMHEoyiEBaYmiTTUs`
       )
       .returns(
         Promise.resolve({
@@ -39,7 +39,7 @@ export class GroestlcoinProtocolStub implements ProtocolHTTPStub {
     const stub = sinon.stub(axios, 'get')
     stub
       .withArgs(
-        `https://blockbook.groestlcoin.org/api/v2/utxo/xpub6D4xGrPgUpGHMmapDu9dWAyoZxM5agTYw5KaxZGGLA4DFV4XeQWSB2Sacmpf4KA2QoEuU2JDtDscuEGeELXEaQE2qXnMHEoyiEBaYmiTTUs`
+        `https://cors-proxy.airgap.prod.gke.papers.tech/proxy?url=https://blockbook.groestlcoin.org/api/v2/utxo/xpub6D4xGrPgUpGHMmapDu9dWAyoZxM5agTYw5KaxZGGLA4DFV4XeQWSB2Sacmpf4KA2QoEuU2JDtDscuEGeELXEaQE2qXnMHEoyiEBaYmiTTUs`
       )
       .returns(
         Promise.resolve({
