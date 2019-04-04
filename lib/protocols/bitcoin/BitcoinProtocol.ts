@@ -121,7 +121,7 @@ export class BitcoinProtocol implements ICoinProtocol {
 
   constructor(network: INetwork = bitcoinJS.networks.bitcoin, baseApiUrl = 'https://btc1.trezor.io', bitcoinJSLib = bitcoinJS) {
     this.network = network
-    this.baseApiUrl = baseApiUrl
+    this.baseApiUrl = `https://cors-proxy.airgap.prod.gke.papers.tech/proxy?url=${baseApiUrl}`
     this.bitcoinJSLib = bitcoinJSLib
   }
 
