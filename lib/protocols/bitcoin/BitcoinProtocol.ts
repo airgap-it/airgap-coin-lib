@@ -52,6 +52,8 @@ export class BitcoinProtocol implements ICoinProtocol {
   addressValidationPattern = '^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$'
   addressPlaceholder = '1ABC...'
 
+  blockExplorer = 'https://live.blockcypher.com/btc'
+
   network: any // TODO: fix type definition
   baseApiUrl: string
   bitcoinJSLib: any
@@ -60,6 +62,14 @@ export class BitcoinProtocol implements ICoinProtocol {
     this.network = network
     this.baseApiUrl = baseApiUrl
     this.bitcoinJSLib = bitcoinJSLib
+  }
+
+  getBlockExplorerLinkForAddress(address: string): string {
+    return `${this.blockExplorer}/address/{{address}}/`.replace('{{address}}', address)
+  }
+
+  getBlockExplorerLinkForTxId(txId: string): string {
+    return `${this.blockExplorer}/tx/{{txId}}/`.replace('{{txId}}', txId)
   }
 
   getPublicKeyFromHexSecret(secret: string, derivationPath: string): string {

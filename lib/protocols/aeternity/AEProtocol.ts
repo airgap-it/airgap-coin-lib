@@ -46,6 +46,8 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
   addressValidationPattern = '^ak_+[1-9A-Za-z]{49,50}$'
   addressPlaceholder = 'ak_abc...'
 
+  blockExplorer = 'https://explorer.aepps.com'
+
   // ae specifics
   defaultNetworkId = 'ae_mainnet'
 
@@ -54,6 +56,15 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
   constructor(public epochRPC = 'https://ae-epoch-rpc-proxy.gke.papers.tech') {
     super()
   }
+
+  getBlockExplorerLinkForAddress(address: string): string {
+    return `${this.blockExplorer}/#/account/{{address}}/`.replace('{{address}}', address)
+  }
+
+  getBlockExplorerLinkForTxId(txId: string): string {
+    return `${this.blockExplorer}/#/tx/{{txId}}/`.replace('{{txId}}', txId)
+  }
+
   /**
    * Returns the PublicKey as String, derived from a supplied hex-string
    * @param secret HEX-Secret from BIP39
