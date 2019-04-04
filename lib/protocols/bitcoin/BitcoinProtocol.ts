@@ -355,7 +355,7 @@ export class BitcoinProtocol implements ICoinProtocol {
     const changeValue = valueAccumulator.minus(fee)
     if (changeValue.isGreaterThan(new BigNumber(DUST_AMOUNT))) {
       transaction.outs.push({
-        recipient: internalAddresses[maxIndex + 1],
+        recipient: internalAddresses[Math.min(maxIndex + 1, internalAddresses.length - 1)],
         isChange: true,
         value: changeValue
       })
@@ -399,7 +399,7 @@ export class BitcoinProtocol implements ICoinProtocol {
     }
 
     if (valueAccumulator.isLessThan(totalRequiredBalance)) {
-      throw new Error(`Not enough Balance, having ${valueAccumulator.toFixed()} of ${totalRequiredBalance.toFixed()}`)
+      throw new Error(`not enough balance, having ${valueAccumulator.toFixed()} of ${totalRequiredBalance.toFixed()}`)
     }
 
     // tx.addInput(utxo.txid, utxo.vout)

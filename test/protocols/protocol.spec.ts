@@ -173,6 +173,29 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
         })
       })
 
+      itIf(
+        protocol.lib.supportsHD,
+        'prepareTransactionFromExtendedPublicKey - Is able to prepare a tx using its extended public key',
+        async () => {
+          let preparedTx = await protocol.lib.prepareTransactionFromExtendedPublicKey(
+            protocol.wallet.publicKey,
+            0,
+            protocol.txs[0].to,
+            [protocol.txs[0].amount],
+            protocol.txs[0].fee
+          )
+
+          protocol.txs.forEach(tx => {
+            if (tx.properties) {
+              tx.properties.forEach(property => {
+                expect(preparedTx).to.have.property(property)
+              })
+            }
+            expect(preparedTx).to.deep.include(tx.unsignedTx)
+          })
+        }
+      )
+
       itIf(!protocol.lib.supportsHD, 'prepareTransactionFromPublicKey - Is able to prepare a transaction with amount 0', async () => {
         // should not throw an exception when trying to create a 0 TX, given enough funds are available for the gas
         try {
