@@ -4,6 +4,7 @@ const expect = chai.expect
 const CoinLib = require('../dist/index')
 
 describe('AirGapMarketWallet', async () => {
+  /*
   it('should display the fiat value of a BTC wallet', async () => {
     let wallet = new CoinLib.AirGapMarketWallet(
       'btc',
@@ -14,7 +15,7 @@ describe('AirGapMarketWallet', async () => {
     const data = await wallet.fetchWalletValue()
     expect(data.toNumber()).to.be.above(0)
   })
-
+*/
   it('should display the fiat value of an ETH wallet', async () => {
     let wallet = new CoinLib.AirGapMarketWallet('eth', '030b6de6d7bdc70570bf08ee7e8e0360e6bd69dc4c07671110f975d9f39ad089d3', false, '')
     const data = await wallet.fetchWalletValue()
