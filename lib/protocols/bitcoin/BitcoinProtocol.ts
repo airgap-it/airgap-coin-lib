@@ -334,6 +334,10 @@ export class BitcoinProtocol implements ICoinProtocol {
       responseType: 'json'
     })
 
+    if (utxos.length <= 0) {
+      throw new Error('not enough balance') // no transactions found on those addresses, probably won't find anything in the next ones
+    }
+
     const totalRequiredBalance = values.reduce((accumulator, currentValue) => accumulator.plus(currentValue)).plus(fee)
     let valueAccumulator = new BigNumber(0)
 
@@ -358,14 +362,7 @@ export class BitcoinProtocol implements ICoinProtocol {
     }
 
     if (valueAccumulator.isLessThan(totalRequiredBalance)) {
-      const { data: transactions } = await axios.get(this.baseApiUrl + '/api/v2/utxo/' + extendedPublicKey, {
-        responseType: 'json'
-      })
-      if (transactions.items.length <= 0) {
-        throw new Error('not enough balance') // no transactions found on those addresses, probably won't find anything in the next ones
-      }
-
-      return this.prepareTransactionFromExtendedPublicKey(extendedPublicKey, offset + 10, recipients, values, fee) // recursion needed to navigate through HD wallet
+      throw new Error('not enough balance')
     }
 
     // tx.addInput(utxo.txid, utxo.vout)

@@ -27,47 +27,47 @@ export class GroestlcoinProtocolSpec extends TestProtocolSpec {
     '3PaJn4UzvPsuke14qDErzsqTR2TtKzn5o7'
   ]
   wallet = {
-    privateKey: 'xprv9yzvjXeHEDMMM2x8H6btZjyVaB9YBpvR7wdqQhGAEQbsvjrQejHhPdqdMRcAE3MqdZcfrSkCGk96YVqPhFHwJqY7VxgPgmMWMehcmEydJ5A',
-    publicKey: 'xpub6CzH93BB4aueZX2bP88tvsvE8Cz2bHeGVAZSD5fmnk8roYBZCGbwwSA7ChiRr65jncuPH8qBQA9nBwi2Qtz1Uqt8wuHvof9SAcPpFwyemtF',
-    addresses: ['fzlk8rmka9wnmhsawtc7udqna29dtmm5er', 'FbC5C7QRwBY2fsTV7xVgjDwnXwLkDkZV3B']
+    privateKey: 'xprv9z5bsLrneShz9HWM7scd93351vWbBDjhZrPzAArempXENgjP6sCBdE86mXn2SjhbDP8YDYHeXbjH2tjqk365F8j4fMjsJ44e8bLSYzBeYKf',
+    publicKey: 'xpub6D4xGrPgUpGHMmapDu9dWAyoZxM5agTYw5KaxZGGLA4DFV4XeQWSB2Sacmpf4KA2QoEuU2JDtDscuEGeELXEaQE2qXnMHEoyiEBaYmiTTUs',
+    addresses: ['Fo5wJdoDwg7XvDi7ntnMwWv15Vc1UMA7Bz', 'FiEEq7G31QAsFfWFtWbMosVzUGQgtpUJsZ']
   }
   txs = [
     {
-      from: ['fzlk8rmka9wnmhsawtc7udqna29dtmm5er', 'FbC5C7QRwBY2fsTV7xVgjDwnXwLkDkZV3B'],
-      to: ['FZ4AfMJjHNzjtMHvFR244TZf2934Y6J5Fr'],
-      amount: new BigNumber('10'),
-      fee: new BigNumber('27000'),
+      from: ['FiEEq7G31QAsFfWFtWbMosVzUGQgtpUJsZ', 'Fo5wJdoDwg7XvDi7ntnMwWv15Vc1UMA7Bz'],
+      to: ['FkPxwoFcgf16MpYka596GK3HV4SSiAPanR'],
+      amount: new BigNumber('60000000'),
+      fee: new BigNumber('2000'),
       unsignedTx: {
         ins: [
           {
-            txId: 'cc69b832b6d922a04bf9653bbd12335a78f82fc09be7536f2378bbad8554039d',
-            value: new BigNumber('10'),
+            txId: '859590b5fa94b477d6acfec3410d381a0aa2fe4f8a8c04f8519c4451e282b04d',
+            value: new BigNumber('50000000'),
             vout: 0,
-            address: 'FZ4AfMJjHNzjtMHvFR244TZf2934Y6J5Fr',
-            derivationPath: '0/0'
+            address: 'FiEEq7G31QAsFfWFtWbMosVzUGQgtpUJsZ',
+            derivationPath: '0/1'
           },
           {
-            txId: 'cc69b832b6d922a04bf9653bbd12335a78f82fc09be7536f2378bbad8554039d',
-            value: new BigNumber('32418989'),
-            vout: 1,
-            address: '1QKqr9wjki9K9tF9NxigbwgHeLXHT682sc',
-            derivationPath: '1/3'
+            txId: '8ad19fb60971488667333c184786bb6b24ecfe7599290683720d2631722e6e90',
+            value: new BigNumber('50000000'),
+            vout: 0,
+            address: 'Fo5wJdoDwg7XvDi7ntnMwWv15Vc1UMA7Bz',
+            derivationPath: '0/0'
           }
         ],
         outs: [
           {
-            recipient: 'FZ4AfMJjHNzjtMHvFR244TZf2934Y6J5Fr',
+            recipient: 'FkPxwoFcgf16MpYka596GK3HV4SSiAPanR',
             isChange: false,
-            value: new BigNumber('10')
+            value: new BigNumber('60000000')
           },
           {
-            recipient: 'FbC5C7QRwBY2fsTV7xVgjDwnXwLkDkZV3B',
+            recipient: 'FkVmovQbcun3fZ34AnettSSKfxCWtsAvhA',
             isChange: true,
-            value: new BigNumber('32391989')
+            value: new BigNumber('39998000')
           }
         ]
       },
-      signedTx: ``
+      signedTx: `01000000024db082e251449c51f8048c8a4ffea20a1a380d41c3feacd677b494fab5909585000000006a47304402203ce8c5dd56b3c9167fd844b859f8b3059ca0732d0ed21b5e9779a5a80835ee82022006eca776677015c7f22b72a4483c935b0a9b9a64f9a2d1a1ae4fed8c8834e2890121038d395851a535bfdafd632a2c39b814ce22b1f5735afcb55fe610575c9c13c8cdffffffff906e2e7231260d728306299975feec246bbb8647183c336786487109b69fd18a000000006a47304402200f72418052517c07f2c6874d10f87cf2b9b5f6f723235f8a6e561387d01ce442022010bc61de8381ffa15c920849e8dc19b5567e25ed2a8360c320e34754f0b54e84012103749df51ed0644de54fdb8f090150101e75c1496314a139cc4eade854dd08d7e2ffffffff0200879303000000001976a914a70b658a6125894f59f3bbcb87c486fe3f9cd91c88ac30526202000000001976a914a82498c2236dd3218a7b1d3b093d1c45da4b07f488ac00000000`
     }
   ]
 
