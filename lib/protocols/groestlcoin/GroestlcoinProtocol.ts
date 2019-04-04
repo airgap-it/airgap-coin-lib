@@ -36,10 +36,20 @@ export class GroestlcoinProtocol extends BitcoinProtocol {
   supportsHD = true
 
   standardDerivationPath = `m/44'/17'/0'`
-  addressValidationPattern = '^[F][a-km-zA-HJ-NP-Z1-9]{25,34}$'
-  addressPlaceholder = '1ABC...'
+  addressValidationPattern = '^([F3][a-km-zA-HJ-NP-Z1-9]{33}|grs1[a-zA-HJ-NP-Z0-9]{39})$'
+  addressPlaceholder = 'Fdb...'
+
+  blockExplorer = 'https://chainz.cryptoid.info/grs/'
 
   constructor() {
     super(bitGoUTXO.networks.groestlcoin, 'https://blockbook.groestlcoin.org', bitGoUTXO)
+  }
+
+  getBlockExplorerLinkForAddress(address: string): string {
+    return `${this.blockExplorer}/address.dws?{{address}}.htm`.replace('{{address}}', address)
+  }
+
+  getBlockExplorerLinkForTxId(txId: string): string {
+    return `${this.blockExplorer}/tx.dws?{{txId}}.htm`.replace('{{txId}}', txId)
   }
 }

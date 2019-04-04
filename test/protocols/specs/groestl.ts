@@ -7,7 +7,25 @@ export class GroestlcoinProtocolSpec extends TestProtocolSpec {
   name = 'Groestlcoin'
   lib = new GroestlcoinProtocol()
   stub = new GroestlcoinProtocolStub()
-  validAddresses = ['FkPxwoFcgf16MpYka596GK3HV4SSiAPanR', 'FbC5C7QRwBY2fsTV7xVgjDwnXwLkDkZV3B', 'FfdwiqX6B8TD1JunHVv5YfhB8YdweQibV9']
+  validAddresses = [
+    'Fo5wJdoDwg7XvDi7ntnMwWv15Vc1UMA7Bz',
+    'Fdbvoe7cvqhUieb5ReFeCdhQxhSXuKjDDq',
+    '34mYVANQZhdhVpEh3uodhBUUkbW75NFmN9',
+    '38vZLCc9MmY5ATUGDBbpW4iGyU2KswjTup',
+    'grs1q2udtu5tnqte7exezvj355s27ga297dxshal3kh',
+    'grs1q3kfpul4l5nncmnq4npw8qp72rec9y7pxg3nxgs',
+    'grs1qj4y2q2ds8wuq3vft3vve5sdadf03q0rxcnxzrv',
+    'grs1q24gmqsv6p5rsyw0j2g0pat52jtdqzc02wpl22n',
+    'grs1qhpa2lsfrkcmcq8yk8s3s0um7e7uta4vesnd4my',
+    'grs1q2rk404unpxru0s27q6mdy2snrhegge8hd5zm4c',
+    'grs1qfwqlkwadlmre94jucan05ctxxvdzf4suu63l0y',
+    'grs1qtlpls5q9fq3jjwj9ewtt0a56uv05z4rewkvl66',
+    'grs1qyl3d3zzdu66yy8u08x693j6sxgsg2xnz69e06f',
+    'grs1qavkc8nk0y9f9ul0pgzvr8x5fffntu0mpv9mnu9',
+    'grs1qpxhsxeytlwrhj2ssrqqj7s456wmp0d4n9mkl9w',
+    '3QJx33XJjxupTo7mGyDCLqU9HpND8GFXFx',
+    '3PaJn4UzvPsuke14qDErzsqTR2TtKzn5o7'
+  ]
   wallet = {
     privateKey: 'xprv9yzvjXeHEDMMM2x8H6btZjyVaB9YBpvR7wdqQhGAEQbsvjrQejHhPdqdMRcAE3MqdZcfrSkCGk96YVqPhFHwJqY7VxgPgmMWMehcmEydJ5A',
     publicKey: 'xpub6CzH93BB4aueZX2bP88tvsvE8Cz2bHeGVAZSD5fmnk8roYBZCGbwwSA7ChiRr65jncuPH8qBQA9nBwi2Qtz1Uqt8wuHvof9SAcPpFwyemtF',
