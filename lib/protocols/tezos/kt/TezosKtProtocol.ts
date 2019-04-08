@@ -70,7 +70,14 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     return ktAddresses.reverse()
   }
 
-  async originate(publicKey: string): Promise<RawTezosTransaction> {
+  /**
+   * If the delegate is set and amount is not set, the whole balance will be sent to the KT address.
+   *
+   * @param publicKey Public key of tezos account
+   * @param delegate The address of the account where you want to delegate the newly originated KT address
+   * @param amount The amount of tezzies to be transferred to the newly originated KT address
+   */
+  async originate(publicKey: string, delegate?: string, amount?: BigNumber): Promise<RawTezosTransaction> {
     let counter = new BigNumber(1)
     let branch: string
 
@@ -100,9 +107,26 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
 
     const balance = await this.getBalanceOfAddresses([address])
 
-    const fee = new BigNumber(1400)
+    const originationSize = '257'
 
-    if (balance.isLessThan(fee)) {
+    const fee = new BigNumber(1400)
+    const originationBurn = new BigNumber(originationSize).times(1000) // https://tezos.stackexchange.com/a/787
+
+    let balanceToSend = new BigNumber(0)
+
+    if (delegate) {
+      if (!amount) {
+        // We have a delegate but no amount, so we send max
+        balanceToSend = balance
+          .minus(fee)
+          .minus(originationBurn)
+          .minus(1)
+      } else {
+        balanceToSend = amount
+      }
+    }
+
+    if (balance.isLessThan(fee.plus(originationBurn).plus(1))) {
       throw new Error('not enough balance')
     }
 
@@ -112,11 +136,12 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
       fee: fee.toFixed(),
       counter: counter.toFixed(),
       gas_limit: '10000', // taken from eztz
-      storage_limit: '257', // taken from eztz
+      storage_limit: originationSize,
       managerPubkey: address,
-      balance: '0',
+      balance: balanceToSend.toFixed(),
       spendable: true,
-      delegatable: true
+      delegatable: true,
+      delegate: delegate
     }
 
     operations.push(originationOperation)

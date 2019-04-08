@@ -71,6 +71,8 @@ export interface TezosOriginationOperation extends TezosOperation {
   source: string
   spendable: boolean
   storage_limit: string
+  delegate?: string
+  script?: string
 }
 export interface TezosRevealOperation extends TezosOperation {
   public_key: string
@@ -610,9 +612,22 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     const spendable = result === 'ff' ? true : false
     ;({ result, rest } = this.splitAndReturnRest(rest, 2))
     const delegatable = result === 'ff' ? true : false
-
-    // remove 0000 at end
-    rest = rest.slice(4)
+    ;({ result, rest } = this.splitAndReturnRest(rest, 2))
+    const hasDelegate = result === 'ff' ? true : false
+    let delegate
+    if (hasDelegate) {
+      // Delegate is optional
+      ;({ result, rest } = this.splitAndReturnRest(rest, 42))
+      delegate = this.parseAddress('00' + result)
+    }
+    ;({ result, rest } = this.splitAndReturnRest(rest, 2))
+    const hasScript = result === 'ff' ? true : false
+    let script
+    if (hasScript) {
+      // Script is optional
+      ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
+      script = this.zarithToBigNumber(result)
+    }
 
     return {
       tezosOriginationOperation: {
@@ -625,7 +640,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         balance: balance.toFixed(),
         managerPubkey: managerPubKey,
         spendable: spendable,
-        delegatable: delegatable
+        delegatable: delegatable,
+        delegate: delegate,
+        script: script
       },
       rest: rest
     }
@@ -692,6 +709,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         throw new Error('currently unsupported operation type supplied ' + operation.kind)
       }
 
+      // TAG
       if (operation.kind === TezosOperationType.TRANSACTION) {
         resultHexString += '08' // because this is a transaction operation
       } else if (operation.kind === TezosOperationType.REVEAL) {
@@ -780,7 +798,43 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         resultHexString += originationOperation.spendable ? 'ff' : '00'
         resultHexString += originationOperation.delegatable ? 'ff' : '00'
 
-        resultHexString += '0000'
+        if (originationOperation.delegate) {
+          // PRESENCE OF DELEGATE
+          resultHexString += 'ff'
+
+          let cleanedDestination
+
+          if (originationOperation.delegate.toLowerCase().startsWith('tz1')) {
+            cleanedDestination = this.checkAndRemovePrefixToHex(originationOperation.delegate, this.tezosPrefixes.tz1)
+          } else if (originationOperation.delegate.toLowerCase().startsWith('kt1')) {
+            cleanedDestination = this.checkAndRemovePrefixToHex(originationOperation.delegate, this.tezosPrefixes.kt)
+          }
+
+          if (!cleanedDestination || cleanedDestination.length > 42) {
+            // must be less or equal 21 bytes
+            throw new Error('provided destination is invalid')
+          }
+
+          while (cleanedDestination.length !== 42) {
+            // fill up with 0s to match 21 bytes
+            cleanedDestination = '0' + cleanedDestination
+          }
+
+          resultHexString += cleanedDestination
+        } else {
+          // ABSENCE OF DELEGATE
+          resultHexString += '00'
+        }
+
+        if (originationOperation.script) {
+          // PRESENCE OF SCRIPT
+          resultHexString += 'ff'
+
+          throw new Error('script not supported')
+        } else {
+          // ABSENCE OF SCRIPT
+          resultHexString += '00'
+        }
       }
 
       if (operation.kind === TezosOperationType.DELEGATION) {

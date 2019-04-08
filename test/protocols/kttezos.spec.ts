@@ -326,6 +326,65 @@ describe(`ICoinProtocol KtTezos - Custom Tests`, () => {
       expect(tezosOriginationOperation.balance, 'balance').to.equal('0')
       expect(tezosOriginationOperation.delegatable, 'delegatable').to.equal(true)
       expect(tezosOriginationOperation.spendable, 'spendable').to.equal(true)
+      expect(tezosOriginationOperation.delegate, 'delegate').to.be.undefined
+    })
+
+    it('should send all funds in origination operation if delegate is set', async () => {
+      const delegate = 'tz1MJx9vhaNRSimcuXPK2rW4fLccQnDAnVKJ'
+      const balance = new BigNumber(100000000)
+      const tz = await ktTezosLib.originate(tezosProtocolSpec.wallet.publicKey, delegate)
+      expect(tz.binaryTransaction).to.equal(
+        'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb95509000091a9d2b003f19cf5a1f38f04f1000ab482d33176f80ac4fe37904e81020091a9d2b003f19cf5a1f38f04f1000ab482d331769fdfc72fffffff0012548f71994cb2ce18072d0dcb568fe35fb7493000'
+      )
+
+      console.log(tz.binaryTransaction)
+
+      const tezosWrappedOperation = ktTezosLib.unforgeUnsignedTezosWrappedOperation(tz.binaryTransaction)
+      const tezosOriginationOperation = tezosWrappedOperation.contents[0] as TezosOriginationOperation
+
+      expect(tezosOriginationOperation.kind, 'kind').to.equal(TezosOperationType.ORIGINATION)
+      expect(tezosOriginationOperation.source, 'source').to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
+      expect(tezosOriginationOperation.fee, 'fee').to.equal('1400')
+      expect(tezosOriginationOperation.counter, 'counter').to.equal('917316')
+      expect(tezosOriginationOperation.gas_limit, 'gas_limit').to.equal('10000')
+      expect(tezosOriginationOperation.storage_limit, 'storage_limit').to.equal('257')
+      expect(tezosOriginationOperation.managerPubkey, 'managerPubkey').to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
+      expect(tezosOriginationOperation.balance, 'balance').to.equal(
+        balance
+          .minus(1400)
+          .minus(257000)
+          .minus(1)
+          .toFixed()
+      )
+      expect(tezosOriginationOperation.delegatable, 'delegatable').to.equal(true)
+      expect(tezosOriginationOperation.spendable, 'spendable').to.equal(true)
+      expect(tezosOriginationOperation.delegate, 'delegate').to.equal(delegate)
+    })
+
+    it('should send defined amount in origination operation if delegate and amount are set', async () => {
+      const delegate = 'tz1MJx9vhaNRSimcuXPK2rW4fLccQnDAnVKJ'
+      const amount = new BigNumber(50000000)
+      const tz = await ktTezosLib.originate(tezosProtocolSpec.wallet.publicKey, delegate, amount)
+      expect(tz.binaryTransaction).to.equal(
+        'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb95509000091a9d2b003f19cf5a1f38f04f1000ab482d33176f80ac4fe37904e81020091a9d2b003f19cf5a1f38f04f1000ab482d3317680e1eb17ffffff0012548f71994cb2ce18072d0dcb568fe35fb7493000'
+      )
+
+      console.log(tz.binaryTransaction)
+
+      const tezosWrappedOperation = ktTezosLib.unforgeUnsignedTezosWrappedOperation(tz.binaryTransaction)
+      const tezosOriginationOperation = tezosWrappedOperation.contents[0] as TezosOriginationOperation
+
+      expect(tezosOriginationOperation.kind, 'kind').to.equal(TezosOperationType.ORIGINATION)
+      expect(tezosOriginationOperation.source, 'source').to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
+      expect(tezosOriginationOperation.fee, 'fee').to.equal('1400')
+      expect(tezosOriginationOperation.counter, 'counter').to.equal('917316')
+      expect(tezosOriginationOperation.gas_limit, 'gas_limit').to.equal('10000')
+      expect(tezosOriginationOperation.storage_limit, 'storage_limit').to.equal('257')
+      expect(tezosOriginationOperation.managerPubkey, 'managerPubkey').to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
+      expect(tezosOriginationOperation.balance, 'balance').to.equal(amount.toFixed())
+      expect(tezosOriginationOperation.delegatable, 'delegatable').to.equal(true)
+      expect(tezosOriginationOperation.spendable, 'spendable').to.equal(true)
+      expect(tezosOriginationOperation.delegate, 'delegate').to.equal(delegate)
     })
 
     it('should be able to forge and unforge a delegation TX', async () => {
