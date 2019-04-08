@@ -337,8 +337,6 @@ describe(`ICoinProtocol KtTezos - Custom Tests`, () => {
         'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb95509000091a9d2b003f19cf5a1f38f04f1000ab482d33176f80ac4fe37904e81020091a9d2b003f19cf5a1f38f04f1000ab482d331769fdfc72fffffff0012548f71994cb2ce18072d0dcb568fe35fb7493000'
       )
 
-      console.log(tz.binaryTransaction)
-
       const tezosWrappedOperation = ktTezosLib.unforgeUnsignedTezosWrappedOperation(tz.binaryTransaction)
       const tezosOriginationOperation = tezosWrappedOperation.contents[0] as TezosOriginationOperation
 
@@ -368,8 +366,6 @@ describe(`ICoinProtocol KtTezos - Custom Tests`, () => {
       expect(tz.binaryTransaction).to.equal(
         'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb95509000091a9d2b003f19cf5a1f38f04f1000ab482d33176f80ac4fe37904e81020091a9d2b003f19cf5a1f38f04f1000ab482d3317680e1eb17ffffff0012548f71994cb2ce18072d0dcb568fe35fb7493000'
       )
-
-      console.log(tz.binaryTransaction)
 
       const tezosWrappedOperation = ktTezosLib.unforgeUnsignedTezosWrappedOperation(tz.binaryTransaction)
       const tezosOriginationOperation = tezosWrappedOperation.contents[0] as TezosOriginationOperation
