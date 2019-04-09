@@ -3,7 +3,7 @@ import 'mocha'
 import * as chai from 'chai'
 import * as chaiAsPromised from 'chai-as-promised'
 import { AETestProtocolSpec } from './specs/ae'
-import { AEProtocol } from '../../lib'
+import { AEProtocol, IAirGapTransaction } from '../../lib'
 import BigNumber from 'bignumber.js'
 import * as sinon from 'sinon'
 import axios from 'axios'
@@ -17,39 +17,66 @@ const aeProtocolSpec = new AETestProtocolSpec()
 const aeLib = aeProtocolSpec.lib as AEProtocol
 
 describe(`ICoinProtocol Aeternity - Custom Tests`, () => {
+  const sampleAccountResponse: Readonly<any> = Object.freeze({
+    data: {
+      transactions: [
+        {
+          block_height: 443,
+          block_hash: 'mh_EoB9uuMGwhncyRgXSqztAz4PqUX41rNLtEcrVPsVwXksf8u58',
+          hash: 'th_z8bNzdugQdpiRUVXUmQbxoy5dLLEFLG6StBY95jF1KdXrRxiq',
+          signatures: ['sg_JTXgD5WaKbDeVeDQXt9w7MyHXdxFdTqqzUvKFwoYsQZENc2zivckavGhBpX2h2a5QajiewuvsEgc3o7FxEB57oHTEn153'],
+          tx: {
+            amount: aeProtocolSpec.txs[0].amount.toFixed(),
+            fee: aeProtocolSpec.txs[0].fee.toFixed(),
+            nonce: 1,
+            payload: '"create account" 1',
+            recipient_id: aeProtocolSpec.wallet.addresses[0],
+            sender_id: aeProtocolSpec.wallet.addresses[0],
+            ttl: 444,
+            type: 'SpendTx',
+            version: 1
+          }
+        }
+      ]
+    }
+  })
+
   beforeEach(() => {
     sinon
       .stub(axios, 'get')
       .withArgs(`${aeLib.epochMiddleware}/middleware/transactions/account/${aeProtocolSpec.wallet.addresses[0]}`)
-      .returns(
-        Promise.resolve({
-          data: {
-            transactions: [
-              {
-                block_height: 443,
-                block_hash: 'mh_EoB9uuMGwhncyRgXSqztAz4PqUX41rNLtEcrVPsVwXksf8u58',
-                hash: 'th_z8bNzdugQdpiRUVXUmQbxoy5dLLEFLG6StBY95jF1KdXrRxiq',
-                signatures: ['sg_JTXgD5WaKbDeVeDQXt9w7MyHXdxFdTqqzUvKFwoYsQZENc2zivckavGhBpX2h2a5QajiewuvsEgc3o7FxEB57oHTEn153'],
-                tx: {
-                  amount: aeProtocolSpec.txs[0].amount.toFixed(),
-                  fee: aeProtocolSpec.txs[0].fee.toFixed(),
-                  nonce: 1,
-                  payload: '"create account" 1',
-                  recipient_id: aeProtocolSpec.wallet.addresses[0],
-                  sender_id: aeProtocolSpec.wallet.addresses[0],
-                  ttl: 444,
-                  type: 'SpendTx',
-                  version: 1
-                }
-              }
-            ]
-          }
-        })
-      )
+      .returns(Promise.resolve(sampleAccountResponse))
   })
 
   afterEach(() => {
     sinon.restore()
+  })
+
+  it("will include the timestamp if it's availalbe", async () => {
+    const responseWithTimestamp = JSON.parse(JSON.stringify(sampleAccountResponse))
+    responseWithTimestamp.data.transactions[0].time = 1543450515994
+
+    sinon.restore()
+    sinon
+      .stub(axios, 'get')
+      .withArgs(`${aeLib.epochMiddleware}/middleware/transactions/account/${aeProtocolSpec.wallet.addresses[0]}`)
+      .returns(Promise.resolve(responseWithTimestamp))
+
+    const transactions = await aeLib.getTransactionsFromAddresses(aeProtocolSpec.wallet.addresses, 0, 0)
+
+    expect(transactions).to.deep.equal([
+      {
+        amount: new BigNumber(aeProtocolSpec.txs[0].amount),
+        fee: new BigNumber(aeProtocolSpec.txs[0].fee),
+        from: aeProtocolSpec.wallet.addresses,
+        isInbound: true,
+        protocolIdentifier: aeLib.identifier,
+        to: aeProtocolSpec.wallet.addresses,
+        hash: 'th_z8bNzdugQdpiRUVXUmQbxoy5dLLEFLG6StBY95jF1KdXrRxiq',
+        blockHeight: 443,
+        timestamp: 1543450515994
+      }
+    ])
   })
 
   it('can give a list of transactions from endpoints', async () => {
