@@ -123,7 +123,8 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
         protocolIdentifier: this.identifier,
         to: [obj.tx.recipient_id],
         hash: obj.hash,
-        blockHeight: obj.block_height
+        blockHeight: obj.block_height,
+        timestamp: parseInt(obj.time, 10)
       }
 
       return airGapTx
