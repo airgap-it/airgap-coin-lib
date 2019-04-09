@@ -116,6 +116,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
   supportsHD = false
   standardDerivationPath = `m/44h/1729h/0h/0h`
+
+  addressIsCaseSensitivite = true
   addressValidationPattern = '^(tz1|KT1)[1-9A-Za-z]{33}$'
   addressPlaceholder = 'tz1...'
 
