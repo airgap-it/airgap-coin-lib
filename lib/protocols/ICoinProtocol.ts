@@ -26,7 +26,7 @@ export interface ICoinProtocol {
   supportsHD: boolean
   standardDerivationPath: string
 
-  addressIsCaseSensitivite: boolean
+  addressIsCaseSensitive: boolean
   addressValidationPattern: string
   addressPlaceholder: string
 
