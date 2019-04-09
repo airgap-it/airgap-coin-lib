@@ -50,7 +50,7 @@ export abstract class BaseEthereumProtocol implements ICoinProtocol {
   supportsHD = false
   standardDerivationPath = `m/44'/60'/0'/0/0`
 
-  addressIsCaseSensitivite = false
+  addressIsCaseSensitive = false
   addressValidationPattern = '^0x[a-fA-F0-9]{40}$'
   addressPlaceholder = '0xabc...'
 
