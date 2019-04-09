@@ -280,7 +280,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       amount = new BigNumber((tezosOperation as TezosSpendOperation).amount)
       to = [(tezosOperation as TezosSpendOperation).destination]
     } else if (tezosOperation.kind === TezosOperationType.ORIGINATION) {
-      to = ['Origination']
+      const tezosOriginationOperation = tezosOperation as TezosOriginationOperation
+      amount = new BigNumber(tezosOriginationOperation.balance)
+      let delegate = tezosOriginationOperation.delegate
+      to = [delegate ? `Delegate: ${delegate}` : 'Origination']
     } else if (tezosOperation.kind === TezosOperationType.DELEGATION) {
       let delegate = (tezosOperation as TezosDelegationOperation).delegate
       to = [delegate ? delegate : 'Undelegate']
