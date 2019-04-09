@@ -115,6 +115,7 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
     )
 
     return transactions.map(obj => {
+      const parsedTimestamp = parseInt(obj.time, 10)
       const airGapTx: IAirGapTransaction = {
         amount: new BigNumber(obj.tx.amount),
         fee: new BigNumber(obj.tx.fee),
@@ -123,8 +124,11 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
         protocolIdentifier: this.identifier,
         to: [obj.tx.recipient_id],
         hash: obj.hash,
-        blockHeight: obj.block_height,
-        timestamp: parseInt(obj.time, 10)
+        blockHeight: obj.block_height
+      }
+
+      if (!isNaN(parsedTimestamp)) {
+        airGapTx.timestamp = parsedTimestamp
       }
 
       return airGapTx
