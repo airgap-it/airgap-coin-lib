@@ -84,6 +84,8 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     const operations: TezosOperation[] = []
     const address = await super.getAddressFromPublicKey(publicKey)
 
+    let revealFee = new BigNumber(0) // If we don't have to reveal, it's 0
+
     try {
       const results = await Promise.all([
         axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/counter`),
@@ -100,6 +102,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
       if (!accountManager.key) {
         operations.push(await super.createRevealOperation(counter, publicKey, address))
         counter = counter.plus(1)
+        revealFee = this.revealFee
       }
     } catch (error) {
       throw error
@@ -107,26 +110,25 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
 
     const balance = await this.getBalanceOfAddresses([address])
 
-    const originationSize = '257'
-
     const fee = new BigNumber(1400)
-    const originationBurn = new BigNumber(originationSize).times(1000) // https://tezos.stackexchange.com/a/787
 
     let balanceToSend = new BigNumber(0)
+
+    const combinedFees = fee
+      .plus(this.originationBurn)
+      .plus(revealFee)
+      .plus(1)
 
     if (delegate) {
       if (!amount) {
         // We have a delegate but no amount, so we send max
-        balanceToSend = balance
-          .minus(fee)
-          .minus(originationBurn)
-          .minus(1)
+        balanceToSend = balance.minus(combinedFees)
       } else {
         balanceToSend = amount
       }
     }
 
-    if (balance.isLessThan(fee.plus(originationBurn).plus(1))) {
+    if (balance.isLessThan(balanceToSend.plus(combinedFees))) {
       throw new Error('not enough balance')
     }
 
@@ -136,7 +138,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
       fee: fee.toFixed(),
       counter: counter.toFixed(),
       gas_limit: '10000', // taken from eztz
-      storage_limit: originationSize,
+      storage_limit: this.originationSize.toFixed(),
       managerPubkey: address,
       balance: balanceToSend.toFixed(),
       spendable: true,

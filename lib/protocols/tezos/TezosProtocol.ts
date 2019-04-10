@@ -125,7 +125,13 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
   blockExplorer = 'https://tzscan.io'
 
-  private addressInitializationFee = new BigNumber('0.257').shiftedBy(this.decimals)
+  protected originationSize = new BigNumber('257')
+  protected storageCostPerByte = new BigNumber('1000')
+
+  protected initializationFee = new BigNumber(this.originationSize).times(this.storageCostPerByte)
+  protected originationFee = new BigNumber(this.originationSize).times(this.storageCostPerByte)
+  protected revealFee = new BigNumber('1300')
+  protected originationBurn = this.originationSize.times(this.storageCostPerByte) // https://tezos.stackexchange.com/a/787
 
   // Tezos - We need to wrap these in Buffer due to non-compatible browser polyfills
   private tezosPrefixes = {
@@ -376,9 +382,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     if (receivingBalance.isZero() && recipients[0].toLowerCase().startsWith('tz')) {
       // We have to supply an additional 0.257 XTZ fee for storage_limit costs, which gets automatically deducted from the sender so we just have to make sure enough balance is around
       // check whether the sender has enough to cover the amount to send + fee + initialization
-      if (balance.isLessThan(values[0].plus(fee).plus(this.addressInitializationFee))) {
+      if (balance.isLessThan(values[0].plus(fee).plus(this.initializationFee))) {
         // if not, make room for the init fee
-        values[0] = values[0].minus(this.addressInitializationFee) // deduct fee from balance
+        values[0] = values[0].minus(this.initializationFee) // deduct fee from balance
       }
     }
 
@@ -926,7 +932,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   async createRevealOperation(counter: BigNumber, publicKey: string, address: string): Promise<TezosRevealOperation> {
     const operation: TezosRevealOperation = {
       kind: TezosOperationType.REVEAL,
-      fee: '1300',
+      fee: this.revealFee.toFixed(),
       gas_limit: '10000', // taken from conseiljs
       storage_limit: '0', // taken from conseiljs
       counter: counter.toFixed(),
