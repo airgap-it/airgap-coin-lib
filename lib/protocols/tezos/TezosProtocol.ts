@@ -128,8 +128,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   protected originationSize = new BigNumber('257')
   protected storageCostPerByte = new BigNumber('1000')
 
-  protected initializationFee = this.originationSize.times(this.storageCostPerByte)
   protected revealFee = new BigNumber('1300')
+  protected activationBurn = this.originationSize.times(this.storageCostPerByte)
   protected originationBurn = this.originationSize.times(this.storageCostPerByte) // https://tezos.stackexchange.com/a/787
 
   // Tezos - We need to wrap these in Buffer due to non-compatible browser polyfills
@@ -353,8 +353,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
     const address = addresses[addressIndex]
 
-    let revealFee = new BigNumber(0) // If we don't have to reveal, it's 0
-
     try {
       const results = await Promise.all([
         axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/counter`),
@@ -371,7 +369,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       if (address.toLowerCase().startsWith('tz') && !accountManager.key) {
         operations.push(await this.createRevealOperation(counter, publicKey, address))
         counter = counter.plus(1)
-        revealFee = this.revealFee
       }
     } catch (error) {
       throw error
@@ -380,20 +377,22 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     const balance = await this.getBalanceOfPublicKey(publicKey)
     const receivingBalance = await this.getBalanceOfAddresses(recipients)
 
-    if (!revealFee.isZero()) {
-      if (balance.isLessThan(values[0].plus(fee).plus(this.revealFee))) {
+    const amountUsedByPreviousOperations = this.getAmountUsedByPreviousOperations(operations)
+
+    if (!amountUsedByPreviousOperations.isZero()) {
+      if (balance.isLessThan(values[0].plus(fee).plus(amountUsedByPreviousOperations))) {
         // if not, make room for the init fee
-        values[0] = values[0].minus(this.revealFee) // deduct fee from balance
+        values[0] = values[0].minus(amountUsedByPreviousOperations) // deduct fee from balance
       }
     }
 
     // if our receiver has 0 balance, the account is not activated yet.
     if (receivingBalance.isZero() && recipients[0].toLowerCase().startsWith('tz')) {
       // We have to supply an additional 0.257 XTZ fee for storage_limit costs, which gets automatically deducted from the sender so we just have to make sure enough balance is around
-      // check whether the sender has enough to cover the amount to send + fee + initialization
-      if (balance.isLessThan(values[0].plus(fee).plus(this.initializationFee))) {
+      // check whether the sender has enough to cover the amount to send + fee + activation
+      if (balance.isLessThan(values[0].plus(fee).plus(this.activationBurn))) {
         // if not, make room for the init fee
-        values[0] = values[0].minus(this.initializationFee) // deduct fee from balance
+        values[0] = values[0].minus(this.activationBurn) // deduct fee from balance
       }
     }
 
@@ -446,8 +445,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     const operations: TezosOperation[] = []
     const address = await this.getAddressFromPublicKey(publicKey)
 
-    let revealFee = new BigNumber(0) // If we don't have to reveal, it's 0
-
     try {
       const results = await Promise.all([
         axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/counter`),
@@ -464,7 +461,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       if (!accountManager.key) {
         operations.push(await this.createRevealOperation(counter, publicKey, address))
         counter = counter.plus(1)
-        revealFee = this.revealFee
       }
     } catch (error) {
       throw error
@@ -474,9 +470,11 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
     const fee = new BigNumber(1400)
 
-    const combinedFees = fee
+    const amountUsedByPreviousOperations = this.getAmountUsedByPreviousOperations(operations)
+
+    const combinedAmountsAndFees = fee
+      .plus(amountUsedByPreviousOperations)
       .plus(this.originationBurn)
-      .plus(revealFee)
       .plus(1)
 
     let balanceToSend = new BigNumber(0)
@@ -489,11 +487,11 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       balanceToSend = amount // If amount is set and valid, we override
     }
 
-    const maxAmount = balance.minus(combinedFees)
+    const maxAmount = balance.minus(combinedAmountsAndFees)
 
     balanceToSend = BigNumber.min(balanceToSend, maxAmount)
 
-    if (balance.isLessThan(balanceToSend.plus(combinedFees))) {
+    if (balance.isLessThan(balanceToSend.plus(combinedAmountsAndFees))) {
       throw new Error('not enough balance')
     }
 
@@ -526,6 +524,32 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       console.warn(error.message)
       throw new Error('Forging Tezos TX failed.')
     }
+  }
+
+  private getAmountUsedByPreviousOperations(operations: TezosOperation[]): BigNumber {
+    let amountUsed = new BigNumber(0)
+    const assertNever = (x: never) => undefined
+
+    operations.forEach(operation => {
+      amountUsed = amountUsed.plus(operation.fee) // Fee has to be added for every operation type
+
+      if (operation.kind === TezosOperationType.REVEAL) {
+        const _revealOperation = operation as TezosRevealOperation
+        // No additional amount/fee
+      } else if (operation.kind === TezosOperationType.ORIGINATION) {
+        const originationOperation = operation as TezosOriginationOperation
+        amountUsed = amountUsed.plus(originationOperation.balance)
+      } else if (operation.kind === TezosOperationType.DELEGATION) {
+        const _delegationOperation = operation as TezosDelegationOperation
+        // No additional amount/fee
+      } else if (operation.kind === TezosOperationType.TRANSACTION) {
+        const spendOperation = operation as TezosSpendOperation
+        amountUsed = amountUsed.plus(spendOperation.amount)
+      } else {
+        assertNever(operation.kind) // Exhaustive if
+      }
+    })
+    return amountUsed
   }
 
   async broadcastTransaction(rawTransaction: IAirGapSignedTransaction): Promise<string> {
