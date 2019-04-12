@@ -24,9 +24,11 @@ const ktTezosLib = new TezosKtProtocol()
 
 describe(`ICoinProtocol KtTezos - Custom Tests`, () => {
   describe('Kt Transactions', () => {
-    before(async () => {
+    let stub
+    beforeEach(async () => {
       await isCoinlibReady()
-      const stub = sinon.stub(axios, 'get')
+      sinon.restore()
+      stub = sinon.stub(axios, 'get')
 
       // standard stubs for prepareTx
       stub
@@ -76,6 +78,53 @@ describe(`ICoinProtocol KtTezos - Custom Tests`, () => {
                     failed: false,
                     internal: false,
                     op_level: 358990,
+                    timestamp: '2019-03-19T12:39:37Z'
+                  }
+                ]
+              }
+            }
+          ]
+        })
+      )
+
+      stub.withArgs(`${ktTezosLib.baseApiUrl}/v3/operations/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy?type=Origination`).returns(
+        Promise.resolve({
+          data: [
+            {
+              hash: 'op5UEri2nWbTA9dwu7jGRQuni5MfPUGmgX4Cu2gBx7JAPKKfSUn',
+              block_hash: 'BLP8zGpKjhyGPokB9WXjnessWFjroRNG6xxiFVVjTmd4irUrL1G',
+              network_hash: 'NetXdQprcVkpaWU',
+              type: {
+                kind: 'manager',
+                source: {
+                  tz: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'
+                },
+                operations: [
+                  {
+                    kind: 'origination',
+                    src: {
+                      tz: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'
+                    },
+                    managerPubkey: {
+                      tz: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'
+                    },
+                    balance: 8352000,
+                    spendable: false,
+                    delegatable: false,
+                    delegate: {
+                      tz: 'tz1MJx9vhaNRSimcuXPK2rW4fLccQnDAnVKJ'
+                    },
+                    tz1: {
+                      tz: 'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy'
+                    },
+                    failed: false,
+                    internal: false,
+                    burn_tez: 257000,
+                    counter: 1215289,
+                    fee: 1400,
+                    gas_limit: '10000',
+                    storage_limit: '257',
+                    op_level: 389762,
                     timestamp: '2019-03-19T12:39:37Z'
                   }
                 ]
@@ -307,82 +356,6 @@ describe(`ICoinProtocol KtTezos - Custom Tests`, () => {
         .returns(Promise.resolve({ data: '50000' }))
     })
 
-    it('should be able to forge and unforge an origination TX', async () => {
-      const tz = await ktTezosLib.originate(tezosProtocolSpec.wallet.publicKey)
-      expect(tz.binaryTransaction).to.equal(
-        'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb95509000091a9d2b003f19cf5a1f38f04f1000ab482d33176f80ac4fe37904e81020091a9d2b003f19cf5a1f38f04f1000ab482d3317600ffff0000'
-      )
-
-      const tezosWrappedOperation = ktTezosLib.unforgeUnsignedTezosWrappedOperation(tz.binaryTransaction)
-      const tezosOriginationOperation = tezosWrappedOperation.contents[0] as TezosOriginationOperation
-
-      expect(tezosOriginationOperation.kind, 'kind').to.equal(TezosOperationType.ORIGINATION)
-      expect(tezosOriginationOperation.source, 'source').to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
-      expect(tezosOriginationOperation.fee, 'fee').to.equal('1400')
-      expect(tezosOriginationOperation.counter, 'counter').to.equal('917316')
-      expect(tezosOriginationOperation.gas_limit, 'gas_limit').to.equal('10000')
-      expect(tezosOriginationOperation.storage_limit, 'storage_limit').to.equal('257')
-      expect(tezosOriginationOperation.managerPubkey, 'managerPubkey').to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
-      expect(tezosOriginationOperation.balance, 'balance').to.equal('0')
-      expect(tezosOriginationOperation.delegatable, 'delegatable').to.equal(true)
-      expect(tezosOriginationOperation.spendable, 'spendable').to.equal(true)
-      expect(tezosOriginationOperation.delegate, 'delegate').to.be.undefined
-    })
-
-    it('should send all funds in origination operation if delegate is set', async () => {
-      const delegate = 'tz1MJx9vhaNRSimcuXPK2rW4fLccQnDAnVKJ'
-      const balance = new BigNumber(100000000)
-      const tz = await ktTezosLib.originate(tezosProtocolSpec.wallet.publicKey, delegate)
-      expect(tz.binaryTransaction).to.equal(
-        'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb95509000091a9d2b003f19cf5a1f38f04f1000ab482d33176f80ac4fe37904e81020091a9d2b003f19cf5a1f38f04f1000ab482d331769fdfc72fffffff0012548f71994cb2ce18072d0dcb568fe35fb7493000'
-      )
-
-      const tezosWrappedOperation = ktTezosLib.unforgeUnsignedTezosWrappedOperation(tz.binaryTransaction)
-      const tezosOriginationOperation = tezosWrappedOperation.contents[0] as TezosOriginationOperation
-
-      expect(tezosOriginationOperation.kind, 'kind').to.equal(TezosOperationType.ORIGINATION)
-      expect(tezosOriginationOperation.source, 'source').to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
-      expect(tezosOriginationOperation.fee, 'fee').to.equal('1400')
-      expect(tezosOriginationOperation.counter, 'counter').to.equal('917316')
-      expect(tezosOriginationOperation.gas_limit, 'gas_limit').to.equal('10000')
-      expect(tezosOriginationOperation.storage_limit, 'storage_limit').to.equal('257')
-      expect(tezosOriginationOperation.managerPubkey, 'managerPubkey').to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
-      expect(tezosOriginationOperation.balance, 'balance').to.equal(
-        balance
-          .minus(1400)
-          .minus(257000)
-          .minus(1)
-          .toFixed()
-      )
-      expect(tezosOriginationOperation.delegatable, 'delegatable').to.equal(true)
-      expect(tezosOriginationOperation.spendable, 'spendable').to.equal(true)
-      expect(tezosOriginationOperation.delegate, 'delegate').to.equal(delegate)
-    })
-
-    it('should send defined amount in origination operation if delegate and amount are set', async () => {
-      const delegate = 'tz1MJx9vhaNRSimcuXPK2rW4fLccQnDAnVKJ'
-      const amount = new BigNumber(50000000)
-      const tz = await ktTezosLib.originate(tezosProtocolSpec.wallet.publicKey, delegate, amount)
-      expect(tz.binaryTransaction).to.equal(
-        'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb95509000091a9d2b003f19cf5a1f38f04f1000ab482d33176f80ac4fe37904e81020091a9d2b003f19cf5a1f38f04f1000ab482d3317680e1eb17ffffff0012548f71994cb2ce18072d0dcb568fe35fb7493000'
-      )
-
-      const tezosWrappedOperation = ktTezosLib.unforgeUnsignedTezosWrappedOperation(tz.binaryTransaction)
-      const tezosOriginationOperation = tezosWrappedOperation.contents[0] as TezosOriginationOperation
-
-      expect(tezosOriginationOperation.kind, 'kind').to.equal(TezosOperationType.ORIGINATION)
-      expect(tezosOriginationOperation.source, 'source').to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
-      expect(tezosOriginationOperation.fee, 'fee').to.equal('1400')
-      expect(tezosOriginationOperation.counter, 'counter').to.equal('917316')
-      expect(tezosOriginationOperation.gas_limit, 'gas_limit').to.equal('10000')
-      expect(tezosOriginationOperation.storage_limit, 'storage_limit').to.equal('257')
-      expect(tezosOriginationOperation.managerPubkey, 'managerPubkey').to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
-      expect(tezosOriginationOperation.balance, 'balance').to.equal(amount.toFixed())
-      expect(tezosOriginationOperation.delegatable, 'delegatable').to.equal(true)
-      expect(tezosOriginationOperation.spendable, 'spendable').to.equal(true)
-      expect(tezosOriginationOperation.delegate, 'delegate').to.equal(delegate)
-    })
-
     it('should be able to forge and unforge a delegation TX', async () => {
       /**
        * Delegate KT1 -> TZ1
@@ -452,7 +425,7 @@ describe(`ICoinProtocol KtTezos - Custom Tests`, () => {
       )
     })
 
-    it('should be able to check the delegation state of an KT address', async () => {
+    it('should be able to check the delegation state of a DELEGATED KT address', async () => {
       const delegatedState = await ktTezosLib.isAddressDelegated('KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy')
 
       expect(delegatedState.isDelegated).to.equal(true)
@@ -461,7 +434,9 @@ describe(`ICoinProtocol KtTezos - Custom Tests`, () => {
 
       expect(delegatedState.delegatedDate!.getTime()).to.equal(new Date('2019-03-19T12:39:37Z').getTime())
       expect(delegatedState.delegatedOpLevel!).to.equal(358990)
+    })
 
+    it('should be able to check the delegation state of an UNDELEGATED KT address', async () => {
       const undelegatedState = await ktTezosLib.isAddressDelegated('KT1RBMUbb7QSD46VXhAvaMiyVSoys6QZiTxN')
 
       expect(undelegatedState.isDelegated).to.equal(false)
@@ -469,6 +444,46 @@ describe(`ICoinProtocol KtTezos - Custom Tests`, () => {
       expect(undelegatedState.value).to.equal(undefined)
       expect(undelegatedState.delegatedDate).to.equal(undefined)
       expect(undelegatedState.delegatedOpLevel).to.equal(undefined)
+    })
+
+    it('should be able to check the delegation state of a DELEGATED KT address that has been delegated with an ORIGINATION operation', async () => {
+      stub.withArgs(`${ktTezosLib.baseApiUrl}/v3/operations/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy?type=Delegation`).returns(
+        Promise.resolve({
+          data: []
+        })
+      )
+
+      const delegatedState = await ktTezosLib.isAddressDelegated('KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy')
+
+      expect(delegatedState.isDelegated).to.equal(true)
+      expect(delegatedState.setable).to.equal(true)
+      expect(delegatedState.value).to.equal('tz1cX93Q3KsiTADpCC4f12TBvAmS5tw7CW19')
+
+      expect(delegatedState.delegatedDate!.getTime()).to.equal(new Date('2019-03-19T12:39:37Z').getTime())
+      expect(delegatedState.delegatedOpLevel!).to.equal(389762)
+    })
+
+    it('should be able to check the delegation state but not  of a DELEGATED KT address that has been delegated by an unknown operation and NOT CRASH', async () => {
+      stub.withArgs(`${ktTezosLib.baseApiUrl}/v3/operations/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy?type=Delegation`).returns(
+        Promise.resolve({
+          data: []
+        })
+      )
+
+      stub.withArgs(`${ktTezosLib.baseApiUrl}/v3/operations/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy?type=Origination`).returns(
+        Promise.resolve({
+          data: []
+        })
+      )
+
+      const delegatedState = await ktTezosLib.isAddressDelegated('KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy')
+
+      expect(delegatedState.isDelegated).to.equal(true)
+      expect(delegatedState.setable).to.equal(true)
+      expect(delegatedState.value).to.equal('tz1cX93Q3KsiTADpCC4f12TBvAmS5tw7CW19')
+
+      expect(delegatedState.delegatedDate).to.equal(undefined)
+      expect(delegatedState.delegatedOpLevel).to.equal(undefined)
     })
 
     it('should correctly report the stats of a baker', async () => {

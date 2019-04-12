@@ -128,8 +128,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   protected originationSize = new BigNumber('257')
   protected storageCostPerByte = new BigNumber('1000')
 
-  protected initializationFee = new BigNumber(this.originationSize).times(this.storageCostPerByte)
-  protected originationFee = new BigNumber(this.originationSize).times(this.storageCostPerByte)
+  protected initializationFee = this.originationSize.times(this.storageCostPerByte)
   protected revealFee = new BigNumber('1300')
   protected originationBurn = this.originationSize.times(this.storageCostPerByte) // https://tezos.stackexchange.com/a/787
 
@@ -354,6 +353,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
     const address = addresses[addressIndex]
 
+    let revealFee = new BigNumber(0) // If we don't have to reveal, it's 0
+
     try {
       const results = await Promise.all([
         axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/counter`),
@@ -367,9 +368,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       const accountManager = results[2].data
 
       // check if we have revealed the key already
-      if (!accountManager.key) {
+      if (address.toLowerCase().startsWith('tz') && !accountManager.key) {
         operations.push(await this.createRevealOperation(counter, publicKey, address))
         counter = counter.plus(1)
+        revealFee = this.revealFee
       }
     } catch (error) {
       throw error
@@ -377,6 +379,13 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
     const balance = await this.getBalanceOfPublicKey(publicKey)
     const receivingBalance = await this.getBalanceOfAddresses(recipients)
+
+    if (!revealFee.isZero()) {
+      if (balance.isLessThan(values[0].plus(fee).plus(this.revealFee))) {
+        // if not, make room for the init fee
+        values[0] = values[0].minus(this.revealFee) // deduct fee from balance
+      }
+    }
 
     // if our receiver has 0 balance, the account is not activated yet.
     if (receivingBalance.isZero() && recipients[0].toLowerCase().startsWith('tz')) {
@@ -407,6 +416,102 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     }
 
     operations.push(spendOperation)
+
+    try {
+      const tezosWrappedOperation: TezosWrappedOperation = {
+        branch: branch,
+        contents: operations
+      }
+
+      const binaryTx = this.forgeTezosOperation(tezosWrappedOperation)
+
+      return { binaryTransaction: binaryTx }
+    } catch (error) {
+      console.warn(error.message)
+      throw new Error('Forging Tezos TX failed.')
+    }
+  }
+
+  /**
+   * If the delegate is set and amount is not set, the whole balance will be sent to the KT address.
+   *
+   * @param publicKey Public key of tezos account
+   * @param delegate The address of the account where you want to delegate the newly originated KT address
+   * @param amount The amount of tezzies to be transferred to the newly originated KT address
+   */
+  async originate(publicKey: string, delegate?: string, amount?: BigNumber): Promise<RawTezosTransaction> {
+    let counter = new BigNumber(1)
+    let branch: string
+
+    const operations: TezosOperation[] = []
+    const address = await this.getAddressFromPublicKey(publicKey)
+
+    let revealFee = new BigNumber(0) // If we don't have to reveal, it's 0
+
+    try {
+      const results = await Promise.all([
+        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/counter`),
+        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/hash`),
+        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/manager_key`)
+      ])
+
+      counter = new BigNumber(results[0].data).plus(1)
+      branch = results[1].data
+
+      const accountManager = results[2].data
+
+      // check if we have revealed the key already
+      if (!accountManager.key) {
+        operations.push(await this.createRevealOperation(counter, publicKey, address))
+        counter = counter.plus(1)
+        revealFee = this.revealFee
+      }
+    } catch (error) {
+      throw error
+    }
+
+    const balance = await this.getBalanceOfAddresses([address])
+
+    const fee = new BigNumber(1400)
+
+    const combinedFees = fee
+      .plus(this.originationBurn)
+      .plus(revealFee)
+      .plus(1)
+
+    let balanceToSend = new BigNumber(0)
+
+    if (delegate) {
+      balanceToSend = balance // If delegate is set, by default we send the whole balance
+    }
+
+    if (amount && amount.isLessThan(balance)) {
+      balanceToSend = amount // If amount is set and valid, we override
+    }
+
+    const maxAmount = balance.minus(combinedFees)
+
+    balanceToSend = BigNumber.min(balanceToSend, maxAmount)
+
+    if (balance.isLessThan(balanceToSend.plus(combinedFees))) {
+      throw new Error('not enough balance')
+    }
+
+    const originationOperation: TezosOriginationOperation = {
+      kind: TezosOperationType.ORIGINATION,
+      source: address,
+      fee: fee.toFixed(),
+      counter: counter.toFixed(),
+      gas_limit: '10000', // taken from eztz
+      storage_limit: this.originationSize.toFixed(),
+      managerPubkey: address,
+      balance: balanceToSend.toFixed(),
+      spendable: true,
+      delegatable: true,
+      delegate: delegate
+    }
+
+    operations.push(originationOperation)
 
     try {
       const tezosWrappedOperation: TezosWrappedOperation = {

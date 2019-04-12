@@ -6,10 +6,61 @@ import * as sinon from 'sinon'
 import axios from 'axios'
 import { isCoinlibReady } from '../../lib'
 import { TezosTestProtocolSpec } from '../protocols/specs/tezos'
-import { TezosOperationType, TezosRevealOperation, TezosSpendOperation } from '../../lib/protocols/tezos/TezosProtocol'
+import {
+  TezosOperationType,
+  TezosRevealOperation,
+  TezosSpendOperation,
+  TezosOriginationOperation
+} from '../../lib/protocols/tezos/TezosProtocol'
+import { RawTezosTransaction } from '../../lib/serializer/unsigned-transactions/tezos-transactions.serializer'
 
 const tezosProtocolSpec = new TezosTestProtocolSpec()
 const tezosLib = tezosProtocolSpec.lib
+
+const prepareTxHelper = async (rawTezosTx: RawTezosTransaction) => {
+  const airGapTx = await tezosLib.getTransactionDetails({
+    transaction: rawTezosTx,
+    publicKey: tezosProtocolSpec.wallet.publicKey
+  })
+
+  const unforgedTransaction = tezosLib.unforgeUnsignedTezosWrappedOperation(rawTezosTx.binaryTransaction)
+
+  const spendOperation = unforgedTransaction.contents.find(content => content.kind === TezosOperationType.TRANSACTION)
+  if (spendOperation) {
+    const spendTransaction: TezosSpendOperation = spendOperation as TezosSpendOperation
+    return {
+      spendTransaction,
+      originationTransaction: {} as any,
+      unforgedTransaction,
+      airGapTx,
+      rawTezosTx
+    }
+  }
+
+  const originationOperation = unforgedTransaction.contents.find(content => content.kind === TezosOperationType.ORIGINATION)
+  if (originationOperation) {
+    const originationTransaction: TezosOriginationOperation = originationOperation as TezosOriginationOperation
+    return {
+      spendTransaction: {} as any,
+      originationTransaction,
+      unforgedTransaction,
+      airGapTx,
+      rawTezosTx
+    }
+  }
+
+  throw new Error('no supported operation')
+}
+
+const prepareOrigination = async (delegate?: string, amount?: BigNumber) => {
+  let rawTezosTx = await tezosLib.originate(tezosProtocolSpec.wallet.publicKey, delegate, amount)
+  return prepareTxHelper(rawTezosTx)
+}
+
+const prepareSpend = async (receivers: string[], amounts: BigNumber[], fee: BigNumber) => {
+  let rawTezosTx = await tezosLib.prepareTransactionFromPublicKey(tezosProtocolSpec.wallet.publicKey, receivers, amounts, fee)
+  return prepareTxHelper(rawTezosTx)
+}
 
 describe(`ICoinProtocol Tezos - Custom Tests`, () => {
   afterEach(() => {
@@ -287,29 +338,16 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
     })
 
     it('will properly prepare a TX to a KT1 address', async () => {
-      const rawTezosTx = await tezosLib.prepareTransactionFromPublicKey(
-        tezosProtocolSpec.wallet.publicKey,
+      const result = await prepareSpend(
         ['KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy'],
-        [new BigNumber(100000)],
+        [new BigNumber(100000)], // send so much funds that it should deduct, given it is a 0-balance receiver (which it is not)
         new BigNumber(1420)
       )
-      const airGapTx = await tezosLib.getTransactionDetails({
-        transaction: rawTezosTx,
-        publicKey: tezosProtocolSpec.wallet.publicKey
-      })
 
-      const unforgedTransaction = tezosLib.unforgeUnsignedTezosWrappedOperation(rawTezosTx.binaryTransaction)
-
-      const spendOperation = unforgedTransaction.contents.find(content => content.kind === TezosOperationType.TRANSACTION)
-      if (!spendOperation) {
-        throw new Error('No spend transaction found')
-      }
-      const spendTransaction: TezosSpendOperation = spendOperation as TezosSpendOperation
-
-      expect(spendTransaction.storage_limit).to.equal('0') // kt addresses do not need to get funed, they are originated :)
-      expect(airGapTx.amount.toFixed()).to.equal('100000')
-      expect(airGapTx.fee.toFixed()).to.equal('1420')
-      expect(rawTezosTx.binaryTransaction).to.equal(
+      expect(result.spendTransaction.storage_limit).to.equal('0') // kt addresses do not need to get funed, they are originated :)
+      expect(result.airGapTx.amount.toFixed()).to.equal('100000')
+      expect(result.airGapTx.fee.toFixed()).to.equal('1420')
+      expect(result.rawTezosTx.binaryTransaction).to.equal(
         'e4b7e31c04d23e3a10ea20e11bd0ebb4bde16f632c1d94779fd5849a34ec42a308000091a9d2b003f19cf5a1f38f04f1000ab482d331768c0bcffe37f44e00a08d0601ba4e7349ac25dc5eb2df5a43fceacc58963df4f50000'
       )
     })
@@ -327,9 +365,16 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
   })
 
   describe('Address Init', () => {
+    const sendFee = new BigNumber('1400')
+    const revealFee = new BigNumber('1300')
+    const initializationFee = new BigNumber('257000')
+    const originationBurn = new BigNumber('257000')
+    let stub
+
     beforeEach(async () => {
       await isCoinlibReady()
-      const stub = sinon.stub(axios, 'get')
+      sinon.restore()
+      stub = sinon.stub(axios, 'get')
 
       stub
         .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${tezosProtocolSpec.wallet.addresses[0]}/counter`)
@@ -351,112 +396,335 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         .returns(Promise.resolve({ data: { key: 'test-key' } }))
     })
 
-    it('will deduct necessary fee to initialize empty TZ1 accounts, if amount + fee === balance', async () => {
-      const rawTezosTx = await tezosLib.prepareTransactionFromPublicKey(
-        tezosProtocolSpec.wallet.publicKey,
-        ['tz1bgWdfd9YS7pTkNgZTNs26c33nBHwSYW6S'],
-        [new BigNumber(900000)],
-        new BigNumber(100000)
-      )
-      const airGapTx = await tezosLib.getTransactionDetails({
-        transaction: rawTezosTx,
-        publicKey: tezosProtocolSpec.wallet.publicKey
+    describe('Spend', () => {
+      it('will deduct fee to initialize empty tz1 receiving address, if amount + fee === balance', async () => {
+        const address = 'tz1bgWdfd9YS7pTkNgZTNs26c33nBHwSYW6S'
+        const amount = new BigNumber(900000)
+        const fee = new BigNumber(100000)
+        const result = await prepareSpend(
+          [address],
+          [amount], // send so much funds that it should deduct, given it is a 0-balance receiver (which it is not)
+          fee
+        )
+
+        // check that storage is properly set
+        expect(result.spendTransaction.storage_limit).to.equal('300')
+
+        expect(result.airGapTx.amount.toFixed()).to.equal('643000') // 900000 - 257000 amount - initializationFee
+        expect(result.airGapTx.amount.toFixed()).to.equal(amount.minus(initializationFee).toFixed())
+
+        expect(result.airGapTx.fee.toFixed()).to.equal('100000')
+        expect(result.airGapTx.fee.toFixed()).to.equal(fee.toFixed())
       })
 
-      const unforgedTransaction = tezosLib.unforgeUnsignedTezosWrappedOperation(rawTezosTx.binaryTransaction)
+      it('will not deduct fee if enough funds are available on the account', async () => {
+        const result = await prepareSpend(
+          ['tz1bgWdfd9YS7pTkNgZTNs26c33nBHwSYW6S'],
+          [new BigNumber(100000)], // send so much funds that it should deduct, given it is a 0-balance receiver (which it is not)
+          new BigNumber(100000)
+        )
 
-      const spendOperation = unforgedTransaction.contents.find(content => content.kind === TezosOperationType.TRANSACTION)
-      if (!spendOperation) {
-        throw new Error('No spend transaction found')
-      }
-      const spendTransaction: TezosSpendOperation = spendOperation as TezosSpendOperation
+        // check that storage is properly set
+        expect(result.spendTransaction.storage_limit).to.equal('300')
 
-      // check that storage is properly set
-      expect(spendTransaction.storage_limit).to.equal('300')
+        expect(result.airGapTx.amount.toFixed()).to.equal('100000') // amount should be correct
+        expect(result.airGapTx.fee.toFixed()).to.equal('100000')
+      })
 
-      expect(airGapTx.amount.toFixed()).to.equal('643000')
-      expect(airGapTx.fee.toFixed()).to.equal('100000')
+      it('will not mess with anything, given the receiving account has balance already', async () => {
+        const result = await prepareSpend(
+          ['tz1d75oB6T4zUMexzkr5WscGktZ1Nss1JrT7'],
+          [new BigNumber(899999)], // send so much funds that it should deduct, given it is a 0-balance receiver (which it is not)
+          new BigNumber(100000)
+        )
+
+        // check that storage is properly set
+        expect(result.spendTransaction.storage_limit).to.equal('0')
+
+        expect(result.airGapTx.amount.toFixed()).to.equal('899999') // amount should be correct
+        expect(result.airGapTx.fee.toFixed()).to.equal('100000')
+      })
+
+      it('will leave 1 mutez behind if we try to send the full balance', async () => {
+        const result = await prepareSpend(
+          ['tz1d75oB6T4zUMexzkr5WscGktZ1Nss1JrT7'],
+          [new BigNumber(900000)], // send so much funds that it should deduct, given it is a 0-balance receiver (which it is not)
+          new BigNumber(100000)
+        )
+        // check that storage is properly set
+        expect(result.spendTransaction.storage_limit).to.equal('0')
+
+        expect(result.airGapTx.amount.toFixed()).to.equal('899999') // amount should be 1 less
+        expect(result.airGapTx.fee.toFixed()).to.equal('100000')
+      })
     })
 
-    it('will not deduct fee if enough funds are available on the account', async () => {
-      const rawTezosTx = await tezosLib.prepareTransactionFromPublicKey(
-        tezosProtocolSpec.wallet.publicKey,
-        ['tz1bgWdfd9YS7pTkNgZTNs26c33nBHwSYW6S'],
-        [new BigNumber(100000)], // send only 1/10 of funds, so it should not deduct anything
-        new BigNumber(100000)
-      )
-      const airGapTx = await tezosLib.getTransactionDetails({
-        transaction: rawTezosTx,
-        publicKey: tezosProtocolSpec.wallet.publicKey
+    ///////////////////////////
+    // ORIGINATION
+    ///////////////////////////
+
+    describe('Origination', () => {
+      it('should be able to forge and unforge an origination TX', async () => {
+        const tz = await tezosLib.originate(tezosProtocolSpec.wallet.publicKey)
+        expect(tz.binaryTransaction).to.equal(
+          'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb95509000091a9d2b003f19cf5a1f38f04f1000ab482d33176f80ac4fe37904e81020091a9d2b003f19cf5a1f38f04f1000ab482d3317600ffff0000'
+        )
+
+        const tezosWrappedOperation = tezosLib.unforgeUnsignedTezosWrappedOperation(tz.binaryTransaction)
+        const tezosOriginationOperation = tezosWrappedOperation.contents[0] as TezosOriginationOperation
+
+        expect(tezosOriginationOperation.kind, 'kind').to.equal(TezosOperationType.ORIGINATION)
+        expect(tezosOriginationOperation.source, 'source').to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
+        expect(tezosOriginationOperation.fee, 'fee').to.equal('1400')
+        expect(tezosOriginationOperation.counter, 'counter').to.equal('917316')
+        expect(tezosOriginationOperation.gas_limit, 'gas_limit').to.equal('10000')
+        expect(tezosOriginationOperation.storage_limit, 'storage_limit').to.equal('257')
+        expect(tezosOriginationOperation.managerPubkey, 'managerPubkey').to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
+        expect(tezosOriginationOperation.balance, 'balance').to.equal('0')
+        expect(tezosOriginationOperation.delegatable, 'delegatable').to.equal(true)
+        expect(tezosOriginationOperation.spendable, 'spendable').to.equal(true)
+        expect(tezosOriginationOperation.delegate, 'delegate').to.be.undefined
       })
 
-      const unforgedTransaction = tezosLib.unforgeUnsignedTezosWrappedOperation(rawTezosTx.binaryTransaction)
+      it('should send all funds in origination operation if delegate is set', async () => {
+        const delegate = 'tz1MJx9vhaNRSimcuXPK2rW4fLccQnDAnVKJ'
+        const balance = new BigNumber(1000000)
+        const tz = await tezosLib.originate(tezosProtocolSpec.wallet.publicKey, delegate)
 
-      const spendOperation = unforgedTransaction.contents.find(content => content.kind === TezosOperationType.TRANSACTION)
-      if (!spendOperation) {
-        throw new Error('No spend transaction found')
-      }
-      const spendTransaction: TezosSpendOperation = spendOperation as TezosSpendOperation
+        expect(tz.binaryTransaction).to.equal(
+          'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb95509000091a9d2b003f19cf5a1f38f04f1000ab482d33176f80ac4fe37904e81020091a9d2b003f19cf5a1f38f04f1000ab482d33176dfa12dffffff0012548f71994cb2ce18072d0dcb568fe35fb7493000'
+        )
 
-      // check that storage is properly set
-      expect(spendTransaction.storage_limit).to.equal('300')
+        const tezosWrappedOperation = tezosLib.unforgeUnsignedTezosWrappedOperation(tz.binaryTransaction)
+        const tezosOriginationOperation = tezosWrappedOperation.contents[0] as TezosOriginationOperation
 
-      expect(airGapTx.amount.toFixed()).to.equal('100000') // amount should be correct
-      expect(airGapTx.fee.toFixed()).to.equal('100000')
-    })
-
-    it('will not mess with anything, given the receiving account has balance already', async () => {
-      const rawTezosTx = await tezosLib.prepareTransactionFromPublicKey(
-        tezosProtocolSpec.wallet.publicKey,
-        ['tz1d75oB6T4zUMexzkr5WscGktZ1Nss1JrT7'],
-        [new BigNumber(899999)], // send so much funds that it should deduct, given it is a 0-balance receiver (which it is not)
-        new BigNumber(100000)
-      )
-      const airGapTx = await tezosLib.getTransactionDetails({
-        transaction: rawTezosTx,
-        publicKey: tezosProtocolSpec.wallet.publicKey
+        expect(tezosOriginationOperation.kind, 'kind').to.equal(TezosOperationType.ORIGINATION)
+        expect(tezosOriginationOperation.source, 'source').to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
+        expect(tezosOriginationOperation.fee, 'fee').to.equal('1400')
+        expect(tezosOriginationOperation.counter, 'counter').to.equal('917316')
+        expect(tezosOriginationOperation.gas_limit, 'gas_limit').to.equal('10000')
+        expect(tezosOriginationOperation.storage_limit, 'storage_limit').to.equal('257')
+        expect(tezosOriginationOperation.managerPubkey, 'managerPubkey').to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
+        expect(tezosOriginationOperation.balance, 'balance').to.equal(
+          balance
+            .minus(1400)
+            .minus(257000)
+            .minus(1)
+            .toFixed()
+        )
+        expect(tezosOriginationOperation.balance, 'balance').to.equal(new BigNumber('741599').toFixed())
+        expect(tezosOriginationOperation.delegatable, 'delegatable').to.equal(true)
+        expect(tezosOriginationOperation.spendable, 'spendable').to.equal(true)
+        expect(tezosOriginationOperation.delegate, 'delegate').to.equal(delegate)
       })
 
-      const unforgedTransaction = tezosLib.unforgeUnsignedTezosWrappedOperation(rawTezosTx.binaryTransaction)
+      it('should send defined amount in origination operation if delegate and amount are set', async () => {
+        const delegate = 'tz1MJx9vhaNRSimcuXPK2rW4fLccQnDAnVKJ'
+        const amount = new BigNumber(200000)
+        const tz = await tezosLib.originate(tezosProtocolSpec.wallet.publicKey, delegate, amount)
+        expect(tz.binaryTransaction).to.equal(
+          'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb95509000091a9d2b003f19cf5a1f38f04f1000ab482d33176f80ac4fe37904e81020091a9d2b003f19cf5a1f38f04f1000ab482d33176c09a0cffffff0012548f71994cb2ce18072d0dcb568fe35fb7493000'
+        )
 
-      const spendOperation = unforgedTransaction.contents.find(content => content.kind === TezosOperationType.TRANSACTION)
-      if (!spendOperation) {
-        throw new Error('No spend transaction found')
-      }
-      const spendTransaction: TezosSpendOperation = spendOperation as TezosSpendOperation
+        const tezosWrappedOperation = tezosLib.unforgeUnsignedTezosWrappedOperation(tz.binaryTransaction)
+        const tezosOriginationOperation = tezosWrappedOperation.contents[0] as TezosOriginationOperation
 
-      // check that storage is properly set
-      expect(spendTransaction.storage_limit).to.equal('0')
-
-      expect(airGapTx.amount.toFixed()).to.equal('899999') // amount should be correct
-      expect(airGapTx.fee.toFixed()).to.equal('100000')
-    })
-
-    it('will leave 1 mutez behind if we try to send the full balance', async () => {
-      const rawTezosTx = await tezosLib.prepareTransactionFromPublicKey(
-        tezosProtocolSpec.wallet.publicKey,
-        ['tz1d75oB6T4zUMexzkr5WscGktZ1Nss1JrT7'],
-        [new BigNumber(900000)], // send so much funds that it should deduct, given it is a 0-balance receiver (which it is not)
-        new BigNumber(100000)
-      )
-      const airGapTx = await tezosLib.getTransactionDetails({
-        transaction: rawTezosTx,
-        publicKey: tezosProtocolSpec.wallet.publicKey
+        expect(tezosOriginationOperation.kind, 'kind').to.equal(TezosOperationType.ORIGINATION)
+        expect(tezosOriginationOperation.source, 'source').to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
+        expect(tezosOriginationOperation.fee, 'fee').to.equal('1400')
+        expect(tezosOriginationOperation.counter, 'counter').to.equal('917316')
+        expect(tezosOriginationOperation.gas_limit, 'gas_limit').to.equal('10000')
+        expect(tezosOriginationOperation.storage_limit, 'storage_limit').to.equal('257')
+        expect(tezosOriginationOperation.managerPubkey, 'managerPubkey').to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
+        expect(tezosOriginationOperation.balance, 'balance').to.equal(amount.toFixed())
+        expect(tezosOriginationOperation.delegatable, 'delegatable').to.equal(true)
+        expect(tezosOriginationOperation.spendable, 'spendable').to.equal(true)
+        expect(tezosOriginationOperation.delegate, 'delegate').to.equal(delegate)
       })
 
-      const unforgedTransaction = tezosLib.unforgeUnsignedTezosWrappedOperation(rawTezosTx.binaryTransaction)
+      it('should send specified amount in origination operation if delegate is not set and amount is set', async () => {
+        const delegate = 'tz1MJx9vhaNRSimcuXPK2rW4fLccQnDAnVKJ'
+        const amount = new BigNumber(200000)
+        const tz = await tezosLib.originate(tezosProtocolSpec.wallet.publicKey, undefined, amount)
+        /*
+        expect(tz.binaryTransaction).to.equal(
+          'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb95509000091a9d2b003f19cf5a1f38f04f1000ab482d33176f80ac4fe37904e81020091a9d2b003f19cf5a1f38f04f1000ab482d33176c09a0cffffff0012548f71994cb2ce18072d0dcb568fe35fb7493000'
+        )
+*/
+        const tezosWrappedOperation = tezosLib.unforgeUnsignedTezosWrappedOperation(tz.binaryTransaction)
+        const tezosOriginationOperation = tezosWrappedOperation.contents[0] as TezosOriginationOperation
 
-      const spendOperation = unforgedTransaction.contents.find(content => content.kind === TezosOperationType.TRANSACTION)
-      if (!spendOperation) {
-        throw new Error('No spend transaction found')
-      }
-      const spendTransaction: TezosSpendOperation = spendOperation as TezosSpendOperation
+        expect(tezosOriginationOperation.kind, 'kind').to.equal(TezosOperationType.ORIGINATION)
+        expect(tezosOriginationOperation.source, 'source').to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
+        expect(tezosOriginationOperation.fee, 'fee').to.equal('1400')
+        expect(tezosOriginationOperation.counter, 'counter').to.equal('917316')
+        expect(tezosOriginationOperation.gas_limit, 'gas_limit').to.equal('10000')
+        expect(tezosOriginationOperation.storage_limit, 'storage_limit').to.equal('257')
+        expect(tezosOriginationOperation.managerPubkey, 'managerPubkey').to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
+        expect(tezosOriginationOperation.balance, 'balance').to.equal(amount.toFixed())
+        expect(tezosOriginationOperation.delegatable, 'delegatable').to.equal(true)
+        expect(tezosOriginationOperation.spendable, 'spendable').to.equal(true)
+        expect(tezosOriginationOperation.delegate, 'delegate').to.be.undefined
+      })
 
-      // check that storage is properly set
-      expect(spendTransaction.storage_limit).to.equal('0')
+      it('should send 0 amount in origination operation if delegate and amount are not set', async () => {
+        const delegate = 'tz1MJx9vhaNRSimcuXPK2rW4fLccQnDAnVKJ'
+        const amount = new BigNumber(0)
+        const tz = await tezosLib.originate(tezosProtocolSpec.wallet.publicKey)
+        /*
+        expect(tz.binaryTransaction).to.equal(
+          'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb95509000091a9d2b003f19cf5a1f38f04f1000ab482d33176f80ac4fe37904e81020091a9d2b003f19cf5a1f38f04f1000ab482d33176c09a0cffffff0012548f71994cb2ce18072d0dcb568fe35fb7493000'
+        )
+*/
+        const tezosWrappedOperation = tezosLib.unforgeUnsignedTezosWrappedOperation(tz.binaryTransaction)
+        const tezosOriginationOperation = tezosWrappedOperation.contents[0] as TezosOriginationOperation
 
-      expect(airGapTx.amount.toFixed()).to.equal('899999') // amount should be 1 less
-      expect(airGapTx.fee.toFixed()).to.equal('100000')
+        expect(tezosOriginationOperation.kind, 'kind').to.equal(TezosOperationType.ORIGINATION)
+        expect(tezosOriginationOperation.source, 'source').to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
+        expect(tezosOriginationOperation.fee, 'fee').to.equal('1400')
+        expect(tezosOriginationOperation.counter, 'counter').to.equal('917316')
+        expect(tezosOriginationOperation.gas_limit, 'gas_limit').to.equal('10000')
+        expect(tezosOriginationOperation.storage_limit, 'storage_limit').to.equal('257')
+        expect(tezosOriginationOperation.managerPubkey, 'managerPubkey').to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
+        expect(tezosOriginationOperation.balance, 'balance').to.equal(amount.toFixed())
+        expect(tezosOriginationOperation.delegatable, 'delegatable').to.equal(true)
+        expect(tezosOriginationOperation.spendable, 'spendable').to.equal(true)
+        expect(tezosOriginationOperation.delegate, 'delegate').to.be.undefined
+      })
+
+      it('will send 0 AMOUNT from USED ADDRESS and automatically subtract SPEND FEE, ORIGINATION BURN and 1', async () => {
+        const address = 'tz1bgWdfd9YS7pTkNgZTNs26c33nBHwSYW6S'
+        const amount = new BigNumber('0')
+
+        const result = await prepareOrigination(address, amount)
+
+        expect(result.originationTransaction.storage_limit).to.equal('257')
+
+        expect(result.airGapTx.amount.toFixed()).to.equal('0')
+        expect(result.airGapTx.amount.toFixed()).to.equal(amount.toFixed())
+
+        expect(result.airGapTx.fee.toFixed()).to.equal('1400')
+        expect(result.airGapTx.fee.toFixed()).to.equal(sendFee.toFixed())
+      })
+
+      it('will send 0 AMOUNT from UNUSED ADDRESS and automatically subtract SPEND FEE, REVEAL FEE, ORIGINATION BURN and 1', async () => {
+        stub
+          .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L/manager_key`)
+          .returns(Promise.resolve({ data: {} }))
+
+        const address = 'tz1bgWdfd9YS7pTkNgZTNs26c33nBHwSYW6S'
+        const amount = new BigNumber('0')
+
+        const result = await prepareOrigination(address, amount)
+
+        expect(result.originationTransaction.storage_limit).to.equal('257')
+
+        expect(result.airGapTx.amount.toFixed()).to.equal('0')
+        expect(result.airGapTx.amount.toFixed()).to.equal(amount.toFixed())
+
+        expect(result.airGapTx.fee.toFixed()).to.equal('1400')
+        expect(result.airGapTx.fee.toFixed()).to.equal(sendFee.toFixed())
+      })
+
+      it('will send SPECIFIC AMOUNT from USED ADDRESS and automatically subtract SPEND FEE, ORIGINATION BURN and 1', async () => {
+        const address = 'tz1bgWdfd9YS7pTkNgZTNs26c33nBHwSYW6S'
+        const balance = new BigNumber('1000000')
+        const amount = new BigNumber('900000')
+
+        const result = await prepareOrigination(address, amount)
+
+        // check that storage is properly set
+        expect(result.originationTransaction.storage_limit).to.equal('257')
+
+        expect(result.airGapTx.amount.toFixed()).to.equal('741599') // 1000000 (balance) - 257000 (origination burn) - 1400 (fee) - 1 (min amount)
+        expect(result.airGapTx.amount.toFixed()).to.equal(
+          balance
+            .minus(originationBurn)
+            .minus(sendFee)
+            .minus(1)
+            .toFixed()
+        )
+
+        expect(result.airGapTx.fee.toFixed()).to.equal('1400')
+        expect(result.airGapTx.fee.toFixed()).to.equal(sendFee.toFixed())
+      })
+
+      it('will send SPECIFIC AMOUNT from UNUSED ADDRESS and automatically subtract SPEND FEE, REVEAL FEE, ORIGINATION BURN and 1', async () => {
+        stub
+          .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L/manager_key`)
+          .returns(Promise.resolve({ data: {} }))
+
+        const address = 'tz1bgWdfd9YS7pTkNgZTNs26c33nBHwSYW6S'
+        const balance = new BigNumber('1000000')
+        const amount = new BigNumber('900000')
+
+        const result = await prepareOrigination(address, amount)
+
+        // check that storage is properly set
+        expect(result.originationTransaction.storage_limit).to.equal('257')
+
+        expect(result.airGapTx.amount.toFixed()).to.equal('740299') // 1000000 (balance) - 257000 (origination burn) - 1300 (reveal fee) - 1400 (fee) - 1 (min amount)
+        expect(result.airGapTx.amount.toFixed()).to.equal(
+          balance
+            .minus(originationBurn)
+            .minus(sendFee)
+            .minus(revealFee)
+            .minus(1)
+            .toFixed()
+        )
+
+        expect(result.airGapTx.fee.toFixed()).to.equal('1400')
+        expect(result.airGapTx.fee.toFixed()).to.equal(sendFee.toFixed())
+      })
+
+      it('will send MAX AMOUNT from USED ADDRESS and automatically subtract SPEND FEE, ORIGINATION BURN and 1', async () => {
+        const address = 'tz1bgWdfd9YS7pTkNgZTNs26c33nBHwSYW6S'
+        const balance = new BigNumber('1000000')
+
+        const result = await prepareOrigination(address)
+
+        // check that storage is properly set
+        expect(result.originationTransaction.storage_limit).to.equal('257')
+
+        expect(result.airGapTx.amount.toFixed()).to.equal('741599') // 1000000 (balance) - 257000 (origination burn) - 1400 (fee) - 1 (min amount)
+        expect(result.airGapTx.amount.toFixed()).to.equal(
+          balance
+            .minus(originationBurn)
+            .minus(sendFee)
+            .minus(1)
+            .toFixed()
+        )
+
+        expect(result.airGapTx.fee.toFixed()).to.equal('1400')
+        expect(result.airGapTx.fee.toFixed()).to.equal(sendFee.toFixed())
+      })
+
+      it('will send MAX AMOUNT from UNUSED ADDRESS and automatically subtract SPEND FEE, REVEAL FEE, ORIGINATION BURN and 1', async () => {
+        stub
+          .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L/manager_key`)
+          .returns(Promise.resolve({ data: {} }))
+
+        const address = 'tz1bgWdfd9YS7pTkNgZTNs26c33nBHwSYW6S'
+        const balance = new BigNumber('1000000')
+
+        const result = await prepareOrigination(address)
+
+        // check that storage is properly set
+        expect(result.originationTransaction.storage_limit).to.equal('257')
+
+        expect(result.airGapTx.amount.toFixed()).to.equal('740299') // 1000000 (balance) - 257000 (origination burn) - 1300 (reveal fee) - 1400 (fee) - 1 (min amount)
+        expect(result.airGapTx.amount.toFixed()).to.equal(
+          balance
+            .minus(originationBurn)
+            .minus(sendFee)
+            .minus(revealFee)
+            .minus(1)
+            .toFixed()
+        )
+
+        expect(result.airGapTx.fee.toFixed()).to.equal('1400')
+        expect(result.airGapTx.fee.toFixed()).to.equal(sendFee.toFixed())
+      })
     })
   })
 })
