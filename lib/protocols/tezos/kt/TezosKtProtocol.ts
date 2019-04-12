@@ -82,23 +82,32 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
 
     // if the address is delegated, check since when
     if (data.delegate.value) {
+      const getDataFromMostRecentTransaction = (transactions): { date: Date; opLevel: number } | void => {
+        if (transactions.length > 0) {
+          const mostRecentTransaction = transactions[0]
+
+          return {
+            date: new Date(mostRecentTransaction.type.operations[0].timestamp),
+            opLevel: mostRecentTransaction.type.operations[0].op_level
+          }
+        }
+      }
+
       // We first try to get the data from the lastest delegation
-      const { data: delegationData } = await axios.get(`${this.baseApiUrl}/v3/operations/${delegatedAddress}?type=Delegation`)
+      // After that try to get it from the origination
+      const transactionSourceUrls = [
+        `${this.baseApiUrl}/v3/operations/${delegatedAddress}?type=Delegation`,
+        `${this.baseApiUrl}/v3/operations/${delegatedAddress}?type=Origination`
+      ]
 
-      if (delegationData.length > 0) {
-        const mostRecentDelegation = delegationData[0]
+      for (let sourceUrl of transactionSourceUrls) {
+        const { data } = await axios.get(sourceUrl)
 
-        delegatedDate = new Date(mostRecentDelegation.type.operations[0].timestamp)
-        delegatedOpLevel = mostRecentDelegation.type.operations[0].op_level
-      } else {
-        // In case there is no delegation operation for this KT address, it was delegated within an origination operation, so we check those txs
-        const { data: originationData } = await axios.get(`${this.baseApiUrl}/v3/operations/${delegatedAddress}?type=Origination`)
-
-        if (originationData.length > 0) {
-          const mostRecentOrigination = originationData[0]
-
-          delegatedDate = new Date(mostRecentOrigination.type.operations[0].timestamp)
-          delegatedOpLevel = mostRecentOrigination.type.operations[0].op_level
+        const recentTransactionData = getDataFromMostRecentTransaction(data)
+        if (recentTransactionData) {
+          delegatedDate = recentTransactionData.date
+          delegatedOpLevel = recentTransactionData.opLevel
+          break
         }
       }
     }
