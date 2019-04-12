@@ -125,12 +125,13 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
   blockExplorer = 'https://tzscan.io'
 
-  protected originationSize = new BigNumber('257')
-  protected storageCostPerByte = new BigNumber('1000')
+  protected readonly transactionFee = new BigNumber('1400')
+  protected readonly originationSize = new BigNumber('257')
+  protected readonly storageCostPerByte = new BigNumber('1000')
 
-  protected revealFee = new BigNumber('1300')
-  protected activationBurn = this.originationSize.times(this.storageCostPerByte)
-  protected originationBurn = this.originationSize.times(this.storageCostPerByte) // https://tezos.stackexchange.com/a/787
+  protected readonly revealFee = new BigNumber('1300')
+  protected readonly activationBurn = this.originationSize.times(this.storageCostPerByte)
+  protected readonly originationBurn = this.originationSize.times(this.storageCostPerByte) // https://tezos.stackexchange.com/a/787
 
   // Tezos - We need to wrap these in Buffer due to non-compatible browser polyfills
   private tezosPrefixes = {
@@ -468,7 +469,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
     const balance = await this.getBalanceOfAddresses([address])
 
-    const fee = new BigNumber(1400)
+    const fee = this.transactionFee
 
     const amountUsedByPreviousOperations = this.getAmountUsedByPreviousOperations(operations)
 
