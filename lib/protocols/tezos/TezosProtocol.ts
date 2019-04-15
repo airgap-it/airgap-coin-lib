@@ -71,6 +71,8 @@ export interface TezosOriginationOperation extends TezosOperation {
   source: string
   spendable: boolean
   storage_limit: string
+  delegate?: string
+  script?: string
 }
 export interface TezosRevealOperation extends TezosOperation {
   public_key: string
@@ -123,7 +125,13 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
   blockExplorer = 'https://tzscan.io'
 
-  private addressInitializationFee = new BigNumber('0.257').shiftedBy(this.decimals)
+  protected readonly transactionFee = new BigNumber('1400')
+  protected readonly originationSize = new BigNumber('257')
+  protected readonly storageCostPerByte = new BigNumber('1000')
+
+  protected readonly revealFee = new BigNumber('1300')
+  protected readonly activationBurn = this.originationSize.times(this.storageCostPerByte)
+  protected readonly originationBurn = this.originationSize.times(this.storageCostPerByte) // https://tezos.stackexchange.com/a/787
 
   // Tezos - We need to wrap these in Buffer due to non-compatible browser polyfills
   private tezosPrefixes = {
@@ -144,7 +152,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
    * @param jsonRPCAPI
    * @param baseApiUrl
    */
-  constructor(public jsonRPCAPI = 'https://rpc.tezrpc.me', public baseApiUrl = 'https://api6.tzscan.io') {
+  constructor(public jsonRPCAPI = 'https://mainnet-node.tzscan.io', public baseApiUrl = 'https://api6.tzscan.io') {
     super()
   }
 
@@ -278,7 +286,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       amount = new BigNumber((tezosOperation as TezosSpendOperation).amount)
       to = [(tezosOperation as TezosSpendOperation).destination]
     } else if (tezosOperation.kind === TezosOperationType.ORIGINATION) {
-      to = ['Origination']
+      const tezosOriginationOperation = tezosOperation as TezosOriginationOperation
+      amount = new BigNumber(tezosOriginationOperation.balance)
+      let delegate = tezosOriginationOperation.delegate
+      to = [delegate ? `Delegate: ${delegate}` : 'Origination']
     } else if (tezosOperation.kind === TezosOperationType.DELEGATION) {
       let delegate = (tezosOperation as TezosDelegationOperation).delegate
       to = [delegate ? delegate : 'Undelegate']
@@ -356,7 +367,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       const accountManager = results[2].data
 
       // check if we have revealed the key already
-      if (!accountManager.key) {
+      if (address.toLowerCase().startsWith('tz') && !accountManager.key) {
         operations.push(await this.createRevealOperation(counter, publicKey, address))
         counter = counter.plus(1)
       }
@@ -367,13 +378,22 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     const balance = await this.getBalanceOfPublicKey(publicKey)
     const receivingBalance = await this.getBalanceOfAddresses(recipients)
 
+    const amountUsedByPreviousOperations = this.getAmountUsedByPreviousOperations(operations)
+
+    if (!amountUsedByPreviousOperations.isZero()) {
+      if (balance.isLessThan(values[0].plus(fee).plus(amountUsedByPreviousOperations))) {
+        // if not, make room for the init fee
+        values[0] = values[0].minus(amountUsedByPreviousOperations) // deduct fee from balance
+      }
+    }
+
     // if our receiver has 0 balance, the account is not activated yet.
     if (receivingBalance.isZero() && recipients[0].toLowerCase().startsWith('tz')) {
       // We have to supply an additional 0.257 XTZ fee for storage_limit costs, which gets automatically deducted from the sender so we just have to make sure enough balance is around
-      // check whether the sender has enough to cover the amount to send + fee + initialization
-      if (balance.isLessThan(values[0].plus(fee).plus(this.addressInitializationFee))) {
+      // check whether the sender has enough to cover the amount to send + fee + activation
+      if (balance.isLessThan(values[0].plus(fee).plus(this.activationBurn))) {
         // if not, make room for the init fee
-        values[0] = values[0].minus(this.addressInitializationFee) // deduct fee from balance
+        values[0] = values[0].minus(this.activationBurn) // deduct fee from balance
       }
     }
 
@@ -410,6 +430,125 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       console.warn(error.message)
       throw new Error('Forging Tezos TX failed.')
     }
+  }
+
+  /**
+   * If the delegate is set and amount is not set, the whole balance will be sent to the KT address.
+   *
+   * @param publicKey Public key of tezos account
+   * @param delegate The address of the account where you want to delegate the newly originated KT address
+   * @param amount The amount of tezzies to be transferred to the newly originated KT address
+   */
+  async originate(publicKey: string, delegate?: string, amount?: BigNumber): Promise<RawTezosTransaction> {
+    let counter = new BigNumber(1)
+    let branch: string
+
+    const operations: TezosOperation[] = []
+    const address = await this.getAddressFromPublicKey(publicKey)
+
+    try {
+      const results = await Promise.all([
+        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/counter`),
+        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/hash`),
+        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/manager_key`)
+      ])
+
+      counter = new BigNumber(results[0].data).plus(1)
+      branch = results[1].data
+
+      const accountManager = results[2].data
+
+      // check if we have revealed the key already
+      if (!accountManager.key) {
+        operations.push(await this.createRevealOperation(counter, publicKey, address))
+        counter = counter.plus(1)
+      }
+    } catch (error) {
+      throw error
+    }
+
+    const balance = await this.getBalanceOfAddresses([address])
+
+    const amountUsedByPreviousOperations = this.getAmountUsedByPreviousOperations(operations)
+
+    const combinedAmountsAndFees = this.transactionFee
+      .plus(amountUsedByPreviousOperations)
+      .plus(this.originationBurn)
+      .plus(1)
+
+    let balanceToSend = new BigNumber(0)
+
+    if (delegate) {
+      balanceToSend = balance // If delegate is set, by default we send the whole balance
+    }
+
+    if (amount && amount.isLessThan(balance)) {
+      balanceToSend = amount // If amount is set and valid, we override
+    }
+
+    const maxAmount = balance.minus(combinedAmountsAndFees)
+
+    balanceToSend = BigNumber.min(balanceToSend, maxAmount)
+
+    if (balance.isLessThan(balanceToSend.plus(combinedAmountsAndFees))) {
+      throw new Error('not enough balance')
+    }
+
+    const originationOperation: TezosOriginationOperation = {
+      kind: TezosOperationType.ORIGINATION,
+      source: address,
+      fee: this.transactionFee.toFixed(),
+      counter: counter.toFixed(),
+      gas_limit: '10000', // taken from eztz
+      storage_limit: this.originationSize.toFixed(),
+      managerPubkey: address,
+      balance: balanceToSend.toFixed(),
+      spendable: true,
+      delegatable: true,
+      delegate: delegate
+    }
+
+    operations.push(originationOperation)
+
+    try {
+      const tezosWrappedOperation: TezosWrappedOperation = {
+        branch: branch,
+        contents: operations
+      }
+
+      const binaryTx = this.forgeTezosOperation(tezosWrappedOperation)
+
+      return { binaryTransaction: binaryTx }
+    } catch (error) {
+      console.warn(error.message)
+      throw new Error('Forging Tezos TX failed.')
+    }
+  }
+
+  private getAmountUsedByPreviousOperations(operations: TezosOperation[]): BigNumber {
+    let amountUsed = new BigNumber(0)
+    const assertNever = (x: never) => undefined
+
+    operations.forEach(operation => {
+      amountUsed = amountUsed.plus(operation.fee) // Fee has to be added for every operation type
+
+      if (operation.kind === TezosOperationType.REVEAL) {
+        // const revealOperation = operation as TezosRevealOperation
+        // No additional amount/fee
+      } else if (operation.kind === TezosOperationType.ORIGINATION) {
+        const originationOperation = operation as TezosOriginationOperation
+        amountUsed = amountUsed.plus(originationOperation.balance)
+      } else if (operation.kind === TezosOperationType.DELEGATION) {
+        // const delegationOperation = operation as TezosDelegationOperation
+        // No additional amount/fee
+      } else if (operation.kind === TezosOperationType.TRANSACTION) {
+        const spendOperation = operation as TezosSpendOperation
+        amountUsed = amountUsed.plus(spendOperation.amount)
+      } else {
+        assertNever(operation.kind) // Exhaustive if
+      }
+    })
+    return amountUsed
   }
 
   async broadcastTransaction(rawTransaction: IAirGapSignedTransaction): Promise<string> {
@@ -610,9 +749,22 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     const spendable = result === 'ff' ? true : false
     ;({ result, rest } = this.splitAndReturnRest(rest, 2))
     const delegatable = result === 'ff' ? true : false
-
-    // remove 0000 at end
-    rest = rest.slice(4)
+    ;({ result, rest } = this.splitAndReturnRest(rest, 2))
+    const hasDelegate = result === 'ff' ? true : false
+    let delegate
+    if (hasDelegate) {
+      // Delegate is optional
+      ;({ result, rest } = this.splitAndReturnRest(rest, 42))
+      delegate = this.parseAddress('00' + result)
+    }
+    ;({ result, rest } = this.splitAndReturnRest(rest, 2))
+    const hasScript = result === 'ff' ? true : false
+    let script
+    if (hasScript) {
+      // Script is optional
+      ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
+      script = this.zarithToBigNumber(result)
+    }
 
     return {
       tezosOriginationOperation: {
@@ -625,7 +777,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         balance: balance.toFixed(),
         managerPubkey: managerPubKey,
         spendable: spendable,
-        delegatable: delegatable
+        delegatable: delegatable,
+        delegate: delegate,
+        script: script
       },
       rest: rest
     }
@@ -692,6 +846,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         throw new Error('currently unsupported operation type supplied ' + operation.kind)
       }
 
+      // TAG
       if (operation.kind === TezosOperationType.TRANSACTION) {
         resultHexString += '08' // because this is a transaction operation
       } else if (operation.kind === TezosOperationType.REVEAL) {
@@ -780,7 +935,43 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         resultHexString += originationOperation.spendable ? 'ff' : '00'
         resultHexString += originationOperation.delegatable ? 'ff' : '00'
 
-        resultHexString += '0000'
+        if (originationOperation.delegate) {
+          // PRESENCE OF DELEGATE
+          resultHexString += 'ff'
+
+          let cleanedDestination
+
+          if (originationOperation.delegate.toLowerCase().startsWith('tz1')) {
+            cleanedDestination = this.checkAndRemovePrefixToHex(originationOperation.delegate, this.tezosPrefixes.tz1)
+          } else if (originationOperation.delegate.toLowerCase().startsWith('kt1')) {
+            cleanedDestination = this.checkAndRemovePrefixToHex(originationOperation.delegate, this.tezosPrefixes.kt)
+          }
+
+          if (!cleanedDestination || cleanedDestination.length > 42) {
+            // must be less or equal 21 bytes
+            throw new Error('provided destination is invalid')
+          }
+
+          while (cleanedDestination.length !== 42) {
+            // fill up with 0s to match 21 bytes
+            cleanedDestination = '0' + cleanedDestination
+          }
+
+          resultHexString += cleanedDestination
+        } else {
+          // ABSENCE OF DELEGATE
+          resultHexString += '00'
+        }
+
+        if (originationOperation.script) {
+          // PRESENCE OF SCRIPT
+          resultHexString += 'ff'
+
+          throw new Error('script not supported')
+        } else {
+          // ABSENCE OF SCRIPT
+          resultHexString += '00'
+        }
       }
 
       if (operation.kind === TezosOperationType.DELEGATION) {
@@ -869,7 +1060,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   async createRevealOperation(counter: BigNumber, publicKey: string, address: string): Promise<TezosRevealOperation> {
     const operation: TezosRevealOperation = {
       kind: TezosOperationType.REVEAL,
-      fee: '1300',
+      fee: this.revealFee.toFixed(),
       gas_limit: '10000', // taken from conseiljs
       storage_limit: '0', // taken from conseiljs
       counter: counter.toFixed(),

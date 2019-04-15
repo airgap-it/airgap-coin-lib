@@ -70,70 +70,8 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     return ktAddresses.reverse()
   }
 
-  async originate(publicKey: string): Promise<RawTezosTransaction> {
-    let counter = new BigNumber(1)
-    let branch: string
-
-    const operations: TezosOperation[] = []
-    const address = await super.getAddressFromPublicKey(publicKey)
-
-    try {
-      const results = await Promise.all([
-        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/counter`),
-        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/hash`),
-        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/manager_key`)
-      ])
-
-      counter = new BigNumber(results[0].data).plus(1)
-      branch = results[1].data
-
-      const accountManager = results[2].data
-
-      // check if we have revealed the key already
-      if (!accountManager.key) {
-        operations.push(await super.createRevealOperation(counter, publicKey, address))
-        counter = counter.plus(1)
-      }
-    } catch (error) {
-      throw error
-    }
-
-    const balance = await this.getBalanceOfAddresses([address])
-
-    const fee = new BigNumber(1400)
-
-    if (balance.isLessThan(fee)) {
-      throw new Error('not enough balance')
-    }
-
-    const originationOperation: TezosOriginationOperation = {
-      kind: TezosOperationType.ORIGINATION,
-      source: address,
-      fee: fee.toFixed(),
-      counter: counter.toFixed(),
-      gas_limit: '10000', // taken from eztz
-      storage_limit: '257', // taken from eztz
-      managerPubkey: address,
-      balance: '0',
-      spendable: true,
-      delegatable: true
-    }
-
-    operations.push(originationOperation)
-
-    try {
-      const tezosWrappedOperation: TezosWrappedOperation = {
-        branch: branch,
-        contents: operations
-      }
-
-      const binaryTx = this.forgeTezosOperation(tezosWrappedOperation)
-
-      return { binaryTransaction: binaryTx }
-    } catch (error) {
-      console.warn(error.message)
-      throw new Error('Forging Tezos TX failed.')
-    }
+  async originate(publicKey: string, delegate?: string, amount?: BigNumber): Promise<RawTezosTransaction> {
+    throw new Error('Originate operation not supported for KT Addresses')
   }
 
   async isAddressDelegated(delegatedAddress: string): Promise<DelegationInfo> {
@@ -144,12 +82,34 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
 
     // if the address is delegated, check since when
     if (data.delegate.value) {
-      const { data: delegationData } = await axios.get(`${this.baseApiUrl}/v3/operations/${delegatedAddress}?type=Delegation`)
+      const getDataFromMostRecentTransaction = (transactions): { date: Date; opLevel: number } | void => {
+        if (transactions.length > 0) {
+          const mostRecentTransaction = transactions[0]
 
-      const mostRecentDelegation = delegationData[0]
+          return {
+            date: new Date(mostRecentTransaction.type.operations[0].timestamp),
+            opLevel: mostRecentTransaction.type.operations[0].op_level
+          }
+        }
+      }
 
-      delegatedDate = new Date(mostRecentDelegation.type.operations[0].timestamp)
-      delegatedOpLevel = mostRecentDelegation.type.operations[0].op_level
+      // We first try to get the data from the lastest delegation
+      // After that try to get it from the origination
+      const transactionSourceUrls = [
+        `${this.baseApiUrl}/v3/operations/${delegatedAddress}?type=Delegation`,
+        `${this.baseApiUrl}/v3/operations/${delegatedAddress}?type=Origination`
+      ]
+
+      for (let sourceUrl of transactionSourceUrls) {
+        const { data } = await axios.get(sourceUrl)
+
+        const recentTransactionData = getDataFromMostRecentTransaction(data)
+        if (recentTransactionData) {
+          delegatedDate = recentTransactionData.date
+          delegatedOpLevel = recentTransactionData.opLevel
+          break
+        }
+      }
     }
 
     return {
