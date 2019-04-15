@@ -469,11 +469,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
     const balance = await this.getBalanceOfAddresses([address])
 
-    const fee = this.transactionFee
-
     const amountUsedByPreviousOperations = this.getAmountUsedByPreviousOperations(operations)
 
-    const combinedAmountsAndFees = fee
+    const combinedAmountsAndFees = this.transactionFee
       .plus(amountUsedByPreviousOperations)
       .plus(this.originationBurn)
       .plus(1)
@@ -499,7 +497,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     const originationOperation: TezosOriginationOperation = {
       kind: TezosOperationType.ORIGINATION,
       source: address,
-      fee: fee.toFixed(),
+      fee: this.transactionFee.toFixed(),
       counter: counter.toFixed(),
       gas_limit: '10000', // taken from eztz
       storage_limit: this.originationSize.toFixed(),
@@ -535,13 +533,13 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       amountUsed = amountUsed.plus(operation.fee) // Fee has to be added for every operation type
 
       if (operation.kind === TezosOperationType.REVEAL) {
-        const _revealOperation = operation as TezosRevealOperation
+        // const revealOperation = operation as TezosRevealOperation
         // No additional amount/fee
       } else if (operation.kind === TezosOperationType.ORIGINATION) {
         const originationOperation = operation as TezosOriginationOperation
         amountUsed = amountUsed.plus(originationOperation.balance)
       } else if (operation.kind === TezosOperationType.DELEGATION) {
-        const _delegationOperation = operation as TezosDelegationOperation
+        // const delegationOperation = operation as TezosDelegationOperation
         // No additional amount/fee
       } else if (operation.kind === TezosOperationType.TRANSACTION) {
         const spendOperation = operation as TezosSpendOperation
