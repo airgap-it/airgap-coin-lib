@@ -4,7 +4,7 @@
 
 This can be used to request for example [Airgap Vault](https://github.com/airgap-it/airgap-vault) to sign a transation.
 
-```
+```typescript
 import { EthereumProtocol, SyncProtocolUtils, EncodedType } from 'airgap-coin-lib'
 
 ...
@@ -33,7 +33,7 @@ const syncString = await syncProtocolUtils.serialize({
 
 The returned string `syncString` can now be used to be embedded in a QR-Code, or sent using other means to a device capable of deserializing it, for example using deep-links or through HTTP.
 
-```
+```typescript
 import { EthereumProtocol, SyncProtocolUtils, EncodedType } from 'airgap-coin-lib'
 
 const syncProtocolUtils = new SyncProtocolUtils()
@@ -46,7 +46,7 @@ const deserializedSync = await syncProtocol.deserialize(syncString)
 
 This can be used to request for example [Airgap Wallet](https://github.com/airgap-it/airgap-wallet) to broadcast a signed transaction to the network.
 
-```
+```typescript
 import { EthereumProtocol, SyncProtocolUtils, EncodedType } from 'airgap-coin-lib'
 
 ...
@@ -78,7 +78,7 @@ const serializedTx = await syncProtocol.serialize(deserializedTxSigningRequest)
 
 The returned string `serializedTx` can now be used to be embedded in a QR-Code, or sent using other means to a device capable of deserializing it, for example using deep-links or through HTTP.
 
-```
+```typescript
 import { EthereumProtocol, SyncProtocolUtils, EncodedType } from 'airgap-coin-lib'
 
 const syncProtocolUtils = new SyncProtocolUtils()
