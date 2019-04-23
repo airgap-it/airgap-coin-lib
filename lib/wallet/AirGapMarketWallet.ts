@@ -1,6 +1,7 @@
 import BigNumber from 'bignumber.js'
 import { AirGapWallet } from './AirGapWallet'
 import * as cryptocompare from 'cryptocompare'
+import { IAirGapTransaction } from '..'
 
 export enum TimeUnit {
   Hours = 'hours',
@@ -119,6 +120,39 @@ export class AirGapMarketWallet extends AirGapWallet {
           .catch(reject)
       }
     })
+  }
+
+  private addressesToCheck(): string[] {
+    const addressesToReceive = this.addressIndex !== undefined ? [this.addresses[this.addressIndex]] : this.addresses
+    return addressesToReceive
+  }
+  async balanceOf(): Promise<BigNumber> {
+    if (this.isExtendedPublicKey) {
+      return this.coinProtocol.getBalanceOfExtendedPublicKey(this.publicKey, 0)
+    } else if (this.addresses.length > 0) {
+      return this.coinProtocol.getBalanceOfAddresses(this.addressesToCheck())
+    } else {
+      return this.coinProtocol.getBalanceOfPublicKey(this.publicKey)
+    }
+  }
+
+  fetchTransactions(limit: number, offset: number): Promise<IAirGapTransaction[]> {
+    if (this.isExtendedPublicKey) {
+      return this.coinProtocol.getTransactionsFromExtendedPublicKey(this.publicKey, limit, offset)
+    } else if (this.addresses.length > 0) {
+      return this.coinProtocol.getTransactionsFromAddresses(this.addressesToCheck(), limit, offset)
+    } else {
+      return this.coinProtocol.getTransactionsFromPublicKey(this.publicKey, limit, offset)
+    }
+  }
+
+  prepareTransaction(recipients: string[], values: BigNumber[], fee: BigNumber): Promise<IAirGapTransaction> {
+    if (this.isExtendedPublicKey) {
+      return this.coinProtocol.prepareTransactionFromExtendedPublicKey(this.publicKey, 0, recipients, values, fee)
+    } else {
+      const data = this.addressIndex ? { addressIndex: this.addressIndex } : undefined
+      return this.coinProtocol.prepareTransactionFromPublicKey(this.publicKey, recipients, values, fee, data)
+    }
   }
 
   private algoSelector(numberOfMinutes: number, timeUnit: TimeUnit, date: Date, baseSymbol = 'USD'): Promise<MarketDataSample[]> {
