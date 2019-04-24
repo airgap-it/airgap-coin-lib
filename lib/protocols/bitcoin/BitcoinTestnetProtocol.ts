@@ -8,6 +8,6 @@ export class BitcoinTestnetProtocol extends BitcoinProtocol {
   addressValidationPattern = '^..[13][a-km-zA-HJ-NP-Z1-9]{25,34}$'
 
   constructor() {
-    super(bitcoinJS.networks.testnet, 'https://tbtc1.trezor.io')
+    super(bitcoinJS.networks.testnet, 'https://test-insight.bitpay.com')
   }
 }

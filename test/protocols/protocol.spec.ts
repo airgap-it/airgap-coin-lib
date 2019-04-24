@@ -41,8 +41,8 @@ const protocols = [
   new AETestProtocolSpec(),
   new TezosTestProtocolSpec(),
   new KtTezosTestProtocolSpec(),
-  // new BitcoinProtocolSpec(),
-  // new BitcoinTestProtocolSpec(),
+  new BitcoinProtocolSpec(),
+  new BitcoinTestProtocolSpec(),
   new GenericERC20TokenTestProtocolSpec(),
   new GroestlcoinProtocolSpec()
 ]
