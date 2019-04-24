@@ -71,6 +71,20 @@ export interface XPubResponse {
   tokens: Token[]
 }
 
+export interface AddressResponse {
+  page: number
+  totalPages: number
+  itemsOnPage: number
+  address: string
+  balance: string
+  totalReceived: string
+  totalSent: string
+  unconfirmedBalance: string
+  unconfirmedTxs: number
+  txs: number
+  transactions: Transaction[]
+}
+
 const DUST_AMOUNT = 50
 
 export class BitcoinBlockbookProtocol implements ICoinProtocol {
@@ -277,20 +291,19 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
     return tx
   }
 
-  getBalanceOfAddresses(addresses: string[]): Promise<BigNumber> {
-    return new Promise((resolve, reject) => {
-      axios
-        .get(`${this.baseApiUrl}/api/v2/address/${addresses.join(',')}/utxo`, { responseType: 'json' })
-        .then(response => {
-          const utxos = response.data
-          let valueAccumulator = new BigNumber(0)
-          for (let utxo of utxos) {
-            valueAccumulator = valueAccumulator.plus(new BigNumber(utxo.satoshis))
-          }
-          resolve(valueAccumulator)
-        })
-        .catch(reject)
-    })
+  async getBalanceOfAddresses(addresses: string[]): Promise<BigNumber> {
+    let valueAccumulator = new BigNumber(0)
+
+    // The API doesn't support batch checking of balances, so we have to do it manually
+    for (const address of addresses) {
+      const { data } = await axios.get(`${this.baseApiUrl}/api/v2/address/${address}?details=basic`, {
+        responseType: 'json'
+      })
+
+      valueAccumulator = valueAccumulator.plus(new BigNumber(data.balance))
+    }
+
+    return valueAccumulator
   }
 
   async getBalanceOfPublicKey(publicKey: string): Promise<BigNumber> {
@@ -299,7 +312,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
   }
 
   async getBalanceOfExtendedPublicKey(extendedPublicKey: string, offset: number = 0): Promise<BigNumber> {
-    const { data } = await axios.get(this.baseApiUrl + '/api/v2/xpub/' + extendedPublicKey + '?pageSize=1', {
+    const { data } = await axios.get(`${this.baseApiUrl}/api/v2/xpub/${extendedPublicKey}?pageSize=1`, {
       responseType: 'json'
     })
 
@@ -328,9 +341,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
     derivedAddresses.push(...internalAddresses.slice(0, -1)) // we don't add the last one
     derivedAddresses.push(...externalAddresses.slice(0, -1)) // we don't add the last one to make change address possible
 
-    console.log(this.baseApiUrl + '/api/v2/utxo/' + extendedPublicKey)
-
-    const { data: utxos } = await axios.get(this.baseApiUrl + '/api/v2/utxo/' + extendedPublicKey, {
+    const { data: utxos } = await axios.get(`${this.baseApiUrl}/api/v2/utxo/${extendedPublicKey}`, {
       responseType: 'json'
     })
 
@@ -351,8 +362,8 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
           address: utxo.address,
           derivationPath:
             externalAddresses.indexOf(utxo.address) >= 0
-              ? '0/' + (externalAddresses.indexOf(utxo.address) + offset)
-              : '1/' + (internalAddresses.indexOf(utxo.address) + offset)
+              ? `0/${externalAddresses.indexOf(utxo.address) + offset}`
+              : `1/${internalAddresses.indexOf(utxo.address) + offset}`
         })
       }
 
@@ -376,7 +387,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
       // tx.addOutput(recipients[i], values[i])
     }
 
-    const { data: transactions } = await axios.get(this.baseApiUrl + '/api/v2/utxo/' + extendedPublicKey, {
+    const { data: transactions } = await axios.get(`${this.baseApiUrl}/api/v2/utxo/${extendedPublicKey}`, {
       responseType: 'json'
     })
 
@@ -419,19 +430,26 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
     assert(recipients.length === values.length)
     const address = await this.getAddressFromPublicKey(publicKey)
 
-    const { data: utxos } = await axios.get(this.baseApiUrl + '/api/v2/utxo/' + address, { responseType: 'json' })
+    interface UTXOResponse {
+      txid: string
+      vout: number
+      value: string
+      height: number
+      confirmations: number
+    }
+
+    const { data: utxos } = await axios.get<UTXOResponse[]>(`${this.baseApiUrl}/api/v2/utxo/${address}`, { responseType: 'json' })
     const totalRequiredBalance = values.reduce((accumulator, currentValue) => accumulator.plus(currentValue)).plus(fee)
+
     let valueAccumulator = new BigNumber(0)
     for (let utxo of utxos) {
-      valueAccumulator = valueAccumulator.plus(new BigNumber(utxo.satoshis))
-      if (address === utxo.address) {
-        transaction.ins.push({
-          txId: utxo.txid,
-          value: new BigNumber(utxo.satoshis),
-          vout: utxo.vout,
-          address: utxo.address
-        })
-      }
+      valueAccumulator = valueAccumulator.plus(new BigNumber(utxo.value))
+      transaction.ins.push({
+        txId: utxo.txid,
+        value: new BigNumber(utxo.value),
+        vout: utxo.vout,
+        address: address
+      })
 
       if (valueAccumulator.isGreaterThanOrEqualTo(totalRequiredBalance)) {
         break
@@ -547,14 +565,12 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
 
   async getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
     const airGapTransactions: IAirGapTransaction[] = []
-    const { data: transactions } = await axios.get(
-      this.baseApiUrl + '/api/addrs/' + addresses.join(',') + '/txs?from=' + offset + '&to=' + (offset + limit),
-      {
-        responseType: 'json'
-      }
-    )
 
-    for (let transaction of transactions.items) {
+    const { data } = await axios.get<AddressResponse>(`${this.baseApiUrl}/api/v2/utxo/${addresses[0]}?details=txs`, {
+      responseType: 'json'
+    })
+
+    for (let transaction of data.transactions) {
       let tempAirGapTransactionFrom: string[] = []
       let tempAirGapTransactionTo: string[] = []
       let tempAirGapTransactionIsInbound: boolean = true
@@ -562,23 +578,23 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
       let amount = new BigNumber(0)
 
       for (let vin of transaction.vin) {
-        if (addresses.indexOf(vin.addr) > -1) {
+        if (this.containsSome(vin.addresses, addresses)) {
           tempAirGapTransactionIsInbound = false
         }
-        tempAirGapTransactionFrom.push(vin.addr)
-        amount = amount.plus(vin.valueSat)
+        tempAirGapTransactionFrom.push(...vin.addresses)
+        amount = amount.plus(vin.value)
       }
 
       for (let vout of transaction.vout) {
-        if (vout.scriptPubKey.addresses) {
-          tempAirGapTransactionTo.push(...vout.scriptPubKey.addresses)
+        if (vout.addresses) {
+          tempAirGapTransactionTo.push(...vout.addresses)
           // If receiving address is our address, and transaction is outbound => our change
-          if (this.containsSome(vout.scriptPubKey.addresses, addresses) && !tempAirGapTransactionIsInbound) {
+          if (this.containsSome(vout.addresses, addresses) && !tempAirGapTransactionIsInbound) {
             // remove only if related to this address
             amount = amount.minus(new BigNumber(vout.value).shiftedBy(this.decimals))
           }
           // If receiving address is not ours, and transaction isbound => senders change
-          if (!this.containsSome(vout.scriptPubKey.addresses, addresses) && tempAirGapTransactionIsInbound) {
+          if (!this.containsSome(vout.addresses, addresses) && tempAirGapTransactionIsInbound) {
             amount = amount.minus(new BigNumber(vout.value).shiftedBy(this.decimals))
           }
         }
@@ -594,9 +610,9 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
         isInbound: tempAirGapTransactionIsInbound,
         amount: amount,
         fee: new BigNumber(transaction.fees).shiftedBy(this.feeDecimals),
-        blockHeight: transaction.blockheight,
+        blockHeight: transaction.blockheight.toString(),
         protocolIdentifier: this.identifier,
-        timestamp: transaction.time
+        timestamp: transaction.blocktime
       }
 
       airGapTransactions.push(airGapTransaction)
