@@ -19,7 +19,6 @@ const sinon = require('sinon')
 const axios = require('axios')
 
 describe('Extended Public Derivation Logic', function() {
-  /*
   it('should return the correct bitcoin address from extended public key', function(done) {
     const bitcoinHdNode = bitcoinJS.HDNode.fromSeedBuffer(masterSeed, bitcoinJS.networks.bitcoin)
     const extendedPublicKey = bitcoinHdNode
@@ -265,7 +264,7 @@ describe('Balance Of', function() {
       })
       .catch(done)
   })
-*/
+
   /*
   @deprecated: flaky test that fails given the address balance changes, done in new set of tests anyway
   it('should return the correct ethereum balance given an address', function(done) {
@@ -280,7 +279,7 @@ describe('Balance Of', function() {
       .catch(done)
   })
   */
-  /*
+
   it('should return the correct bitcoin balance given an address', function(done) {
     const address = '122zHqVVaY21SEjSPeHqVVs9qFDwTV3duS'
     const bitcoin = new CoinLib.BitcoinProtocol()
@@ -743,5 +742,5 @@ describe('Transaction Detail Logic', function(done) {
       .catch(error => {
         done(error)
       })
-  })*/
+  })
 })
