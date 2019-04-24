@@ -1,9 +1,9 @@
 import * as BIP39 from 'bip39'
-import { BitcoinProtocol } from '../bitcoin/BitcoinProtocol'
+import { BitcoinBlockbookProtocol } from '../bitcoin/BitcoinBlockbookProtocol'
 import * as bitGoUTXO from 'bitgo-utxo-lib'
 import BigNumber from 'bignumber.js'
 
-export class GroestlcoinProtocol extends BitcoinProtocol {
+export class GroestlcoinProtocol extends BitcoinBlockbookProtocol {
   symbol = 'GRS'
   name = 'Groestlcoin'
   marketSymbol = 'grs'
