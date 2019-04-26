@@ -66,9 +66,9 @@ export interface XPubResponse {
   unconfirmedBalance: string
   unconfirmedTxs: number
   txs: number
-  transactions: Transaction[]
-  totalTokens: number
-  tokens: Token[]
+  transactions?: Transaction[]
+  totalTokens?: number
+  tokens?: Token[]
 }
 
 export interface AddressResponse {
@@ -82,7 +82,7 @@ export interface AddressResponse {
   unconfirmedBalance: string
   unconfirmedTxs: number
   txs: number
-  transactions: Transaction[]
+  transactions?: Transaction[]
 }
 
 const DUST_AMOUNT = 50
@@ -504,11 +504,11 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
       }
     )
 
-    const ourAddresses = data.tokens.filter(token => token.type === 'XPUBAddress').map(token => token.name)
+    const ourAddresses = (data.tokens || []).filter(token => token.type === 'XPUBAddress').map(token => token.name)
 
     const airGapTransactions: IAirGapTransaction[] = []
 
-    for (let transaction of data.transactions) {
+    for (let transaction of data.transactions || []) {
       let tempAirGapTransactionFrom: string[] = []
       let tempAirGapTransactionTo: string[] = []
       let tempAirGapTransactionIsInbound: boolean = true
@@ -570,7 +570,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
       responseType: 'json'
     })
 
-    for (let transaction of data.transactions) {
+    for (let transaction of data.transactions || []) {
       let tempAirGapTransactionFrom: string[] = []
       let tempAirGapTransactionTo: string[] = []
       let tempAirGapTransactionIsInbound: boolean = true
