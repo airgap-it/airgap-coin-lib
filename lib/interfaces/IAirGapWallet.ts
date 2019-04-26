@@ -7,7 +7,4 @@ export interface IAirGapWallet {
   coinProtocol: ICoinProtocol
 
   deriveAddresses(amount: number): Promise<string[]>
-  balanceOf(): Promise<BigNumber>
-  fetchTransactions(limit: number, offset: number): Promise<IAirGapTransaction[]>
-  prepareTransaction(recipients: string[], values: BigNumber[], fee: BigNumber): Promise<IAirGapTransaction>
 }

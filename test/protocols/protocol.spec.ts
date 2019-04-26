@@ -15,6 +15,7 @@ import { BitcoinProtocolSpec } from './specs/bitcoin'
 import { BitcoinTestProtocolSpec } from './specs/bitcoin-test'
 import { GenericERC20TokenTestProtocolSpec } from './specs/generic-erc20-token'
 import { KtTezosTestProtocolSpec } from './specs/kt-tezos'
+import { GroestlcoinProtocolSpec } from './specs/groestl'
 
 // use chai-as-promised plugin
 chai.use(chaiAsPromised)
@@ -42,7 +43,8 @@ const protocols = [
   new KtTezosTestProtocolSpec(),
   new BitcoinProtocolSpec(),
   new BitcoinTestProtocolSpec(),
-  new GenericERC20TokenTestProtocolSpec()
+  new GenericERC20TokenTestProtocolSpec(),
+  new GroestlcoinProtocolSpec()
 ]
 
 const itIf = (condition, title, test) => {
@@ -294,8 +296,8 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
             transaction: tx.signedTx
           })
 
-          expect(airgapTx.to.map(obj => obj.toLowerCase())).to.deep.equal(tx.to.map(obj => obj.toLowerCase()))
-          expect(airgapTx.from.map(obj => obj.toLowerCase())).to.deep.equal(tx.from.map(obj => obj.toLowerCase()))
+          expect(airgapTx.to.map(obj => obj.toLowerCase()), 'from').to.deep.equal(tx.to.map(obj => obj.toLowerCase()))
+          expect(airgapTx.from.sort().map(obj => obj.toLowerCase()), 'to').to.deep.equal(tx.from.sort().map(obj => obj.toLowerCase()))
 
           expect(airgapTx.amount).to.deep.equal(protocol.txs[0].amount)
           expect(airgapTx.fee).to.deep.equal(protocol.txs[0].fee)
