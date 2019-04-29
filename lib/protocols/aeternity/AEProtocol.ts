@@ -128,7 +128,7 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
       }
 
       if (!isNaN(parsedTimestamp)) {
-        airGapTx.timestamp = parsedTimestamp / 1000
+        airGapTx.timestamp = Math.round(parsedTimestamp / 1000)
       }
 
       return airGapTx
