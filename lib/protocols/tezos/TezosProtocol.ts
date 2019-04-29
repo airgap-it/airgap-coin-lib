@@ -366,8 +366,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
       const accountManager = results[2].data
 
-      // check if we have revealed the key already
-      if (address.toLowerCase().startsWith('tz') && !accountManager.key) {
+      // check if we have revealed the address already
+      if (!accountManager.key) {
         operations.push(await this.createRevealOperation(counter, publicKey, address))
         counter = counter.plus(1)
       }

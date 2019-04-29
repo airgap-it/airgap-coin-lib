@@ -130,16 +130,25 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     let branch: string
 
     const operations: TezosOperation[] = []
-    const address = await super.getAddressFromPublicKey(publicKey)
+    const tzAddress = await super.getAddressFromPublicKey(publicKey)
 
     try {
       const results = await Promise.all([
         axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${delegatedAddress}/counter`),
-        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/hash`)
+        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/hash`),
+        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${delegatedAddress}/manager_key`)
       ])
 
       counter = new BigNumber(results[0].data).plus(1)
       branch = results[1].data
+
+      const accountManager = results[2].data
+
+      // check if we have revealed the address already
+      if (!accountManager.key) {
+        operations.push(await this.createRevealOperation(counter, publicKey, delegatedAddress))
+        counter = counter.plus(1)
+      }
     } catch (error) {
       throw error
     }
@@ -154,7 +163,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
 
     const delegationOperation: TezosDelegationOperation = {
       kind: TezosOperationType.DELEGATION,
-      source: delegatedAddress || address,
+      source: delegatedAddress || tzAddress, // TODO: Does the tzAddress make sense here as a fallback?
       fee: fee.toFixed(),
       counter: counter.toFixed(),
       gas_limit: '10000', // taken from eztz
