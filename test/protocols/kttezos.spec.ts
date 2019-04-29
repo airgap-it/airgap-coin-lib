@@ -11,7 +11,8 @@ import {
   TezosOperationType,
   TezosDelegationOperation,
   TezosOriginationOperation,
-  TezosSpendOperation
+  TezosSpendOperation,
+  TezosRevealOperation
 } from '../../lib/protocols/tezos/TezosProtocol'
 import BigNumber from 'bignumber.js'
 
@@ -403,6 +404,46 @@ describe(`ICoinProtocol KtTezos - Custom Tests`, () => {
 
       expect(tz2.binaryTransaction).to.equal(
         'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb9550a000091a9d2b003f19cf5a1f38f04f1000ab482d331768c0bc4fe37904e00ff0091a9d2b003f19cf5a1f38f04f1000ab482d33176'
+      )
+    })
+
+    it('should include a reveal operation when delegating an unrevealed KT address', async () => {
+      stub
+        .withArgs(`${ktTezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy/manager_key`)
+        .returns(Promise.resolve({ data: {} }))
+
+      /**
+       * Delegate KT1 -> TZ1
+       */
+      const tz = await ktTezosLib.delegate(
+        tezosProtocolSpec.wallet.publicKey,
+        'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy',
+        'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'
+      )
+
+      const tezosWrappedOperation = ktTezosLib.unforgeUnsignedTezosWrappedOperation(tz.binaryTransaction)
+      const tezosRevealOperation = tezosWrappedOperation.contents[0] as TezosRevealOperation
+      const tezosDelegationOperation = tezosWrappedOperation.contents[1] as TezosDelegationOperation
+
+      expect(tezosWrappedOperation.contents.length, 'operations').to.equal(2) // Make sure reveal and delegate are included
+
+      expect(tezosRevealOperation.kind, 'kind').to.equal(TezosOperationType.REVEAL)
+      expect(tezosRevealOperation.fee, 'fee').to.equal('1300')
+      expect(tezosRevealOperation.gas_limit, 'gas_limit').to.equal('10000')
+      expect(tezosRevealOperation.storage_limit, 'storage_limit').to.equal('0')
+      expect(tezosRevealOperation.counter, 'counter').to.equal('917316')
+      expect(tezosRevealOperation.source, 'source').to.equal('KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy')
+
+      expect(tezosDelegationOperation.kind, 'kind').to.equal(TezosOperationType.DELEGATION)
+      expect(tezosDelegationOperation.source, 'source').to.equal('KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy')
+      expect(tezosDelegationOperation.fee, 'fee').to.equal('1420')
+      expect(tezosDelegationOperation.counter, 'counter').to.equal('917317')
+      expect(tezosDelegationOperation.gas_limit, 'gas_limit').to.equal('10000')
+      expect(tezosDelegationOperation.storage_limit, 'storage_limit').to.equal('0')
+      expect(tezosDelegationOperation.delegate, 'delegate').to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
+
+      expect(tz.binaryTransaction).to.equal(
+        'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb9550701ba4e7349ac25dc5eb2df5a43fceacc58963df4f500940ac4fe37904e0000cdbc0c3449784bd53907c3c7a06060cf12087e492a7b937f044c6a73b522a2340a01ba4e7349ac25dc5eb2df5a43fceacc58963df4f5008c0bc5fe37904e00ff0091a9d2b003f19cf5a1f38f04f1000ab482d33176'
       )
     })
 

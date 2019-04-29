@@ -14,7 +14,7 @@ const expect = chai.expect
 const protocol = new EthereumProtocol()
 const xPubProtocol = new BitcoinProtocol()
 
-describe.only(`AirGapMarketWallet`, () => {
+describe(`AirGapMarketWallet`, () => {
   const sampleResponse: Readonly<any> = Object.freeze({
     data: {}
   })
