@@ -110,7 +110,7 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
 
     const transactions: any[] = [].concat(
       ...allTransactions.map(axiosData => {
-        return axiosData.data.transactions
+        return axiosData.data || []
       })
     )
 
@@ -128,7 +128,7 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
       }
 
       if (!isNaN(parsedTimestamp)) {
-        airGapTx.timestamp = parsedTimestamp
+        airGapTx.timestamp = parsedTimestamp / 1000
       }
 
       return airGapTx
