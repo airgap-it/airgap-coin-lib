@@ -127,7 +127,18 @@ export class AirGapMarketWallet extends AirGapWallet {
     return addressesToReceive
   }
   async balanceOf(): Promise<BigNumber> {
-    if (this.addresses.length > 0) {
+    if (this.protocolIdentifier === 'grs' && this.isExtendedPublicKey) {
+      /* 
+      We should remove this if BTC also uses blockbook. (And change the order of the if/else below)
+      
+      The problem is that we have addresses cached for all protocols. But blockbook (grs) doesn't allow
+      multiple addresses to be checked at once, so we need to xPub key there (or we would do 100s of requests).
+
+      We can also not simply change the order of the following if/else, because then it would use the xPub method for
+      BTC as well, which results in the addresses being derived again, which causes massive lags in the apps.
+      */
+      return this.coinProtocol.getBalanceOfExtendedPublicKey(this.publicKey, 0)
+    } else if (this.addresses.length > 0) {
       return this.coinProtocol.getBalanceOfAddresses(this.addressesToCheck())
     } else if (this.isExtendedPublicKey) {
       return this.coinProtocol.getBalanceOfExtendedPublicKey(this.publicKey, 0)
@@ -137,7 +148,18 @@ export class AirGapMarketWallet extends AirGapWallet {
   }
 
   fetchTransactions(limit: number, offset: number): Promise<IAirGapTransaction[]> {
-    if (this.addresses.length > 0) {
+    if (this.protocolIdentifier === 'grs' && this.isExtendedPublicKey) {
+      /* 
+      We should remove this if BTC also uses blockbook. (And change the order of the if/else below)
+      
+      The problem is that we have addresses cached for all protocols. But blockbook (grs) doesn't allow
+      multiple addresses to be checked at once, so we need to xPub key there (or we would do 100s of requests).
+
+      We can also not simply change the order of the following if/else, because then it would use the xPub method for
+      BTC as well, which results in the addresses being derived again, which causes massive lags in the apps.
+      */
+      return this.coinProtocol.getTransactionsFromExtendedPublicKey(this.publicKey, limit, offset)
+    } else if (this.addresses.length > 0) {
       return this.coinProtocol.getTransactionsFromAddresses(this.addressesToCheck(), limit, offset)
     } else if (this.isExtendedPublicKey) {
       return this.coinProtocol.getTransactionsFromExtendedPublicKey(this.publicKey, limit, offset)
