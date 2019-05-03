@@ -127,20 +127,20 @@ export class AirGapMarketWallet extends AirGapWallet {
     return addressesToReceive
   }
   async balanceOf(): Promise<BigNumber> {
-    if (this.isExtendedPublicKey) {
-      return this.coinProtocol.getBalanceOfExtendedPublicKey(this.publicKey, 0)
-    } else if (this.addresses.length > 0) {
+    if (this.addresses.length > 0) {
       return this.coinProtocol.getBalanceOfAddresses(this.addressesToCheck())
+    } else if (this.isExtendedPublicKey) {
+      return this.coinProtocol.getBalanceOfExtendedPublicKey(this.publicKey, 0)
     } else {
       return this.coinProtocol.getBalanceOfPublicKey(this.publicKey)
     }
   }
 
   fetchTransactions(limit: number, offset: number): Promise<IAirGapTransaction[]> {
-    if (this.isExtendedPublicKey) {
-      return this.coinProtocol.getTransactionsFromExtendedPublicKey(this.publicKey, limit, offset)
-    } else if (this.addresses.length > 0) {
+    if (this.addresses.length > 0) {
       return this.coinProtocol.getTransactionsFromAddresses(this.addressesToCheck(), limit, offset)
+    } else if (this.isExtendedPublicKey) {
+      return this.coinProtocol.getTransactionsFromExtendedPublicKey(this.publicKey, limit, offset)
     } else {
       return this.coinProtocol.getTransactionsFromPublicKey(this.publicKey, limit, offset)
     }
