@@ -236,7 +236,8 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
     publicKey: string,
     recipients: string[],
     values: BigNumber[],
-    fee: BigNumber
+    fee: BigNumber,
+    payload?: string
   ): Promise<RawAeternityTransaction> {
     let nonce = 1
 
@@ -270,7 +271,7 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
       fee: this.toHexBuffer(fee),
       ttl: this.toHexBuffer(0),
       nonce: this.toHexBuffer(nonce),
-      payload: Buffer.from('')
+      payload: Buffer.from(payload || '')
     }
 
     const txArray = Object.keys(txObj).map(a => txObj[a])
