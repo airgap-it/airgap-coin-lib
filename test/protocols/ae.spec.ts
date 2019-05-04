@@ -72,7 +72,8 @@ describe(`ICoinProtocol Aeternity - Custom Tests`, () => {
         to: aeProtocolSpec.wallet.addresses,
         hash: 'th_z8bNzdugQdpiRUVXUmQbxoy5dLLEFLG6StBY95jF1KdXrRxiq',
         blockHeight: 443,
-        timestamp: 1543450516
+        timestamp: 1543450516,
+        data: '"create account" 1'
       }
     ])
   })
@@ -89,7 +90,8 @@ describe(`ICoinProtocol Aeternity - Custom Tests`, () => {
         protocolIdentifier: aeLib.identifier,
         to: aeProtocolSpec.wallet.addresses,
         hash: 'th_z8bNzdugQdpiRUVXUmQbxoy5dLLEFLG6StBY95jF1KdXrRxiq',
-        blockHeight: 443
+        blockHeight: 443,
+        data: '"create account" 1'
       }
     ])
   })

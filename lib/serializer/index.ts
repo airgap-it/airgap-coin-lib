@@ -14,7 +14,7 @@ export function unsignedTransactionSerializerByProtocolIdentifier(protocolIdenti
   const implementedSerializers = {
     eth: EthereumUnsignedTransactionSerializer,
     btc: BitcoinUnsignedTransactionSerializer,
-    grs: BitcoinUnsignedTransactionSerializer,
+    // grs: BitcoinUnsignedTransactionSerializer,
     ae: AeternityUnsignedTransactionSerializer,
     xtz: TezosUnsignedTransactionSerializer
   }
@@ -32,7 +32,7 @@ export function signedTransactionSerializerByProtocolIdentifier(protocolIdentifi
   const implementedSerializers = {
     eth: EthereumSignedTransactionSerializer,
     btc: BitcoinSignedTransactionSerializer,
-    grs: BitcoinSignedTransactionSerializer,
+    // grs: BitcoinSignedTransactionSerializer,
     ae: AeternitySignedTransactionSerializer,
     xtz: TezosSignedTransactionSerializer
   }

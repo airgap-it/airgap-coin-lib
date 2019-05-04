@@ -168,11 +168,13 @@ export class AirGapMarketWallet extends AirGapWallet {
     }
   }
 
-  prepareTransaction(recipients: string[], values: BigNumber[], fee: BigNumber): Promise<IAirGapTransaction> {
+  prepareTransaction(recipients: string[], values: BigNumber[], fee: BigNumber, data?: any): Promise<IAirGapTransaction> {
     if (this.isExtendedPublicKey) {
-      return this.coinProtocol.prepareTransactionFromExtendedPublicKey(this.publicKey, 0, recipients, values, fee)
+      return this.coinProtocol.prepareTransactionFromExtendedPublicKey(this.publicKey, 0, recipients, values, fee, data)
     } else {
-      const data = this.addressIndex ? { addressIndex: this.addressIndex } : undefined
+      if (this.addressIndex) {
+        data = { addressIndex: this.addressIndex }
+      }
       return this.coinProtocol.prepareTransactionFromPublicKey(this.publicKey, recipients, values, fee, data)
     }
   }
