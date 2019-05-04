@@ -127,6 +127,10 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
         blockHeight: obj.block_height
       }
 
+      if (obj.tx.payload) {
+        airGapTx.data = obj.tx.payload
+      }
+
       if (!isNaN(parsedTimestamp)) {
         airGapTx.timestamp = Math.round(parsedTimestamp / 1000)
       }
