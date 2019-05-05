@@ -1,8 +1,9 @@
 import BigNumber from 'bignumber.js'
+import { isNullOrUndefined } from 'util'
 
-export function toBuffer(rlpArray: any): Buffer | Buffer[] {
+export function toBuffer(rlpArray: any, nullOrUndefinedCreatesEmptyBuffer: boolean = false): Buffer | Buffer[] {
   if (Array.isArray(rlpArray)) {
-    return rlpArray.map(obj => toBuffer(obj)) as Buffer[]
+    return rlpArray.map(obj => toBuffer(obj, nullOrUndefinedCreatesEmptyBuffer)) as Buffer[]
   }
 
   if (typeof rlpArray === 'number') {
@@ -16,6 +17,8 @@ export function toBuffer(rlpArray: any): Buffer | Buffer[] {
   if (BigNumber.isBigNumber(rlpArray)) {
     return Buffer.from(rlpArray.toFixed())
   }
+
+  if (isNullOrUndefined(rlpArray)) return Buffer.from([])
 
   return Buffer.from(rlpArray)
 }
