@@ -1,11 +1,4 @@
-import {
-  TezosProtocol,
-  TezosOperation,
-  TezosOperationType,
-  TezosWrappedOperation,
-  TezosOriginationOperation,
-  TezosDelegationOperation
-} from '../TezosProtocol'
+import { TezosProtocol, TezosOperation, TezosOperationType, TezosWrappedOperation, TezosDelegationOperation } from '../TezosProtocol'
 import { SubProtocolType, ICoinSubProtocol } from '../../ICoinSubProtocol'
 import axios, { AxiosResponse } from 'axios'
 import BigNumber from 'bignumber.js'

@@ -1,4 +1,3 @@
-import * as BIP39 from 'bip39'
 import { BitcoinBlockbookProtocol } from '../bitcoin/BitcoinBlockbookProtocol'
 import * as bitGoUTXO from 'bitgo-utxo-lib'
 import BigNumber from 'bignumber.js'

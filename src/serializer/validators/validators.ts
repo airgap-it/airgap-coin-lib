@@ -80,6 +80,7 @@ export async function validateSyncScheme(syncScheme) {
 }
 
 // tslint:disable-next-line
+/*
 function validateSerializationInput(from: string, fee: BigNumber, amount: BigNumber, publicKey: string, transaction: any) {
   const constraints = {
     from: {
@@ -117,3 +118,4 @@ function validateSerializationInput(from: string, fee: BigNumber, amount: BigNum
 
   return test
 }
+*/

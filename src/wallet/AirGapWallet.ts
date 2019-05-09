@@ -1,6 +1,4 @@
 import { ICoinProtocol } from '../protocols/ICoinProtocol'
-import BigNumber from 'bignumber.js'
-import { IAirGapTransaction } from '../interfaces/IAirGapTransaction'
 import { IAirGapWallet } from '../interfaces/IAirGapWallet'
 import { getProtocolByIdentifier } from '../utils/protocolsByIdentifier'
 
