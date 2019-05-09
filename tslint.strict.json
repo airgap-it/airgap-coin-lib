@@ -1,0 +1,36 @@
+{
+  "extends": ["tslint-config-valorsoft", "tslint-config-prettier"],
+
+  "rules": {
+    "semicolon": [true, "never"],
+    "member-access": [true],
+    "member-ordering": [
+      true,
+      {
+        "order": ["public-before-private", "static-before-instance", "variables-before-functions"],
+        "alphabetize": true
+      }
+    ],
+    "typedef": [
+      true,
+      "call-signature",
+      "arrow-call-signature",
+      "parameter",
+      "arrow-parameter",
+      "property-declaration",
+      "variable-declaration",
+      "member-variable-declaration",
+      "object-destructuring",
+      "array-destructuring"
+    ],
+    "no-inferrable-types": false,
+    "ordered-imports": {
+      "options": {
+        "grouped-imports": true,
+        "import-sources-order": "case-insensitive",
+        "named-imports-order": "case-insensitive",
+        "module-source-path": "full"
+      }
+    }
+  }
+}

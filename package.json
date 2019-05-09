@@ -75,6 +75,7 @@
     "tslint": "^5.10.0",
     "tslint-config-prettier": "^1.15.0",
     "tslint-config-standard": "github:papers-ch/tslint-config-standard",
+    "tslint-config-valorsoft": "^2.2.1",
     "typescript": "3.4.5",
     "typestrict": "^1.0.1",
     "websocket": "^1.0.28"
