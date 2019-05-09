@@ -11,14 +11,18 @@ interface ProtocolHTTPStub {
 }
 
 abstract class TestProtocolSpec {
-  name: string
-  lib: ICoinProtocol
-  stub: ProtocolHTTPStub
-  validAddresses: string[]
+  name: string = 'TEST'
+  lib: ICoinProtocol = {} as ICoinProtocol // Class is abstract, will be overwritten
+  stub: ProtocolHTTPStub = {} as ProtocolHTTPStub // Class is abstract, will be overwritten
+  validAddresses: string[] = []
   wallet: {
     privateKey: string
     publicKey: string
     addresses: string[]
+  } = {
+    privateKey: '',
+    publicKey: '',
+    addresses: ['']
   }
   txs: {
     to: string[]
@@ -28,7 +32,7 @@ abstract class TestProtocolSpec {
     properties?: string[]
     unsignedTx: any
     signedTx: string
-  }[]
+  }[] = []
 
   seed() {
     return BIP39.mnemonicToSeedHex(mnemonic)

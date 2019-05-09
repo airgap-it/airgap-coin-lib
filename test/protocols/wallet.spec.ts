@@ -2,7 +2,6 @@ import 'mocha'
 
 import * as chai from 'chai'
 import * as chaiAsPromised from 'chai-as-promised'
-import BigNumber from 'bignumber.js'
 import * as sinon from 'sinon'
 import axios from 'axios'
 import { AirGapWallet, EthereumProtocol, BitcoinProtocol } from '../../src/index'
@@ -38,7 +37,7 @@ describe(`AirGapWallet`, () => {
         false,
         protocol.standardDerivationPath
       )
-      expect(true).to.equal(false)
+      expect(wallet).to.undefined
     } catch (error) {
       expect(error.message).to.equal('PROTOCOL_NOT_SUPPORTED')
     }

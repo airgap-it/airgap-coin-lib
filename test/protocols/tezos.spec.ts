@@ -543,7 +543,6 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       })
 
       it('should send specified amount in origination operation if delegate is not set and amount is set', async () => {
-        const delegate = 'tz1MJx9vhaNRSimcuXPK2rW4fLccQnDAnVKJ'
         const amount = new BigNumber(200000)
         const tz = await tezosLib.originate(tezosProtocolSpec.wallet.publicKey, undefined, amount)
         /*
@@ -568,7 +567,6 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       })
 
       it('should send 0 amount in origination operation if delegate and amount are not set', async () => {
-        const delegate = 'tz1MJx9vhaNRSimcuXPK2rW4fLccQnDAnVKJ'
         const amount = new BigNumber(0)
         const tz = await tezosLib.originate(tezosProtocolSpec.wallet.publicKey)
         /*

@@ -10,11 +10,9 @@ import axios from 'axios'
 import {
   TezosOperationType,
   TezosDelegationOperation,
-  TezosOriginationOperation,
   TezosSpendOperation,
   TezosRevealOperation
 } from '../../src/protocols/tezos/TezosProtocol'
-import BigNumber from 'bignumber.js'
 
 // use chai-as-promised plugin
 chai.use(chaiAsPromised)

@@ -1,4 +1,4 @@
-import { TezosProtocol, SyncProtocolUtils, EncodedType, isCoinlibReady, TezosKtProtocol } from '../../../src/index'
+import { SyncProtocolUtils, EncodedType, isCoinlibReady, TezosKtProtocol } from '../../../src/index'
 import BigNumber from 'bignumber.js'
 import * as readline from 'readline'
 import * as qrcode from 'qrcode-terminal'
