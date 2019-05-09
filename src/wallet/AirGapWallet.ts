@@ -39,7 +39,7 @@ export class AirGapWallet implements IAirGapWallet {
   }
 
   public toJSON(): any {
-    let json = Object.assign({}, this)
+    const json = Object.assign({}, this)
     delete json.coinProtocol
     return json
   }

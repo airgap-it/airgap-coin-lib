@@ -218,7 +218,7 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
   public async getBalanceOfAddresses(addresses: string[]): Promise<BigNumber> {
     let balance = new BigNumber(0)
 
-    for (let address of addresses) {
+    for (const address of addresses) {
       try {
         const { data } = await axios.get(`${this.epochRPC}/v2/accounts/${address}`)
         balance = balance.plus(new BigNumber(data.balance))

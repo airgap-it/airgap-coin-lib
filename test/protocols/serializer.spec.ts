@@ -27,7 +27,7 @@ protocols.forEach((protocol: TestProtocolSpec) => {
 
   describe(`Serialization Protocol for ${protocol.name}`, () => {
     it(`should be able to serialize an transaction to a airgap protocol string`, async () => {
-      for (let tx of protocol.txs) {
+      for (const tx of protocol.txs) {
         const serializedTx = await syncProtocol.serialize(protocol.unsignedTransaction(tx))
         const deserializedTx = await syncProtocol.deserialize(serializedTx)
 
@@ -36,7 +36,7 @@ protocols.forEach((protocol: TestProtocolSpec) => {
     })
 
     it(`should be able to properly extract amount/fee using getTransactionDetails in combination with the coin-lib`, async () => {
-      for (let tx of protocol.txs) {
+      for (const tx of protocol.txs) {
         const serializedTx = await syncProtocol.serialize(protocol.unsignedTransaction(tx))
         const deserializedTx = await syncProtocol.deserialize(serializedTx)
 
@@ -49,7 +49,7 @@ protocols.forEach((protocol: TestProtocolSpec) => {
     })
 
     it(`should be able to properly extract amount/fee using from signedTx in combination with the coin-lib`, async () => {
-      for (let tx of protocol.txs) {
+      for (const tx of protocol.txs) {
         const serializedTx = await syncProtocol.serialize(protocol.signedTransaction(tx))
         const deserializedTx = await syncProtocol.deserialize(serializedTx)
 
@@ -62,7 +62,7 @@ protocols.forEach((protocol: TestProtocolSpec) => {
     })
 
     it(`should be able to serialize and deserialize a sync-wallet request`, async () => {
-      for (let tx of protocol.txs) {
+      for (const tx of protocol.txs) {
         const serializedWalletRequest = await syncProtocol.serialize(protocol.signedTransaction(tx))
         const deserializedWalletRequest = await syncProtocol.deserialize(serializedWalletRequest)
 
@@ -71,7 +71,7 @@ protocols.forEach((protocol: TestProtocolSpec) => {
     })
 
     it(`should be able to serialize and deserialize a signed-tx request`, async () => {
-      for (let tx of protocol.txs) {
+      for (const tx of protocol.txs) {
         const serializedSignedTx = await syncProtocol.serialize(protocol.signedTransaction(tx))
         const deserializedTx = await syncProtocol.deserialize(serializedSignedTx)
 
@@ -80,7 +80,7 @@ protocols.forEach((protocol: TestProtocolSpec) => {
     })
 
     it(`should be able to properly construct the protocol from a unsigned tx`, async () => {
-      for (let tx of protocol.txs) {
+      for (const tx of protocol.txs) {
         const serializedTx = await syncProtocol.serialize(protocol.unsignedTransaction(tx))
         const deserializedTx = await syncProtocol.deserialize(serializedTx)
 

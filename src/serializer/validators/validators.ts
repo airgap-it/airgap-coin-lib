@@ -44,7 +44,7 @@ validators.isHexStringWithPrefix = function(value, options, key, attributes) {
     return 'is not hex string'
   }
 
-  let hexWithoutPrefix = value.substr(2)
+  const hexWithoutPrefix = value.substr(2)
   if (hexWithoutPrefix.length === 0) {
     // For ethereum, "0x" is valid
     return null

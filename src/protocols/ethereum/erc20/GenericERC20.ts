@@ -166,10 +166,10 @@ export class GenericERC20 extends BaseEthereumProtocol implements ICoinSubProtoc
     const airGapTransactions: IAirGapTransaction[] = []
     return new Promise((overallResolve, overallReject) => {
       const promises: Promise<IAirGapTransaction[]>[] = []
-      for (let address of addresses) {
+      for (const address of addresses) {
         promises.push(
           new Promise((resolve, reject) => {
-            let page = Math.ceil(offset / limit)
+            const page = Math.ceil(offset / limit)
             axios
               .get(
                 `${this.infoAPI}transactions?address=${address}&contract=${this.tokenContract.options.address}&page=${page}&limit=${limit}`

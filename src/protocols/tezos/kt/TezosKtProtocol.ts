@@ -94,7 +94,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
         `${this.baseApiUrl}/v3/operations/${delegatedAddress}?type=Origination`
       ]
 
-      for (let sourceUrl of transactionSourceUrls) {
+      for (const sourceUrl of transactionSourceUrls) {
         const { data } = await axios.get(sourceUrl)
 
         const recentTransactionData = getDataFromMostRecentTransaction(data)

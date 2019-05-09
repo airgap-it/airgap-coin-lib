@@ -289,10 +289,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     } else if (tezosOperation.kind === TezosOperationType.ORIGINATION) {
       const tezosOriginationOperation = tezosOperation as TezosOriginationOperation
       amount = new BigNumber(tezosOriginationOperation.balance)
-      let delegate = tezosOriginationOperation.delegate
+      const delegate = tezosOriginationOperation.delegate
       to = [delegate ? `Delegate: ${delegate}` : 'Origination']
     } else if (tezosOperation.kind === TezosOperationType.DELEGATION) {
-      let delegate = (tezosOperation as TezosDelegationOperation).delegate
+      const delegate = (tezosOperation as TezosDelegationOperation).delegate
       to = [delegate ? delegate : 'Undelegate']
     } else {
       throw new Error('no operation to unforge found')
@@ -313,7 +313,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   public async getBalanceOfAddresses(addresses: string[]): Promise<BigNumber> {
     let balance = new BigNumber(0)
 
-    for (let address of addresses) {
+    for (const address of addresses) {
       try {
         const { data } = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/balance`)
         balance = balance.plus(new BigNumber(data))
@@ -609,7 +609,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   }
 
   protected parsePublicKey(rawHexPublicKey: string): string {
-    let { result, rest } = this.splitAndReturnRest(rawHexPublicKey, 2)
+    const { result, rest } = this.splitAndReturnRest(rawHexPublicKey, 2)
     const tag = result
     if (tag === '00') {
       // tz1 address
@@ -630,7 +630,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     let { result, rest } = this.splitAndReturnRest(hexString, 64)
     const branch = this.prefixAndBase58CheckEncode(result, this.tezosPrefixes.branch)
 
-    let tezosWrappedOperation: TezosWrappedOperation = {
+    const tezosWrappedOperation: TezosWrappedOperation = {
       branch: branch,
       contents: []
     }
@@ -833,7 +833,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       throw new Error('provided branch is invalid')
     }
 
-    let branchHexString = cleanedBranch // ignore the tezos prefix
+    const branchHexString = cleanedBranch // ignore the tezos prefix
 
     const forgedOperation = tezosWrappedOperation.contents.map(operation => {
       let resultHexString = ''
@@ -910,7 +910,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       }
 
       if (operation.kind === TezosOperationType.REVEAL) {
-        let cleanedPublicKey = this.checkAndRemovePrefixToHex((operation as TezosRevealOperation).public_key, this.tezosPrefixes.edpk)
+        const cleanedPublicKey = this.checkAndRemovePrefixToHex((operation as TezosRevealOperation).public_key, this.tezosPrefixes.edpk)
 
         if (cleanedPublicKey.length === 32) {
           // must be equal 32 bytes
@@ -923,7 +923,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       if (operation.kind === TezosOperationType.ORIGINATION) {
         const originationOperation = operation as TezosOriginationOperation
 
-        let cleanedManagerPubKey = this.checkAndRemovePrefixToHex(originationOperation.manager_pubkey, this.tezosPrefixes.tz1)
+        const cleanedManagerPubKey = this.checkAndRemovePrefixToHex(originationOperation.manager_pubkey, this.tezosPrefixes.tz1)
 
         if (cleanedManagerPubKey.length === 32) {
           // must be equal 32 bytes

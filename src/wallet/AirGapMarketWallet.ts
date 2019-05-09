@@ -205,7 +205,7 @@ export class AirGapMarketWallet extends AirGapWallet {
       }
       promise
         .then(prices => {
-          for (let idx in prices) {
+          for (const idx in prices) {
             const marketDataObject = {
               time: prices[idx].time,
               close: prices[idx].close,

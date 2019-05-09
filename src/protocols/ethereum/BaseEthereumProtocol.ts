@@ -176,10 +176,10 @@ export abstract class BaseEthereumProtocol implements ICoinProtocol {
   public async getTransactionDetailsFromSigned(transaction: SignedEthereumTransaction): Promise<IAirGapTransaction> {
     const ethTx = new EthereumTransaction(transaction.transaction)
 
-    let hexValue = ethTx.value.toString('hex') || '0x0'
-    let hexGasPrice = ethTx.gasPrice.toString('hex') || '0x0'
-    let hexGasLimit = ethTx.gasLimit.toString('hex') || '0x0'
-    let hexNonce = ethTx.nonce.toString('hex') || '0x0'
+    const hexValue = ethTx.value.toString('hex') || '0x0'
+    const hexGasPrice = ethTx.gasPrice.toString('hex') || '0x0'
+    const hexGasLimit = ethTx.gasLimit.toString('hex') || '0x0'
+    const hexNonce = ethTx.nonce.toString('hex') || '0x0'
 
     return {
       from: [ethUtil.toChecksumAddress(`0x${ethTx.from.toString('hex')}`)],
@@ -295,15 +295,15 @@ export abstract class BaseEthereumProtocol implements ICoinProtocol {
     const airGapTransactions: IAirGapTransaction[] = []
     return new Promise((overallResolve, overallReject) => {
       const promises: Promise<any>[] = []
-      for (let address of addresses) {
+      for (const address of addresses) {
         promises.push(
           new Promise((resolve, reject) => {
-            let page = this.getPageNumber(limit, offset)
+            const page = this.getPageNumber(limit, offset)
             axios
               .get(`${this.infoAPI}transactions?address=${address}&page=${page}&limit=${limit}&filterContractInteraction=true`)
               .then(response => {
                 const transactionResponse = response.data
-                for (let transaction of transactionResponse.docs) {
+                for (const transaction of transactionResponse.docs) {
                   const fee = new BigNumber(transaction.gasUsed).times(new BigNumber(transaction.gasPrice))
                   const airGapTransaction: IAirGapTransaction = {
                     hash: transaction.id,

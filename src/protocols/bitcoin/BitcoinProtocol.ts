@@ -132,11 +132,11 @@ export class BitcoinProtocol implements ICoinProtocol {
     return new Promise((resolve, reject) => {
       const transactionBuilder = new this.bitcoinJSLib.TransactionBuilder(this.network)
 
-      for (let input of transaction.ins) {
+      for (const input of transaction.ins) {
         transactionBuilder.addInput(input.txId, input.vout)
       }
 
-      for (let output of transaction.outs) {
+      for (const output of transaction.outs) {
         transactionBuilder.addOutput(output.recipient, output.value.toNumber())
       }
 
@@ -153,11 +153,11 @@ export class BitcoinProtocol implements ICoinProtocol {
       const transactionBuilder = new this.bitcoinJSLib.TransactionBuilder(this.network)
       const node = this.bitcoinJSLib.HDNode.fromBase58(extendedPrivateKey, this.network)
 
-      for (let input of transaction.ins) {
+      for (const input of transaction.ins) {
         transactionBuilder.addInput(input.txId, input.vout)
       }
 
-      for (let output of transaction.outs) {
+      for (const output of transaction.outs) {
         transactionBuilder.addOutput(output.recipient, output.value.toNumber())
       }
 
@@ -175,11 +175,11 @@ export class BitcoinProtocol implements ICoinProtocol {
 
     let feeCalculator = new BigNumber(0)
 
-    for (let txIn of transaction.ins) {
+    for (const txIn of transaction.ins) {
       feeCalculator = feeCalculator.plus(new BigNumber(txIn.value))
     }
 
-    for (let txOut of transaction.outs) {
+    for (const txOut of transaction.outs) {
       feeCalculator = feeCalculator.minus(new BigNumber(txOut.value))
     }
 
@@ -197,7 +197,7 @@ export class BitcoinProtocol implements ICoinProtocol {
   }
 
   public async getTransactionDetailsFromSigned(signedTx: SignedBitcoinTransaction): Promise<IAirGapTransaction> {
-    let tx = {
+    const tx = {
       to: [] as string[],
       from: signedTx.from,
       amount: signedTx.amount,
@@ -208,7 +208,7 @@ export class BitcoinProtocol implements ICoinProtocol {
 
     const bitcoinTx = this.bitcoinJSLib.Transaction.fromHex(signedTx.transaction)
     bitcoinTx.outs.forEach(output => {
-      let address = this.bitcoinJSLib.address.fromOutputScript(output.script, this.network)
+      const address = this.bitcoinJSLib.address.fromOutputScript(output.script, this.network)
       // only works if one output is target and rest is change, but this way we can filter out change addresses
       if (new BigNumber(output.value).isEqualTo(signedTx.amount)) {
         tx.to.push(address)
@@ -225,7 +225,7 @@ export class BitcoinProtocol implements ICoinProtocol {
         .then(response => {
           const utxos = response.data
           let valueAccumulator = new BigNumber(0)
-          for (let utxo of utxos) {
+          for (const utxo of utxos) {
             valueAccumulator = valueAccumulator.plus(new BigNumber(utxo.satoshis))
           }
           resolve(valueAccumulator)
@@ -251,7 +251,7 @@ export class BitcoinProtocol implements ICoinProtocol {
     })
 
     let valueAccumulator = new BigNumber(0)
-    for (let utxo of utxos) {
+    for (const utxo of utxos) {
       valueAccumulator = valueAccumulator.plus(utxo.satoshis)
     }
 
@@ -296,7 +296,7 @@ export class BitcoinProtocol implements ICoinProtocol {
     const totalRequiredBalance = values.reduce((accumulator, currentValue) => accumulator.plus(currentValue)).plus(fee)
     let valueAccumulator = new BigNumber(0)
 
-    for (let utxo of utxos) {
+    for (const utxo of utxos) {
       valueAccumulator = valueAccumulator.plus(new BigNumber(utxo.satoshis))
       if (derivedAddresses.indexOf(utxo.address) >= 0) {
         transaction.ins.push({
@@ -343,9 +343,9 @@ export class BitcoinProtocol implements ICoinProtocol {
     })
 
     let maxIndex = -1
-    for (let transaction of transactions.items) {
-      for (let vout of transaction.vout) {
-        for (let address of vout.scriptPubKey.addresses) {
+    for (const transaction of transactions.items) {
+      for (const vout of transaction.vout) {
+        for (const address of vout.scriptPubKey.addresses) {
           maxIndex = Math.max(maxIndex, internalAddresses.indexOf(address))
         }
       }
@@ -384,7 +384,7 @@ export class BitcoinProtocol implements ICoinProtocol {
     const { data: utxos } = await axios.get(this.baseApiUrl + '/api/addrs/' + address + '/utxo', { responseType: 'json' })
     const totalRequiredBalance = values.reduce((accumulator, currentValue) => accumulator.plus(currentValue)).plus(fee)
     let valueAccumulator = new BigNumber(0)
-    for (let utxo of utxos) {
+    for (const utxo of utxos) {
       valueAccumulator = valueAccumulator.plus(new BigNumber(utxo.satoshis))
       if (address === utxo.address) {
         transaction.ins.push({
@@ -432,7 +432,7 @@ export class BitcoinProtocol implements ICoinProtocol {
 
   public broadcastTransaction(rawTransaction: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      let params = new URLSearchParams() // Fix for axios content-type
+      const params = new URLSearchParams() // Fix for axios content-type
       params.append('rawtx', rawTransaction)
       axios
         .post(this.baseApiUrl + '/api/tx/send', params)
@@ -470,14 +470,14 @@ export class BitcoinProtocol implements ICoinProtocol {
       }
     )
 
-    for (let transaction of transactions.items) {
-      let tempAirGapTransactionFrom: string[] = []
-      let tempAirGapTransactionTo: string[] = []
+    for (const transaction of transactions.items) {
+      const tempAirGapTransactionFrom: string[] = []
+      const tempAirGapTransactionTo: string[] = []
       let tempAirGapTransactionIsInbound: boolean = true
 
       let amount = new BigNumber(0)
 
-      for (let vin of transaction.vin) {
+      for (const vin of transaction.vin) {
         if (addresses.indexOf(vin.addr) > -1) {
           tempAirGapTransactionIsInbound = false
         }
@@ -485,7 +485,7 @@ export class BitcoinProtocol implements ICoinProtocol {
         amount = amount.plus(vin.valueSat)
       }
 
-      for (let vout of transaction.vout) {
+      for (const vout of transaction.vout) {
         if (vout.scriptPubKey.addresses) {
           tempAirGapTransactionTo.push(...vout.scriptPubKey.addresses)
           // If receiving address is our address, and transaction is outbound => our change
