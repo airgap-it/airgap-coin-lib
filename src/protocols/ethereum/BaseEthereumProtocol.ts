@@ -6,7 +6,7 @@ import * as Web3 from 'web3'
 
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
 import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
-import { INetwork } from '../../networks'
+import { Network } from '../../networks'
 import { SignedEthereumTransaction } from '../../serializer/signed-transactions/ethereum-transactions.serializer'
 import { UnsignedTransaction } from '../../serializer/unsigned-transaction.serializer'
 import { RawEthereumTransaction } from '../../serializer/unsigned-transactions/ethereum-transactions.serializer'
@@ -57,7 +57,7 @@ export abstract class BaseEthereumProtocol implements ICoinProtocol {
   public blockExplorer = 'https://etherscan.io'
 
   public web3: any
-  public network: INetwork
+  public network: Network
   public chainId: number
   public infoAPI: string
 

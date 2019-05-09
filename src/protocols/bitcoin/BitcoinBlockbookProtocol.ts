@@ -6,7 +6,7 @@ import * as bitcoinJS from 'bitcoinjs-lib'
 
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
 import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
-import { INetwork } from '../../networks'
+import { Network } from '../../networks'
 import { SignedBitcoinTransaction } from '../../serializer/signed-transactions/bitcoin-transactions.serializer'
 import { UnsignedTransaction } from '../../serializer/unsigned-transaction.serializer'
 import { RawBitcoinTransaction } from '../../serializer/unsigned-transactions/bitcoin-transactions.serializer'
@@ -133,7 +133,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
   public baseApiUrl: string
   public bitcoinJSLib: any
 
-  constructor(network: INetwork = bitcoinJS.networks.bitcoin, baseApiUrl = 'https://btc1.trezor.io', bitcoinJSLib = bitcoinJS) {
+  constructor(network: Network = bitcoinJS.networks.bitcoin, baseApiUrl = 'https://btc1.trezor.io', bitcoinJSLib = bitcoinJS) {
     this.network = network
     this.baseApiUrl = `https://cors-proxy.airgap.prod.gke.papers.tech/proxy?url=${baseApiUrl}`
     this.bitcoinJSLib = bitcoinJSLib

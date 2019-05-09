@@ -1,11 +1,13 @@
 import * as bitcoinJS from 'bitcoinjs-lib'
 
-export interface INetwork {
+interface Bip32 {
+  public: number
+  private: number
+}
+
+export interface Network {
   messagePrefix?: string
-  bip32: {
-    public: number
-    private: number
-  }
+  bip32: Bip32
   pubKeyHash: number
   scriptHash?: number
   wif: number
@@ -15,7 +17,7 @@ export interface INetwork {
   ethereum?: boolean
 }
 
-const networks: { [key: string]: INetwork | bitcoinJS.Network } = {}
+const networks: { [key: string]: Network | bitcoinJS.Network } = {}
 
 networks.shadow = {
   messagePrefix: '\x19ShadowCash Signed Message:\n',

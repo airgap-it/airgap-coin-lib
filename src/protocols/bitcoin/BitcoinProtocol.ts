@@ -6,7 +6,7 @@ import * as bitcoinJS from 'bitcoinjs-lib'
 
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
 import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
-import { INetwork } from '../../networks'
+import { Network } from '../../networks'
 import { SignedBitcoinTransaction } from '../../serializer/signed-transactions/bitcoin-transactions.serializer'
 import { UnsignedTransaction } from '../../serializer/unsigned-transaction.serializer'
 import { RawBitcoinTransaction } from '../../serializer/unsigned-transactions/bitcoin-transactions.serializer'
@@ -60,7 +60,7 @@ export class BitcoinProtocol implements ICoinProtocol {
   public baseApiUrl: string
   public bitcoinJSLib: any
 
-  constructor(network: INetwork = bitcoinJS.networks.bitcoin, baseApiUrl = 'https://insight.bitpay.com', bitcoinJSLib = bitcoinJS) {
+  constructor(network: Network = bitcoinJS.networks.bitcoin, baseApiUrl = 'https://insight.bitpay.com', bitcoinJSLib = bitcoinJS) {
     this.network = network
     this.baseApiUrl = baseApiUrl
     this.bitcoinJSLib = bitcoinJSLib
