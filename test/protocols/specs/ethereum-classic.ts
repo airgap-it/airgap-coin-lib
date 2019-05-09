@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js'
 import { EthereumProtocolStub } from '../stubs/ethereum.stub'
-import { EthereumClassicProtocol } from '../../../lib'
+import { EthereumClassicProtocol } from '../../../src'
 import { TestProtocolSpec } from '../implementations'
 
 export class EthereumClassicTestProtocolSpec extends TestProtocolSpec {

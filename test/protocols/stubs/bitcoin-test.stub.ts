@@ -1,7 +1,7 @@
 import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
 import axios from 'axios'
 import * as sinon from 'sinon'
-import { BitcoinTestnetProtocol } from '../../../lib'
+import { BitcoinTestnetProtocol } from '../../../src'
 
 export class BitcoinTestnetProtocolStub implements ProtocolHTTPStub {
   registerStub(testProtocolSpec: TestProtocolSpec, protocol: BitcoinTestnetProtocol) {

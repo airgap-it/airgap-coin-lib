@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js'
-import { DeserializedSyncProtocol, SignedTransaction, GroestlcoinProtocol } from '../../../lib'
+import { DeserializedSyncProtocol, SignedTransaction, GroestlcoinProtocol } from '../../../src'
 import { GroestlcoinProtocolStub } from '../stubs/groestlcoin.stub'
 import { TestProtocolSpec } from '../implementations'
 

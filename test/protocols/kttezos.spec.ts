@@ -5,7 +5,7 @@ import * as chaiAsPromised from 'chai-as-promised'
 
 import * as sinon from 'sinon'
 import { TezosTestProtocolSpec } from './specs/tezos'
-import { TezosKtProtocol, isCoinlibReady } from '../../lib'
+import { TezosKtProtocol, isCoinlibReady } from '../../src'
 import axios from 'axios'
 import {
   TezosOperationType,
@@ -13,7 +13,7 @@ import {
   TezosOriginationOperation,
   TezosSpendOperation,
   TezosRevealOperation
-} from '../../lib/protocols/tezos/TezosProtocol'
+} from '../../src/protocols/tezos/TezosProtocol'
 import BigNumber from 'bignumber.js'
 
 // use chai-as-promised plugin

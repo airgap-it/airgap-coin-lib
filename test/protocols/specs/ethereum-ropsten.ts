@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js'
-import { EthereumRopstenProtocol } from '../../../lib'
+import { EthereumRopstenProtocol } from '../../../src'
 import { EthereumRopstenProtocolStub } from '../stubs/ethereum-ropsten.stub'
 import { TestProtocolSpec } from '../implementations'
 

@@ -2,15 +2,15 @@ import 'mocha'
 
 import { expect } from 'chai'
 import { TestProtocolSpec } from './implementations'
-import { SyncProtocolUtils } from '../../lib/serializer/serializer'
-import { SignedTransaction, UnsignedTransaction } from '../../lib'
+import { SyncProtocolUtils } from '../../src/serializer/serializer'
+import { SignedTransaction, UnsignedTransaction } from '../../src'
 import { EthereumTestProtocolSpec } from './specs/ethereum'
 import { AETestProtocolSpec } from './specs/ae'
 import { ERC20HOPTokenTestProtocolSpec } from './specs/erc20-hop-token'
 import { TezosTestProtocolSpec } from './specs/tezos'
 import { BitcoinTestProtocolSpec } from './specs/bitcoin-test'
 import { GenericERC20TokenTestProtocolSpec } from './specs/generic-erc20-token'
-import { getProtocolByIdentifier } from '../../lib/utils/protocolsByIdentifier'
+import { getProtocolByIdentifier } from '../../src/utils/protocolsByIdentifier'
 
 const protocols = [
   new EthereumTestProtocolSpec(),

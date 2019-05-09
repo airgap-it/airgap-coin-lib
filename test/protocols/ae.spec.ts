@@ -3,11 +3,11 @@ import 'mocha'
 import * as chai from 'chai'
 import * as chaiAsPromised from 'chai-as-promised'
 import { AETestProtocolSpec } from './specs/ae'
-import { AEProtocol, IAirGapTransaction } from '../../lib'
+import { AEProtocol, IAirGapTransaction } from '../../src'
 import BigNumber from 'bignumber.js'
 import * as sinon from 'sinon'
 import axios from 'axios'
-import { RawAeternityTransaction } from '../../lib/serializer/unsigned-transactions/aeternity-transactions.serializer'
+import { RawAeternityTransaction } from '../../src/serializer/unsigned-transactions/aeternity-transactions.serializer'
 
 // use chai-as-promised plugin
 chai.use(chaiAsPromised)

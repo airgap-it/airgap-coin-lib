@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js'
-import { AEProtocol } from '../../../lib'
+import { AEProtocol } from '../../../src'
 import { AEProtocolStub } from '../stubs/ae.stub'
 import { TestProtocolSpec } from '../implementations'
 

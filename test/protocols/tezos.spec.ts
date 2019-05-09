@@ -4,15 +4,15 @@ import { expect } from 'chai'
 import BigNumber from 'bignumber.js'
 import * as sinon from 'sinon'
 import axios from 'axios'
-import { isCoinlibReady } from '../../lib'
+import { isCoinlibReady } from '../../src'
 import { TezosTestProtocolSpec } from '../protocols/specs/tezos'
 import {
   TezosOperationType,
   TezosRevealOperation,
   TezosSpendOperation,
   TezosOriginationOperation
-} from '../../lib/protocols/tezos/TezosProtocol'
-import { RawTezosTransaction } from '../../lib/serializer/unsigned-transactions/tezos-transactions.serializer'
+} from '../../src/protocols/tezos/TezosProtocol'
+import { RawTezosTransaction } from '../../src/serializer/unsigned-transactions/tezos-transactions.serializer'
 
 const tezosProtocolSpec = new TezosTestProtocolSpec()
 const tezosLib = tezosProtocolSpec.lib

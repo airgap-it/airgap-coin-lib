@@ -1,8 +1,8 @@
 import BigNumber from 'bignumber.js'
-import { HOPTokenProtocol } from '../../../lib/protocols/ethereum/erc20/HopRopstenToken'
+import { HOPTokenProtocol } from '../../../src/protocols/ethereum/erc20/HopRopstenToken'
 import { GenericERC20ProtocolStub } from '../stubs/generic-erc20.stub'
 import { TestProtocolSpec } from '../implementations'
-import { addSubProtocol } from '../../../lib'
+import { addSubProtocol } from '../../../src'
 
 const protocol = HOPTokenProtocol
 

@@ -1,4 +1,4 @@
-import { isCoinlibReady, TezosKtProtocol } from '../../../lib/index'
+import { isCoinlibReady, TezosKtProtocol } from '../../../src/index'
 
 // prepare, sign and do a TX
 const promise = async () => {

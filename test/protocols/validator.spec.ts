@@ -3,7 +3,7 @@ import 'mocha'
 import { expect } from 'chai'
 import { validate } from 'validate.js'
 
-import { validateSyncScheme } from '../../lib/serializer/validators/validators'
+import { validateSyncScheme } from '../../src/serializer/validators/validators'
 import BigNumber from 'bignumber.js'
 
 describe('Validators', () => {

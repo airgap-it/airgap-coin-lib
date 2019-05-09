@@ -1,8 +1,8 @@
 import BigNumber from 'bignumber.js'
 import { GenericERC20ProtocolStub } from '../stubs/generic-erc20.stub'
 import { TestProtocolSpec } from '../implementations'
-import { ERC20Token } from '../../../lib/protocols/ethereum/erc20/ERC20'
-import { addSubProtocol } from '../../../lib'
+import { ERC20Token } from '../../../src/protocols/ethereum/erc20/ERC20'
+import { addSubProtocol } from '../../../src'
 
 const protocol = ERC20Token
 

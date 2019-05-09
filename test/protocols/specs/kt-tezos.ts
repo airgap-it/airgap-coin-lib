@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js'
 import { TestProtocolSpec } from '../implementations'
-import { TezosKtProtocol } from '../../../lib'
+import { TezosKtProtocol } from '../../../src'
 import { KtTezosProtocolStub } from '../stubs/kt-tezos.stub'
 
 // Test Mnemonic from using Ledger, 44'/1729'/0'/0'

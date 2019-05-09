@@ -5,7 +5,7 @@ import * as chaiAsPromised from 'chai-as-promised'
 import BigNumber from 'bignumber.js'
 import * as sinon from 'sinon'
 import axios from 'axios'
-import { AirGapWallet, EthereumProtocol, BitcoinProtocol } from '../../lib/index'
+import { AirGapWallet, EthereumProtocol, BitcoinProtocol } from '../../src/index'
 
 // use chai-as-promised plugin
 chai.use(chaiAsPromised)

@@ -1,7 +1,7 @@
 import * as BIP39 from 'bip39'
-import { ICoinProtocol, EncodedType, DeserializedSyncProtocol } from '../../lib'
+import { ICoinProtocol, EncodedType, DeserializedSyncProtocol } from '../../src'
 import BigNumber from 'bignumber.js'
-import { SERIALIZER_VERSION } from '../../lib/serializer/constants'
+import { SERIALIZER_VERSION } from '../../src/serializer/constants'
 
 const mnemonic = 'spell device they juice trial skirt amazing boat badge steak usage february virus art survey'
 

@@ -1,6 +1,6 @@
 import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
 import axios from 'axios'
-import { AEProtocol } from '../../../lib'
+import { AEProtocol } from '../../../src'
 import * as sinon from 'sinon'
 
 export class AEProtocolStub implements ProtocolHTTPStub {

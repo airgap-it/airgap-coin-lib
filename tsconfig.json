@@ -10,5 +10,5 @@
     "strictNullChecks": true,
     "sourceMap": true
   },
-  "include": ["lib/**/*.ts"]
+  "include": ["src/**/*.ts"]
 }

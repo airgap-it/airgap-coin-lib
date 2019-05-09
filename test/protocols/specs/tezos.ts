@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js'
 import { TestProtocolSpec } from '../implementations'
 import { TezosProtocolStub } from '../stubs/tezos.stub'
-import { TezosProtocol } from '../../../lib/'
+import { TezosProtocol } from '../../../src/'
 
 // Test Mnemonic from using Ledger, 44'/1729'/0'/0'
 // leopard crouch simple blind castle they elder enact slow rate mad blanket saddle tail silk fury quarter obscure interest exact veteran volcano fabric cherry

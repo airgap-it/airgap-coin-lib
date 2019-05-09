@@ -1,8 +1,8 @@
-import { TezosProtocol, SyncProtocolUtils, EncodedType, isCoinlibReady, TezosKtProtocol } from '../../../lib/index'
+import { TezosProtocol, SyncProtocolUtils, EncodedType, isCoinlibReady, TezosKtProtocol } from '../../../src/index'
 import BigNumber from 'bignumber.js'
 import * as readline from 'readline'
 import * as qrcode from 'qrcode-terminal'
-import { SERIALIZER_VERSION } from '../../../lib/serializer/constants'
+import { SERIALIZER_VERSION } from '../../../src/serializer/constants'
 
 // prepare, sign and do a TX
 const promise = async () => {

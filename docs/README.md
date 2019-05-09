@@ -34,7 +34,7 @@ $ npm test
 
 The modular design used in this library allows you to simply add new protocols with special logic. Adding a new Bitcoin-like protocol basically means:
 
-1. select the correct network parameters (see `lib/networks.ts`)
+1. select the correct network parameters (see `src/networks.ts`)
 2. set the Insight API URL to communicate with the blockchain
 
 Adding a new Ethereum-like protocol means:

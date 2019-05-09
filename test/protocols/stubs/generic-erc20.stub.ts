@@ -1,5 +1,5 @@
 import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
-import { EthereumProtocol } from '../../../lib/protocols/ethereum/EthereumProtocol'
+import { EthereumProtocol } from '../../../src/protocols/ethereum/EthereumProtocol'
 import * as sinon from 'sinon'
 import BigNumber from 'bignumber.js'
 
