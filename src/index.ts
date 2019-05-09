@@ -1,4 +1,5 @@
 // tslint:disable
+// This needs to be imported first, otherwise the tests won't run anymore
 import { EthereumProtocol } from './protocols/ethereum/EthereumProtocol'
 // tslint:enable
 
