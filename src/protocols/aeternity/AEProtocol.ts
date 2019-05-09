@@ -75,6 +75,7 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
    */
   public getPublicKeyFromHexSecret(secret: string, derivationPath: string): string {
     const { publicKey } = generateWalletUsingDerivationPath(Buffer.from(secret, 'hex'), derivationPath)
+
     return Buffer.from(publicKey).toString('hex')
   }
 
@@ -85,16 +86,19 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
    */
   public getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Buffer {
     const { secretKey } = generateWalletUsingDerivationPath(Buffer.from(secret, 'hex'), derivationPath)
+
     return Buffer.from(secretKey)
   }
 
   public async getAddressFromPublicKey(publicKey: string): Promise<string> {
     const base58 = bs58check.encode(Buffer.from(publicKey, 'hex'))
+
     return `ak_${base58}`
   }
 
   public async getAddressesFromPublicKey(publicKey: string): Promise<string[]> {
     const address = await this.getAddressFromPublicKey(publicKey)
+
     return [address]
   }
 
@@ -235,6 +239,7 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
 
   public async getBalanceOfPublicKey(publicKey: string): Promise<BigNumber> {
     const address = await this.getAddressFromPublicKey(publicKey)
+
     return this.getBalanceOfAddresses([address])
   }
 
@@ -309,11 +314,13 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
       { tx: rawTransaction },
       { headers: { 'Content-Type': 'application/json' } }
     )
+
     return data.tx_hash
   }
 
   private toHexBuffer(value: number | BigNumber): Buffer {
     const hexString: string = Web3.utils.toHex(value).substr(2)
+
     return Buffer.from(padStart(hexString, hexString.length % 2 === 0 ? hexString.length : hexString.length + 1, '0'), 'hex')
   }
 }
