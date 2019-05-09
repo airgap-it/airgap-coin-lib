@@ -114,9 +114,9 @@ export class SyncProtocolUtils {
     }
 
     return {
-      version: version,
-      type: type,
-      protocol: protocol,
+      version,
+      type,
+      protocol,
       payload: typedPayload
     }
   }

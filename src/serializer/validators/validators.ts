@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js'
 import { isArray, isDate, isInteger, isNumber, isObject, isString, validate, validators } from 'validate.js'
 
-validators.type = function(value, options, key, attributes) {
+validators.type = (value, options, key, attributes) => {
   // allow empty values by default (needs to be checked by "presence" check)
   if (value === null || typeof value === 'undefined') {
     return null
@@ -16,11 +16,12 @@ validators.type = function(value, options, key, attributes) {
   if (!validators.type.checks[options]) {
     throw new Error(`Could not find validator for type ${options}`)
   }
+
   return validators.type.checks[options](value) ? null : `is not of type "${options}"`
 }
 
 validators.type.checks = {
-  Object: function(value) {
+  Object(value) {
     return isObject(value) && !isArray(value)
   },
   Array: isArray,
@@ -28,15 +29,15 @@ validators.type.checks = {
   Number: isNumber,
   String: isString,
   Date: isDate,
-  Boolean: function(value) {
+  Boolean(value) {
     return typeof value === 'boolean'
   },
-  BigNumber: function(value) {
+  BigNumber(value) {
     return BigNumber.isBigNumber(value)
   }
 }
 
-validators.isHexStringWithPrefix = function(value, options, key, attributes) {
+validators.isHexStringWithPrefix = (value, options, key, attributes) => {
   if (typeof value !== 'string') {
     return 'is not hex string'
   }

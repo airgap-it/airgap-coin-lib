@@ -311,7 +311,7 @@ export abstract class BaseEthereumProtocol implements ICoinProtocol {
                     to: [transaction.to],
                     isInbound: transaction.to.toLowerCase() === address.toLowerCase(),
                     amount: new BigNumber(transaction.value),
-                    fee: fee,
+                    fee,
                     blockHeight: transaction.blockNumber,
                     protocolIdentifier: this.identifier,
                     timestamp: parseInt(transaction.timeStamp, 10)

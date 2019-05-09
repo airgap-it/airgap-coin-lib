@@ -23,7 +23,7 @@ export interface ICoinProtocol {
   feeDecimals: number
   identifier: string
 
-  units: Array<{ unitSymbol: string; factor: BigNumber }>
+  units: { unitSymbol: string; factor: BigNumber }[]
 
   supportsHD: boolean
   standardDerivationPath: string

@@ -110,8 +110,8 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
       isDelegated: data.delegate.value ? true : false,
       setable: data.delegate.setable,
       value: data.delegate.value,
-      delegatedDate: delegatedDate,
-      delegatedOpLevel: delegatedOpLevel
+      delegatedDate,
+      delegatedOpLevel
     }
   }
 
@@ -162,14 +162,14 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
       counter: counter.toFixed(),
       gas_limit: '10000', // taken from eztz
       storage_limit: '0', // taken from eztz
-      delegate: delegate
+      delegate
     }
 
     operations.push(delegationOperation)
 
     try {
       const tezosWrappedOperation: TezosWrappedOperation = {
-        branch: branch,
+        branch,
         contents: operations
       }
 
@@ -207,10 +207,10 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
 
     const bakerInfo: BakerInfo = {
       balance: tzBalance,
-      delegatedBalance: delegatedBalance,
-      stakingBalance: stakingBalance,
+      delegatedBalance,
+      stakingBalance,
       bakingActive: isBakingActive,
-      selfBond: selfBond,
+      selfBond,
       bakerCapacity: stakingBalance.div(stakingCapacity),
       bakerUsage: stakingCapacity
     }

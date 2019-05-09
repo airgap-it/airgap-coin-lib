@@ -188,7 +188,7 @@ export class GenericERC20 extends BaseEthereumProtocol implements ICoinSubProtoc
                       blockHeight: transaction.blockNumber,
                       protocolIdentifier: this.identifier,
                       amount: new BigNumber(transactionPayload.value),
-                      fee: fee,
+                      fee,
                       timestamp: parseInt(transaction.timeStamp, 10)
                     }
 

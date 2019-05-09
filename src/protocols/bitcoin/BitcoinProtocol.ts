@@ -185,9 +185,9 @@ export class BitcoinProtocol implements ICoinProtocol {
 
     return {
       from: transaction.ins.map(obj => obj.address),
-      to: transaction.outs.filter(obj => obj.isChange === false).map(obj => obj.recipient),
+      to: transaction.outs.filter(obj => !obj.isChange).map(obj => obj.recipient),
       amount: transaction.outs
-        .filter(obj => obj.isChange === false)
+        .filter(obj => !obj.isChange)
         .map(obj => obj.value)
         .reduce((accumulator, currentValue) => accumulator.plus(currentValue)),
       fee: feeCalculator,
@@ -508,7 +508,7 @@ export class BitcoinProtocol implements ICoinProtocol {
         from: tempAirGapTransactionFrom,
         to: tempAirGapTransactionTo,
         isInbound: tempAirGapTransactionIsInbound,
-        amount: amount,
+        amount,
         fee: new BigNumber(transaction.fees).shiftedBy(this.feeDecimals),
         blockHeight: transaction.blockheight,
         protocolIdentifier: this.identifier,
@@ -527,6 +527,7 @@ export class BitcoinProtocol implements ICoinProtocol {
         return true
       }
     }
+
     return false
   }
 }

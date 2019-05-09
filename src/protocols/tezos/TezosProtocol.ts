@@ -135,7 +135,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   protected readonly originationBurn = this.originationSize.times(this.storageCostPerByte) // https://tezos.stackexchange.com/a/787
 
   // Tezos - We need to wrap these in Buffer due to non-compatible browser polyfills
-  private tezosPrefixes = {
+  private readonly tezosPrefixes = {
     tz1: Buffer.from(new Uint8Array([6, 161, 159])),
     tz2: Buffer.from(new Uint8Array([6, 161, 161])),
     tz3: Buffer.from(new Uint8Array([6, 161, 164])),
@@ -299,12 +299,12 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     }
 
     const airgapTx: IAirGapTransaction = {
-      amount: amount,
+      amount,
       fee: new BigNumber(tezosOperation.fee),
       from: [tezosOperation.source],
       isInbound: false,
       protocolIdentifier: this.identifier,
-      to: to
+      to
     }
 
     return airgapTx
@@ -420,7 +420,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
     try {
       const tezosWrappedOperation: TezosWrappedOperation = {
-        branch: branch,
+        branch,
         contents: operations
       }
 
@@ -506,14 +506,14 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       balance: balanceToSend.toFixed(),
       spendable: true,
       delegatable: true,
-      delegate: delegate
+      delegate
     }
 
     operations.push(originationOperation)
 
     try {
       const tezosWrappedOperation: TezosWrappedOperation = {
-        branch: branch,
+        branch,
         contents: operations
       }
 
@@ -579,13 +579,15 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
   protected prefixAndBase58CheckEncode(hexStringPayload: string, tezosPrefix: Uint8Array): string {
     const prefixHex = Buffer.from(tezosPrefix).toString('hex')
+
     return bs58check.encode(Buffer.from(prefixHex + hexStringPayload, 'hex'))
   }
 
   protected splitAndReturnRest(payload: string, length: number): { result: string; rest: string } {
     const result = payload.substr(0, length)
     const rest = payload.substr(length, payload.length - length)
-    return { result: result, rest: rest }
+
+    return { result, rest }
   }
 
   protected parseAddress(rawHexAddress: string): string {
@@ -623,6 +625,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     if (hexString.length <= 128) {
       throw new Error('Not a valid signed transaction')
     }
+
     return this.unforgeUnsignedTezosWrappedOperation(hexString.substring(0, hexString.length - 128))
   }
 
@@ -631,7 +634,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     const branch = this.prefixAndBase58CheckEncode(result, this.tezosPrefixes.branch)
 
     const tezosWrappedOperation: TezosWrappedOperation = {
-      branch: branch,
+      branch,
       contents: []
     }
 
@@ -658,6 +661,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         throw new Error('transaction operation unknown')
       }
     }
+
     return tezosWrappedOperation
   }
 
@@ -684,9 +688,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         storage_limit: storageLimit.toFixed(),
         counter: counter.toFixed(),
         public_key: publicKey,
-        source: source
+        source
       },
-      rest: rest
+      rest
     }
   }
 
@@ -722,10 +726,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         storage_limit: storageLimit.toFixed(),
         amount: amount.toFixed(),
         counter: counter.toFixed(),
-        destination: destination,
-        source: source
+        destination,
+        source
       },
-      rest: rest
+      rest
     }
   }
 
@@ -769,7 +773,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
     return {
       tezosOriginationOperation: {
-        source: source,
+        source,
         kind: TezosOperationType.ORIGINATION,
         fee: fee.toFixed(),
         gas_limit: gasLimit.toFixed(),
@@ -777,12 +781,12 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         counter: counter.toFixed(),
         balance: balance.toFixed(),
         manager_pubkey: managerPubKey,
-        spendable: spendable,
-        delegatable: delegatable,
-        delegate: delegate,
-        script: script
+        spendable,
+        delegatable,
+        delegate,
+        script
       },
-      rest: rest
+      rest
     }
   }
 
@@ -813,7 +817,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
     return {
       tezosDelegationOperation: {
-        source: source,
+        source,
         kind: TezosOperationType.DELEGATION,
         fee: fee.toFixed(),
         gas_limit: gasLimit.toFixed(),
@@ -821,7 +825,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         counter: counter.toFixed(),
         delegate: delegate ? delegate : undefined
       },
-      rest: rest
+      rest
     }
   }
 

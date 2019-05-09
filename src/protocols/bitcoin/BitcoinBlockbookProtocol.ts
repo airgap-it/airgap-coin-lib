@@ -258,9 +258,9 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
 
     return {
       from: transaction.ins.map(obj => obj.address),
-      to: transaction.outs.filter(obj => obj.isChange === false).map(obj => obj.recipient),
+      to: transaction.outs.filter(obj => !obj.isChange).map(obj => obj.recipient),
       amount: transaction.outs
-        .filter(obj => obj.isChange === false)
+        .filter(obj => !obj.isChange)
         .map(obj => obj.value)
         .reduce((accumulator, currentValue) => accumulator.plus(currentValue)),
       fee: feeCalculator,
@@ -448,7 +448,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
         txId: utxo.txid,
         value: new BigNumber(utxo.value),
         vout: utxo.vout,
-        address: address
+        address
       })
 
       if (valueAccumulator.isGreaterThanOrEqualTo(totalRequiredBalance)) {
@@ -546,7 +546,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
         from: tempAirGapTransactionFrom,
         to: tempAirGapTransactionTo,
         isInbound: tempAirGapTransactionIsInbound,
-        amount: amount,
+        amount,
         fee: new BigNumber(transaction.fees),
         blockHeight: transaction.blockheight.toString(),
         protocolIdentifier: this.identifier,
@@ -608,7 +608,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
         from: tempAirGapTransactionFrom,
         to: tempAirGapTransactionTo,
         isInbound: tempAirGapTransactionIsInbound,
-        amount: amount,
+        amount,
         fee: new BigNumber(transaction.fees).shiftedBy(this.feeDecimals),
         blockHeight: transaction.blockheight.toString(),
         protocolIdentifier: this.identifier,
@@ -627,6 +627,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
         return true
       }
     }
+
     return false
   }
 }

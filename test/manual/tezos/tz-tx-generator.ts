@@ -44,7 +44,7 @@ const promise = async () => {
     protocol: tezos.identifier,
     type: EncodedType.UNSIGNED_TRANSACTION,
     payload: {
-      publicKey: publicKey,
+      publicKey,
       callback: 'airgap-wallet://?d=',
       transaction: rawTezosTx
     }

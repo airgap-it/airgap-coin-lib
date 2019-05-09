@@ -22,7 +22,7 @@ describe('Validators', () => {
       expect(validationErrors).to.deep.equal({ test: ['Test is not of type "BigNumber"'] })
       validationErrors = await validate({ test: 123 }, constraints)
       expect(validationErrors).to.deep.equal({ test: ['Test is not of type "BigNumber"'] })
-      validationErrors = await validate({ test: { isBigNumber: function() {} } }, constraints)
+      validationErrors = await validate({ test: { isBigNumber: () => undefined } }, constraints)
       expect(validationErrors).to.deep.equal({ test: ['Test is not of type "BigNumber"'] })
       validationErrors = await validate({ test: new BigNumber(0) }, constraints)
       expect(validationErrors).to.be.undefined
