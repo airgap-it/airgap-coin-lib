@@ -4,7 +4,7 @@ import { ProtocolNotSupported } from '../serializer/errors'
 
 const getProtocolByIdentifier = function(identifier: string): ICoinProtocol {
   // create a complete list of all protocols and subprotocols
-  let candidates: ICoinProtocol[] = [].concat.apply(
+  let candidates: ICoinProtocol[] = ([] as ICoinProtocol[]).concat.apply(
     [],
     supportedProtocols().map(protocol => {
       const protocols = [protocol]

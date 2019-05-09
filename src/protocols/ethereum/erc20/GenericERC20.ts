@@ -203,7 +203,7 @@ export class GenericERC20 extends BaseEthereumProtocol implements ICoinSubProtoc
       }
       Promise.all(promises)
         .then(values => {
-          overallResolve([].concat.apply([], values))
+          overallResolve(([] as IAirGapTransaction[]).concat.apply([], values))
         })
         .catch(overallReject)
     })
