@@ -12,7 +12,7 @@ Import the desired protocol, `SyncProtocolUtils` and `EncodedType` from `airgap-
 
 ## Structure
 
-The code that defines the sync scheme can be found [here](https://github.com/airgap-it/airgap-coin-lib/blob/master/lib/serializer/serializer.ts)
+The code that defines the sync scheme can be found [here](https://github.com/airgap-it/airgap-coin-lib/blob/master/src/serializer/serializer.ts)
 
 The general structure of a sync request is the following:
 
