@@ -20,8 +20,8 @@ export interface MarketDataSample {
 }
 
 export class AirGapMarketWallet extends AirGapWallet {
-  public currentBalance: BigNumber
-  public currentMarketPrice: BigNumber
+  public currentBalance: BigNumber | undefined
+  public currentMarketPrice: BigNumber | undefined
 
   public marketSample: MarketDataSample[] = []
   public minuteMarketSample: MarketDataSample[] = []
@@ -103,17 +103,18 @@ export class AirGapMarketWallet extends AirGapWallet {
   public fetchWalletValue(): Promise<BigNumber> {
     return new Promise((resolve, reject) => {
       if (this.currentMarketPrice) {
+        const price = this.currentMarketPrice
         this.balanceOf()
           .then(balance => {
-            resolve(new BigNumber(balance.toNumber() * this.currentMarketPrice.toNumber()))
+            resolve(new BigNumber(balance.toNumber() * price.toNumber()))
           })
           .catch(reject)
       } else {
         this.fetchCurrentMarketPrice()
-          .then(() => {
+          .then(price => {
             this.balanceOf()
               .then(balance => {
-                resolve(new BigNumber(balance.toNumber() * this.currentMarketPrice.toNumber()))
+                resolve(new BigNumber(balance.toNumber() * price.toNumber()))
               })
               .catch(reject)
           })
