@@ -1,17 +1,17 @@
-import { ICoinProtocol } from '../ICoinProtocol'
-import { INetwork } from '../../networks'
-
-import * as bitcoinJS from 'bitcoinjs-lib'
-import { BigNumber } from 'bignumber.js'
-import * as ethUtil from 'ethereumjs-util'
-import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 import axios from 'axios'
-import { RawEthereumTransaction } from '../../serializer/unsigned-transactions/ethereum-transactions.serializer'
+import { BigNumber } from 'bignumber.js'
+import * as bitcoinJS from 'bitcoinjs-lib'
+import * as ethUtil from 'ethereumjs-util'
 import * as Web3 from 'web3'
-import { UnsignedTransaction } from '../../serializer/unsigned-transaction.serializer'
-import { SignedEthereumTransaction } from '../../serializer/signed-transactions/ethereum-transactions.serializer'
+
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
+import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
+import { INetwork } from '../../networks'
+import { SignedEthereumTransaction } from '../../serializer/signed-transactions/ethereum-transactions.serializer'
+import { UnsignedTransaction } from '../../serializer/unsigned-transaction.serializer'
+import { RawEthereumTransaction } from '../../serializer/unsigned-transactions/ethereum-transactions.serializer'
 import { getSubProtocolsByIdentifier } from '../../utils/subProtocols'
+import { ICoinProtocol } from '../ICoinProtocol'
 
 const EthereumTransaction = require('ethereumjs-tx')
 

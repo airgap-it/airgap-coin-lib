@@ -1,11 +1,12 @@
-import { toBuffer } from '../utils/toBuffer'
+import BigNumber from 'bignumber.js'
+
 import {
+  SerializedSyncProtocolSignedTransaction,
   SignedTransaction,
   SignedTransactionSerializer,
-  SerializedSyncProtocolSignedTransaction,
   SyncProtocolSignedTransactionKeys
 } from '../signed-transaction.serializer'
-import BigNumber from 'bignumber.js'
+import { toBuffer } from '../utils/toBuffer'
 
 export type SerializedSignedBitcoinTransaction = [Buffer, Buffer]
 

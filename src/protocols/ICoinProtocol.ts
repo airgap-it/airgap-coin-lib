@@ -1,8 +1,10 @@
-import { IAirGapTransaction } from '../interfaces/IAirGapTransaction'
 import BigNumber from 'bignumber.js'
-import { UnsignedTransaction } from './../serializer/unsigned-transaction.serializer'
-import { SignedTransaction } from '../serializer/signed-transaction.serializer'
+
 import { IAirGapSignedTransaction } from '../interfaces/IAirGapSignedTransaction'
+import { IAirGapTransaction } from '../interfaces/IAirGapTransaction'
+import { SignedTransaction } from '../serializer/signed-transaction.serializer'
+
+import { UnsignedTransaction } from './../serializer/unsigned-transaction.serializer'
 import { ICoinSubProtocol } from './ICoinSubProtocol'
 
 export interface ICoinProtocol {

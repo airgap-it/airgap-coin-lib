@@ -1,8 +1,9 @@
-import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
 import axios from 'axios'
-import * as sinon from 'sinon'
-import { TezosProtocol } from '../../../src/protocols/tezos/TezosProtocol'
 import BigNumber from 'bignumber.js'
+import * as sinon from 'sinon'
+
+import { TezosProtocol } from '../../../src/protocols/tezos/TezosProtocol'
+import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
 
 export class TezosProtocolStub implements ProtocolHTTPStub {
   registerStub(testProtocolSpec: TestProtocolSpec, protocol: TezosProtocol) {

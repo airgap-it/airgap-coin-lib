@@ -1,14 +1,14 @@
-import { EthereumUnsignedTransactionSerializer } from './unsigned-transactions/ethereum-transactions.serializer'
-import { BitcoinUnsignedTransactionSerializer } from './unsigned-transactions/bitcoin-transactions.serializer'
-import { UnsignedTransactionSerializer } from './unsigned-transaction.serializer'
-import { BitcoinSignedTransactionSerializer } from './signed-transactions/bitcoin-transactions.serializer'
-import { EthereumSignedTransactionSerializer } from './signed-transactions/ethereum-transactions.serializer'
+import { ProtocolNotSupported } from './errors'
 import { SignedTransactionSerializer } from './signed-transaction.serializer'
 import { AeternitySignedTransactionSerializer } from './signed-transactions/aeternity-transactions.serializer'
-import { AeternityUnsignedTransactionSerializer } from './unsigned-transactions/aeternity-transactions.serializer'
-import { ProtocolNotSupported } from './errors'
-import { TezosUnsignedTransactionSerializer } from './unsigned-transactions/tezos-transactions.serializer'
+import { BitcoinSignedTransactionSerializer } from './signed-transactions/bitcoin-transactions.serializer'
+import { EthereumSignedTransactionSerializer } from './signed-transactions/ethereum-transactions.serializer'
 import { TezosSignedTransactionSerializer } from './signed-transactions/tezos-transactions.serializer'
+import { UnsignedTransactionSerializer } from './unsigned-transaction.serializer'
+import { AeternityUnsignedTransactionSerializer } from './unsigned-transactions/aeternity-transactions.serializer'
+import { BitcoinUnsignedTransactionSerializer } from './unsigned-transactions/bitcoin-transactions.serializer'
+import { EthereumUnsignedTransactionSerializer } from './unsigned-transactions/ethereum-transactions.serializer'
+import { TezosUnsignedTransactionSerializer } from './unsigned-transactions/tezos-transactions.serializer'
 
 export function unsignedTransactionSerializerByProtocolIdentifier(protocolIdentifier: string): UnsignedTransactionSerializer {
   const implementedSerializers = {

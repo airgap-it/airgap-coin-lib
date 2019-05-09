@@ -1,7 +1,8 @@
 import BigNumber from 'bignumber.js'
+
 import { AEProtocol } from '../../../src'
-import { AEProtocolStub } from '../stubs/ae.stub'
 import { TestProtocolSpec } from '../implementations'
+import { AEProtocolStub } from '../stubs/ae.stub'
 
 // Test Mnemonic:
 // mango club state husband keen fiber float jelly major include horse infant square spike equip caught version must pen swim setup right poem economy

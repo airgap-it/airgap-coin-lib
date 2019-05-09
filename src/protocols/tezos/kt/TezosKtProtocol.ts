@@ -1,8 +1,9 @@
-import { TezosProtocol, TezosOperation, TezosOperationType, TezosWrappedOperation, TezosDelegationOperation } from '../TezosProtocol'
-import { SubProtocolType, ICoinSubProtocol } from '../../ICoinSubProtocol'
 import axios, { AxiosResponse } from 'axios'
 import BigNumber from 'bignumber.js'
+
 import { RawTezosTransaction } from '../../../serializer/unsigned-transactions/tezos-transactions.serializer'
+import { ICoinSubProtocol, SubProtocolType } from '../../ICoinSubProtocol'
+import { TezosDelegationOperation, TezosOperation, TezosOperationType, TezosProtocol, TezosWrappedOperation } from '../TezosProtocol'
 
 // 8.25%
 const SELF_BOND_REQUIREMENT = 0.0825

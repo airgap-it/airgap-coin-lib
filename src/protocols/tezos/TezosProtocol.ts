@@ -1,16 +1,17 @@
-import { ICoinProtocol } from '../ICoinProtocol'
-import BigNumber from 'bignumber.js'
-import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
-import * as nacl from 'tweetnacl'
 import { generateWalletUsingDerivationPath } from '@aeternity/hd-wallet'
 import axios, { AxiosError, AxiosResponse } from 'axios'
+import BigNumber from 'bignumber.js'
 import * as bs58check from 'bs58check'
-import { RawTezosTransaction, UnsignedTezosTransaction } from '../../serializer/unsigned-transactions/tezos-transactions.serializer'
-import { SignedTezosTransaction } from '../../serializer/signed-transactions/tezos-transactions.serializer'
 import * as sodium from 'libsodium-wrappers'
+import * as nacl from 'tweetnacl'
+
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
-import { NonExtendedProtocol } from '../NonExtendedProtocol'
+import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
+import { SignedTezosTransaction } from '../../serializer/signed-transactions/tezos-transactions.serializer'
+import { RawTezosTransaction, UnsignedTezosTransaction } from '../../serializer/unsigned-transactions/tezos-transactions.serializer'
 import { getSubProtocolsByIdentifier } from '../../utils/subProtocols'
+import { ICoinProtocol } from '../ICoinProtocol'
+import { NonExtendedProtocol } from '../NonExtendedProtocol'
 
 export enum TezosOperationType {
   TRANSACTION = 'transaction',

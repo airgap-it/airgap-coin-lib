@@ -1,4 +1,5 @@
 import BigNumber from 'bignumber.js'
+
 import { IAirGapTransaction } from '../interfaces/IAirGapTransaction'
 
 export abstract class NonExtendedProtocol {

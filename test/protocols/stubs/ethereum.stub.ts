@@ -1,7 +1,8 @@
-import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
-import { EthereumProtocol } from '../../../src/protocols/ethereum/EthereumProtocol'
-import * as sinon from 'sinon'
 import BigNumber from 'bignumber.js'
+import * as sinon from 'sinon'
+
+import { EthereumProtocol } from '../../../src/protocols/ethereum/EthereumProtocol'
+import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
 
 export class EthereumProtocolStub implements ProtocolHTTPStub {
   registerStub(testProtocolSpec: TestProtocolSpec, protocol: EthereumProtocol) {

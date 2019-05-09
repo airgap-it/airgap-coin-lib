@@ -1,5 +1,5 @@
-import { ICoinProtocol } from '../protocols/ICoinProtocol'
 import { IAirGapWallet } from '../interfaces/IAirGapWallet'
+import { ICoinProtocol } from '../protocols/ICoinProtocol'
 import { getProtocolByIdentifier } from '../utils/protocolsByIdentifier'
 
 export class AirGapWallet implements IAirGapWallet {

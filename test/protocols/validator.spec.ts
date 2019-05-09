@@ -1,10 +1,9 @@
-import 'mocha'
-
+import BigNumber from 'bignumber.js'
 import { expect } from 'chai'
+import 'mocha'
 import { validate } from 'validate.js'
 
 import { validateSyncScheme } from '../../src/serializer/validators/validators'
-import BigNumber from 'bignumber.js'
 
 describe('Validators', () => {
   describe('custom validators', () => {

@@ -1,7 +1,8 @@
-import { SerializedSignedEthereumTransaction } from './signed-transactions/ethereum-transactions.serializer'
-import { SerializedSignedBitcoinTransaction } from './signed-transactions/bitcoin-transactions.serializer'
 import BigNumber from 'bignumber.js'
+
 import { SerializedSignedAeternityTransaction } from './signed-transactions/aeternity-transactions.serializer'
+import { SerializedSignedBitcoinTransaction } from './signed-transactions/bitcoin-transactions.serializer'
+import { SerializedSignedEthereumTransaction } from './signed-transactions/ethereum-transactions.serializer'
 import { SerializedSignedTezosTransaction } from './signed-transactions/tezos-transactions.serializer'
 
 export abstract class SignedTransactionSerializer {

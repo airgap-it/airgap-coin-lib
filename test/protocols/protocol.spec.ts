@@ -1,21 +1,23 @@
-import * as sinon from 'sinon'
-import 'mocha'
+import BigNumber from 'bignumber.js'
 import * as chai from 'chai'
 import * as chaiAsPromised from 'chai-as-promised'
-import { TestProtocolSpec } from './implementations'
+import 'mocha'
+import * as sinon from 'sinon'
+
 import { IAirGapTransaction } from '../../src'
+
+import { TestProtocolSpec } from './implementations'
 import { AETestProtocolSpec } from './specs/ae'
-import { EthereumTestProtocolSpec } from './specs/ethereum'
-import { EthereumRopstenTestProtocolSpec } from './specs/ethereum-ropsten'
-import { EthereumClassicTestProtocolSpec } from './specs/ethereum-classic'
-import { ERC20HOPTokenTestProtocolSpec } from './specs/erc20-hop-token'
-import BigNumber from 'bignumber.js'
-import { TezosTestProtocolSpec } from './specs/tezos'
 import { BitcoinProtocolSpec } from './specs/bitcoin'
 import { BitcoinTestProtocolSpec } from './specs/bitcoin-test'
+import { ERC20HOPTokenTestProtocolSpec } from './specs/erc20-hop-token'
+import { EthereumTestProtocolSpec } from './specs/ethereum'
+import { EthereumClassicTestProtocolSpec } from './specs/ethereum-classic'
+import { EthereumRopstenTestProtocolSpec } from './specs/ethereum-ropsten'
 import { GenericERC20TokenTestProtocolSpec } from './specs/generic-erc20-token'
-import { KtTezosTestProtocolSpec } from './specs/kt-tezos'
 import { GroestlcoinProtocolSpec } from './specs/groestl'
+import { KtTezosTestProtocolSpec } from './specs/kt-tezos'
+import { TezosTestProtocolSpec } from './specs/tezos'
 
 // use chai-as-promised plugin
 chai.use(chaiAsPromised)

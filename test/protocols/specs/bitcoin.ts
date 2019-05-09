@@ -1,7 +1,8 @@
 import BigNumber from 'bignumber.js'
-import { DeserializedSyncProtocol, SignedTransaction, BitcoinProtocol } from '../../../src'
-import { BitcoinProtocolStub } from '../stubs/bitcoin.stub'
+
+import { BitcoinProtocol, DeserializedSyncProtocol, SignedTransaction } from '../../../src'
 import { TestProtocolSpec } from '../implementations'
+import { BitcoinProtocolStub } from '../stubs/bitcoin.stub'
 
 export class BitcoinProtocolSpec extends TestProtocolSpec {
   name = 'Bitcoin'

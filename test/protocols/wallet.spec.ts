@@ -1,10 +1,10 @@
-import 'mocha'
-
+import axios from 'axios'
 import * as chai from 'chai'
 import * as chaiAsPromised from 'chai-as-promised'
+import 'mocha'
 import * as sinon from 'sinon'
-import axios from 'axios'
-import { AirGapWallet, EthereumProtocol, BitcoinProtocol } from '../../src/index'
+
+import { AirGapWallet, BitcoinProtocol, EthereumProtocol } from '../../src/index'
 
 // use chai-as-promised plugin
 chai.use(chaiAsPromised)

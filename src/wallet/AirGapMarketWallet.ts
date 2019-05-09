@@ -1,7 +1,9 @@
 import BigNumber from 'bignumber.js'
-import { AirGapWallet } from './AirGapWallet'
 import * as cryptocompare from 'cryptocompare'
+
 import { IAirGapTransaction } from '..'
+
+import { AirGapWallet } from './AirGapWallet'
 
 export enum TimeUnit {
   Hours = 'hours',

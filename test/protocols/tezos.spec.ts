@@ -1,18 +1,18 @@
-import 'mocha'
-
-import { expect } from 'chai'
-import BigNumber from 'bignumber.js'
-import * as sinon from 'sinon'
 import axios from 'axios'
+import BigNumber from 'bignumber.js'
+import { expect } from 'chai'
+import 'mocha'
+import * as sinon from 'sinon'
+
 import { isCoinlibReady } from '../../src'
-import { TezosTestProtocolSpec } from '../protocols/specs/tezos'
 import {
   TezosOperationType,
+  TezosOriginationOperation,
   TezosRevealOperation,
-  TezosSpendOperation,
-  TezosOriginationOperation
+  TezosSpendOperation
 } from '../../src/protocols/tezos/TezosProtocol'
 import { RawTezosTransaction } from '../../src/serializer/unsigned-transactions/tezos-transactions.serializer'
+import { TezosTestProtocolSpec } from '../protocols/specs/tezos'
 
 const tezosProtocolSpec = new TezosTestProtocolSpec()
 const tezosLib = tezosProtocolSpec.lib

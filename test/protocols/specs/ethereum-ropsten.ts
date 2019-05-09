@@ -1,7 +1,8 @@
 import BigNumber from 'bignumber.js'
+
 import { EthereumRopstenProtocol } from '../../../src'
-import { EthereumRopstenProtocolStub } from '../stubs/ethereum-ropsten.stub'
 import { TestProtocolSpec } from '../implementations'
+import { EthereumRopstenProtocolStub } from '../stubs/ethereum-ropsten.stub'
 
 export class EthereumRopstenTestProtocolSpec extends TestProtocolSpec {
   name = 'EthereumRopsten'

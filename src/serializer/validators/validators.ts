@@ -1,5 +1,5 @@
-import { validate, validators, isObject, isArray, isInteger, isNumber, isString, isDate } from 'validate.js'
 import BigNumber from 'bignumber.js'
+import { isArray, isDate, isInteger, isNumber, isObject, isString, validate, validators } from 'validate.js'
 
 validators.type = function(value, options, key, attributes) {
   // allow empty values by default (needs to be checked by "presence" check)

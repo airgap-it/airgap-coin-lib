@@ -1,12 +1,13 @@
-import { SerializedSyncProtocolTransaction, UnsignedTransaction } from './unsigned-transaction.serializer'
-import { SerializedSyncProtocolWalletSync, SyncWalletRequest, WalletSerializer } from './wallet-sync.serializer'
-import * as rlp from 'rlp'
-import { unsignedTransactionSerializerByProtocolIdentifier, signedTransactionSerializerByProtocolIdentifier } from '.'
-import { toBuffer } from './utils/toBuffer'
 import * as bs58check from 'bs58check'
-import { SignedTransaction, SerializedSyncProtocolSignedTransaction } from './signed-transaction.serializer'
+import * as rlp from 'rlp'
+
+import { signedTransactionSerializerByProtocolIdentifier, unsignedTransactionSerializerByProtocolIdentifier } from '.'
 import { SERIALIZER_VERSION } from './constants'
-import { TypeNotSupported, SerializerVersionMismatch } from './errors'
+import { SerializerVersionMismatch, TypeNotSupported } from './errors'
+import { SerializedSyncProtocolSignedTransaction, SignedTransaction } from './signed-transaction.serializer'
+import { SerializedSyncProtocolTransaction, UnsignedTransaction } from './unsigned-transaction.serializer'
+import { toBuffer } from './utils/toBuffer'
+import { SerializedSyncProtocolWalletSync, SyncWalletRequest, WalletSerializer } from './wallet-sync.serializer'
 
 export enum SyncProtocolKeys {
   VERSION,

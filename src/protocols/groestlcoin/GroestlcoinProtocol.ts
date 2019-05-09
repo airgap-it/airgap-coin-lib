@@ -1,6 +1,7 @@
-import { BitcoinBlockbookProtocol } from '../bitcoin/BitcoinBlockbookProtocol'
-import * as bitGoUTXO from 'bitgo-utxo-lib'
 import BigNumber from 'bignumber.js'
+import * as bitGoUTXO from 'bitgo-utxo-lib'
+
+import { BitcoinBlockbookProtocol } from '../bitcoin/BitcoinBlockbookProtocol'
 
 export class GroestlcoinProtocol extends BitcoinBlockbookProtocol {
   symbol = 'GRS'

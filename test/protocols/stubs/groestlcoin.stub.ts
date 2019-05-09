@@ -1,7 +1,8 @@
-import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
 import axios from 'axios'
 import * as sinon from 'sinon'
+
 import { GroestlcoinProtocol } from '../../../src'
+import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
 
 export class GroestlcoinProtocolStub implements ProtocolHTTPStub {
   registerStub(testProtocolSpec: TestProtocolSpec, protocol: GroestlcoinProtocol) {

@@ -1,7 +1,8 @@
-import { SyncProtocolUtils, EncodedType, isCoinlibReady, TezosKtProtocol } from '../../../src/index'
 import BigNumber from 'bignumber.js'
-import * as readline from 'readline'
 import * as qrcode from 'qrcode-terminal'
+import * as readline from 'readline'
+
+import { EncodedType, isCoinlibReady, SyncProtocolUtils, TezosKtProtocol } from '../../../src/index'
 import { SERIALIZER_VERSION } from '../../../src/serializer/constants'
 
 // prepare, sign and do a TX
@@ -52,9 +53,9 @@ const promise = async () => {
   // print QR to Terminal for scanning
   qrcode.generate('airgap-vault://?d=' + syncString, { small: true })
 
-  const answer = (await new Promise((resolve, reject) => {
+  const answer = await new Promise((resolve, reject) => {
     rl.question('Would you like to broadcast this TX? [y/N]', resolve)
-  })) as string
+  })
 
   if (answer.toLowerCase() === 'y') {
     console.log('Broadcasting TX...')

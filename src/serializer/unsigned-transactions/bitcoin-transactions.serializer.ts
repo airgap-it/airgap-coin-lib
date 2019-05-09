@@ -1,10 +1,11 @@
+import BigNumber from 'bignumber.js'
+
 import {
   SerializedSyncProtocolTransaction,
   SyncProtocolUnsignedTransactionKeys,
   UnsignedTransaction,
   UnsignedTransactionSerializer
 } from '../unsigned-transaction.serializer'
-import BigNumber from 'bignumber.js'
 import { toBuffer } from '../utils/toBuffer'
 
 export type SerializedUnsignedBitcoinTransaction = [[[Buffer, Buffer, Buffer, Buffer, Buffer]], [[Buffer, Buffer, Buffer]]]

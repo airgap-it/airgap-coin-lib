@@ -1,16 +1,16 @@
 import * as assert from 'assert'
 
-import * as bitcoinJS from 'bitcoinjs-lib'
 import axios from 'axios'
 import BigNumber from 'bignumber.js'
+import * as bitcoinJS from 'bitcoinjs-lib'
 
+import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
 import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 import { INetwork } from '../../networks'
-import { ICoinProtocol } from '../ICoinProtocol'
+import { SignedBitcoinTransaction } from '../../serializer/signed-transactions/bitcoin-transactions.serializer'
 import { UnsignedTransaction } from '../../serializer/unsigned-transaction.serializer'
 import { RawBitcoinTransaction } from '../../serializer/unsigned-transactions/bitcoin-transactions.serializer'
-import { SignedBitcoinTransaction } from '../../serializer/signed-transactions/bitcoin-transactions.serializer'
-import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
+import { ICoinProtocol } from '../ICoinProtocol'
 
 export interface Vin {
   txid: string

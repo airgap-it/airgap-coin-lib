@@ -1,20 +1,21 @@
-import { ICoinProtocol } from '../ICoinProtocol'
-import BigNumber from 'bignumber.js'
-import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
-import * as nacl from 'tweetnacl'
 import { generateWalletUsingDerivationPath } from '@aeternity/hd-wallet'
 import axios from 'axios'
-import * as rlp from 'rlp'
+import BigNumber from 'bignumber.js'
 import * as bs58check from 'bs58check'
-import bs64check from '../../utils/base64Check'
+import * as rlp from 'rlp'
+import * as nacl from 'tweetnacl'
+import * as Web3 from 'web3'
+
+import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
+import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
+import { SignedAeternityTransaction } from '../../serializer/signed-transactions/aeternity-transactions.serializer'
 import {
   RawAeternityTransaction,
   UnsignedAeternityTransaction
 } from '../../serializer/unsigned-transactions/aeternity-transactions.serializer'
-import { SignedAeternityTransaction } from '../../serializer/signed-transactions/aeternity-transactions.serializer'
-import * as Web3 from 'web3'
+import bs64check from '../../utils/base64Check'
 import { padStart } from '../../utils/padStart'
-import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
+import { ICoinProtocol } from '../ICoinProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
 
 export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {

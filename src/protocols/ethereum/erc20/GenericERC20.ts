@@ -1,16 +1,17 @@
+import * as abiDecoder from 'abi-decoder'
 import axios from 'axios'
 import BigNumber from 'bignumber.js'
-import { ICoinSubProtocol, SubProtocolType } from '../../ICoinSubProtocol'
+import * as ethUtil from 'ethereumjs-util'
+
+import { IAirGapSignedTransaction } from '../../../interfaces/IAirGapSignedTransaction'
 import { IAirGapTransaction } from '../../../interfaces/IAirGapTransaction'
-import * as abiDecoder from 'abi-decoder'
+import { SignedEthereumTransaction } from '../../../serializer/signed-transactions/ethereum-transactions.serializer'
+import { UnsignedTransaction } from '../../../serializer/unsigned-transaction.serializer'
 import {
   RawEthereumTransaction,
   UnsignedEthereumTransaction
 } from '../../../serializer/unsigned-transactions/ethereum-transactions.serializer'
-import { UnsignedTransaction } from '../../../serializer/unsigned-transaction.serializer'
-import * as ethUtil from 'ethereumjs-util'
-import { SignedEthereumTransaction } from '../../../serializer/signed-transactions/ethereum-transactions.serializer'
-import { IAirGapSignedTransaction } from '../../../interfaces/IAirGapSignedTransaction'
+import { ICoinSubProtocol, SubProtocolType } from '../../ICoinSubProtocol'
 import { BaseEthereumProtocol } from '../BaseEthereumProtocol'
 const EthereumTransaction = require('ethereumjs-tx')
 
