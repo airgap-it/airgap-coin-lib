@@ -6,7 +6,7 @@ import { TezosProtocol } from '../../../src/protocols/tezos/TezosProtocol'
 import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
 
 export class TezosProtocolStub implements ProtocolHTTPStub {
-  registerStub(testProtocolSpec: TestProtocolSpec, protocol: TezosProtocol) {
+  public registerStub(testProtocolSpec: TestProtocolSpec, protocol: TezosProtocol) {
     const stub = sinon.stub(axios, 'get')
 
     stub
@@ -22,7 +22,7 @@ export class TezosProtocolStub implements ProtocolHTTPStub {
       .withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${testProtocolSpec.wallet.addresses[0]}/manager_key`)
       .returns(Promise.resolve({ data: { key: 'test-key' } }))
   }
-  noBalanceStub(testProtocolSpec: TestProtocolSpec, protocol: TezosProtocol) {
+  public noBalanceStub(testProtocolSpec: TestProtocolSpec, protocol: TezosProtocol) {
     sinon
       .stub(protocol, 'getBalanceOfPublicKey')
       .withArgs(sinon.match.any)

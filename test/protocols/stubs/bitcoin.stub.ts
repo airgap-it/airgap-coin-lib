@@ -5,7 +5,7 @@ import { BitcoinProtocol } from '../../../src'
 import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
 
 export class BitcoinProtocolStub implements ProtocolHTTPStub {
-  registerStub(testProtocolSpec: TestProtocolSpec, protocol: BitcoinProtocol) {
+  public registerStub(testProtocolSpec: TestProtocolSpec, protocol: BitcoinProtocol) {
     const stub = sinon.stub(axios, 'get')
     stub
       .withArgs(
@@ -68,7 +68,7 @@ export class BitcoinProtocolStub implements ProtocolHTTPStub {
         })
       )
   }
-  noBalanceStub() {
+  public noBalanceStub() {
     //
   }
 }

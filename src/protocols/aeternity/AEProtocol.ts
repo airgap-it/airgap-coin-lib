@@ -19,52 +19,52 @@ import { ICoinProtocol } from '../ICoinProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
 
 export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
-  symbol = 'AE'
-  name = 'æternity'
-  marketSymbol = 'ae'
+  public symbol = 'AE'
+  public name = 'æternity'
+  public marketSymbol = 'ae'
 
-  feeSymbol = 'ae'
+  public feeSymbol = 'ae'
 
-  decimals = 18
-  feeDecimals = 18
-  identifier = 'ae'
+  public decimals = 18
+  public feeDecimals = 18
+  public identifier = 'ae'
 
-  feeDefaults = {
+  public feeDefaults = {
     low: new BigNumber('0.00021'), // 21000 Gas * 2 Gwei
     medium: new BigNumber('0.000315'), // 21000 Gas * 15 Gwei
     high: new BigNumber('0.00084') // 21000 Gas * 40 Gwei
   }
 
-  units = [
+  public units = [
     {
       unitSymbol: 'AE',
       factor: new BigNumber(1)
     }
   ]
 
-  supportsHD = false
-  standardDerivationPath = `m/44h/457h/0h/0h/0h`
+  public supportsHD = false
+  public standardDerivationPath = `m/44h/457h/0h/0h/0h`
 
-  addressIsCaseSensitive = true
-  addressValidationPattern = '^ak_+[1-9A-Za-z]{49,50}$'
-  addressPlaceholder = 'ak_abc...'
+  public addressIsCaseSensitive = true
+  public addressValidationPattern = '^ak_+[1-9A-Za-z]{49,50}$'
+  public addressPlaceholder = 'ak_abc...'
 
-  blockExplorer = 'https://explorer.aepps.com'
+  public blockExplorer = 'https://explorer.aepps.com'
 
   // ae specifics
-  defaultNetworkId = 'ae_mainnet'
+  public defaultNetworkId = 'ae_mainnet'
 
-  epochMiddleware = 'https://ae-epoch-rpc-proxy.gke.papers.tech'
+  public epochMiddleware = 'https://ae-epoch-rpc-proxy.gke.papers.tech'
 
   constructor(public epochRPC = 'https://ae-epoch-rpc-proxy.gke.papers.tech') {
     super()
   }
 
-  getBlockExplorerLinkForAddress(address: string): string {
+  public getBlockExplorerLinkForAddress(address: string): string {
     return `${this.blockExplorer}/#/account/{{address}}/`.replace('{{address}}', address)
   }
 
-  getBlockExplorerLinkForTxId(txId: string): string {
+  public getBlockExplorerLinkForTxId(txId: string): string {
     return `${this.blockExplorer}/#/tx/{{txId}}/`.replace('{{txId}}', txId)
   }
 
@@ -73,7 +73,7 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
    * @param secret HEX-Secret from BIP39
    * @param derivationPath DerivationPath for Key
    */
-  getPublicKeyFromHexSecret(secret: string, derivationPath: string): string {
+  public getPublicKeyFromHexSecret(secret: string, derivationPath: string): string {
     const { publicKey } = generateWalletUsingDerivationPath(Buffer.from(secret, 'hex'), derivationPath)
     return Buffer.from(publicKey).toString('hex')
   }
@@ -83,26 +83,26 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
    * @param secret HEX-Secret from BIP39
    * @param derivationPath DerivationPath for Key
    */
-  getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Buffer {
+  public getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Buffer {
     const { secretKey } = generateWalletUsingDerivationPath(Buffer.from(secret, 'hex'), derivationPath)
     return Buffer.from(secretKey)
   }
 
-  async getAddressFromPublicKey(publicKey: string): Promise<string> {
+  public async getAddressFromPublicKey(publicKey: string): Promise<string> {
     const base58 = bs58check.encode(Buffer.from(publicKey, 'hex'))
     return `ak_${base58}`
   }
 
-  async getAddressesFromPublicKey(publicKey: string): Promise<string[]> {
+  public async getAddressesFromPublicKey(publicKey: string): Promise<string[]> {
     const address = await this.getAddressFromPublicKey(publicKey)
     return [address]
   }
 
-  async getTransactionsFromPublicKey(publicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]> {
+  public async getTransactionsFromPublicKey(publicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]> {
     return this.getTransactionsFromAddresses([await this.getAddressFromPublicKey(publicKey)], limit, offset)
   }
 
-  async getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
+  public async getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
     const allTransactions = await Promise.all(
       addresses.map(address => {
         return axios.get(`${this.epochMiddleware}/middleware/transactions/account/${address}`)
@@ -140,7 +140,7 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
     })
   }
 
-  async signWithPrivateKey(privateKey: Buffer, transaction: RawAeternityTransaction): Promise<IAirGapSignedTransaction> {
+  public async signWithPrivateKey(privateKey: Buffer, transaction: RawAeternityTransaction): Promise<IAirGapSignedTransaction> {
     // sign and cut off first byte ('ae')
     const rawTx = this.decodeTx(transaction.transaction)
 
@@ -181,7 +181,7 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
     throw new Error('invalid TX-encoding')
   }
 
-  async getTransactionDetails(unsignedTx: UnsignedAeternityTransaction): Promise<IAirGapTransaction> {
+  public async getTransactionDetails(unsignedTx: UnsignedAeternityTransaction): Promise<IAirGapTransaction> {
     const transaction = unsignedTx.transaction.transaction
     const rlpEncodedTx = this.decodeTx(transaction)
     const rlpDecodedTx = rlp.decode(rlpEncodedTx)
@@ -199,7 +199,7 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
     return airgapTx
   }
 
-  async getTransactionDetailsFromSigned(signedTx: SignedAeternityTransaction): Promise<IAirGapTransaction> {
+  public async getTransactionDetailsFromSigned(signedTx: SignedAeternityTransaction): Promise<IAirGapTransaction> {
     const rlpEncodedTx = this.decodeTx(signedTx.transaction)
     const rlpDecodedTx = rlp.decode(rlpEncodedTx)
 
@@ -215,7 +215,7 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
     return this.getTransactionDetails(unsignedAeternityTransaction)
   }
 
-  async getBalanceOfAddresses(addresses: string[]): Promise<BigNumber> {
+  public async getBalanceOfAddresses(addresses: string[]): Promise<BigNumber> {
     let balance = new BigNumber(0)
 
     for (let address of addresses) {
@@ -233,12 +233,12 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
     return balance
   }
 
-  async getBalanceOfPublicKey(publicKey: string): Promise<BigNumber> {
+  public async getBalanceOfPublicKey(publicKey: string): Promise<BigNumber> {
     const address = await this.getAddressFromPublicKey(publicKey)
     return this.getBalanceOfAddresses([address])
   }
 
-  async prepareTransactionFromPublicKey(
+  public async prepareTransactionFromPublicKey(
     publicKey: string,
     recipients: string[],
     values: BigNumber[],
@@ -296,14 +296,14 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
    * @deprecated
    * @param preparedTx
    */
-  convertTxToBase58(preparedTx: RawAeternityTransaction): RawAeternityTransaction {
+  public convertTxToBase58(preparedTx: RawAeternityTransaction): RawAeternityTransaction {
     return {
       transaction: bs58check.encode(bs64check.decode(preparedTx.transaction)),
       networkId: preparedTx.networkId
     }
   }
 
-  async broadcastTransaction(rawTransaction: string): Promise<string> {
+  public async broadcastTransaction(rawTransaction: string): Promise<string> {
     const { data } = await axios.post(
       `${this.epochRPC}/v2/transactions`,
       { tx: rawTransaction },

@@ -12,11 +12,11 @@ interface ProtocolHTTPStub {
 }
 
 abstract class TestProtocolSpec {
-  name: string = 'TEST'
-  lib: ICoinProtocol = {} as ICoinProtocol // Class is abstract, will be overwritten
-  stub: ProtocolHTTPStub = {} as ProtocolHTTPStub // Class is abstract, will be overwritten
-  validAddresses: string[] = []
-  wallet: {
+  public name: string = 'TEST'
+  public lib: ICoinProtocol = {} as ICoinProtocol // Class is abstract, will be overwritten
+  public stub: ProtocolHTTPStub = {} as ProtocolHTTPStub // Class is abstract, will be overwritten
+  public validAddresses: string[] = []
+  public wallet: {
     privateKey: string
     publicKey: string
     addresses: string[]
@@ -25,7 +25,7 @@ abstract class TestProtocolSpec {
     publicKey: '',
     addresses: ['']
   }
-  txs: {
+  public txs: {
     to: string[]
     from: string[]
     amount: BigNumber
@@ -35,11 +35,11 @@ abstract class TestProtocolSpec {
     signedTx: string
   }[] = []
 
-  seed() {
+  public seed() {
     return BIP39.mnemonicToSeedHex(mnemonic)
   }
 
-  unsignedTransaction(tx: any): DeserializedSyncProtocol {
+  public unsignedTransaction(tx: any): DeserializedSyncProtocol {
     return {
       version: SERIALIZER_VERSION,
       protocol: this.lib.identifier,
@@ -52,7 +52,7 @@ abstract class TestProtocolSpec {
     }
   }
 
-  signedTransaction(tx: any): DeserializedSyncProtocol {
+  public signedTransaction(tx: any): DeserializedSyncProtocol {
     return {
       version: SERIALIZER_VERSION,
       protocol: this.lib.identifier,
@@ -64,7 +64,7 @@ abstract class TestProtocolSpec {
     }
   }
 
-  syncWallet(): DeserializedSyncProtocol {
+  public syncWallet(): DeserializedSyncProtocol {
     return {
       version: SERIALIZER_VERSION,
       protocol: this.lib.identifier,

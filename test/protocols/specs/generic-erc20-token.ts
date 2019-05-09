@@ -10,16 +10,16 @@ const protocol = ERC20Token
 addSubProtocol('eth', protocol)
 
 export class GenericERC20TokenTestProtocolSpec extends TestProtocolSpec {
-  name = 'Generic ERC20 Token'
-  lib = protocol
-  stub = new GenericERC20ProtocolStub()
-  validAddresses = []
-  wallet = {
+  public name = 'Generic ERC20 Token'
+  public lib = protocol
+  public stub = new GenericERC20ProtocolStub()
+  public validAddresses = []
+  public wallet = {
     privateKey: '832d58a77ad222b8d9b75322e66d97e46b7dcfab3f25f6c1dd79ec13e046c7bc',
     publicKey: '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
     addresses: ['0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e']
   }
-  txs = [
+  public txs = [
     {
       amount: new BigNumber('5').shiftedBy(protocol.decimals),
       fee: new BigNumber('31705000000000'),

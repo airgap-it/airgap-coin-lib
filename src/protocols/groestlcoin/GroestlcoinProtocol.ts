@@ -4,21 +4,21 @@ import * as bitGoUTXO from 'bitgo-utxo-lib'
 import { BitcoinBlockbookProtocol } from '../bitcoin/BitcoinBlockbookProtocol'
 
 export class GroestlcoinProtocol extends BitcoinBlockbookProtocol {
-  symbol = 'GRS'
-  name = 'Groestlcoin'
-  marketSymbol = 'grs'
+  public symbol = 'GRS'
+  public name = 'Groestlcoin'
+  public marketSymbol = 'grs'
 
-  feeSymbol = 'grs'
+  public feeSymbol = 'grs'
 
-  feeDefaults = {
+  public feeDefaults = {
     low: new BigNumber('0.00002'),
     medium: new BigNumber('0.00004'),
     high: new BigNumber('0.00005')
   }
-  decimals = 8
-  feeDecimals = 8
-  identifier = 'grs'
-  units = [
+  public decimals = 8
+  public feeDecimals = 8
+  public identifier = 'grs'
+  public units = [
     {
       unitSymbol: 'GRS',
       factor: new BigNumber(1)
@@ -33,23 +33,23 @@ export class GroestlcoinProtocol extends BitcoinBlockbookProtocol {
     }
   ]
 
-  supportsHD = true
+  public supportsHD = true
 
-  standardDerivationPath = `m/44'/17'/0'`
-  addressValidationPattern = '^([F3][a-km-zA-HJ-NP-Z1-9]{33}|grs1[a-zA-HJ-NP-Z0-9]{39})$'
-  addressPlaceholder = 'Fdb...'
+  public standardDerivationPath = `m/44'/17'/0'`
+  public addressValidationPattern = '^([F3][a-km-zA-HJ-NP-Z1-9]{33}|grs1[a-zA-HJ-NP-Z0-9]{39})$'
+  public addressPlaceholder = 'Fdb...'
 
-  blockExplorer = 'https://chainz.cryptoid.info/grs/'
+  public blockExplorer = 'https://chainz.cryptoid.info/grs/'
 
   constructor() {
     super(bitGoUTXO.networks.groestlcoin, 'https://blockbook.groestlcoin.org', bitGoUTXO)
   }
 
-  getBlockExplorerLinkForAddress(address: string): string {
+  public getBlockExplorerLinkForAddress(address: string): string {
     return `${this.blockExplorer}/address.dws?{{address}}.htm`.replace('{{address}}', address)
   }
 
-  getBlockExplorerLinkForTxId(txId: string): string {
+  public getBlockExplorerLinkForTxId(txId: string): string {
     return `${this.blockExplorer}/tx.dws?{{txId}}.htm`.replace('{{txId}}', txId)
   }
 }

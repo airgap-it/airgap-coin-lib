@@ -5,7 +5,7 @@ import { EthereumProtocol } from '../../../src/protocols/ethereum/EthereumProtoc
 import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
 
 export class GenericERC20ProtocolStub implements ProtocolHTTPStub {
-  registerStub(testProtocolSpec: TestProtocolSpec, protocol: EthereumProtocol) {
+  public registerStub(testProtocolSpec: TestProtocolSpec, protocol: EthereumProtocol) {
     sinon
       .stub(Object.getPrototypeOf(Object.getPrototypeOf(protocol)), 'getBalanceOfPublicKey')
       .withArgs(sinon.match.any)
@@ -31,7 +31,7 @@ export class GenericERC20ProtocolStub implements ProtocolHTTPStub {
       .withArgs(sinon.match.any)
       .returns(Promise.resolve('31705'))
   }
-  noBalanceStub(testProtocolSpec: TestProtocolSpec, protocol: EthereumProtocol) {
+  public noBalanceStub(testProtocolSpec: TestProtocolSpec, protocol: EthereumProtocol) {
     sinon
       .stub(Object.getPrototypeOf(Object.getPrototypeOf(protocol)), 'getBalanceOfPublicKey')
       .withArgs(sinon.match.any)

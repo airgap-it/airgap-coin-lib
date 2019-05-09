@@ -72,9 +72,9 @@ export interface GenericERC20Configuration {
 }
 
 export class GenericERC20 extends BaseEthereumProtocol implements ICoinSubProtocol {
-  tokenContract: any
-  isSubProtocol = true
-  subProtocolType = SubProtocolType.TOKEN
+  public tokenContract: any
+  public isSubProtocol = true
+  public subProtocolType = SubProtocolType.TOKEN
 
   constructor(config: GenericERC20Configuration) {
     super(config.jsonRPCAPI, config.infoAPI, config.chainId || 1) // we probably need another network here, explorer is ok
@@ -87,12 +87,12 @@ export class GenericERC20 extends BaseEthereumProtocol implements ICoinSubProtoc
     this.decimals = config.decimals || this.decimals
   }
 
-  async getBalanceOfPublicKey(publicKey: string): Promise<BigNumber> {
+  public async getBalanceOfPublicKey(publicKey: string): Promise<BigNumber> {
     const address = await this.getAddressFromPublicKey(publicKey)
     return this.getBalanceOfAddresses([address])
   }
 
-  async getBalanceOfAddresses(addresses: string[]): Promise<BigNumber> {
+  public async getBalanceOfAddresses(addresses: string[]): Promise<BigNumber> {
     const balances = await Promise.all(
       addresses.map(address => {
         return this.tokenContract.methods.balanceOf(address).call()
@@ -101,7 +101,7 @@ export class GenericERC20 extends BaseEthereumProtocol implements ICoinSubProtoc
     return balances.map(obj => new BigNumber(obj)).reduce((a, b) => a.plus(b))
   }
 
-  signWithPrivateKey(privateKey: Buffer, transaction: RawEthereumTransaction): Promise<IAirGapSignedTransaction> {
+  public signWithPrivateKey(privateKey: Buffer, transaction: RawEthereumTransaction): Promise<IAirGapSignedTransaction> {
     if (!transaction.data || transaction.data === '0x') {
       transaction.data = this.tokenContract.methods.transfer(transaction.to, transaction.value).encodeABI() // backwards-compatible fix
     }
@@ -114,7 +114,7 @@ export class GenericERC20 extends BaseEthereumProtocol implements ICoinSubProtoc
     return gasEstimate.toFixed()
   }
 
-  async prepareTransactionFromPublicKey(
+  public async prepareTransactionFromPublicKey(
     publicKey: string,
     recipients: string[],
     values: BigNumber[],
@@ -162,7 +162,7 @@ export class GenericERC20 extends BaseEthereumProtocol implements ICoinSubProtoc
     }
   }
 
-  getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
+  public getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
     const airGapTransactions: IAirGapTransaction[] = []
     return new Promise((overallResolve, overallReject) => {
       const promises: Promise<IAirGapTransaction[]>[] = []
@@ -210,7 +210,7 @@ export class GenericERC20 extends BaseEthereumProtocol implements ICoinSubProtoc
     })
   }
 
-  async getTransactionDetailsFromSigned(signedTx: SignedEthereumTransaction): Promise<IAirGapTransaction> {
+  public async getTransactionDetailsFromSigned(signedTx: SignedEthereumTransaction): Promise<IAirGapTransaction> {
     const ethTx = await super.getTransactionDetailsFromSigned(signedTx)
 
     const extractedTx = new EthereumTransaction(signedTx.transaction)
@@ -221,7 +221,7 @@ export class GenericERC20 extends BaseEthereumProtocol implements ICoinSubProtoc
     return ethTx
   }
 
-  async getTransactionDetails(unsignedTx: UnsignedTransaction): Promise<IAirGapTransaction> {
+  public async getTransactionDetails(unsignedTx: UnsignedTransaction): Promise<IAirGapTransaction> {
     const unsignedEthereumTx = unsignedTx as UnsignedEthereumTransaction
     const ethTx = await super.getTransactionDetails(unsignedEthereumTx)
 

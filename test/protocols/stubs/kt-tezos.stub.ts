@@ -6,7 +6,7 @@ import { TezosProtocol } from '../../../src/protocols/tezos/TezosProtocol'
 import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
 
 export class KtTezosProtocolStub implements ProtocolHTTPStub {
-  registerStub(testProtocolSpec: TestProtocolSpec, protocol: TezosProtocol) {
+  public registerStub(testProtocolSpec: TestProtocolSpec, protocol: TezosProtocol) {
     const stub = sinon.stub(axios, 'get')
 
     stub
@@ -131,7 +131,7 @@ export class KtTezosProtocolStub implements ProtocolHTTPStub {
       })
     )
   }
-  noBalanceStub(testProtocolSpec: TestProtocolSpec, protocol: TezosProtocol) {
+  public noBalanceStub(testProtocolSpec: TestProtocolSpec, protocol: TezosProtocol) {
     sinon
       .stub(Object.getPrototypeOf(protocol), 'getBalanceOfPublicKey')
       .withArgs(sinon.match.any)

@@ -20,7 +20,7 @@ export class AirGapWallet implements IAirGapWallet {
     return this.addresses[this.addressIndex !== undefined ? this.addressIndex : 0]
   }
 
-  async deriveAddresses(amount: number = 50): Promise<string[]> {
+  public async deriveAddresses(amount: number = 50): Promise<string[]> {
     if (this.isExtendedPublicKey) {
       const parts = this.derivationPath.split('/')
       let offset = 0
@@ -38,7 +38,7 @@ export class AirGapWallet implements IAirGapWallet {
     }
   }
 
-  toJSON(): any {
+  public toJSON(): any {
     let json = Object.assign({}, this)
     delete json.coinProtocol
     return json

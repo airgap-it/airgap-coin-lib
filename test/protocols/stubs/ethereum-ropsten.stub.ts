@@ -5,7 +5,7 @@ import { EthereumProtocol } from '../../../src/protocols/ethereum/EthereumProtoc
 import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
 
 export class EthereumRopstenProtocolStub implements ProtocolHTTPStub {
-  registerStub(testProtocolSpec: TestProtocolSpec, protocol: EthereumProtocol) {
+  public registerStub(testProtocolSpec: TestProtocolSpec, protocol: EthereumProtocol) {
     sinon
       .stub(protocol.web3.eth, 'getTransactionCount')
       .withArgs(testProtocolSpec.wallet.addresses[0])
@@ -15,7 +15,7 @@ export class EthereumRopstenProtocolStub implements ProtocolHTTPStub {
       .withArgs(testProtocolSpec.wallet.addresses[0])
       .returns(Promise.resolve('100000000000000000000'))
   }
-  noBalanceStub(testProtocolSpec: TestProtocolSpec, protocol: EthereumProtocol) {
+  public noBalanceStub(testProtocolSpec: TestProtocolSpec, protocol: EthereumProtocol) {
     sinon
       .stub(protocol, 'getBalanceOfPublicKey')
       .withArgs(sinon.match.any)
