@@ -31,6 +31,8 @@
         "named-imports-order": "case-insensitive",
         "module-source-path": "full"
       }
-    }
+    },
+    // "no-implicit-dependencies": [true, "dev"],
+    "type-literal-delimiter": false
   }
 }
