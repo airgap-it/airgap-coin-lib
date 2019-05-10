@@ -7,14 +7,16 @@ import { SERIALIZER_VERSION } from '../../src/serializer/constants'
 const mnemonic = 'spell device they juice trial skirt amazing boat badge steak usage february virus art survey'
 
 interface ProtocolHTTPStub {
-  registerStub(testProtocolSpec: TestProtocolSpec, protocol: ICoinProtocol)
-  noBalanceStub(testProtocolSpec: TestProtocolSpec, protocol: ICoinProtocol)
+  registerStub(testProtocolSpec: TestProtocolSpec, protocol: ICoinProtocol): void
+  noBalanceStub(testProtocolSpec: TestProtocolSpec, protocol: ICoinProtocol): void
 }
 
 abstract class TestProtocolSpec {
   public name: string = 'TEST'
+  // tslint:disable:no-object-literal-type-assertion
   public lib: ICoinProtocol = {} as ICoinProtocol // Class is abstract, will be overwritten
   public stub: ProtocolHTTPStub = {} as ProtocolHTTPStub // Class is abstract, will be overwritten
+  // tslint:enable:no-object-literal-type-assertion
   public validAddresses: string[] = []
   public wallet: {
     privateKey: string
@@ -35,7 +37,7 @@ abstract class TestProtocolSpec {
     signedTx: string
   }[] = []
 
-  public seed() {
+  public seed(): string {
     return BIP39.mnemonicToSeedHex(mnemonic)
   }
 
