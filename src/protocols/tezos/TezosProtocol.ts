@@ -3,7 +3,6 @@ import axios, { AxiosError, AxiosResponse } from 'axios'
 import BigNumber from 'bignumber.js'
 import * as bs58check from 'bs58check'
 import * as sodium from 'libsodium-wrappers'
-import * as nacl from 'tweetnacl'
 
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
 import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
@@ -257,7 +256,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     const watermarkedForgedOperationBytes: Buffer = Buffer.from(watermarkedForgedOperationBytesHex, 'hex')
     const hashedWatermarkedOpBytes: Buffer = sodium.crypto_generichash(32, watermarkedForgedOperationBytes)
 
-    const opSignature = nacl.sign.detached(hashedWatermarkedOpBytes, privateKey)
+    await sodium.ready
+    const opSignature = sodium.crypto_sign_detached(hashedWatermarkedOpBytes, privateKey)
     const signedOpBytes: Buffer = Buffer.concat([Buffer.from(transaction.binaryTransaction, 'hex'), Buffer.from(opSignature)])
 
     return signedOpBytes.toString('hex')
@@ -1077,13 +1077,15 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
   async signMessage(message: string, privateKey: Buffer): Promise<string> {
     await sodium.ready
-    let signed = sodium.crypto_sign_detached(sodium.from_string(message), privateKey)
+    const signature = sodium.crypto_sign_detached(sodium.from_string(message), privateKey)
+    const hexSignature = Buffer.from(signature).toString('hex')
 
-    return signed
+    return hexSignature
   }
 
-  async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
+  async verifyMessage(message: string, hexSignature: string, publicKey: Buffer): Promise<boolean> {
     await sodium.ready
+    const signature = new Uint8Array(Buffer.from(hexSignature, 'hex'))
     const isValidSignature = sodium.crypto_sign_verify_detached(signature, message, publicKey)
 
     return isValidSignature
