@@ -380,12 +380,13 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
       protocol.messages.forEach(async messageObject => {
         try {
           const signature = await protocol.lib.signMessage(messageObject.message, privateKey)
-          const signatureIsValid = await protocol.lib.verifyMessage(messageObject.message, Buffer.from(signature) as any, publicKeyBuffer)
+          const signatureIsValid = await protocol.lib.verifyMessage(messageObject.message, signature, publicKeyBuffer)
+
           expect(signatureIsValid).to.be.true
 
           const signature2IsValid = await protocol.lib.verifyMessage(
             `different-message-${messageObject.message}`,
-            Buffer.from(signature) as any,
+            signature,
             publicKeyBuffer
           )
           expect(signature2IsValid).to.be.false
