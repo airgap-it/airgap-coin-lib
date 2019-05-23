@@ -8,7 +8,7 @@
 
 - Generic Architecture, easy to extend and maintain
 - Fully Browser Compatible
-- Support for Bitcoin, Ethereum, Aeternity and Tezos
+- Support for Bitcoin, Ethereum, Aeternity, Tezos and Groestlcoin
 
 [GitHub](https://github.com/airgap-it/airgap-coin-lib/)
 [Get Started](README.md#airgap-coin-library)

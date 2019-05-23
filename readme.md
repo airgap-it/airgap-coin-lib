@@ -34,6 +34,7 @@ Currently supported are:
   - Generic ERC20 Tokens
 - Aeternity
 - Tezos
+- Groestlcoin
 
 ## Features
 
