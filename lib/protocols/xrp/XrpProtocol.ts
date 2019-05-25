@@ -76,7 +76,7 @@ class TransactionHistoryHolder {
   }
 }
 
-export abstract class XrpProtocol implements ICoinProtocol {
+export class XrpProtocol implements ICoinProtocol {
   private static ALLOWED_CHARS = 'rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz'
   private precision = 6
   private network = bitcoinJS.networks.bitcoin
@@ -261,7 +261,7 @@ export abstract class XrpProtocol implements ICoinProtocol {
         apiOptions = {}
         apiOptions.server = 'wss://s1.ripple.com'
         break
-      case LedgerType.RealTimeLedger:
+      case LedgerType.LongTermLedger:
         apiOptions = {}
         apiOptions.server = 'wss://s2.ripple.com'
         break
