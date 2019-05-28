@@ -16,30 +16,34 @@ export type SerializedAdjustment = [Buffer, [Buffer, Buffer, Buffer, Buffer], Bu
 export type SerializedMemos = [[Buffer, Buffer, Buffer]]
 
 export type SerializedUnsignedXrpTransaction = [
-  // Instructions
-  [Buffer, Buffer, Buffer, Buffer, Buffer, Buffer],
-
   // XrpPayment
-  [
-    SerializedAdjustment, // source
-    SerializedAdjustment, // destination
-    SerializedMemos, // memos
-    Buffer,
-    Buffer,
-    Buffer,
-    Buffer,
-    Buffer
-  ]
-]
+  Buffer,
+  Buffer,
 
-export interface XrpPayment extends Payment {
-  source: MaxAdjustment
-  destination: Adjustment
+  Buffer,
+  Buffer,
+  Buffer,
+  Buffer,
+  Buffer,
+
+  SerializedMemos // memos
+]
+export interface XrpMemo {
+  type?: string
+  format?: string
+  data: string
 }
 
 export interface RawXrpTransaction {
-  instructions: Instructions
-  payment: XrpPayment
+  transactionType: string
+  account: string
+  fee: number
+  destination: string
+  destinationTag?: number
+  amount: number
+  sequence: number
+
+  memos: XrpMemo[]
 }
 
 export interface UnsignedXrpTransaction extends UnsignedTransaction {
@@ -78,10 +82,10 @@ export class XrpUnsignedTransactionSerializer extends UnsignedTransactionSeriali
     return amount
   }
 
-  serializedToMemo(serialized: SerializedMemos): Array<Memo> {
+  serializedToMemo(serialized: SerializedMemos): Array<XrpMemo> {
     const memos = serialized.map(buffers => {
-      let memo: Memo = {
-        data: this.toStringOrNull(buffers[0]),
+      let memo: XrpMemo = {
+        data: this.toString(buffers[0]),
         format: this.toStringOrNull(buffers[1]),
         type: this.toStringOrNull(buffers[2])
       }
@@ -92,7 +96,7 @@ export class XrpUnsignedTransactionSerializer extends UnsignedTransactionSeriali
     return memos
   }
 
-  memoToBuffer(memo: Memo): Buffer[] {
+  memoToBuffer(memo: XrpMemo): Buffer[] {
     var memoItems = new Array<any>()
     memoItems.push(memo.data)
     memoItems.push(memo.format)
@@ -103,6 +107,12 @@ export class XrpUnsignedTransactionSerializer extends UnsignedTransactionSeriali
 
   toNumberOrNull(buffer: Buffer, radix: number = 10): number | undefined {
     if (buffer.length < 1) return undefined
+
+    return parseInt(buffer.toString(), radix)
+  }
+
+  toNumber(buffer: Buffer, radix: number = 10): number {
+    if (buffer.length < 1) throw new Error('No number data in buffer')
 
     return parseInt(buffer.toString(), radix)
   }
@@ -119,48 +129,29 @@ export class XrpUnsignedTransactionSerializer extends UnsignedTransactionSeriali
     return buffer.toString()
   }
 
+  toString(buffer: Buffer): string {
+    if (buffer.length < 1) return ''
+
+    return buffer.toString()
+  }
+
   public serialize(transaction: UnsignedXrpTransaction): SerializedSyncProtocolTransaction {
     const tx = transaction.transaction
 
     const serializedTx: SerializedSyncProtocolTransaction = toBuffer(
       [
         [
-          [
-            tx.instructions.sequence,
-            tx.instructions.fee,
-            tx.instructions.maxFee,
-            tx.instructions.maxLedgerVersion,
-            tx.instructions.maxLedgerVersionOffset,
-            tx.instructions.signersCount
-          ],
-          [
-            [
-              tx.payment.source.address,
-              [
-                tx.payment.source.maxAmount.value,
-                tx.payment.source.maxAmount.currency,
-                tx.payment.source.maxAmount.issuer,
-                tx.payment.source.maxAmount.counterparty
-              ],
-              tx.payment.source.tag
-            ],
-            [
-              tx.payment.destination.address,
-              [
-                tx.payment.destination.amount.value,
-                tx.payment.destination.amount.currency,
-                tx.payment.destination.amount.issuer,
-                tx.payment.destination.amount.counterparty
-              ],
-              tx.payment.destination.tag
-            ],
-            tx.payment.memos ? tx.payment.memos.map(x => this.memoToBuffer(x)) : new Array<Array<Buffer>>(),
-            tx.payment.paths,
-            tx.payment.invoiceID,
-            tx.payment.allowPartialPayment,
-            tx.payment.noDirectRipple,
-            tx.payment.limitQuality
-          ]
+          tx.transactionType,
+          tx.account,
+
+          tx.fee,
+          tx.destination,
+          tx.destinationTag,
+
+          tx.amount,
+          tx.sequence,
+
+          tx.memos ? tx.memos.map(x => this.memoToBuffer(x)) : new Array<Array<Buffer>>()
         ],
         transaction.publicKey, // publicKey
         transaction.callback ? transaction.callback : 'airgap-wallet://?d=' // callback-scheme
@@ -172,30 +163,19 @@ export class XrpUnsignedTransactionSerializer extends UnsignedTransactionSeriali
   }
 
   public deserialize(serializedTx: SerializedSyncProtocolTransaction): UnsignedXrpTransaction {
-    let test = serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION][0][0]
     let xrpTx = serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION] as SerializedUnsignedXrpTransaction
 
     const unsignedXrpTx: UnsignedXrpTransaction = {
       publicKey: serializedTx[SyncProtocolUnsignedTransactionKeys.PUBLIC_KEY].toString(),
       transaction: {
-        instructions: {
-          sequence: this.toNumberOrNull(xrpTx[0][0]),
-          fee: this.toStringOrNull(xrpTx[0][1]),
-          maxFee: this.toStringOrNull(xrpTx[0][2]),
-          maxLedgerVersion: this.toNumberOrNull(xrpTx[0][3]),
-          maxLedgerVersionOffset: this.toNumberOrNull(xrpTx[0][4]),
-          signersCount: this.toNumberOrNull(xrpTx[0][5])
-        },
-        payment: {
-          source: this.serializedToAdjustment(xrpTx[1][0], true) as MaxAdjustment,
-          destination: this.serializedToAdjustment(xrpTx[1][1], false) as Adjustment,
-          memos: this.serializedToMemo(xrpTx[1][2]),
-          paths: this.toStringOrNull(xrpTx[1][3]),
-          invoiceID: this.toStringOrNull(xrpTx[1][4]),
-          allowPartialPayment: this.toBooleanrOrNull(xrpTx[1][5]),
-          noDirectRipple: this.toBooleanrOrNull(xrpTx[1][6]),
-          limitQuality: this.toBooleanrOrNull(xrpTx[1][7])
-        }
+        transactionType: this.toString(xrpTx[0]),
+        account: this.toString(xrpTx[1]),
+        fee: this.toNumber(xrpTx[2]),
+        destination: this.toString(xrpTx[3]),
+        destinationTag: this.toNumber(xrpTx[4]),
+        amount: this.toNumber(xrpTx[5]),
+        sequence: this.toNumber(xrpTx[6]),
+        memos: this.serializedToMemo(xrpTx[7])
       },
       callback: serializedTx[SyncProtocolUnsignedTransactionKeys.CALLBACK].toString()
     }

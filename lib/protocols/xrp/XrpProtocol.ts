@@ -3,34 +3,38 @@ import { INetwork } from '../../networks'
 
 import * as bitcoinJS from 'bitcoinjs-lib'
 import { BigNumber } from 'bignumber.js'
-import * as ethUtil from 'ethereumjs-util'
 import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 import axios from 'axios'
-import { RawEthereumTransaction } from '../../serializer/unsigned-transactions/ethereum-transactions.serializer'
-import * as Web3 from 'web3'
 import { UnsignedTransaction } from '../../serializer/unsigned-transaction.serializer'
-import { SignedEthereumTransaction } from '../../serializer/signed-transactions/ethereum-transactions.serializer'
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
-import { getSubProtocolsByIdentifier } from '../../utils/subProtocols'
 import rippleKeypairs = require('ripple-keypairs')
 import { FormattedPayment } from '../../../node_modules/ripple-lib/dist/npm/transaction/types'
-import {
-  FormattedOrderSpecification,
-  FormattedTrustline,
-  Adjustment,
-  RippledAmount,
-  Memo,
-  FormattedSettings
-} from '../../../node_modules/ripple-lib/dist/npm/common/types/objects'
+import { oc } from 'ts-optchain'
+
+// import { Payment } from 'ripple-lib/dist/npm/transaction/payment'
+// import { Instructions } from 'ripple-lib/dist/npm/transaction/types'
+// import { Adjustment, MaxAdjustment } from 'ripple-lib/dist/npm/common/types/objects/adjustments'
+
+// import {
+//   FormattedOrderSpecification,
+//   FormattedTrustline,
+//   RippledAmount,
+//   FormattedSettings
+// } from '../../../node_modules/ripple-lib/dist/npm/common/types/objects'
 import { RippleAPI, FormattedTransactionType, RippleAPIBroadcast } from 'ripple-lib'
 import { APIOptions } from 'ripple-lib/dist/npm/api'
 import { isPendingLedgerVersion } from 'ripple-lib/dist/npm/ledger/utils'
-const EthereumTransaction = require('ethereumjs-tx')
+import { RawXrpTransaction, XrpMemo } from '../../serializer/unsigned-transactions/xrp-transactions.serializer'
 
 const enum LedgerType {
   Offline,
   RealTimeLedger, // used for current transactions
   LongTermLedger // used for historical data
+}
+
+export interface XrpAdditionalData {
+  memos: XrpMemo[]
+  destinationTag?: number
 }
 
 class TransactionHistoryHolder {
@@ -282,6 +286,7 @@ export class XrpProtocol implements ICoinProtocol {
   async signWithPrivateKey(privateKey: Buffer, transaction: any): Promise<string> {
     const api = this.getRippleApi(LedgerType.Offline)
 
+    // api.sign()
     //api.preparePayment()
     throw new Error('Method not implemented.')
   }
@@ -310,9 +315,43 @@ export class XrpProtocol implements ICoinProtocol {
   ): Promise<any> {
     throw new Error('Method not implemented.')
   }
-  prepareTransactionFromPublicKey(publicKey: string, recipients: string[], values: BigNumber[], fee: BigNumber, data?: any): Promise<any> {
-    throw new Error('Method not implemented.')
+
+  async prepareTransactionFromPublicKey(
+    publicKey: string,
+    recipients: string[],
+    values: BigNumber[],
+    xrpFee: BigNumber,
+    data?: XrpAdditionalData
+  ): Promise<RawXrpTransaction> {
+    if (recipients.length !== values.length) {
+      return Promise.reject('recipients length does not match with values')
+    }
+
+    if (recipients.length !== 1) {
+      return Promise.reject('you cannot have 0 recipients')
+    }
+    let sourceAddress = await this.getAddressFromPublicKey(publicKey)
+    let destinationTag = oc(data).destinationTag(undefined)
+
+    let api = this.getRippleApi(LedgerType.RealTimeLedger)
+
+    await api.connect()
+    let accountInfo = await api.getAccountInfo(sourceAddress)
+    await api.disconnect
+
+    const transaction: RawXrpTransaction = {
+      fee: xrpFee.toNumber(),
+      account: sourceAddress,
+      amount: values[0].toNumber(),
+      destination: recipients[0],
+      destinationTag: destinationTag, // TODO
+      sequence: accountInfo.sequence + 1, // TODO:,
+      transactionType: 'Payment',
+      memos: data ? data.memos : []
+    }
+    return transaction
   }
+
   broadcastTransaction(rawTransaction: any): Promise<string> {
     throw new Error('Method not implemented.')
   }
