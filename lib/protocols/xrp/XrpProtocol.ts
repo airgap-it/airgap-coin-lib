@@ -107,7 +107,7 @@ export class XrpProtocol implements ICoinProtocol {
     }
   ]
 
-  supportsHD: boolean = true
+  supportsHD: boolean = false
   standardDerivationPath: string = `m/44'/144'/0'/0/0`
   addressIsCaseSensitive: boolean = true
   addressValidationPattern: string = '^r[' + XrpProtocol.ALLOWED_CHARS + ']{27,35}$'
