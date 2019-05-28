@@ -337,15 +337,15 @@ export class XrpProtocol implements ICoinProtocol {
 
     await api.connect()
     let accountInfo = await api.getAccountInfo(sourceAddress)
-    await api.disconnect
+    api.disconnect()
 
     const transaction: RawXrpTransaction = {
       fee: xrpFee.toNumber(),
       account: sourceAddress,
       amount: values[0].toNumber(),
       destination: recipients[0],
-      destinationTag: destinationTag, // TODO
-      sequence: accountInfo.sequence + 1, // TODO:,
+      destinationTag: destinationTag,
+      sequence: accountInfo.sequence,
       transactionType: 'Payment',
       memos: data ? data.memos : []
     }
