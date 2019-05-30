@@ -1,5 +1,5 @@
 import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
-import { XrpProtocol } from '../../../lib/protocols/xrp/XrpProtocol'
+import { XrpProtocol, IRippleLedgerProvider } from '../../../lib/protocols/xrp/XrpProtocol'
 import * as sinon from 'sinon'
 import BigNumber from 'bignumber.js'
 import { RippleAPI, FormattedTransactionType, RippleAPIBroadcast } from 'ripple-lib'
@@ -16,10 +16,27 @@ export class XrpProtocolStub implements ProtocolHTTPStub {
       xrpBalance: '100000000'
     }
 
-    const stubAcountInfo = sinon
-      .stub(RippleAPI, 'getAccountInfo')
+    var rippleApi = new RippleAPI()
+
+    sinon
+      .stub(rippleApi, 'getAccountInfo')
       .withArgs(sinon.match.any)
       .returns(Promise.resolve(accountInfo))
+
+    sinon
+      .stub(rippleApi, 'connect')
+      .withArgs(sinon.match.any)
+      .returns(Promise.resolve(undefined))
+
+    sinon
+      .stub(rippleApi, 'disconnect')
+      .withArgs(sinon.match.any)
+      .returns(Promise.resolve(undefined))
+
+    const stubAcountInfo = sinon
+      .stub(protocol.rippleLedgerProvider, 'getRippleApi')
+      .withArgs(sinon.match.any)
+      .returns(rippleApi)
 
     //sinon
     //    .stub(protocol.web3.eth, 'getTransactionCount')

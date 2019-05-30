@@ -26,7 +26,7 @@ import { APIOptions } from 'ripple-lib/dist/npm/api'
 import { isPendingLedgerVersion } from 'ripple-lib/dist/npm/ledger/utils'
 import { RawXrpTransaction, XrpMemo } from '../../serializer/unsigned-transactions/xrp-transactions.serializer'
 
-const enum LedgerType {
+export const enum LedgerType {
   Offline,
   RealTimeLedger, // used for current transactions
   LongTermLedger // used for historical data
@@ -35,6 +35,34 @@ const enum LedgerType {
 export interface XrpAdditionalData {
   memos: XrpMemo[]
   destinationTag?: number
+}
+
+export interface IRippleLedgerProvider {
+  getRippleApi(ledgerType: LedgerType): RippleAPI
+}
+
+class RippleLedgerProvider implements IRippleLedgerProvider {
+  getRippleApi(ledgerType: LedgerType): RippleAPI {
+    var apiOptions: APIOptions | null = null
+
+    switch (ledgerType) {
+      case LedgerType.RealTimeLedger:
+        apiOptions = {}
+        apiOptions.server = 'wss://s1.ripple.com'
+        break
+      case LedgerType.LongTermLedger:
+        apiOptions = {}
+        apiOptions.server = 'wss://s2.ripple.com'
+        break
+
+      default:
+        break
+    }
+
+    const api = new RippleAPI(apiOptions as APIOptions)
+
+    return api
+  }
 }
 
 class TransactionHistoryHolder {
@@ -84,6 +112,8 @@ export class XrpProtocol implements ICoinProtocol {
   private static ALLOWED_CHARS = 'rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz'
   private precision = 6
   private network = bitcoinJS.networks.bitcoin
+
+  rippleLedgerProvider: IRippleLedgerProvider = new RippleLedgerProvider()
 
   symbol = 'XRP'
   name = 'XRP'
@@ -196,7 +226,7 @@ export class XrpProtocol implements ICoinProtocol {
     return new Promise((overallResolve, overallReject) => {
       const promises: Promise<any>[] = []
       for (let address of addresses) {
-        const api = this.getRippleApi(LedgerType.LongTermLedger)
+        const api = this.rippleLedgerProvider.getRippleApi(LedgerType.LongTermLedger)
 
         var afterTransaction: FormattedTransactionType | null =
           offset < 1 ? null : this._transactionHolder.getTransactionAtIndex(address, offset)
@@ -257,34 +287,12 @@ export class XrpProtocol implements ICoinProtocol {
     })
   }
 
-  private getRippleApi(ledgerType: LedgerType = LedgerType.Offline): RippleAPI {
-    var apiOptions: APIOptions | null = null
-
-    switch (ledgerType) {
-      case LedgerType.RealTimeLedger:
-        apiOptions = {}
-        apiOptions.server = 'wss://s1.ripple.com'
-        break
-      case LedgerType.LongTermLedger:
-        apiOptions = {}
-        apiOptions.server = 'wss://s2.ripple.com'
-        break
-
-      default:
-        break
-    }
-
-    const api = new RippleAPI(apiOptions as APIOptions)
-
-    return api
-  }
-
   signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: any): Promise<string> {
     throw new Error('signWithExtendedPrivateKey not available for XRP.')
   }
 
   async signWithPrivateKey(privateKey: Buffer, transaction: any): Promise<string> {
-    const api = this.getRippleApi(LedgerType.Offline)
+    const api = this.rippleLedgerProvider.getRippleApi(LedgerType.Offline)
 
     // api.sign()
     //api.preparePayment()
@@ -333,7 +341,7 @@ export class XrpProtocol implements ICoinProtocol {
     let sourceAddress = await this.getAddressFromPublicKey(publicKey)
     let destinationTag = oc(data).destinationTag(undefined)
 
-    let api = this.getRippleApi(LedgerType.RealTimeLedger)
+    let api = this.rippleLedgerProvider.getRippleApi(LedgerType.RealTimeLedger)
 
     await api.connect()
     let accountInfo = await api.getAccountInfo(sourceAddress)

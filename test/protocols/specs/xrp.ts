@@ -26,18 +26,19 @@ export class XrpTestProtocolSpec extends TestProtocolSpec {
   }
   txs = [
     {
-      amount: new BigNumber('1000000000000000000'),
-      fee: new BigNumber('420000000000000'),
-      to: ['0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e'],
-      from: ['0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e'],
+      amount: new BigNumber('20000'),
+      fee: new BigNumber('1'),
+      to: ['r3m9qXwzLMLsBZc7E6pgRFC41jxiBhmGz2'],
+      from: ['r46JsDnHLY7uaSmnnh86Uov4u16xt8eyxT'],
       unsignedTx: {
-        nonce: '0x0',
-        gasPrice: '0x4a817c800',
-        gasLimit: '0x5208',
-        to: '0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e',
-        value: '0xde0b6b3a7640000',
-        chainId: 1,
-        data: '0x'
+        fee: 1,
+        account: 'r46JsDnHLY7uaSmnnh86Uov4u16xt8eyxT',
+        amount: 20000,
+        destination: 'r3m9qXwzLMLsBZc7E6pgRFC41jxiBhmGz2',
+        destinationTag: undefined,
+        sequence: 0,
+        transactionType: 'Payment',
+        memos: []
       },
       signedTx:
         'f86c808504a817c800825208944a1e1d37462a422873bfccb1e705b05cc4bd922e880de0b6b3a76400008026a00678aaa8f8fd478952bf46044589f5489e809c5ae5717dfe6893490b1f98b441a06a82b82dad7c3232968ec3aa2bba32879b3ecdb877934915d7e65e095fe53d5d'
