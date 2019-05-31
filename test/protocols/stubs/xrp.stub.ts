@@ -7,21 +7,38 @@ import { FormattedGetAccountInfoResponse } from 'ripple-lib/dist/npm/ledger/acco
 
 export class XrpProtocolStub implements ProtocolHTTPStub {
   registerStub(testProtocolSpec: TestProtocolSpec, protocol: XrpProtocol) {
+    var rippleApi = this.rippleApiWithStubbedConnectLogic()
+
+    this.supplyAccountInfo(rippleApi, '100000000')
+
+    this.stubToAlwaysProvideRippleApi(protocol, rippleApi)
+  }
+  noBalanceStub(testProtocolSpec: TestProtocolSpec, protocol: XrpProtocol) {
+    var rippleApi = this.rippleApiWithStubbedConnectLogic()
+
+    this.supplyAccountInfo(rippleApi, '0')
+
+    this.stubToAlwaysProvideRippleApi(protocol, rippleApi)
+  }
+
+  supplyAccountInfo(rippleApi: RippleAPI, balance: string) {
     let accountInfo: FormattedGetAccountInfoResponse = {
       ownerCount: 1,
       previousAffectingTransactionID: '',
       previousAffectingTransactionLedgerVersion: 1,
       previousInitiatedTransactionID: '',
       sequence: 0,
-      xrpBalance: '100000000'
+      xrpBalance: balance
     }
-
-    var rippleApi = new RippleAPI()
 
     sinon
       .stub(rippleApi, 'getAccountInfo')
       .withArgs(sinon.match.any)
       .returns(Promise.resolve(accountInfo))
+  }
+
+  rippleApiWithStubbedConnectLogic(): RippleAPI {
+    var rippleApi = new RippleAPI()
 
     sinon
       .stub(rippleApi, 'connect')
@@ -33,24 +50,13 @@ export class XrpProtocolStub implements ProtocolHTTPStub {
       .withArgs(sinon.match.any)
       .returns(Promise.resolve(undefined))
 
-    const stubAcountInfo = sinon
-      .stub(protocol.rippleLedgerProvider, 'getRippleApi')
+    return rippleApi
+  }
+
+  stubToAlwaysProvideRippleApi(xrpProtocol: XrpProtocol, rippleApi: RippleAPI) {
+    sinon
+      .stub(xrpProtocol.rippleLedgerProvider, 'getRippleApi')
       .withArgs(sinon.match.any)
       .returns(rippleApi)
-
-    //sinon
-    //    .stub(protocol.web3.eth, 'getTransactionCount')
-    //    .withArgs(testProtocolSpec.wallet.addresses[0])
-    //    .returns(Promise.resolve(0))
-    //sinon
-    //    .stub(protocol.web3.eth, 'getBalance')
-    //    .withArgs(testProtocolSpec.wallet.addresses[0])
-    //    .returns(Promise.resolve('100000000000000000000'))
-  }
-  noBalanceStub(testProtocolSpec: TestProtocolSpec, protocol: XrpProtocol) {
-    //sinon
-    //    .stub(protocol, 'getBalanceOfPublicKey')
-    //    .withArgs(sinon.match.any)
-    //    .returns(Promise.resolve(new BigNumber(0)))
   }
 }

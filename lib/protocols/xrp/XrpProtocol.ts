@@ -347,6 +347,13 @@ export class XrpProtocol implements ICoinProtocol {
     let accountInfo = await api.getAccountInfo(sourceAddress)
     api.disconnect()
 
+    let totalToPay = xrpFee.plus(values[0].toNumber())
+    let balance = new BigNumber(accountInfo.xrpBalance)
+
+    if (totalToPay.comparedTo(balance) > 0) {
+      return Promise.reject('total to pay ' + totalToPay + ' is greater than balance ' + balance)
+    }
+
     const transaction: RawXrpTransaction = {
       fee: xrpFee.toNumber(),
       account: sourceAddress,
