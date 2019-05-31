@@ -348,7 +348,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       expect(result.airGapTx.amount.toFixed()).to.equal('100000')
       expect(result.airGapTx.fee.toFixed()).to.equal('1420')
       expect(result.rawTezosTx.binaryTransaction).to.equal(
-        'e4b7e31c04d23e3a10ea20e11bd0ebb4bde16f632c1d94779fd5849a34ec42a308000091a9d2b003f19cf5a1f38f04f1000ab482d331768c0bcffe37f44e00a08d0601ba4e7349ac25dc5eb2df5a43fceacc58963df4f50000'
+        'e4b7e31c04d23e3a10ea20e11bd0ebb4bde16f632c1d94779fd5849a34ec42a308000091a9d2b003f19cf5a1f38f04f1000ab482d331768c0bcffe37bc5000a08d0601ba4e7349ac25dc5eb2df5a43fceacc58963df4f50000'
       )
     })
 
