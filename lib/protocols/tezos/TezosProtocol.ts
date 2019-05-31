@@ -67,7 +67,7 @@ export interface TezosOriginationOperation extends TezosOperation {
   delegatable: boolean
   fee: string
   gas_limit: string
-  managerPubkey: string
+  manager_pubkey: string
   source: string
   spendable: boolean
   storage_limit: string
@@ -501,7 +501,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       counter: counter.toFixed(),
       gas_limit: '10000', // taken from eztz
       storage_limit: this.originationSize.toFixed(),
-      managerPubkey: address,
+      manager_pubkey: address,
       balance: balanceToSend.toFixed(),
       spendable: true,
       delegatable: true,
@@ -775,7 +775,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         storage_limit: storageLimit.toFixed(),
         counter: counter.toFixed(),
         balance: balance.toFixed(),
-        managerPubkey: managerPubKey,
+        manager_pubkey: managerPubKey,
         spendable: spendable,
         delegatable: delegatable,
         delegate: delegate,
@@ -922,7 +922,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       if (operation.kind === TezosOperationType.ORIGINATION) {
         const originationOperation = operation as TezosOriginationOperation
 
-        let cleanedManagerPubKey = this.checkAndRemovePrefixToHex(originationOperation.managerPubkey, this.tezosPrefixes.tz1)
+        let cleanedManagerPubKey = this.checkAndRemovePrefixToHex(originationOperation.manager_pubkey, this.tezosPrefixes.tz1)
 
         if (cleanedManagerPubKey.length === 32) {
           // must be equal 32 bytes
