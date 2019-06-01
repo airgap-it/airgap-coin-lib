@@ -48,6 +48,7 @@
     "ripple-lib": "^1.2.3",
     "ripple-sign-keypairs": "^1.0.2",
     "rlp": "^2.1.0",
+    "sjcl": "^1.0.8",
     "ts-optchain": "^0.1.7",
     "tweetnacl": "^1.0.0",
     "validate.js": "^0.12.0",

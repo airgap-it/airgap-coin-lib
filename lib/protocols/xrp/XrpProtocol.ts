@@ -1,6 +1,6 @@
 import { ICoinProtocol } from '../ICoinProtocol'
 import { INetwork } from '../../networks'
-
+import { XrpKeyPair } from '../../utils/xrp/xrpKeyPair'
 import * as bitcoinJS from 'bitcoinjs-lib'
 import { BigNumber } from 'bignumber.js'
 import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
@@ -10,6 +10,7 @@ import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransact
 import rippleKeypairs = require('ripple-keypairs')
 import { FormattedPayment } from '../../../node_modules/ripple-lib/dist/npm/transaction/types'
 import { oc } from 'ts-optchain'
+import sign from 'ripple-sign-keypairs'
 
 // import { Payment } from 'ripple-lib/dist/npm/transaction/payment'
 // import { Instructions } from 'ripple-lib/dist/npm/transaction/types'
@@ -291,13 +292,19 @@ export class XrpProtocol implements ICoinProtocol {
     throw new Error('signWithExtendedPrivateKey not available for XRP.')
   }
 
-  async signWithPrivateKey(privateKey: Buffer, transaction: any): Promise<string> {
-    const api = this.rippleLedgerProvider.getRippleApi(LedgerType.Offline)
+  async signWithPrivateKey(privateKey: Buffer, transaction: RawXrpTransaction): Promise<string> {
+    const privateKeyString = privateKey.toString()
+    let xrpKeyPair = new XrpKeyPair(privateKeyString)
+    let privateKeyHex = xrpKeyPair.toHexPrivateKey(true)
+    let publicKeyHex = xrpKeyPair.toHexPubKey()
+    const keyPair = { privateKey: privateKeyHex, publicKey: publicKeyHex }
 
-    // api.sign()
-    //api.preparePayment()
-    throw new Error('Method not implemented.')
+    var txJSON = JSON.stringify(transaction)
+    var txSign = sign(txJSON, keyPair)
+
+    return Promise.resolve(txSign)
   }
+
   getTransactionDetails(transaction: UnsignedTransaction): Promise<IAirGapTransaction> {
     throw new Error('Method not implemented.')
   }
