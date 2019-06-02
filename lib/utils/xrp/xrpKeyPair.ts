@@ -1,4 +1,4 @@
-import sjcl from 'sjcl'
+import sjcl = require('sjcl')
 
 export class XrpKeyPair {
   private _secret: any
@@ -6,12 +6,12 @@ export class XrpKeyPair {
   private _pubkey: any = undefined
 
   constructor(privateKeyHex: string) {
-    var bn = undefined
+    var bn: sjcl.BigNumber | undefined
     if (/^[0-9a-fA-f]{64}$/.test(privateKeyHex)) {
-      bn = new sjcl.bn(privateKeyHex, 16)
+      bn = new sjcl.bn(0x64)
     }
     if (!bn) {
-      throw new Error('Unsuported private key type')
+      throw new Error('Unsuported private key type: ' + privateKeyHex)
     }
 
     this._secret = new sjcl.ecc.ecdsa.secretKey(sjcl.ecc.curves.k256, bn)
@@ -50,7 +50,7 @@ export class XrpKeyPair {
     return pubKey
   }
 
-  private pubBits() {
+  private pubBits(): any {
     var pub = this.getPub()
 
     if (!pub) {
@@ -60,17 +60,17 @@ export class XrpKeyPair {
     var point = pub._point,
       y_even = point.y.mod(2).equals(0)
 
-    return sjcl.bitArray.concat([sjcl.bitArray.partial(8, y_even ? 0x02 : 0x03)], point.x.toBits(this._curve.r.bitLength()))
+    //return sjcl.bitArray.concat([sjcl.bitArray.partial(8, y_even ? 0x02 : 0x03)], point.x.toBits(this._curve.r.bitLength()))
   }
 
   private getPub(): any {
-    var curve = this._curve
+    //var curve = this._curve
 
-    if (!this._pubkey && this._secret) {
-      var exponent = this._secret._exponent
+    //if (!this._pubkey && this._secret) {
+    //  var exponent = this._secret._exponent
 
-      this._pubkey = new sjcl.ecc.ecdsa.publicKey(curve, curve.G.mult(exponent))
-    }
+    //  this._pubkey = new sjcl.ecc.ecdsa.publicKey(curve, curve.G.mult(exponent))
+    //}
 
     return this._pubkey
   }

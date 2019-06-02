@@ -293,7 +293,7 @@ export class XrpProtocol implements ICoinProtocol {
   }
 
   async signWithPrivateKey(privateKey: Buffer, transaction: RawXrpTransaction): Promise<string> {
-    const privateKeyString = privateKey.toString()
+    const privateKeyString = privateKey.toString('hex')
     let xrpKeyPair = new XrpKeyPair(privateKeyString)
     let privateKeyHex = xrpKeyPair.toHexPrivateKey(true)
     let publicKeyHex = xrpKeyPair.toHexPubKey()
