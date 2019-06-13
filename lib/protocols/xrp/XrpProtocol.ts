@@ -10,11 +10,11 @@ import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransact
 import rippleKeypairs = require('ripple-keypairs')
 import { FormattedPayment } from '../../../node_modules/ripple-lib/dist/npm/transaction/types'
 import { oc } from 'ts-optchain'
-const sign = require('ripple-sign-keypairs')
 
 import { Payment } from 'ripple-lib/dist/npm/transaction/payment'
 import { Instructions } from 'ripple-lib/dist/npm/transaction/types'
 import { Adjustment, MaxAdjustment } from 'ripple-lib/dist/npm/common/types/objects/adjustments'
+const rippleBinaryCodec = require('ripple-binary-codec')
 
 // import {
 //   FormattedOrderSpecification,
@@ -27,6 +27,9 @@ import { APIOptions } from 'ripple-lib/dist/npm/api'
 import { isPendingLedgerVersion } from 'ripple-lib/dist/npm/ledger/utils'
 import { RawXrpTransaction, XrpMemo } from '../../serializer/unsigned-transactions/xrp-transactions.serializer'
 import { Amount } from 'ripple-lib/dist/npm/common/types/objects'
+import { SignedXrpTransaction } from '../../serializer/signed-transactions/xrp-transactions.serializer'
+import { dropsToXrp } from 'ripple-lib/dist/npm/common'
+import getAccountInfo, { FormattedGetAccountInfoResponse } from 'ripple-lib/dist/npm/ledger/accountinfo'
 
 export const enum LedgerType {
   Offline,
@@ -183,13 +186,7 @@ export class XrpProtocol implements ICoinProtocol {
     visibilityDerivationIndex: number,
     addressDerivationIndex: number
   ): Promise<string> {
-    return this.getAddressFromPublicKey(
-      bitcoinJS.HDNode.fromBase58(extendedPublicKey, this.network as bitcoinJS.Network)
-        .derive(visibilityDerivationIndex)
-        .derive(addressDerivationIndex)
-        .getPublicKeyBuffer()
-        .toString('hex')
-    )
+    return Promise.reject('getAddressFromExtendedPublicKey for XRP not implemented')
   }
   getAddressesFromExtendedPublicKey(
     extendedPublicKey: string,
@@ -197,19 +194,7 @@ export class XrpProtocol implements ICoinProtocol {
     addressCount: number,
     offset: number
   ): Promise<string[]> {
-    const node = bitcoinJS.HDNode.fromBase58(extendedPublicKey, this.network as bitcoinJS.Network)
-    const generatorArray = [addressCount].map((x, i) => i + offset)
-    return Promise.all(
-      generatorArray.map(x =>
-        this.getAddressFromPublicKey(
-          node
-            .derive(visibilityDerivationIndex)
-            .derive(x)
-            .getPublicKeyBuffer()
-            .toString('hex')
-        )
-      )
-    )
+    return Promise.reject('getAddressesFromExtendedPublicKey for XRP not implemented')
   }
   async getTransactionsFromPublicKey(publicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]> {
     const address = await this.getAddressFromPublicKey(publicKey)
@@ -290,7 +275,7 @@ export class XrpProtocol implements ICoinProtocol {
   }
 
   signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: any): Promise<string> {
-    throw new Error('signWithExtendedPrivateKey not available for XRP.')
+    return Promise.reject('signWithExtendedPrivateKey for XRP not implemented')
   }
 
   async signWithPrivateKey(privateKey: Buffer, transaction: RawXrpTransaction): Promise<string> {
@@ -334,20 +319,62 @@ export class XrpProtocol implements ICoinProtocol {
     return Promise.resolve(signedTx)
   }
 
-  getTransactionDetails(transaction: UnsignedTransaction): Promise<IAirGapTransaction> {
-    throw new Error('Method not implemented.')
+  getTransactionDetails(unsignedTx: UnsignedTransaction): Promise<IAirGapTransaction> {
+    const transaction = unsignedTx.transaction as RawXrpTransaction
+    let fromAccounts: [string] = [transaction.account.toString()]
+    let airGapTransaction: IAirGapTransaction = {
+      from: fromAccounts,
+      to: [transaction.destination],
+      amount: new BigNumber(transaction.amount),
+      fee: new BigNumber(transaction.fee),
+      protocolIdentifier: this.identifier,
+      isInbound: false,
+      data: '' // TODO: transaction.data
+    }
+    return Promise.resolve(airGapTransaction)
   }
-  getTransactionDetailsFromSigned(transaction: any): Promise<IAirGapTransaction> {
-    throw new Error('Method not implemented.')
+  async getTransactionDetailsFromSigned(xrpSignedTransaction: SignedXrpTransaction): Promise<IAirGapTransaction> {
+    let txJson = rippleBinaryCodec.decode(xrpSignedTransaction.transaction)
+
+    let airGapTx: IAirGapTransaction = {
+      from: [txJson.Account],
+      to: [txJson.Destination],
+      amount: new BigNumber(dropsToXrp(txJson.Amount)),
+      fee: new BigNumber(dropsToXrp(txJson.Fee)),
+      protocolIdentifier: this.identifier,
+      isInbound: false
+    }
+
+    return Promise.resolve(airGapTx)
   }
-  getBalanceOfAddresses(addresses: string[]): Promise<BigNumber> {
-    throw new Error('Method not implemented.')
+  async getBalanceOfAddresses(addresses: string[]): Promise<BigNumber> {
+    let values = await addresses.map(async address => {
+      let value = await this.getAccountInfo(address).then(x => {
+        return new BigNumber(x.xrpBalance)
+      })
+      return value
+    })
+
+    return values.reduce(async (a, b) => {
+      let aBigNum = await a
+      let bBigNum = await b
+      return BigNumber.sum(aBigNum, bBigNum)
+    })
   }
-  getBalanceOfPublicKey(publicKey: string): Promise<BigNumber> {
-    throw new Error('Method not implemented.')
+  async getBalanceOfPublicKey(publicKey: string): Promise<BigNumber> {
+    let address = await this.getAddressFromPublicKey(publicKey)
+    return this.getAccountInfo(address).then(x => {
+      return new BigNumber(x.xrpBalance)
+    })
   }
+
+  private getAccountInfo(address: string): Promise<FormattedGetAccountInfoResponse> {
+    let api = this.rippleLedgerProvider.getRippleApi(LedgerType.RealTimeLedger)
+    return api.getAccountInfo(address)
+  }
+
   getBalanceOfExtendedPublicKey(extendedPublicKey: string, offset: number): Promise<BigNumber> {
-    throw new Error('Method not implemented.')
+    return Promise.reject('getBalanceOfExtendedPublicKey for XRP not implemented')
   }
   prepareTransactionFromExtendedPublicKey(
     extendedPublicKey: string,
@@ -357,7 +384,7 @@ export class XrpProtocol implements ICoinProtocol {
     fee: BigNumber,
     data?: any
   ): Promise<any> {
-    throw new Error('Method not implemented.')
+    return Promise.reject('prepareTransactionFromExtendedPublicKey for XRP not implemented')
   }
 
   async prepareTransactionFromPublicKey(

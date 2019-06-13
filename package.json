@@ -45,6 +45,7 @@
     "ethereumjs-util": "^5.2.0",
     "jest-cli": "^24.8.0",
     "libsodium-wrappers": "^0.7.3",
+    "ripple-binary-codec": "^0.2.1",
     "ripple-keypairs": "^0.11.0",
     "ripple-lib": "^1.2.3",
     "ripple-sign-keypairs": "^1.0.2",
