@@ -10,11 +10,11 @@ import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransact
 import rippleKeypairs = require('ripple-keypairs')
 import { FormattedPayment } from '../../../node_modules/ripple-lib/dist/npm/transaction/types'
 import { oc } from 'ts-optchain'
-import sign from 'ripple-sign-keypairs'
+const sign = require('ripple-sign-keypairs')
 
-// import { Payment } from 'ripple-lib/dist/npm/transaction/payment'
-// import { Instructions } from 'ripple-lib/dist/npm/transaction/types'
-// import { Adjustment, MaxAdjustment } from 'ripple-lib/dist/npm/common/types/objects/adjustments'
+import { Payment } from 'ripple-lib/dist/npm/transaction/payment'
+import { Instructions } from 'ripple-lib/dist/npm/transaction/types'
+import { Adjustment, MaxAdjustment } from 'ripple-lib/dist/npm/common/types/objects/adjustments'
 
 // import {
 //   FormattedOrderSpecification,
@@ -26,6 +26,7 @@ import { RippleAPI, FormattedTransactionType, RippleAPIBroadcast } from 'ripple-
 import { APIOptions } from 'ripple-lib/dist/npm/api'
 import { isPendingLedgerVersion } from 'ripple-lib/dist/npm/ledger/utils'
 import { RawXrpTransaction, XrpMemo } from '../../serializer/unsigned-transactions/xrp-transactions.serializer'
+import { Amount } from 'ripple-lib/dist/npm/common/types/objects'
 
 export const enum LedgerType {
   Offline,
@@ -293,16 +294,44 @@ export class XrpProtocol implements ICoinProtocol {
   }
 
   async signWithPrivateKey(privateKey: Buffer, transaction: RawXrpTransaction): Promise<string> {
+    let api = this.rippleLedgerProvider.getRippleApi(LedgerType.Offline)
+
+    let amount: Amount = {
+      currency: 'XRP',
+      value: transaction.amount.toString()
+    }
+    let source: MaxAdjustment = {
+      address: transaction.account,
+      maxAmount: amount,
+      tag: undefined
+    }
+    let destination: Adjustment = {
+      address: transaction.destination,
+      amount: amount,
+      tag: transaction.destinationTag
+    }
+    let payment: Payment = {
+      source: source,
+      destination: destination
+    }
     const privateKeyString = privateKey.toString('hex')
     let xrpKeyPair = new XrpKeyPair(privateKeyString)
     let privateKeyHex = xrpKeyPair.toHexPrivateKey(true)
     let publicKeyHex = xrpKeyPair.toHexPubKey()
     const keyPair = { privateKey: privateKeyHex, publicKey: publicKeyHex }
 
-    var txJSON = JSON.stringify(transaction)
-    var txSign = sign(txJSON, keyPair)
+    let paymentInstruction: Instructions = {
+      sequence: transaction.sequence,
+      fee: transaction.fee.toString(),
+      maxLedgerVersion: transaction.maxLedgerVersion
+    }
 
-    return Promise.resolve(txSign)
+    let preparedPayment = await api.preparePayment(transaction.account, payment, paymentInstruction)
+
+    let signedTransactionInfo = await api.sign(preparedPayment.txJSON, keyPair)
+    let signedTx = signedTransactionInfo.signedTransaction
+
+    return Promise.resolve(signedTx)
   }
 
   getTransactionDetails(transaction: UnsignedTransaction): Promise<IAirGapTransaction> {
@@ -352,7 +381,10 @@ export class XrpProtocol implements ICoinProtocol {
 
     await api.connect()
     let accountInfo = await api.getAccountInfo(sourceAddress)
-    api.disconnect()
+    let currentLedgerVersion = await api.getLedgerVersion()
+    let maxLedgerVersion = currentLedgerVersion + +100 // TODO: What max ledger offset to give :O?
+
+    await api.disconnect()
 
     let totalToPay = xrpFee.plus(values[0].toNumber())
     let balance = new BigNumber(accountInfo.xrpBalance)
@@ -369,7 +401,8 @@ export class XrpProtocol implements ICoinProtocol {
       destinationTag: destinationTag,
       sequence: accountInfo.sequence,
       transactionType: 'Payment',
-      memos: data ? data.memos : []
+      memos: data ? data.memos : [],
+      maxLedgerVersion: maxLedgerVersion
     }
     return transaction
   }

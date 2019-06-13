@@ -1,77 +1,36 @@
-import sjcl = require('sjcl')
+var EC = require('elliptic').ec
 
 export class XrpKeyPair {
-  private _secret: any
-  private _curve = sjcl.ecc.curves.k256
-  private _pubkey: any = undefined
+  private _pubkey: String
+  private _privateKeyHex: String
 
   constructor(privateKeyHex: string) {
-    var bn: sjcl.BigNumber | undefined
-    if (/^[0-9a-fA-f]{64}$/.test(privateKeyHex)) {
-      bn = new sjcl.bn(0x64)
-    }
-    if (!bn) {
-      throw new Error('Unsuported private key type: ' + privateKeyHex)
-    }
+    this._privateKeyHex = privateKeyHex
+    let ec = new EC('secp256k1')
 
-    this._secret = new sjcl.ecc.ecdsa.secretKey(sjcl.ecc.curves.k256, bn)
+    let key = ec.keyFromPrivate(this._privateKeyHex)
+    let pubKey = key.getPublic().encodeCompressed()
+    this._pubkey = this.bytesToHex(pubKey)
   }
 
-  public toHexPrivateKey(preceedWithZeroes: boolean = true): string {
-    let bits = this._secret.get()
-
-    let privKey = sjcl.codec.hex.fromBits(bits).toUpperCase()
-    if (typeof privKey === 'string') {
-      let privKeyString = privKey as string
-
-      if (preceedWithZeroes) {
-        return '00' + privKeyString
-      }
-
-      return privKeyString
-    }
-
-    throw new Error('Could not decode to hex private key')
+  bytesToHex(a): String {
+    return a
+      .map(function(byteValue) {
+        const hex = byteValue.toString(16).toUpperCase()
+        return hex.length > 1 ? hex : '0' + hex
+      })
+      .join('')
   }
 
-  public toHexPubKey(): string {
-    var bits = this.pubBits()
-
-    if (!bits) {
-      throw new Error('Could not decode to pub key')
+  public toHexPrivateKey(preceedWithZeroes: boolean = true): String {
+    if (preceedWithZeroes) {
+      return '00' + this._privateKeyHex
     }
 
-    let pubKey = sjcl.codec.hex.fromBits(bits).toUpperCase()
-
-    if (typeof pubKey !== 'string') {
-      throw new Error('Could not decode to pub key')
-    }
-
-    return pubKey
+    return this._privateKeyHex
   }
 
-  private pubBits(): any {
-    var pub = this.getPub()
-
-    if (!pub) {
-      throw new Error('Could not decode to pub key')
-    }
-
-    var point = pub._point,
-      y_even = point.y.mod(2).equals(0)
-
-    //return sjcl.bitArray.concat([sjcl.bitArray.partial(8, y_even ? 0x02 : 0x03)], point.x.toBits(this._curve.r.bitLength()))
-  }
-
-  private getPub(): any {
-    //var curve = this._curve
-
-    //if (!this._pubkey && this._secret) {
-    //  var exponent = this._secret._exponent
-
-    //  this._pubkey = new sjcl.ecc.ecdsa.publicKey(curve, curve.G.mult(exponent))
-    //}
-
+  public toHexPubKey(): String {
     return this._pubkey
   }
 }

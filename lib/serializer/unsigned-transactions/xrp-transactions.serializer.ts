@@ -26,7 +26,9 @@ export type SerializedUnsignedXrpTransaction = [
   Buffer,
   Buffer,
 
-  SerializedMemos // memos
+  Buffer, // max ledger version
+
+  SerializedMemos // memos,
 ]
 export interface XrpMemo {
   type?: string
@@ -41,7 +43,9 @@ export interface RawXrpTransaction {
   destination: string
   destinationTag?: number
   amount: number
-  sequence: number
+
+  sequence: number // needed for offline support
+  maxLedgerVersion: number // needed for offline support
 
   memos: XrpMemo[]
 }
@@ -105,16 +109,16 @@ export class XrpUnsignedTransactionSerializer extends UnsignedTransactionSeriali
     return toBuffer(memoItems, true) as Buffer[]
   }
 
-  toNumberOrNull(buffer: Buffer, radix: number = 10): number | undefined {
+  toNumberOrNull(buffer: Buffer): number | undefined {
     if (buffer.length < 1) return undefined
 
-    return parseInt(buffer.toString(), radix)
+    return parseFloat(buffer.toString())
   }
 
-  toNumber(buffer: Buffer, radix: number = 10): number {
+  toNumber(buffer: Buffer): number {
     if (buffer.length < 1) throw new Error('No number data in buffer')
 
-    return parseInt(buffer.toString(), radix)
+    return parseFloat(buffer.toString())
   }
 
   toBooleanrOrNull(buffer: Buffer): boolean | undefined {
@@ -149,7 +153,9 @@ export class XrpUnsignedTransactionSerializer extends UnsignedTransactionSeriali
           tx.destinationTag,
 
           tx.amount,
+
           tx.sequence,
+          tx.maxLedgerVersion,
 
           tx.memos ? tx.memos.map(x => this.memoToBuffer(x)) : new Array<Array<Buffer>>()
         ],
@@ -172,10 +178,11 @@ export class XrpUnsignedTransactionSerializer extends UnsignedTransactionSeriali
         account: this.toString(xrpTx[1]),
         fee: this.toNumber(xrpTx[2]),
         destination: this.toString(xrpTx[3]),
-        destinationTag: this.toNumber(xrpTx[4]),
+        destinationTag: this.toNumberOrNull(xrpTx[4]),
         amount: this.toNumber(xrpTx[5]),
         sequence: this.toNumber(xrpTx[6]),
-        memos: this.serializedToMemo(xrpTx[7])
+        maxLedgerVersion: this.toNumber(xrpTx[7]),
+        memos: this.serializedToMemo(xrpTx[8])
       },
       callback: serializedTx[SyncProtocolUnsignedTransactionKeys.CALLBACK].toString()
     }

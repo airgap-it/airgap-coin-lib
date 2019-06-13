@@ -9,6 +9,7 @@ import { AETestProtocolSpec } from './specs/ae'
 import { ERC20HOPTokenTestProtocolSpec } from './specs/erc20-hop-token'
 import { TezosTestProtocolSpec } from './specs/tezos'
 import { BitcoinTestProtocolSpec } from './specs/bitcoin-test'
+import { XrpTestProtocolSpec } from './specs/xrp'
 import { GenericERC20TokenTestProtocolSpec } from './specs/generic-erc20-token'
 import { getProtocolByIdentifier } from '../../lib/utils/protocolsByIdentifier'
 
@@ -18,7 +19,8 @@ const protocols = [
   new AETestProtocolSpec(),
   new ERC20HOPTokenTestProtocolSpec(),
   new TezosTestProtocolSpec(),
-  new GenericERC20TokenTestProtocolSpec()
+  new GenericERC20TokenTestProtocolSpec(),
+  new XrpTestProtocolSpec()
 ]
 
 protocols.forEach((protocol: TestProtocolSpec) => {

@@ -12,6 +12,8 @@ export class XrpProtocolStub implements ProtocolHTTPStub {
     this.supplyAccountInfo(rippleApi, '100000000')
 
     this.stubToAlwaysProvideRippleApi(protocol, rippleApi)
+
+    this.supplyLedgerVersion(rippleApi)
   }
   noBalanceStub(testProtocolSpec: TestProtocolSpec, protocol: XrpProtocol) {
     var rippleApi = this.rippleApiWithStubbedConnectLogic()
@@ -19,6 +21,8 @@ export class XrpProtocolStub implements ProtocolHTTPStub {
     this.supplyAccountInfo(rippleApi, '0')
 
     this.stubToAlwaysProvideRippleApi(protocol, rippleApi)
+
+    this.supplyLedgerVersion(rippleApi)
   }
 
   supplyAccountInfo(rippleApi: RippleAPI, balance: string) {
@@ -27,7 +31,7 @@ export class XrpProtocolStub implements ProtocolHTTPStub {
       previousAffectingTransactionID: '',
       previousAffectingTransactionLedgerVersion: 1,
       previousInitiatedTransactionID: '',
-      sequence: 0,
+      sequence: 1, // The next (smallest unused) sequence number for this account.
       xrpBalance: balance
     }
 
@@ -35,6 +39,10 @@ export class XrpProtocolStub implements ProtocolHTTPStub {
       .stub(rippleApi, 'getAccountInfo')
       .withArgs(sinon.match.any)
       .returns(Promise.resolve(accountInfo))
+  }
+
+  supplyLedgerVersion(rippleApi: RippleAPI) {
+    sinon.stub(rippleApi, 'getLedgerVersion').returns(Promise.resolve(42))
   }
 
   rippleApiWithStubbedConnectLogic(): RippleAPI {
