@@ -182,13 +182,13 @@ export abstract class BaseEthereumProtocol implements ICoinProtocol {
     let hexNonce = ethTx.nonce.toString('hex') || '0x0'
 
     return {
-      from: [ethUtil.toChecksumAddress('0x' + ethTx.from.toString('hex'))],
-      to: [ethUtil.toChecksumAddress('0x' + ethTx.to.toString('hex'))],
+      from: [ethUtil.toChecksumAddress(`0x${ethTx.from.toString('hex')}`)],
+      to: [ethUtil.toChecksumAddress(`0x${ethTx.to.toString('hex')}`)],
       amount: new BigNumber(parseInt(hexValue, 16)),
       fee: new BigNumber(parseInt(hexGasLimit, 16)).multipliedBy(new BigNumber(parseInt(hexGasPrice, 16))),
       protocolIdentifier: this.identifier,
       isInbound: ethTx.toCreationAddress(),
-      hash: ethTx.hash,
+      hash: `0x${ethTx.hash().toString('hex')}`,
       meta: {
         nonce: parseInt(hexNonce, 16)
       },

@@ -127,6 +127,10 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
         blockHeight: obj.block_height
       }
 
+      if (obj.tx.payload) {
+        airGapTx.data = obj.tx.payload
+      }
+
       if (!isNaN(parsedTimestamp)) {
         airGapTx.timestamp = Math.round(parsedTimestamp / 1000)
       }
@@ -187,7 +191,8 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
       from: [await this.getAddressFromPublicKey(rlpDecodedTx[2].slice(1).toString('hex'))],
       isInbound: false,
       protocolIdentifier: this.identifier,
-      to: [await this.getAddressFromPublicKey(rlpDecodedTx[3].slice(1).toString('hex'))]
+      to: [await this.getAddressFromPublicKey(rlpDecodedTx[3].slice(1).toString('hex'))],
+      data: (rlpDecodedTx[8] || '').toString('utf8')
     }
 
     return airgapTx
@@ -236,7 +241,8 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
     publicKey: string,
     recipients: string[],
     values: BigNumber[],
-    fee: BigNumber
+    fee: BigNumber,
+    payload?: string
   ): Promise<RawAeternityTransaction> {
     let nonce = 1
 
@@ -270,7 +276,7 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
       fee: this.toHexBuffer(fee),
       ttl: this.toHexBuffer(0),
       nonce: this.toHexBuffer(nonce),
-      payload: Buffer.from('')
+      payload: Buffer.from(payload || '')
     }
 
     const txArray = Object.keys(txObj).map(a => txObj[a])
