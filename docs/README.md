@@ -48,4 +48,5 @@ Currently supported are:
 - Ethereum
   - Generic ERC20 Tokens
 - Aeternity
-- Tezos (Beta)
+- Tezos
+- Groestlcoin
