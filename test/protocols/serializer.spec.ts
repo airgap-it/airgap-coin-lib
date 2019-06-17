@@ -1,16 +1,17 @@
+import { expect } from 'chai'
 import 'mocha'
 
-import { expect } from 'chai'
-import { TestProtocolSpec } from './implementations'
-import { SyncProtocolUtils } from '../../src/serializer/serializer'
 import { SignedTransaction, UnsignedTransaction } from '../../src'
-import { EthereumTestProtocolSpec } from './specs/ethereum'
-import { AETestProtocolSpec } from './specs/ae'
-import { ERC20HOPTokenTestProtocolSpec } from './specs/erc20-hop-token'
-import { TezosTestProtocolSpec } from './specs/tezos'
-import { BitcoinTestProtocolSpec } from './specs/bitcoin-test'
-import { GenericERC20TokenTestProtocolSpec } from './specs/generic-erc20-token'
+import { SyncProtocolUtils } from '../../src/serializer/serializer'
 import { getProtocolByIdentifier } from '../../src/utils/protocolsByIdentifier'
+
+import { TestProtocolSpec } from './implementations'
+import { AETestProtocolSpec } from './specs/ae'
+import { BitcoinTestProtocolSpec } from './specs/bitcoin-test'
+import { ERC20HOPTokenTestProtocolSpec } from './specs/erc20-hop-token'
+import { EthereumTestProtocolSpec } from './specs/ethereum'
+import { GenericERC20TokenTestProtocolSpec } from './specs/generic-erc20-token'
+import { TezosTestProtocolSpec } from './specs/tezos'
 
 const protocols = [
   new EthereumTestProtocolSpec(),
@@ -26,7 +27,7 @@ protocols.forEach((protocol: TestProtocolSpec) => {
 
   describe(`Serialization Protocol for ${protocol.name}`, () => {
     it(`should be able to serialize an transaction to a airgap protocol string`, async () => {
-      for (let tx of protocol.txs) {
+      for (const tx of protocol.txs) {
         const serializedTx = await syncProtocol.serialize(protocol.unsignedTransaction(tx))
         const deserializedTx = await syncProtocol.deserialize(serializedTx)
 
@@ -35,7 +36,7 @@ protocols.forEach((protocol: TestProtocolSpec) => {
     })
 
     it(`should be able to properly extract amount/fee using getTransactionDetails in combination with the coin-lib`, async () => {
-      for (let tx of protocol.txs) {
+      for (const tx of protocol.txs) {
         const serializedTx = await syncProtocol.serialize(protocol.unsignedTransaction(tx))
         const deserializedTx = await syncProtocol.deserialize(serializedTx)
 
@@ -48,7 +49,7 @@ protocols.forEach((protocol: TestProtocolSpec) => {
     })
 
     it(`should be able to properly extract amount/fee using from signedTx in combination with the coin-lib`, async () => {
-      for (let tx of protocol.txs) {
+      for (const tx of protocol.txs) {
         const serializedTx = await syncProtocol.serialize(protocol.signedTransaction(tx))
         const deserializedTx = await syncProtocol.deserialize(serializedTx)
 
@@ -61,7 +62,7 @@ protocols.forEach((protocol: TestProtocolSpec) => {
     })
 
     it(`should be able to serialize and deserialize a sync-wallet request`, async () => {
-      for (let tx of protocol.txs) {
+      for (const tx of protocol.txs) {
         const serializedWalletRequest = await syncProtocol.serialize(protocol.signedTransaction(tx))
         const deserializedWalletRequest = await syncProtocol.deserialize(serializedWalletRequest)
 
@@ -70,7 +71,7 @@ protocols.forEach((protocol: TestProtocolSpec) => {
     })
 
     it(`should be able to serialize and deserialize a signed-tx request`, async () => {
-      for (let tx of protocol.txs) {
+      for (const tx of protocol.txs) {
         const serializedSignedTx = await syncProtocol.serialize(protocol.signedTransaction(tx))
         const deserializedTx = await syncProtocol.deserialize(serializedSignedTx)
 
@@ -79,7 +80,7 @@ protocols.forEach((protocol: TestProtocolSpec) => {
     })
 
     it(`should be able to properly construct the protocol from a unsigned tx`, async () => {
-      for (let tx of protocol.txs) {
+      for (const tx of protocol.txs) {
         const serializedTx = await syncProtocol.serialize(protocol.unsignedTransaction(tx))
         const deserializedTx = await syncProtocol.deserialize(serializedTx)
 

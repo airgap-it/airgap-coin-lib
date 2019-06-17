@@ -1,7 +1,9 @@
 import BigNumber from 'bignumber.js'
-import { AirGapWallet } from './AirGapWallet'
 import * as cryptocompare from 'cryptocompare'
+
 import { IAirGapTransaction } from '..'
+
+import { AirGapWallet } from './AirGapWallet'
 
 export enum TimeUnit {
   Hours = 'hours',
@@ -127,7 +129,7 @@ export class AirGapMarketWallet extends AirGapWallet {
     const addressesToReceive = this.addressIndex !== undefined ? [this.addresses[this.addressIndex]] : this.addresses
     return addressesToReceive
   }
-  async balanceOf(): Promise<BigNumber> {
+  public async balanceOf(): Promise<BigNumber> {
     if (this.protocolIdentifier === 'grs' && this.isExtendedPublicKey) {
       /* 
       We should remove this if BTC also uses blockbook. (And change the order of the if/else below)
@@ -148,7 +150,7 @@ export class AirGapMarketWallet extends AirGapWallet {
     }
   }
 
-  fetchTransactions(limit: number, offset: number): Promise<IAirGapTransaction[]> {
+  public fetchTransactions(limit: number, offset: number): Promise<IAirGapTransaction[]> {
     if (this.protocolIdentifier === 'grs' && this.isExtendedPublicKey) {
       /* 
       We should remove this if BTC also uses blockbook. (And change the order of the if/else below)
@@ -169,7 +171,7 @@ export class AirGapMarketWallet extends AirGapWallet {
     }
   }
 
-  prepareTransaction(recipients: string[], values: BigNumber[], fee: BigNumber, data?: any): Promise<IAirGapTransaction> {
+  public prepareTransaction(recipients: string[], values: BigNumber[], fee: BigNumber, data?: any): Promise<IAirGapTransaction> {
     if (this.isExtendedPublicKey) {
       return this.coinProtocol.prepareTransactionFromExtendedPublicKey(this.publicKey, 0, recipients, values, fee, data)
     } else {
@@ -203,7 +205,7 @@ export class AirGapMarketWallet extends AirGapWallet {
       }
       promise
         .then(prices => {
-          for (let idx in prices) {
+          for (const idx in prices) {
             const marketDataObject = {
               time: prices[idx].time,
               close: prices[idx].close,

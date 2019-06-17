@@ -1,10 +1,10 @@
-import { toBuffer } from '../utils/toBuffer'
 import {
+  SerializedSyncProtocolSignedTransaction,
   SignedTransaction,
   SignedTransactionSerializer,
-  SerializedSyncProtocolSignedTransaction,
   SyncProtocolSignedTransactionKeys
 } from '../signed-transaction.serializer'
+import { toBuffer } from '../utils/toBuffer'
 
 export type SerializedSignedEthereumTransaction = [Buffer]
 

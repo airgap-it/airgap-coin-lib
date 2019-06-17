@@ -1,8 +1,8 @@
-import 'mocha'
-
 import { expect } from 'chai'
-import bs64check from '../../../src/utils/base64Check'
+import 'mocha'
 import * as rlp from 'rlp'
+
+import bs64check from '../../../src/utils/base64Check'
 
 describe('Base64Check', () => {
   it('should properly encode and decode an input string', () => {

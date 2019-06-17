@@ -1,7 +1,8 @@
 import BigNumber from 'bignumber.js'
+
 import { AEProtocol } from '../../../src'
-import { AEProtocolStub } from '../stubs/ae.stub'
 import { TestProtocolSpec } from '../implementations'
+import { AEProtocolStub } from '../stubs/ae.stub'
 
 // Test Mnemonic:
 // mango club state husband keen fiber float jelly major include horse infant square spike equip caught version must pen swim setup right poem economy
@@ -11,10 +12,10 @@ import { TestProtocolSpec } from '../implementations'
 // HEX Seed: a109e38f00824ea80107cd7ccbac4e7afe7abe588eeac9191d71adf98fb1fba73311182c010a0182e20e67f4daa45bf1cbbbecab8ff407f33e50045d7d516e0c
 
 export class AETestProtocolSpec extends TestProtocolSpec {
-  name = 'Aeternity'
-  lib = new AEProtocol()
-  stub = new AEProtocolStub()
-  validAddresses = [
+  public name = 'Aeternity'
+  public lib = new AEProtocol()
+  public stub = new AEProtocolStub()
+  public validAddresses = [
     'ak_542o93BKHiANzqNaFj6UurrJuDuxU61zCGr9LJCwtTUg34kWt',
     'ak_hb4E2MwjH8vYctr3cimoSHfg8Hg8NdWYQfpGhprKdaurRbNfi',
     'ak_72TjHqojjETdkDTcERaTo2cgtXxCiNPL4dD3ZZjvFuS1VB7Xk',
@@ -27,13 +28,13 @@ export class AETestProtocolSpec extends TestProtocolSpec {
     'ak_2cxpdq6npukgL2x5pm56Q6rqrE2BfQ1Kd62JxZioMJeKg3LP3T',
     'ak_27SFwPeBrgWaXnVgr51nKTN21DJq8B7jPeZ8oC59koEEnrmkSc'
   ]
-  wallet = {
+  public wallet = {
     privateKey:
       '65093ac9899ced07211b56eaef83c2fdfef11ecea77a665d2d59cf93c40e5196d64f61ec56519e7f10f35908c40f7b3288fb3ebdc0f6c504aa95ec780e3c7ff9',
     publicKey: 'd64f61ec56519e7f10f35908c40f7b3288fb3ebdc0f6c504aa95ec780e3c7ff9',
     addresses: ['ak_2dPGHd5dZgKwR234uqPZcAXXcCyxr3TbWwgV8NSnNincth4Lf7']
   }
-  txs = [
+  public txs = [
     {
       /*
         HEX of Unsigned TX includes:
@@ -58,7 +59,7 @@ export class AETestProtocolSpec extends TestProtocolSpec {
     }
   ]
 
-  seed() {
+  public seed() {
     return 'a109e38f00824ea80107cd7ccbac4e7afe7abe588eeac9191d71adf98fb1fba73311182c010a0182e20e67f4daa45bf1cbbbecab8ff407f33e50045d7d516e0c'
   }
 }

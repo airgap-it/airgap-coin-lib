@@ -1,18 +1,18 @@
-import 'mocha'
-
+import axios from 'axios'
 import * as chai from 'chai'
 import * as chaiAsPromised from 'chai-as-promised'
-
+import 'mocha'
 import * as sinon from 'sinon'
-import { TezosTestProtocolSpec } from './specs/tezos'
-import { TezosKtProtocol, isCoinlibReady } from '../../src'
-import axios from 'axios'
+
+import { isCoinlibReady, TezosKtProtocol } from '../../src'
 import {
-  TezosOperationType,
   TezosDelegationOperation,
-  TezosSpendOperation,
-  TezosRevealOperation
+  TezosOperationType,
+  TezosRevealOperation,
+  TezosSpendOperation
 } from '../../src/protocols/tezos/TezosProtocol'
+
+import { TezosTestProtocolSpec } from './specs/tezos'
 
 // use chai-as-promised plugin
 chai.use(chaiAsPromised)

@@ -1,13 +1,14 @@
 import BigNumber from 'bignumber.js'
-import { DeserializedSyncProtocol, SignedTransaction, GroestlcoinProtocol } from '../../../src'
-import { GroestlcoinProtocolStub } from '../stubs/groestlcoin.stub'
+
+import { DeserializedSyncProtocol, GroestlcoinProtocol, SignedTransaction } from '../../../src'
 import { TestProtocolSpec } from '../implementations'
+import { GroestlcoinProtocolStub } from '../stubs/groestlcoin.stub'
 
 export class GroestlcoinProtocolSpec extends TestProtocolSpec {
-  name = 'Groestlcoin'
-  lib = new GroestlcoinProtocol()
-  stub = new GroestlcoinProtocolStub()
-  validAddresses = [
+  public name = 'Groestlcoin'
+  public lib = new GroestlcoinProtocol()
+  public stub = new GroestlcoinProtocolStub()
+  public validAddresses = [
     'Fo5wJdoDwg7XvDi7ntnMwWv15Vc1UMA7Bz',
     'Fdbvoe7cvqhUieb5ReFeCdhQxhSXuKjDDq',
     '34mYVANQZhdhVpEh3uodhBUUkbW75NFmN9',
@@ -26,12 +27,12 @@ export class GroestlcoinProtocolSpec extends TestProtocolSpec {
     '3QJx33XJjxupTo7mGyDCLqU9HpND8GFXFx',
     '3PaJn4UzvPsuke14qDErzsqTR2TtKzn5o7'
   ]
-  wallet = {
+  public wallet = {
     privateKey: 'xprv9z5bsLrneShz9HWM7scd93351vWbBDjhZrPzAArempXENgjP6sCBdE86mXn2SjhbDP8YDYHeXbjH2tjqk365F8j4fMjsJ44e8bLSYzBeYKf',
     publicKey: 'xpub6D4xGrPgUpGHMmapDu9dWAyoZxM5agTYw5KaxZGGLA4DFV4XeQWSB2Sacmpf4KA2QoEuU2JDtDscuEGeELXEaQE2qXnMHEoyiEBaYmiTTUs',
     addresses: ['Fo5wJdoDwg7XvDi7ntnMwWv15Vc1UMA7Bz', 'FiEEq7G31QAsFfWFtWbMosVzUGQgtpUJsZ']
   }
-  txs = [
+  public txs = [
     {
       from: ['FiEEq7G31QAsFfWFtWbMosVzUGQgtpUJsZ', 'Fo5wJdoDwg7XvDi7ntnMwWv15Vc1UMA7Bz'],
       to: ['FkPxwoFcgf16MpYka596GK3HV4SSiAPanR'],
@@ -71,7 +72,7 @@ export class GroestlcoinProtocolSpec extends TestProtocolSpec {
     }
   ]
 
-  signedTransaction(tx: any): DeserializedSyncProtocol {
+  public signedTransaction(tx: any): DeserializedSyncProtocol {
     const protocol: DeserializedSyncProtocol = super.signedTransaction(tx)
     const payload = protocol.payload as SignedTransaction
     payload.amount = this.txs[0].amount

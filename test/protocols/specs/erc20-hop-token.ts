@@ -1,23 +1,24 @@
 import BigNumber from 'bignumber.js'
-import { HOPTokenProtocol } from '../../../src/protocols/ethereum/erc20/HopRopstenToken'
-import { GenericERC20ProtocolStub } from '../stubs/generic-erc20.stub'
-import { TestProtocolSpec } from '../implementations'
+
 import { addSubProtocol } from '../../../src'
+import { HOPTokenProtocol } from '../../../src/protocols/ethereum/erc20/HopRopstenToken'
+import { TestProtocolSpec } from '../implementations'
+import { GenericERC20ProtocolStub } from '../stubs/generic-erc20.stub'
 
 const protocol = HOPTokenProtocol
 
 addSubProtocol('eth', protocol)
 export class ERC20HOPTokenTestProtocolSpec extends TestProtocolSpec {
-  name = 'HOP Token ERC20'
-  lib = HOPTokenProtocol
-  stub = new GenericERC20ProtocolStub()
-  validAddresses = []
-  wallet = {
+  public name = 'HOP Token ERC20'
+  public lib = HOPTokenProtocol
+  public stub = new GenericERC20ProtocolStub()
+  public validAddresses = []
+  public wallet = {
     privateKey: '832d58a77ad222b8d9b75322e66d97e46b7dcfab3f25f6c1dd79ec13e046c7bc',
     publicKey: '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
     addresses: ['0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e']
   }
-  txs = [
+  public txs = [
     {
       to: ['0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e'],
       from: ['0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e'],

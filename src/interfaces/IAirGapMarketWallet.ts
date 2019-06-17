@@ -1,6 +1,7 @@
 import { BigNumber } from 'bignumber.js'
-import { MarketDataSample } from '../wallet/AirGapMarketWallet'
+
 import { IAirGapTransaction } from '..'
+import { MarketDataSample } from '../wallet/AirGapMarketWallet'
 
 export interface IAirGapMarketWallet {
   fetchCurrentMarketPrice(baseSymbol: string): Promise<BigNumber>

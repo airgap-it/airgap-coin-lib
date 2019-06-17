@@ -1,20 +1,20 @@
-import 'mocha'
-
+import axios from 'axios'
+import BigNumber from 'bignumber.js'
 import * as chai from 'chai'
 import * as chaiAsPromised from 'chai-as-promised'
-import { AETestProtocolSpec } from './specs/ae'
-import { AEProtocol } from '../../src'
-import BigNumber from 'bignumber.js'
+import 'mocha'
 import * as sinon from 'sinon'
-import axios from 'axios'
+
 import { RawAeternityTransaction } from '../../src/serializer/unsigned-transactions/aeternity-transactions.serializer'
+
+import { AETestProtocolSpec } from './specs/ae'
 
 // use chai-as-promised plugin
 chai.use(chaiAsPromised)
 const expect = chai.expect
 
 const aeProtocolSpec = new AETestProtocolSpec()
-const aeLib = aeProtocolSpec.lib as AEProtocol
+const aeLib = aeProtocolSpec.lib
 
 describe(`ICoinProtocol Aeternity - Custom Tests`, () => {
   const sampleAccountResponse: Readonly<any> = Object.freeze({

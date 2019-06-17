@@ -1,6 +1,6 @@
-import { SerializedUnsignedEthereumTransaction, RawEthereumTransaction } from './unsigned-transactions/ethereum-transactions.serializer'
-import { RawBitcoinTransaction, SerializedUnsignedBitcoinTransaction } from './unsigned-transactions/bitcoin-transactions.serializer'
 import { RawAeternityTransaction } from './unsigned-transactions/aeternity-transactions.serializer'
+import { RawBitcoinTransaction, SerializedUnsignedBitcoinTransaction } from './unsigned-transactions/bitcoin-transactions.serializer'
+import { RawEthereumTransaction, SerializedUnsignedEthereumTransaction } from './unsigned-transactions/ethereum-transactions.serializer'
 import { RawTezosTransaction, SerializedUnsignedTezosTransaction } from './unsigned-transactions/tezos-transactions.serializer'
 
 export abstract class UnsignedTransactionSerializer {

@@ -1,6 +1,7 @@
-import { ICoinSubProtocol } from '../protocols/ICoinSubProtocol'
-import { getProtocolByIdentifier } from './protocolsByIdentifier'
 import { ICoinProtocol } from '../protocols/ICoinProtocol'
+import { ICoinSubProtocol } from '../protocols/ICoinSubProtocol'
+
+import { getProtocolByIdentifier } from './protocolsByIdentifier'
 
 const subProtocolMapper = {}
 

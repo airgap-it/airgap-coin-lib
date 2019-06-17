@@ -1,18 +1,18 @@
-import 'mocha'
-
-import { expect } from 'chai'
-import BigNumber from 'bignumber.js'
-import * as sinon from 'sinon'
 import axios from 'axios'
+import BigNumber from 'bignumber.js'
+import { expect } from 'chai'
+import 'mocha'
+import * as sinon from 'sinon'
+
 import { isCoinlibReady } from '../../src'
-import { TezosTestProtocolSpec } from '../protocols/specs/tezos'
 import {
   TezosOperationType,
+  TezosOriginationOperation,
   TezosRevealOperation,
-  TezosSpendOperation,
-  TezosOriginationOperation
+  TezosSpendOperation
 } from '../../src/protocols/tezos/TezosProtocol'
 import { RawTezosTransaction } from '../../src/serializer/unsigned-transactions/tezos-transactions.serializer'
+import { TezosTestProtocolSpec } from '../protocols/specs/tezos'
 
 const tezosProtocolSpec = new TezosTestProtocolSpec()
 const tezosLib = tezosProtocolSpec.lib
@@ -53,12 +53,12 @@ const prepareTxHelper = async (rawTezosTx: RawTezosTransaction) => {
 }
 
 const prepareOrigination = async (delegate?: string, amount?: BigNumber) => {
-  let rawTezosTx = await tezosLib.originate(tezosProtocolSpec.wallet.publicKey, delegate, amount)
+  const rawTezosTx = await tezosLib.originate(tezosProtocolSpec.wallet.publicKey, delegate, amount)
   return prepareTxHelper(rawTezosTx)
 }
 
 const prepareSpend = async (receivers: string[], amounts: BigNumber[], fee: BigNumber) => {
-  let rawTezosTx = await tezosLib.prepareTransactionFromPublicKey(tezosProtocolSpec.wallet.publicKey, receivers, amounts, fee)
+  const rawTezosTx = await tezosLib.prepareTransactionFromPublicKey(tezosProtocolSpec.wallet.publicKey, receivers, amounts, fee)
   return prepareTxHelper(rawTezosTx)
 }
 
@@ -154,7 +154,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
     it('will iteratively convert multiple zariths to bignum', async () => {
       let hexString = 'f44e0af44e00b960' // contains: fee, counter, gas_limit, storage_limit and amount
 
-      let results: BigNumber[] = []
+      const results: BigNumber[] = []
       while (hexString.length > 0) {
         const zarithString = hexString.substr(0, tezosLib.findZarithEndIndex(hexString))
         hexString = hexString.substr(tezosLib.findZarithEndIndex(hexString), hexString.length - tezosLib.findZarithEndIndex(hexString))
@@ -170,7 +170,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
     })
 
     it('will parse various operations', async () => {
-      let hexString =
+      const hexString =
         'a732d3520eeaa3de98d78e5e5cb6c85f72204fd46feb9f76853841d4a701add308000008ba0cb2fad622697145cf1665124096d25bc31ef44e0af44e00b960000008ba0cb2fad622697145cf1665124096d25bc31e0008000008ba0cb2fad622697145cf1665124096d25bc31ed3e7bd1008d3bb0300b1a803000008ba0cb2fad622697145cf1665124096d25bc31e00' // contains: fee, counter, gas_limit, storage_limit and amount
 
       /*

@@ -1,8 +1,8 @@
-import { ICoinProtocol } from '../protocols/ICoinProtocol'
-import { BitcoinProtocol } from '../protocols/bitcoin/BitcoinProtocol'
-import { GroestlcoinProtocol } from '../protocols/groestlcoin/GroestlcoinProtocol'
-import { EthereumProtocol } from '../protocols/ethereum/EthereumProtocol'
 import { AEProtocol } from '../protocols/aeternity/AEProtocol'
+import { BitcoinProtocol } from '../protocols/bitcoin/BitcoinProtocol'
+import { EthereumProtocol } from '../protocols/ethereum/EthereumProtocol'
+import { GroestlcoinProtocol } from '../protocols/groestlcoin/GroestlcoinProtocol'
+import { ICoinProtocol } from '../protocols/ICoinProtocol'
 import { TezosProtocol } from '../protocols/tezos/TezosProtocol'
 
 const protocols: ICoinProtocol[] = []

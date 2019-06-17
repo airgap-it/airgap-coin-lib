@@ -1,5 +1,5 @@
-import { ICoinProtocol } from '../protocols/ICoinProtocol'
 import { IAirGapWallet } from '../interfaces/IAirGapWallet'
+import { ICoinProtocol } from '../protocols/ICoinProtocol'
 import { getProtocolByIdentifier } from '../utils/protocolsByIdentifier'
 
 export class AirGapWallet implements IAirGapWallet {
@@ -20,7 +20,7 @@ export class AirGapWallet implements IAirGapWallet {
     return this.addresses[this.addressIndex !== undefined ? this.addressIndex : 0]
   }
 
-  async deriveAddresses(amount: number = 50): Promise<string[]> {
+  public async deriveAddresses(amount: number = 50): Promise<string[]> {
     if (this.isExtendedPublicKey) {
       const parts = this.derivationPath.split('/')
       let offset = 0
@@ -38,8 +38,8 @@ export class AirGapWallet implements IAirGapWallet {
     }
   }
 
-  toJSON(): any {
-    let json = Object.assign({}, this)
+  public toJSON(): any {
+    const json = Object.assign({}, this)
     delete json.coinProtocol
     return json
   }

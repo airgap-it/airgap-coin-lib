@@ -1,24 +1,25 @@
 import BigNumber from 'bignumber.js'
-import { DeserializedSyncProtocol, SignedTransaction, BitcoinProtocol } from '../../../src'
-import { BitcoinProtocolStub } from '../stubs/bitcoin.stub'
+
+import { BitcoinProtocol, DeserializedSyncProtocol, SignedTransaction } from '../../../src'
 import { TestProtocolSpec } from '../implementations'
+import { BitcoinProtocolStub } from '../stubs/bitcoin.stub'
 
 export class BitcoinProtocolSpec extends TestProtocolSpec {
-  name = 'Bitcoin'
-  lib = new BitcoinProtocol()
-  stub = new BitcoinProtocolStub()
-  validAddresses = [
+  public name = 'Bitcoin'
+  public lib = new BitcoinProtocol()
+  public stub = new BitcoinProtocolStub()
+  public validAddresses = [
     '1NVqzkVsgWhiQmjXKmEvRiJLmyR17yFCwd',
     '19165VoETh1ZAcwNN5pjeXgMCJbmt4rbUB',
     '3JcJdozCssqB1RUGhhZPCSCFeSAE21sep9',
     '3CzQRvFBARhR14mfL6Dcm1XgzTRnvLwhjs'
   ]
-  wallet = {
+  public wallet = {
     privateKey: 'xprv9yzvjXeHEDMMM2x8H6btZjyVaB9YBpvR7wdqQhGAEQbsvjrQejHhPdqdMRcAE3MqdZcfrSkCGk96YVqPhFHwJqY7VxgPgmMWMehcmHdQJ5h',
     publicKey: 'xpub6CzH93BB4aueZX2bP88tvsvE8Cz2bHeGVAZSD5fmnk8roYBZCGbwwSA7ChiRr65jncuPH8qBQA9nBwi2Qtz1Uqt8wuHvof9SAcPpFxpe1GV',
     addresses: ['15B2gX2x1eqFKgR44nCe1i33ursGKP4Qpi', '1QKqr9wjki9K9tF9NxigbwgHeLXHT682sc']
   }
-  txs = [
+  public txs = [
     {
       from: ['15B2gX2x1eqFKgR44nCe1i33ursGKP4Qpi', '1QKqr9wjki9K9tF9NxigbwgHeLXHT682sc'],
       to: ['15B2gX2x1eqFKgR44nCe1i33ursGKP4Qpi'],
@@ -58,7 +59,7 @@ export class BitcoinProtocolSpec extends TestProtocolSpec {
     }
   ]
 
-  signedTransaction(tx: any): DeserializedSyncProtocol {
+  public signedTransaction(tx: any): DeserializedSyncProtocol {
     const protocol: DeserializedSyncProtocol = super.signedTransaction(tx)
     const payload = protocol.payload as SignedTransaction
     payload.amount = this.txs[0].amount

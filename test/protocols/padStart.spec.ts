@@ -1,6 +1,6 @@
+import { expect } from 'chai'
 import 'mocha'
 
-import { expect } from 'chai'
 import { padStart } from '../../src/utils/padStart'
 
 describe(`padStart`, () => {

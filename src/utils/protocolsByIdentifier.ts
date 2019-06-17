@@ -1,6 +1,7 @@
 import { ICoinProtocol } from '../protocols/ICoinProtocol'
-import { supportedProtocols } from './supportedProtocols'
 import { ProtocolNotSupported } from '../serializer/errors'
+
+import { supportedProtocols } from './supportedProtocols'
 
 const getProtocolByIdentifier = function(identifier: string): ICoinProtocol {
   // create a complete list of all protocols and subprotocols

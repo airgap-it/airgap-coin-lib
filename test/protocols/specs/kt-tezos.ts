@@ -1,6 +1,7 @@
 import BigNumber from 'bignumber.js'
-import { TestProtocolSpec } from '../implementations'
+
 import { TezosKtProtocol } from '../../../src'
+import { TestProtocolSpec } from '../implementations'
 import { KtTezosProtocolStub } from '../stubs/kt-tezos.stub'
 
 // Test Mnemonic from using Ledger, 44'/1729'/0'/0'
@@ -8,10 +9,10 @@ import { KtTezosProtocolStub } from '../stubs/kt-tezos.stub'
 // Address: tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L
 
 export class KtTezosTestProtocolSpec extends TestProtocolSpec {
-  name = 'KtTezos'
-  lib = new TezosKtProtocol()
-  stub = new KtTezosProtocolStub()
-  validAddresses = [
+  public name = 'KtTezos'
+  public lib = new TezosKtProtocol()
+  public stub = new KtTezosProtocolStub()
+  public validAddresses = [
     'tz1MecudVJnFZN5FSrriu8ULz2d6dDTR7KaM',
     'tz1awXW7wuXy21c66vBudMXQVAPgRnqqwgTH',
     'tz1Yju7jmmsaUiG9qQLoYv35v5pHgnWoLWbt',
@@ -23,13 +24,13 @@ export class KtTezosTestProtocolSpec extends TestProtocolSpec {
     'KT1DwFCbxes79DxMeuBzAzW82z6eBVTnYjoN',
     'KT1Ux1JNNVhVVfdDXF1qiyGpS4ZZgDa9MbvH'
   ]
-  wallet = {
+  public wallet = {
     privateKey:
       '2f243e474992bb96b49b2fa7b2c1cba7a804257f0cf13dceb640cf3210d54838cdbc0c3449784bd53907c3c7a06060cf12087e492a7b937f044c6a73b522a234',
     publicKey: 'cdbc0c3449784bd53907c3c7a06060cf12087e492a7b937f044c6a73b522a234',
     addresses: ['KT1HncyWvnY9FcoW8A2KYuauEe5qM1U2ntX8', 'KT1RBMUbb7QSD46VXhAvaMiyVSoys6QZiTxN', 'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy']
   }
-  txs = [
+  public txs = [
     {
       amount: new BigNumber('1000000'),
       fee: new BigNumber('1420'),
@@ -44,7 +45,7 @@ export class KtTezosTestProtocolSpec extends TestProtocolSpec {
     }
   ]
 
-  seed() {
+  public seed() {
     return '5b72ef2589b7bd6e35c349ce682cb574f09726e171f2ea166982bf66a1a815fabb9dcbed182b50a3468f8af7ce1f6a3ca739dbde4241b8b674c25b9b2cc5489c'
   }
 }

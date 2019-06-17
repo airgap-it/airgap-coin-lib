@@ -1,5 +1,6 @@
-import { BitcoinProtocol } from '../bitcoin/BitcoinProtocol'
 import * as bitcoinJS from 'bitcoinjs-lib'
+
+import { BitcoinProtocol } from '../bitcoin/BitcoinProtocol'
 
 export class LitecoinProtocol extends BitcoinProtocol {
   constructor() {

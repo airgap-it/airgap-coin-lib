@@ -1,11 +1,11 @@
-import { toBuffer } from '../utils/toBuffer'
+import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
 import {
+  SerializedSyncProtocolSignedTransaction,
   SignedTransaction,
   SignedTransactionSerializer,
-  SerializedSyncProtocolSignedTransaction,
   SyncProtocolSignedTransactionKeys
 } from '../signed-transaction.serializer'
-import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
+import { toBuffer } from '../utils/toBuffer'
 
 export interface SignedTezosTransaction extends SignedTransaction {
   accountIdentifier: string

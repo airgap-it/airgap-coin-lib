@@ -1,7 +1,8 @@
-import { ICoinSubProtocol } from '../../ICoinSubProtocol'
 import { ICoinProtocol } from '../../ICoinProtocol'
-import { HOPTokenProtocol } from './HopRopstenToken'
+import { ICoinSubProtocol } from '../../ICoinSubProtocol'
+
 import { AeternityERC20Token } from './AeToken'
+import { HOPTokenProtocol } from './HopRopstenToken'
 
 const erc20Tokens: (ICoinSubProtocol & ICoinProtocol)[] = [HOPTokenProtocol, AeternityERC20Token]
 

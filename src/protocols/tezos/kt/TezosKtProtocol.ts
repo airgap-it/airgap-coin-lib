@@ -1,8 +1,9 @@
-import { TezosProtocol, TezosOperation, TezosOperationType, TezosWrappedOperation, TezosDelegationOperation } from '../TezosProtocol'
-import { SubProtocolType, ICoinSubProtocol } from '../../ICoinSubProtocol'
 import axios, { AxiosResponse } from 'axios'
 import BigNumber from 'bignumber.js'
+
 import { RawTezosTransaction } from '../../../serializer/unsigned-transactions/tezos-transactions.serializer'
+import { ICoinSubProtocol, SubProtocolType } from '../../ICoinSubProtocol'
+import { TezosDelegationOperation, TezosOperation, TezosOperationType, TezosProtocol, TezosWrappedOperation } from '../TezosProtocol'
 
 // 8.25%
 const SELF_BOND_REQUIREMENT = 0.0825
@@ -38,16 +39,16 @@ export interface DelegationInfo {
 }
 
 export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
-  identifier = 'xtz-kt'
-  isSubProtocol = true
-  subProtocolType = SubProtocolType.ACCOUNT
-  addressValidationPattern = '^(tz1|KT1)[1-9A-Za-z]{33}$'
+  public identifier = 'xtz-kt'
+  public isSubProtocol = true
+  public subProtocolType = SubProtocolType.ACCOUNT
+  public addressValidationPattern = '^(tz1|KT1)[1-9A-Za-z]{33}$'
 
-  async getAddressFromPublicKey(publicKey: string): Promise<string> {
+  public async getAddressFromPublicKey(publicKey: string): Promise<string> {
     return (await this.getAddressesFromPublicKey(publicKey))[0]
   }
 
-  async getAddressesFromPublicKey(publicKey: string): Promise<string[]> {
+  public async getAddressesFromPublicKey(publicKey: string): Promise<string[]> {
     const tz1address = await super.getAddressFromPublicKey(publicKey)
     const { data } = await axios.get(`${this.baseApiUrl}/v3/operations/${tz1address}?type=Origination`)
 
@@ -63,11 +64,11 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     return ktAddresses.reverse()
   }
 
-  async originate(publicKey: string, delegate?: string, amount?: BigNumber): Promise<RawTezosTransaction> {
+  public async originate(publicKey: string, delegate?: string, amount?: BigNumber): Promise<RawTezosTransaction> {
     throw new Error('Originate operation not supported for KT Addresses')
   }
 
-  async isAddressDelegated(delegatedAddress: string): Promise<DelegationInfo> {
+  public async isAddressDelegated(delegatedAddress: string): Promise<DelegationInfo> {
     const { data } = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${delegatedAddress}`)
 
     let delegatedOpLevel: number | undefined
@@ -93,7 +94,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
         `${this.baseApiUrl}/v3/operations/${delegatedAddress}?type=Origination`
       ]
 
-      for (let sourceUrl of transactionSourceUrls) {
+      for (const sourceUrl of transactionSourceUrls) {
         const { data } = await axios.get(sourceUrl)
 
         const recentTransactionData = getDataFromMostRecentTransaction(data)
@@ -109,16 +110,16 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
       isDelegated: data.delegate.value ? true : false,
       setable: data.delegate.setable,
       value: data.delegate.value,
-      delegatedDate: delegatedDate,
-      delegatedOpLevel: delegatedOpLevel
+      delegatedDate,
+      delegatedOpLevel
     }
   }
 
-  async undelegate(publicKey: string, delegatedAddress: string): Promise<RawTezosTransaction> {
+  public async undelegate(publicKey: string, delegatedAddress: string): Promise<RawTezosTransaction> {
     return this.delegate(publicKey, delegatedAddress)
   }
 
-  async delegate(publicKey: string, delegatedAddress: string, delegate?: string): Promise<RawTezosTransaction> {
+  public async delegate(publicKey: string, delegatedAddress: string, delegate?: string): Promise<RawTezosTransaction> {
     let counter = new BigNumber(1)
     let branch: string
 
@@ -161,14 +162,14 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
       counter: counter.toFixed(),
       gas_limit: '10000', // taken from eztz
       storage_limit: '0', // taken from eztz
-      delegate: delegate
+      delegate
     }
 
     operations.push(delegationOperation)
 
     try {
       const tezosWrappedOperation: TezosWrappedOperation = {
-        branch: branch,
+        branch,
         contents: operations
       }
 
@@ -181,7 +182,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     }
   }
 
-  async bakerInfo(tzAddress: string): Promise<BakerInfo> {
+  public async bakerInfo(tzAddress: string): Promise<BakerInfo> {
     if (!tzAddress.toLowerCase().startsWith('tz1')) {
       throw new Error('non tz1-address supplied')
     }
@@ -206,10 +207,10 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
 
     const bakerInfo: BakerInfo = {
       balance: tzBalance,
-      delegatedBalance: delegatedBalance,
-      stakingBalance: stakingBalance,
+      delegatedBalance,
+      stakingBalance,
       bakingActive: isBakingActive,
-      selfBond: selfBond,
+      selfBond,
       bakerCapacity: stakingBalance.div(stakingCapacity),
       bakerUsage: stakingCapacity
     }
@@ -217,7 +218,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     return bakerInfo
   }
 
-  async delegationInfo(ktAddress: string): Promise<DelegationRewardInfo[]> {
+  public async delegationInfo(ktAddress: string): Promise<DelegationRewardInfo[]> {
     if (!ktAddress.toLowerCase().startsWith('kt')) {
       throw new Error('non kt-address supplied')
     }
@@ -231,7 +232,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     return this.delegationRewards(status.value, ktAddress)
   }
 
-  async delegationRewards(tzAddress: string, ktAddress?: string): Promise<DelegationRewardInfo[]> {
+  public async delegationRewards(tzAddress: string, ktAddress?: string): Promise<DelegationRewardInfo[]> {
     const { data: frozenBalance }: AxiosResponse<[{ cycle: number; deposit: string; fees: string; rewards: string }]> = await axios.get(
       `${this.jsonRPCAPI}/chains/main/blocks/head/context/delegates/${tzAddress}/frozen_balance_by_cycle`
     )
