@@ -1,0 +1,8 @@
+{
+  "bignumber.js-9.0.0": {
+    "version": "9.0.0",
+    "repository": "MikeMcl/bignumber.js",
+    "commitHash": "986fd70e514e58e86d43bc9944547d82658e47ae",
+    "files": ["bignumber.js", "bignumber.d.ts"]
+  }
+}
