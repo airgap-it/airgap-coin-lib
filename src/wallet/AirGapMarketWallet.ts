@@ -1,3 +1,4 @@
+import Axios from 'axios'
 import BigNumber from 'bignumber.js'
 import * as cryptocompare from 'cryptocompare'
 
@@ -62,7 +63,26 @@ export class AirGapMarketWallet extends AirGapWallet {
           this.currentMarketPrice = new BigNumber(prices.USD)
           resolve(this.currentMarketPrice)
         })
-        .catch(console.error)
+        .catch(cryptocompareError => {
+          // TODO: Remove once cryptocompare supports xchf
+          const symbolMapping = {
+            xchf: 'cryptofranc'
+          }
+
+          console.error('cryptocompare', cryptocompareError)
+
+          const id = symbolMapping[this.coinProtocol.marketSymbol.toLowerCase()]
+          if (id) {
+            Axios.get(`https://api.coingecko.com/api/v3/simple/price?ids=${id}&vs_currencies=usd`)
+              .then(({ data }) => {
+                this.currentMarketPrice = new BigNumber(data[id].usd)
+                resolve(this.currentMarketPrice)
+              })
+              .catch(coinGeckoError => {
+                console.error(coinGeckoError)
+              })
+          }
+        })
     })
   }
 
