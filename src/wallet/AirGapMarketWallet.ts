@@ -64,6 +64,7 @@ export class AirGapMarketWallet extends AirGapWallet {
           resolve(this.currentMarketPrice)
         })
         .catch(cryptocompareError => {
+          // TODO: Remove once cryptocompare supports xchf
           const symbolMapping = {
             xchf: 'cryptofranc'
           }
