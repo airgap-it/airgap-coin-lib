@@ -1,7 +1,7 @@
+import { expect } from 'chai'
 import 'mocha'
 
-import { expect } from 'chai'
-import { padStart } from '../../lib/utils/padStart'
+import { padStart } from '../../src/utils/padStart'
 
 describe(`padStart`, () => {
   it('does not pad if length is already reached', async () => {

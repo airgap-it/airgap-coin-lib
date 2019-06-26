@@ -1,19 +1,20 @@
 import BigNumber from 'bignumber.js'
-import { DeserializedSyncProtocol, SignedTransaction, BitcoinTestnetProtocol } from '../../../lib'
+
+import { BitcoinTestnetProtocol, DeserializedSyncProtocol, SignedTransaction } from '../../../src'
 import { TestProtocolSpec } from '../implementations'
 import { BitcoinTestnetProtocolStub } from '../stubs/bitcoin-test.stub'
 
 export class BitcoinTestProtocolSpec extends TestProtocolSpec {
-  name = 'Bitcoin Testnet'
-  lib = new BitcoinTestnetProtocol()
-  stub = new BitcoinTestnetProtocolStub()
-  validAddresses = []
-  wallet = {
+  public name = 'Bitcoin Testnet'
+  public lib = new BitcoinTestnetProtocol()
+  public stub = new BitcoinTestnetProtocolStub()
+  public validAddresses = []
+  public wallet = {
     privateKey: 'tprv8fmGMwHA9QVZZzFAR77eLN6bursxXG4Jb59YnZKFyR8WG48s1JbpLuurf7LiRW3NEkkxR1mNmPcY9sWfrYMwFVDQKzJwhirzw8YpmFCYgEq',
     publicKey: 'tpubDCTJWMKQHnBETTGxJknEjmkiUtPtgbFDANkL55MZPgvu6YPddhRQXQXiqHZdfHwcoVNwTaHmS6DuNjcaYPRqVFkDogJdWSMLpSWSC4pNa3r',
     addresses: ['mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k', 'mtb2Yx8rPUhYxdqPsH9nzT375QtWZ9XJcX']
   }
-  txs = [
+  public txs = [
     {
       from: ['mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k', 'mtb2Yx8rPUhYxdqPsH9nzT375QtWZ9XJcX'],
       to: ['mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k'],
@@ -53,7 +54,7 @@ export class BitcoinTestProtocolSpec extends TestProtocolSpec {
     }
   ]
 
-  signedTransaction(tx: any): DeserializedSyncProtocol {
+  public signedTransaction(tx: any): DeserializedSyncProtocol {
     const protocol: DeserializedSyncProtocol = super.signedTransaction(tx)
     const payload = protocol.payload as SignedTransaction
     payload.amount = this.txs[0].amount

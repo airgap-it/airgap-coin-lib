@@ -1,0 +1,3 @@
+const SERIALIZER_VERSION = 1
+
+export { SERIALIZER_VERSION }
