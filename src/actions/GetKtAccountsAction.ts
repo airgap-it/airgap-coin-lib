@@ -9,7 +9,11 @@ export interface ImportAccoutActionContext {
 export class ImportAccountAction extends Action<ImportAccoutActionContext, ActionProgress<void>, string[]> {
   public readonly identifier: string = 'tezos-import-account-action'
 
-  public readonly handlerFunction = async (context: ImportAccoutActionContext): Promise<string[]> => {
+  public readonly handlerFunction = async (context?: ImportAccoutActionContext): Promise<string[] | undefined> => {
+    if (!context) {
+      return undefined
+    }
+
     const protocol: TezosKtProtocol = new TezosKtProtocol()
     const ktAddresses: string[] = await protocol.getAddressesFromPublicKey(context.publicKey)
 
