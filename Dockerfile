@@ -8,7 +8,7 @@ WORKDIR /app
 
 # Install app dependencies
 COPY package.json /app
-COPY npm-shrinkwrap.json /app
+COPY package-lock.json /app
 
 # install dependencies
 RUN npm install
