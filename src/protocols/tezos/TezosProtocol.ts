@@ -40,6 +40,15 @@ export interface TezosBlockHeader {
   signature: string
 }
 
+export interface TezosOperation {
+  storage_limit: string
+  gas_limit: string
+  counter: string
+  fee: string
+  source: string
+  kind: TezosOperationType
+}
+
 export interface TezosWrappedOperation {
   branch: string
   contents: TezosOperation[]
@@ -77,15 +86,6 @@ export interface TezosOriginationOperation extends TezosOperation {
 export interface TezosRevealOperation extends TezosOperation {
   public_key: string
   kind: TezosOperationType.REVEAL
-}
-
-export interface TezosOperation {
-  storage_limit: string
-  gas_limit: string
-  counter: string
-  fee: string
-  source: string
-  kind: TezosOperationType
 }
 
 export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol {
@@ -264,14 +264,14 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     return signedOpBytes.toString('hex')
   }
 
-  public async getTransactionDetails(unsignedTx: UnsignedTezosTransaction): Promise<IAirGapTransaction> {
+  public async getTransactionDetails(unsignedTx: UnsignedTezosTransaction): Promise<IAirGapTransaction[]> {
     const binaryTransaction = unsignedTx.transaction.binaryTransaction
     const wrappedOperations = this.unforgeUnsignedTezosWrappedOperation(binaryTransaction)
 
     return this.getAirGapTxFromWrappedOperations(wrappedOperations)
   }
 
-  public async getTransactionDetailsFromSigned(signedTx: SignedTezosTransaction): Promise<IAirGapTransaction> {
+  public async getTransactionDetailsFromSigned(signedTx: SignedTezosTransaction): Promise<IAirGapTransaction[]> {
     const binaryTransaction = signedTx.transaction
     const wrappedOperations = this.unforgeSignedTezosWrappedOperation(binaryTransaction)
 
@@ -279,36 +279,49 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   }
 
   private getAirGapTxFromWrappedOperations(wrappedOperations: TezosWrappedOperation) {
-    const tezosOperation: TezosOperation = wrappedOperations.contents[wrappedOperations.contents.length - 1]
+    const airGapTxs: IAirGapTransaction[] = []
 
-    let amount = new BigNumber(0)
-    let to = ['']
+    const assertNever: (x: never) => void = (x: never): void => undefined
 
-    if (tezosOperation.kind === TezosOperationType.TRANSACTION) {
-      amount = new BigNumber((tezosOperation as TezosSpendOperation).amount)
-      to = [(tezosOperation as TezosSpendOperation).destination]
-    } else if (tezosOperation.kind === TezosOperationType.ORIGINATION) {
-      const tezosOriginationOperation = tezosOperation as TezosOriginationOperation
-      amount = new BigNumber(tezosOriginationOperation.balance)
-      const delegate = tezosOriginationOperation.delegate
-      to = [delegate ? `Delegate: ${delegate}` : 'Origination']
-    } else if (tezosOperation.kind === TezosOperationType.DELEGATION) {
-      const delegate = (tezosOperation as TezosDelegationOperation).delegate
-      to = [delegate ? delegate : 'Undelegate']
-    } else {
-      throw new Error('no operation to unforge found')
+    for (let i: number = 0; i < wrappedOperations.contents.length; i++) {
+      const tezosOperation: TezosOperation = wrappedOperations.contents[i]
+
+      let amount: BigNumber = new BigNumber(0)
+      let to: string[] = ['']
+
+      if (tezosOperation.kind === TezosOperationType.REVEAL) {
+        // const tezosRevealOperation: TezosRevealOperation = tezosOperation as TezosRevealOperation
+      } else if (tezosOperation.kind === TezosOperationType.TRANSACTION) {
+        const tezosSpendOperation: TezosSpendOperation = tezosOperation as TezosSpendOperation
+        amount = new BigNumber(tezosSpendOperation.amount)
+        to = [tezosSpendOperation.destination]
+      } else if (tezosOperation.kind === TezosOperationType.ORIGINATION) {
+        const tezosOriginationOperation: TezosOriginationOperation = tezosOperation as TezosOriginationOperation
+        amount = new BigNumber(tezosOriginationOperation.balance)
+        const delegate: string | undefined = tezosOriginationOperation.delegate
+        to = [delegate ? `Delegate: ${delegate}` : 'Origination']
+      } else if (tezosOperation.kind === TezosOperationType.DELEGATION) {
+        const delegate: string | undefined = (tezosOperation as TezosDelegationOperation).delegate
+        to = [delegate ? delegate : 'Undelegate']
+      } else {
+        assertNever(tezosOperation.kind) // Exhaustive if
+
+        throw new Error('no operation to unforge found')
+      }
+
+      const airgapTx: IAirGapTransaction = {
+        amount,
+        fee: new BigNumber(tezosOperation.fee),
+        from: [tezosOperation.source],
+        isInbound: false,
+        protocolIdentifier: this.identifier,
+        to
+      }
+
+      airGapTxs.push(airgapTx)
     }
 
-    const airgapTx: IAirGapTransaction = {
-      amount,
-      fee: new BigNumber(tezosOperation.fee),
-      from: [tezosOperation.source],
-      isInbound: false,
-      protocolIdentifier: this.identifier,
-      to
-    }
-
-    return airgapTx
+    return airGapTxs
   }
 
   public async getBalanceOfAddresses(addresses: string[]): Promise<BigNumber> {
@@ -341,6 +354,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     fee: BigNumber,
     data?: { addressIndex: number }
   ): Promise<RawTezosTransaction> {
+    if (recipients.length !== values.length) {
+      throw new Error('length of recipients and values does not match!')
+    }
+
     let counter = new BigNumber(1)
     let branch: string
 
@@ -389,35 +406,37 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       }
     }
 
-    // if our receiver has 0 balance, the account is not activated yet.
-    if (receivingBalance.isZero() && recipients[0].toLowerCase().startsWith('tz')) {
-      // We have to supply an additional 0.257 XTZ fee for storage_limit costs, which gets automatically deducted from the sender so we just have to make sure enough balance is around
-      // check whether the sender has enough to cover the amount to send + fee + activation
-      if (balance.isLessThan(values[0].plus(fee).plus(this.activationBurn))) {
-        // if not, make room for the init fee
-        values[0] = values[0].minus(this.activationBurn) // deduct fee from balance
+    for (let i: number = 0; i < recipients.length; i++) {
+      // if our receiver has 0 balance, the account is not activated yet.
+      if (receivingBalance.isZero() && recipients[i].toLowerCase().startsWith('tz')) {
+        // We have to supply an additional 0.257 XTZ fee for storage_limit costs, which gets automatically deducted from the sender so we just have to make sure enough balance is around
+        // check whether the sender has enough to cover the amount to send + fee + activation
+        if (balance.isLessThan(values[i].plus(fee).plus(this.activationBurn))) {
+          // if not, make room for the init fee
+          values[i] = values[i].minus(this.activationBurn) // deduct fee from balance
+        }
       }
-    }
 
-    if (balance.isEqualTo(values[0].plus(fee))) {
-      // Tezos accounts can never be empty. If user tries to send everything, we must leave 1 mutez behind.
-      values[0] = values[0].minus(1)
-    } else if (balance.isLessThan(values[0].plus(fee))) {
-      throw new Error('not enough balance')
-    }
+      if (balance.isEqualTo(values[i].plus(fee))) {
+        // Tezos accounts can never be empty. If user tries to send everything, we must leave 1 mutez behind.
+        values[i] = values[i].minus(1)
+      } else if (balance.isLessThan(values[i].plus(fee))) {
+        throw new Error('not enough balance')
+      }
 
-    const spendOperation: TezosSpendOperation = {
-      kind: TezosOperationType.TRANSACTION,
-      fee: fee.toFixed(),
-      gas_limit: '10300', // taken from eztz
-      storage_limit: receivingBalance.isZero() && recipients[0].toLowerCase().startsWith('tz') ? '300' : '0', // taken from eztz
-      amount: values[0].toFixed(),
-      counter: counter.toFixed(),
-      destination: recipients[0],
-      source: address
-    }
+      const spendOperation: TezosSpendOperation = {
+        kind: TezosOperationType.TRANSACTION,
+        fee: fee.toFixed(),
+        gas_limit: '10300', // taken from eztz
+        storage_limit: receivingBalance.isZero() && recipients[0].toLowerCase().startsWith('tz') ? '300' : '0', // taken from eztz
+        amount: values[0].toFixed(),
+        counter: counter.toFixed(),
+        destination: recipients[0],
+        source: address
+      }
 
-    operations.push(spendOperation)
+      operations.push(spendOperation)
+    }
 
     try {
       const tezosWrappedOperation: TezosWrappedOperation = {
