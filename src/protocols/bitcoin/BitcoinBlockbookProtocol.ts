@@ -242,7 +242,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
     })
   }
 
-  public async getTransactionDetails(unsignedTx: UnsignedTransaction): Promise<IAirGapTransaction> {
+  public async getTransactionDetails(unsignedTx: UnsignedTransaction): Promise<IAirGapTransaction[]> {
     // out of public information (both broadcaster and signer)
     const transaction = unsignedTx.transaction as RawBitcoinTransaction
 
@@ -256,20 +256,22 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
       feeCalculator = feeCalculator.minus(new BigNumber(txOut.value))
     }
 
-    return {
-      from: transaction.ins.map(obj => obj.address),
-      to: transaction.outs.filter(obj => !obj.isChange).map(obj => obj.recipient),
-      amount: transaction.outs
-        .filter(obj => !obj.isChange)
-        .map(obj => obj.value)
-        .reduce((accumulator, currentValue) => accumulator.plus(currentValue)),
-      fee: feeCalculator,
-      protocolIdentifier: this.identifier,
-      isInbound: false
-    }
+    return [
+      {
+        from: transaction.ins.map(obj => obj.address),
+        to: transaction.outs.filter(obj => !obj.isChange).map(obj => obj.recipient),
+        amount: transaction.outs
+          .filter(obj => !obj.isChange)
+          .map(obj => obj.value)
+          .reduce((accumulator, currentValue) => accumulator.plus(currentValue)),
+        fee: feeCalculator,
+        protocolIdentifier: this.identifier,
+        isInbound: false
+      }
+    ]
   }
 
-  public async getTransactionDetailsFromSigned(signedTx: SignedBitcoinTransaction): Promise<IAirGapTransaction> {
+  public async getTransactionDetailsFromSigned(signedTx: SignedBitcoinTransaction): Promise<IAirGapTransaction[]> {
     const tx = {
       to: [] as string[],
       from: signedTx.from,
@@ -288,7 +290,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
       }
     })
 
-    return tx
+    return [tx]
   }
 
   public async getBalanceOfAddresses(addresses: string[]): Promise<BigNumber> {

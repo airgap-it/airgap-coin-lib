@@ -4,6 +4,7 @@ import { expect } from 'chai'
 import 'mocha'
 import * as sinon from 'sinon'
 
+import { IAirGapTransaction } from '../../dist'
 import { isCoinlibReady } from '../../src'
 import {
   TezosOperationType,
@@ -18,10 +19,12 @@ const tezosProtocolSpec = new TezosTestProtocolSpec()
 const tezosLib = tezosProtocolSpec.lib
 
 const prepareTxHelper = async (rawTezosTx: RawTezosTransaction) => {
-  const airGapTx = await tezosLib.getTransactionDetails({
+  const airGapTxs = await tezosLib.getTransactionDetails({
     transaction: rawTezosTx,
     publicKey: tezosProtocolSpec.wallet.publicKey
   })
+
+  const airGapTx: IAirGapTransaction = airGapTxs[airGapTxs.length - 1] // TODO: We used to take the last one by default, now we get everything. We have to update tests to reflect that.
 
   const unforgedTransaction = tezosLib.unforgeUnsignedTezosWrappedOperation(rawTezosTx.binaryTransaction)
 

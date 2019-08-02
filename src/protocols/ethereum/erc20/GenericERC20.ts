@@ -209,26 +209,38 @@ export class GenericERC20 extends BaseEthereumProtocol implements ICoinSubProtoc
     })
   }
 
-  public async getTransactionDetailsFromSigned(signedTx: SignedEthereumTransaction): Promise<IAirGapTransaction> {
-    const ethTx = await super.getTransactionDetailsFromSigned(signedTx)
+  public async getTransactionDetailsFromSigned(signedTx: SignedEthereumTransaction): Promise<IAirGapTransaction[]> {
+    const ethTxs = await super.getTransactionDetailsFromSigned(signedTx)
+
+    if (ethTxs.length !== 1) {
+      throw new Error('More than one ETH transaction detected.')
+    }
+
+    const ethTx = ethTxs[0]
 
     const extractedTx = new EthereumTransaction(signedTx.transaction)
     const tokenTransferDetails = abiDecoder.decodeMethod(`0x${extractedTx.data.toString('hex')}`)
     ethTx.to = [ethUtil.toChecksumAddress(tokenTransferDetails.params[0].value)]
     ethTx.amount = new BigNumber(tokenTransferDetails.params[1].value)
 
-    return ethTx
+    return [ethTx]
   }
 
-  public async getTransactionDetails(unsignedTx: UnsignedTransaction): Promise<IAirGapTransaction> {
+  public async getTransactionDetails(unsignedTx: UnsignedTransaction): Promise<IAirGapTransaction[]> {
     const unsignedEthereumTx = unsignedTx as UnsignedEthereumTransaction
-    const ethTx = await super.getTransactionDetails(unsignedEthereumTx)
+    const ethTxs = await super.getTransactionDetails(unsignedEthereumTx)
+
+    if (ethTxs.length !== 1) {
+      throw new Error('More than one ETH transaction detected.')
+    }
+
+    const ethTx = ethTxs[0]
 
     const tokenTransferDetails = abiDecoder.decodeMethod(unsignedEthereumTx.transaction.data)
 
     ethTx.to = [ethUtil.toChecksumAddress(tokenTransferDetails.params[0].value)]
     ethTx.amount = new BigNumber(tokenTransferDetails.params[1].value)
 
-    return ethTx
+    return [ethTx]
   }
 }

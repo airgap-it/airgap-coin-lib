@@ -188,7 +188,7 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
     throw new Error('invalid TX-encoding')
   }
 
-  public async getTransactionDetails(unsignedTx: UnsignedAeternityTransaction): Promise<IAirGapTransaction> {
+  public async getTransactionDetails(unsignedTx: UnsignedAeternityTransaction): Promise<IAirGapTransaction[]> {
     const transaction = unsignedTx.transaction.transaction
     const rlpEncodedTx = this.decodeTx(transaction)
     const rlpDecodedTx = rlp.decode(rlpEncodedTx)
@@ -203,10 +203,10 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
       data: (rlpDecodedTx[8] || '').toString('utf8')
     }
 
-    return airgapTx
+    return [airgapTx]
   }
 
-  public async getTransactionDetailsFromSigned(signedTx: SignedAeternityTransaction): Promise<IAirGapTransaction> {
+  public async getTransactionDetailsFromSigned(signedTx: SignedAeternityTransaction): Promise<IAirGapTransaction[]> {
     const rlpEncodedTx = this.decodeTx(signedTx.transaction)
     const rlpDecodedTx = rlp.decode(rlpEncodedTx)
 
