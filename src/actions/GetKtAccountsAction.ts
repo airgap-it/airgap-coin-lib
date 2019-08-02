@@ -1,21 +1,24 @@
 import { TezosKtProtocol } from '..'
 
-import { Action, ActionProgress } from './Action'
+import { Action } from './Action'
 
 export interface ImportAccoutActionContext {
   publicKey: string
 }
 
-export class ImportAccountAction extends Action<ImportAccoutActionContext, ActionProgress<void>, string[]> {
+export class ImportAccountAction extends Action<string[]> {
   public readonly identifier: string = 'tezos-import-account-action'
 
-  public readonly handlerFunction = async (context?: ImportAccoutActionContext): Promise<string[] | undefined> => {
-    if (!context) {
-      return undefined
-    }
+  public readonly context: ImportAccoutActionContext
 
+  public constructor(context: ImportAccoutActionContext) {
+    super()
+    this.context = context
+  }
+
+  protected async perform(): Promise<string[] | undefined> {
     const protocol: TezosKtProtocol = new TezosKtProtocol()
-    const ktAddresses: string[] = await protocol.getAddressesFromPublicKey(context.publicKey)
+    const ktAddresses: string[] = await protocol.getAddressesFromPublicKey(this.context.publicKey)
 
     return ktAddresses
   }
