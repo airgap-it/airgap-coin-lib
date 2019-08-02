@@ -1,5 +1,5 @@
 export enum ActionState {
-  READY,
+  INITIAL,
 
   PREPARING,
   PREPARED,
@@ -19,8 +19,7 @@ export enum ActionState {
 
 export interface ActionProgress<U> {
   percentage: number
-  stage: string
-  info: U
+  info?: U
 }
 
 export interface ActionInfo {
@@ -63,22 +62,31 @@ export abstract class Action<CONTEXT, PROGRESS, RESULT> {
 
   protected data: { [key: string]: unknown } = {}
   private progress: ActionProgress<PROGRESS> | undefined
-  private state: ActionState = ActionState.READY
+  private state: ActionState = ActionState.INITIAL
 
   constructor(context?: CONTEXT) {
     this.context = context
+    this.progress = { percentage: 0 }
   }
 
   public readonly perform: () => Promise<RESULT | undefined> = async () => {
-    await this.onPrepare()
+    try {
+      await this.onPrepare()
 
-    await this.beforeHandler()
-    const result: RESULT | undefined = await this.handler()
-    await this.afterHandler()
+      await this.beforeHandler()
 
-    await this.onComplete(result)
+      const result: RESULT | undefined = await this.handler()
 
-    return result
+      await this.afterHandler()
+
+      await this.onComplete(result)
+
+      return result
+    } catch (error) {
+      this.onError(error).catch()
+
+      return undefined
+    }
   }
 
   public readonly getState: () => Promise<ActionState> = async () => {
@@ -134,7 +142,7 @@ export abstract class Action<CONTEXT, PROGRESS, RESULT> {
 
     await this.errorFunction(this.context, error)
 
-    this.state = ActionState.ERRORING
+    this.state = ActionState.ERROR
   }
 
   protected onCancel: () => Promise<void> = async () => {

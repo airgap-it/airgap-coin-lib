@@ -6,10 +6,9 @@ import { RawTezosTransaction } from '../serializer/unsigned-transactions/tezos-t
 
 import { Action, ActionProgress } from './Action'
 
-export interface DelegateActionContext<T> {
+export interface DelegateActionContext {
   wallet: AirGapMarketWallet
   delegate: string
-  env: T
 }
 
 export interface DelegateActionResult {
@@ -47,10 +46,10 @@ function getAirGapTx(
   })
 }
 
-export class DelegateAction<T> extends Action<DelegateActionContext<T>, ActionProgress<void>, DelegateActionResult> {
+export class DelegateAction<Context extends DelegateActionContext> extends Action<Context, ActionProgress<void>, DelegateActionResult> {
   public readonly identifier: string = 'tezos-delegate-action'
 
-  public readonly handlerFunction = async (context?: DelegateActionContext<T>): Promise<DelegateActionResult | undefined> => {
+  public readonly handlerFunction = async (context?: Context): Promise<DelegateActionResult | undefined> => {
     if (!context) {
       return undefined
     }
