@@ -56,7 +56,7 @@ export class DelegateAction<Context extends DelegateActionContext> extends Actio
     this.context = context
   }
 
-  protected async perform(): Promise<DelegateActionResult | undefined> {
+  protected async perform(): Promise<DelegateActionResult> {
     return new Promise<DelegateActionResult>(
       async (resolve: (context: DelegateActionResult) => void, reject: () => void): Promise<void> => {
         if (this.context.wallet.protocolIdentifier === 'xtz') {

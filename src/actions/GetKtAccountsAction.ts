@@ -16,7 +16,7 @@ export class ImportAccountAction extends Action<string[]> {
     this.context = context
   }
 
-  protected async perform(): Promise<string[] | undefined> {
+  protected async perform(): Promise<string[]> {
     const protocol: TezosKtProtocol = new TezosKtProtocol()
     const ktAddresses: string[] = await protocol.getAddressesFromPublicKey(this.context.publicKey)
 
