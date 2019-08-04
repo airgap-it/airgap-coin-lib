@@ -46,15 +46,8 @@ function getAirGapTx(
   })
 }
 
-export class DelegateAction<Context extends DelegateActionContext> extends Action<DelegateActionResult> {
+export class DelegateAction<Context extends DelegateActionContext> extends Action<DelegateActionResult, Context> {
   public readonly identifier: string = 'tezos-delegate-action'
-
-  public readonly context: Context
-
-  public constructor(context: Context) {
-    super()
-    this.context = context
-  }
 
   protected async perform(): Promise<DelegateActionResult> {
     return new Promise<DelegateActionResult>(

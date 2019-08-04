@@ -6,15 +6,8 @@ export interface ImportAccoutActionContext {
   publicKey: string
 }
 
-export class ImportAccountAction extends Action<string[]> {
+export class ImportAccountAction extends Action<string[], ImportAccoutActionContext> {
   public readonly identifier: string = 'tezos-import-account-action'
-
-  public readonly context: ImportAccoutActionContext
-
-  public constructor(context: ImportAccoutActionContext) {
-    super()
-    this.context = context
-  }
 
   protected async perform(): Promise<string[]> {
     const protocol: TezosKtProtocol = new TezosKtProtocol()
