@@ -99,9 +99,8 @@ export abstract class Action<Result, Context> {
     this.stateMachine.transitionTo(ActionState.COMPLETED)
     if (this.onError) {
       this.onError(error)
-    } else {
-      throw error
     }
+    throw error
   }
 }
 
