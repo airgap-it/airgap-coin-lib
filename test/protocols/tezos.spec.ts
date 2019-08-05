@@ -4,7 +4,6 @@ import { expect } from 'chai'
 import 'mocha'
 import * as sinon from 'sinon'
 
-import { IAirGapTransaction } from '../../dist'
 import { isCoinlibReady } from '../../src'
 import {
   TezosOperationType,
@@ -24,18 +23,17 @@ const prepareTxHelper = async (rawTezosTx: RawTezosTransaction) => {
     publicKey: tezosProtocolSpec.wallet.publicKey
   })
 
-  const airGapTx: IAirGapTransaction = airGapTxs[airGapTxs.length - 1] // TODO: We used to take the last one by default, now we get everything. We have to update tests to reflect that.
-
   const unforgedTransaction = tezosLib.unforgeUnsignedTezosWrappedOperation(rawTezosTx.binaryTransaction)
 
   const spendOperation = unforgedTransaction.contents.find(content => content.kind === TezosOperationType.TRANSACTION)
   if (spendOperation) {
     const spendTransaction: TezosSpendOperation = spendOperation as TezosSpendOperation
+
     return {
       spendTransaction,
       originationTransaction: {} as any,
       unforgedTransaction,
-      airGapTx,
+      airGapTxs,
       rawTezosTx
     }
   }
@@ -47,7 +45,7 @@ const prepareTxHelper = async (rawTezosTx: RawTezosTransaction) => {
       spendTransaction: {} as any,
       originationTransaction,
       unforgedTransaction,
-      airGapTx,
+      airGapTxs,
       rawTezosTx
     }
   }
@@ -424,11 +422,13 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         // check that storage is properly set
         expect(result.spendTransaction.storage_limit).to.equal('300')
 
-        expect(result.airGapTx.amount.toFixed()).to.equal('643000') // 900000 - 257000 amount - initializationFee
-        expect(result.airGapTx.amount.toFixed()).to.equal(amount.minus(initializationFee).toFixed())
+        expect(result.airGapTxs.length).to.equal(1)
 
-        expect(result.airGapTx.fee.toFixed()).to.equal('100000')
-        expect(result.airGapTx.fee.toFixed()).to.equal(fee.toFixed())
+        expect(result.airGapTxs[0].amount.toFixed()).to.equal('643000') // 900000 - 257000 amount - initializationFee
+        expect(result.airGapTxs[0].amount.toFixed()).to.equal(amount.minus(initializationFee).toFixed())
+
+        expect(result.airGapTxs[0].fee.toFixed()).to.equal('100000')
+        expect(result.airGapTxs[0].fee.toFixed()).to.equal(fee.toFixed())
       })
 
       it('will not deduct fee if enough funds are available on the account', async () => {
@@ -441,8 +441,10 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         // check that storage is properly set
         expect(result.spendTransaction.storage_limit).to.equal('300')
 
-        expect(result.airGapTx.amount.toFixed()).to.equal('100000') // amount should be correct
-        expect(result.airGapTx.fee.toFixed()).to.equal('100000')
+        expect(result.airGapTxs.length).to.equal(1)
+
+        expect(result.airGapTxs[0].amount.toFixed()).to.equal('100000') // amount should be correct
+        expect(result.airGapTxs[0].fee.toFixed()).to.equal('100000')
       })
 
       it('will not mess with anything, given the receiving account has balance already', async () => {
@@ -455,8 +457,10 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         // check that storage is properly set
         expect(result.spendTransaction.storage_limit).to.equal('0')
 
-        expect(result.airGapTx.amount.toFixed()).to.equal('899999') // amount should be correct
-        expect(result.airGapTx.fee.toFixed()).to.equal('100000')
+        expect(result.airGapTxs.length).to.equal(1)
+
+        expect(result.airGapTxs[0].amount.toFixed()).to.equal('899999') // amount should be correct
+        expect(result.airGapTxs[0].fee.toFixed()).to.equal('100000')
       })
 
       it('will leave 1 mutez behind if we try to send the full balance', async () => {
@@ -468,8 +472,10 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         // check that storage is properly set
         expect(result.spendTransaction.storage_limit).to.equal('0')
 
-        expect(result.airGapTx.amount.toFixed()).to.equal('899999') // amount should be 1 less
-        expect(result.airGapTx.fee.toFixed()).to.equal('100000')
+        expect(result.airGapTxs.length).to.equal(1)
+
+        expect(result.airGapTxs[0].amount.toFixed()).to.equal('899999') // amount should be 1 less
+        expect(result.airGapTxs[0].fee.toFixed()).to.equal('100000')
       })
     })
   })
