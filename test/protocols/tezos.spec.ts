@@ -4,7 +4,6 @@ import { expect } from 'chai'
 import 'mocha'
 import * as sinon from 'sinon'
 
-import { IAirGapTransaction } from '../../dist'
 import { isCoinlibReady } from '../../src'
 import {
   TezosOperationType,
@@ -24,18 +23,17 @@ const prepareTxHelper = async (rawTezosTx: RawTezosTransaction) => {
     publicKey: tezosProtocolSpec.wallet.publicKey
   })
 
-  const airGapTx: IAirGapTransaction = airGapTxs[airGapTxs.length - 1] // TODO: We used to take the last one by default, now we get everything. We have to update tests to reflect that.
-
   const unforgedTransaction = tezosLib.unforgeUnsignedTezosWrappedOperation(rawTezosTx.binaryTransaction)
 
   const spendOperation = unforgedTransaction.contents.find(content => content.kind === TezosOperationType.TRANSACTION)
   if (spendOperation) {
     const spendTransaction: TezosSpendOperation = spendOperation as TezosSpendOperation
+
     return {
       spendTransaction,
       originationTransaction: {} as any,
       unforgedTransaction,
-      airGapTx,
+      airGapTxs,
       rawTezosTx
     }
   }
@@ -47,7 +45,7 @@ const prepareTxHelper = async (rawTezosTx: RawTezosTransaction) => {
       spendTransaction: {} as any,
       originationTransaction,
       unforgedTransaction,
-      airGapTx,
+      airGapTxs,
       rawTezosTx
     }
   }
@@ -348,8 +346,9 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       )
 
       expect(result.spendTransaction.storage_limit).to.equal('0') // kt addresses do not need to get funed, they are originated :)
-      expect(result.airGapTx.amount.toFixed()).to.equal('100000')
-      expect(result.airGapTx.fee.toFixed()).to.equal('1420')
+      expect(result.airGapTxs.length).to.equal(1)
+      expect(result.airGapTxs[0].amount.toFixed()).to.equal('100000')
+      expect(result.airGapTxs[0].fee.toFixed()).to.equal('1420')
       expect(result.rawTezosTx.binaryTransaction).to.equal(
         'e4b7e31c04d23e3a10ea20e11bd0ebb4bde16f632c1d94779fd5849a34ec42a308000091a9d2b003f19cf5a1f38f04f1000ab482d331768c0bcffe37bc5000a08d0601ba4e7349ac25dc5eb2df5a43fceacc58963df4f50000'
       )
@@ -413,11 +412,13 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         // check that storage is properly set
         expect(result.spendTransaction.storage_limit).to.equal('300')
 
-        expect(result.airGapTx.amount.toFixed()).to.equal('643000') // 900000 - 257000 amount - initializationFee
-        expect(result.airGapTx.amount.toFixed()).to.equal(amount.minus(initializationFee).toFixed())
+        expect(result.airGapTxs.length).to.equal(1)
 
-        expect(result.airGapTx.fee.toFixed()).to.equal('100000')
-        expect(result.airGapTx.fee.toFixed()).to.equal(fee.toFixed())
+        expect(result.airGapTxs[0].amount.toFixed()).to.equal('643000') // 900000 - 257000 amount - initializationFee
+        expect(result.airGapTxs[0].amount.toFixed()).to.equal(amount.minus(initializationFee).toFixed())
+
+        expect(result.airGapTxs[0].fee.toFixed()).to.equal('100000')
+        expect(result.airGapTxs[0].fee.toFixed()).to.equal(fee.toFixed())
       })
 
       it('will not deduct fee if enough funds are available on the account', async () => {
@@ -430,8 +431,10 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         // check that storage is properly set
         expect(result.spendTransaction.storage_limit).to.equal('300')
 
-        expect(result.airGapTx.amount.toFixed()).to.equal('100000') // amount should be correct
-        expect(result.airGapTx.fee.toFixed()).to.equal('100000')
+        expect(result.airGapTxs.length).to.equal(1)
+
+        expect(result.airGapTxs[0].amount.toFixed()).to.equal('100000') // amount should be correct
+        expect(result.airGapTxs[0].fee.toFixed()).to.equal('100000')
       })
 
       it('will not mess with anything, given the receiving account has balance already', async () => {
@@ -444,8 +447,10 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         // check that storage is properly set
         expect(result.spendTransaction.storage_limit).to.equal('0')
 
-        expect(result.airGapTx.amount.toFixed()).to.equal('899999') // amount should be correct
-        expect(result.airGapTx.fee.toFixed()).to.equal('100000')
+        expect(result.airGapTxs.length).to.equal(1)
+
+        expect(result.airGapTxs[0].amount.toFixed()).to.equal('899999') // amount should be correct
+        expect(result.airGapTxs[0].fee.toFixed()).to.equal('100000')
       })
 
       it('will leave 1 mutez behind if we try to send the full balance', async () => {
@@ -457,8 +462,10 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         // check that storage is properly set
         expect(result.spendTransaction.storage_limit).to.equal('0')
 
-        expect(result.airGapTx.amount.toFixed()).to.equal('899999') // amount should be 1 less
-        expect(result.airGapTx.fee.toFixed()).to.equal('100000')
+        expect(result.airGapTxs.length).to.equal(1)
+
+        expect(result.airGapTxs[0].amount.toFixed()).to.equal('899999') // amount should be 1 less
+        expect(result.airGapTxs[0].fee.toFixed()).to.equal('100000')
       })
     })
 
@@ -601,11 +608,13 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
 
         expect(result.originationTransaction.storage_limit).to.equal('257')
 
-        expect(result.airGapTx.amount.toFixed()).to.equal('0')
-        expect(result.airGapTx.amount.toFixed()).to.equal(amount.toFixed())
+        expect(result.airGapTxs.length).to.equal(1)
 
-        expect(result.airGapTx.fee.toFixed()).to.equal('1400')
-        expect(result.airGapTx.fee.toFixed()).to.equal(sendFee.toFixed())
+        expect(result.airGapTxs[0].amount.toFixed()).to.equal('0')
+        expect(result.airGapTxs[0].amount.toFixed()).to.equal(amount.toFixed())
+
+        expect(result.airGapTxs[0].fee.toFixed()).to.equal('1400')
+        expect(result.airGapTxs[0].fee.toFixed()).to.equal(sendFee.toFixed())
       })
 
       it('will send 0 AMOUNT from UNUSED ADDRESS and automatically subtract SPEND FEE, REVEAL FEE, ORIGINATION BURN and 1', async () => {
@@ -620,11 +629,13 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
 
         expect(result.originationTransaction.storage_limit).to.equal('257')
 
-        expect(result.airGapTx.amount.toFixed()).to.equal('0')
-        expect(result.airGapTx.amount.toFixed()).to.equal(amount.toFixed())
+        expect(result.airGapTxs.length).to.equal(2)
 
-        expect(result.airGapTx.fee.toFixed()).to.equal('1400')
-        expect(result.airGapTx.fee.toFixed()).to.equal(sendFee.toFixed())
+        expect(result.airGapTxs[1].amount.toFixed()).to.equal('0')
+        expect(result.airGapTxs[1].amount.toFixed()).to.equal(amount.toFixed())
+
+        expect(result.airGapTxs[1].fee.toFixed()).to.equal('1400')
+        expect(result.airGapTxs[1].fee.toFixed()).to.equal(sendFee.toFixed())
       })
 
       it('will send SPECIFIC AMOUNT from USED ADDRESS and automatically subtract SPEND FEE, ORIGINATION BURN and 1', async () => {
@@ -637,8 +648,10 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         // check that storage is properly set
         expect(result.originationTransaction.storage_limit).to.equal('257')
 
-        expect(result.airGapTx.amount.toFixed()).to.equal('741599') // 1000000 (balance) - 257000 (origination burn) - 1400 (fee) - 1 (min amount)
-        expect(result.airGapTx.amount.toFixed()).to.equal(
+        expect(result.airGapTxs.length).to.equal(1)
+
+        expect(result.airGapTxs[0].amount.toFixed()).to.equal('741599') // 1000000 (balance) - 257000 (origination burn) - 1400 (fee) - 1 (min amount)
+        expect(result.airGapTxs[0].amount.toFixed()).to.equal(
           balance
             .minus(originationBurn)
             .minus(sendFee)
@@ -646,8 +659,8 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
             .toFixed()
         )
 
-        expect(result.airGapTx.fee.toFixed()).to.equal('1400')
-        expect(result.airGapTx.fee.toFixed()).to.equal(sendFee.toFixed())
+        expect(result.airGapTxs[0].fee.toFixed()).to.equal('1400')
+        expect(result.airGapTxs[0].fee.toFixed()).to.equal(sendFee.toFixed())
       })
 
       it('will send SPECIFIC AMOUNT from UNUSED ADDRESS and automatically subtract SPEND FEE, REVEAL FEE, ORIGINATION BURN and 1', async () => {
@@ -664,8 +677,10 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         // check that storage is properly set
         expect(result.originationTransaction.storage_limit).to.equal('257')
 
-        expect(result.airGapTx.amount.toFixed()).to.equal('740299') // 1000000 (balance) - 257000 (origination burn) - 1300 (reveal fee) - 1400 (fee) - 1 (min amount)
-        expect(result.airGapTx.amount.toFixed()).to.equal(
+        expect(result.airGapTxs.length).to.equal(2)
+
+        expect(result.airGapTxs[1].amount.toFixed()).to.equal('740299') // 1000000 (balance) - 257000 (origination burn) - 1300 (reveal fee) - 1400 (fee) - 1 (min amount)
+        expect(result.airGapTxs[1].amount.toFixed()).to.equal(
           balance
             .minus(originationBurn)
             .minus(sendFee)
@@ -674,8 +689,8 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
             .toFixed()
         )
 
-        expect(result.airGapTx.fee.toFixed()).to.equal('1400')
-        expect(result.airGapTx.fee.toFixed()).to.equal(sendFee.toFixed())
+        expect(result.airGapTxs[1].fee.toFixed()).to.equal('1400')
+        expect(result.airGapTxs[1].fee.toFixed()).to.equal(sendFee.toFixed())
       })
 
       it('will send MAX AMOUNT from USED ADDRESS and automatically subtract SPEND FEE, ORIGINATION BURN and 1', async () => {
@@ -687,8 +702,10 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         // check that storage is properly set
         expect(result.originationTransaction.storage_limit).to.equal('257')
 
-        expect(result.airGapTx.amount.toFixed()).to.equal('741599') // 1000000 (balance) - 257000 (origination burn) - 1400 (fee) - 1 (min amount)
-        expect(result.airGapTx.amount.toFixed()).to.equal(
+        expect(result.airGapTxs.length).to.equal(1)
+
+        expect(result.airGapTxs[0].amount.toFixed()).to.equal('741599') // 1000000 (balance) - 257000 (origination burn) - 1400 (fee) - 1 (min amount)
+        expect(result.airGapTxs[0].amount.toFixed()).to.equal(
           balance
             .minus(originationBurn)
             .minus(sendFee)
@@ -696,8 +713,8 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
             .toFixed()
         )
 
-        expect(result.airGapTx.fee.toFixed()).to.equal('1400')
-        expect(result.airGapTx.fee.toFixed()).to.equal(sendFee.toFixed())
+        expect(result.airGapTxs[0].fee.toFixed()).to.equal('1400')
+        expect(result.airGapTxs[0].fee.toFixed()).to.equal(sendFee.toFixed())
       })
 
       it('will send MAX AMOUNT from UNUSED ADDRESS and automatically subtract SPEND FEE, REVEAL FEE, ORIGINATION BURN and 1', async () => {
@@ -713,8 +730,10 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         // check that storage is properly set
         expect(result.originationTransaction.storage_limit).to.equal('257')
 
-        expect(result.airGapTx.amount.toFixed()).to.equal('740299') // 1000000 (balance) - 257000 (origination burn) - 1300 (reveal fee) - 1400 (fee) - 1 (min amount)
-        expect(result.airGapTx.amount.toFixed()).to.equal(
+        expect(result.airGapTxs.length).to.equal(2)
+
+        expect(result.airGapTxs[1].amount.toFixed()).to.equal('740299') // 1000000 (balance) - 257000 (origination burn) - 1300 (reveal fee) - 1400 (fee) - 1 (min amount)
+        expect(result.airGapTxs[1].amount.toFixed()).to.equal(
           balance
             .minus(originationBurn)
             .minus(sendFee)
@@ -723,9 +742,71 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
             .toFixed()
         )
 
-        expect(result.airGapTx.fee.toFixed()).to.equal('1400')
-        expect(result.airGapTx.fee.toFixed()).to.equal(sendFee.toFixed())
+        expect(result.airGapTxs[1].fee.toFixed()).to.equal('1400')
+        expect(result.airGapTxs[1].fee.toFixed()).to.equal(sendFee.toFixed())
       })
+
+      it('will prepare a transaction with multiple spend operations', async () => {
+        stub
+          .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy/balance`)
+          .returns(Promise.resolve({ data: 0 }))
+
+        const result = await prepareSpend(
+          ['tz1d75oB6T4zUMexzkr5WscGktZ1Nss1JrT7', 'tz1d75oB6T4zUMexzkr5WscGktZ1Nss1JrT7'],
+          [new BigNumber(12345), new BigNumber(54321)],
+          new BigNumber(111)
+        )
+
+        // check that storage is properly set
+        expect(result.spendTransaction.storage_limit).to.equal('0')
+
+        expect(result.airGapTxs.length).to.equal(2)
+
+        expect(result.airGapTxs[0].amount.toFixed()).to.equal('12345')
+        expect(result.airGapTxs[0].fee.toFixed()).to.equal('111')
+
+        expect(result.airGapTxs[1].amount.toFixed()).to.equal('54321')
+        expect(result.airGapTxs[1].fee.toFixed()).to.equal('111')
+      })
+    })
+
+    it('will prepare a transaction with multiple spend operations to KT addresses', async () => {
+      stub
+        .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy/balance`)
+        .returns(Promise.resolve({ data: 0 }))
+
+      const result = await prepareSpend(
+        ['KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy', 'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy'],
+        [new BigNumber(12345), new BigNumber(54321)],
+        new BigNumber(111)
+      )
+
+      // check that storage is properly set
+      expect(result.spendTransaction.storage_limit).to.equal('0')
+
+      expect(result.airGapTxs.length).to.equal(2)
+
+      expect(result.airGapTxs[0].amount.toFixed()).to.equal('12345')
+      expect(result.airGapTxs[0].fee.toFixed()).to.equal('111')
+
+      expect(result.airGapTxs[1].amount.toFixed()).to.equal('54321')
+      expect(result.airGapTxs[1].fee.toFixed()).to.equal('111')
+    })
+
+    it('will throw an error if the number of recipients and amounts do not match', async () => {
+      stub
+        .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy/balance`)
+        .returns(Promise.resolve({ data: 0 }))
+
+      return prepareSpend(
+        ['KT1X6SSqro2zUo1Wa7X5BnDWBvfBxZ6feUnc', 'KT1QLtQ54dKzcfwxMHmEM6PC8tooUg6MxDZ3'],
+        [new BigNumber(12345)],
+        new BigNumber(111)
+      ).catch((error: Error) =>
+        expect(error)
+          .to.be.an('error')
+          .with.property('message', 'length of recipients and values does not match!')
+      )
     })
   })
 })

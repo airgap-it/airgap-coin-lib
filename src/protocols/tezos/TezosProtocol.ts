@@ -172,6 +172,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   public getPublicKeyFromHexSecret(secret: string, derivationPath: string): string {
     // both AE and Tezos use the same ECC curves (ed25519)
     const { publicKey } = generateWalletUsingDerivationPath(Buffer.from(secret, 'hex'), derivationPath)
+
     return Buffer.from(publicKey).toString('hex')
   }
 
@@ -183,6 +184,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   public getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Buffer {
     // both AE and Tezos use the same ECC curves (ed25519)
     const { secretKey } = generateWalletUsingDerivationPath(Buffer.from(secret, 'hex'), derivationPath)
+
     return Buffer.from(secretKey)
   }
 
@@ -197,11 +199,13 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
   public async getAddressesFromPublicKey(publicKey: string): Promise<string[]> {
     const address = await this.getAddressFromPublicKey(publicKey)
+
     return [address]
   }
 
   public async getTransactionsFromPublicKey(publicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]> {
     const addresses = await this.getAddressesFromPublicKey(publicKey)
+
     return this.getTransactionsFromAddresses(addresses, limit, offset)
   }
 
@@ -209,6 +213,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     if (limit <= 0 || offset < 0) {
       return 0
     }
+
     return Math.floor(offset / limit) // we need +1 here because pages start at 1
   }
 
@@ -247,6 +252,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       })
       .reduce((previous: any[], current: any[]) => {
         previous.push(...current)
+
         return previous
       }, [])
   }
@@ -344,6 +350,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
   public async getBalanceOfPublicKey(publicKey: string): Promise<BigNumber> {
     const address = await this.getAddressFromPublicKey(publicKey)
+
     return this.getBalanceOfAddresses([address])
   }
 
@@ -428,10 +435,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         kind: TezosOperationType.TRANSACTION,
         fee: fee.toFixed(),
         gas_limit: '10300', // taken from eztz
-        storage_limit: receivingBalance.isZero() && recipients[0].toLowerCase().startsWith('tz') ? '300' : '0', // taken from eztz
-        amount: values[0].toFixed(),
-        counter: counter.toFixed(),
-        destination: recipients[0],
+        storage_limit: receivingBalance.isZero() && recipients[i].toLowerCase().startsWith('tz') ? '300' : '0', // taken from eztz
+        amount: values[i].toFixed(),
+        counter: counter.plus(i).toFixed(),
+        destination: recipients[i],
         source: address
       }
 
@@ -569,6 +576,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         assertNever(operation.kind) // Exhaustive if
       }
     })
+
     return amountUsed
   }
 
@@ -579,6 +587,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       const { data: injectionResponse } = await axios.post(`${this.jsonRPCAPI}/injection/operation?chain=main`, JSON.stringify(payload), {
         headers: { 'content-type': 'application/json' }
       })
+
       // returns hash if successful
       return injectionResponse
     } catch (err) {
@@ -732,9 +741,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     ;({ result, rest } = this.splitAndReturnRest(rest, 44))
     const destination = this.parseAddress(result)
     ;({ result, rest } = this.splitAndReturnRest(rest, 2))
-    const hasParameters = result
+    const hasParameters = result === 'ff' ? true : false
 
-    if (hasParameters !== '00') {
+    if (hasParameters) {
       throw new Error('spend transaction parser does not support parameters yet')
     }
 
@@ -1059,6 +1068,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
       resultHexString += hexStringSection
     }
+
     return resultHexString
   }
 
@@ -1079,6 +1089,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       const bitSection = ('00000000' + parseInt(byteSection, 16).toString(2)).substr(-7)
       bitString = bitSection + bitString
     }
+
     return new BigNumber(bitString, 2)
   }
 
@@ -1092,6 +1103,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       public_key: bs58check.encode(Buffer.concat([this.tezosPrefixes.edpk, Buffer.from(publicKey, 'hex')])),
       source: address
     }
+
     return operation
   }
 
