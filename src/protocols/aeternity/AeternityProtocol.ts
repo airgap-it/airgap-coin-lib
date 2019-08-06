@@ -18,7 +18,7 @@ import { padStart } from '../../utils/padStart'
 import { ICoinProtocol } from '../ICoinProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
 
-export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
+export class AeternityProtocol extends NonExtendedProtocol implements ICoinProtocol {
   public symbol = 'AE'
   public name = 'æternity'
   public marketSymbol = 'ae'
@@ -170,6 +170,7 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
 
     try {
       rawTx = bs64check.decode(transaction.replace('tx_', ''))
+
       return rawTx
     } catch (error) {
       //
@@ -177,6 +178,7 @@ export class AEProtocol extends NonExtendedProtocol implements ICoinProtocol {
 
     try {
       rawTx = bs58check.decode(transaction.replace('tx_', ''))
+
       return rawTx
     } catch (error) {
       //

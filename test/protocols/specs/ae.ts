@@ -1,8 +1,8 @@
 import BigNumber from 'bignumber.js'
 
-import { AEProtocol } from '../../../src'
+import { AeternityProtocol } from '../../../src'
 import { TestProtocolSpec } from '../implementations'
-import { AEProtocolStub } from '../stubs/ae.stub'
+import { AeternityProtocolStub } from '../stubs/ae.stub'
 
 // Test Mnemonic:
 // mango club state husband keen fiber float jelly major include horse infant square spike equip caught version must pen swim setup right poem economy
@@ -13,8 +13,8 @@ import { AEProtocolStub } from '../stubs/ae.stub'
 
 export class AETestProtocolSpec extends TestProtocolSpec {
   public name = 'Aeternity'
-  public lib = new AEProtocol()
-  public stub = new AEProtocolStub()
+  public lib = new AeternityProtocol()
+  public stub = new AeternityProtocolStub()
   public validAddresses = [
     'ak_542o93BKHiANzqNaFj6UurrJuDuxU61zCGr9LJCwtTUg34kWt',
     'ak_hb4E2MwjH8vYctr3cimoSHfg8Hg8NdWYQfpGhprKdaurRbNfi',

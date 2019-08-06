@@ -3,10 +3,10 @@
 
 import BigNumber from 'bignumber.js'
 
-import { AEProtocol, IAirGapTransaction } from '../src'
+import { AeternityProtocol, IAirGapTransaction } from '../src'
 import { RawAeternityTransaction } from '../src/serializer/unsigned-transactions/aeternity-transactions.serializer'
 
-const protocol: AEProtocol = new AEProtocol()
+const protocol: AeternityProtocol = new AeternityProtocol()
 
 const publicKey: string = '5ab8b757139d4700df37763de6e6e20a2111811a193c235db3792a846a376eeb'
 const recipient: string = 'ak_11111111111111111111111111111111273Yts'

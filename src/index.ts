@@ -5,7 +5,7 @@ import { EthereumProtocol } from './protocols/ethereum/EthereumProtocol'
 
 import { IAirGapTransaction } from './interfaces/IAirGapTransaction'
 import { IAirGapWallet } from './interfaces/IAirGapWallet'
-import { AEProtocol } from './protocols/aeternity/AEProtocol'
+import { AeternityProtocol } from './protocols/aeternity/AeternityProtocol'
 import { BitcoinProtocol } from './protocols/bitcoin/BitcoinProtocol'
 import { BitcoinTestnetProtocol } from './protocols/bitcoin/BitcoinTestnetProtocol'
 import { GenericERC20, GenericERC20Configuration } from './protocols/ethereum/erc20/GenericERC20'
@@ -53,7 +53,7 @@ export {
   EthereumRopstenProtocol,
   EthereumClassicProtocol,
   GenericERC20,
-  AEProtocol,
+  AeternityProtocol,
   TezosProtocol,
   TezosKtProtocol,
   // tezos-specific configuration
