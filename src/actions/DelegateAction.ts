@@ -14,7 +14,7 @@ export interface DelegateActionContext {
 export interface DelegateActionResult {
   rawTx: RawTezosTransaction
   serializedTx: string
-  airGapTx: IAirGapTransaction | void
+  airGapTxs: IAirGapTransaction[] | void
   dataUrl: string
 }
 
@@ -59,8 +59,8 @@ export class DelegateAction<Context extends DelegateActionContext> extends Actio
             const originateTx: RawTezosTransaction = await protocol.originate(this.context.wallet.publicKey, this.context.delegate)
             const serializedTx: string = await serializeTx(this.context.wallet, originateTx)
 
-            const airGapTx: IAirGapTransaction | void = await getAirGapTx(this.context.wallet, originateTx)
-            resolve({ rawTx: originateTx, serializedTx, airGapTx, dataUrl: `airgap-vault://?d=${serializedTx}` })
+            const airGapTxs: IAirGapTransaction[] | void = await getAirGapTx(this.context.wallet, originateTx)
+            resolve({ rawTx: originateTx, serializedTx, airGapTxs, dataUrl: `airgap-vault://?d=${serializedTx}` })
           } finally {
             reject()
           }
@@ -75,8 +75,8 @@ export class DelegateAction<Context extends DelegateActionContext> extends Actio
             )
             const serializedTx: string = await serializeTx(this.context.wallet, delegateTx)
 
-            const airGapTx: IAirGapTransaction | void = await getAirGapTx(this.context.wallet, delegateTx)
-            resolve({ rawTx: delegateTx, serializedTx, airGapTx, dataUrl: `airgap-vault://?d=${serializedTx}` })
+            const airGapTxs: IAirGapTransaction[] | void = await getAirGapTx(this.context.wallet, delegateTx)
+            resolve({ rawTx: delegateTx, serializedTx, airGapTxs, dataUrl: `airgap-vault://?d=${serializedTx}` })
           } finally {
             reject()
           }
