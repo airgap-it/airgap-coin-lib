@@ -1,155 +1,144 @@
 export enum ActionState {
-  INITIAL,
-
-  PREPARING,
-  PREPARED,
-
+  READY,
   EXECUTING,
-  EXECUTED,
-
-  COMPLETING,
   COMPLETED,
-
-  ERRORING,
-  ERROR,
-
-  CANCELLING,
   CANCELLED
 }
 
-export interface ActionProgress<U> {
-  percentage: number
-  info?: U
-}
+class StateMachine<S> {
+  private state: S
+  private readonly validTransitions: Map<S, S[]>
 
-export interface ActionInfo {
-  [key: string]: string | undefined
+  constructor(initialState: S, validTransitions: Map<S, S[]>) {
+    this.state = initialState
+    this.validTransitions = validTransitions
+  }
+
+  transitionTo(state: S) {
+    if (this.canTransitionTo(state)) {
+      this.state = state
+    } else {
+      throw new Error('Invalid state transition: ' + this.state + ' -> ' + state)
+    }
+  }
+
+  getState() {
+    return this.state
+  }
+
+  private canTransitionTo(state: S): boolean {
+    const states = this.validTransitions.get(state)
+    if (states) {
+      return states.indexOf(this.state) != -1
+    }
+    return false
+  }
 }
 
 /**
  * We have all the methods as readonly properties to prevent users from accidentally overwriting them.
  */
-export abstract class Action<CONTEXT, PROGRESS, RESULT> {
+export abstract class Action<Result, Context> {
   public readonly identifier: string = 'action'
-  public info: ActionInfo = {}
-  public context: CONTEXT | undefined
 
-  public prepareFunction: () => Promise<CONTEXT | void> = async () => {
-    /* */
-  }
-  public beforeHandler: () => Promise<void> = async () => {
-    /* */
-  }
-  public handlerFunction: (context?: CONTEXT) => Promise<RESULT | undefined> = async () => {
-    /* */
-    return undefined
-  }
-  public afterHandler: () => Promise<void> = async () => {
-    /* */
-  }
-  public progressFunction: (context?: CONTEXT, progress?: ActionProgress<PROGRESS>) => Promise<void> = async () => {
-    /* */
-  }
-  public completeFunction: (context?: CONTEXT, result?: RESULT) => Promise<void> = async () => {
-    /* */
-  }
-  public errorFunction: (context?: CONTEXT, error?: Error) => Promise<void> = async () => {
-    /* */
-  }
-  public cancelFunction: (context?: CONTEXT) => Promise<void> = async () => {
-    /* */
-  }
+  public readonly context: Context
+  public result?: Result
+  public error?: Error
 
-  protected data: { [key: string]: unknown } = {}
-  private progress: ActionProgress<PROGRESS> | undefined
-  private state: ActionState = ActionState.INITIAL
+  public onComplete?: (result: Result) => Promise<void>
+  public onError?: (error: Error) => Promise<void>
+  public onCancel?: () => Promise<void>
 
-  constructor(context?: CONTEXT) {
+  private stateMachine = new StateMachine<ActionState>(
+    ActionState.READY,
+    new Map<ActionState, ActionState[]>([
+      [ActionState.READY, []],
+      [ActionState.EXECUTING, [ActionState.READY]],
+      [ActionState.COMPLETED, [ActionState.EXECUTING]],
+      [ActionState.CANCELLED, [ActionState.READY, ActionState.EXECUTING]]
+    ])
+  )
+
+  public constructor(context: Context) {
     this.context = context
-    this.progress = { percentage: 0 }
-  }
-
-  public readonly perform: () => Promise<RESULT | undefined> = async () => {
-    try {
-      await this.onPrepare()
-
-      await this.beforeHandler()
-
-      const result: RESULT | undefined = await this.handler()
-
-      await this.afterHandler()
-
-      await this.onComplete(result)
-
-      return result
-    } catch (error) {
-      this.onError(error).catch()
-
-      return undefined
-    }
   }
 
   public readonly getState: () => Promise<ActionState> = async () => {
-    return this.state
+    return this.stateMachine.getState()
   }
 
-  public readonly getProgress: () => Promise<ActionProgress<PROGRESS> | undefined> = async () => {
-    return this.progress
-  }
-
-  public readonly cancel: () => Promise<void> = async () => {
-    await this.onCancel()
-  }
-
-  protected readonly onPrepare: () => Promise<void> = async () => {
-    this.state = ActionState.PREPARING
-
-    const preparedContext: CONTEXT | void = await this.prepareFunction()
-    if (preparedContext) {
-      // We only overwrite the context if onPrepare returns one
-      this.context = preparedContext
+  public async start() {
+    try {
+      this.stateMachine.transitionTo(ActionState.EXECUTING)
+      const result = await this.perform()
+      this.handleSuccess(result)
+    } catch (error) {
+      this.handleError(error)
     }
-
-    this.state = ActionState.PREPARED
   }
 
-  protected readonly handler: () => Promise<RESULT | undefined> = async () => {
-    this.state = ActionState.EXECUTING
-
-    const result: RESULT | undefined = await this.handlerFunction(this.context)
-
-    this.state = ActionState.EXECUTED
-
-    return result
+  public cancel() {
+    this.stateMachine.transitionTo(ActionState.CANCELLED)
+    if (this.onCancel) {
+      this.onCancel()
+    }
   }
 
-  protected readonly onProgress: (progress: ActionProgress<PROGRESS>) => Promise<void> = async (progress: ActionProgress<PROGRESS>) => {
-    this.progress = progress
+  protected abstract async perform(): Promise<Result>
 
-    return this.progressFunction(this.context, progress)
+  private handleSuccess(result: Result) {
+    this.result = result
+    this.stateMachine.transitionTo(ActionState.COMPLETED)
+    if (this.onComplete) {
+      this.onComplete(result)
+    }
   }
 
-  protected readonly onComplete: (result?: RESULT) => Promise<void> = async (result?: RESULT) => {
-    this.state = ActionState.COMPLETING
+  private handleError(error: Error) {
+    this.error = error
+    this.stateMachine.transitionTo(ActionState.COMPLETED)
+    if (this.onError) {
+      this.onError(error)
+    }
+    throw error
+  }
+}
 
-    await this.completeFunction(this.context, result)
+export class SimpleAction<Result> extends Action<Result, void> {
+  public readonly identifier: string = 'simple-action'
 
-    this.state = ActionState.COMPLETED
+  private readonly promise: () => Promise<Result>
+
+  public constructor(promise: () => Promise<Result>) {
+    super()
+    this.promise = promise
   }
 
-  protected onError: (error: Error) => Promise<void> = async (error: Error) => {
-    this.state = ActionState.ERRORING
+  protected async perform(): Promise<Result> {
+    return await this.promise()
+  }
+}
 
-    await this.errorFunction(this.context, error)
+export class LinkedAction<Result, Context> extends Action<Result, void> {
+  public readonly action: Action<Context, void>
+  private linkedAction?: Action<Result, Context>
 
-    this.state = ActionState.ERROR
+  public constructor(
+    action: Action<Context, void>,
+    private readonly linkedActionType: { new (context: Context): Action<Result, Context> }
+  ) {
+    super()
+    this.action = action
   }
 
-  protected onCancel: () => Promise<void> = async () => {
-    this.state = ActionState.CANCELLING
+  public getLinkedAction(): Action<Result, Context> | undefined {
+    return this.linkedAction
+  }
 
-    await this.cancelFunction(this.context)
-
-    this.state = ActionState.CANCELLED
+  protected async perform(): Promise<Result> {
+    await this.action.start()
+    this.linkedAction = new this.linkedActionType(this.action.result!)
+    await this.linkedAction.start()
+    return this.linkedAction.result!
   }
 }
