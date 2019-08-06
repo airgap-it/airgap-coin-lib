@@ -39,7 +39,7 @@ function serializeTx(
 function getAirGapTx(
   wallet: AirGapMarketWallet,
   transaction: RawTezosTransaction | RawEthereumTransaction | RawBitcoinTransaction | RawAeternityTransaction
-): Promise<IAirGapTransaction | void> {
+): Promise<IAirGapTransaction[] | void> {
   return wallet.coinProtocol.getTransactionDetails({
     publicKey: wallet.publicKey,
     transaction
