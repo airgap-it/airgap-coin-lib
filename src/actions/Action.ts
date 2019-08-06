@@ -27,9 +27,9 @@ class StateMachine<S> {
   }
 
   private canTransitionTo(state: S): boolean {
-    const states = this.validTransitions.get(this.state)
+    const states = this.validTransitions.get(state)
     if (states) {
-      return states.indexOf(state) != -1
+      return states.indexOf(this.state) != -1
     }
     return false
   }
@@ -107,15 +107,15 @@ export abstract class Action<Result, Context> {
 export class SimpleAction<Result> extends Action<Result, void> {
   public readonly identifier: string = 'simple-action'
 
-  private readonly promise: Promise<Result>
+  private readonly promise: () => Promise<Result>
 
-  public constructor(promise: Promise<Result>) {
+  public constructor(promise: () => Promise<Result>) {
     super()
     this.promise = promise
   }
 
   protected async perform(): Promise<Result> {
-    return this.promise
+    return await this.promise()
   }
 }
 
