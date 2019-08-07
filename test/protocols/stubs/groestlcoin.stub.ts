@@ -1,10 +1,11 @@
-import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
 import axios from 'axios'
 import * as sinon from 'sinon'
-import { GroestlcoinProtocol } from '../../../lib'
+
+import { GroestlcoinProtocol } from '../../../src'
+import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
 
 export class GroestlcoinProtocolStub implements ProtocolHTTPStub {
-  registerStub(testProtocolSpec: TestProtocolSpec, protocol: GroestlcoinProtocol) {
+  public registerStub(testProtocolSpec: TestProtocolSpec, protocol: GroestlcoinProtocol) {
     const stub = sinon.stub(axios, 'get')
     stub
       .withArgs(
@@ -35,7 +36,7 @@ export class GroestlcoinProtocolStub implements ProtocolHTTPStub {
         })
       )
   }
-  noBalanceStub() {
+  public noBalanceStub() {
     const stub = sinon.stub(axios, 'get')
     stub
       .withArgs(

@@ -1,9 +1,9 @@
-import { isCoinlibReady, TezosKtProtocol } from '../../../lib/index'
+import { isCoinlibReady } from '../../../src/index'
 
 // prepare, sign and do a TX
 const promise = async () => {
   await isCoinlibReady()
-  const tezosKt = new TezosKtProtocol()
+  // const tezosKt = new TezosKtProtocol()
 }
 
 promise()

@@ -1,10 +1,11 @@
-import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
 import axios from 'axios'
-import { AEProtocol } from '../../../lib'
 import * as sinon from 'sinon'
 
-export class AEProtocolStub implements ProtocolHTTPStub {
-  registerStub(testProtocolSpec: TestProtocolSpec, protocol: AEProtocol) {
+import { AeternityProtocol } from '../../../src'
+import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
+
+export class AeternityProtocolStub implements ProtocolHTTPStub {
+  public registerStub(testProtocolSpec: TestProtocolSpec, protocol: AeternityProtocol) {
     sinon
       .stub(axios, 'get')
       .withArgs(`${protocol.epochRPC}/v2/accounts/${testProtocolSpec.wallet.addresses[0]}`)
@@ -14,7 +15,7 @@ export class AEProtocolStub implements ProtocolHTTPStub {
       .withArgs(`/v2/transactions`)
       .returns(Promise.resolve({ tx_hash: 'tx_hash' }))
   }
-  noBalanceStub(testProtocolSpec: TestProtocolSpec, protocol: AEProtocol) {
+  public noBalanceStub(testProtocolSpec: TestProtocolSpec, protocol: AeternityProtocol) {
     sinon
       .stub(axios, 'get')
       .withArgs(`${protocol.epochRPC}/v2/accounts/${testProtocolSpec.wallet.addresses[0]}`)
