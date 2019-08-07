@@ -8,7 +8,7 @@ Actions are used to encapsulate simple workflows into a generic interface. Multi
 
 The `Action<Result, Context>` abstract class defines the `start()` method used to execute the action.
 
-An action is intiliazed with a `Context` and produces a `Result`. To create your own action, sublcass `Action<Result, Context>` and implement the `perform()` method.
+An action is initialized with a `Context` and produces a `Result`. To create your own action, sublcass `Action<Result, Context>` and implement the `perform()` method.
 
 ```typescript
 interface EncryptContext {
@@ -30,6 +30,30 @@ try {
     let result = action.result
     /// use encrypted result
 } catch (error) {
+    // handle error
+}
+```
+
+It is also possible to handle an action's result or error by providing a handler function.
+
+```typescript
+interface EncryptContext {
+    message: string
+}
+
+class EncryptAction: Action<string, EncryptContext> {
+    public readonly identifier: string = 'encrypt-action'
+
+    protected async perform(): Promise<string> {
+        return Encrypt(this.context.message)
+    }
+}
+
+let action = new EncryptAction({ message: "hello, world!" })
+action.onComplete = (result) => {
+    // handle result
+}
+action.onError = (error) => {
     // handle error
 }
 ```
