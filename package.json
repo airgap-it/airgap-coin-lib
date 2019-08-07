@@ -76,7 +76,7 @@
     "tslint": "5.11.0",
     "tslint-config-prettier": "1.15.0",
     "tslint-config-valorsoft": "2.2.1",
-    "typescript": "3.5.2",
+    "typescript": "3.5.3",
     "websocket": "1.0.28"
   },
   "nyc": {
