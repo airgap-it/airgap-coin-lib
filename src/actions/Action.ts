@@ -35,9 +35,6 @@ class StateMachine<S> {
   }
 }
 
-/**
- * We have all the methods as readonly properties to prevent users from accidentally overwriting them.
- */
 export abstract class Action<Result, Context> {
   public readonly identifier: string = 'action'
 
