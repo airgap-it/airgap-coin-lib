@@ -2,7 +2,7 @@ import { expect } from 'chai'
 import 'mocha'
 
 import { SignedTransaction, UnsignedTransaction } from '../../src'
-import { SyncProtocolUtils } from '../../src/serializer/serializer'
+import { DeserializedSyncProtocol, SyncProtocolUtils } from '../../src/serializer/serializer'
 import { getProtocolByIdentifier } from '../../src/utils/protocolsByIdentifier'
 
 import { TestProtocolSpec } from './implementations'
@@ -88,6 +88,39 @@ protocols.forEach((protocol: TestProtocolSpec) => {
 
         expect(protocol.lib.identifier).to.equal(reConstructedProtocol.identifier)
       }
+    })
+
+    it(`should be able to serialize and deserialize a message sign request`, async () => {
+      const originalJson = {
+        version: 1,
+        protocol: protocol.lib.identifier,
+        type: 3,
+        payload: {
+          message: 'TestMessage'
+        }
+      }
+
+      const serialized: string = await syncProtocol.serialize(originalJson)
+      const deserialized: DeserializedSyncProtocol = await syncProtocol.deserialize(serialized)
+
+      expect(originalJson).to.deep.equal(deserialized)
+    })
+
+    it(`should be able to serialize and deserialize a message sign response`, async () => {
+      const originalJson = {
+        version: 1,
+        protocol: protocol.lib.identifier,
+        type: 4,
+        payload: {
+          message: 'TestMessage',
+          signature: 'asdfasdf'
+        }
+      }
+
+      const serialized: string = await syncProtocol.serialize(originalJson)
+      const deserialized: DeserializedSyncProtocol = await syncProtocol.deserialize(serialized)
+
+      expect(originalJson).to.deep.equal(deserialized)
     })
   })
 })
