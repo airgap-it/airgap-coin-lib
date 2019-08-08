@@ -62,6 +62,7 @@ export class MessageSignRequestSerializer {
     if (!deserializedObject.callbackURL) {
       delete deserializedObject.callbackURL
     }
+
     return deserializedObject
   }
 }
