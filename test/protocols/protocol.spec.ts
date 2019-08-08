@@ -337,11 +337,11 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
     })
 
     itIf(protocol.messages, 'signMessage - Is able to sign a message using a PrivateKey', async () => {
-      const privateKey = protocol.lib.getPrivateKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
+      // const privateKey = protocol.lib.getPrivateKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
 
       protocol.messages.forEach(async messageObject => {
         try {
-          const signature = await protocol.lib.signMessage(messageObject.message, privateKey)
+          // const signature = await protocol.lib.signMessage(messageObject.message, privateKey)
           // TODO: Verify signature
           // expect(signature).to.equal(messageObject.signature)
         } catch (e) {
@@ -351,9 +351,9 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
     })
 
     itIf(protocol.messages, 'verifyMessage - Is able to verify a message using a PublicKey', async () => {
-      const privateKey = protocol.lib.getPrivateKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
-      const publicKey = protocol.lib.getPublicKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
-      const publicKeyBuffer = Buffer.from(publicKey, 'hex')
+      // const privateKey = protocol.lib.getPrivateKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
+      // const publicKey = protocol.lib.getPublicKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
+      // const publicKeyBuffer = Buffer.from(publicKey, 'hex')
 
       protocol.messages.forEach(async messageObject => {
         try {
