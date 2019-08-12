@@ -4,5 +4,11 @@
     "repository": "MikeMcl/bignumber.js",
     "commitHash": "986fd70e514e58e86d43bc9944547d82658e47ae",
     "files": ["bignumber.js", "bignumber.d.ts"]
+  },
+  "validate.js-0.13.1": {
+    "version": "0.13.1",
+    "repository": "ansman/validate.js",
+    "commitHash": "40e06a1bafd2ce61dba37779ee77e796ad397b81",
+    "files": ["validate.js", "validate.d.ts"]
   }
 }

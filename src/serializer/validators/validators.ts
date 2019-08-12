@@ -1,5 +1,5 @@
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
-import { isArray, isDate, isInteger, isNumber, isObject, isString, validate, validators } from 'validate.js'
+import { isArray, isDate, isInteger, isNumber, isObject, isString, validate, validators } from '../../../dependencies/src/validate.js-0.13.1/validate'
 
 validators.type = (value, options, key, attributes) => {
   // allow empty values by default (needs to be checked by "presence" check)

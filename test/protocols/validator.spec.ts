@@ -1,7 +1,7 @@
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { expect } from 'chai'
 import 'mocha'
-import { validate } from 'validate.js'
+import { validate } from '../../dependencies/src/validate.js-0.13.1/validate'
 
 import { validateSyncScheme } from '../../src/serializer/validators/validators'
 

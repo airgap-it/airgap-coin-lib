@@ -1,6 +1,5 @@
 import Axios, { AxiosError } from 'axios'
-import { readFileSync } from 'fs'
-
+import { readFileSync, writeFileSync, exists } from 'fs'
 /*
 function getStringDifference(a: string, b: string): string {
   let i: number = 0
@@ -68,12 +67,27 @@ for (const prop of Object.keys(deps)) {
     .catch((error: AxiosError) => {
       console.error(error)
     })
-  /*
+  
   for (const file of deps[prop].files) {
     const urlCommit: string = `https://raw.githubusercontent.com/${deps[prop].repository}/${deps[prop].commitHash}/${file}`
-    const urlMaster: string = `https://raw.githubusercontent.com/${deps[prop].repository}/master/${file}`
-    const localContent: string = readFileSync(`./dependencies/src/${prop}/${file}`, 'utf-8')
-
+		// const urlMaster: string = `https://raw.githubusercontent.com/${deps[prop].repository}/master/${file}`
+		const localPath = `./dependencies/src/${prop}/${file}`
+		
+		exists(localPath, exists => {
+			if (!exists) {
+				console.log('DOES NOT EXIST')
+				Axios(urlCommit)
+				.then(response => {
+					writeFileSync(localPath, response.data)
+					log('green', `${prop} (commit): Saved file: ${file}`)
+				})
+				.catch((error: AxiosError) => {
+					console.error(error)
+				})
+	
+			}
+		})
+		/*
     Axios(urlCommit)
       .then(response => {
         const difference: string = getStringDifference(localContent.trim(), response.data.trim())
@@ -92,7 +106,6 @@ for (const prop of Object.keys(deps)) {
       })
       .catch((error: AxiosError) => {
         console.error(error)
-      })
+      })*/
 	}
-	*/
 }
