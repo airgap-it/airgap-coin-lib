@@ -25,7 +25,8 @@
     "test-ci": "nyc --reporter=lcov npm test",
     "test-legacy": "npm run build && mocha --full-trace --timeout 40000 ./test/**/**.spec.js",
     "sonar-scanner": "sonar-scanner",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "install-test-dependencies": "npm i ts-node --no-save && npx ts-node install-test-deps.ts"
   },
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
