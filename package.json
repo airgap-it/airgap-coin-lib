@@ -26,7 +26,7 @@
     "test-legacy": "npm run build && mocha --full-trace --timeout 40000 ./test/**/**.spec.js",
     "sonar-scanner": "sonar-scanner",
     "prepare": "npm run build",
-    "install-test-dependencies": "npm i ts-node --no-save && npx ts-node install-test-deps.ts"
+    "install-test-dependencies": "npm i ts-node --no-save && npx ts-node install-test-deps.ts && npm install"
   },
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
@@ -50,7 +50,34 @@
     "web3": "1.0.0-beta.36"
   },
   "devDependencies": {
-    "typescript": "3.5.3"
+    "typescript": "3.5.3",
+    "@types/assert": "0.0.31",
+    "@types/bip39": "2.4.0",
+    "@types/bitcoinjs-lib": "3.4.0",
+    "@types/chai": "4.1.7",
+    "@types/chai-as-promised": "7.1.0",
+    "@types/ethereumjs-util": "5.2.0",
+    "@types/jasmine": "2.8.9",
+    "@types/mocha": "5.2.5",
+    "@types/node": "10.12.0",
+    "@types/underscore": "1.8.9",
+    "chai": "4.2.0",
+    "chai-as-promised": "7.1.1",
+    "husky": "1.1.2",
+    "istanbul": "0.4.5",
+    "mocha": "5.2.0",
+    "node-fetch": "2.2.0",
+    "nyc": "12.0.2",
+    "prettier": "1.14.2",
+    "pretty-quick": "1.8.0",
+    "qrcode-terminal": "0.12.0",
+    "sinon": "6.3.5",
+    "sonarqube-scanner": "2.1.2",
+    "ts-node": "7.0.1",
+    "tslint": "5.11.0",
+    "tslint-config-prettier": "1.15.0",
+    "tslint-config-valorsoft": "2.2.1",
+    "websocket": "1.0.28"
   },
   "buildDependencies": {
     "typescript": "3.5.3"
