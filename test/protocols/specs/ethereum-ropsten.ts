@@ -1,4 +1,4 @@
-import BigNumber from 'bignumber.js'
+import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 
 import { EthereumRopstenProtocol } from '../../../src'
 import { TestProtocolSpec } from '../implementations'

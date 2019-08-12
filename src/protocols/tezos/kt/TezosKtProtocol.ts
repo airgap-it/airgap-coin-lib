@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios'
-import BigNumber from 'bignumber.js'
+import BigNumber from '../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 
 import { RawTezosTransaction } from '../../../serializer/unsigned-transactions/tezos-transactions.serializer'
 import { ICoinSubProtocol, SubProtocolType } from '../../ICoinSubProtocol'

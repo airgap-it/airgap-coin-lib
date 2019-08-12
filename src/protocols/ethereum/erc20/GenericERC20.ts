@@ -1,6 +1,6 @@
 import * as abiDecoder from 'abi-decoder'
 import axios from 'axios'
-import BigNumber from 'bignumber.js'
+import BigNumber from '../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import * as ethUtil from 'ethereumjs-util'
 
 import { IAirGapSignedTransaction } from '../../../interfaces/IAirGapSignedTransaction'

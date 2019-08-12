@@ -1,6 +1,6 @@
 import { generateWalletUsingDerivationPath } from '@aeternity/hd-wallet'
 import axios from 'axios'
-import BigNumber from 'bignumber.js'
+import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import * as bs58check from 'bs58check'
 import * as rlp from 'rlp'
 import * as Web3 from 'web3'

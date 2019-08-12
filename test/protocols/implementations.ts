@@ -1,4 +1,4 @@
-import BigNumber from 'bignumber.js'
+import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import * as BIP39 from 'bip39'
 
 import { DeserializedSyncProtocol, EncodedType, ICoinProtocol } from '../../src'

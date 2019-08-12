@@ -1,7 +1,7 @@
 // tslint:disable:no-any
 // tslint:disable:no-console
 
-import BigNumber from 'bignumber.js'
+import BigNumber from '../dependencies/src/bignumber.js-9.0.0/bignumber'
 
 import { AeternityProtocol, IAirGapTransaction } from '../src'
 import { RawAeternityTransaction } from '../src/serializer/unsigned-transactions/aeternity-transactions.serializer'
