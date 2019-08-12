@@ -49,6 +49,12 @@
     "web3": "1.0.0-beta.36"
   },
   "devDependencies": {
+    "typescript": "3.5.3"
+  },
+  "buildDependencies": {
+    "typescript": "3.5.3"
+  },
+  "testDependencies": {
     "@types/assert": "0.0.31",
     "@types/bip39": "2.4.0",
     "@types/bitcoinjs-lib": "3.4.0",
@@ -75,7 +81,6 @@
     "tslint": "5.11.0",
     "tslint-config-prettier": "1.15.0",
     "tslint-config-valorsoft": "2.2.1",
-    "typescript": "3.5.3",
     "websocket": "1.0.28"
   },
   "nyc": {
