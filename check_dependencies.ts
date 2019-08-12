@@ -1,6 +1,7 @@
 import Axios, { AxiosError } from 'axios'
 import { readFileSync } from 'fs'
 
+/*
 function getStringDifference(a: string, b: string): string {
   let i: number = 0
   let j: number = 0
@@ -17,6 +18,7 @@ function getStringDifference(a: string, b: string): string {
 
   return result
 }
+*/
 
 interface Dependency {
   version: string
@@ -51,6 +53,22 @@ const dependencies: string = readFileSync('./dependencies/deps.json', 'utf-8')
 const deps: { [key: string]: Dependency } = JSON.parse(dependencies)
 
 for (const prop of Object.keys(deps)) {
+  const urlLatestCommits: string = `https://api.github.com/repos/${deps[prop].repository}/commits`
+
+  Axios(urlLatestCommits)
+    .then(response => {
+      const { data }: { data: { sha: string }[] } = response
+      const isSame: boolean = deps[prop].commitHash === data[0].sha
+      const diffUrl: string = `https://github.com/${deps[prop].repository}/compare/${deps[prop].commitHash.substr(
+        0,
+        7
+      )}..${data[0].sha.substr(0, 7)}`
+      log(isSame ? 'green' : 'red', `${prop} (commit): ${isSame ? 'up to date' : diffUrl}`)
+    })
+    .catch((error: AxiosError) => {
+      console.error(error)
+    })
+  /*
   for (const file of deps[prop].files) {
     const urlCommit: string = `https://raw.githubusercontent.com/${deps[prop].repository}/${deps[prop].commitHash}/${file}`
     const urlMaster: string = `https://raw.githubusercontent.com/${deps[prop].repository}/master/${file}`
@@ -75,5 +93,6 @@ for (const prop of Object.keys(deps)) {
       .catch((error: AxiosError) => {
         console.error(error)
       })
-  }
+	}
+	*/
 }
