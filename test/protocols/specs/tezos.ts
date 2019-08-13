@@ -1,4 +1,4 @@
-import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import BigNumber from '../../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
 
 import { TezosProtocol } from '../../../src/'
 import { TestProtocolSpec } from '../implementations'

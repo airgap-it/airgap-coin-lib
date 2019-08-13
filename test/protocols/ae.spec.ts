@@ -1,10 +1,10 @@
 import axios from 'axios'
-import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import * as chai from 'chai'
 import * as chaiAsPromised from 'chai-as-promised'
 import 'mocha'
 import * as sinon from 'sinon'
 
+import BigNumber from '../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
 import { RawAeternityTransaction } from '../../src/serializer/unsigned-transactions/aeternity-transactions.serializer'
 
 import { AETestProtocolSpec } from './specs/ae'

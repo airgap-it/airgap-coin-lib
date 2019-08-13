@@ -17,13 +17,13 @@
 
 import { fromString } from '../../bip32-path-0.4.2/index'
 import * as nacl from '../../tweetnacl-1.0.1/nacl'
-import * as hmac from '../../tweetnacl-auth-1.0.1/nacl-auth'
+import * as naclAuth from '../../tweetnacl-auth-1.0.1/nacl-auth'
 
 const ED25519_CURVE = Buffer.from('ed25519 seed')
 const HARDENED_OFFSET = 0x80000000
 
 export function getMasterKeyFromSeed(seed) {
-  const I = hmac(seed, ED25519_CURVE)
+  const I = naclAuth.full(seed, ED25519_CURVE)
   const IL = I.slice(0, 32)
   const IR = I.slice(32)
   return {
@@ -41,7 +41,7 @@ export function deriveChild({ privateKey, chainCode }, index) {
 
   const data = Buffer.concat([Buffer.alloc(1, 0), Buffer.from(privateKey), Buffer.from(indexBuffer)])
 
-  const I = hmac(data, Buffer.from(chainCode))
+  const I = naclAuth.full(data, Buffer.from(chainCode))
   const IL = I.slice(0, 32)
   const IR = I.slice(32)
   return {

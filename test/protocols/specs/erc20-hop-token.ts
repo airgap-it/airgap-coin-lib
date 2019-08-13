@@ -1,4 +1,4 @@
-import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import BigNumber from '../../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
 
 import { addSubProtocol } from '../../../src'
 import { HOPTokenProtocol } from '../../../src/protocols/ethereum/erc20/HopRopstenToken'

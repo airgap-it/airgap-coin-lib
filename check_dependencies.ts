@@ -47,7 +47,7 @@ function log(color: string, ...message: any[]): void {
   }
 }
 
-const dependencies: string = readFileSync('./dependencies/deps.json', 'utf-8')
+const dependencies: string = readFileSync('./src/dependencies/deps.json', 'utf-8')
 
 const deps: { [key: string]: Dependency } = JSON.parse(dependencies)
 
@@ -70,12 +70,12 @@ for (const prop of Object.keys(deps)) {
   
   for (const file of deps[prop].files) {
     try {
-      mkdirSync(`./dependencies/src/${prop}/`, { recursive: true });
+      mkdirSync(`./src/dependencies/src/${prop}/`, { recursive: true });
     } catch(e) {}
 
     const urlCommit: string = `https://raw.githubusercontent.com/${deps[prop].repository}/${deps[prop].commitHash}/${file}`
 		// const urlMaster: string = `https://raw.githubusercontent.com/${deps[prop].repository}/master/${file}`
-		const localPath = `./dependencies/src/${prop}/${file}`
+		const localPath = `./src/dependencies/src/${prop}/${file}`
 		
 		exists(localPath, exists => {
 			if (!exists) {

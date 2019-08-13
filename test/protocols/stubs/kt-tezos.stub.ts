@@ -1,5 +1,5 @@
 import axios from 'axios'
-import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import BigNumber from '../../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
 import * as sinon from 'sinon'
 
 import { TezosProtocol } from '../../../src/protocols/tezos/TezosProtocol'

@@ -1,10 +1,10 @@
-import { generateWalletUsingDerivationPath } from '../../dependencies/src/hd-wallet-js-b216450e56954a6e82ace0aade9474673de5d9d5/src/index'
 import axios from 'axios'
-import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import * as bs58check from 'bs58check'
 import * as rlp from 'rlp'
 import * as Web3 from 'web3'
 
+import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { generateWalletUsingDerivationPath } from '../../dependencies/src/hd-wallet-js-b216450e56954a6e82ace0aade9474673de5d9d5/src/index'
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
 import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 import { SignedAeternityTransaction } from '../../serializer/signed-transactions/aeternity-transactions.serializer'
