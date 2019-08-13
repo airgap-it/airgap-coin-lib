@@ -1,9 +1,9 @@
 import axios from 'axios'
-import { BigNumber } from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import * as bitcoinJS from 'bitcoinjs-lib'
 import * as ethUtil from 'ethereumjs-util'
 import * as Web3 from 'web3'
 
+import { BigNumber } from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
 import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 import { Network } from '../../networks'

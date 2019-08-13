@@ -3,7 +3,8 @@
     "target": "es5",
     "lib": ["es2015", "es2017.string", "dom"],
     "module": "commonjs",
-    "declaration": true,
+    // "declaration": true,
+    "allowJs": true,
     "outDir": "./dist",
     "typeRoots": ["./node_modules/@types"],
     "types": ["node"],
@@ -25,5 +26,5 @@
     "noImplicitReturns": true /* Report error when not all code paths in function return a value. */,
     "noFallthroughCasesInSwitch": true /* Report errors for fallthrough cases in switch statement. */
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*"]
 }

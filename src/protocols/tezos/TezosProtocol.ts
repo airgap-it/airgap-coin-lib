@@ -1,6 +1,6 @@
-import { generateWalletUsingDerivationPath } from '../../../dependencies/src/hd-wallet-js-b216450e56954a6e82ace0aade9474673de5d9d5/src/index'
+import { generateWalletUsingDerivationPath } from '../../dependencies/src/hd-wallet-js-b216450e56954a6e82ace0aade9474673de5d9d5/src/index'
 import axios, { AxiosError, AxiosResponse } from 'axios'
-import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import * as bs58check from 'bs58check'
 import * as sodium from 'libsodium-wrappers'
 

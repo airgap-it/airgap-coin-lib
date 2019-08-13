@@ -1,6 +1,6 @@
-import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import * as bitGoUTXO from 'bitgo-utxo-lib'
 
+import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { BitcoinBlockbookProtocol } from '../bitcoin/BitcoinBlockbookProtocol'
 
 export class GroestlcoinProtocol extends BitcoinBlockbookProtocol {

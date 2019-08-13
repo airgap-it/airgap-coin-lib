@@ -1,4 +1,4 @@
-import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import BigNumber from '../dependencies/src/bignumber.js-9.0.0/bignumber'
 
 import { SerializedSignedAeternityTransaction } from './signed-transactions/aeternity-transactions.serializer'
 import { SerializedSignedBitcoinTransaction } from './signed-transactions/bitcoin-transactions.serializer'

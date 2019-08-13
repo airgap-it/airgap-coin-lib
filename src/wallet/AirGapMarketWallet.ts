@@ -1,8 +1,8 @@
 import Axios from 'axios'
-import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
-import * as cryptocompare from '../../dependencies/src/cryptocompare-0.5.0/index'
 
 import { IAirGapTransaction } from '..'
+import BigNumber from '../dependencies/src/bignumber.js-9.0.0/bignumber'
+import * as cryptocompare from '../dependencies/src/cryptocompare-0.5.0/index'
 
 import { AirGapWallet } from './AirGapWallet'
 

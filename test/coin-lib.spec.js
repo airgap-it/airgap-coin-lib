@@ -1,16 +1,16 @@
 const BIP39 = require('bip39')
 const assert = require('assert')
-const networks = require('../dist/src/networks')
+const networks = require('../dist/networks')
 
 const bitcoinJS = require('bitcoinjs-lib')
 
-const BigNumber = require('../dependencies/src/bignumber.js-9.0.0/bignumber')
+const BigNumber = require('../dist/dependencies/src/bignumber.js-9.0.0/bignumber')
 
 const mnemonicPhrase = 'spell device they juice trial skirt amazing boat badge steak usage february virus art survey' // this is what the user writes down and what is saved by secure storage?
 const masterSeed = BIP39.mnemonicToSeed(mnemonicPhrase)
 
-const CoinLib = require('../dist/src/index')
-const hopTokenProtocol = require('../dist/src/protocols/ethereum/erc20/HopRopstenToken').HOPTokenProtocol
+const CoinLib = require('../dist/index')
+const hopTokenProtocol = require('../dist/protocols/ethereum/erc20/HopRopstenToken').HOPTokenProtocol
 
 const validateTxHelper = require('./helpers/validate-tx')
 
