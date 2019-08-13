@@ -2,7 +2,7 @@ const BIP39 = require('bip39')
 const assert = require('assert')
 const networks = require('../dist/networks')
 
-const bitcoinJS = require('bitcoinjs-lib')
+const bitcoinJS = require('bitgo-utxo-lib')
 
 const BigNumber = require('../dist/dependencies/src/bignumber.js-9.0.0/bignumber')
 

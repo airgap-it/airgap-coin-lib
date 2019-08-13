@@ -54,7 +54,6 @@
   "testDependencies": {
     "@types/assert": "0.0.31",
     "@types/bip39": "2.4.0",
-    "@types/bitcoinjs-lib": "3.4.0",
     "@types/chai": "4.1.7",
     "@types/chai-as-promised": "7.1.0",
     "@types/ethereumjs-util": "5.2.0",
