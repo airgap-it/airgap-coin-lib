@@ -15,7 +15,7 @@ const hopTokenProtocol = require('../dist/protocols/ethereum/erc20/HopRopstenTok
 const validateTxHelper = require('./helpers/validate-tx')
 
 const sinon = require('sinon')
-const axios = require('axios')
+const axios = require('../dist/dependencies/src/axios-0.19.0/index')
 
 describe('Extended Public Derivation Logic', function() {
   it('should return the correct bitcoin address from extended public key', function(done) {
