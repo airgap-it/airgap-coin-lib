@@ -1,5 +1,5 @@
 import Axios, { AxiosError } from 'axios'
-import { readFileSync, writeFileSync, exists } from 'fs'
+import { readFileSync, writeFileSync, exists, mkdirSync } from 'fs'
 /*
 function getStringDifference(a: string, b: string): string {
   let i: number = 0
@@ -69,6 +69,10 @@ for (const prop of Object.keys(deps)) {
     })
   
   for (const file of deps[prop].files) {
+    try {
+      mkdirSync(`./dependencies/src/${prop}/`, { recursive: true });
+    } catch(e) {}
+
     const urlCommit: string = `https://raw.githubusercontent.com/${deps[prop].repository}/${deps[prop].commitHash}/${file}`
 		// const urlMaster: string = `https://raw.githubusercontent.com/${deps[prop].repository}/master/${file}`
 		const localPath = `./dependencies/src/${prop}/${file}`
