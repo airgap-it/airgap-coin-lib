@@ -1,5 +1,5 @@
 import axios from 'axios'
-import * as bitcoinJS from 'bitcoinjs-lib'
+import * as bitcoinJS from 'bitgo-utxo-lib'
 import * as ethUtil from 'ethereumjs-util'
 import * as Web3 from 'web3'
 

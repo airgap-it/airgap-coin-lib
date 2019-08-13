@@ -1,4 +1,4 @@
-import * as bitcoinJS from 'bitcoinjs-lib'
+import * as bitcoinJS from 'bitgo-utxo-lib'
 
 interface Bip32 {
   public: number
