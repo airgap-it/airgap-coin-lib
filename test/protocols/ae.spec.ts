@@ -1,9 +1,9 @@
-import axios from 'axios'
 import * as chai from 'chai'
 import * as chaiAsPromised from 'chai-as-promised'
 import 'mocha'
 import * as sinon from 'sinon'
 
+import axios from '../../src/dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
 import { RawAeternityTransaction } from '../../src/serializer/unsigned-transactions/aeternity-transactions.serializer'
 

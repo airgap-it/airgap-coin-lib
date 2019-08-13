@@ -1,5 +1,5 @@
 import * as assert from 'assert'
-import axios from 'axios'
+import axios from '../../dependencies/src/axios-0.19.0/index'
 import * as bitcoinJS from 'bitgo-utxo-lib'
 
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'

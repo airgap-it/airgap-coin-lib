@@ -31,7 +31,6 @@
   },
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
-    "axios": "0.18.0",
     "bip39": "2.5.0",
     "bitgo-utxo-lib": "github:airgap-it/bitgo-utxo-lib#5d91049fd7a988382df81c8260e244ee56d57aac",
     "bs58check": "2.1.2",

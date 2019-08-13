@@ -1,10 +1,10 @@
-import BigNumber from '../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
 import * as chai from 'chai'
 import * as chaiAsPromised from 'chai-as-promised'
 import 'mocha'
 import * as sinon from 'sinon'
 
 import { IAirGapTransaction } from '../../src'
+import BigNumber from '../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
 
 import { TestProtocolSpec } from './implementations'
 import { AETestProtocolSpec } from './specs/ae'

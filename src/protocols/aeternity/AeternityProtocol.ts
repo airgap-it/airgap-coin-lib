@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios from '../../dependencies/src/axios-0.19.0/index'
 import * as bs58check from 'bs58check'
 import * as rlp from 'rlp'
 import * as Web3 from 'web3'

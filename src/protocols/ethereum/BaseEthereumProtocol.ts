@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios from '../../dependencies/src/axios-0.19.0/index'
 import * as bitcoinJS from 'bitgo-utxo-lib'
 import * as ethUtil from 'ethereumjs-util'
 import * as Web3 from 'web3'

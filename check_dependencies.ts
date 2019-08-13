@@ -1,4 +1,4 @@
-import Axios, { AxiosError } from 'axios'
+import Axios, { AxiosError } from './src/dependencies/src/axios-0.19.0/index'
 import { readFileSync, writeFileSync, exists, mkdirSync } from 'fs'
 /*
 function getStringDifference(a: string, b: string): string {

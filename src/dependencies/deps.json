@@ -47,5 +47,68 @@
     "repository": "airgap-it/abi-decoder",
     "commitHash": "a4b60b35d12af863026d6d723bec73b172c4e5b7",
     "files": ["index.js"]
+  },
+  "axios-0.19.0": {
+    "version": "0.19.0",
+    "repository": "axios/axios",
+    "commitHash": "8d0b92b2678d96770304dd767cd05a59d37f12cf",
+    "files": [
+      "package.json",
+      "index.js",
+      "index.d.ts",
+      "lib/axios.js",
+      "lib/defaults.js",
+      "lib/utils.js",
+      "lib/adapters/http.js",
+      "lib/adapters/xhr.js",
+      "lib/cancel/Cancel.js",
+      "lib/cancel/CancelToken.js",
+      "lib/cancel/isCancel.js",
+      "lib/core/Axios.js",
+      "lib/core/InterceptorManager.js",
+      "lib/core/createError.js",
+      "lib/core/dispatchRequest.js",
+      "lib/core/enhanceError.js",
+      "lib/core/mergeConfig.js",
+      "lib/core/settle.js",
+      "lib/core/transformData.js",
+      "lib/helpers/bind.js",
+      "lib/helpers/buildURL.js",
+      "lib/helpers/combineURLs.js",
+      "lib/helpers/cookies.js",
+      "lib/helpers/deprecatedMethod.js",
+      "lib/helpers/isAbsoluteURL.js",
+      "lib/helpers/isURLSameOrigin.js",
+      "lib/helpers/normalizeHeaderName.js",
+      "lib/helpers/parseHeaders.js",
+      "lib/helpers/spread.js"
+    ],
+    "deps": ["follow-redirects-1.5.10", "is-buffer-2.0.3"]
+  },
+  "is-buffer-2.0.3": {
+    "version": "2.0.3",
+    "repository": "feross/is-buffer",
+    "commitHash": "e05c7852e1a978b81c7eb6d677c861a7dc935ead",
+    "files": ["index.js"]
+  },
+  "follow-redirects-1.5.10": {
+    "version": "1.5.10",
+    "repository": "follow-redirects/follow-redirects",
+    "commitHash": "91842752013b26ed780f7b04e557c72f02228cde",
+    "files": ["index.js", "http.js", "https.js"],
+    "deps": ["debug-4.1.1"]
+  },
+  "debug-4.1.1": {
+    "version": "4.1.1",
+    "repository": "visionmedia/debug",
+    "commitHash": "68b4dc8d8549d3924673c38fccc5d594f0a38da1",
+    "files": ["src/browser.js", "src/common.js", "src/index.js", "src/node.js"],
+    "deps": ["ms-2.1.2"]
+  },
+  "ms-2.1.2": {
+    "version": "2.1.2",
+    "repository": "zeit/ms",
+    "commitHash": "7920885eb232fbe7a5efdab956d3e7c507c92ddf",
+    "files": ["index.js"]
   }
 }

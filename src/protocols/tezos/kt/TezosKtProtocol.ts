@@ -1,4 +1,4 @@
-import axios, { AxiosResponse } from 'axios'
+import axios, { AxiosResponse } from '../../../dependencies/src/axios-0.19.0/index'
 
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { RawTezosTransaction } from '../../../serializer/unsigned-transactions/tezos-transactions.serializer'

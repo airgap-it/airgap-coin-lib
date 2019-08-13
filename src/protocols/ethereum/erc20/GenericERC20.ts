@@ -1,5 +1,5 @@
 import * as abiDecoder from '../../../dependencies/src/abi-decoder-a4b60b35d12af863026d6d723bec73b172c4e5b7/index'
-import axios from 'axios'
+import axios from '../../../dependencies/src/axios-0.19.0/index'
 import * as ethUtil from 'ethereumjs-util'
 
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'

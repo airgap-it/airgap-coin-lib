@@ -1,4 +1,4 @@
-import Axios from 'axios'
+import Axios from '../dependencies/src/axios-0.19.0/index'
 
 import { IAirGapTransaction } from '..'
 import BigNumber from '../dependencies/src/bignumber.js-9.0.0/bignumber'

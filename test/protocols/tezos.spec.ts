@@ -1,10 +1,10 @@
-import axios from 'axios'
-import BigNumber from '../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
 import { expect } from 'chai'
 import 'mocha'
 import * as sinon from 'sinon'
 
 import { isCoinlibReady } from '../../src'
+import axios from '../../src/dependencies/src/axios-0.19.0/index'
+import BigNumber from '../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
 import {
   TezosOperationType,
   TezosOriginationOperation,
