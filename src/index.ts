@@ -18,8 +18,6 @@ import { ICoinSubProtocol } from './protocols/ICoinSubProtocol'
 import { LitecoinProtocol } from './protocols/litecoin/LitecoinProtocol'
 import { BakerInfo, DelegationInfo, DelegationRewardInfo, TezosKtProtocol } from './protocols/tezos/kt/TezosKtProtocol'
 import { TezosProtocol } from './protocols/tezos/TezosProtocol'
-import { ZCashProtocol } from './protocols/zcash/ZCashProtocol'
-import { ZCashTestnetProtocol } from './protocols/zcash/ZCashTestnetProtocol'
 import { ProtocolNotSupported, ProtocolVersionMismatch, SerializerVersionMismatch, TypeNotSupported } from './serializer/errors'
 import { DeserializedSyncProtocol, EncodedType, SyncProtocolUtils } from './serializer/serializer'
 import { SignedTransaction } from './serializer/signed-transaction.serializer'
@@ -47,8 +45,6 @@ export {
   GroestlcoinProtocol,
   GroestlcoinTestnetProtocol,
   LitecoinProtocol,
-  ZCashProtocol,
-  ZCashTestnetProtocol,
   EthereumProtocol,
   EthereumRopstenProtocol,
   EthereumClassicProtocol,
