@@ -50,7 +50,7 @@ qa:
   before_script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
   script:
-    - docker create --name qa-$CI_PIPELINE_ID $IMAGE_TAG_CURRENT /bin/bash -c "sudo npm install sonar-scanner; npm run sonar-scanner -- -X
+    - docker create --name qa-$CI_PIPELINE_ID $IMAGE_TAG_CURRENT /bin/bash -c "npm install -g sonar-scanner; npm run sonar-scanner -- -X
       -Dsonar.typescript.lcov.reportPaths=lcov.info
       -Dsonar.typescript.tslint.reportPaths=lintReport.json
       -Dsonar.test.inclusions=**/*.spec.ts
