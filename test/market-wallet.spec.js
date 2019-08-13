@@ -1,4 +1,3 @@
-global.fetch = require('node-fetch')
 const chai = require('chai')
 const expect = chai.expect
 const CoinLib = require('../dist/index')

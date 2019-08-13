@@ -3,7 +3,6 @@ const assert = require('assert')
 const networks = require('../dist/networks')
 
 const bitcoinJS = require('bitcoinjs-lib')
-const zcashJS = require('bitcoinjs-lib-zcash')
 
 const BigNumber = require('../dependencies/src/bignumber.js-9.0.0/bignumber')
 
@@ -84,27 +83,6 @@ describe('Extended Public Derivation Logic', function() {
         done(error)
       })
   })
-  it('should return the correct zcash address from extended public key', function(done) {
-    const zcashHdNode = zcashJS.HDNode.fromSeedBuffer(masterSeed, networks.zcash)
-    const extendedPublicKey = zcashHdNode
-      .derivePath("m/44'/133'/0'")
-      .neutered()
-      .toBase58()
-    const zcash = new CoinLib.ZCashProtocol()
-
-    Promise.all([
-      zcash.getAddressFromExtendedPublicKey(extendedPublicKey, 0, 0),
-      zcash.getAddressFromExtendedPublicKey(extendedPublicKey, 0, 1)
-    ])
-      .then(results => {
-        assert.equal(results[0], 't1PFyZ43MRrVRBWTKqTT5wfimtZ9MFSTgPC') // m/44'/133'/0'/0/0
-        assert.equal(results[1], 't1XwXnCQopt16zfAJVb76A7JPerKE9LSg9L') // m/44'/133'/0'/0/1
-        done()
-      })
-      .catch(error => {
-        done(error)
-      })
-  })
   it('should return the correct ethereum address from extended public key', function(done) {
     const bitcoinHdNode = bitcoinJS.HDNode.fromSeedBuffer(masterSeed, bitcoinJS.networks.bitcoin)
     const publicKey = bitcoinHdNode
@@ -171,24 +149,6 @@ describe('Public Derivation Logic', function() {
       .getAddressFromPublicKey(publicKey)
       .then(address => {
         assert.equal(address, 'mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k')
-        done()
-      })
-      .catch(error => {
-        done(error)
-      })
-  })
-  it('should return the correct zcash address from extended public key', function(done) {
-    const zcashHdNode = zcashJS.HDNode.fromSeedBuffer(masterSeed, networks.zcash)
-    const publicKey = zcashHdNode
-      .derivePath("m/44'/133'/0'/0/0")
-      .neutered()
-      .toBase58()
-    const zcash = new CoinLib.ZCashProtocol()
-
-    zcash
-      .getAddressFromPublicKey(publicKey)
-      .then(address => {
-        assert.equal(address, 't1PFyZ43MRrVRBWTKqTT5wfimtZ9MFSTgPC')
         done()
       })
       .catch(error => {
