@@ -26,7 +26,3 @@ RUN export NODE_ENV=production
 RUN npm run build
 
 CMD ["npm", "run", "test"]
-
-# install sonar-scanner
-
-RUN npm install sonar-scanner
