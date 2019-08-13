@@ -10,5 +10,29 @@
     "repository": "ansman/validate.js",
     "commitHash": "40e06a1bafd2ce61dba37779ee77e796ad397b81",
     "files": ["validate.js", "validate.d.ts"]
+  },
+  "tweetnacl-1.0.1": {
+    "version": "1.0.1",
+    "repository": "dchest/tweetnacl-js",
+    "commitHash": "acab4d4883e7a0be0b230df7b42c0bbd25210d39",
+    "files": ["nacl.js", "nacl.d.ts"]
+  },
+  "tweetnacl-auth-1.0.1": {
+    "version": "1.0.1",
+    "repository": "dchest/tweetnacl-auth-js",
+    "commitHash": "f7e7b60a017880a1e7c5e1cf68f422a4c6005cf9",
+    "files": ["nacl-auth.js"]
+  },
+  "bip32-path-0.4.2": {
+    "version": "0.4.2",
+    "repository": "axic/bip32-path",
+    "commitHash": "d6d14bf9a848c9c28e23a8d68ad0e1bb3432c03c",
+    "files": ["index.js"]
+  },
+  "hd-wallet-js-b216450e56954a6e82ace0aade9474673de5d9d5": {
+    "version": "b216450e56954a6e82ace0aade9474673de5d9d5",
+    "repository": "airgap-it/hd-wallet-js",
+    "commitHash": "b216450e56954a6e82ace0aade9474673de5d9d5",
+    "files": ["src/hd-key.js", "src/hd-wallet.js", "src/index.js"]
   }
 }
