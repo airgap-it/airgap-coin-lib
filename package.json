@@ -31,7 +31,6 @@
   },
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
-    "abi-decoder": "github:airgap-it/abi-decoder#a4b60b35d12af863026d6d723bec73b172c4e5b7",
     "axios": "0.18.0",
     "bip39": "2.5.0",
     "bitcoinjs-lib": "3.3.2",

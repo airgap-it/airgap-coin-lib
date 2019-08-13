@@ -41,5 +41,11 @@
     "repository": "ExodusMovement/cryptocompare",
     "commitHash": "7dbaf1eea531751dbf8b8f2cab339cc747904fab",
     "files": ["index.js"]
+  },
+  "abi-decoder-a4b60b35d12af863026d6d723bec73b172c4e5b7": {
+    "version": "a4b60b35d12af863026d6d723bec73b172c4e5b7",
+    "repository": "airgap-it/abi-decoder",
+    "commitHash": "a4b60b35d12af863026d6d723bec73b172c4e5b7",
+    "files": ["index.js"]
   }
 }

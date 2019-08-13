@@ -1,4 +1,4 @@
-import * as abiDecoder from 'abi-decoder'
+import * as abiDecoder from '../../../dependencies/src/abi-decoder-a4b60b35d12af863026d6d723bec73b172c4e5b7/index'
 import axios from 'axios'
 import * as ethUtil from 'ethereumjs-util'
 
@@ -220,7 +220,7 @@ export class GenericERC20 extends BaseEthereumProtocol implements ICoinSubProtoc
     const ethTx = ethTxs[0]
 
     const extractedTx = new EthereumTransaction(signedTx.transaction)
-    const tokenTransferDetails = abiDecoder.decodeMethod(`0x${extractedTx.data.toString('hex')}`)
+    const tokenTransferDetails: any = abiDecoder.decodeMethod(`0x${extractedTx.data.toString('hex')}`)
     ethTx.to = [ethUtil.toChecksumAddress(tokenTransferDetails.params[0].value)]
     ethTx.amount = new BigNumber(tokenTransferDetails.params[1].value)
 
@@ -237,7 +237,7 @@ export class GenericERC20 extends BaseEthereumProtocol implements ICoinSubProtoc
 
     const ethTx = ethTxs[0]
 
-    const tokenTransferDetails = abiDecoder.decodeMethod(unsignedEthereumTx.transaction.data)
+    const tokenTransferDetails: any = abiDecoder.decodeMethod(unsignedEthereumTx.transaction.data)
 
     ethTx.to = [ethUtil.toChecksumAddress(tokenTransferDetails.params[0].value)]
     ethTx.amount = new BigNumber(tokenTransferDetails.params[1].value)

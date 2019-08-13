@@ -67,31 +67,30 @@ for (const prop of Object.keys(deps)) {
     .catch((error: AxiosError) => {
       console.error(error)
     })
-  
+
   for (const file of deps[prop].files) {
     try {
-      mkdirSync(`./src/dependencies/src/${prop}/`, { recursive: true });
-    } catch(e) {}
+      mkdirSync(`./src/dependencies/src/${prop}/`, { recursive: true })
+    } catch (e) {}
 
     const urlCommit: string = `https://raw.githubusercontent.com/${deps[prop].repository}/${deps[prop].commitHash}/${file}`
-		// const urlMaster: string = `https://raw.githubusercontent.com/${deps[prop].repository}/master/${file}`
-		const localPath = `./src/dependencies/src/${prop}/${file}`
-		
-		exists(localPath, exists => {
-			if (!exists) {
-				console.log('DOES NOT EXIST')
-				Axios(urlCommit)
-				.then(response => {
-					writeFileSync(localPath, response.data)
-					log('green', `${prop} (commit): Saved file: ${file}`)
-				})
-				.catch((error: AxiosError) => {
-					console.error(error)
-				})
-	
-			}
-		})
-		/*
+    // const urlMaster: string = `https://raw.githubusercontent.com/${deps[prop].repository}/master/${file}`
+    const localPath = `./src/dependencies/src/${prop}/${file}`
+
+    exists(localPath, exists => {
+      if (!exists) {
+        console.log('DOES NOT EXIST')
+        Axios(urlCommit)
+          .then(response => {
+            writeFileSync(localPath, response.data)
+            log('green', `${prop} (commit): Saved file: ${file}`)
+          })
+          .catch((error: AxiosError) => {
+            console.error(error)
+          })
+      }
+    })
+    /*
     Axios(urlCommit)
       .then(response => {
         const difference: string = getStringDifference(localContent.trim(), response.data.trim())
@@ -111,5 +110,5 @@ for (const prop of Object.keys(deps)) {
       .catch((error: AxiosError) => {
         console.error(error)
       })*/
-	}
+  }
 }
