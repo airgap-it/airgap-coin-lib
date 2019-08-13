@@ -1,7 +1,7 @@
 global.fetch = require('node-fetch') // cryptocompare needs fetch internally
 const chai = require('chai')
 const expect = chai.expect
-const CoinLib = require('../dist/index')
+const CoinLib = require('../dist/src/index')
 
 describe('AirGapMarketWallet', async () => {
   it('should display the fiat value of a BTC wallet', async () => {
