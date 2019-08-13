@@ -47,10 +47,12 @@
     "web3": "1.0.0-beta.36"
   },
   "devDependencies": {
-    "typescript": "3.5.3"
+    "typescript": "3.5.3",
+    "sonarqube-scanner": "2.1.2"
   },
   "buildDependencies": {
-    "typescript": "3.5.3"
+    "typescript": "3.5.3",
+    "sonarqube-scanner": "2.1.2"
   },
   "testDependencies": {
     "@types/assert": "0.0.31",
