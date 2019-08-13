@@ -15,9 +15,9 @@
  *  PERFORMANCE OF THIS SOFTWARE.
  */
 
-import nacl from '../../tweetnacl-1.0.1/nacl'
-import { full as hmac } from '../../tweetnacl-auth-1.0.1/nacl-auth'
 import { fromString } from '../../bip32-path-0.4.2/index'
+import * as nacl from '../../tweetnacl-1.0.1/nacl'
+import { full as hmac } from '../../tweetnacl-auth-1.0.1/nacl-auth'
 
 const ED25519_CURVE = Buffer.from('ed25519 seed')
 const HARDENED_OFFSET = 0x80000000
@@ -62,11 +62,11 @@ export function derivePathFromKey(path, key) {
     }
   })
 
-  return segments.reduce((parentKey, segment) => deriveChild(parentKey, segment), key)
+  return segments.reduce(deriveChild, key)
 }
 
 export function derivePathFromSeed(path, seed) {
-  if (!['m', 'm/'].includes(path.slice(0, 2))) {
+  if (!(['m', 'm/'] as any).includes(path.slice(0, 2))) {
     throw new Error('Invalid path')
   }
   const masterKey = getMasterKeyFromSeed(seed)
