@@ -272,10 +272,16 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
     describe(`Extract TX`, () => {
       it('getTransactionDetails - Is able to extract all necessary properties from a TX', async () => {
         for (const tx of protocol.txs) {
-          const airgapTx: IAirGapTransaction = await protocol.lib.getTransactionDetails({
+          const airgapTxs: IAirGapTransaction[] = await protocol.lib.getTransactionDetails({
             publicKey: protocol.wallet.publicKey,
             transaction: tx.unsignedTx
           })
+
+          if (airgapTxs.length !== 1) {
+            throw new Error('Unexpected number of transactions')
+          }
+
+          const airgapTx: IAirGapTransaction = airgapTxs[0]
 
           expect(airgapTx.to, 'to property does not match').to.deep.equal(tx.to)
           expect(airgapTx.from, 'from property does not match').to.deep.equal(tx.from)
@@ -289,7 +295,7 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
 
       it('getTransactionDetailsFromSigned - Is able to extract all necessary properties from a TX', async () => {
         for (const tx of protocol.txs) {
-          const airgapTx: IAirGapTransaction = await protocol.lib.getTransactionDetailsFromSigned({
+          const airgapTxs: IAirGapTransaction[] = await protocol.lib.getTransactionDetailsFromSigned({
             accountIdentifier: protocol.wallet.publicKey.substr(-6),
             from: protocol.wallet.addresses,
             amount: protocol.txs[0].amount,
@@ -297,6 +303,12 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
             to: protocol.wallet.addresses,
             transaction: tx.signedTx
           })
+
+          if (airgapTxs.length !== 1) {
+            throw new Error('Unexpected number of transactions')
+          }
+
+          const airgapTx: IAirGapTransaction = airgapTxs[0]
 
           expect(airgapTx.to.map(obj => obj.toLowerCase()), 'from').to.deep.equal(tx.to.map(obj => obj.toLowerCase()))
           expect(airgapTx.from.sort().map(obj => obj.toLowerCase()), 'to').to.deep.equal(tx.from.sort().map(obj => obj.toLowerCase()))

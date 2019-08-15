@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import 'mocha'
 
-import { SignedTransaction, UnsignedTransaction } from '../../src'
+import { IAirGapTransaction, SignedTransaction, UnsignedTransaction } from '../../src'
 import { DeserializedSyncProtocol, SyncProtocolUtils } from '../../src/serializer/serializer'
 import { getProtocolByIdentifier } from '../../src/utils/protocolsByIdentifier'
 
@@ -40,7 +40,13 @@ protocols.forEach((protocol: TestProtocolSpec) => {
         const serializedTx = await syncProtocol.serialize(protocol.unsignedTransaction(tx))
         const deserializedTx = await syncProtocol.deserialize(serializedTx)
 
-        const airGapTx = await protocol.lib.getTransactionDetails(deserializedTx.payload as UnsignedTransaction)
+        const airGapTxs: IAirGapTransaction[] = await protocol.lib.getTransactionDetails(deserializedTx.payload as UnsignedTransaction)
+
+        if (airGapTxs.length !== 1) {
+          throw new Error('Unexpected number of transactions')
+        }
+
+        const airGapTx: IAirGapTransaction = airGapTxs[0]
 
         expect(airGapTx.from).to.deep.equal(protocol.wallet.addresses)
         expect(airGapTx.amount).to.deep.equal(tx.amount)
@@ -53,7 +59,13 @@ protocols.forEach((protocol: TestProtocolSpec) => {
         const serializedTx = await syncProtocol.serialize(protocol.signedTransaction(tx))
         const deserializedTx = await syncProtocol.deserialize(serializedTx)
 
-        const airGapTx = await protocol.lib.getTransactionDetailsFromSigned(deserializedTx.payload as SignedTransaction)
+        const airGapTxs = await protocol.lib.getTransactionDetailsFromSigned(deserializedTx.payload as SignedTransaction)
+
+        if (airGapTxs.length !== 1) {
+          throw new Error('Unexpected number of transactions')
+        }
+
+        const airGapTx: IAirGapTransaction = airGapTxs[0]
 
         expect(airGapTx.from).to.deep.equal(tx.from)
         expect(airGapTx.amount).to.deep.equal(tx.amount)
