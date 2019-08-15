@@ -630,4 +630,12 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
 
     return false
   }
+
+  public async signMessage(message: string, privateKey: Buffer): Promise<string> {
+    return Promise.reject('Message signing not implemented')
+  }
+
+  public async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
+    return Promise.reject('Message verification not implemented')
+  }
 }

@@ -3,7 +3,6 @@ import axios from 'axios'
 import BigNumber from 'bignumber.js'
 import * as bs58check from 'bs58check'
 import * as rlp from 'rlp'
-import * as nacl from 'tweetnacl'
 import * as Web3 from 'web3'
 
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
@@ -17,6 +16,7 @@ import bs64check from '../../utils/base64Check'
 import { padStart } from '../../utils/padStart'
 import { ICoinProtocol } from '../ICoinProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
+import * as sodium from 'libsodium-wrappers'
 
 export class AeternityProtocol extends NonExtendedProtocol implements ICoinProtocol {
   public symbol = 'AE'
@@ -148,7 +148,8 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
     // sign and cut off first byte ('ae')
     const rawTx = this.decodeTx(transaction.transaction)
 
-    const signature = nacl.sign.detached(Buffer.concat([Buffer.from(transaction.networkId), rawTx]), privateKey)
+    await sodium.ready
+    const signature = sodium.crypto_sign_detached(Buffer.concat([Buffer.from(transaction.networkId), rawTx]), privateKey)
 
     const txObj = {
       tag: this.toHexBuffer(11),
@@ -324,5 +325,13 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
     const hexString: string = Web3.utils.toHex(value).substr(2)
 
     return Buffer.from(padStart(hexString, hexString.length % 2 === 0 ? hexString.length : hexString.length + 1, '0'), 'hex')
+  }
+
+  async signMessage(message: string, privateKey: Buffer): Promise<string> {
+    return Promise.reject('Message signing not implemented')
+  }
+
+  async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
+    return Promise.reject('Message verification not implemented')
   }
 }

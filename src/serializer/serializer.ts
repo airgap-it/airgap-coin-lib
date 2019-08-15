@@ -4,6 +4,8 @@ import * as rlp from 'rlp'
 import { signedTransactionSerializerByProtocolIdentifier, unsignedTransactionSerializerByProtocolIdentifier } from '.'
 import { SERIALIZER_VERSION } from './constants'
 import { SerializerVersionMismatch, TypeNotSupported } from './errors'
+import { MessageSignRequestSerializer, SerializedSyncProtocolSignMessageRequest, SignMessageRequest } from './sign-request.serializer'
+import { MessageSignResponseSerializer, SerializedSyncProtocolSignMessageResponse, SignMessageResponse } from './sign-response.serializer'
 import { SerializedSyncProtocolSignedTransaction, SignedTransaction } from './signed-transaction.serializer'
 import { SerializedSyncProtocolTransaction, UnsignedTransaction } from './unsigned-transaction.serializer'
 import { toBuffer } from './utils/toBuffer'
@@ -17,15 +19,19 @@ export enum SyncProtocolKeys {
 }
 
 export enum EncodedType {
-  UNSIGNED_TRANSACTION,
-  SIGNED_TRANSACTION,
-  WALLET_SYNC
+  UNSIGNED_TRANSACTION = 0,
+  SIGNED_TRANSACTION = 1,
+  WALLET_SYNC = 2,
+  MESSAGE_SIGN_REQUEST = 3,
+  MESSAGE_SIGN_RESPONSE = 4
 }
 
 export type SerializedSyncProtocolPayload =
   | SerializedSyncProtocolTransaction
   | SerializedSyncProtocolWalletSync
   | SerializedSyncProtocolSignedTransaction
+  | SerializedSyncProtocolSignMessageRequest
+  | SerializedSyncProtocolSignMessageResponse
 
 export interface SerializedSyncProtocol extends Array<Buffer | SerializedSyncProtocolPayload> {
   [0]: Buffer // SyncProtocolKeys.VERSION
@@ -38,8 +44,10 @@ export interface DeserializedSyncProtocol {
   version?: number
   type: EncodedType
   protocol: string
-  payload: UnsignedTransaction | SyncWalletRequest | SignedTransaction
+  payload: UnsignedTransaction | SyncWalletRequest | SignedTransaction | SignMessageRequest | SignMessageResponse
 }
+
+const assertNever: (x: never) => undefined = (x: never): undefined => undefined
 
 export class SyncProtocolUtils {
   public async serialize(deserializedSyncProtocol: DeserializedSyncProtocol): Promise<string> {
@@ -64,7 +72,14 @@ export class SyncProtocolUtils {
       case EncodedType.WALLET_SYNC:
         untypedPayload = new WalletSerializer().serialize(typedPayload as SyncWalletRequest)
         break
+      case EncodedType.MESSAGE_SIGN_REQUEST:
+        untypedPayload = new MessageSignRequestSerializer().serialize(typedPayload as SignMessageRequest)
+        break
+      case EncodedType.MESSAGE_SIGN_RESPONSE:
+        untypedPayload = new MessageSignResponseSerializer().serialize(typedPayload as SignMessageResponse)
+        break
       default:
+        assertNever(deserializedSyncProtocol.type)
         throw new TypeNotSupported()
     }
 
@@ -109,7 +124,14 @@ export class SyncProtocolUtils {
       case EncodedType.WALLET_SYNC:
         typedPayload = new WalletSerializer().deserialize(payload as SerializedSyncProtocolWalletSync)
         break
+      case EncodedType.MESSAGE_SIGN_REQUEST:
+        typedPayload = new MessageSignRequestSerializer().deserialize(payload as SerializedSyncProtocolSignMessageRequest)
+        break
+      case EncodedType.MESSAGE_SIGN_RESPONSE:
+        typedPayload = new MessageSignResponseSerializer().deserialize(payload as SerializedSyncProtocolSignMessageResponse)
+        break
       default:
+        // TODO: Find way to handle this: assertNever(type)
         throw new TypeNotSupported()
     }
 
