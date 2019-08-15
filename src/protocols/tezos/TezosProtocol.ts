@@ -1444,6 +1444,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     return operation
   }
 
+  /*
   async signMessage(message: string, privateKey: Buffer): Promise<string> {
     await sodium.ready
     const signature = sodium.crypto_sign_detached(sodium.from_string(message), privateKey)
@@ -1459,7 +1460,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
     return isValidSignature
   }
-
+  */
+ 
   public async getTezosVotingInfo(blockHash: string): Promise<Array<TezosVotingInfo>> {
     const response: AxiosResponse = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/${blockHash}/votes/listings`)
     return response.data
