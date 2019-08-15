@@ -2,7 +2,7 @@ import { expect } from 'chai'
 import 'mocha'
 
 import { IAirGapTransaction, SignedTransaction, UnsignedTransaction } from '../../src'
-import { SyncProtocolUtils } from '../../src/serializer/serializer'
+import { DeserializedSyncProtocol, SyncProtocolUtils } from '../../src/serializer/serializer'
 import { getProtocolByIdentifier } from '../../src/utils/protocolsByIdentifier'
 
 import { TestProtocolSpec } from './implementations'
