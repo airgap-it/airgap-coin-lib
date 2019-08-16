@@ -110,5 +110,59 @@
     "repository": "zeit/ms",
     "commitHash": "7920885eb232fbe7a5efdab956d3e7c507c92ddf",
     "files": ["index.js"]
+  },
+  "create-hash-1.2.0": {
+    "version": "1.2.0",
+    "repository": "crypto-browserify/createHash",
+    "commitHash": "469f2a62f4010d8df777b0009f05d504b6c4cd27",
+    "files": ["browser.js", "index.js", "md5.js"],
+    "deps": ["cipher-base-1.0.4", "inherits-2.0.4", "md5.js-1.3.5"]
+  },
+  "cipher-base-1.0.4": {
+    "version": "1.0.4",
+    "repository": "crypto-browserify/cipher-base",
+    "commitHash": "bc18dc847050c34f11f7a0472ff13a76b53fedc6",
+    "files": ["index.js"],
+    "deps": ["safe-buffer-5.2.0", "inherits-2.0.4"]
+  },
+  "safe-buffer-5.2.0": {
+    "version": "5.2.0",
+    "repository": "feross/safe-buffer",
+    "commitHash": "ae53d5b9f06eae8540ca948d14e43ca32692dd8c",
+    "files": ["index.js", "index.d.ts"]
+  },
+  "inherits-2.0.4": {
+    "version": "2.0.4",
+    "repository": "isaacs/inherits",
+    "commitHash": "9a2c29400c6d491e0b7beefe0c32efa3b462545d",
+    "files": ["inherits.js", "inherits_browser.js"]
+  },
+  "md5.js-1.3.5": {
+    "version": "1.3.5",
+    "repository": "crypto-browserify/md5.js",
+    "commitHash": "48df1d6b8c4af2cf52638092d590c528420c61ed",
+    "files": ["index.js"],
+    "deps": ["hash-base-3.0.4", "inherits-2.0.4", "safe-buffer-5.2.0"]
+  },
+  "hash-base-3.0.4": {
+    "version": "3.0.4",
+    "repository": "crypto-browserify/hash-base",
+    "commitHash": "d36440ed0448a654734ae05464d55d34b189a17a",
+    "files": ["index.js"],
+    "deps": ["inherits-2.0.4", "safe-buffer-5.2.0"]
+  },
+  "ripemd160-2.0.2": {
+    "version": "2.0.2",
+    "repository": "crypto-browserify/ripemd160",
+    "commitHash": "3419c6409799d37e0323a556c94d040154657d9d",
+    "files": ["index.js"],
+    "deps": ["hash-base-3.0.4", "inherits-2.0.4"]
+  },
+  "sha.js-2.4.11": {
+    "version": "2.4.11",
+    "repository": "crypto-browserify/sha.js",
+    "commitHash": "105bfe57c69e13c83fcf7a6ca660dd984cb291bf",
+    "files": ["index.js", "sha.js", "sha1.js", "sha224.js", "sha256.js", "sha384.js", "sha512.js"],
+    "deps": ["inherits-2.0.4", "safe-buffer-5.2.0"]
   }
 }
