@@ -1,4 +1,3 @@
-import * as abiDecoder from 'abi-decoder'
 import BigNumber from 'bignumber.js'
 import * as ethUtil from 'ethereumjs-util'
 
@@ -18,50 +17,6 @@ import { TrustWalletInfoClient } from '../clients/info-clients/InfoClient'
 
 const EthereumTransaction = require('ethereumjs-tx')
 
-const AUTH_TOKEN_ABI = [
-  {
-    constant: true,
-    inputs: [
-      {
-        name: '_owner',
-        type: 'address'
-      }
-    ],
-    name: 'balanceOf',
-    outputs: [
-      {
-        name: 'balance',
-        type: 'uint256'
-      }
-    ],
-    payable: false,
-    type: 'function'
-  },
-  {
-    constant: false,
-    inputs: [
-      {
-        name: '_to',
-        type: 'address'
-      },
-      {
-        name: '_value',
-        type: 'uint256'
-      }
-    ],
-    name: 'transfer',
-    outputs: [
-      {
-        name: 'success',
-        type: 'bool'
-      }
-    ],
-    payable: false,
-    type: 'function'
-  }
-]
-
-abiDecoder.addABI(AUTH_TOKEN_ABI)
 export interface GenericERC20Configuration {
   symbol: string
   name: string
@@ -196,9 +151,9 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, TrustWa
     const ethTx = ethTxs[0]
 
     const extractedTx = new EthereumTransaction(signedTx.transaction)
-    const tokenTransferDetails = abiDecoder.decodeMethod(`0x${extractedTx.data.toString('hex')}`)
-    ethTx.to = [ethUtil.toChecksumAddress(tokenTransferDetails.params[0].value)]
-    ethTx.amount = new BigNumber(tokenTransferDetails.params[1].value)
+    const tokenTransferDetails = new EthereumRPCDataTransfer(`0x${extractedTx.data.toString('hex')}`)
+    ethTx.to = [ethUtil.toChecksumAddress(tokenTransferDetails.recipient)]
+    ethTx.amount = new BigNumber(tokenTransferDetails.amount)
 
     return [ethTx]
   }
@@ -213,10 +168,10 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, TrustWa
 
     const ethTx = ethTxs[0]
 
-    const tokenTransferDetails = abiDecoder.decodeMethod(unsignedEthereumTx.transaction.data)
+    const tokenTransferDetails = new EthereumRPCDataTransfer(unsignedEthereumTx.transaction.data)
 
-    ethTx.to = [ethUtil.toChecksumAddress(tokenTransferDetails.params[0].value)]
-    ethTx.amount = new BigNumber(tokenTransferDetails.params[1].value)
+    ethTx.to = [ethUtil.toChecksumAddress(tokenTransferDetails.recipient)]
+    ethTx.amount = new BigNumber(tokenTransferDetails.amount)
 
     return [ethTx]
   }
