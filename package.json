@@ -46,9 +46,7 @@
     "rlp": "2.1.0",
     "validate.js": "0.12.0",
     "validator": "10.8.0",
-    "bn.js": "4.11.8",
     "eth-lib": "0.2.7",
-    "number-to-bn": "1.7.0",
     "underscore": "1.9.1",
     "utf8": "3.0.0"
   },

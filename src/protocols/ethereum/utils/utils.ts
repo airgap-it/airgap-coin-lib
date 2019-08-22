@@ -1,8 +1,9 @@
 import { isNumber } from 'util'
+import BigNumber from 'bignumber.js'
 
 var _ = require('underscore')
-var BN = require('bn.js')
-var numberToBN = require('number-to-bn')
+// var BN = require('bn.js')
+// var numberToBN = require('number-to-bn')
 var utf8 = require('utf8')
 var Hash = require('eth-lib/lib/hash')
 
@@ -17,7 +18,7 @@ export class EthereumUtils {
       return value ? '0x01' : '0x00'
     }
 
-    if (_.isObject(value) && !EthereumUtils.isBigNumber(value) && !EthereumUtils.isBN(value)) {
+    if (_.isObject(value) && !EthereumUtils.isBigNumber(value) /* && !EthereumUtils.isBN(value)*/) {
       return EthereumUtils.utf8ToHex(JSON.stringify(value))
     }
 
@@ -37,9 +38,9 @@ export class EthereumUtils {
 
   private static SHA3_NULL_S = '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
   public static sha3(value: any): string | null {
-    if (EthereumUtils.isBN(value)) {
-      value = value.toString()
-    }
+    // if (EthereumUtils.isBN(value)) {
+    //   value = value.toString()
+    // }
 
     if (EthereumUtils.isHexStrict(value) && /^0x/i.test(value.toString())) {
       value = EthereumUtils.hexToBytes(value)
@@ -54,17 +55,17 @@ export class EthereumUtils {
     }
   }
 
-  private static toBN(number: any): any {
-    try {
-      return numberToBN.apply(null, arguments)
-    } catch (e) {
-      throw new Error(e + ' Given value: "' + number + '"')
-    }
-  }
+  // private static toBN(number: any): any {
+  //   try {
+  //     return numberToBN.apply(null, arguments)
+  //   } catch (e) {
+  //     throw new Error(e + ' Given value: "' + number + '"')
+  //   }
+  // }
 
-  private static isBN(value: any): boolean {
-    return value instanceof BN || (value && value.constructor && value.constructor.name === 'BN')
-  }
+  // private static isBN(value: any): boolean {
+  //   return value instanceof BN || (value && value.constructor && value.constructor.name === 'BN')
+  // }
 
   private static numberToHex(value: number): string {
     if (_.isNull(value) || _.isUndefined(value)) {
@@ -75,10 +76,11 @@ export class EthereumUtils {
       throw new Error('Given input "' + value + '" is not a number.')
     }
 
-    var number = EthereumUtils.toBN(value)
+    // var number = EthereumUtils.toBN(value)
+    var number = new BigNumber(value)
     var result = number.toString(16)
 
-    return number.lt(new BN(0)) ? '-0x' + result.substr(1) : '0x' + result
+    return number.lt(new BigNumber(0)) ? '-0x' + result.substr(1) : '0x' + result
   }
 
   private static hexToBytes(hex: string): number[] {
