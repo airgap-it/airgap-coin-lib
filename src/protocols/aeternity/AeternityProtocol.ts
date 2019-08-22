@@ -3,7 +3,7 @@ import axios from 'axios'
 import BigNumber from 'bignumber.js'
 import * as bs58check from 'bs58check'
 import * as rlp from 'rlp'
-import * as Web3 from 'web3'
+import { EthereumUtils } from '../ethereum/utils/utils'
 
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
 import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
@@ -322,7 +322,7 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
   }
 
   private toHexBuffer(value: number | BigNumber): Buffer {
-    const hexString: string = Web3.utils.toHex(value).substr(2)
+    const hexString: string = EthereumUtils.toHex(value).substr(2)
 
     return Buffer.from(padStart(hexString, hexString.length % 2 === 0 ? hexString.length : hexString.length + 1, '0'), 'hex')
   }
