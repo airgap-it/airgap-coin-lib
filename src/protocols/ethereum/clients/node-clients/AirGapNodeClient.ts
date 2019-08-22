@@ -37,18 +37,26 @@ export class EthereumRPCData {
     this.methodSignature = methodSignature
   }
 
-  abiEncoded(): string {
+  public abiEncoded(): string {
     const hash = EthereumUtils.sha3(this.methodSignature)
     if (hash === null) {
       return ''
     }
-    return hash.slice(2, 10)
+    return `0x${hash.slice(2, 10)}`
   }
 
-  addZeroPadding(value: string, targetLength: number): string {
+  static addLeadingZeroPadding(value: string, targetLength: number): string {
     let result = value
     while (result.length < targetLength) {
       result = '0' + result
+    }
+    return result
+  }
+
+  static removeLeadingZeroPadding(value: string): string {
+    let result = value
+    while (result.startsWith('0')) {
+      result = result.slice(1) // this can probably be done much more efficiently with a regex
     }
     return result
   }
@@ -63,28 +71,44 @@ export class EthereumRPCDataBalanceOf extends EthereumRPCData {
     this.address = address
   }
 
-  abiEncoded(): string {
+  public abiEncoded(): string {
     let srcAddress = this.address
     if (srcAddress.startsWith('0x')) {
       srcAddress = srcAddress.slice(2)
     }
-    return super.abiEncoded() + this.addZeroPadding(srcAddress, 64)
+    return super.abiEncoded() + EthereumRPCData.addLeadingZeroPadding(srcAddress, 64)
   }
 }
 
 export class EthereumRPCDataTransfer extends EthereumRPCData {
+  // 2 chars = 1 byte hence to get to 32 bytes we need 64 chars
+  private static parametersLength: number = 64
   public static methodName: string = 'transfer'
-  public receipient: string
+  public recipient: string
   public amount: string
 
-  constructor(toAddress: string, amount: string) {
+  constructor(toAddressOrData: string, amount?: string) {
     super(`${EthereumRPCDataTransfer.methodName}(address,uint256)`)
-    this.receipient = toAddress
-    this.amount = amount
+    if (amount) {
+      const toAddress = toAddressOrData
+      this.recipient = toAddress
+      this.amount = amount
+    } else {
+      const data = toAddressOrData
+      const methodID = super.abiEncoded()
+      if (!data.startsWith(methodID)) {
+        throw new Error('unexpected method ID')
+      }
+      const params = data.slice(methodID.length)
+      const recipient = EthereumRPCData.removeLeadingZeroPadding(params.slice(0, EthereumRPCDataTransfer.parametersLength))
+      const amount = EthereumRPCData.removeLeadingZeroPadding(params.slice(EthereumRPCDataTransfer.parametersLength))
+      this.recipient = `0x${recipient}`
+      this.amount = `0x${amount}`
+    }
   }
 
-  abiEncoded(): string {
-    let dstAddress = this.receipient
+  public abiEncoded(): string {
+    let dstAddress = this.recipient
     if (dstAddress.startsWith('0x')) {
       dstAddress = dstAddress.slice(2)
     }
@@ -92,8 +116,12 @@ export class EthereumRPCDataTransfer extends EthereumRPCData {
     if (transferAmount.startsWith('0x')) {
       transferAmount = transferAmount.slice(2)
     }
-    // 2 chars = 1 byte hence to get to 32 bytes we need 64 chars
-    return super.abiEncoded() + this.addZeroPadding(dstAddress, 64) + this.addZeroPadding(transferAmount, 64)
+
+    return (
+      super.abiEncoded() +
+      EthereumRPCData.addLeadingZeroPadding(dstAddress, EthereumRPCDataTransfer.parametersLength) +
+      EthereumRPCData.addLeadingZeroPadding(transferAmount, EthereumRPCDataTransfer.parametersLength)
+    )
   }
 }
 
