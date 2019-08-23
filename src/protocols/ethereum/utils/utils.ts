@@ -1,7 +1,7 @@
 import { isNumber } from 'util'
-import BigNumber from 'bignumber.js'
+import { BigNumber } from 'bignumber.js'
 
-var _ = require('underscore')
+// var _ = require('underscore')
 // var BN = require('bn.js')
 // var numberToBN = require('number-to-bn')
 var utf8 = require('utf8')
@@ -14,21 +14,21 @@ export class EthereumUtils {
       return '0x' + value.toLowerCase().replace(/^0x/i, '')
     }
 
-    if (_.isBoolean(value)) {
+    if (typeof value === 'boolean') {
       return value ? '0x01' : '0x00'
     }
 
-    if (_.isObject(value) && !EthereumUtils.isBigNumber(value) /* && !EthereumUtils.isBN(value)*/) {
+    if (EthereumUtils.isObject(value) && !EthereumUtils.isBigNumber(value) /* && !EthereumUtils.isBN(value)*/) {
       return EthereumUtils.utf8ToHex(JSON.stringify(value))
     }
 
     // if its a negative number, pass it through numberToHex
-    if (_.isString(value)) {
+    if (typeof value === 'string') {
       if (value.indexOf('-0x') === 0 || value.indexOf('-0X') === 0) {
         return EthereumUtils.numberToHex(value)
       } else if (value.indexOf('0x') === 0 || value.indexOf('0X') === 0) {
         return value
-      } else if (!isFinite(value)) {
+      } else if (!isFinite(Number(value))) {
         return EthereumUtils.utf8ToHex(value)
       }
     }
@@ -67,12 +67,12 @@ export class EthereumUtils {
   //   return value instanceof BN || (value && value.constructor && value.constructor.name === 'BN')
   // }
 
-  private static numberToHex(value: number): string {
-    if (_.isNull(value) || _.isUndefined(value)) {
+  private static numberToHex(value: string | number): string {
+    if (value === null || value === undefined) {
       return '0x00'
     }
 
-    if (!isFinite(value) && !EthereumUtils.isHexStrict(value)) {
+    if ((typeof value !== 'number' || !isFinite(value)) && !EthereumUtils.isHexStrict(value)) {
       throw new Error('Given input "' + value + '" is not a number.')
     }
 
@@ -165,5 +165,10 @@ export class EthereumUtils {
     }
 
     return '0x' + hex
+  }
+
+  private static isObject(value: any): boolean {
+    var type = typeof value
+    return type === 'function' || (type === 'object' && !!value)
   }
 }
