@@ -11,7 +11,7 @@ export class EthereumProtocolStub implements ProtocolHTTPStub {
       .withArgs(testProtocolSpec.wallet.addresses[0])
       .returns(Promise.resolve(0))
     sinon
-      .stub(protocol.configuration.nodeClient, 'fetchBalanceOf')
+      .stub(protocol.configuration.nodeClient, 'fetchBalance')
       .withArgs(testProtocolSpec.wallet.addresses[0])
       .returns(Promise.resolve('100000000000000000000'))
   }
