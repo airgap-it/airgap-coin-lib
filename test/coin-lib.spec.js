@@ -644,7 +644,7 @@ describe('List Transactions', function() {
           .stub(axios, 'get')
           .withArgs(
             `https://ropsten.trustwalletapp.com/transactions?address=${address}&contract=${
-              hopTokenProtocol.tokenContract.options.address
+              hopTokenProtocol.contractAddress
             }&page=0&limit=20`
           )
           .returns(Promise.resolve({ data: { docs: [] } }))
