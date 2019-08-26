@@ -1,4 +1,3 @@
-import { isNumber } from 'util'
 import { BigNumber } from 'bignumber.js'
 
 // var _ = require('underscore')
@@ -69,10 +68,10 @@ export class EthereumUtils {
 
   private static numberToHex(value: string | number): string {
     if (value === null || value === undefined) {
-      return '0x00'
+      return value
     }
 
-    if ((typeof value !== 'number' || !isFinite(value)) && !EthereumUtils.isHexStrict(value)) {
+    if (!isFinite(Number(value)) && !EthereumUtils.isHexStrict(value)) {
       throw new Error('Given input "' + value + '" is not a number.')
     }
 
@@ -83,8 +82,8 @@ export class EthereumUtils {
     return number.lt(new BigNumber(0)) ? '-0x' + result.substr(1) : '0x' + result
   }
 
-  private static hexToBytes(hex: string): number[] {
-    if (isNumber(hex)) {
+  private static hexToBytes(hex: string | number): number[] {
+    if (typeof hex === 'number') {
       hex = hex.toString(16)
     }
 

@@ -31,6 +31,8 @@ class EthereumRPCBody {
 }
 
 export class EthereumRPCData {
+  // 2 chars = 1 byte hence to get to 32 bytes we need 64 chars
+  protected static parametersLength: number = 64
   public methodSignature: string
 
   constructor(methodSignature: string) {
@@ -45,7 +47,7 @@ export class EthereumRPCData {
     return `0x${hash.slice(2, 10)}`
   }
 
-  static addLeadingZeroPadding(value: string, targetLength: number): string {
+  static addLeadingZeroPadding(value: string, targetLength: number = EthereumRPCData.parametersLength): string {
     let result = value
     while (result.length < targetLength) {
       result = '0' + result
@@ -76,13 +78,11 @@ export class EthereumRPCDataBalanceOf extends EthereumRPCData {
     if (srcAddress.startsWith('0x')) {
       srcAddress = srcAddress.slice(2)
     }
-    return super.abiEncoded() + EthereumRPCData.addLeadingZeroPadding(srcAddress, 64)
+    return super.abiEncoded() + EthereumRPCData.addLeadingZeroPadding(srcAddress)
   }
 }
 
 export class EthereumRPCDataTransfer extends EthereumRPCData {
-  // 2 chars = 1 byte hence to get to 32 bytes we need 64 chars
-  private static parametersLength: number = 64
   public static methodName: string = 'transfer'
   public recipient: string
   public amount: string
@@ -100,8 +100,8 @@ export class EthereumRPCDataTransfer extends EthereumRPCData {
         throw new Error('unexpected method ID')
       }
       const params = data.slice(methodID.length)
-      const recipient = EthereumRPCData.removeLeadingZeroPadding(params.slice(0, EthereumRPCDataTransfer.parametersLength))
-      const amount = EthereumRPCData.removeLeadingZeroPadding(params.slice(EthereumRPCDataTransfer.parametersLength))
+      const recipient = EthereumRPCData.removeLeadingZeroPadding(params.slice(0, EthereumRPCData.parametersLength))
+      const amount = EthereumRPCData.removeLeadingZeroPadding(params.slice(EthereumRPCData.parametersLength))
       this.recipient = `0x${recipient}`
       this.amount = `0x${amount}`
     }
@@ -119,8 +119,8 @@ export class EthereumRPCDataTransfer extends EthereumRPCData {
 
     return (
       super.abiEncoded() +
-      EthereumRPCData.addLeadingZeroPadding(dstAddress, EthereumRPCDataTransfer.parametersLength) +
-      EthereumRPCData.addLeadingZeroPadding(transferAmount, EthereumRPCDataTransfer.parametersLength)
+      EthereumRPCData.addLeadingZeroPadding(dstAddress.toLowerCase()) +
+      EthereumRPCData.addLeadingZeroPadding(transferAmount.toLowerCase())
     )
   }
 }
