@@ -22,7 +22,7 @@ export class GenericERC20ProtocolStub implements ProtocolHTTPStub {
       .returns(Promise.resolve(80))
 
     sinon
-      .stub(protocol.configuration.nodeClient, 'fetchBalanceOf')
+      .stub(protocol.configuration.nodeClient, 'fetchBalance')
       .withArgs(testProtocolSpec.wallet.addresses[0])
       .returns(Promise.resolve('100000000000000000000'))
 
