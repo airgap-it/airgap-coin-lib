@@ -96,10 +96,10 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, TrustWa
       const ethBalance = await super.getBalanceOfPublicKey(publicKey)
       const address = await this.getAddressFromPublicKey(publicKey)
 
-      const gasAmountWeb3: string = await this.estimateGas(address, recipients[0], EthereumUtils.toHex(values[0].toFixed()).toString())
+      const estimatedAmount: string = await this.estimateGas(address, recipients[0], EthereumUtils.toHex(values[0].toFixed()).toString())
 
       // re-cast to our own big-number
-      const gasAmount = new BigNumber(gasAmountWeb3)
+      const gasAmount = new BigNumber(estimatedAmount)
 
       if (ethBalance.isGreaterThanOrEqualTo(fee)) {
         const txCount = await this.configuration.nodeClient.fetchTransactionCount(address)

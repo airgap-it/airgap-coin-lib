@@ -65,7 +65,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
   public blockExplorer = 'https://etherscan.io'
 
   public network: Network
-  protected configuration: EthereumProtocolConfiguration<NodeClient, InfoClient>
+  public configuration: EthereumProtocolConfiguration<NodeClient, InfoClient>
 
   get subProtocols() {
     return getSubProtocolsByIdentifier(this.identifier)
