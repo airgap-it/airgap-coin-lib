@@ -1,3 +1,9 @@
+### 0.5.1 (2019-08-28)
+
+### Bug Fixes
+
+- **xtz**: allow `getBakerInfo` for tz2 and tz3 addresses
+
 ## 0.5.0 (2019-08-07)
 
 ### Internals
