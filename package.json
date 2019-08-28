@@ -33,6 +33,7 @@
     "abi-decoder": "github:airgap-it/abi-decoder#a4b60b35d12af863026d6d723bec73b172c4e5b7",
     "axios": "0.18.0",
     "bignumber.js": "8.0.1",
+    "bip32": "^2.0.4",
     "bip39": "2.5.0",
     "bitcoinjs-lib": "3.3.2",
     "bitcoinjs-lib-zcash": "3.5.2",
