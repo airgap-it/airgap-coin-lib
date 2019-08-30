@@ -20,14 +20,14 @@ export abstract class EthereumInfoClient {
 }
 
 export class TrustWalletInfoClient extends EthereumInfoClient {
-  constructor(baseURL: string = 'https://api.trustwalletapp.com/') {
+  constructor(baseURL: string = 'https://api.trustwalletapp.com') {
     super(baseURL)
   }
 
   public async fetchTransactions(identifier: string, address: string, page: number, limit: number): Promise<IAirGapTransaction[]> {
     return new Promise((resolve, reject) => {
       axios
-        .get(`${this.baseURL}transactions?address=${address}&page=${page}&limit=${limit}&filterContractInteraction=true`)
+        .get(`${this.baseURL}/transactions?address=${address}&page=${page}&limit=${limit}&filterContractInteraction=true`)
         .then(response => {
           const transactionResponse = response.data
           const airGapTransactions: IAirGapTransaction[] = []
@@ -61,7 +61,7 @@ export class TrustWalletInfoClient extends EthereumInfoClient {
   ): Promise<IAirGapTransaction[]> {
     return new Promise((resolve, reject) => {
       axios
-        .get(`${this.baseURL}transactions?address=${address}&contract=${contractAddress}&page=${page}&limit=${limit}`)
+        .get(`${this.baseURL}/transactions?address=${address}&contract=${contractAddress}&page=${page}&limit=${limit}`)
         .then(response => {
           const transactionResponse = response.data
           const airGapTransactions: IAirGapTransaction[] = []
