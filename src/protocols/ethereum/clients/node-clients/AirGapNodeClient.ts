@@ -126,7 +126,7 @@ export class EthereumRPCDataTransfer extends EthereumRPCData {
 }
 
 export class AirGapNodeClient extends EthereumNodeClient {
-  constructor(baseURL: string = 'https://eth-rpc-proxy.airgap.prod.gke.papers.tech/') {
+  constructor(baseURL: string = 'https://eth-rpc-proxy.airgap.prod.gke.papers.tech') {
     super(baseURL)
   }
 
