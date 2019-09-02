@@ -9,13 +9,14 @@ import BigNumber from 'bignumber.js'
 
 export type SerializedUnsignedCosmosTransaction = [[[Buffer, Buffer, [[Buffer, Buffer]]]], [[[Buffer, Buffer]], Buffer], Buffer]
 
-export interface RawCosmosSendTransaction {
-  messages: RawCosmosMessage[]
+export interface RawCosmosTransaction {
+  messages: RawCosmosSendMessage[]
   fee: RawCosmosFee
   memo: string
+  chainID: string
 }
 
-export interface RawCosmosMessage {
+export interface RawCosmosSendMessage {
   fromAddress: string
   toAddress: string
   coins: RawCosmosCoin[]
@@ -32,7 +33,7 @@ export interface RawCosmosFee {
 }
 
 export interface UnsignedCosmosTransaction extends UnsignedTransaction {
-  transaction: RawCosmosSendTransaction
+  transaction: RawCosmosTransaction
 }
 
 export class CosmosTransactionSerializer extends UnsignedTransactionSerializer {
@@ -65,7 +66,7 @@ export class CosmosTransactionSerializer extends UnsignedTransactionSerializer {
     const fee = cosmosTx[1]
     const memo = cosmosTx[2]
 
-    const rawCosmosTx: RawCosmosSendTransaction = {
+    const rawCosmosTx: RawCosmosTransaction = {
       messages: messages.map(message => {
         return {
           fromAddress: message[0].toString(),
