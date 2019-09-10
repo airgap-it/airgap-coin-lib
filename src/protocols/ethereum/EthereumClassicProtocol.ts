@@ -7,7 +7,7 @@ export class EthereumClassicProtocol extends BaseEthereumProtocol<AirGapNodeClie
     // we probably need another network here, explorer is ok
     super({
       chainID: 61,
-      nodeClient: new AirGapNodeClient('https://mew.epool.io/'),
+      nodeClient: new AirGapNodeClient('https://mew.epool.io'),
       infoClient: new TrustWalletInfoClient('https://classic.trustwalletapp.com')
     })
   }
