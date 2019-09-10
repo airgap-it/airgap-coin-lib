@@ -7,8 +7,8 @@ export class EthereumRopstenProtocol extends BaseEthereumProtocol<AirGapNodeClie
     // we probably need another network here, explorer is ok
     super({
       chainID: 3,
-      nodeClient: new AirGapNodeClient('https://ropsten.infura.io/'),
-      infoClient: new TrustWalletInfoClient('https://ropsten.trustwalletapp.com/')
+      nodeClient: new AirGapNodeClient('https://ropsten.infura.io'),
+      infoClient: new TrustWalletInfoClient('https://ropsten.trustwalletapp.com')
     })
   }
 }
