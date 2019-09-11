@@ -37,9 +37,6 @@ export class EthereumUtils {
 
   private static SHA3_NULL_S = '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
   public static sha3(value: any): string | null {
-    // if (EthereumUtils.isBN(value)) {
-    //   value = value.toString()
-    // }
 
     if (EthereumUtils.isHexStrict(value) && /^0x/i.test(value.toString())) {
       value = EthereumUtils.hexToBytes(value)
@@ -53,18 +50,6 @@ export class EthereumUtils {
       return returnValue
     }
   }
-
-  // private static toBN(number: any): any {
-  //   try {
-  //     return numberToBN.apply(null, arguments)
-  //   } catch (e) {
-  //     throw new Error(e + ' Given value: "' + number + '"')
-  //   }
-  // }
-
-  // private static isBN(value: any): boolean {
-  //   return value instanceof BN || (value && value.constructor && value.constructor.name === 'BN')
-  // }
 
   private static numberToHex(value: string | number): string {
     if (value === null || value === undefined) {
