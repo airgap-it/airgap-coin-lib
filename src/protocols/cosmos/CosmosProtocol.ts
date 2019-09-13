@@ -13,6 +13,7 @@ import { RawCosmosSendMessage, RawCosmosTransaction } from '../../serializer/uns
 
 const RIPEMD160 = require('ripemd160')
 const BECH32 = require('bech32')
+const SECP256K1 = require('secp256k1')
 
 export interface KeyPair {
   publicKey: Buffer
@@ -91,6 +92,11 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
     return this.generateKeyPairFromNode(node, derivationPath).publicKey.toString('hex')
   }
 
+  public getPublicKeyFromPrivateKey(privateKey: Buffer): Buffer {
+    const publicKey = SECP256K1.publicKeyCreate(privateKey)
+    return Buffer.from(publicKey, 'binary')
+  }
+
   public getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Buffer {
     let node = fromSeed(Buffer.from(secret, 'hex'))
     return this.generateKeyPairFromNode(node, derivationPath).privateKey
@@ -132,7 +138,65 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
   }
 
   public async signWithPrivateKey(privateKey: Buffer, transaction: RawCosmosTransaction): Promise<string> {
-    throw new Error('Method not implemented.')
+    const accointNumber = 0 // TODO: find where to get this
+    const sequence = 0 // TODO: find where to get this
+    const toSign = {
+      account_number: accointNumber,
+      chain_id: transaction.chainID,
+      fee: {
+        amount: [
+          ...transaction.fee.amount.map(value => {
+            return {
+              amount: value.amount.toFixed(10),
+              denom: value.denom
+            }
+          })
+        ],
+        gas: transaction.fee.gas.toFixed(10)
+      },
+      memo: transaction.memo,
+      msgs: [
+        ...transaction.messages.map(value => {
+          return {
+            type: 'cosmos-sdk/MsgSend',
+            value: {
+              amount: [
+                ...value.coins.map(coin => {
+                  return {
+                    amount: coin.amount.toFixed(10),
+                    denom: coin.denom
+                  }
+                })
+              ],
+              from_address: value.fromAddress,
+              to_address: value.toAddress
+            }
+          }
+        })
+      ],
+      sequence: sequence
+    } // TODO: check if sorting is needed
+    const hash = Buffer.from(await crypto.subtle.digest('SHA-256', Buffer.from(JSON.stringify(toSign))))
+    const signed = SECP256K1.sign(hash, privateKey)
+    const sigBase64 = Buffer.from(signed.signature, 'binary').toString('base64')
+    const signedTransaction = {
+      tx: {
+        msg: toSign.msgs,
+        fee: toSign.fee,
+        signatures: [
+          {
+            signature: sigBase64,
+            pub_key: {
+              type: 'tendermint/PubKeySecp256k1',
+              value: await this.getPublicKeyFromPrivateKey(privateKey).toString('base64') // TODO: check if this is optional
+            }
+          }
+        ],
+        memo: toSign.memo
+      },
+      mode: 'sync'
+    }
+    return JSON.stringify(signedTransaction)
   }
 
   public async getTransactionDetails(transaction: UnsignedTransaction): Promise<IAirGapTransaction[]> {
@@ -204,8 +268,8 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
     return transaction
   }
 
-  public async broadcastTransaction(rawTransaction: any): Promise<string> {
-    throw new Error('Method not implemented.')
+  public async broadcastTransaction(rawTransaction: string): Promise<string> {
+    return await this.nodeClient.broadcastSignedTransaction(rawTransaction)
   }
 
   public async signMessage(message: string, privateKey: Buffer): Promise<string> {

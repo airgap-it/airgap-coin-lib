@@ -7,7 +7,7 @@ import {
 import { toBuffer } from '../utils/toBuffer'
 import BigNumber from 'bignumber.js'
 
-export type SerializedUnsignedCosmosTransaction = [[[Buffer, Buffer, [[Buffer, Buffer]]]], [[[Buffer, Buffer]], Buffer], Buffer]
+export type SerializedUnsignedCosmosTransaction = [[[Buffer, Buffer, [[Buffer, Buffer]]]], [[[Buffer, Buffer]], Buffer], Buffer, Buffer]
 
 export interface RawCosmosTransaction {
   messages: RawCosmosSendMessage[]
@@ -52,7 +52,8 @@ export class CosmosTransactionSerializer extends UnsignedTransactionSerializer {
           ])
         ],
         [[...unsignedTx.transaction.fee.amount.map(amount => [amount.denom, amount.amount])], unsignedTx.transaction.fee.gas],
-        unsignedTx.transaction.memo
+        unsignedTx.transaction.memo,
+        unsignedTx.transaction.chainID
       ],
       unsignedTx.publicKey, // publicKey
       unsignedTx.callback ? unsignedTx.callback : 'airgap-wallet://?d=' // callback-scheme
@@ -65,6 +66,7 @@ export class CosmosTransactionSerializer extends UnsignedTransactionSerializer {
     const messages = cosmosTx[0]
     const fee = cosmosTx[1]
     const memo = cosmosTx[2]
+    const chainID = cosmosTx[3]
 
     const rawCosmosTx: RawCosmosTransaction = {
       messages: messages.map(message => {
@@ -79,7 +81,6 @@ export class CosmosTransactionSerializer extends UnsignedTransactionSerializer {
           })
         }
       }),
-      chainID: '',
       fee: {
         amount: fee[0].map(amount => {
           return {
@@ -89,7 +90,8 @@ export class CosmosTransactionSerializer extends UnsignedTransactionSerializer {
         }),
         gas: new BigNumber(fee[1].toString())
       },
-      memo: memo.toString()
+      memo: memo.toString(),
+      chainID: chainID.toString()
     }
     return {
       transaction: rawCosmosTx,

@@ -92,4 +92,19 @@ export class CosmosNodeClient {
         .catch(reject)
     })
   }
+
+  public async broadcastSignedTransaction(transaction: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      axios
+        .post(`${this.baseURL}/txs`, transaction, {
+          headers: {
+            'Content-type': 'application/json'
+          }
+        })
+        .then(response => {
+          resolve(response.data.hash)
+        })
+        .catch(reject)
+    })
+  }
 }
