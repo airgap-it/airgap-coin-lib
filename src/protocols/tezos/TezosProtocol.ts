@@ -124,7 +124,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   public addressValidationPattern: string = '^(tz1|KT1)[1-9A-Za-z]{33}$'
   public addressPlaceholder: string = 'tz1...'
 
-  public blockExplorer: string = 'https://tzscan.io'
+  public blockExplorer: string = 'https://mvp.tezblock.io'
 
   protected readonly transactionFee: BigNumber = new BigNumber('1400')
   protected readonly originationSize: BigNumber = new BigNumber('257')
@@ -166,11 +166,11 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   }
 
   public getBlockExplorerLinkForAddress(address: string): string {
-    return `${this.blockExplorer}/{{address}}`.replace('{{address}}', address)
+    return `${this.blockExplorer}/account/{{address}}`.replace('{{address}}', address)
   }
 
   public getBlockExplorerLinkForTxId(txId: string): string {
-    return `${this.blockExplorer}/{{txId}}`.replace('{{txId}}', txId)
+    return `${this.blockExplorer}transaction/{{txId}}`.replace('{{txId}}', txId)
   }
 
   /**
