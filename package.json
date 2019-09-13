@@ -25,13 +25,15 @@
     "test-ci": "nyc --reporter=lcov npm test",
     "test-legacy": "npm run build && mocha --full-trace --timeout 40000 ./test/**/**.spec.js",
     "sonar-scanner": "sonar-scanner",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "browserify": "browserify ./dist/index.js -s airgapCoinLib -o ./libs/airgap-coin-lib.browserify.js"
   },
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
     "@aeternity/hd-wallet": "github:airgap-it/hd-wallet-js#b216450e56954a6e82ace0aade9474673de5d9d5",
     "abi-decoder": "github:airgap-it/abi-decoder#a4b60b35d12af863026d6d723bec73b172c4e5b7",
     "axios": "0.18.0",
+    "bech32": "^1.1.3",
     "bignumber.js": "8.0.1",
     "bip32": "^2.0.4",
     "bip39": "2.5.0",
@@ -61,6 +63,7 @@
     "@types/mocha": "5.2.5",
     "@types/node": "10.12.0",
     "@types/underscore": "1.8.9",
+    "browserify": "^16.5.0",
     "chai": "4.2.0",
     "chai-as-promised": "7.1.1",
     "husky": "1.1.2",

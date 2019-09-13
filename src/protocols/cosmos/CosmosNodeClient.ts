@@ -22,11 +22,9 @@ export interface NodeInfo {
 
 export abstract class CosmosNodeClient {
   public baseURL: string
-  public identifier: string
 
-  constructor(identifier: string, baseURL: string) {
+  constructor(baseURL: string) {
     this.baseURL = baseURL
-    this.identifier = identifier
   }
 
   public abstract async fetchTransactions(address: string, page: number, limit: number): Promise<IAirGapTransaction[]>
@@ -35,21 +33,22 @@ export abstract class CosmosNodeClient {
 }
 
 export class CosmosJSONRPCNodeClient extends CosmosNodeClient {
-  constructor(identifier: string, baseURL: string = 'https://lcd-do-not-abuse.cosmostation.io') {
-    super(identifier, baseURL)
+  constructor(baseURL: string = 'https://lcd-do-not-abuse.cosmostation.io') {
+    super(baseURL)
   }
 
   public async fetchTransactions(address: string, page: number, limit: number): Promise<IAirGapTransaction[]> {
+    // TODO: need to find a better way to do this
     const promises: Promise<IAirGapTransaction[]>[] = []
     promises.push(
       new Promise((resolve, reject) => {
         axios
           .get(`${this.baseURL}/txs?message.sender=${address}&page=${page}&limit=${limit}`)
           .then(response => {
-            const transactionResponse = response.data
+            // const transactionResponse = response.data
             const airGapTransactions: IAirGapTransaction[] = []
-            for (const transaction of transactionResponse) {
-            }
+            // for (const transaction of transactionResponse) {
+            // }
             resolve(airGapTransactions)
           })
           .catch(reject)
@@ -60,10 +59,10 @@ export class CosmosJSONRPCNodeClient extends CosmosNodeClient {
         axios
           .get(`${this.baseURL}/txs?transfer.receiver=${address}&page=${page}&limit=${limit}`)
           .then(response => {
-            const transactionResponse = response.data
+            // const transactionResponse = response.data
             const airGapTransactions: IAirGapTransaction[] = []
-            for (const transaction of transactionResponse) {
-            }
+            // for (const transaction of transactionResponse) {
+            // }
             resolve(airGapTransactions)
           })
           .catch(reject)

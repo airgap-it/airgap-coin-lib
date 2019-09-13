@@ -79,6 +79,7 @@ export class CosmosTransactionSerializer extends UnsignedTransactionSerializer {
           })
         }
       }),
+      chainID: '',
       fee: {
         amount: fee[0].map(amount => {
           return {

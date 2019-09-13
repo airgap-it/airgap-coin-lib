@@ -1,4 +1,4 @@
-import { CosmosNodeClient } from './CosmosNodeClient'
+import { CosmosNodeClient, CosmosJSONRPCNodeClient } from './CosmosNodeClient'
 import { ICoinProtocol } from '../ICoinProtocol'
 import { ICoinSubProtocol } from '../ICoinSubProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
@@ -6,15 +6,20 @@ import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 import { UnsignedTransaction } from '../../serializer/unsigned-transaction.serializer'
 import { SignedTransaction } from '../../serializer/signed-transaction.serializer'
 
-import * as bip32 from 'bip32'
-import { BIP32Interface } from 'bip32'
+import { BIP32Interface, fromSeed } from 'bip32'
+import { mnemonicToSeed, validateMnemonic } from 'bip39'
 import { BigNumber } from 'bignumber.js'
 import { RawCosmosSendMessage, RawCosmosTransaction } from '../../serializer/unsigned-transactions/cosmos-transactions.serializer'
 
-// const secp256k1 = require('secp256k1')
 const RIPEMD160 = require('ripemd160')
+const BECH32 = require('bech32')
 
-export class CosmosProtocol<NodeClient extends CosmosNodeClient> extends NonExtendedProtocol implements ICoinProtocol {
+export interface KeyPair {
+  publicKey: Buffer
+  privateKey: Buffer
+}
+
+export class BaseCosmosProtocol<NodeClient extends CosmosNodeClient> extends NonExtendedProtocol implements ICoinProtocol {
   public symbol: string = '⌀'
   public name: string = 'Cosmos'
   public marketSymbol: string = 'Atom'
@@ -62,30 +67,42 @@ export class CosmosProtocol<NodeClient extends CosmosNodeClient> extends NonExte
     return `${this.blockExplorer}/tx/${txId}`
   }
 
-  public getPublicKeyFromHexSecret(secret: string, derivationPath: string): string {
-    let node: BIP32Interface = bip32.fromSeed(Buffer.from(secret, 'hex'))
+  public generateKeyPair(mnemonic: string, derivationPath: string = this.standardDerivationPath): KeyPair {
+    validateMnemonic(mnemonic)
+    const seed = mnemonicToSeed(mnemonic)
+    const node = fromSeed(seed)
+    return this.generateKeyPairFromNode(node, derivationPath)
+  }
+
+  private generateKeyPairFromNode(node: BIP32Interface, derivationPath: string): KeyPair {
     let keys = node.derivePath(derivationPath)
-    return keys.publicKey.toString('hex')
+    let privateKey = keys.privateKey
+    if (privateKey === undefined) {
+      throw new Error('Cannot generate private key')
+    }
+    return {
+      publicKey: keys.publicKey,
+      privateKey: privateKey
+    }
+  }
+
+  public getPublicKeyFromHexSecret(secret: string, derivationPath: string): string {
+    let node: BIP32Interface = fromSeed(Buffer.from(secret, 'hex'))
+    return this.generateKeyPairFromNode(node, derivationPath).publicKey.toString('hex')
   }
 
   public getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Buffer {
-    let node = bip32.fromSeed(Buffer.from(secret, 'hex'))
-    let keys = node.derivePath(derivationPath)
-    let privateKey = keys.privateKey
-    if (privateKey) {
-      return Buffer.from(privateKey.buffer)
-    }
-    throw new Error('Cannot generate private key')
+    let node = fromSeed(Buffer.from(secret, 'hex'))
+    return this.generateKeyPairFromNode(node, derivationPath).privateKey
   }
 
   public async getAddressFromPublicKey(publicKey: string): Promise<string> {
     return new Promise(resolve => {
-      let encoder = new TextEncoder()
-      window.crypto.subtle.digest('SHA-256', encoder.encode(publicKey)).then(value => {
-        let decoder = new TextDecoder()
-        let digest = decoder.decode(value)
-        let address = new RIPEMD160().update(digest).digest('hex')
-        resolve(`${this.addressPrefix}${address}`)
+      const pubkey = Buffer.from(publicKey, 'hex')
+      crypto.subtle.digest('SHA-256', pubkey).then(value => {
+        const hash = new RIPEMD160().update(Buffer.from(value)).digest()
+        const address = BECH32.encode(this.addressPrefix, BECH32.toWords(hash))
+        resolve(address)
       })
     })
   }
@@ -108,13 +125,15 @@ export class CosmosProtocol<NodeClient extends CosmosNodeClient> extends NonExte
   public async getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
     const promises: Promise<IAirGapTransaction[]>[] = []
     const page = this.getPageNumber(limit, offset)
-    for (const address in addresses) {
+    for (const address of addresses) {
       promises.push(this.nodeClient.fetchTransactions(address, page, limit))
     }
     return Promise.all(promises).then(transactions => transactions.reduce((current, next) => current.concat(next)))
   }
 
-  public async signWithPrivateKey(privateKey: Buffer, transaction: RawCosmosTransaction): Promise<string> {}
+  public async signWithPrivateKey(privateKey: Buffer, transaction: RawCosmosTransaction): Promise<string> {
+    throw new Error('Method not implemented.')
+  }
 
   public async getTransactionDetails(transaction: UnsignedTransaction): Promise<IAirGapTransaction> {
     throw new Error('Method not implemented.')
@@ -126,7 +145,7 @@ export class CosmosProtocol<NodeClient extends CosmosNodeClient> extends NonExte
 
   public async getBalanceOfAddresses(addresses: string[]): Promise<BigNumber> {
     const promises: Promise<BigNumber>[] = []
-    for (const address in addresses) {
+    for (const address of addresses) {
       promises.push(this.nodeClient.fetchBalance(address))
     }
     return Promise.all(promises).then(balances => {
@@ -146,7 +165,7 @@ export class CosmosProtocol<NodeClient extends CosmosNodeClient> extends NonExte
     values: BigNumber[],
     fee: BigNumber,
     data?: any
-  ): Promise<any> {
+  ): Promise<RawCosmosTransaction> {
     const address = await this.getAddressFromPublicKey(publicKey)
     const nodeInfo = await this.nodeClient.fetchNodeInfo()
 
@@ -187,5 +206,11 @@ export class CosmosProtocol<NodeClient extends CosmosNodeClient> extends NonExte
 
   public async broadcastTransaction(rawTransaction: any): Promise<string> {
     throw new Error('Method not implemented.')
+  }
+}
+
+export class CosmosProtocol extends BaseCosmosProtocol<CosmosJSONRPCNodeClient> {
+  constructor() {
+    super(new CosmosJSONRPCNodeClient())
   }
 }
