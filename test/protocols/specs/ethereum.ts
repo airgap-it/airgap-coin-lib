@@ -1,8 +1,11 @@
+import { SignedEthereumTransaction } from './../../../src/serializer/signed-transactions/ethereum-transactions.serializer'
+import { EthereumTransactionValidator } from './../../../src/serializer/unsigned-transactions/ethereum-transactions.validator'
 import BigNumber from '../../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
 
 import { EthereumProtocol } from '../../../src'
 import { TestProtocolSpec } from '../implementations'
 import { EthereumProtocolStub } from '../stubs/ethereum.stub'
+import { RawEthereumTransaction } from '../../../src/serializer/unsigned-transactions/ethereum-transactions.serializer'
 
 export class EthereumTestProtocolSpec extends TestProtocolSpec {
   public name = 'Ethereum'
@@ -44,4 +47,134 @@ export class EthereumTestProtocolSpec extends TestProtocolSpec {
         'f86c808504a817c800825208944a1e1d37462a422873bfccb1e705b05cc4bd922e880de0b6b3a76400008026a00678aaa8f8fd478952bf46044589f5489e809c5ae5717dfe6893490b1f98b441a06a82b82dad7c3232968ec3aa2bba32879b3ecdb877934915d7e65e095fe53d5d'
     }
   ]
+  public validRawTransactions: Array<RawEthereumTransaction> = [
+    {
+      nonce: '0x0',
+      gasPrice: '0x4a817c800',
+      gasLimit: '0x5208',
+      to: '0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e',
+      value: '0xde0b6b3a7640000',
+      chainId: 1,
+      data: '0x'
+    }
+  ]
+  public invalidUnsignedTransactionValues: { property: string; testName: string; values: { value: any; expectedError: any }[] }[] = [
+    {
+      property: 'nonce',
+      testName: 'Nonce',
+      values: [
+        { value: '0x', expectedError: undefined }, // TODO: Valid?
+        { value: '', expectedError: [" can't be blank", ' is not hex string'] },
+        { value: 0x0, expectedError: [' is not of type "String"', ' is not hex string'] },
+        { value: 1, expectedError: [' is not of type "String"', ' is not hex string'] },
+        { value: -1, expectedError: [' is not of type "String"', ' is not hex string'] },
+        { value: undefined, expectedError: [" can't be blank", ' is not hex string'] },
+        { value: null, expectedError: [" can't be blank", ' is not hex string'] }
+      ]
+    },
+    {
+      property: 'gasPrice',
+      testName: 'Gas price',
+      values: [
+        { value: '0x', expectedError: undefined }, // TODO: Valid?
+        { value: '', expectedError: [" can't be blank", ' is not hex string'] },
+        { value: 0x0, expectedError: [' is not of type "String"', ' is not hex string'] },
+        { value: 1, expectedError: [' is not of type "String"', ' is not hex string'] },
+        { value: -1, expectedError: [' is not of type "String"', ' is not hex string'] },
+        { value: undefined, expectedError: [" can't be blank", ' is not hex string'] },
+        { value: null, expectedError: [" can't be blank", ' is not hex string'] }
+      ]
+    },
+    {
+      property: 'gasLimit',
+      testName: 'Gas limit',
+      values: [
+        { value: '0x', expectedError: undefined }, // TODO: Valid?
+        { value: '', expectedError: [" can't be blank", ' is not hex string'] },
+        { value: 0x0, expectedError: [' is not of type "String"', ' is not hex string'] },
+        { value: 1, expectedError: [' is not of type "String"', ' is not hex string'] },
+        { value: -1, expectedError: [' is not of type "String"', ' is not hex string'] },
+        { value: undefined, expectedError: [" can't be blank", ' is not hex string'] },
+        { value: null, expectedError: [" can't be blank", ' is not hex string'] }
+      ]
+    },
+    {
+      property: 'to',
+      testName: 'To',
+      values: [
+        { value: '0x', expectedError: [' is not a valid ethereum address'] }, // TODO: Valid?
+        { value: '', expectedError: [" can't be blank", ' is not hex string', ' is not a valid ethereum address'] },
+        { value: 0x0, expectedError: [' is not of type "String"', ' is not hex string', ' is not a valid ethereum address'] },
+        { value: 1, expectedError: [' is not of type "String"', ' is not hex string', ' is not a valid ethereum address'] },
+        { value: -1, expectedError: [' is not of type "String"', ' is not hex string', ' is not a valid ethereum address'] },
+        { value: undefined, expectedError: [" can't be blank", ' is not hex string'] },
+        { value: null, expectedError: [" can't be blank", ' is not hex string'] }
+      ]
+    },
+    {
+      property: 'value',
+      testName: 'Value',
+      values: [
+        { value: '0x', expectedError: undefined }, // TODO: Valid?
+        { value: '', expectedError: [" can't be blank", ' is not hex string'] },
+        { value: 0x0, expectedError: [' is not of type "String"', ' is not hex string'] },
+        { value: 1, expectedError: [' is not of type "String"', ' is not hex string'] },
+        { value: -1, expectedError: [' is not of type "String"', ' is not hex string'] },
+        { value: undefined, expectedError: [" can't be blank", ' is not hex string'] },
+        { value: null, expectedError: [" can't be blank", ' is not hex string'] }
+      ]
+    },
+    {
+      property: 'chainId',
+      testName: 'Chain id',
+      values: [
+        { value: '0x', expectedError: [' is not a number'] }, // TODO: Valid?
+        { value: '', expectedError: [" can't be blank", ' is not a number'] },
+        { value: 0x0, expectedError: undefined },
+        { value: 1, expectedError: undefined },
+        { value: -1, expectedError: [' must be greater than or equal to 0'] },
+        { value: undefined, expectedError: [" can't be blank"] },
+        { value: null, expectedError: [" can't be blank"] }
+      ]
+    },
+    {
+      property: 'data',
+      testName: 'Data',
+      values: [
+        { value: '0x', expectedError: undefined }, // TODO: Valid?
+        { value: '', expectedError: [" can't be blank", ' is not hex string'] },
+        { value: 0x0, expectedError: [' is not of type "String"', ' is not hex string'] },
+        { value: 1, expectedError: [' is not of type "String"', ' is not hex string'] },
+        { value: -1, expectedError: [' is not of type "String"', ' is not hex string'] },
+        { value: undefined, expectedError: [" can't be blank", ' is not hex string'] },
+        { value: null, expectedError: [" can't be blank", ' is not hex string'] }
+      ]
+    }
+  ]
+
+  public invalidSignedTransactionValues: { property: string; testName: string; values: { value: any; expectedError: any }[] }[] = [
+    {
+      property: 'transaction',
+      testName: 'Transaction',
+      values: [
+        { value: '0x', expectedError: [' not a valid Ethereum transaction'] }, // TODO: Valid?
+        { value: '', expectedError: [" can't be blank", ' not a valid Ethereum transaction'] },
+        { value: 0x0, expectedError: [' is not of type "String"', ' not a valid Ethereum transaction'] },
+        { value: 1, expectedError: [' is not of type "String"', ' not a valid Ethereum transaction'] },
+        { value: -1, expectedError: [' is not of type "String"', ' not a valid Ethereum transaction'] },
+        { value: undefined, expectedError: [" can't be blank", ' not a valid Ethereum transaction'] },
+        { value: null, expectedError: [" can't be blank", ' not a valid Ethereum transaction'] }
+      ]
+    }
+  ]
+
+  public validSignedTransactions: Array<SignedEthereumTransaction> = [
+    {
+      accountIdentifier: '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
+      transaction:
+        'f86c808504a817c800825208944a1e1d37462a422873bfccb1e705b05cc4bd922e880de0b6b3a76400008026a00678aaa8f8fd478952bf46044589f5489e809c5ae5717dfe6893490b1f98b441a06a82b82dad7c3232968ec3aa2bba32879b3ecdb877934915d7e65e095fe53d5d'
+    }
+  ]
+
+  public validator = new EthereumTransactionValidator()
 }

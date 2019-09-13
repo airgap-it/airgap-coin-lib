@@ -1,3 +1,4 @@
+import { TezosTransactionValidator } from './../unsigned-transactions/tezos-transactions.validator'
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
 import {
   SerializedSyncProtocolSignedTransaction,
@@ -15,7 +16,14 @@ export interface SignedTezosTransaction extends SignedTransaction {
 export type SerializedSignedTezosTransaction = [Buffer]
 
 export class TezosSignedTransactionSerializer extends SignedTransactionSerializer {
-  public serialize(transaction: SignedTezosTransaction): SerializedSyncProtocolSignedTransaction {
+  public async serialize(transaction: SignedTezosTransaction): Promise<SerializedSyncProtocolSignedTransaction> {
+    const validator = new TezosTransactionValidator()
+
+    validator.validateSignedTransaction(transaction)
+    const errors = await validator.validateSignedTransaction(transaction)
+    if (errors) {
+      throw errors
+    }
     const toSerialize: any[] = []
 
     toSerialize[SyncProtocolSignedTransactionKeys.SIGNED_TRANSACTION] = transaction.transaction
@@ -26,10 +34,17 @@ export class TezosSignedTransactionSerializer extends SignedTransactionSerialize
     return serializedBuffer
   }
 
-  public deserialize(serializedTx: SerializedSyncProtocolSignedTransaction): SignedTezosTransaction {
+  public async deserialize(serializedTx: SerializedSyncProtocolSignedTransaction): Promise<SignedTezosTransaction> {
     const signedTezosTx: SignedTezosTransaction = {
       accountIdentifier: serializedTx[SyncProtocolSignedTransactionKeys.ACCOUNT_IDENTIFIER].toString(),
       transaction: serializedTx[SyncProtocolSignedTransactionKeys.SIGNED_TRANSACTION].toString()
+    }
+    const validator = new TezosTransactionValidator()
+
+    // TODO return promise instead
+    const errors = await validator.validateSignedTransaction(signedTezosTx)
+    if (errors) {
+      throw errors
     }
 
     return signedTezosTx

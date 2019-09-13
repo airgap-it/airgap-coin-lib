@@ -1,7 +1,7 @@
 import axios from '../../dependencies/src/axios-0.19.0/index'
 import * as bs58check from 'bs58check'
 import * as rlp from 'rlp'
-import * as Web3 from 'web3'
+import { EthereumUtils } from '../ethereum/utils/utils'
 
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { generateWalletUsingDerivationPath } from '../../dependencies/src/hd-wallet-js-b216450e56954a6e82ace0aade9474673de5d9d5/src/index'
@@ -322,7 +322,7 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
   }
 
   private toHexBuffer(value: number | BigNumber): Buffer {
-    const hexString: string = Web3.utils.toHex(value).substr(2)
+    const hexString: string = EthereumUtils.toHex(value).substr(2)
 
     return Buffer.from(padStart(hexString, hexString.length % 2 === 0 ? hexString.length : hexString.length + 1, '0'), 'hex')
   }

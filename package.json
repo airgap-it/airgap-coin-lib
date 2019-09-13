@@ -39,8 +39,10 @@
     "ethereumjs-util": "5.2.0",
     "libsodium-wrappers": "0.7.3",
     "rlp": "2.1.0",
-    "tweetnacl": "1.0.0",
-    "web3": "1.0.0-beta.36"
+    "validate.js": "0.12.0",
+    "validator": "10.8.0",
+    "eth-lib": "0.2.7",
+    "utf8": "3.0.0"
   },
   "devDependencies": {
     "typescript": "3.5.3",

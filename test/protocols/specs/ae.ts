@@ -1,8 +1,11 @@
+import { AeternityProtocol } from './../../../src/protocols/aeternity/AeternityProtocol'
+import { SignedAeternityTransaction } from './../../../src/serializer/signed-transactions/aeternity-transactions.serializer'
+import { AeternityTransactionValidator } from './../../../src/serializer/unsigned-transactions/aeternity-transactions.validator'
 import BigNumber from '../../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
 
-import { AeternityProtocol } from '../../../src'
 import { TestProtocolSpec } from '../implementations'
 import { AeternityProtocolStub } from '../stubs/ae.stub'
+import { RawAeternityTransaction } from '../../../src/serializer/unsigned-transactions/aeternity-transactions.serializer'
 
 // Test Mnemonic:
 // mango club state husband keen fiber float jelly major include horse infant square spike equip caught version must pen swim setup right poem economy
@@ -62,4 +65,129 @@ export class AETestProtocolSpec extends TestProtocolSpec {
   public seed() {
     return 'a109e38f00824ea80107cd7ccbac4e7afe7abe588eeac9191d71adf98fb1fba73311182c010a0182e20e67f4daa45bf1cbbbecab8ff407f33e50045d7d516e0c'
   }
+
+  public invalidUnsignedTransactionValues: { property: string; testName: string; values: { value: any; expectedError: any }[] }[] = [
+    {
+      property: 'transaction',
+      testName: 'Transaction',
+      values: [
+        {
+          value: '0x0',
+          expectedError: [' invalid tx format']
+        }, // TODO: Valid?
+        {
+          value: '',
+          expectedError: [" can't be blank", ' invalid tx format']
+        },
+        {
+          value: 0x0,
+          expectedError: [' is not of type "String"', " isn't base64 encoded"]
+        },
+        {
+          value: 1,
+          expectedError: [' is not of type "String"', " isn't base64 encoded"]
+        },
+        {
+          value: -1,
+          expectedError: [' is not of type "String"', " isn't base64 encoded"]
+        },
+        {
+          value: undefined,
+          expectedError: [" can't be blank"]
+        },
+        {
+          value: null,
+          expectedError: [" can't be blank"]
+        }
+      ]
+    }
+  ]
+
+  public invalidSignedTransactionValues: { property: string; testName: string; values: { value: any; expectedError: any }[] }[] = [
+    {
+      property: 'transaction',
+      testName: 'Transaction',
+      values: [
+        {
+          value: '0x0',
+          expectedError: [' invalid tx format']
+        }, // TODO: Valid?
+        {
+          value: '',
+          expectedError: [" can't be blank", ' invalid tx format']
+        },
+        {
+          value: 0x0,
+          expectedError: [' is not of type "String"', " isn't base64 encoded"]
+        },
+        {
+          value: 1,
+          expectedError: [' is not of type "String"', " isn't base64 encoded"]
+        },
+        {
+          value: -1,
+          expectedError: [' is not of type "String"', " isn't base64 encoded"]
+        },
+        {
+          value: undefined,
+          expectedError: [" can't be blank"]
+        },
+        {
+          value: null,
+          expectedError: [" can't be blank"]
+        }
+      ]
+    },
+    {
+      property: 'accountIdentifier',
+      testName: 'Account identifier',
+      values: [
+        {
+          value: '0x0',
+          expectedError: [' not a valid Aeternity account']
+        },
+        {
+          value: '',
+          expectedError: [" can't be blank", ' not a valid Aeternity account']
+        },
+        {
+          value: 0x0,
+          expectedError: [' is not of type "String"', ' not a valid Aeternity account']
+        },
+        {
+          value: 1,
+          expectedError: [' is not of type "String"', ' not a valid Aeternity account']
+        },
+        {
+          value: -1,
+          expectedError: [' is not of type "String"', ' not a valid Aeternity account']
+        },
+        {
+          value: null,
+          expectedError: [" can't be blank"]
+        },
+        {
+          value: undefined,
+          expectedError: [" can't be blank"]
+        }
+      ]
+    }
+  ]
+  public validRawTransactions: Array<RawAeternityTransaction> = [
+    {
+      transaction:
+        'tx_+FsMAaEB1k9h7FZRnn8Q81kIxA97Moj7Pr3A9sUEqpXseA48f/mhAdZPYexWUZ5/EPNZCMQPezKI+z69wPbFBKqV7HgOPH/5iIrHIwSJ6AAAiA3gtrOnZAAAAACAQCdXaA==',
+      networkId: 'ae_mainnet'
+    }
+  ]
+
+  public validSignedTransactions: Array<SignedAeternityTransaction> = [
+    {
+      accountIdentifier: 'd64f61ec56519e7f10f35908c40f7b3288fb3ebdc0f6c504aa95ec780e3c7ff9',
+      transaction:
+        'tx_+KULAfhCuEBokDCnOXkU2G+pwrNXVQetMO1+2fQsnOeJKGcRl1S5toQAJRldCQb1VSkmF2yumQl11kmF2H6LpAH1npP71i0OuF34WwwBoQHWT2HsVlGefxDzWQjED3syiPs+vcD2xQSqlex4Djx/+aEB1k9h7FZRnn8Q81kIxA97Moj7Pr3A9sUEqpXseA48f/mIiscjBInoAACIDeC2s6dkAAAAAIAxkWE6'
+    }
+  ]
+
+  public validator = new AeternityTransactionValidator()
 }
