@@ -64,8 +64,8 @@ export interface ICoinProtocol {
 
   signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: any): Promise<IAirGapSignedTransaction> // broadcaster proxies this operation
   signWithPrivateKey(privateKey: Buffer, transaction: any): Promise<IAirGapSignedTransaction> // broadcaster proxies this operation
-  getTransactionDetails(transaction: UnsignedTransaction): Promise<IAirGapTransaction> // out of unsigned transaction
-  getTransactionDetailsFromSigned(transaction: SignedTransaction): Promise<IAirGapTransaction> // out of signed transaction
+  getTransactionDetails(transaction: UnsignedTransaction): Promise<IAirGapTransaction[]> // out of unsigned transaction
+  getTransactionDetailsFromSigned(transaction: SignedTransaction): Promise<IAirGapTransaction[]> // out of signed transaction
 
   getBalanceOfAddresses(addresses: string[]): Promise<BigNumber>
   getBalanceOfPublicKey(publicKey: string): Promise<BigNumber>
@@ -81,4 +81,7 @@ export interface ICoinProtocol {
   ): Promise<any> // only broadcaster
   prepareTransactionFromPublicKey(publicKey: string, recipients: string[], values: BigNumber[], fee: BigNumber, data?: any): Promise<any> // only broadcaster
   broadcastTransaction(rawTransaction: any): Promise<string>
+
+  signMessage(message: string, privateKey: Buffer): Promise<string> // Returns signature
+  verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean>
 }

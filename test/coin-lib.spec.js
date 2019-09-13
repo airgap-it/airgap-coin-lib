@@ -684,7 +684,7 @@ describe('Transaction Detail Logic', function(done) {
         publicKey: '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
         transaction: tx
       })
-      .then(airGapTx => {
+      .then(([airGapTx]) => {
         assert.deepEqual(airGapTx.from, ['0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e'], 'from-addresses were not properly extracted')
         assert.deepEqual(airGapTx.to, ['0xf5E54317822EBA2568236EFa7b08065eF15C5d42'], 'to-addresses were not properly extracted')
         assert.equal(airGapTx.fee, '420000000000000', 'fee was not properly extracted')
@@ -734,7 +734,7 @@ describe('Transaction Detail Logic', function(done) {
       .getTransactionDetails({
         transaction: tx
       })
-      .then(airGapTx => {
+      .then(([airGapTx]) => {
         assert.deepEqual(
           airGapTx.from,
           ['mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k', 'mtb2Yx8rPUhYxdqPsH9nzT375QtWZ9XJcX'],

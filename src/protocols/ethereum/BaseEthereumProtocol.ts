@@ -160,20 +160,22 @@ export abstract class BaseEthereumProtocol implements ICoinProtocol {
     return tx.serialize().toString('hex')
   }
 
-  public async getTransactionDetails(unsignedTx: UnsignedTransaction): Promise<IAirGapTransaction> {
+  public async getTransactionDetails(unsignedTx: UnsignedTransaction): Promise<IAirGapTransaction[]> {
     const transaction = unsignedTx.transaction as RawEthereumTransaction
-    return {
-      from: [await this.getAddressFromPublicKey(unsignedTx.publicKey)],
-      to: [transaction.to],
-      amount: new BigNumber(transaction.value),
-      fee: new BigNumber(transaction.gasLimit).multipliedBy(new BigNumber(transaction.gasPrice)),
-      protocolIdentifier: this.identifier,
-      isInbound: false,
-      data: transaction.data
-    }
+    return [
+      {
+        from: [await this.getAddressFromPublicKey(unsignedTx.publicKey)],
+        to: [transaction.to],
+        amount: new BigNumber(transaction.value),
+        fee: new BigNumber(transaction.gasLimit).multipliedBy(new BigNumber(transaction.gasPrice)),
+        protocolIdentifier: this.identifier,
+        isInbound: false,
+        data: transaction.data
+      }
+    ]
   }
 
-  public async getTransactionDetailsFromSigned(transaction: SignedEthereumTransaction): Promise<IAirGapTransaction> {
+  public async getTransactionDetailsFromSigned(transaction: SignedEthereumTransaction): Promise<IAirGapTransaction[]> {
     const ethTx = new EthereumTransaction(transaction.transaction)
 
     const hexValue = ethTx.value.toString('hex') || '0x0'
@@ -181,19 +183,21 @@ export abstract class BaseEthereumProtocol implements ICoinProtocol {
     const hexGasLimit = ethTx.gasLimit.toString('hex') || '0x0'
     const hexNonce = ethTx.nonce.toString('hex') || '0x0'
 
-    return {
-      from: [ethUtil.toChecksumAddress(`0x${ethTx.from.toString('hex')}`)],
-      to: [ethUtil.toChecksumAddress(`0x${ethTx.to.toString('hex')}`)],
-      amount: new BigNumber(parseInt(hexValue, 16)),
-      fee: new BigNumber(parseInt(hexGasLimit, 16)).multipliedBy(new BigNumber(parseInt(hexGasPrice, 16))),
-      protocolIdentifier: this.identifier,
-      isInbound: ethTx.toCreationAddress(),
-      hash: `0x${ethTx.hash().toString('hex')}`,
-      meta: {
-        nonce: parseInt(hexNonce, 16)
-      },
-      data: `0x${ethTx.data.toString('hex')}`
-    }
+    return [
+      {
+        from: [ethUtil.toChecksumAddress(`0x${ethTx.from.toString('hex')}`)],
+        to: [ethUtil.toChecksumAddress(`0x${ethTx.to.toString('hex')}`)],
+        amount: new BigNumber(parseInt(hexValue, 16)),
+        fee: new BigNumber(parseInt(hexGasLimit, 16)).multipliedBy(new BigNumber(parseInt(hexGasPrice, 16))),
+        protocolIdentifier: this.identifier,
+        isInbound: ethTx.toCreationAddress(),
+        hash: `0x${ethTx.hash().toString('hex')}`,
+        meta: {
+          nonce: parseInt(hexNonce, 16)
+        },
+        data: `0x${ethTx.data.toString('hex')}`
+      }
+    ]
   }
 
   public async getBalanceOfPublicKey(publicKey: string): Promise<BigNumber> {
@@ -332,5 +336,13 @@ export abstract class BaseEthereumProtocol implements ICoinProtocol {
         })
         .catch(overallReject)
     })
+  }
+
+  async signMessage(message: string, privateKey: Buffer): Promise<string> {
+    return Promise.reject('Message signing not implemented')
+  }
+
+  async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
+    return Promise.reject('Message verification not implemented')
   }
 }
