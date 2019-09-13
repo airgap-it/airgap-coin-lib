@@ -1,8 +1,6 @@
-import axios from 'axios'
 import { BigNumber } from 'bignumber.js'
 import * as bitcoinJS from 'bitcoinjs-lib'
 import * as ethUtil from 'ethereumjs-util'
-import * as Web3 from 'web3'
 
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
 import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
@@ -12,10 +10,20 @@ import { UnsignedTransaction } from '../../serializer/unsigned-transaction.seria
 import { RawEthereumTransaction } from '../../serializer/unsigned-transactions/ethereum-transactions.serializer'
 import { getSubProtocolsByIdentifier } from '../../utils/subProtocols'
 import { ICoinProtocol } from '../ICoinProtocol'
+import { EthereumNodeClient } from './clients/node-clients/NodeClient'
+import { EthereumInfoClient } from './clients/info-clients/InfoClient'
+import { EthereumUtils } from './utils/utils'
 
 const EthereumTransaction = require('ethereumjs-tx')
 
-export abstract class BaseEthereumProtocol implements ICoinProtocol {
+export interface EthereumProtocolConfiguration<NodeClient extends EthereumNodeClient, InfoClient extends EthereumInfoClient> {
+  chainID: number
+  nodeClient: NodeClient
+  infoClient: InfoClient
+}
+
+export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient, InfoClient extends EthereumInfoClient>
+  implements ICoinProtocol {
   public symbol = 'ETH'
   public name = 'Ethereum'
   public marketSymbol = 'eth'
@@ -56,24 +64,16 @@ export abstract class BaseEthereumProtocol implements ICoinProtocol {
 
   public blockExplorer = 'https://etherscan.io'
 
-  public web3: any
   public network: Network
-  public chainId: number
-  public infoAPI: string
+  public configuration: EthereumProtocolConfiguration<NodeClient, InfoClient>
 
   get subProtocols() {
     return getSubProtocolsByIdentifier(this.identifier)
   }
 
-  constructor(
-    public jsonRPCAPI = 'https://eth-rpc-proxy.airgap.prod.gke.papers.tech/',
-    infoAPI = 'https://api.trustwalletapp.com/',
-    chainId = 1
-  ) {
-    this.infoAPI = infoAPI
-    this.web3 = new Web3(new Web3.providers.HttpProvider(jsonRPCAPI))
+  constructor(configuration: EthereumProtocolConfiguration<NodeClient, InfoClient>) {
+    this.configuration = configuration
     this.network = bitcoinJS.networks.bitcoin
-    this.chainId = chainId
   }
 
   public getBlockExplorerLinkForAddress(address: string): string {
@@ -160,20 +160,22 @@ export abstract class BaseEthereumProtocol implements ICoinProtocol {
     return tx.serialize().toString('hex')
   }
 
-  public async getTransactionDetails(unsignedTx: UnsignedTransaction): Promise<IAirGapTransaction> {
+  public async getTransactionDetails(unsignedTx: UnsignedTransaction): Promise<IAirGapTransaction[]> {
     const transaction = unsignedTx.transaction as RawEthereumTransaction
-    return {
-      from: [await this.getAddressFromPublicKey(unsignedTx.publicKey)],
-      to: [transaction.to],
-      amount: new BigNumber(transaction.value),
-      fee: new BigNumber(transaction.gasLimit).multipliedBy(new BigNumber(transaction.gasPrice)),
-      protocolIdentifier: this.identifier,
-      isInbound: false,
-      data: transaction.data
-    }
+    return [
+      {
+        from: [await this.getAddressFromPublicKey(unsignedTx.publicKey)],
+        to: [transaction.to],
+        amount: new BigNumber(transaction.value),
+        fee: new BigNumber(transaction.gasLimit).multipliedBy(new BigNumber(transaction.gasPrice)),
+        protocolIdentifier: this.identifier,
+        isInbound: false,
+        data: transaction.data
+      }
+    ]
   }
 
-  public async getTransactionDetailsFromSigned(transaction: SignedEthereumTransaction): Promise<IAirGapTransaction> {
+  public async getTransactionDetailsFromSigned(transaction: SignedEthereumTransaction): Promise<IAirGapTransaction[]> {
     const ethTx = new EthereumTransaction(transaction.transaction)
 
     const hexValue = ethTx.value.toString('hex') || '0x0'
@@ -181,19 +183,21 @@ export abstract class BaseEthereumProtocol implements ICoinProtocol {
     const hexGasLimit = ethTx.gasLimit.toString('hex') || '0x0'
     const hexNonce = ethTx.nonce.toString('hex') || '0x0'
 
-    return {
-      from: [ethUtil.toChecksumAddress(`0x${ethTx.from.toString('hex')}`)],
-      to: [ethUtil.toChecksumAddress(`0x${ethTx.to.toString('hex')}`)],
-      amount: new BigNumber(parseInt(hexValue, 16)),
-      fee: new BigNumber(parseInt(hexGasLimit, 16)).multipliedBy(new BigNumber(parseInt(hexGasPrice, 16))),
-      protocolIdentifier: this.identifier,
-      isInbound: ethTx.toCreationAddress(),
-      hash: `0x${ethTx.hash().toString('hex')}`,
-      meta: {
-        nonce: parseInt(hexNonce, 16)
-      },
-      data: `0x${ethTx.data.toString('hex')}`
-    }
+    return [
+      {
+        from: [ethUtil.toChecksumAddress(`0x${ethTx.from.toString('hex')}`)],
+        to: [ethUtil.toChecksumAddress(`0x${ethTx.to.toString('hex')}`)],
+        amount: new BigNumber(parseInt(hexValue, 16)),
+        fee: new BigNumber(parseInt(hexGasLimit, 16)).multipliedBy(new BigNumber(parseInt(hexGasPrice, 16))),
+        protocolIdentifier: this.identifier,
+        isInbound: ethTx.toCreationAddress(),
+        hash: `0x${ethTx.hash().toString('hex')}`,
+        meta: {
+          nonce: parseInt(hexNonce, 16)
+        },
+        data: `0x${ethTx.data.toString('hex')}`
+      }
+    ]
   }
 
   public async getBalanceOfPublicKey(publicKey: string): Promise<BigNumber> {
@@ -204,10 +208,10 @@ export abstract class BaseEthereumProtocol implements ICoinProtocol {
   public async getBalanceOfAddresses(addresses: string[]): Promise<BigNumber> {
     const balances = await Promise.all(
       addresses.map(address => {
-        return this.web3.eth.getBalance(address)
+        return this.configuration.nodeClient.fetchBalance(address)
       })
     )
-    return balances.map(obj => new BigNumber(obj)).reduce((a, b) => a.plus(b))
+    return balances.reduce((a, b) => a.plus(b))
   }
 
   public getBalanceOfExtendedPublicKey(extendedPublicKey: string, offset: number = 0): Promise<BigNumber> {
@@ -245,14 +249,14 @@ export abstract class BaseEthereumProtocol implements ICoinProtocol {
     const gasLimit = new BigNumber(21000)
     const gasPrice = fee.div(gasLimit).integerValue(BigNumber.ROUND_CEIL)
     if (new BigNumber(balance).gte(new BigNumber(values[0].plus(fee)))) {
-      const txCount = await this.web3.eth.getTransactionCount(address)
+      const txCount = await this.configuration.nodeClient.fetchTransactionCount(address)
       const transaction: RawEthereumTransaction = {
-        nonce: this.web3.utils.toHex(txCount),
-        gasLimit: this.web3.utils.toHex(gasLimit.toFixed()),
-        gasPrice: this.web3.utils.toHex(gasPrice.toFixed()), // 10 Gwei
+        nonce: EthereumUtils.toHex(txCount),
+        gasLimit: EthereumUtils.toHex(gasLimit.toFixed()),
+        gasPrice: EthereumUtils.toHex(gasPrice.toFixed()), // 10 Gwei
         to: recipients[0],
-        value: this.web3.utils.toHex(values[0].toFixed()),
-        chainId: this.chainId,
+        value: EthereumUtils.toHex(values[0].toFixed()),
+        chainId: this.configuration.chainID,
         data: '0x'
       }
 
@@ -262,17 +266,8 @@ export abstract class BaseEthereumProtocol implements ICoinProtocol {
     }
   }
 
-  public broadcastTransaction(rawTransaction: string): Promise<string> {
-    return new Promise((resolve, reject) => {
-      this.web3.eth
-        .sendSignedTransaction(`0x${rawTransaction}`)
-        .then(receipt => {
-          resolve(receipt.transactionHash)
-        })
-        .catch(err => {
-          reject(err)
-        })
-    })
+  public async broadcastTransaction(rawTransaction: string): Promise<string> {
+    return await this.configuration.nodeClient.sendSignedTransaction(`0x${rawTransaction}`)
   }
 
   public getTransactionsFromExtendedPublicKey(extendedPublicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]> {
@@ -292,45 +287,29 @@ export abstract class BaseEthereumProtocol implements ICoinProtocol {
   }
 
   public getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
-    const airGapTransactions: IAirGapTransaction[] = []
+    const page = this.getPageNumber(limit, offset)
     return new Promise((overallResolve, overallReject) => {
-      const promises: Promise<any>[] = []
+      const promises: Promise<IAirGapTransaction[]>[] = []
       for (const address of addresses) {
-        promises.push(
-          new Promise((resolve, reject) => {
-            const page = this.getPageNumber(limit, offset)
-            axios
-              .get(`${this.infoAPI}transactions?address=${address}&page=${page}&limit=${limit}&filterContractInteraction=true`)
-              .then(response => {
-                const transactionResponse = response.data
-                for (const transaction of transactionResponse.docs) {
-                  const fee = new BigNumber(transaction.gasUsed).times(new BigNumber(transaction.gasPrice))
-                  const airGapTransaction: IAirGapTransaction = {
-                    hash: transaction.id,
-                    from: [transaction.from],
-                    to: [transaction.to],
-                    isInbound: transaction.to.toLowerCase() === address.toLowerCase(),
-                    amount: new BigNumber(transaction.value),
-                    fee,
-                    blockHeight: transaction.blockNumber,
-                    protocolIdentifier: this.identifier,
-                    timestamp: parseInt(transaction.timeStamp, 10)
-                  }
-
-                  airGapTransactions.push(airGapTransaction)
-                }
-
-                resolve(airGapTransactions)
-              })
-              .catch(reject)
-          })
-        )
+        promises.push(this.configuration.infoClient.fetchTransactions(this.identifier, address, page, limit))
       }
       Promise.all(promises)
         .then(values => {
-          overallResolve([].concat.apply([], values))
+          overallResolve(
+            values.reduce((a, b) => {
+              return a.concat(b)
+            })
+          )
         })
         .catch(overallReject)
     })
+  }
+
+  async signMessage(message: string, privateKey: Buffer): Promise<string> {
+    return Promise.reject('Message signing not implemented')
+  }
+
+  async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
+    return Promise.reject('Message verification not implemented')
   }
 }

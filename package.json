@@ -1,6 +1,6 @@
 {
   "name": "airgap-coin-lib",
-  "version": "0.5.1",
+  "version": "0.5.0-beta.3",
   "description": "The airgap-coin-lib is setup in a way that prepare, signing and broadcasting are willingfully separated.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -30,7 +30,6 @@
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
     "@aeternity/hd-wallet": "github:airgap-it/hd-wallet-js#b216450e56954a6e82ace0aade9474673de5d9d5",
-    "abi-decoder": "github:airgap-it/abi-decoder#a4b60b35d12af863026d6d723bec73b172c4e5b7",
     "axios": "0.18.0",
     "bignumber.js": "8.0.1",
     "bip39": "2.5.0",
@@ -44,10 +43,10 @@
     "ethereumjs-util": "5.2.0",
     "libsodium-wrappers": "0.7.3",
     "rlp": "2.1.0",
-    "tweetnacl": "1.0.0",
     "validate.js": "0.12.0",
     "validator": "10.8.0",
-    "web3": "1.0.0-beta.36"
+    "eth-lib": "0.2.7",
+    "utf8": "3.0.0"
   },
   "devDependencies": {
     "@types/assert": "0.0.31",

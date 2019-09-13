@@ -272,10 +272,16 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
     describe(`Extract TX`, () => {
       it('getTransactionDetails - Is able to extract all necessary properties from a TX', async () => {
         for (const tx of protocol.txs) {
-          const airgapTx: IAirGapTransaction = await protocol.lib.getTransactionDetails({
+          const airgapTxs: IAirGapTransaction[] = await protocol.lib.getTransactionDetails({
             publicKey: protocol.wallet.publicKey,
             transaction: tx.unsignedTx
           })
+
+          if (airgapTxs.length !== 1) {
+            throw new Error('Unexpected number of transactions')
+          }
+
+          const airgapTx: IAirGapTransaction = airgapTxs[0]
 
           expect(airgapTx.to, 'to property does not match').to.deep.equal(tx.to)
           expect(airgapTx.from, 'from property does not match').to.deep.equal(tx.from)
@@ -289,7 +295,7 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
 
       it('getTransactionDetailsFromSigned - Is able to extract all necessary properties from a TX', async () => {
         for (const tx of protocol.txs) {
-          const airgapTx: IAirGapTransaction = await protocol.lib.getTransactionDetailsFromSigned({
+          const airgapTxs: IAirGapTransaction[] = await protocol.lib.getTransactionDetailsFromSigned({
             accountIdentifier: protocol.wallet.publicKey.substr(-6),
             from: protocol.wallet.addresses,
             amount: protocol.txs[0].amount,
@@ -297,6 +303,12 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
             to: protocol.wallet.addresses,
             transaction: tx.signedTx
           })
+
+          if (airgapTxs.length !== 1) {
+            throw new Error('Unexpected number of transactions')
+          }
+
+          const airgapTx: IAirGapTransaction = airgapTxs[0]
 
           expect(airgapTx.to.map(obj => obj.toLowerCase()), 'from').to.deep.equal(tx.to.map(obj => obj.toLowerCase()))
           expect(airgapTx.from.sort().map(obj => obj.toLowerCase()), 'to').to.deep.equal(tx.from.sort().map(obj => obj.toLowerCase()))
@@ -313,6 +325,72 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
           const match = address.match(protocol.lib.addressValidationPattern)
 
           expect(match && match.length > 0, `address: ${address}`).to.be.true
+        }
+      })
+    })
+  })
+
+  describe(`Sign Message`, () => {
+    afterEach(async () => {
+      sinon.restore()
+    })
+
+    itIf(protocol.messages, 'signMessage - Is able to sign a message using a PrivateKey', async () => {
+      // const privateKey = protocol.lib.getPrivateKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
+
+      protocol.messages.forEach(async messageObject => {
+        try {
+          // const signature = await protocol.lib.signMessage(messageObject.message, privateKey)
+          // TODO: Verify signature
+          // expect(signature).to.equal(messageObject.signature)
+        } catch (e) {
+          expect(e).to.equal('Message signing not implemented')
+        }
+      })
+    })
+
+    itIf(protocol.messages, 'verifyMessage - Is able to verify a message using a PublicKey', async () => {
+      // const privateKey = protocol.lib.getPrivateKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
+      // const publicKey = protocol.lib.getPublicKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
+      // const publicKeyBuffer = Buffer.from(publicKey, 'hex')
+
+      protocol.messages.forEach(async messageObject => {
+        try {
+          /*
+          const signatureIsValid = await protocol.lib.verifyMessage(
+            messageObject.message,
+            Buffer.from(messageObject.signature) as any,
+            publicKeyBuffer
+          )
+          */
+          // TODO: Verify signature
+          // expect(signatureIsValid).to.be.true
+        } catch (e) {
+          expect(e).to.equal('Message signing not implemented')
+        }
+      })
+    })
+
+    itIf(protocol.messages, 'signMessage and verifyMessage - Is able to sign and verify a message', async () => {
+      const privateKey = protocol.lib.getPrivateKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
+      const publicKey = protocol.lib.getPublicKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
+      const publicKeyBuffer = Buffer.from(publicKey, 'hex')
+
+      protocol.messages.forEach(async messageObject => {
+        try {
+          const signature = await protocol.lib.signMessage(messageObject.message, privateKey)
+          const signatureIsValid = await protocol.lib.verifyMessage(messageObject.message, signature, publicKeyBuffer)
+
+          expect(signatureIsValid).to.be.true
+
+          const signature2IsValid = await protocol.lib.verifyMessage(
+            `different-message-${messageObject.message}`,
+            signature,
+            publicKeyBuffer
+          )
+          expect(signature2IsValid).to.be.false
+        } catch (e) {
+          expect(e).to.equal('Message signing not implemented')
         }
       })
     })
