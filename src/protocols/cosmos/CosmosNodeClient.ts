@@ -20,21 +20,11 @@ export interface NodeInfo {
   }
 }
 
-export abstract class CosmosNodeClient {
+export class CosmosNodeClient {
   public baseURL: string
 
   constructor(baseURL: string) {
     this.baseURL = baseURL
-  }
-
-  public abstract async fetchTransactions(address: string, page: number, limit: number): Promise<IAirGapTransaction[]>
-  public abstract async fetchBalance(address: string): Promise<BigNumber>
-  public abstract async fetchNodeInfo(): Promise<NodeInfo>
-}
-
-export class CosmosJSONRPCNodeClient extends CosmosNodeClient {
-  constructor(baseURL: string = 'https://lcd-do-not-abuse.cosmostation.io') {
-    super(baseURL)
   }
 
   public async fetchTransactions(address: string, page: number, limit: number): Promise<IAirGapTransaction[]> {

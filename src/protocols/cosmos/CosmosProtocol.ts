@@ -1,4 +1,4 @@
-import { CosmosNodeClient, CosmosJSONRPCNodeClient } from './CosmosNodeClient'
+import { CosmosNodeClient } from './CosmosNodeClient'
 import { ICoinProtocol } from '../ICoinProtocol'
 import { ICoinSubProtocol } from '../ICoinSubProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
@@ -19,7 +19,7 @@ export interface KeyPair {
   privateKey: Buffer
 }
 
-export class BaseCosmosProtocol<NodeClient extends CosmosNodeClient> extends NonExtendedProtocol implements ICoinProtocol {
+export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol {
   public symbol: string = '⌀'
   public name: string = 'Cosmos'
   public marketSymbol: string = 'Atom'
@@ -29,7 +29,7 @@ export class BaseCosmosProtocol<NodeClient extends CosmosNodeClient> extends Non
     medium: new BigNumber(0.025),
     high: new BigNumber(0.025)
   }
-  public decimals: number = 18
+  public decimals: number = 18 // TODO: verify these values
   public feeDecimals: number = 18
   public identifier: string = 'cosmos'
   public units = [
@@ -50,11 +50,11 @@ export class BaseCosmosProtocol<NodeClient extends CosmosNodeClient> extends Non
   public blockExplorer: string = 'https://www.mintscan.io'
   public subProtocols?: (ICoinProtocol & ICoinSubProtocol)[] | undefined
 
-  public nodeClient: NodeClient
+  public nodeClient: CosmosNodeClient
 
   private addressPrefix = 'cosmos'
 
-  constructor(nodeClient: NodeClient) {
+  constructor(nodeClient: CosmosNodeClient = new CosmosNodeClient('https://lcd-do-not-abuse.cosmostation.io')) {
     super()
     this.nodeClient = nodeClient
   }
@@ -206,11 +206,5 @@ export class BaseCosmosProtocol<NodeClient extends CosmosNodeClient> extends Non
 
   public async broadcastTransaction(rawTransaction: any): Promise<string> {
     throw new Error('Method not implemented.')
-  }
-}
-
-export class CosmosProtocol extends BaseCosmosProtocol<CosmosJSONRPCNodeClient> {
-  constructor() {
-    super(new CosmosJSONRPCNodeClient())
   }
 }
