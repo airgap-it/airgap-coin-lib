@@ -161,4 +161,42 @@ describe(`ICoinProtocol Aeternity - Custom Tests`, () => {
       expect(error.toString()).to.contain('invalid TX-encoding')
     }
   })
+  describe('testing toHexBuffer with BigNumber', () => {
+    it('should return the same hex for BigNumbers as for numbers', async () => {
+      console.log('test hex 5: ', (aeLib as any).toHexBuffer(5).toString('hex'))
+      expect((aeLib as any).toHexBuffer(5).toString('hex')).to.equal('05')
+      console.log('test hex bignumber 5: ', (aeLib as any).toHexBuffer(new BigNumber(5)).toString('hex'))
+      expect((aeLib as any).toHexBuffer(new BigNumber(5)).toString('hex')).to.equal('05')
+
+      console.log('test hex 0: ', (aeLib as any).toHexBuffer(0).toString('hex'))
+      expect((aeLib as any).toHexBuffer(0).toString('hex')).to.equal('00')
+      console.log('test hex bignumber 0: ', (aeLib as any).toHexBuffer(new BigNumber(0)).toString('hex'))
+      expect((aeLib as any).toHexBuffer(new BigNumber(0)).toString('hex')).to.equal('00')
+
+      console.log('test hex -0: ', (aeLib as any).toHexBuffer(-0).toString('hex'))
+      expect((aeLib as any).toHexBuffer(-0).toString('hex')).to.equal('00')
+      console.log('test hex bignumber -0: ', (aeLib as any).toHexBuffer(new BigNumber(-0)).toString('hex'))
+      expect((aeLib as any).toHexBuffer(new BigNumber(-0)).toString('hex')).to.equal('00')
+
+      console.log('test hex -5: ', (aeLib as any).toHexBuffer(-5).toString('hex'))
+      expect((aeLib as any).toHexBuffer(-5).toString('hex')).to.equal('')
+      console.log('test hex bignumber -5: ', (aeLib as any).toHexBuffer(new BigNumber(-5)).toString('hex'))
+      expect((aeLib as any).toHexBuffer(new BigNumber(-5)).toString('hex')).to.equal('')
+
+      console.log('test hex 1: ', (aeLib as any).toHexBuffer(1).toString('hex'))
+      expect((aeLib as any).toHexBuffer(1).toString('hex')).to.equal('01')
+      console.log('test hex bignumber 1: ', (aeLib as any).toHexBuffer(new BigNumber(1)).toString('hex'))
+      expect((aeLib as any).toHexBuffer(new BigNumber(1)).toString('hex')).to.equal('01')
+
+      console.log('test hex -1: ', (aeLib as any).toHexBuffer(-1).toString('hex'))
+      expect((aeLib as any).toHexBuffer(-1).toString('hex')).to.equal('')
+      console.log('test hex bignumber -1: ', (aeLib as any).toHexBuffer(new BigNumber(-1)).toString('hex'))
+      expect((aeLib as any).toHexBuffer(new BigNumber(-1)).toString('hex')).to.equal('')
+
+      console.log('test hex 100000000000000000: ', (aeLib as any).toHexBuffer(100000000000000000).toString('hex'))
+      expect((aeLib as any).toHexBuffer(100000000000000000).toString('hex')).to.equal('016345785d8a0000')
+      console.log('test hex bignumber 100000000000000000: ', (aeLib as any).toHexBuffer(new BigNumber(100000000000000000)).toString('hex'))
+      expect((aeLib as any).toHexBuffer(new BigNumber(100000000000000000)).toString('hex')).to.equal('016345785d8a0000')
+    })
+  })
 })
