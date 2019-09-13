@@ -65,7 +65,7 @@ describe(`JSON to RLP`, () => {
     console.log('rlp hex', rlp.toString('hex'))
     expect(rlp.toString('hex')).to.equal('d13131c1328c4920616d206120746578742e')
 
-    const decodedJson = rlpToJson(testSchema, rlp)
+    const decodedJson = rlpToJson(testSchema, rlp as any)
     expect(decodedJson).to.deep.equal(json)
   })
 
@@ -81,7 +81,7 @@ describe(`JSON to RLP`, () => {
 
       expect(rlp.toString('hex')).to.equal('c3323131')
 
-      const decodedJson = rlpToJson(unwrapSchema(accountShareResponse), rlp)
+      const decodedJson = rlpToJson(unwrapSchema(accountShareResponse), rlp as any)
       expect(decodedJson).to.deep.equal(json)
     })
 
@@ -101,7 +101,7 @@ describe(`JSON to RLP`, () => {
         'f840a068747470733a2f2f6169726761702e69743f7369676e65644d6573736167653d84746573749168747470733a2f2f6169726761702e6974867075626b657931'
       )
 
-      const decodedJson: MessageSignRequest = rlpToJson(unwrapSchema(messageSignRequest), rlp)
+      const decodedJson: MessageSignRequest | undefined = rlpToJson(unwrapSchema(messageSignRequest), rlp as any)
       expect(decodedJson).to.deep.equal(json)
     })
 
@@ -121,7 +121,7 @@ describe(`JSON to RLP`, () => {
         'f83da068747470733a2f2f6169726761702e69743f7369676e65644d6573736167653d84746573749168747470733a2f2f6169726761702e69748373696731'
       )
 
-      const decodedJson: MessageSignResponse = rlpToJson(unwrapSchema(messageSignResponse), rlp)
+      const decodedJson: MessageSignResponse | undefined = rlpToJson(unwrapSchema(messageSignResponse), rlp as any)
       expect(decodedJson).to.deep.equal(json)
     })
   })
