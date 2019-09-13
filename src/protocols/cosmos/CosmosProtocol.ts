@@ -9,7 +9,12 @@ import { SignedTransaction } from '../../serializer/signed-transaction.serialize
 import { BIP32Interface, fromSeed } from 'bip32'
 import { mnemonicToSeed, validateMnemonic } from 'bip39'
 import { BigNumber } from 'bignumber.js'
-import { RawCosmosSendMessage, RawCosmosTransaction } from '../../serializer/unsigned-transactions/cosmos-transactions.serializer'
+import {
+  RawCosmosSendMessage,
+  RawCosmosTransaction,
+  RawCosmosCoin,
+  RawCosmosFee
+} from '../../serializer/unsigned-transactions/cosmos-transactions.serializer'
 
 const RIPEMD160 = require('ripemd160')
 const BECH32 = require('bech32')
@@ -103,14 +108,11 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
   }
 
   public async getAddressFromPublicKey(publicKey: string): Promise<string> {
-    return new Promise(resolve => {
-      const pubkey = Buffer.from(publicKey, 'hex')
-      crypto.subtle.digest('SHA-256', pubkey).then(value => {
-        const hash = new RIPEMD160().update(Buffer.from(value)).digest()
-        const address = BECH32.encode(this.addressPrefix, BECH32.toWords(hash))
-        resolve(address)
-      })
-    })
+    const pubkey = Buffer.from(publicKey, 'hex')
+    const sha256Hash = await crypto.subtle.digest('SHA-256', pubkey)
+    const hash = new RIPEMD160().update(Buffer.from(sha256Hash)).digest()
+    const address = BECH32.encode(this.addressPrefix, BECH32.toWords(hash))
+    return address
   }
 
   public async getAddressesFromPublicKey(publicKey: string): Promise<string[]> {
@@ -138,44 +140,10 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
   }
 
   public async signWithPrivateKey(privateKey: Buffer, transaction: RawCosmosTransaction): Promise<string> {
-    const accointNumber = 0 // TODO: find where to get this
+    const accountNumber = 0 // TODO: find where to get this
     const sequence = 0 // TODO: find where to get this
-    const toSign = {
-      account_number: accointNumber,
-      chain_id: transaction.chainID,
-      fee: {
-        amount: [
-          ...transaction.fee.amount.map(value => {
-            return {
-              amount: value.amount.toFixed(10),
-              denom: value.denom
-            }
-          })
-        ],
-        gas: transaction.fee.gas.toFixed(10)
-      },
-      memo: transaction.memo,
-      msgs: [
-        ...transaction.messages.map(value => {
-          return {
-            type: 'cosmos-sdk/MsgSend',
-            value: {
-              amount: [
-                ...value.coins.map(coin => {
-                  return {
-                    amount: coin.amount.toFixed(10),
-                    denom: coin.denom
-                  }
-                })
-              ],
-              from_address: value.fromAddress,
-              to_address: value.toAddress
-            }
-          }
-        })
-      ],
-      sequence: sequence
-    } // TODO: check if sorting is needed
+    const toSign = transaction.toSignJSON(accountNumber, sequence)
+    // TODO: check if sorting is needed
     const hash = Buffer.from(await crypto.subtle.digest('SHA-256', Buffer.from(JSON.stringify(toSign))))
     const signed = SECP256K1.sign(hash, privateKey)
     const sigBase64 = Buffer.from(signed.signature, 'binary').toString('base64')
@@ -239,32 +207,16 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
 
     const messages: RawCosmosSendMessage[] = []
     for (let i = 0; i < recipients.length; ++i) {
-      const message: RawCosmosSendMessage = {
-        fromAddress: address,
-        toAddress: recipients[i],
-        coins: [
-          {
-            denom: 'uatom',
-            amount: values[i]
-          }
-        ]
-      }
+      const message = new RawCosmosSendMessage(address, recipients[i], [new RawCosmosCoin('uatom', values[i])])
       messages.push(message)
     }
-    const transaction: RawCosmosTransaction = {
-      messages: messages,
-      fee: {
-        amount: [
-          {
-            denom: this.feeSymbol,
-            amount: fee
-          }
-        ],
-        gas: new BigNumber('200000')
-      },
-      memo: data !== undefined && typeof data === 'string' ? (data as string) : '',
-      chainID: nodeInfo.network
-    }
+    const memo = data !== undefined && typeof data === 'string' ? (data as string) : ''
+    const transaction = new RawCosmosTransaction(
+      messages,
+      new RawCosmosFee([new RawCosmosCoin(this.feeSymbol, fee)], new BigNumber('200000')),
+      memo,
+      nodeInfo.network
+    )
     return transaction
   }
 
