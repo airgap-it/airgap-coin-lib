@@ -135,11 +135,11 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
     throw new Error('Method not implemented.')
   }
 
-  public async getTransactionDetails(transaction: UnsignedTransaction): Promise<IAirGapTransaction> {
+  public async getTransactionDetails(transaction: UnsignedTransaction): Promise<IAirGapTransaction[]> {
     throw new Error('Method not implemented.')
   }
 
-  public async getTransactionDetailsFromSigned(transaction: SignedTransaction): Promise<IAirGapTransaction> {
+  public async getTransactionDetailsFromSigned(transaction: SignedTransaction): Promise<IAirGapTransaction[]> {
     throw new Error('Method not implemented.')
   }
 
@@ -205,6 +205,13 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
   }
 
   public async broadcastTransaction(rawTransaction: any): Promise<string> {
+    throw new Error('Method not implemented.')
+  }
+
+  public async signMessage(message: string, privateKey: Buffer): Promise<string> {
+    throw new Error('Method not implemented.')
+  }
+  public async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
     throw new Error('Method not implemented.')
   }
 }
