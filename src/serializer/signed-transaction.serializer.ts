@@ -6,8 +6,10 @@ import { SerializedSignedEthereumTransaction } from './signed-transactions/ether
 import { SerializedSignedTezosTransaction } from './signed-transactions/tezos-transactions.serializer'
 
 export abstract class SignedTransactionSerializer {
-  public abstract serialize(unsignedTx: SignedTransaction): SerializedSyncProtocolSignedTransaction
-  public abstract deserialize(serializedTx: SerializedSyncProtocolSignedTransaction): SignedTransaction
+  public abstract serialize(
+    unsignedTx: SignedTransaction
+  ): SerializedSyncProtocolSignedTransaction | Promise<SerializedSyncProtocolSignedTransaction>
+  public abstract deserialize(serializedTx: SerializedSyncProtocolSignedTransaction): SignedTransaction | Promise<SignedTransaction>
 }
 
 export interface SignedTransaction {

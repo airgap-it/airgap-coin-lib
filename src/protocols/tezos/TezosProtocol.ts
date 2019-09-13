@@ -193,7 +193,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     await sodium.ready
     const payload = sodium.crypto_generichash(20, Buffer.from(publicKey, 'hex'))
     const address = bs58check.encode(Buffer.concat([this.tezosPrefixes.tz1, Buffer.from(payload)]))
-
     return address
   }
 
