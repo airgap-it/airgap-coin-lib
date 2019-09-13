@@ -1,3 +1,4 @@
+import { BitcoinProtocolSpec } from './specs/bitcoin'
 import { expect } from 'chai'
 import 'mocha'
 
@@ -7,7 +8,6 @@ import { getProtocolByIdentifier } from '../../src/utils/protocolsByIdentifier'
 
 import { TestProtocolSpec } from './implementations'
 import { AETestProtocolSpec } from './specs/ae'
-import { BitcoinTestProtocolSpec } from './specs/bitcoin-test'
 import { ERC20HOPTokenTestProtocolSpec } from './specs/erc20-hop-token'
 import { EthereumTestProtocolSpec } from './specs/ethereum'
 import { GenericERC20TokenTestProtocolSpec } from './specs/generic-erc20-token'
@@ -15,7 +15,7 @@ import { GenericERC20TokenTestProtocolSpec } from './specs/generic-erc20-token'
 
 const protocols = [
   new EthereumTestProtocolSpec(),
-  new BitcoinTestProtocolSpec(),
+  new BitcoinProtocolSpec(),
   new AETestProtocolSpec(),
   new ERC20HOPTokenTestProtocolSpec(),
   // new TezosTestProtocolSpec(),
@@ -26,7 +26,7 @@ protocols.forEach((protocol: TestProtocolSpec) => {
   const syncProtocol = new SyncProtocolUtils()
 
   describe(`Serialization Protocol for ${protocol.name}`, () => {
-    it(`should be able to serialize an transaction to a airgap protocol string`, async () => {
+    it(`should be able to serialize a transaction to a airgap protocol string`, async () => {
       for (const tx of protocol.txs) {
         const serializedTx = await syncProtocol.serialize(protocol.unsignedTransaction(tx))
         const deserializedTx = await syncProtocol.deserialize(serializedTx)
@@ -57,6 +57,7 @@ protocols.forEach((protocol: TestProtocolSpec) => {
     it(`should be able to properly extract amount/fee using from signedTx in combination with the coin-lib`, async () => {
       for (const tx of protocol.txs) {
         const serializedTx = await syncProtocol.serialize(protocol.signedTransaction(tx))
+
         const deserializedTx = await syncProtocol.deserialize(serializedTx)
 
         const airGapTxs = await protocol.lib.getTransactionDetailsFromSigned(deserializedTx.payload as SignedTransaction)
@@ -67,6 +68,7 @@ protocols.forEach((protocol: TestProtocolSpec) => {
 
         const airGapTx: IAirGapTransaction = airGapTxs[0]
 
+        // console.log('airGapTx', airGapTx)
         expect(airGapTx.from).to.deep.equal(tx.from)
         expect(airGapTx.amount).to.deep.equal(tx.amount)
         expect(airGapTx.fee).to.deep.equal(tx.fee)

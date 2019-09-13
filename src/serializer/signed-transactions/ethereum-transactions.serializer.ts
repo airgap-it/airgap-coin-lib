@@ -1,3 +1,4 @@
+import { EthereumTransactionValidator } from './../unsigned-transactions/ethereum-transactions.validator'
 import {
   SerializedSyncProtocolSignedTransaction,
   SignedTransaction,
@@ -14,8 +15,14 @@ export interface SignedEthereumTransaction extends SignedTransaction {
 }
 
 export class EthereumSignedTransactionSerializer extends SignedTransactionSerializer {
-  public serialize(transaction: SignedEthereumTransaction): SerializedSyncProtocolSignedTransaction {
+  public async serialize(transaction: SignedEthereumTransaction): Promise<SerializedSyncProtocolSignedTransaction> {
     const toSerialize: any[] = []
+
+    const validator = new EthereumTransactionValidator()
+    const errors = await validator.validateSignedTransaction(transaction)
+    if (errors) {
+      throw errors
+    }
 
     toSerialize[SyncProtocolSignedTransactionKeys.ACCOUNT_IDENTIFIER] = transaction.accountIdentifier
     toSerialize[SyncProtocolSignedTransactionKeys.SIGNED_TRANSACTION] = transaction.transaction
@@ -25,10 +32,17 @@ export class EthereumSignedTransactionSerializer extends SignedTransactionSerial
     return serializedBuffer
   }
 
-  public deserialize(serializedTx: SerializedSyncProtocolSignedTransaction): SignedEthereumTransaction {
-    return {
+  public async deserialize(serializedTx: SerializedSyncProtocolSignedTransaction): Promise<SignedEthereumTransaction> {
+    const signedTx = {
       accountIdentifier: serializedTx[SyncProtocolSignedTransactionKeys.ACCOUNT_IDENTIFIER].toString(),
       transaction: serializedTx[SyncProtocolSignedTransactionKeys.SIGNED_TRANSACTION].toString()
     }
+    const validator = new EthereumTransactionValidator()
+    const errors = await validator.validateSignedTransaction(signedTx)
+
+    if (errors) {
+      throw errors
+    }
+    return signedTx
   }
 }

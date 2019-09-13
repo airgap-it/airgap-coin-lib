@@ -60,12 +60,12 @@ export class SyncProtocolUtils {
 
     switch (deserializedSyncProtocol.type) {
       case EncodedType.UNSIGNED_TRANSACTION:
-        untypedPayload = unsignedTransactionSerializerByProtocolIdentifier(deserializedSyncProtocol.protocol).serialize(
+        untypedPayload = await unsignedTransactionSerializerByProtocolIdentifier(deserializedSyncProtocol.protocol).serialize(
           typedPayload as UnsignedTransaction
         )
         break
       case EncodedType.SIGNED_TRANSACTION:
-        untypedPayload = signedTransactionSerializerByProtocolIdentifier(deserializedSyncProtocol.protocol).serialize(
+        untypedPayload = await signedTransactionSerializerByProtocolIdentifier(deserializedSyncProtocol.protocol).serialize(
           typedPayload as SignedTransaction
         )
         break
@@ -114,10 +114,12 @@ export class SyncProtocolUtils {
 
     switch (type) {
       case EncodedType.UNSIGNED_TRANSACTION:
-        typedPayload = unsignedTransactionSerializerByProtocolIdentifier(protocol).deserialize(payload as SerializedSyncProtocolTransaction)
+        typedPayload = await unsignedTransactionSerializerByProtocolIdentifier(protocol).deserialize(
+          payload as SerializedSyncProtocolTransaction
+        )
         break
       case EncodedType.SIGNED_TRANSACTION:
-        typedPayload = signedTransactionSerializerByProtocolIdentifier(protocol).deserialize(
+        typedPayload = await signedTransactionSerializerByProtocolIdentifier(protocol).deserialize(
           payload as SerializedSyncProtocolSignedTransaction
         )
         break
