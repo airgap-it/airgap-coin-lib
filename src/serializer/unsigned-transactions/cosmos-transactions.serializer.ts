@@ -7,22 +7,33 @@ import {
 import { toBuffer } from '../utils/toBuffer'
 import BigNumber from 'bignumber.js'
 
-export type SerializedUnsignedCosmosTransaction = [[[Buffer, Buffer, [[Buffer, Buffer]]]], [[[Buffer, Buffer]], Buffer], Buffer, Buffer]
+export type SerializedUnsignedCosmosTransaction = [
+  [[Buffer, Buffer, [[Buffer, Buffer]]]],
+  [[[Buffer, Buffer]], Buffer],
+  Buffer,
+  Buffer,
+  Buffer,
+  Buffer
+]
 
 export class RawCosmosTransaction {
   public messages: RawCosmosSendMessage[]
   public fee: RawCosmosFee
   public memo: string
   public chainID: string
+  public accountNumber: string
+  public sequence: string
 
-  constructor(messages: RawCosmosSendMessage[], fee: RawCosmosFee, memo: string, chainID: string) {
+  constructor(messages: RawCosmosSendMessage[], fee: RawCosmosFee, memo: string, chainID: string, accountNumber: string, sequence: string) {
     this.messages = messages
     this.fee = fee
     this.memo = memo
     this.chainID = chainID
+    this.accountNumber = accountNumber
+    this.sequence = sequence
   }
 
-  toSignJSON(accountNumber: number, sequence: number): any {
+  toSignJSON(accountNumber: string, sequence: string): any {
     return {
       accountNumber: accountNumber,
       chain_id: this.chainID,
@@ -126,6 +137,8 @@ export class CosmosTransactionSerializer extends UnsignedTransactionSerializer {
     const fee = cosmosTx[1]
     const memo = cosmosTx[2]
     const chainID = cosmosTx[3]
+    const accountNumber = cosmosTx[4]
+    const sequence = cosmosTx[5]
 
     const rawCosmosTx = new RawCosmosTransaction(
       messages.map(
@@ -141,7 +154,9 @@ export class CosmosTransactionSerializer extends UnsignedTransactionSerializer {
         new BigNumber(fee[1].toString())
       ),
       memo.toString(),
-      chainID.toString()
+      chainID.toString(),
+      accountNumber.toString(),
+      sequence.toString()
     )
     return {
       transaction: rawCosmosTx,

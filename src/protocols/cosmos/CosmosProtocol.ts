@@ -140,9 +140,8 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
   }
 
   public async signWithPrivateKey(privateKey: Buffer, transaction: RawCosmosTransaction): Promise<string> {
-    const accountNumber = 0 // TODO: find where to get this
-    const sequence = 0 // TODO: find where to get this
-    const toSign = transaction.toSignJSON(accountNumber, sequence)
+    const publicKey = await this.getPublicKeyFromPrivateKey(privateKey)
+    const toSign = transaction.toSignJSON(transaction.accountNumber, transaction.sequence)
     // TODO: check if sorting is needed
     const hash = Buffer.from(await crypto.subtle.digest('SHA-256', Buffer.from(JSON.stringify(toSign))))
     const signed = SECP256K1.sign(hash, privateKey)
@@ -156,7 +155,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
             signature: sigBase64,
             pub_key: {
               type: 'tendermint/PubKeySecp256k1',
-              value: await this.getPublicKeyFromPrivateKey(privateKey).toString('base64') // TODO: check if this is optional
+              value: publicKey.toString('base64') // TODO: check if this is optional
             }
           }
         ],
@@ -200,6 +199,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
   ): Promise<RawCosmosTransaction> {
     const address = await this.getAddressFromPublicKey(publicKey)
     const nodeInfo = await this.nodeClient.fetchNodeInfo()
+    const account = await this.nodeClient.fetchAccount(address)
 
     if (recipients.length !== values.length) {
       return Promise.reject('recipients length does not match with values')
@@ -215,7 +215,9 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
       messages,
       new RawCosmosFee([new RawCosmosCoin(this.feeSymbol, fee)], new BigNumber('200000')),
       memo,
-      nodeInfo.network
+      nodeInfo.network,
+      account.value.account_number,
+      account.sequence
     )
     return transaction
   }

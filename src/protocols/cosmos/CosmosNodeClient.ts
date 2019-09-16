@@ -2,7 +2,7 @@ import axios from 'axios'
 import { BigNumber } from 'bignumber.js'
 import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 
-export interface NodeInfo {
+export interface CosmosNodeInfo {
   protocol_version: {
     p2p: string
     block: string
@@ -18,6 +18,20 @@ export interface NodeInfo {
     tx_index: string
     rpc_address: string
   }
+}
+
+export interface CosmosAccount {
+  type: string
+  value: {
+    account_number: string
+    address: string
+    coins: {
+      denom: string
+      amount: string
+    }[]
+  }
+  public_key: string
+  sequence: string
 }
 
 export class CosmosNodeClient {
@@ -81,12 +95,12 @@ export class CosmosNodeClient {
     })
   }
 
-  public async fetchNodeInfo(): Promise<NodeInfo> {
+  public async fetchNodeInfo(): Promise<CosmosNodeInfo> {
     return new Promise((resolve, reject) => {
       axios
         .get(`${this.baseURL}/node_info`)
         .then(response => {
-          const nodeInfo = response.data as NodeInfo
+          const nodeInfo = response.data as CosmosNodeInfo
           resolve(nodeInfo)
         })
         .catch(reject)
@@ -103,6 +117,18 @@ export class CosmosNodeClient {
         })
         .then(response => {
           resolve(response.data.hash)
+        })
+        .catch(reject)
+    })
+  }
+
+  public async fetchAccount(address: string): Promise<CosmosAccount> {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`${this.baseURL}/auth/accounts/${address}`)
+        .then(response => {
+          const account = response.data as CosmosAccount
+          resolve(account)
         })
         .catch(reject)
     })
