@@ -155,8 +155,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     branch: Buffer.from(new Uint8Array([1, 52]))
   }
 
-  protected tezosChainId: string = 'PsddFKi32cMJ2qPjf43Qv5GDWLDPZb3T3bF6fLKiF5HtvHNU7aP' // TODO: Is this needed?
-
   /**
    * Tezos Implemention of ICoinProtocol
    */
