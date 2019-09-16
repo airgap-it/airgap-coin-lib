@@ -871,189 +871,201 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     }
   }
 
-  public forgeTezosOperation(tezosWrappedOperation: TezosWrappedOperation) {
+  public forgeTezosOperation(tezosWrappedOperation: TezosWrappedOperation): string {
     // taken from http://tezos.gitlab.io/mainnet/api/p2p.html
-    const cleanedBranch = this.checkAndRemovePrefixToHex(tezosWrappedOperation.branch, this.tezosPrefixes.branch) // ignore the tezos prefix
+    const cleanedBranch: string = this.checkAndRemovePrefixToHex(tezosWrappedOperation.branch, this.tezosPrefixes.branch) // ignore the tezos prefix
     if (cleanedBranch.length !== 64) {
       // must be 32 bytes
       throw new Error('provided branch is invalid')
     }
 
-    const branchHexString = cleanedBranch // ignore the tezos prefix
+    const branchHexString: string = cleanedBranch // ignore the tezos prefix
 
-    const forgedOperation = tezosWrappedOperation.contents.map(operation => {
-      let resultHexString = ''
+    const forgedOperation: string[] = tezosWrappedOperation.contents.map((operation: TezosOperation) => {
+      switch (operation.kind) {
+        case TezosOperationType.TRANSACTION:
+          return this.forgeTransactionOperation(operation)
 
-      if (
-        operation.kind !== TezosOperationType.TRANSACTION &&
-        operation.kind !== TezosOperationType.REVEAL &&
-        operation.kind !== TezosOperationType.ORIGINATION &&
-        operation.kind !== TezosOperationType.DELEGATION
-      ) {
-        throw new Error('currently unsupported operation type supplied ' + operation.kind)
+        case TezosOperationType.REVEAL:
+          return this.forgeRevealOperation(operation)
+
+        case TezosOperationType.ORIGINATION:
+          return this.forgeOriginationOperation(operation)
+
+        case TezosOperationType.DELEGATION:
+          return this.forgeDelegationOperation(operation)
+
+        default:
+          throw new Error(`Currently unsupported operation type supplied ${operation.kind}`)
       }
-
-      // TAG
-      if (operation.kind === TezosOperationType.TRANSACTION) {
-        resultHexString += '08' // because this is a transaction operation
-      } else if (operation.kind === TezosOperationType.REVEAL) {
-        resultHexString += '07' // because this is a reveal operation
-      } else if (operation.kind === TezosOperationType.ORIGINATION) {
-        resultHexString += '09' // because this is a reveal operation
-      } else if (operation.kind === TezosOperationType.DELEGATION) {
-        resultHexString += '0a' // because this is a reveal operation
-      }
-
-      let cleanedSource: string
-
-      if ((operation as TezosSpendOperation).source.toLowerCase().startsWith('kt')) {
-        cleanedSource = '01' + this.checkAndRemovePrefixToHex(operation.source, this.tezosPrefixes.kt) + '00'
-      } else {
-        cleanedSource = this.checkAndRemovePrefixToHex(operation.source, this.tezosPrefixes.tz1)
-      }
-
-      if (cleanedSource.length > 44) {
-        // must be less or equal 22 bytes
-        throw new Error('provided source is invalid')
-      }
-
-      while (cleanedSource.length !== 44) {
-        // fill up with 0s to match 22bytes
-        cleanedSource = '0' + cleanedSource
-      }
-
-      resultHexString += cleanedSource
-      resultHexString += this.bigNumberToZarith(new BigNumber(operation.fee))
-      resultHexString += this.bigNumberToZarith(new BigNumber(operation.counter))
-      resultHexString += this.bigNumberToZarith(new BigNumber(operation.gas_limit))
-      resultHexString += this.bigNumberToZarith(new BigNumber(operation.storage_limit))
-
-      if (operation.kind === TezosOperationType.TRANSACTION) {
-        resultHexString += this.bigNumberToZarith(new BigNumber((operation as TezosSpendOperation).amount))
-
-        let cleanedDestination
-
-        if ((operation as TezosSpendOperation).destination.toLowerCase().startsWith('kt')) {
-          cleanedDestination =
-            '01' + this.checkAndRemovePrefixToHex((operation as TezosSpendOperation).destination, this.tezosPrefixes.kt) + '00'
-        } else {
-          cleanedDestination = this.checkAndRemovePrefixToHex((operation as TezosSpendOperation).destination, this.tezosPrefixes.tz1)
-        }
-
-        if (cleanedDestination.length > 44) {
-          // must be less or equal 22 bytes
-          throw new Error('provided destination is invalid')
-        }
-
-        while (cleanedDestination.length !== 44) {
-          // fill up with 0s to match 22bytes
-          cleanedDestination = '0' + cleanedDestination
-        }
-
-        resultHexString += cleanedDestination
-
-        resultHexString += '00' // because we have no additional parameters
-      }
-
-      if (operation.kind === TezosOperationType.REVEAL) {
-        const cleanedPublicKey = this.checkAndRemovePrefixToHex((operation as TezosRevealOperation).public_key, this.tezosPrefixes.edpk)
-
-        if (cleanedPublicKey.length === 32) {
-          // must be equal 32 bytes
-          throw new Error('provided public key is invalid')
-        }
-
-        resultHexString += '00' + cleanedPublicKey
-      }
-
-      if (operation.kind === TezosOperationType.ORIGINATION) {
-        const originationOperation = operation as TezosOriginationOperation
-
-        const cleanedManagerPubKey = this.checkAndRemovePrefixToHex(originationOperation.manager_pubkey, this.tezosPrefixes.tz1)
-
-        if (cleanedManagerPubKey.length === 32) {
-          // must be equal 32 bytes
-          throw new Error('provided public key is invalid')
-        }
-
-        resultHexString += '00' + cleanedManagerPubKey
-
-        resultHexString += this.bigNumberToZarith(new BigNumber(originationOperation.balance))
-        resultHexString += originationOperation.spendable ? 'ff' : '00'
-        resultHexString += originationOperation.delegatable ? 'ff' : '00'
-
-        if (originationOperation.delegate) {
-          // PRESENCE OF DELEGATE
-          resultHexString += 'ff'
-
-          let cleanedDestination
-
-          if (originationOperation.delegate.toLowerCase().startsWith('tz1')) {
-            cleanedDestination = this.checkAndRemovePrefixToHex(originationOperation.delegate, this.tezosPrefixes.tz1)
-          } else if (originationOperation.delegate.toLowerCase().startsWith('kt1')) {
-            cleanedDestination = this.checkAndRemovePrefixToHex(originationOperation.delegate, this.tezosPrefixes.kt)
-          }
-
-          if (!cleanedDestination || cleanedDestination.length > 42) {
-            // must be less or equal 21 bytes
-            throw new Error('provided destination is invalid')
-          }
-
-          while (cleanedDestination.length !== 42) {
-            // fill up with 0s to match 21 bytes
-            cleanedDestination = '0' + cleanedDestination
-          }
-
-          resultHexString += cleanedDestination
-        } else {
-          // ABSENCE OF DELEGATE
-          resultHexString += '00'
-        }
-
-        if (originationOperation.script) {
-          // PRESENCE OF SCRIPT
-          resultHexString += 'ff'
-
-          throw new Error('script not supported')
-        } else {
-          // ABSENCE OF SCRIPT
-          resultHexString += '00'
-        }
-      }
-
-      if (operation.kind === TezosOperationType.DELEGATION) {
-        const delegationOperation = operation as TezosDelegationOperation
-        if (delegationOperation.delegate) {
-          resultHexString += 'ff'
-
-          let cleanedDestination
-
-          if (delegationOperation.delegate.toLowerCase().startsWith('tz1')) {
-            cleanedDestination = this.checkAndRemovePrefixToHex(delegationOperation.delegate, this.tezosPrefixes.tz1)
-          } else if (delegationOperation.delegate.toLowerCase().startsWith('kt1')) {
-            cleanedDestination = this.checkAndRemovePrefixToHex(delegationOperation.delegate, this.tezosPrefixes.kt)
-          }
-
-          if (!cleanedDestination || cleanedDestination.length > 42) {
-            // must be less or equal 21 bytes
-            throw new Error('provided destination is invalid')
-          }
-
-          while (cleanedDestination.length !== 42) {
-            // fill up with 0s to match 21 bytes
-            cleanedDestination = '0' + cleanedDestination
-          }
-
-          resultHexString += cleanedDestination
-        } else {
-          resultHexString += '00'
-        }
-      }
-
-      return resultHexString
     })
 
     return branchHexString + forgedOperation.join('')
+  }
+
+  private forgeSharedFields(operation: TezosOperation): string {
+    let resultHexString: string = ''
+
+    let cleanedSource: string = (operation as TezosSpendOperation).source.toLowerCase().startsWith('kt')
+      ? `01${this.checkAndRemovePrefixToHex(operation.source, this.tezosPrefixes.kt)}00`
+      : this.checkAndRemovePrefixToHex(operation.source, this.tezosPrefixes.tz1)
+
+    if (cleanedSource.length > 44) {
+      // must be less or equal 22 bytes
+      throw new Error('provided source is invalid')
+    }
+
+    while (cleanedSource.length !== 44) {
+      // fill up with 0s to match 22bytes
+      cleanedSource = `0${cleanedSource}`
+    }
+
+    resultHexString += cleanedSource
+    resultHexString += this.bigNumberToZarith(new BigNumber(operation.fee))
+    resultHexString += this.bigNumberToZarith(new BigNumber(operation.counter))
+    resultHexString += this.bigNumberToZarith(new BigNumber(operation.gas_limit))
+    resultHexString += this.bigNumberToZarith(new BigNumber(operation.storage_limit))
+
+    return resultHexString
+  }
+
+  private forgeTransactionOperation(operation: TezosOperation): string {
+    let resultHexString: string = ''
+    resultHexString += '08' // because this is a transaction operation
+    resultHexString += this.forgeSharedFields(operation)
+
+    resultHexString += this.bigNumberToZarith(new BigNumber((operation as TezosSpendOperation).amount))
+
+    let cleanedDestination: string = (operation as TezosSpendOperation).destination.toLowerCase().startsWith('kt')
+      ? `01${this.checkAndRemovePrefixToHex((operation as TezosSpendOperation).destination, this.tezosPrefixes.kt)}00`
+      : this.checkAndRemovePrefixToHex((operation as TezosSpendOperation).destination, this.tezosPrefixes.tz1)
+
+    if (cleanedDestination.length > 44) {
+      // must be less or equal 22 bytes
+      throw new Error('provided destination is invalid')
+    }
+
+    while (cleanedDestination.length !== 44) {
+      // fill up with 0s to match 22bytes
+      cleanedDestination = `0${cleanedDestination}`
+    }
+
+    resultHexString += cleanedDestination
+
+    resultHexString += '00' // because we have no additional parameters
+
+    return resultHexString
+  }
+  private forgeRevealOperation(operation: TezosOperation): string {
+    let resultHexString: string = ''
+    resultHexString += '07' // because this is a reveal operation
+    resultHexString += this.forgeSharedFields(operation)
+
+    const cleanedPublicKey: string = this.checkAndRemovePrefixToHex((operation as TezosRevealOperation).public_key, this.tezosPrefixes.edpk)
+
+    if (cleanedPublicKey.length === 32) {
+      // must be equal 32 bytes
+      throw new Error('provided public key is invalid')
+    }
+
+    resultHexString += `00${cleanedPublicKey}`
+
+    return resultHexString
+  }
+  private forgeOriginationOperation(operation: TezosOperation): string {
+    let resultHexString: string = ''
+    resultHexString += '09' // because this is a reveal operation
+    resultHexString += this.forgeSharedFields(operation)
+
+    const originationOperation: TezosOriginationOperation = operation as TezosOriginationOperation
+
+    const cleanedManagerPubKey: string = this.checkAndRemovePrefixToHex(originationOperation.manager_pubkey, this.tezosPrefixes.tz1)
+
+    if (cleanedManagerPubKey.length === 32) {
+      // must be equal 32 bytes
+      throw new Error('provided public key is invalid')
+    }
+
+    resultHexString += `00${cleanedManagerPubKey}`
+
+    resultHexString += this.bigNumberToZarith(new BigNumber(originationOperation.balance))
+    resultHexString += originationOperation.spendable ? 'ff' : '00'
+    resultHexString += originationOperation.delegatable ? 'ff' : '00'
+
+    if (originationOperation.delegate) {
+      // PRESENCE OF DELEGATE
+      resultHexString += 'ff'
+
+      let cleanedDestination: string | undefined
+
+      if (originationOperation.delegate.toLowerCase().startsWith('tz1')) {
+        cleanedDestination = this.checkAndRemovePrefixToHex(originationOperation.delegate, this.tezosPrefixes.tz1)
+      } else if (originationOperation.delegate.toLowerCase().startsWith('kt1')) {
+        cleanedDestination = this.checkAndRemovePrefixToHex(originationOperation.delegate, this.tezosPrefixes.kt)
+      }
+
+      if (!cleanedDestination || cleanedDestination.length > 42) {
+        // must be less or equal 21 bytes
+        throw new Error('provided destination is invalid')
+      }
+
+      while (cleanedDestination.length !== 42) {
+        // fill up with 0s to match 21 bytes
+        cleanedDestination = `0${cleanedDestination}`
+      }
+
+      resultHexString += cleanedDestination
+    } else {
+      // ABSENCE OF DELEGATE
+      resultHexString += '00'
+    }
+
+    if (originationOperation.script) {
+      // PRESENCE OF SCRIPT
+      resultHexString += 'ff'
+
+      throw new Error('script not supported')
+    } else {
+      // ABSENCE OF SCRIPT
+      resultHexString += '00'
+    }
+
+    return resultHexString
+  }
+
+  private forgeDelegationOperation(operation: TezosOperation): string {
+    let resultHexString: string = ''
+    resultHexString += '0a' // because this is a reveal operation
+    resultHexString += this.forgeSharedFields(operation)
+
+    const delegationOperation: TezosDelegationOperation = operation as TezosDelegationOperation
+    if (delegationOperation.delegate) {
+      resultHexString += 'ff'
+
+      let cleanedDestination: string | undefined
+
+      if (delegationOperation.delegate.toLowerCase().startsWith('tz1')) {
+        cleanedDestination = this.checkAndRemovePrefixToHex(delegationOperation.delegate, this.tezosPrefixes.tz1)
+      } else if (delegationOperation.delegate.toLowerCase().startsWith('kt1')) {
+        cleanedDestination = this.checkAndRemovePrefixToHex(delegationOperation.delegate, this.tezosPrefixes.kt)
+      }
+
+      if (!cleanedDestination || cleanedDestination.length > 42) {
+        // must be less or equal 21 bytes
+        throw new Error('provided destination is invalid')
+      }
+
+      while (cleanedDestination.length !== 42) {
+        // fill up with 0s to match 21 bytes
+        cleanedDestination = `0${cleanedDestination}`
+      }
+
+      resultHexString += cleanedDestination
+    } else {
+      resultHexString += '00'
+    }
+
+    return resultHexString
   }
 
   public bigNumberToZarith(inputNumber: BigNumber): string {
