@@ -158,10 +158,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   /**
    * Tezos Implemention of ICoinProtocol
    */
-  constructor(
-    public readonly jsonRPCAPI: string = 'https://mainnet.tezrpc.me',
-    public readonly baseApiUrl: string = 'https://api6.tzscan.io'
-  ) {
+  constructor(public readonly jsonRPCAPI: string = 'http://localhost:8732', public readonly baseApiUrl: string = 'https://api6.tzscan.io') {
     super()
   }
 
@@ -198,7 +195,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   }
 
   public async getAddressFromPublicKey(publicKey: string): Promise<string> {
-    // using libsodium for now
+    await sodium.ready
+
     const payload: Uint8Array = sodium.crypto_generichash(20, Buffer.from(publicKey, 'hex'))
     const address: string = bs58check.encode(Buffer.concat([this.tezosPrefixes.tz1, Buffer.from(payload)]))
 
@@ -266,6 +264,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   }
 
   public async signWithPrivateKey(privateKey: Buffer, transaction: RawTezosTransaction): Promise<IAirGapSignedTransaction> {
+    await sodium.ready
+
     const watermark: string = '03'
     const watermarkedForgedOperationBytesHex: string = watermark + transaction.binaryTransaction
     const watermarkedForgedOperationBytes: Buffer = Buffer.from(watermarkedForgedOperationBytesHex, 'hex')
@@ -708,7 +708,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
   public unforgeRevealOperation(hexString: string): { tezosRevealOperation: TezosRevealOperation; rest: string } {
     let { result, rest }: { result: string; rest: string } = this.splitAndReturnRest(hexString, 44)
-    const source: string = this.parseAddress(result)
+    const source: string = this.prefixAndBase58CheckEncode(result, this.tezosPrefixes.tz1)
 
     // fee, counter, gas_limit, storage_limit
     ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
@@ -738,7 +738,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
   public unforgeSpendOperation(hexString: string): { tezosSpendOperation: TezosSpendOperation; rest: string } {
     let { result, rest }: { result: string; rest: string } = this.splitAndReturnRest(hexString, 44)
-    const source: string = this.parseAddress(result)
+    const source: string = this.prefixAndBase58CheckEncode(result, this.tezosPrefixes.tz1)
 
     // fee, counter, gas_limit, storage_limit, amount
     ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
@@ -777,7 +777,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
   public unforgeOriginationOperation(hexString: string): { tezosOriginationOperation: TezosOriginationOperation; rest: string } {
     let { result, rest }: { result: string; rest: string } = this.splitAndReturnRest(hexString, 44) // slice of FF at beginning
-    const source: string = this.parseAddress(result)
+    const source: string = this.prefixAndBase58CheckEncode(result, this.tezosPrefixes.tz1)
 
     // fee, counter, gas_limit, storage_limit
     ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
@@ -834,7 +834,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
   public unforgeDelegationOperation(hexString: string): { tezosDelegationOperation: TezosDelegationOperation; rest: string } {
     let { result, rest }: { result: string; rest: string } = this.splitAndReturnRest(hexString, 44) // slice of FF at beginning
-    const source: string = this.parseAddress(result)
+    const source: string = this.prefixAndBase58CheckEncode(result, this.tezosPrefixes.tz1)
 
     // fee, counter, gas_limit, storage_limit, amount
     ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
@@ -906,18 +906,11 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   private forgeSharedFields(operation: TezosOperation): string {
     let resultHexString: string = ''
 
-    let cleanedSource: string = (operation as TezosSpendOperation).source.toLowerCase().startsWith('kt')
-      ? `01${this.checkAndRemovePrefixToHex(operation.source, this.tezosPrefixes.kt)}00`
-      : this.checkAndRemovePrefixToHex(operation.source, this.tezosPrefixes.tz1)
+    const cleanedSource: string = this.checkAndRemovePrefixToHex(operation.source, this.tezosPrefixes.tz1)
 
-    if (cleanedSource.length > 44) {
-      // must be less or equal 22 bytes
+    if (cleanedSource.length !== 42) {
+      // must be less or equal 21 bytes
       throw new Error('provided source is invalid')
-    }
-
-    while (cleanedSource.length !== 44) {
-      // fill up with 0s to match 22bytes
-      cleanedSource = `0${cleanedSource}`
     }
 
     resultHexString += cleanedSource
