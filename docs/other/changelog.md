@@ -1,3 +1,13 @@
+### 0.5.2 (2019-09-17)
+
+### Internals
+
+- **xtz**: forge implementation refactoring
+
+### Bug Fixes
+
+- **actions**: add repeatable actions
+
 ### 0.5.1 (2019-08-28)
 
 ### Bug Fixes
