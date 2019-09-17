@@ -183,8 +183,10 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
   }
 
   public async bakerInfo(tzAddress: string): Promise<BakerInfo> {
-    if (!tzAddress.toLowerCase().startsWith('tz1')) {
-      throw new Error('non tz1-address supplied')
+    if (
+      !(tzAddress.toLowerCase().startsWith('tz1') || tzAddress.toLowerCase().startsWith('tz2') || tzAddress.toLowerCase().startsWith('tz3'))
+    ) {
+      throw new Error('non tz-address supplied')
     }
 
     const results = await Promise.all([
