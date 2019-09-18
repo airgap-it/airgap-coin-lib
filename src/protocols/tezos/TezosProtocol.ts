@@ -70,20 +70,19 @@ export interface TezosDelegationOperation extends TezosOperation {
   storage_limit: string
   delegate?: string
 }
+
 export interface TezosOriginationOperation extends TezosOperation {
   kind: TezosOperationType.ORIGINATION
   balance: string
   counter: string
-  delegatable: boolean
   fee: string
   gas_limit: string
-  manager_pubkey: string
   source: string
-  spendable: boolean
   storage_limit: string
   delegate?: string
   script?: string
 }
+
 export interface TezosRevealOperation extends TezosOperation {
   public_key: string
   kind: TezosOperationType.REVEAL
@@ -526,10 +525,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       counter: counter.toFixed(),
       gas_limit: '10000', // taken from eztz
       storage_limit: this.originationSize.toFixed(),
-      manager_pubkey: address,
       balance: balanceToSend.toFixed(),
-      spendable: true,
-      delegatable: true,
       delegate
     }
 
@@ -656,6 +652,16 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     }
   }
 
+  private checkBoolean(hexString: string): boolean {
+    if (hexString === 'ff') {
+      return true
+    } else if (hexString === '00') {
+      return false
+    } else {
+      throw new Error('Boolean value invalid!')
+    }
+  }
+
   public unforgeSignedTezosWrappedOperation(hexString: string): TezosWrappedOperation {
     if (hexString.length <= 128) {
       throw new Error('Not a valid signed transaction')
@@ -678,22 +684,27 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       const kindHexString: string = result
 
       switch (kindHexString) {
-        case '08':
-          let tezosSpendOperation: TezosSpendOperation
-          ;({ tezosSpendOperation, rest } = this.unforgeSpendOperation(rest))
-          tezosWrappedOperation.contents.push(tezosSpendOperation)
-          break
         case '07':
+        case '08':
+        case '09':
+        case '0a':
+          throw new Error(`deprecated operations found with tag ${kindHexString}`)
+        case '6b':
           let tezosRevealOperation: TezosRevealOperation
           ;({ tezosRevealOperation, rest } = this.unforgeRevealOperation(rest))
           tezosWrappedOperation.contents.push(tezosRevealOperation)
           break
-        case '09':
+        case '6c':
+          let tezosSpendOperation: TezosSpendOperation
+          ;({ tezosSpendOperation, rest } = this.unforgeSpendOperation(rest))
+          tezosWrappedOperation.contents.push(tezosSpendOperation)
+          break
+        case '6d':
           let tezosOriginationOperation: TezosOriginationOperation
           ;({ tezosOriginationOperation, rest } = this.unforgeOriginationOperation(rest))
           tezosWrappedOperation.contents.push(tezosOriginationOperation)
           break
-        case '0a':
+        case '6e':
           let tezosDelegationOperation: TezosDelegationOperation
           ;({ tezosDelegationOperation, rest } = this.unforgeDelegationOperation(rest))
           tezosWrappedOperation.contents.push(tezosDelegationOperation)
@@ -737,7 +748,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   }
 
   public unforgeSpendOperation(hexString: string): { tezosSpendOperation: TezosSpendOperation; rest: string } {
-    let { result, rest }: { result: string; rest: string } = this.splitAndReturnRest(hexString, 44)
+    let { result, rest }: { result: string; rest: string } = this.splitAndReturnRest(hexString, 42)
     const source: string = this.prefixAndBase58CheckEncode(result, this.tezosPrefixes.tz1)
 
     // fee, counter, gas_limit, storage_limit, amount
@@ -754,9 +765,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     ;({ result, rest } = this.splitAndReturnRest(rest, 44))
     const destination: string = this.parseAddress(result)
     ;({ result, rest } = this.splitAndReturnRest(rest, 2))
-    const hasParameters: string = result
+    const hasParameters: boolean = this.checkBoolean(result)
 
-    if (hasParameters !== '00') {
+    if (hasParameters) {
       throw new Error('spend transaction parser does not support parameters yet')
     }
 
@@ -776,7 +787,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   }
 
   public unforgeOriginationOperation(hexString: string): { tezosOriginationOperation: TezosOriginationOperation; rest: string } {
-    let { result, rest }: { result: string; rest: string } = this.splitAndReturnRest(hexString, 44) // slice of FF at beginning
+    let { result, rest }: { result: string; rest: string } = this.splitAndReturnRest(hexString, 42)
     const source: string = this.prefixAndBase58CheckEncode(result, this.tezosPrefixes.tz1)
 
     // fee, counter, gas_limit, storage_limit
@@ -788,30 +799,19 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     const gasLimit: BigNumber = this.zarithToBigNumber(result)
     ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
     const storageLimit: BigNumber = this.zarithToBigNumber(result)
-    ;({ result, rest } = this.splitAndReturnRest(rest, 42))
-    const managerPubKey: string = this.parseAddress(`00${result}`)
     ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
     const balance: BigNumber = this.zarithToBigNumber(result)
     ;({ result, rest } = this.splitAndReturnRest(rest, 2))
-    const spendable: boolean = result === 'ff' ? true : false
-    ;({ result, rest } = this.splitAndReturnRest(rest, 2))
-    const delegatable: boolean = result === 'ff' ? true : false
-    ;({ result, rest } = this.splitAndReturnRest(rest, 2))
-    const hasDelegate: boolean = result === 'ff' ? true : false
+    const hasDelegate: boolean = this.checkBoolean(result)
     let delegate: string | undefined
     if (hasDelegate) {
       // Delegate is optional
       ;({ result, rest } = this.splitAndReturnRest(rest, 42))
       delegate = this.parseAddress(`00${result}`)
     }
-    ;({ result, rest } = this.splitAndReturnRest(rest, 2))
-    const hasScript: boolean = result === 'ff' ? true : false
-    let script: BigNumber | undefined
-    if (hasScript) {
-      // Script is optional
-      ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
-      script = this.zarithToBigNumber(result) // TODO: What is the type here?
-    }
+
+    ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
+    const script: BigNumber = this.zarithToBigNumber(result) // TODO: What is the type here?
 
     return {
       tezosOriginationOperation: {
@@ -822,9 +822,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         storage_limit: storageLimit.toFixed(),
         counter: counter.toFixed(),
         balance: balance.toFixed(),
-        manager_pubkey: managerPubKey,
-        spendable,
-        delegatable,
         delegate,
         script: script ? script.toString() : undefined
       },
@@ -833,7 +830,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   }
 
   public unforgeDelegationOperation(hexString: string): { tezosDelegationOperation: TezosDelegationOperation; rest: string } {
-    let { result, rest }: { result: string; rest: string } = this.splitAndReturnRest(hexString, 44) // slice of FF at beginning
+    let { result, rest }: { result: string; rest: string } = this.splitAndReturnRest(hexString, 42)
     const source: string = this.prefixAndBase58CheckEncode(result, this.tezosPrefixes.tz1)
 
     // fee, counter, gas_limit, storage_limit, amount
@@ -922,9 +919,26 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     return resultHexString
   }
 
+  private forgeRevealOperation(operation: TezosOperation): string {
+    let resultHexString: string = ''
+    resultHexString += '6b' // because this is a reveal operation
+    resultHexString += this.forgeSharedFields(operation)
+
+    const cleanedPublicKey: string = this.checkAndRemovePrefixToHex((operation as TezosRevealOperation).public_key, this.tezosPrefixes.edpk)
+
+    if (cleanedPublicKey.length === 32) {
+      // must be equal 32 bytes
+      throw new Error('provided public key is invalid')
+    }
+
+    resultHexString += `00${cleanedPublicKey}`
+
+    return resultHexString
+  }
+
   private forgeTransactionOperation(operation: TezosOperation): string {
     let resultHexString: string = ''
-    resultHexString += '08' // because this is a transaction operation
+    resultHexString += '6c' // because this is a transaction operation
     resultHexString += this.forgeSharedFields(operation)
 
     resultHexString += this.bigNumberToZarith(new BigNumber((operation as TezosSpendOperation).amount))
@@ -949,41 +963,15 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
     return resultHexString
   }
-  private forgeRevealOperation(operation: TezosOperation): string {
-    let resultHexString: string = ''
-    resultHexString += '07' // because this is a reveal operation
-    resultHexString += this.forgeSharedFields(operation)
 
-    const cleanedPublicKey: string = this.checkAndRemovePrefixToHex((operation as TezosRevealOperation).public_key, this.tezosPrefixes.edpk)
-
-    if (cleanedPublicKey.length === 32) {
-      // must be equal 32 bytes
-      throw new Error('provided public key is invalid')
-    }
-
-    resultHexString += `00${cleanedPublicKey}`
-
-    return resultHexString
-  }
   private forgeOriginationOperation(operation: TezosOperation): string {
     let resultHexString: string = ''
-    resultHexString += '09' // because this is a reveal operation
+    resultHexString += '6d' // because this is a reveal operation
     resultHexString += this.forgeSharedFields(operation)
 
     const originationOperation: TezosOriginationOperation = operation as TezosOriginationOperation
 
-    const cleanedManagerPubKey: string = this.checkAndRemovePrefixToHex(originationOperation.manager_pubkey, this.tezosPrefixes.tz1)
-
-    if (cleanedManagerPubKey.length === 32) {
-      // must be equal 32 bytes
-      throw new Error('provided public key is invalid')
-    }
-
-    resultHexString += `00${cleanedManagerPubKey}`
-
     resultHexString += this.bigNumberToZarith(new BigNumber(originationOperation.balance))
-    resultHexString += originationOperation.spendable ? 'ff' : '00'
-    resultHexString += originationOperation.delegatable ? 'ff' : '00'
 
     if (originationOperation.delegate) {
       // PRESENCE OF DELEGATE
@@ -1014,13 +1002,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     }
 
     if (originationOperation.script) {
-      // PRESENCE OF SCRIPT
-      resultHexString += 'ff'
-
       throw new Error('script not supported')
-    } else {
-      // ABSENCE OF SCRIPT
-      resultHexString += '00'
     }
 
     return resultHexString
@@ -1028,7 +1010,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
   private forgeDelegationOperation(operation: TezosOperation): string {
     let resultHexString: string = ''
-    resultHexString += '0a' // because this is a reveal operation
+    resultHexString += '6e' // because this is a reveal operation
     resultHexString += this.forgeSharedFields(operation)
 
     const delegationOperation: TezosDelegationOperation = operation as TezosDelegationOperation

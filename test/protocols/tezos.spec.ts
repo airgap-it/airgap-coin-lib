@@ -479,10 +479,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         expect(tezosOriginationOperation.counter, 'counter').to.equal('917316')
         expect(tezosOriginationOperation.gas_limit, 'gas_limit').to.equal('10000')
         expect(tezosOriginationOperation.storage_limit, 'storage_limit').to.equal('257')
-        expect(tezosOriginationOperation.manager_pubkey, 'manager_pubkey').to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
         expect(tezosOriginationOperation.balance, 'balance').to.equal('0')
-        expect(tezosOriginationOperation.delegatable, 'delegatable').to.equal(true)
-        expect(tezosOriginationOperation.spendable, 'spendable').to.equal(true)
         expect(tezosOriginationOperation.delegate, 'delegate').to.be.undefined
       })
 
@@ -504,7 +501,6 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         expect(tezosOriginationOperation.counter, 'counter').to.equal('917316')
         expect(tezosOriginationOperation.gas_limit, 'gas_limit').to.equal('10000')
         expect(tezosOriginationOperation.storage_limit, 'storage_limit').to.equal('257')
-        expect(tezosOriginationOperation.manager_pubkey, 'manager_pubkey').to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
         expect(tezosOriginationOperation.balance, 'balance').to.equal(
           balance
             .minus(1400)
@@ -513,8 +509,6 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
             .toFixed()
         )
         expect(tezosOriginationOperation.balance, 'balance').to.equal(new BigNumber('741599').toFixed())
-        expect(tezosOriginationOperation.delegatable, 'delegatable').to.equal(true)
-        expect(tezosOriginationOperation.spendable, 'spendable').to.equal(true)
         expect(tezosOriginationOperation.delegate, 'delegate').to.equal(delegate)
       })
 
@@ -535,10 +529,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         expect(tezosOriginationOperation.counter, 'counter').to.equal('917316')
         expect(tezosOriginationOperation.gas_limit, 'gas_limit').to.equal('10000')
         expect(tezosOriginationOperation.storage_limit, 'storage_limit').to.equal('257')
-        expect(tezosOriginationOperation.manager_pubkey, 'manager_pubkey').to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
         expect(tezosOriginationOperation.balance, 'balance').to.equal(amount.toFixed())
-        expect(tezosOriginationOperation.delegatable, 'delegatable').to.equal(true)
-        expect(tezosOriginationOperation.spendable, 'spendable').to.equal(true)
         expect(tezosOriginationOperation.delegate, 'delegate').to.equal(delegate)
       })
 
@@ -559,10 +550,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         expect(tezosOriginationOperation.counter, 'counter').to.equal('917316')
         expect(tezosOriginationOperation.gas_limit, 'gas_limit').to.equal('10000')
         expect(tezosOriginationOperation.storage_limit, 'storage_limit').to.equal('257')
-        expect(tezosOriginationOperation.manager_pubkey, 'manager_pubkey').to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
         expect(tezosOriginationOperation.balance, 'balance').to.equal(amount.toFixed())
-        expect(tezosOriginationOperation.delegatable, 'delegatable').to.equal(true)
-        expect(tezosOriginationOperation.spendable, 'spendable').to.equal(true)
         expect(tezosOriginationOperation.delegate, 'delegate').to.be.undefined
       })
 
@@ -583,10 +571,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         expect(tezosOriginationOperation.counter, 'counter').to.equal('917316')
         expect(tezosOriginationOperation.gas_limit, 'gas_limit').to.equal('10000')
         expect(tezosOriginationOperation.storage_limit, 'storage_limit').to.equal('257')
-        expect(tezosOriginationOperation.manager_pubkey, 'manager_pubkey').to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
         expect(tezosOriginationOperation.balance, 'balance').to.equal(amount.toFixed())
-        expect(tezosOriginationOperation.delegatable, 'delegatable').to.equal(true)
-        expect(tezosOriginationOperation.spendable, 'spendable').to.equal(true)
         expect(tezosOriginationOperation.delegate, 'delegate').to.be.undefined
       })
 
