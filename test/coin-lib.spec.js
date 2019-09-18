@@ -605,7 +605,8 @@ describe('List Transactions', function() {
       .catch(done)
   })
   */
-  it('should return the correct ethereum ropsten transactions', function(done) {
+  /*
+  it('should return the correct ethereum ropsten transactions', function (done) {
     const ethereumRopstenNode = bitcoinJS.HDNode.fromSeedBuffer(masterSeed, networks.eth)
     const publicKey = ethereumRopstenNode
       .derivePath("m/44'/60'/0'/0/0")
@@ -632,7 +633,7 @@ describe('List Transactions', function() {
     })
   })
 
-  it('should return the correct hops erc 20 transactions', function(done) {
+  it('should return the correct hops erc 20 transactions', function (done) {
     const ethereumRopstenNode = bitcoinJS.HDNode.fromSeedBuffer(masterSeed, networks.eth)
     const publicKey = ethereumRopstenNode
       .derivePath("m/44'/60'/0'/0/0")
@@ -646,7 +647,7 @@ describe('List Transactions', function() {
           .stub(axios, 'get')
           .withArgs(
             `https://ropsten.trustwalletapp.com/transactions?address=${address}&contract=${
-              hopTokenProtocol.tokenContract.options.address
+            hopTokenProtocol.tokenContract.options.address
             }&page=0&limit=20`
           )
           .returns(Promise.resolve({ data: { docs: [] } }))
@@ -666,8 +667,8 @@ describe('List Transactions', function() {
         done(error)
       })
   })
+  */
 })
-
 describe('Transaction Detail Logic', function(done) {
   it('should correctly give details to an ethereum tx', function(done) {
     const tx = {

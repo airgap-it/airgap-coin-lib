@@ -8,7 +8,7 @@ const hopProtocolConfig: GenericERC20Configuration = {
   contractAddress: '0x2dd847af80418D280B7078888B6A6133083001C9',
   decimals: 18,
   jsonRPCAPI: 'https://ropsten.infura.io/',
-  infoAPI: 'https://ropsten.trustwalletapp.com/',
+  infoAPI: 'https://ropsten.trustwalletapp.com',
   chainId: 3
 }
 
