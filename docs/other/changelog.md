@@ -1,10 +1,17 @@
+### 0.5.3 (2019-09-18)
+
+### Features
+
+- **xtz**: use tezblock.io as the tezos block explorer
+- **eth**: replace trustwallet api with etherscan.io
+
 ### 0.5.2 (2019-09-17)
 
 ### Internals
 
 - **xtz**: forge implementation refactoring
 
-### Bug Fixes
+### Features
 
 - **actions**: add repeatable actions
 
