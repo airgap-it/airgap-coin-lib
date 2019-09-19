@@ -51,7 +51,7 @@ export class DelegateAction<Context extends DelegateActionContext> extends Actio
 
   protected async perform(): Promise<DelegateActionResult> {
     return new Promise<DelegateActionResult>(
-      async (resolve: (context: DelegateActionResult) => void, reject: () => void): Promise<void> => {
+      async (resolve: (context: DelegateActionResult) => void, reject: (error: Error) => void): Promise<void> => {
         if (this.context.wallet.protocolIdentifier === 'xtz') {
           const protocol: TezosProtocol = new TezosProtocol()
 
@@ -61,8 +61,8 @@ export class DelegateAction<Context extends DelegateActionContext> extends Actio
 
             const airGapTx: IAirGapTransaction | void = await getAirGapTx(this.context.wallet, originateTx)
             resolve({ rawTx: originateTx, serializedTx, airGapTx, dataUrl: `airgap-vault://?d=${serializedTx}` })
-          } finally {
-            reject()
+          } catch (error) {
+            reject(error)
           }
         } else {
           const protocol: TezosKtProtocol = new TezosKtProtocol()
@@ -77,8 +77,8 @@ export class DelegateAction<Context extends DelegateActionContext> extends Actio
 
             const airGapTx: IAirGapTransaction | void = await getAirGapTx(this.context.wallet, delegateTx)
             resolve({ rawTx: delegateTx, serializedTx, airGapTx, dataUrl: `airgap-vault://?d=${serializedTx}` })
-          } finally {
-            reject()
+          } catch (error) {
+            reject(error)
           }
         }
       }
