@@ -391,10 +391,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       counter = new BigNumber(results[0].data).plus(1)
       branch = results[1].data
 
-      const accountManager: { key: string } = results[2].data
+      const accountManager: string = results[2].data
 
       // check if we have revealed the address already
-      if (!accountManager.key) {
+      if (!accountManager) {
         operations.push(await this.createRevealOperation(counter, publicKey, address))
         counter = counter.plus(1)
       }
@@ -625,20 +625,25 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   }
 
   protected parseAddress(rawHexAddress: string): string {
-    let { result, rest }: { result: string; rest: string } = this.splitAndReturnRest(rawHexAddress, 2)
+    const { result, rest }: { result: string; rest: string } = this.splitAndReturnRest(rawHexAddress, 2)
     const contractIdTag: string = result
     if (contractIdTag === '00') {
-      // tz1 address
-      ;({ result, rest } = this.splitAndReturnRest(rest, 2))
-      const publicKeyHashTag: string = result
-      if (publicKeyHashTag === '00') {
-        return this.prefixAndBase58CheckEncode(rest, this.tezosPrefixes.tz1)
-      } else {
-        throw new Error('address format not supported')
-      }
+      // tz address
+      return this.parseTzAddress(rest)
     } else if (contractIdTag === '01') {
       // kt address
       return this.prefixAndBase58CheckEncode(rest.slice(0, -2), this.tezosPrefixes.kt)
+    } else {
+      throw new Error('address format not supported')
+    }
+  }
+
+  protected parseTzAddress(rawHexAddress: string): string {
+    // tz1 address
+    const { result, rest }: { result: string; rest: string } = this.splitAndReturnRest(rawHexAddress, 2)
+    const publicKeyHashTag: string = result
+    if (publicKeyHashTag === '00') {
+      return this.prefixAndBase58CheckEncode(rest, this.tezosPrefixes.tz1)
     } else {
       throw new Error('address format not supported')
     }
@@ -721,8 +726,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   }
 
   public unforgeRevealOperation(hexString: string): { tezosRevealOperation: TezosRevealOperation; rest: string } {
-    let { result, rest }: { result: string; rest: string } = this.splitAndReturnRest(hexString, 44)
-    const source: string = this.prefixAndBase58CheckEncode(result, this.tezosPrefixes.tz1)
+    let { result, rest }: { result: string; rest: string } = this.splitAndReturnRest(hexString, 42)
+    const source: string = this.parseTzAddress(result)
 
     // fee, counter, gas_limit, storage_limit
     ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
@@ -752,7 +757,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
   public unforgeSpendOperation(hexString: string): { tezosSpendOperation: TezosSpendOperation; rest: string } {
     let { result, rest }: { result: string; rest: string } = this.splitAndReturnRest(hexString, 42)
-    const source: string = this.prefixAndBase58CheckEncode(result, this.tezosPrefixes.tz1)
+    const source: string = this.parseTzAddress(result)
 
     // fee, counter, gas_limit, storage_limit, amount
     ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
@@ -791,7 +796,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
   public unforgeOriginationOperation(hexString: string): { tezosOriginationOperation: TezosOriginationOperation; rest: string } {
     let { result, rest }: { result: string; rest: string } = this.splitAndReturnRest(hexString, 42)
-    const source: string = this.prefixAndBase58CheckEncode(result, this.tezosPrefixes.tz1)
+    const source: string = this.parseTzAddress(result)
 
     // fee, counter, gas_limit, storage_limit
     ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
@@ -834,7 +839,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
   public unforgeDelegationOperation(hexString: string): { tezosDelegationOperation: TezosDelegationOperation; rest: string } {
     let { result, rest }: { result: string; rest: string } = this.splitAndReturnRest(hexString, 42)
-    const source: string = this.prefixAndBase58CheckEncode(result, this.tezosPrefixes.tz1)
+    const source: string = this.parseTzAddress(result)
 
     // fee, counter, gas_limit, storage_limit, amount
     ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
@@ -906,11 +911,16 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   private forgeSharedFields(operation: TezosOperation): string {
     let resultHexString: string = ''
 
-    const cleanedSource: string = this.checkAndRemovePrefixToHex(operation.source, this.tezosPrefixes.tz1)
+    let cleanedSource: string = this.checkAndRemovePrefixToHex(operation.source, this.tezosPrefixes.tz1)
 
-    if (cleanedSource.length !== 42) {
+    if (cleanedSource.length > 42) {
       // must be less or equal 21 bytes
       throw new Error('provided source is invalid')
+    }
+
+    while (cleanedSource.length !== 42) {
+      // fill up with 0s to match 21 bytes
+      cleanedSource = `0${cleanedSource}`
     }
 
     resultHexString += cleanedSource
