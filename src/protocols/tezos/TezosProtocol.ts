@@ -483,10 +483,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       counter = new BigNumber(results[0].data).plus(1)
       branch = results[1].data
 
-      const accountManager: { key: string } = results[2].data
+      const accountManager: string = results[2].data
 
       // check if we have revealed the key already
-      if (!accountManager.key) {
+      if (!accountManager) {
         operations.push(await this.createRevealOperation(counter, publicKey, address))
         counter = counter.plus(1)
       }
@@ -545,6 +545,73 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       return { binaryTransaction: binaryTx }
     } catch (error) {
       console.warn(error.message)
+      throw new Error('Forging Tezos TX failed.')
+    }
+  }
+
+  public async undelegate(publicKey: string): Promise<RawTezosTransaction> {
+    return this.delegate(publicKey)
+  }
+
+  public async delegate(publicKey: string, delegate?: string): Promise<RawTezosTransaction> {
+    let counter: BigNumber = new BigNumber(1)
+    let branch: string
+
+    const operations: TezosOperation[] = []
+    const tzAddress: string = await this.getAddressFromPublicKey(publicKey)
+
+    try {
+      const results: AxiosResponse[] = await Promise.all([
+        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${tzAddress}/counter`),
+        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/hash`),
+        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${tzAddress}/manager_key`)
+      ])
+
+      counter = new BigNumber(results[0].data).plus(1)
+      branch = results[1].data
+
+      const accountManager: string = results[2].data
+
+      // check if we have revealed the address already
+      if (!accountManager) {
+        operations.push(await this.createRevealOperation(counter, publicKey, tzAddress))
+        counter = counter.plus(1)
+      }
+    } catch (error) {
+      throw error
+    }
+
+    const balance: BigNumber = await this.getBalanceOfAddresses([tzAddress])
+
+    const fee: BigNumber = new BigNumber(1420)
+
+    if (balance.isLessThan(fee)) {
+      throw new Error('not enough balance')
+    }
+
+    const delegationOperation: TezosDelegationOperation = {
+      kind: TezosOperationType.DELEGATION,
+      source: tzAddress,
+      fee: fee.toFixed(),
+      counter: counter.toFixed(),
+      gas_limit: '10000', // taken from eztz
+      storage_limit: '0', // taken from eztz
+      delegate
+    }
+
+    operations.push(delegationOperation)
+
+    try {
+      const tezosWrappedOperation: TezosWrappedOperation = {
+        branch,
+        contents: operations
+      }
+
+      const binaryTx: string = this.forgeTezosOperation(tezosWrappedOperation)
+
+      return { binaryTransaction: binaryTx }
+    } catch (error) {
+      console.warn(error)
       throw new Error('Forging Tezos TX failed.')
     }
   }

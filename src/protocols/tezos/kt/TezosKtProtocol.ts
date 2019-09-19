@@ -3,7 +3,7 @@ import BigNumber from 'bignumber.js'
 
 import { RawTezosTransaction } from '../../../serializer/unsigned-transactions/tezos-transactions.serializer'
 import { ICoinSubProtocol, SubProtocolType } from '../../ICoinSubProtocol'
-import { TezosDelegationOperation, TezosOperation, TezosOperationType, TezosProtocol, TezosWrappedOperation } from '../TezosProtocol'
+import { TezosProtocol } from '../TezosProtocol'
 
 // 8.25%
 const SELF_BOND_REQUIREMENT: number = 0.0825
@@ -117,73 +117,6 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
       value: data.delegate.value,
       delegatedDate,
       delegatedOpLevel
-    }
-  }
-
-  public async undelegate(publicKey: string, delegatedAddress: string): Promise<RawTezosTransaction> {
-    return this.delegate(publicKey, delegatedAddress)
-  }
-
-  public async delegate(publicKey: string, delegatedAddress: string, delegate?: string): Promise<RawTezosTransaction> {
-    let counter: BigNumber = new BigNumber(1)
-    let branch: string
-
-    const operations: TezosOperation[] = []
-    const tzAddress: string = await super.getAddressFromPublicKey(publicKey)
-
-    try {
-      const results: AxiosResponse[] = await Promise.all([
-        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${delegatedAddress}/counter`),
-        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/hash`),
-        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${delegatedAddress}/manager_key`)
-      ])
-
-      counter = new BigNumber(results[0].data).plus(1)
-      branch = results[1].data
-
-      const accountManager: { key: string } = results[2].data
-
-      // check if we have revealed the address already
-      if (!accountManager.key) {
-        operations.push(await this.createRevealOperation(counter, publicKey, delegatedAddress))
-        counter = counter.plus(1)
-      }
-    } catch (error) {
-      throw error
-    }
-
-    const balance: BigNumber = await this.getBalanceOfAddresses([delegatedAddress])
-
-    const fee: BigNumber = new BigNumber(1420)
-
-    if (balance.isLessThan(fee)) {
-      throw new Error('not enough balance')
-    }
-
-    const delegationOperation: TezosDelegationOperation = {
-      kind: TezosOperationType.DELEGATION,
-      source: delegatedAddress || tzAddress, // TODO: Does the tzAddress make sense here as a fallback?
-      fee: fee.toFixed(),
-      counter: counter.toFixed(),
-      gas_limit: '10000', // taken from eztz
-      storage_limit: '0', // taken from eztz
-      delegate
-    }
-
-    operations.push(delegationOperation)
-
-    try {
-      const tezosWrappedOperation: TezosWrappedOperation = {
-        branch,
-        contents: operations
-      }
-
-      const binaryTx: string = this.forgeTezosOperation(tezosWrappedOperation)
-
-      return { binaryTransaction: binaryTx }
-    } catch (error) {
-      console.warn(error)
-      throw new Error('Forging Tezos TX failed.')
     }
   }
 

@@ -68,11 +68,7 @@ export class DelegateAction<Context extends DelegateActionContext> extends Actio
           const protocol: TezosKtProtocol = new TezosKtProtocol()
 
           try {
-            const delegateTx: RawTezosTransaction = await protocol.delegate(
-              this.context.wallet.publicKey,
-              this.context.wallet.receivingPublicAddress,
-              this.context.delegate
-            )
+            const delegateTx: RawTezosTransaction = await protocol.delegate(this.context.wallet.publicKey, this.context.delegate)
             const serializedTx: string = await serializeTx(this.context.wallet, delegateTx)
 
             const airGapTx: IAirGapTransaction | void = await getAirGapTx(this.context.wallet, delegateTx)
