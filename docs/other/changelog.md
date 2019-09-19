@@ -1,3 +1,10 @@
+### 0.5.4 (2019-09-19)
+
+### Bug Fixes
+
+- **actions**: catch errors and propagate them
+- **xtz**: handle invalid responses
+
 ### 0.5.3 (2019-09-18)
 
 ### Features
