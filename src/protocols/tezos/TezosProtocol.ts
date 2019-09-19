@@ -342,7 +342,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         balance = balance.plus(new BigNumber(data))
       } catch (error) {
         // if node returns 404 (which means 'no account found'), go with 0 balance
-        if (error.response.status !== 404) {
+        if (error.response && error.response.status !== 404) {
           throw error
         }
       }
