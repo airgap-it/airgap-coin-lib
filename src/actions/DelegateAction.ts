@@ -5,13 +5,14 @@ import { RawEthereumTransaction } from '../serializer/unsigned-transactions/ethe
 import { RawTezosTransaction } from '../serializer/unsigned-transactions/tezos-transactions.serializer'
 
 import { Action } from './Action'
+import { RawCosmosTransaction } from '../serializer/unsigned-transactions/cosmos-transactions.serializer'
 
-export interface DelegateActionContext {
+export interface TezosDelegateActionContext {
   wallet: AirGapMarketWallet
   delegate: string
 }
 
-export interface DelegateActionResult {
+export interface TezosDelegateActionResult {
   rawTx: RawTezosTransaction
   serializedTx: string
   airGapTxs: IAirGapTransaction[] | void
@@ -20,7 +21,7 @@ export interface DelegateActionResult {
 
 function serializeTx(
   wallet: AirGapMarketWallet,
-  transaction: RawTezosTransaction | RawEthereumTransaction | RawBitcoinTransaction | RawAeternityTransaction
+  transaction: RawTezosTransaction | RawEthereumTransaction | RawBitcoinTransaction | RawAeternityTransaction | RawCosmosTransaction
 ): Promise<string> {
   const syncProtocol: SyncProtocolUtils = new SyncProtocolUtils()
 
@@ -38,7 +39,7 @@ function serializeTx(
 
 function getAirGapTx(
   wallet: AirGapMarketWallet,
-  transaction: RawTezosTransaction | RawEthereumTransaction | RawBitcoinTransaction | RawAeternityTransaction
+  transaction: RawTezosTransaction | RawEthereumTransaction | RawBitcoinTransaction | RawAeternityTransaction | RawCosmosTransaction
 ): Promise<IAirGapTransaction[] | void> {
   return wallet.coinProtocol.getTransactionDetails({
     publicKey: wallet.publicKey,
@@ -46,12 +47,12 @@ function getAirGapTx(
   })
 }
 
-export class DelegateAction<Context extends DelegateActionContext> extends Action<DelegateActionResult, Context> {
+export class TezosDelegateAction<Context extends TezosDelegateActionContext> extends Action<TezosDelegateActionResult, Context> {
   public readonly identifier: string = 'tezos-delegate-action'
 
-  protected async perform(): Promise<DelegateActionResult> {
-    return new Promise<DelegateActionResult>(
-      async (resolve: (context: DelegateActionResult) => void, reject: () => void): Promise<void> => {
+  protected async perform(): Promise<TezosDelegateActionResult> {
+    return new Promise<TezosDelegateActionResult>(
+      async (resolve: (context: TezosDelegateActionResult) => void, reject: () => void): Promise<void> => {
         if (this.context.wallet.protocolIdentifier === 'xtz') {
           const protocol: TezosProtocol = new TezosProtocol()
 

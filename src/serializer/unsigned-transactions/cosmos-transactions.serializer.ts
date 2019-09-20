@@ -17,14 +17,14 @@ export type SerializedUnsignedCosmosTransaction = [
 ]
 
 export class RawCosmosTransaction {
-  public messages: RawCosmosSendMessage[]
+  public messages: RawCosmosMessage[]
   public fee: RawCosmosFee
   public memo: string
   public chainID: string
   public accountNumber: string
   public sequence: string
 
-  constructor(messages: RawCosmosSendMessage[], fee: RawCosmosFee, memo: string, chainID: string, accountNumber: string, sequence: string) {
+  constructor(messages: RawCosmosMessage[], fee: RawCosmosFee, memo: string, chainID: string, accountNumber: string, sequence: string) {
     this.messages = messages
     this.fee = fee
     this.memo = memo
@@ -45,30 +45,64 @@ export class RawCosmosTransaction {
   }
 }
 
-export class RawCosmosSendMessage {
+export interface RawCosmosMessage {
+  toSignJSON(): any
+  toRLP(): any
+}
+
+export class RawCosmosSendMessage implements RawCosmosMessage {
   public fromAddress: string
   public toAddress: string
-  public coins: RawCosmosCoin[]
+  public amount: RawCosmosCoin[]
 
-  constructor(fromAddress: string, toAddress: string, coins: RawCosmosCoin[]) {
+  constructor(fromAddress: string, toAddress: string, amount: RawCosmosCoin[]) {
     this.fromAddress = fromAddress
     this.toAddress = toAddress
-    this.coins = coins
+    this.amount = amount
   }
 
   toSignJSON(): any {
     return {
       type: 'cosmos-sdk/MsgSend',
       value: {
-        amount: this.coins.map(value => value.toSignJSON()),
+        amount: this.amount.map(value => value.toSignJSON()),
         from_address: this.fromAddress,
         to_address: this.toAddress
       }
     }
   }
+
+  toRLP(): any {
+    return [this.fromAddress, this.toAddress, this.amount.map(coin => coin.toRLP())]
+  }
 }
 
-export class RawCosmosCoin {
+export class RawCosmosDelegateMessage implements RawCosmosMessage {
+  public delegatorAddress: string
+  public validatorAddress: string
+  public amount: RawCosmosCoin
+
+  constructor(delegatorAddress: string, validatorAddress: string, amount: RawCosmosCoin) {
+    this.delegatorAddress = delegatorAddress
+    this.validatorAddress = validatorAddress
+    this.amount = amount
+  }
+
+  toSignJSON(): any {
+    return {
+      type: 'cosmos-sdk/MsgDelegate',
+      value: {
+        amount: this.amount.toSignJSON(),
+        delegator_address: this.delegatorAddress,
+        validator_address: this.validatorAddress
+      }
+    }
+  }
+
+  toRLP(): any {}
+}
+
+export class RawCosmosCoin implements RawCosmosMessage {
   public denom: string
   public amount: BigNumber
 
@@ -83,9 +117,13 @@ export class RawCosmosCoin {
       denom: this.denom
     }
   }
+
+  toRLP(): any {
+    return [this.denom, this.amount]
+  }
 }
 
-export class RawCosmosFee {
+export class RawCosmosFee implements RawCosmosMessage {
   public amount: RawCosmosCoin[]
   public gas: BigNumber
 
@@ -100,6 +138,10 @@ export class RawCosmosFee {
       gas: this.gas.toFixed()
     }
   }
+
+  toRLP(): any {
+    return [this.amount.map(coin => [coin.denom, coin.amount]), this.gas]
+  }
 }
 
 export interface UnsignedCosmosTransaction extends UnsignedTransaction {
@@ -110,18 +152,8 @@ export class CosmosTransactionSerializer extends UnsignedTransactionSerializer {
   public serialize(unsignedTx: UnsignedCosmosTransaction): SerializedSyncProtocolTransaction {
     const serialized = [
       [
-        [
-          ...unsignedTx.transaction.messages.map(message => [
-            message.fromAddress,
-            message.toAddress,
-            [
-              ...message.coins.map(coin => {
-                ;[coin.denom, coin.amount]
-              })
-            ]
-          ])
-        ],
-        [[...unsignedTx.transaction.fee.amount.map(amount => [amount.denom, amount.amount])], unsignedTx.transaction.fee.gas],
+        unsignedTx.transaction.messages.map(message => message.toRLP()),
+        unsignedTx.transaction.fee.toRLP(),
         unsignedTx.transaction.memo,
         unsignedTx.transaction.chainID
       ],

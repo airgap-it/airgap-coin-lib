@@ -13,7 +13,8 @@ import {
   RawCosmosSendMessage,
   RawCosmosTransaction,
   RawCosmosCoin,
-  RawCosmosFee
+  RawCosmosFee,
+  RawCosmosDelegateMessage
 } from '../../serializer/unsigned-transactions/cosmos-transactions.serializer'
 
 const RIPEMD160 = require('ripemd160')
@@ -28,12 +29,13 @@ export interface KeyPair {
 export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol {
   public symbol: string = '⌀'
   public name: string = 'Cosmos'
-  public marketSymbol: string = 'Atom'
+  public marketSymbol: string = 'ATOM'
   public feeSymbol: string = 'uatom'
   public feeDefaults = {
-    low: new BigNumber(0.025),
-    medium: new BigNumber(0.025),
-    high: new BigNumber(0.025)
+    // TODO: verify if these values are ok
+    low: new BigNumber(500),
+    medium: new BigNumber(5000),
+    high: new BigNumber(7500)
   }
   public decimals: number = 18 // TODO: verify these values
   public feeDecimals: number = 18
@@ -58,9 +60,10 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
 
   public nodeClient: CosmosNodeClient
 
-  private addressPrefix = 'cosmos'
+  private addressPrefix: string = 'cosmos'
+  private defaultGas: BigNumber = new BigNumber('200000')
 
-  constructor(nodeClient: CosmosNodeClient = new CosmosNodeClient('https://lcd-do-not-abuse.cosmostation.io')) {
+  constructor(nodeClient: CosmosNodeClient = new CosmosNodeClient('https://cosmoshub-rpc.chainlayer.net')) {
     super()
     this.nodeClient = nodeClient
   }
@@ -213,13 +216,29 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
     const memo = data !== undefined && typeof data === 'string' ? (data as string) : ''
     const transaction = new RawCosmosTransaction(
       messages,
-      new RawCosmosFee([new RawCosmosCoin(this.feeSymbol, fee)], new BigNumber('200000')),
+      new RawCosmosFee([new RawCosmosCoin(this.feeSymbol, fee)], this.defaultGas),
       memo,
       nodeInfo.network,
       account.value.account_number,
       account.sequence
     )
     return transaction
+  }
+
+  public async delegate(publicKey: string, validatorAddress: string, amount: BigNumber, memo?: string): Promise<RawCosmosTransaction> {
+    const address = await this.getAddressFromPublicKey(publicKey)
+    const nodeInfo = await this.nodeClient.fetchNodeInfo()
+    const account = await this.nodeClient.fetchAccount(address)
+    const message = new RawCosmosDelegateMessage(address, validatorAddress, new RawCosmosCoin('uatom', amount))
+
+    return new RawCosmosTransaction(
+      [message],
+      new RawCosmosFee([new RawCosmosCoin(this.feeSymbol, this.feeDefaults.medium)], this.defaultGas),
+      memo !== undefined ? memo : '',
+      nodeInfo.network,
+      account.value.account_number,
+      account.sequence
+    )
   }
 
   public async broadcastTransaction(rawTransaction: string): Promise<string> {
