@@ -7,14 +7,52 @@ import {
 import { toBuffer } from '../utils/toBuffer'
 import BigNumber from 'bignumber.js'
 
-export type SerializedUnsignedCosmosTransaction = [
-  [[Buffer, Buffer, [[Buffer, Buffer]]]],
-  [[[Buffer, Buffer]], Buffer],
-  Buffer,
-  Buffer,
-  Buffer,
-  Buffer
+export type SerializedUnsignedCosmosSendMessage = [
+  Buffer, // type
+  Buffer, // from address
+  Buffer, // to address
+  [
+    // amount
+    Buffer, // denom
+    Buffer // amount
+  ][] // amount end
 ]
+
+export type SerializedUnsignedCosmosDelegateMessage = [
+  Buffer, // type
+  Buffer, // delegator address
+  Buffer, // validator address
+  [
+    // amount
+    Buffer, // denom
+    Buffer // amount
+  ] // amount end
+]
+
+export type SerializedUnsignedCosmosTransaction = [
+  (SerializedUnsignedCosmosSendMessage | SerializedUnsignedCosmosDelegateMessage)[], // messages
+  [
+    // fee
+    [
+      Buffer, // denom
+      Buffer // amount
+    ][],
+    Buffer // gas
+  ], // fee end
+  Buffer, // memo
+  Buffer, // chain id
+  Buffer, // account number
+  Buffer // sequence number
+]
+
+export enum SerializedUnsignedCosmosTransactionKeys {
+  MESSAGES = 0,
+  FEE = 1,
+  MEMO = 2,
+  CHAIN_ID = 3,
+  ACCOUNT_NUMBER = 4,
+  SEQUENCE = 5
+}
 
 export class RawCosmosTransaction {
   public messages: RawCosmosMessage[]
@@ -50,10 +88,34 @@ export interface RawCosmosMessage {
   toRLP(): any
 }
 
+enum RawCosmosMessageTypeIndex {
+  SEND = 0,
+  DELEGATE = 1,
+  UNDELEGATE = 2
+}
+
+class RawCosmosMessageType {
+  static Send = new RawCosmosMessageType(RawCosmosMessageTypeIndex.SEND)
+  static Delegate = new RawCosmosMessageType(RawCosmosMessageTypeIndex.DELEGATE)
+  static Undelegate = new RawCosmosMessageType(RawCosmosMessageTypeIndex.UNDELEGATE)
+
+  private static values = ['cosmos-sdk/MsgSend', 'cosmos-sdk/MsgDelegate', 'cosmos-sdk/MsgUndelegate']
+
+  index: RawCosmosMessageTypeIndex
+  value: string
+
+  constructor(index: RawCosmosMessageTypeIndex) {
+    this.index = index
+    this.value = RawCosmosMessageType.values[index]
+  }
+}
+
 export class RawCosmosSendMessage implements RawCosmosMessage {
   public fromAddress: string
   public toAddress: string
   public amount: RawCosmosCoin[]
+
+  public readonly type: RawCosmosMessageType = RawCosmosMessageType.Send
 
   constructor(fromAddress: string, toAddress: string, amount: RawCosmosCoin[]) {
     this.fromAddress = fromAddress
@@ -63,7 +125,7 @@ export class RawCosmosSendMessage implements RawCosmosMessage {
 
   toSignJSON(): any {
     return {
-      type: 'cosmos-sdk/MsgSend',
+      type: this.type.value,
       value: {
         amount: this.amount.map(value => value.toSignJSON()),
         from_address: this.fromAddress,
@@ -73,7 +135,7 @@ export class RawCosmosSendMessage implements RawCosmosMessage {
   }
 
   toRLP(): any {
-    return [this.fromAddress, this.toAddress, this.amount.map(coin => coin.toRLP())]
+    return [this.type.index, this.fromAddress, this.toAddress, this.amount.map(coin => coin.toRLP())]
   }
 }
 
@@ -82,15 +144,22 @@ export class RawCosmosDelegateMessage implements RawCosmosMessage {
   public validatorAddress: string
   public amount: RawCosmosCoin
 
-  constructor(delegatorAddress: string, validatorAddress: string, amount: RawCosmosCoin) {
+  public readonly type: RawCosmosMessageType
+
+  constructor(delegatorAddress: string, validatorAddress: string, amount: RawCosmosCoin, undelegate: boolean = false) {
     this.delegatorAddress = delegatorAddress
     this.validatorAddress = validatorAddress
     this.amount = amount
+    if (undelegate) {
+      this.type = RawCosmosMessageType.Undelegate
+    } else {
+      this.type = RawCosmosMessageType.Delegate
+    }
   }
 
   toSignJSON(): any {
     return {
-      type: 'cosmos-sdk/MsgDelegate',
+      type: this.type.value,
       value: {
         amount: this.amount.toSignJSON(),
         delegator_address: this.delegatorAddress,
@@ -99,7 +168,9 @@ export class RawCosmosDelegateMessage implements RawCosmosMessage {
     }
   }
 
-  toRLP(): any {}
+  toRLP(): any {
+    return [this.type.index, this.delegatorAddress, this.validatorAddress, this.amount.toRLP()]
+  }
 }
 
 export class RawCosmosCoin implements RawCosmosMessage {
@@ -155,7 +226,9 @@ export class CosmosTransactionSerializer extends UnsignedTransactionSerializer {
         unsignedTx.transaction.messages.map(message => message.toRLP()),
         unsignedTx.transaction.fee.toRLP(),
         unsignedTx.transaction.memo,
-        unsignedTx.transaction.chainID
+        unsignedTx.transaction.chainID,
+        unsignedTx.transaction.accountNumber,
+        unsignedTx.transaction.sequence
       ],
       unsignedTx.publicKey, // publicKey
       unsignedTx.callback ? unsignedTx.callback : 'airgap-wallet://?d=' // callback-scheme
@@ -165,22 +238,33 @@ export class CosmosTransactionSerializer extends UnsignedTransactionSerializer {
 
   public deserialize(serializedTx: SerializedSyncProtocolTransaction): UnsignedCosmosTransaction {
     const cosmosTx = serializedTx[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION] as SerializedUnsignedCosmosTransaction
-    const messages = cosmosTx[0]
-    const fee = cosmosTx[1]
-    const memo = cosmosTx[2]
-    const chainID = cosmosTx[3]
-    const accountNumber = cosmosTx[4]
-    const sequence = cosmosTx[5]
+    const messages = cosmosTx[SerializedUnsignedCosmosTransactionKeys.MESSAGES]
+    const fee = cosmosTx[SerializedUnsignedCosmosTransactionKeys.FEE]
+    const memo = cosmosTx[SerializedUnsignedCosmosTransactionKeys.MEMO]
+    const chainID = cosmosTx[SerializedUnsignedCosmosTransactionKeys.CHAIN_ID]
+    const accountNumber = cosmosTx[SerializedUnsignedCosmosTransactionKeys.ACCOUNT_NUMBER]
+    const sequence = cosmosTx[SerializedUnsignedCosmosTransactionKeys.SEQUENCE]
 
     const rawCosmosTx = new RawCosmosTransaction(
-      messages.map(
-        message =>
-          new RawCosmosSendMessage(
-            message[0].toString(),
-            message[1].toString(),
-            message[2].map(coin => new RawCosmosCoin(coin[0].toString(), new BigNumber(coin[1].toString())))
+      messages.map(message => {
+        const type = parseInt(message[0].toString())
+        if (type === RawCosmosMessageType.Send.index) {
+          const sendMessage = message as SerializedUnsignedCosmosSendMessage
+          return new RawCosmosSendMessage(
+            sendMessage[1].toString(),
+            sendMessage[2].toString(),
+            sendMessage[3].map(coin => new RawCosmosCoin(coin[0].toString(), new BigNumber(coin[1].toString())))
           )
-      ),
+        } /* if (type === RawCosmosMessageType.DELEGATE || type === RawCosmosMessageType.UNDELEGATE) */ else {
+          const delegateMessage = message as SerializedUnsignedCosmosDelegateMessage
+          return new RawCosmosDelegateMessage(
+            delegateMessage[1].toString(),
+            delegateMessage[2].toString(),
+            new RawCosmosCoin(delegateMessage[3][0].toString(), new BigNumber(delegateMessage[3][1].toString())),
+            type === RawCosmosMessageType.Undelegate.index
+          )
+        }
+      }),
       new RawCosmosFee(
         fee[0].map(amount => new RawCosmosCoin(amount[0].toString(), new BigNumber(amount[1].toString()))),
         new BigNumber(fee[1].toString())

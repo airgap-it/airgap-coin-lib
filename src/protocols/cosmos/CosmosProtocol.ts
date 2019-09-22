@@ -3,7 +3,6 @@ import { ICoinProtocol } from '../ICoinProtocol'
 import { ICoinSubProtocol } from '../ICoinSubProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
 import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
-import { UnsignedTransaction } from '../../serializer/unsigned-transaction.serializer'
 import { SignedTransaction } from '../../serializer/signed-transaction.serializer'
 
 import { BIP32Interface, fromSeed } from 'bip32'
@@ -14,7 +13,8 @@ import {
   RawCosmosTransaction,
   RawCosmosCoin,
   RawCosmosFee,
-  RawCosmosDelegateMessage
+  RawCosmosDelegateMessage,
+  UnsignedCosmosTransaction
 } from '../../serializer/unsigned-transactions/cosmos-transactions.serializer'
 
 const RIPEMD160 = require('ripemd160')
@@ -63,7 +63,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
   private addressPrefix: string = 'cosmos'
   private defaultGas: BigNumber = new BigNumber('200000')
 
-  constructor(nodeClient: CosmosNodeClient = new CosmosNodeClient('https://cosmoshub-rpc.chainlayer.net')) {
+  constructor(nodeClient: CosmosNodeClient = new CosmosNodeClient('https://lcd-do-not-abuse.cosmostation.io')) {
     super()
     this.nodeClient = nodeClient
   }
@@ -143,7 +143,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
   }
 
   public async signWithPrivateKey(privateKey: Buffer, transaction: RawCosmosTransaction): Promise<string> {
-    const publicKey = await this.getPublicKeyFromPrivateKey(privateKey)
+    const publicKey = this.getPublicKeyFromPrivateKey(privateKey)
     const toSign = transaction.toSignJSON(transaction.accountNumber, transaction.sequence)
     // TODO: check if sorting is needed
     const hash = Buffer.from(await crypto.subtle.digest('SHA-256', Buffer.from(JSON.stringify(toSign))))
@@ -169,7 +169,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
     return JSON.stringify(signedTransaction)
   }
 
-  public async getTransactionDetails(transaction: UnsignedTransaction): Promise<IAirGapTransaction[]> {
+  public async getTransactionDetails(transaction: UnsignedCosmosTransaction): Promise<IAirGapTransaction[]> {
     throw new Error('Method not implemented.')
   }
 
@@ -225,11 +225,17 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
     return transaction
   }
 
-  public async delegate(publicKey: string, validatorAddress: string, amount: BigNumber, memo?: string): Promise<RawCosmosTransaction> {
+  public async delegate(
+    publicKey: string,
+    validatorAddress: string,
+    amount: BigNumber,
+    undelegate: boolean = false,
+    memo?: string
+  ): Promise<RawCosmosTransaction> {
     const address = await this.getAddressFromPublicKey(publicKey)
     const nodeInfo = await this.nodeClient.fetchNodeInfo()
     const account = await this.nodeClient.fetchAccount(address)
-    const message = new RawCosmosDelegateMessage(address, validatorAddress, new RawCosmosCoin('uatom', amount))
+    const message = new RawCosmosDelegateMessage(address, validatorAddress, new RawCosmosCoin('uatom', amount), undelegate)
 
     return new RawCosmosTransaction(
       [message],
@@ -248,6 +254,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
   public async signMessage(message: string, privateKey: Buffer): Promise<string> {
     throw new Error('Method not implemented.')
   }
+
   public async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
     throw new Error('Method not implemented.')
   }

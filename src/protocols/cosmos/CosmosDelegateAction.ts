@@ -10,6 +10,7 @@ export interface CosmosDelegationActionContext {
   wallet: AirGapMarketWallet
   validatorAddress: string
   amount: BigNumber
+  undelegate: boolean
 }
 
 export interface CosmosDelegationActionResult {
@@ -25,7 +26,12 @@ export class CosmosDelegateAction<Context extends CosmosDelegationActionContext>
   protected async perform(): Promise<CosmosDelegationActionResult> {
     const protocol = new CosmosProtocol()
     const syncProtocol = new SyncProtocolUtils()
-    const transaction = await protocol.delegate(this.context.wallet.publicKey, this.context.validatorAddress, this.context.amount)
+    const transaction = await protocol.delegate(
+      this.context.wallet.publicKey,
+      this.context.validatorAddress,
+      this.context.amount,
+      this.context.undelegate
+    )
 
     const serializeTransaction = await syncProtocol.serialize({
       version: 1,
