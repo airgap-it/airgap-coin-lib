@@ -99,14 +99,25 @@ class RawCosmosMessageType {
   static Delegate = new RawCosmosMessageType(RawCosmosMessageTypeIndex.DELEGATE)
   static Undelegate = new RawCosmosMessageType(RawCosmosMessageTypeIndex.UNDELEGATE)
 
-  private static values = ['cosmos-sdk/MsgSend', 'cosmos-sdk/MsgDelegate', 'cosmos-sdk/MsgUndelegate']
-
   index: RawCosmosMessageTypeIndex
   value: string
 
   constructor(index: RawCosmosMessageTypeIndex) {
     this.index = index
-    this.value = RawCosmosMessageType.values[index]
+    switch (index) {
+      case RawCosmosMessageTypeIndex.SEND:
+        this.value = 'cosmos-sdk/MsgSend'
+        break
+      case RawCosmosMessageTypeIndex.DELEGATE:
+        this.value = 'cosmos-sdk/MsgDelegate'
+        break
+      case RawCosmosMessageTypeIndex.UNDELEGATE:
+        this.value = 'cosmos-sdk/MsgUndelegate'
+        break
+      default:
+        this.value = 'cosmos-sdk/MsgSend'
+        break
+    }
   }
 }
 
