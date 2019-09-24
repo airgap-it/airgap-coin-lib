@@ -1,8 +1,9 @@
-import { UnsignedAeternityTransaction, RawAeternityTransaction } from './aeternity-transactions.serializer'
-import { SignedAeternityTransaction } from './../signed-transactions/aeternity-transactions.serializer'
-import validate = require('validate.js')
+import { validate } from '../../dependencies/src/validate.js-0.13.1/validate'
 import { TransactionValidator } from '../validators/transactions.validator'
 import { validateSyncScheme } from '../validators/validators'
+
+import { SignedAeternityTransaction } from './../signed-transactions/aeternity-transactions.serializer'
+import { RawAeternityTransaction, UnsignedAeternityTransaction } from './aeternity-transactions.serializer'
 
 const unsignedTransactionConstraints = {
   transaction: {
@@ -38,6 +39,6 @@ export class AeternityTransactionValidator extends TransactionValidator {
     return validate(rawTx, unsignedTransactionConstraints)
   }
   public async validateSignedTransaction(signedTx: SignedAeternityTransaction): Promise<any> {
-    return validate.async(signedTx, signedTransactionConstraints).then(success, error)
+    return validate(signedTx, signedTransactionConstraints).then(success, error)
   }
 }

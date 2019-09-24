@@ -1,10 +1,11 @@
-import { UnsignedTezosTransaction, RawTezosTransaction } from './tezos-transactions.serializer'
-import validate = require('validate.js')
+import { validate } from '../../dependencies/src/validate.js-0.13.1/validate'
+import { SignedTezosTransaction } from '../signed-transactions/tezos-transactions.serializer'
 import { TransactionValidator } from '../validators/transactions.validator'
 import { validateSyncScheme } from '../validators/validators'
-import { SignedTezosTransaction } from '../signed-transactions/tezos-transactions.serializer'
 
-var unsignedTransactionConstraints = {
+import { RawTezosTransaction, UnsignedTezosTransaction } from './tezos-transactions.serializer'
+
+let unsignedTransactionConstraints = {
     binaryTransaction: {
       isValidTezosUnsignedTransaction: true,
       presence: { allowEmpty: false },
@@ -14,7 +15,7 @@ var unsignedTransactionConstraints = {
   success = () => undefined,
   error = errors => errors
 
-var signedTransactionConstraints = {
+let signedTransactionConstraints = {
     transaction: {
       isValidTezosSignedTransaction: true,
       presence: { allowEmpty: false },
@@ -33,9 +34,9 @@ export class TezosTransactionValidator extends TransactionValidator {
   public async validateUnsignedTransaction(unsignedTx: UnsignedTezosTransaction): Promise<any> {
     const rawTx: RawTezosTransaction = unsignedTx.transaction
     validateSyncScheme({})
-    return validate.async(rawTx, unsignedTransactionConstraints).then(success, error)
+    return validate(rawTx, unsignedTransactionConstraints).then(success, error)
   }
   public validateSignedTransaction(signedTx: SignedTezosTransaction): Promise<any> {
-    return validate.async(signedTx, signedTransactionConstraints).then(success, error)
+    return validate(signedTx, signedTransactionConstraints).then(success, error)
   }
 }

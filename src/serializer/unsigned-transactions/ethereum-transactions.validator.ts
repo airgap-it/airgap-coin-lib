@@ -1,9 +1,10 @@
-import { SignedEthereumTransaction } from './../signed-transactions/ethereum-transactions.serializer'
-import { UnsignedEthereumTransaction, RawEthereumTransaction } from './ethereum-transactions.serializer'
+import { validate } from '../../dependencies/src/validate.js-0.13.1/validate'
 import { EthereumProtocol } from '../../protocols/ethereum/EthereumProtocol'
-import validate = require('validate.js')
 import { TransactionValidator } from '../validators/transactions.validator'
 import { validateSyncScheme } from '../validators/validators'
+
+import { SignedEthereumTransaction } from './../signed-transactions/ethereum-transactions.serializer'
+import { RawEthereumTransaction, UnsignedEthereumTransaction } from './ethereum-transactions.serializer'
 
 const unsignedTransactionConstraints = {
   nonce: {
@@ -64,7 +65,7 @@ export class EthereumTransactionValidator extends TransactionValidator {
     return validate(rawTx, unsignedTransactionConstraints)
   }
   public validateSignedTransaction(signedTx: SignedEthereumTransaction): any {
-    return validate.async(signedTx, signedTransactionConstraints).then(success, error)
+    return validate(signedTx, signedTransactionConstraints).then(success, error)
     // return undefined
   }
 }
