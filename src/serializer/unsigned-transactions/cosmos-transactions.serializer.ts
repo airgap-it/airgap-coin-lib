@@ -230,7 +230,7 @@ export interface UnsignedCosmosTransaction extends UnsignedTransaction {
   transaction: RawCosmosTransaction
 }
 
-export class CosmosTransactionSerializer extends UnsignedTransactionSerializer {
+export class CosmosUnsignedTransactionSerializer extends UnsignedTransactionSerializer {
   public serialize(unsignedTx: UnsignedCosmosTransaction): SerializedSyncProtocolTransaction {
     const serialized = [
       [
