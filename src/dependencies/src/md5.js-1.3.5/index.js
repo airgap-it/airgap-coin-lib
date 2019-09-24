@@ -1,11 +1,11 @@
 'use strict'
 var inherits = require('inherits')
 var HashBase = require('hash-base')
-var Buffer = require('safe-buffer').Buffer
+var Buffer = require('../safe-buffer-5.2.0/index').Buffer
 
 var ARRAY16 = new Array(16)
 
-function MD5 () {
+function MD5() {
   HashBase.call(this, 64)
 
   // state
@@ -17,7 +17,7 @@ function MD5 () {
 
 inherits(MD5, HashBase)
 
-MD5.prototype._update = function () {
+MD5.prototype._update = function() {
   var M = ARRAY16
   for (var i = 0; i < 16; ++i) M[i] = this._block.readInt32LE(i * 4)
 
@@ -100,7 +100,7 @@ MD5.prototype._update = function () {
   this._d = (this._d + d) | 0
 }
 
-MD5.prototype._digest = function () {
+MD5.prototype._digest = function() {
   // create padding and handle blocks
   this._block[this._blockOffset++] = 0x80
   if (this._blockOffset > 56) {
@@ -123,24 +123,24 @@ MD5.prototype._digest = function () {
   return buffer
 }
 
-function rotl (x, n) {
+function rotl(x, n) {
   return (x << n) | (x >>> (32 - n))
 }
 
-function fnF (a, b, c, d, m, k, s) {
-  return (rotl((a + ((b & c) | ((~b) & d)) + m + k) | 0, s) + b) | 0
+function fnF(a, b, c, d, m, k, s) {
+  return (rotl((a + ((b & c) | (~b & d)) + m + k) | 0, s) + b) | 0
 }
 
-function fnG (a, b, c, d, m, k, s) {
-  return (rotl((a + ((b & d) | (c & (~d))) + m + k) | 0, s) + b) | 0
+function fnG(a, b, c, d, m, k, s) {
+  return (rotl((a + ((b & d) | (c & ~d)) + m + k) | 0, s) + b) | 0
 }
 
-function fnH (a, b, c, d, m, k, s) {
+function fnH(a, b, c, d, m, k, s) {
   return (rotl((a + (b ^ c ^ d) + m + k) | 0, s) + b) | 0
 }
 
-function fnI (a, b, c, d, m, k, s) {
-  return (rotl((a + ((c ^ (b | (~d)))) + m + k) | 0, s) + b) | 0
+function fnI(a, b, c, d, m, k, s) {
+  return (rotl((a + (c ^ (b | ~d)) + m + k) | 0, s) + b) | 0
 }
 
 module.exports = MD5

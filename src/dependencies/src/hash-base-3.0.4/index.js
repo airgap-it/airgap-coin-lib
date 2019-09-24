@@ -1,15 +1,15 @@
 'use strict'
-var Buffer = require('safe-buffer').Buffer
+var Buffer = require('../safe-buffer-5.2.0/index').Buffer
 var Transform = require('stream').Transform
 var inherits = require('inherits')
 
-function throwIfNotStringOrBuffer (val, prefix) {
+function throwIfNotStringOrBuffer(val, prefix) {
   if (!Buffer.isBuffer(val) && typeof val !== 'string') {
     throw new TypeError(prefix + ' must be a string or a buffer')
   }
 }
 
-function HashBase (blockSize) {
+function HashBase(blockSize) {
   Transform.call(this)
 
   this._block = Buffer.allocUnsafe(blockSize)
@@ -22,7 +22,7 @@ function HashBase (blockSize) {
 
 inherits(HashBase, Transform)
 
-HashBase.prototype._transform = function (chunk, encoding, callback) {
+HashBase.prototype._transform = function(chunk, encoding, callback) {
   var error = null
   try {
     this.update(chunk, encoding)
@@ -33,7 +33,7 @@ HashBase.prototype._transform = function (chunk, encoding, callback) {
   callback(error)
 }
 
-HashBase.prototype._flush = function (callback) {
+HashBase.prototype._flush = function(callback) {
   var error = null
   try {
     this.push(this.digest())
@@ -44,7 +44,7 @@ HashBase.prototype._flush = function (callback) {
   callback(error)
 }
 
-HashBase.prototype.update = function (data, encoding) {
+HashBase.prototype.update = function(data, encoding) {
   throwIfNotStringOrBuffer(data, 'Data')
   if (this._finalized) throw new Error('Digest already called')
   if (!Buffer.isBuffer(data)) data = Buffer.from(data, encoding)
@@ -53,7 +53,7 @@ HashBase.prototype.update = function (data, encoding) {
   var block = this._block
   var offset = 0
   while (this._blockOffset + data.length - offset >= this._blockSize) {
-    for (var i = this._blockOffset; i < this._blockSize;) block[i++] = data[offset++]
+    for (var i = this._blockOffset; i < this._blockSize; ) block[i++] = data[offset++]
     this._update()
     this._blockOffset = 0
   }
@@ -69,11 +69,11 @@ HashBase.prototype.update = function (data, encoding) {
   return this
 }
 
-HashBase.prototype._update = function () {
+HashBase.prototype._update = function() {
   throw new Error('_update is not implemented')
 }
 
-HashBase.prototype.digest = function (encoding) {
+HashBase.prototype.digest = function(encoding) {
   if (this._finalized) throw new Error('Digest already called')
   this._finalized = true
 
@@ -88,7 +88,7 @@ HashBase.prototype.digest = function (encoding) {
   return digest
 }
 
-HashBase.prototype._digest = function () {
+HashBase.prototype._digest = function() {
   throw new Error('_digest is not implemented')
 }
 
