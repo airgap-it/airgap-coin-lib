@@ -5,8 +5,8 @@ import { RawTezosTransaction, SerializedUnsignedTezosTransaction } from './unsig
 import { RawCosmosTransaction, SerializedUnsignedCosmosTransaction } from './unsigned-transactions/cosmos-transactions.serializer'
 
 export abstract class UnsignedTransactionSerializer {
-  public abstract serialize(unsignedTx: UnsignedTransaction): SerializedSyncProtocolTransaction
-  public abstract deserialize(serializedTx: SerializedSyncProtocolTransaction): UnsignedTransaction
+  public abstract serialize(unsignedTx: UnsignedTransaction): SerializedSyncProtocolTransaction | Promise<SerializedSyncProtocolTransaction>
+  public abstract deserialize(serializedTx: SerializedSyncProtocolTransaction): UnsignedTransaction | Promise<UnsignedTransaction>
 }
 
 export interface UnsignedTransaction {
