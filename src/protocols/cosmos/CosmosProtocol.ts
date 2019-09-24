@@ -30,12 +30,12 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
   public symbol: string = '⌀'
   public name: string = 'Cosmos'
   public marketSymbol: string = 'ATOM'
-  public feeSymbol: string = 'uatom'
+  public feeSymbol: string = 'atom'
   public feeDefaults = {
     // TODO: verify if these values are ok
-    low: new BigNumber(500),
-    medium: new BigNumber(5000),
-    high: new BigNumber(7500)
+    low: new BigNumber(0.0005),
+    medium: new BigNumber(0.005),
+    high: new BigNumber(0.0075)
   }
   public decimals: number = 18 // TODO: verify these values
   public feeDecimals: number = 18
@@ -53,8 +53,8 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
   public supportsHD: boolean = true
   public standardDerivationPath: string = `m/44'/118'/0'/0/0`
   public addressIsCaseSensitive: boolean = false
-  public addressValidationPattern: string = '^cosmos[a-fA-F0-9]{40}$'
-  public addressPlaceholder: string = 'cosmosabc...'
+  public addressValidationPattern: string = '^cosmos[a-zA-Z0-9]{39}$'
+  public addressPlaceholder: string = 'cosmos...'
   public blockExplorer: string = 'https://www.mintscan.io'
   public subProtocols?: (ICoinProtocol & ICoinSubProtocol)[] | undefined
 
@@ -210,7 +210,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
 
     const messages: RawCosmosSendMessage[] = []
     for (let i = 0; i < recipients.length; ++i) {
-      const message = new RawCosmosSendMessage(address, recipients[i], [new RawCosmosCoin('uatom', values[i])])
+      const message = new RawCosmosSendMessage(address, recipients[i], [new RawCosmosCoin('atom', values[i])])
       messages.push(message)
     }
     const memo = data !== undefined && typeof data === 'string' ? (data as string) : ''
@@ -235,7 +235,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
     const address = await this.getAddressFromPublicKey(publicKey)
     const nodeInfo = await this.nodeClient.fetchNodeInfo()
     const account = await this.nodeClient.fetchAccount(address)
-    const message = new RawCosmosDelegateMessage(address, validatorAddress, new RawCosmosCoin('uatom', amount), undelegate)
+    const message = new RawCosmosDelegateMessage(address, validatorAddress, new RawCosmosCoin('atom', amount), undelegate)
 
     return new RawCosmosTransaction(
       [message],
