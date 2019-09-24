@@ -52,7 +52,7 @@ export class TezosDelegateAction<Context extends TezosDelegateActionContext> ext
 
   protected async perform(): Promise<TezosDelegateActionResult> {
     return new Promise<TezosDelegateActionResult>(
-      async (resolve: (context: TezosDelegateActionResult) => void, reject: () => void): Promise<void> => {
+      async (resolve: (context: TezosDelegateActionResult) => void, reject: (error: Error) => void): Promise<void> => {
         if (this.context.wallet.protocolIdentifier === 'xtz') {
           const protocol: TezosProtocol = new TezosProtocol()
 
@@ -62,8 +62,8 @@ export class TezosDelegateAction<Context extends TezosDelegateActionContext> ext
 
             const airGapTxs: IAirGapTransaction[] | void = await getAirGapTx(this.context.wallet, originateTx)
             resolve({ rawTx: originateTx, serializedTx, airGapTxs, dataUrl: `airgap-vault://?d=${serializedTx}` })
-          } finally {
-            reject()
+          } catch (error) {
+            reject(error)
           }
         } else {
           const protocol: TezosKtProtocol = new TezosKtProtocol()
@@ -78,8 +78,8 @@ export class TezosDelegateAction<Context extends TezosDelegateActionContext> ext
 
             const airGapTxs: IAirGapTransaction[] | void = await getAirGapTx(this.context.wallet, delegateTx)
             resolve({ rawTx: delegateTx, serializedTx, airGapTxs, dataUrl: `airgap-vault://?d=${serializedTx}` })
-          } finally {
-            reject()
+          } catch (error) {
+            reject(error)
           }
         }
       }

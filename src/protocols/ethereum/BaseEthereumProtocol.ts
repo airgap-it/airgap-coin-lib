@@ -279,7 +279,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     return this.getTransactionsFromAddresses([address], limit, offset)
   }
 
-  private getPageNumber(limit: number, offset: number): number {
+  protected getPageNumber(limit: number, offset: number): number {
     if (limit <= 0 || offset < 0) {
       return 1
     }

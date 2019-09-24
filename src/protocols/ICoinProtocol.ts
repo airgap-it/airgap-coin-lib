@@ -7,6 +7,17 @@ import { SignedTransaction } from '../serializer/signed-transaction.serializer'
 import { UnsignedTransaction } from './../serializer/unsigned-transaction.serializer'
 import { ICoinSubProtocol } from './ICoinSubProtocol'
 
+export interface FeeDefaults {
+  low: BigNumber
+  medium: BigNumber
+  high: BigNumber
+}
+
+export interface CurrencyUnit {
+  unitSymbol: string
+  factor: BigNumber
+}
+
 export interface ICoinProtocol {
   symbol: string // This will be used in the UI, eg. "ETH", "BTC", "AE"
   name: string // Name of the currency, eg. "Bitcoin", "Aeternity"
