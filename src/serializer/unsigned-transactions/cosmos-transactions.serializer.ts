@@ -71,21 +71,28 @@ export class RawCosmosTransaction {
     this.sequence = sequence
   }
 
-  toSignJSON(accountNumber: string, sequence: string): any {
+  toJSON(accountNumber: string, sequence: string): any {
     return {
       accountNumber: accountNumber,
       chain_id: this.chainID,
-      fee: this.fee.toSignJSON(),
+      fee: this.fee.toJSON(),
       memo: this.memo,
-      msgs: this.messages.map(value => value.toSignJSON()),
+      msgs: this.messages.map(value => value.toJSON()),
       sequence: sequence
     }
   }
 }
 
-export interface RawCosmosMessage {
-  toSignJSON(): any
-  toRLP(): any
+export interface RawCosmosMessage extends JSONConvertible, RLPConvertible {
+  type: RawCosmosMessageType
+}
+
+export interface JSONConvertible {
+  toJSON(): any
+}
+
+export interface RLPConvertible {
+  toRLP(): any[]
 }
 
 enum RawCosmosMessageTypeIndex {
@@ -94,7 +101,7 @@ enum RawCosmosMessageTypeIndex {
   UNDELEGATE = 2
 }
 
-class RawCosmosMessageType {
+export class RawCosmosMessageType {
   static Send = new RawCosmosMessageType(RawCosmosMessageTypeIndex.SEND)
   static Delegate = new RawCosmosMessageType(RawCosmosMessageTypeIndex.DELEGATE)
   static Undelegate = new RawCosmosMessageType(RawCosmosMessageTypeIndex.UNDELEGATE)
@@ -134,11 +141,11 @@ export class RawCosmosSendMessage implements RawCosmosMessage {
     this.amount = amount
   }
 
-  toSignJSON(): any {
+  toJSON(): any {
     return {
       type: this.type.value,
       value: {
-        amount: this.amount.map(value => value.toSignJSON()),
+        amount: this.amount.map(value => value.toJSON()),
         from_address: this.fromAddress,
         to_address: this.toAddress
       }
@@ -168,11 +175,11 @@ export class RawCosmosDelegateMessage implements RawCosmosMessage {
     }
   }
 
-  toSignJSON(): any {
+  toJSON(): any {
     return {
       type: this.type.value,
       value: {
-        amount: this.amount.toSignJSON(),
+        amount: this.amount.toJSON(),
         delegator_address: this.delegatorAddress,
         validator_address: this.validatorAddress
       }
@@ -184,7 +191,7 @@ export class RawCosmosDelegateMessage implements RawCosmosMessage {
   }
 }
 
-export class RawCosmosCoin implements RawCosmosMessage {
+export class RawCosmosCoin implements JSONConvertible, RLPConvertible {
   public denom: string
   public amount: BigNumber
 
@@ -193,7 +200,7 @@ export class RawCosmosCoin implements RawCosmosMessage {
     this.amount = amount
   }
 
-  toSignJSON(): any {
+  toJSON(): any {
     return {
       amount: this.amount.toFixed(),
       denom: this.denom
@@ -205,7 +212,7 @@ export class RawCosmosCoin implements RawCosmosMessage {
   }
 }
 
-export class RawCosmosFee implements RawCosmosMessage {
+export class RawCosmosFee implements JSONConvertible, RLPConvertible {
   public amount: RawCosmosCoin[]
   public gas: BigNumber
 
@@ -214,9 +221,9 @@ export class RawCosmosFee implements RawCosmosMessage {
     this.gas = gas
   }
 
-  toSignJSON(): any {
+  toJSON(): any {
     return {
-      amount: this.amount.map(value => value.toSignJSON()),
+      amount: this.amount.map(value => value.toJSON()),
       gas: this.gas.toFixed()
     }
   }
