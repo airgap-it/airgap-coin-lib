@@ -1,7 +1,7 @@
 // tslint:disable:no-console
 import BigNumber from 'bignumber.js'
 
-import { IAirGapTransaction, TezosProtocol } from '../src'
+import { TezosProtocol } from '../src'
 import { RawTezosTransaction } from '../src/serializer/unsigned-transactions/tezos-transactions.serializer'
 
 const tezosProtocol: TezosProtocol = new TezosProtocol()
@@ -9,20 +9,17 @@ const tezosProtocol: TezosProtocol = new TezosProtocol()
 const privateKey: string =
   '2f243e474992bb96b49b2fa7b2c1cba7a804257f0cf13dceb640cf3210d54838cdbc0c3449784bd53907c3c7a06060cf12087e492a7b937f044c6a73b522a234'
 const publicKey: string = 'cdbc0c3449784bd53907c3c7a06060cf12087e492a7b937f044c6a73b522a234'
-const recipient: string = 'tz1UNY14FTp2ZUPneTt2ezf6e5ZvyRL9KDis'
-const amount: BigNumber = new BigNumber(100000000)
-const fee: BigNumber = new BigNumber(1280)
+// Manager: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'
+const delegate: string = ''
+const amount: BigNumber = new BigNumber(1000000)
 
 tezosProtocol
-  .prepareTransactionFromPublicKey(publicKey, [recipient], [amount], fee)
-  .then(async (tx: RawTezosTransaction) => {
-    console.log('tx', tx)
-    const details: IAirGapTransaction = await tezosProtocol.getTransactionDetails({ publicKey: '', transaction: tx })
-
-    console.log('details', details)
+  .originate(publicKey, delegate, amount)
+  .then((result: RawTezosTransaction) => {
+    console.log('originate result', result)
 
     tezosProtocol
-      .signWithPrivateKey(Buffer.from(privateKey, 'hex'), tx)
+      .signWithPrivateKey(Buffer.from(privateKey, 'hex'), result)
       .then(signed => {
         console.log('signed', signed)
 
@@ -40,5 +37,5 @@ tezosProtocol
       })
   })
   .catch((error: Error) => {
-    console.error('PREPARE ERROR: ', error)
+    console.error('SIGN ERROR: ', error)
   })
