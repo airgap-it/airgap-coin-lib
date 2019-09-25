@@ -29,9 +29,9 @@ export interface CosmosAccount {
       denom: string
       amount: string
     }[]
+    sequence: string
   }
   public_key: string
-  sequence: string
 }
 
 export class CosmosNodeClient {
