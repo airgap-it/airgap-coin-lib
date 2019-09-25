@@ -30,12 +30,12 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
   public symbol: string = '⌀'
   public name: string = 'Cosmos'
   public marketSymbol: string = 'ATOM'
-  public feeSymbol: string = 'uatom'
+  public feeSymbol: string = 'atom'
   public feeDefaults = {
     // TODO: verify if these values are ok
-    low: new BigNumber(500),
-    medium: new BigNumber(5000),
-    high: new BigNumber(7500)
+    low: new BigNumber(0.0005),
+    medium: new BigNumber(0.005),
+    high: new BigNumber(0.0075)
   }
   public decimals: number = 6 // TODO: verify these values
   public feeDecimals: number = 6
@@ -63,7 +63,9 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
   private addressPrefix: string = 'cosmos'
   private defaultGas: BigNumber = new BigNumber('200000')
 
-  constructor(nodeClient: CosmosNodeClient = new CosmosNodeClient('https://lcd-do-not-abuse.cosmostation.io')) {
+  constructor(
+    nodeClient: CosmosNodeClient = new CosmosNodeClient('https://a4687b90b05c46aaa96fe69a8d828034.cosmoshub-2.rest.cosmos.api.nodesmith.io')
+  ) {
     super()
     this.nodeClient = nodeClient
   }
@@ -239,7 +241,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
 
     return new RawCosmosTransaction(
       [message],
-      new RawCosmosFee([new RawCosmosCoin(this.feeSymbol, this.feeDefaults.medium)], this.defaultGas),
+      new RawCosmosFee([new RawCosmosCoin('uatom', this.feeDefaults.medium.shiftedBy(this.feeDecimals))], this.defaultGas),
       memo !== undefined ? memo : '',
       nodeInfo.network,
       account.value.account_number,
