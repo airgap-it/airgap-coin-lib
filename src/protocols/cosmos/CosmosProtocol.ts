@@ -30,15 +30,15 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
   public symbol: string = '⌀'
   public name: string = 'Cosmos'
   public marketSymbol: string = 'ATOM'
-  public feeSymbol: string = 'atom'
+  public feeSymbol: string = 'uatom'
   public feeDefaults = {
     // TODO: verify if these values are ok
-    low: new BigNumber(0.0005),
-    medium: new BigNumber(0.005),
-    high: new BigNumber(0.0075)
+    low: new BigNumber(500),
+    medium: new BigNumber(5000),
+    high: new BigNumber(7500)
   }
-  public decimals: number = 18 // TODO: verify these values
-  public feeDecimals: number = 18
+  public decimals: number = 6 // TODO: verify these values
+  public feeDecimals: number = 6
   public identifier: string = 'cosmos'
   public units = [
     {
@@ -210,7 +210,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
 
     const messages: RawCosmosSendMessage[] = []
     for (let i = 0; i < recipients.length; ++i) {
-      const message = new RawCosmosSendMessage(address, recipients[i], [new RawCosmosCoin('atom', values[i])])
+      const message = new RawCosmosSendMessage(address, recipients[i], [new RawCosmosCoin('uatom', values[i])])
       messages.push(message)
     }
     const memo = data !== undefined && typeof data === 'string' ? (data as string) : ''
@@ -235,7 +235,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
     const address = await this.getAddressFromPublicKey(publicKey)
     const nodeInfo = await this.nodeClient.fetchNodeInfo()
     const account = await this.nodeClient.fetchAccount(address)
-    const message = new RawCosmosDelegateMessage(address, validatorAddress, new RawCosmosCoin('atom', amount), undelegate)
+    const message = new RawCosmosDelegateMessage(address, validatorAddress, new RawCosmosCoin('uatom', amount), undelegate)
 
     return new RawCosmosTransaction(
       [message],
