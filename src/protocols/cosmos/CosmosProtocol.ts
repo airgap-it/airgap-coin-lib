@@ -14,12 +14,13 @@ import {
   RawCosmosCoin,
   RawCosmosFee,
   RawCosmosDelegateMessage,
-  UnsignedCosmosTransaction
+  UnsignedCosmosTransaction,
+  RawCosmosMessageType
 } from '../../serializer/unsigned-transactions/cosmos-transactions.serializer'
 
-const RIPEMD160 = require('ripemd160')
-const BECH32 = require('bech32')
-const SECP256K1 = require('secp256k1')
+import RIPEMD160 = require('ripemd160')
+import BECH32 = require('bech32')
+import SECP256K1 = require('secp256k1')
 
 export interface KeyPair {
   publicKey: Buffer
@@ -144,7 +145,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
 
   public async signWithPrivateKey(privateKey: Buffer, transaction: RawCosmosTransaction): Promise<string> {
     const publicKey = this.getPublicKeyFromPrivateKey(privateKey)
-    const toSign = transaction.toSignJSON(transaction.accountNumber, transaction.sequence)
+    const toSign = transaction.toJSON(transaction.accountNumber, transaction.sequence)
     // TODO: check if sorting is needed
     const hash = Buffer.from(await crypto.subtle.digest('SHA-256', Buffer.from(JSON.stringify(toSign))))
     const signed = SECP256K1.sign(hash, privateKey)
@@ -170,7 +171,32 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
   }
 
   public async getTransactionDetails(transaction: UnsignedCosmosTransaction): Promise<IAirGapTransaction[]> {
-    throw new Error('Method not implemented.')
+    return transaction.transaction.messages.map(message => {
+      switch (message.type) {
+        case RawCosmosMessageType.Send:
+          const sendMessage = message as RawCosmosSendMessage
+          return {
+            amount: sendMessage.amount.map(value => value.amount).reduce((prev, next) => prev.plus(next)),
+            to: [sendMessage.toAddress],
+            from: [sendMessage.fromAddress],
+            isInbound: false,
+            fee: transaction.transaction.fee.amount.map(value => value.amount).reduce((prev, next) => prev.plus(next)),
+            protocolIdentifier: this.identifier
+          } as IAirGapTransaction
+        case RawCosmosMessageType.Delegate || RawCosmosMessageType.Undelegate:
+          const delegateMessage = message as RawCosmosDelegateMessage
+          return {
+            amount: delegateMessage.amount.amount,
+            to: [delegateMessage.delegatorAddress],
+            from: [delegateMessage.validatorAddress],
+            isInbound: false,
+            fee: transaction.transaction.fee.amount.map(value => value.amount).reduce((prev, next) => prev.plus(next)),
+            protocolIdentifier: this.identifier
+          } as IAirGapTransaction
+        default:
+          throw Error('Unknown transaction')
+      }
+    })
   }
 
   public async getTransactionDetailsFromSigned(transaction: SignedTransaction): Promise<IAirGapTransaction[]> {
