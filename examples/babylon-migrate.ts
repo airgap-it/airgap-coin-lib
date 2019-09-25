@@ -11,7 +11,7 @@ const publicKey: string = 'cdbc0c3449784bd53907c3c7a06060cf12087e492a7b937f044c6
 const contractToMigrate: string = 'KT1FmL24X3CbCxrSYV12qrNHdXSADXw3wyGz'
 
 tezosProtocol
-  .migrate(publicKey, contractToMigrate)
+  .migrateKtContract(publicKey, contractToMigrate)
   .then((result: { binaryTransaction: string }) => {
     console.log('delegation result', result)
 
