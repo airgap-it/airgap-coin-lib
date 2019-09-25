@@ -271,7 +271,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
       memo !== undefined ? memo : '',
       nodeInfo.network,
       account.value.account_number,
-      account.sequence
+      account.value.sequence
     )
   }
 
