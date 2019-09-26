@@ -6,6 +6,7 @@ import {
 } from '../unsigned-transaction.serializer'
 import { toBuffer } from '../utils/toBuffer'
 import BigNumber from 'bignumber.js'
+import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 
 export type SerializedUnsignedCosmosSendMessage = [
   Buffer, // type
@@ -100,6 +101,8 @@ export class RawCosmosTransaction {
 
 export interface RawCosmosMessage extends JSONConvertible, RLPConvertible {
   type: RawCosmosMessageType
+
+  toAirGapTransaction(identifier: string, fee: BigNumber): IAirGapTransaction
 }
 
 export interface JSONConvertible {
@@ -171,6 +174,17 @@ export class RawCosmosSendMessage implements RawCosmosMessage {
     return [this.type.index, this.fromAddress, this.toAddress, this.amount.map(coin => coin.toRLP())]
   }
 
+  toAirGapTransaction(identifier: string, fee: BigNumber): IAirGapTransaction {
+    return {
+      amount: this.amount.map(value => value.amount).reduce((prev, next) => prev.plus(next)),
+      to: [this.toAddress],
+      from: [this.fromAddress],
+      isInbound: false,
+      fee: fee,
+      protocolIdentifier: identifier
+    }
+  }
+
   public static fromJSON(json: any): RawCosmosSendMessage {
     return new RawCosmosSendMessage(json.value.from_address, json.to_address, json.value.amount.map(value => RawCosmosCoin.fromJSON(value)))
   }
@@ -202,6 +216,17 @@ export class RawCosmosDelegateMessage implements RawCosmosMessage {
         delegator_address: this.delegatorAddress,
         validator_address: this.validatorAddress
       }
+    }
+  }
+
+  toAirGapTransaction(identifier: string, fee: BigNumber): IAirGapTransaction {
+    return {
+      amount: this.amount.amount,
+      to: [this.delegatorAddress],
+      from: [this.validatorAddress],
+      isInbound: false,
+      fee: fee,
+      protocolIdentifier: identifier
     }
   }
 
