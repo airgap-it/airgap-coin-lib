@@ -71,15 +71,30 @@ export class RawCosmosTransaction {
     this.sequence = sequence
   }
 
-  toJSON(accountNumber: string, sequence: string): any {
+  toJSON(): any {
     return {
-      accountNumber: accountNumber,
+      account_number: this.accountNumber,
       chain_id: this.chainID,
       fee: this.fee.toJSON(),
       memo: this.memo,
       msgs: this.messages.map(value => value.toJSON()),
-      sequence: sequence
+      sequence: this.sequence
     }
+  }
+
+  public static fromJSON(json: any): RawCosmosTransaction {
+    const messages: RawCosmosMessage[] = json.msgs.map(value => {
+      const type: string = value.type
+      switch (type) {
+        case RawCosmosMessageType.Send.value:
+          return RawCosmosSendMessage.fromJSON(value)
+        case RawCosmosMessageType.Delegate.value || RawCosmosMessageType.Undelegate.value:
+          return RawCosmosDelegateMessage.fromJSON(value)
+        default:
+          throw new Error('Unknown message')
+      }
+    })
+    return new RawCosmosTransaction(messages, RawCosmosFee.fromJSON(json.fee), json.memo, json.chain_id, json.account_number, json.sequence)
   }
 }
 
@@ -155,6 +170,10 @@ export class RawCosmosSendMessage implements RawCosmosMessage {
   toRLP(): any {
     return [this.type.index, this.fromAddress, this.toAddress, this.amount.map(coin => coin.toRLP())]
   }
+
+  public static fromJSON(json: any): RawCosmosSendMessage {
+    return new RawCosmosSendMessage(json.value.from_address, json.to_address, json.value.amount.map(value => RawCosmosCoin.fromJSON(value)))
+  }
 }
 
 export class RawCosmosDelegateMessage implements RawCosmosMessage {
@@ -189,6 +208,15 @@ export class RawCosmosDelegateMessage implements RawCosmosMessage {
   toRLP(): any {
     return [this.type.index, this.delegatorAddress, this.validatorAddress, this.amount.toRLP()]
   }
+
+  public static fromJSON(json: any): RawCosmosDelegateMessage {
+    return new RawCosmosDelegateMessage(
+      json.value.delegator_address,
+      json.value.validator_address,
+      RawCosmosCoin.fromJSON(json.value.amount),
+      json.type === RawCosmosMessageType.Undelegate.value
+    )
+  }
 }
 
 export class RawCosmosCoin implements JSONConvertible, RLPConvertible {
@@ -210,6 +238,10 @@ export class RawCosmosCoin implements JSONConvertible, RLPConvertible {
   toRLP(): any {
     return [this.denom, this.amount]
   }
+
+  public static fromJSON(json: any): RawCosmosCoin {
+    return new RawCosmosCoin(json.denom, new BigNumber(json.denom))
+  }
 }
 
 export class RawCosmosFee implements JSONConvertible, RLPConvertible {
@@ -230,6 +262,10 @@ export class RawCosmosFee implements JSONConvertible, RLPConvertible {
 
   toRLP(): any {
     return [this.amount.map(coin => [coin.denom, coin.amount]), this.gas]
+  }
+
+  public static fromJSON(json: any): RawCosmosFee {
+    return new RawCosmosFee(json.account.map((value: any) => RawCosmosCoin.fromJSON(value)), new BigNumber(json.gas))
   }
 }
 
