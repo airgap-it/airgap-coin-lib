@@ -3,7 +3,6 @@ import { ICoinProtocol } from '../ICoinProtocol'
 import { ICoinSubProtocol } from '../ICoinSubProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
 import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
-import { SignedTransaction } from '../../serializer/signed-transaction.serializer'
 
 import { BIP32Interface, fromSeed } from 'bip32'
 import { mnemonicToSeed, validateMnemonic } from 'bip39'
@@ -21,6 +20,7 @@ import {
 import RIPEMD160 = require('ripemd160')
 import BECH32 = require('bech32')
 import SECP256K1 = require('secp256k1')
+import { SignedCosmosTransaction } from '../../serializer/signed-transactions/cosmos-transactions.serializer'
 
 export interface KeyPair {
   publicKey: Buffer
@@ -147,7 +147,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
 
   public async signWithPrivateKey(privateKey: Buffer, transaction: RawCosmosTransaction): Promise<string> {
     const publicKey = this.getPublicKeyFromPrivateKey(privateKey)
-    const toSign = transaction.toJSON(transaction.accountNumber, transaction.sequence)
+    const toSign = transaction.toJSON()
     // TODO: check if sorting is needed
     const hash = Buffer.from(await crypto.subtle.digest('SHA-256', Buffer.from(JSON.stringify(toSign))))
     const signed = SECP256K1.sign(hash, privateKey)
@@ -173,26 +173,27 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
   }
 
   public async getTransactionDetails(transaction: UnsignedCosmosTransaction): Promise<IAirGapTransaction[]> {
+    const fee = transaction.transaction.fee.amount.map(value => value.amount).reduce((prev, next) => prev.plus(next))
     return transaction.transaction.messages.map(message => {
-      switch (message.type) {
-        case RawCosmosMessageType.Send:
+      switch (message.type.index) {
+        case RawCosmosMessageType.Send.index:
           const sendMessage = message as RawCosmosSendMessage
           return {
             amount: sendMessage.amount.map(value => value.amount).reduce((prev, next) => prev.plus(next)),
             to: [sendMessage.toAddress],
             from: [sendMessage.fromAddress],
             isInbound: false,
-            fee: transaction.transaction.fee.amount.map(value => value.amount).reduce((prev, next) => prev.plus(next)),
+            fee: fee,
             protocolIdentifier: this.identifier
           } as IAirGapTransaction
-        case RawCosmosMessageType.Delegate || RawCosmosMessageType.Undelegate:
+        case RawCosmosMessageType.Delegate.index || RawCosmosMessageType.Undelegate.index:
           const delegateMessage = message as RawCosmosDelegateMessage
           return {
             amount: delegateMessage.amount.amount,
             to: [delegateMessage.delegatorAddress],
             from: [delegateMessage.validatorAddress],
             isInbound: false,
-            fee: transaction.transaction.fee.amount.map(value => value.amount).reduce((prev, next) => prev.plus(next)),
+            fee: fee,
             protocolIdentifier: this.identifier
           } as IAirGapTransaction
         default:
@@ -201,8 +202,38 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
     })
   }
 
-  public async getTransactionDetailsFromSigned(transaction: SignedTransaction): Promise<IAirGapTransaction[]> {
-    throw new Error('Method not implemented.')
+  public async getTransactionDetailsFromSigned(transaction: SignedCosmosTransaction): Promise<IAirGapTransaction[]> {
+    const json = JSON.parse(transaction.transaction).tx
+    const fee: BigNumber = json.fee.amount
+      .map(value => new BigNumber(value.amount))
+      .reduce((current: BigNumber, next: BigNumber) => current.plus(next))
+    return json.msg.map(message => {
+      const type: string = message.type
+      switch (type) {
+        case RawCosmosMessageType.Send.value:
+          return {
+            amount: message.value.amount
+              .map((value: string) => new BigNumber(value))
+              .reduce((current: BigNumber, next: BigNumber) => current.plus(next)),
+            to: message.value.from_address,
+            from: message.value.to_address,
+            isInbound: false,
+            fee: fee,
+            protocolIdentifier: this.identifier
+          } as IAirGapTransaction
+        case RawCosmosMessageType.Delegate.value || RawCosmosMessageType.Undelegate.value:
+          return {
+            amount: new BigNumber(message.value.amount.amount),
+            to: message.value.validator_address,
+            from: message.value.delegator_address,
+            isInbound: false,
+            fee: fee,
+            protocolIdentifier: this.identifier
+          } as IAirGapTransaction
+        default:
+          throw Error('Unknown transaction')
+      }
+    })
   }
 
   public async getBalanceOfAddresses(addresses: string[]): Promise<BigNumber> {
