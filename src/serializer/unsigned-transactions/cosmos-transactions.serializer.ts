@@ -72,7 +72,7 @@ export class RawCosmosTransaction {
     this.sequence = sequence
   }
 
-  toJSON(): any {
+  public toJSON(): any {
     return {
       account_number: this.accountNumber,
       chain_id: this.chainID,
@@ -96,6 +96,11 @@ export class RawCosmosTransaction {
       }
     })
     return new RawCosmosTransaction(messages, RawCosmosFee.fromJSON(json.fee), json.memo, json.chain_id, json.account_number, json.sequence)
+  }
+
+  public toAirGapTransactions(identifier: string): IAirGapTransaction[] {
+    const fee = this.fee.amount.map(value => value.amount).reduce((prev, next) => prev.plus(next))
+    return this.messages.map(message => message.toAirGapTransaction(identifier, fee))
   }
 }
 

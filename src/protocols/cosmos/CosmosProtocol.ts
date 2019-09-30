@@ -173,33 +173,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
   }
 
   public async getTransactionDetails(transaction: UnsignedCosmosTransaction): Promise<IAirGapTransaction[]> {
-    const fee = transaction.transaction.fee.amount.map(value => value.amount).reduce((prev, next) => prev.plus(next))
-    return transaction.transaction.messages.map(message => {
-      switch (message.type.index) {
-        case RawCosmosMessageType.Send.index:
-          const sendMessage = message as RawCosmosSendMessage
-          return {
-            amount: sendMessage.amount.map(value => value.amount).reduce((prev, next) => prev.plus(next)),
-            to: [sendMessage.toAddress],
-            from: [sendMessage.fromAddress],
-            isInbound: false,
-            fee: fee,
-            protocolIdentifier: this.identifier
-          } as IAirGapTransaction
-        case RawCosmosMessageType.Delegate.index || RawCosmosMessageType.Undelegate.index:
-          const delegateMessage = message as RawCosmosDelegateMessage
-          return {
-            amount: delegateMessage.amount.amount,
-            to: [delegateMessage.delegatorAddress],
-            from: [delegateMessage.validatorAddress],
-            isInbound: false,
-            fee: fee,
-            protocolIdentifier: this.identifier
-          } as IAirGapTransaction
-        default:
-          throw Error('Unknown transaction')
-      }
-    })
+    return transaction.transaction.toAirGapTransactions(this.identifier)
   }
 
   public async getTransactionDetailsFromSigned(transaction: SignedCosmosTransaction): Promise<IAirGapTransaction[]> {
