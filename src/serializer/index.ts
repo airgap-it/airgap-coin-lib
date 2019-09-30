@@ -10,6 +10,7 @@ import { BitcoinUnsignedTransactionSerializer } from './unsigned-transactions/bi
 import { EthereumUnsignedTransactionSerializer } from './unsigned-transactions/ethereum-transactions.serializer'
 import { TezosUnsignedTransactionSerializer } from './unsigned-transactions/tezos-transactions.serializer'
 import { CosmosUnsignedTransactionSerializer } from './unsigned-transactions/cosmos-transactions.serializer'
+import { CosmosSignedTransactionSerializer } from './signed-transactions/cosmos-transactions.serializer'
 
 export function unsignedTransactionSerializerByProtocolIdentifier(protocolIdentifier: string): UnsignedTransactionSerializer {
   const implementedSerializers = {
@@ -36,7 +37,8 @@ export function signedTransactionSerializerByProtocolIdentifier(protocolIdentifi
     btc: BitcoinSignedTransactionSerializer,
     grs: BitcoinSignedTransactionSerializer,
     ae: AeternitySignedTransactionSerializer,
-    xtz: TezosSignedTransactionSerializer
+    xtz: TezosSignedTransactionSerializer,
+    cosmos: CosmosSignedTransactionSerializer
   }
 
   const protocol = Object.keys(implementedSerializers).find(protocol => protocolIdentifier.startsWith(protocol))

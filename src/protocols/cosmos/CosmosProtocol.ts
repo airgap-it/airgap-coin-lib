@@ -1,3 +1,4 @@
+import axios, { AxiosResponse } from 'axios'
 import { CosmosNodeClient } from './CosmosNodeClient'
 import { ICoinProtocol } from '../ICoinProtocol'
 import { ICoinSubProtocol } from '../ICoinSubProtocol'
@@ -65,7 +66,8 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
   private defaultGas: BigNumber = new BigNumber('200000')
 
   constructor(
-    nodeClient: CosmosNodeClient = new CosmosNodeClient('https://a4687b90b05c46aaa96fe69a8d828034.cosmoshub-2.rest.cosmos.api.nodesmith.io')
+    public readonly jsonRPCAPI: string = 'https://a4687b90b05c46aaa96fe69a8d828034.cosmoshub-2.rest.cosmos.api.nodesmith.io',
+    nodeClient: CosmosNodeClient = new CosmosNodeClient(jsonRPCAPI)
   ) {
     super()
     this.nodeClient = nodeClient
@@ -278,6 +280,14 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
       account.value.account_number,
       account.value.sequence
     )
+  }
+
+  public async isAddressDelegated(address: string): Promise<boolean> {
+    const { data }: AxiosResponse = await axios.get(`${this.jsonRPCAPI}/staking/delegators/${address}/delegations`)
+    if (data && data.length) {
+      return data.length > 0 ? true : false
+    }
+    return false
   }
 
   public async broadcastTransaction(rawTransaction: string): Promise<string> {
