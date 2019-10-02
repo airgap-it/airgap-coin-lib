@@ -27,6 +27,15 @@ export interface KeyPair {
   publicKey: Buffer
   privateKey: Buffer
 }
+export interface RpcDelegationResponse {
+  delegator_address: string
+  validator_address: string
+  shares: string
+}
+export interface CosmosDelegationInfo {
+  isDelegated: boolean
+  delegationInfo?: Array<RpcDelegationResponse>
+}
 
 export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol {
   public symbol: string = '⌀'
@@ -308,12 +317,12 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
     )
   }
 
-  public async isAddressDelegated(address: string): Promise<boolean> {
+  public async isAddressDelegated(address: string): Promise<CosmosDelegationInfo> {
     const { data }: AxiosResponse = await axios.get(`${this.jsonRPCAPI}/staking/delegators/${address}/delegations`)
     if (data && data.length) {
-      return data.length > 0 ? true : false
+      return { isDelegated: true, delegationInfo: data }
     }
-    return false
+    return { isDelegated: false }
   }
 
   public async broadcastTransaction(rawTransaction: string): Promise<string> {
