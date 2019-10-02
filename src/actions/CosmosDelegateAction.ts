@@ -1,10 +1,10 @@
+import { CosmosProtocol } from '../protocols/cosmos/CosmosProtocol'
 import BigNumber from 'bignumber.js'
 import { AirGapMarketWallet } from '../wallet/AirGapMarketWallet'
-import { RawCosmosTransaction } from '../serializer/unsigned-transactions/cosmos-transactions.serializer'
 import { IAirGapTransaction } from '../interfaces/IAirGapTransaction'
-import { CosmosProtocol } from '../protocols/cosmos/CosmosProtocol'
-import { SyncProtocolUtils, EncodedType } from '../serializer/serializer'
+import { RawCosmosTransaction } from '../serializer/unsigned-transactions/cosmos-transactions.serializer'
 import { Action } from './Action'
+import { SyncProtocolUtils, EncodedType } from '../serializer/serializer'
 
 export interface CosmosDelegateActionContext {
   wallet: AirGapMarketWallet

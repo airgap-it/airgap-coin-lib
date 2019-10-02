@@ -27,6 +27,15 @@ export interface KeyPair {
   publicKey: Buffer
   privateKey: Buffer
 }
+export interface RpcDelegationResponse {
+  delegator_address: string
+  validator_address: string
+  shares: string
+}
+export interface CosmosDelegationInfo {
+  isDelegated: boolean
+  delegationInfo?: Array<RpcDelegationResponse>
+}
 
 export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol {
   public symbol: string = 'ATOM'
@@ -180,7 +189,8 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
         case RawCosmosMessageType.Send.value:
           const sendMessage = RawCosmosSendMessage.fromJSON(message)
           return sendMessage.toAirGapTransaction(this.identifier, fee)
-        case RawCosmosMessageType.Delegate.value || RawCosmosMessageType.Undelegate.value:
+        case RawCosmosMessageType.Undelegate.value:
+        case RawCosmosMessageType.Delegate.value:
           const delegateMessage = RawCosmosDelegateMessage.fromJSON(message)
           return delegateMessage.toAirGapTransaction(this.identifier, fee)
         default:
@@ -257,6 +267,13 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
       account.value.account_number,
       account.value.sequence
     )
+  }
+  public async isAddressDelegated(address: string): Promise<CosmosDelegationInfo> {
+    const delegationInfo: CosmosDelegation[] = await this.fetchDelegations(address)
+    if (delegationInfo && delegationInfo.length) {
+      return delegationInfo.length > 0 ? { isDelegated: true, delegationInfo: delegationInfo } : { isDelegated: false }
+    }
+    return { isDelegated: false }
   }
 
   public async fetchDelegations(address: string): Promise<CosmosDelegation[]> {
