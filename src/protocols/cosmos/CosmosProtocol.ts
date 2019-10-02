@@ -199,17 +199,18 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
             amount: message.value.amount
               .map((value: string) => new BigNumber(value))
               .reduce((current: BigNumber, next: BigNumber) => current.plus(next)),
-            to: message.value.from_address,
-            from: message.value.to_address,
+            to: [message.value.from_address],
+            from: [message.value.to_address],
             isInbound: false,
             fee: fee,
             protocolIdentifier: this.identifier
           } as IAirGapTransaction
-        case RawCosmosMessageType.Delegate.value || RawCosmosMessageType.Undelegate.value:
+        case RawCosmosMessageType.Undelegate.value:
+        case RawCosmosMessageType.Delegate.value:
           return {
             amount: new BigNumber(message.value.amount.amount),
-            to: message.value.validator_address,
-            from: message.value.delegator_address,
+            to: [message.value.validator_address],
+            from: [message.value.delegator_address],
             isInbound: false,
             fee: fee,
             protocolIdentifier: this.identifier
@@ -288,6 +289,13 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
       account.value.account_number,
       account.value.sequence
     )
+  }
+  public async isAddressDelegated(address: string): Promise<CosmosDelegationInfo> {
+    const delegationInfo: CosmosDelegation[] = await this.fetchDelegations(address)
+    if (delegationInfo && delegationInfo.length) {
+      return delegationInfo.length > 0 ? { isDelegated: true, delegationInfo: delegationInfo } : { isDelegated: false }
+    }
+    return { isDelegated: false }
   }
 
   public async fetchDelegations(address: string): Promise<CosmosDelegation[]> {
