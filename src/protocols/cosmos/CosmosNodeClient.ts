@@ -1,6 +1,5 @@
 import axios from 'axios'
 import { BigNumber } from 'bignumber.js'
-import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 
 export interface CosmosNodeInfo {
   protocol_version: {
@@ -77,44 +76,6 @@ export class CosmosNodeClient {
 
   constructor(baseURL: string) {
     this.baseURL = baseURL
-  }
-
-  public async fetchTransactions(address: string, page: number, limit: number): Promise<IAirGapTransaction[]> {
-    // TODO: need to find a better way to do this
-    const promises: Promise<IAirGapTransaction[]>[] = []
-    promises.push(
-      new Promise((resolve, reject) => {
-        axios
-          .get(`${this.baseURL}/txs?message.sender=${address}&page=${page}&limit=${limit}`)
-          .then(response => {
-            // const transactionResponse = response.data
-            const airGapTransactions: IAirGapTransaction[] = []
-            // for (const transaction of transactionResponse) {
-            // }
-            resolve(airGapTransactions)
-          })
-          .catch(reject)
-      })
-    )
-    promises.push(
-      new Promise((resolve, reject) => {
-        axios
-          .get(`${this.baseURL}/txs?transfer.receiver=${address}&page=${page}&limit=${limit}`)
-          .then(response => {
-            // const transactionResponse = response.data
-            const airGapTransactions: IAirGapTransaction[] = []
-            // for (const transaction of transactionResponse) {
-            // }
-            resolve(airGapTransactions)
-          })
-          .catch(reject)
-      })
-    )
-    return Promise.all(promises).then(transactions => {
-      return transactions.reduce((current, next) => {
-        return current.concat(next)
-      })
-    })
   }
 
   public async fetchBalance(address: string): Promise<BigNumber> {

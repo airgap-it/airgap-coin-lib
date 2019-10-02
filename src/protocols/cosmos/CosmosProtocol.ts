@@ -1,4 +1,5 @@
 import { CosmosNodeClient, CosmosDelegation, CosmosValidator } from './CosmosNodeClient'
+import { CosmosInfoClient } from './CosmosInfoClient'
 import { ICoinProtocol } from '../ICoinProtocol'
 import { ICoinSubProtocol } from '../ICoinSubProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
@@ -28,10 +29,10 @@ export interface KeyPair {
 }
 
 export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol {
-  public symbol: string = '⌀'
+  public symbol: string = 'ATOM'
   public name: string = 'Cosmos'
   public marketSymbol: string = 'ATOM'
-  public feeSymbol: string = 'atom'
+  public feeSymbol: string = 'ATOM'
   public feeDefaults = {
     // TODO: verify if these values are ok
     low: new BigNumber(0.0005),
@@ -59,17 +60,16 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
   public blockExplorer: string = 'https://www.mintscan.io'
   public subProtocols?: (ICoinProtocol & ICoinSubProtocol)[] | undefined
 
-  public nodeClient: CosmosNodeClient
-
   private addressPrefix: string = 'cosmos'
   private defaultGas: BigNumber = new BigNumber('200000')
 
   constructor(
-    public readonly jsonRPCAPI: string = 'https://a4687b90b05c46aaa96fe69a8d828034.cosmoshub-2.rest.cosmos.api.nodesmith.io',
-    nodeClient: CosmosNodeClient = new CosmosNodeClient(jsonRPCAPI)
+    public readonly infoClient: CosmosInfoClient = new CosmosInfoClient(),
+    public readonly nodeClient: CosmosNodeClient = new CosmosNodeClient(
+      'https://a4687b90b05c46aaa96fe69a8d828034.cosmoshub-2.rest.cosmos.api.nodesmith.io'
+    )
   ) {
     super()
-    this.nodeClient = nodeClient
   }
 
   public getBlockExplorerLinkForAddress(address: string): string {
@@ -130,18 +130,10 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
     return await this.getTransactionsFromAddresses([await this.getAddressFromPublicKey(publicKey)], limit, offset)
   }
 
-  private getPageNumber(limit: number, offset: number): number {
-    if (limit <= 0 || offset < 0) {
-      return 0
-    }
-    return Math.floor(offset / limit) // we need +1 here because pages start at 1
-  }
-
   public async getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
     const promises: Promise<IAirGapTransaction[]>[] = []
-    const page = this.getPageNumber(limit, offset)
     for (const address of addresses) {
-      promises.push(this.nodeClient.fetchTransactions(address, page, limit))
+      promises.push(this.infoClient.fetchTransactions(this.identifier, address, offset, limit))
     }
     return Promise.all(promises).then(transactions => transactions.reduce((current, next) => current.concat(next)))
   }
@@ -186,25 +178,11 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
       const type: string = message.type
       switch (type) {
         case RawCosmosMessageType.Send.value:
-          return {
-            amount: message.value.amount
-              .map((value: string) => new BigNumber(value))
-              .reduce((current: BigNumber, next: BigNumber) => current.plus(next)),
-            to: message.value.from_address,
-            from: message.value.to_address,
-            isInbound: false,
-            fee: fee,
-            protocolIdentifier: this.identifier
-          } as IAirGapTransaction
+          const sendMessage = RawCosmosSendMessage.fromJSON(message)
+          return sendMessage.toAirGapTransaction(this.identifier, fee)
         case RawCosmosMessageType.Delegate.value || RawCosmosMessageType.Undelegate.value:
-          return {
-            amount: new BigNumber(message.value.amount.amount),
-            to: message.value.validator_address,
-            from: message.value.delegator_address,
-            isInbound: false,
-            fee: fee,
-            protocolIdentifier: this.identifier
-          } as IAirGapTransaction
+          const delegateMessage = RawCosmosDelegateMessage.fromJSON(message)
+          return delegateMessage.toAirGapTransaction(this.identifier, fee)
         default:
           throw Error('Unknown transaction')
       }
