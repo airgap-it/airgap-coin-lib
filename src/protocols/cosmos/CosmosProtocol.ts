@@ -1,5 +1,4 @@
-import axios, { AxiosResponse } from 'axios'
-import { CosmosNodeClient } from './CosmosNodeClient'
+import { CosmosNodeClient, CosmosDelegation, CosmosValidator } from './CosmosNodeClient'
 import { ICoinProtocol } from '../ICoinProtocol'
 import { ICoinSubProtocol } from '../ICoinSubProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
@@ -52,7 +51,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
       factor: new BigNumber(1).shiftedBy(-6)
     }
   ]
-  public supportsHD: boolean = true
+  public supportsHD: boolean = false
   public standardDerivationPath: string = `m/44'/118'/0'/0/0`
   public addressIsCaseSensitive: boolean = false
   public addressValidationPattern: string = '^cosmos[a-zA-Z0-9]{39}$'
@@ -282,12 +281,12 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
     )
   }
 
-  public async isAddressDelegated(address: string): Promise<boolean> {
-    const { data }: AxiosResponse = await axios.get(`${this.jsonRPCAPI}/staking/delegators/${address}/delegations`)
-    if (data && data.length) {
-      return data.length > 0 ? true : false
-    }
-    return false
+  public async fetchDelegations(address: string): Promise<CosmosDelegation[]> {
+    return this.nodeClient.fetchDelegations(address)
+  }
+
+  public async fetchValidator(address: string): Promise<CosmosValidator> {
+    return this.nodeClient.fetchValidator(address)
   }
 
   public async broadcastTransaction(rawTransaction: string): Promise<string> {

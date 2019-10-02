@@ -6,24 +6,24 @@ import { CosmosProtocol } from '../protocols/cosmos/CosmosProtocol'
 import { SyncProtocolUtils, EncodedType } from '../serializer/serializer'
 import { Action } from './Action'
 
-export interface CosmosDelegationActionContext {
+export interface CosmosDelegateActionContext {
   wallet: AirGapMarketWallet
   validatorAddress: string
   amount: BigNumber
   undelegate: boolean
 }
 
-export interface CosmosDelegationActionResult {
+export interface CosmosDelegateActionResult {
   rawTx: RawCosmosTransaction
   serializedTx: string
   airGapTxs: IAirGapTransaction[] | void
   dataUrl: string
 }
 
-export class CosmosDelegateAction<Context extends CosmosDelegationActionContext> extends Action<CosmosDelegationActionResult, Context> {
+export class CosmosDelegateAction<Context extends CosmosDelegateActionContext> extends Action<CosmosDelegateActionResult, Context> {
   public readonly identifier = 'cosmos-delegate-action'
 
-  protected async perform(): Promise<CosmosDelegationActionResult> {
+  protected async perform(): Promise<CosmosDelegateActionResult> {
     const protocol = new CosmosProtocol()
     const syncProtocol = new SyncProtocolUtils()
     const transaction = await protocol.delegate(
