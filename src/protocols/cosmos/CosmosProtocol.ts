@@ -176,15 +176,18 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
   }
 
   public async getTransactionDetails(transaction: UnsignedCosmosTransaction): Promise<IAirGapTransaction[]> {
-    return transaction.transaction.toAirGapTransactions(this.identifier)
+    const result = transaction.transaction.toAirGapTransactions(this.identifier)
+    console.log('UNSIGNED TXS DETAILS', result)
+    return result
   }
 
   public async getTransactionDetailsFromSigned(transaction: SignedCosmosTransaction): Promise<IAirGapTransaction[]> {
     const json = JSON.parse(transaction.transaction).tx
+    console.log('SIGNED JSON', json)
     const fee: BigNumber = json.fee.amount
       .map(value => new BigNumber(value.amount))
       .reduce((current: BigNumber, next: BigNumber) => current.plus(next))
-    return json.msg.map(message => {
+    const result = json.msg.map(message => {
       const type: string = message.type
       switch (type) {
         case RawCosmosMessageType.Send.value:
@@ -198,6 +201,8 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
           throw Error('Unknown transaction')
       }
     })
+    console.log('SIGNED TXS DETAILS', result)
+    return result
   }
 
   public async getBalanceOfAddresses(addresses: string[]): Promise<BigNumber> {
@@ -239,7 +244,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
     const memo = data !== undefined && typeof data === 'string' ? (data as string) : ''
     const transaction = new RawCosmosTransaction(
       messages,
-      new RawCosmosFee([new RawCosmosCoin(this.feeSymbol, fee)], this.defaultGas),
+      new RawCosmosFee([new RawCosmosCoin('uatom', fee)], this.defaultGas),
       memo,
       nodeInfo.network,
       account.value.account_number,

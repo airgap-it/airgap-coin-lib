@@ -191,7 +191,11 @@ export class RawCosmosSendMessage implements RawCosmosMessage {
   }
 
   public static fromJSON(json: any): RawCosmosSendMessage {
-    return new RawCosmosSendMessage(json.value.from_address, json.to_address, json.value.amount.map(value => RawCosmosCoin.fromJSON(value)))
+    return new RawCosmosSendMessage(
+      json.value.from_address,
+      json.value.to_address,
+      json.value.amount.map(value => RawCosmosCoin.fromJSON(value))
+    )
   }
 }
 
@@ -270,7 +274,7 @@ export class RawCosmosCoin implements JSONConvertible, RLPConvertible {
   }
 
   public static fromJSON(json: any): RawCosmosCoin {
-    return new RawCosmosCoin(json.denom, new BigNumber(json.denom))
+    return new RawCosmosCoin(json.denom, new BigNumber(json.amount))
   }
 }
 
