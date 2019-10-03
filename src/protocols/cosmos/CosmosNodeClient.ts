@@ -72,14 +72,10 @@ export interface CosmosValidatorCommission {
 }
 
 export class CosmosNodeClient {
-  public baseURL: string
-
-  constructor(baseURL: string) {
-    this.baseURL = baseURL
-  }
+  constructor(public readonly baseURL: string, public useCORSProxy: boolean = false) {}
 
   public async fetchBalance(address: string): Promise<BigNumber> {
-    const response = await axios.get(`${this.baseURL}/bank/balances/${address}`)
+    const response = await axios.get(this.url(`/bank/balances/${address}`))
     const data: any[] = response.data
     if (data.length > 0) {
       return new BigNumber(data[0].amount)
@@ -89,13 +85,13 @@ export class CosmosNodeClient {
   }
 
   public async fetchNodeInfo(): Promise<CosmosNodeInfo> {
-    const response = await axios.get(`${this.baseURL}/node_info`)
+    const response = await axios.get(this.url(`/node_info`))
     const nodeInfo = response.data as CosmosNodeInfo
     return nodeInfo
   }
 
   public async broadcastSignedTransaction(transaction: string): Promise<string> {
-    const response = await axios.post(`${this.baseURL}/txs`, transaction, {
+    const response = await axios.post(this.url(`/txs`), transaction, {
       headers: {
         'Content-type': 'application/json'
       }
@@ -104,20 +100,31 @@ export class CosmosNodeClient {
   }
 
   public async fetchAccount(address: string): Promise<CosmosAccount> {
-    const response = await axios.get(`${this.baseURL}/auth/accounts/${address}`)
+    const response = await axios.get(this.url(`/auth/accounts/${address}`))
     const account = response.data as CosmosAccount
     return account
   }
 
   public async fetchDelegations(address: string): Promise<CosmosDelegation[]> {
-    const response = await axios.get(`${this.baseURL}/staking/delegators/${address}/delegations`)
+    const response = await axios.get(this.url(`/staking/delegators/${address}/delegations`))
+    if (response.data === null) {
+      return []
+    }
     const delegations = response.data as CosmosDelegation[]
     return delegations
   }
 
   public async fetchValidator(address: string): Promise<CosmosValidator> {
-    const response = await axios.get(`${this.baseURL}/staking/validators/${address}`)
+    const response = await axios.get(this.url(`/staking/validators/${address}`))
     const validator = response.data as CosmosValidator
     return validator
+  }
+
+  private url(path: string): string {
+    let result = `${this.baseURL}${path}`
+    if (this.useCORSProxy) {
+      result = `https://cors-proxy.airgap.prod.gke.papers.tech/proxy?url=${encodeURI(result)}`
+    }
+    return result
   }
 }
