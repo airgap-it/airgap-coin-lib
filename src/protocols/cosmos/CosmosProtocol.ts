@@ -177,13 +177,11 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
 
   public async getTransactionDetails(transaction: UnsignedCosmosTransaction): Promise<IAirGapTransaction[]> {
     const result = transaction.transaction.toAirGapTransactions(this.identifier)
-    console.log('UNSIGNED TXS DETAILS', result)
     return result
   }
 
   public async getTransactionDetailsFromSigned(transaction: SignedCosmosTransaction): Promise<IAirGapTransaction[]> {
     const json = JSON.parse(transaction.transaction).tx
-    console.log('SIGNED JSON', json)
     const fee: BigNumber = json.fee.amount
       .map(value => new BigNumber(value.amount))
       .reduce((current: BigNumber, next: BigNumber) => current.plus(next))
@@ -201,7 +199,6 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
           throw Error('Unknown transaction')
       }
     })
-    console.log('SIGNED TXS DETAILS', result)
     return result
   }
 
