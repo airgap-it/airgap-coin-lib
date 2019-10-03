@@ -1,5 +1,6 @@
 import { IACProtocol } from './inter-app-communication-protocol'
-import { IACMessageDefinition, IACMessageType } from './message'
+import { IACMessageType } from './interfaces'
+import { IACMessageDefinition } from './message'
 
 const accountShareResponse = require('./schemas/account-share-response.json')
 
@@ -9,21 +10,28 @@ export enum IACPayloadType {
 }
 
 export class Serializer {
-  public static readonly schemas: Map<string, any> = new Map()
+  private static readonly schemas: Map<string, any> = new Map()
 
   constructor() {}
 
-  public static addSchema(schemaName: string, schema: any): void {
-    if (this.schemas.has(schemaName)) {
-      throw new Error(`Schema ${schemaName} already exists`)
+  public static addSchema(schemaName: string, schema: any, protocol: string = ''): void {
+    const protocolSpecificSchemaName: string = `${schemaName}-${protocol}`
+    if (this.schemas.has(protocolSpecificSchemaName)) {
+      throw new Error(`Schema ${protocolSpecificSchemaName} already exists`)
     }
-    this.schemas.set(schemaName, schema)
+    this.schemas.set(protocolSpecificSchemaName, schema)
+  }
+
+  public static getSchema(schemaName: string, protocol: string = ''): any {
+    const protocolSpecificSchemaName: string = `${schemaName}-${protocol}`
+
+    return this.schemas.get(protocolSpecificSchemaName)
   }
 
   public serialize(messages: IACMessageDefinition[], chunkSize: number = 0): string[] {
-    if (messages.every(message => Serializer.schemas.get(message.type.toString()))) {
+    if (messages.every(message => Serializer.getSchema(message.type.toString()))) {
       const iacps = IACProtocol.create(messages, chunkSize)
-      console.log(iacps)
+      console.log('iacps', iacps)
       return iacps.map(iac => iac.encoded())
     } else {
       throw Error('Unknown schema')

@@ -1,4 +1,4 @@
-import { IACMessageType } from '../../src/serializer/v2/message'
+import { IACMessageType } from '../../src/serializer/v2/interfaces'
 import { Serializer } from '../../src/serializer/v2/serializer.new'
 
 const serializeAndDeserialize = (messages: any, size: number) => {

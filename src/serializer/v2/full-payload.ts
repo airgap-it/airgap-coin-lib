@@ -3,7 +3,6 @@ import * as rlp from 'rlp'
 
 import { assertNever, IACMessageDefinition, Message } from './message'
 import { Payload, PayloadType } from './payload'
-import { Serializer } from './serializer.new'
 
 export class FullPayload implements Payload {
   private readonly messages: IACMessageDefinition[]
@@ -27,7 +26,11 @@ export class FullPayload implements Payload {
     console.log('messages', this.messages)
 
     return this.messages.map(message =>
-      new Message(message.type, Serializer.schemas.get(message.type.toString()), 'eth', message.data).asArray()
+      new Message(PayloadType.DECODED, {
+        messageType: message.type,
+        protocol: 'eth',
+        data: message.data
+      }).asArray()
     )
   }
 
