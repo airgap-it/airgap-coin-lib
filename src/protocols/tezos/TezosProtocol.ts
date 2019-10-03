@@ -853,6 +853,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
     if (contractData) {
       // This is a migration contract, so we can display more meaningful data to the user
+      if (!amount.isZero()) {
+        throw new Error('Amount has to be zero for contract calls.')
+      }
       source = destination
       amount = contractData.amount
       destination = contractData.destination
