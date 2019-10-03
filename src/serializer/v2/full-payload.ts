@@ -4,10 +4,15 @@ import * as rlp from 'rlp'
 import { assertNever, IACMessageDefinition, Message } from './message'
 import { Payload, PayloadType } from './payload'
 
+interface PayloadTypeReturnType {
+  [PayloadType.ENCODED]: Buffer
+  [PayloadType.DECODED]: string
+}
+
 export class FullPayload implements Payload {
   private readonly messages: IACMessageDefinition[]
 
-  constructor(type: PayloadType, object: Buffer[] | IACMessageDefinition[] | string) {
+  constructor(type: PayloadType, object: PayloadTypeReturnType[PayloadType]) {
     if (type === PayloadType.DECODED) {
       this.messages = object as any
     } else if (type === PayloadType.ENCODED) {

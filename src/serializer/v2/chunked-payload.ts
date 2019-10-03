@@ -1,14 +1,25 @@
 import { assertNever } from './message'
 import { Payload, PayloadType } from './payload'
 
+interface DecodedChunkedPayload {
+  currentPage: number
+  total: number
+  payload: Buffer
+}
+
+interface PayloadTypeReturnType {
+  [PayloadType.ENCODED]: Buffer[]
+  [PayloadType.DECODED]: DecodedChunkedPayload
+}
+
 export class ChunkedPayload implements Payload {
   public currentPage: number
   public total: number
   public buffer: Buffer
 
-  constructor(type: PayloadType, object: Buffer[] | { currentPage: number; total: number; payload: Buffer }) {
+  constructor(type: PayloadType, object: PayloadTypeReturnType[PayloadType]) {
     if (type === PayloadType.DECODED) {
-      const x = object as { currentPage: number; total: number; payload: Buffer }
+      const x = object as DecodedChunkedPayload
       this.currentPage = x.currentPage
       this.total = x.total
       this.buffer = x.payload
