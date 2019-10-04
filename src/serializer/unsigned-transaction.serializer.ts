@@ -2,7 +2,7 @@ import { RawAeternityTransaction } from './unsigned-transactions/aeternity-trans
 import { RawBitcoinTransaction, SerializedUnsignedBitcoinTransaction } from './unsigned-transactions/bitcoin-transactions.serializer'
 import { RawEthereumTransaction, SerializedUnsignedEthereumTransaction } from './unsigned-transactions/ethereum-transactions.serializer'
 import { RawTezosTransaction, SerializedUnsignedTezosTransaction } from './unsigned-transactions/tezos-transactions.serializer'
-import { RawCosmosTransaction, SerializedUnsignedCosmosTransaction } from './unsigned-transactions/cosmos-transactions.serializer'
+import { CosmosTransaction, RLPCosmosTransaction } from '../protocols/cosmos/CosmosTransaction'
 
 export abstract class UnsignedTransactionSerializer {
   public abstract serialize(unsignedTx: UnsignedTransaction): SerializedSyncProtocolTransaction | Promise<SerializedSyncProtocolTransaction>
@@ -10,7 +10,7 @@ export abstract class UnsignedTransactionSerializer {
 }
 
 export interface UnsignedTransaction {
-  transaction: RawEthereumTransaction | RawBitcoinTransaction | RawAeternityTransaction | RawTezosTransaction | RawCosmosTransaction
+  transaction: RawEthereumTransaction | RawBitcoinTransaction | RawAeternityTransaction | RawTezosTransaction | CosmosTransaction
   publicKey: string
   callback?: string
 }
@@ -19,7 +19,7 @@ export type SerializedUnsignedTransaction =
   | SerializedUnsignedEthereumTransaction
   | SerializedUnsignedBitcoinTransaction
   | SerializedUnsignedTezosTransaction
-  | SerializedUnsignedCosmosTransaction
+  | RLPCosmosTransaction
 
 export enum SyncProtocolUnsignedTransactionKeys {
   UNSIGNED_TRANSACTION = 0,

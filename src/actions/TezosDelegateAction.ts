@@ -5,7 +5,7 @@ import { RawEthereumTransaction } from '../serializer/unsigned-transactions/ethe
 import { RawTezosTransaction } from '../serializer/unsigned-transactions/tezos-transactions.serializer'
 
 import { Action } from './Action'
-import { RawCosmosTransaction } from '../serializer/unsigned-transactions/cosmos-transactions.serializer'
+import { CosmosTransaction } from '../protocols/cosmos/CosmosTransaction'
 
 export interface TezosDelegateActionContext {
   wallet: AirGapMarketWallet
@@ -21,7 +21,7 @@ export interface TezosDelegateActionResult {
 
 function serializeTx(
   wallet: AirGapMarketWallet,
-  transaction: RawTezosTransaction | RawEthereumTransaction | RawBitcoinTransaction | RawAeternityTransaction | RawCosmosTransaction
+  transaction: RawTezosTransaction | RawEthereumTransaction | RawBitcoinTransaction | RawAeternityTransaction | CosmosTransaction
 ): Promise<string> {
   const syncProtocol: SyncProtocolUtils = new SyncProtocolUtils()
 
@@ -39,7 +39,7 @@ function serializeTx(
 
 function getAirGapTx(
   wallet: AirGapMarketWallet,
-  transaction: RawTezosTransaction | RawEthereumTransaction | RawBitcoinTransaction | RawAeternityTransaction | RawCosmosTransaction
+  transaction: RawTezosTransaction | RawEthereumTransaction | RawBitcoinTransaction | RawAeternityTransaction | CosmosTransaction
 ): Promise<IAirGapTransaction[] | void> {
   return wallet.coinProtocol.getTransactionDetails({
     publicKey: wallet.publicKey,

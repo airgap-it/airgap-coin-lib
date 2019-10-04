@@ -120,6 +120,66 @@ export class CosmosNodeClient {
     return validator
   }
 
+  public async fetchValidators(): Promise<CosmosValidator[]> {
+    const response = await axios.get(this.url('/staking/validators'))
+    const validators = response.data as CosmosValidator[]
+    return validators
+  }
+
+  public async fetchTotalReward(delegatorAddress: string): Promise<BigNumber> {
+    const response = await axios.get(this.url(`/distribution/delegators/${delegatorAddress}/rewards`))
+    const totalRewards = response.data as { denom: string; amount: string }[]
+    if (totalRewards.length > 0) {
+      return new BigNumber(totalRewards[0].amount)
+    }
+    return new BigNumber(0)
+  }
+
+  public async fetchRewardForDelegation(delegatorAddress: string, validatorAddress: string): Promise<BigNumber> {
+    const response = await axios.get(this.url(`/distribution/delegators/${delegatorAddress}/rewards/${validatorAddress}`))
+    const totalRewards = response.data as { denom: string; amount: string }[]
+    if (totalRewards.length > 0) {
+      return new BigNumber(totalRewards[0].amount)
+    }
+    return new BigNumber(0)
+  }
+
+  public async withdrawAllDelegationRewards(
+    delegatorAddress: string,
+    chainID: string,
+    accountNumber: string,
+    sequence: string,
+    gas: BigNumber,
+    fee: BigNumber,
+    memo: string,
+    simulate: boolean = false
+  ): Promise<string> {
+    const body = {
+      base_req: {
+        from: delegatorAddress,
+        memo: memo,
+        chain_id: chainID,
+        account_number: accountNumber,
+        sequence: sequence,
+        gas: gas.toFixed(),
+        gas_adjustment: '1.2',
+        fees: [
+          {
+            denom: 'uatom',
+            amount: fee.toFixed()
+          }
+        ],
+        simulate: simulate
+      }
+    }
+    const response = await axios.post(this.url(`/distribution/delegators/${delegatorAddress}/rewards`), JSON.stringify(body), {
+      headers: {
+        'Content-type': 'application/json'
+      }
+    })
+    return response.data.hash
+  }
+
   private url(path: string): string {
     let result = `${this.baseURL}${path}`
     if (this.useCORSProxy) {
