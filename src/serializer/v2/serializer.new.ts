@@ -2,7 +2,21 @@ import { IACProtocol } from './inter-app-communication-protocol'
 import { IACMessageType } from './interfaces'
 import { IACMessageDefinition } from './message'
 
+// const accountShareRequest = require('./schemas/account-share-request.json')
 const accountShareResponse = require('./schemas/account-share-response.json')
+
+const messageSignRequest = require('./schemas/message-sign-request.json')
+const messageSignResponse = require('./schemas/message-sign-response.json')
+
+const signedTransactionAeternity = require('./schemas/signed-transaction-aeternity.json')
+const signedTransactionBitcoin = require('./schemas/signed-transaction-bitcoin.json')
+const signedTransactionEthereum = require('./schemas/signed-transaction-ethereum.json')
+const signedTransactionTezos = require('./schemas/signed-transaction-tezos.json')
+
+const unsignedTransactionAeternity = require('./schemas/unsigned-transaction-aeternity.json')
+const unsignedTransactionBitcoin = require('./schemas/unsigned-transaction-bitcoin.json')
+const unsignedTransactionEthereum = require('./schemas/unsigned-transaction-ethereum.json')
+const unsignedTransactionTezos = require('./schemas/unsigned-transaction-tezos.json')
 
 export enum IACPayloadType {
   FULL = 0,
@@ -29,7 +43,15 @@ export class Serializer {
   }
 
   public serialize(messages: IACMessageDefinition[], chunkSize: number = 0): string[] {
-    if (messages.every(message => Serializer.getSchema(message.type.toString()))) {
+    if (
+      messages.every(message => {
+        if (message.protocol) {
+          return Serializer.getSchema(message.type.toString(), message.protocol)
+        } else {
+          return Serializer.getSchema(message.type.toString())
+        }
+      })
+    ) {
       const iacps = IACProtocol.create(messages, chunkSize)
       console.log('iacps', iacps)
       return iacps.map(iac => iac.encoded())
@@ -45,14 +67,21 @@ export class Serializer {
   }
 }
 
-// this.schemas.set(IACMessageType.MetadataRequest.toString(), '')
-// this.schemas.set(IACMessageType.MetadataResponse.toString(), '')
+// Serializer.addSchema(IACMessageType.MetadataRequest.toString(), '')
+// Serializer.addSchema(IACMessageType.MetadataResponse.toString(), '')
 
-// this.schemas.set(IACMessageType.AccountShareRequest.toString(), '')
+// Serializer.addSchema(IACMessageType.AccountShareRequest.toString(), accountShareRequest)
 Serializer.addSchema(IACMessageType.AccountShareResponse.toString(), accountShareResponse)
 
-// this.schemas.set(IACMessageType.TransactionSignRequest.toString(), '')
-// this.schemas.set(IACMessageType.TransactionSignResponse.toString(), '')
+Serializer.addSchema(IACMessageType.MessageSignRequest.toString(), messageSignRequest)
+Serializer.addSchema(IACMessageType.MessageSignResponse.toString(), messageSignResponse)
 
-// this.schemas.set(IACMessageType.MessageSignRequest.toString(), '')
-// this.schemas.set(IACMessageType.MessageSignResponse.toString(), '')
+Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), signedTransactionAeternity, 'ae')
+Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), signedTransactionBitcoin, 'btc')
+Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), signedTransactionEthereum, 'eth')
+Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), signedTransactionTezos, 'xtz')
+
+Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), unsignedTransactionAeternity, 'ae')
+Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), unsignedTransactionBitcoin, 'btc')
+Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), unsignedTransactionEthereum, 'eth')
+Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), unsignedTransactionTezos, 'xtz')

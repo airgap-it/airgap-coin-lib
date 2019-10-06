@@ -1,21 +1,40 @@
 import { jsonToArray, rlpArrayToJson, unwrapSchema } from '../json-to-rlp/json-to-rlp'
+import { SignedBitcoinTransaction } from '../signed-transactions/bitcoin-transactions.serializer'
+import { UnsignedEthereumTransaction } from '../unsigned-transactions/ethereum-transactions.serializer'
 
+import { IACMessageType } from './interfaces'
 import { PayloadType } from './payload'
 import { AccountShareResponse } from './schemas/account-share-response'
 import { MessageSignRequest } from './schemas/message-sign-request'
 import { MessageSignResponse } from './schemas/message-sign-response'
+import { SignedAeternityTransaction } from './schemas/signed-transaction-aeternity'
+import { SignedEthereumTransaction } from './schemas/signed-transaction-ethereum'
+import { SignedTezosTransaction } from './schemas/signed-transaction-tezos'
+import { UnsignedAeternityTransaction } from './schemas/unsigned-transaction-aeternity'
+import { UnsignedBitcoinTransaction } from './schemas/unsigned-transaction-bitcoin'
+import { UnsignedTezosTransaction } from './schemas/unsigned-transaction-tezos'
 import { Serializer } from './serializer.new'
-
-import { IACMessageType } from './interfaces'
 
 const accountShareResponse = require('./schemas/account-share-response.json')
 
 export const assertNever: (x: never) => void = (x: never): void => undefined
 
-export type IACMessages = AccountShareResponse | MessageSignRequest | MessageSignResponse
+export type IACMessages =
+  | AccountShareResponse
+  | MessageSignRequest
+  | MessageSignResponse
+  | UnsignedTezosTransaction
+  | UnsignedAeternityTransaction
+  | UnsignedBitcoinTransaction
+  | UnsignedEthereumTransaction
+  | SignedTezosTransaction
+  | SignedAeternityTransaction
+  | SignedBitcoinTransaction
+  | SignedEthereumTransaction
 
 export interface IACMessageDefinition {
   type: IACMessageType
+  protocol?: 'btc' | 'eth' | 'xtz' | 'ae' | 'grs'
   data: IACMessages
 }
 
@@ -26,11 +45,15 @@ export class Message {
   private protocol: string
   private data: any
 
-  constructor(type: PayloadType, object: Buffer | { messageType: number; protocol: string; data: any }) {
+  constructor(type: PayloadType, object: Buffer | { messageType: number; protocol?: string; data: any }) {
     if (type === PayloadType.DECODED) {
       const x = object as { messageType: number; protocol: string; data: any }
       this.type = x.messageType
-      this.schema = Serializer.getSchema(x.messageType.toString())
+      if (x.protocol) {
+        this.schema = Serializer.getSchema(x.messageType.toString(), x.protocol)
+      } else {
+        this.schema = Serializer.getSchema(x.messageType.toString())
+      }
       this.protocol = x.protocol
       this.data = x.data
     } else if (type === PayloadType.ENCODED) {
@@ -51,7 +74,7 @@ export class Message {
   }
 
   public asArray(): string[] {
-    console.log('c')
+    console.log('c', this.schema)
     const array = jsonToArray('root', unwrapSchema(this.schema), this.data)
     console.log(array)
 

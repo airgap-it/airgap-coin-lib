@@ -5,8 +5,8 @@ import { assertNever, IACMessageDefinition, Message } from './message'
 import { Payload, PayloadType } from './payload'
 
 interface PayloadTypeReturnType {
-  [PayloadType.ENCODED]: Buffer
-  [PayloadType.DECODED]: string
+  [PayloadType.ENCODED]: Buffer[]
+  [PayloadType.DECODED]: IACMessageDefinition[]
 }
 
 export class FullPayload implements Payload {
@@ -33,7 +33,7 @@ export class FullPayload implements Payload {
     return this.messages.map(message =>
       new Message(PayloadType.DECODED, {
         messageType: message.type,
-        protocol: 'eth',
+        protocol: message.protocol,
         data: message.data
       }).asArray()
     )

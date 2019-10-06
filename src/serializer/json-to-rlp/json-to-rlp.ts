@@ -13,6 +13,7 @@ enum SchemaTypes {
 const assertNever: (x: never) => void = (x: never): void => undefined
 
 export function unwrapSchema(schema: Object): any {
+  console.log('UNWRAPPING SCHEMA', schema)
   const definitions: Object = (schema as any).definitions
   const definitionKeys: string[] = Object.keys(definitions)
   if (definitionKeys.length !== 1) {

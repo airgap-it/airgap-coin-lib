@@ -1,7 +1,8 @@
 import { IACMessageType } from '../../src/serializer/v2/interfaces'
+import { IACMessageDefinition } from '../../src/serializer/v2/message'
 import { Serializer } from '../../src/serializer/v2/serializer.new'
 
-const serializeAndDeserialize = (messages: any, size: number) => {
+const serializeAndDeserialize = (messages: IACMessageDefinition[], size: number) => {
   const serializer = new Serializer()
 
   const result = serializer.serialize(messages, size)
@@ -15,20 +16,33 @@ const serializeAndDeserialize = (messages: any, size: number) => {
   console.log('reconstructed', reconstructed)
 }
 
-const accountShareMessage = [
-  {
-    type: IACMessageType.AccountShareResponse,
-    data: {
-      publicKey: '1',
-      derivationPath: '2',
-      isExtendedPublicKey: true
-    }
+const accountShareMessage: IACMessageDefinition = {
+  type: IACMessageType.AccountShareResponse,
+  data: {
+    publicKey: '1',
+    derivationPath: '2',
+    isExtendedPublicKey: true
   }
-]
+}
 
-serializeAndDeserialize(accountShareMessage, 0)
+const signTransactionRequest: IACMessageDefinition = {
+  type: IACMessageType.TransactionSignRequest,
+  protocol: 'ae',
+  data: {
+    transaction: {
+      networkId: 'main',
+      transaction: 'string'
+    },
+    publicKey: '1',
+    callback: '2'
+  }
+}
 
-serializeAndDeserialize(accountShareMessage, 20)
+const messages = [accountShareMessage, signTransactionRequest]
+
+serializeAndDeserialize(messages, 0)
+
+serializeAndDeserialize(messages, 20)
 
 // serializeAndDeserialize(accountShareMessage, 20)
 
