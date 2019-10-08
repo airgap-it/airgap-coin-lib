@@ -164,5 +164,70 @@
     "commitHash": "105bfe57c69e13c83fcf7a6ca660dd984cb291bf",
     "files": ["index.js", "sha.js", "sha1.js", "sha224.js", "sha256.js", "sha384.js", "sha512.js"],
     "deps": ["inherits-2.0.4", "safe-buffer-5.2.0"]
+  },
+  "big39-2.5.0": {
+    "version": "2.5.0",
+    "repository": "bitcoinjs/bip39",
+    "commitHash": "bafbcd352a6a5275bbc640a79c3917d0baee5bc8",
+    "files": [
+      "index.js",
+      "wordlists/spanish.json",
+      "wordlists/korean.json",
+      "wordlists/japanese.json",
+      "wordlists/italian.json",
+      "wordlists/french.json",
+      "wordlists/english.json",
+      "wordlists/chinese_traditional.json",
+      "wordlists/chinese_simplified.json"
+    ],
+    "deps": ["safe-buffer-5.2.0", "create-hash-1.2.0", "TODOOOO unorm 1.3.3", "TODOOOO pbkdf2 3.0.9", "randombytes-2.1.0"]
+  },
+
+  "pbkdf2-3.0.17": {
+    "version": "3.0.17",
+    "repository": "crypto-browserify/pbkdf2",
+    "commitHash": "a572cbc655a1cc626ae72ccf8bb29f25418d394e",
+    "files": [
+      "index.js",
+      "browser.js",
+      "bench/index.js",
+      "bench/old.js",
+      "lib/async.js",
+      "lib/default-encoding.js",
+      "lib/precondition.js",
+      "lib/sync-browser.js",
+      "lib/browser.js"
+    ],
+    "deps": ["create-hash-1.2.0", "create-hmac-1.1.4", "ripemd160-2.0.2", "safe-buffer-5.2.0", "sha.js-2.4.11"]
+  },
+  "create-hmac-1.1.4": {
+    "version": "1.14",
+    "repository": "crypto-browserify/createHmac",
+    "commitHash": "3c7dd3047b5ab3e3be44d802241d224f0c9e2325",
+    "files": ["browser.js", "index.js"],
+    "deps": ["create-hash-1.2.0", "inherits-2.0.4"]
+  },
+  "randombytes-2.1.0": {
+    "version": "2.1.0",
+    "repository": "crypto-browserify/randombytes",
+    "commitHash": "f18ded32b209f0d4c637608a11ae042ae96b4c2e",
+    "files": ["index.js", "browser.js"],
+    "deps": ["safe-buffer-5.2.0"]
+  },
+  "rlp-2.1.0": {
+    "TODOOOO": "not done",
+    "version": "2.1.0",
+    "repository": "ethereumjs/rlp",
+    "commitHash": "296857a1c1c20a93e1377d221dba0c782d7b65a4",
+    "files": ["bin/rlp", "index.js", "index.d.ts"],
+    "deps": ["TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", "safe-buffer-5.2.0", "assert"]
+  },
+
+  "utf8.js-3.0.0": {
+    "TODOOOOO": "not done",
+    "version": "3.0.0",
+    "repository": "mathiasbynens/utf8.js",
+    "commitHash": "2ce09544b62f2a274dbcd249473c0986e3660849",
+    "files": ["TODO!!!!!!!!!!!!!!!!", "utf8.js", "Gruntfile.js", "package.json"]
   }
 }
