@@ -15,8 +15,6 @@ import { UnsignedBitcoinTransaction } from './schemas/unsigned-transaction-bitco
 import { UnsignedTezosTransaction } from './schemas/unsigned-transaction-tezos'
 import { Serializer } from './serializer.new'
 
-const accountShareResponse = require('./schemas/account-share-response.json')
-
 export const assertNever: (x: never) => void = (x: never): void => undefined
 
 export type IACMessages =
@@ -63,7 +61,7 @@ export class Message {
       this.type = parseInt(x[0][1].toString(), 10)
       this.protocol = x[0][2].toString()
       console.log('a')
-      this.schema = unwrapSchema(accountShareResponse) // TODO: Select schema according to protocol
+      this.schema = unwrapSchema(Serializer.getSchema(this.type.toString(), this.protocol)) // TODO: Select schema according to protocol
       console.log('b')
       console.log('decoded message', this.version, this.type, this.protocol, x[0][3])
       this.data = rlpArrayToJson((this.schema as any).properties, x[0][3] as any)

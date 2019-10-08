@@ -40,9 +40,9 @@ const signTransactionRequest: IACMessageDefinition = {
 
 const messages = [accountShareMessage, signTransactionRequest]
 
-serializeAndDeserialize(messages, 0)
+// serializeAndDeserialize(messages, 0)
 
-serializeAndDeserialize(messages, 20)
+serializeAndDeserialize(messages, 1)
 
 // serializeAndDeserialize(accountShareMessage, 20)
 
