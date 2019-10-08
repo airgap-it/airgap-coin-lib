@@ -180,7 +180,7 @@
       "wordlists/chinese_traditional.json",
       "wordlists/chinese_simplified.json"
     ],
-    "deps": ["safe-buffer-5.2.0", "create-hash-1.2.0", "TODOOOO unorm 1.3.3", "TODOOOO pbkdf2 3.0.9", "randombytes-2.1.0"]
+    "deps": ["safe-buffer-5.2.0", "create-hash-1.2.0", "unorm-1.6.0", "pbkdf2-3.0.17", "randombytes-2.1.0"]
   },
 
   "pbkdf2-3.0.17": {
@@ -229,5 +229,11 @@
     "repository": "mathiasbynens/utf8.js",
     "commitHash": "2ce09544b62f2a274dbcd249473c0986e3660849",
     "files": ["TODO!!!!!!!!!!!!!!!!", "utf8.js", "Gruntfile.js", "package.json"]
+  },
+  "unorm-1.6.0": {
+    "version": "1.6.0",
+    "repository": "walling/unorm",
+    "commitHash": "26c36c3ce6cd66d3c5bf7867736cb1f2b49fe6b1",
+    "files": ["unorm.js"]
   }
 }

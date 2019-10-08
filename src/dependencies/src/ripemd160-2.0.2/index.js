@@ -1,5 +1,5 @@
 'use strict'
-var Buffer = require('../safe-buffer-5.2.0/index').Buffer
+var Buffer = require('buffer').Buffer
 var inherits = require('inherits')
 var HashBase = require('hash-base')
 
