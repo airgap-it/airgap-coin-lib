@@ -1,6 +1,6 @@
 import { BigNumber } from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 // var _ = require('underscore')
-// var BN = require('bn.js')
+// var BN = require('../../../dependencies/src/bn.js-4.11.8/bn')
 // var numberToBN = require('number-to-bn')
 var utf8 = require('../../../dependencies/src/utf8.js-3.0.0/utf8')
 var Hash = require('eth-lib/lib/hash')

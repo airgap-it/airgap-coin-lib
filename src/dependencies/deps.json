@@ -214,26 +214,30 @@
     "files": ["index.js", "browser.js"],
     "deps": ["safe-buffer-5.2.0"]
   },
-  "rlp-2.1.0": {
-    "TODOOOO": "not done",
-    "version": "2.1.0",
+  "rlp-2.2.3": {
+    "version": "2.2.3",
     "repository": "ethereumjs/rlp",
     "commitHash": "296857a1c1c20a93e1377d221dba0c782d7b65a4",
     "files": ["bin/rlp", "index.js", "index.d.ts"],
-    "deps": ["TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", "safe-buffer-5.2.0", "assert"]
+    "deps": ["safe-buffer-5.2.0", "bn.js-4.11.8"]
   },
 
   "utf8.js-3.0.0": {
-    "TODOOOOO": "not done",
     "version": "3.0.0",
     "repository": "mathiasbynens/utf8.js",
     "commitHash": "2ce09544b62f2a274dbcd249473c0986e3660849",
-    "files": ["TODO!!!!!!!!!!!!!!!!", "utf8.js", "Gruntfile.js", "package.json"]
+    "files": ["utf8.js", "Gruntfile.js", "package.json"]
   },
   "unorm-1.6.0": {
     "version": "1.6.0",
     "repository": "walling/unorm",
     "commitHash": "26c36c3ce6cd66d3c5bf7867736cb1f2b49fe6b1",
     "files": ["unorm.js"]
+  },
+  "bn.js-4.11.8": {
+    "version": "4.11.8",
+    "repository": "indutny/bn.js",
+    "commitHash": "c69b4ae8e789e10f7f91811cd4937949ff0d4768",
+    "files": ["bn.js"]
   }
 }
