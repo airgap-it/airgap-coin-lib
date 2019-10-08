@@ -1,4 +1,4 @@
-const BIP39 = require('bip39')
+const BIP39 = require('../../airgap-coin-lib/src/dependencies/src/bip39-2.5.0/index')
 const assert = require('assert')
 const networks = require('../dist/networks')
 
@@ -607,9 +607,7 @@ describe('List Transactions', function() {
         sinon
           .stub(axios, 'get')
           .withArgs(
-            `https://ropsten.trustwalletapp.com/transactions?address=${address}&contract=${
-              hopTokenProtocol.contractAddress
-            }&page=0&limit=20`
+            `https://ropsten.trustwalletapp.com/transactions?address=${address}&contract=${hopTokenProtocol.contractAddress}&page=0&limit=20`
           )
           .returns(Promise.resolve({ data: { docs: [] } }))
 
