@@ -1,9 +1,8 @@
 import { BigNumber } from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
-
 // var _ = require('underscore')
 // var BN = require('bn.js')
 // var numberToBN = require('number-to-bn')
-var utf8 = require('utf8')
+var utf8 = require('../../../dependencies/src/utf8.js-3.0.0/utf8')
 var Hash = require('eth-lib/lib/hash')
 
 // this code was adapted from web3.js (https://github.com/ethereum/web3.js/blob/2.x/packages/web3-utils/src/Utils.js)
@@ -37,7 +36,6 @@ export class EthereumUtils {
 
   private static SHA3_NULL_S = '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
   public static sha3(value: any): string | null {
-
     if (EthereumUtils.isHexStrict(value) && /^0x/i.test(value.toString())) {
       value = EthereumUtils.hexToBytes(value)
     }
