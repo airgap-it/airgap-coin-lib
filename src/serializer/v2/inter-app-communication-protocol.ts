@@ -85,7 +85,6 @@ export class IACProtocol {
     let globalType: string | undefined
     data.forEach(entry => {
       const decoded: Buffer[] = rlp.decode(bs58check.decode(entry)) as any // Will be fixed with new rlp version
-      console.log('decoded', decoded)
       const version: string = decoded[0].toString()
       const type: string = decoded[1].toString()
 
@@ -115,11 +114,11 @@ export class IACProtocol {
       const arr = chunked.sort((a, b) => a.currentPage - b.currentPage).map(chunk => chunk.buffer)
       console.log('arr', arr)
 
-      finalPayload = rlp.decode(Buffer.concat(arr as any) as any) as any
+      finalPayload = new FullPayload(PayloadType.ENCODED, rlp.decode(Buffer.concat(arr as any) as any) as any)
     }
 
-    console.log(finalPayload)
+    console.log('finalPayload', finalPayload)
 
-    return []
+    return [new IACProtocol(PayloadType.DECODED, finalPayload)]
   }
 }

@@ -13,7 +13,7 @@ const serializeAndDeserialize = (messages: IACMessageDefinition[], size: number)
 
   const reconstructed = serializer2.deserialize(result)
 
-  console.log('reconstructed', reconstructed)
+  console.log('reconstructed', reconstructed.map(el => JSON.stringify(el)))
 }
 
 const accountShareMessage: IACMessageDefinition = {
@@ -31,7 +31,7 @@ const signTransactionRequest: IACMessageDefinition = {
   data: {
     transaction: {
       networkId: 'main',
-      transaction: 'string'
+      transaction: 'txstring'
     },
     publicKey: '1',
     callback: '2'

@@ -37,45 +37,43 @@ export interface IACMessageDefinition {
 }
 
 export class Message {
-  private version: string = '0'
+  private version: string = '0' // TODO: Version depending on the message type
   public type: number
   private schema: Object
   private protocol: string
   private data: any
 
-  constructor(type: PayloadType, object: Buffer | { messageType: number; protocol?: string; data: any }) {
+  constructor(type: PayloadType, object: Buffer[] | { messageType: number; protocol?: string; data: any }) {
     if (type === PayloadType.DECODED) {
       const x = object as { messageType: number; protocol: string; data: any }
       this.type = x.messageType
-      if (x.protocol) {
-        this.schema = Serializer.getSchema(x.messageType.toString(), x.protocol)
-      } else {
-        this.schema = Serializer.getSchema(x.messageType.toString())
-      }
+      this.schema = Serializer.getSchema(x.messageType.toString(), x.protocol)
       this.protocol = x.protocol
       this.data = x.data
     } else if (type === PayloadType.ENCODED) {
-      const x = object as Buffer
-      console.log('messageType', x[0])
-      this.version = x[0][0].toString()
-      this.type = parseInt(x[0][1].toString(), 10)
-      this.protocol = x[0][2].toString()
-      console.log('a')
-      this.schema = unwrapSchema(Serializer.getSchema(this.type.toString(), this.protocol)) // TODO: Select schema according to protocol
-      console.log('b')
-      console.log('decoded message', this.version, this.type, this.protocol, x[0][3])
-      this.data = rlpArrayToJson((this.schema as any).properties, x[0][3] as any)
+      const x = object as Buffer[]
+      this.version = x[0].toString()
+      this.type = parseInt(x[1].toString(), 10)
+      this.protocol = x[2].toString()
+      this.schema = unwrapSchema(Serializer.getSchema(this.type.toString(), this.protocol))
+      this.data = rlpArrayToJson((this.schema as any).properties, x[3] as any)
     } else {
       assertNever(type)
       throw new Error('UNKNOWN PAYLOAD TYPE')
     }
   }
 
-  public asArray(): string[] {
-    console.log('c', this.schema)
-    const array = jsonToArray('root', unwrapSchema(this.schema), this.data)
-    console.log(array)
+  public asJson(): IACMessageDefinition {
+    return {
+      type: this.type,
+      protocol: (this.protocol as 'btc' | 'eth' | 'xtz' | 'ae' | 'grs'),
+      data: this.data
+    }
+  }
 
-    return [this.version /* TODO Set value */, this.type.toString(), this.protocol, array]
+  public asArray(): string[] {
+    const array = jsonToArray('root', unwrapSchema(this.schema), this.data)
+
+    return [this.version, this.type.toString(), this.protocol, array]
   }
 }

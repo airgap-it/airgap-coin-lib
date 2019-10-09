@@ -14,9 +14,10 @@ export class FullPayload implements Payload {
 
   constructor(type: PayloadType, object: PayloadTypeReturnType[PayloadType]) {
     if (type === PayloadType.DECODED) {
-      this.messages = object as any
+      this.messages = object as IACMessageDefinition[]
     } else if (type === PayloadType.ENCODED) {
-      this.messages = object as any
+
+      this.messages = (object as Buffer[]).map(buffer => new Message(PayloadType.ENCODED, buffer as any as Buffer[]).asJson())
     } else {
       assertNever(type)
       throw new Error('UNKNOWN PAYLOAD TYPE')
@@ -28,8 +29,6 @@ export class FullPayload implements Payload {
   }
 
   public asArray(): any {
-    console.log('messages', this.messages)
-
     return this.messages.map(message =>
       new Message(PayloadType.DECODED, {
         messageType: message.type,

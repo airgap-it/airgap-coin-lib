@@ -1,5 +1,12 @@
 import * as rlp from 'rlp'
 
+function log(...args) {
+  const loggingEnabled = false
+  if (loggingEnabled) {
+    console.log(args)
+  }
+}
+
 enum SchemaTypes {
   STRING = 'string',
   NUMBER = 'number',
@@ -13,7 +20,7 @@ enum SchemaTypes {
 const assertNever: (x: never) => void = (x: never): void => undefined
 
 export function unwrapSchema(schema: Object): any {
-  console.log('UNWRAPPING SCHEMA', schema)
+  log('UNWRAPPING SCHEMA', schema)
   const definitions: Object = (schema as any).definitions
   const definitionKeys: string[] = Object.keys(definitions)
   if (definitionKeys.length !== 1) {
@@ -40,11 +47,11 @@ function checkType<T>(key: string, expectedType: string, value: unknown, callbac
 export function jsonToRlp(schema: Object, json: Object): Buffer {
   const array = jsonToArray('root', schema, json)
 
-  console.log('BEFORE RLP', array)
+  log('BEFORE RLP', array)
 
   const rlpEncoded: Buffer = rlp.encode(array) as any // TODO: As any can be removed with new RLP version
 
-  console.log('RLP', rlpEncoded)
+  log('RLP', rlpEncoded)
 
   return rlpEncoded
 }
@@ -58,7 +65,7 @@ export function jsonToArray(key: string, schema: Object, value: Object): string 
         'string',
         value,
         (arg: string): string => {
-          console.log(`Parsing key ${key} as string, which results in ${arg}`)
+          log(`Parsing key ${key} as string, which results in ${arg}`)
           return arg
         }
       )
@@ -70,7 +77,7 @@ export function jsonToArray(key: string, schema: Object, value: Object): string 
         'number',
         value,
         (arg: number): string => {
-          console.log(`Parsing key ${key} as number, which results in ${arg.toString()}`)
+          log(`Parsing key ${key} as number, which results in ${arg.toString()}`)
           return arg.toString()
         }
       )
@@ -81,14 +88,14 @@ export function jsonToArray(key: string, schema: Object, value: Object): string 
         'boolean',
         value,
         (arg: boolean): string => {
-          console.log(`Parsing key ${key} as boolean, which results in ${arg ? '1' : '0'}`)
+          log(`Parsing key ${key} as boolean, which results in ${arg ? '1' : '0'}`)
           return arg ? '1' : '0'
         }
       )
 
     case SchemaTypes.NULL:
       if (typeof value === 'undefined') {
-        console.log(`Parsing key ${key} as undefined, which results in ''`)
+        log(`Parsing key ${key} as undefined, which results in ''`)
         return ''
       } else {
         throw typeError(key, 'undefined', value)
@@ -109,7 +116,7 @@ export function jsonToArray(key: string, schema: Object, value: Object): string 
           out.push(jsonToArray(propertyKey, properties[propertyKey], arg[propertyKey]))
         }
 
-        console.log(`Parsing key ${key} as object, which results in ${out}`)
+        log(`Parsing key ${key} as object, which results in ${out}`)
         return out
       })
 
@@ -151,7 +158,7 @@ export function rlpArrayToJson(schema: Object, decoded: any[]): any {
   const outObject = {}
 
   const keys: string[] = Object.keys(schema).sort()
-  console.log(keys)
+  log(keys)
   let i: number = -1 // TODO: Find better way to do this
   for (const key of keys) {
     i++

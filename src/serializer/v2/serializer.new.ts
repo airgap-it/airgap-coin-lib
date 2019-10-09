@@ -1,6 +1,7 @@
 import { IACProtocol } from './inter-app-communication-protocol'
 import { IACMessageType } from './interfaces'
 import { IACMessageDefinition } from './message'
+import { FullPayload } from './full-payload'
 
 // const accountShareRequest = require('./schemas/account-share-request.json')
 const accountShareResponse = require('./schemas/account-share-response.json')
@@ -60,10 +61,10 @@ export class Serializer {
     }
   }
 
-  public deserialize(data: string[]): IACMessageType {
-    console.log(IACProtocol.createFromEncoded(data))
+  public deserialize(data: string[]): any[] {
+    const result = IACProtocol.createFromEncoded(data)
 
-    return 1
+    return result.map(el => el.payload).map(el => (el as FullPayload).asJson())
   }
 }
 

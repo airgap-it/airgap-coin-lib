@@ -4,5 +4,5 @@ export enum PayloadType {
 }
 
 export interface Payload {
-  asArray(): string[]
+  asArray(): (string | Buffer)[]
 }
