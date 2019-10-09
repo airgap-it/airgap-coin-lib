@@ -32,16 +32,17 @@ export type IACMessages =
 
 export interface IACMessageDefinition {
   type: IACMessageType
-  protocol?: 'btc' | 'eth' | 'xtz' | 'ae' | 'grs'
+  protocol?: string
   data: IACMessages
 }
 
-export class Message {
-  private version: string = '0' // TODO: Version depending on the message type
-  public type: number
-  private schema: Object
-  private protocol: string
-  private data: any
+export class Message implements IACMessageDefinition {
+  private readonly version: string = '0' // TODO: Version depending on the message type
+  private readonly schema: Object
+
+  public readonly type: number
+  public readonly protocol: string
+  public readonly data: any
 
   constructor(type: PayloadType, object: Buffer[] | { messageType: number; protocol?: string; data: any }) {
     if (type === PayloadType.DECODED) {
@@ -66,7 +67,7 @@ export class Message {
   public asJson(): IACMessageDefinition {
     return {
       type: this.type,
-      protocol: (this.protocol as 'btc' | 'eth' | 'xtz' | 'ae' | 'grs'),
+      protocol: this.protocol,
       data: this.data
     }
   }

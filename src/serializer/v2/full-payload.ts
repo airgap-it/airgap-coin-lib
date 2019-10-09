@@ -16,7 +16,6 @@ export class FullPayload implements Payload {
     if (type === PayloadType.DECODED) {
       this.messages = object as IACMessageDefinition[]
     } else if (type === PayloadType.ENCODED) {
-
       this.messages = (object as Buffer[]).map(buffer => new Message(PayloadType.ENCODED, buffer as any as Buffer[]).asJson())
     } else {
       assertNever(type)
@@ -24,11 +23,11 @@ export class FullPayload implements Payload {
     }
   }
 
-  public asJson(): Object {
+  public asJson(): IACMessageDefinition[] {
     return this.messages
   }
 
-  public asArray(): any {
+  public asArray(): any[] /* TODO: Fix type */ {
     return this.messages.map(message =>
       new Message(PayloadType.DECODED, {
         messageType: message.type,

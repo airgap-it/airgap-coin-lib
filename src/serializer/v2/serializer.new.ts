@@ -61,10 +61,13 @@ export class Serializer {
     }
   }
 
-  public deserialize(data: string[]): any[] {
+  public deserialize(data: string[]): IACMessageDefinition[] /* TODO: Array of messages */ { 
     const result = IACProtocol.createFromEncoded(data)
 
-    return result.map(el => el.payload).map(el => (el as FullPayload).asJson())
+    return result
+    .map(el => el.payload)
+    .map(el => (el as FullPayload).asJson())
+    .reduce((pv: IACMessageDefinition[], cv: IACMessageDefinition[]) => pv.concat(...cv), [] as IACMessageDefinition[])
   }
 }
 
