@@ -32,7 +32,6 @@ export interface DelegationRewardInfo {
 
 export interface DelegationInfo {
   isDelegated: boolean
-  setable: boolean
   value?: string
   delegatedOpLevel?: number
   delegatedDate?: Date
@@ -199,7 +198,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     let delegatedDate: Date | undefined
 
     // if the address is delegated, check since when
-    if (data.delegate.value) {
+    if (data.balance) {
       const getDataFromMostRecentTransaction: (transactions) => { date: Date; opLevel: number } | void = (
         transactions
       ): { date: Date; opLevel: number } | void => {
@@ -236,9 +235,8 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     }
 
     return {
-      isDelegated: data.delegate.value ? true : false,
-      setable: data.delegate.setable,
-      value: data.delegate.value,
+      isDelegated: data.balance ? true : false,
+      value: data.balance,
       delegatedDate,
       delegatedOpLevel
     }
