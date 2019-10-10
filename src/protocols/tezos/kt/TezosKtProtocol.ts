@@ -194,7 +194,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     let delegatedDate: Date | undefined
 
     // if the address is delegated, check since when
-    if (data.balance) {
+    if (data.delegate) {
       const getDataFromMostRecentTransaction: (transactions) => { date: Date; opLevel: number } | void = (
         transactions
       ): { date: Date; opLevel: number } | void => {
@@ -231,8 +231,8 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     }
 
     return {
-      isDelegated: data.balance ? true : false,
-      value: data.balance,
+      isDelegated: data.delegate ? true : false,
+      value: data.delegate,
       delegatedDate,
       delegatedOpLevel
     }
