@@ -1,7 +1,8 @@
+import { FullPayload } from './full-payload'
 import { IACProtocol } from './inter-app-communication-protocol'
 import { IACMessageType } from './interfaces'
 import { IACMessageDefinition } from './message'
-import { FullPayload } from './full-payload'
+import { Schema } from './schemas/schema'
 
 // const accountShareRequest = require('./schemas/account-share-request.json')
 const accountShareResponse = require('./schemas/account-share-response.json')
@@ -25,49 +26,55 @@ export enum IACPayloadType {
 }
 
 export class Serializer {
-  private static readonly schemas: Map<string, any> = new Map()
+  private static readonly schemas: Map<string, Schema> = new Map()
 
   constructor() {}
 
-  public static addSchema(schemaName: string, schema: any, protocol: string = ''): void {
-    const protocolSpecificSchemaName: string = `${schemaName}-${protocol}`
+  public static addSchema(schemaName: string, schema: Schema, protocol?: string): void {
+    const protocolSpecificSchemaName: string = Serializer.getSchemName(schemaName, protocol)
+
     if (this.schemas.has(protocolSpecificSchemaName)) {
       throw new Error(`Schema ${protocolSpecificSchemaName} already exists`)
     }
     this.schemas.set(protocolSpecificSchemaName, schema)
   }
 
-  public static getSchema(schemaName: string, protocol: string = ''): any {
-    const protocolSpecificSchemaName: string = `${schemaName}-${protocol}`
+  public static getSchema(schemaName: string, protocol?: string): Schema {
+    const protocolSpecificSchemaName: string = Serializer.getSchemName(schemaName, protocol)
 
-    return this.schemas.get(protocolSpecificSchemaName)
+    const schema = this.schemas.get(protocolSpecificSchemaName)
+
+    if (!schema) {
+      throw new Error(`Schema ${protocolSpecificSchemaName} does not exist`)
+    }
+
+    return schema
+  }
+
+  private static getSchemName(schemaName: string, protocol?: string) {
+    return protocol ? `${schemaName}-${protocol}` : schemaName
   }
 
   public serialize(messages: IACMessageDefinition[], chunkSize: number = 0): string[] {
     if (
       messages.every(message => {
-        if (message.protocol) {
-          return Serializer.getSchema(message.type.toString(), message.protocol)
-        } else {
-          return Serializer.getSchema(message.type.toString())
-        }
+        return Serializer.getSchema(message.type.toString(), message.protocol)
       })
     ) {
       const iacps = IACProtocol.create(messages, chunkSize)
-      console.log('iacps', iacps)
       return iacps.map(iac => iac.encoded())
     } else {
       throw Error('Unknown schema')
     }
   }
 
-  public deserialize(data: string[]): IACMessageDefinition[] /* TODO: Array of messages */ { 
+  public deserialize(data: string[]): IACMessageDefinition[] {
     const result = IACProtocol.createFromEncoded(data)
 
     return result
-    .map(el => el.payload)
-    .map(el => (el as FullPayload).asJson())
-    .reduce((pv: IACMessageDefinition[], cv: IACMessageDefinition[]) => pv.concat(...cv), [] as IACMessageDefinition[])
+      .map(el => el.payload)
+      .map(el => (el as FullPayload).asJson())
+      .reduce((pv: IACMessageDefinition[], cv: IACMessageDefinition[]) => pv.concat(...cv), [] as IACMessageDefinition[])
   }
 }
 
@@ -80,12 +87,15 @@ Serializer.addSchema(IACMessageType.AccountShareResponse.toString(), accountShar
 Serializer.addSchema(IACMessageType.MessageSignRequest.toString(), messageSignRequest)
 Serializer.addSchema(IACMessageType.MessageSignResponse.toString(), messageSignResponse)
 
+// TODO: Make sure that we have a schema for every protocol we support
 Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), unsignedTransactionAeternity, 'ae')
 Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), unsignedTransactionBitcoin, 'btc')
+Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), unsignedTransactionBitcoin, 'grs')
 Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), unsignedTransactionEthereum, 'eth')
 Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), unsignedTransactionTezos, 'xtz')
 
 Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), signedTransactionAeternity, 'ae')
 Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), signedTransactionBitcoin, 'btc')
+Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), signedTransactionBitcoin, 'grs')
 Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), signedTransactionEthereum, 'eth')
 Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), signedTransactionTezos, 'xtz')

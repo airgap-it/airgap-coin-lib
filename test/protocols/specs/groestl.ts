@@ -1,6 +1,7 @@
 import BigNumber from 'bignumber.js'
 
-import { DeserializedSyncProtocol, GroestlcoinProtocol, SignedTransaction } from '../../../src'
+import { GroestlcoinProtocol, SignedTransaction } from '../../../src'
+import { IACMessageDefinition } from '../../../src/serializer/v2/message'
 import { TestProtocolSpec } from '../implementations'
 import { GroestlcoinProtocolStub } from '../stubs/groestlcoin.stub'
 
@@ -72,12 +73,13 @@ export class GroestlcoinProtocolSpec extends TestProtocolSpec {
     }
   ]
 
-  public signedTransaction(tx: any): DeserializedSyncProtocol {
-    const protocol: DeserializedSyncProtocol = super.signedTransaction(tx)
-    const payload = protocol.payload as SignedTransaction
+  public signedTransaction(tx: any): IACMessageDefinition[] {
+    const protocol: IACMessageDefinition[] = super.signedTransaction(tx)
+    const payload = protocol[0].data as SignedTransaction
     payload.amount = this.txs[0].amount
     payload.fee = this.txs[0].fee
     payload.from = this.wallet.addresses
+
     return protocol
   }
 }

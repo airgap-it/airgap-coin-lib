@@ -1,11 +1,13 @@
-import { BitcoinTransactionValidator } from './../../../src/serializer/unsigned-transactions/bitcoin-transactions.validator'
 import BigNumber from 'bignumber.js'
 
-import { BitcoinProtocol, DeserializedSyncProtocol, SignedTransaction } from '../../../src'
-import { TestProtocolSpec } from '../implementations'
-import { BitcoinProtocolStub } from '../stubs/bitcoin.stub'
+import { BitcoinProtocol, SignedTransaction } from '../../../src'
 import { SignedBitcoinTransaction } from '../../../src/serializer/signed-transactions/bitcoin-transactions.serializer'
 import { RawBitcoinTransaction } from '../../../src/serializer/unsigned-transactions/bitcoin-transactions.serializer'
+import { IACMessageDefinition } from '../../../src/serializer/v2/message'
+import { TestProtocolSpec } from '../implementations'
+import { BitcoinProtocolStub } from '../stubs/bitcoin.stub'
+
+import { BitcoinTransactionValidator } from './../../../src/serializer/unsigned-transactions/bitcoin-transactions.validator'
 
 export class BitcoinProtocolSpec extends TestProtocolSpec {
   public name = 'Bitcoin'
@@ -61,7 +63,7 @@ export class BitcoinProtocolSpec extends TestProtocolSpec {
       signedTx: `01000000027bcda7b76bc47ab562a79cb36198cefe364b66cf913426b7932e84120822108a000000006a47304402202a449911bc9c0deb77fc326fed98bd10d0d70a650bbb7e20964dfaac5ae7ca07022020c2af3ce6a6f2686f72e4fbf0ee582a14e5344d9825aec445d341931dae65d601210311a202c95426b8aafdd7b482e53a363935eb6491b8bcd8991f16abc810f68868ffffffff9d035485adbb78236f53e79bc02ff8785a3312bd3b65f94ba022d9b632b869cc000000006b483045022100f515e7d18601cf1fe263d872ead795ddf5d019c11dab0ad63d737a724bc0d82402204fdaf34ed9d2f7eb765177261b7370063a35385f2a95d685d97e9951dc6ce6b0012102f5ec5458a1d3ce47e87e606df057e6efdfa4c3190b492b115418376865682cacffffffff020a000000000000001976a9142dc610f6d5bfca59507d0dddb986eacfe5c3ed8b88ac3543ee01000000001976a91450bed24b350241ac16f72144cfa4849138013aed88ac00000000`
     }
   ]
-  public validRawTransactions: Array<RawBitcoinTransaction> = [
+  public validRawTransactions: RawBitcoinTransaction[] = [
     {
       ins: [
         {
@@ -750,7 +752,7 @@ export class BitcoinProtocolSpec extends TestProtocolSpec {
     }
   ]
 
-  public validSignedTransactions: Array<SignedBitcoinTransaction> = [
+  public validSignedTransactions: SignedBitcoinTransaction[] = [
     {
       from: ['3E35SFZkfLMGo4qX5aVs1bBDSnAuGgBH33', '385cR5DM96n1HvBDMzLHPYcw89fZAXULJP'],
       amount: new BigNumber('1008'),
@@ -802,12 +804,13 @@ export class BitcoinProtocolSpec extends TestProtocolSpec {
   ]
   public validator = new BitcoinTransactionValidator()
 
-  public signedTransaction(tx: any): DeserializedSyncProtocol {
-    const protocol: DeserializedSyncProtocol = super.signedTransaction(tx)
-    const payload = protocol.payload as SignedTransaction
+  public signedTransaction(tx: any): IACMessageDefinition[] {
+    const protocol: IACMessageDefinition[] = super.signedTransaction(tx)
+    const payload = protocol[0].data as SignedTransaction
     payload.amount = this.txs[0].amount
     payload.fee = this.txs[0].fee
     payload.from = this.wallet.addresses
+
     return protocol
   }
 }

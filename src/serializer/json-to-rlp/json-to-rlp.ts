@@ -1,5 +1,7 @@
 import * as rlp from 'rlp'
 
+import { Schema } from '../v2/schemas/schema'
+
 function log(...args) {
   const loggingEnabled = false
   if (loggingEnabled) {
@@ -19,7 +21,7 @@ enum SchemaTypes {
 
 const assertNever: (x: never) => void = (x: never): void => undefined
 
-export function unwrapSchema(schema: Object): any {
+export function unwrapSchema(schema: Schema): any {
   log('UNWRAPPING SCHEMA', schema)
   const definitions: Object = (schema as any).definitions
   const definitionKeys: string[] = Object.keys(definitions)
@@ -66,6 +68,7 @@ export function jsonToArray(key: string, schema: Object, value: Object): string 
         value,
         (arg: string): string => {
           log(`Parsing key ${key} as string, which results in ${arg}`)
+
           return arg
         }
       )
@@ -78,6 +81,7 @@ export function jsonToArray(key: string, schema: Object, value: Object): string 
         value,
         (arg: number): string => {
           log(`Parsing key ${key} as number, which results in ${arg.toString()}`)
+
           return arg.toString()
         }
       )
@@ -89,6 +93,7 @@ export function jsonToArray(key: string, schema: Object, value: Object): string 
         value,
         (arg: boolean): string => {
           log(`Parsing key ${key} as boolean, which results in ${arg ? '1' : '0'}`)
+
           return arg ? '1' : '0'
         }
       )
@@ -96,6 +101,7 @@ export function jsonToArray(key: string, schema: Object, value: Object): string 
     case SchemaTypes.NULL:
       if (typeof value === 'undefined') {
         log(`Parsing key ${key} as undefined, which results in ''`)
+
         return ''
       } else {
         throw typeError(key, 'undefined', value)
@@ -117,6 +123,7 @@ export function jsonToArray(key: string, schema: Object, value: Object): string 
         }
 
         log(`Parsing key ${key} as object, which results in ${out}`)
+
         return out
       })
 
@@ -159,9 +166,8 @@ export function rlpArrayToJson(schema: Object, decoded: any[]): any {
 
   const keys: string[] = Object.keys(schema).sort()
   log(keys)
-  let i: number = -1 // TODO: Find better way to do this
-  for (const key of keys) {
-    i++
+  for (let i: number = 0; i < keys.length; i++) {
+    const key: string = keys[i]
     const type: SchemaTypes = schema[key].type
     switch (type) {
       case SchemaTypes.BOOLEAN:
