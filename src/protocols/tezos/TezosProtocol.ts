@@ -125,7 +125,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   public addressValidationPattern: string = '^(tz1|KT1)[1-9A-Za-z]{33}$'
   public addressPlaceholder: string = 'tz1...'
 
-  public blockExplorer: string = 'https://tzscan.io'
+  public blockExplorer: string = 'https://tezblock.io'
 
   protected readonly transactionFee: BigNumber = new BigNumber('1400')
   protected readonly originationSize: BigNumber = new BigNumber('257')
@@ -167,11 +167,11 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   }
 
   public getBlockExplorerLinkForAddress(address: string): string {
-    return `${this.blockExplorer}/{{address}}`.replace('{{address}}', address)
+    return `${this.blockExplorer}/account/{{address}}`.replace('{{address}}', address)
   }
 
   public getBlockExplorerLinkForTxId(txId: string): string {
-    return `${this.blockExplorer}/{{txId}}`.replace('{{txId}}', txId)
+    return `${this.blockExplorer}/transaction/{{txId}}`.replace('{{txId}}', txId)
   }
 
   /**
@@ -346,7 +346,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         balance = balance.plus(new BigNumber(data))
       } catch (error) {
         // if node returns 404 (which means 'no account found'), go with 0 balance
-        if (error.response.status !== 404) {
+        if (error.response && error.response.status !== 404) {
           throw error
         }
       }
@@ -445,98 +445,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     }
 
     operations.push(spendOperation)
-
-    try {
-      const tezosWrappedOperation: TezosWrappedOperation = {
-        branch,
-        contents: operations
-      }
-
-      const binaryTx: string = this.forgeTezosOperation(tezosWrappedOperation)
-
-      return { binaryTransaction: binaryTx }
-    } catch (error) {
-      console.warn(error.message)
-      throw new Error('Forging Tezos TX failed.')
-    }
-  }
-
-  /**
-   * If the delegate is set and amount is not set, the whole balance will be sent to the KT address.
-   *
-   * @param publicKey Public key of tezos account
-   * @param delegate The address of the account where you want to delegate the newly originated KT address
-   * @param amount The amount of tezzies to be transferred to the newly originated KT address
-   */
-  public async originate(publicKey: string, delegate?: string, amount?: BigNumber): Promise<RawTezosTransaction> {
-    let counter: BigNumber = new BigNumber(1)
-    let branch: string
-
-    const operations: TezosOperation[] = []
-    const address: string = await this.getAddressFromPublicKey(publicKey)
-
-    try {
-      const results = await Promise.all([
-        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/counter`),
-        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/hash`),
-        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/manager_key`)
-      ])
-
-      counter = new BigNumber(results[0].data).plus(1)
-      branch = results[1].data
-
-      const accountManager: string = results[2].data
-
-      // check if we have revealed the key already
-      if (!accountManager) {
-        operations.push(await this.createRevealOperation(counter, publicKey, address))
-        counter = counter.plus(1)
-      }
-    } catch (error) {
-      throw error
-    }
-
-    const balance: BigNumber = await this.getBalanceOfAddresses([address])
-
-    const amountUsedByPreviousOperations: BigNumber = this.getAmountUsedByPreviousOperations(operations)
-
-    const combinedAmountsAndFees: BigNumber = this.transactionFee
-      .plus(amountUsedByPreviousOperations)
-      .plus(this.originationBurn)
-      .plus(1)
-
-    let balanceToSend: BigNumber = new BigNumber(0)
-
-    if (delegate) {
-      balanceToSend = balance // If delegate is set, by default we send the whole balance
-    }
-
-    if (amount && amount.isLessThan(balance)) {
-      balanceToSend = amount // If amount is set and valid, we override
-    }
-
-    const maxAmount: BigNumber = balance.minus(combinedAmountsAndFees)
-
-    balanceToSend = BigNumber.min(balanceToSend, maxAmount)
-
-    if (balance.isLessThan(balanceToSend.plus(combinedAmountsAndFees))) {
-      throw new Error('not enough balance')
-    }
-
-    // Taken from https://blog.nomadic-labs.com/babylon-update-instructions-for-delegation-wallet-developers.html#transfer-from-a-managertz-smart-contract-to-an-implicit-tz-account
-
-    const originationOperation: TezosOriginationOperation = {
-      kind: TezosOperationType.ORIGINATION,
-      source: address,
-      fee: new BigNumber(2053).toFixed(),
-      counter: counter.toFixed(),
-      gas_limit: new BigNumber(15678).toFixed(), // taken from eztz
-      storage_limit: new BigNumber(509).toFixed(),
-      balance: balanceToSend.toFixed(),
-      delegate
-    }
-
-    operations.push(originationOperation)
 
     try {
       const tezosWrappedOperation: TezosWrappedOperation = {

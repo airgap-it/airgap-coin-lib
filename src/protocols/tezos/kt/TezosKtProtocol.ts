@@ -63,10 +63,6 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     return ktAddresses.reverse()
   }
 
-  public async originate(publicKey: string, delegate?: string, amount?: BigNumber): Promise<RawTezosTransaction> {
-    throw new Error('Originate operation not supported for KT Addresses')
-  }
-
   public async delegate(publicKey: string, delegate?: string): Promise<RawTezosTransaction> {
     throw new Error('Delegate operation not supported for KT Addresses')
   }
@@ -198,7 +194,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     let delegatedDate: Date | undefined
 
     // if the address is delegated, check since when
-    if (data.balance) {
+    if (data.delegate) {
       const getDataFromMostRecentTransaction: (transactions) => { date: Date; opLevel: number } | void = (
         transactions
       ): { date: Date; opLevel: number } | void => {
@@ -235,8 +231,8 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     }
 
     return {
-      isDelegated: data.balance ? true : false,
-      value: data.balance,
+      isDelegated: data.delegate ? true : false,
+      value: data.delegate,
       delegatedDate,
       delegatedOpLevel
     }

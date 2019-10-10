@@ -7,7 +7,7 @@ export enum ActionState {
 
 class StateMachine<S> {
   private state: S
-  private readonly validTransitions: Map<S, S[]>
+  private validTransitions: Map<S, S[]>
 
   constructor(initialState: S, validTransitions: Map<S, S[]>) {
     this.state = initialState
@@ -26,9 +26,19 @@ class StateMachine<S> {
     return this.state
   }
 
+  addValidStateTransition(from: S, to: S) {
+    const states = this.validTransitions.get(to)
+    if (states !== undefined && states.indexOf(from) === -1) {
+      states.push(from)
+      this.validTransitions.set(to, states)
+    } else {
+      this.validTransitions.set(to, [from])
+    }
+  }
+
   private canTransitionTo(state: S): boolean {
     const states = this.validTransitions.get(state)
-    if (states) {
+    if (states !== undefined) {
       return states.indexOf(this.state) != -1
     }
     return false
@@ -60,7 +70,7 @@ export abstract class Action<Result, Context> {
     this.context = context
   }
 
-  public readonly getState: () => Promise<ActionState> = async () => {
+  public getState(): ActionState {
     return this.stateMachine.getState()
   }
 
@@ -82,6 +92,10 @@ export abstract class Action<Result, Context> {
   }
 
   protected abstract async perform(): Promise<Result>
+
+  protected addValidTransition(from: ActionState, to: ActionState) {
+    this.stateMachine.addValidStateTransition(from, to)
+  }
 
   private handleSuccess(result: Result) {
     this.result = result
@@ -137,5 +151,43 @@ export class LinkedAction<Result, Context> extends Action<Result, void> {
     this.linkedAction = new this.linkedActionType(this.action.result!)
     await this.linkedAction.start()
     return this.linkedAction.result!
+  }
+
+  public cancel() {
+    if (this.action.getState() === ActionState.EXECUTING) {
+      this.action.cancel()
+    } else if (this.linkedAction !== undefined && this.linkedAction.getState() === ActionState.EXECUTING) {
+      this.linkedAction.cancel()
+    }
+    super.cancel()
+  }
+}
+
+export class RepeatableAction<Result, InnerContext, Context> extends Action<Result, Context> {
+  private actionFactory: () => Action<Result, InnerContext>
+  private innerAction?: Action<Result, InnerContext>
+
+  public constructor(context: Context, actionFactory: () => Action<Result, InnerContext>) {
+    super(context)
+    this.actionFactory = actionFactory
+    this.addValidTransition(ActionState.EXECUTING, ActionState.EXECUTING)
+    this.addValidTransition(ActionState.COMPLETED, ActionState.EXECUTING)
+    this.addValidTransition(ActionState.CANCELLED, ActionState.EXECUTING)
+  }
+
+  protected async perform(): Promise<Result> {
+    if (this.innerAction !== undefined && this.innerAction.getState() === ActionState.EXECUTING) {
+      this.innerAction.cancel()
+    }
+    this.innerAction = this.actionFactory()
+    await this.innerAction.start()
+    return this.innerAction.result!
+  }
+
+  public cancel() {
+    if (this.innerAction !== undefined && this.innerAction.getState() === ActionState.EXECUTING) {
+      this.innerAction.cancel()
+    }
+    super.cancel()
   }
 }

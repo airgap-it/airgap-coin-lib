@@ -169,31 +169,30 @@ export class GenericERC20 extends BaseEthereumProtocol implements ICoinSubProtoc
       for (const address of addresses) {
         promises.push(
           new Promise((resolve, reject) => {
-            const page = Math.ceil(offset / limit)
+            const page = this.getPageNumber(limit, offset)
             axios
               .get(
-                `${this.infoAPI}transactions?address=${address}&contract=${this.tokenContract.options.address}&page=${page}&limit=${limit}`
+                `${this.infoAPI}/api?module=account&action=tokentx&address=${address}&contractAddress=${
+                  this.tokenContract.options.address
+                }&page=${page}&offset=${limit}&sort=desc`
               )
               .then(response => {
                 const transactionResponse = response.data
-                for (const transaction of transactionResponse.docs) {
-                  if (transaction.operations.length >= 1) {
-                    const transactionPayload = transaction.operations[0]
-                    const fee = new BigNumber(transaction.gasUsed).times(new BigNumber(transaction.gasPrice))
-                    const airGapTransaction: IAirGapTransaction = {
-                      hash: transaction.id,
-                      from: [transactionPayload.from],
-                      to: [transactionPayload.to],
-                      isInbound: transactionPayload.to.toLowerCase() === address.toLowerCase(),
-                      blockHeight: transaction.blockNumber,
-                      protocolIdentifier: this.identifier,
-                      amount: new BigNumber(transactionPayload.value),
-                      fee,
-                      timestamp: parseInt(transaction.timeStamp, 10)
-                    }
-
-                    airGapTransactions.push(airGapTransaction)
+                for (const transaction of transactionResponse.result) {
+                  const fee = new BigNumber(transaction.gas).times(new BigNumber(transaction.gasPrice))
+                  const airGapTransaction: IAirGapTransaction = {
+                    hash: transaction.hash,
+                    from: [transaction.from],
+                    to: [transaction.to],
+                    isInbound: transaction.to.toLowerCase() === address.toLowerCase(),
+                    blockHeight: transaction.blockNumber,
+                    protocolIdentifier: this.identifier,
+                    amount: new BigNumber(transaction.value),
+                    fee,
+                    timestamp: parseInt(transaction.timeStamp, 10)
                   }
+
+                  airGapTransactions.push(airGapTransaction)
                 }
 
                 resolve(airGapTransactions)
