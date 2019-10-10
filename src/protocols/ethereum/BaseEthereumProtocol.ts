@@ -65,11 +65,7 @@ export abstract class BaseEthereumProtocol implements ICoinProtocol {
     return getSubProtocolsByIdentifier(this.identifier)
   }
 
-  constructor(
-    public jsonRPCAPI = 'https://eth-rpc-proxy.airgap.prod.gke.papers.tech/',
-    infoAPI = 'https://api.trustwalletapp.com/',
-    chainId = 1
-  ) {
+  constructor(public jsonRPCAPI = 'https://eth-rpc-proxy.airgap.prod.gke.papers.tech/', infoAPI = 'https://api.etherscan.io', chainId = 1) {
     this.infoAPI = infoAPI
     this.web3 = new Web3(new Web3.providers.HttpProvider(jsonRPCAPI))
     this.network = bitcoinJS.networks.bitcoin
@@ -284,7 +280,7 @@ export abstract class BaseEthereumProtocol implements ICoinProtocol {
     return this.getTransactionsFromAddresses([address], limit, offset)
   }
 
-  private getPageNumber(limit: number, offset: number): number {
+  protected getPageNumber(limit: number, offset: number): number {
     if (limit <= 0 || offset < 0) {
       return 1
     }
@@ -300,13 +296,13 @@ export abstract class BaseEthereumProtocol implements ICoinProtocol {
           new Promise((resolve, reject) => {
             const page = this.getPageNumber(limit, offset)
             axios
-              .get(`${this.infoAPI}transactions?address=${address}&page=${page}&limit=${limit}&filterContractInteraction=true`)
+              .get(`${this.infoAPI}/api?module=account&action=txlist&address=${address}&page=${page}&offset=${limit}&sort=desc`)
               .then(response => {
                 const transactionResponse = response.data
-                for (const transaction of transactionResponse.docs) {
-                  const fee = new BigNumber(transaction.gasUsed).times(new BigNumber(transaction.gasPrice))
+                for (const transaction of transactionResponse.result) {
+                  const fee = new BigNumber(transaction.gas).times(new BigNumber(transaction.gasPrice))
                   const airGapTransaction: IAirGapTransaction = {
-                    hash: transaction.id,
+                    hash: transaction.hash,
                     from: [transaction.from],
                     to: [transaction.to],
                     isInbound: transaction.to.toLowerCase() === address.toLowerCase(),

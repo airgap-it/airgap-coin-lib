@@ -1,5 +1,6 @@
 import { generateWalletUsingDerivationPath } from '@aeternity/hd-wallet'
 import axios, { AxiosError, AxiosResponse } from 'axios'
+import * as bigInt from 'big-integer'
 import BigNumber from 'bignumber.js'
 import * as bs58check from 'bs58check'
 import * as sodium from 'libsodium-wrappers'
@@ -59,6 +60,7 @@ export interface TezosSpendOperation extends TezosOperation {
   destination: string
   amount: string
   kind: TezosOperationType.TRANSACTION
+  code?: string
 }
 
 export interface TezosDelegationOperation extends TezosOperation {
@@ -123,7 +125,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   public addressValidationPattern: string = '^(tz1|KT1)[1-9A-Za-z]{33}$'
   public addressPlaceholder: string = 'tz1...'
 
-  public blockExplorer: string = 'https://tzscan.io'
+  public blockExplorer: string = 'https://tezblock.io'
 
   protected readonly transactionFee: BigNumber = new BigNumber('1400')
   protected readonly originationSize: BigNumber = new BigNumber('257')
@@ -134,7 +136,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   protected readonly originationBurn: BigNumber = this.originationSize.times(this.storageCostPerByte) // https://tezos.stackexchange.com/a/787
 
   // Tezos - We need to wrap these in Buffer due to non-compatible browser polyfills
-  private readonly tezosPrefixes: {
+  protected readonly tezosPrefixes: {
     tz1: Buffer
     tz2: Buffer
     tz3: Buffer
@@ -158,18 +160,18 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
    * Tezos Implemention of ICoinProtocol
    */
   constructor(
-    public readonly jsonRPCAPI: string = 'https://rpczero.tzbeta.net',
-    public readonly baseApiUrl: string = 'https://api.zeronet.tzscan.io'
+    public readonly jsonRPCAPI: string = 'http://35.246.251.120:8732',
+    public readonly baseApiUrl: string = 'https://api.babylonnet.tzscan.io'
   ) {
     super()
   }
 
   public getBlockExplorerLinkForAddress(address: string): string {
-    return `${this.blockExplorer}/{{address}}`.replace('{{address}}', address)
+    return `${this.blockExplorer}/account/{{address}}`.replace('{{address}}', address)
   }
 
   public getBlockExplorerLinkForTxId(txId: string): string {
-    return `${this.blockExplorer}/{{txId}}`.replace('{{txId}}', txId)
+    return `${this.blockExplorer}/transaction/{{txId}}`.replace('{{txId}}', txId)
   }
 
   /**
@@ -344,7 +346,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         balance = balance.plus(new BigNumber(data))
       } catch (error) {
         // if node returns 404 (which means 'no account found'), go with 0 balance
-        if (error.response.status !== 404) {
+        if (error.response && error.response.status !== 404) {
           throw error
         }
       }
@@ -459,80 +461,57 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     }
   }
 
-  /**
-   * If the delegate is set and amount is not set, the whole balance will be sent to the KT address.
-   *
-   * @param publicKey Public key of tezos account
-   * @param delegate The address of the account where you want to delegate the newly originated KT address
-   * @param amount The amount of tezzies to be transferred to the newly originated KT address
-   */
-  public async originate(publicKey: string, delegate?: string, amount?: BigNumber): Promise<RawTezosTransaction> {
+  public async undelegate(publicKey: string): Promise<RawTezosTransaction> {
+    return this.delegate(publicKey)
+  }
+
+  public async delegate(publicKey: string, delegate?: string): Promise<RawTezosTransaction> {
     let counter: BigNumber = new BigNumber(1)
     let branch: string
 
     const operations: TezosOperation[] = []
-    const address: string = await this.getAddressFromPublicKey(publicKey)
+    const tzAddress: string = await this.getAddressFromPublicKey(publicKey)
 
     try {
-      const results = await Promise.all([
-        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/counter`),
+      const results: AxiosResponse[] = await Promise.all([
+        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${tzAddress}/counter`),
         axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/hash`),
-        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/manager_key`)
+        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${tzAddress}/manager_key`)
       ])
 
       counter = new BigNumber(results[0].data).plus(1)
       branch = results[1].data
 
-      const accountManager: { key: string } = results[2].data
+      const accountManager: string = results[2].data
 
-      // check if we have revealed the key already
-      if (!accountManager.key) {
-        operations.push(await this.createRevealOperation(counter, publicKey, address))
+      // check if we have revealed the address already
+      if (!accountManager) {
+        operations.push(await this.createRevealOperation(counter, publicKey, tzAddress))
         counter = counter.plus(1)
       }
     } catch (error) {
       throw error
     }
 
-    const balance: BigNumber = await this.getBalanceOfAddresses([address])
+    const balance: BigNumber = await this.getBalanceOfAddresses([tzAddress])
 
-    const amountUsedByPreviousOperations: BigNumber = this.getAmountUsedByPreviousOperations(operations)
+    const fee: BigNumber = new BigNumber(1420)
 
-    const combinedAmountsAndFees: BigNumber = this.transactionFee
-      .plus(amountUsedByPreviousOperations)
-      .plus(this.originationBurn)
-      .plus(1)
-
-    let balanceToSend: BigNumber = new BigNumber(0)
-
-    if (delegate) {
-      balanceToSend = balance // If delegate is set, by default we send the whole balance
-    }
-
-    if (amount && amount.isLessThan(balance)) {
-      balanceToSend = amount // If amount is set and valid, we override
-    }
-
-    const maxAmount: BigNumber = balance.minus(combinedAmountsAndFees)
-
-    balanceToSend = BigNumber.min(balanceToSend, maxAmount)
-
-    if (balance.isLessThan(balanceToSend.plus(combinedAmountsAndFees))) {
+    if (balance.isLessThan(fee)) {
       throw new Error('not enough balance')
     }
 
-    const originationOperation: TezosOriginationOperation = {
-      kind: TezosOperationType.ORIGINATION,
-      source: address,
-      fee: this.transactionFee.toFixed(),
+    const delegationOperation: TezosDelegationOperation = {
+      kind: TezosOperationType.DELEGATION,
+      source: tzAddress,
+      fee: fee.toFixed(),
       counter: counter.toFixed(),
       gas_limit: '10000', // taken from eztz
-      storage_limit: this.originationSize.toFixed(),
-      balance: balanceToSend.toFixed(),
+      storage_limit: '0', // taken from eztz
       delegate
     }
 
-    operations.push(originationOperation)
+    operations.push(delegationOperation)
 
     try {
       const tezosWrappedOperation: TezosWrappedOperation = {
@@ -544,7 +523,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
       return { binaryTransaction: binaryTx }
     } catch (error) {
-      console.warn(error.message)
+      console.warn(error)
       throw new Error('Forging Tezos TX failed.')
     }
   }
@@ -597,7 +576,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       return injectionResponse
     } catch (err) {
       console.warn((err as AxiosError).message, ((err as AxiosError).response as AxiosResponse).statusText)
-      throw new Error('broadcasting failed')
+      throw new Error(`broadcasting failed ${err}`)
     }
   }
 
@@ -718,7 +697,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
           tezosWrappedOperation.contents.push(tezosDelegationOperation)
           break
         default:
-          throw new Error('transaction operation unknown')
+          throw new Error(`transaction operation unknown ${kindHexString}`)
       }
     }
 
@@ -757,7 +736,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
   public unforgeSpendOperation(hexString: string): { tezosSpendOperation: TezosSpendOperation; rest: string } {
     let { result, rest }: { result: string; rest: string } = this.splitAndReturnRest(hexString, 42)
-    const source: string = this.parseTzAddress(result)
+    let source: string = this.parseTzAddress(result)
 
     // fee, counter, gas_limit, storage_limit, amount
     ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
@@ -769,14 +748,25 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
     const storageLimit: BigNumber = this.zarithToBigNumber(result)
     ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
-    const amount: BigNumber = this.zarithToBigNumber(result)
+    let amount: BigNumber = this.zarithToBigNumber(result)
     ;({ result, rest } = this.splitAndReturnRest(rest, 44))
-    const destination: string = this.parseAddress(result)
+    let destination: string = this.parseAddress(result)
     ;({ result, rest } = this.splitAndReturnRest(rest, 2))
     const hasParameters: boolean = this.checkBoolean(result)
 
+    let contractData: { amount: BigNumber; destination: string } | undefined
     if (hasParameters) {
-      throw new Error('spend transaction parser does not support parameters yet')
+      ;({ result: contractData, rest } = this.unforgeParameters(rest))
+    }
+
+    if (contractData) {
+      // This is a migration contract, so we can display more meaningful data to the user
+      if (!amount.isZero()) {
+        throw new Error('Amount has to be zero for contract calls.')
+      }
+      source = destination
+      amount = contractData.amount
+      destination = contractData.destination
     }
 
     return {
@@ -792,6 +782,29 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       },
       rest
     }
+  }
+
+  public unforgeParameters(hexString: string): { result: { amount: BigNumber; destination: string }; rest: string } {
+    // We can only unforge one specific contract call right now
+    let { result, rest }: { result: string; rest: string } = this.splitAndReturnRest(hexString, 2) // Entrypoint
+    ;({ result, rest } = this.splitAndReturnRest(rest, 8)) // Argument length
+    const argumentLength: BigNumber = new BigNumber(result, 16)
+    ;({ result, rest } = this.splitAndReturnRest(rest, 40)) // Contract data
+    ;({ result, rest } = this.splitAndReturnRest(rest, 42)) // Sequence length
+    const destination: string = this.parseTzAddress(result)
+    ;({ result, rest } = this.splitAndReturnRest(rest, 12)) // Contract data
+    ;({ result, rest } = this.splitAndReturnRest(
+      rest,
+      argumentLength
+        .times(2)
+        .minus(40 + 42 + 12 + 12)
+        .toNumber()
+    )) // Contract data
+
+    const amount: BigNumber = new BigNumber(this.decodeSignedInt(result.substr(2, result.length)))
+    ;({ result, rest } = this.splitAndReturnRest(rest, 12)) // Contract data
+
+    return { result: { amount, destination }, rest }
   }
 
   public unforgeOriginationOperation(hexString: string): { tezosOriginationOperation: TezosOriginationOperation; rest: string } {
@@ -889,16 +902,16 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     const forgedOperation: string[] = tezosWrappedOperation.contents.map((operation: TezosOperation) => {
       switch (operation.kind) {
         case TezosOperationType.TRANSACTION:
-          return this.forgeTransactionOperation(operation)
+          return this.forgeTransactionOperation(operation as TezosSpendOperation)
 
         case TezosOperationType.REVEAL:
-          return this.forgeRevealOperation(operation)
+          return this.forgeRevealOperation(operation as TezosRevealOperation)
 
         case TezosOperationType.ORIGINATION:
-          return this.forgeOriginationOperation(operation)
+          return this.forgeOriginationOperation(operation as TezosOriginationOperation)
 
         case TezosOperationType.DELEGATION:
-          return this.forgeDelegationOperation(operation)
+          return this.forgeDelegationOperation(operation as TezosDelegationOperation)
 
         default:
           throw new Error(`Currently unsupported operation type supplied ${operation.kind}`)
@@ -932,12 +945,12 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     return resultHexString
   }
 
-  private forgeRevealOperation(operation: TezosOperation): string {
+  private forgeRevealOperation(operation: TezosRevealOperation): string {
     let resultHexString: string = ''
     resultHexString += '6b' // because this is a reveal operation
     resultHexString += this.forgeSharedFields(operation)
 
-    const cleanedPublicKey: string = this.checkAndRemovePrefixToHex((operation as TezosRevealOperation).public_key, this.tezosPrefixes.edpk)
+    const cleanedPublicKey: string = this.checkAndRemovePrefixToHex(operation.public_key, this.tezosPrefixes.edpk)
 
     if (cleanedPublicKey.length === 32) {
       // must be equal 32 bytes
@@ -949,16 +962,16 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     return resultHexString
   }
 
-  private forgeTransactionOperation(operation: TezosOperation): string {
+  protected forgeTransactionOperation(operation: TezosSpendOperation): string {
     let resultHexString: string = ''
     resultHexString += '6c' // because this is a transaction operation
     resultHexString += this.forgeSharedFields(operation)
 
-    resultHexString += this.bigNumberToZarith(new BigNumber((operation as TezosSpendOperation).amount))
+    resultHexString += this.bigNumberToZarith(new BigNumber(operation.amount))
 
-    let cleanedDestination: string = (operation as TezosSpendOperation).destination.toLowerCase().startsWith('kt')
-      ? `01${this.checkAndRemovePrefixToHex((operation as TezosSpendOperation).destination, this.tezosPrefixes.kt)}00`
-      : this.checkAndRemovePrefixToHex((operation as TezosSpendOperation).destination, this.tezosPrefixes.tz1)
+    let cleanedDestination: string = operation.destination.toLowerCase().startsWith('kt')
+      ? `01${this.checkAndRemovePrefixToHex(operation.destination, this.tezosPrefixes.kt)}00`
+      : this.checkAndRemovePrefixToHex(operation.destination, this.tezosPrefixes.tz1)
 
     if (cleanedDestination.length > 44) {
       // must be less or equal 22 bytes
@@ -972,35 +985,42 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
     resultHexString += cleanedDestination
 
-    resultHexString += '00' // because we have no additional parameters
+    if (operation.code) {
+      resultHexString += operation.code
+    } else {
+      resultHexString += '00' // because we have no additional parameters
+    }
 
     return resultHexString
   }
 
-  private forgeOriginationOperation(operation: TezosOperation): string {
+  private forgeOriginationOperation(operation: TezosOriginationOperation): string {
     let resultHexString: string = ''
     resultHexString += '6d' // because this is a reveal operation
     resultHexString += this.forgeSharedFields(operation)
 
-    const originationOperation: TezosOriginationOperation = operation as TezosOriginationOperation
+    resultHexString += this.bigNumberToZarith(new BigNumber(operation.balance))
 
-    resultHexString += this.bigNumberToZarith(new BigNumber(originationOperation.balance))
+    let cleanedSource: string = this.checkAndRemovePrefixToHex(operation.source, this.tezosPrefixes.tz1)
 
-    if (originationOperation.delegate) {
-      // PRESENCE OF DELEGATE
-      resultHexString += 'ff'
+    if (cleanedSource.length > 42) {
+      // must be less or equal 21 bytes
+      throw new Error('provided source is invalid')
+    }
 
-      let cleanedDestination: string | undefined
+    while (cleanedSource.length !== 42) {
+      // fill up with 0s to match 21 bytes
+      cleanedSource = `0${cleanedSource}`
+    }
 
-      if (originationOperation.delegate.toLowerCase().startsWith('tz1')) {
-        cleanedDestination = this.checkAndRemovePrefixToHex(originationOperation.delegate, this.tezosPrefixes.tz1)
-      } else if (originationOperation.delegate.toLowerCase().startsWith('kt1')) {
-        cleanedDestination = this.checkAndRemovePrefixToHex(originationOperation.delegate, this.tezosPrefixes.kt)
-      }
+    const delegate: string | undefined = operation.delegate
 
-      if (!cleanedDestination || cleanedDestination.length > 42) {
+    if (delegate) {
+      let cleanedDestination: string = this.checkAndRemovePrefixToHex(delegate, this.tezosPrefixes.tz1)
+
+      if (cleanedDestination.length > 42) {
         // must be less or equal 21 bytes
-        throw new Error('provided destination is invalid')
+        throw new Error('provided source is invalid')
       }
 
       while (cleanedDestination.length !== 42) {
@@ -1008,34 +1028,38 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         cleanedDestination = `0${cleanedDestination}`
       }
 
+      resultHexString += 'ff'
       resultHexString += cleanedDestination
     } else {
-      // ABSENCE OF DELEGATE
       resultHexString += '00'
     }
 
-    if (originationOperation.script) {
-      throw new Error('script not supported')
-    }
+    // Taken from https://blog.nomadic-labs.com/babylon-update-instructions-for-delegation-wallet-developers.html#transfer-from-a-managertz-smart-contract-to-an-implicit-tz-account
+
+    resultHexString +=
+      '000000c602000000c105000764085e036c055f036d0000000325646f046c000000082564656661756c740501035d050202000000950200000012020000000d03210316051f02000000020317072e020000006a0743036a00000313020000001e020000000403190325072c020000000002000000090200000004034f0327020000000b051f02000000020321034c031e03540348020000001e020000000403190325072c020000000002000000090200000004034f0327034f0326034202000000080320053d036d0342'
+    resultHexString += '0000001a'
+    resultHexString += '0a'
+    resultHexString += '00000015'
+    resultHexString += cleanedSource
 
     return resultHexString
   }
 
-  private forgeDelegationOperation(operation: TezosOperation): string {
+  private forgeDelegationOperation(operation: TezosDelegationOperation): string {
     let resultHexString: string = ''
     resultHexString += '6e' // because this is a reveal operation
     resultHexString += this.forgeSharedFields(operation)
 
-    const delegationOperation: TezosDelegationOperation = operation as TezosDelegationOperation
-    if (delegationOperation.delegate) {
+    if (operation.delegate) {
       resultHexString += 'ff'
 
       let cleanedDestination: string | undefined
 
-      if (delegationOperation.delegate.toLowerCase().startsWith('tz1')) {
-        cleanedDestination = this.checkAndRemovePrefixToHex(delegationOperation.delegate, this.tezosPrefixes.tz1)
-      } else if (delegationOperation.delegate.toLowerCase().startsWith('kt1')) {
-        cleanedDestination = this.checkAndRemovePrefixToHex(delegationOperation.delegate, this.tezosPrefixes.kt)
+      if (operation.delegate.toLowerCase().startsWith('tz1')) {
+        cleanedDestination = this.checkAndRemovePrefixToHex(operation.delegate, this.tezosPrefixes.tz1)
+      } else if (operation.delegate.toLowerCase().startsWith('kt1')) {
+        cleanedDestination = this.checkAndRemovePrefixToHex(operation.delegate, this.tezosPrefixes.kt)
       }
 
       if (!cleanedDestination || cleanedDestination.length > 42) {
@@ -1085,6 +1109,65 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     }
 
     return resultHexString
+  }
+
+  /**
+   * Encodes a signed integer into hex.
+   * Copied from conseil.js
+   * @param value Number to be encoded.
+   */
+  public encodeSignedInt(value: number): string {
+    if (value === 0) {
+      return '00'
+    }
+
+    const n = bigInt(value).abs()
+    const l = n.bitLength().toJSNumber()
+
+    const arr: number[] = []
+    let v = n
+    for (let i = 0; i < l; i += 7) {
+      let byte = bigInt.zero
+
+      if (i === 0) {
+        byte = v.and(0x3f) // first byte makes room for sign flag
+        v = v.shiftRight(6)
+      } else {
+        byte = v.and(0x7f) // NOT base128 encoded
+        v = v.shiftRight(7)
+      }
+
+      if (value < 0 && i === 0) {
+        byte = byte.or(0x40)
+      } // set sign flag
+
+      if (i + 7 < l) {
+        byte = byte.or(0x80)
+      } // set next byte flag
+      arr.push(byte.toJSNumber())
+    }
+
+    if (l % 7 === 0) {
+      arr[arr.length - 1] = arr[arr.length - 1] | 0x80
+      arr.push(1)
+    }
+
+    return arr.map(v => ('0' + v.toString(16)).slice(-2)).join('')
+  }
+
+  public decodeSignedInt(hex: string): number {
+    const positive = Buffer.from(hex.slice(0, 2), 'hex')[0] & 0x40 ? false : true
+    const arr = Buffer.from(hex, 'hex').map((v, i) => (i === 0 ? v & 0x3f : v & 0x7f))
+    let n = bigInt.zero
+    for (let i = arr.length - 1; i >= 0; i--) {
+      if (i === 0) {
+        n = n.or(arr[i])
+      } else {
+        n = n.or(bigInt(arr[i]).shiftLeft(7 * i - 1))
+      }
+    }
+
+    return positive ? n.toJSNumber() : n.negate().toJSNumber()
   }
 
   public findZarithEndIndex(hexString: string): number {

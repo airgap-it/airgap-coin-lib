@@ -16,8 +16,8 @@ import { EthereumClassicTestProtocolSpec } from './specs/ethereum-classic'
 import { EthereumRopstenTestProtocolSpec } from './specs/ethereum-ropsten'
 import { GenericERC20TokenTestProtocolSpec } from './specs/generic-erc20-token'
 import { GroestlcoinProtocolSpec } from './specs/groestl'
-import { KtTezosTestProtocolSpec } from './specs/kt-tezos'
-import { TezosTestProtocolSpec } from './specs/tezos'
+// import { KtTezosTestProtocolSpec } from './specs/kt-tezos'
+// import { TezosTestProtocolSpec } from './specs/tezos'
 
 // use chai-as-promised plugin
 chai.use(chaiAsPromised)
@@ -41,8 +41,8 @@ const protocols = [
   new EthereumClassicTestProtocolSpec(),
   new EthereumRopstenTestProtocolSpec(),
   new AETestProtocolSpec(),
-  new TezosTestProtocolSpec(),
-  new KtTezosTestProtocolSpec(),
+  // new TezosTestProtocolSpec(),
+  // new KtTezosTestProtocolSpec(),
   new BitcoinProtocolSpec(),
   new BitcoinTestProtocolSpec(),
   new GenericERC20TokenTestProtocolSpec(),
@@ -81,6 +81,19 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
         expect(blockExplorerLinkAddress).to.not.contain('}}')
         expect(blockExplorerLinkTxId).to.not.contain('{{')
         expect(blockExplorerLinkTxId).to.not.contain('}}')
+      })
+
+      it('should always use https://', async () => {
+        expect(blockExplorerLinkAddress).to.not.contain('http://')
+        expect(blockExplorerLinkTxId).to.not.contain('http://')
+        expect(blockExplorerLinkAddress).to.contain('https://')
+        expect(blockExplorerLinkTxId).to.contain('https://')
+      })
+
+      it('should never contain 2 / after each other', async () => {
+        // We remove "https://" so we can check if the rest of the url contains "//"
+        expect(blockExplorerLinkAddress.split('https://').join('')).to.not.contain('//')
+        expect(blockExplorerLinkTxId.split('https://').join('')).to.not.contain('//')
       })
     })
 

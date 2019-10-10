@@ -1,5 +1,5 @@
+// tslint:disable:no-console
 import BigNumber from 'bignumber.js'
-import * as bip39 from 'bip39'
 
 import { IAirGapTransaction, TezosProtocol } from '../src'
 import { RawTezosTransaction } from '../src/serializer/unsigned-transactions/tezos-transactions.serializer'
@@ -9,24 +9,9 @@ const tezosProtocol: TezosProtocol = new TezosProtocol()
 const privateKey: string =
   '2f243e474992bb96b49b2fa7b2c1cba7a804257f0cf13dceb640cf3210d54838cdbc0c3449784bd53907c3c7a06060cf12087e492a7b937f044c6a73b522a234'
 const publicKey: string = 'cdbc0c3449784bd53907c3c7a06060cf12087e492a7b937f044c6a73b522a234'
-const recipient: string = 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'
-const amount: BigNumber = new BigNumber(1)
+const recipient: string = 'tz1UNY14FTp2ZUPneTt2ezf6e5ZvyRL9KDis'
+const amount: BigNumber = new BigNumber(100000000)
 const fee: BigNumber = new BigNumber(1280)
-
-const mnemonic = 'idea right curve cactus absorb very shallow flock scatter cricket cherry supreme snack work abstract'
-const newPrivKey = tezosProtocol.getPrivateKeyFromHexSecret(
-  bip39.mnemonicToSeedHex(mnemonic, 'nZ8zrTtLfR'),
-  tezosProtocol.standardDerivationPath
-)
-const newPubKey = tezosProtocol.getPublicKeyFromHexSecret(
-  bip39.mnemonicToSeedHex(mnemonic, 'nZ8zrTtLfR'),
-  tezosProtocol.standardDerivationPath
-)
-tezosProtocol.getAddressFromPublicKey(newPubKey).then(res => {
-  console.log('new address', res)
-})
-
-console.log('new pk', newPrivKey)
 
 tezosProtocol
   .prepareTransactionFromPublicKey(publicKey, [recipient], [amount], fee)

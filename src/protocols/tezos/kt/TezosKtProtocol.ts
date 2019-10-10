@@ -3,7 +3,7 @@ import BigNumber from 'bignumber.js'
 
 import { RawTezosTransaction } from '../../../serializer/unsigned-transactions/tezos-transactions.serializer'
 import { ICoinSubProtocol, SubProtocolType } from '../../ICoinSubProtocol'
-import { TezosDelegationOperation, TezosOperation, TezosOperationType, TezosProtocol, TezosWrappedOperation } from '../TezosProtocol'
+import { TezosOperation, TezosOperationType, TezosProtocol, TezosSpendOperation, TezosWrappedOperation } from '../TezosProtocol'
 
 // 8.25%
 const SELF_BOND_REQUIREMENT: number = 0.0825
@@ -32,7 +32,6 @@ export interface DelegationRewardInfo {
 
 export interface DelegationInfo {
   isDelegated: boolean
-  setable: boolean
   value?: string
   delegatedOpLevel?: number
   delegatedDate?: Date
@@ -64,8 +63,128 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     return ktAddresses.reverse()
   }
 
-  public async originate(publicKey: string, delegate?: string, amount?: BigNumber): Promise<RawTezosTransaction> {
-    throw new Error('Originate operation not supported for KT Addresses')
+  public async delegate(publicKey: string, delegate?: string): Promise<RawTezosTransaction> {
+    throw new Error('Delegate operation not supported for KT Addresses')
+  }
+
+  public async migrateKtContract(
+    publicKey: string,
+    destinationContract: string
+  ): Promise<{
+    binaryTransaction: string
+  }> {
+    let counter: BigNumber = new BigNumber(1)
+    let branch: string
+
+    const operations: TezosOperation[] = []
+
+    const address: string = await super.getAddressFromPublicKey(publicKey)
+    const amount: BigNumber = await this.getBalanceOfAddresses([destinationContract])
+
+    try {
+      const results: AxiosResponse[] = await Promise.all([
+        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/counter`),
+        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/hash`),
+        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/manager_key`)
+      ])
+
+      counter = new BigNumber(results[0].data).plus(1)
+      branch = results[1].data
+
+      const accountManager: string = results[2].data
+
+      // check if we have revealed the address already
+      if (!accountManager) {
+        operations.push(await this.createRevealOperation(counter, publicKey, address))
+        counter = counter.plus(1)
+      }
+    } catch (error) {
+      throw error
+    }
+
+    const hexAmount: string = `00${this.encodeSignedInt(amount.toNumber())}`
+
+    let hexDestination: string = this.checkAndRemovePrefixToHex(address, this.tezosPrefixes.tz1)
+
+    if (hexDestination.length > 42) {
+      // must be less or equal 21 bytes
+      throw new Error('provided source is invalid')
+    }
+
+    while (hexDestination.length !== 42) {
+      // fill up with 0s to match 21 bytes
+      hexDestination = `0${hexDestination}`
+    }
+
+    const lengthOfArgument: number = 32 + hexDestination.length / 2 + hexAmount.length / 2
+    const lengthOfSequence: number = lengthOfArgument - 5
+
+    let hexArgumentLength: string = lengthOfArgument.toString(16)
+    let hexSequenceLength: string = lengthOfSequence.toString(16)
+
+    while (hexArgumentLength.length < 8) {
+      // Make sure it's 4 bytes
+      hexArgumentLength = `0${hexArgumentLength}`
+    }
+
+    while (hexSequenceLength.length < 8) {
+      // Make sure it's 4 bytes
+      hexSequenceLength = `0${hexSequenceLength}`
+    }
+
+    // Taken from https://blog.nomadic-labs.com/babylon-update-instructions-for-delegation-wallet-developers.html#transfer-from-a-managertz-smart-contract-to-an-implicit-tz-account
+
+    // tslint:disable:prefer-template
+    const code: string =
+      'ff' + // 0xff (or any other non-null byte): presence flag for the parameters (entrypoint and argument)
+      '02' + // 0x02: tag of the "%do" entrypoint
+      hexArgumentLength + // <4 bytes>: length of the argument
+      '02' + // 0x02: Michelson sequence
+      hexSequenceLength + // <4 bytes>: length of the sequence
+      '0320' + // 0x0320: DROP
+      '053d' + // 0x053d: NIL
+      '036d' + // 0x036d: operation
+      '0743' + // 0x0743: PUSH
+      '035d' + // 0x035d: key_hash
+      '0a' + // 0x0a: Byte sequence
+      '00000015' + // 0x00000015: Length of the sequence (21 bytes)
+      hexDestination + // <21 bytes>: <destination>
+      '031e' + // 0x031e: IMPLICIT_ACCOUNT
+      '0743' + // 0x0743: PUSH
+      '036a' + // 0x036a: mutez
+      hexAmount + // <amount>: Amout to be transfered
+      '034f' + // 0x034f: UNIT
+      '034d' + // 0x034d: TRANSFER_TOKENS
+      '031b' // 0x031b: CONS
+    // tslint:enable:prefer-template
+
+    const spendOperation: TezosSpendOperation = {
+      kind: TezosOperationType.TRANSACTION,
+      fee: '2941',
+      gas_limit: '26283',
+      storage_limit: '0',
+      amount: '0',
+      counter: counter.toFixed(),
+      destination: destinationContract,
+      source: address,
+      code
+    }
+
+    operations.push(spendOperation)
+
+    try {
+      const tezosWrappedOperation: TezosWrappedOperation = {
+        branch,
+        contents: operations
+      }
+
+      const binaryTx: string = this.forgeTezosOperation(tezosWrappedOperation)
+
+      return { binaryTransaction: binaryTx }
+    } catch (error) {
+      console.warn(error.message)
+      throw new Error('Forging Tezos TX failed.')
+    }
   }
 
   public async isAddressDelegated(delegatedAddress: string): Promise<DelegationInfo> {
@@ -75,7 +194,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     let delegatedDate: Date | undefined
 
     // if the address is delegated, check since when
-    if (data.delegate.value) {
+    if (data.delegate) {
       const getDataFromMostRecentTransaction: (transactions) => { date: Date; opLevel: number } | void = (
         transactions
       ): { date: Date; opLevel: number } | void => {
@@ -112,78 +231,10 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     }
 
     return {
-      isDelegated: data.delegate.value ? true : false,
-      setable: data.delegate.setable,
-      value: data.delegate.value,
+      isDelegated: data.delegate ? true : false,
+      value: data.delegate,
       delegatedDate,
       delegatedOpLevel
-    }
-  }
-
-  public async undelegate(publicKey: string, delegatedAddress: string): Promise<RawTezosTransaction> {
-    return this.delegate(publicKey, delegatedAddress)
-  }
-
-  public async delegate(publicKey: string, delegatedAddress: string, delegate?: string): Promise<RawTezosTransaction> {
-    let counter: BigNumber = new BigNumber(1)
-    let branch: string
-
-    const operations: TezosOperation[] = []
-    const tzAddress: string = await super.getAddressFromPublicKey(publicKey)
-
-    try {
-      const results: AxiosResponse[] = await Promise.all([
-        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${delegatedAddress}/counter`),
-        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/hash`),
-        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${delegatedAddress}/manager_key`)
-      ])
-
-      counter = new BigNumber(results[0].data).plus(1)
-      branch = results[1].data
-
-      const accountManager: { key: string } = results[2].data
-
-      // check if we have revealed the address already
-      if (!accountManager.key) {
-        operations.push(await this.createRevealOperation(counter, publicKey, delegatedAddress))
-        counter = counter.plus(1)
-      }
-    } catch (error) {
-      throw error
-    }
-
-    const balance: BigNumber = await this.getBalanceOfAddresses([delegatedAddress])
-
-    const fee: BigNumber = new BigNumber(1420)
-
-    if (balance.isLessThan(fee)) {
-      throw new Error('not enough balance')
-    }
-
-    const delegationOperation: TezosDelegationOperation = {
-      kind: TezosOperationType.DELEGATION,
-      source: delegatedAddress || tzAddress, // TODO: Does the tzAddress make sense here as a fallback?
-      fee: fee.toFixed(),
-      counter: counter.toFixed(),
-      gas_limit: '10000', // taken from eztz
-      storage_limit: '0', // taken from eztz
-      delegate
-    }
-
-    operations.push(delegationOperation)
-
-    try {
-      const tezosWrappedOperation: TezosWrappedOperation = {
-        branch,
-        contents: operations
-      }
-
-      const binaryTx: string = this.forgeTezosOperation(tezosWrappedOperation)
-
-      return { binaryTransaction: binaryTx }
-    } catch (error) {
-      console.warn(error)
-      throw new Error('Forging Tezos TX failed.')
     }
   }
 
