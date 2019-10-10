@@ -63,10 +63,6 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     return ktAddresses.reverse()
   }
 
-  public async originate(publicKey: string, delegate?: string, amount?: BigNumber): Promise<RawTezosTransaction> {
-    throw new Error('Originate operation not supported for KT Addresses')
-  }
-
   public async delegate(publicKey: string, delegate?: string): Promise<RawTezosTransaction> {
     throw new Error('Delegate operation not supported for KT Addresses')
   }
