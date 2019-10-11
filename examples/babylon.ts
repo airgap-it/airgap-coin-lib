@@ -10,7 +10,7 @@ const privateKey: string =
   '2f243e474992bb96b49b2fa7b2c1cba7a804257f0cf13dceb640cf3210d54838cdbc0c3449784bd53907c3c7a06060cf12087e492a7b937f044c6a73b522a234'
 const publicKey: string = 'cdbc0c3449784bd53907c3c7a06060cf12087e492a7b937f044c6a73b522a234'
 const recipient: string = 'tz1UNY14FTp2ZUPneTt2ezf6e5ZvyRL9KDis'
-const amount: BigNumber = new BigNumber(100000000)
+const amount: BigNumber = new BigNumber(1000000)
 const fee: BigNumber = new BigNumber(1280)
 
 tezosProtocol

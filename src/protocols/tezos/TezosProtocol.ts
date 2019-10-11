@@ -433,10 +433,14 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       throw new Error('not enough balance')
     }
 
+    // When sending money to a contract the gas limit and fee needs to be higher.
+    const gasLimit: string = recipients[0].toLowerCase().startsWith('kt') ? '15385' : '10300'
+    const adjustedFee: BigNumber = recipients[0].toLowerCase().startsWith('kt') ? fee.plus(500) : fee
+
     const spendOperation: TezosSpendOperation = {
       kind: TezosOperationType.TRANSACTION,
-      fee: fee.toFixed(),
-      gas_limit: '10300', // taken from eztz
+      fee: adjustedFee.toFixed(),
+      gas_limit: gasLimit, // taken from eztz
       storage_limit: receivingBalance.isZero() && recipients[0].toLowerCase().startsWith('tz') ? '300' : '0', // taken from eztz
       amount: values[0].toFixed(),
       counter: counter.toFixed(),
