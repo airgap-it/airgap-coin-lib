@@ -1,4 +1,4 @@
-import { AirGapMarketWallet, EncodedType, IAirGapTransaction, SyncProtocolUtils, TezosKtProtocol, TezosProtocol } from '..'
+import { AirGapMarketWallet, EncodedType, IAirGapTransaction, SyncProtocolUtils, TezosProtocol } from '..'
 import { RawAeternityTransaction } from '../serializer/unsigned-transactions/aeternity-transactions.serializer'
 import { RawBitcoinTransaction } from '../serializer/unsigned-transactions/bitcoin-transactions.serializer'
 import { RawEthereumTransaction } from '../serializer/unsigned-transactions/ethereum-transactions.serializer'
@@ -51,35 +51,17 @@ export class DelegateAction<Context extends DelegateActionContext> extends Actio
 
   protected async perform(): Promise<DelegateActionResult> {
     return new Promise<DelegateActionResult>(
-      async (resolve: (context: DelegateActionResult) => void, reject: (error: Error) => void): Promise<void> => {
-        if (this.context.wallet.protocolIdentifier === 'xtz') {
-          const protocol: TezosProtocol = new TezosProtocol()
+      async (resolve: (context: DelegateActionResult) => void, reject: () => void): Promise<void> => {
+        const protocol: TezosProtocol = new TezosProtocol()
 
-          try {
-            const originateTx: RawTezosTransaction = await protocol.originate(this.context.wallet.publicKey, this.context.delegate)
-            const serializedTx: string = await serializeTx(this.context.wallet, originateTx)
+        try {
+          const originateTx: RawTezosTransaction = await protocol.delegate(this.context.wallet.publicKey, this.context.delegate)
+          const serializedTx: string = await serializeTx(this.context.wallet, originateTx)
 
-            const airGapTx: IAirGapTransaction | void = await getAirGapTx(this.context.wallet, originateTx)
-            resolve({ rawTx: originateTx, serializedTx, airGapTx, dataUrl: `airgap-vault://?d=${serializedTx}` })
-          } catch (error) {
-            reject(error)
-          }
-        } else {
-          const protocol: TezosKtProtocol = new TezosKtProtocol()
-
-          try {
-            const delegateTx: RawTezosTransaction = await protocol.delegate(
-              this.context.wallet.publicKey,
-              this.context.wallet.receivingPublicAddress,
-              this.context.delegate
-            )
-            const serializedTx: string = await serializeTx(this.context.wallet, delegateTx)
-
-            const airGapTx: IAirGapTransaction | void = await getAirGapTx(this.context.wallet, delegateTx)
-            resolve({ rawTx: delegateTx, serializedTx, airGapTx, dataUrl: `airgap-vault://?d=${serializedTx}` })
-          } catch (error) {
-            reject(error)
-          }
+          const airGapTx: IAirGapTransaction | void = await getAirGapTx(this.context.wallet, originateTx)
+          resolve({ rawTx: originateTx, serializedTx, airGapTx, dataUrl: `airgap-vault://?d=${serializedTx}` })
+        } finally {
+          reject()
         }
       }
     )

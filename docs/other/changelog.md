@@ -1,3 +1,9 @@
+### 0.5.5 (2019-10-11)
+
+### Features
+
+- **xtz**: prepare for babylon network upgrade
+
 ### 0.5.4 (2019-09-19)
 
 ### Bug Fixes
