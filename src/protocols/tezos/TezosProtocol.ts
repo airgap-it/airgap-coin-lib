@@ -160,8 +160,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
    * Tezos Implemention of ICoinProtocol
    */
   constructor(
-    public readonly jsonRPCAPI: string = 'http://35.246.251.120:8732',
-    public readonly baseApiUrl: string = 'https://api.babylonnet.tzscan.io'
+    public readonly jsonRPCAPI: string = 'https://mainnet.tezrpc.me',
+    public readonly baseApiUrl: string = 'https://api6.tzscan.io'
   ) {
     super()
   }
