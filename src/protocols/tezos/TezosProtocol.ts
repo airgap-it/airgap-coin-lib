@@ -222,7 +222,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     // TODO: implement pagination
     const allTransactions = await Promise.all(
       addresses.map(address => {
-        // return axios.get(`${this.baseApiUrl}/v3/operations/${address}?type=Transaction&p=${page}&number=${limit}`)
         const getRequestBody = (field: string, set: string) => {
           return {
             predicates: [
@@ -242,7 +241,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
             limit: limit
           }
         }
-        return new Promise(async (resolve, reject) => {
+        return new Promise<any>(async (resolve, reject) => {
           const fromPromise = axios.post(`${this.baseApiUrl}/v2/data/tezos/mainnet/operations`, getRequestBody('source', 'transaction'), {
             headers: { 'Content-Type': 'application/json', apikey: 'airgap00391' }
           })
@@ -258,7 +257,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         })
       })
     )
-    return allTransactions.map((transaction: any) => {
+    return allTransactions.reduce((current, next) => current.concat(next)).map((transaction: any) => {
       return {
         amount: transaction.amount,
         fee: transaction.fee,
