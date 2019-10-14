@@ -48,19 +48,111 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
   }
 
   public async getAddressesFromPublicKey(publicKey: string): Promise<string[]> {
-    const tz1address: string = await super.getAddressFromPublicKey(publicKey)
-    const { data }: AxiosResponse = await axios.get(`${this.baseApiUrl}/v3/operations/${tz1address}?type=Origination`)
-
-    const ktAddresses: string[] = [].concat.apply(
-      [],
-      data.map((origination: { type: { operations: [{ tz1: { tz: string } }] } }) => {
-        return origination.type.operations.map((operation: { tz1: { tz: string } }) => {
-          return operation.tz1.tz
-        })
-      })
+    const tz1address = await super.getAddressFromPublicKey(publicKey)
+    const getRequestBody = (field: string, set: string) => {
+      return {
+        predicates: [
+          {
+            field: field,
+            operation: 'eq',
+            set: [tz1address],
+            inverse: false
+          },
+          {
+            field: 'kind',
+            operation: 'eq',
+            set: [set],
+            inverse: false
+          }
+        ]
+      }
+    }
+    const { data } = await axios.post(
+      `${this.baseApiUrl}/v2/data/tezos/mainnet/operations`,
+      getRequestBody('manager_pubkey', 'origination'),
+      {
+        headers: { 'Content-Type': 'application/json', apiKey: 'airgap00391' }
+      }
     )
-
+    const ktAddresses: string[] = data.map((origination: { originated_contracts: string }) => {
+      return origination.originated_contracts
+    })
     return ktAddresses.reverse()
+  }
+
+  public async originate(publicKey: string, delegate?: string, amount?: BigNumber): Promise<RawTezosTransaction> {
+    throw new Error('Originate operation not supported for KT Addresses')
+  }
+
+  public async isAddressDelegated(delegatedAddress: string): Promise<DelegationInfo> {
+    const { data } = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${delegatedAddress}`)
+    let delegatedOpLevel: number | undefined
+    let delegatedDate: Date | undefined
+
+    // if the address is delegated, check since when
+    if (data.delegate) {
+      const getDataFromMostRecentTransaction = (transactions): { date: Date; opLevel: number } | void => {
+        if (transactions.length > 0) {
+          const mostRecentTransaction = transactions[0]
+
+          return {
+            date: new Date(mostRecentTransaction.timestamp),
+            opLevel: mostRecentTransaction.block_level
+          }
+        }
+      }
+      const getRequestBody = (field: string, set: string) => {
+        return {
+          predicates: [
+            {
+              field: field,
+              operation: 'eq',
+              set: [delegatedAddress],
+              inverse: false
+            },
+            {
+              field: 'kind',
+              operation: 'eq',
+              set: [set],
+              inverse: false
+            }
+          ],
+          orderBy: [
+            {
+              field: 'block_level',
+              direction: 'desc'
+            }
+          ]
+        }
+      }
+
+      // We first try to get the data from the lastest delegation
+      // After that try to get it from the origination
+      const transactionSourceUrl = `${this.baseApiUrl}/v2/data/tezos/mainnet/operations`
+      const results = await Promise.all([
+        axios.post(transactionSourceUrl, getRequestBody('source', 'delegation'), {
+          headers: { 'Content-Type': 'application/json', apiKey: 'airgap00391' }
+        }),
+        axios.post(transactionSourceUrl, getRequestBody('manager_pubkey', 'origination'), {
+          headers: { 'Content-Type': 'application/json', apiKey: 'airgap00391' }
+        })
+      ])
+
+      const combinedData = results[0].data.concat(results[1].data)
+
+      const recentTransactionData = getDataFromMostRecentTransaction(combinedData)
+      if (recentTransactionData) {
+        delegatedDate = recentTransactionData.date
+        delegatedOpLevel = recentTransactionData.opLevel
+      }
+    }
+
+    return {
+      isDelegated: data.delegate ? true : false,
+      value: data.delegate,
+      delegatedDate,
+      delegatedOpLevel
+    }
   }
 
   public async delegate(publicKey: string, delegate?: string): Promise<RawTezosTransaction> {
@@ -184,57 +276,6 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     } catch (error) {
       console.warn(error.message)
       throw new Error('Forging Tezos TX failed.')
-    }
-  }
-
-  public async isAddressDelegated(delegatedAddress: string): Promise<DelegationInfo> {
-    const { data }: AxiosResponse = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${delegatedAddress}`)
-
-    let delegatedOpLevel: number | undefined
-    let delegatedDate: Date | undefined
-
-    // if the address is delegated, check since when
-    if (data.delegate) {
-      const getDataFromMostRecentTransaction: (transactions) => { date: Date; opLevel: number } | void = (
-        transactions
-      ): { date: Date; opLevel: number } | void => {
-        if (transactions.length > 0) {
-          const mostRecentTransaction = transactions[0]
-
-          return {
-            date: new Date(mostRecentTransaction.type.operations[0].timestamp),
-            opLevel: mostRecentTransaction.type.operations[0].op_level
-          }
-        }
-      }
-
-      // We first try to get the data from the lastest delegation
-      // After that try to get it from the origination
-      const transactionSourceUrls: [string, string] = [
-        `${this.baseApiUrl}/v3/operations/${delegatedAddress}?type=Delegation`,
-        `${this.baseApiUrl}/v3/operations/${delegatedAddress}?type=Origination`
-      ]
-
-      for (const sourceUrl of transactionSourceUrls) {
-        const { data }: AxiosResponse = await axios.get(sourceUrl)
-
-        const recentTransactionData: {
-          date: Date
-          opLevel: number
-        } | void = getDataFromMostRecentTransaction(data)
-        if (recentTransactionData) {
-          delegatedDate = recentTransactionData.date
-          delegatedOpLevel = recentTransactionData.opLevel
-          break
-        }
-      }
-    }
-
-    return {
-      isDelegated: data.delegate ? true : false,
-      value: data.delegate,
-      delegatedDate,
-      delegatedOpLevel
     }
   }
 

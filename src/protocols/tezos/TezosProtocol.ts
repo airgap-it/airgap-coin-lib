@@ -158,11 +158,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
   /**
    * Tezos Implemention of ICoinProtocol
+   * @param jsonRPCAPI
+   * @param baseApiUrl
    */
-  constructor(
-    public readonly jsonRPCAPI: string = 'https://mainnet.tezrpc.me',
-    public readonly baseApiUrl: string = 'https://api6.tzscan.io'
-  ) {
+  constructor(public jsonRPCAPI = 'https://mainnet.tezrpc.me', public baseApiUrl = 'https://conseil-prod.cryptonomic-infra.tech') {
     super()
   }
 
@@ -219,52 +218,59 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     return this.getTransactionsFromAddresses(addresses, limit, offset)
   }
 
-  private getPageNumber(limit: number, offset: number): number {
-    if (limit <= 0 || offset < 0) {
-      return 0
-    }
-
-    return Math.floor(offset / limit) // we need +1 here because pages start at 1
-  }
-
   public async getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
-    const page = this.getPageNumber(limit, offset)
-
+    // TODO: implement pagination
     const allTransactions = await Promise.all(
       addresses.map(address => {
-        return axios.get(`${this.baseApiUrl}/v3/operations/${address}?type=Transaction&p=${page}&number=${limit}`)
-      })
-    )
-
-    const transactions: any[] = [].concat(
-      ...allTransactions.map(axiosData => {
-        return axiosData.data
-      })
-    )
-
-    return transactions
-      .map(obj => {
-        return obj.type.operations.filter(operation => !operation.failed).map(operation => {
-          const airGapTx: IAirGapTransaction = {
-            amount: new BigNumber(operation.amount),
-            fee: new BigNumber(operation.fee),
-            from: [operation.src.tz],
-            isInbound: addresses.indexOf(operation.destination.tz) !== -1,
-            protocolIdentifier: this.identifier,
-            to: [operation.destination.tz],
-            hash: obj.hash,
-            timestamp: new Date(operation.timestamp).getTime() / 1000, // make sure its a unix timestamp
-            blockHeight: operation.op_level // TODO show correct height
+        // return axios.get(`${this.baseApiUrl}/v3/operations/${address}?type=Transaction&p=${page}&number=${limit}`)
+        const getRequestBody = (field: string, set: string) => {
+          return {
+            predicates: [
+              {
+                field: field,
+                operation: 'eq',
+                set: [address],
+                inverse: false
+              },
+              {
+                field: 'kind',
+                operation: 'eq',
+                set: [set],
+                inverse: false
+              }
+            ],
+            limit: limit
           }
-
-          return airGapTx
+        }
+        return new Promise(async (resolve, reject) => {
+          const fromPromise = axios.post(`${this.baseApiUrl}/v2/data/tezos/mainnet/operations`, getRequestBody('source', 'transaction'), {
+            headers: { 'Content-Type': 'application/json', apikey: 'airgap00391' }
+          })
+          const toPromise = axios.post(
+            `${this.baseApiUrl}/v2/data/tezos/mainnet/operations`,
+            getRequestBody('destination', 'transaction'),
+            {
+              headers: { 'Content-Type': 'application/json', apikey: 'airgap00391' }
+            }
+          )
+          const [to, from] = await Promise.all([fromPromise, toPromise])
+          resolve([...to.data, ...from.data])
         })
       })
-      .reduce((previous: any[], current: any[]) => {
-        previous.push(...current)
-
-        return previous
-      }, [])
+    )
+    return allTransactions.map((transaction: any) => {
+      return {
+        amount: transaction.amount,
+        fee: transaction.fee,
+        from: transaction.source,
+        isInbound: addresses.indexOf(transaction.destination) !== -1,
+        protocolIdentifier: this.identifier,
+        to: transaction.destination,
+        hash: transaction.operation_group_hash,
+        timestamp: transaction.timestamp,
+        blockHeight: transaction.block_level
+      }
+    })
   }
 
   public async signWithPrivateKey(privateKey: Buffer, transaction: RawTezosTransaction): Promise<IAirGapSignedTransaction> {
