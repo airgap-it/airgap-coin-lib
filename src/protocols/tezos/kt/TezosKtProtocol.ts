@@ -341,9 +341,9 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     return this.delegationRewards(status.value, address)
   }
 
-  public async delegationRewards(tzAddress: string, ktAddress?: string): Promise<DelegationRewardInfo[]> {
+  public async delegationRewards(bakerAddress: string, delegatorAddress?: string): Promise<DelegationRewardInfo[]> {
     const { data: frozenBalance }: AxiosResponse<[{ cycle: number; deposit: string; fees: string; rewards: string }]> = await axios.get(
-      `${this.jsonRPCAPI}/chains/main/blocks/head/context/delegates/${tzAddress}/frozen_balance_by_cycle`
+      `${this.jsonRPCAPI}/chains/main/blocks/head/context/delegates/${bakerAddress}/frozen_balance_by_cycle`
     )
 
     const lastConfirmedCycle: number = frozenBalance[0].cycle - 1
@@ -356,12 +356,12 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
       frozenBalance.map(async obj => {
         const { data: delegatedBalanceAtCycle } = await axios.get(
           `${this.jsonRPCAPI}/chains/main/blocks/${(obj.cycle - 6) * BLOCK_PER_CYCLE}/context/contracts/${
-            ktAddress ? ktAddress : tzAddress
+            delegatorAddress ? delegatorAddress : bakerAddress
           }/balance`
         )
 
         const { data: stakingBalanceAtCycle } = await axios.get(
-          `${this.jsonRPCAPI}/chains/main/blocks/${(obj.cycle - 6) * BLOCK_PER_CYCLE}/context/delegates/${tzAddress}/staking_balance`
+          `${this.jsonRPCAPI}/chains/main/blocks/${(obj.cycle - 6) * BLOCK_PER_CYCLE}/context/delegates/${bakerAddress}/staking_balance`
         )
 
         return {
