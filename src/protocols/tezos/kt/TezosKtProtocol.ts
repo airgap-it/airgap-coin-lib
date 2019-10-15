@@ -63,6 +63,12 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
             operation: 'eq',
             set: [set],
             inverse: false
+          },
+          {
+            field: 'status',
+            operation: 'eq',
+            set: ['applied'],
+            inverse: false
           }
         ]
       }
@@ -71,7 +77,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
       `${this.baseApiUrl}/v2/data/tezos/mainnet/operations`,
       getRequestBody('manager_pubkey', 'origination'),
       {
-        headers: { 'Content-Type': 'application/json', apiKey: 'airgap00391' }
+        headers: this.headers
       }
     )
     const ktAddresses: string[] = data.map((origination: { originated_contracts: string }) => {
@@ -130,12 +136,20 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
       // After that try to get it from the origination
       const transactionSourceUrl = `${this.baseApiUrl}/v2/data/tezos/mainnet/operations`
       const results = await Promise.all([
-        axios.post(transactionSourceUrl, getRequestBody('source', 'delegation'), {
-          headers: { 'Content-Type': 'application/json', apiKey: 'airgap00391' }
-        }),
-        axios.post(transactionSourceUrl, getRequestBody('manager_pubkey', 'origination'), {
-          headers: { 'Content-Type': 'application/json', apiKey: 'airgap00391' }
-        })
+        axios
+          .post(transactionSourceUrl, getRequestBody('source', 'delegation'), {
+            headers: this.headers
+          })
+          .catch(() => {
+            return { data: [] }
+          }),
+        axios
+          .post(transactionSourceUrl, getRequestBody('manager_pubkey', 'origination'), {
+            headers: this.headers
+          })
+          .catch(() => {
+            return { data: [] }
+          })
       ])
 
       const combinedData = results[0].data.concat(results[1].data)
@@ -317,18 +331,14 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     return bakerInfo
   }
 
-  public async delegationInfo(ktAddress: string): Promise<DelegationRewardInfo[]> {
-    if (!ktAddress.toLowerCase().startsWith('kt')) {
-      throw new Error('non kt-address supplied')
-    }
-
-    const status: DelegationInfo = await this.isAddressDelegated(ktAddress)
+  public async delegationInfo(address: string): Promise<DelegationRewardInfo[]> {
+    const status: DelegationInfo = await this.isAddressDelegated(address)
 
     if (!status.isDelegated || !status.value) {
       throw new Error('address not delegated')
     }
 
-    return this.delegationRewards(status.value, ktAddress)
+    return this.delegationRewards(status.value, address)
   }
 
   public async delegationRewards(tzAddress: string, ktAddress?: string): Promise<DelegationRewardInfo[]> {

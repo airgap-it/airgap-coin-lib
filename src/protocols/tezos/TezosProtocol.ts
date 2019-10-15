@@ -156,6 +156,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     branch: Buffer.from(new Uint8Array([1, 52]))
   }
 
+  protected readonly headers = { 'Content-Type': 'application/json', apiKey: 'airgap00391' }
+
   /**
    * Tezos Implemention of ICoinProtocol
    * @param jsonRPCAPI
@@ -220,6 +222,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
   public async getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
     // TODO: implement pagination
+    if (offset !== 0) {
+      return []
+    }
     const allTransactions = await Promise.all(
       addresses.map(address => {
         const getRequestBody = (field: string, set: string) => {
@@ -242,17 +247,23 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
           }
         }
         return new Promise<any>(async (resolve, reject) => {
-          const fromPromise = axios.post(`${this.baseApiUrl}/v2/data/tezos/mainnet/operations`, getRequestBody('source', 'transaction'), {
-            headers: { 'Content-Type': 'application/json', apikey: 'airgap00391' }
-          })
-          const toPromise = axios.post(
-            `${this.baseApiUrl}/v2/data/tezos/mainnet/operations`,
-            getRequestBody('destination', 'transaction'),
-            {
-              headers: { 'Content-Type': 'application/json', apikey: 'airgap00391' }
-            }
-          )
+          const fromPromise = axios
+            .post(`${this.baseApiUrl}/v2/data/tezos/mainnet/operations`, getRequestBody('source', 'transaction'), {
+              headers: this.headers
+            })
+            .catch(() => {
+              return { data: [] }
+            })
+          const toPromise = axios
+            .post(`${this.baseApiUrl}/v2/data/tezos/mainnet/operations`, getRequestBody('destination', 'transaction'), {
+              headers: this.headers
+            })
+            .catch(() => {
+              return { data: [] }
+            })
           const [to, from] = await Promise.all([fromPromise, toPromise])
+          const transactions: any[] = to.data.concat(from.data)
+          transactions.sort((a, b) => a.timestamp - b.timestamp)
           resolve([...to.data, ...from.data])
         })
       })
@@ -261,14 +272,14 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       return {
         amount: transaction.amount,
         fee: transaction.fee,
-        from: transaction.source,
+        from: [transaction.source],
         isInbound: addresses.indexOf(transaction.destination) !== -1,
         protocolIdentifier: this.identifier,
-        to: transaction.destination,
+        to: [transaction.destination],
         hash: transaction.operation_group_hash,
-        timestamp: transaction.timestamp,
+        timestamp: transaction.timestamp / 1000,
         blockHeight: transaction.block_level
-      }
+      } as IAirGapTransaction
     })
   }
 
