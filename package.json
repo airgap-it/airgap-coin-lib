@@ -31,15 +31,12 @@
   },
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
-    "bip39": "2.5.0",
     "bitgo-utxo-lib": "github:airgap-it/bitgo-utxo-lib#5d91049fd7a988382df81c8260e244ee56d57aac",
     "bs58check": "2.1.2",
     "eth-lib": "0.2.7",
     "ethereumjs-tx": "1.3.7",
     "ethereumjs-util": "5.2.0",
-    "libsodium-wrappers": "0.7.3",
-    "rlp": "2.1.0",
-    "utf8": "3.0.0"
+    "libsodium-wrappers": "0.7.3"
   },
   "devDependencies": {
     "@types/node": "10.12.0",
