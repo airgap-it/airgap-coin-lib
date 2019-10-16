@@ -90,6 +90,11 @@ export interface TezosRevealOperation extends TezosOperation {
   kind: TezosOperationType.REVEAL
 }
 
+export interface TezosVotingInfo {
+  pkh: string
+  rolls: number
+}
+
 export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol {
   public symbol: string = 'XTZ'
   public name: string = 'Tezos'
@@ -1207,5 +1212,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     }
 
     return operation
+  }
+
+  public async getTezosVotingInfo(blockHash: string): Promise<Array<TezosVotingInfo>> {
+    const response: AxiosResponse = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/${blockHash}/votes/listings`)
+    return response.data
   }
 }
