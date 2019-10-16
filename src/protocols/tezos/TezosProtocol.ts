@@ -1224,4 +1224,39 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
     return operation
   }
+
+  private static FIRST_005_CYCLE: number = 160
+  private static BAKING_REWARD_PER_BLOCK = 16000000
+  public async calculateRewards(bakerAddress: string, cycle: number): Promise<string> {
+    const headMetadata = await this.fetchBlockMetadata('head')
+    const currentCycle: number = headMetadata.level.cycle
+    if (cycle < currentCycle) {
+      const bakingRightsResult = await axios.get(
+        `${this.jsonRPCAPI}/chains/main/blocks/head/helpers/baking_rights?cycle=${cycle}&delegate=${bakerAddress}&max_priority=5`
+      )
+      const bakingRights: TezosBakingRight[] = bakingRightsResult.data
+      const filteredBakingRights = bakingRights.filter(async bakingRight => {
+        const metadata = await this.fetchBlockMetadata(bakingRight.level)
+        return metadata.baker === bakerAddress
+      })
+    }
+  }
+
+  private async fetchBlockMetadata(block: number | 'head'): Promise<any> {
+    const result = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/${block}/metadata`)
+    return result.data
+  }
+}
+
+interface TezosBakingRight {
+  level: number
+  delegate: string
+  priority: number
+}
+
+interface TezosRewards {
+  bakingRewards: string
+  endorsmentRewards: string
+  fee: string
+  cycle: number
 }
