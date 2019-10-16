@@ -34,6 +34,7 @@
     "repository": "airgap-it/hd-wallet-js",
     "commitHash": "b216450e56954a6e82ace0aade9474673de5d9d5",
     "files": ["src/hd-key.js", "src/hd-wallet.js", "src/index.js"],
+    "renameFiles": [["src/hd-key.js", "src/hd-key.ts"], ["src/hd-wallet.js", "src/hd-wallet.ts"], ["src/index.js", "src/index.ts"]],
     "deps": ["tweetnacl-1.0.1", "tweetnacl-auth-1.0.1", "bip32-path-0.4.2"]
   },
   "cryptocompare-0.5.0": {
@@ -162,7 +163,7 @@
     "version": "2.4.11",
     "repository": "crypto-browserify/sha.js",
     "commitHash": "105bfe57c69e13c83fcf7a6ca660dd984cb291bf",
-    "files": ["index.js", "sha.js", "sha1.js", "sha224.js", "sha256.js", "sha384.js", "sha512.js"],
+    "files": ["index.js", "hash.js", "sha.js", "sha1.js", "sha224.js", "sha256.js", "sha384.js", "sha512.js"],
     "deps": ["inherits-2.0.4", "safe-buffer-5.2.0"]
   },
   "bip39-2.5.0": {

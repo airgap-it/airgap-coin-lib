@@ -27,4 +27,5 @@
     "noFallthroughCasesInSwitch": true /* Report errors for fallthrough cases in switch statement. */
   },
   "include": ["src/**/*"]
+  // "exclude": ["./dist/**/*", "./$$ts-node$$/**/*"]
 }
