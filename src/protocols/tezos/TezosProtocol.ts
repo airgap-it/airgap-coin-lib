@@ -1227,9 +1227,11 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
   private static FIRST_005_CYCLE: number = 160
   private static BAKING_REWARD_PER_BLOCK = 16000000
-  public async calculateRewards(bakerAddress: string, cycle: number): Promise<string> {
+  public async calculateRewards(bakerAddress: string, cycle: number): Promise<TezosRewards> {
     const headMetadata = await this.fetchBlockMetadata('head')
     const currentCycle: number = headMetadata.level.cycle
+    let computedBakingRewards = '0'
+    let computedEndorsmentRewards = '0'
     if (cycle < currentCycle) {
       const bakingRightsResult = await axios.get(
         `${this.jsonRPCAPI}/chains/main/blocks/head/helpers/baking_rights?cycle=${cycle}&delegate=${bakerAddress}&max_priority=5`
@@ -1239,6 +1241,17 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         const metadata = await this.fetchBlockMetadata(bakingRight.level)
         return metadata.baker === bakerAddress
       })
+      if (cycle >= TezosProtocol.FIRST_005_CYCLE) {
+        computedBakingRewards = filteredBakingRights
+          .reduce((current: BigNumber, next: TezosBakingRight) => {
+            // 16 / (priority + 1)
+            const bakingReward = new BigNumber(TezosProtocol.BAKING_REWARD_PER_BLOCK).div(new BigNumber(next.priority + 1))
+            return current.plus(bakingReward)
+          }, new BigNumber(0))
+          .toFixed()
+      } else {
+        computedBakingRewards = new BigNumber(filteredBakingRights.length * TezosProtocol.BAKING_REWARD_PER_BLOCK).toFixed()
+      }
     }
   }
 
@@ -1258,5 +1271,6 @@ interface TezosRewards {
   bakingRewards: string
   endorsmentRewards: string
   fee: string
+  totalRewards: string
   cycle: number
 }
