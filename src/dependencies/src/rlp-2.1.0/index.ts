@@ -59,7 +59,7 @@ export function decode(input: Buffer, stream?: boolean): Buffer
 export function decode(input: Buffer[], stream?: boolean): Buffer[]
 export function decode(input: Input, stream?: boolean): Buffer[] | Buffer | Decoded
 export function decode(input: Input, stream: boolean = false): Buffer[] | Buffer | Decoded {
-  if (!input || (<any>input).length === 0) {
+  if (!input || (input as any).length === 0) {
     return Buffer.from([])
   }
 
@@ -82,7 +82,7 @@ export function decode(input: Input, stream: boolean = false): Buffer[] | Buffer
  * @returns The length of the input or an empty Buffer if no input
  */
 export function getLength(input: Input): Buffer | number {
-  if (!input || (<any>input).length === 0) {
+  if (!input || (input as any).length === 0) {
     return Buffer.from([])
   }
 
@@ -109,7 +109,7 @@ export function getLength(input: Input): Buffer | number {
 /** Decode an input with RLP */
 function _decode(input: Buffer): Decoded {
   let length, llength, data, innerRemainder, d
-  const decoded = []
+  const decoded: any[] = []
   const firstByte = input[0]
 
   if (firstByte <= 0x7f) {
@@ -135,7 +135,7 @@ function _decode(input: Buffer): Decoded {
     }
 
     return {
-      data: data,
+      data,
       remainder: input.slice(length)
     }
   } else if (firstByte <= 0xbf) {
@@ -147,7 +147,7 @@ function _decode(input: Buffer): Decoded {
     }
 
     return {
-      data: data,
+      data,
       remainder: input.slice(length + llength)
     }
   } else if (firstByte <= 0xf7) {
@@ -244,7 +244,7 @@ function toBuffer(v: Input): Buffer {
       return Buffer.from(v as any)
     } else if (BN.isBN(v)) {
       // converts a BN to a Buffer
-      return Buffer.from(v.toArray())
+      return Buffer.from((v as any).toArray())
     } else {
       throw new Error('invalid type')
     }

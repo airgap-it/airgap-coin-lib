@@ -5,30 +5,28 @@ import { validateSyncScheme } from '../validators/validators'
 
 import { RawTezosTransaction, UnsignedTezosTransaction } from './tezos-transactions.serializer'
 
-let unsignedTransactionConstraints = {
-    binaryTransaction: {
-      isValidTezosUnsignedTransaction: true,
-      presence: { allowEmpty: false },
-      type: 'String'
-    }
-  },
-  success = () => undefined,
-  error = errors => errors
+const unsignedTransactionConstraints = {
+  binaryTransaction: {
+    isValidTezosUnsignedTransaction: true,
+    presence: { allowEmpty: false },
+    type: 'String'
+  }
+}
+const success = () => undefined
+const error = errors => errors
 
-let signedTransactionConstraints = {
-    transaction: {
-      isValidTezosSignedTransaction: true,
-      presence: { allowEmpty: false },
-      type: 'String'
-    },
-    accountIdentifier: {
-      presence: { allowEmpty: false },
-      type: 'String',
-      isPublicKey: true
-    }
+const signedTransactionConstraints = {
+  transaction: {
+    isValidTezosSignedTransaction: true,
+    presence: { allowEmpty: false },
+    type: 'String'
   },
-  success = () => undefined,
-  error = errors => errors
+  accountIdentifier: {
+    presence: { allowEmpty: false },
+    type: 'String',
+    isPublicKey: true
+  }
+}
 
 export class TezosTransactionValidator extends TransactionValidator {
   public async validateUnsignedTransaction(unsignedTx: UnsignedTezosTransaction): Promise<any> {

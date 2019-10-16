@@ -1,6 +1,4 @@
-import BN = require('../bn.js-4.11.8/bn')
-
-export type Input = Buffer | string | number | Uint8Array | BN | List | null
+export type Input = Buffer | string | number | Uint8Array | List | null
 
 // Use interface extension instead of type alias to
 // make circular declaration possible.
