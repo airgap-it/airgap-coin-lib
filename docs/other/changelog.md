@@ -1,3 +1,9 @@
+### 0.5.6 (2019-10-16)
+
+### Features
+
+- **xtz**: replace all calls to tzscan.io with calls to the conseil api
+
 ### 0.5.5 (2019-10-11)
 
 ### Features

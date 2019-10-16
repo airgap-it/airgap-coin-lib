@@ -48,19 +48,125 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
   }
 
   public async getAddressesFromPublicKey(publicKey: string): Promise<string[]> {
-    const tz1address: string = await super.getAddressFromPublicKey(publicKey)
-    const { data }: AxiosResponse = await axios.get(`${this.baseApiUrl}/v3/operations/${tz1address}?type=Origination`)
-
-    const ktAddresses: string[] = [].concat.apply(
-      [],
-      data.map((origination: { type: { operations: [{ tz1: { tz: string } }] } }) => {
-        return origination.type.operations.map((operation: { tz1: { tz: string } }) => {
-          return operation.tz1.tz
-        })
-      })
+    const tz1address = await super.getAddressFromPublicKey(publicKey)
+    const getRequestBody = (field: string, set: string) => {
+      return {
+        predicates: [
+          {
+            field: field,
+            operation: 'eq',
+            set: [tz1address],
+            inverse: false
+          },
+          {
+            field: 'kind',
+            operation: 'eq',
+            set: [set],
+            inverse: false
+          },
+          {
+            field: 'status',
+            operation: 'eq',
+            set: ['applied'],
+            inverse: false
+          }
+        ]
+      }
+    }
+    const { data } = await axios.post(
+      `${this.baseApiUrl}/v2/data/tezos/mainnet/operations`,
+      getRequestBody('manager_pubkey', 'origination'),
+      {
+        headers: this.headers
+      }
     )
-
+    const ktAddresses: string[] = data.map((origination: { originated_contracts: string }) => {
+      return origination.originated_contracts
+    })
     return ktAddresses.reverse()
+  }
+
+  public async originate(publicKey: string, delegate?: string, amount?: BigNumber): Promise<RawTezosTransaction> {
+    throw new Error('Originate operation not supported for KT Addresses')
+  }
+
+  public async isAddressDelegated(delegatedAddress: string): Promise<DelegationInfo> {
+    const { data } = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${delegatedAddress}`)
+    let delegatedOpLevel: number | undefined
+    let delegatedDate: Date | undefined
+
+    // if the address is delegated, check since when
+    if (data.delegate) {
+      const getDataFromMostRecentTransaction = (transactions): { date: Date; opLevel: number } | void => {
+        if (transactions.length > 0) {
+          const mostRecentTransaction = transactions[0]
+
+          return {
+            date: new Date(mostRecentTransaction.timestamp),
+            opLevel: mostRecentTransaction.block_level
+          }
+        }
+      }
+      const getRequestBody = (field: string, set: string) => {
+        return {
+          predicates: [
+            {
+              field: field,
+              operation: 'eq',
+              set: [delegatedAddress],
+              inverse: false
+            },
+            {
+              field: 'kind',
+              operation: 'eq',
+              set: [set],
+              inverse: false
+            }
+          ],
+          orderBy: [
+            {
+              field: 'block_level',
+              direction: 'desc'
+            }
+          ]
+        }
+      }
+
+      // We first try to get the data from the lastest delegation
+      // After that try to get it from the origination
+      const transactionSourceUrl = `${this.baseApiUrl}/v2/data/tezos/mainnet/operations`
+      const results = await Promise.all([
+        axios
+          .post(transactionSourceUrl, getRequestBody('source', 'delegation'), {
+            headers: this.headers
+          })
+          .catch(() => {
+            return { data: [] }
+          }),
+        axios
+          .post(transactionSourceUrl, getRequestBody('manager_pubkey', 'origination'), {
+            headers: this.headers
+          })
+          .catch(() => {
+            return { data: [] }
+          })
+      ])
+
+      const combinedData = results[0].data.concat(results[1].data)
+
+      const recentTransactionData = getDataFromMostRecentTransaction(combinedData)
+      if (recentTransactionData) {
+        delegatedDate = recentTransactionData.date
+        delegatedOpLevel = recentTransactionData.opLevel
+      }
+    }
+
+    return {
+      isDelegated: data.delegate ? true : false,
+      value: data.delegate,
+      delegatedDate,
+      delegatedOpLevel
+    }
   }
 
   public async delegate(publicKey: string, delegate?: string): Promise<RawTezosTransaction> {
@@ -187,57 +293,6 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     }
   }
 
-  public async isAddressDelegated(delegatedAddress: string): Promise<DelegationInfo> {
-    const { data }: AxiosResponse = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${delegatedAddress}`)
-
-    let delegatedOpLevel: number | undefined
-    let delegatedDate: Date | undefined
-
-    // if the address is delegated, check since when
-    if (data.delegate) {
-      const getDataFromMostRecentTransaction: (transactions) => { date: Date; opLevel: number } | void = (
-        transactions
-      ): { date: Date; opLevel: number } | void => {
-        if (transactions.length > 0) {
-          const mostRecentTransaction = transactions[0]
-
-          return {
-            date: new Date(mostRecentTransaction.type.operations[0].timestamp),
-            opLevel: mostRecentTransaction.type.operations[0].op_level
-          }
-        }
-      }
-
-      // We first try to get the data from the lastest delegation
-      // After that try to get it from the origination
-      const transactionSourceUrls: [string, string] = [
-        `${this.baseApiUrl}/v3/operations/${delegatedAddress}?type=Delegation`,
-        `${this.baseApiUrl}/v3/operations/${delegatedAddress}?type=Origination`
-      ]
-
-      for (const sourceUrl of transactionSourceUrls) {
-        const { data }: AxiosResponse = await axios.get(sourceUrl)
-
-        const recentTransactionData: {
-          date: Date
-          opLevel: number
-        } | void = getDataFromMostRecentTransaction(data)
-        if (recentTransactionData) {
-          delegatedDate = recentTransactionData.date
-          delegatedOpLevel = recentTransactionData.opLevel
-          break
-        }
-      }
-    }
-
-    return {
-      isDelegated: data.delegate ? true : false,
-      value: data.delegate,
-      delegatedDate,
-      delegatedOpLevel
-    }
-  }
-
   public async bakerInfo(tzAddress: string): Promise<BakerInfo> {
     if (
       !(tzAddress.toLowerCase().startsWith('tz1') || tzAddress.toLowerCase().startsWith('tz2') || tzAddress.toLowerCase().startsWith('tz3'))
@@ -276,23 +331,19 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     return bakerInfo
   }
 
-  public async delegationInfo(ktAddress: string): Promise<DelegationRewardInfo[]> {
-    if (!ktAddress.toLowerCase().startsWith('kt')) {
-      throw new Error('non kt-address supplied')
-    }
-
-    const status: DelegationInfo = await this.isAddressDelegated(ktAddress)
+  public async delegationInfo(address: string): Promise<DelegationRewardInfo[]> {
+    const status: DelegationInfo = await this.isAddressDelegated(address)
 
     if (!status.isDelegated || !status.value) {
       throw new Error('address not delegated')
     }
 
-    return this.delegationRewards(status.value, ktAddress)
+    return this.delegationRewards(status.value, address)
   }
 
-  public async delegationRewards(tzAddress: string, ktAddress?: string): Promise<DelegationRewardInfo[]> {
+  public async delegationRewards(bakerAddress: string, delegatorAddress?: string): Promise<DelegationRewardInfo[]> {
     const { data: frozenBalance }: AxiosResponse<[{ cycle: number; deposit: string; fees: string; rewards: string }]> = await axios.get(
-      `${this.jsonRPCAPI}/chains/main/blocks/head/context/delegates/${tzAddress}/frozen_balance_by_cycle`
+      `${this.jsonRPCAPI}/chains/main/blocks/head/context/delegates/${bakerAddress}/frozen_balance_by_cycle`
     )
 
     const lastConfirmedCycle: number = frozenBalance[0].cycle - 1
@@ -305,12 +356,12 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
       frozenBalance.map(async obj => {
         const { data: delegatedBalanceAtCycle } = await axios.get(
           `${this.jsonRPCAPI}/chains/main/blocks/${(obj.cycle - 6) * BLOCK_PER_CYCLE}/context/contracts/${
-            ktAddress ? ktAddress : tzAddress
+            delegatorAddress ? delegatorAddress : bakerAddress
           }/balance`
         )
 
         const { data: stakingBalanceAtCycle } = await axios.get(
-          `${this.jsonRPCAPI}/chains/main/blocks/${(obj.cycle - 6) * BLOCK_PER_CYCLE}/context/delegates/${tzAddress}/staking_balance`
+          `${this.jsonRPCAPI}/chains/main/blocks/${(obj.cycle - 6) * BLOCK_PER_CYCLE}/context/delegates/${bakerAddress}/staking_balance`
         )
 
         return {
