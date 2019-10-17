@@ -1344,12 +1344,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   private async fetchEndorsmentOperations(block: number): Promise<TezosEndorsmentOperation[]> {
     const operationResult = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/${block}/operations`)
     const operations: any[][] = operationResult.data
-    const endorsments: TezosEndorsmentOperation[] = operations
+    const endorsments: TezosEndorsmentOperation[] = operations[0]
       .reduce((current, next) => {
-        const first = current.reduce((current, next) => current.contents.contact(next.contents))
-        const second = next.reduce((current, next) => current.contents.contact(next.contents))
-        return first.concat(second)
-      })
+        return current.concat(next.contents !== undefined ? next.contents : [])
+      }, [])
       .filter(operation => operation.kind === 'endorsement')
     return endorsments
   }
