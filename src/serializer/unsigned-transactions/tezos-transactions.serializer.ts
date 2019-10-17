@@ -1,4 +1,3 @@
-import { TezosTransactionValidator } from './tezos-transactions.validator'
 import {
   SerializedSyncProtocolTransaction,
   SyncProtocolUnsignedTransactionKeys,
@@ -6,6 +5,8 @@ import {
   UnsignedTransactionSerializer
 } from '../unsigned-transaction.serializer'
 import { toBuffer } from '../utils/toBuffer'
+
+import { TezosTransactionValidator } from './tezos-transactions.validator'
 
 export type SerializedUnsignedTezosTransaction = [Buffer]
 

@@ -1,4 +1,3 @@
-import { BitcoinProtocolSpec } from './specs/bitcoin'
 import { expect } from 'chai'
 import 'mocha'
 
@@ -8,6 +7,7 @@ import { getProtocolByIdentifier } from '../../src/utils/protocolsByIdentifier'
 
 import { TestProtocolSpec } from './implementations'
 import { AETestProtocolSpec } from './specs/ae'
+import { BitcoinProtocolSpec } from './specs/bitcoin'
 import { ERC20HOPTokenTestProtocolSpec } from './specs/erc20-hop-token'
 import { EthereumTestProtocolSpec } from './specs/ethereum'
 import { GenericERC20TokenTestProtocolSpec } from './specs/generic-erc20-token'

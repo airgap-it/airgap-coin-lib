@@ -1,4 +1,4 @@
-import { validate } from '../../dependencies/src/validate.js-0.13.1/validate'
+import { async } from '../../dependencies/src/validate.js-0.13.1/validate'
 import { SignedTezosTransaction } from '../signed-transactions/tezos-transactions.serializer'
 import { TransactionValidator } from '../validators/transactions.validator'
 import { validateSyncScheme } from '../validators/validators'
@@ -32,9 +32,9 @@ export class TezosTransactionValidator extends TransactionValidator {
   public async validateUnsignedTransaction(unsignedTx: UnsignedTezosTransaction): Promise<any> {
     const rawTx: RawTezosTransaction = unsignedTx.transaction
     validateSyncScheme({})
-    return validate(rawTx, unsignedTransactionConstraints).then(success, error)
+    return async(rawTx, unsignedTransactionConstraints).then(success, error)
   }
   public validateSignedTransaction(signedTx: SignedTezosTransaction): Promise<any> {
-    return validate(signedTx, signedTransactionConstraints).then(success, error)
+    return async(signedTx, signedTransactionConstraints).then(success, error)
   }
 }
