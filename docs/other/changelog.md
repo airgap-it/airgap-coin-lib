@@ -1,3 +1,9 @@
+### 0.5.8 (2019-10-18)
+
+### Features
+
+- **xtz**: added rewards and payouts calculations
+
 ### 0.5.7 (2019-10-18)
 
 ### Features

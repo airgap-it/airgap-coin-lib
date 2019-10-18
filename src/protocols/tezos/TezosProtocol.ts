@@ -1249,7 +1249,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     let totalRewards = '0'
     if (cycle < currentCycle) {
       // baking rewards
-      const bakingRights: TezosBakingRight[] = await this.fetchBakingRights(bakerAddress, cycle * TezosProtocol.BLOCKS_PER_CYCLE, cycle, 5)
+      const bakingRights: TezosBakingRight[] = await this.fetchBakingRights(bakerAddress, cycle * TezosProtocol.BLOCKS_PER_CYCLE, cycle)
       const blockLevels = bakingRights.map(br => br.level)
       if (blockLevels.length > 0) {
         const blockBakers = await this.fetchBlockBakers(blockLevels)
