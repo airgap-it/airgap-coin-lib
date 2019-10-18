@@ -1234,10 +1234,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     let computedEndorsingRewards = '0'
     let fees = '0'
     let totalRewards = '0'
-    let payouts = {}
     if (cycle < currentCycle) {
       // baking rewards
-      const bakingRights: TezosBakingRight[] = await this.fetchBakingRights(bakerAddress, cycle, 5)
+      const bakingRights: TezosBakingRight[] = await this.fetchBakingRights(bakerAddress, cycle * TezosProtocol.BLOCKS_PER_CYCLE, cycle, 5)
       const blockLevels = bakingRights.map(br => br.level)
       const blockBakers = await this.fetchBlockBakers(blockLevels)
       const filteredBakingRights = bakingRights.filter(async bakingRight => {
@@ -1248,11 +1247,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         return block.baker === bakerAddress
       })
       computedBakingRewards = (await this.computeBakingRewards(filteredBakingRights, is005, false)).toFixed()
-      console.log('COMPUTED BAKING REWARDS', computedBakingRewards)
 
       // endorsing rewards
-      const endorsingRights = await this.fetchEndorsingRights(bakerAddress, cycle)
-      const endorsingOperations = await this.fetchEndorsementOperations2(cycle, bakerAddress)
+      const endorsingRights = await this.fetchEndorsingRights(bakerAddress, cycle * TezosProtocol.BLOCKS_PER_CYCLE, cycle)
+      const endorsingOperations = await this.fetchEndorsementOperations(cycle, bakerAddress)
       const filteredEndorsingRights = endorsingRights.filter(async endorsingRight => {
         const found = endorsingOperations.find(operation => {
           return operation.delegate === bakerAddress
@@ -1260,7 +1258,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         return found !== undefined
       })
       computedEndorsingRewards = (await this.computeEndorsingRewards(filteredEndorsingRights, false)).toFixed()
-      console.log('COMPUTED ENDORSING REWARDS', computedEndorsingRewards)
 
       const forzenBalance = (await this.fetchFrozenBalances((cycle + 1) * TezosProtocol.BLOCKS_PER_CYCLE, bakerAddress)).find(
         fb => fb.cycle == cycle
@@ -1270,9 +1267,12 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         totalRewards = forzenBalance.rewards
       }
     } else {
-      const bakingRights = await this.fetchBakingRights(bakerAddress, cycle, 1)
+      if (cycle - currentCycle > 5) {
+        throw new Error('Provided cycle is invalid')
+      }
+      const bakingRights = await this.fetchBakingRights(bakerAddress, 'head', cycle, 1)
       computedBakingRewards = (await this.computeBakingRewards(bakingRights, is005, true)).toFixed()
-      const endorsingRights = await this.fetchEndorsingRights(bakerAddress, cycle)
+      const endorsingRights = await this.fetchEndorsingRights(bakerAddress, 'head', cycle)
       computedEndorsingRewards = (await this.computeEndorsingRewards(endorsingRights, true)).toFixed()
       totalRewards = new BigNumber(computedBakingRewards).plus(new BigNumber(computedEndorsingRewards)).toFixed()
       const forzenBalances = await this.fetchFrozenBalances('head', bakerAddress)
@@ -1285,22 +1285,43 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     const snapshotLevel = await this.computeSnapshotBlockLevel(cycle, cycle < currentCycle ? undefined : 'head')
     const bakerInfo = await this.fetchDelegateInfo(bakerAddress, snapshotLevel)
     const stakingBalance = new BigNumber(bakerInfo.staking_balance)
-    const totalRewardsBN = new BigNumber(totalRewards).plus(new BigNumber(fees))
-    for (const delegator of bakerInfo.delegated_contracts) {
-      const balance = await this.fetchContractBalance(snapshotLevel, delegator)
-      const share = balance.div(stakingBalance)
-      const payoutAmount = totalRewardsBN.multipliedBy(share)
-      payouts[delegator] = payoutAmount.toFixed()
-    }
 
     return {
+      baker: bakerAddress,
+      stakingBalance: stakingBalance.toFixed(),
       bakingRewards: computedBakingRewards,
       endorsingRewards: computedEndorsingRewards,
       cycle: cycle,
       fees: fees,
       totalRewards: totalRewards,
-      payouts: payouts
+      snapshotBlockLevel: snapshotLevel,
+      delegatedContracts: bakerInfo.delegated_contracts
     }
+  }
+
+  public async computePayouts(
+    rewards: TezosRewards,
+    offset: number,
+    limit: number
+  ): Promise<{ delegator: string; share: string; payout: string }[]> {
+    const result: { delegator: string; share: string; payout: string }[] = []
+    const totalRewardsBN = new BigNumber(rewards.totalRewards).plus(new BigNumber(rewards.fees))
+    const limitIndex = offset + limit
+    for (let i = offset; i < limitIndex && i < rewards.delegatedContracts.length; i++) {
+      const delegator = rewards.delegatedContracts[i]
+      let balance = await this.fetchContractBalance(rewards.snapshotBlockLevel, delegator)
+      if (balance === undefined) {
+        balance = new BigNumber(0)
+      }
+      const share = balance.div(rewards.stakingBalance)
+      const payoutAmount = totalRewardsBN.multipliedBy(share)
+      result.push({
+        delegator: delegator,
+        share: share.toFixed(),
+        payout: payoutAmount.toFixed()
+      })
+    }
+    return result
   }
 
   private async fetchBlockMetadata(block: number | 'head'): Promise<any> {
@@ -1324,11 +1345,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     return result.data
   }
 
-  // private async fetchBlock(block: number | 'head'): Promise<any> {
-  //   const result = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/${block}`)
-  //   return result.data
-  // }
-
   private async fetchBlockPriorities(blockLevels: number[]): Promise<{ priority: number; level: number }[]> {
     const query = {
       fields: ['priority', 'level'],
@@ -1345,10 +1361,15 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     return result.data
   }
 
-  private async fetchBakingRights(bakerAddress: string, cycle: number, maxPriority?: number): Promise<TezosBakingRight[]> {
+  private async fetchBakingRights(
+    bakerAddress: string,
+    blockLevel: number | 'head',
+    cycle: number,
+    maxPriority?: number
+  ): Promise<TezosBakingRight[]> {
     const maxPriorityArg = maxPriority !== undefined ? `&max_priority=${maxPriority}` : ''
     const bakingRightsResult = await axios.get(
-      `${this.jsonRPCAPI}/chains/main/blocks/head/helpers/baking_rights?cycle=${cycle}&delegate=${bakerAddress}${maxPriorityArg}`
+      `${this.jsonRPCAPI}/chains/main/blocks/${blockLevel}/helpers/baking_rights?cycle=${cycle}&delegate=${bakerAddress}${maxPriorityArg}`
     )
     return bakingRightsResult.data
   }
@@ -1358,15 +1379,22 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     let result = new BigNumber(0)
     if (is005) {
       const levels = bakingRights.map(br => br.level)
-      const endrosementCounts = await this.fetchEndorsementOperationCount(levels)
+      let endrosementCounts: { level: number; count_kind: string }[] = []
+      if (!isFutureCycle) {
+        endrosementCounts = await this.fetchEndorsementOperationCount(levels)
+      }
       result = bakingRights.reduce((current: BigNumber, next: TezosBakingRight) => {
         // (16 / (priority + 1)) * (0.8 + (0.2 * (e / 32)))
-        const count = endrosementCounts.find(op => op.level == next.level)
-        if (count === undefined) {
-          throw new Error('Cannot find endorsement operation count')
+        let count = 32
+        if (!isFutureCycle) {
+          const endorsementCount = endrosementCounts.find(op => op.level === next.level)
+          if (endorsementCount === undefined) {
+            throw new Error('Cannot find endorsement operation count')
+          }
+          count = parseInt(endorsementCount.count_kind)
         }
         const p = next.priority
-        const e = isFutureCycle ? 32 : parseInt(count.count_kind)
+        const e = count
         const bakingReward = new BigNumber(TezosProtocol.BAKING_REWARD_PER_BLOCK).div(new BigNumber(p + 1)).times(0.8 + 0.2 * (e / 32))
 
         return current.plus(bakingReward)
@@ -1377,25 +1405,14 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     return result
   }
 
-  private async fetchEndorsingRights(bakerAddress: string, cycle: number): Promise<TezosEndorsingRight[]> {
+  private async fetchEndorsingRights(bakerAddress: string, blockLevel: number | 'head', cycle: number): Promise<TezosEndorsingRight[]> {
     const endorsingRightsResult = await axios.get(
-      `${this.jsonRPCAPI}/chains/main/blocks/head/helpers/endorsing_rights?cycle=${cycle}&delegate=${bakerAddress}`
+      `${this.jsonRPCAPI}/chains/main/blocks/${blockLevel}/helpers/endorsing_rights?cycle=${cycle}&delegate=${bakerAddress}`
     )
     return endorsingRightsResult.data
   }
 
-  // private async fetchEndorsementOperations(block: number): Promise<TezosEndorsmentOperation[]> {
-  //   const operationResult = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/${block}/operations`)
-  //   const operations: any[][] = operationResult.data
-  //   const endorsments: TezosEndorsmentOperation[] = operations[0]
-  //     .reduce((current, next) => {
-  //       return current.concat(next.contents !== undefined ? next.contents : [])
-  //     }, [])
-  //     .filter(operation => operation.kind === 'endorsement')
-  //   return endorsments
-  // }
-
-  private async fetchEndorsementOperations2(cycle: number, bakerAddress: string): Promise<{ level: number; delegate: string }[]> {
+  private async fetchEndorsementOperations(cycle: number, bakerAddress: string): Promise<{ level: number; delegate: string }[]> {
     const query = {
       fields: ['level', 'delegate'],
       predicates: [
@@ -1522,28 +1539,17 @@ interface TezosEndorsingRight {
   slots: number[]
 }
 
-interface TezosRewards {
+export interface TezosRewards {
+  baker: string
+  stakingBalance: string
   bakingRewards: string
   endorsingRewards: string
   fees: string
   totalRewards: string
   cycle: number
-  payouts?: any
+  snapshotBlockLevel: number
+  delegatedContracts: string[]
 }
-
-// interface TezosEndorsmentOperation {
-//   kind: string
-//   level: number
-//   metadata: {
-//     balance_updates: {
-//       kind: string
-//       contract: string
-//       change: string
-//     }[]
-//     delegate: string
-//     slots: number[]
-//   }
-// }
 
 interface TezosDelegateInfo {
   balance: string

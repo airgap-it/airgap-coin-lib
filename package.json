@@ -26,7 +26,7 @@
     "test-legacy": "npm run build && mocha --full-trace --timeout 40000 ./test/**/**.spec.js",
     "sonar-scanner": "sonar-scanner",
     "prepare": "npm run build",
-    "browserify": "browserify ./dist/index.js -s airgapCoinLib -o ~/Desktop/www/airgap-coin-lib.browserify.js"
+    "browserify": "browserify"
   },
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
