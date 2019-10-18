@@ -1,3 +1,9 @@
+### 0.5.7 (2019-10-18)
+
+### Features
+
+- **xtz**: now using a different tezos node for rpc calls
+
 ### 0.5.6 (2019-10-16)
 
 ### Features

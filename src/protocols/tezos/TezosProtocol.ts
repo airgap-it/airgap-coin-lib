@@ -168,7 +168,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
    * @param jsonRPCAPI
    * @param baseApiUrl
    */
-  constructor(public jsonRPCAPI = 'https://mainnet.tezrpc.me', public baseApiUrl = 'https://conseil-prod.cryptonomic-infra.tech') {
+  constructor(
+    public jsonRPCAPI = 'https://tezos-node.prod.gke.papers.tech',
+    public baseApiUrl = 'https://conseil-prod.cryptonomic-infra.tech'
+  ) {
     super()
   }
 
