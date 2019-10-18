@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "es5",
-    "lib": ["es2015", "es2017.string", "dom"],
+    "lib": ["es2015", "es7", "es2017.string", "dom"],
     "module": "commonjs",
     // "declaration": true,
     "allowJs": true,

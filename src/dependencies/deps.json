@@ -47,7 +47,8 @@
     "version": "a4b60b35d12af863026d6d723bec73b172c4e5b7",
     "repository": "airgap-it/abi-decoder",
     "commitHash": "a4b60b35d12af863026d6d723bec73b172c4e5b7",
-    "files": ["index.js"]
+    "files": ["index.js"],
+    "ignoredDeps": [{ "module": "babel-core", "reason": "unused dependency" }]
   },
   "axios-0.19.0": {
     "version": "0.19.0",
@@ -201,7 +202,7 @@
     "deps": ["create-hash-1.2.0", "create-hmac-1.1.4", "ripemd160-2.0.2", "safe-buffer-5.2.0", "sha.js-2.4.11"]
   },
   "create-hmac-1.1.4": {
-    "version": "1.14",
+    "version": "1.1.4",
     "repository": "crypto-browserify/createHmac",
     "commitHash": "3c7dd3047b5ab3e3be44d802241d224f0c9e2325",
     "files": ["browser.js", "index.js"],
@@ -326,9 +327,9 @@
     "repository": "ecowden/require-path",
     "commitHash": "52b8026581727706080d4c510a42a4dc43792ef9",
     "files": ["lib/index.js", "lib/getAllFiles.js", "lib/getFilteredFiles.js"],
-    "deps": ["highland-2.5.1", " minimatch-3.0.3"]
+    "deps": ["highland-2.5.1", "minimatch-3.0.3"]
   },
-  "highlang-2.5.1": {
+  "highland-2.5.1": {
     "version": "2.5.1",
     "repository": "caolan/highland",
     "commitHash": "d7fbb1d03c23a8817fb121e34bff40585b2ff964",
