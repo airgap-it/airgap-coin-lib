@@ -281,6 +281,22 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
     it('can unforge a delegation TX', async () => {})
 
     it('can give a list of transactions from TZScan API', async () => {
+      const stub = sinon.stub(axios, 'post')
+      stub.withArgs(`${tezosLib.baseApiUrl}/v2/data/tezos/mainnet/operations`).returns(
+        Promise.resolve({
+          data: [
+            {
+              source: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L',
+              timestamp: 1561035943000,
+              block_level: 261513,
+              operation_group_hash: 'ooNNmftGhsUriHVWYgHGq6AE3F2sHZFYaCq41NQZSeUdm1UZEAP',
+              amount: 1000000,
+              destination: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L',
+              fee: 1420
+            }
+          ]
+        })
+      )
       const transactions = await tezosLib.getTransactionsFromAddresses(tezosProtocolSpec.wallet.addresses, 20, 0)
 
       expect(transactions).to.deep.equal([
@@ -289,7 +305,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
           fee: new BigNumber(1420),
           from: ['tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'],
           isInbound: true,
-          timestamp: 1546941735,
+          timestamp: 1561035943,
           protocolIdentifier: tezosLib.identifier,
           to: ['tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'],
           hash: 'ooNNmftGhsUriHVWYgHGq6AE3F2sHZFYaCq41NQZSeUdm1UZEAP',
@@ -300,7 +316,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
           fee: new BigNumber(1420),
           from: ['tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'],
           isInbound: true,
-          timestamp: 1546941735,
+          timestamp: 1561035943,
           protocolIdentifier: tezosLib.identifier,
           to: ['tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'],
           hash: 'ooNNmftGhsUriHVWYgHGq6AE3F2sHZFYaCq41NQZSeUdm1UZEAP',

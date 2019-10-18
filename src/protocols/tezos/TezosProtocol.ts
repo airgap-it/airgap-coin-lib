@@ -90,6 +90,11 @@ export interface TezosRevealOperation extends TezosOperation {
   kind: TezosOperationType.REVEAL
 }
 
+export interface TezosVotingInfo {
+  pkh: string
+  rolls: number
+}
+
 export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol {
   public symbol: string = 'XTZ'
   public name: string = 'Tezos'
@@ -270,8 +275,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     )
     return allTransactions.reduce((current, next) => current.concat(next)).map((transaction: any) => {
       return {
-        amount: transaction.amount,
-        fee: transaction.fee,
+        amount: new BigNumber(transaction.amount),
+        fee: new BigNumber(transaction.fee),
         from: [transaction.source],
         isInbound: addresses.indexOf(transaction.destination) !== -1,
         protocolIdentifier: this.identifier,
@@ -1223,6 +1228,11 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     }
 
     return operation
+  }
+
+  public async getTezosVotingInfo(blockHash: string): Promise<Array<TezosVotingInfo>> {
+    const response: AxiosResponse = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/${blockHash}/votes/listings`)
+    return response.data
   }
 
   private static FIRST_005_CYCLE: number = 160
