@@ -25,7 +25,8 @@
     "test-ci": "nyc --reporter=lcov npm test",
     "test-legacy": "npm run build && mocha --full-trace --timeout 40000 ./test/**/**.spec.js",
     "sonar-scanner": "sonar-scanner",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "browserify": "browserify ./dist/index.js -s airgapCoinLib -o ~/Desktop/www/airgap-coin-lib.browserify.js"
   },
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
@@ -78,7 +79,8 @@
     "tslint-config-prettier": "1.15.0",
     "tslint-config-valorsoft": "2.2.1",
     "typescript": "3.5.3",
-    "websocket": "1.0.28"
+    "websocket": "1.0.28",
+    "browserify": "^16.5.0"
   },
   "nyc": {
     "include": [
