@@ -1316,7 +1316,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     }
   }
 
-  public async computePayouts(
+  public async calculatePayouts(
     rewards: TezosRewards,
     offset: number,
     limit: number
