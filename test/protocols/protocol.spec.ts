@@ -16,7 +16,6 @@ import { EthereumClassicTestProtocolSpec } from './specs/ethereum-classic'
 import { EthereumRopstenTestProtocolSpec } from './specs/ethereum-ropsten'
 import { GenericERC20TokenTestProtocolSpec } from './specs/generic-erc20-token'
 import { GroestlcoinProtocolSpec } from './specs/groestl'
-// import { KtTezosTestProtocolSpec } from './specs/kt-tezos'
 import { TezosTestProtocolSpec } from './specs/tezos'
 
 // use chai-as-promised plugin
@@ -42,7 +41,6 @@ const protocols = [
   new EthereumRopstenTestProtocolSpec(),
   new AETestProtocolSpec(),
   new TezosTestProtocolSpec(),
-  //  new KtTezosTestProtocolSpec(),
   new BitcoinProtocolSpec(),
   new BitcoinTestProtocolSpec(),
   new GenericERC20TokenTestProtocolSpec(),
