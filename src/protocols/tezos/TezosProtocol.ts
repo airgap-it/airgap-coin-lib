@@ -1251,15 +1251,17 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       // baking rewards
       const bakingRights: TezosBakingRight[] = await this.fetchBakingRights(bakerAddress, cycle * TezosProtocol.BLOCKS_PER_CYCLE, cycle, 5)
       const blockLevels = bakingRights.map(br => br.level)
-      const blockBakers = await this.fetchBlockBakers(blockLevels)
-      const filteredBakingRights = bakingRights.filter(async bakingRight => {
-        const block = blockBakers.find(bb => bb.level === bakingRight.level)
-        if (block === undefined) {
-          throw new Error("Cannot find block's baker")
-        }
-        return block.baker === bakerAddress
-      })
-      computedBakingRewards = (await this.computeBakingRewards(filteredBakingRights, is005, false)).toFixed()
+      if (blockLevels.length > 0) {
+        const blockBakers = await this.fetchBlockBakers(blockLevels)
+        const filteredBakingRights = bakingRights.filter(async bakingRight => {
+          const block = blockBakers.find(bb => bb.level === bakingRight.level)
+          if (block === undefined) {
+            throw new Error("Cannot find block's baker")
+          }
+          return block.baker === bakerAddress
+        })
+        computedBakingRewards = (await this.computeBakingRewards(filteredBakingRights, is005, false)).toFixed()
+      }
 
       // endorsing rewards
       const endorsingRights = await this.fetchEndorsingRights(bakerAddress, cycle * TezosProtocol.BLOCKS_PER_CYCLE, cycle)
@@ -1296,7 +1298,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     }
 
     const snapshotLevel = await this.computeSnapshotBlockLevel(cycle, cycle < currentCycle ? undefined : 'head')
-    const bakerInfo = await this.fetchDelegateInfo(bakerAddress, snapshotLevel)
+    const bakerInfo = await this.fetchDelegateInfo(bakerAddress, snapshotLevel).catch(() => {
+      return { staking_balance: '0', delegated_contracts: [] }
+    })
     const stakingBalance = new BigNumber(bakerInfo.staking_balance)
 
     return {
@@ -1484,7 +1488,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   private async computeEndorsingRewards(endorsingRights: TezosEndorsingRight[], isFutureCycle: boolean): Promise<BigNumber> {
     const levels = endorsingRights.map(er => er.level)
     let priorities: { priority: number; level: number }[] = []
-    if (!isFutureCycle) {
+    if (!isFutureCycle && levels.length > 0) {
       priorities = await this.fetchBlockPriorities(levels)
     }
     return endorsingRights.reduce((current, next) => {
