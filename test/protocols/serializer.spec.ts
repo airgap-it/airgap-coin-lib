@@ -11,14 +11,14 @@ import { BitcoinTestProtocolSpec } from './specs/bitcoin-test'
 import { ERC20HOPTokenTestProtocolSpec } from './specs/erc20-hop-token'
 import { EthereumTestProtocolSpec } from './specs/ethereum'
 import { GenericERC20TokenTestProtocolSpec } from './specs/generic-erc20-token'
-// import { TezosTestProtocolSpec } from './specs/tezos'
+import { TezosTestProtocolSpec } from './specs/tezos'
 
 const protocols = [
   new EthereumTestProtocolSpec(),
   new BitcoinTestProtocolSpec(),
   new AETestProtocolSpec(),
   new ERC20HOPTokenTestProtocolSpec(),
-  // new TezosTestProtocolSpec(),
+  new TezosTestProtocolSpec(),
   new GenericERC20TokenTestProtocolSpec()
 ]
 
