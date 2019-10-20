@@ -1,8 +1,7 @@
 import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
-import { XrpProtocol, IRippleLedgerProvider } from '../../../lib/protocols/xrp/XrpProtocol'
+import { XrpProtocol } from '../../../src/protocols/xrp/XrpProtocol'
 import * as sinon from 'sinon'
-import BigNumber from 'bignumber.js'
-import { RippleAPI, FormattedTransactionType, RippleAPIBroadcast } from 'ripple-lib'
+import { RippleAPI } from 'ripple-lib'
 import { FormattedGetAccountInfoResponse } from 'ripple-lib/dist/npm/ledger/accountinfo'
 
 export class XrpProtocolStub implements ProtocolHTTPStub {
