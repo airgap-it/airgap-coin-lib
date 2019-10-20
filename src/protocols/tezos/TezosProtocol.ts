@@ -392,20 +392,24 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     fee: BigNumber,
     data?: { addressIndex: number }
   ): Promise<RawTezosTransaction> {
-    let counter: BigNumber = new BigNumber(1)
+    if (recipients.length !== values.length) {
+      throw new Error('length of recipients and values does not match!')
+    }
+
+    let counter = new BigNumber(1)
     let branch: string
 
     const operations: TezosOperation[] = []
 
     // check if we got an address-index
-    const addressIndex: number = data && data.addressIndex ? data.addressIndex : 0
-    const addresses: string[] = await this.getAddressesFromPublicKey(publicKey)
+    const addressIndex = data && data.addressIndex ? data.addressIndex : 0
+    const addresses = await this.getAddressesFromPublicKey(publicKey)
 
     if (!addresses[addressIndex]) {
       throw new Error('no kt-address with this index exists')
     }
 
-    const address: string = addresses[addressIndex]
+    const address = addresses[addressIndex]
 
     try {
       const results = await Promise.all([
@@ -417,10 +421,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       counter = new BigNumber(results[0].data).plus(1)
       branch = results[1].data
 
-      const accountManager: string = results[2].data
+      const accountManager = results[2].data
 
       // check if we have revealed the address already
-      if (!accountManager) {
+      if (!accountManager.key) {
         operations.push(await this.createRevealOperation(counter, publicKey, address))
         counter = counter.plus(1)
       }
@@ -428,10 +432,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       throw error
     }
 
-    const balance: BigNumber = await this.getBalanceOfPublicKey(publicKey)
-    const receivingBalance: BigNumber = await this.getBalanceOfAddresses(recipients)
+    const balance = await this.getBalanceOfPublicKey(publicKey)
+    const receivingBalance = await this.getBalanceOfAddresses(recipients)
 
-    const amountUsedByPreviousOperations: BigNumber = this.getAmountUsedByPreviousOperations(operations)
+    const amountUsedByPreviousOperations = this.getAmountUsedByPreviousOperations(operations)
 
     if (!amountUsedByPreviousOperations.isZero()) {
       if (balance.isLessThan(values[0].plus(fee).plus(amountUsedByPreviousOperations))) {
@@ -440,47 +444,49 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       }
     }
 
-    // if our receiver has 0 balance, the account is not activated yet.
-    if (receivingBalance.isZero() && recipients[0].toLowerCase().startsWith('tz')) {
-      // We have to supply an additional 0.257 XTZ fee for storage_limit costs, which gets automatically deducted from the sender so we just have to make sure enough balance is around
-      // check whether the sender has enough to cover the amount to send + fee + activation
-      if (balance.isLessThan(values[0].plus(fee).plus(this.activationBurn))) {
-        // if not, make room for the init fee
-        values[0] = values[0].minus(this.activationBurn) // deduct fee from balance
+    for (let i = 0; i < recipients.length; i++) {
+      console.log('PREPARING TX', i)
+
+      // if our receiver has 0 balance, the account is not activated yet.
+      if (receivingBalance.isZero() && recipients[i].toLowerCase().startsWith('tz')) {
+        // We have to supply an additional 0.257 XTZ fee for storage_limit costs, which gets automatically deducted from the sender so we just have to make sure enough balance is around
+        // check whether the sender has enough to cover the amount to send + fee + activation
+        if (balance.isLessThan(values[i].plus(fee).plus(this.activationBurn))) {
+          // if not, make room for the init fee
+          values[i] = values[i].minus(this.activationBurn) // deduct fee from balance
+        }
       }
+
+      if (balance.isEqualTo(values[i].plus(fee))) {
+        // Tezos accounts can never be empty. If user tries to send everything, we must leave 1 mutez behind.
+        values[i] = values[i].minus(1)
+      } else if (balance.isLessThan(values[i].plus(fee))) {
+        throw new Error('not enough balance')
+      }
+
+      const spendOperation: TezosSpendOperation = {
+        kind: TezosOperationType.TRANSACTION,
+        fee: fee.toFixed(),
+        gas_limit: '10100', // taken from eztz
+        storage_limit: receivingBalance.isZero() && recipients[i].toLowerCase().startsWith('tz') ? '300' : '0', // taken from eztz
+        amount: values[i].toFixed(),
+        counter: counter.plus(i).toFixed(),
+        destination: recipients[i],
+        source: address
+      }
+
+      operations.push(spendOperation)
     }
-
-    if (balance.isEqualTo(values[0].plus(fee))) {
-      // Tezos accounts can never be empty. If user tries to send everything, we must leave 1 mutez behind.
-      values[0] = values[0].minus(1)
-    } else if (balance.isLessThan(values[0].plus(fee))) {
-      throw new Error('not enough balance')
-    }
-
-    // When sending money to a contract the gas limit and fee needs to be higher.
-    const gasLimit: string = recipients[0].toLowerCase().startsWith('kt') ? '15385' : '10300'
-    const adjustedFee: BigNumber = recipients[0].toLowerCase().startsWith('kt') ? fee.plus(500) : fee
-
-    const spendOperation: TezosSpendOperation = {
-      kind: TezosOperationType.TRANSACTION,
-      fee: adjustedFee.toFixed(),
-      gas_limit: gasLimit, // taken from eztz
-      storage_limit: receivingBalance.isZero() && recipients[0].toLowerCase().startsWith('tz') ? '300' : '0', // taken from eztz
-      amount: values[0].toFixed(),
-      counter: counter.toFixed(),
-      destination: recipients[0],
-      source: address
-    }
-
-    operations.push(spendOperation)
 
     try {
       const tezosWrappedOperation: TezosWrappedOperation = {
-        branch,
+        branch: branch,
         contents: operations
       }
 
-      const binaryTx: string = this.forgeTezosOperation(tezosWrappedOperation)
+      console.log('wrapped operation', tezosWrappedOperation)
+
+      const binaryTx = this.forgeTezosOperation(tezosWrappedOperation)
 
       return { binaryTransaction: binaryTx }
     } catch (error) {
