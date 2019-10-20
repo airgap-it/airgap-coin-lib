@@ -464,10 +464,12 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         throw new Error('not enough balance')
       }
 
+      const adjustedFee: BigNumber = recipients[0].toLowerCase().startsWith('kt') ? fee.plus(500) : fee
+
       const spendOperation: TezosSpendOperation = {
         kind: TezosOperationType.TRANSACTION,
-        fee: fee.toFixed(),
-        gas_limit: '10100', // taken from eztz
+        fee: adjustedFee.toFixed(),
+        gas_limit: recipients[i].toLowerCase().startsWith('kt') ? '15385' : '10300',
         storage_limit: receivingBalance.isZero() && recipients[i].toLowerCase().startsWith('tz') ? '300' : '0', // taken from eztz
         amount: values[i].toFixed(),
         counter: counter.plus(i).toFixed(),
@@ -480,7 +482,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
     try {
       const tezosWrappedOperation: TezosWrappedOperation = {
-        branch: branch,
+        branch,
         contents: operations
       }
 
