@@ -482,7 +482,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
     try {
       const tezosWrappedOperation: TezosWrappedOperation = {
-        branch,
+        branch: branch,
         contents: operations
       }
 
