@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -yq git python build-essential
 RUN mkdir /app
 WORKDIR /app
 
-# Install app dependencies, using wildcard if package-lock exists
+# Install app dependencies
 COPY package.json /app
 COPY package-lock.json /app
 

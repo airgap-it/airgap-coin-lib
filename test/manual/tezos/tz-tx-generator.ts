@@ -1,8 +1,9 @@
-import { TezosProtocol, SyncProtocolUtils, EncodedType, isCoinlibReady, TezosKtProtocol } from '../../../lib/index'
 import BigNumber from 'bignumber.js'
-import * as readline from 'readline'
 import * as qrcode from 'qrcode-terminal'
-import { SERIALIZER_VERSION } from '../../../lib/serializer/constants'
+import * as readline from 'readline'
+
+import { EncodedType, isCoinlibReady, SyncProtocolUtils, TezosKtProtocol } from '../../../src/index'
+import { SERIALIZER_VERSION } from '../../../src/serializer/constants'
 
 // prepare, sign and do a TX
 const promise = async () => {
@@ -43,7 +44,7 @@ const promise = async () => {
     protocol: tezos.identifier,
     type: EncodedType.UNSIGNED_TRANSACTION,
     payload: {
-      publicKey: publicKey,
+      publicKey,
       callback: 'airgap-wallet://?d=',
       transaction: rawTezosTx
     }
@@ -52,9 +53,9 @@ const promise = async () => {
   // print QR to Terminal for scanning
   qrcode.generate('airgap-vault://?d=' + syncString, { small: true })
 
-  const answer = (await new Promise((resolve, reject) => {
+  const answer = await new Promise<string>((resolve, reject) => {
     rl.question('Would you like to broadcast this TX? [y/N]', resolve)
-  })) as string
+  })
 
   if (answer.toLowerCase() === 'y') {
     console.log('Broadcasting TX...')

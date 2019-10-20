@@ -1,7 +1,7 @@
+import { expect } from 'chai'
 import 'mocha'
 
-import { expect } from 'chai'
-import { EthereumProtocol, addSubProtocol, GenericERC20, GenericERC20Configuration, TezosProtocol, TezosKtProtocol } from '../../lib'
+import { addSubProtocol, EthereumProtocol, GenericERC20, GenericERC20Configuration, TezosKtProtocol, TezosProtocol } from '../../src'
 
 describe(`SubTokens`, () => {
   it('should be able to add a GenericERC20 Sub-Token to Ethereum', async () => {

@@ -1,11 +1,10 @@
-import 'mocha'
-
+import axios from 'axios'
 import * as chai from 'chai'
 import * as chaiAsPromised from 'chai-as-promised'
-import BigNumber from 'bignumber.js'
+import 'mocha'
 import * as sinon from 'sinon'
-import axios from 'axios'
-import { AirGapWallet, EthereumProtocol, BitcoinProtocol } from '../../lib/index'
+
+import { AirGapWallet, BitcoinProtocol, EthereumProtocol } from '../../src/index'
 
 // use chai-as-promised plugin
 chai.use(chaiAsPromised)
@@ -38,7 +37,7 @@ describe(`AirGapWallet`, () => {
         false,
         protocol.standardDerivationPath
       )
-      expect(true).to.equal(false)
+      expect(wallet).to.undefined
     } catch (error) {
       expect(error.message).to.equal('PROTOCOL_NOT_SUPPORTED')
     }

@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js'
 import { XrpProtocolStub } from '../stubs/xrp.stub'
-import { XrpProtocol } from '../../../lib'
+import { XrpProtocol } from '../../../src'
 import { TestProtocolSpec } from '../implementations'
 
 export class XrpTestProtocolSpec extends TestProtocolSpec {
