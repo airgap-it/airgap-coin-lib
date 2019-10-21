@@ -95,6 +95,45 @@ export interface TezosVotingInfo {
   rolls: number
 }
 
+export interface DelegationInfo {
+  isDelegated: boolean
+  value?: string
+  delegatedOpLevel?: number
+  delegatedDate?: Date
+}
+
+export interface BakerInfo {
+  balance: BigNumber
+  delegatedBalance: BigNumber
+  stakingBalance: BigNumber
+  bakingActive: boolean
+  selfBond: BigNumber
+  bakerCapacity: BigNumber
+  bakerUsage: BigNumber
+}
+
+export interface DelegationRewardInfo {
+  cycle: number
+  reward: BigNumber
+  deposit: BigNumber
+  delegatedBalance: BigNumber
+  stakingBalance: BigNumber
+  totalRewards: BigNumber
+  totalFees: BigNumber
+  payout: Date
+}
+
+export interface DelegationInfo {
+  isDelegated: boolean
+  value?: string
+  delegatedOpLevel?: number
+  delegatedDate?: Date
+}
+
+// 8.25%
+const SELF_BOND_REQUIREMENT: number = 0.0825
+const BLOCK_PER_CYCLE: number = 4096
+
 export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol {
   public symbol: string = 'XTZ'
   public name: string = 'Tezos'
@@ -487,6 +526,172 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       console.warn(error.message)
       throw new Error('Forging Tezos TX failed.')
     }
+  }
+
+  public async isAddressDelegated(delegatedAddress: string): Promise<DelegationInfo> {
+    const { data } = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${delegatedAddress}`)
+    let delegatedOpLevel: number | undefined
+    let delegatedDate: Date | undefined
+
+    // if the address is delegated, check since when
+    if (data.delegate) {
+      const getDataFromMostRecentTransaction = (transactions): { date: Date; opLevel: number } | void => {
+        if (transactions.length > 0) {
+          const mostRecentTransaction = transactions[0]
+
+          return {
+            date: new Date(mostRecentTransaction.timestamp),
+            opLevel: mostRecentTransaction.block_level
+          }
+        }
+      }
+      const getRequestBody = (field: string, set: string) => {
+        return {
+          predicates: [
+            {
+              field: field,
+              operation: 'eq',
+              set: [delegatedAddress],
+              inverse: false
+            },
+            {
+              field: 'kind',
+              operation: 'eq',
+              set: [set],
+              inverse: false
+            }
+          ],
+          orderBy: [
+            {
+              field: 'block_level',
+              direction: 'desc'
+            }
+          ]
+        }
+      }
+
+      // We first try to get the data from the lastest delegation
+      // After that try to get it from the origination
+      const transactionSourceUrl = `${this.baseApiUrl}/v2/data/tezos/mainnet/operations`
+      const results = await Promise.all([
+        axios
+          .post(transactionSourceUrl, getRequestBody('source', 'delegation'), {
+            headers: this.headers
+          })
+          .catch(() => {
+            return { data: [] }
+          }),
+        axios
+          .post(transactionSourceUrl, getRequestBody('manager_pubkey', 'origination'), {
+            headers: this.headers
+          })
+          .catch(() => {
+            return { data: [] }
+          })
+      ])
+
+      const combinedData = results[0].data.concat(results[1].data)
+
+      const recentTransactionData = getDataFromMostRecentTransaction(combinedData)
+      if (recentTransactionData) {
+        delegatedDate = recentTransactionData.date
+        delegatedOpLevel = recentTransactionData.opLevel
+      }
+    }
+
+    return {
+      isDelegated: data.delegate ? true : false,
+      value: data.delegate,
+      delegatedDate,
+      delegatedOpLevel
+    }
+  }
+
+  public async bakerInfo(tzAddress: string): Promise<BakerInfo> {
+    if (
+      !(tzAddress.toLowerCase().startsWith('tz1') || tzAddress.toLowerCase().startsWith('tz2') || tzAddress.toLowerCase().startsWith('tz3'))
+    ) {
+      throw new Error('non tz-address supplied')
+    }
+
+    const results: AxiosResponse[] = await Promise.all([
+      axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/delegates/${tzAddress}/balance`),
+      axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/delegates/${tzAddress}/delegated_balance`),
+      axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/delegates/${tzAddress}/staking_balance`),
+      axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/delegates/${tzAddress}/deactivated`)
+    ])
+
+    const tzBalance: BigNumber = new BigNumber(results[0].data)
+    const delegatedBalance: BigNumber = new BigNumber(results[1].data)
+    const stakingBalance: BigNumber = new BigNumber(results[2].data)
+    const isBakingActive: boolean = !results[3].data // we need to negate as the query is "deactivated"
+
+    // calculate the self bond of the baker
+    const selfBond: BigNumber = stakingBalance.minus(delegatedBalance)
+
+    // check what capacity is staked relatively to the self-bond
+    const stakingCapacity: BigNumber = stakingBalance.div(selfBond.div(SELF_BOND_REQUIREMENT))
+
+    const bakerInfo: BakerInfo = {
+      balance: tzBalance,
+      delegatedBalance,
+      stakingBalance,
+      bakingActive: isBakingActive,
+      selfBond,
+      bakerCapacity: stakingBalance.div(stakingCapacity),
+      bakerUsage: stakingCapacity
+    }
+
+    return bakerInfo
+  }
+
+  public async delegationInfo(address: string): Promise<DelegationRewardInfo[]> {
+    const status: DelegationInfo = await this.isAddressDelegated(address)
+
+    if (!status.isDelegated || !status.value) {
+      throw new Error('address not delegated')
+    }
+
+    return this.delegationRewards(status.value, address)
+  }
+
+  public async delegationRewards(bakerAddress: string, delegatorAddress?: string): Promise<DelegationRewardInfo[]> {
+    const { data: frozenBalance }: AxiosResponse<[{ cycle: number; deposit: string; fees: string; rewards: string }]> = await axios.get(
+      `${this.jsonRPCAPI}/chains/main/blocks/head/context/delegates/${bakerAddress}/frozen_balance_by_cycle`
+    )
+
+    const lastConfirmedCycle: number = frozenBalance[0].cycle - 1
+    const mostRecentCycle: number = frozenBalance[frozenBalance.length - 1].cycle
+
+    const { data: mostRecentBlock } = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/${mostRecentCycle * BLOCK_PER_CYCLE}`)
+    const timestamp: Date = new Date(mostRecentBlock.header.timestamp)
+
+    const delegationInfo: DelegationRewardInfo[] = await Promise.all(
+      frozenBalance.map(async obj => {
+        const { data: delegatedBalanceAtCycle } = await axios.get(
+          `${this.jsonRPCAPI}/chains/main/blocks/${(obj.cycle - 6) * BLOCK_PER_CYCLE}/context/contracts/${
+            delegatorAddress ? delegatorAddress : bakerAddress
+          }/balance`
+        )
+
+        const { data: stakingBalanceAtCycle } = await axios.get(
+          `${this.jsonRPCAPI}/chains/main/blocks/${(obj.cycle - 6) * BLOCK_PER_CYCLE}/context/delegates/${bakerAddress}/staking_balance`
+        )
+
+        return {
+          cycle: obj.cycle,
+          totalRewards: new BigNumber(obj.rewards),
+          totalFees: new BigNumber(obj.fees),
+          deposit: new BigNumber(obj.deposit),
+          delegatedBalance: new BigNumber(delegatedBalanceAtCycle),
+          stakingBalance: new BigNumber(stakingBalanceAtCycle),
+          reward: new BigNumber(obj.rewards).plus(obj.fees).multipliedBy(new BigNumber(delegatedBalanceAtCycle).div(stakingBalanceAtCycle)),
+          payout: new Date(timestamp.getTime() + (obj.cycle - lastConfirmedCycle) * BLOCK_PER_CYCLE * 60 * 1000)
+        }
+      })
+    )
+
+    return delegationInfo
   }
 
   public async undelegate(publicKey: string): Promise<RawTezosTransaction> {
