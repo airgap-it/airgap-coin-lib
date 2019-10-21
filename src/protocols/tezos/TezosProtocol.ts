@@ -1246,10 +1246,15 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     return response.data
   }
 
-  private static FIRST_005_CYCLE: number = 160
-  public async calculateRewards(bakerAddress: string, cycle: number): Promise<TezosRewards> {
+  public async fetchCurrentCycle(): Promise<number> {
     const headMetadata = await this.fetchBlockMetadata('head')
     const currentCycle: number = headMetadata.level.cycle
+    return currentCycle
+  }
+
+  private static FIRST_005_CYCLE: number = 160
+  public async calculateRewards(bakerAddress: string, cycle: number): Promise<TezosRewards> {
+    const currentCycle: number = await this.fetchCurrentCycle()
     const is005 = cycle >= TezosProtocol.FIRST_005_CYCLE
     let computedBakingRewards = '0'
     let computedEndorsingRewards = '0'
@@ -1306,7 +1311,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     }
 
     const snapshotLevel = await this.computeSnapshotBlockLevel(cycle, cycle < currentCycle ? undefined : 'head')
-    const bakerInfo = await this.fetchDelegateInfo(bakerAddress, snapshotLevel).catch(() => {
+    const bakerInfo = await this.fetchBakerInfo(bakerAddress, snapshotLevel).catch(() => {
       return { staking_balance: '0', delegated_contracts: [] }
     })
     const stakingBalance = new BigNumber(bakerInfo.staking_balance)
@@ -1519,9 +1524,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
   private static BLOCKS_PER_CYCLE = 4096
   private static SNAPSHOTS_PER_CYCLE = 256
-  private async fetchDelegateInfo(bakerAddress: string, blockLevel: number | 'head'): Promise<TezosDelegateInfo> {
-    const delegateInfoResult = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/${blockLevel}/context/delegates/${bakerAddress}`)
-    return delegateInfoResult.data
+  private async fetchBakerInfo(bakerAddress: string, blockLevel: number | 'head'): Promise<TezosBakerInfo> {
+    const bakerInfoResult = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/${blockLevel}/context/delegates/${bakerAddress}`)
+    return bakerInfoResult.data
   }
 
   private async computeSnapshotBlockLevel(cycle: number, blockLevel?: number | 'head'): Promise<number> {
@@ -1576,7 +1581,7 @@ export interface TezosRewards {
   delegatedContracts: string[]
 }
 
-interface TezosDelegateInfo {
+interface TezosBakerInfo {
   balance: string
   frozen_balance: string
   frozen_balance_by_cycle: TezosFrozenBalance[]
