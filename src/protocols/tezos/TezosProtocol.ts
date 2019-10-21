@@ -431,20 +431,24 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     fee: BigNumber,
     data?: { addressIndex: number }
   ): Promise<RawTezosTransaction> {
-    let counter: BigNumber = new BigNumber(1)
+    if (recipients.length !== values.length) {
+      throw new Error('length of recipients and values does not match!')
+    }
+
+    let counter = new BigNumber(1)
     let branch: string
 
     const operations: TezosOperation[] = []
 
     // check if we got an address-index
-    const addressIndex: number = data && data.addressIndex ? data.addressIndex : 0
-    const addresses: string[] = await this.getAddressesFromPublicKey(publicKey)
+    const addressIndex = data && data.addressIndex ? data.addressIndex : 0
+    const addresses = await this.getAddressesFromPublicKey(publicKey)
 
     if (!addresses[addressIndex]) {
       throw new Error('no kt-address with this index exists')
     }
 
-    const address: string = addresses[addressIndex]
+    const address = addresses[addressIndex]
 
     try {
       const results = await Promise.all([
@@ -456,7 +460,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       counter = new BigNumber(results[0].data).plus(1)
       branch = results[1].data
 
-      const accountManager: string = results[2].data
+      const accountManager = results[2].data
 
       // check if we have revealed the address already
       if (!accountManager) {
@@ -467,10 +471,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       throw error
     }
 
-    const balance: BigNumber = await this.getBalanceOfPublicKey(publicKey)
-    const receivingBalance: BigNumber = await this.getBalanceOfAddresses(recipients)
+    const balance = await this.getBalanceOfPublicKey(publicKey)
+    const receivingBalance = await this.getBalanceOfAddresses(recipients)
 
-    const amountUsedByPreviousOperations: BigNumber = this.getAmountUsedByPreviousOperations(operations)
+    const amountUsedByPreviousOperations = this.getAmountUsedByPreviousOperations(operations)
 
     if (!amountUsedByPreviousOperations.isZero()) {
       if (balance.isLessThan(values[0].plus(fee).plus(amountUsedByPreviousOperations))) {
@@ -479,47 +483,49 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       }
     }
 
-    // if our receiver has 0 balance, the account is not activated yet.
-    if (receivingBalance.isZero() && recipients[0].toLowerCase().startsWith('tz')) {
-      // We have to supply an additional 0.257 XTZ fee for storage_limit costs, which gets automatically deducted from the sender so we just have to make sure enough balance is around
-      // check whether the sender has enough to cover the amount to send + fee + activation
-      if (balance.isLessThan(values[0].plus(fee).plus(this.activationBurn))) {
-        // if not, make room for the init fee
-        values[0] = values[0].minus(this.activationBurn) // deduct fee from balance
+    for (let i = 0; i < recipients.length; i++) {
+      // if our receiver has 0 balance, the account is not activated yet.
+      if (receivingBalance.isZero() && recipients[i].toLowerCase().startsWith('tz')) {
+        // We have to supply an additional 0.257 XTZ fee for storage_limit costs, which gets automatically deducted from the sender so we just have to make sure enough balance is around
+        // check whether the sender has enough to cover the amount to send + fee + activation
+        if (balance.isLessThan(values[i].plus(fee).plus(this.activationBurn))) {
+          // if not, make room for the init fee
+          values[i] = values[i].minus(this.activationBurn) // deduct fee from balance
+        }
       }
+
+      if (balance.isEqualTo(values[i].plus(fee))) {
+        // Tezos accounts can never be empty. If user tries to send everything, we must leave 1 mutez behind.
+        values[i] = values[i].minus(1)
+      } else if (balance.isLessThan(values[i].plus(fee))) {
+        throw new Error('not enough balance')
+      }
+
+      const adjustedFee: BigNumber = recipients[0].toLowerCase().startsWith('kt') ? fee.plus(500) : fee
+
+      const spendOperation: TezosSpendOperation = {
+        kind: TezosOperationType.TRANSACTION,
+        fee: adjustedFee.toFixed(),
+        gas_limit: recipients[i].toLowerCase().startsWith('kt') ? '15385' : '10300',
+        storage_limit: receivingBalance.isZero() && recipients[i].toLowerCase().startsWith('tz') ? '300' : '0', // taken from eztz
+        amount: values[i].toFixed(),
+        counter: counter.plus(i).toFixed(),
+        destination: recipients[i],
+        source: address
+      }
+
+      operations.push(spendOperation)
     }
-
-    if (balance.isEqualTo(values[0].plus(fee))) {
-      // Tezos accounts can never be empty. If user tries to send everything, we must leave 1 mutez behind.
-      values[0] = values[0].minus(1)
-    } else if (balance.isLessThan(values[0].plus(fee))) {
-      throw new Error('not enough balance')
-    }
-
-    // When sending money to a contract the gas limit and fee needs to be higher.
-    const gasLimit: string = recipients[0].toLowerCase().startsWith('kt') ? '15385' : '10300'
-    const adjustedFee: BigNumber = recipients[0].toLowerCase().startsWith('kt') ? fee.plus(500) : fee
-
-    const spendOperation: TezosSpendOperation = {
-      kind: TezosOperationType.TRANSACTION,
-      fee: adjustedFee.toFixed(),
-      gas_limit: gasLimit, // taken from eztz
-      storage_limit: receivingBalance.isZero() && recipients[0].toLowerCase().startsWith('tz') ? '300' : '0', // taken from eztz
-      amount: values[0].toFixed(),
-      counter: counter.toFixed(),
-      destination: recipients[0],
-      source: address
-    }
-
-    operations.push(spendOperation)
 
     try {
       const tezosWrappedOperation: TezosWrappedOperation = {
-        branch,
+        branch: branch,
         contents: operations
       }
 
-      const binaryTx: string = this.forgeTezosOperation(tezosWrappedOperation)
+      console.log('wrapped operation', tezosWrappedOperation)
+
+      const binaryTx = this.forgeTezosOperation(tezosWrappedOperation)
 
       return { binaryTransaction: binaryTx }
     } catch (error) {
@@ -1442,4 +1448,356 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     const response: AxiosResponse = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/${blockHash}/votes/listings`)
     return response.data
   }
+
+  public async fetchCurrentCycle(): Promise<number> {
+    const headMetadata = await this.fetchBlockMetadata('head')
+    const currentCycle: number = headMetadata.level.cycle
+    return currentCycle
+  }
+
+  private static FIRST_005_CYCLE: number = 160
+  public async calculateRewards(bakerAddress: string, cycle: number): Promise<TezosRewards> {
+    const currentCycle: number = await this.fetchCurrentCycle()
+    const is005 = cycle >= TezosProtocol.FIRST_005_CYCLE
+    let computedBakingRewards = '0'
+    let computedEndorsingRewards = '0'
+    let fees = '0'
+    let totalRewards = '0'
+    if (cycle < currentCycle) {
+      // baking rewards
+      const bakingRights: TezosBakingRight[] = await this.fetchBakingRights(bakerAddress, cycle * TezosProtocol.BLOCKS_PER_CYCLE, cycle)
+      const blockLevels = bakingRights.map(br => br.level)
+      if (blockLevels.length > 0) {
+        const blockBakers = await this.fetchBlockBakers(blockLevels)
+        const filteredBakingRights = bakingRights.filter(async bakingRight => {
+          const block = blockBakers.find(bb => bb.level === bakingRight.level)
+          if (block === undefined) {
+            throw new Error("Cannot find block's baker")
+          }
+          return block.baker === bakerAddress
+        })
+        computedBakingRewards = (await this.computeBakingRewards(filteredBakingRights, is005, false)).toFixed()
+      }
+
+      // endorsing rewards
+      const endorsingRights = await this.fetchEndorsingRights(bakerAddress, cycle * TezosProtocol.BLOCKS_PER_CYCLE, cycle)
+      const endorsingOperations = await this.fetchEndorsementOperations(cycle, bakerAddress)
+      const filteredEndorsingRights = endorsingRights.filter(async endorsingRight => {
+        const found = endorsingOperations.find(operation => {
+          return operation.delegate === bakerAddress
+        })
+        return found !== undefined
+      })
+      computedEndorsingRewards = (await this.computeEndorsingRewards(filteredEndorsingRights, false)).toFixed()
+
+      const frozenBalance = (await this.fetchFrozenBalances((cycle + 1) * TezosProtocol.BLOCKS_PER_CYCLE, bakerAddress)).find(
+        fb => fb.cycle == cycle
+      )
+      if (frozenBalance) {
+        fees = frozenBalance.fees
+        totalRewards = frozenBalance.rewards
+      }
+    } else {
+      if (cycle - currentCycle > 5) {
+        throw new Error('Provided cycle is invalid')
+      }
+      const bakingRights = await this.fetchBakingRights(bakerAddress, 'head', cycle, 1)
+      computedBakingRewards = (await this.computeBakingRewards(bakingRights, is005, true)).toFixed()
+      const endorsingRights = await this.fetchEndorsingRights(bakerAddress, 'head', cycle)
+      computedEndorsingRewards = (await this.computeEndorsingRewards(endorsingRights, true)).toFixed()
+      totalRewards = new BigNumber(computedBakingRewards).plus(new BigNumber(computedEndorsingRewards)).toFixed()
+      const frozenBalances = await this.fetchFrozenBalances('head', bakerAddress)
+      if (frozenBalances.length > 0) {
+        const lastFrozenBalance = frozenBalances[frozenBalances.length - 1]
+        fees = lastFrozenBalance.fees
+      }
+    }
+
+    const snapshotLevel = await this.computeSnapshotBlockLevel(cycle, cycle < currentCycle ? undefined : 'head')
+    const bakerInfo = await this.fetchBakerInfo(bakerAddress, snapshotLevel).catch(() => {
+      return { staking_balance: '0', delegated_contracts: [] }
+    })
+    const stakingBalance = new BigNumber(bakerInfo.staking_balance)
+
+    return {
+      baker: bakerAddress,
+      stakingBalance: stakingBalance.toFixed(),
+      bakingRewards: computedBakingRewards,
+      endorsingRewards: computedEndorsingRewards,
+      cycle: cycle,
+      fees: fees,
+      totalRewards: totalRewards,
+      snapshotBlockLevel: snapshotLevel,
+      delegatedContracts: bakerInfo.delegated_contracts
+    }
+  }
+
+  public async calculatePayouts(
+    rewards: TezosRewards,
+    offset: number,
+    limit: number
+  ): Promise<{ delegator: string; share: string; payout: string }[]> {
+    const result: { delegator: string; share: string; payout: string }[] = []
+    const totalRewardsBN = new BigNumber(rewards.totalRewards).plus(new BigNumber(rewards.fees))
+    const limitIndex = offset + limit
+    for (let i = offset; i < limitIndex && i < rewards.delegatedContracts.length; i++) {
+      const delegator = rewards.delegatedContracts[i]
+      let balance = await this.fetchContractBalance(rewards.snapshotBlockLevel, delegator)
+      if (balance === undefined) {
+        balance = new BigNumber(0)
+      }
+      const share = balance.div(rewards.stakingBalance)
+      const payoutAmount = totalRewardsBN.multipliedBy(share)
+      result.push({
+        delegator: delegator,
+        share: share.toFixed(),
+        payout: payoutAmount.toFixed()
+      })
+    }
+    return result
+  }
+
+  private async fetchBlockMetadata(block: number | 'head'): Promise<any> {
+    const result = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/${block}/metadata`)
+    return result.data
+  }
+
+  private async fetchBlockBakers(blockLevels: number[]): Promise<{ level: number; baker: string }[]> {
+    const query = {
+      fields: ['level', 'baker'],
+      predicates: [
+        {
+          field: 'level',
+          operation: 'in',
+          set: blockLevels,
+          inverse: false
+        }
+      ]
+    }
+    const result = await axios.post(`${this.baseApiUrl}/v2/data/tezos/mainnet/blocks`, query, { headers: this.headers })
+    return result.data
+  }
+
+  private async fetchBlockPriorities(blockLevels: number[]): Promise<{ priority: number; level: number }[]> {
+    const query = {
+      fields: ['priority', 'level'],
+      predicates: [
+        {
+          field: 'level',
+          operation: 'in',
+          set: blockLevels,
+          inverse: false
+        }
+      ]
+    }
+    const result = await axios.post(`${this.baseApiUrl}/v2/data/tezos/mainnet/blocks`, query, { headers: this.headers })
+    return result.data
+  }
+
+  private async fetchBakingRights(
+    bakerAddress: string,
+    blockLevel: number | 'head',
+    cycle: number,
+    maxPriority?: number
+  ): Promise<TezosBakingRight[]> {
+    const maxPriorityArg = maxPriority !== undefined ? `&max_priority=${maxPriority}` : ''
+    const bakingRightsResult = await axios.get(
+      `${this.jsonRPCAPI}/chains/main/blocks/${blockLevel}/helpers/baking_rights?cycle=${cycle}&delegate=${bakerAddress}${maxPriorityArg}`
+    )
+    return bakingRightsResult.data
+  }
+
+  private static BAKING_REWARD_PER_BLOCK = 16000000
+  private async computeBakingRewards(bakingRights: TezosBakingRight[], is005: boolean, isFutureCycle: boolean): Promise<BigNumber> {
+    let result = new BigNumber(0)
+    if (is005) {
+      const levels = bakingRights.map(br => br.level)
+      let endrosementCounts: { level: number; count_kind: string }[] = []
+      if (!isFutureCycle) {
+        endrosementCounts = await this.fetchEndorsementOperationCount(levels)
+      }
+      result = bakingRights.reduce((current: BigNumber, next: TezosBakingRight) => {
+        // (16 / (priority + 1)) * (0.8 + (0.2 * (e / 32)))
+        let count = 32
+        if (!isFutureCycle) {
+          const endorsementCount = endrosementCounts.find(op => op.level === next.level)
+          if (endorsementCount === undefined) {
+            throw new Error('Cannot find endorsement operation count')
+          }
+          count = parseInt(endorsementCount.count_kind)
+        }
+        const p = next.priority
+        const e = count
+        const bakingReward = new BigNumber(TezosProtocol.BAKING_REWARD_PER_BLOCK).div(new BigNumber(p + 1)).times(0.8 + 0.2 * (e / 32))
+
+        return current.plus(bakingReward)
+      }, new BigNumber(0))
+    } else {
+      result = new BigNumber(bakingRights.length * TezosProtocol.BAKING_REWARD_PER_BLOCK)
+    }
+    return result
+  }
+
+  private async fetchEndorsingRights(bakerAddress: string, blockLevel: number | 'head', cycle: number): Promise<TezosEndorsingRight[]> {
+    const endorsingRightsResult = await axios.get(
+      `${this.jsonRPCAPI}/chains/main/blocks/${blockLevel}/helpers/endorsing_rights?cycle=${cycle}&delegate=${bakerAddress}`
+    )
+    return endorsingRightsResult.data
+  }
+
+  private async fetchEndorsementOperations(cycle: number, bakerAddress: string): Promise<{ level: number; delegate: string }[]> {
+    const query = {
+      fields: ['level', 'delegate'],
+      predicates: [
+        {
+          field: 'kind',
+          operation: 'eq',
+          set: ['endorsement'],
+          inverse: false
+        },
+        {
+          field: 'cycle',
+          operation: 'eq',
+          set: [`${cycle}`],
+          inverse: false
+        },
+        {
+          field: 'delegate',
+          operation: 'eq',
+          set: [bakerAddress]
+        }
+      ]
+    }
+    const result = await axios.post(`${this.baseApiUrl}/v2/data/tezos/mainnet/operations`, query, { headers: this.headers })
+    return result.data
+  }
+
+  private async fetchEndorsementOperationCount(blockLevels: number[]): Promise<{ count_kind: string; level: number }[]> {
+    const query = {
+      fields: ['level', 'kind'],
+      predicates: [
+        {
+          field: 'kind',
+          operation: 'eq',
+          set: ['endorsement'],
+          inverse: false
+        },
+        {
+          field: 'level',
+          operation: 'eq',
+          set: blockLevels,
+          inverse: false
+        }
+      ],
+      aggregation: [
+        {
+          field: 'kind',
+          function: 'count'
+        }
+      ]
+    }
+    const result = await axios.post(`${this.baseApiUrl}/v2/data/tezos/mainnet/operations`, query, { headers: this.headers })
+    return result.data[0].count_level
+  }
+
+  private static ENDORSING_REWARD_PER_SLOT = 2000000
+  private async computeEndorsingRewards(endorsingRights: TezosEndorsingRight[], isFutureCycle: boolean): Promise<BigNumber> {
+    const levels = endorsingRights.map(er => er.level)
+    let priorities: { priority: number; level: number }[] = []
+    if (!isFutureCycle && levels.length > 0) {
+      priorities = await this.fetchBlockPriorities(levels)
+    }
+    return endorsingRights.reduce((current, next) => {
+      let priority = 0
+      if (!isFutureCycle) {
+        const block = priorities.find(p => p.level === next.level)
+        if (block === undefined) {
+          throw new Error('Cannot find block priority')
+        }
+        priority = block.priority
+      }
+      const multiplier =
+        priority === 0
+          ? new BigNumber(TezosProtocol.ENDORSING_REWARD_PER_SLOT)
+          : new BigNumber(TezosProtocol.ENDORSING_REWARD_PER_SLOT).div(new BigNumber(priority))
+      const reward: BigNumber = new BigNumber(next.slots.length).times(multiplier)
+      return current.plus(reward)
+    }, new BigNumber(0))
+  }
+
+  private static BLOCKS_PER_CYCLE = 4096
+  private static SNAPSHOTS_PER_CYCLE = 256
+  private async fetchBakerInfo(bakerAddress: string, blockLevel: number | 'head'): Promise<TezosBakerInfo> {
+    const bakerInfoResult = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/${blockLevel}/context/delegates/${bakerAddress}`)
+    return bakerInfoResult.data
+  }
+
+  private async computeSnapshotBlockLevel(cycle: number, blockLevel?: number | 'head'): Promise<number> {
+    const level = blockLevel === undefined ? cycle * TezosProtocol.BLOCKS_PER_CYCLE : blockLevel
+    const snapshotNumberResult = await axios.get(
+      `${this.jsonRPCAPI}/chains/main/blocks/${level}/context/raw/json/rolls/owner/snapshot/${cycle}`,
+      { timeout: 60000 }
+    )
+    const snapshotNumber: number = snapshotNumberResult.data[0]
+    const delegationCycle = cycle - 7
+    const firstDelegationCycleBlocklLevel = delegationCycle * TezosProtocol.BLOCKS_PER_CYCLE
+    const numberOfSnapshotsBeforeDelegationCycle = firstDelegationCycleBlocklLevel / TezosProtocol.SNAPSHOTS_PER_CYCLE
+    const totalSnapshotNumber = numberOfSnapshotsBeforeDelegationCycle + snapshotNumber + 1
+    const snapshotBlockLevel = totalSnapshotNumber * TezosProtocol.SNAPSHOTS_PER_CYCLE
+    return snapshotBlockLevel
+  }
+
+  private async fetchFrozenBalances(blockLevel: number | 'head', bakerAddress: string): Promise<TezosFrozenBalance[]> {
+    const result = await axios.get(
+      `${this.jsonRPCAPI}/chains/main/blocks/${blockLevel}/context/delegates/${bakerAddress}/frozen_balance_by_cycle`
+    )
+    return result.data
+  }
+
+  private async fetchContractBalance(blockLevel: number | `head`, address: string): Promise<BigNumber> {
+    const result = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/${blockLevel}/context/contracts/${address}/balance`)
+    return new BigNumber(result.data)
+  }
+}
+
+interface TezosBakingRight {
+  level: number
+  delegate: string
+  priority: number
+}
+
+interface TezosEndorsingRight {
+  level: number
+  delegate: string
+  slots: number[]
+}
+
+export interface TezosRewards {
+  baker: string
+  stakingBalance: string
+  bakingRewards: string
+  endorsingRewards: string
+  fees: string
+  totalRewards: string
+  cycle: number
+  snapshotBlockLevel: number
+  delegatedContracts: string[]
+}
+
+interface TezosBakerInfo {
+  balance: string
+  frozen_balance: string
+  frozen_balance_by_cycle: TezosFrozenBalance[]
+  staking_balance: string
+  delegated_contracts: string[]
+  delegated_balance: string
+  deactivated: boolean
+  grace_period: number
+}
+
+interface TezosFrozenBalance {
+  cycle: number
+  deposit: string
+  fees: string
+  rewards: string
 }
