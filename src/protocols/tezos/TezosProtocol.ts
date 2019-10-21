@@ -523,8 +523,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         contents: operations
       }
 
-      console.log('wrapped operation', tezosWrappedOperation)
-
       const binaryTx = this.forgeTezosOperation(tezosWrappedOperation)
 
       return { binaryTransaction: binaryTx }
