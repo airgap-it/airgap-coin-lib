@@ -1,8 +1,9 @@
-### 0.5.8 (2019-10-18)
+### 0.5.12 (2019-10-18)
 
 ### Features
 
 - **xtz**: added rewards and payouts calculations
+- **xtz**: added support for multiple tezos operations in one transaction
 
 ### 0.5.7 (2019-10-18)
 

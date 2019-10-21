@@ -445,8 +445,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     }
 
     for (let i = 0; i < recipients.length; i++) {
-      console.log('PREPARING TX', i)
-
       // if our receiver has 0 balance, the account is not activated yet.
       if (receivingBalance.isZero() && recipients[i].toLowerCase().startsWith('tz')) {
         // We have to supply an additional 0.257 XTZ fee for storage_limit costs, which gets automatically deducted from the sender so we just have to make sure enough balance is around
