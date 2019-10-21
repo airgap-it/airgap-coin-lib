@@ -1285,12 +1285,12 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       })
       computedEndorsingRewards = (await this.computeEndorsingRewards(filteredEndorsingRights, false)).toFixed()
 
-      const forzenBalance = (await this.fetchFrozenBalances((cycle + 1) * TezosProtocol.BLOCKS_PER_CYCLE, bakerAddress)).find(
+      const frozenBalance = (await this.fetchFrozenBalances((cycle + 1) * TezosProtocol.BLOCKS_PER_CYCLE, bakerAddress)).find(
         fb => fb.cycle == cycle
       )
-      if (forzenBalance) {
-        fees = forzenBalance.fees
-        totalRewards = forzenBalance.rewards
+      if (frozenBalance) {
+        fees = frozenBalance.fees
+        totalRewards = frozenBalance.rewards
       }
     } else {
       if (cycle - currentCycle > 5) {
@@ -1301,9 +1301,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       const endorsingRights = await this.fetchEndorsingRights(bakerAddress, 'head', cycle)
       computedEndorsingRewards = (await this.computeEndorsingRewards(endorsingRights, true)).toFixed()
       totalRewards = new BigNumber(computedBakingRewards).plus(new BigNumber(computedEndorsingRewards)).toFixed()
-      const forzenBalances = await this.fetchFrozenBalances('head', bakerAddress)
-      if (forzenBalances.length > 0) {
-        const lastFrozenBalance = forzenBalances[forzenBalances.length - 1]
+      const frozenBalances = await this.fetchFrozenBalances('head', bakerAddress)
+      if (frozenBalances.length > 0) {
+        const lastFrozenBalance = frozenBalances[frozenBalances.length - 1]
         fees = lastFrozenBalance.fees
       }
     }
