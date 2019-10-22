@@ -48,6 +48,11 @@
     "tweetnacl": "1.0.0",
     "validate.js": "0.12.0",
     "validator": "10.8.0",
+    "ripple-binary-codec": "^0.2.1",
+    "ripple-keypairs": "^0.11.0",
+    "ripple-lib": "^1.2.3",
+    "ripple-sign-keypairs": "^1.0.2",
+    "ts-optchain": "0.1.7",
     "web3": "1.0.0-beta.36"
   },
   "devDependencies": {

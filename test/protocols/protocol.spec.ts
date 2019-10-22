@@ -16,6 +16,7 @@ import { EthereumClassicTestProtocolSpec } from './specs/ethereum-classic'
 import { EthereumRopstenTestProtocolSpec } from './specs/ethereum-ropsten'
 import { GenericERC20TokenTestProtocolSpec } from './specs/generic-erc20-token'
 import { GroestlcoinProtocolSpec } from './specs/groestl'
+import { XrpTestProtocolSpec } from './specs/xrp'
 // import { KtTezosTestProtocolSpec } from './specs/kt-tezos'
 // import { TezosTestProtocolSpec } from './specs/tezos'
 
@@ -46,7 +47,8 @@ const protocols = [
   new BitcoinProtocolSpec(),
   new BitcoinTestProtocolSpec(),
   new GenericERC20TokenTestProtocolSpec(),
-  new GroestlcoinProtocolSpec()
+  new GroestlcoinProtocolSpec(),
+  new XrpTestProtocolSpec()
 ]
 
 const itIf = (condition, title, test) => {

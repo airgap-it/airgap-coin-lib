@@ -32,6 +32,8 @@ import { supportedProtocols } from './utils/supportedProtocols'
 import { AirGapMarketWallet } from './wallet/AirGapMarketWallet'
 import { AirGapWallet } from './wallet/AirGapWallet'
 
+import { XrpProtocol } from './protocols/xrp/XrpProtocol'
+
 export {
   getProtocolByIdentifier,
   getSubProtocolsByIdentifier,
@@ -56,6 +58,7 @@ export {
   AeternityProtocol,
   TezosProtocol,
   TezosKtProtocol,
+  XrpProtocol,
   // tezos-specific configuration
   BakerInfo,
   DelegationRewardInfo,

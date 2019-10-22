@@ -53,7 +53,7 @@ const promise = async () => {
   // print QR to Terminal for scanning
   qrcode.generate('airgap-vault://?d=' + syncString, { small: true })
 
-  const answer = await new Promise((resolve, reject) => {
+  const answer = await new Promise<string>((resolve, reject) => {
     rl.question('Would you like to broadcast this TX? [y/N]', resolve)
   })
 
