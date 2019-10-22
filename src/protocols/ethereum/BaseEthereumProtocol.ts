@@ -3,7 +3,7 @@ import { BigNumber } from 'bignumber.js'
 import * as bitcoinJS from 'bitcoinjs-lib'
 import * as ethUtil from 'ethereumjs-util'
 import * as Web3 from 'web3'
-
+import { toHexString } from './../../utils/toHex'
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
 import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 import { Network } from '../../networks'
@@ -151,11 +151,13 @@ export abstract class BaseEthereumProtocol implements ICoinProtocol {
   }
 
   public async signWithPrivateKey(privateKey: Buffer, transaction: RawEthereumTransaction): Promise<IAirGapSignedTransaction> {
+    if (!transaction.value.startsWith('0x')) {
+      transaction.value = toHexString(parseInt(transaction.value))
+    }
     const tx = new EthereumTransaction(transaction)
     tx.sign(privateKey)
     return tx.serialize().toString('hex')
   }
-
   public async getTransactionDetails(unsignedTx: UnsignedTransaction): Promise<IAirGapTransaction> {
     const transaction = unsignedTx.transaction as RawEthereumTransaction
     return {
