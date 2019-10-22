@@ -21,7 +21,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
       return {
         predicates: [
           {
-            field: field,
+            field,
             operation: 'eq',
             set: [tz1address],
             inverse: false
@@ -74,6 +74,13 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     const operations: TezosOperation[] = []
 
     const address: string = await super.getAddressFromPublicKey(publicKey)
+
+    const balanceOfManager: BigNumber = await this.getBalanceOfPublicKey(publicKey)
+
+    if (balanceOfManager.isLessThan('2941')) {
+      throw new Error('not enough balance on tz address')
+    }
+
     const amount: BigNumber = await this.getBalanceOfAddresses([destinationContract])
 
     try {
