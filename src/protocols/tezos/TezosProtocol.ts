@@ -534,13 +534,13 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     }
   }
 
-  public async isAddressDelegated(delegatedAddress: string): Promise<DelegationInfo> {
+  public async isAddressDelegated(delegatedAddress: string, fetchExtraInfo: boolean = true): Promise<DelegationInfo> {
     const { data } = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${delegatedAddress}`)
     let delegatedOpLevel: number | undefined
     let delegatedDate: Date | undefined
 
     // if the address is delegated, check since when
-    if (data.delegate) {
+    if (data.delegate && fetchExtraInfo) {
       const getDataFromMostRecentTransaction = (transactions): { date: Date; opLevel: number } | void => {
         if (transactions.length > 0) {
           const mostRecentTransaction = transactions[0]
