@@ -109,17 +109,17 @@ describe(`signing should handle hex and decimal values`, async () => {
       for (const tx of txs) {
         const signedTx: string = await ethProtocolSpec.lib.signWithPrivateKey(privateKey, tx.unsignedTx)
 
-        const txFromUnsigned: IAirGapTransaction | void = await ethProtocolSpec.lib.getTransactionDetails({
+        const txFromUnsigned: IAirGapTransaction[] | void = await ethProtocolSpec.lib.getTransactionDetails({
           publicKey: ethProtocolSpec.wallet.publicKey,
           transaction: tx.unsignedTx
         })
 
-        const txFromSigned: IAirGapTransaction = await ethProtocolSpec.lib.getTransactionDetailsFromSigned({
+        const txFromSigned: IAirGapTransaction[] = await ethProtocolSpec.lib.getTransactionDetailsFromSigned({
           accountIdentifier: ethProtocolSpec.wallet.publicKey.substr(-6),
           transaction: signedTx
         })
 
-        expect(txFromUnsigned.amount).to.deep.equal(txFromSigned.amount)
+        expect(txFromUnsigned[0].amount).to.deep.equal(txFromSigned[0].amount)
       }
     } catch (error) {
       console.error(error)
