@@ -10,6 +10,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
   public isSubProtocol: boolean = true
   public subProtocolType: SubProtocolType = SubProtocolType.ACCOUNT
   public addressValidationPattern: string = '^(tz1|KT1)[1-9A-Za-z]{33}$'
+  public migrationFee: BigNumber = new BigNumber(2941)
 
   public async getAddressFromPublicKey(publicKey: string): Promise<string> {
     return (await this.getAddressesFromPublicKey(publicKey))[0]
@@ -21,7 +22,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
       return {
         predicates: [
           {
-            field: field,
+            field,
             operation: 'eq',
             set: [tz1address],
             inverse: false
@@ -74,6 +75,13 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     const operations: TezosOperation[] = []
 
     const address: string = await super.getAddressFromPublicKey(publicKey)
+
+    const balanceOfManager: BigNumber = await super.getBalanceOfAddresses([address])
+
+    if (balanceOfManager.isLessThan(this.migrationFee)) {
+      throw new Error('not enough balance on tz address for fee')
+    }
+
     const amount: BigNumber = await this.getBalanceOfAddresses([destinationContract])
 
     try {
@@ -155,7 +163,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
 
     const spendOperation: TezosSpendOperation = {
       kind: TezosOperationType.TRANSACTION,
-      fee: '2941',
+      fee: this.migrationFee.toFixed(),
       gas_limit: '26283',
       storage_limit: '0',
       amount: '0',

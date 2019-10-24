@@ -1,3 +1,9 @@
+### 0.5.13 (2019-10-23)
+
+### Features
+
+- **xtz**: added check of tz account balance before migration of kt account
+
 ### 0.5.12 (2019-10-18)
 
 ### Features
