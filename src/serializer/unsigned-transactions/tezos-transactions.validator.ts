@@ -22,8 +22,7 @@ var signedTransactionConstraints = {
     },
     accountIdentifier: {
       presence: { allowEmpty: false },
-      type: 'String',
-      isPublicKey: true
+      type: 'String'
     }
   },
   success = () => undefined,

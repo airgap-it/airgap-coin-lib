@@ -24,8 +24,7 @@ const signedTransactionConstraints = {
     },
     accountIdentifier: {
       presence: { allowEmpty: false },
-      type: 'String',
-      isValidAeternityAccount: true
+      type: 'String'
     }
   },
   success = () => undefined,
