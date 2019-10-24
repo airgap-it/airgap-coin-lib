@@ -496,10 +496,10 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       expect(result.airGapTxs.length).to.equal(2)
 
       expect(result.airGapTxs[0].amount.toFixed()).to.equal('12345')
-      expect(result.airGapTxs[0].fee.toFixed()).to.equal('111')
+      expect(result.airGapTxs[0].fee.toFixed()).to.equal('611')
 
       expect(result.airGapTxs[1].amount.toFixed()).to.equal('54321')
-      expect(result.airGapTxs[1].fee.toFixed()).to.equal('111')
+      expect(result.airGapTxs[1].fee.toFixed()).to.equal('611')
     })
 
     it('will throw an error if the number of recipients and amounts do not match', async () => {
