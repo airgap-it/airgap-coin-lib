@@ -478,5 +478,44 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         expect(result.airGapTxs[0].fee.toFixed()).to.equal('100000')
       })
     })
+
+    it('will prepare a transaction with multiple spend operations to KT addresses', async () => {
+      stub
+        .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy/balance`)
+        .returns(Promise.resolve({ data: 0 }))
+
+      const result = await prepareSpend(
+        ['KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy', 'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy'],
+        [new BigNumber(12345), new BigNumber(54321)],
+        new BigNumber(111)
+      )
+
+      // check that storage is properly set
+      expect(result.spendTransaction.storage_limit).to.equal('0')
+
+      expect(result.airGapTxs.length).to.equal(2)
+
+      expect(result.airGapTxs[0].amount.toFixed()).to.equal('12345')
+      expect(result.airGapTxs[0].fee.toFixed()).to.equal('111')
+
+      expect(result.airGapTxs[1].amount.toFixed()).to.equal('54321')
+      expect(result.airGapTxs[1].fee.toFixed()).to.equal('111')
+    })
+
+    it('will throw an error if the number of recipients and amounts do not match', async () => {
+      stub
+        .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy/balance`)
+        .returns(Promise.resolve({ data: 0 }))
+
+      return prepareSpend(
+        ['KT1X6SSqro2zUo1Wa7X5BnDWBvfBxZ6feUnc', 'KT1QLtQ54dKzcfwxMHmEM6PC8tooUg6MxDZ3'],
+        [new BigNumber(12345)],
+        new BigNumber(111)
+      ).catch((error: Error) =>
+        expect(error)
+          .to.be.an('error')
+          .with.property('message', 'length of recipients and values does not match!')
+      )
+    })
   })
 })
