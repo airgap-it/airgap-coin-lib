@@ -1496,12 +1496,12 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         totalRewards = frozenBalance.rewards
       }
     } else {
-      if (cycle - currentCycle > 5) {
+      if (cycle - currentCycle > 4) {
         throw new Error('Provided cycle is invalid')
       }
-      const bakingRights = await this.fetchBakingRights(bakerAddress, 'head', cycle, 1)
+      const bakingRights = await this.fetchBakingRights(bakerAddress, currentCycle * TezosProtocol.BLOCKS_PER_CYCLE, cycle, 1)
       computedBakingRewards = (await this.computeBakingRewards(bakingRights, is005, true)).toFixed()
-      const endorsingRights = await this.fetchEndorsingRights(bakerAddress, 'head', cycle)
+      const endorsingRights = await this.fetchEndorsingRights(bakerAddress, currentCycle * TezosProtocol.BLOCKS_PER_CYCLE, cycle)
       computedEndorsingRewards = (await this.computeEndorsingRewards(endorsingRights, true)).toFixed()
       totalRewards = new BigNumber(computedBakingRewards).plus(new BigNumber(computedEndorsingRewards)).toFixed()
       const frozenBalances = await this.fetchFrozenBalances('head', bakerAddress)
@@ -1511,7 +1511,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       }
     }
 
-    const snapshotLevel = await this.computeSnapshotBlockLevel(cycle, cycle < currentCycle ? undefined : 'head')
+    const snapshotLevel = await this.computeSnapshotBlockLevel(Math.min(cycle, currentCycle))
     const bakerInfo = await this.fetchBakerInfo(bakerAddress, snapshotLevel).catch(() => {
       return { staking_balance: '0', delegated_contracts: [] }
     })
