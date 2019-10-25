@@ -1682,7 +1682,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         },
         {
           field: 'level',
-          operation: 'eq',
+          operation: 'in',
           set: blockLevels,
           inverse: false
         }
@@ -1695,7 +1695,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       ]
     }
     const result = await axios.post(`${this.baseApiUrl}/v2/data/tezos/mainnet/operations`, query, { headers: this.headers })
-    return result.data[0].count_level
+    return result.data
   }
 
   private static ENDORSING_REWARD_PER_SLOT = 2000000
