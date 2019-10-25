@@ -12,7 +12,6 @@ import { ICoinProtocol } from '../ICoinProtocol'
 import { EthereumNodeClient } from './clients/node-clients/NodeClient'
 import { EthereumInfoClient } from './clients/info-clients/InfoClient'
 import { EthereumUtils } from './utils/utils'
-import { toHexString } from '../../utils/toHex'
 
 const EthereumTransaction = require('ethereumjs-tx')
 
@@ -156,7 +155,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
 
   public async signWithPrivateKey(privateKey: Buffer, transaction: RawEthereumTransaction): Promise<IAirGapSignedTransaction> {
     if (!transaction.value.startsWith('0x')) {
-      transaction.value = toHexString(parseInt(transaction.value))
+      transaction.value = EthereumUtils.toHex(parseInt(transaction.value))
     }
     const tx = new EthereumTransaction(transaction)
     tx.sign(privateKey)
