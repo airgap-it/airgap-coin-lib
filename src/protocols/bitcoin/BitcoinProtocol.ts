@@ -148,25 +148,39 @@ export class BitcoinProtocol implements ICoinProtocol {
     })
   }
 
-  public signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: RawBitcoinTransaction): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const transactionBuilder = new this.bitcoinJSLib.TransactionBuilder(this.network)
-      const node = this.bitcoinJSLib.HDNode.fromBase58(extendedPrivateKey, this.network)
+  public async signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: RawBitcoinTransaction): Promise<string> {
+    const transactionBuilder = new this.bitcoinJSLib.TransactionBuilder(this.network)
+    const node = this.bitcoinJSLib.HDNode.fromBase58(extendedPrivateKey, this.network)
 
-      for (const input of transaction.ins) {
-        transactionBuilder.addInput(input.txId, input.vout)
+    for (const input of transaction.ins) {
+      transactionBuilder.addInput(input.txId, input.vout)
+    }
+
+    const changeAddressBatchSize: number = 10
+    const changeAddressMaxAddresses: number = 500
+
+    for (const output of transaction.outs) {
+      let changeAddressIsValid: boolean = false
+      if (output.isChange) {
+        for (let x = 0; x < changeAddressMaxAddresses; x += changeAddressBatchSize) {
+          const addresses: string[] = await this.getAddressesFromExtendedPublicKey(extendedPrivateKey, 1, changeAddressBatchSize, x)
+          if (addresses.indexOf(output.recipient) >= 0) {
+            changeAddressIsValid = true
+            x = changeAddressMaxAddresses
+          }
+        }
+        if (!changeAddressIsValid) {
+          throw new Error('Change address could not be verified.')
+        }
       }
+      transactionBuilder.addOutput(output.recipient, output.value.toNumber())
+    }
 
-      for (const output of transaction.outs) {
-        transactionBuilder.addOutput(output.recipient, output.value.toNumber())
-      }
+    for (let i = 0; i < transaction.ins.length; i++) {
+      transactionBuilder.sign(i, node.derivePath(transaction.ins[i].derivationPath))
+    }
 
-      for (let i = 0; i < transaction.ins.length; i++) {
-        transactionBuilder.sign(i, node.derivePath(transaction.ins[i].derivationPath))
-      }
-
-      resolve(transactionBuilder.build().toHex())
-    })
+    return transactionBuilder.build().toHex()
   }
 
   public async getTransactionDetails(unsignedTx: UnsignedTransaction): Promise<IAirGapTransaction[]> {
