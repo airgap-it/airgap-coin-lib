@@ -207,7 +207,7 @@
     "name": "pbkdf2",
     "version": "3.0.17",
     "repository": "crypto-browserify/pbkdf2",
-    "commitHash": "a572cbc655a1cc626ae72ccf8bb29f25418d394e",
+    "commitHash": "dadbcb741111f0ed165951d53028f2358e0e0a1c",
     "files": [
       "index.js",
       "browser.js",
@@ -217,7 +217,7 @@
       "lib/default-encoding.js",
       "lib/precondition.js",
       "lib/sync-browser.js",
-      "lib/browser.js"
+      "lib/sync.js"
     ],
     "deps": ["create-hash-1.2.0", "create-hmac-1.1.4", "ripemd160-2.0.2", "safe-buffer-5.2.0", "sha.js-2.4.11"]
   },
@@ -258,14 +258,14 @@
     "version": "1.6.0",
     "repository": "walling/unorm",
     "commitHash": "26c36c3ce6cd66d3c5bf7867736cb1f2b49fe6b1",
-    "files": ["unorm.js"]
+    "files": ["lib/unorm.js"]
   },
   "bn.js-4.11.8": {
     "name": "bn.js",
     "version": "4.11.8",
     "repository": "indutny/bn.js",
     "commitHash": "c69b4ae8e789e10f7f91811cd4937949ff0d4768",
-    "files": ["bn.js"]
+    "files": ["lib/bn.js"]
   },
   "ethereumjs-tx-1.3.7": {
     "STATUS": "TODO",
@@ -273,8 +273,9 @@
     "version": "1.3.7",
     "repository": "ethereumjs/ethereumjs-tx",
     "commitHash": "e3fc21467ecb997090f63f154b1407094f173bf2",
-    "files": ["fake.js", "index.js", "es5/index.js"],
-    "deps": ["ethereum-common-0.0.18", "ethereumjs-util-5.2.0"]
+    "files": ["fake.js", "index.js"],
+    "deps": ["ethereum-common-0.0.18", "ethereumjs-util-5.2.0"],
+    "TODO": "Check if es/index.js is needed or not."
   },
   "ethereumjs-util-5.2.0": {
     "STATUS": "TODO",
@@ -304,14 +305,14 @@
     "version": "1.0.0",
     "repository": "SilentCicero/is-hex-prefixed",
     "commitHash": "2a5a31481e3f8f7cd3217f50c7950b5de589eaba",
-    "files": ["index.js"]
+    "files": ["src/index.js"]
   },
   "strip-hex-prefix-1.0.0": {
     "name": "strip-hex-prefix",
     "version": "1.0.0",
     "repository": "SilentCicero/strip-hex-prefix",
     "commitHash": "94058ad57053b4be0c7946b1abcbef0ae6c34cc8",
-    "files": ["index.js"],
+    "files": ["src/index.js"],
     "deps": ["is-hex-prefixed-1.0.0"]
   },
   "keccak-1.0.2": {
