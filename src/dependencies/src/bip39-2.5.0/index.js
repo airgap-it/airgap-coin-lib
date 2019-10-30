@@ -20,63 +20,57 @@ var INVALID_MNEMONIC = 'Invalid mnemonic'
 var INVALID_ENTROPY = 'Invalid entropy'
 var INVALID_CHECKSUM = 'Invalid mnemonic checksum'
 
-function lpad(str, padString, length) {
+function lpad (str, padString, length) {
   while (str.length < length) str = padString + str
   return str
 }
 
-function binaryToByte(bin) {
+function binaryToByte (bin) {
   return parseInt(bin, 2)
 }
 
-function bytesToBinary(bytes) {
-  return bytes
-    .map(function(x) {
-      return lpad(x.toString(2), '0', 8)
-    })
-    .join('')
+function bytesToBinary (bytes) {
+  return bytes.map(function (x) {
+    return lpad(x.toString(2), '0', 8)
+  }).join('')
 }
 
-function deriveChecksumBits(entropyBuffer) {
+function deriveChecksumBits (entropyBuffer) {
   var ENT = entropyBuffer.length * 8
   var CS = ENT / 32
-  var hash = createHash('sha256')
-    .update(entropyBuffer)
-    .digest()
+  var hash = createHash('sha256').update(entropyBuffer).digest()
 
   return bytesToBinary([].slice.call(hash)).slice(0, CS)
 }
 
-function salt(password) {
+function salt (password) {
   return 'mnemonic' + (password || '')
 }
 
-function mnemonicToSeed(mnemonic, password) {
+function mnemonicToSeed (mnemonic, password) {
   var mnemonicBuffer = Buffer.from(unorm.nfkd(mnemonic), 'utf8')
   var saltBuffer = Buffer.from(salt(unorm.nfkd(password)), 'utf8')
 
   return pbkdf2(mnemonicBuffer, saltBuffer, 2048, 64, 'sha512')
 }
 
-function mnemonicToSeedHex(mnemonic, password) {
+function mnemonicToSeedHex (mnemonic, password) {
   return mnemonicToSeed(mnemonic, password).toString('hex')
 }
 
-function mnemonicToEntropy(mnemonic, wordlist) {
+function mnemonicToEntropy (mnemonic, wordlist) {
   wordlist = wordlist || DEFAULT_WORDLIST
 
   var words = unorm.nfkd(mnemonic).split(' ')
   if (words.length % 3 !== 0) throw new Error(INVALID_MNEMONIC)
 
   // convert word indices to 11 bit binary strings
-  var bits = words
-    .map(function(word) {
-      var index = wordlist.indexOf(word)
-      if (index === -1) throw new Error(INVALID_MNEMONIC)
+  var bits = words.map(function (word) {
+    var index = wordlist.indexOf(word)
+    if (index === -1) throw new Error(INVALID_MNEMONIC)
 
-      return lpad(index.toString(2), '0', 11)
-    })
-    .join('')
+    return lpad(index.toString(2), '0', 11)
+  }).join('')
 
   // split the binary string into ENT/CS
   var dividerIndex = Math.floor(bits.length / 33) * 32
@@ -96,7 +90,7 @@ function mnemonicToEntropy(mnemonic, wordlist) {
   return entropy.toString('hex')
 }
 
-function entropyToMnemonic(entropy, wordlist) {
+function entropyToMnemonic (entropy, wordlist) {
   if (!Buffer.isBuffer(entropy)) entropy = Buffer.from(entropy, 'hex')
   wordlist = wordlist || DEFAULT_WORDLIST
 
@@ -110,7 +104,7 @@ function entropyToMnemonic(entropy, wordlist) {
 
   var bits = entropyBits + checksumBits
   var chunks = bits.match(/(.{1,11})/g)
-  var words = chunks.map(function(binary) {
+  var words = chunks.map(function (binary) {
     var index = binaryToByte(binary)
     return wordlist[index]
   })
@@ -118,7 +112,7 @@ function entropyToMnemonic(entropy, wordlist) {
   return wordlist === JAPANESE_WORDLIST ? words.join('\u3000') : words.join(' ')
 }
 
-function generateMnemonic(strength, rng, wordlist) {
+function generateMnemonic (strength, rng, wordlist) {
   strength = strength || 128
   if (strength % 32 !== 0) throw new TypeError(INVALID_ENTROPY)
   rng = rng || randomBytes
@@ -126,7 +120,7 @@ function generateMnemonic(strength, rng, wordlist) {
   return entropyToMnemonic(rng(strength / 8), wordlist)
 }
 
-function validateMnemonic(mnemonic, wordlist) {
+function validateMnemonic (mnemonic, wordlist) {
   try {
     mnemonicToEntropy(mnemonic, wordlist)
   } catch (e) {

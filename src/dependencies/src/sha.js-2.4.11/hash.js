@@ -1,14 +1,14 @@
 var Buffer = require('safe-buffer').Buffer
 
 // prototype class for hash functions
-function Hash(blockSize, finalSize) {
+function Hash (blockSize, finalSize) {
   this._block = Buffer.alloc(blockSize)
   this._finalSize = finalSize
   this._blockSize = blockSize
   this._len = 0
 }
 
-Hash.prototype.update = function(data, enc) {
+Hash.prototype.update = function (data, enc) {
   if (typeof data === 'string') {
     enc = enc || 'utf8'
     data = Buffer.from(data, enc)
@@ -19,7 +19,7 @@ Hash.prototype.update = function(data, enc) {
   var length = data.length
   var accum = this._len
 
-  for (var offset = 0; offset < length; ) {
+  for (var offset = 0; offset < length;) {
     var assigned = accum % blockSize
     var remainder = Math.min(length - offset, blockSize - assigned)
 
@@ -30,7 +30,7 @@ Hash.prototype.update = function(data, enc) {
     accum += remainder
     offset += remainder
 
-    if (accum % blockSize === 0) {
+    if ((accum % blockSize) === 0) {
       this._update(block)
     }
   }
@@ -39,7 +39,7 @@ Hash.prototype.update = function(data, enc) {
   return this
 }
 
-Hash.prototype.digest = function(enc) {
+Hash.prototype.digest = function (enc) {
   var rem = this._len % this._blockSize
 
   this._block[rem] = 0x80
@@ -59,7 +59,7 @@ Hash.prototype.digest = function(enc) {
   if (bits <= 0xffffffff) {
     this._block.writeUInt32BE(bits, this._blockSize - 4)
 
-    // uint64
+  // uint64
   } else {
     var lowBits = (bits & 0xffffffff) >>> 0
     var highBits = (bits - lowBits) / 0x100000000
@@ -74,7 +74,7 @@ Hash.prototype.digest = function(enc) {
   return enc ? hash.toString(enc) : hash
 }
 
-Hash.prototype._update = function() {
+Hash.prototype._update = function () {
   throw new Error('_update must be implemented by subclass')
 }
 

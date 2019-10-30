@@ -9,11 +9,11 @@
 var inherits = require('inherits')
 var Sha256 = require('./sha256')
 var Hash = require('./hash')
-var Buffer = require('buffer').Buffer
+var Buffer = require('safe-buffer').Buffer
 
 var W = new Array(64)
 
-function Sha224() {
+function Sha224 () {
   this.init()
 
   this._w = W // new Array(64)
@@ -23,7 +23,7 @@ function Sha224() {
 
 inherits(Sha224, Sha256)
 
-Sha224.prototype.init = function() {
+Sha224.prototype.init = function () {
   this._a = 0xc1059ed8
   this._b = 0x367cd507
   this._c = 0x3070dd17
@@ -36,7 +36,7 @@ Sha224.prototype.init = function() {
   return this
 }
 
-Sha224.prototype._hash = function() {
+Sha224.prototype._hash = function () {
   var H = Buffer.allocUnsafe(28)
 
   H.writeInt32BE(this._a, 0)

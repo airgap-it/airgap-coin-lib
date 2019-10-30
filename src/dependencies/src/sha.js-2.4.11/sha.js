@@ -8,13 +8,15 @@
 
 var inherits = require('inherits')
 var Hash = require('./hash')
-var Buffer = require('buffer').Buffer
+var Buffer = require('safe-buffer').Buffer
 
-var K = [0x5a827999, 0x6ed9eba1, 0x8f1bbcdc | 0, 0xca62c1d6 | 0]
+var K = [
+  0x5a827999, 0x6ed9eba1, 0x8f1bbcdc | 0, 0xca62c1d6 | 0
+]
 
 var W = new Array(80)
 
-function Sha() {
+function Sha () {
   this.init()
   this._w = W
 
@@ -23,7 +25,7 @@ function Sha() {
 
 inherits(Sha, Hash)
 
-Sha.prototype.init = function() {
+Sha.prototype.init = function () {
   this._a = 0x67452301
   this._b = 0xefcdab89
   this._c = 0x98badcfe
@@ -33,21 +35,21 @@ Sha.prototype.init = function() {
   return this
 }
 
-function rotl5(num) {
+function rotl5 (num) {
   return (num << 5) | (num >>> 27)
 }
 
-function rotl30(num) {
+function rotl30 (num) {
   return (num << 30) | (num >>> 2)
 }
 
-function ft(s, b, c, d) {
-  if (s === 0) return (b & c) | (~b & d)
+function ft (s, b, c, d) {
+  if (s === 0) return (b & c) | ((~b) & d)
   if (s === 2) return (b & c) | (b & d) | (c & d)
   return b ^ c ^ d
 }
 
-Sha.prototype._update = function(M) {
+Sha.prototype._update = function (M) {
   var W = this._w
 
   var a = this._a | 0
@@ -77,7 +79,7 @@ Sha.prototype._update = function(M) {
   this._e = (e + this._e) | 0
 }
 
-Sha.prototype._hash = function() {
+Sha.prototype._hash = function () {
   var H = Buffer.allocUnsafe(20)
 
   H.writeInt32BE(this._a | 0, 0)
