@@ -1,7 +1,7 @@
-import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
-import { dirname } from 'path'
+import { existsSync, readFileSync } from 'fs'
 import * as semver from 'semver'
 
+import { copyFileAndCreateFolder, createFolderIfNotExists, writeFileAndCreateFolder } from './check_dependencies_fs'
 import Axios from './src/dependencies/src/axios-0.19.0/index'
 
 const cliCommand: string = process.argv[2]
@@ -210,7 +210,7 @@ const downloadFile = async (url: string) => {
       log('magenta', `Downloading ${url}`)
 
       const response = await Axios(url)
-      writeFileSync(cacheFile, response.data)
+      writeFileAndCreateFolder(cacheFile, response.data)
 
       return response.data
     } catch (error) {
@@ -219,28 +219,6 @@ const downloadFile = async (url: string) => {
       } else {
         throw error
       }
-    }
-  }
-}
-
-const copyFileAndCreateFolder = (src: string, dest: string) => {
-  createFolderIfNotExists(dest)
-  copyFileSync(src, dest)
-}
-
-const writeFileAndCreateFolder = (path: string, data: any) => {
-  createFolderIfNotExists(path)
-  writeFileSync(path, data)
-}
-
-const createFolderIfNotExists = (path: string) => {
-  const dir = dirname(path)
-  try {
-    mkdirSync(dir, { recursive: true })
-  } catch (e) {
-    if (e.code === 'EEXIST') {
-    } else {
-      throw e
     }
   }
 }
@@ -268,13 +246,13 @@ const createFolderIfNotExists = (path: string) => {
 
 export const getPackageJsonForDepsFiles = async (depsFile: DepsFile) => {
   for (const prop of Object.keys(depsFile)) {
+    createFolderIfNotExists(`./src/dependencies/github/${prop}/`)
     const localPath = `./src/dependencies/github/${prop}/package.json`
     const fileExists = existsSync(localPath)
     if (!fileExists) {
       console.log('DOES NOT EXIST', prop)
       const urlCommit: string = `https://raw.githubusercontent.com/${depsFile[prop].repository}/${depsFile[prop].commitHash}/package.json`
       const data = await downloadFile(urlCommit)
-      createFolderIfNotExists(`./src/dependencies/github/${prop}/`)
       writeFileAndCreateFolder(localPath, JSON.stringify(data, null, 4))
       log('green', `${prop} (commit): Saved package.json`)
     } else {
@@ -370,12 +348,12 @@ export const getFilesForDepsFile = async (depsFile: DepsFile) => {
   createFolderIfNotExists(`./src/dependencies/src/`)
 
   console.log('START')
-  getPackageJsonForDepsFiles(deps).then(() => {
+  getFilesForDepsFile(deps).then(() => {
     console.log('MID')
 
-    getFilesForDepsFile(deps).then(() => {
+    getPackageJsonForDepsFiles(deps).then(() => {
       console.log('END')
+      validateDepsJson(deps)
     })
   })
-  // validateDepsJson(deps)
 }
