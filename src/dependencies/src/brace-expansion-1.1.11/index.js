@@ -1,4 +1,4 @@
-var concatMap = require('../node-concat-map-0.0.1/index')
+var concatMap = require('../concat-map-0.0.1/index')
 var balanced = require('../balanced-match-1.0.0/index')
 
 module.exports = expandTop
@@ -132,7 +132,7 @@ function expand(str, isTop) {
       n = expand(n[0], false).map(embrace)
       if (n.length === 1) {
         var post = m.post.length ? expand(m.post, false) : ['']
-        return post.map(function (p) {
+        return post.map(function(p) {
           return m.pre + n[0] + p
         })
       }
@@ -182,7 +182,7 @@ function expand(str, isTop) {
       N.push(c)
     }
   } else {
-    N = concatMap(n, function (el) {
+    N = concatMap(n, function(el) {
       return expand(el, false)
     })
   }

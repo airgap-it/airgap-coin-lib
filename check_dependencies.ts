@@ -30,7 +30,7 @@ function getStringDifference(a: string, b: string): string {
 */
 
 interface Dependency {
-  moduleName?: string // If the module name is not the same as the repository name
+  name: string // Name of the module
   version: string
   repository: string
   commitHash: string
@@ -66,10 +66,32 @@ function log(color: string, ...message: any[]): void {
 }
 
 const validateDepsJson = (depsFile: DepsFile) => {
+
+  log(`
+#############################
+##                         ##
+## VALIDATING DEPENDENCIES ##
+##                         ##
+#############################
+`)
+
   const verificationFailed = (prop: string, reason: string) => {
     log('red', `${prop} is invalid because ${reason}`)
     return false
   }
+
+  const packageJson = JSON.parse(readFileSync(`./package.json`, 'utf-8'))
+
+  const topLevelPackages = Object.keys(packageJson.localDependencies).map(tlp => `${tlp}-${packageJson.localDependencies[tlp]}`)
+  topLevelPackages.forEach(pkgName => {
+    if (depsFile[pkgName]) {
+      log('green', `${pkgName} is in deps file`)
+    } else {
+      log('red', `${pkgName} is NOT in deps file`)
+    }
+  })
+  // verificationFailed(`version in key doesn't match version in json. ${prop} should end in ${depsFile[prop].version}`)
+
   const keys = Object.keys(depsFile)
   for (const prop of keys) {
     log('blue', `--- ${prop} ---`)
@@ -80,12 +102,12 @@ const validateDepsJson = (depsFile: DepsFile) => {
         isValid && verificationFailed(prop, `version in key doesn't match version in json. ${prop} should end in ${depsFile[prop].version}`)
     }
 
-    if (!prop.startsWith(depsFile[prop].repository.split('/')[1])) {
+    if (!prop.startsWith(depsFile[prop].name)) {
       isValid =
         isValid &&
         verificationFailed(
           prop,
-          `name in key doesn't match name of repository. ${prop} should start with ${depsFile[prop].repository.split('/')[1]}`
+          `name in key doesn't match name of repository. ${prop} should start with ${depsFile[prop].name}`
         )
     }
 
@@ -98,7 +120,16 @@ const validateDepsJson = (depsFile: DepsFile) => {
       for (const dependency of dependencyKeys) {
         const key = keys.find(key => key.startsWith(dependency))
         if (!key) {
-          isValid = isValid && verificationFailed(dependency, `dependency not found`)
+          if (depsFile[prop].ignoredDeps) {
+            const x = depsFile[prop].ignoredDeps.find(ignoredDep => ignoredDep.module === dependency)
+            if (x) {
+              log('green', `Ignored "${dependency}" because ${x.reason}`)
+            } else {
+              isValid = isValid && verificationFailed(prop, `${dependency} not found`)
+            }
+          } else {
+            isValid = isValid && verificationFailed(prop, `${dependency} not found`)
+          }
         } else {
           const keyVersion = key.substr(key.lastIndexOf('-') + 1) // TODO: Handle multiple versions
           const isSatisfied = semver.satisfies(keyVersion, pkg.dependencies[dependency])
@@ -126,6 +157,22 @@ const validateDepsJson = (depsFile: DepsFile) => {
         }
       })
     }
+
+    const parentPackages = keys.filter(key => {
+      const deps = depsFile[key].deps
+      if (deps) {
+        return deps.includes(prop)
+      }
+      return false
+    })
+
+    if (parentPackages.length === 0) {
+      // Check if it's a top level package
+      if (!topLevelPackages.includes(prop)) {
+        isValid = isValid && verificationFailed(prop, `is not used in any other package`)
+      }
+    }
+
 
     if (isValid) {
       log('green', `${prop} is valid`)
