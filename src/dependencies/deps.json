@@ -105,14 +105,14 @@
     "repository": "follow-redirects/follow-redirects",
     "commitHash": "91842752013b26ed780f7b04e557c72f02228cde",
     "files": ["index.js", "http.js", "https.js"],
-    "deps": ["debug-4.1.1"]
+    "deps": ["debug-3.1.0"]
   },
-  "debug-4.1.1": {
+  "debug-3.1.0": {
     "name": "debug",
-    "version": "4.1.1",
+    "version": "3.1.0",
     "repository": "visionmedia/debug",
-    "commitHash": "68b4dc8d8549d3924673c38fccc5d594f0a38da1",
-    "files": ["src/browser.js", "src/common.js", "src/index.js", "src/node.js"],
+    "commitHash": "f073e056f33efdd5b311381eb6bca2bc850745bf",
+    "files": ["src/browser.js", "src/debug.js", "src/index.js"],
     "deps": ["ms-2.1.2"]
   },
   "ms-2.1.2": {
@@ -143,7 +143,8 @@
     "version": "5.2.0",
     "repository": "feross/safe-buffer",
     "commitHash": "ae53d5b9f06eae8540ca948d14e43ca32692dd8c",
-    "files": ["index.js", "index.d.ts"]
+    "files": ["index.js"],
+    "TODO": ["index.d.ts"]
   },
   "inherits-2.0.4": {
     "name": "inherits",
@@ -241,8 +242,9 @@
     "version": "2.2.3",
     "repository": "ethereumjs/rlp",
     "commitHash": "296857a1c1c20a93e1377d221dba0c782d7b65a4",
-    "files": ["bin/rlp", "index.js", "index.d.ts"],
-    "deps": ["safe-buffer-5.2.0", "bn.js-4.11.8"]
+    "files": ["bin/rlp", "index.js"],
+    "deps": ["safe-buffer-5.2.0", "bn.js-4.11.8"],
+    "TODO": ["index.d.ts"]
   },
   "utf8-3.0.0": {
     "name": "utf8",
@@ -325,66 +327,5 @@
       { "module": "nan", "reason": "using pure js implementation, node bindings not necessary." },
       { "module": "prebuild-install", "reason": "using pure js implementation, node bindings not necessary." }
     ]
-  },
-  "bindings-1.5.0": {
-    "name": "bindings",
-    "version": "1.5.0",
-    "repository": "TooTallNate/node-bindings",
-    "commitHash": "bcdc7cadf839ef84c9bd9e21c697f2a727b2b1d3",
-    "files": ["bindings.js"],
-    "deps": ["file-uri-to-path-1.0.0", "require-path-0.3.0"]
-  },
-  "file-uri-to-path-1.0.0": {
-    "name": "file-uri-to-path",
-    "version": "1.0.0",
-    "repository": "TooTallNate/file-uri-to-path",
-    "commitHash": "db012b4db2c9da9f6eeb5202b4a493450482e0e4",
-    "files": ["index.js", "index.d.ts"],
-    "deps": ["require-path-0.3.0"]
-  },
-  "require-path-0.3.0": {
-    "name": "require-path",
-    "version": "0.3.0",
-    "repository": "ecowden/require-path",
-    "commitHash": "52b8026581727706080d4c510a42a4dc43792ef9",
-    "files": ["lib/index.js", "lib/getAllFiles.js", "lib/getFilteredFiles.js"],
-    "deps": ["highland-2.5.1", "minimatch-3.0.3"]
-  },
-  "highland-2.5.1": {
-    "name": "highland",
-    "version": "2.5.1",
-    "repository": "caolan/highland",
-    "commitHash": "d7fbb1d03c23a8817fb121e34bff40585b2ff964",
-    "files": ["lib/index.js", "dist/highland.js"]
-  },
-  "minimatch-3.0.4": {
-    "name": "minimatch",
-    "version": "3.0.4",
-    "repository": "isaacs/minimatch",
-    "commitHash": "bafa295617d984c5863b13a33b2bb601c67e4a8b",
-    "files": ["minimatch.js"],
-    "deps": ["brace-expansion-1.1.11"]
-  },
-  "brace-expansion-1.1.11": {
-    "name": "brace-expansion",
-    "version": "1.1.11",
-    "repository": "juliangruber/brace-expansion",
-    "commitHash": "e52ad1c92cb928dcdc5334625cf3a04e230d3bd5",
-    "files": ["index.js"],
-    "deps": ["balanced-match-1.0.0", "concat-map-0.0.1"]
-  },
-  "balanced-match-1.0.0": {
-    "name": "balanced-match",
-    "version": "1.0.0",
-    "repository": "juliangruber/balanced-match",
-    "commitHash": "d701a549a7653a874eebce7eca25d3577dc868ac",
-    "files": ["index.js"]
-  },
-  "concat-map-0.0.1": {
-    "name": "concat-map",
-    "version": "0.0.1",
-    "repository": "substack/node-concat-map",
-    "commitHash": "0be8682c13068fde1caf1d75c201069d91260bcd",
-    "files": ["index.js"]
   }
 }

@@ -1,6 +1,8 @@
-// import Axios, { AxiosError } from './src/dependencies/src/axios-0.19.0/index'
-import { readFileSync /* writeFileSync, exists, mkdirSync */ } from 'fs'
+import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
+import { dirname } from 'path'
 import * as semver from 'semver'
+
+import Axios from './src/dependencies/src/axios-0.19.0/index'
 
 const cliCommand: string = process.argv[2]
 
@@ -65,8 +67,7 @@ function log(color: string, ...message: any[]): void {
   }
 }
 
-const validateDepsJson = (depsFile: DepsFile) => {
-
+export const validateDepsJson = (depsFile: DepsFile) => {
   log(`
 #############################
 ##                         ##
@@ -77,6 +78,7 @@ const validateDepsJson = (depsFile: DepsFile) => {
 
   const verificationFailed = (prop: string, reason: string) => {
     log('red', `${prop} is invalid because ${reason}`)
+
     return false
   }
 
@@ -90,7 +92,6 @@ const validateDepsJson = (depsFile: DepsFile) => {
       log('red', `${pkgName} is NOT in deps file`)
     }
   })
-  // verificationFailed(`version in key doesn't match version in json. ${prop} should end in ${depsFile[prop].version}`)
 
   const keys = Object.keys(depsFile)
   for (const prop of keys) {
@@ -105,10 +106,7 @@ const validateDepsJson = (depsFile: DepsFile) => {
     if (!prop.startsWith(depsFile[prop].name)) {
       isValid =
         isValid &&
-        verificationFailed(
-          prop,
-          `name in key doesn't match name of repository. ${prop} should start with ${depsFile[prop].name}`
-        )
+        verificationFailed(prop, `name in key doesn't match name of repository. ${prop} should start with ${depsFile[prop].name}`)
     }
 
     const pkg = JSON.parse(readFileSync(`./src/dependencies/github/${prop}/package.json`, 'utf-8'))
@@ -163,6 +161,7 @@ const validateDepsJson = (depsFile: DepsFile) => {
       if (deps) {
         return deps.includes(prop)
       }
+
       return false
     })
 
@@ -173,110 +172,210 @@ const validateDepsJson = (depsFile: DepsFile) => {
       }
     }
 
-
     if (isValid) {
       log('green', `${prop} is valid`)
     } else {
       log('blue', `--- ${prop} ---`)
     }
-
-    // log('prop', depsFile[prop])
   }
 }
 
-// const getPackageJsonForDepsFiles = (depsFile: DepsFile) => {
-//       for (const prop of Object.keys(depsFile)) {
-//         const localPath = `./src/dependencies/github/${prop}/package.json`
-//             exists(localPath, exists => {
+const simpleHash = (s: string): string => {
+  let h = 0xdeadbeef
+  for (let i = 0; i < s.length; i++) {
+    h = Math.imul(h ^ s.charCodeAt(i), 2654435761)
+  }
+
+  const code = (h ^ (h >>> 16)) >>> 0
+  const buff = Buffer.from(code.toString())
+
+  return buff
+    .toString('base64')
+    .split('=')
+    .join('')
+}
+
+const downloadFile = async (url: string) => {
+  const cachePath = './src/dependencies/cache/'
+  const cacheFile = `${cachePath}${simpleHash(url)}`
+
+  const fileExists = existsSync(cacheFile)
+
+  if (fileExists) {
+    log('cyan', `Using cache ${url}`)
+
+    return readFileSync(cacheFile, 'utf-8')
+  } else {
+    try {
+      log('magenta', `Downloading ${url}`)
+
+      const response = await Axios(url)
+      writeFileSync(cacheFile, response.data)
+
+      return response.data
+    } catch (error) {
+      if (error.response && error.response.status) {
+        log('red', `Error: ${error.config.url} ${error.response.status}`)
+      } else {
+        throw error
+      }
+    }
+  }
+}
+
+const copyFileAndCreateFolder = (src: string, dest: string) => {
+  createFolderIfNotExists(dest)
+  copyFileSync(src, dest)
+}
+
+const writeFileAndCreateFolder = (path: string, data: any) => {
+  createFolderIfNotExists(path)
+  writeFileSync(path, data)
+}
+
+const createFolderIfNotExists = (path: string) => {
+  const dir = dirname(path)
+  try {
+    mkdirSync(dir, { recursive: true })
+  } catch (e) {
+    if (e.code === 'EEXIST') {
+    } else {
+      throw e
+    }
+  }
+}
+
+// export const checkCacheAndDownload = (cachePath: string, localPath: string, remotePath: string) => {
+//   return new Promise((resolve, reject) => {
+//     exists(cachePath, exists => {
 //       if (!exists) {
-//         console.log('DOES NOT EXIST', prop)
-//         const urlCommit: string = `https://raw.githubusercontent.com/${depsFile[prop].repository}/${depsFile[prop].commitHash}/package.json`
-//         Axios(urlCommit)
-//             .then(response => {
-//               mkdirSync(`./src/dependencies/github/${prop}/`, { recursive: true })
-//               console.log('DATA', response.data)
-//             writeFileSync(localPath, JSON.stringify(response.data, null, 4))
-//             log('green', `${prop} (commit): Saved package.json`)
+//         console.log('DOES NOT EXIST', localPath)
+//         downloadFile(remotePath)
+//           .then(data => {
+//             createFolderIfNotExists(localPath)
+
+//             resolve(data)
 //           })
 //           .catch((error: AxiosError) => {
-//             console.error(error)
+//             reject(error)
 //           })
 //       } else {
 //         console.log('ALREADY EXISTS')
 //       }
-
 //     })
-
-//       }
+//   })
 // }
+
+export const getPackageJsonForDepsFiles = async (depsFile: DepsFile) => {
+  for (const prop of Object.keys(depsFile)) {
+    const localPath = `./src/dependencies/github/${prop}/package.json`
+    const fileExists = existsSync(localPath)
+    if (!fileExists) {
+      console.log('DOES NOT EXIST', prop)
+      const urlCommit: string = `https://raw.githubusercontent.com/${depsFile[prop].repository}/${depsFile[prop].commitHash}/package.json`
+      const data = await downloadFile(urlCommit)
+      createFolderIfNotExists(`./src/dependencies/github/${prop}/`)
+      writeFileAndCreateFolder(localPath, JSON.stringify(data, null, 4))
+      log('green', `${prop} (commit): Saved package.json`)
+    } else {
+      console.log(`ALREADY EXISTS: ${prop}`)
+    }
+  }
+}
+
+export const getFilesForDepsFile = async (depsFile: DepsFile) => {
+  for (const prop of Object.keys(depsFile)) {
+    // const urlLatestCommits: string = `https://api.github.com/repos/${depsFile[prop].repository}/commits`
+
+    // Axios(urlLatestCommits)
+    //   .then(response => {
+    //     const { data }: { data: { sha: string }[] } = response
+    //     const isSame: boolean = depsFile[prop].commitHash === data[0].sha
+    //     const diffUrl: string = `https://github.com/${depsFile[prop].repository}/compare/${depsFile[prop].commitHash.substr(
+    //       0,
+    //       7
+    //     )}..${data[0].sha.substr(0, 7)}`
+    //     log(isSame ? 'green' : 'red', `${prop} (commit): ${isSame ? 'up to date' : diffUrl}`)
+    //   })
+    //   .catch((error: AxiosError) => {
+    //     console.error(error)
+    //   })
+
+    for (const file of depsFile[prop].files) {
+      const urlCommit: string = `https://raw.githubusercontent.com/${depsFile[prop].repository}/${depsFile[prop].commitHash}/${file}`
+      // const urlMaster: string = `https://raw.githubusercontent.com/${depsFile[prop].repository}/master/${file}`
+
+      // Rename files when copying
+      let renamedFile = file
+      const renamedFiles = depsFile[prop].renameFiles
+      if (renamedFiles) {
+        const replaceArray = renamedFiles.find(replace => replace[0] === file)
+        if (replaceArray) {
+          renamedFile = replaceArray[1]
+        }
+      }
+
+      const localPath = `./src/dependencies/src/${prop}/${renamedFile}`
+      const localCache = `./src/dependencies/github/${prop}/${file}`
+
+      const cacheExists = existsSync(localCache)
+      if (!cacheExists) {
+        const data = await downloadFile(urlCommit)
+
+        if (!data) {
+          return
+        }
+
+        writeFileAndCreateFolder(localCache, data)
+        log('green', `${prop} (commit): Cached file: ${file}`)
+      }
+
+      const fileExists = existsSync(localPath)
+      if (!fileExists) {
+        console.log('DOES NOT EXIST, CHECKING CACHE ' + localPath)
+        copyFileAndCreateFolder(localCache, localPath)
+      }
+
+      /*
+      downloadFile(urlCommit)
+        .then(data => {
+          const difference: string = getStringDifference(localContent.trim(), data.trim())
+          const isSame: boolean = difference.trim().length === 0
+          log(isSame ? 'green' : 'red', `${prop} (commit): ${file} is ${isSame ? 'unchanged' : 'CHANGED'}`)
+        })
+        .catch((error: AxiosError) => {
+          
+        })
+  
+      downloadFile(urlMaster)
+        .then(data => {
+          const difference: string = getStringDifference(localContent.trim(), data.trim())
+          const isSame: boolean = difference.trim().length === 0
+          log(isSame ? 'green' : 'red', `${prop} (master): ${file} is ${isSame ? 'unchanged' : 'CHANGED'}`)
+        })
+        .catch((error: AxiosError) => {
+          
+        })*/
+    }
+  }
+}
 
 {
   const dependencies: string = readFileSync('./src/dependencies/deps.json', 'utf-8')
 
   const deps: DepsFile = JSON.parse(dependencies)
 
-  validateDepsJson(deps)
-  // getPackageJsonForDepsFiles(deps)
+  createFolderIfNotExists(`./src/dependencies/cache/`)
+  createFolderIfNotExists(`./src/dependencies/github/`)
+  createFolderIfNotExists(`./src/dependencies/src/`)
+
+  console.log('START')
+  getPackageJsonForDepsFiles(deps).then(() => {
+    console.log('MID')
+
+    getFilesForDepsFile(deps).then(() => {
+      console.log('END')
+    })
+  })
+  // validateDepsJson(deps)
 }
-
-// for (const prop of Object.keys(deps)) {
-//   const urlLatestCommits: string = `https://api.github.com/repos/${deps[prop].repository}/commits`
-
-//   Axios(urlLatestCommits)
-//     .then(response => {
-//       const { data }: { data: { sha: string }[] } = response
-//       const isSame: boolean = deps[prop].commitHash === data[0].sha
-//       const diffUrl: string = `https://github.com/${deps[prop].repository}/compare/${deps[prop].commitHash.substr(
-//         0,
-//         7
-//       )}..${data[0].sha.substr(0, 7)}`
-//       log(isSame ? 'green' : 'red', `${prop} (commit): ${isSame ? 'up to date' : diffUrl}`)
-//     })
-//     .catch((error: AxiosError) => {
-//       console.error(error)
-//     })
-
-//   for (const file of deps[prop].files) {
-//     try {
-//       mkdirSync(`./src/dependencies/src/${prop}/`, { recursive: true })
-//     } catch (e) {}
-
-//     const urlCommit: string = `https://raw.githubusercontent.com/${deps[prop].repository}/${deps[prop].commitHash}/${file}`
-//     // const urlMaster: string = `https://raw.githubusercontent.com/${deps[prop].repository}/master/${file}`
-//     const localPath = `./src/dependencies/src/${prop}/${file}`
-
-//     exists(localPath, exists => {
-//       if (!exists) {
-//         console.log('DOES NOT EXIST')
-//         Axios(urlCommit)
-//           .then(response => {
-//             writeFileSync(localPath, response.data)
-//             log('green', `${prop} (commit): Saved file: ${file}`)
-//           })
-//           .catch((error: AxiosError) => {
-//             console.error(error)
-//           })
-//       }
-//     })
-//     /*
-//     Axios(urlCommit)
-//       .then(response => {
-//         const difference: string = getStringDifference(localContent.trim(), response.data.trim())
-//         const isSame: boolean = difference.trim().length === 0
-//         log(isSame ? 'green' : 'red', `${prop} (commit): ${file} is ${isSame ? 'unchanged' : 'CHANGED'}`)
-//       })
-//       .catch((error: AxiosError) => {
-//         console.error(error)
-//       })
-
-//     Axios(urlMaster)
-//       .then(response => {
-//         const difference: string = getStringDifference(localContent.trim(), response.data.trim())
-//         const isSame: boolean = difference.trim().length === 0
-//         log(isSame ? 'green' : 'red', `${prop} (master): ${file} is ${isSame ? 'unchanged' : 'CHANGED'}`)
-//       })
-//       .catch((error: AxiosError) => {
-//         console.error(error)
-//       })*/
-//   }
-// }
