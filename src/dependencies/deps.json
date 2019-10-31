@@ -407,5 +407,13 @@
       { "module": "nan", "reason": "using pure js implementation, node bindings not necessary." },
       { "module": "prebuild-install", "reason": "using pure js implementation, node bindings not necessary." }
     ]
+  },
+  "big-integer-1.6.45": {
+    "name": "big-integer",
+    "entrypoint": "src/index",
+    "version": "1.6.45",
+    "repository": "peterolson/BigInteger.js",
+    "commitHash": "4e99b15b7951338f164728377c906caae5a78202",
+    "files": ["BigInteger.js", "BigInteger.d.ts"]
   }
 }
