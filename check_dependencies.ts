@@ -1,8 +1,41 @@
 import { existsSync, readFileSync } from 'fs'
+import { request } from 'https'
 import * as semver from 'semver'
 
 import { copyFileAndCreateFolder, createFolderIfNotExists, writeFileAndCreateFolder } from './check_dependencies_fs'
-import Axios from './src/dependencies/src/axios-0.19.0/index'
+
+function httpGet(params) {
+  return new Promise((resolve, reject) => {
+    const req = request(params, res => {
+      // reject on bad status
+      if (res.statusCode && (res.statusCode < 200 || res.statusCode >= 300)) {
+        return reject(new Error('statusCode=' + res.statusCode))
+      }
+
+      // cumulate data
+      let body: any[] = []
+      res.on('data', chunk => {
+        body.push(chunk)
+      })
+      // resolve on end
+      res.on('end', () => {
+        try {
+          body = JSON.parse(Buffer.concat(body).toString())
+        } catch (e) {
+          body = Buffer.concat(body).toString() as any
+        }
+        resolve(body)
+      })
+    })
+    // reject on request error
+    req.on('error', err => {
+      // This is not a "Second reject", just a different sort of failure
+      reject(err)
+    })
+    // IMPORTANT
+    req.end()
+  })
+}
 
 const cliCommand: string = process.argv[2]
 
@@ -215,10 +248,10 @@ const downloadFile = async (url: string) => {
     try {
       log('magenta', `Downloading ${url}`)
 
-      const response = await Axios(url)
-      writeFileAndCreateFolder(cacheFile, response.data)
+      const response: any = await httpGet(url)
+      writeFileAndCreateFolder(cacheFile, response)
 
-      return response.data
+      return response
     } catch (error) {
       if (error.response && error.response.status) {
         log('red', `Error: ${error.config.url} ${error.response.status}`)
