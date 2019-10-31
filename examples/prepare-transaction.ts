@@ -21,7 +21,7 @@ protocol
   .prepareTransactionFromPublicKey(publicKey, [recipient], [amount], fee, data)
   .then(async (tx: RawAeternityTransaction) => {
     console.log(tx)
-    const details: IAirGapTransaction = await protocol.getTransactionDetails({ publicKey: '', transaction: tx })
+    const details: IAirGapTransaction[] = await protocol.getTransactionDetails({ publicKey: '', transaction: tx })
 
     console.log(details)
   })
