@@ -424,5 +424,13 @@
     "commitHash": "7dd2b95a5c44e9b574f224268254a7bbecfac2ed",
     "files": ["index.js", "base.js"],
     "deps": ["bs58-4.0.1"]
+  },
+  "bs58-4.0.1": {
+    "name": "bs58",
+    "entrypoint": "index",
+    "version": "4.0.1",
+    "repository": "cryptocoinjs/bs58",
+    "commitHash": "a1d5dadc1e3544c6852648776179629f96efd1d6",
+    "files": ["index.js"]
   }
 }

@@ -1,6 +1,6 @@
 'use strict'
 
-var base58 = require('bs58')
+var base58 = require('../bs58-4.0.1/index')
 var Buffer = require('safe-buffer').Buffer
 
 module.exports = function (checksumFn) {
