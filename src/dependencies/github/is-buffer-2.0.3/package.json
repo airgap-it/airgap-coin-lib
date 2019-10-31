@@ -1,1 +1,54 @@
-"{\n    \"name\": \"is-buffer\",\n    \"description\": \"Determine if an object is a Buffer\",\n    \"version\": \"2.0.3\",\n    \"author\": {\n        \"name\": \"Feross Aboukhadijeh\",\n        \"email\": \"feross@feross.org\",\n        \"url\": \"https://feross.org\"\n    },\n    \"bugs\": {\n        \"url\": \"https://github.com/feross/is-buffer/issues\"\n    },\n    \"dependencies\": {},\n    \"devDependencies\": {\n        \"airtap\": \"0.0.7\",\n        \"standard\": \"*\",\n        \"tape\": \"^4.0.0\"\n    },\n    \"engines\": {\n        \"node\": \">=4\"\n    },\n    \"keywords\": [\n        \"arraybuffer\",\n        \"browser\",\n        \"browser buffer\",\n        \"browserify\",\n        \"buffer\",\n        \"buffers\",\n        \"core buffer\",\n        \"dataview\",\n        \"float32array\",\n        \"float64array\",\n        \"int16array\",\n        \"int32array\",\n        \"type\",\n        \"typed array\",\n        \"uint32array\"\n    ],\n    \"license\": \"MIT\",\n    \"main\": \"index.js\",\n    \"repository\": {\n        \"type\": \"git\",\n        \"url\": \"git://github.com/feross/is-buffer.git\"\n    },\n    \"scripts\": {\n        \"test\": \"standard && npm run test-node && npm run test-browser\",\n        \"test-browser\": \"airtap -- test/*.js\",\n        \"test-browser-local\": \"airtap --local -- test/*.js\",\n        \"test-node\": \"tape test/*.js\"\n    },\n    \"testling\": {\n        \"files\": \"test/*.js\"\n    }\n}"
+{
+    "name": "is-buffer",
+    "description": "Determine if an object is a Buffer",
+    "version": "2.0.3",
+    "author": {
+        "name": "Feross Aboukhadijeh",
+        "email": "feross@feross.org",
+        "url": "https://feross.org"
+    },
+    "bugs": {
+        "url": "https://github.com/feross/is-buffer/issues"
+    },
+    "dependencies": {},
+    "devDependencies": {
+        "airtap": "0.0.7",
+        "standard": "*",
+        "tape": "^4.0.0"
+    },
+    "engines": {
+        "node": ">=4"
+    },
+    "keywords": [
+        "arraybuffer",
+        "browser",
+        "browser buffer",
+        "browserify",
+        "buffer",
+        "buffers",
+        "core buffer",
+        "dataview",
+        "float32array",
+        "float64array",
+        "int16array",
+        "int32array",
+        "type",
+        "typed array",
+        "uint32array"
+    ],
+    "license": "MIT",
+    "main": "index.js",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/feross/is-buffer.git"
+    },
+    "scripts": {
+        "test": "standard && npm run test-node && npm run test-browser",
+        "test-browser": "airtap -- test/*.js",
+        "test-browser-local": "airtap --local -- test/*.js",
+        "test-node": "tape test/*.js"
+    },
+    "testling": {
+        "files": "test/*.js"
+    }
+}

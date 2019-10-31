@@ -1,1 +1,49 @@
-"{\n    \"name\": \"@aeternity/hd-wallet\",\n    \"version\": \"0.2.0\",\n    \"description\": \"HD Wallet for the æternity blockchain\",\n    \"main\": \"dist/wallet.js\",\n    \"browser\": \"dist/wallet.browser.js\",\n    \"scripts\": {\n        \"build\": \"webpack -p\",\n        \"build:dev\": \"webpack --mode=development\",\n        \"test\": \"mocha --recursive --require @babel/register\",\n        \"test:watch\": \"mocha --recursive --require @babel/register --watch\",\n        \"postinstall\": \"postinstall-build --only-as-dependency dist\"\n    },\n    \"license\": \"ISC\",\n    \"dependencies\": {\n        \"@babel/runtime\": \"^7.0.0-beta.46\",\n        \"bip32-path\": \"^0.4.2\",\n        \"postinstall-build\": \"^5.0.1\",\n        \"tweetnacl\": \"^1.0.0\",\n        \"tweetnacl-auth\": \"^1.0.1\"\n    },\n    \"repository\": {\n        \"type\": \"git\",\n        \"url\": \"https://github.com/aeternity/wallet-js\"\n    },\n    \"devDependencies\": {\n        \"@babel/cli\": \"^7.0.0-beta.46\",\n        \"@babel/core\": \"^7.0.0-beta.46\",\n        \"@babel/node\": \"^7.0.0-beta.46\",\n        \"@babel/plugin-proposal-export-default-from\": \"^7.0.0-beta.46\",\n        \"@babel/plugin-proposal-object-rest-spread\": \"^7.0.0-beta.40\",\n        \"@babel/plugin-transform-runtime\": \"^7.0.0-beta.46\",\n        \"@babel/preset-env\": \"^7.0.0-beta.39\",\n        \"@babel/register\": \"^7.0.0-beta.46\",\n        \"babel-core\": \"6\",\n        \"babel-loader\": \"^8.0.0-beta.2\",\n        \"bufferutil\": \"^3.0.3\",\n        \"chai\": \"^4.1.2\",\n        \"import-glob-loader\": \"^1.1.0\",\n        \"mocha\": \"^5.0.0\",\n        \"mocha-junit-reporter\": \"^1.17.0\",\n        \"prompt\": \"^1.0.0\",\n        \"sinon\": \"^4.2.2\",\n        \"standard\": \"*\",\n        \"standard-loader\": \"^6.0.1\",\n        \"webpack\": \"^4.8.1\",\n        \"webpack-cli\": \"^3.1.1\"\n    }\n}"
+{
+    "name": "@aeternity/hd-wallet",
+    "version": "0.2.0",
+    "description": "HD Wallet for the æternity blockchain",
+    "main": "dist/wallet.js",
+    "browser": "dist/wallet.browser.js",
+    "scripts": {
+        "build": "webpack -p",
+        "build:dev": "webpack --mode=development",
+        "test": "mocha --recursive --require @babel/register",
+        "test:watch": "mocha --recursive --require @babel/register --watch",
+        "postinstall": "postinstall-build --only-as-dependency dist"
+    },
+    "license": "ISC",
+    "dependencies": {
+        "@babel/runtime": "^7.0.0-beta.46",
+        "bip32-path": "^0.4.2",
+        "postinstall-build": "^5.0.1",
+        "tweetnacl": "^1.0.0",
+        "tweetnacl-auth": "^1.0.1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/aeternity/wallet-js"
+    },
+    "devDependencies": {
+        "@babel/cli": "^7.0.0-beta.46",
+        "@babel/core": "^7.0.0-beta.46",
+        "@babel/node": "^7.0.0-beta.46",
+        "@babel/plugin-proposal-export-default-from": "^7.0.0-beta.46",
+        "@babel/plugin-proposal-object-rest-spread": "^7.0.0-beta.40",
+        "@babel/plugin-transform-runtime": "^7.0.0-beta.46",
+        "@babel/preset-env": "^7.0.0-beta.39",
+        "@babel/register": "^7.0.0-beta.46",
+        "babel-core": "6",
+        "babel-loader": "^8.0.0-beta.2",
+        "bufferutil": "^3.0.3",
+        "chai": "^4.1.2",
+        "import-glob-loader": "^1.1.0",
+        "mocha": "^5.0.0",
+        "mocha-junit-reporter": "^1.17.0",
+        "prompt": "^1.0.0",
+        "sinon": "^4.2.2",
+        "standard": "*",
+        "standard-loader": "^6.0.1",
+        "webpack": "^4.8.1",
+        "webpack-cli": "^3.1.1"
+    }
+}

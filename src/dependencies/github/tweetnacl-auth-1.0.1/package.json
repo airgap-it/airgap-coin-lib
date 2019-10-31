@@ -1,1 +1,41 @@
-"{\n    \"name\": \"tweetnacl-auth\",\n    \"version\": \"1.0.1\",\n    \"description\": \"HMAC-SHA-512-256 based on TweetNaCl.js\",\n    \"main\": \"nacl-auth.js\",\n    \"directories\": {\n        \"test\": \"test\"\n    },\n    \"scripts\": {\n        \"build\": \"uglifyjs nacl-auth.js -c -m -o nacl-auth.min.js\",\n        \"test\": \"tape test/*.js | faucet\"\n    },\n    \"repository\": {\n        \"type\": \"git\",\n        \"url\": \"https://github.com/dchest/tweetnacl-auth-js.git\"\n    },\n    \"keywords\": [\n        \"authentication\",\n        \"auth\",\n        \"crypto\",\n        \"hmac\",\n        \"hmac-sha512\",\n        \"nacl\",\n        \"tweetnacl\"\n    ],\n    \"author\": \"Dmitry Chestnykh\",\n    \"license\": \"Unlicense\",\n    \"bugs\": {\n        \"url\": \"https://github.com/dchest/tweetnacl-auth-js/issues\"\n    },\n    \"homepage\": \"https://github.com/dchest/tweetnacl-auth-js\",\n    \"devDependencies\": {\n        \"faucet\": \"0.x.x\",\n        \"tape\": \"2.x.x\",\n        \"tweetnacl-util\": \"^0.13.5\",\n        \"uglify-js\": \"2.8.x\"\n    },\n    \"dependencies\": {\n        \"tweetnacl\": \"1.x.x\"\n    }\n}"
+{
+    "name": "tweetnacl-auth",
+    "version": "1.0.1",
+    "description": "HMAC-SHA-512-256 based on TweetNaCl.js",
+    "main": "nacl-auth.js",
+    "directories": {
+        "test": "test"
+    },
+    "scripts": {
+        "build": "uglifyjs nacl-auth.js -c -m -o nacl-auth.min.js",
+        "test": "tape test/*.js | faucet"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/dchest/tweetnacl-auth-js.git"
+    },
+    "keywords": [
+        "authentication",
+        "auth",
+        "crypto",
+        "hmac",
+        "hmac-sha512",
+        "nacl",
+        "tweetnacl"
+    ],
+    "author": "Dmitry Chestnykh",
+    "license": "Unlicense",
+    "bugs": {
+        "url": "https://github.com/dchest/tweetnacl-auth-js/issues"
+    },
+    "homepage": "https://github.com/dchest/tweetnacl-auth-js",
+    "devDependencies": {
+        "faucet": "0.x.x",
+        "tape": "2.x.x",
+        "tweetnacl-util": "^0.13.5",
+        "uglify-js": "2.8.x"
+    },
+    "dependencies": {
+        "tweetnacl": "1.x.x"
+    }
+}

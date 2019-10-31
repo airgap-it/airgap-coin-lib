@@ -1,1 +1,34 @@
-"{\n    \"name\": \"cryptocompare\",\n    \"description\": \"CryptoCompare JavaScript API\",\n    \"version\": \"0.5.0\",\n    \"author\": \"JP Richardson <jprichardson@gmail.com>\",\n    \"bugs\": {\n        \"url\": \"https://github.com/exodusmovement/cryptocompare/issues\"\n    },\n    \"devDependencies\": {\n        \"node-fetch\": \"^1.5.3\",\n        \"standard\": \"9.x\",\n        \"tap-spec\": \"^4.0.2\",\n        \"tape\": \"^4.0.0\"\n    },\n    \"homepage\": \"https://github.com/exodusmovement/cryptocompare\",\n    \"keywords\": [\n        \"api\",\n        \"bitcoin\",\n        \"cryptocurrency\",\n        \"ethereum\",\n        \"price\"\n    ],\n    \"license\": \"MIT\",\n    \"main\": \"index.js\",\n    \"repository\": {\n        \"type\": \"git\",\n        \"url\": \"https://github.com/exodusmovement/cryptocompare.git\"\n    },\n    \"scripts\": {\n        \"lint\": \"standard\",\n        \"test\": \"npm run lint && npm run unit\",\n        \"unit\": \"tape test/*.js | tap-spec\"\n    }\n}"
+{
+    "name": "cryptocompare",
+    "description": "CryptoCompare JavaScript API",
+    "version": "0.5.0",
+    "author": "JP Richardson <jprichardson@gmail.com>",
+    "bugs": {
+        "url": "https://github.com/exodusmovement/cryptocompare/issues"
+    },
+    "devDependencies": {
+        "node-fetch": "^1.5.3",
+        "standard": "9.x",
+        "tap-spec": "^4.0.2",
+        "tape": "^4.0.0"
+    },
+    "homepage": "https://github.com/exodusmovement/cryptocompare",
+    "keywords": [
+        "api",
+        "bitcoin",
+        "cryptocurrency",
+        "ethereum",
+        "price"
+    ],
+    "license": "MIT",
+    "main": "index.js",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/exodusmovement/cryptocompare.git"
+    },
+    "scripts": {
+        "lint": "standard",
+        "test": "npm run lint && npm run unit",
+        "unit": "tape test/*.js | tap-spec"
+    }
+}

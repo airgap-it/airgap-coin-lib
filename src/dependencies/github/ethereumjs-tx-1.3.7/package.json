@@ -1,1 +1,165 @@
-"{\n    \"name\": \"ethereumjs-tx\",\n    \"version\": \"1.3.7\",\n    \"description\": \"An simple module for creating, manipulating and signing ethereum transactions\",\n    \"main\": \"es5/index.js\",\n    \"scripts\": {\n        \"coverage\": \"istanbul cover ./test/index.js\",\n        \"coveralls\": \"npm run coverage && coveralls <coverage/lcov.info\",\n        \"lint\": \"standard\",\n        \"test\": \"npm run test:node && npm run test:browser\",\n        \"test:browser\": \"karma start karma.conf.js\",\n        \"test:node\": \"tape ./test/index.js\",\n        \"build:es5\": \"babel index.js --source-root ./ -d ./es5\",\n        \"build:docs\": \"documentation --github  -f md ./index.js > ./docs/index.md && contributor\"\n    },\n    \"keywords\": [\n        \"ethereum\",\n        \"transactions\"\n    ],\n    \"author\": \"mjbecze <mb@ethdev.com>\",\n    \"license\": \"MPL-2.0\",\n    \"dependencies\": {\n        \"ethereum-common\": \"^0.0.18\",\n        \"ethereumjs-util\": \"^5.0.0\"\n    },\n    \"devDependencies\": {\n        \"async\": \"^2.0.0\",\n        \"babel-cli\": \"^6.22.2\",\n        \"babel-preset-env\": \"^1.6.1\",\n        \"babel-preset-stage-0\": \"^6.16.0\",\n        \"babelify\": \"^7.3.0\",\n        \"browserify\": \"^13.0.0\",\n        \"contributor\": \"^0.1.25\",\n        \"coveralls\": \"^2.11.4\",\n        \"documentation\": \"^3.0.4\",\n        \"ethereumjs-testing\": \"0.0.1\",\n        \"istanbul\": \"^0.4.1\",\n        \"karma\": \"^1.1.1\",\n        \"karma-browserify\": \"^5.1.0\",\n        \"karma-detect-browsers\": \"^2.0.2\",\n        \"karma-env-preprocessor\": \"^0.1.1\",\n        \"karma-firefox-launcher\": \"^1.0.0\",\n        \"karma-tap\": \"^2.0.1\",\n        \"minimist\": \"^1.2.0\",\n        \"standard\": \"^7.1.2\",\n        \"tape\": \"^4.0.3\"\n    },\n    \"repository\": {\n        \"type\": \"git\",\n        \"url\": \"https://github.com/ethereumjs/ethereumjs-tx.git\"\n    },\n    \"bugs\": {\n        \"url\": \"https://github.com/ethereumjs/ethereumjs-tx/issues\"\n    },\n    \"homepage\": \"https://github.com/ethereumjs/ethereumjs-tx\",\n    \"standard\": {\n        \"ignore\": [\n            \"es5/**\",\n            \"dist/**\",\n            \"package-init.js\",\n            \"package.js\"\n        ]\n    },\n    \"contributors\": [\n        {\n            \"name\": \"<-c-g-> \",\n            \"email\": \"christophergewecke@gmail.com\",\n            \"url\": \"https://github.com/cgewecke\",\n            \"contributions\": 1,\n            \"additions\": 3,\n            \"deletions\": 1,\n            \"hireable\": true\n        },\n        {\n            \"name\": \"Kirill Fomichev\",\n            \"email\": \"fanatid@ya.ru\",\n            \"url\": \"https://github.com/fanatid\",\n            \"contributions\": 1,\n            \"additions\": 3,\n            \"deletions\": 2,\n            \"hireable\": true\n        },\n        {\n            \"name\": \"Rick Behl\",\n            \"email\": null,\n            \"url\": \"https://github.com/Nexus7\",\n            \"contributions\": 1,\n            \"additions\": 1,\n            \"deletions\": 1,\n            \"hireable\": null\n        },\n        {\n            \"name\": \"Tim Coulter\",\n            \"email\": \"tim@timothyjcoulter.com\",\n            \"url\": \"https://github.com/tcoulter\",\n            \"contributions\": 1,\n            \"additions\": 1,\n            \"deletions\": 1,\n            \"hireable\": null\n        },\n        {\n            \"name\": \"kumavis\",\n            \"email\": \"aaron@kumavis.me\",\n            \"url\": \"https://github.com/kumavis\",\n            \"contributions\": 1,\n            \"additions\": 6,\n            \"deletions\": 6,\n            \"hireable\": true\n        },\n        {\n            \"name\": \"Jack Peterson\",\n            \"email\": \"jack@tinybike.net\",\n            \"url\": \"https://github.com/tinybike\",\n            \"contributions\": 2,\n            \"additions\": 1,\n            \"deletions\": 2,\n            \"hireable\": null\n        },\n        {\n            \"name\": \"Nick Dodson\",\n            \"email\": null,\n            \"url\": \"https://github.com/SilentCicero\",\n            \"contributions\": 2,\n            \"additions\": 29,\n            \"deletions\": 0,\n            \"hireable\": true\n        },\n        {\n            \"name\": null,\n            \"email\": null,\n            \"url\": \"https://github.com/ckeenan\",\n            \"contributions\": 2,\n            \"additions\": 4,\n            \"deletions\": 3,\n            \"hireable\": null\n        },\n        {\n            \"name\": \"Alex Beregszaszi\",\n            \"email\": \"alex@rtfs.hu\",\n            \"url\": \"https://github.com/axic\",\n            \"contributions\": 22,\n            \"additions\": 27562,\n            \"deletions\": 42613,\n            \"hireable\": true\n        },\n        {\n            \"name\": null,\n            \"email\": null,\n            \"url\": \"https://github.com/wanderer\",\n            \"contributions\": 171,\n            \"additions\": 112706,\n            \"deletions\": 96355,\n            \"hireable\": null\n        },\n        {\n            \"name\": null,\n            \"email\": null,\n            \"url\": \"https://github.com/kvhnuke\",\n            \"contributions\": 7,\n            \"additions\": 268,\n            \"deletions\": 53,\n            \"hireable\": null\n        }\n    ]\n}"
+{
+    "name": "ethereumjs-tx",
+    "version": "1.3.7",
+    "description": "An simple module for creating, manipulating and signing ethereum transactions",
+    "main": "es5/index.js",
+    "scripts": {
+        "coverage": "istanbul cover ./test/index.js",
+        "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
+        "lint": "standard",
+        "test": "npm run test:node && npm run test:browser",
+        "test:browser": "karma start karma.conf.js",
+        "test:node": "tape ./test/index.js",
+        "build:es5": "babel index.js --source-root ./ -d ./es5",
+        "build:docs": "documentation --github  -f md ./index.js > ./docs/index.md && contributor"
+    },
+    "keywords": [
+        "ethereum",
+        "transactions"
+    ],
+    "author": "mjbecze <mb@ethdev.com>",
+    "license": "MPL-2.0",
+    "dependencies": {
+        "ethereum-common": "^0.0.18",
+        "ethereumjs-util": "^5.0.0"
+    },
+    "devDependencies": {
+        "async": "^2.0.0",
+        "babel-cli": "^6.22.2",
+        "babel-preset-env": "^1.6.1",
+        "babel-preset-stage-0": "^6.16.0",
+        "babelify": "^7.3.0",
+        "browserify": "^13.0.0",
+        "contributor": "^0.1.25",
+        "coveralls": "^2.11.4",
+        "documentation": "^3.0.4",
+        "ethereumjs-testing": "0.0.1",
+        "istanbul": "^0.4.1",
+        "karma": "^1.1.1",
+        "karma-browserify": "^5.1.0",
+        "karma-detect-browsers": "^2.0.2",
+        "karma-env-preprocessor": "^0.1.1",
+        "karma-firefox-launcher": "^1.0.0",
+        "karma-tap": "^2.0.1",
+        "minimist": "^1.2.0",
+        "standard": "^7.1.2",
+        "tape": "^4.0.3"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/ethereumjs/ethereumjs-tx.git"
+    },
+    "bugs": {
+        "url": "https://github.com/ethereumjs/ethereumjs-tx/issues"
+    },
+    "homepage": "https://github.com/ethereumjs/ethereumjs-tx",
+    "standard": {
+        "ignore": [
+            "es5/**",
+            "dist/**",
+            "package-init.js",
+            "package.js"
+        ]
+    },
+    "contributors": [
+        {
+            "name": "<-c-g-> ",
+            "email": "christophergewecke@gmail.com",
+            "url": "https://github.com/cgewecke",
+            "contributions": 1,
+            "additions": 3,
+            "deletions": 1,
+            "hireable": true
+        },
+        {
+            "name": "Kirill Fomichev",
+            "email": "fanatid@ya.ru",
+            "url": "https://github.com/fanatid",
+            "contributions": 1,
+            "additions": 3,
+            "deletions": 2,
+            "hireable": true
+        },
+        {
+            "name": "Rick Behl",
+            "email": null,
+            "url": "https://github.com/Nexus7",
+            "contributions": 1,
+            "additions": 1,
+            "deletions": 1,
+            "hireable": null
+        },
+        {
+            "name": "Tim Coulter",
+            "email": "tim@timothyjcoulter.com",
+            "url": "https://github.com/tcoulter",
+            "contributions": 1,
+            "additions": 1,
+            "deletions": 1,
+            "hireable": null
+        },
+        {
+            "name": "kumavis",
+            "email": "aaron@kumavis.me",
+            "url": "https://github.com/kumavis",
+            "contributions": 1,
+            "additions": 6,
+            "deletions": 6,
+            "hireable": true
+        },
+        {
+            "name": "Jack Peterson",
+            "email": "jack@tinybike.net",
+            "url": "https://github.com/tinybike",
+            "contributions": 2,
+            "additions": 1,
+            "deletions": 2,
+            "hireable": null
+        },
+        {
+            "name": "Nick Dodson",
+            "email": null,
+            "url": "https://github.com/SilentCicero",
+            "contributions": 2,
+            "additions": 29,
+            "deletions": 0,
+            "hireable": true
+        },
+        {
+            "name": null,
+            "email": null,
+            "url": "https://github.com/ckeenan",
+            "contributions": 2,
+            "additions": 4,
+            "deletions": 3,
+            "hireable": null
+        },
+        {
+            "name": "Alex Beregszaszi",
+            "email": "alex@rtfs.hu",
+            "url": "https://github.com/axic",
+            "contributions": 22,
+            "additions": 27562,
+            "deletions": 42613,
+            "hireable": true
+        },
+        {
+            "name": null,
+            "email": null,
+            "url": "https://github.com/wanderer",
+            "contributions": 171,
+            "additions": 112706,
+            "deletions": 96355,
+            "hireable": null
+        },
+        {
+            "name": null,
+            "email": null,
+            "url": "https://github.com/kvhnuke",
+            "contributions": 7,
+            "additions": 268,
+            "deletions": 53,
+            "hireable": null
+        }
+    ]
+}

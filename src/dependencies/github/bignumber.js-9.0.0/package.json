@@ -1,1 +1,40 @@
-"{\n    \"name\": \"bignumber.js\",\n    \"description\": \"A library for arbitrary-precision decimal and non-decimal arithmetic\",\n    \"version\": \"9.0.0\",\n    \"keywords\": [\n        \"arbitrary\",\n        \"precision\",\n        \"arithmetic\",\n        \"big\",\n        \"number\",\n        \"decimal\",\n        \"float\",\n        \"biginteger\",\n        \"bigdecimal\",\n        \"bignumber\",\n        \"bigint\",\n        \"bignum\"\n    ],\n    \"repository\": {\n        \"type\": \"git\",\n        \"url\": \"https://github.com/MikeMcl/bignumber.js.git\"\n    },\n    \"main\": \"bignumber\",\n    \"module\": \"bignumber.mjs\",\n    \"browser\": \"bignumber.js\",\n    \"types\": \"bignumber.d.ts\",\n    \"author\": {\n        \"name\": \"Michael Mclaughlin\",\n        \"email\": \"M8ch88l@gmail.com\"\n    },\n    \"engines\": {\n        \"node\": \"*\"\n    },\n    \"license\": \"MIT\",\n    \"scripts\": {\n        \"test\": \"node test/test\",\n        \"build\": \"uglifyjs bignumber.js --source-map -c -m -o bignumber.min.js\"\n    },\n    \"dependencies\": {}\n}"
+{
+    "name": "bignumber.js",
+    "description": "A library for arbitrary-precision decimal and non-decimal arithmetic",
+    "version": "9.0.0",
+    "keywords": [
+        "arbitrary",
+        "precision",
+        "arithmetic",
+        "big",
+        "number",
+        "decimal",
+        "float",
+        "biginteger",
+        "bigdecimal",
+        "bignumber",
+        "bigint",
+        "bignum"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/MikeMcl/bignumber.js.git"
+    },
+    "main": "bignumber",
+    "module": "bignumber.mjs",
+    "browser": "bignumber.js",
+    "types": "bignumber.d.ts",
+    "author": {
+        "name": "Michael Mclaughlin",
+        "email": "M8ch88l@gmail.com"
+    },
+    "engines": {
+        "node": "*"
+    },
+    "license": "MIT",
+    "scripts": {
+        "test": "node test/test",
+        "build": "uglifyjs bignumber.js --source-map -c -m -o bignumber.min.js"
+    },
+    "dependencies": {}
+}

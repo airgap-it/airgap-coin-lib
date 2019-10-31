@@ -1,1 +1,36 @@
-"{\n    \"name\": \"bn.js\",\n    \"version\": \"4.11.8\",\n    \"description\": \"Big number implementation in pure javascript\",\n    \"main\": \"lib/bn.js\",\n    \"scripts\": {\n        \"lint\": \"semistandard\",\n        \"unit\": \"mocha --reporter=spec test/*-test.js\",\n        \"test\": \"npm run lint && npm run unit\"\n    },\n    \"repository\": {\n        \"type\": \"git\",\n        \"url\": \"git@github.com:indutny/bn.js\"\n    },\n    \"keywords\": [\n        \"BN\",\n        \"BigNum\",\n        \"Big number\",\n        \"Modulo\",\n        \"Montgomery\"\n    ],\n    \"author\": \"Fedor Indutny <fedor@indutny.com>\",\n    \"license\": \"MIT\",\n    \"bugs\": {\n        \"url\": \"https://github.com/indutny/bn.js/issues\"\n    },\n    \"homepage\": \"https://github.com/indutny/bn.js\",\n    \"browser\": {\n        \"buffer\": false\n    },\n    \"devDependencies\": {\n        \"istanbul\": \"^0.3.5\",\n        \"mocha\": \"^2.1.0\",\n        \"semistandard\": \"^7.0.4\"\n    }\n}"
+{
+    "name": "bn.js",
+    "version": "4.11.8",
+    "description": "Big number implementation in pure javascript",
+    "main": "lib/bn.js",
+    "scripts": {
+        "lint": "semistandard",
+        "unit": "mocha --reporter=spec test/*-test.js",
+        "test": "npm run lint && npm run unit"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git@github.com:indutny/bn.js"
+    },
+    "keywords": [
+        "BN",
+        "BigNum",
+        "Big number",
+        "Modulo",
+        "Montgomery"
+    ],
+    "author": "Fedor Indutny <fedor@indutny.com>",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/indutny/bn.js/issues"
+    },
+    "homepage": "https://github.com/indutny/bn.js",
+    "browser": {
+        "buffer": false
+    },
+    "devDependencies": {
+        "istanbul": "^0.3.5",
+        "mocha": "^2.1.0",
+        "semistandard": "^7.0.4"
+    }
+}
