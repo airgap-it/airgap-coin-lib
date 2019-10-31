@@ -24,7 +24,6 @@ build:
 
 unit:
   stage: test
-  when: manual
   before_script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker rm -f unit-$CI_COMMIT_SHA || true
@@ -48,7 +47,6 @@ unit:
 
 qa:
   stage: qa
-  when: manual
   before_script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
   script:
