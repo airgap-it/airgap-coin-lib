@@ -12,6 +12,10 @@ if (!validCommands.some(validCommand => validCommand === cliCommand)) {
   throw new Error('invalid command')
 }
 
+function escapeRegExp(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // $& means the whole matched string
+}
+
 /*
 function getStringDifference(a: string, b: string): string {
   let i: number = 0
@@ -33,11 +37,13 @@ function getStringDifference(a: string, b: string): string {
 
 interface Dependency {
   name: string // Name of the module
+  entrypoint: string
   version: string
   repository: string
   commitHash: string
   files: string[]
   renameFiles?: [string, string][]
+  replaceInFiles?: { filename: string; replacements: { from: string; to: string; expectedReplacements: number }[] }[]
   deps?: string[]
   ignoredDeps: { module: string; reason: string }[]
 }
@@ -67,7 +73,7 @@ function log(color: string, ...message: any[]): void {
   }
 }
 
-export const validateDepsJson = (depsFile: DepsFile) => {
+export const validateDepsJson = async (depsFile: DepsFile) => {
   log(`
 #############################
 ##                         ##
@@ -253,7 +259,7 @@ export const getPackageJsonForDepsFiles = async (depsFile: DepsFile) => {
       console.log('DOES NOT EXIST', prop)
       const urlCommit: string = `https://raw.githubusercontent.com/${depsFile[prop].repository}/${depsFile[prop].commitHash}/package.json`
       const data = await downloadFile(urlCommit)
-      writeFileAndCreateFolder(localPath, JSON.stringify(data, null, 4))
+      writeFileAndCreateFolder(localPath, data)
       log('green', `${prop} (commit): Saved package.json`)
     } else {
       console.log(`ALREADY EXISTS: ${prop}`)
@@ -308,11 +314,13 @@ export const getFilesForDepsFile = async (depsFile: DepsFile) => {
         log('green', `${prop} (commit): Cached file: ${file}`)
       }
 
-      const fileExists = existsSync(localPath)
-      if (!fileExists) {
-        console.log('DOES NOT EXIST, CHECKING CACHE ' + localPath)
-        copyFileAndCreateFolder(localCache, localPath)
-      }
+      // const fileExists = existsSync(localPath)
+      // if (!fileExists) {
+      //   console.log('DOES NOT EXIST, CHECKING CACHE ' + localPath)
+
+      copyFileAndCreateFolder(localCache, localPath)
+
+      // }
 
       /*
       downloadFile(urlCommit)
@@ -338,6 +346,78 @@ export const getFilesForDepsFile = async (depsFile: DepsFile) => {
   }
 }
 
+const replaceWithinContainer = (content: string, before: string, after: string) => {
+  const containers = [`require("PLACEHOLDER")`, `require('PLACEHOLDER')`, ` from "PLACEHOLDER"`, ` from 'PLACEHOLDER'`]
+  for (const container of containers) {
+    const searchString = container.split('PLACEHOLDER').join(before)
+    const replaceString = container.split('PLACEHOLDER').join(after)
+    content = content.split(searchString).join(replaceString)
+  }
+
+  return content
+}
+
+const replaceImports = async (depsFile: DepsFile) => {
+  for (const prop of Object.keys(depsFile)) {
+    const predefinedReplacements = depsFile[prop].replaceInFiles
+    for (const file of depsFile[prop].files) {
+      // Rename files
+      let renamedFile = file
+      const renamedFiles = depsFile[prop].renameFiles
+      if (renamedFiles) {
+        const replaceArray = renamedFiles.find(replace => replace[0] === file)
+        if (replaceArray) {
+          renamedFile = replaceArray[1]
+        }
+      }
+
+      const localPath = `./src/dependencies/src/${prop}/${renamedFile}`
+
+      let fileContent = readFileSync(localPath, 'utf-8')
+
+      // INCLUDE DEFINED REPLACEMENTS
+      if (predefinedReplacements) {
+        const replacements = predefinedReplacements.find(predefinedReplacement => predefinedReplacement.filename === renamedFile)
+        if (replacements) {
+          replacements.replacements.forEach(replacement => {
+            const count = (fileContent.match(new RegExp(escapeRegExp(replacement.from), 'g')) || []).length
+            if (count === replacement.expectedReplacements) {
+              fileContent = fileContent.split(replacement.from).join(replacement.to)
+            } else {
+              log('red', `EXPECTED ${replacement.expectedReplacements} MATCHES BUT HAVE ${count}`)
+            }
+          })
+        }
+      }
+
+      const dependencies = depsFile[prop].deps
+
+      if (dependencies) {
+        for (const dependency of dependencies) {
+          const dependencyDefinition = depsFile[dependency]
+          if (!dependencyDefinition) {
+            console.log('WOOPS', dependency)
+          } else {
+            const levels = (file.match(/\//g) || []).length
+            const levelUpString = '../'
+
+            if (dependencyDefinition.entrypoint === '') {
+              dependencyDefinition.entrypoint = 'index'
+            }
+            const relativePath = `${levelUpString.repeat(levels + 1)}${dependencyDefinition.name}-${dependencyDefinition.version}/${
+              dependencyDefinition.entrypoint
+            }`
+
+            fileContent = replaceWithinContainer(fileContent, dependencyDefinition.name, relativePath)
+          }
+        }
+      }
+
+      writeFileAndCreateFolder(localPath, fileContent)
+    }
+  }
+}
+
 {
   const dependencies: string = readFileSync('./src/dependencies/deps.json', 'utf-8')
 
@@ -353,7 +433,12 @@ export const getFilesForDepsFile = async (depsFile: DepsFile) => {
 
     getPackageJsonForDepsFiles(deps).then(() => {
       console.log('END')
-      validateDepsJson(deps)
+      validateDepsJson(deps).then(() => {
+        console.log('VALIDATED')
+        replaceImports(deps).then(() => {
+          console.log('REPLACED IMPORTS')
+        })
+      })
     })
   })
 }

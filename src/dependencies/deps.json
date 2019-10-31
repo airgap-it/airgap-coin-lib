@@ -1,6 +1,7 @@
 {
   "bignumber.js-9.0.0": {
     "name": "bignumber.js",
+    "entrypoint": "bignumber",
     "version": "9.0.0",
     "repository": "MikeMcl/bignumber.js",
     "commitHash": "986fd70e514e58e86d43bc9944547d82658e47ae",
@@ -8,6 +9,7 @@
   },
   "validate.js-0.13.1": {
     "name": "validate.js",
+    "entrypoint": "validate",
     "version": "0.13.1",
     "repository": "ansman/validate.js",
     "commitHash": "40e06a1bafd2ce61dba37779ee77e796ad397b81",
@@ -15,6 +17,7 @@
   },
   "tweetnacl-1.0.1": {
     "name": "tweetnacl",
+    "entrypoint": "nacl",
     "version": "1.0.1",
     "repository": "dchest/tweetnacl-js",
     "commitHash": "acab4d4883e7a0be0b230df7b42c0bbd25210d39",
@@ -22,6 +25,7 @@
   },
   "tweetnacl-auth-1.0.1": {
     "name": "tweetnacl-auth",
+    "entrypoint": "nacl-auth",
     "version": "1.0.1",
     "repository": "dchest/tweetnacl-auth-js",
     "commitHash": "f7e7b60a017880a1e7c5e1cf68f422a4c6005cf9",
@@ -29,6 +33,7 @@
   },
   "bip32-path-0.4.2": {
     "name": "bip32-path",
+    "entrypoint": "index",
     "version": "0.4.2",
     "repository": "axic/bip32-path",
     "commitHash": "d6d14bf9a848c9c28e23a8d68ad0e1bb3432c03c",
@@ -36,11 +41,51 @@
   },
   "hd-wallet-js-b216450e56954a6e82ace0aade9474673de5d9d5": {
     "name": "hd-wallet-js",
+    "entrypoint": "src/index",
     "version": "b216450e56954a6e82ace0aade9474673de5d9d5",
     "repository": "airgap-it/hd-wallet-js",
     "commitHash": "b216450e56954a6e82ace0aade9474673de5d9d5",
     "files": ["src/hd-key.js", "src/hd-wallet.js", "src/index.js"],
     "renameFiles": [["src/hd-key.js", "src/hd-key.ts"], ["src/hd-wallet.js", "src/hd-wallet.ts"], ["src/index.js", "src/index.ts"]],
+    "replaceInFiles": [
+      {
+        "filename": "src/hd-key.ts",
+        "replacements": [
+          { "from": "import nacl from 'tweetnacl'", "to": "import * as nacl from 'tweetnacl'", "expectedReplacements": 1 },
+          {
+            "from": "import { full as hmac } from 'tweetnacl-auth'",
+            "to": "import * as naclAuth from 'tweetnacl-auth'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": "const I = hmac(seed, ED25519_CURVE)",
+            "to": "const I = naclAuth.full(seed, ED25519_CURVE)",
+            "expectedReplacements": 1
+          },
+          {
+            "from": "const I = hmac(data, Buffer.from(chainCode))",
+            "to": "const I = naclAuth.full(data, Buffer.from(chainCode))",
+            "expectedReplacements": 1
+          },
+          {
+            "from": "if (!['m', 'm/'].includes(path.slice(0, 2))) {",
+            "to": "if (!(['m', 'm/'] as any).includes(path.slice(0, 2))) {",
+            "expectedReplacements": 1
+          }
+        ]
+      },
+      {
+        "filename": "src/hd-wallet.ts",
+        "replacements": [
+          {
+            "from": "return (new Array(accountCount)).fill()",
+            "to": "return (new Array(accountCount) as any).fill()",
+            "expectedReplacements": 1,
+            "reason": "Typescript compilation error"
+          }
+        ]
+      }
+    ],
     "deps": ["tweetnacl-1.0.1", "tweetnacl-auth-1.0.1", "bip32-path-0.4.2"],
     "ignoredDeps": [
       { "module": "@babel/runtime", "reason": "Should be a dev dependency" },
@@ -49,6 +94,7 @@
   },
   "cryptocompare-0.5.0": {
     "name": "cryptocompare",
+    "entrypoint": "index",
     "version": "0.5.0",
     "repository": "ExodusMovement/cryptocompare",
     "commitHash": "7dbaf1eea531751dbf8b8f2cab339cc747904fab",
@@ -56,6 +102,7 @@
   },
   "axios-0.19.0": {
     "name": "axios",
+    "entrypoint": "index",
     "version": "0.19.0",
     "repository": "axios/axios",
     "commitHash": "8d0b92b2678d96770304dd767cd05a59d37f12cf",
@@ -94,6 +141,7 @@
   },
   "is-buffer-2.0.3": {
     "name": "is-buffer",
+    "entrypoint": "index",
     "version": "2.0.3",
     "repository": "feross/is-buffer",
     "commitHash": "e05c7852e1a978b81c7eb6d677c861a7dc935ead",
@@ -101,6 +149,7 @@
   },
   "follow-redirects-1.5.10": {
     "name": "follow-redirects",
+    "entrypoint": "index",
     "version": "1.5.10",
     "repository": "follow-redirects/follow-redirects",
     "commitHash": "91842752013b26ed780f7b04e557c72f02228cde",
@@ -109,14 +158,16 @@
   },
   "debug-3.1.0": {
     "name": "debug",
+    "entrypoint": "src/index",
     "version": "3.1.0",
     "repository": "visionmedia/debug",
     "commitHash": "f073e056f33efdd5b311381eb6bca2bc850745bf",
-    "files": ["src/browser.js", "src/debug.js", "src/index.js"],
+    "files": ["src/browser.js", "src/debug.js", "src/index.js", "src/node.js"],
     "deps": ["ms-2.1.2"]
   },
   "ms-2.1.2": {
     "name": "ms",
+    "entrypoint": "index",
     "version": "2.1.2",
     "repository": "zeit/ms",
     "commitHash": "7920885eb232fbe7a5efdab956d3e7c507c92ddf",
@@ -124,6 +175,7 @@
   },
   "create-hash-1.2.0": {
     "name": "create-hash",
+    "entrypoint": "browser",
     "version": "1.2.0",
     "repository": "crypto-browserify/createHash",
     "commitHash": "469f2a62f4010d8df777b0009f05d504b6c4cd27",
@@ -132,6 +184,7 @@
   },
   "cipher-base-1.0.4": {
     "name": "cipher-base",
+    "entrypoint": "index",
     "version": "1.0.4",
     "repository": "crypto-browserify/cipher-base",
     "commitHash": "bc18dc847050c34f11f7a0472ff13a76b53fedc6",
@@ -140,6 +193,7 @@
   },
   "safe-buffer-5.2.0": {
     "name": "safe-buffer",
+    "entrypoint": "index",
     "version": "5.2.0",
     "repository": "feross/safe-buffer",
     "commitHash": "ae53d5b9f06eae8540ca948d14e43ca32692dd8c",
@@ -148,6 +202,7 @@
   },
   "inherits-2.0.4": {
     "name": "inherits",
+    "entrypoint": "inherits",
     "version": "2.0.4",
     "repository": "isaacs/inherits",
     "commitHash": "9a2c29400c6d491e0b7beefe0c32efa3b462545d",
@@ -155,6 +210,7 @@
   },
   "md5.js-1.3.5": {
     "name": "md5.js",
+    "entrypoint": "index",
     "version": "1.3.5",
     "repository": "crypto-browserify/md5.js",
     "commitHash": "48df1d6b8c4af2cf52638092d590c528420c61ed",
@@ -163,6 +219,7 @@
   },
   "hash-base-3.0.4": {
     "name": "hash-base",
+    "entrypoint": "index",
     "version": "3.0.4",
     "repository": "crypto-browserify/hash-base",
     "commitHash": "d36440ed0448a654734ae05464d55d34b189a17a",
@@ -171,6 +228,7 @@
   },
   "ripemd160-2.0.2": {
     "name": "ripemd160",
+    "entrypoint": "index",
     "version": "2.0.2",
     "repository": "crypto-browserify/ripemd160",
     "commitHash": "3419c6409799d37e0323a556c94d040154657d9d",
@@ -179,6 +237,7 @@
   },
   "sha.js-2.4.11": {
     "name": "sha.js",
+    "entrypoint": "index",
     "version": "2.4.11",
     "repository": "crypto-browserify/sha.js",
     "commitHash": "105bfe57c69e13c83fcf7a6ca660dd984cb291bf",
@@ -187,6 +246,7 @@
   },
   "bip39-2.5.0": {
     "name": "bip39",
+    "entrypoint": "index",
     "version": "2.5.0",
     "repository": "bitcoinjs/bip39",
     "commitHash": "bafbcd352a6a5275bbc640a79c3917d0baee5bc8",
@@ -205,6 +265,7 @@
   },
   "pbkdf2-3.0.17": {
     "name": "pbkdf2",
+    "entrypoint": "index",
     "version": "3.0.17",
     "repository": "crypto-browserify/pbkdf2",
     "commitHash": "dadbcb741111f0ed165951d53028f2358e0e0a1c",
@@ -219,10 +280,12 @@
       "lib/sync-browser.js",
       "lib/sync.js"
     ],
-    "deps": ["create-hash-1.2.0", "create-hmac-1.1.4", "ripemd160-2.0.2", "safe-buffer-5.2.0", "sha.js-2.4.11"]
+    "deps": ["create-hash-1.2.0", "create-hmac-1.1.4", "ripemd160-2.0.2", "safe-buffer-5.2.0", "sha.js-2.4.11"],
+    "TODO": "Check if we need to use browser version"
   },
   "create-hmac-1.1.4": {
     "name": "create-hmac",
+    "entrypoint": "browser",
     "version": "1.1.4",
     "repository": "crypto-browserify/createHmac",
     "commitHash": "3c7dd3047b5ab3e3be44d802241d224f0c9e2325",
@@ -231,6 +294,7 @@
   },
   "randombytes-2.1.0": {
     "name": "randombytes",
+    "entrypoint": "browser",
     "version": "2.1.0",
     "repository": "crypto-browserify/randombytes",
     "commitHash": "f18ded32b209f0d4c637608a11ae042ae96b4c2e",
@@ -239,22 +303,25 @@
   },
   "rlp-2.2.3": {
     "name": "rlp",
+    "entrypoint": "index",
     "version": "2.2.3",
     "repository": "ethereumjs/rlp",
     "commitHash": "296857a1c1c20a93e1377d221dba0c782d7b65a4",
-    "files": ["bin/rlp", "index.js"],
+    "files": ["index.js"],
     "deps": ["safe-buffer-5.2.0", "bn.js-4.11.8"],
     "TODO": ["index.d.ts"]
   },
   "utf8-3.0.0": {
     "name": "utf8",
+    "entrypoint": "utf8",
     "version": "3.0.0",
     "repository": "mathiasbynens/utf8.js",
     "commitHash": "2ce09544b62f2a274dbcd249473c0986e3660849",
-    "files": ["utf8.js", "Gruntfile.js", "package.json"]
+    "files": ["utf8.js"]
   },
   "unorm-1.6.0": {
     "name": "unorm",
+    "entrypoint": "lib/unorm",
     "version": "1.6.0",
     "repository": "walling/unorm",
     "commitHash": "26c36c3ce6cd66d3c5bf7867736cb1f2b49fe6b1",
@@ -262,6 +329,7 @@
   },
   "bn.js-4.11.8": {
     "name": "bn.js",
+    "entrypoint": "lib/bn",
     "version": "4.11.8",
     "repository": "indutny/bn.js",
     "commitHash": "c69b4ae8e789e10f7f91811cd4937949ff0d4768",
@@ -269,15 +337,17 @@
   },
   "ethereumjs-tx-1.3.7": {
     "name": "ethereumjs-tx",
+    "entrypoint": "index",
     "version": "1.3.7",
     "repository": "ethereumjs/ethereumjs-tx",
     "commitHash": "e3fc21467ecb997090f63f154b1407094f173bf2",
-    "files": ["fake.js", "index.js"],
+    "files": ["index.js"],
     "deps": ["ethereum-common-0.0.18", "ethereumjs-util-5.2.0"],
     "TODO": "Check if es/index.js is needed or not."
   },
   "ethereumjs-util-5.2.0": {
     "name": "ethereumjs-util",
+    "entrypoint": "index",
     "version": "5.2.0",
     "repository": "ethereumjs/ethereumjs-util",
     "commitHash": "7e3be1d97b4e11fbc4924836b8c444e644f643ac",
@@ -286,6 +356,7 @@
   },
   "ethjs-util-0.1.4": {
     "name": "ethjs-util",
+    "entrypoint": "src/index",
     "version": "0.1.4",
     "repository": "ethjs/ethjs-util",
     "commitHash": "e9aede668177b6d1ea62d741ba1c19402bc337b3",
@@ -295,6 +366,7 @@
   },
   "is-hex-prefixed-1.0.0": {
     "name": "is-hex-prefixed",
+    "entrypoint": "src/index",
     "version": "1.0.0",
     "repository": "SilentCicero/is-hex-prefixed",
     "commitHash": "2a5a31481e3f8f7cd3217f50c7950b5de589eaba",
@@ -302,6 +374,7 @@
   },
   "strip-hex-prefix-1.0.0": {
     "name": "strip-hex-prefix",
+    "entrypoint": "src/index",
     "version": "1.0.0",
     "repository": "SilentCicero/strip-hex-prefix",
     "commitHash": "94058ad57053b4be0c7946b1abcbef0ae6c34cc8",
@@ -310,6 +383,7 @@
   },
   "keccak-1.0.2": {
     "name": "keccak",
+    "entrypoint": "index",
     "version": "1.0.2",
     "repository": "cryptocoinjs/keccak",
     "commitHash": "e94fbe0af3879d0d9bca5435f35832dcb93137a6",
