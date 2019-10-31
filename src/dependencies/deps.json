@@ -29,7 +29,8 @@
     "version": "1.0.1",
     "repository": "dchest/tweetnacl-auth-js",
     "commitHash": "f7e7b60a017880a1e7c5e1cf68f422a4c6005cf9",
-    "files": ["nacl-auth.js"]
+    "files": ["nacl-auth.js"],
+    "deps": ["tweetnacl-1.0.1"]
   },
   "bip32-path-0.4.2": {
     "name": "bip32-path",

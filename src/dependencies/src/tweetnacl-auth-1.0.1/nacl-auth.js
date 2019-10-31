@@ -1,6 +1,6 @@
 (function(root, f) {
   'use strict';
-  if (typeof module !== 'undefined' && module.exports) module.exports = f(require('tweetnacl'));
+  if (typeof module !== 'undefined' && module.exports) module.exports = f(require('../tweetnacl-1.0.1/nacl'));
   else root.nacl.auth = f(root.nacl);
 
 }(this, function(nacl) {
