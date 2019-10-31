@@ -1,4 +1,4 @@
-var isHexPrefixed = require('is-hex-prefixed');
+var isHexPrefixed = require('../../is-hex-prefixed-1.0.0/src/index');
 
 /**
  * Removes '0x' from a given `String` if present

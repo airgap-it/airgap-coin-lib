@@ -1,7 +1,7 @@
-var createHmac = require('create-hmac')
+var createHmac = require('../../create-hmac-1.1.4/browser')
 var checkParameters = require('../lib/precondition')
 var defaultEncoding = require('../lib/default-encoding')
-var Buffer = require('safe-buffer').Buffer
+var Buffer = require('../../safe-buffer-5.2.0/index').Buffer
 module.exports = pbkdf2
 function pbkdf2 (password, salt, iterations, keylen, digest) {
   if (!Buffer.isBuffer(password)) password = Buffer.from(password, defaultEncoding)

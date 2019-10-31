@@ -1,7 +1,7 @@
-var Buffer = require('safe-buffer').Buffer
+var Buffer = require('../safe-buffer-5.2.0/index').Buffer
 var Transform = require('stream').Transform
 var StringDecoder = require('string_decoder').StringDecoder
-var inherits = require('inherits')
+var inherits = require('../inherits-2.0.4/inherits')
 
 function CipherBase (hashMode) {
   Transform.call(this)

@@ -1,7 +1,7 @@
 'use strict'
 var Buffer = require('buffer').Buffer
-var inherits = require('inherits')
-var HashBase = require('hash-base')
+var inherits = require('../inherits-2.0.4/inherits')
+var HashBase = require('../hash-base-3.0.4/index')
 
 var ARRAY16 = new Array(16)
 

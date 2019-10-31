@@ -1,5 +1,5 @@
-const isHexPrefixed = require('is-hex-prefixed');
-const stripHexPrefix = require('strip-hex-prefix');
+const isHexPrefixed = require('../../is-hex-prefixed-1.0.0/src/index');
+const stripHexPrefix = require('../../strip-hex-prefix-1.0.0/src/index');
 
 /**
  * Pads a `String` to have an even length

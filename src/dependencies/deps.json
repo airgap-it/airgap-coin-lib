@@ -290,6 +290,18 @@
     "repository": "crypto-browserify/createHmac",
     "commitHash": "3c7dd3047b5ab3e3be44d802241d224f0c9e2325",
     "files": ["browser.js", "index.js"],
+    "replaceInFiles": [
+      {
+        "filename": "browser.js",
+        "replacements": [
+          {
+            "from": "var createHash = require('create-hash/browser');",
+            "to": "var createHash = require('../create-hash-1.2.0/browser')",
+            "expectedReplacements": 1
+          }
+        ]
+      }
+    ],
     "deps": ["create-hash-1.2.0", "inherits-2.0.4"]
   },
   "randombytes-2.1.0": {

@@ -1,10 +1,10 @@
-var Buffer = require('buffer').Buffer
+var Buffer = require('../safe-buffer-5.2.0/index').Buffer
 var createHash = require('../create-hash-1.2.0/browser')
-var pbkdf2 = require('../pbkdf2-3.0.17/browser').pbkdf2Sync
-var randomBytes = require('../randombytes-2.1.0/index')
+var pbkdf2 = require('../pbkdf2-3.0.17/index').pbkdf2Sync
+var randomBytes = require('../randombytes-2.1.0/browser')
 
 // use unorm until String.prototype.normalize gets better browser support
-var unorm = require('../unorm-1.6.0/unorm')
+var unorm = require('../unorm-1.6.0/lib/unorm')
 
 var CHINESE_SIMPLIFIED_WORDLIST = require('./wordlists/chinese_simplified.json')
 var CHINESE_TRADITIONAL_WORDLIST = require('./wordlists/chinese_traditional.json')

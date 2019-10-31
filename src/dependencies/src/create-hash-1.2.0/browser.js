@@ -1,8 +1,8 @@
 'use strict'
 var inherits = require('../inherits-2.0.4/inherits')
-var MD5 = require('../create-hash-1.2.0/md5')
-var RIPEMD160 = require('../ripemd160-2.0.2/index')
-var sha = require('../sha.js-2.4.11/sha')
+var MD5 = require('../md5.js-1.3.5/index')
+var RIPEMD160 = require('ripemd160')
+var sha = require('sha.js')
 var Base = require('../cipher-base-1.0.4/index')
 
 function Hash (hash) {

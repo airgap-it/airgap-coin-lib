@@ -1,10 +1,10 @@
 var md5 = require('create-hash/md5')
-var RIPEMD160 = require('ripemd160')
-var sha = require('sha.js')
+var RIPEMD160 = require('../../ripemd160-2.0.2/index')
+var sha = require('../../sha.js-2.4.11/index')
 
 var checkParameters = require('./precondition')
 var defaultEncoding = require('./default-encoding')
-var Buffer = require('safe-buffer').Buffer
+var Buffer = require('../../safe-buffer-5.2.0/index').Buffer
 var ZEROS = Buffer.alloc(128)
 var sizes = {
   md5: 16,

@@ -1,7 +1,7 @@
 'use strict'
-var Buffer = require('safe-buffer').Buffer
+var Buffer = require('../safe-buffer-5.2.0/index').Buffer
 var Transform = require('stream').Transform
-var inherits = require('inherits')
+var inherits = require('../inherits-2.0.4/inherits')
 
 function throwIfNotStringOrBuffer (val, prefix) {
   if (!Buffer.isBuffer(val) && typeof val !== 'string') {

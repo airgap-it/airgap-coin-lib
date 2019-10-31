@@ -11,7 +11,7 @@ exports.coerce = coerce;
 exports.disable = disable;
 exports.enable = enable;
 exports.enabled = enabled;
-exports.humanize = require('ms');
+exports.humanize = require('../../ms-2.1.2/index');
 
 /**
  * Active `debug` instances.

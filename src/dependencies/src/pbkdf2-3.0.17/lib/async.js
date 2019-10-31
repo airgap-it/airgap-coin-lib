@@ -1,7 +1,7 @@
 var checkParameters = require('./precondition')
 var defaultEncoding = require('./default-encoding')
 var sync = require('./sync')
-var Buffer = require('safe-buffer').Buffer
+var Buffer = require('../../safe-buffer-5.2.0/index').Buffer
 
 var ZERO_BUF
 var subtle = global.crypto && global.crypto.subtle

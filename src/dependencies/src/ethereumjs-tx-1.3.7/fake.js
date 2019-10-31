@@ -1,7 +1,7 @@
 'use strict'
 
 const Transaction = require('./index.js')
-const ethUtil = require('ethereumjs-util')
+const ethUtil = require('../ethereumjs-util-5.2.0/index')
 
 /**
  * Creates a new transaction object that doesn't need to be signed

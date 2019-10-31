@@ -6,10 +6,10 @@
  *
  */
 
-var inherits = require('inherits')
+var inherits = require('../inherits-2.0.4/inherits')
 var Sha256 = require('./sha256')
 var Hash = require('./hash')
-var Buffer = require('safe-buffer').Buffer
+var Buffer = require('../safe-buffer-5.2.0/index').Buffer
 
 var W = new Array(64)
 

@@ -1,5 +1,5 @@
 'use strict'
-const ethUtil = require('ethereumjs-util')
+const ethUtil = require('../ethereumjs-util-5.2.0/index')
 const fees = require('ethereum-common/params.json')
 const BN = ethUtil.BN
 

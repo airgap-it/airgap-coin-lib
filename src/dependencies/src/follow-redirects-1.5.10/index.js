@@ -3,7 +3,7 @@ var http = require("http");
 var https = require("https");
 var assert = require("assert");
 var Writable = require("stream").Writable;
-var debug = require("../debug-4.1.1/src/index")("follow-redirects")
+var debug = require("../debug-3.1.0/src/index")("follow-redirects");
 
 // RFC7231§4.2.1: Of the request methods defined by this specification,
 // the GET, HEAD, OPTIONS, and TRACE methods are defined to be safe.

@@ -1,6 +1,6 @@
-var inherits = require('inherits')
+var inherits = require('../inherits-2.0.4/inherits')
 var Hash = require('./hash')
-var Buffer = require('safe-buffer').Buffer
+var Buffer = require('../safe-buffer-5.2.0/index').Buffer
 
 var K = [
   0x428a2f98, 0xd728ae22, 0x71374491, 0x23ef65cd,

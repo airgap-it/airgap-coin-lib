@@ -1,6 +1,6 @@
 'use strict';
 var createHash = require('../create-hash-1.2.0/browser')
-var inherits = require('inherits')
+var inherits = require('../inherits-2.0.4/inherits')
 
 var Transform = require('stream').Transform
 
