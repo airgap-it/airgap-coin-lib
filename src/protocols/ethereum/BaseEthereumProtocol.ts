@@ -10,8 +10,9 @@ import { UnsignedTransaction } from '../../serializer/unsigned-transaction.seria
 import { RawEthereumTransaction } from '../../serializer/unsigned-transactions/ethereum-transactions.serializer'
 import { getSubProtocolsByIdentifier } from '../../utils/subProtocols'
 import { ICoinProtocol } from '../ICoinProtocol'
-import { EthereumNodeClient } from './clients/node-clients/NodeClient'
+
 import { EthereumInfoClient } from './clients/info-clients/InfoClient'
+import { EthereumNodeClient } from './clients/node-clients/NodeClient'
 import { EthereumUtils } from './utils/utils'
 
 const EthereumTransaction = require('ethereumjs-tx')
@@ -86,6 +87,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
 
   public getPublicKeyFromHexSecret(secret: string, derivationPath: string): string {
     const ethereumNode = bitcoinJS.HDNode.fromSeedHex(secret, this.network as bitcoinJS.Network)
+
     return ethereumNode
       .derivePath(derivationPath)
       .neutered()
@@ -95,6 +97,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
 
   public getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Buffer {
     const ethereumNode = bitcoinJS.HDNode.fromSeedHex(secret, this.network as bitcoinJS.Network)
+
     return ethereumNode.derivePath(derivationPath).keyPair.d.toBuffer(32)
   }
 
@@ -112,6 +115,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
 
   public async getAddressesFromPublicKey(publicKey: string | Buffer): Promise<string[]> {
     const address = await this.getAddressFromPublicKey(publicKey)
+
     return [address]
   }
 
@@ -137,6 +141,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
   ): Promise<string[]> {
     const node = bitcoinJS.HDNode.fromBase58(extendedPublicKey, this.network as bitcoinJS.Network)
     const generatorArray = [addressCount].map((x, i) => i + offset)
+
     return Promise.all(
       generatorArray.map(x =>
         this.getAddressFromPublicKey(
@@ -155,13 +160,18 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
   }
 
   public async signWithPrivateKey(privateKey: Buffer, transaction: RawEthereumTransaction): Promise<IAirGapSignedTransaction> {
+    if (!transaction.value.startsWith('0x')) {
+      transaction.value = toHexString(parseInt(transaction.value))
+    }
     const tx = new EthereumTransaction(transaction)
     tx.sign(privateKey)
+
     return tx.serialize().toString('hex')
   }
 
   public async getTransactionDetails(unsignedTx: UnsignedTransaction): Promise<IAirGapTransaction[]> {
     const transaction = unsignedTx.transaction as RawEthereumTransaction
+
     return [
       {
         from: [await this.getAddressFromPublicKey(unsignedTx.publicKey)],
@@ -202,6 +212,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
 
   public async getBalanceOfPublicKey(publicKey: string): Promise<BigNumber> {
     const address = await this.getAddressFromPublicKey(publicKey)
+
     return this.getBalanceOfAddresses([address])
   }
 
@@ -211,6 +222,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
         return this.configuration.nodeClient.fetchBalance(address)
       })
     )
+
     return balances.reduce((a, b) => a.plus(b))
   }
 
@@ -267,7 +279,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
   }
 
   public async broadcastTransaction(rawTransaction: string): Promise<string> {
-    return await this.configuration.nodeClient.sendSignedTransaction(`0x${rawTransaction}`)
+    return this.configuration.nodeClient.sendSignedTransaction(`0x${rawTransaction}`)
   }
 
   public getTransactionsFromExtendedPublicKey(extendedPublicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]> {
@@ -276,18 +288,21 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
 
   public async getTransactionsFromPublicKey(publicKey: string, limit: number = 50, offset: number = 0): Promise<IAirGapTransaction[]> {
     const address = await this.getAddressFromPublicKey(publicKey)
+
     return this.getTransactionsFromAddresses([address], limit, offset)
   }
 
-  private getPageNumber(limit: number, offset: number): number {
+  protected getPageNumber(limit: number, offset: number): number {
     if (limit <= 0 || offset < 0) {
       return 1
     }
+
     return 1 + Math.floor(offset / limit) // We need +1 here because pages start at 1
   }
 
   public getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
     const page = this.getPageNumber(limit, offset)
+
     return new Promise((overallResolve, overallReject) => {
       const promises: Promise<IAirGapTransaction[]>[] = []
       for (const address of addresses) {
@@ -305,11 +320,11 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     })
   }
 
-  async signMessage(message: string, privateKey: Buffer): Promise<string> {
+  public async signMessage(message: string, privateKey: Buffer): Promise<string> {
     return Promise.reject('Message signing not implemented')
   }
 
-  async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
+  public async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
     return Promise.reject('Message verification not implemented')
   }
 }

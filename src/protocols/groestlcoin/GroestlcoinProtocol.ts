@@ -39,7 +39,7 @@ export class GroestlcoinProtocol extends BitcoinBlockbookProtocol {
   public addressValidationPattern = '^([F3][a-km-zA-HJ-NP-Z1-9]{33}|grs1[a-zA-HJ-NP-Z0-9]{39})$'
   public addressPlaceholder = 'Fdb...'
 
-  public blockExplorer = 'https://chainz.cryptoid.info/grs/'
+  public blockExplorer = 'https://chainz.cryptoid.info/grs'
 
   constructor() {
     super(bitGoUTXO.networks.groestlcoin, 'https://blockbook.groestlcoin.org', bitGoUTXO)
