@@ -1,7 +1,8 @@
-import { IAirGapTransaction } from './../../dist/interfaces/IAirGapTransaction.d'
-import { BigNumber } from 'bignumber.js'
 import { expect } from 'chai'
 import 'mocha'
+
+import { IAirGapTransaction } from '../../src'
+import BigNumber from '../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
 
 import { EthereumTestProtocolSpec } from './specs/ethereum'
 
@@ -109,17 +110,17 @@ describe(`signing should handle hex and decimal values`, async () => {
       for (const tx of txs) {
         const signedTx: string = await ethProtocolSpec.lib.signWithPrivateKey(privateKey, tx.unsignedTx)
 
-        const txFromUnsigned: IAirGapTransaction | void = await ethProtocolSpec.lib.getTransactionDetails({
+        const txsFromUnsigned: IAirGapTransaction[] | void = await ethProtocolSpec.lib.getTransactionDetails({
           publicKey: ethProtocolSpec.wallet.publicKey,
           transaction: tx.unsignedTx
         })
 
-        const txFromSigned: IAirGapTransaction = await ethProtocolSpec.lib.getTransactionDetailsFromSigned({
+        const txsFromSigned: IAirGapTransaction[] = await ethProtocolSpec.lib.getTransactionDetailsFromSigned({
           accountIdentifier: ethProtocolSpec.wallet.publicKey.substr(-6),
           transaction: signedTx
         })
 
-        expect(txFromUnsigned.amount).to.deep.equal(txFromSigned.amount)
+        expect(txsFromUnsigned[0].amount).to.deep.equal(txsFromSigned[0].amount)
       }
     } catch (error) {
       console.error(error)
