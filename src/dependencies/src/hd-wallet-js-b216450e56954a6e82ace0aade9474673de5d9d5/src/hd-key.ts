@@ -15,14 +15,14 @@
  *  PERFORMANCE OF THIS SOFTWARE.
  */
 
-import { fromString } from '../../bip32-path-0.4.2/index'
 import * as nacl from '../../tweetnacl-1.0.1/nacl'
 import * as naclAuth from '../../tweetnacl-auth-1.0.1/nacl-auth'
+import { fromString } from '../../bip32-path-0.4.2/index'
 
 const ED25519_CURVE = Buffer.from('ed25519 seed')
 const HARDENED_OFFSET = 0x80000000
 
-export function getMasterKeyFromSeed(seed) {
+export function getMasterKeyFromSeed (seed) {
   const I = naclAuth.full(seed, ED25519_CURVE)
   const IL = I.slice(0, 32)
   const IR = I.slice(32)
@@ -32,14 +32,18 @@ export function getMasterKeyFromSeed(seed) {
   }
 }
 
-export function deriveChild({ privateKey, chainCode }, index) {
+export function deriveChild ({ privateKey, chainCode }, index) {
   if (index < HARDENED_OFFSET) {
     throw new Error(`Child index #${index} is not supported`)
   }
   const indexBuffer = Buffer.allocUnsafe(4)
   indexBuffer.writeUInt32BE(index, 0)
 
-  const data = Buffer.concat([Buffer.alloc(1, 0), Buffer.from(privateKey), Buffer.from(indexBuffer)])
+  const data = Buffer.concat([
+    Buffer.alloc(1, 0),
+    Buffer.from(privateKey),
+    Buffer.from(indexBuffer)
+  ])
 
   const I = naclAuth.full(data, Buffer.from(chainCode))
   const IL = I.slice(0, 32)
@@ -50,11 +54,11 @@ export function deriveChild({ privateKey, chainCode }, index) {
   }
 }
 
-export function getKeyPair(privateKey) {
+export function getKeyPair (privateKey) {
   return nacl.sign.keyPair.fromSeed(privateKey)
 }
 
-export function derivePathFromKey(path, key) {
+export function derivePathFromKey (path, key) {
   const segments = path === '' ? [] : fromString(path).toPathArray()
   segments.forEach((segment, i) => {
     if (segment < HARDENED_OFFSET) {
@@ -62,10 +66,10 @@ export function derivePathFromKey(path, key) {
     }
   })
 
-  return segments.reduce(deriveChild, key)
+  return segments.reduce((parentKey, segment) => deriveChild(parentKey, segment), key)
 }
 
-export function derivePathFromSeed(path, seed) {
+export function derivePathFromSeed (path, seed) {
   if (!(['m', 'm/'] as any).includes(path.slice(0, 2))) {
     throw new Error('Invalid path')
   }

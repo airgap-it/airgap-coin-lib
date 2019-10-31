@@ -15,16 +15,18 @@
  *  PERFORMANCE OF THIS SOFTWARE.
  */
 
-import { derivePathFromKey, derivePathFromSeed, getKeyPair } from './hd-key'
+import { derivePathFromSeed, derivePathFromKey, getKeyPair } from './hd-key'
 
-export function generateHDWallet(seed) {
+export function generateHDWallet (seed) {
   return derivePathFromSeed('m/44h/457h', seed)
 }
 
-export function generateWalletUsingDerivationPath(seed, derivationPath = 'm/44h/457h/0h/0h/0h') {
+export function generateWalletUsingDerivationPath (seed, derivationPath = 'm/44h/457h/0h/0h/0h') {
   return getKeyPair(derivePathFromSeed(derivationPath, seed).privateKey)
 }
 
-export function getHDWalletAccounts(wallet, accountCount) {
-  return (new Array(accountCount) as any).fill().map((_, idx) => getKeyPair(derivePathFromKey(`${idx}h/0h/0h`, wallet).privateKey))
+export function getHDWalletAccounts (wallet, accountCount) {
+  return (new Array(accountCount) as any).fill()
+    .map((_, idx) =>
+      getKeyPair(derivePathFromKey(`${idx}h/0h/0h`, wallet).privateKey))
 }
