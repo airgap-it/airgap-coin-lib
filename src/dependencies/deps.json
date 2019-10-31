@@ -415,5 +415,14 @@
     "repository": "peterolson/BigInteger.js",
     "commitHash": "4e99b15b7951338f164728377c906caae5a78202",
     "files": ["BigInteger.js", "BigInteger.d.ts"]
+  },
+  "bs58check-2.1.2": {
+    "name": "bs58check",
+    "entrypoint": "index",
+    "version": "2.1.2",
+    "repository": "bitcoinjs/bs58check",
+    "commitHash": "7dd2b95a5c44e9b574f224268254a7bbecfac2ed",
+    "files": ["index.js", "base.js"],
+    "deps": ["bs58-4.0.1"]
   }
 }
