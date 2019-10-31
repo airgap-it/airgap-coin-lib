@@ -1,9 +1,9 @@
-var Buffer = require('buffer').Buffer
+var Buffer = require('../safe-buffer-5.2.0/index').Buffer
 var Transform = require('stream').Transform
 var StringDecoder = require('string_decoder').StringDecoder
-var inherits = require('inherits')
+var inherits = require('../inherits-2.0.4/inherits')
 
-function CipherBase(hashMode) {
+function CipherBase (hashMode) {
   Transform.call(this)
   this.hashMode = typeof hashMode === 'string'
   if (this.hashMode) {
@@ -20,7 +20,7 @@ function CipherBase(hashMode) {
 }
 inherits(CipherBase, Transform)
 
-CipherBase.prototype.update = function(data, inputEnc, outputEnc) {
+CipherBase.prototype.update = function (data, inputEnc, outputEnc) {
   if (typeof data === 'string') {
     data = Buffer.from(data, inputEnc)
   }
@@ -35,20 +35,20 @@ CipherBase.prototype.update = function(data, inputEnc, outputEnc) {
   return outData
 }
 
-CipherBase.prototype.setAutoPadding = function() {}
-CipherBase.prototype.getAuthTag = function() {
+CipherBase.prototype.setAutoPadding = function () {}
+CipherBase.prototype.getAuthTag = function () {
   throw new Error('trying to get auth tag in unsupported state')
 }
 
-CipherBase.prototype.setAuthTag = function() {
+CipherBase.prototype.setAuthTag = function () {
   throw new Error('trying to set auth tag in unsupported state')
 }
 
-CipherBase.prototype.setAAD = function() {
+CipherBase.prototype.setAAD = function () {
   throw new Error('trying to set aad in unsupported state')
 }
 
-CipherBase.prototype._transform = function(data, _, next) {
+CipherBase.prototype._transform = function (data, _, next) {
   var err
   try {
     if (this.hashMode) {
@@ -62,7 +62,7 @@ CipherBase.prototype._transform = function(data, _, next) {
     next(err)
   }
 }
-CipherBase.prototype._flush = function(done) {
+CipherBase.prototype._flush = function (done) {
   var err
   try {
     this.push(this.__final())
@@ -72,7 +72,7 @@ CipherBase.prototype._flush = function(done) {
 
   done(err)
 }
-CipherBase.prototype._finalOrDigest = function(outputEnc) {
+CipherBase.prototype._finalOrDigest = function (outputEnc) {
   var outData = this.__final() || Buffer.alloc(0)
   if (outputEnc) {
     outData = this._toString(outData, outputEnc, true)
@@ -80,13 +80,13 @@ CipherBase.prototype._finalOrDigest = function(outputEnc) {
   return outData
 }
 
-CipherBase.prototype._toString = function(value, enc, fin) {
+CipherBase.prototype._toString = function (value, enc, fin) {
   if (!this._decoder) {
     this._decoder = new StringDecoder(enc)
     this._encoding = enc
   }
 
-  if (this._encoding !== enc) throw new Error("can't switch encodings")
+  if (this._encoding !== enc) throw new Error('can\'t switch encodings')
 
   var out = this._decoder.write(value)
   if (fin) {

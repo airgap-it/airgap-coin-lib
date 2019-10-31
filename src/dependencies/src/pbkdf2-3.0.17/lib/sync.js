@@ -9,12 +9,12 @@ var sizes = {
   ripemd160: 20
 }
 
-var createHmac = require('../../create-hmac-1.1.4/index')
+var createHmac = require('../../create-hmac-1.1.4/browser')
 var checkParameters = require('../lib/precondition')
 var defaultEncoding = require('../lib/default-encoding')
-var Buffer = require('buffer').Buffer
+var Buffer = require('../../safe-buffer-5.2.0/index').Buffer
 
-function pbkdf2(password, salt, iterations, keylen, digest) {
+function pbkdf2 (password, salt, iterations, keylen, digest) {
   checkParameters(password, salt, iterations, keylen)
 
   if (!Buffer.isBuffer(password)) password = Buffer.from(password, defaultEncoding)
@@ -33,15 +33,11 @@ function pbkdf2(password, salt, iterations, keylen, digest) {
   for (var i = 1; i <= l; i++) {
     block1.writeUInt32BE(i, salt.length)
 
-    var T = createHmac(digest, password)
-      .update(block1)
-      .digest()
+    var T = createHmac(digest, password).update(block1).digest()
     var U = T
 
     for (var j = 1; j < iterations; j++) {
-      U = createHmac(digest, password)
-        .update(U)
-        .digest()
+      U = createHmac(digest, password).update(U).digest()
       for (var k = 0; k < hLen; k++) T[k] ^= U[k]
     }
 

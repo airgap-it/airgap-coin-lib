@@ -7,15 +7,17 @@
  * See http://pajhome.org.uk/crypt/md5 for details.
  */
 
-var inherits = require('inherits')
+var inherits = require('../inherits-2.0.4/inherits')
 var Hash = require('./hash')
-var Buffer = require('buffer').Buffer
+var Buffer = require('../safe-buffer-5.2.0/index').Buffer
 
-var K = [0x5a827999, 0x6ed9eba1, 0x8f1bbcdc | 0, 0xca62c1d6 | 0]
+var K = [
+  0x5a827999, 0x6ed9eba1, 0x8f1bbcdc | 0, 0xca62c1d6 | 0
+]
 
 var W = new Array(80)
 
-function Sha1() {
+function Sha1 () {
   this.init()
   this._w = W
 
@@ -24,7 +26,7 @@ function Sha1() {
 
 inherits(Sha1, Hash)
 
-Sha1.prototype.init = function() {
+Sha1.prototype.init = function () {
   this._a = 0x67452301
   this._b = 0xefcdab89
   this._c = 0x98badcfe
@@ -34,25 +36,25 @@ Sha1.prototype.init = function() {
   return this
 }
 
-function rotl1(num) {
+function rotl1 (num) {
   return (num << 1) | (num >>> 31)
 }
 
-function rotl5(num) {
+function rotl5 (num) {
   return (num << 5) | (num >>> 27)
 }
 
-function rotl30(num) {
+function rotl30 (num) {
   return (num << 30) | (num >>> 2)
 }
 
-function ft(s, b, c, d) {
-  if (s === 0) return (b & c) | (~b & d)
+function ft (s, b, c, d) {
+  if (s === 0) return (b & c) | ((~b) & d)
   if (s === 2) return (b & c) | (b & d) | (c & d)
   return b ^ c ^ d
 }
 
-Sha1.prototype._update = function(M) {
+Sha1.prototype._update = function (M) {
   var W = this._w
 
   var a = this._a | 0
@@ -82,7 +84,7 @@ Sha1.prototype._update = function(M) {
   this._e = (e + this._e) | 0
 }
 
-Sha1.prototype._hash = function() {
+Sha1.prototype._hash = function () {
   var H = Buffer.allocUnsafe(20)
 
   H.writeInt32BE(this._a | 0, 0)

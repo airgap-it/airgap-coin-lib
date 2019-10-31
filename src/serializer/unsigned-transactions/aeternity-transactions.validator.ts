@@ -1,4 +1,4 @@
-import { validate, async } from '../../dependencies/src/validate.js-0.13.1/validate'
+import { async, validate } from '../../dependencies/src/validate.js-0.13.1/validate'
 import { TransactionValidator } from '../validators/transactions.validator'
 import { validateSyncScheme } from '../validators/validators'
 

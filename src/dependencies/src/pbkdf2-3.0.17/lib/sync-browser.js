@@ -1,10 +1,10 @@
-var md5 = require('../../create-hash-1.2.0/md5')
+var md5 = require('create-hash/md5')
 var RIPEMD160 = require('../../ripemd160-2.0.2/index')
-var sha = require('../../sha.js-2.4.11/sha')
+var sha = require('../../sha.js-2.4.11/index')
 
 var checkParameters = require('./precondition')
 var defaultEncoding = require('./default-encoding')
-var Buffer = require('buffer').Buffer
+var Buffer = require('../../safe-buffer-5.2.0/index').Buffer
 var ZEROS = Buffer.alloc(128)
 var sizes = {
   md5: 16,
@@ -17,9 +17,9 @@ var sizes = {
   ripemd160: 20
 }
 
-function Hmac(alg, key, saltLen) {
+function Hmac (alg, key, saltLen) {
   var hash = getDigest(alg)
-  var blocksize = alg === 'sha512' || alg === 'sha384' ? 128 : 64
+  var blocksize = (alg === 'sha512' || alg === 'sha384') ? 128 : 64
 
   if (key.length > blocksize) {
     key = hash(key)
@@ -31,7 +31,7 @@ function Hmac(alg, key, saltLen) {
   var opad = Buffer.allocUnsafe(blocksize + sizes[alg])
   for (var i = 0; i < blocksize; i++) {
     ipad[i] = key[i] ^ 0x36
-    opad[i] = key[i] ^ 0x5c
+    opad[i] = key[i] ^ 0x5C
   }
 
   var ipad1 = Buffer.allocUnsafe(blocksize + saltLen + 4)
@@ -45,20 +45,18 @@ function Hmac(alg, key, saltLen) {
   this.size = sizes[alg]
 }
 
-Hmac.prototype.run = function(data, ipad) {
+Hmac.prototype.run = function (data, ipad) {
   data.copy(ipad, this.blocksize)
   var h = this.hash(ipad)
   h.copy(this.opad, this.blocksize)
   return this.hash(this.opad)
 }
 
-function getDigest(alg) {
-  function shaFunc(data) {
-    return sha(alg)
-      .update(data)
-      .digest()
+function getDigest (alg) {
+  function shaFunc (data) {
+    return sha(alg).update(data).digest()
   }
-  function rmd160Func(data) {
+  function rmd160Func (data) {
     return new RIPEMD160().update(data).digest()
   }
 
@@ -67,7 +65,7 @@ function getDigest(alg) {
   return shaFunc
 }
 
-function pbkdf2(password, salt, iterations, keylen, digest) {
+function pbkdf2 (password, salt, iterations, keylen, digest) {
   checkParameters(password, salt, iterations, keylen)
 
   if (!Buffer.isBuffer(password)) password = Buffer.from(password, defaultEncoding)

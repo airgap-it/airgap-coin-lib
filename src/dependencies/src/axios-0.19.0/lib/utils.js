@@ -1,13 +1,13 @@
-'use strict'
+'use strict';
 
-var bind = require('./helpers/bind')
-var isBuffer = require('../../is-buffer-2.0.3/index')
+var bind = require('./helpers/bind');
+var isBuffer = require('../../is-buffer-2.0.3/index');
 
 /*global toString:true*/
 
 // utils is a library of generic helper functions non-specific to axios
 
-var toString = Object.prototype.toString
+var toString = Object.prototype.toString;
 
 /**
  * Determine if a value is an Array
@@ -16,7 +16,7 @@ var toString = Object.prototype.toString
  * @returns {boolean} True if value is an Array, otherwise false
  */
 function isArray(val) {
-  return toString.call(val) === '[object Array]'
+  return toString.call(val) === '[object Array]';
 }
 
 /**
@@ -26,7 +26,7 @@ function isArray(val) {
  * @returns {boolean} True if value is an ArrayBuffer, otherwise false
  */
 function isArrayBuffer(val) {
-  return toString.call(val) === '[object ArrayBuffer]'
+  return toString.call(val) === '[object ArrayBuffer]';
 }
 
 /**
@@ -36,7 +36,7 @@ function isArrayBuffer(val) {
  * @returns {boolean} True if value is an FormData, otherwise false
  */
 function isFormData(val) {
-  return typeof FormData !== 'undefined' && val instanceof FormData
+  return (typeof FormData !== 'undefined') && (val instanceof FormData);
 }
 
 /**
@@ -46,13 +46,13 @@ function isFormData(val) {
  * @returns {boolean} True if value is a view on an ArrayBuffer, otherwise false
  */
 function isArrayBufferView(val) {
-  var result
-  if (typeof ArrayBuffer !== 'undefined' && ArrayBuffer.isView) {
-    result = ArrayBuffer.isView(val)
+  var result;
+  if ((typeof ArrayBuffer !== 'undefined') && (ArrayBuffer.isView)) {
+    result = ArrayBuffer.isView(val);
   } else {
-    result = val && val.buffer && val.buffer instanceof ArrayBuffer
+    result = (val) && (val.buffer) && (val.buffer instanceof ArrayBuffer);
   }
-  return result
+  return result;
 }
 
 /**
@@ -62,7 +62,7 @@ function isArrayBufferView(val) {
  * @returns {boolean} True if value is a String, otherwise false
  */
 function isString(val) {
-  return typeof val === 'string'
+  return typeof val === 'string';
 }
 
 /**
@@ -72,7 +72,7 @@ function isString(val) {
  * @returns {boolean} True if value is a Number, otherwise false
  */
 function isNumber(val) {
-  return typeof val === 'number'
+  return typeof val === 'number';
 }
 
 /**
@@ -82,7 +82,7 @@ function isNumber(val) {
  * @returns {boolean} True if the value is undefined, otherwise false
  */
 function isUndefined(val) {
-  return typeof val === 'undefined'
+  return typeof val === 'undefined';
 }
 
 /**
@@ -92,7 +92,7 @@ function isUndefined(val) {
  * @returns {boolean} True if value is an Object, otherwise false
  */
 function isObject(val) {
-  return val !== null && typeof val === 'object'
+  return val !== null && typeof val === 'object';
 }
 
 /**
@@ -102,7 +102,7 @@ function isObject(val) {
  * @returns {boolean} True if value is a Date, otherwise false
  */
 function isDate(val) {
-  return toString.call(val) === '[object Date]'
+  return toString.call(val) === '[object Date]';
 }
 
 /**
@@ -112,7 +112,7 @@ function isDate(val) {
  * @returns {boolean} True if value is a File, otherwise false
  */
 function isFile(val) {
-  return toString.call(val) === '[object File]'
+  return toString.call(val) === '[object File]';
 }
 
 /**
@@ -122,7 +122,7 @@ function isFile(val) {
  * @returns {boolean} True if value is a Blob, otherwise false
  */
 function isBlob(val) {
-  return toString.call(val) === '[object Blob]'
+  return toString.call(val) === '[object Blob]';
 }
 
 /**
@@ -132,7 +132,7 @@ function isBlob(val) {
  * @returns {boolean} True if value is a Function, otherwise false
  */
 function isFunction(val) {
-  return toString.call(val) === '[object Function]'
+  return toString.call(val) === '[object Function]';
 }
 
 /**
@@ -142,7 +142,7 @@ function isFunction(val) {
  * @returns {boolean} True if value is a Stream, otherwise false
  */
 function isStream(val) {
-  return isObject(val) && isFunction(val.pipe)
+  return isObject(val) && isFunction(val.pipe);
 }
 
 /**
@@ -152,7 +152,7 @@ function isStream(val) {
  * @returns {boolean} True if value is a URLSearchParams object, otherwise false
  */
 function isURLSearchParams(val) {
-  return typeof URLSearchParams !== 'undefined' && val instanceof URLSearchParams
+  return typeof URLSearchParams !== 'undefined' && val instanceof URLSearchParams;
 }
 
 /**
@@ -162,7 +162,7 @@ function isURLSearchParams(val) {
  * @returns {String} The String freed of excess whitespace
  */
 function trim(str) {
-  return str.replace(/^\s*/, '').replace(/\s*$/, '')
+  return str.replace(/^\s*/, '').replace(/\s*$/, '');
 }
 
 /**
@@ -181,13 +181,15 @@ function trim(str) {
  *  navigator.product -> 'NativeScript' or 'NS'
  */
 function isStandardBrowserEnv() {
-  if (
-    typeof navigator !== 'undefined' &&
-    (navigator.product === 'ReactNative' || navigator.product === 'NativeScript' || navigator.product === 'NS')
-  ) {
-    return false
+  if (typeof navigator !== 'undefined' && (navigator.product === 'ReactNative' ||
+                                           navigator.product === 'NativeScript' ||
+                                           navigator.product === 'NS')) {
+    return false;
   }
-  return typeof window !== 'undefined' && typeof document !== 'undefined'
+  return (
+    typeof window !== 'undefined' &&
+    typeof document !== 'undefined'
+  );
 }
 
 /**
@@ -205,25 +207,25 @@ function isStandardBrowserEnv() {
 function forEach(obj, fn) {
   // Don't bother if no value provided
   if (obj === null || typeof obj === 'undefined') {
-    return
+    return;
   }
 
   // Force an array if not already something iterable
   if (typeof obj !== 'object') {
     /*eslint no-param-reassign:0*/
-    obj = [obj]
+    obj = [obj];
   }
 
   if (isArray(obj)) {
     // Iterate over array values
     for (var i = 0, l = obj.length; i < l; i++) {
-      fn.call(null, obj[i], i, obj)
+      fn.call(null, obj[i], i, obj);
     }
   } else {
     // Iterate over object keys
     for (var key in obj) {
       if (Object.prototype.hasOwnProperty.call(obj, key)) {
-        fn.call(null, obj[key], key, obj)
+        fn.call(null, obj[key], key, obj);
       }
     }
   }
@@ -247,19 +249,19 @@ function forEach(obj, fn) {
  * @returns {Object} Result of all merge properties
  */
 function merge(/* obj1, obj2, obj3, ... */) {
-  var result = {}
+  var result = {};
   function assignValue(val, key) {
     if (typeof result[key] === 'object' && typeof val === 'object') {
-      result[key] = merge(result[key], val)
+      result[key] = merge(result[key], val);
     } else {
-      result[key] = val
+      result[key] = val;
     }
   }
 
   for (var i = 0, l = arguments.length; i < l; i++) {
-    forEach(arguments[i], assignValue)
+    forEach(arguments[i], assignValue);
   }
-  return result
+  return result;
 }
 
 /**
@@ -271,21 +273,21 @@ function merge(/* obj1, obj2, obj3, ... */) {
  * @returns {Object} Result of all merge properties
  */
 function deepMerge(/* obj1, obj2, obj3, ... */) {
-  var result = {}
+  var result = {};
   function assignValue(val, key) {
     if (typeof result[key] === 'object' && typeof val === 'object') {
-      result[key] = deepMerge(result[key], val)
+      result[key] = deepMerge(result[key], val);
     } else if (typeof val === 'object') {
-      result[key] = deepMerge({}, val)
+      result[key] = deepMerge({}, val);
     } else {
-      result[key] = val
+      result[key] = val;
     }
   }
 
   for (var i = 0, l = arguments.length; i < l; i++) {
-    forEach(arguments[i], assignValue)
+    forEach(arguments[i], assignValue);
   }
-  return result
+  return result;
 }
 
 /**
@@ -299,12 +301,12 @@ function deepMerge(/* obj1, obj2, obj3, ... */) {
 function extend(a, b, thisArg) {
   forEach(b, function assignValue(val, key) {
     if (thisArg && typeof val === 'function') {
-      a[key] = bind(val, thisArg)
+      a[key] = bind(val, thisArg);
     } else {
-      a[key] = val
+      a[key] = val;
     }
-  })
-  return a
+  });
+  return a;
 }
 
 module.exports = {
@@ -329,4 +331,4 @@ module.exports = {
   deepMerge: deepMerge,
   extend: extend,
   trim: trim
-}
+};

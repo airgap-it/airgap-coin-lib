@@ -1,6 +1,6 @@
 'use strict'
 var Transform = require('stream').Transform
-var inherits = require('inherits')
+var inherits = require('../../../inherits-2.0.4/inherits')
 
 module.exports = function (internal) {
   function Keccak (rate, capacity, delimitedSuffix, hashBitLength, options) {

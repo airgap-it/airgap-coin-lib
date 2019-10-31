@@ -1,9 +1,9 @@
-var createHmac = require('../../create-hmac-1.1.4/index')
+var createHmac = require('../../create-hmac-1.1.4/browser')
 var checkParameters = require('../lib/precondition')
 var defaultEncoding = require('../lib/default-encoding')
-var Buffer = require('buffer').Buffer
+var Buffer = require('../../safe-buffer-5.2.0/index').Buffer
 module.exports = pbkdf2
-function pbkdf2(password, salt, iterations, keylen, digest) {
+function pbkdf2 (password, salt, iterations, keylen, digest) {
   if (!Buffer.isBuffer(password)) password = Buffer.from(password, defaultEncoding)
   if (!Buffer.isBuffer(salt)) salt = Buffer.from(salt, defaultEncoding)
 
@@ -22,9 +22,7 @@ function pbkdf2(password, salt, iterations, keylen, digest) {
 
   for (var i = 1; i <= l; i++) {
     block1.writeUInt32BE(i, salt.length)
-    var U = createHmac(digest, password)
-      .update(block1)
-      .digest()
+    var U = createHmac(digest, password).update(block1).digest()
 
     if (!hLen) {
       hLen = U.length
@@ -36,14 +34,12 @@ function pbkdf2(password, salt, iterations, keylen, digest) {
     U.copy(T, 0, 0, hLen)
 
     for (var j = 1; j < iterations; j++) {
-      U = createHmac(digest, password)
-        .update(U)
-        .digest()
+      U = createHmac(digest, password).update(U).digest()
       for (var k = 0; k < hLen; k++) T[k] ^= U[k]
     }
 
     var destPos = (i - 1) * hLen
-    var len = i === l ? r : hLen
+    var len = (i === l ? r : hLen)
     T.copy(DK, destPos, 0, len)
   }
 

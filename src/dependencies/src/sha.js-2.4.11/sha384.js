@@ -1,11 +1,11 @@
-var inherits = require('inherits')
+var inherits = require('../inherits-2.0.4/inherits')
 var SHA512 = require('./sha512')
 var Hash = require('./hash')
-var Buffer = require('buffer').Buffer
+var Buffer = require('../safe-buffer-5.2.0/index').Buffer
 
 var W = new Array(160)
 
-function Sha384() {
+function Sha384 () {
   this.init()
   this._w = W
 
@@ -14,7 +14,7 @@ function Sha384() {
 
 inherits(Sha384, SHA512)
 
-Sha384.prototype.init = function() {
+Sha384.prototype.init = function () {
   this._ah = 0xcbbb9d5d
   this._bh = 0x629a292a
   this._ch = 0x9159015a
@@ -36,10 +36,10 @@ Sha384.prototype.init = function() {
   return this
 }
 
-Sha384.prototype._hash = function() {
+Sha384.prototype._hash = function () {
   var H = Buffer.allocUnsafe(48)
 
-  function writeInt64BE(h, l, offset) {
+  function writeInt64BE (h, l, offset) {
     H.writeInt32BE(h, offset)
     H.writeInt32BE(l, offset + 4)
   }
