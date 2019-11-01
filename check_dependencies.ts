@@ -155,7 +155,7 @@ export const validateDepsJson = async (depsFile: DepsFile) => {
     if (pkg.dependencies) {
       const dependencyKeys = Object.keys(pkg.dependencies)
       for (const dependency of dependencyKeys) {
-        const key = keys.find(key => key.startsWith(dependency))
+        const key = keys.find(key => key.startsWith(dependency + '-')) // TODO: Handle packages that start with the same name
         if (!key) {
           if (depsFile[prop].ignoredDeps) {
             const x = depsFile[prop].ignoredDeps.find(ignoredDep => ignoredDep.module === dependency)
@@ -168,10 +168,16 @@ export const validateDepsJson = async (depsFile: DepsFile) => {
             isValid = isValid && verificationFailed(prop, `${dependency} not found`)
           }
         } else {
-          const keyVersion = key.substr(key.lastIndexOf('-') + 1) // TODO: Handle multiple versions
-          const isSatisfied = semver.satisfies(keyVersion, pkg.dependencies[dependency])
-          if (!isSatisfied) {
-            isValid = isValid && verificationFailed(dependency, `version is not satisfied`)
+          const packageDeps = depsFile[prop].deps
+          if (!(packageDeps && packageDeps.some(dep => dep.startsWith(dependency + '-')))) {
+            isValid = isValid && verificationFailed(dependency, `is not in deps!`)
+          } else {
+            const keyVersion = key.substr(key.lastIndexOf('-') + 1) // TODO: Handle multiple versions
+            const isSatisfied = semver.satisfies(keyVersion, pkg.dependencies[dependency])
+            if (!isSatisfied) {
+              console.log('FAIL', keyVersion, pkg.dependencies[dependency])
+              isValid = isValid && verificationFailed(dependency, `version is not satisfied`)
+            }
           }
         }
       }

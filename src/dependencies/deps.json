@@ -423,7 +423,7 @@
     "repository": "bitcoinjs/bs58check",
     "commitHash": "7dd2b95a5c44e9b574f224268254a7bbecfac2ed",
     "files": ["index.js", "base.js"],
-    "deps": ["bs58-4.0.1"]
+    "deps": ["bs58-4.0.1", "create-hash-1.2.0", "safe-buffer-5.2.0"]
   },
   "bs58-4.0.1": {
     "name": "bs58",
@@ -431,6 +431,16 @@
     "version": "4.0.1",
     "repository": "cryptocoinjs/bs58",
     "commitHash": "a1d5dadc1e3544c6852648776179629f96efd1d6",
-    "files": ["index.js"]
+    "files": ["index.js"],
+    "deps": ["base-x-3.0.7", "create-hash-1.2.0"]
+  },
+  "base-x-3.0.7": {
+    "name": "base-x",
+    "entrypoint": "src/index",
+    "version": "3.0.7",
+    "repository": "cryptocoinjs/base-x",
+    "commitHash": "9a8183101079fdb0f70ee70079992ec72a830d05",
+    "files": ["src/index.js", "src/index.d.ts"],
+    "deps": ["safe-buffer-5.2.0"]
   }
 }
