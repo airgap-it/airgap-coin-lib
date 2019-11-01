@@ -181,7 +181,7 @@
     "repository": "crypto-browserify/createHash",
     "commitHash": "469f2a62f4010d8df777b0009f05d504b6c4cd27",
     "files": ["browser.js", "index.js", "md5.js"],
-    "deps": ["cipher-base-1.0.4", "inherits-2.0.4", "md5.js-1.3.5"]
+    "deps": ["cipher-base-1.0.4", "inherits-2.0.4", "ripemd160-2.0.2", "sha.js-2.4.11", "md5.js-1.3.5"]
   },
   "cipher-base-1.0.4": {
     "name": "cipher-base",
