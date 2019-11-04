@@ -1,6 +1,6 @@
 import * as assert from 'assert'
 import axios from '../../dependencies/src/axios-0.19.0/index'
-import * as bitcoinJS from 'bitgo-utxo-lib'
+import * as bitcoinJS from '../../dependencies/src/bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac/src/index'
 
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'

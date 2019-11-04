@@ -1,5 +1,5 @@
-import * as bitcoinJS from 'bitgo-utxo-lib'
-import * as ethUtil from 'ethereumjs-util'
+import * as bitcoinJS from '../../dependencies/src/bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac/src/index'
+import * as ethUtil from '../../dependencies/src/ethereumjs-util-5.2.0/index'
 
 import { BigNumber } from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
@@ -86,7 +86,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
   }
 
   public getPublicKeyFromHexSecret(secret: string, derivationPath: string): string {
-    const ethereumNode = bitcoinJS.HDNode.fromSeedHex(secret, this.network as bitcoinJS.Network)
+    const ethereumNode = bitcoinJS.HDNode.fromSeedHex(secret, this.network as Network)
 
     return ethereumNode
       .derivePath(derivationPath)
@@ -96,7 +96,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
   }
 
   public getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Buffer {
-    const ethereumNode = bitcoinJS.HDNode.fromSeedHex(secret, this.network as bitcoinJS.Network)
+    const ethereumNode = bitcoinJS.HDNode.fromSeedHex(secret, this.network as Network)
 
     return ethereumNode.derivePath(derivationPath).keyPair.d.toBuffer(32)
   }
@@ -107,10 +107,12 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
 
   public async getAddressFromPublicKey(publicKey: string | Buffer): Promise<string> {
     if (typeof publicKey === 'string') {
-      return ethUtil.toChecksumAddress((ethUtil.pubToAddress(Buffer.from(publicKey, 'hex'), true) as Buffer).toString('hex'))
+      // TODO: Types
+      return ethUtil.toChecksumAddress((ethUtil.pubToAddress(Buffer.from(publicKey, 'hex') as any, true) as any).toString('hex'))
     }
 
-    return ethUtil.toChecksumAddress((ethUtil.pubToAddress(publicKey, true) as Buffer).toString('hex'))
+    // TODO: Types
+    return ethUtil.toChecksumAddress((ethUtil.pubToAddress(publicKey as any, true) as any).toString('hex'))
   }
 
   public async getAddressesFromPublicKey(publicKey: string | Buffer): Promise<string[]> {
@@ -125,7 +127,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     addressDerivationIndex: number
   ): Promise<string> {
     return this.getAddressFromPublicKey(
-      bitcoinJS.HDNode.fromBase58(extendedPublicKey, this.network as bitcoinJS.Network)
+      bitcoinJS.HDNode.fromBase58(extendedPublicKey, this.network as Network)
         .derive(visibilityDerivationIndex)
         .derive(addressDerivationIndex)
         .getPublicKeyBuffer()
@@ -139,7 +141,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     addressCount: number,
     offset: number
   ): Promise<string[]> {
-    const node = bitcoinJS.HDNode.fromBase58(extendedPublicKey, this.network as bitcoinJS.Network)
+    const node = bitcoinJS.HDNode.fromBase58(extendedPublicKey, this.network as Network)
     const generatorArray = [addressCount].map((x, i) => i + offset)
 
     return Promise.all(

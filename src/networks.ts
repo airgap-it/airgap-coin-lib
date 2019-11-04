@@ -1,5 +1,3 @@
-import * as bitcoinJS from 'bitgo-utxo-lib'
-
 interface Bip32 {
   public: number
   private: number
@@ -17,7 +15,7 @@ export interface Network {
   ethereum?: boolean
 }
 
-const networks: { [key: string]: Network | bitcoinJS.Network } = {}
+const networks: { [key: string]: Network } = {}
 
 networks.shadow = {
   messagePrefix: '\x19ShadowCash Signed Message:\n',

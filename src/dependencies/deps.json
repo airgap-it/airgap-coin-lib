@@ -685,6 +685,7 @@
       "src/script_number.js",
       "src/transaction.js",
       "src/transaction_builder.js",
+      "src/types.js",
       "src/templates/multisig/index.js",
       "src/templates/multisig/input.js",
       "src/templates/multisig/output.js",

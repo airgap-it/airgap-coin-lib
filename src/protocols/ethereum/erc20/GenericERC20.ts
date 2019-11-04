@@ -1,4 +1,4 @@
-import * as ethUtil from 'ethereumjs-util'
+import * as ethUtil from '../../../dependencies/src/ethereumjs-util-5.2.0/index'
 
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { IAirGapSignedTransaction } from '../../../interfaces/IAirGapSignedTransaction'

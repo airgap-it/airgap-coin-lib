@@ -1,4 +1,4 @@
-import * as bitGoUTXO from 'bitgo-utxo-lib'
+import * as bitGoUTXO from '../../dependencies/src/bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac/src/index'
 
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { BitcoinBlockbookProtocol } from '../bitcoin/BitcoinBlockbookProtocol'

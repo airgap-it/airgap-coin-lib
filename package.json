@@ -31,9 +31,6 @@
   },
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
-    "bitgo-utxo-lib": "github:airgap-it/bitgo-utxo-lib#5d91049fd7a988382df81c8260e244ee56d57aac",
-    "ethereumjs-tx": "1.3.7",
-    "ethereumjs-util": "5.2.0",
     "libsodium-wrappers": "0.7.3"
   },
   "localDependencies": {
@@ -51,13 +48,11 @@
     "libsodium-wrappers": "0.7.3",
     "rlp": "2.2.3",
     "validate.js": "0.13.1",
-    "eth-lib": "0.2.7",
     "utf8": "3.0.0"
   },
   "devDependencies": {
     "@types/node": "10.12.0",
-    "typescript": "3.5.3",
-    "sonarqube-scanner": "2.1.2"
+    "typescript": "3.5.3"
   },
   "buildDependencies": {
     "@types/node": "10.12.0",

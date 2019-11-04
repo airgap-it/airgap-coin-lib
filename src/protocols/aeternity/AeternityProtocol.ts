@@ -1,6 +1,6 @@
 import axios from '../../dependencies/src/axios-0.19.0/index'
-import * as bs58check from 'bs58check'
-import * as rlp from 'rlp'
+import * as bs58check from '../../dependencies/src/bs58check-2.1.2/index'
+import * as rlp from '../../dependencies/src/rlp-2.2.3/index'
 import { EthereumUtils } from '../ethereum/utils/utils'
 
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
@@ -191,7 +191,7 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
   public async getTransactionDetails(unsignedTx: UnsignedAeternityTransaction): Promise<IAirGapTransaction[]> {
     const transaction = unsignedTx.transaction.transaction
     const rlpEncodedTx = this.decodeTx(transaction)
-    const rlpDecodedTx = rlp.decode(rlpEncodedTx)
+    const rlpDecodedTx = rlp.decode(rlpEncodedTx, false)
 
     const airgapTx: IAirGapTransaction = {
       amount: new BigNumber(parseInt(rlpDecodedTx[4].toString('hex'), 16)),
@@ -208,7 +208,7 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
 
   public async getTransactionDetailsFromSigned(signedTx: SignedAeternityTransaction): Promise<IAirGapTransaction[]> {
     const rlpEncodedTx = this.decodeTx(signedTx.transaction)
-    const rlpDecodedTx = rlp.decode(rlpEncodedTx)
+    const rlpDecodedTx = rlp.decode(rlpEncodedTx, false)
 
     const unsignedAeternityTransaction: UnsignedAeternityTransaction = {
       publicKey: '',

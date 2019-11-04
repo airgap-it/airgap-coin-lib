@@ -2,7 +2,7 @@ import { generateWalletUsingDerivationPath } from '../../dependencies/src/hd-wal
 import axios, { AxiosError, AxiosResponse } from '../../dependencies/src/axios-0.19.0/index'
 import * as bigInt from '../../dependencies/src/big-integer-1.6.45/BigInteger'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
-import * as bs58check from 'bs58check'
+import * as bs58check from '../../dependencies/src/bs58check-2.1.2/index'
 import * as sodium from 'libsodium-wrappers'
 
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
