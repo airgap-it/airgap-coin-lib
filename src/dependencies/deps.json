@@ -5,7 +5,10 @@
     "version": "9.0.0",
     "repository": "MikeMcl/bignumber.js",
     "commitHash": "986fd70e514e58e86d43bc9944547d82658e47ae",
-    "files": ["bignumber.js", "bignumber.d.ts"]
+    "files": [
+      "bignumber.js",
+      "bignumber.d.ts"
+    ]
   },
   "validate.js-0.13.1": {
     "name": "validate.js",
@@ -13,7 +16,10 @@
     "version": "0.13.1",
     "repository": "ansman/validate.js",
     "commitHash": "40e06a1bafd2ce61dba37779ee77e796ad397b81",
-    "files": ["validate.js", "validate.d.ts"]
+    "files": [
+      "validate.js",
+      "validate.d.ts"
+    ]
   },
   "tweetnacl-1.0.1": {
     "name": "tweetnacl",
@@ -21,7 +27,10 @@
     "version": "1.0.1",
     "repository": "dchest/tweetnacl-js",
     "commitHash": "acab4d4883e7a0be0b230df7b42c0bbd25210d39",
-    "files": ["nacl.js", "nacl.d.ts"]
+    "files": [
+      "nacl.js",
+      "nacl.d.ts"
+    ]
   },
   "tweetnacl-auth-1.0.1": {
     "name": "tweetnacl-auth",
@@ -29,8 +38,12 @@
     "version": "1.0.1",
     "repository": "dchest/tweetnacl-auth-js",
     "commitHash": "f7e7b60a017880a1e7c5e1cf68f422a4c6005cf9",
-    "files": ["nacl-auth.js"],
-    "deps": ["tweetnacl-1.0.1"]
+    "files": [
+      "nacl-auth.js"
+    ],
+    "deps": [
+      "tweetnacl-1.0.1"
+    ]
   },
   "bip32-path-0.4.2": {
     "name": "bip32-path",
@@ -38,7 +51,9 @@
     "version": "0.4.2",
     "repository": "axic/bip32-path",
     "commitHash": "d6d14bf9a848c9c28e23a8d68ad0e1bb3432c03c",
-    "files": ["index.js"]
+    "files": [
+      "index.js"
+    ]
   },
   "hd-wallet-js-b216450e56954a6e82ace0aade9474673de5d9d5": {
     "name": "hd-wallet-js",
@@ -46,13 +61,34 @@
     "version": "b216450e56954a6e82ace0aade9474673de5d9d5",
     "repository": "airgap-it/hd-wallet-js",
     "commitHash": "b216450e56954a6e82ace0aade9474673de5d9d5",
-    "files": ["src/hd-key.js", "src/hd-wallet.js", "src/index.js"],
-    "renameFiles": [["src/hd-key.js", "src/hd-key.ts"], ["src/hd-wallet.js", "src/hd-wallet.ts"], ["src/index.js", "src/index.ts"]],
+    "files": [
+      "src/hd-key.js",
+      "src/hd-wallet.js",
+      "src/index.js"
+    ],
+    "renameFiles": [
+      [
+        "src/hd-key.js",
+        "src/hd-key.ts"
+      ],
+      [
+        "src/hd-wallet.js",
+        "src/hd-wallet.ts"
+      ],
+      [
+        "src/index.js",
+        "src/index.ts"
+      ]
+    ],
     "replaceInFiles": [
       {
         "filename": "src/hd-key.ts",
         "replacements": [
-          { "from": "import nacl from 'tweetnacl'", "to": "import * as nacl from 'tweetnacl'", "expectedReplacements": 1 },
+          {
+            "from": "import nacl from 'tweetnacl'",
+            "to": "import * as nacl from 'tweetnacl'",
+            "expectedReplacements": 1
+          },
           {
             "from": "import { full as hmac } from 'tweetnacl-auth'",
             "to": "import * as naclAuth from 'tweetnacl-auth'",
@@ -87,10 +123,20 @@
         ]
       }
     ],
-    "deps": ["tweetnacl-1.0.1", "tweetnacl-auth-1.0.1", "bip32-path-0.4.2"],
+    "deps": [
+      "tweetnacl-1.0.1",
+      "tweetnacl-auth-1.0.1",
+      "bip32-path-0.4.2"
+    ],
     "ignoredDeps": [
-      { "module": "@babel/runtime", "reason": "Should be a dev dependency" },
-      { "module": "postinstall-build", "reason": "Should be a dev dependency" }
+      {
+        "module": "@babel/runtime",
+        "reason": "Should be a dev dependency"
+      },
+      {
+        "module": "postinstall-build",
+        "reason": "Should be a dev dependency"
+      }
     ]
   },
   "cryptocompare-0.5.0": {
@@ -99,7 +145,9 @@
     "version": "0.5.0",
     "repository": "ExodusMovement/cryptocompare",
     "commitHash": "7dbaf1eea531751dbf8b8f2cab339cc747904fab",
-    "files": ["index.js"]
+    "files": [
+      "index.js"
+    ]
   },
   "axios-0.19.0": {
     "name": "axios",
@@ -138,7 +186,10 @@
       "lib/helpers/parseHeaders.js",
       "lib/helpers/spread.js"
     ],
-    "deps": ["follow-redirects-1.5.10", "is-buffer-2.0.3"]
+    "deps": [
+      "follow-redirects-1.5.10",
+      "is-buffer-2.0.3"
+    ]
   },
   "is-buffer-2.0.3": {
     "name": "is-buffer",
@@ -146,7 +197,9 @@
     "version": "2.0.3",
     "repository": "feross/is-buffer",
     "commitHash": "e05c7852e1a978b81c7eb6d677c861a7dc935ead",
-    "files": ["index.js"]
+    "files": [
+      "index.js"
+    ]
   },
   "follow-redirects-1.5.10": {
     "name": "follow-redirects",
@@ -154,8 +207,14 @@
     "version": "1.5.10",
     "repository": "follow-redirects/follow-redirects",
     "commitHash": "91842752013b26ed780f7b04e557c72f02228cde",
-    "files": ["index.js", "http.js", "https.js"],
-    "deps": ["debug-3.1.0"]
+    "files": [
+      "index.js",
+      "http.js",
+      "https.js"
+    ],
+    "deps": [
+      "debug-3.1.0"
+    ]
   },
   "debug-3.1.0": {
     "name": "debug",
@@ -163,8 +222,15 @@
     "version": "3.1.0",
     "repository": "visionmedia/debug",
     "commitHash": "f073e056f33efdd5b311381eb6bca2bc850745bf",
-    "files": ["src/browser.js", "src/debug.js", "src/index.js", "src/node.js"],
-    "deps": ["ms-2.1.2"]
+    "files": [
+      "src/browser.js",
+      "src/debug.js",
+      "src/index.js",
+      "src/node.js"
+    ],
+    "deps": [
+      "ms-2.1.2"
+    ]
   },
   "ms-2.1.2": {
     "name": "ms",
@@ -172,7 +238,9 @@
     "version": "2.1.2",
     "repository": "zeit/ms",
     "commitHash": "7920885eb232fbe7a5efdab956d3e7c507c92ddf",
-    "files": ["index.js"]
+    "files": [
+      "index.js"
+    ]
   },
   "create-hash-1.2.0": {
     "name": "create-hash",
@@ -180,8 +248,18 @@
     "version": "1.2.0",
     "repository": "crypto-browserify/createHash",
     "commitHash": "469f2a62f4010d8df777b0009f05d504b6c4cd27",
-    "files": ["browser.js", "index.js", "md5.js"],
-    "deps": ["cipher-base-1.0.4", "inherits-2.0.4", "ripemd160-2.0.2", "sha.js-2.4.11", "md5.js-1.3.5"]
+    "files": [
+      "browser.js",
+      "index.js",
+      "md5.js"
+    ],
+    "deps": [
+      "cipher-base-1.0.4",
+      "inherits-2.0.4",
+      "ripemd160-2.0.2",
+      "sha.js-2.4.11",
+      "md5.js-1.3.5"
+    ]
   },
   "cipher-base-1.0.4": {
     "name": "cipher-base",
@@ -189,8 +267,13 @@
     "version": "1.0.4",
     "repository": "crypto-browserify/cipher-base",
     "commitHash": "bc18dc847050c34f11f7a0472ff13a76b53fedc6",
-    "files": ["index.js"],
-    "deps": ["safe-buffer-5.2.0", "inherits-2.0.4"]
+    "files": [
+      "index.js"
+    ],
+    "deps": [
+      "safe-buffer-5.2.0",
+      "inherits-2.0.4"
+    ]
   },
   "safe-buffer-5.2.0": {
     "name": "safe-buffer",
@@ -198,8 +281,12 @@
     "version": "5.2.0",
     "repository": "feross/safe-buffer",
     "commitHash": "ae53d5b9f06eae8540ca948d14e43ca32692dd8c",
-    "files": ["index.js"],
-    "TODO": ["index.d.ts"]
+    "files": [
+      "index.js"
+    ],
+    "TODO": [
+      "index.d.ts"
+    ]
   },
   "inherits-2.0.4": {
     "name": "inherits",
@@ -207,7 +294,10 @@
     "version": "2.0.4",
     "repository": "isaacs/inherits",
     "commitHash": "9a2c29400c6d491e0b7beefe0c32efa3b462545d",
-    "files": ["inherits.js", "inherits_browser.js"]
+    "files": [
+      "inherits.js",
+      "inherits_browser.js"
+    ]
   },
   "md5.js-1.3.5": {
     "name": "md5.js",
@@ -215,8 +305,14 @@
     "version": "1.3.5",
     "repository": "crypto-browserify/md5.js",
     "commitHash": "48df1d6b8c4af2cf52638092d590c528420c61ed",
-    "files": ["index.js"],
-    "deps": ["hash-base-3.0.4", "inherits-2.0.4", "safe-buffer-5.2.0"]
+    "files": [
+      "index.js"
+    ],
+    "deps": [
+      "hash-base-3.0.4",
+      "inherits-2.0.4",
+      "safe-buffer-5.2.0"
+    ]
   },
   "hash-base-3.0.4": {
     "name": "hash-base",
@@ -224,8 +320,13 @@
     "version": "3.0.4",
     "repository": "crypto-browserify/hash-base",
     "commitHash": "d36440ed0448a654734ae05464d55d34b189a17a",
-    "files": ["index.js"],
-    "deps": ["inherits-2.0.4", "safe-buffer-5.2.0"]
+    "files": [
+      "index.js"
+    ],
+    "deps": [
+      "inherits-2.0.4",
+      "safe-buffer-5.2.0"
+    ]
   },
   "ripemd160-2.0.2": {
     "name": "ripemd160",
@@ -233,8 +334,13 @@
     "version": "2.0.2",
     "repository": "crypto-browserify/ripemd160",
     "commitHash": "3419c6409799d37e0323a556c94d040154657d9d",
-    "files": ["index.js"],
-    "deps": ["hash-base-3.0.4", "inherits-2.0.4"]
+    "files": [
+      "index.js"
+    ],
+    "deps": [
+      "hash-base-3.0.4",
+      "inherits-2.0.4"
+    ]
   },
   "sha.js-2.4.11": {
     "name": "sha.js",
@@ -242,8 +348,20 @@
     "version": "2.4.11",
     "repository": "crypto-browserify/sha.js",
     "commitHash": "105bfe57c69e13c83fcf7a6ca660dd984cb291bf",
-    "files": ["index.js", "hash.js", "sha.js", "sha1.js", "sha224.js", "sha256.js", "sha384.js", "sha512.js"],
-    "deps": ["inherits-2.0.4", "safe-buffer-5.2.0"]
+    "files": [
+      "index.js",
+      "hash.js",
+      "sha.js",
+      "sha1.js",
+      "sha224.js",
+      "sha256.js",
+      "sha384.js",
+      "sha512.js"
+    ],
+    "deps": [
+      "inherits-2.0.4",
+      "safe-buffer-5.2.0"
+    ]
   },
   "bip39-2.5.0": {
     "name": "bip39",
@@ -262,7 +380,13 @@
       "wordlists/chinese_traditional.json",
       "wordlists/chinese_simplified.json"
     ],
-    "deps": ["safe-buffer-5.2.0", "create-hash-1.2.0", "unorm-1.6.0", "pbkdf2-3.0.17", "randombytes-2.1.0"]
+    "deps": [
+      "safe-buffer-5.2.0",
+      "create-hash-1.2.0",
+      "unorm-1.6.0",
+      "pbkdf2-3.0.17",
+      "randombytes-2.1.0"
+    ]
   },
   "pbkdf2-3.0.17": {
     "name": "pbkdf2",
@@ -281,7 +405,13 @@
       "lib/sync-browser.js",
       "lib/sync.js"
     ],
-    "deps": ["create-hash-1.2.0", "create-hmac-1.1.4", "ripemd160-2.0.2", "safe-buffer-5.2.0", "sha.js-2.4.11"],
+    "deps": [
+      "create-hash-1.2.0",
+      "create-hmac-1.1.4",
+      "ripemd160-2.0.2",
+      "safe-buffer-5.2.0",
+      "sha.js-2.4.11"
+    ],
     "TODO": "Check if we need to use browser version"
   },
   "create-hmac-1.1.4": {
@@ -290,7 +420,10 @@
     "version": "1.1.4",
     "repository": "crypto-browserify/createHmac",
     "commitHash": "3c7dd3047b5ab3e3be44d802241d224f0c9e2325",
-    "files": ["browser.js", "index.js"],
+    "files": [
+      "browser.js",
+      "index.js"
+    ],
     "replaceInFiles": [
       {
         "filename": "browser.js",
@@ -303,7 +436,10 @@
         ]
       }
     ],
-    "deps": ["create-hash-1.2.0", "inherits-2.0.4"]
+    "deps": [
+      "create-hash-1.2.0",
+      "inherits-2.0.4"
+    ]
   },
   "randombytes-2.1.0": {
     "name": "randombytes",
@@ -311,8 +447,13 @@
     "version": "2.1.0",
     "repository": "crypto-browserify/randombytes",
     "commitHash": "f18ded32b209f0d4c637608a11ae042ae96b4c2e",
-    "files": ["index.js", "browser.js"],
-    "deps": ["safe-buffer-5.2.0"]
+    "files": [
+      "index.js",
+      "browser.js"
+    ],
+    "deps": [
+      "safe-buffer-5.2.0"
+    ]
   },
   "rlp-2.2.3": {
     "name": "rlp",
@@ -320,9 +461,16 @@
     "version": "2.2.3",
     "repository": "ethereumjs/rlp",
     "commitHash": "296857a1c1c20a93e1377d221dba0c782d7b65a4",
-    "files": ["index.js"],
-    "deps": ["safe-buffer-5.2.0", "bn.js-4.11.8"],
-    "TODO": ["index.d.ts"]
+    "files": [
+      "index.js"
+    ],
+    "deps": [
+      "safe-buffer-5.2.0",
+      "bn.js-4.11.8"
+    ],
+    "TODO": [
+      "index.d.ts"
+    ]
   },
   "utf8-3.0.0": {
     "name": "utf8",
@@ -330,7 +478,9 @@
     "version": "3.0.0",
     "repository": "mathiasbynens/utf8.js",
     "commitHash": "2ce09544b62f2a274dbcd249473c0986e3660849",
-    "files": ["utf8.js"]
+    "files": [
+      "utf8.js"
+    ]
   },
   "unorm-1.6.0": {
     "name": "unorm",
@@ -338,7 +488,9 @@
     "version": "1.6.0",
     "repository": "walling/unorm",
     "commitHash": "26c36c3ce6cd66d3c5bf7867736cb1f2b49fe6b1",
-    "files": ["lib/unorm.js"]
+    "files": [
+      "lib/unorm.js"
+    ]
   },
   "bn.js-4.11.8": {
     "name": "bn.js",
@@ -346,7 +498,9 @@
     "version": "4.11.8",
     "repository": "indutny/bn.js",
     "commitHash": "c69b4ae8e789e10f7f91811cd4937949ff0d4768",
-    "files": ["lib/bn.js"]
+    "files": [
+      "lib/bn.js"
+    ]
   },
   "ethereumjs-tx-1.3.7": {
     "name": "ethereumjs-tx",
@@ -354,8 +508,13 @@
     "version": "1.3.7",
     "repository": "ethereumjs/ethereumjs-tx",
     "commitHash": "e3fc21467ecb997090f63f154b1407094f173bf2",
-    "files": ["index.js"],
-    "deps": ["ethereum-common-0.0.18", "ethereumjs-util-5.2.0"],
+    "files": [
+      "index.js"
+    ],
+    "deps": [
+      "ethereum-common-0.0.18",
+      "ethereumjs-util-5.2.0"
+    ],
     "TODO": "Check if es/index.js is needed or not."
   },
   "ethereumjs-util-5.2.0": {
@@ -364,8 +523,18 @@
     "version": "5.2.0",
     "repository": "ethereumjs/ethereumjs-util",
     "commitHash": "7e3be1d97b4e11fbc4924836b8c444e644f643ac",
-    "files": ["index.js"],
-    "deps": ["bn.js-4.11.8", "create-hash-1.2.0", "ethjs-util-0.1.4", "keccak-1.0.2", "rlp-2.2.3", "safe-buffer-5.2.0", "secp256k1-3.0.1"]
+    "files": [
+      "index.js"
+    ],
+    "deps": [
+      "bn.js-4.11.8",
+      "create-hash-1.2.0",
+      "ethjs-util-0.1.4",
+      "keccak-1.0.2",
+      "rlp-2.2.3",
+      "safe-buffer-5.2.0",
+      "secp256k1-3.0.1"
+    ]
   },
   "ethjs-util-0.1.4": {
     "name": "ethjs-util",
@@ -373,8 +542,13 @@
     "version": "0.1.4",
     "repository": "ethjs/ethjs-util",
     "commitHash": "e9aede668177b6d1ea62d741ba1c19402bc337b3",
-    "files": ["src/index.js"],
-    "deps": ["is-hex-prefixed-1.0.0", "strip-hex-prefix-1.0.0"],
+    "files": [
+      "src/index.js"
+    ],
+    "deps": [
+      "is-hex-prefixed-1.0.0",
+      "strip-hex-prefix-1.0.0"
+    ],
     "TODO": "Check if we need dist files."
   },
   "is-hex-prefixed-1.0.0": {
@@ -383,7 +557,9 @@
     "version": "1.0.0",
     "repository": "SilentCicero/is-hex-prefixed",
     "commitHash": "2a5a31481e3f8f7cd3217f50c7950b5de589eaba",
-    "files": ["src/index.js"]
+    "files": [
+      "src/index.js"
+    ]
   },
   "strip-hex-prefix-1.0.0": {
     "name": "strip-hex-prefix",
@@ -391,8 +567,12 @@
     "version": "1.0.0",
     "repository": "SilentCicero/strip-hex-prefix",
     "commitHash": "94058ad57053b4be0c7946b1abcbef0ae6c34cc8",
-    "files": ["src/index.js"],
-    "deps": ["is-hex-prefixed-1.0.0"]
+    "files": [
+      "src/index.js"
+    ],
+    "deps": [
+      "is-hex-prefixed-1.0.0"
+    ]
   },
   "keccak-1.0.2": {
     "name": "keccak",
@@ -400,12 +580,31 @@
     "version": "1.0.2",
     "repository": "cryptocoinjs/keccak",
     "commitHash": "e94fbe0af3879d0d9bca5435f35832dcb93137a6",
-    "files": ["index.js", "js.js", "lib/keccak.js", "lib/keccak-state.js", "lib/api/index.js", "lib/api/keccak.js", "lib/api/shake.js"],
-    "deps": ["inherits-2.0.4"],
+    "files": [
+      "index.js",
+      "js.js",
+      "lib/keccak.js",
+      "lib/keccak-state.js",
+      "lib/api/index.js",
+      "lib/api/keccak.js",
+      "lib/api/shake.js"
+    ],
+    "deps": [
+      "inherits-2.0.4"
+    ],
     "ignoredDeps": [
-      { "module": "bindings", "reason": "using pure js implementation, node bindings not necessary." },
-      { "module": "nan", "reason": "using pure js implementation, node bindings not necessary." },
-      { "module": "prebuild-install", "reason": "using pure js implementation, node bindings not necessary." }
+      {
+        "module": "bindings",
+        "reason": "using pure js implementation, node bindings not necessary."
+      },
+      {
+        "module": "nan",
+        "reason": "using pure js implementation, node bindings not necessary."
+      },
+      {
+        "module": "prebuild-install",
+        "reason": "using pure js implementation, node bindings not necessary."
+      }
     ]
   },
   "big-integer-1.6.45": {
@@ -414,7 +613,10 @@
     "version": "1.6.45",
     "repository": "peterolson/BigInteger.js",
     "commitHash": "4e99b15b7951338f164728377c906caae5a78202",
-    "files": ["BigInteger.js", "BigInteger.d.ts"]
+    "files": [
+      "BigInteger.js",
+      "BigInteger.d.ts"
+    ]
   },
   "bs58check-2.1.2": {
     "name": "bs58check",
@@ -422,8 +624,15 @@
     "version": "2.1.2",
     "repository": "bitcoinjs/bs58check",
     "commitHash": "7dd2b95a5c44e9b574f224268254a7bbecfac2ed",
-    "files": ["index.js", "base.js"],
-    "deps": ["bs58-4.0.1", "create-hash-1.2.0", "safe-buffer-5.2.0"]
+    "files": [
+      "index.js",
+      "base.js"
+    ],
+    "deps": [
+      "bs58-4.0.1",
+      "create-hash-1.2.0",
+      "safe-buffer-5.2.0"
+    ]
   },
   "bs58-4.0.1": {
     "name": "bs58",
@@ -431,8 +640,13 @@
     "version": "4.0.1",
     "repository": "cryptocoinjs/bs58",
     "commitHash": "a1d5dadc1e3544c6852648776179629f96efd1d6",
-    "files": ["index.js"],
-    "deps": ["base-x-3.0.7", "create-hash-1.2.0"]
+    "files": [
+      "index.js"
+    ],
+    "deps": [
+      "base-x-3.0.7",
+      "create-hash-1.2.0"
+    ]
   },
   "base-x-3.0.7": {
     "name": "base-x",
@@ -440,7 +654,59 @@
     "version": "3.0.7",
     "repository": "cryptocoinjs/base-x",
     "commitHash": "9a8183101079fdb0f70ee70079992ec72a830d05",
-    "files": ["src/index.js", "src/index.d.ts"],
-    "deps": ["safe-buffer-5.2.0"]
+    "files": [
+      "src/index.js",
+      "src/index.d.ts"
+    ],
+    "deps": [
+      "safe-buffer-5.2.0"
+    ]
+  },
+  "bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac": {
+    "name": "bitgo-utxo-lib",
+    "entrypoint": "src/index",
+    "version": "5d91049fd7a988382df81c8260e244ee56d57aac",
+    "repository": "Groestlcoin/bitgo-utxo-lib",
+    "commitHash": "5d91049fd7a988382df81c8260e244ee56d57aac",
+    "files": [
+      "src/address.js",
+      "src/block.js",
+      "src/bufferWriter.js",
+      "src/bufferutils.js",
+      "src/coins.js",
+      "src/ecdsa.js",
+      "src/ecpair.js",
+      "src/ecsignature.js",
+      "src/fastcurve.js",
+      "src/hdnode.js",
+      "src/index.js",
+      "src/networks.js",
+      "src/script.js",
+      "src/script_number.js",
+      "src/transaction.js",
+      "src/transaction_builder.js",
+      "src/templates/multisig/index.js",
+      "src/templates/multisig/input.js",
+      "src/templates/multisig/output.js",
+      "src/templates/pubkey/index.js",
+      "src/templates/pubkey/input.js",
+      "src/templates/pubkey/output.js",
+      "src/templates/pubkeyhash/index.js",
+      "src/templates/pubkeyhash/input.js",
+      "src/templates/pubkeyhash/output.js",
+      "src/templates/scripthash/index.js",
+      "src/templates/scripthash/input.js",
+      "src/templates/scripthash/output.js",
+      "src/templates/witnesscommitment/index.js",
+      "src/templates/witnesscommitment/output.js",
+      "src/templates/witnesspubkeyhash/index.js",
+      "src/templates/witnesspubkeyhash/input.js",
+      "src/templates/witnesspubkeyhash/output.js",
+      "src/templates/witnessscripthash/index.js",
+      "src/templates/witnessscripthash/input.js",
+      "src/templates/index.js",
+      "src/templates/nulldata.js"
+    ],
+    "deps": []
   }
 }

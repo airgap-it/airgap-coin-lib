@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from 'fs'
 import { request } from 'https'
-import * as semver from 'semver'
+import * as semver from './check_dependencies_semver'
 
 import { copyFileAndCreateFolder, createFolderIfNotExists, writeFileAndCreateFolder } from './check_dependencies_fs'
 
