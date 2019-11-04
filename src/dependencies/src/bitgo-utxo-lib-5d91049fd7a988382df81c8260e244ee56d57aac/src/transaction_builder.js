@@ -1,12 +1,12 @@
-var Buffer = require('safe-buffer').Buffer
+var Buffer = require('../../safe-buffer-5.2.0/index').Buffer
 var baddress = require('./address')
 var bcrypto = require('./crypto')
 var bscript = require('./script')
 var btemplates = require('./templates')
 var coins = require('./coins')
 var networks = require('./networks')
-var ops = require('bitcoin-ops')
-var typeforce = require('typeforce')
+var ops = require('../../bitcoin-ops-1.4.1/index.json')
+var typeforce = require('../../typeforce-1.18.0/index')
 var types = require('./types')
 var scriptTypes = btemplates.types
 var SIGNABLE = [btemplates.types.P2PKH, btemplates.types.P2PK, btemplates.types.MULTISIG]
@@ -16,7 +16,7 @@ var ECPair = require('./ecpair')
 var ECSignature = require('./ecsignature')
 var Transaction = require('./transaction')
 
-var debug = require('debug')('bitgo:utxolib:txbuilder')
+var debug = require('../../debug-3.1.0/src/index')('bitgo:utxolib:txbuilder')
 
 function supportedType (type) {
   return SIGNABLE.indexOf(type) !== -1

@@ -1,15 +1,15 @@
-var Buffer = require('safe-buffer').Buffer
-var createHmac = require('create-hmac')
-var typeforce = require('typeforce')
+var Buffer = require('../../safe-buffer-5.2.0/index').Buffer
+var createHmac = require('../../create-hmac-1.1.4/browser')
+var typeforce = require('../../typeforce-1.18.0/index')
 var types = require('./types')
 
-var BigInteger = require('bigi')
+var BigInteger = require('../../bigi-1.4.2/lib/index')
 var ECSignature = require('./ecsignature')
 
 var ZERO = Buffer.alloc(1, 0)
 var ONE = Buffer.alloc(1, 1)
 
-var ecurve = require('ecurve')
+var ecurve = require('../../ecurve-1.0.6/lib/index')
 var secp256k1 = ecurve.getCurveByName('secp256k1')
 
 // https://tools.ietf.org/html/rfc6979#section-3.2

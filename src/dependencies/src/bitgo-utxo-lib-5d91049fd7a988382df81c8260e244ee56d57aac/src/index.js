@@ -19,6 +19,6 @@ module.exports = {
   coins: require('./coins'),
   crypto: require('./crypto'),
   networks: require('./networks'),
-  opcodes: require('bitcoin-ops'),
+  opcodes: require('../../bitcoin-ops-1.4.1/index.json'),
   script: script
 }

@@ -1,9 +1,9 @@
-var Buffer = require('safe-buffer').Buffer
+var Buffer = require('../../safe-buffer-5.2.0/index').Buffer
 var bcrypto = require('./crypto')
-var fastMerkleRoot = require('merkle-lib/fastRoot')
-var typeforce = require('typeforce')
+var fastMerkleRoot = require('../../merkle-lib-2.0.10/fastRoot')
+var typeforce = require('../../typeforce-1.18.0/index')
 var types = require('./types')
-var varuint = require('varuint-bitcoin')
+var varuint = require('../../varuint-bitcoin-1.1.2/index')
 var networks = require('./networks')
 var coins = require('./coins')
 

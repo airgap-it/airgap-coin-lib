@@ -674,6 +674,7 @@
       "src/bufferWriter.js",
       "src/bufferutils.js",
       "src/coins.js",
+      "src/crypto.js",
       "src/ecdsa.js",
       "src/ecpair.js",
       "src/ecsignature.js",
@@ -705,9 +706,254 @@
       "src/templates/witnesspubkeyhash/output.js",
       "src/templates/witnessscripthash/index.js",
       "src/templates/witnessscripthash/input.js",
+      "src/templates/witnessscripthash/output.js",
       "src/templates/index.js",
       "src/templates/nulldata.js"
     ],
-    "deps": []
+    "deps": [
+      "bech32-0.0.3",
+      "bigi-1.4.2",
+      "bip66-1.1.5",
+      "bitcoin-ops-1.4.1",
+      "blake2b-6268e6dd678661e0acc4359e9171b97eb1ebf8ac",
+      "bs58check-2.1.2",
+      "create-hash-1.2.0",
+      "create-hmac-1.1.4",
+      "debug-3.1.0",
+      "ecurve-1.0.6",
+      "merkle-lib-2.0.10",
+      "pushdata-bitcoin-1.0.1",
+      "randombytes-2.1.0",
+      "safe-buffer-5.2.0",
+      "typeforce-1.18.0",
+      "varuint-bitcoin-1.1.2",
+      "wif-2.0.6",
+      "groestl-hash-js-ef6a04f1c4d2f0448f0882b5f213ef7a0659baee"
+    ],
+    "replaceInFiles": [
+      {
+        "filename": "src/script.js",
+        "replacements": [
+          {
+            "from": "var REVERSE_OPS = require('bitcoin-ops/map')",
+            "to": "var REVERSE_OPS = require('../../bitcoin-ops-1.4.1/map')",
+            "expectedReplacements": 1
+          }
+        ]
+      },
+      {
+        "filename": "src/block.js",
+        "replacements": [
+          {
+            "from": "var fastMerkleRoot = require('merkle-lib/fastRoot')",
+            "to": "var fastMerkleRoot = require('../../merkle-lib-2.0.10/fastRoot')",
+            "expectedReplacements": 1
+          }
+        ]
+      },
+      {
+        "filename": "src/address.js",
+        "replacements": [
+          {
+            "from": "var bs58checkBase = require('bs58check/base')",
+            "to": "var bs58checkBase = require('../../bs58check-2.1.2/base')",
+            "expectedReplacements": 1
+          }
+        ]
+      },
+      {
+        "filename": "src/hdnode.js",
+        "replacements": [
+          {
+            "from": "var bs58checkBase = require('bs58check/base')",
+            "to": "var bs58checkBase = require('../../bs58check-2.1.2/base')",
+            "expectedReplacements": 1
+          }
+        ]
+      }
+    ]
+  },
+  "bech32-0.0.3": {
+    "name": "bech32",
+    "entrypoint": "index",
+    "version": "0.0.3",
+    "repository": "bitcoinjs/bech32",
+    "commitHash": "b3bc5d82896c45d046b74ae18ee13681f4212462",
+    "files": [
+      "index.js"
+    ]
+  },
+  "bigi-1.4.2": {
+    "name": "bigi",
+    "entrypoint": "lib/index",
+    "version": "1.4.2",
+    "repository": "cryptocoinjs/bigi",
+    "commitHash": "c25308081c896ff84702303722bf5ecd8b3f78e3",
+    "files": [
+      "lib/bigi.js",
+      "lib/convert.js",
+      "lib/index.js",
+      "package.json"
+    ]
+  },
+  "bip66-1.1.5": {
+    "name": "bip66",
+    "entrypoint": "index",
+    "version": "1.1.5",
+    "repository": "bitcoinjs/bip66",
+    "commitHash": "9d71107e16878d87605dd2460342119d36d72fb4",
+    "files": [
+      "index.js"
+    ],
+    "deps": [
+      "safe-buffer-5.2.0"
+    ]
+  },
+  "bitcoin-ops-1.4.1": {
+    "name": "bitcoin-ops",
+    "entrypoint": "index.json",
+    "version": "1.4.1",
+    "repository": "bitcoinjs/bitcoin-ops",
+    "commitHash": "44829aa0450a65c6afd40c62d00a347ae739b9f4",
+    "files": [
+      "index.json",
+      "map.js"
+    ]
+  },
+  "blake2b-6268e6dd678661e0acc4359e9171b97eb1ebf8ac": {
+    "name": "blake2b",
+    "entrypoint": "index",
+    "version": "6268e6dd678661e0acc4359e9171b97eb1ebf8ac",
+    "repository": "BitGo/blake2b",
+    "commitHash": "6268e6dd678661e0acc4359e9171b97eb1ebf8ac",
+    "files": [
+      "index.js"
+    ],
+    "deps": [
+      "blake2b-wasm-193cdb71656c1a6c7f89b05d0327bb9b758d071b",
+      "nanoassert-1.1.0"
+    ]
+  },
+  "blake2b-wasm-193cdb71656c1a6c7f89b05d0327bb9b758d071b": {
+    "name": "blake2b-wasm",
+    "entrypoint": "index",
+    "version": "193cdb71656c1a6c7f89b05d0327bb9b758d071b",
+    "repository": "BitGo/blake2b-wasm",
+    "commitHash": "193cdb71656c1a6c7f89b05d0327bb9b758d071b",
+    "files": [
+      "index.js",
+      "blake2b.js"
+    ],
+    "deps": [
+      "nanoassert-1.1.0"
+    ]
+  },
+  "nanoassert-1.1.0": {
+    "name": "nanoassert",
+    "entrypoint": "index",
+    "version": "1.1.0",
+    "repository": "emilbayes/nanoassert",
+    "commitHash": "c2e2231aa88fb872f1fbd72fba50cadfe6b97431",
+    "files": [
+      "index.js"
+    ]
+  },
+  "ecurve-1.0.6": {
+    "name": "ecurve",
+    "entrypoint": "lib/index",
+    "version": "1.0.6",
+    "repository": "cryptocoinjs/ecurve",
+    "commitHash": "14d72f5f468d53ff33dc13c1c7af350a41d52aab",
+    "files": [
+      "lib/curve.js",
+      "lib/curves.json",
+      "lib/index.js",
+      "lib/names.js",
+      "lib/point.js"
+    ],
+    "deps": [
+      "bigi-1.4.2",
+      "safe-buffer-5.2.0"
+    ]
+  },
+  "merkle-lib-2.0.10": {
+    "name": "merkle-lib",
+    "entrypoint": "index",
+    "version": "2.0.10",
+    "repository": "bitcoinjs/merkle-lib",
+    "commitHash": "3d2205c0130c664bb19f6aa39fecf6d92e9bd8a8",
+    "files": [
+      "index.js",
+      "fastRoot.js"
+    ]
+  },
+  "pushdata-bitcoin-1.0.1": {
+    "name": "pushdata-bitcoin",
+    "entrypoint": "index",
+    "version": "1.0.1",
+    "repository": "bitcoinjs/pushdata-bitcoin",
+    "commitHash": "bfdfcc5f9a57e8728c5d86420bd040d3b1d1689e",
+    "files": [
+      "index.js"
+    ],
+    "deps": [
+      "bitcoin-ops-1.4.1"
+    ]
+  },
+  "typeforce-1.18.0": {
+    "name": "typeforce",
+    "entrypoint": "index",
+    "version": "1.18.0",
+    "repository": "dcousens/typeforce",
+    "commitHash": "29ff3061ba372b0f4eeeda47d5013f13545ea01e",
+    "files": [
+      "errors.js",
+      "extra.js",
+      "index.js",
+      "native.js"
+    ]
+  },
+  "varuint-bitcoin-1.1.2": {
+    "name": "varuint-bitcoin",
+    "entrypoint": "index",
+    "version": "1.1.2",
+    "repository": "bitcoinjs/varuint-bitcoin",
+    "commitHash": "a05cb2cd32be43f6cab477704d60574066e3bb48",
+    "files": [
+      "index.js",
+      "index.d.ts"
+    ],
+    "deps": [
+      "safe-buffer-5.2.0"
+    ]
+  },
+  "wif-2.0.6": {
+    "name": "wif",
+    "entrypoint": "index",
+    "version": "2.0.6",
+    "repository": "bitcoinjs/wif",
+    "commitHash": "0330fcaf4d4733a0669ddb7147be9808922cbb3a",
+    "files": [
+      "index.js"
+    ],
+    "deps": [
+      "bs58check-2.1.2"
+    ]
+  },
+  "groestl-hash-js-ef6a04f1c4d2f0448f0882b5f213ef7a0659baee": {
+    "name": "groestl-hash-js",
+    "entrypoint": "index",
+    "version": "ef6a04f1c4d2f0448f0882b5f213ef7a0659baee",
+    "repository": "Groestlcoin/groestl-hash-js",
+    "commitHash": "ef6a04f1c4d2f0448f0882b5f213ef7a0659baee",
+    "files": [
+      "index.js",
+      "lib/groestl.js",
+      "lib/helper.js",
+      "lib/op.js"
+    ],
+    "deps": [
+      "bs58check-2.1.2"
+    ]
   }
 }

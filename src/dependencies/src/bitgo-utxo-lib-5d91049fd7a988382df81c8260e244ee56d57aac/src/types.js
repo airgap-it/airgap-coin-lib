@@ -1,4 +1,4 @@
-var typeforce = require('typeforce')
+var typeforce = require('../../typeforce-1.18.0/index')
 
 var UINT31_MAX = Math.pow(2, 31) - 1
 function UInt31 (value) {

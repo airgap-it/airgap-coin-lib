@@ -1,10 +1,10 @@
 // OP_RETURN {aa21a9ed} {commitment}
 
-var Buffer = require('safe-buffer').Buffer
+var Buffer = require('../../../../safe-buffer-5.2.0/index').Buffer
 var bscript = require('../../script')
 var types = require('../../types')
-var typeforce = require('typeforce')
-var OPS = require('bitcoin-ops')
+var typeforce = require('../../../../typeforce-1.18.0/index')
+var OPS = require('../../../../bitcoin-ops-1.4.1/index.json')
 
 var HEADER = Buffer.from('aa21a9ed', 'hex')
 

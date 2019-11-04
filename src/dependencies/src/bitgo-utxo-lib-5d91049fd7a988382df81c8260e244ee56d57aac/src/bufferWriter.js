@@ -1,6 +1,6 @@
-var Buffer = require('safe-buffer').Buffer
+var Buffer = require('../../safe-buffer-5.2.0/index').Buffer
 var bufferutils = require('./bufferutils')
-var varuint = require('varuint-bitcoin')
+var varuint = require('../../varuint-bitcoin-1.1.2/index')
 
 function BufferWriter (bufferSize) {
   this.buffer = Buffer.allocUnsafe(bufferSize)

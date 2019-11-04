@@ -1,4 +1,4 @@
-var typeforce = require('typeforce')
+var typeforce = require('../../typeforce-1.18.0/index')
 
 var ECSignature = require('./ecsignature')
 var types = require('./types')

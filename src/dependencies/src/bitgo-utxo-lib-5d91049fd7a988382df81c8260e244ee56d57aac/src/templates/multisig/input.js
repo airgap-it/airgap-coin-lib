@@ -1,10 +1,10 @@
 // OP_0 [signatures ...]
 
-var Buffer = require('safe-buffer').Buffer
+var Buffer = require('../../../../safe-buffer-5.2.0/index').Buffer
 var bscript = require('../../script')
 var p2mso = require('./output')
-var typeforce = require('typeforce')
-var OPS = require('bitcoin-ops')
+var typeforce = require('../../../../typeforce-1.18.0/index')
+var OPS = require('../../../../bitcoin-ops-1.4.1/index.json')
 
 function partialSignature (value) {
   return value === OPS.OP_0 || bscript.isCanonicalSignature(value)

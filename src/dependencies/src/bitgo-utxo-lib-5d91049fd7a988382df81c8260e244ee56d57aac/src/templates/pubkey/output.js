@@ -1,8 +1,8 @@
 // {pubKey} OP_CHECKSIG
 
 var bscript = require('../../script')
-var typeforce = require('typeforce')
-var OPS = require('bitcoin-ops')
+var typeforce = require('../../../../typeforce-1.18.0/index')
+var OPS = require('../../../../bitcoin-ops-1.4.1/index.json')
 
 function check (script) {
   var chunks = bscript.decompile(script)

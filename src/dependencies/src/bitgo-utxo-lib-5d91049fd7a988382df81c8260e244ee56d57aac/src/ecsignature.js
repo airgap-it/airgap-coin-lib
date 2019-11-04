@@ -1,8 +1,8 @@
-var bip66 = require('bip66')
-var typeforce = require('typeforce')
+var bip66 = require('../../bip66-1.1.5/index')
+var typeforce = require('../../typeforce-1.18.0/index')
 var types = require('./types')
 
-var BigInteger = require('bigi')
+var BigInteger = require('../../bigi-1.4.2/lib/index')
 
 function ECSignature (r, s) {
   typeforce(types.tuple(types.BigInt, types.BigInt), arguments)

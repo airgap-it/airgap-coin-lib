@@ -162,10 +162,10 @@ export const validateDepsJson = async (depsFile: DepsFile) => {
             if (x) {
               log('green', `Ignored "${dependency}" because ${x.reason}`)
             } else {
-              isValid = isValid && verificationFailed(prop, `${dependency} not found`)
+              isValid = isValid && verificationFailed(prop, `${dependency}@${pkg.dependencies[dependency]} not found`)
             }
           } else {
-            isValid = isValid && verificationFailed(prop, `${dependency} not found`)
+            isValid = isValid && verificationFailed(prop, `${dependency}@${pkg.dependencies[dependency]} not found`)
           }
         } else {
           const packageDeps = depsFile[prop].deps
@@ -174,7 +174,7 @@ export const validateDepsJson = async (depsFile: DepsFile) => {
           } else {
             const keyVersion = key.substr(key.lastIndexOf('-') + 1) // TODO: Handle multiple versions
             const isSatisfied = semver.satisfies(keyVersion, pkg.dependencies[dependency])
-            if (!isSatisfied) {
+            if (!isSatisfied && pkg.dependencies[dependency].length < 20) {
               console.log('FAIL', keyVersion, pkg.dependencies[dependency])
               isValid = isValid && verificationFailed(dependency, `version is not satisfied`)
             }

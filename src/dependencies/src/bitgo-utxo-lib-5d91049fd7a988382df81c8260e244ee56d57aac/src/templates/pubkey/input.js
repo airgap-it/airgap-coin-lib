@@ -1,7 +1,7 @@
 // {signature}
 
 var bscript = require('../../script')
-var typeforce = require('typeforce')
+var typeforce = require('../../../../typeforce-1.18.0/index')
 
 function check (script) {
   var chunks = bscript.decompile(script)

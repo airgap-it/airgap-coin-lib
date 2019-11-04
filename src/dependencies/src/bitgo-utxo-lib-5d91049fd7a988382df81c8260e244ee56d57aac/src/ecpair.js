@@ -1,15 +1,15 @@
 var baddress = require('./address')
 var bcrypto = require('./crypto')
 var ecdsa = require('./ecdsa')
-var randomBytes = require('randombytes')
-var typeforce = require('typeforce')
+var randomBytes = require('../../randombytes-2.1.0/browser')
+var typeforce = require('../../typeforce-1.18.0/index')
 var types = require('./types')
-var wif = require('wif')
+var wif = require('../../wif-2.0.6/index')
 
 var NETWORKS = require('./networks')
-var BigInteger = require('bigi')
+var BigInteger = require('../../bigi-1.4.2/lib/index')
 
-var ecurve = require('ecurve')
+var ecurve = require('../../ecurve-1.0.6/lib/index')
 var secp256k1 = ecdsa.__curve
 
 var fastcurve = require('./fastcurve')

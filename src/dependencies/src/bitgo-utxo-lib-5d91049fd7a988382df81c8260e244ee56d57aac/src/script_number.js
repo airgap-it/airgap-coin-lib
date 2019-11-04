@@ -1,4 +1,4 @@
-var Buffer = require('safe-buffer').Buffer
+var Buffer = require('../../safe-buffer-5.2.0/index').Buffer
 
 function decode (buffer, maxLength, minimal) {
   maxLength = maxLength || 4

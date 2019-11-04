@@ -1,8 +1,8 @@
 // <scriptSig> {serialized scriptPubKey script}
 
-var Buffer = require('safe-buffer').Buffer
+var Buffer = require('../../../../safe-buffer-5.2.0/index').Buffer
 var bscript = require('../../script')
-var typeforce = require('typeforce')
+var typeforce = require('../../../../typeforce-1.18.0/index')
 
 var p2ms = require('../multisig/')
 var p2pk = require('../pubkey/')

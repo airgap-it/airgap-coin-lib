@@ -1,12 +1,12 @@
-var Buffer = require('safe-buffer').Buffer
-var bip66 = require('bip66')
-var pushdata = require('pushdata-bitcoin')
-var typeforce = require('typeforce')
+var Buffer = require('../../safe-buffer-5.2.0/index').Buffer
+var bip66 = require('../../bip66-1.1.5/index')
+var pushdata = require('../../pushdata-bitcoin-1.0.1/index')
+var typeforce = require('../../typeforce-1.18.0/index')
 var types = require('./types')
 var scriptNumber = require('./script_number')
 
-var OPS = require('bitcoin-ops')
-var REVERSE_OPS = require('bitcoin-ops/map')
+var OPS = require('../../bitcoin-ops-1.4.1/index.json')
+var REVERSE_OPS = require('../../bitcoin-ops-1.4.1/map')
 var OP_INT_BASE = OPS.OP_RESERVED // OP_1 - 1
 
 function isOPInt (value) {

@@ -1,5 +1,5 @@
 // Coins supported by bitgo-bitcoinjs-lib
-const typeforce = require('typeforce')
+const typeforce = require('../../typeforce-1.18.0/index')
 
 const coins = {
   BCH: 'bch',

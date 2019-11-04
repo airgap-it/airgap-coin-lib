@@ -1,12 +1,12 @@
-var Buffer = require('safe-buffer').Buffer
-var bech32 = require('bech32')
-var bs58check = require('bs58check')
+var Buffer = require('../../safe-buffer-5.2.0/index').Buffer
+var bech32 = require('../../bech32-0.0.3/index')
+var bs58check = require('../../bs58check-2.1.2/index')
 var bscript = require('./script')
 var btemplates = require('./templates')
 var networks = require('./networks')
-var typeforce = require('typeforce')
+var typeforce = require('../../typeforce-1.18.0/index')
 var types = require('./types')
-var bs58checkBase = require('bs58check/base')
+var bs58checkBase = require('../../bs58check-2.1.2/base')
 
 function fromBase58Check (address, network) {
   network = network || networks.bitcoin

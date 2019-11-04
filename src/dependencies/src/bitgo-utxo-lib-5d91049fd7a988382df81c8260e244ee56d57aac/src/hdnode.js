@@ -1,18 +1,18 @@
-var Buffer = require('safe-buffer').Buffer
-var base58check = require('bs58check')
+var Buffer = require('../../safe-buffer-5.2.0/index').Buffer
+var base58check = require('../../bs58check-2.1.2/index')
 var bcrypto = require('./crypto')
-var createHmac = require('create-hmac')
-var typeforce = require('typeforce')
+var createHmac = require('../../create-hmac-1.1.4/browser')
+var typeforce = require('../../typeforce-1.18.0/index')
 var types = require('./types')
 var NETWORKS = require('./networks')
 
-var BigInteger = require('bigi')
+var BigInteger = require('../../bigi-1.4.2/lib/index')
 var ECPair = require('./ecpair')
 
-var ecurve = require('ecurve')
+var ecurve = require('../../ecurve-1.0.6/lib/index')
 var curve = ecurve.getCurveByName('secp256k1')
 
-var bs58checkBase = require('bs58check/base')
+var bs58checkBase = require('../../bs58check-2.1.2/base')
 
 var fastcurve = require('./fastcurve')
 

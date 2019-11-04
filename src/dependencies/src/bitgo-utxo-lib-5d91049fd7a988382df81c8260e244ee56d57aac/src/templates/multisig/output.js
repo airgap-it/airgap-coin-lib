@@ -2,8 +2,8 @@
 
 var bscript = require('../../script')
 var types = require('../../types')
-var typeforce = require('typeforce')
-var OPS = require('bitcoin-ops')
+var typeforce = require('../../../../typeforce-1.18.0/index')
+var OPS = require('../../../../bitcoin-ops-1.4.1/index.json')
 var OP_INT_BASE = OPS.OP_RESERVED // OP_1 - 1
 
 function check (script, allowIncomplete) {
