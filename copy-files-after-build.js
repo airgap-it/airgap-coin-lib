@@ -38,100 +38,47 @@ var _this = this;
 exports.__esModule = true;
 var fs_1 = require("fs");
 var path_1 = require("path");
-var findPackageJsonOnLevel = function (base) { return __awaiter(_this, void 0, void 0, function () {
-    var packageJsons, files, _i, files_1, file, path, isDirectory, _a, _b, _c, fileContent;
+var findJsonOnLevel = function (base) { return __awaiter(_this, void 0, void 0, function () {
+    var packageJsons, files, _i, files_1, file, path, isDirectory, _a, _b, _c;
     return __generator(this, function (_d) {
         switch (_d.label) {
             case 0:
                 packageJsons = [];
-                return [4 /*yield*/, fs_1.promises.readdir(base)];
-            case 1:
-                files = _d.sent();
+                files = fs_1.readdirSync(base);
                 _i = 0, files_1 = files;
-                _d.label = 2;
-            case 2:
-                if (!(_i < files_1.length)) return [3 /*break*/, 9];
+                _d.label = 1;
+            case 1:
+                if (!(_i < files_1.length)) return [3 /*break*/, 5];
                 file = files_1[_i];
                 path = base + "/" + file;
-                return [4 /*yield*/, fs_1.promises.lstat(path)];
-            case 3:
-                isDirectory = (_d.sent()).isDirectory();
-                if (!isDirectory) return [3 /*break*/, 5];
+                isDirectory = (fs_1.lstatSync(path)).isDirectory();
+                if (!isDirectory) return [3 /*break*/, 3];
                 _b = (_a = packageJsons.push).apply;
                 _c = [packageJsons];
-                return [4 /*yield*/, findPackageJsonOnLevel(path)];
-            case 4:
+                return [4 /*yield*/, findJsonOnLevel(path)];
+            case 2:
                 _b.apply(_a, _c.concat([_d.sent()]));
-                return [3 /*break*/, 8];
-            case 5:
-                if (!(file === 'package.json')) return [3 /*break*/, 8];
-                packageJsons.push(path);
-                return [4 /*yield*/, fs_1.promises.readFile(path)];
-            case 6:
-                fileContent = _d.sent();
-                return [4 /*yield*/, fs_1.promises.writeFile(path.replace('./src', './dist'), fileContent)];
-            case 7:
-                _d.sent();
-                _d.label = 8;
-            case 8:
+                return [3 /*break*/, 4];
+            case 3:
+                if (file.endsWith('json')) {
+                    packageJsons.push(path);
+                    try {
+                        fs_1.mkdirSync(path_1.dirname(path), { recursive: true });
+                    }
+                    catch (error) {
+                        if (error.code === 'EEXIST') { }
+                        else {
+                            throw error;
+                        }
+                    }
+                    fs_1.copyFileSync(path, path.replace('./src', './dist'));
+                }
+                _d.label = 4;
+            case 4:
                 _i++;
-                return [3 /*break*/, 2];
-            case 9: return [2 /*return*/, packageJsons];
+                return [3 /*break*/, 1];
+            case 5: return [2 /*return*/, packageJsons];
         }
     });
 }); };
-findPackageJsonOnLevel('./src').then(function () { })["catch"](console.error);
-var copyFiles = function () {
-    var files = [
-        {
-            src: './src/dependencies/src/bip39-2.5.0/wordlists/chinese_simplified.json',
-            dest: './dist/dependencies/src/bip39-2.5.0/wordlists/chinese_simplified.json'
-        },
-        {
-            src: './src/dependencies/src/bip39-2.5.0/wordlists/chinese_traditional.json',
-            dest: './dist/dependencies/src/bip39-2.5.0/wordlists/chinese_traditional.json'
-        },
-        {
-            src: './src/dependencies/src/bip39-2.5.0/wordlists/english.json',
-            dest: './dist/dependencies/src/bip39-2.5.0/wordlists/english.json'
-        },
-        {
-            src: './src/dependencies/src/bip39-2.5.0/wordlists/french.json',
-            dest: './dist/dependencies/src/bip39-2.5.0/wordlists/french.json'
-        },
-        {
-            src: './src/dependencies/src/bip39-2.5.0/wordlists/italian.json',
-            dest: './dist/dependencies/src/bip39-2.5.0/wordlists/italian.json'
-        },
-        {
-            src: './src/dependencies/src/bip39-2.5.0/wordlists/japanese.json',
-            dest: './dist/dependencies/src/bip39-2.5.0/wordlists/japanese.json'
-        },
-        {
-            src: './src/dependencies/src/bip39-2.5.0/wordlists/korean.json',
-            dest: './dist/dependencies/src/bip39-2.5.0/wordlists/korean.json'
-        },
-        {
-            src: './src/dependencies/src/bip39-2.5.0/wordlists/spanish.json',
-            dest: './dist/dependencies/src/bip39-2.5.0/wordlists/spanish.json'
-        },
-        {
-            src: './src/dependencies/src/bitcoin-ops-1.4.1/index.json',
-            dest: './dist/dependencies/src/bitcoin-ops-1.4.1/index.json'
-        }
-    ];
-    for (var _i = 0, files_2 = files; _i < files_2.length; _i++) {
-        var file = files_2[_i];
-        try {
-            fs_1.mkdirSync(path_1.dirname(file.dest), { recursive: true });
-        }
-        catch (error) {
-            if (error.code === 'EEXIST') { }
-            else {
-                throw error;
-            }
-        }
-        fs_1.copyFileSync(file.src, file.dest);
-    }
-};
-copyFiles();
+findJsonOnLevel('./src/dependencies/src').then(function () { })["catch"](console.error);
