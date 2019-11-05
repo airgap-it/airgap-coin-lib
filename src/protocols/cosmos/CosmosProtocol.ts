@@ -267,19 +267,18 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
     )
   }
 
-  public async withdrawDelegationRewards(publicKey: string, validatorAddresses: string[], memo?: string): Promise<CosmosTransaction> {
-    const address = await this.getAddressFromPublicKey(publicKey)
+  public async withdrawDelegationRewards(delegatorAddress: string, validatorAdress: string, fee: BigNumber, memo?: string) {
     const nodeInfo = await this.nodeClient.fetchNodeInfo()
-    const account = await this.nodeClient.fetchAccount(address)
-    const messages = validatorAddresses.map(validatorAddress => new CosmosWithdrawDelegationRewardMessage(address, validatorAddress))
-
-    return new CosmosTransaction(
-      messages,
-      new CosmosFee([new CosmosCoin('uatom', this.feeDefaults.medium.shiftedBy(this.feeDecimals))], this.defaultGas),
-      memo !== undefined ? memo : '',
+    const account = await this.nodeClient.fetchAccount(delegatorAddress)
+    return this.nodeClient.withdrawDelegationRewards(
+      delegatorAddress,
+      validatorAdress,
       nodeInfo.network,
       account.value.account_number,
-      account.value.sequence
+      account.value.sequence,
+      this.defaultGas,
+      fee,
+      memo !== undefined ? memo : ''
     )
   }
 

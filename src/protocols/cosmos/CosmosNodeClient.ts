@@ -180,6 +180,47 @@ export class CosmosNodeClient {
     return response.data.hash
   }
 
+  public async withdrawDelegationRewards(
+    delegatorAddress: string,
+    validatorAdress: string,
+    chainID: string,
+    accountNumber: string,
+    sequence: string,
+    gas: BigNumber,
+    fee: BigNumber,
+    memo: string,
+    simulate: boolean = false
+  ): Promise<string> {
+    const body = {
+      base_req: {
+        from: delegatorAddress,
+        memo: memo,
+        chain_id: chainID,
+        account_number: accountNumber,
+        sequence: sequence,
+        gas: gas.toFixed(),
+        gas_adjustment: '1.2',
+        fees: [
+          {
+            denom: 'uatom',
+            amount: fee.toFixed()
+          }
+        ],
+        simulate: simulate
+      }
+    }
+    const response = await axios.post(
+      this.url(`/distribution/delegators/${delegatorAddress}/rewards/${validatorAdress}`),
+      JSON.stringify(body),
+      {
+        headers: {
+          'Content-type': 'application/json'
+        }
+      }
+    )
+    return response.data.hash
+  }
+
   private url(path: string): string {
     let result = `${this.baseURL}${path}`
     if (this.useCORSProxy) {
