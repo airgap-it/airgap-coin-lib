@@ -15,7 +15,7 @@ import { EthereumInfoClient } from './clients/info-clients/InfoClient'
 import { EthereumNodeClient } from './clients/node-clients/NodeClient'
 import { EthereumUtils } from './utils/utils'
 
-const EthereumTransaction = require('ethereumjs-tx')
+const EthereumTransaction = require('../../dependencies/src/ethereumjs-tx-1.3.7/index')
 
 export interface EthereumProtocolConfiguration<NodeClient extends EthereumNodeClient, InfoClient extends EthereumInfoClient> {
   chainID: number

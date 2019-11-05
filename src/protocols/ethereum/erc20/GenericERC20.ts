@@ -15,7 +15,7 @@ import { TrustWalletInfoClient } from '../clients/info-clients/InfoClient'
 import { AirGapNodeClient, EthereumRPCDataTransfer } from '../clients/node-clients/AirGapNodeClient'
 import { EthereumUtils } from '../utils/utils'
 
-const EthereumTransaction = require('ethereumjs-tx')
+const EthereumTransaction = require('../../../dependencies/src/ethereumjs-tx-1.3.7/index')
 
 export interface GenericERC20Configuration {
   symbol: string

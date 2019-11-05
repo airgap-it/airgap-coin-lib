@@ -515,6 +515,18 @@
       "ethereum-common-0.2.1",
       "ethereumjs-util-5.2.0"
     ],
+    "replaceInFiles": [
+      {
+        "filename": "index.js",
+        "replacements": [
+          {
+            "from": "const fees = require('ethereum-common/params.json')",
+            "to": "const fees = require('../ethereum-common-0.2.1/params.json')",
+            "expectedReplacements": 1
+          }
+        ]
+      }
+    ],
     "TODO": "Check if es/index.js is needed or not."
   },
   "ethereumjs-util-5.2.0": {
@@ -533,7 +545,7 @@
       "keccak-1.0.2",
       "rlp-2.2.3",
       "safe-buffer-5.2.0",
-      "secp256k1-3.0.1"
+      "secp256k1-3.7.1"
     ]
   },
   "ethjs-util-0.1.4": {
@@ -967,6 +979,174 @@
       "params.json",
       "genesisState.json",
       "bootstrapNodes.json"
+    ]
+  },
+  "secp256k1-3.7.1": {
+    "name": "secp256k1",
+    "entrypoint": "elliptic",
+    "version": "3.7.1",
+    "repository": "cryptocoinjs/secp256k1-node",
+    "commitHash": "2f1c956d71c39e5667e6285a6dafc15ce28e86f0",
+    "files": [
+      "elliptic.js",
+      "lib/index.js",
+      "lib/assert.js",
+      "lib/der.js",
+      "lib/messages.json",
+      "lib/elliptic/index.js"
+    ],
+    "deps": [
+      "bip66-1.1.5",
+      "bn.js-4.11.8",
+      "create-hash-1.2.0",
+      "drbg.js-1.0.1",
+      "elliptic-6.5.1",
+      "nan-2.14.0",
+      "safe-buffer-5.2.0"
+    ],
+    "ignoredDeps": [
+      {
+        "module": "bindings",
+        "reason": "using pure js implementation, node bindings not necessary."
+      }
+    ]
+  },
+  "drbg.js-1.0.1": {
+    "name": "drbg.js",
+    "entrypoint": "index",
+    "version": "1.0.1",
+    "repository": "cryptocoinjs/drbg.js",
+    "commitHash": "4dc077f2c87bccaf0092f949d6c8cbfdc33e658d",
+    "files": [
+      "index.js",
+      "hash.js",
+      "hmac.js",
+      "lib/hash-info.json",
+      "lib/util.js"
+    ],
+    "deps": [
+      "create-hash-1.2.0",
+      "create-hmac-1.1.4"
+    ],
+    "ignoredDeps": [
+      {
+        "module": "browserify-aes",
+        "reason": "File that uses this package is not included."
+      }
+    ]
+  },
+  "elliptic-6.5.1": {
+    "name": "elliptic",
+    "entrypoint": "lib/elliptic",
+    "version": "6.5.1",
+    "repository": "indutny/elliptic",
+    "commitHash": "71e4e8e2f5b8f0bdbfbe106c72cc9fbc746d3d60",
+    "files": [
+      "package.json",
+      "lib/elliptic.js",
+      "lib/elliptic/curves.js",
+      "lib/elliptic/utils.js",
+      "lib/elliptic/curve/base.js",
+      "lib/elliptic/curve/edwards.js",
+      "lib/elliptic/curve/index.js",
+      "lib/elliptic/curve/mont.js",
+      "lib/elliptic/curve/short.js",
+      "lib/elliptic/ec/index.js",
+      "lib/elliptic/ec/key.js",
+      "lib/elliptic/ec/signature.js",
+      "lib/elliptic/eddsa/index.js",
+      "lib/elliptic/eddsa/key.js",
+      "lib/elliptic/eddsa/signature.js"
+    ],
+    "deps": [
+      "bn.js-4.11.8",
+      "brorand-1.1.0",
+      "hash.js-1.1.7",
+      "hmac-drbg-1.0.1",
+      "inherits-2.0.4",
+      "minimalistic-assert-1.0.1",
+      "minimalistic-crypto-utils-1.0.1"
+    ]
+  },
+  "brorand-1.1.0": {
+    "name": "brorand",
+    "entrypoint": "index",
+    "version": "1.1.0",
+    "repository": "indutny/brorand",
+    "commitHash": "ddc4f9344287769d7e2c2ea987d26bbeec5456b4",
+    "files": [
+      "index.js"
+    ]
+  },
+  "hash.js-1.1.7": {
+    "name": "hash.js",
+    "entrypoint": "lib/hash",
+    "version": "1.1.7",
+    "repository": "indutny/hash.js",
+    "commitHash": "fcd35edcc4e30145be4b7a737477ad54e83afc25",
+    "files": [
+      "lib/hash.js",
+      "lib/hash.d.ts",
+      "lib/hash/common.js",
+      "lib/hash/hmac.js",
+      "lib/hash/ripemd.js",
+      "lib/hash/sha.js",
+      "lib/hash/utils.js",
+      "lib/hash/sha/1.js",
+      "lib/hash/sha/224.js",
+      "lib/hash/sha/256.js",
+      "lib/hash/sha/384.js",
+      "lib/hash/sha/512.js",
+      "lib/hash/sha/common.js"
+    ],
+    "deps": [
+      "inherits-2.0.4",
+      "minimalistic-assert-1.0.1"
+    ]
+  },
+  "minimalistic-assert-1.0.1": {
+    "name": "minimalistic-assert",
+    "entrypoint": "index",
+    "version": "1.0.1",
+    "repository": "calvinmetcalf/minimalistic-assert",
+    "commitHash": "33113391ad64bea7a3398074a71d0569d4ae038d",
+    "files": [
+      "index.js"
+    ]
+  },
+  "hmac-drbg-1.0.1": {
+    "name": "hmac-drbg",
+    "entrypoint": "lib/hmac-drbg",
+    "version": "1.0.1",
+    "repository": "indutny/hmac-drbg",
+    "commitHash": "2592375270a7a689d3752a6ba7235a47eb234d15",
+    "files": [
+      "lib/hmac-drbg.js"
+    ],
+    "deps": [
+      "hash.js-1.1.7",
+      "minimalistic-assert-1.0.1",
+      "minimalistic-crypto-utils-1.0.1"
+    ]
+  },
+  "minimalistic-crypto-utils-1.0.1": {
+    "name": "minimalistic-crypto-utils",
+    "entrypoint": "lib/utils",
+    "version": "1.0.1",
+    "repository": "indutny/minimalistic-crypto-utils",
+    "commitHash": "f4f2b13a3ac78d8ee6991994bae89ec93304d225",
+    "files": [
+      "lib/utils.js"
+    ]
+  },
+  "nan-2.14.0": {
+    "name": "nan",
+    "entrypoint": "include_dirs",
+    "version": "2.14.0",
+    "repository": "nodejs/nan",
+    "commitHash": "1dcc61bd06d84e389bfd5311b2b1492a14c74201",
+    "files": [
+      "include_dirs.js"
     ]
   }
 }
