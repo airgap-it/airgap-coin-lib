@@ -1,6 +1,6 @@
 'use strict'
 const ethUtil = require('../ethereumjs-util-5.2.0/index')
-const fees = require('ethereum-common/params.json')
+const fees = require('../ethereum-common-0.2.1/params.json')
 const BN = ethUtil.BN
 
 // secp256k1n/2

@@ -1086,7 +1086,6 @@
     "commitHash": "fcd35edcc4e30145be4b7a737477ad54e83afc25",
     "files": [
       "lib/hash.js",
-      "lib/hash.d.ts",
       "lib/hash/common.js",
       "lib/hash/hmac.js",
       "lib/hash/ripemd.js",
