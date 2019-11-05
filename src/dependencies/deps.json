@@ -1077,6 +1077,18 @@
       "inherits-2.0.4",
       "minimalistic-assert-1.0.1",
       "minimalistic-crypto-utils-1.0.1"
+    ],
+    "replaceInFiles": [
+      {
+        "filename": "package.json",
+        "replacements": [
+          {
+            "from": "\"files\": [\n        \"lib\"\n    ],\n",
+            "to": "",
+            "expectedReplacements": 1
+          }
+        ]
+      }
     ]
   },
   "brorand-1.1.0": {

@@ -3,10 +3,7 @@
     "version": "6.5.1",
     "description": "EC cryptography",
     "main": "lib/elliptic.js",
-    "files": [
-        "lib"
-    ],
-    "scripts": {
+        "scripts": {
         "jscs": "jscs benchmarks/*.js lib/*.js lib/**/*.js lib/**/**/*.js test/index.js",
         "jshint": "jscs benchmarks/*.js lib/*.js lib/**/*.js lib/**/**/*.js test/index.js",
         "lint": "npm run jscs && npm run jshint",
