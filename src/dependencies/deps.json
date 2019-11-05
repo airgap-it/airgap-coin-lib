@@ -512,7 +512,7 @@
       "index.js"
     ],
     "deps": [
-      "ethereum-common-0.0.18",
+      "ethereum-common-0.2.1",
       "ethereumjs-util-5.2.0"
     ],
     "TODO": "Check if es/index.js is needed or not."
@@ -954,6 +954,19 @@
     ],
     "deps": [
       "bs58check-2.1.2"
+    ]
+  },
+  "ethereum-common-0.2.1": {
+    "name": "ethereum-common",
+    "entrypoint": "index",
+    "version": "0.2.1",
+    "repository": "ethereumjs/common",
+    "commitHash": "f1f0a99f6818ab07b6e7704d4defc1b067619552",
+    "files": [
+      "index.js",
+      "params.json",
+      "genesisState.json",
+      "bootstrapNodes.json"
     ]
   }
 }
