@@ -38,30 +38,30 @@ var _this = this;
 exports.__esModule = true;
 var fs_1 = require("fs");
 var path_1 = require("path");
-var findJsonOnLevel = function (base) { return __awaiter(_this, void 0, void 0, function () {
-    var packageJsons, files, _i, files_1, file, path, isDirectory, _a, _b, _c;
+var findFilesOnLevel = function (base) { return __awaiter(_this, void 0, void 0, function () {
+    var files, filesInFolder, _i, filesInFolder_1, file, path, isDirectory, _a, _b, _c;
     return __generator(this, function (_d) {
         switch (_d.label) {
             case 0:
-                packageJsons = [];
-                files = fs_1.readdirSync(base);
-                _i = 0, files_1 = files;
+                files = [];
+                filesInFolder = fs_1.readdirSync(base);
+                _i = 0, filesInFolder_1 = filesInFolder;
                 _d.label = 1;
             case 1:
-                if (!(_i < files_1.length)) return [3 /*break*/, 5];
-                file = files_1[_i];
+                if (!(_i < filesInFolder_1.length)) return [3 /*break*/, 5];
+                file = filesInFolder_1[_i];
                 path = base + "/" + file;
                 isDirectory = (fs_1.lstatSync(path)).isDirectory();
                 if (!isDirectory) return [3 /*break*/, 3];
-                _b = (_a = packageJsons.push).apply;
-                _c = [packageJsons];
-                return [4 /*yield*/, findJsonOnLevel(path)];
+                _b = (_a = files.push).apply;
+                _c = [files];
+                return [4 /*yield*/, findFilesOnLevel(path)];
             case 2:
                 _b.apply(_a, _c.concat([_d.sent()]));
                 return [3 /*break*/, 4];
             case 3:
-                if (file.endsWith('json')) {
-                    packageJsons.push(path);
+                if (file.endsWith('json') || file.endsWith('js')) {
+                    files.push(path);
                     path_1.dirname(path)
                         .split(path_1.sep)
                         .reduce(function (prevPath, folder) {
@@ -81,8 +81,8 @@ var findJsonOnLevel = function (base) { return __awaiter(_this, void 0, void 0, 
             case 4:
                 _i++;
                 return [3 /*break*/, 1];
-            case 5: return [2 /*return*/, packageJsons];
+            case 5: return [2 /*return*/, files];
         }
     });
 }); };
-findJsonOnLevel('./src/dependencies/src').then(function () { })["catch"](console.error);
+findFilesOnLevel('./src/dependencies/src').then(function () { })["catch"](console.error);

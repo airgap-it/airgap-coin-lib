@@ -1,16 +1,16 @@
 import { mkdirSync, copyFileSync, readdirSync, lstatSync, existsSync } from 'fs'
 import { dirname, join, sep } from 'path'
 
-const findJsonOnLevel = async (base: string) => {
-	const packageJsons: string[] = []
-	const files = readdirSync(base)
-	for (const file of files) {
+const findFilesOnLevel = async (base: string) => {
+	const files: string[] = []
+	const filesInFolder = readdirSync(base)
+	for (const file of filesInFolder) {
 		const path = `${base}/${file}`
 		const isDirectory = (lstatSync(path)).isDirectory()
 		if (isDirectory) {
-			packageJsons.push(...await findJsonOnLevel(path))
-		} else if ((file as any).endsWith('json')) {
-			packageJsons.push(path)
+			files.push(...await findFilesOnLevel(path))
+		} else if ((file as any).endsWith('json') || (file as any).endsWith('js')) {
+			files.push(path)
 			dirname(path)
 				.split(sep)
 				.reduce((prevPath, folder) => {
@@ -31,8 +31,8 @@ const findJsonOnLevel = async (base: string) => {
 			copyFileSync(path, path.replace('./src', './dist'))
 		}
 	}
-	return packageJsons
+	return files
 }
 
-findJsonOnLevel('./src/dependencies/src').then(() => {}).catch(console.error)
+findFilesOnLevel('./src/dependencies/src').then(() => {}).catch(console.error)
 
