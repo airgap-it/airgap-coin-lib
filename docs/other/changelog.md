@@ -1,6 +1,14 @@
 ### 0.6.0 (2019-10-23)
 
-- multi transaction support
+### Features
+
+- **all**: multi transaction support
+
+### 0.5.14 (2019-10-25)
+
+### Features
+
+- **xtz**: fixed reward calculation for 005 cycles
 
 ### 0.5.13 (2019-10-23)
 
