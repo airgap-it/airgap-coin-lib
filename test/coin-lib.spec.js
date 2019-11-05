@@ -1,4 +1,4 @@
-const BIP39 = require('../../airgap-coin-lib/src/dependencies/src/bip39-2.5.0/index')
+const BIP39 = require('../dist/dependencies/src/bip39-2.5.0/index')
 const assert = require('assert')
 const networks = require('../dist/networks')
 
