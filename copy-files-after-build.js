@@ -62,15 +62,18 @@ var findJsonOnLevel = function (base) { return __awaiter(_this, void 0, void 0, 
             case 3:
                 if (file.endsWith('json')) {
                     packageJsons.push(path);
-                    try {
-                        fs_1.mkdirSync(path_1.dirname(path), { recursive: true });
-                    }
-                    catch (error) {
-                        if (error.code === 'EEXIST') { }
-                        else {
-                            throw error;
+                    path_1.dirname(path)
+                        .split(path_1.sep)
+                        .reduce(function (prevPath, folder) {
+                        var currentPath = path_1.join(prevPath, folder, path_1.sep);
+                        if (currentPath === 'src/') {
+                            return 'dist/';
                         }
-                    }
+                        if (!fs_1.existsSync(currentPath)) {
+                            fs_1.mkdirSync(currentPath);
+                        }
+                        return currentPath;
+                    }, '');
                     fs_1.copyFileSync(path, path.replace('./src', './dist'));
                 }
                 _d.label = 4;

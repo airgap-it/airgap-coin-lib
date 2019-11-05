@@ -1,5 +1,5 @@
-import { mkdirSync, copyFileSync, readdirSync, lstatSync } from 'fs'
-import { dirname } from 'path'
+import { mkdirSync, copyFileSync, readdirSync, lstatSync, existsSync } from 'fs'
+import { dirname, join, sep } from 'path'
 
 const findJsonOnLevel = async (base: string) => {
 	const packageJsons: string[] = []
@@ -11,13 +11,21 @@ const findJsonOnLevel = async (base: string) => {
 			packageJsons.push(...await findJsonOnLevel(path))
 		} else if ((file as any).endsWith('json')) {
 			packageJsons.push(path)
-			try {
-				mkdirSync(dirname(path), { recursive: true })
-			} catch(error) {
-				if (error.code === 'EEXIST') {} else {
-					throw error
-				}
-			}
+			dirname(path)
+				.split(sep)
+				.reduce((prevPath, folder) => {
+					const currentPath = join(prevPath, folder, sep);
+					if (currentPath === 'src/') {
+						return 'dist/'
+					}
+
+					if (!existsSync(currentPath)){
+						mkdirSync(currentPath);
+					}
+					
+					return currentPath;
+				}, '');
+
 			copyFileSync(path, path.replace('./src', './dist'))
 		}
 	}
