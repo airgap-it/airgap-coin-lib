@@ -267,7 +267,12 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
     )
   }
 
-  public async withdrawDelegationRewards(delegatorAddress: string, validatorAdress: string, fee: BigNumber, memo?: string) {
+  public async withdrawDelegationRewards(
+    delegatorAddress: string,
+    validatorAdress: string,
+    fee: BigNumber,
+    memo?: string
+  ): Promise<string> {
     const nodeInfo = await this.nodeClient.fetchNodeInfo()
     const account = await this.nodeClient.fetchAccount(delegatorAddress)
     return this.nodeClient.withdrawDelegationRewards(
