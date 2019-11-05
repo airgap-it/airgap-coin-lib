@@ -16,7 +16,7 @@ var ECPair = require('./ecpair')
 var ECSignature = require('./ecsignature')
 var Transaction = require('./transaction')
 
-var debug = require('../../debug-3.1.0/src/index')('bitgo:utxolib:txbuilder')
+var debug = require('../../debug-3.1.0/src/browser')('bitgo:utxolib:txbuilder')
 
 function supportedType (type) {
   return SIGNABLE.indexOf(type) !== -1

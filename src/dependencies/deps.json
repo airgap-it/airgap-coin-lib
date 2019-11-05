@@ -218,15 +218,13 @@
   },
   "debug-3.1.0": {
     "name": "debug",
-    "entrypoint": "src/index",
+    "entrypoint": "src/browser",
     "version": "3.1.0",
     "repository": "visionmedia/debug",
     "commitHash": "f073e056f33efdd5b311381eb6bca2bc850745bf",
     "files": [
       "src/browser.js",
-      "src/debug.js",
-      "src/index.js",
-      "src/node.js"
+      "src/debug.js"
     ],
     "deps": [
       "ms-2.1.2"
@@ -588,12 +586,11 @@
   },
   "keccak-1.0.2": {
     "name": "keccak",
-    "entrypoint": "index",
+    "entrypoint": "js",
     "version": "1.0.2",
     "repository": "cryptocoinjs/keccak",
     "commitHash": "e94fbe0af3879d0d9bca5435f35832dcb93137a6",
     "files": [
-      "index.js",
       "js.js",
       "lib/keccak.js",
       "lib/keccak-state.js",
@@ -740,7 +737,8 @@
       "typeforce-1.18.0",
       "varuint-bitcoin-1.1.2",
       "wif-2.0.6",
-      "groestl-hash-js-ef6a04f1c4d2f0448f0882b5f213ef7a0659baee"
+      "groestl-hash-js-ef6a04f1c4d2f0448f0882b5f213ef7a0659baee",
+      "secp256k1-3.7.1"
     ],
     "replaceInFiles": [
       {
@@ -1068,7 +1066,8 @@
       "lib/elliptic/ec/signature.js",
       "lib/elliptic/eddsa/index.js",
       "lib/elliptic/eddsa/key.js",
-      "lib/elliptic/eddsa/signature.js"
+      "lib/elliptic/eddsa/signature.js",
+      "lib/elliptic/precomputed/secp256k1.js"
     ],
     "deps": [
       "bn.js-4.11.8",

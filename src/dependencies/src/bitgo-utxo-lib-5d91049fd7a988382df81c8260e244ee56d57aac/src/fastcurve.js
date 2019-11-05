@@ -9,7 +9,7 @@ try {
   // secp256k1 is an optional native module used for accelerating
   // low-level elliptic curve operations. It's nice to have, but
   // we can live without it too
-  secp256k1 = require('secp256k1')
+  secp256k1 = require('../../secp256k1-3.7.1/elliptic')
   available = true
 } catch (e) {
   // secp256k1 is not available, this is alright

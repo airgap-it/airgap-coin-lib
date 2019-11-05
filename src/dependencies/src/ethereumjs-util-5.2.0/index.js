@@ -1,4 +1,4 @@
-const createKeccakHash = require('../keccak-1.0.2/index')
+const createKeccakHash = require('../keccak-1.0.2/js')
 const secp256k1 = require('../secp256k1-3.7.1/elliptic')
 const assert = require('assert')
 const rlp = require('../rlp-2.2.3/index')
