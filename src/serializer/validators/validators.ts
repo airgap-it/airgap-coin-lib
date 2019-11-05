@@ -74,13 +74,13 @@ validators.isHexStringWithPrefix = value => {
 
 validators.isPublicKey = value => {
   if (typeof value !== 'string') {
-    return 'is not a valid public key'
+    return 'is not a valid public key: should be of type string'
   }
   if (value.length !== 64) {
-    return 'is not a valid public key'
+    return 'is not a valid public key: wrong length'
   }
 
-  return /[0-9A-F]/gi.test(value) ? null : 'is not a valid public key'
+  return /[0-9A-F]/gi.test(value) ? null : 'is not a valid public key: invalid characters'
 }
 // ETHEREUM
 

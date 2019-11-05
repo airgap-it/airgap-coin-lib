@@ -24,7 +24,6 @@ const signedTransactionConstraints = {
   accountIdentifier: {
     presence: { allowEmpty: false },
     type: 'String',
-    isPublicKey: true
   }
 }
 
