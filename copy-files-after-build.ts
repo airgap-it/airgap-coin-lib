@@ -26,6 +26,8 @@ const findJsonOnLevel = async (base: string) => {
 					return currentPath;
 				}, '');
 
+			console.log('Copying file', path.replace('./src', './dist'))
+
 			copyFileSync(path, path.replace('./src', './dist'))
 		}
 	}

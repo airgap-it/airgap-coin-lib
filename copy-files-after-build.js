@@ -74,6 +74,7 @@ var findJsonOnLevel = function (base) { return __awaiter(_this, void 0, void 0, 
                         }
                         return currentPath;
                     }, '');
+                    console.log('Copying file', path.replace('./src', './dist'));
                     fs_1.copyFileSync(path, path.replace('./src', './dist'));
                 }
                 _d.label = 4;
