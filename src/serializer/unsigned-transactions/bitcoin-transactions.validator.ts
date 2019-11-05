@@ -31,8 +31,7 @@ const signedTransactionConstraints = {
   },
   accountIdentifier: {
     type: 'String',
-    presence: { allowEmpty: false },
-    isBitcoinAccount: true
+    presence: { allowEmpty: false }
   },
   transaction: {
     isValidBitcoinTxString: true,

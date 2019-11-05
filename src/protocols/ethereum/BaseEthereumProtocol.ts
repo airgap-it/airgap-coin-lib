@@ -163,7 +163,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
 
   public async signWithPrivateKey(privateKey: Buffer, transaction: RawEthereumTransaction): Promise<IAirGapSignedTransaction> {
     if (!transaction.value.startsWith('0x')) {
-      transaction.value = EthereumUtils.toHex(parseInt(transaction.value, 16))
+      transaction.value = EthereumUtils.toHex(parseInt(transaction.value, 10))
     }
     const tx = new EthereumTransaction(transaction)
     tx.sign(privateKey)

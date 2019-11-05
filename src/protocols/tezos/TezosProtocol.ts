@@ -89,7 +89,6 @@ export interface TezosRevealOperation extends TezosOperation {
   kind: TezosOperationType.REVEAL
 }
 
-
 export interface TezosVotingInfo {
   pkh: string
   rolls: number
@@ -169,7 +168,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   public addressValidationPattern: string = '^(tz1|KT1)[1-9A-Za-z]{33}$'
   public addressPlaceholder: string = 'tz1...'
 
-  public blockExplorer: string = 'https://tezblock.io'
+  public blockExplorer = 'https://tezblock.io'
 
   protected readonly transactionFee: BigNumber = new BigNumber('1400')
   protected readonly originationSize: BigNumber = new BigNumber('257')
