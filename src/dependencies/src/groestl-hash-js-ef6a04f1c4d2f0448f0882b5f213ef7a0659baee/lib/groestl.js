@@ -1076,7 +1076,7 @@ var B64 = function(n, x) {
   }
   else {
     var bitsOff32 = 32 - bits,
-      toMoveDown = this.hi << bitsOff32 >>> bitsOff32;
+      toMoveDown = undefined << bitsOff32 >>> bitsOff32;
     return (x.lo >>> bits | (toMoveDown << bitsOff32)) & 0xFF;
   }
 }

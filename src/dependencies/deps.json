@@ -966,6 +966,18 @@
     ],
     "deps": [
       "bs58check-2.1.2"
+    ],
+    "replaceInFiles": [
+      {
+        "filename": "lib/groestl.js",
+        "replacements": [
+          {
+            "from": "toMoveDown = this.hi << bitsOff32 >>> bitsOff32;",
+            "to": "toMoveDown = undefined << bitsOff32 >>> bitsOff32;",
+            "expectedReplacements": 1
+          }
+        ]
+      }
     ]
   },
   "ethereum-common-0.2.1": {
