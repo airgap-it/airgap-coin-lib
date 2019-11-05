@@ -53,6 +53,10 @@ const copyFiles = () => {
 		{
 			src: './src/dependencies/src/bip39-2.5.0/wordlists/spanish.json',
 			dest: './dist/dependencies/src/bip39-2.5.0/wordlists/spanish.json'
+		},
+		{
+			src: './src/dependencies/src/bitcoin-ops-1.4.1/index.json',
+			dest: './dist/dependencies/src/bitcoin-ops-1.4.1/index.json'
 		}
 	]
 	for (let file of files) {

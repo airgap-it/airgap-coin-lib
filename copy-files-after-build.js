@@ -114,6 +114,10 @@ var copyFiles = function () {
         {
             src: './src/dependencies/src/bip39-2.5.0/wordlists/spanish.json',
             dest: './dist/dependencies/src/bip39-2.5.0/wordlists/spanish.json'
+        },
+        {
+            src: './src/dependencies/src/bitcoin-ops-1.4.1/index.json',
+            dest: './dist/dependencies/src/bitcoin-ops-1.4.1/index.json'
         }
     ];
     for (var _i = 0, files_2 = files; _i < files_2.length; _i++) {
