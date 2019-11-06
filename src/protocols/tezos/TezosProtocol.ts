@@ -335,7 +335,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     const watermarkedForgedOperationBytes: Buffer = Buffer.from(watermarkedForgedOperationBytesHex, 'hex')
     const hashedWatermarkedOpBytes: Buffer = sodium.crypto_generichash(32, watermarkedForgedOperationBytes)
 
-    const opSignature: Uint8Array = nacl.sign.detached(hashedWatermarkedOpBytes, privateKey)
+    const opSignature = sodium.crypto_sign_detached(hashedWatermarkedOpBytes, privateKey)
     const signedOpBytes: Buffer = Buffer.concat([Buffer.from(transaction.binaryTransaction, 'hex'), Buffer.from(opSignature)])
 
     return signedOpBytes.toString('hex')

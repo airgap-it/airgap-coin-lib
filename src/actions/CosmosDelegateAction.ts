@@ -1,5 +1,5 @@
 import { CosmosProtocol } from '../protocols/cosmos/CosmosProtocol'
-import BigNumber from 'bignumber.js'
+import BigNumber from '../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { AirGapMarketWallet } from '../wallet/AirGapMarketWallet'
 import { IAirGapTransaction } from '../interfaces/IAirGapTransaction'
 import { Action } from './Action'

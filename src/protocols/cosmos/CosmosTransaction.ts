@@ -1,5 +1,5 @@
 import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
-import BigNumber from 'bignumber.js'
+import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 
 export interface JSONConvertible {
   toJSON(): any

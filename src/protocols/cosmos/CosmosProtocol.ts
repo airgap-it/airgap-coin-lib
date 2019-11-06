@@ -6,8 +6,8 @@ import { NonExtendedProtocol } from '../NonExtendedProtocol'
 import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 
 import { BIP32Interface, fromSeed } from 'bip32'
-import { mnemonicToSeed, validateMnemonic } from 'bip39'
-import { BigNumber } from 'bignumber.js'
+import { mnemonicToSeed, validateMnemonic } from '../../dependencies/src/bip39-2.5.0/index'
+import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { UnsignedCosmosTransaction } from '../../serializer/unsigned-transactions/cosmos-transactions.serializer'
 
 import RIPEMD160 = require('ripemd160')
