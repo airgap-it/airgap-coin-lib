@@ -3,6 +3,7 @@
 ### Features
 
 - **all**: multi transaction support
+- **cosmos**: add support for cosmos / atom
 
 ### 0.5.14 (2019-10-25)
 

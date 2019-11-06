@@ -29,6 +29,7 @@ import { addSubProtocol, getSubProtocolsByIdentifier } from './utils/subProtocol
 import { supportedProtocols } from './utils/supportedProtocols'
 import { AirGapMarketWallet } from './wallet/AirGapMarketWallet'
 import { AirGapWallet } from './wallet/AirGapWallet'
+import { CosmosProtocol } from './protocols/cosmos/CosmosProtocol'
 
 export {
   getProtocolByIdentifier,
@@ -52,6 +53,7 @@ export {
   AeternityProtocol,
   TezosProtocol,
   TezosKtProtocol,
+  CosmosProtocol,
   // tezos-specific configuration
   BakerInfo,
   DelegationRewardInfo,

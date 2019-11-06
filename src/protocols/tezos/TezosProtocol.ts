@@ -168,7 +168,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   public addressValidationPattern: string = '^(tz1|KT1)[1-9A-Za-z]{33}$'
   public addressPlaceholder: string = 'tz1...'
 
-  public blockExplorer = 'https://tezblock.io'
+  public blockExplorer: string = 'https://tezblock.io'
 
   protected readonly transactionFee: BigNumber = new BigNumber('1400')
   protected readonly originationSize: BigNumber = new BigNumber('257')
@@ -203,8 +203,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
   /**
    * Tezos Implemention of ICoinProtocol
-   * @param jsonRPCAPI
-   * @param baseApiUrl
    */
   constructor(
     public jsonRPCAPI = 'https://tezos-node.prod.gke.papers.tech',
@@ -337,7 +335,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     const watermarkedForgedOperationBytes: Buffer = Buffer.from(watermarkedForgedOperationBytesHex, 'hex')
     const hashedWatermarkedOpBytes: Buffer = sodium.crypto_generichash(32, watermarkedForgedOperationBytes)
 
-    await sodium.ready
     const opSignature = sodium.crypto_sign_detached(hashedWatermarkedOpBytes, privateKey)
     const signedOpBytes: Buffer = Buffer.concat([Buffer.from(transaction.binaryTransaction, 'hex'), Buffer.from(opSignature)])
 
@@ -447,20 +444,20 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       throw new Error('length of recipients and values does not match!')
     }
 
-    let counter = new BigNumber(1)
+    let counter: BigNumber = new BigNumber(1)
     let branch: string
 
     const operations: TezosOperation[] = []
 
     // check if we got an address-index
-    const addressIndex = data && data.addressIndex ? data.addressIndex : 0
-    const addresses = await this.getAddressesFromPublicKey(publicKey)
+    const addressIndex: number = data && data.addressIndex ? data.addressIndex : 0
+    const addresses: string[] = await this.getAddressesFromPublicKey(publicKey)
 
     if (!addresses[addressIndex]) {
       throw new Error('no kt-address with this index exists')
     }
 
-    const address = addresses[addressIndex]
+    const address: string = addresses[addressIndex]
 
     try {
       const results = await Promise.all([
@@ -472,7 +469,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       counter = new BigNumber(results[0].data).plus(1)
       branch = results[1].data
 
-      const accountManager = results[2].data
+      const accountManager: { key: string } = results[2].data
 
       // check if we have revealed the address already
       if (!accountManager) {
@@ -483,10 +480,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       throw error
     }
 
-    const balance = await this.getBalanceOfPublicKey(publicKey)
-    const receivingBalance = await this.getBalanceOfAddresses(recipients)
+    const balance: BigNumber = await this.getBalanceOfPublicKey(publicKey)
+    const receivingBalance: BigNumber = await this.getBalanceOfAddresses(recipients)
 
-    const amountUsedByPreviousOperations = this.getAmountUsedByPreviousOperations(operations)
+    const amountUsedByPreviousOperations: BigNumber = this.getAmountUsedByPreviousOperations(operations)
 
     if (!amountUsedByPreviousOperations.isZero()) {
       if (balance.isLessThan(values[0].plus(fee).plus(amountUsedByPreviousOperations))) {
@@ -535,7 +532,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         contents: operations
       }
 
-      const binaryTx = this.forgeTezosOperation(tezosWrappedOperation)
+      const binaryTx: string = this.forgeTezosOperation(tezosWrappedOperation)
 
       return { binaryTransaction: binaryTx }
     } catch (error) {
