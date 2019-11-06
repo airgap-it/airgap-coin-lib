@@ -3,7 +3,7 @@ import * as rlp from '../../dependencies/src/rlp-2.2.3/index'
 
 import { ChunkedPayload } from './chunked-payload'
 import { FullPayload } from './full-payload'
-import { assertNever, IACMessageDefinition } from './message'
+import { assertNever, IACMessageDefinitionObject } from './message'
 import { Payload, PayloadType } from './payload'
 import { IACPayloadType } from './serializer.new'
 
@@ -48,7 +48,7 @@ export class IACProtocol {
     return bs58check.encode(rlp.encode([this.version.toString(), this.payloadType.toString(), this.payload.asArray() as any]) as any)
   }
 
-  public static create(data: IACMessageDefinition[], chunkSize: number = 0): IACProtocol[] {
+  public static create(data: IACMessageDefinitionObject[], chunkSize: number = 0): IACProtocol[] {
     const payload: FullPayload = new FullPayload(PayloadType.DECODED, data)
 
     const rawPayload: Buffer = payload.asBuffer()
@@ -83,7 +83,7 @@ export class IACProtocol {
 
     // make sure that all are the same type
     let globalType: string | undefined
-    data.forEach(entry => {
+    data.forEach((entry: string) => {
       const decoded: Buffer[] = rlp.decode(bs58check.decode(entry)) as any // Will be fixed with new rlp version
       const version: string = decoded[0].toString()
       const type: string = decoded[1].toString()
@@ -111,10 +111,12 @@ export class IACProtocol {
 
     if (!finalPayload) {
       console.log(chunked)
-      const arr = chunked.sort((a, b) => a.currentPage - b.currentPage).map(chunk => chunk.buffer)
+      const arr: Buffer[] = chunked
+        .sort((a: ChunkedPayload, b: ChunkedPayload) => a.currentPage - b.currentPage)
+        .map((chunk: ChunkedPayload) => chunk.buffer)
       console.log('arr', arr)
 
-      finalPayload = new FullPayload(PayloadType.ENCODED, rlp.decode(Buffer.concat(arr as any) as any) as any)
+      finalPayload = new FullPayload(PayloadType.ENCODED, rlp.decode(Buffer.concat(arr)))
     }
 
     console.log('finalPayload', finalPayload)

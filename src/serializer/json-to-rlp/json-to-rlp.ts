@@ -1,10 +1,12 @@
 import * as rlp from '../../dependencies/src/rlp-2.2.3/index'
+import { RLPData } from '../utils/toBuffer'
 
 import { Schema } from '../v2/schemas/schema'
 
-function log(...args) {
-  const loggingEnabled = false
+function log(...args: unknown[]): void {
+  const loggingEnabled: boolean = false
   if (loggingEnabled) {
+    // tslint:disable-next-line:no-console
     console.log(args)
   }
 }
@@ -32,11 +34,11 @@ export function unwrapSchema(schema: Schema): any {
   return definitions[definitionKeys[0]]
 }
 
-function typeError(key: string, expectedType: string, value: any): Error {
+function typeError(key: string, expectedType: string, value: unknown): Error {
   return new Error(`${key}: expected type "${expectedType}", but got "${typeof value}"`)
 }
 
-function checkType<T>(key: string, expectedType: string, value: unknown, callback: ((arg: any) => string | string[])): any {
+function checkType<T>(key: string, expectedType: string, value: unknown, callback: ((arg: any) => RLPData)): RLPData {
   if (typeof value === expectedType) {
     return callback(value)
   } else if (typeof value === 'undefined') {
@@ -47,18 +49,18 @@ function checkType<T>(key: string, expectedType: string, value: unknown, callbac
 }
 
 export function jsonToRlp(schema: Object, json: Object): Buffer {
-  const array = jsonToArray('root', schema, json)
+  const array: RLPData = jsonToArray('root', schema, json)
 
   log('BEFORE RLP', array)
 
-  const rlpEncoded: Buffer = rlp.encode(array) as any // TODO: As any can be removed with new RLP version
+  const rlpEncoded: Buffer = rlp.encode(array)
 
   log('RLP', rlpEncoded)
 
   return rlpEncoded
 }
 
-export function jsonToArray(key: string, schema: Object, value: Object): string | string[] | any {
+export function jsonToArray(key: string, schema: Object, value: Object): RLPData {
   const type: SchemaTypes = (schema as any).type
   switch (type) {
     case SchemaTypes.STRING:
@@ -117,7 +119,7 @@ export function jsonToArray(key: string, schema: Object, value: Object): string 
         const properties: Object = (schema as any).properties
         const keys: string[] = Object.keys(properties).sort()
 
-        const out: string[] = []
+        const out: RLPData[] = []
         for (const propertyKey of keys) {
           out.push(jsonToArray(propertyKey, properties[propertyKey], arg[propertyKey]))
         }
@@ -135,7 +137,7 @@ export function jsonToArray(key: string, schema: Object, value: Object): string 
 }
 
 export function rlpToJson<T>(schema: Object, rlpEncoded: string): T | undefined {
-  const array: any[] = rlp.decode(rlpEncoded)
+  const array: RLPData[] = rlp.decode(rlpEncoded)
   const type: SchemaTypes = (schema as any).type
 
   switch (type) {

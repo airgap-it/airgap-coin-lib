@@ -1,6 +1,7 @@
 import { jsonToArray, rlpArrayToJson, unwrapSchema } from '../json-to-rlp/json-to-rlp'
 import { SignedBitcoinTransaction } from '../signed-transactions/bitcoin-transactions.serializer'
 import { UnsignedEthereumTransaction } from '../unsigned-transactions/ethereum-transactions.serializer'
+import { RLPData } from '../utils/toBuffer'
 
 import { IACMessageType } from './interfaces'
 import { PayloadType } from './payload'
@@ -30,25 +31,33 @@ export type IACMessages =
   | SignedBitcoinTransaction
   | SignedEthereumTransaction
 
-export interface IACMessageDefinition {
+// tslint:disable-next-line:interface-name
+export interface IACMessageDefinitionObject {
   type: IACMessageType
-  protocol?: string
+  protocol: string
   data: IACMessages
 }
 
-export class Message implements IACMessageDefinition {
+export interface MessageDefinitionArray {
+  [0]: string // Version
+  [1]: string // Type
+  [2]: string // Protocol
+  [3]: RLPData // Message
+}
+
+export class Message implements IACMessageDefinitionObject {
   private readonly version: string = '0' // TODO: Version depending on the message type
   private readonly schema: Object
 
   public readonly type: number
   public readonly protocol: string
-  public readonly data: any
+  public readonly data: IACMessages
 
-  constructor(type: PayloadType, object: Buffer[] | { messageType: number; protocol?: string; data: any }) {
+  constructor(type: PayloadType, object: Buffer[] | IACMessageDefinitionObject) {
     if (type === PayloadType.DECODED) {
-      const x = object as { messageType: number; protocol: string; data: any }
-      this.type = x.messageType
-      this.schema = Serializer.getSchema(x.messageType.toString(), x.protocol)
+      const x = object as IACMessageDefinitionObject
+      this.type = x.type
+      this.schema = Serializer.getSchema(x.type.toString(), x.protocol)
       this.protocol = x.protocol
       this.data = x.data
     } else if (type === PayloadType.ENCODED) {
@@ -64,7 +73,7 @@ export class Message implements IACMessageDefinition {
     }
   }
 
-  public asJson(): IACMessageDefinition {
+  public asJson(): IACMessageDefinitionObject {
     return {
       type: this.type,
       protocol: this.protocol,
@@ -72,8 +81,8 @@ export class Message implements IACMessageDefinition {
     }
   }
 
-  public asArray(): string[] {
-    const array = jsonToArray('root', unwrapSchema(this.schema), this.data)
+  public asArray(): RLPData /* it could be MessageDefinitionArray */ {
+    const array: RLPData = jsonToArray('root', unwrapSchema(this.schema), this.data)
 
     return [this.version, this.type.toString(), this.protocol, array]
   }

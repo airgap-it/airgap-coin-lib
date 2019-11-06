@@ -1,7 +1,8 @@
 import { FullPayload } from './full-payload'
 import { IACProtocol } from './inter-app-communication-protocol'
 import { IACMessageType } from './interfaces'
-import { IACMessageDefinition } from './message'
+import { IACMessageDefinitionObject } from './message'
+import { Payload } from './payload'
 import { Schema } from './schemas/schema'
 
 // const accountShareRequest = require('./schemas/account-share-request.json')
@@ -28,8 +29,6 @@ export enum IACPayloadType {
 export class Serializer {
   private static readonly schemas: Map<string, Schema> = new Map()
 
-  constructor() {}
-
   public static addSchema(schemaName: string, schema: Schema, protocol?: string): void {
     const protocolSpecificSchemaName: string = Serializer.getSchemName(schemaName, protocol)
 
@@ -42,7 +41,7 @@ export class Serializer {
   public static getSchema(schemaName: string, protocol?: string): Schema {
     const protocolSpecificSchemaName: string = Serializer.getSchemName(schemaName, protocol)
 
-    const schema = this.schemas.get(protocolSpecificSchemaName)
+    const schema: Schema | undefined = this.schemas.get(protocolSpecificSchemaName)
 
     if (!schema) {
       throw new Error(`Schema ${protocolSpecificSchemaName} does not exist`)
@@ -51,30 +50,31 @@ export class Serializer {
     return schema
   }
 
-  private static getSchemName(schemaName: string, protocol?: string) {
+  private static getSchemName(schemaName: string, protocol?: string): string {
     return protocol ? `${schemaName}-${protocol}` : schemaName
   }
 
-  public serialize(messages: IACMessageDefinition[], chunkSize: number = 0): string[] {
+  public serialize(messages: IACMessageDefinitionObject[], chunkSize: number = 0): string[] {
     if (
-      messages.every(message => {
+      messages.every((message: IACMessageDefinitionObject) => {
         return Serializer.getSchema(message.type.toString(), message.protocol)
       })
     ) {
-      const iacps = IACProtocol.create(messages, chunkSize)
-      return iacps.map(iac => iac.encoded())
+      const iacps: IACProtocol[] = IACProtocol.create(messages, chunkSize)
+
+      return iacps.map((iac: IACProtocol) => iac.encoded())
     } else {
       throw Error('Unknown schema')
     }
   }
 
-  public deserialize(data: string[]): IACMessageDefinition[] {
-    const result = IACProtocol.createFromEncoded(data)
+  public deserialize(data: string[]): IACMessageDefinitionObject[] {
+    const result: IACProtocol[] = IACProtocol.createFromEncoded(data)
 
     return result
-      .map(el => el.payload)
-      .map(el => (el as FullPayload).asJson())
-      .reduce((pv: IACMessageDefinition[], cv: IACMessageDefinition[]) => pv.concat(...cv), [] as IACMessageDefinition[])
+      .map((el: IACProtocol) => el.payload)
+      .map((el: Payload) => (el as FullPayload).asJson())
+      .reduce((pv: IACMessageDefinitionObject[], cv: IACMessageDefinitionObject[]) => pv.concat(...cv), [] as IACMessageDefinitionObject[])
   }
 }
 

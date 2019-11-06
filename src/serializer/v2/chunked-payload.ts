@@ -1,3 +1,5 @@
+import { RLPData } from '../utils/toBuffer'
+
 import { assertNever } from './message'
 import { Payload, PayloadType } from './payload'
 
@@ -13,7 +15,7 @@ interface PayloadTypeReturnType {
 }
 
 function isBufferArray(arg: unknown): arg is Buffer[] {
-  return Array.isArray(arg) && arg.every(el => el instanceof Buffer);
+  return Array.isArray(arg) && arg.every(el => el instanceof Buffer)
 }
 
 function isDecodedChunkedPayload(arg: unknown): arg is DecodedChunkedPayload {
@@ -33,7 +35,7 @@ function isObject(arg: unknown): arg is { [key: string]: unknown } {
   return typeof arg === 'object'
 }
 
-function getIntFromBuffer(buffer: Buffer) {
+function getIntFromBuffer(buffer: Buffer): number {
   return parseInt(buffer.toString(), 10)
 }
 
@@ -76,7 +78,7 @@ export class ChunkedPayload implements Payload {
     console.log(`ChunkedPayload constructor - Page: ${this.currentPage}/${this.total}, Buffer: ${this.buffer}`)
   }
 
-  public asArray() {
+  public asArray(): RLPData {
     return [this.currentPage.toString(), this.total.toString(), this.buffer]
   }
 }

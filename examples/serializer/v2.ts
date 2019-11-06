@@ -1,8 +1,8 @@
 import { IACMessageType } from '../../src/serializer/v2/interfaces'
-import { IACMessageDefinition } from '../../src/serializer/v2/message'
+import { IACMessageDefinitionObject } from '../../src/serializer/v2/message'
 import { Serializer } from '../../src/serializer/v2/serializer.new'
 
-const serializeAndDeserialize = (messages: IACMessageDefinition[], size: number) => {
+const serializeAndDeserialize = (messages: IACMessageDefinitionObject[], size: number) => {
   const serializer = new Serializer()
 
   const result = serializer.serialize(messages, size)
@@ -16,7 +16,7 @@ const serializeAndDeserialize = (messages: IACMessageDefinition[], size: number)
   console.log('reconstructed', reconstructed.map(el => JSON.stringify(el)))
 }
 
-const accountShareMessage: IACMessageDefinition = {
+const accountShareMessage: IACMessageDefinitionObject = {
   type: IACMessageType.AccountShareResponse,
   data: {
     publicKey: '1',
@@ -25,7 +25,7 @@ const accountShareMessage: IACMessageDefinition = {
   }
 }
 
-const signTransactionRequest: IACMessageDefinition = {
+const signTransactionRequest: IACMessageDefinitionObject = {
   type: IACMessageType.TransactionSignRequest,
   protocol: 'ae',
   data: {
