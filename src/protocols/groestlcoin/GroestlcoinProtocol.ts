@@ -1,6 +1,6 @@
-import BigNumber from 'bignumber.js'
-import * as bitGoUTXO from 'bitgo-utxo-lib'
+import * as bitGoUTXO from '../../dependencies/src/bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac/src/index'
 
+import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { BitcoinBlockbookProtocol } from '../bitcoin/BitcoinBlockbookProtocol'
 
 export class GroestlcoinProtocol extends BitcoinBlockbookProtocol {
@@ -39,7 +39,7 @@ export class GroestlcoinProtocol extends BitcoinBlockbookProtocol {
   public addressValidationPattern = '^([F3][a-km-zA-HJ-NP-Z1-9]{33}|grs1[a-zA-HJ-NP-Z0-9]{39})$'
   public addressPlaceholder = 'Fdb...'
 
-  public blockExplorer = 'https://chainz.cryptoid.info/grs/'
+  public blockExplorer = 'https://chainz.cryptoid.info/grs'
 
   constructor() {
     super(bitGoUTXO.networks.groestlcoin, 'https://blockbook.groestlcoin.org', bitGoUTXO)

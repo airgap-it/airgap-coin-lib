@@ -16,10 +16,8 @@ import { GroestlcoinTestnetProtocol } from './protocols/groestlcoin/GroestlcoinT
 import { ICoinProtocol } from './protocols/ICoinProtocol'
 import { ICoinSubProtocol } from './protocols/ICoinSubProtocol'
 import { LitecoinProtocol } from './protocols/litecoin/LitecoinProtocol'
-import { BakerInfo, DelegationInfo, DelegationRewardInfo, TezosKtProtocol } from './protocols/tezos/kt/TezosKtProtocol'
-import { TezosProtocol } from './protocols/tezos/TezosProtocol'
-import { ZCashProtocol } from './protocols/zcash/ZCashProtocol'
-import { ZCashTestnetProtocol } from './protocols/zcash/ZCashTestnetProtocol'
+import { TezosKtProtocol } from './protocols/tezos/kt/TezosKtProtocol'
+import { BakerInfo, DelegationInfo, DelegationRewardInfo, TezosProtocol } from './protocols/tezos/TezosProtocol'
 import { ProtocolNotSupported, ProtocolVersionMismatch, SerializerVersionMismatch, TypeNotSupported } from './serializer/errors'
 import { DeserializedSyncProtocol, EncodedType, SyncProtocolUtils } from './serializer/serializer'
 import { SignedTransaction } from './serializer/signed-transaction.serializer'
@@ -31,6 +29,7 @@ import { addSubProtocol, getSubProtocolsByIdentifier } from './utils/subProtocol
 import { supportedProtocols } from './utils/supportedProtocols'
 import { AirGapMarketWallet } from './wallet/AirGapMarketWallet'
 import { AirGapWallet } from './wallet/AirGapWallet'
+import { CosmosProtocol } from './protocols/cosmos/CosmosProtocol'
 
 export {
   getProtocolByIdentifier,
@@ -47,8 +46,6 @@ export {
   GroestlcoinProtocol,
   GroestlcoinTestnetProtocol,
   LitecoinProtocol,
-  ZCashProtocol,
-  ZCashTestnetProtocol,
   EthereumProtocol,
   EthereumRopstenProtocol,
   EthereumClassicProtocol,
@@ -56,6 +53,7 @@ export {
   AeternityProtocol,
   TezosProtocol,
   TezosKtProtocol,
+  CosmosProtocol,
   // tezos-specific configuration
   BakerInfo,
   DelegationRewardInfo,

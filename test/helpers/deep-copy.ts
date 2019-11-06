@@ -1,6 +1,6 @@
-import { BigNumber } from 'bignumber.js'
+import BigNumber from '../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
 export function deepCopy(obj) {
-  var rv
+  let rv
 
   switch (typeof obj) {
     case 'object':
@@ -26,14 +26,12 @@ export function deepCopy(obj) {
               prev[key] = deepCopy(obj[key])
               return prev
             }, {})
-            break
         }
       }
       break
     default:
       // It's a primitive, copy via assignment
       rv = obj
-      break
   }
   return rv
 }

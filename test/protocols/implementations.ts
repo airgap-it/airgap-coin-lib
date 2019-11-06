@@ -1,5 +1,5 @@
-import BigNumber from 'bignumber.js'
-import * as BIP39 from 'bip39'
+import * as BIP39 from '../../src/dependencies/src/bip39-2.5.0/index'
+import BigNumber from '../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
 
 import { ICoinProtocol } from '../../src'
 import { IACMessageType } from '../../src/serializer/v2/interfaces'

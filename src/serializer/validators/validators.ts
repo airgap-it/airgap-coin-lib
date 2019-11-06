@@ -1,11 +1,20 @@
+import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import {
+  isArray,
+  isDate,
+  isInteger,
+  isNumber,
+  isObject,
+  isString,
+  validate,
+  validators
+} from '../../dependencies/src/validate.js-0.13.1/validate'
 import { AeternityProtocol } from './../../protocols/aeternity/AeternityProtocol'
 import { SignedTezosTransaction } from './../signed-transactions/tezos-transactions.serializer'
 import { SignedEthereumTransaction } from './../signed-transactions/ethereum-transactions.serializer'
 import { BitcoinProtocol } from './../../protocols/bitcoin/BitcoinProtocol'
 import { TezosProtocol } from './../../protocols/tezos/TezosProtocol'
-import * as BIP39 from 'bip39'
-import BigNumber from 'bignumber.js'
-import { isArray, isDate, isInteger, isNumber, isObject, isString, validate, validators } from 'validate.js'
+import * as BIP39 from '../../dependencies/src/bip39-2.5.0/index'
 import bs64check from '../../utils/base64Check'
 import { EthereumProtocol } from '../..'
 import { RawTezosTransaction, UnsignedTezosTransaction } from '../unsigned-transactions/tezos-transactions.serializer'
@@ -65,13 +74,13 @@ validators.isHexStringWithPrefix = value => {
 
 validators.isPublicKey = value => {
   if (typeof value !== 'string') {
-    return 'is not a valid public key'
+    return 'is not a valid public key: should be of type string'
   }
   if (value.length !== 64) {
-    return 'is not a valid public key'
+    return 'is not a valid public key: wrong length'
   }
 
-  return /[0-9A-F]/gi.test(value) ? null : 'is not a valid public key'
+  return /[0-9A-F]/gi.test(value) ? null : 'is not a valid public key: invalid characters'
 }
 // ETHEREUM
 

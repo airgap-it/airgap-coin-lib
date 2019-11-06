@@ -1,4 +1,4 @@
-import BigNumber from 'bignumber.js'
+import BigNumber from '../../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
 
 import { BitcoinProtocol, SignedTransaction } from '../../../src'
 import { SignedBitcoinTransaction } from '../../../src/serializer/signed-transactions/bitcoin-transactions.serializer'

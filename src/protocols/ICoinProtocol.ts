@@ -1,4 +1,4 @@
-import BigNumber from 'bignumber.js'
+import BigNumber from '../dependencies/src/bignumber.js-9.0.0/bignumber'
 
 import { IAirGapSignedTransaction } from '../interfaces/IAirGapSignedTransaction'
 import { IAirGapTransaction } from '../interfaces/IAirGapTransaction'
@@ -6,6 +6,17 @@ import { SignedTransaction } from '../serializer/signed-transaction.serializer'
 
 import { UnsignedTransaction } from './../serializer/unsigned-transaction.serializer'
 import { ICoinSubProtocol } from './ICoinSubProtocol'
+
+export interface FeeDefaults {
+  low: BigNumber
+  medium: BigNumber
+  high: BigNumber
+}
+
+export interface CurrencyUnit {
+  unitSymbol: string
+  factor: BigNumber
+}
 
 export interface ICoinProtocol {
   symbol: string // This will be used in the UI, eg. "ETH", "BTC", "AE"

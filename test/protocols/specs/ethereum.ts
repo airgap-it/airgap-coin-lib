@@ -1,4 +1,4 @@
-import BigNumber from 'bignumber.js'
+import BigNumber from '../../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
 
 import { EthereumProtocol } from '../../../src'
 import { RawEthereumTransaction } from '../../../src/serializer/unsigned-transactions/ethereum-transactions.serializer'

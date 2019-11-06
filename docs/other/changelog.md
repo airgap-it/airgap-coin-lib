@@ -1,3 +1,77 @@
+### 0.6.0 (2019-10-23)
+
+### Features
+
+- **all**: multi transaction support
+- **cosmos**: add support for cosmos / atom
+
+### 0.5.14 (2019-10-25)
+
+### Features
+
+- **xtz**: fixed reward calculation for 005 cycles
+
+### 0.5.13 (2019-10-23)
+
+### Features
+
+- **xtz**: added check of tz account balance before migration of kt account
+
+### 0.5.12 (2019-10-18)
+
+### Features
+
+- **xtz**: added rewards and payouts calculations
+- **xtz**: added support for multiple tezos operations in one transaction
+
+### 0.5.7 (2019-10-18)
+
+### Features
+
+- **xtz**: now using a different tezos node for rpc calls
+
+### 0.5.6 (2019-10-16)
+
+### Features
+
+- **xtz**: replace all calls to tzscan.io with calls to the conseil api
+
+### 0.5.5 (2019-10-11)
+
+### Features
+
+- **xtz**: prepare for babylon network upgrade
+
+### 0.5.4 (2019-09-19)
+
+### Bug Fixes
+
+- **actions**: catch errors and propagate them
+- **xtz**: handle invalid responses
+
+### 0.5.3 (2019-09-18)
+
+### Features
+
+- **xtz**: use tezblock.io as the tezos block explorer
+- **eth**: replace trustwallet api with etherscan.io
+
+### 0.5.2 (2019-09-17)
+
+### Internals
+
+- **xtz**: forge implementation refactoring
+
+### Features
+
+- **actions**: add repeatable actions
+
+### 0.5.1 (2019-08-28)
+
+### Bug Fixes
+
+- **xtz**: allow `getBakerInfo` for tz2 and tz3 addresses
+
 ## 0.5.0 (2019-08-07)
 
 ### Internals

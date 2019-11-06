@@ -1,6 +1,6 @@
-import BigNumber from 'bignumber.js'
-import * as ethUtil from 'ethereumjs-util'
+import * as ethUtil from '../../../dependencies/src/ethereumjs-util-5.2.0/index'
 
+import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { IAirGapSignedTransaction } from '../../../interfaces/IAirGapSignedTransaction'
 import { IAirGapTransaction } from '../../../interfaces/IAirGapTransaction'
 import { SignedEthereumTransaction } from '../../../serializer/signed-transactions/ethereum-transactions.serializer'
@@ -11,11 +11,11 @@ import {
 } from '../../../serializer/unsigned-transactions/ethereum-transactions.serializer'
 import { ICoinSubProtocol, SubProtocolType } from '../../ICoinSubProtocol'
 import { BaseEthereumProtocol } from '../BaseEthereumProtocol'
-import { EthereumUtils } from '../utils/utils'
-import { AirGapNodeClient, EthereumRPCDataTransfer } from '../clients/node-clients/AirGapNodeClient'
 import { TrustWalletInfoClient } from '../clients/info-clients/InfoClient'
+import { AirGapNodeClient, EthereumRPCDataTransfer } from '../clients/node-clients/AirGapNodeClient'
+import { EthereumUtils } from '../utils/utils'
 
-const EthereumTransaction = require('ethereumjs-tx')
+const EthereumTransaction = require('../../../dependencies/src/ethereumjs-tx-1.3.7/index')
 
 export interface GenericERC20Configuration {
   symbol: string
@@ -51,6 +51,7 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, TrustWa
 
   public async getBalanceOfPublicKey(publicKey: string): Promise<BigNumber> {
     const address = await this.getAddressFromPublicKey(publicKey)
+
     return this.getBalanceOfAddresses([address])
   }
 
@@ -60,6 +61,7 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, TrustWa
         return this.configuration.nodeClient.callBalanceOf(this.contractAddress, address)
       })
     )
+
     return balances.reduce((a, b) => a.plus(b))
   }
 
@@ -73,6 +75,7 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, TrustWa
 
   private async estimateGas(source: string, recipient: string, hexValue: string): Promise<string> {
     const gasEstimate = await this.configuration.nodeClient.estimateTransferGas(this.contractAddress, source, recipient, hexValue)
+
     return gasEstimate.toFixed()
   }
 
@@ -113,6 +116,7 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, TrustWa
           chainId: this.configuration.chainID,
           data: new EthereumRPCDataTransfer(recipients[0], EthereumUtils.toHex(values[0].toFixed())).abiEncoded()
         }
+
         return transaction
       } else {
         throw new Error('not enough ETH balance')
@@ -124,6 +128,7 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, TrustWa
 
   public getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
     const page = Math.ceil(offset / limit)
+
     return new Promise((overallResolve, overallReject) => {
       const promises: Promise<IAirGapTransaction[]>[] = []
       for (const address of addresses) {

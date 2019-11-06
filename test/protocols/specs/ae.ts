@@ -1,7 +1,7 @@
 import { AeternityProtocol } from './../../../src/protocols/aeternity/AeternityProtocol'
 import { SignedAeternityTransaction } from './../../../src/serializer/signed-transactions/aeternity-transactions.serializer'
 import { AeternityTransactionValidator } from './../../../src/serializer/unsigned-transactions/aeternity-transactions.validator'
-import BigNumber from 'bignumber.js'
+import BigNumber from '../../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
 
 import { TestProtocolSpec } from '../implementations'
 import { AeternityProtocolStub } from '../stubs/ae.stub'
