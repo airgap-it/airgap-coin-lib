@@ -1,10 +1,9 @@
-import { BigNumber } from 'bignumber.js'
-
+import { BigNumber } from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 // var _ = require('underscore')
-// var BN = require('bn.js')
+// var BN = require('../../../dependencies/src/bn.js-4.11.8/bn')
 // var numberToBN = require('number-to-bn')
-var utf8 = require('utf8')
-var Hash = require('eth-lib/lib/hash')
+const utf8 = require('../../../dependencies/src/utf8-3.0.0/utf8')
+const createKeccakHash = require('../../../dependencies/src/keccak-1.0.2/js')
 
 // this code was adapted from web3.js (https://github.com/ethereum/web3.js/blob/2.x/packages/web3-utils/src/Utils.js)
 export class EthereumUtils {
@@ -41,7 +40,7 @@ export class EthereumUtils {
       value = EthereumUtils.hexToBytes(value)
     }
 
-    var returnValue = Hash.keccak256(value) // jshint ignore:line
+    var returnValue = '0x' + createKeccakHash('keccak256').update(value).digest('hex')
 
     if (returnValue === EthereumUtils.SHA3_NULL_S) {
       return null

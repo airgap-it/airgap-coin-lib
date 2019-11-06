@@ -1,6 +1,6 @@
 import { SignedEthereumTransaction } from './../../../src/serializer/signed-transactions/ethereum-transactions.serializer'
 import { EthereumTransactionValidator } from './../../../src/serializer/unsigned-transactions/ethereum-transactions.validator'
-import BigNumber from 'bignumber.js'
+import BigNumber from '../../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
 
 import { EthereumProtocol } from '../../../src'
 import { TestProtocolSpec } from '../implementations'

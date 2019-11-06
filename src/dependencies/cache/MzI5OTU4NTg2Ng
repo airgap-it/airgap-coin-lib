@@ -1,0 +1,41 @@
+{
+    "name": "tweetnacl-auth",
+    "version": "1.0.1",
+    "description": "HMAC-SHA-512-256 based on TweetNaCl.js",
+    "main": "nacl-auth.js",
+    "directories": {
+        "test": "test"
+    },
+    "scripts": {
+        "build": "uglifyjs nacl-auth.js -c -m -o nacl-auth.min.js",
+        "test": "tape test/*.js | faucet"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/dchest/tweetnacl-auth-js.git"
+    },
+    "keywords": [
+        "authentication",
+        "auth",
+        "crypto",
+        "hmac",
+        "hmac-sha512",
+        "nacl",
+        "tweetnacl"
+    ],
+    "author": "Dmitry Chestnykh",
+    "license": "Unlicense",
+    "bugs": {
+        "url": "https://github.com/dchest/tweetnacl-auth-js/issues"
+    },
+    "homepage": "https://github.com/dchest/tweetnacl-auth-js",
+    "devDependencies": {
+        "faucet": "0.x.x",
+        "tape": "2.x.x",
+        "tweetnacl-util": "^0.13.5",
+        "uglify-js": "2.8.x"
+    },
+    "dependencies": {
+        "tweetnacl": "1.x.x"
+    }
+}

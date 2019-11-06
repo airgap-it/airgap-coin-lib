@@ -1,4 +1,4 @@
-import BigNumber from 'bignumber.js'
+import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 
 export function toBuffer(rlpArray: any): Buffer | Buffer[] {
   if (Array.isArray(rlpArray)) {

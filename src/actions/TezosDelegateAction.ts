@@ -1,4 +1,4 @@
-import { AirGapMarketWallet, EncodedType, IAirGapTransaction, SyncProtocolUtils, TezosKtProtocol, TezosProtocol } from '..'
+import { AirGapMarketWallet, EncodedType, IAirGapTransaction, SyncProtocolUtils, TezosProtocol } from '..'
 import { RawAeternityTransaction } from '../serializer/unsigned-transactions/aeternity-transactions.serializer'
 import { RawBitcoinTransaction } from '../serializer/unsigned-transactions/bitcoin-transactions.serializer'
 import { RawEthereumTransaction } from '../serializer/unsigned-transactions/ethereum-transactions.serializer'
@@ -56,33 +56,16 @@ export class TezosDelegateAction<Context extends TezosDelegateActionContext> ext
         if (this.context.wallet.protocolIdentifier === 'xtz') {
           const protocol: TezosProtocol = new TezosProtocol()
 
-          try {
-            const originateTx: RawTezosTransaction = await protocol.originate(this.context.wallet.publicKey, this.context.delegate)
-            const serializedTx: string = await serializeTx(this.context.wallet, originateTx)
+        try {
+          const originateTx: RawTezosTransaction = await protocol.delegate(this.context.wallet.publicKey, this.context.delegate)
+          const serializedTx: string = await serializeTx(this.context.wallet, originateTx)
 
-            const airGapTxs: IAirGapTransaction[] | void = await getAirGapTx(this.context.wallet, originateTx)
-            resolve({ rawTx: originateTx, serializedTx, airGapTxs, dataUrl: `airgap-vault://?d=${serializedTx}` })
-          } catch (error) {
-            reject(error)
-          }
-        } else {
-          const protocol: TezosKtProtocol = new TezosKtProtocol()
-
-          try {
-            const delegateTx: RawTezosTransaction = await protocol.delegate(
-              this.context.wallet.publicKey,
-              this.context.wallet.receivingPublicAddress,
-              this.context.delegate
-            )
-            const serializedTx: string = await serializeTx(this.context.wallet, delegateTx)
-
-            const airGapTxs: IAirGapTransaction[] | void = await getAirGapTx(this.context.wallet, delegateTx)
-            resolve({ rawTx: delegateTx, serializedTx, airGapTxs, dataUrl: `airgap-vault://?d=${serializedTx}` })
-          } catch (error) {
-            reject(error)
-          }
+          const airGapTxs: IAirGapTransaction[] | void = await getAirGapTx(this.context.wallet, originateTx)
+          resolve({ rawTx: originateTx, serializedTx, airGapTxs, dataUrl: `airgap-vault://?d=${serializedTx}` })
+        } catch(error) {
+          reject(error)
         }
       }
-    )
+    })
   }
 }

@@ -1,8 +1,9 @@
-import { SignedBitcoinTransaction } from './../signed-transactions/bitcoin-transactions.serializer'
-import validate = require('validate.js')
+import { validate } from '../../dependencies/src/validate.js-0.13.1/validate'
 import { TransactionValidator } from '../validators/transactions.validator'
 import { validateSyncScheme } from '../validators/validators'
-import { UnsignedBitcoinTransaction, RawBitcoinTransaction } from './bitcoin-transactions.serializer'
+
+import { SignedBitcoinTransaction } from './../signed-transactions/bitcoin-transactions.serializer'
+import { RawBitcoinTransaction, UnsignedBitcoinTransaction } from './bitcoin-transactions.serializer'
 
 const unsignedTransactionConstraints = {
   ins: {
@@ -30,8 +31,7 @@ const signedTransactionConstraints = {
   },
   accountIdentifier: {
     type: 'String',
-    presence: { allowEmpty: false },
-    isBitcoinAccount: true
+    presence: { allowEmpty: false }
   },
   transaction: {
     isValidBitcoinTxString: true,

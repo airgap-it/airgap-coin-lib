@@ -1,7 +1,7 @@
 // tslint:disable:no-any
 // tslint:disable:no-console
 
-import BigNumber from 'bignumber.js'
+import BigNumber from '../src/dependencies/src/bignumber.js-9.0.0/bignumber'
 
 import { AeternityProtocol, IAirGapTransaction } from '../src'
 import { RawAeternityTransaction } from '../src/serializer/unsigned-transactions/aeternity-transactions.serializer'
@@ -21,7 +21,7 @@ protocol
   .prepareTransactionFromPublicKey(publicKey, [recipient], [amount], fee, data)
   .then(async (tx: RawAeternityTransaction) => {
     console.log(tx)
-    const details: IAirGapTransaction = await protocol.getTransactionDetails({ publicKey: '', transaction: tx })
+    const details: IAirGapTransaction[] = await protocol.getTransactionDetails({ publicKey: '', transaction: tx })
 
     console.log(details)
   })

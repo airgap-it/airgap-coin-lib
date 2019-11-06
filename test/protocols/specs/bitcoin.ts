@@ -1,5 +1,5 @@
 import { BitcoinTransactionValidator } from './../../../src/serializer/unsigned-transactions/bitcoin-transactions.validator'
-import BigNumber from 'bignumber.js'
+import BigNumber from '../../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
 
 import { BitcoinProtocol, DeserializedSyncProtocol, SignedTransaction } from '../../../src'
 import { TestProtocolSpec } from '../implementations'

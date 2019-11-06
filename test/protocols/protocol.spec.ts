@@ -1,10 +1,10 @@
-import BigNumber from 'bignumber.js'
 import * as chai from 'chai'
 import * as chaiAsPromised from 'chai-as-promised'
 import 'mocha'
 import * as sinon from 'sinon'
 
 import { IAirGapTransaction } from '../../src'
+import BigNumber from '../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
 
 import { TestProtocolSpec } from './implementations'
 import { AETestProtocolSpec } from './specs/ae'
@@ -16,7 +16,6 @@ import { EthereumClassicTestProtocolSpec } from './specs/ethereum-classic'
 import { EthereumRopstenTestProtocolSpec } from './specs/ethereum-ropsten'
 import { GenericERC20TokenTestProtocolSpec } from './specs/generic-erc20-token'
 import { GroestlcoinProtocolSpec } from './specs/groestl'
-import { KtTezosTestProtocolSpec } from './specs/kt-tezos'
 import { TezosTestProtocolSpec } from './specs/tezos'
 
 // use chai-as-promised plugin
@@ -42,7 +41,6 @@ const protocols = [
   new EthereumRopstenTestProtocolSpec(),
   new AETestProtocolSpec(),
   new TezosTestProtocolSpec(),
-  new KtTezosTestProtocolSpec(),
   new BitcoinProtocolSpec(),
   new BitcoinTestProtocolSpec(),
   new GenericERC20TokenTestProtocolSpec(),

@@ -1,5 +1,5 @@
-import * as bs58check from 'bs58check'
-import * as rlp from 'rlp'
+import * as bs58check from '../dependencies/src/bs58check-2.1.2/index'
+import * as rlp from '../dependencies/src/rlp-2.2.3/index'
 
 import { signedTransactionSerializerByProtocolIdentifier, unsignedTransactionSerializerByProtocolIdentifier } from '.'
 import { SERIALIZER_VERSION } from './constants'
@@ -98,7 +98,7 @@ export class SyncProtocolUtils {
 
   public async deserialize(serializedSyncProtocol: string): Promise<DeserializedSyncProtocol> {
     const base58Decoded = bs58check.decode(serializedSyncProtocol)
-    const rlpDecodedTx: SerializedSyncProtocol = (rlp.decode(base58Decoded as any) as {}) as SerializedSyncProtocol
+    const rlpDecodedTx: SerializedSyncProtocol = (rlp.decode(base58Decoded as any, false) as {}) as SerializedSyncProtocol
 
     const version = parseInt(rlpDecodedTx[SyncProtocolKeys.VERSION].toString(), 10)
 

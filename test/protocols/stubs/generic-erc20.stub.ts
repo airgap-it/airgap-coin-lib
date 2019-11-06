@@ -1,4 +1,4 @@
-import BigNumber from 'bignumber.js'
+import BigNumber from '../../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
 import * as sinon from 'sinon'
 
 import { EthereumProtocol } from '../../../src/protocols/ethereum/EthereumProtocol'

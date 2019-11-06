@@ -1,7 +1,7 @@
 import { SignedTezosTransaction } from './../../../src/serializer/signed-transactions/tezos-transactions.serializer'
 
 import { TezosTransactionValidator } from './../../../src/serializer/unsigned-transactions/tezos-transactions.validator'
-import BigNumber from 'bignumber.js'
+import BigNumber from '../../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
 
 import { TezosProtocol } from '../../../src/'
 import { TestProtocolSpec } from '../implementations'
@@ -42,10 +42,10 @@ export class TezosTestProtocolSpec extends TestProtocolSpec {
       from: ['tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'],
       unsignedTx: {
         binaryTransaction:
-          'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb95508000091a9d2b003f19cf5a1f38f04f1000ab482d331768c0bc4fe37bc5000c0843d000091a9d2b003f19cf5a1f38f04f1000ab482d3317600'
+          'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb9556c0091a9d2b003f19cf5a1f38f04f1000ab482d331768c0bc4fe37bc5000c0843d000091a9d2b003f19cf5a1f38f04f1000ab482d3317600'
       },
       signedTx:
-        'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb95508000091a9d2b003f19cf5a1f38f04f1000ab482d331768c0bc4fe37bc5000c0843d000091a9d2b003f19cf5a1f38f04f1000ab482d3317600803add2e702795b8f5d72bde46567ebfedd47c2e793ecc4a91bafc16db968a4d0a78d18ad471ba56c3bb78839dccbfc7fe22b69a148246a44749bcbedae53c01'
+        'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb9556c0091a9d2b003f19cf5a1f38f04f1000ab482d331768c0bc4fe37bc5000c0843d000091a9d2b003f19cf5a1f38f04f1000ab482d3317600b6e3e3a70996ef1e9414324d291f3d50f63c4f32b32fc1abd4dbe2d2ce55ca47598aead75b94c9a691d7b3f1912220db0118c18e141cacc84e39147aabfad60e'
     }
   ]
 

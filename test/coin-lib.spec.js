@@ -1,11 +1,10 @@
-const BIP39 = require('bip39')
+const BIP39 = require('../dist/dependencies/src/bip39-2.5.0/index')
 const assert = require('assert')
 const networks = require('../dist/networks')
 
-const bitcoinJS = require('bitcoinjs-lib')
-const zcashJS = require('bitcoinjs-lib-zcash')
+const bitcoinJS = require('../dist/dependencies/src/bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac/src/index')
 
-const BigNumber = require('bignumber.js')
+const BigNumber = require('../dist/dependencies/src/bignumber.js-9.0.0/bignumber')
 
 const mnemonicPhrase = 'spell device they juice trial skirt amazing boat badge steak usage february virus art survey' // this is what the user writes down and what is saved by secure storage?
 const masterSeed = BIP39.mnemonicToSeed(mnemonicPhrase)
@@ -16,7 +15,7 @@ const hopTokenProtocol = require('../dist/protocols/ethereum/erc20/HopRopstenTok
 const validateTxHelper = require('./helpers/validate-tx')
 
 const sinon = require('sinon')
-const axios = require('axios')
+const axios = require('../dist/dependencies/src/axios-0.19.0/index')
 
 describe('Extended Public Derivation Logic', function() {
   it('should return the correct bitcoin address from extended public key', function(done) {
@@ -78,27 +77,6 @@ describe('Extended Public Derivation Logic', function() {
       .then(results => {
         assert.equal(results[0], 'mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k') // m/44'/1'/0'/0/0
         assert.equal(results[1], 'moK2Ws7YvK3LRppzCuLRVfDkpvZiw7T4cu') // m/44'/1'/0'/0/1
-        done()
-      })
-      .catch(error => {
-        done(error)
-      })
-  })
-  it('should return the correct zcash address from extended public key', function(done) {
-    const zcashHdNode = zcashJS.HDNode.fromSeedBuffer(masterSeed, networks.zcash)
-    const extendedPublicKey = zcashHdNode
-      .derivePath("m/44'/133'/0'")
-      .neutered()
-      .toBase58()
-    const zcash = new CoinLib.ZCashProtocol()
-
-    Promise.all([
-      zcash.getAddressFromExtendedPublicKey(extendedPublicKey, 0, 0),
-      zcash.getAddressFromExtendedPublicKey(extendedPublicKey, 0, 1)
-    ])
-      .then(results => {
-        assert.equal(results[0], 't1PFyZ43MRrVRBWTKqTT5wfimtZ9MFSTgPC') // m/44'/133'/0'/0/0
-        assert.equal(results[1], 't1XwXnCQopt16zfAJVb76A7JPerKE9LSg9L') // m/44'/133'/0'/0/1
         done()
       })
       .catch(error => {
@@ -171,24 +149,6 @@ describe('Public Derivation Logic', function() {
       .getAddressFromPublicKey(publicKey)
       .then(address => {
         assert.equal(address, 'mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k')
-        done()
-      })
-      .catch(error => {
-        done(error)
-      })
-  })
-  it('should return the correct zcash address from extended public key', function(done) {
-    const zcashHdNode = zcashJS.HDNode.fromSeedBuffer(masterSeed, networks.zcash)
-    const publicKey = zcashHdNode
-      .derivePath("m/44'/133'/0'/0/0")
-      .neutered()
-      .toBase58()
-    const zcash = new CoinLib.ZCashProtocol()
-
-    zcash
-      .getAddressFromPublicKey(publicKey)
-      .then(address => {
-        assert.equal(address, 't1PFyZ43MRrVRBWTKqTT5wfimtZ9MFSTgPC')
         done()
       })
       .catch(error => {

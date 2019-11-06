@@ -1,4 +1,4 @@
-import BigNumber from 'bignumber.js'
+import BigNumber from '../../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
 
 import { BitcoinTestnetProtocol, DeserializedSyncProtocol, SignedTransaction } from '../../../src'
 import { TestProtocolSpec } from '../implementations'
