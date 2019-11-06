@@ -1,5 +1,5 @@
-import * as bs58check from 'bs58check'
-import * as rlp from 'rlp'
+import * as bs58check from '../../dependencies/src/bs58check-2.1.2/index'
+import * as rlp from '../../dependencies/src/rlp-2.2.3/index'
 
 import { assertNever, IACMessageDefinition, Message } from './message'
 import { Payload, PayloadType } from './payload'

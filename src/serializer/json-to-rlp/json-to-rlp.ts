@@ -1,4 +1,4 @@
-import * as rlp from 'rlp'
+import * as rlp from '../../dependencies/src/rlp-2.2.3/index'
 
 import { Schema } from '../v2/schemas/schema'
 
