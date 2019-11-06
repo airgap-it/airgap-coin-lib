@@ -1772,11 +1772,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     return result.data
   }
 
-  // private async fetchContractBalance(blockLevel: number | `head`, address: string): Promise<BigNumber> {
-  //   const result = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/${blockLevel}/context/contracts/${address}/balance`)
-  //   return new BigNumber(result.data)
-  // }
-
   private async fetchBalances(addresses: string[], blockLevel: number): Promise<{ address: string; balance: BigNumber }[]> {
     const body = {
       fields: ['account_id', 'balance'],
