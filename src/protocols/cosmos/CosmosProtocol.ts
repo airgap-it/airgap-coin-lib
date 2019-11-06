@@ -5,14 +5,14 @@ import { ICoinSubProtocol } from '../ICoinSubProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
 import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 
-import { BIP32Interface, fromSeed } from 'bip32'
+import { BIP32Interface, fromSeed } from '../../dependencies/src/bip32-2.0.4/src/index'
 import { mnemonicToSeed, validateMnemonic } from '../../dependencies/src/bip39-2.5.0/index'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { UnsignedCosmosTransaction } from '../../serializer/unsigned-transactions/cosmos-transactions.serializer'
 
-import RIPEMD160 = require('ripemd160')
-import BECH32 = require('bech32')
-import SECP256K1 = require('secp256k1')
+import RIPEMD160 = require('../../dependencies/src/ripemd160-2.0.2/index')
+import BECH32 = require('../../dependencies/src/bech32-1.1.3/index')
+import SECP256K1 = require('../../dependencies/src/secp256k1-3.7.1/elliptic')
 import { SignedCosmosTransaction } from '../../serializer/signed-transactions/cosmos-transactions.serializer'
 import {
   CosmosTransaction,

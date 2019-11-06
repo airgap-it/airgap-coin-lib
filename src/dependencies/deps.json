@@ -439,6 +439,37 @@
       "inherits-2.0.4"
     ]
   },
+  "create-hmac-1.1.7": {
+    "name": "create-hmac",
+    "entrypoint": "browser",
+    "version": "1.1.7",
+    "repository": "crypto-browserify/createHmac",
+    "commitHash": "f6e01bb8151fb53bfdccc3a6037c68e0b07127e5",
+    "files": [
+      "browser.js",
+      "legacy.js"
+    ],
+    "deps": [
+      "cipher-base-1.0.4",
+      "create-hash-1.2.0",
+      "inherits-2.0.4",
+      "ripemd160-2.0.2",
+      "safe-buffer-5.2.0",
+      "sha.js-2.4.11"
+    ],
+    "replaceInFiles": [
+      {
+        "filename": "browser.js",
+        "replacements": [
+          {
+            "from": "var md5 = require('create-hash/md5')",
+            "to": "var md5 = require('../create-hash-1.2.0/md5')",
+            "expectedReplacements": 1
+          }
+        ]
+      }
+    ]
+  },
   "randombytes-2.1.0": {
     "name": "randombytes",
     "entrypoint": "browser",
@@ -789,6 +820,16 @@
     "version": "0.0.3",
     "repository": "bitcoinjs/bech32",
     "commitHash": "b3bc5d82896c45d046b74ae18ee13681f4212462",
+    "files": [
+      "index.js"
+    ]
+  },
+  "bech32-1.1.3": {
+    "name": "bech32",
+    "entrypoint": "index",
+    "version": "1.1.3",
+    "repository": "bitcoinjs/bech32",
+    "commitHash": "b91129de18826dc17b82ba11c6762b4627fc3d1c",
     "files": [
       "index.js"
     ]
@@ -1169,6 +1210,56 @@
     "commitHash": "1dcc61bd06d84e389bfd5311b2b1492a14c74201",
     "files": [
       "include_dirs.js"
+    ]
+  },
+  "bip32-2.0.4": {
+    "name": "bip32",
+    "entrypoint": "src/index",
+    "version": "2.0.4",
+    "repository": "bitcoinjs/bip32",
+    "commitHash": "52bc5500bd13fe632bcea93cf602f8f80e057895",
+    "files": [
+      "src/index.js",
+      "src/bip32.js",
+      "src/crypto.js"
+    ],
+    "deps": [
+      "bs58check-2.1.2",
+      "create-hash-1.2.0",
+      "create-hmac-1.1.7",
+      "tiny-secp256k1-1.1.3",
+      "typeforce-1.18.0",
+      "wif-2.0.6"
+    ],
+    "ignoredDeps": [
+      {
+        "module": "@types/node",
+        "reason": "Should be a dev dependency"
+      }
+    ]
+  },
+  "tiny-secp256k1-1.1.3": {
+    "name": "tiny-secp256k1",
+    "entrypoint": "js",
+    "version": "1.1.3",
+    "repository": "bitcoinjs/tiny-secp256k1",
+    "commitHash": "86b15340a11bc5c42329078bd5f4e7fd92566036",
+    "files": [
+      "js.js",
+      "rfc6979.js"
+    ],
+    "deps": [
+      "bn.js-4.11.8",
+      "create-hmac-1.1.7",
+      "elliptic-6.5.1",
+      "wif-2.0.6",
+      "nan-2.14.0"
+    ],
+    "ignoredDeps": [
+      {
+        "module": "bindings",
+        "reason": "Only used in node"
+      }
     ]
   }
 }
