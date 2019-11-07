@@ -2,6 +2,7 @@ import * as rlp from '../../dependencies/src/rlp-2.2.3/index'
 import { RLPData } from '../utils/toBuffer'
 
 import { Schema } from '../v2/schemas/schema'
+import { InvalidSchema, InvalidSchemaType } from '../errors'
 
 function log(...args: unknown[]): void {
   const loggingEnabled: boolean = false
@@ -25,17 +26,19 @@ const assertNever: (x: never) => void = (x: never): void => undefined
 
 export function unwrapSchema(schema: Schema): any {
   log('UNWRAPPING SCHEMA', schema)
+
   const definitions: Object = (schema as any).definitions
   const definitionKeys: string[] = Object.keys(definitions)
+
   if (definitionKeys.length !== 1) {
-    throw new Error('INVALID SCHEMA, MORE THAN ONE DEFINITION')
+    throw new InvalidSchema()
   }
 
   return definitions[definitionKeys[0]]
 }
 
 function typeError(key: string, expectedType: string, value: unknown): Error {
-  return new Error(`${key}: expected type "${expectedType}", but got "${typeof value}"`)
+  return new InvalidSchemaType(`${key}: expected type "${expectedType}", but got "${typeof value}"`)
 }
 
 function checkType<T>(key: string, expectedType: string, value: unknown, callback: ((arg: any) => RLPData)): RLPData {

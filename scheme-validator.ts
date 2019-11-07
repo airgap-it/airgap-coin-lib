@@ -1,4 +1,4 @@
-const accountShareResponse = require('./account-share-response.json')
+const accountShareResponse = require('./src/serializer/v2/schemas/generated/account-share-response.json')
 const data = {}
 
 let Ajv = require('ajv')

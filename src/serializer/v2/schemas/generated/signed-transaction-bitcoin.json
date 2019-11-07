@@ -1,8 +1,8 @@
 {
-  "$ref": "#/definitions/SignedEthereumTransaction",
+  "$ref": "#/definitions/SignedBitcoinTransaction",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
-    "SignedEthereumTransaction": {
+    "SignedBitcoinTransaction": {
       "additionalProperties": false,
       "properties": {
         "accountIdentifier": {
@@ -30,7 +30,13 @@
           "type": "string"
         }
       },
-      "required": ["accountIdentifier", "transaction"],
+      "required": [
+        "accountIdentifier",
+        "amount",
+        "fee",
+        "from",
+        "transaction"
+      ],
       "type": "object"
     }
   }

@@ -15,7 +15,11 @@
           "type": "string"
         }
       },
-      "required": ["publicKey", "derivationPath", "isExtendedPublicKey"],
+      "required": [
+        "publicKey",
+        "derivationPath",
+        "isExtendedPublicKey"
+      ],
       "type": "object"
     }
   }

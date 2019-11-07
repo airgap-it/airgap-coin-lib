@@ -21,7 +21,10 @@
           "type": "string"
         }
       },
-      "required": ["message", "signature"],
+      "required": [
+        "message",
+        "signature"
+      ],
       "type": "object"
     }
   }

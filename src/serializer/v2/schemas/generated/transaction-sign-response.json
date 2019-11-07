@@ -1,8 +1,8 @@
 {
-  "$ref": "#/definitions/SignedAeternityTransaction",
+  "$ref": "#/definitions/SignedTransaction",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
-    "SignedAeternityTransaction": {
+    "SignedTransaction": {
       "additionalProperties": false,
       "properties": {
         "accountIdentifier": {
@@ -30,7 +30,10 @@
           "type": "string"
         }
       },
-      "required": ["accountIdentifier", "transaction"],
+      "required": [
+        "transaction",
+        "accountIdentifier"
+      ],
       "type": "object"
     }
   }

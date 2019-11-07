@@ -1,8 +1,8 @@
 {
-  "$ref": "#/definitions/SignedTezosTransaction",
+  "$ref": "#/definitions/SignedAeternityTransaction",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
-    "SignedTezosTransaction": {
+    "SignedAeternityTransaction": {
       "additionalProperties": false,
       "properties": {
         "accountIdentifier": {
@@ -30,7 +30,10 @@
           "type": "string"
         }
       },
-      "required": ["accountIdentifier", "transaction"],
+      "required": [
+        "accountIdentifier",
+        "transaction"
+      ],
       "type": "object"
     }
   }
