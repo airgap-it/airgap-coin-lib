@@ -1,5 +1,5 @@
 // tslint:disable:no-console
-import BigNumber from 'bignumber.js'
+import BigNumber from '../src/dependencies/src/bignumber.js-9.0.0/bignumber'
 
 import { IAirGapTransaction, TezosProtocol } from '../src'
 import { RawTezosTransaction } from '../src/serializer/unsigned-transactions/tezos-transactions.serializer'
@@ -17,7 +17,7 @@ tezosProtocol
   .prepareTransactionFromPublicKey(publicKey, [recipient], [amount], fee)
   .then(async (tx: RawTezosTransaction) => {
     console.log('tx', tx)
-    const details: IAirGapTransaction = await tezosProtocol.getTransactionDetails({ publicKey: '', transaction: tx })
+    const details: IAirGapTransaction[] = await tezosProtocol.getTransactionDetails({ publicKey: '', transaction: tx })
 
     console.log('details', details)
 

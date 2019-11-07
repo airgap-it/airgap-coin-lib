@@ -1,5 +1,5 @@
+import BigNumber from '../src/dependencies/src/bignumber.js-9.0.0/bignumber'
 import { CosmosProtocol } from '../src/protocols/cosmos/CosmosProtocol'
-import BigNumber from 'bignumber.js'
 
 const mnemonic =
   'sick protect below book devote mention juice neck tent wrong fun either phone omit mango vacuum hedgehog run educate flag hundred famous duck garbage'
