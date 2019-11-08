@@ -1,0 +1,41 @@
+{
+  "$ref": "#/definitions/SignedCosmosTransaction",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "IAirGapSignedTransaction": {
+      "type": "string"
+    },
+    "SignedCosmosTransaction": {
+      "additionalProperties": false,
+      "properties": {
+        "accountIdentifier": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string"
+        },
+        "fee": {
+          "type": "string"
+        },
+        "from": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "to": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "transaction": {
+          "$ref": "#/definitions/IAirGapSignedTransaction",
+          "type": "string"
+        }
+      },
+      "required": ["accountIdentifier", "transaction"],
+      "type": "object"
+    }
+  }
+}
