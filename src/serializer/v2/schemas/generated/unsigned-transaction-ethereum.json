@@ -2,6 +2,9 @@
   "$ref": "#/definitions/UnsignedEthereumTransaction",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
+    "HexString": {
+      "type": "string"
+    },
     "UnsignedEthereumTransaction": {
       "additionalProperties": false,
       "properties": {
@@ -18,22 +21,22 @@
               "type": "number"
             },
             "data": {
-              "type": "string"
+              "$ref": "#/definitions/HexString"
             },
             "gasLimit": {
-              "type": "string"
+              "$ref": "#/definitions/HexString"
             },
             "gasPrice": {
-              "type": "string"
+              "$ref": "#/definitions/HexString"
             },
             "nonce": {
-              "type": "string"
+              "$ref": "#/definitions/HexString"
             },
             "to": {
-              "type": "string"
+              "$ref": "#/definitions/HexString"
             },
             "value": {
-              "type": "string"
+              "$ref": "#/definitions/HexString"
             }
           },
           "required": [

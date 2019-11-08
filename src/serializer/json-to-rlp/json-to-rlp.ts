@@ -1,8 +1,8 @@
 import * as rlp from '../../dependencies/src/rlp-2.2.3/index'
 import { RLPData } from '../utils/toBuffer'
 
-import { Schema } from '../v2/schemas/schema'
 import { InvalidSchema, InvalidSchemaType } from '../errors'
+import { Schema } from '../v2/schemas/schema'
 
 function log(...args: unknown[]): void {
   const loggingEnabled: boolean = false
@@ -30,19 +30,28 @@ export function unwrapSchema(schema: Schema): any {
   const definitions: Object = (schema as any).definitions
   const definitionKeys: string[] = Object.keys(definitions)
 
-  if (definitionKeys.length !== 1) {
-    throw new InvalidSchema()
+  let extraDefinitions: number = 0
+  if (definitionKeys.includes('HexString')) {
+    extraDefinitions++
+  }
+
+  if (definitionKeys.length !== 1 + extraDefinitions) {
+    throw new InvalidSchema('Not exactly one Schema is defined')
   }
 
   return definitions[definitionKeys[0]]
 }
 
 function typeError(key: string, expectedType: string, value: unknown): Error {
-  return new InvalidSchemaType(`${key}: expected type "${expectedType}", but got "${typeof value}"`)
+  return new InvalidSchemaType(
+    `${key}: expected type "${expectedType}", but got "${typeof value}", ${typeof value === 'object' ? JSON.stringify(value) : value}`
+  )
 }
 
 function checkType<T>(key: string, expectedType: string, value: unknown, callback: ((arg: any) => RLPData)): RLPData {
-  if (typeof value === expectedType) {
+  if (expectedType === 'array' && Array.isArray(value)) {
+    return callback(value)
+  } else if (typeof value === expectedType) {
     return callback(value)
   } else if (typeof value === 'undefined') {
     return ''
@@ -114,7 +123,7 @@ export function jsonToArray(key: string, schema: Object, value: Object): RLPData
 
     case SchemaTypes.ARRAY:
       return checkType(key, 'array', value, arg => {
-        return arg.map(element => jsonToArray(key, schema, element))
+        return arg.map(element => jsonToArray(key, (schema as any).items, element))
       })
 
     case SchemaTypes.OBJECT:
@@ -198,7 +207,7 @@ export function rlpArrayToJson(schema: Object, decoded: any[]): any {
 
       case SchemaTypes.ARRAY:
         // TODO: Implement
-        outObject[key] = rlpArrayToJson(schema[key].properties, decoded[i])
+        outObject[key] = decoded[i].map(decodedElement => rlpArrayToJson(schema[key].items.properties, decodedElement))
         break
 
       case SchemaTypes.OBJECT:
