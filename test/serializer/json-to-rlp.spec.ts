@@ -1,12 +1,12 @@
 import { expect } from 'chai'
 import 'mocha'
 
-import { AccountShareResponse } from '../../src/serializer/v2/schemas/account-share-response'
-const accountShareResponse = require('../../src/serializer/v2/schemas/account-share-response.json')
-import { MessageSignRequest } from '../../src/serializer/v2/schemas/message-sign-request'
-const messageSignRequest = require('../../src/serializer/v2/schemas/message-sign-request.json')
-import { MessageSignResponse } from '../../src/serializer/v2/schemas/message-sign-response'
-const messageSignResponse = require('../../src/serializer/v2/schemas/message-sign-response.json')
+import { AccountShareResponse } from '../../src/serializer/v2/schemas/definitions/account-share-response'
+const accountShareResponse = require('../../src/serializer/v2/schemas/generated/account-share-response.json')
+import { MessageSignRequest } from '../../src/serializer/v2/schemas/definitions/message-sign-request'
+const messageSignRequest = require('../../src/serializer/v2/schemas/generated/message-sign-request.json')
+import { MessageSignResponse } from '../../src/serializer/v2/schemas/definitions/message-sign-response'
+const messageSignResponse = require('../../src/serializer/v2/schemas/generated/message-sign-response.json')
 import { jsonToRlp, rlpToJson, unwrapSchema } from '../../src/serializer/json-to-rlp/json-to-rlp'
 
 export const testSchema = {
