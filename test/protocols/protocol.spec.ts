@@ -10,7 +10,6 @@ import { TestProtocolSpec } from './implementations'
 import { AETestProtocolSpec } from './specs/ae'
 import { BitcoinProtocolSpec } from './specs/bitcoin'
 import { BitcoinTestProtocolSpec } from './specs/bitcoin-test'
-import { ERC20HOPTokenTestProtocolSpec } from './specs/erc20-hop-token'
 import { EthereumTestProtocolSpec } from './specs/ethereum'
 import { EthereumClassicTestProtocolSpec } from './specs/ethereum-classic'
 import { EthereumRopstenTestProtocolSpec } from './specs/ethereum-ropsten'
@@ -35,7 +34,6 @@ const expect = chai.expect
  */
 
 const protocols = [
-  new ERC20HOPTokenTestProtocolSpec(),
   new EthereumTestProtocolSpec(),
   new EthereumClassicTestProtocolSpec(),
   new EthereumRopstenTestProtocolSpec(),

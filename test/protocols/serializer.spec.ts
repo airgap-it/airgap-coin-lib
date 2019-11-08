@@ -8,7 +8,6 @@ import { Serializer } from '../../src/serializer/v2/serializer.new'
 import { TestProtocolSpec } from './implementations'
 import { AETestProtocolSpec } from './specs/ae'
 import { BitcoinProtocolSpec } from './specs/bitcoin'
-import { ERC20HOPTokenTestProtocolSpec } from './specs/erc20-hop-token'
 import { EthereumTestProtocolSpec } from './specs/ethereum'
 import { GenericERC20TokenTestProtocolSpec } from './specs/generic-erc20-token'
 import { TezosTestProtocolSpec } from './specs/tezos'
@@ -17,7 +16,6 @@ const protocols = [
   new EthereumTestProtocolSpec(),
   new BitcoinProtocolSpec(),
   new AETestProtocolSpec(),
-  new ERC20HOPTokenTestProtocolSpec(),
   new TezosTestProtocolSpec(),
   new GenericERC20TokenTestProtocolSpec()
 ]
