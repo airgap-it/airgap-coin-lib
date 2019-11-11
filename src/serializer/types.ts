@@ -1,5 +1,3 @@
-import BigNumber from '../dependencies/src/bignumber.js-9.0.0/bignumber'
-
 export interface RawTezosTransaction {
   binaryTransaction: string
 }
