@@ -215,11 +215,13 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
       promises.push(this.nodeClient.fetchBalance(address))
     }
 
-    return (await Promise.all(promises).then(balances => {
-      return balances.reduce((current, next) => {
-        return current.plus(next)
+    return (
+      await Promise.all(promises).then(balances => {
+        return balances.reduce((current, next) => {
+          return current.plus(next)
+        })
       })
-    })).toString(10)
+    ).toString(10)
   }
 
   public async getBalanceOfPublicKey(publicKey: string): Promise<string> {

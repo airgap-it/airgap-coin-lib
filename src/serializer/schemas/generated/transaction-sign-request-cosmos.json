@@ -21,24 +21,14 @@
         },
         "e": {
           "description": "The exponent of the value of this BigNumber, an integer number, -1000000000 to 1000000000, or null.",
-          "type": [
-            "number",
-            "null"
-          ]
+          "type": ["number", "null"]
         },
         "s": {
           "description": "The sign of the value of this BigNumber, -1, 1, or null.",
-          "type": [
-            "number",
-            "null"
-          ]
+          "type": ["number", "null"]
         }
       },
-      "required": [
-        "c",
-        "e",
-        "s"
-      ],
+      "required": ["c", "e", "s"],
       "type": "object"
     },
     "CosmosCoin": {
@@ -51,10 +41,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "denom",
-        "amount"
-      ],
+      "required": ["denom", "amount"],
       "type": "object"
     },
     "CosmosFee": {
@@ -70,10 +57,7 @@
           "$ref": "#/definitions/BigNumber"
         }
       },
-      "required": [
-        "amount",
-        "gas"
-      ],
+      "required": ["amount", "gas"],
       "type": "object"
     },
     "CosmosMessage": {
@@ -83,9 +67,7 @@
           "$ref": "#/definitions/CosmosMessageType"
         }
       },
-      "required": [
-        "type"
-      ],
+      "required": ["type"],
       "type": "object"
     },
     "CosmosMessageType": {
@@ -98,19 +80,11 @@
           "type": "string"
         }
       },
-      "required": [
-        "index",
-        "value"
-      ],
+      "required": ["index", "value"],
       "type": "object"
     },
     "CosmosMessageTypeIndex": {
-      "enum": [
-        0,
-        1,
-        2,
-        3
-      ],
+      "enum": [0, 1, 2, 3],
       "type": "number"
     },
     "CosmosTransaction": {
@@ -138,14 +112,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "messages",
-        "fee",
-        "memo",
-        "chainID",
-        "accountNumber",
-        "sequence"
-      ],
+      "required": ["messages", "fee", "memo", "chainID", "accountNumber", "sequence"],
       "type": "object"
     },
     "UnsignedCosmosTransaction": {
@@ -161,10 +128,7 @@
           "$ref": "#/definitions/CosmosTransaction"
         }
       },
-      "required": [
-        "publicKey",
-        "transaction"
-      ],
+      "required": ["publicKey", "transaction"],
       "type": "object"
     }
   }
