@@ -1,8 +1,7 @@
 import { expect } from 'chai'
 import 'mocha'
 
-// import { getProtocolByIdentifier, IAirGapTransaction, SignedTransaction, UnsignedTransaction } from '../../src'
-// import { IACMessageDefinition } from '../../src/serializer/v2/message'
+import { IACMessageDefinitionObject } from '../../src/serializer/v2/message'
 import { Serializer } from '../../src/serializer/v2/serializer.new'
 
 import { TestProtocolSpec } from './implementations'
@@ -26,8 +25,8 @@ protocols.forEach((protocol: TestProtocolSpec) => {
   describe(`Serialization Protocol for ${protocol.name}`, () => {
     it(`should be able to serialize a transaction to a airgap protocol string`, async () => {
       for (const tx of protocol.txs) {
-        const serializedTx = syncProtocol.serialize(protocol.unsignedTransaction(tx))
-        const deserializedTx = syncProtocol.deserialize(serializedTx)
+        const serializedTx: string[] = await syncProtocol.serialize(protocol.unsignedTransaction(tx))
+        const deserializedTx: IACMessageDefinitionObject[] = await syncProtocol.deserialize(serializedTx)
 
         expect(protocol.unsignedTransaction(tx)).to.deep.equal(deserializedTx)
       }

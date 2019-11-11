@@ -74,7 +74,7 @@ export class GroestlcoinProtocolSpec extends TestProtocolSpec {
 
   public signedTransaction(tx: any): IACMessageDefinitionObject[] {
     const protocol: IACMessageDefinitionObject[] = super.signedTransaction(tx)
-    const payload = protocol[0].data as SignedTransaction
+    const payload = protocol[0].payload as SignedTransaction
     payload.amount = this.txs[0].amount
     payload.fee = this.txs[0].fee
     payload.from = this.wallet.addresses
