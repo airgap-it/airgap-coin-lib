@@ -59,12 +59,12 @@
   "devDependencies": {
     "@types/node": "12.12.6",
     "typescript": "3.7.2",
-    "sonarqube-scanner": "2.1.2"
+    "sonarqube-scanner": "2.5.0"
   },
   "buildDependencies": {
     "@types/node": "12.12.6",
     "typescript": "3.7.2",
-    "sonarqube-scanner": "2.1.2"
+    "sonarqube-scanner": "2.5.0"
   },
   "testDependencies": {
     "@types/assert": "0.0.31",
@@ -81,23 +81,22 @@
     "browserify": "16.5.0",
     "chai": "4.2.0",
     "chai-as-promised": "7.1.1",
-    "husky": "1.1.2",
+    "husky": "3.0.9",
     "istanbul": "0.4.5",
     "mocha": "5.2.0",
     "node-fetch": "2.2.0",
     "nyc": "12.0.2",
-    "prettier": "1.14.2",
-    "pretty-quick": "1.8.0",
+    "prettier": "1.19.1",
+    "pretty-quick": "2.0.1",
     "qrcode-terminal": "0.12.0",
     "semver": "6.3.0",
     "sinon": "6.3.5",
-    "sonarqube-scanner": "2.1.2",
-    "ts-json-schema-generator": "^0.52.14",
-    "ts-node": "7.0.1",
-    "tslint": "5.11.0",
-    "tslint-config-prettier": "1.15.0",
-    "tslint-config-valorsoft": "2.2.1",
-    "websocket": "1.0.28"
+    "sonarqube-scanner": "2.5.0",
+    "ts-json-schema-generator": "0.56.0",
+    "ts-node": "8.5.0",
+    "tslint": "5.20.1",
+    "tslint-config-prettier": "1.18.0",
+    "tslint-config-valorsoft": "2.2.1"
   },
   "files": [
     "/dist"
