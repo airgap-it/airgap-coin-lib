@@ -6,9 +6,9 @@ import * as bitcoinJS from '../../dependencies/src/bitgo-utxo-lib-5d91049fd7a988
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
 import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 import { Network } from '../../networks'
+import { UnsignedTransaction } from '../../serializer/schemas/definitions/transaction-sign-request'
+import { SignedBitcoinTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-bitcoin'
 import { RawBitcoinTransaction } from '../../serializer/types'
-import { SignedBitcoinTransaction } from '../../serializer/schemas/definitions/signed-transaction-bitcoin'
-import { UnsignedTransaction } from '../../serializer/schemas/definitions/unsigned-transaction'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
 
 const DUST_AMOUNT: number = 50

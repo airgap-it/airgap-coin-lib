@@ -1,4 +1,4 @@
-import { UnsignedTransaction } from './unsigned-transaction'
+import { UnsignedTransaction } from './transaction-sign-request'
 
 interface RawAeternityTransaction {
   networkId: string

@@ -1,8 +1,11 @@
 {
-  "$ref": "#/definitions/SignedTransaction",
+  "$ref": "#/definitions/SignedCosmosTransaction",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
-    "SignedTransaction": {
+    "IAirGapSignedTransaction": {
+      "type": "string"
+    },
+    "SignedCosmosTransaction": {
       "additionalProperties": false,
       "properties": {
         "accountIdentifier": {
@@ -27,12 +30,13 @@
           "type": "array"
         },
         "transaction": {
+          "$ref": "#/definitions/IAirGapSignedTransaction",
           "type": "string"
         }
       },
       "required": [
-        "transaction",
-        "accountIdentifier"
+        "accountIdentifier",
+        "transaction"
       ],
       "type": "object"
     }

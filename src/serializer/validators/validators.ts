@@ -12,10 +12,10 @@ import {
   validators
 } from '../../dependencies/src/validate.js-0.13.1/validate'
 import bs64check from '../../utils/base64Check'
+import { UnsignedTezosTransaction } from '../schemas/definitions/transaction-sign-request-tezos'
+import { SignedEthereumTransaction } from '../schemas/definitions/transaction-sign-response-ethereum'
+import { SignedTezosTransaction } from '../schemas/definitions/transaction-sign-response-tezos'
 import { RawTezosTransaction } from '../types'
-import { SignedEthereumTransaction } from '../schemas/definitions/signed-transaction-ethereum'
-import { SignedTezosTransaction } from '../schemas/definitions/signed-transaction-tezos'
-import { UnsignedTezosTransaction } from '../schemas/definitions/unsigned-transaction-tezos'
 
 import { AeternityProtocol } from './../../protocols/aeternity/AeternityProtocol'
 import { BitcoinProtocol } from './../../protocols/bitcoin/BitcoinProtocol'

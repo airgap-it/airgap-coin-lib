@@ -1,6 +1,6 @@
 import { EthereumProtocol } from '../../../src'
+import { SignedEthereumTransaction } from '../../../src/serializer/schemas/definitions/transaction-sign-response-ethereum'
 import { RawEthereumTransaction } from '../../../src/serializer/types'
-import { SignedEthereumTransaction } from '../../../src/serializer/schemas/definitions/signed-transaction-ethereum'
 import { TestProtocolSpec } from '../implementations'
 import { EthereumProtocolStub } from '../stubs/ethereum.stub'
 

@@ -1,7 +1,7 @@
 import { validate } from '../../dependencies/src/validate.js-0.13.1/validate'
+import { UnsignedBitcoinTransaction } from '../schemas/definitions/transaction-sign-request-bitcoin'
+import { SignedBitcoinTransaction } from '../schemas/definitions/transaction-sign-response-bitcoin'
 import { RawBitcoinTransaction } from '../types'
-import { SignedBitcoinTransaction } from '../schemas/definitions/signed-transaction-bitcoin'
-import { UnsignedBitcoinTransaction } from '../schemas/definitions/unsigned-transaction-bitcoin'
 import { TransactionValidator } from '../validators/transactions.validator'
 import { validateSyncScheme } from '../validators/validators'
 

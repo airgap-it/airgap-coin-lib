@@ -1,4 +1,4 @@
-import { SignedTransaction } from './signed-transaction'
+import { SignedTransaction } from './transaction-sign-response'
 
 export interface SignedTezosTransaction extends SignedTransaction {
   accountIdentifier: string

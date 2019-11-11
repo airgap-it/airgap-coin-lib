@@ -5,21 +5,22 @@ import { IACMessageDefinitionObject } from './message'
 import { Payload } from './payloads/payload'
 import { Schema } from './schemas/schema'
 
-// const accountShareRequest = require('./schemas/generated/account-share-request.json')
 const accountShareResponse = require('./schemas/generated/account-share-response.json')
 
 const messageSignRequest = require('./schemas/generated/message-sign-request.json')
 const messageSignResponse = require('./schemas/generated/message-sign-response.json')
 
-const signedTransactionAeternity = require('./schemas/generated/signed-transaction-aeternity.json')
-const signedTransactionBitcoin = require('./schemas/generated/signed-transaction-bitcoin.json')
-const signedTransactionEthereum = require('./schemas/generated/signed-transaction-ethereum.json')
-const signedTransactionTezos = require('./schemas/generated/signed-transaction-tezos.json')
+const signedTransactionAeternity = require('./schemas/generated/transaction-sign-response-aeternity.json')
+const signedTransactionBitcoin = require('./schemas/generated/transaction-sign-response-bitcoin.json')
+const signedTransactionCosmos = require('./schemas/generated/transaction-sign-response-cosmos.json')
+const signedTransactionEthereum = require('./schemas/generated/transaction-sign-response-ethereum.json')
+const signedTransactionTezos = require('./schemas/generated/transaction-sign-response-tezos.json')
 
-const unsignedTransactionAeternity = require('./schemas/generated/unsigned-transaction-aeternity.json')
-const unsignedTransactionBitcoin = require('./schemas/generated/unsigned-transaction-bitcoin.json')
-const unsignedTransactionEthereum = require('./schemas/generated/unsigned-transaction-ethereum.json')
-const unsignedTransactionTezos = require('./schemas/generated/unsigned-transaction-tezos.json')
+const unsignedTransactionAeternity = require('./schemas/generated/transaction-sign-request-aeternity.json')
+const unsignedTransactionBitcoin = require('./schemas/generated/transaction-sign-request-bitcoin.json')
+const unsignedTransactionCosmos = require('./schemas/generated/transaction-sign-request-cosmos.json')
+const unsignedTransactionEthereum = require('./schemas/generated/transaction-sign-request-ethereum.json')
+const unsignedTransactionTezos = require('./schemas/generated/transaction-sign-request-tezos.json')
 
 export enum IACPayloadType {
   FULL = 0,
@@ -92,6 +93,7 @@ Serializer.addSchema(IACMessageType.MessageSignResponse.toString(), messageSignR
 Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), unsignedTransactionAeternity, 'ae')
 Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), unsignedTransactionBitcoin, 'btc')
 Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), unsignedTransactionBitcoin, 'grs')
+Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), unsignedTransactionCosmos, 'cosmos')
 Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), unsignedTransactionEthereum, 'eth')
 Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), unsignedTransactionEthereum, 'eth-erc20')
 Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), unsignedTransactionTezos, 'xtz')
@@ -99,6 +101,7 @@ Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), unsignedT
 Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), signedTransactionAeternity, 'ae')
 Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), signedTransactionBitcoin, 'btc')
 Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), signedTransactionBitcoin, 'grs')
+Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), signedTransactionCosmos, 'cosmos')
 Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), signedTransactionEthereum, 'eth')
 Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), signedTransactionEthereum, 'eth-erc20')
 Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), signedTransactionTezos, 'xtz')

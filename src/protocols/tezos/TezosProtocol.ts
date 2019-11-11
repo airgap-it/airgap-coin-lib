@@ -7,9 +7,9 @@ import * as bs58check from '../../dependencies/src/bs58check-2.1.2/index'
 import { generateWalletUsingDerivationPath } from '../../dependencies/src/hd-wallet-js-b216450e56954a6e82ace0aade9474673de5d9d5/src/index'
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
 import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
+import { UnsignedTezosTransaction } from '../../serializer/schemas/definitions/transaction-sign-request-tezos'
+import { SignedTezosTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-tezos'
 import { RawTezosTransaction } from '../../serializer/types'
-import { SignedTezosTransaction } from '../../serializer/schemas/definitions/signed-transaction-tezos'
-import { UnsignedTezosTransaction } from '../../serializer/schemas/definitions/unsigned-transaction-tezos'
 import { getSubProtocolsByIdentifier } from '../../utils/subProtocols'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
@@ -918,7 +918,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     }
 
     while (rest.length > 0) {
-      ;({ result, rest } = this.splitAndReturnRest(rest, 2))
+      ({ result, rest } = this.splitAndReturnRest(rest, 2))
       const kindHexString: string = result
 
       switch (kindHexString) {
@@ -1007,7 +1007,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
     let contractData: { amount: BigNumber; destination: string } | undefined
     if (hasParameters) {
-      ;({ result: contractData, rest } = this.unforgeParameters(rest))
+      ({ result: contractData, rest } = this.unforgeParameters(rest))
     }
 
     if (contractData) {
@@ -1078,11 +1078,11 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     let delegate: string | undefined
     if (hasDelegate) {
       // Delegate is optional
-      ;({ result, rest } = this.splitAndReturnRest(rest, 42))
+      ({ result, rest } = this.splitAndReturnRest(rest, 42))
       delegate = this.parseAddress(`00${result}`)
     }
 
-    ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
+    ({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
     const script: BigNumber = this.zarithToBigNumber(result) // TODO: What is the type here?
 
     return {
@@ -1117,10 +1117,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
     let delegate: string | undefined
     if (rest.length === 42) {
-      ;({ result, rest } = this.splitAndReturnRest(`01${rest.slice(2)}`, 42))
+      ({ result, rest } = this.splitAndReturnRest(`01${rest.slice(2)}`, 42))
       delegate = this.parseAddress(result)
     } else if (rest.length > 42) {
-      ;({ result, rest } = this.splitAndReturnRest(`00${rest.slice(2)}`, 44))
+      ({ result, rest } = this.splitAndReturnRest(`00${rest.slice(2)}`, 44))
       delegate = this.parseAddress(result)
     } else if (rest.length === 2 && rest === '00') {
       rest = ''

@@ -1,4 +1,4 @@
-import { SignedTransaction } from './signed-transaction'
+import { SignedTransaction } from './transaction-sign-response'
 
 export interface SignedEthereumTransaction extends SignedTransaction {
   accountIdentifier: string

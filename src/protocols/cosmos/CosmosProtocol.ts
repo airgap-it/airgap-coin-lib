@@ -5,8 +5,8 @@ import { mnemonicToSeed, validateMnemonic } from '../../dependencies/src/bip39-2
 import RIPEMD160 = require('../../dependencies/src/ripemd160-2.0.2/index')
 import SECP256K1 = require('../../dependencies/src/secp256k1-3.7.1/elliptic')
 import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
-import { SignedCosmosTransaction } from '../../serializer/schemas/definitions/signed-transaction-cosmos'
-import { UnsignedCosmosTransaction } from '../../serializer/schemas/definitions/unsigned-transaction-cosmos'
+import { UnsignedCosmosTransaction } from '../../serializer/schemas/definitions/transaction-sign-request-cosmos'
+import { SignedCosmosTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-cosmos'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
 import { ICoinSubProtocol } from '../ICoinSubProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
@@ -31,8 +31,8 @@ export interface KeyPair {
 export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol {
   public symbol: string = 'ATOM'
   public name: string = 'Cosmos'
-  public marketSymbol: string = 'ATOM'
-  public feeSymbol: string = 'ATOM'
+  public marketSymbol: string = 'atom'
+  public feeSymbol: string = 'atom'
   public feeDefaults: FeeDefaults = {
     // TODO: verify if these values are ok
     low: '0.0005',
