@@ -41,7 +41,8 @@ export class Serializer {
   public static getSchema(schemaName: string, protocol?: string): Schema {
     const protocolSpecificSchemaName: string = Serializer.getSchemName(schemaName, protocol)
 
-    const schema: Schema | undefined = this.schemas.get(protocolSpecificSchemaName)
+    // Try to get the protocol specific scheme, if it doesn't exist fall back to the generic one
+    const schema: Schema | undefined = this.schemas.get(protocolSpecificSchemaName) ?? this.schemas.get(Serializer.getSchemName(schemaName))
 
     if (!schema) {
       throw new Error(`Schema ${protocolSpecificSchemaName} does not exist`)
@@ -54,7 +55,7 @@ export class Serializer {
     return protocol ? `${schemaName}-${protocol}` : schemaName
   }
 
-  public serialize(messages: IACMessageDefinitionObject[], chunkSize: number = 0): string[] {
+  public async serialize(messages: IACMessageDefinitionObject[], chunkSize: number = 0): Promise<string[]> {
     if (
       messages.every((message: IACMessageDefinitionObject) => {
         return Serializer.getSchema(message.type.toString(), message.protocol)
@@ -68,7 +69,7 @@ export class Serializer {
     }
   }
 
-  public deserialize(data: string[]): IACMessageDefinitionObject[] {
+  public async deserialize(data: string[]): Promise<IACMessageDefinitionObject[]> {
     const result: IACProtocol[] = IACProtocol.createFromEncoded(data)
 
     return result

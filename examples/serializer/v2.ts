@@ -2,16 +2,16 @@ import { IACMessageType } from '../../src/serializer/v2/interfaces'
 import { IACMessageDefinitionObject } from '../../src/serializer/v2/message'
 import { Serializer } from '../../src/serializer/v2/serializer.new'
 
-const serializeAndDeserialize = (messages: IACMessageDefinitionObject[], size: number) => {
+const serializeAndDeserialize = async (messages: IACMessageDefinitionObject[], size: number) => {
   const serializer = new Serializer()
 
-  const result = serializer.serialize(messages, size)
+  const result = await serializer.serialize(messages, size)
 
   console.log(`Split up into ${result.length} chunks`, result)
 
   const serializer2 = new Serializer()
 
-  const reconstructed = serializer2.deserialize(result)
+  const reconstructed = await serializer2.deserialize(result)
 
   console.log('reconstructed', reconstructed.map(el => JSON.stringify(el)))
 }

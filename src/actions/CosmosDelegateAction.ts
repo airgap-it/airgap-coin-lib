@@ -36,7 +36,7 @@ export class CosmosDelegateAction<Context extends CosmosDelegateActionContext> e
 
     const serializer: Serializer = new Serializer()
 
-    const serializedTx = serializer.serialize([
+    const serializedTx: string[] = await serializer.serialize([
       {
         protocol: this.context.wallet.coinProtocol.identifier,
         type: IACMessageType.TransactionSignRequest,
