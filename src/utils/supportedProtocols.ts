@@ -1,10 +1,10 @@
 import { AeternityProtocol } from '../protocols/aeternity/AeternityProtocol'
 import { BitcoinProtocol } from '../protocols/bitcoin/BitcoinProtocol'
+import { CosmosProtocol } from '../protocols/cosmos/CosmosProtocol'
 import { EthereumProtocol } from '../protocols/ethereum/EthereumProtocol'
 import { GroestlcoinProtocol } from '../protocols/groestlcoin/GroestlcoinProtocol'
 import { ICoinProtocol } from '../protocols/ICoinProtocol'
 import { TezosProtocol } from '../protocols/tezos/TezosProtocol'
-import { CosmosProtocol } from '../protocols/cosmos/CosmosProtocol'
 
 const protocols: ICoinProtocol[] = []
 

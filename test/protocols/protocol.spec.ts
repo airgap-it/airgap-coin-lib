@@ -4,7 +4,6 @@ import 'mocha'
 import * as sinon from 'sinon'
 
 import { IAirGapTransaction } from '../../src'
-import BigNumber from '../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
 
 import { TestProtocolSpec } from './implementations'
 import { AETestProtocolSpec } from './specs/ae'
@@ -212,12 +211,7 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
       itIf(!protocol.lib.supportsHD, 'prepareTransactionFromPublicKey - Is able to prepare a transaction with amount 0', async () => {
         // should not throw an exception when trying to create a 0 TX, given enough funds are available for the gas
         try {
-          await protocol.lib.prepareTransactionFromPublicKey(
-            protocol.wallet.publicKey,
-            protocol.txs[0].to,
-            [new BigNumber(0)],
-            protocol.txs[0].fee
-          )
+          await protocol.lib.prepareTransactionFromPublicKey(protocol.wallet.publicKey, protocol.txs[0].to, ['0'], protocol.txs[0].fee)
         } catch (error) {
           throw error
         }
@@ -227,12 +221,7 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
         protocol.stub.noBalanceStub(protocol, protocol.lib)
 
         try {
-          await protocol.lib.prepareTransactionFromPublicKey(
-            protocol.wallet.publicKey,
-            protocol.txs[0].to,
-            [new BigNumber(0)],
-            protocol.txs[0].fee
-          )
+          await protocol.lib.prepareTransactionFromPublicKey(protocol.wallet.publicKey, protocol.txs[0].to, ['0'], protocol.txs[0].fee)
           throw new Error(`should have failed`)
         } catch (error) {
           expect(error.toString()).to.contain('balance')

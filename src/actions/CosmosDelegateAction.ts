@@ -1,10 +1,12 @@
-import { CosmosProtocol } from '../protocols/cosmos/CosmosProtocol'
 import BigNumber from '../dependencies/src/bignumber.js-9.0.0/bignumber'
-import { AirGapMarketWallet } from '../wallet/AirGapMarketWallet'
 import { IAirGapTransaction } from '../interfaces/IAirGapTransaction'
-import { Action } from './Action'
-import { SyncProtocolUtils, EncodedType } from '../serializer/serializer'
+import { CosmosProtocol } from '../protocols/cosmos/CosmosProtocol'
 import { CosmosTransaction } from '../protocols/cosmos/CosmosTransaction'
+import { IACMessageType } from '../serializer/v2/interfaces'
+import { Serializer } from '../serializer/v2/serializer.new'
+import { AirGapMarketWallet } from '../wallet/AirGapMarketWallet'
+
+import { Action } from './Action'
 
 export interface CosmosDelegateActionContext {
   wallet: AirGapMarketWallet
@@ -15,7 +17,7 @@ export interface CosmosDelegateActionContext {
 
 export interface CosmosDelegateActionResult {
   rawTx: CosmosTransaction
-  serializedTx: string
+  serializedTx: string[]
   airGapTxs: IAirGapTransaction[] | void
   dataUrl: string
 }
@@ -25,7 +27,6 @@ export class CosmosDelegateAction<Context extends CosmosDelegateActionContext> e
 
   protected async perform(): Promise<CosmosDelegateActionResult> {
     const protocol = new CosmosProtocol()
-    const syncProtocol = new SyncProtocolUtils()
     const transaction = await protocol.delegate(
       this.context.wallet.publicKey,
       this.context.validatorAddress,
@@ -33,16 +34,19 @@ export class CosmosDelegateAction<Context extends CosmosDelegateActionContext> e
       this.context.undelegate
     )
 
-    const serializeTransaction = await syncProtocol.serialize({
-      version: 1,
-      protocol: this.context.wallet.coinProtocol.identifier,
-      type: EncodedType.UNSIGNED_TRANSACTION,
-      payload: {
-        publicKey: this.context.wallet.publicKey,
-        transaction,
-        callback: 'airgap-wallet://?d='
+    const serializer: Serializer = new Serializer()
+
+    const serializedTx = serializer.serialize([
+      {
+        protocol: this.context.wallet.coinProtocol.identifier,
+        type: IACMessageType.TransactionSignRequest,
+        data: {
+          publicKey: this.context.wallet.publicKey,
+          transaction,
+          callback: 'airgap-wallet://?d='
+        }
       }
-    })
+    ])
 
     let airGapTransactions: IAirGapTransaction[] | void
     try {
@@ -54,9 +58,9 @@ export class CosmosDelegateAction<Context extends CosmosDelegateActionContext> e
 
     return {
       rawTx: transaction,
-      serializedTx: serializeTransaction,
+      serializedTx,
       airGapTxs: airGapTransactions,
-      dataUrl: `airgap-vault://?d=${serializeTransaction}`
+      dataUrl: `airgap-vault://?d=${serializedTx.join(',')}`
     }
   }
 }

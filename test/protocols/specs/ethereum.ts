@@ -1,11 +1,9 @@
-import BigNumber from '../../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
-
 import { EthereumProtocol } from '../../../src'
-import { RawEthereumTransaction } from '../../../src/serializer/unsigned-transactions/ethereum-transactions.serializer'
+import { RawEthereumTransaction } from '../../../src/serializer/types'
+import { SignedEthereumTransaction } from '../../../src/serializer/v2/schemas/definitions/signed-transaction-ethereum'
 import { TestProtocolSpec } from '../implementations'
 import { EthereumProtocolStub } from '../stubs/ethereum.stub'
 
-import { SignedEthereumTransaction } from './../../../src/serializer/signed-transactions/ethereum-transactions.serializer'
 import { EthereumTransactionValidator } from './../../../src/serializer/unsigned-transactions/ethereum-transactions.validator'
 
 export class EthereumTestProtocolSpec extends TestProtocolSpec {
@@ -31,8 +29,8 @@ export class EthereumTestProtocolSpec extends TestProtocolSpec {
   }
   public txs = [
     {
-      amount: new BigNumber('1000000000000000000'),
-      fee: new BigNumber('420000000000000'),
+      amount: '1000000000000000000',
+      fee: '420000000000000',
       to: ['0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e'],
       from: ['0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e'],
       unsignedTx: {

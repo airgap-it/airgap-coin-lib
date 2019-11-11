@@ -1,5 +1,3 @@
-import BigNumber from '../dependencies/src/bignumber.js-9.0.0/bignumber'
-
 import { IAirGapTransaction } from '../interfaces/IAirGapTransaction'
 
 export abstract class NonExtendedProtocol {
@@ -7,7 +5,7 @@ export abstract class NonExtendedProtocol {
     throw new Error('extended private key support not implemented')
   }
 
-  public getBalanceOfExtendedPublicKey(extendedPublicKey: string, offset: number): Promise<BigNumber> {
+  public getBalanceOfExtendedPublicKey(extendedPublicKey: string, offset: number): Promise<string> {
     return Promise.reject('extended public balance not implemented')
   }
 
@@ -40,8 +38,8 @@ export abstract class NonExtendedProtocol {
     extendedPublicKey: string,
     offset: number,
     recipients: string[],
-    values: BigNumber[],
-    fee: BigNumber
+    values: string[],
+    fee: string
   ): Promise<any> {
     return Promise.reject('extended public key tx not implemented')
   }

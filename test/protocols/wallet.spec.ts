@@ -39,7 +39,7 @@ describe(`AirGapWallet`, () => {
       )
       expect(wallet).to.undefined
     } catch (error) {
-      expect(error.message).to.equal('PROTOCOL_NOT_SUPPORTED')
+      expect(error.message).to.equal('serializer(PROTOCOL_NOT_SUPPORTED): ')
     }
   })
 

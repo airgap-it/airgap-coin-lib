@@ -1,10 +1,10 @@
 import { async, validate } from '../../dependencies/src/validate.js-0.13.1/validate'
 import { EthereumProtocol } from '../../protocols/ethereum/EthereumProtocol'
+import { RawEthereumTransaction } from '../types'
+import { SignedEthereumTransaction } from '../v2/schemas/definitions/signed-transaction-ethereum'
+import { UnsignedEthereumTransaction } from '../v2/schemas/definitions/unsigned-transaction-ethereum'
 import { TransactionValidator } from '../validators/transactions.validator'
 import { validateSyncScheme } from '../validators/validators'
-
-import { SignedEthereumTransaction } from './../signed-transactions/ethereum-transactions.serializer'
-import { RawEthereumTransaction, UnsignedEthereumTransaction } from './ethereum-transactions.serializer'
 
 const unsignedTransactionConstraints = {
   nonce: {
@@ -49,14 +49,14 @@ const unsignedTransactionConstraints = {
 }
 
 const signedTransactionConstraints = {
-    transaction: {
-      presence: { allowEmpty: false },
-      type: 'String',
-      isValidEthereumTransactionString: true
-    }
-  },
-  success = () => undefined,
-  error = errors => errors
+  transaction: {
+    presence: { allowEmpty: false },
+    type: 'String',
+    isValidEthereumTransactionString: true
+  }
+}
+const success = () => undefined
+const error = errors => errors
 
 export class EthereumTransactionValidator extends TransactionValidator {
   public validateUnsignedTransaction(unsignedTx: UnsignedEthereumTransaction): any {

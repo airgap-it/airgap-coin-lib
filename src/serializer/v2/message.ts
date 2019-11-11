@@ -1,6 +1,4 @@
 import { jsonToArray, rlpArrayToJson, unwrapSchema } from '../json-to-rlp/json-to-rlp'
-import { SignedBitcoinTransaction } from '../signed-transactions/bitcoin-transactions.serializer'
-import { UnsignedEthereumTransaction } from '../unsigned-transactions/ethereum-transactions.serializer'
 import { RLPData } from '../utils/toBuffer'
 
 import { IACMessageType } from './interfaces'
@@ -9,10 +7,14 @@ import { AccountShareResponse } from './schemas/definitions/account-share-respon
 import { MessageSignRequest } from './schemas/definitions/message-sign-request'
 import { MessageSignResponse } from './schemas/definitions/message-sign-response'
 import { SignedAeternityTransaction } from './schemas/definitions/signed-transaction-aeternity'
+import { SignedBitcoinTransaction } from './schemas/definitions/signed-transaction-bitcoin'
+import { SignedCosmosTransaction } from './schemas/definitions/signed-transaction-cosmos'
 import { SignedEthereumTransaction } from './schemas/definitions/signed-transaction-ethereum'
 import { SignedTezosTransaction } from './schemas/definitions/signed-transaction-tezos'
 import { UnsignedAeternityTransaction } from './schemas/definitions/unsigned-transaction-aeternity'
 import { UnsignedBitcoinTransaction } from './schemas/definitions/unsigned-transaction-bitcoin'
+import { UnsignedCosmosTransaction } from './schemas/definitions/unsigned-transaction-cosmos'
+import { UnsignedEthereumTransaction } from './schemas/definitions/unsigned-transaction-ethereum'
 import { UnsignedTezosTransaction } from './schemas/definitions/unsigned-transaction-tezos'
 import { Serializer } from './serializer.new'
 
@@ -25,10 +27,12 @@ export type IACMessages =
   | UnsignedTezosTransaction
   | UnsignedAeternityTransaction
   | UnsignedBitcoinTransaction
+  | UnsignedCosmosTransaction
   | UnsignedEthereumTransaction
   | SignedTezosTransaction
   | SignedAeternityTransaction
   | SignedBitcoinTransaction
+  | SignedCosmosTransaction
   | SignedEthereumTransaction
 
 // tslint:disable-next-line:interface-name

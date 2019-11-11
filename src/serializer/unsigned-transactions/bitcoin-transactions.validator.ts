@@ -1,9 +1,9 @@
 import { validate } from '../../dependencies/src/validate.js-0.13.1/validate'
+import { RawBitcoinTransaction } from '../types'
+import { SignedBitcoinTransaction } from '../v2/schemas/definitions/signed-transaction-bitcoin'
+import { UnsignedBitcoinTransaction } from '../v2/schemas/definitions/unsigned-transaction-bitcoin'
 import { TransactionValidator } from '../validators/transactions.validator'
 import { validateSyncScheme } from '../validators/validators'
-
-import { SignedBitcoinTransaction } from './../signed-transactions/bitcoin-transactions.serializer'
-import { RawBitcoinTransaction, UnsignedBitcoinTransaction } from './bitcoin-transactions.serializer'
 
 const unsignedTransactionConstraints = {
   ins: {

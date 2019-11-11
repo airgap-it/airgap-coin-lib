@@ -1,5 +1,7 @@
-import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
+
+// tslint:disable:max-classes-per-file
 
 export interface JSONConvertible {
   toJSON(): any
@@ -152,7 +154,7 @@ export class CosmosSendMessage implements CosmosMessage {
     this.amount = amount
   }
 
-  toJSON(): any {
+  public toJSON(): any {
     return {
       type: this.type.value,
       value: {
@@ -163,17 +165,20 @@ export class CosmosSendMessage implements CosmosMessage {
     }
   }
 
-  toRLP(): any {
+  public toRLP(): any {
     return [this.type.index, this.fromAddress, this.toAddress, this.amount.map(coin => coin.toRLP())]
   }
 
-  toAirGapTransaction(identifier: string, fee: BigNumber): IAirGapTransaction {
+  public toAirGapTransaction(identifier: string, fee: BigNumber): IAirGapTransaction {
     return {
-      amount: this.amount.map(value => value.amount).reduce((prev, next) => prev.plus(next)),
+      amount: this.amount
+        .map(value => value.amount)
+        .reduce((prev, next) => prev.plus(next))
+        .toString(10),
       to: [this.toAddress],
       from: [this.fromAddress],
       isInbound: false,
-      fee: fee,
+      fee: fee.toString(10),
       protocolIdentifier: identifier
     }
   }
@@ -208,7 +213,7 @@ export class CosmosDelegateMessage implements CosmosMessage {
     }
   }
 
-  toJSON(): any {
+  public toJSON(): any {
     return {
       type: this.type.value,
       value: {
@@ -219,18 +224,18 @@ export class CosmosDelegateMessage implements CosmosMessage {
     }
   }
 
-  toAirGapTransaction(identifier: string, fee: BigNumber): IAirGapTransaction {
+  public toAirGapTransaction(identifier: string, fee: BigNumber): IAirGapTransaction {
     return {
-      amount: this.amount.amount,
+      amount: this.amount.amount.toString(10),
       to: [this.delegatorAddress],
       from: [this.validatorAddress],
       isInbound: false,
-      fee: fee,
+      fee: fee.toString(10),
       protocolIdentifier: identifier
     }
   }
 
-  toRLP(): any {
+  public toRLP(): any {
     return [this.type.index, this.delegatorAddress, this.validatorAddress, this.amount.toRLP()]
   }
 
@@ -244,7 +249,8 @@ export class CosmosDelegateMessage implements CosmosMessage {
   }
 
   public static fromRLP(rlp: RLPCosmosDelegateMessage): CosmosDelegateMessage {
-    const type = parseInt(rlp[0].toString())
+    const type: number = parseInt(rlp[0].toString(), 10)
+
     return new CosmosDelegateMessage(
       rlp[1].toString(),
       rlp[2].toString(),
@@ -264,18 +270,18 @@ export class CosmosWithdrawDelegationRewardMessage implements CosmosMessage {
     this.validatorAddress = validatorAddress
   }
 
-  toAirGapTransaction(identifier: string, fee: BigNumber): IAirGapTransaction {
+  public toAirGapTransaction(identifier: string, fee: BigNumber): IAirGapTransaction {
     return {
       to: [this.validatorAddress],
       from: [this.delegatorAddress],
-      amount: new BigNumber(0),
+      amount: new BigNumber(0).toString(10),
       isInbound: false,
-      fee: fee,
+      fee: fee.toString(10),
       protocolIdentifier: identifier
     }
   }
 
-  toJSON() {
+  public toJSON() {
     return {
       type: this.type.value,
       value: {
@@ -285,7 +291,7 @@ export class CosmosWithdrawDelegationRewardMessage implements CosmosMessage {
     }
   }
 
-  toRLP(): any[] {
+  public toRLP(): any[] {
     return [this.type.index, this.delegatorAddress, this.validatorAddress]
   }
 
@@ -307,14 +313,14 @@ export class CosmosCoin implements JSONConvertible, RLPConvertible {
     this.amount = amount
   }
 
-  toJSON(): any {
+  public toJSON(): any {
     return {
       amount: this.amount.toFixed(),
       denom: this.denom
     }
   }
 
-  toRLP(): any {
+  public toRLP(): any {
     return [this.denom, this.amount]
   }
 
@@ -336,14 +342,14 @@ export class CosmosFee implements JSONConvertible, RLPConvertible {
     this.gas = gas
   }
 
-  toJSON(): any {
+  public toJSON(): any {
     return {
       amount: this.amount.map(value => value.toJSON()),
       gas: this.gas.toFixed()
     }
   }
 
-  toRLP(): any {
+  public toRLP(): any {
     return [this.amount.map(coin => coin.toRLP()), this.gas]
   }
 
