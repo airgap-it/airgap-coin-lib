@@ -1,5 +1,5 @@
 import { RawAeternityTransaction } from '../../../src/serializer/types'
-import { SignedAeternityTransaction } from '../../../src/serializer/v2/schemas/definitions/signed-transaction-aeternity'
+import { SignedAeternityTransaction } from '../../../src/serializer/schemas/definitions/signed-transaction-aeternity'
 import { TestProtocolSpec } from '../implementations'
 import { AeternityProtocolStub } from '../stubs/ae.stub'
 

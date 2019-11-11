@@ -35,4 +35,5 @@ const findFilesOnLevel = async (base: string) => {
 }
 
 findFilesOnLevel('./src/dependencies/src').then(() => {}).catch(console.error)
+findFilesOnLevel('./src/serializer/schemas').then(() => {}).catch(console.error)
 

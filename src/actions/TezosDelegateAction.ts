@@ -1,8 +1,8 @@
 import { AirGapMarketWallet, IAirGapTransaction, TezosProtocol } from '..'
 import { CosmosTransaction } from '../protocols/cosmos/CosmosTransaction'
 import { RawAeternityTransaction, RawBitcoinTransaction, RawEthereumTransaction, RawTezosTransaction } from '../serializer/types'
-import { IACMessageType } from '../serializer/v2/interfaces'
-import { Serializer } from '../serializer/v2/serializer.new'
+import { IACMessageType } from '../serializer/interfaces'
+import { Serializer } from '../serializer/serializer'
 
 import { Action } from './Action'
 

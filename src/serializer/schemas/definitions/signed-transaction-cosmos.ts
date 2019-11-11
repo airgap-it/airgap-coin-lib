@@ -1,4 +1,4 @@
-import { IAirGapSignedTransaction } from '../../../../interfaces/IAirGapSignedTransaction'
+import { IAirGapSignedTransaction } from '../../../interfaces/IAirGapSignedTransaction'
 
 import { SignedTransaction } from './signed-transaction'
 

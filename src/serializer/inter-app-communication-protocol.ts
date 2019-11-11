@@ -1,11 +1,11 @@
-import * as bs58check from '../../dependencies/src/bs58check-2.1.2/index'
-import * as rlp from '../../dependencies/src/rlp-2.2.3/index'
+import * as bs58check from '../dependencies/src/bs58check-2.1.2/index'
+import * as rlp from '../dependencies/src/rlp-2.2.3/index'
 
-import { ChunkedPayload } from './chunked-payload'
-import { FullPayload } from './full-payload'
+import { ChunkedPayload } from './payloads/chunked-payload'
+import { FullPayload } from './payloads/full-payload'
 import { assertNever, IACMessageDefinitionObject } from './message'
-import { Payload, PayloadType } from './payload'
-import { IACPayloadType } from './serializer.new'
+import { Payload, PayloadType } from './payloads/payload'
+import { IACPayloadType } from './serializer'
 
 export type IACProtocolVersion = number
 export type IACProtocolType = [IACProtocolVersion, IACPayloadType, Payload]

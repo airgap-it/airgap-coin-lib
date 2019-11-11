@@ -86,3 +86,4 @@ var findFilesOnLevel = function (base) { return __awaiter(_this, void 0, void 0,
     });
 }); };
 findFilesOnLevel('./src/dependencies/src').then(function () { })["catch"](console.error);
+findFilesOnLevel('./src/serializer/schemas').then(function () { })["catch"](console.error);

@@ -5,8 +5,8 @@ import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransact
 import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 import { Network } from '../../networks'
 import { RawEthereumTransaction } from '../../serializer/types'
-import { SignedEthereumTransaction } from '../../serializer/v2/schemas/definitions/signed-transaction-ethereum'
-import { UnsignedTransaction } from '../../serializer/v2/schemas/definitions/unsigned-transaction'
+import { SignedEthereumTransaction } from '../../serializer/schemas/definitions/signed-transaction-ethereum'
+import { UnsignedTransaction } from '../../serializer/schemas/definitions/unsigned-transaction'
 import { getSubProtocolsByIdentifier } from '../../utils/subProtocols'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
 

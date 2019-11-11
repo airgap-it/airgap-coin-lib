@@ -1,6 +1,6 @@
 import { BitcoinTestnetProtocol } from '../../../src'
-import { IACMessageDefinitionObject } from '../../../src/serializer/v2/message'
-import { SignedTransaction } from '../../../src/serializer/v2/schemas/definitions/signed-transaction'
+import { IACMessageDefinitionObject } from '../../../src/serializer/message'
+import { SignedTransaction } from '../../../src/serializer/schemas/definitions/signed-transaction'
 import { TestProtocolSpec } from '../implementations'
 import { BitcoinTestnetProtocolStub } from '../stubs/bitcoin-test.stub'
 

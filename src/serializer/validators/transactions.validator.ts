@@ -1,5 +1,5 @@
-import { SignedTransaction } from '../v2/schemas/definitions/signed-transaction'
-import { UnsignedTransaction } from '../v2/schemas/definitions/unsigned-transaction'
+import { SignedTransaction } from '../schemas/definitions/signed-transaction'
+import { UnsignedTransaction } from '../schemas/definitions/unsigned-transaction'
 
 export abstract class TransactionValidator {
   public abstract validateUnsignedTransaction(transaction: UnsignedTransaction): Promise<boolean>

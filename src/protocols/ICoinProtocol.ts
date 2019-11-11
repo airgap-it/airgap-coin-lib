@@ -1,7 +1,7 @@
 import { IAirGapSignedTransaction } from '../interfaces/IAirGapSignedTransaction'
 import { IAirGapTransaction } from '../interfaces/IAirGapTransaction'
-import { SignedTransaction } from '../serializer/v2/schemas/definitions/transaction-sign-response'
-import { UnsignedTransaction } from '../serializer/v2/schemas/definitions/unsigned-transaction'
+import { SignedTransaction } from '../serializer/schemas/definitions/transaction-sign-response'
+import { UnsignedTransaction } from '../serializer/schemas/definitions/unsigned-transaction'
 
 import { ICoinSubProtocol } from './ICoinSubProtocol'
 

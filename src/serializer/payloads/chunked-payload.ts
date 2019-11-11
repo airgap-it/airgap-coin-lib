@@ -1,6 +1,6 @@
 import { RLPData } from '../utils/toBuffer'
 
-import { assertNever } from './message'
+import { assertNever } from '../message'
 import { Payload, PayloadType } from './payload'
 
 interface DecodedChunkedPayload {

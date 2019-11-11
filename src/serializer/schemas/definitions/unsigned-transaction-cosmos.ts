@@ -1,4 +1,4 @@
-import { CosmosTransaction } from '../../../../protocols/cosmos/CosmosTransaction'
+import { CosmosTransaction } from '../../../protocols/cosmos/CosmosTransaction'
 
 import { UnsignedTransaction } from './unsigned-transaction'
 

@@ -1,6 +1,6 @@
 import { TezosProtocol } from '../../../src/'
 import { RawTezosTransaction } from '../../../src/serializer/types'
-import { SignedTezosTransaction } from '../../../src/serializer/v2/schemas/definitions/signed-transaction-tezos'
+import { SignedTezosTransaction } from '../../../src/serializer/schemas/definitions/signed-transaction-tezos'
 import { TestProtocolSpec } from '../implementations'
 import { TezosProtocolStub } from '../stubs/tezos.stub'
 

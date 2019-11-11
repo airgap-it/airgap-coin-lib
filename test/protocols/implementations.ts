@@ -1,8 +1,8 @@
 import * as BIP39 from '../../src/dependencies/src/bip39-2.5.0/index'
 
 import { ICoinProtocol } from '../../src'
-import { IACMessageType } from '../../src/serializer/v2/interfaces'
-import { IACMessageDefinitionObject } from '../../src/serializer/v2/message'
+import { IACMessageType } from '../../src/serializer/interfaces'
+import { IACMessageDefinitionObject } from '../../src/serializer/message'
 
 const mnemonic: string = 'spell device they juice trial skirt amazing boat badge steak usage february virus art survey'
 

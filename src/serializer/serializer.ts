@@ -1,8 +1,8 @@
-import { FullPayload } from './full-payload'
+import { FullPayload } from './payloads/full-payload'
 import { IACProtocol } from './inter-app-communication-protocol'
 import { IACMessageType } from './interfaces'
 import { IACMessageDefinitionObject } from './message'
-import { Payload } from './payload'
+import { Payload } from './payloads/payload'
 import { Schema } from './schemas/schema'
 
 // const accountShareRequest = require('./schemas/generated/account-share-request.json')

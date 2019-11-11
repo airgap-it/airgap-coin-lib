@@ -1,5 +1,5 @@
 import { ICoinProtocol } from '../protocols/ICoinProtocol'
-import { ProtocolNotSupported } from '../serializer/errors'
+import { ProtocolNotSupported } from '../errors'
 
 import { supportedProtocols } from './supportedProtocols'
 

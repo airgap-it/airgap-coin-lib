@@ -1,8 +1,8 @@
-import { jsonToArray, rlpArrayToJson, unwrapSchema } from '../json-to-rlp/json-to-rlp'
-import { RLPData } from '../utils/toBuffer'
+import { jsonToArray, rlpArrayToJson, unwrapSchema } from './utils/json-to-rlp'
+import { RLPData } from './utils/toBuffer'
 
 import { IACMessageType } from './interfaces'
-import { PayloadType } from './payload'
+import { PayloadType } from './payloads/payload'
 import { AccountShareResponse } from './schemas/definitions/account-share-response'
 import { MessageSignRequest } from './schemas/definitions/message-sign-request'
 import { MessageSignResponse } from './schemas/definitions/message-sign-response'
@@ -16,7 +16,7 @@ import { UnsignedBitcoinTransaction } from './schemas/definitions/unsigned-trans
 import { UnsignedCosmosTransaction } from './schemas/definitions/unsigned-transaction-cosmos'
 import { UnsignedEthereumTransaction } from './schemas/definitions/unsigned-transaction-ethereum'
 import { UnsignedTezosTransaction } from './schemas/definitions/unsigned-transaction-tezos'
-import { Serializer } from './serializer.new'
+import { Serializer } from './serializer'
 
 export const assertNever: (x: never) => void = (x: never): void => undefined
 

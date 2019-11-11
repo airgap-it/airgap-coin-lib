@@ -5,8 +5,8 @@ import { mnemonicToSeed, validateMnemonic } from '../../dependencies/src/bip39-2
 import RIPEMD160 = require('../../dependencies/src/ripemd160-2.0.2/index')
 import SECP256K1 = require('../../dependencies/src/secp256k1-3.7.1/elliptic')
 import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
-import { SignedCosmosTransaction } from '../../serializer/v2/schemas/definitions/signed-transaction-cosmos'
-import { UnsignedCosmosTransaction } from '../../serializer/v2/schemas/definitions/unsigned-transaction-cosmos'
+import { SignedCosmosTransaction } from '../../serializer/schemas/definitions/signed-transaction-cosmos'
+import { UnsignedCosmosTransaction } from '../../serializer/schemas/definitions/unsigned-transaction-cosmos'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
 import { ICoinSubProtocol } from '../ICoinSubProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'

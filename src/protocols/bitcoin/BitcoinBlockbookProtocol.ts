@@ -7,8 +7,8 @@ import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransact
 import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 import { Network } from '../../networks'
 import { RawBitcoinTransaction } from '../../serializer/types'
-import { SignedBitcoinTransaction } from '../../serializer/v2/schemas/definitions/signed-transaction-bitcoin'
-import { UnsignedTransaction } from '../../serializer/v2/schemas/definitions/unsigned-transaction'
+import { SignedBitcoinTransaction } from '../../serializer/schemas/definitions/signed-transaction-bitcoin'
+import { UnsignedTransaction } from '../../serializer/schemas/definitions/unsigned-transaction'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
 
 export interface Vin {

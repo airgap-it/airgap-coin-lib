@@ -1,7 +1,7 @@
-import { RLPData } from '../utils/toBuffer'
+import { RLPData } from './toBuffer'
 
-import { InvalidSchema, InvalidSchemaType } from '../errors'
-import { Schema } from '../v2/schemas/schema'
+import { InvalidSchema, InvalidSchemaType } from '../../errors'
+import { Schema } from '../schemas/schema'
 
 function log(...args: unknown[]): void {
   const loggingEnabled: boolean = false

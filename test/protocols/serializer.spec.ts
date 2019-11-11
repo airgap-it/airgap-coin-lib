@@ -1,8 +1,8 @@
 import { expect } from 'chai'
 import 'mocha'
 
-import { IACMessageDefinitionObject } from '../../src/serializer/v2/message'
-import { Serializer } from '../../src/serializer/v2/serializer.new'
+import { IACMessageDefinitionObject } from '../../src/serializer/message'
+import { Serializer } from '../../src/serializer/serializer'
 
 import { TestProtocolSpec } from './implementations'
 import { AETestProtocolSpec } from './specs/ae'

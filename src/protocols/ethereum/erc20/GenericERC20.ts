@@ -5,9 +5,9 @@ import { IAirGapSignedTransaction } from '../../../interfaces/IAirGapSignedTrans
 import { IAirGapTransaction } from '../../../interfaces/IAirGapTransaction'
 
 import { RawEthereumTransaction } from '../../../serializer/types'
-import { SignedEthereumTransaction } from '../../../serializer/v2/schemas/definitions/signed-transaction-ethereum'
-import { UnsignedTransaction } from '../../../serializer/v2/schemas/definitions/unsigned-transaction'
-import { UnsignedEthereumTransaction } from '../../../serializer/v2/schemas/definitions/unsigned-transaction-ethereum'
+import { SignedEthereumTransaction } from '../../../serializer/schemas/definitions/signed-transaction-ethereum'
+import { UnsignedTransaction } from '../../../serializer/schemas/definitions/unsigned-transaction'
+import { UnsignedEthereumTransaction } from '../../../serializer/schemas/definitions/unsigned-transaction-ethereum'
 import { ICoinSubProtocol, SubProtocolType } from '../../ICoinSubProtocol'
 import { BaseEthereumProtocol } from '../BaseEthereumProtocol'
 import { TrustWalletInfoClient } from '../clients/info-clients/InfoClient'
