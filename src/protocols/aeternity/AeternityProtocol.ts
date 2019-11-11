@@ -120,8 +120,8 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
     return transactions.map(obj => {
       const parsedTimestamp = parseInt(obj.time, 10)
       const airGapTx: IAirGapTransaction = {
-        amount: new BigNumber(obj.tx.amount),
-        fee: new BigNumber(obj.tx.fee),
+        amount: new BigNumber(obj.tx.amount).toString(10),
+        fee: new BigNumber(obj.tx.fee).toString(10),
         from: [obj.tx.sender_id],
         isInbound: addresses.indexOf(obj.tx.recipient_id) !== -1,
         protocolIdentifier: this.identifier,
@@ -192,8 +192,8 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
     const rlpDecodedTx = rlp.decode(rlpEncodedTx, false)
 
     const airgapTx: IAirGapTransaction = {
-      amount: new BigNumber(parseInt(rlpDecodedTx[4].toString('hex'), 16)),
-      fee: new BigNumber(parseInt(rlpDecodedTx[5].toString('hex'), 16)),
+      amount: new BigNumber(parseInt(rlpDecodedTx[4].toString('hex'), 16)).toString(10),
+      fee: new BigNumber(parseInt(rlpDecodedTx[5].toString('hex'), 16)).toString(10),
       from: [await this.getAddressFromPublicKey(rlpDecodedTx[2].slice(1).toString('hex'))],
       isInbound: false,
       protocolIdentifier: this.identifier,

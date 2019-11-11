@@ -276,8 +276,9 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
         amount: transaction.outs
           .filter(obj => !obj.isChange)
           .map(obj => new BigNumber(obj.value))
-          .reduce((accumulator, currentValue) => accumulator.plus(currentValue)),
-        fee: feeCalculator,
+          .reduce((accumulator, currentValue) => accumulator.plus(currentValue))
+          .toString(10),
+        fee: feeCalculator.toString(10),
         protocolIdentifier: this.identifier,
         isInbound: false
       }
@@ -285,8 +286,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
   }
 
   public async getTransactionDetailsFromSigned(signedTx: SignedBitcoinTransaction): Promise<IAirGapTransaction[]> {
-    const tx: any = {
-      // TODO: Remove any type
+    const tx: IAirGapTransaction = {
       to: [] as string[],
       from: signedTx.from,
       amount: signedTx.amount,
@@ -303,9 +303,6 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
         tx.to.push(address)
       }
     })
-
-    tx.amount = new BigNumber(tx.amount)
-    tx.fee = new BigNumber(tx.fee)
 
     return [tx]
   }
@@ -576,8 +573,8 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
         from: tempAirGapTransactionFrom,
         to: tempAirGapTransactionTo,
         isInbound: tempAirGapTransactionIsInbound,
-        amount,
-        fee: new BigNumber(transaction.fees),
+        amount: amount.toString(10),
+        fee: new BigNumber(transaction.fees).toString(10),
         blockHeight: transaction.blockheight.toString(),
         protocolIdentifier: this.identifier,
         timestamp: transaction.blocktime
@@ -638,8 +635,8 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
         from: tempAirGapTransactionFrom,
         to: tempAirGapTransactionTo,
         isInbound: tempAirGapTransactionIsInbound,
-        amount,
-        fee: new BigNumber(transaction.fees).shiftedBy(this.feeDecimals),
+        amount: amount.toString(10),
+        fee: new BigNumber(transaction.fees).shiftedBy(this.feeDecimals).toString(10),
         blockHeight: transaction.blockheight.toString(),
         protocolIdentifier: this.identifier,
         timestamp: transaction.blocktime

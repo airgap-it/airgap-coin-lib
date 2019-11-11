@@ -177,8 +177,8 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
       {
         from: [await this.getAddressFromPublicKey(unsignedTx.publicKey)],
         to: [transaction.to],
-        amount: new BigNumber(transaction.value),
-        fee: new BigNumber(transaction.gasLimit).multipliedBy(new BigNumber(transaction.gasPrice)),
+        amount: new BigNumber(transaction.value).toString(10),
+        fee: new BigNumber(transaction.gasLimit).multipliedBy(new BigNumber(transaction.gasPrice)).toString(10),
         protocolIdentifier: this.identifier,
         isInbound: false,
         data: transaction.data
@@ -198,8 +198,8 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
       {
         from: [ethUtil.toChecksumAddress(`0x${ethTx.from.toString('hex')}`)],
         to: [ethUtil.toChecksumAddress(`0x${ethTx.to.toString('hex')}`)],
-        amount: new BigNumber(parseInt(hexValue, 16)),
-        fee: new BigNumber(parseInt(hexGasLimit, 16)).multipliedBy(new BigNumber(parseInt(hexGasPrice, 16))),
+        amount: new BigNumber(parseInt(hexValue, 16)).toString(10),
+        fee: new BigNumber(parseInt(hexGasLimit, 16)).multipliedBy(new BigNumber(parseInt(hexGasPrice, 16))).toString(10),
         protocolIdentifier: this.identifier,
         isInbound: ethTx.toCreationAddress(),
         hash: `0x${ethTx.hash().toString('hex')}`,

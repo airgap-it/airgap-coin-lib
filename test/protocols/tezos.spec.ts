@@ -359,8 +359,8 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
 
       expect(result.spendTransaction.storage_limit).to.equal('0') // kt addresses do not need to get funed, they are originated :)
       expect(result.airGapTxs.length).to.equal(1)
-      expect(result.airGapTxs[0].amount.toFixed()).to.equal('100000')
-      expect(result.airGapTxs[0].fee.toFixed()).to.equal('1920') // 500 mutez is added because in babylon this is sent to a contract
+      expect(result.airGapTxs[0].amount).to.equal('100000')
+      expect(result.airGapTxs[0].fee).to.equal('1920') // 500 mutez is added because in babylon this is sent to a contract
       expect(result.rawTezosTx.binaryTransaction).to.equal(
         'e4b7e31c04d23e3a10ea20e11bd0ebb4bde16f632c1d94779fd5849a34ec42a36c0091a9d2b003f19cf5a1f38f04f1000ab482d33176800fcffe37997800a08d0601ba4e7349ac25dc5eb2df5a43fceacc58963df4f50000'
       )
@@ -426,11 +426,11 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
 
         expect(result.airGapTxs.length).to.equal(1)
 
-        expect(result.airGapTxs[0].amount.toFixed()).to.equal('643000') // 900000 - 257000 amount - initializationFee
-        expect(result.airGapTxs[0].amount.toFixed()).to.equal(new BigNumber(amount).minus(initializationFee).toFixed())
+        expect(result.airGapTxs[0].amount).to.equal('643000') // 900000 - 257000 amount - initializationFee
+        expect(result.airGapTxs[0].amount).to.equal(new BigNumber(amount).minus(initializationFee).toFixed())
 
-        expect(result.airGapTxs[0].fee.toFixed()).to.equal('100000')
-        expect(result.airGapTxs[0].fee.toFixed()).to.equal(fee)
+        expect(result.airGapTxs[0].fee).to.equal('100000')
+        expect(result.airGapTxs[0].fee).to.equal(fee)
       })
 
       it('will not deduct fee if enough funds are available on the account', async () => {
@@ -445,8 +445,8 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
 
         expect(result.airGapTxs.length).to.equal(1)
 
-        expect(result.airGapTxs[0].amount.toFixed()).to.equal('100000') // amount should be correct
-        expect(result.airGapTxs[0].fee.toFixed()).to.equal('100000')
+        expect(result.airGapTxs[0].amount).to.equal('100000') // amount should be correct
+        expect(result.airGapTxs[0].fee).to.equal('100000')
       })
 
       it('will not mess with anything, given the receiving account has balance already', async () => {
@@ -461,8 +461,8 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
 
         expect(result.airGapTxs.length).to.equal(1)
 
-        expect(result.airGapTxs[0].amount.toFixed()).to.equal('899999') // amount should be correct
-        expect(result.airGapTxs[0].fee.toFixed()).to.equal('100000')
+        expect(result.airGapTxs[0].amount).to.equal('899999') // amount should be correct
+        expect(result.airGapTxs[0].fee).to.equal('100000')
       })
 
       it('will leave 1 mutez behind if we try to send the full balance', async () => {
@@ -476,8 +476,8 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
 
         expect(result.airGapTxs.length).to.equal(1)
 
-        expect(result.airGapTxs[0].amount.toFixed()).to.equal('899999') // amount should be 1 less
-        expect(result.airGapTxs[0].fee.toFixed()).to.equal('100000')
+        expect(result.airGapTxs[0].amount).to.equal('899999') // amount should be 1 less
+        expect(result.airGapTxs[0].fee).to.equal('100000')
       })
     })
 
@@ -497,11 +497,11 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
 
       expect(result.airGapTxs.length).to.equal(2)
 
-      expect(result.airGapTxs[0].amount.toFixed()).to.equal('12345')
-      expect(result.airGapTxs[0].fee.toFixed()).to.equal('611')
+      expect(result.airGapTxs[0].amount).to.equal('12345')
+      expect(result.airGapTxs[0].fee).to.equal('611')
 
-      expect(result.airGapTxs[1].amount.toFixed()).to.equal('54321')
-      expect(result.airGapTxs[1].fee.toFixed()).to.equal('611')
+      expect(result.airGapTxs[1].amount).to.equal('54321')
+      expect(result.airGapTxs[1].fee).to.equal('611')
     })
 
     it('will throw an error if the number of recipients and amounts do not match', async () => {

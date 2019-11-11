@@ -166,7 +166,7 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, TrustWa
     const extractedTx = new EthereumTransaction(signedTx.transaction)
     const tokenTransferDetails = new EthereumRPCDataTransfer(`0x${extractedTx.data.toString('hex')}`)
     ethTx.to = [ethUtil.toChecksumAddress(tokenTransferDetails.recipient)]
-    ethTx.amount = new BigNumber(tokenTransferDetails.amount)
+    ethTx.amount = new BigNumber(tokenTransferDetails.amount).toString(10)
 
     return [ethTx]
   }
@@ -184,7 +184,7 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, TrustWa
     const tokenTransferDetails = new EthereumRPCDataTransfer(unsignedEthereumTx.transaction.data)
 
     ethTx.to = [ethUtil.toChecksumAddress(tokenTransferDetails.recipient)]
-    ethTx.amount = new BigNumber(tokenTransferDetails.amount)
+    ethTx.amount = new BigNumber(tokenTransferDetails.amount).toString(10)
 
     return [ethTx]
   }

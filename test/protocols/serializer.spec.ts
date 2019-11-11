@@ -23,7 +23,7 @@ const protocols = [
 protocols.forEach((protocol: TestProtocolSpec) => {
   const syncProtocol = new Serializer()
 
-  describe.only(`Serialization Protocol for ${protocol.name}`, () => {
+  describe(`Serialization Protocol for ${protocol.name}`, () => {
     it(`should be able to serialize a transaction to a airgap protocol string`, async () => {
       for (const tx of protocol.txs) {
         const serializedTx = syncProtocol.serialize(protocol.unsignedTransaction(tx))

@@ -64,8 +64,8 @@ describe(`ICoinProtocol Aeternity - Custom Tests`, () => {
 
     expect(transactions).to.deep.equal([
       {
-        amount: new BigNumber(aeProtocolSpec.txs[0].amount),
-        fee: new BigNumber(aeProtocolSpec.txs[0].fee),
+        amount: new BigNumber(aeProtocolSpec.txs[0].amount).toString(),
+        fee: new BigNumber(aeProtocolSpec.txs[0].fee).toString(),
         from: aeProtocolSpec.wallet.addresses,
         isInbound: true,
         protocolIdentifier: aeLib.identifier,
@@ -83,8 +83,8 @@ describe(`ICoinProtocol Aeternity - Custom Tests`, () => {
 
     expect(transactions).to.deep.equal([
       {
-        amount: new BigNumber(aeProtocolSpec.txs[0].amount),
-        fee: new BigNumber(aeProtocolSpec.txs[0].fee),
+        amount: new BigNumber(aeProtocolSpec.txs[0].amount).toString(),
+        fee: new BigNumber(aeProtocolSpec.txs[0].fee).toString(),
         from: aeProtocolSpec.wallet.addresses,
         isInbound: true,
         protocolIdentifier: aeLib.identifier,

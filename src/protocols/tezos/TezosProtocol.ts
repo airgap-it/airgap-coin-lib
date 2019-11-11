@@ -397,8 +397,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       }
 
       const airgapTx: IAirGapTransaction = {
-        amount,
-        fee: new BigNumber(tezosOperation.fee),
+        amount: amount.toString(10),
+        fee: new BigNumber(tezosOperation.fee).toString(10),
         from: [tezosOperation.source],
         isInbound: false,
         protocolIdentifier: this.identifier,

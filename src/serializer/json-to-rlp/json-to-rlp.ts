@@ -1,4 +1,3 @@
-import * as rlp from '../../dependencies/src/rlp-2.2.3/index'
 import { RLPData } from '../utils/toBuffer'
 
 import { InvalidSchema, InvalidSchemaType } from '../errors'
@@ -19,7 +18,8 @@ enum SchemaTypes {
   BOOLEAN = 'boolean',
   NULL = 'null',
   ARRAY = 'array',
-  OBJECT = 'object'
+  OBJECT = 'object',
+  HEX_STRING = 'hexString' // TODO: Should we do it like that?
 }
 
 const assertNever: (x: never) => void = (x: never): void => undefined
@@ -30,9 +30,11 @@ export function unwrapSchema(schema: Schema): any {
   const definitions: Object = (schema as any).definitions
   const definitionKeys: string[] = Object.keys(definitions)
 
-  let extraDefinitions: number = 0
+  let extraDefinitions: number = 0 // TODO: Make generic
   if (definitionKeys.includes('HexString')) {
     extraDefinitions++
+
+    return definitions[definitionKeys[1]]
   }
 
   if (definitionKeys.length !== 1 + extraDefinitions) {
@@ -60,20 +62,12 @@ function checkType<T>(key: string, expectedType: string, value: unknown, callbac
   }
 }
 
-export function jsonToRlp(schema: Object, json: Object): Buffer {
-  const array: RLPData = jsonToArray('root', schema, json)
-
-  log('BEFORE RLP', array)
-
-  const rlpEncoded: Buffer = rlp.encode(array)
-
-  log('RLP', rlpEncoded)
-
-  return rlpEncoded
+function getTypeFromSchemaDefinition(schema: any): SchemaTypes {
+  return schema?.type ?? /* schema?.$ref === "#/definitions/HexString" ? */ SchemaTypes.HEX_STRING
 }
 
 export function jsonToArray(key: string, schema: Object, value: Object): RLPData {
-  const type: SchemaTypes = (schema as any).type
+  const type: SchemaTypes = getTypeFromSchemaDefinition(schema)
   switch (type) {
     case SchemaTypes.STRING:
       return checkType(
@@ -87,6 +81,18 @@ export function jsonToArray(key: string, schema: Object, value: Object): RLPData
         }
       )
 
+      case SchemaTypes.HEX_STRING:
+        return checkType(
+          key,
+          'string',
+          value,
+          (arg: string): string => {
+            log(`Parsing key ${key} as string, which results in ${arg}`)
+  
+            return arg.substr(2) // Remove the '0x'
+          }
+        )
+  
     case SchemaTypes.NUMBER:
     case SchemaTypes.INTEGER:
       return checkType(
@@ -148,33 +154,6 @@ export function jsonToArray(key: string, schema: Object, value: Object): RLPData
   }
 }
 
-export function rlpToJson<T>(schema: Object, rlpEncoded: string): T | undefined {
-  const array: RLPData[] = rlp.decode(rlpEncoded)
-  const type: SchemaTypes = (schema as any).type
-
-  switch (type) {
-    case SchemaTypes.STRING:
-    case SchemaTypes.NUMBER:
-    case SchemaTypes.INTEGER:
-    case SchemaTypes.BOOLEAN:
-    case SchemaTypes.NULL:
-      return rlpArrayToJson(schema, array)
-
-    case SchemaTypes.ARRAY:
-      // TODO: Implement
-      // return arrayToJson(schema, array as any)
-      throw new Error('ARRAY TYPE NOT IMPLEMENTED')
-
-    case SchemaTypes.OBJECT:
-      return rlpArrayToJson((schema as any).properties, array)
-
-    default:
-      assertNever(type)
-
-      return undefined
-  }
-}
-
 export function rlpArrayToJson(schema: Object, decoded: any[]): any {
   const outObject = {}
 
@@ -182,7 +161,7 @@ export function rlpArrayToJson(schema: Object, decoded: any[]): any {
   log(keys)
   for (let i: number = 0; i < keys.length; i++) {
     const key: string = keys[i]
-    const type: SchemaTypes = schema[key].type
+    const type: SchemaTypes = getTypeFromSchemaDefinition(schema[key])
     switch (type) {
       case SchemaTypes.BOOLEAN:
         if (decoded[i].toString() !== '') {
@@ -192,6 +171,10 @@ export function rlpArrayToJson(schema: Object, decoded: any[]): any {
 
       case SchemaTypes.STRING:
         outObject[key] = decoded[i].toString()
+        break
+
+      case SchemaTypes.HEX_STRING:
+        outObject[key] = `0x${decoded[i].toString()}`
         break
 
       case SchemaTypes.NUMBER:
@@ -206,7 +189,6 @@ export function rlpArrayToJson(schema: Object, decoded: any[]): any {
         break
 
       case SchemaTypes.ARRAY:
-        // TODO: Implement
         outObject[key] = decoded[i].map(decodedElement => rlpArrayToJson(schema[key].items.properties, decodedElement))
         break
 
