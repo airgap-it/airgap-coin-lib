@@ -1,7 +1,6 @@
-import { SyncProtocolUtils } from './src/serializer/serializer'
+import { Serializer } from '../src/serializer/serializer'
 
 const json = {
-  version: 1,
   type: 0,
   protocol: 'eth',
   payload: {
@@ -19,10 +18,10 @@ const json = {
   }
 }
 
-const syncProtocol = new SyncProtocolUtils()
+const serializer = new Serializer()
 
-syncProtocol
-  .serialize(json)
+serializer
+  .serialize([json])
   .then(serialized => {
     console.log(serialized)
   })
