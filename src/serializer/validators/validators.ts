@@ -1,4 +1,6 @@
+import { EthereumProtocol } from '../..'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import * as BIP39 from '../../dependencies/src/bip39-2.5.0/index'
 import {
   isArray,
   isDate,
@@ -9,15 +11,15 @@ import {
   validate,
   validators
 } from '../../dependencies/src/validate.js-0.13.1/validate'
+import bs64check from '../../utils/base64Check'
+import { RawTezosTransaction } from '../types'
+import { SignedEthereumTransaction } from '../v2/schemas/definitions/signed-transaction-ethereum'
+import { SignedTezosTransaction } from '../v2/schemas/definitions/signed-transaction-tezos'
+import { UnsignedTezosTransaction } from '../v2/schemas/definitions/unsigned-transaction-tezos'
+
 import { AeternityProtocol } from './../../protocols/aeternity/AeternityProtocol'
-import { SignedTezosTransaction } from './../signed-transactions/tezos-transactions.serializer'
-import { SignedEthereumTransaction } from './../signed-transactions/ethereum-transactions.serializer'
 import { BitcoinProtocol } from './../../protocols/bitcoin/BitcoinProtocol'
 import { TezosProtocol } from './../../protocols/tezos/TezosProtocol'
-import * as BIP39 from '../../dependencies/src/bip39-2.5.0/index'
-import bs64check from '../../utils/base64Check'
-import { EthereumProtocol } from '../..'
-import { RawTezosTransaction, UnsignedTezosTransaction } from '../unsigned-transactions/tezos-transactions.serializer'
 
 validators.type = (value, options, key, attributes) => {
   // allow empty values by default (needs to be checked by "presence" check)
@@ -92,7 +94,7 @@ validators.isValidEthereumTransactionString = (transaction: string) => {
     }
     const signedTx: SignedEthereumTransaction = {
       accountIdentifier: '',
-      transaction: transaction
+      transaction
     }
     const protocol = new EthereumProtocol()
     // allow empty values by default (needs to be checked by "presence" check)

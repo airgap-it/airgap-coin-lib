@@ -1,6 +1,6 @@
 import { BaseEthereumProtocol } from './BaseEthereumProtocol'
-import { AirGapNodeClient } from './clients/node-clients/AirGapNodeClient'
 import { TrustWalletInfoClient } from './clients/info-clients/InfoClient'
+import { AirGapNodeClient } from './clients/node-clients/AirGapNodeClient'
 
 export class EthereumClassicProtocol extends BaseEthereumProtocol<AirGapNodeClient, TrustWalletInfoClient> {
   constructor() {

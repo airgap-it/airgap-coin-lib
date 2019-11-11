@@ -1,9 +1,8 @@
 import * as BIP39 from '../../src/dependencies/src/bip39-2.5.0/index'
-import BigNumber from '../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
 
 import { ICoinProtocol } from '../../src'
 import { IACMessageType } from '../../src/serializer/v2/interfaces'
-import { IACMessageDefinition } from '../../src/serializer/v2/message'
+import { IACMessageDefinitionObject } from '../../src/serializer/v2/message'
 
 const mnemonic: string = 'spell device they juice trial skirt amazing boat badge steak usage february virus art survey'
 
@@ -31,8 +30,8 @@ abstract class TestProtocolSpec {
   public txs: {
     to: string[]
     from: string[]
-    amount: BigNumber
-    fee: BigNumber
+    amount: string
+    fee: string
     properties?: string[]
     unsignedTx: any
     signedTx: string
@@ -43,7 +42,7 @@ abstract class TestProtocolSpec {
     return BIP39.mnemonicToSeedHex(mnemonic)
   }
 
-  public unsignedTransaction(tx: any): IACMessageDefinition[] {
+  public unsignedTransaction(tx: any): IACMessageDefinitionObject[] {
     return [
       {
         protocol: this.lib.identifier,
@@ -57,7 +56,7 @@ abstract class TestProtocolSpec {
     ]
   }
 
-  public signedTransaction(tx: any): IACMessageDefinition[] {
+  public signedTransaction(tx: any): IACMessageDefinitionObject[] {
     return [
       {
         protocol: this.lib.identifier,
@@ -70,7 +69,7 @@ abstract class TestProtocolSpec {
     ]
   }
 
-  public syncWallet(): IACMessageDefinition[] {
+  public syncWallet(): IACMessageDefinitionObject[] {
     return [
       {
         protocol: this.lib.identifier,

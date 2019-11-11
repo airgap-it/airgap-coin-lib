@@ -11,7 +11,7 @@ import {
   TezosRevealOperation,
   TezosSpendOperation
 } from '../../src/protocols/tezos/TezosProtocol'
-import { RawTezosTransaction } from '../../src/serializer/unsigned-transactions/tezos-transactions.serializer'
+import { RawTezosTransaction } from '../../src/serializer/types'
 import { TezosTestProtocolSpec } from '../protocols/specs/tezos'
 
 const tezosProtocolSpec = new TezosTestProtocolSpec()
@@ -53,8 +53,9 @@ const prepareTxHelper = async (rawTezosTx: RawTezosTransaction) => {
   throw new Error('no supported operation')
 }
 
-const prepareSpend = async (receivers: string[], amounts: BigNumber[], fee: BigNumber) => {
+const prepareSpend = async (receivers: string[], amounts: string[], fee: string) => {
   const rawTezosTx = await tezosLib.prepareTransactionFromPublicKey(tezosProtocolSpec.wallet.publicKey, receivers, amounts, fee)
+
   return prepareTxHelper(rawTezosTx)
 }
 
@@ -352,8 +353,8 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
     it('will properly prepare a TX to a KT1 address', async () => {
       const result = await prepareSpend(
         ['KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy'],
-        [new BigNumber(100000)], // send so much funds that it should deduct, given it is a 0-balance receiver (which it is not)
-        new BigNumber(1420)
+        ['100000'], // send so much funds that it should deduct, given it is a 0-balance receiver (which it is not)
+        '1420'
       )
 
       expect(result.spendTransaction.storage_limit).to.equal('0') // kt addresses do not need to get funed, they are originated :)
@@ -412,8 +413,8 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
     describe('Spend', () => {
       it('will deduct fee to initialize empty tz1 receiving address, if amount + fee === balance', async () => {
         const address = 'tz1bgWdfd9YS7pTkNgZTNs26c33nBHwSYW6S'
-        const amount = new BigNumber(900000)
-        const fee = new BigNumber(100000)
+        const amount = '900000'
+        const fee = '100000'
         const result = await prepareSpend(
           [address],
           [amount], // send so much funds that it should deduct, given it is a 0-balance receiver (which it is not)
@@ -426,17 +427,17 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         expect(result.airGapTxs.length).to.equal(1)
 
         expect(result.airGapTxs[0].amount.toFixed()).to.equal('643000') // 900000 - 257000 amount - initializationFee
-        expect(result.airGapTxs[0].amount.toFixed()).to.equal(amount.minus(initializationFee).toFixed())
+        expect(result.airGapTxs[0].amount.toFixed()).to.equal(new BigNumber(amount).minus(initializationFee).toFixed())
 
         expect(result.airGapTxs[0].fee.toFixed()).to.equal('100000')
-        expect(result.airGapTxs[0].fee.toFixed()).to.equal(fee.toFixed())
+        expect(result.airGapTxs[0].fee.toFixed()).to.equal(fee)
       })
 
       it('will not deduct fee if enough funds are available on the account', async () => {
         const result = await prepareSpend(
           ['tz1bgWdfd9YS7pTkNgZTNs26c33nBHwSYW6S'],
-          [new BigNumber(100000)], // send so much funds that it should deduct, given it is a 0-balance receiver (which it is not)
-          new BigNumber(100000)
+          ['100000'], // send so much funds that it should deduct, given it is a 0-balance receiver (which it is not)
+          '100000'
         )
 
         // check that storage is properly set
@@ -451,8 +452,8 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       it('will not mess with anything, given the receiving account has balance already', async () => {
         const result = await prepareSpend(
           ['tz1d75oB6T4zUMexzkr5WscGktZ1Nss1JrT7'],
-          [new BigNumber(899999)], // send so much funds that it should deduct, given it is a 0-balance receiver (which it is not)
-          new BigNumber(100000)
+          ['899999'], // send so much funds that it should deduct, given it is a 0-balance receiver (which it is not)
+          '100000'
         )
 
         // check that storage is properly set
@@ -467,8 +468,8 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       it('will leave 1 mutez behind if we try to send the full balance', async () => {
         const result = await prepareSpend(
           ['tz1d75oB6T4zUMexzkr5WscGktZ1Nss1JrT7'],
-          [new BigNumber(900000)], // send so much funds that it should deduct, given it is a 0-balance receiver (which it is not)
-          new BigNumber(100000)
+          ['900000'], // send so much funds that it should deduct, given it is a 0-balance receiver (which it is not)
+          '100000'
         )
         // check that storage is properly set
         expect(result.spendTransaction.storage_limit).to.equal('0')
@@ -487,8 +488,8 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
 
       const result = await prepareSpend(
         ['KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy', 'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy'],
-        [new BigNumber(12345), new BigNumber(54321)],
-        new BigNumber(111)
+        ['12345', '54321'],
+        '111'
       )
 
       // check that storage is properly set
@@ -508,14 +509,11 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy/balance`)
         .returns(Promise.resolve({ data: 0 }))
 
-      return prepareSpend(
-        ['KT1X6SSqro2zUo1Wa7X5BnDWBvfBxZ6feUnc', 'KT1QLtQ54dKzcfwxMHmEM6PC8tooUg6MxDZ3'],
-        [new BigNumber(12345)],
-        new BigNumber(111)
-      ).catch((error: Error) =>
-        expect(error)
-          .to.be.an('error')
-          .with.property('message', 'length of recipients and values does not match!')
+      return prepareSpend(['KT1X6SSqro2zUo1Wa7X5BnDWBvfBxZ6feUnc', 'KT1QLtQ54dKzcfwxMHmEM6PC8tooUg6MxDZ3'], ['12345'], '111').catch(
+        (error: Error) =>
+          expect(error)
+            .to.be.an('error')
+            .with.property('message', 'length of recipients and values does not match!')
       )
     })
   })

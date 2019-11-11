@@ -1,14 +1,15 @@
-import { generateWalletUsingDerivationPath } from '../../dependencies/src/hd-wallet-js-b216450e56954a6e82ace0aade9474673de5d9d5/src/index'
+import * as sodium from 'libsodium-wrappers'
+
 import axios, { AxiosError, AxiosResponse } from '../../dependencies/src/axios-0.19.0/index'
 import * as bigInt from '../../dependencies/src/big-integer-1.6.45/BigInteger'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import * as bs58check from '../../dependencies/src/bs58check-2.1.2/index'
-import * as sodium from 'libsodium-wrappers'
-
+import { generateWalletUsingDerivationPath } from '../../dependencies/src/hd-wallet-js-b216450e56954a6e82ace0aade9474673de5d9d5/src/index'
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
 import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
-import { SignedTezosTransaction } from '../../serializer/signed-transactions/tezos-transactions.serializer'
-import { RawTezosTransaction, UnsignedTezosTransaction } from '../../serializer/unsigned-transactions/tezos-transactions.serializer'
+import { RawTezosTransaction } from '../../serializer/types'
+import { SignedTezosTransaction } from '../../serializer/v2/schemas/definitions/signed-transaction-tezos'
+import { UnsignedTezosTransaction } from '../../serializer/v2/schemas/definitions/unsigned-transaction-tezos'
 import { getSubProtocolsByIdentifier } from '../../utils/subProtocols'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
@@ -149,15 +150,15 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
   // tezbox default
   public feeDefaults: FeeDefaults = {
-    low: new BigNumber('0.001420'),
-    medium: new BigNumber('0.001520'),
-    high: new BigNumber('0.003000')
+    low: '0.001420',
+    medium: '0.001520',
+    high: '0.003000'
   }
 
   public units: CurrencyUnit[] = [
     {
       unitSymbol: 'XTZ',
-      factor: new BigNumber(1)
+      factor: '1'
     }
   ]
 
@@ -205,8 +206,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
    * Tezos Implemention of ICoinProtocol
    */
   constructor(
-    public jsonRPCAPI = 'https://tezos-node.prod.gke.papers.tech',
-    public baseApiUrl = 'https://conseil-prod.cryptonomic-infra.tech'
+    public jsonRPCAPI: string = 'https://tezos-node.prod.gke.papers.tech',
+    public baseApiUrl: string = 'https://conseil-prod.cryptonomic-infra.tech'
   ) {
     super()
   }
@@ -275,7 +276,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
           return {
             predicates: [
               {
-                field: field,
+                field,
                 operation: 'eq',
                 set: [address],
                 inverse: false
@@ -287,7 +288,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
                 inverse: false
               }
             ],
-            limit: limit
+            limit
           }
         }
         return new Promise<any>(async (resolve, reject) => {
@@ -312,6 +313,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         })
       })
     )
+
     return allTransactions.reduce((current, next) => current.concat(next)).map((transaction: any) => {
       return {
         amount: new BigNumber(transaction.amount),
@@ -323,7 +325,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         hash: transaction.operation_group_hash,
         timestamp: transaction.timestamp / 1000,
         blockHeight: transaction.block_level
-      } as IAirGapTransaction
+      }
     })
   }
 
@@ -373,7 +375,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
           const tezosSpendOperation: TezosSpendOperation = tezosOperation as TezosSpendOperation
           amount = new BigNumber(tezosSpendOperation.amount)
           to = [tezosSpendOperation.destination]
-  
+
           break
         case TezosOperationType.ORIGINATION:
           {
@@ -409,7 +411,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     return airGapTxs
   }
 
-  public async getBalanceOfAddresses(addresses: string[]): Promise<BigNumber> {
+  public async getBalanceOfAddresses(addresses: string[]): Promise<string> {
     let balance: BigNumber = new BigNumber(0)
 
     for (const address of addresses) {
@@ -424,10 +426,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       }
     }
 
-    return balance
+    return balance.toString(10)
   }
 
-  public async getBalanceOfPublicKey(publicKey: string): Promise<BigNumber> {
+  public async getBalanceOfPublicKey(publicKey: string): Promise<string> {
     const address: string = await this.getAddressFromPublicKey(publicKey)
 
     return this.getBalanceOfAddresses([address])
@@ -436,11 +438,14 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   public async prepareTransactionFromPublicKey(
     publicKey: string,
     recipients: string[],
-    values: BigNumber[],
-    fee: BigNumber,
+    values: string[],
+    fee: string,
     data?: { addressIndex: number }
   ): Promise<RawTezosTransaction> {
-    if (recipients.length !== values.length) {
+    const wrappedValues: BigNumber[] = values.map((value: string) => new BigNumber(value))
+    const wrappedFee: BigNumber = new BigNumber(fee)
+
+    if (recipients.length !== wrappedValues.length) {
       throw new Error('length of recipients and values does not match!')
     }
 
@@ -480,15 +485,15 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       throw error
     }
 
-    const balance: BigNumber = await this.getBalanceOfPublicKey(publicKey)
-    const receivingBalance: BigNumber = await this.getBalanceOfAddresses(recipients)
+    const balance: BigNumber = new BigNumber(await this.getBalanceOfPublicKey(publicKey))
+    const receivingBalance: BigNumber = new BigNumber(await this.getBalanceOfAddresses(recipients))
 
     const amountUsedByPreviousOperations: BigNumber = this.getAmountUsedByPreviousOperations(operations)
 
     if (!amountUsedByPreviousOperations.isZero()) {
-      if (balance.isLessThan(values[0].plus(fee).plus(amountUsedByPreviousOperations))) {
+      if (balance.isLessThan(wrappedValues[0].plus(wrappedFee).plus(amountUsedByPreviousOperations))) {
         // if not, make room for the init fee
-        values[0] = values[0].minus(amountUsedByPreviousOperations) // deduct fee from balance
+        wrappedValues[0] = wrappedValues[0].minus(amountUsedByPreviousOperations) // deduct fee from balance
       }
     }
 
@@ -497,27 +502,27 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       if (receivingBalance.isZero() && recipients[i].toLowerCase().startsWith('tz')) {
         // We have to supply an additional 0.257 XTZ fee for storage_limit costs, which gets automatically deducted from the sender so we just have to make sure enough balance is around
         // check whether the sender has enough to cover the amount to send + fee + activation
-        if (balance.isLessThan(values[i].plus(fee).plus(this.activationBurn))) {
+        if (balance.isLessThan(wrappedValues[i].plus(wrappedFee).plus(this.activationBurn))) {
           // if not, make room for the init fee
-          values[i] = values[i].minus(this.activationBurn) // deduct fee from balance
+          wrappedValues[i] = wrappedValues[i].minus(this.activationBurn) // deduct fee from balance
         }
       }
 
-      if (balance.isEqualTo(values[i].plus(fee))) {
+      if (balance.isEqualTo(wrappedValues[i].plus(wrappedFee))) {
         // Tezos accounts can never be empty. If user tries to send everything, we must leave 1 mutez behind.
-        values[i] = values[i].minus(1)
-      } else if (balance.isLessThan(values[i].plus(fee))) {
+        wrappedValues[i] = wrappedValues[i].minus(1)
+      } else if (balance.isLessThan(wrappedValues[i].plus(wrappedFee))) {
         throw new Error('not enough balance')
       }
 
-      const adjustedFee: BigNumber = recipients[0].toLowerCase().startsWith('kt') ? fee.plus(500) : fee
+      const adjustedFee: BigNumber = recipients[0].toLowerCase().startsWith('kt') ? wrappedFee.plus(500) : wrappedFee
 
       const spendOperation: TezosSpendOperation = {
         kind: TezosOperationType.TRANSACTION,
         fee: adjustedFee.toFixed(),
         gas_limit: recipients[i].toLowerCase().startsWith('kt') ? '15385' : '10300',
         storage_limit: receivingBalance.isZero() && recipients[i].toLowerCase().startsWith('tz') ? '300' : '0', // taken from eztz
-        amount: values[i].toFixed(),
+        amount: wrappedValues[i].toFixed(),
         counter: counter.plus(i).toFixed(),
         destination: recipients[i],
         source: address
@@ -528,7 +533,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
     try {
       const tezosWrappedOperation: TezosWrappedOperation = {
-        branch: branch,
+        branch,
         contents: operations
       }
 
@@ -562,7 +567,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         return {
           predicates: [
             {
-              field: field,
+              field,
               operation: 'eq',
               set: [delegatedAddress],
               inverse: false
@@ -739,7 +744,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       throw error
     }
 
-    const balance: BigNumber = await this.getBalanceOfAddresses([tzAddress])
+    const balance: BigNumber = new BigNumber(await this.getBalanceOfAddresses([tzAddress]))
 
     const fee: BigNumber = new BigNumber(1420)
 
@@ -1451,7 +1456,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     return operation
   }
 
-  public async getTezosVotingInfo(blockHash: string): Promise<Array<TezosVotingInfo>> {
+  public async getTezosVotingInfo(blockHash: string): Promise<TezosVotingInfo[]> {
     const response: AxiosResponse = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/${blockHash}/votes/listings`)
     return response.data
   }
@@ -1531,9 +1536,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       stakingBalance: stakingBalance.toFixed(),
       bakingRewards: computedBakingRewards,
       endorsingRewards: computedEndorsingRewards,
-      cycle: cycle,
-      fees: fees,
-      totalRewards: totalRewards,
+      cycle,
+      fees,
+      totalRewards,
       snapshotBlockLevel: snapshotLevel,
       delegatedContracts: bakerInfo.delegated_contracts
     }
@@ -1556,7 +1561,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       const share = balance.div(rewards.stakingBalance)
       const payoutAmount = totalRewardsBN.multipliedBy(share)
       result.push({
-        delegator: delegator,
+        delegator,
         share: share.toFixed(),
         payout: payoutAmount.toFixed()
       })
@@ -1766,11 +1771,11 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     return new BigNumber(result.data)
   }
 
-  async signMessage(message: string, privateKey: Buffer): Promise<string> {
+  public async signMessage(message: string, privateKey: Buffer): Promise<string> {
     return Promise.reject('Message signing not implemented')
   }
 
-  async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
+  public async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
     return Promise.reject('Message verification not implemented')
   }
 

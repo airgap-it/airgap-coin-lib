@@ -22,8 +22,8 @@ export class AirGapWallet implements IAirGapWallet {
 
   public async deriveAddresses(amount: number = 50): Promise<string[]> {
     if (this.isExtendedPublicKey) {
-      const parts = this.derivationPath.split('/')
-      let offset = 0
+      const parts: string[] = this.derivationPath.split('/')
+      let offset: number = 0
 
       if (!parts[parts.length - 1].endsWith("'")) {
         offset = Number.parseInt(parts[parts.length - 1], 10)
@@ -41,6 +41,7 @@ export class AirGapWallet implements IAirGapWallet {
   public toJSON(): any {
     const json = Object.assign({}, this)
     delete json.coinProtocol
+
     return json
   }
 }

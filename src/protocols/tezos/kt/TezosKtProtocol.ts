@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from '../../../dependencies/src/axios-0.19.0/index'
 
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
-import { RawTezosTransaction } from '../../../serializer/unsigned-transactions/tezos-transactions.serializer'
+import { RawTezosTransaction } from '../../../serializer/types'
 import { ICoinSubProtocol, SubProtocolType } from '../../ICoinSubProtocol'
 import { TezosOperation, TezosOperationType, TezosProtocol, TezosSpendOperation, TezosWrappedOperation } from '../TezosProtocol'
 
@@ -17,7 +17,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
   }
 
   public async getAddressesFromPublicKey(publicKey: string): Promise<string[]> {
-    const tz1address = await super.getAddressFromPublicKey(publicKey)
+    const tz1address: string = await super.getAddressFromPublicKey(publicKey)
     const getRequestBody = (field: string, set: string) => {
       return {
         predicates: [
@@ -58,8 +58,8 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
   public async prepareTransactionFromPublicKey(
     publicKey: string,
     recipients: string[],
-    values: BigNumber[],
-    fee: BigNumber,
+    values: string[],
+    fee: string,
     data?: { addressIndex: number }
   ): Promise<RawTezosTransaction> {
     throw new Error('sending funds from KT addresses is not supported. Please use the migration feature.')
@@ -86,13 +86,13 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
 
     const address: string = await super.getAddressFromPublicKey(publicKey)
 
-    const balanceOfManager: BigNumber = await super.getBalanceOfAddresses([address])
+    const balanceOfManager: BigNumber = new BigNumber(await super.getBalanceOfAddresses([address]))
 
     if (balanceOfManager.isLessThan(this.migrationFee)) {
       throw new Error('not enough balance on tz address for fee')
     }
 
-    const amount: BigNumber = await this.getBalanceOfAddresses([destinationContract])
+    const amount: BigNumber = new BigNumber(await this.getBalanceOfAddresses([destinationContract]))
 
     try {
       const results: AxiosResponse[] = await Promise.all([

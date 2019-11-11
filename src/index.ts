@@ -8,6 +8,7 @@ import { IAirGapWallet } from './interfaces/IAirGapWallet'
 import { AeternityProtocol } from './protocols/aeternity/AeternityProtocol'
 import { BitcoinProtocol } from './protocols/bitcoin/BitcoinProtocol'
 import { BitcoinTestnetProtocol } from './protocols/bitcoin/BitcoinTestnetProtocol'
+import { CosmosProtocol } from './protocols/cosmos/CosmosProtocol'
 import { GenericERC20, GenericERC20Configuration } from './protocols/ethereum/erc20/GenericERC20'
 import { EthereumClassicProtocol } from './protocols/ethereum/EthereumClassicProtocol'
 import { EthereumRopstenProtocol } from './protocols/ethereum/EthereumRopstenProtocol'
@@ -19,17 +20,12 @@ import { LitecoinProtocol } from './protocols/litecoin/LitecoinProtocol'
 import { TezosKtProtocol } from './protocols/tezos/kt/TezosKtProtocol'
 import { BakerInfo, DelegationInfo, DelegationRewardInfo, TezosProtocol } from './protocols/tezos/TezosProtocol'
 import { ProtocolNotSupported, ProtocolVersionMismatch, SerializerVersionMismatch, TypeNotSupported } from './serializer/errors'
-import { DeserializedSyncProtocol, EncodedType, SyncProtocolUtils } from './serializer/serializer'
-import { SignedTransaction } from './serializer/signed-transaction.serializer'
-import { UnsignedTransaction } from './serializer/unsigned-transaction.serializer'
-import { SyncWalletRequest } from './serializer/wallet-sync.serializer'
 import { isCoinlibReady } from './utils/coinlibReady'
 import { getProtocolByIdentifier } from './utils/protocolsByIdentifier'
 import { addSubProtocol, getSubProtocolsByIdentifier } from './utils/subProtocols'
 import { supportedProtocols } from './utils/supportedProtocols'
 import { AirGapMarketWallet } from './wallet/AirGapMarketWallet'
 import { AirGapWallet } from './wallet/AirGapWallet'
-import { CosmosProtocol } from './protocols/cosmos/CosmosProtocol'
 
 export {
   getProtocolByIdentifier,
@@ -60,13 +56,6 @@ export {
   DelegationInfo,
   // sub protocols configs,
   GenericERC20Configuration,
-  // sync protocol
-  SyncProtocolUtils,
-  DeserializedSyncProtocol,
-  SyncWalletRequest,
-  UnsignedTransaction,
-  SignedTransaction,
-  EncodedType,
   TypeNotSupported,
   SerializerVersionMismatch,
   ProtocolNotSupported,
