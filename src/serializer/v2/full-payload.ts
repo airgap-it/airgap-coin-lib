@@ -33,7 +33,7 @@ export class FullPayload implements Payload {
       new Message(PayloadType.DECODED, {
         type: message.type,
         protocol: message.protocol,
-        data: message.data
+        payload: message.payload
       }).asArray()
     )
   }

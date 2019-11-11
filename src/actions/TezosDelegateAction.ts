@@ -28,7 +28,7 @@ async function serializeTx(
     {
       protocol: wallet.coinProtocol.identifier,
       type: IACMessageType.TransactionSignRequest,
-      data: {
+      payload: {
         publicKey: wallet.publicKey,
         transaction: transaction as RawEthereumTransaction,
         callback: 'airgap-wallet://?d='

@@ -40,7 +40,7 @@ export class CosmosDelegateAction<Context extends CosmosDelegateActionContext> e
       {
         protocol: this.context.wallet.coinProtocol.identifier,
         type: IACMessageType.TransactionSignRequest,
-        data: {
+        payload: {
           publicKey: this.context.wallet.publicKey,
           transaction,
           callback: 'airgap-wallet://?d='

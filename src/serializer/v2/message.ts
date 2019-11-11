@@ -39,7 +39,7 @@ export type IACMessages =
 export interface IACMessageDefinitionObject {
   type: IACMessageType
   protocol: string
-  data: IACMessages
+  payload: IACMessages
 }
 
 export interface MessageDefinitionArray {
@@ -55,7 +55,7 @@ export class Message implements IACMessageDefinitionObject {
 
   public readonly type: number
   public readonly protocol: string
-  public readonly data: IACMessages
+  public readonly payload: IACMessages
 
   constructor(type: PayloadType, object: Buffer[] | IACMessageDefinitionObject) {
     if (type === PayloadType.DECODED) {
@@ -63,14 +63,14 @@ export class Message implements IACMessageDefinitionObject {
       this.type = x.type
       this.schema = Serializer.getSchema(x.type.toString(), x.protocol)
       this.protocol = x.protocol
-      this.data = x.data
+      this.payload = x.payload
     } else if (type === PayloadType.ENCODED) {
       const x = object as Buffer[]
       this.version = x[0].toString()
       this.type = parseInt(x[1].toString(), 10)
       this.protocol = x[2].toString()
       this.schema = unwrapSchema(Serializer.getSchema(this.type.toString(), this.protocol))
-      this.data = rlpArrayToJson((this.schema as any).properties, x[3] as any)
+      this.payload = rlpArrayToJson((this.schema as any).properties, x[3] as any)
     } else {
       assertNever(type)
       throw new Error('UNKNOWN PAYLOAD TYPE')
@@ -81,12 +81,12 @@ export class Message implements IACMessageDefinitionObject {
     return {
       type: this.type,
       protocol: this.protocol,
-      data: this.data
+      payload: this.payload
     }
   }
 
   public asArray(): RLPData /* it could be MessageDefinitionArray */ {
-    const array: RLPData = jsonToArray('root', unwrapSchema(this.schema), this.data)
+    const array: RLPData = jsonToArray('root', unwrapSchema(this.schema), this.payload)
 
     return [this.version, this.type.toString(), this.protocol, array]
   }
