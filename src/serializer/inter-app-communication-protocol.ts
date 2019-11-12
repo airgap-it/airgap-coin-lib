@@ -111,10 +111,19 @@ export class IACProtocol {
 
     if (!finalPayload) {
       console.log(chunked)
-      const arr: Buffer[] = chunked
-        .sort((a: ChunkedPayload, b: ChunkedPayload) => a.currentPage - b.currentPage)
-        .map((chunk: ChunkedPayload) => chunk.buffer)
+      const sortedChunks = chunked.sort((a: ChunkedPayload, b: ChunkedPayload) => a.currentPage - b.currentPage)
+      const arr: Buffer[] = sortedChunks.map((chunk: ChunkedPayload) => chunk.buffer)
       console.log('arr', arr)
+
+      const result = {
+        availablePages: sortedChunks.map(a => a.currentPage),
+        totalPages: sortedChunks[0].total
+      }
+      console.log('checking individual chunks', result)
+
+      if (result.availablePages.length < result.totalPages) {
+        throw result
+      }
 
       finalPayload = new FullPayload(PayloadType.ENCODED, rlp.decode(Buffer.concat(arr)))
     }
