@@ -315,6 +315,9 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
   public async fetchValidators(): Promise<CosmosValidator[]> {
     return this.nodeClient.fetchValidators()
   }
+  public async fetchSelfDelegation(address: string): Promise<CosmosDelegation> {
+    return this.nodeClient.fetchSelfDelegation(address)
+  }
 
   public async broadcastTransaction(rawTransaction: string): Promise<string> {
     return await this.nodeClient.broadcastSignedTransaction(rawTransaction)
