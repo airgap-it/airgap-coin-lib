@@ -293,7 +293,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
 
     return new CosmosTransaction(
       messages,
-      new CosmosFee([new CosmosCoin('uatom', this.feeDefaults.medium.shiftedBy(this.feeDecimals))], this.defaultGas),
+      new CosmosFee([new CosmosCoin('uatom', new BigNumber(this.feeDefaults.medium).shiftedBy(this.feeDecimals))], this.defaultGas),
       memo !== undefined ? memo : '',
       nodeInfo.network,
       account.value.account_number,
