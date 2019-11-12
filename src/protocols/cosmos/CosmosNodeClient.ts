@@ -72,7 +72,7 @@ export interface CosmosValidatorCommission {
 }
 
 export class CosmosNodeClient {
-  constructor(public readonly baseURL: string, public useCORSProxy: boolean = false) {}
+  constructor(public readonly baseURL: string, public useCORSProxy: boolean = false) { }
 
   public async fetchBalance(address: string): Promise<BigNumber> {
     const response = await axios.get(this.url(`/bank/balances/${address}`))
@@ -125,6 +125,15 @@ export class CosmosNodeClient {
     const validators = response.data as CosmosValidator[]
     return validators
   }
+
+  public async fetchSelfDelegation(validatorAddress: string): Promise<CosmosDelegation> {
+    const validatorInfo = await axios.get(this.url(`/distribution/validators/${validatorAddress}`))
+    const operatorAddress = validatorInfo.data.operator_address
+    const response = await axios.get(this.url(`/staking/delegators/${operatorAddress}/delegations/${validatorAddress}`))
+    const delegation = response.data as CosmosDelegation
+    return delegation
+  }
+
 
   public async fetchTotalReward(delegatorAddress: string): Promise<BigNumber> {
     const response = await axios.get(this.url(`/distribution/delegators/${delegatorAddress}/rewards`))
