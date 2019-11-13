@@ -50,7 +50,7 @@ function typeError(key: string, expectedType: string, value: unknown): Error {
   )
 }
 
-function checkType<T>(key: string, expectedType: string, value: unknown, callback: ((arg: any) => RLPData)): RLPData {
+function checkType<T>(key: string, expectedType: string, value: unknown, callback: (arg: any) => RLPData): RLPData {
   if (expectedType === 'array' && Array.isArray(value)) {
     return callback(value)
   } else if (typeof value === expectedType) {
@@ -70,53 +70,33 @@ export function jsonToArray(key: string, schema: Object, value: Object): RLPData
   const type: SchemaTypes = getTypeFromSchemaDefinition(schema)
   switch (type) {
     case SchemaTypes.STRING:
-      return checkType(
-        key,
-        'string',
-        value,
-        (arg: string): string => {
-          log(`Parsing key ${key} as string, which results in ${arg}`)
+      return checkType(key, 'string', value, (arg: string): string => {
+        log(`Parsing key ${key} as string, which results in ${arg}`)
 
-          return arg
-        }
-      )
+        return arg
+      })
 
-      case SchemaTypes.HEX_STRING:
-        return checkType(
-          key,
-          'string',
-          value,
-          (arg: string): string => {
-            log(`Parsing key ${key} as string, which results in ${arg}`)
-  
-            return arg.substr(2) // Remove the '0x'
-          }
-        )
-  
+    case SchemaTypes.HEX_STRING:
+      return checkType(key, 'string', value, (arg: string): string => {
+        log(`Parsing key ${key} as string, which results in ${arg}`)
+
+        return arg.substr(2) // Remove the '0x'
+      })
+
     case SchemaTypes.NUMBER:
     case SchemaTypes.INTEGER:
-      return checkType(
-        key,
-        'number',
-        value,
-        (arg: number): string => {
-          log(`Parsing key ${key} as number, which results in ${arg.toString()}`)
+      return checkType(key, 'number', value, (arg: number): string => {
+        log(`Parsing key ${key} as number, which results in ${arg.toString()}`)
 
-          return arg.toString()
-        }
-      )
+        return arg.toString()
+      })
 
     case SchemaTypes.BOOLEAN:
-      return checkType(
-        key,
-        'boolean',
-        value,
-        (arg: boolean): string => {
-          log(`Parsing key ${key} as boolean, which results in ${arg ? '1' : '0'}`)
+      return checkType(key, 'boolean', value, (arg: boolean): string => {
+        log(`Parsing key ${key} as boolean, which results in ${arg ? '1' : '0'}`)
 
-          return arg ? '1' : '0'
-        }
-      )
+        return arg ? '1' : '0'
+      })
 
     case SchemaTypes.NULL:
       if (typeof value === 'undefined') {
@@ -154,11 +134,17 @@ export function jsonToArray(key: string, schema: Object, value: Object): RLPData
   }
 }
 
-export function rlpArrayToJson(schema: Object, decoded: any[]): any {
-  const outObject = {}
+export function rlpArrayToJson(schema: Object, decoded: RLPData): { [key: string]: unknown } {
+  const outObject: { [key: string]: unknown } = {}
+
+  if ((schema as any).type === SchemaTypes.OBJECT) {
+    return rlpArrayToJson((schema as any).properties, decoded)
+  }
 
   const keys: string[] = Object.keys(schema).sort()
+
   log(keys)
+
   for (let i: number = 0; i < keys.length; i++) {
     const key: string = keys[i]
     const type: SchemaTypes = getTypeFromSchemaDefinition(schema[key])
@@ -189,7 +175,7 @@ export function rlpArrayToJson(schema: Object, decoded: any[]): any {
         break
 
       case SchemaTypes.ARRAY:
-        outObject[key] = decoded[i].map(decodedElement => rlpArrayToJson(schema[key].items.properties, decodedElement))
+        outObject[key] = decoded[i].map((decodedElement: RLPData) => rlpArrayToJson(schema[key].items, decodedElement))
         break
 
       case SchemaTypes.OBJECT:
@@ -199,7 +185,7 @@ export function rlpArrayToJson(schema: Object, decoded: any[]): any {
       default:
         assertNever(type)
 
-        return undefined
+        return {}
     }
   }
 

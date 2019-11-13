@@ -70,7 +70,7 @@ export class Message implements IACMessageDefinitionObject {
       this.type = parseInt(x[1].toString(), 10)
       this.protocol = x[2].toString()
       this.schema = unwrapSchema(Serializer.getSchema(this.type.toString(), this.protocol))
-      this.payload = rlpArrayToJson((this.schema as any).properties, x[3] as any)
+      this.payload = (rlpArrayToJson(this.schema, x[3] as RLPData) as any) as IACMessages
     } else {
       assertNever(type)
       throw new Error('UNKNOWN PAYLOAD TYPE')
