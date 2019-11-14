@@ -1,21 +1,19 @@
-import BigNumber from '../dependencies/src/bignumber.js-9.0.0/bignumber'
-
 import { IAirGapSignedTransaction } from '../interfaces/IAirGapSignedTransaction'
 import { IAirGapTransaction } from '../interfaces/IAirGapTransaction'
-import { SignedTransaction } from '../serializer/signed-transaction.serializer'
+import { UnsignedTransaction } from '../serializer/schemas/definitions/transaction-sign-request'
+import { SignedTransaction } from '../serializer/schemas/definitions/transaction-sign-response'
 
-import { UnsignedTransaction } from './../serializer/unsigned-transaction.serializer'
 import { ICoinSubProtocol } from './ICoinSubProtocol'
 
 export interface FeeDefaults {
-  low: BigNumber
-  medium: BigNumber
-  high: BigNumber
+  low: string
+  medium: string
+  high: string
 }
 
 export interface CurrencyUnit {
   unitSymbol: string
-  factor: BigNumber
+  factor: string
 }
 
 export interface ICoinProtocol {
@@ -24,17 +22,12 @@ export interface ICoinProtocol {
   marketSymbol: string // Symbol that is most commonly used by other services such as coinmarketcap or cryptocompare.
 
   feeSymbol: string
-  feeDefaults: {
-    // This should be replaced with fees from an API
-    low: BigNumber
-    medium: BigNumber
-    high: BigNumber
-  }
+  feeDefaults: FeeDefaults
   decimals: number
   feeDecimals: number
   identifier: string
 
-  units: { unitSymbol: string; factor: BigNumber }[]
+  units: { unitSymbol: string; factor: string }[]
 
   supportsHD: boolean
   standardDerivationPath: string
@@ -78,19 +71,19 @@ export interface ICoinProtocol {
   getTransactionDetails(transaction: UnsignedTransaction): Promise<IAirGapTransaction[]> // out of unsigned transaction
   getTransactionDetailsFromSigned(transaction: SignedTransaction): Promise<IAirGapTransaction[]> // out of signed transaction
 
-  getBalanceOfAddresses(addresses: string[]): Promise<BigNumber>
-  getBalanceOfPublicKey(publicKey: string): Promise<BigNumber>
-  getBalanceOfExtendedPublicKey(extendedPublicKey: string, offset: number): Promise<BigNumber>
+  getBalanceOfAddresses(addresses: string[]): Promise<string>
+  getBalanceOfPublicKey(publicKey: string): Promise<string>
+  getBalanceOfExtendedPublicKey(extendedPublicKey: string, offset: number): Promise<string>
 
   prepareTransactionFromExtendedPublicKey(
     extendedPublicKey: string,
     offset: number,
     recipients: string[],
-    values: BigNumber[],
-    fee: BigNumber,
+    values: string[],
+    fee: string,
     data?: any
   ): Promise<any> // only broadcaster
-  prepareTransactionFromPublicKey(publicKey: string, recipients: string[], values: BigNumber[], fee: BigNumber, data?: any): Promise<any> // only broadcaster
+  prepareTransactionFromPublicKey(publicKey: string, recipients: string[], values: string[], fee: string, data?: any): Promise<any> // only broadcaster
   broadcastTransaction(rawTransaction: any): Promise<string>
 
   signMessage(message: string, privateKey: Buffer): Promise<string> // Returns signature

@@ -1,10 +1,10 @@
 import * as BIP39 from '../../src/dependencies/src/bip39-2.5.0/index'
 
-import { DeserializedSyncProtocol, EncodedType, ICoinProtocol } from '../../src'
-import BigNumber from '../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
-import { SERIALIZER_VERSION } from '../../src/serializer/constants'
+import { ICoinProtocol } from '../../src'
+import { IACMessageType } from '../../src/serializer/interfaces'
+import { IACMessageDefinitionObject } from '../../src/serializer/message'
 
-const mnemonic = 'spell device they juice trial skirt amazing boat badge steak usage february virus art survey'
+const mnemonic: string = 'spell device they juice trial skirt amazing boat badge steak usage february virus art survey'
 
 interface ProtocolHTTPStub {
   registerStub(testProtocolSpec: TestProtocolSpec, protocol: ICoinProtocol): void
@@ -30,54 +30,57 @@ abstract class TestProtocolSpec {
   public txs: {
     to: string[]
     from: string[]
-    amount: BigNumber
-    fee: BigNumber
+    amount: string
+    fee: string
     properties?: string[]
     unsignedTx: any
     signedTx: string
   }[] = []
-  messages = [{ message: 'test', signature: '' }]
+  public messages = [{ message: 'test', signature: '' }]
 
   public seed(): string {
     return BIP39.mnemonicToSeedHex(mnemonic)
   }
 
-  public unsignedTransaction(tx: any): DeserializedSyncProtocol {
-    return {
-      version: SERIALIZER_VERSION,
-      protocol: this.lib.identifier,
-      type: EncodedType.UNSIGNED_TRANSACTION,
-      payload: {
-        publicKey: this.wallet.publicKey,
-        callback: 'airgap-wallet://?d=',
-        transaction: tx.unsignedTx
+  public unsignedTransaction(tx: any): IACMessageDefinitionObject[] {
+    return [
+      {
+        protocol: this.lib.identifier,
+        type: IACMessageType.TransactionSignRequest,
+        payload: {
+          publicKey: this.wallet.publicKey,
+          callback: 'airgap-wallet://?d=',
+          transaction: tx.unsignedTx
+        }
       }
-    }
+    ]
   }
 
-  public signedTransaction(tx: any): DeserializedSyncProtocol {
-    return {
-      version: SERIALIZER_VERSION,
-      protocol: this.lib.identifier,
-      type: EncodedType.SIGNED_TRANSACTION,
-      payload: {
-        accountIdentifier: this.wallet.publicKey,
-        transaction: tx.signedTx
+  public signedTransaction(tx: any): IACMessageDefinitionObject[] {
+    return [
+      {
+        protocol: this.lib.identifier,
+        type: IACMessageType.TransactionSignResponse,
+        payload: {
+          accountIdentifier: this.wallet.publicKey,
+          transaction: tx.signedTx
+        }
       }
-    }
+    ]
   }
 
-  public syncWallet(): DeserializedSyncProtocol {
-    return {
-      version: SERIALIZER_VERSION,
-      protocol: this.lib.identifier,
-      type: EncodedType.WALLET_SYNC,
-      payload: {
-        publicKey: this.wallet.publicKey,
-        isExtendedPublicKey: this.lib.supportsHD,
-        derivationPath: this.lib.standardDerivationPath
+  public syncWallet(): IACMessageDefinitionObject[] {
+    return [
+      {
+        protocol: this.lib.identifier,
+        type: IACMessageType.AccountShareResponse,
+        payload: {
+          publicKey: this.wallet.publicKey,
+          isExtendedPublicKey: this.lib.supportsHD,
+          derivationPath: this.lib.standardDerivationPath
+        }
       }
-    }
+    ]
   }
 }
 

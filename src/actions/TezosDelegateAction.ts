@@ -1,11 +1,10 @@
-import { AirGapMarketWallet, EncodedType, IAirGapTransaction, SyncProtocolUtils, TezosProtocol } from '..'
-import { RawAeternityTransaction } from '../serializer/unsigned-transactions/aeternity-transactions.serializer'
-import { RawBitcoinTransaction } from '../serializer/unsigned-transactions/bitcoin-transactions.serializer'
-import { RawEthereumTransaction } from '../serializer/unsigned-transactions/ethereum-transactions.serializer'
-import { RawTezosTransaction } from '../serializer/unsigned-transactions/tezos-transactions.serializer'
+import { AirGapMarketWallet, IAirGapTransaction, TezosProtocol } from '..'
+import { CosmosTransaction } from '../protocols/cosmos/CosmosTransaction'
+import { RawAeternityTransaction, RawBitcoinTransaction, RawEthereumTransaction, RawTezosTransaction } from '../serializer/types'
+import { IACMessageType } from '../serializer/interfaces'
+import { Serializer } from '../serializer/serializer'
 
 import { Action } from './Action'
-import { CosmosTransaction } from '../protocols/cosmos/CosmosTransaction'
 
 export interface TezosDelegateActionContext {
   wallet: AirGapMarketWallet
@@ -14,27 +13,28 @@ export interface TezosDelegateActionContext {
 
 export interface TezosDelegateActionResult {
   rawTx: RawTezosTransaction
-  serializedTx: string
+  serializedTx: string[]
   airGapTxs: IAirGapTransaction[] | void
   dataUrl: string
 }
 
-function serializeTx(
+async function serializeTx(
   wallet: AirGapMarketWallet,
   transaction: RawTezosTransaction | RawEthereumTransaction | RawBitcoinTransaction | RawAeternityTransaction | CosmosTransaction
-): Promise<string> {
-  const syncProtocol: SyncProtocolUtils = new SyncProtocolUtils()
+): Promise<string[]> {
+  const serializer: Serializer = new Serializer()
 
-  return syncProtocol.serialize({
-    version: 1,
-    protocol: wallet.coinProtocol.identifier,
-    type: EncodedType.UNSIGNED_TRANSACTION,
-    payload: {
-      publicKey: wallet.publicKey,
-      transaction,
-      callback: 'airgap-wallet://?d='
+  return serializer.serialize([
+    {
+      protocol: wallet.coinProtocol.identifier,
+      type: IACMessageType.TransactionSignRequest,
+      payload: {
+        publicKey: wallet.publicKey,
+        transaction: transaction as RawEthereumTransaction,
+        callback: 'airgap-wallet://?d='
+      }
     }
-  })
+  ])
 }
 
 function getAirGapTx(
@@ -56,16 +56,17 @@ export class TezosDelegateAction<Context extends TezosDelegateActionContext> ext
         if (this.context.wallet.protocolIdentifier === 'xtz') {
           const protocol: TezosProtocol = new TezosProtocol()
 
-        try {
-          const originateTx: RawTezosTransaction = await protocol.delegate(this.context.wallet.publicKey, this.context.delegate)
-          const serializedTx: string = await serializeTx(this.context.wallet, originateTx)
+          try {
+            const originateTx: RawTezosTransaction = await protocol.delegate(this.context.wallet.publicKey, this.context.delegate)
+            const serializedTx: string[] = await serializeTx(this.context.wallet, originateTx)
 
-          const airGapTxs: IAirGapTransaction[] | void = await getAirGapTx(this.context.wallet, originateTx)
-          resolve({ rawTx: originateTx, serializedTx, airGapTxs, dataUrl: `airgap-vault://?d=${serializedTx}` })
-        } catch(error) {
-          reject(error)
+            const airGapTxs: IAirGapTransaction[] | void = await getAirGapTx(this.context.wallet, originateTx)
+            resolve({ rawTx: originateTx, serializedTx, airGapTxs, dataUrl: `airgap-vault://?d=${serializedTx.join(',')}` })
+          } catch (error) {
+            reject(error)
+          }
         }
       }
-    })
+    )
   }
 }

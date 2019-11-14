@@ -1,6 +1,8 @@
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 
-export function toBuffer(rlpArray: any): Buffer | Buffer[] {
+export type RLPData = number | string | boolean | BigNumber | Buffer | RLPData[]
+
+export function toBuffer(rlpArray: RLPData): Buffer | Buffer[] {
   if (Array.isArray(rlpArray)) {
     return rlpArray.map(toBuffer) as Buffer[]
   }
@@ -15,6 +17,10 @@ export function toBuffer(rlpArray: any): Buffer | Buffer[] {
 
   if (BigNumber.isBigNumber(rlpArray)) {
     return Buffer.from(rlpArray.toFixed())
+  }
+
+  if (Buffer.isBuffer(rlpArray)) {
+    return rlpArray
   }
 
   return Buffer.from(rlpArray)

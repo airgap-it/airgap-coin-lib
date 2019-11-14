@@ -1,6 +1,6 @@
 {
   "name": "airgap-coin-lib",
-  "version": "0.6.0-beta.15",
+  "version": "0.6.0-beta.17",
   "description": "The airgap-coin-lib is setup in a way that prepare, signing and broadcasting are willingfully separated.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -18,7 +18,8 @@
     "url": "https://github.com/airgap-it/airgap-coin-lib"
   },
   "scripts": {
-    "build": "tsc && node copy-files-after-build.js && node make-ts-declaration-files-backwards-compatible.js",
+    "build": "tsc && node scripts/copy-files-after-build.js && node scripts/make-ts-declaration-files-backwards-compatible.js",
+    "build-scripts": "tsc scripts/*.ts",
     "tslint": "tslint -c ./tslint.json --project ./tsconfig.json --format stylish",
     "lint-ci": "tslint -t json -o lintReport.json --project . || true",
     "test": "nyc mocha --require ts-node/register --require source-map-support/register --full-trace --timeout 40000 ./test/**/**.spec.ts",
@@ -26,8 +27,8 @@
     "test-legacy": "npm run build && mocha --full-trace --timeout 40000 ./test/**/**.spec.js",
     "sonar-scanner": "sonar-scanner",
     "prepare": "npm run build",
-    "install-test-dependencies": "npm i ts-node --no-save && npx ts-node install-test-deps.ts && npm install",
-    "install-build-dependencies": "npm i ts-node --no-save && npx ts-node install-build-deps.ts && npm install",
+    "install-test-dependencies": "node scripts/install-test-deps.js && npm install",
+    "install-build-dependencies": "node scripts/install-build-deps.js && npm install",
     "browserify": "browserify"
   },
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
@@ -59,12 +60,12 @@
   "devDependencies": {
     "@types/node": "12.12.6",
     "typescript": "3.7.2",
-    "sonarqube-scanner": "2.1.2"
+    "sonarqube-scanner": "2.5.0"
   },
   "buildDependencies": {
     "@types/node": "12.12.6",
     "typescript": "3.7.2",
-    "sonarqube-scanner": "2.1.2"
+    "sonarqube-scanner": "2.5.0"
   },
   "testDependencies": {
     "@types/assert": "0.0.31",
@@ -77,25 +78,26 @@
     "@types/node": "12.12.6",
     "@types/semver": "6.0.2",
     "@types/underscore": "1.8.9",
-    "browserify": "^16.5.0",
+    "ajv": "6.10.2",
+    "browserify": "16.5.0",
     "chai": "4.2.0",
     "chai-as-promised": "7.1.1",
-    "husky": "1.1.2",
+    "husky": "3.0.9",
     "istanbul": "0.4.5",
     "mocha": "5.2.0",
     "node-fetch": "2.2.0",
     "nyc": "12.0.2",
-    "prettier": "1.14.2",
-    "pretty-quick": "1.8.0",
+    "prettier": "1.19.1",
+    "pretty-quick": "2.0.1",
     "qrcode-terminal": "0.12.0",
     "semver": "6.3.0",
     "sinon": "6.3.5",
-    "sonarqube-scanner": "2.1.2",
-    "ts-node": "7.0.1",
-    "tslint": "5.11.0",
-    "tslint-config-prettier": "1.15.0",
-    "tslint-config-valorsoft": "2.2.1",
-    "websocket": "1.0.28"
+    "sonarqube-scanner": "2.5.0",
+    "ts-json-schema-generator": "0.56.0",
+    "ts-node": "8.5.0",
+    "tslint": "5.20.1",
+    "tslint-config-prettier": "1.18.0",
+    "tslint-config-valorsoft": "2.2.1"
   },
   "files": [
     "/dist"

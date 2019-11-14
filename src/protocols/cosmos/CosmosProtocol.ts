@@ -1,27 +1,26 @@
-import { CosmosNodeClient, CosmosDelegation, CosmosValidator } from './CosmosNodeClient'
-import { CosmosInfoClient } from './CosmosInfoClient'
-import { ICoinProtocol } from '../ICoinProtocol'
-import { ICoinSubProtocol } from '../ICoinSubProtocol'
-import { NonExtendedProtocol } from '../NonExtendedProtocol'
-import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
-
+import BECH32 = require('../../dependencies/src/bech32-1.1.3/index')
+import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { BIP32Interface, fromSeed } from '../../dependencies/src/bip32-2.0.4/src/index'
 import { mnemonicToSeed, validateMnemonic } from '../../dependencies/src/bip39-2.5.0/index'
-import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
-import { UnsignedCosmosTransaction } from '../../serializer/unsigned-transactions/cosmos-transactions.serializer'
-
 import RIPEMD160 = require('../../dependencies/src/ripemd160-2.0.2/index')
-import BECH32 = require('../../dependencies/src/bech32-1.1.3/index')
 import SECP256K1 = require('../../dependencies/src/secp256k1-3.7.1/elliptic')
-import { SignedCosmosTransaction } from '../../serializer/signed-transactions/cosmos-transactions.serializer'
+import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
+import { UnsignedCosmosTransaction } from '../../serializer/schemas/definitions/transaction-sign-request-cosmos'
+import { SignedCosmosTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-cosmos'
+import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
+import { ICoinSubProtocol } from '../ICoinSubProtocol'
+import { NonExtendedProtocol } from '../NonExtendedProtocol'
+
+import { CosmosInfoClient } from './CosmosInfoClient'
+import { CosmosAccount, CosmosDelegation, CosmosNodeClient, CosmosNodeInfo, CosmosValidator } from './CosmosNodeClient'
 import {
-  CosmosTransaction,
+  CosmosCoin,
+  CosmosDelegateMessage,
+  CosmosFee,
   CosmosMessageType,
   CosmosSendMessage,
-  CosmosDelegateMessage,
-  CosmosWithdrawDelegationRewardMessage,
-  CosmosCoin,
-  CosmosFee
+  CosmosTransaction,
+  CosmosWithdrawDelegationRewardMessage
 } from './CosmosTransaction'
 
 export interface KeyPair {
@@ -32,25 +31,25 @@ export interface KeyPair {
 export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol {
   public symbol: string = 'ATOM'
   public name: string = 'Cosmos'
-  public marketSymbol: string = 'ATOM'
-  public feeSymbol: string = 'ATOM'
-  public feeDefaults = {
+  public marketSymbol: string = 'atom'
+  public feeSymbol: string = 'atom'
+  public feeDefaults: FeeDefaults = {
     // TODO: verify if these values are ok
-    low: new BigNumber(0.0005),
-    medium: new BigNumber(0.005),
-    high: new BigNumber(0.0075)
+    low: '0.0005',
+    medium: '0.005',
+    high: '0.0075'
   }
   public decimals: number = 6 // TODO: verify these values
   public feeDecimals: number = 6
   public identifier: string = 'cosmos'
-  public units = [
+  public units: CurrencyUnit[] = [
     {
       unitSymbol: 'atom',
-      factor: new BigNumber(1)
+      factor: '1'
     },
     {
       unitSymbol: 'uatom',
-      factor: new BigNumber(1).shiftedBy(-6)
+      factor: '0.000001'
     }
   ]
   public supportsHD: boolean = false
@@ -61,8 +60,8 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
   public blockExplorer: string = 'https://www.mintscan.io'
   public subProtocols?: (ICoinProtocol & ICoinSubProtocol)[] | undefined
 
-  private addressPrefix: string = 'cosmos'
-  private defaultGas: BigNumber = new BigNumber('200000')
+  private readonly addressPrefix: string = 'cosmos'
+  private readonly defaultGas: BigNumber = new BigNumber('200000')
 
   constructor(
     public readonly infoClient: CosmosInfoClient = new CosmosInfoClient(),
@@ -86,33 +85,38 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
     validateMnemonic(mnemonic)
     const seed = mnemonicToSeed(mnemonic)
     const node = fromSeed(seed)
+
     return this.generateKeyPairFromNode(node, derivationPath)
   }
 
   private generateKeyPairFromNode(node: BIP32Interface, derivationPath: string): KeyPair {
-    let keys = node.derivePath(derivationPath)
-    let privateKey = keys.privateKey
+    const keys = node.derivePath(derivationPath)
+    const privateKey = keys.privateKey
     if (privateKey === undefined) {
       throw new Error('Cannot generate private key')
     }
+
     return {
       publicKey: keys.publicKey,
-      privateKey: privateKey
+      privateKey
     }
   }
 
   public getPublicKeyFromHexSecret(secret: string, derivationPath: string): string {
-    let node: BIP32Interface = fromSeed(Buffer.from(secret, 'hex'))
+    const node: BIP32Interface = fromSeed(Buffer.from(secret, 'hex'))
+
     return this.generateKeyPairFromNode(node, derivationPath).publicKey.toString('hex')
   }
 
   public getPublicKeyFromPrivateKey(privateKey: Buffer): Buffer {
     const publicKey = SECP256K1.publicKeyCreate(privateKey)
+
     return Buffer.from(publicKey, 'binary')
   }
 
   public getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Buffer {
-    let node = fromSeed(Buffer.from(secret, 'hex'))
+    const node = fromSeed(Buffer.from(secret, 'hex'))
+
     return this.generateKeyPairFromNode(node, derivationPath).privateKey
   }
 
@@ -121,6 +125,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
     const sha256Hash = await crypto.subtle.digest('SHA-256', pubkey)
     const hash = new RIPEMD160().update(Buffer.from(sha256Hash)).digest()
     const address = BECH32.encode(this.addressPrefix, BECH32.toWords(hash))
+
     return address
   }
 
@@ -129,7 +134,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
   }
 
   public async getTransactionsFromPublicKey(publicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]> {
-    return await this.getTransactionsFromAddresses([await this.getAddressFromPublicKey(publicKey)], limit, offset)
+    return this.getTransactionsFromAddresses([await this.getAddressFromPublicKey(publicKey)], limit, offset)
   }
 
   public async getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
@@ -137,6 +142,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
     for (const address of addresses) {
       promises.push(this.infoClient.fetchTransactions(this.identifier, address, offset, limit))
     }
+
     return Promise.all(promises).then(transactions => transactions.reduce((current, next) => current.concat(next)))
   }
 
@@ -164,11 +170,13 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
       },
       mode: 'sync'
     }
+
     return JSON.stringify(signedTransaction)
   }
 
   public async getTransactionDetails(transaction: UnsignedCosmosTransaction): Promise<IAirGapTransaction[]> {
     const result = transaction.transaction.toAirGapTransactions(this.identifier)
+
     return result
   }
 
@@ -182,66 +190,77 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
       switch (type) {
         case CosmosMessageType.Send.value:
           const sendMessage = CosmosSendMessage.fromJSON(message)
+
           return sendMessage.toAirGapTransaction(this.identifier, fee)
         case CosmosMessageType.Undelegate.value:
         case CosmosMessageType.Delegate.value:
           const delegateMessage = CosmosDelegateMessage.fromJSON(message)
+
           return delegateMessage.toAirGapTransaction(this.identifier, fee)
         case CosmosMessageType.WithdrawDelegationReward.value:
           const withdrawMessage = CosmosWithdrawDelegationRewardMessage.fromJSON(message)
+
           return withdrawMessage.toAirGapTransaction(this.identifier, fee)
         default:
           throw Error('Unknown transaction')
       }
     })
+
     return result
   }
 
-  public async getBalanceOfAddresses(addresses: string[]): Promise<BigNumber> {
+  public async getBalanceOfAddresses(addresses: string[]): Promise<string> {
     const promises: Promise<BigNumber>[] = []
     for (const address of addresses) {
       promises.push(this.nodeClient.fetchBalance(address))
     }
-    return Promise.all(promises).then(balances => {
-      return balances.reduce((current, next) => {
-        return current.plus(next)
+
+    return (
+      await Promise.all(promises).then(balances => {
+        return balances.reduce((current, next) => {
+          return current.plus(next)
+        })
       })
-    })
+    ).toString(10)
   }
 
-  public async getBalanceOfPublicKey(publicKey: string): Promise<BigNumber> {
-    return await this.getBalanceOfAddresses([await this.getAddressFromPublicKey(publicKey)])
+  public async getBalanceOfPublicKey(publicKey: string): Promise<string> {
+    return this.getBalanceOfAddresses([await this.getAddressFromPublicKey(publicKey)])
   }
 
   public async prepareTransactionFromPublicKey(
     publicKey: string,
     recipients: string[],
-    values: BigNumber[],
-    fee: BigNumber,
+    values: string[],
+    fee: string,
     data?: any
   ): Promise<CosmosTransaction> {
-    const address = await this.getAddressFromPublicKey(publicKey)
-    const nodeInfo = await this.nodeClient.fetchNodeInfo()
-    const account = await this.nodeClient.fetchAccount(address)
+    const wrappedValues: BigNumber[] = values.map((value: string) => new BigNumber(value))
+    const wrappedFee: BigNumber = new BigNumber(fee)
 
-    if (recipients.length !== values.length) {
+    const address: string = await this.getAddressFromPublicKey(publicKey)
+    const nodeInfo: CosmosNodeInfo = await this.nodeClient.fetchNodeInfo()
+    const account: CosmosAccount = await this.nodeClient.fetchAccount(address)
+
+    if (recipients.length !== wrappedValues.length) {
       return Promise.reject('recipients length does not match with values')
     }
 
     const messages: CosmosSendMessage[] = []
-    for (let i = 0; i < recipients.length; ++i) {
-      const message = new CosmosSendMessage(address, recipients[i], [new CosmosCoin('uatom', values[i])])
+    for (let i: number = 0; i < recipients.length; ++i) {
+      const message = new CosmosSendMessage(address, recipients[i], [new CosmosCoin('uatom', wrappedValues[i])])
       messages.push(message)
     }
     const memo = data !== undefined && typeof data === 'string' ? (data as string) : ''
     const transaction = new CosmosTransaction(
       messages,
-      new CosmosFee([new CosmosCoin('uatom', fee)], this.defaultGas),
+      new CosmosFee([new CosmosCoin('uatom', wrappedFee)], this.defaultGas),
       memo,
       nodeInfo.network,
       account.value.account_number,
       account.value.sequence
     )
+
     return transaction
   }
 
@@ -252,14 +271,14 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
     undelegate: boolean = false,
     memo?: string
   ): Promise<CosmosTransaction> {
-    const address = await this.getAddressFromPublicKey(publicKey)
-    const nodeInfo = await this.nodeClient.fetchNodeInfo()
-    const account = await this.nodeClient.fetchAccount(address)
-    const message = new CosmosDelegateMessage(address, validatorAddress, new CosmosCoin('uatom', amount), undelegate)
+    const address: string = await this.getAddressFromPublicKey(publicKey)
+    const nodeInfo: CosmosNodeInfo = await this.nodeClient.fetchNodeInfo()
+    const account: CosmosAccount = await this.nodeClient.fetchAccount(address)
+    const message: CosmosDelegateMessage = new CosmosDelegateMessage(address, validatorAddress, new CosmosCoin('uatom', amount), undelegate)
 
     return new CosmosTransaction(
       [message],
-      new CosmosFee([new CosmosCoin('uatom', this.feeDefaults.medium.shiftedBy(this.feeDecimals))], this.defaultGas),
+      new CosmosFee([new CosmosCoin('uatom', new BigNumber(this.feeDefaults.medium).shiftedBy(this.feeDecimals))], this.defaultGas),
       memo !== undefined ? memo : '',
       nodeInfo.network,
       account.value.account_number,
@@ -274,7 +293,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
 
     return new CosmosTransaction(
       messages,
-      new CosmosFee([new CosmosCoin('uatom', this.feeDefaults.medium.shiftedBy(this.feeDecimals))], this.defaultGas),
+      new CosmosFee([new CosmosCoin('uatom', new BigNumber(this.feeDefaults.medium).shiftedBy(this.feeDecimals))], this.defaultGas),
       memo !== undefined ? memo : '',
       nodeInfo.network,
       account.value.account_number,
@@ -283,8 +302,9 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
   }
 
   public async withdrawAllDelegationRewards(delegatorAddress: string, fee: BigNumber, memo?: string): Promise<string> {
-    const nodeInfo = await this.nodeClient.fetchNodeInfo()
-    const account = await this.nodeClient.fetchAccount(delegatorAddress)
+    const nodeInfo: CosmosNodeInfo = await this.nodeClient.fetchNodeInfo()
+    const account: CosmosAccount = await this.nodeClient.fetchAccount(delegatorAddress)
+
     return this.nodeClient.withdrawAllDelegationRewards(
       delegatorAddress,
       nodeInfo.network,
@@ -320,7 +340,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
   }
 
   public async broadcastTransaction(rawTransaction: string): Promise<string> {
-    return await this.nodeClient.broadcastSignedTransaction(rawTransaction)
+    return this.nodeClient.broadcastSignedTransaction(rawTransaction)
   }
 
   public async signMessage(message: string, privateKey: Buffer): Promise<string> {

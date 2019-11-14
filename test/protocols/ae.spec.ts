@@ -5,7 +5,7 @@ import * as sinon from 'sinon'
 
 import axios from '../../src/dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
-import { RawAeternityTransaction } from '../../src/serializer/unsigned-transactions/aeternity-transactions.serializer'
+import { RawAeternityTransaction } from '../../src/serializer/types'
 
 import { AETestProtocolSpec } from './specs/ae'
 
@@ -25,8 +25,8 @@ describe(`ICoinProtocol Aeternity - Custom Tests`, () => {
         hash: 'th_z8bNzdugQdpiRUVXUmQbxoy5dLLEFLG6StBY95jF1KdXrRxiq',
         signatures: ['sg_JTXgD5WaKbDeVeDQXt9w7MyHXdxFdTqqzUvKFwoYsQZENc2zivckavGhBpX2h2a5QajiewuvsEgc3o7FxEB57oHTEn153'],
         tx: {
-          amount: aeProtocolSpec.txs[0].amount.toFixed(),
-          fee: aeProtocolSpec.txs[0].fee.toFixed(),
+          amount: aeProtocolSpec.txs[0].amount,
+          fee: aeProtocolSpec.txs[0].fee,
           nonce: 1,
           payload: '"create account" 1',
           recipient_id: aeProtocolSpec.wallet.addresses[0],
@@ -64,8 +64,8 @@ describe(`ICoinProtocol Aeternity - Custom Tests`, () => {
 
     expect(transactions).to.deep.equal([
       {
-        amount: new BigNumber(aeProtocolSpec.txs[0].amount),
-        fee: new BigNumber(aeProtocolSpec.txs[0].fee),
+        amount: new BigNumber(aeProtocolSpec.txs[0].amount).toString(),
+        fee: new BigNumber(aeProtocolSpec.txs[0].fee).toString(),
         from: aeProtocolSpec.wallet.addresses,
         isInbound: true,
         protocolIdentifier: aeLib.identifier,
@@ -83,8 +83,8 @@ describe(`ICoinProtocol Aeternity - Custom Tests`, () => {
 
     expect(transactions).to.deep.equal([
       {
-        amount: new BigNumber(aeProtocolSpec.txs[0].amount),
-        fee: new BigNumber(aeProtocolSpec.txs[0].fee),
+        amount: new BigNumber(aeProtocolSpec.txs[0].amount).toString(),
+        fee: new BigNumber(aeProtocolSpec.txs[0].fee).toString(),
         from: aeProtocolSpec.wallet.addresses,
         isInbound: true,
         protocolIdentifier: aeLib.identifier,

@@ -1,9 +1,12 @@
 import { ICoinProtocol } from '../protocols/ICoinProtocol'
-import { ProtocolNotSupported } from '../serializer/errors'
+import { ProtocolNotSupported } from '../errors'
 
 import { supportedProtocols } from './supportedProtocols'
 
 const getProtocolByIdentifier = function(identifier: string): ICoinProtocol {
+  if (!identifier || typeof identifier !== 'string') {
+    throw new Error('No protocol identifier provided')
+  }
   // create a complete list of all protocols and subprotocols
   let candidates = supportedProtocols()
     .map(protocol => {

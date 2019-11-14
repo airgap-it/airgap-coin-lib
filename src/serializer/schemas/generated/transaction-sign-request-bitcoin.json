@@ -1,0 +1,85 @@
+{
+  "$ref": "#/definitions/UnsignedBitcoinTransaction",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "UnsignedBitcoinTransaction": {
+      "additionalProperties": false,
+      "properties": {
+        "callback": {
+          "type": "string"
+        },
+        "publicKey": {
+          "type": "string"
+        },
+        "transaction": {
+          "additionalProperties": false,
+          "properties": {
+            "ins": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "address": {
+                    "type": "string"
+                  },
+                  "derivationPath": {
+                    "type": "string"
+                  },
+                  "txId": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "string"
+                  },
+                  "vout": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "txId",
+                  "value",
+                  "vout",
+                  "address"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "outs": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "isChange": {
+                    "type": "boolean"
+                  },
+                  "recipient": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "recipient",
+                  "isChange",
+                  "value"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "ins",
+            "outs"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "publicKey",
+        "transaction"
+      ],
+      "type": "object"
+    }
+  }
+}

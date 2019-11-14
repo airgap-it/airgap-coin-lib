@@ -2,10 +2,12 @@ import axios from '../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 
+// tslint:disable:max-classes-per-file
+
 class TransactionListQuery {
   constructor(private offset: number, private limit: number, private address: string) {}
 
-  toJSON(): string {
+  public toJSON(): string {
     return JSON.stringify({
       from: this.offset,
       size: this.limit,
@@ -49,19 +51,23 @@ export class CosmosInfoClient {
         .reduce((current: BigNumber, next: BigNumber) => current.plus(next))
       const result = transaction.value.msg.map(message => {
         const destination: string = message.value.to_address
+
         return {
           amount: message.value.amount
             .map(coin => new BigNumber(coin.amount))
-            .reduce((current: BigNumber, next: BigNumber) => current.plus(next)) as BigNumber,
+            .reduce((current: BigNumber, next: BigNumber) => current.plus(next))
+            .toString(10),
           to: [destination],
           from: [message.value.from_address as String],
           isInbound: destination === address,
-          fee: fee,
+          fee: fee.toString(10),
           protocolIdentifier: identifier
-        } as IAirGapTransaction
+        }
       })
+
       return result
     })
+
     return transactions.reduce((current, next) => current.concat(next))
   }
 }

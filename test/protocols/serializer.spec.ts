@@ -1,14 +1,12 @@
 import { expect } from 'chai'
 import 'mocha'
 
-import { IAirGapTransaction, SignedTransaction, UnsignedTransaction } from '../../src'
-import { DeserializedSyncProtocol, SyncProtocolUtils } from '../../src/serializer/serializer'
-import { getProtocolByIdentifier } from '../../src/utils/protocolsByIdentifier'
+import { IACMessageDefinitionObject } from '../../src/serializer/message'
+import { Serializer } from '../../src/serializer/serializer'
 
 import { TestProtocolSpec } from './implementations'
 import { AETestProtocolSpec } from './specs/ae'
 import { BitcoinProtocolSpec } from './specs/bitcoin'
-import { ERC20HOPTokenTestProtocolSpec } from './specs/erc20-hop-token'
 import { EthereumTestProtocolSpec } from './specs/ethereum'
 import { GenericERC20TokenTestProtocolSpec } from './specs/generic-erc20-token'
 import { TezosTestProtocolSpec } from './specs/tezos'
@@ -17,30 +15,30 @@ const protocols = [
   new EthereumTestProtocolSpec(),
   new BitcoinProtocolSpec(),
   new AETestProtocolSpec(),
-  new ERC20HOPTokenTestProtocolSpec(),
   new TezosTestProtocolSpec(),
   new GenericERC20TokenTestProtocolSpec()
 ]
 
 protocols.forEach((protocol: TestProtocolSpec) => {
-  const syncProtocol = new SyncProtocolUtils()
+  const syncProtocol = new Serializer()
 
   describe(`Serialization Protocol for ${protocol.name}`, () => {
     it(`should be able to serialize a transaction to a airgap protocol string`, async () => {
       for (const tx of protocol.txs) {
-        const serializedTx = await syncProtocol.serialize(protocol.unsignedTransaction(tx))
-        const deserializedTx = await syncProtocol.deserialize(serializedTx)
+        const serializedTx: string[] = await syncProtocol.serialize(protocol.unsignedTransaction(tx))
+        const deserializedTx: IACMessageDefinitionObject[] = await syncProtocol.deserialize(serializedTx)
 
-        expect(protocol.unsignedTransaction(tx)).to.deep.include(deserializedTx)
+        expect(protocol.unsignedTransaction(tx)).to.deep.equal(deserializedTx)
       }
     })
-
+    /*
     it(`should be able to properly extract amount/fee using getTransactionDetails in combination with the coin-lib`, async () => {
       for (const tx of protocol.txs) {
-        const serializedTx = await syncProtocol.serialize(protocol.unsignedTransaction(tx))
-        const deserializedTx = await syncProtocol.deserialize(serializedTx)
+        const serializedTx = syncProtocol.serialize(protocol.unsignedTransaction(tx))
+        const deserializedTxs = syncProtocol.deserialize(serializedTx)
+        const deserializedTx = deserializedTxs[0]
 
-        const airGapTxs: IAirGapTransaction[] = await protocol.lib.getTransactionDetails(deserializedTx.payload as UnsignedTransaction)
+        const airGapTxs: IAirGapTransaction[] = await protocol.lib.getTransactionDetails(deserializedTx.data as UnsignedTransaction)
 
         if (airGapTxs.length !== 1) {
           throw new Error('Unexpected number of transactions')
@@ -56,11 +54,12 @@ protocols.forEach((protocol: TestProtocolSpec) => {
 
     it(`should be able to properly extract amount/fee using from signedTx in combination with the coin-lib`, async () => {
       for (const tx of protocol.txs) {
-        const serializedTx = await syncProtocol.serialize(protocol.signedTransaction(tx))
+        const serializedTx = syncProtocol.serialize(protocol.signedTransaction(tx))
 
-        const deserializedTx = await syncProtocol.deserialize(serializedTx)
+        const deserializedTxs: IACMessageDefinition[] = syncProtocol.deserialize(serializedTx)
+        const deserializedTx: IACMessageDefinition = deserializedTxs[0]
 
-        const airGapTxs = await protocol.lib.getTransactionDetailsFromSigned(deserializedTx.payload as SignedTransaction)
+        const airGapTxs = await protocol.lib.getTransactionDetailsFromSigned(deserializedTx.data as SignedTransaction)
 
         if (airGapTxs.length !== 1) {
           throw new Error('Unexpected number of transactions')
@@ -77,26 +76,31 @@ protocols.forEach((protocol: TestProtocolSpec) => {
 
     it(`should be able to serialize and deserialize a sync-wallet request`, async () => {
       for (const tx of protocol.txs) {
-        const serializedWalletRequest = await syncProtocol.serialize(protocol.signedTransaction(tx))
-        const deserializedWalletRequest = await syncProtocol.deserialize(serializedWalletRequest)
+        const serializedWalletRequest = syncProtocol.serialize(protocol.signedTransaction(tx))
+        const deserializedWalletRequest = syncProtocol.deserialize(serializedWalletRequest)
 
-        expect(protocol.signedTransaction(tx)).to.deep.include(deserializedWalletRequest)
+        expect(protocol.signedTransaction(tx)).to.deep.equal(deserializedWalletRequest)
       }
     })
 
     it(`should be able to serialize and deserialize a signed-tx request`, async () => {
       for (const tx of protocol.txs) {
-        const serializedSignedTx = await syncProtocol.serialize(protocol.signedTransaction(tx))
-        const deserializedTx = await syncProtocol.deserialize(serializedSignedTx)
+        const serializedSignedTx = syncProtocol.serialize(protocol.signedTransaction(tx))
+        const deserializedTx = syncProtocol.deserialize(serializedSignedTx)
 
-        expect(protocol.signedTransaction(tx)).to.deep.include(deserializedTx)
+        expect(protocol.signedTransaction(tx)).to.deep.equal(deserializedTx)
       }
     })
 
     it(`should be able to properly construct the protocol from a unsigned tx`, async () => {
       for (const tx of protocol.txs) {
-        const serializedTx = await syncProtocol.serialize(protocol.unsignedTransaction(tx))
-        const deserializedTx = await syncProtocol.deserialize(serializedTx)
+        const serializedTx = syncProtocol.serialize(protocol.unsignedTransaction(tx))
+        const deserializedTxs: IACMessageDefinition[] = syncProtocol.deserialize(serializedTx)
+        const deserializedTx: IACMessageDefinition = deserializedTxs[0]
+
+        if (!deserializedTx.protocol) {
+          throw new Error('No protocol present')
+        }
 
         const reConstructedProtocol = getProtocolByIdentifier(deserializedTx.protocol)
 
@@ -105,36 +109,38 @@ protocols.forEach((protocol: TestProtocolSpec) => {
     })
 
     it(`should be able to serialize and deserialize a message sign request`, async () => {
-      const originalJson = {
-        version: 1,
-        protocol: protocol.lib.identifier,
-        type: 3,
-        payload: {
-          message: 'TestMessage'
+      const originalJson = [
+        {
+          protocol: protocol.lib.identifier,
+          type: 3,
+          data: {
+            message: 'TestMessage'
+          }
         }
-      }
+      ]
 
-      const serialized: string = await syncProtocol.serialize(originalJson)
-      const deserialized: DeserializedSyncProtocol = await syncProtocol.deserialize(serialized)
+      const serialized: string[] = syncProtocol.serialize(originalJson)
+      const deserialized: IACMessageDefinition[] = syncProtocol.deserialize(serialized)
 
       expect(originalJson).to.deep.equal(deserialized)
     })
 
     it(`should be able to serialize and deserialize a message sign response`, async () => {
-      const originalJson = {
-        version: 1,
-        protocol: protocol.lib.identifier,
-        type: 4,
-        payload: {
-          message: 'TestMessage',
-          signature: 'asdfasdf'
+      const originalJson = [
+        {
+          protocol: protocol.lib.identifier,
+          type: 4,
+          data: {
+            message: 'TestMessage',
+            signature: 'asdfasdf'
+          }
         }
-      }
+      ]
 
-      const serialized: string = await syncProtocol.serialize(originalJson)
-      const deserialized: DeserializedSyncProtocol = await syncProtocol.deserialize(serialized)
+      const serialized: string[] = syncProtocol.serialize(originalJson)
+      const deserialized: IACMessageDefinition[] = syncProtocol.deserialize(serialized)
 
       expect(originalJson).to.deep.equal(deserialized)
-    })
+    }) */
   })
 })

@@ -1,12 +1,9 @@
-import { SignedTezosTransaction } from './../../../src/serializer/signed-transactions/tezos-transactions.serializer'
-
-import { TezosTransactionValidator } from './../../../src/serializer/unsigned-transactions/tezos-transactions.validator'
-import BigNumber from '../../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
-
-import { TezosProtocol } from '../../../src/'
+import { SignedTezosTransaction, TezosProtocol } from '../../../src/'
+import { RawTezosTransaction } from '../../../src/serializer/types'
 import { TestProtocolSpec } from '../implementations'
 import { TezosProtocolStub } from '../stubs/tezos.stub'
-import { RawTezosTransaction } from '../../../src/serializer/unsigned-transactions/tezos-transactions.serializer'
+
+import { TezosTransactionValidator } from './../../../src/serializer/unsigned-transactions/tezos-transactions.validator'
 
 // Test Mnemonic from using Ledger, 44'/1729'/0'/0'
 // leopard crouch simple blind castle they elder enact slow rate mad blanket saddle tail silk fury quarter obscure interest exact veteran volcano fabric cherry
@@ -36,8 +33,8 @@ export class TezosTestProtocolSpec extends TestProtocolSpec {
   }
   public txs = [
     {
-      amount: new BigNumber('1000000'),
-      fee: new BigNumber('1420'),
+      amount: '1000000',
+      fee: '1420',
       to: ['tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'],
       from: ['tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'],
       unsignedTx: {
@@ -49,7 +46,7 @@ export class TezosTestProtocolSpec extends TestProtocolSpec {
     }
   ]
 
-  public seed() {
+  public seed(): string {
     return '5b72ef2589b7bd6e35c349ce682cb574f09726e171f2ea166982bf66a1a815fabb9dcbed182b50a3468f8af7ce1f6a3ca739dbde4241b8b674c25b9b2cc5489c'
   }
   public invalidUnsignedTransactionValues: { property: string; testName: string; values: { value: any; expectedError: any }[] }[] = [
@@ -94,7 +91,7 @@ export class TezosTestProtocolSpec extends TestProtocolSpec {
       ]
     }
   ]
-  public validRawTransactions: Array<RawTezosTransaction> = [
+  public validRawTransactions: RawTezosTransaction[] = [
     {
       binaryTransaction:
         'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb95508000091a9d2b003f19cf5a1f38f04f1000ab482d331768c0bc4fe37bc5000c0843d000091a9d2b003f19cf5a1f38f04f1000ab482d3317600'
@@ -130,7 +127,7 @@ export class TezosTestProtocolSpec extends TestProtocolSpec {
     }
   ]
 
-  public validSignedTransactions: Array<SignedTezosTransaction> = [
+  public validSignedTransactions: SignedTezosTransaction[] = [
     {
       accountIdentifier: 'cdbc0c3449784bd53907c3c7a06060cf12087e492a7b937f044c6a73b522a234',
       transaction:

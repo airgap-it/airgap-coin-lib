@@ -10,7 +10,6 @@ const mnemonicPhrase = 'spell device they juice trial skirt amazing boat badge s
 const masterSeed = BIP39.mnemonicToSeed(mnemonicPhrase)
 
 const CoinLib = require('../dist/index')
-const hopTokenProtocol = require('../dist/protocols/ethereum/erc20/HopRopstenToken').HOPTokenProtocol
 
 const validateTxHelper = require('./helpers/validate-tx')
 
@@ -214,20 +213,6 @@ describe('Balance Of', function() {
       .catch(done)
   })
 */
-  it('should return the correct hop ropsten balance', function(done) {
-    const ethereumRopstenNode = bitcoinJS.HDNode.fromSeedBuffer(masterSeed, networks.eth)
-    const publicKey = ethereumRopstenNode
-      .derivePath("m/44'/60'/0'/0/0")
-      .neutered()
-      .getPublicKeyBuffer()
-    hopTokenProtocol
-      .getBalanceOfPublicKey(publicKey)
-      .then(value => {
-        assert.equal(value.toString(10), '11999999999999999420')
-        done()
-      })
-      .catch(done)
-  })
 
   /*
   @deprecated: flaky test that fails given the address balance changes, done in new set of tests anyway
@@ -431,27 +416,6 @@ describe('Raw Transaction Prepare', function() {
       .catch(done)
   })
 */
-  it('should return a correct hop ropsten transaction', function(done) {
-    const ethereumRopstenNode = bitcoinJS.HDNode.fromSeedBuffer(masterSeed, networks.eth)
-    const publicKey = ethereumRopstenNode
-      .derivePath("m/44'/60'/0'/0/0")
-      .neutered()
-      .getPublicKeyBuffer()
-    const privateKey = ethereumRopstenNode.derivePath("m/44'/60'/0'/0/0").keyPair.d.toBuffer(32)
-    hopTokenProtocol
-      .prepareTransactionFromPublicKey(
-        publicKey,
-        ['0x41d9c9996Ca6De4B759deC24B09EF638c94166e8'],
-        [new BigNumber(10)],
-        new BigNumber(21000 * 10 ** 9)
-      )
-      .then(transaction => {
-        hopTokenProtocol.signWithPrivateKey(privateKey, transaction).then(rawTransaction => {
-          done()
-        })
-      })
-      .catch(done)
-  })
 })
 
 describe('Secret to Public Key Logic', function() {
@@ -597,40 +561,6 @@ describe('List Transactions', function() {
     })
   })
 
-  it('should return the correct hops erc 20 transactions', function (done) {
-    const ethereumRopstenNode = bitcoinJS.HDNode.fromSeedBuffer(masterSeed, networks.eth)
-    const publicKey = ethereumRopstenNode
-      .derivePath("m/44'/60'/0'/0/0")
-      .neutered()
-      .getPublicKeyBuffer()
-
-    hopTokenProtocol
-      .getAddressFromPublicKey(publicKey)
-      .then(address => {
-        sinon
-          .stub(axios, 'get')
-          .withArgs(
-            `https://ropsten.trustwalletapp.com/transactions?address=${address}&contract=${
-              hopTokenProtocol.contractAddress
-            }&page=0&limit=20`
-          )
-          .returns(Promise.resolve({ data: { docs: [] } }))
-
-        hopTokenProtocol
-          .getTransactionsFromPublicKey(publicKey, 20, 0)
-          .then(transactions => {
-            sinon.restore()
-            done()
-          })
-          .catch(error => {
-            sinon.restore()
-            done(error)
-          })
-      })
-      .catch(error => {
-        done(error)
-      })
-  })
   */
 })
 describe('Transaction Detail Logic', function(done) {

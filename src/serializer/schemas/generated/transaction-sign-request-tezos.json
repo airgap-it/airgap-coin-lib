@@ -1,0 +1,34 @@
+{
+  "$ref": "#/definitions/UnsignedTezosTransaction",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "UnsignedTezosTransaction": {
+      "additionalProperties": false,
+      "properties": {
+        "callback": {
+          "type": "string"
+        },
+        "publicKey": {
+          "type": "string"
+        },
+        "transaction": {
+          "additionalProperties": false,
+          "properties": {
+            "binaryTransaction": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "binaryTransaction"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "publicKey",
+        "transaction"
+      ],
+      "type": "object"
+    }
+  }
+}
