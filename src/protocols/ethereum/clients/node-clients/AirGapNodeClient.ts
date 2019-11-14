@@ -1,7 +1,8 @@
-import axios, { AxiosResponse } from 'axios'
-import { EthereumNodeClient } from './NodeClient'
-import { BigNumber } from 'bignumber.js'
+import axios, { AxiosResponse } from '../../../../dependencies/src/axios-0.19.0/index'
+import { BigNumber } from '../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { EthereumUtils } from '../../utils/utils'
+
+import { EthereumNodeClient } from './NodeClient'
 
 class EthereumRPCBody {
   public static blockEarliest = 'earliest'
@@ -20,7 +21,7 @@ class EthereumRPCBody {
     this.id = 1
   }
 
-  toJSON(): string {
+  public toJSON(): string {
     return JSON.stringify({
       jsonrpc: this.jsonrpc,
       method: this.method,
@@ -47,7 +48,7 @@ export class EthereumRPCData {
     return `0x${hash.slice(2, 10)}`
   }
 
-  static addLeadingZeroPadding(value: string, targetLength: number = EthereumRPCData.parametersLength): string {
+  public static addLeadingZeroPadding(value: string, targetLength: number = EthereumRPCData.parametersLength): string {
     let result = value
     while (result.length < targetLength) {
       result = '0' + result
@@ -55,7 +56,7 @@ export class EthereumRPCData {
     return result
   }
 
-  static removeLeadingZeroPadding(value: string): string {
+  public static removeLeadingZeroPadding(value: string): string {
     let result = value
     while (result.startsWith('0')) {
       result = result.slice(1) // this can probably be done much more efficiently with a regex
@@ -133,7 +134,7 @@ export class AirGapNodeClient extends EthereumNodeClient {
   public async fetchBalance(address: string): Promise<BigNumber> {
     const body = new EthereumRPCBody('eth_getBalance', [address, EthereumRPCBody.blockLatest])
     return this.send(body, response => {
-      let balance: string = response.data.result
+      const balance: string = response.data.result
       return new BigNumber(balance)
     })
   }
@@ -141,7 +142,7 @@ export class AirGapNodeClient extends EthereumNodeClient {
   public async fetchTransactionCount(address: string): Promise<number> {
     const body = new EthereumRPCBody('eth_getTransactionCount', [address, EthereumRPCBody.blockLatest])
     return this.send(body, response => {
-      let count: string = response.data.result
+      const count: string = response.data.result
       return new BigNumber(count).toNumber()
     })
   }

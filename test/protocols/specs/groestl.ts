@@ -1,6 +1,6 @@
-import BigNumber from 'bignumber.js'
-
-import { DeserializedSyncProtocol, GroestlcoinProtocol, SignedTransaction } from '../../../src'
+import { GroestlcoinProtocol } from '../../../src'
+import { IACMessageDefinitionObject } from '../../../src/serializer/message'
+import { SignedTransaction } from '../../../src/serializer/schemas/definitions/transaction-sign-response'
 import { TestProtocolSpec } from '../implementations'
 import { GroestlcoinProtocolStub } from '../stubs/groestlcoin.stub'
 
@@ -36,20 +36,20 @@ export class GroestlcoinProtocolSpec extends TestProtocolSpec {
     {
       from: ['FiEEq7G31QAsFfWFtWbMosVzUGQgtpUJsZ', 'Fo5wJdoDwg7XvDi7ntnMwWv15Vc1UMA7Bz'],
       to: ['FkPxwoFcgf16MpYka596GK3HV4SSiAPanR'],
-      amount: new BigNumber('60000000'),
-      fee: new BigNumber('2000'),
+      amount: '60000000',
+      fee: '2000',
       unsignedTx: {
         ins: [
           {
             txId: '859590b5fa94b477d6acfec3410d381a0aa2fe4f8a8c04f8519c4451e282b04d',
-            value: new BigNumber('50000000'),
+            value: '50000000',
             vout: 0,
             address: 'FiEEq7G31QAsFfWFtWbMosVzUGQgtpUJsZ',
             derivationPath: '0/1'
           },
           {
             txId: '8ad19fb60971488667333c184786bb6b24ecfe7599290683720d2631722e6e90',
-            value: new BigNumber('50000000'),
+            value: '50000000',
             vout: 0,
             address: 'Fo5wJdoDwg7XvDi7ntnMwWv15Vc1UMA7Bz',
             derivationPath: '0/0'
@@ -59,12 +59,12 @@ export class GroestlcoinProtocolSpec extends TestProtocolSpec {
           {
             recipient: 'FkPxwoFcgf16MpYka596GK3HV4SSiAPanR',
             isChange: false,
-            value: new BigNumber('60000000')
+            value: '60000000'
           },
           {
             recipient: 'FkVmovQbcun3fZ34AnettSSKfxCWtsAvhA',
             isChange: true,
-            value: new BigNumber('39998000')
+            value: '39998000'
           }
         ]
       },
@@ -72,12 +72,13 @@ export class GroestlcoinProtocolSpec extends TestProtocolSpec {
     }
   ]
 
-  public signedTransaction(tx: any): DeserializedSyncProtocol {
-    const protocol: DeserializedSyncProtocol = super.signedTransaction(tx)
-    const payload = protocol.payload as SignedTransaction
+  public signedTransaction(tx: any): IACMessageDefinitionObject[] {
+    const protocol: IACMessageDefinitionObject[] = super.signedTransaction(tx)
+    const payload = protocol[0].payload as SignedTransaction
     payload.amount = this.txs[0].amount
     payload.fee = this.txs[0].fee
     payload.from = this.wallet.addresses
+
     return protocol
   }
 }

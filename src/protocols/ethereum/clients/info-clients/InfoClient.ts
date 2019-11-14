@@ -1,6 +1,9 @@
-import axios from 'axios'
+import axios from '../../../../dependencies/src/axios-0.19.0/index'
+
+import { BigNumber } from '../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { IAirGapTransaction } from '../../../../interfaces/IAirGapTransaction'
-import { BigNumber } from 'bignumber.js'
+
+// tslint:disable:max-classes-per-file
 
 export abstract class EthereumInfoClient {
   public baseURL: string
@@ -38,8 +41,8 @@ export class TrustWalletInfoClient extends EthereumInfoClient {
               from: [transaction.from],
               to: [transaction.to],
               isInbound: transaction.to.toLowerCase() === address.toLowerCase(),
-              amount: new BigNumber(transaction.value),
-              fee,
+              amount: new BigNumber(transaction.value).toString(10),
+              fee: fee.toString(10),
               blockHeight: transaction.blockNumber,
               protocolIdentifier: identifier,
               timestamp: parseInt(transaction.timeStamp, 10)
@@ -76,8 +79,8 @@ export class TrustWalletInfoClient extends EthereumInfoClient {
                 isInbound: transactionPayload.to.toLowerCase() === address.toLowerCase(),
                 blockHeight: transaction.blockNumber,
                 protocolIdentifier: identifier,
-                amount: new BigNumber(transactionPayload.value),
-                fee,
+                amount: new BigNumber(transactionPayload.value).toString(10),
+                fee: fee.toString(10),
                 timestamp: parseInt(transaction.timeStamp, 10)
               }
               airGapTransactions.push(airGapTransaction)

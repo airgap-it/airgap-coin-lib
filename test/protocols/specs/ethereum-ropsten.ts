@@ -1,5 +1,3 @@
-import BigNumber from 'bignumber.js'
-
 import { EthereumRopstenProtocol } from '../../../src'
 import { TestProtocolSpec } from '../implementations'
 import { EthereumRopstenProtocolStub } from '../stubs/ethereum-ropsten.stub'
@@ -16,8 +14,8 @@ export class EthereumRopstenTestProtocolSpec extends TestProtocolSpec {
   }
   public txs = [
     {
-      amount: new BigNumber('1000000000000000000'),
-      fee: new BigNumber('420000000000000'),
+      amount: '1000000000000000000',
+      fee: '420000000000000',
       to: ['0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e'],
       from: ['0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e'],
       unsignedTx: {

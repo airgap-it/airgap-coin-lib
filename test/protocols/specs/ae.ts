@@ -1,11 +1,10 @@
-import { AeternityProtocol } from './../../../src/protocols/aeternity/AeternityProtocol'
-import { SignedAeternityTransaction } from './../../../src/serializer/signed-transactions/aeternity-transactions.serializer'
-import { AeternityTransactionValidator } from './../../../src/serializer/unsigned-transactions/aeternity-transactions.validator'
-import BigNumber from 'bignumber.js'
-
+import { SignedAeternityTransaction } from '../../../src/serializer/schemas/definitions/transaction-sign-response-aeternity'
+import { RawAeternityTransaction } from '../../../src/serializer/types'
 import { TestProtocolSpec } from '../implementations'
 import { AeternityProtocolStub } from '../stubs/ae.stub'
-import { RawAeternityTransaction } from '../../../src/serializer/unsigned-transactions/aeternity-transactions.serializer'
+
+import { AeternityProtocol } from './../../../src/protocols/aeternity/AeternityProtocol'
+import { AeternityTransactionValidator } from './../../../src/serializer/unsigned-transactions/aeternity-transactions.validator'
 
 // Test Mnemonic:
 // mango club state husband keen fiber float jelly major include horse infant square spike equip caught version must pen swim setup right poem economy
@@ -50,8 +49,8 @@ export class AETestProtocolSpec extends TestProtocolSpec {
       */
       to: ['ak_2dPGHd5dZgKwR234uqPZcAXXcCyxr3TbWwgV8NSnNincth4Lf7'],
       from: ['ak_2dPGHd5dZgKwR234uqPZcAXXcCyxr3TbWwgV8NSnNincth4Lf7'],
-      amount: new BigNumber('10000000000000000000'),
-      fee: new BigNumber('1000000000000000000'),
+      amount: '10000000000000000000',
+      fee: '1000000000000000000',
       unsignedTx: {
         transaction:
           'tx_+FsMAaEB1k9h7FZRnn8Q81kIxA97Moj7Pr3A9sUEqpXseA48f/mhAdZPYexWUZ5/EPNZCMQPezKI+z69wPbFBKqV7HgOPH/5iIrHIwSJ6AAAiA3gtrOnZAAAAACAQCdXaA==',
@@ -62,7 +61,7 @@ export class AETestProtocolSpec extends TestProtocolSpec {
     }
   ]
 
-  public seed() {
+  public seed(): string {
     return 'a109e38f00824ea80107cd7ccbac4e7afe7abe588eeac9191d71adf98fb1fba73311182c010a0182e20e67f4daa45bf1cbbbecab8ff407f33e50045d7d516e0c'
   }
 
@@ -173,7 +172,7 @@ export class AETestProtocolSpec extends TestProtocolSpec {
       ]
     }
   ]
-  public validRawTransactions: Array<RawAeternityTransaction> = [
+  public validRawTransactions: RawAeternityTransaction[] = [
     {
       transaction:
         'tx_+FsMAaEB1k9h7FZRnn8Q81kIxA97Moj7Pr3A9sUEqpXseA48f/mhAdZPYexWUZ5/EPNZCMQPezKI+z69wPbFBKqV7HgOPH/5iIrHIwSJ6AAAiA3gtrOnZAAAAACAQCdXaA==',
@@ -181,7 +180,7 @@ export class AETestProtocolSpec extends TestProtocolSpec {
     }
   ]
 
-  public validSignedTransactions: Array<SignedAeternityTransaction> = [
+  public validSignedTransactions: SignedAeternityTransaction[] = [
     {
       accountIdentifier: 'd64f61ec56519e7f10f35908c40f7b3288fb3ebdc0f6c504aa95ec780e3c7ff9',
       transaction:
@@ -189,5 +188,5 @@ export class AETestProtocolSpec extends TestProtocolSpec {
     }
   ]
 
-  public validator = new AeternityTransactionValidator()
+  public validator: AeternityTransactionValidator = new AeternityTransactionValidator()
 }

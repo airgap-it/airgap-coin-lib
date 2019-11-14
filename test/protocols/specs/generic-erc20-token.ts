@@ -1,4 +1,4 @@
-import BigNumber from 'bignumber.js'
+import BigNumber from '../../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
 
 import { addSubProtocol } from '../../../src'
 import { ERC20Token } from '../../../src/protocols/ethereum/erc20/ERC20'
@@ -21,8 +21,8 @@ export class GenericERC20TokenTestProtocolSpec extends TestProtocolSpec {
   }
   public txs = [
     {
-      amount: new BigNumber('5').shiftedBy(protocol.decimals),
-      fee: new BigNumber('31705000000000'),
+      amount: new BigNumber('5').shiftedBy(protocol.decimals).toString(10),
+      fee: '31705000000000',
       to: ['0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e'],
       from: ['0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e'],
       mandatoryProperties: ['data', 'nonce', 'gasPrice', 'gasLimit', 'to', 'value', 'chainId'],

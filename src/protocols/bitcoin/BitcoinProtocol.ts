@@ -1,66 +1,65 @@
 import * as assert from 'assert'
 
-import axios from 'axios'
-import BigNumber from 'bignumber.js'
-import * as bitcoinJS from 'bitcoinjs-lib'
-
+import axios from '../../dependencies/src/axios-0.19.0/index'
+import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import * as bitcoinJS from '../../dependencies/src/bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac/src/index'
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
 import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 import { Network } from '../../networks'
-import { SignedBitcoinTransaction } from '../../serializer/signed-transactions/bitcoin-transactions.serializer'
-import { UnsignedTransaction } from '../../serializer/unsigned-transaction.serializer'
-import { RawBitcoinTransaction } from '../../serializer/unsigned-transactions/bitcoin-transactions.serializer'
-import { ICoinProtocol } from '../ICoinProtocol'
+import { UnsignedTransaction } from '../../serializer/schemas/definitions/transaction-sign-request'
+import { SignedBitcoinTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-bitcoin'
+import { RawBitcoinTransaction } from '../../serializer/types'
+import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
 
-const DUST_AMOUNT = 50
+const DUST_AMOUNT: number = 50
 
 export class BitcoinProtocol implements ICoinProtocol {
-  public symbol = 'BTC'
-  public name = 'Bitcoin'
-  public marketSymbol = 'btc'
+  public symbol: string = 'BTC'
+  public name: string = 'Bitcoin'
+  public marketSymbol: string = 'btc'
 
-  public feeSymbol = 'btc'
+  public feeSymbol: string = 'btc'
 
   public subProtocols = []
 
-  public feeDefaults = {
-    low: new BigNumber('0.00002'),
-    medium: new BigNumber('0.00004'),
-    high: new BigNumber('0.00005')
+  public feeDefaults: FeeDefaults = {
+    low: '0.00002',
+    medium: '0.00004',
+    high: '0.00005'
   }
-  public decimals = 8
-  public feeDecimals = 8
-  public identifier = 'btc'
-  public units = [
+  public decimals: number = 8
+  public feeDecimals: number = 8
+  public identifier: string = 'btc'
+  public units: CurrencyUnit[] = [
     {
       unitSymbol: 'BTC',
-      factor: new BigNumber(1)
+      factor: '1'
     },
     {
       unitSymbol: 'mBTC',
-      factor: new BigNumber(1).shiftedBy(-4)
+      factor: '0.0001'
     },
     {
       unitSymbol: 'Satoshi',
-      factor: new BigNumber(1).shiftedBy(-8)
+      factor: '0.00000001'
     }
   ]
 
-  public supportsHD = true
+  public supportsHD: boolean = true
 
-  public standardDerivationPath = `m/44'/0'/0'`
+  public standardDerivationPath: string = `m/44'/0'/0'`
 
-  public addressIsCaseSensitive = true
-  public addressValidationPattern = '^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$'
-  public addressPlaceholder = '1ABC...'
+  public addressIsCaseSensitive: boolean = true
+  public addressValidationPattern: string = '^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$'
+  public addressPlaceholder: string = '1ABC...'
 
-  public blockExplorer = 'https://live.blockcypher.com/btc'
+  public blockExplorer: string = 'https://live.blockcypher.com/btc'
 
   public network: any // TODO: fix type definition
   public baseApiUrl: string
   public bitcoinJSLib: any
 
-  constructor(network: Network = bitcoinJS.networks.bitcoin, baseApiUrl = 'https://insight.bitpay.com', bitcoinJSLib = bitcoinJS) {
+  constructor(network: Network = bitcoinJS.networks.bitcoin, baseApiUrl: string = 'https://insight.bitpay.com', bitcoinJSLib = bitcoinJS) {
     this.network = network
     this.baseApiUrl = baseApiUrl
     this.bitcoinJSLib = bitcoinJSLib
@@ -137,7 +136,7 @@ export class BitcoinProtocol implements ICoinProtocol {
       }
 
       for (const output of transaction.outs) {
-        transactionBuilder.addOutput(output.recipient, output.value.toNumber())
+        transactionBuilder.addOutput(output.recipient, new BigNumber(output.value).toNumber())
       }
 
       for (let i = 0; i < transaction.ins.length; i++) {
@@ -173,7 +172,7 @@ export class BitcoinProtocol implements ICoinProtocol {
           throw new Error('Change address could not be verified.')
         }
       }
-      transactionBuilder.addOutput(output.recipient, output.value.toNumber())
+      transactionBuilder.addOutput(output.recipient, new BigNumber(output.value).toNumber())
     }
 
     for (let i = 0; i < transaction.ins.length; i++) {
@@ -203,9 +202,10 @@ export class BitcoinProtocol implements ICoinProtocol {
         to: transaction.outs.filter(obj => !obj.isChange).map(obj => obj.recipient),
         amount: transaction.outs
           .filter(obj => !obj.isChange)
-          .map(obj => obj.value)
-          .reduce((accumulator, currentValue) => accumulator.plus(currentValue)),
-        fee: feeCalculator,
+          .map(obj => new BigNumber(obj.value))
+          .reduce((accumulator, currentValue) => accumulator.plus(currentValue))
+          .toString(10),
+        fee: feeCalculator.toString(10),
         protocolIdentifier: this.identifier,
         isInbound: false
       }
@@ -213,7 +213,7 @@ export class BitcoinProtocol implements ICoinProtocol {
   }
 
   public async getTransactionDetailsFromSigned(signedTx: SignedBitcoinTransaction): Promise<IAirGapTransaction[]> {
-    const tx = {
+    const tx: IAirGapTransaction = {
       to: [] as string[],
       from: signedTx.from,
       amount: signedTx.amount,
@@ -234,28 +234,25 @@ export class BitcoinProtocol implements ICoinProtocol {
     return [tx]
   }
 
-  public getBalanceOfAddresses(addresses: string[]): Promise<BigNumber> {
-    return new Promise((resolve, reject) => {
-      axios
-        .get(`${this.baseApiUrl}/api/addrs/${addresses.join(',')}/utxo`, { responseType: 'json' })
-        .then(response => {
-          const utxos = response.data
-          let valueAccumulator = new BigNumber(0)
-          for (const utxo of utxos) {
-            valueAccumulator = valueAccumulator.plus(new BigNumber(utxo.satoshis))
-          }
-          resolve(valueAccumulator)
-        })
-        .catch(reject)
-    })
+  public async getBalanceOfAddresses(addresses: string[]): Promise<string> {
+    const response = await axios.get(`${this.baseApiUrl}/api/addrs/${addresses.join(',')}/utxo`, { responseType: 'json' })
+
+    const utxos = response.data
+    let valueAccumulator: BigNumber = new BigNumber(0)
+    for (const utxo of utxos) {
+      valueAccumulator = valueAccumulator.plus(new BigNumber(utxo.satoshis))
+    }
+
+    return valueAccumulator.toString(10)
   }
 
-  public async getBalanceOfPublicKey(publicKey: string): Promise<BigNumber> {
-    const address = await this.getAddressFromPublicKey(publicKey)
+  public async getBalanceOfPublicKey(publicKey: string): Promise<string> {
+    const address: string = await this.getAddressFromPublicKey(publicKey)
+
     return this.getBalanceOfAddresses([address])
   }
 
-  public async getBalanceOfExtendedPublicKey(extendedPublicKey: string, offset: number = 0): Promise<BigNumber> {
+  public async getBalanceOfExtendedPublicKey(extendedPublicKey: string, offset: number = 0): Promise<string> {
     const derivedAddresses: string[][] = []
     const internalAddresses = await this.getAddressesFromExtendedPublicKey(extendedPublicKey, 1, 20, offset)
     const externalAddresses = await this.getAddressesFromExtendedPublicKey(extendedPublicKey, 0, 20, offset)
@@ -266,7 +263,7 @@ export class BitcoinProtocol implements ICoinProtocol {
       responseType: 'json'
     })
 
-    let valueAccumulator = new BigNumber(0)
+    let valueAccumulator: BigNumber = new BigNumber(0)
     for (const utxo of utxos) {
       valueAccumulator = valueAccumulator.plus(utxo.satoshis)
     }
@@ -277,9 +274,9 @@ export class BitcoinProtocol implements ICoinProtocol {
 
     if (transactions.items.length > 0) {
       const value = await this.getBalanceOfExtendedPublicKey(extendedPublicKey, offset + 100)
-      return valueAccumulator.plus(value)
+      return valueAccumulator.plus(value).toString(10)
     } else {
-      return valueAccumulator
+      return valueAccumulator.toString(10)
     }
   }
 
@@ -287,15 +284,18 @@ export class BitcoinProtocol implements ICoinProtocol {
     extendedPublicKey: string,
     offset: number,
     recipients: string[],
-    values: BigNumber[],
-    fee: BigNumber
+    values: string[],
+    fee: string
   ): Promise<RawBitcoinTransaction> {
+    const wrappedValues: BigNumber[] = values.map((value: string) => new BigNumber(value))
+    const wrappedFee: BigNumber = new BigNumber(fee)
+
     const transaction: RawBitcoinTransaction = {
       ins: [],
       outs: []
     }
 
-    if (recipients.length !== values.length) {
+    if (recipients.length !== wrappedValues.length) {
       throw new Error('recipients do not match values')
     }
 
@@ -309,15 +309,17 @@ export class BitcoinProtocol implements ICoinProtocol {
       responseType: 'json'
     })
 
-    const totalRequiredBalance = values.reduce((accumulator, currentValue) => accumulator.plus(currentValue)).plus(fee)
-    let valueAccumulator = new BigNumber(0)
+    const totalRequiredBalance: BigNumber = wrappedValues
+      .reduce((accumulator: BigNumber, currentValue: BigNumber) => accumulator.plus(currentValue))
+      .plus(wrappedFee)
+    let valueAccumulator: BigNumber = new BigNumber(0)
 
     for (const utxo of utxos) {
       valueAccumulator = valueAccumulator.plus(new BigNumber(utxo.satoshis))
       if (derivedAddresses.indexOf(utxo.address) >= 0) {
         transaction.ins.push({
           txId: utxo.txid,
-          value: new BigNumber(utxo.satoshis),
+          value: new BigNumber(utxo.satoshis).toString(10),
           vout: utxo.vout,
           address: utxo.address,
           derivationPath:
@@ -344,13 +346,13 @@ export class BitcoinProtocol implements ICoinProtocol {
     }
 
     // tx.addInput(utxo.txid, utxo.vout)
-    for (let i = 0; i < recipients.length; i++) {
+    for (let i: number = 0; i < recipients.length; i++) {
       transaction.outs.push({
         recipient: recipients[i],
         isChange: false,
-        value: values[i]
+        value: wrappedValues[i].toString(10)
       })
-      valueAccumulator = valueAccumulator.minus(values[i])
+      valueAccumulator = valueAccumulator.minus(wrappedValues[i])
       // tx.addOutput(recipients[i], values[i])
     }
 
@@ -358,9 +360,9 @@ export class BitcoinProtocol implements ICoinProtocol {
       responseType: 'json'
     })
 
-    let maxIndex = -1
-    for (const transaction of transactions.items) {
-      for (const vout of transaction.vout) {
+    let maxIndex: number = -1
+    for (const item of transactions.items) {
+      for (const vout of item.vout) {
         for (const address of vout.scriptPubKey.addresses) {
           maxIndex = Math.max(maxIndex, internalAddresses.indexOf(address))
         }
@@ -370,12 +372,12 @@ export class BitcoinProtocol implements ICoinProtocol {
     // If the change is considered dust, the transaction will fail.
     // Dust is a variable value around 300-600 satoshis, depending on the configuration.
     // We set a low fee here to not block any transactions, but it might still fail due to "dust".
-    const changeValue = valueAccumulator.minus(fee)
+    const changeValue: BigNumber = valueAccumulator.minus(wrappedFee)
     if (changeValue.isGreaterThan(new BigNumber(DUST_AMOUNT))) {
       transaction.outs.push({
         recipient: internalAddresses[Math.min(maxIndex + 1, internalAddresses.length - 1)],
         isChange: true,
-        value: changeValue
+        value: changeValue.toString(10)
       })
     }
     // tx.addOutput(internalAddresses[maxIndex + 1], valueAccumulator - fee) //this is why we sliced the arrays earlier
@@ -386,26 +388,31 @@ export class BitcoinProtocol implements ICoinProtocol {
   public async prepareTransactionFromPublicKey(
     publicKey: string,
     recipients: string[],
-    values: BigNumber[],
-    fee: BigNumber
+    values: string[],
+    fee: string
   ): Promise<RawBitcoinTransaction> {
+    const wrappedValues: BigNumber[] = values.map((value: string) => new BigNumber(value))
+    const wrappedFee: BigNumber = new BigNumber(fee)
+
     const transaction: RawBitcoinTransaction = {
       ins: [],
       outs: []
     }
 
-    assert(recipients.length === values.length)
+    assert(recipients.length === wrappedValues.length)
     const address = await this.getAddressFromPublicKey(publicKey)
 
     const { data: utxos } = await axios.get(this.baseApiUrl + '/api/addrs/' + address + '/utxo', { responseType: 'json' })
-    const totalRequiredBalance = values.reduce((accumulator, currentValue) => accumulator.plus(currentValue)).plus(fee)
-    let valueAccumulator = new BigNumber(0)
+    const totalRequiredBalance: BigNumber = wrappedValues
+      .reduce((accumulator: BigNumber, currentValue: BigNumber) => accumulator.plus(currentValue))
+      .plus(wrappedFee)
+    let valueAccumulator: BigNumber = new BigNumber(0)
     for (const utxo of utxos) {
       valueAccumulator = valueAccumulator.plus(new BigNumber(utxo.satoshis))
       if (address === utxo.address) {
         transaction.ins.push({
           txId: utxo.txid,
-          value: new BigNumber(utxo.satoshis),
+          value: new BigNumber(utxo.satoshis).toString(10),
           vout: utxo.vout,
           address: utxo.address
         })
@@ -421,25 +428,25 @@ export class BitcoinProtocol implements ICoinProtocol {
     }
 
     // tx.addInput(utxo.txid, utxo.vout)
-    for (let i = 0; i < recipients.length; i++) {
+    for (let i: number = 0; i < recipients.length; i++) {
       transaction.outs.push({
         recipient: recipients[i],
         isChange: false,
-        value: values[i]
+        value: wrappedValues[i].toString(10)
       })
-      valueAccumulator = valueAccumulator.minus(values[i])
+      valueAccumulator = valueAccumulator.minus(wrappedValues[i])
       // tx.addOutput(recipients[i], values[i])
     }
 
     // If the change is considered dust, the transaction will fail.
     // Dust is a variable value around 300-600 satoshis, depending on the configuration.
     // We set a low fee here to not block any transactions, but it might still fail due to "dust".
-    const changeValue = valueAccumulator.minus(fee)
+    const changeValue: BigNumber = valueAccumulator.minus(wrappedFee)
     if (changeValue.isGreaterThan(new BigNumber(DUST_AMOUNT))) {
       transaction.outs.push({
         recipient: address,
         isChange: true,
-        value: changeValue
+        value: changeValue.toString(10)
       })
     }
 
@@ -524,8 +531,8 @@ export class BitcoinProtocol implements ICoinProtocol {
         from: tempAirGapTransactionFrom,
         to: tempAirGapTransactionTo,
         isInbound: tempAirGapTransactionIsInbound,
-        amount,
-        fee: new BigNumber(transaction.fees).shiftedBy(this.feeDecimals),
+        amount: amount.toString(10),
+        fee: new BigNumber(transaction.fees).shiftedBy(this.feeDecimals).toString(10),
         blockHeight: transaction.blockheight,
         protocolIdentifier: this.identifier,
         timestamp: transaction.time
@@ -547,11 +554,11 @@ export class BitcoinProtocol implements ICoinProtocol {
     return false
   }
 
-  async signMessage(message: string, privateKey: Buffer): Promise<string> {
+  public async signMessage(message: string, privateKey: Buffer): Promise<string> {
     return Promise.reject('Message signing not implemented')
   }
 
-  async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
+  public async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
     return Promise.reject('Message verification not implemented')
   }
 }

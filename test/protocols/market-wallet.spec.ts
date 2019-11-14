@@ -1,9 +1,9 @@
-import axios from 'axios'
 import * as chai from 'chai'
 import * as chaiAsPromised from 'chai-as-promised'
 import 'mocha'
 import * as sinon from 'sinon'
 
+import axios from '../../src/dependencies/src/axios-0.19.0/index'
 import { AirGapMarketWallet, BitcoinProtocol, EthereumProtocol } from '../../src/index'
 
 // use chai-as-promised plugin
@@ -130,7 +130,7 @@ describe(`AirGapMarketWallet`, () => {
       )
       expect(wallet).to.undefined
     } catch (error) {
-      expect(error.message).to.equal('PROTOCOL_NOT_SUPPORTED')
+      expect(error.message).to.equal('serializer(PROTOCOL_NOT_SUPPORTED): ')
     }
   })
 

@@ -1,0 +1,35 @@
+{
+    "name": "groestl-hash-js",
+    "version": "1.0.0",
+    "description": "groestl javascript hashing algorithm in pure javascript",
+    "main": "index.js",
+    "scripts": {
+        "test": "mocha test/test.js",
+        "clean": "rm -rfv dist/*",
+        "benchmark": "node test/benchmarks.js",
+        "build": "grunt"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/quantumexplorer/groestl-hash-js.git"
+    },
+    "keywords": [
+        "groestl"
+    ],
+    "author": "quantumexplorer",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/quantumexplorer/groestl-hash-js/issues"
+    },
+    "devDependencies": {
+        "benchmark": "^2.1.0",
+        "browserify": "^13.0.1",
+        "chai": "^3.5.0",
+        "grunt": "^1.0.1",
+        "grunt-browserify": "^5.0.0",
+        "grunt-contrib-uglify": "^1.0.1",
+        "grunt-contrib-watch": "^1.0.0",
+        "mocha": "^2.5.3",
+        "uglify": "^0.1.5"
+    }
+}

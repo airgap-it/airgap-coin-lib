@@ -1,7 +1,7 @@
-import axios from 'axios'
 import * as sinon from 'sinon'
 
 import { GroestlcoinProtocol } from '../../../src'
+import axios from '../../../src/dependencies/src/axios-0.19.0/index'
 import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
 
 export class GroestlcoinProtocolStub implements ProtocolHTTPStub {

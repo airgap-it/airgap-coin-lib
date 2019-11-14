@@ -1,11 +1,9 @@
-import BigNumber from 'bignumber.js'
-
 export interface IAirGapTransaction {
   from: string[]
   to: string[]
   isInbound: boolean
-  amount: BigNumber
-  fee: BigNumber
+  amount: string
+  fee: string
   timestamp?: number
 
   protocolIdentifier: string

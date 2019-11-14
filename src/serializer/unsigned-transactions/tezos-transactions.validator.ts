@@ -1,40 +1,40 @@
-import { UnsignedTezosTransaction, RawTezosTransaction } from './tezos-transactions.serializer'
-import validate = require('validate.js')
+import { async } from '../../dependencies/src/validate.js-0.13.1/validate'
+import { UnsignedTezosTransaction } from '../schemas/definitions/transaction-sign-request-tezos'
+import { SignedTezosTransaction } from '../schemas/definitions/transaction-sign-response-tezos'
+import { RawTezosTransaction } from '../types'
 import { TransactionValidator } from '../validators/transactions.validator'
 import { validateSyncScheme } from '../validators/validators'
-import { SignedTezosTransaction } from '../signed-transactions/tezos-transactions.serializer'
 
-var unsignedTransactionConstraints = {
-    binaryTransaction: {
-      isValidTezosUnsignedTransaction: true,
-      presence: { allowEmpty: false },
-      type: 'String'
-    }
-  },
-  success = () => undefined,
-  error = errors => errors
+const unsignedTransactionConstraints = {
+  binaryTransaction: {
+    isValidTezosUnsignedTransaction: true,
+    presence: { allowEmpty: false },
+    type: 'String'
+  }
+}
+const success = () => undefined
+const error = errors => errors
 
-var signedTransactionConstraints = {
-    transaction: {
-      isValidTezosSignedTransaction: true,
-      presence: { allowEmpty: false },
-      type: 'String'
-    },
-    accountIdentifier: {
-      presence: { allowEmpty: false },
-      type: 'String'
-    }
+const signedTransactionConstraints = {
+  transaction: {
+    isValidTezosSignedTransaction: true,
+    presence: { allowEmpty: false },
+    type: 'String'
   },
-  success = () => undefined,
-  error = errors => errors
+  accountIdentifier: {
+    presence: { allowEmpty: false },
+    type: 'String'
+  }
+}
 
 export class TezosTransactionValidator extends TransactionValidator {
   public async validateUnsignedTransaction(unsignedTx: UnsignedTezosTransaction): Promise<any> {
     const rawTx: RawTezosTransaction = unsignedTx.transaction
     validateSyncScheme({})
-    return validate.async(rawTx, unsignedTransactionConstraints).then(success, error)
+
+    return async(rawTx, unsignedTransactionConstraints).then(success, error)
   }
   public validateSignedTransaction(signedTx: SignedTezosTransaction): Promise<any> {
-    return validate.async(signedTx, signedTransactionConstraints).then(success, error)
+    return async(signedTx, signedTransactionConstraints).then(success, error)
   }
 }

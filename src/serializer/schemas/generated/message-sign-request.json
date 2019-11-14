@@ -1,0 +1,30 @@
+{
+  "$ref": "#/definitions/MessageSignRequest",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "MessageSignRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "callbackURL": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "origin": {
+          "type": "string"
+        },
+        "publicKey": {
+          "type": "string"
+        },
+        "ttl": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "message"
+      ],
+      "type": "object"
+    }
+  }
+}

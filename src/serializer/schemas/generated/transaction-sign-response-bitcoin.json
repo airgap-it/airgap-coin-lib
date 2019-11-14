@@ -1,0 +1,43 @@
+{
+  "$ref": "#/definitions/SignedBitcoinTransaction",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "SignedBitcoinTransaction": {
+      "additionalProperties": false,
+      "properties": {
+        "accountIdentifier": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string"
+        },
+        "fee": {
+          "type": "string"
+        },
+        "from": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "to": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "transaction": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "accountIdentifier",
+        "amount",
+        "fee",
+        "from",
+        "transaction"
+      ],
+      "type": "object"
+    }
+  }
+}

@@ -1,22 +1,20 @@
-const BIP39 = require('bip39')
+const BIP39 = require('../dist/dependencies/src/bip39-2.5.0/index')
 const assert = require('assert')
 const networks = require('../dist/networks')
 
-const bitcoinJS = require('bitcoinjs-lib')
-const zcashJS = require('bitcoinjs-lib-zcash')
+const bitcoinJS = require('../dist/dependencies/src/bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac/src/index')
 
-const BigNumber = require('bignumber.js')
+const BigNumber = require('../dist/dependencies/src/bignumber.js-9.0.0/bignumber')
 
 const mnemonicPhrase = 'spell device they juice trial skirt amazing boat badge steak usage february virus art survey' // this is what the user writes down and what is saved by secure storage?
 const masterSeed = BIP39.mnemonicToSeed(mnemonicPhrase)
 
 const CoinLib = require('../dist/index')
-const hopTokenProtocol = require('../dist/protocols/ethereum/erc20/HopRopstenToken').HOPTokenProtocol
 
 const validateTxHelper = require('./helpers/validate-tx')
 
 const sinon = require('sinon')
-const axios = require('axios')
+const axios = require('../dist/dependencies/src/axios-0.19.0/index')
 
 describe('Extended Public Derivation Logic', function() {
   it('should return the correct bitcoin address from extended public key', function(done) {
@@ -78,27 +76,6 @@ describe('Extended Public Derivation Logic', function() {
       .then(results => {
         assert.equal(results[0], 'mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k') // m/44'/1'/0'/0/0
         assert.equal(results[1], 'moK2Ws7YvK3LRppzCuLRVfDkpvZiw7T4cu') // m/44'/1'/0'/0/1
-        done()
-      })
-      .catch(error => {
-        done(error)
-      })
-  })
-  it('should return the correct zcash address from extended public key', function(done) {
-    const zcashHdNode = zcashJS.HDNode.fromSeedBuffer(masterSeed, networks.zcash)
-    const extendedPublicKey = zcashHdNode
-      .derivePath("m/44'/133'/0'")
-      .neutered()
-      .toBase58()
-    const zcash = new CoinLib.ZCashProtocol()
-
-    Promise.all([
-      zcash.getAddressFromExtendedPublicKey(extendedPublicKey, 0, 0),
-      zcash.getAddressFromExtendedPublicKey(extendedPublicKey, 0, 1)
-    ])
-      .then(results => {
-        assert.equal(results[0], 't1PFyZ43MRrVRBWTKqTT5wfimtZ9MFSTgPC') // m/44'/133'/0'/0/0
-        assert.equal(results[1], 't1XwXnCQopt16zfAJVb76A7JPerKE9LSg9L') // m/44'/133'/0'/0/1
         done()
       })
       .catch(error => {
@@ -177,24 +154,6 @@ describe('Public Derivation Logic', function() {
         done(error)
       })
   })
-  it('should return the correct zcash address from extended public key', function(done) {
-    const zcashHdNode = zcashJS.HDNode.fromSeedBuffer(masterSeed, networks.zcash)
-    const publicKey = zcashHdNode
-      .derivePath("m/44'/133'/0'/0/0")
-      .neutered()
-      .toBase58()
-    const zcash = new CoinLib.ZCashProtocol()
-
-    zcash
-      .getAddressFromPublicKey(publicKey)
-      .then(address => {
-        assert.equal(address, 't1PFyZ43MRrVRBWTKqTT5wfimtZ9MFSTgPC')
-        done()
-      })
-      .catch(error => {
-        done(error)
-      })
-  })
   it('should return the correct ethereum address from extended public key', function(done) {
     const bitcoinHdNode = bitcoinJS.HDNode.fromSeedBuffer(masterSeed, networks.eth)
     const publicKey = bitcoinHdNode
@@ -254,20 +213,6 @@ describe('Balance Of', function() {
       .catch(done)
   })
 */
-  it('should return the correct hop ropsten balance', function(done) {
-    const ethereumRopstenNode = bitcoinJS.HDNode.fromSeedBuffer(masterSeed, networks.eth)
-    const publicKey = ethereumRopstenNode
-      .derivePath("m/44'/60'/0'/0/0")
-      .neutered()
-      .getPublicKeyBuffer()
-    hopTokenProtocol
-      .getBalanceOfPublicKey(publicKey)
-      .then(value => {
-        assert.equal(value.toString(10), '11999999999999999420')
-        done()
-      })
-      .catch(done)
-  })
 
   /*
   @deprecated: flaky test that fails given the address balance changes, done in new set of tests anyway
@@ -471,27 +416,6 @@ describe('Raw Transaction Prepare', function() {
       .catch(done)
   })
 */
-  it('should return a correct hop ropsten transaction', function(done) {
-    const ethereumRopstenNode = bitcoinJS.HDNode.fromSeedBuffer(masterSeed, networks.eth)
-    const publicKey = ethereumRopstenNode
-      .derivePath("m/44'/60'/0'/0/0")
-      .neutered()
-      .getPublicKeyBuffer()
-    const privateKey = ethereumRopstenNode.derivePath("m/44'/60'/0'/0/0").keyPair.d.toBuffer(32)
-    hopTokenProtocol
-      .prepareTransactionFromPublicKey(
-        publicKey,
-        ['0x41d9c9996Ca6De4B759deC24B09EF638c94166e8'],
-        [new BigNumber(10)],
-        new BigNumber(21000 * 10 ** 9)
-      )
-      .then(transaction => {
-        hopTokenProtocol.signWithPrivateKey(privateKey, transaction).then(rawTransaction => {
-          done()
-        })
-      })
-      .catch(done)
-  })
 })
 
 describe('Secret to Public Key Logic', function() {
@@ -637,40 +561,6 @@ describe('List Transactions', function() {
     })
   })
 
-  it('should return the correct hops erc 20 transactions', function (done) {
-    const ethereumRopstenNode = bitcoinJS.HDNode.fromSeedBuffer(masterSeed, networks.eth)
-    const publicKey = ethereumRopstenNode
-      .derivePath("m/44'/60'/0'/0/0")
-      .neutered()
-      .getPublicKeyBuffer()
-
-    hopTokenProtocol
-      .getAddressFromPublicKey(publicKey)
-      .then(address => {
-        sinon
-          .stub(axios, 'get')
-          .withArgs(
-            `https://ropsten.trustwalletapp.com/transactions?address=${address}&contract=${
-              hopTokenProtocol.contractAddress
-            }&page=0&limit=20`
-          )
-          .returns(Promise.resolve({ data: { docs: [] } }))
-
-        hopTokenProtocol
-          .getTransactionsFromPublicKey(publicKey, 20, 0)
-          .then(transactions => {
-            sinon.restore()
-            done()
-          })
-          .catch(error => {
-            sinon.restore()
-            done(error)
-          })
-      })
-      .catch(error => {
-        done(error)
-      })
-  })
   */
 })
 describe('Transaction Detail Logic', function(done) {

@@ -1,14 +1,25 @@
+import { EthereumProtocol } from '../..'
+import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import * as BIP39 from '../../dependencies/src/bip39-2.5.0/index'
+import {
+  isArray,
+  isDate,
+  isInteger,
+  isNumber,
+  isObject,
+  isString,
+  validate,
+  validators
+} from '../../dependencies/src/validate.js-0.13.1/validate'
+import bs64check from '../../utils/base64Check'
+import { UnsignedTezosTransaction } from '../schemas/definitions/transaction-sign-request-tezos'
+import { SignedEthereumTransaction } from '../schemas/definitions/transaction-sign-response-ethereum'
+import { SignedTezosTransaction } from '../schemas/definitions/transaction-sign-response-tezos'
+import { RawTezosTransaction } from '../types'
+
 import { AeternityProtocol } from './../../protocols/aeternity/AeternityProtocol'
-import { SignedTezosTransaction } from './../signed-transactions/tezos-transactions.serializer'
-import { SignedEthereumTransaction } from './../signed-transactions/ethereum-transactions.serializer'
 import { BitcoinProtocol } from './../../protocols/bitcoin/BitcoinProtocol'
 import { TezosProtocol } from './../../protocols/tezos/TezosProtocol'
-import * as BIP39 from 'bip39'
-import BigNumber from 'bignumber.js'
-import { isArray, isDate, isInteger, isNumber, isObject, isString, validate, validators } from 'validate.js'
-import bs64check from '../../utils/base64Check'
-import { EthereumProtocol } from '../..'
-import { RawTezosTransaction, UnsignedTezosTransaction } from '../unsigned-transactions/tezos-transactions.serializer'
 
 validators.type = (value, options, key, attributes) => {
   // allow empty values by default (needs to be checked by "presence" check)
@@ -65,13 +76,13 @@ validators.isHexStringWithPrefix = value => {
 
 validators.isPublicKey = value => {
   if (typeof value !== 'string') {
-    return 'is not a valid public key'
+    return 'is not a valid public key: should be of type string'
   }
   if (value.length !== 64) {
-    return 'is not a valid public key'
+    return 'is not a valid public key: wrong length'
   }
 
-  return /[0-9A-F]/gi.test(value) ? null : 'is not a valid public key'
+  return /[0-9A-F]/gi.test(value) ? null : 'is not a valid public key: invalid characters'
 }
 // ETHEREUM
 
@@ -83,7 +94,7 @@ validators.isValidEthereumTransactionString = (transaction: string) => {
     }
     const signedTx: SignedEthereumTransaction = {
       accountIdentifier: '',
-      transaction: transaction
+      transaction
     }
     const protocol = new EthereumProtocol()
     // allow empty values by default (needs to be checked by "presence" check)
