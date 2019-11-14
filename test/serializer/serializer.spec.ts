@@ -1,8 +1,6 @@
 import { expect } from 'chai'
 import 'mocha'
 
-var URL = require('url').URL
-
 import { Serializer } from '../../src/serializer/serializer'
 
 interface DataToUrlInput {

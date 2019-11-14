@@ -5,6 +5,11 @@ import { IACMessageDefinitionObject } from './message'
 import { Payload } from './payloads/payload'
 import { Schema } from './schemas/schema'
 
+if (!URL) {
+  // URL is not available in node
+  var URL = require('url').URL
+}
+
 const accountShareResponse = require('./schemas/generated/account-share-response.json')
 
 const messageSignRequest = require('./schemas/generated/message-sign-request.json')
