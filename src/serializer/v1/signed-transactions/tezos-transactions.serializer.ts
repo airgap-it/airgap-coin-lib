@@ -1,4 +1,4 @@
-import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
+import { IAirGapSignedTransaction } from '../../../interfaces/IAirGapSignedTransaction'
 import {
   SerializedSyncProtocolSignedTransaction,
   SignedTransaction,
