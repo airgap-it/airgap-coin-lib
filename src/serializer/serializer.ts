@@ -78,6 +78,21 @@ export class Serializer {
       .map((el: Payload) => (el as FullPayload).asJson())
       .reduce((pv: IACMessageDefinitionObject[], cv: IACMessageDefinitionObject[]) => pv.concat(...cv), [] as IACMessageDefinitionObject[])
   }
+
+  public static serializedDataToUrlString(data: string[], host: string = 'airgap-wallet://', parameter: string = 'd') {
+    return `${host}?${parameter}=${data.join(',')}`
+  }
+
+  public static urlStringToSerializedData(url: string, parameter: string = 'd') {
+    const parsedUrl: URL = new URL(url)
+
+    return (
+      parsedUrl.searchParams
+        .get(parameter)
+        ?.split(',')
+        .filter(el => el !== '') ?? []
+    )
+  }
 }
 
 // Serializer.addSchema(IACMessageType.MetadataRequest.toString(), '')
