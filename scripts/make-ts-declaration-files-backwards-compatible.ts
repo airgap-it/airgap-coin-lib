@@ -1,9 +1,9 @@
-var fs = require('fs')
+import { readFileSync, writeFileSync } from 'fs'
 
-const replaceInFile = (file, src, dest) => {
-  const content = fs.readFileSync(file, 'utf-8')
-  const newContent = content.split(src).join(dest)
-  fs.writeFileSync(file, newContent)
+const replaceInFile: (file: string, src: string, dest: string) => void = (file: string, src: string, dest: string): void => {
+  const content: string = readFileSync(file, 'utf-8')
+  const newContent: string = content.split(src).join(dest)
+  writeFileSync(file, newContent)
 }
 
 replaceInFile('./dist/protocols/ethereum/BaseEthereumProtocol.d.ts', 'get subProtocols(): any[];', 'readonly subProtocols: any[];')

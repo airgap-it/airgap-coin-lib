@@ -34,7 +34,12 @@
                     "type": "number"
                   }
                 },
-                "required": ["txId", "value", "vout", "address"],
+                "required": [
+                  "txId",
+                  "value",
+                  "vout",
+                  "address"
+                ],
                 "type": "object"
               },
               "type": "array"
@@ -53,17 +58,27 @@
                     "type": "string"
                   }
                 },
-                "required": ["recipient", "isChange", "value"],
+                "required": [
+                  "recipient",
+                  "isChange",
+                  "value"
+                ],
                 "type": "object"
               },
               "type": "array"
             }
           },
-          "required": ["ins", "outs"],
+          "required": [
+            "ins",
+            "outs"
+          ],
           "type": "object"
         }
       },
-      "required": ["publicKey", "transaction"],
+      "required": [
+        "publicKey",
+        "transaction"
+      ],
       "type": "object"
     }
   }

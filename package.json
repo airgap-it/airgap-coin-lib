@@ -18,7 +18,8 @@
     "url": "https://github.com/airgap-it/airgap-coin-lib"
   },
   "scripts": {
-    "build": "tsc && node copy-files-after-build.js && node make-ts-declaration-files-backwards-compatible.js",
+    "build": "tsc && node scripts/copy-files-after-build.js && node scripts/make-ts-declaration-files-backwards-compatible.js",
+    "build-scripts": "tsc scripts/*.ts",
     "tslint": "tslint -c ./tslint.json --project ./tsconfig.json --format stylish",
     "lint-ci": "tslint -t json -o lintReport.json --project . || true",
     "test": "nyc mocha --require ts-node/register --require source-map-support/register --full-trace --timeout 40000 ./test/**/**.spec.ts",
@@ -26,8 +27,8 @@
     "test-legacy": "npm run build && mocha --full-trace --timeout 40000 ./test/**/**.spec.js",
     "sonar-scanner": "sonar-scanner",
     "prepare": "npm run build",
-    "install-test-dependencies": "npm i ts-node --no-save && npx ts-node install-test-deps.ts && npm install",
-    "install-build-dependencies": "npm i ts-node --no-save && npx ts-node install-build-deps.ts && npm install",
+    "install-test-dependencies": "node scripts/install-test-deps.js && npm install",
+    "install-build-dependencies": "node scripts/install-build-deps.js && npm install",
     "browserify": "browserify"
   },
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",

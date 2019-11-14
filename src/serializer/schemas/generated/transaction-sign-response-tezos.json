@@ -30,7 +30,10 @@
           "type": "string"
         }
       },
-      "required": ["accountIdentifier", "transaction"],
+      "required": [
+        "accountIdentifier",
+        "transaction"
+      ],
       "type": "object"
     }
   }

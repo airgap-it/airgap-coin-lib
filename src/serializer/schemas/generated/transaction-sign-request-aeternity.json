@@ -21,11 +21,17 @@
               "type": "string"
             }
           },
-          "required": ["networkId", "transaction"],
+          "required": [
+            "networkId",
+            "transaction"
+          ],
           "type": "object"
         }
       },
-      "required": ["publicKey", "transaction"],
+      "required": [
+        "publicKey",
+        "transaction"
+      ],
       "type": "object"
     }
   }

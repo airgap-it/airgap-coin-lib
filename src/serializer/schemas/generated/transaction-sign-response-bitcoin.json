@@ -30,7 +30,13 @@
           "type": "string"
         }
       },
-      "required": ["accountIdentifier", "amount", "fee", "from", "transaction"],
+      "required": [
+        "accountIdentifier",
+        "amount",
+        "fee",
+        "from",
+        "transaction"
+      ],
       "type": "object"
     }
   }
