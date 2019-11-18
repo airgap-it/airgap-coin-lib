@@ -1,6 +1,5 @@
 import { BitcoinProtocol } from '../../../src'
 import { IACMessageDefinitionObject } from '../../../src/serializer/message'
-import { SignedTransaction } from '../../../src/serializer/schemas/definitions/transaction-sign-response'
 import { SignedBitcoinTransaction } from '../../../src/serializer/schemas/definitions/transaction-sign-response-bitcoin'
 import { RawBitcoinTransaction } from '../../../src/serializer/types'
 import { TestProtocolSpec } from '../implementations'
@@ -754,6 +753,7 @@ export class BitcoinProtocolSpec extends TestProtocolSpec {
   public validSignedTransactions: SignedBitcoinTransaction[] = [
     {
       from: ['3E35SFZkfLMGo4qX5aVs1bBDSnAuGgBH33', '385cR5DM96n1HvBDMzLHPYcw89fZAXULJP'],
+      to: [],
       amount: '1008',
       fee: '27000',
       accountIdentifier: 'xpub6CzH93BB4aueZX2bP88tvsvE8Cz2bHeGVAZSD5fmnk8roYBZCGbwwSA7ChiRr65jncuPH8qBQA9nBwi2Qtz1Uqt8wuHvof9SAcPpFxpe1GV',
@@ -805,7 +805,7 @@ export class BitcoinProtocolSpec extends TestProtocolSpec {
 
   public signedTransaction(tx: any): IACMessageDefinitionObject[] {
     const protocol: IACMessageDefinitionObject[] = super.signedTransaction(tx)
-    const payload = protocol[0].payload as SignedTransaction
+    const payload = protocol[0].payload as SignedBitcoinTransaction
     payload.amount = this.txs[0].amount
     payload.fee = this.txs[0].fee
     payload.from = this.wallet.addresses

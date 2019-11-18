@@ -21,10 +21,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "message",
-        "signature"
-      ],
+      "required": ["message", "signature", "ttl", "origin", "callbackURL"],
       "type": "object"
     }
   }

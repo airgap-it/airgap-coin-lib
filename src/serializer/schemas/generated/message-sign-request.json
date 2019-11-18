@@ -21,9 +21,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "message"
-      ],
+      "required": ["message", "publicKey", "ttl", "origin", "callbackURL"],
       "type": "object"
     }
   }

@@ -1,6 +1,5 @@
-import { GroestlcoinProtocol } from '../../../src'
+import { GroestlcoinProtocol, SignedBitcoinTransaction } from '../../../src'
 import { IACMessageDefinitionObject } from '../../../src/serializer/message'
-import { SignedTransaction } from '../../../src/serializer/schemas/definitions/transaction-sign-response'
 import { TestProtocolSpec } from '../implementations'
 import { GroestlcoinProtocolStub } from '../stubs/groestlcoin.stub'
 
@@ -74,7 +73,7 @@ export class GroestlcoinProtocolSpec extends TestProtocolSpec {
 
   public signedTransaction(tx: any): IACMessageDefinitionObject[] {
     const protocol: IACMessageDefinitionObject[] = super.signedTransaction(tx)
-    const payload = protocol[0].payload as SignedTransaction
+    const payload = protocol[0].payload as SignedBitcoinTransaction
     payload.amount = this.txs[0].amount
     payload.fee = this.txs[0].fee
     payload.from = this.wallet.addresses

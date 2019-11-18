@@ -293,14 +293,16 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
 
       it('getTransactionDetailsFromSigned - Is able to extract all necessary properties from a TX', async () => {
         for (const tx of protocol.txs) {
-          const airgapTxs: IAirGapTransaction[] = await protocol.lib.getTransactionDetailsFromSigned({
+          // tslint:disable-next-line:no-any
+          const transaction: any = {
             accountIdentifier: protocol.wallet.publicKey.substr(-6),
             from: protocol.wallet.addresses,
             amount: protocol.txs[0].amount,
             fee: protocol.txs[0].fee,
             to: protocol.wallet.addresses,
             transaction: tx.signedTx
-          })
+          }
+          const airgapTxs: IAirGapTransaction[] = await protocol.lib.getTransactionDetailsFromSigned(transaction)
 
           if (airgapTxs.length !== 1) {
             throw new Error('Unexpected number of transactions')
@@ -308,8 +310,14 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
 
           const airgapTx: IAirGapTransaction = airgapTxs[0]
 
-          expect(airgapTx.to.map(obj => obj.toLowerCase()), 'from').to.deep.equal(tx.to.map(obj => obj.toLowerCase()))
-          expect(airgapTx.from.sort().map(obj => obj.toLowerCase()), 'to').to.deep.equal(tx.from.sort().map(obj => obj.toLowerCase()))
+          expect(
+            airgapTx.to.map(obj => obj.toLowerCase()),
+            'from'
+          ).to.deep.equal(tx.to.map(obj => obj.toLowerCase()))
+          expect(
+            airgapTx.from.sort().map(obj => obj.toLowerCase()),
+            'to'
+          ).to.deep.equal(tx.from.sort().map(obj => obj.toLowerCase()))
 
           expect(airgapTx.amount).to.deep.equal(protocol.txs[0].amount)
           expect(airgapTx.fee).to.deep.equal(protocol.txs[0].fee)

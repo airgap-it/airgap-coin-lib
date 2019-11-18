@@ -11,33 +11,12 @@
         "accountIdentifier": {
           "type": "string"
         },
-        "amount": {
-          "type": "string"
-        },
-        "fee": {
-          "type": "string"
-        },
-        "from": {
-          "items": {
-            "type": "string"
-          },
-          "type": "array"
-        },
-        "to": {
-          "items": {
-            "type": "string"
-          },
-          "type": "array"
-        },
         "transaction": {
           "$ref": "#/definitions/IAirGapSignedTransaction",
           "type": "string"
         }
       },
-      "required": [
-        "accountIdentifier",
-        "transaction"
-      ],
+      "required": ["accountIdentifier", "transaction"],
       "type": "object"
     }
   }
