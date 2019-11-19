@@ -20,7 +20,8 @@
   "scripts": {
     "build": "tsc && node scripts/copy-files-after-build.js && node scripts/make-ts-declaration-files-backwards-compatible.js",
     "build-scripts": "tsc scripts/*.ts",
-    "tslint": "tslint -c ./tslint.json --project ./tsconfig.json --format stylish",
+    "lint": "tslint -c ./tslint.json --project ./tsconfig.json --format stylish --fix",
+    "lint:prettier": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint-ci": "tslint -t json -o lintReport.json --project . || true",
     "test": "nyc mocha --require ts-node/register --require source-map-support/register --full-trace --timeout 40000 ./test/**/**.spec.ts",
     "test-ci": "nyc --reporter=lcov npm test",
@@ -121,10 +122,5 @@
     ],
     "sourceMap": true,
     "instrument": true
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "pretty-quick --staged && npm run install-build-dependencies && git diff --exit-code package.json"
-    }
   }
 }
