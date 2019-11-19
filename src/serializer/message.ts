@@ -8,7 +8,6 @@ import { MessageSignRequest } from './schemas/definitions/message-sign-request'
 import { MessageSignResponse } from './schemas/definitions/message-sign-response'
 import { UnsignedAeternityTransaction } from './schemas/definitions/transaction-sign-request-aeternity'
 import { UnsignedBitcoinTransaction } from './schemas/definitions/transaction-sign-request-bitcoin'
-import { UnsignedCosmosTransaction } from './schemas/definitions/transaction-sign-request-cosmos'
 import { UnsignedEthereumTransaction } from './schemas/definitions/transaction-sign-request-ethereum'
 import { UnsignedTezosTransaction } from './schemas/definitions/transaction-sign-request-tezos'
 import { SignedAeternityTransaction } from './schemas/definitions/transaction-sign-response-aeternity'
@@ -16,7 +15,9 @@ import { SignedBitcoinTransaction } from './schemas/definitions/transaction-sign
 import { SignedCosmosTransaction } from './schemas/definitions/transaction-sign-response-cosmos'
 import { SignedEthereumTransaction } from './schemas/definitions/transaction-sign-response-ethereum'
 import { SignedTezosTransaction } from './schemas/definitions/transaction-sign-response-tezos'
+import { SchemaItem, SchemaTransformer } from './schemas/schema'
 import { Serializer } from './serializer'
+import { UnsignedCosmosTransaction } from './types'
 
 export const assertNever: (x: never) => void = (x: never): void => undefined
 
@@ -51,7 +52,8 @@ export interface MessageDefinitionArray {
 
 export class Message implements IACMessageDefinitionObject {
   private readonly version: string = '0' // TODO: Version depending on the message type
-  private readonly schema: Object
+  private readonly schema: SchemaItem
+  private readonly schemaTransformer: SchemaTransformer | undefined
 
   public readonly type: number
   public readonly protocol: string
@@ -61,16 +63,21 @@ export class Message implements IACMessageDefinitionObject {
     if (type === PayloadType.DECODED) {
       const x = object as IACMessageDefinitionObject
       this.type = x.type
-      this.schema = Serializer.getSchema(x.type.toString(), x.protocol)
       this.protocol = x.protocol
       this.payload = x.payload
+      const schemaInfo = Serializer.getSchema(this.type.toString(), this.protocol)
+      this.schema = unwrapSchema(schemaInfo.schema)
+      this.schemaTransformer = schemaInfo.transformer
     } else if (type === PayloadType.ENCODED) {
       const x = object as Buffer[]
       this.version = x[0].toString()
       this.type = parseInt(x[1].toString(), 10)
       this.protocol = x[2].toString()
-      this.schema = unwrapSchema(Serializer.getSchema(this.type.toString(), this.protocol))
-      this.payload = (rlpArrayToJson(this.schema, x[3] as RLPData) as any) as IACMessages
+      const schemaInfo = Serializer.getSchema(this.type.toString(), this.protocol)
+      this.schema = unwrapSchema(schemaInfo.schema)
+      this.schemaTransformer = schemaInfo.transformer
+      const json: IACMessages = (rlpArrayToJson(this.schema, x[3] as RLPData) as any) as IACMessages
+      this.payload = this.schemaTransformer ? this.schemaTransformer(json) : json
     } else {
       assertNever(type)
       throw new Error('UNKNOWN PAYLOAD TYPE')
@@ -86,7 +93,7 @@ export class Message implements IACMessageDefinitionObject {
   }
 
   public asArray(): RLPData /* it could be MessageDefinitionArray */ {
-    const array: RLPData = jsonToArray('root', unwrapSchema(this.schema), this.payload)
+    const array: RLPData = jsonToArray('root', this.schema, this.payload)
 
     return [this.version, this.type.toString(), this.protocol, array]
   }

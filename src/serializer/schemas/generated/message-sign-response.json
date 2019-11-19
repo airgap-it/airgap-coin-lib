@@ -21,7 +21,13 @@
           "type": "string"
         }
       },
-      "required": ["message", "signature", "ttl", "origin", "callbackURL"],
+      "required": [
+        "message",
+        "signature",
+        "ttl",
+        "origin",
+        "callbackURL"
+      ],
       "type": "object"
     }
   }

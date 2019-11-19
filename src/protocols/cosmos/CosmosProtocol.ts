@@ -4,9 +4,10 @@ import { BIP32Interface, fromSeed } from '../../dependencies/src/bip32-2.0.4/src
 import { mnemonicToSeed, validateMnemonic } from '../../dependencies/src/bip39-2.5.0/index'
 import RIPEMD160 = require('../../dependencies/src/ripemd160-2.0.2/index')
 import SECP256K1 = require('../../dependencies/src/secp256k1-3.7.1/elliptic')
+import * as sha from '../../dependencies/src/sha.js-2.4.11/index'
 import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
-import { UnsignedCosmosTransaction } from '../../serializer/schemas/definitions/transaction-sign-request-cosmos'
 import { SignedCosmosTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-cosmos'
+import { UnsignedCosmosTransaction } from '../../serializer/types'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
 import { ICoinSubProtocol } from '../ICoinSubProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
@@ -55,7 +56,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
   public supportsHD: boolean = false
   public standardDerivationPath: string = `m/44'/118'/0'/0/0`
   public addressIsCaseSensitive: boolean = false
-  public addressValidationPattern: string = '^cosmos[a-zA-Z0-9]{39}$'
+  public addressValidationPattern: string = '^(cosmos|cosmosvaloper)[a-zA-Z0-9]{39}$'
   public addressPlaceholder: string = 'cosmos...'
   public blockExplorer: string = 'https://www.mintscan.io'
   public subProtocols?: (ICoinProtocol & ICoinSubProtocol)[] | undefined
@@ -122,7 +123,10 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
 
   public async getAddressFromPublicKey(publicKey: string): Promise<string> {
     const pubkey = Buffer.from(publicKey, 'hex')
-    const sha256Hash = await crypto.subtle.digest('SHA-256', pubkey)
+
+    const sha256Hash: string = sha('sha256')
+      .update(pubkey)
+      .digest()
     const hash = new RIPEMD160().update(Buffer.from(sha256Hash)).digest()
     const address = BECH32.encode(this.addressPrefix, BECH32.toWords(hash))
 
@@ -148,9 +152,12 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
 
   public async signWithPrivateKey(privateKey: Buffer, transaction: CosmosTransaction): Promise<string> {
     const publicKey = this.getPublicKeyFromPrivateKey(privateKey)
-    const toSign = transaction.toJSON()
+    const toSign = transaction.toRPCBody()
     // TODO: check if sorting is needed
-    const hash = Buffer.from(await crypto.subtle.digest('SHA-256', Buffer.from(JSON.stringify(toSign))))
+    const sha256Hash: string = sha('sha256')
+      .update(Buffer.from(JSON.stringify(toSign)))
+      .digest()
+    const hash = Buffer.from(sha256Hash)
     const signed = SECP256K1.sign(hash, privateKey)
     const sigBase64 = Buffer.from(signed.signature, 'binary').toString('base64')
     const signedTransaction = {
@@ -182,23 +189,24 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
 
   public async getTransactionDetailsFromSigned(transaction: SignedCosmosTransaction): Promise<IAirGapTransaction[]> {
     const json = JSON.parse(transaction.transaction).tx
-    const fee: BigNumber = json.fee.amount
-      .map(value => new BigNumber(value.amount))
+    const fee: string = (json.fee.amount as { amount: string }[])
+      .map(({ amount }: { amount: string }) => new BigNumber(amount))
       .reduce((current: BigNumber, next: BigNumber) => current.plus(next))
+      .toString(10)
     const result = json.msg.map(message => {
       const type: string = message.type
       switch (type) {
         case CosmosMessageType.Send.value:
-          const sendMessage = CosmosSendMessage.fromJSON(message)
+          const sendMessage = CosmosSendMessage.fromRPCBody(message)
 
           return sendMessage.toAirGapTransaction(this.identifier, fee)
         case CosmosMessageType.Undelegate.value:
         case CosmosMessageType.Delegate.value:
-          const delegateMessage = CosmosDelegateMessage.fromJSON(message)
+          const delegateMessage = CosmosDelegateMessage.fromRPCBody(message)
 
           return delegateMessage.toAirGapTransaction(this.identifier, fee)
         case CosmosMessageType.WithdrawDelegationReward.value:
-          const withdrawMessage = CosmosWithdrawDelegationRewardMessage.fromJSON(message)
+          const withdrawMessage = CosmosWithdrawDelegationRewardMessage.fromRPCBody(message)
 
           return withdrawMessage.toAirGapTransaction(this.identifier, fee)
         default:
@@ -238,23 +246,29 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
     const wrappedValues: BigNumber[] = values.map((value: string) => new BigNumber(value))
     const wrappedFee: BigNumber = new BigNumber(fee)
 
-    const address: string = await this.getAddressFromPublicKey(publicKey)
-    const nodeInfo: CosmosNodeInfo = await this.nodeClient.fetchNodeInfo()
-    const account: CosmosAccount = await this.nodeClient.fetchAccount(address)
-
     if (recipients.length !== wrappedValues.length) {
       return Promise.reject('recipients length does not match with values')
     }
 
+    const address: string = await this.getAddressFromPublicKey(publicKey)
+    const nodeInfo: CosmosNodeInfo = await this.nodeClient.fetchNodeInfo()
+    const account: CosmosAccount = await this.nodeClient.fetchAccount(address)
+
+    const balance: BigNumber = new BigNumber(await this.getBalanceOfAddresses([address]))
+
+    if (balance.lt(values.reduce((pv, cv) => pv.plus(cv), wrappedFee))) {
+      throw new Error('not enough balance')
+    }
+
     const messages: CosmosSendMessage[] = []
     for (let i: number = 0; i < recipients.length; ++i) {
-      const message = new CosmosSendMessage(address, recipients[i], [new CosmosCoin('uatom', wrappedValues[i])])
+      const message = new CosmosSendMessage(address, recipients[i], [new CosmosCoin('uatom', wrappedValues[i].toString(10))])
       messages.push(message)
     }
     const memo = data !== undefined && typeof data === 'string' ? (data as string) : ''
     const transaction = new CosmosTransaction(
       messages,
-      new CosmosFee([new CosmosCoin('uatom', wrappedFee)], this.defaultGas),
+      new CosmosFee([new CosmosCoin('uatom', wrappedFee.toString(10))], this.defaultGas.toString(10)),
       memo,
       nodeInfo.network,
       account.value.account_number,
@@ -274,11 +288,19 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
     const address: string = await this.getAddressFromPublicKey(publicKey)
     const nodeInfo: CosmosNodeInfo = await this.nodeClient.fetchNodeInfo()
     const account: CosmosAccount = await this.nodeClient.fetchAccount(address)
-    const message: CosmosDelegateMessage = new CosmosDelegateMessage(address, validatorAddress, new CosmosCoin('uatom', amount), undelegate)
+    const message: CosmosDelegateMessage = new CosmosDelegateMessage(
+      address,
+      validatorAddress,
+      new CosmosCoin('uatom', amount.toString(10)),
+      undelegate
+    )
 
     return new CosmosTransaction(
       [message],
-      new CosmosFee([new CosmosCoin('uatom', new BigNumber(this.feeDefaults.medium).shiftedBy(this.feeDecimals))], this.defaultGas),
+      new CosmosFee(
+        [new CosmosCoin('uatom', new BigNumber(this.feeDefaults.medium).shiftedBy(this.feeDecimals).toString(10))],
+        this.defaultGas.toString(10)
+      ),
       memo !== undefined ? memo : '',
       nodeInfo.network,
       account.value.account_number,
@@ -293,7 +315,10 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
 
     return new CosmosTransaction(
       messages,
-      new CosmosFee([new CosmosCoin('uatom', new BigNumber(this.feeDefaults.medium).shiftedBy(this.feeDecimals))], this.defaultGas),
+      new CosmosFee(
+        [new CosmosCoin('uatom', new BigNumber(this.feeDefaults.medium).shiftedBy(this.feeDecimals).toString(10))],
+        this.defaultGas.toString(10)
+      ),
       memo !== undefined ? memo : '',
       nodeInfo.network,
       account.value.account_number,

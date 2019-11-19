@@ -1,5 +1,6 @@
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
+import { SerializableUnsignedCosmosTransaction } from '../../serializer/schemas/definitions/transaction-sign-request-cosmos'
 
 // tslint:disable:max-classes-per-file
 
@@ -7,11 +8,15 @@ export interface JSONConvertible {
   toJSON(): any
 }
 
+export interface RPCConvertible {
+  toRPCBody(): any
+}
+
 export interface RLPConvertible {
   toRLP(): any[]
 }
 
-export class CosmosTransaction implements JSONConvertible, RLPConvertible {
+export class CosmosTransaction implements JSONConvertible, RPCConvertible, RLPConvertible {
   public readonly messages: CosmosMessage[]
   public readonly fee: CosmosFee
   public readonly memo: string
@@ -28,13 +33,24 @@ export class CosmosTransaction implements JSONConvertible, RLPConvertible {
     this.sequence = sequence
   }
 
-  public toJSON(): any {
+  public toJSON() {
+    return {
+      accountNumber: this.accountNumber,
+      chainID: this.chainID,
+      fee: this.fee.toJSON(),
+      memo: this.memo,
+      messages: this.messages.map(value => value.toJSON()),
+      sequence: this.sequence
+    }
+  }
+
+  public toRPCBody(): any {
     return {
       account_number: this.accountNumber,
       chain_id: this.chainID,
-      fee: this.fee.toJSON(),
+      fee: this.fee.toRPCBody(),
       memo: this.memo,
-      msgs: this.messages.map(value => value.toJSON()),
+      msgs: this.messages.map(value => value.toRPCBody()),
       sequence: this.sequence
     }
   }
@@ -44,23 +60,47 @@ export class CosmosTransaction implements JSONConvertible, RLPConvertible {
   }
 
   public toAirGapTransactions(identifier: string): IAirGapTransaction[] {
-    const fee = this.fee.amount.map(value => value.amount).reduce((prev, next) => prev.plus(next))
-    return this.messages.map(message => message.toAirGapTransaction(identifier, fee))
+    const fee = this.fee.amount.map(value => new BigNumber(value.amount)).reduce((prev, next) => prev.plus(next))
+
+    return this.messages.map(message => message.toAirGapTransaction(identifier, fee.toString(10)))
   }
 
-  public static fromJSON(json: any): CosmosTransaction {
-    const messages: CosmosMessage[] = json.msgs.map(value => {
-      const type: string = value.type
+  public static fromJSON(json: SerializableUnsignedCosmosTransaction): CosmosTransaction {
+    const messages: CosmosMessage[] = json.transaction.messages.map(value => {
+      const type: CosmosMessageTypeIndex = value.type
       switch (type) {
-        case CosmosMessageType.Send.value:
+        case CosmosMessageType.Send.index:
           return CosmosSendMessage.fromJSON(value)
-        case CosmosMessageType.Delegate.value || CosmosMessageType.Undelegate.value:
+        case CosmosMessageType.Delegate.index || CosmosMessageType.Undelegate.index:
           return CosmosDelegateMessage.fromJSON(value)
         default:
           throw new Error('Unknown message')
       }
     })
-    return new CosmosTransaction(messages, CosmosFee.fromJSON(json.fee), json.memo, json.chain_id, json.account_number, json.sequence)
+
+    return new CosmosTransaction(
+      messages,
+      CosmosFee.fromJSON(json.transaction.fee),
+      json.transaction.memo,
+      json.transaction.chainID,
+      json.transaction.accountNumber,
+      json.transaction.sequence
+    )
+  }
+
+  public static fromRPCBody(json: any): CosmosTransaction {
+    const messages: CosmosMessage[] = json.msgs.map(value => {
+      const type: string = value.type
+      switch (type) {
+        case CosmosMessageType.Send.value:
+          return CosmosSendMessage.fromRPCBody(value)
+        case CosmosMessageType.Delegate.value || CosmosMessageType.Undelegate.value:
+          return CosmosDelegateMessage.fromRPCBody(value)
+        default:
+          throw new Error('Unknown message')
+      }
+    })
+    return new CosmosTransaction(messages, CosmosFee.fromRPCBody(json.fee), json.memo, json.chain_id, json.account_number, json.sequence)
   }
 
   public static fromRLP(rlp: RLPCosmosTransaction): CosmosTransaction {
@@ -98,10 +138,10 @@ export class CosmosTransaction implements JSONConvertible, RLPConvertible {
   }
 }
 
-export interface CosmosMessage extends JSONConvertible, RLPConvertible {
+export interface CosmosMessage extends JSONConvertible, RPCConvertible, RLPConvertible {
   type: CosmosMessageType
 
-  toAirGapTransaction(identifier: string, fee: BigNumber): IAirGapTransaction
+  toAirGapTransaction(identifier: string, fee: string): IAirGapTransaction
 }
 
 export enum CosmosMessageTypeIndex {
@@ -156,9 +196,26 @@ export class CosmosSendMessage implements CosmosMessage {
 
   public toJSON(): any {
     return {
+      type: this.type.index,
+      amount: this.amount.map((value: CosmosCoin) => value.toJSON()),
+      fromAddress: this.fromAddress,
+      toAddress: this.toAddress
+    }
+  }
+
+  public static fromJSON(json) {
+    return new CosmosSendMessage(
+      json.fromAddress,
+      json.toAddress,
+      json.amount.map((value: CosmosCoin) => CosmosCoin.fromJSON(value))
+    )
+  }
+
+  public toRPCBody(): any {
+    return {
       type: this.type.value,
       value: {
-        amount: this.amount.map(value => value.toJSON()),
+        amount: this.amount.map(value => value.toRPCBody()),
         from_address: this.fromAddress,
         to_address: this.toAddress
       }
@@ -169,22 +226,26 @@ export class CosmosSendMessage implements CosmosMessage {
     return [this.type.index, this.fromAddress, this.toAddress, this.amount.map(coin => coin.toRLP())]
   }
 
-  public toAirGapTransaction(identifier: string, fee: BigNumber): IAirGapTransaction {
+  public toAirGapTransaction(identifier: string, fee: string): IAirGapTransaction {
     return {
       amount: this.amount
-        .map(value => value.amount)
+        .map(value => new BigNumber(value.amount))
         .reduce((prev, next) => prev.plus(next))
         .toString(10),
       to: [this.toAddress],
       from: [this.fromAddress],
       isInbound: false,
-      fee: fee.toString(10),
+      fee,
       protocolIdentifier: identifier
     }
   }
 
-  public static fromJSON(json: any): CosmosSendMessage {
-    return new CosmosSendMessage(json.value.from_address, json.value.to_address, json.value.amount.map(value => CosmosCoin.fromJSON(value)))
+  public static fromRPCBody(json: any): CosmosSendMessage {
+    return new CosmosSendMessage(
+      json.value.from_address,
+      json.value.to_address,
+      json.value.amount.map(value => CosmosCoin.fromRPCBody(value))
+    )
   }
 
   public static fromRLP(rlp: RLPCosmosSendMessage): CosmosSendMessage {
@@ -215,22 +276,40 @@ export class CosmosDelegateMessage implements CosmosMessage {
 
   public toJSON(): any {
     return {
+      type: this.type.index,
+      amount: this.amount.toJSON(),
+      delegatorAddress: this.delegatorAddress,
+      validatorAddress: this.validatorAddress
+    }
+  }
+
+  public static fromJSON(json: any): CosmosDelegateMessage {
+    return new CosmosDelegateMessage(
+      json.delegatorAddress,
+      json.validatorAddress,
+      CosmosCoin.fromJSON(json.amount),
+      json.type === CosmosMessageType.Undelegate.index
+    )
+  }
+
+  public toRPCBody(): any {
+    return {
       type: this.type.value,
       value: {
-        amount: this.amount.toJSON(),
+        amount: this.amount.toRPCBody(),
         delegator_address: this.delegatorAddress,
         validator_address: this.validatorAddress
       }
     }
   }
 
-  public toAirGapTransaction(identifier: string, fee: BigNumber): IAirGapTransaction {
+  public toAirGapTransaction(identifier: string, fee: string): IAirGapTransaction {
     return {
-      amount: this.amount.amount.toString(10),
+      amount: this.amount.amount,
       to: [this.delegatorAddress],
       from: [this.validatorAddress],
       isInbound: false,
-      fee: fee.toString(10),
+      fee,
       protocolIdentifier: identifier
     }
   }
@@ -239,11 +318,11 @@ export class CosmosDelegateMessage implements CosmosMessage {
     return [this.type.index, this.delegatorAddress, this.validatorAddress, this.amount.toRLP()]
   }
 
-  public static fromJSON(json: any): CosmosDelegateMessage {
+  public static fromRPCBody(json: any): CosmosDelegateMessage {
     return new CosmosDelegateMessage(
       json.value.delegator_address,
       json.value.validator_address,
-      CosmosCoin.fromJSON(json.value.amount),
+      CosmosCoin.fromRPCBody(json.value.amount),
       json.type === CosmosMessageType.Undelegate.value
     )
   }
@@ -270,18 +349,30 @@ export class CosmosWithdrawDelegationRewardMessage implements CosmosMessage {
     this.validatorAddress = validatorAddress
   }
 
-  public toAirGapTransaction(identifier: string, fee: BigNumber): IAirGapTransaction {
+  public toAirGapTransaction(identifier: string, fee: string): IAirGapTransaction {
     return {
       to: [this.validatorAddress],
       from: [this.delegatorAddress],
-      amount: new BigNumber(0).toString(10),
+      amount: '0',
       isInbound: false,
-      fee: fee.toString(10),
+      fee,
       protocolIdentifier: identifier
     }
   }
 
   public toJSON() {
+    return {
+      type: this.type.value,
+      delegatorAddress: this.delegatorAddress,
+      validatorAddress: this.validatorAddress
+    }
+  }
+
+  public static fromJSON(json: any): CosmosWithdrawDelegationRewardMessage {
+    return new CosmosWithdrawDelegationRewardMessage(json.delegator_address, json.validator_address)
+  }
+
+  public toRPCBody() {
     return {
       type: this.type.value,
       value: {
@@ -295,7 +386,7 @@ export class CosmosWithdrawDelegationRewardMessage implements CosmosMessage {
     return [this.type.index, this.delegatorAddress, this.validatorAddress]
   }
 
-  public static fromJSON(json: any): CosmosWithdrawDelegationRewardMessage {
+  public static fromRPCBody(json: any): CosmosWithdrawDelegationRewardMessage {
     return new CosmosWithdrawDelegationRewardMessage(json.value.delegator_address, json.value.validator_address)
   }
 
@@ -304,18 +395,29 @@ export class CosmosWithdrawDelegationRewardMessage implements CosmosMessage {
   }
 }
 
-export class CosmosCoin implements JSONConvertible, RLPConvertible {
+export class CosmosCoin implements RPCConvertible, RLPConvertible {
   public readonly denom: string
-  public readonly amount: BigNumber
+  public readonly amount: string
 
-  constructor(denom: string, amount: BigNumber) {
+  constructor(denom: string, amount: string) {
     this.denom = denom
     this.amount = amount
   }
 
-  public toJSON(): any {
+  public toJSON() {
     return {
-      amount: this.amount.toFixed(),
+      amount: this.amount,
+      denom: this.denom
+    }
+  }
+
+  public static fromJSON(json: any): CosmosCoin {
+    return new CosmosCoin(json.denom, json.amount)
+  }
+
+  public toRPCBody(): any {
+    return {
+      amount: this.amount,
       denom: this.denom
     }
   }
@@ -324,28 +426,42 @@ export class CosmosCoin implements JSONConvertible, RLPConvertible {
     return [this.denom, this.amount]
   }
 
-  public static fromJSON(json: any): CosmosCoin {
-    return new CosmosCoin(json.denom, new BigNumber(json.amount))
+  public static fromRPCBody(json: any): CosmosCoin {
+    return new CosmosCoin(json.denom, json.amount)
   }
 
   public static fromRLP(rlp: RLPCosmosCoin): CosmosCoin {
-    return new CosmosCoin(rlp[0].toString(), new BigNumber(rlp[1].toString()))
+    return new CosmosCoin(rlp[0].toString(), rlp[1].toString())
   }
 }
 
-export class CosmosFee implements JSONConvertible, RLPConvertible {
+export class CosmosFee implements RPCConvertible, RLPConvertible {
   public readonly amount: CosmosCoin[]
-  public readonly gas: BigNumber
+  public readonly gas: string
 
-  constructor(amount: CosmosCoin[], gas: BigNumber) {
+  constructor(amount: CosmosCoin[], gas: string) {
     this.amount = amount
     this.gas = gas
   }
 
-  public toJSON(): any {
+  public toJSON() {
     return {
       amount: this.amount.map(value => value.toJSON()),
-      gas: this.gas.toFixed()
+      gas: this.gas
+    }
+  }
+
+  public static fromJSON(json: any): CosmosFee {
+    return new CosmosFee(
+      json.amount.map((value: any) => CosmosCoin.fromJSON(value)),
+      json.gas
+    )
+  }
+
+  public toRPCBody(): any {
+    return {
+      amount: this.amount.map(value => value.toRPCBody()),
+      gas: this.gas
     }
   }
 
@@ -353,12 +469,18 @@ export class CosmosFee implements JSONConvertible, RLPConvertible {
     return [this.amount.map(coin => coin.toRLP()), this.gas]
   }
 
-  public static fromJSON(json: any): CosmosFee {
-    return new CosmosFee(json.amount.map((value: any) => CosmosCoin.fromJSON(value)), new BigNumber(json.gas))
+  public static fromRPCBody(json: any): CosmosFee {
+    return new CosmosFee(
+      json.amount.map((value: any) => CosmosCoin.fromRPCBody(value)),
+      json.gas
+    )
   }
 
   public static fromRLP(rlp: RLPCosmosFee): CosmosFee {
-    return new CosmosFee(rlp[0].map(coin => CosmosCoin.fromRLP(coin)), new BigNumber(rlp[1].toString()))
+    return new CosmosFee(
+      rlp[0].map(coin => CosmosCoin.fromRLP(coin)),
+      rlp[1].toString()
+    )
   }
 }
 

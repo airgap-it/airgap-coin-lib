@@ -1,3 +1,6 @@
+import { UnsignedTransaction } from './schemas/definitions/transaction-sign-request'
+import { CosmosTransaction } from '../protocols/cosmos/CosmosTransaction'
+
 export interface RawTezosTransaction {
   binaryTransaction: string
 }
@@ -34,4 +37,8 @@ export interface RawBitcoinTransaction {
 export interface RawAeternityTransaction {
   networkId: string
   transaction: string
+}
+
+export interface UnsignedCosmosTransaction extends UnsignedTransaction {
+  transaction: CosmosTransaction
 }

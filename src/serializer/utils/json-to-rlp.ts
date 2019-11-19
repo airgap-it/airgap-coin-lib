@@ -1,7 +1,7 @@
-import { RLPData } from './toBuffer'
+import { InvalidSchemaType } from '../../errors'
+import { SchemaDefinition, SchemaItem, SchemaRoot, SchemaTypes } from '../schemas/schema'
 
-import { InvalidSchema, InvalidSchemaType } from '../../errors'
-import { Schema } from '../schemas/schema'
+import { RLPData } from './toBuffer'
 
 function log(...args: unknown[]): void {
   const loggingEnabled: boolean = false
@@ -11,37 +11,20 @@ function log(...args: unknown[]): void {
   }
 }
 
-enum SchemaTypes {
-  STRING = 'string',
-  NUMBER = 'number',
-  INTEGER = 'integer',
-  BOOLEAN = 'boolean',
-  NULL = 'null',
-  ARRAY = 'array',
-  OBJECT = 'object',
-  HEX_STRING = 'hexString' // TODO: Should we do it like that?
-}
-
 const assertNever: (x: never) => void = (x: never): void => undefined
 
-export function unwrapSchema(schema: Schema): any {
+export function getDefinitionByRefPath(schema: SchemaRoot, refPath: string): SchemaItem {
+  const mainDefinitionName: string = refPath.split('/').slice(-1)[0]
+
+  const definitions: SchemaDefinition = schema.definitions
+
+  return definitions[mainDefinitionName]
+}
+
+export function unwrapSchema(schema: SchemaRoot): SchemaItem {
   log('UNWRAPPING SCHEMA', schema)
 
-  const definitions: Object = (schema as any).definitions
-  const definitionKeys: string[] = Object.keys(definitions)
-
-  let extraDefinitions: number = 0 // TODO: Make generic
-  if (definitionKeys.includes('HexString')) {
-    extraDefinitions++
-
-    return definitions[definitionKeys[1]]
-  }
-
-  if (definitionKeys.length !== 1 + extraDefinitions) {
-    throw new InvalidSchema('Not exactly one Schema is defined')
-  }
-
-  return definitions[definitionKeys[0]]
+  return getDefinitionByRefPath(schema, schema.$ref)
 }
 
 function typeError(key: string, expectedType: string, value: unknown): Error {
@@ -62,11 +45,11 @@ function checkType<T>(key: string, expectedType: string, value: unknown, callbac
   }
 }
 
-function getTypeFromSchemaDefinition(schema: any): SchemaTypes {
+function getTypeFromSchemaDefinition(schema: SchemaItem | undefined): SchemaTypes {
   return schema?.type ?? /* schema?.$ref === "#/definitions/HexString" ? */ SchemaTypes.HEX_STRING
 }
 
-export function jsonToArray(key: string, schema: Object, value: Object): RLPData {
+export function jsonToArray(key: string, schema: SchemaItem, value: Object): RLPData {
   const type: SchemaTypes = getTypeFromSchemaDefinition(schema)
   switch (type) {
     case SchemaTypes.STRING:
@@ -134,7 +117,7 @@ export function jsonToArray(key: string, schema: Object, value: Object): RLPData
   }
 }
 
-export function rlpArrayToJson(schema: Object, decoded: RLPData): { [key: string]: unknown } {
+export function rlpArrayToJson(schema: SchemaItem, decoded: RLPData): { [key: string]: unknown } {
   const outObject: { [key: string]: unknown } = {}
 
   if ((schema as any).type === SchemaTypes.OBJECT) {

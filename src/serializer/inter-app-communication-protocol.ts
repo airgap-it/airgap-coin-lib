@@ -43,8 +43,6 @@ export class IACProtocol {
   }
 
   public encoded(): string {
-    console.log('before encoded: ', [this.version.toString(), this.payloadType.toString(), this.payload.asArray()])
-
     return bs58check.encode(rlp.encode([this.version.toString(), this.payloadType.toString(), this.payload.asArray() as any]) as any)
   }
 
@@ -59,8 +57,6 @@ export class IACProtocol {
       const bufferLength: number = rawPayload.length
 
       let i: number = 0
-      console.log('BUFFER LENGTH', bufferLength, 'chunkSize', chunkSize)
-      console.log('BUFFER', nodeBuffer)
       while (i < bufferLength) {
         chunks.push(nodeBuffer.slice(i, (i += chunkSize)))
       }
@@ -85,7 +81,7 @@ export class IACProtocol {
     let globalType: string | undefined
     data.forEach((entry: string) => {
       const decoded: Buffer[] = rlp.decode(bs58check.decode(entry)) as any // Will be fixed with new rlp version
-      const version: string = decoded[0].toString()
+      // const version: string = decoded[0].toString()
       const type: string = decoded[1].toString()
 
       globalType = globalType || type
@@ -94,7 +90,6 @@ export class IACProtocol {
       }
 
       const payload: Buffer[] = (decoded[2] as any) as Buffer[]
-      console.log(version, type, payload)
 
       if (type === '0') {
         // full
@@ -102,7 +97,6 @@ export class IACProtocol {
         finalPayload = new FullPayload(PayloadType.ENCODED, payload)
       } else if (type === '1') {
         // chunked
-        console.log('chunked')
         chunked.push(new ChunkedPayload(PayloadType.ENCODED, payload))
       } else {
         throw new Error('EMPTY ARRAY')
@@ -110,16 +104,13 @@ export class IACProtocol {
     })
 
     if (!finalPayload) {
-      console.log(chunked)
       const sortedChunks = chunked.sort((a: ChunkedPayload, b: ChunkedPayload) => a.currentPage - b.currentPage)
       const arr: Buffer[] = sortedChunks.map((chunk: ChunkedPayload) => chunk.buffer)
-      console.log('arr', arr)
 
       const result = {
         availablePages: sortedChunks.map(a => a.currentPage),
         totalPages: sortedChunks[0].total
       }
-      console.log('checking individual chunks', result)
 
       if (result.availablePages.length < result.totalPages) {
         throw result
@@ -127,8 +118,6 @@ export class IACProtocol {
 
       finalPayload = new FullPayload(PayloadType.ENCODED, rlp.decode(Buffer.concat(arr)))
     }
-
-    console.log('finalPayload', finalPayload)
 
     return [new IACProtocol(PayloadType.DECODED, finalPayload)]
   }

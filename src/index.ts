@@ -28,7 +28,7 @@ import { MessageSignResponse } from './serializer/schemas/definitions/message-si
 import { UnsignedTransaction } from './serializer/schemas/definitions/transaction-sign-request'
 import { UnsignedAeternityTransaction } from './serializer/schemas/definitions/transaction-sign-request-aeternity'
 import { UnsignedBitcoinTransaction } from './serializer/schemas/definitions/transaction-sign-request-bitcoin'
-import { UnsignedCosmosTransaction } from './serializer/schemas/definitions/transaction-sign-request-cosmos'
+import { UnsignedCosmosTransaction } from './serializer/types'
 import { UnsignedEthereumTransaction } from './serializer/schemas/definitions/transaction-sign-request-ethereum'
 import { UnsignedTezosTransaction } from './serializer/schemas/definitions/transaction-sign-request-tezos'
 import { SignedTransaction } from './serializer/schemas/definitions/transaction-sign-response'

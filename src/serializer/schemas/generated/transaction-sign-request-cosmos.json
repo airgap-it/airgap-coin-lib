@@ -1,154 +1,8 @@
 {
-  "$ref": "#/definitions/UnsignedCosmosTransaction",
+  "$ref": "#/definitions/SerializableUnsignedCosmosTransaction",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
-    "BigNumber": {
-      "additionalProperties": false,
-      "properties": {
-        "c": {
-          "anyOf": [
-            {
-              "items": {
-                "type": "number"
-              },
-              "type": "array"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "description": "The coefficient of the value of this BigNumber, an array of base 1e14 integer numbers, or null."
-        },
-        "e": {
-          "description": "The exponent of the value of this BigNumber, an integer number, -1000000000 to 1000000000, or null.",
-          "type": [
-            "number",
-            "null"
-          ]
-        },
-        "s": {
-          "description": "The sign of the value of this BigNumber, -1, 1, or null.",
-          "type": [
-            "number",
-            "null"
-          ]
-        }
-      },
-      "required": [
-        "c",
-        "e",
-        "s"
-      ],
-      "type": "object"
-    },
-    "CosmosCoin": {
-      "additionalProperties": false,
-      "properties": {
-        "amount": {
-          "$ref": "#/definitions/BigNumber"
-        },
-        "denom": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "denom",
-        "amount"
-      ],
-      "type": "object"
-    },
-    "CosmosFee": {
-      "additionalProperties": false,
-      "properties": {
-        "amount": {
-          "items": {
-            "$ref": "#/definitions/CosmosCoin"
-          },
-          "type": "array"
-        },
-        "gas": {
-          "$ref": "#/definitions/BigNumber"
-        }
-      },
-      "required": [
-        "amount",
-        "gas"
-      ],
-      "type": "object"
-    },
-    "CosmosMessage": {
-      "additionalProperties": false,
-      "properties": {
-        "type": {
-          "$ref": "#/definitions/CosmosMessageType"
-        }
-      },
-      "required": [
-        "type"
-      ],
-      "type": "object"
-    },
-    "CosmosMessageType": {
-      "additionalProperties": false,
-      "properties": {
-        "index": {
-          "$ref": "#/definitions/CosmosMessageTypeIndex"
-        },
-        "value": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "index",
-        "value"
-      ],
-      "type": "object"
-    },
-    "CosmosMessageTypeIndex": {
-      "enum": [
-        0,
-        1,
-        2,
-        3
-      ],
-      "type": "number"
-    },
-    "CosmosTransaction": {
-      "additionalProperties": false,
-      "properties": {
-        "accountNumber": {
-          "type": "string"
-        },
-        "chainID": {
-          "type": "string"
-        },
-        "fee": {
-          "$ref": "#/definitions/CosmosFee"
-        },
-        "memo": {
-          "type": "string"
-        },
-        "messages": {
-          "items": {
-            "$ref": "#/definitions/CosmosMessage"
-          },
-          "type": "array"
-        },
-        "sequence": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "messages",
-        "fee",
-        "memo",
-        "chainID",
-        "accountNumber",
-        "sequence"
-      ],
-      "type": "object"
-    },
-    "UnsignedCosmosTransaction": {
+    "SerializableUnsignedCosmosTransaction": {
       "additionalProperties": false,
       "properties": {
         "callback": {
@@ -158,7 +12,111 @@
           "type": "string"
         },
         "transaction": {
-          "$ref": "#/definitions/CosmosTransaction"
+          "additionalProperties": false,
+          "properties": {
+            "accountNumber": {
+              "type": "string"
+            },
+            "chainID": {
+              "type": "string"
+            },
+            "fee": {
+              "additionalProperties": false,
+              "properties": {
+                "amount": {
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "amount": {
+                        "type": "string"
+                      },
+                      "denom": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "denom",
+                      "amount"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "gas": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "amount",
+                "gas"
+              ],
+              "type": "object"
+            },
+            "memo": {
+              "type": "string"
+            },
+            "messages": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "amount": {
+                    "items": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "amount": {
+                          "type": "string"
+                        },
+                        "denom": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "denom",
+                        "amount"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "fromAddress": {
+                    "type": "string"
+                  },
+                  "toAddress": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": [
+                      0,
+                      1,
+                      2,
+                      3
+                    ],
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "type",
+                  "amount",
+                  "fromAddress",
+                  "toAddress"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "sequence": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "messages",
+            "fee",
+            "memo",
+            "chainID",
+            "accountNumber",
+            "sequence"
+          ],
+          "type": "object"
         }
       },
       "required": [

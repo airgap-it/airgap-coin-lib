@@ -3,8 +3,9 @@ import { BigNumber } from '../../../../dependencies/src/bignumber.js-9.0.0/bignu
 import { EthereumUtils } from '../../utils/utils'
 
 import { EthereumNodeClient } from './NodeClient'
+import { RPCConvertible } from '../../../cosmos/CosmosTransaction'
 
-class EthereumRPCBody {
+class EthereumRPCBody implements RPCConvertible {
   public static blockEarliest = 'earliest'
   public static blockLatest = 'latest'
   public static blockPending = 'pending'
@@ -21,7 +22,7 @@ class EthereumRPCBody {
     this.id = 1
   }
 
-  public toJSON(): string {
+  public toRPCBody(): string {
     return JSON.stringify({
       jsonrpc: this.jsonrpc,
       method: this.method,
@@ -176,7 +177,7 @@ export class AirGapNodeClient extends EthereumNodeClient {
   private async send<Result>(body: EthereumRPCBody, responseHandler: (response: AxiosResponse<any>) => Result): Promise<Result> {
     return new Promise((resolve, reject) => {
       axios
-        .post(this.baseURL, body.toJSON())
+        .post(this.baseURL, body.toRPCBody())
         .then(response => {
           resolve(responseHandler(response))
         })

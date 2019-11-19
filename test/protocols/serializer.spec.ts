@@ -7,11 +7,13 @@ import { Serializer } from '../../src/serializer/serializer'
 import { TestProtocolSpec } from './implementations'
 import { AETestProtocolSpec } from './specs/ae'
 import { BitcoinProtocolSpec } from './specs/bitcoin'
+import { CosmosTestProtocolSpec } from './specs/cosmos'
 import { EthereumTestProtocolSpec } from './specs/ethereum'
 import { GenericERC20TokenTestProtocolSpec } from './specs/generic-erc20-token'
 import { TezosTestProtocolSpec } from './specs/tezos'
 
 const protocols = [
+  new CosmosTestProtocolSpec(),
   new EthereumTestProtocolSpec(),
   new BitcoinProtocolSpec(),
   new AETestProtocolSpec(),
@@ -28,7 +30,7 @@ protocols.forEach((protocol: TestProtocolSpec) => {
         const serializedTx: string[] = await syncProtocol.serialize(protocol.unsignedTransaction(tx))
         const deserializedTx: IACMessageDefinitionObject[] = await syncProtocol.deserialize(serializedTx)
 
-        expect(protocol.unsignedTransaction(tx)).to.deep.equal(deserializedTx)
+        expect(JSON.parse(JSON.stringify(protocol.unsignedTransaction(tx)))).to.deep.equal(JSON.parse(JSON.stringify(deserializedTx)))
       }
     })
     /*
