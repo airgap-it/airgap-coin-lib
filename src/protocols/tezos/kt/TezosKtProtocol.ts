@@ -9,7 +9,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
   public isSubProtocol: boolean = true
   public subProtocolType: SubProtocolType = SubProtocolType.ACCOUNT
   public addressValidationPattern: string = '^(tz1|KT1)[1-9A-Za-z]{33}$'
-  public migrationFee: BigNumber = new BigNumber(2941)
+  public migrationFee: BigNumber = new BigNumber(5000)
 
   public async getAddressFromPublicKey(publicKey: string): Promise<string> {
     return (await this.getAddressesFromPublicKey(publicKey))[0]
