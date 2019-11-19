@@ -31,7 +31,7 @@ export interface GenericERC20Configuration {
 export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, TrustWalletInfoClient> implements ICoinSubProtocol {
   public isSubProtocol: boolean = true
   public subProtocolType: SubProtocolType = SubProtocolType.TOKEN
-  private readonly contractAddress: string
+  public readonly contractAddress: string
 
   constructor(config: GenericERC20Configuration) {
     // we probably need another network here, explorer is ok
