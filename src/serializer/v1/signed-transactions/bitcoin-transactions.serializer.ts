@@ -1,5 +1,4 @@
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
-
 import {
   SerializedSyncProtocolSignedTransaction,
   SignedTransaction,

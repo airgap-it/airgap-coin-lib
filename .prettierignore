@@ -1,2 +1,16 @@
+#
+.history
+.dockerignore
+.DS_Store
+.gitignore
+.nyc_output
+.prettierignore
+.prettierrc
+coverage
+dist
+node_modules
+npm-ci-publish-beta-only.sh
+npm-ci-publish.sh
+
 # Ignore downloaded dependencies:
 src/dependencies

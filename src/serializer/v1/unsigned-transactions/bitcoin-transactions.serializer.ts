@@ -1,5 +1,4 @@
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
-
 import {
   SerializedSyncProtocolTransaction,
   SyncProtocolUnsignedTransactionKeys,
@@ -63,6 +62,7 @@ export class BitcoinUnsignedTransactionSerializer extends UnsignedTransactionSer
             address: val[3].toString(),
             derivationPath: val[4].toString()
           }
+
           return input
         }),
         outs: outputs.map(val => {
@@ -71,6 +71,7 @@ export class BitcoinUnsignedTransactionSerializer extends UnsignedTransactionSer
             recipient: val[1].toString(),
             value: new BigNumber(val[2].toString())
           }
+
           return output
         })
       },

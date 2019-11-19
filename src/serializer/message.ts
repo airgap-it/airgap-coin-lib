@@ -1,6 +1,3 @@
-import { jsonToArray, rlpArrayToJson, unwrapSchema } from './utils/json-to-rlp'
-import { RLPData } from './utils/toBuffer'
-
 import { IACMessageType } from './interfaces'
 import { PayloadType } from './payloads/payload'
 import { AccountShareResponse } from './schemas/definitions/account-share-response'
@@ -18,6 +15,8 @@ import { SignedTezosTransaction } from './schemas/definitions/transaction-sign-r
 import { SchemaItem, SchemaTransformer } from './schemas/schema'
 import { Serializer } from './serializer'
 import { UnsignedCosmosTransaction } from './types'
+import { jsonToArray, rlpArrayToJson, unwrapSchema } from './utils/json-to-rlp'
+import { RLPData } from './utils/toBuffer'
 
 export const assertNever: (x: never) => void = (x: never): void => undefined
 

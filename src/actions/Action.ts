@@ -7,14 +7,14 @@ export enum ActionState {
 
 class StateMachine<S> {
   private state: S
-  private validTransitions: Map<S, S[]>
+  private readonly validTransitions: Map<S, S[]>
 
   constructor(initialState: S, validTransitions: Map<S, S[]>) {
     this.state = initialState
     this.validTransitions = validTransitions
   }
 
-  transitionTo(state: S) {
+  public transitionTo(state: S) {
     if (this.canTransitionTo(state)) {
       this.state = state
     } else {
@@ -22,11 +22,11 @@ class StateMachine<S> {
     }
   }
 
-  getState() {
+  public getState() {
     return this.state
   }
 
-  addValidStateTransition(from: S, to: S) {
+  public addValidStateTransition(from: S, to: S) {
     const states = this.validTransitions.get(to)
     if (states !== undefined && states.indexOf(from) === -1) {
       states.push(from)
@@ -41,6 +41,7 @@ class StateMachine<S> {
     if (states !== undefined) {
       return states.indexOf(this.state) != -1
     }
+
     return false
   }
 }
@@ -56,7 +57,7 @@ export abstract class Action<Result, Context> {
   public onError?: (error: Error) => Promise<void>
   public onCancel?: () => Promise<void>
 
-  private stateMachine = new StateMachine<ActionState>(
+  private readonly stateMachine = new StateMachine<ActionState>(
     ActionState.READY,
     new Map<ActionState, ActionState[]>([
       [ActionState.READY, []],
@@ -126,7 +127,7 @@ export class SimpleAction<Result> extends Action<Result, void> {
   }
 
   protected async perform(): Promise<Result> {
-    return await this.promise()
+    return this.promise()
   }
 }
 
@@ -134,10 +135,7 @@ export class LinkedAction<Result, Context> extends Action<Result, void> {
   public readonly action: Action<Context, void>
   private linkedAction?: Action<Result, Context>
 
-  public constructor(
-    action: Action<Context, void>,
-    private readonly linkedActionType: { new (context: Context): Action<Result, Context> }
-  ) {
+  public constructor(action: Action<Context, void>, private readonly linkedActionType: new (context: Context) => Action<Result, Context>) {
     super()
     this.action = action
   }
@@ -150,6 +148,7 @@ export class LinkedAction<Result, Context> extends Action<Result, void> {
     await this.action.start()
     this.linkedAction = new this.linkedActionType(this.action.result!)
     await this.linkedAction.start()
+
     return this.linkedAction.result!
   }
 
@@ -164,7 +163,7 @@ export class LinkedAction<Result, Context> extends Action<Result, void> {
 }
 
 export class RepeatableAction<Result, InnerContext, Context> extends Action<Result, Context> {
-  private actionFactory: () => Action<Result, InnerContext>
+  private readonly actionFactory: () => Action<Result, InnerContext>
   private innerAction?: Action<Result, InnerContext>
 
   public constructor(context: Context, actionFactory: () => Action<Result, InnerContext>) {
@@ -181,6 +180,7 @@ export class RepeatableAction<Result, InnerContext, Context> extends Action<Resu
     }
     this.innerAction = this.actionFactory()
     await this.innerAction.start()
+
     return this.innerAction.result!
   }
 

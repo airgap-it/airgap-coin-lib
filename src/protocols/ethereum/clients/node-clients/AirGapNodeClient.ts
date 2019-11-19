@@ -1,9 +1,9 @@
 import axios, { AxiosResponse } from '../../../../dependencies/src/axios-0.19.0/index'
 import { BigNumber } from '../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { RPCConvertible } from '../../../cosmos/CosmosTransaction'
 import { EthereumUtils } from '../../utils/utils'
 
 import { EthereumNodeClient } from './NodeClient'
-import { RPCConvertible } from '../../../cosmos/CosmosTransaction'
 
 class EthereumRPCBody implements RPCConvertible {
   public static blockEarliest = 'earliest'
@@ -46,6 +46,7 @@ export class EthereumRPCData {
     if (hash === null) {
       return ''
     }
+
     return `0x${hash.slice(2, 10)}`
   }
 
@@ -54,6 +55,7 @@ export class EthereumRPCData {
     while (result.length < targetLength) {
       result = '0' + result
     }
+
     return result
   }
 
@@ -62,6 +64,7 @@ export class EthereumRPCData {
     while (result.startsWith('0')) {
       result = result.slice(1) // this can probably be done much more efficiently with a regex
     }
+
     return result
   }
 }
@@ -80,6 +83,7 @@ export class EthereumRPCDataBalanceOf extends EthereumRPCData {
     if (srcAddress.startsWith('0x')) {
       srcAddress = srcAddress.slice(2)
     }
+
     return super.abiEncoded() + EthereumRPCData.addLeadingZeroPadding(srcAddress)
   }
 }
@@ -134,22 +138,27 @@ export class AirGapNodeClient extends EthereumNodeClient {
 
   public async fetchBalance(address: string): Promise<BigNumber> {
     const body = new EthereumRPCBody('eth_getBalance', [address, EthereumRPCBody.blockLatest])
+
     return this.send(body, response => {
       const balance: string = response.data.result
+
       return new BigNumber(balance)
     })
   }
 
   public async fetchTransactionCount(address: string): Promise<number> {
     const body = new EthereumRPCBody('eth_getTransactionCount', [address, EthereumRPCBody.blockLatest])
+
     return this.send(body, response => {
       const count: string = response.data.result
+
       return new BigNumber(count).toNumber()
     })
   }
 
   public async sendSignedTransaction(transaction: string): Promise<string> {
     const body = new EthereumRPCBody('eth_sendRawTransaction', [transaction])
+
     return this.send(body, response => {
       return response.data.result
     })
@@ -158,6 +167,7 @@ export class AirGapNodeClient extends EthereumNodeClient {
   public async callBalanceOf(contractAddress: string, address: string): Promise<BigNumber> {
     const data = new EthereumRPCDataBalanceOf(address)
     const body = new EthereumRPCBody('eth_call', [{ to: contractAddress, data: data.abiEncoded() }, EthereumRPCBody.blockLatest])
+
     return this.send(body, response => {
       return new BigNumber(response.data.result)
     })
@@ -169,12 +179,13 @@ export class AirGapNodeClient extends EthereumNodeClient {
       { from: fromAddress, to: contractAddress, data: data.abiEncoded() },
       EthereumRPCBody.blockLatest
     ])
+
     return this.send(body, response => {
       return new BigNumber(response.data.result).toNumber()
     })
   }
 
-  private async send<Result>(body: EthereumRPCBody, responseHandler: (response: AxiosResponse<any>) => Result): Promise<Result> {
+  private async send<Result>(body: EthereumRPCBody, responseHandler: (response: AxiosResponse) => Result): Promise<Result> {
     return new Promise((resolve, reject) => {
       axios
         .post(this.baseURL, body.toRPCBody())

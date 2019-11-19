@@ -9,6 +9,7 @@ const getSubProtocolsByIdentifier = (identifier: string) => {
   if (subProtocolMapper[identifier]) {
     return Object.keys(subProtocolMapper[identifier]).map(key => subProtocolMapper[identifier][key])
   }
+
   return []
 }
 

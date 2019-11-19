@@ -34,13 +34,17 @@ export class EthereumUtils {
     return EthereumUtils.numberToHex(value)
   }
 
-  private static SHA3_NULL_S = '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
+  private static readonly SHA3_NULL_S: string = '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
   public static sha3(value: any): string | null {
     if (EthereumUtils.isHexStrict(value) && /^0x/i.test(value.toString())) {
       value = EthereumUtils.hexToBytes(value)
     }
 
-    var returnValue = '0x' + createKeccakHash('keccak256').update(value).digest('hex')
+    const returnValue: string =
+      '0x' +
+      createKeccakHash('keccak256')
+        .update(value)
+        .digest('hex')
 
     if (returnValue === EthereumUtils.SHA3_NULL_S) {
       return null
@@ -59,8 +63,8 @@ export class EthereumUtils {
     }
 
     // var number = EthereumUtils.toBN(value)
-    var number = new BigNumber(value)
-    var result = number.toString(16)
+    const number = new BigNumber(value)
+    const result = number.toString(16)
 
     return number.lt(new BigNumber(0)) ? '-0x' + result.substr(1) : '0x' + result
   }
@@ -76,10 +80,11 @@ export class EthereumUtils {
 
     hex = hex.replace(/^0x/i, '')
 
-    let bytes: number[] = []
+    const bytes: number[] = []
     for (let c = 0; c < hex.length; c += 2) {
       bytes.push(parseInt(hex.substr(c, 2), 16))
     }
+
     return bytes
   }
 
@@ -89,7 +94,7 @@ export class EthereumUtils {
 
   private static checkAddressChecksum(address: string) {
     address = address.replace(/^0x/i, '')
-    var addressHash = EthereumUtils.sha3(address.toLowerCase())
+    let addressHash = EthereumUtils.sha3(address.toLowerCase())
 
     if (addressHash === null) {
       return false
@@ -97,7 +102,7 @@ export class EthereumUtils {
 
     addressHash = addressHash.replace(/^0x/i, '')
 
-    for (var i = 0; i < 40; i++) {
+    for (let i = 0; i < 40; i++) {
       if (
         (parseInt(addressHash[i], 16) > 7 && address[i].toUpperCase() !== address[i]) ||
         (parseInt(addressHash[i], 16) <= 7 && address[i].toLowerCase() !== address[i])
@@ -105,6 +110,7 @@ export class EthereumUtils {
         return false
       }
     }
+
     return true
   }
 
@@ -140,9 +146,9 @@ export class EthereumUtils {
       .reverse()
       .join('')
 
-    for (var i = 0; i < str.length; i++) {
-      var code = str.charCodeAt(i)
-      var n = code.toString(16)
+    for (let i = 0; i < str.length; i++) {
+      const code = str.charCodeAt(i)
+      const n = code.toString(16)
       hex += n.length < 2 ? '0' + n : n
     }
 
@@ -150,7 +156,8 @@ export class EthereumUtils {
   }
 
   private static isObject(value: any): boolean {
-    var type = typeof value
+    const type = typeof value
+
     return type === 'function' || (type === 'object' && !!value)
   }
 }

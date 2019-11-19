@@ -100,6 +100,7 @@ export class CosmosTransaction implements JSONConvertible, RPCConvertible, RLPCo
           throw new Error('Unknown message')
       }
     })
+
     return new CosmosTransaction(messages, CosmosFee.fromRPCBody(json.fee), json.memo, json.chain_id, json.account_number, json.sequence)
   }
 
@@ -117,13 +118,16 @@ export class CosmosTransaction implements JSONConvertible, RPCConvertible, RLPCo
         switch (type) {
           case CosmosMessageType.Send.index:
             const sendMessage = message as RLPCosmosSendMessage
+
             return CosmosSendMessage.fromRLP(sendMessage)
           case CosmosMessageType.Delegate.index:
           case CosmosMessageType.Undelegate.index:
             const delegateMessage = message as RLPCosmosDelegateMessage
+
             return CosmosDelegateMessage.fromRLP(delegateMessage)
           case CosmosMessageType.WithdrawDelegationReward.index:
             const withdrawMessage = message as RLPCosmosWithdrawDelegationRewardMessage
+
             return CosmosWithdrawDelegationRewardMessage.fromRLP(withdrawMessage)
           default:
             throw new Error('Unknown message type')
@@ -252,6 +256,7 @@ export class CosmosSendMessage implements CosmosMessage {
     const from = rlp[1].toString()
     const to = rlp[2].toString()
     const amount = rlp[3].map(coin => CosmosCoin.fromRLP(coin))
+
     return new CosmosSendMessage(from, to, amount)
   }
 }

@@ -1,9 +1,9 @@
 import * as bs58check from '../dependencies/src/bs58check-2.1.2/index'
 import * as rlp from '../dependencies/src/rlp-2.2.3/index'
 
+import { assertNever, IACMessageDefinitionObject } from './message'
 import { ChunkedPayload } from './payloads/chunked-payload'
 import { FullPayload } from './payloads/full-payload'
-import { assertNever, IACMessageDefinitionObject } from './message'
 import { Payload, PayloadType } from './payloads/payload'
 import { IACPayloadType } from './serializer'
 

@@ -37,6 +37,7 @@ export class WalletSerializer {
       derivationPath: serializedWalletRequest[SyncProtocolWalletSync.DERIVATION_PATH].toString(),
       isExtendedPublicKey: serializedWalletRequest[SyncProtocolWalletSync.IS_EXTENDED_PUBLIC_KEY].toString() === '0' ? false : true
     }
+
     return syncWalletRequest
   }
 }

@@ -163,6 +163,7 @@ validators.isValidBitcoinInput = ins => {
         return 'invalid derivation path'
       }
     }
+
     return null
   }
 
@@ -198,8 +199,10 @@ validators.isValidBitcoinOutput = outs => {
         return 'value is not BigNumber'
       }
     }
+
     return null
   }
+
   return null
 }
 
@@ -216,6 +219,7 @@ validators.isValidBitcoinFromArray = array => {
       return 'not a valid bitcoin address'
     }
   }
+
   return null
 }
 
@@ -226,6 +230,7 @@ validators.isBitcoinAccount = (accountIdentifier: string) => {
   try {
     const protocol = new BitcoinProtocol()
     protocol.getAddressFromExtendedPublicKey(accountIdentifier, 0, 0)
+
     return null
   } catch (error) {
     return 'not a valid Bitcoin account'
@@ -241,6 +246,7 @@ validators.isValidBitcoinTxString = (transaction: string) => {
     const protocol = new BitcoinProtocol()
     const bitcoinJSLib = protocol.bitcoinJSLib
     bitcoinJSLib.Transaction.fromHex(transaction)
+
     return null
   } catch (error) {
     return 'is not a valid hex encoded Bitcoin transaction'
@@ -257,6 +263,7 @@ validators.isMainNet = value => {
   if (value !== 'ae_mainnet') {
     return 'is not on mainnet'
   }
+
   return null
 }
 
@@ -272,6 +279,7 @@ validators.isValidAeternityTx = transaction => {
 
   try {
     bs64check.decode(transaction.replace('tx_', ''))
+
     return null
   } catch (error) {
     return "isn't base64 encoded"
@@ -300,6 +308,7 @@ validators.isValidTezosUnsignedTransaction = (binaryTx: string) => {
     transaction: rawTx,
     publicKey: ''
   }
+
   return new Promise(async (resolve, reject) => {
     if (binaryTx === null || typeof binaryTx === 'undefined') {
       resolve('not a valid Tezos transaction')
@@ -324,6 +333,7 @@ validators.isValidTezosSignedTransaction = (signedTransaction: string) => {
     accountIdentifier: '',
     transaction: signedTransaction
   }
+
   return new Promise(async (resolve, reject) => {
     if (signedTransaction === null || typeof signedTransaction === 'undefined') {
       resolve('not a valid Tezos transaction')

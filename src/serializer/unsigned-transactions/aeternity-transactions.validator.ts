@@ -35,6 +35,7 @@ export class AeternityTransactionValidator extends TransactionValidator {
   public validateUnsignedTransaction(unsignedTx: UnsignedAeternityTransaction): any {
     const rawTx: RawAeternityTransaction = unsignedTx.transaction
     validateSyncScheme({})
+
     return validate(rawTx, unsignedTransactionConstraints)
   }
   public async validateSignedTransaction(signedTx: SignedAeternityTransaction): Promise<any> {

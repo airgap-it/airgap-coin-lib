@@ -148,6 +148,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
 
   public getPublicKeyFromHexSecret(secret: string, derivationPath: string): string {
     const bitcoinNode = this.bitcoinJSLib.HDNode.fromSeedHex(secret, this.network)
+
     return bitcoinNode
       .derivePath(derivationPath)
       .neutered()
@@ -156,11 +157,13 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
 
   public getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Buffer {
     const bitcoinNode = this.bitcoinJSLib.HDNode.fromSeedHex(secret, this.network)
+
     return bitcoinNode.derivePath(derivationPath).keyPair.d.toBuffer(32)
   }
 
   public getExtendedPrivateKeyFromHexSecret(secret: string, derivationPath: string): string {
     const bitcoinNode = this.bitcoinJSLib.HDNode.fromSeedHex(secret, this.network)
+
     return bitcoinNode.derivePath(derivationPath).toBase58()
   }
 
@@ -190,6 +193,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
     // broadcaster knows this (both broadcaster and signer)
     const node = this.bitcoinJSLib.HDNode.fromBase58(extendedPublicKey, this.network)
     const generatorArray = Array.from(new Array(addressCount), (x, i) => i + offset)
+
     return Promise.all(
       generatorArray.map(x =>
         node
@@ -515,6 +519,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
 
   public async broadcastTransaction(rawTransaction: string): Promise<string> {
     const { data } = await axios.post(this.baseApiUrl + '/api/v2/sendtx/', rawTransaction)
+
     return data.result
   }
 

@@ -1,6 +1,5 @@
-import Axios from '../dependencies/src/axios-0.19.0/index'
-
 import { IAirGapTransaction } from '..'
+import Axios from '../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../dependencies/src/bignumber.js-9.0.0/bignumber'
 import * as cryptocompare from '../dependencies/src/cryptocompare-0.5.0/index'
 
@@ -88,6 +87,7 @@ export class AirGapMarketWallet extends AirGapWallet {
 
   public fetchDailyMarketPrices(numberOfDays: number, date: Date, baseSymbol = 'USD'): Promise<MarketDataSample[]> {
     this.dailyMarketSample = []
+
     return new Promise((resolve, reject) => {
       this.algoSelector(numberOfDays, TimeUnit.Days, date, baseSymbol)
         .then(marketSample => {
@@ -100,6 +100,7 @@ export class AirGapMarketWallet extends AirGapWallet {
 
   public fetchHourlyMarketPrices(numberOfHours: number, date: Date, baseSymbol = 'USD'): Promise<MarketDataSample[]> {
     this.hourlyMarketSample = []
+
     return new Promise((resolve, reject) => {
       this.algoSelector(numberOfHours, TimeUnit.Hours, date, baseSymbol)
         .then(marketSample => {
@@ -112,6 +113,7 @@ export class AirGapMarketWallet extends AirGapWallet {
 
   public fetchMinutesMarketPrices(numberOfMinutes: number, date: Date, baseSymbol = 'USD'): Promise<MarketDataSample[]> {
     this.minuteMarketSample = []
+
     return new Promise((resolve, reject) => {
       this.algoSelector(numberOfMinutes, TimeUnit.Minutes, date, baseSymbol)
         .then(marketSample => {

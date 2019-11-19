@@ -1,5 +1,5 @@
-import { ICoinProtocol } from '../protocols/ICoinProtocol'
 import { ProtocolNotSupported } from '../errors'
+import { ICoinProtocol } from '../protocols/ICoinProtocol'
 
 import { supportedProtocols } from './supportedProtocols'
 
@@ -8,12 +8,13 @@ const getProtocolByIdentifier = function(identifier: string): ICoinProtocol {
     throw new Error('No protocol identifier provided')
   }
   // create a complete list of all protocols and subprotocols
-  let candidates = supportedProtocols()
+  const candidates = supportedProtocols()
     .map(protocol => {
       const protocols = [protocol]
       if (protocol.subProtocols) {
         protocols.push(...protocol.subProtocols)
       }
+
       return protocols
     })
     .reduce((current, next) => current.concat(next))

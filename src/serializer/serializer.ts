@@ -5,8 +5,8 @@ import { IACMessageType } from './interfaces'
 import { IACMessageDefinitionObject } from './message'
 import { FullPayload } from './payloads/full-payload'
 import { Payload } from './payloads/payload'
-import { SchemaInfo, SchemaRoot } from './schemas/schema'
 import { SerializableUnsignedCosmosTransaction } from './schemas/definitions/transaction-sign-request-cosmos'
+import { SchemaInfo, SchemaRoot } from './schemas/schema'
 
 const accountShareResponse: SchemaRoot = require('./schemas/generated/account-share-response.json')
 

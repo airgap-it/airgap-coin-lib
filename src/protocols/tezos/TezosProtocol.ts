@@ -291,6 +291,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
             limit
           }
         }
+
         return new Promise<any>(async (resolve, reject) => {
           const fromPromise = axios
             .post(`${this.baseApiUrl}/v2/data/tezos/mainnet/operations`, getRequestBody('source', 'transaction'), {
@@ -1460,16 +1461,18 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
   public async getTezosVotingInfo(blockHash: string): Promise<TezosVotingInfo[]> {
     const response: AxiosResponse = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/${blockHash}/votes/listings`)
+
     return response.data
   }
 
   public async fetchCurrentCycle(): Promise<number> {
     const headMetadata = await this.fetchBlockMetadata('head')
     const currentCycle: number = headMetadata.level.cycle
+
     return currentCycle
   }
 
-  private static FIRST_005_CYCLE: number = 160
+  private static readonly FIRST_005_CYCLE: number = 160
   public async calculateRewards(bakerAddress: string, cycle: number): Promise<TezosRewards> {
     const currentCycle: number = await this.fetchCurrentCycle()
     const is005 = cycle >= TezosProtocol.FIRST_005_CYCLE
@@ -1488,6 +1491,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
           if (block === undefined) {
             throw new Error("Cannot find block's baker")
           }
+
           return block.baker === bakerAddress
         })
         computedBakingRewards = (await this.computeBakingRewards(filteredBakingRights, is005, false)).toFixed()
@@ -1500,6 +1504,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         const found = endorsingOperations.find(operation => {
           return operation.delegate === bakerAddress
         })
+
         return found !== undefined
       })
       computedEndorsingRewards = (await this.computeEndorsingRewards(filteredEndorsingRights, false)).toFixed()
@@ -1568,11 +1573,13 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         payout: payoutAmount.toFixed()
       })
     }
+
     return result
   }
 
   private async fetchBlockMetadata(block: number | 'head'): Promise<any> {
     const result = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/${block}/metadata`)
+
     return result.data
   }
 
@@ -1589,6 +1596,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       ]
     }
     const result = await axios.post(`${this.baseApiUrl}/v2/data/tezos/mainnet/blocks`, query, { headers: this.headers })
+
     return result.data
   }
 
@@ -1605,6 +1613,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       ]
     }
     const result = await axios.post(`${this.baseApiUrl}/v2/data/tezos/mainnet/blocks`, query, { headers: this.headers })
+
     return result.data
   }
 
@@ -1618,10 +1627,11 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     const bakingRightsResult = await axios.get(
       `${this.jsonRPCAPI}/chains/main/blocks/${blockLevel}/helpers/baking_rights?cycle=${cycle}&delegate=${bakerAddress}${maxPriorityArg}`
     )
+
     return bakingRightsResult.data
   }
 
-  private static BAKING_REWARD_PER_BLOCK = 16000000
+  private static readonly BAKING_REWARD_PER_BLOCK = 16000000
   private async computeBakingRewards(bakingRights: TezosBakingRight[], is005: boolean, isFutureCycle: boolean): Promise<BigNumber> {
     let result = new BigNumber(0)
     if (is005) {
@@ -1649,6 +1659,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     } else {
       result = new BigNumber(bakingRights.length * TezosProtocol.BAKING_REWARD_PER_BLOCK)
     }
+
     return result
   }
 
@@ -1656,6 +1667,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     const endorsingRightsResult = await axios.get(
       `${this.jsonRPCAPI}/chains/main/blocks/${blockLevel}/helpers/endorsing_rights?cycle=${cycle}&delegate=${bakerAddress}`
     )
+
     return endorsingRightsResult.data
   }
 
@@ -1683,6 +1695,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       ]
     }
     const result = await axios.post(`${this.baseApiUrl}/v2/data/tezos/mainnet/operations`, query, { headers: this.headers })
+
     return result.data
   }
 
@@ -1711,16 +1724,18 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       ]
     }
     const result = await axios.post(`${this.baseApiUrl}/v2/data/tezos/mainnet/operations`, query, { headers: this.headers })
+
     return result.data
   }
 
-  private static ENDORSING_REWARD_PER_SLOT = 2000000
+  private static readonly ENDORSING_REWARD_PER_SLOT = 2000000
   private async computeEndorsingRewards(endorsingRights: TezosEndorsingRight[], isFutureCycle: boolean): Promise<BigNumber> {
     const levels = endorsingRights.map(er => er.level)
     let priorities: { priority: number; level: number }[] = []
     if (!isFutureCycle && levels.length > 0) {
       priorities = await this.fetchBlockPriorities(levels)
     }
+
     return endorsingRights.reduce((current, next) => {
       let priority = 0
       if (!isFutureCycle) {
@@ -1735,14 +1750,16 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
           ? new BigNumber(TezosProtocol.ENDORSING_REWARD_PER_SLOT)
           : new BigNumber(TezosProtocol.ENDORSING_REWARD_PER_SLOT).div(new BigNumber(priority))
       const reward: BigNumber = new BigNumber(next.slots.length).times(multiplier)
+
       return current.plus(reward)
     }, new BigNumber(0))
   }
 
-  private static BLOCKS_PER_CYCLE = 4096
-  private static SNAPSHOTS_PER_CYCLE = 256
+  private static readonly BLOCKS_PER_CYCLE = 4096
+  private static readonly SNAPSHOTS_PER_CYCLE = 256
   private async fetchBakerInfo(bakerAddress: string, blockLevel: number | 'head'): Promise<TezosBakerInfo> {
     const bakerInfoResult = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/${blockLevel}/context/delegates/${bakerAddress}`)
+
     return bakerInfoResult.data
   }
 
@@ -1758,6 +1775,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     const numberOfSnapshotsBeforeDelegationCycle = firstDelegationCycleBlocklLevel / TezosProtocol.SNAPSHOTS_PER_CYCLE
     const totalSnapshotNumber = numberOfSnapshotsBeforeDelegationCycle + snapshotNumber + 1
     const snapshotBlockLevel = totalSnapshotNumber * TezosProtocol.SNAPSHOTS_PER_CYCLE
+
     return snapshotBlockLevel
   }
 
@@ -1765,11 +1783,13 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     const result = await axios.get(
       `${this.jsonRPCAPI}/chains/main/blocks/${blockLevel}/context/delegates/${bakerAddress}/frozen_balance_by_cycle`
     )
+
     return result.data
   }
 
   private async fetchContractBalance(blockLevel: number | `head`, address: string): Promise<BigNumber> {
     const result = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/${blockLevel}/context/contracts/${address}/balance`)
+
     return new BigNumber(result.data)
   }
 

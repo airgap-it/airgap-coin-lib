@@ -87,6 +87,7 @@ export class CosmosNodeClient {
   public async fetchNodeInfo(): Promise<CosmosNodeInfo> {
     const response = await axios.get(this.url(`/node_info`))
     const nodeInfo = response.data as CosmosNodeInfo
+
     return nodeInfo
   }
 
@@ -96,12 +97,14 @@ export class CosmosNodeClient {
         'Content-type': 'application/json'
       }
     })
+
     return response.data.hash
   }
 
   public async fetchAccount(address: string): Promise<CosmosAccount> {
     const response = await axios.get(this.url(`/auth/accounts/${address}`))
     const account = response.data as CosmosAccount
+
     return account
   }
 
@@ -111,18 +114,21 @@ export class CosmosNodeClient {
       return []
     }
     const delegations = response.data as CosmosDelegation[]
+
     return delegations
   }
 
   public async fetchValidator(address: string): Promise<CosmosValidator> {
     const response = await axios.get(this.url(`/staking/validators/${address}`))
     const validator = response.data as CosmosValidator
+
     return validator
   }
 
   public async fetchValidators(): Promise<CosmosValidator[]> {
     const response = await axios.get(this.url('/staking/validators'))
     const validators = response.data as CosmosValidator[]
+
     return validators
   }
 
@@ -131,6 +137,7 @@ export class CosmosNodeClient {
     const operatorAddress = validatorInfo.data.operator_address
     const response = await axios.get(this.url(`/staking/delegators/${operatorAddress}/delegations/${validatorAddress}`))
     const delegation = response.data as CosmosDelegation
+
     return delegation
   }
 
@@ -140,6 +147,7 @@ export class CosmosNodeClient {
     if (totalRewards.length > 0) {
       return new BigNumber(totalRewards[0].amount)
     }
+
     return new BigNumber(0)
   }
 
@@ -149,6 +157,7 @@ export class CosmosNodeClient {
     if (totalRewards.length > 0) {
       return new BigNumber(totalRewards[0].amount)
     }
+
     return new BigNumber(0)
   }
 
@@ -165,10 +174,10 @@ export class CosmosNodeClient {
     const body = {
       base_req: {
         from: delegatorAddress,
-        memo: memo,
+        memo,
         chain_id: chainID,
         account_number: accountNumber,
-        sequence: sequence,
+        sequence,
         gas: gas.toFixed(),
         gas_adjustment: '1.2',
         fees: [
@@ -177,7 +186,7 @@ export class CosmosNodeClient {
             amount: fee.toFixed()
           }
         ],
-        simulate: simulate
+        simulate
       }
     }
     const response = await axios.post(this.url(`/distribution/delegators/${delegatorAddress}/rewards`), JSON.stringify(body), {
@@ -185,6 +194,7 @@ export class CosmosNodeClient {
         'Content-type': 'application/json'
       }
     })
+
     return response.data.hash
   }
 
@@ -202,10 +212,10 @@ export class CosmosNodeClient {
     const body = {
       base_req: {
         from: delegatorAddress,
-        memo: memo,
+        memo,
         chain_id: chainID,
         account_number: accountNumber,
-        sequence: sequence,
+        sequence,
         gas: gas.toFixed(),
         gas_adjustment: '1.2',
         fees: [
@@ -214,7 +224,7 @@ export class CosmosNodeClient {
             amount: fee.toFixed()
           }
         ],
-        simulate: simulate
+        simulate
       }
     }
     const response = await axios.post(
@@ -226,6 +236,7 @@ export class CosmosNodeClient {
         }
       }
     )
+
     return response.data.hash
   }
 
@@ -234,6 +245,7 @@ export class CosmosNodeClient {
     if (this.useCORSProxy) {
       result = `https://cors-proxy.airgap.prod.gke.papers.tech/proxy?url=${encodeURI(result)}`
     }
+
     return result
   }
 }

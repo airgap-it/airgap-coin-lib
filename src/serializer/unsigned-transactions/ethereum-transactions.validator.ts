@@ -62,6 +62,7 @@ export class EthereumTransactionValidator extends TransactionValidator {
   public validateUnsignedTransaction(unsignedTx: UnsignedEthereumTransaction): any {
     const rawTx: RawEthereumTransaction = unsignedTx.transaction
     validateSyncScheme({})
+
     return validate(rawTx, unsignedTransactionConstraints)
   }
   public validateSignedTransaction(signedTx: SignedEthereumTransaction): any {

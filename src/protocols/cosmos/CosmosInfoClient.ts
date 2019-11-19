@@ -5,7 +5,7 @@ import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 // tslint:disable:max-classes-per-file
 
 class TransactionListQuery {
-  constructor(private offset: number, private limit: number, private address: string) {}
+  constructor(private readonly offset: number, private readonly limit: number, private readonly address: string) {}
 
   public toRLPBody(): string {
     return JSON.stringify({

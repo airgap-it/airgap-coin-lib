@@ -1,5 +1,4 @@
 import axios, { AxiosResponse } from '../../../dependencies/src/axios-0.19.0/index'
-
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { RawTezosTransaction } from '../../../serializer/types'
 import { ICoinSubProtocol, SubProtocolType } from '../../ICoinSubProtocol'
@@ -52,6 +51,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     const ktAddresses: string[] = data.map((origination: { originated_contracts: string }) => {
       return origination.originated_contracts
     })
+
     return ktAddresses.reverse()
   }
 

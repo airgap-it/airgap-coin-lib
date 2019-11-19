@@ -265,7 +265,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
       const message = new CosmosSendMessage(address, recipients[i], [new CosmosCoin('uatom', wrappedValues[i].toString(10))])
       messages.push(message)
     }
-    const memo = data !== undefined && typeof data === 'string' ? (data as string) : ''
+    const memo = data !== undefined && typeof data === 'string' ? data : ''
     const transaction = new CosmosTransaction(
       messages,
       new CosmosFee([new CosmosCoin('uatom', wrappedFee.toString(10))], this.defaultGas.toString(10)),
