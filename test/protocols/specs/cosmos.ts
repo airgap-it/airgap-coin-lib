@@ -1,7 +1,10 @@
 import { CosmosProtocol, SignedCosmosTransaction } from '../../../src'
+import { CosmosSendMessage } from '../../../src/protocols/cosmos/cosmos-message/CosmosSendMessage'
+import { CosmosCoin } from '../../../src/protocols/cosmos/CosmosCoin'
+import { CosmosFee } from '../../../src/protocols/cosmos/CosmosFee'
+import { CosmosTransaction } from '../../../src/protocols/cosmos/CosmosTransaction'
 import { TestProtocolSpec } from '../implementations'
 import { CosmosProtocolStub } from '../stubs/cosmos.stub'
-import { CosmosFee, CosmosCoin, CosmosTransaction, CosmosSendMessage } from '../../../src/protocols/cosmos/CosmosTransaction'
 
 const cosmosMessage = new CosmosSendMessage(
   'cosmos1w3mea9ghfdc3r7ax45mehl2tcqw9p0vnlhl0p6',

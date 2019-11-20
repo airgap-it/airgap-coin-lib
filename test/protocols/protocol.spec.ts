@@ -183,8 +183,6 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
               expect(preparedTx).to.have.property(property)
             })
           }
-          console.log('prepared', preparedTx)
-          console.log('tx.unsignedTx', tx.unsignedTx)
           expect(preparedTx).to.deep.include(tx.unsignedTx)
         })
       })
@@ -322,8 +320,6 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
             airgapTx.from.sort().map(obj => obj.toLowerCase()),
             'to'
           ).to.deep.equal(tx.from.sort().map(obj => obj.toLowerCase()))
-
-          console.log(airgapTx)
 
           expect(airgapTx.amount).to.deep.equal(protocol.txs[0].amount)
           expect(airgapTx.fee).to.deep.equal(protocol.txs[0].fee)
