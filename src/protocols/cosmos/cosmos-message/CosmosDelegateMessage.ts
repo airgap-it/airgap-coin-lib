@@ -1,0 +1,71 @@
+import { CosmosMessage, CosmosMessageType, CosmosMessageJSON } from './CosmosMessage'
+import { IAirGapTransaction } from '../../..'
+import { CosmosCoin } from '../CosmosCoin'
+
+export class CosmosDelegateMessage implements CosmosMessage {
+  public readonly delegatorAddress: string
+  public readonly validatorAddress: string
+  public readonly amount: CosmosCoin
+
+  public readonly type: CosmosMessageType
+
+  constructor(delegatorAddress: string, validatorAddress: string, amount: CosmosCoin, undelegate: boolean = false) {
+    this.delegatorAddress = delegatorAddress
+    this.validatorAddress = validatorAddress
+    this.amount = amount
+    if (undelegate) {
+      this.type = CosmosMessageType.Undelegate
+    } else {
+      this.type = CosmosMessageType.Delegate
+    }
+  }
+
+  public toJSON(): CosmosMessageJSON {
+    return {
+      type: this.type.index,
+      amount: [this.amount.toJSON()],
+      fromAddress: this.delegatorAddress,
+      toAddress: this.validatorAddress
+    }
+  }
+
+  public static fromJSON(json: CosmosMessageJSON): CosmosDelegateMessage {
+    return new CosmosDelegateMessage(
+      json.fromAddress,
+      json.toAddress,
+      CosmosCoin.fromJSON(json.amount[0]),
+      json.type === CosmosMessageType.Undelegate.index
+    )
+  }
+
+  public toRPCBody(): any {
+    return {
+      type: this.type.value,
+      value: {
+        amount: this.amount.toRPCBody(),
+        delegator_address: this.delegatorAddress,
+        validator_address: this.validatorAddress
+      }
+    }
+  }
+
+  public toAirGapTransaction(identifier: string, fee: string): IAirGapTransaction {
+    return {
+      amount: this.amount.amount,
+      to: [this.delegatorAddress],
+      from: [this.validatorAddress],
+      isInbound: false,
+      fee,
+      protocolIdentifier: identifier
+    }
+  }
+
+  public static fromRPCBody(json: any): CosmosDelegateMessage {
+    return new CosmosDelegateMessage(
+      json.value.delegator_address,
+      json.value.validator_address,
+      CosmosCoin.fromRPCBody(json.value.amount),
+      json.type === CosmosMessageType.Undelegate.value
+    )
+  }
+}

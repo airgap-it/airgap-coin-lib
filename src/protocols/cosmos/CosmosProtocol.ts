@@ -14,15 +14,13 @@ import { NonExtendedProtocol } from '../NonExtendedProtocol'
 
 import { CosmosInfoClient } from './CosmosInfoClient'
 import { CosmosAccount, CosmosDelegation, CosmosNodeClient, CosmosNodeInfo, CosmosValidator } from './CosmosNodeClient'
-import {
-  CosmosCoin,
-  CosmosDelegateMessage,
-  CosmosFee,
-  CosmosMessageType,
-  CosmosSendMessage,
-  CosmosTransaction,
-  CosmosWithdrawDelegationRewardMessage
-} from './CosmosTransaction'
+import { CosmosTransaction } from './CosmosTransaction'
+import { CosmosMessageType } from './cosmos-message/CosmosMessage'
+import { CosmosSendMessage } from './cosmos-message/CosmosSendMessage'
+import { CosmosDelegateMessage } from './cosmos-message/CosmosDelegateMessage'
+import { CosmosWithdrawDelegationRewardMessage } from './cosmos-message/CosmosWithdrawDelegationRewardMessage'
+import { CosmosCoin } from './CosmosCoin'
+import { CosmosFee } from './CosmosFee'
 
 export interface KeyPair {
   publicKey: Buffer
