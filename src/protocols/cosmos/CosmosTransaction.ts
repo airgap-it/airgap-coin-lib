@@ -5,6 +5,7 @@ import { CosmosMessage, CosmosMessageType, CosmosMessageTypeIndex } from './cosm
 import { CosmosSendMessage } from './cosmos-message/CosmosSendMessage'
 import { CosmosDelegateMessage } from './cosmos-message/CosmosDelegateMessage'
 import { CosmosFee } from './CosmosFee'
+import { CosmosWithdrawDelegationRewardMessage } from './cosmos-message/CosmosWithdrawDelegationRewardMessage'
 
 export interface JSONConvertible {
   toJSON(): any
@@ -67,6 +68,8 @@ export class CosmosTransaction implements JSONConvertible, RPCConvertible {
           return CosmosSendMessage.fromJSON(value)
         case CosmosMessageType.Delegate.index || CosmosMessageType.Undelegate.index:
           return CosmosDelegateMessage.fromJSON(value)
+        case CosmosMessageType.WithdrawDelegationReward.index:
+          return CosmosWithdrawDelegationRewardMessage.fromJSON(value)
         default:
           throw new Error('Unknown message')
       }
@@ -90,6 +93,8 @@ export class CosmosTransaction implements JSONConvertible, RPCConvertible {
           return CosmosSendMessage.fromRPCBody(value)
         case CosmosMessageType.Delegate.value || CosmosMessageType.Undelegate.value:
           return CosmosDelegateMessage.fromRPCBody(value)
+        case CosmosMessageType.WithdrawDelegationReward.value:
+          return CosmosWithdrawDelegationRewardMessage.fromRPCBody(value)
         default:
           throw new Error('Unknown message')
       }
