@@ -47,7 +47,7 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
   public addressValidationPattern: string = '^ak_+[1-9A-Za-z]{49,50}$'
   public addressPlaceholder: string = 'ak_abc...'
 
-  public blockExplorer: string = 'https://explorer.aepps.com'
+  public blockExplorer: string = 'https://mainnet.aeternal.io'
 
   // ae specifics
   public defaultNetworkId: string = 'ae_mainnet'
@@ -59,11 +59,11 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
   }
 
   public getBlockExplorerLinkForAddress(address: string): string {
-    return `${this.blockExplorer}/#/account/{{address}}/`.replace('{{address}}', address)
+    return `${this.blockExplorer}/account/transactions/{{address}}/`.replace('{{address}}', address)
   }
 
   public getBlockExplorerLinkForTxId(txId: string): string {
-    return `${this.blockExplorer}/#/tx/{{txId}}/`.replace('{{txId}}', txId)
+    return `${this.blockExplorer}/transactions/{{txId}}/`.replace('{{txId}}', txId)
   }
 
   /**
