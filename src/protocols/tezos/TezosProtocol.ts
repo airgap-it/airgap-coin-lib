@@ -132,7 +132,12 @@ export interface DelegationInfo {
 
 // 8.25%
 const SELF_BOND_REQUIREMENT: number = 0.0825
-const BLOCK_PER_CYCLE: number = 4096
+
+export enum TezosNetwork {
+  MAINNET = 'mainnet',
+  BABYLONNET = 'babylonnet',
+  CARTHAGENET = 'carthagenet'
+}
 
 export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol {
   public symbol: string = 'XTZ'
@@ -200,7 +205,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     branch: Buffer.from(new Uint8Array([1, 52]))
   }
 
-  protected readonly headers = { 'Content-Type': 'application/json', apiKey: 'airgap00391' }
+  protected readonly headers = { 'Content-Type': 'application/json', apiKey: 'airgap123' }
 
   /**
    * Tezos Implemention of ICoinProtocol
@@ -209,9 +214,15 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
    */
   constructor(
     public jsonRPCAPI = 'https://tezos-node.prod.gke.papers.tech',
-    public baseApiUrl = 'https://conseil-prod.cryptonomic-infra.tech'
+    public baseApiUrl = 'https://tezos-mainnet-conseil-1.kubernetes.papers.tech',
+    public network = TezosNetwork.MAINNET,
+    private baseApiNetwork: string = network,
+    apiKey?: string
   ) {
     super()
+    if (apiKey !== undefined) {
+      this.headers.apiKey = apiKey
+    }
   }
 
   public getBlockExplorerLinkForAddress(address: string): string {
@@ -295,14 +306,14 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         }
         return new Promise<any>(async (resolve, reject) => {
           const fromPromise = axios
-            .post(`${this.baseApiUrl}/v2/data/tezos/mainnet/operations`, getRequestBody('source', 'transaction'), {
+            .post(`${this.baseApiUrl}/v2/data/tezos/${this.baseApiNetwork}/operations`, getRequestBody('source', 'transaction'), {
               headers: this.headers
             })
             .catch(() => {
               return { data: [] }
             })
           const toPromise = axios
-            .post(`${this.baseApiUrl}/v2/data/tezos/mainnet/operations`, getRequestBody('destination', 'transaction'), {
+            .post(`${this.baseApiUrl}/v2/data/tezos/${this.baseApiNetwork}/operations`, getRequestBody('destination', 'transaction'), {
               headers: this.headers
             })
             .catch(() => {
@@ -576,7 +587,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
       // We first try to get the data from the lastest delegation
       // After that try to get it from the origination
-      const transactionSourceUrl = `${this.baseApiUrl}/v2/data/tezos/mainnet/operations`
+      const transactionSourceUrl = `${this.baseApiUrl}/v2/data/tezos/${this.baseApiNetwork}/operations`
       const results = await Promise.all([
         axios
           .post(transactionSourceUrl, getRequestBody('source', 'delegation'), {
@@ -667,19 +678,22 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     const lastConfirmedCycle: number = frozenBalance[0].cycle - 1
     const mostRecentCycle: number = frozenBalance[frozenBalance.length - 1].cycle
 
-    const { data: mostRecentBlock } = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/${mostRecentCycle * BLOCK_PER_CYCLE}`)
+    const { data: mostRecentBlock } = await axios.get(
+      `${this.jsonRPCAPI}/chains/main/blocks/${mostRecentCycle * TezosProtocol.BLOCKS_PER_CYCLE[this.network]}`
+    )
     const timestamp: Date = new Date(mostRecentBlock.header.timestamp)
 
     const delegationInfo: DelegationRewardInfo[] = await Promise.all(
       frozenBalance.map(async obj => {
         const { data: delegatedBalanceAtCycle } = await axios.get(
-          `${this.jsonRPCAPI}/chains/main/blocks/${(obj.cycle - 6) * BLOCK_PER_CYCLE}/context/contracts/${
+          `${this.jsonRPCAPI}/chains/main/blocks/${(obj.cycle - 6) * TezosProtocol.BLOCKS_PER_CYCLE[this.network]}/context/contracts/${
             delegatorAddress ? delegatorAddress : bakerAddress
           }/balance`
         )
 
         const { data: stakingBalanceAtCycle } = await axios.get(
-          `${this.jsonRPCAPI}/chains/main/blocks/${(obj.cycle - 6) * BLOCK_PER_CYCLE}/context/delegates/${bakerAddress}/staking_balance`
+          `${this.jsonRPCAPI}/chains/main/blocks/${(obj.cycle - 6) *
+            TezosProtocol.BLOCKS_PER_CYCLE[this.network]}/context/delegates/${bakerAddress}/staking_balance`
         )
 
         return {
@@ -690,7 +704,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
           delegatedBalance: new BigNumber(delegatedBalanceAtCycle),
           stakingBalance: new BigNumber(stakingBalanceAtCycle),
           reward: new BigNumber(obj.rewards).plus(obj.fees).multipliedBy(new BigNumber(delegatedBalanceAtCycle).div(stakingBalanceAtCycle)),
-          payout: new Date(timestamp.getTime() + (obj.cycle - lastConfirmedCycle) * BLOCK_PER_CYCLE * 60 * 1000)
+          payout: new Date(
+            timestamp.getTime() + (obj.cycle - lastConfirmedCycle) * TezosProtocol.BLOCKS_PER_CYCLE[this.network] * 60 * 1000
+          )
         }
       })
     )
@@ -1463,7 +1479,11 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     let totalRewards = '0'
     if (cycle < currentCycle) {
       // baking rewards
-      const bakingRights: TezosBakingRight[] = await this.fetchBakingRights(bakerAddress, cycle * TezosProtocol.BLOCKS_PER_CYCLE, cycle)
+      const bakingRights: TezosBakingRight[] = await this.fetchBakingRights(
+        bakerAddress,
+        cycle * TezosProtocol.BLOCKS_PER_CYCLE[this.network],
+        cycle
+      )
       const blockLevels = bakingRights.map(br => br.level)
       if (blockLevels.length > 0) {
         const blockBakers = await this.fetchBlockBakers(blockLevels)
@@ -1478,17 +1498,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       }
 
       // endorsing rewards
-      const endorsingRights = await this.fetchEndorsingRights(bakerAddress, cycle * TezosProtocol.BLOCKS_PER_CYCLE, cycle)
       const endorsingOperations = await this.fetchEndorsementOperations(cycle, bakerAddress)
-      const filteredEndorsingRights = endorsingRights.filter(async endorsingRight => {
-        const found = endorsingOperations.find(operation => {
-          return operation.delegate === bakerAddress
-        })
-        return found !== undefined
-      })
-      computedEndorsingRewards = (await this.computeEndorsingRewards(filteredEndorsingRights, false)).toFixed()
+      computedEndorsingRewards = (await this.computeEndorsingRewards(endorsingOperations, false)).toFixed()
 
-      const frozenBalance = (await this.fetchFrozenBalances((cycle + 1) * TezosProtocol.BLOCKS_PER_CYCLE, bakerAddress)).find(
+      const frozenBalance = (await this.fetchFrozenBalances((cycle + 1) * TezosProtocol.BLOCKS_PER_CYCLE[this.network], bakerAddress)).find(
         fb => fb.cycle == cycle
       )
       if (frozenBalance) {
@@ -1499,9 +1512,13 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       if (cycle - currentCycle > 4) {
         throw new Error('Provided cycle is invalid')
       }
-      const bakingRights = await this.fetchBakingRights(bakerAddress, currentCycle * TezosProtocol.BLOCKS_PER_CYCLE, cycle, 1)
+      const bakingRights = await this.fetchBakingRights(bakerAddress, currentCycle * TezosProtocol.BLOCKS_PER_CYCLE[this.network], cycle, 1)
       computedBakingRewards = (await this.computeBakingRewards(bakingRights, is005, true)).toFixed()
-      const endorsingRights = await this.fetchEndorsingRights(bakerAddress, currentCycle * TezosProtocol.BLOCKS_PER_CYCLE, cycle)
+      const endorsingRights = await this.fetchEndorsingRights(
+        bakerAddress,
+        currentCycle * TezosProtocol.BLOCKS_PER_CYCLE[this.network],
+        cycle
+      )
       computedEndorsingRewards = (await this.computeEndorsingRewards(endorsingRights, true)).toFixed()
       totalRewards = new BigNumber(computedBakingRewards).plus(new BigNumber(computedEndorsingRewards)).toFixed()
       const frozenBalances = await this.fetchFrozenBalances('head', bakerAddress)
@@ -1537,17 +1554,17 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   ): Promise<{ delegator: string; share: string; payout: string }[]> {
     const result: { delegator: string; share: string; payout: string }[] = []
     const totalRewardsBN = new BigNumber(rewards.totalRewards).plus(new BigNumber(rewards.fees))
-    const limitIndex = offset + limit
-    for (let i = offset; i < limitIndex && i < rewards.delegatedContracts.length; i++) {
-      const delegator = rewards.delegatedContracts[i]
-      let balance = await this.fetchContractBalance(rewards.snapshotBlockLevel, delegator)
-      if (balance === undefined) {
-        balance = new BigNumber(0)
+    const delegators = rewards.delegatedContracts.slice(offset, Math.min(offset + limit, rewards.delegatedContracts.length))
+    const balances = await this.fetchBalances(delegators, rewards.snapshotBlockLevel)
+    for (const balance of balances) {
+      let amount = balance.balance
+      if (amount === undefined) {
+        amount = new BigNumber(0)
       }
-      const share = balance.div(rewards.stakingBalance)
+      const share = amount.div(rewards.stakingBalance)
       const payoutAmount = totalRewardsBN.multipliedBy(share)
       result.push({
-        delegator: delegator,
+        delegator: balance.address,
         share: share.toFixed(),
         payout: payoutAmount.toFixed()
       })
@@ -1572,7 +1589,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         }
       ]
     }
-    const result = await axios.post(`${this.baseApiUrl}/v2/data/tezos/mainnet/blocks`, query, { headers: this.headers })
+    const result = await axios.post(`${this.baseApiUrl}/v2/data/tezos/${this.baseApiNetwork}/blocks`, query, { headers: this.headers })
     return result.data
   }
 
@@ -1588,7 +1605,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         }
       ]
     }
-    const result = await axios.post(`${this.baseApiUrl}/v2/data/tezos/mainnet/blocks`, query, { headers: this.headers })
+    const result = await axios.post(`${this.baseApiUrl}/v2/data/tezos/${this.baseApiNetwork}/blocks`, query, { headers: this.headers })
     return result.data
   }
 
@@ -1640,12 +1657,18 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     const endorsingRightsResult = await axios.get(
       `${this.jsonRPCAPI}/chains/main/blocks/${blockLevel}/helpers/endorsing_rights?cycle=${cycle}&delegate=${bakerAddress}`
     )
-    return endorsingRightsResult.data
+    return endorsingRightsResult.data.map(endorsingRight => {
+      return {
+        level: endorsingRight.level,
+        delegate: endorsingRight.delegate,
+        number_of_slots: endorsingRight.slots.length
+      }
+    })
   }
 
-  private async fetchEndorsementOperations(cycle: number, bakerAddress: string): Promise<{ level: number; delegate: string }[]> {
+  private async fetchEndorsementOperations(cycle: number, bakerAddress: string): Promise<TezosEndorsingRight[]> {
     const query = {
-      fields: ['level', 'delegate'],
+      fields: ['level', 'delegate', 'number_of_slots'],
       predicates: [
         {
           field: 'kind',
@@ -1666,7 +1689,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         }
       ]
     }
-    const result = await axios.post(`${this.baseApiUrl}/v2/data/tezos/mainnet/operations`, query, { headers: this.headers })
+    const result = await axios.post(`${this.baseApiUrl}/v2/data/tezos/${this.baseApiNetwork}/operations`, query, { headers: this.headers })
     return result.data
   }
 
@@ -1694,7 +1717,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         }
       ]
     }
-    const result = await axios.post(`${this.baseApiUrl}/v2/data/tezos/mainnet/operations`, query, { headers: this.headers })
+    const result = await axios.post(`${this.baseApiUrl}/v2/data/tezos/${this.baseApiNetwork}/operations`, query, { headers: this.headers })
     return result.data
   }
 
@@ -1718,12 +1741,16 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         priority === 0
           ? new BigNumber(TezosProtocol.ENDORSING_REWARD_PER_SLOT)
           : new BigNumber(TezosProtocol.ENDORSING_REWARD_PER_SLOT).div(new BigNumber(priority))
-      const reward: BigNumber = new BigNumber(next.slots.length).times(multiplier)
+      const reward: BigNumber = new BigNumber(next.number_of_slots).times(multiplier)
       return current.plus(reward)
     }, new BigNumber(0))
   }
 
-  private static BLOCKS_PER_CYCLE = 4096
+  private static BLOCKS_PER_CYCLE = {
+    mainnet: 4096,
+    babylonnet: 2048,
+    carthagenet: 2048
+  }
   private static SNAPSHOTS_PER_CYCLE = 256
   private async fetchBakerInfo(bakerAddress: string, blockLevel: number | 'head'): Promise<TezosBakerInfo> {
     const bakerInfoResult = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/${blockLevel}/context/delegates/${bakerAddress}`)
@@ -1731,14 +1758,14 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   }
 
   private async computeSnapshotBlockLevel(cycle: number, blockLevel?: number | 'head'): Promise<number> {
-    const level = blockLevel === undefined ? cycle * TezosProtocol.BLOCKS_PER_CYCLE : blockLevel
+    const level = blockLevel === undefined ? cycle * TezosProtocol.BLOCKS_PER_CYCLE[this.network] : blockLevel
     const snapshotNumberResult = await axios.get(
       `${this.jsonRPCAPI}/chains/main/blocks/${level}/context/raw/json/rolls/owner/snapshot/${cycle}`,
       { timeout: 60000 }
     )
     const snapshotNumber: number = snapshotNumberResult.data[0]
     const delegationCycle = cycle - 7
-    const firstDelegationCycleBlocklLevel = delegationCycle * TezosProtocol.BLOCKS_PER_CYCLE
+    const firstDelegationCycleBlocklLevel = delegationCycle * TezosProtocol.BLOCKS_PER_CYCLE[this.network]
     const numberOfSnapshotsBeforeDelegationCycle = firstDelegationCycleBlocklLevel / TezosProtocol.SNAPSHOTS_PER_CYCLE
     const totalSnapshotNumber = numberOfSnapshotsBeforeDelegationCycle + snapshotNumber + 1
     const snapshotBlockLevel = totalSnapshotNumber * TezosProtocol.SNAPSHOTS_PER_CYCLE
@@ -1752,9 +1779,30 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     return result.data
   }
 
-  private async fetchContractBalance(blockLevel: number | `head`, address: string): Promise<BigNumber> {
-    const result = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/${blockLevel}/context/contracts/${address}/balance`)
-    return new BigNumber(result.data)
+  private async fetchBalances(addresses: string[], blockLevel: number): Promise<{ address: string; balance: BigNumber }[]> {
+    const body = {
+      fields: ['account_id', 'balance'],
+      predicates: [
+        {
+          field: 'account_id',
+          operation: 'in',
+          set: addresses
+        }
+      ],
+      snapshot: {
+        field: 'block_level',
+        value: blockLevel
+      }
+    }
+    const result = await axios.post(`${this.baseApiUrl}/v2/data/tezos/${this.baseApiNetwork}/accounts_history`, body, {
+      headers: this.headers
+    })
+    return result.data.map(account => {
+      return {
+        address: account.account_id,
+        balance: new BigNumber(account.balance)
+      }
+    })
   }
 }
 
@@ -1767,7 +1815,7 @@ interface TezosBakingRight {
 interface TezosEndorsingRight {
   level: number
   delegate: string
-  slots: number[]
+  number_of_slots: number
 }
 
 export interface TezosRewards {
