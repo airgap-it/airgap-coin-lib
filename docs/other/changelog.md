@@ -1,3 +1,9 @@
+### 0.5.14 (2019-11-21)
+
+### Features
+
+- **xtz**: now using new conseil api for rewards calculation
+
 ### 0.5.14 (2019-10-25)
 
 ### Features
