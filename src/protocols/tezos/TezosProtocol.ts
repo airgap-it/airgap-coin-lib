@@ -135,7 +135,8 @@ const SELF_BOND_REQUIREMENT: number = 0.0825
 
 export enum TezosNetwork {
   MAINNET = 'mainnet',
-  BABYLONNET = 'babylonnet'
+  BABYLONNET = 'babylonnet',
+  CARTHAGENET = 'carthagenet'
 }
 
 export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol {
@@ -204,7 +205,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     branch: Buffer.from(new Uint8Array([1, 52]))
   }
 
-  protected readonly headers = { 'Content-Type': 'application/json', apiKey: 'airgap00391' }
+  protected readonly headers = { 'Content-Type': 'application/json', apiKey: 'airgap123' }
 
   /**
    * Tezos Implemention of ICoinProtocol
@@ -213,8 +214,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
    */
   constructor(
     public jsonRPCAPI = 'https://tezos-node.prod.gke.papers.tech',
-    public baseApiUrl = 'https://conseil-prod.cryptonomic-infra.tech',
-    public network = TezosNetwork.MAINNET
+    public baseApiUrl = 'https://tezos-mainnet-conseil-1.kubernetes.papers.tech',
+    public network = TezosNetwork.MAINNET,
+    private baseApiNetwork: string = network
   ) {
     super()
   }
@@ -300,14 +302,14 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         }
         return new Promise<any>(async (resolve, reject) => {
           const fromPromise = axios
-            .post(`${this.baseApiUrl}/v2/data/tezos/${this.network}/operations`, getRequestBody('source', 'transaction'), {
+            .post(`${this.baseApiUrl}/v2/data/tezos/${this.baseApiNetwork}/operations`, getRequestBody('source', 'transaction'), {
               headers: this.headers
             })
             .catch(() => {
               return { data: [] }
             })
           const toPromise = axios
-            .post(`${this.baseApiUrl}/v2/data/tezos/${this.network}/operations`, getRequestBody('destination', 'transaction'), {
+            .post(`${this.baseApiUrl}/v2/data/tezos/${this.baseApiNetwork}/operations`, getRequestBody('destination', 'transaction'), {
               headers: this.headers
             })
             .catch(() => {
@@ -581,7 +583,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
       // We first try to get the data from the lastest delegation
       // After that try to get it from the origination
-      const transactionSourceUrl = `${this.baseApiUrl}/v2/data/tezos/${this.network}/operations`
+      const transactionSourceUrl = `${this.baseApiUrl}/v2/data/tezos/${this.baseApiNetwork}/operations`
       const results = await Promise.all([
         axios
           .post(transactionSourceUrl, getRequestBody('source', 'delegation'), {
@@ -1583,7 +1585,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         }
       ]
     }
-    const result = await axios.post(`${this.baseApiUrl}/v2/data/tezos/${this.network}/blocks`, query, { headers: this.headers })
+    const result = await axios.post(`${this.baseApiUrl}/v2/data/tezos/${this.baseApiNetwork}/blocks`, query, { headers: this.headers })
     return result.data
   }
 
@@ -1599,7 +1601,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         }
       ]
     }
-    const result = await axios.post(`${this.baseApiUrl}/v2/data/tezos/${this.network}/blocks`, query, { headers: this.headers })
+    const result = await axios.post(`${this.baseApiUrl}/v2/data/tezos/${this.baseApiNetwork}/blocks`, query, { headers: this.headers })
     return result.data
   }
 
@@ -1683,7 +1685,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         }
       ]
     }
-    const result = await axios.post(`${this.baseApiUrl}/v2/data/tezos/${this.network}/operations`, query, { headers: this.headers })
+    const result = await axios.post(`${this.baseApiUrl}/v2/data/tezos/${this.baseApiNetwork}/operations`, query, { headers: this.headers })
     return result.data
   }
 
@@ -1711,7 +1713,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         }
       ]
     }
-    const result = await axios.post(`${this.baseApiUrl}/v2/data/tezos/${this.network}/operations`, query, { headers: this.headers })
+    const result = await axios.post(`${this.baseApiUrl}/v2/data/tezos/${this.baseApiNetwork}/operations`, query, { headers: this.headers })
     return result.data
   }
 
@@ -1742,7 +1744,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
   private static BLOCKS_PER_CYCLE = {
     mainnet: 4096,
-    babylonnet: 2048
+    babylonnet: 2048,
+    carthagenet: 2048
   }
   private static SNAPSHOTS_PER_CYCLE = 256
   private async fetchBakerInfo(bakerAddress: string, blockLevel: number | 'head'): Promise<TezosBakerInfo> {
@@ -1787,7 +1790,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         value: blockLevel
       }
     }
-    const result = await axios.post(`${this.baseApiUrl}/v2/data/tezos/${this.network}/accounts_history`, body, { headers: this.headers })
+    const result = await axios.post(`${this.baseApiUrl}/v2/data/tezos/${this.baseApiNetwork}/accounts_history`, body, {
+      headers: this.headers
+    })
     return result.data.map(account => {
       return {
         address: account.account_id,
