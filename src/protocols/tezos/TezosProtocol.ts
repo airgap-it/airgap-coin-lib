@@ -216,9 +216,13 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     public jsonRPCAPI = 'https://tezos-node.prod.gke.papers.tech',
     public baseApiUrl = 'https://tezos-mainnet-conseil-1.kubernetes.papers.tech',
     public network = TezosNetwork.MAINNET,
-    private baseApiNetwork: string = network
+    private baseApiNetwork: string = network,
+    apiKey?: string
   ) {
     super()
+    if (apiKey !== undefined) {
+      this.headers.apiKey = apiKey
+    }
   }
 
   public getBlockExplorerLinkForAddress(address: string): string {
