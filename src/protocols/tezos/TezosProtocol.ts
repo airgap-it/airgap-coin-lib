@@ -1472,7 +1472,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   private static FIRST_005_CYCLE: number = 160
   public async calculateRewards(bakerAddress: string, cycle: number): Promise<TezosRewards> {
     const currentCycle: number = await this.fetchCurrentCycle()
-    const is005 = cycle >= TezosProtocol.FIRST_005_CYCLE
+    const is005 = this.network !== TezosNetwork.MAINNET || cycle >= TezosProtocol.FIRST_005_CYCLE
     let computedBakingRewards = '0'
     let computedEndorsingRewards = '0'
     let fees = '0'
@@ -1627,7 +1627,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     let result = new BigNumber(0)
     if (is005) {
       const levels = bakingRights.map(br => br.level)
-      let endrosementCounts: { level: number; count_kind: string }[] = []
+      let endrosementCounts: { block_level: number; count_kind: string }[] = []
       if (!isFutureCycle) {
         endrosementCounts = await this.fetchEndorsementOperationCount(levels)
       }
@@ -1635,7 +1635,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         // (16 / (priority + 1)) * (0.8 + (0.2 * (e / 32)))
         let count = 32
         if (!isFutureCycle) {
-          const endorsementCount = endrosementCounts.find(op => op.level === next.level)
+          const endorsementCount = endrosementCounts.find(op => op.block_level === next.level)
           if (endorsementCount === undefined) {
             throw new Error('Cannot find endorsement operation count')
           }
@@ -1693,9 +1693,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     return result.data
   }
 
-  private async fetchEndorsementOperationCount(blockLevels: number[]): Promise<{ count_kind: string; level: number }[]> {
+  private async fetchEndorsementOperationCount(blockLevels: number[]): Promise<{ count_kind: string; block_level: number }[]> {
     const query = {
-      fields: ['level', 'kind'],
+      fields: ['block_level', 'kind'],
       predicates: [
         {
           field: 'kind',
@@ -1704,7 +1704,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
           inverse: false
         },
         {
-          field: 'level',
+          field: 'block_level',
           operation: 'in',
           set: blockLevels,
           inverse: false
