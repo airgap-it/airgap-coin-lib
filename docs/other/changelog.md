@@ -1,3 +1,9 @@
+### 0.5.17 (2019-11-24)
+
+### Features
+
+- **xtz**: improved rewards calculation performance
+
 ### 0.5.16 (2019-11-22)
 
 ### Features
