@@ -1485,11 +1485,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       return { staking_balance: '0', delegated_contracts: [] }
     })
     const stakingBalance = new BigNumber(bakerInfo.staking_balance)
-    console.log(
-      'Computed total rewards',
-      new BigNumber(computedRewards.bakingRewards).plus(new BigNumber(computedRewards.endorsingRewards)).toFixed()
-    )
-    console.log('Retrieved total rewards', computedRewards.totalRewards)
+
     return {
       baker: bakerAddress,
       stakingBalance: stakingBalance.toFixed(),
