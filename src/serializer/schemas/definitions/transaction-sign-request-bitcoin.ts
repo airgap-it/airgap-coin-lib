@@ -12,6 +12,7 @@ interface IOutTransaction {
   recipient: string
   isChange: boolean
   value: string
+  derivationPath?: string
 }
 
 interface RawBitcoinTransaction {

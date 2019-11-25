@@ -48,6 +48,9 @@
               "items": {
                 "additionalProperties": false,
                 "properties": {
+                  "derivationPath": {
+                    "type": "string"
+                  },
                   "isChange": {
                     "type": "boolean"
                   },
