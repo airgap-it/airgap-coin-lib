@@ -57,7 +57,19 @@ export class CosmosTransaction implements JSONConvertible, RPCConvertible {
   public toAirGapTransactions(identifier: string): IAirGapTransaction[] {
     const fee = this.fee.amount.map(value => new BigNumber(value.amount)).reduce((prev, next) => prev.plus(next))
 
-    return this.messages.map(message => message.toAirGapTransaction(identifier, fee.toString(10)))
+    return this.messages
+      .map((message: CosmosMessage) => message.toAirGapTransaction(identifier, fee.toString(10)))
+      .map((tx: IAirGapTransaction) => {
+        if (!tx.transactionDetails) {
+          tx.transactionDetails = {}
+        }
+        tx.transactionDetails.accountNumber = this.accountNumber
+        tx.transactionDetails.chainID = this.chainID
+        tx.transactionDetails.memo = this.memo
+        tx.transactionDetails.sequence = this.sequence
+
+        return tx
+      })
   }
 
   public static fromJSON(json: SerializableUnsignedCosmosTransaction): CosmosTransaction {

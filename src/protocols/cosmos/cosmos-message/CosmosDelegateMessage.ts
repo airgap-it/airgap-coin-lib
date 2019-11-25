@@ -56,7 +56,8 @@ export class CosmosDelegateMessage implements CosmosMessage {
       from: [this.validatorAddress],
       isInbound: false,
       fee,
-      protocolIdentifier: identifier
+      protocolIdentifier: identifier,
+      transactionDetails: this.toRPCBody()
     }
   }
 

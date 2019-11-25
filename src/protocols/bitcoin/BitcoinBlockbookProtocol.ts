@@ -284,7 +284,8 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
           .toString(10),
         fee: feeCalculator.toString(10),
         protocolIdentifier: this.identifier,
-        isInbound: false
+        isInbound: false,
+        transactionDetails: unsignedTx.transaction
       }
     ]
   }
@@ -296,7 +297,8 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
       amount: signedTx.amount,
       fee: signedTx.fee,
       protocolIdentifier: this.identifier,
-      isInbound: false
+      isInbound: false,
+      transactionDetails: signedTx.transaction
     }
 
     const bitcoinTx = this.bitcoinJSLib.Transaction.fromHex(signedTx.transaction)

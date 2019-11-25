@@ -12,15 +12,15 @@ import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
 import { ICoinSubProtocol } from '../ICoinSubProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
 
-import { CosmosInfoClient } from './CosmosInfoClient'
-import { CosmosAccount, CosmosDelegation, CosmosNodeClient, CosmosNodeInfo, CosmosValidator } from './CosmosNodeClient'
-import { CosmosTransaction } from './CosmosTransaction'
+import { CosmosDelegateMessage } from './cosmos-message/CosmosDelegateMessage'
 import { CosmosMessageType } from './cosmos-message/CosmosMessage'
 import { CosmosSendMessage } from './cosmos-message/CosmosSendMessage'
-import { CosmosDelegateMessage } from './cosmos-message/CosmosDelegateMessage'
 import { CosmosWithdrawDelegationRewardMessage } from './cosmos-message/CosmosWithdrawDelegationRewardMessage'
 import { CosmosCoin } from './CosmosCoin'
 import { CosmosFee } from './CosmosFee'
+import { CosmosInfoClient } from './CosmosInfoClient'
+import { CosmosAccount, CosmosDelegation, CosmosNodeClient, CosmosNodeInfo, CosmosValidator } from './CosmosNodeClient'
+import { CosmosTransaction } from './CosmosTransaction'
 
 export interface KeyPair {
   publicKey: Buffer
@@ -191,26 +191,38 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
       .map(({ amount }: { amount: string }) => new BigNumber(amount))
       .reduce((current: BigNumber, next: BigNumber) => current.plus(next))
       .toString(10)
-    const result = json.msg.map(message => {
-      const type: string = message.type
-      switch (type) {
-        case CosmosMessageType.Send.value:
-          const sendMessage = CosmosSendMessage.fromRPCBody(message)
+    const result = json.msg
+      .map(message => {
+        const type: string = message.type
+        switch (type) {
+          case CosmosMessageType.Send.value:
+            const sendMessage = CosmosSendMessage.fromRPCBody(message)
 
-          return sendMessage.toAirGapTransaction(this.identifier, fee)
-        case CosmosMessageType.Undelegate.value:
-        case CosmosMessageType.Delegate.value:
-          const delegateMessage = CosmosDelegateMessage.fromRPCBody(message)
+            return sendMessage.toAirGapTransaction(this.identifier, fee)
+          case CosmosMessageType.Undelegate.value:
+          case CosmosMessageType.Delegate.value:
+            const delegateMessage = CosmosDelegateMessage.fromRPCBody(message)
 
-          return delegateMessage.toAirGapTransaction(this.identifier, fee)
-        case CosmosMessageType.WithdrawDelegationReward.value:
-          const withdrawMessage = CosmosWithdrawDelegationRewardMessage.fromRPCBody(message)
+            return delegateMessage.toAirGapTransaction(this.identifier, fee)
+          case CosmosMessageType.WithdrawDelegationReward.value:
+            const withdrawMessage = CosmosWithdrawDelegationRewardMessage.fromRPCBody(message)
 
-          return withdrawMessage.toAirGapTransaction(this.identifier, fee)
-        default:
-          throw Error('Unknown transaction')
-      }
-    })
+            return withdrawMessage.toAirGapTransaction(this.identifier, fee)
+          default:
+            throw Error('Unknown transaction')
+        }
+      })
+      .map((tx: IAirGapTransaction) => {
+        if (!tx.transactionDetails) {
+          tx.transactionDetails = {}
+        }
+        tx.transactionDetails.accountNumber = json.accountNumber
+        tx.transactionDetails.chainID = json.chainID
+        tx.transactionDetails.memo = json.memo
+        tx.transactionDetails.sequence = json.sequence
+
+        return tx
+      })
 
     return result
   }

@@ -290,6 +290,8 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
           expect(airgapTx.fee, 'fee does not match').to.deep.equal(protocol.txs[0].fee)
 
           expect(airgapTx.protocolIdentifier, 'protocol-identifier does not match').to.equal(protocol.lib.identifier)
+
+          expect(airgapTx.transactionDetails, 'extras should exist').to.not.be.undefined
         }
       })
 
@@ -325,6 +327,8 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
           expect(airgapTx.fee).to.deep.equal(protocol.txs[0].fee)
 
           expect(airgapTx.protocolIdentifier).to.equal(protocol.lib.identifier)
+
+          expect(airgapTx.transactionDetails, 'extras should exist').to.not.be.undefined
         }
       })
 

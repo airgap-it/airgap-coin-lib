@@ -54,7 +54,8 @@ export class CosmosSendMessage implements CosmosMessage {
       from: [this.fromAddress],
       isInbound: false,
       fee,
-      protocolIdentifier: identifier
+      protocolIdentifier: identifier,
+      transactionDetails: this.toRPCBody()
     }
   }
 

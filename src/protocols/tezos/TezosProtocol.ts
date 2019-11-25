@@ -405,7 +405,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         from: [tezosOperation.source],
         isInbound: false,
         protocolIdentifier: this.identifier,
-        to
+        to,
+        transactionDetails: tezosOperation
       }
 
       airGapTxs.push(airgapTx)

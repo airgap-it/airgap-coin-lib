@@ -12,5 +12,6 @@ export interface IAirGapTransaction {
   blockHeight?: string
   data?: string
 
-  meta?: {}
+  extra?: any
+  transactionDetails?: any
 }

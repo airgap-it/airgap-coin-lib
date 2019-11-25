@@ -198,7 +198,8 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
       isInbound: false,
       protocolIdentifier: this.identifier,
       to: [await this.getAddressFromPublicKey(rlpDecodedTx[3].slice(1).toString('hex'))],
-      data: (rlpDecodedTx[8] || '').toString('utf8')
+      data: (rlpDecodedTx[8] || '').toString('utf8'),
+      transactionDetails: unsignedTx.transaction
     }
 
     return [airgapTx]

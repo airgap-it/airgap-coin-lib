@@ -18,7 +18,8 @@ export class CosmosWithdrawDelegationRewardMessage implements CosmosMessage {
       amount: '0',
       isInbound: false,
       fee,
-      protocolIdentifier: identifier
+      protocolIdentifier: identifier,
+      transactionDetails: this.toRPCBody()
     }
   }
 
