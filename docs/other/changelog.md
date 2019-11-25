@@ -1,9 +1,31 @@
-### 0.6.0 (2019-10-23)
+### 0.6.0 (2019-11-25)
+
+### Breaking Changes
+
+- **BigNumber:** remove `BigNumber` type in all public APIs. Now, all methods will take `strings` and return `strings` instead of `BigNumber`s. 
+- **serializer:** a new serializer has been added (the old one is still accessible but the imports paths are different). The old one will be removed in the next version.
+- **getTransactionDetails and getTransactionDetailsFromSigned:** now return an array of `IAirGapTransaction`s
 
 ### Features
 
-- **all**: multi transaction support
-- **cosmos**: add support for cosmos / atom
+- **serializer:** chunked messages (paged qr) support
+- **all:** multi transaction support
+- **cosmos:** add support for cosmos / atom
+- **xtz:** add multi operation support
+- **ae:** use aeternal.io block explorer
+
+### Internals
+
+- **typescript:** upgrade typescript from `3.5.3` to `3.7.2`
+- **dependencies:** remove `tweetnacl` dependency and use `libsodium`
+- **dependencies:** remove `web3`
+- **dependencies:** remove `abi-decoder`
+- **dependencies:** all dependencies (except for libsodium) are now included in the coinlib. The source code gets pulled directly from github (the actual source code, not the compiled npm package) and is shipped with the coinlib to prevent malicious code from being included.
+- **dependencies:** split up "test" and "build" dependencies
+
+### Bug Fixes
+
+- **xtz:** wait for `libsodium` to be ready inside the coinlib
 
 ### 0.5.14 (2019-10-25)
 
