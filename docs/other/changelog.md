@@ -5,6 +5,7 @@
 - **BigNumber:** remove `BigNumber` type in all public APIs. Now, all methods will take `strings` and return `strings` instead of `BigNumber`s. 
 - **serializer:** a new serializer has been added (the old one is still accessible but the imports paths are different). The old one will be removed in the next version.
 - **getTransactionDetails and getTransactionDetailsFromSigned:** now return an array of `IAirGapTransaction`s
+- **IAirGapTransaction:** `meta` property renamed to `extras`
 
 ### Features
 
@@ -13,6 +14,7 @@
 - **cosmos:** add support for cosmos / atom
 - **xtz:** add multi operation support
 - **ae:** use aeternal.io block explorer
+- **IAirGapTransaction:** added a new property called `transactionDetails` that contains more details about the transaction (which is different per protocol)
 
 ### Internals
 
