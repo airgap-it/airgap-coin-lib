@@ -1,6 +1,6 @@
 {
   "name": "airgap-coin-lib",
-  "version": "0.6.0-beta.22",
+  "version": "0.6.0-beta.23",
   "description": "The airgap-coin-lib is setup in a way that prepare, signing and broadcasting are willingfully separated.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
