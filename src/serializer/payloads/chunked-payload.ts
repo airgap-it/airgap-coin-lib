@@ -46,18 +46,14 @@ export class ChunkedPayload implements Payload {
 
   constructor(type: PayloadType, object: PayloadTypeReturnType[PayloadType]) {
     if (type === PayloadType.DECODED) {
-      console.log('ChunkedPayload constructor - DECODED PAYLOAD')
       if (!isDecodedChunkedPayload(object)) {
-        console.log('obj test', object)
         throw new Error('UNEXPECTED TYPE OF PAYLOAD IN CHUNKED PAYLOAD CONSTRUCTOR')
       }
       this.currentPage = object.currentPage
       this.total = object.total
       this.buffer = object.payload
     } else if (type === PayloadType.ENCODED) {
-      console.log('ChunkedPayload constructor - ENCODED PAYLOAD')
       if (!isBufferArray(object)) {
-        console.log('obj test', object)
         throw new Error('UNEXPECTED TYPE OF PAYLOAD IN CHUNKED PAYLOAD CONSTRUCTOR')
       }
       if (object.length !== 3) {
@@ -74,8 +70,6 @@ export class ChunkedPayload implements Payload {
       assertNever(type)
       throw new Error('UNKNOWN PAYLOAD TYPE')
     }
-
-    console.log(`ChunkedPayload constructor - Page: ${this.currentPage}/${this.total}, Buffer: ${this.buffer}`)
   }
 
   public asArray(): RLPData {

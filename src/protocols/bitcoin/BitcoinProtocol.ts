@@ -131,24 +131,29 @@ export class BitcoinProtocol implements ICoinProtocol {
     )
   }
 
-  public signWithPrivateKey(privateKey: Buffer, transaction: RawBitcoinTransaction): Promise<IAirGapSignedTransaction> {
-    return new Promise((resolve, reject) => {
-      const transactionBuilder = new this.bitcoinJSLib.TransactionBuilder(this.network)
+  public async signWithPrivateKey(privateKey: Buffer, transaction: RawBitcoinTransaction): Promise<IAirGapSignedTransaction> {
+    const transactionBuilder = new this.bitcoinJSLib.TransactionBuilder(this.network)
 
-      for (const input of transaction.ins) {
-        transactionBuilder.addInput(input.txId, input.vout)
+    for (const input of transaction.ins) {
+      transactionBuilder.addInput(input.txId, input.vout)
+    }
+
+    for (const output of transaction.outs) {
+      if (output.isChange) {
+        const generatedChangeAddress: string = await this.getAddressFromPublicKey(privateKey.toString('hex'))
+        if (generatedChangeAddress !== output.recipient) {
+          throw new Error('Change address could not be verified.')
+        }
       }
 
-      for (const output of transaction.outs) {
-        transactionBuilder.addOutput(output.recipient, new BigNumber(output.value).toNumber())
-      }
+      transactionBuilder.addOutput(output.recipient, new BigNumber(output.value).toNumber())
+    }
 
-      for (let i = 0; i < transaction.ins.length; i++) {
-        transactionBuilder.sign(i, privateKey)
-      }
+    for (let i = 0; i < transaction.ins.length; i++) {
+      transactionBuilder.sign(i, privateKey)
+    }
 
-      resolve(transactionBuilder.build().toHex())
-    })
+    return transactionBuilder.build().toHex()
   }
 
   public async signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: RawBitcoinTransaction): Promise<string> {
@@ -165,11 +170,21 @@ export class BitcoinProtocol implements ICoinProtocol {
     for (const output of transaction.outs) {
       let changeAddressIsValid: boolean = false
       if (output.isChange) {
-        for (let x = 0; x < changeAddressMaxAddresses; x += changeAddressBatchSize) {
-          const addresses: string[] = await this.getAddressesFromExtendedPublicKey(extendedPrivateKey, 1, changeAddressBatchSize, x)
-          if (addresses.indexOf(output.recipient) >= 0) {
-            changeAddressIsValid = true
-            x = changeAddressMaxAddresses
+        if (output.derivationPath) {
+          const generatedChangeAddress: string[] = await this.getAddressesFromExtendedPublicKey(
+            extendedPrivateKey,
+            1,
+            1,
+            parseInt(output.derivationPath, 10)
+          )
+          changeAddressIsValid = generatedChangeAddress.includes(output.recipient)
+        } else {
+          for (let x = 0; x < changeAddressMaxAddresses; x += changeAddressBatchSize) {
+            const addresses: string[] = await this.getAddressesFromExtendedPublicKey(extendedPrivateKey, 1, changeAddressBatchSize, x)
+            if (addresses.indexOf(output.recipient) >= 0) {
+              changeAddressIsValid = true
+              x = changeAddressMaxAddresses
+            }
           }
         }
         if (!changeAddressIsValid) {
@@ -357,7 +372,8 @@ export class BitcoinProtocol implements ICoinProtocol {
       transaction.outs.push({
         recipient: recipients[i],
         isChange: false,
-        value: wrappedValues[i].toString(10)
+        value: wrappedValues[i].toString(10),
+        derivationPath: '' // TODO: Remove this as soon as our serializer supports optional properties
       })
       valueAccumulator = valueAccumulator.minus(wrappedValues[i])
       // tx.addOutput(recipients[i], values[i])
@@ -381,10 +397,12 @@ export class BitcoinProtocol implements ICoinProtocol {
     // We set a low fee here to not block any transactions, but it might still fail due to "dust".
     const changeValue: BigNumber = valueAccumulator.minus(wrappedFee)
     if (changeValue.isGreaterThan(new BigNumber(DUST_AMOUNT))) {
+      const internalAddressIndex: number = Math.min(maxIndex + 1, internalAddresses.length - 1)
       transaction.outs.push({
-        recipient: internalAddresses[Math.min(maxIndex + 1, internalAddresses.length - 1)],
+        recipient: internalAddresses[internalAddressIndex],
         isChange: true,
-        value: changeValue.toString(10)
+        value: changeValue.toString(10),
+        derivationPath: (internalAddressIndex + offset).toString()
       })
     }
     // tx.addOutput(internalAddresses[maxIndex + 1], valueAccumulator - fee) //this is why we sliced the arrays earlier

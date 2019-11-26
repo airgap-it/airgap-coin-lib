@@ -56,11 +56,13 @@ export class GroestlcoinProtocolSpec extends TestProtocolSpec {
         ],
         outs: [
           {
+            derivationPath: '',
             recipient: 'FkPxwoFcgf16MpYka596GK3HV4SSiAPanR',
             isChange: false,
             value: '60000000'
           },
           {
+            derivationPath: '0',
             recipient: 'FkVmovQbcun3fZ34AnettSSKfxCWtsAvhA',
             isChange: true,
             value: '39998000'

@@ -38,11 +38,13 @@ export class BitcoinTestProtocolSpec extends TestProtocolSpec {
         ],
         outs: [
           {
+            derivationPath: '',
             recipient: 'mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k',
             isChange: false,
             value: '10'
           },
           {
+            derivationPath: '100',
             recipient: 'mm3JNWeMUnFtGCqxphh4RAgXSAnhNz6LV5',
             isChange: true,
             value: '64973000'
