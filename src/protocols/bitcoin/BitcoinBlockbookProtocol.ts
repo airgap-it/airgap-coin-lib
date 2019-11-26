@@ -216,8 +216,6 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
         const generatedChangeAddress: string = await this.getAddressFromPublicKey(privateKey.toString('hex'))
         if (generatedChangeAddress !== output.recipient) {
           throw new Error('Change address could not be verified.')
-        } else {
-          console.log('OK')
         }
       }
 
