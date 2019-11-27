@@ -78,7 +78,8 @@ export class CosmosTransaction implements JSONConvertible, RPCConvertible {
       switch (type) {
         case CosmosMessageType.Send.index:
           return CosmosSendMessage.fromJSON(value)
-        case CosmosMessageType.Delegate.index || CosmosMessageType.Undelegate.index:
+        case CosmosMessageType.Delegate.index:
+        case CosmosMessageType.Undelegate.index:
           return CosmosDelegateMessage.fromJSON(value)
         case CosmosMessageType.WithdrawDelegationReward.index:
           return CosmosWithdrawDelegationRewardMessage.fromJSON(value)
@@ -103,7 +104,8 @@ export class CosmosTransaction implements JSONConvertible, RPCConvertible {
       switch (type) {
         case CosmosMessageType.Send.value:
           return CosmosSendMessage.fromRPCBody(value)
-        case CosmosMessageType.Delegate.value || CosmosMessageType.Undelegate.value:
+        case CosmosMessageType.Delegate.value:
+        case CosmosMessageType.Undelegate.value:
           return CosmosDelegateMessage.fromRPCBody(value)
         case CosmosMessageType.WithdrawDelegationReward.value:
           return CosmosWithdrawDelegationRewardMessage.fromRPCBody(value)
