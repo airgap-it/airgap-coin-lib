@@ -55,7 +55,7 @@ qa:
       -Dsonar.typescript.tslint.reportPaths=lintReport.json
       -Dsonar.test.inclusions=**/*.spec.ts
       -Dsonar.tests=src/
-      -Dsonar.exclusions=**/node_modules/**,**/*.spec.ts
+      -Dsonar.exclusions=**/node_modules/**,**/*.spec.ts,src/dependencies/**
       -Dsonar.sources=src/
       -Dsonar.host.url=$SONAR_URL
       -Dsonar.login=$SONAR_LOGIN
