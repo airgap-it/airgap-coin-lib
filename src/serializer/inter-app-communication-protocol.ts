@@ -10,6 +10,10 @@ import { IACPayloadType } from './serializer'
 export type IACProtocolVersion = number
 export type IACProtocolType = [IACProtocolVersion, IACPayloadType, Payload]
 
+function sortByPage(a: ChunkedPayload, b: ChunkedPayload): number {
+  return a.currentPage - b.currentPage
+}
+
 // IACProtocolMessage instead of IACProtocol?
 export class IACProtocol {
   public readonly version: number = 2
@@ -80,7 +84,7 @@ export class IACProtocol {
     // make sure that all are the same type
     let globalType: string | undefined
     data.forEach((entry: string) => {
-      const decoded: Buffer[] = rlp.decode(bs58check.decode(entry)) as any // Will be fixed with new rlp version
+      const decoded: Buffer[] = rlp.decode(bs58check.decode(entry))
       // const version: string = decoded[0].toString()
       const type: string = decoded[1].toString()
 
@@ -93,7 +97,6 @@ export class IACProtocol {
 
       if (type === '0') {
         // full
-        // res.push(new Message(payload as any, {}, '', ''))
         finalPayload = new FullPayload(PayloadType.ENCODED, payload)
       } else if (type === '1') {
         // chunked
@@ -104,10 +107,10 @@ export class IACProtocol {
     })
 
     if (!finalPayload) {
-      const sortedChunks = chunked.sort((a: ChunkedPayload, b: ChunkedPayload) => a.currentPage - b.currentPage)
+      const sortedChunks: ChunkedPayload[] = chunked.sort(sortByPage)
       const arr: Buffer[] = sortedChunks.map((chunk: ChunkedPayload) => chunk.buffer)
 
-      const result = {
+      const result: { availablePages: number[]; totalPages: number } = {
         availablePages: sortedChunks.map(a => a.currentPage),
         totalPages: sortedChunks[0].total
       }

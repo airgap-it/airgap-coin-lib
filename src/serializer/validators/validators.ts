@@ -121,7 +121,7 @@ validators.isValidBitcoinInput = (ins: unknown) => {
     return 'not an array'
   }
 
-  for (let i = 0; i < ins.length; i++) {
+  for (let i: number = 0; i < ins.length; i++) {
     const value = ins[i]
     if (!value.hasOwnProperty('txId')) {
       return 'doesn\'t have property txId '
@@ -167,8 +167,6 @@ validators.isValidBitcoinInput = (ins: unknown) => {
         return 'invalid derivation path'
       }
     }
-
-    return null
   }
 
   return null
@@ -183,7 +181,7 @@ validators.isValidBitcoinOutput = (outs: unknown) => {
     return 'not an array'
   }
 
-  for (let i = 0; i < outs.length; i++) {
+  for (let i: number = 0; i < outs.length; i++) {
     const value = outs[i]
     if (!value.hasOwnProperty('recipient')) {
       return 'doesn\'t have property recipient'
@@ -207,8 +205,6 @@ validators.isValidBitcoinOutput = (outs: unknown) => {
         return 'value is not BigNumber'
       }
     }
-
-    return null
   }
 
   return null
