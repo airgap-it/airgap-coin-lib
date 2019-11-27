@@ -23,11 +23,11 @@ export interface CosmosDelegateActionResult {
 }
 
 export class CosmosDelegateAction<Context extends CosmosDelegateActionContext> extends Action<CosmosDelegateActionResult, Context> {
-  public readonly identifier = 'cosmos-delegate-action'
+  public readonly identifier: string = 'cosmos-delegate-action'
 
   protected async perform(): Promise<CosmosDelegateActionResult> {
-    const protocol = new CosmosProtocol()
-    const transaction = await protocol.delegate(
+    const protocol: CosmosProtocol = new CosmosProtocol()
+    const transaction: CosmosTransaction = await protocol.delegate(
       this.context.wallet.publicKey,
       this.context.validatorAddress,
       this.context.amount,
@@ -54,7 +54,9 @@ export class CosmosDelegateAction<Context extends CosmosDelegateActionContext> e
         publicKey: this.context.wallet.publicKey,
         transaction
       })
-    } catch {}
+    } catch {
+      //
+    }
 
     return {
       rawTx: transaction,

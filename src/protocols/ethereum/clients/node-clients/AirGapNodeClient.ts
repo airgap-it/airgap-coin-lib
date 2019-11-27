@@ -6,9 +6,9 @@ import { EthereumUtils } from '../../utils/utils'
 import { EthereumNodeClient } from './NodeClient'
 
 class EthereumRPCBody implements RPCConvertible {
-  public static blockEarliest = 'earliest'
-  public static blockLatest = 'latest'
-  public static blockPending = 'pending'
+  public static blockEarliest: string = 'earliest'
+  public static blockLatest: string = 'latest'
+  public static blockPending: string = 'pending'
 
   public jsonrpc: string
   public method: string
@@ -107,9 +107,9 @@ export class EthereumRPCDataTransfer extends EthereumRPCData {
       }
       const params = data.slice(methodID.length)
       const recipient = EthereumRPCData.removeLeadingZeroPadding(params.slice(0, EthereumRPCData.parametersLength))
-      const amount = EthereumRPCData.removeLeadingZeroPadding(params.slice(EthereumRPCData.parametersLength))
+      const parsedAmount = EthereumRPCData.removeLeadingZeroPadding(params.slice(EthereumRPCData.parametersLength))
       this.recipient = `0x${recipient}`
-      this.amount = `0x${amount}`
+      this.amount = `0x${parsedAmount}`
     }
   }
 

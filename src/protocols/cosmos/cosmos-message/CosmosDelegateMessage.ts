@@ -1,6 +1,7 @@
-import { CosmosMessage, CosmosMessageType, CosmosMessageJSON } from './CosmosMessage'
 import { IAirGapTransaction } from '../../..'
 import { CosmosCoin } from '../CosmosCoin'
+
+import { CosmosMessage, CosmosMessageJSON, CosmosMessageType } from './CosmosMessage'
 
 export class CosmosDelegateMessage implements CosmosMessage {
   public readonly delegatorAddress: string
@@ -13,11 +14,7 @@ export class CosmosDelegateMessage implements CosmosMessage {
     this.delegatorAddress = delegatorAddress
     this.validatorAddress = validatorAddress
     this.amount = amount
-    if (undelegate) {
-      this.type = CosmosMessageType.Undelegate
-    } else {
-      this.type = CosmosMessageType.Delegate
-    }
+    this.type = undelegate ? CosmosMessageType.Undelegate : CosmosMessageType.Delegate
   }
 
   public toJSON(): CosmosMessageJSON {

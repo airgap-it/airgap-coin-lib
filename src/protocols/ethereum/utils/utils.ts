@@ -9,7 +9,7 @@ const createKeccakHash = require('../../../dependencies/src/keccak-1.0.2/js')
 export class EthereumUtils {
   public static toHex(value: any): string {
     if (EthereumUtils.isAddress(value)) {
-      return '0x' + value.toLowerCase().replace(/^0x/i, '')
+      return `0x${value.toLowerCase().replace(/^0x/i, '')}`
     }
 
     if (typeof value === 'boolean') {
@@ -35,16 +35,17 @@ export class EthereumUtils {
   }
 
   private static readonly SHA3_NULL_S: string = '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
+
   public static sha3(value: any): string | null {
+    let valueInBytes: string | number[] = value
     if (EthereumUtils.isHexStrict(value) && /^0x/i.test(value.toString())) {
-      value = EthereumUtils.hexToBytes(value)
+      valueInBytes = EthereumUtils.hexToBytes(value)
     }
 
-    const returnValue: string =
-      '0x' +
-      createKeccakHash('keccak256')
-        .update(value)
-        .digest('hex')
+    const hash: string = createKeccakHash('keccak256')
+      .update(valueInBytes)
+      .digest('hex')
+    const returnValue: string = `0x${hash}`
 
     if (returnValue === EthereumUtils.SHA3_NULL_S) {
       return null
@@ -59,23 +60,21 @@ export class EthereumUtils {
     }
 
     if (!isFinite(Number(value)) && !EthereumUtils.isHexStrict(value)) {
-      throw new Error('Given input "' + value + '" is not a number.')
+      throw new Error(`Given input "${value}" is not a number.`)
     }
 
     // var number = EthereumUtils.toBN(value)
-    const number = new BigNumber(value)
-    const result = number.toString(16)
+    const myNumber: BigNumber = new BigNumber(value)
+    const result: string = myNumber.toString(16)
 
-    return number.lt(new BigNumber(0)) ? '-0x' + result.substr(1) : '0x' + result
+    return myNumber.lt(new BigNumber(0)) ? `-0x${result.substr(1)}` : `0x${result}`
   }
 
-  private static hexToBytes(hex: string | number): number[] {
-    if (typeof hex === 'number') {
-      hex = hex.toString(16)
-    }
+  private static hexToBytes(value: string | number): number[] {
+    let hex: string = typeof value === 'number' ? value.toString(16) : value
 
     if (!EthereumUtils.isHexStrict(hex)) {
-      throw new Error('Given value "' + hex + '" is not a valid hex string.')
+      throw new Error(`Given value "${hex}" is not a valid hex string.`)
     }
 
     hex = hex.replace(/^0x/i, '')
@@ -88,13 +87,13 @@ export class EthereumUtils {
     return bytes
   }
 
-  private static isHexStrict(hex: any): boolean {
+  private static isHexStrict(hex: unknown): boolean {
     return (typeof hex === 'string' || typeof hex === 'number') && /^(-)?0x[0-9a-f]*$/i.test(hex.toString())
   }
 
-  private static checkAddressChecksum(address: string) {
-    address = address.replace(/^0x/i, '')
-    let addressHash = EthereumUtils.sha3(address.toLowerCase())
+  private static checkAddressChecksum(value: string): boolean {
+    const address: string = value.replace(/^0x/i, '')
+    let addressHash: string | null = EthereumUtils.sha3(address.toLowerCase())
 
     if (addressHash === null) {
       return false
@@ -102,7 +101,7 @@ export class EthereumUtils {
 
     addressHash = addressHash.replace(/^0x/i, '')
 
-    for (let i = 0; i < 40; i++) {
+    for (let i: number = 0; i < 40; i++) {
       if (
         (parseInt(addressHash[i], 16) > 7 && address[i].toUpperCase() !== address[i]) ||
         (parseInt(addressHash[i], 16) <= 7 && address[i].toLowerCase() !== address[i])
@@ -126,13 +125,13 @@ export class EthereumUtils {
     }
   }
 
-  private static isBigNumber(value: any): boolean {
-    return value && value.constructor && value.constructor.name === 'BigNumber'
+  private static isBigNumber(value: unknown): boolean {
+    return value && BigNumber.isBigNumber(value)
   }
 
   private static utf8ToHex(value: string): string {
-    let str = utf8.encode(value)
-    let hex = ''
+    let str: string = utf8.encode(value)
+    let hex: string = ''
 
     // remove \u0000 padding from either side
     str = str.replace(/^(?:\u0000)*/, '')
@@ -147,16 +146,16 @@ export class EthereumUtils {
       .join('')
 
     for (let i = 0; i < str.length; i++) {
-      const code = str.charCodeAt(i)
-      const n = code.toString(16)
-      hex += n.length < 2 ? '0' + n : n
+      const code: number = str.charCodeAt(i)
+      const n: string = code.toString(16)
+      hex += n.length < 2 ? `0${n}` : n
     }
 
-    return '0x' + hex
+    return `0x${hex}`
   }
 
-  private static isObject(value: any): boolean {
-    const type = typeof value
+  private static isObject(value: unknown): boolean {
+    const type: string = typeof value
 
     return type === 'function' || (type === 'object' && !!value)
   }
