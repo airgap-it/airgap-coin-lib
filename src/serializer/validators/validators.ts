@@ -41,7 +41,7 @@ validators.type = (value, options, key, attributes) => {
 }
 
 validators.type.checks = {
-  Object(value) {
+  Object(value: unknown) {
     return isObject(value) && !isArray(value)
   },
   Array: isArray,
@@ -49,15 +49,15 @@ validators.type.checks = {
   Number: isNumber,
   String: isString,
   Date: isDate,
-  Boolean(value) {
+  Boolean(value: unknown) {
     return typeof value === 'boolean'
   },
-  BigNumber(value) {
+  BigNumber(value: unknown) {
     return BigNumber.isBigNumber(value)
   }
 }
 
-validators.isHexStringWithPrefix = value => {
+validators.isHexStringWithPrefix = (value: unknown) => {
   if (typeof value !== 'string') {
     return 'is not hex string'
   }
@@ -74,7 +74,7 @@ validators.isHexStringWithPrefix = value => {
   return /[0-9A-F]/gi.test(hexWithoutPrefix) ? null : 'is not hex string'
 }
 
-validators.isPublicKey = value => {
+validators.isPublicKey = (value: unknown) => {
   if (typeof value !== 'string') {
     return 'is not a valid public key: should be of type string'
   }
@@ -113,7 +113,7 @@ validators.isValidEthereumTransactionString = (transaction: string) => {
 
 // BITCOIN
 
-validators.isValidBitcoinInput = ins => {
+validators.isValidBitcoinInput = (ins: unknown) => {
   // if (!Array.isArray(ins)) {
   //   ins = [ins]
   // }
@@ -170,7 +170,7 @@ validators.isValidBitcoinInput = ins => {
   return null
 }
 
-validators.isValidBitcoinOutput = outs => {
+validators.isValidBitcoinOutput = (outs: unknown) => {
   // console.log(outs)
   // if (!Array.isArray(outs)) {
   //   outs = [outs]
@@ -206,7 +206,7 @@ validators.isValidBitcoinOutput = outs => {
   return null
 }
 
-validators.isValidBitcoinFromArray = array => {
+validators.isValidBitcoinFromArray = (array: unknown) => {
   if (!Array.isArray(array)) {
     return 'not an array of Bitcoin addresses'
   }
@@ -255,7 +255,7 @@ validators.isValidBitcoinTxString = (transaction: string) => {
 
 // AETERNITY
 
-validators.isMainNet = value => {
+validators.isMainNet = (value: unknown) => {
   // allow empty values by default (needs to be checked by "presence" check)
   if (value === null || typeof value === 'undefined') {
     return null
@@ -267,7 +267,7 @@ validators.isMainNet = value => {
   return null
 }
 
-validators.isValidAeternityTx = transaction => {
+validators.isValidAeternityTx = (transaction: unknown) => {
   // allow empty values by default (needs to be checked by "presence" check)
   if (transaction === null || typeof transaction === 'undefined') {
     return null
@@ -353,7 +353,7 @@ validators.isValidTezosSignedTransaction = (signedTransaction: string) => {
   })
 }
 
-export async function validateSyncScheme(syncScheme) {
+export async function validateSyncScheme(syncScheme: unknown) {
   const constraints = {
     version: {
       presence: { allowEmpty: false },
