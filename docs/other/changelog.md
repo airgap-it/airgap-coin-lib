@@ -29,6 +29,24 @@
 
 - **xtz:** wait for `libsodium` to be ready inside the coinlib
 
+### 0.5.17 (2019-11-24)
+
+### Features
+
+- **xtz**: improved rewards calculation performance
+
+### 0.5.16 (2019-11-22)
+
+### Features
+
+- **xtz**: now using new conseil api for rewards calculation
+
+### 0.5.15 (2019-11-21)
+
+### Features
+
+- **xtz**: use new conseil api endpoint
+
 ### 0.5.14 (2019-10-25)
 
 ### Features

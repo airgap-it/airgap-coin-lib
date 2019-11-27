@@ -117,6 +117,10 @@ validators.isValidBitcoinInput = (ins: unknown) => {
   // if (!Array.isArray(ins)) {
   //   ins = [ins]
   // }
+  if (!Array.isArray(ins)) {
+    return 'not an array'
+  }
+
   for (let i = 0; i < ins.length; i++) {
     const value = ins[i]
     if (!value.hasOwnProperty('txId')) {
@@ -175,6 +179,10 @@ validators.isValidBitcoinOutput = (outs: unknown) => {
   // if (!Array.isArray(outs)) {
   //   outs = [outs]
   // }
+  if (!Array.isArray(outs)) {
+    return 'not an array'
+  }
+
   for (let i = 0; i < outs.length; i++) {
     const value = outs[i]
     if (!value.hasOwnProperty('recipient')) {
@@ -275,14 +283,16 @@ validators.isValidAeternityTx = (transaction: unknown) => {
 
   if (typeof transaction === 'string' && !transaction.startsWith('tx_')) {
     return 'invalid tx format'
-  }
+  } else if (typeof transaction === 'string') {
+    try {
+      bs64check.decode(transaction.replace('tx_', ''))
 
-  try {
-    bs64check.decode(transaction.replace('tx_', ''))
-
-    return null
-  } catch (error) {
-    return "isn't base64 encoded"
+      return null
+    } catch (error) {
+      return "isn't base64 encoded"
+    }
+  } else {
+    return "isn't a string"
   }
 }
 
