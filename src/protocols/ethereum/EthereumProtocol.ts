@@ -1,13 +1,13 @@
 import { BaseEthereumProtocol } from './BaseEthereumProtocol'
-import { TrustWalletInfoClient } from './clients/info-clients/InfoClient'
+import { EtherscanInfoClient } from './clients/info-clients/EtherscanInfoClient'
 import { AirGapNodeClient } from './clients/node-clients/AirGapNodeClient'
 
-export class EthereumProtocol extends BaseEthereumProtocol<AirGapNodeClient, TrustWalletInfoClient> {
+export class EthereumProtocol extends BaseEthereumProtocol<AirGapNodeClient, EtherscanInfoClient> {
   constructor() {
     super({
       chainID: 1,
       nodeClient: new AirGapNodeClient(),
-      infoClient: new TrustWalletInfoClient()
+      infoClient: new EtherscanInfoClient()
     })
   }
 }

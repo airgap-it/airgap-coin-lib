@@ -8,7 +8,7 @@ import { SignedEthereumTransaction } from '../../../serializer/schemas/definitio
 import { RawEthereumTransaction } from '../../../serializer/types'
 import { ICoinSubProtocol, SubProtocolType } from '../../ICoinSubProtocol'
 import { BaseEthereumProtocol } from '../BaseEthereumProtocol'
-import { TrustWalletInfoClient } from '../clients/info-clients/InfoClient'
+import { EtherscanInfoClient } from '../clients/info-clients/EtherscanInfoClient'
 import { AirGapNodeClient, EthereumRPCDataTransfer } from '../clients/node-clients/AirGapNodeClient'
 import { EthereumUtils } from '../utils/utils'
 
@@ -26,7 +26,7 @@ export interface GenericERC20Configuration {
   chainId?: number
 }
 
-export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, TrustWalletInfoClient> implements ICoinSubProtocol {
+export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, EtherscanInfoClient> implements ICoinSubProtocol {
   public isSubProtocol: boolean = true
   public subProtocolType: SubProtocolType = SubProtocolType.TOKEN
   public readonly contractAddress: string
@@ -36,7 +36,7 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, TrustWa
     super({
       chainID: config.chainId || 1,
       nodeClient: new AirGapNodeClient(config.jsonRPCAPI),
-      infoClient: new TrustWalletInfoClient(config.infoAPI)
+      infoClient: new EtherscanInfoClient(config.infoAPI)
     })
     this.contractAddress = config.contractAddress
     this.symbol = config.symbol
