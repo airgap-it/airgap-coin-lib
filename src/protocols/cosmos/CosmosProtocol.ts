@@ -231,8 +231,8 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
     }
 
     return (
-      await Promise.all(promises).then(balances => {
-        return balances.reduce((current, next) => {
+      await Promise.all(promises).then((balances: BigNumber[]) => {
+        return balances.reduce((current: BigNumber, next: BigNumber) => {
           return current.plus(next)
         })
       })
@@ -248,7 +248,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
     recipients: string[],
     values: string[],
     fee: string,
-    data?: any
+    data?: unknown
   ): Promise<CosmosTransaction> {
     const wrappedValues: BigNumber[] = values.map((value: string) => new BigNumber(value))
     const wrappedFee: BigNumber = new BigNumber(fee)
@@ -263,17 +263,19 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
 
     const balance: BigNumber = new BigNumber(await this.getBalanceOfAddresses([address]))
 
-    if (balance.lt(values.reduce((pv, cv) => pv.plus(cv), wrappedFee))) {
+    if (balance.lt(values.reduce((pv: BigNumber, cv: string) => pv.plus(cv), wrappedFee))) {
       throw new Error('not enough balance')
     }
 
     const messages: CosmosSendMessage[] = []
     for (let i: number = 0; i < recipients.length; ++i) {
-      const message = new CosmosSendMessage(address, recipients[i], [new CosmosCoin('uatom', wrappedValues[i].toString(10))])
+      const message: CosmosSendMessage = new CosmosSendMessage(address, recipients[i], [
+        new CosmosCoin('uatom', wrappedValues[i].toString(10))
+      ])
       messages.push(message)
     }
-    const memo = data !== undefined && typeof data === 'string' ? data : ''
-    const transaction = new CosmosTransaction(
+    const memo: string = data !== undefined && typeof data === 'string' ? data : ''
+    const transaction: CosmosTransaction = new CosmosTransaction(
       messages,
       new CosmosFee([new CosmosCoin('uatom', wrappedFee.toString(10))], this.defaultGas.toString(10)),
       memo,
@@ -315,10 +317,12 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
     )
   }
   public async withdrawDelegationRewards(publicKey: string, validatorAddresses: string[], memo?: string): Promise<CosmosTransaction> {
-    const address = await this.getAddressFromPublicKey(publicKey)
-    const nodeInfo = await this.nodeClient.fetchNodeInfo()
-    const account = await this.nodeClient.fetchAccount(address)
-    const messages = validatorAddresses.map(validatorAddress => new CosmosWithdrawDelegationRewardMessage(address, validatorAddress))
+    const address: string = await this.getAddressFromPublicKey(publicKey)
+    const nodeInfo: CosmosNodeInfo = await this.nodeClient.fetchNodeInfo()
+    const account: CosmosAccount = await this.nodeClient.fetchAccount(address)
+    const messages: CosmosWithdrawDelegationRewardMessage[] = validatorAddresses.map(
+      (validatorAddress: string) => new CosmosWithdrawDelegationRewardMessage(address, validatorAddress)
+    )
 
     return new CosmosTransaction(
       messages,

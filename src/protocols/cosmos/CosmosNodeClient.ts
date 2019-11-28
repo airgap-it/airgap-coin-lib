@@ -72,30 +72,8 @@ export interface CosmosValidatorCommission {
 }
 
 export interface CosmosBroadcastSignedTransactionResponse {
-  check_tx: CheckTx
-  deliver_tx: DeliverTx
-  hash: string
+  txhash: string
   height: number
-}
-
-interface CheckTx {
-  code: number
-  data: string
-  log: string
-  gas_used: number
-  gas_wanted: number
-  info: string
-  tags: string[]
-}
-
-interface DeliverTx {
-  code: number
-  data: string
-  log: string
-  gas_used: number
-  gas_wanted: number
-  info: string
-  tags: string[]
 }
 
 export class CosmosNodeClient {
@@ -125,7 +103,7 @@ export class CosmosNodeClient {
       }
     })
 
-    return response.data.hash
+    return response.data.txhash
   }
 
   public async fetchAccount(address: string): Promise<CosmosAccount> {
