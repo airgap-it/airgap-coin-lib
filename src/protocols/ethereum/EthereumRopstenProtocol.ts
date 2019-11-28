@@ -8,7 +8,7 @@ export class EthereumRopstenProtocol extends BaseEthereumProtocol<AirGapNodeClie
     super({
       chainID: 3,
       nodeClient: new AirGapNodeClient('https://ropsten.infura.io'),
-      infoClient: new EtherscanInfoClient('https://ropsten.trustwalletapp.com')
+      infoClient: new EtherscanInfoClient('https://api-ropsten.etherscan.io/')
     })
   }
 }

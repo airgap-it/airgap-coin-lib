@@ -5,7 +5,7 @@ import { IAirGapTransaction } from '../../../../interfaces/IAirGapTransaction'
 import { EthereumInfoClient } from './InfoClient'
 
 export class EtherscanInfoClient extends EthereumInfoClient {
-  constructor(baseURL: string = 'https://api.trustwalletapp.com') {
+  constructor(baseURL: string = 'https://api.etherscan.io') {
     super(baseURL)
   }
 
