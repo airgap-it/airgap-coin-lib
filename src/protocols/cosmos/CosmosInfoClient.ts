@@ -1,37 +1,103 @@
-import axios from '../../dependencies/src/axios-0.19.0/index'
+import Axios, { AxiosResponse } from '../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 
-// tslint:disable:max-classes-per-file
+import { TransactionListQuery } from './CosmosTransactionListQuery'
 
-class TransactionListQuery {
-  constructor(private readonly offset: number, private readonly limit: number, private readonly address: string) {}
+interface Shards {
+  total: number
+  successful: number
+  failed: number
+}
 
-  public toRLPBody(): string {
-    return JSON.stringify({
-      from: this.offset,
-      size: this.limit,
-      query: {
-        bool: {
-          should: [
-            {
-              multi_match: {
-                query: this.address,
-                fields: ['tx.value.msg.value.from_address', 'tx.value.msg.value.to_address']
-              }
-            }
-          ]
-        }
-      },
-      sort: [
-        {
-          height: {
-            order: 'desc'
-          }
-        }
-      ]
-    })
-  }
+interface Amount {
+  denom: string
+  amount: string
+}
+
+interface MsgTypeValue {
+  from_address: string
+  to_address: string
+  amount: Amount[]
+}
+
+interface Msg {
+  type: string
+  value: MsgTypeValue
+}
+
+interface Fee {
+  amount: Amount[]
+  gas: string
+}
+
+interface PubKey {
+  type: string
+  value: string
+}
+
+interface Signature {
+  pub_key: PubKey
+  signature: string
+}
+
+interface Value {
+  msg: Msg[]
+  fee: Fee
+  signatures: Signature[]
+  memo: string
+}
+
+interface Tx {
+  type: string
+  value: Value
+}
+
+interface Log {
+  msg_index: string
+  success: boolean
+  log: string
+}
+
+interface Tag {
+  key: string
+  value: string
+}
+
+interface Result {
+  gas_wanted: number
+  gas_used: number
+  log: Log[]
+  tags: Tag[]
+}
+
+interface Source {
+  hash: string
+  height: number
+  time: unknown
+  tx: Tx
+  result: Result
+}
+
+interface Hit {
+  _index: string
+  _type: string
+  _id: string
+  _score: number
+  _source: Source
+}
+
+interface Hits {
+  total: number
+  max_score?: unknown
+  hits: Hit[]
+}
+
+interface CosmosTransactionsResponse {
+  took: number
+  time_out: boolean
+  _shards: Shards
+  hits: Hits
 }
 
 export class CosmosInfoClient {
@@ -42,26 +108,30 @@ export class CosmosInfoClient {
   }
 
   public async fetchTransactions(identifier: string, address: string, offset: number, limit: number): Promise<IAirGapTransaction[]> {
-    const query = new TransactionListQuery(offset, limit, address)
-    const response = await axios.post(`${this.baseURL}/cosmos/v1/getTxsByAddr`, query.toRLPBody())
-    const transactions: IAirGapTransaction[][] = response.data.hits.hits.map(hit => {
-      const transaction = hit._source.tx
+    const query: TransactionListQuery = new TransactionListQuery(offset, limit, address)
+    const response: AxiosResponse<CosmosTransactionsResponse> = await Axios.post(
+      `${this.baseURL}/cosmos/v1/getTxsByAddr`,
+      query.toRLPBody()
+    )
+    const transactions: IAirGapTransaction[][] = response.data.hits.hits.map((hit: Hit) => {
+      const transaction: Tx = hit._source.tx
       const fee: BigNumber = transaction.value.fee.amount
-        .map(coin => new BigNumber(coin.amount))
+        .map((coin: Amount) => new BigNumber(coin.amount))
         .reduce((current: BigNumber, next: BigNumber) => current.plus(next))
-      const result = transaction.value.msg.map(message => {
+      const result: IAirGapTransaction[] = transaction.value.msg.map((message: Msg) => {
         const destination: string = message.value.to_address
 
         return {
           amount: message.value.amount
-            .map(coin => new BigNumber(coin.amount))
+            .map((coin: Amount) => new BigNumber(coin.amount))
             .reduce((current: BigNumber, next: BigNumber) => current.plus(next))
             .toString(10),
           to: [destination],
-          from: [message.value.from_address as string],
+          from: [message.value.from_address],
           isInbound: destination === address,
           fee: fee.toString(10),
-          protocolIdentifier: identifier
+          protocolIdentifier: identifier,
+          hash: hit._source.hash
         }
       })
 

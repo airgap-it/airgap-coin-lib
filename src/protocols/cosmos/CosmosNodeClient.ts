@@ -1,4 +1,4 @@
-import axios from '../../dependencies/src/axios-0.19.0/index'
+import Axios, { AxiosResponse } from '../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 
 export interface CosmosNodeInfo {
@@ -71,11 +71,38 @@ export interface CosmosValidatorCommission {
   update_time: string
 }
 
+export interface CosmosBroadcastSignedTransactionResponse {
+  check_tx: CheckTx
+  deliver_tx: DeliverTx
+  hash: string
+  height: number
+}
+
+interface CheckTx {
+  code: number
+  data: string
+  log: string
+  gas_used: number
+  gas_wanted: number
+  info: string
+  tags: string[]
+}
+
+interface DeliverTx {
+  code: number
+  data: string
+  log: string
+  gas_used: number
+  gas_wanted: number
+  info: string
+  tags: string[]
+}
+
 export class CosmosNodeClient {
   constructor(public readonly baseURL: string, public useCORSProxy: boolean = false) {}
 
   public async fetchBalance(address: string): Promise<BigNumber> {
-    const response = await axios.get(this.url(`/bank/balances/${address}`))
+    const response = await Axios.get(this.url(`/bank/balances/${address}`))
     const data: any[] = response.data
     if (data.length > 0) {
       return new BigNumber(data[0].amount)
@@ -85,14 +112,14 @@ export class CosmosNodeClient {
   }
 
   public async fetchNodeInfo(): Promise<CosmosNodeInfo> {
-    const response = await axios.get(this.url(`/node_info`))
+    const response = await Axios.get(this.url(`/node_info`))
     const nodeInfo = response.data as CosmosNodeInfo
 
     return nodeInfo
   }
 
   public async broadcastSignedTransaction(transaction: string): Promise<string> {
-    const response = await axios.post(this.url(`/txs`), transaction, {
+    const response: AxiosResponse<CosmosBroadcastSignedTransactionResponse> = await Axios.post(this.url(`/txs`), transaction, {
       headers: {
         'Content-type': 'application/json'
       }
@@ -102,14 +129,14 @@ export class CosmosNodeClient {
   }
 
   public async fetchAccount(address: string): Promise<CosmosAccount> {
-    const response = await axios.get(this.url(`/auth/accounts/${address}`))
+    const response = await Axios.get(this.url(`/auth/accounts/${address}`))
     const account = response.data as CosmosAccount
 
     return account
   }
 
   public async fetchDelegations(address: string): Promise<CosmosDelegation[]> {
-    const response = await axios.get(this.url(`/staking/delegators/${address}/delegations`))
+    const response = await Axios.get(this.url(`/staking/delegators/${address}/delegations`))
     if (response.data === null) {
       return []
     }
@@ -119,30 +146,30 @@ export class CosmosNodeClient {
   }
 
   public async fetchValidator(address: string): Promise<CosmosValidator> {
-    const response = await axios.get(this.url(`/staking/validators/${address}`))
+    const response = await Axios.get(this.url(`/staking/validators/${address}`))
     const validator = response.data as CosmosValidator
 
     return validator
   }
 
   public async fetchValidators(): Promise<CosmosValidator[]> {
-    const response = await axios.get(this.url('/staking/validators'))
+    const response = await Axios.get(this.url('/staking/validators'))
     const validators = response.data as CosmosValidator[]
 
     return validators
   }
 
   public async fetchSelfDelegation(validatorAddress: string): Promise<CosmosDelegation> {
-    const validatorInfo = await axios.get(this.url(`/distribution/validators/${validatorAddress}`))
+    const validatorInfo = await Axios.get(this.url(`/distribution/validators/${validatorAddress}`))
     const operatorAddress = validatorInfo.data.operator_address
-    const response = await axios.get(this.url(`/staking/delegators/${operatorAddress}/delegations/${validatorAddress}`))
+    const response = await Axios.get(this.url(`/staking/delegators/${operatorAddress}/delegations/${validatorAddress}`))
     const delegation = response.data as CosmosDelegation
 
     return delegation
   }
 
   public async fetchTotalReward(delegatorAddress: string): Promise<BigNumber> {
-    const response = await axios.get(this.url(`/distribution/delegators/${delegatorAddress}/rewards`))
+    const response = await Axios.get(this.url(`/distribution/delegators/${delegatorAddress}/rewards`))
     const totalRewards = response.data as { denom: string; amount: string }[]
     if (totalRewards.length > 0) {
       return new BigNumber(totalRewards[0].amount)
@@ -152,7 +179,7 @@ export class CosmosNodeClient {
   }
 
   public async fetchRewardForDelegation(delegatorAddress: string, validatorAddress: string): Promise<BigNumber> {
-    const response = await axios.get(this.url(`/distribution/delegators/${delegatorAddress}/rewards/${validatorAddress}`))
+    const response = await Axios.get(this.url(`/distribution/delegators/${delegatorAddress}/rewards/${validatorAddress}`))
     const totalRewards = response.data as { denom: string; amount: string }[]
     if (totalRewards.length > 0) {
       return new BigNumber(totalRewards[0].amount)
@@ -189,7 +216,7 @@ export class CosmosNodeClient {
         simulate
       }
     }
-    const response = await axios.post(this.url(`/distribution/delegators/${delegatorAddress}/rewards`), JSON.stringify(body), {
+    const response = await Axios.post(this.url(`/distribution/delegators/${delegatorAddress}/rewards`), JSON.stringify(body), {
       headers: {
         'Content-type': 'application/json'
       }
@@ -227,7 +254,7 @@ export class CosmosNodeClient {
         simulate
       }
     }
-    const response = await axios.post(
+    const response = await Axios.post(
       this.url(`/distribution/delegators/${delegatorAddress}/rewards/${validatorAdress}`),
       JSON.stringify(body),
       {
