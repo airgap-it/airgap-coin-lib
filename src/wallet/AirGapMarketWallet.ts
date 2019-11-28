@@ -88,7 +88,7 @@ export class AirGapMarketWallet extends AirGapWallet {
   public fetchDailyMarketPrices(numberOfDays: number, date: Date, baseSymbol = 'USD'): Promise<MarketDataSample[]> {
     this.dailyMarketSample = []
 
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
       this.algoSelector(numberOfDays, TimeUnit.Days, date, baseSymbol)
         .then(marketSample => {
           this.dailyMarketSample = marketSample
@@ -101,7 +101,7 @@ export class AirGapMarketWallet extends AirGapWallet {
   public fetchHourlyMarketPrices(numberOfHours: number, date: Date, baseSymbol = 'USD'): Promise<MarketDataSample[]> {
     this.hourlyMarketSample = []
 
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
       this.algoSelector(numberOfHours, TimeUnit.Hours, date, baseSymbol)
         .then(marketSample => {
           this.hourlyMarketSample = marketSample
@@ -114,7 +114,7 @@ export class AirGapMarketWallet extends AirGapWallet {
   public fetchMinutesMarketPrices(numberOfMinutes: number, date: Date, baseSymbol = 'USD'): Promise<MarketDataSample[]> {
     this.minuteMarketSample = []
 
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
       this.algoSelector(numberOfMinutes, TimeUnit.Minutes, date, baseSymbol)
         .then(marketSample => {
           this.minuteMarketSample = marketSample
@@ -194,7 +194,7 @@ export class AirGapMarketWallet extends AirGapWallet {
     }
   }
 
-  public prepareTransaction(recipients: string[], values: string[], fee: string, data?: any): Promise<IAirGapTransaction> {
+  public prepareTransaction(recipients: string[], values: string[], fee: string, data?: unknown): Promise<IAirGapTransaction> {
     if (this.isExtendedPublicKey) {
       return this.coinProtocol.prepareTransactionFromExtendedPublicKey(this.publicKey, 0, recipients, values, fee, data)
     } else {
@@ -206,8 +206,8 @@ export class AirGapMarketWallet extends AirGapWallet {
     }
   }
 
-  private algoSelector(numberOfMinutes: number, timeUnit: TimeUnit, date: Date, baseSymbol = 'USD'): Promise<MarketDataSample[]> {
-    return new Promise((resolve, reject) => {
+  private algoSelector(numberOfMinutes: number, timeUnit: TimeUnit, date: Date, baseSymbol: string = 'USD'): Promise<MarketDataSample[]> {
+    return new Promise(resolve => {
       let promise: Promise<MarketDataSample>
       if (timeUnit === 'days') {
         promise = cryptocompare.histoDay(this.coinProtocol.marketSymbol.toUpperCase(), baseSymbol, {
