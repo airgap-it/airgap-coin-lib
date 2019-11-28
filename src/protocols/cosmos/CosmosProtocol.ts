@@ -64,7 +64,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
 
   constructor(
     public readonly infoClient: CosmosInfoClient = new CosmosInfoClient(),
-    public readonly nodeClient: CosmosNodeClient = new CosmosNodeClient('https://cosmos-cosmoshub-2.kubernetes.papers.tech', false)
+    public readonly nodeClient: CosmosNodeClient = new CosmosNodeClient('https://cosmos-cosmoshub-2.kubernetes.papers.tech', true)
   ) {
     super()
   }
