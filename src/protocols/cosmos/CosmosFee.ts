@@ -1,5 +1,5 @@
 import { CosmosCoin } from './CosmosCoin'
-import { RPCConvertible, JSONConvertible } from './CosmosTransaction'
+import { JSONConvertible, RPCConvertible } from './CosmosTransaction'
 
 export class CosmosFee implements JSONConvertible, RPCConvertible {
   public readonly amount: CosmosCoin[]

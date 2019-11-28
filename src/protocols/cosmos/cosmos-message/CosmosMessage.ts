@@ -1,6 +1,6 @@
 import { IAirGapTransaction } from '../../..'
-import { JSONConvertible, RPCConvertible } from '../CosmosTransaction'
 import { CosmosCoinJSON } from '../CosmosCoin'
+import { JSONConvertible, RPCConvertible } from '../CosmosTransaction'
 
 export interface CosmosMessageJSON {
   type: CosmosMessageTypeIndex
@@ -17,10 +17,10 @@ export enum CosmosMessageTypeIndex {
 }
 
 export class CosmosMessageType {
-  public static Send = new CosmosMessageType(CosmosMessageTypeIndex.SEND)
-  public static Delegate = new CosmosMessageType(CosmosMessageTypeIndex.DELEGATE)
-  public static Undelegate = new CosmosMessageType(CosmosMessageTypeIndex.UNDELEGATE)
-  public static WithdrawDelegationReward = new CosmosMessageType(CosmosMessageTypeIndex.WITHDRAW_DELEGATION_REWARD)
+  public static Send: CosmosMessageType = new CosmosMessageType(CosmosMessageTypeIndex.SEND)
+  public static Delegate: CosmosMessageType = new CosmosMessageType(CosmosMessageTypeIndex.DELEGATE)
+  public static Undelegate: CosmosMessageType = new CosmosMessageType(CosmosMessageTypeIndex.UNDELEGATE)
+  public static WithdrawDelegationReward: CosmosMessageType = new CosmosMessageType(CosmosMessageTypeIndex.WITHDRAW_DELEGATION_REWARD)
 
   public readonly index: CosmosMessageTypeIndex
   public readonly value: string

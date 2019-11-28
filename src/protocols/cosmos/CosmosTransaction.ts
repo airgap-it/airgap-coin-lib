@@ -1,11 +1,12 @@
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 import { SerializableUnsignedCosmosTransaction } from '../../serializer/schemas/definitions/transaction-sign-request-cosmos'
+
+import { CosmosDelegateMessage } from './cosmos-message/CosmosDelegateMessage'
 import { CosmosMessage, CosmosMessageType, CosmosMessageTypeIndex } from './cosmos-message/CosmosMessage'
 import { CosmosSendMessage } from './cosmos-message/CosmosSendMessage'
-import { CosmosDelegateMessage } from './cosmos-message/CosmosDelegateMessage'
-import { CosmosFee } from './CosmosFee'
 import { CosmosWithdrawDelegationRewardMessage } from './cosmos-message/CosmosWithdrawDelegationRewardMessage'
+import { CosmosFee } from './CosmosFee'
 
 export interface JSONConvertible {
   toJSON(): any

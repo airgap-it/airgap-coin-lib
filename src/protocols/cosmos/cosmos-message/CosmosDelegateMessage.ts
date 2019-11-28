@@ -49,8 +49,8 @@ export class CosmosDelegateMessage implements CosmosMessage {
   public toAirGapTransaction(identifier: string, fee: string): IAirGapTransaction {
     return {
       amount: this.amount.amount,
-      to: [this.delegatorAddress],
-      from: [this.validatorAddress],
+      from: [this.delegatorAddress],
+      to: [this.validatorAddress],
       isInbound: false,
       fee,
       protocolIdentifier: identifier,

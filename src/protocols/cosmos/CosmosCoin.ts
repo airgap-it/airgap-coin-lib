@@ -1,4 +1,4 @@
-import { RPCConvertible, JSONConvertible } from './CosmosTransaction'
+import { JSONConvertible, RPCConvertible } from './CosmosTransaction'
 
 export interface CosmosCoinJSON {
   denom: string

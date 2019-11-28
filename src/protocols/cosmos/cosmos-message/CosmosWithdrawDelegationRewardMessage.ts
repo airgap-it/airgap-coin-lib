@@ -1,5 +1,6 @@
-import { CosmosMessageType, CosmosMessage, CosmosMessageJSON } from './CosmosMessage'
 import { IAirGapTransaction } from '../../..'
+
+import { CosmosMessage, CosmosMessageJSON, CosmosMessageType } from './CosmosMessage'
 
 export class CosmosWithdrawDelegationRewardMessage implements CosmosMessage {
   public readonly delegatorAddress: string
@@ -13,8 +14,8 @@ export class CosmosWithdrawDelegationRewardMessage implements CosmosMessage {
 
   public toAirGapTransaction(identifier: string, fee: string): IAirGapTransaction {
     return {
-      to: [this.validatorAddress],
       from: [this.delegatorAddress],
+      to: [this.validatorAddress],
       amount: '0',
       isInbound: false,
       fee,
