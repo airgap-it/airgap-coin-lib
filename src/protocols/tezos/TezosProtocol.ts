@@ -351,7 +351,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     const watermarkedForgedOperationBytes: Buffer = Buffer.from(watermarkedForgedOperationBytesHex, 'hex')
     const hashedWatermarkedOpBytes: Buffer = sodium.crypto_generichash(32, watermarkedForgedOperationBytes)
 
-    const opSignature = sodium.crypto_sign_detached(hashedWatermarkedOpBytes, privateKey)
+    const opSignature: Buffer = sodium.crypto_sign_detached(hashedWatermarkedOpBytes, privateKey)
     const signedOpBytes: Buffer = Buffer.concat([Buffer.from(transaction.binaryTransaction, 'hex'), Buffer.from(opSignature)])
 
     return signedOpBytes.toString('hex')
@@ -371,7 +371,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     return this.getAirGapTxFromWrappedOperations(wrappedOperations)
   }
 
-  private getAirGapTxFromWrappedOperations(wrappedOperations: TezosWrappedOperation) {
+  private getAirGapTxFromWrappedOperations(wrappedOperations: TezosWrappedOperation): IAirGapTransaction[] {
     const airGapTxs: IAirGapTransaction[] = []
 
     const assertNever: (x: never) => void = (x: never): void => undefined
@@ -384,6 +384,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
       switch (tezosOperation.kind) {
         case TezosOperationType.REVEAL:
+          to = ['Reveal']
           break
         case TezosOperationType.TRANSACTION:
           const tezosSpendOperation: TezosSpendOperation = tezosOperation as TezosSpendOperation
