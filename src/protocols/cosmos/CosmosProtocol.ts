@@ -74,7 +74,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
   }
 
   public getBlockExplorerLinkForTxId(txId: string): string {
-    return `${this.blockExplorer}/tx/${txId}`
+    return `${this.blockExplorer}/txs/${txId}`
   }
 
   public generateKeyPair(mnemonic: string, derivationPath: string = this.standardDerivationPath): KeyPair {
