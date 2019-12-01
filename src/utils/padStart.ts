@@ -1,4 +1,4 @@
-export function padStart(targetString: string, targetLength: number, padString: string) {
+export function padStart(targetString: string, targetLength: number, padString: string): string {
   // truncate if number, or convert non-number to 0
   targetLength = targetLength >> 0
 

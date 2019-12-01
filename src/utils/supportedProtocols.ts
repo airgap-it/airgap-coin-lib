@@ -8,7 +8,7 @@ import { TezosProtocol } from '../protocols/tezos/TezosProtocol'
 
 const protocols: ICoinProtocol[] = []
 
-const supportedProtocols = function(): ICoinProtocol[] {
+const supportedProtocols: () => ICoinProtocol[] = (): ICoinProtocol[] => {
   if (protocols.length === 0) {
     // We cannot assign the protocols outside a function because the compiler complains
     // The reason is that we have a circular dependency in the EthereumProtocol.
@@ -25,8 +25,8 @@ const supportedProtocols = function(): ICoinProtocol[] {
   return protocols
 }
 
-const addSupportedProtocol = function(newProtocol: ICoinProtocol): void {
-  if (supportedProtocols().find(protocol => protocol.identifier === newProtocol.identifier)) {
+const addSupportedProtocol: (newProtocol: ICoinProtocol) => void = (newProtocol: ICoinProtocol): void => {
+  if (supportedProtocols().find((protocol: ICoinProtocol) => protocol.identifier === newProtocol.identifier)) {
     throw new Error(`protocol ${newProtocol.name} already exists`)
   }
 

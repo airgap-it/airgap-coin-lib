@@ -13,6 +13,7 @@ import { RawTezosTransaction } from '../../serializer/types'
 import { getSubProtocolsByIdentifier } from '../../utils/subProtocols'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
+import { ICoinSubProtocol } from '../..'
 
 export enum TezosOperationType {
   TRANSACTION = 'transaction',
@@ -149,8 +150,12 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   public feeDecimals: number = 6 // micro tez is the smallest, 1000000 microtez is 1 tez
   public identifier: string = 'xtz'
 
-  get subProtocols() {
+  get subProtocols(): ICoinSubProtocol[] {
     return getSubProtocolsByIdentifier(this.identifier)
+  }
+
+  set subProtocols(_value: ICoinSubProtocol[]) {
+    // do nothing
   }
 
   // tezbox default
