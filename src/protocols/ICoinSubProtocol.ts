@@ -1,11 +1,9 @@
-import { ICoinProtocol } from '..'
-
 export enum SubProtocolType {
   ACCOUNT = 'account',
   TOKEN = 'token'
 }
 
-export interface ICoinSubProtocol extends ICoinProtocol {
+export interface ICoinSubProtocol {
   isSubProtocol: boolean
   subProtocolType: SubProtocolType
 }

@@ -39,7 +39,7 @@ export interface ICoinProtocol {
   blockExplorer: string
 
   // can have sub-protocols defined
-  subProtocols?: ICoinSubProtocol[]
+  subProtocols?: (ICoinProtocol & ICoinSubProtocol)[]
 
   getBlockExplorerLinkForAddress(address: string): string
   getBlockExplorerLinkForTxId(txId: string): string
