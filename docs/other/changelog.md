@@ -1,3 +1,9 @@
+### 0.6.2 (2019-12-04)
+
+### Bug Fixes
+
+- **typescript**: remove typescript types that are not compatible with older typescript versions
+
 ### 0.6.1 (2019-12-04)
 
 ### Bug Fixes
