@@ -29,9 +29,9 @@ unit:
     - docker rm -f unit-$CI_COMMIT_SHA || true
     - docker rm -f unit-legacy-$CI_COMMIT_SHA || true
   script:
-    - docker run --name unit-$CI_COMMIT_SHA $IMAGE_TAG_CURRENT npm run test-ci
-    - docker run --name unit-legacy-$CI_COMMIT_SHA $IMAGE_TAG_CURRENT npm run test-legacy
-    - docker run --name lint-$CI_COMMIT_SHA $IMAGE_TAG_CURRENT npm run lint-ci
+    - docker run --name unit-$CI_COMMIT_SHA $IMAGE_TAG_CURRENT /bin/bash -c "npm run install-test-dependencies; npm run test-ci"
+    - docker run --name unit-legacy-$CI_COMMIT_SHA $IMAGE_TAG_CURRENT /bin/bash -c "npm run install-test-dependencies; npm run test-legacy"
+    - docker run --name lint-$CI_COMMIT_SHA $IMAGE_TAG_CURRENT /bin/bash -c "npm run install-test-dependencies; npm run lint-ci"
     - docker cp unit-$CI_COMMIT_SHA:/app/coverage/lcov.info lcov.info
     - docker cp lint-$CI_COMMIT_SHA:/app/lintReport.json lintReport.json
   after_script:
@@ -55,7 +55,7 @@ qa:
       -Dsonar.typescript.tslint.reportPaths=lintReport.json
       -Dsonar.test.inclusions=**/*.spec.ts
       -Dsonar.tests=src/
-      -Dsonar.exclusions=**/node_modules/**,**/*.spec.ts
+      -Dsonar.exclusions=**/node_modules/**,**/*.spec.ts,src/dependencies/**
       -Dsonar.sources=src/
       -Dsonar.host.url=$SONAR_URL
       -Dsonar.login=$SONAR_LOGIN

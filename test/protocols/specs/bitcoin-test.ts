@@ -1,6 +1,5 @@
-import BigNumber from 'bignumber.js'
-
-import { BitcoinTestnetProtocol, DeserializedSyncProtocol, SignedTransaction } from '../../../src'
+import { BitcoinTestnetProtocol, SignedBitcoinTransaction } from '../../../src'
+import { IACMessageDefinitionObject } from '../../../src/serializer/message'
 import { TestProtocolSpec } from '../implementations'
 import { BitcoinTestnetProtocolStub } from '../stubs/bitcoin-test.stub'
 
@@ -18,20 +17,20 @@ export class BitcoinTestProtocolSpec extends TestProtocolSpec {
     {
       from: ['mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k', 'mtb2Yx8rPUhYxdqPsH9nzT375QtWZ9XJcX'],
       to: ['mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k'],
-      amount: new BigNumber('10'),
-      fee: new BigNumber('27000'),
+      amount: '10',
+      fee: '27000',
       unsignedTx: {
         ins: [
           {
             txId: '8a10220812842e93b7263491cf664b36fece9861b39ca762b57ac46bb7a7cd7b',
-            value: new BigNumber('10'),
+            value: '10',
             vout: 0,
             address: 'mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k',
             derivationPath: '0/0'
           },
           {
             txId: 'e7ab576fd222c7c5d463497e3eb54789abebca2c48efcc1a2e93e8ab5c066eac',
-            value: new BigNumber('65000000'),
+            value: '65000000',
             vout: 0,
             address: 'mtb2Yx8rPUhYxdqPsH9nzT375QtWZ9XJcX',
             derivationPath: '1/3'
@@ -39,14 +38,16 @@ export class BitcoinTestProtocolSpec extends TestProtocolSpec {
         ],
         outs: [
           {
+            derivationPath: '',
             recipient: 'mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k',
             isChange: false,
-            value: new BigNumber('10')
+            value: '10'
           },
           {
+            derivationPath: '100',
             recipient: 'mm3JNWeMUnFtGCqxphh4RAgXSAnhNz6LV5',
             isChange: true,
-            value: new BigNumber('64973000')
+            value: '64973000'
           }
         ]
       },
@@ -54,12 +55,13 @@ export class BitcoinTestProtocolSpec extends TestProtocolSpec {
     }
   ]
 
-  public signedTransaction(tx: any): DeserializedSyncProtocol {
-    const protocol: DeserializedSyncProtocol = super.signedTransaction(tx)
-    const payload = protocol.payload as SignedTransaction
+  public signedTransaction(tx: any): IACMessageDefinitionObject[] {
+    const protocol: IACMessageDefinitionObject[] = super.signedTransaction(tx)
+    const payload = protocol[0].payload as SignedBitcoinTransaction
     payload.amount = this.txs[0].amount
     payload.fee = this.txs[0].fee
     payload.from = this.wallet.addresses
+
     return protocol
   }
 }

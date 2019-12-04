@@ -1,8 +1,8 @@
-import BigNumber from 'bignumber.js'
 import { expect } from 'chai'
 import 'mocha'
-import { validate } from 'validate.js'
 
+import BigNumber from '../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
+import { validate } from '../../src/dependencies/src/validate.js-0.13.1/validate'
 import { validateSyncScheme } from '../../src/serializer/validators/validators'
 
 describe('Validators', () => {
@@ -22,7 +22,16 @@ describe('Validators', () => {
       expect(validationErrors).to.deep.equal({ test: ['Test is not of type "BigNumber"'] })
       validationErrors = await validate({ test: 123 }, constraints)
       expect(validationErrors).to.deep.equal({ test: ['Test is not of type "BigNumber"'] })
-      validationErrors = await validate({ test: { isBigNumber: () => undefined } }, constraints)
+      validationErrors = await validate(
+        {
+          test: {
+            isBigNumber() {
+              /* */
+            }
+          }
+        },
+        constraints
+      )
       expect(validationErrors).to.deep.equal({ test: ['Test is not of type "BigNumber"'] })
       validationErrors = await validate({ test: new BigNumber(0) }, constraints)
       expect(validationErrors).to.be.undefined
@@ -65,6 +74,7 @@ describe('Validators', () => {
       expect(validationErrors).to.be.undefined
     })
   })
+
   describe('Sync Scheme', () => {
     const validScheme = {
       version: 1,

@@ -1,8 +1,7 @@
-import Axios from 'axios'
-import BigNumber from 'bignumber.js'
-import * as cryptocompare from 'cryptocompare'
-
 import { IAirGapTransaction } from '..'
+import Axios from '../dependencies/src/axios-0.19.0/index'
+import BigNumber from '../dependencies/src/bignumber.js-9.0.0/bignumber'
+import * as cryptocompare from '../dependencies/src/cryptocompare-0.5.0/index'
 
 import { AirGapWallet } from './AirGapWallet'
 
@@ -88,7 +87,8 @@ export class AirGapMarketWallet extends AirGapWallet {
 
   public fetchDailyMarketPrices(numberOfDays: number, date: Date, baseSymbol = 'USD'): Promise<MarketDataSample[]> {
     this.dailyMarketSample = []
-    return new Promise((resolve, reject) => {
+
+    return new Promise(resolve => {
       this.algoSelector(numberOfDays, TimeUnit.Days, date, baseSymbol)
         .then(marketSample => {
           this.dailyMarketSample = marketSample
@@ -100,7 +100,8 @@ export class AirGapMarketWallet extends AirGapWallet {
 
   public fetchHourlyMarketPrices(numberOfHours: number, date: Date, baseSymbol = 'USD'): Promise<MarketDataSample[]> {
     this.hourlyMarketSample = []
-    return new Promise((resolve, reject) => {
+
+    return new Promise(resolve => {
       this.algoSelector(numberOfHours, TimeUnit.Hours, date, baseSymbol)
         .then(marketSample => {
           this.hourlyMarketSample = marketSample
@@ -112,7 +113,8 @@ export class AirGapMarketWallet extends AirGapWallet {
 
   public fetchMinutesMarketPrices(numberOfMinutes: number, date: Date, baseSymbol = 'USD'): Promise<MarketDataSample[]> {
     this.minuteMarketSample = []
-    return new Promise((resolve, reject) => {
+
+    return new Promise(resolve => {
       this.algoSelector(numberOfMinutes, TimeUnit.Minutes, date, baseSymbol)
         .then(marketSample => {
           this.minuteMarketSample = marketSample
@@ -146,7 +148,8 @@ export class AirGapMarketWallet extends AirGapWallet {
   }
 
   private addressesToCheck(): string[] {
-    const addressesToReceive = this.addressIndex !== undefined ? [this.addresses[this.addressIndex]] : this.addresses
+    const addressesToReceive: string[] = this.addressIndex !== undefined ? [this.addresses[this.addressIndex]] : this.addresses
+
     return addressesToReceive
   }
   public async balanceOf(): Promise<BigNumber> {
@@ -160,13 +163,13 @@ export class AirGapMarketWallet extends AirGapWallet {
       We can also not simply change the order of the following if/else, because then it would use the xPub method for
       BTC as well, which results in the addresses being derived again, which causes massive lags in the apps.
       */
-      return this.coinProtocol.getBalanceOfExtendedPublicKey(this.publicKey, 0)
+      return new BigNumber(await this.coinProtocol.getBalanceOfExtendedPublicKey(this.publicKey, 0))
     } else if (this.addresses.length > 0) {
-      return this.coinProtocol.getBalanceOfAddresses(this.addressesToCheck())
+      return new BigNumber(await this.coinProtocol.getBalanceOfAddresses(this.addressesToCheck()))
     } else if (this.isExtendedPublicKey) {
-      return this.coinProtocol.getBalanceOfExtendedPublicKey(this.publicKey, 0)
+      return new BigNumber(await this.coinProtocol.getBalanceOfExtendedPublicKey(this.publicKey, 0))
     } else {
-      return this.coinProtocol.getBalanceOfPublicKey(this.publicKey)
+      return new BigNumber(await this.coinProtocol.getBalanceOfPublicKey(this.publicKey))
     }
   }
 
@@ -191,19 +194,20 @@ export class AirGapMarketWallet extends AirGapWallet {
     }
   }
 
-  public prepareTransaction(recipients: string[], values: BigNumber[], fee: BigNumber, data?: any): Promise<IAirGapTransaction> {
+  public prepareTransaction(recipients: string[], values: string[], fee: string, data?: unknown): Promise<IAirGapTransaction> {
     if (this.isExtendedPublicKey) {
       return this.coinProtocol.prepareTransactionFromExtendedPublicKey(this.publicKey, 0, recipients, values, fee, data)
     } else {
       if (this.addressIndex) {
         data = { addressIndex: this.addressIndex }
       }
+
       return this.coinProtocol.prepareTransactionFromPublicKey(this.publicKey, recipients, values, fee, data)
     }
   }
 
-  private algoSelector(numberOfMinutes: number, timeUnit: TimeUnit, date: Date, baseSymbol = 'USD'): Promise<MarketDataSample[]> {
-    return new Promise((resolve, reject) => {
+  private algoSelector(numberOfMinutes: number, timeUnit: TimeUnit, date: Date, baseSymbol: string = 'USD'): Promise<MarketDataSample[]> {
+    return new Promise(resolve => {
       let promise: Promise<MarketDataSample>
       if (timeUnit === 'days') {
         promise = cryptocompare.histoDay(this.coinProtocol.marketSymbol.toUpperCase(), baseSymbol, {

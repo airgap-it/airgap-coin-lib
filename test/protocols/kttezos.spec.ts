@@ -1,11 +1,16 @@
-// import axios from 'axios'
 // import * as chai from 'chai'
 // import * as chaiAsPromised from 'chai-as-promised'
 // import 'mocha'
 // import * as sinon from 'sinon'
 
 // import { isCoinlibReady, TezosKtProtocol } from '../../src'
-// import { TezosSpendOperation } from '../../src/protocols/tezos/TezosProtocol'
+// import axios from '../../src/dependencies/src/axios-0.19.0/index'
+// import {
+//   TezosDelegationOperation,
+//   TezosOperationType,
+//   TezosRevealOperation,
+//   TezosSpendOperation
+// } from '../../src/protocols/tezos/TezosProtocol'
 
 // import { TezosTestProtocolSpec } from './specs/tezos'
 
@@ -349,120 +354,121 @@
 //         )
 //         .returns(Promise.resolve({ data: '50000' }))
 //     })
-//     // TODO: Babylon
-//     // it('should be able to forge and unforge a delegation TX', async () => {
-//     //   /**
-//     //    * Delegate KT1 -> TZ1
-//     //    */
-//     //   const tz = await ktTezosLib.delegate(
-//     //     tezosProtocolSpec.wallet.publicKey,
-//     //     'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy',
-//     //     'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'
-//     //   )
 
-//     //   const tezosWrappedOperation = ktTezosLib.unforgeUnsignedTezosWrappedOperation(tz.binaryTransaction)
-//     //   const tezosDelegationOperation = tezosWrappedOperation.contents[0] as TezosDelegationOperation
+//     it('should be able to forge and unforge a delegation TX', async () => {
+//       /**
+//        * Delegate KT1 -> TZ1
+//        */
+//       const tz = await ktTezosLib.delegate(
+//         tezosProtocolSpec.wallet.publicKey,
+//         'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy',
+//         'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'
+//       )
 
-//     //   expect(tezosDelegationOperation.kind, 'kind').to.equal(TezosOperationType.DELEGATION)
-//     //   expect(tezosDelegationOperation.source, 'source').to.equal('KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy')
-//     //   expect(tezosDelegationOperation.fee, 'fee').to.equal('1420')
-//     //   expect(tezosDelegationOperation.counter, 'counter').to.equal('917316')
-//     //   expect(tezosDelegationOperation.gas_limit, 'gas_limit').to.equal('10000')
-//     //   expect(tezosDelegationOperation.storage_limit, 'storage_limit').to.equal('0')
-//     //   expect(tezosDelegationOperation.delegate, 'delegate').to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
+//       const tezosWrappedOperation = ktTezosLib.unforgeUnsignedTezosWrappedOperation(tz.binaryTransaction)
+//       const tezosDelegationOperation = tezosWrappedOperation.contents[0] as TezosDelegationOperation
 
-//     //   expect(tz.binaryTransaction).to.equal(
-//     //     'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb9550a01ba4e7349ac25dc5eb2df5a43fceacc58963df4f5008c0bc4fe37904e00ff0091a9d2b003f19cf5a1f38f04f1000ab482d33176'
-//     //   )
+//       expect(tezosDelegationOperation.kind, 'kind').to.equal(TezosOperationType.DELEGATION)
+//       expect(tezosDelegationOperation.source, 'source').to.equal('KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy')
+//       expect(tezosDelegationOperation.fee, 'fee').to.equal('1420')
+//       expect(tezosDelegationOperation.counter, 'counter').to.equal('917316')
+//       expect(tezosDelegationOperation.gas_limit, 'gas_limit').to.equal('10000')
+//       expect(tezosDelegationOperation.storage_limit, 'storage_limit').to.equal('0')
+//       expect(tezosDelegationOperation.delegate, 'delegate').to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
 
-//     //   /**
-//     //    * Delegate TZ1 -> TZ1
-//     //    */
-//     //   const tz2 = await ktTezosLib.delegate(
-//     //     tezosProtocolSpec.wallet.publicKey,
-//     //     'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L',
-//     //     'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'
-//     //   )
+//       expect(tz.binaryTransaction).to.equal(
+//         'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb9550a01ba4e7349ac25dc5eb2df5a43fceacc58963df4f5008c0bc4fe37904e00ff0091a9d2b003f19cf5a1f38f04f1000ab482d33176'
+//       )
 
-//     //   const tezosWrappedOperation2 = ktTezosLib.unforgeUnsignedTezosWrappedOperation(tz2.binaryTransaction)
-//     //   const tezosDelegationOperation2 = tezosWrappedOperation2.contents[0] as TezosDelegationOperation
+//       /**
+//        * Delegate TZ1 -> TZ1
+//        */
+//       const tz2 = await ktTezosLib.delegate(
+//         tezosProtocolSpec.wallet.publicKey,
+//         'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L',
+//         'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'
+//       )
 
-//     //   expect(tezosDelegationOperation2.kind, 'kind').to.equal(TezosOperationType.DELEGATION)
-//     //   expect(tezosDelegationOperation2.source, 'source').to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
-//     //   expect(tezosDelegationOperation2.fee, 'fee').to.equal('1420')
-//     //   expect(tezosDelegationOperation2.counter, 'counter').to.equal('917316')
-//     //   expect(tezosDelegationOperation2.gas_limit, 'gas_limit').to.equal('10000')
-//     //   expect(tezosDelegationOperation2.storage_limit, 'storage_limit').to.equal('0')
-//     //   expect(tezosDelegationOperation2.delegate, 'delegate').to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
+//       const tezosWrappedOperation2 = ktTezosLib.unforgeUnsignedTezosWrappedOperation(tz2.binaryTransaction)
+//       const tezosDelegationOperation2 = tezosWrappedOperation2.contents[0] as TezosDelegationOperation
 
-//     //   expect(tz2.binaryTransaction).to.equal(
-//     //     'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb9550a000091a9d2b003f19cf5a1f38f04f1000ab482d331768c0bc4fe37904e00ff0091a9d2b003f19cf5a1f38f04f1000ab482d33176'
-//     //   )
-//     // })
-//     // TODO: Babylon
-//     // it('should include a reveal operation when delegating an unrevealed KT address', async () => {
-//     //   stub
-//     //     .withArgs(`${ktTezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy/manager_key`)
-//     //     .returns(Promise.resolve({ data: {} }))
+//       expect(tezosDelegationOperation2.kind, 'kind').to.equal(TezosOperationType.DELEGATION)
+//       expect(tezosDelegationOperation2.source, 'source').to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
+//       expect(tezosDelegationOperation2.fee, 'fee').to.equal('1420')
+//       expect(tezosDelegationOperation2.counter, 'counter').to.equal('917316')
+//       expect(tezosDelegationOperation2.gas_limit, 'gas_limit').to.equal('10000')
+//       expect(tezosDelegationOperation2.storage_limit, 'storage_limit').to.equal('0')
+//       expect(tezosDelegationOperation2.delegate, 'delegate').to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
 
-//     //   /**
-//     //    * Delegate KT1 -> TZ1
-//     //    */
-//     //   const tz = await ktTezosLib.delegate(
-//     //     tezosProtocolSpec.wallet.publicKey,
-//     //     'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy',
-//     //     'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'
-//     //   )
+//       expect(tz2.binaryTransaction).to.equal(
+//         'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb9550a000091a9d2b003f19cf5a1f38f04f1000ab482d331768c0bc4fe37904e00ff0091a9d2b003f19cf5a1f38f04f1000ab482d33176'
+//       )
+//     })
 
-//     //   const tezosWrappedOperation = ktTezosLib.unforgeUnsignedTezosWrappedOperation(tz.binaryTransaction)
-//     //   const tezosRevealOperation = tezosWrappedOperation.contents[0] as TezosRevealOperation
-//     //   const tezosDelegationOperation = tezosWrappedOperation.contents[1] as TezosDelegationOperation
+//     it('should include a reveal operation when delegating an unrevealed KT address', async () => {
+//       stub
+//         .withArgs(`${ktTezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy/manager_key`)
+//         .returns(Promise.resolve({ data: {} }))
 
-//     //   expect(tezosWrappedOperation.contents.length, 'operations').to.equal(2) // Make sure reveal and delegate are included
+//       /**
+//        * Delegate KT1 -> TZ1
+//        */
+//       const tz = await ktTezosLib.delegate(
+//         tezosProtocolSpec.wallet.publicKey,
+//         'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy',
+//         'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'
+//       )
 
-//     //   expect(tezosRevealOperation.kind, 'kind').to.equal(TezosOperationType.REVEAL)
-//     //   expect(tezosRevealOperation.fee, 'fee').to.equal('1300')
-//     //   expect(tezosRevealOperation.gas_limit, 'gas_limit').to.equal('10000')
-//     //   expect(tezosRevealOperation.storage_limit, 'storage_limit').to.equal('0')
-//     //   expect(tezosRevealOperation.counter, 'counter').to.equal('917316')
-//     //   expect(tezosRevealOperation.source, 'source').to.equal('KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy')
+//       const tezosWrappedOperation = ktTezosLib.unforgeUnsignedTezosWrappedOperation(tz.binaryTransaction)
+//       const tezosRevealOperation = tezosWrappedOperation.contents[0] as TezosRevealOperation
+//       const tezosDelegationOperation = tezosWrappedOperation.contents[1] as TezosDelegationOperation
 
-//     //   expect(tezosDelegationOperation.kind, 'kind').to.equal(TezosOperationType.DELEGATION)
-//     //   expect(tezosDelegationOperation.source, 'source').to.equal('KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy')
-//     //   expect(tezosDelegationOperation.fee, 'fee').to.equal('1420')
-//     //   expect(tezosDelegationOperation.counter, 'counter').to.equal('917317')
-//     //   expect(tezosDelegationOperation.gas_limit, 'gas_limit').to.equal('10000')
-//     //   expect(tezosDelegationOperation.storage_limit, 'storage_limit').to.equal('0')
-//     //   expect(tezosDelegationOperation.delegate, 'delegate').to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
+//       expect(tezosWrappedOperation.contents.length, 'operations').to.equal(2) // Make sure reveal and delegate are included
 
-//     //   expect(tz.binaryTransaction).to.equal(
-//     //     'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb9550701ba4e7349ac25dc5eb2df5a43fceacc58963df4f500940ac4fe37904e0000cdbc0c3449784bd53907c3c7a06060cf12087e492a7b937f044c6a73b522a2340a01ba4e7349ac25dc5eb2df5a43fceacc58963df4f5008c0bc5fe37904e00ff0091a9d2b003f19cf5a1f38f04f1000ab482d33176'
-//     //   )
-//     // })
-//     // TODO: Update for babylon
-//     // it('should be able to forge a un-delegation TX', async () => {
-//     //   const tz = await ktTezosLib.undelegate(tezosProtocolSpec.wallet.publicKey, 'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy')
+//       expect(tezosRevealOperation.kind, 'kind').to.equal(TezosOperationType.REVEAL)
+//       expect(tezosRevealOperation.fee, 'fee').to.equal('1300')
+//       expect(tezosRevealOperation.gas_limit, 'gas_limit').to.equal('10000')
+//       expect(tezosRevealOperation.storage_limit, 'storage_limit').to.equal('0')
+//       expect(tezosRevealOperation.counter, 'counter').to.equal('917316')
+//       expect(tezosRevealOperation.source, 'source').to.equal('KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy')
 
-//     //   const tezosWrappedOperation = ktTezosLib.unforgeUnsignedTezosWrappedOperation(tz.binaryTransaction)
-//     //   const tezosDelegationOperation = tezosWrappedOperation.contents[0] as TezosDelegationOperation
+//       expect(tezosDelegationOperation.kind, 'kind').to.equal(TezosOperationType.DELEGATION)
+//       expect(tezosDelegationOperation.source, 'source').to.equal('KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy')
+//       expect(tezosDelegationOperation.fee, 'fee').to.equal('1420')
+//       expect(tezosDelegationOperation.counter, 'counter').to.equal('917317')
+//       expect(tezosDelegationOperation.gas_limit, 'gas_limit').to.equal('10000')
+//       expect(tezosDelegationOperation.storage_limit, 'storage_limit').to.equal('0')
+//       expect(tezosDelegationOperation.delegate, 'delegate').to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
 
-//     //   expect(tezosDelegationOperation.kind, 'kind').to.equal(TezosOperationType.DELEGATION)
-//     //   expect(tezosDelegationOperation.source, 'source').to.equal('KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy')
-//     //   expect(tezosDelegationOperation.fee, 'fee').to.equal('1420')
-//     //   expect(tezosDelegationOperation.counter, 'counter').to.equal('917316')
-//     //   expect(tezosDelegationOperation.gas_limit, 'gas_limit').to.equal('10000')
-//     //   expect(tezosDelegationOperation.storage_limit, 'storage_limit').to.equal('0')
-//     //   expect(tezosDelegationOperation.delegate, 'delegate').to.equal(undefined)
+//       expect(tz.binaryTransaction).to.equal(
+//         'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb9550701ba4e7349ac25dc5eb2df5a43fceacc58963df4f500940ac4fe37904e0000cdbc0c3449784bd53907c3c7a06060cf12087e492a7b937f044c6a73b522a2340a01ba4e7349ac25dc5eb2df5a43fceacc58963df4f5008c0bc5fe37904e00ff0091a9d2b003f19cf5a1f38f04f1000ab482d33176'
+//       )
+//     })
 
-//     //   expect(tz.binaryTransaction).to.equal(
-//     //     'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb9550a01ba4e7349ac25dc5eb2df5a43fceacc58963df4f5008c0bc4fe37904e0000'
-//     //   )
-//     // })
+//     it('should be able to forge a un-delegation TX', async () => {
+//       const tz = await ktTezosLib.undelegate(tezosProtocolSpec.wallet.publicKey, 'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy')
+
+//       const tezosWrappedOperation = ktTezosLib.unforgeUnsignedTezosWrappedOperation(tz.binaryTransaction)
+//       const tezosDelegationOperation = tezosWrappedOperation.contents[0] as TezosDelegationOperation
+
+//       expect(tezosDelegationOperation.kind, 'kind').to.equal(TezosOperationType.DELEGATION)
+//       expect(tezosDelegationOperation.source, 'source').to.equal('KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy')
+//       expect(tezosDelegationOperation.fee, 'fee').to.equal('1420')
+//       expect(tezosDelegationOperation.counter, 'counter').to.equal('917316')
+//       expect(tezosDelegationOperation.gas_limit, 'gas_limit').to.equal('10000')
+//       expect(tezosDelegationOperation.storage_limit, 'storage_limit').to.equal('0')
+//       expect(tezosDelegationOperation.delegate, 'delegate').to.equal(undefined)
+
+//       expect(tz.binaryTransaction).to.equal(
+//         'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb9550a01ba4e7349ac25dc5eb2df5a43fceacc58963df4f5008c0bc4fe37904e0000'
+//       )
+//     })
 
 //     it('should be able to check the delegation state of a DELEGATED KT address', async () => {
 //       const delegatedState = await ktTezosLib.isAddressDelegated('KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy')
 
 //       expect(delegatedState.isDelegated).to.equal(true)
+//       expect(delegatedState.setable).to.equal(true)
 //       expect(delegatedState.value).to.equal('tz1cX93Q3KsiTADpCC4f12TBvAmS5tw7CW19')
 
 //       expect(delegatedState.delegatedDate!.getTime()).to.equal(new Date('2019-03-19T12:39:37Z').getTime())
@@ -473,6 +479,7 @@
 //       const undelegatedState = await ktTezosLib.isAddressDelegated('KT1RBMUbb7QSD46VXhAvaMiyVSoys6QZiTxN')
 
 //       expect(undelegatedState.isDelegated).to.equal(false)
+//       expect(undelegatedState.setable).to.equal(true)
 //       expect(undelegatedState.value).to.equal(undefined)
 //       expect(undelegatedState.delegatedDate).to.equal(undefined)
 //       expect(undelegatedState.delegatedOpLevel).to.equal(undefined)
@@ -488,6 +495,7 @@
 //       const delegatedState = await ktTezosLib.isAddressDelegated('KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy')
 
 //       expect(delegatedState.isDelegated).to.equal(true)
+//       expect(delegatedState.setable).to.equal(true)
 //       expect(delegatedState.value).to.equal('tz1cX93Q3KsiTADpCC4f12TBvAmS5tw7CW19')
 
 //       expect(delegatedState.delegatedDate!.getTime()).to.equal(new Date('2019-03-19T12:39:37Z').getTime())
@@ -510,6 +518,7 @@
 //       const delegatedState = await ktTezosLib.isAddressDelegated('KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy')
 
 //       expect(delegatedState.isDelegated).to.equal(true)
+//       expect(delegatedState.setable).to.equal(true)
 //       expect(delegatedState.value).to.equal('tz1cX93Q3KsiTADpCC4f12TBvAmS5tw7CW19')
 
 //       expect(delegatedState.delegatedDate).to.equal(undefined)

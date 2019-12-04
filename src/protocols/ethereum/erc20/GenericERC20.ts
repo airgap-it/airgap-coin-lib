@@ -1,64 +1,19 @@
-import * as abiDecoder from 'abi-decoder'
-import axios from 'axios'
-import BigNumber from 'bignumber.js'
-import * as ethUtil from 'ethereumjs-util'
-
+import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import * as ethUtil from '../../../dependencies/src/ethereumjs-util-5.2.0/index'
 import { IAirGapSignedTransaction } from '../../../interfaces/IAirGapSignedTransaction'
 import { IAirGapTransaction } from '../../../interfaces/IAirGapTransaction'
-import { SignedEthereumTransaction } from '../../../serializer/signed-transactions/ethereum-transactions.serializer'
-import { UnsignedTransaction } from '../../../serializer/unsigned-transaction.serializer'
-import {
-  RawEthereumTransaction,
-  UnsignedEthereumTransaction
-} from '../../../serializer/unsigned-transactions/ethereum-transactions.serializer'
+import { UnsignedTransaction } from '../../../serializer/schemas/definitions/transaction-sign-request'
+import { UnsignedEthereumTransaction } from '../../../serializer/schemas/definitions/transaction-sign-request-ethereum'
+import { SignedEthereumTransaction } from '../../../serializer/schemas/definitions/transaction-sign-response-ethereum'
+import { RawEthereumTransaction } from '../../../serializer/types'
 import { ICoinSubProtocol, SubProtocolType } from '../../ICoinSubProtocol'
 import { BaseEthereumProtocol } from '../BaseEthereumProtocol'
-const EthereumTransaction = require('ethereumjs-tx')
+import { EtherscanInfoClient } from '../clients/info-clients/EtherscanInfoClient'
+import { AirGapNodeClient, EthereumRPCDataTransfer } from '../clients/node-clients/AirGapNodeClient'
+import { EthereumUtils } from '../utils/utils'
 
-const AUTH_TOKEN_ABI = [
-  {
-    constant: true,
-    inputs: [
-      {
-        name: '_owner',
-        type: 'address'
-      }
-    ],
-    name: 'balanceOf',
-    outputs: [
-      {
-        name: 'balance',
-        type: 'uint256'
-      }
-    ],
-    payable: false,
-    type: 'function'
-  },
-  {
-    constant: false,
-    inputs: [
-      {
-        name: '_to',
-        type: 'address'
-      },
-      {
-        name: '_value',
-        type: 'uint256'
-      }
-    ],
-    name: 'transfer',
-    outputs: [
-      {
-        name: 'success',
-        type: 'bool'
-      }
-    ],
-    payable: false,
-    type: 'function'
-  }
-]
+const EthereumTransaction = require('../../../dependencies/src/ethereumjs-tx-1.3.7/index')
 
-abiDecoder.addABI(AUTH_TOKEN_ABI)
 export interface GenericERC20Configuration {
   symbol: string
   name: string
@@ -71,15 +26,19 @@ export interface GenericERC20Configuration {
   chainId?: number
 }
 
-export class GenericERC20 extends BaseEthereumProtocol implements ICoinSubProtocol {
-  public tokenContract: any
-  public isSubProtocol = true
-  public subProtocolType = SubProtocolType.TOKEN
+export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, EtherscanInfoClient> implements ICoinSubProtocol {
+  public isSubProtocol: boolean = true
+  public subProtocolType: SubProtocolType = SubProtocolType.TOKEN
+  public readonly contractAddress: string
 
   constructor(config: GenericERC20Configuration) {
-    super(config.jsonRPCAPI, config.infoAPI, config.chainId || 1) // we probably need another network here, explorer is ok
-
-    this.tokenContract = new this.web3.eth.Contract(AUTH_TOKEN_ABI as any, config.contractAddress) // todo: check whether the auth_token_abi conversion here is okay
+    // we probably need another network here, explorer is ok
+    super({
+      chainID: config.chainId || 1,
+      nodeClient: new AirGapNodeClient(config.jsonRPCAPI),
+      infoClient: new EtherscanInfoClient(config.infoAPI)
+    })
+    this.contractAddress = config.contractAddress
     this.symbol = config.symbol
     this.name = config.name
     this.marketSymbol = config.marketSymbol
@@ -87,40 +46,46 @@ export class GenericERC20 extends BaseEthereumProtocol implements ICoinSubProtoc
     this.decimals = config.decimals || this.decimals
   }
 
-  public async getBalanceOfPublicKey(publicKey: string): Promise<BigNumber> {
-    const address = await this.getAddressFromPublicKey(publicKey)
+  public async getBalanceOfPublicKey(publicKey: string): Promise<string> {
+    const address: string = await this.getAddressFromPublicKey(publicKey)
+
     return this.getBalanceOfAddresses([address])
   }
 
-  public async getBalanceOfAddresses(addresses: string[]): Promise<BigNumber> {
-    const balances = await Promise.all(
-      addresses.map(address => {
-        return this.tokenContract.methods.balanceOf(address).call()
+  public async getBalanceOfAddresses(addresses: string[]): Promise<string> {
+    const balances: BigNumber[] = await Promise.all(
+      addresses.map((address: string) => {
+        return this.configuration.nodeClient.callBalanceOf(this.contractAddress, address)
       })
     )
-    return balances.map(obj => new BigNumber(obj)).reduce((a, b) => a.plus(b))
+
+    return balances.reduce((a: BigNumber, b: BigNumber) => a.plus(b)).toString(10)
   }
 
   public signWithPrivateKey(privateKey: Buffer, transaction: RawEthereumTransaction): Promise<IAirGapSignedTransaction> {
     if (!transaction.data || transaction.data === '0x') {
-      transaction.data = this.tokenContract.methods.transfer(transaction.to, transaction.value).encodeABI() // backwards-compatible fix
+      transaction.data = new EthereumRPCDataTransfer(transaction.to, transaction.value).abiEncoded() // backwards-compatible fix
     }
 
     return super.signWithPrivateKey(privateKey, transaction)
   }
 
-  private async estimateGas(recipient: string, hexValue: string, params: any): Promise<string> {
-    const gasEstimate = await this.tokenContract.methods.transfer(recipient, hexValue).estimateGas(params)
+  private async estimateGas(source: string, recipient: string, hexValue: string): Promise<string> {
+    const gasEstimate: number = await this.configuration.nodeClient.estimateTransferGas(this.contractAddress, source, recipient, hexValue)
+
     return gasEstimate.toFixed()
   }
 
   public async prepareTransactionFromPublicKey(
     publicKey: string,
     recipients: string[],
-    values: BigNumber[],
-    fee: BigNumber
+    values: string[],
+    fee: string
   ): Promise<RawEthereumTransaction> {
-    if (recipients.length !== values.length) {
+    const wrappedValues: BigNumber[] = values.map((value: string) => new BigNumber(value))
+    const wrappedFee: BigNumber = new BigNumber(fee)
+
+    if (recipients.length !== wrappedValues.length) {
       throw new Error('recipients length does not match with values')
     }
 
@@ -128,31 +93,36 @@ export class GenericERC20 extends BaseEthereumProtocol implements ICoinSubProtoc
       throw new Error('you cannot have 0 recipients')
     }
 
-    const balance = await this.getBalanceOfPublicKey(publicKey)
+    const balance: BigNumber = new BigNumber(await this.getBalanceOfPublicKey(publicKey))
 
-    if (balance.isGreaterThanOrEqualTo(values[0])) {
-      const ethBalance = await super.getBalanceOfPublicKey(publicKey)
-      const address = await this.getAddressFromPublicKey(publicKey)
+    if (balance.isGreaterThanOrEqualTo(wrappedValues[0])) {
+      const ethBalance: BigNumber = new BigNumber(await super.getBalanceOfPublicKey(publicKey))
+      const address: string = await this.getAddressFromPublicKey(publicKey)
 
-      const gasAmountWeb3: string = await this.estimateGas(recipients[0], this.web3.utils.toHex(values[0].toFixed()).toString(), {
-        from: address
-      })
+      const estimatedAmount: string = await this.estimateGas(
+        address,
+        recipients[0],
+        EthereumUtils.toHex(wrappedValues[0].toFixed()).toString()
+      )
 
       // re-cast to our own big-number
-      const gasAmount = new BigNumber(gasAmountWeb3)
+      const gasAmount: BigNumber = new BigNumber(estimatedAmount)
 
-      if (ethBalance.isGreaterThanOrEqualTo(fee)) {
-        const txCount = await this.web3.eth.getTransactionCount(address)
-        const gasPrice = fee.isEqualTo(0) ? new BigNumber(0) : fee.div(gasAmount).integerValue(BigNumber.ROUND_CEIL)
+      if (ethBalance.isGreaterThanOrEqualTo(wrappedFee)) {
+        const txCount: number = await this.configuration.nodeClient.fetchTransactionCount(address)
+        const gasPrice: BigNumber = wrappedFee.isEqualTo(0)
+          ? new BigNumber(0)
+          : wrappedFee.div(gasAmount).integerValue(BigNumber.ROUND_CEIL)
         const transaction: RawEthereumTransaction = {
-          nonce: this.web3.utils.toHex(txCount),
-          gasLimit: this.web3.utils.toHex(gasAmount.toFixed()),
-          gasPrice: this.web3.utils.toHex(gasPrice.toFixed()),
-          to: this.tokenContract.options.address,
-          value: this.web3.utils.toHex(new BigNumber(0).toFixed()),
-          chainId: this.chainId,
-          data: this.tokenContract.methods.transfer(recipients[0], this.web3.utils.toHex(values[0].toFixed()).toString()).encodeABI()
+          nonce: EthereumUtils.toHex(txCount),
+          gasLimit: EthereumUtils.toHex(gasAmount.toFixed()),
+          gasPrice: EthereumUtils.toHex(gasPrice.toFixed()),
+          to: this.contractAddress,
+          value: EthereumUtils.toHex(new BigNumber(0).toFixed()),
+          chainId: this.configuration.chainID,
+          data: new EthereumRPCDataTransfer(recipients[0], EthereumUtils.toHex(wrappedValues[0].toFixed())).abiEncoded()
         }
+
         return transaction
       } else {
         throw new Error('not enough ETH balance')
@@ -163,72 +133,57 @@ export class GenericERC20 extends BaseEthereumProtocol implements ICoinSubProtoc
   }
 
   public getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
-    const airGapTransactions: IAirGapTransaction[] = []
+    const page: number = Math.ceil(offset / limit)
+
     return new Promise((overallResolve, overallReject) => {
       const promises: Promise<IAirGapTransaction[]>[] = []
       for (const address of addresses) {
-        promises.push(
-          new Promise((resolve, reject) => {
-            const page = this.getPageNumber(limit, offset)
-            axios
-              .get(
-                `${this.infoAPI}/api?module=account&action=tokentx&address=${address}&contractAddress=${
-                  this.tokenContract.options.address
-                }&page=${page}&offset=${limit}&sort=desc`
-              )
-              .then(response => {
-                const transactionResponse = response.data
-                for (const transaction of transactionResponse.result) {
-                  const fee = new BigNumber(transaction.gas).times(new BigNumber(transaction.gasPrice))
-                  const airGapTransaction: IAirGapTransaction = {
-                    hash: transaction.hash,
-                    from: [transaction.from],
-                    to: [transaction.to],
-                    isInbound: transaction.to.toLowerCase() === address.toLowerCase(),
-                    blockHeight: transaction.blockNumber,
-                    protocolIdentifier: this.identifier,
-                    amount: new BigNumber(transaction.value),
-                    fee,
-                    timestamp: parseInt(transaction.timeStamp, 10)
-                  }
-
-                  airGapTransactions.push(airGapTransaction)
-                }
-
-                resolve(airGapTransactions)
-              })
-              .catch(reject)
-          })
-        )
+        promises.push(this.configuration.infoClient.fetchContractTransactions(this.identifier, this.contractAddress, address, page, limit))
       }
       Promise.all(promises)
         .then(values => {
-          overallResolve(([] as IAirGapTransaction[]).concat.apply([], values))
+          overallResolve(
+            values.reduce((a, b) => {
+              return a.concat(b)
+            })
+          )
         })
         .catch(overallReject)
     })
   }
 
-  public async getTransactionDetailsFromSigned(signedTx: SignedEthereumTransaction): Promise<IAirGapTransaction> {
-    const ethTx = await super.getTransactionDetailsFromSigned(signedTx)
+  public async getTransactionDetailsFromSigned(signedTx: SignedEthereumTransaction): Promise<IAirGapTransaction[]> {
+    const ethTxs: IAirGapTransaction[] = await super.getTransactionDetailsFromSigned(signedTx)
+
+    if (ethTxs.length !== 1) {
+      throw new Error('More than one ETH transaction detected.')
+    }
+
+    const ethTx: IAirGapTransaction = ethTxs[0]
 
     const extractedTx = new EthereumTransaction(signedTx.transaction)
-    const tokenTransferDetails = abiDecoder.decodeMethod(`0x${extractedTx.data.toString('hex')}`)
-    ethTx.to = [ethUtil.toChecksumAddress(tokenTransferDetails.params[0].value)]
-    ethTx.amount = new BigNumber(tokenTransferDetails.params[1].value)
+    const tokenTransferDetails = new EthereumRPCDataTransfer(`0x${extractedTx.data.toString('hex')}`)
+    ethTx.to = [ethUtil.toChecksumAddress(tokenTransferDetails.recipient)]
+    ethTx.amount = new BigNumber(tokenTransferDetails.amount).toString(10)
 
-    return ethTx
+    return [ethTx]
   }
 
-  public async getTransactionDetails(unsignedTx: UnsignedTransaction): Promise<IAirGapTransaction> {
+  public async getTransactionDetails(unsignedTx: UnsignedTransaction): Promise<IAirGapTransaction[]> {
     const unsignedEthereumTx = unsignedTx as UnsignedEthereumTransaction
-    const ethTx = await super.getTransactionDetails(unsignedEthereumTx)
+    const ethTxs: IAirGapTransaction[] = await super.getTransactionDetails(unsignedEthereumTx)
 
-    const tokenTransferDetails = abiDecoder.decodeMethod(unsignedEthereumTx.transaction.data)
+    if (ethTxs.length !== 1) {
+      throw new Error('More than one ETH transaction detected.')
+    }
 
-    ethTx.to = [ethUtil.toChecksumAddress(tokenTransferDetails.params[0].value)]
-    ethTx.amount = new BigNumber(tokenTransferDetails.params[1].value)
+    const ethTx: IAirGapTransaction = ethTxs[0]
 
-    return ethTx
+    const tokenTransferDetails = new EthereumRPCDataTransfer(unsignedEthereumTx.transaction.data)
+
+    ethTx.to = [ethUtil.toChecksumAddress(tokenTransferDetails.recipient)]
+    ethTx.amount = new BigNumber(tokenTransferDetails.amount).toString(10)
+
+    return [ethTx]
   }
 }

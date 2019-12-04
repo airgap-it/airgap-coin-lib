@@ -1,4 +1,4 @@
-export function padStart(targetString: string, targetLength: number, padString: string) {
+export function padStart(targetString: string, targetLength: number, padString: string): string {
   // truncate if number, or convert non-number to 0
   targetLength = targetLength >> 0
 
@@ -10,6 +10,7 @@ export function padStart(targetString: string, targetLength: number, padString: 
       // append to original to ensure we are longer than needed
       padString += padString.repeat(targetLength / padString.length)
     }
+
     return padString.slice(0, targetLength) + targetString
   }
 }

@@ -33,6 +33,7 @@
       }
     },
     // "no-implicit-dependencies": [true, "dev"],
+    "strict-comparisons": true,
     "type-literal-delimiter": false
   }
 }

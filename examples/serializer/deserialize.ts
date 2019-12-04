@@ -1,32 +1,18 @@
 // tslint:disable:no-console
 
-import { DeserializedSyncProtocol, EthereumProtocol, IAirGapTransaction, SyncProtocolUtils } from '../../src'
-import { UnsignedEthereumTransaction } from '../../src/serializer/unsigned-transactions/ethereum-transactions.serializer'
+import { IACMessageDefinitionObject } from '../../src/serializer/message'
+import { Serializer } from '../../src/serializer/serializer'
 
-const url: string =
-  '3FGmTQe41UxKgNMYnNg8PPnbdrk1JteEoJeF5pX6mfr4Vq69A2ah9ezGojGhd3MgA4ikgQLVxmjosUc8J5Ai8TEjGJZsefA2gSJgLYD76hRmyPXRMHKVVAh7G6TfmXrBs1qSNL3SJuddRaKco4ANM9Up31VH7dko8ys2FdkS4EGcbo4pu33TvAG9dpBMf49fhfQu2m87NxwrucaRykJwTYJABZGY26ciBgcxpJybQxsg5FWXsyLNkZLXN8eXUB5aemA2T7E'
+const urls: string[] = [
+  'UV9La4L9iqSztUbkKAE6tGeeTixJuam5wNaybVk3fJQYaZh6hUiRpXeXRzJ9TCXTuptahAx6WM97VH7VB7NjU9aQgmbN9MogwhZSyW6e7k2B9m8AGxLqBdENyp8Vq22EYpeb1xTgNfaSfwDwsJWJURiZvPat1bCTJj7iLWKBtvNqFjtgVABAbmk2RWjogXtwyZVfaENYLR3PP8WAhJZZ6dHM4WJA7VaNb22rreiS4td8vMA4e2mvUfJ1gB18inJY1DvY1JyeJUnujc2XBmAYTuAeoSGwxQkpUnScnucmzsk1xJik9FYztmZi1T86AS8znrMKZhwSGrzTCXVk8DnYhwp4bm3YhPzVLLbpvHYev1Nk3LNWtyNt9HjCScyQBYN9365kyWM6L28cemfqZzidPXzNcZnibgnvsXX6k1h6v77yFCbg5JXqk7UeaY4r7nMGhX1JuBvcSsEahDXMAmfJVo3NFZVCj4TKKZXsLZ1ByPVEgz2cyUoJjn13G5X8SQCPBWam4MBm17dQcJq9N33HnWhn7nGncjVat2gUEKXc94ZV'
+]
 
-const tezosProtocol: EthereumProtocol = new EthereumProtocol()
-const syncProtocol: SyncProtocolUtils = new SyncProtocolUtils()
+const serializer: Serializer = new Serializer()
 
-syncProtocol
-  .deserialize(url)
-  .then((sync: DeserializedSyncProtocol) => {
+serializer
+  .deserialize(urls)
+  .then((sync: IACMessageDefinitionObject[]) => {
     console.log('decoded:', sync)
-
-    // Cast it to the type you expect
-    const unsigned: UnsignedEthereumTransaction = sync.payload as UnsignedEthereumTransaction
-    tezosProtocol
-      .getTransactionDetails({
-        publicKey: '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
-        transaction: unsigned.transaction
-      })
-      .then((result: IAirGapTransaction) => {
-        console.log('transactions', result)
-      })
-      .catch((error: Error) => {
-        console.error('DESERIALIZE ERROR:', error)
-      })
   })
   .catch((error: Error) => {
     console.error('DESERIALIZE ERROR:', error)

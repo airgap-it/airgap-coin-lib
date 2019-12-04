@@ -1,6 +1,6 @@
 {
   "name": "airgap-coin-lib",
-  "version": "0.5.17",
+  "version": "0.6.0",
   "description": "The airgap-coin-lib is setup in a way that prepare, signing and broadcasting are willingfully separated.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -18,68 +18,91 @@
     "url": "https://github.com/airgap-it/airgap-coin-lib"
   },
   "scripts": {
-    "build": "tsc",
-    "tslint": "tslint -c ./tslint.json --project ./tsconfig.json --format stylish",
+    "build": "tsc && node scripts/copy-files-after-build.js && node scripts/make-ts-declaration-files-backwards-compatible.js",
+    "build-scripts": "tsc scripts/*.ts",
+    "lint": "tslint -c ./tslint.json --project ./tsconfig.json --format stylish --fix",
+    "lint:prettier": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint-ci": "tslint -t json -o lintReport.json --project . || true",
     "test": "nyc mocha --require ts-node/register --require source-map-support/register --full-trace --timeout 40000 ./test/**/**.spec.ts",
     "test-ci": "nyc --reporter=lcov npm test",
     "test-legacy": "npm run build && mocha --full-trace --timeout 40000 ./test/**/**.spec.js",
     "sonar-scanner": "sonar-scanner",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "install-test-dependencies": "node scripts/install-test-deps.js && npm install",
+    "install-build-dependencies": "node scripts/install-build-deps.js && npm install",
+    "browserify": "browserify"
   },
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
-    "@aeternity/hd-wallet": "github:airgap-it/hd-wallet-js#b216450e56954a6e82ace0aade9474673de5d9d5",
-    "abi-decoder": "github:airgap-it/abi-decoder#a4b60b35d12af863026d6d723bec73b172c4e5b7",
-    "axios": "0.18.0",
+    "libsodium-wrappers": "0.7.3"
+  },
+  "localDependencies": {
+    "hd-wallet-js": "b216450e56954a6e82ace0aade9474673de5d9d5",
+    "axios": "0.19.0",
+    "bech32": "1.1.3",
     "big-integer": "1.6.45",
-    "bignumber.js": "8.0.1",
+    "bignumber.js": "9.0.0",
+    "bip32": "2.0.4",
     "bip39": "2.5.0",
-    "bitcoinjs-lib": "3.3.2",
-    "bitcoinjs-lib-zcash": "3.5.2",
-    "bitgo-utxo-lib": "github:airgap-it/bitgo-utxo-lib#5d91049fd7a988382df81c8260e244ee56d57aac",
+    "bitgo-utxo-lib": "5d91049fd7a988382df81c8260e244ee56d57aac",
     "bs58check": "2.1.2",
     "create-hash": "1.2.0",
     "cryptocompare": "0.5.0",
+    "eth-lib": "0.2.7",
     "ethereumjs-tx": "1.3.7",
     "ethereumjs-util": "5.2.0",
     "libsodium-wrappers": "0.7.3",
-    "rlp": "2.1.0",
-    "tweetnacl": "1.0.0",
-    "validate.js": "0.12.0",
-    "validator": "10.8.0",
-    "web3": "1.0.0-beta.36"
+    "rlp": "2.2.3",
+    "ripemd160": "2.0.2",
+    "secp256k1": "3.7.1",
+    "validate.js": "0.13.1",
+    "utf8": "3.0.0"
   },
   "devDependencies": {
+    "@types/node": "12.12.6",
+    "typescript": "3.7.2",
+    "sonarqube-scanner": "2.5.0"
+  },
+  "buildDependencies": {
+    "@types/node": "12.12.6",
+    "typescript": "3.7.2",
+    "sonarqube-scanner": "2.5.0"
+  },
+  "testDependencies": {
     "@types/assert": "0.0.31",
     "@types/bip39": "2.4.0",
-    "@types/bitcoinjs-lib": "3.4.0",
     "@types/chai": "4.1.7",
     "@types/chai-as-promised": "7.1.0",
     "@types/ethereumjs-util": "5.2.0",
     "@types/jasmine": "2.8.9",
     "@types/mocha": "5.2.5",
-    "@types/node": "10.12.0",
+    "@types/node": "12.12.6",
+    "@types/semver": "6.0.2",
     "@types/underscore": "1.8.9",
+    "ajv": "6.10.2",
+    "browserify": "16.5.0",
     "chai": "4.2.0",
     "chai-as-promised": "7.1.1",
-    "husky": "1.1.2",
+    "husky": "3.0.9",
     "istanbul": "0.4.5",
     "mocha": "5.2.0",
     "node-fetch": "2.2.0",
     "nyc": "12.0.2",
-    "prettier": "1.14.2",
-    "pretty-quick": "1.8.0",
+    "prettier": "1.19.1",
+    "pretty-quick": "2.0.1",
     "qrcode-terminal": "0.12.0",
+    "semver": "6.3.0",
     "sinon": "6.3.5",
-    "sonarqube-scanner": "2.1.2",
-    "ts-node": "7.0.1",
-    "tslint": "5.11.0",
-    "tslint-config-prettier": "1.15.0",
-    "tslint-config-valorsoft": "2.2.1",
-    "typescript": "3.5.3",
-    "websocket": "1.0.28"
+    "sonarqube-scanner": "2.5.0",
+    "ts-json-schema-generator": "0.56.0",
+    "ts-node": "8.5.0",
+    "tslint": "5.20.1",
+    "tslint-config-prettier": "1.18.0",
+    "tslint-config-valorsoft": "2.2.1"
   },
+  "files": [
+    "/dist"
+  ],
   "nyc": {
     "include": [
       "src/**/*.ts"
@@ -99,10 +122,5 @@
     ],
     "sourceMap": true,
     "instrument": true
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "pretty-quick --staged"
-    }
   }
 }

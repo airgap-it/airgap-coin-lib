@@ -1,4 +1,3 @@
-import BigNumber from 'bignumber.js'
 import * as chai from 'chai'
 import * as chaiAsPromised from 'chai-as-promised'
 import 'mocha'
@@ -10,7 +9,7 @@ import { TestProtocolSpec } from './implementations'
 import { AETestProtocolSpec } from './specs/ae'
 import { BitcoinProtocolSpec } from './specs/bitcoin'
 import { BitcoinTestProtocolSpec } from './specs/bitcoin-test'
-import { ERC20HOPTokenTestProtocolSpec } from './specs/erc20-hop-token'
+import { CosmosTestProtocolSpec } from './specs/cosmos'
 import { EthereumTestProtocolSpec } from './specs/ethereum'
 import { EthereumClassicTestProtocolSpec } from './specs/ethereum-classic'
 import { EthereumRopstenTestProtocolSpec } from './specs/ethereum-ropsten'
@@ -35,7 +34,7 @@ const expect = chai.expect
  */
 
 const protocols = [
-  new ERC20HOPTokenTestProtocolSpec(),
+  new CosmosTestProtocolSpec(),
   new EthereumTestProtocolSpec(),
   new EthereumClassicTestProtocolSpec(),
   new EthereumRopstenTestProtocolSpec(),
@@ -54,8 +53,8 @@ const itIf = (condition, title, test) => {
 protocols.forEach(async (protocol: TestProtocolSpec) => {
   describe(`ICoinProtocol ${protocol.name}`, () => {
     describe(`Blockexplorer`, () => {
-      const address = 'LOOK_AT_MY_HORSE'
-      const txId = 'MY_HORSE_IS_AMAZING'
+      const address = 'dummyAddress'
+      const txId = 'dummyTxId'
 
       const blockExplorerLinkAddress = protocol.lib.getBlockExplorerLinkForAddress(address)
       const blockExplorerLinkTxId = protocol.lib.getBlockExplorerLinkForTxId(txId)
@@ -214,12 +213,7 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
       itIf(!protocol.lib.supportsHD, 'prepareTransactionFromPublicKey - Is able to prepare a transaction with amount 0', async () => {
         // should not throw an exception when trying to create a 0 TX, given enough funds are available for the gas
         try {
-          await protocol.lib.prepareTransactionFromPublicKey(
-            protocol.wallet.publicKey,
-            protocol.txs[0].to,
-            [new BigNumber(0)],
-            protocol.txs[0].fee
-          )
+          await protocol.lib.prepareTransactionFromPublicKey(protocol.wallet.publicKey, protocol.txs[0].to, ['0'], protocol.txs[0].fee)
         } catch (error) {
           throw error
         }
@@ -229,12 +223,7 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
         protocol.stub.noBalanceStub(protocol, protocol.lib)
 
         try {
-          await protocol.lib.prepareTransactionFromPublicKey(
-            protocol.wallet.publicKey,
-            protocol.txs[0].to,
-            [new BigNumber(0)],
-            protocol.txs[0].fee
-          )
+          await protocol.lib.prepareTransactionFromPublicKey(protocol.wallet.publicKey, protocol.txs[0].to, ['0'], protocol.txs[0].fee)
           throw new Error(`should have failed`)
         } catch (error) {
           expect(error.toString()).to.contain('balance')
@@ -261,7 +250,7 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
         }
 
         txs.forEach((tx, index) => {
-          expect(tx).to.equal(protocol.txs[index].signedTx)
+          expect(tx).to.deep.equal(protocol.txs[index].signedTx)
         })
       })
 
@@ -283,10 +272,16 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
     describe(`Extract TX`, () => {
       it('getTransactionDetails - Is able to extract all necessary properties from a TX', async () => {
         for (const tx of protocol.txs) {
-          const airgapTx: IAirGapTransaction = await protocol.lib.getTransactionDetails({
+          const airgapTxs: IAirGapTransaction[] = await protocol.lib.getTransactionDetails({
             publicKey: protocol.wallet.publicKey,
             transaction: tx.unsignedTx
           })
+
+          if (airgapTxs.length !== 1) {
+            throw new Error('Unexpected number of transactions')
+          }
+
+          const airgapTx: IAirGapTransaction = airgapTxs[0]
 
           expect(airgapTx.to, 'to property does not match').to.deep.equal(tx.to)
           expect(airgapTx.from, 'from property does not match').to.deep.equal(tx.from)
@@ -295,27 +290,45 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
           expect(airgapTx.fee, 'fee does not match').to.deep.equal(protocol.txs[0].fee)
 
           expect(airgapTx.protocolIdentifier, 'protocol-identifier does not match').to.equal(protocol.lib.identifier)
+
+          expect(airgapTx.transactionDetails, 'extras should exist').to.not.be.undefined
         }
       })
 
       it('getTransactionDetailsFromSigned - Is able to extract all necessary properties from a TX', async () => {
         for (const tx of protocol.txs) {
-          const airgapTx: IAirGapTransaction = await protocol.lib.getTransactionDetailsFromSigned({
+          // tslint:disable-next-line:no-any
+          const transaction: any = {
             accountIdentifier: protocol.wallet.publicKey.substr(-6),
             from: protocol.wallet.addresses,
             amount: protocol.txs[0].amount,
             fee: protocol.txs[0].fee,
             to: protocol.wallet.addresses,
             transaction: tx.signedTx
-          })
+          }
+          const airgapTxs: IAirGapTransaction[] = await protocol.lib.getTransactionDetailsFromSigned(transaction)
 
-          expect(airgapTx.to.map(obj => obj.toLowerCase()), 'from').to.deep.equal(tx.to.map(obj => obj.toLowerCase()))
-          expect(airgapTx.from.sort().map(obj => obj.toLowerCase()), 'to').to.deep.equal(tx.from.sort().map(obj => obj.toLowerCase()))
+          if (airgapTxs.length !== 1) {
+            throw new Error('Unexpected number of transactions')
+          }
+
+          const airgapTx: IAirGapTransaction = airgapTxs[0]
+
+          expect(
+            airgapTx.to.map(obj => obj.toLowerCase()),
+            'from'
+          ).to.deep.equal(tx.to.map(obj => obj.toLowerCase()))
+          expect(
+            airgapTx.from.sort().map(obj => obj.toLowerCase()),
+            'to'
+          ).to.deep.equal(tx.from.sort().map(obj => obj.toLowerCase()))
 
           expect(airgapTx.amount).to.deep.equal(protocol.txs[0].amount)
           expect(airgapTx.fee).to.deep.equal(protocol.txs[0].fee)
 
           expect(airgapTx.protocolIdentifier).to.equal(protocol.lib.identifier)
+
+          expect(airgapTx.transactionDetails, 'extras should exist').to.not.be.undefined
         }
       })
 
@@ -328,4 +341,70 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
       })
     })
   })
+
+  // describe(`Sign Message`, () => {
+  //   afterEach(async () => {
+  //     sinon.restore()
+  //   })
+
+  //   itIf(protocol.messages, 'signMessage - Is able to sign a message using a PrivateKey', async () => {
+  //     // const privateKey = protocol.lib.getPrivateKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
+
+  //     protocol.messages.forEach(async messageObject => {
+  //       try {
+  //         // const signature = await protocol.lib.signMessage(messageObject.message, privateKey)
+  //         // TODO: Verify signature
+  //         // expect(signature).to.equal(messageObject.signature)
+  //       } catch (e) {
+  //         expect(e).to.equal('Message signing not implemented')
+  //       }
+  //     })
+  //   })
+
+  //   itIf(protocol.messages, 'verifyMessage - Is able to verify a message using a PublicKey', async () => {
+  //     // const privateKey = protocol.lib.getPrivateKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
+  //     // const publicKey = protocol.lib.getPublicKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
+  //     // const publicKeyBuffer = Buffer.from(publicKey, 'hex')
+
+  //     protocol.messages.forEach(async messageObject => {
+  //       try {
+  //         /*
+  //         const signatureIsValid = await protocol.lib.verifyMessage(
+  //           messageObject.message,
+  //           Buffer.from(messageObject.signature) as any,
+  //           publicKeyBuffer
+  //         )
+  //         */
+  //         // TODO: Verify signature
+  //         // expect(signatureIsValid).to.be.true
+  //       } catch (e) {
+  //         expect(e).to.equal('Message signing not implemented')
+  //       }
+  //     })
+  //   })
+
+  //   itIf(protocol.messages, 'signMessage and verifyMessage - Is able to sign and verify a message', async () => {
+  //     const privateKey = protocol.lib.getPrivateKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
+  //     const publicKey = protocol.lib.getPublicKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
+  //     const publicKeyBuffer = Buffer.from(publicKey, 'hex')
+
+  //     protocol.messages.forEach(async messageObject => {
+  //       try {
+  //         const signature = await protocol.lib.signMessage(messageObject.message, privateKey)
+  //         const signatureIsValid = await protocol.lib.verifyMessage(messageObject.message, signature, publicKeyBuffer)
+
+  //         expect(signatureIsValid).to.be.true
+
+  //         const signature2IsValid = await protocol.lib.verifyMessage(
+  //           `different-message-${messageObject.message}`,
+  //           signature,
+  //           publicKeyBuffer
+  //         )
+  //         expect(signature2IsValid).to.be.false
+  //       } catch (e) {
+  //         expect(e).to.equal('Message signing not implemented')
+  //       }
+  //     })
+  //   })
+  // })
 })

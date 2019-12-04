@@ -1,0 +1,34 @@
+{
+  "$ref": "#/definitions/MessageSignResponse",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "MessageSignResponse": {
+      "additionalProperties": false,
+      "properties": {
+        "callbackURL": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "origin": {
+          "type": "string"
+        },
+        "signature": {
+          "type": "string"
+        },
+        "ttl": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "message",
+        "signature",
+        "ttl",
+        "origin",
+        "callbackURL"
+      ],
+      "type": "object"
+    }
+  }
+}

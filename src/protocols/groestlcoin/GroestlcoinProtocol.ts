@@ -1,45 +1,44 @@
-import BigNumber from 'bignumber.js'
-import * as bitGoUTXO from 'bitgo-utxo-lib'
-
+import * as bitGoUTXO from '../../dependencies/src/bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac/src/index'
 import { BitcoinBlockbookProtocol } from '../bitcoin/BitcoinBlockbookProtocol'
+import { CurrencyUnit, FeeDefaults } from '../ICoinProtocol'
 
 export class GroestlcoinProtocol extends BitcoinBlockbookProtocol {
-  public symbol = 'GRS'
-  public name = 'Groestlcoin'
-  public marketSymbol = 'grs'
+  public symbol: string = 'GRS'
+  public name: string = 'Groestlcoin'
+  public marketSymbol: string = 'grs'
 
-  public feeSymbol = 'grs'
+  public feeSymbol: string = 'grs'
 
-  public feeDefaults = {
-    low: new BigNumber('0.00002'),
-    medium: new BigNumber('0.00004'),
-    high: new BigNumber('0.00005')
+  public feeDefaults: FeeDefaults = {
+    low: '0.00002',
+    medium: '0.00004',
+    high: '0.00005'
   }
-  public decimals = 8
-  public feeDecimals = 8
-  public identifier = 'grs'
-  public units = [
+  public decimals: number = 8
+  public feeDecimals: number = 8
+  public identifier: string = 'grs'
+  public units: CurrencyUnit[] = [
     {
       unitSymbol: 'GRS',
-      factor: new BigNumber(1)
+      factor: '1'
     },
     {
       unitSymbol: 'mGRS',
-      factor: new BigNumber(1).shiftedBy(-4)
+      factor: '0.0001'
     },
     {
       unitSymbol: 'Satoshi',
-      factor: new BigNumber(1).shiftedBy(-8)
+      factor: '0.00000001'
     }
   ]
 
-  public supportsHD = true
+  public supportsHD: boolean = true
 
-  public standardDerivationPath = `m/44'/17'/0'`
-  public addressValidationPattern = '^([F3][a-km-zA-HJ-NP-Z1-9]{33}|grs1[a-zA-HJ-NP-Z0-9]{39})$'
-  public addressPlaceholder = 'Fdb...'
+  public standardDerivationPath: string = `m/44'/17'/0'`
+  public addressValidationPattern: string = '^([F3][a-km-zA-HJ-NP-Z1-9]{33}|grs1[a-zA-HJ-NP-Z0-9]{39})$'
+  public addressPlaceholder: string = 'Fdb...'
 
-  public blockExplorer = 'https://chainz.cryptoid.info/grs'
+  public blockExplorer: string = 'https://chainz.cryptoid.info/grs'
 
   constructor() {
     super(bitGoUTXO.networks.groestlcoin, 'https://blockbook.groestlcoin.org', bitGoUTXO)

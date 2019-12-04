@@ -1,6 +1,5 @@
-import { BigNumber } from 'bignumber.js'
-
 import { IAirGapTransaction } from '..'
+import { BigNumber } from '../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { MarketDataSample } from '../wallet/AirGapMarketWallet'
 
 export interface IAirGapMarketWallet {

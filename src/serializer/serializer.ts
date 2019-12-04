@@ -1,123 +1,121 @@
-import * as bs58check from 'bs58check'
-import * as rlp from 'rlp'
+import { CosmosTransaction } from '../protocols/cosmos/CosmosTransaction'
 
-import { signedTransactionSerializerByProtocolIdentifier, unsignedTransactionSerializerByProtocolIdentifier } from '.'
-import { SERIALIZER_VERSION } from './constants'
-import { SerializerVersionMismatch, TypeNotSupported } from './errors'
-import { SerializedSyncProtocolSignedTransaction, SignedTransaction } from './signed-transaction.serializer'
-import { SerializedSyncProtocolTransaction, UnsignedTransaction } from './unsigned-transaction.serializer'
-import { toBuffer } from './utils/toBuffer'
-import { SerializedSyncProtocolWalletSync, SyncWalletRequest, WalletSerializer } from './wallet-sync.serializer'
+import { IACProtocol } from './inter-app-communication-protocol'
+import { IACMessageType } from './interfaces'
+import { IACMessageDefinitionObject } from './message'
+import { FullPayload } from './payloads/full-payload'
+import { Payload } from './payloads/payload'
+import { SerializableUnsignedCosmosTransaction } from './schemas/definitions/transaction-sign-request-cosmos'
+import { SchemaInfo, SchemaRoot } from './schemas/schema'
 
-export enum SyncProtocolKeys {
-  VERSION,
-  TYPE,
-  PROTOCOL,
-  PAYLOAD
+const accountShareResponse: SchemaRoot = require('./schemas/generated/account-share-response.json')
+
+const messageSignRequest: SchemaRoot = require('./schemas/generated/message-sign-request.json')
+const messageSignResponse: SchemaRoot = require('./schemas/generated/message-sign-response.json')
+
+const unsignedTransactionAeternity: SchemaRoot = require('./schemas/generated/transaction-sign-request-aeternity.json')
+const unsignedTransactionBitcoin: SchemaRoot = require('./schemas/generated/transaction-sign-request-bitcoin.json')
+const unsignedTransactionCosmos: SchemaRoot = require('./schemas/generated/transaction-sign-request-cosmos.json')
+const unsignedTransactionEthereum: SchemaRoot = require('./schemas/generated/transaction-sign-request-ethereum.json')
+const unsignedTransactionTezos: SchemaRoot = require('./schemas/generated/transaction-sign-request-tezos.json')
+
+const signedTransactionAeternity: SchemaRoot = require('./schemas/generated/transaction-sign-response-aeternity.json')
+const signedTransactionBitcoin: SchemaRoot = require('./schemas/generated/transaction-sign-response-bitcoin.json')
+const signedTransactionCosmos: SchemaRoot = require('./schemas/generated/transaction-sign-response-cosmos.json')
+const signedTransactionEthereum: SchemaRoot = require('./schemas/generated/transaction-sign-response-ethereum.json')
+const signedTransactionTezos: SchemaRoot = require('./schemas/generated/transaction-sign-response-tezos.json')
+
+function unsignedTransactionTransformerCosmos(value: SerializableUnsignedCosmosTransaction): SerializableUnsignedCosmosTransaction {
+  value.transaction = CosmosTransaction.fromJSON(value) as any
+
+  return value
 }
 
-export enum EncodedType {
-  UNSIGNED_TRANSACTION,
-  SIGNED_TRANSACTION,
-  WALLET_SYNC
+export enum IACPayloadType {
+  FULL = 0,
+  CHUNKED = 1
 }
 
-export type SerializedSyncProtocolPayload =
-  | SerializedSyncProtocolTransaction
-  | SerializedSyncProtocolWalletSync
-  | SerializedSyncProtocolSignedTransaction
+export class Serializer {
+  private static readonly schemas: Map<string, SchemaInfo> = new Map()
 
-export interface SerializedSyncProtocol extends Array<Buffer | SerializedSyncProtocolPayload> {
-  [0]: Buffer // SyncProtocolKeys.VERSION
-  [1]: Buffer // SyncProtocolKeys.TYPE
-  [2]: Buffer // SyncProtocolKeys.PROTOCOL
-  [3]: SerializedSyncProtocolPayload // SyncProtocolKeys.PAYLOAD
-}
+  public static addSchema(schemaName: string, schema: SchemaInfo, protocol?: string): void {
+    const protocolSpecificSchemaName: string = Serializer.getSchemName(schemaName, protocol)
 
-export interface DeserializedSyncProtocol {
-  version?: number
-  type: EncodedType
-  protocol: string
-  payload: UnsignedTransaction | SyncWalletRequest | SignedTransaction
-}
-
-export class SyncProtocolUtils {
-  public async serialize(deserializedSyncProtocol: DeserializedSyncProtocol): Promise<string> {
-    const version = toBuffer(SERIALIZER_VERSION)
-    const type = toBuffer(deserializedSyncProtocol.type.toString())
-    const protocol = toBuffer(deserializedSyncProtocol.protocol)
-    const typedPayload = deserializedSyncProtocol.payload
-
-    let untypedPayload
-
-    switch (deserializedSyncProtocol.type) {
-      case EncodedType.UNSIGNED_TRANSACTION:
-        untypedPayload = unsignedTransactionSerializerByProtocolIdentifier(deserializedSyncProtocol.protocol).serialize(
-          typedPayload as UnsignedTransaction
-        )
-        break
-      case EncodedType.SIGNED_TRANSACTION:
-        untypedPayload = signedTransactionSerializerByProtocolIdentifier(deserializedSyncProtocol.protocol).serialize(
-          typedPayload as SignedTransaction
-        )
-        break
-      case EncodedType.WALLET_SYNC:
-        untypedPayload = new WalletSerializer().serialize(typedPayload as SyncWalletRequest)
-        break
-      default:
-        throw new TypeNotSupported()
+    if (this.schemas.has(protocolSpecificSchemaName)) {
+      throw new Error(`Schema ${protocolSpecificSchemaName} already exists`)
     }
-
-    const toRlpEncode: any[] = []
-
-    toRlpEncode[SyncProtocolKeys.VERSION] = version
-    toRlpEncode[SyncProtocolKeys.TYPE] = type
-    toRlpEncode[SyncProtocolKeys.PROTOCOL] = protocol
-    toRlpEncode[SyncProtocolKeys.PAYLOAD] = untypedPayload
-
-    const rlpEncoded = rlp.encode(toRlpEncode)
-
-    // as any is necessary due to https://github.com/ethereumjs/rlp/issues/35
-    return bs58check.encode(rlpEncoded)
+    this.schemas.set(protocolSpecificSchemaName, schema)
   }
 
-  public async deserialize(serializedSyncProtocol: string): Promise<DeserializedSyncProtocol> {
-    const base58Decoded = bs58check.decode(serializedSyncProtocol)
-    const rlpDecodedTx: SerializedSyncProtocol = (rlp.decode(base58Decoded as any) as {}) as SerializedSyncProtocol
+  public static getSchema(schemaName: string, protocol?: string): SchemaInfo {
+    const protocolSpecificSchemaName: string = Serializer.getSchemName(schemaName, protocol)
 
-    const version = parseInt(rlpDecodedTx[SyncProtocolKeys.VERSION].toString(), 10)
+    // Try to get the protocol specific scheme, if it doesn't exist fall back to the generic one
+    const schema: SchemaInfo | undefined =
+      this.schemas.get(protocolSpecificSchemaName) ?? this.schemas.get(Serializer.getSchemName(schemaName))
 
-    if (version !== SERIALIZER_VERSION) {
-      throw new SerializerVersionMismatch()
+    if (!schema) {
+      throw new Error(`Schema ${protocolSpecificSchemaName} does not exist`)
     }
 
-    const type = parseInt(rlpDecodedTx[SyncProtocolKeys.TYPE].toString(), 10)
-    const protocol = rlpDecodedTx[SyncProtocolKeys.PROTOCOL].toString()
-    const payload = rlpDecodedTx[SyncProtocolKeys.PAYLOAD]
+    return schema
+  }
 
-    let typedPayload
+  private static getSchemName(schemaName: string, protocol?: string): string {
+    return protocol ? `${schemaName}-${protocol}` : schemaName
+  }
 
-    switch (type) {
-      case EncodedType.UNSIGNED_TRANSACTION:
-        typedPayload = unsignedTransactionSerializerByProtocolIdentifier(protocol).deserialize(payload as SerializedSyncProtocolTransaction)
-        break
-      case EncodedType.SIGNED_TRANSACTION:
-        typedPayload = signedTransactionSerializerByProtocolIdentifier(protocol).deserialize(
-          payload as SerializedSyncProtocolSignedTransaction
-        )
-        break
-      case EncodedType.WALLET_SYNC:
-        typedPayload = new WalletSerializer().deserialize(payload as SerializedSyncProtocolWalletSync)
-        break
-      default:
-        throw new TypeNotSupported()
-    }
+  public async serialize(messages: IACMessageDefinitionObject[], chunkSize: number = 0): Promise<string[]> {
+    if (
+      messages.every((message: IACMessageDefinitionObject) => {
+        return Serializer.getSchema(message.type.toString(), message.protocol)
+      })
+    ) {
+      const iacps: IACProtocol[] = IACProtocol.create(JSON.parse(JSON.stringify(messages)), chunkSize)
 
-    return {
-      version,
-      type,
-      protocol,
-      payload: typedPayload
+      return iacps.map((iac: IACProtocol) => iac.encoded())
+    } else {
+      throw Error('Unknown schema')
     }
   }
+
+  public async deserialize(data: string[]): Promise<IACMessageDefinitionObject[]> {
+    const result: IACProtocol[] = IACProtocol.createFromEncoded(data)
+
+    return result
+      .map((el: IACProtocol) => el.payload)
+      .map((el: Payload) => (el as FullPayload).asJson())
+      .reduce((pv: IACMessageDefinitionObject[], cv: IACMessageDefinitionObject[]) => pv.concat(...cv), [] as IACMessageDefinitionObject[])
+  }
 }
+
+// Serializer.addSchema(IACMessageType.MetadataRequest.toString(), '')
+// Serializer.addSchema(IACMessageType.MetadataResponse.toString(), '')
+
+// Serializer.addSchema(IACMessageType.AccountShareRequest.toString(), accountShareRequest)
+Serializer.addSchema(IACMessageType.AccountShareResponse.toString(), { schema: accountShareResponse })
+
+Serializer.addSchema(IACMessageType.MessageSignRequest.toString(), { schema: messageSignRequest })
+Serializer.addSchema(IACMessageType.MessageSignResponse.toString(), { schema: messageSignResponse })
+
+// TODO: Make sure that we have a schema for every protocol we support
+Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema: unsignedTransactionAeternity }, 'ae')
+Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema: unsignedTransactionBitcoin }, 'btc')
+Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema: unsignedTransactionBitcoin }, 'grs')
+Serializer.addSchema(
+  IACMessageType.TransactionSignRequest.toString(),
+  { schema: unsignedTransactionCosmos, transformer: unsignedTransactionTransformerCosmos },
+  'cosmos'
+)
+Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema: unsignedTransactionEthereum }, 'eth')
+Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema: unsignedTransactionEthereum }, 'eth-erc20')
+Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema: unsignedTransactionTezos }, 'xtz')
+
+Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionAeternity }, 'ae')
+Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionBitcoin }, 'btc')
+Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionBitcoin }, 'grs')
+Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionCosmos }, 'cosmos')
+Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionEthereum }, 'eth')
+Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionEthereum }, 'eth-erc20')
+Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionTezos }, 'xtz')

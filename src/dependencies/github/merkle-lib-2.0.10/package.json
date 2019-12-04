@@ -1,0 +1,43 @@
+{
+    "name": "merkle-lib",
+    "version": "2.0.10",
+    "description": "A performance conscious library for merkle root and tree calculations.",
+    "keywords": [
+        "bitcoin",
+        "bitcoinjs-lib",
+        "leaf",
+        "merkle tree",
+        "merkle",
+        "root",
+        "hash",
+        "chain",
+        "tree"
+    ],
+    "homepage": "https://github.com/bitcoinjs/merkle-lib",
+    "bugs": {
+        "url": "https://github.com/bitcoinjs/merkle-lib/issues"
+    },
+    "license": "MIT",
+    "author": "Daniel Cousens",
+    "files": [
+        "index.js",
+        "fastRoot.js",
+        "proof.js"
+    ],
+    "main": "index.js",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/bitcoinjs/merkle-lib.git"
+    },
+    "scripts": {
+        "coverage": "nyc --check-coverage --branches 90 --functions 90 tape test/*.js",
+        "lint": "standard",
+        "unit": "tape test/*.js",
+        "test": "npm run lint && npm run unit"
+    },
+    "devDependencies": {
+        "nyc": "^6.4.0",
+        "standard": "*",
+        "tape": "^4.5.1"
+    }
+}
