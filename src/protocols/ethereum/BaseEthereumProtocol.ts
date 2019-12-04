@@ -68,7 +68,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
   public configuration: EthereumProtocolConfiguration<NodeClient, InfoClient>
 
   get subProtocols() {
-    return getSubProtocolsByIdentifier(this.identifier) as any // TODO: Fix typings once apps are compatible with 3.7
+    return getSubProtocolsByIdentifier(this.identifier) as any[] // TODO: Fix typings once apps are compatible with 3.7
   }
 
   constructor(configuration: EthereumProtocolConfiguration<NodeClient, InfoClient>) {
