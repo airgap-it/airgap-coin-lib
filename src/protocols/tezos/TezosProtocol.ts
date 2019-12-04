@@ -150,7 +150,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   public identifier: string = 'xtz'
 
   get subProtocols() {
-    return getSubProtocolsByIdentifier(this.identifier) as any // TODO: Fix typings once apps are compatible with 3.7
+    return getSubProtocolsByIdentifier(this.identifier) as any[] // TODO: Fix typings once apps are compatible with 3.7
   }
 
   // tezbox default
