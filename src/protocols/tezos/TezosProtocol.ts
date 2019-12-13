@@ -1494,7 +1494,15 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   public async calculateRewards(bakerAddress: string, cycle: number): Promise<TezosRewards> {
     const currentCycle: number = await this.fetchCurrentCycle()
     const is005 = this.network !== TezosNetwork.MAINNET || cycle >= TezosProtocol.FIRST_005_CYCLE
-    let computedRewards: { bakingRewards: string; endorsingRewards: string; totalRewards: string; fees: string }
+    let computedRewards: {
+      bakingRewards: string
+      endorsingRewards: string
+      totalRewards: string
+      fees: string,
+      deposit: string,
+      bakingRewardsDetails: {level: number, amount: string}[],
+      endorsingRewardsDetails: {level: number, amount: string}[]
+    }
     if (cycle < currentCycle) {
       computedRewards = await this.calculatePastRewards(bakerAddress, cycle, is005)
     } else {
@@ -1516,7 +1524,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       fees: computedRewards.fees,
       totalRewards: computedRewards.totalRewards,
       snapshotBlockLevel: snapshotLevel,
-      delegatedContracts: bakerInfo.delegated_contracts
+      delegatedContracts: bakerInfo.delegated_contracts,
+      bakingRewardsDetails: computedRewards.bakingRewardsDetails,
+      endorsingRewardsDetails: computedRewards.endorsingRewardsDetails,
+      deposit: computedRewards.deposit
     }
   }
 
@@ -1524,18 +1535,33 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     bakerAddress: string,
     cycle: number,
     is005: boolean
-  ): Promise<{ bakingRewards: string; endorsingRewards: string; totalRewards: string; fees: string }> {
-    let computedBakingRewards = '0'
-    let computedEndorsingRewards = '0'
+  ): Promise<{
+    bakingRewards: string
+    endorsingRewards: string
+    totalRewards: string
+    fees: string,
+    deposit: string,
+    bakingRewardsDetails: {level: number, amount: string}[],
+    endorsingRewardsDetails: {level: number, amount: string}[]
+  }> {
+    let computedBakingRewards: TezosBakingRewards = {
+      totalBakingRewards: "0",
+      rewardsDetails: []
+    } 
+    let computedEndorsingRewards: TezosEndorsingRewards = {
+      totalEndorsingRewards: "0",
+      rewardsDetails: []
+    } 
     let fees = '0'
     let totalRewards = '0'
+    let deposit = '0'
     const bakedBlocks = await this.fetchBlocksForBaker(bakerAddress, cycle)
     if (bakedBlocks.length > 0) {
-      computedBakingRewards = (await this.computeBakingRewards(bakedBlocks, is005, false)).toFixed()
+      computedBakingRewards = await this.computeBakingRewards(bakedBlocks, is005, false)
     }
 
     const endorsingOperations = await this.fetchEndorsementOperations(cycle, bakerAddress)
-    computedEndorsingRewards = (await this.computeEndorsingRewards(endorsingOperations, is005, false)).toFixed()
+    computedEndorsingRewards = await this.computeEndorsingRewards(endorsingOperations, is005, false)
 
     const frozenBalance = (await this.fetchFrozenBalances((cycle + 1) * TezosProtocol.BLOCKS_PER_CYCLE[this.network], bakerAddress)).find(
       fb => fb.cycle == cycle
@@ -1543,13 +1569,17 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     if (frozenBalance) {
       fees = frozenBalance.fees
       totalRewards = frozenBalance.rewards
+      deposit = frozenBalance.deposit
     }
 
     return {
-      bakingRewards: computedBakingRewards,
-      endorsingRewards: computedEndorsingRewards,
+      bakingRewards: computedBakingRewards.totalBakingRewards,
+      endorsingRewards: computedEndorsingRewards.totalEndorsingRewards,
       totalRewards,
-      fees
+      fees,
+      bakingRewardsDetails: computedBakingRewards.rewardsDetails,
+      endorsingRewardsDetails: computedEndorsingRewards.rewardsDetails,
+      deposit: deposit
     }
   }
 
@@ -1558,23 +1588,39 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     cycle: number,
     is005: boolean,
     currentCycle: number
-  ): Promise<{ bakingRewards: string; endorsingRewards: string; totalRewards: string; fees: string }> {
-    let computedBakingRewards = '0'
-    let computedEndorsingRewards = '0'
+  ): Promise<{
+    bakingRewards: string
+    endorsingRewards: string
+    totalRewards: string
+    fees: string,
+    deposit: string,
+    bakingRewardsDetails: {level: number, amount: string}[],
+    endorsingRewardsDetails: {level: number, amount: string}[]
+  }> {
+    let computedBakingRewards: TezosBakingRewards = {
+      totalBakingRewards: "0",
+      rewardsDetails: []
+    } 
+    let computedEndorsingRewards: TezosEndorsingRewards = {
+      totalEndorsingRewards: "0",
+      rewardsDetails: []
+    }
     let fees = '0'
     let totalRewards = '0'
     if (cycle - currentCycle > 4) {
       throw new Error('Provided cycle is invalid')
     }
     const bakingRights = await this.fetchBakingRights(bakerAddress, currentCycle * TezosProtocol.BLOCKS_PER_CYCLE[this.network], cycle, 1)
-    computedBakingRewards = (await this.computeBakingRewards(bakingRights, is005, true)).toFixed()
+    computedBakingRewards = await this.computeBakingRewards(bakingRights, is005, true)
     const endorsingRights = await this.fetchEndorsingRights(
       bakerAddress,
       currentCycle * TezosProtocol.BLOCKS_PER_CYCLE[this.network],
       cycle
     )
-    computedEndorsingRewards = (await this.computeEndorsingRewards(endorsingRights, is005, true)).toFixed()
-    totalRewards = new BigNumber(computedBakingRewards).plus(new BigNumber(computedEndorsingRewards)).toFixed()
+    computedEndorsingRewards = await this.computeEndorsingRewards(endorsingRights, is005, true)
+    totalRewards = new BigNumber(computedBakingRewards.totalBakingRewards)
+      .plus(new BigNumber(computedEndorsingRewards.totalEndorsingRewards))
+      .toFixed()
     const frozenBalances = await this.fetchFrozenBalances('head', bakerAddress)
     if (frozenBalances.length > 0) {
       const lastFrozenBalance = frozenBalances[frozenBalances.length - 1]
@@ -1582,10 +1628,13 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     }
 
     return {
-      bakingRewards: computedBakingRewards,
-      endorsingRewards: computedEndorsingRewards,
+      bakingRewards: computedBakingRewards.totalBakingRewards,
+      endorsingRewards: computedEndorsingRewards.totalEndorsingRewards,
       totalRewards,
-      fees
+      fees,
+      bakingRewardsDetails: computedBakingRewards.rewardsDetails,
+      endorsingRewardsDetails: computedEndorsingRewards.rewardsDetails,
+      deposit: '0'
     }
   }
 
@@ -1680,8 +1729,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     bakingRights: { level: number; priority: number }[],
     is005: boolean,
     isFutureCycle: boolean
-  ): Promise<BigNumber> {
+  ): Promise<TezosBakingRewards> {
     let result = new BigNumber(0)
+    let rewardsByLevel: { level: number, amount: string }[] = []
     if (is005) {
       const levels = bakingRights.map(br => br.level)
       let endrosementCounts: { block_level: number; sum_number_of_slots: string }[] = []
@@ -1704,14 +1754,16 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         // const bakingReward = new BigNumber(TezosProtocol.BAKING_REWARD_PER_BLOCK).div(new BigNumber(p + 1)).times(new BigNumber(0.8).plus(new BigNumber(0.2).times((new BigNumber(e).div(new BigNumber(32))))))
         const muliplier = Math.floor(8 + 2 * (e / 32))
         const bakingReward = (TezosProtocol.BAKING_REWARD_PER_BLOCK * muliplier) / 10 / (p + 1)
-
+        rewardsByLevel.push({
+          level: next.level,
+          amount: bakingReward.toFixed()
+        })
         return current.plus(bakingReward)
       }, new BigNumber(0))
     } else {
       result = new BigNumber(bakingRights.length * TezosProtocol.BAKING_REWARD_PER_BLOCK)
     }
-
-    return result
+    return { totalBakingRewards: result.toFixed(), rewardsDetails: rewardsByLevel }
   }
 
   private async fetchEndorsingRights(bakerAddress: string, blockLevel: number | 'head', cycle: number): Promise<TezosEndorsingRight[]> {
@@ -1792,8 +1844,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     endorsingRights: TezosEndorsingRight[],
     is005: boolean,
     isFutureCycle: boolean
-  ): Promise<BigNumber> {
+  ): Promise<TezosEndorsingRewards> {
     let priorities: { priority: number; level: number }[] = []
+    let rewardsByLevel: { level: number, amount: string }[] = []
     if (!isFutureCycle) {
       const levels = endorsingRights.map(er => {
         return is005 ? er.block_level! : er.level
@@ -1803,7 +1856,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       }
     }
 
-    return endorsingRights.reduce((current, next) => {
+    const result = endorsingRights.reduce((current, next) => {
       let priority = 0
       if (!isFutureCycle) {
         const block = priorities.find(p => p.level === (is005 ? next.block_level! : next.level))
@@ -1814,9 +1867,13 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       }
       const multiplier = new BigNumber(TezosProtocol.ENDORSING_REWARD_PER_SLOT).div(new BigNumber(priority + 1))
       const reward: BigNumber = new BigNumber(next.number_of_slots).times(multiplier)
-
+      rewardsByLevel.push({
+        level: next.level,
+        amount: reward.toFixed()
+      })
       return current.plus(reward)
     }, new BigNumber(0))
+    return { totalEndorsingRewards: result.toFixed(), rewardsDetails: rewardsByLevel }
   }
 
   private static readonly BLOCKS_PER_CYCLE = {
@@ -1914,6 +1971,16 @@ interface TezosBakingRight {
   priority: number
 }
 
+interface TezosBakingRewards {
+  totalBakingRewards: string
+  rewardsDetails: { level: number, amount: string }[]
+}
+
+interface TezosEndorsingRewards {
+  totalEndorsingRewards: string
+  rewardsDetails: { level: number, amount: string }[]
+}
+
 interface TezosEndorsingRight {
   level: number
   block_level?: number
@@ -1927,10 +1994,13 @@ export interface TezosRewards {
   bakingRewards: string
   endorsingRewards: string
   fees: string
+  deposit: string
   totalRewards: string
   cycle: number
   snapshotBlockLevel: number
   delegatedContracts: string[]
+  bakingRewardsDetails: { level: number, amount: string }[]
+  endorsingRewardsDetails: { level: number, amount: string }[]
 }
 
 interface TezosBakerInfo {
