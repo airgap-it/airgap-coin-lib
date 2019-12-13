@@ -22,7 +22,6 @@ export interface CosmosNodeInfo {
 export interface CosmosAccount {
   type: string
   value: CosmosAccountValue
-  public_key: string
 }
 
 export interface CosmosAccountValue {
@@ -30,6 +29,7 @@ export interface CosmosAccountValue {
   address: string
   coins: CosmosAccountCoin[]
   sequence: string
+  public_key?: string
 }
 
 export interface CosmosAccountCoin {
@@ -41,6 +41,7 @@ export interface CosmosDelegation {
   delegator_address: string
   validator_address: string
   shares: string
+  balance: string
 }
 
 export interface CosmosValidator {
@@ -65,10 +66,14 @@ export interface CosmosValidatorDescription {
 }
 
 export interface CosmosValidatorCommission {
+  commission_rates: CosmosValidatorCommissionRate
+  update_time: string
+}
+
+export interface CosmosValidatorCommissionRate {
   rate: string
   max_rate: string
   max_change_rate: string
-  update_time: string
 }
 
 export interface CosmosBroadcastSignedTransactionResponse {
@@ -81,7 +86,7 @@ export class CosmosNodeClient {
 
   public async fetchBalance(address: string): Promise<BigNumber> {
     const response = await Axios.get(this.url(`/bank/balances/${address}`))
-    const data: any[] = response.data
+    const data: any[] = response.data.result
     if (data.length > 0) {
       return new BigNumber(data[0].amount)
     } else {
@@ -91,7 +96,7 @@ export class CosmosNodeClient {
 
   public async fetchNodeInfo(): Promise<CosmosNodeInfo> {
     const response = await Axios.get(this.url(`/node_info`))
-    const nodeInfo = response.data as CosmosNodeInfo
+    const nodeInfo = response.data.node_info as CosmosNodeInfo
 
     return nodeInfo
   }
@@ -108,7 +113,7 @@ export class CosmosNodeClient {
 
   public async fetchAccount(address: string): Promise<CosmosAccount> {
     const response = await Axios.get(this.url(`/auth/accounts/${address}`))
-    const account = response.data as CosmosAccount
+    const account = response.data.result as CosmosAccount
 
     return account
   }
@@ -118,21 +123,21 @@ export class CosmosNodeClient {
     if (response.data === null) {
       return []
     }
-    const delegations = response.data as CosmosDelegation[]
+    const delegations = response.data.result as CosmosDelegation[]
 
     return delegations
   }
 
   public async fetchValidator(address: string): Promise<CosmosValidator> {
     const response = await Axios.get(this.url(`/staking/validators/${address}`))
-    const validator = response.data as CosmosValidator
+    const validator = response.data.result as CosmosValidator
 
     return validator
   }
 
   public async fetchValidators(): Promise<CosmosValidator[]> {
     const response = await Axios.get(this.url('/staking/validators'))
-    const validators = response.data as CosmosValidator[]
+    const validators = response.data.result as CosmosValidator[]
 
     return validators
   }
@@ -141,14 +146,14 @@ export class CosmosNodeClient {
     const validatorInfo = await Axios.get(this.url(`/distribution/validators/${validatorAddress}`))
     const operatorAddress = validatorInfo.data.operator_address
     const response = await Axios.get(this.url(`/staking/delegators/${operatorAddress}/delegations/${validatorAddress}`))
-    const delegation = response.data as CosmosDelegation
+    const delegation = response.data.result as CosmosDelegation
 
     return delegation
   }
 
   public async fetchTotalReward(delegatorAddress: string): Promise<BigNumber> {
     const response = await Axios.get(this.url(`/distribution/delegators/${delegatorAddress}/rewards`))
-    const totalRewards = response.data as { denom: string; amount: string }[]
+    const totalRewards = response.data.result.total as { denom: string; amount: string }[]
     if (totalRewards.length > 0) {
       return new BigNumber(totalRewards[0].amount)
     }
@@ -158,7 +163,7 @@ export class CosmosNodeClient {
 
   public async fetchRewardForDelegation(delegatorAddress: string, validatorAddress: string): Promise<BigNumber> {
     const response = await Axios.get(this.url(`/distribution/delegators/${delegatorAddress}/rewards/${validatorAddress}`))
-    const totalRewards = response.data as { denom: string; amount: string }[]
+    const totalRewards = response.data.result as { denom: string; amount: string }[]
     if (totalRewards.length > 0) {
       return new BigNumber(totalRewards[0].amount)
     }
