@@ -1,3 +1,13 @@
+### 0.6.3 (2019-12-13)
+
+### Features
+
+- **cosmos**: include cosmos protocol upgrade changes
+
+### Bug Fixes
+
+- **cosmos**: return empty array if no transactions were found (instead of throwing an exception)
+
 ### 0.6.2 (2019-12-04)
 
 ### Bug Fixes
