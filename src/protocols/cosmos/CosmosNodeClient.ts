@@ -144,7 +144,7 @@ export class CosmosNodeClient {
 
   public async fetchSelfDelegation(validatorAddress: string): Promise<CosmosDelegation> {
     const validatorInfo = await Axios.get(this.url(`/distribution/validators/${validatorAddress}`))
-    const operatorAddress = validatorInfo.data.operator_address
+    const operatorAddress = validatorInfo.data.result.operator_address
     const response = await Axios.get(this.url(`/staking/delegators/${operatorAddress}/delegations/${validatorAddress}`))
     const delegation = response.data.result as CosmosDelegation
 
