@@ -113,6 +113,9 @@ export class CosmosInfoClient {
       `${this.baseURL}/cosmos/v1/getTxsByAddr`,
       query.toRLPBody()
     )
+    if (response.data.hits.hits === null) {
+      return []
+    }
     const transactions: IAirGapTransaction[][] = response.data.hits.hits.map((hit: Hit) => {
       const transaction: Tx = hit._source.tx
       const fee: BigNumber = transaction.value.fee.amount
