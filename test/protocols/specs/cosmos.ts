@@ -43,12 +43,12 @@ export class CosmosTestProtocolSpec extends TestProtocolSpec {
         [cosmosMessage],
         new CosmosFee([new CosmosCoin('uatom', '1')], '200000'),
         '',
-        'cosmoshub-2',
+        'cosmoshub-3',
         '0',
         '0'
       ),
       signedTx:
-        '{"tx":{"msg":[{"type":"cosmos-sdk/MsgSend","value":{"amount":[{"amount":"2","denom":"uatom"}],"from_address":"cosmos1w3mea9ghfdc3r7ax45mehl2tcqw9p0vnlhl0p6","to_address":"cosmos1w3mea9ghfdc3r7ax45mehl2tcqw9p0vnlhl0p6"}}],"fee":{"amount":[{"amount":"1","denom":"uatom"}],"gas":"200000"},"signatures":[{"signature":"bt3NgJiQmQbTTmIMrU+Rsyr4HDuas0fi1QGRG0EldsB/O0s0QVNtuTMQe13JYlud3f6tZ7KFQLxWvlV4H/eRXQ==","pub_key":{"type":"tendermint/PubKeySecp256k1","value":"A999/ltDX5YCczflI0F+B8zmGqS59Ru5Oqy9+1SnCiiq"}}],"memo":""},"mode":"sync"}'
+        '{"tx":{"msg":[{"type":"cosmos-sdk/MsgSend","value":{"amount":[{"amount":"2","denom":"uatom"}],"from_address":"cosmos1w3mea9ghfdc3r7ax45mehl2tcqw9p0vnlhl0p6","to_address":"cosmos1w3mea9ghfdc3r7ax45mehl2tcqw9p0vnlhl0p6"}}],"fee":{"amount":[{"amount":"1","denom":"uatom"}],"gas":"200000"},"signatures":[{"signature":"WwCyYGN1VRqbF1x5KmSBP4EAcQO9ym2p7xRdpywSzcl4L9ubjj/fZNc1G2PgAShMG6fbu9LKbh6rxftlixjnPQ==","pub_key":{"type":"tendermint/PubKeySecp256k1","value":"A999/ltDX5YCczflI0F+B8zmGqS59Ru5Oqy9+1SnCiiq"}}],"memo":""},"mode":"sync"}'
     }
   ]
   public validRawTransactions: any[] = [
@@ -60,7 +60,7 @@ export class CosmosTestProtocolSpec extends TestProtocolSpec {
       ],
       new CosmosFee([new CosmosCoin('uatom', '1')], '200000'),
       '',
-      'cosmoshub-2',
+      'cosmoshub-3',
       '0',
       '0'
     )
