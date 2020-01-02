@@ -299,6 +299,12 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
                 inverse: false
               }
             ],
+            orderBy: [
+              {
+                field: 'block_level',
+                direction: 'desc'
+              }
+            ],
             limit
           }
         }
