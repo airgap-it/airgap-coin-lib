@@ -280,7 +280,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       expect((tezosWrappedOperation.contents[2] as TezosSpendOperation).destination).to.equal('KT1J5mFAxxzAYDLjYeVXkLcyEzNGRZ3kuFGq')
     })
 
-    it('can unforge a delegation TX', async () => { })
+    it('can unforge a delegation TX', async () => {})
 
     it('can give a list of transactions from Conseil API', async () => {
       const stub = sinon.stub(axios, 'post')
