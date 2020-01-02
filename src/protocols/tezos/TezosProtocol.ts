@@ -318,10 +318,24 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
             .catch(() => {
               return { data: [] }
             })
+
+          interface ConseilOperation {
+            amount: string,
+            source: string,
+            destination: string,
+            operation_group_hash: string
+          }
+
           const [to, from] = await Promise.all([fromPromise, toPromise])
-          const transactions: any[] = to.data.concat(from.data)
+          const transactions: any[] = (to.data.concat(from.data) as ConseilOperation[]).reduce((pv: ConseilOperation[], cv) => {
+            // Filter out all duplicates
+            if (!pv.find((el: ConseilOperation) => el.amount === cv.amount && el.source === cv.source && el.destination === cv.destination && el.operation_group_hash === cv.operation_group_hash)) {
+              pv.push(cv)
+            }
+            return pv
+          }, [])
           transactions.sort((a, b) => b.timestamp - a.timestamp)
-          transactions.length = limit // Because we concat from and to, we have to omit some results
+          transactions.length = Math.min(limit, transactions.length) // Because we concat from and to, we have to omit some results
           resolve(transactions)
         })
       })

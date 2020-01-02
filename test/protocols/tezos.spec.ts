@@ -280,9 +280,9 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       expect((tezosWrappedOperation.contents[2] as TezosSpendOperation).destination).to.equal('KT1J5mFAxxzAYDLjYeVXkLcyEzNGRZ3kuFGq')
     })
 
-    it('can unforge a delegation TX', async () => {})
+    it('can unforge a delegation TX', async () => { })
 
-    it('can give a list of transactions from TZScan API', async () => {
+    it('can give a list of transactions from Conseil API', async () => {
       const stub = sinon.stub(axios, 'post')
       stub.withArgs(`${tezosLib.baseApiUrl}/v2/data/tezos/mainnet/operations`).returns(
         Promise.resolve({
@@ -302,17 +302,6 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       const transactions = await tezosLib.getTransactionsFromAddresses(tezosProtocolSpec.wallet.addresses, 20, 0)
 
       expect(transactions).to.deep.equal([
-        {
-          amount: new BigNumber(1000000),
-          fee: new BigNumber(1420),
-          from: ['tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'],
-          isInbound: true,
-          timestamp: 1561035943,
-          protocolIdentifier: tezosLib.identifier,
-          to: ['tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'],
-          hash: 'ooNNmftGhsUriHVWYgHGq6AE3F2sHZFYaCq41NQZSeUdm1UZEAP',
-          blockHeight: 261513
-        },
         {
           amount: new BigNumber(1000000),
           fee: new BigNumber(1420),
