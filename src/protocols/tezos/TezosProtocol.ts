@@ -195,15 +195,15 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     edsig: Buffer
     branch: Buffer
   } = {
-    tz1: Buffer.from(new Uint8Array([6, 161, 159])),
-    tz2: Buffer.from(new Uint8Array([6, 161, 161])),
-    tz3: Buffer.from(new Uint8Array([6, 161, 164])),
-    kt: Buffer.from(new Uint8Array([2, 90, 121])),
-    edpk: Buffer.from(new Uint8Array([13, 15, 37, 217])),
-    edsk: Buffer.from(new Uint8Array([43, 246, 78, 7])),
-    edsig: Buffer.from(new Uint8Array([9, 245, 205, 134, 18])),
-    branch: Buffer.from(new Uint8Array([1, 52]))
-  }
+      tz1: Buffer.from(new Uint8Array([6, 161, 159])),
+      tz2: Buffer.from(new Uint8Array([6, 161, 161])),
+      tz3: Buffer.from(new Uint8Array([6, 161, 164])),
+      kt: Buffer.from(new Uint8Array([2, 90, 121])),
+      edpk: Buffer.from(new Uint8Array([13, 15, 37, 217])),
+      edsk: Buffer.from(new Uint8Array([43, 246, 78, 7])),
+      edsig: Buffer.from(new Uint8Array([9, 245, 205, 134, 18])),
+      branch: Buffer.from(new Uint8Array([1, 52]))
+    }
 
   protected readonly headers = { 'Content-Type': 'application/json', apiKey: 'airgap123' }
 
@@ -320,8 +320,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
             })
           const [to, from] = await Promise.all([fromPromise, toPromise])
           const transactions: any[] = to.data.concat(from.data)
-          transactions.sort((a, b) => a.timestamp - b.timestamp)
-          resolve([...to.data, ...from.data])
+          transactions.sort((a, b) => b.timestamp - a.timestamp)
+          transactions.length = limit // Because we concat from and to, we have to omit some results
+          resolve(transactions)
         })
       })
     )
@@ -706,13 +707,13 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       frozenBalance.map(async obj => {
         const { data: delegatedBalanceAtCycle } = await axios.get(
           `${this.jsonRPCAPI}/chains/main/blocks/${(obj.cycle - 6) * TezosProtocol.BLOCKS_PER_CYCLE[this.network]}/context/contracts/${
-            delegatorAddress ? delegatorAddress : bakerAddress
+          delegatorAddress ? delegatorAddress : bakerAddress
           }/balance`
         )
 
         const { data: stakingBalanceAtCycle } = await axios.get(
           `${this.jsonRPCAPI}/chains/main/blocks/${(obj.cycle - 6) *
-            TezosProtocol.BLOCKS_PER_CYCLE[this.network]}/context/delegates/${bakerAddress}/staking_balance`
+          TezosProtocol.BLOCKS_PER_CYCLE[this.network]}/context/delegates/${bakerAddress}/staking_balance`
         )
 
         return {
@@ -939,7 +940,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     }
 
     while (rest.length > 0) {
-      ;({ result, rest } = this.splitAndReturnRest(rest, 2))
+      ; ({ result, rest } = this.splitAndReturnRest(rest, 2))
       const kindHexString: string = result
 
       switch (kindHexString) {
@@ -950,22 +951,22 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
           throw new Error(`deprecated operations found with tag ${kindHexString}`)
         case '6b':
           let tezosRevealOperation: TezosRevealOperation
-          ;({ tezosRevealOperation, rest } = this.unforgeRevealOperation(rest))
+            ; ({ tezosRevealOperation, rest } = this.unforgeRevealOperation(rest))
           tezosWrappedOperation.contents.push(tezosRevealOperation)
           break
         case '6c':
           let tezosSpendOperation: TezosSpendOperation
-          ;({ tezosSpendOperation, rest } = this.unforgeSpendOperation(rest))
+            ; ({ tezosSpendOperation, rest } = this.unforgeSpendOperation(rest))
           tezosWrappedOperation.contents.push(tezosSpendOperation)
           break
         case '6d':
           let tezosOriginationOperation: TezosOriginationOperation
-          ;({ tezosOriginationOperation, rest } = this.unforgeOriginationOperation(rest))
+            ; ({ tezosOriginationOperation, rest } = this.unforgeOriginationOperation(rest))
           tezosWrappedOperation.contents.push(tezosOriginationOperation)
           break
         case '6e':
           let tezosDelegationOperation: TezosDelegationOperation
-          ;({ tezosDelegationOperation, rest } = this.unforgeDelegationOperation(rest))
+            ; ({ tezosDelegationOperation, rest } = this.unforgeDelegationOperation(rest))
           tezosWrappedOperation.contents.push(tezosDelegationOperation)
           break
         default:
@@ -981,15 +982,15 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     const source: string = this.parseTzAddress(result)
 
       // fee, counter, gas_limit, storage_limit
-    ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
+      ; ({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
     const fee: BigNumber = this.zarithToBigNumber(result)
-    ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
+      ; ({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
     const counter: BigNumber = this.zarithToBigNumber(result)
-    ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
+      ; ({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
     const gasLimit: BigNumber = this.zarithToBigNumber(result)
-    ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
+      ; ({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
     const storageLimit: BigNumber = this.zarithToBigNumber(result)
-    ;({ result, rest } = this.splitAndReturnRest(rest, 66))
+      ; ({ result, rest } = this.splitAndReturnRest(rest, 66))
     const publicKey: string = this.parsePublicKey(result)
 
     return {
@@ -1011,24 +1012,24 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     let source: string = this.parseTzAddress(result)
 
       // fee, counter, gas_limit, storage_limit, amount
-    ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
+      ; ({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
     const fee: BigNumber = this.zarithToBigNumber(result)
-    ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
+      ; ({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
     const counter: BigNumber = this.zarithToBigNumber(result)
-    ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
+      ; ({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
     const gasLimit: BigNumber = this.zarithToBigNumber(result)
-    ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
+      ; ({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
     const storageLimit: BigNumber = this.zarithToBigNumber(result)
-    ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
+      ; ({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
     let amount: BigNumber = this.zarithToBigNumber(result)
-    ;({ result, rest } = this.splitAndReturnRest(rest, 44))
+      ; ({ result, rest } = this.splitAndReturnRest(rest, 44))
     let destination: string = this.parseAddress(result)
-    ;({ result, rest } = this.splitAndReturnRest(rest, 2))
+      ; ({ result, rest } = this.splitAndReturnRest(rest, 2))
     const hasParameters: boolean = this.checkBoolean(result)
 
     let contractData: { amount: BigNumber; destination: string } | undefined
     if (hasParameters) {
-      ;({ result: contractData, rest } = this.unforgeParameters(rest))
+      ; ({ result: contractData, rest } = this.unforgeParameters(rest))
     }
 
     if (contractData) {
@@ -1059,22 +1060,22 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   public unforgeParameters(hexString: string): { result: { amount: BigNumber; destination: string }; rest: string } {
     // We can only unforge one specific contract call right now
     let { result, rest }: { result: string; rest: string } = this.splitAndReturnRest(hexString, 2) // Entrypoint
-    ;({ result, rest } = this.splitAndReturnRest(rest, 8)) // Argument length
+      ; ({ result, rest } = this.splitAndReturnRest(rest, 8)) // Argument length
     const argumentLength: BigNumber = new BigNumber(result, 16)
-    ;({ result, rest } = this.splitAndReturnRest(rest, 40)) // Contract data
-    ;({ result, rest } = this.splitAndReturnRest(rest, 42)) // Sequence length
+      ; ({ result, rest } = this.splitAndReturnRest(rest, 40)) // Contract data
+      ; ({ result, rest } = this.splitAndReturnRest(rest, 42)) // Sequence length
     const destination: string = this.parseTzAddress(result)
-    ;({ result, rest } = this.splitAndReturnRest(rest, 12)) // Contract data
-    ;({ result, rest } = this.splitAndReturnRest(
-      rest,
-      argumentLength
-        .times(2)
-        .minus(40 + 42 + 12 + 12)
-        .toNumber()
-    )) // Contract data
+      ; ({ result, rest } = this.splitAndReturnRest(rest, 12)) // Contract data
+      ; ({ result, rest } = this.splitAndReturnRest(
+        rest,
+        argumentLength
+          .times(2)
+          .minus(40 + 42 + 12 + 12)
+          .toNumber()
+      )) // Contract data
 
     const amount: BigNumber = new BigNumber(this.decodeSignedInt(result.substr(2, result.length)))
-    ;({ result, rest } = this.splitAndReturnRest(rest, 12)) // Contract data
+      ; ({ result, rest } = this.splitAndReturnRest(rest, 12)) // Contract data
 
     return { result: { amount, destination }, rest }
   }
@@ -1084,26 +1085,26 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     const source: string = this.parseTzAddress(result)
 
       // fee, counter, gas_limit, storage_limit
-    ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
+      ; ({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
     const fee: BigNumber = this.zarithToBigNumber(result)
-    ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
+      ; ({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
     const counter: BigNumber = this.zarithToBigNumber(result)
-    ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
+      ; ({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
     const gasLimit: BigNumber = this.zarithToBigNumber(result)
-    ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
+      ; ({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
     const storageLimit: BigNumber = this.zarithToBigNumber(result)
-    ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
+      ; ({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
     const balance: BigNumber = this.zarithToBigNumber(result)
-    ;({ result, rest } = this.splitAndReturnRest(rest, 2))
+      ; ({ result, rest } = this.splitAndReturnRest(rest, 2))
     const hasDelegate: boolean = this.checkBoolean(result)
     let delegate: string | undefined
     if (hasDelegate) {
       // Delegate is optional
-      ;({ result, rest } = this.splitAndReturnRest(rest, 42))
+      ; ({ result, rest } = this.splitAndReturnRest(rest, 42))
       delegate = this.parseAddress(`00${result}`)
     }
 
-    ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
+    ; ({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
     const script: BigNumber = this.zarithToBigNumber(result) // TODO: What is the type here?
 
     return {
@@ -1127,21 +1128,21 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     const source: string = this.parseTzAddress(result)
 
       // fee, counter, gas_limit, storage_limit, amount
-    ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
+      ; ({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
     const fee: BigNumber = this.zarithToBigNumber(result)
-    ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
+      ; ({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
     const counter: BigNumber = this.zarithToBigNumber(result)
-    ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
+      ; ({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
     const gasLimit: BigNumber = this.zarithToBigNumber(result)
-    ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
+      ; ({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
     const storageLimit: BigNumber = this.zarithToBigNumber(result)
 
     let delegate: string | undefined
     if (rest.length === 42) {
-      ;({ result, rest } = this.splitAndReturnRest(`01${rest.slice(2)}`, 42))
+      ; ({ result, rest } = this.splitAndReturnRest(`01${rest.slice(2)}`, 42))
       delegate = this.parseAddress(result)
     } else if (rest.length > 42) {
-      ;({ result, rest } = this.splitAndReturnRest(`00${rest.slice(2)}`, 44))
+      ; ({ result, rest } = this.splitAndReturnRest(`00${rest.slice(2)}`, 44))
       delegate = this.parseAddress(result)
     } else if (rest.length === 2 && rest === '00') {
       rest = ''
@@ -1500,8 +1501,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       totalRewards: string
       fees: string,
       deposit: string,
-      bakingRewardsDetails: {level: number, amount: string}[],
-      endorsingRewardsDetails: {level: number, amount: string}[]
+      bakingRewardsDetails: { level: number, amount: string }[],
+      endorsingRewardsDetails: { level: number, amount: string }[]
     }
     if (cycle < currentCycle) {
       computedRewards = await this.calculatePastRewards(bakerAddress, cycle, is005)
@@ -1541,17 +1542,17 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     totalRewards: string
     fees: string,
     deposit: string,
-    bakingRewardsDetails: {level: number, amount: string}[],
-    endorsingRewardsDetails: {level: number, amount: string}[]
+    bakingRewardsDetails: { level: number, amount: string }[],
+    endorsingRewardsDetails: { level: number, amount: string }[]
   }> {
     let computedBakingRewards: TezosBakingRewards = {
       totalBakingRewards: "0",
       rewardsDetails: []
-    } 
+    }
     let computedEndorsingRewards: TezosEndorsingRewards = {
       totalEndorsingRewards: "0",
       rewardsDetails: []
-    } 
+    }
     let fees = '0'
     let totalRewards = '0'
     let deposit = '0'
@@ -1594,13 +1595,13 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     totalRewards: string
     fees: string,
     deposit: string,
-    bakingRewardsDetails: {level: number, amount: string}[],
-    endorsingRewardsDetails: {level: number, amount: string}[]
+    bakingRewardsDetails: { level: number, amount: string }[],
+    endorsingRewardsDetails: { level: number, amount: string }[]
   }> {
     let computedBakingRewards: TezosBakingRewards = {
       totalBakingRewards: "0",
       rewardsDetails: []
-    } 
+    }
     let computedEndorsingRewards: TezosEndorsingRewards = {
       totalEndorsingRewards: "0",
       rewardsDetails: []
