@@ -1,3 +1,9 @@
+### 0.6.4 (2020-01-02)
+
+### Bug Fixes
+
+- **tezos**: sort transaction history from newest to oldest
+
 ### 0.6.3 (2019-12-13)
 
 ### Features
