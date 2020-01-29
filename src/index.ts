@@ -19,7 +19,7 @@ import { ICoinProtocol } from './protocols/ICoinProtocol'
 import { ICoinSubProtocol } from './protocols/ICoinSubProtocol'
 import { LitecoinProtocol } from './protocols/litecoin/LitecoinProtocol'
 import { TezosKtProtocol } from './protocols/tezos/kt/TezosKtProtocol'
-import { BakerInfo, DelegationInfo, DelegationRewardInfo, TezosProtocol } from './protocols/tezos/TezosProtocol'
+import { BakerInfo, DelegationInfo, DelegationRewardInfo, TezosProtocol, TezosPayoutInfo } from './protocols/tezos/TezosProtocol'
 import { IACMessageType } from './serializer/interfaces'
 import { IACMessageDefinitionObject } from './serializer/message'
 import { AccountShareResponse } from './serializer/schemas/definitions/account-share-response'
@@ -73,6 +73,7 @@ export {
   BakerInfo,
   DelegationRewardInfo,
   DelegationInfo,
+  TezosPayoutInfo,
   // sub protocols configs,
   GenericERC20Configuration,
   TypeNotSupported,

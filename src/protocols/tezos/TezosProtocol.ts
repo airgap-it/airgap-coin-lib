@@ -130,6 +130,12 @@ export interface DelegationInfo {
   delegatedDate?: Date
 }
 
+export interface TezosPayoutInfo {
+  delegator: string 
+  share: string 
+  payout: string
+}
+
 // 8.25%
 const SELF_BOND_REQUIREMENT: number = 0.0825
 
@@ -1671,11 +1677,23 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     rewards: TezosRewards,
     offset: number,
     limit: number
-  ): Promise<{ delegator: string; share: string; payout: string }[]> {
-    const result: { delegator: string; share: string; payout: string }[] = []
-    const totalRewardsBN = new BigNumber(rewards.totalRewards).plus(new BigNumber(rewards.fees))
+  ): Promise<TezosPayoutInfo[]> {
     const delegators = rewards.delegatedContracts.slice(offset, Math.min(offset + limit, rewards.delegatedContracts.length))
-    const balances = await this.fetchBalances(delegators, rewards.snapshotBlockLevel)
+    return this.calculatePayoutForAddresses(delegators, rewards)
+  }
+
+  public async calculatePayout(address: string, rewards: TezosRewards): Promise<TezosPayoutInfo> {
+    let result = (await this.calculatePayoutForAddresses([address], rewards)).pop()
+    if (result === undefined) {
+      throw new Error(`cannot calculate payout for ${address}`)
+    }
+    return result
+  }
+
+  private async calculatePayoutForAddresses(addresses: string[], rewards: TezosRewards) {
+    const result: TezosPayoutInfo[] = []
+    const totalRewardsBN = new BigNumber(rewards.totalRewards).plus(new BigNumber(rewards.fees))
+    const balances = await this.fetchBalances(addresses, rewards.snapshotBlockLevel)
     for (const balance of balances) {
       let amount = balance.balance
       if (amount === undefined) {
