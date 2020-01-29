@@ -44,6 +44,15 @@ export interface CosmosDelegation {
   balance: string
 }
 
+export interface CosmosUnbondingDelegation {
+  delegator_address: string
+  validator_address: string
+  initial_balance: string
+  balance: string
+  creation_height: number
+  min_time: number
+}
+
 export interface CosmosValidator {
   operator_address: string
   consensus_pubkey: string
@@ -84,11 +93,24 @@ export interface CosmosBroadcastSignedTransactionResponse {
 export class CosmosNodeClient {
   constructor(public readonly baseURL: string, public useCORSProxy: boolean = false) {}
 
-  public async fetchBalance(address: string): Promise<BigNumber> {
+  public async fetchBalance(address: string, totalBalance?: boolean): Promise<BigNumber> {
     const response = await Axios.get(this.url(`/bank/balances/${address}`))
     const data: any[] = response.data.result
     if (data.length > 0) {
-      return new BigNumber(data[0].amount)
+      const availableBalance = data[0].amount
+      if (totalBalance) {
+        const results = await Promise.all([
+          this.fetchTotalReward(address), 
+          this.fetchTotalUnbondingAmount(address), 
+          this.fetchTotalDelegatedAmount(address)
+        ])
+        const totalRewardValue = results[0]
+        const totalUnbondingValue = results[1]
+        const totalDelegatedValue = results[2]
+        return BigNumber.sum.apply(null, [availableBalance, totalRewardValue, totalUnbondingValue, totalDelegatedValue])
+      } else {
+        return new BigNumber(availableBalance)
+      }
     } else {
       return new BigNumber(0)
     }
@@ -128,6 +150,11 @@ export class CosmosNodeClient {
     return delegations
   }
 
+  public async fetchTotalDelegatedAmount(address: string): Promise<BigNumber> {
+    const delegations = await this.fetchDelegations(address)
+    return new BigNumber(delegations.map(delegation => parseFloat(delegation.shares)).reduce((a, b) => a + b, 0))
+  }
+
   public async fetchValidator(address: string): Promise<CosmosValidator> {
     const response = await Axios.get(this.url(`/staking/validators/${address}`))
     const validator = response.data.result as CosmosValidator
@@ -149,6 +176,20 @@ export class CosmosNodeClient {
     const delegation = response.data.result as CosmosDelegation
 
     return delegation
+  }
+
+  public async fetchUnbondingDelegations(delegatorAddress: string): Promise<CosmosUnbondingDelegation[]> {
+    const response = await Axios.get(this.url(`/staking/delegators/${delegatorAddress}/unbonding_delegations`))
+    const unbondingDelegations = response.data as CosmosUnbondingDelegation[]
+    return unbondingDelegations
+  }
+
+  public async fetchTotalUnbondingAmount(address: string): Promise<BigNumber> {
+    const unbondingDelegations: CosmosUnbondingDelegation[] = await this.fetchUnbondingDelegations(address)
+    if (unbondingDelegations) {
+      return new BigNumber(unbondingDelegations.map(delegation => parseFloat(delegation.balance)).reduce((a, b) => a + b, 0))
+    }
+    return new BigNumber(0)
   }
 
   public async fetchTotalReward(delegatorAddress: string): Promise<BigNumber> {

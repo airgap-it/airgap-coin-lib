@@ -1,3 +1,4 @@
+import { AirGapTransactionType } from './../interfaces/IAirGapTransaction'
 import BigNumber from '../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { IAirGapTransaction } from '../interfaces/IAirGapTransaction'
 import { CosmosProtocol } from '../protocols/cosmos/CosmosProtocol'
@@ -54,9 +55,8 @@ export class CosmosDelegateAction<Context extends CosmosDelegateActionContext> e
         publicKey: this.context.wallet.publicKey,
         transaction
       })
-    } catch {
-      //
-    }
+      airGapTransactions.map(tx => (tx.extra = AirGapTransactionType.DELEGATE))
+    } catch {}
 
     return {
       rawTx: transaction,
