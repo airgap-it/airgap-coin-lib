@@ -19,7 +19,14 @@ import { CosmosWithdrawDelegationRewardMessage } from './cosmos-message/CosmosWi
 import { CosmosCoin } from './CosmosCoin'
 import { CosmosFee } from './CosmosFee'
 import { CosmosInfoClient } from './CosmosInfoClient'
-import { CosmosAccount, CosmosDelegation, CosmosNodeClient, CosmosNodeInfo, CosmosValidator } from './CosmosNodeClient'
+import {
+  CosmosAccount,
+  CosmosDelegation,
+  CosmosNodeClient,
+  CosmosNodeInfo,
+  CosmosValidator,
+  CosmosUnbondingDelegation
+} from './CosmosNodeClient'
 import { CosmosTransaction } from './CosmosTransaction'
 
 export interface KeyPair {
@@ -227,7 +234,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
   public async getBalanceOfAddresses(addresses: string[]): Promise<string> {
     const promises: Promise<BigNumber>[] = []
     for (const address of addresses) {
-      promises.push(this.nodeClient.fetchBalance(address))
+      promises.push(this.nodeClient.fetchBalance(address, true))
     }
 
     return (
@@ -241,6 +248,10 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
 
   public async getBalanceOfPublicKey(publicKey: string): Promise<string> {
     return this.getBalanceOfAddresses([await this.getAddressFromPublicKey(publicKey)])
+  }
+
+  public async fetchAvailableBalance(address: string): Promise<BigNumber> {
+    return this.nodeClient.fetchBalance(address)
   }
 
   public async prepareTransactionFromPublicKey(
@@ -364,8 +375,24 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
     return this.nodeClient.fetchDelegations(address)
   }
 
+  public async fetchTotalDelegatedAmount(address: string): Promise<BigNumber> {
+    const delegations = await this.fetchDelegations(address)
+    return new BigNumber(delegations.map(delegation => parseFloat(delegation.shares)).reduce((a, b) => a + b, 0))
+  }
+
   public async fetchValidator(address: string): Promise<CosmosValidator> {
     return this.nodeClient.fetchValidator(address)
+  }
+  public async fetchUnbondingDelegations(delegatorAddress: string): Promise<CosmosUnbondingDelegation[]> {
+    return this.nodeClient.fetchUnbondingDelegations(delegatorAddress)
+  }
+
+  public async fetchTotalUnbondingAmount(address: string): Promise<BigNumber> {
+    const unbondingDelegations: CosmosUnbondingDelegation[] = await this.fetchUnbondingDelegations(address)
+    if (unbondingDelegations) {
+      return new BigNumber(unbondingDelegations.map(delegation => parseFloat(delegation.balance)).reduce((a, b) => a + b, 0))
+    }
+    return new BigNumber(0)
   }
 
   public async fetchValidators(): Promise<CosmosValidator[]> {

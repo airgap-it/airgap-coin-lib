@@ -1,3 +1,8 @@
+export enum AirGapTransactionType {
+  SPEND = 'Spend Transaction',
+  DELEGATE = 'Delegation'
+}
+
 export interface IAirGapTransaction {
   from: string[]
   to: string[]
