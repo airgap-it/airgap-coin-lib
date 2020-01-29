@@ -1,6 +1,5 @@
 import { TezosProtocol } from '../src'
 import { TezosNetwork } from '../src/protocols/tezos/TezosProtocol'
-import BigNumber from '../src/dependencies/src/bignumber.js-9.0.0/bignumber'
 
 const tezosProtocol: TezosProtocol = new TezosProtocol(
   'https://tezos-mainnet-node-1.kubernetes.papers.tech',
@@ -14,8 +13,7 @@ tezosProtocol
   .then(result => {
     console.log('REWARDS', result)
     tezosProtocol.calculatePayouts(result, 0, 200).then(result => {
-      // console.log('PAYOUTS', result)
-      console.log('SHARE SUM', result.reduce((current, next) => { return current.plus(new BigNumber(next.share)) }, new BigNumber(0)).toFixed())
+      console.log('PAYOUTS', result)
     })
     tezosProtocol.calculatePayout('tz1MJx9vhaNRSimcuXPK2rW4fLccQnDAnVKJ', result).then(result => {
       console.log('PAYOUT', result)
