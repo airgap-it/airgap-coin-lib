@@ -1,26 +1,15 @@
 import axios, { AxiosResponse } from '../../../../dependencies/src/axios-0.19.0/index'
 import { BigNumber } from '../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { RPCConvertible } from '../../../cosmos/CosmosTransaction'
+import { RPCBody } from '../../../../data/RPCBody'
 import { EthereumUtils } from '../../utils/utils'
 
 import { EthereumNodeClient } from './NodeClient'
 
-class EthereumRPCBody implements RPCConvertible {
+class EthereumRPCBody extends RPCBody implements RPCConvertible {
   public static blockEarliest: string = 'earliest'
   public static blockLatest: string = 'latest'
   public static blockPending: string = 'pending'
-
-  public jsonrpc: string
-  public method: string
-  public params: any[]
-  public id: number
-
-  constructor(method: string, params: any[]) {
-    this.jsonrpc = '2.0'
-    this.method = method
-    this.params = params
-    this.id = 1
-  }
 
   public toRPCBody(): string {
     return JSON.stringify({

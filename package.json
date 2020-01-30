@@ -34,7 +34,8 @@
   },
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
-    "libsodium-wrappers": "0.7.3"
+    "libsodium-wrappers": "0.7.3",
+    "xxhashjs": "^0.2.2"
   },
   "localDependencies": {
     "hd-wallet-js": "b216450e56954a6e82ace0aade9474673de5d9d5",
