@@ -1,5 +1,4 @@
 import * as sodium from 'libsodium-wrappers'
-
 import axios, { AxiosError, AxiosResponse } from '../../dependencies/src/axios-0.19.0/index'
 import * as bigInt from '../../dependencies/src/big-integer-1.6.45/BigInteger'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
@@ -61,6 +60,7 @@ export interface TezosSpendOperation extends TezosOperation {
   amount: string
   kind: TezosOperationType.TRANSACTION
   code?: string
+  contractDestination?: string
 }
 
 export interface TezosDelegationOperation extends TezosOperation {
@@ -160,6 +160,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   }
 
   // tezbox default
+  // TODO: Lower fees for mainnet
   public feeDefaults: FeeDefaults = {
     low: '0.001420',
     medium: '0.001520',
@@ -220,7 +221,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     public jsonRPCAPI: string = 'https://tezos-node.prod.gke.papers.tech',
     public baseApiUrl: string = 'https://tezos-mainnet-conseil-1.kubernetes.papers.tech',
     public network: TezosNetwork = TezosNetwork.MAINNET,
-    private readonly baseApiNetwork: string = network,
+    protected readonly baseApiNetwork: string = network,
     apiKey?: string
   ) {
     super()
@@ -424,7 +425,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         case TezosOperationType.TRANSACTION:
           const tezosSpendOperation: TezosSpendOperation = tezosOperation as TezosSpendOperation
           amount = new BigNumber(tezosSpendOperation.amount)
-          to = [tezosSpendOperation.destination]
+          to = [tezosSpendOperation.destination] // contract destination but should be the address of actual receiver
 
           break
         case TezosOperationType.ORIGINATION:
@@ -934,7 +935,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       throw new Error('address format not supported')
     }
   }
-
   protected parsePublicKey(rawHexPublicKey: string): string {
     const { result, rest }: { result: string; rest: string } = this.splitAndReturnRest(rawHexPublicKey, 2)
     const tag: string = result
@@ -976,7 +976,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     while (rest.length > 0) {
       ;({ result, rest } = this.splitAndReturnRest(rest, 2))
       const kindHexString: string = result
-
       switch (kindHexString) {
         case '07':
         case '08':
@@ -1044,7 +1043,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   public unforgeSpendOperation(hexString: string): { tezosSpendOperation: TezosSpendOperation; rest: string } {
     let { result, rest }: { result: string; rest: string } = this.splitAndReturnRest(hexString, 42)
     let source: string = this.parseTzAddress(result)
-
       // fee, counter, gas_limit, storage_limit, amount
     ;({ result, rest } = this.splitAndReturnRest(rest, this.findZarithEndIndex(rest)))
     const fee: BigNumber = this.zarithToBigNumber(result)
@@ -1061,21 +1059,21 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     ;({ result, rest } = this.splitAndReturnRest(rest, 2))
     const hasParameters: boolean = this.checkBoolean(result)
 
+    // const contractDestination = destination
     let contractData: { amount: BigNumber; destination: string } | undefined
     if (hasParameters) {
       ;({ result: contractData, rest } = this.unforgeParameters(rest))
     }
 
+    let contractDestination: string | undefined = undefined
     if (contractData) {
       // This is a migration contract, so we can display more meaningful data to the user
       if (!amount.isZero()) {
         throw new Error('Amount has to be zero for contract calls.')
       }
-      source = destination
-      amount = contractData.amount
-      destination = contractData.destination
+      contractDestination = destination
+      ;({ source, amount, destination } = this.formatContractData(source, amount, destination, contractData))
     }
-
     return {
       tezosSpendOperation: {
         kind: TezosOperationType.TRANSACTION,
@@ -1084,10 +1082,28 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         storage_limit: storageLimit.toFixed(),
         amount: amount.toFixed(),
         counter: counter.toFixed(),
-        destination,
+        contractDestination: contractDestination,
+        destination, // final destination
         source
       },
       rest
+    }
+  }
+
+  protected formatContractData(
+    source: string,
+    amount: BigNumber,
+    destination: string,
+    contractData: any
+  ): {
+    source: string
+    amount: BigNumber
+    destination: string
+  } {
+    return {
+      source: destination,
+      amount: contractData.amount,
+      destination: contractData.destination
     }
   }
 
@@ -1107,10 +1123,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         .minus(40 + 42 + 12 + 12)
         .toNumber()
     )) // Contract data
-
     const amount: BigNumber = new BigNumber(this.decodeSignedInt(result.substr(2, result.length)))
     ;({ result, rest } = this.splitAndReturnRest(rest, 12)) // Contract data
-
     return { result: { amount, destination }, rest }
   }
 
@@ -1224,7 +1238,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
           throw new Error(`Currently unsupported operation type supplied ${operation.kind}`)
       }
     })
-
     return branchHexString + forgedOperation.join('')
   }
 

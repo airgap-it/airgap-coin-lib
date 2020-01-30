@@ -44,6 +44,8 @@ import { addSubProtocol, getSubProtocolsByIdentifier } from './utils/subProtocol
 import { addSupportedProtocol, supportedProtocols } from './utils/supportedProtocols'
 import { AirGapMarketWallet } from './wallet/AirGapMarketWallet'
 import { AirGapWallet } from './wallet/AirGapWallet'
+import { TezosFAProtocol, TezosTransactionResult, TezosTransactionCursor } from './protocols/tezos/fa/TezosFAProtocol'
+import { TezosBTC } from './protocols/tezos/fa/TezosBTC'
 
 export {
   addSupportedProtocol,
@@ -68,6 +70,10 @@ export {
   AeternityProtocol,
   TezosProtocol,
   TezosKtProtocol,
+  TezosFAProtocol,
+  TezosBTC,
+  TezosTransactionResult,
+  TezosTransactionCursor,
   CosmosProtocol,
   // tezos-specific configuration
   BakerInfo,
