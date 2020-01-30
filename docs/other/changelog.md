@@ -1,3 +1,9 @@
+### 0.6.5 (2020-01-29)
+
+### Bug Fixes
+
+- **tezos**: added deposits and fees to baking/endorsing rewards
+
 ### 0.6.4 (2020-01-02)
 
 ### Bug Fixes
