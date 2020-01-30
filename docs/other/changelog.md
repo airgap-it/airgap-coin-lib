@@ -1,6 +1,12 @@
+### 0.7.0 (2020-01-30)
+
+### Feature
+
+- **tezos**: added support for FA 1.2
+
 ### 0.6.5 (2020-01-29)
 
-### Bug Fixes
+### Feature
 
 - **tezos**: added deposits and fees to baking/endorsing rewards
 
