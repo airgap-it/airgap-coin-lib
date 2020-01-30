@@ -1868,7 +1868,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
   private async fetchEndorsementOperationCountAndTotalFees(blockLevels: number[]): Promise<Map<number, { sum_number_of_slots: string; block_level: number; sum_fee: number }>> {
     const query = {
-      fields: ['block_level', 'kind'],
+      fields: ['block_level'],
       predicates: [
         {
           field: 'block_level',
