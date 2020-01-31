@@ -639,6 +639,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         case TezosOperationType.REVEAL:
           const revealOperation = operation as TezosRevealOperation
 
+          if (!revealOperation.public_key) {
+            throw new Error('property "public_key" was not defined')
+          }
+
           ;(operation as TezosRevealOperation).public_key = revealOperation.public_key
           break
         case TezosOperationType.DELEGATION:
@@ -649,11 +653,19 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         case TezosOperationType.TRANSACTION:
           const spendOperation: TezosSpendOperation = operationRequest as TezosSpendOperation
 
+          if (!spendOperation.amount) {
+            throw new Error('property "amount" was not defined')
+          }
+
+          if (!spendOperation.destination) {
+            throw new Error('property "destination" was not defined')
+          }
+
           ;(operation as TezosSpendOperation).amount = spendOperation.amount
           ;(operation as TezosSpendOperation).destination = spendOperation.destination
           break
         default:
-          throw new Error('unsupported operation type' + operationRequest.kind) // Exhaustive if
+          throw new Error(`unsupported operation type "${operationRequest.kind}"`)
         }
 
         if (operation) {
