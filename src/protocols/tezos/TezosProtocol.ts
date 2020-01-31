@@ -65,22 +65,12 @@ export interface TezosSpendOperation extends TezosOperation {
 
 export interface TezosDelegationOperation extends TezosOperation {
   kind: TezosOperationType.DELEGATION
-  source: string
-  fee: string
-  counter: string
-  gas_limit: string
-  storage_limit: string
   delegate?: string
 }
 
 export interface TezosOriginationOperation extends TezosOperation {
   kind: TezosOperationType.ORIGINATION
   balance: string
-  counter: string
-  fee: string
-  gas_limit: string
-  source: string
-  storage_limit: string
   delegate?: string
   script?: string
 }
@@ -584,6 +574,95 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     }
 
     try {
+      console.log('forging operations preparetx', operations)
+      const tezosWrappedOperation: TezosWrappedOperation = {
+        branch,
+        contents: operations
+      }
+
+      const binaryTx: string = this.forgeTezosOperation(tezosWrappedOperation)
+
+      return { binaryTransaction: binaryTx }
+    } catch (error) {
+      console.warn(error.message)
+      throw new Error('Forging Tezos TX failed.')
+    }
+  }
+
+  public async prepareOperations(
+    publicKey: string,
+    operationRequests: TezosOperation[]
+  ): Promise<RawTezosTransaction> {
+    let counter: BigNumber = new BigNumber(1)
+    let branch: string
+
+    const operations: TezosOperation[] = []
+
+    const address: string = await this.getAddressFromPublicKey(publicKey)
+
+    try {
+      const results = await Promise.all([
+        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/counter`),
+        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/hash`),
+        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/manager_key`)
+      ])
+
+      counter = new BigNumber(results[0].data).plus(1)
+      branch = results[1].data
+
+      const accountManager: { key: string } = results[2].data
+
+      // check if we have revealed the address already
+      if (!accountManager) {
+        operations.push(await this.createRevealOperation(counter, publicKey, address))
+        counter = counter.plus(1)
+      }
+    } catch (error) {
+      throw error
+    }
+
+    operationRequests.forEach((operationRequest, index) => {
+      console.log('preparing tezos operation', operationRequest)
+
+      let operation: TezosOperation | undefined = {
+        kind: operationRequest.kind || address,
+        source: operationRequest.source || address,
+        counter: operationRequest.counter || counter.plus(index).toFixed(),
+        fee: operationRequest.fee || new BigNumber(this.feeDefaults.low).times(1000000).toFixed(),
+        gas_limit: operationRequest.gas_limit || '15385',
+        // gas_limit: (spendOperation.destination).toLowerCase().startsWith('kt') ? '15385' : '10300',
+        storage_limit: operationRequest.storage_limit || '300',
+        // storage_limit: receivingBalance.isZero() && recipients[i].toLowerCase().startsWith('tz') ? '300' : '0', // taken from eztz
+      }
+
+      switch (operationRequest.kind) {
+        case TezosOperationType.REVEAL:
+          const revealOperation = operation as TezosRevealOperation
+
+          ;(operation as TezosRevealOperation).public_key = revealOperation.public_key
+          break
+        case TezosOperationType.DELEGATION:
+          const delegationOperation = operation as TezosDelegationOperation
+
+          ;(operation as TezosDelegationOperation).delegate = delegationOperation.delegate
+          break
+        case TezosOperationType.TRANSACTION:
+          const spendOperation: TezosSpendOperation = operationRequest as TezosSpendOperation
+
+          ;(operation as TezosSpendOperation).amount = spendOperation.amount
+          ;(operation as TezosSpendOperation).destination = spendOperation.destination
+          break
+        default:
+          throw new Error('unsupported operation type' + operationRequest.kind) // Exhaustive if
+        }
+
+        if (operation) {
+          operations.push(operation)   
+        }
+    })
+
+    try {
+      console.log('forging operations prepareOperations', operations)
       const tezosWrappedOperation: TezosWrappedOperation = {
         branch,
         contents: operations
