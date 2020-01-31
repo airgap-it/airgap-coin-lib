@@ -637,7 +637,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
       switch (operationRequest.kind) {
         case TezosOperationType.REVEAL:
-          const revealOperation = operation as TezosRevealOperation
+          const revealOperation = operationRequest as TezosRevealOperation
 
           if (!revealOperation.public_key) {
             throw new Error('property "public_key" was not defined')
@@ -646,7 +646,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
           ;(operation as TezosRevealOperation).public_key = revealOperation.public_key
           break
         case TezosOperationType.DELEGATION:
-          const delegationOperation = operation as TezosDelegationOperation
+          const delegationOperation = operationRequest as TezosDelegationOperation
 
           ;(operation as TezosDelegationOperation).delegate = delegationOperation.delegate
           break
