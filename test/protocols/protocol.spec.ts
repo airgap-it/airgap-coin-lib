@@ -52,12 +52,12 @@ const itIf = (condition, title, test) => {
 
 protocols.forEach(async (protocol: TestProtocolSpec) => {
   describe(`ICoinProtocol ${protocol.name}`, () => {
-    describe(`Blockexplorer`, () => {
+    describe(`Blockexplorer`, async () => {
       const address = 'dummyAddress'
       const txId = 'dummyTxId'
 
-      const blockExplorerLinkAddress = protocol.lib.getBlockExplorerLinkForAddress(address)
-      const blockExplorerLinkTxId = protocol.lib.getBlockExplorerLinkForTxId(txId)
+      const blockExplorerLinkAddress = await protocol.lib.getBlockExplorerLinkForAddress(address)
+      const blockExplorerLinkTxId = await protocol.lib.getBlockExplorerLinkForTxId(txId)
 
       it('should replace address', async () => {
         expect(blockExplorerLinkAddress).to.contain(address)
@@ -104,12 +104,12 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
       })
 
       it('getPublicKeyFromHexSecret - should be able to create a public key from a corresponding hex secret', async () => {
-        const publicKey = protocol.lib.getPublicKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
+        const publicKey = await protocol.lib.getPublicKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
         expect(publicKey).to.equal(protocol.wallet.publicKey)
       })
 
       itIf(!protocol.lib.supportsHD, 'getPrivateKeyFromHexSecret - should be able to create a private key from a hex secret', async () => {
-        const privateKey = protocol.lib.getPrivateKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
+        const privateKey = await protocol.lib.getPrivateKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
 
         // check if privateKey is a Buffer
         expect(privateKey).to.be.instanceof(Buffer)
@@ -122,7 +122,7 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
         protocol.lib.supportsHD,
         'getExtendedPrivateKeyFromHexSecret - should be able to create ext private key from hex secret',
         async () => {
-          const privateKey = protocol.lib.getExtendedPrivateKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
+          const privateKey = await protocol.lib.getExtendedPrivateKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
 
           // check if privateKey matches to supplied one
           expect(privateKey).to.equal(protocol.wallet.privateKey)
@@ -133,7 +133,7 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
         !protocol.lib.supportsHD,
         'getAddressFromPublicKey - should be able to create a valid address from a supplied publicKey',
         async () => {
-          const publicKey = protocol.lib.getPublicKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
+          const publicKey = await protocol.lib.getPublicKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
           const address = await protocol.lib.getAddressFromPublicKey(publicKey)
 
           // check if address format matches
@@ -148,7 +148,7 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
         protocol.lib.supportsHD,
         'getAddressFromExtendedPublicKey - should be able to create a valid address from ext publicKey',
         async () => {
-          const publicKey = protocol.lib.getPublicKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
+          const publicKey = await protocol.lib.getPublicKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
           const address = await protocol.lib.getAddressFromExtendedPublicKey(publicKey, 0, 0)
 
           // check if address format matches
@@ -241,7 +241,7 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
       })
 
       itIf(!protocol.lib.supportsHD, 'signWithPrivateKey - Is able to sign a transaction using a PrivateKey', async () => {
-        const privateKey = protocol.lib.getPrivateKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
+        const privateKey = await protocol.lib.getPrivateKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
         const txs: any[] = []
 
         for (const { unsignedTx } of protocol.txs) {
@@ -255,7 +255,7 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
       })
 
       itIf(protocol.lib.supportsHD, 'signWithExtendedPrivateKey - Is able to sign a transaction using a PrivateKey', async () => {
-        const privateKey = protocol.lib.getExtendedPrivateKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
+        const privateKey = await protocol.lib.getExtendedPrivateKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
         const txs: any[] = []
 
         for (const { unsignedTx } of protocol.txs) {

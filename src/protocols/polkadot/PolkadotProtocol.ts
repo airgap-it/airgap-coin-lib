@@ -42,23 +42,23 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
         super()
     }
 
-    public getBlockExplorerLinkForAddress(address: string): string {
+    public async getBlockExplorerLinkForAddress(address: string): Promise<string> {
         throw new Error('Method not implemented.');
     }
 
-    public getBlockExplorerLinkForTxId(txId: string): string {
+    public async getBlockExplorerLinkForTxId(txId: string): Promise<string> {
         throw new Error('Method not implemented.');
     }
 
-    public getPublicKeyFromHexSecret(secret: string, derivationPath: string): string {
+    public async getPublicKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
         throw new Error('Method not implemented.');
     }
 
-    public getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Buffer {
+    public async getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<Buffer> {
         throw new Error('Method not implemented.');
     }
 
-    public getExtendedPrivateKeyFromHexSecret(secret: string, derivationPath: string): string {
+    public async getExtendedPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
         throw new Error('Method not implemented.');
     }
 

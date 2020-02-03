@@ -76,15 +76,15 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     this.network = bitcoinJS.networks.bitcoin
   }
 
-  public getBlockExplorerLinkForAddress(address: string): string {
+  public async getBlockExplorerLinkForAddress(address: string): Promise<string> {
     return `${this.blockExplorer}/address/{{address}}`.replace('{{address}}', address)
   }
 
-  public getBlockExplorerLinkForTxId(txId: string): string {
+  public async getBlockExplorerLinkForTxId(txId: string): Promise<string> {
     return `${this.blockExplorer}/tx/{{txId}}`.replace('{{txId}}', txId)
   }
 
-  public getPublicKeyFromHexSecret(secret: string, derivationPath: string): string {
+  public async getPublicKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
     const ethereumNode = bitcoinJS.HDNode.fromSeedHex(secret, this.network)
 
     return ethereumNode
@@ -94,13 +94,13 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
       .toString('hex')
   }
 
-  public getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Buffer {
+  public async getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<Buffer> {
     const ethereumNode = bitcoinJS.HDNode.fromSeedHex(secret, this.network)
 
     return ethereumNode.derivePath(derivationPath).keyPair.d.toBuffer(32)
   }
 
-  public getExtendedPrivateKeyFromHexSecret(secret: string, derivationPath: string): string {
+  public async getExtendedPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
     throw new Error('extended private key support for ether not implemented')
   }
 

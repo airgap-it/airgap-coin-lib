@@ -65,15 +65,15 @@ export class BitcoinProtocol implements ICoinProtocol {
     this.bitcoinJSLib = bitcoinJSLib
   }
 
-  public getBlockExplorerLinkForAddress(address: string): string {
+  public async getBlockExplorerLinkForAddress(address: string): Promise<string> {
     return `${this.blockExplorer}/address/{{address}}/`.replace('{{address}}', address)
   }
 
-  public getBlockExplorerLinkForTxId(txId: string): string {
+  public async getBlockExplorerLinkForTxId(txId: string): Promise<string> {
     return `${this.blockExplorer}/tx/{{txId}}/`.replace('{{txId}}', txId)
   }
 
-  public getPublicKeyFromHexSecret(secret: string, derivationPath: string): string {
+  public async getPublicKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
     const bitcoinNode = this.bitcoinJSLib.HDNode.fromSeedHex(secret, this.network)
 
     return bitcoinNode
@@ -82,13 +82,13 @@ export class BitcoinProtocol implements ICoinProtocol {
       .toBase58()
   }
 
-  public getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Buffer {
+  public async getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<Buffer> {
     const bitcoinNode = this.bitcoinJSLib.HDNode.fromSeedHex(secret, this.network)
 
     return bitcoinNode.derivePath(derivationPath).keyPair.d.toBuffer(32)
   }
 
-  public getExtendedPrivateKeyFromHexSecret(secret: string, derivationPath: string): string {
+  public async getExtendedPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
     const bitcoinNode = this.bitcoinJSLib.HDNode.fromSeedHex(secret, this.network)
 
     return bitcoinNode.derivePath(derivationPath).toBase58()

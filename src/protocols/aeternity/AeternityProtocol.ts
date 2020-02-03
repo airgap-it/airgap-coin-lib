@@ -58,11 +58,11 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
     super()
   }
 
-  public getBlockExplorerLinkForAddress(address: string): string {
+  public async getBlockExplorerLinkForAddress(address: string): Promise<string> {
     return `${this.blockExplorer}/account/transactions/{{address}}/`.replace('{{address}}', address)
   }
 
-  public getBlockExplorerLinkForTxId(txId: string): string {
+  public async getBlockExplorerLinkForTxId(txId: string): Promise<string> {
     return `${this.blockExplorer}/transactions/{{txId}}/`.replace('{{txId}}', txId)
   }
 
@@ -71,7 +71,7 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
    * @param secret HEX-Secret from BIP39
    * @param derivationPath DerivationPath for Key
    */
-  public getPublicKeyFromHexSecret(secret: string, derivationPath: string): string {
+  public async getPublicKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
     const { publicKey } = generateWalletUsingDerivationPath(Buffer.from(secret, 'hex'), derivationPath)
 
     return Buffer.from(publicKey).toString('hex')
@@ -82,7 +82,7 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
    * @param secret HEX-Secret from BIP39
    * @param derivationPath DerivationPath for Key
    */
-  public getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Buffer {
+  public async getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<Buffer> {
     const { secretKey } = generateWalletUsingDerivationPath(Buffer.from(secret, 'hex'), derivationPath)
 
     return Buffer.from(secretKey)

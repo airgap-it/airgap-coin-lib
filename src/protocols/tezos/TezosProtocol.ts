@@ -233,11 +233,11 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     }
   }
 
-  public getBlockExplorerLinkForAddress(address: string): string {
+  public async getBlockExplorerLinkForAddress(address: string): Promise<string> {
     return `${this.blockExplorer}/account/{{address}}`.replace('{{address}}', address)
   }
 
-  public getBlockExplorerLinkForTxId(txId: string): string {
+  public async getBlockExplorerLinkForTxId(txId: string): Promise<string> {
     return `${this.blockExplorer}/transaction/{{txId}}`.replace('{{txId}}', txId)
   }
 
@@ -246,7 +246,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
    * @param secret HEX-Secret from BIP39
    * @param derivationPath DerivationPath for Key
    */
-  public getPublicKeyFromHexSecret(secret: string, derivationPath: string): string {
+  public async getPublicKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
     // both AE and Tezos use the same ECC curves (ed25519)
     const { publicKey }: { publicKey: string } = generateWalletUsingDerivationPath(Buffer.from(secret, 'hex'), derivationPath) as any // TODO: Look into typings
 
@@ -258,7 +258,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
    * @param secret HEX-Secret from BIP39
    * @param derivationPath DerivationPath for Key
    */
-  public getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Buffer {
+  public async getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<Buffer> {
     // both AE and Tezos use the same ECC curves (ed25519)
     const { secretKey }: { secretKey: string } = generateWalletUsingDerivationPath(Buffer.from(secret, 'hex'), derivationPath) as any // TODO: Look into typings
 

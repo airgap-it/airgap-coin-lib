@@ -76,11 +76,11 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
     super()
   }
 
-  public getBlockExplorerLinkForAddress(address: string): string {
+  public async getBlockExplorerLinkForAddress(address: string): Promise<string> {
     return `${this.blockExplorer}/account/${address}`
   }
 
-  public getBlockExplorerLinkForTxId(txId: string): string {
+  public async getBlockExplorerLinkForTxId(txId: string): Promise<string> {
     return `${this.blockExplorer}/txs/${txId}`
   }
 
@@ -105,7 +105,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
     }
   }
 
-  public getPublicKeyFromHexSecret(secret: string, derivationPath: string): string {
+  public async getPublicKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
     const node: BIP32Interface = fromSeed(Buffer.from(secret, 'hex'))
 
     return this.generateKeyPairFromNode(node, derivationPath).publicKey.toString('hex')
@@ -117,7 +117,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
     return Buffer.from(publicKey, 'binary')
   }
 
-  public getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Buffer {
+  public async getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<Buffer> {
     const node = fromSeed(Buffer.from(secret, 'hex'))
 
     return this.generateKeyPairFromNode(node, derivationPath).privateKey
