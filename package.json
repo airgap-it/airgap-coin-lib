@@ -34,6 +34,8 @@
   },
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
+    "@polkadot/util": "^2.0.1",
+    "@polkadot/wasm-crypto": "^0.20.1",
     "libsodium-wrappers": "0.7.3",
     "xxhashjs": "^0.2.2"
   },

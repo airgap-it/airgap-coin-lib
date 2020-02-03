@@ -28,11 +28,7 @@ import {
   CosmosUnbondingDelegation
 } from './CosmosNodeClient'
 import { CosmosTransaction } from './CosmosTransaction'
-
-export interface KeyPair {
-  publicKey: Buffer
-  privateKey: Buffer
-}
+import { KeyPair } from '../../data/KeyPair'
 
 export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol {
   public symbol: string = 'ATOM'
