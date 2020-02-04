@@ -5,6 +5,7 @@ import { PolkadotNodeClient } from './PolkadotNodeClient'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { createSr25519KeyPair } from '../../utils/sr25519'
 import { encodeAddress } from './utils/address'
+import { SignedTransaction, UnsignedTransaction, IAirGapTransaction } from '../..'
 
 export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtocol {
     // TODO: set proper values
@@ -70,19 +71,11 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
         return [await this.getAddressFromPublicKey(publicKey)]
     }
     
-    public getTransactionsFromPublicKey(publicKey: string, limit: number, offset: number): Promise<import('../..').IAirGapTransaction[]> {
+    public getTransactionsFromPublicKey(publicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]> {
         throw new Error('Method not implemented.');
     }
     
-    public getTransactionsFromExtendedPublicKey(extendedPublicKey: string, limit: number, offset: number): Promise<import('../..').IAirGapTransaction[]> {
-        throw new Error('Method not implemented.');
-    }
-    
-    public getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<import('../..').IAirGapTransaction[]> {
-        throw new Error('Method not implemented.');
-    }
-    
-    public signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: any): Promise<string> {
+    public getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
         throw new Error('Method not implemented.');
     }
     
@@ -90,11 +83,11 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
         throw new Error('Method not implemented.');
     }
     
-    public getTransactionDetails(transaction: import('../..').UnsignedTransaction): Promise<import('../..').IAirGapTransaction[]> {
+    public getTransactionDetails(transaction: UnsignedTransaction): Promise<IAirGapTransaction[]> {
         throw new Error('Method not implemented.');
     }
     
-    public getTransactionDetailsFromSigned(transaction: import('../..').SignedTransaction): Promise<import('../..').IAirGapTransaction[]> {
+    public getTransactionDetailsFromSigned(transaction: SignedTransaction): Promise<IAirGapTransaction[]> {
         throw new Error('Method not implemented.');
     }
 
@@ -110,14 +103,6 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
         return this.getBalanceOfAddresses([await this.getAddressFromPublicKey(publicKey)])        
     }
 
-    public getBalanceOfExtendedPublicKey(extendedPublicKey: string, offset: number): Promise<string> {
-        throw new Error('Method not implemented.');
-    }
-    
-    public prepareTransactionFromExtendedPublicKey(extendedPublicKey: string, offset: number, recipients: string[], values: string[], fee: string, data?: any): Promise<any> {
-        throw new Error('Method not implemented.');
-    }
-    
     public prepareTransactionFromPublicKey(publicKey: string, recipients: string[], values: string[], fee: string, data?: any): Promise<any> {
         throw new Error('Method not implemented.');
     }
