@@ -4,6 +4,7 @@ import { NonExtendedProtocol } from '../NonExtendedProtocol'
 import { PolkadotNodeClient } from './PolkadotNodeClient'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { createSr25519KeyPair } from '../../utils/sr25519'
+import { encodeAddress } from './utils/address'
 
 export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtocol {
     // TODO: set proper values
@@ -61,20 +62,12 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
         return keyPair.privateKey
     }
 
-    public getAddressFromPublicKey(publicKey: string): Promise<string> {
-        throw new Error('Method not implemented.');
+    public async getAddressFromPublicKey(publicKey: string): Promise<string> {
+        return encodeAddress(Buffer.from(publicKey, 'hex'))
     }
     
-    public getAddressesFromPublicKey(publicKey: string): Promise<string[]> {
-        throw new Error('Method not implemented.');
-    }
-    
-    public getAddressFromExtendedPublicKey(extendedPublicKey: string, visibilityDerivationIndex: number, addressDerivationIndex: number): Promise<string> {
-        throw new Error('Method not implemented.');
-    }
-    
-    public getAddressesFromExtendedPublicKey(extendedPublicKey: string, visibilityDerivationIndex: number, addressCount: number, offset: number): Promise<string[]> {
-        throw new Error('Method not implemented.');
+    public async getAddressesFromPublicKey(publicKey: string): Promise<string[]> {
+        return [await this.getAddressFromPublicKey(publicKey)]
     }
     
     public getTransactionsFromPublicKey(publicKey: string, limit: number, offset: number): Promise<import('../..').IAirGapTransaction[]> {
