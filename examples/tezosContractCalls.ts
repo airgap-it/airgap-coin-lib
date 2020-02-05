@@ -1,16 +1,16 @@
 import { TezosBTC } from '../src/protocols/tezos/fa/TezosBTC'
-import { UnsignedTezosTransaction } from '../src/serializer/v1/unsigned-transactions/tezos-transactions.serializer'
-import { SyncProtocolUtils, EncodedType } from '../src/serializer/v1/serializer'
-import { SERIALIZER_VERSION } from '../src/serializer/v1/constants'
+// import { UnsignedTezosTransaction } from '../src/serializer/v1/unsigned-transactions/tezos-transactions.serializer'
+// import { SyncProtocolUtils, EncodedType } from '../src/serializer/v1/serializer'
+// import { SERIALIZER_VERSION } from '../src/serializer/v1/constants'
 
-const protocol = new TezosBTC()
-const pubKey = '9430c2ac8fe1403c6cbbee3a98b19f3f3bbdd89d0659b3eb6e4106a5cbe41351'
-const fromAddress = 'tz1Mj7RzPmMAqDUNFBn5t5VbXmWW4cSUAdtT'
-const toAddress = 'tz1UmM6TUo9PJ2VixcVzGwAJpobhCx1yYpmV'
-const amount = '0'
-const fee = '1600000'
+// const protocol = new TezosBTC()
+// const pubKey = '9430c2ac8fe1403c6cbbee3a98b19f3f3bbdd89d0659b3eb6e4106a5cbe41351'
+// const fromAddress = 'tz1Mj7RzPmMAqDUNFBn5t5VbXmWW4cSUAdtT'
+// const toAddress = 'tz1UmM6TUo9PJ2VixcVzGwAJpobhCx1yYpmV'
+// const amount = '0'
+// const fee = '1600000'
 
-const syncProtocolUtils = new SyncProtocolUtils()
+// const syncProtocolUtils = new SyncProtocolUtils()
 
 const contract = new TezosBTC()
 // contract.getBalance('tz1aqsunnQ9ECPAfvRaWeMfiNFhF3s8M15sy').then(result => {
@@ -43,27 +43,29 @@ const contract = new TezosBTC()
 //     })
 // })
 
-contract.transfer(fromAddress, toAddress, amount, fee, pubKey)
-  .then(rawTx => {
-    syncProtocolUtils
-      .serialize({
-        version: SERIALIZER_VERSION,
-        protocol: 'xtz-btc',
-        type: EncodedType.UNSIGNED_TRANSACTION,
-        payload: {
-          publicKey: pubKey,
-          callback: 'airgap-wallet://?d=',
-          transaction: rawTx
-        }
-      })
-      .then(async serialized => {
-        syncProtocolUtils.deserialize(serialized).then(async deserialized => {
-          const unsignedTx = deserialized.payload as UnsignedTezosTransaction
-          const airGapTxs = await protocol.getTransactionDetails(unsignedTx).catch(err => console.error(err))
-          console.log(airGapTxs)
-        })
-      })
-  })
-  .catch(error => console.log(error))
+contract.getTotalBurned('tz1aqsunnQ9ECPAfvRaWeMfiNFhF3s8M15sy').then(console.log)
+
+// contract.transfer(fromAddress, toAddress, amount, fee, pubKey)
+//   .then(rawTx => {
+//     syncProtocolUtils
+//       .serialize({
+//         version: SERIALIZER_VERSION,
+//         protocol: 'xtz-btc',
+//         type: EncodedType.UNSIGNED_TRANSACTION,
+//         payload: {
+//           publicKey: pubKey,
+//           callback: 'airgap-wallet://?d=',
+//           transaction: rawTx
+//         }
+//       })
+//       .then(async serialized => {
+//         syncProtocolUtils.deserialize(serialized).then(async deserialized => {
+//           const unsignedTx = deserialized.payload as UnsignedTezosTransaction
+//           const airGapTxs = await protocol.getTransactionDetails(unsignedTx).catch(err => console.error(err))
+//           console.log(airGapTxs)
+//         })
+//       })
+//   })
+//   .catch(error => console.log(error))
 
 
