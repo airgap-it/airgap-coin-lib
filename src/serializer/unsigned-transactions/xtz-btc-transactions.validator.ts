@@ -1,4 +1,3 @@
-import { TezosSpendOperation } from './../../../dist/protocols/tezos/TezosProtocol.d'
 import { async } from '../../dependencies/src/validate.js-0.13.1/validate'
 import { UnsignedTezosTransaction } from '../schemas/definitions/transaction-sign-request-tezos'
 import { SignedTezosTransaction } from '../schemas/definitions/transaction-sign-response-tezos'
@@ -7,6 +6,7 @@ import { TransactionValidator } from '../validators/transactions.validator'
 import { validateSyncScheme } from '../validators/validators'
 import { TezosProtocol } from '../..'
 import { TezosBTCDetails } from '../constants'
+import { TezosSpendOperation } from '../../protocols/tezos/TezosProtocol'
 
 const unsignedTransactionConstraints = {
   binaryTransaction: {
