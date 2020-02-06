@@ -100,8 +100,8 @@ export class CosmosNodeClient {
       const availableBalance = data[0].amount
       if (totalBalance) {
         const results = await Promise.all([
-          this.fetchTotalReward(address), 
-          this.fetchTotalUnbondingAmount(address), 
+          this.fetchTotalReward(address),
+          this.fetchTotalUnbondingAmount(address),
           this.fetchTotalDelegatedAmount(address)
         ])
         const totalRewardValue = results[0]

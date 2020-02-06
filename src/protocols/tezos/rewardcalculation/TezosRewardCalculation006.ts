@@ -1,9 +1,8 @@
-import { TezosNodeConstantsV2, TezosProtocol } from "../TezosProtocol"
-import BigNumber from "../../../dependencies/src/bignumber.js-9.0.0/bignumber"
-import { TezosRewardsCalculation005 } from "./TezosRewardCalculation005"
+import { TezosNodeConstantsV2, TezosProtocol } from '../TezosProtocol'
+import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { TezosRewardsCalculation005 } from './TezosRewardCalculation005'
 
 export class TezosRewardsCalculation006 extends TezosRewardsCalculation005 {
-
   constructor(public protocol: TezosProtocol) {
     super(protocol)
     this.tezosNodeConstants = {} as TezosNodeConstantsV2

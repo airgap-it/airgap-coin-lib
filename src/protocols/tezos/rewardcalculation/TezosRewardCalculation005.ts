@@ -1,16 +1,16 @@
-import { TezosBakingRewards, TezosProtocol, TezosNodeConstantsV1, TezosEndorsingRight, TezosEndorsingRewards } from "../TezosProtocol"
-import { TezosRewardsCalculationDefault } from "./TezosRewardCalculationDefault"
-import BigNumber from "../../../dependencies/src/bignumber.js-9.0.0/bignumber"
+import { TezosBakingRewards, TezosProtocol, TezosNodeConstantsV1, TezosEndorsingRight, TezosEndorsingRewards } from '../TezosProtocol'
+import { TezosRewardsCalculationDefault } from './TezosRewardCalculationDefault'
+import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 
 export class TezosRewardsCalculation005 extends TezosRewardsCalculationDefault {
   constructor(public protocol: TezosProtocol) {
     super(protocol)
   }
 
-  protected async computeBakingRewards(bakingRights: { level: number; priority: number }[],
+  protected async computeBakingRewards(
+    bakingRights: { level: number; priority: number }[],
     isFutureCycle: boolean
   ): Promise<TezosBakingRewards> {
-
     let result = new BigNumber(0)
     let rewardsByLevel: { level: number; amount: string; deposit: string; fees?: string }[] = []
     const levels = bakingRights.map(br => br.level)
@@ -41,7 +41,7 @@ export class TezosRewardsCalculation005 extends TezosRewardsCalculationDefault {
         level: next.level,
         amount: bakingReward.toFixed(),
         deposit: this.tezosNodeConstants.block_security_deposit,
-        fees: blockEndorsementCountAndFee !== undefined ? new BigNumber(blockEndorsementCountAndFee.sum_fee).toFixed() : "0"
+        fees: blockEndorsementCountAndFee !== undefined ? new BigNumber(blockEndorsementCountAndFee.sum_fee).toFixed() : '0'
       })
       return current.plus(bakingReward)
     }, new BigNumber(0))
@@ -51,7 +51,8 @@ export class TezosRewardsCalculation005 extends TezosRewardsCalculationDefault {
 
   protected specificBakingCalculation(e: number, p: number): BigNumber {
     const muliplier = Math.floor(8 + 2 * (e / 32))
-    const bakingReward = (((this.tezosNodeConstants as TezosNodeConstantsV1).block_reward as unknown as number) * muliplier) / 10 / (p + 1)
+    const bakingReward =
+      ((((this.tezosNodeConstants as TezosNodeConstantsV1).block_reward as unknown) as number) * muliplier) / 10 / (p + 1)
     return new BigNumber(bakingReward)
   }
 
@@ -70,7 +71,7 @@ export class TezosRewardsCalculation005 extends TezosRewardsCalculationDefault {
     const result = endorsingRights.reduce((current, next) => {
       let priority = 0
       if (!isFutureCycle) {
-        const block = priorities.find(p => p.level === (next.block_level!))
+        const block = priorities.find(p => p.level === next.block_level!)
         if (block === undefined) {
           throw new Error('Cannot find block priority')
         }

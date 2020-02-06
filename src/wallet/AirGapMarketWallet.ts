@@ -190,9 +190,9 @@ export class AirGapMarketWallet extends AirGapWallet {
     if (this.protocolIdentifier === 'cosmos') {
       const protocol = new CosmosProtocol()
       const results = await Promise.all([
-        protocol.fetchAvailableBalance(this.addresses[0]), 
-        protocol.fetchTotalReward(this.addresses[0]), 
-        protocol.fetchTotalUnbondingAmount(this.addresses[0]), 
+        protocol.fetchAvailableBalance(this.addresses[0]),
+        protocol.fetchTotalReward(this.addresses[0]),
+        protocol.fetchTotalUnbondingAmount(this.addresses[0]),
         protocol.fetchTotalDelegatedAmount(this.addresses[0])
       ])
       const availableBalance = results[0]
