@@ -12,7 +12,7 @@ import { RawTezosTransaction } from '../../serializer/types'
 import { getSubProtocolsByIdentifier } from '../../utils/subProtocols'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
-import { TezosRewardsCalculation005 as TezosRewardsCalculation005 } from './rewardcalculation/TezosRewardCalculation005'
+import { TezosRewardsCalculation005 } from './rewardcalculation/TezosRewardCalculation005'
 import { TezosRewardsCalculationDefault } from './rewardcalculation/TezosRewardCalculationDefault'
 import { TezosRewardsCalculation006 } from './rewardcalculation/TezosRewardCalculation006'
 
@@ -134,8 +134,8 @@ export interface DelegationInfo {
 }
 
 export interface TezosPayoutInfo {
-  delegator: string 
-  share: string 
+  delegator: string
+  share: string
   payout: string
 }
 
@@ -1548,22 +1548,16 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     let rewardCalculation: TezosRewardsCalculations
     if (is006) {
       rewardCalculation = new TezosRewardsCalculation006(this)
-    }
-    else if (is005){
+    } else if (is005) {
       rewardCalculation = new TezosRewardsCalculation005(this)
-    } 
-    else {
+    } else {
       rewardCalculation = new TezosRewardsCalculationDefault(this)
-    }  
+    }
 
     return rewardCalculation.calculateRewards(bakerAddress, cycle)
   }
 
-  public async calculatePayouts(
-    rewards: TezosRewards,
-    offset: number,
-    limit: number
-  ): Promise<TezosPayoutInfo[]> {
+  public async calculatePayouts(rewards: TezosRewards, offset: number, limit: number): Promise<TezosPayoutInfo[]> {
     const delegators = rewards.delegatedContracts.slice(offset, Math.min(offset + limit, rewards.delegatedContracts.length))
     return this.calculatePayoutForAddresses(delegators, rewards)
   }
@@ -1607,7 +1601,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     babylonnet: 2048,
     carthagenet: 2048
   }
-  
 
   private async fetchBalances(addresses: string[], blockLevel: number): Promise<{ address: string; balance: BigNumber }[]> {
     const body = {
@@ -1686,9 +1679,9 @@ export interface TezosEndorsingRight {
   number_of_slots: number
 }
 
-export interface TezosRewardsCalculations{
-    protocol:TezosProtocol
-    calculateRewards(bakerAddress:string, cycle:number):Promise<TezosRewards>
+export interface TezosRewardsCalculations {
+  protocol: TezosProtocol
+  calculateRewards(bakerAddress: string, cycle: number): Promise<TezosRewards>
 }
 
 export interface TezosRewards {
@@ -1727,16 +1720,16 @@ export interface TezosFrozenBalance {
 }
 
 export interface TezosNodeConstants {
-  proof_of_work_nonce_size: number 
-  nonce_length: number 
-  max_revelations_per_block: number 
-  max_operation_data_length: number 
-  max_proposals_per_delegate: number 
-  preserved_cycles: number 
-  blocks_per_cycle: number 
-  blocks_per_commitment: number 
-  blocks_per_roll_snapshot: number 
-  blocks_per_voting_period: number 
+  proof_of_work_nonce_size: number
+  nonce_length: number
+  max_revelations_per_block: number
+  max_operation_data_length: number
+  max_proposals_per_delegate: number
+  preserved_cycles: number
+  blocks_per_cycle: number
+  blocks_per_commitment: number
+  blocks_per_roll_snapshot: number
+  blocks_per_voting_period: number
   time_between_blocks: number[]
   endorsers_per_block: number
   hard_gas_limit_per_operation: string
@@ -1758,12 +1751,12 @@ export interface TezosNodeConstants {
   delay_per_missing_endorsement: string
 }
 
-export interface TezosNodeConstantsV1 extends TezosNodeConstants{
+export interface TezosNodeConstantsV1 extends TezosNodeConstants {
   block_reward: string
   endorsement_reward: string
 }
 
-export interface TezosNodeConstantsV2 extends TezosNodeConstants{
+export interface TezosNodeConstantsV2 extends TezosNodeConstants {
   baking_reward_per_endorsement: string[]
   endorsement_reward: string[]
 }
