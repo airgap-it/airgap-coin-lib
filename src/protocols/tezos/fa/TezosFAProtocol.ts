@@ -43,6 +43,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
   public readonly contractAddress: string
 
   private readonly defaultCallbackContract: string = 'KT1JjN5bTE9yayzYHiBm6ruktwEWSHRF8aDm'
+  private readonly defaultSourceAddress: string = 'tz1Mj7RzPmMAqDUNFBn5t5VbXmWW4cSUAdtT'
 
   constructor(configuration: TezosFAProtocolConfiguration) {
     super(configuration.jsonRPCAPI, configuration.baseApiUrl, configuration.network, configuration.baseApiNetwork, configuration.baseApiKey)
@@ -57,7 +58,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
   public async getBalanceOfAddresses(addresses: string[]): Promise<string> {
     const promises: Promise<string>[] = []
     for (const address of addresses) {
-      promises.push(this.getBalance(address))
+      promises.push(this.getBalance(address, this.defaultSourceAddress))
     }
     const results: string[] = await Promise.all(promises)
 
@@ -96,7 +97,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
 
   public async getBalance(address: string, source?: string, callbackContract: string = this.defaultCallbackContract): Promise<string> {
     if (address.toLowerCase().startsWith('kt') && (source === undefined || source.toLowerCase().startsWith('kt'))) {
-      throw new Error('Please provide a tz address as the source parameter')
+      source = this.defaultSourceAddress
     } else if (source === undefined) {
       source = address
     }
@@ -112,7 +113,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     source?: string
   ): Promise<string> {
     if (spenderAddress.toLowerCase().startsWith('kt') && (source === undefined || source.toLowerCase().startsWith('kt'))) {
-      throw new Error('Please provide a tz address as the source parameter')
+      source = this.defaultSourceAddress
     } else if (source === undefined) {
       source = spenderAddress
     }
@@ -121,19 +122,28 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     return this.runContractCall(getAllowanceCall, source)
   }
 
-  public async getTotalSupply(source: string, callbackContract: string = this.defaultCallbackContract){
+  public async getTotalSupply(source?: string, callbackContract: string = this.defaultCallbackContract) {
+    if (source === undefined) {
+      source = this.defaultSourceAddress
+    }
     const args = new TezosContractPair( new TezosContractUnit(), callbackContract)
     const getTotalSupplyCall = new TezosContractCall(TezosContractEntrypoint.totalsupply, args)
-    return this.runContractCall(getTotalSupplyCall,source)
+    return this.runContractCall(getTotalSupplyCall, source)
   }
 
-  public async getTotalMinted(source: string, callbackContract: string = this.defaultCallbackContract){
+  public async getTotalMinted(source?: string, callbackContract: string = this.defaultCallbackContract) {
+    if (source === undefined) {
+      source = this.defaultSourceAddress
+    }
     const args = new TezosContractPair( new TezosContractUnit(), callbackContract)
     const getTotalMintedCall = new TezosContractCall(TezosContractEntrypoint.totalminted, args)
     return this.runContractCall(getTotalMintedCall,source)
   }
 
-  public async getTotalBurned(source: string, callbackContract: string = this.defaultCallbackContract){
+  public async getTotalBurned(source?: string, callbackContract: string = this.defaultCallbackContract) {
+    if (source === undefined) {
+      source = this.defaultSourceAddress
+    }
     const args = new TezosContractPair( new TezosContractUnit(), callbackContract)
     const getTotalBurnedCall = new TezosContractCall(TezosContractEntrypoint.totalburned, args)
     return this.runContractCall(getTotalBurnedCall,source)
