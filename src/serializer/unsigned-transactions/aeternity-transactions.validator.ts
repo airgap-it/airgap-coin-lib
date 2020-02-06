@@ -32,7 +32,7 @@ const success = () => undefined
 const error = errors => errors
 
 export class AeternityTransactionValidator extends TransactionValidator {
-  public validateUnsignedTransaction(unsignedTx: UnsignedAeternityTransaction): any {
+  public validateUnsignedTransaction(unsignedTx: UnsignedAeternityTransaction): Promise<any> {
     const rawTx: RawAeternityTransaction = unsignedTx.transaction
     validateSyncScheme({})
 

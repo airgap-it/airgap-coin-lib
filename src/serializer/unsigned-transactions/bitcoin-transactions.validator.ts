@@ -41,7 +41,7 @@ const signedTransactionConstraints = {
 }
 
 export class BitcoinTransactionValidator extends TransactionValidator {
-  public validateUnsignedTransaction(unsignedTx: UnsignedBitcoinTransaction): any {
+  public validateUnsignedTransaction(unsignedTx: UnsignedBitcoinTransaction): Promise<any> {
     const rawBitcoinTx: RawBitcoinTransaction = unsignedTx.transaction
     validateSyncScheme({})
 

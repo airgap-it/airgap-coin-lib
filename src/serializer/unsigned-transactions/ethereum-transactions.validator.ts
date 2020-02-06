@@ -59,7 +59,7 @@ const success = () => undefined
 const error = errors => errors
 
 export class EthereumTransactionValidator extends TransactionValidator {
-  public validateUnsignedTransaction(unsignedTx: UnsignedEthereumTransaction): any {
+  public validateUnsignedTransaction(unsignedTx: UnsignedEthereumTransaction): Promise<any> {
     const rawTx: RawEthereumTransaction = unsignedTx.transaction
     validateSyncScheme({})
 
