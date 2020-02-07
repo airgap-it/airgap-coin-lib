@@ -41,7 +41,7 @@ export class TezosBTCTransactionValidator extends TransactionValidator {
       unforged.contents.forEach(async operation => {
         const spendTransaction = operation as TezosSpendOperation
         if (spendTransaction.contractDestination !== TezosBTCDetails.CONTRACT_ADDRESS) {
-          reject(
+          return reject(
             new Error(
               `the contract address for a xtz-btc transfer must be ${TezosBTCDetails.CONTRACT_ADDRESS}, but is ${spendTransaction.contractDestination}`
             )
