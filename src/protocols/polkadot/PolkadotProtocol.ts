@@ -6,9 +6,8 @@ import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { createSr25519KeyPair } from '../../utils/sr25519'
 import { encodeAddress, decodeAddress } from './utils/address'
 import { IAirGapTransaction } from '../..'
-import { PolkadotTransaction, UnsignedPolkadotTransaction, SignedPolkadotTransaction } from './data/transaction/PolkadotTransaction'
-import { PolkadotSpendTransactionBuilder } from './data/transaction/PolkadotTransactionBuilder'
-import { PolkadotEra, ImmortalEra } from './data/transaction/PolkadotEra'
+import { PolkadotTransaction, UnsignedPolkadotTransaction, SignedPolkadotTransaction, PolkadotSpendTransactionConfig } from './data/transaction/PolkadotTransaction'
+import { SCALEEra } from './type/scaleType'
 
 const ERA_PERIOD = 50 // 5 min at 6s block times
 
@@ -88,12 +87,12 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
         const lastHash = await this.nodeClient.getLastBlockHash()
         const genesisHash = await this.nodeClient.getFirstBlockHash()
         const currentHeight = await this.nodeClient.getCurrentHeight()
-        const era = PolkadotEra.create({ period: ERA_PERIOD, chainHeight: currentHeight })
-        let nonce = (await this.nodeClient.getNonce(transaction.signer)).toNumber()
+        const era = SCALEEra.Mortal({ chainHeight: currentHeight, period: ERA_PERIOD })
+        let nonce = (await this.nodeClient.getNonce(transaction.signer.value)).toNumber()
         const specVersion = await this.nodeClient.getSpecVersion()
 
         await transaction.sign(privateKey, {
-            blockHash: (era instanceof ImmortalEra) ? genesisHash : lastHash,
+            blockHash: era.isMortal ? lastHash : genesisHash,
             era,
             genesisHash,
             nonce: nonce++,
@@ -102,7 +101,7 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
 
         const signed = {
             tx: transaction.toAirGapTransaction(this.identifier),
-            encoded: transaction.encode()
+            encoded: transaction.encode({ withPrefix: true })
         }
 
         return JSON.stringify(signed)
@@ -145,16 +144,16 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
 
         const recipient = recipients[0]
         const value = new BigNumber(values[0])
-        const { moduleIndex, callIndex } = await this.nodeClient.getSpendTransactionMetadata()
+        const methodId = await this.nodeClient.getSpendTransactionMetadata()
         const tip = new BigNumber(fee)
 
-        return new PolkadotSpendTransactionBuilder()
-            .from(publicKey)
-            .to(recipient)
-            .setValue(value)
-            .setTip(tip)
-            .withMethod(moduleIndex, callIndex)
-            .build()
+        return PolkadotTransaction.Factory.create({
+            from: publicKey,
+            to: recipient,
+            value,
+            tip,
+            methodId
+        } as PolkadotSpendTransactionConfig)
     }
     
     public broadcastTransaction(rawTransaction: string): Promise<string> {

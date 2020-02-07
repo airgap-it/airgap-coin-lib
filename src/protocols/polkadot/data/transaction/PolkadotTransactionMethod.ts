@@ -1,48 +1,41 @@
-import { SCALEEncodable } from "./scale"
-import BigNumber from "../../../../dependencies/src/bignumber.js-9.0.0/bignumber"
-import { encodeCompactIntToHex } from "../../utils/scale"
 import { IAirGapTransaction } from "../../../../interfaces/IAirGapTransaction"
 import { encodeAddress } from "../../utils/address"
+import { SCALEInt, SCALEType, SCALEAccountId, SCALECompactInt } from "../../type/scaleType"
+import { SCALEClass } from "../../type/scaleClass"
 
-export abstract class PolkadotTransactionMethod implements SCALEEncodable {
+export abstract class PolkadotTransactionMethod extends SCALEClass {
+    protected readonly scaleFields = [this.moduleIndex, this.callIndex, ...this.args]
 
     constructor(
-        readonly moduleIndex: number,
-        readonly callIndex: number,
-        readonly args: any
-    ) {}
+        readonly moduleIndex: SCALEInt,
+        readonly callIndex: SCALEInt,
+        readonly args: SCALEType[]
+    ) { super() }
 
     public abstract toAirGapTransactionPart(): Partial<IAirGapTransaction> 
-    protected abstract encodeArgs(): string
-
-    public encode() {
-        const moduleIndexEncoded = new Uint8Array([this.moduleIndex])
-        const callIndexEncoded = new Uint8Array([this.callIndex])
-
-        return Buffer.concat([moduleIndexEncoded, callIndexEncoded]).toString('hex') + this.encodeArgs()
-    }
 }
 
 export class PolkadotSpendTransactionMethod extends PolkadotTransactionMethod {
 
     constructor(
-        moduleIndex: number, 
-        callIndex: number, 
-        destination: string, 
-        value: number | BigNumber
-    ) { super(moduleIndex, callIndex, { destination, value }) }
+        moduleIndex: SCALEInt, 
+        callIndex: SCALEInt, 
+        destination: SCALEAccountId, 
+        value: SCALECompactInt
+    ) { super(moduleIndex, callIndex, [destination, value]) }
+
+    private get destination(): SCALEAccountId {
+        return this.args[0] as SCALEAccountId
+    }
+
+    private get value(): SCALECompactInt {
+        return this.args[1] as SCALECompactInt
+    }
 
     public toAirGapTransactionPart(): Partial<IAirGapTransaction> {
         return {
-            to: [encodeAddress(this.args.destination)],
-            amount: this.args.value.toString(10)
+            to: [encodeAddress(this.destination.value)],
+            amount: this.value.value.toString(10)
         }
-    }
-
-    protected encodeArgs(): string {
-        const destinationEncoded = 'ff' + this.args.destination
-        const valueEncoded = encodeCompactIntToHex(this.args.value)
-
-        return destinationEncoded + valueEncoded
     }
 }

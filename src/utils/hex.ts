@@ -3,7 +3,7 @@ import BigNumber from '../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { padStart } from './padStart'
 
 const HEX_PREFIX = '0x'
-const HEX_REGEX = new RegExp(`${HEX_PREFIX}[0-9a-fA-F]*`)
+const HEX_REGEX = new RegExp(`${HEX_PREFIX}?[0-9a-fA-F]*`)
 
 function hasPrefix(value: string): boolean {
   return value.startsWith(HEX_PREFIX)
