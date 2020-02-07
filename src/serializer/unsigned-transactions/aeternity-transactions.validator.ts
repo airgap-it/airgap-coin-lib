@@ -1,4 +1,4 @@
-import { async, validate } from '../../dependencies/src/validate.js-0.13.1/validate'
+import { async } from '../../dependencies/src/validate.js-0.13.1/validate'
 import { UnsignedAeternityTransaction } from '../schemas/definitions/transaction-sign-request-aeternity'
 import { SignedAeternityTransaction } from '../schemas/definitions/transaction-sign-response-aeternity'
 import { RawAeternityTransaction } from '../types'
@@ -36,7 +36,7 @@ export class AeternityTransactionValidator extends TransactionValidator {
     const rawTx: RawAeternityTransaction = unsignedTx.transaction
     validateSyncScheme({})
 
-    return validate(rawTx, unsignedTransactionConstraints)
+    return async(rawTx, unsignedTransactionConstraints).then(success, error)
   }
   public async validateSignedTransaction(signedTx: SignedAeternityTransaction): Promise<any> {
     return async(signedTx, signedTransactionConstraints).then(success, error)

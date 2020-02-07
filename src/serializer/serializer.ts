@@ -97,13 +97,15 @@ export class Serializer {
       .reduce((pv: IACMessageDefinitionObject[], cv: IACMessageDefinitionObject[]) => pv.concat(...cv), [] as IACMessageDefinitionObject[])
 
     for (let object of deserializedIACMessageDefinitionObjects) {
-      this.serializationValidatorByProtocolIdentifier(object.protocol).then(validator => {
-        const unsignedTx = object.payload as UnsignedTransaction
-        validator
-          .validateUnsignedTransaction(unsignedTx)
-          .then()
-          .catch(err => console.error(`something went wrong with the validation ${err}`))
-      })
+      this.serializationValidatorByProtocolIdentifier(object.protocol)
+        .then(validator => {
+          const unsignedTx = object.payload as UnsignedTransaction
+          validator
+            .validateUnsignedTransaction(unsignedTx)
+            .then()
+            .catch(err => console.error(`something went wrong with the validation ${err}`))
+        })
+        .catch(err => console.error(err))
     }
 
     return deserializedIACMessageDefinitionObjects
@@ -126,7 +128,6 @@ export class Serializer {
     if (!validator) {
       throw Error(`Validator not implemented for ${protocolIdentifier}, ${exactMatch}, ${startsWith}, ${validator}`)
     }
-
     return new validators[validator]()
   }
 }
