@@ -7,8 +7,7 @@ import { FullPayload } from './payloads/full-payload'
 import { Payload } from './payloads/payload'
 import { SerializableUnsignedCosmosTransaction } from './schemas/definitions/transaction-sign-request-cosmos'
 import { SchemaInfo, SchemaRoot } from './schemas/schema'
-import { serializationValidatorByProtocolIdentifier } from './validators/file'
-
+import { serializationValidatorByProtocolIdentifier } from './validators/transactions.validator'
 const accountShareResponse: SchemaRoot = require('./schemas/generated/account-share-response.json')
 
 const messageSignRequest: SchemaRoot = require('./schemas/generated/message-sign-request.json')
