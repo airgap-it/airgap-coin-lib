@@ -91,11 +91,11 @@ export class PolkadotNodeClient {
         )
     }
 
-    public getFirstBlockHash(): Promise<string> {
+    public getFirstBlockHash(): Promise<string | null> {
         return this.getBlockHash(0)
     }
 
-    public getLastBlockHash(): Promise<string> {
+    public getLastBlockHash(): Promise<string | null> {
         return this.getBlockHash()
     }
 
@@ -115,7 +115,7 @@ export class PolkadotNodeClient {
         )
     }
 
-    public submitTransaction(encoded: string): Promise<string> {
+    public submitTransaction(encoded: string): Promise<string | null> {
         return this.send<string, (string | null)>(
             RPC_ENDPOINTS.SUBMIT_EXTRINSIC,
             [encoded]
@@ -130,11 +130,10 @@ export class PolkadotNodeClient {
         )
     }
 
-    private async getBlockHash(blockNumber?: number): Promise<string> {
+    private async getBlockHash(blockNumber?: number): Promise<string | null> {
         return this.send<string, (string | null)>(
             RPC_ENDPOINTS.GET_BLOCK_HASH,
-            blockNumber !== undefined ? [toHexString(blockNumber)] : [],
-            result => stripHexPrefix(result || '')
+            blockNumber !== undefined ? [toHexString(blockNumber)] : []
         )
     }
 

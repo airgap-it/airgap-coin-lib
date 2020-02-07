@@ -86,6 +86,11 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
     public async signWithPrivateKey(privateKey: Buffer, transaction: PolkadotTransaction): Promise<string> {
         const lastHash = await this.nodeClient.getLastBlockHash()
         const genesisHash = await this.nodeClient.getFirstBlockHash()
+
+        if (!lastHash || !genesisHash) {
+            return Promise.reject('Could not fetch all necessary data.')
+        }
+
         const currentHeight = await this.nodeClient.getCurrentHeight()
         const era = SCALEEra.Mortal({ chainHeight: currentHeight, period: ERA_PERIOD })
         let nonce = (await this.nodeClient.getNonce(transaction.signer.value)).toNumber()
@@ -156,9 +161,11 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
         } as PolkadotSpendTransactionConfig)
     }
     
-    public broadcastTransaction(rawTransaction: string): Promise<string> {
+    public async broadcastTransaction(rawTransaction: string): Promise<string> {
         const encoded = JSON.parse(rawTransaction).encoded
-        return this.nodeClient.submitTransaction(encoded)
+        const result = await this.nodeClient.submitTransaction(encoded)
+        
+        return result ? result : Promise.reject('Error while submitting the transaction.')
     }
     
     public signMessage(message: string, privateKey: Buffer): Promise<string> {
