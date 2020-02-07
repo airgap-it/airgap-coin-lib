@@ -2,6 +2,7 @@ import bs58 = require('../../../dependencies/src/bs58-4.0.1')
 
 import { isHex, stripHexPrefix } from "../../../utils/hex"
 import { blake2bAsBytes } from '../../../utils/blake2b'
+import { isString } from 'util'
 
 /*
  * Polkadot: 0, 1
@@ -21,12 +22,13 @@ const SS58_PREFIX = 'SS58PRE'
  * 35: 1, 32, 2
  */
 class Address {
-    static fromPayload(payload: Uint8Array) {
+    static fromPayload(payload: Uint8Array | string) {
+        const payloadU8a = isString(payload) ? Buffer.from(stripHexPrefix(payload), 'hex') : payload
         const version = new Uint8Array([SS58_FORMAT])
-        const checksum = generateChecksum(Buffer.concat([version, payload]))
-        const checksumBytes = payload.length === 32 ? 2 : 1
+        const checksum = generateChecksum(Buffer.concat([version, payloadU8a]))
+        const checksumBytes = payloadU8a.length === 32 ? 2 : 1
 
-        return new Address(version, payload, checksum.subarray(0, checksumBytes))
+        return new Address(version, payloadU8a, checksum.subarray(0, checksumBytes))
     }
 
     static fromBytes(bytes: Uint8Array): Address {
@@ -60,7 +62,7 @@ export function decodeAddress(encoded: string): Uint8Array {
     return decoded.payload
 }
 
-export function encodeAddress(payload: Uint8Array): string {
+export function encodeAddress(payload: Uint8Array | string): string {
     const decoded = Address.fromPayload(payload)
 
     return bs58.encode(decoded.asBytes())

@@ -22,11 +22,15 @@ export function isHex(value: string): boolean {
 }
 
 export function toHexBuffer(value: number | BigNumber): Buffer {
-  return Buffer.from(toHexString(value), 'hex')
+  return Buffer.from(toHex(value), 'hex')
 }
 
-export function toHexString(value: number | BigNumber): string {
-  return HEX_PREFIX + padStart(value.toString(16), 2, '0')
+export function toHex(value: number | BigNumber, targetLength: number = 2): string {
+  return padStart(value.toString(16), 2, '0')
+}
+
+export function toHexString(value: number | BigNumber, targetLength: number = 2): string {
+  return addHexPrefix(toHex(value, targetLength))
 }
 
 export function hexToBigNumber(hex: string | null, config: { littleEndian: boolean } = { littleEndian: false }): BigNumber {
