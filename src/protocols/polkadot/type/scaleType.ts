@@ -1,6 +1,7 @@
 import BigNumber from "../../../dependencies/src/bignumber.js-9.0.0/bignumber";
 import { changeEndianness, addHexPrefix, isHex, stripHexPrefix } from "../../../utils/hex";
 import { isString } from "util";
+import { encodeAddress } from "../utils/address";
 
 export interface SCALEEncodeConfig {
     withPrefix: boolean
@@ -22,6 +23,10 @@ export class SCALEInt extends SCALEType {
 
     private constructor(readonly value: BigNumber, readonly bitLength?: number) { super() }
 
+    public asString(base: number = 10): string {
+        return this.value.toString(base)
+    }
+
     protected _encode(): string {
         const encoded = changeEndianness(this.value.toString(16))
         const encodedBytes = Math.ceil(encoded.length / 2)
@@ -42,6 +47,10 @@ export class SCALECompactInt extends SCALEType {
     }
 
     private constructor(readonly value: BigNumber) { super() }
+
+    public asString(base: number = 10): string {
+        return this.value.toString(base)
+    }
 
     protected _encode(): string {
         const bits = this.value.toString(2).length
@@ -118,6 +127,10 @@ export class SCALEAccountId extends SCALEType {
 
     private constructor(readonly value: string) { super() }
 
+    public asAddress(): string {
+        return encodeAddress(this.value)
+    }
+
     protected _encode(): string {
         return this.value
     }
@@ -129,6 +142,10 @@ export class SCALEAddress extends SCALEType {
     }
 
     private constructor(readonly accountId: string) { super() }
+
+    public asAddress(): string {
+        return encodeAddress(this.accountId)
+    }
 
     protected _encode(): string {
         return 'ff' + this.accountId

@@ -4,10 +4,20 @@ import { PolkadotTransactionPayload } from "./PolkadotTransactionPayload";
 import { sr25519Sign, waitReady } from "@polkadot/wasm-crypto";
 import { stripHexPrefix } from "../../../../utils/hex";
 import { blake2bAsBytes } from "../../../../utils/blake2b";
-import { SCALEEra, SCALEAddress, SCALECompactInt, SCALEInt, SCALEBytes, SCALEType } from "../../type/scaleType";
+import { SCALEEra, SCALEAddress, SCALEInt, SCALEBytes, SCALEType } from "../../type/scaleType";
 import { SCALEClass } from "../../type/scaleClass";
 
+enum PolkadotSignatureType {
+    Ed25519 = 0,
+    Sr25519,
+    Ecdsa
+}
+
 export class PolkadotSignature extends SCALEClass {
+    public static createSr25519(signer: string): PolkadotSignature {
+        return new PolkadotSignature(PolkadotSignatureType.Sr25519, SCALEAddress.from(signer))
+    }
+
     signature: SCALEBytes = SCALEBytes.empty()
 
     protected get scaleFields(): SCALEType[] {
@@ -24,20 +34,16 @@ export class PolkadotSignature extends SCALEClass {
     ) { super() }
 
     public async sign(privateKey: Buffer, method: PolkadotTransactionMethod, signatureParams: PolkadotSignatureParams): Promise<void> {
-        const payload = this.createPayload(method, signatureParams)
-        this.signature = SCALEBytes.from(await this.signPayload(privateKey, payload))
-    }
-
-    private createPayload(method: PolkadotTransactionMethod, signatureParams: PolkadotSignatureParams): PolkadotTransactionPayload {
-        return new PolkadotTransactionPayload(
+        const payload = PolkadotTransactionPayload.create(
             method, 
             signatureParams.era, 
-            SCALECompactInt.from(signatureParams.nonce), 
-            SCALECompactInt.from(signatureParams.tip), 
-            SCALEInt.from(signatureParams.specVersion, 32), 
-            SCALEBytes.from(signatureParams.genesisHash), 
-            SCALEBytes.from(signatureParams.blockHash)
+            signatureParams.nonce, 
+            signatureParams.tip, 
+            signatureParams.specVersion, 
+            signatureParams.genesisHash, 
+            signatureParams.blockHash
         )
+        this.signature = SCALEBytes.from(await this.signPayload(privateKey, payload))
     }
 
     private async signPayload(privateKey: Buffer, payload: PolkadotTransactionPayload): Promise<Uint8Array> {
@@ -49,12 +55,6 @@ export class PolkadotSignature extends SCALEClass {
 
         return sr25519Sign(publicKey, privateKey, message)
     }
-}
-
-export enum PolkadotSignatureType {
-    Ed25519 = 0,
-    Sr25519,
-    Ecdsa
 }
 
 export interface PolkadotSignatureParams {

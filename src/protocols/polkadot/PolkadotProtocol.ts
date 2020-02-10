@@ -136,25 +136,16 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
         return this.getBalanceOfAddresses([await this.getAddressFromPublicKey(publicKey)])        
     }
 
-    public async prepareTransactionFromPublicKey(
-        publicKey: string, 
-        recipients: string[], 
-        values: string[], 
-        fee: string, 
-        data: { type: PolkadotTransactionType } = { type: PolkadotTransactionType.SPEND }
-    ): Promise<PolkadotTransaction> {
+    public prepareTransactionFromPublicKey(publicKey: string, recipients: string[], values: string[], fee: string, data?: any): Promise<PolkadotTransaction> {
         if  (recipients.length !== 1 && values.length !== 1) {
             return Promise.reject('only single transactions are supported')
         }
 
-        const methodId = await this.nodeClient.getTransactionMetadata(data.type)
-        return PolkadotTransaction.create(data.type, {
-            from: publicKey,
-            to: recipients[0],
-            value: values[0],
-            tip: new BigNumber(fee),
-            methodId
-        })
+        return this.prepareTransaction(PolkadotTransactionType.SPEND, publicKey, fee, { to: recipients[0], value: new BigNumber(values[0]) })
+    }
+
+    public prepareDelegationFromPublicKey(publicKey: string, to: string, conviction: string, fee: string): Promise<PolkadotTransaction> {
+        return this.prepareTransaction(PolkadotTransactionType.DELEGATION, publicKey, fee, { to, conviction })
     }
     
     public async broadcastTransaction(rawTransaction: string): Promise<string> {
@@ -170,5 +161,15 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
     
     public verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
         throw new Error('Method not implemented.');
+    }
+
+    private async prepareTransaction(type: PolkadotTransactionType, publicKey: string, fee: string, args: any): Promise<PolkadotTransaction> {
+        const methodId = await this.nodeClient.getTransactionMetadata(type)
+        return PolkadotTransaction.create(type, {
+            from: publicKey,
+            tip: new BigNumber(fee),
+            methodId,
+            args
+        })
     }
 }
