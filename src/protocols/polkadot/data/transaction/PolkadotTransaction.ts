@@ -1,11 +1,11 @@
-import { PolkadotTransactionMethod, PolkadotSpendTransactionMethod } from "./PolkadotTransactionMethod"
+import { PolkadotTransactionMethod, PolkadotSpendTransactionMethod, PolkadotDelegationTransactionMethod } from "./PolkadotTransactionMethod"
 import BigNumber from "../../../../dependencies/src/bignumber.js-9.0.0/bignumber"
 import { PolkadotSignature, PolkadotSignatureParams, PolkadotSignatureType } from "./PolkadotSignature"
 import { UnsignedTransaction } from "../../../../serializer/schemas/definitions/transaction-sign-request"
 import { SignedTransaction } from "../../../../serializer/schemas/definitions/transaction-sign-response"
 import { IAirGapTransaction } from "../../../../interfaces/IAirGapTransaction"
 import { encodeAddress } from "../../utils/address"
-import { SCALECompactInt, SCALEEra, SCALEAccountId, SCALEType, SCALEByteArray, SCALEInt } from "../../type/scaleType"
+import { SCALECompactInt, SCALEEra, SCALEAddress, SCALEType, SCALEByteArray, SCALEInt, SCALEAccountId } from "../../type/scaleType"
 import { SCALEClass } from "../../type/scaleClass"
 
 const VERSION = 4
@@ -14,13 +14,14 @@ const BIT_UNSIGNED = 0
 
 interface PolkadotTransactionConfig {
     from: string,
+    to: string,
+    value: string,
     tip: number | BigNumber,
     methodId: { moduleIndex: number, callIndex: number }
 }
 
-export interface PolkadotSpendTransactionConfig extends PolkadotTransactionConfig {
-    to: string,
-    value: number | BigNumber
+export enum PolkadotTransactionType {
+    SPEND, DELEGATION
 }
 
 export class PolkadotTransaction extends SCALEClass {
@@ -32,7 +33,7 @@ export class PolkadotTransaction extends SCALEClass {
     }
 
     private constructor(
-        readonly signer: SCALEAccountId,
+        readonly signer: SCALEAddress,
         readonly signature: PolkadotSignature,
         readonly tip: SCALECompactInt,
         readonly method: PolkadotTransactionMethod,
@@ -56,7 +57,7 @@ export class PolkadotTransaction extends SCALEClass {
 
     public toAirGapTransaction(identifier: string): IAirGapTransaction {
         return {
-            from: [encodeAddress(this.signer.value)],
+            from: [encodeAddress(this.signer.accountId)],
             to: [],
             isInbound: false,
             amount: '',
@@ -66,39 +67,36 @@ export class PolkadotTransaction extends SCALEClass {
         }
     }
 
-    static Factory = class {
-        private constructor() {}
+    public static create(type: PolkadotTransactionType, config: PolkadotTransactionConfig): PolkadotTransaction {
+        return new PolkadotTransaction(
+            SCALEAddress.from(config.from), 
+            new PolkadotSignature(PolkadotSignatureType.Sr25519, SCALEAddress.from(config.from)), 
+            SCALECompactInt.from(config.tip), 
+            this.createTransactionMethod(type, config)
+        )
+    }
 
-        public static create(config: PolkadotTransactionConfig): PolkadotTransaction {
-            const createSpend = (config: PolkadotTransactionConfig): config is PolkadotTransactionConfig => {
-                const spendConfig = config as PolkadotSpendTransactionConfig
-                return spendConfig.to !== undefined && spendConfig.value !== undefined
-            }
-
-            let method: PolkadotTransactionMethod
-            if (createSpend(config)){
-                const spendConfig = config as PolkadotSpendTransactionConfig
+    private static createTransactionMethod(type: PolkadotTransactionType, config: PolkadotTransactionConfig): PolkadotTransactionMethod {
+        let method: PolkadotTransactionMethod
+        switch (type) {
+            case PolkadotTransactionType.SPEND:
                 method = new PolkadotSpendTransactionMethod(
-                    SCALEInt.from(spendConfig.methodId.moduleIndex), 
-                    SCALEInt.from(spendConfig.methodId.callIndex), 
-                    SCALEAccountId.from(spendConfig.to), 
-                    SCALECompactInt.from(spendConfig.value)
+                    SCALEInt.from(config.methodId.moduleIndex), 
+                    SCALEInt.from(config.methodId.callIndex), 
+                    SCALEAddress.from(config.to), 
+                    SCALECompactInt.from(config.value)
                 )
-            } else {
-                throw new Error('Unknown Polkadot transaction config type.')
-            }
-            const signature = new PolkadotSignature(
-                PolkadotSignatureType.Sr25519, 
-                SCALEAccountId.from(config.from)
-            )
-    
-            return new PolkadotTransaction(
-                SCALEAccountId.from(config.from), 
-                signature, 
-                SCALECompactInt.from(config.tip), 
-                method
-            )
+                break
+            case PolkadotTransactionType.DELEGATION:
+                method = new PolkadotDelegationTransactionMethod(
+                    SCALEInt.from(config.methodId.moduleIndex),
+                    SCALEInt.from(config.methodId.callIndex),
+                    SCALEAccountId.from(config.to),
+                    SCALEInt.from(config.value, 2)
+                )
+                break
         }
+        return method
     }
 }
 

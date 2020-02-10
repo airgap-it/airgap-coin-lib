@@ -8,6 +8,7 @@ import { hexToBigNumber, stripHexPrefix, toHexString } from '../../utils/hex'
 import { TransactionMetadata } from './data/metadata/TransactionMetadata'
 import { parseTransactionMetadata } from './utils/metadata'
 import { isString } from 'util'
+import { PolkadotTransactionType } from './data/transaction/PolkadotTransaction'
 
 const RPC_ENDPOINTS = {
     GET_METADATA: 'state_getMetadata',
@@ -70,16 +71,22 @@ export class PolkadotNodeClient {
         )
     }
 
-    public async getSpendTransactionMetadata(): Promise<TransactionMetadata> {
-        if (!this.transactionMetadata.has(RPC_EXTRINSIC.TRANSFER)) {
+    public async getTransactionMetadata(type: PolkadotTransactionType): Promise<TransactionMetadata> {
+        let rpcEndpoint
+        switch (type) {
+            case PolkadotTransactionType.SPEND:
+                rpcEndpoint = RPC_EXTRINSIC.TRANSFER
+                break
+            case PolkadotTransactionType.DELEGATION:
+                rpcEndpoint = RPC_EXTRINSIC.DELEGATE
+                break
+        }
+
+        if (!this.transactionMetadata.has(rpcEndpoint)) {
             await this.fetchExtrinsicIndices()
         }
 
-        // TODO: return data parsed from metadata
-        return {
-            moduleIndex: 4,
-            callIndex: 0
-        }
+        return this.transactionMetadata[rpcEndpoint]
     }
 
     public getNonce(accountId: Uint8Array | string): Promise<BigNumber> {

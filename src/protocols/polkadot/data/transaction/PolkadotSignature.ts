@@ -4,7 +4,7 @@ import { PolkadotTransactionPayload } from "./PolkadotTransactionPayload";
 import { sr25519Sign, waitReady } from "@polkadot/wasm-crypto";
 import { stripHexPrefix } from "../../../../utils/hex";
 import { blake2bAsBytes } from "../../../../utils/blake2b";
-import { SCALEEra, SCALEAccountId, SCALECompactInt, SCALEInt, SCALEBytes, SCALEType } from "../../type/scaleType";
+import { SCALEEra, SCALEAddress, SCALECompactInt, SCALEInt, SCALEBytes, SCALEType } from "../../type/scaleType";
 import { SCALEClass } from "../../type/scaleClass";
 
 export class PolkadotSignature extends SCALEClass {
@@ -20,7 +20,7 @@ export class PolkadotSignature extends SCALEClass {
 
     constructor(
         readonly type: PolkadotSignatureType,
-        readonly signer: SCALEAccountId
+        readonly signer: SCALEAddress
     ) { super() }
 
     public async sign(privateKey: Buffer, method: PolkadotTransactionMethod, signatureParams: PolkadotSignatureParams): Promise<void> {
@@ -43,7 +43,7 @@ export class PolkadotSignature extends SCALEClass {
     private async signPayload(privateKey: Buffer, payload: PolkadotTransactionPayload): Promise<Uint8Array> {
         await waitReady()
         
-        const publicKey = Buffer.from(stripHexPrefix(this.signer.value), 'hex')
+        const publicKey = Buffer.from(stripHexPrefix(this.signer.accountId), 'hex')
         const payloadBuffer = Buffer.from(payload.encode(), 'hex')
         const message = payloadBuffer.length > 256 ? blake2bAsBytes(payloadBuffer, 256) : payloadBuffer
 

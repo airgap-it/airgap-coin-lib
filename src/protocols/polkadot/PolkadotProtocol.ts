@@ -6,7 +6,7 @@ import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { createSr25519KeyPair } from '../../utils/sr25519'
 import { encodeAddress, decodeAddress } from './utils/address'
 import { IAirGapTransaction } from '../..'
-import { PolkadotTransaction, UnsignedPolkadotTransaction, SignedPolkadotTransaction, PolkadotSpendTransactionConfig } from './data/transaction/PolkadotTransaction'
+import { PolkadotTransaction, UnsignedPolkadotTransaction, SignedPolkadotTransaction, PolkadotTransactionType } from './data/transaction/PolkadotTransaction'
 import { SCALEEra } from './type/scaleType'
 
 const ERA_PERIOD = 50 // 5 min at 6s block times
@@ -93,7 +93,7 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
 
         const currentHeight = await this.nodeClient.getCurrentHeight()
         const era = SCALEEra.Mortal({ chainHeight: currentHeight, period: ERA_PERIOD })
-        let nonce = (await this.nodeClient.getNonce(transaction.signer.value)).toNumber()
+        let nonce = (await this.nodeClient.getNonce(transaction.signer.accountId)).toNumber()
         const specVersion = await this.nodeClient.getSpecVersion()
 
         await transaction.sign(privateKey, {
@@ -141,24 +141,20 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
         recipients: string[], 
         values: string[], 
         fee: string, 
-        data?: any
+        data: { type: PolkadotTransactionType } = { type: PolkadotTransactionType.SPEND }
     ): Promise<PolkadotTransaction> {
         if  (recipients.length !== 1 && values.length !== 1) {
             return Promise.reject('only single transactions are supported')
         }
 
-        const recipient = recipients[0]
-        const value = new BigNumber(values[0])
-        const methodId = await this.nodeClient.getSpendTransactionMetadata()
-        const tip = new BigNumber(fee)
-
-        return PolkadotTransaction.Factory.create({
+        const methodId = await this.nodeClient.getTransactionMetadata(data.type)
+        return PolkadotTransaction.create(data.type, {
             from: publicKey,
-            to: recipient,
-            value,
-            tip,
+            to: recipients[0],
+            value: values[0],
+            tip: new BigNumber(fee),
             methodId
-        } as PolkadotSpendTransactionConfig)
+        })
     }
     
     public async broadcastTransaction(rawTransaction: string): Promise<string> {

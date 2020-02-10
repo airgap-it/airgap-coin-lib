@@ -16,7 +16,7 @@ export abstract class SCALEType {
 }
 
 export class SCALEInt extends SCALEType {
-    public static from(value: number | BigNumber, bitLength?: number): SCALEInt {
+    public static from(value: number | BigNumber | string, bitLength?: number): SCALEInt {
         return new SCALEInt(BigNumber.isBigNumber(value) ? value : new BigNumber(value), bitLength)
     }
 
@@ -37,7 +37,7 @@ export class SCALEInt extends SCALEType {
 }
 
 export class SCALECompactInt extends SCALEType {
-    public static from(value: number | BigNumber): SCALECompactInt {
+    public static from(value: number | BigNumber | string): SCALECompactInt {
         return new SCALECompactInt(BigNumber.isBigNumber(value) ? value : new BigNumber(value))
     }
 
@@ -116,10 +116,22 @@ export class SCALEAccountId extends SCALEType {
         return new SCALEAccountId(publicKey)
     }
 
-    private constructor (readonly value: string) { super() }
+    private constructor(readonly value: string) { super() }
 
     protected _encode(): string {
-        return 'ff' + this.value
+        return this.value
+    }
+}
+
+export class SCALEAddress extends SCALEType {
+    public static from(publicKey: string): SCALEAddress {
+        return new SCALEAddress(publicKey)
+    }
+
+    private constructor(readonly accountId: string) { super() }
+
+    protected _encode(): string {
+        return 'ff' + this.accountId
     }
 }
 
