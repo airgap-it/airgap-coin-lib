@@ -625,18 +625,23 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       throw error
     }
 
-    operationRequests.forEach((operationRequest, index) => {
+    // tslint:disable:cyclomatic-complexity
+    const operationPromises: Promise<TezosOperation>[] = operationRequests.map(async (operationRequest, index) => {
       console.log('preparing tezos operation', operationRequest)
 
-      let operation: TezosOperation | undefined = {
+      const recipient: string | undefined = (operationRequest as TezosSpendOperation).destination
+      let receivingBalance: BigNumber | undefined
+      if (recipient) {
+        receivingBalance = new BigNumber(await this.getBalanceOfAddresses([recipient]))
+      }
+
+      const operation: TezosOperation | undefined = {
         kind: operationRequest.kind || address,
         source: operationRequest.source || address,
         counter: operationRequest.counter || counter.plus(index).toFixed(),
         fee: operationRequest.fee || new BigNumber(this.feeDefaults.low).times(1000000).toFixed(),
-        gas_limit: operationRequest.gas_limit || '15385',
-        // gas_limit: (spendOperation.destination).toLowerCase().startsWith('kt') ? '15385' : '10300',
-        storage_limit: operationRequest.storage_limit || '300',
-        // storage_limit: receivingBalance.isZero() && recipients[i].toLowerCase().startsWith('tz') ? '300' : '0', // taken from eztz
+        gas_limit: operationRequest.gas_limit || recipient && recipient.toLowerCase().startsWith('kt') ? '15385' : '10300',
+        storage_limit: operationRequest.storage_limit || receivingBalance && receivingBalance.isZero() && recipient && recipient.toLowerCase().startsWith('tz') ? '300' : '0', // taken from eztz
       }
 
       switch (operationRequest.kind) {
@@ -672,10 +677,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
           throw new Error(`unsupported operation type "${operationRequest.kind}"`)
       }
 
-      if (operation) {
-        operations.push(operation)
-      }
+      return operation
     })
+
+    operations.push(...(await Promise.all(operationPromises)))
 
     const tezosWrappedOperation: TezosWrappedOperation = {
       branch,
