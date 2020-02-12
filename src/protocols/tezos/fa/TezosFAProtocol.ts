@@ -43,6 +43,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
   public readonly contractAddress: string
 
   private readonly defaultCallbackContract: string = 'KT1JjN5bTE9yayzYHiBm6ruktwEWSHRF8aDm'
+  private readonly defaultSourceAddress: string = 'tz1Mj7RzPmMAqDUNFBn5t5VbXmWW4cSUAdtT'
 
   constructor(configuration: TezosFAProtocolConfiguration) {
     super(configuration.jsonRPCAPI, configuration.baseApiUrl, configuration.network, configuration.baseApiNetwork, configuration.baseApiKey)
@@ -57,7 +58,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
   public async getBalanceOfAddresses(addresses: string[]): Promise<string> {
     const promises: Promise<string>[] = []
     for (const address of addresses) {
-      promises.push(this.getBalance(address))
+      promises.push(this.getBalance(address, this.defaultSourceAddress))
     }
     const results: string[] = await Promise.all(promises)
 
@@ -87,7 +88,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
 
     const transferCalls: TezosContractCall[] = []
     for (let i: number = 0; i < recipients.length; i++) {
-      const args = new TezosContractCallPair(fromAddress, new TezosContractCallPair(recipients[i], new BigNumber(values[i]).toNumber()))
+      const args = new TezosContractPair(fromAddress, new TezosContractPair(recipients[i], new BigNumber(values[i]).toNumber()))
       transferCalls.push(new TezosContractCall(TezosContractEntrypoint.transfer, args))
     }
 
@@ -96,11 +97,11 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
 
   public async getBalance(address: string, source?: string, callbackContract: string = this.defaultCallbackContract): Promise<string> {
     if (address.toLowerCase().startsWith('kt') && (source === undefined || source.toLowerCase().startsWith('kt'))) {
-      throw new Error('Please provide a tz address as the source parameter')
+      source = this.defaultSourceAddress
     } else if (source === undefined) {
       source = address
     }
-    const args = new TezosContractCallPair(address, callbackContract)
+    const args = new TezosContractPair(address, callbackContract)
     const getBalanceCall = new TezosContractCall(TezosContractEntrypoint.balance, args)
     return this.runContractCall(getBalanceCall, source)
   }
@@ -112,13 +113,40 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     source?: string
   ): Promise<string> {
     if (spenderAddress.toLowerCase().startsWith('kt') && (source === undefined || source.toLowerCase().startsWith('kt'))) {
-      throw new Error('Please provide a tz address as the source parameter')
+      source = this.defaultSourceAddress
     } else if (source === undefined) {
       source = spenderAddress
     }
-    const args = new TezosContractCallPair(new TezosContractCallPair(ownerAddress, spenderAddress), callbackContract)
+    const args = new TezosContractPair(new TezosContractPair(ownerAddress, spenderAddress), callbackContract)
     const getAllowanceCall = new TezosContractCall(TezosContractEntrypoint.allowance, args)
     return this.runContractCall(getAllowanceCall, source)
+  }
+
+  public async getTotalSupply(source?: string, callbackContract: string = this.defaultCallbackContract) {
+    if (source === undefined) {
+      source = this.defaultSourceAddress
+    }
+    const args = new TezosContractPair(new TezosContractUnit(), callbackContract)
+    const getTotalSupplyCall = new TezosContractCall(TezosContractEntrypoint.totalsupply, args)
+    return this.runContractCall(getTotalSupplyCall, source)
+  }
+
+  public async getTotalMinted(source?: string, callbackContract: string = this.defaultCallbackContract) {
+    if (source === undefined) {
+      source = this.defaultSourceAddress
+    }
+    const args = new TezosContractPair(new TezosContractUnit(), callbackContract)
+    const getTotalMintedCall = new TezosContractCall(TezosContractEntrypoint.totalminted, args)
+    return this.runContractCall(getTotalMintedCall, source)
+  }
+
+  public async getTotalBurned(source?: string, callbackContract: string = this.defaultCallbackContract) {
+    if (source === undefined) {
+      source = this.defaultSourceAddress
+    }
+    const args = new TezosContractPair(new TezosContractUnit(), callbackContract)
+    const getTotalBurnedCall = new TezosContractCall(TezosContractEntrypoint.totalburned, args)
+    return this.runContractCall(getTotalBurnedCall, source)
   }
 
   public async getTransactionsFromPublicKey(publicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]> {
@@ -202,7 +230,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
         })
       })
     )
-    
+
     return allTransactions
       .reduce((current, next) => current.concat(next))
       .map((transaction: any) => {
@@ -251,7 +279,9 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     const response = await axios.post(`${this.baseApiUrl}/v2/data/tezos/${this.baseApiNetwork}/operations`, body, {
       headers: this.headers
     })
-    const transactions: IAirGapTransaction[] = response.data.map((transaction: any) => { return this.transactionToAirGapTransaction(transaction) })
+    const transactions: IAirGapTransaction[] = response.data.map((transaction: any) => {
+      return this.transactionToAirGapTransaction(transaction)
+    })
     const lastEntryBlockLevel: number = response.data.length > 0 ? response.data[response.data.length - 1].block_level : 0
     return {
       transactions: transactions,
@@ -265,9 +295,9 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     const toBeRemoved = 'Unparsable code: '
     const transferData = JSON.parse(transaction.parameters.slice(toBeRemoved.length))
     const contractCall = TezosContractCall.fromJSON(transferData)
-    const amount = (contractCall.args.second as TezosContractCallPair).second as number
+    const amount = (contractCall.args.second as TezosContractPair).second as number
     const from = contractCall.args.first as string
-    const to = (contractCall.args.second as TezosContractCallPair).first as string
+    const to = (contractCall.args.second as TezosContractPair).first as string
     const inbound = sourceAddresses !== undefined ? sourceAddresses.indexOf(transferData.value.args[1].args[0].string) !== -1 : false
     return {
       amount: new BigNumber(amount).toFixed(), // in tzbtc
@@ -291,12 +321,10 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     const branch = results[1].data.hash
     const chainID = results[1].data.chain_id
     const body = contractCall.toOperationJSONBody(chainID, branch, counter, source, this.contractAddress)
-
     try {
       const response = await axios.post(this.url('/chains/main/blocks/head/helpers/scripts/run_operation'), body, {
         headers: { 'Content-Type': 'application/json' }
       })
-
       return response.data.contents[0].metadata.internal_operation_results[0].result.storage.int
     } catch (runOperationError) {
       return '0'
@@ -310,13 +338,13 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     fee: string,
     publicKey: string
   ): Promise<RawTezosTransaction> {
-    const args = new TezosContractCallPair(fromAddress, new TezosContractCallPair(toAddress, new BigNumber(amount).toNumber()))
+    const args = new TezosContractPair(fromAddress, new TezosContractPair(toAddress, new BigNumber(amount).toNumber()))
     const transferCall = new TezosContractCall(TezosContractEntrypoint.transfer, args)
     return this.prepareContractCall([transferCall], fee, publicKey)
   }
 
   public async approve(spenderAddress: string, amount: string, fee: string, publicKey: string): Promise<RawTezosTransaction> {
-    const args = new TezosContractCallPair(spenderAddress, new BigNumber(amount).toNumber())
+    const args = new TezosContractPair(spenderAddress, new BigNumber(amount).toNumber())
     const transferCall = new TezosContractCall(TezosContractEntrypoint.approve, args)
     return this.prepareContractCall([transferCall], fee, publicKey)
   }
@@ -383,10 +411,10 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     }
     const contractCall: TezosContractCall = TezosContractCall.fromHex(hexBytes)
     switch (
-    contractCall.entrypoint.name // TODO: this should be refactored, every case should call a function to do the job instead of doing it inline
+      contractCall.entrypoint.name // TODO: this should be refactored, every case should call a function to do the job instead of doing it inline
     ) {
       case TezosContractEntrypointName.TRANSFER: {
-        const pair: TezosContractCallPair = contractCall.args.second as TezosContractCallPair
+        const pair: TezosContractPair = contractCall.args.second as TezosContractPair
 
         return {
           result: {
@@ -397,7 +425,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
         }
       }
       case TezosContractEntrypointName.APPROVE: {
-        const pair: TezosContractCallPair = contractCall.args
+        const pair: TezosContractPair = contractCall.args
 
         return {
           result: {
@@ -482,7 +510,7 @@ abstract class TezosContractEntity {
     if (n.isZero()) {
       return '00'
     }
-    
+
     const l = n.bitLength().toJSNumber()
 
     const arr: number[] = []
@@ -513,8 +541,8 @@ abstract class TezosContractEntity {
       arr.push(1)
     }
 
-    const result =  arr.map(v => ('0' + v.toString(16)).slice(-2)).join('')
-    console.log("RETURNING", result)
+    const result = arr.map(v => ('0' + v.toString(16)).slice(-2)).join('')
+    console.log('RETURNING', result)
     return result
   }
 
@@ -538,7 +566,10 @@ enum TezosContractEntrypointName {
   BALANCE = 'getBalance',
   ALLOWANCE = 'getAllowance',
   APPROVE = 'approve',
-  TRANSFER = 'transfer'
+  TRANSFER = 'transfer',
+  TOTALSUPPLY = 'getTotalSupply',
+  TOTALMINTED = 'getTotalMinted',
+  TOTALBURNED = 'getTotalBurned'
 }
 
 class TezosContractEntrypoint extends TezosContractEntity {
@@ -546,6 +577,9 @@ class TezosContractEntrypoint extends TezosContractEntity {
   static balance = new TezosContractEntrypoint(TezosContractEntrypointName.BALANCE)
   static allowance = new TezosContractEntrypoint(TezosContractEntrypointName.ALLOWANCE)
   static approve = new TezosContractEntrypoint(TezosContractEntrypointName.APPROVE)
+  static totalsupply = new TezosContractEntrypoint(TezosContractEntrypointName.TOTALSUPPLY)
+  static totalminted = new TezosContractEntrypoint(TezosContractEntrypointName.TOTALMINTED)
+  static totalburned = new TezosContractEntrypoint(TezosContractEntrypointName.TOTALBURNED)
 
   readonly name: TezosContractEntrypointName
 
@@ -605,11 +639,11 @@ class TezosContractEntrypoint extends TezosContractEntity {
   }
 }
 
-class TezosContractCallPair extends TezosContractEntity {
-  first: string | number | TezosContractCallPair
-  second: string | number | TezosContractCallPair
+class TezosContractPair extends TezosContractEntity {
+  first: string | number | TezosContractEntity
+  second: string | number | TezosContractEntity
 
-  constructor(first: string | number | TezosContractCallPair, second: string | number | TezosContractCallPair) {
+  constructor(first: string | number | TezosContractEntity, second: string | number | TezosContractEntity) {
     super()
     this.first = first
     this.second = second
@@ -628,14 +662,14 @@ class TezosContractCallPair extends TezosContractEntity {
     return `${length}${args}`
   }
 
-  static fromJSON(json: any): TezosContractCallPair {
+  static fromJSON(json: any): TezosContractPair {
     if (json.prim !== 'Pair') {
       throw new Error('type not supported')
     }
-    return new TezosContractCallPair(this.argumentsFromJSON(json.args[0]), this.argumentsFromJSON(json.args[1]))
+    return new TezosContractPair(this.argumentsFromJSON(json.args[0]), this.argumentsFromJSON(json.args[1]))
   }
 
-  static argumentsFromJSON(json: any): string | number | TezosContractCallPair {
+  static argumentsFromJSON(json: any): string | number | TezosContractPair {
     if (json.string !== undefined) {
       return json.string
     }
@@ -643,35 +677,35 @@ class TezosContractCallPair extends TezosContractEntity {
       return parseInt(json.int)
     }
     if (json.prim !== undefined) {
-      return TezosContractCallPair.fromJSON(json)
+      return TezosContractPair.fromJSON(json)
     }
     throw new Error('type not supported')
   }
 
-  static fromHex(hex: string[]): TezosContractCallPair {
+  static fromHex(hex: string[]): TezosContractPair {
     const type1 = hex.shift()
     const type2 = hex.shift()
     if (type1 === '07' && type2 == '07') {
       // prim/pair
-      return TezosContractCallPair.parsePair(hex)
+      return TezosContractPair.parsePair(hex)
     }
     throw new Error('Type not supported')
   }
 
-  static parsePair(hex: string[]): TezosContractCallPair {
-    const first = TezosContractCallPair.hexToArguments(hex)
-    const second = TezosContractCallPair.hexToArguments(hex)
-    return new TezosContractCallPair(first, second)
+  static parsePair(hex: string[]): TezosContractPair {
+    const first = TezosContractPair.hexToArguments(hex)
+    const second = TezosContractPair.hexToArguments(hex)
+    return new TezosContractPair(first, second)
   }
 
-  private jsonEncodedArg(arg: string | number | TezosContractCallPair): any {
+  private jsonEncodedArg(arg: string | number | TezosContractEntity): any {
     switch (typeof arg) {
       case 'string':
         return { string: arg }
       case 'number':
         return { int: arg.toString() }
       default:
-        return (arg as TezosContractCallPair).toJSON()
+        return (arg as TezosContractEntity).toJSON()
     }
   }
 
@@ -684,7 +718,7 @@ class TezosContractCallPair extends TezosContractEntity {
         result += this.argumentsToHex(arg)
       }
     } else if (args.int !== undefined) {
-      console.log("ARGS", args.int)
+      console.log('ARGS', args.int)
       result += `00${this.encodeSignedInt(args.int)}`
     } else if (args.string !== undefined) {
       const value = this.stringToHex(args.string)
@@ -696,14 +730,14 @@ class TezosContractCallPair extends TezosContractEntity {
     return result
   }
 
-  static hexToArguments(hex: string[]): string | number | TezosContractCallPair {
+  static hexToArguments(hex: string[]): string | number | TezosContractPair {
     const type = hex.shift()
     switch (type) {
       case '07': // prim
         const primType = hex.shift()
         if (primType === '07') {
           // pair
-          return TezosContractCallPair.parsePair(hex)
+          return TezosContractPair.parsePair(hex)
         }
         throw new Error('Prim type not supported')
       case '00': // int
@@ -716,21 +750,30 @@ class TezosContractCallPair extends TezosContractEntity {
           }
           intBytes.push(byte)
         } while (parseInt(byte, 16).toString(2)[0] !== '0')
-        return TezosContractCallPair.decodeSignedInt(intBytes.join(''))
+        return TezosContractPair.decodeSignedInt(intBytes.join(''))
       case '01':
-        const lengthBytes = TezosContractCallPair.hexToLength(hex.splice(0, 4))
-        return TezosContractCallPair.hexToString(hex.splice(0, lengthBytes))
+        const lengthBytes = TezosContractPair.hexToLength(hex.splice(0, 4))
+        return TezosContractPair.hexToString(hex.splice(0, lengthBytes))
       default:
         throw new Error('Type not supported')
     }
   }
 }
 
+class TezosContractUnit extends TezosContractEntity {
+  toJSON() {
+    return { prim: 'Unit' }
+  }
+
+  toHex(): string {
+    throw new Error('Method not implemented.')
+  }
+}
 class TezosContractCall extends TezosContractEntity {
   readonly entrypoint: TezosContractEntrypoint
-  readonly args: TezosContractCallPair
+  readonly args: TezosContractPair
 
-  constructor(entrypoint: TezosContractEntrypoint, args: TezosContractCallPair) {
+  constructor(entrypoint: TezosContractEntrypoint, args: TezosContractPair) {
     super()
     this.entrypoint = entrypoint
     this.args = args
@@ -782,7 +825,7 @@ class TezosContractCall extends TezosContractEntity {
 
   static fromJSON(json: any): TezosContractCall {
     const entrypoint = TezosContractEntrypoint.fromJSON(json.entrypoint)
-    const args = TezosContractCallPair.fromJSON(json.value)
+    const args = TezosContractPair.fromJSON(json.value)
     return new TezosContractCall(entrypoint, args)
   }
 
@@ -793,7 +836,7 @@ class TezosContractCall extends TezosContractEntity {
     const entrypointLength = TezosContractCall.hexToLength(hexBytes.splice(0, 1))
     const entrypoint = TezosContractEntrypoint.fromHex(hexBytes.splice(0, entrypointLength))
     hexBytes.splice(0, 4) // Remove total length of args because it is not needed
-    const args = TezosContractCallPair.fromHex(hexBytes)
+    const args = TezosContractPair.fromHex(hexBytes)
 
     return new TezosContractCall(entrypoint, args)
   }
