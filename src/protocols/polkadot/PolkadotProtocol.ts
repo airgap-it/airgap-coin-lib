@@ -12,42 +12,61 @@ import { SCALEEra } from './codec/type/SCALEEra'
 const ERA_PERIOD = 50 // 5 min at 6s block times
 
 export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtocol {
-    // TODO: set proper values
-    symbol: string = ''
-    name: string = ''
-    marketSymbol: string = ''
-    feeSymbol: string = ''
+    symbol: string = 'DOT'
+    name: string = 'Polkadot'
+    marketSymbol: string = 'DOT'
+    feeSymbol: string = 'DOT'
 
-    decimals: number = 0;
-    feeDecimals: number = 0;
-    identifier: string = '';
+    decimals: number = 12;
+    feeDecimals: number = 12; // TODO: verify
+    identifier: string = 'polkadot';
 
     get subProtocols() {
         return getSubProtocolsByIdentifier(this.identifier) as any[]
     }
 
+    // TODO: verify
     feeDefaults: FeeDefaults = {
-        low: '',
-        medium: '',
-        high: ''
+        low: '0.01',
+        medium: '0.01',
+        high: '0.01'
     }
 
-    units: CurrencyUnit[] = []
+    units: CurrencyUnit[] = [
+        {
+            unitSymbol: 'DOT',
+            factor: '1'
+        },
+        {
+            unitSymbol: 'mDOT',
+            factor: '0.001'
+        },
+        {
+            unitSymbol: 'uDOT',
+            factor: '0.000001'
+        },
+        {
+            unitSymbol: 'Point',
+            factor: '0.000000001'
+        },
+        {
+            unitSymbol: 'Planck',
+            factor: '0.000000000001'
+        }
+    ]
 
     supportsHD: boolean = false
-    standardDerivationPath: string = ''
+    standardDerivationPath: string = `m/44'/354'/0'/0/0` // TODO: verify
 
     addressIsCaseSensitive: boolean = false
-    addressValidationPattern: string = ''
-    addressPlaceholder: string = ''
+    addressValidationPattern: string = '^[a-km-zA-HJ-NP-Z1-9]+$' // TODO: set length?
+    addressPlaceholder: string = 'ABC...'
 
-    blockExplorer: string = ''
+    blockExplorer: string = '' // TODO: set proper value
 
     constructor(
         private readonly nodeClient: PolkadotNodeClient = new PolkadotNodeClient('http://localhost:9933') // TODO: change to non local address
-    ) {
-        super()
-    }
+    ) { super() }
 
     public async getBlockExplorerLinkForAddress(address: string): Promise<string> {
         throw new Error('Method not implemented.');
