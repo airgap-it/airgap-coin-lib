@@ -1,4 +1,4 @@
-import { SCALEType } from "../SCALEType"
+import { SCALEType } from "../type/SCALEType"
 import BigNumber from "../../../../dependencies/src/bignumber.js-9.0.0/bignumber"
 import { stripHexPrefix, changeEndianness, toHexStringRaw } from "../../../../utils/hex"
 import { SCALEDecodeResult } from "../SCALEDecoder"

@@ -1,11 +1,11 @@
-import { SCALEClass } from "../../../../type/SCALEClass"
-import { SCALEDecodeResult } from "../../../../type/SCALEDecoder";
-import { SCALEString } from "../../../../type/primitive/SCALEString"
-import { SCALEDecoder } from "../../../../type/SCALEDecoder"
-import { SCALEEnum } from "../../../../type/scaleEnum"
+import { SCALEClass } from "../../../../codec/type/SCALEClass"
+import { SCALEDecodeResult } from "../../../../codec/SCALEDecoder";
+import { SCALEString } from "../../../../codec/type/SCALEString"
+import { SCALEDecoder } from "../../../../codec/SCALEDecoder"
+import { SCALEEnum } from "../../../../codec/type/SCALEEnum"
 import { MetadataStorageEntryType } from "./MetadataStorageEntryType"
-import { SCALEBytes } from "../../../../type/primitive/SCALEBytes"
-import { SCALEArray } from "../../../../type/collection/SCALEArray"
+import { SCALEBytes } from "../../../../codec/type/SCALEBytes"
+import { SCALEArray } from "../../../../codec/type/SCALEArray"
 
 enum StorageEntryModifier {
     Optional = 0,

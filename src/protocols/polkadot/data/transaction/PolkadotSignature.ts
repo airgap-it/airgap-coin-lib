@@ -4,12 +4,12 @@ import { PolkadotTransactionPayload } from "./PolkadotTransactionPayload";
 import { sr25519Sign, waitReady } from "@polkadot/wasm-crypto";
 import { stripHexPrefix } from "../../../../utils/hex";
 import { blake2bAsBytes } from "../../../../utils/blake2b";
-import { SCALEClass } from "../../type/SCALEClass";
-import { SCALEAddress } from "../../type/primitive/SCALEAddress";
-import { SCALEHash } from "../../type/primitive/SCALEHash";
-import { SCALEType } from "../../type/SCALEType";
-import { SCALEInt } from "../../type/primitive/SCALEInt";
-import { SCALEEra } from "../../type/primitive/SCALEEra";
+import { SCALEClass } from "../../codec/type/SCALEClass";
+import { SCALEAddress } from "../../codec/type/SCALEAddress";
+import { SCALEHash } from "../../codec/type/SCALEHash";
+import { SCALEType } from "../../codec/type/SCALEType";
+import { SCALEInt } from "../../codec/type/SCALEInt";
+import { SCALEEra } from "../../codec/type/SCALEEra";
 
 enum PolkadotSignatureType {
     Ed25519 = 0,

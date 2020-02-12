@@ -1,5 +1,5 @@
+import { SCALEType } from "../type/SCALEType"
 import BigNumber from "../../../../dependencies/src/bignumber.js-9.0.0/bignumber"
-import { SCALEType } from "../SCALEType"
 
 type SCALEMortalEraConfig = { chainHeight: number | BigNumber, period: number | BigNumber }
 export class SCALEEra extends SCALEType {

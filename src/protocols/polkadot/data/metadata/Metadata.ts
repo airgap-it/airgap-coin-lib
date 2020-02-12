@@ -1,8 +1,8 @@
 import { MetadataModule } from "./module/MetadataModule"
-import { SCALEClass } from "../../type/SCALEClass";
-import { SCALEInt } from "../../type/primitive/SCALEInt";
-import { SCALEArray } from "../../type/collection/SCALEArray";
-import { SCALEDecoder } from "../../type/SCALEDecoder";
+import { SCALEClass } from "../../codec/type/SCALEClass";
+import { SCALEInt } from "../../codec/type/SCALEInt";
+import { SCALEArray } from "../../codec/type/SCALEArray";
+import { SCALEDecoder } from "../../codec/SCALEDecoder";
 
 const MAGIC_NUMBER = '6174656d' // `meta` in hex
 const EXPECTED_VERSION = 11

@@ -1,5 +1,5 @@
-import { SCALEType } from "../SCALEType"
-import { SCALECompactInt } from "../primitive/SCALECompactInt"
+import { SCALEType } from "./SCALEType"
+import { SCALECompactInt } from "./SCALECompactInt"
 import { SCALEDecodeResult, DecoderMethod } from "../SCALEDecoder"
 
 export class SCALEArray<T extends SCALEType> extends SCALEType {

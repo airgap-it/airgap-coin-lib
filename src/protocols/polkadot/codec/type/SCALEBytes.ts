@@ -1,4 +1,4 @@
-import { SCALEType } from "../SCALEType"
+import { SCALEType } from "../type/SCALEType"
 import { SCALECompactInt } from "./SCALECompactInt"
 import { isString } from "util"
 import { isHex, stripHexPrefix } from "../../../../utils/hex"

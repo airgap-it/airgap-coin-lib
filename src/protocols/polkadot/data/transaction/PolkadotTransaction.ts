@@ -5,12 +5,12 @@ import { UnsignedTransaction } from "../../../../serializer/schemas/definitions/
 import { SignedTransaction } from "../../../../serializer/schemas/definitions/transaction-sign-response"
 import { IAirGapTransaction } from "../../../../interfaces/IAirGapTransaction"
 import { encodeAddress } from "../../utils/address"
-import { SCALEClass } from "../../type/SCALEClass"
-import { SCALEAddress } from "../../type/primitive/SCALEAddress"
-import { SCALECompactInt } from "../../type/primitive/SCALECompactInt"
-import { SCALEEra } from "../../type/primitive/SCALEEra"
-import { SCALEType } from "../../type/SCALEType"
-import { SCALEBytes } from "../../type/primitive/SCALEBytes"
+import { SCALEClass } from "../../codec/type/SCALEClass"
+import { SCALEAddress } from "../../codec/type/SCALEAddress"
+import { SCALECompactInt } from "../../codec/type/SCALECompactInt"
+import { SCALEEra } from "../../codec/type/SCALEEra"
+import { SCALEType } from "../../codec/type/SCALEType"
+import { SCALEBytes } from "../../codec/type/SCALEBytes"
 
 const VERSION = 4
 const BIT_SIGNED = 128

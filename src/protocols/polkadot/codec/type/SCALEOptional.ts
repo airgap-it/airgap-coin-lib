@@ -1,4 +1,4 @@
-import { SCALEType } from "../SCALEType"
+import { SCALEType } from "../type/SCALEType"
 import { toHexStringRaw } from "../../../../utils/hex"
 import { SCALEDecodeResult, DecoderMethod } from "../SCALEDecoder"
 

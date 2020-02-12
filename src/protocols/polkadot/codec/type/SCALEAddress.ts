@@ -1,4 +1,4 @@
-import { SCALEType } from "../SCALEType"
+import { SCALEType } from "./SCALEType"
 import { encodeAddress } from "../../utils/address"
 
 export class SCALEAddress extends SCALEType {

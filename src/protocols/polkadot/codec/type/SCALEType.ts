@@ -1,4 +1,4 @@
-import { addHexPrefix } from "../../../utils/hex"
+import { addHexPrefix } from "../../../../utils/hex"
 
 export interface SCALEEncodeConfig {
     withPrefix: boolean

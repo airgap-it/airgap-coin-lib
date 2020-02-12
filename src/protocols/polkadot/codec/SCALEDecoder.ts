@@ -1,12 +1,12 @@
-import { SCALEBoolean } from "./primitive/SCALEBoolean";
-import { SCALEType } from "./SCALEType";
-import { SCALEBytes } from "./primitive/SCALEBytes";
-import { SCALECompactInt } from "./primitive/SCALECompactInt";
-import { SCALEInt } from "./primitive/SCALEInt";
-import { SCALEOptional } from "./primitive/SCALEOptional";
-import { SCALEArray } from "./collection/SCALEArray";
-import { SCALEString } from "./primitive/SCALEString";
-import { SCALEEnum } from "./scaleEnum";
+import { SCALEBoolean } from "./type/SCALEBoolean";
+import { SCALEType } from "./type/SCALEType";
+import { SCALEBytes } from "./type/SCALEBytes";
+import { SCALECompactInt } from "./type/SCALECompactInt";
+import { SCALEInt } from "./type/SCALEInt";
+import { SCALEOptional } from "./type/SCALEOptional";
+import { SCALEArray } from "./type/SCALEArray";
+import { SCALEString } from "./type/SCALEString";
+import { SCALEEnum } from "./type/SCALEEnum";
 import { stripHexPrefix } from "../../../utils/hex";
 
 export type DecoderMethod<T> = (hex: string) => SCALEDecodeResult<T>

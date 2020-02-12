@@ -1,8 +1,8 @@
-import { SCALEClass } from "../../../../type/SCALEClass";
-import { SCALEString } from "../../../../type/primitive/SCALEString";
-import { SCALEArray } from "../../../../type/collection/SCALEArray";
-import { SCALEDecoder } from "../../../../type/SCALEDecoder";
-import { SCALEDecodeResult } from "../../../../type/SCALEDecoder";
+import { SCALEClass } from "../../../../codec/type/SCALEClass";
+import { SCALEString } from "../../../../codec/type/SCALEString";
+import { SCALEArray } from "../../../../codec/type/SCALEArray";
+import { SCALEDecoder } from "../../../../codec/SCALEDecoder";
+import { SCALEDecodeResult } from "../../../../codec/SCALEDecoder";
 import { stripHexPrefix } from "../../../../../../utils/hex";
 import { MetadataStorageEntry } from "./MetadataStorageEntry";
 

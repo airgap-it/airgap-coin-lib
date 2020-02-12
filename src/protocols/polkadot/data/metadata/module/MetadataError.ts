@@ -1,8 +1,8 @@
-import { SCALEClass } from "../../../type/SCALEClass";
-import { SCALEString } from "../../../type/primitive/SCALEString";
-import { SCALEDecodeResult } from "../../../type/SCALEDecoder";
-import { SCALEArray } from "../../../type/collection/SCALEArray";
-import { SCALEDecoder } from "../../../type/SCALEDecoder";
+import { SCALEClass } from "../../../codec/type/SCALEClass";
+import { SCALEString } from "../../../codec/type/SCALEString";
+import { SCALEDecodeResult } from "../../../codec/SCALEDecoder";
+import { SCALEArray } from "../../../codec/type/SCALEArray";
+import { SCALEDecoder } from "../../../codec/SCALEDecoder";
 
 export class MetadataError extends SCALEClass {
 

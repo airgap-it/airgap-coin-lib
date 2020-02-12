@@ -1,14 +1,14 @@
-import { SCALEClass } from "../../../type/SCALEClass";
+import { SCALEClass } from "../../../codec/type/SCALEClass";
 import { MetadataConstant } from "./MetadataConstants";
 import { MetadataStorage } from "./storage/MetadataStorage";
 import { MetadataCall } from "./MetadataCall";
 import { MetadataEvent } from "./MetadataEvent";
 import { MetadataError } from "./MetadataError";
-import { SCALEString } from "../../../type/primitive/SCALEString";
-import { SCALEOptional } from "../../../type/primitive/SCALEOptional";
-import { SCALEArray } from "../../../type/collection/SCALEArray";
-import { SCALEDecodeResult } from "../../../type/SCALEDecoder";
-import { SCALEDecoder } from "../../../type/SCALEDecoder";
+import { SCALEString } from "../../../codec/type/SCALEString";
+import { SCALEOptional } from "../../../codec/type/SCALEOptional";
+import { SCALEArray } from "../../../codec/type/SCALEArray";
+import { SCALEDecodeResult } from "../../../codec/SCALEDecoder";
+import { SCALEDecoder } from "../../../codec/SCALEDecoder";
 
 export class MetadataModule extends SCALEClass {
 

@@ -1,10 +1,10 @@
 import { PolkadotTransactionMethod } from "./PolkadotTransactionMethod";
-import { SCALEClass } from "../../type/SCALEClass";
+import { SCALEClass } from "../../codec/type/SCALEClass";
 import BigNumber from "../../../../dependencies/src/bignumber.js-9.0.0/bignumber";
-import { SCALEEra } from "../../type/primitive/SCALEEra";
-import { SCALECompactInt } from "../../type/primitive/SCALECompactInt";
-import { SCALEInt } from "../../type/primitive/SCALEInt";
-import { SCALEHash } from "../../type/primitive/SCALEHash";
+import { SCALEEra } from "../../codec/type/SCALEEra";
+import { SCALECompactInt } from "../../codec/type/SCALECompactInt";
+import { SCALEInt } from "../../codec/type/SCALEInt";
+import { SCALEHash } from "../../codec/type/SCALEHash";
 
 export class PolkadotTransactionPayload extends SCALEClass {
     public static create(

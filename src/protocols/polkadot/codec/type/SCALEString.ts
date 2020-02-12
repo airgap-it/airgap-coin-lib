@@ -1,4 +1,4 @@
-import { SCALEType } from "../SCALEType"
+import { SCALEType } from "./SCALEType"
 import { SCALECompactInt } from "./SCALECompactInt"
 import { SCALEDecodeResult } from "../SCALEDecoder"
 

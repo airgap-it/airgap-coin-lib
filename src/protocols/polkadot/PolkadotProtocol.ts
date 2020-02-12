@@ -7,7 +7,7 @@ import { createSr25519KeyPair } from '../../utils/sr25519'
 import { encodeAddress, decodeAddress } from './utils/address'
 import { IAirGapTransaction } from '../..'
 import { PolkadotTransaction, UnsignedPolkadotTransaction, SignedPolkadotTransaction, PolkadotTransactionType } from './data/transaction/PolkadotTransaction'
-import { SCALEEra } from './type/primitive/SCALEEra'
+import { SCALEEra } from './codec/type/SCALEEra'
 
 const ERA_PERIOD = 50 // 5 min at 6s block times
 
