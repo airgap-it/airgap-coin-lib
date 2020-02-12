@@ -397,7 +397,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     return this.getAirGapTxFromWrappedOperations(wrappedOperations)
   }
 
-  private getAirGapTxFromWrappedOperations(wrappedOperations: TezosWrappedOperation): IAirGapTransaction[] {
+  public getAirGapTxFromWrappedOperations(wrappedOperations: TezosWrappedOperation): IAirGapTransaction[] {
     const airGapTxs: IAirGapTransaction[] = []
 
     const assertNever: (x: never) => void = (x: never): void => undefined
