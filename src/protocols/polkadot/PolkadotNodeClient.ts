@@ -5,10 +5,9 @@ import { RPCBody } from '../../data/RPCBody'
 import { xxhashAsHex } from '../../utils/xxhash'
 import { blake2bAsHex } from '../../utils/blake2b'
 import { hexToBigNumber, stripHexPrefix, toHexString } from '../../utils/hex'
-import { TransactionMetadata } from './data/metadata/TransactionMetadata'
-import { parseTransactionMetadata } from './utils/metadata'
 import { isString } from 'util'
 import { PolkadotTransactionType } from './data/transaction/PolkadotTransaction'
+import { Metadata, ExtrinsicId } from './data/metadata/Metadata'
 
 const RPC_ENDPOINTS = {
     GET_METADATA: 'state_getMetadata',
@@ -56,7 +55,7 @@ class StorageKeyUtil {
 }
 
 export class PolkadotNodeClient {
-    private transactionMetadata: Map<string, TransactionMetadata> = new Map()
+    private metadata: Metadata | null = null
 
     constructor(
         private readonly baseURL: string, 
@@ -71,8 +70,8 @@ export class PolkadotNodeClient {
         )
     }
 
-    public async getTransactionMetadata(type: PolkadotTransactionType): Promise<TransactionMetadata> {
-        let rpcEndpoint
+    public async getTransactionMetadata(type: PolkadotTransactionType): Promise<ExtrinsicId> {
+        let rpcEndpoint: string
         switch (type) {
             case PolkadotTransactionType.SPEND:
                 rpcEndpoint = RPC_EXTRINSIC.TRANSFER
@@ -82,11 +81,15 @@ export class PolkadotNodeClient {
                 break
         }
 
-        if (!this.transactionMetadata.has(rpcEndpoint)) {
-            await this.fetchExtrinsicIndices()
+        if (!this.metadata) {
+            await this.fetchMetadata()
+        } 
+        
+        if (this.metadata && this.metadata.hasExtrinsicId(rpcEndpoint)) {
+            return this.metadata!.getExtrinsicId(rpcEndpoint)
         }
 
-        return this.transactionMetadata[rpcEndpoint]
+        return Promise.reject('Could not fetch metadata.')
     }
 
     public getNonce(accountId: Uint8Array | string): Promise<BigNumber> {
@@ -129,11 +132,11 @@ export class PolkadotNodeClient {
         )
     }
 
-    private async fetchExtrinsicIndices(): Promise<void> {
-        this.transactionMetadata = await this.send<Map<string, TransactionMetadata>, (string | null)>(
+    private async fetchMetadata(): Promise<void> {
+        this.metadata = await this.send<(Metadata | null), (string | null)>(
             RPC_ENDPOINTS.GET_METADATA,
             [],
-            result => parseTransactionMetadata(result)
+            result => result ? Metadata.decode(result) : null
         )
     }
 

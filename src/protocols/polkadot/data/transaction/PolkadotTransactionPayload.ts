@@ -1,7 +1,10 @@
 import { PolkadotTransactionMethod } from "./PolkadotTransactionMethod";
-import { SCALEEra, SCALECompactInt, SCALEInt, SCALEBytes } from "../../type/scaleType";
-import { SCALEClass } from "../../type/scaleClass";
+import { SCALEClass } from "../../type/SCALEClass";
 import BigNumber from "../../../../dependencies/src/bignumber.js-9.0.0/bignumber";
+import { SCALEEra } from "../../type/primitive/SCALEEra";
+import { SCALECompactInt } from "../../type/primitive/SCALECompactInt";
+import { SCALEInt } from "../../type/primitive/SCALEInt";
+import { SCALEHash } from "../../type/primitive/SCALEHash";
 
 export class PolkadotTransactionPayload extends SCALEClass {
     public static create(
@@ -19,8 +22,8 @@ export class PolkadotTransactionPayload extends SCALEClass {
             SCALECompactInt.from(nonce), 
             SCALECompactInt.from(tip), 
             SCALEInt.from(specVersion, 32), 
-            SCALEBytes.from(genesisHash), 
-            SCALEBytes.from(blockHash)
+            SCALEHash.from(genesisHash), 
+            SCALEHash.from(blockHash)
         )
     }
 
@@ -32,7 +35,7 @@ export class PolkadotTransactionPayload extends SCALEClass {
         readonly nonce: SCALECompactInt,
         readonly tip: SCALECompactInt,
         readonly specVersion: SCALEInt,
-        readonly genesisHash: SCALEBytes,
-        readonly blockHash: SCALEBytes
+        readonly genesisHash: SCALEHash,
+        readonly blockHash: SCALEHash
     ) { super() }
 }

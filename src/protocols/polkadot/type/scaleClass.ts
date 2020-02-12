@@ -1,4 +1,4 @@
-import { SCALEType } from "./scaleType";
+import { SCALEType } from "./SCALEType";
 
 export abstract class SCALEClass extends SCALEType {
     protected abstract readonly scaleFields: SCALEType[]

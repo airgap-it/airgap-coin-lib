@@ -3,7 +3,7 @@ import BigNumber from '../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { padStart } from './padStart'
 
 const HEX_PREFIX = '0x'
-const HEX_REGEX = new RegExp(`${HEX_PREFIX}?[0-9a-fA-F]*`)
+const HEX_REGEX = new RegExp(`(${HEX_PREFIX})?[0-9a-fA-F]*`)
 
 function hasPrefix(value: string): boolean {
   return value.startsWith(HEX_PREFIX)
@@ -22,15 +22,16 @@ export function isHex(value: string): boolean {
 }
 
 export function toHexBuffer(value: number | BigNumber): Buffer {
-  return Buffer.from(toHex(value), 'hex')
+  return Buffer.from(toHexStringRaw(value), 'hex')
 }
 
-export function toHex(value: number | BigNumber, targetLength: number = 2): string {
-  return padStart(value.toString(16), 2, '0')
+export function toHexStringRaw(value: number | BigNumber, bitLength: number = 8): string {
+  const byteLength = Math.ceil(bitLength / 8)
+  return padStart(value.toString(16), byteLength * 2, '0')
 }
 
-export function toHexString(value: number | BigNumber, targetLength: number = 2): string {
-  return addHexPrefix(toHex(value, targetLength))
+export function toHexString(value: number | BigNumber, bitLength: number = 8): string {
+  return addHexPrefix(toHexStringRaw(value, bitLength))
 }
 
 export function hexToBigNumber(hex: string | null, config: { littleEndian: boolean } = { littleEndian: false }): BigNumber {
@@ -43,7 +44,9 @@ export function hexToBigNumber(hex: string | null, config: { littleEndian: boole
 }
 
 export function changeEndianness(hex: string): string {
-  const _hex = hex.length % 2 != 0 ? '0' + hex : hex
+  let _hex = stripHexPrefix(hex)
+  _hex = _hex.length % 2 != 0 ? '0' + _hex : _hex
+  
   const bytes = _hex.match(/.{2}/g) || []
 
   return bytes.reverse().join('')

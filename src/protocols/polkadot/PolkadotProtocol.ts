@@ -7,7 +7,7 @@ import { createSr25519KeyPair } from '../../utils/sr25519'
 import { encodeAddress, decodeAddress } from './utils/address'
 import { IAirGapTransaction } from '../..'
 import { PolkadotTransaction, UnsignedPolkadotTransaction, SignedPolkadotTransaction, PolkadotTransactionType } from './data/transaction/PolkadotTransaction'
-import { SCALEEra } from './type/scaleType'
+import { SCALEEra } from './type/primitive/SCALEEra'
 
 const ERA_PERIOD = 50 // 5 min at 6s block times
 
@@ -164,6 +164,7 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
     }
 
     private async prepareTransaction(type: PolkadotTransactionType, publicKey: string, fee: string, args: any): Promise<PolkadotTransaction> {
+        // TODO: handle metadata error
         const methodId = await this.nodeClient.getTransactionMetadata(type)
         return PolkadotTransaction.create(type, {
             from: publicKey,

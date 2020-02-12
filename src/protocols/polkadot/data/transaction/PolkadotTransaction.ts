@@ -5,8 +5,12 @@ import { UnsignedTransaction } from "../../../../serializer/schemas/definitions/
 import { SignedTransaction } from "../../../../serializer/schemas/definitions/transaction-sign-response"
 import { IAirGapTransaction } from "../../../../interfaces/IAirGapTransaction"
 import { encodeAddress } from "../../utils/address"
-import { SCALECompactInt, SCALEEra, SCALEAddress, SCALEType, SCALEByteArray } from "../../type/scaleType"
-import { SCALEClass } from "../../type/scaleClass"
+import { SCALEClass } from "../../type/SCALEClass"
+import { SCALEAddress } from "../../type/primitive/SCALEAddress"
+import { SCALECompactInt } from "../../type/primitive/SCALECompactInt"
+import { SCALEEra } from "../../type/primitive/SCALEEra"
+import { SCALEType } from "../../type/SCALEType"
+import { SCALEBytes } from "../../type/primitive/SCALEBytes"
 
 const VERSION = 4
 const BIT_SIGNED = 128
@@ -49,9 +53,9 @@ export class PolkadotTransaction extends SCALEClass {
 
     protected _encode(): string {
         const typeEncoded = Buffer.from([VERSION | (this.signature.isSigned ? BIT_SIGNED : BIT_UNSIGNED)]).toString('hex')
-        return SCALEByteArray.from(
-            typeEncoded + this.scaleFields.reduce((encoded: string, struct: SCALEType) => encoded + struct.encode(), '')
-        ).encode()
+        const bytes = Buffer.from(typeEncoded + this.scaleFields.reduce((encoded: string, struct: SCALEType) => encoded + struct.encode(), ''), 'hex')
+
+        return SCALEBytes.from(bytes).encode()
     }
 
     public async sign(privateKey: Buffer, signatureParams: Partial<PolkadotSignatureParams>): Promise<void> {
