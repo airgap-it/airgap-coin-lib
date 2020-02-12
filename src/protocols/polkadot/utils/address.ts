@@ -5,12 +5,13 @@ import { blake2bAsBytes } from '../../../utils/blake2b'
 import { isString } from 'util'
 
 /*
- * Polkadot: 0, 1
- * Kusama: 2, 3
- * Dothereum: 20
- * Substrate: 42, 43
+ * Polkadot Live: 0 (SS58 checksum preimage), 1 (AccountId checksum preimage)
+ * Polkadot Canary: 2 (SS58), 3 (AccountId)
+ * Kulupu: 16 (SS58), 17 (Reserved)
+ * Dothereum: 20 (SS58), 21 (AccountId)
+ * Substrate: 42 (SS58), 43 (AccountId)
  */
-const SS58_FORMAT = 42
+const SS58_FORMAT = 42 // TODO: verify
 const SS58_PREFIX = 'SS58PRE'
 
 /* 
@@ -22,16 +23,15 @@ const SS58_PREFIX = 'SS58PRE'
  * 35: 1, 32, 2
  */
 class Address {
-    static fromPayload(payload: Uint8Array | string) {
-        const payloadU8a = isString(payload) ? Buffer.from(stripHexPrefix(payload), 'hex') : payload
-        const version = new Uint8Array([SS58_FORMAT])
-        const checksum = generateChecksum(Buffer.concat([version, payloadU8a]))
-        const checksumBytes = payloadU8a.length === 32 ? 2 : 1
+    static fromPayload(payload: Buffer) {
+        const version = Buffer.from([SS58_FORMAT])
+        const checksum = generateChecksum(Buffer.concat([version, payload]))
+        const checksumBytes = payload.length === 32 ? 2 : 1
 
-        return new Address(version, payloadU8a, checksum.subarray(0, checksumBytes))
+        return new Address(version, payload, checksum.slice(0, checksumBytes))
     }
 
-    static fromBytes(bytes: Uint8Array): Address {
+    static fromBytes(bytes: Buffer): Address {
         const checksumBytes = bytes.length === 35 ? 2 : 1
 
         const version = bytes.slice(0, 1)
@@ -41,29 +41,30 @@ class Address {
         return new Address(version, payload, checksum)
     }
 
-    constructor(readonly version: Uint8Array, readonly payload: Uint8Array, readonly checksum: Uint8Array) {}
+    constructor(readonly version: Buffer, readonly payload: Buffer, readonly checksum: Buffer) {}
 
-    public asBytes(): Uint8Array {
+    public asBytes(): Buffer {
         return Buffer.concat([this.version, this.payload, this.checksum])
     }
 }
 
-function generateChecksum(input: Uint8Array): Uint8Array {
+function generateChecksum(input: Buffer): Buffer {
     const prefixBuffer = Buffer.from(SS58_PREFIX)
-    return blake2bAsBytes(Buffer.concat([prefixBuffer, input]), 512)
+    return Buffer.from(blake2bAsBytes(Buffer.concat([prefixBuffer, input]), 512))
 }
 
-export function decodeAddress(encoded: string): Uint8Array {
+export function decodeAddress(encoded: string): Buffer {
     if (isHex(encoded)) {
-        return new Uint8Array(Buffer.from(stripHexPrefix(encoded), 'hex'))
+        return Buffer.from(stripHexPrefix(encoded), 'hex')
     }
 
     const decoded = Address.fromBytes(bs58.decode(encoded))
     return decoded.payload
 }
 
-export function encodeAddress(payload: Uint8Array | string): string {
-    const decoded = Address.fromPayload(payload)
+export function encodeAddress(payload: Buffer | Uint8Array | string): string {
+    const payloadBuffer = isString(payload) ? Buffer.from(stripHexPrefix(payload), 'hex') : Buffer.from(payload)
+    const decoded = Address.fromPayload(payloadBuffer)
 
     return bs58.encode(decoded.asBytes())
 }

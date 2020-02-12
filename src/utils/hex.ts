@@ -26,8 +26,13 @@ export function toHexBuffer(value: number | BigNumber): Buffer {
 }
 
 export function toHexStringRaw(value: number | BigNumber, bitLength: number = 8): string {
-  const byteLength = Math.ceil(bitLength / 8)
-  return padStart(value.toString(16), byteLength * 2, '0')
+  const nibbleLength = Math.ceil(bitLength / 4)
+  const hexString = value.toString(16)
+
+  let targetLength = hexString.length >= nibbleLength ? hexString.length : nibbleLength
+  targetLength = targetLength % 2 == 0 ? targetLength : targetLength + 1
+  
+  return padStart(value.toString(16), targetLength, '0')
 }
 
 export function toHexString(value: number | BigNumber, bitLength: number = 8): string {

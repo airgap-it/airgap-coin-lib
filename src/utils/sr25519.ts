@@ -1,7 +1,7 @@
 import { waitReady, sr25519KeypairFromSeed, sr25519DeriveKeypairHard, sr25519DeriveKeypairSoft } from '@polkadot/wasm-crypto'
 
 import { KeyPair } from "../data/KeyPair";
-import { stripHexPrefix } from './hex';
+import { stripHexPrefix, toHexStringRaw, changeEndianness } from './hex';
 
 interface DeriveJunction {
     chainCode: Uint8Array,
@@ -17,9 +17,10 @@ function assertProperDerivationPath(path: string) {
 function getChainCode(value: string): Uint8Array {
     const chainCode = new Uint8Array(32)
     const index = parseInt(value, 10)
+    const indexHex = changeEndianness(toHexStringRaw(index))
 
     chainCode.fill(0)
-    chainCode.set(Buffer.from(index.toString(16), 'hex'))
+    chainCode.set(Buffer.from(indexHex, 'hex'))
 
     return chainCode
 }
@@ -47,7 +48,7 @@ export async function createSr25519KeyPair(secret: string, derivationPath: strin
     assertProperDerivationPath(derivationPath)
     await waitReady()
 
-    const keyPair = sr25519KeypairFromSeed(Buffer.from(stripHexPrefix(secret), 'hex'))
+    const keyPair = sr25519KeypairFromSeed(Buffer.from(stripHexPrefix(secret), 'hex').subarray(0, 32)) // 32-bit seed is required
     const derivedKeyPair = deriveFromPath(keyPair, derivationPath.slice(2))
 
     return {
