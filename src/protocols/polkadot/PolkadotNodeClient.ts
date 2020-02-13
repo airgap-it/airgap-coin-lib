@@ -4,7 +4,7 @@ import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { RPCBody } from '../../data/RPCBody'
 import { xxhashAsHex } from '../../utils/xxhash'
 import { blake2bAsHex } from '../../utils/blake2b'
-import { hexToBigNumber, stripHexPrefix, toHexString } from '../../utils/hex'
+import { hexToBigNumber, stripHexPrefix, toHexString, addHexPrefix } from '../../utils/hex'
 import { isString } from 'util'
 import { PolkadotTransactionType } from './data/transaction/PolkadotTransaction'
 import { Metadata, ExtrinsicId } from './data/metadata/Metadata'
@@ -33,7 +33,7 @@ class StorageKeyUtil {
         const rawKey = moduleName + storageName + (firstKey || '') + (secondKey || '')
 
         if (!this.storageKeys[rawKey]) {
-            this.storageKeys[rawKey] = '0x' + this.generatePrefixTrie(moduleName, storageName) + this.generateItemHash(firstKey, secondKey)
+            this.storageKeys[rawKey] = this.generatePrefixTrie(moduleName, storageName) + this.generateItemHash(firstKey, secondKey)
         }
 
         return this.storageKeys[rawKey]
@@ -147,8 +147,8 @@ export class PolkadotNodeClient {
         )
     }
 
-    private async send<T, R>(method: string, params: any[], resultHandler?: (result: R) => T): Promise<T> {
-        const response: AxiosResponse = await axios.post(this.baseURL, new RPCBody(method, params))
+    private async send<T, R>(method: string, params: string[], resultHandler?: (result: R) => T): Promise<T> {
+        const response: AxiosResponse = await axios.post(this.baseURL, new RPCBody(method, params.map(param => addHexPrefix(param))))
 
         return resultHandler ? resultHandler(response.data.result) : response.data.result
     }
