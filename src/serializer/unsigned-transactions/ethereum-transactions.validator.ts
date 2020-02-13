@@ -1,4 +1,4 @@
-import { async, validate } from '../../dependencies/src/validate.js-0.13.1/validate'
+import { async } from '../../dependencies/src/validate.js-0.13.1/validate'
 import { EthereumProtocol } from '../../protocols/ethereum/EthereumProtocol'
 import { UnsignedEthereumTransaction } from '../schemas/definitions/transaction-sign-request-ethereum'
 import { SignedEthereumTransaction } from '../schemas/definitions/transaction-sign-response-ethereum'
@@ -59,14 +59,13 @@ const success = () => undefined
 const error = errors => errors
 
 export class EthereumTransactionValidator extends TransactionValidator {
-  public validateUnsignedTransaction(unsignedTx: UnsignedEthereumTransaction): any {
+  public validateUnsignedTransaction(unsignedTx: UnsignedEthereumTransaction): Promise<any> {
     const rawTx: RawEthereumTransaction = unsignedTx.transaction
     validateSyncScheme({})
 
-    return validate(rawTx, unsignedTransactionConstraints)
+    return async(rawTx, unsignedTransactionConstraints).then(success, error)
   }
   public validateSignedTransaction(signedTx: SignedEthereumTransaction): any {
     return async(signedTx, signedTransactionConstraints).then(success, error)
-    // return undefined
   }
 }

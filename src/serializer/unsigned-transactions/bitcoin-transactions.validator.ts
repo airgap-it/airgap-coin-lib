@@ -1,4 +1,4 @@
-import { validate } from '../../dependencies/src/validate.js-0.13.1/validate'
+import { async } from '../../dependencies/src/validate.js-0.13.1/validate'
 import { UnsignedBitcoinTransaction } from '../schemas/definitions/transaction-sign-request-bitcoin'
 import { SignedBitcoinTransaction } from '../schemas/definitions/transaction-sign-response-bitcoin'
 import { RawBitcoinTransaction } from '../types'
@@ -39,15 +39,17 @@ const signedTransactionConstraints = {
     presence: { allowEmpty: false }
   }
 }
+const success = () => undefined
+const error = errors => errors
 
 export class BitcoinTransactionValidator extends TransactionValidator {
-  public validateUnsignedTransaction(unsignedTx: UnsignedBitcoinTransaction): any {
+  public validateUnsignedTransaction(unsignedTx: UnsignedBitcoinTransaction): Promise<any> {
     const rawBitcoinTx: RawBitcoinTransaction = unsignedTx.transaction
     validateSyncScheme({})
 
-    return validate(rawBitcoinTx, unsignedTransactionConstraints)
+    return async(rawBitcoinTx, unsignedTransactionConstraints).then(success, error)
   }
   public validateSignedTransaction(signedTx: SignedBitcoinTransaction): Promise<any> {
-    return validate(signedTx, signedTransactionConstraints)
+    return async(signedTx, signedTransactionConstraints).then(success, error)
   }
 }
