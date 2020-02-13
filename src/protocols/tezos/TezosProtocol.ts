@@ -576,7 +576,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       operations.push(spendOperation)
     }
 
-    console.log('forging operations preparetx', operations)
     const tezosWrappedOperation: TezosWrappedOperation = {
       branch,
       contents: operations
