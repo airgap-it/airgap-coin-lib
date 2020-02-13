@@ -1,9 +1,10 @@
 import { SCALEType } from "./SCALEType"
-import { encodeAddress } from "../../utils/address"
+import { encodeAddress, decodeAddress } from "../../utils/address"
+import { isHex } from "../../../../utils/hex"
 
 export class SCALEAccountId extends SCALEType {
-    public static from(publicKey: string): SCALEAccountId {
-        return new SCALEAccountId(publicKey)
+    public static from(value: string): SCALEAccountId {
+        return new SCALEAccountId(isHex(value) ? value : decodeAddress(value).toString('hex'))
     }
 
     private constructor(readonly value: string) { super() }
