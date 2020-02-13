@@ -44,9 +44,8 @@ export class GenericERC20ProtocolStub implements ProtocolHTTPStub {
       .returns(Promise.resolve(new BigNumber(0)))
 
     sinon
-      .stub(protocol.configuration.nodeClient, 'fetchBalance')
-      .withArgs(testProtocolSpec.wallet.addresses[0])
-      .returns(Promise.resolve('0'))
-
+      .stub(protocol, 'estimateGas')
+      .withArgs(sinon.match.any)
+      .returns(Promise.resolve(new BigNumber(0).toFixed()))
   }
 }
