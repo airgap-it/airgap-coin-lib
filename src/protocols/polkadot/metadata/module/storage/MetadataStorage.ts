@@ -1,9 +1,9 @@
-import { SCALEClass } from "../../../../codec/type/SCALEClass";
-import { SCALEString } from "../../../../codec/type/SCALEString";
-import { SCALEArray } from "../../../../codec/type/SCALEArray";
-import { SCALEDecoder } from "../../../../codec/SCALEDecoder";
-import { SCALEDecodeResult } from "../../../../codec/SCALEDecoder";
-import { stripHexPrefix } from "../../../../../../utils/hex";
+import { SCALEClass } from "../../../codec/type/SCALEClass";
+import { SCALEString } from "../../../codec/type/SCALEString";
+import { SCALEArray } from "../../../codec/type/SCALEArray";
+import { SCALEDecoder } from "../../../codec/SCALEDecoder";
+import { SCALEDecodeResult } from "../../../codec/SCALEDecoder";
+import { stripHexPrefix } from "../../../../../utils/hex";
 import { MetadataStorageEntry } from "./MetadataStorageEntry";
 
 export class MetadataStorage extends SCALEClass {

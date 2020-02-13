@@ -1,9 +1,9 @@
-import { SCALEClass } from "../../../codec/type/SCALEClass";
-import { SCALEString } from "../../../codec/type/SCALEString";
-import { SCALEDecodeResult } from "../../../codec/SCALEDecoder";
-import { SCALEBytes } from "../../../codec/type/SCALEBytes";
-import { SCALEArray } from "../../../codec/type/SCALEArray";
-import { SCALEDecoder } from "../../../codec/SCALEDecoder";
+import { SCALEClass } from "../../codec/type/SCALEClass";
+import { SCALEString } from "../../codec/type/SCALEString";
+import { SCALEDecodeResult } from "../../codec/SCALEDecoder";
+import { SCALEBytes } from "../../codec/type/SCALEBytes";
+import { SCALEArray } from "../../codec/type/SCALEArray";
+import { SCALEDecoder } from "../../codec/SCALEDecoder";
 
 export class MetadataConstant extends SCALEClass {
 

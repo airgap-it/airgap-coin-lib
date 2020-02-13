@@ -1,10 +1,10 @@
-import { SCALEClass } from "../../../../codec/type/SCALEClass";
-import { SCALEDecodeResult, DecoderMethod } from "../../../../codec/SCALEDecoder";
-import { SCALEEnum } from "../../../../codec/type/SCALEEnum";
-import { SCALEDecoder } from "../../../../codec/SCALEDecoder";
-import { SCALEType } from "../../../../codec/type/SCALEType";
-import { SCALEString } from "../../../../codec/type/SCALEString";
-import { SCALEBoolean } from "../../../../codec/type/SCALEBoolean";
+import { SCALEClass } from "../../../codec/type/SCALEClass";
+import { SCALEDecodeResult, DecoderMethod } from "../../../codec/SCALEDecoder";
+import { SCALEEnum } from "../../../codec/type/SCALEEnum";
+import { SCALEDecoder } from "../../../codec/SCALEDecoder";
+import { SCALEType } from "../../../codec/type/SCALEType";
+import { SCALEString } from "../../../codec/type/SCALEString";
+import { SCALEBoolean } from "../../../codec/type/SCALEBoolean";
 
 enum StorageHasher {
     Blake2_128 = 0, 

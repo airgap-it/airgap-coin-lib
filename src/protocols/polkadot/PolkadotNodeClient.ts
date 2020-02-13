@@ -6,8 +6,8 @@ import { xxhashAsHex } from '../../utils/xxhash'
 import { blake2bAsHex } from '../../utils/blake2b'
 import { hexToBigNumber, stripHexPrefix, toHexString, addHexPrefix } from '../../utils/hex'
 import { isString } from 'util'
-import { PolkadotTransactionType } from './data/transaction/PolkadotTransaction'
-import { Metadata, ExtrinsicId } from './data/metadata/Metadata'
+import { PolkadotTransactionType } from './transaction/PolkadotTransaction'
+import { Metadata, ExtrinsicId } from './metadata/Metadata'
 
 const RPC_ENDPOINTS = {
     GET_METADATA: 'state_getMetadata',

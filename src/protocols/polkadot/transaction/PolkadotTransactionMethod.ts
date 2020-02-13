@@ -1,12 +1,12 @@
-import { IAirGapTransaction } from "../../../../interfaces/IAirGapTransaction"
-import { SCALEClass } from "../../codec/type/SCALEClass"
-import BigNumber from "../../../../dependencies/src/bignumber.js-9.0.0/bignumber"
+import { IAirGapTransaction } from "../../../interfaces/IAirGapTransaction"
+import { SCALEClass } from "../codec/type/SCALEClass"
+import BigNumber from "../../../dependencies/src/bignumber.js-9.0.0/bignumber"
 import { PolkadotTransactionType } from "./PolkadotTransaction"
-import { SCALEAddress } from "../../codec/type/SCALEAddress"
-import { SCALECompactInt } from "../../codec/type/SCALECompactInt"
-import { SCALEInt } from "../../codec/type/SCALEInt"
-import { SCALEAccountId } from "../../codec/type/SCALEAccountId"
-import { SCALEType } from "../../codec/type/SCALEType"
+import { SCALEAddress } from "../codec/type/SCALEAddress"
+import { SCALECompactInt } from "../codec/type/SCALECompactInt"
+import { SCALEInt } from "../codec/type/SCALEInt"
+import { SCALEAccountId } from "../codec/type/SCALEAccountId"
+import { SCALEType } from "../codec/type/SCALEType"
 
 export interface PolkadotSpendTransactionArgs {
     to: string,

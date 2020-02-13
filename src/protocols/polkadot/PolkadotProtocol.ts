@@ -6,10 +6,10 @@ import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { createSr25519KeyPair } from '../../utils/sr25519'
 import { encodeAddress, decodeAddress } from './utils/address'
 import { IAirGapTransaction } from '../..'
-import { PolkadotTransaction, UnsignedPolkadotTransaction, SignedPolkadotTransaction, PolkadotTransactionType } from './data/transaction/PolkadotTransaction'
-import { SCALEEra } from './codec/type/SCALEEra'
-
-const ERA_PERIOD = 50 // 5 min at 6s block times
+import { PolkadotTransaction, PolkadotTransactionType } from './transaction/PolkadotTransaction'
+import { UnsignedPolkadotTransaction } from '../../serializer/schemas/definitions/transaction-sign-request-polkadot'
+import { SignedPolkadotTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-polkadot'
+import { sign } from './transaction/sign'
 
 export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtocol {
     symbol: string = 'DOT'
@@ -111,24 +111,21 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
         }
 
         const currentHeight = await this.nodeClient.getCurrentHeight()
-        const era = SCALEEra.Mortal({ chainHeight: currentHeight, period: ERA_PERIOD })
         let nonce = (await this.nodeClient.getNonce(transaction.signer.accountId)).toNumber()
         const specVersion = await this.nodeClient.getSpecVersion()
 
-        await transaction.sign(privateKey, {
-            blockHash: era.isMortal ? lastHash : genesisHash,
-            era,
+        const signed = await sign(transaction, privateKey, {
+            lastHash,
+            eraConfig: { chainHeight: currentHeight },
             genesisHash,
             nonce: nonce++,
             specVersion
         })
 
-        const signed = {
-            tx: transaction.toAirGapTransaction(this.identifier),
-            encoded: transaction.encode({ withPrefix: true })
-        }
-
-        return JSON.stringify(signed)
+        return JSON.stringify({
+            tx: signed.toAirGapTransaction(this.identifier),
+            encoded: signed.encode({ withPrefix: true })
+        })
     }
     
     public async getTransactionDetails(transaction: UnsignedPolkadotTransaction): Promise<IAirGapTransaction[]> {
@@ -186,10 +183,10 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
         // TODO: handle metadata error
         const methodId = await this.nodeClient.getTransactionMetadata(type)
         return PolkadotTransaction.create(type, {
-            from: publicKey,
-            tip: new BigNumber(fee),
-            methodId,
-            args
-        })
+                from: publicKey,
+                tip: new BigNumber(fee),
+                methodId,
+                args
+            })
     }
 }

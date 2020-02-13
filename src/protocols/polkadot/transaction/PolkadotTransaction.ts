@@ -1,0 +1,89 @@
+import { PolkadotTransactionMethod } from "./PolkadotTransactionMethod"
+import BigNumber from "../../../dependencies/src/bignumber.js-9.0.0/bignumber"
+import { PolkadotSignature, PolkadotSignatureType } from "./PolkadotSignature"
+import { IAirGapTransaction } from "../../../interfaces/IAirGapTransaction"
+import { encodeAddress } from "../utils/address"
+import { SCALEClass } from "../codec/type/SCALEClass"
+import { SCALEAddress } from "../codec/type/SCALEAddress"
+import { SCALECompactInt } from "../codec/type/SCALECompactInt"
+import { SCALEEra } from "../codec/type/SCALEEra"
+import { SCALEType } from "../codec/type/SCALEType"
+import { SCALEBytes } from "../codec/type/SCALEBytes"
+import { ExtrinsicId } from "../metadata/Metadata"
+
+const VERSION = 4
+const BIT_SIGNED = 128
+const BIT_UNSIGNED = 0
+
+interface PolkadotTransactionConfig {
+    from: string,
+    args: any,
+    tip: number | BigNumber,
+    methodId: ExtrinsicId,
+    era?: SCALEEra,
+    nonce?: number | BigNumber,
+    signature?: string | Uint8Array | Buffer
+}
+
+export enum PolkadotTransactionType {
+    SPEND, DELEGATION
+}
+
+export class PolkadotTransaction extends SCALEClass {
+    public static create(type: PolkadotTransactionType, config: PolkadotTransactionConfig): PolkadotTransaction {
+        return new PolkadotTransaction(
+            type,
+            SCALEAddress.from(config.from), 
+            PolkadotSignature.create(PolkadotSignatureType.Sr25519, config.signature), 
+            config.era || SCALEEra.Immortal(),
+            SCALECompactInt.from(config.nonce || 0),
+            SCALECompactInt.from(config.tip), 
+            PolkadotTransactionMethod.create(type, config.methodId.moduleIndex, config.methodId.callIndex, config.args)
+        )
+    }
+
+    public static from(transaction: PolkadotTransaction, config: Partial<PolkadotTransactionConfig>): PolkadotTransaction {
+        return new PolkadotTransaction(
+            transaction.type,
+            config.from ? SCALEAddress.from(config.from) : transaction.signer,
+            PolkadotSignature.create(transaction.signature.type, config.signature),
+            config.era || transaction.era,
+            config.nonce ? SCALECompactInt.from(config.nonce) : transaction.nonce,
+            config.tip ? SCALECompactInt.from(config.tip) : transaction.tip,
+            config.args && config.methodId ? PolkadotTransactionMethod.create(transaction.type, config.methodId.moduleIndex, config.methodId.callIndex, config.args) : transaction.method
+        )
+    }
+
+    protected get scaleFields(): SCALEType[] {
+        return [this.signer, this.signature, this.era, this.nonce, this.tip, this.method]
+    }
+
+    private constructor(
+        readonly type: PolkadotTransactionType,
+        readonly signer: SCALEAddress,
+        readonly signature: PolkadotSignature,
+        readonly era: SCALEEra,
+        readonly nonce: SCALECompactInt,
+        readonly tip: SCALECompactInt,
+        readonly method: PolkadotTransactionMethod,
+    ) { super() }
+
+    protected _encode(): string {
+        const typeEncoded = Buffer.from([VERSION | (this.signature.isSigned ? BIT_SIGNED : BIT_UNSIGNED)]).toString('hex')
+        const bytes = Buffer.from(typeEncoded + this.scaleFields.reduce((encoded: string, struct: SCALEType) => encoded + struct.encode(), ''), 'hex')
+
+        return SCALEBytes.from(bytes).encode()
+    }
+
+    public toAirGapTransaction(identifier: string): IAirGapTransaction {
+        return {
+            from: [encodeAddress(this.signer.accountId)],
+            to: [],
+            isInbound: false,
+            amount: '',
+            fee: this.tip.value.toString(10),
+            protocolIdentifier: identifier,
+            ...this.method.toAirGapTransactionPart()
+        }
+    }
+}

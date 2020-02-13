@@ -1,8 +1,8 @@
-import { SCALEClass } from "../../../codec/type/SCALEClass";
-import { SCALEString } from "../../../codec/type/SCALEString";
-import { SCALEArray } from "../../../codec/type/SCALEArray";
-import { SCALEDecodeResult } from "../../../codec/SCALEDecoder";
-import { SCALEDecoder } from "../../../codec/SCALEDecoder";
+import { SCALEClass } from "../../codec/type/SCALEClass";
+import { SCALEString } from "../../codec/type/SCALEString";
+import { SCALEArray } from "../../codec/type/SCALEArray";
+import { SCALEDecodeResult } from "../../codec/SCALEDecoder";
+import { SCALEDecoder } from "../../codec/SCALEDecoder";
 
 class MetadataCallArgument extends SCALEClass {
 

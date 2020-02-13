@@ -3,8 +3,11 @@ import { isString } from "util"
 import { isHex, stripHexPrefix } from "../../../../utils/hex"
 
 export class SCALEHash extends SCALEType {
-    public static empty(): SCALEHash {
-        return new SCALEHash(Buffer.from([]))
+    public static empty(bitLength: number = 0): SCALEHash {
+        const u8a = new Uint8Array(bitLength)
+        u8a.fill(0)
+
+        return new SCALEHash(Buffer.from(u8a))
     }
     
     public static from(bytes: string | Buffer | Uint8Array): SCALEHash {
