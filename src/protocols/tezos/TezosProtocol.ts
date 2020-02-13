@@ -1068,27 +1068,30 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       ;({ result: contractData, rest } = this.unforgeParameters(rest))
     }
 
-    let contractDestination: string | undefined = undefined
+    let contractAddress: string | undefined
     if (contractData) {
       // This is a migration contract, so we can display more meaningful data to the user
       if (!amount.isZero()) {
         throw new Error('Amount has to be zero for contract calls.')
       }
-      contractDestination = destination
+      contractAddress = destination
       ;({ source, amount, destination } = this.formatContractData(source, amount, destination, contractData))
     }
+    let tezosSpendOperation: TezosSpendOperation = {
+      kind: TezosOperationType.TRANSACTION,
+      fee: fee.toFixed(),
+      gas_limit: gasLimit.toFixed(),
+      storage_limit: storageLimit.toFixed(),
+      amount: amount.toFixed(),
+      counter: counter.toFixed(),
+      destination, // final destination
+      source
+    }
+    if (contractAddress !== undefined) {
+      tezosSpendOperation.contractDestination = contractAddress
+    }
     return {
-      tezosSpendOperation: {
-        kind: TezosOperationType.TRANSACTION,
-        fee: fee.toFixed(),
-        gas_limit: gasLimit.toFixed(),
-        storage_limit: storageLimit.toFixed(),
-        amount: amount.toFixed(),
-        counter: counter.toFixed(),
-        contractDestination: contractDestination,
-        destination, // final destination
-        source
-      },
+      tezosSpendOperation: tezosSpendOperation,
       rest
     }
   }
