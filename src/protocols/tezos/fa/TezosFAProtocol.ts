@@ -456,6 +456,9 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     amount: BigNumber
     destination: string
   } {
+    if (destination !== this.contractAddress) {
+      throw new Error('Destination does not match contract address')
+    }
     return {
       source: source,
       amount: contractData.amount,
