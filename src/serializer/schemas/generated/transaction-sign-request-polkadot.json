@@ -7,13 +7,17 @@
         "encoded": {
           "type": "string"
         },
+        "payload": {
+          "type": "string"
+        },
         "type": {
           "type": "string"
         }
       },
       "required": [
         "type",
-        "encoded"
+        "encoded",
+        "payload"
       ],
       "type": "object"
     },

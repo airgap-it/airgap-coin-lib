@@ -6,7 +6,7 @@ import { encodeAddress } from "../utils/address"
 import { SCALEClass } from "../codec/type/SCALEClass"
 import { SCALEAddress } from "../codec/type/SCALEAddress"
 import { SCALECompactInt } from "../codec/type/SCALECompactInt"
-import { SCALEEra } from "../codec/type/SCALEEra"
+import { SCALEEra, EraConfig } from "../codec/type/SCALEEra"
 import { SCALEType } from "../codec/type/SCALEType"
 import { SCALEBytes } from "../codec/type/SCALEBytes"
 import { ExtrinsicId } from "../metadata/Metadata"
@@ -24,8 +24,8 @@ interface PolkadotTransactionConfig {
     args: any,
     tip: number | BigNumber,
     methodId: ExtrinsicId,
-    era?: SCALEEra,
-    nonce?: number | BigNumber,
+    era: EraConfig | null,
+    nonce: number | BigNumber,
     signature?: string | Uint8Array | Buffer
 }
 
@@ -39,22 +39,24 @@ export class PolkadotTransaction extends SCALEClass {
             type,
             SCALEAddress.from(config.from), 
             PolkadotSignature.create(PolkadotSignatureType.Sr25519, config.signature), 
-            config.era || SCALEEra.Immortal(),
-            SCALECompactInt.from(config.nonce || 0),
+            config.era ? SCALEEra.Mortal(config.era) : SCALEEra.Immortal(),
+            SCALECompactInt.from(config.nonce),
             SCALECompactInt.from(config.tip), 
             PolkadotTransactionMethod.create(type, config.methodId.moduleIndex, config.methodId.callIndex, config.args)
         )
     }
 
-    public static fromTransaction(transaction: PolkadotTransaction, config: Partial<PolkadotTransactionConfig>): PolkadotTransaction {
+    public static fromTransaction(transaction: PolkadotTransaction, config?: Partial<PolkadotTransactionConfig>): PolkadotTransaction {
         return new PolkadotTransaction(
             transaction.type,
-            config.from ? SCALEAddress.from(config.from) : transaction.signer,
-            PolkadotSignature.create(transaction.signature.type.value, config.signature),
-            config.era || transaction.era,
-            config.nonce ? SCALECompactInt.from(config.nonce) : transaction.nonce,
-            config.tip ? SCALECompactInt.from(config.tip) : transaction.tip,
-            config.args && config.methodId ? PolkadotTransactionMethod.create(transaction.type, config.methodId.moduleIndex, config.methodId.callIndex, config.args) : transaction.method
+            (config && config.from) ? SCALEAddress.from(config.from) : transaction.signer,
+            PolkadotSignature.create(transaction.signature.type.value, config ? config.signature : undefined),
+            (config && config.era) ? SCALEEra.Mortal(config.era) : transaction.era,
+            (config && config.nonce) ? SCALECompactInt.from(config.nonce) : transaction.nonce,
+            (config && config.tip) ? SCALECompactInt.from(config.tip) : transaction.tip,
+            (config && config.args && config.methodId) 
+                ? PolkadotTransactionMethod.create(transaction.type, config.methodId.moduleIndex, config.methodId.callIndex, config.args) 
+                : transaction.method
         )
     }
 
@@ -107,13 +109,6 @@ export class PolkadotTransaction extends SCALEClass {
             tip: this.tip.toNumber(),
             method: JSON.parse(this.method.toString())
         }, null, 2)
-    }
-
-    public toRaw(): RawPolkadotTransaction {
-        return {
-            type: this.type.toString(),
-            encoded: this.encode({ withPrefix: true })
-        }
     }
 
     public toAirGapTransaction(): Partial<IAirGapTransaction> {

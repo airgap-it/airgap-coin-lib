@@ -1,11 +1,12 @@
 import { UnsignedTransactionSerializer, UnsignedTransaction, SerializedSyncProtocolTransaction, SyncProtocolUnsignedTransactionKeys } from "../unsigned-transaction.serializer";
 import { toBuffer } from "../../utils/toBuffer";
 
-export type SerializedUnsignedPolkadotTransaction = [Buffer, Buffer]
+export type SerializedUnsignedPolkadotTransaction = [Buffer, Buffer, Buffer]
 
 export interface RawPolkadotTransaction {
     type: string,
-    encoded: string
+    encoded: string,
+    payload: string
 }
 
 export interface UnsignedPolkadotTransaction extends UnsignedTransaction {
@@ -17,7 +18,11 @@ export class PolkadotUnsignedTransactionsSerializer extends UnsignedTransactionS
     public serialize(transaction: UnsignedPolkadotTransaction): SerializedSyncProtocolTransaction {
         const toSerialize: any[] = []
             
-        toSerialize[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION] = [transaction.transaction.type, transaction.transaction.encoded]
+        toSerialize[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION] = [
+            transaction.transaction.type, 
+            transaction.transaction.encoded,
+            transaction.transaction.payload
+        ]
         toSerialize[SyncProtocolUnsignedTransactionKeys.PUBLIC_KEY] = transaction.publicKey
         toSerialize[SyncProtocolUnsignedTransactionKeys.CALLBACK] = transaction.callback ? transaction.callback : 'airgap-wallet://?d='
             
@@ -30,7 +35,8 @@ export class PolkadotUnsignedTransactionsSerializer extends UnsignedTransactionS
         return {
             transaction: {
                 type: unsignedTx[0].toString(),
-                encoded: unsignedTx[1].toString()
+                encoded: unsignedTx[1].toString(),
+                payload: unsignedTx[2].toString()
             },
             publicKey: serializedTx[SyncProtocolUnsignedTransactionKeys.PUBLIC_KEY].toString(),
             callback: serializedTx[SyncProtocolUnsignedTransactionKeys.CALLBACK].toString()

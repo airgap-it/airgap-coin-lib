@@ -10,6 +10,7 @@ import { PolkadotTransaction, PolkadotTransactionType } from './transaction/Polk
 import { UnsignedPolkadotTransaction, RawPolkadotTransaction } from '../../serializer/schemas/definitions/transaction-sign-request-polkadot'
 import { SignedPolkadotTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-polkadot'
 import { sign } from './transaction/sign'
+import { PolkadotTransactionPayload } from './transaction/PolkadotTransactionPayload'
 
 export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtocol {
     symbol: string = 'DOT'
@@ -104,28 +105,13 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
     
     public async signWithPrivateKey(privateKey: Buffer, rawTransaction: RawPolkadotTransaction): Promise<string> {
         const unsigned = PolkadotTransaction.fromRaw(rawTransaction)
-        const lastHash = await this.nodeClient.getLastBlockHash()
-        const genesisHash = await this.nodeClient.getFirstBlockHash()
 
-        if (!lastHash || !genesisHash) {
-            return Promise.reject('Could not fetch all necessary data.')
-        }
-
-        const currentHeight = await this.nodeClient.getCurrentHeight()
-        let nonce = (await this.nodeClient.getNonce(unsigned.signer.accountId)).toNumber()
-        const specVersion = await this.nodeClient.getSpecVersion()
-
-        const signed = await sign(unsigned, privateKey, {
-            lastHash,
-            eraConfig: { chainHeight: currentHeight },
-            genesisHash,
-            nonce: nonce++,
-            specVersion
-        })
+        const signed = await sign(privateKey, unsigned, rawTransaction.payload)
 
         return JSON.stringify({
             type: signed.type.toString(),
-            encoded: signed.encode({ withPrefix: true })
+            encoded: signed.encode({ withPrefix: true }),
+            payload: rawTransaction.payload
         })
     }
     
@@ -181,16 +167,37 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
     }
 
     private async prepareTransaction(type: PolkadotTransactionType, publicKey: string, fee: string, args: any): Promise<RawPolkadotTransaction> {
-        // TODO: handle metadata error
+        const lastHash = await this.nodeClient.getLastBlockHash()
+        const genesisHash = await this.nodeClient.getFirstBlockHash()
+
+        const chainHeight = await this.nodeClient.getCurrentHeight()
+        const nonce = (await this.nodeClient.getNonce(publicKey)).toNumber()
+        const specVersion = await this.nodeClient.getSpecVersion()
         const methodId = await this.nodeClient.getTransactionMetadata(type)
+
+        if (!lastHash || !genesisHash || !methodId) {
+            return Promise.reject('Could not fetch all necessary data.')
+        }
+
+        const transaction = PolkadotTransaction.create(type, {
+            from: publicKey,
+            tip: new BigNumber(fee),
+            methodId,
+            args,
+            era: { chainHeight },
+            nonce
+        })
+
+        const payload = PolkadotTransactionPayload.create(transaction, {
+            specVersion,
+            genesisHash,
+            lastHash
+        })
+
         return {
             type: type.toString(),
-            encoded: PolkadotTransaction.create(type, {
-                from: publicKey,
-                tip: new BigNumber(fee),
-                methodId,
-                args
-            }).encode({ withPrefix: true })
+            encoded: transaction.encode({ withPrefix: true }),
+            payload: payload.encode()
         }
     }
 

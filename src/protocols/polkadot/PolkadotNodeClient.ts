@@ -70,7 +70,7 @@ export class PolkadotNodeClient {
         )
     }
 
-    public async getTransactionMetadata(type: PolkadotTransactionType): Promise<ExtrinsicId> {
+    public async getTransactionMetadata(type: PolkadotTransactionType): Promise<ExtrinsicId | null> {
         let rpcEndpoint: string
         switch (type) {
             case PolkadotTransactionType.SPEND:
@@ -81,15 +81,17 @@ export class PolkadotNodeClient {
                 break
         }
 
-        if (!this.metadata) {
-            await this.fetchMetadata()
-        } 
-        
-        if (this.metadata && this.metadata.hasExtrinsicId(rpcEndpoint)) {
-            return this.metadata!.getExtrinsicId(rpcEndpoint)
+        try {
+            if (!this.metadata) {
+                await this.fetchMetadata()
+            } 
+            
+            return (this.metadata && this.metadata.hasExtrinsicId(rpcEndpoint)) 
+                ? this.metadata!.getExtrinsicId(rpcEndpoint) 
+                : null
+        } catch (e) {
+            return null
         }
-
-        return Promise.reject('Could not fetch metadata.')
     }
 
     public getNonce(accountId: Uint8Array | string): Promise<BigNumber> {
