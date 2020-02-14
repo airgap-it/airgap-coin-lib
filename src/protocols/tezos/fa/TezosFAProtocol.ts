@@ -1,3 +1,4 @@
+import { FeeDefaults } from './../../ICoinProtocol'
 import axios, { AxiosResponse } from '../../../dependencies/src/axios-0.19.0/index'
 import * as bigInt from '../../../dependencies/src/big-integer-1.6.45/BigInteger'
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
@@ -19,6 +20,7 @@ export interface TezosFAProtocolConfiguration {
   marketSymbol: string
   identifier: string
   contractAddress: string
+  feeDefaults: FeeDefaults
   decimals?: number
   jsonRPCAPI?: string
   baseApiUrl?: string
@@ -52,6 +54,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     this.name = configuration.name
     this.marketSymbol = configuration.marketSymbol
     this.identifier = configuration.identifier
+    this.feeDefaults = configuration.feeDefaults
     this.decimals = configuration.decimals || this.decimals
   }
 

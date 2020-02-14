@@ -16,6 +16,11 @@ export class TezosBTC extends TezosFAProtocol {
       name: 'Tezos BTC',
       marketSymbol: 'btc',
       identifier: 'xtz-btc',
+      feeDefaults: {
+        low: '0.250',
+        medium: '0.50',
+        high: '1.00'
+      },
       contractAddress: contractAddress,
       jsonRPCAPI: jsonRPCAPI,
       baseApiUrl: baseApiUrl,
