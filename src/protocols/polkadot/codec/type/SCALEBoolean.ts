@@ -17,6 +17,10 @@ export class SCALEBoolean extends SCALEType {
 
     private constructor(readonly value: boolean) { super() }
 
+    public toString(): string {
+        return String(this.value)
+    }
+
     protected _encode(): string {
         return toHexStringRaw(this.value ? 1 : 0)
     }

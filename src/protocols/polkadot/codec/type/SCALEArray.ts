@@ -16,7 +16,7 @@ export class SCALEArray<T extends SCALEType> extends SCALEType {
 
         const elements: T[] = []
         let bytesDecoded = 0
-        for (let i = 0; i < arrayLength.decoded.asNumber(); i++) {
+        for (let i = 0; i < arrayLength.decoded.toNumber(); i++) {
             const element = decodeElement(_hex)
             elements.push(element.decoded)
             bytesDecoded += element.bytesDecoded
@@ -30,6 +30,10 @@ export class SCALEArray<T extends SCALEType> extends SCALEType {
     }
 
     protected constructor(readonly elements: T[]) { super() }
+
+    public toString(): string {
+        return `[${this.elements.map(element => element.toString()).join()}]`
+    }
 
     protected _encode(): string {
         return SCALECompactInt.from(this.elements.length).encode() + this.elements.map(element => element.encode()).join('')

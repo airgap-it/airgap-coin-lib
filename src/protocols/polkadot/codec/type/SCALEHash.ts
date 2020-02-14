@@ -36,10 +36,14 @@ export class SCALEHash extends SCALEType {
     }
 
     public get isEmpty(): boolean {
-        return this.value.length === 0
+        return this.value.length === 0 || this.value.every(value => value === 0)
     }
 
     private constructor(readonly value: Buffer) { super() }
+
+    public toString(encoding: string = 'hex'): string {
+        return this.value.toString(encoding)
+    }
 
     protected _encode(): string {
         return this.value.toString('hex')

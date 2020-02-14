@@ -31,8 +31,6 @@ export class SCALEEra extends SCALEType {
         return new SCALEEra(period, quantizePhase)
     }
 
-    private constructor(readonly period: number, readonly phase: number) { super() }
-
     public get isMortal(): boolean {
         return this.period !== 0
     }
@@ -63,6 +61,16 @@ export class SCALEEra extends SCALEType {
             bytesDecoded: 2,
             decoded: new SCALEEra(period, phase)
         }
+    }
+
+    private constructor(readonly period: number, readonly phase: number) { super() }
+
+    public toString(): string {
+        return JSON.stringify({
+            isMortal: this.isMortal,
+            period: this.period,
+            phase: this.phase
+        }, null, 2)
     }
 
     protected _encode(): string {

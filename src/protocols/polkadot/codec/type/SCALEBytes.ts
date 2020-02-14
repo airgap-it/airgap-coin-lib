@@ -23,15 +23,19 @@ export class SCALEBytes extends SCALEType {
         let _hex = hex
 
         const length = SCALECompactInt.decode(_hex)
-        const bytes = _hex.substr(length.bytesDecoded * 2, length.decoded.asNumber() * 2)
+        const bytes = _hex.substr(length.bytesDecoded * 2, length.decoded.toNumber() * 2)
 
         return {
-            bytesDecoded: length.bytesDecoded + length.decoded.asNumber(),
+            bytesDecoded: length.bytesDecoded + length.decoded.toNumber(),
             decoded: SCALEBytes.from(bytes)
         }
     }
 
     private constructor(readonly bytes: Buffer) { super() }
+
+    public toString(encoding: string = 'hex'): string {
+        return this.bytes.toString(encoding)
+    }
 
     protected _encode(): string {
         return SCALECompactInt.from(this.bytes.length).encode() + this.bytes.toString('hex')

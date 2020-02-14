@@ -28,6 +28,10 @@ export class SCALEAddress extends SCALEType {
         return encodeAddress(this.accountId)
     }
 
+    public toString(): string {
+        return this.accountId
+    }
+
     protected _encode(): string {
         return ENCODED_ADDRESS_PREFIX + this.accountId
     }

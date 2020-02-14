@@ -130,13 +130,12 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
     }
     
     public async getTransactionDetails(transaction: UnsignedPolkadotTransaction): Promise<IAirGapTransaction[]> {
-        const polkadotTransaction = PolkadotTransaction.fromRaw(transaction.transaction)
-        return [polkadotTransaction.toAirGapTransaction(this.identifier)]
+        return this.getTransactionDetailsFromRaw(transaction.transaction)
     }
     
     public async getTransactionDetailsFromSigned(transaction: SignedPolkadotTransaction): Promise<IAirGapTransaction[]> {
-        const polkadotTransaction = PolkadotTransaction.fromRaw(JSON.parse(transaction.transaction) as RawPolkadotTransaction)
-        return [polkadotTransaction.toAirGapTransaction(this.identifier)]
+        const rawTransaction = JSON.parse(transaction.transaction) as RawPolkadotTransaction
+        return this.getTransactionDetailsFromRaw(rawTransaction)
     }
 
     public async getBalanceOfAddresses(addresses: string[]): Promise<string> {
@@ -193,5 +192,18 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
                 args
             }).encode({ withPrefix: true })
         }
+    }
+
+    private getTransactionDetailsFromRaw(rawTransaction: RawPolkadotTransaction): IAirGapTransaction[] {
+        const polkadotTransaction = PolkadotTransaction.fromRaw(rawTransaction)
+        return [{
+            from: [],
+            to: [],
+            amount: '',
+            fee: '',
+            protocolIdentifier: this.identifier,
+            isInbound: false,
+            ...polkadotTransaction.toAirGapTransaction()
+        }]
     }
 }

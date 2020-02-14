@@ -24,11 +24,11 @@ export class SCALEInt extends SCALEType {
         private readonly bitLength?: number
     ) { super() }
 
-    public asString(base: number = 10): string {
+    public toString(base: number = 10): string {
         return this.value.toString(base)
     }
 
-    public asNumber(): number {
+    public toNumber(): number {
         return this.value.toNumber()
     }
 

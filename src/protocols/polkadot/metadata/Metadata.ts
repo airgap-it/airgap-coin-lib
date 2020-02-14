@@ -17,10 +17,10 @@ export class Metadata extends SCALEClass {
         const decoder = new SCALEDecoder(raw)
 
         const magicNumber = decoder.decodeNextInt(32) // 32 bits
-        this.assertMagicNumber(magicNumber.decoded.asNumber())
+        this.assertMagicNumber(magicNumber.decoded.toNumber())
 
         const version = decoder.decodeNextInt(8) // 8 bits
-        this.assertVersion(version.decoded.asNumber())
+        this.assertVersion(version.decoded.toNumber())
 
         const modules = decoder.decodeNextArray(MetadataModule.decode)
 

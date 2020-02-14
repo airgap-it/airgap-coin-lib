@@ -11,5 +11,6 @@ export abstract class SCALEType {
         return (config && config.withPrefix) ? addHexPrefix(encoded) : encoded
     }
 
+    public abstract toString(): string
     protected abstract _encode(): string
 }

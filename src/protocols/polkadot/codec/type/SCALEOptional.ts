@@ -52,7 +52,11 @@ export class SCALEOptional<T extends SCALEType> extends SCALEType {
     private constructor(readonly _value: T | null) { 
         super()
         this.type = _value ? 1 : 0
-     }
+    }
+    
+    public toString(): string {
+        return `Optional<${this.hasValue ? this.value.toString() : 'EMPTY'}>`
+    }
 
     protected _encode(): string {
         return toHexStringRaw(this.type, 2) + this.hasValue ? this.value.encode() : ''

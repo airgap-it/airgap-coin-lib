@@ -33,11 +33,11 @@ export class SCALECompactInt extends SCALEType {
 
     private constructor(readonly value: BigNumber) { super() }
 
-    public asString(base: number = 10): string {
+    public toString(base: number = 10): string {
         return this.value.toString(base)
     }
 
-    public asNumber(): number {
+    public toNumber(): number {
         return this.value.toNumber()
     }
 

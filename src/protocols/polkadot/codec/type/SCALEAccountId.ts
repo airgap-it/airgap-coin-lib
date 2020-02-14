@@ -13,6 +13,10 @@ export class SCALEAccountId extends SCALEType {
         return encodeAddress(this.value)
     }
 
+    public toString(): string {
+        return this.value
+    }
+
     protected _encode(): string {
         return this.value
     }

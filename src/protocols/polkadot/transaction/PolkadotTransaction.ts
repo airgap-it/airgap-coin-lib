@@ -97,11 +97,16 @@ export class PolkadotTransaction extends SCALEClass {
         readonly method: PolkadotTransactionMethod,
     ) { super() }
 
-    protected _encode(): string {
-        const typeEncoded = SCALEHash.from(new Uint8Array([VERSION | (this.signature.isSigned ? BIT_SIGNED : BIT_UNSIGNED)])).encode()
-        const bytes = Buffer.from(typeEncoded + this.scaleFields.reduce((encoded: string, struct: SCALEType) => encoded + struct.encode(), ''), 'hex')
-
-        return SCALEBytes.from(bytes).encode()
+    public toString(): string {
+        return JSON.stringify({
+            type: PolkadotTransactionType[this.type],
+            signer: this.signer.toString(),
+            signature: JSON.parse(this.signature.toString()),
+            era: JSON.parse(this.era.toString()),
+            nonce: this.nonce.toNumber(),
+            tip: this.tip.toNumber(),
+            method: JSON.parse(this.method.toString())
+        }, null, 2)
     }
 
     public toRaw(): RawPolkadotTransaction {
@@ -111,15 +116,19 @@ export class PolkadotTransaction extends SCALEClass {
         }
     }
 
-    public toAirGapTransaction(identifier: string): IAirGapTransaction {
+    public toAirGapTransaction(): Partial<IAirGapTransaction> {
         return {
             from: [encodeAddress(this.signer.accountId)],
-            to: [],
-            isInbound: false,
-            amount: '',
-            fee: this.tip.value.toString(10),
-            protocolIdentifier: identifier,
+            fee: this.tip.toString(),
+            transactionDetails: JSON.parse(this.toString()),
             ...this.method.toAirGapTransactionPart()
         }
+    }
+
+    protected _encode(): string {
+        const typeEncoded = SCALEHash.from(new Uint8Array([VERSION | (this.signature.isSigned ? BIT_SIGNED : BIT_UNSIGNED)])).encode()
+        const bytes = Buffer.from(typeEncoded + this.scaleFields.reduce((encoded: string, struct: SCALEType) => encoded + struct.encode(), ''), 'hex')
+
+        return SCALEBytes.from(bytes).encode()
     }
 }

@@ -29,6 +29,10 @@ export class SCALEEnum<T> extends SCALEType {
 
     private constructor(readonly value: T) { super() }
 
+    public toString(): string {
+        return ((this.value as any) as number).toString()
+    }
+
     protected _encode(): string {
         return toHexStringRaw((this.value as any) as number)
     }

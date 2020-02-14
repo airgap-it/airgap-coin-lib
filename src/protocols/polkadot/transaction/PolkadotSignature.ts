@@ -38,4 +38,12 @@ export class PolkadotSignature extends SCALEClass {
         readonly type: SCALEEnum<PolkadotSignatureType>,
         readonly signature: SCALEHash
     ) { super() }
+
+    public toString(): string {
+        return JSON.stringify({
+            type: PolkadotSignatureType[this.type.value],
+            isSigned: this.isSigned,
+            signature: this.signature.toString()
+        }, null, 2)
+    }
 }

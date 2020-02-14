@@ -51,7 +51,7 @@ export class PolkadotTransactionMethod extends SCALEClass {
 
         return {
             bytesDecoded: moduleIndex.bytesDecoded + callIndex.bytesDecoded + args.bytesDecoded,
-            decoded: PolkadotTransactionMethod.create(type, moduleIndex.decoded.asNumber(), callIndex.decoded.asNumber(), args.decoded)
+            decoded: PolkadotTransactionMethod.create(type, moduleIndex.decoded.toNumber(), callIndex.decoded.toNumber(), args.decoded)
         }
     }
 
@@ -62,12 +62,15 @@ export class PolkadotTransactionMethod extends SCALEClass {
 
         const destination = SCALEAddress.from(args.to)
         const value = SCALECompactInt.from(args.value)
-        return new PolkadotTransactionMethod(SCALEInt.from(moduleIndex), SCALEInt.from(callIndex), [destination, value], () => { 
-            return { 
+        return new PolkadotTransactionMethod(
+            SCALEInt.from(moduleIndex), 
+            SCALEInt.from(callIndex), 
+            new Map(Object.entries({ destination, value })), 
+            () => ({ 
                 to: [destination.asAddress()], 
-                amount: value.asString()
-            } 
-        })
+                amount: value.toString()
+            })
+        )
     }
 
     private static createDelegationTransaction(moduleIndex: number, callIndex: number, args: PolkadotDelegationTransactionArgs): PolkadotTransactionMethod {
@@ -77,12 +80,15 @@ export class PolkadotTransactionMethod extends SCALEClass {
 
         const to = SCALEAccountId.from(args.to)
         const conviction = SCALEInt.from(args.conviction)
-        return new PolkadotTransactionMethod(SCALEInt.from(moduleIndex), SCALEInt.from(callIndex), [to, conviction], () => {
-            return {
-                to: [to.asAddress()],
-                amount: conviction.asString()
-            }
-        })
+        return new PolkadotTransactionMethod(
+            SCALEInt.from(moduleIndex), 
+            SCALEInt.from(callIndex), 
+            new Map(Object.entries({ to, conviction })), 
+            () => ({ 
+                to: [to.asAddress()], 
+                amount: conviction.toString() 
+            })
+        )
     }
 
     private static decodeSpendTransactionArgs(raw: string): SCALEDecodeResult<PolkadotSpendTransactionArgs> {
@@ -110,17 +116,25 @@ export class PolkadotTransactionMethod extends SCALEClass {
             bytesDecoded: to.bytesDecoded + conviction.bytesDecoded,
             decoded: {
                 to: to.decoded.accountId,
-                conviction: conviction.decoded.asString()
+                conviction: conviction.decoded.toString()
             }
         }
     }
 
-    protected readonly scaleFields = [this.moduleIndex, this.callIndex, ...this.args]
+    protected readonly scaleFields = [this.moduleIndex, this.callIndex, ...Array.from(this.args.values())]
 
     private constructor(
         readonly moduleIndex: SCALEInt,
         readonly callIndex: SCALEInt,
-        readonly args: SCALEType[],
+        readonly args: Map<string, SCALEType>,
         readonly toAirGapTransactionPart: () => Partial<IAirGapTransaction>
     ) { super() }
+
+    public toString(): string {
+        return JSON.stringify({
+            moduleIndex: this.moduleIndex.toNumber(),
+            callIndex: this.callIndex.toNumber(),
+            ...Array.from(this.args.entries()).reduce((prev, [key, value]) => Object.assign(prev, { [key]: value.toString() }), {})
+        }, null, 2)
+    }
 }

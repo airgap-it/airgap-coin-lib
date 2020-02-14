@@ -12,12 +12,12 @@ export class SCALEString extends SCALEType {
 
         const length = SCALECompactInt.decode(_hex)
 
-        _hex = _hex.substr(length.bytesDecoded * 2, length.decoded.asNumber() * 2)
+        _hex = _hex.substr(length.bytesDecoded * 2, length.decoded.toNumber() * 2)
 
         const decoded = new TextDecoder().decode(Buffer.from(_hex, 'hex'))
         
         return {
-            bytesDecoded: length.bytesDecoded + length.decoded.asNumber(), // utf-8 encoding
+            bytesDecoded: length.bytesDecoded + length.decoded.toNumber(), // utf-8 encoding
             decoded: SCALEString.from(decoded)
         }
     }
@@ -31,6 +31,10 @@ export class SCALEString extends SCALEType {
                 return index === 0 ? match.toLowerCase() : match.toUpperCase()
             })
             .replace(/\s+/g, '')
+    }
+
+    public toString(): string {
+        return this.value
     }
 
     protected _encode(): string {
