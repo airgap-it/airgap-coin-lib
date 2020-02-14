@@ -13,18 +13,21 @@ export class SCALECompactInt extends SCALEType {
         const mode = parseInt(firstByte.toString(2).slice(-2), 2)
 
         let bytes: number
+        let metaBits: number
         if (mode === 3) {
-            bytes = parseInt(firstByte.toString(2).substr(0, 6), 2)
+            bytes = parseInt(firstByte.toString(2).substr(2, 6), 2) + 5 // + 4 bytes of original length + 1 byte of meta
+            metaBits = 8
         } else {
             bytes = 1 << mode
+            metaBits = 2
         }
-        
+
         const encodedHex = hex.substr(0, bytes * 2)
         const encodedBin = new BigNumber(changeEndianness(encodedHex), 16).toString(2)
 
         return {
             bytesDecoded: bytes,
-            decoded: SCALECompactInt.from(new BigNumber(encodedBin.slice(0, -2), 2))
+            decoded: SCALECompactInt.from(new BigNumber(encodedBin.slice(0, -metaBits), 2))
         }
     }
 
@@ -58,7 +61,7 @@ export class SCALECompactInt extends SCALEType {
         let value: BigNumber
         if (mode == 3) {
             const bytes = Math.ceil(bits / 8)
-            value = this.value.multipliedBy(64).plus(bytes - 4) // value << 6 + number of bytes
+            value = this.value.multipliedBy(64).plus(bytes - 4) // value << 6 + number of bytes less 4
         } else {
             value = this.value
         }

@@ -1,6 +1,10 @@
 import { UnsignedTransaction } from "./transaction-sign-request";
-import { PolkadotTransaction } from "../../../protocols/polkadot/transaction/PolkadotTransaction";
+
+export interface RawPolkadotTransaction {
+    type: string,
+    encoded: string
+}
 
 export interface UnsignedPolkadotTransaction extends UnsignedTransaction {
-    transaction: PolkadotTransaction
+    transaction: RawPolkadotTransaction
 }

@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "RawPolkadotTransaction": {
+      "additionalProperties": false,
+      "properties": {
+        "encoded": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "encoded"
+      ],
+      "type": "object"
+    },
+    "UnsignedPolkadotTransaction": {
+      "additionalProperties": false,
+      "properties": {
+        "callback": {
+          "type": "string"
+        },
+        "publicKey": {
+          "type": "string"
+        },
+        "transaction": {
+          "$ref": "#/definitions/RawPolkadotTransaction"
+        }
+      },
+      "required": [
+        "publicKey",
+        "transaction"
+      ],
+      "type": "object"
+    }
+  }
+}

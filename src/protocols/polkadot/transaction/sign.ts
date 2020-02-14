@@ -83,5 +83,5 @@ export async function sign(transaction: PolkadotTransaction, privateKey: Buffer,
     const publicKey = Buffer.from(stripHexPrefix(transaction.signer.accountId), 'hex')
     const signature = await signPayload(privateKey, publicKey, payload)
 
-    return PolkadotTransaction.from(transaction, { signature, era, nonce: signParams.nonce })
+    return PolkadotTransaction.fromTransaction(transaction, { signature, era, nonce: signParams.nonce })
 }

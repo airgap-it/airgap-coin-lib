@@ -7,6 +7,7 @@ import { SCALECompactInt } from "../codec/type/SCALECompactInt"
 import { SCALEInt } from "../codec/type/SCALEInt"
 import { SCALEAccountId } from "../codec/type/SCALEAccountId"
 import { SCALEType } from "../codec/type/SCALEType"
+import { SCALEDecodeResult, SCALEDecoder } from "../codec/SCALEDecoder"
 
 export interface PolkadotSpendTransactionArgs {
     to: string,
@@ -30,6 +31,28 @@ export class PolkadotTransactionMethod extends SCALEClass {
                 break
         }
         return methodFactory(moduleIndex, callIndex, args)
+    }
+
+    public static decode(type: PolkadotTransactionType, raw: string): SCALEDecodeResult<PolkadotTransactionMethod> {
+        const decoder = new SCALEDecoder(raw)
+
+        const moduleIndex = decoder.decodeNextInt(8)
+        const callIndex = decoder.decodeNextInt(8)
+
+        let args
+        switch (type) {
+            case PolkadotTransactionType.SPEND:
+                args = decoder.decodeNextObject(PolkadotTransactionMethod.decodeSpendTransactionArgs)
+                break
+            case PolkadotTransactionType.DELEGATION:
+                args = decoder.decodeNextObject(PolkadotTransactionMethod.decodeDelegationTransactionArgs)
+                break
+        }
+
+        return {
+            bytesDecoded: moduleIndex.bytesDecoded + callIndex.bytesDecoded + args.bytesDecoded,
+            decoded: PolkadotTransactionMethod.create(type, moduleIndex.decoded.asNumber(), callIndex.decoded.asNumber(), args.decoded)
+        }
     }
 
     private static createSpendTransaction(moduleIndex: number, callIndex: number, args: PolkadotSpendTransactionArgs): PolkadotTransactionMethod {
@@ -60,6 +83,36 @@ export class PolkadotTransactionMethod extends SCALEClass {
                 amount: conviction.asString()
             }
         })
+    }
+
+    private static decodeSpendTransactionArgs(raw: string): SCALEDecodeResult<PolkadotSpendTransactionArgs> {
+        const decoder = new SCALEDecoder(raw)
+
+        const destination = decoder.decodeNextAddress()
+        const value = decoder.decodeNextCompactInt()
+
+        return {
+            bytesDecoded: destination.bytesDecoded + value.bytesDecoded,
+            decoded: {
+                to: destination.decoded.accountId,
+                value: value.decoded.value
+            }
+        }
+    }
+
+    private static decodeDelegationTransactionArgs(raw: string): SCALEDecodeResult<PolkadotDelegationTransactionArgs> {
+        const decoder = new SCALEDecoder(raw)
+
+        const to = decoder.decodeNextAddress()
+        const conviction = decoder.decodeNextInt(8)
+
+        return {
+            bytesDecoded: to.bytesDecoded + conviction.bytesDecoded,
+            decoded: {
+                to: to.decoded.accountId,
+                conviction: conviction.decoded.asString()
+            }
+        }
     }
 
     protected readonly scaleFields = [this.moduleIndex, this.callIndex, ...this.args]

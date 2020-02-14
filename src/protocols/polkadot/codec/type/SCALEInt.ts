@@ -9,11 +9,12 @@ export class SCALEInt extends SCALEType {
     }
 
     public static decode(hex: string, bitLength?: number): SCALEDecodeResult<SCALEInt> {
-        const _hex = changeEndianness(stripHexPrefix(hex))
+        const nibbles = bitLength ? Math.ceil(bitLength / 4) : hex.length
+        const _hex = changeEndianness(stripHexPrefix(hex).substr(0, nibbles))
 
         const decoded = new BigNumber(_hex, 16)
         return {
-            bytesDecoded: Math.ceil(hex.length / 2),
+            bytesDecoded: Math.ceil(nibbles / 2),
             decoded: SCALEInt.from(decoded, bitLength)
         }
     }

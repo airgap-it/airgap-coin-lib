@@ -1,10 +1,12 @@
 import { SCALEType } from "../type/SCALEType"
 import { isString } from "util"
 import { isHex, stripHexPrefix } from "../../../../utils/hex"
+import { SCALEDecodeResult } from "../SCALEDecoder"
 
 export class SCALEHash extends SCALEType {
     public static empty(bitLength: number = 0): SCALEHash {
-        const u8a = new Uint8Array(bitLength)
+        const byteLength = Math.ceil(bitLength / 8)
+        const u8a = new Uint8Array(byteLength)
         u8a.fill(0)
 
         return new SCALEHash(Buffer.from(u8a))
@@ -21,7 +23,17 @@ export class SCALEHash extends SCALEType {
         }
 
         return new SCALEHash(buffer)
-    } 
+    }
+
+    public static decode(hex: string, bitLength: number): SCALEDecodeResult<SCALEHash> {
+        const nibbles = Math.ceil(bitLength / 4)
+        const hash = hex.substr(0, nibbles)
+
+        return {
+            bytesDecoded: Math.ceil(nibbles / 2),
+            decoded: SCALEHash.from(hash)
+        }
+    }
 
     public get isEmpty(): boolean {
         return this.value.length === 0

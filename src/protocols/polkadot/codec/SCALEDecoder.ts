@@ -8,6 +8,9 @@ import { SCALEArray } from "./type/SCALEArray";
 import { SCALEString } from "./type/SCALEString";
 import { SCALEEnum } from "./type/SCALEEnum";
 import { stripHexPrefix } from "../../../utils/hex";
+import { SCALEHash } from "./type/SCALEHash";
+import { SCALEAddress } from "./type/SCALEAddress";
+import { SCALEEra } from "./type/SCALEEra";
 
 export type DecoderMethod<T> = (hex: string) => SCALEDecodeResult<T>
 
@@ -21,6 +24,10 @@ export class SCALEDecoder {
 
     constructor(hex: string) {
         this.hex = stripHexPrefix(hex)
+    }
+
+    public decodeNextAddress(): SCALEDecodeResult<SCALEAddress> {
+        return this.decodeNextValue(SCALEAddress.decode)
     }
 
     public decodeNextArray<T extends SCALEType>(decoderMethod: DecoderMethod<T>): SCALEDecodeResult<SCALEArray<T>> {
@@ -39,9 +46,16 @@ export class SCALEDecoder {
         return this.decodeNextValue(SCALECompactInt.decode)
     }
 
+    public decodeNextEra(): SCALEDecodeResult<SCALEEra> {
+        return this.decodeNextValue(SCALEEra.decode)
+    }
+
+    public decodeNextHash(bitLength: number): SCALEDecodeResult<SCALEHash> {
+        return this.decodeNextValue(hex => SCALEHash.decode(hex, bitLength))
+    }
+
     public decodeNextInt(bitLength: number): SCALEDecodeResult<SCALEInt> {
-        const nibbles = Math.ceil(bitLength / 4)
-        return this.decodeNextValue(SCALEInt.decode, nibbles)
+        return this.decodeNextValue(hex => SCALEInt.decode(hex, bitLength))
     }
 
     public decodeNextOptional<T extends SCALEType>(decoderMethod: DecoderMethod<T>): SCALEDecodeResult<SCALEOptional<T>> {
@@ -56,11 +70,11 @@ export class SCALEDecoder {
         return this.decodeNextValue(hex => SCALEEnum.decode(hex, getEnumValue))
     }
 
-    public decodeNextObject<T extends SCALEType>(decoderMethod: DecoderMethod<T>): SCALEDecodeResult<T> {
+    public decodeNextObject<T>(decoderMethod: DecoderMethod<T>): SCALEDecodeResult<T> {
         return this.decodeNextValue(decoderMethod)
     }
 
-    private decodeNextValue<T extends SCALEType>(decoderMethod: DecoderMethod<T>, nibbleLength?: number): SCALEDecodeResult<T> {
+    private decodeNextValue<T>(decoderMethod: DecoderMethod<T>, nibbleLength?: number): SCALEDecodeResult<T> {
         const decoded = decoderMethod(this.hex.substr(0, nibbleLength))
         this.moveCursor(decoded.bytesDecoded)
         return decoded

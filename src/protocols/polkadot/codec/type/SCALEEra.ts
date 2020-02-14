@@ -1,5 +1,7 @@
 import { SCALEType } from "../type/SCALEType"
 import BigNumber from "../../../../dependencies/src/bignumber.js-9.0.0/bignumber"
+import { changeEndianness, toHexStringRaw } from "../../../../utils/hex"
+import { SCALEDecodeResult } from "../SCALEDecoder"
 
 const IMMORTAL_ENCODED = '00'
 const ERA_DEFAULT_PERIOD = 50 // 5 min at 6s block times
@@ -35,6 +37,34 @@ export class SCALEEra extends SCALEType {
         return this.period !== 0
     }
 
+    public static decode(hex: string): SCALEDecodeResult<SCALEEra> {
+        return hex.substr(0, 2) === IMMORTAL_ENCODED ? SCALEEra.decodeImmortal() : SCALEEra.decodeMortal(hex)
+    }
+
+    private static decodeImmortal(): SCALEDecodeResult<SCALEEra> {
+        return {
+            bytesDecoded: 1,
+            decoded: SCALEEra.Immortal()
+        }
+    }
+
+    private static decodeMortal(hex: string): SCALEDecodeResult<SCALEEra> {
+        const encoded = parseInt(changeEndianness(hex.substr(0, 4)), 16)
+        
+        const period = 2 << (encoded % (1 << 4))
+        const quantizeFactor = Math.max(period >> 12, 1)
+        const phase = (encoded >> 4) * quantizeFactor
+
+        if (period < 4 || period < phase) {
+            throw new Error('Invalid mortal era')
+        }
+
+        return {
+            bytesDecoded: 2,
+            decoded: new SCALEEra(period, phase)
+        }
+    }
+
     protected _encode(): string {
         if (!this.isMortal) {
             return IMMORTAL_ENCODED
@@ -44,11 +74,7 @@ export class SCALEEra extends SCALEType {
         const trailingZeros = this.getTrailingZeros(this.period)
         const encoded = Math.min(15, Math.max(1, trailingZeros - 1)) + (((this.phase / quantizeFactor) << 4))
 
-        // return changeEndianness(toHexStringRaw(encoded, 16))
-        const first = encoded >> 8
-        const second = encoded & 0xff
-
-        return Buffer.from([second, first]).toString('hex')
+        return changeEndianness(toHexStringRaw(encoded, 16))
     }
 
     private getTrailingZeros(value: number): number {
