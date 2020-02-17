@@ -5,18 +5,25 @@ import { PolkadotTransactionType } from "./PolkadotTransaction"
 import { SCALEAddress } from "../codec/type/SCALEAddress"
 import { SCALECompactInt } from "../codec/type/SCALECompactInt"
 import { SCALEInt } from "../codec/type/SCALEInt"
-import { SCALEAccountId } from "../codec/type/SCALEAccountId"
 import { SCALEType } from "../codec/type/SCALEType"
 import { SCALEDecodeResult, SCALEDecoder } from "../codec/SCALEDecoder"
+import { PolkadotRewardDestination } from "./staking/PolkadotRewardDestination"
+import { SCALEEnum } from "../codec/type/SCALEEnum"
+import { SCALEArray } from "../codec/type/SCALEArray"
 
-export interface PolkadotSpendTransactionArgs {
+interface SpendArgs {
     to: string,
     value: number | BigNumber
 }
 
-export interface PolkadotDelegationTransactionArgs {
-    to: string,
-    conviction: string
+interface BondArgs {
+    controller: string,
+    value: number | BigNumber,
+    payee: PolkadotRewardDestination
+}
+
+interface NominationArgs {
+    targets: string[]
 }
 
 export class PolkadotTransactionMethod extends SCALEClass {
@@ -26,8 +33,11 @@ export class PolkadotTransactionMethod extends SCALEClass {
             case PolkadotTransactionType.SPEND:
                 methodFactory = this.createSpendTransaction
                 break
-            case PolkadotTransactionType.DELEGATION:
-                methodFactory = this.createDelegationTransaction
+            case PolkadotTransactionType.BOND:
+                methodFactory = this.createBondTransaction
+                break
+            case PolkadotTransactionType.NOMINATION:
+                methodFactory = this.createNominationTransaction
                 break
         }
         return methodFactory(moduleIndex, callIndex, args)
@@ -42,10 +52,13 @@ export class PolkadotTransactionMethod extends SCALEClass {
         let args
         switch (type) {
             case PolkadotTransactionType.SPEND:
-                args = decoder.decodeNextObject(PolkadotTransactionMethod.decodeSpendTransactionArgs)
+                args = decoder.decodeNextObject(PolkadotTransactionMethod.decodeSpendArgs)
                 break
-            case PolkadotTransactionType.DELEGATION:
-                args = decoder.decodeNextObject(PolkadotTransactionMethod.decodeDelegationTransactionArgs)
+            case PolkadotTransactionType.BOND:
+                args = decoder.decodeNextObject(PolkadotTransactionMethod.decodeBondArgs)
+                break;
+            case PolkadotTransactionType.NOMINATION:
+                args = decoder.decodeNextObject(PolkadotTransactionMethod.decodeNominationArgs)
                 break
         }
 
@@ -55,7 +68,7 @@ export class PolkadotTransactionMethod extends SCALEClass {
         }
     }
 
-    private static createSpendTransaction(moduleIndex: number, callIndex: number, args: PolkadotSpendTransactionArgs): PolkadotTransactionMethod {
+    private static createSpendTransaction(moduleIndex: number, callIndex: number, args: SpendArgs): PolkadotTransactionMethod {
         if (args.to == undefined || args.value == undefined) {
             throw Error('Incorrect arguments passed for Polkadot spend transaction. Arguments `to` and `value` are required')
         }
@@ -73,25 +86,45 @@ export class PolkadotTransactionMethod extends SCALEClass {
         )
     }
 
-    private static createDelegationTransaction(moduleIndex: number, callIndex: number, args: PolkadotDelegationTransactionArgs): PolkadotTransactionMethod {
-        if (args.to == undefined || args.conviction == undefined) {
-            throw Error('Incorrect arguments passed for Polkadot spend transaction. Arguments `to` and `conviction` are required')
+    private static createBondTransaction(moduleIndex: number, callIndex: number, args: BondArgs): PolkadotTransactionMethod {
+        if (args.controller === undefined || args.value === undefined || args.payee === undefined) {
+            throw Error('Incorrect arguments passed for Polkadot bond transaction. Arguments `controller`, `value` and `payee` are required')
         }
 
-        const to = SCALEAccountId.from(args.to)
-        const conviction = SCALEInt.from(args.conviction)
+        const controller = SCALEAddress.from(args.controller)
+        const value = SCALECompactInt.from(args.value)
+        const payee = SCALEEnum.from(args.payee)
+
         return new PolkadotTransactionMethod(
-            SCALEInt.from(moduleIndex), 
-            SCALEInt.from(callIndex), 
-            new Map(Object.entries({ to, conviction })), 
-            () => ({ 
-                to: [to.asAddress()], 
-                amount: conviction.toString() 
+            SCALEInt.from(moduleIndex),
+            SCALEInt.from(callIndex),
+            new Map(Object.entries({ controller, value, payee })),
+            () => ({
+                to: [controller.asAddress()],
+                amount: value.toString()
             })
         )
     }
 
-    private static decodeSpendTransactionArgs(raw: string): SCALEDecodeResult<PolkadotSpendTransactionArgs> {
+    private static createNominationTransaction(moduleIndex: number, callIndex: number, args: NominationArgs): PolkadotTransactionMethod {
+        if (args.targets == undefined) {
+            throw Error('Incorrect arguments passed for Polkadot delegation transaction. Argument `target` is required')
+        }
+
+        const targets = SCALEArray.from(args.targets.map(target => SCALEAddress.from(target)))
+
+        return new PolkadotTransactionMethod(
+            SCALEInt.from(moduleIndex), 
+            SCALEInt.from(callIndex), 
+            new Map(Object.entries({ targets })), 
+            () => ({ 
+                to: targets.elements.map(target => target.asAddress()),
+                amount: ''
+            })
+        )
+    }
+
+    private static decodeSpendArgs(raw: string): SCALEDecodeResult<SpendArgs> {
         const decoder = new SCALEDecoder(raw)
 
         const destination = decoder.decodeNextAddress()
@@ -106,17 +139,32 @@ export class PolkadotTransactionMethod extends SCALEClass {
         }
     }
 
-    private static decodeDelegationTransactionArgs(raw: string): SCALEDecodeResult<PolkadotDelegationTransactionArgs> {
+    private static decodeBondArgs(raw: string): SCALEDecodeResult<BondArgs> {
         const decoder = new SCALEDecoder(raw)
 
-        const to = decoder.decodeNextAddress()
-        const conviction = decoder.decodeNextInt(8)
+        const controller = decoder.decodeNextAddress()
+        const value = decoder.decodeNextCompactInt()
+        const payee = decoder.decodeNextEnum(value => PolkadotRewardDestination[PolkadotRewardDestination[value]])
 
         return {
-            bytesDecoded: to.bytesDecoded + conviction.bytesDecoded,
+            bytesDecoded: controller.bytesDecoded + value.bytesDecoded + payee.bytesDecoded,
             decoded: {
-                to: to.decoded.accountId,
-                conviction: conviction.decoded.toString()
+                controller: controller.decoded.accountId,
+                value: value.decoded.value,
+                payee: payee.decoded.value
+            }
+        }
+    }
+
+    private static decodeNominationArgs(raw: string): SCALEDecodeResult<NominationArgs> {
+        const decoder = new SCALEDecoder(raw)
+
+        const targets = decoder.decodeNextArray(SCALEAddress.decode)
+
+        return {
+            bytesDecoded: targets.bytesDecoded,
+            decoded: {
+                targets: targets.decoded.elements.map(target => target.accountId)
             }
         }
     }

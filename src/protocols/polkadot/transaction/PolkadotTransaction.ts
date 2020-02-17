@@ -30,7 +30,7 @@ interface PolkadotTransactionConfig {
 }
 
 export enum PolkadotTransactionType {
-    SPEND, DELEGATION
+    SPEND, BOND, NOMINATION
 }
 
 export class PolkadotTransaction extends SCALEClass {

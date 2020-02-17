@@ -20,7 +20,9 @@ const RPC_ENDPOINTS = {
 
 const RPC_EXTRINSIC = {
     TRANSFER: 'balances_transfer',
-    DELEGATE: 'democracy_delegate'
+    BOND: 'staking_bond',
+    UNBOND: 'staking_unbond',
+    NOMINATION: 'staking_nominate'
 }
 
 class StorageKeyUtil {
@@ -76,8 +78,11 @@ export class PolkadotNodeClient {
             case PolkadotTransactionType.SPEND:
                 rpcEndpoint = RPC_EXTRINSIC.TRANSFER
                 break
-            case PolkadotTransactionType.DELEGATION:
-                rpcEndpoint = RPC_EXTRINSIC.DELEGATE
+            case PolkadotTransactionType.BOND:
+                rpcEndpoint = RPC_EXTRINSIC.BOND
+                break
+            case PolkadotTransactionType.NOMINATION:
+                rpcEndpoint = RPC_EXTRINSIC.NOMINATION
                 break
         }
 
