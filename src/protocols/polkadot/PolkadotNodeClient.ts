@@ -22,8 +22,17 @@ const RPC_EXTRINSIC = {
     TRANSFER: 'balances_transfer',
     BOND: 'staking_bond',
     UNBOND: 'staking_unbond',
-    NOMINATION: 'staking_nominate'
+    NOMINATE: 'staking_nominate',
+    CHILL: 'staking_chill'
 }
+
+const methodEndpoints: Map<PolkadotTransactionType, string> = new Map([
+    [PolkadotTransactionType.TRANSFER, RPC_EXTRINSIC.TRANSFER],
+    [PolkadotTransactionType.BOND, RPC_EXTRINSIC.BOND],
+    [PolkadotTransactionType.UNBOND, RPC_EXTRINSIC.UNBOND],
+    [PolkadotTransactionType.NOMINATE, RPC_EXTRINSIC.NOMINATE],
+    [PolkadotTransactionType.STOP_NOMINATING, RPC_EXTRINSIC.CHILL]
+])
 
 class StorageKeyUtil {
     private static readonly PREFIX_TRIE_HASH_SIZE = 128
@@ -73,24 +82,12 @@ export class PolkadotNodeClient {
     }
 
     public async getTransactionMetadata(type: PolkadotTransactionType): Promise<ExtrinsicId | null> {
-        let rpcEndpoint: string
-        switch (type) {
-            case PolkadotTransactionType.SPEND:
-                rpcEndpoint = RPC_EXTRINSIC.TRANSFER
-                break
-            case PolkadotTransactionType.BOND:
-                rpcEndpoint = RPC_EXTRINSIC.BOND
-                break
-            case PolkadotTransactionType.NOMINATION:
-                rpcEndpoint = RPC_EXTRINSIC.NOMINATION
-                break
-        }
-
+        const rpcEndpoint = methodEndpoints.get(type) || ''
         try {
             if (!this.metadata) {
                 await this.fetchMetadata()
-            } 
-            
+            }
+
             return (this.metadata && this.metadata.hasExtrinsicId(rpcEndpoint)) 
                 ? this.metadata!.getExtrinsicId(rpcEndpoint) 
                 : null

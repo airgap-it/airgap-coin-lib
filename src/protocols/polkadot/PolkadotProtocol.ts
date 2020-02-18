@@ -11,7 +11,7 @@ import { UnsignedPolkadotTransaction, RawPolkadotTransaction } from '../../seria
 import { SignedPolkadotTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-polkadot'
 import { sign } from './transaction/sign'
 import { PolkadotTransactionPayload } from './transaction/PolkadotTransactionPayload'
-import { PolkadotRewardDestination } from './transaction/staking/PolkadotRewardDestination'
+import { PolkadotRewardDestination } from './staking/PolkadotRewardDestination'
 import { isString } from 'util'
 
 export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtocol {
@@ -146,10 +146,10 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
             return Promise.reject('only single transactions are supported')
         }
 
-        return this.prepareTransaction(PolkadotTransactionType.SPEND, publicKey, fee, { to: recipients[0], value: new BigNumber(values[0]) })
+        return this.prepareTransaction(PolkadotTransactionType.TRANSFER, publicKey, fee, { to: recipients[0], value: new BigNumber(values[0]) })
     }
 
-    public prepareBondTransactionFromPublicKey(
+    public prepareBondTransaction(
         publicKey: string,
         controller: string, 
         value: string | number | BigNumber, 
@@ -163,8 +163,18 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
         })
     }
 
-    public prepareNominationFromPublicKey(publicKey: string, targets: string[], fee: string | number | BigNumber): Promise<RawPolkadotTransaction> {
-        return this.prepareTransaction(PolkadotTransactionType.NOMINATION, publicKey, fee, { targets })
+    public prepareUnbondTransaction(publicKey: string, value: string | number | BigNumber, fee: string | number | BigNumber): Promise<RawPolkadotTransaction> {
+        return this.prepareTransaction(PolkadotTransactionType.UNBOND, publicKey, fee, {
+            value: BigNumber.isBigNumber(value) ? value : new BigNumber(value)
+        })
+    }
+
+    public prepareNominateTransaction(publicKey: string, targets: string[], fee: string | number | BigNumber): Promise<RawPolkadotTransaction> {
+        return this.prepareTransaction(PolkadotTransactionType.NOMINATE, publicKey, fee, { targets })
+    }
+
+    public prepareStopNominatingTransaction(publicKey: string, fee: string | number | BigNumber): Promise<RawPolkadotTransaction> {
+        return this.prepareTransaction(PolkadotTransactionType.STOP_NOMINATING, publicKey, fee)
     }
     
     public async broadcastTransaction(rawTransaction: string): Promise<string> {
@@ -182,7 +192,7 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
         throw new Error('Method not implemented.');
     }
 
-    private async prepareTransaction(type: PolkadotTransactionType, publicKey: string, fee: string | number | BigNumber, args: any): Promise<RawPolkadotTransaction> {
+    private async prepareTransaction(type: PolkadotTransactionType, publicKey: string, fee: string | number | BigNumber, args: any = {}): Promise<RawPolkadotTransaction> {
         const lastHash = await this.nodeClient.getLastBlockHash()
         const genesisHash = await this.nodeClient.getFirstBlockHash()
 

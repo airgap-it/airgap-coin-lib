@@ -1,5 +1,5 @@
 import { SCALEClass } from "../codec/type/SCALEClass"
-import { PolkadotTransactionMethod } from "./PolkadotTransactionMethod"
+import { PolkadotTransactionMethod } from "./method/PolkadotTransactionMethod"
 import { SCALEEra } from "../codec/type/SCALEEra"
 import BigNumber from "../../../dependencies/src/bignumber.js-9.0.0/bignumber"
 import { SCALECompactInt } from "../codec/type/SCALECompactInt"

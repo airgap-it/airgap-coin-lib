@@ -1,4 +1,4 @@
-import { PolkadotTransactionMethod } from "./PolkadotTransactionMethod"
+import { PolkadotTransactionMethod } from "./method/PolkadotTransactionMethod"
 import BigNumber from "../../../dependencies/src/bignumber.js-9.0.0/bignumber"
 import { PolkadotSignature, PolkadotSignatureType } from "./PolkadotSignature"
 import { IAirGapTransaction } from "../../../interfaces/IAirGapTransaction"
@@ -30,7 +30,7 @@ interface PolkadotTransactionConfig {
 }
 
 export enum PolkadotTransactionType {
-    SPEND, BOND, NOMINATION
+    TRANSFER, BOND, UNBOND, NOMINATE, STOP_NOMINATING
 }
 
 export class PolkadotTransaction extends SCALEClass {
@@ -113,7 +113,8 @@ export class PolkadotTransaction extends SCALEClass {
 
     public toAirGapTransaction(): Partial<IAirGapTransaction> {
         return {
-            from: [encodeAddress(this.signer.accountId)],
+            from: [encodeAddress(this.signer.asAddress())],
+            to: [encodeAddress(this.signer.asAddress())],
             fee: this.tip.toString(),
             transactionDetails: JSON.parse(this.toString()),
             ...this.method.toAirGapTransactionPart()
