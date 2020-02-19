@@ -15,7 +15,7 @@ export class SCALECompactInt extends SCALEType {
         let bytes: number
         let metaBits: number
         if (mode === 3) {
-            bytes = parseInt(firstByte.toString(2).substr(2, 6), 2) + 5 // + 4 bytes of original length + 1 byte of meta
+            bytes = parseInt(firstByte.toString(2).slice(0, -2), 2) + 5 // + 4 bytes of original length + 1 byte of meta
             metaBits = 8
         } else {
             bytes = 1 << mode
