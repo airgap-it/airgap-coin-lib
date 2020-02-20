@@ -2,7 +2,6 @@ import { PolkadotTransactionMethod } from "./method/PolkadotTransactionMethod"
 import BigNumber from "../../../dependencies/src/bignumber.js-9.0.0/bignumber"
 import { PolkadotSignature, PolkadotSignatureType } from "./PolkadotSignature"
 import { IAirGapTransaction } from "../../../interfaces/IAirGapTransaction"
-import { encodeAddress } from "../utils/address"
 import { SCALEClass } from "../codec/type/SCALEClass"
 import { SCALEAddress } from "../codec/type/SCALEAddress"
 import { SCALECompactInt } from "../codec/type/SCALECompactInt"
@@ -13,7 +12,7 @@ import { ExtrinsicId } from "../metadata/Metadata"
 import { SCALEDecoder } from "../codec/SCALEDecoder"
 import { SCALEHash } from "../codec/type/SCALEHash"
 import { stripHexPrefix } from "../../../utils/hex"
-import { RawPolkadotTransaction } from "../../../serializer/schemas/definitions/transaction-sign-request-polkadot"
+import { RawPolkadotTransaction } from "../../../serializer/types"
 
 const VERSION = 4
 const BIT_SIGNED = 128
@@ -113,8 +112,8 @@ export class PolkadotTransaction extends SCALEClass {
 
     public toAirGapTransaction(): Partial<IAirGapTransaction> {
         return {
-            from: [encodeAddress(this.signer.asAddress())],
-            to: [encodeAddress(this.signer.asAddress())],
+            from: [this.signer.asAddress()],
+            to: [this.signer.asAddress()],
             fee: this.tip.toString(),
             transactionDetails: JSON.parse(this.toString()),
             ...this.method.toAirGapTransactionPart()

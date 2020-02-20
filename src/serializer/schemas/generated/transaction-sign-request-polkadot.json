@@ -1,26 +1,7 @@
 {
+  "$ref": "#/definitions/UnsignedPolkadotTransaction",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
-    "RawPolkadotTransaction": {
-      "additionalProperties": false,
-      "properties": {
-        "encoded": {
-          "type": "string"
-        },
-        "payload": {
-          "type": "string"
-        },
-        "type": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "type",
-        "encoded",
-        "payload"
-      ],
-      "type": "object"
-    },
     "UnsignedPolkadotTransaction": {
       "additionalProperties": false,
       "properties": {
@@ -31,7 +12,24 @@
           "type": "string"
         },
         "transaction": {
-          "$ref": "#/definitions/RawPolkadotTransaction"
+          "additionalProperties": false,
+          "properties": {
+            "encoded": {
+              "type": "string"
+            },
+            "payload": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "type",
+            "encoded",
+            "payload"
+          ],
+          "type": "object"
         }
       },
       "required": [

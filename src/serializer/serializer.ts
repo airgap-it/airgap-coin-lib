@@ -15,6 +15,7 @@ import { TezosTransactionValidator } from './unsigned-transactions/tezos-transac
 import { TransactionValidator } from './validators/transactions.validator'
 import { TezosBTCTransactionValidator } from './unsigned-transactions/xtz-btc-transactions.validator'
 import { CosmosTransactionValidator } from './unsigned-transactions/cosmos-transactions.validator'
+import { PolkadotTransactionValidator } from './unsigned-transactions/polkadot-transactions.validator'
 
 const accountShareResponse: SchemaRoot = require('./schemas/generated/account-share-response.json')
 
@@ -115,6 +116,7 @@ export class Serializer {
       ae: AeternityTransactionValidator,
       xtz: TezosTransactionValidator,
       cosmos: CosmosTransactionValidator,
+      polkadot: PolkadotTransactionValidator,
       'xtz-btc': TezosBTCTransactionValidator
     }
 

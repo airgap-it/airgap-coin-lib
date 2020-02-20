@@ -7,12 +7,13 @@ import { createSr25519KeyPair } from '../../utils/sr25519'
 import { encodeAddress, decodeAddress } from './utils/address'
 import { IAirGapTransaction } from '../..'
 import { PolkadotTransaction, PolkadotTransactionType } from './transaction/PolkadotTransaction'
-import { UnsignedPolkadotTransaction, RawPolkadotTransaction } from '../../serializer/schemas/definitions/transaction-sign-request-polkadot'
+import { UnsignedPolkadotTransaction } from '../../serializer/schemas/definitions/transaction-sign-request-polkadot'
 import { SignedPolkadotTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-polkadot'
 import { sign } from './transaction/sign'
 import { PolkadotTransactionPayload } from './transaction/PolkadotTransactionPayload'
 import { PolkadotRewardDestination } from './staking/PolkadotRewardDestination'
 import { isString } from 'util'
+import { RawPolkadotTransaction } from '../../serializer/types'
 
 export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtocol {
     symbol: string = 'DOT'
@@ -176,7 +177,13 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
     public prepareStopNominatingTransaction(publicKey: string, fee: string | number | BigNumber): Promise<RawPolkadotTransaction> {
         return this.prepareTransaction(PolkadotTransactionType.STOP_NOMINATING, publicKey, fee)
     }
-    
+
+    public prepareTransactionsFromPublicKey(publicKey: string, txConfig: { type: PolkadotTransactionType, fee: string | number | BigNumber, args: any }[]): Promise<RawPolkadotTransaction[]> {
+        return Promise.all(
+            txConfig.map((tx, index) => this.prepareTransaction(tx.type, publicKey, tx.fee, tx.args, index))
+        )
+    }
+
     public async broadcastTransaction(rawTransaction: string): Promise<string> {
         const encoded = (JSON.parse(rawTransaction) as RawPolkadotTransaction).encoded
         const result = await this.nodeClient.submitTransaction(encoded)
@@ -192,12 +199,12 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
         throw new Error('Method not implemented.');
     }
 
-    private async prepareTransaction(type: PolkadotTransactionType, publicKey: string, fee: string | number | BigNumber, args: any = {}): Promise<RawPolkadotTransaction> {
+    private async prepareTransaction(type: PolkadotTransactionType, publicKey: string, fee: string | number | BigNumber, args: any = {}, index: number | BigNumber = 0): Promise<RawPolkadotTransaction> {
         const lastHash = await this.nodeClient.getLastBlockHash()
         const genesisHash = await this.nodeClient.getFirstBlockHash()
 
         const chainHeight = await this.nodeClient.getCurrentHeight()
-        const nonce = (await this.nodeClient.getNonce(publicKey)).toNumber()
+        const nonce = (await this.nodeClient.getNonce(publicKey)).plus(index)
         const specVersion = await this.nodeClient.getSpecVersion()
         const methodId = await this.nodeClient.getTransactionMetadata(type)
 
@@ -222,7 +229,7 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
 
         return {
             type: type.toString(),
-            encoded: transaction.encode({ withPrefix: true }),
+            encoded: transaction.encode(),
             payload: payload.encode()
         }
     }
