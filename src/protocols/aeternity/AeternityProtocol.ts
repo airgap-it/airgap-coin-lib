@@ -15,6 +15,7 @@ import { padStart } from '../../utils/padStart'
 import { EthereumUtils } from '../ethereum/utils/utils'
 import { CurrencyUnit, ICoinProtocol } from '../ICoinProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
+import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
 
 export class AeternityProtocol extends NonExtendedProtocol implements ICoinProtocol {
   public symbol: string = 'AE'
@@ -64,6 +65,16 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
 
   public async getBlockExplorerLinkForTxId(txId: string): Promise<string> {
     return `${this.blockExplorer}/transactions/{{txId}}/`.replace('{{txId}}', txId)
+  }
+
+  public async getPublicKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
+    const secret = mnemonicToSeed(mnemonic, password)
+    return this.getPublicKeyFromHexSecret(secret, derivationPath)
+  }
+
+  public async getPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<Buffer> {
+    const secret = mnemonicToSeed(mnemonic, password)
+    return this.getPrivateKeyFromHexSecret(secret, derivationPath)
   }
 
   /**

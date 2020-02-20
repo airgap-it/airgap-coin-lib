@@ -1,6 +1,5 @@
 import { EthereumProtocol } from '../..'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
-import * as BIP39 from '../../dependencies/src/bip39-2.5.0/index'
 import {
   isArray,
   isDate,
@@ -164,7 +163,7 @@ validators.isValidBitcoinInput = (ins: unknown) => {
       const protocol = new BitcoinProtocol()
       try {
         const mnemonic = 'spell device they juice trial skirt amazing boat badge steak usage february virus art survey'
-        protocol.getPublicKeyFromHexSecret(BIP39.mnemonicToSeedHex(mnemonic), value.derivationPath)
+        protocol.getPublicKeyFromMnemonic(mnemonic, value.derivationPath)
       } catch (error) {
         return 'invalid derivation path'
       }

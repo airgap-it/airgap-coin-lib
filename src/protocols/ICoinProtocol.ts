@@ -44,10 +44,16 @@ export interface ICoinProtocol {
   getBlockExplorerLinkForAddress(address: string): Promise<string>
   getBlockExplorerLinkForTxId(txId: string): Promise<string>
 
+  getPublicKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string>
+  getPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<Buffer>
+
+  getExtendedPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string>
+
   getPublicKeyFromHexSecret(secret: string, derivationPath: string): Promise<string>
   getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<Buffer>
 
   getExtendedPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<string>
+  
   getAddressFromPublicKey(publicKey: string): Promise<string>
   getAddressesFromPublicKey(publicKey: string): Promise<string[]> // broadcaster knows this (both broadcaster and signer)
   getAddressFromExtendedPublicKey(

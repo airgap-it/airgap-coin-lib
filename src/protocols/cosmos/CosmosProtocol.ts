@@ -80,9 +80,9 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
     return `${this.blockExplorer}/txs/${txId}`
   }
 
-  public generateKeyPair(mnemonic: string, derivationPath: string = this.standardDerivationPath): KeyPair {
+  public generateKeyPair(mnemonic: string, derivationPath: string = this.standardDerivationPath, password?: string): KeyPair {
     validateMnemonic(mnemonic)
-    const seed = mnemonicToSeed(mnemonic)
+    const seed = mnemonicToSeed(mnemonic, password)
     const node = fromSeed(seed)
 
     return this.generateKeyPairFromNode(node, derivationPath)
@@ -99,6 +99,14 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
       publicKey: keys.publicKey,
       privateKey
     }
+  }
+
+  public async getPublicKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
+    return this.generateKeyPair(mnemonic, derivationPath, password).publicKey.toString('hex')
+  }
+  
+  public async getPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<Buffer> {
+    return this.generateKeyPair(mnemonic, derivationPath, password).privateKey
   }
 
   public async getPublicKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {

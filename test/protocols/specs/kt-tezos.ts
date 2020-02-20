@@ -45,7 +45,7 @@ export class KtTezosTestProtocolSpec extends TestProtocolSpec {
     }
   ]
 
-  public seed() {
-    return '5b72ef2589b7bd6e35c349ce682cb574f09726e171f2ea166982bf66a1a815fabb9dcbed182b50a3468f8af7ce1f6a3ca739dbde4241b8b674c25b9b2cc5489c'
+  public mnemonic(): string {
+    return 'leopard crouch simple blind castle they elder enact slow rate mad blanket saddle tail silk fury quarter obscure interest exact veteran volcano fabric cherry'
   }
 }

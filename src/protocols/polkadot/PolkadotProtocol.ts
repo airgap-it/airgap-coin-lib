@@ -14,6 +14,7 @@ import { PolkadotTransactionPayload } from './transaction/PolkadotTransactionPay
 import { PolkadotRewardDestination } from './staking/PolkadotRewardDestination'
 import { isString } from 'util'
 import { RawPolkadotTransaction } from '../../serializer/types'
+import { bip39ToMiniSecret } from '@polkadot/wasm-crypto'
 
 export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtocol {
     symbol: string = 'DOT'
@@ -78,6 +79,16 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
 
     public async getBlockExplorerLinkForTxId(txId: string): Promise<string> {
         return `${this.blockExplorer}/extrinsic/${txId}`
+    }
+
+    public async getPublicKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
+        const secret = bip39ToMiniSecret(mnemonic, password || '')
+        return this.getPublicKeyFromHexSecret(Buffer.from(secret).toString('hex'), derivationPath)
+    }
+    
+    public async getPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<Buffer> {
+        const secret = bip39ToMiniSecret(mnemonic, password || '')
+        return this.getPrivateKeyFromHexSecret(Buffer.from(secret).toString('hex'), derivationPath)
     }
 
     public async getPublicKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {

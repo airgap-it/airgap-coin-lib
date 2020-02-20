@@ -1,6 +1,10 @@
 import { IAirGapTransaction } from '../interfaces/IAirGapTransaction'
 
 export abstract class NonExtendedProtocol {
+  public getExtendedPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
+    throw Promise.reject('extended private key support not implemented')
+  }
+
   public getExtendedPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
     throw Promise.reject('extended private key support not implemented')
   }

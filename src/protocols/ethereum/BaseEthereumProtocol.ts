@@ -9,6 +9,7 @@ import { SignedEthereumTransaction } from '../../serializer/schemas/definitions/
 import { RawEthereumTransaction } from '../../serializer/types'
 import { getSubProtocolsByIdentifier } from '../../utils/subProtocols'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
+import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
 
 import { EthereumInfoClient } from './clients/info-clients/InfoClient'
 import { EthereumNodeClient } from './clients/node-clients/NodeClient'
@@ -82,6 +83,20 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
 
   public async getBlockExplorerLinkForTxId(txId: string): Promise<string> {
     return `${this.blockExplorer}/tx/{{txId}}`.replace('{{txId}}', txId)
+  }
+
+  public async getPublicKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
+    const secret = mnemonicToSeed(mnemonic, password)
+    return this.getPublicKeyFromHexSecret(secret, derivationPath)
+  }
+  
+  public async getPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<Buffer> {
+    const secret = mnemonicToSeed(mnemonic, password)
+    return this.getPrivateKeyFromHexSecret(secret, derivationPath)
+  }
+
+  public async getExtendedPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
+    throw new Error('extended private key support for ether not implemented')
   }
 
   public async getPublicKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {

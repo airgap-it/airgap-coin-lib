@@ -104,7 +104,7 @@ describe(`ICoinProtocol Ethereum - Custom Tests`, () => {
 describe(`signing should handle hex and decimal values`, async () => {
   it('should derive the same tx amount from a signed and an unsigned tx', async () => {
     try {
-      const privateKey = await ethProtocolSpec.lib.getPrivateKeyFromHexSecret(ethProtocolSpec.seed(), ethProtocolSpec.lib.standardDerivationPath)
+      const privateKey = await ethProtocolSpec.lib.getPrivateKeyFromMnemonic(ethProtocolSpec.mnemonic(), ethProtocolSpec.lib.standardDerivationPath)
       // const signedTxs: any[] = []
 
       for (const tx of txs) {

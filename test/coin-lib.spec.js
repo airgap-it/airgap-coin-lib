@@ -424,9 +424,7 @@ describe('Secret to Public Key Logic', function() {
     const derivationPath = `m/44'/60'/0'/0/0'`
     const publicKey = '0x03529b67e7631415fe420b7dc4ef7da2e3d3794ebd12d0ec26e756106f24bc05f4'
 
-    const hexSeed = BIP39.mnemonicToSeed(mnemonicPhrase)
-
-    const publicKeyBuffer = await new CoinLib.EthereumProtocol().getPublicKeyFromHexSecret(hexSeed, derivationPath)
+    const publicKeyBuffer = await new CoinLib.EthereumProtocol().getPublicKeyFromMnemonic(mnemonicPhrase, derivationPath)
     assert.equal('0x' + publicKeyBuffer.toString('hex'), publicKey)
   })
 
@@ -435,10 +433,8 @@ describe('Secret to Public Key Logic', function() {
     const derivationPath = `m/44'/0'/0'`
     const publicKey = 'xpub6BhAi6AdpiSy91gRMSkgHARUukwbt4tQxGR3uf6La7Gtzw1zRmjkeVtA7a7EGHBR11uiQUtTJHbAsLQvnSDDn652j8aDwuWceJkZqphSvnX'
 
-    const hexSeed = BIP39.mnemonicToSeed(mnemonicPhrase)
-
     const bitcoin = new CoinLib.BitcoinProtocol()
-    const result = await bitcoin.getPublicKeyFromHexSecret(hexSeed, derivationPath)
+    const result = await bitcoin.getPublicKeyFromMnemonic(mnemonicPhrase, derivationPath)
 
     assert.equal(result, publicKey)
     assert.equal(await bitcoin.getAddressFromExtendedPublicKey(result, 0, 0), '1DC2NBm8L3QoFhRL9dkrFxFLJjkH2GG9HL')
@@ -451,9 +447,7 @@ describe('Secret to Private Key Logic', function() {
     const derivationPath = `m/44'/60'/0'/0/0`
     const privateKey = '0x0134c240a31c801e65ece657bb695e232de25232b82ff29238d344309ec6af29'
 
-    const hexSeed = BIP39.mnemonicToSeed(mnemonicPhrase)
-
-    const privateKeyBuffer = await new CoinLib.EthereumProtocol().getPrivateKeyFromHexSecret(hexSeed, derivationPath)
+    const privateKeyBuffer = await new CoinLib.EthereumProtocol().getPrivateKeyFromMnemonic(mnemonicPhrase, derivationPath)
     assert.equal('0x' + privateKeyBuffer.toString('hex'), privateKey)
   })
 
@@ -462,10 +456,8 @@ describe('Secret to Private Key Logic', function() {
     const derivationPath = `m/44'/0'/0'`
     const privateKey = 'xprv9xhpJadjzLtfvXbxFRDfv2UkMj77UcAZb3VT7Ggj1mjv88gqtERW6hZgGGwAWaqdUZ26s6UPcUugMpjSTWm1gay1KkqQxtBf45fLyAHn7bX'
 
-    const hexSeed = BIP39.mnemonicToSeed(mnemonicPhrase)
-
     const bitcoin = new CoinLib.BitcoinProtocol()
-    const result = await bitcoin.getExtendedPrivateKeyFromHexSecret(hexSeed, derivationPath)
+    const result = await bitcoin.getExtendedPrivateKeyFromMnemonic(mnemonicPhrase, derivationPath)
 
     assert.equal(result, privateKey)
     assert.equal(await bitcoin.getAddressFromExtendedPublicKey(result, 0, 0), '1DC2NBm8L3QoFhRL9dkrFxFLJjkH2GG9HL')

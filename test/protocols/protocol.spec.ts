@@ -24,8 +24,8 @@ const expect = chai.expect
 /**
  * We currently test the following ICoinProtocol methods
  *
- * - getPublicKeyFromHexSecret
- * - getPrivateKeyFromHexSecret
+ * - getPublicKeyFromMnemonic
+ * - getPrivateKeyFromMnemonic
  * - getAddressFromPublicKey
  * - prepareTransactionFromPublicKey
  * - signWithPrivateKey
@@ -103,13 +103,13 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
         sinon.restore()
       })
 
-      it('getPublicKeyFromHexSecret - should be able to create a public key from a corresponding hex secret', async () => {
-        const publicKey = await protocol.lib.getPublicKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
+      it('getPublicKeyFromMnemonic - should be able to create a public key from a corresponding mnemonic', async () => {
+        const publicKey = await protocol.lib.getPublicKeyFromMnemonic(protocol.mnemonic(), protocol.lib.standardDerivationPath)
         expect(publicKey).to.equal(protocol.wallet.publicKey)
       })
 
-      itIf(!protocol.lib.supportsHD, 'getPrivateKeyFromHexSecret - should be able to create a private key from a hex secret', async () => {
-        const privateKey = await protocol.lib.getPrivateKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
+      itIf(!protocol.lib.supportsHD, 'getPrivateKeyFromMnemonic - should be able to create a private key from a mnemonic', async () => {
+        const privateKey = await protocol.lib.getPrivateKeyFromMnemonic(protocol.mnemonic(), protocol.lib.standardDerivationPath)
 
         // check if privateKey is a Buffer
         expect(privateKey).to.be.instanceof(Buffer)
@@ -120,9 +120,9 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
 
       itIf(
         protocol.lib.supportsHD,
-        'getExtendedPrivateKeyFromHexSecret - should be able to create ext private key from hex secret',
+        'getExtendedPrivateKeyFromMnemonic - should be able to create ext private key from mnemonic',
         async () => {
-          const privateKey = await protocol.lib.getExtendedPrivateKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
+          const privateKey = await protocol.lib.getExtendedPrivateKeyFromMnemonic(protocol.mnemonic(), protocol.lib.standardDerivationPath)
 
           // check if privateKey matches to supplied one
           expect(privateKey).to.equal(protocol.wallet.privateKey)
@@ -133,7 +133,7 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
         !protocol.lib.supportsHD,
         'getAddressFromPublicKey - should be able to create a valid address from a supplied publicKey',
         async () => {
-          const publicKey = await protocol.lib.getPublicKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
+          const publicKey = await protocol.lib.getPublicKeyFromMnemonic(protocol.mnemonic(), protocol.lib.standardDerivationPath)
           const address = await protocol.lib.getAddressFromPublicKey(publicKey)
 
           // check if address format matches
@@ -148,7 +148,7 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
         protocol.lib.supportsHD,
         'getAddressFromExtendedPublicKey - should be able to create a valid address from ext publicKey',
         async () => {
-          const publicKey = await protocol.lib.getPublicKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
+          const publicKey = await protocol.lib.getPublicKeyFromMnemonic(protocol.mnemonic(), protocol.lib.standardDerivationPath)
           const address = await protocol.lib.getAddressFromExtendedPublicKey(publicKey, 0, 0)
 
           // check if address format matches
@@ -241,7 +241,7 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
       })
 
       itIf(!protocol.lib.supportsHD, 'signWithPrivateKey - Is able to sign a transaction using a PrivateKey', async () => {
-        const privateKey = await protocol.lib.getPrivateKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
+        const privateKey = await protocol.lib.getPrivateKeyFromMnemonic(protocol.mnemonic(), protocol.lib.standardDerivationPath)
         const txs: any[] = []
 
         for (const { unsignedTx } of protocol.txs) {
@@ -255,7 +255,7 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
       })
 
       itIf(protocol.lib.supportsHD, 'signWithExtendedPrivateKey - Is able to sign a transaction using a PrivateKey', async () => {
-        const privateKey = await protocol.lib.getExtendedPrivateKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
+        const privateKey = await protocol.lib.getExtendedPrivateKeyFromMnemonic(protocol.mnemonic(), protocol.lib.standardDerivationPath)
         const txs: any[] = []
 
         for (const { unsignedTx } of protocol.txs) {
@@ -348,7 +348,7 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
   //   })
 
   //   itIf(protocol.messages, 'signMessage - Is able to sign a message using a PrivateKey', async () => {
-  //     // const privateKey = protocol.lib.getPrivateKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
+  //     // const privateKey = protocol.lib.getPrivateKeyFromMnemonic(protocol.mnemonic(), protocol.lib.standardDerivationPath)
 
   //     protocol.messages.forEach(async messageObject => {
   //       try {
@@ -362,8 +362,8 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
   //   })
 
   //   itIf(protocol.messages, 'verifyMessage - Is able to verify a message using a PublicKey', async () => {
-  //     // const privateKey = protocol.lib.getPrivateKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
-  //     // const publicKey = protocol.lib.getPublicKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
+  //     // const privateKey = protocol.lib.getPrivateKeyFromMnemonic(protocol.mnemonic(), protocol.lib.standardDerivationPath)
+  //     // const publicKey = protocol.lib.getPublicKeyFromMnemonic(protocol.mnemonic(), protocol.lib.standardDerivationPath)
   //     // const publicKeyBuffer = Buffer.from(publicKey, 'hex')
 
   //     protocol.messages.forEach(async messageObject => {
@@ -384,8 +384,8 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
   //   })
 
   //   itIf(protocol.messages, 'signMessage and verifyMessage - Is able to sign and verify a message', async () => {
-  //     const privateKey = protocol.lib.getPrivateKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
-  //     const publicKey = protocol.lib.getPublicKeyFromHexSecret(protocol.seed(), protocol.lib.standardDerivationPath)
+  //     const privateKey = protocol.lib.getPrivateKeyFromMnemonic(protocol.mnemonic(), protocol.lib.standardDerivationPath)
+  //     const publicKey = protocol.lib.getPublicKeyFromMnemonic(protocol.mnemonic(), protocol.lib.standardDerivationPath)
   //     const publicKeyBuffer = Buffer.from(publicKey, 'hex')
 
   //     protocol.messages.forEach(async messageObject => {

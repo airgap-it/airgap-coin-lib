@@ -10,6 +10,7 @@ import { UnsignedTransaction } from '../../serializer/schemas/definitions/transa
 import { SignedBitcoinTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-bitcoin'
 import { RawBitcoinTransaction } from '../../serializer/types'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
+import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
 
 const DUST_AMOUNT: number = 50
 
@@ -71,6 +72,21 @@ export class BitcoinProtocol implements ICoinProtocol {
 
   public async getBlockExplorerLinkForTxId(txId: string): Promise<string> {
     return `${this.blockExplorer}/tx/{{txId}}/`.replace('{{txId}}', txId)
+  }
+
+  public getPublicKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
+    const secret = mnemonicToSeed(mnemonic, password)
+    return this.getPublicKeyFromHexSecret(secret, derivationPath)
+  }
+  
+  public getPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<Buffer> {
+    const secret = mnemonicToSeed(mnemonic, password)
+    return this.getPrivateKeyFromHexSecret(secret, derivationPath)
+  }
+
+  public getExtendedPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
+    const secret = mnemonicToSeed(mnemonic, password)
+    return this.getExtendedPrivateKeyFromHexSecret(secret, derivationPath)
   }
 
   public async getPublicKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {

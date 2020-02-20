@@ -15,6 +15,7 @@ import { NonExtendedProtocol } from '../NonExtendedProtocol'
 import { TezosRewardsCalculation005 } from './rewardcalculation/TezosRewardCalculation005'
 import { TezosRewardsCalculationDefault } from './rewardcalculation/TezosRewardCalculationDefault'
 import { TezosRewardsCalculation006 } from './rewardcalculation/TezosRewardCalculation006'
+import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
 
 export enum TezosOperationType {
   TRANSACTION = 'transaction',
@@ -239,6 +240,16 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
   public async getBlockExplorerLinkForTxId(txId: string): Promise<string> {
     return `${this.blockExplorer}/transaction/{{txId}}`.replace('{{txId}}', txId)
+  }
+
+  public async getPublicKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
+    const secret = mnemonicToSeed(mnemonic, password)
+    return this.getPublicKeyFromHexSecret(secret, derivationPath)
+  }
+  
+  public async getPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<Buffer> {
+    const secret = mnemonicToSeed(mnemonic, password)
+    return this.getPrivateKeyFromHexSecret(secret, derivationPath)
   }
 
   /**

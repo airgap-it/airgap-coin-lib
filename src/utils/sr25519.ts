@@ -2,6 +2,7 @@ import { waitReady, sr25519KeypairFromSeed, sr25519DeriveKeypairHard, sr25519Der
 
 import { KeyPair } from "../data/KeyPair";
 import { stripHexPrefix, toHexStringRaw, changeEndianness } from './hex';
+import { isString } from 'util';
 
 interface DeriveJunction {
     chainCode: Uint8Array,
@@ -44,11 +45,12 @@ function deriveFromPath(keyPair: Uint8Array, path: string): Buffer {
     return Buffer.from(derived)
 }
 
-export async function createSr25519KeyPair(secret: string, derivationPath: string): Promise<KeyPair> {
+export async function createSr25519KeyPair(secret: string | Uint8Array, derivationPath: string): Promise<KeyPair> {
     assertProperDerivationPath(derivationPath)
     await waitReady()
 
-    const keyPair = sr25519KeypairFromSeed(Buffer.from(stripHexPrefix(secret), 'hex').subarray(0, 32)) // 32-bit seed is required
+    const seed = isString(secret) ? Buffer.from(stripHexPrefix(secret), 'hex') : secret
+    const keyPair = sr25519KeypairFromSeed(seed.subarray(0, 32)) // 32-bit seed is required
     const derivedKeyPair = deriveFromPath(keyPair, derivationPath.slice(2))
 
     return {
