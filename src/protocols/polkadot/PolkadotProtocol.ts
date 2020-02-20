@@ -66,18 +66,18 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
     addressValidationPattern: string = '^[a-km-zA-HJ-NP-Z1-9]+$' // TODO: set length?
     addressPlaceholder: string = 'ABC...'
 
-    blockExplorer: string = '' // TODO: set proper value
+    blockExplorer: string = 'https://polkascan.io/pre/kusama'
 
     constructor(
         private readonly nodeClient: PolkadotNodeClient = new PolkadotNodeClient('http://localhost:9933') // TODO: change to non local address
     ) { super() }
 
     public async getBlockExplorerLinkForAddress(address: string): Promise<string> {
-        throw new Error('Method not implemented.');
+        return `${this.blockExplorer}/account/${decodeAddress(address).toString('hex')}`
     }
 
     public async getBlockExplorerLinkForTxId(txId: string): Promise<string> {
-        throw new Error('Method not implemented.');
+        return `${this.blockExplorer}/extrinsic/${txId}`
     }
 
     public async getPublicKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
