@@ -11,7 +11,7 @@ import { isString } from 'util'
  * Dothereum: 20 (SS58), 21 (AccountId)
  * Substrate: 42 (SS58), 43 (AccountId)
  */
-const SS58_FORMAT = 42 // TODO: verify
+const SS58_FORMAT = 2
 const SS58_PREFIX = 'SS58PRE'
 
 /* 
