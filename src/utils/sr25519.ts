@@ -36,6 +36,10 @@ function createDeriveJunction(value: string): DeriveJunction {
 }
 
 function deriveFromPath(keyPair: Uint8Array, path: string): Buffer {
+    if (path.length == 0) {
+        return Buffer.from(keyPair)
+    }
+    
     const deriveJunctions = path.split('/').map(value => createDeriveJunction(value))
     const derived = deriveJunctions.reduce((pair, junction) => {
         const deriveKeypair = junction.isHard ? sr25519DeriveKeypairHard : sr25519DeriveKeypairSoft

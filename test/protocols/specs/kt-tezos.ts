@@ -32,8 +32,8 @@ export class KtTezosTestProtocolSpec extends TestProtocolSpec {
   }
   public txs = [
     {
-      amount: new BigNumber('1000000'),
-      fee: new BigNumber('1420'),
+      amount: '1000000',
+      fee: '1420',
       to: ['tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'],
       from: ['KT1HncyWvnY9FcoW8A2KYuauEe5qM1U2ntX8'],
       unsignedTx: {
@@ -44,6 +44,10 @@ export class KtTezosTestProtocolSpec extends TestProtocolSpec {
         'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb955080164f6f3de7129aa65bdfb6198f6a94a11b2de63eb008c0bc4fe37bc5000c0843d000091a9d2b003f19cf5a1f38f04f1000ab482d3317600af096707bae7412588422128e08b429fe209f1447854e2c3af1b47e3f656b985854fdfb2376ff7939c2b0aa9f19a517b47419f84eb3e4244d89feb173135110a'
     }
   ]
+
+  public seed(): string {
+    return '5b72ef2589b7bd6e35c349ce682cb574f09726e171f2ea166982bf66a1a815fabb9dcbed182b50a3468f8af7ce1f6a3ca739dbde4241b8b674c25b9b2cc5489c'
+  }
 
   public mnemonic(): string {
     return 'leopard crouch simple blind castle they elder enact slow rate mad blanket saddle tail silk fury quarter obscure interest exact veteran volcano fabric cherry'

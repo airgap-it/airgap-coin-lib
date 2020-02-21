@@ -24,11 +24,11 @@ export class SCALEString extends SCALEType {
 
     private constructor(readonly value: string) { super() }
 
-    public toCamelCase(): string {
+    public toCamelCase(options: { startUpper: boolean } = { startUpper: false }): string {
         return this.value
             .replace(/[-_]+/g, ' ')
             .replace(/(?:^\w|[A-Z]|\b\w)/g, (match, index) => {
-                return index === 0 ? match.toLowerCase() : match.toUpperCase()
+                return (index === 0 && !options.startUpper) ? match.toLowerCase() : match.toUpperCase()
             })
             .replace(/\s+/g, '')
     }

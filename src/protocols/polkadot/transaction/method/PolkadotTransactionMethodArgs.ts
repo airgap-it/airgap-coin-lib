@@ -103,7 +103,7 @@ class TransferArgsFactory extends PolkadotTransactionMethodArgsFactory<TransferA
     public createToAirGapTransactionPart(): () => Partial<IAirGapTransaction>{
         return () => ({
             to: [encodeAddress(this.args.to)],
-            amount: this.args.toString()
+            amount: this.args.value.toString()
         })
     }
 }

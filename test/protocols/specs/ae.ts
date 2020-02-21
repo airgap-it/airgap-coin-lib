@@ -61,6 +61,10 @@ export class AETestProtocolSpec extends TestProtocolSpec {
     }
   ]
 
+  public seed(): string {
+    return 'a109e38f00824ea80107cd7ccbac4e7afe7abe588eeac9191d71adf98fb1fba73311182c010a0182e20e67f4daa45bf1cbbbecab8ff407f33e50045d7d516e0c'
+  }
+
   public mnemonic(): string {
     return 'mango club state husband keen fiber float jelly major include horse infant square spike equip caught version must pen swim setup right poem economy'
   }

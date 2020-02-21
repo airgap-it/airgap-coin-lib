@@ -16,6 +16,8 @@ import { EthereumRopstenTestProtocolSpec } from './specs/ethereum-ropsten'
 import { GenericERC20TokenTestProtocolSpec } from './specs/generic-erc20-token'
 import { GroestlcoinProtocolSpec } from './specs/groestl'
 import { TezosTestProtocolSpec } from './specs/tezos'
+import { PolkadotTestProtocolSpec } from './specs/polkadot'
+import { sr25519Verify } from '@polkadot/wasm-crypto'
 
 // use chai-as-promised plugin
 chai.use(chaiAsPromised)
@@ -43,7 +45,8 @@ const protocols = [
   new BitcoinProtocolSpec(),
   new BitcoinTestProtocolSpec(),
   new GenericERC20TokenTestProtocolSpec(),
-  new GroestlcoinProtocolSpec()
+  new GroestlcoinProtocolSpec(),
+  new PolkadotTestProtocolSpec()
 ]
 
 const itIf = (condition, title, test) => {
@@ -250,7 +253,17 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
         }
 
         txs.forEach((tx, index) => {
-          expect(tx).to.deep.equal(protocol.txs[index].signedTx)
+          if (protocol.lib.identifier === 'polkadot') {
+            const parsedTx = JSON.parse(tx)
+
+            const signature = Buffer.from(parsedTx.encoded.substr(74, 128), 'hex')
+            const payload = Buffer.from(parsedTx.payload, 'hex')
+            const publicKey = Buffer.from(protocol.wallet.publicKey, 'hex')
+
+            expect(sr25519Verify(signature, payload, publicKey)).to.be.true
+          } else {
+            expect(tx).to.deep.equal(protocol.txs[index].signedTx)
+          }
         })
       })
 

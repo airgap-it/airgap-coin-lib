@@ -10,6 +10,8 @@ import { isString } from 'util'
  * Kulupu: 16 (SS58), 17 (Reserved)
  * Dothereum: 20 (SS58), 21 (AccountId)
  * Substrate: 42 (SS58), 43 (AccountId)
+ * 
+ * If changed, the test address in `test/protocols/specs/polkadot.ts` must be changed accordingly
  */
 const SS58_FORMAT = 2
 const SS58_PREFIX = 'SS58PRE'

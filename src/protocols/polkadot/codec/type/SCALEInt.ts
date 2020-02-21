@@ -20,8 +20,8 @@ export class SCALEInt extends SCALEType {
     }
 
     private constructor(
-        private readonly value: BigNumber, 
-        private readonly bitLength?: number
+        readonly value: BigNumber, 
+        readonly bitLength?: number
     ) { super() }
 
     public toString(base: number = 10): string {
