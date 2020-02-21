@@ -8,6 +8,7 @@ import { hexToBigNumber, stripHexPrefix, toHexString, addHexPrefix } from '../..
 import { isString } from 'util'
 import { PolkadotTransactionType } from './transaction/PolkadotTransaction'
 import { Metadata, ExtrinsicId } from './metadata/Metadata'
+import { SCALEInt } from './codec/type/SCALEInt'
 
 const RPC_ENDPOINTS = {
     GET_METADATA: 'state_getMetadata',
@@ -24,6 +25,12 @@ const RPC_EXTRINSIC = {
     UNBOND: 'staking_unbond',
     NOMINATE: 'staking_nominate',
     CHILL: 'staking_chill'
+}
+
+const RPC_CONSTANTS = {
+    TRANSFER_FEE: 'balances_TransferFee',
+    TRANSACTION_BASE_FEE: 'transactionPayment_TransactionBaseFee',
+    TRANSACTION_BYTE_FEE: 'transactionPayment_TransactionByteFee'
 }
 
 const methodEndpoints: Map<PolkadotTransactionType, string> = new Map([
@@ -96,6 +103,18 @@ export class PolkadotNodeClient {
         }
     }
 
+    public getTransferFee(): Promise<BigNumber | null> {
+        return this.getFee(RPC_CONSTANTS.TRANSFER_FEE)
+    }
+
+    public getTransactionBaseFee(): Promise<BigNumber | null> {
+        return this.getFee(RPC_CONSTANTS.TRANSACTION_BASE_FEE)
+    }
+
+    public getTransactionByteFee(): Promise<BigNumber | null> {
+        return this.getFee(RPC_CONSTANTS.TRANSACTION_BYTE_FEE)
+    }
+
     public getNonce(accountId: Uint8Array | string): Promise<BigNumber> {
         const accountIdU8a = isString(accountId) ? Buffer.from(accountId, 'hex') : accountId
         return this.send<BigNumber, (string | null)>(
@@ -134,6 +153,22 @@ export class PolkadotNodeClient {
             RPC_ENDPOINTS.SUBMIT_EXTRINSIC,
             [encoded]
         )
+    }
+
+    private async getFee(name: string): Promise<BigNumber | null> {
+        try {
+            if (!this.metadata) {
+                await this.fetchMetadata()
+            }
+
+            const fee = (this.metadata && this.metadata.hasConstant(name))
+                ? this.metadata.getConstant(name)
+                : null
+
+            return fee ? SCALEInt.decode(fee).decoded.value : null            
+        } catch (e) {
+            return null
+        }
     }
 
     private async fetchMetadata(): Promise<void> {

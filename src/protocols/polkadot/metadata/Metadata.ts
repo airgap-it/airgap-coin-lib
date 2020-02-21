@@ -42,6 +42,7 @@ export class Metadata extends SCALEClass {
     protected scaleFields = [this.magicNumber, this.version, this.modules]
 
     private readonly extrinsicIds: Map<string, ExtrinsicId> = new Map()
+    private readonly constants: Map<string, string> = new Map()
 
     private constructor(
         readonly magicNumber: SCALEInt,
@@ -49,18 +50,45 @@ export class Metadata extends SCALEClass {
         readonly modules: SCALEArray<MetadataModule>
     ) { 
         super()
-        modules.elements
-            .filter(module => module.hasCalls)
-            .map((module, moduleIndex) => module.calls.value.elements.map((call, callIndex) => [`${module.name.toCamelCase()}_${call.name.toCamelCase()}`, { moduleIndex, callIndex }] as [string, ExtrinsicId]))
-            .reduce((prev, curr) => prev.concat(curr), [])
-            .forEach(pair => this.extrinsicIds[pair[0]] = pair[1])
-    }
+        this.flattenThenPopulateMap(
+            this.extrinsicIds,
+            modules.elements
+                .filter(module => module.hasCalls)
+                .map((module, moduleIndex) => module.calls.value.elements.map((call, callIndex) => [
+                    `${module.name.toCamelCase()}_${call.name.toCamelCase()}`, 
+                    { moduleIndex, callIndex }
+                ] as [string, ExtrinsicId]))
+        )
 
-    public getExtrinsicId(endpoint: string): ExtrinsicId {
-        return this.extrinsicIds[endpoint]
+        this.flattenThenPopulateMap(
+            this.constants,
+            modules.elements
+                .map(module => module.constants.elements.map(constant => [
+                    `${module.name.toCamelCase()}_${constant.name.toCamelCase({ startUpper: true })}`,
+                    constant.value.toString()
+                ] as [string, string]))
+        )
     }
 
     public hasExtrinsicId(endpoint: string): boolean {
-        return !!this.extrinsicIds[endpoint]
+        return !!this.extrinsicIds.get(endpoint)
+    }
+
+    public getExtrinsicId(endpoint: string): ExtrinsicId {
+        return this.extrinsicIds.get(endpoint)!
+    }
+
+    public hasConstant(name: string): boolean {
+        return !!this.constants.get(name)
+    }
+
+    public getConstant(name: string): string {
+        return this.constants.get(name)!
+    }
+
+    private flattenThenPopulateMap<K, V>(map: Map<K, V>, pairs: [K, V][][]) {
+        pairs
+            .reduce((flatten, toFlatten) => flatten.concat(toFlatten), [])
+            .forEach(([key, value]: [K, V]) => map.set(key, value))
     }
 }

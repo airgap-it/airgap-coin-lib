@@ -32,7 +32,7 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
 
     // TODO: verify
     feeDefaults: FeeDefaults = {
-        low: '0.01',
+        low: '0.01', // 10 000 000 000
         medium: '0.01',
         high: '0.01'
     }
@@ -74,7 +74,7 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
     ) { super() }
 
     public async getBlockExplorerLinkForAddress(address: string): Promise<string> {
-        return `${this.blockExplorer}/account/${decodeAddress(address).toString('hex')}`
+        return `${this.blockExplorer}/account/${address}` // it works for both Address and AccountId
     }
 
     public async getBlockExplorerLinkForTxId(txId: string): Promise<string> {
@@ -124,7 +124,7 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
 
         return JSON.stringify({
             type: signed.type.toString(),
-            encoded: signed.encode({ withPrefix: true }),
+            encoded: signed.encode(),
             payload: rawTransaction.payload
         })
     }
@@ -210,7 +210,9 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
         throw new Error('Method not implemented.');
     }
 
-    private async prepareTransaction(type: PolkadotTransactionType, publicKey: string, fee: string | number | BigNumber, args: any = {}, index: number | BigNumber = 0): Promise<RawPolkadotTransaction> {
+    private async prepareTransaction(type: PolkadotTransactionType, publicKey: string, tip: string | number | BigNumber, args: any = {}, index: number | BigNumber = 0): Promise<RawPolkadotTransaction> {
+        const currentBalance = new BigNumber(await this.getBalanceOfPublicKey(publicKey))
+
         const lastHash = await this.nodeClient.getLastBlockHash()
         const genesisHash = await this.nodeClient.getFirstBlockHash()
 
@@ -225,12 +227,21 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
 
         const transaction = PolkadotTransaction.create(type, {
             from: publicKey,
-            tip: BigNumber.isBigNumber(fee) ? fee : new BigNumber(fee),
+            tip: BigNumber.isBigNumber(tip) ? tip : new BigNumber(tip),
             methodId,
             args,
             era: { chainHeight },
             nonce
         })
+
+        const fee = await this.calculateTransactionFee(transaction)
+        if (!fee) {
+            return Promise.reject('Could not fetch all necesaary data.')
+        }
+
+        if (currentBalance.lt(fee)) {
+            throw new Error('Not enough balance')
+        }
 
         const payload = PolkadotTransactionPayload.create(transaction, {
             specVersion,
@@ -243,6 +254,26 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
             encoded: transaction.encode(),
             payload: payload.encode()
         }
+    }
+
+    private async calculateTransactionFee(transaction: PolkadotTransaction): Promise<BigNumber | null> {
+        const transferFee = await this.nodeClient.getTransferFee()
+        const transactionBaseFee = await this.nodeClient.getTransactionBaseFee()
+        const transactionByteFee = await this.nodeClient.getTransactionByteFee()
+
+        if (!transferFee || !transactionBaseFee || !transactionByteFee) {
+            return null
+        }
+
+        const transactionBytes = Math.ceil(transaction.encode().length / 2)
+
+        // base fee + per-byte fee * transaction bytes + transfer fee + tip
+        const fee = transactionBaseFee
+            .plus(transactionByteFee.multipliedBy(transactionBytes))
+            .plus(transferFee)
+            .plus(transaction.tip.value)
+
+        return fee
     }
 
     private getTransactionDetailsFromRaw(rawTransaction: RawPolkadotTransaction): IAirGapTransaction[] {
