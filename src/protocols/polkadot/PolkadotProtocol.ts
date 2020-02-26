@@ -70,7 +70,7 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
     blockExplorer: string = 'https://polkascan.io/pre/kusama'
 
     constructor(
-        private readonly nodeClient: PolkadotNodeClient = new PolkadotNodeClient('http://localhost:9933') // TODO: change to non local address
+        readonly nodeClient: PolkadotNodeClient = new PolkadotNodeClient('https://polkadot-kusama-node-1.kubernetes.papers.tech')
     ) { super() }
 
     public async getBlockExplorerLinkForAddress(address: string): Promise<string> {
