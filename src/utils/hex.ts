@@ -39,15 +39,6 @@ export function toHexString(value: number | BigNumber, bitLength: number = 8): s
   return addHexPrefix(toHexStringRaw(value, bitLength))
 }
 
-export function hexToBigNumber(hex: string | null, config: { littleEndian: boolean } = { littleEndian: false }): BigNumber {
-  if (!hex) {
-    return new BigNumber(0)
-  }
-
-  const raw = stripHexPrefix(hex)
-  return new BigNumber(config.littleEndian ? changeEndianness(raw) : raw, 16)
-}
-
 export function changeEndianness(hex: string): string {
   let _hex = stripHexPrefix(hex)
   _hex = _hex.length % 2 != 0 ? '0' + _hex : _hex

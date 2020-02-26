@@ -11,7 +11,8 @@ import { stripHexPrefix } from "../../../utils/hex";
 import { SCALEHash } from "./type/SCALEHash";
 import { SCALEAddress } from "./type/SCALEAddress";
 import { SCALEEra } from "./type/SCALEEra";
-import { SCALEAccountId } from "./type/SCALEAccountID";
+import { SCALEAccountId } from "./type/SCALEAccountId";
+import { SCALETuple } from "./type/SCALETuple";
 
 export type DecoderMethod<T> = (hex: string) => SCALEDecodeResult<T>
 
@@ -69,6 +70,10 @@ export class SCALEDecoder {
 
     public decodeNextString(): SCALEDecodeResult<SCALEString> {
         return this.decodeNextValue(SCALEString.decode)
+    }
+
+    public decodeNextTuple<T extends SCALEType, R extends SCALEType>(firstDecoderMethod: DecoderMethod<T>, secondDecoderMethod: DecoderMethod<R>): SCALEDecodeResult<SCALETuple<T, R>> {
+        return this.decodeNextValue(hex => SCALETuple.decode(hex, firstDecoderMethod, secondDecoderMethod))
     }
 
     public decodeNextEnum<T>(getEnumValue: (value: number) => T | null): SCALEDecodeResult<SCALEEnum<T>> {
