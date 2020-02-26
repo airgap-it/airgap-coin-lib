@@ -1,6 +1,7 @@
 import { SCALEType } from "./SCALEType"
 import { SCALECompactInt } from "./SCALECompactInt"
 import { SCALEDecodeResult } from "../SCALEDecoder"
+import { stripHexPrefix } from "../../../../utils/hex"
 
 export class SCALEString extends SCALEType {
     public static from(value: string): SCALEString {
@@ -8,7 +9,7 @@ export class SCALEString extends SCALEType {
     }
 
     public static decode(hex: string): SCALEDecodeResult<SCALEString> {
-        let _hex = hex
+        let _hex = stripHexPrefix(hex)
 
         const length = SCALECompactInt.decode(_hex)
 

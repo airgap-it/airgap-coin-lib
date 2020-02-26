@@ -1,6 +1,6 @@
 import { SCALEType } from "./SCALEType"
 import { encodeAddress, decodeAddress } from "../../utils/address"
-import { isHex } from "../../../../utils/hex"
+import { isHex, stripHexPrefix } from "../../../../utils/hex"
 import { SCALEDecodeResult } from "../SCALEDecoder"
 
 const ENCODED_ADDRESS_PREFIX = 'ff'
@@ -11,14 +11,16 @@ export class SCALEAddress extends SCALEType {
     }
 
     public static decode(hex: string): SCALEDecodeResult<SCALEAddress> {
-        const prefix = hex.substr(0, 2)
+        const _hex = stripHexPrefix(hex)
+        
+        const prefix = _hex.substr(0, 2)
         if (prefix !== ENCODED_ADDRESS_PREFIX) {
             throw new Error('Invalid address value')
         }
 
         return {
             bytesDecoded: 33,
-            decoded: SCALEAddress.from(hex.substr(2, 64))
+            decoded: SCALEAddress.from(_hex.substr(2, 64))
         }
     }
 

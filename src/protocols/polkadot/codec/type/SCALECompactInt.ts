@@ -1,6 +1,6 @@
 import { SCALEType } from "../type/SCALEType"
 import BigNumber from "../../../../dependencies/src/bignumber.js-9.0.0/bignumber"
-import { changeEndianness } from "../../../../utils/hex"
+import { changeEndianness, stripHexPrefix } from "../../../../utils/hex"
 import { SCALEDecodeResult } from "../SCALEDecoder"
 
 export class SCALECompactInt extends SCALEType {
@@ -9,7 +9,9 @@ export class SCALECompactInt extends SCALEType {
     }
 
     public static decode(hex: string): SCALEDecodeResult<SCALECompactInt> {
-        const firstByte = parseInt(hex.substr(0, 2), 16)
+        const _hex = stripHexPrefix(hex)
+        
+        const firstByte = parseInt(_hex.substr(0, 2), 16)
         const mode = parseInt(firstByte.toString(2).slice(-2), 2)
 
         let bytes: number
@@ -22,7 +24,7 @@ export class SCALECompactInt extends SCALEType {
             metaBits = 2
         }
 
-        const encodedHex = hex.substr(0, bytes * 2)
+        const encodedHex = _hex.substr(0, bytes * 2)
         const encodedBin = new BigNumber(changeEndianness(encodedHex), 16).toString(2)
 
         return {

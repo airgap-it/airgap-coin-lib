@@ -1,5 +1,5 @@
 import { SCALEType } from "../type/SCALEType"
-import { toHexStringRaw } from "../../../../utils/hex"
+import { toHexStringRaw, stripHexPrefix } from "../../../../utils/hex"
 import { SCALEDecodeResult, DecoderMethod } from "../SCALEDecoder"
 
 enum Optional {
@@ -17,7 +17,9 @@ export class SCALEOptional<T extends SCALEType> extends SCALEType {
     }
 
     public static decode<T extends SCALEType>(hex: string, decodeValue: DecoderMethod<T>): SCALEDecodeResult<SCALEOptional<T>> {
-        const prefix = parseInt(hex.substr(0, 2), 16)
+        const _hex = stripHexPrefix(hex)
+        
+        const prefix = parseInt(_hex.substr(0, 2), 16)
         switch (prefix) {
             case Optional.None:
                 return {
@@ -25,7 +27,7 @@ export class SCALEOptional<T extends SCALEType> extends SCALEType {
                     decoded: SCALEOptional.empty()
                 }
             case Optional.Some:
-                const value = decodeValue(hex.slice(2))
+                const value = decodeValue(_hex.slice(2))
                 return {
                     bytesDecoded: 1 + value.bytesDecoded,
                     decoded: SCALEOptional.from(value.decoded)

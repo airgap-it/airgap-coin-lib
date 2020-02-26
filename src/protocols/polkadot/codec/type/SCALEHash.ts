@@ -26,8 +26,10 @@ export class SCALEHash extends SCALEType {
     }
 
     public static decode(hex: string, bitLength: number): SCALEDecodeResult<SCALEHash> {
+        const _hex = stripHexPrefix(hex)
+
         const nibbles = Math.ceil(bitLength / 4)
-        const hash = hex.substr(0, nibbles)
+        const hash = _hex.substr(0, nibbles)
 
         return {
             bytesDecoded: Math.ceil(nibbles / 2),

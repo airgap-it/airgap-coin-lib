@@ -1,5 +1,5 @@
 import { SCALEType } from "./SCALEType";
-import { toHexStringRaw } from "../../../../utils/hex";
+import { toHexStringRaw, stripHexPrefix } from "../../../../utils/hex";
 import { isNumber } from "util";
 import { SCALEDecodeResult } from "../SCALEDecoder";
 
@@ -14,7 +14,9 @@ export class SCALEEnum<T> extends SCALEType {
     }
 
     public static decode<T>(hex: string, getEnumValue: (value: number) => T | null): SCALEDecodeResult<SCALEEnum<T>> {
-        const value = parseInt(hex.substr(0, 2), 16)
+        const _hex = stripHexPrefix(hex)
+        
+        const value = parseInt(_hex.substr(0, 2), 16)
         const enumValue = getEnumValue(value)
 
         if (enumValue === null) {

@@ -1,6 +1,7 @@
 import { SCALEType } from "./SCALEType"
 import { SCALECompactInt } from "./SCALECompactInt"
 import { SCALEDecodeResult, DecoderMethod } from "../SCALEDecoder"
+import { stripHexPrefix } from "../../../../utils/hex"
 
 export class SCALEArray<T extends SCALEType> extends SCALEType {
     public static from<T extends SCALEType>(elements: T[]): SCALEArray<T> {
@@ -8,9 +9,9 @@ export class SCALEArray<T extends SCALEType> extends SCALEType {
     }
 
     public static decode<T extends SCALEType>(hex: string, decodeElement: DecoderMethod<T>): SCALEDecodeResult<SCALEArray<T>> {
-        let _hex = hex
+        let _hex = stripHexPrefix(hex)
 
-        const arrayLength = SCALECompactInt.decode(hex)
+        const arrayLength = SCALECompactInt.decode(_hex)
 
         _hex = _hex.slice(arrayLength.bytesDecoded * 2)
 

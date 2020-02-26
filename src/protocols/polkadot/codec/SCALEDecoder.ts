@@ -11,6 +11,7 @@ import { stripHexPrefix } from "../../../utils/hex";
 import { SCALEHash } from "./type/SCALEHash";
 import { SCALEAddress } from "./type/SCALEAddress";
 import { SCALEEra } from "./type/SCALEEra";
+import { SCALEAccountId } from "./type/SCALEAccountID";
 
 export type DecoderMethod<T> = (hex: string) => SCALEDecodeResult<T>
 
@@ -24,6 +25,10 @@ export class SCALEDecoder {
 
     constructor(hex: string) {
         this.hex = stripHexPrefix(hex)
+    }
+
+    public decodeNextAccountId(): SCALEDecodeResult<SCALEAccountId> {
+        return this.decodeNextValue(SCALEAccountId.decode)
     }
 
     public decodeNextAddress(): SCALEDecodeResult<SCALEAddress> {

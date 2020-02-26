@@ -1,6 +1,6 @@
 import { SCALEType } from "../type/SCALEType"
 import BigNumber from "../../../../dependencies/src/bignumber.js-9.0.0/bignumber"
-import { changeEndianness, toHexStringRaw } from "../../../../utils/hex"
+import { changeEndianness, toHexStringRaw, stripHexPrefix } from "../../../../utils/hex"
 import { SCALEDecodeResult } from "../SCALEDecoder"
 
 const IMMORTAL_ENCODED = '00'
@@ -36,7 +36,8 @@ export class SCALEEra extends SCALEType {
     }
 
     public static decode(hex: string): SCALEDecodeResult<SCALEEra> {
-        return hex.substr(0, 2) === IMMORTAL_ENCODED ? SCALEEra.decodeImmortal() : SCALEEra.decodeMortal(hex)
+        const _hex = stripHexPrefix(hex)
+        return _hex.substr(0, 2) === IMMORTAL_ENCODED ? SCALEEra.decodeImmortal() : SCALEEra.decodeMortal(_hex)
     }
 
     private static decodeImmortal(): SCALEDecodeResult<SCALEEra> {

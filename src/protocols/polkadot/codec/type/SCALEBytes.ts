@@ -20,7 +20,7 @@ export class SCALEBytes extends SCALEType {
     }
 
     public static decode(hex: string): SCALEDecodeResult<SCALEBytes> {
-        let _hex = hex
+        let _hex = stripHexPrefix(hex)
 
         const length = SCALECompactInt.decode(_hex)
         const bytes = _hex.substr(length.bytesDecoded * 2, length.decoded.toNumber() * 2)
