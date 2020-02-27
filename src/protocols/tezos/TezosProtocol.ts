@@ -615,8 +615,12 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
       const accountManager: { key: string } = results[2].data
 
+      const hasRevealInOperationRequests: boolean = operationRequests.some(
+        (request: TezosOperation) => request.kind === TezosOperationType.REVEAL
+      )
+
       // check if we have revealed the address already
-      if (!accountManager) {
+      if (!accountManager && !hasRevealInOperationRequests) {
         operations.push(await this.createRevealOperation(counter, publicKey, address))
         counter = counter.plus(1)
       }
@@ -625,8 +629,14 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     }
 
     // tslint:disable:cyclomatic-complexity
-    const operationPromises: Promise<TezosOperation>[] = operationRequests.map(async (operationRequest, index) => {
+    const operationPromises: Promise<TezosOperation>[] = operationRequests.map(async (operationRequest: TezosOperation, index: number) => {
       console.log('preparing tezos operation', operationRequest)
+
+      // TODO: Handle activation burn
+
+      if (!operationRequest.kind) {
+        throw new Error('property "kind" was not defined')
+      }
 
       const recipient: string | undefined = (operationRequest as TezosSpendOperation).destination
       let receivingBalance: BigNumber | undefined
@@ -634,22 +644,24 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         receivingBalance = new BigNumber(await this.getBalanceOfAddresses([recipient]))
       }
 
+      const defaultCounter: string = counter.plus(index).toFixed()
+      const defaultFee: string = new BigNumber(this.feeDefaults.low).times(1000000).toFixed()
+      const defaultGasLimit: string = recipient && recipient.toLowerCase().startsWith('kt') ? '15385' : '10300' // taken from eztz
+      const defaultStorageLimit: string =
+        receivingBalance && receivingBalance.isZero() && recipient && recipient.toLowerCase().startsWith('tz') ? '300' : '0' // taken from eztz
+
       const operation: TezosOperation | undefined = {
-        kind: operationRequest.kind || address,
-        source: operationRequest.source || address,
-        counter: operationRequest.counter || counter.plus(index).toFixed(),
-        fee: operationRequest.fee || new BigNumber(this.feeDefaults.low).times(1000000).toFixed(),
-        gas_limit: operationRequest.gas_limit || (recipient && recipient.toLowerCase().startsWith('kt')) ? '15385' : '10300',
-        storage_limit:
-          operationRequest.storage_limit ||
-          (receivingBalance && receivingBalance.isZero() && recipient && recipient.toLowerCase().startsWith('tz'))
-            ? '300'
-            : '0' // taken from eztz
+        kind: operationRequest.kind,
+        source: operationRequest.source ?? address,
+        counter: operationRequest.counter ?? defaultCounter,
+        fee: operationRequest.fee ?? defaultFee,
+        gas_limit: operationRequest.gas_limit ?? defaultGasLimit,
+        storage_limit: operationRequest.storage_limit ?? defaultStorageLimit
       }
 
       switch (operationRequest.kind) {
         case TezosOperationType.REVEAL:
-          const revealOperation = operationRequest as TezosRevealOperation
+          const revealOperation: TezosRevealOperation = operationRequest as TezosRevealOperation
 
           if (!revealOperation.public_key) {
             throw new Error('property "public_key" was not defined')
@@ -658,7 +670,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
           ;(operation as TezosRevealOperation).public_key = revealOperation.public_key
           break
         case TezosOperationType.DELEGATION:
-          const delegationOperation = operationRequest as TezosDelegationOperation
+          const delegationOperation: TezosDelegationOperation = operationRequest as TezosDelegationOperation
           ;(operation as TezosDelegationOperation).delegate = delegationOperation.delegate
           break
         case TezosOperationType.TRANSACTION:
