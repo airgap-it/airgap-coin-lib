@@ -550,6 +550,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         if (balance.isLessThan(wrappedValues[i].plus(wrappedFee).plus(this.activationBurn))) {
           // if not, make room for the init fee
           wrappedValues[i] = wrappedValues[i].minus(this.activationBurn) // deduct fee from balance
+        } else {
+          throw new Error('Not enough funds to pay activation burn!')
         }
       }
 
