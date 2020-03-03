@@ -10,6 +10,10 @@ const unsignedTransactionConstraints = {
         presence: { allowEmpty: false },
         type: 'String'
     },
+    fee: {
+        presence: { allowEmpty: false },
+        type: 'String'
+    },
     encoded: {
         isValidPolkadotUnsignedTransaction: true,
         presence: { allowEmpty: false },

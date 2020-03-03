@@ -1,10 +1,11 @@
 import { UnsignedTransactionSerializer, UnsignedTransaction, SerializedSyncProtocolTransaction, SyncProtocolUnsignedTransactionKeys } from "../unsigned-transaction.serializer";
 import { toBuffer } from "../../utils/toBuffer";
 
-export type SerializedUnsignedPolkadotTransaction = [Buffer, Buffer, Buffer]
+export type SerializedUnsignedPolkadotTransaction = [Buffer, Buffer, Buffer, Buffer]
 
 export interface RawPolkadotTransaction {
     type: string,
+    fee: string,
     encoded: string,
     payload: string
 }
@@ -20,6 +21,7 @@ export class PolkadotUnsignedTransactionsSerializer extends UnsignedTransactionS
             
         toSerialize[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION] = [
             transaction.transaction.type, 
+            transaction.transaction.fee,
             transaction.transaction.encoded,
             transaction.transaction.payload
         ]
@@ -35,8 +37,9 @@ export class PolkadotUnsignedTransactionsSerializer extends UnsignedTransactionS
         return {
             transaction: {
                 type: unsignedTx[0].toString(),
-                encoded: unsignedTx[1].toString(),
-                payload: unsignedTx[2].toString()
+                fee: unsignedTx[1].toString(),
+                encoded: unsignedTx[2].toString(),
+                payload: unsignedTx[3].toString()
             },
             publicKey: serializedTx[SyncProtocolUnsignedTransactionKeys.PUBLIC_KEY].toString(),
             callback: serializedTx[SyncProtocolUnsignedTransactionKeys.CALLBACK].toString()

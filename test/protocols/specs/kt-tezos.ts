@@ -34,6 +34,7 @@ export class KtTezosTestProtocolSpec extends TestProtocolSpec {
     {
       amount: '1000000',
       fee: '1420',
+      transactionFee: '1420',
       to: ['tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'],
       from: ['KT1HncyWvnY9FcoW8A2KYuauEe5qM1U2ntX8'],
       unsignedTx: {

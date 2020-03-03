@@ -41,8 +41,10 @@ export class PolkadotTestProtocolSpec extends TestProtocolSpec {
             to: this.wallet.addresses,
             amount: '1000000000000',
             fee: '1000000000',
+            transactionFee: '2690000000',
             unsignedTx: {
                 type: '0',
+                fee: '2690000000',
                 encoded: 
                     '4d02' + // length
                     '04' + // signed flag (not signed)
@@ -62,6 +64,7 @@ export class PolkadotTestProtocolSpec extends TestProtocolSpec {
             },
             signedTx: JSON.stringify({
                 type: '0',
+                fee: '2690000000',
                 encoded: 
                     '4d02' + // length
                     '84' + // signed flag (signed)

@@ -31,7 +31,8 @@ abstract class TestProtocolSpec {
     to: string[]
     from: string[]
     amount: string
-    fee: string
+    fee: string // tip for block creator
+    transactionFee: string // full transaction fee
     properties?: string[]
     unsignedTx: any
     signedTx: string

@@ -37,6 +37,7 @@ export class CosmosTestProtocolSpec extends TestProtocolSpec {
     {
       amount: '2',
       fee: '1',
+      transactionFee: '1',
       to: ['cosmos1w3mea9ghfdc3r7ax45mehl2tcqw9p0vnlhl0p6'],
       from: ['cosmos1w3mea9ghfdc3r7ax45mehl2tcqw9p0vnlhl0p6'],
       unsignedTx: new CosmosTransaction(

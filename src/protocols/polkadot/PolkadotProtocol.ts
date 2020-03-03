@@ -1,5 +1,4 @@
 import { FeeDefaults, CurrencyUnit, ICoinProtocol } from '../ICoinProtocol'
-import { getSubProtocolsByIdentifier } from '../../utils/subProtocols'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
 import { PolkadotNodeClient } from './PolkadotNodeClient'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
@@ -26,10 +25,6 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
     decimals: number = 12;
     feeDecimals: number = 12;
     identifier: string = 'polkadot';
-
-    get subProtocols() {
-        return getSubProtocolsByIdentifier(this.identifier) as any[]
-    }
 
     // TODO: set better values
     feeDefaults: FeeDefaults = {
@@ -125,6 +120,7 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
 
         return JSON.stringify({
             type: signed.type.toString(),
+            fee: rawTransaction.fee,
             encoded: signed.encode(),
             payload: rawTransaction.payload
         })
@@ -244,6 +240,7 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
 
         return {
             type: type.toString(),
+            fee: fee.toString(),
             encoded: transaction.encode(),
             payload: payload.encode()
         }
@@ -290,13 +287,14 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
         return fee
     }
 
-    private getTransactionDetailsFromRaw(rawTransaction: RawPolkadotTransaction): IAirGapTransaction[] {
+    private async getTransactionDetailsFromRaw(rawTransaction: RawPolkadotTransaction): Promise<IAirGapTransaction[]> {
         const polkadotTransaction = PolkadotTransaction.fromRaw(rawTransaction)
+
         return [{
             from: [],
             to: [],
             amount: '',
-            fee: '',
+            fee: rawTransaction.fee,
             protocolIdentifier: this.identifier,
             isInbound: false,
             ...polkadotTransaction.toAirGapTransaction()

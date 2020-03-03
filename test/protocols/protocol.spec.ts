@@ -300,7 +300,7 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
           expect(airgapTx.from, 'from property does not match').to.deep.equal(tx.from)
 
           expect(airgapTx.amount, 'amount does not match').to.deep.equal(protocol.txs[0].amount)
-          expect(airgapTx.fee, 'fee does not match').to.deep.equal(protocol.txs[0].fee)
+          expect(airgapTx.fee, 'fee does not match').to.deep.equal(protocol.txs[0].transactionFee)
 
           expect(airgapTx.protocolIdentifier, 'protocol-identifier does not match').to.equal(protocol.lib.identifier)
 
@@ -337,7 +337,7 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
           ).to.deep.equal(tx.from.sort().map(obj => obj.toLowerCase()))
 
           expect(airgapTx.amount).to.deep.equal(protocol.txs[0].amount)
-          expect(airgapTx.fee).to.deep.equal(protocol.txs[0].fee)
+          expect(airgapTx.fee).to.deep.equal(protocol.txs[0].transactionFee)
 
           expect(airgapTx.protocolIdentifier).to.equal(protocol.lib.identifier)
 

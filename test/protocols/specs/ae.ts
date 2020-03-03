@@ -51,6 +51,7 @@ export class AETestProtocolSpec extends TestProtocolSpec {
       from: ['ak_2dPGHd5dZgKwR234uqPZcAXXcCyxr3TbWwgV8NSnNincth4Lf7'],
       amount: '10000000000000000000',
       fee: '1000000000000000000',
+      transactionFee: '1000000000000000000',
       unsignedTx: {
         transaction:
           'tx_+FsMAaEB1k9h7FZRnn8Q81kIxA97Moj7Pr3A9sUEqpXseA48f/mhAdZPYexWUZ5/EPNZCMQPezKI+z69wPbFBKqV7HgOPH/5iIrHIwSJ6AAAiA3gtrOnZAAAAACAQCdXaA==',

@@ -37,6 +37,7 @@ export class GroestlcoinProtocolSpec extends TestProtocolSpec {
       to: ['FkPxwoFcgf16MpYka596GK3HV4SSiAPanR'],
       amount: '60000000',
       fee: '2000',
+      transactionFee: '2000',
       unsignedTx: {
         ins: [
           {

@@ -17,6 +17,9 @@
             "encoded": {
               "type": "string"
             },
+            "fee": {
+              "type": "string"
+            },
             "payload": {
               "type": "string"
             },
@@ -26,6 +29,7 @@
           },
           "required": [
             "type",
+            "fee",
             "encoded",
             "payload"
           ],

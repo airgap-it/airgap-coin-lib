@@ -2,6 +2,7 @@ import { UnsignedTransaction } from "./transaction-sign-request";
 
 interface RawPolkadotTransaction {
     type: string,
+    fee: string,
     encoded: string,
     payload: string
 }

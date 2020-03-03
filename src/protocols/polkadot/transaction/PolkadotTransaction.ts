@@ -114,7 +114,6 @@ export class PolkadotTransaction extends SCALEClass {
         return {
             from: [this.signer.asAddress()],
             to: [this.signer.asAddress()],
-            fee: this.tip.toString(),
             transactionDetails: JSON.parse(this.toString()),
             ...this.method.toAirGapTransactionPart()
         }
