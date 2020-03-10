@@ -206,11 +206,11 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
         const genesisHash = await this.nodeClient.getFirstBlockHash()
 
         const chainHeight = await this.nodeClient.getCurrentHeight()
-        const nonce = (await this.nodeClient.getNonce(publicKey)).plus(index)
+        const nonce = (await this.nodeClient.getNonce(publicKey))?.plus(index)
         const specVersion = await this.nodeClient.getSpecVersion()
         const methodId = await this.nodeClient.getTransactionMetadata(type)
 
-        if (!lastHash || !genesisHash || !methodId) {
+        if (!lastHash || !genesisHash || !methodId || !nonce) {
             return Promise.reject('Could not fetch all necessary data.')
         }
 
@@ -267,24 +267,10 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
         return this.nodeClient.getValidatorDetails(decodeAddress(validator))
     }
 
-    private async calculateTransactionFee(transaction: PolkadotTransaction): Promise<BigNumber | null> {
-        const transferFee = await this.nodeClient.getTransferFee()
-        const transactionBaseFee = await this.nodeClient.getTransactionBaseFee()
-        const transactionByteFee = await this.nodeClient.getTransactionByteFee()
+    async calculateTransactionFee(transaction: PolkadotTransaction): Promise<BigNumber | null> {
+        const partialEstimate = await this.nodeClient.getTransferFeeEstimate(transaction.encode())
 
-        if (!transferFee || !transactionBaseFee || !transactionByteFee) {
-            return null
-        }
-
-        const transactionBytes = Math.ceil(transaction.encode().length / 2)
-
-        // base fee + per-byte fee * transaction bytes + transfer fee + tip
-        const fee = transactionBaseFee
-            .plus(transactionByteFee.multipliedBy(transactionBytes))
-            .plus(transferFee)
-            .plus(transaction.tip.value)
-
-        return fee
+        return partialEstimate?.plus(transaction.tip.value) || null
     }
 
     private async getTransactionDetailsFromRaw(rawTransaction: RawPolkadotTransaction): Promise<IAirGapTransaction[]> {

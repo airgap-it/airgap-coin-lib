@@ -20,6 +20,7 @@ const RPC_ENDPOINTS = {
     GET_BLOCK: 'chain_getBlock',
     GET_BLOCK_HASH: 'chain_getBlockHash',
     GET_RUNTIME_VERSION: 'state_getRuntimeVersion',
+    GET_QUERY_INFO: 'payment_queryInfo',
     SUBMIT_EXTRINSIC: 'author_submitExtrinsic'
 }
 
@@ -29,12 +30,6 @@ const RPC_EXTRINSIC = {
     UNBOND: 'staking_unbond',
     NOMINATE: 'staking_nominate',
     CHILL: 'staking_chill'
-}
-
-const RPC_CONSTANTS = {
-    TRANSFER_FEE: 'balances_TransferFee',
-    TRANSACTION_BASE_FEE: 'transactionPayment_TransactionBaseFee',
-    TRANSACTION_BYTE_FEE: 'transactionPayment_TransactionByteFee'
 }
 
 const methodEndpoints: Map<PolkadotTransactionType, string> = new Map([
@@ -113,22 +108,18 @@ export class PolkadotNodeClient {
         }
     }
 
-    public getTransferFee(): Promise<BigNumber | null> {
-        return this.getFee(RPC_CONSTANTS.TRANSFER_FEE)
+    public getTransferFeeEstimate(transactionBytes: Uint8Array | string): Promise<BigNumber | null> {
+        return this.send<BigNumber | null, any | null>(
+            RPC_ENDPOINTS.GET_QUERY_INFO,
+            [isString(transactionBytes) ? transactionBytes : Buffer.from(transactionBytes).toString('hex')],
+            result => result ? new BigNumber(result.partialFee) : null
+        )
     }
 
-    public getTransactionBaseFee(): Promise<BigNumber | null> {
-        return this.getFee(RPC_CONSTANTS.TRANSACTION_BASE_FEE)
-    }
-
-    public getTransactionByteFee(): Promise<BigNumber | null> {
-        return this.getFee(RPC_CONSTANTS.TRANSACTION_BYTE_FEE)
-    }
-
-    public getNonce(accountId: Uint8Array | string): Promise<BigNumber> {
-        return this.getFromStorage<BigNumber>(
+    public getNonce(accountId: Uint8Array | string): Promise<BigNumber | null> {
+        return this.getFromStorage<BigNumber | null>(
             { moduleName: 'System', storageName: 'AccountNonce', firstKey: isString(accountId) ? Buffer.from(accountId, 'hex') : accountId },
-            result => result ? SCALEInt.decode(result).decoded.value : new BigNumber(0)
+            result => result ? SCALEInt.decode(result).decoded.value : null
         )
     }
 
@@ -209,22 +200,6 @@ export class PolkadotNodeClient {
         )
     }
 
-    private async getFee(name: string): Promise<BigNumber | null> {
-        try {
-            if (!this.metadata) {
-                await this.fetchMetadata()
-            }
-
-            const fee = (this.metadata && this.metadata.hasConstant(name))
-                ? this.metadata.getConstant(name)
-                : null
-
-            return fee ? SCALEInt.decode(fee).decoded.value : null            
-        } catch (e) {
-            return null
-        }
-    }
-
     private async fetchMetadata(): Promise<void> {
         this.metadata = await this.send<(Metadata | null), string>(
             RPC_ENDPOINTS.GET_METADATA,
@@ -257,7 +232,7 @@ export class PolkadotNodeClient {
 
     private async send<T, R>(method: string, params: string[], resultHandler?: (result: R | null) => T): Promise<T> {
         const response: AxiosResponse = await axios.post(this.baseURL, new RPCBody(method, params.map(param => addHexPrefix(param))))
-
+        
         return resultHandler ? resultHandler(response.data.result) : response.data.result
     }
 }
