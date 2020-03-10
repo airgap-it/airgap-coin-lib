@@ -13,8 +13,7 @@ async function signPayload(privateKey: Buffer, publicKey: Buffer, payload: strin
 }
 
 export async function sign(privateKey: Buffer, transaction: PolkadotTransaction, payload: string): Promise<PolkadotTransaction> {
-    const publicKey = Buffer.from(stripHexPrefix(transaction.signer.accountId), 'hex')
-    const signature = await signPayload(privateKey, publicKey, stripHexPrefix(payload))
+    const signature = await signPayload(privateKey, transaction.signer.value, stripHexPrefix(payload))
 
     return PolkadotTransaction.fromTransaction(transaction, { signature })
 }

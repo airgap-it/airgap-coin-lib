@@ -1,5 +1,4 @@
 import { SCALEType } from "../../codec/type/SCALEType"
-import { SCALEAddress } from "../../codec/type/SCALEAddress"
 import { SCALECompactInt } from "../../codec/type/SCALECompactInt"
 import { encodeAddress } from "../../utils/address"
 import { SCALEDecoder, SCALEDecodeResult } from "../../codec/SCALEDecoder"
@@ -9,6 +8,7 @@ import { IAirGapTransaction } from "../../../../interfaces/IAirGapTransaction"
 import { SCALEEnum } from "../../codec/type/SCALEEnum"
 import { PolkadotRewardDestination } from "../../staking/PolkadotRewardDestination"
 import { SCALEArray } from "../../codec/type/SCALEArray"
+import { SCALEAccountId } from "../../codec/type/SCALEAccountId"
 
 interface TransferArgs {
     to: string,
@@ -95,7 +95,7 @@ export abstract class PolkadotTransactionMethodArgsDecoder<T> {
 class TransferArgsFactory extends PolkadotTransactionMethodArgsFactory<TransferArgs> {
     public createFields(): [string, SCALEType][] {
         return [
-            ['destination', SCALEAddress.from(this.args.to)],
+            ['destination', SCALEAccountId.from(this.args.to)],
             ['value', SCALECompactInt.from(this.args.value)]
         ]
     }
@@ -110,13 +110,13 @@ class TransferArgsFactory extends PolkadotTransactionMethodArgsFactory<TransferA
 
 class TransferArgsDecoder extends PolkadotTransactionMethodArgsDecoder<TransferArgs> {
     protected _decode(decoder: SCALEDecoder): SCALEDecodeResult<TransferArgs> {
-        const destination = decoder.decodeNextAddress()
+        const destination = decoder.decodeNextAccountId()
         const value = decoder.decodeNextCompactInt()
 
         return {
             bytesDecoded: destination.bytesDecoded + value.bytesDecoded,
             decoded: {
-                to: destination.decoded.accountId,
+                to: destination.decoded.toString(),
                 value: value.decoded.value
             }
         }
@@ -126,7 +126,7 @@ class TransferArgsDecoder extends PolkadotTransactionMethodArgsDecoder<TransferA
 class BondArgsFactory extends PolkadotTransactionMethodArgsFactory<BondArgs> {
     public createFields(): [string, SCALEType][] {
         return [
-            ['controller', SCALEAddress.from(this.args.controller)],
+            ['controller', SCALEAccountId.from(this.args.controller)],
             ['value', SCALECompactInt.from(this.args.value)],
             ['payee', SCALEEnum.from(this.args.payee)]
         ]
@@ -141,14 +141,14 @@ class BondArgsFactory extends PolkadotTransactionMethodArgsFactory<BondArgs> {
 
 class BondArgsDecoder extends PolkadotTransactionMethodArgsDecoder<BondArgs> {
     protected _decode(decoder: SCALEDecoder): SCALEDecodeResult<BondArgs> {
-        const controller = decoder.decodeNextAddress()
+        const controller = decoder.decodeNextAccountId()
         const value = decoder.decodeNextCompactInt()
         const payee = decoder.decodeNextEnum(value => PolkadotRewardDestination[PolkadotRewardDestination[value]])
 
         return {
             bytesDecoded: controller.bytesDecoded + value.bytesDecoded + payee.bytesDecoded,
             decoded: {
-                controller: controller.decoded.accountId,
+                controller: controller.decoded.toString(),
                 value: value.decoded.value,
                 payee: payee.decoded.value
             }
@@ -185,7 +185,7 @@ class UnbondArgsDecoder extends PolkadotTransactionMethodArgsDecoder<UnbondArgs>
 class NominateArgsFactory extends PolkadotTransactionMethodArgsFactory<NominateArgs> {
     public createFields(): [string, SCALEType][] {
         return [
-            ['targets', SCALEArray.from(this.args.targets.map(target => SCALEAddress.from(target)))]
+            ['targets', SCALEArray.from(this.args.targets.map(target => SCALEAccountId.from(target)))]
         ]
     }
     public createToAirGapTransactionPart(): () => Partial<IAirGapTransaction> {
@@ -197,12 +197,12 @@ class NominateArgsFactory extends PolkadotTransactionMethodArgsFactory<NominateA
 
 class NominateArgsDecoder extends PolkadotTransactionMethodArgsDecoder<NominateArgs> {
     protected _decode(decoder: SCALEDecoder): SCALEDecodeResult<NominateArgs> {
-        const targets = decoder.decodeNextArray(SCALEAddress.decode)
+        const targets = decoder.decodeNextArray(SCALEAccountId.decode)
 
         return {
             bytesDecoded: targets.bytesDecoded,
             decoded: {
-                targets: targets.decoded.elements.map(target => target.accountId)
+                targets: targets.decoded.elements.map(target => target.toString())
             }
         }
     }

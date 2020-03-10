@@ -9,7 +9,6 @@ import { SCALEString } from "./type/SCALEString";
 import { SCALEEnum } from "./type/SCALEEnum";
 import { stripHexPrefix } from "../../../utils/hex";
 import { SCALEHash } from "./type/SCALEHash";
-import { SCALEAddress } from "./type/SCALEAddress";
 import { SCALEEra } from "./type/SCALEEra";
 import { SCALEAccountId } from "./type/SCALEAccountId";
 import { SCALETuple } from "./type/SCALETuple";
@@ -30,10 +29,6 @@ export class SCALEDecoder {
 
     public decodeNextAccountId(): SCALEDecodeResult<SCALEAccountId> {
         return this.decodeNextValue(SCALEAccountId.decode)
-    }
-
-    public decodeNextAddress(): SCALEDecodeResult<SCALEAddress> {
-        return this.decodeNextValue(SCALEAddress.decode)
     }
 
     public decodeNextArray<T extends SCALEType>(decoderMethod: DecoderMethod<T>): SCALEDecodeResult<SCALEArray<T>> {

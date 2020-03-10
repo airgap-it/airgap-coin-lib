@@ -3,7 +3,6 @@ import BigNumber from "../../../dependencies/src/bignumber.js-9.0.0/bignumber"
 import { PolkadotSignature, PolkadotSignatureType } from "./PolkadotSignature"
 import { IAirGapTransaction } from "../../../interfaces/IAirGapTransaction"
 import { SCALEClass } from "../codec/type/SCALEClass"
-import { SCALEAddress } from "../codec/type/SCALEAddress"
 import { SCALECompactInt } from "../codec/type/SCALECompactInt"
 import { SCALEEra, EraConfig } from "../codec/type/SCALEEra"
 import { SCALEType } from "../codec/type/SCALEType"
@@ -13,10 +12,11 @@ import { SCALEDecoder } from "../codec/SCALEDecoder"
 import { SCALEHash } from "../codec/type/SCALEHash"
 import { stripHexPrefix } from "../../../utils/hex"
 import { RawPolkadotTransaction } from "../../../serializer/types"
+import { SCALEAccountId } from "../codec/type/SCALEAccountId"
 
 const VERSION = 4
 const BIT_SIGNED = 128
-const BIT_UNSIGNED = 0
+const BIT_UNSIGNED = 128 // TODO: change to 0 if payment_queryInfo regocnizes the transaction, at the moment it returns "No such variant in enum Call" error
 
 interface PolkadotTransactionConfig {
     from: string,
@@ -36,7 +36,7 @@ export class PolkadotTransaction extends SCALEClass {
     public static create(type: PolkadotTransactionType, config: PolkadotTransactionConfig): PolkadotTransaction {
         return new PolkadotTransaction(
             type,
-            SCALEAddress.from(config.from), 
+            SCALEAccountId.from(config.from), 
             PolkadotSignature.create(PolkadotSignatureType.Sr25519, config.signature), 
             config.era ? SCALEEra.Mortal(config.era) : SCALEEra.Immortal(),
             SCALECompactInt.from(config.nonce),
@@ -48,7 +48,7 @@ export class PolkadotTransaction extends SCALEClass {
     public static fromTransaction(transaction: PolkadotTransaction, config?: Partial<PolkadotTransactionConfig>): PolkadotTransaction {
         return new PolkadotTransaction(
             transaction.type,
-            (config && config.from) ? SCALEAddress.from(config.from) : transaction.signer,
+            (config && config.from) ? SCALEAccountId.from(config.from) : transaction.signer,
             PolkadotSignature.create(transaction.signature.type.value, config ? config.signature : undefined),
             (config && config.era) ? SCALEEra.Mortal(config.era) : transaction.era,
             (config && config.nonce) ? SCALECompactInt.from(config.nonce) : transaction.nonce,
@@ -68,7 +68,7 @@ export class PolkadotTransaction extends SCALEClass {
         const decoder = new SCALEDecoder(bytes.decoded.bytes.toString('hex'))
 
         decoder.decodeNextHash(8) // signed byte
-        const signer = decoder.decodeNextAddress()
+        const signer = decoder.decodeNextAccountId()
         const signature = decoder.decodeNextObject(PolkadotSignature.decode)
         const era = decoder.decodeNextEra()
         const nonce = decoder.decodeNextCompactInt()
@@ -90,7 +90,7 @@ export class PolkadotTransaction extends SCALEClass {
 
     private constructor(
         readonly type: PolkadotTransactionType,
-        readonly signer: SCALEAddress,
+        readonly signer: SCALEAccountId,
         readonly signature: PolkadotSignature,
         readonly era: SCALEEra,
         readonly nonce: SCALECompactInt,
