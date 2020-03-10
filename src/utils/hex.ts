@@ -1,6 +1,7 @@
 import BigNumber from '../dependencies/src/bignumber.js-9.0.0/bignumber'
 
 import { padStart } from './padStart'
+import { isString } from 'util'
 
 const HEX_PREFIX = '0x'
 const HEX_REGEX = new RegExp(`^(${HEX_PREFIX})?[0-9a-fA-F]*$`)
@@ -37,6 +38,27 @@ export function toHexStringRaw(value: number | BigNumber, bitLength: number = 8)
 
 export function toHexString(value: number | BigNumber, bitLength: number = 8): string {
   return addHexPrefix(toHexStringRaw(value, bitLength))
+}
+
+export function hexToBytes(hex: string | Uint8Array | Buffer): Buffer {
+  if (isString(hex) && isHex(hex)) {
+    return Buffer.from(stripHexPrefix(hex), 'hex')
+  } else if (!isString(hex)) {
+    return Buffer.from(hex)
+  } else {
+    return Buffer.from([0])
+  }
+}
+
+export function bytesToHex(bytes: Uint8Array | Buffer | string, config?: { withPrefix: boolean }): string {
+  let hex: string
+  if (isString(bytes)) {
+    hex = bytes
+  } else {
+    const buffer = Buffer.isBuffer(bytes) ? bytes : Buffer.from(bytes)
+    hex = buffer.toString('hex')
+  }
+  return config?.withPrefix ? addHexPrefix(hex) : hex
 }
 
 export function changeEndianness(hex: string): string {

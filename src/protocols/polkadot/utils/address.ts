@@ -1,8 +1,7 @@
 import bs58 = require('../../../dependencies/src/bs58-4.0.1')
 
-import { isHex, stripHexPrefix } from "../../../utils/hex"
+import { isHex, stripHexPrefix, hexToBytes } from "../../../utils/hex"
 import { blake2bAsBytes } from '../../../utils/blake2b'
-import { isString } from 'util'
 
 /*
  * Polkadot Live: 0 (SS58 checksum preimage), 1 (AccountId checksum preimage)
@@ -65,8 +64,7 @@ export function decodeAddress(encoded: string): Buffer {
 }
 
 export function encodeAddress(payload: Buffer | Uint8Array | string): string {
-    const payloadBuffer = isString(payload) ? Buffer.from(stripHexPrefix(payload), 'hex') : Buffer.from(payload)
-    const decoded = Address.fromPayload(payloadBuffer)
+    const decoded = Address.fromPayload(hexToBytes(payload))
 
     return bs58.encode(decoded.asBytes())
 }
