@@ -41,14 +41,13 @@ export class PolkadotTestProtocolSpec extends TestProtocolSpec {
             to: this.wallet.addresses,
             amount: '1000000000000',
             fee: '1000000000',
-            transactionFee: '2690000000',
+            transactionFee: '1100000000',
             unsignedTx: {
                 type: '0',
-                fee: '2690000000',
+                fee: '1100000000',
                 encoded: 
-                    '4d02' + // length
-                    '04' + // signed flag (not signed)
-                    'ff' + // AccountId prefix
+                    '4502' + // length
+                    '84' + // signed flag (not signed)
                     '52e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10' + // AccountId signer
                     '01' + // signature type (sr25519)
                     '0000000000000000000000000000000000000000000000000000000000000000' + // signature
@@ -57,18 +56,16 @@ export class PolkadotTestProtocolSpec extends TestProtocolSpec {
                     '04' +  // nonce
                     '02286bee' + // tip
                     '0400' + // moduleId + callId
-                    'ff' + // AccountId prefix
                     '52e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10' + // AccountId destination
                     '070010a5d4e8', // value
-                payload: '0400ff52e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10070010a5d4e885030402286bee04000000d51522c9ef7ba4e0990f7a4527de79afcac992ab97abbbc36722f8a27189b17033a7a745849347ce3008c07268be63d8cefd3ef61de0c7318e88a577fb7d26a9'
+                payload: '040052e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10070010a5d4e885030402286bee04000000d51522c9ef7ba4e0990f7a4527de79afcac992ab97abbbc36722f8a27189b17033a7a745849347ce3008c07268be63d8cefd3ef61de0c7318e88a577fb7d26a9'
             },
             signedTx: JSON.stringify({
                 type: '0',
-                fee: '2690000000',
+                fee: '1100000000',
                 encoded: 
-                    '4d02' + // length
+                    '4502' + // length
                     '84' + // signed flag (signed)
-                    'ff' + // AccountId prefix
                     '52e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10' + // AccountId signer
                     '01' + // signature type (sr25519)
                     '3ca263011746baf6301fafcd530330962e13c4b4d947eeb4b7daf1c8d7915552' + // signature
@@ -77,10 +74,9 @@ export class PolkadotTestProtocolSpec extends TestProtocolSpec {
                     '04' + // nonce
                     '02286bee' + // tip
                     '0400' + // moduleId + callId
-                    'ff' + // AccountId prefix
                     '52e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10' + // AccountId destination
                     '070010a5d4e8', // value
-                payload: '0400ff52e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10070010a5d4e885030402286bee04000000d51522c9ef7ba4e0990f7a4527de79afcac992ab97abbbc36722f8a27189b17033a7a745849347ce3008c07268be63d8cefd3ef61de0c7318e88a577fb7d26a9'
+                payload: '040052e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10070010a5d4e885030402286bee04000000d51522c9ef7ba4e0990f7a4527de79afcac992ab97abbbc36722f8a27189b17033a7a745849347ce3008c07268be63d8cefd3ef61de0c7318e88a577fb7d26a9'
             })
         }
     ]

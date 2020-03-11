@@ -43,16 +43,8 @@ export class PolkadotProtocolStub implements ProtocolHTTPStub {
             .returns(Promise.resolve({ moduleIndex: 6, callIndex: 6 }))
 
         sinon
-            .stub(protocol.nodeClient, 'getTransferFee')
+            .stub(protocol.nodeClient, 'getTransferFeeEstimate')
             .returns(Promise.resolve(new BigNumber(100000000)))
-
-        sinon
-            .stub(protocol.nodeClient, 'getTransactionBaseFee')
-            .returns(Promise.resolve(new BigNumber(100000000)))
-
-        sinon
-            .stub(protocol.nodeClient, 'getTransactionByteFee')
-            .returns(Promise.resolve(new BigNumber(10000000)))
 
         sinon
             .stub(protocol.nodeClient, 'getNonce')

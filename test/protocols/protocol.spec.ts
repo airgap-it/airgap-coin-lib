@@ -256,7 +256,7 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
           if (protocol.lib.identifier === 'polkadot') {
             const parsedTx = JSON.parse(tx)
 
-            const signature = Buffer.from(parsedTx.encoded.substr(74, 128), 'hex')
+            const signature = Buffer.from(parsedTx.encoded.substr(72, 128), 'hex')
             const payload = Buffer.from(parsedTx.payload, 'hex')
             const publicKey = Buffer.from(protocol.wallet.publicKey, 'hex')
 
