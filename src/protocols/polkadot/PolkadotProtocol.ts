@@ -1,3 +1,4 @@
+import axios, { AxiosResponse } from '../../dependencies/src/axios-0.19.0'
 import { FeeDefaults, CurrencyUnit, ICoinProtocol } from '../ICoinProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
 import { PolkadotNodeClient } from './PolkadotNodeClient'
@@ -17,23 +18,23 @@ import { bip39ToMiniSecret } from '@polkadot/wasm-crypto'
 import { PolkadotValidatorDetails } from './staking/PolkadotValidatorDetails'
 
 export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtocol {    
-    symbol: string = 'DOT'
-    name: string = 'Polkadot'
-    marketSymbol: string = 'DOT'
-    feeSymbol: string = 'DOT'
+    public symbol: string = 'DOT'
+    public name: string = 'Polkadot'
+    public marketSymbol: string = 'DOT'
+    public feeSymbol: string = 'DOT'
 
-    decimals: number = 12;
-    feeDecimals: number = 12;
-    identifier: string = 'polkadot';
+    public decimals: number = 12;
+    public feeDecimals: number = 12;
+    public identifier: string = 'polkadot';
 
     // TODO: set better values
-    feeDefaults: FeeDefaults = {
+    public feeDefaults: FeeDefaults = {
         low: '0.01', // 10 000 000 000
         medium: '0.01',
         high: '0.01'
     }
 
-    units: CurrencyUnit[] = [
+    public units: CurrencyUnit[] = [
         {
             unitSymbol: 'DOT',
             factor: '1'
@@ -56,14 +57,16 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
         }
     ]
 
-    supportsHD: boolean = false
-    standardDerivationPath: string = `m/44'/354'/0'/0/0` // TODO: verify
+    public supportsHD: boolean = false
+    public standardDerivationPath: string = `m/44'/354'/0'/0/0` // TODO: verify
 
-    addressIsCaseSensitive: boolean = false
-    addressValidationPattern: string = '^[a-km-zA-HJ-NP-Z1-9]+$' // TODO: set length?
-    addressPlaceholder: string = 'ABC...' // TODO: better placeholder?
+    public addressIsCaseSensitive: boolean = false
+    public addressValidationPattern: string = '^[a-km-zA-HJ-NP-Z1-9]+$' // TODO: set length?
+    public addressPlaceholder: string = 'ABC...' // TODO: better placeholder?
 
-    blockExplorer: string = 'https://polkascan.io/pre/kusama'
+    public blockExplorer: string = 'https://polkascan.io/pre/kusama'
+
+    private blockExplorerApi: string = 'https://api-01.polkascan.io/kusama/api/v1'
 
     constructor(
         readonly nodeClient: PolkadotNodeClient = new PolkadotNodeClient('https://polkadot-kusama-node-1.kubernetes.papers.tech')
@@ -105,12 +108,32 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
         return [await this.getAddressFromPublicKey(publicKey)]
     }
     
-    public getTransactionsFromPublicKey(publicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]> {
-        throw new Error('Method not implemented.');
+    public async getTransactionsFromPublicKey(publicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]> {
+        return this.getTransactionsFromAddresses([encodeAddress(publicKey)], limit, offset)
     }
     
-    public getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
-        throw new Error('Method not implemented.');
+    public async getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
+        const pageNumber = Math.ceil(offset / limit) + 1
+        
+        const responses: AxiosResponse[] = await Promise.all(
+            addresses.map(address => axios.get(`${this.blockExplorerApi}/balances/transfer?&filter[address]=${address}&page[size]=${limit}&page[number]=${pageNumber}`))
+        )
+
+        return responses.map(response => response.data.data)
+            .reduce((flatten, toFlatten) => flatten.concat(toFlatten), [])
+            .filter(transfer => transfer.type === 'balancetransfer')
+            .map(transfer => {
+                const destination = encodeAddress(transfer.attributes.destination.id)
+                return {
+                    protocolIdentifier: this.identifier,
+                    from: [encodeAddress(transfer.attributes.sender.id)],
+                    to: [destination],
+                    isInbound: addresses.includes(destination),
+                    amount: transfer.attributes.value,
+                    fee: transfer.attributes.fee,
+                    hash: transfer.id
+                }
+            })
     }
     
     public async signWithPrivateKey(privateKey: Buffer, rawTransaction: RawPolkadotTransaction): Promise<string> {
