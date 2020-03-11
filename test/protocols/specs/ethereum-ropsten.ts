@@ -16,7 +16,6 @@ export class EthereumRopstenTestProtocolSpec extends TestProtocolSpec {
     {
       amount: '1000000000000000000',
       fee: '420000000000000',
-      transactionFee: '420000000000000',
       to: ['0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e'],
       from: ['0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e'],
       unsignedTx: {

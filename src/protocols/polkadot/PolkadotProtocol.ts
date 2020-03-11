@@ -173,17 +173,31 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
         return this.getBalanceOfAddresses([await this.getAddressFromPublicKey(publicKey)])        
     }
 
+    public async getTransferFeeEstimate(publicKey: string, destination: string, value: string, tip: string = '0'): Promise<string> {
+        const transaction = await this.prepareTransaction(PolkadotTransactionType.TRANSFER, publicKey, tip, { 
+            to: destination.length > 0 ? destination : encodeAddress(publicKey), 
+            value: new BigNumber(value) 
+        })
+        const fee = await this.calculateTransactionFee(transaction)
+
+        if (!fee) {
+            return Promise.reject('Could not fetch all necesaary data.')
+        }
+
+        return fee.toString(10)
+    }
+
     public prepareTransactionFromPublicKey(publicKey: string, recipients: string[], values: string[], fee: string, data?: any): Promise<RawPolkadotTransaction> {
         if  (recipients.length !== 1 && values.length !== 1) {
             return Promise.reject('only single transactions are supported')
         }
 
-        return this.prepareTransaction(PolkadotTransactionType.TRANSFER, publicKey, fee, { to: recipients[0], value: new BigNumber(values[0]) })
+        return this.prepareSignableTransaction(PolkadotTransactionType.TRANSFER, publicKey, 0, { to: recipients[0], value: new BigNumber(values[0]) })
     }
 
     public prepareTransactionsFromPublicKey(publicKey: string, txConfig: { type: PolkadotTransactionType, fee: string | number | BigNumber, args: any }[]): Promise<RawPolkadotTransaction[]> {
         return Promise.all(
-            txConfig.map((tx, index) => this.prepareTransaction(tx.type, publicKey, tx.fee, tx.args, index))
+            txConfig.map((tx, index) => this.prepareSignableTransaction(tx.type, publicKey, tx.fee, tx.args, index))
         )
     }
 
@@ -194,57 +208,22 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
         return result ? result : Promise.reject('Error while submitting the transaction.')
     }
 
-    public prepareBondTransaction(
-        publicKey: string,
-        controller: string, 
-        value: string | number | BigNumber, 
-        payee: string | PolkadotRewardDestination, 
-        fee: string | number | BigNumber
-    ): Promise<RawPolkadotTransaction> {
-        return this.prepareTransaction(PolkadotTransactionType.BOND, publicKey, fee, {
-            controller,
-            value: BigNumber.isBigNumber(value) ? value : new BigNumber(value),
-            payee: isString(payee) ? PolkadotRewardDestination[payee] :  payee   
-        })
-    }
+    private async prepareSignableTransaction(type: PolkadotTransactionType, publicKey: string, tip: string | number | BigNumber, args: any = {}, index: number | BigNumber = 0): Promise<RawPolkadotTransaction> {
+        const results = await Promise.all([
+            this.getBalanceOfPublicKey(publicKey),
+            this.prepareTransaction(type, publicKey, tip, args, index),
+            this.nodeClient.getLastBlockHash(),
+            this.nodeClient.getFirstBlockHash(),
+            this.nodeClient.getSpecVersion(),
+        ])
 
-    public prepareUnbondTransaction(publicKey: string, value: string | number | BigNumber, fee: string | number | BigNumber): Promise<RawPolkadotTransaction> {
-        return this.prepareTransaction(PolkadotTransactionType.UNBOND, publicKey, fee, {
-            value: BigNumber.isBigNumber(value) ? value : new BigNumber(value)
-        })
-    }
-
-    public prepareNominateTransaction(publicKey: string, targets: string[], fee: string | number | BigNumber): Promise<RawPolkadotTransaction> {
-        return this.prepareTransaction(PolkadotTransactionType.NOMINATE, publicKey, fee, { targets })
-    }
-
-    public prepareStopNominatingTransaction(publicKey: string, fee: string | number | BigNumber): Promise<RawPolkadotTransaction> {
-        return this.prepareTransaction(PolkadotTransactionType.STOP_NOMINATING, publicKey, fee)
-    }
-
-    private async prepareTransaction(type: PolkadotTransactionType, publicKey: string, tip: string | number | BigNumber, args: any = {}, index: number | BigNumber = 0): Promise<RawPolkadotTransaction> {
-        const currentBalance = new BigNumber(await this.getBalanceOfPublicKey(publicKey))
-
-        const lastHash = await this.nodeClient.getLastBlockHash()
-        const genesisHash = await this.nodeClient.getFirstBlockHash()
-
-        const chainHeight = await this.nodeClient.getCurrentHeight()
-        const nonce = (await this.nodeClient.getNonce(publicKey))?.plus(index)
-        const specVersion = await this.nodeClient.getSpecVersion()
-        const methodId = await this.nodeClient.getTransactionMetadata(type)
-
-        if (!lastHash || !genesisHash || !methodId || !nonce) {
+        if (results.some(result => result === null)) {
             return Promise.reject('Could not fetch all necessary data.')
         }
 
-        const transaction = PolkadotTransaction.create(type, {
-            from: publicKey,
-            tip: BigNumber.isBigNumber(tip) ? tip : new BigNumber(tip),
-            methodId,
-            args,
-            era: { chainHeight },
-            nonce
-        })
+        const currentBalance = new BigNumber(results[0]!)
+
+        const transaction = results[1]!
 
         const fee = await this.calculateTransactionFee(transaction)
         if (!fee) {
@@ -254,6 +233,10 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
         if (currentBalance.lt(fee)) {
             throw new Error('Not enough balance')
         }
+
+        const lastHash = results[2]!
+        const genesisHash = results[3]!
+        const specVersion = results[4]!
 
         const payload = PolkadotTransactionPayload.create(transaction, {
             specVersion,
@@ -269,12 +252,79 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
         }
     }
 
-    public signMessage(message: string, privateKey: Buffer): Promise<string> {
-        throw new Error('Method not implemented.');
+    private async prepareTransaction(type: PolkadotTransactionType, publicKey: string, tip: string | number | BigNumber, args: any = {}, index: number | BigNumber = 0): Promise<PolkadotTransaction> {
+        const results = await Promise.all([
+            this.nodeClient.getCurrentHeight(),
+            this.nodeClient.getNonce(publicKey),
+            this.nodeClient.getTransactionMetadata(type)
+        ])
+
+        if (results.some(result => result === null)) {
+            return Promise.reject('Could not fetch all necessary data.')
+        }
+
+        const chainHeight = results[0]!
+        const nonce = results[1]!.plus(index)
+        const methodId = results[2]!
+
+        return PolkadotTransaction.create(type, {
+            from: publicKey,
+            tip: BigNumber.isBigNumber(tip) ? tip : new BigNumber(tip),
+            methodId,
+            args,
+            era: { chainHeight },
+            nonce
+        })
+    }
+
+    private async calculateTransactionFee(transaction: PolkadotTransaction): Promise<BigNumber | null> {
+        const partialEstimate = await this.nodeClient.getTransferFeeEstimate(transaction.encode())
+
+        return partialEstimate?.plus(transaction.tip.value) || null
     }
     
-    public verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
-        throw new Error('Method not implemented.');
+    private async getTransactionDetailsFromRaw(rawTransaction: RawPolkadotTransaction): Promise<IAirGapTransaction[]> {
+        const polkadotTransaction = PolkadotTransaction.fromRaw(rawTransaction)
+
+        return [{
+            from: [],
+            to: [],
+            amount: '',
+            fee: rawTransaction.fee,
+            protocolIdentifier: this.identifier,
+            isInbound: false,
+            ...polkadotTransaction.toAirGapTransaction()
+        }]
+    }
+
+    // Delegation
+
+    public prepareBondTransaction(
+        publicKey: string,
+        controller: string, 
+        value: string | number | BigNumber, 
+        payee: string | PolkadotRewardDestination, 
+        fee: string | number | BigNumber = 0
+    ): Promise<RawPolkadotTransaction> {
+        return this.prepareSignableTransaction(PolkadotTransactionType.BOND, publicKey, fee, {
+            controller,
+            value: BigNumber.isBigNumber(value) ? value : new BigNumber(value),
+            payee: isString(payee) ? PolkadotRewardDestination[payee] :  payee   
+        })
+    }
+
+    public prepareUnbondTransaction(publicKey: string, value: string | number | BigNumber, fee: string | number | BigNumber = 0): Promise<RawPolkadotTransaction> {
+        return this.prepareSignableTransaction(PolkadotTransactionType.UNBOND, publicKey, fee, {
+            value: BigNumber.isBigNumber(value) ? value : new BigNumber(value)
+        })
+    }
+
+    public prepareNominateTransaction(publicKey: string, targets: string[], tip: string | number | BigNumber = 0): Promise<RawPolkadotTransaction> {
+        return this.prepareSignableTransaction(PolkadotTransactionType.NOMINATE, publicKey, tip, { targets })
+    }
+
+    public prepareStopNominatingTransaction(publicKey: string, tip: string | number | BigNumber = 0): Promise<RawPolkadotTransaction> {
+        return this.prepareSignableTransaction(PolkadotTransactionType.STOP_NOMINATING, publicKey, tip)
     }
 
     public async isPublicKeyDelegating(publicKey: string): Promise<boolean> {
@@ -290,23 +340,11 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
         return this.nodeClient.getValidatorDetails(decodeAddress(validator))
     }
 
-    async calculateTransactionFee(transaction: PolkadotTransaction): Promise<BigNumber | null> {
-        const partialEstimate = await this.nodeClient.getTransferFeeEstimate(transaction.encode())
-
-        return partialEstimate?.plus(transaction.tip.value) || null
+    public signMessage(message: string, privateKey: Buffer): Promise<string> {
+        throw new Error('Method not implemented.');
     }
-
-    private async getTransactionDetailsFromRaw(rawTransaction: RawPolkadotTransaction): Promise<IAirGapTransaction[]> {
-        const polkadotTransaction = PolkadotTransaction.fromRaw(rawTransaction)
-
-        return [{
-            from: [],
-            to: [],
-            amount: '',
-            fee: rawTransaction.fee,
-            protocolIdentifier: this.identifier,
-            isInbound: false,
-            ...polkadotTransaction.toAirGapTransaction()
-        }]
+    
+    public verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
+        throw new Error('Method not implemented.');
     }
 }

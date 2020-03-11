@@ -35,7 +35,6 @@ export class TezosTestProtocolSpec extends TestProtocolSpec {
     {
       amount: '1000000',
       fee: '1420',
-      transactionFee: '1420',
       to: ['tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'],
       from: ['tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'],
       unsignedTx: {

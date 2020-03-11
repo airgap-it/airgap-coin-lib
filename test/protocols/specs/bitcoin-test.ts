@@ -19,7 +19,6 @@ export class BitcoinTestProtocolSpec extends TestProtocolSpec {
       to: ['mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k'],
       amount: '10',
       fee: '27000',
-      transactionFee: '27000',
       unsignedTx: {
         ins: [
           {
