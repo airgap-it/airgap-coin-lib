@@ -131,7 +131,8 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
                     isInbound: addresses.includes(destination),
                     amount: transfer.attributes.value,
                     fee: transfer.attributes.fee,
-                    hash: transfer.id
+                    hash: transfer.id,
+                    blockHeight: transfer.attributes.block_id
                 }
             })
     }
@@ -181,7 +182,7 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
         const fee = await this.calculateTransactionFee(transaction)
 
         if (!fee) {
-            return Promise.reject('Could not fetch all necesaary data.')
+            return Promise.reject('Could not fetch all necessary data.')
         }
 
         return fee.toString(10)
@@ -227,7 +228,7 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
 
         const fee = await this.calculateTransactionFee(transaction)
         if (!fee) {
-            return Promise.reject('Could not fetch all necesaary data.')
+            return Promise.reject('Could not fetch all necessary data.')
         }
 
         if (currentBalance.lt(fee)) {
