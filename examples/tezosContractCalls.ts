@@ -1,3 +1,4 @@
+// import { TezosFAProtocol } from '../src/protocols/tezos/fa/TezosFAProtocol'
 import { TezosBTC } from '../src/protocols/tezos/fa/TezosBTC'
 // import { UnsignedTezosTransaction } from '../src/serializer/v1/unsigned-transactions/tezos-transactions.serializer'
 // import { SyncProtocolUtils, EncodedType } from '../src/serializer/v1/serializer'
@@ -11,8 +12,20 @@ import { TezosBTC } from '../src/protocols/tezos/fa/TezosBTC'
 // const fee = '1600000'
 
 // const syncProtocolUtils = new SyncProtocolUtils()
-
 const contract = new TezosBTC()
+// const contract = new TezosFAProtocol({
+//     symbol: 'TZBTC',
+//     name: 'Tezos BTC',
+//     marketSymbol: 'btc',
+//     identifier: 'xtz-btc',
+//     feeDefaults: {
+//       low: '0.250',
+//       medium: '0.50',
+//       high: '1.00'
+//     },
+//     contractAddress: 'KT1EctCuorV2NfVb1XTQgvzJ88MQtWP8cMMv',//'KT1LH2o12xVRwTpJMZ6QJG74Fox8gE9QieFd',
+//     jsonRPCAPI: 'https://tezos-mainnet-node-1.kubernetes.papers.tech'
+//   })
 // contract.getBalance('tz1aqsunnQ9ECPAfvRaWeMfiNFhF3s8M15sy').then(result => {
 //     console.log('BALANCE', result)
 // }).catch(error => console.log(error))
@@ -43,7 +56,10 @@ const contract = new TezosBTC()
 //     })
 // })
 
-contract.getTotalBurned('tz1aqsunnQ9ECPAfvRaWeMfiNFhF3s8M15sy').then(console.log)
+// contract.getTotalBurned('tz1aqsunnQ9ECPAfvRaWeMfiNFhF3s8M15sy', 'KT19ptNzn4MVAN45KUUNpyL5AdLVhujk815u').then(console.log)
+contract.getTotalSupply().then(console.log)
+// contract.getTotalSupply().then(console.log)
+// contract.getTotalMinted('tz1Mj7RzPmMAqDUNFBn5t5VbXmWW4cSUAdtT', 'KT19ptNzn4MVAN45KUUNpyL5AdLVhujk815u').then(console.log)
 
 // contract.transfer(fromAddress, toAddress, amount, fee, pubKey)
 //   .then(rawTx => {
