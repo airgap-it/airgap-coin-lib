@@ -180,7 +180,7 @@ export class CosmosNodeClient {
 
   public async fetchUnbondingDelegations(delegatorAddress: string): Promise<CosmosUnbondingDelegation[]> {
     const response = await Axios.get(this.url(`/staking/delegators/${delegatorAddress}/unbonding_delegations`))
-    const unbondingDelegations = response.data as CosmosUnbondingDelegation[]
+    const unbondingDelegations = response.data.result as CosmosUnbondingDelegation[]
     return unbondingDelegations
   }
 
