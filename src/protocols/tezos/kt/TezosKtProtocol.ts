@@ -191,7 +191,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
         contents: operations
       }
 
-      const binaryTx: string = this.forgeTezosOperation(tezosWrappedOperation)
+      const binaryTx: string = await this.forgeTezosOperation(tezosWrappedOperation)
 
       return { binaryTransaction: binaryTx }
     } catch (error) {

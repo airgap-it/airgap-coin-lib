@@ -34,6 +34,7 @@
   },
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
+    "@taquito/local-forging": "^6.1.0-beta.0",
     "libsodium-wrappers": "0.7.3"
   },
   "localDependencies": {

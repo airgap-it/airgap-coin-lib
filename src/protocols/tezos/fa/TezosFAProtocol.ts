@@ -9,7 +9,6 @@ import {
   TezosOperation,
   TezosOperationType,
   TezosProtocol,
-  TezosSpendOperation,
   TezosWrappedOperation
 } from '../TezosProtocol'
 
@@ -370,7 +369,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     }
 
     for (const contractCall of contractCalls) {
-      const transactionOperation: TezosSpendOperation = {
+      const transactionOperation: any = {
         kind: TezosOperationType.TRANSACTION,
         fee: fee,
         gas_limit: '400000',
@@ -379,7 +378,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
         counter: counter.toFixed(),
         destination: this.contractAddress,
         source: source,
-        code: `ff${contractCall.toHex()}`
+        parameters: contractCall.toJSON()
       }
 
       operations.push(transactionOperation)
@@ -391,7 +390,9 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
         contents: operations
       }
 
-      const binaryTx: string = this.forgeTezosOperation(tezosWrappedOperation)
+      console.log(JSON.stringify(tezosWrappedOperation, undefined, 2))
+
+      const binaryTx: string = await this.forgeTezosOperation(tezosWrappedOperation)
 
       return { binaryTransaction: binaryTx }
     } catch (error) {
@@ -404,64 +405,6 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     return `${this.jsonRPCAPI}${path}`
   }
 
-  public unforgeParameters(hexString: string): { result: { amount: BigNumber; destination: string }; rest: string } {
-    const hexBytes: RegExpMatchArray | null = hexString.match(/.{2}/g)
-    if (hexBytes === null) {
-      throw new Error('Cannot parse contract code')
-    }
-    const contractCall: TezosContractCall = TezosContractCall.fromHex(hexBytes)
-    switch (
-      contractCall.entrypoint.name // TODO: this should be refactored, every case should call a function to do the job instead of doing it inline
-    ) {
-      case TezosContractEntrypointName.TRANSFER: {
-        const pair: TezosContractPair = contractCall.args.second as TezosContractPair
-
-        return {
-          result: {
-            amount: new BigNumber(pair.second as number),
-            destination: pair.first as string
-          },
-          rest: hexBytes.join('')
-        }
-      }
-      case TezosContractEntrypointName.APPROVE: {
-        const pair: TezosContractPair = contractCall.args
-
-        return {
-          result: {
-            amount: new BigNumber(pair.second as number),
-            destination: pair.first as string
-          },
-          rest: hexBytes.join('')
-        }
-      }
-      default:
-        return {
-          result: {
-            amount: new BigNumber(0),
-            destination: ''
-          },
-          rest: hexBytes.join('')
-        }
-    }
-  }
-
-  protected formatContractData(
-    source: string,
-    amount: BigNumber,
-    destination: string,
-    contractData: any
-  ): {
-    source: string
-    amount: BigNumber
-    destination: string
-  } {
-    return {
-      source: source,
-      amount: contractData.amount,
-      destination: contractData.destination
-    }
-  }
 }
 
 abstract class TezosContractEntity {

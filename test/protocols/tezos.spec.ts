@@ -23,7 +23,7 @@ const prepareTxHelper = async (rawTezosTx: RawTezosTransaction) => {
     publicKey: tezosProtocolSpec.wallet.publicKey
   })
 
-  const unforgedTransaction = tezosLib.unforgeUnsignedTezosWrappedOperation(rawTezosTx.binaryTransaction)
+  const unforgedTransaction = await tezosLib.unforgeUnsignedTezosWrappedOperation(rawTezosTx.binaryTransaction)
 
   const spendOperation = unforgedTransaction.contents.find(content => content.kind === TezosOperationType.TRANSACTION)
   if (spendOperation) {
@@ -141,31 +141,6 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         )
     })
 
-    it('will randomly convert zarith to bignum back and forth', async () => {
-      const numberToConvert = new BigNumber(Math.round(Math.random() * 1000000))
-      const zarithString = tezosLib.bigNumberToZarith(numberToConvert)
-      const resultConversion = tezosLib.zarithToBigNumber(zarithString)
-      expect(numberToConvert.toFixed()).to.equal(resultConversion.toFixed())
-    })
-
-    it('will iteratively convert multiple zariths to bignum', async () => {
-      let hexString = 'f44e0af44e00b960' // contains: fee, counter, gas_limit, storage_limit and amount
-
-      const results: BigNumber[] = []
-      while (hexString.length > 0) {
-        const zarithString = hexString.substr(0, tezosLib.findZarithEndIndex(hexString))
-        hexString = hexString.substr(tezosLib.findZarithEndIndex(hexString), hexString.length - tezosLib.findZarithEndIndex(hexString))
-        results.push(tezosLib.zarithToBigNumber(zarithString))
-      }
-
-      expect(results.length).to.equal(5)
-      expect(results[0].toFixed()).to.equal('10100')
-      expect(results[1].toFixed()).to.equal('10')
-      expect(results[2].toFixed()).to.equal('10100')
-      expect(results[3].toFixed()).to.equal('0')
-      expect(results[4].toFixed()).to.equal('12345')
-    })
-
     it('will parse various operations', async () => {
       const hexString =
         'a732d3520eeaa3de98d78e5e5cb6c85f72204fd46feb9f76853841d4a701add36c0008ba0cb2fad622697145cf1665124096d25bc31ef44e0af44e00b960000008ba0cb2fad622697145cf1665124096d25bc31e006c0008ba0cb2fad622697145cf1665124096d25bc31ed3e7bd1008d3bb0300b1a803000008ba0cb2fad622697145cf1665124096d25bc31e00' // contains: fee, counter, gas_limit, storage_limit and amount
@@ -193,7 +168,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
     }
 
            */
-      let tezosWrappedOperation = tezosLib.unforgeUnsignedTezosWrappedOperation(hexString)
+      let tezosWrappedOperation = await tezosLib.unforgeUnsignedTezosWrappedOperation(hexString)
 
       expect(tezosWrappedOperation.branch).to.equal('BLyvCRkxuTXkx1KeGvrcEXiPYj4p1tFxzvFDhoHE7SFKtmP1rbk')
       expect(tezosWrappedOperation.contents.length).to.equal(2)
@@ -250,7 +225,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
            */
       const hexBigOperationTransaction =
         'a732d3520eeaa3de98d78e5e5cb6c85f72204fd46feb9f76853841d4a701add36b00f6645951a38c13586cda1edb9bdbebcf34a50773ba3d0d901f0900cdbc0c3449784bd53907c3c7a06060cf12087e492a7b937f044c6a73b522a2346c0002b1b8e2338ea7bf67ef23ff1277cbc7d4b6842493bb03b4af05934dd4fb8e0186920401ba4e7349ac25dc5eb2df5a43fceacc58963df4f500006c00c06daac32b63628ff2ed4b75ade88132cbef78d5bb918c0ff0d6950bddef9d03009b9204016834ed66e95b00e7aeeab2778d7c6b5a571171550000'
-      tezosWrappedOperation = tezosLib.unforgeUnsignedTezosWrappedOperation(hexBigOperationTransaction)
+      tezosWrappedOperation = await tezosLib.unforgeUnsignedTezosWrappedOperation(hexBigOperationTransaction)
       expect(tezosWrappedOperation.branch).to.equal('BLyvCRkxuTXkx1KeGvrcEXiPYj4p1tFxzvFDhoHE7SFKtmP1rbk')
       expect(tezosWrappedOperation.contents.length).to.equal(3)
 
@@ -280,7 +255,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       expect((tezosWrappedOperation.contents[2] as TezosSpendOperation).destination).to.equal('KT1J5mFAxxzAYDLjYeVXkLcyEzNGRZ3kuFGq')
     })
 
-    it('can unforge a delegation TX', async () => {})
+    it('can unforge a delegation TX', async () => { })
 
     it('can give a list of transactions from Conseil API', async () => {
       const stub = sinon.stub(axios, 'post')
