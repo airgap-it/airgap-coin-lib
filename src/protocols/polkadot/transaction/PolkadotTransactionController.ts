@@ -9,6 +9,7 @@ import { SCALECompactInt } from '../node/codec/type/SCALECompactInt'
 import { SCALEBytes } from '../node/codec/type/SCALEBytes'
 import { SCALEArray } from '../node/codec/type/SCALEArray'
 import { SCALEDecoder } from '../node/codec/SCALEDecoder'
+import { PolkadotAddress } from '../account/PolkadotAddress'
 
 interface PolkadotTransactionDetails {
     fee: BigNumber
@@ -54,7 +55,7 @@ export class PolkadotTransactionController {
     ): Promise<PolkadotTransaction> {
         const results = await Promise.all([
             this.nodeClient.getCurrentHeight(),
-            this.nodeClient.getNonce(publicKey),
+            this.nodeClient.getNonce(PolkadotAddress.fromPublicKey(publicKey)),
             this.nodeClient.getTransactionMetadata(type)
         ])
 

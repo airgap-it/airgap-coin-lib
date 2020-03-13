@@ -24,12 +24,28 @@ interface UnbondArgs {
     value: number | BigNumber
 }
 
+interface BondExtraArgs {
+    value: number | BigNumber
+}
+
+interface WithdrawUnbondedArgs {
+
+}
+
 interface NominateArgs {
     targets: string[]
 }
 
 interface StopNominatingArgs {
 
+}
+
+interface SetPayeeArgs {
+    payee: PolkadotRewardDestination
+}
+
+interface SetControllerArgs {
+    controller: string
 }
 
 function assertFields(type: string, object: any, ...fields: string[]) {
@@ -53,11 +69,22 @@ export abstract class PolkadotTransactionMethodArgsFactory<T> {
             case PolkadotTransactionType.UNBOND:
                 assertFields('unbond', args, 'value')
                 return new UnbondArgsFactory(args)
+            case PolkadotTransactionType.BOND_EXTRA:
+                assertFields('bondExtra', args, 'value')
+                return new BondExtraArgsFactory(args)
+            case PolkadotTransactionType.WITHDRAW_UNBONDED:
+                return new WithdrawUnbondedArgsFactory(args)
             case PolkadotTransactionType.NOMINATE:
                 assertFields('nominate', args, 'targets')
                 return new NominateArgsFactory(args)
             case PolkadotTransactionType.STOP_NOMINATING:
                 return new StopNominatingArgsFactory(args)
+            case PolkadotTransactionType.SET_PAYEE:
+                assertFields('setPayee', args, 'payee')
+                return new SetPayeeArgsFactory(args)
+            case PolkadotTransactionType.SET_CONTROLLER:
+                assertFields('setController', args, 'controller')
+                return new SetControllerArgsFactory(args)
         }        
     }
 
@@ -76,10 +103,18 @@ export abstract class PolkadotTransactionMethodArgsDecoder<T> {
                 return new BondArgsDecoder()
             case PolkadotTransactionType.UNBOND:
                 return new UnbondArgsDecoder()
+            case PolkadotTransactionType.BOND_EXTRA:
+                return new BondExtraArgsDecoder()
+            case PolkadotTransactionType.WITHDRAW_UNBONDED:
+                return new WithdrawUnbondedArgsDecoder()
             case PolkadotTransactionType.NOMINATE:
                 return new NominateArgsDecoder()
             case PolkadotTransactionType.STOP_NOMINATING:
                 return new StopNominatingArgsDecoder()
+            case PolkadotTransactionType.SET_PAYEE:
+                return new SetPayeeArgsDecoder()
+            case PolkadotTransactionType.SET_CONTROLLER:
+                return new SetControllerArgsDecoder()
         }
     }
 
@@ -181,6 +216,50 @@ class UnbondArgsDecoder extends PolkadotTransactionMethodArgsDecoder<UnbondArgs>
     }
 }
 
+class BondExtraArgsFactory extends PolkadotTransactionMethodArgsFactory<BondExtraArgs> {
+    public createFields(): [string, SCALEType][] {
+        return [
+            ['value', SCALECompactInt.from(this.args.value)]
+        ]
+    }
+    public createToAirGapTransactionPart(): () => Partial<IAirGapTransaction> {
+        return () => ({
+            amount: this.args.value.toString() 
+        })
+    }
+}
+
+class BondExtraArgsDecoder extends PolkadotTransactionMethodArgsDecoder<BondExtraArgs> {
+    protected _decode(decoder: SCALEDecoder): SCALEDecodeResult<BondExtraArgs> {
+        const value = decoder.decodeNextCompactInt()
+
+        return {
+            bytesDecoded: value.bytesDecoded,
+            decoded: {
+                value: value.decoded.value
+            }
+        }
+    }
+}
+
+class WithdrawUnbondedArgsFactory extends PolkadotTransactionMethodArgsFactory<WithdrawUnbondedArgs> {
+    public createFields(): [string, SCALEType][] {
+        return []
+    }
+    public createToAirGapTransactionPart(): () => Partial<IAirGapTransaction> {
+        return () => ({})
+    }
+}
+
+class WithdrawUnbondedArgsDecoder extends PolkadotTransactionMethodArgsDecoder<WithdrawUnbondedArgs> {
+    protected _decode(decoder: SCALEDecoder): SCALEDecodeResult<WithdrawUnbondedArgs> {
+        return {
+            bytesDecoded: 0,
+            decoded: {}
+        }
+    }
+}
+
 class NominateArgsFactory extends PolkadotTransactionMethodArgsFactory<NominateArgs> {
     public createFields(): [string, SCALEType][] {
         return [
@@ -221,6 +300,56 @@ class StopNominatingArgsDecoder extends PolkadotTransactionMethodArgsDecoder<Sto
         return {
             bytesDecoded: 0,
             decoded: {}
+        }
+    }
+}
+
+class SetPayeeArgsFactory extends PolkadotTransactionMethodArgsFactory<SetPayeeArgs> {
+    public createFields(): [string, SCALEType][] {
+        return [
+            ['payee', SCALEEnum.from(this.args.payee)]
+        ]
+    }
+    public createToAirGapTransactionPart(): () => Partial<IAirGapTransaction> {
+        return () => ({})
+    }
+}
+
+class SetPayeeArgsDecoder extends PolkadotTransactionMethodArgsDecoder<SetPayeeArgs> {
+    protected _decode(decoder: SCALEDecoder): SCALEDecodeResult<SetPayeeArgs> {
+        const payee = decoder.decodeNextEnum(value => PolkadotRewardDestination[PolkadotRewardDestination[value]])
+
+        return {
+            bytesDecoded: payee.bytesDecoded,
+            decoded: {
+                payee: payee.decoded.value
+            }
+        }
+    }
+}
+
+class SetControllerArgsFactory extends PolkadotTransactionMethodArgsFactory<SetControllerArgs> {
+    public createFields(): [string, SCALEType][] {
+        return [
+            ['controller', SCALEAccountId.from(this.args.controller)]
+        ]
+    }
+    public createToAirGapTransactionPart(): () => Partial<IAirGapTransaction> {
+        return () => ({
+            to: [PolkadotAddress.fromPublicKey(this.args.controller).toString()]
+        })
+    }
+}
+
+class SetControllerArgsDecoder extends PolkadotTransactionMethodArgsDecoder<SetControllerArgs> {
+    protected _decode(decoder: SCALEDecoder): SCALEDecodeResult<SetControllerArgs> {
+        const controller = decoder.decodeNextAccountId()
+
+        return {
+            bytesDecoded: controller.bytesDecoded,
+            decoded: {
+                controller: controller.decoded.toString()
+            }
         }
     }
 }

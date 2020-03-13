@@ -4,7 +4,7 @@ import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { RPCBody } from '../../../data/RPCBody'
 import { xxhashAsHex } from '../../../utils/xxhash'
 import { blake2bAsHex } from '../../../utils/blake2b'
-import { stripHexPrefix, toHexString, addHexPrefix, bytesToHex, hexToBytes } from '../../../utils/hex'
+import { stripHexPrefix, toHexString, addHexPrefix, bytesToHex } from '../../../utils/hex'
 import { PolkadotTransactionType } from '../transaction/data/PolkadotTransaction'
 import { PolkadotNominations } from '../staking/PolkadotNominations'
 import { 
@@ -19,6 +19,7 @@ import { SCALEInt } from './codec/type/SCALEInt'
 import { SCALEArray } from './codec/type/SCALEArray'
 import { SCALEAccountId } from './codec/type/SCALEAccountId'
 import { PolkadotAccountInfo } from '../account/data/PolkadotAccountInfo'
+import { PolkadotAddress } from '../account/PolkadotAddress'
 
 const RPC_ENDPOINTS = {
     GET_METADATA: 'state_getMetadata',
@@ -34,16 +35,24 @@ const RPC_EXTRINSIC = {
     TRANSFER: 'balances_transfer',
     BOND: 'staking_bond',
     UNBOND: 'staking_unbond',
+    BOND_EXTRA: 'staking_bond_extra',
+    WITHDRAW_UNBONDED: 'staking_withdraw_unbonded',
     NOMINATE: 'staking_nominate',
-    CHILL: 'staking_chill'
+    CHILL: 'staking_chill',
+    SET_PAYEE: 'staking_set_payee',
+    SET_CONTROLLER: 'staking_set_controller'
 }
 
 const methodEndpoints: Map<PolkadotTransactionType, string> = new Map([
     [PolkadotTransactionType.TRANSFER, RPC_EXTRINSIC.TRANSFER],
     [PolkadotTransactionType.BOND, RPC_EXTRINSIC.BOND],
     [PolkadotTransactionType.UNBOND, RPC_EXTRINSIC.UNBOND],
+    [PolkadotTransactionType.BOND_EXTRA, RPC_EXTRINSIC.BOND_EXTRA],
+    [PolkadotTransactionType.WITHDRAW_UNBONDED, RPC_EXTRINSIC.WITHDRAW_UNBONDED],
     [PolkadotTransactionType.NOMINATE, RPC_EXTRINSIC.NOMINATE],
-    [PolkadotTransactionType.STOP_NOMINATING, RPC_EXTRINSIC.CHILL]
+    [PolkadotTransactionType.STOP_NOMINATING, RPC_EXTRINSIC.CHILL],
+    [PolkadotTransactionType.SET_PAYEE, RPC_EXTRINSIC.SET_PAYEE],
+    [PolkadotTransactionType.SET_CONTROLLER, RPC_EXTRINSIC.SET_CONTROLLER]
 ])
 
 enum StorageHasher {
@@ -118,8 +127,8 @@ export class PolkadotNodeClient {
         private readonly storageKeyUtil: StorageKeyUtil = new StorageKeyUtil()
     ) {}
 
-    public async getBalance(accountId: Uint8Array | string): Promise<BigNumber> {
-        const accountInfo = await this.getAccountInfo(accountId)
+    public async getBalance(address: PolkadotAddress): Promise<BigNumber> {
+        const accountInfo = await this.getAccountInfo(address)
 
         return accountInfo?.data.free.value || new BigNumber(NaN)
     }
@@ -147,8 +156,8 @@ export class PolkadotNodeClient {
         )
     }
 
-    public async getNonce(accountId: Uint8Array | string): Promise<BigNumber | null> {
-        const accountInfo = await this.getAccountInfo(accountId)
+    public async getNonce(address: PolkadotAddress): Promise<BigNumber | null> {
+        const accountInfo = await this.getAccountInfo(address)
 
         return accountInfo?.nonce.value || null
     }
@@ -187,64 +196,82 @@ export class PolkadotNodeClient {
         )
     }
 
-    public getNominations(accountId: Uint8Array | string): Promise<PolkadotNominations | null> {
+    public getBonded(address: PolkadotAddress): Promise<PolkadotAddress | null> {
+        return this.getFromStorage<PolkadotAddress | null>(
+            {
+                moduleName: 'Staking',
+                storageName: 'Bonded',
+                firstKey: {
+                    hasher: StorageHasher.BLAKE2_256,
+                    value: address.getBufferPublicKey()
+                }
+            },
+            result => result ? SCALEAccountId.decode(result).decoded.address : null
+        )
+    }
+
+    public getNominations(address: PolkadotAddress): Promise<PolkadotNominations | null> {
         return this.getFromStorage<PolkadotNominations | null>(
             { 
                 moduleName: 'Staking',
                 storageName: 'Nominators', 
                 firstKey: { 
                     hasher: StorageHasher.BLAKE2_256, 
-                    value: accountId 
+                    value: address.getBufferPublicKey()
                 } 
             },
             result => result ? PolkadotNominations.decode(result) : null
         )
     }
 
-    public async getValidatorDetails(accountId: Uint8Array | string): Promise<PolkadotValidatorDetails> {
-        const identity = await this.getFromStorage<PolkadotValidatorIdentity | null>(
-            { 
-                moduleName: 'Sudo', 
-                storageName: 'IdentityOf', 
-                firstKey: { 
-                    hasher: StorageHasher.BLAKE2_256, 
-                    value: accountId 
-                } 
-            },
-            result => result ? PolkadotValidatorIdentity.decode(result) : null
-        )
+    public async getValidatorDetails(address: PolkadotAddress): Promise<PolkadotValidatorDetails> {
+        const results = await Promise.all([
+            this.getFromStorage<PolkadotValidatorIdentity | null>(
+                { 
+                    moduleName: 'Sudo', 
+                    storageName: 'IdentityOf', 
+                    firstKey: { 
+                        hasher: StorageHasher.BLAKE2_256, 
+                        value: address.getBufferPublicKey()
+                    } 
+                },
+                result => result ? PolkadotValidatorIdentity.decode(result) : null
+            ),
+            this.getFromStorage<Buffer[] | null>(
+                { 
+                    moduleName: 'Session', 
+                    storageName: 'Validators'
+                 },
+                result => result ? SCALEArray.decode(result, SCALEAccountId.decode).decoded.elements.map(encoded => encoded.asBytes()) : null
+            ),
+            this.getFromStorage<PolkadotValidatorPrefs | null>(
+                { 
+                    moduleName: 'Staking', 
+                    storageName: 'Validators', 
+                    firstKey: { 
+                        hasher: StorageHasher.BLAKE2_256, 
+                        value: address.getBufferPublicKey()
+                    } 
+                },
+                result => result ? PolkadotValidatorPrefs.decode(result) : null
+            )
+        ])
 
-        const currentValidators = await this.getFromStorage<Buffer[] | null>(
-            { 
-                moduleName: 'Session', 
-                storageName: 'Validators'
-             },
-            result => result ? SCALEArray.decode(result, SCALEAccountId.decode).decoded.elements.map(encoded => encoded.asBytes()) : null
-        )
-
-        const prefs = await this.getFromStorage<PolkadotValidatorPrefs | null>(
-            { 
-                moduleName: 'Staking', 
-                storageName: 'Validators', 
-                firstKey: { 
-                    hasher: StorageHasher.BLAKE2_256, 
-                    value: accountId 
-                } 
-            },
-            result => result ? PolkadotValidatorPrefs.decode(result) : null
-        )
+        const identity = results[0]
+        const currentValidators = results[1]
+        const prefs = results[2]
 
         let status: PolkadotValidatorStatus | null
         // TODO: check if reaped
         if (!currentValidators) {
             status = null
-        } else if (currentValidators.find(buffer => buffer.compare(hexToBytes(accountId)) == 0)) {
+        } else if (currentValidators.find(buffer => buffer.compare(address.getBufferPublicKey()) == 0)) {
             status = PolkadotValidatorStatus.ACTIVE
         } else {
             status = PolkadotValidatorStatus.INACTIVE
         }
 
-        const exposure = await this.getValidatorExposure(accountId)
+        const exposure = await this.getValidatorExposure(address)
         
         return {
             name: identity ? identity.display.value : null,
@@ -270,14 +297,14 @@ export class PolkadotNodeClient {
         )
     }
 
-    private async getAccountInfo(accountId: Uint8Array | string): Promise<PolkadotAccountInfo | null> {
+    private async getAccountInfo(address: PolkadotAddress): Promise<PolkadotAccountInfo | null> {
         return this.getFromStorage<PolkadotAccountInfo | null>(
             { 
                 moduleName: 'System', 
                 storageName: 'Account', 
                 firstKey: { 
                     hasher: StorageHasher.BLAKE2_256, 
-                    value: accountId 
+                    value: address.getBufferPublicKey()
                 } 
             },
             result => result ? PolkadotAccountInfo.decode(result) : null
@@ -291,7 +318,7 @@ export class PolkadotNodeClient {
         )
     }
 
-    private async getValidatorExposure(accountId: string | Uint8Array): Promise<PolkadotExposure | null> {
+    private async getValidatorExposure(address: PolkadotAddress): Promise<PolkadotExposure | null> {
         const eraIndex = await this.getCurrentEraIndex() || 0
 
         return this.getFromStorage(
@@ -304,7 +331,7 @@ export class PolkadotNodeClient {
                 }, 
                 secondKey: { 
                     hasher: StorageHasher.TWOX64_CONCAT, 
-                    value: accountId 
+                    value: address.getBufferPublicKey()
                 } 
             },
             result => result ? PolkadotExposure.decode(result) : null

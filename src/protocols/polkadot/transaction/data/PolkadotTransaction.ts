@@ -28,7 +28,7 @@ interface PolkadotTransactionConfig {
 }
 
 export enum PolkadotTransactionType {
-    TRANSFER, BOND, UNBOND, NOMINATE, STOP_NOMINATING
+    TRANSFER, BOND, UNBOND, BOND_EXTRA, WITHDRAW_UNBONDED, NOMINATE, STOP_NOMINATING, SET_PAYEE, SET_CONTROLLER
 }
 
 export class PolkadotTransaction extends SCALEClass {

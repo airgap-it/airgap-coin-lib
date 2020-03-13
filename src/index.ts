@@ -17,6 +17,7 @@ import { GroestlcoinProtocol } from './protocols/groestlcoin/GroestlcoinProtocol
 import { GroestlcoinTestnetProtocol } from './protocols/groestlcoin/GroestlcoinTestnetProtocol'
 import { ICoinProtocol } from './protocols/ICoinProtocol'
 import { ICoinSubProtocol } from './protocols/ICoinSubProtocol'
+import { ICoinDelegateProtocol } from './protocols/ICoinDelegateProtocol'
 import { LitecoinProtocol } from './protocols/litecoin/LitecoinProtocol'
 import { TezosKtProtocol } from './protocols/tezos/kt/TezosKtProtocol'
 import { BakerInfo, DelegationInfo, DelegationRewardInfo, TezosProtocol, TezosPayoutInfo } from './protocols/tezos/TezosProtocol'
@@ -60,6 +61,7 @@ export {
   IAirGapTransaction,
   ICoinProtocol,
   ICoinSubProtocol,
+  ICoinDelegateProtocol,
   BitcoinProtocol,
   BitcoinTestnetProtocol,
   GroestlcoinProtocol,
