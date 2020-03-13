@@ -1,8 +1,8 @@
 import { ProtocolHTTPStub, TestProtocolSpec } from "../implementations";
 import * as sinon from 'sinon'
 import { PolkadotProtocol } from "../../../src/protocols/polkadot/PolkadotProtocol";
-import { PolkadotTransactionType } from "../../../src/protocols/polkadot/transaction/PolkadotTransaction";
 import BigNumber from "../../../src/dependencies/src/bignumber.js-9.0.0/bignumber";
+import { PolkadotTransactionType } from '../../../src/protocols/polkadot/transaction/data/PolkadotTransaction'
 
 export class PolkadotProtocolStub implements ProtocolHTTPStub {
 

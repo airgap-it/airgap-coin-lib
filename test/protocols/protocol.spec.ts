@@ -3,7 +3,7 @@ import * as chaiAsPromised from 'chai-as-promised'
 import 'mocha'
 import * as sinon from 'sinon'
 
-import { IAirGapTransaction } from '../../src'
+import { IAirGapTransaction, PolkadotProtocol } from '../../src'
 
 import { TestProtocolSpec } from './implementations'
 import { AETestProtocolSpec } from './specs/ae'
@@ -254,10 +254,10 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
 
         txs.forEach((tx, index) => {
           if (protocol.lib.identifier === 'polkadot') {
-            const parsedTx = JSON.parse(tx)
+            const decoded = (protocol.lib as PolkadotProtocol).transactionController.decodeDetails(tx)[0]
 
-            const signature = Buffer.from(parsedTx.encoded.substr(72, 128), 'hex')
-            const payload = Buffer.from(parsedTx.payload, 'hex')
+            const signature = decoded.transaction.signature.signature.value
+            const payload = Buffer.from(decoded.payload.encode(), 'hex')
             const publicKey = Buffer.from(protocol.wallet.publicKey, 'hex')
 
             expect(sr25519Verify(signature, payload, publicKey)).to.be.true
