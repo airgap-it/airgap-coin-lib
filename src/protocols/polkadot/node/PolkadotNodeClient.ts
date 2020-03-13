@@ -130,7 +130,7 @@ export class PolkadotNodeClient {
     public async getBalance(address: PolkadotAddress): Promise<BigNumber> {
         const accountInfo = await this.getAccountInfo(address)
 
-        return accountInfo?.data.free.value || new BigNumber(NaN)
+        return accountInfo?.data.free.value || new BigNumber(0)
     }
 
     public async getTransactionMetadata(type: PolkadotTransactionType): Promise<ExtrinsicId | null> {
