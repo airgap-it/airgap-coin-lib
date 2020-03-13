@@ -6,20 +6,7 @@ import { validateSyncScheme } from "../validators/validators";
 import { async } from "../../dependencies/src/validate.js-0.13.1/validate";
 
 const unsignedTransactionConstraints = {
-    type: {
-        presence: { allowEmpty: false },
-        type: 'String'
-    },
-    fee: {
-        presence: { allowEmpty: false },
-        type: 'String'
-    },
-    encoded: {
-        isValidPolkadotUnsignedTransaction: true,
-        presence: { allowEmpty: false },
-        type: 'String'
-    },
-    payload: {
+    serialized: {
         presence: { allowEmpty: false },
         type: 'String'
     }

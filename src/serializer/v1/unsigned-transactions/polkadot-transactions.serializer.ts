@@ -1,13 +1,10 @@
 import { UnsignedTransactionSerializer, UnsignedTransaction, SerializedSyncProtocolTransaction, SyncProtocolUnsignedTransactionKeys } from "../unsigned-transaction.serializer";
 import { toBuffer } from "../../utils/toBuffer";
 
-export type SerializedUnsignedPolkadotTransaction = [Buffer, Buffer, Buffer, Buffer]
+export type SerializedUnsignedPolkadotTransaction = [Buffer]
 
 export interface RawPolkadotTransaction {
-    type: string,
-    fee: string,
-    encoded: string,
-    payload: string
+    serialized: string
 }
 
 export interface UnsignedPolkadotTransaction extends UnsignedTransaction {
@@ -19,12 +16,7 @@ export class PolkadotUnsignedTransactionsSerializer extends UnsignedTransactionS
     public serialize(transaction: UnsignedPolkadotTransaction): SerializedSyncProtocolTransaction {
         const toSerialize: any[] = []
             
-        toSerialize[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION] = [
-            transaction.transaction.type, 
-            transaction.transaction.fee,
-            transaction.transaction.encoded,
-            transaction.transaction.payload
-        ]
+        toSerialize[SyncProtocolUnsignedTransactionKeys.UNSIGNED_TRANSACTION] = [transaction.transaction.serialized, ]
         toSerialize[SyncProtocolUnsignedTransactionKeys.PUBLIC_KEY] = transaction.publicKey
         toSerialize[SyncProtocolUnsignedTransactionKeys.CALLBACK] = transaction.callback ? transaction.callback : 'airgap-wallet://?d='
             
@@ -36,10 +28,7 @@ export class PolkadotUnsignedTransactionsSerializer extends UnsignedTransactionS
 
         return {
             transaction: {
-                type: unsignedTx[0].toString(),
-                fee: unsignedTx[1].toString(),
-                encoded: unsignedTx[2].toString(),
-                payload: unsignedTx[3].toString()
+                serialized: unsignedTx.toString()
             },
             publicKey: serializedTx[SyncProtocolUnsignedTransactionKeys.PUBLIC_KEY].toString(),
             callback: serializedTx[SyncProtocolUnsignedTransactionKeys.CALLBACK].toString()

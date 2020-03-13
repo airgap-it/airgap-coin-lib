@@ -249,7 +249,7 @@ export class PolkadotNodeClient {
         }
     }
 
-    public submitTransaction(encoded: string): Promise<string | null> {
+    public submitTransaction(encoded: string): Promise<string> {
         return this.send<string, string>(
             RPC_ENDPOINTS.SUBMIT_EXTRINSIC,
             [encoded]

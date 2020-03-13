@@ -9,13 +9,14 @@ import { IAirGapTransaction } from '../..'
 import { PolkadotTransaction, PolkadotTransactionType } from './transaction/PolkadotTransaction'
 import { UnsignedPolkadotTransaction } from '../../serializer/schemas/definitions/transaction-sign-request-polkadot'
 import { SignedPolkadotTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-polkadot'
-import { sign } from './transaction/sign'
+import { signPolkadotTransaction } from './transaction/sign'
 import { PolkadotTransactionPayload } from './transaction/PolkadotTransactionPayload'
 import { PolkadotRewardDestination } from './staking/PolkadotRewardDestination'
 import { isString } from 'util'
 import { RawPolkadotTransaction } from '../../serializer/types'
 import { bip39ToMiniSecret } from '@polkadot/wasm-crypto'
 import { PolkadotValidatorDetails } from './staking/PolkadotValidatorDetails'
+import { PolkadotSerializableTransaction, serializePolkadotTransactions, deserializePolkadotTransactions } from './transaction/serialize'
 
 export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtocol {    
     public symbol: string = 'DOT'
@@ -138,25 +139,20 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
     }
     
     public async signWithPrivateKey(privateKey: Buffer, rawTransaction: RawPolkadotTransaction): Promise<string> {
-        const unsigned = PolkadotTransaction.fromRaw(rawTransaction)
+        const txs = deserializePolkadotTransactions(rawTransaction.serialized)
+        const signed = await Promise.all(txs.map(tx => signPolkadotTransaction(privateKey, tx.transaction, tx.payload)))
 
-        const signed = await sign(privateKey, unsigned, rawTransaction.payload)
+        txs.forEach((tx, index) => tx.transaction = signed[index])
 
-        return JSON.stringify({
-            type: signed.type.toString(),
-            fee: rawTransaction.fee,
-            encoded: signed.encode(),
-            payload: rawTransaction.payload
-        })
+        return serializePolkadotTransactions(txs)
     }
     
     public async getTransactionDetails(transaction: UnsignedPolkadotTransaction): Promise<IAirGapTransaction[]> {
-        return this.getTransactionDetailsFromRaw(transaction.transaction)
+        return this.getTransactionDetailsFromSerialized(transaction.transaction.serialized)
     }
     
     public async getTransactionDetailsFromSigned(transaction: SignedPolkadotTransaction): Promise<IAirGapTransaction[]> {
-        const rawTransaction = JSON.parse(transaction.transaction) as RawPolkadotTransaction
-        return this.getTransactionDetailsFromRaw(rawTransaction)
+        return this.getTransactionDetailsFromSerialized(transaction.transaction)
     }
 
     public async getBalanceOfAddresses(addresses: string[]): Promise<string> {
@@ -189,27 +185,53 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
     }
 
     public prepareTransactionFromPublicKey(publicKey: string, recipients: string[], values: string[], fee: string, data?: any): Promise<RawPolkadotTransaction> {
-        if  (recipients.length !== 1 && values.length !== 1) {
-            return Promise.reject('only single transactions are supported')
+        if (recipients.length !== values.length) {
+            return Promise.reject('Recipients length doesn\'t match values length.')
         }
 
-        return this.prepareSignableTransaction(PolkadotTransactionType.TRANSFER, publicKey, 0, { to: recipients[0], value: new BigNumber(values[0]) })
-    }
+        const recipientsWithValues: [string, string][] = recipients.map((recipient, index) => [recipient, values[index]])
 
-    public prepareTransactionsFromPublicKey(publicKey: string, txConfig: { type: PolkadotTransactionType, fee: string | number | BigNumber, args: any }[]): Promise<RawPolkadotTransaction[]> {
-        return Promise.all(
-            txConfig.map((tx, index) => this.prepareSignableTransaction(tx.type, publicKey, tx.fee, tx.args, index))
+        return this.prepareTransactionsFromPublicKey(
+            publicKey,
+            recipientsWithValues.map(([recipient, value]: [string, string], index) => ({
+                type: PolkadotTransactionType.TRANSFER,
+                tip: 0, // temporary, until we handle Polkadot fee/tip model
+                args: {
+                    to: recipient,
+                    value: new BigNumber(value)
+                }
+            }))
         )
     }
 
-    public async broadcastTransaction(rawTransaction: string): Promise<string> {
-        const encoded = (JSON.parse(rawTransaction) as RawPolkadotTransaction).encoded
-        const result = await this.nodeClient.submitTransaction(encoded)
-        
-        return result ? result : Promise.reject('Error while submitting the transaction.')
+    public async prepareTransactionsFromPublicKey(publicKey: string, txConfig: { type: PolkadotTransactionType, tip: string | number | BigNumber, args: any }[]): Promise<RawPolkadotTransaction> {
+        const txs = await Promise.all(
+            txConfig.map((tx, index) => this.prepareSerializableTransaction(tx.type, publicKey, tx.tip, tx.args, index))
+        )
+
+        return {
+            serialized: serializePolkadotTransactions(txs)
+        }
     }
 
-    private async prepareSignableTransaction(type: PolkadotTransactionType, publicKey: string, tip: string | number | BigNumber, args: any = {}, index: number | BigNumber = 0): Promise<RawPolkadotTransaction> {
+    public async broadcastTransaction(serialized: string): Promise<string> {
+        const txs = deserializePolkadotTransactions(serialized).map(tx => tx.transaction)
+
+        try {
+            const txHashes = await Promise.all(
+                txs.map((tx, index) => this.nodeClient.submitTransaction(tx.encode()).catch(error => {
+                    error.index = index
+                    throw error
+                }))
+            )
+            return txHashes[0]
+        } catch (error) {
+            console.warn(`Transaction #${error.index} submit failure`, error)
+            return Promise.reject(`Error while submitting transaction #${error.index}: ${PolkadotTransactionType[txs[error.index].type]}.`)
+        }
+    }
+
+    private async prepareSerializableTransaction(type: PolkadotTransactionType, publicKey: string, tip: string | number | BigNumber, args: any = {}, index: number | BigNumber = 0): Promise<PolkadotSerializableTransaction> {
         const results = await Promise.all([
             this.getBalanceOfPublicKey(publicKey),
             this.prepareTransaction(type, publicKey, tip, args, index),
@@ -246,10 +268,10 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
         })
 
         return {
-            type: type.toString(),
-            fee: fee.toString(),
-            encoded: transaction.encode(),
-            payload: payload.encode()
+            type,
+            fee,
+            transaction,
+            payload
         }
     }
 
@@ -284,18 +306,18 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
         return partialEstimate?.plus(transaction.tip.value) || null
     }
     
-    private async getTransactionDetailsFromRaw(rawTransaction: RawPolkadotTransaction): Promise<IAirGapTransaction[]> {
-        const polkadotTransaction = PolkadotTransaction.fromRaw(rawTransaction)
+    private async getTransactionDetailsFromSerialized(serialized: string): Promise<IAirGapTransaction[]> {
+        const txs = deserializePolkadotTransactions(serialized)
 
-        return [{
+        return txs.map(tx => ({
             from: [],
             to: [],
             amount: '',
-            fee: rawTransaction.fee,
+            fee: tx.fee.toString(),
             protocolIdentifier: this.identifier,
             isInbound: false,
-            ...polkadotTransaction.toAirGapTransaction()
-        }]
+            ...tx.transaction.toAirGapTransaction()
+        }))
     }
 
     // Delegation
@@ -305,27 +327,51 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
         controller: string, 
         value: string | number | BigNumber, 
         payee: string | PolkadotRewardDestination, 
-        fee: string | number | BigNumber = 0
+        tip: string | number | BigNumber = 0
     ): Promise<RawPolkadotTransaction> {
-        return this.prepareSignableTransaction(PolkadotTransactionType.BOND, publicKey, fee, {
-            controller,
-            value: BigNumber.isBigNumber(value) ? value : new BigNumber(value),
-            payee: isString(payee) ? PolkadotRewardDestination[payee] :  payee   
-        })
+        return this.prepareTransactionsFromPublicKey(publicKey, [
+            {
+                type: PolkadotTransactionType.BOND,
+                tip,
+                args: {
+                    controller,
+                    value: BigNumber.isBigNumber(value) ? value : new BigNumber(value),
+                    payee: isString(payee) ? PolkadotRewardDestination[payee] :  payee
+                }
+            }
+        ])
     }
 
-    public prepareUnbondTransaction(publicKey: string, value: string | number | BigNumber, fee: string | number | BigNumber = 0): Promise<RawPolkadotTransaction> {
-        return this.prepareSignableTransaction(PolkadotTransactionType.UNBOND, publicKey, fee, {
-            value: BigNumber.isBigNumber(value) ? value : new BigNumber(value)
-        })
+    public prepareUnbondTransaction(publicKey: string, value: string | number | BigNumber, tip: string | number | BigNumber = 0): Promise<RawPolkadotTransaction> {
+        return this.prepareTransactionsFromPublicKey(publicKey, [
+            {
+                type: PolkadotTransactionType.UNBOND,
+                tip,
+                args: {
+                    value: BigNumber.isBigNumber(value) ? value : new BigNumber(value)
+                }
+            }
+        ])
     }
 
     public prepareNominateTransaction(publicKey: string, targets: string[], tip: string | number | BigNumber = 0): Promise<RawPolkadotTransaction> {
-        return this.prepareSignableTransaction(PolkadotTransactionType.NOMINATE, publicKey, tip, { targets })
+        return this.prepareTransactionsFromPublicKey(publicKey, [
+            {
+                type: PolkadotTransactionType.BOND,
+                tip,
+                args: { targets }
+            }
+        ])
     }
 
     public prepareStopNominatingTransaction(publicKey: string, tip: string | number | BigNumber = 0): Promise<RawPolkadotTransaction> {
-        return this.prepareSignableTransaction(PolkadotTransactionType.STOP_NOMINATING, publicKey, tip)
+        return this.prepareTransactionsFromPublicKey(publicKey, [
+            {
+                type: PolkadotTransactionType.STOP_NOMINATING,
+                tip,
+                args: {}
+            }
+        ])
     }
 
     public async isPublicKeyDelegating(publicKey: string): Promise<boolean> {

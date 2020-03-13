@@ -14,24 +14,12 @@
         "transaction": {
           "additionalProperties": false,
           "properties": {
-            "encoded": {
-              "type": "string"
-            },
-            "fee": {
-              "type": "string"
-            },
-            "payload": {
-              "type": "string"
-            },
-            "type": {
+            "serialized": {
               "type": "string"
             }
           },
           "required": [
-            "type",
-            "fee",
-            "encoded",
-            "payload"
+            "serialized"
           ],
           "type": "object"
         }

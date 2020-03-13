@@ -8,10 +8,9 @@ import { SCALEEra, EraConfig } from "../codec/type/SCALEEra"
 import { SCALEType } from "../codec/type/SCALEType"
 import { SCALEBytes } from "../codec/type/SCALEBytes"
 import { ExtrinsicId } from "../metadata/Metadata"
-import { SCALEDecoder } from "../codec/SCALEDecoder"
+import { SCALEDecoder, SCALEDecodeResult } from "../codec/SCALEDecoder"
 import { SCALEHash } from "../codec/type/SCALEHash"
 import { stripHexPrefix } from "../../../utils/hex"
-import { RawPolkadotTransaction } from "../../../serializer/types"
 import { SCALEAccountId } from "../codec/type/SCALEAccountId"
 
 const VERSION = 4
@@ -59,11 +58,7 @@ export class PolkadotTransaction extends SCALEClass {
         )
     }
 
-    public static fromRaw(raw: RawPolkadotTransaction): PolkadotTransaction {
-        return PolkadotTransaction.decode(PolkadotTransactionType[PolkadotTransactionType[parseInt(raw.type, 10)]], raw.encoded)
-    }
-
-    public static decode(type: PolkadotTransactionType, raw: string): PolkadotTransaction {
+    public static decode(type: PolkadotTransactionType, raw: string): SCALEDecodeResult<PolkadotTransaction> {
         const bytes = SCALEBytes.decode(stripHexPrefix(raw))
         const decoder = new SCALEDecoder(bytes.decoded.bytes.toString('hex'))
 
@@ -75,15 +70,18 @@ export class PolkadotTransaction extends SCALEClass {
         const tip = decoder.decodeNextCompactInt()
         const method = decoder.decodeNextObject(hex => PolkadotTransactionMethod.decode(type, hex))
 
-        return new PolkadotTransaction(
-            type,
-            signer.decoded,
-            signature.decoded,
-            era.decoded,
-            nonce.decoded,
-            tip.decoded,
-            method.decoded
-        )
+        return {
+            bytesDecoded: bytes.bytesDecoded,
+            decoded: new PolkadotTransaction(
+                type,
+                signer.decoded,
+                signature.decoded,
+                era.decoded,
+                nonce.decoded,
+                tip.decoded,
+                method.decoded
+            )
+        }
     }
 
     protected scaleFields = [this.signer, this.signature, this.era, this.nonce, this.tip, this.method]

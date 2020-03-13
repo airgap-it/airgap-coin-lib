@@ -11,21 +11,19 @@ import { RawPolkadotTransaction } from "../serializer/types"
 
 function serializeTx(
     wallet: AirGapMarketWallet,
-    transactions: RawPolkadotTransaction[]
+    transaction: RawPolkadotTransaction
 ): Promise<string[]> {
     const serializer = new Serializer()
 
-    return serializer.serialize(transactions.map(transaction => (
-        {
-            protocol: wallet.coinProtocol.identifier,
-            type: IACMessageType.TransactionSignRequest,
-            payload: {
-                publicKey: wallet.publicKey,
-                transaction,
-                callback: 'airgap-wallet://?d='
-            }
-        }  
-    )))
+    return serializer.serialize([{
+        protocol: wallet.coinProtocol.identifier,
+        type: IACMessageType.TransactionSignRequest,
+        payload: {
+            publicKey: wallet.publicKey,
+            transaction,
+            callback: 'airgap-wallet://?d='
+        }
+    }])
 }
 
 export interface PolkadotDelegateActionContext {
@@ -51,11 +49,11 @@ export class PolkadotDelegateAction<Context extends PolkadotDelegateActionContex
             const protocol = new PolkadotProtocol()
 
             try {
-                const txs = await protocol.prepareTransactionsFromPublicKey(
+                const tx = await protocol.prepareTransactionsFromPublicKey(
                     this.context.wallet.publicKey,
                     [{ 
                         type: PolkadotTransactionType.BOND,
-                        fee: this.context.fee,
+                        tip: this.context.fee,
                         args: {
                             controller: this.context.controller,
                             value: this.context.value,
@@ -63,24 +61,22 @@ export class PolkadotDelegateAction<Context extends PolkadotDelegateActionContex
                         }
                     }, {
                         type: PolkadotTransactionType.NOMINATE,
-                        fee: this.context.fee,
+                        tip: this.context.fee,
                         args: {
                             targets: this.context.targets
                         }
                     }]
                 )
 
-                const serializedTx = await serializeTx(this.context.wallet, txs)
+                const serializedTx = await serializeTx(this.context.wallet, tx)
                 
-                const airGapTxs = (await Promise.all(
-                    txs.map(async tx => await protocol.getTransactionDetails({ 
-                        publicKey: this.context.wallet.publicKey,
-                        transaction: tx 
-                    }))
-                )).reduce((flattened, toFlatten) => flattened.concat(toFlatten), [])
+                const airGapTxs = await protocol.getTransactionDetails({
+                    publicKey: this.context.wallet.publicKey,
+                    transaction: tx
+                })
 
                 return {
-                    rawTxs: txs,
+                    rawTxs: [tx],
                     serializedTx,
                     airGapTxs,
                     dataUrl: `airgap-vault://?d=${serializedTx.join(',')}`
