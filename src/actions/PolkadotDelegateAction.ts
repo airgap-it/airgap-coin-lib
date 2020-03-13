@@ -5,7 +5,7 @@ import BigNumber from "../dependencies/src/bignumber.js-9.0.0/bignumber"
 import { Serializer } from "../serializer/serializer"
 import { IACMessageType } from "../serializer/interfaces"
 import { PolkadotProtocol } from "../protocols/polkadot/PolkadotProtocol"
-import { PolkadotTransactionType } from "../protocols/polkadot/transaction/PolkadotTransaction"
+import { PolkadotTransactionType } from "../protocols/polkadot/transaction/data/PolkadotTransaction"
 import { PolkadotRewardDestination } from "../protocols/polkadot/staking/PolkadotRewardDestination"
 import { RawPolkadotTransaction } from "../serializer/types"
 
@@ -49,8 +49,12 @@ export class PolkadotDelegateAction<Context extends PolkadotDelegateActionContex
             const protocol = new PolkadotProtocol()
 
             try {
-                const tx = await protocol.prepareTransactionsFromPublicKey(
+                const currentBalance = await protocol.getBalanceOfPublicKey(this.context.wallet.publicKey)
+                const available = new BigNumber(currentBalance).minus(this.context.value)
+
+                const encoded = await protocol.transactionController.prepareSubmittableTransactions(
                     this.context.wallet.publicKey,
+                    available,
                     [{ 
                         type: PolkadotTransactionType.BOND,
                         tip: this.context.fee,
@@ -67,16 +71,17 @@ export class PolkadotDelegateAction<Context extends PolkadotDelegateActionContex
                         }
                     }]
                 )
+                const rawTx = { encoded }
 
-                const serializedTx = await serializeTx(this.context.wallet, tx)
+                const serializedTx = await serializeTx(this.context.wallet, rawTx)
                 
                 const airGapTxs = await protocol.getTransactionDetails({
                     publicKey: this.context.wallet.publicKey,
-                    transaction: tx
+                    transaction: rawTx
                 })
 
                 return {
-                    rawTxs: [tx],
+                    rawTxs: [rawTx],
                     serializedTx,
                     airGapTxs,
                     dataUrl: `airgap-vault://?d=${serializedTx.join(',')}`

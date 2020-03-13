@@ -46,5 +46,5 @@ export interface UnsignedCosmosTransaction extends UnsignedTransaction {
 }
 
 export interface RawPolkadotTransaction {
-  serialized: string
+  encoded: string
 }

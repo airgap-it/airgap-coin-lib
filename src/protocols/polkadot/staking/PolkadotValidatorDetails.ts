@@ -1,10 +1,10 @@
-import { SCALEDecoder } from "../codec/SCALEDecoder";
-import BigNumber from "../../../dependencies/src/bignumber.js-9.0.0/bignumber";
-import { SCALECompactInt } from "../codec/type/SCALECompactInt";
-import { SCALEString } from "../codec/type/SCALEString";
-import { SCALEArray } from "../codec/type/SCALEArray";
-import { SCALETuple } from "../codec/type/SCALETuple";
-import { SCALEAccountId } from "../codec/type/SCALEAccountId";
+import { SCALECompactInt } from '../node/codec/type/SCALECompactInt'
+import { SCALEArray } from '../node/codec/type/SCALEArray'
+import { SCALETuple } from '../node/codec/type/SCALETuple'
+import { SCALEAccountId } from '../node/codec/type/SCALEAccountId'
+import { SCALEDecoder } from '../node/codec/SCALEDecoder'
+import { SCALEString } from '../node/codec/type/SCALEString'
+import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 
 export class PolkadotValidatorIdentity {
     public static decode(raw: string): PolkadotValidatorIdentity {

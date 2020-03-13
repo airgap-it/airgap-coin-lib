@@ -1,7 +1,7 @@
 import { UnsignedTransaction } from "./transaction-sign-request";
 
 interface RawPolkadotTransaction {
-    serialized: string
+    encoded: string
 }
 
 export interface UnsignedPolkadotTransaction extends UnsignedTransaction {

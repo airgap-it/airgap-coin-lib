@@ -1,22 +1,22 @@
-import axios, { AxiosResponse } from '../../dependencies/src/axios-0.19.0'
 import { FeeDefaults, CurrencyUnit, ICoinProtocol } from '../ICoinProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
-import { PolkadotNodeClient } from './PolkadotNodeClient'
+import { PolkadotNodeClient } from './node/PolkadotNodeClient'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
-import { createSr25519KeyPair } from '../../utils/sr25519'
-import { encodeAddress, decodeAddress } from './utils/address'
 import { IAirGapTransaction } from '../..'
-import { PolkadotTransaction, PolkadotTransactionType } from './transaction/PolkadotTransaction'
+import { PolkadotTransactionType } from './transaction/data/PolkadotTransaction'
 import { UnsignedPolkadotTransaction } from '../../serializer/schemas/definitions/transaction-sign-request-polkadot'
 import { SignedPolkadotTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-polkadot'
-import { signPolkadotTransaction } from './transaction/sign'
-import { PolkadotTransactionPayload } from './transaction/PolkadotTransactionPayload'
 import { PolkadotRewardDestination } from './staking/PolkadotRewardDestination'
 import { isString } from 'util'
 import { RawPolkadotTransaction } from '../../serializer/types'
-import { bip39ToMiniSecret } from '@polkadot/wasm-crypto'
 import { PolkadotValidatorDetails } from './staking/PolkadotValidatorDetails'
-import { PolkadotSerializableTransaction, serializePolkadotTransactions, deserializePolkadotTransactions } from './transaction/serialize'
+import { PolkadotAccountController } from './account/PolkadotAccountController'
+import { PolkadotTransactionController } from './transaction/PolkadotTransactionController'
+import { PolkadotBlockExplorerClient } from './blockexplorer/PolkadotBlockExplorerClient'
+import { PolkadotAddress } from './account/PolkadotAddress'
+
+const BLOCK_EXPLORER_URL = 'https://polkascan.io/pre/kusama'
+const BLOCK_EXPLORER_API = 'https://api-01.polkascan.io/kusama/api/v1'
 
 export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtocol {    
     public symbol: string = 'DOT'
@@ -65,44 +65,45 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
     public addressValidationPattern: string = '^[a-km-zA-HJ-NP-Z1-9]+$' // TODO: set length?
     public addressPlaceholder: string = 'ABC...' // TODO: better placeholder?
 
-    public blockExplorer: string = 'https://polkascan.io/pre/kusama'
-
-    private blockExplorerApi: string = 'https://api-01.polkascan.io/kusama/api/v1'
+    public blockExplorer: string = BLOCK_EXPLORER_URL
 
     constructor(
-        readonly nodeClient: PolkadotNodeClient = new PolkadotNodeClient('https://polkadot-kusama-node-1.kubernetes.papers.tech')
+        readonly nodeClient: PolkadotNodeClient = new PolkadotNodeClient('https://polkadot-kusama-node-1.kubernetes.papers.tech'),
+        readonly blockExplorerClient: PolkadotBlockExplorerClient = new PolkadotBlockExplorerClient(BLOCK_EXPLORER_URL, BLOCK_EXPLORER_API),
+        readonly accountController: PolkadotAccountController = new PolkadotAccountController(nodeClient),
+        readonly transactionController: PolkadotTransactionController = new PolkadotTransactionController(nodeClient)
     ) { super() }
 
     public async getBlockExplorerLinkForAddress(address: string): Promise<string> {
-        return `${this.blockExplorer}/account/${address}` // it works for both Address and AccountId
+        return `${this.blockExplorerClient.accountInfoUrl}/${address}`
     }
 
     public async getBlockExplorerLinkForTxId(txId: string): Promise<string> {
-        return `${this.blockExplorer}/extrinsic/${txId}`
+        return `${this.blockExplorerClient.transactionInfoUrl}/${txId}`
     }
 
     public async getPublicKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
-        const secret = bip39ToMiniSecret(mnemonic, password || '')
-        return this.getPublicKeyFromHexSecret(Buffer.from(secret).toString('hex'), derivationPath)
+        const keyPair = await this.accountController.createKeyPairFromMnemonic(mnemonic, derivationPath, password)
+        return keyPair.publicKey.toString('hex')
     }
     
     public async getPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<Buffer> {
-        const secret = bip39ToMiniSecret(mnemonic, password || '')
-        return this.getPrivateKeyFromHexSecret(Buffer.from(secret).toString('hex'), derivationPath)
+        const keyPair = await this.accountController.createKeyPairFromMnemonic(mnemonic, derivationPath, password)
+        return keyPair.privateKey
     }
 
     public async getPublicKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
-        const keyPair = await createSr25519KeyPair(secret, derivationPath)
+        const keyPair = await this.accountController.createKeyPairFromHexSecret(secret, derivationPath)
         return keyPair.publicKey.toString('hex')
     }
 
     public async getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<Buffer> {
-        const keyPair = await createSr25519KeyPair(secret, derivationPath)
+        const keyPair = await this.accountController.createKeyPairFromHexSecret(secret, derivationPath)
         return keyPair.privateKey
     }
 
     public async getAddressFromPublicKey(publicKey: string): Promise<string> {
-        return encodeAddress(publicKey)
+        return this.accountController.createAddress(publicKey)
     }
     
     public async getAddressesFromPublicKey(publicKey: string): Promise<string[]> {
@@ -110,57 +111,46 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
     }
     
     public async getTransactionsFromPublicKey(publicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]> {
-        return this.getTransactionsFromAddresses([encodeAddress(publicKey)], limit, offset)
+        const addresses = await this.getAddressesFromPublicKey(publicKey)
+        return this.getTransactionsFromAddresses(addresses, limit, offset)
     }
     
     public async getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
         const pageNumber = Math.ceil(offset / limit) + 1
-        
-        const responses: AxiosResponse[] = await Promise.all(
-            addresses.map(address => axios.get(`${this.blockExplorerApi}/balances/transfer?&filter[address]=${address}&page[size]=${limit}&page[number]=${pageNumber}`))
-        )
+        const txs = await Promise.all(addresses.map(address => this.blockExplorerClient.getTransactions(address, limit, pageNumber)))
 
-        return responses.map(response => response.data.data)
+        return txs
             .reduce((flatten, toFlatten) => flatten.concat(toFlatten), [])
-            .filter(transfer => transfer.type === 'balancetransfer')
-            .map(transfer => {
-                const destination = encodeAddress(transfer.attributes.destination.id)
-                return {
-                    protocolIdentifier: this.identifier,
-                    from: [encodeAddress(transfer.attributes.sender.id)],
-                    to: [destination],
-                    isInbound: addresses.includes(destination),
-                    amount: transfer.attributes.value,
-                    fee: transfer.attributes.fee,
-                    hash: transfer.id,
-                    blockHeight: transfer.attributes.block_id
-                }
-            })
+            .map(tx => ({
+                protocolIdentifier: this.identifier,
+                from: [],
+                to: [],
+                isInbound: false,
+                amount: '',
+                fee: '',
+                ...tx
+            }))
     }
     
     public async signWithPrivateKey(privateKey: Buffer, rawTransaction: RawPolkadotTransaction): Promise<string> {
-        const txs = deserializePolkadotTransactions(rawTransaction.serialized)
-        const signed = await Promise.all(txs.map(tx => signPolkadotTransaction(privateKey, tx.transaction, tx.payload)))
+        const txs = this.transactionController.decodeDetails(rawTransaction.encoded)
+        const signed = await Promise.all(txs.map(tx => this.transactionController.signTransaction(privateKey, tx.transaction, tx.payload)))
 
         txs.forEach((tx, index) => tx.transaction = signed[index])
 
-        return serializePolkadotTransactions(txs)
+        return this.transactionController.encodeDetails(txs)
     }
     
     public async getTransactionDetails(transaction: UnsignedPolkadotTransaction): Promise<IAirGapTransaction[]> {
-        return this.getTransactionDetailsFromSerialized(transaction.transaction.serialized)
+        return this.getTransactionDetailsFromEncoded(transaction.transaction.encoded)
     }
     
     public async getTransactionDetailsFromSigned(transaction: SignedPolkadotTransaction): Promise<IAirGapTransaction[]> {
-        return this.getTransactionDetailsFromSerialized(transaction.transaction)
+        return this.getTransactionDetailsFromEncoded(transaction.transaction)
     }
 
     public async getBalanceOfAddresses(addresses: string[]): Promise<string> {
-        const promises: Promise<BigNumber>[] = addresses.map(address => {
-            const accountId = decodeAddress(address)
-            return this.nodeClient.getBalance(accountId)
-        })
-        const balances = await Promise.all(promises)
+        const balances = await Promise.all(addresses.map(address => this.accountController.getBalance(address)))
         const balance = balances.reduce((current: BigNumber, next: BigNumber) => current.plus(next))
 
         return balance.toString(10)
@@ -171,11 +161,11 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
     }
 
     public async getTransferFeeEstimate(publicKey: string, destination: string, value: string, tip: string = '0'): Promise<string> {
-        const transaction = await this.prepareTransaction(PolkadotTransactionType.TRANSFER, publicKey, tip, { 
-            to: destination.length > 0 ? destination : encodeAddress(publicKey), 
+        const transaction = await this.transactionController.createTransaction(PolkadotTransactionType.TRANSFER, publicKey, tip, { 
+            to: destination.length > 0 ? destination : publicKey,
             value: new BigNumber(value) 
         })
-        const fee = await this.calculateTransactionFee(transaction)
+        const fee = await this.transactionController.calculateTransactionFee(transaction)
 
         if (!fee) {
             return Promise.reject('Could not fetch all necessary data.')
@@ -184,17 +174,29 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
         return fee.toString(10)
     }
 
-    public prepareTransactionFromPublicKey(publicKey: string, recipients: string[], values: string[], fee: string, data?: any): Promise<RawPolkadotTransaction> {
+    public async prepareTransactionFromPublicKey(
+        publicKey: string, 
+        recipients: string[], 
+        values: string[], 
+        fee: string, 
+        data?: any
+    ): Promise<RawPolkadotTransaction> {
         if (recipients.length !== values.length) {
             return Promise.reject('Recipients length doesn\'t match values length.')
         }
 
         const recipientsWithValues: [string, string][] = recipients.map((recipient, index) => [recipient, values[index]])
 
-        return this.prepareTransactionsFromPublicKey(
+        const currentBalance = await this.getBalanceOfPublicKey(publicKey)
+        const totalValue = values.map(value => new BigNumber(value)).reduce((total, next) => total.plus(next), new BigNumber(0))
+        const available = new BigNumber(currentBalance).minus(totalValue)
+
+        const encoded = await this.transactionController.prepareSubmittableTransactions(
             publicKey,
+            new BigNumber(currentBalance),
             recipientsWithValues.map(([recipient, value]: [string, string], index) => ({
                 type: PolkadotTransactionType.TRANSFER,
+                currentBalance: available,
                 tip: 0, // temporary, until we handle Polkadot fee/tip model
                 args: {
                     to: recipient,
@@ -202,20 +204,12 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
                 }
             }))
         )
+
+        return { encoded }
     }
 
-    public async prepareTransactionsFromPublicKey(publicKey: string, txConfig: { type: PolkadotTransactionType, tip: string | number | BigNumber, args: any }[]): Promise<RawPolkadotTransaction> {
-        const txs = await Promise.all(
-            txConfig.map((tx, index) => this.prepareSerializableTransaction(tx.type, publicKey, tx.tip, tx.args, index))
-        )
-
-        return {
-            serialized: serializePolkadotTransactions(txs)
-        }
-    }
-
-    public async broadcastTransaction(serialized: string): Promise<string> {
-        const txs = deserializePolkadotTransactions(serialized).map(tx => tx.transaction)
+    public async broadcastTransaction(encoded: string): Promise<string> {
+        const txs = this.transactionController.decodeDetails(encoded).map(tx => tx.transaction)
 
         try {
             const txHashes = await Promise.all(
@@ -230,84 +224,9 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
             return Promise.reject(`Error while submitting transaction #${error.index}: ${PolkadotTransactionType[txs[error.index].type]}.`)
         }
     }
-
-    private async prepareSerializableTransaction(type: PolkadotTransactionType, publicKey: string, tip: string | number | BigNumber, args: any = {}, index: number | BigNumber = 0): Promise<PolkadotSerializableTransaction> {
-        const results = await Promise.all([
-            this.getBalanceOfPublicKey(publicKey),
-            this.prepareTransaction(type, publicKey, tip, args, index),
-            this.nodeClient.getLastBlockHash(),
-            this.nodeClient.getFirstBlockHash(),
-            this.nodeClient.getSpecVersion(),
-        ])
-
-        if (results.some(result => result === null)) {
-            return Promise.reject('Could not fetch all necessary data.')
-        }
-
-        const currentBalance = new BigNumber(results[0]!)
-
-        const transaction = results[1]!
-
-        const fee = await this.calculateTransactionFee(transaction)
-        if (!fee) {
-            return Promise.reject('Could not fetch all necessary data.')
-        }
-
-        if (currentBalance.lt(fee)) {
-            throw new Error('Not enough balance')
-        }
-
-        const lastHash = results[2]!
-        const genesisHash = results[3]!
-        const specVersion = results[4]!
-
-        const payload = PolkadotTransactionPayload.create(transaction, {
-            specVersion,
-            genesisHash,
-            lastHash
-        })
-
-        return {
-            type,
-            fee,
-            transaction,
-            payload
-        }
-    }
-
-    private async prepareTransaction(type: PolkadotTransactionType, publicKey: string, tip: string | number | BigNumber, args: any = {}, index: number | BigNumber = 0): Promise<PolkadotTransaction> {
-        const results = await Promise.all([
-            this.nodeClient.getCurrentHeight(),
-            this.nodeClient.getNonce(publicKey),
-            this.nodeClient.getTransactionMetadata(type)
-        ])
-
-        if (results.some(result => result === null)) {
-            return Promise.reject('Could not fetch all necessary data.')
-        }
-
-        const chainHeight = results[0]!
-        const nonce = results[1]!.plus(index)
-        const methodId = results[2]!
-
-        return PolkadotTransaction.create(type, {
-            from: publicKey,
-            tip: BigNumber.isBigNumber(tip) ? tip : new BigNumber(tip),
-            methodId,
-            args,
-            era: { chainHeight },
-            nonce
-        })
-    }
-
-    private async calculateTransactionFee(transaction: PolkadotTransaction): Promise<BigNumber | null> {
-        const partialEstimate = await this.nodeClient.getTransferFeeEstimate(transaction.encode())
-
-        return partialEstimate?.plus(transaction.tip.value) || null
-    }
     
-    private async getTransactionDetailsFromSerialized(serialized: string): Promise<IAirGapTransaction[]> {
-        const txs = deserializePolkadotTransactions(serialized)
+    private async getTransactionDetailsFromEncoded(encoded: string): Promise<IAirGapTransaction[]> {
+        const txs = this.transactionController.decodeDetails(encoded)
 
         return txs.map(tx => ({
             from: [],
@@ -322,14 +241,17 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
 
     // Delegation
 
-    public prepareBondTransaction(
+    public async prepareBondTransaction(
         publicKey: string,
         controller: string, 
         value: string | number | BigNumber, 
         payee: string | PolkadotRewardDestination, 
         tip: string | number | BigNumber = 0
     ): Promise<RawPolkadotTransaction> {
-        return this.prepareTransactionsFromPublicKey(publicKey, [
+        const currentBalance = await this.getBalanceOfPublicKey(publicKey)
+        const available = new BigNumber(currentBalance).minus(value)
+
+        const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, available, [
             {
                 type: PolkadotTransactionType.BOND,
                 tip,
@@ -340,10 +262,19 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
                 }
             }
         ])
+
+        return { encoded }
     }
 
-    public prepareUnbondTransaction(publicKey: string, value: string | number | BigNumber, tip: string | number | BigNumber = 0): Promise<RawPolkadotTransaction> {
-        return this.prepareTransactionsFromPublicKey(publicKey, [
+    public async prepareUnbondTransaction(
+        publicKey: string, 
+        value: string | number | BigNumber, 
+        tip: string | number | BigNumber = 0
+    ): Promise<RawPolkadotTransaction> {
+        const currentBalance = await this.getBalanceOfPublicKey(publicKey)
+        const available = new BigNumber(currentBalance).minus(value)
+
+        const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, available, [
             {
                 type: PolkadotTransactionType.UNBOND,
                 tip,
@@ -352,39 +283,44 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinProtoc
                 }
             }
         ])
+
+        return { encoded }
     }
 
-    public prepareNominateTransaction(publicKey: string, targets: string[], tip: string | number | BigNumber = 0): Promise<RawPolkadotTransaction> {
-        return this.prepareTransactionsFromPublicKey(publicKey, [
+    public async prepareNominateTransaction(publicKey: string, targets: string[], tip: string | number | BigNumber = 0): Promise<RawPolkadotTransaction> {
+        const currentBalance = await this.getBalanceOfPublicKey(publicKey)
+
+        const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, currentBalance, [
             {
                 type: PolkadotTransactionType.BOND,
                 tip,
                 args: { targets }
             }
         ])
+
+        return { encoded }
     }
 
-    public prepareStopNominatingTransaction(publicKey: string, tip: string | number | BigNumber = 0): Promise<RawPolkadotTransaction> {
-        return this.prepareTransactionsFromPublicKey(publicKey, [
+    public async prepareStopNominatingTransaction(publicKey: string, tip: string | number | BigNumber = 0): Promise<RawPolkadotTransaction> {
+        const currentBalance = await this.getBalanceOfPublicKey(publicKey)
+
+        const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, currentBalance, [
             {
                 type: PolkadotTransactionType.STOP_NOMINATING,
                 tip,
                 args: {}
             }
         ])
+
+        return { encoded }
     }
 
     public async isPublicKeyDelegating(publicKey: string): Promise<boolean> {
-        const nominations = await this.nodeClient.getNominations(publicKey)
-        return nominations != null
-    }
-
-    public isAddressDelegating(address: string): Promise<boolean> { 
-        return this.isPublicKeyDelegating(decodeAddress(address).toString('hex'))
+        return this.accountController.isDelegating(publicKey)
     }
 
     public getValidatorDetails(validator: string): Promise<PolkadotValidatorDetails> {
-        return this.nodeClient.getValidatorDetails(decodeAddress(validator))
+        return this.nodeClient.getValidatorDetails(PolkadotAddress.fromEncoded(validator).getBufferPublicKey())
     }
 
     public signMessage(message: string, privateKey: Buffer): Promise<string> {

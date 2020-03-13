@@ -1,0 +1,41 @@
+import { SCALEType } from './SCALEType'
+import { SCALEDecodeResult } from '../SCALEDecoder'
+import BigNumber from '../../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { stripHexPrefix, changeEndianness, toHexStringRaw } from '../../../../../utils/hex'
+
+export class SCALEInt extends SCALEType {
+    public static from(value: number | BigNumber | string, bitLength?: number): SCALEInt {
+        return new SCALEInt(BigNumber.isBigNumber(value) ? value : new BigNumber(value), bitLength)
+    }
+
+    public static decode(hex: string, bitLength?: number): SCALEDecodeResult<SCALEInt> {
+        let _hex = stripHexPrefix(hex)
+
+        const nibbles = bitLength ? Math.ceil(bitLength / 4) : _hex.length
+         _hex = changeEndianness(stripHexPrefix(hex).substr(0, nibbles))
+
+        const decoded = new BigNumber(_hex, 16)
+        return {
+            bytesDecoded: Math.ceil(nibbles / 2),
+            decoded: SCALEInt.from(decoded, bitLength)
+        }
+    }
+
+    private constructor(
+        readonly value: BigNumber, 
+        readonly bitLength?: number
+    ) { super() }
+
+    public toString(base: number = 10): string {
+        return this.value.toString(base)
+    }
+
+    public toNumber(): number {
+        return this.value.toNumber()
+    }
+
+    protected _encode(): string {
+        const hex = toHexStringRaw(this.value, this.bitLength)
+        return changeEndianness(hex)
+    }
+}

@@ -362,14 +362,14 @@ validators.isValidTezosSignedTransaction = (signedTransaction: string) => {
 
 // POLKADOT
 
-validators.isValidPolkadotUnsignedTransaction = (serialized: string) => {
+validators.isValidPolkadotUnsignedTransaction = (encoded: string) => {
   const unsignedTx = {
-    transaction: { serialized },
+    transaction: { encoded },
     publicKey: ''
   }
 
   return new Promise(async (resolve, reject) => {
-    if (serialized === null || typeof serialized === 'undefined') {
+    if (encoded === null || typeof encoded === 'undefined') {
       resolve('not a valid Polkadot transaction')
     }
 

@@ -14,12 +14,12 @@
         "transaction": {
           "additionalProperties": false,
           "properties": {
-            "serialized": {
+            "encoded": {
               "type": "string"
             }
           },
           "required": [
-            "serialized"
+            "encoded"
           ],
           "type": "object"
         }

@@ -1,7 +1,7 @@
-import { SCALEDecoder } from "../codec/SCALEDecoder";
-import { SCALEString } from "../codec/type/SCALEString";
-import { SCALEArray } from "../codec/type/SCALEArray";
-import { SCALEBoolean } from "../codec/type/SCALEBoolean";
+import { SCALEDecoder } from '../node/codec/SCALEDecoder'
+import { SCALEArray } from '../node/codec/type/SCALEArray'
+import { SCALEString } from '../node/codec/type/SCALEString'
+import { SCALEBoolean } from '../node/codec/type/SCALEBoolean'
 
 export class PolkadotNominations {
 
