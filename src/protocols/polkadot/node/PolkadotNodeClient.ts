@@ -224,6 +224,16 @@ export class PolkadotNodeClient {
         )
     }
 
+    public getValidators(): Promise<PolkadotAddress[] | null> {
+        return this.getFromStorage<PolkadotAddress[] | null>(
+            { 
+                moduleName: 'Session', 
+                storageName: 'Validators'
+             },
+            result => result ? SCALEArray.decode(result, SCALEAccountId.decode).decoded.elements.map(encoded => encoded.address) : null
+        )
+    }
+
     public async getValidatorDetails(address: PolkadotAddress): Promise<PolkadotValidatorDetails> {
         const results = await Promise.all([
             this.getFromStorage<PolkadotValidatorIdentity | null>(
@@ -237,13 +247,7 @@ export class PolkadotNodeClient {
                 },
                 result => result ? PolkadotValidatorIdentity.decode(result) : null
             ),
-            this.getFromStorage<Buffer[] | null>(
-                { 
-                    moduleName: 'Session', 
-                    storageName: 'Validators'
-                 },
-                result => result ? SCALEArray.decode(result, SCALEAccountId.decode).decoded.elements.map(encoded => encoded.asBytes()) : null
-            ),
+            this.getValidators(),
             this.getFromStorage<PolkadotValidatorPrefs | null>(
                 { 
                     moduleName: 'Staking', 
@@ -265,7 +269,7 @@ export class PolkadotNodeClient {
         // TODO: check if reaped
         if (!currentValidators) {
             status = null
-        } else if (currentValidators.find(buffer => buffer.compare(address.getBufferPublicKey()) == 0)) {
+        } else if (currentValidators.find(current => current.compare(address) == 0)) {
             status = PolkadotValidatorStatus.ACTIVE
         } else {
             status = PolkadotValidatorStatus.INACTIVE

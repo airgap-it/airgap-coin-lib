@@ -5,18 +5,22 @@ export interface DelegateeDetails {
     address: string
 }
 
-export interface DelegatorActions {
+export interface DelegatorAction {
     type: any
-    args: string[]
+    args?: string[]
 }
 
 export interface DelegatorDetails {
     balance: string
     isDelegating: boolean,
-    availableActions: DelegatorActions[]
+    availableActions: DelegatorAction[]
 }
 
 export interface ICoinDelegateProtocol extends ICoinProtocol {
+    getDefaultDelegatee(): Promise<string>
+    getCurrentDelegateesForPublicKey(publicKey: string): Promise<string[]>
+    getCurrentDelegateesForAddress(address: string): Promise<string[]>
+
     getDelegateeDetails(address: string): Promise<DelegateeDetails>
     
     getDelegatorDetailsFromPublicKey(publicKey: string): Promise<DelegatorDetails>

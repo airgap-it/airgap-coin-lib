@@ -227,6 +227,25 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinDelega
         }
     }
 
+    public async getDefaultDelegatee(): Promise<string> {
+        const validators = await this.nodeClient.getValidators()
+        return validators ? validators[0].toString() : ''
+    }
+
+    public async getCurrentDelegateesForPublicKey(publicKey: string): Promise<string[]> {
+        const address = await this.getAddressFromPublicKey(publicKey)
+        return this.getCurrentDelegateesForAddress(address)
+    }
+
+    public async getCurrentDelegateesForAddress(address: string): Promise<string[]> {
+        const isNominating = await this.accountController.isNominating(address)
+        if (isNominating) {
+            return [await this.getDefaultDelegatee()] // TODO: return proper delegatees
+        }
+
+        return []
+    }
+
     public async getDelegateeDetails(address: string): Promise<DelegateeDetails> {
         const validatorDetails = await this.nodeClient.getValidatorDetails(PolkadotAddress.fromEncoded(address))
         return {

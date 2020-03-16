@@ -4,7 +4,7 @@ import { bip39ToMiniSecret } from '@polkadot/wasm-crypto'
 import { createSr25519KeyPair } from '../../../utils/sr25519'
 import { PolkadotAddress } from './PolkadotAddress'
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
-import { DelegatorActions } from '../../ICoinDelegateProtocol'
+import { DelegatorAction } from '../../ICoinDelegateProtocol'
 import { PolkadotStakingActionType } from '../staking/PolkadotStakingActionType'
 
 export class PolkadotAccountController {
@@ -39,8 +39,8 @@ export class PolkadotAccountController {
         return nominations != null
     }
 
-    public async getAvailableDelegatorActions(publicKey: string): Promise<DelegatorActions[]> {
-        const availableActions: DelegatorActions[] = []
+    public async getAvailableDelegatorActions(publicKey: string): Promise<DelegatorAction[]> {
+        const availableActions: DelegatorAction[] = []
 
         const results = await Promise.all([
             this.isBonded(publicKey),

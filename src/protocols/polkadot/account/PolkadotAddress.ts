@@ -58,6 +58,10 @@ export class PolkadotAddress {
 
     constructor(readonly version: Buffer, readonly payload: Buffer, readonly checksum: Buffer) {}
 
+    public compare(other: PolkadotAddress): number {
+        return this.payload.compare(other.payload)
+    }
+
     public toString(): string {
         if (!this.encoded) {
             this.encoded = bs58.encode(Buffer.concat([this.version, this.payload, this.checksum]))
