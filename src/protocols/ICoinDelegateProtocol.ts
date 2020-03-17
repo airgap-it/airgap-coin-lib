@@ -21,10 +21,10 @@ export interface ICoinDelegateProtocol extends ICoinProtocol {
     getCurrentDelegateesForPublicKey(publicKey: string): Promise<string[]>
     getCurrentDelegateesForAddress(address: string): Promise<string[]>
 
-    getDelegateeDetails(address: string): Promise<DelegateeDetails>
+    getDelegateesDetails(addresses: string[]): Promise<DelegateeDetails[]>
     
     getDelegatorDetailsFromPublicKey(publicKey: string): Promise<DelegatorDetails>
     getDelegatorDetailsFromAddress(address: string): Promise<DelegatorDetails>
 
-    prepareDelegatorActionFromPublicKey(publicKey: string, type: any, data?: any): Promise<any>
+    prepareDelegatorActionFromPublicKey(publicKey: string, type: any, data?: any): Promise<any[]>
 }

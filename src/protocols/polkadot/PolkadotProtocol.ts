@@ -246,12 +246,14 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinDelega
         return []
     }
 
-    public async getDelegateeDetails(address: string): Promise<DelegateeDetails> {
-        const validatorDetails = await this.nodeClient.getValidatorDetails(PolkadotAddress.fromEncoded(address))
-        return {
-            name: validatorDetails.name || '',
-            address
-        }
+    public async getDelegateesDetails(addresses: string[]): Promise<DelegateeDetails[]> {
+        return Promise.all(addresses.map(async address => {
+            const validatorDetails = await this.nodeClient.getValidatorDetails(PolkadotAddress.fromEncoded(address))
+            return {
+                name: validatorDetails.name || '',
+                address
+            }
+        }))
     }
 
     public async getDelegatorDetailsFromPublicKey(publicKey: string): Promise<DelegatorDetails> {
@@ -272,7 +274,7 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinDelega
         }
     }
 
-    public async prepareDelegatorActionFromPublicKey(publicKey: string, type: PolkadotStakingActionType, data?: any): Promise<RawPolkadotTransaction> {
+    public async prepareDelegatorActionFromPublicKey(publicKey: string, type: PolkadotStakingActionType, data?: any): Promise<RawPolkadotTransaction[]> {
         if (!data) {
             return Promise.reject("Not enough information to prepare delegator action.")
         }
@@ -287,14 +289,13 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinDelega
 
         switch (type) {
             case PolkadotStakingActionType.BOND_NOMINATE:
-                assertFields('targets', 'controller', 'value', 'payee')
-                return this.prepareDelegation(publicKey, data.tip || 0, data.targets, data.controller, data.value, data.payee)
+                assertFields('targets', 'value', 'payee')
+                return this.prepareDelegation(publicKey, data.tip || 0, data.targets, data.controller || publicKey, data.value, data.payee)
             case PolkadotStakingActionType.NOMINATE:
                 assertFields('targets')
                 return this.prepareDelegation(publicKey, data.tip || 0, data.targets)
             case PolkadotStakingActionType.CANCEL_NOMINATION:
-                assertFields('tip')
-                return this.prepareCancelDelegation(publicKey, data.tip || 0, data.value)
+                return this.prepareCancelDelegation(publicKey, data.tip || 0, data.keepController ? null : data.value)
             case PolkadotStakingActionType.UNBOND:
                 assertFields('value')
                 return this.prepareUnbond(publicKey, data.tip || 0, data.value)
@@ -314,11 +315,11 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinDelega
     public async prepareDelegation(
         publicKey: string,
         tip: string | number | BigNumber,
-        targets: string[],
+        targets: string[] | string,
         controller?: string,
         value?: string | number | BigNumber,
         payee?: string | PolkadotRewardDestination,
-    ): Promise<RawPolkadotTransaction> {
+    ): Promise<RawPolkadotTransaction[]> {
         const currentBalance = await this.getBalanceOfPublicKey(publicKey)
         const available = new BigNumber(currentBalance).minus(value || 0)
 
@@ -337,20 +338,22 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinDelega
             {
                 type: PolkadotTransactionType.NOMINATE,
                 tip,
-                args: { targets }
+                args: { 
+                    targets: isString(targets) ? [targets] : targets
+                }
             }
         ])
 
-        return { encoded }
+        return [{ encoded }]
     }
 
     public async prepareCancelDelegation(
         publicKey: string,
         tip: string | number | BigNumber,
-        value?: string | number | BigNumber
-    ): Promise<RawPolkadotTransaction> {
+        value?: string | number | BigNumber | null
+    ): Promise<RawPolkadotTransaction[]> {
         const currentBalance = await this.getBalanceOfPublicKey(publicKey)
-        const keepController = value === undefined
+        const keepController = value === undefined || value === null
 
         const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, currentBalance, [
             {
@@ -367,14 +370,14 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinDelega
             }])
         ])
 
-        return { encoded }
+        return [{ encoded }]
     }
 
     public async prepareUnbond(
         publicKey: string,
         tip: string | number | BigNumber,
         value: string | number | BigNumber
-    ): Promise<RawPolkadotTransaction> {
+    ): Promise<RawPolkadotTransaction[]> {
         const currentBalance = await this.getBalanceOfPublicKey(publicKey)
 
         const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, currentBalance, [
@@ -387,10 +390,10 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinDelega
             }
         ])
 
-        return { encoded }
+        return [{ encoded }]
     }
 
-    public async prepareWithdrawUnbonded(publicKey: string, tip: string | number | BigNumber): Promise<RawPolkadotTransaction> {
+    public async prepareWithdrawUnbonded(publicKey: string, tip: string | number | BigNumber): Promise<RawPolkadotTransaction[]> {
         const currentBalance = await this.getBalanceOfPublicKey(publicKey)
 
         const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, currentBalance, [
@@ -401,7 +404,7 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinDelega
             }
         ])
 
-        return { encoded }
+        return [{ encoded }]
     }
 
     private async getTransactionDetailsFromEncoded(encoded: string): Promise<IAirGapTransaction[]> {
