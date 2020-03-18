@@ -281,7 +281,7 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinDelega
 
         const assertFields = (...fields: string[]) => {
             fields.forEach(field => {
-                if (data[field] === undefined) {
+                if (data[field] === undefined || data[field] === null) {
                     throw new Error(`Invalid arguments passed for ${PolkadotStakingActionType[type]} action. Required: ${fields.join()}, but ${field} is missing.`)
                 }
             })

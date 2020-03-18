@@ -156,10 +156,10 @@ export class PolkadotNodeClient {
         )
     }
 
-    public async getNonce(address: PolkadotAddress): Promise<BigNumber | null> {
+    public async getNonce(address: PolkadotAddress): Promise<BigNumber> {
         const accountInfo = await this.getAccountInfo(address)
 
-        return accountInfo?.nonce.value || null
+        return accountInfo?.nonce.value || new BigNumber(0)
     }
 
     public getFirstBlockHash(): Promise<string | null> {
