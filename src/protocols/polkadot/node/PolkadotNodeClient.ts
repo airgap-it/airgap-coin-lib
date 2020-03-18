@@ -56,6 +56,7 @@ const methodEndpoints: Map<PolkadotTransactionType, string> = new Map([
 ])
 
 enum StorageHasher {
+    BLAKE2_128_CONCAT,
     BLAKE2_256,
     TWOX64_CONCAT
 }
@@ -75,6 +76,7 @@ interface StorageKeys {
 class StorageKeyUtil {
     private static readonly PREFIX_TRIE_HASH_SIZE = 128
 
+    private static readonly ITEM_BLAKE2_128_HASH_SIZE = 128
     private static readonly ITEM_BLAKE2_256_HASH_SIZE = 256
     private static readonly ITEM_TWOX64_HASH_SIZE = 64
 
@@ -109,6 +111,8 @@ class StorageKeyUtil {
 
     private async generateKeyHash(key?: StorageKey): Promise<string> {
         switch (key?.hasher) {
+            case StorageHasher.BLAKE2_128_CONCAT:
+                return blake2bAsHex(key.value, StorageKeyUtil.ITEM_BLAKE2_128_HASH_SIZE) + bytesToHex(key.value)
             case StorageHasher.BLAKE2_256:
                 return blake2bAsHex(key.value, StorageKeyUtil.ITEM_BLAKE2_256_HASH_SIZE)                
             case StorageHasher.TWOX64_CONCAT:
@@ -202,7 +206,7 @@ export class PolkadotNodeClient {
                 moduleName: 'Staking',
                 storageName: 'Bonded',
                 firstKey: {
-                    hasher: StorageHasher.BLAKE2_256,
+                    hasher: StorageHasher.TWOX64_CONCAT,
                     value: address.getBufferPublicKey()
                 }
             },
@@ -216,7 +220,7 @@ export class PolkadotNodeClient {
                 moduleName: 'Staking',
                 storageName: 'Nominators', 
                 firstKey: { 
-                    hasher: StorageHasher.BLAKE2_256, 
+                    hasher: StorageHasher.TWOX64_CONCAT, 
                     value: address.getBufferPublicKey()
                 } 
             },
@@ -241,7 +245,7 @@ export class PolkadotNodeClient {
                     moduleName: 'Sudo', 
                     storageName: 'IdentityOf', 
                     firstKey: { 
-                        hasher: StorageHasher.BLAKE2_256, 
+                        hasher: StorageHasher.TWOX64_CONCAT, 
                         value: address.getBufferPublicKey()
                     } 
                 },
@@ -253,7 +257,7 @@ export class PolkadotNodeClient {
                     moduleName: 'Staking', 
                     storageName: 'Validators', 
                     firstKey: { 
-                        hasher: StorageHasher.BLAKE2_256, 
+                        hasher: StorageHasher.TWOX64_CONCAT, 
                         value: address.getBufferPublicKey()
                     } 
                 },
@@ -307,7 +311,7 @@ export class PolkadotNodeClient {
                 moduleName: 'System', 
                 storageName: 'Account', 
                 firstKey: { 
-                    hasher: StorageHasher.BLAKE2_256, 
+                    hasher: StorageHasher.BLAKE2_128_CONCAT, 
                     value: address.getBufferPublicKey()
                 } 
             },
