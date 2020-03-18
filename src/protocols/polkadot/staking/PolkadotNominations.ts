@@ -1,14 +1,14 @@
 import { SCALEDecoder } from '../node/codec/SCALEDecoder'
 import { SCALEArray } from '../node/codec/type/SCALEArray'
-import { SCALEString } from '../node/codec/type/SCALEString'
 import { SCALEBoolean } from '../node/codec/type/SCALEBoolean'
+import { SCALEAccountId } from '../node/codec/type/SCALEAccountId'
 
 export class PolkadotNominations {
 
     public static decode(raw: string): PolkadotNominations {
         const decoder = new SCALEDecoder(raw)
 
-        const targets = decoder.decodeNextArray(SCALEString.decode)
+        const targets = decoder.decodeNextArray(SCALEAccountId.decode)
         decoder.decodeNextInt(32) // submitted in
         const suppressed = decoder.decodeNextBoolean()
 
@@ -16,7 +16,7 @@ export class PolkadotNominations {
     }
 
     private constructor(
-        readonly targets: SCALEArray<SCALEString>,
+        readonly targets: SCALEArray<SCALEAccountId>,
         readonly suppressed: SCALEBoolean
     ) {}
 }

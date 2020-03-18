@@ -238,9 +238,9 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinDelega
     }
 
     public async getCurrentDelegateesForAddress(address: string): Promise<string[]> {
-        const isNominating = await this.accountController.isNominating(address)
-        if (isNominating) {
-            return [await this.getDefaultDelegatee()] // TODO: return proper delegatees
+        const nominations = await this.nodeClient.getNominations(PolkadotAddress.fromEncoded(address))
+        if (nominations) {
+            return nominations.targets.elements.map(target => target.asAddress())
         }
 
         return []
