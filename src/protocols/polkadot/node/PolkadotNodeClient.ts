@@ -10,7 +10,6 @@ import { PolkadotNominations } from '../staking/PolkadotNominations'
 import { 
     PolkadotValidatorDetails, 
     PolkadotValidatorPrefs, 
-    PolkadotValidatorIdentity, 
     PolkadotValidatorStatus, 
     PolkadotExposure 
 } from '../staking/PolkadotValidatorDetails'
@@ -20,6 +19,10 @@ import { SCALEArray } from './codec/type/SCALEArray'
 import { SCALEAccountId } from './codec/type/SCALEAccountId'
 import { PolkadotAccountInfo } from '../account/data/PolkadotAccountInfo'
 import { PolkadotAddress } from '../account/PolkadotAddress'
+import { PolkadotRewardDestination } from '../../..'
+import { SCALEEnum } from './codec/type/SCALEEnum'
+import { PolkadotRegistration } from '../account/data/PolkadotRegistration'
+import { PolkadotStakingLedger } from '../staking/PolkadotStakingLedger'
 
 const RPC_ENDPOINTS = {
     GET_METADATA: 'state_getMetadata',
@@ -228,28 +231,56 @@ export class PolkadotNodeClient {
         )
     }
 
+    public getRewardDestination(address: PolkadotAddress): Promise<PolkadotRewardDestination | null> {
+        return this.getFromStorage<PolkadotRewardDestination | null>(
+            {
+                moduleName: 'Staking',
+                storageName: 'Payee',
+                firstKey: {
+                    hasher: StorageHasher.TWOX64_CONCAT,
+                    value: address.getBufferPublicKey()
+                }
+            },
+            result => result ? SCALEEnum.decode(result, hex => PolkadotRewardDestination[PolkadotRewardDestination[hex]]).decoded.value : null
+        )
+    }
+
+    public getLedger(address: PolkadotAddress): Promise<PolkadotStakingLedger | null> {
+        return this.getFromStorage<PolkadotStakingLedger | null>(
+            {
+                moduleName: 'Staking',
+                storageName: 'Ledger',
+                firstKey: {
+                    hasher: StorageHasher.BLAKE2_128_CONCAT,
+                    value: address.getBufferPublicKey()
+                }
+            },
+            result => result ? PolkadotStakingLedger.decode(result) : null
+        )
+    }
+
     public getValidators(): Promise<PolkadotAddress[] | null> {
         return this.getFromStorage<PolkadotAddress[] | null>(
             { 
                 moduleName: 'Session', 
                 storageName: 'Validators'
-             },
+            },
             result => result ? SCALEArray.decode(result, SCALEAccountId.decode).decoded.elements.map(encoded => encoded.address) : null
         )
     }
 
     public async getValidatorDetails(address: PolkadotAddress): Promise<PolkadotValidatorDetails> {
         const results = await Promise.all([
-            this.getFromStorage<PolkadotValidatorIdentity | null>(
+            this.getFromStorage<PolkadotRegistration | null>(
                 { 
-                    moduleName: 'Sudo', 
+                    moduleName: 'Identity', 
                     storageName: 'IdentityOf', 
                     firstKey: { 
                         hasher: StorageHasher.TWOX64_CONCAT, 
                         value: address.getBufferPublicKey()
                     } 
                 },
-                result => result ? PolkadotValidatorIdentity.decode(result) : null
+                result => result ? PolkadotRegistration.decode(result) : null
             ),
             this.getValidators(),
             this.getFromStorage<PolkadotValidatorPrefs | null>(
@@ -282,7 +313,7 @@ export class PolkadotNodeClient {
         const exposure = await this.getValidatorExposure(address)
         
         return {
-            name: identity ? identity.display.value : null,
+            name: identity ? identity.identityInfo.display : null,
             status,
             ownStash: exposure ? exposure.ownStash.value : null,
             totalStakingBalance: exposure ? exposure.totalBalance.value : null,

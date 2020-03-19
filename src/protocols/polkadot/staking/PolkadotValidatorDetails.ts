@@ -3,21 +3,7 @@ import { SCALEArray } from '../node/codec/type/SCALEArray'
 import { SCALETuple } from '../node/codec/type/SCALETuple'
 import { SCALEAccountId } from '../node/codec/type/SCALEAccountId'
 import { SCALEDecoder } from '../node/codec/SCALEDecoder'
-import { SCALEString } from '../node/codec/type/SCALEString'
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
-
-export class PolkadotValidatorIdentity {
-    public static decode(raw: string): PolkadotValidatorIdentity {
-        // TODO: decode structure
-        return new PolkadotValidatorIdentity(SCALEString.from(''))
-    }
-
-    // TODO: add fields
-    private constructor(
-        readonly display: SCALEString
-    ) {}
-
-}
 
 export class PolkadotValidatorPrefs {
 
