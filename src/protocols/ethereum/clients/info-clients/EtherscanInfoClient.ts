@@ -13,7 +13,7 @@ export class EtherscanInfoClient extends EthereumInfoClient {
     const airGapTransactions: IAirGapTransaction[] = []
 
     const response = await Axios.get(
-      `${this.baseURL}/api?module=account&action=txlist&address=${address}&page=${page}&offset=${limit}&sort=desc`
+      `${this.baseURL}/api?module=account&action=txlist&address=${address}&page=${page}&offset=${limit}&sort=desc&apiKey=P63MEHEYBM5BGEG5WFN76VPNCET8B2MAP7`
     )
     const transactionResponse = response.data
     for (const transaction of transactionResponse.result) {
@@ -46,7 +46,7 @@ export class EtherscanInfoClient extends EthereumInfoClient {
     const airGapTransactions: IAirGapTransaction[] = []
 
     const response = await Axios.get(
-      `${this.baseURL}/api?module=account&action=tokentx&address=${address}&contractAddress=${contractAddress}&page=${page}&offset=${limit}&sort=desc`
+      `${this.baseURL}/api?module=account&action=tokentx&address=${address}&contractAddress=${contractAddress}&page=${page}&offset=${limit}&sort=desc&apiKey=P63MEHEYBM5BGEG5WFN76VPNCET8B2MAP7`
     )
     const transactionResponse = response.data
     for (const transaction of transactionResponse.result) {
