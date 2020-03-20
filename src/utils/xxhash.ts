@@ -2,7 +2,11 @@ import xxhash = require('xxhashjs')
 import { changeEndianness, addHexPrefix, isHex } from './hex'
 import { isString } from 'util'
 
-export async function xxhashAsHex(data: string | Uint8Array | Buffer, bitLength: number, config: { littleEndian: boolean, withPrefix: boolean } = { littleEndian: true, withPrefix: false }): Promise<string> {
+export function xxhashAsHex(
+    data: string | Uint8Array | Buffer, 
+    bitLength: number, 
+    config: { littleEndian: boolean, withPrefix: boolean } = { littleEndian: true, withPrefix: false }
+): string {
     const chunks = Math.ceil(bitLength / 64)
     const buffer = (isString(data) && isHex(data)) ? Buffer.from(data, 'hex') : Buffer.from(data as any)
 

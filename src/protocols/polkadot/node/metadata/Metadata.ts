@@ -3,6 +3,8 @@ import { SCALEClass } from '../codec/type/SCALEClass'
 import { SCALEInt } from '../codec/type/SCALEInt'
 import { SCALEArray } from '../codec/type/SCALEArray'
 import { SCALEDecoder } from '../codec/SCALEDecoder'
+import { PolkadotStorageHasher } from '../PolkadotStorageUtils'
+import { MetadataStorageEntryPlain, MetadataStorageEntryMap, MetadataStorageEntryDoubleMap } from './module/storage/MetadataStorageEntryType'
 
 const MAGIC_NUMBER = '6174656d' // `meta` in hex
 const EXPECTED_VERSION = 11
@@ -42,6 +44,7 @@ export class Metadata extends SCALEClass {
     protected scaleFields = [this.magicNumber, this.version, this.modules]
 
     private readonly extrinsicIds: Map<string, ExtrinsicId> = new Map()
+    private readonly storageHashers: Map<string, [PolkadotStorageHasher | null, PolkadotStorageHasher | null]> = new Map()
     private readonly constants: Map<string, string> = new Map()
 
     private constructor(
@@ -61,6 +64,27 @@ export class Metadata extends SCALEClass {
         )
 
         this.flattenThenPopulateMap(
+            this.storageHashers,
+            modules.elements
+                .filter(module => module.hasStorage)
+                .map(module => module.storage.value.storageEntries.elements.map(entry => {
+                    let hashers: [PolkadotStorageHasher | null, PolkadotStorageHasher | null] = [null, null]
+                    if (entry.type instanceof MetadataStorageEntryPlain) {
+                        hashers = [null, null]
+                    }
+                    if (entry.type instanceof MetadataStorageEntryMap) {
+                        hashers = [entry.type.hasher.value, null]
+                    }
+                    if (entry.type instanceof MetadataStorageEntryDoubleMap) {
+                        hashers = [entry.type.hasher.value, entry.type.key2Hasher.value]
+                    }
+
+                    const itemPrefix = `${module.name.toCamelCase({ startUpper: true })}_${entry.name.toCamelCase({ startUpper: true })}`
+                    return [itemPrefix, hashers]
+                }))
+        )
+
+        this.flattenThenPopulateMap(
             this.constants,
             modules.elements
                 .map(module => module.constants.elements.map(constant => [
@@ -70,20 +94,16 @@ export class Metadata extends SCALEClass {
         )
     }
 
-    public hasExtrinsicId(endpoint: string): boolean {
-        return !!this.extrinsicIds.get(endpoint)
+    public getExtrinsicId(endpoint: string): ExtrinsicId | undefined {
+        return this.extrinsicIds.get(endpoint)
     }
 
-    public getExtrinsicId(endpoint: string): ExtrinsicId {
-        return this.extrinsicIds.get(endpoint)!
+    public getHasher(keyIndex: string): [PolkadotStorageHasher | null, PolkadotStorageHasher | null] | undefined {
+        return this.storageHashers.get(keyIndex)
     }
 
-    public hasConstant(name: string): boolean {
-        return !!this.constants.get(name)
-    }
-
-    public getConstant(name: string): string {
-        return this.constants.get(name)!
+    public getConstant(name: string): string | undefined {
+        return this.constants.get(name)
     }
 
     private flattenThenPopulateMap<K, V>(map: Map<K, V>, pairs: [K, V][][]) {

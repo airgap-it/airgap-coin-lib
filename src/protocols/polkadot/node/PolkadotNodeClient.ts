@@ -2,8 +2,6 @@ import axios, { AxiosResponse } from '../../../dependencies/src/axios-0.19.0'
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 
 import { RPCBody } from '../../../data/RPCBody'
-import { xxhashAsHex } from '../../../utils/xxhash'
-import { blake2bAsHex } from '../../../utils/blake2b'
 import { stripHexPrefix, toHexString, addHexPrefix, bytesToHex } from '../../../utils/hex'
 import { PolkadotTransactionType } from '../transaction/data/PolkadotTransaction'
 import { PolkadotNominations } from '../staking/PolkadotNominations'
@@ -23,6 +21,7 @@ import { PolkadotRewardDestination } from '../../..'
 import { SCALEEnum } from './codec/type/SCALEEnum'
 import { PolkadotRegistration } from '../account/data/PolkadotRegistration'
 import { PolkadotStakingLedger } from '../staking/PolkadotStakingLedger'
+import { PolkadotStorageUtils, PolkadotStorageKeys } from './PolkadotStorageUtils'
 
 const RPC_ENDPOINTS = {
     GET_METADATA: 'state_getMetadata',
@@ -58,80 +57,12 @@ const methodEndpoints: Map<PolkadotTransactionType, string> = new Map([
     [PolkadotTransactionType.SET_CONTROLLER, RPC_EXTRINSIC.SET_CONTROLLER]
 ])
 
-enum StorageHasher {
-    BLAKE2_128_CONCAT,
-    BLAKE2_256,
-    TWOX64_CONCAT
-}
-
-interface StorageKey {
-    hasher: StorageHasher
-    value: Uint8Array | string
-}
-
-interface StorageKeys {
-    moduleName: string
-    storageName: string
-    firstKey?: StorageKey
-    secondKey?: StorageKey
-}
-
-class StorageKeyUtil {
-    private static readonly PREFIX_TRIE_HASH_SIZE = 128
-
-    private static readonly ITEM_BLAKE2_128_HASH_SIZE = 128
-    private static readonly ITEM_BLAKE2_256_HASH_SIZE = 256
-    private static readonly ITEM_TWOX64_HASH_SIZE = 64
-
-    private readonly storageHash: Map<string, string> = new Map()
-
-    public async getHash({ moduleName, storageName, firstKey, secondKey }: StorageKeys): Promise<string> {
-        const rawKey = moduleName + storageName + bytesToHex(firstKey?.value || '') + bytesToHex(secondKey?.value || '')
-
-        if (!this.storageHash[rawKey]) {
-            const prefixTrie = await this.generatePrefixTrie(moduleName, storageName)
-            const itemHash = await this.generateItemHash(firstKey, secondKey)
-
-            this.storageHash[rawKey] = prefixTrie + itemHash
-        }
-
-        return this.storageHash[rawKey]
-    }
-
-    private async generatePrefixTrie(moduleName: string, storageName: string): Promise<string> {
-        const moduleHash = await xxhashAsHex(moduleName, StorageKeyUtil.PREFIX_TRIE_HASH_SIZE)
-        const storageHash = await xxhashAsHex(storageName, StorageKeyUtil.PREFIX_TRIE_HASH_SIZE)
-        
-        return moduleHash + storageHash
-    }
-
-    private async generateItemHash(firstKey?: StorageKey, secondKey?: StorageKey): Promise<string> {
-        const firstKeyHash = await this.generateKeyHash(firstKey)
-        const secondKeyHash = await this.generateKeyHash(secondKey)
-
-        return firstKeyHash + secondKeyHash
-    }
-
-    private async generateKeyHash(key?: StorageKey): Promise<string> {
-        switch (key?.hasher) {
-            case StorageHasher.BLAKE2_128_CONCAT:
-                return blake2bAsHex(key.value, StorageKeyUtil.ITEM_BLAKE2_128_HASH_SIZE) + bytesToHex(key.value)
-            case StorageHasher.BLAKE2_256:
-                return blake2bAsHex(key.value, StorageKeyUtil.ITEM_BLAKE2_256_HASH_SIZE)                
-            case StorageHasher.TWOX64_CONCAT:
-                return await xxhashAsHex(key.value, StorageKeyUtil.ITEM_TWOX64_HASH_SIZE) + bytesToHex(key.value)
-            default:
-                return ''
-        }
-    }
-}
-
 export class PolkadotNodeClient {
     private metadata: Metadata | null = null
 
     constructor(
         private readonly baseURL: string, 
-        private readonly storageKeyUtil: StorageKeyUtil = new StorageKeyUtil()
+        private readonly storageUtils: PolkadotStorageUtils = new PolkadotStorageUtils()
     ) {}
 
     public async getBalance(address: PolkadotAddress): Promise<BigNumber> {
@@ -143,14 +74,9 @@ export class PolkadotNodeClient {
     public async getTransactionMetadata(type: PolkadotTransactionType): Promise<ExtrinsicId | null> {
         const rpcEndpoint = methodEndpoints.get(type) || ''
         try {
-            if (!this.metadata) {
-                await this.fetchMetadata()
-            }
-
-            return (this.metadata && this.metadata.hasExtrinsicId(rpcEndpoint)) 
-                ? this.metadata!.getExtrinsicId(rpcEndpoint) 
-                : null
-        } catch (e) {
+            return await this.getFromMetadata(() => this.metadata!.getExtrinsicId(rpcEndpoint))
+        } catch (error) {
+            console.error(error)
             return null
         }
     }
@@ -209,7 +135,6 @@ export class PolkadotNodeClient {
                 moduleName: 'Staking',
                 storageName: 'Bonded',
                 firstKey: {
-                    hasher: StorageHasher.TWOX64_CONCAT,
                     value: address.getBufferPublicKey()
                 }
             },
@@ -223,7 +148,6 @@ export class PolkadotNodeClient {
                 moduleName: 'Staking',
                 storageName: 'Nominators', 
                 firstKey: { 
-                    hasher: StorageHasher.TWOX64_CONCAT, 
                     value: address.getBufferPublicKey()
                 } 
             },
@@ -237,7 +161,6 @@ export class PolkadotNodeClient {
                 moduleName: 'Staking',
                 storageName: 'Payee',
                 firstKey: {
-                    hasher: StorageHasher.TWOX64_CONCAT,
                     value: address.getBufferPublicKey()
                 }
             },
@@ -251,7 +174,6 @@ export class PolkadotNodeClient {
                 moduleName: 'Staking',
                 storageName: 'Ledger',
                 firstKey: {
-                    hasher: StorageHasher.BLAKE2_128_CONCAT,
                     value: address.getBufferPublicKey()
                 }
             },
@@ -276,7 +198,6 @@ export class PolkadotNodeClient {
                     moduleName: 'Identity', 
                     storageName: 'IdentityOf', 
                     firstKey: { 
-                        hasher: StorageHasher.TWOX64_CONCAT, 
                         value: address.getBufferPublicKey()
                     } 
                 },
@@ -288,7 +209,6 @@ export class PolkadotNodeClient {
                     moduleName: 'Staking', 
                     storageName: 'Validators', 
                     firstKey: { 
-                        hasher: StorageHasher.TWOX64_CONCAT, 
                         value: address.getBufferPublicKey()
                     } 
                 },
@@ -328,6 +248,23 @@ export class PolkadotNodeClient {
         )
     }
 
+    private async getFromMetadata<T>(metadataGetter: () => T | undefined): Promise<T> {
+        if (!this.metadata) {
+            await this.fetchMetadata()
+        }
+
+        if (!this.metadata) {
+            return Promise.reject('Could not fetch metadata')
+        }
+
+        const value = metadataGetter()
+        if (value === undefined) {
+            return Promise.reject('Item not found in metadata.')
+        }
+
+        return value
+    }
+
     private async fetchMetadata(): Promise<void> {
         this.metadata = await this.send<(Metadata | null), string>(
             RPC_ENDPOINTS.GET_METADATA,
@@ -342,7 +279,6 @@ export class PolkadotNodeClient {
                 moduleName: 'System', 
                 storageName: 'Account', 
                 firstKey: { 
-                    hasher: StorageHasher.BLAKE2_128_CONCAT, 
                     value: address.getBufferPublicKey()
                 } 
             },
@@ -365,11 +301,9 @@ export class PolkadotNodeClient {
                 moduleName: 'Staking', 
                 storageName: 'ErasStakers', 
                 firstKey: { 
-                    hasher: StorageHasher.TWOX64_CONCAT, 
                     value: SCALEInt.from(eraIndex, 32).encode() 
                 }, 
                 secondKey: { 
-                    hasher: StorageHasher.TWOX64_CONCAT, 
                     value: address.getBufferPublicKey()
                 } 
             },
@@ -377,12 +311,28 @@ export class PolkadotNodeClient {
         )
     }
 
-    private async getFromStorage<T>(storageKeys: StorageKeys, resultHandler?: (result: string | null) => T): Promise<T> {
-        return this.send<T, string>(
-            RPC_ENDPOINTS.GET_STORAGE,
-            [await this.storageKeyUtil.getHash(storageKeys)],
-            resultHandler
-        )
+    private async getFromStorage<T>(storageKeys: PolkadotStorageKeys, resultHandler?: (result: string | null) => T): Promise<T | null> {
+        try {
+            const keyIndex = `${storageKeys.moduleName}_${storageKeys.storageName}`
+            const hashers = await this.getFromMetadata(() => this.metadata!.getHasher(keyIndex))
+
+            if (storageKeys.firstKey) {
+                storageKeys.firstKey.hasher = hashers[0]
+            }
+
+            if (storageKeys.secondKey) {
+                storageKeys.secondKey.hasher = hashers[1]
+            }
+
+            return this.send<T, string>(
+                RPC_ENDPOINTS.GET_STORAGE,
+                [await this.storageUtils.getHash(storageKeys)],
+                resultHandler
+            )
+        } catch (error) {
+            console.error(error)
+            return null
+        }
     }
 
     private async send<T, R>(method: string, params: string[], resultHandler?: (result: R | null) => T): Promise<T> {
