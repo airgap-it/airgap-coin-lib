@@ -1,12 +1,11 @@
 import { SCALEType } from "./SCALEType"
 import { SCALEDecodeResult } from "../SCALEDecoder"
-import { isString } from "util"
-import { stripHexPrefix } from "../../../../../utils/hex"
+import { stripHexPrefix, bytesToHex } from "../../../../../utils/hex"
 import { PolkadotAddress } from '../../../account/PolkadotAddress'
 
 export class SCALEAccountId extends SCALEType {
     public static from(value: string | Uint8Array | Buffer): SCALEAccountId {
-        const address: PolkadotAddress = isString(value) ? PolkadotAddress.fromEncoded(value) : PolkadotAddress.fromBytes(value)
+        const address: PolkadotAddress = PolkadotAddress.from(bytesToHex(value))
         return new SCALEAccountId(address)
     }
 

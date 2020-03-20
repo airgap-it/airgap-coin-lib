@@ -1,6 +1,7 @@
 import bs58 = require('../../../dependencies/src/bs58-4.0.1')
 import { hexToBytes, isHex } from '../../../utils/hex'
 import { blake2bAsBytes } from '../../../utils/blake2b'
+import { isString } from 'util'
  
 // If changed, the test address in `test/protocols/specs/polkadot.ts` must be changed accordingly
 const SS58_FORMAT = {
@@ -19,18 +20,25 @@ const SS58_PREFIX = 'SS58PRE'
  * 35: 1, 32, 2
  */
 export class PolkadotAddress {
+    public static from(addressOrPublicKey: string | PolkadotAddress): PolkadotAddress {
+        if (isString(addressOrPublicKey) && isHex(addressOrPublicKey)) {
+            return this.fromPublicKey(addressOrPublicKey)
+        } else if (isString(addressOrPublicKey)) {
+            return this.fromEncoded(addressOrPublicKey)
+        } else {
+            return addressOrPublicKey
+        }
+    }
+
     public static fromPublicKey(payload: Buffer | Uint8Array | string, format: number = SS58_FORMAT.KUSAMA): PolkadotAddress {
         return this.fromPayload(hexToBytes(payload), format)
     }
 
     public static fromEncoded(encoded: string): PolkadotAddress {
-        if (isHex(encoded)) {
-            return this.fromPublicKey(encoded)
-        }
         return this.fromBytes(bs58.decode(encoded))
     }
 
-    static fromBytes(bytes: Buffer | Uint8Array): PolkadotAddress {
+    private static fromBytes(bytes: Buffer | Uint8Array): PolkadotAddress {
         const buffer = Buffer.isBuffer(bytes) ? bytes : Buffer.from(bytes)
         const checksumBytes = buffer.length === 35 ? 2 : 1
 
