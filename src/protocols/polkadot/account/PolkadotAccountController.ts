@@ -7,6 +7,8 @@ import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { DelegatorAction } from '../../ICoinDelegateProtocol'
 import { PolkadotStakingActionType } from '../staking/PolkadotStakingActionType'
 
+type WithdrawFundsOption = 'locked' | 'unlocked'
+
 export class PolkadotAccountController {
     constructor(
         readonly nodeClient: PolkadotNodeClient
@@ -21,34 +23,55 @@ export class PolkadotAccountController {
         return createSr25519KeyPair(secret, derivationPath)
     }
 
-    public async createAddress(publicKey: string): Promise<string> {
-        return PolkadotAddress.fromPublicKey(publicKey).toString()
+    public async createAddressFromPublicKey(publicKey: string): Promise<string> {
+        return PolkadotAddress.from(publicKey).toString()
     }
 
-    public async getBalance(address: string): Promise<BigNumber> {
-        return this.nodeClient.getBalance(PolkadotAddress.fromEncoded(address))
+    public async getBalance(addressOrPublicKey: string | PolkadotAddress): Promise<BigNumber> {
+        return this.nodeClient.getBalance(PolkadotAddress.from(addressOrPublicKey))
     }
 
-    public async isBonded(address: string): Promise<boolean> {
-        const bonded = await this.nodeClient.getBonded(PolkadotAddress.fromEncoded(address))
+    public async isBonded(addressOrPublicKey: string | PolkadotAddress): Promise<boolean> {
+        const bonded = await this.nodeClient.getBonded(PolkadotAddress.from(addressOrPublicKey))
         return bonded != null
     }
 
-    public async isNominating(address: string): Promise<boolean> {
-        const nominations = await this.nodeClient.getNominations(PolkadotAddress.fromEncoded(address))
+    public async isNominating(addressOrPublicKey: string | PolkadotAddress): Promise<boolean> {
+        const nominations = await this.nodeClient.getNominations(PolkadotAddress.from(addressOrPublicKey))
         return nominations != null
     }
 
-    public async getAvailableDelegatorActions(publicKey: string): Promise<DelegatorAction[]> {
+    public async getFundsToWithdraw(addressOrPublicKey: string | PolkadotAddress, option: WithdrawFundsOption): Promise<BigNumber | null> {
+        const results = await Promise.all([
+            this.nodeClient.getLedger(PolkadotAddress.from(addressOrPublicKey)),
+            this.nodeClient.getCurrentEraIndex()
+        ])
+
+        const stakingLedger = results[0]
+        const currentEra = results[1]
+
+        if (!stakingLedger || !currentEra) {
+            return null
+        }
+
+        return stakingLedger.unlocking.elements
+            .map(entry => [entry.first.value, entry.second.value] as [BigNumber, BigNumber])
+            .filter(([_, era]: [BigNumber, BigNumber]) => option === 'unlocked' ? era.lte(currentEra) : era.gt(currentEra))
+            .reduce((total: BigNumber, [value, _]: [BigNumber, BigNumber]) => total.plus(value), new BigNumber(0))
+    }
+
+    public async getAvailableDelegatorActions(addressOrPublicKey: string | PolkadotAddress): Promise<DelegatorAction[]> {
         const availableActions: DelegatorAction[] = []
 
         const results = await Promise.all([
-            this.isBonded(publicKey),
-            this.isNominating(publicKey),
+            this.isBonded(addressOrPublicKey),
+            this.isNominating(addressOrPublicKey),
+            this.getFundsToWithdraw(addressOrPublicKey, 'unlocked')
         ])
 
         const isBonded = results[0]
         const isDelegating = results[1]
+        const hasFundsToWithdraw = results[2]?.gt(0)
 
         if (!isBonded) {
             availableActions.push({
@@ -90,6 +113,15 @@ export class PolkadotAccountController {
                 }
             )
         }
+
+        if (hasFundsToWithdraw) {
+            availableActions.push({
+                type: PolkadotStakingActionType.WITHDRAW_UNBONDED,
+                args: []
+            })
+        }
+
+        availableActions.sort((a, b) => a.type - b.type)
 
         return availableActions
     }

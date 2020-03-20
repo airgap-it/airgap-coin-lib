@@ -105,7 +105,7 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinDelega
     }
 
     public async getAddressFromPublicKey(publicKey: string): Promise<string> {
-        return this.accountController.createAddress(publicKey)
+        return this.accountController.createAddressFromPublicKey(publicKey)
     }
     
     public async getAddressesFromPublicKey(publicKey: string): Promise<string[]> {
