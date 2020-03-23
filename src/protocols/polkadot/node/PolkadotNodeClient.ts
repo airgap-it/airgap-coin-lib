@@ -1,4 +1,4 @@
-import axios, { AxiosResponse } from '../../../dependencies/src/axios-0.19.0'
+import axios from '../../../dependencies/src/axios-0.19.0'
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 
 import { RPCBody } from '../../../data/RPCBody'
@@ -62,6 +62,8 @@ const methodEndpoints: Map<PolkadotTransactionType, string> = new Map([
 ])
 
 export class PolkadotNodeClient {
+    private readonly ongoingPromises: Map<string, Promise<any>> = new Map()
+
     private metadata: Metadata | null = null
 
     constructor(
@@ -350,8 +352,21 @@ export class PolkadotNodeClient {
     }
 
     private async send<T, R>(method: string, params: string[], resultHandler?: (result: R | null) => T): Promise<T> {
-        const response: AxiosResponse = await axios.post(this.baseURL, new RPCBody(method, params.map(param => addHexPrefix(param))))
-        
-        return resultHandler ? resultHandler(response.data.result) : response.data.result
+        let promise: Promise<T>
+
+        const key = `${method}_${params.join('')}`
+        const ongoing = this.ongoingPromises.get(key)
+
+        if (ongoing) {
+            promise = ongoing
+        } else {
+            promise = axios.post(this.baseURL, new RPCBody(method, params.map(param => addHexPrefix(param))))
+                .then(response => resultHandler ? resultHandler(response.data.result) : response.data.result)
+                .finally(() => this.ongoingPromises.delete(key))
+            
+            this.ongoingPromises.set(key, promise)
+        }
+
+        return promise
     }
 }
