@@ -295,12 +295,19 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinDelega
                 assertFields('targets')
                 return this.prepareDelegation(publicKey, data.tip || 0, data.targets)
             case PolkadotStakingActionType.CANCEL_NOMINATION:
-                return this.prepareCancelDelegation(publicKey, data.tip || 0, data.keepController ? null : data.value)
+                return this.prepareCancelDelegation(publicKey, data.tip || 0, data.value)
+            case PolkadotStakingActionType.CHANGE_NOMINATION:
+                assertFields('targets')
+                return this.prepareChangeValidator(publicKey, data.tip || 0, data.targets)
             case PolkadotStakingActionType.UNBOND:
                 assertFields('value')
                 return this.prepareUnbond(publicKey, data.tip || 0, data.value)
+            case PolkadotStakingActionType.REBOND:
+                assertFields('value')
+                return this.prepareRebond(publicKey, data.tip || 0, data.value)
             case PolkadotStakingActionType.BOND_EXTRA:
-                return Promise.reject('Unsupported delegator action.')
+                assertFields('value')
+                return this.prepareBondExtra(publicKey, data.tip || 0, data.value)
             case PolkadotStakingActionType.WITHDRAW_UNBONDED:
                 return this.prepareWithdrawUnbonded(publicKey, data.tip || 0)
             case PolkadotStakingActionType.CHANGE_REWARD_DESTINATION:
@@ -350,10 +357,10 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinDelega
     public async prepareCancelDelegation(
         publicKey: string,
         tip: string | number | BigNumber,
-        value?: string | number | BigNumber | null
+        value?: string | number | BigNumber
     ): Promise<RawPolkadotTransaction[]> {
         const currentBalance = await this.getBalanceOfPublicKey(publicKey)
-        const keepController = value === undefined || value === null
+        const keepController = value === undefined
 
         const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, currentBalance, [
             {
@@ -373,6 +380,31 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinDelega
         return [{ encoded }]
     }
 
+    public async prepareChangeValidator(
+        publicKey: string,
+        tip: string | number | BigNumber,
+        targets: string[] | string
+    ): Promise<RawPolkadotTransaction[]> {
+        const currentBalance = await this.getBalanceOfPublicKey(publicKey)
+
+        const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, currentBalance, [
+            {
+                type: PolkadotTransactionType.STOP_NOMINATING,
+                tip,
+                args: {}
+            },
+            {
+                type: PolkadotTransactionType.NOMINATE,
+                tip,
+                args: {
+                    targets: isString(targets) ? [targets] : targets
+                }
+            }
+        ])
+
+        return [{ encoded }]
+    }
+
     public async prepareUnbond(
         publicKey: string,
         tip: string | number | BigNumber,
@@ -386,6 +418,46 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinDelega
                 tip,
                 args: {
                     value: BigNumber.isBigNumber(value) ? value : new BigNumber(value!)
+                }
+            }
+        ])
+
+        return [{ encoded }]
+    }
+
+    public async prepareRebond(
+        publicKey: string,
+        tip: string | number | BigNumber,
+        value: string | number | BigNumber
+    ): Promise<RawPolkadotTransaction[]> {
+        const currentBalance = await this.getBalanceOfPublicKey(publicKey)
+
+        const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, currentBalance, [
+            {
+                type: PolkadotTransactionType.REBOND,
+                tip,
+                args: {
+                    value: BigNumber.isBigNumber(value) ? value : new BigNumber(value!)
+                }
+            }
+        ])
+
+        return [{ encoded }]
+    }
+
+    public async prepareBondExtra(
+        publicKey: string,
+        tip: string | number | BigNumber,
+        value: string | number | BigNumber
+    ): Promise<RawPolkadotTransaction[]> {
+        const currentBalance = await this.getBalanceOfPublicKey(publicKey)
+
+        const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, currentBalance, [
+            {
+                type: PolkadotTransactionType.BOND_EXTRA,
+                tip,
+                args: {
+                    value: BigNumber.isBigNumber(value) ? value : new BigNumber(value)
                 }
             }
         ])

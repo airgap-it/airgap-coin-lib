@@ -88,7 +88,7 @@ export class Metadata extends SCALEClass {
             this.constants,
             modules.elements
                 .map(module => module.constants.elements.map(constant => [
-                    `${module.name.toCamelCase()}_${constant.name.toCamelCase({ startUpper: true })}`,
+                    `${module.name.toCamelCase({ startUpper: true })}_${constant.name.toCamelCase({ startUpper: true })}`,
                     constant.value.toString()
                 ] as [string, string]))
         )

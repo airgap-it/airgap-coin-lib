@@ -24,6 +24,10 @@ interface UnbondArgs {
     value: number | BigNumber
 }
 
+interface RebondArgs {
+    value: number | BigNumber
+}
+
 interface BondExtraArgs {
     value: number | BigNumber
 }
@@ -69,6 +73,9 @@ export abstract class PolkadotTransactionMethodArgsFactory<T> {
             case PolkadotTransactionType.UNBOND:
                 assertFields('unbond', args, 'value')
                 return new UnbondArgsFactory(args)
+            case PolkadotTransactionType.REBOND:
+                assertFields('rebond', args, 'value')
+                return new RebondArgsFactory(args)
             case PolkadotTransactionType.BOND_EXTRA:
                 assertFields('bondExtra', args, 'value')
                 return new BondExtraArgsFactory(args)
@@ -103,6 +110,8 @@ export abstract class PolkadotTransactionMethodArgsDecoder<T> {
                 return new BondArgsDecoder()
             case PolkadotTransactionType.UNBOND:
                 return new UnbondArgsDecoder()
+            case PolkadotTransactionType.REBOND:
+                return new RebondArgsDecoder()
             case PolkadotTransactionType.BOND_EXTRA:
                 return new BondExtraArgsDecoder()
             case PolkadotTransactionType.WITHDRAW_UNBONDED:
@@ -205,6 +214,32 @@ class UnbondArgsFactory extends PolkadotTransactionMethodArgsFactory<UnbondArgs>
 
 class UnbondArgsDecoder extends PolkadotTransactionMethodArgsDecoder<UnbondArgs> {
     protected _decode(decoder: SCALEDecoder): SCALEDecodeResult<UnbondArgs> {
+        const value = decoder.decodeNextCompactInt()
+
+        return {
+            bytesDecoded: value.bytesDecoded,
+            decoded: {
+                value: value.decoded.value
+            }
+        }
+    }
+}
+
+class RebondArgsFactory extends PolkadotTransactionMethodArgsFactory<RebondArgs> {
+    public createFields(): [string, SCALEType][] {
+        return [
+            ['value', SCALECompactInt.from(this.args.value)]
+        ]
+    }
+    public createToAirGapTransactionPart(): () => Partial<IAirGapTransaction> {
+        return () => ({
+            amount: this.args.value.toString() 
+        })
+    }
+}
+
+class RebondArgsDecoder extends PolkadotTransactionMethodArgsDecoder<RebondArgs> {
+    protected _decode(decoder: SCALEDecoder): SCALEDecodeResult<RebondArgs> {
         const value = decoder.decodeNextCompactInt()
 
         return {

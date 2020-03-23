@@ -45,6 +45,10 @@ const RPC_EXTRINSIC = {
     SET_CONTROLLER: 'staking_set_controller'
 }
 
+const RPC_CONSTANTS = {
+    EXISTENTIAL_DEPOSIT: 'Balances_ExistentialDeposit'
+}
+
 const methodEndpoints: Map<PolkadotTransactionType, string> = new Map([
     [PolkadotTransactionType.TRANSFER, RPC_EXTRINSIC.TRANSFER],
     [PolkadotTransactionType.BOND, RPC_EXTRINSIC.BOND],
@@ -69,6 +73,16 @@ export class PolkadotNodeClient {
         const accountInfo = await this.getAccountInfo(address)
 
         return accountInfo?.data.free.value || new BigNumber(0)
+    }
+
+    public async getExistentialDeposit(): Promise<BigNumber | null> {
+        const existentialDeposit = await this.getFromMetadata(() => this.metadata!.getConstant(RPC_CONSTANTS.EXISTENTIAL_DEPOSIT))
+
+        if (!existentialDeposit) {
+            return null
+        }
+
+        return SCALEInt.decode(existentialDeposit).decoded.value
     }
 
     public async getTransactionMetadata(type: PolkadotTransactionType): Promise<ExtrinsicId | null> {

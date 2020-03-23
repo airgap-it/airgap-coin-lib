@@ -3,6 +3,14 @@ import { SCALETuple } from '../node/codec/type/SCALETuple'
 import { SCALEAccountId } from '../node/codec/type/SCALEAccountId'
 import { SCALEArray } from '../node/codec/type/SCALEArray'
 import { SCALECompactInt } from '../node/codec/type/SCALECompactInt'
+import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
+
+export interface PolkadotStakingInfo {
+    total: BigNumber
+    active: BigNumber
+    unlocked: BigNumber
+    locked: BigNumber
+}
 
 export class PolkadotStakingLedger {
     public static decode(raw: string): PolkadotStakingLedger {
