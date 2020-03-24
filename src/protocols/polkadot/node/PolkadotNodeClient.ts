@@ -23,6 +23,7 @@ import { PolkadotRegistration } from '../account/data/PolkadotRegistration'
 import { PolkadotStakingLedger } from '../staking/PolkadotStakingLedger'
 import { PolkadotStorageUtils, PolkadotStorageKeys } from './PolkadotStorageUtils'
 import { PolkadotActiveEraInfo } from '../staking/PolkadotActiveEraInfo'
+import { PolkadotNodeCache } from './PolkadotNodeCache'
 
 const RPC_ENDPOINTS = {
     GET_METADATA: 'state_getMetadata',
@@ -65,15 +66,27 @@ const methodEndpoints: Map<PolkadotTransactionType, string> = new Map([
     [PolkadotTransactionType.SET_CONTROLLER, RPC_EXTRINSIC.SET_CONTROLLER]
 ])
 
-export class PolkadotNodeClient {
-    private readonly ongoingPromises: Map<string, Promise<any>> = new Map()
+const CACHE_EXPIRATION_TIME = 3000 // 3s
 
+interface ConnectionConfig {
+    allowCache: boolean
+}
+
+export class PolkadotNodeClient {
     private metadata: Metadata | null = null
 
     constructor(
         private readonly baseURL: string, 
-        private readonly storageUtils: PolkadotStorageUtils = new PolkadotStorageUtils()
-    ) {}
+        private readonly storageUtils: PolkadotStorageUtils = new PolkadotStorageUtils(),
+        private readonly cache: PolkadotNodeCache = new PolkadotNodeCache(CACHE_EXPIRATION_TIME)
+    ) {
+       this.getConstant(RPC_CONSTANTS.EXPECTED_BLOCK_TIME, constant => constant ? SCALEInt.decode(constant).decoded.toNumber() : null)
+        .then(blockTime => {
+            if (blockTime) {
+                this.cache.expirationTime = Math.floor(blockTime / 3)
+            }
+        }) 
+    }
 
     public async getBalance(address: PolkadotAddress): Promise<BigNumber> {
         const accountInfo = await this.getAccountInfo(address)
@@ -323,7 +336,8 @@ export class PolkadotNodeClient {
         this.metadata = await this.send<(Metadata | null), string>(
             RPC_ENDPOINTS.GET_METADATA,
             [],
-            result => result ? Metadata.decode(result) : null
+            result => result ? Metadata.decode(result) : null,
+            { allowCache: false }
         )
     }
 
@@ -365,7 +379,11 @@ export class PolkadotNodeClient {
         )
     }
 
-    private async getFromStorage<T>(storageKeys: PolkadotStorageKeys, resultHandler?: (result: string | null) => T): Promise<T | null> {
+    private async getFromStorage<T>(
+        storageKeys: PolkadotStorageKeys, 
+        resultHandler: (result: string | null) => T,
+        config: ConnectionConfig = { allowCache: true }
+    ): Promise<T | null> {
         try {
             const keyIndex = `${storageKeys.moduleName}_${storageKeys.storageName}`
             const hashers = await this.getFromMetadata(() => this.metadata!.getHasher(keyIndex))
@@ -381,7 +399,8 @@ export class PolkadotNodeClient {
             return this.send<T, string>(
                 RPC_ENDPOINTS.GET_STORAGE,
                 [await this.storageUtils.getHash(storageKeys)],
-                resultHandler
+                resultHandler,
+                config
             )
         } catch (error) {
             console.error(error)
@@ -389,19 +408,20 @@ export class PolkadotNodeClient {
         }
     }
 
-    private async send<T, R>(method: string, params: string[], resultHandler?: (result: R | null) => T): Promise<T> {
-        const key = `${method}_${params.join('')}`
-        const ongoing = this.ongoingPromises.get(key)
+    private async send<T, R>(
+        method: string, 
+        params: string[], 
+        resultHandler?: (result: R | null) => T,
+        config: ConnectionConfig = { allowCache: true }
+    ): Promise<T> {
+        const key = `${method}$${params.join('')}`
 
-        if (ongoing) {
-            return ongoing
-        }
+        return this.cache.get<T>(key)
+            .catch(() => {
+                const promise = axios.post(this.baseURL, new RPCBody(method, params.map(param => addHexPrefix(param))))
+                    .then(response => resultHandler ? resultHandler(response.data.result) : response.data.result)   
 
-        const promise = axios.post(this.baseURL, new RPCBody(method, params.map(param => addHexPrefix(param))))
-            .then(response => resultHandler ? resultHandler(response.data.result) : response.data.result)
-            .finally(() => this.ongoingPromises.delete(key))
-        
-        this.ongoingPromises.set(key, promise)
-        return promise
+                return this.cache.save(key, promise, { cacheValue: config.allowCache })
+            })
     }
 }
