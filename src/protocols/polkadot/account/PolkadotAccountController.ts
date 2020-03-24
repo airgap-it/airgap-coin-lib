@@ -43,29 +43,36 @@ export class PolkadotAccountController {
     public async getStakingInfo(addressOrPublicKey: string | PolkadotAddress): Promise<PolkadotStakingInfo | null> {
         const results = await Promise.all([
             this.nodeClient.getLedger(PolkadotAddress.from(addressOrPublicKey)),
-            this.nodeClient.getCurrentEraIndex()
+            this.nodeClient.getExpectedEraDuration(),
+            this.nodeClient.getActiveEraInfo()
         ])
 
-        const stakingLedger = results[0]
-        const currentEra = results[1]
-
-        if (!stakingLedger || !currentEra) {
+        if (results.some(result => result === null)) {
             return null
         }
 
+        const stakingLedger = results[0]!
+        const expectedEraDuration = results[1]!
+        const activeEraInfo = results[2]!
+
         const [locked, unlocked] = this.partitionArray(
             stakingLedger.unlocking.elements.map(entry => [entry.first.value, entry.second.value] as [BigNumber, BigNumber]),
-            ([_, era]) => currentEra.lte(era)
+            ([_, era]) => activeEraInfo.index.value.lte(era)
         )
 
-        const reduceValues = (total: BigNumber, [value, _]: [BigNumber, BigNumber]) => total.plus(value)
-        const totalLocked = locked.reduce(reduceValues, new BigNumber(0))
-        const totalUnlocked = unlocked.reduce(reduceValues, new BigNumber(0))
+        const lockedWithTime = locked.map(([value, era]: [BigNumber, BigNumber]) => {
+            const eraStart = activeEraInfo.start.hasValue ? activeEraInfo.start.value.value : new BigNumber(0)
+            const estimatedDuration = era.minus(activeEraInfo.index.value).multipliedBy(expectedEraDuration)
+            const expectedUnlock = eraStart.plus(estimatedDuration)
+
+            return { value, expectedUnlock }
+        })
+        const totalUnlocked = unlocked.reduce((total: BigNumber, [value, _]: [BigNumber, BigNumber]) => total.plus(value), new BigNumber(0))
 
         return {
             total: stakingLedger.total.value,
             active: stakingLedger.active.value,
-            locked: totalLocked,
+            locked: lockedWithTime,
             unlocked: totalUnlocked
         }
     }

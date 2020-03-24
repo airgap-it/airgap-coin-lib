@@ -22,6 +22,7 @@ import { SCALEEnum } from './codec/type/SCALEEnum'
 import { PolkadotRegistration } from '../account/data/PolkadotRegistration'
 import { PolkadotStakingLedger } from '../staking/PolkadotStakingLedger'
 import { PolkadotStorageUtils, PolkadotStorageKeys } from './PolkadotStorageUtils'
+import { PolkadotActiveEraInfo } from '../staking/PolkadotActiveEraInfo'
 
 const RPC_ENDPOINTS = {
     GET_METADATA: 'state_getMetadata',
@@ -46,7 +47,10 @@ const RPC_EXTRINSIC = {
 }
 
 const RPC_CONSTANTS = {
-    EXISTENTIAL_DEPOSIT: 'Balances_ExistentialDeposit'
+    EXISTENTIAL_DEPOSIT: 'Balances_ExistentialDeposit',
+    EXPECTED_BLOCK_TIME: 'Babe_ExpectedBlockTime',
+    EPOCH_DURATION: 'Babe_EpochDuration',
+    SESSIONS_PER_ERA: 'Staking_SessionsPerEra'
 }
 
 const methodEndpoints: Map<PolkadotTransactionType, string> = new Map([
@@ -78,13 +82,10 @@ export class PolkadotNodeClient {
     }
 
     public async getExistentialDeposit(): Promise<BigNumber | null> {
-        const existentialDeposit = await this.getFromMetadata(() => this.metadata!.getConstant(RPC_CONSTANTS.EXISTENTIAL_DEPOSIT))
-
-        if (!existentialDeposit) {
-            return null
-        }
-
-        return SCALEInt.decode(existentialDeposit).decoded.value
+        return this.getConstant(
+            RPC_CONSTANTS.EXISTENTIAL_DEPOSIT,
+            constant => constant ? SCALEInt.decode(constant).decoded.value : null
+        )
     }
 
     public async getTransactionMetadata(type: PolkadotTransactionType): Promise<ExtrinsicId | null> {
@@ -257,11 +258,48 @@ export class PolkadotNodeClient {
         }
     }
 
+    public async getExpectedEraDuration(): Promise<BigNumber | null> {
+        const constants = await this.getConstants([
+            RPC_CONSTANTS.EXPECTED_BLOCK_TIME,
+            RPC_CONSTANTS.EPOCH_DURATION,
+            RPC_CONSTANTS.SESSIONS_PER_ERA
+        ], constant => constant ? SCALEInt.decode(constant).decoded.value : null)
+
+        if (constants.some(constant => constant === null)) {
+            return null
+        }
+
+        const expectedBlockTime = constants[0]!
+        const epochDuration = constants[1]!
+        const sessionsPerEra = constants[2]!
+        
+        return expectedBlockTime.multipliedBy(epochDuration).multipliedBy(sessionsPerEra)
+    }
+
+    public async getActiveEraInfo(): Promise<PolkadotActiveEraInfo | null> {
+        return this.getFromStorage(
+            {
+                moduleName: 'Staking',
+                storageName: 'ActiveEra'
+            },
+            result => result ? PolkadotActiveEraInfo.decode(result) : null
+        )
+    }
+
     public submitTransaction(encoded: string): Promise<string> {
         return this.send<string, string>(
             RPC_ENDPOINTS.SUBMIT_EXTRINSIC,
             [encoded]
         )
+    }
+
+    private async getConstant<T>(key: string, decoder: (value: string) => T): Promise<T> {
+        const constant = await this.getFromMetadata(() => this.metadata!.getConstant(key))
+        return decoder(constant)
+    }
+
+    private async getConstants<T>(keys: string[], decoder: (value: string) => T): Promise<T[]> {
+        return Promise.all(keys.map(key => this.getConstant(key, decoder)))
     }
 
     private async getFromMetadata<T>(metadataGetter: () => T | undefined): Promise<T> {
@@ -352,21 +390,18 @@ export class PolkadotNodeClient {
     }
 
     private async send<T, R>(method: string, params: string[], resultHandler?: (result: R | null) => T): Promise<T> {
-        let promise: Promise<T>
-
         const key = `${method}_${params.join('')}`
         const ongoing = this.ongoingPromises.get(key)
 
         if (ongoing) {
-            promise = ongoing
-        } else {
-            promise = axios.post(this.baseURL, new RPCBody(method, params.map(param => addHexPrefix(param))))
-                .then(response => resultHandler ? resultHandler(response.data.result) : response.data.result)
-                .finally(() => this.ongoingPromises.delete(key))
-            
-            this.ongoingPromises.set(key, promise)
+            return ongoing
         }
 
+        const promise = axios.post(this.baseURL, new RPCBody(method, params.map(param => addHexPrefix(param))))
+            .then(response => resultHandler ? resultHandler(response.data.result) : response.data.result)
+            .finally(() => this.ongoingPromises.delete(key))
+        
+        this.ongoingPromises.set(key, promise)
         return promise
     }
 }
