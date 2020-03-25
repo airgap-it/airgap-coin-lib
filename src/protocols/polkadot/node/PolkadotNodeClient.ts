@@ -51,7 +51,8 @@ const RPC_CONSTANTS = {
     EXISTENTIAL_DEPOSIT: 'Balances_ExistentialDeposit',
     EXPECTED_BLOCK_TIME: 'Babe_ExpectedBlockTime',
     EPOCH_DURATION: 'Babe_EpochDuration',
-    SESSIONS_PER_ERA: 'Staking_SessionsPerEra'
+    SESSIONS_PER_ERA: 'Staking_SessionsPerEra',
+    TRANSACTION_BASE_FEE: 'TransactionPayment_TransactionBaseFee'
 }
 
 const methodEndpoints: Map<PolkadotTransactionType, string> = new Map([
@@ -116,6 +117,13 @@ export class PolkadotNodeClient {
             RPC_ENDPOINTS.GET_QUERY_INFO,
             [bytesToHex(transactionBytes)],
             result => result ? new BigNumber(result.partialFee) : null
+        )
+    }
+
+    public getBaseTransactionFee(): Promise<BigNumber | null> {
+        return this.getConstant(
+            RPC_CONSTANTS.TRANSACTION_BASE_FEE,
+            constant => constant ? SCALEInt.decode(constant).decoded.value : null
         )
     }
 

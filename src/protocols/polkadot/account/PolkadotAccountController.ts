@@ -8,6 +8,8 @@ import { DelegatorAction } from '../../ICoinDelegateProtocol'
 import { PolkadotStakingActionType } from '../staking/PolkadotStakingActionType'
 import { PolkadotStakingInfo } from '../staking/PolkadotStakingLedger'
 
+type FutureFeeEstimationType = 'transfer' | 'delegation'
+
 export class PolkadotAccountController {
     constructor(
         readonly nodeClient: PolkadotNodeClient
@@ -77,21 +79,59 @@ export class PolkadotAccountController {
         }
     }
 
+    public async estimateFutureRequiredFees(addressOrPublicKey, estimationType: FutureFeeEstimationType): Promise<BigNumber | null> {
+        const results = await Promise.all([
+            this.isNominating(addressOrPublicKey),
+            this.isBonded(addressOrPublicKey),
+            this.nodeClient.getBaseTransactionFee()
+        ])
+
+        const isNominating = results[0]
+        const isBonded = results[1]
+        const baseTransactionFee = results[2]
+
+        if (!baseTransactionFee) {
+            return null
+        }
+
+        let requiredFees = 0
+
+        if (!isBonded && estimationType === 'delegation') {
+            requiredFees += 6 // bond + nomination + 1x claim rewards + chill + unbond + withdraw
+        } else if (isBonded) {
+            requiredFees += 2 // unbond + withdraw
+        }
+
+        if (isNominating) {
+            requiredFees += 2 // 1x claim rewards + chill
+        }
+
+        const safetyFactor = 1.5
+        return baseTransactionFee.multipliedBy(requiredFees).multipliedBy(safetyFactor)
+    }
+
+    // make sure it's enough
     public async calculateMaxDelegationValue(addressOrPublicKey: string | PolkadotAddress): Promise<BigNumber> {
         const results = await Promise.all([
             this.getBalance(addressOrPublicKey),
-            this.getStakingInfo(addressOrPublicKey)
+            this.getStakingInfo(addressOrPublicKey),
+            this.nodeClient.getExistentialDeposit(),
+            this.estimateFutureRequiredFees(addressOrPublicKey, 'delegation')
         ])
 
         const currentBalance = results[0]
         const stakingInfo = results[1]
+        const existentialDeposit = results[2]
+        const futureRequiredFees = results[3]
 
-        if (!currentBalance || !stakingInfo) {
+        if (!currentBalance || !existentialDeposit || !futureRequiredFees) {
             return new BigNumber(0)
         }
 
-        // TODO: estimate fees
-        const maxValue = currentBalance.minus(stakingInfo.total)
+        const maxValue = currentBalance
+            .minus(stakingInfo?.total || 0)
+            .minus(existentialDeposit)
+            .minus(futureRequiredFees)
 
         return maxValue
     }
@@ -116,16 +156,18 @@ export class PolkadotAccountController {
 
         const hasFundsToWithdraw = stakingInfo?.unlocked?.gt(0)
 
-        if (!isBonded) {
-            availableActions.push({
-                type: PolkadotStakingActionType.BOND_NOMINATE,
-                args: ['targets', 'controller', 'value', 'payee']
-            })
-        } else if (maxDelegationValue && minDelegationValue && maxDelegationValue.gt(minDelegationValue)) {
-            availableActions.push({
-                type: PolkadotStakingActionType.BOND_EXTRA,
-                args: ['value']
-            })
+        if (maxDelegationValue && minDelegationValue && maxDelegationValue.gt(minDelegationValue)) {
+            if (!isBonded) {
+                availableActions.push({
+                    type: PolkadotStakingActionType.BOND_NOMINATE,
+                    args: ['targets', 'controller', 'value', 'payee']
+                })
+            } else {
+                availableActions.push({
+                    type: PolkadotStakingActionType.BOND_EXTRA,
+                    args: ['value']
+                })
+            }
         }
         
         if (isDelegating) {
