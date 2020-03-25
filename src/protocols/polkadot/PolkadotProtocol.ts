@@ -176,6 +176,33 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinDelega
         return fee.toString(10)
     }
 
+    public async estimateMaxTransactionValueFromPublicKey(publicKey: string, fee: string): Promise<string> {
+        const results = await Promise.all([
+            this.getBalanceOfPublicKey(publicKey),
+            this.accountController.estimateFutureRequiredFees(publicKey, 'transfer'),
+            this.nodeClient.getExistentialDeposit()
+        ])
+
+        if (results.some(result => result === null)) {
+            return Promise.reject('Could not estimate max value.')
+        }
+
+        const balance = new BigNumber(results[0]!)
+        const futureFees = new BigNumber(results[1]!)
+        const existentailDeposit = results[2]!
+        
+        let amountWithoutFees = balance
+            .minus(futureFees)
+            .minus(new BigNumber(fee))
+            .minus(existentailDeposit)
+
+        if (amountWithoutFees.isNegative()) {
+            amountWithoutFees = new BigNumber(0)
+        }
+
+        return amountWithoutFees.toFixed()
+      }
+
     public async prepareTransactionFromPublicKey(
         publicKey: string, 
         recipients: string[], 

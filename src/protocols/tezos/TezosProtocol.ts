@@ -501,6 +501,16 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     return this.getBalanceOfAddresses([address])
   }
 
+  public async estimateMaxTransactionValueFromPublicKey(publicKey: string, fee: string): Promise<string> {
+    const balance = await this.getBalanceOfPublicKey(publicKey)
+
+    let amountWithoutFees = new BigNumber(balance).minus(new BigNumber(fee))
+    if (amountWithoutFees.isNegative()) {
+      amountWithoutFees = new BigNumber(0)
+    }
+    return amountWithoutFees.toFixed()
+  }
+
   public async prepareTransactionFromPublicKey(
     publicKey: string,
     recipients: string[],

@@ -34,6 +34,10 @@ export abstract class NonExtendedProtocol {
     return Promise.resolve([])
   }
 
+  public estimateMaxTransactionValueFromExtendedPublicKey(extendedPublicKey: string, fee: string): Promise<string> {
+    return Promise.reject('estimating max value using extended public key not implemented')
+  }
+
   public getTransactionsFromExtendedPublicKey(extendedPublicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]> {
     return Promise.reject('fetching txs using extended public key not implemented')
   }

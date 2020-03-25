@@ -248,6 +248,10 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     return Promise.reject('extended public balance for ether not implemented')
   }
 
+  public estimateMaxTransactionValueFromExtendedPublicKey(extendedPublicKey: string, fee: string): Promise<string> {
+    return Promise.reject('estimating max value using extended public key not implemented')
+  }
+
   public prepareTransactionFromExtendedPublicKey(
     extendedPublicKey: string,
     offset: number,
@@ -256,6 +260,16 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     fee: string
   ): Promise<RawEthereumTransaction> {
     return Promise.reject('extended public tx for ether not implemented')
+  }
+
+  public async estimateMaxTransactionValueFromPublicKey(publicKey: string, fee: string): Promise<string> {
+    const balance = await this.getBalanceOfPublicKey(publicKey)
+
+    let amountWithoutFees = new BigNumber(balance).minus(new BigNumber(fee))
+    if (amountWithoutFees.isNegative()) {
+      amountWithoutFees = new BigNumber(0)
+    }
+    return amountWithoutFees.toFixed()
   }
 
   public async prepareTransactionFromPublicKey(

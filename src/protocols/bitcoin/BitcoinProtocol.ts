@@ -318,6 +318,16 @@ export class BitcoinProtocol implements ICoinProtocol {
     }
   }
 
+  public async estimateMaxTransactionValueFromExtendedPublicKey(extendedPublicKey: string, fee: string): Promise<string> {
+    const balance = await this.getBalanceOfExtendedPublicKey(extendedPublicKey)
+    return this.estimateMaxTransactionValue(new BigNumber(balance), new BigNumber(fee)).toFixed()
+  }
+
+  public async estimateMaxTransactionValueFromPublicKey(publicKey: string, fee: string): Promise<string> {
+    const balance = await this.getBalanceOfPublicKey(publicKey)
+    return this.estimateMaxTransactionValue(new BigNumber(balance), new BigNumber(fee)).toFixed()
+  }
+
   public async prepareTransactionFromExtendedPublicKey(
     extendedPublicKey: string,
     offset: number,
@@ -601,5 +611,13 @@ export class BitcoinProtocol implements ICoinProtocol {
 
   public async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
     return Promise.reject('Message verification not implemented')
+  }
+
+  private estimateMaxTransactionValue(balance: BigNumber, fee: BigNumber): BigNumber {
+    let amountWithoutFees = balance.minus(fee)
+    if (amountWithoutFees.isNegative()) {
+      amountWithoutFees = new BigNumber(0)
+    }
+    return amountWithoutFees
   }
 }

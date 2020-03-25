@@ -91,7 +91,7 @@ export class PolkadotAccountController {
         const baseTransactionFee = results[2]
 
         if (!baseTransactionFee) {
-            return null
+            return Promise.reject('Could not fetch transaction fee information.')
         }
 
         let requiredFees = 0
