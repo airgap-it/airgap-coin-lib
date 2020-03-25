@@ -4,13 +4,10 @@ import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { IAirGapTransaction } from '../../../interfaces/IAirGapTransaction'
 import { RawTezosTransaction } from '../../../serializer/types'
 import { ICoinSubProtocol, SubProtocolType } from '../../ICoinSubProtocol'
-import {
-  TezosNetwork,
-  TezosOperation,
-  TezosOperationType,
-  TezosProtocol,
-  TezosWrappedOperation
-} from '../TezosProtocol'
+import { TezosNetwork, TezosProtocol } from '../TezosProtocol'
+import { TezosOperationType } from '../types/TezosOperationType'
+import { TezosOperation } from '../types/operations/TezosOperation'
+import { TezosWrappedOperation } from '../types/TezosWrappedOperation'
 
 export interface TezosFAProtocolConfiguration {
   symbol: string
@@ -404,7 +401,6 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
   private url(path: string): string {
     return `${this.jsonRPCAPI}${path}`
   }
-
 }
 
 abstract class TezosContractEntity {

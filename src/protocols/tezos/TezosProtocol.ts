@@ -17,73 +17,15 @@ import { TezosRewardsCalculationDefault } from './rewardcalculation/TezosRewardC
 import { TezosRewardsCalculation006 } from './rewardcalculation/TezosRewardCalculation006'
 
 import { localForger } from '@taquito/local-forging'
+import { TezosOperation } from './types/operations/TezosOperation'
+import { TezosWrappedOperation } from './types/TezosWrappedOperation'
+import { TezosTransactionOperation } from './types/operations/Transaction'
+import { TezosOriginationOperation } from './types/operations/Origination'
+import { TezosDelegationOperation } from './types/operations/Delegation'
+import { TezosOperationType } from './types/TezosOperationType'
+import { TezosRevealOperation } from './types/operations/Reveal'
 
-export enum TezosOperationType {
-  TRANSACTION = 'transaction',
-  REVEAL = 'reveal',
-  ORIGINATION = 'origination',
-  DELEGATION = 'delegation'
-}
-
-export interface TezosBlockMetadata {
-  protocol: string
-  chain_id: string
-  hash: string
-  metadata: TezosBlockHeader
-}
-
-export interface TezosBlockHeader {
-  level: number
-  proto: number
-  predecessor: string
-  timestamp: string
-  validation_pass: number
-  operations_hash: string
-  fitness: string[]
-  context: string
-  priority: number
-  proof_of_work_nonce: string
-  signature: string
-}
-
-export interface TezosOperation {
-  storage_limit: string
-  gas_limit: string
-  counter: string
-  fee: string
-  source: string
-  kind: TezosOperationType
-}
-
-export interface TezosWrappedOperation {
-  branch: string
-  contents: TezosOperation[]
-}
-
-export interface TezosSpendOperation extends TezosOperation {
-  destination: string
-  amount: string
-  kind: TezosOperationType.TRANSACTION
-  code?: string
-  contractDestination?: string
-}
-
-export interface TezosDelegationOperation extends TezosOperation {
-  kind: TezosOperationType.DELEGATION
-  delegate?: string
-}
-
-export interface TezosOriginationOperation extends TezosOperation {
-  kind: TezosOperationType.ORIGINATION
-  balance: string
-  delegate?: string
-  script?: string
-}
-
-export interface TezosRevealOperation extends TezosOperation {
-  public_key: string
-  kind: TezosOperationType.REVEAL
-}
+const assertNever: (x: never) => void = (x: never): void => undefined
 
 export interface TezosVotingInfo {
   pkh: string
@@ -409,16 +351,19 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
     for (let i: number = 0; i < wrappedOperations.contents.length; i++) {
       const tezosOperation: TezosOperation = wrappedOperations.contents[i]
+      let operation: TezosRevealOperation | TezosTransactionOperation | TezosOriginationOperation | TezosDelegationOperation | undefined
 
       let amount: BigNumber = new BigNumber(0)
       let to: string[] = ['']
 
       switch (tezosOperation.kind) {
         case TezosOperationType.REVEAL:
+          operation = tezosOperation as TezosRevealOperation
           to = ['Reveal']
           break
         case TezosOperationType.TRANSACTION:
-          const tezosSpendOperation: TezosSpendOperation = tezosOperation as TezosSpendOperation
+          const tezosSpendOperation: TezosTransactionOperation = tezosOperation as TezosTransactionOperation
+          operation = tezosSpendOperation
           amount = new BigNumber(tezosSpendOperation.amount)
           to = [tezosSpendOperation.destination] // contract destination but should be the address of actual receiver
 
@@ -426,6 +371,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         case TezosOperationType.ORIGINATION:
           {
             const tezosOriginationOperation: TezosOriginationOperation = tezosOperation as TezosOriginationOperation
+            operation = tezosOriginationOperation
             amount = new BigNumber(tezosOriginationOperation.balance)
             const delegate: string | undefined = tezosOriginationOperation.delegate
             to = [delegate ? `Delegate: ${delegate}` : 'Origination']
@@ -433,10 +379,19 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
           break
         case TezosOperationType.DELEGATION:
           {
+            operation = tezosOperation as TezosDelegationOperation
             const delegate: string | undefined = (tezosOperation as TezosDelegationOperation).delegate
             to = [delegate ? delegate : 'Undelegate']
           }
           break
+        case TezosOperationType.ENDORSEMENT:
+        case TezosOperationType.SEED_NONCE_REVELATION:
+        case TezosOperationType.DOUBLE_ENDORSEMENT_EVIDENCE:
+        case TezosOperationType.DOUBLE_BAKING_EVIDENCE:
+        case TezosOperationType.ACTIVATE_ACCOUNT:
+        case TezosOperationType.PROPOSALS:
+        case TezosOperationType.BALLOT:
+          throw new Error('operation not supported: ' + tezosOperation.kind)
         default:
           assertNever(tezosOperation.kind) // Exhaustive switch
           throw new Error('no operation to unforge found')
@@ -444,8 +399,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
       const airgapTx: IAirGapTransaction = {
         amount: amount.toString(10),
-        fee: new BigNumber(tezosOperation.fee).toString(10),
-        from: [tezosOperation.source],
+        fee: new BigNumber(operation.fee).toString(10),
+        from: [operation.source],
         isInbound: false,
         protocolIdentifier: this.identifier,
         to,
@@ -568,7 +523,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
       const adjustedFee: BigNumber = recipients[0].toLowerCase().startsWith('kt') ? wrappedFee.plus(500) : wrappedFee
 
-      const spendOperation: TezosSpendOperation = {
+      const spendOperation: TezosTransactionOperation = {
         kind: TezosOperationType.TRANSACTION,
         fee: adjustedFee.toFixed(),
         gas_limit: recipients[i].toLowerCase().startsWith('kt') ? '15385' : '10300',
@@ -644,25 +599,20 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         throw new Error('property "kind" was not defined')
       }
 
-      const recipient: string | undefined = (operationRequest as TezosSpendOperation).destination
+      const recipient: string | undefined = (operationRequest as TezosTransactionOperation).destination
       let receivingBalance: BigNumber | undefined
       if (recipient) {
         receivingBalance = new BigNumber(await this.getBalanceOfAddresses([recipient]))
       }
 
-      const defaultCounter: string = counter.plus(index).toFixed()
+      const defaultCounter: string = counter.plus(index).toFixed() // TODO: Handle counter if we have some operations without counters in the array
       const defaultFee: string = new BigNumber(this.feeDefaults.low).times(1000000).toFixed()
       const defaultGasLimit: string = recipient && recipient.toLowerCase().startsWith('kt') ? '15385' : '10300' // taken from eztz
       const defaultStorageLimit: string =
         receivingBalance && receivingBalance.isZero() && recipient && recipient.toLowerCase().startsWith('tz') ? '300' : '0' // taken from eztz
 
-      const operation: TezosOperation | undefined = {
-        kind: operationRequest.kind,
-        source: operationRequest.source ?? address,
-        counter: operationRequest.counter ?? defaultCounter,
-        fee: operationRequest.fee ?? defaultFee,
-        gas_limit: operationRequest.gas_limit ?? defaultGasLimit,
-        storage_limit: operationRequest.storage_limit ?? defaultStorageLimit
+      let operation: TezosOperation = {
+        kind: operationRequest.kind
       }
 
       switch (operationRequest.kind) {
@@ -674,13 +624,23 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
           }
 
           ; (operation as TezosRevealOperation).public_key = revealOperation.public_key
+            ; (operation as TezosRevealOperation).source = revealOperation.source ?? address
+            ; (operation as TezosRevealOperation).counter = revealOperation.counter ?? defaultCounter
+            ; (operation as TezosRevealOperation).fee = revealOperation.fee ?? defaultFee
+            ; (operation as TezosRevealOperation).gas_limit = revealOperation.gas_limit ?? defaultGasLimit
+            ; (operation as TezosRevealOperation).storage_limit = revealOperation.storage_limit ?? defaultStorageLimit
           break
         case TezosOperationType.DELEGATION:
           const delegationOperation: TezosDelegationOperation = operationRequest as TezosDelegationOperation
             ; (operation as TezosDelegationOperation).delegate = delegationOperation.delegate
+            ; (operation as TezosDelegationOperation).source = delegationOperation.source ?? address
+            ; (operation as TezosDelegationOperation).counter = delegationOperation.counter ?? defaultCounter
+            ; (operation as TezosDelegationOperation).fee = delegationOperation.fee ?? defaultFee
+            ; (operation as TezosDelegationOperation).gas_limit = delegationOperation.gas_limit ?? defaultGasLimit
+            ; (operation as TezosDelegationOperation).storage_limit = delegationOperation.storage_limit ?? defaultStorageLimit
           break
         case TezosOperationType.TRANSACTION:
-          const spendOperation: TezosSpendOperation = operationRequest as TezosSpendOperation
+          const spendOperation: TezosTransactionOperation = operationRequest as TezosTransactionOperation
 
           if (!spendOperation.amount) {
             throw new Error('property "amount" was not defined')
@@ -690,10 +650,35 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
             throw new Error('property "destination" was not defined')
           }
 
-          ; (operation as TezosSpendOperation).amount = spendOperation.amount
-            ; (operation as TezosSpendOperation).destination = spendOperation.destination
+          ; (operation as TezosTransactionOperation).amount = spendOperation.amount
+            ; (operation as TezosTransactionOperation).destination = spendOperation.destination
+            ; (operation as TezosTransactionOperation).source = spendOperation.source ?? address
+            ; (operation as TezosTransactionOperation).counter = spendOperation.counter ?? defaultCounter
+            ; (operation as TezosTransactionOperation).fee = spendOperation.fee ?? defaultFee
+            ; (operation as TezosTransactionOperation).gas_limit = spendOperation.gas_limit ?? defaultGasLimit
+            ; (operation as TezosTransactionOperation).storage_limit = spendOperation.storage_limit ?? defaultStorageLimit
+          break
+        case TezosOperationType.ORIGINATION:
+          const originationOperation: TezosOriginationOperation = operationRequest as TezosOriginationOperation
+            ; (operation as TezosOriginationOperation).source = originationOperation.source ?? address
+            ; (operation as TezosOriginationOperation).counter = originationOperation.counter ?? defaultCounter
+            ; (operation as TezosOriginationOperation).fee = originationOperation.fee ?? defaultFee
+            ; (operation as TezosOriginationOperation).gas_limit = originationOperation.gas_limit ?? defaultGasLimit
+            ; (operation as TezosOriginationOperation).storage_limit = originationOperation.storage_limit ?? defaultStorageLimit
+
+          break
+        case TezosOperationType.ENDORSEMENT:
+        case TezosOperationType.SEED_NONCE_REVELATION:
+        case TezosOperationType.DOUBLE_ENDORSEMENT_EVIDENCE:
+        case TezosOperationType.DOUBLE_BAKING_EVIDENCE:
+        case TezosOperationType.ACTIVATE_ACCOUNT:
+        case TezosOperationType.PROPOSALS:
+        case TezosOperationType.BALLOT:
+          // Do not change anything
+          operation = operationRequest
           break
         default:
+          assertNever(operationRequest.kind)
           throw new Error(`unsupported operation type "${operationRequest.kind}"`)
       }
 
@@ -950,30 +935,38 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
   private getAmountUsedByPreviousOperations(operations: TezosOperation[]): BigNumber {
     let amountUsed: BigNumber = new BigNumber(0)
-    const assertNever: (x: never) => void = (x: never): void => undefined
 
     operations.forEach((operation: TezosOperation) => {
-      amountUsed = amountUsed.plus(operation.fee) // Fee has to be added for every operation type
-
       switch (operation.kind) {
         case TezosOperationType.REVEAL:
-          // const revealOperation = operation as TezosRevealOperation
-          // No additional amount/fee
+          const revealOperation = operation as TezosRevealOperation
+          amountUsed = amountUsed.plus(revealOperation.fee)
           break
         case TezosOperationType.ORIGINATION:
           const originationOperation: TezosOriginationOperation = operation as TezosOriginationOperation
+          amountUsed = amountUsed.plus(originationOperation.fee)
           amountUsed = amountUsed.plus(originationOperation.balance)
           break
         case TezosOperationType.DELEGATION:
-          // const delegationOperation = operation as TezosDelegationOperation
-          // No additional amount/fee
+          const delegationOperation = operation as TezosDelegationOperation
+          amountUsed = amountUsed.plus(delegationOperation.fee)
           break
         case TezosOperationType.TRANSACTION:
-          const spendOperation: TezosSpendOperation = operation as TezosSpendOperation
+          const spendOperation: TezosTransactionOperation = operation as TezosTransactionOperation
+          amountUsed = amountUsed.plus(spendOperation.fee)
           amountUsed = amountUsed.plus(spendOperation.amount)
           break
+        case TezosOperationType.ENDORSEMENT:
+        case TezosOperationType.SEED_NONCE_REVELATION:
+        case TezosOperationType.DOUBLE_ENDORSEMENT_EVIDENCE:
+        case TezosOperationType.DOUBLE_BAKING_EVIDENCE:
+        case TezosOperationType.ACTIVATE_ACCOUNT:
+        case TezosOperationType.PROPOSALS:
+        case TezosOperationType.BALLOT:
+          break
         default:
-          assertNever(operation.kind) // Exhaustive if
+          assertNever(operation.kind) // Exhaustive switch
+          throw Error('operation type not supported' + operation.kind)
       }
     })
 
@@ -1067,7 +1060,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   }
 
   public async unforgeUnsignedTezosWrappedOperation(hexString: string): Promise<TezosWrappedOperation> {
-    return localForger.parse(hexString)
+    return localForger.parse(hexString) as any
   }
 
   protected formatContractData(
@@ -1088,7 +1081,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   }
 
   public async forgeTezosOperation(tezosWrappedOperation: TezosWrappedOperation): Promise<string> {
-    return localForger.forge(tezosWrappedOperation)
+    return localForger.forge(tezosWrappedOperation as any)
   }
 
   /**
