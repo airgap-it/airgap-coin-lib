@@ -611,11 +611,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       const defaultStorageLimit: string =
         receivingBalance && receivingBalance.isZero() && recipient && recipient.toLowerCase().startsWith('tz') ? '300' : '0' // taken from eztz
 
-      let operation: TezosOperation = {
-        kind: operationRequest.kind
-      }
-
       switch (operationRequest.kind) {
+        // TODO: Handle if the dApp already provides a reveal operation
         case TezosOperationType.REVEAL:
           const revealOperation: TezosRevealOperation = operationRequest as TezosRevealOperation
 
@@ -623,50 +620,61 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
             throw new Error('property "public_key" was not defined')
           }
 
-          ; (operation as TezosRevealOperation).public_key = revealOperation.public_key
-            ; (operation as TezosRevealOperation).source = revealOperation.source ?? address
-            ; (operation as TezosRevealOperation).counter = revealOperation.counter ?? defaultCounter
-            ; (operation as TezosRevealOperation).fee = revealOperation.fee ?? defaultFee
-            ; (operation as TezosRevealOperation).gas_limit = revealOperation.gas_limit ?? defaultGasLimit
-            ; (operation as TezosRevealOperation).storage_limit = revealOperation.storage_limit ?? defaultStorageLimit
-          break
+          revealOperation.source = revealOperation.source ?? address
+          revealOperation.counter = revealOperation.counter ?? defaultCounter
+          revealOperation.fee = revealOperation.fee ?? defaultFee
+          revealOperation.gas_limit = revealOperation.gas_limit ?? defaultGasLimit
+          revealOperation.storage_limit = revealOperation.storage_limit ?? defaultStorageLimit
+
+          return revealOperation
         case TezosOperationType.DELEGATION:
           const delegationOperation: TezosDelegationOperation = operationRequest as TezosDelegationOperation
-            ; (operation as TezosDelegationOperation).delegate = delegationOperation.delegate
-            ; (operation as TezosDelegationOperation).source = delegationOperation.source ?? address
-            ; (operation as TezosDelegationOperation).counter = delegationOperation.counter ?? defaultCounter
-            ; (operation as TezosDelegationOperation).fee = delegationOperation.fee ?? defaultFee
-            ; (operation as TezosDelegationOperation).gas_limit = delegationOperation.gas_limit ?? defaultGasLimit
-            ; (operation as TezosDelegationOperation).storage_limit = delegationOperation.storage_limit ?? defaultStorageLimit
-          break
-        case TezosOperationType.TRANSACTION:
-          const spendOperation: TezosTransactionOperation = operationRequest as TezosTransactionOperation
 
-          if (!spendOperation.amount) {
+          // The delegate property is optional, so we don't have any mandatory properties to check for
+
+          delegationOperation.source = delegationOperation.source ?? address
+          delegationOperation.counter = delegationOperation.counter ?? defaultCounter
+          delegationOperation.fee = delegationOperation.fee ?? defaultFee
+          delegationOperation.gas_limit = delegationOperation.gas_limit ?? defaultGasLimit
+          delegationOperation.storage_limit = delegationOperation.storage_limit ?? defaultStorageLimit
+
+          return delegationOperation
+        case TezosOperationType.TRANSACTION:
+          const transactionOperation: TezosTransactionOperation = operationRequest as TezosTransactionOperation
+
+          if (!transactionOperation.amount) {
             throw new Error('property "amount" was not defined')
           }
 
-          if (!spendOperation.destination) {
+          if (!transactionOperation.destination) {
             throw new Error('property "destination" was not defined')
           }
 
-          ; (operation as TezosTransactionOperation).amount = spendOperation.amount
-            ; (operation as TezosTransactionOperation).destination = spendOperation.destination
-            ; (operation as TezosTransactionOperation).source = spendOperation.source ?? address
-            ; (operation as TezosTransactionOperation).counter = spendOperation.counter ?? defaultCounter
-            ; (operation as TezosTransactionOperation).fee = spendOperation.fee ?? defaultFee
-            ; (operation as TezosTransactionOperation).gas_limit = spendOperation.gas_limit ?? defaultGasLimit
-            ; (operation as TezosTransactionOperation).storage_limit = spendOperation.storage_limit ?? defaultStorageLimit
-          break
+          transactionOperation.source = transactionOperation.source ?? address
+          transactionOperation.counter = transactionOperation.counter ?? defaultCounter
+          transactionOperation.fee = transactionOperation.fee ?? defaultFee
+          transactionOperation.gas_limit = transactionOperation.gas_limit ?? defaultGasLimit
+          transactionOperation.storage_limit = transactionOperation.storage_limit ?? defaultStorageLimit
+
+          return transactionOperation
         case TezosOperationType.ORIGINATION:
           const originationOperation: TezosOriginationOperation = operationRequest as TezosOriginationOperation
-            ; (operation as TezosOriginationOperation).source = originationOperation.source ?? address
-            ; (operation as TezosOriginationOperation).counter = originationOperation.counter ?? defaultCounter
-            ; (operation as TezosOriginationOperation).fee = originationOperation.fee ?? defaultFee
-            ; (operation as TezosOriginationOperation).gas_limit = originationOperation.gas_limit ?? defaultGasLimit
-            ; (operation as TezosOriginationOperation).storage_limit = originationOperation.storage_limit ?? defaultStorageLimit
 
-          break
+          if (!originationOperation.balance) {
+            throw new Error('property "balance" was not defined')
+          }
+
+          if (!originationOperation.script) {
+            throw new Error('property "script" was not defined')
+          }
+
+          originationOperation.source = originationOperation.source ?? address
+          originationOperation.counter = originationOperation.counter ?? defaultCounter
+          originationOperation.fee = originationOperation.fee ?? defaultFee
+          originationOperation.gas_limit = originationOperation.gas_limit ?? defaultGasLimit
+          originationOperation.storage_limit = originationOperation.storage_limit ?? defaultStorageLimit
+
+          return originationOperation
         case TezosOperationType.ENDORSEMENT:
         case TezosOperationType.SEED_NONCE_REVELATION:
         case TezosOperationType.DOUBLE_ENDORSEMENT_EVIDENCE:
@@ -675,14 +683,11 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
         case TezosOperationType.PROPOSALS:
         case TezosOperationType.BALLOT:
           // Do not change anything
-          operation = operationRequest
-          break
+          return operationRequest
         default:
           assertNever(operationRequest.kind)
           throw new Error(`unsupported operation type "${operationRequest.kind}"`)
       }
-
-      return operation
     })
 
     operations.push(...(await Promise.all(operationPromises)))
