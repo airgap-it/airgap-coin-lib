@@ -4,6 +4,8 @@ import { SCALEAccountId } from '../node/codec/type/SCALEAccountId'
 import { SCALEArray } from '../node/codec/type/SCALEArray'
 import { SCALECompactInt } from '../node/codec/type/SCALECompactInt'
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { SCALEInt } from '../node/codec/type/SCALEInt'
+import { SCALEOptional } from '../node/codec/type/SCALEOptional'
 
 interface LockedInfo {
     value: BigNumber
@@ -29,16 +31,17 @@ export class PolkadotStakingLedger {
             first => SCALECompactInt.decode(first),
             second => SCALECompactInt.decode(second)
         ))
-        // TODO: decode last reward, couldn't find docs and have no idea what type it is
+        const lastReward = decoder.decodeNextOptional(hex => SCALEInt.decode(hex, 32))
 
-        return new PolkadotStakingLedger(stash.decoded, total.decoded, active.decoded, unlocking.decoded)
+        return new PolkadotStakingLedger(stash.decoded, total.decoded, active.decoded, unlocking.decoded, lastReward.decoded)
     }
 
     private constructor(
         readonly stash: SCALEAccountId,
         readonly total: SCALECompactInt,
         readonly active: SCALECompactInt,
-        readonly unlocking: SCALEArray<SCALETuple<SCALECompactInt, SCALECompactInt>>
+        readonly unlocking: SCALEArray<SCALETuple<SCALECompactInt, SCALECompactInt>>,
+        readonly lastReward: SCALEOptional<SCALEInt>
     ) {}
     
 }
