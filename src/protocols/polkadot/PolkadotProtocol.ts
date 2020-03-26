@@ -416,11 +416,6 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinDelega
 
         const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, currentBalance, [
             {
-                type: PolkadotTransactionType.STOP_NOMINATING,
-                tip,
-                args: {}
-            },
-            {
                 type: PolkadotTransactionType.NOMINATE,
                 tip,
                 args: {
