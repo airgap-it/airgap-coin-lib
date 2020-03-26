@@ -97,7 +97,7 @@ export class PolkadotAccountController {
         let requiredFees = 0
 
         if (!isBonded && estimationType === 'delegation') {
-            requiredFees += 6 // bond + nomination + 1x claim rewards + chill + unbond + withdraw
+            requiredFees += 5 // bond + nomination + chill + unbond + withdraw
         } else if (isBonded) {
             requiredFees += 2 // unbond + withdraw
         }
