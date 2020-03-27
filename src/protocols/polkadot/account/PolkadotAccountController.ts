@@ -6,7 +6,7 @@ import { PolkadotAddress } from './PolkadotAddress'
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { DelegatorAction } from '../../ICoinDelegateProtocol'
 import { PolkadotStakingActionType } from '../staking/PolkadotStakingActionType'
-import { PolkadotStakingInfo } from '../staking/PolkadotStakingLedger'
+import { PolkadotStakingInfo, PolkadotStakingStatus, PolkadotReward } from '../staking/PolkadotStakingLedger'
 
 type FutureFeeEstimationType = 'transfer' | 'delegation'
 
@@ -43,19 +43,22 @@ export class PolkadotAccountController {
     }
 
     public async getStakingInfo(addressOrPublicKey: string | PolkadotAddress): Promise<PolkadotStakingInfo | null> {
+        const address = PolkadotAddress.from(addressOrPublicKey)
         const results = await Promise.all([
-            this.nodeClient.getLedger(PolkadotAddress.from(addressOrPublicKey)),
+            this.nodeClient.getNominations(address),
+            this.nodeClient.getLedger(address),
             this.nodeClient.getExpectedEraDuration(),
-            this.nodeClient.getActiveEraInfo()
+            this.nodeClient.getActiveEraInfo(),
         ])
 
-        if (results.some(result => result === null)) {
+        const nominations = results[0]
+        const stakingLedger = results[1]
+        const expectedEraDuration = results[2]
+        const activeEraInfo = results[3]
+
+        if (!stakingLedger || !expectedEraDuration || !activeEraInfo) {
             return null
         }
-
-        const stakingLedger = results[0]!
-        const expectedEraDuration = results[1]!
-        const activeEraInfo = results[2]!
 
         const [locked, unlocked] = this.partitionArray(
             stakingLedger.unlocking.elements.map(entry => [entry.first.value, entry.second.value] as [BigNumber, BigNumber]),
@@ -71,12 +74,38 @@ export class PolkadotAccountController {
         })
         const totalUnlocked = unlocked.reduce((total: BigNumber, [value, _]: [BigNumber, BigNumber]) => total.plus(value), new BigNumber(0))
 
+        let status: PolkadotStakingStatus
+        if (nominations === null) {
+            status = 'bonded'
+        } else if (nominations.submittedIn.value.lt(activeEraInfo.index.value)) {
+            status = 'nominating'
+        } else {
+            status = 'nominating_inactive'
+        }
+
+        const nextEra = activeEraInfo.start.value.value.plus(expectedEraDuration).toNumber()
+
+        const rewards = nominations ? await this.nodeClient.getRewards(
+            address, 
+            nominations.targets.elements.map(element => element.address), 
+            activeEraInfo.index.toNumber(),
+            5
+        ) : []
+
         return {
             total: stakingLedger.total.value,
             active: stakingLedger.active.value,
             locked: lockedWithTime,
-            unlocked: totalUnlocked
+            unlocked: totalUnlocked,
+            status,
+            nextEra,
+            previousRewards: rewards
         }
+    }
+
+    public async getNotCollectedRewards(addressOrPublicKey: string | PolkadotAddress): Promise<PolkadotReward[]> {
+        const stakingInfo = await this.getStakingInfo(addressOrPublicKey)
+        return stakingInfo?.previousRewards.filter(reward => !reward.collected) || []
     }
 
     public async estimateFutureRequiredFees(addressOrPublicKey, estimationType: FutureFeeEstimationType): Promise<BigNumber | null> {
@@ -155,6 +184,7 @@ export class PolkadotAccountController {
         const maxDelegationValue = results[4]
 
         const hasFundsToWithdraw = stakingInfo?.unlocked?.gt(0)
+        const hasRewardsToCollect = stakingInfo?.previousRewards.some(reward => !reward.collected)
 
         if (maxDelegationValue && minDelegationValue && maxDelegationValue.gt(minDelegationValue)) {
             if (!isBonded) {
@@ -181,6 +211,13 @@ export class PolkadotAccountController {
                     args: []
                 }
             )
+
+            if (hasRewardsToCollect) {
+                availableActions.push({
+                    type: PolkadotStakingActionType.COLLECT_REWARDS,
+                    args: []
+                })
+            }
         }
 
         if (hasFundsToWithdraw) {

@@ -8,6 +8,9 @@ import { SCALEArray } from '../../../node/codec/type/SCALEArray'
 import { PolkadotRewardDestination, IAirGapTransaction } from '../../../../..'
 import { PolkadotAddress } from '../../../account/PolkadotAddress'
 import BigNumber from '../../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { SCALETuple } from '../../../node/codec/type/SCALETuple'
+import { SCALEString } from '../../../node/codec/type/SCALEString'
+import { SCALEInt } from '../../../node/codec/type/SCALEInt'
 
 interface TransferArgs {
     to: string,
@@ -42,6 +45,11 @@ interface NominateArgs {
 
 interface StopNominatingArgs {
 
+}
+
+interface PayoutNominatorArgs {
+    eraIndex: number | BigNumber
+    validators: [string, number][]
 }
 
 interface SetPayeeArgs {
@@ -86,6 +94,9 @@ export abstract class PolkadotTransactionMethodArgsFactory<T> {
                 return new NominateArgsFactory(args)
             case PolkadotTransactionType.STOP_NOMINATING:
                 return new StopNominatingArgsFactory(args)
+            case PolkadotTransactionType.COLLECT_PAYOUT:
+                assertFields('collectPayout', args, 'eraIndex, validators')
+                return new PayoutNominatorArgsFactory(args)
             case PolkadotTransactionType.SET_PAYEE:
                 assertFields('setPayee', args, 'payee')
                 return new SetPayeeArgsFactory(args)
@@ -120,6 +131,8 @@ export abstract class PolkadotTransactionMethodArgsDecoder<T> {
                 return new NominateArgsDecoder()
             case PolkadotTransactionType.STOP_NOMINATING:
                 return new StopNominatingArgsDecoder()
+            case PolkadotTransactionType.COLLECT_PAYOUT:
+                return new PayoutNominatorArgsDecoder()
             case PolkadotTransactionType.SET_PAYEE:
                 return new SetPayeeArgsDecoder()
             case PolkadotTransactionType.SET_CONTROLLER:
@@ -335,6 +348,41 @@ class StopNominatingArgsDecoder extends PolkadotTransactionMethodArgsDecoder<Sto
         return {
             bytesDecoded: 0,
             decoded: {}
+        }
+    }
+}
+
+class PayoutNominatorArgsFactory extends PolkadotTransactionMethodArgsFactory<PayoutNominatorArgs> {
+    public createFields(): [string, SCALEType][] {
+        return [
+            ['eraIndex', SCALEEnum.from(this.args.eraIndex)],
+            ['validators', SCALEArray.from(
+                this.args.validators.map(([accountId, index]) => SCALETuple.from(SCALEString.from(accountId), SCALEInt.from(index)))
+            )]
+        ]
+    }
+    public createToAirGapTransactionPart(): () => Partial<IAirGapTransaction> {
+        return () => ({})
+    }
+}
+
+class PayoutNominatorArgsDecoder extends PolkadotTransactionMethodArgsDecoder<PayoutNominatorArgs> {
+    protected _decode(decoder: SCALEDecoder): SCALEDecodeResult<PayoutNominatorArgs> {
+        const eraIndex = decoder.decodeNextInt(32)
+        const validators = decoder.decodeNextArray(hex => 
+            SCALETuple.decode(
+                hex, 
+                SCALEString.decode,
+                second => SCALEInt.decode(second, 32)
+            )
+        )
+
+        return {
+            bytesDecoded: eraIndex.bytesDecoded + validators.bytesDecoded,
+            decoded: {
+                eraIndex: eraIndex.decoded.value,
+                validators: validators.decoded.elements.map(element => [element.first.value, element.second.toNumber()])
+            }
         }
     }
 }

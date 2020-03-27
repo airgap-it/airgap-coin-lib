@@ -20,10 +20,11 @@ import { PolkadotAddress } from '../account/PolkadotAddress'
 import { PolkadotRewardDestination } from '../../..'
 import { SCALEEnum } from './codec/type/SCALEEnum'
 import { PolkadotRegistration } from '../account/data/PolkadotRegistration'
-import { PolkadotStakingLedger } from '../staking/PolkadotStakingLedger'
+import { PolkadotStakingLedger, PolkadotReward } from '../staking/PolkadotStakingLedger'
 import { PolkadotStorageUtils, PolkadotStorageKeys } from './PolkadotStorageUtils'
 import { PolkadotActiveEraInfo } from '../staking/PolkadotActiveEraInfo'
 import { PolkadotNodeCache } from './PolkadotNodeCache'
+import { PolkadotEraRewardPoints } from '../staking/PolkadotEraRewardPoints'
 
 const RPC_ENDPOINTS = {
     GET_METADATA: 'state_getMetadata',
@@ -43,6 +44,7 @@ const RPC_EXTRINSIC = {
     WITHDRAW_UNBONDED: 'staking_withdraw_unbonded',
     NOMINATE: 'staking_nominate',
     CHILL: 'staking_chill',
+    COLLECT_PAYOUT: 'staking_payout_nominator',
     SET_PAYEE: 'staking_set_payee',
     SET_CONTROLLER: 'staking_set_controller'
 }
@@ -63,6 +65,7 @@ const methodEndpoints: Map<PolkadotTransactionType, string> = new Map([
     [PolkadotTransactionType.WITHDRAW_UNBONDED, RPC_EXTRINSIC.WITHDRAW_UNBONDED],
     [PolkadotTransactionType.NOMINATE, RPC_EXTRINSIC.NOMINATE],
     [PolkadotTransactionType.STOP_NOMINATING, RPC_EXTRINSIC.CHILL],
+    [PolkadotTransactionType.COLLECT_PAYOUT, RPC_EXTRINSIC.COLLECT_PAYOUT],
     [PolkadotTransactionType.SET_PAYEE, RPC_EXTRINSIC.SET_PAYEE],
     [PolkadotTransactionType.SET_CONTROLLER, RPC_EXTRINSIC.SET_CONTROLLER]
 ])
@@ -193,6 +196,117 @@ export class PolkadotNodeClient {
         )
     }
 
+    public async getRewards(
+        address: PolkadotAddress, 
+        validators: PolkadotAddress[], 
+        currentEra: number, 
+        limit: number = 1
+    ): Promise<PolkadotReward[]> {
+        const rewards: PolkadotReward[] = []
+
+        const eras = Array.from(Array(limit).keys()).map(index => currentEra - 1 - index)
+        for (let era of eras) {
+            const results = await Promise.all([
+                this.getValidatorReward(era),
+                this.getRewardPoints(era),
+                Promise.all(validators.map(async validator => 
+                    [
+                        validator, 
+                        (await this.getValidatorPrefs(validator))?.commission?.value,
+                        await this.getStakersClipped(era, validator)
+                    ] as [PolkadotAddress, BigNumber | null, PolkadotExposure | null]
+                )),
+                this.getLedger(address)
+            ])
+
+            const reward = results[0]
+            const rewardPoints = results[1]
+            const exposuresWithValidators = results[2]
+            const stakingLedger = results[3]
+
+            if (reward && rewardPoints && exposuresWithValidators && stakingLedger) {
+                const total = exposuresWithValidators
+                    .map(exposureWithValidator => {
+                        if (exposureWithValidator[1] && exposureWithValidator[2]) {
+                            const validatorPoints = rewardPoints.individual.elements
+                                .find(element => element.first.address.compare(exposureWithValidator[0]) === 0)
+                            const validatorReward = validatorPoints?.second.value
+                                ?.dividedBy(rewardPoints.total.value)
+                                ?.multipliedBy(reward) 
+                                || new BigNumber(0)
+
+                            const nominatorStake = exposureWithValidator[2].others.elements
+                                .find(element => element.first.address.compare(address) === 0)
+                                ?.second?.value || new BigNumber(0)
+
+                            const nominatorShare = nominatorStake.dividedBy(exposureWithValidator[2].totalBalance.value)
+
+                            return new BigNumber(1)
+                                .minus(exposureWithValidator[1].dividedBy(1_000_000_000))
+                                .multipliedBy(validatorReward)
+                                .multipliedBy(nominatorShare)
+                        } else {
+                            return new BigNumber(0)
+                        }
+                    }).reduce((sum, next) => sum.plus(next), new BigNumber(0))
+
+                rewards.push({
+                    eraIndex: era,
+                    amount: total,
+                    exposures: exposuresWithValidators?.map(exposure => [
+                        exposure[0].toString(), 
+                        exposure[2]?.others.elements.findIndex(element => element.first.address.compare(address) === 0)
+                    ]).filter(([_, index]) => index !== undefined) as [string, number][],
+                    timestamp: 0,
+                    collected: stakingLedger.lastReward.hasValue ? stakingLedger.lastReward.value.value.gte(era) : false
+                })
+            }
+        }
+        return rewards.sort((a, b) => b.eraIndex - a.eraIndex)
+    }
+
+    public async getRewardPoints(eraIndex: number): Promise<PolkadotEraRewardPoints | null> {
+        return this.getFromStorage<PolkadotEraRewardPoints | null>(
+            {
+                moduleName: 'Staking',
+                storageName: 'ErasRewardPoints',
+                firstKey: {
+                    value: SCALEInt.from(eraIndex, 32).encode()
+                }
+            },
+            result => result ? PolkadotEraRewardPoints.decode(result) : null
+        )
+    }
+
+    public async getValidatorReward(eraIndex: number): Promise<BigNumber | null> {
+        return this.getFromStorage<BigNumber | null>(
+            {
+                moduleName: 'Staking',
+                storageName: 'ErasValidatorReward',
+                firstKey: {
+                    value: SCALEInt.from(eraIndex, 32).encode()
+                }
+            },
+            result => result ? SCALEInt.decode(result).decoded.value : null
+        )
+    }
+
+    public async getStakersClipped(eraIndex: number, validator: PolkadotAddress): Promise<PolkadotExposure | null> {
+        return this.getFromStorage<PolkadotExposure | null>(
+            {
+                moduleName: 'Staking',
+                storageName: 'ErasStakersClipped',
+                firstKey: {
+                    value: SCALEInt.from(eraIndex, 32).encode()
+                },
+                secondKey: {
+                    value: SCALEAccountId.from(validator.getBufferPublicKey()).encode()
+                }
+            },
+            result => result ? PolkadotExposure.decode(result) : null
+        )
+    }
+
     public getRewardDestination(address: PolkadotAddress): Promise<PolkadotRewardDestination | null> {
         return this.getFromStorage<PolkadotRewardDestination | null>(
             {
@@ -242,16 +356,7 @@ export class PolkadotNodeClient {
                 result => result ? PolkadotRegistration.decode(result) : null
             ),
             this.getValidators(),
-            this.getFromStorage<PolkadotValidatorPrefs | null>(
-                { 
-                    moduleName: 'Staking', 
-                    storageName: 'Validators', 
-                    firstKey: { 
-                        value: address.getBufferPublicKey()
-                    } 
-                },
-                result => result ? PolkadotValidatorPrefs.decode(result) : null
-            )
+            this.getValidatorPrefs(address)
         ])
 
         const identity = results[0]
@@ -277,6 +382,19 @@ export class PolkadotNodeClient {
             totalStakingBalance: exposure ? exposure.totalBalance.value : null,
             commission: prefs ? prefs.commission.value.dividedBy(1_000_000_000) : null // commission is Perbill (parts per billion)
         }
+    }
+
+    public async getValidatorPrefs(address: PolkadotAddress): Promise<PolkadotValidatorPrefs | null> {
+        return this.getFromStorage<PolkadotValidatorPrefs | null>(
+            { 
+                moduleName: 'Staking', 
+                storageName: 'Validators', 
+                firstKey: { 
+                    value: address.getBufferPublicKey()
+                } 
+            },
+            result => result ? PolkadotValidatorPrefs.decode(result) : null
+        )
     }
 
     public async getExpectedEraDuration(): Promise<BigNumber | null> {

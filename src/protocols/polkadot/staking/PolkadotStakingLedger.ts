@@ -12,11 +12,24 @@ interface LockedInfo {
     expectedUnlock: BigNumber
 }
 
+export interface PolkadotReward {
+    eraIndex: number
+    amount: BigNumber
+    exposures: [string, number][]
+    timestamp: number
+    collected: boolean
+}
+
+export type PolkadotStakingStatus = 'bonded' | 'nominating' | 'nominating_inactive'
+
 export interface PolkadotStakingInfo {
     total: BigNumber
     active: BigNumber
     unlocked: BigNumber
     locked: LockedInfo[]
+    status: PolkadotStakingStatus
+    nextEra: number
+    previousRewards: PolkadotReward[]
 }
 
 export class PolkadotStakingLedger {

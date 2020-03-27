@@ -337,6 +337,8 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinDelega
                 return this.prepareBondExtra(publicKey, data.tip || 0, data.value)
             case PolkadotStakingActionType.WITHDRAW_UNBONDED:
                 return this.prepareWithdrawUnbonded(publicKey, data.tip || 0)
+            case PolkadotStakingActionType.COLLECT_REWARDS:
+                return this.prepareCollectRewards(publicKey, data.tip || 0)
             case PolkadotStakingActionType.CHANGE_REWARD_DESTINATION:
                 return Promise.reject('Unsupported delegator action.')
             case PolkadotStakingActionType.CHANGE_CONTROLLER:
@@ -497,6 +499,32 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinDelega
                 args: {}
             }
         ])
+
+        return [{ encoded }]
+    }
+
+    public async prepareCollectRewards(
+        publicKey: string, 
+        tip: string | number | BigNumber
+    ): Promise<RawPolkadotTransaction[]> {
+        const results = await Promise.all([
+            this.getBalanceOfPublicKey(publicKey),
+            this.accountController.getNotCollectedRewards(publicKey)
+        ])
+
+        const currentBalance = results[0]
+        const awaitingRewards = results[1]
+
+        const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, currentBalance, 
+            awaitingRewards.map(reward => ({
+                type: PolkadotTransactionType.COLLECT_PAYOUT,
+                tip,
+                args: {
+                    eraIndex: reward.eraIndex,
+                    validators: reward.exposures
+                }
+            }))
+        )
 
         return [{ encoded }]
     }
