@@ -40,13 +40,13 @@ const RPC_EXTRINSIC = {
     TRANSFER: 'balances_transfer',
     BOND: 'staking_bond',
     UNBOND: 'staking_unbond',
-    BOND_EXTRA: 'staking_bond_extra',
-    WITHDRAW_UNBONDED: 'staking_withdraw_unbonded',
+    BOND_EXTRA: 'staking_bondExtra',
+    WITHDRAW_UNBONDED: 'staking_withdrawUnbonded',
     NOMINATE: 'staking_nominate',
     CHILL: 'staking_chill',
-    COLLECT_PAYOUT: 'staking_payout_nominator',
-    SET_PAYEE: 'staking_set_payee',
-    SET_CONTROLLER: 'staking_set_controller'
+    COLLECT_PAYOUT: 'staking_payoutNominator',
+    SET_PAYEE: 'staking_setPayee',
+    SET_CONTROLLER: 'staking_setController'
 }
 
 const RPC_CONSTANTS = {
