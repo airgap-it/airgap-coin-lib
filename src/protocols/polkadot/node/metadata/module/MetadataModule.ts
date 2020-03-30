@@ -28,18 +28,6 @@ export class MetadataModule extends SCALEClass {
         }
     }
 
-    public get hasStorage(): boolean {
-        return this.storage.hasValue
-    }
-
-    public get hasCalls(): boolean {
-        return this.calls.hasValue
-    }
-
-    public get hasEvents(): boolean {
-        return this.events.hasValue
-    }
-
     protected scaleFields = [this.name, this.storage, this.calls, this.events, this.constants, this.errors]
 
     private constructor(

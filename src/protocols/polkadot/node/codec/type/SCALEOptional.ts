@@ -39,28 +39,16 @@ export class SCALEOptional<T extends SCALEType> extends SCALEType {
 
     private readonly type: Optional
 
-    public get hasValue(): boolean {
-        return this._value !== null
-    }
-
-    public get value(): T {
-        if (this.hasValue) {
-            return this._value!
-        } else {
-            throw new Error('SCALEOptional is empty')
-        }
-    }
-
-    private constructor(readonly _value: T | null) { 
+    private constructor(readonly value: T | null) { 
         super()
-        this.type = _value ? 1 : 0
+        this.type = value ? 1 : 0
     }
     
     public toString(): string {
-        return `Optional<${this.hasValue ? this.value.toString() : 'EMPTY'}>`
+        return `Optional<${this.value?.toString() || 'EMPTY'}>`
     }
 
     protected _encode(): string {
-        return toHexStringRaw(this.type, 2) + this.hasValue ? this.value.encode() : ''
+        return toHexStringRaw(this.type, 2) + this.value?.encode() || ''
     }
 }

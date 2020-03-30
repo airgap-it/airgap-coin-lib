@@ -10,8 +10,8 @@ import { SCALEBytes } from '../../node/codec/type/SCALEBytes'
 import { SCALEDecodeResult, SCALEDecoder } from '../../node/codec/SCALEDecoder'
 import { SCALEHash } from '../../node/codec/type/SCALEHash'
 import { SCALEType } from '../../node/codec/type/SCALEType'
-import { ExtrinsicId } from '../../node/metadata/Metadata'
 import { stripHexPrefix } from '../../../../utils/hex'
+import { PolkadotCallId } from '../../node/call/PolkadotCallId'
 
 const VERSION = 4
 const BIT_SIGNED = 128
@@ -21,7 +21,7 @@ interface PolkadotTransactionConfig {
     from: string,
     args: any,
     tip: number | BigNumber,
-    methodId: ExtrinsicId,
+    methodId: PolkadotCallId,
     era: EraConfig | null,
     nonce: number | BigNumber,
     signature?: string | Uint8Array | Buffer

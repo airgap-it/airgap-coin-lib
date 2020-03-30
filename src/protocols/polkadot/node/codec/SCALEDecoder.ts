@@ -12,6 +12,7 @@ import { SCALEString } from './type/SCALEString'
 import { SCALETuple } from './type/SCALETuple'
 import { SCALEEnum } from './type/SCALEEnum'
 import { stripHexPrefix } from '../../../../utils/hex'
+import { isString } from 'util'
 
 export type DecoderMethod<T> = (hex: string) => SCALEDecodeResult<T>
 
@@ -23,8 +24,8 @@ export interface SCALEDecodeResult<T> {
 export class SCALEDecoder {
     private hex: string
 
-    constructor(hex: string) {
-        this.hex = stripHexPrefix(hex)
+    constructor(bytes: string | Uint8Array | Buffer) {
+        this.hex = isString(bytes) ? stripHexPrefix(bytes) : Buffer.from(bytes).toString('hex')
     }
 
     public decodeNextAccountId(): SCALEDecodeResult<SCALEAccountId> {

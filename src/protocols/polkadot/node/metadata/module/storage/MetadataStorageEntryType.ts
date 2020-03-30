@@ -5,7 +5,7 @@ import { SCALEDecoder } from '../../../codec/SCALEDecoder'
 import { SCALEType } from '../../../codec/type/SCALEType'
 import { SCALEString } from '../../../codec/type/SCALEString'
 import { SCALEBoolean } from '../../../codec/type/SCALEBoolean'
-import { PolkadotStorageHasher } from '../../../PolkadotStorageUtils'
+import { PolkadotStorageEntryHasher } from '../../../storage/PolkadotStorageEntry'
 
 enum StorageEntryType {
     Plain = 0,
@@ -71,7 +71,7 @@ export class MetadataStorageEntryMap extends MetadataStorageEntryType {
     public static decode(raw: string): SCALEDecodeResult<MetadataStorageEntryMap> {
         const decoder = new SCALEDecoder(raw)
 
-        const hasher = decoder.decodeNextEnum(value => PolkadotStorageHasher[PolkadotStorageHasher[value]])
+        const hasher = decoder.decodeNextEnum(value => PolkadotStorageEntryHasher[PolkadotStorageEntryHasher[value]])
         const key = decoder.decodeNextString()
         const value = decoder.decodeNextString()
         const isLinked = decoder.decodeNextBoolean()
@@ -86,7 +86,7 @@ export class MetadataStorageEntryMap extends MetadataStorageEntryType {
     protected readonly _scaleFields = [this.hasher, this.key, this.value, this.isLinked]
 
     private constructor(
-        readonly hasher: SCALEEnum<PolkadotStorageHasher>,
+        readonly hasher: SCALEEnum<PolkadotStorageEntryHasher>,
         readonly key: SCALEString,
         readonly value: SCALEString,
         readonly isLinked: SCALEBoolean
@@ -98,26 +98,26 @@ export class MetadataStorageEntryDoubleMap extends MetadataStorageEntryType {
     public static decode(raw: string): SCALEDecodeResult<MetadataStorageEntryDoubleMap> {
         const decoder = new SCALEDecoder(raw)
 
-        const hasher = decoder.decodeNextEnum(value => PolkadotStorageHasher[PolkadotStorageHasher[value]])
+        const hasher1 = decoder.decodeNextEnum(value => PolkadotStorageEntryHasher[PolkadotStorageEntryHasher[value]])
         const key1 = decoder.decodeNextString()
         const key2 = decoder.decodeNextString()
         const value = decoder.decodeNextString()
-        const key2Hasher = decoder.decodeNextEnum(value => PolkadotStorageHasher[PolkadotStorageHasher[value]])
+        const hasher2 = decoder.decodeNextEnum(value => PolkadotStorageEntryHasher[PolkadotStorageEntryHasher[value]])
 
         return {
-            bytesDecoded: hasher.bytesDecoded + key1.bytesDecoded + key2.bytesDecoded + value.bytesDecoded + key2Hasher.bytesDecoded,
-            decoded: new MetadataStorageEntryDoubleMap(hasher.decoded, key1.decoded, key2.decoded, value.decoded, key2Hasher.decoded)
+            bytesDecoded: hasher1.bytesDecoded + key1.bytesDecoded + key2.bytesDecoded + value.bytesDecoded + hasher2.bytesDecoded,
+            decoded: new MetadataStorageEntryDoubleMap(hasher1.decoded, key1.decoded, key2.decoded, value.decoded, hasher2.decoded)
         }
     }
 
     protected readonly type = SCALEEnum.from(StorageEntryType.Map)
-    protected readonly _scaleFields = [this.hasher, this.key1, this.key2, this.value, this.key2Hasher]
+    protected readonly _scaleFields = [this.hasher1, this.key1, this.key2, this.value, this.hasher2]
 
     private constructor(
-        readonly hasher: SCALEEnum<PolkadotStorageHasher>,
+        readonly hasher1: SCALEEnum<PolkadotStorageEntryHasher>,
         readonly key1: SCALEString,
         readonly key2: SCALEString,
         readonly value: SCALEString,
-        readonly key2Hasher: SCALEEnum<PolkadotStorageHasher>,
+        readonly hasher2: SCALEEnum<PolkadotStorageEntryHasher>,
     ) { super() }
 }

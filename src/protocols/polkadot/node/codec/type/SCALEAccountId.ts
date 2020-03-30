@@ -4,8 +4,8 @@ import { stripHexPrefix, bytesToHex } from "../../../../../utils/hex"
 import { PolkadotAddress } from '../../../account/PolkadotAddress'
 
 export class SCALEAccountId extends SCALEType {
-    public static from(value: string | Uint8Array | Buffer): SCALEAccountId {
-        const address: PolkadotAddress = PolkadotAddress.from(bytesToHex(value))
+    public static from(value: string | Uint8Array | Buffer | PolkadotAddress): SCALEAccountId {
+        const address: PolkadotAddress = value instanceof PolkadotAddress ? value : PolkadotAddress.from(bytesToHex(value))
         return new SCALEAccountId(address)
     }
 
@@ -19,6 +19,10 @@ export class SCALEAccountId extends SCALEType {
     }
 
     private constructor(readonly address: PolkadotAddress) { super() }
+
+    public compare(other: SCALEAccountId): number {
+        return this.address.compare(other.address)
+    }
 
     public asAddress(): string {
         return this.address.toString()

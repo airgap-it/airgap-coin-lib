@@ -66,7 +66,7 @@ export class PolkadotAccountController {
         )
 
         const lockedWithTime = locked.map(([value, era]: [BigNumber, BigNumber]) => {
-            const eraStart = activeEraInfo.start.hasValue ? activeEraInfo.start.value.value : new BigNumber(0)
+            const eraStart = activeEraInfo.start.value?.value || new BigNumber(0)
             const estimatedDuration = era.minus(activeEraInfo.index.value).multipliedBy(expectedEraDuration)
             const expectedUnlock = eraStart.plus(estimatedDuration)
 
@@ -83,7 +83,7 @@ export class PolkadotAccountController {
             status = 'nominating_inactive'
         }
 
-        const nextEra = activeEraInfo.start.value.value.plus(expectedEraDuration).toNumber()
+        const nextEra = activeEraInfo.start.value?.value.plus(expectedEraDuration).toNumber() || 0
 
         const rewards = nominations ? await this.nodeClient.getRewards(
             address, 
