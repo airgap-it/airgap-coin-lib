@@ -1,8 +1,8 @@
 import { bytesToHex } from '../../../../utils/hex'
 import { xxhashAsHex } from '../../../../utils/xxhash'
 import { blake2bAsHex } from '../../../../utils/blake2b'
-import { SCALEType } from '../codec/type/SCALEType'
-import { MetadataStorageEntryType, MetadataStorageEntryPlain, MetadataStorageEntryMap, MetadataStorageEntryDoubleMap } from '../metadata/module/storage/MetadataStorageEntryType'
+import { SCALEType } from '../../data/scale/type/SCALEType'
+import { MetadataStorageEntryType, MetadataStorageEntryPlain, MetadataStorageEntryMap, MetadataStorageEntryDoubleMap } from '../../data/metadata/module/storage/MetadataStorageEntryType'
 
 export enum PolkadotStorageEntryHasher {
     BLAKE2_128 = 0, 

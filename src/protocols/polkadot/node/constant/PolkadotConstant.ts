@@ -1,4 +1,4 @@
-import { MetadataConstant } from '../metadata/module/MetadataConstants'
+import { MetadataConstant } from '../../data/metadata/module/MetadataConstants'
 
 export class PolkadotConstant {
     public static fromMetadata(constant: MetadataConstant): PolkadotConstant {

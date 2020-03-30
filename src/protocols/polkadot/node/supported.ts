@@ -1,4 +1,4 @@
-import { PolkadotTransactionType } from '../transaction/data/PolkadotTransaction'
+import { PolkadotTransactionType } from '../data/transaction/PolkadotTransaction'
 
 export const supportedRpcMethods = {
     'author': [

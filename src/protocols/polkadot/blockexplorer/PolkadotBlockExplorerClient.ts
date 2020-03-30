@@ -1,6 +1,6 @@
 import { IAirGapTransaction } from '../../../interfaces/IAirGapTransaction'
 import axios from '../../../dependencies/src/axios-0.19.0'
-import { PolkadotAddress } from '../account/PolkadotAddress'
+import { PolkadotAddress } from '../data/account/PolkadotAddress'
 
 export class PolkadotBlockExplorerClient {
     public accountInfoUrl = `${this.baseUrl}/account`

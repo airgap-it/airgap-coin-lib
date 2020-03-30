@@ -14,7 +14,7 @@ replaceInFile(
   'export declare type RLPData = number | string | boolean | BigNumber | Buffer | RLPData[]',
   'export declare type RLPData = number | string | boolean | BigNumber | Buffer'
 )
-replaceInFile('./dist/protocols/polkadot/node/codec/type/SCALEEra.d.ts', 'get isMortal(): boolean;', 'readonly isMortal: boolean;')
-replaceInFile('./dist/protocols/polkadot/node/codec/type/SCALEHash.d.ts', 'get isEmpty(): boolean;', 'readonly isEmpty: boolean;')
-replaceInFile('./dist/protocols/polkadot/node/metadata/module/storage/MetadataStorageEntryType.d.ts', 'protected get scaleFields(): SCALEType[];', 'protected readonly scaleFields: SCALEType[];')
-replaceInFile('./dist/protocols/polkadot/transaction/data/PolkadotSignature.d.ts', 'get isSigned(): boolean;', 'readonly isSigned: boolean;')
+replaceInFile('./dist/protocols/polkadot/data/scale/type/SCALEEra.d.ts', 'get isMortal(): boolean;', 'readonly isMortal: boolean;')
+replaceInFile('./dist/protocols/polkadot/data/scale/type/SCALEHash.d.ts', 'get isEmpty(): boolean;', 'readonly isEmpty: boolean;')
+replaceInFile('./dist/protocols/polkadot/data/metadata/module/storage/MetadataStorageEntryType.d.ts', 'protected get scaleFields(): SCALEType[];', 'protected readonly scaleFields: SCALEType[];')
+replaceInFile('./dist/protocols/polkadot/data/transaction/PolkadotSignature.d.ts', 'get isSigned(): boolean;', 'readonly isSigned: boolean;')
