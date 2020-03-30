@@ -387,8 +387,6 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
         contents: operations
       }
 
-      console.log(JSON.stringify(tezosWrappedOperation, undefined, 2))
-
       const binaryTx: string = await this.forgeTezosOperation(tezosWrappedOperation)
 
       return { binaryTransaction: binaryTx }
@@ -481,7 +479,6 @@ abstract class TezosContractEntity {
     }
 
     const result = arr.map(v => ('0' + v.toString(16)).slice(-2)).join('')
-    console.log('RETURNING', result)
     return result
   }
 
@@ -657,7 +654,6 @@ class TezosContractPair extends TezosContractEntity {
         result += this.argumentsToHex(arg)
       }
     } else if (args.int !== undefined) {
-      console.log('ARGS', args.int)
       result += `00${this.encodeSignedInt(args.int)}`
     } else if (args.string !== undefined) {
       const value = this.stringToHex(args.string)

@@ -605,8 +605,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
     // tslint:disable:cyclomatic-complexity
     const operationPromises: Promise<TezosOperation>[] = operationRequests.map(async (operationRequest: TezosOperation, index: number) => {
-      console.log('preparing tezos operation', operationRequest)
-
       // TODO: Handle activation burn
 
       if (!operationRequest.kind) {
