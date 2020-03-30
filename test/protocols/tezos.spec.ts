@@ -2,7 +2,7 @@ import { expect } from 'chai'
 import 'mocha'
 import * as sinon from 'sinon'
 
-import { isCoinlibReady } from '../../src'
+import { isCoinlibReady, TezosProtocol } from '../../src'
 import axios from '../../src/dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
 import { RawTezosTransaction } from '../../src/serializer/types'
@@ -473,6 +473,78 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
 
       expect(result.airGapTxs[1].amount).to.equal('54321')
       expect(result.airGapTxs[1].fee).to.equal('611')
+    })
+
+    it('will prepare an FA 1.2 transaction', async () => {
+      // stub
+      //   .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy/balance`)
+      //   .returns(Promise.resolve({ data: 0 }))
+
+      const protocol = new TezosProtocol()
+      const incompleteTransaction: any[] = [
+        {
+          "kind": "transaction",
+          "amount": "0",
+          "fee": "500000",
+          "gas_limit": "400000",
+          "storage_limit": "60000",
+          "destination": "KT1LH2o12xVRwTpJMZ6QJG74Fox8gE9QieFd",
+          "parameters": {
+            "entrypoint": "transfer",
+            "value": {
+              "prim": "Pair",
+              "args": [
+                {
+                  "string": "tz1d75oB6T4zUMexzkr5WscGktZ1Nss1JrT7"
+                },
+                {
+                  "prim": "Pair",
+                  "args": [
+                    {
+                      "string": "tz1MJx9vhaNRSimcuXPK2rW4fLccQnDAnVKJ"
+                    },
+                    {
+                      "int": "10"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+
+      const transaction = await protocol.prepareOperations(tezosProtocolSpec.wallet.publicKey, incompleteTransaction)
+      const forged = await protocol.forgeAndWrapOperations(transaction)
+
+      const result = await prepareTxHelper(forged)
+
+      // check that storage is properly set
+      // expect(result.spendTransaction.storage_limit).to.equal('0')
+
+      expect(result.airGapTxs.length).to.equal(1)
+
+      const airGapTx = result.airGapTxs[0]
+
+      expect(airGapTx.transactionDetails.amount).to.equal('0')
+      expect(airGapTx.transactionDetails.fee).to.equal('500000')
+      expect(airGapTx.transactionDetails.gas_limit).to.equal('400000')
+      expect(airGapTx.transactionDetails.storage_limit).to.equal('60000')
+      expect(airGapTx.transactionDetails.source).to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
+      expect(airGapTx.transactionDetails.destination).to.equal('KT1LH2o12xVRwTpJMZ6QJG74Fox8gE9QieFd')
+      expect(airGapTx.transactionDetails.parameters).to.not.be.undefined
+      expect(airGapTx.transactionDetails.parameters.entrypoint).to.equal('transfer')
+      expect(airGapTx.transactionDetails.parameters.value.args[0].string).to.equal('tz1d75oB6T4zUMexzkr5WscGktZ1Nss1JrT7')
+      expect(airGapTx.transactionDetails.parameters.value.args[1].args[0].string).to.equal('tz1MJx9vhaNRSimcuXPK2rW4fLccQnDAnVKJ')
+      expect(airGapTx.transactionDetails.parameters.value.args[1].args[1].int).to.equal('10')
+
+      console.log('airGapTx.from', airGapTx.from)
+      expect(airGapTx.from.length).to.equal(1)
+      expect(airGapTx.from[0]).to.equal('tz1d75oB6T4zUMexzkr5WscGktZ1Nss1JrT7')
+      expect(airGapTx.to.length).to.equal(1)
+      expect(airGapTx.to[0]).to.equal('tz1MJx9vhaNRSimcuXPK2rW4fLccQnDAnVKJ')
+      expect(airGapTx.amount).to.equal('10')
+      expect(airGapTx.fee).to.equal('500000')
     })
 
     it('will throw an error if the number of recipients and amounts do not match', async () => {
