@@ -59,6 +59,9 @@ export const supportedCalls = {
         'set_payee',
         'set_controller',
         'payout_nominator'
+    ] as const,
+    'Utility': [
+        'batch'
     ] as const
 }
 
@@ -105,10 +108,11 @@ export const supportedCallEndpoints: Map<PolkadotTransactionType, [PolkadotCallM
     createCallEndpointEntry(PolkadotTransactionType.BOND_EXTRA, 'Staking', 'bond_extra'),
     createCallEndpointEntry(PolkadotTransactionType.WITHDRAW_UNBONDED, 'Staking', 'withdraw_unbonded'),
     createCallEndpointEntry(PolkadotTransactionType.NOMINATE, 'Staking', 'nominate'),
-    createCallEndpointEntry(PolkadotTransactionType.STOP_NOMINATING, 'Staking', 'chill'),
+    createCallEndpointEntry(PolkadotTransactionType.CANCEL_NOMINATION, 'Staking', 'chill'),
     createCallEndpointEntry(PolkadotTransactionType.COLLECT_PAYOUT, 'Staking', 'payout_nominator'),
     createCallEndpointEntry(PolkadotTransactionType.SET_PAYEE, 'Staking', 'set_payee'),
-    createCallEndpointEntry(PolkadotTransactionType.SET_CONTROLLER, 'Staking', 'set_controller')
+    createCallEndpointEntry(PolkadotTransactionType.SET_CONTROLLER, 'Staking', 'set_controller'),
+    createCallEndpointEntry(PolkadotTransactionType.SUBMIT_BATCH, 'Utility', 'batch')
 ])
 
 function createCallEndpointEntry<M extends PolkadotCallModuleName, C extends PolkadotCallName<M>>(

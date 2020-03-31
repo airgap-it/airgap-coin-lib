@@ -9,7 +9,8 @@ import { SCALECompactInt } from './data/scale/type/SCALECompactInt'
 import { SCALEBytes } from './data/scale/type/SCALEBytes'
 import { SCALEArray } from './data/scale/type/SCALEArray'
 import { SCALEDecoder } from './data/scale/SCALEDecoder'
-import { PolkadotAddress } from './data/account/PolkadotAddress'
+import { PolkadotAddress, PolkadotAccountId } from './data/account/PolkadotAddress'
+import { PolkadotTransactionMethod } from './data/transaction/method/PolkadotTransactionMethod'
 
 interface PolkadotTransactionDetails {
     fee: BigNumber
@@ -29,12 +30,19 @@ export class PolkadotTransactionController {
     ) {}
 
     public async prepareSubmittableTransactions(
-        publicKey: string, 
+        accountId: PolkadotAccountId, 
         available: BigNumber | string,
         txConfig: PolkadotTransactionConfig[]
     ): Promise<string> {
+        const accountInfo = await this.nodeClient.getAccountInfo(PolkadotAddress.from(accountId))
+
+        if (!accountInfo) {
+            return Promise.reject('Could not fetch all necessary data')
+        }
+
+        const nonce = accountInfo.nonce.value
         const txs = await Promise.all(
-            txConfig.map((tx, index) => this.prepareTransactionDetails(tx.type, publicKey, tx.tip, tx.args, index))
+            txConfig.map((tx, index) => this.prepareTransactionDetails(tx.type, accountId, tx.tip, nonce.plus(index), tx.args))
         )
 
         const totalFee = txs.map(tx => tx.fee).reduce((total, next) => total.plus(next), new BigNumber(0))
@@ -48,33 +56,31 @@ export class PolkadotTransactionController {
 
     public async createTransaction(
         type: PolkadotTransactionType, 
-        publicKey: string, 
-        tip: string | number | BigNumber, 
-        args: any = {}, 
-        index: number | BigNumber = 0
+        accountId: PolkadotAccountId, 
+        tip: string | number | BigNumber = 0, 
+        args: any = {},
+        chainHeight: number | BigNumber = 1,
+        nonce: number | BigNumber = 0,
     ): Promise<PolkadotTransaction> {
-        const results = await Promise.all([
-            this.nodeClient.getCurrentHeight(),
-            this.nodeClient.getNonce(PolkadotAddress.fromPublicKey(publicKey)),
-            this.nodeClient.getTransactionMetadata(type)
-        ])
-
-        if (results.some(result => result === null)) {
-            return Promise.reject('Could not fetch all necessary data.')
-        }
-
-        const chainHeight = results[0]!
-        const nonce = results[1]!.plus(index)
-        const methodId = results[2]!
+        const methodId = await this.nodeClient.getTransactionMetadata(type)
 
         return PolkadotTransaction.create(type, {
-            from: publicKey,
+            from: accountId,
             tip: BigNumber.isBigNumber(tip) ? tip : new BigNumber(tip),
             methodId,
             args,
             era: { chainHeight },
             nonce
         })
+    }
+
+    public async createTransactionMethod(
+        type: PolkadotTransactionType,
+        args: any = {}
+    ): Promise<PolkadotTransactionMethod> {
+        const methodId = await this.nodeClient.getTransactionMetadata(type)
+
+        return PolkadotTransactionMethod.create(type, methodId.moduleIndex, methodId.callIndex, args)
     }
 
     public async signTransaction(privateKey: Buffer, transaction: PolkadotTransaction, payload: PolkadotTransactionPayload): Promise<PolkadotTransaction> {
@@ -84,10 +90,10 @@ export class PolkadotTransactionController {
 
     public encodeDetails(txs: PolkadotTransactionDetails[]): string {
         const bytesEncoded = txs.map(tx => {
-            const scaleType = SCALEEnum.from(tx.transaction.type)
+            const scaleTypes = SCALEEnum.from(tx.transaction.type)
             const scaleFee = SCALECompactInt.from(tx.fee)
             
-            return SCALEBytes.from(scaleType.encode() + scaleFee.encode() + tx.transaction.encode() + tx.payload.encode())
+            return SCALEBytes.from(scaleTypes.encode() + scaleFee.encode() + tx.transaction.encode() + tx.payload.encode())
         })
     
         return SCALEArray.from(bytesEncoded).encode()
@@ -117,18 +123,45 @@ export class PolkadotTransactionController {
     public async calculateTransactionFee(transaction: PolkadotTransaction): Promise<BigNumber | null> {
         const partialEstimate = await this.nodeClient.getTransferFeeEstimate(transaction.encode())
 
+        if (partialEstimate) {
+            this.nodeClient.saveLastFee(transaction.type, partialEstimate)
+        }
+
         return partialEstimate?.plus(transaction.tip.value) || null
+    }
+
+    public async estimateTransactionFees(transationTypes: [PolkadotTransactionType, any][]): Promise<BigNumber | null> {
+        const fees = await Promise.all(transationTypes
+            .map(([type, args]) => [
+                type, 
+                args, 
+                this.nodeClient.getSavedLastFee(type, 'largest')
+            ] as [PolkadotTransactionType, any, BigNumber])
+            .map(async ([type, args, fee]) => fee 
+                ? fee 
+                : this.calculateTransactionFee(await this.createTransaction(type, PolkadotAddress.createPlaceholder(), 0, args))
+            )
+        )
+
+        if (fees.some(fee => fee === null)) {
+            return Promise.reject('Could not estimate transaction fees.')
+        }
+
+        const safetyFactor = 1.2
+        return fees.reduce((sum: BigNumber, next) => sum.plus(next!), new BigNumber(0)).multipliedBy(safetyFactor)
     }
 
     private async prepareTransactionDetails(
         type: PolkadotTransactionType, 
-        publicKey: string, 
-        tip: string | number | BigNumber, 
-        args: any = {}, 
-        index: number | BigNumber = 0
+        accountId: PolkadotAccountId, 
+        tip: string | number | BigNumber,
+        nonce: number | BigNumber,
+        args: any = {}
     ): Promise<PolkadotTransactionDetails> {
+        const chainHeight = await this.nodeClient.getCurrentHeight()
+
         const results = await Promise.all([
-            this.createTransaction(type, publicKey, tip, args, index),
+            this.createTransaction(type, accountId, tip, args, chainHeight, nonce),
             this.nodeClient.getLastBlockHash(),
             this.nodeClient.getFirstBlockHash(),
             this.nodeClient.getSpecVersion(),

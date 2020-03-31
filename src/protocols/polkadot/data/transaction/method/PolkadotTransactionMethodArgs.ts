@@ -6,19 +6,19 @@ import { SCALECompactInt } from '../../scale/type/SCALECompactInt'
 import { SCALEEnum } from '../../scale/type/SCALEEnum'
 import { SCALEArray } from '../../scale/type/SCALEArray'
 import { PolkadotRewardDestination, IAirGapTransaction } from '../../../../..'
-import { PolkadotAddress } from '../../account/PolkadotAddress'
+import { PolkadotAddress, PolkadotAccountId } from '../../account/PolkadotAddress'
 import BigNumber from '../../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { SCALETuple } from '../../scale/type/SCALETuple'
-import { SCALEString } from '../../scale/type/SCALEString'
 import { SCALEInt } from '../../scale/type/SCALEInt'
+import { PolkadotTransactionMethod } from './PolkadotTransactionMethod'
 
 interface TransferArgs {
-    to: string,
+    to: PolkadotAccountId,
     value: number | BigNumber
 }
 
 interface BondArgs {
-    controller: string,
+    controller: PolkadotAccountId
     value: number | BigNumber,
     payee: PolkadotRewardDestination
 }
@@ -49,7 +49,7 @@ interface StopNominatingArgs {
 
 interface PayoutNominatorArgs {
     eraIndex: number | BigNumber
-    validators: [string, number][]
+    validators: [PolkadotAccountId, number][]
 }
 
 interface SetPayeeArgs {
@@ -57,7 +57,11 @@ interface SetPayeeArgs {
 }
 
 interface SetControllerArgs {
-    controller: string
+    controller: PolkadotAccountId
+}
+
+interface SubmitBatchArgs {
+    calls: PolkadotTransactionMethod[]
 }
 
 function assertFields(type: string, object: any, ...fields: string[]) {
@@ -92,10 +96,10 @@ export abstract class PolkadotTransactionMethodArgsFactory<T> {
             case PolkadotTransactionType.NOMINATE:
                 assertFields('nominate', args, 'targets')
                 return new NominateArgsFactory(args)
-            case PolkadotTransactionType.STOP_NOMINATING:
+            case PolkadotTransactionType.CANCEL_NOMINATION:
                 return new StopNominatingArgsFactory(args)
             case PolkadotTransactionType.COLLECT_PAYOUT:
-                assertFields('collectPayout', args, 'eraIndex, validators')
+                assertFields('collectPayout', args, 'eraIndex', 'validators')
                 return new PayoutNominatorArgsFactory(args)
             case PolkadotTransactionType.SET_PAYEE:
                 assertFields('setPayee', args, 'payee')
@@ -103,13 +107,16 @@ export abstract class PolkadotTransactionMethodArgsFactory<T> {
             case PolkadotTransactionType.SET_CONTROLLER:
                 assertFields('setController', args, 'controller')
                 return new SetControllerArgsFactory(args)
+            case PolkadotTransactionType.SUBMIT_BATCH:
+                assertFields('submitBatch', args, 'calls')
+                return new SubmitBatchArgsFactory(args)
         }        
     }
 
     constructor(protected readonly args: T) {}
 
     public abstract createFields(): [string, SCALEType][]
-    public abstract createToAirGapTransactionPart(): () => Partial<IAirGapTransaction>
+    public abstract createToAirGapTransactionParts(): () => Partial<IAirGapTransaction>[]
 }
 
 export abstract class PolkadotTransactionMethodArgsDecoder<T> {
@@ -129,7 +136,7 @@ export abstract class PolkadotTransactionMethodArgsDecoder<T> {
                 return new WithdrawUnbondedArgsDecoder()
             case PolkadotTransactionType.NOMINATE:
                 return new NominateArgsDecoder()
-            case PolkadotTransactionType.STOP_NOMINATING:
+            case PolkadotTransactionType.CANCEL_NOMINATION:
                 return new StopNominatingArgsDecoder()
             case PolkadotTransactionType.COLLECT_PAYOUT:
                 return new PayoutNominatorArgsDecoder()
@@ -137,6 +144,8 @@ export abstract class PolkadotTransactionMethodArgsDecoder<T> {
                 return new SetPayeeArgsDecoder()
             case PolkadotTransactionType.SET_CONTROLLER:
                 return new SetControllerArgsDecoder()
+            case PolkadotTransactionType.SUBMIT_BATCH:
+                return new SubmitBatchArgsDecoder()
         }
     }
 
@@ -156,11 +165,11 @@ class TransferArgsFactory extends PolkadotTransactionMethodArgsFactory<TransferA
         ]
     }
 
-    public createToAirGapTransactionPart(): () => Partial<IAirGapTransaction>{
-        return () => ({
-            to: [PolkadotAddress.fromPublicKey(this.args.to).toString()],
+    public createToAirGapTransactionParts(): () => Partial<IAirGapTransaction>[] {
+        return () => [{
+            to: [PolkadotAddress.from(this.args.to).toString()],
             amount: this.args.value.toString()
-        })
+        }]
     }
 }
 
@@ -187,11 +196,11 @@ class BondArgsFactory extends PolkadotTransactionMethodArgsFactory<BondArgs> {
             ['payee', SCALEEnum.from(this.args.payee)]
         ]
     }
-    public createToAirGapTransactionPart(): () => Partial<IAirGapTransaction> {
-        return () => ({
-            to: [PolkadotAddress.fromPublicKey(this.args.controller).toString()],
+    public createToAirGapTransactionParts(): () => Partial<IAirGapTransaction>[] {
+        return () => [{
+            to: [PolkadotAddress.from(this.args.controller).toString()],
             amount: this.args.value.toString()
-        })
+        }]
     }
 }
 
@@ -218,10 +227,10 @@ class UnbondArgsFactory extends PolkadotTransactionMethodArgsFactory<UnbondArgs>
             ['value', SCALECompactInt.from(this.args.value)]
         ]
     }
-    public createToAirGapTransactionPart(): () => Partial<IAirGapTransaction> {
-        return () => ({
+    public createToAirGapTransactionParts(): () => Partial<IAirGapTransaction>[] {
+        return () => [{
             amount: this.args.value.toString() 
-        })
+        }]
     }
 }
 
@@ -244,10 +253,10 @@ class RebondArgsFactory extends PolkadotTransactionMethodArgsFactory<RebondArgs>
             ['value', SCALECompactInt.from(this.args.value)]
         ]
     }
-    public createToAirGapTransactionPart(): () => Partial<IAirGapTransaction> {
-        return () => ({
+    public createToAirGapTransactionParts(): () => Partial<IAirGapTransaction>[] {
+        return () => [{
             amount: this.args.value.toString() 
-        })
+        }]
     }
 }
 
@@ -270,10 +279,10 @@ class BondExtraArgsFactory extends PolkadotTransactionMethodArgsFactory<BondExtr
             ['value', SCALECompactInt.from(this.args.value)]
         ]
     }
-    public createToAirGapTransactionPart(): () => Partial<IAirGapTransaction> {
-        return () => ({
+    public createToAirGapTransactionParts(): () => Partial<IAirGapTransaction>[] {
+        return () => [{
             amount: this.args.value.toString() 
-        })
+        }]
     }
 }
 
@@ -294,8 +303,8 @@ class WithdrawUnbondedArgsFactory extends PolkadotTransactionMethodArgsFactory<W
     public createFields(): [string, SCALEType][] {
         return []
     }
-    public createToAirGapTransactionPart(): () => Partial<IAirGapTransaction> {
-        return () => ({})
+    public createToAirGapTransactionParts(): () => Partial<IAirGapTransaction>[] {
+        return () => []
     }
 }
 
@@ -314,10 +323,10 @@ class NominateArgsFactory extends PolkadotTransactionMethodArgsFactory<NominateA
             ['targets', SCALEArray.from(this.args.targets.map(target => SCALEAccountId.from(target)))]
         ]
     }
-    public createToAirGapTransactionPart(): () => Partial<IAirGapTransaction> {
-        return () => ({
+    public createToAirGapTransactionParts(): () => Partial<IAirGapTransaction>[] {
+        return () => [{
             to: this.args.targets.map(target => PolkadotAddress.fromPublicKey(target).toString())
-        })
+        }]
     }
 }
 
@@ -338,8 +347,8 @@ class StopNominatingArgsFactory extends PolkadotTransactionMethodArgsFactory<Sto
     public createFields(): [string, SCALEType][] {
         return []
     }
-    public createToAirGapTransactionPart(): () => Partial<IAirGapTransaction> {
-        return () => ({})
+    public createToAirGapTransactionParts(): () => Partial<IAirGapTransaction>[] {
+        return () => []
     }
 }
 
@@ -355,14 +364,14 @@ class StopNominatingArgsDecoder extends PolkadotTransactionMethodArgsDecoder<Sto
 class PayoutNominatorArgsFactory extends PolkadotTransactionMethodArgsFactory<PayoutNominatorArgs> {
     public createFields(): [string, SCALEType][] {
         return [
-            ['eraIndex', SCALEEnum.from(this.args.eraIndex)],
+            ['eraIndex', SCALEInt.from(this.args.eraIndex, 32)],
             ['validators', SCALEArray.from(
-                this.args.validators.map(([accountId, index]) => SCALETuple.from(SCALEString.from(accountId), SCALEInt.from(index)))
+                this.args.validators.map(([accountId, index]) => SCALETuple.from(SCALEAccountId.from(accountId), SCALEInt.from(index, 32)))
             )]
         ]
     }
-    public createToAirGapTransactionPart(): () => Partial<IAirGapTransaction> {
-        return () => ({})
+    public createToAirGapTransactionParts(): () => Partial<IAirGapTransaction>[] {
+        return () => []
     }
 }
 
@@ -372,7 +381,7 @@ class PayoutNominatorArgsDecoder extends PolkadotTransactionMethodArgsDecoder<Pa
         const validators = decoder.decodeNextArray(hex => 
             SCALETuple.decode(
                 hex, 
-                SCALEString.decode,
+                SCALEAccountId.decode,
                 second => SCALEInt.decode(second, 32)
             )
         )
@@ -381,7 +390,7 @@ class PayoutNominatorArgsDecoder extends PolkadotTransactionMethodArgsDecoder<Pa
             bytesDecoded: eraIndex.bytesDecoded + validators.bytesDecoded,
             decoded: {
                 eraIndex: eraIndex.decoded.value,
-                validators: validators.decoded.elements.map(element => [element.first.value, element.second.toNumber()])
+                validators: validators.decoded.elements.map(element => [element.first.address, element.second.toNumber()])
             }
         }
     }
@@ -393,8 +402,8 @@ class SetPayeeArgsFactory extends PolkadotTransactionMethodArgsFactory<SetPayeeA
             ['payee', SCALEEnum.from(this.args.payee)]
         ]
     }
-    public createToAirGapTransactionPart(): () => Partial<IAirGapTransaction> {
-        return () => ({})
+    public createToAirGapTransactionParts(): () => Partial<IAirGapTransaction>[] {
+        return () => []
     }
 }
 
@@ -417,10 +426,10 @@ class SetControllerArgsFactory extends PolkadotTransactionMethodArgsFactory<SetC
             ['controller', SCALEAccountId.from(this.args.controller)]
         ]
     }
-    public createToAirGapTransactionPart(): () => Partial<IAirGapTransaction> {
-        return () => ({
-            to: [PolkadotAddress.fromPublicKey(this.args.controller).toString()]
-        })
+    public createToAirGapTransactionParts(): () => Partial<IAirGapTransaction>[] {
+        return () => [{
+            to: [PolkadotAddress.from(this.args.controller).toString()]
+        }]
     }
 }
 
@@ -432,6 +441,33 @@ class SetControllerArgsDecoder extends PolkadotTransactionMethodArgsDecoder<SetC
             bytesDecoded: controller.bytesDecoded,
             decoded: {
                 controller: controller.decoded.toString()
+            }
+        }
+    }
+}
+
+class SubmitBatchArgsFactory extends PolkadotTransactionMethodArgsFactory<SubmitBatchArgs> {
+    public createFields(): [string, SCALEType][] {
+        return [
+            ['controller', SCALEArray.from(this.args.calls)]
+        ]
+    }
+    public createToAirGapTransactionParts(): () => Partial<IAirGapTransaction>[] {
+        return () => this.args.calls
+            .map(call => call.toAirGapTransactionParts())
+            .reduce((flatten, toFlatten) => flatten.concat(toFlatten), [])
+    }
+}
+
+class SubmitBatchArgsDecoder extends PolkadotTransactionMethodArgsDecoder<SubmitBatchArgs> {
+    protected _decode(decoder: SCALEDecoder): SCALEDecodeResult<SubmitBatchArgs> {
+        // temporary fixed type
+        const calls = decoder.decodeNextArray(hex => PolkadotTransactionMethod.decode(PolkadotTransactionType.COLLECT_PAYOUT, hex))
+
+        return {
+            bytesDecoded: calls.bytesDecoded,
+            decoded: {
+                calls: calls.decoded.elements
             }
         }
     }

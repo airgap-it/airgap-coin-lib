@@ -12,13 +12,14 @@ import { SCALEHash } from '../../data/scale/type/SCALEHash'
 import { SCALEType } from '../../data/scale/type/SCALEType'
 import { stripHexPrefix } from '../../../../utils/hex'
 import { PolkadotCallId } from '../../node/call/PolkadotCallId'
+import { PolkadotAccountId } from '../account/PolkadotAddress'
 
 const VERSION = 4
 const BIT_SIGNED = 128
 const BIT_UNSIGNED = 128 // TODO: change to 0 if payment_queryInfo regocnizes the transaction, at the moment it returns "No such variant in enum Call" error
 
 interface PolkadotTransactionConfig {
-    from: string,
+    from: PolkadotAccountId,
     args: any,
     tip: number | BigNumber,
     methodId: PolkadotCallId,
@@ -35,10 +36,11 @@ export enum PolkadotTransactionType {
     BOND_EXTRA,
     WITHDRAW_UNBONDED, 
     NOMINATE, 
-    STOP_NOMINATING,
+    CANCEL_NOMINATION,
     COLLECT_PAYOUT,
     SET_PAYEE, 
-    SET_CONTROLLER
+    SET_CONTROLLER,
+    SUBMIT_BATCH
 }
 
 export class PolkadotTransaction extends SCALEClass {
@@ -118,13 +120,13 @@ export class PolkadotTransaction extends SCALEClass {
         }, null, 2)
     }
 
-    public toAirGapTransaction(): Partial<IAirGapTransaction> {
-        return {
+    public toAirGapTransactions(): Partial<IAirGapTransaction>[] {
+        return this.method.toAirGapTransactionParts().map(part => ({
             from: [this.signer.asAddress()],
             to: [this.signer.asAddress()],
             transactionDetails: JSON.parse(this.toString()),
-            ...this.method.toAirGapTransactionPart()
-        }
+            ...part
+        }))
     }
 
     protected _encode(): string {

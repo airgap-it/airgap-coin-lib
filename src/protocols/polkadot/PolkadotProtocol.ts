@@ -8,14 +8,14 @@ import { IAirGapTransaction } from '../..'
 import { PolkadotTransactionType } from './data/transaction/PolkadotTransaction'
 import { UnsignedPolkadotTransaction } from '../../serializer/schemas/definitions/transaction-sign-request-polkadot'
 import { SignedPolkadotTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-polkadot'
-import { PolkadotRewardDestination } from './data/staking/PolkadotRewardDestination'
+import { PolkadotPayee } from './data/staking/PolkadotPayee'
 import { isString } from 'util'
 import { RawPolkadotTransaction } from '../../serializer/types'
 import { PolkadotAccountController } from './PolkadotAccountController'
 import { PolkadotTransactionController } from './PolkadotTransactionController'
 import { PolkadotBlockExplorerClient } from './blockexplorer/PolkadotBlockExplorerClient'
-import { PolkadotAddress } from './data/account/PolkadotAddress'
 import { PolkadotStakingActionType } from './data/staking/PolkadotStakingActionType'
+import { PolkadotAddress } from './data/account/PolkadotAddress'
 
 const BLOCK_EXPLORER_URL = 'https://polkascan.io/pre/kusama'
 const BLOCK_EXPLORER_API = 'https://api-01.polkascan.io/kusama/api/v1'
@@ -163,10 +163,15 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinDelega
     }
 
     public async getTransferFeeEstimate(publicKey: string, destination: string, value: string, tip: string = '0'): Promise<string> {
-        const transaction = await this.transactionController.createTransaction(PolkadotTransactionType.TRANSFER, publicKey, tip, { 
-            to: destination.length > 0 ? destination : publicKey,
-            value: new BigNumber(value) 
-        })
+        const transaction = await this.transactionController.createTransaction(
+            PolkadotTransactionType.TRANSFER, 
+            publicKey, 
+            tip,
+            { 
+                to: destination.length > 0 ? destination : publicKey,
+                value: new BigNumber(value) 
+            }
+        )
         const fee = await this.transactionController.calculateTransactionFee(transaction)
 
         if (!fee) {
@@ -178,29 +183,28 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinDelega
 
     public async estimateMaxTransactionValueFromPublicKey(publicKey: string, fee: string): Promise<string> {
         const results = await Promise.all([
-            this.getBalanceOfPublicKey(publicKey),
-            this.accountController.estimateFutureRequiredFees(publicKey, 'transfer'),
-            this.nodeClient.getExistentialDeposit()
+            this.accountController.getTransferableBalance(publicKey),
+            this.getFutureRequiredTransactions(publicKey, 'check'),
         ])
 
-        if (results.some(result => result === null)) {
+        const transferableBalance = results[0]
+        const futureTransactions = results[1]
+        
+        const feeEstimate = await this.transactionController.estimateTransactionFees(futureTransactions)
+
+        if (!feeEstimate) {
             return Promise.reject('Could not estimate max value.')
         }
 
-        const balance = new BigNumber(results[0]!)
-        const futureFees = new BigNumber(results[1]!)
-        const existentailDeposit = results[2]!
-        
-        let amountWithoutFees = balance
-            .minus(futureFees)
+        let maxAmount = transferableBalance
+            .minus(feeEstimate)
             .minus(new BigNumber(fee))
-            .minus(existentailDeposit)
 
-        if (amountWithoutFees.isNegative()) {
-            amountWithoutFees = new BigNumber(0)
+        if (maxAmount.lt(0)) {
+            maxAmount = new BigNumber(0)
         }
 
-        return amountWithoutFees.toFixed()
+        return maxAmount.toFixed()
       }
 
     public async prepareTransactionFromPublicKey(
@@ -211,21 +215,20 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinDelega
         data?: any
     ): Promise<RawPolkadotTransaction> {
         if (recipients.length !== values.length) {
-            return Promise.reject('Recipients length doesn\'t match values length.')
+            return Promise.reject("Recipients length doesn't match values length.")
         }
 
         const recipientsWithValues: [string, string][] = recipients.map((recipient, index) => [recipient, values[index]])
 
-        const currentBalance = await this.getBalanceOfPublicKey(publicKey)
+        const transferableBalance = await this.accountController.getTransferableBalance(publicKey)
         const totalValue = values.map(value => new BigNumber(value)).reduce((total, next) => total.plus(next), new BigNumber(0))
-        const available = new BigNumber(currentBalance).minus(totalValue)
+        const available = new BigNumber(transferableBalance).minus(totalValue)
 
         const encoded = await this.transactionController.prepareSubmittableTransactions(
             publicKey,
-            new BigNumber(currentBalance),
-            recipientsWithValues.map(([recipient, value]: [string, string], index) => ({
+            available,
+            recipientsWithValues.map(([recipient, value]) => ({
                 type: PolkadotTransactionType.TRANSFER,
-                currentBalance: available,
                 tip: 0, // temporary, until we handle Polkadot fee/tip model
                 args: {
                     to: recipient,
@@ -260,22 +263,16 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinDelega
     }
 
     public async getCurrentDelegateesForPublicKey(publicKey: string): Promise<string[]> {
-        const address = await this.getAddressFromPublicKey(publicKey)
-        return this.getCurrentDelegateesForAddress(address)
+        return this.accountController.getCurrentValidators(publicKey)
     }
 
     public async getCurrentDelegateesForAddress(address: string): Promise<string[]> {
-        const nominations = await this.nodeClient.getNominations(PolkadotAddress.fromEncoded(address))
-        if (nominations) {
-            return nominations.targets.elements.map(target => target.asAddress())
-        }
-
-        return []
+        return this.accountController.getCurrentValidators(address)
     }
 
     public async getDelegateesDetails(addresses: string[]): Promise<DelegateeDetails[]> {
         return Promise.all(addresses.map(async address => {
-            const validatorDetails = await this.nodeClient.getValidatorDetails(PolkadotAddress.fromEncoded(address))
+            const validatorDetails = await this.accountController.getValidatorDetails(address)
             return {
                 name: validatorDetails.name || '',
                 address
@@ -288,22 +285,22 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinDelega
     }
 
     public async getDelegatorDetailsFromAddress(address: string): Promise<DelegatorDetails> {
-        const results = await Promise.all([
-            this.getBalanceOfAddresses([address]),
-            this.accountController.isNominating(address),
-            this.accountController.getAvailableDelegatorActions(address)
-        ])
+        const nominatorDetails = await this.accountController.getNominatorDetails(address)
 
         return {
-            balance: results[0],
-            isDelegating: results[1],
-            availableActions: results[2]
+            balance: nominatorDetails.balance,
+            isDelegating: nominatorDetails.isDelegating,
+            availableActions: nominatorDetails.availableActions
         }
     }
 
-    public async prepareDelegatorActionFromPublicKey(publicKey: string, type: PolkadotStakingActionType, data?: any): Promise<RawPolkadotTransaction[]> {
+    public async prepareDelegatorActionFromPublicKey(
+        publicKey: string, 
+        type: PolkadotStakingActionType, 
+        data?: any
+    ): Promise<RawPolkadotTransaction[]> {
         if (!data) {
-            return Promise.reject("Not enough information to prepare delegator action.")
+            data = {}
         }
 
         const assertFields = (...fields: string[]) => {
@@ -354,10 +351,10 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinDelega
         targets: string[] | string,
         controller?: string,
         value?: string | number | BigNumber,
-        payee?: string | PolkadotRewardDestination,
+        payee?: string | PolkadotPayee,
     ): Promise<RawPolkadotTransaction[]> {
-        const currentBalance = await this.getBalanceOfPublicKey(publicKey)
-        const available = new BigNumber(currentBalance).minus(value || 0)
+        const transferableBalance = await this.accountController.getTransferableBalance(publicKey)
+        const available = new BigNumber(transferableBalance).minus(value || 0)
 
         const bondFirst = (controller !== undefined && value !== undefined && payee !== undefined)
 
@@ -368,7 +365,7 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinDelega
                 args: {
                     controller,
                     value: BigNumber.isBigNumber(value) ? value : new BigNumber(value!),
-                    payee: isString(payee) ? PolkadotRewardDestination[payee] :  payee
+                    payee: isString(payee) ? PolkadotPayee[payee] :  payee
                 }
             }] : []),
             {
@@ -388,12 +385,12 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinDelega
         tip: string | number | BigNumber,
         value?: string | number | BigNumber
     ): Promise<RawPolkadotTransaction[]> {
-        const currentBalance = await this.getBalanceOfPublicKey(publicKey)
+        const transferableBalance = await this.accountController.getTransferableBalance(publicKey)
         const keepController = value === undefined
 
-        const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, currentBalance, [
+        const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, transferableBalance, [
             {
-                type: PolkadotTransactionType.STOP_NOMINATING,
+                type: PolkadotTransactionType.CANCEL_NOMINATION,
                 tip,
                 args: {}
             },
@@ -414,9 +411,9 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinDelega
         tip: string | number | BigNumber,
         targets: string[] | string
     ): Promise<RawPolkadotTransaction[]> {
-        const currentBalance = await this.getBalanceOfPublicKey(publicKey)
+        const transferableBalance = await this.accountController.getTransferableBalance(publicKey)
 
-        const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, currentBalance, [
+        const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, transferableBalance, [
             {
                 type: PolkadotTransactionType.NOMINATE,
                 tip,
@@ -434,9 +431,9 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinDelega
         tip: string | number | BigNumber,
         value: string | number | BigNumber
     ): Promise<RawPolkadotTransaction[]> {
-        const currentBalance = await this.getBalanceOfPublicKey(publicKey)
+        const transferableBalance = await this.accountController.getTransferableBalance(publicKey)
 
-        const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, currentBalance, [
+        const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, transferableBalance, [
             {
                 type: PolkadotTransactionType.UNBOND,
                 tip,
@@ -454,9 +451,9 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinDelega
         tip: string | number | BigNumber,
         value: string | number | BigNumber
     ): Promise<RawPolkadotTransaction[]> {
-        const currentBalance = await this.getBalanceOfPublicKey(publicKey)
+        const transferableBalance = await this.accountController.getTransferableBalance(publicKey)
 
-        const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, currentBalance, [
+        const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, transferableBalance, [
             {
                 type: PolkadotTransactionType.REBOND,
                 tip,
@@ -474,9 +471,9 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinDelega
         tip: string | number | BigNumber,
         value: string | number | BigNumber
     ): Promise<RawPolkadotTransaction[]> {
-        const currentBalance = await this.getBalanceOfPublicKey(publicKey)
+        const transferableBalance = await this.accountController.getTransferableBalance(publicKey)
 
-        const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, currentBalance, [
+        const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, transferableBalance, [
             {
                 type: PolkadotTransactionType.BOND_EXTRA,
                 tip,
@@ -490,9 +487,9 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinDelega
     }
 
     public async prepareWithdrawUnbonded(publicKey: string, tip: string | number | BigNumber): Promise<RawPolkadotTransaction[]> {
-        const currentBalance = await this.getBalanceOfPublicKey(publicKey)
+        const transferableBalance = await this.accountController.getTransferableBalance(publicKey)
 
-        const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, currentBalance, [
+        const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, transferableBalance, [
             {
                 type: PolkadotTransactionType.WITHDRAW_UNBONDED,
                 tip,
@@ -505,42 +502,124 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinDelega
 
     public async prepareCollectRewards(
         publicKey: string, 
-        tip: string | number | BigNumber
+        tip: string | number | BigNumber,
     ): Promise<RawPolkadotTransaction[]> {
-        const results = await Promise.all([
-            this.getBalanceOfPublicKey(publicKey),
-            this.accountController.getNotCollectedRewards(publicKey)
-        ])
+        const transferableBalance = await this.accountController.getTransferableBalance(publicKey)
+        const awaitingRewards = await this.accountController.getUnclaimedRewards(publicKey)
 
-        const currentBalance = results[0]
-        const awaitingRewards = results[1]
-
-        const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, currentBalance, 
-            awaitingRewards.map(reward => ({
-                type: PolkadotTransactionType.COLLECT_PAYOUT,
-                tip,
-                args: {
+        const payoutCalls = await Promise.all(awaitingRewards.map(
+            reward => this.transactionController.createTransactionMethod(
+                PolkadotTransactionType.COLLECT_PAYOUT,
+                {
                     eraIndex: reward.eraIndex,
                     validators: reward.exposures
                 }
-            }))
-        )
+            )
+        ))
+
+        const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, transferableBalance, [
+            {
+                type: PolkadotTransactionType.SUBMIT_BATCH,
+                tip,
+                args: {
+                    calls: payoutCalls
+                }
+            }
+        ])
 
         return [{ encoded }]
+    }
+
+    public async estimateMaxDelegationValueFromAddress(address: string): Promise<string> {
+        const results = await Promise.all([
+            this.accountController.getTransferableBalance(address),
+            this.getFutureRequiredTransactions(address, 'delegate')
+        ])
+
+        const transferableBalance = results[0]
+        const futureTransactions = results[1]
+
+        const feeEstimate = await this.transactionController.estimateTransactionFees(futureTransactions)
+
+        if (!feeEstimate) {
+            return Promise.reject('Could not estimate max value.')
+        }
+
+        const maxValue = transferableBalance
+            .minus(feeEstimate)
+
+        return (maxValue.gte(0) ? maxValue : new BigNumber(0)).toString(10)
     }
 
     private async getTransactionDetailsFromEncoded(encoded: string): Promise<IAirGapTransaction[]> {
         const txs = this.transactionController.decodeDetails(encoded)
 
-        return txs.map(tx => ({
-            from: [],
-            to: [],
-            amount: '',
-            fee: tx.fee.toString(),
-            protocolIdentifier: this.identifier,
-            isInbound: false,
-            ...tx.transaction.toAirGapTransaction()
-        }))
+        return txs.map(tx => {
+            return tx.transaction.toAirGapTransactions().map(part => ({
+                from: [],
+                to: [],
+                amount: '',
+                fee: tx.fee.toString(),
+                protocolIdentifier: this.identifier,
+                isInbound: false,
+                ...part
+            }))
+        }).reduce((flatten, toFlatten) => flatten.concat(toFlatten), [])
+    }
+
+    private async getFutureRequiredTransactions(
+        publicKey: string,
+        intention: 'check' | 'transfer' | 'delegate'
+    ): Promise<[PolkadotTransactionType, any][]> {
+        const results = await Promise.all([
+            this.accountController.isBonded(publicKey),
+            this.accountController.isNominating(publicKey),
+            this.accountController.getTransferableBalance(publicKey)
+        ])
+
+        const isBonded = results[0]
+        const isNominating = results[1]
+        const transferableBalance = results[2]
+
+        let requiredTransactions: [PolkadotTransactionType, any][] = []
+
+        if (intention === 'transfer') {
+            requiredTransactions.push([PolkadotTransactionType.TRANSFER, {
+                to: PolkadotAddress.createPlaceholder(),
+                value: transferableBalance
+            }])
+        }
+
+        if (!isBonded && intention === 'delegate') {
+            requiredTransactions.push(
+                [PolkadotTransactionType.BOND, {
+                    controller: PolkadotAddress.createPlaceholder(),
+                    value: transferableBalance,
+                    payee: 0
+                }],
+                [PolkadotTransactionType.NOMINATE, {
+                    targets: [PolkadotAddress.createPlaceholder()]
+                }],
+                [PolkadotTransactionType.CANCEL_NOMINATION, {}],
+                [PolkadotTransactionType.UNBOND, {
+                    value: transferableBalance
+                }],
+                [PolkadotTransactionType.WITHDRAW_UNBONDED, {}]
+            )
+        } else if (isBonded) {
+            requiredTransactions.push(
+                [PolkadotTransactionType.UNBOND, {
+                    value: transferableBalance
+                }],
+                [PolkadotTransactionType.WITHDRAW_UNBONDED, {}]
+            )
+        }
+
+        if (isNominating) {
+            requiredTransactions.push([PolkadotTransactionType.CANCEL_NOMINATION, {}])
+        }
+
+        return requiredTransactions
     }
 
     public signMessage(message: string, privateKey: Buffer): Promise<string> {

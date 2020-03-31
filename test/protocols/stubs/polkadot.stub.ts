@@ -39,7 +39,7 @@ export class PolkadotProtocolStub implements ProtocolHTTPStub {
             .returns(Promise.resolve({ moduleIndex: 6, callIndex: 2 }))
             .withArgs(PolkadotTransactionType.NOMINATE)
             .returns(Promise.resolve({ moduleIndex: 6, callIndex: 5 }))
-            .withArgs(PolkadotTransactionType.STOP_NOMINATING)
+            .withArgs(PolkadotTransactionType.CANCEL_NOMINATION)
             .returns(Promise.resolve({ moduleIndex: 6, callIndex: 6 }))
 
         sinon

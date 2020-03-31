@@ -1,9 +1,9 @@
 import { SCALEDecodeResult, SCALEDecoder } from '../scale/SCALEDecoder'
 import { SCALEInt } from '../scale/type/SCALEInt'
 
-class PolkadotAccoountData {
+class PolkadotAccountData {
 
-    public static decode(raw: string): SCALEDecodeResult<PolkadotAccoountData> {
+    public static decode(raw: string): SCALEDecodeResult<PolkadotAccountData> {
         const decoder = new SCALEDecoder(raw)
 
         const free = decoder.decodeNextInt(128)
@@ -13,7 +13,7 @@ class PolkadotAccoountData {
 
         return {
             bytesDecoded: free.bytesDecoded + reserved.bytesDecoded + miscFrozen.bytesDecoded + freeFrozen.bytesDecoded,
-            decoded: new PolkadotAccoountData(free.decoded, reserved.decoded, miscFrozen.decoded, freeFrozen.decoded)
+            decoded: new PolkadotAccountData(free.decoded, reserved.decoded, miscFrozen.decoded, freeFrozen.decoded)
         }
     }
 
@@ -32,7 +32,7 @@ export class PolkadotAccountInfo {
         
         const nonce = decoder.decodeNextInt(32)
         const refcount = decoder.decodeNextInt(8)
-        const data = decoder.decodeNextObject(PolkadotAccoountData.decode)
+        const data = decoder.decodeNextObject(PolkadotAccountData.decode)
 
         return new PolkadotAccountInfo(nonce.decoded, refcount.decoded, data.decoded)
     }
@@ -40,6 +40,6 @@ export class PolkadotAccountInfo {
     private constructor(
         readonly nonce: SCALEInt,
         readonly refcount: SCALEInt,
-        readonly data: PolkadotAccoountData
+        readonly data: PolkadotAccountData
     ) {}
 }

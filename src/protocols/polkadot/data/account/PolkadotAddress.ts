@@ -11,6 +11,8 @@ const SS58_FORMAT = {
 }
 const SS58_PREFIX = 'SS58PRE'
 
+export type PolkadotAccountId = string | PolkadotAddress
+
 /* 
  * An address doesn't have a fixed length. Interpretation:
  * [total bytes: version bytes, payload bytes, checksum bytes]
@@ -20,13 +22,29 @@ const SS58_PREFIX = 'SS58PRE'
  * 35: 1, 32, 2
  */
 export class PolkadotAddress {
-    public static from(addressOrPublicKey: string | PolkadotAddress): PolkadotAddress {
-        if (isString(addressOrPublicKey) && isHex(addressOrPublicKey)) {
-            return this.fromPublicKey(addressOrPublicKey)
-        } else if (isString(addressOrPublicKey)) {
-            return this.fromEncoded(addressOrPublicKey)
+    private static placeholder: PolkadotAddress | undefined
+    public static createPlaceholder(): PolkadotAddress {
+        if (!PolkadotAddress.placeholder) {
+            const payload = new Uint8Array(32)
+            payload.fill(0)
+
+            PolkadotAddress.placeholder = new PolkadotAddress(
+                Buffer.from([0]), 
+                Buffer.from(payload), 
+                Buffer.from([0, 0])
+            )
+        }
+
+        return PolkadotAddress.placeholder
+    }
+
+    public static from(accountId: PolkadotAccountId): PolkadotAddress {
+        if (isString(accountId) && isHex(accountId)) {
+            return this.fromPublicKey(accountId)
+        } else if (isString(accountId)) {
+            return this.fromEncoded(accountId)
         } else {
-            return addressOrPublicKey
+            return accountId
         }
     }
 
@@ -66,8 +84,8 @@ export class PolkadotAddress {
 
     constructor(readonly version: Buffer, readonly payload: Buffer, readonly checksum: Buffer) {}
 
-    public compare(other: PolkadotAddress): number {
-        return this.payload.compare(other.payload)
+    public compare(other: PolkadotAccountId): number {
+        return this.payload.compare(PolkadotAddress.from(other).payload)
     }
 
     public toString(): string {

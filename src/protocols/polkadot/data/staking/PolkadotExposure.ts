@@ -1,21 +1,21 @@
-import { SCALEInt } from '../scale/type/SCALEInt'
 import { SCALEArray } from '../scale/type/SCALEArray'
 import { SCALETuple } from '../scale/type/SCALETuple'
 import { SCALEAccountId } from '../scale/type/SCALEAccountId'
 import { SCALEDecoder } from '../scale/SCALEDecoder'
+import { SCALECompactInt } from '../scale/type/SCALECompactInt'
 
 export class PolkadotExposure {
 
     public static decode(raw: string): PolkadotExposure {
         const decoder = new SCALEDecoder(raw)
 
-        const total = decoder.decodeNextInt(128)
-        const own = decoder.decodeNextInt(128)
+        const total = decoder.decodeNextCompactInt()
+        const own = decoder.decodeNextCompactInt()
         const others = decoder.decodeNextArray(hex => 
             SCALETuple.decode(
                 hex, 
                 SCALEAccountId.decode, 
-                second => SCALEInt.decode(second, 128)
+                second => SCALECompactInt.decode(second)
             )
         )
 
@@ -23,8 +23,8 @@ export class PolkadotExposure {
     }
 
     private constructor(
-        readonly total: SCALEInt,
-        readonly own: SCALEInt,
-        readonly others: SCALEArray<SCALETuple<SCALEAccountId, SCALEInt>>
+        readonly total: SCALECompactInt,
+        readonly own: SCALECompactInt,
+        readonly others: SCALEArray<SCALETuple<SCALEAccountId, SCALECompactInt>>
     ) {}
 }

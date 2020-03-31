@@ -43,16 +43,16 @@ export abstract class PolkadotStorageEntry {
     private readonly storageHash: Map<string, string> = new Map()
 
     public async hash(module: string, prefix: string, ...args: SCALEType[]): Promise<string> {
-        const rawKey = module + prefix + this.argsToKeys(args)
+        const rawKey = module + prefix + (await this.argsToKeys(args))
 
-        if (!this.storageHash[rawKey]) {
+        if (!this.storageHash.get(rawKey)) {
             const prefixTrie = await this.hashPrefixTrie(module, prefix)
             const itemHash = await this.hashArgs(args)
 
-            this.storageHash[rawKey] = prefixTrie + itemHash
+            this.storageHash.set(rawKey, prefixTrie + itemHash)
         }
 
-        return this.storageHash[rawKey]
+        return this.storageHash.get(rawKey)!
     }
 
     protected abstract argsToKeys(args: SCALEType[]): Promise<string>

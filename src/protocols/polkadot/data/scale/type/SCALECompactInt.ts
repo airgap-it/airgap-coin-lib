@@ -3,6 +3,10 @@ import { SCALEDecodeResult } from '../SCALEDecoder'
 import BigNumber from '../../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { stripHexPrefix, changeEndianness } from '../../../../../utils/hex'
 import { padStart } from '../../../../../utils/padStart'
+import { SCALEInt } from './SCALEInt'
+import { isNumber } from 'util'
+
+type Number = SCALECompactInt | SCALEInt | BigNumber | number
 
 export class SCALECompactInt extends SCALEType {
     public static from(value: number | BigNumber | string): SCALECompactInt {
@@ -44,6 +48,42 @@ export class SCALECompactInt extends SCALEType {
         return this.value.toNumber()
     }
 
+    public plus(other: Number): SCALECompactInt {
+        return this.applyOperation(other, BigNumber.prototype.plus)
+    }
+
+    public minus(other: Number): SCALECompactInt {
+        return this.applyOperation(other, BigNumber.prototype.minus)
+    }
+
+    public multiply(other: Number): SCALECompactInt {
+        return this.applyOperation(other, BigNumber.prototype.multipliedBy)
+    }
+
+    public divide(other: Number): SCALECompactInt {
+        return this.applyOperation(other, BigNumber.prototype.dividedBy)
+    }
+
+    public lt(other: Number): boolean {
+        return this.performOperation(other, BigNumber.prototype.lt)
+    }
+
+    public lte(other: Number): boolean {
+        return this.performOperation(other, BigNumber.prototype.lte)
+    }
+
+    public gt(other: Number): boolean {
+        return this.performOperation(other, BigNumber.prototype.gt)
+    }
+
+    public gte(other: Number): boolean {
+        return this.performOperation(other, BigNumber.prototype.gte)
+    }
+
+    public eq(other: Number): boolean {
+        return this.performOperation(other, BigNumber.prototype.eq)
+    }
+
     protected _encode(): string {
         const bits = this.value.toString(2).length
         let mode: number
@@ -72,5 +112,17 @@ export class SCALECompactInt extends SCALEType {
         const encodedValue = value.multipliedBy(4).plus(mode) // value << 2 + mode
 
         return changeEndianness(encodedValue.toString(16))
+    }
+
+    private applyOperation(other: Number, operation: (_: number | BigNumber) => BigNumber): SCALECompactInt {
+        return new SCALECompactInt(this.performOperation(other, operation))
+    }
+
+    private performOperation<T>(other: Number, operation: (_: number | BigNumber) => T): T {
+        if (isNumber(other) || BigNumber.isBigNumber(other)) {
+            return operation.apply(this.value, [other])
+        } else {
+            return this.performOperation(other.value, operation)
+        }
     }
 }

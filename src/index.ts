@@ -48,7 +48,7 @@ import { AirGapWallet } from './wallet/AirGapWallet'
 import { TezosFAProtocol, TezosTransactionResult, TezosTransactionCursor } from './protocols/tezos/fa/TezosFAProtocol'
 import { TezosBTC } from './protocols/tezos/fa/TezosBTC'
 import { PolkadotProtocol } from './protocols/polkadot/PolkadotProtocol'
-import { PolkadotRewardDestination } from './protocols/polkadot/data/staking/PolkadotRewardDestination'
+import { PolkadotPayee } from './protocols/polkadot/data/staking/PolkadotPayee'
 
 export {
   addSupportedProtocol,
@@ -86,7 +86,7 @@ export {
   DelegationInfo,
   TezosPayoutInfo,
   // polkadot specific
-  PolkadotRewardDestination,
+  PolkadotPayee as PolkadotRewardDestination,
   // sub protocols configs,
   GenericERC20Configuration,
   TypeNotSupported,

@@ -14,7 +14,7 @@ export class PolkadotTransactionMethod extends SCALEClass {
             SCALEInt.from(moduleIndex),
             SCALEInt.from(callIndex),
             argsFactory.createFields(),
-            argsFactory.createToAirGapTransactionPart()
+            argsFactory.createToAirGapTransactionParts()
         )
     }
 
@@ -39,7 +39,7 @@ export class PolkadotTransactionMethod extends SCALEClass {
         readonly moduleIndex: SCALEInt,
         readonly callIndex: SCALEInt,
         readonly args: [string, SCALEType][],
-        readonly toAirGapTransactionPart: () => Partial<IAirGapTransaction>
+        readonly toAirGapTransactionParts: () => Partial<IAirGapTransaction>[]
     ) { super() }
 
     public toString(): string {

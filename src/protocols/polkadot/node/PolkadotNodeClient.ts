@@ -33,43 +33,69 @@ import { PolkadotNodeCache } from './PolkadotNodeCache'
 import { SCALEInt } from '../data/scale/type/SCALEInt'
 import { PolkadotTransactionType } from '../data/transaction/PolkadotTransaction'
 import { PolkadotNominations } from '../data/staking/PolkadotNominations'
-import { PolkadotReward, PolkadotStakingLedger } from '../data/staking/PolkadotStakingLedger'
-import { PolkadotExposure, PolkadotValidatorDetails, PolkadotValidatorStatus, PolkadotValidatorPrefs } from '../data/staking/PolkadotValidatorDetails'
+import { PolkadotStakingLedger } from '../data/staking/PolkadotStakingLedger'
 import { PolkadotEraRewardPoints } from '../data/staking/PolkadotEraRewardPoints'
-import { PolkadotRewardDestination } from '../data/staking/PolkadotRewardDestination'
+import { PolkadotPayee } from '../data/staking/PolkadotPayee'
 import { SCALEEnum } from '../data/scale/type/SCALEEnum'
 import { SCALEArray } from '../data/scale/type/SCALEArray'
 import { PolkadotRegistration } from '../data/account/PolkadotRegistration'
 import { PolkadotActiveEraInfo } from '../data/staking/PolkadotActiveEraInfo'
+import { PolkadotExposure } from '../data/staking/PolkadotExposure'
+import { PolkadotValidatorPrefs } from '../data/staking/PolkadotValidatorPrefs'
 
 interface ConnectionConfig {
     allowCache: boolean
 }
 
-const CACHE_EXPIRATION_TIME = 3000 // 3s
+const CACHE_DEFAULT_EXPIRATION_TIME = 3000 // 3s
 
 export class PolkadotNodeClient {
     private readonly storageEntries: Map<string, PolkadotStorageEntry> = new Map()
     private readonly calls: Map<string, PolkadotCallId> = new Map()
     private readonly constants: Map<string, PolkadotConstant> = new Map()
 
+    private readonly lastFees: Map<PolkadotTransactionType, BigNumber> = new Map()
+
+    private initApiPromise: Promise<void> = new Promise(async (resolve) => {
+        const metadataEncoded = await this.send('state', 'getMetadata')
+        const metadata = Metadata.decode(metadataEncoded)
+
+        let callModuleIndex = 0
+        for (let module of metadata.modules.elements) {
+            const moduleName = module.name.value
+
+            const storagePrefix = module.storage.value?.prefix?.value
+            if (storagePrefix && Object.keys(supportedStorageEntries).includes(storagePrefix)) {
+                this.initStorageEntries(module.storage.value)
+            }
+
+            if (Object.keys(supportedCalls).includes(moduleName)) {
+                this.initCalls(moduleName, callModuleIndex, module.calls.value?.elements || [])
+            }
+
+            if (Object.keys(supportedConstants).includes(moduleName)) {
+                this.initConstants(moduleName, module.constants.elements)
+            }
+
+            if (module.calls.value !== null) {
+                callModuleIndex += 1
+            }
+        } 
+        
+        resolve()
+    }).then(async () => {
+        this.initApiPromise = Promise.resolve()
+        await this.initCache()
+    })
+
     public constructor(
         private readonly baseURL: string,
-        private readonly cache: PolkadotNodeCache = new PolkadotNodeCache(CACHE_EXPIRATION_TIME)
-    ) {
-        this.getConstant('Babe', 'ExpectedBlockTime')
-            .then(constant => {
-                const blockTime = SCALEInt.decode(constant).decoded.toNumber()
-                if (blockTime) {
-                    this.cache.expirationTime = Math.floor(blockTime / 3)
-                }
-            }) 
-    }
+        private readonly cache: PolkadotNodeCache = new PolkadotNodeCache(CACHE_DEFAULT_EXPIRATION_TIME)
+    ) {}
 
-    public async getBalance(address: PolkadotAddress): Promise<BigNumber> {
-        const accountInfo = await this.getAccountInfo(address)
-
-        return accountInfo?.data.free.value || new BigNumber(0)
+    public async getAccountInfo(address: PolkadotAddress): Promise<PolkadotAccountInfo | null> {
+        return this.fromStorage('System', 'Account', SCALEAccountId.from(address))
+            .then(item => item ? PolkadotAccountInfo.decode(item) : null)
     }
 
     public async getExistentialDeposit(): Promise<BigNumber> {
@@ -89,18 +115,27 @@ export class PolkadotNodeClient {
 
     public getTransferFeeEstimate(transactionBytes: Uint8Array | string): Promise<BigNumber | null> {
         return this.send('payment', 'queryInfo', [bytesToHex(transactionBytes)])    
-            .then(result => new BigNumber(result.partialFee))
+            .then(result => result ? new BigNumber(result.partialFee) : null)
+    }
+
+    public saveLastFee(type: PolkadotTransactionType, fee: BigNumber) {
+        this.lastFees.set(type, fee)
+    }
+
+    public getSavedLastFee(type: PolkadotTransactionType, defaultValue: 'null' | 'largest' = 'null'): BigNumber | null {
+        let fee = this.lastFees.get(type) || null
+
+        if (!fee && defaultValue === 'largest') {
+            const savedFees = Array.from(this.lastFees.values())
+            fee = savedFees.length > 0 ? BigNumber.max(...savedFees) : null
+        }
+
+        return fee
     }
 
     public getBaseTransactionFee(): Promise<BigNumber | null> {
         return this.getConstant('TransactionPayment', 'TransactionBaseFee')
             .then(constant => SCALEInt.decode(constant).decoded.value)
-    }
-
-    public async getNonce(address: PolkadotAddress): Promise<BigNumber> {
-        const accountInfo = await this.getAccountInfo(address)
-
-        return accountInfo?.nonce.value || new BigNumber(0)
     }
 
     public getFirstBlockHash(): Promise<string | null> {
@@ -136,75 +171,6 @@ export class PolkadotNodeClient {
             .then(item => item ? PolkadotNominations.decode(item) : null)   
     }
 
-    public async getRewards(
-        address: PolkadotAddress, 
-        validators: PolkadotAddress[], 
-        currentEra: number, 
-        limit: number = 1
-    ): Promise<PolkadotReward[]> {
-        const rewards: PolkadotReward[] = []
-
-        const eras = Array.from(Array(limit).keys()).map(index => currentEra - 1 - index)
-        for (let era of eras) {
-            const results = await Promise.all([
-                this.getValidatorReward(era),
-                this.getRewardPoints(era),
-                Promise.all(validators.map(async validator => 
-                    [
-                        validator, 
-                        (await this.getValidatorPrefs(validator))?.commission?.value,
-                        await this.getStakersClipped(era, validator)
-                    ] as [PolkadotAddress, BigNumber | null, PolkadotExposure | null]
-                )),
-                this.getLedger(address)
-            ])
-
-            const reward = results[0]
-            const rewardPoints = results[1]
-            const exposuresWithValidators = results[2]
-            const stakingLedger = results[3]
-
-            if (reward && rewardPoints && exposuresWithValidators && stakingLedger) {
-                const total = exposuresWithValidators
-                    .map(exposureWithValidator => {
-                        if (exposureWithValidator[1] && exposureWithValidator[2]) {
-                            const validatorPoints = rewardPoints.individual.elements
-                                .find(element => element.first.address.compare(exposureWithValidator[0]) === 0)
-                            const validatorReward = validatorPoints?.second.value
-                                ?.dividedBy(rewardPoints.total.value)
-                                ?.multipliedBy(reward) 
-                                || new BigNumber(0)
-
-                            const nominatorStake = exposureWithValidator[2].others.elements
-                                .find(element => element.first.address.compare(address) === 0)
-                                ?.second?.value || new BigNumber(0)
-
-                            const nominatorShare = nominatorStake.dividedBy(exposureWithValidator[2].totalBalance.value)
-
-                            return new BigNumber(1)
-                                .minus(exposureWithValidator[1].dividedBy(1_000_000_000))
-                                .multipliedBy(validatorReward)
-                                .multipliedBy(nominatorShare)
-                        } else {
-                            return new BigNumber(0)
-                        }
-                    }).reduce((sum, next) => sum.plus(next), new BigNumber(0))
-
-                rewards.push({
-                    eraIndex: era,
-                    amount: total,
-                    exposures: exposuresWithValidators?.map(exposure => [
-                        exposure[0].toString(), 
-                        exposure[2]?.others.elements.findIndex(element => element.first.address.compare(address) === 0)
-                    ]).filter(([_, index]) => index !== undefined) as [string, number][],
-                    timestamp: 0,
-                    collected: stakingLedger.lastReward.value?.value?.gte(era) || false
-                })
-            }
-        }
-        return rewards.sort((a, b) => b.eraIndex - a.eraIndex)
-    }
-
     public async getRewardPoints(eraIndex: number): Promise<PolkadotEraRewardPoints | null> {
         return this.fromStorage('Staking', 'ErasRewardPoints', SCALEInt.from(eraIndex, 32))
             .then(item => item ? PolkadotEraRewardPoints.decode(item) : null)
@@ -220,15 +186,15 @@ export class PolkadotNodeClient {
             .then(item => item ? PolkadotExposure.decode(item) : null)
     }
 
-    public getRewardDestination(address: PolkadotAddress): Promise<PolkadotRewardDestination | null> {
+    public getRewardDestination(address: PolkadotAddress): Promise<PolkadotPayee | null> {
         return this.fromStorage('Staking', 'Payee', SCALEAccountId.from(address))
             .then(item => item 
-                ? SCALEEnum.decode(item, hex => PolkadotRewardDestination[PolkadotRewardDestination[hex]]).decoded.value
+                ? SCALEEnum.decode(item, hex => PolkadotPayee[PolkadotPayee[hex]]).decoded.value
                 : null
             )
     }
 
-    public getLedger(address: PolkadotAddress): Promise<PolkadotStakingLedger | null> {
+    public getStakingLedger(address: PolkadotAddress): Promise<PolkadotStakingLedger | null> {
         return this.fromStorage('Staking', 'Ledger', SCALEAccountId.from(address))
             .then(item => item ? PolkadotStakingLedger.decode(item) : null)
     }
@@ -241,37 +207,16 @@ export class PolkadotNodeClient {
             )
     }
 
-    public async getValidatorDetails(address: PolkadotAddress): Promise<PolkadotValidatorDetails> {
-        const results = await Promise.all([
-            this.fromStorage('Identity', 'IdentityOf', SCALEAccountId.from(address))
-                .then(item => item ? PolkadotRegistration.decode(item) : null),
-            this.getValidators(),
-            this.getValidatorPrefs(address)
-        ])
+    public async getValidatorExposure(address: PolkadotAddress): Promise<PolkadotExposure | null> {
+        const eraIndex = await this.getCurrentEraIndex() || 0
 
-        const identity = results[0]
-        const currentValidators = results[1]
-        const prefs = results[2]
+        return this.fromStorage('Staking', 'ErasStakers', SCALEInt.from(eraIndex, 32), SCALEAccountId.from(address))
+            .then(item => item ? PolkadotExposure.decode(item) : null)
+    }
 
-        let status: PolkadotValidatorStatus | null
-        // TODO: check if reaped
-        if (!currentValidators) {
-            status = null
-        } else if (currentValidators.find(current => current.compare(address) == 0)) {
-            status = PolkadotValidatorStatus.ACTIVE
-        } else {
-            status = PolkadotValidatorStatus.INACTIVE
-        }
-
-        const exposure = await this.getValidatorExposure(address)
-        
-        return {
-            name: identity ? identity.identityInfo.display : null,
-            status,
-            ownStash: exposure ? exposure.ownStash.value : null,
-            totalStakingBalance: exposure ? exposure.totalBalance.value : null,
-            commission: prefs ? prefs.commission.value.dividedBy(1_000_000_000) : null // commission is Perbill (parts per billion)
-        }
+    public async getIdentityOf(address: PolkadotAddress): Promise<PolkadotRegistration | null> {
+        return this.fromStorage('Identity', 'IdentityOf', SCALEAccountId.from(address))
+            .then(item => item ? PolkadotRegistration.decode(item) : null)
     }
 
     public async getValidatorPrefs(address: PolkadotAddress): Promise<PolkadotValidatorPrefs | null> {
@@ -306,20 +251,8 @@ export class PolkadotNodeClient {
         return this.send('author', 'submitExtrinsic', [encoded])
     }
 
-    private async getAccountInfo(address: PolkadotAddress): Promise<PolkadotAccountInfo | null> {
-        return this.fromStorage('System', 'Account', SCALEAccountId.from(address))
-            .then(item => item ? PolkadotAccountInfo.decode(item) : null)
-    }
-
     private async getBlockHash(blockNumber?: number): Promise<string | null> {
         return this.send('chain', 'getBlockHash', blockNumber !== undefined ? [toHexString(blockNumber)] : [])
-    }
-
-    private async getValidatorExposure(address: PolkadotAddress): Promise<PolkadotExposure | null> {
-        const eraIndex = await this.getCurrentEraIndex() || 0
-
-        return this.fromStorage('Staking', 'ErasStakers', SCALEInt.from(eraIndex, 32), SCALEAccountId.from(address))
-            .then(item => item ? PolkadotExposure.decode(item) : null)
     }
 
     private async fromStorage<M extends PolkadotStorageModuleName, E extends PolkadotStorageEntryName<M>>(
@@ -327,7 +260,7 @@ export class PolkadotNodeClient {
         entryName: E,
         ...args: SCALEType[]
     ): Promise<string | null> {
-        await this.initApi()
+        await this.initApiPromise
         const key = this.createMapKey(moduleName, entryName)
         const storageEntry = this.storageEntries.get(key)
 
@@ -345,7 +278,7 @@ export class PolkadotNodeClient {
         moduleName: M,
         callName: C
     ): Promise<PolkadotCallId> {
-        await this.initApi()
+        await this.initApiPromise
         const key = this.createMapKey(moduleName, callName)
         const callId = this.calls.get(key)
 
@@ -356,47 +289,11 @@ export class PolkadotNodeClient {
         moduleName: M,
         constantName: C,
     ): Promise<string> {
-        await this.initApi()
+        await this.initApiPromise
         const key = this.createMapKey(moduleName, constantName)
         const constant = this.constants.get(key)
 
         return constant ? constant.value.toString('hex') : Promise.reject(`Could not find requested item: ${moduleName} ${constantName}`)
-    }
-
-    private async initApi(): Promise<void> {
-        const alreadyInitialized = 
-            this.storageEntries.keys.length > 0 &&
-            this.calls.keys.length > 0 &&
-            this.constants.keys.length > 0
-
-        if (alreadyInitialized) {
-            return
-        }
-
-        const metadataEncoded = await this.send('state', 'getMetadata')
-        const metadata = Metadata.decode(metadataEncoded)
-
-        let callModuleIndex = 0
-        for (let module of metadata.modules.elements) {
-            const moduleName = module.name.value
-
-            const storagePrefix = module.storage.value?.prefix?.value
-            if (storagePrefix && Object.keys(supportedStorageEntries).includes(storagePrefix)) {
-                this.initStorageEntries(module.storage.value)
-            }
-
-            if (Object.keys(supportedCalls).includes(moduleName)) {
-                this.initCalls(moduleName, callModuleIndex, module.calls.value?.elements || [])
-            }
-
-            if (Object.keys(supportedConstants).includes(moduleName)) {
-                this.initConstants(moduleName, module.constants.elements)
-            }
-
-            if (module.calls.value !== null) {
-                callModuleIndex += 1
-            }
-        }      
     }
 
     private initStorageEntries(storage: MetadataStorage | null) {
@@ -421,6 +318,13 @@ export class PolkadotNodeClient {
         constants.forEach(constant => {
             this.constants.set(this.createMapKey(moduleName, constant.name.value), PolkadotConstant.fromMetadata(constant))
         })
+    }
+
+    private async initCache(): Promise<void> {
+        const blockTime = await this.getConstant('Babe', 'ExpectedBlockTime')
+            .then(constant => SCALEInt.decode(constant).decoded.toNumber())
+
+        this.cache.expirationTime = Math.floor(blockTime / 3)
     }
 
     private createMapKey(module: string, item: string): string {

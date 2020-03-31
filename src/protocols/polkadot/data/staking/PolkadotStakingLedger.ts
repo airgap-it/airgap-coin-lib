@@ -3,34 +3,8 @@ import { SCALETuple } from '../scale/type/SCALETuple'
 import { SCALEAccountId } from '../scale/type/SCALEAccountId'
 import { SCALEArray } from '../scale/type/SCALEArray'
 import { SCALECompactInt } from '../scale/type/SCALECompactInt'
-import BigNumber from '../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { SCALEInt } from '../scale/type/SCALEInt'
 import { SCALEOptional } from '../scale/type/SCALEOptional'
-
-interface LockedInfo {
-    value: BigNumber
-    expectedUnlock: BigNumber
-}
-
-export interface PolkadotReward {
-    eraIndex: number
-    amount: BigNumber
-    exposures: [string, number][]
-    timestamp: number
-    collected: boolean
-}
-
-export type PolkadotStakingStatus = 'bonded' | 'nominating' | 'nominating_inactive'
-
-export interface PolkadotStakingInfo {
-    total: BigNumber
-    active: BigNumber
-    unlocked: BigNumber
-    locked: LockedInfo[]
-    status: PolkadotStakingStatus
-    nextEra: number
-    previousRewards: PolkadotReward[]
-}
 
 export class PolkadotStakingLedger {
     public static decode(raw: string): PolkadotStakingLedger {

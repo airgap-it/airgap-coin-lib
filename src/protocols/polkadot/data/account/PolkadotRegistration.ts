@@ -122,7 +122,6 @@ export class PolkadotRegistration {
         return new PolkadotRegistration(judgments.decoded, deposit.decoded, identityInfo.decoded)
     }
 
-    // TODO: add fields
     private constructor(
         readonly judgments: SCALEArray<SCALETuple<SCALEInt, SCALEEnum<PolkadotJudgment>>>,
         readonly deposit: SCALEInt,
