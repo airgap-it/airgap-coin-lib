@@ -35,7 +35,6 @@
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
     "@taquito/local-forging": "^6.1.1-beta.0",
-    "@taquito/taquito": "^6.1.1-beta.0",
     "libsodium-wrappers": "0.7.3"
   },
   "localDependencies": {
@@ -61,11 +60,13 @@
     "utf8": "3.0.0"
   },
   "devDependencies": {
+    "@taquito/taquito": "^6.1.1-beta.0",
     "@types/node": "12.12.6",
     "typescript": "3.7.2",
     "sonarqube-scanner": "2.5.0"
   },
   "buildDependencies": {
+    "@taquito/taquito": "^6.1.1-beta.0",
     "@types/node": "12.12.6",
     "typescript": "3.7.2",
     "sonarqube-scanner": "2.5.0"
