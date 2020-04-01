@@ -280,6 +280,14 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinDelega
         }))
     }
 
+    public async isPublicKeyDelegating(publicKey: string): Promise<boolean> {
+        return this.accountController.isNominating(publicKey)
+    }
+
+    public async isAddressDelegating(address: string): Promise<boolean> {
+        return this.accountController.isNominating(address)
+    }
+
     public async getDelegatorDetailsFromPublicKey(publicKey: string): Promise<DelegatorDetails> {
         return this.getDelegatorDetailsFromAddress(await this.getAddressFromPublicKey(publicKey))
     }

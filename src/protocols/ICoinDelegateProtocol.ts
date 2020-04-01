@@ -22,7 +22,10 @@ export interface ICoinDelegateProtocol extends ICoinProtocol {
     getCurrentDelegateesForAddress(address: string): Promise<string[]>
 
     getDelegateesDetails(addresses: string[]): Promise<DelegateeDetails[]>
-    
+
+    isPublicKeyDelegating(publicKey: string): Promise<boolean>
+    isAddressDelegating(address: string): Promise<boolean>
+
     getDelegatorDetailsFromPublicKey(publicKey: string): Promise<DelegatorDetails>
     getDelegatorDetailsFromAddress(address: string): Promise<DelegatorDetails>
 
