@@ -331,7 +331,7 @@ export class PolkadotAccountController {
             return null
         }
 
-        const total = exposuresWithValidators
+        const partialRewards = exposuresWithValidators
             .map(([validator, commission, exposure]) => {
                 const validatorPoints = rewardPoints.individual.elements
                     .find(element => element.first.address.compare(validator) === 0)
@@ -349,12 +349,17 @@ export class PolkadotAccountController {
                         commission,
                         exposure.total.value,
                         nominatorStake
-                    ) : new BigNumber(0)
-            }).reduce((sum, next) => sum.plus(next), new BigNumber(0))
+                    ) : null
+            })
+            .filter(reward => reward !== null)
+
+        if (partialRewards.every(reward => !reward)) {
+            return null
+        }
 
         return {
             eraIndex,
-            amount: total.toString(),
+            amount: partialRewards.reduce((sum: BigNumber, next) => sum.plus(next!), new BigNumber(0)).toString(),
             exposures: exposuresWithValidators?.map(([validator, _, exposure]) => [
                 validator.toString(), 
                 exposure?.others.elements.findIndex(element => element.first.address.compare(accountId) === 0)
