@@ -2,7 +2,6 @@ import { localForger } from '@taquito/local-forging'
 import * as sodium from 'libsodium-wrappers'
 
 import axios, { AxiosError, AxiosResponse } from '../../dependencies/src/axios-0.19.0/index'
-import * as bigInt from '../../dependencies/src/big-integer-1.6.45/BigInteger'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import * as bs58check from '../../dependencies/src/bs58check-2.1.2/index'
 import { generateWalletUsingDerivationPath } from '../../dependencies/src/hd-wallet-js-b216450e56954a6e82ace0aade9474673de5d9d5/src/index'
@@ -1099,65 +1098,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
   public async forgeTezosOperation(tezosWrappedOperation: TezosWrappedOperation): Promise<string> {
     return localForger.forge(tezosWrappedOperation as any)
-  }
-
-  /**
-   * Encodes a signed integer into hex.
-   * Copied from conseil.js
-   * @param value Number to be encoded.
-   */
-  public encodeSignedInt(value: number): string {
-    if (value === 0) {
-      return '00'
-    }
-
-    const n = bigInt(value).abs()
-    const l = n.bitLength().toJSNumber()
-
-    const arr: number[] = []
-    let v = n
-    for (let i = 0; i < l; i += 7) {
-      let byte = bigInt.zero
-
-      if (i === 0) {
-        byte = v.and(0x3f) // first byte makes room for sign flag
-        v = v.shiftRight(6)
-      } else {
-        byte = v.and(0x7f) // NOT base128 encoded
-        v = v.shiftRight(7)
-      }
-
-      if (value < 0 && i === 0) {
-        byte = byte.or(0x40)
-      } // set sign flag
-
-      if (i + 7 < l) {
-        byte = byte.or(0x80)
-      } // set next byte flag
-      arr.push(byte.toJSNumber())
-    }
-
-    if (l % 7 === 0) {
-      arr[arr.length - 1] = arr[arr.length - 1] | 0x80
-      arr.push(1)
-    }
-
-    return arr.map(v => ('0' + v.toString(16)).slice(-2)).join('')
-  }
-
-  public decodeSignedInt(hex: string): number {
-    const positive = Buffer.from(hex.slice(0, 2), 'hex')[0] & 0x40 ? false : true
-    const arr = Buffer.from(hex, 'hex').map((v, i) => (i === 0 ? v & 0x3f : v & 0x7f))
-    let n = bigInt.zero
-    for (let i = arr.length - 1; i >= 0; i--) {
-      if (i === 0) {
-        n = n.or(arr[i])
-      } else {
-        n = n.or(bigInt(arr[i]).shiftLeft(7 * i - 1))
-      }
-    }
-
-    return positive ? n.toJSNumber() : n.negate().toJSNumber()
   }
 
   public async createRevealOperation(counter: BigNumber, publicKey: string, address: string): Promise<TezosRevealOperation> {
