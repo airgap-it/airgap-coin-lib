@@ -386,8 +386,6 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
         contents: operations
       }
 
-      console.log(JSON.stringify(tezosWrappedOperation, undefined, 2))
-
       const binaryTx: string = await this.forgeTezosOperation(tezosWrappedOperation)
 
       return { binaryTransaction: binaryTx }

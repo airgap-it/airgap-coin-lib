@@ -1,4 +1,6 @@
+import { localForger } from '@taquito/local-forging'
 import * as sodium from 'libsodium-wrappers'
+
 import axios, { AxiosError, AxiosResponse } from '../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import * as bs58check from '../../dependencies/src/bs58check-2.1.2/index'
@@ -11,18 +13,17 @@ import { RawTezosTransaction } from '../../serializer/types'
 import { getSubProtocolsByIdentifier } from '../../utils/subProtocols'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
-import { TezosRewardsCalculation005 } from './rewardcalculation/TezosRewardCalculation005'
-import { TezosRewardsCalculationDefault } from './rewardcalculation/TezosRewardCalculationDefault'
-import { TezosRewardsCalculation006 } from './rewardcalculation/TezosRewardCalculation006'
 
-import { localForger } from '@taquito/local-forging'
-import { TezosOperation } from './types/operations/TezosOperation'
-import { TezosWrappedOperation } from './types/TezosWrappedOperation'
-import { TezosTransactionOperation } from './types/operations/Transaction'
-import { TezosOriginationOperation } from './types/operations/Origination'
+import { TezosRewardsCalculation005 } from './rewardcalculation/TezosRewardCalculation005'
+import { TezosRewardsCalculation006 } from './rewardcalculation/TezosRewardCalculation006'
+import { TezosRewardsCalculationDefault } from './rewardcalculation/TezosRewardCalculationDefault'
 import { TezosDelegationOperation } from './types/operations/Delegation'
-import { TezosOperationType } from './types/TezosOperationType'
+import { TezosOriginationOperation } from './types/operations/Origination'
 import { TezosRevealOperation } from './types/operations/Reveal'
+import { TezosOperation } from './types/operations/TezosOperation'
+import { TezosTransactionOperation } from './types/operations/Transaction'
+import { TezosOperationType } from './types/TezosOperationType'
+import { TezosWrappedOperation } from './types/TezosWrappedOperation'
 
 const assertNever: (x: never) => void = (x: never): void => undefined
 
@@ -148,7 +149,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       branch: Buffer.from(new Uint8Array([1, 52]))
     }
 
-  readonly headers = { 'Content-Type': 'application/json', apiKey: 'airgap123' }
+  public readonly headers = { 'Content-Type': 'application/json', apiKey: 'airgap123' }
 
   /**
    * Tezos Implemention of ICoinProtocol
@@ -289,6 +290,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
             ) {
               pv.push(cv)
             }
+
             return pv
           }, [])
           transactions.sort((a, b) => b.timestamp - a.timestamp)
@@ -354,23 +356,35 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
       let amount: BigNumber = new BigNumber(0)
       let to: string[] = ['']
+      let from: string[] = []
 
       switch (tezosOperation.kind) {
         case TezosOperationType.REVEAL:
           operation = tezosOperation as TezosRevealOperation
+          from = [operation.source]
           to = ['Reveal']
           break
         case TezosOperationType.TRANSACTION:
           const tezosSpendOperation: TezosTransactionOperation = tezosOperation as TezosTransactionOperation
           operation = tezosSpendOperation
+          from = [operation.source]
           amount = new BigNumber(tezosSpendOperation.amount)
           to = [tezosSpendOperation.destination] // contract destination but should be the address of actual receiver
+
+          // FA 1.2 support
+          if (tezosSpendOperation.parameters?.entrypoint === 'transfer' && (tezosSpendOperation.parameters?.value as any).args.length === 2) {
+            const value = (tezosSpendOperation.parameters?.value as any)
+            from = [value.args[0].string]
+            to = [value.args[1].args[0].string]
+            amount = value.args[1].args[1].int
+          }
 
           break
         case TezosOperationType.ORIGINATION:
           {
             const tezosOriginationOperation: TezosOriginationOperation = tezosOperation as TezosOriginationOperation
             operation = tezosOriginationOperation
+            from = [operation.source]
             amount = new BigNumber(tezosOriginationOperation.balance)
             const delegate: string | undefined = tezosOriginationOperation.delegate
             to = [delegate ? `Delegate: ${delegate}` : 'Origination']
@@ -399,7 +413,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       const airgapTx: IAirGapTransaction = {
         amount: amount.toString(10),
         fee: new BigNumber(operation.fee).toString(10),
-        from: [operation.source],
+        from,
         isInbound: false,
         protocolIdentifier: this.identifier,
         to,
@@ -590,8 +604,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
     // tslint:disable:cyclomatic-complexity
     const operationPromises: Promise<TezosOperation>[] = operationRequests.map(async (operationRequest: TezosOperation, index: number) => {
-      console.log('preparing tezos operation', operationRequest)
-
       // TODO: Handle activation burn
 
       if (!operationRequest.kind) {
@@ -1118,7 +1130,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   private static readonly FIRST_005_CYCLE: number = 160
   public async calculateRewards(bakerAddress: string, cycle: number): Promise<TezosRewards> {
     const is005 = this.network !== TezosNetwork.MAINNET || cycle >= TezosProtocol.FIRST_005_CYCLE
-    const is006 = this.network === TezosNetwork.CARTHAGENET //TODO: add cycle number once carthage update has happend
+    const is006 = this.network === TezosNetwork.CARTHAGENET // TODO: add cycle number once carthage update has happend
     let rewardCalculation: TezosRewardsCalculations
     if (is006) {
       rewardCalculation = new TezosRewardsCalculation006(this)
@@ -1133,14 +1145,16 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
   public async calculatePayouts(rewards: TezosRewards, offset: number, limit: number): Promise<TezosPayoutInfo[]> {
     const delegators = rewards.delegatedContracts.slice(offset, Math.min(offset + limit, rewards.delegatedContracts.length))
+
     return this.calculatePayoutForAddresses(delegators, rewards)
   }
 
   public async calculatePayout(address: string, rewards: TezosRewards): Promise<TezosPayoutInfo> {
-    let result = (await this.calculatePayoutForAddresses([address], rewards)).pop()
+    const result = (await this.calculatePayoutForAddresses([address], rewards)).pop()
     if (result === undefined) {
       throw new Error(`cannot calculate payout for ${address}`)
     }
+
     return result
   }
 
@@ -1167,10 +1181,11 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
   private async fetchBlockMetadata(block: number | 'head'): Promise<any> {
     const result = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/${block}/metadata`)
+
     return result.data
   }
 
-  static readonly BLOCKS_PER_CYCLE = {
+  public static readonly BLOCKS_PER_CYCLE = {
     mainnet: 4096,
     babylonnet: 2048,
     carthagenet: 2048
