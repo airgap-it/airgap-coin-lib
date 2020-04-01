@@ -1019,54 +1019,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     }
   }
 
-  protected prefixAndBase58CheckEncode(hexStringPayload: string, tezosPrefix: Uint8Array): string {
-    const prefixHex: string = Buffer.from(tezosPrefix).toString('hex')
-
-    return bs58check.encode(Buffer.from(prefixHex + hexStringPayload, 'hex'))
-  }
-
-  protected splitAndReturnRest(payload: string, length: number): { result: string; rest: string } {
-    const result: string = payload.substr(0, length)
-    const rest: string = payload.substr(length, payload.length - length)
-
-    return { result, rest }
-  }
-
-  protected parseAddress(rawHexAddress: string): string {
-    const { result, rest }: { result: string; rest: string } = this.splitAndReturnRest(rawHexAddress, 2)
-    const contractIdTag: string = result
-    if (contractIdTag === '00') {
-      // tz address
-      return this.parseTzAddress(rest)
-    } else if (contractIdTag === '01') {
-      // kt address
-      return this.prefixAndBase58CheckEncode(rest.slice(0, -2), this.tezosPrefixes.kt)
-    } else {
-      throw new Error('address format not supported')
-    }
-  }
-
-  protected parseTzAddress(rawHexAddress: string): string {
-    // tz1 address
-    const { result, rest }: { result: string; rest: string } = this.splitAndReturnRest(rawHexAddress, 2)
-    const publicKeyHashTag: string = result
-    if (publicKeyHashTag === '00') {
-      return this.prefixAndBase58CheckEncode(rest, this.tezosPrefixes.tz1)
-    } else {
-      throw new Error('address format not supported')
-    }
-  }
-  protected parsePublicKey(rawHexPublicKey: string): string {
-    const { result, rest }: { result: string; rest: string } = this.splitAndReturnRest(rawHexPublicKey, 2)
-    const tag: string = result
-    if (tag === '00') {
-      // tz1 address
-      return this.prefixAndBase58CheckEncode(rest, this.tezosPrefixes.edpk)
-    } else {
-      throw new Error('public key format not supported')
-    }
-  }
-
   public async unforgeSignedTezosWrappedOperation(hexString: string): Promise<TezosWrappedOperation> {
     if (hexString.length <= 128) {
       throw new Error('Not a valid signed transaction')
@@ -1077,23 +1029,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
   public async unforgeUnsignedTezosWrappedOperation(hexString: string): Promise<TezosWrappedOperation> {
     return localForger.parse(hexString) as any
-  }
-
-  protected formatContractData(
-    source: string,
-    amount: BigNumber,
-    destination: string,
-    contractData: any
-  ): {
-    source: string
-    amount: BigNumber
-    destination: string
-  } {
-    return {
-      source: destination,
-      amount: contractData.amount,
-      destination: contractData.destination
-    }
   }
 
   public async forgeTezosOperation(tezosWrappedOperation: TezosWrappedOperation): Promise<string> {
