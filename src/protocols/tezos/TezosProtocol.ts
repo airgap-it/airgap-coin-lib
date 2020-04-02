@@ -535,8 +535,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       const start = i * operationsPerGroup
       const end = start + operationsPerGroup
 
-      const recipientsInGroup = recipients.slice(start, end);
-      const valuesInGroup = wrappedValues.slice(start, end);
+      const recipientsInGroup = recipients.slice(start, end)
+      const valuesInGroup = wrappedValues.slice(start, end)
 
       const operationsGroup = await this.createTransactionOperation(operations, recipientsInGroup, valuesInGroup, wrappedFee, address, counter, balance)
       counter = counter.plus(operationsGroup.length)
@@ -551,8 +551,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   }
 
   private async createTransactionOperation(previousOperations: TezosOperation[], recipients: string[], wrappedValues: BigNumber[], wrappedFee: BigNumber, address: string, counter: BigNumber, balance: BigNumber) {
-    const receivingBalance: BigNumber = new BigNumber(await this.getBalanceOfAddresses(recipients))
-
     const amountUsedByPreviousOperations: BigNumber = this.getAmountUsedByPreviousOperations(previousOperations)
 
     const operations: TezosOperation[] = []
@@ -566,6 +564,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
     // TODO: We currently do not correctly calculate whether we have enough balance to pay the activation burn if there are multiple recipients
     for (let i: number = 0; i < recipients.length; i++) {
+      const receivingBalance: BigNumber = new BigNumber(await this.getBalanceOfAddresses([recipients[i]]))
+
       // if our receiver has 0 balance, the account is not activated yet.
       if (receivingBalance.isZero() && recipients[i].toLowerCase().startsWith('tz')) {
         // We have to supply an additional 0.257 XTZ fee for storage_limit costs, which gets automatically deducted from the sender so we just have to make sure enough balance is around
