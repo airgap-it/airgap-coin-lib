@@ -189,8 +189,8 @@ export class PolkadotNodeClient {
             .then(item => item ? PolkadotRegistration.decode(item) : null)
     }
 
-    public async getValidatorPrefs(address: PolkadotAddress): Promise<PolkadotValidatorPrefs | null> {
-        return this.fromStorage('Staking', 'Validators', SCALEAccountId.from(address))
+    public async getValidatorPrefs(eraIndex: number, address: PolkadotAddress): Promise<PolkadotValidatorPrefs | null> {
+        return this.fromStorage('Staking', 'ErasValidatorPrefs', SCALEInt.from(eraIndex, 32), SCALEAccountId.from(address))
             .then(item => item ? PolkadotValidatorPrefs.decode(item) : null)
     }
 

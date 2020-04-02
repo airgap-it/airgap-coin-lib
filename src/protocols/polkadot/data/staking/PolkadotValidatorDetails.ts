@@ -1,7 +1,10 @@
-export enum PolkadotValidatorStatus {
-    REAPED = 'Reaped',
-    INACTIVE = "Inactive",
-    ACTIVE = "Active"
+export type PolkadotValidatorStatus = 'Active' | 'Inactive' | 'Reaped'
+
+export interface PolkadotValidatorRewardDetails {
+    amount: string
+    totalStake: string
+    ownStake: string
+    commission: string
 }
 
 export interface PolkadotValidatorDetails {
@@ -10,4 +13,5 @@ export interface PolkadotValidatorDetails {
     ownStash: string | null
     totalStakingBalance: string | null,
     commission: string | null
+    lastEraReward: PolkadotValidatorRewardDetails | null
 }

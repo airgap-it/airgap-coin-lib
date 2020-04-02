@@ -27,7 +27,6 @@ export const supportedStorageEntries = {
         'Bonded', 
         'Ledger', 
         'Payee', 
-        'Validators', 
         'Nominators', 
         'CurrentEra', 
         'ActiveEra', 

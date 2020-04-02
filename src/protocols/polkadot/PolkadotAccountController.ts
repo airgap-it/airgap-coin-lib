@@ -6,12 +6,14 @@ import { PolkadotAddress, PolkadotAccountId } from './data/account/PolkadotAddre
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { DelegatorAction } from '../ICoinDelegateProtocol'
 import { PolkadotStakingActionType } from './data/staking/PolkadotStakingActionType'
-import { PolkadotValidatorDetails, PolkadotValidatorStatus } from './data/staking/PolkadotValidatorDetails'
-import { PolkadotNominatorDetails, PolkadotStakingDetails, PolkadotStakingStatus, PolkadotRewardDetails, PolkadotLockedDetails } from './data/staking/PolkadotNominatorDetails'
+import { PolkadotValidatorDetails, PolkadotValidatorStatus, PolkadotValidatorRewardDetails } from './data/staking/PolkadotValidatorDetails'
+import { PolkadotNominatorDetails, PolkadotStakingDetails, PolkadotStakingStatus, PolkadotNominatorRewardDetails, PolkadotLockedDetails } from './data/staking/PolkadotNominatorDetails'
 import { PolkadotNominations } from './data/staking/PolkadotNominations'
 import { PolkadotStakingLedger } from './data/staking/PolkadotStakingLedger'
 import { PolkadotActiveEraInfo } from './data/staking/PolkadotActiveEraInfo'
 import { PolkadotExposure } from './data/staking/PolkadotExposure'
+import { PolkadotRegistration } from './data/account/PolkadotRegistration'
+import { PolkadotValidatorPrefs } from './data/staking/PolkadotValidatorPrefs'
 
 export class PolkadotAccountController {
     constructor(
@@ -84,34 +86,45 @@ export class PolkadotAccountController {
 
     public async getValidatorDetails(accountId: PolkadotAccountId): Promise<PolkadotValidatorDetails> {
         const address = PolkadotAddress.from(accountId)
-        const results = await Promise.all([
-            this.nodeClient.getIdentityOf(address).catch(_ => null),
-            this.nodeClient.getValidators(),
-            this.nodeClient.getValidatorPrefs(address)
-        ])
+        const currentEra = await this.nodeClient.getCurrentEraIndex()
 
-        const identity = results[0]
-        const currentValidators = results[1]
-        const prefs = results[2]
+        let identity: PolkadotRegistration | null = null
+        let status: PolkadotValidatorStatus | null = null
+        let exposure: PolkadotExposure | null = null
+        let validatorPrefs: PolkadotValidatorPrefs | null = null
+        let lastEraReward: PolkadotValidatorRewardDetails | null = null
+        if (currentEra) {            
+            const results = await Promise.all([
+                this.nodeClient.getIdentityOf(address).catch(_ => null),
+                this.nodeClient.getValidators(),
+                this.nodeClient.getValidatorPrefs(currentEra.toNumber(), address),
+                this.nodeClient.getValidatorExposure(address)
+            ])
 
-        let status: PolkadotValidatorStatus | null
-        // TODO: check if reaped
-        if (!currentValidators) {
-            status = null
-        } else if (currentValidators.find(current => current.compare(address) == 0)) {
-            status = PolkadotValidatorStatus.ACTIVE
-        } else {
-            status = PolkadotValidatorStatus.INACTIVE
+            identity = results[0]
+            const currentValidators = results[1]
+            validatorPrefs = results[2]
+            exposure = results[3]
+
+            lastEraReward = await this.getEraValidatorReward(address, currentEra.toNumber() - 1)
+
+            // TODO: check if reaped
+            if (currentValidators && currentValidators.find(current => current.compare(address) == 0)) {
+                status = 'Active'
+            } else if (currentValidators) {
+                status = 'Inactive'
+            }
         }
-
-        const exposure = await this.nodeClient.getValidatorExposure(address)
         
         return {
             name: identity ? identity.identityInfo.display : null,
             status,
             ownStash: exposure ? exposure.own.toString() : null,
             totalStakingBalance: exposure ? exposure.total.toString() : null,
-            commission: prefs ? prefs.commission.value.dividedBy(1_000_000_000).toString() : null // commission is Perbill (parts per billion)
+            commission: validatorPrefs 
+                ? validatorPrefs.commission.value.dividedBy(1_000_000_000).toString() // commission is Perbill (parts per billion)
+                : null, 
+            lastEraReward
         }
     }
 
@@ -151,7 +164,7 @@ export class PolkadotAccountController {
         }
     }
 
-    public async getUnclaimedRewards(accountId: PolkadotAccountId): Promise<PolkadotRewardDetails[]> {
+    public async getUnclaimedRewards(accountId: PolkadotAccountId): Promise<PolkadotNominatorRewardDetails[]> {
         const results = await Promise.all([
             this.nodeClient.getStakingLedger(PolkadotAddress.from(accountId)),
             this.nodeClient.getNominations(PolkadotAddress.from(accountId)),
@@ -170,7 +183,7 @@ export class PolkadotAccountController {
             return Promise.reject('Could not fetch all necessary data.')
         }
 
-        return this.calculateRewards(
+        return this.getNominatorRewards(
             accountId,
             nominations.targets.elements.map(id => id.address),
             activeEra,
@@ -198,7 +211,7 @@ export class PolkadotAccountController {
 
         const stakingStatus = await this.getStakingStatus(nominations, activeEra.index.toNumber())
 
-        const rewards = nominations && stakingLedger.lastReward.value ? await this.calculateRewards(
+        const rewards = nominations && stakingLedger.lastReward.value ? await this.getNominatorRewards(
             accountId, 
             nominations.targets.elements.map(id => id.address),
             activeEra,
@@ -259,37 +272,69 @@ export class PolkadotAccountController {
         }
     }
 
-    private async calculateRewards(
+    private async getEraValidatorReward(
+        accountId: PolkadotAccountId,
+        eraIndex: number
+    ): Promise<PolkadotValidatorRewardDetails | null> {
+        const address = PolkadotAddress.from(accountId)
+
+        const results = await Promise.all([
+            this.nodeClient.getValidatorReward(eraIndex),
+            this.nodeClient.getRewardPoints(eraIndex),
+            this.nodeClient.getStakersClipped(eraIndex, address),
+            this.nodeClient.getValidatorPrefs(eraIndex, address)
+        ])
+
+        if (results.some(result => !result)) {
+            return null
+        }
+
+        const eraReward = results[0]
+        const eraPoints = results[1]
+        const exposureClipped = results[2]
+        const validatorPrefs = results[3]
+
+        const validatorPoints = eraPoints?.individual?.elements
+            ?.find(element => element.first.address.compare(address))
+            ?.second?.value
+
+        if (!eraReward || !eraPoints || !exposureClipped || !validatorPrefs || !validatorPoints) {
+            return null
+        }
+
+        const validatorReward = this.calculateValidatorReward(
+            eraReward,
+            eraPoints.total.value,
+            validatorPoints
+        )
+
+        return {
+            amount: validatorReward.toFixed(),
+            totalStake: exposureClipped.total.toString(),
+            ownStake: exposureClipped.own.toString(),
+            commission: validatorPrefs.commission.toString()
+        }
+    }
+
+    private async getNominatorRewards(
         accountId: PolkadotAccountId, 
         validators: PolkadotAccountId[],
         activeEra: PolkadotActiveEraInfo,
         lastReward: number,
         limit: number
-    ): Promise<PolkadotRewardDetails[]> {
+    ): Promise<PolkadotNominatorRewardDetails[]> {
         const address = PolkadotAddress.from(accountId)
-        const validatorAddresses = validators.map(validator => PolkadotAddress.from(validator))
+        const expectedEraDuration = await this.nodeClient.getExpectedEraDuration()
 
-        const results = await Promise.all([
-            this.nodeClient.getExpectedEraDuration(),
-            Promise.all(validatorAddresses.map(async validator => [
-                validator, 
-                await this.nodeClient.getValidatorPrefs(validator)
-                    .then(prefs => prefs ? prefs.commission.value : Promise.reject('Could not fetch validator commission.'))
-            ] as [PolkadotAddress, BigNumber]))
-        ])
-
-        if (results.some(result => result === null)) {
+        if (!expectedEraDuration) {
             return Promise.reject('Could not fetch all necessary data.')
         }
 
-        const expectedEraDuration = results[0]!
-        const validatorsWithCommission = results[1]!
-
         const eras = Array.from(Array(limit).keys()).map(index => activeEra.index.toNumber() - 1 - index)
         const rewards = await Promise.all(eras.map(era => 
-            this.calculateEraReward(
+            this.calculateEraNominatorReward(
                 address,
-                validatorsWithCommission,
+                validators.map(validator => PolkadotAddress.from(validator)),
                 era
             ).then(partial => {
                 if (partial) {
@@ -302,25 +347,26 @@ export class PolkadotAccountController {
                         : 0
                 }
                 
-                return partial as PolkadotRewardDetails
+                return partial as PolkadotNominatorRewardDetails
             })
         ))
         return rewards.filter(reward => reward)
     }
 
-    private async calculateEraReward(
+    private async calculateEraNominatorReward(
         accountId: PolkadotAccountId,
-        validatorsWithCommission: [PolkadotAccountId, BigNumber][],
+        validators: PolkadotAccountId[],
         eraIndex: number
-    ): Promise<Partial<PolkadotRewardDetails> | null> {
+    ): Promise<Partial<PolkadotNominatorRewardDetails> | null> {
         const results = await Promise.all([
             this.nodeClient.getValidatorReward(eraIndex),
             this.nodeClient.getRewardPoints(eraIndex),
-            Promise.all(validatorsWithCommission.map(async ([validator, commission]) => [
+            Promise.all(validators.map(async validator => [
                 PolkadotAddress.from(validator), 
-                commission,
+                await this.nodeClient.getValidatorPrefs(eraIndex, PolkadotAddress.from(validator))
+                    .then(prefs => prefs?.commission?.value),
                 await this.nodeClient.getStakersClipped(eraIndex, PolkadotAddress.from(validator))
-            ] as [PolkadotAddress, BigNumber, PolkadotExposure | null])),
+            ] as [PolkadotAddress, BigNumber | null, PolkadotExposure | null])),
         ])
 
         const reward = results[0]
@@ -341,15 +387,22 @@ export class PolkadotAccountController {
                     .find(element => element.first.address.compare(accountId) === 0)
                     ?.second?.value
 
-                return (exposure && validatorPoints && nominatorStake) 
-                    ? this.calculateNominatorReward(
-                        reward,
+                if (commission && exposure && validatorPoints && nominatorStake) {
+                    const validatorReward = this.calculateValidatorReward(
+                        reward, 
                         rewardPoints.total.value,
-                        validatorPoints,
+                        validatorPoints
+                    )
+
+                    return this.calculateNominatorReward(
+                        validatorReward,
                         commission,
                         exposure.total.value,
                         nominatorStake
-                    ) : null
+                    )
+                } else {
+                    return null
+                }
             })
             .filter(reward => reward !== null)
 
@@ -367,18 +420,22 @@ export class PolkadotAccountController {
         }
     }
 
-    private calculateNominatorReward(
+    private calculateValidatorReward(
         totalReward: BigNumber,
         totalPoints: BigNumber,
         validatorPoints: BigNumber,
+    ): BigNumber {
+        return validatorPoints
+            .dividedBy(totalPoints)
+            .multipliedBy(totalReward)    
+    }
+
+    private calculateNominatorReward(
+        validatorReward: BigNumber,
         validatorCommission: BigNumber,
         totalStake: BigNumber,
         nominatorStake: BigNumber
     ): BigNumber {
-        const validatorReward = validatorPoints
-            .dividedBy(totalPoints)
-            .multipliedBy(totalReward) 
-
         const nominatorShare = nominatorStake.dividedBy(totalStake)
 
         return new BigNumber(1)

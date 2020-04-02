@@ -5,7 +5,7 @@ export interface PolkadotLockedDetails {
     expectedUnlock: number
 }
 
-export interface PolkadotRewardDetails {
+export interface PolkadotNominatorRewardDetails {
     eraIndex: number
     amount: string
     exposures: [string, number][]
@@ -22,7 +22,7 @@ export interface PolkadotStakingDetails {
     locked: PolkadotLockedDetails[]
     status: PolkadotStakingStatus
     nextEra: number
-    previousRewards: PolkadotRewardDetails[]
+    previousRewards: PolkadotNominatorRewardDetails[]
 }
 
 export interface PolkadotNominatorDetails {
