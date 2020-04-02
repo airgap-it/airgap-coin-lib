@@ -46,7 +46,16 @@ export class PolkadotTransactionMethod extends SCALEClass {
         return JSON.stringify({
             moduleIndex: this.moduleIndex.toNumber(),
             callIndex: this.callIndex.toNumber(),
-            ...this.args.reduce((prev, [key, value]) => Object.assign(prev, { [key]: value.toString() }), {})
+            ...this.args.reduce((prev, [key, value]) => {
+                let valueString = value.toString()
+                try {
+                    valueString = JSON.parse(valueString)
+                } catch {}
+
+                return Object.assign(prev, { 
+                    [key]: valueString 
+                })
+            }, {})
         }, null, 2)
     }
 }

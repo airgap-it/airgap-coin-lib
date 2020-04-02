@@ -121,12 +121,14 @@ export class PolkadotTransaction extends SCALEClass {
     }
 
     public toAirGapTransactions(): Partial<IAirGapTransaction>[] {
-        return this.method.toAirGapTransactionParts().map(part => ({
+        const airGapTransaction = {
             from: [this.signer.asAddress()],
             to: [this.signer.asAddress()],
-            transactionDetails: JSON.parse(this.toString()),
-            ...part
-        }))
+            transactionDetails: JSON.parse(this.toString())
+        }
+        const parts = this.method.toAirGapTransactionParts()
+
+        return parts.length > 0 ? parts.map(part => Object.assign(airGapTransaction, part)) : [airGapTransaction]
     }
 
     protected _encode(): string {

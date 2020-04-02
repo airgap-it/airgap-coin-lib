@@ -40,7 +40,7 @@ interface WithdrawUnbondedArgs {
 }
 
 interface NominateArgs {
-    targets: string[]
+    targets: PolkadotAccountId[]
 }
 
 interface StopNominatingArgs {
@@ -325,7 +325,7 @@ class NominateArgsFactory extends PolkadotTransactionMethodArgsFactory<NominateA
     }
     public createToAirGapTransactionParts(): () => Partial<IAirGapTransaction>[] {
         return () => [{
-            to: this.args.targets.map(target => PolkadotAddress.fromPublicKey(target).toString())
+            to: this.args.targets.map(target => PolkadotAddress.from(target).toString())
         }]
     }
 }
@@ -449,7 +449,7 @@ class SetControllerArgsDecoder extends PolkadotTransactionMethodArgsDecoder<SetC
 class SubmitBatchArgsFactory extends PolkadotTransactionMethodArgsFactory<SubmitBatchArgs> {
     public createFields(): [string, SCALEType][] {
         return [
-            ['controller', SCALEArray.from(this.args.calls)]
+            ['calls', SCALEArray.from(this.args.calls)]
         ]
     }
     public createToAirGapTransactionParts(): () => Partial<IAirGapTransaction>[] {

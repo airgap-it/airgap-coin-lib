@@ -33,7 +33,14 @@ export class SCALEArray<T extends SCALEType> extends SCALEType {
     protected constructor(readonly elements: T[]) { super() }
 
     public toString(): string {
-        return `[${this.elements.map(element => element.toString()).join()}]`
+        return JSON.stringify(this.elements.map(element => {
+            let elementString = element.toString()
+            try {
+                elementString = JSON.parse(elementString)
+            } catch {}
+
+            return elementString
+        }))
     }
 
     protected _encode(): string {
