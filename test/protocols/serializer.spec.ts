@@ -1,22 +1,23 @@
 import { expect } from 'chai'
 import 'mocha'
 
-import { IACMessageDefinitionObject } from '../../src/serializer/message'
+// import { IACMessageDefinitionObject } from '../../src/serializer/message'
 import { Serializer } from '../../src/serializer/serializer'
 
 import { TestProtocolSpec } from './implementations'
+import { EthereumTestProtocolSpec } from './specs/ethereum'
+
 import { AETestProtocolSpec } from './specs/ae'
 import { BitcoinProtocolSpec } from './specs/bitcoin'
 import { CosmosTestProtocolSpec } from './specs/cosmos'
-import { EthereumTestProtocolSpec } from './specs/ethereum'
 import { GenericERC20TokenTestProtocolSpec } from './specs/generic-erc20-token'
 import { TezosTestProtocolSpec } from './specs/tezos'
 
 const protocols = [
-  new CosmosTestProtocolSpec(),
   new EthereumTestProtocolSpec(),
   new BitcoinProtocolSpec(),
   new AETestProtocolSpec(),
+  new CosmosTestProtocolSpec(),
   new TezosTestProtocolSpec(),
   new GenericERC20TokenTestProtocolSpec()
 ]
@@ -27,10 +28,19 @@ protocols.forEach((protocol: TestProtocolSpec) => {
   describe(`Serialization Protocol for ${protocol.name}`, () => {
     it(`should be able to serialize a transaction to a airgap protocol string`, async () => {
       for (const tx of protocol.txs) {
-        const serializedTx: string[] = await syncProtocol.serialize(protocol.unsignedTransaction(tx))
-        const deserializedTx: IACMessageDefinitionObject[] = await syncProtocol.deserialize(serializedTx)
-
-        expect(JSON.parse(JSON.stringify(protocol.unsignedTransaction(tx)))).to.deep.equal(JSON.parse(JSON.stringify(deserializedTx)))
+        syncProtocol
+          .serialize(protocol.unsignedTransaction(tx))
+          .then((serializedTx: string[]) => {
+            syncProtocol
+              .deserialize(serializedTx)
+              .then(deserializedTx => {
+                expect(JSON.parse(JSON.stringify(protocol.unsignedTransaction(tx)))).to.deep.equal(
+                  JSON.parse(JSON.stringify(deserializedTx))
+                )
+              })
+              .catch(err => console.error(err))
+          })
+          .catch(err => console.error(err))
       }
     })
     /*

@@ -97,7 +97,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   }
 
   // tezbox default
-  // TODO: Lower fees for mainnet
   public feeDefaults: FeeDefaults = {
     low: '0.001420',
     medium: '0.001520',
@@ -139,15 +138,15 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     edsig: Buffer
     branch: Buffer
   } = {
-      tz1: Buffer.from(new Uint8Array([6, 161, 159])),
-      tz2: Buffer.from(new Uint8Array([6, 161, 161])),
-      tz3: Buffer.from(new Uint8Array([6, 161, 164])),
-      kt: Buffer.from(new Uint8Array([2, 90, 121])),
-      edpk: Buffer.from(new Uint8Array([13, 15, 37, 217])),
-      edsk: Buffer.from(new Uint8Array([43, 246, 78, 7])),
-      edsig: Buffer.from(new Uint8Array([9, 245, 205, 134, 18])),
-      branch: Buffer.from(new Uint8Array([1, 52]))
-    }
+    tz1: Buffer.from(new Uint8Array([6, 161, 159])),
+    tz2: Buffer.from(new Uint8Array([6, 161, 161])),
+    tz3: Buffer.from(new Uint8Array([6, 161, 164])),
+    kt: Buffer.from(new Uint8Array([2, 90, 121])),
+    edpk: Buffer.from(new Uint8Array([13, 15, 37, 217])),
+    edsk: Buffer.from(new Uint8Array([43, 246, 78, 7])),
+    edsig: Buffer.from(new Uint8Array([9, 245, 205, 134, 18])),
+    branch: Buffer.from(new Uint8Array([1, 52]))
+  }
 
   public readonly headers = { 'Content-Type': 'application/json', apiKey: 'airgap123' }
 
@@ -372,8 +371,11 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
           to = [tezosSpendOperation.destination] // contract destination but should be the address of actual receiver
 
           // FA 1.2 support
-          if (tezosSpendOperation.parameters?.entrypoint === 'transfer' && (tezosSpendOperation.parameters?.value as any).args.length === 2) {
-            const value = (tezosSpendOperation.parameters?.value as any)
+          if (
+            tezosSpendOperation.parameters?.entrypoint === 'transfer' &&
+            (tezosSpendOperation.parameters?.value as any).args.length === 2
+          ) {
+            const value = tezosSpendOperation.parameters?.value as any
             from = [value.args[0].string]
             to = [value.args[1].args[0].string]
             amount = value.args[1].args[1].int
@@ -855,13 +857,13 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       frozenBalance.map(async obj => {
         const { data: delegatedBalanceAtCycle } = await axios.get(
           `${this.jsonRPCAPI}/chains/main/blocks/${(obj.cycle - 6) * TezosProtocol.BLOCKS_PER_CYCLE[this.network]}/context/contracts/${
-          delegatorAddress ? delegatorAddress : bakerAddress
+            delegatorAddress ? delegatorAddress : bakerAddress
           }/balance`
         )
 
         const { data: stakingBalanceAtCycle } = await axios.get(
           `${this.jsonRPCAPI}/chains/main/blocks/${(obj.cycle - 6) *
-          TezosProtocol.BLOCKS_PER_CYCLE[this.network]}/context/delegates/${bakerAddress}/staking_balance`
+            TezosProtocol.BLOCKS_PER_CYCLE[this.network]}/context/delegates/${bakerAddress}/staking_balance`
         )
 
         return {
@@ -1063,9 +1065,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   }
 
   private static readonly FIRST_005_CYCLE: number = 160
+  private static readonly FIRST_006_CYCLE: number = 208
   public async calculateRewards(bakerAddress: string, cycle: number): Promise<TezosRewards> {
     const is005 = this.network !== TezosNetwork.MAINNET || cycle >= TezosProtocol.FIRST_005_CYCLE
-    const is006 = this.network === TezosNetwork.CARTHAGENET // TODO: add cycle number once carthage update has happend
+    const is006 = this.network === TezosNetwork.CARTHAGENET || cycle >= TezosProtocol.FIRST_006_CYCLE
     let rewardCalculation: TezosRewardsCalculations
     if (is006) {
       rewardCalculation = new TezosRewardsCalculation006(this)
