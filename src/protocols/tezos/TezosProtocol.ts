@@ -457,6 +457,32 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     fee: string,
     data?: { addressIndex: number }
   ): Promise<RawTezosTransaction> {
+    if (recipients.length !== values.length) {
+      throw new Error('length of recipients and values does not match!')
+    }
+
+    const operationsPerGroup = 50
+
+    if (recipients.length > operationsPerGroup) {
+      throw new Error('this transaction exceeds the maximum allowed number of transactions per operation. Please use the "prepareTransactionsFromPublicKey" method instead.')
+    }
+
+    const transactions: RawTezosTransaction[] = await this.prepareTransactionsFromPublicKey(publicKey, recipients, values, fee, data, operationsPerGroup)
+    if (transactions.length === 1) {
+      return transactions[0]
+    } else {
+      throw new Error('Transaction could not be prepared. More or less than 1 operations have been generated.')
+    }
+  }
+
+  public async prepareTransactionsFromPublicKey(
+    publicKey: string,
+    recipients: string[],
+    values: string[],
+    fee: string,
+    data?: { addressIndex: number },
+    operationsPerGroup: number = 50
+  ): Promise<RawTezosTransaction[]> {
     const wrappedValues: BigNumber[] = values.map((value: string) => new BigNumber(value))
     const wrappedFee: BigNumber = new BigNumber(fee)
 
@@ -501,9 +527,35 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     }
 
     const balance: BigNumber = new BigNumber(await this.getBalanceOfPublicKey(publicKey))
+
+    const wrappedOperations: RawTezosTransaction[] = []
+
+    const numberOfGroups: number = Math.ceil(recipients.length / operationsPerGroup)
+    for (let i = 0; i < numberOfGroups; i++) {
+      const start = i * operationsPerGroup
+      const end = start + operationsPerGroup
+
+      const recipientsInGroup = recipients.slice(start, end);
+      const valuesInGroup = wrappedValues.slice(start, end);
+
+      const operationsGroup = await this.createTransactionOperation(operations, recipientsInGroup, valuesInGroup, wrappedFee, address, counter, balance)
+      counter = counter.plus(operationsGroup.length)
+
+      wrappedOperations.push(await this.forgeAndWrapOperations({
+        branch,
+        contents: operationsGroup
+      }))
+    }
+
+    return wrappedOperations
+  }
+
+  private async createTransactionOperation(previousOperations: TezosOperation[], recipients: string[], wrappedValues: BigNumber[], wrappedFee: BigNumber, address: string, counter: BigNumber, balance: BigNumber) {
     const receivingBalance: BigNumber = new BigNumber(await this.getBalanceOfAddresses(recipients))
 
-    const amountUsedByPreviousOperations: BigNumber = this.getAmountUsedByPreviousOperations(operations)
+    const amountUsedByPreviousOperations: BigNumber = this.getAmountUsedByPreviousOperations(previousOperations)
+
+    const operations: TezosOperation[] = []
 
     if (!amountUsedByPreviousOperations.isZero()) {
       if (balance.isLessThan(wrappedValues[0].plus(wrappedFee).plus(amountUsedByPreviousOperations))) {
@@ -550,12 +602,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       operations.push(spendOperation)
     }
 
-    const tezosWrappedOperation: TezosWrappedOperation = {
-      branch,
-      contents: operations
-    }
-
-    return this.forgeAndWrapOperations(tezosWrappedOperation)
+    return operations
   }
 
   public async forgeAndWrapOperations(tezosWrappedOperation: TezosWrappedOperation): Promise<RawTezosTransaction> {

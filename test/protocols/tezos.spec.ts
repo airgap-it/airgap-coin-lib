@@ -475,6 +475,79 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       expect(result.airGapTxs[1].fee).to.equal('611')
     })
 
+    it('will correctly prepare a single operation group if below the threshold', async () => {
+      const numberOfOperations: number = 50
+      const result = await prepareSpend(
+        [...Array(numberOfOperations)].map(x => 'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy'),
+        [...Array(numberOfOperations)].map((v, i) => i.toString()),
+        '1'
+      )
+      expect(result.airGapTxs.length).to.equal(50)
+    })
+
+    it('will throw an error if number of operations is above the threshold for a single operation group', async () => {
+      const numberOfOperations: number = 51
+
+      return prepareSpend(
+        [...Array(numberOfOperations)].map(x => 'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy'),
+        [...Array(numberOfOperations)].map((v, i) => i.toString()),
+        '1'
+      ).catch(
+        (error: Error) =>
+          expect(error)
+            .to.be.an('error')
+            .with.property('message', 'this transaction exceeds the maximum allowed number of transactions per operation. Please use the "prepareTransactionsFromPublicKey" method instead.')
+      )
+    })
+
+    it('will correctly prepare a single operation group when calling prepareTransactionsFromPublicKey', async () => {
+      const numberOfOperations: number = 50
+      const protocol = new TezosProtocol()
+
+      const transactions = await protocol.prepareTransactionsFromPublicKey(
+        tezosProtocolSpec.wallet.publicKey,
+        [...Array(numberOfOperations)].map(x => 'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy'),
+        [...Array(numberOfOperations)].map((v, i) => i.toString()),
+        '1')
+
+      expect(transactions.length).to.equal(1)
+
+      const result1 = await prepareTxHelper(transactions[0])
+
+      expect(result1.airGapTxs.length).to.equal(50)
+    })
+
+    it('will return 2 operation groups when calling prepareTransactionsFromPublicKey with a number of operations above the threshold', async () => {
+      const numberOfOperations: number = 51
+      const protocol = new TezosProtocol()
+
+      const transactions = await protocol.prepareTransactionsFromPublicKey(
+        tezosProtocolSpec.wallet.publicKey,
+        [...Array(numberOfOperations)].map(x => 'tz1MJx9vhaNRSimcuXPK2rW4fLccQnDAnVKJ'),
+        [...Array(numberOfOperations)].map((v, i) => i.toString()),
+        '1')
+
+      expect(transactions.length).to.equal(2)
+
+      const result1 = await prepareTxHelper(transactions[0])
+      const result2 = await prepareTxHelper(transactions[1])
+
+      expect(result1.airGapTxs.length).to.equal(50)
+      expect(result2.airGapTxs.length).to.equal(1)
+
+      expect(result1.airGapTxs[0].amount, 'result1 first amount').to.equal('0')
+      expect(result1.airGapTxs[0].fee, 'result1 first fee').to.equal('1')
+      expect(result1.airGapTxs[0].transactionDetails.counter, 'result1 first counter').to.equal('917316')
+
+      expect(result1.airGapTxs[49].amount).to.equal('49')
+      expect(result1.airGapTxs[49].fee).to.equal('1')
+      expect(result1.airGapTxs[49].transactionDetails.counter).to.equal('917365')
+
+      expect(result2.airGapTxs[0].amount).to.equal('50')
+      expect(result2.airGapTxs[0].fee).to.equal('1')
+      expect(result2.airGapTxs[0].transactionDetails.counter).to.equal('917366')
+    })
+
     it('will prepare an FA 1.2 transaction', async () => {
       // stub
       //   .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy/balance`)
