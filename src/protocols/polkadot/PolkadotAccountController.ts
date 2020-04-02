@@ -359,7 +359,7 @@ export class PolkadotAccountController {
 
         return {
             eraIndex,
-            amount: partialRewards.reduce((sum: BigNumber, next) => sum.plus(next!), new BigNumber(0)).toString(),
+            amount: partialRewards.reduce((sum: BigNumber, next) => sum.plus(next!), new BigNumber(0)).toFixed(0),
             exposures: exposuresWithValidators?.map(([validator, _, exposure]) => [
                 validator.toString(), 
                 exposure?.others.elements.findIndex(element => element.first.address.compare(accountId) === 0)
