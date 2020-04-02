@@ -193,8 +193,10 @@ export class CosmosNodeClient {
   }
 
   public async fetchTotalReward(delegatorAddress: string): Promise<BigNumber> {
-    const response = await Axios.get(this.url(`/distribution/delegators/${delegatorAddress}/rewards`))
-    const totalRewards = response.data.result.total as { denom: string; amount: string }[]
+    const totalRewards = await Axios.get(this.url(`/distribution/delegators/${delegatorAddress}/rewards`))
+    .then(response => response.data.result.total as { denom: string; amount: string }[])
+    .catch(() => [])
+    
     if (totalRewards.length > 0) {
       return new BigNumber(totalRewards[0].amount)
     }
@@ -203,8 +205,9 @@ export class CosmosNodeClient {
   }
 
   public async fetchRewardForDelegation(delegatorAddress: string, validatorAddress: string): Promise<BigNumber> {
-    const response = await Axios.get(this.url(`/distribution/delegators/${delegatorAddress}/rewards/${validatorAddress}`))
-    const totalRewards = response.data.result as { denom: string; amount: string }[]
+    const totalRewards = await Axios.get(this.url(`/distribution/delegators/${delegatorAddress}/rewards/${validatorAddress}`))
+    .then(response => response.data.result as { denom: string; amount: string }[])
+    .catch(() => [])
     if (totalRewards.length > 0) {
       return new BigNumber(totalRewards[0].amount)
     }

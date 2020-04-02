@@ -31,10 +31,6 @@ export class TezosRewardsCalculation005 extends TezosRewardsCalculationDefault {
       }
       const p = next.priority
       const e = count
-      // TODO: there is a bug in babylon when calculating the rewards... it should have been done like the line below, but it is not because of the use of integer divisions....
-      // const bakingReward = new BigNumber(TezosProtocol.BAKING_REWARD_PER_BLOCK).div(new BigNumber(p + 1)).times(new BigNumber(0.8).plus(new BigNumber(0.2).times((new BigNumber(e).div(new BigNumber(32))))))
-      // const muliplier = Math.floor(8 + 2 * (e / 32))
-      // const bakingReward = ( ((this.tezosNodeConstants as TezosNodeConstantsV1).block_reward as unknown as number) * muliplier) / 10 / (p + 1)
       const bakingReward = this.specificBakingCalculation(e, p)
 
       rewardsByLevel.push({

@@ -163,7 +163,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   }
 
   // tezbox default
-  // TODO: Lower fees for mainnet
   public feeDefaults: FeeDefaults = {
     low: '0.001420',
     medium: '0.001520',

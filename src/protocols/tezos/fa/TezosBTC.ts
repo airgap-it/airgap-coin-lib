@@ -5,11 +5,11 @@ import { TezosNetwork } from '../TezosProtocol'
 export class TezosBTC extends TezosFAProtocol {
   constructor(
     contractAddress: string = TezosBTCDetails.CONTRACT_ADDRESS,
-    jsonRPCAPI: string = 'https://tezos-babylonnet-node-1.kubernetes.papers.tech',
-    baseApiUrl: string = 'https://tezos-babylonnet-conseil-1.kubernetes.papers.tech',
-    baseApiKey: string = 'airgap00391',
-    baseApiNetwork: string = 'babylonnet',
-    network: TezosNetwork = TezosNetwork.BABYLONNET
+    jsonRPCAPI: string = 'https://tezos-node.prod.gke.papers.tech',
+    baseApiUrl: string = 'https://tezos-mainnet-conseil-1.kubernetes.papers.tech',
+    baseApiKey: string = 'airgap123',
+    baseApiNetwork: string = 'mainnet',
+    network: TezosNetwork = TezosNetwork.MAINNET
   ) {
     super({
       symbol: 'TZBTC',
@@ -17,10 +17,11 @@ export class TezosBTC extends TezosFAProtocol {
       marketSymbol: 'btc',
       identifier: 'xtz-btc',
       feeDefaults: {
-        low: '0.250',
-        medium: '0.50',
-        high: '1.00'
+        low: '0.100',
+        medium: '0.300',
+        high: '0.500'
       },
+      decimals: 8,
       contractAddress: contractAddress,
       jsonRPCAPI: jsonRPCAPI,
       baseApiUrl: baseApiUrl,
