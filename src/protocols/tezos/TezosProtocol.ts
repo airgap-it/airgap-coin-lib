@@ -27,6 +27,8 @@ import { TezosWrappedOperation } from './types/TezosWrappedOperation'
 
 const assertNever: (x: never) => void = (x: never): void => undefined
 
+const MAX_OPERATIONS_PER_GROUP: number = 200
+
 export interface TezosVotingInfo {
   pkh: string
   rolls: number
@@ -139,15 +141,15 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     edsig: Buffer
     branch: Buffer
   } = {
-      tz1: Buffer.from(new Uint8Array([6, 161, 159])),
-      tz2: Buffer.from(new Uint8Array([6, 161, 161])),
-      tz3: Buffer.from(new Uint8Array([6, 161, 164])),
-      kt: Buffer.from(new Uint8Array([2, 90, 121])),
-      edpk: Buffer.from(new Uint8Array([13, 15, 37, 217])),
-      edsk: Buffer.from(new Uint8Array([43, 246, 78, 7])),
-      edsig: Buffer.from(new Uint8Array([9, 245, 205, 134, 18])),
-      branch: Buffer.from(new Uint8Array([1, 52]))
-    }
+    tz1: Buffer.from(new Uint8Array([6, 161, 159])),
+    tz2: Buffer.from(new Uint8Array([6, 161, 161])),
+    tz3: Buffer.from(new Uint8Array([6, 161, 164])),
+    kt: Buffer.from(new Uint8Array([2, 90, 121])),
+    edpk: Buffer.from(new Uint8Array([13, 15, 37, 217])),
+    edsk: Buffer.from(new Uint8Array([43, 246, 78, 7])),
+    edsig: Buffer.from(new Uint8Array([9, 245, 205, 134, 18])),
+    branch: Buffer.from(new Uint8Array([1, 52]))
+  }
 
   public readonly headers = { 'Content-Type': 'application/json', apiKey: 'airgap123' }
 
@@ -372,8 +374,11 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
           to = [tezosSpendOperation.destination] // contract destination but should be the address of actual receiver
 
           // FA 1.2 support
-          if (tezosSpendOperation.parameters?.entrypoint === 'transfer' && (tezosSpendOperation.parameters?.value as any).args.length === 2) {
-            const value = (tezosSpendOperation.parameters?.value as any)
+          if (
+            tezosSpendOperation.parameters?.entrypoint === 'transfer' &&
+            (tezosSpendOperation.parameters?.value as any).args.length === 2
+          ) {
+            const value = tezosSpendOperation.parameters?.value as any
             from = [value.args[0].string]
             to = [value.args[1].args[0].string]
             amount = value.args[1].args[1].int
@@ -461,13 +466,13 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       throw new Error('length of recipients and values does not match!')
     }
 
-    const operationsPerGroup = 50
-
-    if (recipients.length > operationsPerGroup) {
-      throw new Error('this transaction exceeds the maximum allowed number of transactions per operation. Please use the "prepareTransactionsFromPublicKey" method instead.')
+    if (recipients.length > MAX_OPERATIONS_PER_GROUP) {
+      throw new Error(
+        `this transaction exceeds the maximum allowed number of transactions per operation (${MAX_OPERATIONS_PER_GROUP}). Please use the "prepareTransactionsFromPublicKey" method instead.`
+      )
     }
 
-    const transactions: RawTezosTransaction[] = await this.prepareTransactionsFromPublicKey(publicKey, recipients, values, fee, data, operationsPerGroup)
+    const transactions: RawTezosTransaction[] = await this.prepareTransactionsFromPublicKey(publicKey, recipients, values, fee, data)
     if (transactions.length === 1) {
       return transactions[0]
     } else {
@@ -481,7 +486,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     values: string[],
     fee: string,
     data?: { addressIndex: number },
-    operationsPerGroup: number = 50
+    operationsPerGroup: number = MAX_OPERATIONS_PER_GROUP
   ): Promise<RawTezosTransaction[]> {
     const wrappedValues: BigNumber[] = values.map((value: string) => new BigNumber(value))
     const wrappedFee: BigNumber = new BigNumber(fee)
@@ -538,19 +543,37 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       const recipientsInGroup = recipients.slice(start, end)
       const valuesInGroup = wrappedValues.slice(start, end)
 
-      const operationsGroup = await this.createTransactionOperation(operations, recipientsInGroup, valuesInGroup, wrappedFee, address, counter, balance)
+      const operationsGroup = await this.createTransactionOperation(
+        operations,
+        recipientsInGroup,
+        valuesInGroup,
+        wrappedFee,
+        address,
+        counter,
+        balance
+      )
       counter = counter.plus(operationsGroup.length)
 
-      wrappedOperations.push(await this.forgeAndWrapOperations({
-        branch,
-        contents: operationsGroup
-      }))
+      wrappedOperations.push(
+        await this.forgeAndWrapOperations({
+          branch,
+          contents: operationsGroup
+        })
+      )
     }
 
     return wrappedOperations
   }
 
-  private async createTransactionOperation(previousOperations: TezosOperation[], recipients: string[], wrappedValues: BigNumber[], wrappedFee: BigNumber, address: string, counter: BigNumber, balance: BigNumber) {
+  private async createTransactionOperation(
+    previousOperations: TezosOperation[],
+    recipients: string[],
+    wrappedValues: BigNumber[],
+    wrappedFee: BigNumber,
+    address: string,
+    counter: BigNumber,
+    balance: BigNumber
+  ) {
     const amountUsedByPreviousOperations: BigNumber = this.getAmountUsedByPreviousOperations(previousOperations)
 
     const operations: TezosOperation[] = []
@@ -902,13 +925,13 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       frozenBalance.map(async obj => {
         const { data: delegatedBalanceAtCycle } = await axios.get(
           `${this.jsonRPCAPI}/chains/main/blocks/${(obj.cycle - 6) * TezosProtocol.BLOCKS_PER_CYCLE[this.network]}/context/contracts/${
-          delegatorAddress ? delegatorAddress : bakerAddress
+            delegatorAddress ? delegatorAddress : bakerAddress
           }/balance`
         )
 
         const { data: stakingBalanceAtCycle } = await axios.get(
           `${this.jsonRPCAPI}/chains/main/blocks/${(obj.cycle - 6) *
-          TezosProtocol.BLOCKS_PER_CYCLE[this.network]}/context/delegates/${bakerAddress}/staking_balance`
+            TezosProtocol.BLOCKS_PER_CYCLE[this.network]}/context/delegates/${bakerAddress}/staking_balance`
         )
 
         return {
