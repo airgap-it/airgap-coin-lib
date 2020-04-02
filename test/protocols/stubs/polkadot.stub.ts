@@ -8,16 +8,21 @@ export class PolkadotProtocolStub implements ProtocolHTTPStub {
 
     public registerStub(testProtocolSpec: TestProtocolSpec, protocol: PolkadotProtocol): void {
         sinon
-            .stub(protocol.nodeClient, 'getBalance')
+            .stub(protocol.accountController, 'getBalance')
             .withArgs(sinon.match.any)
-            .returns(Promise.resolve(new BigNumber(1000000000000)))
+            .returns(Promise.resolve(new BigNumber(10000000000000)))
+        
+        sinon
+            .stub(protocol.accountController, 'getTransferableBalance')
+            .withArgs(sinon.match.any)
+            .returns(Promise.resolve(new BigNumber(10000000000000)))
 
         this.registerDefaultStub(testProtocolSpec, protocol)
     }    
     
     public noBalanceStub(testProtocolSpec: TestProtocolSpec, protocol: PolkadotProtocol): void {
         sinon
-            .stub(protocol, 'getBalanceOfPublicKey')
+            .stub(protocol.accountController, 'getTransferableBalance')
             .withArgs(sinon.match.any)
             .returns(Promise.resolve(new BigNumber(0)))
 
@@ -47,9 +52,17 @@ export class PolkadotProtocolStub implements ProtocolHTTPStub {
             .returns(Promise.resolve(new BigNumber(testProtocolSpec.txs[0].fee)))
 
         sinon
-            .stub(protocol.nodeClient, 'getNonce')
+            .stub(protocol.nodeClient, 'getAccountInfo')
             .withArgs(sinon.match.any)
-            .returns(Promise.resolve(new BigNumber(1)))
+            .returns(Promise.resolve({
+                nonce: { value: new BigNumber(1) },
+                data: {
+                    free: { value: new BigNumber(1000000000000) },
+                    reserved: { value: new BigNumber(0) },
+                    miscFrozen: { value: new BigNumber(0) },
+                    feeFrozen: { value: new BigNumber(0) }
+                }
+            }))
 
         sinon
             .stub(protocol.nodeClient, 'getFirstBlockHash')

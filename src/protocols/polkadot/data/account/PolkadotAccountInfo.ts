@@ -9,11 +9,11 @@ class PolkadotAccountData {
         const free = decoder.decodeNextInt(128)
         const reserved = decoder.decodeNextInt(128)
         const miscFrozen = decoder.decodeNextInt(128)
-        const freeFrozen = decoder.decodeNextInt(128)
+        const feeFrozen = decoder.decodeNextInt(128)
 
         return {
-            bytesDecoded: free.bytesDecoded + reserved.bytesDecoded + miscFrozen.bytesDecoded + freeFrozen.bytesDecoded,
-            decoded: new PolkadotAccountData(free.decoded, reserved.decoded, miscFrozen.decoded, freeFrozen.decoded)
+            bytesDecoded: free.bytesDecoded + reserved.bytesDecoded + miscFrozen.bytesDecoded + feeFrozen.bytesDecoded,
+            decoded: new PolkadotAccountData(free.decoded, reserved.decoded, miscFrozen.decoded, feeFrozen.decoded)
         }
     }
 
