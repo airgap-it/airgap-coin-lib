@@ -56,37 +56,7 @@ export class PolkadotNodeClient {
 
     private readonly lastFees: Map<PolkadotTransactionType, BigNumber> = new Map()
 
-    private initApiPromise: Promise<void> = new Promise(async (resolve) => {
-        const metadataEncoded = await this.send('state', 'getMetadata')
-        const metadata = Metadata.decode(metadataEncoded)
-
-        let callModuleIndex = 0
-        for (let module of metadata.modules.elements) {
-            const moduleName = module.name.value
-
-            const storagePrefix = module.storage.value?.prefix?.value
-            if (storagePrefix && Object.keys(supportedStorageEntries).includes(storagePrefix)) {
-                this.initStorageEntries(module.storage.value)
-            }
-
-            if (Object.keys(supportedCalls).includes(moduleName)) {
-                this.initCalls(moduleName, callModuleIndex, module.calls.value?.elements || [])
-            }
-
-            if (Object.keys(supportedConstants).includes(moduleName)) {
-                this.initConstants(moduleName, module.constants.elements)
-            }
-
-            if (module.calls.value !== null) {
-                callModuleIndex += 1
-            }
-        } 
-        
-        resolve()
-    }).then(async () => {
-        this.initApiPromise = Promise.resolve()
-        await this.initCache()
-    })
+    private initApiPromise: Promise<void> | null = null
 
     public constructor(
         private readonly baseURL: string,
@@ -260,7 +230,7 @@ export class PolkadotNodeClient {
         entryName: E,
         ...args: SCALEType[]
     ): Promise<string | null> {
-        await this.initApiPromise
+        await this.initApi()
         const key = this.createMapKey(moduleName, entryName)
         const storageEntry = this.storageEntries.get(key)
 
@@ -278,7 +248,7 @@ export class PolkadotNodeClient {
         moduleName: M,
         callName: C
     ): Promise<PolkadotCallId> {
-        await this.initApiPromise
+        await this.initApi()
         const key = this.createMapKey(moduleName, callName)
         const callId = this.calls.get(key)
 
@@ -289,11 +259,49 @@ export class PolkadotNodeClient {
         moduleName: M,
         constantName: C,
     ): Promise<string> {
-        await this.initApiPromise
+        await this.initApi()
         const key = this.createMapKey(moduleName, constantName)
         const constant = this.constants.get(key)
 
         return constant ? constant.value.toString('hex') : Promise.reject(`Could not find requested item: ${moduleName} ${constantName}`)
+    }
+
+    private initApi(): Promise<void> {
+        if (!this.initApiPromise) {
+            this.initApiPromise = new Promise(async (resolve) => {
+                const metadataEncoded = await this.send('state', 'getMetadata')
+                const metadata = Metadata.decode(metadataEncoded)
+        
+                let callModuleIndex = 0
+                for (let module of metadata.modules.elements) {
+                    const moduleName = module.name.value
+        
+                    const storagePrefix = module.storage.value?.prefix?.value
+                    if (storagePrefix && Object.keys(supportedStorageEntries).includes(storagePrefix)) {
+                        this.initStorageEntries(module.storage.value)
+                    }
+        
+                    if (Object.keys(supportedCalls).includes(moduleName)) {
+                        this.initCalls(moduleName, callModuleIndex, module.calls.value?.elements || [])
+                    }
+        
+                    if (Object.keys(supportedConstants).includes(moduleName)) {
+                        this.initConstants(moduleName, module.constants.elements)
+                    }
+        
+                    if (module.calls.value !== null) {
+                        callModuleIndex += 1
+                    }
+                } 
+                
+                resolve()
+            }).then(async () => {
+                this.initApiPromise = Promise.resolve()
+                await this.initCache()
+            })
+        }
+
+        return this.initApiPromise
     }
 
     private initStorageEntries(storage: MetadataStorage | null) {
