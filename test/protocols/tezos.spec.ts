@@ -613,7 +613,6 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       expect(airGapTx.transactionDetails.parameters.value.args[1].args[0].string).to.equal('tz1MJx9vhaNRSimcuXPK2rW4fLccQnDAnVKJ')
       expect(airGapTx.transactionDetails.parameters.value.args[1].args[1].int).to.equal('10')
 
-      console.log('airGapTx.from', airGapTx.from)
       expect(airGapTx.from.length).to.equal(1)
       expect(airGapTx.from[0]).to.equal('tz1d75oB6T4zUMexzkr5WscGktZ1Nss1JrT7')
       expect(airGapTx.to.length).to.equal(1)
