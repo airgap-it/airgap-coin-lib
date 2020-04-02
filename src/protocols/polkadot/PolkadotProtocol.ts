@@ -250,7 +250,8 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinDelega
                     throw error
                 }))
             )
-            return txHashes[0]
+
+            return txs[0].type !== PolkadotTransactionType.SUBMIT_BATCH ? txHashes[0] : ''
         } catch (error) {
             console.warn(`Transaction #${error.index} submit failure`, error)
             return Promise.reject(`Error while submitting transaction #${error.index}: ${PolkadotTransactionType[txs[error.index].type]}.`)
