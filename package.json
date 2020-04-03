@@ -1,6 +1,6 @@
 {
   "name": "airgap-coin-lib",
-  "version": "0.7.5",
+  "version": "0.8.0-beta.11",
   "description": "The airgap-coin-lib is setup in a way that prepare, signing and broadcasting are willingfully separated.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -34,7 +34,10 @@
   },
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
-    "libsodium-wrappers": "0.7.3"
+    "@polkadot/util": "^2.0.1",
+    "@polkadot/wasm-crypto": "^0.20.1",
+    "libsodium-wrappers": "0.7.3",
+    "xxhashjs": "^0.2.2"
   },
   "localDependencies": {
     "hd-wallet-js": "b216450e56954a6e82ace0aade9474673de5d9d5",

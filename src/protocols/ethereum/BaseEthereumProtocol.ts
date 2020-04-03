@@ -9,6 +9,7 @@ import { SignedEthereumTransaction } from '../../serializer/schemas/definitions/
 import { RawEthereumTransaction } from '../../serializer/types'
 import { getSubProtocolsByIdentifier } from '../../utils/subProtocols'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
+import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
 
 import { EthereumInfoClient } from './clients/info-clients/InfoClient'
 import { EthereumNodeClient } from './clients/node-clients/NodeClient'
@@ -76,15 +77,29 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     this.network = bitcoinJS.networks.bitcoin
   }
 
-  public getBlockExplorerLinkForAddress(address: string): string {
+  public async getBlockExplorerLinkForAddress(address: string): Promise<string> {
     return `${this.blockExplorer}/address/{{address}}`.replace('{{address}}', address)
   }
 
-  public getBlockExplorerLinkForTxId(txId: string): string {
+  public async getBlockExplorerLinkForTxId(txId: string): Promise<string> {
     return `${this.blockExplorer}/tx/{{txId}}`.replace('{{txId}}', txId)
   }
 
-  public getPublicKeyFromHexSecret(secret: string, derivationPath: string): string {
+  public async getPublicKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
+    const secret = mnemonicToSeed(mnemonic, password)
+    return this.getPublicKeyFromHexSecret(secret, derivationPath)
+  }
+  
+  public async getPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<Buffer> {
+    const secret = mnemonicToSeed(mnemonic, password)
+    return this.getPrivateKeyFromHexSecret(secret, derivationPath)
+  }
+
+  public async getExtendedPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
+    throw new Error('extended private key support for ether not implemented')
+  }
+
+  public async getPublicKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
     const ethereumNode = bitcoinJS.HDNode.fromSeedHex(secret, this.network)
 
     return ethereumNode
@@ -94,13 +109,13 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
       .toString('hex')
   }
 
-  public getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Buffer {
+  public async getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<Buffer> {
     const ethereumNode = bitcoinJS.HDNode.fromSeedHex(secret, this.network)
 
     return ethereumNode.derivePath(derivationPath).keyPair.d.toBuffer(32)
   }
 
-  public getExtendedPrivateKeyFromHexSecret(secret: string, derivationPath: string): string {
+  public async getExtendedPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
     throw new Error('extended private key support for ether not implemented')
   }
 
@@ -233,6 +248,10 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     return Promise.reject('extended public balance for ether not implemented')
   }
 
+  public estimateMaxTransactionValueFromExtendedPublicKey(extendedPublicKey: string, fee: string): Promise<string> {
+    return Promise.reject('estimating max value using extended public key not implemented')
+  }
+
   public prepareTransactionFromExtendedPublicKey(
     extendedPublicKey: string,
     offset: number,
@@ -241,6 +260,16 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     fee: string
   ): Promise<RawEthereumTransaction> {
     return Promise.reject('extended public tx for ether not implemented')
+  }
+
+  public async estimateMaxTransactionValueFromPublicKey(publicKey: string, fee: string): Promise<string> {
+    const balance = await this.getBalanceOfPublicKey(publicKey)
+
+    let amountWithoutFees = new BigNumber(balance).minus(new BigNumber(fee))
+    if (amountWithoutFees.isNegative()) {
+      amountWithoutFees = new BigNumber(0)
+    }
+    return amountWithoutFees.toFixed()
   }
 
   public async prepareTransactionFromPublicKey(

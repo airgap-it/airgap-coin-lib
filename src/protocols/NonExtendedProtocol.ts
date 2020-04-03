@@ -1,8 +1,12 @@
 import { IAirGapTransaction } from '../interfaces/IAirGapTransaction'
 
 export abstract class NonExtendedProtocol {
-  public getExtendedPrivateKeyFromHexSecret(secret: string, derivationPath: string): string {
-    throw new Error('extended private key support not implemented')
+  public getExtendedPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
+    throw Promise.reject('extended private key support not implemented')
+  }
+
+  public getExtendedPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
+    throw Promise.reject('extended private key support not implemented')
   }
 
   public getBalanceOfExtendedPublicKey(extendedPublicKey: string, offset: number): Promise<string> {
@@ -28,6 +32,10 @@ export abstract class NonExtendedProtocol {
     offset: number
   ): Promise<string[]> {
     return Promise.resolve([])
+  }
+
+  public estimateMaxTransactionValueFromExtendedPublicKey(extendedPublicKey: string, fee: string): Promise<string> {
+    return Promise.reject('estimating max value using extended public key not implemented')
   }
 
   public getTransactionsFromExtendedPublicKey(extendedPublicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]> {

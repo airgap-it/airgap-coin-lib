@@ -111,7 +111,7 @@ describe(`ICoinProtocol Aeternity - Custom Tests`, () => {
   })
 
   it('can sign both, b58 and b64 of a supplied TX', async () => {
-    const privateKey = aeLib.getPrivateKeyFromHexSecret(aeProtocolSpec.seed(), aeLib.standardDerivationPath)
+    const privateKey = await aeLib.getPrivateKeyFromMnemonic(aeProtocolSpec.mnemonic(), aeLib.standardDerivationPath)
 
     const rawAeTxBase58: RawAeternityTransaction = {
       transaction:
@@ -135,7 +135,7 @@ describe(`ICoinProtocol Aeternity - Custom Tests`, () => {
   })
 
   it('can sign neither invalid TXs', async () => {
-    const privateKey = aeLib.getPrivateKeyFromHexSecret(aeProtocolSpec.seed(), aeLib.standardDerivationPath)
+    const privateKey = await aeLib.getPrivateKeyFromMnemonic(aeProtocolSpec.mnemonic(), aeLib.standardDerivationPath)
 
     const rawAeTxBase58: RawAeternityTransaction = {
       transaction:

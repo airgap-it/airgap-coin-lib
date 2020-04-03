@@ -15,6 +15,7 @@ import { NonExtendedProtocol } from '../NonExtendedProtocol'
 import { TezosRewardsCalculation005 } from './rewardcalculation/TezosRewardCalculation005'
 import { TezosRewardsCalculationDefault } from './rewardcalculation/TezosRewardCalculationDefault'
 import { TezosRewardsCalculation006 } from './rewardcalculation/TezosRewardCalculation006'
+import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
 
 export enum TezosOperationType {
   TRANSACTION = 'transaction',
@@ -232,12 +233,22 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     }
   }
 
-  public getBlockExplorerLinkForAddress(address: string): string {
+  public async getBlockExplorerLinkForAddress(address: string): Promise<string> {
     return `${this.blockExplorer}/account/{{address}}`.replace('{{address}}', address)
   }
 
-  public getBlockExplorerLinkForTxId(txId: string): string {
+  public async getBlockExplorerLinkForTxId(txId: string): Promise<string> {
     return `${this.blockExplorer}/transaction/{{txId}}`.replace('{{txId}}', txId)
+  }
+
+  public async getPublicKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
+    const secret = mnemonicToSeed(mnemonic, password)
+    return this.getPublicKeyFromHexSecret(secret, derivationPath)
+  }
+  
+  public async getPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<Buffer> {
+    const secret = mnemonicToSeed(mnemonic, password)
+    return this.getPrivateKeyFromHexSecret(secret, derivationPath)
   }
 
   /**
@@ -245,7 +256,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
    * @param secret HEX-Secret from BIP39
    * @param derivationPath DerivationPath for Key
    */
-  public getPublicKeyFromHexSecret(secret: string, derivationPath: string): string {
+  public async getPublicKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
     // both AE and Tezos use the same ECC curves (ed25519)
     const { publicKey }: { publicKey: string } = generateWalletUsingDerivationPath(Buffer.from(secret, 'hex'), derivationPath) as any // TODO: Look into typings
 
@@ -257,7 +268,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
    * @param secret HEX-Secret from BIP39
    * @param derivationPath DerivationPath for Key
    */
-  public getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Buffer {
+  public async getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<Buffer> {
     // both AE and Tezos use the same ECC curves (ed25519)
     const { secretKey }: { secretKey: string } = generateWalletUsingDerivationPath(Buffer.from(secret, 'hex'), derivationPath) as any // TODO: Look into typings
 
@@ -487,6 +498,16 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     const address: string = await this.getAddressFromPublicKey(publicKey)
 
     return this.getBalanceOfAddresses([address])
+  }
+
+  public async estimateMaxTransactionValueFromPublicKey(publicKey: string, fee: string): Promise<string> {
+    const balance = await this.getBalanceOfPublicKey(publicKey)
+
+    let amountWithoutFees = new BigNumber(balance).minus(new BigNumber(fee))
+    if (amountWithoutFees.isNegative()) {
+      amountWithoutFees = new BigNumber(0)
+    }
+    return amountWithoutFees.toFixed()
   }
 
   public async prepareTransactionFromPublicKey(
