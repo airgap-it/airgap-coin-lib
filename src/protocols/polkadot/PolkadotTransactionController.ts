@@ -199,7 +199,7 @@ export class PolkadotTransactionController {
         await waitReady()
             
         const payloadBuffer = Buffer.from(payload, 'hex')
-        const message = payloadBuffer.length > 256 ? await blake2bAsBytes(payloadBuffer, 256) : payloadBuffer
+        const message = payloadBuffer.length > 256 ? blake2bAsBytes(payloadBuffer, 256) : payloadBuffer
     
         return sr25519Sign(publicKey, privateKey, message)
     }

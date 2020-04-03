@@ -83,7 +83,7 @@ export class PolkadotNodeClient {
         return callId ? callId : Promise.reject('Could not find requested item.')
     }
 
-    public getTransferFeeEstimate(transactionBytes: Uint8Array | string): Promise<BigNumber | null> {
+    public async getTransferFeeEstimate(transactionBytes: Uint8Array | string): Promise<BigNumber | null> {
         return this.send('payment', 'queryInfo', [bytesToHex(transactionBytes)])    
             .then(result => result ? new BigNumber(result.partialFee) : null)
     }
@@ -103,40 +103,40 @@ export class PolkadotNodeClient {
         return fee
     }
 
-    public getBaseTransactionFee(): Promise<BigNumber | null> {
+    public async getBaseTransactionFee(): Promise<BigNumber | null> {
         return this.getConstant('TransactionPayment', 'TransactionBaseFee')
             .then(constant => SCALEInt.decode(constant).decoded.value)
     }
 
-    public getFirstBlockHash(): Promise<string | null> {
+    public async getFirstBlockHash(): Promise<string | null> {
         return this.getBlockHash(0)
     }
 
-    public getLastBlockHash(): Promise<string | null> {
+    public async getLastBlockHash(): Promise<string | null> {
         return this.getBlockHash()
     }
 
-    public getCurrentHeight(): Promise<BigNumber> {
+    public async getCurrentHeight(): Promise<BigNumber> {
         return this.send('chain', 'getBlock')
             .then(result => new BigNumber(stripHexPrefix(result.block.header.number), 16))
     }
 
-    public getCurrentEraIndex(): Promise<BigNumber | null> {
+    public async getCurrentEraIndex(): Promise<BigNumber | null> {
         return this.fromStorage('Staking', 'CurrentEra')
             .then(item => item ? SCALEInt.decode(item).decoded.value : null)
     }
 
-    public getSpecVersion(): Promise<number> {
+    public async getSpecVersion(): Promise<number> {
         return this.send('state', 'getRuntimeVersion')
             .then(result => result.specVersion)
     }
 
-    public getBonded(address: PolkadotAddress): Promise<PolkadotAddress | null> {
+    public async getBonded(address: PolkadotAddress): Promise<PolkadotAddress | null> {
         return this.fromStorage('Staking', 'Bonded', SCALEAccountId.from(address))
             .then(item => item ? SCALEAccountId.decode(item).decoded.address : null)
     }
 
-    public getNominations(address: PolkadotAddress): Promise<PolkadotNominations | null> {
+    public async getNominations(address: PolkadotAddress): Promise<PolkadotNominations | null> {
         return this.fromStorage('Staking', 'Nominators', SCALEAccountId.from(address))
             .then(item => item ? PolkadotNominations.decode(item) : null)   
     }
@@ -156,7 +156,7 @@ export class PolkadotNodeClient {
             .then(item => item ? PolkadotExposure.decode(item) : null)
     }
 
-    public getRewardDestination(address: PolkadotAddress): Promise<PolkadotPayee | null> {
+    public async getRewardDestination(address: PolkadotAddress): Promise<PolkadotPayee | null> {
         return this.fromStorage('Staking', 'Payee', SCALEAccountId.from(address))
             .then(item => item 
                 ? SCALEEnum.decode(item, hex => PolkadotPayee[PolkadotPayee[hex]]).decoded.value
@@ -164,12 +164,12 @@ export class PolkadotNodeClient {
             )
     }
 
-    public getStakingLedger(address: PolkadotAddress): Promise<PolkadotStakingLedger | null> {
+    public async getStakingLedger(address: PolkadotAddress): Promise<PolkadotStakingLedger | null> {
         return this.fromStorage('Staking', 'Ledger', SCALEAccountId.from(address))
             .then(item => item ? PolkadotStakingLedger.decode(item) : null)
     }
 
-    public getValidators(): Promise<PolkadotAddress[] | null> {
+    public async getValidators(): Promise<PolkadotAddress[] | null> {
         return this.fromStorage('Session', 'Validators')
             .then(items => items 
                 ? SCALEArray.decode(items, SCALEAccountId.decode).decoded.elements.map(encoded => encoded.address)
@@ -217,7 +217,7 @@ export class PolkadotNodeClient {
             .then(item => item ? PolkadotActiveEraInfo.decode(item) : null)
     }
 
-    public submitTransaction(encoded: string): Promise<string> {
+    public async submitTransaction(encoded: string): Promise<string> {
         return this.send('author', 'submitExtrinsic', [encoded])
     }
 
@@ -252,7 +252,9 @@ export class PolkadotNodeClient {
         const key = this.createMapKey(moduleName, callName)
         const callId = this.calls.get(key)
 
-        return callId ? callId : Promise.reject(`Could not find requested item: ${moduleName} ${callName}`)
+        return callId 
+            ? callId 
+            : Promise.reject(`Could not find requested item: ${moduleName} ${callName}`)
     }
 
     private async getConstant<M extends PolkadotConstantModuleName, C extends PolkadotConstantName<M>>(
@@ -263,10 +265,12 @@ export class PolkadotNodeClient {
         const key = this.createMapKey(moduleName, constantName)
         const constant = this.constants.get(key)
 
-        return constant ? constant.value.toString('hex') : Promise.reject(`Could not find requested item: ${moduleName} ${constantName}`)
+        return constant 
+            ? constant.value.toString('hex') 
+            : Promise.reject(`Could not find requested item: ${moduleName} ${constantName}`)
     }
 
-    private initApi(): Promise<void> {
+    private async initApi(): Promise<void> {
         if (!this.initApiPromise) {
             this.initApiPromise = new Promise(async (resolve) => {
                 const metadataEncoded = await this.send('state', 'getMetadata')
@@ -348,7 +352,7 @@ export class PolkadotNodeClient {
         const endpoint = `${module}_${method}`
         const key = `${endpoint}$${params.join('')}`
 
-        return this.cache.get<T>(key)
+        return this.cache.get(key)
             .catch(() => {
                 const promise = axios
                     .post(this.baseURL, new RPCBody(endpoint, params.map(param => addHexPrefix(param))))

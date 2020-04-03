@@ -230,11 +230,11 @@ export class PolkadotAccountController {
         }
     }
 
-    private async getUnlockingDetails(
+    private getUnlockingDetails(
         unlocking: [BigNumber, BigNumber][],
         activeEra: PolkadotActiveEraInfo,
         expectedEraDuration: BigNumber
-    ): Promise<{ locked: PolkadotLockedDetails[], unlocked: string }> {
+    ): { locked: PolkadotLockedDetails[], unlocked: string } {
         const [locked, unlocked] = this.partitionArray(
             unlocking,
             ([_, era]) => activeEra.index.lte(era)
@@ -262,7 +262,7 @@ export class PolkadotAccountController {
         }
     }
 
-    private async getStakingStatus(nominations: PolkadotNominations | null, eraIndex: number): Promise<PolkadotStakingStatus> {
+    private getStakingStatus(nominations: PolkadotNominations | null, eraIndex: number): PolkadotStakingStatus {
         if (nominations === null) {
             return 'bonded'
         } else if (nominations.submittedIn.lt(eraIndex)) {

@@ -4,10 +4,10 @@ import { blake2bAsBytes } from '../../../../utils/blake2b'
 import { isString } from 'util'
  
 // If changed, the test address in `test/protocols/specs/polkadot.ts` must be changed accordingly
-const SS58_FORMAT = {
-    POLKADOT_LIVE: 0,
-    KUSAMA: 2,
-    SUBSTRATE: 42
+enum SS58_Format {
+    POLKADOT_LIVE = 0,
+    KUSAMA = 2,
+    SUBSTRATE = 42
 }
 const SS58_PREFIX = 'SS58PRE'
 
@@ -48,7 +48,7 @@ export class PolkadotAddress {
         }
     }
 
-    public static fromPublicKey(payload: Buffer | Uint8Array | string, format: number = SS58_FORMAT.KUSAMA): PolkadotAddress {
+    public static fromPublicKey(payload: Buffer | Uint8Array | string, format: SS58_Format = SS58_Format.KUSAMA): PolkadotAddress {
         return this.fromPayload(hexToBytes(payload), format)
     }
 
