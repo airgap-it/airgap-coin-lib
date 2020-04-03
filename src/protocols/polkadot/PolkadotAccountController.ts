@@ -203,13 +203,13 @@ export class PolkadotAccountController {
             return null
         }
 
-        const unlockingDetails = await this.getUnlockingDetails(
+        const unlockingDetails = this.getUnlockingDetails(
             stakingLedger.unlocking.elements.map(tuple => [tuple.first.value, tuple.second.value] as [BigNumber, BigNumber]),
             activeEra,
             expectedEraDuration
         )
 
-        const stakingStatus = await this.getStakingStatus(nominations, activeEra.index.toNumber())
+        const stakingStatus = this.getStakingStatus(nominations, activeEra.index.toNumber())
 
         const rewards = nominations && stakingLedger.lastReward.value ? await this.getNominatorRewards(
             accountId, 
