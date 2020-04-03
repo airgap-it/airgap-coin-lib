@@ -1,7 +1,8 @@
 import { ICoinProtocol } from "./ICoinProtocol";
 
 export interface DelegateeDetails {
-    name: string
+    name?: string
+    status?: any
     address: string
 }
 

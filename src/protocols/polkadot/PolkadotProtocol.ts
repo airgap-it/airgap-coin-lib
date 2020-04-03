@@ -276,6 +276,7 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinDelega
             const validatorDetails = await this.accountController.getValidatorDetails(address)
             return {
                 name: validatorDetails.name || '',
+                status: validatorDetails.status || '',
                 address
             }
         }))
