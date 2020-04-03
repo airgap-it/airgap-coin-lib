@@ -164,7 +164,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   }
 
   // tezbox default
-  // TODO: Lower fees for mainnet
   public feeDefaults: FeeDefaults = {
     low: '0.001420',
     medium: '0.001520',
@@ -1566,9 +1565,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   }
 
   private static readonly FIRST_005_CYCLE: number = 160
+	private static readonly FIRST_006_CYCLE: number = 208
   public async calculateRewards(bakerAddress: string, cycle: number): Promise<TezosRewards> {
     const is005 = this.network !== TezosNetwork.MAINNET || cycle >= TezosProtocol.FIRST_005_CYCLE
-    const is006 = this.network === TezosNetwork.CARTHAGENET //TODO: add cycle number once carthage update has happend
+    const is006 = this.network === TezosNetwork.CARTHAGENET || cycle >= TezosProtocol.FIRST_006_CYCLE
     let rewardCalculation: TezosRewardsCalculations
     if (is006) {
       rewardCalculation = new TezosRewardsCalculation006(this)

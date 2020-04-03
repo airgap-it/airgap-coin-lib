@@ -44,7 +44,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
   public readonly identifier: string
   public readonly contractAddress: string
 
-  private readonly defaultCallbackContract: string = 'KT1JjN5bTE9yayzYHiBm6ruktwEWSHRF8aDm'
+  private readonly defaultCallbackContractMap = new Map<TezosNetwork, string>()
   private readonly defaultSourceAddress: string = 'tz1Mj7RzPmMAqDUNFBn5t5VbXmWW4cSUAdtT'
 
   constructor(configuration: TezosFAProtocolConfiguration) {
@@ -56,6 +56,8 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     this.identifier = configuration.identifier
     this.feeDefaults = configuration.feeDefaults
     this.decimals = configuration.decimals || this.decimals
+    this.defaultCallbackContractMap.set(TezosNetwork.MAINNET, 'KT19ptNzn4MVAN45KUUNpyL5AdLVhujk815u')
+    this.defaultCallbackContractMap.set(TezosNetwork.CARTHAGENET, 'KT1J8FmFLSgMz5H2vexFmsCtTLVod9V49iyW')
   }
 
   public async getBalanceOfAddresses(addresses: string[]): Promise<string> {
@@ -98,7 +100,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     return this.prepareContractCall(transferCalls, fee, publicKey)
   }
 
-  public async getBalance(address: string, source?: string, callbackContract: string = this.defaultCallbackContract): Promise<string> {
+  public async getBalance(address: string, source?: string, callbackContract: string = this.callbackContract()): Promise<string> {
     if (address.toLowerCase().startsWith('kt') && (source === undefined || source.toLowerCase().startsWith('kt'))) {
       source = this.defaultSourceAddress
     } else if (source === undefined) {
@@ -112,7 +114,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
   public async getAllowance(
     ownerAddress: string,
     spenderAddress: string,
-    callbackContract: string = this.defaultCallbackContract,
+    callbackContract: string = this.callbackContract(),
     source?: string
   ): Promise<string> {
     if (spenderAddress.toLowerCase().startsWith('kt') && (source === undefined || source.toLowerCase().startsWith('kt'))) {
@@ -125,7 +127,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     return this.runContractCall(getAllowanceCall, source)
   }
 
-  public async getTotalSupply(source?: string, callbackContract: string = this.defaultCallbackContract) {
+  public async getTotalSupply(source?: string, callbackContract: string = this.callbackContract()) {
     if (source === undefined) {
       source = this.defaultSourceAddress
     }
@@ -134,7 +136,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     return this.runContractCall(getTotalSupplyCall, source)
   }
 
-  public async getTotalMinted(source?: string, callbackContract: string = this.defaultCallbackContract) {
+  public async getTotalMinted(source?: string, callbackContract: string = this.callbackContract()) {
     if (source === undefined) {
       source = this.defaultSourceAddress
     }
@@ -143,7 +145,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     return this.runContractCall(getTotalMintedCall, source)
   }
 
-  public async getTotalBurned(source?: string, callbackContract: string = this.defaultCallbackContract) {
+  public async getTotalBurned(source?: string, callbackContract: string = this.callbackContract()) {
     if (source === undefined) {
       source = this.defaultSourceAddress
     }
@@ -165,71 +167,50 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
 
     const allTransactions = await Promise.all(
       addresses.map(address => {
-        const getRequestBody = (inverse: boolean) => {
-          return {
-            predicates: [
-              {
-                field: 'parameters',
-                operation: 'like',
-                set: [address],
-                inverse: false
-              },
-              {
-                field: 'parameters',
-                operation: 'like',
-                set: ['"transfer"'],
-                inverse: false
-              },
-              {
-                field: 'kind',
-                operation: 'eq',
-                set: ['transaction'],
-                inverse: false
-              },
-              {
-                field: 'source',
-                operation: 'eq',
-                set: [address],
-                inverse: inverse
-              },
-              {
-                field: 'destination',
-                operation: 'eq',
-                set: [this.contractAddress],
-                inverse: false
-              }
-            ],
-            orderBy: [
-              {
-                field: 'timestamp',
-                direction: 'desc'
-              }
-            ],
-            limit: limit
-          }
+        const body = {
+          predicates: [
+            {
+              field: 'parameters',
+              operation: 'like',
+              set: [address],
+              inverse: false
+            },
+            {
+              field: 'parameters',
+              operation: 'like',
+              set: ['"transfer"'],
+              inverse: false
+            },
+            {
+              field: 'kind',
+              operation: 'eq',
+              set: ['transaction'],
+              inverse: false
+            },
+            {
+              field: 'destination',
+              operation: 'eq',
+              set: [this.contractAddress],
+              inverse: false
+            }
+          ],
+          orderBy: [
+            {
+              field: 'timestamp',
+              direction: 'desc'
+            }
+          ],
+          limit: limit
         }
 
-        return new Promise<any>(async (resolve, reject) => {
-          const fromPromise = axios
-            .post(`${this.baseApiUrl}/v2/data/tezos/${this.baseApiNetwork}/operations`, getRequestBody(false), {
-              // incoming txs
-              headers: this.headers
-            })
-            .catch(() => {
-              return { data: [] }
-            })
-          const toPromise = axios
-            .post(`${this.baseApiUrl}/v2/data/tezos/${this.baseApiNetwork}/operations`, getRequestBody(true), {
-              // outgoing txs
-              headers: this.headers
-            })
-            .catch(() => {
-              return { data: [] }
-            })
-          const [to, from] = await Promise.all([fromPromise, toPromise])
-          const transactions: any[] = to.data.concat(from.data)
-          transactions.sort((a, b) => a.timestamp - b.timestamp)
-          resolve([...to.data, ...from.data])
+        return axios
+        .post(`${this.baseApiUrl}/v2/data/tezos/${this.baseApiNetwork}/operations`, body, {
+          // incoming txs
+          headers: this.headers
+        })
+        .then(response => response.data)
+        .catch(() => {
+          return []
         })
       })
     )
@@ -311,14 +292,25 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
       to: [to],
       hash: transaction.operation_group_hash,
       timestamp: transaction.timestamp / 1000,
-      blockHeight: transaction.block_level
+      blockHeight: transaction.block_level,
+      extra: {
+        status: transaction.status
+      }
     }
+  }
+
+  private callbackContract(): string {
+    let result = this.defaultCallbackContractMap.get(this.network)
+    if (result === undefined) {
+      result = ''
+    }
+    return result
   }
 
   private async runContractCall(contractCall: TezosContractCall, source: string): Promise<string> {
     const results: AxiosResponse[] = await Promise.all([
       axios.get(this.url(`/chains/main/blocks/head/context/contracts/${source}/counter`)),
-      axios.get(this.url('/chains/main/blocks/head'))
+      axios.get(this.url('/chains/main/blocks/head/'))
     ])
     const counter = new BigNumber(results[0].data).plus(1)
     const branch = results[1].data.hash
@@ -328,8 +320,14 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
       const response = await axios.post(this.url('/chains/main/blocks/head/helpers/scripts/run_operation'), body, {
         headers: { 'Content-Type': 'application/json' }
       })
-      return response.data.contents[0].metadata.internal_operation_results[0].result.storage.int
+      const metadata = response.data.contents[0].metadata
+      if (metadata.internal_operation_results !== undefined && metadata.operation_result.status === 'applied') {
+        return metadata.internal_operation_results[0].parameters.value.int
+      } else {
+        throw new Error(metadata.operation_result.errors[0].id)
+      }
     } catch (runOperationError) {
+      console.error(runOperationError)
       return '0'
     }
   }

@@ -121,7 +121,7 @@ export class CosmosInfoClient {
       const fee: BigNumber = transaction.value.fee.amount
         .map((coin: Amount) => new BigNumber(coin.amount))
         .reduce((current: BigNumber, next: BigNumber) => current.plus(next))
-      const result: IAirGapTransaction[] = transaction.value.msg.map((message: Msg) => {
+      const result: IAirGapTransaction[] = transaction.value.msg.filter((message: Msg) => message.type === 'cosmos-sdk/MsgSend').map((message: Msg) => {
         const destination: string = message.value.to_address
 
         return {
