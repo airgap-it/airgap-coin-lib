@@ -630,8 +630,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   }
 
   public async getCurrentDelegateesForAddress(address: string): Promise<string[]> {
-    const { data: currentBaker } = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/delegate`)
-    return currentBaker ? [currentBaker] : []
+    const { data } = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}`)
+    return data.delegate ? [data.delegate] : []
   }
 
   public async getDelegateesDetails(addresses: string[]): Promise<DelegateeDetails[]> {
@@ -674,7 +674,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     const isDelegating = !!accountDetails.delegate
     const availableActions: DelegatorAction[] = []
 
-    if (isDelegating) {
+    if (!isDelegating) {
       availableActions.push({
         type: TezosDelegationAction.DELEGATE,
         args: ['delegate']
