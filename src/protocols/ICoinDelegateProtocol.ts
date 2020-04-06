@@ -13,8 +13,16 @@ export interface DelegatorAction {
 
 export interface DelegatorDetails {
     balance: string
-    isDelegating: boolean,
-    availableActions: DelegatorAction[]
+    isDelegating: boolean
+    availableActions?: DelegatorAction[]
+    rewards?: DelegatorReward[]
+}
+
+export interface DelegatorReward {
+    index: number
+    amount: string
+    collected: boolean
+    timestamp: number
 }
 
 export interface ICoinDelegateProtocol extends ICoinProtocol {

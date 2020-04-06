@@ -22,7 +22,7 @@ export interface PolkadotStakingDetails {
     locked: PolkadotLockedDetails[]
     status: PolkadotStakingStatus
     nextEra: number
-    previousRewards: PolkadotNominatorRewardDetails[]
+    rewards: PolkadotNominatorRewardDetails[]
 }
 
 export interface PolkadotNominatorDetails {

@@ -226,7 +226,7 @@ export class PolkadotAccountController {
             unlocked: unlockingDetails.unlocked,
             status: stakingStatus,
             nextEra: activeEra.start.value?.plus(expectedEraDuration)?.toNumber() || 0,
-            previousRewards: rewards
+            rewards
         }
     }
 
@@ -455,7 +455,7 @@ export class PolkadotAccountController {
         const isDelegating = stakingDetails && stakingDetails.status !== 'bonded'
 
         const hasFundsToWithdraw = new BigNumber(stakingDetails?.unlocked || 0).gt(0)
-        const hasRewardsToCollect = stakingDetails?.previousRewards.some(reward => !reward.collected)
+        const hasRewardsToCollect = stakingDetails?.rewards.some(reward => !reward.collected)
 
         if (maxDelegationValue.gt(minDelegationValue)) {
             if (!isBonded) {

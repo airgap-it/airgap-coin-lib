@@ -300,7 +300,14 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinDelega
         return {
             balance: nominatorDetails.balance,
             isDelegating: nominatorDetails.isDelegating,
-            availableActions: nominatorDetails.availableActions
+            availableActions: nominatorDetails.availableActions,
+            rewards: nominatorDetails.isDelegating && nominatorDetails.stakingDetails
+                ? nominatorDetails.stakingDetails.rewards.map(reward => ({
+                    index: reward.eraIndex,
+                    amount: reward.amount,
+                    collected: reward.collected,
+                    timestamp: reward.timestamp
+                })) : []
         }
     }
 
