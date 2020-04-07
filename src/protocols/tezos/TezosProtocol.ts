@@ -129,7 +129,9 @@ export interface DelegationInfo {
 }
 
 export enum TezosDelegationAction {
-  DELEGATE, UNDELEGATE
+  DELEGATE = 'delegate', 
+  UNDELEGATE = 'undelegate', 
+  CHANGE_BAKER = 'change_baker'
 }
 
 export interface TezosPayoutInfo {
@@ -692,9 +694,15 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
         args: ['delegate']
       })
     } else {
-      availableActions.push({ 
-        type: TezosDelegationAction.UNDELEGATE 
-      })
+      availableActions.push(
+        {
+          type: TezosDelegationAction.CHANGE_BAKER,
+          args: ['delegate']
+        },
+        { 
+          type: TezosDelegationAction.UNDELEGATE 
+        }
+      )
     }
 
     return {
@@ -716,6 +724,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   public async prepareDelegatorActionFromPublicKey(publicKey: string, type: any, data?: any): Promise<RawTezosTransaction[]> {
     switch (type) {
       case TezosDelegationAction.DELEGATE:
+      case TezosDelegationAction.CHANGE_BAKER:
         if (!data || !data.delegate) {
           return Promise.reject('Invalid arguments passed for DELEGATE action, `delegate` is missing.')
         }
