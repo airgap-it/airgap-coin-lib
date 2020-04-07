@@ -184,6 +184,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
   public blockExplorer: string = 'https://tezblock.io'
 
+  public supportsMultipleDelegatees: boolean = false
+
   protected readonly transactionFee: BigNumber = new BigNumber('1400')
   protected readonly originationSize: BigNumber = new BigNumber('257')
   protected readonly storageCostPerByte: BigNumber = new BigNumber('1000')
