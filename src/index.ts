@@ -26,7 +26,7 @@ import {
   DelegationRewardInfo, 
   TezosProtocol, 
   TezosPayoutInfo, 
-  TezosDelegationAction 
+  TezosDelegatorAction 
 } from './protocols/tezos/TezosProtocol'
 import { IACMessageType } from './serializer/interfaces'
 import { IACMessageDefinitionObject } from './serializer/message'
@@ -92,7 +92,7 @@ export {
   DelegationRewardInfo,
   DelegationInfo,
   TezosPayoutInfo,
-  TezosDelegationAction,
+  TezosDelegatorAction,
   // polkadot specific
   PolkadotPayee,
   // sub protocols configs,

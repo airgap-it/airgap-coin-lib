@@ -128,7 +128,7 @@ export interface DelegationInfo {
   delegatedDate?: Date
 }
 
-export enum TezosDelegationAction {
+export enum TezosDelegatorAction {
   DELEGATE = 'delegate', 
   UNDELEGATE = 'undelegate', 
   CHANGE_BAKER = 'change_baker'
@@ -674,7 +674,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   public async getDelegatorDetailsFromAddress(address: string): Promise<DelegatorDetails> {
     const results = await Promise.all([
       axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}`),
-      this.delegationInfo(address).catch(() => null)
+      this.getDelegationRewardsForAddress(address).catch(() => null)
     ])
 
     const accountDetails = results[0]?.data
@@ -690,17 +690,17 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
     if (!isDelegating) {
       availableActions.push({
-        type: TezosDelegationAction.DELEGATE,
+        type: TezosDelegatorAction.DELEGATE,
         args: ['delegate']
       })
     } else {
       availableActions.push(
         {
-          type: TezosDelegationAction.CHANGE_BAKER,
+          type: TezosDelegatorAction.CHANGE_BAKER,
           args: ['delegate']
         },
         { 
-          type: TezosDelegationAction.UNDELEGATE 
+          type: TezosDelegatorAction.UNDELEGATE 
         }
       )
     }
@@ -721,22 +721,22 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     }
   }
 
-  public async prepareDelegatorActionFromPublicKey(publicKey: string, type: any, data?: any): Promise<RawTezosTransaction[]> {
+  public async prepareDelegatorActionFromPublicKey(publicKey: string, type: TezosDelegatorAction, data?: any): Promise<RawTezosTransaction[]> {
     switch (type) {
-      case TezosDelegationAction.DELEGATE:
-      case TezosDelegationAction.CHANGE_BAKER:
+      case TezosDelegatorAction.DELEGATE:
+      case TezosDelegatorAction.CHANGE_BAKER:
         if (!data || !data.delegate) {
-          return Promise.reject('Invalid arguments passed for DELEGATE action, `delegate` is missing.')
+          return Promise.reject(`Invalid arguments passed for ${type} action, delegate is missing.`)
         }
         return [await this.delegate(publicKey, data.delegate)]
-      case TezosDelegationAction.UNDELEGATE:
+      case TezosDelegatorAction.UNDELEGATE:
         return [await this.undelegate(publicKey)]
       default:
         return Promise.reject('Unsupported delegator action.')
     }
   }
 
-  public async isAddressDelegated(delegatedAddress: string, fetchExtraInfo: boolean = true): Promise<DelegationInfo> {
+  public async getDelegationInfo(delegatedAddress: string, fetchExtraInfo: boolean = true): Promise<DelegationInfo> {
     const { data } = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${delegatedAddress}`)
     let delegatedOpLevel: number | undefined
     let delegatedDate: Date | undefined
@@ -853,17 +853,17 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     return bakerInfo
   }
 
-  public async delegationInfo(address: string): Promise<DelegationRewardInfo[]> {
-    const status: DelegationInfo = await this.isAddressDelegated(address)
+  public async getDelegationRewardsForAddress(address: string): Promise<DelegationRewardInfo[]> {
+    const status: DelegationInfo = await this.getDelegationInfo(address)
 
     if (!status.isDelegated || !status.value) {
       throw new Error('address not delegated')
     }
 
-    return this.delegationRewards(status.value, address)
+    return this.getDelegationRewards(status.value, address)
   }
 
-  public async delegationRewards(bakerAddress: string, delegatorAddress?: string): Promise<DelegationRewardInfo[]> {
+  public async getDelegationRewards(bakerAddress: string, delegatorAddress?: string): Promise<DelegationRewardInfo[]> {
     const { data: frozenBalance }: AxiosResponse<[{ cycle: number; deposit: string; fees: string; rewards: string }]> = await axios.get(
       `${this.jsonRPCAPI}/chains/main/blocks/head/context/delegates/${bakerAddress}/frozen_balance_by_cycle`
     )
