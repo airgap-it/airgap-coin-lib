@@ -10,6 +10,7 @@ import { UnsignedTransaction } from '../../serializer/schemas/definitions/transa
 import { SignedBitcoinTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-bitcoin'
 import { RawBitcoinTransaction } from '../../serializer/types'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
+import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
 
 const DUST_AMOUNT: number = 50
 
@@ -65,15 +66,30 @@ export class BitcoinProtocol implements ICoinProtocol {
     this.bitcoinJSLib = bitcoinJSLib
   }
 
-  public getBlockExplorerLinkForAddress(address: string): string {
+  public async getBlockExplorerLinkForAddress(address: string): Promise<string> {
     return `${this.blockExplorer}/address/{{address}}/`.replace('{{address}}', address)
   }
 
-  public getBlockExplorerLinkForTxId(txId: string): string {
+  public async getBlockExplorerLinkForTxId(txId: string): Promise<string> {
     return `${this.blockExplorer}/tx/{{txId}}/`.replace('{{txId}}', txId)
   }
 
-  public getPublicKeyFromHexSecret(secret: string, derivationPath: string): string {
+  public getPublicKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
+    const secret = mnemonicToSeed(mnemonic, password)
+    return this.getPublicKeyFromHexSecret(secret, derivationPath)
+  }
+  
+  public getPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<Buffer> {
+    const secret = mnemonicToSeed(mnemonic, password)
+    return this.getPrivateKeyFromHexSecret(secret, derivationPath)
+  }
+
+  public getExtendedPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
+    const secret = mnemonicToSeed(mnemonic, password)
+    return this.getExtendedPrivateKeyFromHexSecret(secret, derivationPath)
+  }
+
+  public async getPublicKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
     const bitcoinNode = this.bitcoinJSLib.HDNode.fromSeedHex(secret, this.network)
 
     return bitcoinNode
@@ -82,13 +98,13 @@ export class BitcoinProtocol implements ICoinProtocol {
       .toBase58()
   }
 
-  public getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Buffer {
+  public async getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<Buffer> {
     const bitcoinNode = this.bitcoinJSLib.HDNode.fromSeedHex(secret, this.network)
 
     return bitcoinNode.derivePath(derivationPath).keyPair.d.toBuffer(32)
   }
 
-  public getExtendedPrivateKeyFromHexSecret(secret: string, derivationPath: string): string {
+  public async getExtendedPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
     const bitcoinNode = this.bitcoinJSLib.HDNode.fromSeedHex(secret, this.network)
 
     return bitcoinNode.derivePath(derivationPath).toBase58()
@@ -300,6 +316,16 @@ export class BitcoinProtocol implements ICoinProtocol {
     } else {
       return valueAccumulator.toString(10)
     }
+  }
+
+  public async estimateMaxTransactionValueFromExtendedPublicKey(extendedPublicKey: string, fee: string): Promise<string> {
+    const balance = await this.getBalanceOfExtendedPublicKey(extendedPublicKey)
+    return this.estimateMaxTransactionValue(new BigNumber(balance), new BigNumber(fee)).toFixed()
+  }
+
+  public async estimateMaxTransactionValueFromPublicKey(publicKey: string, fee: string): Promise<string> {
+    const balance = await this.getBalanceOfPublicKey(publicKey)
+    return this.estimateMaxTransactionValue(new BigNumber(balance), new BigNumber(fee)).toFixed()
   }
 
   public async prepareTransactionFromExtendedPublicKey(
@@ -585,5 +611,13 @@ export class BitcoinProtocol implements ICoinProtocol {
 
   public async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
     return Promise.reject('Message verification not implemented')
+  }
+
+  private estimateMaxTransactionValue(balance: BigNumber, fee: BigNumber): BigNumber {
+    let amountWithoutFees = balance.minus(fee)
+    if (amountWithoutFees.isNegative()) {
+      amountWithoutFees = new BigNumber(0)
+    }
+    return amountWithoutFees
   }
 }

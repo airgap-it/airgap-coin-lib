@@ -1,0 +1,34 @@
+{
+  "$ref": "#/definitions/UnsignedPolkadotTransaction",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "UnsignedPolkadotTransaction": {
+      "additionalProperties": false,
+      "properties": {
+        "callback": {
+          "type": "string"
+        },
+        "publicKey": {
+          "type": "string"
+        },
+        "transaction": {
+          "additionalProperties": false,
+          "properties": {
+            "encoded": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "encoded"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "publicKey",
+        "transaction"
+      ],
+      "type": "object"
+    }
+  }
+}

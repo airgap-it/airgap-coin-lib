@@ -231,6 +231,14 @@ export class AirGapMarketWallet extends AirGapWallet {
     }
   }
 
+  public async getMaxTransferValue(fee: string): Promise<BigNumber> {
+    if (this.isExtendedPublicKey) {
+      return new BigNumber(await this.coinProtocol.estimateMaxTransactionValueFromExtendedPublicKey(this.publicKey, fee))
+    } else {
+      return new BigNumber(await this.coinProtocol.estimateMaxTransactionValueFromPublicKey(this.publicKey, fee))
+    }
+  }
+
   public prepareTransaction(recipients: string[], values: string[], fee: string, data?: unknown): Promise<IAirGapTransaction> {
     if (this.isExtendedPublicKey) {
       return this.coinProtocol.prepareTransactionFromExtendedPublicKey(this.publicKey, 0, recipients, values, fee, data)

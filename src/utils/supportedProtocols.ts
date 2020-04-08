@@ -5,6 +5,7 @@ import { EthereumProtocol } from '../protocols/ethereum/EthereumProtocol'
 import { GroestlcoinProtocol } from '../protocols/groestlcoin/GroestlcoinProtocol'
 import { ICoinProtocol } from '../protocols/ICoinProtocol'
 import { TezosProtocol } from '../protocols/tezos/TezosProtocol'
+import { PolkadotProtocol } from '../protocols/polkadot/PolkadotProtocol'
 
 const protocols: ICoinProtocol[] = []
 
@@ -18,7 +19,8 @@ const supportedProtocols: () => ICoinProtocol[] = (): ICoinProtocol[] => {
       new EthereumProtocol(),
       new GroestlcoinProtocol(),
       new TezosProtocol(),
-      new CosmosProtocol()
+      new CosmosProtocol(),
+      new PolkadotProtocol()
     )
   }
 
