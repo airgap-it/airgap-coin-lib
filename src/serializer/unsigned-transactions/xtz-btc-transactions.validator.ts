@@ -43,7 +43,7 @@ export class TezosBTCTransactionValidator extends TransactionValidator {
         if (spendTransaction.destination !== TezosBTCDetails.CONTRACT_ADDRESS) {
           return reject(
             new Error(
-              `the contract address for a xtz-btc transfer must be ${TezosBTCDetails.CONTRACT_ADDRESS}, but is ${spendTransaction.contractDestination}`
+              `the contract address for a xtz-btc transfer must be ${TezosBTCDetails.CONTRACT_ADDRESS}, but is ${spendTransaction.destination}`
             )
           )
         }
