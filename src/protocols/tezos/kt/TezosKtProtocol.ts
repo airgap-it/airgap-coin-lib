@@ -2,7 +2,11 @@ import axios, { AxiosResponse } from '../../../dependencies/src/axios-0.19.0/ind
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { RawTezosTransaction } from '../../../serializer/types'
 import { ICoinSubProtocol, SubProtocolType } from '../../ICoinSubProtocol'
-import { TezosOperation, TezosOperationType, TezosProtocol, TezosSpendOperation, TezosWrappedOperation } from '../TezosProtocol'
+import { TezosProtocol } from '../TezosProtocol'
+import { TezosTransactionOperation } from '../types/operations/Transaction'
+import { TezosOperation } from '../types/operations/TezosOperation'
+import { TezosOperationType } from '../types/TezosOperationType'
+import { TezosWrappedOperation } from '../types/TezosWrappedOperation'
 
 export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
   public identifier: string = 'xtz-kt'
@@ -56,11 +60,11 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
   }
 
   public async prepareTransactionFromPublicKey(
-    publicKey: string,
-    recipients: string[],
-    values: string[],
-    fee: string,
-    data?: { addressIndex: number }
+    _publicKey: string,
+    _recipients: string[],
+    _values: string[],
+    _fee: string,
+    _data?: { addressIndex: number }
   ): Promise<RawTezosTransaction> {
     throw new Error('sending funds from KT addresses is not supported. Please use the migration feature.')
   }
@@ -115,8 +119,6 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
       throw error
     }
 
-    const hexAmount: string = `00${this.encodeSignedInt(amount.toNumber())}`
-
     let hexDestination: string = this.checkAndRemovePrefixToHex(address, this.tezosPrefixes.tz1)
 
     if (hexDestination.length > 42) {
@@ -129,49 +131,8 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
       hexDestination = `0${hexDestination}`
     }
 
-    const lengthOfArgument: number = 32 + hexDestination.length / 2 + hexAmount.length / 2
-    const lengthOfSequence: number = lengthOfArgument - 5
-
-    let hexArgumentLength: string = lengthOfArgument.toString(16)
-    let hexSequenceLength: string = lengthOfSequence.toString(16)
-
-    while (hexArgumentLength.length < 8) {
-      // Make sure it's 4 bytes
-      hexArgumentLength = `0${hexArgumentLength}`
-    }
-
-    while (hexSequenceLength.length < 8) {
-      // Make sure it's 4 bytes
-      hexSequenceLength = `0${hexSequenceLength}`
-    }
-
     // Taken from https://blog.nomadic-labs.com/babylon-update-instructions-for-delegation-wallet-developers.html#transfer-from-a-managertz-smart-contract-to-an-implicit-tz-account
-
-    // tslint:disable:prefer-template
-    const code: string =
-      'ff' + // 0xff (or any other non-null byte): presence flag for the parameters (entrypoint and argument)
-      '02' + // 0x02: tag of the "%do" entrypoint
-      hexArgumentLength + // <4 bytes>: length of the argument
-      '02' + // 0x02: Michelson sequence
-      hexSequenceLength + // <4 bytes>: length of the sequence
-      '0320' + // 0x0320: DROP
-      '053d' + // 0x053d: NIL
-      '036d' + // 0x036d: operation
-      '0743' + // 0x0743: PUSH
-      '035d' + // 0x035d: key_hash
-      '0a' + // 0x0a: Byte sequence
-      '00000015' + // 0x00000015: Length of the sequence (21 bytes)
-      hexDestination + // <21 bytes>: <destination>
-      '031e' + // 0x031e: IMPLICIT_ACCOUNT
-      '0743' + // 0x0743: PUSH
-      '036a' + // 0x036a: mutez
-      hexAmount + // <amount>: Amout to be transfered
-      '034f' + // 0x034f: UNIT
-      '034d' + // 0x034d: TRANSFER_TOKENS
-      '031b' // 0x031b: CONS
-    // tslint:enable:prefer-template
-
-    const spendOperation: TezosSpendOperation = {
+    const spendOperation: TezosTransactionOperation = {
       kind: TezosOperationType.TRANSACTION,
       fee: this.migrationFee.toFixed(),
       gas_limit: '26283',
@@ -180,7 +141,30 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
       counter: counter.toFixed(),
       destination: destinationContract,
       source: address,
-      code
+      parameters: {
+        entrypoint: 'do',
+        value: [
+          { prim: 'DROP' },
+          { prim: 'NIL', args: [{ prim: 'operation' }] },
+          {
+            prim: 'PUSH',
+            args: [
+              { prim: 'key_hash' },
+              {
+                bytes: hexDestination
+              }
+            ]
+          },
+          { prim: 'IMPLICIT_ACCOUNT' },
+          {
+            prim: 'PUSH',
+            args: [{ prim: 'mutez' }, { int: amount.toString(10) }]
+          },
+          { prim: 'UNIT' },
+          { prim: 'TRANSFER_TOKENS' },
+          { prim: 'CONS' }
+        ]
+      }
     }
 
     operations.push(spendOperation)
@@ -191,7 +175,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
         contents: operations
       }
 
-      const binaryTx: string = this.forgeTezosOperation(tezosWrappedOperation)
+      const binaryTx: string = await this.forgeTezosOperation(tezosWrappedOperation)
 
       return { binaryTransaction: binaryTx }
     } catch (error) {
