@@ -1,3 +1,9 @@
+### 0.7.3 (2020-03-10)
+
+### Feature
+
+- **tezos**: updated rewards calculation after carthagenet update
+
 ### 0.7.0 (2020-01-30)
 
 ### Feature

@@ -17,6 +17,8 @@ import { Serializer } from './serializer'
 import { UnsignedCosmosTransaction } from './types'
 import { jsonToArray, rlpArrayToJson, unwrapSchema } from './utils/json-to-rlp'
 import { RLPData } from './utils/toBuffer'
+import { UnsignedPolkadotTransaction } from './schemas/definitions/transaction-sign-request-polkadot'
+import { SignedPolkadotTransaction } from './schemas/definitions/transaction-sign-response-polkadot'
 
 export const assertNever: (x: never) => void = (x: never): void => undefined
 
@@ -29,11 +31,13 @@ export type IACMessages =
   | UnsignedBitcoinTransaction
   | UnsignedCosmosTransaction
   | UnsignedEthereumTransaction
+  | UnsignedPolkadotTransaction
   | SignedTezosTransaction
   | SignedAeternityTransaction
   | SignedBitcoinTransaction
   | SignedCosmosTransaction
   | SignedEthereumTransaction
+  | SignedPolkadotTransaction
 
 // tslint:disable-next-line:interface-name
 export interface IACMessageDefinitionObject {

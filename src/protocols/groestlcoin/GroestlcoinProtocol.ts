@@ -44,11 +44,11 @@ export class GroestlcoinProtocol extends BitcoinBlockbookProtocol {
     super(bitGoUTXO.networks.groestlcoin, 'https://blockbook.groestlcoin.org', bitGoUTXO)
   }
 
-  public getBlockExplorerLinkForAddress(address: string): string {
+  public async getBlockExplorerLinkForAddress(address: string): Promise<string> {
     return `${this.blockExplorer}/address.dws?{{address}}.htm`.replace('{{address}}', address)
   }
 
-  public getBlockExplorerLinkForTxId(txId: string): string {
+  public async getBlockExplorerLinkForTxId(txId: string): Promise<string> {
     return `${this.blockExplorer}/tx.dws?{{txId}}.htm`.replace('{{txId}}', txId)
   }
 }

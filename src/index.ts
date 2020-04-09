@@ -17,6 +17,7 @@ import { GroestlcoinProtocol } from './protocols/groestlcoin/GroestlcoinProtocol
 import { GroestlcoinTestnetProtocol } from './protocols/groestlcoin/GroestlcoinTestnetProtocol'
 import { ICoinProtocol } from './protocols/ICoinProtocol'
 import { ICoinSubProtocol } from './protocols/ICoinSubProtocol'
+import { ICoinDelegateProtocol } from './protocols/ICoinDelegateProtocol'
 import { LitecoinProtocol } from './protocols/litecoin/LitecoinProtocol'
 import { TezosKtProtocol } from './protocols/tezos/kt/TezosKtProtocol'
 import { BakerInfo, DelegationInfo, DelegationRewardInfo, TezosProtocol, TezosPayoutInfo } from './protocols/tezos/TezosProtocol'
@@ -46,6 +47,8 @@ import { AirGapMarketWallet } from './wallet/AirGapMarketWallet'
 import { AirGapWallet } from './wallet/AirGapWallet'
 import { TezosFAProtocol, TezosTransactionResult, TezosTransactionCursor } from './protocols/tezos/fa/TezosFAProtocol'
 import { TezosBTC } from './protocols/tezos/fa/TezosBTC'
+import { PolkadotProtocol } from './protocols/polkadot/PolkadotProtocol'
+import { PolkadotPayee } from './protocols/polkadot/data/staking/PolkadotPayee'
 
 export {
   addSupportedProtocol,
@@ -58,6 +61,7 @@ export {
   IAirGapTransaction,
   ICoinProtocol,
   ICoinSubProtocol,
+  ICoinDelegateProtocol,
   BitcoinProtocol,
   BitcoinTestnetProtocol,
   GroestlcoinProtocol,
@@ -75,11 +79,14 @@ export {
   TezosTransactionResult,
   TezosTransactionCursor,
   CosmosProtocol,
+  PolkadotProtocol,
   // tezos-specific configuration
   BakerInfo,
   DelegationRewardInfo,
   DelegationInfo,
   TezosPayoutInfo,
+  // polkadot specific
+  PolkadotPayee as PolkadotRewardDestination,
   // sub protocols configs,
   GenericERC20Configuration,
   TypeNotSupported,

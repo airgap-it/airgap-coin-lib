@@ -24,6 +24,7 @@ import { TezosOperation } from './types/operations/TezosOperation'
 import { TezosTransactionOperation } from './types/operations/Transaction'
 import { TezosOperationType } from './types/TezosOperationType'
 import { TezosWrappedOperation } from './types/TezosWrappedOperation'
+import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
 
 const assertNever: (x: never) => void = (x: never): void => undefined
 
@@ -99,7 +100,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   }
 
   // tezbox default
-  // TODO: Lower fees for mainnet
   public feeDefaults: FeeDefaults = {
     low: '0.001420',
     medium: '0.001520',
@@ -169,12 +169,22 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     }
   }
 
-  public getBlockExplorerLinkForAddress(address: string): string {
+  public async getBlockExplorerLinkForAddress(address: string): Promise<string> {
     return `${this.blockExplorer}/account/{{address}}`.replace('{{address}}', address)
   }
 
-  public getBlockExplorerLinkForTxId(txId: string): string {
+  public async getBlockExplorerLinkForTxId(txId: string): Promise<string> {
     return `${this.blockExplorer}/transaction/{{txId}}`.replace('{{txId}}', txId)
+  }
+
+  public async getPublicKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
+    const secret = mnemonicToSeed(mnemonic, password)
+    return this.getPublicKeyFromHexSecret(secret, derivationPath)
+  }
+  
+  public async getPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<Buffer> {
+    const secret = mnemonicToSeed(mnemonic, password)
+    return this.getPrivateKeyFromHexSecret(secret, derivationPath)
   }
 
   /**
@@ -182,7 +192,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
    * @param secret HEX-Secret from BIP39
    * @param derivationPath DerivationPath for Key
    */
-  public getPublicKeyFromHexSecret(secret: string, derivationPath: string): string {
+  public async getPublicKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
     // both AE and Tezos use the same ECC curves (ed25519)
     const { publicKey }: { publicKey: string } = generateWalletUsingDerivationPath(Buffer.from(secret, 'hex'), derivationPath) as any // TODO: Look into typings
 
@@ -194,7 +204,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
    * @param secret HEX-Secret from BIP39
    * @param derivationPath DerivationPath for Key
    */
-  public getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Buffer {
+  public async getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<Buffer> {
     // both AE and Tezos use the same ECC curves (ed25519)
     const { secretKey }: { secretKey: string } = generateWalletUsingDerivationPath(Buffer.from(secret, 'hex'), derivationPath) as any // TODO: Look into typings
 
@@ -453,6 +463,16 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     const address: string = await this.getAddressFromPublicKey(publicKey)
 
     return this.getBalanceOfAddresses([address])
+  }
+
+  public async estimateMaxTransactionValueFromPublicKey(publicKey: string, fee: string): Promise<string> {
+    const balance = await this.getBalanceOfPublicKey(publicKey)
+
+    let amountWithoutFees = new BigNumber(balance).minus(new BigNumber(fee))
+    if (amountWithoutFees.isNegative()) {
+      amountWithoutFees = new BigNumber(0)
+    }
+    return amountWithoutFees.toFixed()
   }
 
   public async prepareTransactionFromPublicKey(
@@ -1133,9 +1153,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   }
 
   private static readonly FIRST_005_CYCLE: number = 160
+  private static readonly FIRST_006_CYCLE: number = 208
   public async calculateRewards(bakerAddress: string, cycle: number): Promise<TezosRewards> {
     const is005 = this.network !== TezosNetwork.MAINNET || cycle >= TezosProtocol.FIRST_005_CYCLE
-    const is006 = this.network === TezosNetwork.CARTHAGENET // TODO: add cycle number once carthage update has happend
+    const is006 = this.network === TezosNetwork.CARTHAGENET || cycle >= TezosProtocol.FIRST_006_CYCLE
     let rewardCalculation: TezosRewardsCalculations
     if (is006) {
       rewardCalculation = new TezosRewardsCalculation006(this)

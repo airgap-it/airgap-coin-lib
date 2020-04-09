@@ -28,11 +28,7 @@ import {
   CosmosUnbondingDelegation
 } from './CosmosNodeClient'
 import { CosmosTransaction } from './CosmosTransaction'
-
-export interface KeyPair {
-  publicKey: Buffer
-  privateKey: Buffer
-}
+import { KeyPair } from '../../data/KeyPair'
 
 export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol {
   public symbol: string = 'ATOM'
@@ -76,17 +72,17 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
     super()
   }
 
-  public getBlockExplorerLinkForAddress(address: string): string {
+  public async getBlockExplorerLinkForAddress(address: string): Promise<string> {
     return `${this.blockExplorer}/account/${address}`
   }
 
-  public getBlockExplorerLinkForTxId(txId: string): string {
+  public async getBlockExplorerLinkForTxId(txId: string): Promise<string> {
     return `${this.blockExplorer}/txs/${txId}`
   }
 
-  public generateKeyPair(mnemonic: string, derivationPath: string = this.standardDerivationPath): KeyPair {
+  public generateKeyPair(mnemonic: string, derivationPath: string = this.standardDerivationPath, password?: string): KeyPair {
     validateMnemonic(mnemonic)
-    const seed = mnemonicToSeed(mnemonic)
+    const seed = mnemonicToSeed(mnemonic, password)
     const node = fromSeed(seed)
 
     return this.generateKeyPairFromNode(node, derivationPath)
@@ -105,7 +101,15 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
     }
   }
 
-  public getPublicKeyFromHexSecret(secret: string, derivationPath: string): string {
+  public async getPublicKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
+    return this.generateKeyPair(mnemonic, derivationPath, password).publicKey.toString('hex')
+  }
+  
+  public async getPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<Buffer> {
+    return this.generateKeyPair(mnemonic, derivationPath, password).privateKey
+  }
+
+  public async getPublicKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
     const node: BIP32Interface = fromSeed(Buffer.from(secret, 'hex'))
 
     return this.generateKeyPairFromNode(node, derivationPath).publicKey.toString('hex')
@@ -117,7 +121,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
     return Buffer.from(publicKey, 'binary')
   }
 
-  public getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Buffer {
+  public async getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<Buffer> {
     const node = fromSeed(Buffer.from(secret, 'hex'))
 
     return this.generateKeyPairFromNode(node, derivationPath).privateKey
@@ -252,6 +256,16 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinProtocol
 
   public async fetchAvailableBalance(address: string): Promise<BigNumber> {
     return this.nodeClient.fetchBalance(address)
+  }
+
+  public async estimateMaxTransactionValueFromPublicKey(publicKey: string, fee: string): Promise<string> {
+    const balance = await this.getBalanceOfPublicKey(publicKey)
+
+    let amountWithoutFees = new BigNumber(balance).minus(new BigNumber(fee))
+    if (amountWithoutFees.isNegative()) {
+      amountWithoutFees = new BigNumber(0)
+    }
+    return amountWithoutFees.toFixed()
   }
 
   public async prepareTransactionFromPublicKey(
