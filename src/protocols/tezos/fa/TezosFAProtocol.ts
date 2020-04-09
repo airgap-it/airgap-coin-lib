@@ -8,6 +8,7 @@ import { TezosNetwork, TezosProtocol } from '../TezosProtocol'
 import { TezosOperationType } from '../types/TezosOperationType'
 import { TezosOperation } from '../types/operations/TezosOperation'
 import { TezosWrappedOperation } from '../types/TezosWrappedOperation'
+import { TezosTransactionOperation } from '../types/operations/Transaction'
 
 export interface TezosFAProtocolConfiguration {
   symbol: string
@@ -366,7 +367,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     }
 
     for (const contractCall of contractCalls) {
-      const transactionOperation: any = {
+      const transactionOperation: TezosTransactionOperation = {
         kind: TezosOperationType.TRANSACTION,
         fee: fee,
         gas_limit: '400000',
