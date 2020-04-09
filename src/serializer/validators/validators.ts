@@ -19,8 +19,8 @@ import { RawTezosTransaction } from '../types'
 import { AeternityProtocol } from './../../protocols/aeternity/AeternityProtocol'
 import { BitcoinProtocol } from './../../protocols/bitcoin/BitcoinProtocol'
 import { TezosProtocol } from './../../protocols/tezos/TezosProtocol'
-import { PolkadotProtocol } from '../../protocols/polkadot/PolkadotProtocol'
-import { SignedPolkadotTransaction } from '../schemas/definitions/transaction-sign-response-polkadot'
+import { SubstrateProtocol } from '../../protocols/substrate/SubstrateProtocol'
+import { SignedSubstrateTransaction } from '../schemas/definitions/transaction-sign-response-substrate'
 
 validators.type = (value, options, key, attributes) => {
   // allow empty values by default (needs to be checked by "presence" check)
@@ -362,7 +362,7 @@ validators.isValidTezosSignedTransaction = (signedTransaction: string) => {
 
 // POLKADOT
 
-validators.isValidPolkadotUnsignedTransaction = (encoded: string) => {
+validators.isValidSubstrateUnsignedTransaction = (encoded: string) => {
   const unsignedTx = {
     transaction: { encoded },
     publicKey: ''
@@ -370,36 +370,36 @@ validators.isValidPolkadotUnsignedTransaction = (encoded: string) => {
 
   return new Promise(async (resolve, reject) => {
     if (encoded === null || typeof encoded === 'undefined') {
-      resolve('not a valid Polkadot transaction')
+      resolve('not a valid Substrate transaction')
     }
 
-    const protocol = new PolkadotProtocol()
+    const protocol = new SubstrateProtocol()
 
     try {
       await protocol.getTransactionDetails(unsignedTx)
       resolve()
     } catch (error) {
-      resolve('not a valid Polkadot transaction')
+      resolve('not a valid Substrate transaction')
     }
   })
 }
 
-validators.isValidPolkadotSignedTransaction = (transaction: string) => {
-  const signedTx: SignedPolkadotTransaction = {
+validators.isValidSubstrateSignedTransaction = (transaction: string) => {
+  const signedTx: SignedSubstrateTransaction = {
     accountIdentifier: '',
     transaction
   }
 
   return new Promise(async (resolve, reject) => {
     if (transaction === null || typeof transaction === 'undefined') {
-      resolve('not a valid Polkadot transaction')
+      resolve('not a valid Substrate transaction')
     }
-    const protocol = new PolkadotProtocol()
+    const protocol = new SubstrateProtocol()
     try {
       await protocol.getTransactionDetailsFromSigned(signedTx)
       resolve()
     } catch (error) {
-      resolve('not a valid Polkadot transaction')
+      resolve('not a valid Substrate transaction')
     }
   })
 }

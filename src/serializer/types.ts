@@ -45,6 +45,6 @@ export interface UnsignedCosmosTransaction extends UnsignedTransaction {
   transaction: CosmosTransaction
 }
 
-export interface RawPolkadotTransaction {
+export interface RawSubstrateTransaction {
   encoded: string
 }
