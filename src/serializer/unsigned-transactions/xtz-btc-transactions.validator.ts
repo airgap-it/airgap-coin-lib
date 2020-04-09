@@ -6,7 +6,7 @@ import { TransactionValidator } from '../validators/transactions.validator'
 import { validateSyncScheme } from '../validators/validators'
 import { TezosProtocol } from '../..'
 import { TezosBTCDetails } from '../constants'
-import { TezosSpendOperation } from '../../protocols/tezos/TezosProtocol'
+import { TezosTransactionOperation } from '../../protocols/tezos/types/operations/Transaction'
 
 const unsignedTransactionConstraints = {
   binaryTransaction: {
@@ -34,16 +34,16 @@ export class TezosBTCTransactionValidator extends TransactionValidator {
   public async validateUnsignedTransaction(unsignedTx: UnsignedTezosTransaction): Promise<any> {
     return new Promise(async (resolve, reject) => {
       const protocol = new TezosProtocol()
-      const unforged = protocol.unforgeUnsignedTezosWrappedOperation(unsignedTx.transaction.binaryTransaction)
+      const unforged = await protocol.unforgeUnsignedTezosWrappedOperation(unsignedTx.transaction.binaryTransaction)
       const rawTx: RawTezosTransaction = unsignedTx.transaction
       validateSyncScheme({})
 
       unforged.contents.forEach(async operation => {
-        const spendTransaction = operation as TezosSpendOperation
-        if (spendTransaction.contractDestination !== TezosBTCDetails.CONTRACT_ADDRESS) {
+        const spendTransaction = operation as TezosTransactionOperation
+        if (spendTransaction.destination !== TezosBTCDetails.CONTRACT_ADDRESS) {
           return reject(
             new Error(
-              `the contract address for a xtz-btc transfer must be ${TezosBTCDetails.CONTRACT_ADDRESS}, but is ${spendTransaction.contractDestination}`
+              `the contract address for a xtz-btc transfer must be ${TezosBTCDetails.CONTRACT_ADDRESS}, but is ${spendTransaction.destination}`
             )
           )
         }
