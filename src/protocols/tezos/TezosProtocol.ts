@@ -28,6 +28,8 @@ import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
 
 const assertNever: (x: never) => void = (x: never): void => undefined
 
+const MAX_OPERATIONS_PER_GROUP: number = 200
+
 export interface TezosVotingInfo {
   pkh: string
   rolls: number
@@ -480,6 +482,32 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     fee: string,
     data?: { addressIndex: number }
   ): Promise<RawTezosTransaction> {
+    if (recipients.length !== values.length) {
+      throw new Error('length of recipients and values does not match!')
+    }
+
+    if (recipients.length > MAX_OPERATIONS_PER_GROUP) {
+      throw new Error(
+        `this transaction exceeds the maximum allowed number of transactions per operation (${MAX_OPERATIONS_PER_GROUP}). Please use the "prepareTransactionsFromPublicKey" method instead.`
+      )
+    }
+
+    const transactions: RawTezosTransaction[] = await this.prepareTransactionsFromPublicKey(publicKey, recipients, values, fee, data)
+    if (transactions.length === 1) {
+      return transactions[0]
+    } else {
+      throw new Error('Transaction could not be prepared. More or less than 1 operations have been generated.')
+    }
+  }
+
+  public async prepareTransactionsFromPublicKey(
+    publicKey: string,
+    recipients: string[],
+    values: string[],
+    fee: string,
+    data?: { addressIndex: number },
+    operationsPerGroup: number = MAX_OPERATIONS_PER_GROUP
+  ): Promise<RawTezosTransaction[]> {
     const wrappedValues: BigNumber[] = values.map((value: string) => new BigNumber(value))
     const wrappedFee: BigNumber = new BigNumber(fee)
 
@@ -524,9 +552,51 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     }
 
     const balance: BigNumber = new BigNumber(await this.getBalanceOfPublicKey(publicKey))
-    const receivingBalance: BigNumber = new BigNumber(await this.getBalanceOfAddresses(recipients))
 
-    const amountUsedByPreviousOperations: BigNumber = this.getAmountUsedByPreviousOperations(operations)
+    const wrappedOperations: RawTezosTransaction[] = []
+
+    const numberOfGroups: number = Math.ceil(recipients.length / operationsPerGroup)
+    for (let i = 0; i < numberOfGroups; i++) {
+      const start = i * operationsPerGroup
+      const end = start + operationsPerGroup
+
+      const recipientsInGroup = recipients.slice(start, end)
+      const valuesInGroup = wrappedValues.slice(start, end)
+
+      const operationsGroup = await this.createTransactionOperation(
+        operations,
+        recipientsInGroup,
+        valuesInGroup,
+        wrappedFee,
+        address,
+        counter,
+        balance
+      )
+      counter = counter.plus(operationsGroup.length)
+
+      wrappedOperations.push(
+        await this.forgeAndWrapOperations({
+          branch,
+          contents: operationsGroup
+        })
+      )
+    }
+
+    return wrappedOperations
+  }
+
+  private async createTransactionOperation(
+    previousOperations: TezosOperation[],
+    recipients: string[],
+    wrappedValues: BigNumber[],
+    wrappedFee: BigNumber,
+    address: string,
+    counter: BigNumber,
+    balance: BigNumber
+  ) {
+    const amountUsedByPreviousOperations: BigNumber = this.getAmountUsedByPreviousOperations(previousOperations)
+
+    const operations: TezosOperation[] = []
 
     if (!amountUsedByPreviousOperations.isZero()) {
       if (balance.isLessThan(wrappedValues[0].plus(wrappedFee).plus(amountUsedByPreviousOperations))) {
@@ -537,6 +607,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
 
     // TODO: We currently do not correctly calculate whether we have enough balance to pay the activation burn if there are multiple recipients
     for (let i: number = 0; i < recipients.length; i++) {
+      const receivingBalance: BigNumber = new BigNumber(await this.getBalanceOfAddresses([recipients[i]]))
+
       // if our receiver has 0 balance, the account is not activated yet.
       if (receivingBalance.isZero() && recipients[i].toLowerCase().startsWith('tz')) {
         // We have to supply an additional 0.257 XTZ fee for storage_limit costs, which gets automatically deducted from the sender so we just have to make sure enough balance is around
@@ -573,12 +645,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
       operations.push(spendOperation)
     }
 
-    const tezosWrappedOperation: TezosWrappedOperation = {
-      branch,
-      contents: operations
-    }
-
-    return this.forgeAndWrapOperations(tezosWrappedOperation)
+    return operations
   }
 
   public async forgeAndWrapOperations(tezosWrappedOperation: TezosWrappedOperation): Promise<RawTezosTransaction> {

@@ -241,9 +241,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       expect(operation1.storage_limit).to.equal('9')
       expect(operation1.counter).to.equal('13')
       expect(operation1.source).to.equal('tz1i6q8g1dcUha9PkKYpt3NtaXiQDLdLPSVn')
-      expect(operation1.public_key).to.equal(
-        'edpkvCq9fHmAukBpFurMwR7YVukezNW7GCdQop3PJsGCo62t5MDeNw'
-      )
+      expect(operation1.public_key).to.equal('edpkvCq9fHmAukBpFurMwR7YVukezNW7GCdQop3PJsGCo62t5MDeNw')
 
       expect(operation2.fee).to.equal('56723')
       expect(operation2.gas_limit).to.equal('9875')
@@ -262,7 +260,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       expect(operation3.destination).to.equal('KT1J5mFAxxzAYDLjYeVXkLcyEzNGRZ3kuFGq')
     })
 
-    it('can unforge a delegation TX', async () => { })
+    it('can unforge a delegation TX', async () => {})
 
     it('can give a list of transactions from Conseil API', async () => {
       const stub = sinon.stub(axios, 'post')
@@ -475,6 +473,83 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       expect(result.airGapTxs[1].fee).to.equal('611')
     })
 
+    it('will correctly prepare a single operation group if below the threshold', async () => {
+      const numberOfOperations: number = 50
+      const result = await prepareSpend(
+        [...Array(numberOfOperations)].map(x => 'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy'),
+        [...Array(numberOfOperations)].map((v, i) => i.toString()),
+        '1'
+      )
+      expect(result.airGapTxs.length).to.equal(50)
+    })
+
+    it('will throw an error if number of operations is above the threshold for a single operation group', async () => {
+      const numberOfOperations: number = 51
+
+      return prepareSpend(
+        [...Array(numberOfOperations)].map(x => 'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy'),
+        [...Array(numberOfOperations)].map((v, i) => i.toString()),
+        '1'
+      ).catch((error: Error) =>
+        expect(error)
+          .to.be.an('error')
+          .with.property(
+            'message',
+            'this transaction exceeds the maximum allowed number of transactions per operation. Please use the "prepareTransactionsFromPublicKey" method instead.'
+          )
+      )
+    })
+
+    it('will correctly prepare a single operation group when calling prepareTransactionsFromPublicKey', async () => {
+      const numberOfOperations: number = 50
+      const protocol = new TezosProtocol()
+
+      const transactions = await protocol.prepareTransactionsFromPublicKey(
+        tezosProtocolSpec.wallet.publicKey,
+        [...Array(numberOfOperations)].map(x => 'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy'),
+        [...Array(numberOfOperations)].map((v, i) => i.toString()),
+        '1'
+      )
+
+      expect(transactions.length).to.equal(1)
+
+      const result1 = await prepareTxHelper(transactions[0])
+
+      expect(result1.airGapTxs.length).to.equal(50)
+    })
+
+    it('will return 2 operation groups when calling prepareTransactionsFromPublicKey with a number of operations above the threshold', async () => {
+      const numberOfOperations: number = 201
+      const protocol = new TezosProtocol()
+
+      const transactions = await protocol.prepareTransactionsFromPublicKey(
+        tezosProtocolSpec.wallet.publicKey,
+        [...Array(numberOfOperations)].map(x => 'tz1MJx9vhaNRSimcuXPK2rW4fLccQnDAnVKJ'),
+        [...Array(numberOfOperations)].map((v, i) => i.toString()),
+        '1'
+      )
+
+      expect(transactions.length).to.equal(2)
+
+      const result1 = await prepareTxHelper(transactions[0])
+      const result2 = await prepareTxHelper(transactions[1])
+
+      expect(result1.airGapTxs.length).to.equal(200)
+      expect(result2.airGapTxs.length).to.equal(1)
+
+      expect(result1.airGapTxs[0].amount, 'result1 first amount').to.equal('0')
+      expect(result1.airGapTxs[0].fee, 'result1 first fee').to.equal('1')
+      expect(result1.airGapTxs[0].transactionDetails.counter, 'result1 first counter').to.equal('917316')
+
+      expect(result1.airGapTxs[199].amount).to.equal('199')
+      expect(result1.airGapTxs[199].fee).to.equal('1')
+      expect(result1.airGapTxs[199].transactionDetails.counter).to.equal('917515')
+
+      expect(result2.airGapTxs[0].amount).to.equal('200')
+      expect(result2.airGapTxs[0].fee).to.equal('1')
+      expect(result2.airGapTxs[0].transactionDetails.counter).to.equal('917516')
+    })
+
     it('will prepare an FA 1.2 transaction', async () => {
       // stub
       //   .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy/balance`)
@@ -483,28 +558,28 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       const protocol = new TezosProtocol()
       const incompleteTransaction: any[] = [
         {
-          "kind": "transaction",
-          "amount": "0",
-          "fee": "500000",
-          "gas_limit": "400000",
-          "storage_limit": "60000",
-          "destination": "KT1LH2o12xVRwTpJMZ6QJG74Fox8gE9QieFd",
-          "parameters": {
-            "entrypoint": "transfer",
-            "value": {
-              "prim": "Pair",
-              "args": [
+          kind: 'transaction',
+          amount: '0',
+          fee: '500000',
+          gas_limit: '400000',
+          storage_limit: '60000',
+          destination: 'KT1LH2o12xVRwTpJMZ6QJG74Fox8gE9QieFd',
+          parameters: {
+            entrypoint: 'transfer',
+            value: {
+              prim: 'Pair',
+              args: [
                 {
-                  "string": "tz1d75oB6T4zUMexzkr5WscGktZ1Nss1JrT7"
+                  string: 'tz1d75oB6T4zUMexzkr5WscGktZ1Nss1JrT7'
                 },
                 {
-                  "prim": "Pair",
-                  "args": [
+                  prim: 'Pair',
+                  args: [
                     {
-                      "string": "tz1MJx9vhaNRSimcuXPK2rW4fLccQnDAnVKJ"
+                      string: 'tz1MJx9vhaNRSimcuXPK2rW4fLccQnDAnVKJ'
                     },
                     {
-                      "int": "10"
+                      int: '10'
                     }
                   ]
                 }
@@ -538,7 +613,6 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       expect(airGapTx.transactionDetails.parameters.value.args[1].args[0].string).to.equal('tz1MJx9vhaNRSimcuXPK2rW4fLccQnDAnVKJ')
       expect(airGapTx.transactionDetails.parameters.value.args[1].args[1].int).to.equal('10')
 
-      console.log('airGapTx.from', airGapTx.from)
       expect(airGapTx.from.length).to.equal(1)
       expect(airGapTx.from[0]).to.equal('tz1d75oB6T4zUMexzkr5WscGktZ1Nss1JrT7')
       expect(airGapTx.to.length).to.equal(1)
