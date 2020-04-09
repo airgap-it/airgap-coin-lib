@@ -48,7 +48,9 @@ import { AirGapWallet } from './wallet/AirGapWallet'
 import { TezosFAProtocol, TezosTransactionResult, TezosTransactionCursor } from './protocols/tezos/fa/TezosFAProtocol'
 import { TezosBTC } from './protocols/tezos/fa/TezosBTC'
 import { SubstrateProtocol } from './protocols/substrate/SubstrateProtocol'
-import { SubstratePayee } from './protocols/substrate/data/staking/SubstratePayee'
+import { SubstratePayee } from './protocols/substrate/helpers/data/staking/SubstratePayee'
+import { PolkadotProtocol } from './protocols/substrate/implementations/PolkadotProtocol'
+import { KusamaProtocol } from './protocols/substrate/implementations/KusamaProtocol'
 
 export {
   addSupportedProtocol,
@@ -80,6 +82,8 @@ export {
   TezosTransactionCursor,
   CosmosProtocol,
   SubstrateProtocol,
+  PolkadotProtocol,
+  KusamaProtocol,
   // tezos-specific configuration
   BakerInfo,
   DelegationRewardInfo,

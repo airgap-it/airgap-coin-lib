@@ -2,78 +2,50 @@
 import { FeeDefaults, CurrencyUnit } from '../ICoinProtocol'
 import { ICoinDelegateProtocol, DelegatorDetails, DelegateeDetails } from '../ICoinDelegateProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
-import { SubstrateNodeClient } from './node/SubstrateNodeClient'
+import { SubstrateNodeClient } from './helpers/node/SubstrateNodeClient'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { IAirGapTransaction } from '../..'
-import { SubstrateTransactionType } from './data/transaction/SubstrateTransaction'
+import { SubstrateTransactionType } from './helpers/data/transaction/SubstrateTransaction'
 import { UnsignedSubstrateTransaction } from '../../serializer/schemas/definitions/transaction-sign-request-substrate'
 import { SignedSubstrateTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-substrate'
-import { SubstratePayee } from './data/staking/SubstratePayee'
+import { SubstratePayee } from './helpers/data/staking/SubstratePayee'
 import { isString } from 'util'
 import { RawSubstrateTransaction } from '../../serializer/types'
-import { SubstrateAccountController } from './SubstrateAccountController'
-import { SubstrateTransactionController } from './SubstrateTransactionController'
-import { SubstrateBlockExplorerClient } from './blockexplorer/SubstrateBlockExplorerClient'
-import { SubstrateStakingActionType } from './data/staking/SubstrateStakingActionType'
-import { SubstrateAddress } from './data/account/SubstrateAddress'
+import { SubstrateAccountController } from './helpers/SubstrateAccountController'
+import { SubstrateTransactionController } from './helpers/SubstrateTransactionController'
+import { SubstrateBlockExplorerClient } from './helpers/blockexplorer/SubstrateBlockExplorerClient'
+import { SubstrateStakingActionType } from './helpers/data/staking/SubstrateStakingActionType'
+import { SubstrateAddress } from './helpers/data/account/SubstrateAddress'
+import { SubstrateNetwork } from './SubstrateNetwork'
 
-const BLOCK_EXPLORER_URL = 'https://polkascan.io/pre/kusama'
-const BLOCK_EXPLORER_API = 'https://api-01.polkascan.io/kusama/api/v1'
+export abstract class SubstrateProtocol extends NonExtendedProtocol implements ICoinDelegateProtocol {    
+    public abstract symbol: string
+    public abstract name: string
+    public abstract marketSymbol: string
+    public abstract feeSymbol: string
 
-export class SubstrateProtocol extends NonExtendedProtocol implements ICoinDelegateProtocol {    
-    public symbol: string = 'DOT'
-    public name: string = 'Substrate'
-    public marketSymbol: string = 'DOT'
-    public feeSymbol: string = 'DOT'
+    public abstract decimals: number
+    public abstract feeDecimals: number
+    public abstract identifier: string
 
-    public decimals: number = 12;
-    public feeDecimals: number = 12;
-    public identifier: string = 'substrate';
-
-    // TODO: set better values
-    public feeDefaults: FeeDefaults = {
-        low: '0.01', // 10 000 000 000
-        medium: '0.01',
-        high: '0.01'
-    }
-
-    public units: CurrencyUnit[] = [
-        {
-            unitSymbol: 'DOT',
-            factor: '1'
-        },
-        {
-            unitSymbol: 'mDOT',
-            factor: '0.001'
-        },
-        {
-            unitSymbol: 'uDOT',
-            factor: '0.000001'
-        },
-        {
-            unitSymbol: 'Point',
-            factor: '0.000000001'
-        },
-        {
-            unitSymbol: 'Planck',
-            factor: '0.000000000001'
-        }
-    ]
+    public abstract feeDefaults: FeeDefaults
+    public abstract units: CurrencyUnit[]
+    public abstract standardDerivationPath: string
 
     public supportsHD: boolean = false
-    public standardDerivationPath: string = `m/44'/354'/0'/0/0` // TODO: verify
 
     public addressIsCaseSensitive: boolean = false
     public addressValidationPattern: string = '^[a-km-zA-HJ-NP-Z1-9]+$' // TODO: set length?
     public addressPlaceholder: string = 'ABC...' // TODO: better placeholder?
 
-    public blockExplorer: string = BLOCK_EXPLORER_URL
+    public blockExplorer: string = this.blockExplorerClient.baseUrl
 
     constructor(
-        readonly nodeClient: SubstrateNodeClient = new SubstrateNodeClient('https://polkadot-kusama-node-1.kubernetes.papers.tech'),
-        readonly blockExplorerClient: SubstrateBlockExplorerClient = new SubstrateBlockExplorerClient(BLOCK_EXPLORER_URL, BLOCK_EXPLORER_API),
-        readonly accountController: SubstrateAccountController = new SubstrateAccountController(nodeClient),
-        readonly transactionController: SubstrateTransactionController = new SubstrateTransactionController(nodeClient)
+        readonly network: SubstrateNetwork,
+        readonly nodeClient: SubstrateNodeClient,
+        readonly blockExplorerClient: SubstrateBlockExplorerClient,
+        readonly accountController: SubstrateAccountController = new SubstrateAccountController(network, nodeClient),
+        readonly transactionController: SubstrateTransactionController = new SubstrateTransactionController(network, nodeClient)
     ) { super() }
 
     public async getBlockExplorerLinkForAddress(address: string): Promise<string> {

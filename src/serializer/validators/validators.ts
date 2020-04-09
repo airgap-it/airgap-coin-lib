@@ -19,8 +19,8 @@ import { RawTezosTransaction } from '../types'
 import { AeternityProtocol } from './../../protocols/aeternity/AeternityProtocol'
 import { BitcoinProtocol } from './../../protocols/bitcoin/BitcoinProtocol'
 import { TezosProtocol } from './../../protocols/tezos/TezosProtocol'
-import { SubstrateProtocol } from '../../protocols/substrate/SubstrateProtocol'
 import { SignedSubstrateTransaction } from '../schemas/definitions/transaction-sign-response-substrate'
+import { KusamaProtocol } from '../../protocols/substrate/implementations/KusamaProtocol'
 
 validators.type = (value, options, key, attributes) => {
   // allow empty values by default (needs to be checked by "presence" check)
@@ -360,7 +360,7 @@ validators.isValidTezosSignedTransaction = (signedTransaction: string) => {
   })
 }
 
-// POLKADOT
+// KUSAMA
 
 validators.isValidSubstrateUnsignedTransaction = (encoded: string) => {
   const unsignedTx = {
@@ -373,7 +373,7 @@ validators.isValidSubstrateUnsignedTransaction = (encoded: string) => {
       resolve('not a valid Substrate transaction')
     }
 
-    const protocol = new SubstrateProtocol()
+    const protocol = new KusamaProtocol()
 
     try {
       await protocol.getTransactionDetails(unsignedTx)
@@ -394,7 +394,7 @@ validators.isValidSubstrateSignedTransaction = (transaction: string) => {
     if (transaction === null || typeof transaction === 'undefined') {
       resolve('not a valid Substrate transaction')
     }
-    const protocol = new SubstrateProtocol()
+    const protocol = new KusamaProtocol()
     try {
       await protocol.getTransactionDetailsFromSigned(signedTx)
       resolve()

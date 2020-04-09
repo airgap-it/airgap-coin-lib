@@ -16,7 +16,7 @@ import { EthereumRopstenTestProtocolSpec } from './specs/ethereum-ropsten'
 import { GenericERC20TokenTestProtocolSpec } from './specs/generic-erc20-token'
 import { GroestlcoinProtocolSpec } from './specs/groestl'
 import { TezosTestProtocolSpec } from './specs/tezos'
-import { SubstrateTestProtocolSpec } from './specs/substrate'
+import { KusamaTestProtocolSpec } from './specs/kusama'
 import { sr25519Verify } from '@polkadot/wasm-crypto'
 
 // use chai-as-promised plugin
@@ -46,7 +46,7 @@ const protocols = [
   new BitcoinTestProtocolSpec(),
   new GenericERC20TokenTestProtocolSpec(),
   new GroestlcoinProtocolSpec(),
-  new SubstrateTestProtocolSpec()
+  new KusamaTestProtocolSpec()
 ]
 
 const itIf = (condition, title, test) => {
@@ -253,7 +253,7 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
         }
 
         txs.forEach((tx, index) => {
-          if (protocol.lib.identifier === 'substrate') {
+          if (protocol.lib instanceof SubstrateProtocol) {
             const decoded = (protocol.lib as SubstrateProtocol).transactionController.decodeDetails(tx)[0]
 
             const signature = decoded.transaction.signature.signature.value
