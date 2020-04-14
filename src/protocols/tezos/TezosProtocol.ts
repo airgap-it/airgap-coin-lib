@@ -11,7 +11,7 @@ import { UnsignedTezosTransaction } from '../../serializer/schemas/definitions/t
 import { SignedTezosTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-tezos'
 import { RawTezosTransaction } from '../../serializer/types'
 import { getSubProtocolsByIdentifier } from '../../utils/subProtocols'
-import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
+import { CurrencyUnit, FeeDefaults } from '../ICoinProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
 
 import { TezosRewardsCalculation005 } from './rewardcalculation/TezosRewardCalculation005'
@@ -25,6 +25,7 @@ import { TezosTransactionOperation } from './types/operations/Transaction'
 import { TezosOperationType } from './types/TezosOperationType'
 import { TezosWrappedOperation } from './types/TezosWrappedOperation'
 import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
+import { ICoinDelegateProtocol, DelegateeDetails, DelegatorDetails, DelegatorAction } from '../ICoinDelegateProtocol'
 
 const assertNever: (x: never) => void = (x: never): void => undefined
 
@@ -33,13 +34,6 @@ const MAX_OPERATIONS_PER_GROUP: number = 200
 export interface TezosVotingInfo {
   pkh: string
   rolls: number
-}
-
-export interface DelegationInfo {
-  isDelegated: boolean
-  value?: string
-  delegatedOpLevel?: number
-  delegatedDate?: Date
 }
 
 export interface BakerInfo {
@@ -70,6 +64,12 @@ export interface DelegationInfo {
   delegatedDate?: Date
 }
 
+export enum TezosDelegatorAction {
+  DELEGATE = 'delegate', 
+  UNDELEGATE = 'undelegate', 
+  CHANGE_BAKER = 'change_baker'
+}
+
 export interface TezosPayoutInfo {
   delegator: string
   share: string
@@ -85,7 +85,7 @@ export enum TezosNetwork {
   CARTHAGENET = 'carthagenet'
 }
 
-export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol {
+export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateProtocol {
   public symbol: string = 'XTZ'
   public name: string = 'Tezos'
   public marketSymbol: string = 'xtz'
@@ -121,6 +121,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
   public addressPlaceholder: string = 'tz1...'
 
   public blockExplorer: string = 'https://tezblock.io'
+
+  public supportsMultipleDelegatees: boolean = false
 
   protected readonly transactionFee: BigNumber = new BigNumber('1400')
   protected readonly originationSize: BigNumber = new BigNumber('257')
@@ -659,6 +661,119 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     }
   }
 
+  public async getDefaultDelegatee(): Promise<string> {
+    const { data: activeBakers } = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/delegates?active`)
+
+    return activeBakers[0] || ''
+  }
+
+  public async getCurrentDelegateesForPublicKey(publicKey: string): Promise<string[]> {
+    return this.getCurrentDelegateesForAddress(await this.getAddressFromPublicKey(publicKey))
+  }
+
+  public async getCurrentDelegateesForAddress(address: string): Promise<string[]> {
+    const { data } = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}`)
+    return data.delegate ? [data.delegate] : []
+  }
+
+  public async getDelegateesDetails(addresses: string[]): Promise<DelegateeDetails[]> {
+    if (addresses.length > 1) {
+      return Promise.reject('Multiple delegation is not supported.')
+    }
+
+    const bakerAddress = addresses[0]
+
+    const details: DelegateeDetails[] = []
+    if (bakerAddress) {
+      const bakerInfo = await this.bakerInfo(bakerAddress)
+
+      details.push({
+        status: bakerInfo.bakingActive ? 'Active' : 'Inactive',
+        address: bakerAddress
+      })
+    }
+
+    return details
+  }
+
+  public async isPublicKeyDelegating(publicKey: string): Promise<boolean> {
+    return this.isAddressDelegating(await this.getAddressFromPublicKey(publicKey))
+  }
+
+  public async isAddressDelegating(address: string): Promise<boolean> {
+    const { data } = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}`)
+    return !!data.delegate
+  }
+
+  public async getDelegatorDetailsFromPublicKey(publicKey: string): Promise<DelegatorDetails> {
+    return this.getDelegatorDetailsFromAddress(await this.getAddressFromPublicKey(publicKey))
+  }
+  
+  public async getDelegatorDetailsFromAddress(address: string): Promise<DelegatorDetails> {
+    const results = await Promise.all([
+      axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}`),
+      this.getDelegationRewardsForAddress(address).catch(() => null)
+    ])
+
+    const accountDetails = results[0]?.data
+    const rewardInfo = results[1]
+
+    if (!accountDetails) {
+      return Promise.reject('Could not get account details')
+    }
+
+    const balance = accountDetails.balance
+    const isDelegating = !!accountDetails.delegate
+    const availableActions: DelegatorAction[] = []
+
+    if (!isDelegating) {
+      availableActions.push({
+        type: TezosDelegatorAction.DELEGATE,
+        args: ['delegate']
+      })
+    } else {
+      availableActions.push(
+        {
+          type: TezosDelegatorAction.CHANGE_BAKER,
+          args: ['delegate']
+        },
+        { 
+          type: TezosDelegatorAction.UNDELEGATE 
+        }
+      )
+    }
+
+    return {
+      balance,
+      isDelegating,
+      availableActions,
+      rewards: isDelegating && rewardInfo 
+        ? rewardInfo
+            .map(reward => ({
+              index: reward.cycle,
+              amount: reward.reward.toFixed(),
+              collected: reward.payout < new Date(),
+              timestamp: reward.payout.getTime()
+            })) 
+        : []
+    }
+  }
+
+  public async prepareDelegatorActionFromPublicKey(publicKey: string, type: TezosDelegatorAction, data?: any): Promise<RawTezosTransaction[]> {
+    switch (type) {
+      case TezosDelegatorAction.DELEGATE:
+      case TezosDelegatorAction.CHANGE_BAKER:
+        if (!data || !data.delegate) {
+          return Promise.reject(`Invalid arguments passed for ${type} action, delegate is missing.`)
+        }
+        return [await this.delegate(publicKey, data.delegate)]
+      case TezosDelegatorAction.UNDELEGATE:
+        return [await this.undelegate(publicKey)]
+      default:
+        return Promise.reject('Unsupported delegator action.')
+    }
+  }
+
   public async prepareOperations(publicKey: string, operationRequests: TezosOperation[]): Promise<TezosWrappedOperation> {
     let counter: BigNumber = new BigNumber(1)
     let branch: string
@@ -801,7 +916,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     return tezosWrappedOperation
   }
 
-  public async isAddressDelegated(delegatedAddress: string, fetchExtraInfo: boolean = true): Promise<DelegationInfo> {
+  public async getDelegationInfo(delegatedAddress: string, fetchExtraInfo: boolean = true): Promise<DelegationInfo> {
     const { data } = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${delegatedAddress}`)
     let delegatedOpLevel: number | undefined
     let delegatedDate: Date | undefined
@@ -918,17 +1033,17 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     return bakerInfo
   }
 
-  public async delegationInfo(address: string): Promise<DelegationRewardInfo[]> {
-    const status: DelegationInfo = await this.isAddressDelegated(address)
+  public async getDelegationRewardsForAddress(address: string): Promise<DelegationRewardInfo[]> {
+    const status: DelegationInfo = await this.getDelegationInfo(address)
 
     if (!status.isDelegated || !status.value) {
       throw new Error('address not delegated')
     }
 
-    return this.delegationRewards(status.value, address)
+    return this.getDelegationRewards(status.value, address)
   }
 
-  public async delegationRewards(bakerAddress: string, delegatorAddress?: string): Promise<DelegationRewardInfo[]> {
+  public async getDelegationRewards(bakerAddress: string, delegatorAddress?: string): Promise<DelegationRewardInfo[]> {
     const { data: frozenBalance }: AxiosResponse<[{ cycle: number; deposit: string; fees: string; rewards: string }]> = await axios.get(
       `${this.jsonRPCAPI}/chains/main/blocks/head/context/delegates/${bakerAddress}/frozen_balance_by_cycle`
     )

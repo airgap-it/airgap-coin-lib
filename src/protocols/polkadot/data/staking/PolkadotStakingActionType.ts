@@ -1,13 +1,13 @@
 export enum PolkadotStakingActionType {
-    BOND_NOMINATE, 
-    NOMINATE, 
-    CANCEL_NOMINATION,
-    CHANGE_NOMINATION,
-    UNBOND, 
-    REBOND, 
-    BOND_EXTRA, 
-    WITHDRAW_UNBONDED, 
-    COLLECT_REWARDS,
-    CHANGE_REWARD_DESTINATION,
-    CHANGE_CONTROLLER
+    BOND_NOMINATE = 'bond_nominate', 
+    NOMINATE = 'nominate', 
+    CANCEL_NOMINATION = 'cancel_nomination',
+    CHANGE_NOMINATION = 'change_nomination',
+    UNBOND = 'unbond', 
+    REBOND = 'rebond', 
+    BOND_EXTRA = 'bond_extra', 
+    WITHDRAW_UNBONDED = 'withdraw_unbonded', 
+    COLLECT_REWARDS = 'collect_rewards',
+    CHANGE_REWARD_DESTINATION = 'change_reward_destination',
+    CHANGE_CONTROLLER = 'change_controller'
 }

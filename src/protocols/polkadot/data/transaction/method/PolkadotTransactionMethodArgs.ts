@@ -5,12 +5,13 @@ import { SCALEAccountId } from '../../scale/type/SCALEAccountId'
 import { SCALECompactInt } from '../../scale/type/SCALECompactInt'
 import { SCALEEnum } from '../../scale/type/SCALEEnum'
 import { SCALEArray } from '../../scale/type/SCALEArray'
-import { PolkadotRewardDestination, IAirGapTransaction } from '../../../../..'
 import { PolkadotAddress, PolkadotAccountId } from '../../account/PolkadotAddress'
 import BigNumber from '../../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { SCALETuple } from '../../scale/type/SCALETuple'
 import { SCALEInt } from '../../scale/type/SCALEInt'
 import { PolkadotTransactionMethod } from './PolkadotTransactionMethod'
+import { PolkadotPayee } from '../../staking/PolkadotPayee'
+import { IAirGapTransaction } from '../../../../../interfaces/IAirGapTransaction'
 
 interface TransferArgs {
     to: PolkadotAccountId,
@@ -20,7 +21,7 @@ interface TransferArgs {
 interface BondArgs {
     controller: PolkadotAccountId
     value: number | BigNumber,
-    payee: PolkadotRewardDestination
+    payee: PolkadotPayee
 }
 
 interface UnbondArgs {
@@ -53,7 +54,7 @@ interface PayoutNominatorArgs {
 }
 
 interface SetPayeeArgs {
-    payee: PolkadotRewardDestination
+    payee: PolkadotPayee
 }
 
 interface SetControllerArgs {
@@ -208,7 +209,7 @@ class BondArgsDecoder extends PolkadotTransactionMethodArgsDecoder<BondArgs> {
     protected _decode(decoder: SCALEDecoder): SCALEDecodeResult<BondArgs> {
         const controller = decoder.decodeNextAccountId()
         const value = decoder.decodeNextCompactInt()
-        const payee = decoder.decodeNextEnum(value => PolkadotRewardDestination[PolkadotRewardDestination[value]])
+        const payee = decoder.decodeNextEnum(value => PolkadotPayee[PolkadotPayee[value]])
 
         return {
             bytesDecoded: controller.bytesDecoded + value.bytesDecoded + payee.bytesDecoded,
@@ -409,7 +410,7 @@ class SetPayeeArgsFactory extends PolkadotTransactionMethodArgsFactory<SetPayeeA
 
 class SetPayeeArgsDecoder extends PolkadotTransactionMethodArgsDecoder<SetPayeeArgs> {
     protected _decode(decoder: SCALEDecoder): SCALEDecodeResult<SetPayeeArgs> {
-        const payee = decoder.decodeNextEnum(value => PolkadotRewardDestination[PolkadotRewardDestination[value]])
+        const payee = decoder.decodeNextEnum(value => PolkadotPayee[PolkadotPayee[value]])
 
         return {
             bytesDecoded: payee.bytesDecoded,

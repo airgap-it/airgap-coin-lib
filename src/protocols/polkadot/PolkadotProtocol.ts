@@ -69,6 +69,8 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinDelega
 
     public blockExplorer: string = BLOCK_EXPLORER_URL
 
+    public supportsMultipleDelegatees: boolean = true
+
     constructor(
         readonly nodeClient: PolkadotNodeClient = new PolkadotNodeClient('https://polkadot-kusama-node-1.kubernetes.papers.tech'),
         readonly blockExplorerClient: PolkadotBlockExplorerClient = new PolkadotBlockExplorerClient(BLOCK_EXPLORER_URL, BLOCK_EXPLORER_API),
@@ -276,6 +278,7 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinDelega
             const validatorDetails = await this.accountController.getValidatorDetails(address)
             return {
                 name: validatorDetails.name || '',
+                status: validatorDetails.status || '',
                 address
             }
         }))
@@ -299,7 +302,14 @@ export class PolkadotProtocol extends NonExtendedProtocol implements ICoinDelega
         return {
             balance: nominatorDetails.balance,
             isDelegating: nominatorDetails.isDelegating,
-            availableActions: nominatorDetails.availableActions
+            availableActions: nominatorDetails.availableActions,
+            rewards: nominatorDetails.isDelegating && nominatorDetails.stakingDetails
+                ? nominatorDetails.stakingDetails.rewards.map(reward => ({
+                    index: reward.eraIndex,
+                    amount: reward.amount,
+                    collected: reward.collected,
+                    timestamp: reward.timestamp
+                })) : []
         }
     }
 
