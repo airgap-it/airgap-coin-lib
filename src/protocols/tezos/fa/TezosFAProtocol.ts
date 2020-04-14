@@ -66,6 +66,10 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     return results.reduce((current, next) => current.plus(new BigNumber(next)), new BigNumber(0)).toFixed()
   }
 
+  public async estimateMaxTransactionValueFromPublicKey(publicKey: string, fee: string): Promise<string> {
+    return this.getBalanceOfPublicKey(publicKey)
+  }
+
   public async prepareTransactionFromPublicKey(
     publicKey: string,
     recipients: string[],

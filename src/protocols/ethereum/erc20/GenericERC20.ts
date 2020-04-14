@@ -76,6 +76,10 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, Ethersc
     return gasEstimate.toFixed()
   }
 
+  public async estimateMaxTransactionValueFromPublicKey(publicKey: string, fee: string): Promise<string> {
+    return this.getBalanceOfPublicKey(publicKey)
+  }
+
   public async prepareTransactionFromPublicKey(
     publicKey: string,
     recipients: string[],
