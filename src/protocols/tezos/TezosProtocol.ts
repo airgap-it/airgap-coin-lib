@@ -1560,8 +1560,16 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     return rewardCalculation.calculateRewards(bakerAddress, cycle)
   }
 
-  public async calculatePayouts(rewards: TezosRewards, offset: number, limit: number): Promise<TezosPayoutInfo[]> {
-    const delegators = rewards.delegatedContracts.slice(offset, Math.min(offset + limit, rewards.delegatedContracts.length))
+  public async calculatePayouts(rewards: TezosRewards, offsetOrAddresses: number | string[], limit?: number): Promise<TezosPayoutInfo[]> {
+    let delegators: string[]
+    if (typeof offsetOrAddresses === 'number') {
+      if (limit === undefined) {
+        throw new Error('limit parameter is required when providing offset')
+      }
+      delegators = rewards.delegatedContracts.slice(offsetOrAddresses, Math.min(offsetOrAddresses + limit, rewards.delegatedContracts.length))
+    } else {
+      delegators = offsetOrAddresses
+    }
     return this.calculatePayoutForAddresses(delegators, rewards)
   }
 
@@ -1573,7 +1581,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     return result
   }
 
-  public async calculatePayoutForAddresses(addresses: string[], rewards: TezosRewards) {
+  private async calculatePayoutForAddresses(addresses: string[], rewards: TezosRewards) {
     const result: TezosPayoutInfo[] = []
     const totalRewardsBN = new BigNumber(rewards.totalRewards).plus(new BigNumber(rewards.fees))
     const balances = await this.fetchBalances(addresses, rewards.snapshotBlockLevel)
