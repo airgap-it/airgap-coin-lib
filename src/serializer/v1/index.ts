@@ -19,7 +19,8 @@ export function unsignedTransactionSerializerByProtocolIdentifier(protocolIdenti
     grs: BitcoinUnsignedTransactionSerializer,
     ae: AeternityUnsignedTransactionSerializer,
     xtz: TezosUnsignedTransactionSerializer,
-    substrate: SubstrateUnsignedTransactionsSerializer
+    polkadot: SubstrateUnsignedTransactionsSerializer,
+    kusama: SubstrateUnsignedTransactionsSerializer
   }
 
   const protocol = Object.keys(implementedSerializers).find(protocol => protocolIdentifier.startsWith(protocol))
@@ -38,7 +39,8 @@ export function signedTransactionSerializerByProtocolIdentifier(protocolIdentifi
     grs: BitcoinSignedTransactionSerializer,
     ae: AeternitySignedTransactionSerializer,
     xtz: TezosSignedTransactionSerializer,
-    substrate: SubstrateSignedTransactionSerializer
+    polkadot: SubstrateSignedTransactionSerializer,
+    kusama: SubstrateSignedTransactionSerializer
   }
 
   const protocol = Object.keys(implementedSerializers).find(protocol => protocolIdentifier.startsWith(protocol))

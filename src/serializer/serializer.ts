@@ -116,7 +116,8 @@ export class Serializer {
       ae: AeternityTransactionValidator,
       xtz: TezosTransactionValidator,
       cosmos: CosmosTransactionValidator,
-      substrate: SubstrateTransactionValidator,
+      polkadot: SubstrateTransactionValidator,
+      kusama: SubstrateTransactionValidator,
       'xtz-btc': TezosBTCTransactionValidator
     }
 
@@ -152,7 +153,8 @@ Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema:
 Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema: unsignedTransactionEthereum }, 'eth-erc20')
 Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema: unsignedTransactionTezos }, 'xtz')
 Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema: unsignedTransactionTezos }, 'xtz-btc')
-Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema: unsignedTransactionSubstrate }, 'substrate')
+Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema: unsignedTransactionSubstrate }, 'polkadot')
+Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema: unsignedTransactionSubstrate }, 'kusama')
 
 Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionAeternity }, 'ae')
 Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionBitcoin }, 'btc')
@@ -162,4 +164,5 @@ Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema
 Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionEthereum }, 'eth-erc20')
 Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionTezos }, 'xtz')
 Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionTezos }, 'xtz-btc')
-Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionSubstrate }, 'substrate')
+Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionSubstrate }, 'polkadot')
+Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionSubstrate }, 'kusama')

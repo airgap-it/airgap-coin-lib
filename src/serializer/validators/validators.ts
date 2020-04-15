@@ -360,7 +360,7 @@ validators.isValidTezosSignedTransaction = (signedTransaction: string) => {
   })
 }
 
-// KUSAMA
+// SUBSTRATE
 
 validators.isValidSubstrateUnsignedTransaction = (encoded: string) => {
   const unsignedTx = {
