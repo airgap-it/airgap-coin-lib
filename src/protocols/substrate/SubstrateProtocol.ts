@@ -17,6 +17,7 @@ import { SubstrateBlockExplorerClient } from './helpers/blockexplorer/SubstrateB
 import { SubstrateStakingActionType } from './helpers/data/staking/SubstrateStakingActionType'
 import { SubstrateAddress } from './helpers/data/account/SubstrateAddress'
 import { SubstrateNetwork } from './SubstrateNetwork'
+import { assertFields } from '../../utils/assert'
 
 export abstract class SubstrateProtocol extends NonExtendedProtocol implements ICoinDelegateProtocol {    
     public abstract symbol: string
@@ -294,34 +295,26 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
             data = {}
         }
 
-        const assertFields = (...fields: string[]) => {
-            fields.forEach(field => {
-                if (data[field] === undefined || data[field] === null) {
-                    throw new Error(`Invalid arguments passed for ${SubstrateStakingActionType[type]} action. Required: ${fields.join()}, but ${field} is missing.`)
-                }
-            })
-        }
-
         switch (type) {
             case SubstrateStakingActionType.BOND_NOMINATE:
-                assertFields('targets', 'value', 'payee')
+                assertFields(`${SubstrateStakingActionType[type]} action`, data, 'targets', 'value', 'payee')
                 return this.prepareDelegation(publicKey, data.tip || 0, data.targets, data.controller || publicKey, data.value, data.payee)
             case SubstrateStakingActionType.NOMINATE:
-                assertFields('targets')
+                assertFields(`${SubstrateStakingActionType[type]} action`, data, 'targets')
                 return this.prepareDelegation(publicKey, data.tip || 0, data.targets)
             case SubstrateStakingActionType.CANCEL_NOMINATION:
                 return this.prepareCancelDelegation(publicKey, data.tip || 0, data.value)
             case SubstrateStakingActionType.CHANGE_NOMINATION:
-                assertFields('targets')
+                assertFields(`${SubstrateStakingActionType[type]} action`, data, 'targets')
                 return this.prepareChangeValidator(publicKey, data.tip || 0, data.targets)
             case SubstrateStakingActionType.UNBOND:
-                assertFields('value')
+                assertFields(`${SubstrateStakingActionType[type]} action`, data, 'value')
                 return this.prepareUnbond(publicKey, data.tip || 0, data.value)
             case SubstrateStakingActionType.REBOND:
-                assertFields('value')
+                assertFields(`${SubstrateStakingActionType[type]} action`, data, 'value')
                 return this.prepareRebond(publicKey, data.tip || 0, data.value)
             case SubstrateStakingActionType.BOND_EXTRA:
-                assertFields('value')
+                assertFields(`${SubstrateStakingActionType[type]} action`, data, 'value')
                 return this.prepareBondExtra(publicKey, data.tip || 0, data.value)
             case SubstrateStakingActionType.WITHDRAW_UNBONDED:
                 return this.prepareWithdrawUnbonded(publicKey, data.tip || 0)

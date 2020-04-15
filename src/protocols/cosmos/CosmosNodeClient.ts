@@ -90,6 +90,14 @@ export interface CosmosBroadcastSignedTransactionResponse {
   height: number
 }
 
+export interface CosmosRewardDetails {
+  validator_address: string
+  reward: {
+    denom: string,
+    amount: number
+  }[]
+}
+
 export class CosmosNodeClient {
   constructor(public readonly baseURL: string, public useCORSProxy: boolean = false) {}
 
@@ -190,6 +198,13 @@ export class CosmosNodeClient {
       return new BigNumber(unbondingDelegations.map(delegation => parseFloat(delegation.balance)).reduce((a, b) => a + b, 0))
     }
     return new BigNumber(0)
+  }
+
+  public async fetchRewardDetails(delegatorAddress: string): Promise<CosmosRewardDetails[]> {
+    return Axios.get(this.url(`/distribution/delegators/${delegatorAddress}/rewards`))
+      .then(response => response.data.result.rewards as CosmosRewardDetails[])
+      .catch(() => [])
+      
   }
 
   public async fetchTotalReward(delegatorAddress: string): Promise<BigNumber> {

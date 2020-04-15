@@ -688,7 +688,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       const bakerInfo = await this.bakerInfo(bakerAddress)
 
       details.push({
-        status: bakerInfo.bakingActive ? 'Active' : 'Inactive',
+        status: bakerInfo.bakingActive ? 'active' : 'inactive',
         address: bakerAddress
       })
     }

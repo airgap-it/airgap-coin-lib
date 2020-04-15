@@ -31,7 +31,7 @@ export class CosmosDelegateAction<Context extends CosmosDelegateActionContext> e
     const transaction: CosmosTransaction = await protocol.delegate(
       this.context.wallet.publicKey,
       this.context.validatorAddress,
-      this.context.amount,
+      this.context.amount.toString(10),
       this.context.undelegate
     )
 
