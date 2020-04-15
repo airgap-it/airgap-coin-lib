@@ -22,7 +22,7 @@ export interface SubstrateStakingDetails {
     locked: SubstrateLockedDetails[]
     status: SubstrateStakingStatus
     nextEra: number
-    previousRewards: SubstrateNominatorRewardDetails[]
+    rewards: SubstrateNominatorRewardDetails[]
 }
 
 export interface SubstrateNominatorDetails {

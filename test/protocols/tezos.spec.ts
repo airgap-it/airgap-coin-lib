@@ -2,17 +2,16 @@ import { expect } from 'chai'
 import 'mocha'
 import * as sinon from 'sinon'
 
-import { isCoinlibReady } from '../../src'
+import { isCoinlibReady, TezosProtocol } from '../../src'
 import axios from '../../src/dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
-import {
-  TezosOperationType,
-  TezosOriginationOperation,
-  TezosRevealOperation,
-  TezosSpendOperation
-} from '../../src/protocols/tezos/TezosProtocol'
 import { RawTezosTransaction } from '../../src/serializer/types'
 import { TezosTestProtocolSpec } from '../protocols/specs/tezos'
+import { TezosTransactionOperation } from '../../src/protocols/tezos/types/operations/Transaction'
+import { TezosOperationType } from '../../src/protocols/tezos/types/TezosOperationType'
+import { TezosOriginationOperation } from '../../src/protocols/tezos/types/operations/Origination'
+import { TezosWrappedOperation } from '../../src/protocols/tezos/types/TezosWrappedOperation'
+import { TezosRevealOperation } from '../../src/protocols/tezos/types/operations/Reveal'
 
 const tezosProtocolSpec = new TezosTestProtocolSpec()
 const tezosLib = tezosProtocolSpec.lib
@@ -23,11 +22,11 @@ const prepareTxHelper = async (rawTezosTx: RawTezosTransaction) => {
     publicKey: tezosProtocolSpec.wallet.publicKey
   })
 
-  const unforgedTransaction = tezosLib.unforgeUnsignedTezosWrappedOperation(rawTezosTx.binaryTransaction)
+  const unforgedTransaction = await tezosLib.unforgeUnsignedTezosWrappedOperation(rawTezosTx.binaryTransaction)
 
   const spendOperation = unforgedTransaction.contents.find(content => content.kind === TezosOperationType.TRANSACTION)
   if (spendOperation) {
-    const spendTransaction: TezosSpendOperation = spendOperation as TezosSpendOperation
+    const spendTransaction: TezosTransactionOperation = spendOperation as TezosTransactionOperation
 
     return {
       spendTransaction,
@@ -141,31 +140,6 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         )
     })
 
-    it('will randomly convert zarith to bignum back and forth', async () => {
-      const numberToConvert = new BigNumber(Math.round(Math.random() * 1000000))
-      const zarithString = tezosLib.bigNumberToZarith(numberToConvert)
-      const resultConversion = tezosLib.zarithToBigNumber(zarithString)
-      expect(numberToConvert.toFixed()).to.equal(resultConversion.toFixed())
-    })
-
-    it('will iteratively convert multiple zariths to bignum', async () => {
-      let hexString = 'f44e0af44e00b960' // contains: fee, counter, gas_limit, storage_limit and amount
-
-      const results: BigNumber[] = []
-      while (hexString.length > 0) {
-        const zarithString = hexString.substr(0, tezosLib.findZarithEndIndex(hexString))
-        hexString = hexString.substr(tezosLib.findZarithEndIndex(hexString), hexString.length - tezosLib.findZarithEndIndex(hexString))
-        results.push(tezosLib.zarithToBigNumber(zarithString))
-      }
-
-      expect(results.length).to.equal(5)
-      expect(results[0].toFixed()).to.equal('10100')
-      expect(results[1].toFixed()).to.equal('10')
-      expect(results[2].toFixed()).to.equal('10100')
-      expect(results[3].toFixed()).to.equal('0')
-      expect(results[4].toFixed()).to.equal('12345')
-    })
-
     it('will parse various operations', async () => {
       const hexString =
         'a732d3520eeaa3de98d78e5e5cb6c85f72204fd46feb9f76853841d4a701add36c0008ba0cb2fad622697145cf1665124096d25bc31ef44e0af44e00b960000008ba0cb2fad622697145cf1665124096d25bc31e006c0008ba0cb2fad622697145cf1665124096d25bc31ed3e7bd1008d3bb0300b1a803000008ba0cb2fad622697145cf1665124096d25bc31e00' // contains: fee, counter, gas_limit, storage_limit and amount
@@ -193,26 +167,30 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
     }
 
            */
-      let tezosWrappedOperation = tezosLib.unforgeUnsignedTezosWrappedOperation(hexString)
+
+      let tezosWrappedOperation: TezosWrappedOperation = await tezosLib.unforgeUnsignedTezosWrappedOperation(hexString)
 
       expect(tezosWrappedOperation.branch).to.equal('BLyvCRkxuTXkx1KeGvrcEXiPYj4p1tFxzvFDhoHE7SFKtmP1rbk')
       expect(tezosWrappedOperation.contents.length).to.equal(2)
 
-      expect(tezosWrappedOperation.contents[0].fee).to.equal('10100')
-      expect(tezosWrappedOperation.contents[0].gas_limit).to.equal('10100')
-      expect(tezosWrappedOperation.contents[0].storage_limit).to.equal('0')
-      expect((tezosWrappedOperation.contents[0] as TezosSpendOperation).amount).to.equal('12345')
-      expect(tezosWrappedOperation.contents[0].counter).to.equal('10')
-      expect(tezosWrappedOperation.contents[0].source).to.equal('tz1LSAycAVcNdYnXCy18bwVksXci8gUC2YpA')
-      expect((tezosWrappedOperation.contents[0] as TezosSpendOperation).destination).to.equal('tz1LSAycAVcNdYnXCy18bwVksXci8gUC2YpA')
+      const spendOperation1: TezosTransactionOperation = tezosWrappedOperation.contents[0] as TezosTransactionOperation
+      const spendOperation2: TezosTransactionOperation = tezosWrappedOperation.contents[1] as TezosTransactionOperation
 
-      expect(tezosWrappedOperation.contents[1].fee).to.equal('34567123')
-      expect(tezosWrappedOperation.contents[1].gas_limit).to.equal('56787')
-      expect(tezosWrappedOperation.contents[1].storage_limit).to.equal('0')
-      expect((tezosWrappedOperation.contents[1] as TezosSpendOperation).amount).to.equal('54321')
-      expect(tezosWrappedOperation.contents[1].counter).to.equal('8')
-      expect(tezosWrappedOperation.contents[1].source).to.equal('tz1LSAycAVcNdYnXCy18bwVksXci8gUC2YpA')
-      expect((tezosWrappedOperation.contents[1] as TezosSpendOperation).destination).to.equal('tz1LSAycAVcNdYnXCy18bwVksXci8gUC2YpA')
+      expect(spendOperation1.fee).to.equal('10100')
+      expect(spendOperation1.gas_limit).to.equal('10100')
+      expect(spendOperation1.storage_limit).to.equal('0')
+      expect(spendOperation1.amount).to.equal('12345')
+      expect(spendOperation1.counter).to.equal('10')
+      expect(spendOperation1.source).to.equal('tz1LSAycAVcNdYnXCy18bwVksXci8gUC2YpA')
+      expect(spendOperation1.destination).to.equal('tz1LSAycAVcNdYnXCy18bwVksXci8gUC2YpA')
+
+      expect(spendOperation2.fee).to.equal('34567123')
+      expect(spendOperation2.gas_limit).to.equal('56787')
+      expect(spendOperation2.storage_limit).to.equal('0')
+      expect(spendOperation2.amount).to.equal('54321')
+      expect(spendOperation2.counter).to.equal('8')
+      expect(spendOperation2.source).to.equal('tz1LSAycAVcNdYnXCy18bwVksXci8gUC2YpA')
+      expect(spendOperation2.destination).to.equal('tz1LSAycAVcNdYnXCy18bwVksXci8gUC2YpA')
       /*
     { "branch":"BLyvCRkxuTXkx1KeGvrcEXiPYj4p1tFxzvFDhoHE7SFKtmP1rbk",
       "contents":[
@@ -250,34 +228,36 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
            */
       const hexBigOperationTransaction =
         'a732d3520eeaa3de98d78e5e5cb6c85f72204fd46feb9f76853841d4a701add36b00f6645951a38c13586cda1edb9bdbebcf34a50773ba3d0d901f0900cdbc0c3449784bd53907c3c7a06060cf12087e492a7b937f044c6a73b522a2346c0002b1b8e2338ea7bf67ef23ff1277cbc7d4b6842493bb03b4af05934dd4fb8e0186920401ba4e7349ac25dc5eb2df5a43fceacc58963df4f500006c00c06daac32b63628ff2ed4b75ade88132cbef78d5bb918c0ff0d6950bddef9d03009b9204016834ed66e95b00e7aeeab2778d7c6b5a571171550000'
-      tezosWrappedOperation = tezosLib.unforgeUnsignedTezosWrappedOperation(hexBigOperationTransaction)
+      tezosWrappedOperation = await tezosLib.unforgeUnsignedTezosWrappedOperation(hexBigOperationTransaction)
       expect(tezosWrappedOperation.branch).to.equal('BLyvCRkxuTXkx1KeGvrcEXiPYj4p1tFxzvFDhoHE7SFKtmP1rbk')
       expect(tezosWrappedOperation.contents.length).to.equal(3)
 
-      expect(tezosWrappedOperation.contents[0].fee).to.equal('7866')
-      expect(tezosWrappedOperation.contents[0].gas_limit).to.equal('3984')
-      expect(tezosWrappedOperation.contents[0].storage_limit).to.equal('9')
-      expect(tezosWrappedOperation.contents[0].counter).to.equal('13')
-      expect(tezosWrappedOperation.contents[0].source).to.equal('tz1i6q8g1dcUha9PkKYpt3NtaXiQDLdLPSVn')
-      expect((tezosWrappedOperation.contents[0] as TezosRevealOperation).public_key).to.equal(
-        'edpkvCq9fHmAukBpFurMwR7YVukezNW7GCdQop3PJsGCo62t5MDeNw'
-      )
+      const operation1: TezosRevealOperation = tezosWrappedOperation.contents[0] as TezosRevealOperation
+      const operation2: TezosTransactionOperation = tezosWrappedOperation.contents[1] as TezosTransactionOperation
+      const operation3: TezosTransactionOperation = tezosWrappedOperation.contents[2] as TezosTransactionOperation
 
-      expect(tezosWrappedOperation.contents[1].fee).to.equal('56723')
-      expect(tezosWrappedOperation.contents[1].gas_limit).to.equal('9875')
-      expect(tezosWrappedOperation.contents[1].storage_limit).to.equal('2342356')
-      expect((tezosWrappedOperation.contents[1] as TezosSpendOperation).amount).to.equal('67846')
-      expect(tezosWrappedOperation.contents[1].counter).to.equal('87988')
-      expect(tezosWrappedOperation.contents[1].source).to.equal('tz1KtGwriE7VuLwT3LwuvU9Nv4wAxP7XZ57d')
-      expect((tezosWrappedOperation.contents[1] as TezosSpendOperation).destination).to.equal('KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy')
+      expect(operation1.fee).to.equal('7866')
+      expect(operation1.gas_limit).to.equal('3984')
+      expect(operation1.storage_limit).to.equal('9')
+      expect(operation1.counter).to.equal('13')
+      expect(operation1.source).to.equal('tz1i6q8g1dcUha9PkKYpt3NtaXiQDLdLPSVn')
+      expect(operation1.public_key).to.equal('edpkvCq9fHmAukBpFurMwR7YVukezNW7GCdQop3PJsGCo62t5MDeNw')
 
-      expect(tezosWrappedOperation.contents[2].fee).to.equal('31656123')
-      expect(tezosWrappedOperation.contents[2].gas_limit).to.equal('6780893')
-      expect(tezosWrappedOperation.contents[2].storage_limit).to.equal('0')
-      expect((tezosWrappedOperation.contents[2] as TezosSpendOperation).amount).to.equal('67867')
-      expect(tezosWrappedOperation.contents[2].counter).to.equal('23423856')
-      expect(tezosWrappedOperation.contents[2].source).to.equal('tz1dBVokTuhh5UXtKxaVqmiUyhqoQhu71BmS')
-      expect((tezosWrappedOperation.contents[2] as TezosSpendOperation).destination).to.equal('KT1J5mFAxxzAYDLjYeVXkLcyEzNGRZ3kuFGq')
+      expect(operation2.fee).to.equal('56723')
+      expect(operation2.gas_limit).to.equal('9875')
+      expect(operation2.storage_limit).to.equal('2342356')
+      expect(operation2.amount).to.equal('67846')
+      expect(operation2.counter).to.equal('87988')
+      expect(operation2.source).to.equal('tz1KtGwriE7VuLwT3LwuvU9Nv4wAxP7XZ57d')
+      expect(operation2.destination).to.equal('KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy')
+
+      expect(operation3.fee).to.equal('31656123')
+      expect(operation3.gas_limit).to.equal('6780893')
+      expect(operation3.storage_limit).to.equal('0')
+      expect(operation3.amount).to.equal('67867')
+      expect(operation3.counter).to.equal('23423856')
+      expect(operation3.source).to.equal('tz1dBVokTuhh5UXtKxaVqmiUyhqoQhu71BmS')
+      expect(operation3.destination).to.equal('KT1J5mFAxxzAYDLjYeVXkLcyEzNGRZ3kuFGq')
     })
 
     it('can unforge a delegation TX', async () => {})
@@ -491,6 +471,154 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
 
       expect(result.airGapTxs[1].amount).to.equal('54321')
       expect(result.airGapTxs[1].fee).to.equal('611')
+    })
+
+    it('will correctly prepare a single operation group if below the threshold', async () => {
+      const numberOfOperations: number = 50
+      const result = await prepareSpend(
+        [...Array(numberOfOperations)].map(x => 'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy'),
+        [...Array(numberOfOperations)].map((v, i) => i.toString()),
+        '1'
+      )
+      expect(result.airGapTxs.length).to.equal(50)
+    })
+
+    it('will throw an error if number of operations is above the threshold for a single operation group', async () => {
+      const numberOfOperations: number = 51
+
+      return prepareSpend(
+        [...Array(numberOfOperations)].map(x => 'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy'),
+        [...Array(numberOfOperations)].map((v, i) => i.toString()),
+        '1'
+      ).catch((error: Error) =>
+        expect(error)
+          .to.be.an('error')
+          .with.property(
+            'message',
+            'this transaction exceeds the maximum allowed number of transactions per operation. Please use the "prepareTransactionsFromPublicKey" method instead.'
+          )
+      )
+    })
+
+    it('will correctly prepare a single operation group when calling prepareTransactionsFromPublicKey', async () => {
+      const numberOfOperations: number = 50
+      const protocol = new TezosProtocol()
+
+      const transactions = await protocol.prepareTransactionsFromPublicKey(
+        tezosProtocolSpec.wallet.publicKey,
+        [...Array(numberOfOperations)].map(x => 'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy'),
+        [...Array(numberOfOperations)].map((v, i) => i.toString()),
+        '1'
+      )
+
+      expect(transactions.length).to.equal(1)
+
+      const result1 = await prepareTxHelper(transactions[0])
+
+      expect(result1.airGapTxs.length).to.equal(50)
+    })
+
+    it('will return 2 operation groups when calling prepareTransactionsFromPublicKey with a number of operations above the threshold', async () => {
+      const numberOfOperations: number = 201
+      const protocol = new TezosProtocol()
+
+      const transactions = await protocol.prepareTransactionsFromPublicKey(
+        tezosProtocolSpec.wallet.publicKey,
+        [...Array(numberOfOperations)].map(x => 'tz1MJx9vhaNRSimcuXPK2rW4fLccQnDAnVKJ'),
+        [...Array(numberOfOperations)].map((v, i) => i.toString()),
+        '1'
+      )
+
+      expect(transactions.length).to.equal(2)
+
+      const result1 = await prepareTxHelper(transactions[0])
+      const result2 = await prepareTxHelper(transactions[1])
+
+      expect(result1.airGapTxs.length).to.equal(200)
+      expect(result2.airGapTxs.length).to.equal(1)
+
+      expect(result1.airGapTxs[0].amount, 'result1 first amount').to.equal('0')
+      expect(result1.airGapTxs[0].fee, 'result1 first fee').to.equal('1')
+      expect(result1.airGapTxs[0].transactionDetails.counter, 'result1 first counter').to.equal('917316')
+
+      expect(result1.airGapTxs[199].amount).to.equal('199')
+      expect(result1.airGapTxs[199].fee).to.equal('1')
+      expect(result1.airGapTxs[199].transactionDetails.counter).to.equal('917515')
+
+      expect(result2.airGapTxs[0].amount).to.equal('200')
+      expect(result2.airGapTxs[0].fee).to.equal('1')
+      expect(result2.airGapTxs[0].transactionDetails.counter).to.equal('917516')
+    })
+
+    it('will prepare an FA 1.2 transaction', async () => {
+      // stub
+      //   .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy/balance`)
+      //   .returns(Promise.resolve({ data: 0 }))
+
+      const protocol = new TezosProtocol()
+      const incompleteTransaction: any[] = [
+        {
+          kind: 'transaction',
+          amount: '0',
+          fee: '500000',
+          gas_limit: '400000',
+          storage_limit: '60000',
+          destination: 'KT1LH2o12xVRwTpJMZ6QJG74Fox8gE9QieFd',
+          parameters: {
+            entrypoint: 'transfer',
+            value: {
+              prim: 'Pair',
+              args: [
+                {
+                  string: 'tz1d75oB6T4zUMexzkr5WscGktZ1Nss1JrT7'
+                },
+                {
+                  prim: 'Pair',
+                  args: [
+                    {
+                      string: 'tz1MJx9vhaNRSimcuXPK2rW4fLccQnDAnVKJ'
+                    },
+                    {
+                      int: '10'
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+
+      const transaction = await protocol.prepareOperations(tezosProtocolSpec.wallet.publicKey, incompleteTransaction)
+      const forged = await protocol.forgeAndWrapOperations(transaction)
+
+      const result = await prepareTxHelper(forged)
+
+      // check that storage is properly set
+      // expect(result.spendTransaction.storage_limit).to.equal('0')
+
+      expect(result.airGapTxs.length).to.equal(1)
+
+      const airGapTx = result.airGapTxs[0]
+
+      expect(airGapTx.transactionDetails.amount).to.equal('0')
+      expect(airGapTx.transactionDetails.fee).to.equal('500000')
+      expect(airGapTx.transactionDetails.gas_limit).to.equal('400000')
+      expect(airGapTx.transactionDetails.storage_limit).to.equal('60000')
+      expect(airGapTx.transactionDetails.source).to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
+      expect(airGapTx.transactionDetails.destination).to.equal('KT1LH2o12xVRwTpJMZ6QJG74Fox8gE9QieFd')
+      expect(airGapTx.transactionDetails.parameters).to.not.be.undefined
+      expect(airGapTx.transactionDetails.parameters.entrypoint).to.equal('transfer')
+      expect(airGapTx.transactionDetails.parameters.value.args[0].string).to.equal('tz1d75oB6T4zUMexzkr5WscGktZ1Nss1JrT7')
+      expect(airGapTx.transactionDetails.parameters.value.args[1].args[0].string).to.equal('tz1MJx9vhaNRSimcuXPK2rW4fLccQnDAnVKJ')
+      expect(airGapTx.transactionDetails.parameters.value.args[1].args[1].int).to.equal('10')
+
+      expect(airGapTx.from.length).to.equal(1)
+      expect(airGapTx.from[0]).to.equal('tz1d75oB6T4zUMexzkr5WscGktZ1Nss1JrT7')
+      expect(airGapTx.to.length).to.equal(1)
+      expect(airGapTx.to[0]).to.equal('tz1MJx9vhaNRSimcuXPK2rW4fLccQnDAnVKJ')
+      expect(airGapTx.amount).to.equal('10')
+      expect(airGapTx.fee).to.equal('500000')
     })
 
     it('will throw an error if the number of recipients and amounts do not match', async () => {

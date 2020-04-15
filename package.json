@@ -1,6 +1,6 @@
 {
   "name": "airgap-coin-lib",
-  "version": "0.8.0-beta.11",
+  "version": "0.8.0-beta.13",
   "description": "The airgap-coin-lib is setup in a way that prepare, signing and broadcasting are willingfully separated.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -34,9 +34,10 @@
   },
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
+    "@taquito/local-forging": "^6.1.1-beta.0",
+    "libsodium-wrappers": "0.7.3",
     "@polkadot/util": "^2.0.1",
     "@polkadot/wasm-crypto": "^0.20.1",
-    "libsodium-wrappers": "0.7.3",
     "xxhashjs": "^0.2.2"
   },
   "localDependencies": {
@@ -62,11 +63,13 @@
     "utf8": "3.0.0"
   },
   "devDependencies": {
+    "@taquito/taquito": "^6.1.1-beta.0",
     "@types/node": "12.12.6",
     "typescript": "3.7.2",
     "sonarqube-scanner": "2.5.0"
   },
   "buildDependencies": {
+    "@taquito/taquito": "^6.1.1-beta.0",
     "@types/node": "12.12.6",
     "typescript": "3.7.2",
     "sonarqube-scanner": "2.5.0"

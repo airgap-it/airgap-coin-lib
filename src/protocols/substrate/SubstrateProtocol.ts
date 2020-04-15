@@ -40,6 +40,8 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
 
     public blockExplorer: string = this.blockExplorerClient.baseUrl
 
+    public supportsMultipleDelegatees: boolean = true
+
     constructor(
         readonly network: SubstrateNetwork,
         readonly nodeClient: SubstrateNodeClient,
@@ -248,6 +250,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
             const validatorDetails = await this.accountController.getValidatorDetails(address)
             return {
                 name: validatorDetails.name || '',
+                status: validatorDetails.status || '',
                 address
             }
         }))
@@ -271,7 +274,14 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
         return {
             balance: nominatorDetails.balance,
             isDelegating: nominatorDetails.isDelegating,
-            availableActions: nominatorDetails.availableActions
+            availableActions: nominatorDetails.availableActions,
+            rewards: nominatorDetails.isDelegating && nominatorDetails.stakingDetails
+                ? nominatorDetails.stakingDetails.rewards.map(reward => ({
+                    index: reward.eraIndex,
+                    amount: reward.amount,
+                    collected: reward.collected,
+                    timestamp: reward.timestamp
+                })) : []
         }
     }
 
