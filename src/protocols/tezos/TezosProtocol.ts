@@ -1573,7 +1573,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinProtocol 
     return result
   }
 
-  private async calculatePayoutForAddresses(addresses: string[], rewards: TezosRewards) {
+  public async calculatePayoutForAddresses(addresses: string[], rewards: TezosRewards) {
     const result: TezosPayoutInfo[] = []
     const totalRewardsBN = new BigNumber(rewards.totalRewards).plus(new BigNumber(rewards.fees))
     const balances = await this.fetchBalances(addresses, rewards.snapshotBlockLevel)
