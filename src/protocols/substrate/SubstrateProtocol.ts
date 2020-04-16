@@ -41,8 +41,6 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
 
     public blockExplorer: string = this.blockExplorerClient.baseUrl
 
-    public supportsMultipleDelegatees: boolean = true
-
     constructor(
         readonly network: SubstrateNetwork,
         readonly nodeClient: SubstrateNodeClient,
@@ -246,15 +244,14 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
         return this.accountController.getCurrentValidators(address)
     }
 
-    public async getDelegateesDetails(addresses: string[]): Promise<DelegateeDetails[]> {
-        return Promise.all(addresses.map(async address => {
-            const validatorDetails = await this.accountController.getValidatorDetails(address)
-            return {
-                name: validatorDetails.name || '',
-                status: validatorDetails.status || '',
-                address
-            }
-        }))
+    public async getDelegateeDetails(address: string): Promise<DelegateeDetails> {
+        const validatorDetails = await this.accountController.getValidatorDetails(address)
+
+        return {
+            name: validatorDetails.name || '',
+            status: validatorDetails.status || '',
+            address
+        }
     }
 
     public async isPublicKeyDelegating(publicKey: string): Promise<boolean> {

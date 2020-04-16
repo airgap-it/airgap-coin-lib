@@ -122,8 +122,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
   public blockExplorer: string = 'https://tezblock.io'
 
-  public supportsMultipleDelegatees: boolean = false
-
   protected readonly transactionFee: BigNumber = new BigNumber('1400')
   protected readonly originationSize: BigNumber = new BigNumber('257')
   protected readonly storageCostPerByte: BigNumber = new BigNumber('1000')
@@ -676,24 +674,13 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     return data.delegate ? [data.delegate] : []
   }
 
-  public async getDelegateesDetails(addresses: string[]): Promise<DelegateeDetails[]> {
-    if (addresses.length > 1) {
-      return Promise.reject('Multiple delegation is not supported.')
+  public async getDelegateeDetails(address: string): Promise<DelegateeDetails> {
+    const bakerInfo = await this.bakerInfo(address)
+
+    return {
+      status: bakerInfo.bakingActive ? 'active' : 'inactive',
+      address
     }
-
-    const bakerAddress = addresses[0]
-
-    const details: DelegateeDetails[] = []
-    if (bakerAddress) {
-      const bakerInfo = await this.bakerInfo(bakerAddress)
-
-      details.push({
-        status: bakerInfo.bakingActive ? 'active' : 'inactive',
-        address: bakerAddress
-      })
-    }
-
-    return details
   }
 
   public async isPublicKeyDelegating(publicKey: string): Promise<boolean> {

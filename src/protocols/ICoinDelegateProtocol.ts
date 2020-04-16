@@ -26,13 +26,11 @@ export interface DelegatorReward {
 }
 
 export interface ICoinDelegateProtocol extends ICoinProtocol {
-    supportsMultipleDelegatees: boolean
-
     getDefaultDelegatee(): Promise<string>
     getCurrentDelegateesForPublicKey(publicKey: string): Promise<string[]>
     getCurrentDelegateesForAddress(address: string): Promise<string[]>
 
-    getDelegateesDetails(addresses: string[]): Promise<DelegateeDetails[]>
+    getDelegateeDetails(address: string): Promise<DelegateeDetails>
 
     isPublicKeyDelegating(publicKey: string): Promise<boolean>
     isAddressDelegating(address: string): Promise<boolean>

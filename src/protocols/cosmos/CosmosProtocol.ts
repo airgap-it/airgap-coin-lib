@@ -70,8 +70,6 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
   public blockExplorer: string = 'https://www.mintscan.io'
   public subProtocols?: (ICoinProtocol & ICoinSubProtocol)[] | undefined
 
-  public supportsMultipleDelegatees: boolean = true
-
   private readonly addressPrefix: string = 'cosmos'
   private readonly defaultGas: BigNumber = new BigNumber('200000')
 
@@ -336,15 +334,15 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
     return delegations.map(delegation => delegation.validator_address)
   }
 
-  public async getDelegateesDetails(addresses: string[]): Promise<DelegateeDetails[]> {
-    const validators = await Promise.all(addresses.map(address => this.nodeClient.fetchValidator(address)))
+  public async getDelegateeDetails(address: string): Promise<DelegateeDetails> {
+    const validator = await this.nodeClient.fetchValidator(address)
     const statusCodes = { 0: 'jailed', 1: 'inactive', 2: 'active' }
 
-    return validators.map(validator => ({
+    return {
       name: validator.description.moniker,
       status: statusCodes[validator.status],
       address: validator.operator_address
-    }))
+    }
   }
 
   public async isPublicKeyDelegating(publicKey: string): Promise<boolean> {
