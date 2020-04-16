@@ -15,7 +15,7 @@ import { TezosTransactionValidator } from './unsigned-transactions/tezos-transac
 import { TransactionValidator } from './validators/transactions.validator'
 import { TezosBTCTransactionValidator } from './unsigned-transactions/xtz-btc-transactions.validator'
 import { CosmosTransactionValidator } from './unsigned-transactions/cosmos-transactions.validator'
-import { PolkadotTransactionValidator } from './unsigned-transactions/polkadot-transactions.validator'
+import { SubstrateTransactionValidator } from './unsigned-transactions/substrate-transactions.validator'
 
 const accountShareResponse: SchemaRoot = require('./schemas/generated/account-share-response.json')
 
@@ -27,14 +27,14 @@ const unsignedTransactionBitcoin: SchemaRoot = require('./schemas/generated/tran
 const unsignedTransactionCosmos: SchemaRoot = require('./schemas/generated/transaction-sign-request-cosmos.json')
 const unsignedTransactionEthereum: SchemaRoot = require('./schemas/generated/transaction-sign-request-ethereum.json')
 const unsignedTransactionTezos: SchemaRoot = require('./schemas/generated/transaction-sign-request-tezos.json')
-const unsignedTransactionPolkadot: SchemaRoot = require('./schemas/generated/transaction-sign-request-polkadot.json')
+const unsignedTransactionSubstrate: SchemaRoot = require('./schemas/generated/transaction-sign-request-substrate.json')
 
 const signedTransactionAeternity: SchemaRoot = require('./schemas/generated/transaction-sign-response-aeternity.json')
 const signedTransactionBitcoin: SchemaRoot = require('./schemas/generated/transaction-sign-response-bitcoin.json')
 const signedTransactionCosmos: SchemaRoot = require('./schemas/generated/transaction-sign-response-cosmos.json')
 const signedTransactionEthereum: SchemaRoot = require('./schemas/generated/transaction-sign-response-ethereum.json')
 const signedTransactionTezos: SchemaRoot = require('./schemas/generated/transaction-sign-response-tezos.json')
-const signedTransactionPolkadot: SchemaRoot = require('./schemas/generated/transaction-sign-response-polkadot.json')
+const signedTransactionSubstrate: SchemaRoot = require('./schemas/generated/transaction-sign-response-substrate.json')
 
 function unsignedTransactionTransformerCosmos(value: SerializableUnsignedCosmosTransaction): SerializableUnsignedCosmosTransaction {
   value.transaction = CosmosTransaction.fromJSON(value) as any
@@ -116,7 +116,8 @@ export class Serializer {
       ae: AeternityTransactionValidator,
       xtz: TezosTransactionValidator,
       cosmos: CosmosTransactionValidator,
-      polkadot: PolkadotTransactionValidator,
+      polkadot: SubstrateTransactionValidator,
+      kusama: SubstrateTransactionValidator,
       'xtz-btc': TezosBTCTransactionValidator
     }
 
@@ -152,7 +153,8 @@ Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema:
 Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema: unsignedTransactionEthereum }, 'eth-erc20')
 Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema: unsignedTransactionTezos }, 'xtz')
 Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema: unsignedTransactionTezos }, 'xtz-btc')
-Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema: unsignedTransactionPolkadot }, 'polkadot')
+Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema: unsignedTransactionSubstrate }, 'polkadot')
+Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema: unsignedTransactionSubstrate }, 'kusama')
 
 Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionAeternity }, 'ae')
 Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionBitcoin }, 'btc')
@@ -162,4 +164,5 @@ Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema
 Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionEthereum }, 'eth-erc20')
 Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionTezos }, 'xtz')
 Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionTezos }, 'xtz-btc')
-Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionPolkadot }, 'polkadot')
+Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionSubstrate }, 'polkadot')
+Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionSubstrate }, 'kusama')

@@ -4,7 +4,7 @@ import { SerializedSignedAeternityTransaction } from './signed-transactions/aete
 import { SerializedSignedBitcoinTransaction } from './signed-transactions/bitcoin-transactions.serializer'
 import { SerializedSignedEthereumTransaction } from './signed-transactions/ethereum-transactions.serializer'
 import { SerializedSignedTezosTransaction } from './signed-transactions/tezos-transactions.serializer'
-import { SerializedSignedPolkadotTransaction } from './signed-transactions/polkadot-transactions.serializer'
+import { SerializedSignedSubstrateTransaction } from './signed-transactions/substrate-transactions.serializer'
 
 export abstract class SignedTransactionSerializer {
   public abstract serialize(unsignedTx: SignedTransaction): SerializedSyncProtocolSignedTransaction
@@ -25,7 +25,7 @@ export type SerializedSignedTransaction =
   | SerializedSignedBitcoinTransaction
   | SerializedSignedAeternityTransaction
   | SerializedSignedTezosTransaction
-  | SerializedSignedPolkadotTransaction
+  | SerializedSignedSubstrateTransaction
 
 export enum SyncProtocolSignedTransactionKeys {
   SIGNED_TRANSACTION = 0,

@@ -3,7 +3,7 @@ import * as chaiAsPromised from 'chai-as-promised'
 import 'mocha'
 import * as sinon from 'sinon'
 
-import { IAirGapTransaction, PolkadotProtocol } from '../../src'
+import { IAirGapTransaction, SubstrateProtocol } from '../../src'
 
 import { TestProtocolSpec } from './implementations'
 import { AETestProtocolSpec } from './specs/ae'
@@ -16,7 +16,7 @@ import { EthereumRopstenTestProtocolSpec } from './specs/ethereum-ropsten'
 import { GenericERC20TokenTestProtocolSpec } from './specs/generic-erc20-token'
 import { GroestlcoinProtocolSpec } from './specs/groestl'
 import { TezosTestProtocolSpec } from './specs/tezos'
-import { PolkadotTestProtocolSpec } from './specs/polkadot'
+import { KusamaTestProtocolSpec } from './specs/kusama'
 import { sr25519Verify } from '@polkadot/wasm-crypto'
 
 // use chai-as-promised plugin
@@ -46,7 +46,7 @@ const protocols = [
   new BitcoinTestProtocolSpec(),
   new GenericERC20TokenTestProtocolSpec(),
   new GroestlcoinProtocolSpec(),
-  new PolkadotTestProtocolSpec()
+  new KusamaTestProtocolSpec()
 ]
 
 const itIf = (condition, title, test) => {
@@ -253,8 +253,8 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
         }
 
         txs.forEach((tx, index) => {
-          if (protocol.lib.identifier === 'polkadot') {
-            const decoded = (protocol.lib as PolkadotProtocol).transactionController.decodeDetails(tx)[0]
+          if (protocol.lib instanceof SubstrateProtocol) {
+            const decoded = (protocol.lib as SubstrateProtocol).transactionController.decodeDetails(tx)[0]
 
             const signature = decoded.transaction.signature.signature.value
             const payload = Buffer.from(decoded.payload.encode(), 'hex')
