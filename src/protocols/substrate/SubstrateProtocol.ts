@@ -1,6 +1,6 @@
 
 import { FeeDefaults, CurrencyUnit } from '../ICoinProtocol'
-import { ICoinDelegateProtocol, DelegatorDetails, DelegateeDetails } from '../ICoinDelegateProtocol'
+import { ICoinDelegateProtocol, DelegationDetails, DelegateeDetails } from '../ICoinDelegateProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
 import { SubstrateNodeClient } from './helpers/node/SubstrateNodeClient'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
@@ -246,13 +246,13 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
 
     public async getDelegateeDetails(address: string): Promise<DelegateeDetails> {
         const validatorDetails = await this.accountController.getValidatorDetails(address)
-
         return {
             name: validatorDetails.name || '',
             status: validatorDetails.status || '',
             address
         }
     }
+
 
     public async isPublicKeyDelegating(publicKey: string): Promise<boolean> {
         return this.accountController.isNominating(publicKey)
@@ -262,24 +262,27 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
         return this.accountController.isNominating(address)
     }
 
-    public async getDelegatorDetailsFromPublicKey(publicKey: string): Promise<DelegatorDetails> {
-        return this.getDelegatorDetailsFromAddress(await this.getAddressFromPublicKey(publicKey))
+    public async getDelegationDetailsFromPublicKey(publicKey: string, delegatees: string[]): Promise<DelegationDetails> {
+        return this.getDelegationDetailsFromAddress(await this.getAddressFromPublicKey(publicKey), delegatees)
     }
 
-    public async getDelegatorDetailsFromAddress(address: string): Promise<DelegatorDetails> {
-        const nominatorDetails = await this.accountController.getNominatorDetails(address)
+    public async getDelegationDetailsFromAddress(address: string, delegatees: string[]): Promise<DelegationDetails> {
+        const [nominatorDetails, validatorsDetails] = await Promise.all([
+            this.accountController.getNominatorDetails(address, delegatees),
+            Promise.all(delegatees.map(validator => this.accountController.getValidatorDetails(validator))),
+        ])
+
+        nominatorDetails.rewards = nominatorDetails.delegatees.length > 0 && nominatorDetails.stakingDetails
+            ? nominatorDetails.stakingDetails.rewards.map(reward => ({
+                index: reward.eraIndex,
+                amount: reward.amount,
+                collected: reward.collected,
+                timestamp: reward.timestamp
+            })) : [] 
 
         return {
-            balance: nominatorDetails.balance,
-            isDelegating: nominatorDetails.isDelegating,
-            availableActions: nominatorDetails.availableActions,
-            rewards: nominatorDetails.isDelegating && nominatorDetails.stakingDetails
-                ? nominatorDetails.stakingDetails.rewards.map(reward => ({
-                    index: reward.eraIndex,
-                    amount: reward.amount,
-                    collected: reward.collected,
-                    timestamp: reward.timestamp
-                })) : []
+            delegator: nominatorDetails,
+            delegatees: validatorsDetails
         }
     }
 

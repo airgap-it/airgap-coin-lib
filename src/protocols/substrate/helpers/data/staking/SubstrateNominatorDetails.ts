@@ -1,4 +1,4 @@
-import { DelegatorAction } from '../../../../ICoinDelegateProtocol'
+import { DelegatorDetails } from '../../../../ICoinDelegateProtocol'
 
 export interface SubstrateLockedDetails {
     value: string
@@ -25,9 +25,6 @@ export interface SubstrateStakingDetails {
     rewards: SubstrateNominatorRewardDetails[]
 }
 
-export interface SubstrateNominatorDetails {
-    balance: string
-    isDelegating: boolean
-    availableActions: DelegatorAction[]
-    stakingDetails: SubstrateStakingDetails | null
+export interface SubstrateNominatorDetails extends DelegatorDetails {
+    stakingDetails?: SubstrateStakingDetails
 }
