@@ -369,17 +369,18 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
     const results = await Promise.all([
       this.getBalanceOfAddresses([address]),
       this.nodeClient.fetchDelegations(address),
-      this.nodeClient.fetchTotalReward(address),
+      this.nodeClient.fetchRewardForDelegation(address, validator).catch(() => new BigNumber(0)),
       this.getDelegateeDetails(validator),
     ])
 
     const balance = results[0]
     const delegations = results[1]
-    const totalRewards = results[2]
+    const unclaimedRewards = results[2]
     const validatorDetails = results[3]
 
     const isDelegating = delegations.some(delegation => delegation.validator_address === validator)
-    const availableActions = this.getAvailableDelegatorActions(isDelegating, new BigNumber(balance), totalRewards)
+    const totalDelegated = new BigNumber(delegations.map(delegation => parseFloat(delegation.shares)).reduce((a, b) => a + b, 0))
+    const availableActions = this.getAvailableDelegatorActions(isDelegating, new BigNumber(balance), totalDelegated, unclaimedRewards)
 
     return {
       delegator: {
@@ -524,22 +525,31 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
     return this.nodeClient.broadcastSignedTransaction(rawTransaction)
   }
 
-  private getAvailableDelegatorActions(isDelegating: boolean, balance: BigNumber, totalRewards: BigNumber): DelegatorAction[] {
+  private getAvailableDelegatorActions(isDelegating: boolean, balance: BigNumber, totalDelegated: BigNumber, unclaimedRewards: BigNumber): DelegatorAction[] {
     const actions: DelegatorAction[] = []
 
-    if (!isDelegating && balance.gt(0)) {
+    const requiredFee = new BigNumber(this.feeDefaults.low).shiftedBy(this.feeDecimals)
+    const hasSufficientBalance = balance
+      .minus(totalDelegated)
+      .gt(requiredFee)
+
+    const canDelegate = !isDelegating || (isDelegating && hasSufficientBalance)
+
+    if (canDelegate) {
       actions.push({
         type: CosmosDelegationActionType.DELEGATE,
         args: ['validator', 'amount']
       })
-    } else {
+    } 
+    
+    if (isDelegating) {
       actions.push({
         type: CosmosDelegationActionType.UNDELEGATE,
         args: ['validator', 'amount']
       })
     }
 
-    if (totalRewards.gt(0)) {
+    if (unclaimedRewards.gt(0)) {
       actions.push({
         type: CosmosDelegationActionType.WITHDRAW_REWARDS
       })
