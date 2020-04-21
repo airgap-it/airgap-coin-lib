@@ -107,17 +107,14 @@ export class CosmosNodeClient {
     if (data.length > 0) {
       const availableBalance = data[0].amount
       if (totalBalance) {
-        const results = await Promise.all([
+        const totalBalance = (await Promise.all([
           this.fetchTotalReward(address),
           this.fetchTotalUnbondingAmount(address),
           this.fetchTotalDelegatedAmount(address)
-        ])
-        const totalRewardValue = results[0]
-        const totalUnbondingValue = results[1]
-        const totalDelegatedValue = results[2]
-        return BigNumber.sum.apply(null, [availableBalance, totalRewardValue, totalUnbondingValue, totalDelegatedValue])
+        ])).reduce((current, next) => current.plus(next), new BigNumber(availableBalance))
+        return totalBalance.decimalPlaces(0, BigNumber.ROUND_FLOOR)
       } else {
-        return new BigNumber(availableBalance)
+        return new BigNumber(availableBalance).decimalPlaces(0, BigNumber.ROUND_FLOOR)
       }
     } else {
       return new BigNumber(0)
@@ -160,7 +157,7 @@ export class CosmosNodeClient {
 
   public async fetchTotalDelegatedAmount(address: string): Promise<BigNumber> {
     const delegations = await this.fetchDelegations(address)
-    return new BigNumber(delegations.map(delegation => parseFloat(delegation.balance)).reduce((a, b) => a + b, 0))
+    return new BigNumber(delegations.map(delegation => parseFloat(delegation.balance)).reduce((a, b) => a + b, 0)).decimalPlaces(0, BigNumber.ROUND_FLOOR)
   }
 
   public async fetchValidator(address: string): Promise<CosmosValidator> {
@@ -195,7 +192,7 @@ export class CosmosNodeClient {
   public async fetchTotalUnbondingAmount(address: string): Promise<BigNumber> {
     const unbondingDelegations: CosmosUnbondingDelegation[] = await this.fetchUnbondingDelegations(address)
     if (unbondingDelegations) {
-      return new BigNumber(unbondingDelegations.map(delegation => parseFloat(delegation.balance)).reduce((a, b) => a + b, 0))
+      return new BigNumber(unbondingDelegations.map(delegation => parseFloat(delegation.balance)).reduce((a, b) => a + b, 0)).decimalPlaces(0, BigNumber.ROUND_FLOOR)
     }
     return new BigNumber(0)
   }
@@ -213,7 +210,7 @@ export class CosmosNodeClient {
     .catch(() => [])
     
     if (totalRewards.length > 0) {
-      return new BigNumber(totalRewards[0].amount)
+      return new BigNumber(totalRewards[0].amount).decimalPlaces(0, BigNumber.ROUND_FLOOR)
     }
 
     return new BigNumber(0)
@@ -224,7 +221,7 @@ export class CosmosNodeClient {
     .then(response => response.data.result as { denom: string; amount: string }[])
     .catch(() => [])
     if (totalRewards.length > 0) {
-      return new BigNumber(totalRewards[0].amount)
+      return new BigNumber(totalRewards[0].amount).decimalPlaces(0, BigNumber.ROUND_FLOOR)
     }
 
     return new BigNumber(0)
