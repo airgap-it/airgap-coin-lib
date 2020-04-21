@@ -160,7 +160,7 @@ export class CosmosNodeClient {
 
   public async fetchTotalDelegatedAmount(address: string): Promise<BigNumber> {
     const delegations = await this.fetchDelegations(address)
-    return new BigNumber(delegations.map(delegation => parseFloat(delegation.shares)).reduce((a, b) => a + b, 0))
+    return new BigNumber(delegations.map(delegation => parseFloat(delegation.balance)).reduce((a, b) => a + b, 0))
   }
 
   public async fetchValidator(address: string): Promise<CosmosValidator> {
