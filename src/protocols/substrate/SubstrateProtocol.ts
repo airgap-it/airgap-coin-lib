@@ -131,6 +131,13 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
         return balance.toString(10)
     }
 
+    public async getAvailableBalanceOfAddresses(addresses: string[]): Promise<string> {
+        const balances = await Promise.all(addresses.map(address => this.accountController.getTransferableBalance(address, false)))
+        const balance = balances.reduce((current: BigNumber, next: BigNumber) => current.plus(next))
+
+        return balance.toString(10)
+    }
+
     public async getBalanceOfPublicKey(publicKey: string): Promise<string> {
         return this.getBalanceOfAddresses([await this.getAddressFromPublicKey(publicKey)])        
     }

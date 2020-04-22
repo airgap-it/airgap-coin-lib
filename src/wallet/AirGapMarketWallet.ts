@@ -1,4 +1,3 @@
-import { CosmosProtocol } from './../protocols/cosmos/CosmosProtocol'
 import { IAirGapTransaction } from '..'
 import Axios from '../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../dependencies/src/bignumber.js-9.0.0/bignumber'
@@ -31,11 +30,6 @@ export class AirGapMarketWallet extends AirGapWallet {
   public dailyMarketSample: MarketDataSample[] = []
   public hourlyMarketSample: MarketDataSample[] = []
 
-  public availableBalance?: BigNumber
-  public totalDelegatedValue?: BigNumber
-  public totalUnbondingValue?: BigNumber
-  public totalRewardValue?: BigNumber
-
   constructor(
     public protocolIdentifier: string,
     public publicKey: string,
@@ -48,17 +42,10 @@ export class AirGapMarketWallet extends AirGapWallet {
 
   public synchronize(): Promise<void> {
     return new Promise((resolve, reject) => {
-      Promise.all([this.balanceOf(), this.fetchCurrentMarketPrice(), this.fetchAdditionalProperties()])
+      Promise.all([this.balanceOf(), this.fetchCurrentMarketPrice()])
         .then(results => {
           this.currentBalance = results[0]
           this.currentMarketPrice = results[1]
-          if (results[2] !== undefined) {
-            const info = results[2]
-            this.availableBalance = info.availableBalance
-            this.totalDelegatedValue = info.totalDelegatedValue
-            this.totalRewardValue = info.totalRewardValue
-            this.totalUnbondingValue = info.totalUnbondingValue
-          }
           resolve()
         })
         .catch(error => {
@@ -183,30 +170,6 @@ export class AirGapMarketWallet extends AirGapWallet {
       return new BigNumber(await this.coinProtocol.getBalanceOfExtendedPublicKey(this.publicKey, 0))
     } else {
       return new BigNumber(await this.coinProtocol.getBalanceOfPublicKey(this.publicKey))
-    }
-  }
-
-  public async fetchAdditionalProperties(): Promise<any> {
-    if (this.protocolIdentifier === 'cosmos') {
-      const protocol = new CosmosProtocol()
-      const results = await Promise.all([
-        protocol.fetchAvailableBalance(this.addresses[0]),
-        protocol.fetchTotalReward(this.addresses[0]),
-        protocol.fetchTotalUnbondingAmount(this.addresses[0]),
-        protocol.fetchTotalDelegatedAmount(this.addresses[0])
-      ])
-      const availableBalance = results[0]
-      const totalRewardValue = results[1]
-      const totalUnbondingValue = results[2]
-      const totalDelegatedValue = results[3]
-      return {
-        availableBalance: availableBalance,
-        totalRewardValue: totalRewardValue,
-        totalUnbondingValue: totalUnbondingValue,
-        totalDelegatedValue: totalDelegatedValue
-      }
-    } else {
-      return undefined
     }
   }
 

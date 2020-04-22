@@ -80,6 +80,7 @@ export interface ICoinProtocol {
   getBalanceOfAddresses(addresses: string[]): Promise<string>
   getBalanceOfPublicKey(publicKey: string): Promise<string>
   getBalanceOfExtendedPublicKey(extendedPublicKey: string, offset: number): Promise<string>
+  getAvailableBalanceOfAddresses(addresses: string[]): Promise<string>
 
   estimateMaxTransactionValueFromExtendedPublicKey(extendedPublicKey: string, fee: string): Promise<string>
   estimateMaxTransactionValueFromPublicKey(publicKey: string, fee: string): Promise<string>
