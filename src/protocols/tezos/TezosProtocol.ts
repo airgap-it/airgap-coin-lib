@@ -25,7 +25,8 @@ import { TezosTransactionOperation } from './types/operations/Transaction'
 import { TezosOperationType } from './types/TezosOperationType'
 import { TezosWrappedOperation } from './types/TezosWrappedOperation'
 import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
-import { ICoinDelegateProtocol, DelegateeDetails, DelegatorDetails, DelegatorAction } from '../ICoinDelegateProtocol'
+import { ICoinDelegateProtocol, DelegatorAction, DelegationDetails, DelegateeDetails } from '../ICoinDelegateProtocol'
+import { isArray } from 'util'
 
 const assertNever: (x: never) => void = (x: never): void => undefined
 
@@ -121,8 +122,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   public addressPlaceholder: string = 'tz1...'
 
   public blockExplorer: string = 'https://tezblock.io'
-
-  public supportsMultipleDelegatees: boolean = false
 
   protected readonly transactionFee: BigNumber = new BigNumber('1400')
   protected readonly originationSize: BigNumber = new BigNumber('257')
@@ -676,25 +675,15 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     return data.delegate ? [data.delegate] : []
   }
 
-  public async getDelegateesDetails(addresses: string[]): Promise<DelegateeDetails[]> {
-    if (addresses.length > 1) {
-      return Promise.reject('Multiple delegation is not supported.')
+  public async getDelegateeDetails(address: string): Promise<DelegateeDetails> {
+    const bakerInfo = await this.bakerInfo(address)
+
+    return {
+      status: bakerInfo.bakingActive ? 'Active' : 'Inactive',
+      address: address
     }
-
-    const bakerAddress = addresses[0]
-
-    const details: DelegateeDetails[] = []
-    if (bakerAddress) {
-      const bakerInfo = await this.bakerInfo(bakerAddress)
-
-      details.push({
-        status: bakerInfo.bakingActive ? 'Active' : 'Inactive',
-        address: bakerAddress
-      })
-    }
-
-    return details
   }
+
 
   public async isPublicKeyDelegating(publicKey: string): Promise<boolean> {
     return this.isAddressDelegating(await this.getAddressFromPublicKey(publicKey))
@@ -705,21 +694,29 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     return !!data.delegate
   }
 
-  public async getDelegatorDetailsFromPublicKey(publicKey: string): Promise<DelegatorDetails> {
-    return this.getDelegatorDetailsFromAddress(await this.getAddressFromPublicKey(publicKey))
+  public async getDelegationDetailsFromPublicKey(publicKey: string, delegatees: string[]): Promise<DelegationDetails> {
+    return this.getDelegationDetailsFromAddress(await this.getAddressFromPublicKey(publicKey), delegatees)
   }
   
-  public async getDelegatorDetailsFromAddress(address: string): Promise<DelegatorDetails> {
+  public async getDelegationDetailsFromAddress(address: string, delegatees: string[]): Promise<DelegationDetails> {
+    if (delegatees.length > 1) {
+      return Promise.reject('Multiple delegation is not supported.')
+    }
+
+    const bakerAddress = delegatees[0]
+    
     const results = await Promise.all([
       axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}`),
-      this.getDelegationRewardsForAddress(address).catch(() => null)
+      this.getDelegationRewardsForAddress(address).catch(() => null),
+      this.getDelegateeDetails(bakerAddress),
     ])
 
     const accountDetails = results[0]?.data
     const rewardInfo = results[1]
+    const bakerDetails = results[2]
 
-    if (!accountDetails) {
-      return Promise.reject('Could not get account details')
+    if (!accountDetails || !bakerDetails) {
+      return Promise.reject('Could not fetch necessary details.')
     }
 
     const balance = accountDetails.balance
@@ -731,31 +728,36 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
         type: TezosDelegatorAction.DELEGATE,
         args: ['delegate']
       })
-    } else {
-      availableActions.push(
-        {
-          type: TezosDelegatorAction.CHANGE_BAKER,
-          args: ['delegate']
-        },
-        { 
+    } else if (accountDetails.delegate === bakerAddress) {
+      availableActions.push({ 
           type: TezosDelegatorAction.UNDELEGATE 
-        }
-      )
+      })
+    } else {
+      availableActions.push({
+        type: TezosDelegatorAction.CHANGE_BAKER,
+        args: ['delegate']
+      })
     }
 
+    const rewards = isDelegating && rewardInfo 
+      ? rewardInfo
+          .map(reward => ({
+            index: reward.cycle,
+            amount: reward.reward.toFixed(),
+            collected: reward.payout < new Date(),
+            timestamp: reward.payout.getTime()
+          })) 
+      : []
+
     return {
-      balance,
-      isDelegating,
-      availableActions,
-      rewards: isDelegating && rewardInfo 
-        ? rewardInfo
-            .map(reward => ({
-              index: reward.cycle,
-              amount: reward.reward.toFixed(),
-              collected: reward.payout < new Date(),
-              timestamp: reward.payout.getTime()
-            })) 
-        : []
+      delegator: {
+        address,
+        balance,
+        delegatees: [accountDetails.delegate],
+        availableActions,
+        rewards
+      },
+      delegatees: [bakerDetails]
     }
   }
 
@@ -995,8 +997,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     }
   }
 
-  public async bakerInfo(tzAddress: string): Promise<BakerInfo> {
+  public async bakerInfo(tzAddress: string | undefined): Promise<BakerInfo> {
     if (
+      !tzAddress ||
       !(tzAddress.toLowerCase().startsWith('tz1') || tzAddress.toLowerCase().startsWith('tz2') || tzAddress.toLowerCase().startsWith('tz3'))
     ) {
       throw new Error('non tz-address supplied')
@@ -1091,7 +1094,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     return this.delegate(publicKey)
   }
 
-  public async delegate(publicKey: string, delegate?: string): Promise<RawTezosTransaction> {
+  public async delegate(publicKey: string, delegate?: string | string[]): Promise<RawTezosTransaction> {
     let counter: BigNumber = new BigNumber(1)
     let branch: string
 
@@ -1134,7 +1137,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       counter: counter.toFixed(),
       gas_limit: '10000', // taken from eztz
       storage_limit: '0', // taken from eztz
-      delegate
+      delegate: isArray(delegate) ? delegate[0] : delegate
     }
 
     operations.push(delegationOperation)

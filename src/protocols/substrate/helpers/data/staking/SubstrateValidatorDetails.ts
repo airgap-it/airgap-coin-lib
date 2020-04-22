@@ -1,3 +1,5 @@
+import { DelegateeDetails } from '../../../../ICoinDelegateProtocol'
+
 export type SubstrateValidatorStatus = 'Active' | 'Inactive' | 'Reaped'
 
 export interface SubstrateValidatorRewardDetails {
@@ -7,11 +9,10 @@ export interface SubstrateValidatorRewardDetails {
     commission: string
 }
 
-export interface SubstrateValidatorDetails {
-    name: string | null,
-    status: SubstrateValidatorStatus | null,
-    ownStash: string | null
-    totalStakingBalance: string | null,
-    commission: string | null
-    lastEraReward: SubstrateValidatorRewardDetails | null
+export interface SubstrateValidatorDetails extends DelegateeDetails {
+    status?: SubstrateValidatorStatus
+    ownStash?: string
+    totalStakingBalance?: string
+    commission?: string
+    lastEraReward?: SubstrateValidatorRewardDetails
 }
