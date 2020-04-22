@@ -111,7 +111,7 @@ export class CosmosInfoClient {
     const query: TransactionListQuery = new TransactionListQuery(offset, limit, address)
     const response: AxiosResponse<CosmosTransactionsResponse> = await Axios.post(
       `${this.baseURL}/cosmos/v1/getTxsByAddr`,
-      query.toRLPBody()
+      query.toJSONBody()
     )
     if (response.data.hits.hits === null) {
       return []
@@ -121,7 +121,7 @@ export class CosmosInfoClient {
       const fee: BigNumber = transaction.value.fee.amount
         .map((coin: Amount) => new BigNumber(coin.amount))
         .reduce((current: BigNumber, next: BigNumber) => current.plus(next))
-      const result: IAirGapTransaction[] = transaction.value.msg.map((message: Msg) => {
+      const result: IAirGapTransaction[] = transaction.value.msg.filter((message: Msg) => message.type === 'cosmos-sdk/MsgSend').map((message: Msg) => {
         const destination: string = message.value.to_address
 
         return {
