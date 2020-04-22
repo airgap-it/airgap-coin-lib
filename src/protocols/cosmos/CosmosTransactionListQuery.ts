@@ -13,6 +13,11 @@ export class TransactionListQuery {
                 query: this.address,
                 fields: ['tx.value.msg.value.from_address', 'tx.value.msg.value.to_address']
               }
+            },
+            {
+              match_phrase: {
+                "tx.value.msg.type": "cosmos-sdk/MsgSend"
+              }
             }
           ]
         }

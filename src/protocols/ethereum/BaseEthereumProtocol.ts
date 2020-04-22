@@ -248,6 +248,10 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     return Promise.reject('extended public balance for ether not implemented')
   }
 
+  public async getAvailableBalanceOfAddresses(addresses: string[]): Promise<string> {
+    return this.getBalanceOfAddresses(addresses)
+  }
+
   public estimateMaxTransactionValueFromExtendedPublicKey(extendedPublicKey: string, fee: string): Promise<string> {
     return Promise.reject('estimating max value using extended public key not implemented')
   }

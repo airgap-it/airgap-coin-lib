@@ -466,6 +466,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     return this.getBalanceOfAddresses([address])
   }
 
+  public async getAvailableBalanceOfAddresses(addresses: string[]): Promise<string> {
+    return this.getBalanceOfAddresses(addresses)
+  }
+
   public async estimateMaxTransactionValueFromPublicKey(publicKey: string, fee: string): Promise<string> {
     const balance = await this.getBalanceOfPublicKey(publicKey)
 
