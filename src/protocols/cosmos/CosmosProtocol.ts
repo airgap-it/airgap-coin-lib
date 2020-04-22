@@ -368,24 +368,25 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
     const validator = delegatees[0]
     const results = await Promise.all([
       this.getBalanceOfAddresses([address]),
+      this.fetchAvailableBalance(address),
       this.nodeClient.fetchDelegations(address),
       this.nodeClient.fetchRewardForDelegation(address, validator).catch(() => new BigNumber(0)),
       this.getDelegateeDetails(validator),
     ])
 
-    const balance = results[0]
-    const delegations = results[1]
-    const unclaimedRewards = results[2]
-    const validatorDetails = results[3]
+    const totalBalance = results[0]
+    const availableBalance = results[1]
+    const delegations = results[2]
+    const unclaimedRewards = results[3]
+    const validatorDetails = results[4]
 
     const isDelegating = delegations.some(delegation => delegation.validator_address === validator)
-    const totalDelegated = new BigNumber(delegations.map(delegation => parseFloat(delegation.balance)).reduce((a, b) => a + b, 0))
-    const availableActions = this.getAvailableDelegatorActions(isDelegating, new BigNumber(balance), totalDelegated, unclaimedRewards)
+    const availableActions = this.getAvailableDelegatorActions(isDelegating, availableBalance, unclaimedRewards)
 
     return {
       delegator: {
         address,
-        balance,
+        balance: totalBalance,
         delegatees: delegations.map(delegation => delegation.validator_address),
         availableActions
       },
@@ -525,17 +526,17 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
     return this.nodeClient.broadcastSignedTransaction(rawTransaction)
   }
 
-  private getAvailableDelegatorActions(isDelegating: boolean, balance: BigNumber, totalDelegated: BigNumber, unclaimedRewards: BigNumber): DelegatorAction[] {
+  private getAvailableDelegatorActions(
+    isDelegating: boolean, 
+    availableBalance: BigNumber, 
+    unclaimedRewards: BigNumber
+  ): DelegatorAction[] {
     const actions: DelegatorAction[] = []
 
     const requiredFee = new BigNumber(this.feeDefaults.low).shiftedBy(this.feeDecimals)
-    const hasSufficientBalance = balance
-      .minus(totalDelegated)
-      .gt(requiredFee)
+    const hasSufficientBalance = availableBalance.gt(requiredFee)
 
-    const canDelegate = !isDelegating || (isDelegating && hasSufficientBalance)
-
-    if (canDelegate) {
+    if (hasSufficientBalance) {
       actions.push({
         type: CosmosDelegationActionType.DELEGATE,
         args: ['validator', 'amount']
