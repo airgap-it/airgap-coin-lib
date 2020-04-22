@@ -245,9 +245,21 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
   }
 
   public async getBalanceOfAddresses(addresses: string[]): Promise<string> {
+    return this.getBalance(addresses)
+  }
+
+  public async getBalanceOfPublicKey(publicKey: string): Promise<string> {
+    return this.getBalanceOfAddresses([await this.getAddressFromPublicKey(publicKey)])
+  }
+
+  public async getAvailableBalanceOfAddresses(addresses: string[]): Promise<string> {
+    return this.getBalance(addresses, false)
+  }
+
+  private async getBalance(addresses: string[], totalBalance: boolean = true): Promise<string> {
     const promises: Promise<BigNumber>[] = []
     for (const address of addresses) {
-      promises.push(this.nodeClient.fetchBalance(address, true))
+      promises.push(this.nodeClient.fetchBalance(address, totalBalance))
     }
 
     return (
@@ -257,14 +269,6 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
         })
       })
     ).toString(10)
-  }
-
-  public async getBalanceOfPublicKey(publicKey: string): Promise<string> {
-    return this.getBalanceOfAddresses([await this.getAddressFromPublicKey(publicKey)])
-  }
-
-  public async fetchAvailableBalance(address: string): Promise<BigNumber> {
-    return this.nodeClient.fetchBalance(address)
   }
 
   public async estimateMaxTransactionValueFromPublicKey(publicKey: string, fee: string): Promise<string> {

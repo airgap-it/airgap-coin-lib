@@ -318,6 +318,10 @@ export class BitcoinProtocol implements ICoinProtocol {
     }
   }
 
+  public async getAvailableBalanceOfAddresses(addresses: string[]): Promise<string> {
+    return this.getBalanceOfAddresses(addresses)
+  }
+
   public async estimateMaxTransactionValueFromExtendedPublicKey(extendedPublicKey: string, fee: string): Promise<string> {
     const balance = await this.getBalanceOfExtendedPublicKey(extendedPublicKey)
     return this.estimateMaxTransactionValue(new BigNumber(balance), new BigNumber(fee)).toFixed()
