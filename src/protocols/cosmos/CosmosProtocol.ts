@@ -272,7 +272,8 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
   }
 
   public async estimateMaxTransactionValueFromPublicKey(publicKey: string, fee: string): Promise<string> {
-    const balance = await this.getBalanceOfPublicKey(publicKey)
+    const address = await this.getAddressFromPublicKey(publicKey)
+    const balance = await this.getAvailableBalanceOfAddresses([address])
 
     let amountWithoutFees = new BigNumber(balance).minus(new BigNumber(fee))
     if (amountWithoutFees.isNegative()) {
