@@ -90,11 +90,11 @@ export class SubstrateAccountController {
         const address = SubstrateAddress.from(accountId, this.network)
         const currentEra = await this.nodeClient.getCurrentEraIndex()
 
-        let identity: SubstrateRegistration | null = null
-        let status: SubstrateValidatorStatus | null = null
-        let exposure: SubstrateExposure | null = null
-        let validatorPrefs: SubstrateValidatorPrefs | null = null
-        let lastEraReward: SubstrateValidatorRewardDetails | null = null
+        let identity: SubstrateRegistration | undefined
+        let status: SubstrateValidatorStatus | undefined
+        let exposure: SubstrateExposure | undefined
+        let validatorPrefs: SubstrateValidatorPrefs | undefined
+        let lastEraReward: SubstrateValidatorRewardDetails | undefined
         if (currentEra) {            
             const results = await Promise.all([
                 this.nodeClient.getIdentityOf(address).catch(_ => null),
@@ -103,12 +103,12 @@ export class SubstrateAccountController {
                 this.nodeClient.getValidatorExposure(address)
             ])
 
-            identity = results[0]
+            identity = results[0] || undefined
             const currentValidators = results[1]
-            validatorPrefs = results[2]
-            exposure = results[3]
+            validatorPrefs = results[2] || undefined
+            exposure = results[3] || undefined
 
-            lastEraReward = await this.getEraValidatorReward(address, currentEra.toNumber() - 1)
+            lastEraReward = (await this.getEraValidatorReward(address, currentEra.toNumber() - 1)) || undefined
 
             // TODO: check if reaped
             if (currentValidators && currentValidators.find(current => current.compare(address) == 0)) {
@@ -119,18 +119,19 @@ export class SubstrateAccountController {
         }
         
         return {
-            name: identity ? identity.identityInfo.display : null,
-            status,
-            ownStash: exposure ? exposure.own.toString() : null,
-            totalStakingBalance: exposure ? exposure.total.toString() : null,
+            address: address.toString(),
+            name: identity ? identity.identityInfo.display : undefined,
+            status: status || undefined,
+            ownStash: exposure ? exposure.own.toString() : undefined,
+            totalStakingBalance: exposure ? exposure.total.toString() : undefined,
             commission: validatorPrefs 
                 ? validatorPrefs.commission.value.dividedBy(1_000_000_000).toString() // commission is Perbill (parts per billion)
-                : null, 
+                : undefined, 
             lastEraReward
         }
     }
 
-    public async getNominatorDetails(accountId: SubstrateAccountId): Promise<SubstrateNominatorDetails> {
+    public async getNominatorDetails(accountId: SubstrateAccountId, validatorIds: SubstrateAccountId[]): Promise<SubstrateNominatorDetails> {
         const address = SubstrateAddress.from(accountId, this.network)
 
         const results = await Promise.all([
@@ -156,13 +157,14 @@ export class SubstrateAccountController {
         }
 
         const stakingDetails = await this.getStakingDetails(accountId, stakingLedger, nominations, activeEra, expectedEraDuration)
-        const availableActions = await this.getAvailableStakingActions(stakingDetails, existentialDeposit, transferableBalance)
+        const availableActions = await this.getAvailableStakingActions(stakingDetails, nominations, validatorIds, existentialDeposit, transferableBalance)
 
         return {
+            address: address.toString(),
             balance: balance.toString(),
-            isDelegating: nominations !== null,
+            delegatees: nominations?.targets?.elements?.map(target => target.asAddress()) || [],
             availableActions,
-            stakingDetails
+            stakingDetails: stakingDetails || undefined
         }
     }
 
@@ -448,13 +450,18 @@ export class SubstrateAccountController {
 
     private async getAvailableStakingActions(
         stakingDetails: SubstrateStakingDetails | null,
+        nominations: SubstrateNominations | null,
+        validatorIds: SubstrateAccountId[],
         minDelegationValue: BigNumber,
         maxDelegationValue: BigNumber
     ): Promise<DelegatorAction[]> {
         const availableActions: DelegatorAction[] = []
 
+        const currentValidators = nominations?.targets?.elements?.map(target => target.asAddress()) || []
+        const validatorAddresses = validatorIds.map(id => SubstrateAddress.from(id, this.network).toString())
+
         const isBonded = stakingDetails !== null
-        const isDelegating = stakingDetails && stakingDetails.status !== 'bonded'
+        const isDelegating = nominations !== null
 
         const hasFundsToWithdraw = new BigNumber(stakingDetails?.unlocked || 0).gt(0)
         const hasRewardsToCollect = stakingDetails?.rewards.some(reward => !reward.collected)
@@ -474,16 +481,17 @@ export class SubstrateAccountController {
         }
         
         if (isDelegating) {
-            availableActions.push(
-                {
-                    type: SubstrateStakingActionType.CHANGE_NOMINATION,
-                    args: ['targets']
-                },
-                {
+            if (validatorAddresses.every(validator => currentValidators.includes(validator)) && validatorAddresses.length === currentValidators.length) {
+                availableActions.push({
                     type: SubstrateStakingActionType.CANCEL_NOMINATION,
                     args: []
-                }
-            )
+                })
+            } else {
+                availableActions.push({
+                    type: SubstrateStakingActionType.CHANGE_NOMINATION,
+                    args: ['targets']
+                })
+            }
 
             if (hasRewardsToCollect) {
                 availableActions.push({

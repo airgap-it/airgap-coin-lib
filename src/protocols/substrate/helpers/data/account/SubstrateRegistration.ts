@@ -22,7 +22,7 @@ export class SubstrateIdentityInfo {
     public static decode(network: SubstrateNetwork, raw: string): SCALEDecodeResult<SubstrateIdentityInfo> {
         const decoder = new SCALEDecoder(network, raw)
 
-        const dataDecodeMethod = hex => {
+        const dataDecodeMethod = (_, hex) => {
             const encoded = hexToBytes(hex)
             const indicator = encoded[0]
 

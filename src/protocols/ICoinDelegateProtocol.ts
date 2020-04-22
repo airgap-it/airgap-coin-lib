@@ -12,8 +12,9 @@ export interface DelegatorAction {
 }
 
 export interface DelegatorDetails {
+    address: string
     balance: string
-    isDelegating: boolean
+    delegatees: string[]
     availableActions?: DelegatorAction[]
     rewards?: DelegatorReward[]
 }
@@ -25,20 +26,23 @@ export interface DelegatorReward {
     timestamp: number
 }
 
-export interface ICoinDelegateProtocol extends ICoinProtocol {
-    supportsMultipleDelegatees: boolean
+export interface DelegationDetails {
+    delegator: DelegatorDetails
+    delegatees: DelegateeDetails[]
+}
 
+export interface ICoinDelegateProtocol extends ICoinProtocol {
     getDefaultDelegatee(): Promise<string>
     getCurrentDelegateesForPublicKey(publicKey: string): Promise<string[]>
     getCurrentDelegateesForAddress(address: string): Promise<string[]>
 
-    getDelegateesDetails(addresses: string[]): Promise<DelegateeDetails[]>
+    getDelegateeDetails(address: string): Promise<DelegateeDetails>
 
     isPublicKeyDelegating(publicKey: string): Promise<boolean>
     isAddressDelegating(address: string): Promise<boolean>
 
-    getDelegatorDetailsFromPublicKey(publicKey: string): Promise<DelegatorDetails>
-    getDelegatorDetailsFromAddress(address: string): Promise<DelegatorDetails>
+    getDelegationDetailsFromPublicKey(publicKey: string, delegatees: string[]): Promise<DelegationDetails>
+    getDelegationDetailsFromAddress(address: string, delegatees: string[]): Promise<DelegationDetails>
 
     prepareDelegatorActionFromPublicKey(publicKey: string, type: any, data?: any): Promise<any[]>
 }

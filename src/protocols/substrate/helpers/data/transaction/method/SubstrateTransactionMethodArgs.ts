@@ -13,6 +13,7 @@ import { SubstrateTransactionMethod } from './SubstrateTransactionMethod'
 import { SubstratePayee } from '../../staking/SubstratePayee'
 import { IAirGapTransaction } from '../../../../../../interfaces/IAirGapTransaction'
 import { SubstrateNetwork } from '../../../../SubstrateNetwork'
+import { assertFields } from '../../../../../../utils/assert'
 
 interface TransferArgs {
     to: SubstrateAccountId,
@@ -64,15 +65,6 @@ interface SetControllerArgs {
 
 interface SubmitBatchArgs {
     calls: SubstrateTransactionMethod[]
-}
-
-function assertFields(type: string, object: any, ...fields: string[]) {
-    fields.forEach(field => {
-        if (object[field] === undefined) {
-            throw new Error(`Incorrect arguments passed for Substrate ${type} transaction. Required: ${fields.join(', ')} but ${field} is missing`)
-        }
-    })
-    return true
 }
 
 export abstract class SubstrateTransactionMethodArgsFactory<T> {
