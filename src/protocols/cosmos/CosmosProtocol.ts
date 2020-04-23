@@ -409,7 +409,8 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
       case CosmosDelegationActionType.WITHDRAW_REWARDS:
         const address = await this.getAddressFromPublicKey(publicKey)
         const rewards = await this.nodeClient.fetchRewardDetails(address)
-        const validators = rewards.map(reward => reward.validator_address)
+        const filteredRewards = rewards.filter(reward => reward.reward.reduce((current, next) => current.plus(new BigNumber(next.amount)), new BigNumber(0)).decimalPlaces(0, BigNumber.ROUND_FLOOR).gt(0))
+        const validators = filteredRewards.map(reward => reward.validator_address)
 
         return [await this.withdrawDelegationRewards(publicKey, validators)]
       default:
@@ -500,8 +501,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
   }
 
   public async fetchTotalDelegatedAmount(address: string): Promise<BigNumber> {
-    const delegations = await this.fetchDelegations(address)
-    return new BigNumber(delegations.map(delegation => parseFloat(delegation.balance)).reduce((a, b) => a + b, 0))
+    return this.nodeClient.fetchTotalDelegatedAmount(address)
   }
 
   public async fetchValidator(address: string): Promise<CosmosValidator> {
@@ -512,11 +512,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
   }
 
   public async fetchTotalUnbondingAmount(address: string): Promise<BigNumber> {
-    const unbondingDelegations: CosmosUnbondingDelegation[] = await this.fetchUnbondingDelegations(address)
-    if (unbondingDelegations) {
-      return new BigNumber(unbondingDelegations.map(delegation => parseFloat(delegation.balance)).reduce((a, b) => a + b, 0))
-    }
-    return new BigNumber(0)
+    return this.nodeClient.fetchTotalUnbondingAmount(address)
   }
 
   public async fetchValidators(): Promise<CosmosValidator[]> {
