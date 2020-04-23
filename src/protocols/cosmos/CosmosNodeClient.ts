@@ -134,7 +134,7 @@ export class CosmosNodeClient {
         'Content-type': 'application/json'
       }
     })
-
+    
     return response.data.txhash
   }
 

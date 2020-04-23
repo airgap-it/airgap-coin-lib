@@ -74,7 +74,7 @@ interface Result {
 interface Source {
   hash: string
   height: number
-  time: unknown
+  timestamp: string
   tx: Tx
   result: Result
 }
@@ -118,6 +118,7 @@ export class CosmosInfoClient {
     }
     const transactions: IAirGapTransaction[][] = response.data.hits.hits.map((hit: Hit) => {
       const transaction: Tx = hit._source.tx
+      const timestamp = (new Date(hit._source.timestamp)).getTime() / 1000
       const fee: BigNumber = transaction.value.fee.amount
         .map((coin: Amount) => new BigNumber(coin.amount))
         .reduce((current: BigNumber, next: BigNumber) => current.plus(next))
@@ -134,7 +135,8 @@ export class CosmosInfoClient {
           isInbound: destination === address,
           fee: fee.toString(10),
           protocolIdentifier: identifier,
-          hash: hit._source.hash
+          hash: hit._source.hash,
+          timestamp
         }
       })
 
