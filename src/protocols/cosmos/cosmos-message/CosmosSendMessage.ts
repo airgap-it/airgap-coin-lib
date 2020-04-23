@@ -3,6 +3,7 @@ import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { CosmosCoin, CosmosCoinJSON } from '../CosmosCoin'
 
 import { CosmosMessage, CosmosMessageJSON, CosmosMessageType } from './CosmosMessage'
+import { AirGapTransactionType } from '../../../interfaces/IAirGapTransaction'
 
 export class CosmosSendMessage implements CosmosMessage {
   public readonly fromAddress: string
@@ -56,7 +57,10 @@ export class CosmosSendMessage implements CosmosMessage {
       isInbound: false,
       fee,
       protocolIdentifier: identifier,
-      transactionDetails: this.toRPCBody()
+      transactionDetails: this.toRPCBody(),
+      extra: {
+        type: AirGapTransactionType.SPEND
+      }
     }
   }
 
