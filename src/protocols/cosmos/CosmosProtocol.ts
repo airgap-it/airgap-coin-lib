@@ -441,7 +441,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
     return new CosmosTransaction(
       [message],
       new CosmosFee(
-        [new CosmosCoin('uatom', new BigNumber(this.feeDefaults.medium).shiftedBy(this.feeDecimals).toString(10))],
+        [new CosmosCoin('uatom', new BigNumber(this.feeDefaults.low).shiftedBy(this.feeDecimals).toString(10))],
         this.defaultGas.toString(10)
       ),
       memo !== undefined ? memo : '',
@@ -462,7 +462,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
     return new CosmosTransaction(
       messages,
       new CosmosFee(
-        [new CosmosCoin('uatom', new BigNumber(this.feeDefaults.medium).shiftedBy(this.feeDecimals).toString(10))],
+        [new CosmosCoin('uatom', new BigNumber(this.feeDefaults.low).shiftedBy(this.feeDecimals).toString(10))],
         this.defaultGas.toString(10)
       ),
       memo !== undefined ? memo : '',

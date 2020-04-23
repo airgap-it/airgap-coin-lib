@@ -33,18 +33,20 @@ const contract = new TezosBTC()
 // edpktpPTi9MLK2wabnNny1kD5LvBmGtFdRjnCiUT3ZZgNDjjM4mpoh
 // tz1grSQDByRpnVs7sPtaprNZRp531ZKz6Jmm
 
-contract
-  .transfer(
-    'tz1aqsunnQ9ECPAfvRaWeMfiNFhF3s8M15sy',
-    'tz1grSQDByRpnVs7sPtaprNZRp531ZKz6Jmm',
-    '10',
-    '40370',
-    '9430c2ac8fe1403c6cbbee3a98b19f3f3bbdd89d0659b3eb6e4106a5cbe41351'
-  )
-  .then(result => {
-    console.log('RESULT', result)
-  })
-  .catch(error => console.log(error))
+// contract
+//   .transfer(
+//     'tz1aqsunnQ9ECPAfvRaWeMfiNFhF3s8M15sy',
+//     'tz1grSQDByRpnVs7sPtaprNZRp531ZKz6Jmm',
+//     '10',
+//     '40370',
+//     '9430c2ac8fe1403c6cbbee3a98b19f3f3bbdd89d0659b3eb6e4106a5cbe41351'
+//   )
+//   .then(result => {
+//     console.log('RESULT', result)
+//   })
+//   .catch(error => console.log(error))
+
+contract.getTransactions(10).then(console.log).catch(console.error)
 
 // contract.getAllowance('tz1aqsunnQ9ECPAfvRaWeMfiNFhF3s8M15sy', 'tz1grSQDByRpnVs7sPtaprNZRp531ZKz6Jmm').then(result => {
 //     console.log('ALLOWANCE', result)
@@ -66,7 +68,7 @@ contract
 // })
 
 // contract.getTotalBurned('tz1aqsunnQ9ECPAfvRaWeMfiNFhF3s8M15sy', 'KT19ptNzn4MVAN45KUUNpyL5AdLVhujk815u').then(console.log)
-contract.getTotalSupply().then(console.log)
+// contract.getTotalSupply().then(console.log)
 // contract.getTotalSupply().then(console.log)
 // contract.getTotalMinted('tz1Mj7RzPmMAqDUNFBn5t5VbXmWW4cSUAdtT', 'KT19ptNzn4MVAN45KUUNpyL5AdLVhujk815u').then(console.log)
 
