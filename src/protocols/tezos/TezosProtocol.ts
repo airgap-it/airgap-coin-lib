@@ -66,8 +66,8 @@ export interface DelegationInfo {
 }
 
 export enum TezosDelegatorAction {
-  DELEGATE = 'delegate', 
-  UNDELEGATE = 'undelegate', 
+  DELEGATE = 'delegate',
+  UNDELEGATE = 'undelegate',
   CHANGE_BAKER = 'change_baker'
 }
 
@@ -142,15 +142,15 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     edsig: Buffer
     branch: Buffer
   } = {
-    tz1: Buffer.from(new Uint8Array([6, 161, 159])),
-    tz2: Buffer.from(new Uint8Array([6, 161, 161])),
-    tz3: Buffer.from(new Uint8Array([6, 161, 164])),
-    kt: Buffer.from(new Uint8Array([2, 90, 121])),
-    edpk: Buffer.from(new Uint8Array([13, 15, 37, 217])),
-    edsk: Buffer.from(new Uint8Array([43, 246, 78, 7])),
-    edsig: Buffer.from(new Uint8Array([9, 245, 205, 134, 18])),
-    branch: Buffer.from(new Uint8Array([1, 52]))
-  }
+      tz1: Buffer.from(new Uint8Array([6, 161, 159])),
+      tz2: Buffer.from(new Uint8Array([6, 161, 161])),
+      tz3: Buffer.from(new Uint8Array([6, 161, 164])),
+      kt: Buffer.from(new Uint8Array([2, 90, 121])),
+      edpk: Buffer.from(new Uint8Array([13, 15, 37, 217])),
+      edsk: Buffer.from(new Uint8Array([43, 246, 78, 7])),
+      edsig: Buffer.from(new Uint8Array([9, 245, 205, 134, 18])),
+      branch: Buffer.from(new Uint8Array([1, 52]))
+    }
 
   public readonly headers = { 'Content-Type': 'application/json', apiKey: 'airgap123' }
 
@@ -182,7 +182,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     const secret = mnemonicToSeed(mnemonic, password)
     return this.getPublicKeyFromHexSecret(secret, derivationPath)
   }
-  
+
   public async getPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<Buffer> {
     const secret = mnemonicToSeed(mnemonic, password)
     return this.getPrivateKeyFromHexSecret(secret, derivationPath)
@@ -368,7 +368,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       let operation: TezosRevealOperation | TezosTransactionOperation | TezosOriginationOperation | TezosDelegationOperation | undefined
 
       let amount: BigNumber = new BigNumber(0)
-      let to: string[] = ['']
+      let to: string[] = []
       let from: string[] = []
 
       switch (tezosOperation.kind) {
@@ -409,7 +409,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
         case TezosOperationType.DELEGATION:
           {
             operation = tezosOperation as TezosDelegationOperation
-            const delegate: string | undefined = (tezosOperation as TezosDelegationOperation).delegate
+            const delegate: string | undefined = operation.delegate
+            from = [operation.source]
             to = [delegate ? delegate : 'Undelegate']
           }
           break
@@ -701,14 +702,14 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   public async getDelegationDetailsFromPublicKey(publicKey: string, delegatees: string[]): Promise<DelegationDetails> {
     return this.getDelegationDetailsFromAddress(await this.getAddressFromPublicKey(publicKey), delegatees)
   }
-  
+
   public async getDelegationDetailsFromAddress(address: string, delegatees: string[]): Promise<DelegationDetails> {
     if (delegatees.length > 1) {
       return Promise.reject('Multiple delegation is not supported.')
     }
 
     const bakerAddress = delegatees[0]
-    
+
     const results = await Promise.all([
       axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}`),
       this.getDelegationRewardsForAddress(address).catch(() => null),
@@ -733,8 +734,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
         args: ['delegate']
       })
     } else if (accountDetails.delegate === bakerAddress) {
-      availableActions.push({ 
-          type: TezosDelegatorAction.UNDELEGATE 
+      availableActions.push({
+        type: TezosDelegatorAction.UNDELEGATE
       })
     } else {
       availableActions.push({
@@ -743,14 +744,14 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       })
     }
 
-    const rewards = isDelegating && rewardInfo 
+    const rewards = isDelegating && rewardInfo
       ? rewardInfo
-          .map(reward => ({
-            index: reward.cycle,
-            amount: reward.reward.toFixed(),
-            collected: reward.payout < new Date(),
-            timestamp: reward.payout.getTime()
-          })) 
+        .map(reward => ({
+          index: reward.cycle,
+          amount: reward.reward.toFixed(),
+          collected: reward.payout < new Date(),
+          timestamp: reward.payout.getTime()
+        }))
       : []
 
     return {
@@ -1067,13 +1068,13 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       frozenBalance.map(async obj => {
         const { data: delegatedBalanceAtCycle } = await axios.get(
           `${this.jsonRPCAPI}/chains/main/blocks/${(obj.cycle - 6) * TezosProtocol.BLOCKS_PER_CYCLE[this.network]}/context/contracts/${
-            delegatorAddress ? delegatorAddress : bakerAddress
+          delegatorAddress ? delegatorAddress : bakerAddress
           }/balance`
         )
 
         const { data: stakingBalanceAtCycle } = await axios.get(
           `${this.jsonRPCAPI}/chains/main/blocks/${(obj.cycle - 6) *
-            TezosProtocol.BLOCKS_PER_CYCLE[this.network]}/context/delegates/${bakerAddress}/staking_balance`
+          TezosProtocol.BLOCKS_PER_CYCLE[this.network]}/context/delegates/${bakerAddress}/staking_balance`
         )
 
         return {
