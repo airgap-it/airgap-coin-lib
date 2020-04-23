@@ -2,7 +2,7 @@ import { expect } from 'chai'
 import 'mocha'
 import * as sinon from 'sinon'
 
-import { isCoinlibReady, TezosProtocol } from '../../src'
+import { IAirGapTransaction, isCoinlibReady, TezosProtocol } from '../../src'
 import axios from '../../src/dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
 import { RawTezosTransaction } from '../../src/serializer/types'
@@ -260,7 +260,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       expect(operation3.destination).to.equal('KT1J5mFAxxzAYDLjYeVXkLcyEzNGRZ3kuFGq')
     })
 
-    it('can unforge a delegation TX', async () => {})
+    it('can unforge a delegation TX', async () => { })
 
     it('can give a list of transactions from Conseil API', async () => {
       const stub = sinon.stub(axios, 'post')
@@ -632,6 +632,29 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
             .to.be.an('error')
             .with.property('message', 'length of recipients and values does not match!')
       )
+    })
+  })
+
+  describe('TransactionDetails', () => {
+    it('correctly get transaction details from a forged, unsigned transaction', async () => {
+      const forgedUnsignedTransaction: string = 'e879f5c6312b85da97cbb3bcb14dd515f29b407a0cc08b70fbcdece5bb49d8b06e00bf97f5f1dbfd6ada0cf986d0a812f1bf0a572abc8c0bbe8139bc5000ff0012548f71994cb2ce18072d0dcb568fe35fb74930'
+
+      const protocol: TezosProtocol = new TezosProtocol()
+      const details: IAirGapTransaction[] = await protocol.getTransactionDetails({ publicKey: '', transaction: { binaryTransaction: forgedUnsignedTransaction } })
+
+      expect(details[0].amount).to.equal('0')
+      expect(details[0].fee).to.equal('1420')
+      expect(details[0].from[0]).to.equal('tz1d75oB6T4zUMexzkr5WscGktZ1Nss1JrT7')
+      expect(details[0].to[0]).to.equal('tz1MJx9vhaNRSimcuXPK2rW4fLccQnDAnVKJ')
+      expect(details[0].transactionDetails).to.deep.equal({
+        kind: 'delegation',
+        source: 'tz1d75oB6T4zUMexzkr5WscGktZ1Nss1JrT7',
+        fee: '1420',
+        counter: '934078',
+        gas_limit: '10300',
+        storage_limit: '0',
+        delegate: 'tz1MJx9vhaNRSimcuXPK2rW4fLccQnDAnVKJ'
+      })
     })
   })
 })
