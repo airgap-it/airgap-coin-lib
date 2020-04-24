@@ -47,10 +47,12 @@ export interface CosmosDelegation {
 export interface CosmosUnbondingDelegation {
   delegator_address: string
   validator_address: string
-  initial_balance: string
-  balance: string
-  creation_height: number
-  min_time: number
+  entries: {
+      creation_height: string
+      completion_time: string
+      initial_balance: string
+      balance: string
+  }[]
 }
 
 export interface CosmosValidator {
@@ -134,7 +136,7 @@ export class CosmosNodeClient {
         'Content-type': 'application/json'
       }
     })
-
+    
     return response.data.txhash
   }
 
@@ -157,7 +159,7 @@ export class CosmosNodeClient {
 
   public async fetchTotalDelegatedAmount(address: string): Promise<BigNumber> {
     const delegations = await this.fetchDelegations(address)
-    return new BigNumber(delegations.map(delegation => parseFloat(delegation.balance)).reduce((a, b) => a + b, 0)).decimalPlaces(0, BigNumber.ROUND_FLOOR)
+    return delegations.reduce((current, next) => current.plus(new BigNumber(next.balance)), new BigNumber(0)).decimalPlaces(0, BigNumber.ROUND_FLOOR)
   }
 
   public async fetchValidator(address: string): Promise<CosmosValidator> {
@@ -192,7 +194,8 @@ export class CosmosNodeClient {
   public async fetchTotalUnbondingAmount(address: string): Promise<BigNumber> {
     const unbondingDelegations: CosmosUnbondingDelegation[] = await this.fetchUnbondingDelegations(address)
     if (unbondingDelegations) {
-      return new BigNumber(unbondingDelegations.map(delegation => parseFloat(delegation.balance)).reduce((a, b) => a + b, 0)).decimalPlaces(0, BigNumber.ROUND_FLOOR)
+      const unbondings = unbondingDelegations.map(delegation => delegation.entries).reduce((current, next) => current.concat(next), [])
+      return unbondings.reduce((current, next) => current.plus(new BigNumber(next.balance)), new BigNumber(0)).decimalPlaces(0, BigNumber.ROUND_FLOOR)
     }
     return new BigNumber(0)
   }
