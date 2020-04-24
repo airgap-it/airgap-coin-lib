@@ -1,6 +1,5 @@
 import { EthereumProtocol } from '../..'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
-import * as BIP39 from '../../dependencies/src/bip39-2.5.0/index'
 import {
   isArray,
   isDate,
@@ -20,6 +19,8 @@ import { RawTezosTransaction } from '../types'
 import { AeternityProtocol } from './../../protocols/aeternity/AeternityProtocol'
 import { BitcoinProtocol } from './../../protocols/bitcoin/BitcoinProtocol'
 import { TezosProtocol } from './../../protocols/tezos/TezosProtocol'
+import { SignedSubstrateTransaction } from '../schemas/definitions/transaction-sign-response-substrate'
+import { KusamaProtocol } from '../../protocols/substrate/implementations/KusamaProtocol'
 
 validators.type = (value, options, key, attributes) => {
   // allow empty values by default (needs to be checked by "presence" check)
@@ -162,7 +163,7 @@ validators.isValidBitcoinInput = (ins: unknown) => {
       const protocol = new BitcoinProtocol()
       try {
         const mnemonic = 'spell device they juice trial skirt amazing boat badge steak usage february virus art survey'
-        protocol.getPublicKeyFromHexSecret(BIP39.mnemonicToSeedHex(mnemonic), value.derivationPath)
+        protocol.getPublicKeyFromMnemonic(mnemonic, value.derivationPath)
       } catch (error) {
         return 'invalid derivation path'
       }
@@ -355,6 +356,50 @@ validators.isValidTezosSignedTransaction = (signedTransaction: string) => {
     } catch (error) {
       // console.log(error)
       resolve('not a valid Tezos transaction')
+    }
+  })
+}
+
+// SUBSTRATE
+
+validators.isValidSubstrateUnsignedTransaction = (encoded: string) => {
+  const unsignedTx = {
+    transaction: { encoded },
+    publicKey: ''
+  }
+
+  return new Promise(async (resolve, reject) => {
+    if (encoded === null || typeof encoded === 'undefined') {
+      resolve('not a valid Substrate transaction')
+    }
+
+    const protocol = new KusamaProtocol()
+
+    try {
+      await protocol.getTransactionDetails(unsignedTx)
+      resolve()
+    } catch (error) {
+      resolve('not a valid Substrate transaction')
+    }
+  })
+}
+
+validators.isValidSubstrateSignedTransaction = (transaction: string) => {
+  const signedTx: SignedSubstrateTransaction = {
+    accountIdentifier: '',
+    transaction
+  }
+
+  return new Promise(async (resolve, reject) => {
+    if (transaction === null || typeof transaction === 'undefined') {
+      resolve('not a valid Substrate transaction')
+    }
+    const protocol = new KusamaProtocol()
+    try {
+      await protocol.getTransactionDetailsFromSigned(signedTx)
+      resolve()
+    } catch (error) {
+      resolve('not a valid Substrate transaction')
     }
   })
 }

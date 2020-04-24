@@ -1,7 +1,8 @@
 import { IAirGapTransaction } from '../../..'
 import { CosmosCoin } from '../CosmosCoin'
 
-import { CosmosMessage, CosmosMessageJSON, CosmosMessageType } from './CosmosMessage'
+import { CosmosMessage, CosmosMessageJSON, CosmosMessageType, CosmosMessageTypeIndex } from './CosmosMessage'
+import { AirGapTransactionType } from '../../../interfaces/IAirGapTransaction'
 
 export class CosmosDelegateMessage implements CosmosMessage {
   public readonly delegatorAddress: string
@@ -54,7 +55,10 @@ export class CosmosDelegateMessage implements CosmosMessage {
       isInbound: false,
       fee,
       protocolIdentifier: identifier,
-      transactionDetails: this.toRPCBody()
+      transactionDetails: this.toRPCBody(),
+      extra: {
+        type: this.type.index === CosmosMessageTypeIndex.DELEGATE ? AirGapTransactionType.DELEGATE : AirGapTransactionType.UNDELEGATE
+      }
     }
   }
 

@@ -41,13 +41,19 @@ export interface ICoinProtocol {
   // can have sub-protocols defined
   subProtocols?: (ICoinProtocol & ICoinSubProtocol)[]
 
-  getBlockExplorerLinkForAddress(address: string): string
-  getBlockExplorerLinkForTxId(txId: string): string
+  getBlockExplorerLinkForAddress(address: string): Promise<string>
+  getBlockExplorerLinkForTxId(txId: string): Promise<string>
 
-  getPublicKeyFromHexSecret(secret: string, derivationPath: string): string
-  getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Buffer
+  getPublicKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string>
+  getPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<Buffer>
 
-  getExtendedPrivateKeyFromHexSecret(secret: string, derivationPath: string): string
+  getExtendedPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string>
+
+  getPublicKeyFromHexSecret(secret: string, derivationPath: string): Promise<string>
+  getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<Buffer>
+
+  getExtendedPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<string>
+  
   getAddressFromPublicKey(publicKey: string): Promise<string>
   getAddressesFromPublicKey(publicKey: string): Promise<string[]> // broadcaster knows this (both broadcaster and signer)
   getAddressFromExtendedPublicKey(
@@ -74,7 +80,10 @@ export interface ICoinProtocol {
   getBalanceOfAddresses(addresses: string[]): Promise<string>
   getBalanceOfPublicKey(publicKey: string): Promise<string>
   getBalanceOfExtendedPublicKey(extendedPublicKey: string, offset: number): Promise<string>
+  getAvailableBalanceOfAddresses(addresses: string[]): Promise<string>
 
+  estimateMaxTransactionValueFromExtendedPublicKey(extendedPublicKey: string, fee: string): Promise<string>
+  estimateMaxTransactionValueFromPublicKey(publicKey: string, fee: string): Promise<string>
   prepareTransactionFromExtendedPublicKey(
     extendedPublicKey: string,
     offset: number,

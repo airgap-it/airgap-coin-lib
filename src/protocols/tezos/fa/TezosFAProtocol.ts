@@ -1,19 +1,15 @@
 import { FeeDefaults } from './../../ICoinProtocol'
 import axios, { AxiosResponse } from '../../../dependencies/src/axios-0.19.0/index'
-import * as bigInt from '../../../dependencies/src/big-integer-1.6.45/BigInteger'
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { IAirGapTransaction } from '../../../interfaces/IAirGapTransaction'
 import { RawTezosTransaction } from '../../../serializer/types'
 import { ICoinSubProtocol, SubProtocolType } from '../../ICoinSubProtocol'
+import { TezosNetwork, TezosProtocol } from '../TezosProtocol'
+import { TezosOperationType } from '../types/TezosOperationType'
+import { TezosOperation } from '../types/operations/TezosOperation'
+import { TezosWrappedOperation } from '../types/TezosWrappedOperation'
+import { TezosTransactionOperation } from '../types/operations/Transaction'
 import * as bs58check from '../../../dependencies/src/bs58check-2.1.2/index'
-import {
-  TezosNetwork,
-  TezosOperation,
-  TezosOperationType,
-  TezosProtocol,
-  TezosSpendOperation,
-  TezosWrappedOperation
-} from '../TezosProtocol'
 
 export interface TezosFAProtocolConfiguration {
   symbol: string
@@ -69,6 +65,10 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     const results: string[] = await Promise.all(promises)
 
     return results.reduce((current, next) => current.plus(new BigNumber(next)), new BigNumber(0)).toFixed()
+  }
+
+  public async estimateMaxTransactionValueFromPublicKey(publicKey: string, fee: string): Promise<string> {
+    return this.getBalanceOfPublicKey(publicKey)
   }
 
   public async prepareTransactionFromPublicKey(
@@ -205,14 +205,14 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
         }
 
         return axios
-        .post(`${this.baseApiUrl}/v2/data/tezos/${this.baseApiNetwork}/operations`, body, {
-          // incoming txs
-          headers: this.headers
-        })
-        .then(response => response.data)
-        .catch(() => {
-          return []
-        })
+          .post(`${this.baseApiUrl}/v2/data/tezos/${this.baseApiNetwork}/operations`, body, {
+            // incoming txs
+            headers: this.headers
+          })
+          .then(response => response.data)
+          .catch(() => {
+            return []
+          })
       })
     )
 
@@ -376,7 +376,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     }
 
     for (const contractCall of contractCalls) {
-      const transactionOperation: TezosSpendOperation = {
+      const transactionOperation: TezosTransactionOperation = {
         kind: TezosOperationType.TRANSACTION,
         fee: fee,
         gas_limit: '400000',
@@ -385,7 +385,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
         counter: counter.toFixed(),
         destination: this.contractAddress,
         source: source,
-        code: `ff${contractCall.toHex()}`
+        parameters: contractCall.toJSON()
       }
 
       operations.push(transactionOperation)
@@ -397,7 +397,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
         contents: operations
       }
 
-      const binaryTx: string = this.forgeTezosOperation(tezosWrappedOperation)
+      const binaryTx: string = await this.forgeTezosOperation(tezosWrappedOperation)
 
       return { binaryTransaction: binaryTx }
     } catch (error) {
@@ -409,166 +409,10 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
   private url(path: string): string {
     return `${this.jsonRPCAPI}${path}`
   }
-
-  public unforgeParameters(hexString: string): { result: { amount: BigNumber; destination: string }; rest: string } {
-    const hexBytes: RegExpMatchArray | null = hexString.match(/.{2}/g)
-    if (hexBytes === null) {
-      throw new Error('Cannot parse contract code')
-    }
-    const contractCall: TezosContractCall = TezosContractCall.fromHex(hexBytes)
-    switch (
-      contractCall.entrypoint.name // TODO: this should be refactored, every case should call a function to do the job instead of doing it inline
-    ) {
-      case TezosContractEntrypointName.TRANSFER: {
-        const pair: TezosContractPair = contractCall.args.second as TezosContractPair
-
-        return {
-          result: {
-            amount: new BigNumber(pair.second as number),
-            destination: pair.first as string
-          },
-          rest: hexBytes.join('')
-        }
-      }
-      case TezosContractEntrypointName.APPROVE: {
-        const pair: TezosContractPair = contractCall.args
-
-        return {
-          result: {
-            amount: new BigNumber(pair.second as number),
-            destination: pair.first as string
-          },
-          rest: hexBytes.join('')
-        }
-      }
-      default:
-        return {
-          result: {
-            amount: new BigNumber(0),
-            destination: ''
-          },
-          rest: hexBytes.join('')
-        }
-    }
-  }
-
-  protected formatContractData(
-    source: string,
-    amount: BigNumber,
-    destination: string,
-    contractData: any
-  ): {
-    source: string
-    amount: BigNumber
-    destination: string
-  } {
-    if (destination !== this.contractAddress) {
-      throw new Error('Destination does not match contract address')
-    }
-    return {
-      source: source,
-      amount: contractData.amount,
-      destination: contractData.destination
-    }
-  }
 }
 
 abstract class TezosContractEntity {
   abstract toJSON(): any
-  abstract toHex(): string
-
-  protected stringToHex(value: string): string {
-    return value
-      .split('')
-      .map(c => c.charCodeAt(0).toString(16))
-      .join('')
-  }
-
-  protected static hexToString(hex: string[]): string {
-    return hex.map(byte => String.fromCharCode(parseInt(byte, 16))).join('')
-  }
-
-  protected lengthToHex(length: number, nBytes: number): string {
-    const count = nBytes * 2
-    const hexLength = (length / 2).toString(16)
-    const prefix = '0'.repeat(count - hexLength.length)
-    return `${prefix}${hexLength}`
-  }
-
-  static hexToLength(hex: string[]): number {
-    const stringValue = hex.reduce((previous, next) => {
-      if (next === '00') {
-        return previous
-      }
-      return `${previous}${next}`
-    }, '')
-
-    if (stringValue.length > 0) {
-      return parseInt(stringValue, 16)
-    }
-    return 0
-  }
-
-  /**
-   * Encodes a signed integer into hex.
-   * Copied from conseil.js
-   * @param value Number to be encoded.
-   */
-  protected encodeSignedInt(value: any): string {
-    let n = bigInt(value).abs()
-    if (n.isZero()) {
-      return '00'
-    }
-
-    const l = n.bitLength().toJSNumber()
-
-    const arr: number[] = []
-    let v = n
-    for (let i = 0; i < l; i += 7) {
-      let byte = bigInt.zero
-
-      if (i === 0) {
-        byte = v.and(0x3f) // first byte makes room for sign flag
-        v = v.shiftRight(6)
-      } else {
-        byte = v.and(0x7f) // NOT base128 encoded
-        v = v.shiftRight(7)
-      }
-
-      if (value < 0 && i === 0) {
-        byte = byte.or(0x40)
-      } // set sign flag
-
-      if (i + 7 < l) {
-        byte = byte.or(0x80)
-      } // set next byte flag
-      arr.push(byte.toJSNumber())
-    }
-
-    if (l % 7 === 0) {
-      arr[arr.length - 1] = arr[arr.length - 1] | 0x80
-      arr.push(1)
-    }
-
-    const result = arr.map(v => ('0' + v.toString(16)).slice(-2)).join('')
-    console.log('RETURNING', result)
-    return result
-  }
-
-  static decodeSignedInt(hex: string): number {
-    const positive = Buffer.from(hex.slice(0, 2), 'hex')[0] & 0x40 ? false : true
-    const arr = Buffer.from(hex, 'hex').map((v, i) => (i === 0 ? v & 0x3f : v & 0x7f))
-    let n = bigInt.zero
-    for (let i = arr.length - 1; i >= 0; i--) {
-      if (i === 0) {
-        n = n.or(arr[i])
-      } else {
-        n = n.or(bigInt(arr[i]).shiftLeft(7 * i - 1))
-      }
-    }
-
-    return positive ? n.toJSNumber() : n.negate().toJSNumber()
-  }
 }
 
 enum TezosContractEntrypointName {
@@ -601,13 +445,6 @@ class TezosContractEntrypoint extends TezosContractEntity {
     return `${this.name}`
   }
 
-  toHex(): string {
-    const entrypointHex = this.stringToHex(this.name)
-    let result = this.lengthToHex(entrypointHex.length, 1)
-    result += entrypointHex
-    return result
-  }
-
   static fromJSON(json: any): TezosContractEntrypoint {
     if (typeof json !== 'string') {
       throw new Error('expected a string as input')
@@ -625,11 +462,6 @@ class TezosContractEntrypoint extends TezosContractEntity {
       default:
         throw new Error('unsupported entrypoint')
     }
-  }
-
-  static fromHex(hex: string[]): TezosContractEntrypoint {
-    const entrypoint = TezosContractEntity.hexToString(hex)
-    return TezosContractEntrypoint.fromString(entrypoint)
   }
 
   static fromString(name: string): TezosContractEntrypoint {
@@ -663,12 +495,6 @@ class TezosContractPair extends TezosContractEntity {
       prim: 'Pair',
       args: [this.jsonEncodedArg(this.first), this.jsonEncodedArg(this.second)]
     }
-  }
-
-  toHex(): string {
-    const args = this.argumentsToHex(this.toJSON())
-    const length = this.lengthToHex(args.length, 4)
-    return `${length}${args}`
   }
 
   static fromJSON(json: any): TezosContractPair {
@@ -752,23 +578,6 @@ class TezosContractPair extends TezosContractEntity {
 
     return bs58check.encode(Buffer.from(prefixHex + hexStringPayload, 'hex'))
   }
-
-  static fromHex(hex: string[]): TezosContractPair {
-    const type1 = hex.shift()
-    const type2 = hex.shift()
-    if (type1 === '07' && type2 == '07') {
-      // prim/pair
-      return TezosContractPair.parsePair(hex)
-    }
-    throw new Error('Type not supported')
-  }
-
-  static parsePair(hex: string[]): TezosContractPair {
-    const first = TezosContractPair.hexToArguments(hex)
-    const second = TezosContractPair.hexToArguments(hex)
-    return new TezosContractPair(first, second)
-  }
-
   private jsonEncodedArg(arg: string | number | TezosContractEntity): any {
     switch (typeof arg) {
       case 'string':
@@ -779,65 +588,11 @@ class TezosContractPair extends TezosContractEntity {
         return (arg as TezosContractEntity).toJSON()
     }
   }
-
-  private argumentsToHex(args: any): string {
-    let result = ''
-    if (args.prim !== undefined && args.prim === 'Pair') {
-      result += '0707' // prim/Pair
-      const pair: any[] = args.args
-      for (const arg of pair) {
-        result += this.argumentsToHex(arg)
-      }
-    } else if (args.int !== undefined) {
-      console.log('ARGS', args.int)
-      result += `00${this.encodeSignedInt(args.int)}`
-    } else if (args.string !== undefined) {
-      const value = this.stringToHex(args.string)
-      result += `01${this.lengthToHex(value.length, 4)}${value}`
-    } else {
-      throw new Error('Prim type not supported')
-    }
-
-    return result
-  }
-
-  static hexToArguments(hex: string[]): string | number | TezosContractPair {
-    const type = hex.shift()
-    switch (type) {
-      case '07': // prim
-        const primType = hex.shift()
-        if (primType === '07') {
-          // pair
-          return TezosContractPair.parsePair(hex)
-        }
-        throw new Error('Prim type not supported')
-      case '00': // int
-        const intBytes: string[] = []
-        let byte: string | undefined
-        do {
-          byte = hex.shift()
-          if (byte === undefined) {
-            break
-          }
-          intBytes.push(byte)
-        } while (parseInt(byte, 16).toString(2)[0] !== '0')
-        return TezosContractPair.decodeSignedInt(intBytes.join(''))
-      case '01':
-        const lengthBytes = TezosContractPair.hexToLength(hex.splice(0, 4))
-        return TezosContractPair.hexToString(hex.splice(0, lengthBytes))
-      default:
-        throw new Error('Type not supported')
-    }
-  }
 }
 
 class TezosContractUnit extends TezosContractEntity {
   toJSON() {
     return { prim: 'Unit' }
-  }
-
-  toHex(): string {
-    throw new Error('Method not implemented.')
   }
 }
 class TezosContractCall extends TezosContractEntity {
@@ -887,28 +642,9 @@ class TezosContractCall extends TezosContractEntity {
     }
   }
 
-  toHex(): string {
-    let result = 'ff'
-    result += this.entrypoint.toHex()
-    result += this.args.toHex()
-    return result
-  }
-
   static fromJSON(json: any): TezosContractCall {
     const entrypoint = TezosContractEntrypoint.fromJSON(json.entrypoint)
     const args = TezosContractPair.fromJSON(json.value)
-    return new TezosContractCall(entrypoint, args)
-  }
-
-  static fromHex(hexBytes: string[]): TezosContractCall {
-    if (hexBytes.splice(0, 1)[0] !== 'ff') {
-      throw new Error('Cannot parse hex string')
-    }
-    const entrypointLength = TezosContractCall.hexToLength(hexBytes.splice(0, 1))
-    const entrypoint = TezosContractEntrypoint.fromHex(hexBytes.splice(0, entrypointLength))
-    hexBytes.splice(0, 4) // Remove total length of args because it is not needed
-    const args = TezosContractPair.fromHex(hexBytes)
-
     return new TezosContractCall(entrypoint, args)
   }
 }

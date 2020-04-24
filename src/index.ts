@@ -17,9 +17,17 @@ import { GroestlcoinProtocol } from './protocols/groestlcoin/GroestlcoinProtocol
 import { GroestlcoinTestnetProtocol } from './protocols/groestlcoin/GroestlcoinTestnetProtocol'
 import { ICoinProtocol } from './protocols/ICoinProtocol'
 import { ICoinSubProtocol } from './protocols/ICoinSubProtocol'
+import { ICoinDelegateProtocol } from './protocols/ICoinDelegateProtocol'
 import { LitecoinProtocol } from './protocols/litecoin/LitecoinProtocol'
 import { TezosKtProtocol } from './protocols/tezos/kt/TezosKtProtocol'
-import { BakerInfo, DelegationInfo, DelegationRewardInfo, TezosProtocol, TezosPayoutInfo } from './protocols/tezos/TezosProtocol'
+import { 
+  BakerInfo, 
+  DelegationInfo, 
+  DelegationRewardInfo, 
+  TezosProtocol, 
+  TezosPayoutInfo, 
+  TezosDelegatorAction 
+} from './protocols/tezos/TezosProtocol'
 import { IACMessageType } from './serializer/interfaces'
 import { IACMessageDefinitionObject } from './serializer/message'
 import { AccountShareResponse } from './serializer/schemas/definitions/account-share-response'
@@ -46,6 +54,10 @@ import { AirGapMarketWallet } from './wallet/AirGapMarketWallet'
 import { AirGapWallet } from './wallet/AirGapWallet'
 import { TezosFAProtocol, TezosTransactionResult, TezosTransactionCursor } from './protocols/tezos/fa/TezosFAProtocol'
 import { TezosBTC } from './protocols/tezos/fa/TezosBTC'
+import { SubstrateProtocol } from './protocols/substrate/SubstrateProtocol'
+import { SubstratePayee } from './protocols/substrate/helpers/data/staking/SubstratePayee'
+import { PolkadotProtocol } from './protocols/substrate/implementations/PolkadotProtocol'
+import { KusamaProtocol } from './protocols/substrate/implementations/KusamaProtocol'
 
 export {
   addSupportedProtocol,
@@ -58,6 +70,7 @@ export {
   IAirGapTransaction,
   ICoinProtocol,
   ICoinSubProtocol,
+  ICoinDelegateProtocol,
   BitcoinProtocol,
   BitcoinTestnetProtocol,
   GroestlcoinProtocol,
@@ -75,11 +88,17 @@ export {
   TezosTransactionResult,
   TezosTransactionCursor,
   CosmosProtocol,
+  SubstrateProtocol,
+  PolkadotProtocol,
+  KusamaProtocol,
   // tezos-specific configuration
   BakerInfo,
   DelegationRewardInfo,
   DelegationInfo,
   TezosPayoutInfo,
+  // substrate specific
+  SubstratePayee,
+  TezosDelegatorAction,
   // sub protocols configs,
   GenericERC20Configuration,
   TypeNotSupported,

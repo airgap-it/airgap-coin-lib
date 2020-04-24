@@ -47,10 +47,12 @@ export interface CosmosDelegation {
 export interface CosmosUnbondingDelegation {
   delegator_address: string
   validator_address: string
-  initial_balance: string
-  balance: string
-  creation_height: number
-  min_time: number
+  entries: {
+      creation_height: string
+      completion_time: string
+      initial_balance: string
+      balance: string
+  }[]
 }
 
 export interface CosmosValidator {
@@ -90,6 +92,14 @@ export interface CosmosBroadcastSignedTransactionResponse {
   height: number
 }
 
+export interface CosmosRewardDetails {
+  validator_address: string
+  reward: {
+    denom: string,
+    amount: number
+  }[]
+}
+
 export class CosmosNodeClient {
   constructor(public readonly baseURL: string, public useCORSProxy: boolean = false) {}
 
@@ -99,17 +109,14 @@ export class CosmosNodeClient {
     if (data.length > 0) {
       const availableBalance = data[0].amount
       if (totalBalance) {
-        const results = await Promise.all([
+        const totalBalance = (await Promise.all([
           this.fetchTotalReward(address),
           this.fetchTotalUnbondingAmount(address),
           this.fetchTotalDelegatedAmount(address)
-        ])
-        const totalRewardValue = results[0]
-        const totalUnbondingValue = results[1]
-        const totalDelegatedValue = results[2]
-        return BigNumber.sum.apply(null, [availableBalance, totalRewardValue, totalUnbondingValue, totalDelegatedValue])
+        ])).reduce((current, next) => current.plus(next), new BigNumber(availableBalance))
+        return totalBalance.decimalPlaces(0, BigNumber.ROUND_FLOOR)
       } else {
-        return new BigNumber(availableBalance)
+        return new BigNumber(availableBalance).decimalPlaces(0, BigNumber.ROUND_FLOOR)
       }
     } else {
       return new BigNumber(0)
@@ -129,7 +136,7 @@ export class CosmosNodeClient {
         'Content-type': 'application/json'
       }
     })
-
+    
     return response.data.txhash
   }
 
@@ -152,7 +159,7 @@ export class CosmosNodeClient {
 
   public async fetchTotalDelegatedAmount(address: string): Promise<BigNumber> {
     const delegations = await this.fetchDelegations(address)
-    return new BigNumber(delegations.map(delegation => parseFloat(delegation.shares)).reduce((a, b) => a + b, 0))
+    return delegations.reduce((current, next) => current.plus(new BigNumber(next.balance)), new BigNumber(0)).decimalPlaces(0, BigNumber.ROUND_FLOOR)
   }
 
   public async fetchValidator(address: string): Promise<CosmosValidator> {
@@ -187,9 +194,17 @@ export class CosmosNodeClient {
   public async fetchTotalUnbondingAmount(address: string): Promise<BigNumber> {
     const unbondingDelegations: CosmosUnbondingDelegation[] = await this.fetchUnbondingDelegations(address)
     if (unbondingDelegations) {
-      return new BigNumber(unbondingDelegations.map(delegation => parseFloat(delegation.balance)).reduce((a, b) => a + b, 0))
+      const unbondings = unbondingDelegations.map(delegation => delegation.entries).reduce((current, next) => current.concat(next), [])
+      return unbondings.reduce((current, next) => current.plus(new BigNumber(next.balance)), new BigNumber(0)).decimalPlaces(0, BigNumber.ROUND_FLOOR)
     }
     return new BigNumber(0)
+  }
+
+  public async fetchRewardDetails(delegatorAddress: string): Promise<CosmosRewardDetails[]> {
+    return Axios.get(this.url(`/distribution/delegators/${delegatorAddress}/rewards`))
+      .then(response => response.data.result.rewards as CosmosRewardDetails[])
+      .catch(() => [])
+      
   }
 
   public async fetchTotalReward(delegatorAddress: string): Promise<BigNumber> {
@@ -198,7 +213,7 @@ export class CosmosNodeClient {
     .catch(() => [])
     
     if (totalRewards.length > 0) {
-      return new BigNumber(totalRewards[0].amount)
+      return new BigNumber(totalRewards[0].amount).decimalPlaces(0, BigNumber.ROUND_FLOOR)
     }
 
     return new BigNumber(0)
@@ -209,7 +224,7 @@ export class CosmosNodeClient {
     .then(response => response.data.result as { denom: string; amount: string }[])
     .catch(() => [])
     if (totalRewards.length > 0) {
-      return new BigNumber(totalRewards[0].amount)
+      return new BigNumber(totalRewards[0].amount).decimalPlaces(0, BigNumber.ROUND_FLOOR)
     }
 
     return new BigNumber(0)

@@ -1,6 +1,7 @@
 export enum AirGapTransactionType {
   SPEND = 'Spend Transaction',
-  DELEGATE = 'Delegation'
+  DELEGATE = 'Delegation',
+  UNDELEGATE = 'Undelegate'
 }
 
 export interface IAirGapTransaction {

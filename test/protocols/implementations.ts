@@ -42,6 +42,10 @@ abstract class TestProtocolSpec {
     return BIP39.mnemonicToSeedHex(mnemonic)
   }
 
+  public mnemonic(): string {
+    return mnemonic
+  }
+
   public unsignedTransaction(tx: any): IACMessageDefinitionObject[] {
     return [
       {

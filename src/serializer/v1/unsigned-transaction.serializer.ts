@@ -2,6 +2,7 @@ import { RawAeternityTransaction } from './unsigned-transactions/aeternity-trans
 import { RawBitcoinTransaction, SerializedUnsignedBitcoinTransaction } from './unsigned-transactions/bitcoin-transactions.serializer'
 import { RawEthereumTransaction, SerializedUnsignedEthereumTransaction } from './unsigned-transactions/ethereum-transactions.serializer'
 import { RawTezosTransaction, SerializedUnsignedTezosTransaction } from './unsigned-transactions/tezos-transactions.serializer'
+import { RawSubstrateTransaction, SerializedUnsignedSubstrateTransaction } from './unsigned-transactions/substrate-transactions.serializer'
 
 export abstract class UnsignedTransactionSerializer {
   public abstract serialize(unsignedTx: UnsignedTransaction): SerializedSyncProtocolTransaction
@@ -9,7 +10,7 @@ export abstract class UnsignedTransactionSerializer {
 }
 
 export interface UnsignedTransaction {
-  transaction: RawEthereumTransaction | RawBitcoinTransaction | RawAeternityTransaction | RawTezosTransaction
+  transaction: RawEthereumTransaction | RawBitcoinTransaction | RawAeternityTransaction | RawTezosTransaction | RawSubstrateTransaction
   publicKey: string
   callback?: string
 }
@@ -18,6 +19,7 @@ export type SerializedUnsignedTransaction =
   | SerializedUnsignedEthereumTransaction
   | SerializedUnsignedBitcoinTransaction
   | SerializedUnsignedTezosTransaction
+  | SerializedUnsignedSubstrateTransaction
 
 export enum SyncProtocolUnsignedTransactionKeys {
   UNSIGNED_TRANSACTION = 0,
