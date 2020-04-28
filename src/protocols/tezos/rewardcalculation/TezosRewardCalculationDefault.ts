@@ -27,8 +27,8 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
     ).data as TezosNodeConstantsV1
   }
 
-  async calculateRewards(bakerAddress: string, cycle: number): Promise<TezosRewards> {
-    const currentCycle = await this.protocol.fetchCurrentCycle()
+  async calculateRewards(bakerAddress: string, cycle: number, currentCycleIn?: number): Promise<TezosRewards> {
+    const currentCycle = currentCycleIn ?? await this.protocol.fetchCurrentCycle()
     const calculatingLevel = cycle * TezosProtocol.BLOCKS_PER_CYCLE[this.protocol.network]
 
     await this.getConstants(calculatingLevel, currentCycle < cycle)

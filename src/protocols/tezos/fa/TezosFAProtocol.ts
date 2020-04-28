@@ -595,6 +595,7 @@ class TezosContractUnit extends TezosContractEntity {
     return { prim: 'Unit' }
   }
 }
+
 class TezosContractCall extends TezosContractEntity {
   readonly entrypoint: TezosContractEntrypoint
   readonly args: TezosContractPair
