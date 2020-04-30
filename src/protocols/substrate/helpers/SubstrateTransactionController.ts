@@ -12,6 +12,7 @@ import { SCALEDecoder } from './data/scale/SCALEDecoder'
 import { SubstrateAddress, SubstrateAccountId } from './data/account/SubstrateAddress'
 import { SubstrateTransactionMethod } from './data/transaction/method/SubstrateTransactionMethod'
 import { SubstrateNetwork } from '../SubstrateNetwork'
+import { SubstrateSignature, SubstrateSignatureType } from './data/transaction/SubstrateSignature'
 
 interface SubstrateTransactionDetails {
     fee: BigNumber
@@ -198,12 +199,27 @@ export class SubstrateTransactionController {
         }
     }
 
-    private async signPayload(privateKey: Buffer, publicKey: Buffer, payload: string): Promise<Uint8Array> {
+    private async signPayload(
+        privateKey: Buffer, 
+        publicKey: Buffer, 
+        payload: string, 
+        signatureType: SubstrateSignatureType = SubstrateSignatureType.Sr25519
+    ): Promise<SubstrateSignature> {
+        switch (signatureType) {
+            case SubstrateSignatureType.Sr25519:
+                return this.signSr25519Payload(privateKey, publicKey, payload)
+            default:
+                return Promise.reject('Signature type not supported.')
+        }
+    }
+
+    private async signSr25519Payload(privateKey: Buffer, publicKey: Buffer, payload: string): Promise<SubstrateSignature> {
         await waitReady()
             
         const payloadBuffer = Buffer.from(payload, 'hex')
         const message = payloadBuffer.length > 256 ? blake2bAsBytes(payloadBuffer, 256) : payloadBuffer
     
-        return sr25519Sign(publicKey, privateKey, message)
+        const signature = sr25519Sign(publicKey, privateKey, message)
+        return SubstrateSignature.create(SubstrateSignatureType.Sr25519, signature)
     }
 }

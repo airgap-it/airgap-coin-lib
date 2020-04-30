@@ -50,7 +50,7 @@ export class KusamaTestProtocolSpec extends TestProtocolSpec {
                     '3902' + // length
                     '84' + // signed flag (not signed)
                     '52e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10' + // AccountId signer
-                    '01' + // signature type (sr25519)
+                    '00' + // signature type (sr25519)
                     '0000000000000000000000000000000000000000000000000000000000000000' + // signature
                     '0000000000000000000000000000000000000000000000000000000000000000' + // signature
                     '8503' + // era
