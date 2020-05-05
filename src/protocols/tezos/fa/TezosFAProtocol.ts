@@ -9,7 +9,11 @@ import { TezosOperationType } from '../types/TezosOperationType'
 import { TezosOperation } from '../types/operations/TezosOperation'
 import { TezosWrappedOperation } from '../types/TezosWrappedOperation'
 import { TezosTransactionOperation } from '../types/operations/Transaction'
-import * as bs58check from '../../../dependencies/src/bs58check-2.1.2/index'
+import { TezosContract, TezosContractMethodSelector } from '../contract/TezosContract'
+import { TezosContractCall } from '../contract/TezosContractCall'
+import { TezosContractPair } from '../contract/TezosContractPair'
+import { TezosContractEntrypoint } from '../contract/TezosContractEntrypoint'
+import { TezosContractUnit } from '../contract/TezosContractUnit'
 
 export interface TezosFAProtocolConfiguration {
   symbol: string
@@ -41,6 +45,8 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
   public readonly identifier: string
   public readonly contractAddress: string
 
+  private readonly contract: TezosContract
+
   private readonly defaultCallbackContractMap = new Map<TezosNetwork, string>()
   private readonly defaultSourceAddress: string = 'tz1Mj7RzPmMAqDUNFBn5t5VbXmWW4cSUAdtT'
 
@@ -55,6 +61,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     this.decimals = configuration.decimals || this.decimals
     this.defaultCallbackContractMap.set(TezosNetwork.MAINNET, 'KT19ptNzn4MVAN45KUUNpyL5AdLVhujk815u')
     this.defaultCallbackContractMap.set(TezosNetwork.CARTHAGENET, 'KT1J8FmFLSgMz5H2vexFmsCtTLVod9V49iyW')
+    this.contract = new TezosContract(this.contractAddress, this.jsonRPCAPI)
   }
 
   public async getBalanceOfAddresses(addresses: string[]): Promise<string> {
@@ -276,13 +283,34 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     }
   }
 
-  private transactionToAirGapTransaction(transaction: any, sourceAddresses?: string[]): IAirGapTransaction {
+  public async normalizeParameters(parameters: string): Promise<{entrypoint: string, value: any}> {
+    const parsedParameters = this.parseParameters(parameters)
+    if (parsedParameters.entrypoint !== undefined && parsedParameters.entrypoint !== TezosContract.defaultMethodName) {
+      return {
+        entrypoint: parsedParameters.entrypoint,
+        value: parsedParameters.value
+      }
+    }
+    const params = parsedParameters.value !== undefined ? parsedParameters.value : parsedParameters
+    const {selector, value} = TezosContractMethodSelector.fromJSON(params)
+    const method = await this.contract.methodForSelector(selector)
+    return {
+      entrypoint: method.name,
+      value: value
+    }
+  }
+
+  private parseParameters(parameters: string): any {
     const toBeRemoved = 'Unparsable code: '
-    let parameters: string = transaction.parameters
     if (parameters.startsWith(toBeRemoved)) {
       parameters = parameters.slice(toBeRemoved.length)
     }
-    const transferData = JSON.parse(parameters)
+    return JSON.parse(parameters)
+  }
+
+  private transactionToAirGapTransaction(transaction: any, sourceAddresses?: string[]): IAirGapTransaction {
+    let parameters: string = transaction.parameters
+    const transferData = this.parseParameters(parameters)
     const contractCall = TezosContractCall.fromJSON(transferData)
     const amount = (contractCall.args.second as TezosContractPair).second as number
     const from = contractCall.args.first as string
@@ -409,270 +437,4 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
   private url(path: string): string {
     return `${this.jsonRPCAPI}${path}`
   }
-}
-
-abstract class TezosContractEntity {
-  abstract toJSON(): any
-}
-
-enum TezosContractEntrypointName {
-  BALANCE = 'getBalance',
-  ALLOWANCE = 'getAllowance',
-  APPROVE = 'approve',
-  TRANSFER = 'transfer',
-  TOTALSUPPLY = 'getTotalSupply',
-  TOTALMINTED = 'getTotalMinted',
-  TOTALBURNED = 'getTotalBurned'
-}
-
-class TezosContractEntrypoint extends TezosContractEntity {
-  static transfer = new TezosContractEntrypoint(TezosContractEntrypointName.TRANSFER)
-  static balance = new TezosContractEntrypoint(TezosContractEntrypointName.BALANCE)
-  static allowance = new TezosContractEntrypoint(TezosContractEntrypointName.ALLOWANCE)
-  static approve = new TezosContractEntrypoint(TezosContractEntrypointName.APPROVE)
-  static totalsupply = new TezosContractEntrypoint(TezosContractEntrypointName.TOTALSUPPLY)
-  static totalminted = new TezosContractEntrypoint(TezosContractEntrypointName.TOTALMINTED)
-  static totalburned = new TezosContractEntrypoint(TezosContractEntrypointName.TOTALBURNED)
-
-  readonly name: TezosContractEntrypointName
-
-  constructor(name: TezosContractEntrypointName) {
-    super()
-    this.name = name
-  }
-
-  toJSON(): any {
-    return `${this.name}`
-  }
-
-  static fromJSON(json: any): TezosContractEntrypoint {
-    if (typeof json !== 'string') {
-      throw new Error('expected a string as input')
-    }
-    const name: string = json
-    switch (name) {
-      case TezosContractEntrypointName.TRANSFER:
-        return new TezosContractEntrypoint(TezosContractEntrypointName.TRANSFER)
-      case TezosContractEntrypointName.BALANCE:
-        return new TezosContractEntrypoint(TezosContractEntrypointName.BALANCE)
-      case TezosContractEntrypointName.ALLOWANCE:
-        return new TezosContractEntrypoint(TezosContractEntrypointName.ALLOWANCE)
-      case TezosContractEntrypointName.APPROVE:
-        return new TezosContractEntrypoint(TezosContractEntrypointName.APPROVE)
-      default:
-        throw new Error('unsupported entrypoint')
-    }
-  }
-
-  static fromString(name: string): TezosContractEntrypoint {
-    switch (name) {
-      case TezosContractEntrypointName.BALANCE:
-        return TezosContractEntrypoint.balance
-      case TezosContractEntrypointName.APPROVE:
-        return TezosContractEntrypoint.approve
-      case TezosContractEntrypointName.ALLOWANCE:
-        return TezosContractEntrypoint.allowance
-      case TezosContractEntrypointName.TRANSFER:
-        return TezosContractEntrypoint.transfer
-      default:
-        throw new Error('Cannot get entrypoint name from string')
-    }
-  }
-}
-
-class TezosContractPair extends TezosContractEntity {
-  first: string | number | TezosContractEntity
-  second: string | number | TezosContractEntity
-
-  constructor(first: string | number | TezosContractEntity, second: string | number | TezosContractEntity) {
-    super()
-    this.first = first
-    this.second = second
-  }
-
-  toJSON(): any {
-    return {
-      prim: 'Pair',
-      args: [this.jsonEncodedArg(this.first), this.jsonEncodedArg(this.second)]
-    }
-  }
-
-  static fromJSON(json: any): TezosContractPair {
-    if (json.prim !== 'Pair') {
-      throw new Error('type not supported')
-    }
-    return new TezosContractPair(this.argumentsFromJSON(json.args[0]), this.argumentsFromJSON(json.args[1]))
-  }
-
-  static argumentsFromJSON(json: any): string | number | TezosContractPair {
-    if (json.string !== undefined) {
-      return json.string
-    }
-    if (json.int !== undefined) {
-      return parseInt(json.int)
-    }
-    if (json.bytes !== undefined) {
-       return this.parseAddress(json.bytes)
-    }
-    if (json.prim !== undefined) {
-      return TezosContractPair.fromJSON(json)
-    }
-    throw new Error('type not supported')
-  }
-
-  // Tezos - We need to wrap these in Buffer due to non-compatible browser polyfills
-  private static readonly tezosPrefixes: {
-    tz1: Buffer
-    tz2: Buffer
-    tz3: Buffer
-    kt: Buffer
-    edpk: Buffer
-    edsk: Buffer
-    edsig: Buffer
-    branch: Buffer
-  } = {
-    tz1: Buffer.from(new Uint8Array([6, 161, 159])),
-    tz2: Buffer.from(new Uint8Array([6, 161, 161])),
-    tz3: Buffer.from(new Uint8Array([6, 161, 164])),
-    kt: Buffer.from(new Uint8Array([2, 90, 121])),
-    edpk: Buffer.from(new Uint8Array([13, 15, 37, 217])),
-    edsk: Buffer.from(new Uint8Array([43, 246, 78, 7])),
-    edsig: Buffer.from(new Uint8Array([9, 245, 205, 134, 18])),
-    branch: Buffer.from(new Uint8Array([1, 52]))
-  }
-
-  private static splitAndReturnRest(payload: string, length: number): { result: string; rest: string } {
-    const result: string = payload.substr(0, length)
-    const rest: string = payload.substr(length, payload.length - length)
-
-    return { result, rest }
-  }
-
-  private static parseAddress(rawHexAddress: string): string {
-    const { result, rest }: { result: string; rest: string } = this.splitAndReturnRest(rawHexAddress, 2)
-    const contractIdTag: string = result
-    if (contractIdTag === '00') {
-      // tz address
-      return this.parseTzAddress(rest)
-    } else if (contractIdTag === '01') {
-      // kt address
-      return this.prefixAndBase58CheckEncode(rest.slice(0, -2), this.tezosPrefixes.kt)
-    } else {
-      throw new Error('address format not supported')
-    }
-  }
-
-  private static parseTzAddress(rawHexAddress: string): string {
-    // tz1 address
-    const { result, rest }: { result: string; rest: string } = this.splitAndReturnRest(rawHexAddress, 2)
-    const publicKeyHashTag: string = result
-    if (publicKeyHashTag === '00') {
-      return this.prefixAndBase58CheckEncode(rest, this.tezosPrefixes.tz1)
-    } else {
-      throw new Error('address format not supported')
-    }
-  }
-
-  private static prefixAndBase58CheckEncode(hexStringPayload: string, tezosPrefix: Uint8Array): string {
-    const prefixHex: string = Buffer.from(tezosPrefix).toString('hex')
-
-    return bs58check.encode(Buffer.from(prefixHex + hexStringPayload, 'hex'))
-  }
-  private jsonEncodedArg(arg: string | number | TezosContractEntity): any {
-    switch (typeof arg) {
-      case 'string':
-        return { string: arg }
-      case 'number':
-        return { int: arg.toString() }
-      default:
-        return (arg as TezosContractEntity).toJSON()
-    }
-  }
-}
-
-class TezosContractUnit extends TezosContractEntity {
-  toJSON() {
-    return { prim: 'Unit' }
-  }
-}
-class TezosContractCall extends TezosContractEntity {
-  readonly entrypoint: TezosContractEntrypoint
-  readonly args: TezosContractPair
-
-  constructor(entrypoint: TezosContractEntrypoint, args: TezosContractPair) {
-    super()
-    this.entrypoint = entrypoint
-    this.args = args
-  }
-
-  toOperationJSONBody(
-    chainID: string,
-    branch: string,
-    counter: BigNumber,
-    source: string,
-    contractAddress: string,
-    fee: string = '0'
-  ): TezosRPCOperationBody {
-    return {
-      chain_id: chainID,
-      operation: {
-        branch: branch,
-        signature: 'sigUHx32f9wesZ1n2BWpixXz4AQaZggEtchaQNHYGRCoWNAXx45WGW2ua3apUUUAGMLPwAU41QoaFCzVSL61VaessLg4YbbP', // signature will not be checked, so it is ok to always use this one
-        contents: [
-          {
-            kind: 'transaction',
-            counter: counter.toFixed(),
-            amount: '0',
-            source: source,
-            destination: contractAddress,
-            fee: fee,
-            gas_limit: '400000',
-            storage_limit: '60000',
-            parameters: this.toJSON()
-          }
-        ]
-      }
-    }
-  }
-
-  toJSON(): any {
-    return {
-      entrypoint: this.entrypoint.toJSON(),
-      value: this.args.toJSON()
-    }
-  }
-
-  static fromJSON(json: any): TezosContractCall {
-    const entrypoint = TezosContractEntrypoint.fromJSON(json.entrypoint)
-    const args = TezosContractPair.fromJSON(json.value)
-    return new TezosContractCall(entrypoint, args)
-  }
-}
-
-interface TezosRPCOperationBody {
-  operation: TezosRPCOperation
-  chain_id: string
-}
-
-interface TezosRPCOperation {
-  branch: string
-  contents: TezosRPCTransaction[]
-  signature: string
-}
-
-interface TezosRPCTransaction {
-  kind: 'transaction'
-  counter: string
-  amount: string
-  source: string
-  destination: string
-  fee: string
-  gas_limit: string
-  storage_limit: string
-  parameters?: TezosRPCTransactionParameters
-}
-
-interface TezosRPCTransactionParameters {
-  entrypoint: String
-  value: any
 }

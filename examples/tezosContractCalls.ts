@@ -46,7 +46,8 @@ const contract = new TezosBTC()
 //   })
 //   .catch(error => console.log(error))
 
-contract.getTransactions(10).then(console.log).catch(console.error)
+// contract.getTransactions(10).then(console.log).catch(console.error)
+contract.normalizeParameters('{"prim":"Right","args":[{"prim":"Right","args":[{"prim":"Right","args":[{"prim":"Right","args":[{"prim":"Left","args":[{"prim":"Right","args":[{"prim":"Right","args":[{"prim":"Left","args":[{"prim":"Pair","args":[{"bytes":"00009472982d7f6b096bc57d6da95e0b8ec8ee37e72f"},{"prim":"Pair","args":[{"bytes":"00005db2d005097876d14fab0c648aefdbf3cf806ae9"},{"int":"99990000"}]}]}]}]}]}]}]}]}]}]}').then((result) => console.log(JSON.stringify(result, null, 2))).catch(console.error)
 
 // contract.getAllowance('tz1aqsunnQ9ECPAfvRaWeMfiNFhF3s8M15sy', 'tz1grSQDByRpnVs7sPtaprNZRp531ZKz6Jmm').then(result => {
 //     console.log('ALLOWANCE', result)
