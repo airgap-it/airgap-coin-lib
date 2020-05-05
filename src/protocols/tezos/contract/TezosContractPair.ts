@@ -69,7 +69,7 @@ export class TezosContractPair extends TezosContractEntity {
     return { result, rest }
   }
 
-  private static parseAddress(rawHexAddress: string): string {
+  public static parseAddress(rawHexAddress: string): string {
     const { result, rest }: { result: string; rest: string } = this.splitAndReturnRest(rawHexAddress, 2)
     const contractIdTag: string = result
     if (contractIdTag === '00') {

@@ -30,4 +30,19 @@ export class TezosBTC extends TezosFAProtocol {
       network: network
     })
   }
+
+  public async fetchHolders(): Promise<{address: string, amount: string}[]> {
+
+    const values = await this.contract.bigMapValues([{
+      field: 'key' as const,
+      operation: "startsWith" as const,
+      set: ["0x05070701000000066c65646765720a00000016"]
+    }])
+    return values.map((value) => {
+      return {
+        address: value.key,
+        amount: value.value !== null ? value.value : "0"
+      }
+    })
+  }
 }
