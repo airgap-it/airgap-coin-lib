@@ -14,7 +14,7 @@ import { TezosBTC } from '../src/protocols/tezos/fa/TezosBTC'
 
 // const syncProtocolUtils = new SyncProtocolUtils()
 // const contract = new TezosBTC('KT1EctCuorV2NfVb1XTQgvzJ88MQtWP8cMMv')
-// const contract = new TezosBTC('KT1PWx2mnDueood7fEmfbBDKx1D9BAnnXitn', 'https://tezos-node.prod.gke.papers.tech', 'https://tezos-mainnet-conseil-1.megan.papers.tech')
+const contract = new TezosBTC('KT1PWx2mnDueood7fEmfbBDKx1D9BAnnXitn', 'https://tezos-node.prod.gke.papers.tech', 'https://tezos-mainnet-conseil-1.megan.papers.tech')
 // const contract = new TezosFAProtocol({
 //     symbol: 'TZBTC',
 //     name: 'Tezos BTC',
@@ -50,8 +50,9 @@ import { TezosBTC } from '../src/protocols/tezos/fa/TezosBTC'
 
 // contract.getTransactions(10).then(console.log).catch(console.error)
 // console.log(contract)
-// contract.fetchHolders().then(console.log).catch(console.error)
-console.log(TezosBTC.decodeSignedInt('0xb8c6ce9502'))
+
+contract.fetchHolders().then(console.log).catch(console.error)
+
 // contract.normalizeTransactionParameters('{"entrypoint":"default","value":{"prim":"Right","args":[{"prim":"Left","args":[{"prim":"Left","args":[{"prim":"Right","args":[{"prim":"Pair","args":[{"bytes":"00007374616b65722d64616f2f7265736572766f6972"},{"prim":"Pair","args":[{"bytes":"0000c67788ea8ada32b2426e1b02b9ebebdc2dc51007"},{"int":"1"}]}]}]}]}]}]}}')
 // .then((result) => { 
 //     console.log(JSON.stringify(result, null, 2))
