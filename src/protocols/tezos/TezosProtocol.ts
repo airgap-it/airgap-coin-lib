@@ -561,23 +561,16 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
     const wrappedOperations: RawTezosTransaction[] = []
 
-    const numberOfGroups: number = Math.ceil(recipients.length / operationsPerGroup)
+    let allOperations = await this.createTransactionOperation(operations, recipients, wrappedValues, wrappedFee, address, counter, balance)
+    allOperations = operations.concat(allOperations) // if we have a reveal in operations, we need to make sure it is present in the allOperations array
+
+    const numberOfGroups: number = Math.ceil(allOperations.length / operationsPerGroup)
+  
     for (let i = 0; i < numberOfGroups; i++) {
       const start = i * operationsPerGroup
       const end = start + operationsPerGroup
 
-      const recipientsInGroup = recipients.slice(start, end)
-      const valuesInGroup = wrappedValues.slice(start, end)
-
-      const operationsGroup = await this.createTransactionOperation(
-        operations,
-        recipientsInGroup,
-        valuesInGroup,
-        wrappedFee,
-        address,
-        counter,
-        balance
-      )
+      let operationsGroup = allOperations.slice(start, end)
       counter = counter.plus(operationsGroup.length)
 
       wrappedOperations.push(
@@ -602,7 +595,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   ) {
     const amountUsedByPreviousOperations: BigNumber = this.getAmountUsedByPreviousOperations(previousOperations)
 
-    const operations: TezosOperation[] = previousOperations
+    const operations: TezosOperation[] = []
 
     if (!amountUsedByPreviousOperations.isZero()) {
       if (balance.isLessThan(wrappedValues[0].plus(wrappedFee).plus(amountUsedByPreviousOperations))) {
