@@ -561,7 +561,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
     const wrappedOperations: RawTezosTransaction[] = []
 
-    let allOperations = await this.createTransactionOperation(operations, recipients, wrappedValues, wrappedFee, address, counter, balance)
+    let allOperations = await this.createTransactionOperations(operations, recipients, wrappedValues, wrappedFee, address, counter, balance)
     allOperations = operations.concat(allOperations) // if we have a reveal in operations, we need to make sure it is present in the allOperations array
 
     const numberOfGroups: number = Math.ceil(allOperations.length / operationsPerGroup)
@@ -571,7 +571,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       const end = start + operationsPerGroup
 
       let operationsGroup = allOperations.slice(start, end)
-      counter = counter.plus(operationsGroup.length)
 
       wrappedOperations.push(
         await this.forgeAndWrapOperations({
@@ -584,7 +583,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     return wrappedOperations
   }
 
-  private async createTransactionOperation(
+  private async createTransactionOperations(
     previousOperations: TezosOperation[],
     recipients: string[],
     wrappedValues: BigNumber[],
@@ -1212,7 +1211,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     } catch (err) {
       const axiosError = (err as AxiosError)
       if (axiosError.response !== undefined && axiosError.response.data !== undefined) {
-        throw new Error(`broadcasting failed ${err.response.data}`)
+        throw new Error(`broadcasting failed ${axiosError.response.data}`)
       } else {
         throw new Error(`broadcasting failed ${err}`)
       }
