@@ -31,6 +31,7 @@ import { isArray } from 'util'
 const assertNever: (x: never) => void = (x: never): void => undefined
 
 const MAX_OPERATIONS_PER_GROUP: number = 200
+const GAS_LIMIT_PLACEHOLDER: string = '1000000'
 
 export interface TezosVotingInfo {
   pkh: string
@@ -75,6 +76,40 @@ export interface TezosPayoutInfo {
   delegator: string
   share: string
   payout: string
+}
+
+// run_operation response
+export interface RunOperationBalanceUpdate {
+  kind: string
+  contract: string
+  change: string
+  category: string
+  delegate: string
+  cycle?: number
+}
+
+export interface RunOperationOperationBalanceUpdate {
+  kind: string
+  contract: string
+  change: string
+}
+
+export interface RunOperationOperationResult {
+  status: string
+  balance_updates: RunOperationOperationBalanceUpdate[]
+  consumed_gas: string
+}
+
+export interface RunOperationMetadata {
+  balance_updates: RunOperationBalanceUpdate[]
+  operation_result: RunOperationOperationResult
+}
+
+interface RunOperationResponse {
+  contents: (TezosOperation & {
+    metadata: RunOperationMetadata
+  })[]
+  signature: string
 }
 
 // 8.25%
@@ -640,7 +675,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       const spendOperation: TezosTransactionOperation = {
         kind: TezosOperationType.TRANSACTION,
         fee: adjustedFee.toFixed(),
-        gas_limit: recipients[i].toLowerCase().startsWith('kt') ? '15385' : '10300',
+        gas_limit: '10300',
         storage_limit: receivingBalance.isZero() && recipients[i].toLowerCase().startsWith('tz') ? '300' : '0', // taken from eztz
         amount: wrappedValues[i].toFixed(),
         counter: counter.plus(i).toFixed(),
@@ -830,7 +865,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
       const defaultCounter: string = counter.plus(index).toFixed() // TODO: Handle counter if we have some operations without counters in the array
       const defaultFee: string = new BigNumber(this.feeDefaults.low).times(1000000).toFixed()
-      const defaultGasLimit: string = recipient && recipient.toLowerCase().startsWith('kt') ? '15385' : '10300' // taken from eztz
+      const defaultGasLimit: string = '10300'
       const defaultStorageLimit: string =
         receivingBalance && receivingBalance.isZero() && recipient && recipient.toLowerCase().startsWith('tz') ? '300' : '0' // taken from eztz
 
@@ -876,7 +911,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
           transactionOperation.source = transactionOperation.source ?? address
           transactionOperation.counter = transactionOperation.counter ?? defaultCounter
           transactionOperation.fee = transactionOperation.fee ?? defaultFee
-          transactionOperation.gas_limit = transactionOperation.gas_limit ?? defaultGasLimit
+          transactionOperation.gas_limit = transactionOperation.gas_limit ?? GAS_LIMIT_PLACEHOLDER
           transactionOperation.storage_limit = transactionOperation.storage_limit ?? defaultStorageLimit
 
           return transactionOperation
@@ -894,7 +929,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
           originationOperation.source = originationOperation.source ?? address
           originationOperation.counter = originationOperation.counter ?? defaultCounter
           originationOperation.fee = originationOperation.fee ?? defaultFee
-          originationOperation.gas_limit = originationOperation.gas_limit ?? defaultGasLimit
+          originationOperation.gas_limit = originationOperation.gas_limit ?? GAS_LIMIT_PLACEHOLDER
           originationOperation.storage_limit = originationOperation.storage_limit ?? defaultStorageLimit
 
           return originationOperation
@@ -918,6 +953,35 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     const tezosWrappedOperation: TezosWrappedOperation = {
       branch,
       contents: operations
+    }
+
+    return this.estimateAndReplaceGas(tezosWrappedOperation)
+  }
+
+  public async estimateAndReplaceGas(tezosWrappedOperation: TezosWrappedOperation): Promise<TezosWrappedOperation> {
+    const { data: block }: AxiosResponse<{ chain_id: string }> = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/`)
+    const body = {
+      chain_id: block.chain_id,
+      operation: {
+        branch: tezosWrappedOperation.branch,
+        contents: tezosWrappedOperation.contents,
+        signature: 'sigUHx32f9wesZ1n2BWpixXz4AQaZggEtchaQNHYGRCoWNAXx45WGW2ua3apUUUAGMLPwAU41QoaFCzVSL61VaessLg4YbbP' // signature will not be checked, so it is ok to always use this one
+      }
+    }
+
+    try {
+      const response: AxiosResponse<RunOperationResponse> = await axios.post(`${this.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`, body, {
+        headers: { 'Content-Type': 'application/json' }
+      })
+
+      tezosWrappedOperation.contents.forEach((content: TezosOperation, i: number) => {
+        const metadata: RunOperationMetadata = response.data.contents[i].metadata
+        if (metadata.operation_result.consumed_gas) {
+          (content as TezosTransactionOperation | TezosOriginationOperation).gas_limit = metadata.operation_result.consumed_gas
+        }
+      })
+    } catch (runOperationError) {
+      console.error('runOperationError', runOperationError.response ? runOperationError.response : runOperationError)
     }
 
     return tezosWrappedOperation

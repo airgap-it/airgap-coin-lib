@@ -12,6 +12,7 @@ import { TezosOperationType } from '../../src/protocols/tezos/types/TezosOperati
 import { TezosOriginationOperation } from '../../src/protocols/tezos/types/operations/Origination'
 import { TezosWrappedOperation } from '../../src/protocols/tezos/types/TezosWrappedOperation'
 import { TezosRevealOperation } from '../../src/protocols/tezos/types/operations/Reveal'
+import { RunOperationMetadata } from '../../src/protocols/tezos/TezosProtocol'
 
 const tezosProtocolSpec = new TezosTestProtocolSpec()
 const tezosLib = tezosProtocolSpec.lib
@@ -331,7 +332,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       expect(result.airGapTxs[0].amount).to.equal('100000')
       expect(result.airGapTxs[0].fee).to.equal('1920') // 500 mutez is added because in babylon this is sent to a contract
       expect(result.rawTezosTx.binaryTransaction).to.equal(
-        'e4b7e31c04d23e3a10ea20e11bd0ebb4bde16f632c1d94779fd5849a34ec42a36c0091a9d2b003f19cf5a1f38f04f1000ab482d33176800fcffe37997800a08d0601ba4e7349ac25dc5eb2df5a43fceacc58963df4f50000'
+        'e4b7e31c04d23e3a10ea20e11bd0ebb4bde16f632c1d94779fd5849a34ec42a36c0091a9d2b003f19cf5a1f38f04f1000ab482d33176800fcffe37bc5000a08d0601ba4e7349ac25dc5eb2df5a43fceacc58963df4f50000'
       )
     })
 
@@ -550,44 +551,115 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       expect(result2.airGapTxs[0].transactionDetails.counter).to.equal('917516')
     })
 
-    it('will prepare an FA 1.2 transaction', async () => {
-      // stub
-      //   .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy/balance`)
-      //   .returns(Promise.resolve({ data: 0 }))
+    it.only('will prepare an FA 1.2 transaction', async () => {
+      stub
+        .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/`)
+        .returns(Promise.resolve({
+          data: {
+            "protocol": "PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb",
+            "chain_id": "NetXdQprcVkpaWU",
+            "hash": "BKuTvcx5LJQgtiNXbd4py3RFRE4x7EYjTFwJjVjj4XP7h2vSxs6",
+            "header": {
+              "level": 940455,
+              "proto": 6,
+              "predecessor": "BLurthGbZXstELdA3hXtGAA5kXxgtxmfUpzCq7bzpPVB92u9g1z",
+              "timestamp": "2020-05-06T10:41:32Z",
+              "validation_pass": 4,
+              "operations_hash": "LLoajfGAHirmjbJWjX81gNiZPqyv8pqEyUx7FAygiYBXLQ18H2kX8",
+              "fitness": ["01", "00000000000459a7"],
+              "context": "CoVNfjwSR78ChDuvVpRW6Lvjq6nwC6UsyrZzhDgrU2ZMiPYXNjYy",
+              "priority": 0,
+              "proof_of_work_nonce": "0639894462090000",
+              "signature": "sigjnLFcgqv8QC1QwNhPgg4WomUGtL4nQ68u3GavKXLLWyFcf8g2ceaT6FeuRRVGcdDY7qj7MBo2iUo83L1rtroQKMhqZbw2"
+            },
+            "metadata": {
+              "protocol": "PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb",
+              "next_protocol": "PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb",
+              "test_chain_status": { "status": "not_running" },
+              "max_operations_ttl": 60,
+              "max_operation_data_length": 16384,
+              "max_block_header_length": 238,
+              "max_operation_list_length": [{
+                "max_size": 32768,
+                "max_op": 32
+              },
+              { "max_size": 32768 },
+              {
+                "max_size": 135168,
+                "max_op": 132
+              },
+              { "max_size": 524288 }],
+              "baker": "tz1Kt4P8BCaP93AEV4eA7gmpRryWt5hznjCP",
+              "level": {
+                "level": 940455,
+                "level_position": 940454,
+                "cycle": 229,
+                "cycle_position": 2470,
+                "voting_period": 28,
+                "voting_period_position": 22950,
+                "expected_commitment": false
+              },
+              "voting_period_kind": "proposal",
+              "nonce_hash": null,
+              "consumed_gas": "0",
+              "deactivated": [],
+              "balance_updates": []
+            },
+            "operations": [
+              [],
+              [],
+              [],
+              []
+            ]
+          }
+        }))
 
-      const protocol = new TezosProtocol()
-      const incompleteTransaction: any[] = [
-        {
-          kind: 'transaction',
-          amount: '0',
-          fee: '500000',
-          gas_limit: '400000',
-          storage_limit: '60000',
-          destination: 'KT1LH2o12xVRwTpJMZ6QJG74Fox8gE9QieFd',
-          parameters: {
-            entrypoint: 'transfer',
-            value: {
-              prim: 'Pair',
-              args: [
-                {
-                  string: 'tz1d75oB6T4zUMexzkr5WscGktZ1Nss1JrT7'
-                },
-                {
-                  prim: 'Pair',
-                  args: [
-                    {
-                      string: 'tz1MJx9vhaNRSimcuXPK2rW4fLccQnDAnVKJ'
-                    },
-                    {
-                      int: '10'
-                    }
-                  ]
-                }
-              ]
-            }
+      const tx = {
+        kind: 'transaction',
+        amount: '0',
+        fee: '500000',
+        storage_limit: '60000',
+        destination: 'KT1LH2o12xVRwTpJMZ6QJG74Fox8gE9QieFd',
+        parameters: {
+          entrypoint: 'transfer',
+          value: {
+            prim: 'Pair',
+            args: [
+              {
+                string: 'tz1d75oB6T4zUMexzkr5WscGktZ1Nss1JrT7'
+              },
+              {
+                prim: 'Pair',
+                args: [
+                  {
+                    string: 'tz1MJx9vhaNRSimcuXPK2rW4fLccQnDAnVKJ'
+                  },
+                  {
+                    int: '10'
+                  }
+                ]
+              }
+            ]
           }
         }
-      ]
+      }
+
+      const metadata: RunOperationMetadata = {
+        balance_updates: [],
+        operation_result: {
+          status: 'applied',
+          balance_updates: [],
+          consumed_gas: '350000'
+        }
+      }
+
+      const postStub = sinon.stub(axios, 'post')
+      postStub
+        .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`)
+        .returns(Promise.resolve({ data: { contents: [{ ...tx, metadata }, { ...tx, metadata }] } }))
+
+      const protocol = new TezosProtocol()
+      const incompleteTransaction: any[] = [tx, tx]
 
       const transaction = await protocol.prepareOperations(tezosProtocolSpec.wallet.publicKey, incompleteTransaction)
       const forged = await protocol.forgeAndWrapOperations(transaction)
@@ -597,13 +669,14 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       // check that storage is properly set
       // expect(result.spendTransaction.storage_limit).to.equal('0')
 
-      expect(result.airGapTxs.length).to.equal(1)
+      expect(result.airGapTxs.length).to.equal(2)
 
       const airGapTx = result.airGapTxs[0]
+      const airGapTx2 = result.airGapTxs[1]
 
       expect(airGapTx.transactionDetails.amount).to.equal('0')
       expect(airGapTx.transactionDetails.fee).to.equal('500000')
-      expect(airGapTx.transactionDetails.gas_limit).to.equal('400000')
+      expect(airGapTx.transactionDetails.gas_limit).to.equal('350000')
       expect(airGapTx.transactionDetails.storage_limit).to.equal('60000')
       expect(airGapTx.transactionDetails.source).to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
       expect(airGapTx.transactionDetails.destination).to.equal('KT1LH2o12xVRwTpJMZ6QJG74Fox8gE9QieFd')
@@ -612,6 +685,8 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       expect(airGapTx.transactionDetails.parameters.value.args[0].string).to.equal('tz1d75oB6T4zUMexzkr5WscGktZ1Nss1JrT7')
       expect(airGapTx.transactionDetails.parameters.value.args[1].args[0].string).to.equal('tz1MJx9vhaNRSimcuXPK2rW4fLccQnDAnVKJ')
       expect(airGapTx.transactionDetails.parameters.value.args[1].args[1].int).to.equal('10')
+
+      expect(airGapTx2.transactionDetails.gas_limit).to.equal('350000')
 
       expect(airGapTx.from.length).to.equal(1)
       expect(airGapTx.from[0]).to.equal('tz1d75oB6T4zUMexzkr5WscGktZ1Nss1JrT7')
