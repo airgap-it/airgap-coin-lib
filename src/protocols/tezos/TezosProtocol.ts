@@ -976,7 +976,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
       tezosWrappedOperation.contents.forEach((content: TezosOperation, i: number) => {
         const metadata: RunOperationMetadata = response.data.contents[i].metadata
-        if (metadata.operation_result.consumed_gas) {
+        if ((content.kind === TezosOperationType.TRANSACTION || content.kind === TezosOperationType.ORIGINATION) && metadata.operation_result.consumed_gas) {
           (content as TezosTransactionOperation | TezosOriginationOperation).gas_limit = metadata.operation_result.consumed_gas
         }
       })
