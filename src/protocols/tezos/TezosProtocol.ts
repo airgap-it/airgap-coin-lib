@@ -602,7 +602,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   ) {
     const amountUsedByPreviousOperations: BigNumber = this.getAmountUsedByPreviousOperations(previousOperations)
 
-    const operations: TezosOperation[] = []
+    const operations: TezosOperation[] = previousOperations
 
     if (!amountUsedByPreviousOperations.isZero()) {
       if (balance.isLessThan(wrappedValues[0].plus(wrappedFee).plus(amountUsedByPreviousOperations))) {
@@ -1217,8 +1217,12 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       // returns hash if successful
       return injectionResponse
     } catch (err) {
-      console.warn((err as AxiosError).message, ((err as AxiosError).response as AxiosResponse).statusText)
-      throw new Error(`broadcasting failed ${err}`)
+      const axiosError = (err as AxiosError)
+      if (axiosError.response !== undefined && axiosError.response.data !== undefined) {
+        throw new Error(`broadcasting failed ${err.response.data}`)
+      } else {
+        throw new Error(`broadcasting failed ${err}`)
+      }
     }
   }
 
