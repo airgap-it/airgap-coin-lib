@@ -32,7 +32,7 @@ const assertNever: (x: never) => void = (x: never): void => undefined
 
 const MAX_OPERATIONS_PER_GROUP: number = 200
 const GAS_LIMIT_PLACEHOLDER: string = '1040000'
-// const STORAGE_LIMIT_PLACEHOLDER: string = '60000'
+const STORAGE_LIMIT_PLACEHOLDER: string = '60000'
 
 const MINIMAL_FEE: number = 100
 const MINIMAL_FEE_PER_GAS_UNIT: number = 0.1
@@ -932,7 +932,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
           transactionOperation.counter = transactionOperation.counter ?? defaultCounter
           transactionOperation.fee = transactionOperation.fee ?? defaultFee
           transactionOperation.gas_limit = transactionOperation.gas_limit ?? GAS_LIMIT_PLACEHOLDER
-          transactionOperation.storage_limit = transactionOperation.storage_limit ?? GAS_LIMIT_PLACEHOLDER
+          transactionOperation.storage_limit = transactionOperation.storage_limit ?? STORAGE_LIMIT_PLACEHOLDER
 
           return transactionOperation
         case TezosOperationType.ORIGINATION:
@@ -950,7 +950,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
           originationOperation.counter = originationOperation.counter ?? defaultCounter
           originationOperation.fee = originationOperation.fee ?? defaultFee
           originationOperation.gas_limit = originationOperation.gas_limit ?? GAS_LIMIT_PLACEHOLDER
-          originationOperation.storage_limit = originationOperation.storage_limit ?? GAS_LIMIT_PLACEHOLDER
+          originationOperation.storage_limit = originationOperation.storage_limit ?? STORAGE_LIMIT_PLACEHOLDER
 
           return originationOperation
         case TezosOperationType.ENDORSEMENT:
