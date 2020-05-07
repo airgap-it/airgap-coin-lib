@@ -932,7 +932,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
           transactionOperation.counter = transactionOperation.counter ?? defaultCounter
           transactionOperation.fee = transactionOperation.fee ?? defaultFee
           transactionOperation.gas_limit = transactionOperation.gas_limit ?? GAS_LIMIT_PLACEHOLDER
-          transactionOperation.storage_limit = transactionOperation.storage_limit ?? defaultStorageLimit
+          transactionOperation.storage_limit = transactionOperation.storage_limit ?? GAS_LIMIT_PLACEHOLDER
 
           return transactionOperation
         case TezosOperationType.ORIGINATION:
@@ -950,7 +950,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
           originationOperation.counter = originationOperation.counter ?? defaultCounter
           originationOperation.fee = originationOperation.fee ?? defaultFee
           originationOperation.gas_limit = originationOperation.gas_limit ?? GAS_LIMIT_PLACEHOLDER
-          originationOperation.storage_limit = originationOperation.storage_limit ?? defaultStorageLimit
+          originationOperation.storage_limit = originationOperation.storage_limit ?? GAS_LIMIT_PLACEHOLDER
 
           return originationOperation
         case TezosOperationType.ENDORSEMENT:
@@ -1067,18 +1067,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     }
 
     const fee: number = MINIMAL_FEE
-      + MINIMAL_FEE_PER_BYTE * (`${forgedOperation}${fakeSignature}`.length / 2)
+      + MINIMAL_FEE_PER_BYTE * Math.ceil((forgedOperation.length + 128) / 2) // 128 is the length of a hex signature
       + MINIMAL_FEE_PER_GAS_UNIT * gasLimitTotal
 
-
-
     const feePerOperation: number = Math.ceil(fee / tezosWrappedOperation.contents.length)
-
-    console.log('MINIMAL_FEE', MINIMAL_FEE)
-    console.log('MINIMAL_FEE_PER_BYTE', MINIMAL_FEE_PER_BYTE * (`${forgedOperation}${fakeSignature}`.length / 2))
-    console.log('MINIMAL_FEE_PER_GAS_UNIT', MINIMAL_FEE_PER_GAS_UNIT * gasLimitTotal)
-    console.log('fee', fee)
-    console.log('feePerOperation', feePerOperation)
 
     tezosWrappedOperation.contents.forEach((operation: TezosOperation) => {
       if ((operation as TezosTransactionOperation).fee) {
