@@ -19,14 +19,16 @@ const contract = new TezosBTC('KT1PWx2mnDueood7fEmfbBDKx1D9BAnnXitn', 'https://t
 
 // contract.getTransactions(10).then(console.log).catch(console.error)
 
-contract.fetchTokenHolders().then(console.log).catch(console.error)
+// contract.fetchTokenHolders().then(console.log).catch(console.error)
 
-contract.normalizeTransactionParameters('Unparsable code: {"entrypoint":"default","value":{"prim":"Right","args":[{"prim":"Right","args":[{"prim":"Right","args":[{"prim":"Right","args":[{"prim":"Left","args":[{"prim":"Right","args":[{"prim":"Right","args":[{"prim":"Left","args":[{"prim":"Pair","args":[{"bytes":"0000f735ed6df2fb409a8634ce63ac12c82bbb5c83d4"},{"prim":"Pair","args":[{"bytes":"0000a9955122cdcc273d71e0f57db725b74ab177d662"},{"int":"9"}]}]}]}]}]}]}]}]}]}]}}')
-.then((result) => { 
-    console.log(JSON.stringify(result, null, 2))
-    const details = contract.transferDetailsFromParameters(result)
-    console.log(JSON.stringify(details, null, 2)) 
-}).catch(console.error)
+// contract.normalizeTransactionParameters('Unparsable code: {"entrypoint":"default","value":{"prim":"Right","args":[{"prim":"Right","args":[{"prim":"Right","args":[{"prim":"Right","args":[{"prim":"Left","args":[{"prim":"Right","args":[{"prim":"Right","args":[{"prim":"Left","args":[{"prim":"Pair","args":[{"bytes":"0000f735ed6df2fb409a8634ce63ac12c82bbb5c83d4"},{"prim":"Pair","args":[{"bytes":"0000a9955122cdcc273d71e0f57db725b74ab177d662"},{"int":"9"}]}]}]}]}]}]}]}]}]}]}}')
+// .then((result) => { 
+//     console.log(JSON.stringify(result, null, 2))
+//     const details = contract.transferDetailsFromParameters(result)
+//     console.log(JSON.stringify(details, null, 2)) 
+// }).catch(console.error)
+
+contract.getBalance('tz1aqsunnQ9ECPAfvRaWeMfiNFhF3s8M15sy', 'tz1Mj7RzPmMAqDUNFBn5t5VbXmWW4cSUAdtT').then(console.log).catch(console.error)
 
 // contract.getAllowance('tz1aqsunnQ9ECPAfvRaWeMfiNFhF3s8M15sy', 'tz1grSQDByRpnVs7sPtaprNZRp531ZKz6Jmm').then(result => {
 //     console.log('ALLOWANCE', result)

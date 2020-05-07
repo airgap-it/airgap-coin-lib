@@ -2,6 +2,8 @@ import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { TezosContractPair } from './TezosContractPair'
 import { TezosContractEntrypoint } from './TezosContractEntrypoint'
 import { TezosContractEntity } from './TezosContractEntity'
+import { TezosTransactionOperation } from '../types/operations/Transaction'
+import { TezosOperationType } from '../types/TezosOperationType'
 
 export class TezosContractCall extends TezosContractEntity {
   readonly entrypoint: TezosContractEntrypoint
@@ -28,7 +30,7 @@ export class TezosContractCall extends TezosContractEntity {
         signature: 'sigUHx32f9wesZ1n2BWpixXz4AQaZggEtchaQNHYGRCoWNAXx45WGW2ua3apUUUAGMLPwAU41QoaFCzVSL61VaessLg4YbbP', // signature will not be checked, so it is ok to always use this one
         contents: [
           {
-            kind: 'transaction',
+            kind: TezosOperationType.TRANSACTION,
             counter: counter.toFixed(),
             amount: '0',
             source: source,
@@ -64,23 +66,6 @@ export interface TezosRPCOperationBody {
 
 export interface TezosRPCOperation {
   branch: string
-  contents: TezosRPCTransaction[]
+  contents: TezosTransactionOperation[]
   signature: string
-}
-
-export interface TezosRPCTransaction {
-  kind: 'transaction'
-  counter: string
-  amount: string
-  source: string
-  destination: string
-  fee: string
-  gas_limit: string
-  storage_limit: string
-  parameters?: TezosRPCTransactionParameters
-}
-
-interface TezosRPCTransactionParameters {
-  entrypoint: String
-  value: any
 }
