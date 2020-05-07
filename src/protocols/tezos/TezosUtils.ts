@@ -28,21 +28,6 @@ export class TezosUtils {
       branch: Buffer.from(new Uint8Array([1, 52]))
     }
 
-  public static decodeSignedInt(hex: string): number {
-    const positive = Buffer.from(hex.slice(0, 2), 'hex')[0] & 0x40 ? false : true
-    const arr = Buffer.from(hex, 'hex').map((v, i) => (i === 0 ? v & 0x3f : v & 0x7f))
-    let n = bigInt.zero
-    for (let i = arr.length - 1; i >= 0; i--) {
-      if (i === 0) {
-        n = n.or(arr[i])
-      } else {
-        n = n.or(bigInt(arr[i]).shiftLeft(7 * i - 1))
-      }
-    }
-
-    return positive ? n.toJSNumber() : n.negate().toJSNumber()
-  }
-
   public static parseAddress(rawHexAddress: string): string {
     const { result, rest }: { result: string; rest: string } = this.splitAndReturnRest(rawHexAddress, 2)
     const contractIdTag: string = result
@@ -57,7 +42,7 @@ export class TezosUtils {
     }
   }
 
-  public static hexToArguments(rawHex: string | string[]): string | number | TezosContractEntity {
+  public static parseHex(rawHex: string | string[]): string | number | TezosContractEntity {
     let hex: string[]
     if (typeof rawHex === 'string') {
       hex = TezosUtils.hexStringToArray(rawHex)
@@ -88,7 +73,7 @@ export class TezosUtils {
         const lengthBytes = TezosUtils.hexToLength(hex.splice(0, 4))
         return TezosUtils.hexToString(hex.splice(0, lengthBytes))
       case '05': // single arg prim
-        return TezosUtils.hexToArguments(hex)
+        return TezosUtils.parseHex(hex)
       case '02': // list
         return TezosUtils.parseList(hex)
       default:
@@ -96,7 +81,25 @@ export class TezosUtils {
     }
   }
 
+  private static decodeSignedInt(hex: string): number {
+    const positive = Buffer.from(hex.slice(0, 2), 'hex')[0] & 0x40 ? false : true
+    const arr = Buffer.from(hex, 'hex').map((v, i) => (i === 0 ? v & 0x3f : v & 0x7f))
+    let n = bigInt.zero
+    for (let i = arr.length - 1; i >= 0; i--) {
+      if (i === 0) {
+        n = n.or(arr[i])
+      } else {
+        n = n.or(bigInt(arr[i]).shiftLeft(7 * i - 1))
+      }
+    }
+
+    return positive ? n.toJSNumber() : n.negate().toJSNumber()
+  }
+
   private static hexStringToArray(hexString: string): string[] {
+    if (hexString.startsWith('0x')) {
+      hexString = hexString.slice(2)
+    }
     const hexBytes: RegExpMatchArray | null = hexString.match(/.{2}/g)
     if (hexBytes === null) {
       throw new Error('Cannot parse contract code')
@@ -105,8 +108,8 @@ export class TezosUtils {
   }
 
   private static parsePair(hex: string[]): TezosContractPair {
-    const first = TezosUtils.hexToArguments(hex)
-    const second = TezosUtils.hexToArguments(hex)
+    const first = TezosUtils.parseHex(hex)
+    const second = TezosUtils.parseHex(hex)
     return new TezosContractPair(first, second)
   }
 
@@ -116,7 +119,7 @@ export class TezosUtils {
     if (lengthBytes > 0) {
       const listBytes = hex.splice(0, lengthBytes)
       while (listBytes.length > 0) {
-        const item = TezosUtils.hexToArguments(listBytes)
+        const item = TezosUtils.parseHex(listBytes)
         items.push(item)
       }
     }
