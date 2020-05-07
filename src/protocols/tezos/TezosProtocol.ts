@@ -561,24 +561,16 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
     const wrappedOperations: RawTezosTransaction[] = []
 
-    const numberOfGroups: number = Math.ceil(recipients.length / operationsPerGroup)
+    let allOperations = await this.createTransactionOperations(operations, recipients, wrappedValues, wrappedFee, address, counter, balance)
+    allOperations = operations.concat(allOperations) // if we have a reveal in operations, we need to make sure it is present in the allOperations array
+
+    const numberOfGroups: number = Math.ceil(allOperations.length / operationsPerGroup)
+  
     for (let i = 0; i < numberOfGroups; i++) {
       const start = i * operationsPerGroup
       const end = start + operationsPerGroup
 
-      const recipientsInGroup = recipients.slice(start, end)
-      const valuesInGroup = wrappedValues.slice(start, end)
-
-      const operationsGroup = await this.createTransactionOperation(
-        operations,
-        recipientsInGroup,
-        valuesInGroup,
-        wrappedFee,
-        address,
-        counter,
-        balance
-      )
-      counter = counter.plus(operationsGroup.length)
+      let operationsGroup = allOperations.slice(start, end)
 
       wrappedOperations.push(
         await this.forgeAndWrapOperations({
@@ -591,7 +583,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     return wrappedOperations
   }
 
-  private async createTransactionOperation(
+  private async createTransactionOperations(
     previousOperations: TezosOperation[],
     recipients: string[],
     wrappedValues: BigNumber[],
@@ -1217,8 +1209,12 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       // returns hash if successful
       return injectionResponse
     } catch (err) {
-      console.warn((err as AxiosError).message, ((err as AxiosError).response as AxiosResponse).statusText)
-      throw new Error(`broadcasting failed ${err}`)
+      const axiosError = (err as AxiosError)
+      if (axiosError.response !== undefined && axiosError.response.data !== undefined) {
+        throw new Error(`broadcasting failed ${axiosError.response.data}`)
+      } else {
+        throw new Error(`broadcasting failed ${err}`)
+      }
     }
   }
 
