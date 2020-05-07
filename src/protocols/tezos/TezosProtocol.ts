@@ -994,77 +994,74 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     const forgedOperation: string = await this.forgeTezosOperation(tezosWrappedOperation)
     let gasLimitTotal: number = 0
 
-    try {
-      const response: AxiosResponse<RunOperationResponse> = await axios.post(`${this.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`, body, {
-        headers: { 'Content-Type': 'application/json' }
-      })
-
-
-      tezosWrappedOperation.contents.forEach((content: TezosOperation, i: number) => {
-        const metadata: RunOperationMetadata = response.data.contents[i].metadata
-        if ((content.kind === TezosOperationType.TRANSACTION || content.kind === TezosOperationType.ORIGINATION) && metadata.operation_result) {
-          const operation: TezosTransactionOperation | TezosOriginationOperation = (content as TezosTransactionOperation | TezosOriginationOperation)
-
-          const result: RunOperationOperationResult = metadata.operation_result
-
-          let gasLimit: number = 0
-          let storageLimit: number = 0
-
-          // If there are internal operations, we first add gas and storage used of internal operations
-          if (metadata.internal_operation_results) {
-            metadata.internal_operation_results.forEach((internalOperation: RunOperationInternalOperationResult) => {
-              if (internalOperation?.result) {
-                if (internalOperation.result.errors) {
-                  throw new ErrorWithData('Internal operation errors', result.errors)
-                }
-
-                gasLimit += Number(internalOperation.result.consumed_gas)
-
-                if (internalOperation.result.paid_storage_size_diff) {
-                  storageLimit += Number(internalOperation.result.paid_storage_size_diff)
-                }
-                if (internalOperation.result.originated_contracts) {
-                  storageLimit += internalOperation.result.originated_contracts.length * 257
-                }
-                if (internalOperation.result.allocated_destination_contract) {
-                  storageLimit += 257
-                }
-              }
-            })
-          }
-
-          if (result.errors) {
-            throw new ErrorWithData('Operation errors', result.errors)
-          }
-
-          // Add gas and storage used by operation
-          gasLimit += Number(result.consumed_gas)
-
-          if (result.paid_storage_size_diff) {
-            storageLimit += Number(result.paid_storage_size_diff)
-          }
-          if (result.originated_contracts) {
-            storageLimit += result.originated_contracts.length * 257
-          }
-          if (result.allocated_destination_contract) {
-            storageLimit += 257
-          }
-
-
-          if (operation.gas_limit) {
-            operation.gas_limit = gasLimit.toString()
-          }
-          if (operation.storage_limit) {
-            operation.storage_limit = storageLimit.toString()
-          }
-
-          gasLimitTotal += gasLimit
-        }
-      })
-
-    } catch (runOperationError) {
+    const response: AxiosResponse<RunOperationResponse> = await axios.post(`${this.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`, body, {
+      headers: { 'Content-Type': 'application/json' }
+    }).catch((runOperationError: AxiosError) => {
       console.error('runOperationError', runOperationError.response ? runOperationError.response : runOperationError)
-    }
+      throw new ErrorWithData('Run operation error', runOperationError.response ? runOperationError.response : runOperationError)
+    })
+
+    tezosWrappedOperation.contents.forEach((content: TezosOperation, i: number) => {
+      const metadata: RunOperationMetadata = response.data.contents[i].metadata
+      if ((content.kind === TezosOperationType.TRANSACTION || content.kind === TezosOperationType.ORIGINATION) && metadata.operation_result) {
+        const operation: TezosTransactionOperation | TezosOriginationOperation = (content as TezosTransactionOperation | TezosOriginationOperation)
+
+        const result: RunOperationOperationResult = metadata.operation_result
+
+        let gasLimit: number = 0
+        let storageLimit: number = 0
+
+        // If there are internal operations, we first add gas and storage used of internal operations
+        if (metadata.internal_operation_results) {
+          metadata.internal_operation_results.forEach((internalOperation: RunOperationInternalOperationResult) => {
+            if (internalOperation?.result) {
+              if (internalOperation.result.errors) {
+                throw new ErrorWithData('Internal operation errors', result.errors)
+              }
+
+              gasLimit += Number(internalOperation.result.consumed_gas)
+
+              if (internalOperation.result.paid_storage_size_diff) {
+                storageLimit += Number(internalOperation.result.paid_storage_size_diff)
+              }
+              if (internalOperation.result.originated_contracts) {
+                storageLimit += internalOperation.result.originated_contracts.length * 257
+              }
+              if (internalOperation.result.allocated_destination_contract) {
+                storageLimit += 257
+              }
+            }
+          })
+        }
+
+        if (result.errors) {
+          throw new ErrorWithData('Operation errors', result.errors)
+        }
+
+        // Add gas and storage used by operation
+        gasLimit += Number(result.consumed_gas)
+
+        if (result.paid_storage_size_diff) {
+          storageLimit += Number(result.paid_storage_size_diff)
+        }
+        if (result.originated_contracts) {
+          storageLimit += result.originated_contracts.length * 257
+        }
+        if (result.allocated_destination_contract) {
+          storageLimit += 257
+        }
+
+
+        if (operation.gas_limit) {
+          operation.gas_limit = gasLimit.toString()
+        }
+        if (operation.storage_limit) {
+          operation.storage_limit = storageLimit.toString()
+        }
+
+        gasLimitTotal += gasLimit
+      }
+    })
 
     const fee: number = MINIMAL_FEE
       + MINIMAL_FEE_PER_BYTE * Math.ceil((forgedOperation.length + 128) / 2) // 128 is the length of a hex signature
