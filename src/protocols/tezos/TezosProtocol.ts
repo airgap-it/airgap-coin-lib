@@ -1,6 +1,5 @@
 import { localForger } from '@taquito/local-forging'
 import * as sodium from 'libsodium-wrappers'
-import { isArray } from 'util'
 
 import axios, { AxiosError, AxiosResponse } from '../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
@@ -1309,7 +1308,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       counter: counter.toFixed(),
       gas_limit: '10000', // taken from eztz
       storage_limit: '0', // taken from eztz
-      delegate: isArray(delegate) ? delegate[0] : delegate
+      delegate: Array.isArray(delegate) ? delegate[0] : delegate
     }
 
     operations.push(delegationOperation)
