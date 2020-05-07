@@ -1,37 +1,8 @@
 // import { TezosFAProtocol } from '../src/protocols/tezos/fa/TezosFAProtocol'
 import { TezosBTC } from '../src/protocols/tezos/fa/TezosBTC'
-// import { UnsignedTezosTransaction } from '../src/serializer/v1/unsigned-transactions/tezos-transactions.serializer'
-// import { SyncProtocolUtils, EncodedType } from '../src/serializer/v1/serializer'
-// import { SERIALIZER_VERSION } from '../src/serializer/v1/constants'
+// import { TezosStaker } from '../src/protocols/tezos/fa/TezosStaker'
 
-// const protocol = new TezosBTC()
-// const pubKey = '9430c2ac8fe1403c6cbbee3a98b19f3f3bbdd89d0659b3eb6e4106a5cbe41351'
-// const fromAddress = 'tz1Mj7RzPmMAqDUNFBn5t5VbXmWW4cSUAdtT'
-// const toAddress = 'tz1UmM6TUo9PJ2VixcVzGwAJpobhCx1yYpmV'
-// const amount = '0'
-// const fee = '1600000'
-
-// const syncProtocolUtils = new SyncProtocolUtils()
-const contract = new TezosBTC()
-// const contract = new TezosFAProtocol({
-//     symbol: 'TZBTC',
-//     name: 'Tezos BTC',
-//     marketSymbol: 'btc',
-//     identifier: 'xtz-btc',
-//     feeDefaults: {
-//       low: '0.250',
-//       medium: '0.50',
-//       high: '1.00'
-//     },
-//     contractAddress: 'KT1EctCuorV2NfVb1XTQgvzJ88MQtWP8cMMv',//'KT1LH2o12xVRwTpJMZ6QJG74Fox8gE9QieFd',
-//     jsonRPCAPI: 'https://tezos-mainnet-node-1.kubernetes.papers.tech'
-//   })
-// contract.getBalance('tz1aqsunnQ9ECPAfvRaWeMfiNFhF3s8M15sy').then(result => {
-//     console.log('BALANCE', result)
-// }).catch(error => console.log(error))
-
-// edpktpPTi9MLK2wabnNny1kD5LvBmGtFdRjnCiUT3ZZgNDjjM4mpoh
-// tz1grSQDByRpnVs7sPtaprNZRp531ZKz6Jmm
+const contract = new TezosBTC('KT1PWx2mnDueood7fEmfbBDKx1D9BAnnXitn', 'https://tezos-node.prod.gke.papers.tech', 'https://tezos-mainnet-conseil-1.megan.papers.tech')
 
 // contract
 //   .transfer(
@@ -46,7 +17,18 @@ const contract = new TezosBTC()
 //   })
 //   .catch(error => console.log(error))
 
-contract.getTransactions(10).then(console.log).catch(console.error)
+// contract.getTransactions(10).then(console.log).catch(console.error)
+
+// contract.fetchTokenHolders().then(console.log).catch(console.error)
+
+// contract.normalizeTransactionParameters('Unparsable code: {"entrypoint":"default","value":{"prim":"Right","args":[{"prim":"Right","args":[{"prim":"Right","args":[{"prim":"Right","args":[{"prim":"Left","args":[{"prim":"Right","args":[{"prim":"Right","args":[{"prim":"Left","args":[{"prim":"Pair","args":[{"bytes":"0000f735ed6df2fb409a8634ce63ac12c82bbb5c83d4"},{"prim":"Pair","args":[{"bytes":"0000a9955122cdcc273d71e0f57db725b74ab177d662"},{"int":"9"}]}]}]}]}]}]}]}]}]}]}}')
+// .then((result) => { 
+//     console.log(JSON.stringify(result, null, 2))
+//     const details = contract.transferDetailsFromParameters(result)
+//     console.log(JSON.stringify(details, null, 2)) 
+// }).catch(console.error)
+
+contract.getBalance('tz1aqsunnQ9ECPAfvRaWeMfiNFhF3s8M15sy', 'tz1Mj7RzPmMAqDUNFBn5t5VbXmWW4cSUAdtT').then(console.log).catch(console.error)
 
 // contract.getAllowance('tz1aqsunnQ9ECPAfvRaWeMfiNFhF3s8M15sy', 'tz1grSQDByRpnVs7sPtaprNZRp531ZKz6Jmm').then(result => {
 //     console.log('ALLOWANCE', result)
@@ -71,26 +53,3 @@ contract.getTransactions(10).then(console.log).catch(console.error)
 // contract.getTotalSupply().then(console.log)
 // contract.getTotalSupply().then(console.log)
 // contract.getTotalMinted('tz1Mj7RzPmMAqDUNFBn5t5VbXmWW4cSUAdtT', 'KT19ptNzn4MVAN45KUUNpyL5AdLVhujk815u').then(console.log)
-
-// contract.transfer(fromAddress, toAddress, amount, fee, pubKey)
-//     .then(rawTx => {
-//         syncProtocolUtils
-//             .serialize({
-//                 version: SERIALIZER_VERSION,
-//                 protocol: 'xtz-btc',
-//                 type: EncodedType.UNSIGNED_TRANSACTION,
-//                 payload: {
-//                     publicKey: pubKey,
-//                     callback: 'airgap-wallet://?d=',
-//                     transaction: rawTx
-//                 }
-//             })
-//             .then(async serialized => {
-//                 syncProtocolUtils.deserialize(serialized).then(async deserialized => {
-//                     const unsignedTx = deserialized.payload as UnsignedTezosTransaction
-//                     const airGapTxs = await protocol.getTransactionDetails(unsignedTx).catch(err => console.error(err))
-//                     console.log(airGapTxs)
-//                 })
-//             })
-//     })
-//     .catch(error => console.log(error))
