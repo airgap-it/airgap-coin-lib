@@ -1,8 +1,10 @@
 import { localForger } from '@taquito/local-forging'
 import * as sodium from 'libsodium-wrappers'
+import { isArray } from 'util'
 
 import axios, { AxiosError, AxiosResponse } from '../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
 import * as bs58check from '../../dependencies/src/bs58check-2.1.2/index'
 import { generateWalletUsingDerivationPath } from '../../dependencies/src/hd-wallet-js-b216450e56954a6e82ace0aade9474673de5d9d5/src/index'
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
@@ -10,7 +12,9 @@ import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 import { UnsignedTezosTransaction } from '../../serializer/schemas/definitions/transaction-sign-request-tezos'
 import { SignedTezosTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-tezos'
 import { RawTezosTransaction } from '../../serializer/types'
+import { ErrorWithData } from '../../utils/ErrorWithData'
 import { getSubProtocolsByIdentifier } from '../../utils/subProtocols'
+import { DelegateeDetails, DelegationDetails, DelegatorAction, ICoinDelegateProtocol } from '../ICoinDelegateProtocol'
 import { CurrencyUnit, FeeDefaults } from '../ICoinProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
 
@@ -24,14 +28,16 @@ import { TezosOperation } from './types/operations/TezosOperation'
 import { TezosTransactionOperation } from './types/operations/Transaction'
 import { TezosOperationType } from './types/TezosOperationType'
 import { TezosWrappedOperation } from './types/TezosWrappedOperation'
-import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
-import { ICoinDelegateProtocol, DelegatorAction, DelegationDetails, DelegateeDetails } from '../ICoinDelegateProtocol'
-import { isArray } from 'util'
 
 const assertNever: (x: never) => void = (x: never): void => undefined
 
 const MAX_OPERATIONS_PER_GROUP: number = 200
-const GAS_LIMIT_PLACEHOLDER: string = '1000000'
+const GAS_LIMIT_PLACEHOLDER: string = '1040000'
+// const STORAGE_LIMIT_PLACEHOLDER: string = '60000'
+
+const MINIMAL_FEE: number = 100
+const MINIMAL_FEE_PER_GAS_UNIT: number = 0.1
+const MINIMAL_FEE_PER_BYTE: number = 1
 
 export interface TezosVotingInfo {
   pkh: string
@@ -96,13 +102,28 @@ export interface RunOperationOperationBalanceUpdate {
 
 export interface RunOperationOperationResult {
   status: string
+  errors?: unknown
   balance_updates: RunOperationOperationBalanceUpdate[]
-  consumed_gas: string
+  consumed_gas: string,
+  paid_storage_size_diff?: string
+  originated_contracts?: string[]
+  allocated_destination_contract?: boolean
+}
+
+interface RunOperationInternalOperationResult {
+  result?: {
+    errors?: unknown
+    consumed_gas: string
+    paid_storage_size_diff?: string
+    originated_contracts?: string[]
+    allocated_destination_contract?: boolean
+  }
 }
 
 export interface RunOperationMetadata {
   balance_updates: RunOperationBalanceUpdate[]
-  operation_result: RunOperationOperationResult
+  operation_result: RunOperationOperationResult,
+  internal_operation_results?: RunOperationInternalOperationResult[]
 }
 
 interface RunOperationResponse {
@@ -955,34 +976,116 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       contents: operations
     }
 
-    return this.estimateAndReplaceGas(tezosWrappedOperation)
+    return this.estimateAndReplaceLimitsAndFee(tezosWrappedOperation)
   }
 
-  public async estimateAndReplaceGas(tezosWrappedOperation: TezosWrappedOperation): Promise<TezosWrappedOperation> {
+  public async estimateAndReplaceLimitsAndFee(tezosWrappedOperation: TezosWrappedOperation): Promise<TezosWrappedOperation> {
+    const fakeSignature: string = 'sigUHx32f9wesZ1n2BWpixXz4AQaZggEtchaQNHYGRCoWNAXx45WGW2ua3apUUUAGMLPwAU41QoaFCzVSL61VaessLg4YbbP'
+
     const { data: block }: AxiosResponse<{ chain_id: string }> = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/`)
     const body = {
       chain_id: block.chain_id,
       operation: {
         branch: tezosWrappedOperation.branch,
         contents: tezosWrappedOperation.contents,
-        signature: 'sigUHx32f9wesZ1n2BWpixXz4AQaZggEtchaQNHYGRCoWNAXx45WGW2ua3apUUUAGMLPwAU41QoaFCzVSL61VaessLg4YbbP' // signature will not be checked, so it is ok to always use this one
+        signature: fakeSignature // signature will not be checked, so it is ok to always use this one
       }
     }
+
+    const forgedOperation: string = await this.forgeTezosOperation(tezosWrappedOperation)
+    let gasLimitTotal: number = 0
 
     try {
       const response: AxiosResponse<RunOperationResponse> = await axios.post(`${this.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`, body, {
         headers: { 'Content-Type': 'application/json' }
       })
 
+
       tezosWrappedOperation.contents.forEach((content: TezosOperation, i: number) => {
         const metadata: RunOperationMetadata = response.data.contents[i].metadata
-        if ((content.kind === TezosOperationType.TRANSACTION || content.kind === TezosOperationType.ORIGINATION) && metadata.operation_result.consumed_gas) {
-          (content as TezosTransactionOperation | TezosOriginationOperation).gas_limit = metadata.operation_result.consumed_gas
+        if ((content.kind === TezosOperationType.TRANSACTION || content.kind === TezosOperationType.ORIGINATION) && metadata.operation_result) {
+          const operation: TezosTransactionOperation | TezosOriginationOperation = (content as TezosTransactionOperation | TezosOriginationOperation)
+
+          const result: RunOperationOperationResult = metadata.operation_result
+
+          let gasLimit: number = 0
+          let storageLimit: number = 0
+
+          // If there are internal operations, we first add gas and storage used of internal operations
+          if (metadata.internal_operation_results) {
+            metadata.internal_operation_results.forEach((internalOperation: RunOperationInternalOperationResult) => {
+              if (internalOperation?.result) {
+                if (internalOperation.result.errors) {
+                  throw new ErrorWithData('Internal operation errors', result.errors)
+                }
+
+                gasLimit += Number(internalOperation.result.consumed_gas)
+
+                if (internalOperation.result.paid_storage_size_diff) {
+                  storageLimit += Number(internalOperation.result.paid_storage_size_diff)
+                }
+                if (internalOperation.result.originated_contracts) {
+                  storageLimit += internalOperation.result.originated_contracts.length * 257
+                }
+                if (internalOperation.result.allocated_destination_contract) {
+                  storageLimit += 257
+                }
+              }
+            })
+          }
+
+          if (result.errors) {
+            throw new ErrorWithData('Operation errors', result.errors)
+          }
+
+          // Add gas and storage used by operation
+          gasLimit += Number(result.consumed_gas)
+
+          if (result.paid_storage_size_diff) {
+            storageLimit += Number(result.paid_storage_size_diff)
+          }
+          if (result.originated_contracts) {
+            storageLimit += result.originated_contracts.length * 257
+          }
+          if (result.allocated_destination_contract) {
+            storageLimit += 257
+          }
+
+
+          if (operation.gas_limit) {
+            operation.gas_limit = gasLimit.toString()
+          }
+          if (operation.storage_limit) {
+            operation.storage_limit = storageLimit.toString()
+          }
+
+          gasLimitTotal += gasLimit
         }
       })
+
     } catch (runOperationError) {
       console.error('runOperationError', runOperationError.response ? runOperationError.response : runOperationError)
     }
+
+    const fee: number = MINIMAL_FEE
+      + MINIMAL_FEE_PER_BYTE * (`${forgedOperation}${fakeSignature}`.length / 2)
+      + MINIMAL_FEE_PER_GAS_UNIT * gasLimitTotal
+
+
+
+    const feePerOperation: number = Math.ceil(fee / tezosWrappedOperation.contents.length)
+
+    console.log('MINIMAL_FEE', MINIMAL_FEE)
+    console.log('MINIMAL_FEE_PER_BYTE', MINIMAL_FEE_PER_BYTE * (`${forgedOperation}${fakeSignature}`.length / 2))
+    console.log('MINIMAL_FEE_PER_GAS_UNIT', MINIMAL_FEE_PER_GAS_UNIT * gasLimitTotal)
+    console.log('fee', fee)
+    console.log('feePerOperation', feePerOperation)
+
+    tezosWrappedOperation.contents.forEach((operation: TezosOperation) => {
+      if ((operation as TezosTransactionOperation).fee) {
+        (operation as TezosTransactionOperation).fee = feePerOperation.toString()
+      }
+    })
 
     return tezosWrappedOperation
   }
