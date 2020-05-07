@@ -1,5 +1,6 @@
 // import { TezosFAProtocol } from '../src/protocols/tezos/fa/TezosFAProtocol'
 import { TezosBTC } from '../src/protocols/tezos/fa/TezosBTC'
+// import { TezosStaker } from '../src/protocols/tezos/fa/TezosStaker'
 // import { TezosContractPair } from '../src/protocols/tezos/contract/TezosContractPair'
 // import { UnsignedTezosTransaction } from '../src/serializer/v1/unsigned-transactions/tezos-transactions.serializer'
 // import { SyncProtocolUtils, EncodedType } from '../src/serializer/v1/serializer'
@@ -14,7 +15,7 @@ import { TezosBTC } from '../src/protocols/tezos/fa/TezosBTC'
 
 // const syncProtocolUtils = new SyncProtocolUtils()
 // const contract = new TezosBTC('KT1EctCuorV2NfVb1XTQgvzJ88MQtWP8cMMv')
-const contract = new TezosBTC('KT1PWx2mnDueood7fEmfbBDKx1D9BAnnXitn', 'https://tezos-node.prod.gke.papers.tech', 'https://tezos-mainnet-conseil-1.megan.papers.tech')
+const contract = new TezosBTC()
 // const contract = new TezosFAProtocol({
 //     symbol: 'TZBTC',
 //     name: 'Tezos BTC',
@@ -51,14 +52,14 @@ const contract = new TezosBTC('KT1PWx2mnDueood7fEmfbBDKx1D9BAnnXitn', 'https://t
 // contract.getTransactions(10).then(console.log).catch(console.error)
 // console.log(contract)
 
-contract.fetchHolders().then(console.log).catch(console.error)
+// contract.fetchTokenHolders().then(console.log).catch(console.error)
 
-// contract.normalizeTransactionParameters('{"entrypoint":"default","value":{"prim":"Right","args":[{"prim":"Left","args":[{"prim":"Left","args":[{"prim":"Right","args":[{"prim":"Pair","args":[{"bytes":"00007374616b65722d64616f2f7265736572766f6972"},{"prim":"Pair","args":[{"bytes":"0000c67788ea8ada32b2426e1b02b9ebebdc2dc51007"},{"int":"1"}]}]}]}]}]}]}}')
-// .then((result) => { 
-//     console.log(JSON.stringify(result, null, 2))
-//     const details = contract.transferDetailsFromParameters(result)
-//     console.log(JSON.stringify(details, null, 2)) 
-// }).catch(console.error)
+contract.normalizeTransactionParameters('Unparsable code: {"entrypoint":"default","value":{"prim":"Right","args":[{"prim":"Right","args":[{"prim":"Right","args":[{"prim":"Right","args":[{"prim":"Left","args":[{"prim":"Right","args":[{"prim":"Right","args":[{"prim":"Left","args":[{"prim":"Pair","args":[{"bytes":"0000f735ed6df2fb409a8634ce63ac12c82bbb5c83d4"},{"prim":"Pair","args":[{"bytes":"0000a9955122cdcc273d71e0f57db725b74ab177d662"},{"int":"9"}]}]}]}]}]}]}]}]}]}]}}')
+.then((result) => { 
+    console.log(JSON.stringify(result, null, 2))
+    const details = contract.transferDetailsFromParameters(result)
+    console.log(JSON.stringify(details, null, 2)) 
+}).catch(console.error)
 
 // contract.getAllowance('tz1aqsunnQ9ECPAfvRaWeMfiNFhF3s8M15sy', 'tz1grSQDByRpnVs7sPtaprNZRp531ZKz6Jmm').then(result => {
 //     console.log('ALLOWANCE', result)

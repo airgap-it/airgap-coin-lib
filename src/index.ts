@@ -58,6 +58,7 @@ import { SubstrateProtocol } from './protocols/substrate/SubstrateProtocol'
 import { SubstratePayee } from './protocols/substrate/helpers/data/staking/SubstratePayee'
 import { PolkadotProtocol } from './protocols/substrate/implementations/PolkadotProtocol'
 import { KusamaProtocol } from './protocols/substrate/implementations/KusamaProtocol'
+import { TezosStaker } from './protocols/tezos/fa/TezosStaker'
 
 export {
   addSupportedProtocol,
@@ -85,6 +86,7 @@ export {
   TezosKtProtocol,
   TezosFAProtocol,
   TezosBTC,
+  TezosStaker,
   TezosTransactionResult,
   TezosTransactionCursor,
   CosmosProtocol,
