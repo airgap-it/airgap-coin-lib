@@ -1379,7 +1379,28 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   }
 
   public async getTransactionStatus(transactionHash: string): Promise<string> {
-    return Promise.reject('Transaction status  not implemented')
+    const body = {
+      fields: ['status'],
+      predicates: [
+        {
+          field: 'operation_group_hash',
+          operation: 'eq',
+          set: [transactionHash]
+        },
+        {
+          field: 'kind',
+          operation: 'eq',
+          set: ['transaction']
+        }
+      ]
+    }
+    const result = await axios.post(`${this.baseApiUrl}/v2/data/tezos/${this.baseApiNetwork}/operations`, body, {
+      headers: this.headers
+    })
+
+    return result.data.map(res => {
+      return res.status
+    })[0]
   }
   /*
   async signMessage(message: string, privateKey: Buffer): Promise<string> {
