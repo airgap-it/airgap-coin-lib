@@ -565,7 +565,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     allOperations = operations.concat(allOperations) // if we have a reveal in operations, we need to make sure it is present in the allOperations array
 
     const numberOfGroups: number = Math.ceil(allOperations.length / operationsPerGroup)
-  
+
     for (let i = 0; i < numberOfGroups; i++) {
       const start = i * operationsPerGroup
       const end = start + operationsPerGroup
@@ -1378,6 +1378,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     return Promise.reject('Message verification not implemented')
   }
 
+  public async getTransactionStatus(transactionHash: string): Promise<string> {
+    return Promise.reject('Transaction status  not implemented')
+  }
   /*
   async signMessage(message: string, privateKey: Buffer): Promise<string> {
     await sodium.ready

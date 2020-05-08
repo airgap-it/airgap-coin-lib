@@ -358,4 +358,8 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
   public async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
     return Promise.reject('Message verification not implemented')
   }
+
+  public async getTransactionStatus(transactionHash: string): Promise<string> {
+    return Promise.reject('Transaction status  not implemented')
+  }
 }

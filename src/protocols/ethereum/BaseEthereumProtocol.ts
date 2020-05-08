@@ -89,7 +89,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     const secret = mnemonicToSeed(mnemonic, password)
     return this.getPublicKeyFromHexSecret(secret, derivationPath)
   }
-  
+
   public async getPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<Buffer> {
     const secret = mnemonicToSeed(mnemonic, password)
     return this.getPrivateKeyFromHexSecret(secret, derivationPath)
@@ -366,4 +366,9 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
   public async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
     return Promise.reject('Message verification not implemented')
   }
+
+  public async getTransactionStatus(transactionHash: string): Promise<string> {
+    return this.configuration.nodeClient.getTransactionStatus(transactionHash)
+  }
+
 }

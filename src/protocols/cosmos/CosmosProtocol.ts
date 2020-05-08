@@ -113,7 +113,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
   public async getPublicKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
     return this.generateKeyPair(mnemonic, derivationPath, password).publicKey.toString('hex')
   }
-  
+
   public async getPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<Buffer> {
     return this.generateKeyPair(mnemonic, derivationPath, password).privateKey
   }
@@ -527,8 +527,8 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
   }
 
   private getAvailableDelegatorActions(
-    isDelegating: boolean, 
-    availableBalance: BigNumber, 
+    isDelegating: boolean,
+    availableBalance: BigNumber,
     unclaimedRewards: BigNumber
   ): DelegatorAction[] {
     const actions: DelegatorAction[] = []
@@ -541,8 +541,8 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
         type: CosmosDelegationActionType.DELEGATE,
         args: ['validator', 'amount']
       })
-    } 
-    
+    }
+
     if (isDelegating) {
       actions.push({
         type: CosmosDelegationActionType.UNDELEGATE,
@@ -565,5 +565,9 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
 
   public async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
     throw new Error('Method not implemented.')
+  }
+
+  public async getTransactionStatus(transactionHash: string): Promise<string> {
+    return Promise.reject('Transaction status  not implemented')
   }
 }

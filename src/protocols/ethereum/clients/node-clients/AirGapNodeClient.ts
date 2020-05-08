@@ -153,6 +153,14 @@ export class AirGapNodeClient extends EthereumNodeClient {
     })
   }
 
+  public async getTransactionStatus(transactionHash: string): Promise<string> {
+    const body = new EthereumRPCBody('eth_getTransactionReceipt', [transactionHash])
+    return this.send(body, response => {
+      return response.data.result.status === '0x1' ? 'applied' : 'failed'
+    })
+  }
+
+
   public async callBalanceOf(contractAddress: string, address: string): Promise<BigNumber> {
     const data = new EthereumRPCDataBalanceOf(address)
     const body = new EthereumRPCBody('eth_call', [{ to: contractAddress, data: data.abiEncoded() }, EthereumRPCBody.blockLatest])

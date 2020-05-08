@@ -11,6 +11,7 @@ export abstract class EthereumNodeClient {
   public abstract async fetchTransactionCount(address: string): Promise<number>
   public abstract async sendSignedTransaction(transaction: string): Promise<string>
   public abstract async callBalanceOf(contractAddress: string, address: string): Promise<BigNumber>
+  public abstract async getTransactionStatus(transactionHash: string): Promise<string>
   public abstract async estimateTransferGas(
     contractAddress: string,
     fromAddress: string,

@@ -53,7 +53,7 @@ export interface ICoinProtocol {
   getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<Buffer>
 
   getExtendedPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<string>
-  
+
   getAddressFromPublicKey(publicKey: string): Promise<string>
   getAddressesFromPublicKey(publicKey: string): Promise<string[]> // broadcaster knows this (both broadcaster and signer)
   getAddressFromExtendedPublicKey(
@@ -81,6 +81,7 @@ export interface ICoinProtocol {
   getBalanceOfPublicKey(publicKey: string): Promise<string>
   getBalanceOfExtendedPublicKey(extendedPublicKey: string, offset: number): Promise<string>
   getAvailableBalanceOfAddresses(addresses: string[]): Promise<string>
+  getTransactionStatus(transactionHash: string): Promise<string>
 
   estimateMaxTransactionValueFromExtendedPublicKey(extendedPublicKey: string, fee: string): Promise<string>
   estimateMaxTransactionValueFromPublicKey(publicKey: string, fee: string): Promise<string>

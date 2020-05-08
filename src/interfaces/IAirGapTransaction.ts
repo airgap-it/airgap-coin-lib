@@ -19,5 +19,7 @@ export interface IAirGapTransaction {
   data?: string
 
   extra?: any
+  status?: string
+
   transactionDetails?: any
 }

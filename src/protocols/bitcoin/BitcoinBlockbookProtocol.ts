@@ -151,7 +151,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
     const secret = mnemonicToSeed(mnemonic, password)
     return this.getPublicKeyFromHexSecret(secret, derivationPath)
   }
-  
+
   public async getPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<Buffer> {
     const secret = mnemonicToSeed(mnemonic, password)
     return this.getPrivateKeyFromHexSecret(secret, derivationPath)
@@ -718,6 +718,10 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
 
   public async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
     return Promise.reject('Message verification not implemented')
+  }
+
+  public async getTransactionStatus(transactionHash: string): Promise<string> {
+    return Promise.reject('Transaction status  not implemented')
   }
 
   private estimateMaxTransactionValue(balance: BigNumber, fee: BigNumber): BigNumber {
