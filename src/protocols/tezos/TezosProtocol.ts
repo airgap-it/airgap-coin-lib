@@ -1273,7 +1273,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
   private static readonly FIRST_005_CYCLE: number = 160
   private static readonly FIRST_006_CYCLE: number = 208
-  public async calculateRewards(bakerAddress: string, cycle: number): Promise<TezosRewards> {
+  public async calculateRewards(bakerAddress: string, cycle: number, currentCycle?: number): Promise<TezosRewards> {
     const is005 = this.network !== TezosNetwork.MAINNET || cycle >= TezosProtocol.FIRST_005_CYCLE
     const is006 = this.network === TezosNetwork.CARTHAGENET || cycle >= TezosProtocol.FIRST_006_CYCLE
     let rewardCalculation: TezosRewardsCalculations
@@ -1285,7 +1285,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       rewardCalculation = new TezosRewardsCalculationDefault(this)
     }
 
-    return rewardCalculation.calculateRewards(bakerAddress, cycle)
+    return rewardCalculation.calculateRewards(bakerAddress, cycle, currentCycle)
   }
 
   public async calculatePayouts(rewards: TezosRewards, offsetOrAddresses: number | string[], limit?: number): Promise<TezosPayoutInfo[]> {
@@ -1425,7 +1425,7 @@ export interface TezosEndorsingRight {
 
 export interface TezosRewardsCalculations {
   protocol: TezosProtocol
-  calculateRewards(bakerAddress: string, cycle: number): Promise<TezosRewards>
+  calculateRewards(bakerAddress: string, cycle: number, currentCycleIn?: number): Promise<TezosRewards>
 }
 
 export interface TezosRewards {
