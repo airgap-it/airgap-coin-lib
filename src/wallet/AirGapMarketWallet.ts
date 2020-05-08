@@ -173,7 +173,8 @@ export class AirGapMarketWallet extends AirGapWallet {
     }
   }
 
-  public fetchTransactions(limit: number, offset: number): Promise<IAirGapTransaction[]> {
+  public async fetchTransactions(limit: number, offset: number): Promise<IAirGapTransaction[]> {
+    let transactions: IAirGapTransaction[] = []
     if (this.protocolIdentifier === 'grs' && this.isExtendedPublicKey) {
       /* 
       We should remove this if BTC also uses blockbook. (And change the order of the if/else below)
@@ -184,14 +185,25 @@ export class AirGapMarketWallet extends AirGapWallet {
       We can also not simply change the order of the following if/else, because then it would use the xPub method for
       BTC as well, which results in the addresses being derived again, which causes massive lags in the apps.
       */
-      return this.coinProtocol.getTransactionsFromExtendedPublicKey(this.publicKey, limit, offset)
+      transactions = await this.coinProtocol.getTransactionsFromExtendedPublicKey(this.publicKey, limit, offset)
     } else if (this.addresses.length > 0) {
-      return this.coinProtocol.getTransactionsFromAddresses(this.addressesToCheck(), limit, offset)
+      transactions = await this.coinProtocol.getTransactionsFromAddresses(this.addressesToCheck(), limit, offset)
     } else if (this.isExtendedPublicKey) {
-      return this.coinProtocol.getTransactionsFromExtendedPublicKey(this.publicKey, limit, offset)
+      transactions = await this.coinProtocol.getTransactionsFromExtendedPublicKey(this.publicKey, limit, offset)
     } else {
-      return this.coinProtocol.getTransactionsFromPublicKey(this.publicKey, limit, offset)
+      transactions = await this.coinProtocol.getTransactionsFromPublicKey(this.publicKey, limit, offset)
     }
+    return await this.txsIncludingStatus(transactions)
+  }
+
+  private async txsIncludingStatus(transactions: IAirGapTransaction[]): Promise<IAirGapTransaction[]> {
+    if (this.protocolIdentifier.toLowerCase() === 'eth' || this.protocolIdentifier.toLowerCase() === 'xtz') {
+      return await Promise.all(transactions.map(async (tx) => {
+        tx.status = await this.coinProtocol.getTransactionStatus(tx.hash)
+        return tx
+      }))
+    }
+    return transactions
   }
 
   public async getMaxTransferValue(fee: string): Promise<BigNumber> {
