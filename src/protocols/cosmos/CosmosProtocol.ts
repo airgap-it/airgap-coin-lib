@@ -26,7 +26,8 @@ import {
   CosmosNodeClient,
   CosmosNodeInfo,
   CosmosValidator,
-  CosmosUnbondingDelegation
+  CosmosUnbondingDelegation,
+  CosmosRewardDetails
 } from './CosmosNodeClient'
 import { CosmosTransaction } from './CosmosTransaction'
 import { KeyPair } from '../../data/KeyPair'
@@ -36,7 +37,8 @@ import { isArray } from 'util'
 export enum CosmosDelegationActionType {
   DELEGATE = 'delegate',
   UNDELEGATE = 'undelegate',
-  WITHDRAW_REWARDS = 'withdraw_rewards'
+  WITHDRAW_ALL_REWARDS = 'withdraw_all_rewards',
+  WITHDRAW_VALIDATOR_REWARDS = 'withdraw_validator_rewards'
 }
 
 export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegateProtocol {
@@ -374,18 +376,32 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
       this.getBalanceOfAddresses([address]),
       this.getAvailableBalanceOfAddresses([address]),
       this.nodeClient.fetchDelegations(address),
-      this.nodeClient.fetchRewardForDelegation(address, validator).catch(() => new BigNumber(0)),
+      this.nodeClient.fetchRewardDetails(address).catch(() => [] as CosmosRewardDetails[]),
       this.getDelegateeDetails(validator),
     ])
 
     const totalBalance = results[0]
     const availableBalance = results[1]
     const delegations = results[2]
-    const unclaimedRewards = results[3]
+    const rewardDetails = results[3]
     const validatorDetails = results[4]
 
+    const unclaimedRewards = rewardDetails
+      .map(details => [
+        details.validator_address, 
+        details.reward.reduce((total, next) => total.plus(next.amount), new BigNumber(0)).decimalPlaces(0, BigNumber.ROUND_FLOOR)
+      ] as [string, BigNumber])
+
+    const unclaimedTotalRewards = unclaimedRewards.reduce((total, next) => total.plus(next[1]), new BigNumber(0))
+    const unclaimedDelegationRewards = unclaimedRewards.find(([validatorAddress, _]) => validatorAddress === validator)?.[1] || new BigNumber(0)
+
     const isDelegating = delegations.some(delegation => delegation.validator_address === validator)
-    const availableActions = this.getAvailableDelegatorActions(isDelegating, new BigNumber(availableBalance), unclaimedRewards)
+    const availableActions = this.getAvailableDelegatorActions(
+      isDelegating, 
+      new BigNumber(availableBalance), 
+      unclaimedTotalRewards,
+      unclaimedDelegationRewards
+    )
 
     return {
       delegator: {
@@ -406,13 +422,11 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
       case CosmosDelegationActionType.UNDELEGATE:
         assertFields(`${CosmosDelegationActionType[type]} action`, data, 'validator', 'amount')
         return [await this.undelegate(publicKey, data.validator, data.amount)]
-      case CosmosDelegationActionType.WITHDRAW_REWARDS:
-        const address = await this.getAddressFromPublicKey(publicKey)
-        const rewards = await this.nodeClient.fetchRewardDetails(address)
-        const filteredRewards = rewards.filter(reward => reward.reward.reduce((current, next) => current.plus(new BigNumber(next.amount)), new BigNumber(0)).decimalPlaces(0, BigNumber.ROUND_FLOOR).gt(0))
-        const validators = filteredRewards.map(reward => reward.validator_address)
-
-        return [await this.withdrawDelegationRewards(publicKey, validators)]
+      case CosmosDelegationActionType.WITHDRAW_ALL_REWARDS:
+        return [await this.withdrawDelegationRewards(publicKey)]
+      case CosmosDelegationActionType.WITHDRAW_VALIDATOR_REWARDS:
+        assertFields(`${CosmosDelegationActionType[type]} action`, data, 'validator')
+        return [await this.withdrawDelegationRewards(publicKey, [data.validator])]
       default:
         return Promise.reject(`Delegator action type ${type} is not supported.`)
     }
@@ -452,7 +466,22 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
     )
   }
 
-  public async withdrawDelegationRewards(publicKey: string, validatorAddresses: string[], memo?: string): Promise<CosmosTransaction> {
+  public async withdrawDelegationRewards(publicKey: string, _validatorAddresses: string[] = [], memo?: string): Promise<CosmosTransaction> {
+    let validatorAddresses: string[]
+    if (_validatorAddresses.length > 0) {
+      validatorAddresses = _validatorAddresses
+    } else {
+      const address = await this.getAddressFromPublicKey(publicKey)
+      const rewards = await this.nodeClient.fetchRewardDetails(address)
+      const filteredRewards = rewards.filter(reward => 
+        reward.reward.reduce(
+          (total, next) => total.plus(new BigNumber(next.amount)),
+           new BigNumber(0)
+        ).decimalPlaces(0, BigNumber.ROUND_FLOOR).gt(0)
+      )
+      validatorAddresses = filteredRewards.map(reward => reward.validator_address)
+    }
+
     const address: string = await this.getAddressFromPublicKey(publicKey)
     const nodeInfo: CosmosNodeInfo = await this.nodeClient.fetchNodeInfo()
     const account: CosmosAccount = await this.nodeClient.fetchAccount(address)
@@ -527,9 +556,10 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
   }
 
   private getAvailableDelegatorActions(
-    isDelegating: boolean, 
+    isDelegating: boolean,
     availableBalance: BigNumber, 
-    unclaimedRewards: BigNumber
+    unclaimedTotalRewards: BigNumber,
+    unclaimedDelegationRewards: BigNumber
   ): DelegatorAction[] {
     const actions: DelegatorAction[] = []
 
@@ -550,9 +580,16 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
       })
     }
 
-    if (unclaimedRewards.gt(0)) {
+    if (unclaimedTotalRewards.gt(0)) {
       actions.push({
-        type: CosmosDelegationActionType.WITHDRAW_REWARDS
+        type: CosmosDelegationActionType.WITHDRAW_ALL_REWARDS
+      })
+    }
+
+    if (unclaimedDelegationRewards.gt(0)) {
+      actions.push({
+        type: CosmosDelegationActionType.WITHDRAW_VALIDATOR_REWARDS,
+        args: ['validator']
       })
     }
 
