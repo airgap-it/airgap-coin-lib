@@ -1003,8 +1003,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
     tezosWrappedOperation.contents.forEach((content: TezosOperation, i: number) => {
       const metadata: RunOperationMetadata = response.data.contents[i].metadata
-      if ((content.kind === TezosOperationType.TRANSACTION || content.kind === TezosOperationType.ORIGINATION) && metadata.operation_result) {
-        const operation: TezosTransactionOperation | TezosOriginationOperation = (content as TezosTransactionOperation | TezosOriginationOperation)
+      if (metadata.operation_result) {
+        const operation: TezosOperation = content
 
         const result: RunOperationOperationResult = metadata.operation_result
 
@@ -1051,12 +1051,11 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
           storageLimit += 257
         }
 
-
-        if (operation.gas_limit) {
-          operation.gas_limit = gasLimit.toString()
+        if ((operation as any).gas_limit) {
+          (operation as any).gas_limit = gasLimit.toString()
         }
-        if (operation.storage_limit) {
-          operation.storage_limit = storageLimit.toString()
+        if ((operation as any).storage_limit) {
+          (operation as any).storage_limit = storageLimit.toString()
         }
 
         gasLimitTotal += gasLimit
