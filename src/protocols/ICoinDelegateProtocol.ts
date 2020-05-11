@@ -41,6 +41,9 @@ export interface ICoinDelegateProtocol extends ICoinProtocol {
     isPublicKeyDelegating(publicKey: string): Promise<boolean>
     isAddressDelegating(address: string): Promise<boolean>
 
+    getDelegatorDetailsFromPublicKey(publicKey: string): Promise<DelegatorDetails>
+    getDelegatorDetailsFromAddress(address: string): Promise<DelegatorDetails>
+
     getDelegationDetailsFromPublicKey(publicKey: string, delegatees: string[]): Promise<DelegationDetails>
     getDelegationDetailsFromAddress(address: string, delegatees: string[]): Promise<DelegationDetails>
 

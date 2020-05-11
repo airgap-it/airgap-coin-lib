@@ -1,6 +1,6 @@
 
 import { FeeDefaults, CurrencyUnit } from '../ICoinProtocol'
-import { ICoinDelegateProtocol, DelegationDetails, DelegateeDetails } from '../ICoinDelegateProtocol'
+import { ICoinDelegateProtocol, DelegationDetails, DelegateeDetails, DelegatorDetails } from '../ICoinDelegateProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
 import { SubstrateNodeClient } from './helpers/node/SubstrateNodeClient'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
@@ -268,6 +268,14 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     public async isAddressDelegating(address: string): Promise<boolean> {
         return this.accountController.isNominating(address)
     }
+
+    public async getDelegatorDetailsFromPublicKey(publicKey: string): Promise<DelegatorDetails> {
+        return this.getDelegatorDetailsFromAddress(await this.getAddressFromPublicKey(publicKey))
+      }
+    
+      public async getDelegatorDetailsFromAddress(address: string): Promise<DelegatorDetails> {
+        return this.accountController.getNominatorDetails(address)
+      }
 
     public async getDelegationDetailsFromPublicKey(publicKey: string, delegatees: string[]): Promise<DelegationDetails> {
         return this.getDelegationDetailsFromAddress(await this.getAddressFromPublicKey(publicKey), delegatees)
