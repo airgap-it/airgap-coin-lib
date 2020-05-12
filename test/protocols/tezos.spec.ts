@@ -551,6 +551,8 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       expect(result2.airGapTxs[0].transactionDetails.counter).to.equal('917516')
     })
 
+    // TODO: add test to test the add reveal to spend transactions
+
     it('will prepare an FA 1.2 transaction', async () => {
       stub
         .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/`)

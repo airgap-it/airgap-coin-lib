@@ -1,15 +1,21 @@
 import { TezosBTCDetails } from './../../../serializer/constants'
 import { TezosFAProtocol } from './TezosFAProtocol'
 import { TezosNetwork } from '../TezosProtocol'
+import { TezosUtils } from '../TezosUtils'
+import { TezosContractEntity } from '../contract/TezosContractEntity'
+import { TezosContractPair } from '../contract/TezosContractPair'
 
 export class TezosBTC extends TezosFAProtocol {
+
+  private static bigMapKeyLedgerPrefix = "0x05070701000000066c65646765720a00000016"
+
   constructor(
     contractAddress: string = TezosBTCDetails.CONTRACT_ADDRESS,
-    jsonRPCAPI: string = 'https://tezos-node.prod.gke.papers.tech',
-    baseApiUrl: string = 'https://tezos-mainnet-conseil-1.kubernetes.papers.tech',
-    baseApiKey: string = 'airgap123',
-    baseApiNetwork: string = 'mainnet',
-    network: TezosNetwork = TezosNetwork.MAINNET
+    jsonRPCAPI?: string,
+    baseApiUrl?: string,
+    baseApiKey?: string,
+    baseApiNetwork?: string,
+    network?: TezosNetwork
   ) {
     super({
       symbol: 'TZBTC',
@@ -29,5 +35,25 @@ export class TezosBTC extends TezosFAProtocol {
       baseApiNetwork: baseApiNetwork,
       network: network
     })
+  }
+
+  public async fetchTokenHolders(): Promise<{address: string, amount: string}[]> {
+    const values = await this.contract.bigMapValues([{
+      field: 'key' as const,
+      operation: "startsWith" as const,
+      set: [TezosBTC.bigMapKeyLedgerPrefix]
+    }])
+    return values.map((bigMapEntry) => {
+      const addressHex = bigMapEntry.key.substring(TezosBTC.bigMapKeyLedgerPrefix.length)
+      const address = TezosUtils.parseAddress(addressHex)
+      let value: number | string | TezosContractEntity = bigMapEntry.value !== null ? TezosUtils.parseHex(bigMapEntry.value) : '0'
+      if (value instanceof TezosContractPair) {
+        value = value.first
+      }
+      return {
+        address: address,
+        amount: (value as number).toString()
+      }
+    }).filter((value) => value.amount !== '0')
   }
 }
