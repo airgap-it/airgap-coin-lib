@@ -326,7 +326,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
             case SubstrateStakingActionType.WITHDRAW_UNBONDED:
                 return this.prepareWithdrawUnbonded(publicKey, data.tip || 0)
             case SubstrateStakingActionType.COLLECT_REWARDS:
-                return this.prepareCollectRewards(publicKey, data.tip || 0)
+                return Promise.reject('Unsupported delegator action.')
             case SubstrateStakingActionType.CHANGE_REWARD_DESTINATION:
                 return Promise.reject('Unsupported delegator action.')
             case SubstrateStakingActionType.CHANGE_CONTROLLER:
@@ -485,36 +485,6 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
                 type: SubstrateTransactionType.WITHDRAW_UNBONDED,
                 tip,
                 args: {}
-            }
-        ])
-
-        return [{ encoded }]
-    }
-
-    public async prepareCollectRewards(
-        publicKey: string, 
-        tip: string | number | BigNumber,
-    ): Promise<RawSubstrateTransaction[]> {
-        const transferableBalance = await this.accountController.getTransferableBalance(publicKey)
-        const awaitingRewards = await this.accountController.getUnclaimedRewards(publicKey)
-
-        const payoutCalls = await Promise.all(awaitingRewards.map(
-            reward => this.transactionController.createTransactionMethod(
-                SubstrateTransactionType.COLLECT_PAYOUT,
-                {
-                    eraIndex: reward.eraIndex,
-                    validators: reward.exposures
-                }
-            )
-        ))
-
-        const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, transferableBalance, [
-            {
-                type: SubstrateTransactionType.SUBMIT_BATCH,
-                tip,
-                args: {
-                    calls: payoutCalls
-                }
             }
         ])
 

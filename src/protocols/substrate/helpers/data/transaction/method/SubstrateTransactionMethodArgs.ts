@@ -7,7 +7,6 @@ import { SCALEEnum } from '../../scale/type/SCALEEnum'
 import { SCALEArray } from '../../scale/type/SCALEArray'
 import { SubstrateAddress, SubstrateAccountId } from '../../account/SubstrateAddress'
 import BigNumber from '../../../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
-import { SCALETuple } from '../../scale/type/SCALETuple'
 import { SCALEInt } from '../../scale/type/SCALEInt'
 import { SubstrateTransactionMethod } from './SubstrateTransactionMethod'
 import { SubstratePayee } from '../../staking/SubstratePayee'
@@ -50,9 +49,9 @@ interface StopNominatingArgs {
 
 }
 
-interface PayoutNominatorArgs {
+interface PayoutStakersArgs {
     eraIndex: number | BigNumber
-    validators: [SubstrateAccountId, number][]
+    validator: SubstrateAccountId
 }
 
 interface SetPayeeArgs {
@@ -94,7 +93,7 @@ export abstract class SubstrateTransactionMethodArgsFactory<T> {
                 return new StopNominatingArgsFactory(network, args)
             case SubstrateTransactionType.COLLECT_PAYOUT:
                 assertFields('collectPayout', args, 'eraIndex', 'validators')
-                return new PayoutNominatorArgsFactory(network, args)
+                return new PayoutStakersArgsFactory(network, args)
             case SubstrateTransactionType.SET_PAYEE:
                 assertFields('setPayee', args, 'payee')
                 return new SetPayeeArgsFactory(network, args)
@@ -355,15 +354,11 @@ class StopNominatingArgsDecoder extends SubstrateTransactionMethodArgsDecoder<St
     }
 }
 
-class PayoutNominatorArgsFactory extends SubstrateTransactionMethodArgsFactory<PayoutNominatorArgs> {
+class PayoutStakersArgsFactory extends SubstrateTransactionMethodArgsFactory<PayoutStakersArgs> {
     public createFields(): [string, SCALEType][] {
         return [
             ['eraIndex', SCALEInt.from(this.args.eraIndex, 32)],
-            ['validators', SCALEArray.from(
-                this.args.validators.map(
-                    ([accountId, index]) => SCALETuple.from(SCALEAccountId.from(accountId, this.network), SCALEInt.from(index, 32))
-                )
-            )]
+            ['validator', SCALEAccountId.from(this.args.validator, this.network)]
         ]
     }
     public createToAirGapTransactionParts(): () => Partial<IAirGapTransaction>[] {
@@ -371,23 +366,16 @@ class PayoutNominatorArgsFactory extends SubstrateTransactionMethodArgsFactory<P
     }
 }
 
-class PayoutNominatorArgsDecoder extends SubstrateTransactionMethodArgsDecoder<PayoutNominatorArgs> {
-    protected _decode(decoder: SCALEDecoder): SCALEDecodeResult<PayoutNominatorArgs> {
+class PayoutNominatorArgsDecoder extends SubstrateTransactionMethodArgsDecoder<PayoutStakersArgs> {
+    protected _decode(decoder: SCALEDecoder): SCALEDecodeResult<PayoutStakersArgs> {
         const eraIndex = decoder.decodeNextInt(32)
-        const validators = decoder.decodeNextArray((network, hex) => 
-            SCALETuple.decode(
-                network,
-                hex, 
-                SCALEAccountId.decode,
-                (_, second) => SCALEInt.decode(second, 32)
-            )
-        )
+        const validator = decoder.decodeNextAccountId()
 
         return {
-            bytesDecoded: eraIndex.bytesDecoded + validators.bytesDecoded,
+            bytesDecoded: eraIndex.bytesDecoded + validator.bytesDecoded,
             decoded: {
                 eraIndex: eraIndex.decoded.value,
-                validators: validators.decoded.elements.map(element => [element.first.address, element.second.toNumber()])
+                validator: validator.decoded.address
             }
         }
     }
