@@ -131,7 +131,7 @@ export class SubstrateAccountController {
         }
     }
 
-    public async getNominatorDetails(accountId: SubstrateAccountId, validatorIds: SubstrateAccountId[]): Promise<SubstrateNominatorDetails> {
+    public async getNominatorDetails(accountId: SubstrateAccountId, validatorIds?: SubstrateAccountId[]): Promise<SubstrateNominatorDetails> {
         const address = SubstrateAddress.from(accountId, this.network)
 
         const results = await Promise.all([
@@ -156,13 +156,27 @@ export class SubstrateAccountController {
             return Promise.reject('Could not fetch nominator details.')
         }
 
-        const stakingDetails = await this.getStakingDetails(accountId, stakingLedger, nominations, activeEra, expectedEraDuration)
-        const availableActions = await this.getAvailableStakingActions(stakingDetails, nominations, validatorIds, existentialDeposit, transferableBalance)
+        const validators = nominations?.targets?.elements?.map(target => target.asAddress()) || []
+
+        const stakingDetails = await this.getStakingDetails(
+            accountId, 
+            stakingLedger, 
+            nominations, 
+            activeEra, 
+            expectedEraDuration
+        )
+        const availableActions = await this.getAvailableStakingActions(
+            stakingDetails, 
+            nominations, 
+            validatorIds || validators, 
+            existentialDeposit, 
+            transferableBalance
+        )
 
         return {
             address: address.toString(),
             balance: balance.toString(),
-            delegatees: nominations?.targets?.elements?.map(target => target.asAddress()) || [],
+            delegatees: validators,
             availableActions,
             stakingDetails: stakingDetails || undefined
         }
@@ -486,7 +500,7 @@ export class SubstrateAccountController {
                     type: SubstrateStakingActionType.CANCEL_NOMINATION,
                     args: []
                 })
-            } else {
+            } else if (validatorAddresses.length > 0) {
                 availableActions.push({
                     type: SubstrateStakingActionType.CHANGE_NOMINATION,
                     args: ['targets']
