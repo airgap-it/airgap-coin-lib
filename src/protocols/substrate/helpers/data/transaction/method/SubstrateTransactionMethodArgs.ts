@@ -132,7 +132,7 @@ export abstract class SubstrateTransactionMethodArgsDecoder<T> {
             case SubstrateTransactionType.CANCEL_NOMINATION:
                 return new StopNominatingArgsDecoder()
             case SubstrateTransactionType.COLLECT_PAYOUT:
-                return new PayoutNominatorArgsDecoder()
+                return new PayoutStakersArgsDecoder()
             case SubstrateTransactionType.SET_PAYEE:
                 return new SetPayeeArgsDecoder()
             case SubstrateTransactionType.SET_CONTROLLER:
@@ -366,7 +366,7 @@ class PayoutStakersArgsFactory extends SubstrateTransactionMethodArgsFactory<Pay
     }
 }
 
-class PayoutNominatorArgsDecoder extends SubstrateTransactionMethodArgsDecoder<PayoutStakersArgs> {
+class PayoutStakersArgsDecoder extends SubstrateTransactionMethodArgsDecoder<PayoutStakersArgs> {
     protected _decode(decoder: SCALEDecoder): SCALEDecodeResult<PayoutStakersArgs> {
         const eraIndex = decoder.decodeNextInt(32)
         const validator = decoder.decodeNextAccountId()
