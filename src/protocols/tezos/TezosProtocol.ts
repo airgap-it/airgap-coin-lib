@@ -1386,7 +1386,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
   public async getTransactionStatuses(transactionHashes: string[]): Promise<AirGapTransactionStatus[]> {
     const body = {
-      fields: ['status'],
+      fields: ['status', 'operation_group_hash'],
       predicates: [
         {
           field: 'operation_group_hash',
@@ -1401,7 +1401,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       ]
     }
 
-    const result: AxiosResponse<{ status: string }[]> = await axios.post(
+    const result: AxiosResponse<{ status: string; operation_group_hash: string }[]> = await axios.post(
       `${this.baseApiUrl}/v2/data/tezos/${this.baseApiNetwork}/operations`,
       body,
       {
@@ -1409,8 +1409,28 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       }
     )
 
-    return result.data.map((element: { status: string }) => {
-      return element.status === 'applied' ? AirGapTransactionStatus.APPLIED : AirGapTransactionStatus.FAILED
+    const statusGroups: Record<string, AirGapTransactionStatus> = {}
+
+    result.data.forEach((element: { status: string; operation_group_hash: string }) => {
+      const currentStatus: AirGapTransactionStatus =
+        element.status === 'applied' ? AirGapTransactionStatus.APPLIED : AirGapTransactionStatus.FAILED
+
+      if (statusGroups[element.operation_group_hash] === AirGapTransactionStatus.FAILED) {
+        // If status is "failed", we can move on because it will not change anymore
+        return
+      } else if (statusGroups[element.operation_group_hash] === AirGapTransactionStatus.APPLIED) {
+        if (currentStatus === AirGapTransactionStatus.FAILED) {
+          // If the status so far is "applied" but the current one "failed", we need to update the status
+          statusGroups[element.operation_group_hash] = currentStatus
+        }
+      } else {
+        // If no status is set, use the current one
+        statusGroups[element.operation_group_hash] = currentStatus
+      }
+    })
+
+    return transactionHashes.map((txHash: string) => {
+      return statusGroups[txHash]
     })
   }
   /*
