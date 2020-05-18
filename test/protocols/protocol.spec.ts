@@ -353,7 +353,7 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
         }
       })
 
-      it.only('getTransactionStatus - Is able to get transaction status', async () => {
+      it('getTransactionStatus - Is able to get transaction status', async () => {
         for (const test of protocol.transactionStatusTests) {
           const statuses: string[] = await protocol.lib.getTransactionStatuses(test.hashes)
 
