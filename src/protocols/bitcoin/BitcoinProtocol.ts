@@ -2,15 +2,15 @@ import * as assert from 'assert'
 
 import axios from '../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
 import * as bitcoinJS from '../../dependencies/src/bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac/src/index'
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
-import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
+import { AirGapTransactionStatus, IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 import { Network } from '../../networks'
 import { UnsignedTransaction } from '../../serializer/schemas/definitions/transaction-sign-request'
 import { SignedBitcoinTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-bitcoin'
 import { RawBitcoinTransaction } from '../../serializer/types'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
-import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
 
 const DUST_AMOUNT: number = 50
 
@@ -617,8 +617,8 @@ export class BitcoinProtocol implements ICoinProtocol {
     return Promise.reject('Message verification not implemented')
   }
 
-  public async getTransactionStatus(transactionHash: string): Promise<string> {
-    return Promise.reject('Transaction status  not implemented')
+  public async getTransactionStatuses(transactionHashes: string[]): Promise<AirGapTransactionStatus[]> {
+    return Promise.reject('Transaction status not implemented')
   }
 
   private estimateMaxTransactionValue(balance: BigNumber, fee: BigNumber): BigNumber {
@@ -628,5 +628,4 @@ export class BitcoinProtocol implements ICoinProtocol {
     }
     return amountWithoutFees
   }
-
 }

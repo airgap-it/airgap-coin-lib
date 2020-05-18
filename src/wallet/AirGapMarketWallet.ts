@@ -2,6 +2,7 @@ import { IAirGapTransaction } from '..'
 import Axios from '../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../dependencies/src/bignumber.js-9.0.0/bignumber'
 import * as cryptocompare from '../dependencies/src/cryptocompare-0.5.0/index'
+import { AirGapTransactionStatus } from '../interfaces/IAirGapTransaction'
 
 import { AirGapWallet } from './AirGapWallet'
 
@@ -19,6 +20,10 @@ export interface MarketDataSample {
   open: number
   volumefrom: string
   volumeto: number
+}
+
+function notEmpty<TValue>(value: TValue | null | undefined): value is TValue {
+  return value !== null && value !== undefined
 }
 
 export class AirGapMarketWallet extends AirGapWallet {
@@ -198,11 +203,20 @@ export class AirGapMarketWallet extends AirGapWallet {
 
   private async txsIncludingStatus(transactions: IAirGapTransaction[]): Promise<IAirGapTransaction[]> {
     if (this.protocolIdentifier.toLowerCase() === 'eth' || this.protocolIdentifier.toLowerCase() === 'xtz') {
-      return await Promise.all(transactions.map(async (tx) => {
-        tx.status = await this.coinProtocol.getTransactionStatus(tx.hash)
-        return tx
-      }))
+      const transactionsWithHash: IAirGapTransaction[] = transactions.filter((tx: IAirGapTransaction) => tx.hash)
+      const hashes: string[] = transactionsWithHash.map((tx: IAirGapTransaction) => tx.hash).filter(notEmpty) // Extra filter here for typing reasons, should not alter the array because we filter on the line before.
+
+      if (transactionsWithHash.length !== hashes.length) {
+        throw new Error('Transaction array lengths do not match!')
+      }
+
+      const statuses: AirGapTransactionStatus[] = await this.coinProtocol.getTransactionStatuses(hashes)
+
+      transactionsWithHash.forEach((el: IAirGapTransaction, i: number) => {
+        el.status = statuses[i]
+      })
     }
+
     return transactions
   }
 

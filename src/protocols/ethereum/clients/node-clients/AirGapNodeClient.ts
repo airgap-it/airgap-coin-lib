@@ -1,7 +1,8 @@
+import { RPCBody } from '../../../../data/RPCBody'
 import axios, { AxiosResponse } from '../../../../dependencies/src/axios-0.19.0/index'
 import { BigNumber } from '../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { AirGapTransactionStatus } from '../../../../interfaces/IAirGapTransaction'
 import { RPCConvertible } from '../../../cosmos/CosmosTransaction'
-import { RPCBody } from '../../../../data/RPCBody'
 import { EthereumUtils } from '../../utils/utils'
 
 import { EthereumNodeClient } from './NodeClient'
@@ -153,13 +154,12 @@ export class AirGapNodeClient extends EthereumNodeClient {
     })
   }
 
-  public async getTransactionStatus(transactionHash: string): Promise<string> {
+  public async getTransactionStatus(transactionHash: string): Promise<AirGapTransactionStatus> {
     const body = new EthereumRPCBody('eth_getTransactionReceipt', [transactionHash])
     return this.send(body, response => {
-      return response.data.result.status === '0x1' ? 'applied' : 'failed'
+      return response.data.result.status === '0x1' ? AirGapTransactionStatus.APPLIED : AirGapTransactionStatus.FAILED
     })
   }
-
 
   public async callBalanceOf(contractAddress: string, address: string): Promise<BigNumber> {
     const data = new EthereumRPCDataBalanceOf(address)

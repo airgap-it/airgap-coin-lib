@@ -18,6 +18,7 @@ import { SubstrateStakingActionType } from './helpers/data/staking/SubstrateStak
 import { SubstrateAddress } from './helpers/data/account/SubstrateAddress'
 import { SubstrateNetwork } from './SubstrateNetwork'
 import { assertFields } from '../../utils/assert'
+import { AirGapTransactionStatus } from '../../interfaces/IAirGapTransaction'
 
 export abstract class SubstrateProtocol extends NonExtendedProtocol implements ICoinDelegateProtocol {
     public abstract symbol: string
@@ -621,7 +622,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
         throw new Error('Method not implemented.');
     }
 
-    public async getTransactionStatus(transactionHash: string): Promise<string> {
-        return Promise.reject('Transaction status  not implemented')
+    public async getTransactionStatuses(transactionHashes: string[]): Promise<AirGapTransactionStatus[]> {
+      return Promise.reject('Transaction status not implemented')
     }
 }

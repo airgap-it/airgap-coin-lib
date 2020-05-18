@@ -1,5 +1,5 @@
 import { IAirGapSignedTransaction } from '../interfaces/IAirGapSignedTransaction'
-import { IAirGapTransaction } from '../interfaces/IAirGapTransaction'
+import { AirGapTransactionStatus, IAirGapTransaction } from '../interfaces/IAirGapTransaction'
 import { UnsignedTransaction } from '../serializer/schemas/definitions/transaction-sign-request'
 import { SignedTransaction } from '../serializer/schemas/definitions/transaction-sign-response'
 
@@ -81,7 +81,7 @@ export interface ICoinProtocol {
   getBalanceOfPublicKey(publicKey: string): Promise<string>
   getBalanceOfExtendedPublicKey(extendedPublicKey: string, offset: number): Promise<string>
   getAvailableBalanceOfAddresses(addresses: string[]): Promise<string>
-  getTransactionStatus(transactionHash: string | undefined): Promise<string>
+  getTransactionStatuses(transactionHash: string[]): Promise<AirGapTransactionStatus[]>
 
   estimateMaxTransactionValueFromExtendedPublicKey(extendedPublicKey: string, fee: string): Promise<string>
   estimateMaxTransactionValueFromPublicKey(publicKey: string, fee: string): Promise<string>

@@ -1,4 +1,5 @@
 import { SignedTezosTransaction, TezosProtocol } from '../../../src/'
+import { AirGapTransactionStatus } from '../../../src/interfaces/IAirGapTransaction'
 import { RawTezosTransaction } from '../../../src/serializer/types'
 import { TestProtocolSpec } from '../implementations'
 import { TezosProtocolStub } from '../stubs/tezos.stub'
@@ -43,6 +44,15 @@ export class TezosTestProtocolSpec extends TestProtocolSpec {
       },
       signedTx:
         'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb9556c0091a9d2b003f19cf5a1f38f04f1000ab482d331768c0bc4fe37bc5000c0843d000091a9d2b003f19cf5a1f38f04f1000ab482d3317600b6e3e3a70996ef1e9414324d291f3d50f63c4f32b32fc1abd4dbe2d2ce55ca47598aead75b94c9a691d7b3f1912220db0118c18e141cacc84e39147aabfad60e'
+    }
+  ]
+
+  public transactionStatusTests: { hashes: string[]; expectedResults: AirGapTransactionStatus[] }[] = [
+    { hashes: ['op7mhXwjNMjfP2yDhDWRMxwu2oYyE44pdv9y6JeVFvaTcjpgAAD'], expectedResults: [AirGapTransactionStatus.APPLIED] },
+    { hashes: ['onzAK6Hkyv5HWY3Ru2ohX1tS3VYz9YC8mtP2ozNvk4Dia9QLtku'], expectedResults: [AirGapTransactionStatus.FAILED] },
+    {
+      hashes: ['op7mhXwjNMjfP2yDhDWRMxwu2oYyE44pdv9y6JeVFvaTcjpgAAD', 'onzAK6Hkyv5HWY3Ru2ohX1tS3VYz9YC8mtP2ozNvk4Dia9QLtku'],
+      expectedResults: [AirGapTransactionStatus.APPLIED, AirGapTransactionStatus.FAILED]
     }
   ]
 

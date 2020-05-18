@@ -1,4 +1,5 @@
 import { EthereumProtocol } from '../../../src'
+import { AirGapTransactionStatus } from '../../../src/interfaces/IAirGapTransaction'
 import { SignedEthereumTransaction } from '../../../src/serializer/schemas/definitions/transaction-sign-response-ethereum'
 import { RawEthereumTransaction } from '../../../src/serializer/types'
 import { TestProtocolSpec } from '../implementations'
@@ -44,6 +45,17 @@ export class EthereumTestProtocolSpec extends TestProtocolSpec {
       },
       signedTx:
         'f86c808504a817c800825208944a1e1d37462a422873bfccb1e705b05cc4bd922e880de0b6b3a76400008026a00678aaa8f8fd478952bf46044589f5489e809c5ae5717dfe6893490b1f98b441a06a82b82dad7c3232968ec3aa2bba32879b3ecdb877934915d7e65e095fe53d5d'
+    }
+  ]
+  public transactionStatusTests: { hashes: string[]; expectedResults: AirGapTransactionStatus[] }[] = [
+    { hashes: ['0x20904cf629692c925a235e98ccf5b317c56bbc069c0941b9e45af2f35a5b612b'], expectedResults: [AirGapTransactionStatus.APPLIED] },
+    { hashes: ['0x4a50a2d30b2ab022819ff6407ccfcfb3905406729fed82208e2d07ed92cedbe1'], expectedResults: [AirGapTransactionStatus.FAILED] },
+    {
+      hashes: [
+        '0x20904cf629692c925a235e98ccf5b317c56bbc069c0941b9e45af2f35a5b612b',
+        '0x4a50a2d30b2ab022819ff6407ccfcfb3905406729fed82208e2d07ed92cedbe1'
+      ],
+      expectedResults: [AirGapTransactionStatus.APPLIED, AirGapTransactionStatus.FAILED]
     }
   ]
   public validRawTransactions: RawEthereumTransaction[] = [
