@@ -18,8 +18,9 @@ import { SubstrateStakingActionType } from './helpers/data/staking/SubstrateStak
 import { SubstrateAddress } from './helpers/data/account/SubstrateAddress'
 import { SubstrateNetwork } from './SubstrateNetwork'
 import { assertFields } from '../../utils/assert'
+import { AirGapTransactionStatus } from '../../interfaces/IAirGapTransaction'
 
-export abstract class SubstrateProtocol extends NonExtendedProtocol implements ICoinDelegateProtocol {    
+export abstract class SubstrateProtocol extends NonExtendedProtocol implements ICoinDelegateProtocol {
     public abstract symbol: string
     public abstract name: string
     public abstract marketSymbol: string
@@ -61,7 +62,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
         const keyPair = await this.accountController.createKeyPairFromMnemonic(mnemonic, derivationPath, password)
         return keyPair.publicKey.toString('hex')
     }
-    
+
     public async getPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<Buffer> {
         const keyPair = await this.accountController.createKeyPairFromMnemonic(mnemonic, derivationPath, password)
         return keyPair.privateKey
@@ -80,16 +81,16 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     public async getAddressFromPublicKey(publicKey: string): Promise<string> {
         return this.accountController.createAddressFromPublicKey(publicKey)
     }
-    
+
     public async getAddressesFromPublicKey(publicKey: string): Promise<string[]> {
         return [await this.getAddressFromPublicKey(publicKey)]
     }
-    
+
     public async getTransactionsFromPublicKey(publicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]> {
         const addresses = await this.getAddressesFromPublicKey(publicKey)
         return this.getTransactionsFromAddresses(addresses, limit, offset)
     }
-    
+
     public async getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
         const pageNumber = Math.ceil(offset / limit) + 1
         const txs = await Promise.all(addresses.map(address => this.blockExplorerClient.getTransactions(address, limit, pageNumber)))
@@ -106,7 +107,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
                 ...tx
             }))
     }
-    
+
     public async signWithPrivateKey(privateKey: Buffer, rawTransaction: RawSubstrateTransaction): Promise<string> {
         const txs = this.transactionController.decodeDetails(rawTransaction.encoded)
         const signed = await Promise.all(txs.map(tx => this.transactionController.signTransaction(privateKey, tx.transaction, tx.payload)))
@@ -115,11 +116,11 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
 
         return this.transactionController.encodeDetails(txs)
     }
-    
+
     public async getTransactionDetails(transaction: UnsignedSubstrateTransaction): Promise<IAirGapTransaction[]> {
         return this.getTransactionDetailsFromEncoded(transaction.transaction.encoded)
     }
-    
+
     public async getTransactionDetailsFromSigned(transaction: SignedSubstrateTransaction): Promise<IAirGapTransaction[]> {
         return this.getTransactionDetailsFromEncoded(transaction.transaction)
     }
@@ -139,17 +140,17 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     }
 
     public async getBalanceOfPublicKey(publicKey: string): Promise<string> {
-        return this.getBalanceOfAddresses([await this.getAddressFromPublicKey(publicKey)])        
+        return this.getBalanceOfAddresses([await this.getAddressFromPublicKey(publicKey)])
     }
 
     public async getTransferFeeEstimate(publicKey: string, destination: string, value: string, tip: string = '0'): Promise<string> {
         const transaction = await this.transactionController.createTransaction(
-            SubstrateTransactionType.TRANSFER, 
-            publicKey, 
+            SubstrateTransactionType.TRANSFER,
+            publicKey,
             tip,
-            { 
+            {
                 to: destination.length > 0 ? destination : publicKey,
-                value: new BigNumber(value) 
+                value: new BigNumber(value)
             }
         )
         const fee = await this.transactionController.calculateTransactionFee(transaction)
@@ -169,7 +170,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
 
         const transferableBalance = results[0]
         const futureTransactions = results[1]
-        
+
         const feeEstimate = await this.transactionController.estimateTransactionFees(futureTransactions)
 
         if (!feeEstimate) {
@@ -185,13 +186,13 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
         }
 
         return maxAmount.toFixed()
-      }
+    }
 
     public async prepareTransactionFromPublicKey(
-        publicKey: string, 
-        recipients: string[], 
-        values: string[], 
-        fee: string, 
+        publicKey: string,
+        recipients: string[],
+        values: string[],
+        fee: string,
         data?: any
     ): Promise<RawSubstrateTransaction> {
         if (recipients.length !== values.length) {
@@ -293,7 +294,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
                 amount: reward.amount,
                 collected: reward.collected,
                 timestamp: reward.timestamp
-            })) : [] 
+            })) : []
 
         return {
             delegator: nominatorDetails,
@@ -302,8 +303,8 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     }
 
     public async prepareDelegatorActionFromPublicKey(
-        publicKey: string, 
-        type: SubstrateStakingActionType, 
+        publicKey: string,
+        type: SubstrateStakingActionType,
         data?: any
     ): Promise<RawSubstrateTransaction[]> {
         if (!data) {
@@ -364,13 +365,13 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
                 args: {
                     controller,
                     value: BigNumber.isBigNumber(value) ? value : new BigNumber(value!),
-                    payee: isString(payee) ? SubstratePayee[payee] :  payee
+                    payee: isString(payee) ? SubstratePayee[payee] : payee
                 }
             }] : []),
             {
                 type: SubstrateTransactionType.NOMINATE,
                 tip,
-                args: { 
+                args: {
                     targets: isString(targets) ? [targets] : targets
                 }
             }
@@ -594,8 +595,12 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     public signMessage(message: string, privateKey: Buffer): Promise<string> {
         throw new Error('Method not implemented.');
     }
-    
+
     public verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
         throw new Error('Method not implemented.');
+    }
+
+    public async getTransactionStatuses(transactionHashes: string[]): Promise<AirGapTransactionStatus[]> {
+      return Promise.reject('Transaction status not implemented')
     }
 }

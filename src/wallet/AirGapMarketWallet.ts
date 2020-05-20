@@ -2,6 +2,7 @@ import { IAirGapTransaction } from '..'
 import Axios from '../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../dependencies/src/bignumber.js-9.0.0/bignumber'
 import * as cryptocompare from '../dependencies/src/cryptocompare-0.5.0/index'
+import { AirGapTransactionStatus } from '../interfaces/IAirGapTransaction'
 
 import { AirGapWallet } from './AirGapWallet'
 
@@ -19,6 +20,10 @@ export interface MarketDataSample {
   open: number
   volumefrom: string
   volumeto: number
+}
+
+function notEmpty<TValue>(value: TValue | null | undefined): value is TValue {
+  return value !== null && value !== undefined
 }
 
 export class AirGapMarketWallet extends AirGapWallet {
@@ -173,7 +178,8 @@ export class AirGapMarketWallet extends AirGapWallet {
     }
   }
 
-  public fetchTransactions(limit: number, offset: number): Promise<IAirGapTransaction[]> {
+  public async fetchTransactions(limit: number, offset: number): Promise<IAirGapTransaction[]> {
+    let transactions: IAirGapTransaction[] = []
     if (this.protocolIdentifier === 'grs' && this.isExtendedPublicKey) {
       /* 
       We should remove this if BTC also uses blockbook. (And change the order of the if/else below)
@@ -184,14 +190,34 @@ export class AirGapMarketWallet extends AirGapWallet {
       We can also not simply change the order of the following if/else, because then it would use the xPub method for
       BTC as well, which results in the addresses being derived again, which causes massive lags in the apps.
       */
-      return this.coinProtocol.getTransactionsFromExtendedPublicKey(this.publicKey, limit, offset)
+      transactions = await this.coinProtocol.getTransactionsFromExtendedPublicKey(this.publicKey, limit, offset)
     } else if (this.addresses.length > 0) {
-      return this.coinProtocol.getTransactionsFromAddresses(this.addressesToCheck(), limit, offset)
+      transactions = await this.coinProtocol.getTransactionsFromAddresses(this.addressesToCheck(), limit, offset)
     } else if (this.isExtendedPublicKey) {
-      return this.coinProtocol.getTransactionsFromExtendedPublicKey(this.publicKey, limit, offset)
+      transactions = await this.coinProtocol.getTransactionsFromExtendedPublicKey(this.publicKey, limit, offset)
     } else {
-      return this.coinProtocol.getTransactionsFromPublicKey(this.publicKey, limit, offset)
+      transactions = await this.coinProtocol.getTransactionsFromPublicKey(this.publicKey, limit, offset)
     }
+    return await this.txsIncludingStatus(transactions)
+  }
+
+  private async txsIncludingStatus(transactions: IAirGapTransaction[]): Promise<IAirGapTransaction[]> {
+    if (this.protocolIdentifier.toLowerCase() === 'eth' || this.protocolIdentifier.toLowerCase() === 'xtz') {
+      const transactionsWithHash: IAirGapTransaction[] = transactions.filter((tx: IAirGapTransaction) => tx.hash)
+      const hashes: string[] = transactionsWithHash.map((tx: IAirGapTransaction) => tx.hash).filter(notEmpty) // Extra filter here for typing reasons, should not alter the array because we filter on the line before.
+
+      if (transactionsWithHash.length !== hashes.length) {
+        throw new Error('Transaction array lengths do not match!')
+      }
+
+      const statuses: AirGapTransactionStatus[] = await this.coinProtocol.getTransactionStatuses(hashes)
+
+      transactionsWithHash.forEach((el: IAirGapTransaction, i: number) => {
+        el.status = statuses[i]
+      })
+    }
+
+    return transactions
   }
 
   public async getMaxTransferValue(fee: string): Promise<BigNumber> {

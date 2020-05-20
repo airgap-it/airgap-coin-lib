@@ -2,7 +2,7 @@ import { BigNumber } from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import * as bitcoinJS from '../../dependencies/src/bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac/src/index'
 import * as ethUtil from '../../dependencies/src/ethereumjs-util-5.2.0/index'
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
-import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
+import { AirGapTransactionStatus, IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 import { Network } from '../../networks'
 import { UnsignedTransaction } from '../../serializer/schemas/definitions/transaction-sign-request'
 import { SignedEthereumTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-ethereum'
@@ -89,7 +89,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     const secret = mnemonicToSeed(mnemonic, password)
     return this.getPublicKeyFromHexSecret(secret, derivationPath)
   }
-  
+
   public async getPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<Buffer> {
     const secret = mnemonicToSeed(mnemonic, password)
     return this.getPrivateKeyFromHexSecret(secret, derivationPath)
@@ -365,5 +365,13 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
 
   public async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
     return Promise.reject('Message verification not implemented')
+  }
+
+  public async getTransactionStatuses(transactionHashes: string[]): Promise<AirGapTransactionStatus[]> {
+    const statusPromises: Promise<AirGapTransactionStatus>[] = transactionHashes.map((txHash: string) => {
+      return this.configuration.nodeClient.getTransactionStatus(txHash)
+    })
+
+    return Promise.all(statusPromises)
   }
 }

@@ -7,7 +7,7 @@ import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
 import * as bs58check from '../../dependencies/src/bs58check-2.1.2/index'
 import { generateWalletUsingDerivationPath } from '../../dependencies/src/hd-wallet-js-b216450e56954a6e82ace0aade9474673de5d9d5/src/index'
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
-import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
+import { AirGapTransactionStatus, IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 import { UnsignedTezosTransaction } from '../../serializer/schemas/definitions/transaction-sign-request-tezos'
 import { SignedTezosTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-tezos'
 import { RawTezosTransaction } from '../../serializer/types'
@@ -103,7 +103,7 @@ export interface RunOperationOperationResult {
   status: string
   errors?: unknown
   balance_updates: RunOperationOperationBalanceUpdate[]
-  consumed_gas: string,
+  consumed_gas: string
   paid_storage_size_diff?: string
   originated_contracts?: string[]
   allocated_destination_contract?: boolean
@@ -121,7 +121,7 @@ interface RunOperationInternalOperationResult {
 
 export interface RunOperationMetadata {
   balance_updates: RunOperationBalanceUpdate[]
-  operation_result: RunOperationOperationResult,
+  operation_result: RunOperationOperationResult
   internal_operation_results?: RunOperationInternalOperationResult[]
 }
 
@@ -197,15 +197,15 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     edsig: Buffer
     branch: Buffer
   } = {
-      tz1: Buffer.from(new Uint8Array([6, 161, 159])),
-      tz2: Buffer.from(new Uint8Array([6, 161, 161])),
-      tz3: Buffer.from(new Uint8Array([6, 161, 164])),
-      kt: Buffer.from(new Uint8Array([2, 90, 121])),
-      edpk: Buffer.from(new Uint8Array([13, 15, 37, 217])),
-      edsk: Buffer.from(new Uint8Array([43, 246, 78, 7])),
-      edsig: Buffer.from(new Uint8Array([9, 245, 205, 134, 18])),
-      branch: Buffer.from(new Uint8Array([1, 52]))
-    }
+    tz1: Buffer.from(new Uint8Array([6, 161, 159])),
+    tz2: Buffer.from(new Uint8Array([6, 161, 161])),
+    tz3: Buffer.from(new Uint8Array([6, 161, 164])),
+    kt: Buffer.from(new Uint8Array([2, 90, 121])),
+    edpk: Buffer.from(new Uint8Array([13, 15, 37, 217])),
+    edsk: Buffer.from(new Uint8Array([43, 246, 78, 7])),
+    edsig: Buffer.from(new Uint8Array([9, 245, 205, 134, 18])),
+    branch: Buffer.from(new Uint8Array([1, 52]))
+  }
 
   public readonly headers = { 'Content-Type': 'application/json', apiKey: 'airgap123' }
 
@@ -620,7 +620,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     allOperations = operations.concat(allOperations) // if we have a reveal in operations, we need to make sure it is present in the allOperations array
 
     const numberOfGroups: number = Math.ceil(allOperations.length / operationsPerGroup)
-  
+
     for (let i = 0; i < numberOfGroups; i++) {
       const start = i * operationsPerGroup
       const end = start + operationsPerGroup
@@ -736,7 +736,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     }
   }
 
-
   public async isPublicKeyDelegating(publicKey: string): Promise<boolean> {
     return this.isAddressDelegating(await this.getAddressFromPublicKey(publicKey))
   }
@@ -765,10 +764,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
     const bakerAddress = delegatees[0]
 
-    const results = await Promise.all([
-      this.getDelegatorDetails(address, bakerAddress),
-      this.getDelegateeDetails(bakerAddress),
-    ])
+    const results = await Promise.all([this.getDelegatorDetails(address, bakerAddress), this.getDelegateeDetails(bakerAddress)])
 
     const delegatorDetails = results[0]
     const bakerDetails = results[1]
@@ -826,7 +822,11 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     }
   }
 
-  public async prepareDelegatorActionFromPublicKey(publicKey: string, type: TezosDelegatorAction, data?: any): Promise<RawTezosTransaction[]> {
+  public async prepareDelegatorActionFromPublicKey(
+    publicKey: string,
+    type: TezosDelegatorAction,
+    data?: any
+  ): Promise<RawTezosTransaction[]> {
     switch (type) {
       case TezosDelegatorAction.DELEGATE:
       case TezosDelegatorAction.CHANGE_BAKER:
@@ -999,12 +999,14 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     const forgedOperation: string = await this.forgeTezosOperation(tezosWrappedOperation)
     let gasLimitTotal: number = 0
 
-    const response: AxiosResponse<RunOperationResponse> = await axios.post(`${this.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`, body, {
-      headers: { 'Content-Type': 'application/json' }
-    }).catch((runOperationError: AxiosError) => {
-      console.error('runOperationError', runOperationError.response ? runOperationError.response : runOperationError)
-      throw new ErrorWithData('Run operation error', runOperationError.response ? runOperationError.response : runOperationError)
-    })
+    const response: AxiosResponse<RunOperationResponse> = await axios
+      .post(`${this.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`, body, {
+        headers: { 'Content-Type': 'application/json' }
+      })
+      .catch((runOperationError: AxiosError) => {
+        console.error('runOperationError', runOperationError.response ? runOperationError.response : runOperationError)
+        throw new ErrorWithData('Run operation error', runOperationError.response ? runOperationError.response : runOperationError)
+      })
 
     tezosWrappedOperation.contents.forEach((content: TezosOperation, i: number) => {
       const metadata: RunOperationMetadata = response.data.contents[i].metadata
@@ -1057,25 +1059,26 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
         }
 
         if ((operation as any).gas_limit) {
-          (operation as any).gas_limit = gasLimit.toString()
+          ;(operation as any).gas_limit = gasLimit.toString()
         }
         if ((operation as any).storage_limit) {
-          (operation as any).storage_limit = storageLimit.toString()
+          ;(operation as any).storage_limit = storageLimit.toString()
         }
 
         gasLimitTotal += gasLimit
       }
     })
 
-    const fee: number = MINIMAL_FEE
-      + MINIMAL_FEE_PER_BYTE * Math.ceil((forgedOperation.length + 128) / 2) // 128 is the length of a hex signature
-      + MINIMAL_FEE_PER_GAS_UNIT * gasLimitTotal
+    const fee: number =
+      MINIMAL_FEE +
+      MINIMAL_FEE_PER_BYTE * Math.ceil((forgedOperation.length + 128) / 2) + // 128 is the length of a hex signature
+      MINIMAL_FEE_PER_GAS_UNIT * gasLimitTotal
 
     const feePerOperation: number = Math.ceil(fee / tezosWrappedOperation.contents.length)
 
     tezosWrappedOperation.contents.forEach((operation: TezosOperation) => {
       if ((operation as TezosTransactionOperation).fee) {
-        (operation as TezosTransactionOperation).fee = feePerOperation.toString()
+        ;(operation as TezosTransactionOperation).fee = feePerOperation.toString()
       }
     })
 
@@ -1227,13 +1230,13 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       frozenBalance.map(async obj => {
         const { data: delegatedBalanceAtCycle } = await axios.get(
           `${this.jsonRPCAPI}/chains/main/blocks/${(obj.cycle - 6) * TezosProtocol.BLOCKS_PER_CYCLE[this.network]}/context/contracts/${
-          delegatorAddress ? delegatorAddress : bakerAddress
+            delegatorAddress ? delegatorAddress : bakerAddress
           }/balance`
         )
 
         const { data: stakingBalanceAtCycle } = await axios.get(
           `${this.jsonRPCAPI}/chains/main/blocks/${(obj.cycle - 6) *
-          TezosProtocol.BLOCKS_PER_CYCLE[this.network]}/context/delegates/${bakerAddress}/staking_balance`
+            TezosProtocol.BLOCKS_PER_CYCLE[this.network]}/context/delegates/${bakerAddress}/staking_balance`
         )
 
         return {
@@ -1376,7 +1379,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       // returns hash if successful
       return injectionResponse
     } catch (err) {
-      const axiosError = (err as AxiosError)
+      const axiosError = err as AxiosError
       if (axiosError.response !== undefined && axiosError.response.data !== undefined) {
         throw new Error(`broadcasting failed ${axiosError.response.data}`)
       } else {
@@ -1461,7 +1464,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       if (limit === undefined) {
         throw new Error('limit parameter is required when providing offset')
       }
-      delegators = rewards.delegatedContracts.slice(offsetOrAddresses, Math.min(offsetOrAddresses + limit, rewards.delegatedContracts.length))
+      delegators = rewards.delegatedContracts.slice(
+        offsetOrAddresses,
+        Math.min(offsetOrAddresses + limit, rewards.delegatedContracts.length)
+      )
     } else {
       delegators = offsetOrAddresses
     }
@@ -1545,6 +1551,55 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     return Promise.reject('Message verification not implemented')
   }
 
+  public async getTransactionStatuses(transactionHashes: string[]): Promise<AirGapTransactionStatus[]> {
+    const body = {
+      fields: ['status', 'operation_group_hash'],
+      predicates: [
+        {
+          field: 'operation_group_hash',
+          operation: 'in',
+          set: transactionHashes
+        },
+        {
+          field: 'kind',
+          operation: 'eq',
+          set: ['transaction']
+        }
+      ]
+    }
+
+    const result: AxiosResponse<{ status: string; operation_group_hash: string }[]> = await axios.post(
+      `${this.baseApiUrl}/v2/data/tezos/${this.baseApiNetwork}/operations`,
+      body,
+      {
+        headers: this.headers
+      }
+    )
+
+    const statusGroups: Record<string, AirGapTransactionStatus> = {}
+
+    result.data.forEach((element: { status: string; operation_group_hash: string }) => {
+      const currentStatus: AirGapTransactionStatus =
+        element.status === 'applied' ? AirGapTransactionStatus.APPLIED : AirGapTransactionStatus.FAILED
+
+      if (statusGroups[element.operation_group_hash] === AirGapTransactionStatus.FAILED) {
+        // If status is "failed", we can move on because it will not change anymore
+        return
+      } else if (statusGroups[element.operation_group_hash] === AirGapTransactionStatus.APPLIED) {
+        if (currentStatus === AirGapTransactionStatus.FAILED) {
+          // If the status so far is "applied" but the current one "failed", we need to update the status
+          statusGroups[element.operation_group_hash] = currentStatus
+        }
+      } else {
+        // If no status is set, use the current one
+        statusGroups[element.operation_group_hash] = currentStatus
+      }
+    })
+
+    return transactionHashes.map((txHash: string) => {
+      return statusGroups[txHash]
+    })
+  }
   /*
   async signMessage(message: string, privateKey: Buffer): Promise<string> {
     await sodium.ready

@@ -352,6 +352,14 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
           expect(match && match.length > 0, `address: ${address}`).to.be.true
         }
       })
+
+      it('getTransactionStatus - Is able to get transaction status', async () => {
+        for (const test of protocol.transactionStatusTests) {
+          const statuses: string[] = await protocol.lib.getTransactionStatuses(test.hashes)
+
+          expect(statuses, 'transactionStatus').to.deep.equal(test.expectedResults)
+        }
+      })
     })
   })
 

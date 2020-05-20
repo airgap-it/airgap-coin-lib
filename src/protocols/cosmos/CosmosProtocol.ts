@@ -5,7 +5,7 @@ import { mnemonicToSeed, validateMnemonic } from '../../dependencies/src/bip39-2
 import RIPEMD160 = require('../../dependencies/src/ripemd160-2.0.2/index')
 import SECP256K1 = require('../../dependencies/src/secp256k1-3.7.1/elliptic')
 import * as sha from '../../dependencies/src/sha.js-2.4.11/index'
-import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
+import { AirGapTransactionStatus, IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 import { SignedCosmosTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-cosmos'
 import { UnsignedCosmosTransaction } from '../../serializer/types'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
@@ -115,7 +115,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
   public async getPublicKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
     return this.generateKeyPair(mnemonic, derivationPath, password).publicKey.toString('hex')
   }
-  
+
   public async getPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<Buffer> {
     return this.generateKeyPair(mnemonic, derivationPath, password).privateKey
   }
@@ -394,7 +394,11 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
     }
   }
 
-  public async prepareDelegatorActionFromPublicKey(publicKey: string, type: CosmosDelegationActionType, data?: any): Promise<CosmosTransaction[]> {
+  public async prepareDelegatorActionFromPublicKey(
+    publicKey: string,
+    type: CosmosDelegationActionType,
+    data?: any
+  ): Promise<CosmosTransaction[]> {
     switch (type) {
       case CosmosDelegationActionType.DELEGATE:
         assertFields(`${CosmosDelegationActionType[type]} action`, data, 'validator', 'amount')
@@ -591,8 +595,8 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
         type: CosmosDelegationActionType.DELEGATE,
         args: ['validator', 'amount']
       })
-    } 
-    
+    }
+
     if (isDelegating) {
       actions.push({
         type: CosmosDelegationActionType.UNDELEGATE,
@@ -622,5 +626,9 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
 
   public async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
     throw new Error('Method not implemented.')
+  }
+
+  public async getTransactionStatuses(transactionHashes: string[]): Promise<AirGapTransactionStatus[]> {
+    return Promise.reject('Transaction status not implemented')
   }
 }
