@@ -1,6 +1,6 @@
 
 import { FeeDefaults, CurrencyUnit } from '../ICoinProtocol'
-import { ICoinDelegateProtocol, DelegationDetails, DelegateeDetails } from '../ICoinDelegateProtocol'
+import { ICoinDelegateProtocol, DelegationDetails, DelegateeDetails, DelegatorDetails } from '../ICoinDelegateProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
 import { SubstrateNodeClient } from './helpers/node/SubstrateNodeClient'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
@@ -270,6 +270,14 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
         return this.accountController.isNominating(address)
     }
 
+    public async getDelegatorDetailsFromPublicKey(publicKey: string): Promise<DelegatorDetails> {
+        return this.getDelegatorDetailsFromAddress(await this.getAddressFromPublicKey(publicKey))
+      }
+    
+      public async getDelegatorDetailsFromAddress(address: string): Promise<DelegatorDetails> {
+        return this.accountController.getNominatorDetails(address)
+      }
+
     public async getDelegationDetailsFromPublicKey(publicKey: string, delegatees: string[]): Promise<DelegationDetails> {
         return this.getDelegationDetailsFromAddress(await this.getAddressFromPublicKey(publicKey), delegatees)
     }
@@ -327,7 +335,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
             case SubstrateStakingActionType.WITHDRAW_UNBONDED:
                 return this.prepareWithdrawUnbonded(publicKey, data.tip || 0)
             case SubstrateStakingActionType.COLLECT_REWARDS:
-                return this.prepareCollectRewards(publicKey, data.tip || 0)
+                return Promise.reject('Unsupported delegator action.')
             case SubstrateStakingActionType.CHANGE_REWARD_DESTINATION:
                 return Promise.reject('Unsupported delegator action.')
             case SubstrateStakingActionType.CHANGE_CONTROLLER:
@@ -486,36 +494,6 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
                 type: SubstrateTransactionType.WITHDRAW_UNBONDED,
                 tip,
                 args: {}
-            }
-        ])
-
-        return [{ encoded }]
-    }
-
-    public async prepareCollectRewards(
-        publicKey: string,
-        tip: string | number | BigNumber,
-    ): Promise<RawSubstrateTransaction[]> {
-        const transferableBalance = await this.accountController.getTransferableBalance(publicKey)
-        const awaitingRewards = await this.accountController.getUnclaimedRewards(publicKey)
-
-        const payoutCalls = await Promise.all(awaitingRewards.map(
-            reward => this.transactionController.createTransactionMethod(
-                SubstrateTransactionType.COLLECT_PAYOUT,
-                {
-                    eraIndex: reward.eraIndex,
-                    validators: reward.exposures
-                }
-            )
-        ))
-
-        const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, transferableBalance, [
-            {
-                type: SubstrateTransactionType.SUBMIT_BATCH,
-                tip,
-                args: {
-                    calls: payoutCalls
-                }
             }
         ])
 
