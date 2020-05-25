@@ -182,34 +182,6 @@ export class SubstrateAccountController {
         }
     }
 
-    public async getUnclaimedRewards(accountId: SubstrateAccountId): Promise<SubstrateNominatorRewardDetails[]> {
-        const results = await Promise.all([
-            this.nodeClient.getStakingLedger(SubstrateAddress.from(accountId, this.network)),
-            this.nodeClient.getNominations(SubstrateAddress.from(accountId, this.network)),
-            this.nodeClient.getActiveEraInfo()
-        ])
-
-        const stakingLedger = results[0]
-        const nominations = results[1]
-        const activeEra = results[2]
-
-        if (!stakingLedger || !stakingLedger.lastReward.value || !nominations) {
-            return []
-        }
-
-        if (!activeEra) {
-            return Promise.reject('Could not fetch all necessary data.')
-        }
-
-        return this.getNominatorRewards(
-            accountId,
-            nominations.targets.elements.map(id => id.address),
-            activeEra,
-            stakingLedger.lastReward.value.toNumber(),
-            activeEra.index.minus(stakingLedger.lastReward.value.value).toNumber()
-        ).then(rewards => rewards.filter(reward => !reward.collected))
-    }
-
     private async getStakingDetails(
         accountId: SubstrateAccountId,
         stakingLedger: SubstrateStakingLedger | null,
@@ -229,12 +201,11 @@ export class SubstrateAccountController {
 
         const stakingStatus = this.getStakingStatus(nominations, activeEra.index.toNumber())
 
-        const rewards = nominations && stakingLedger.lastReward.value ? await this.getNominatorRewards(
+        const rewards = nominations ? await this.getNominatorRewards(
             accountId, 
             nominations.targets.elements.map(id => id.address),
             activeEra,
-            stakingLedger.lastReward.value.toNumber(),
-            activeEra.index.minus(stakingLedger.lastReward.value).toNumber() + 5
+            5
         ) : []
 
         return {
@@ -297,7 +268,9 @@ export class SubstrateAccountController {
         const address = SubstrateAddress.from(accountId, this.network)
 
         const results = await Promise.all([
-            this.nodeClient.getValidatorReward(eraIndex),
+            this.nodeClient.getValidatorReward(eraIndex).then(async (result) => {
+                return result ? result : await this.nodeClient.getValidatorReward(eraIndex - 1)
+            }),
             this.nodeClient.getRewardPoints(eraIndex),
             this.nodeClient.getStakersClipped(eraIndex, address),
             this.nodeClient.getValidatorPrefs(eraIndex, address)
@@ -338,8 +311,7 @@ export class SubstrateAccountController {
         accountId: SubstrateAccountId, 
         validators: SubstrateAccountId[],
         activeEra: SubstrateActiveEraInfo,
-        lastReward: number,
-        limit: number
+        eras: number | number[]
     ): Promise<SubstrateNominatorRewardDetails[]> {
         const address = SubstrateAddress.from(accountId, this.network)
         const expectedEraDuration = await this.nodeClient.getExpectedEraDuration()
@@ -348,8 +320,11 @@ export class SubstrateAccountController {
             return Promise.reject('Could not fetch all necessary data.')
         }
 
-        const eras = Array.from(Array(limit).keys()).map(index => activeEra.index.toNumber() - 1 - index)
-        const rewards = await Promise.all(eras.map(era => 
+        const eraIndices = Array.isArray(eras)
+            ? eras
+            : Array.from(Array(eras).keys()).map(index => activeEra.index.toNumber() - 1 - index)
+            
+        const rewards = await Promise.all(eraIndices.map(era => 
             this.calculateEraNominatorReward(
                 address,
                 validators.map(validator => SubstrateAddress.from(validator, this.network)),
@@ -359,7 +334,6 @@ export class SubstrateAccountController {
                     const rewardEra = partial.eraIndex || activeEra.index.toNumber()
                     const erasPassed = activeEra.index.minus(rewardEra).toNumber()
 
-                    partial.collected = lastReward >= rewardEra
                     partial.timestamp = activeEra.start.value 
                         ? activeEra.start.value.minus(expectedEraDuration.multipliedBy(erasPassed - 1)).toNumber()
                         : 0
@@ -478,7 +452,6 @@ export class SubstrateAccountController {
         const isDelegating = nominations !== null
 
         const hasFundsToWithdraw = new BigNumber(stakingDetails?.unlocked || 0).gt(0)
-        const hasRewardsToCollect = stakingDetails?.rewards.some(reward => !reward.collected)
 
         if (maxDelegationValue.gt(minDelegationValue)) {
             if (!isBonded) {
@@ -504,13 +477,6 @@ export class SubstrateAccountController {
                 availableActions.push({
                     type: SubstrateStakingActionType.CHANGE_NOMINATION,
                     args: ['targets']
-                })
-            }
-
-            if (hasRewardsToCollect) {
-                availableActions.push({
-                    type: SubstrateStakingActionType.COLLECT_REWARDS,
-                    args: ['rewards']
                 })
             }
         }

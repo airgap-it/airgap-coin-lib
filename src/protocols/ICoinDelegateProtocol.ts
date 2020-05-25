@@ -22,7 +22,7 @@ export interface DelegatorDetails {
 export interface DelegatorReward {
     index: number
     amount: string
-    collected: boolean
+    collected?: boolean
     timestamp: number
 }
 
