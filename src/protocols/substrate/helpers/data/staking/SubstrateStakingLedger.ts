@@ -4,7 +4,6 @@ import { SCALEAccountId } from '../scale/type/SCALEAccountId'
 import { SCALEArray } from '../scale/type/SCALEArray'
 import { SCALECompactInt } from '../scale/type/SCALECompactInt'
 import { SCALEInt } from '../scale/type/SCALEInt'
-import { SCALEOptional } from '../scale/type/SCALEOptional'
 import { SubstrateNetwork } from '../../../SubstrateNetwork'
 
 export class SubstrateStakingLedger {
@@ -20,9 +19,9 @@ export class SubstrateStakingLedger {
             (_, first) => SCALECompactInt.decode(first),
             (_, second) => SCALECompactInt.decode(second)
         ))
-        const lastReward = decoder.decodeNextOptional((_, hex) => SCALEInt.decode(hex, 32))
+        const claimedRewards = decoder.decodeNextArray((_, hex) => SCALEInt.decode(hex, 32))
 
-        return new SubstrateStakingLedger(stash.decoded, total.decoded, active.decoded, unlocking.decoded, lastReward.decoded)
+        return new SubstrateStakingLedger(stash.decoded, total.decoded, active.decoded, unlocking.decoded, claimedRewards.decoded)
     }
 
     private constructor(
@@ -30,7 +29,7 @@ export class SubstrateStakingLedger {
         readonly total: SCALECompactInt,
         readonly active: SCALECompactInt,
         readonly unlocking: SCALEArray<SCALETuple<SCALECompactInt, SCALECompactInt>>,
-        readonly lastReward: SCALEOptional<SCALEInt>
+        readonly claimedRewards: SCALEArray<SCALEInt>
     ) {}
     
 }

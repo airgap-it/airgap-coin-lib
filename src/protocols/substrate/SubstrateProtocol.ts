@@ -292,7 +292,6 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
             ? nominatorDetails.stakingDetails.rewards.map(reward => ({
                 index: reward.eraIndex,
                 amount: reward.amount,
-                collected: reward.collected,
                 timestamp: reward.timestamp
             })) : []
 
@@ -334,8 +333,6 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
                 return this.prepareBondExtra(publicKey, data.tip || 0, data.value)
             case SubstrateStakingActionType.WITHDRAW_UNBONDED:
                 return this.prepareWithdrawUnbonded(publicKey, data.tip || 0)
-            case SubstrateStakingActionType.COLLECT_REWARDS:
-                return Promise.reject('Unsupported delegator action.')
             case SubstrateStakingActionType.CHANGE_REWARD_DESTINATION:
                 return Promise.reject('Unsupported delegator action.')
             case SubstrateStakingActionType.CHANGE_CONTROLLER:

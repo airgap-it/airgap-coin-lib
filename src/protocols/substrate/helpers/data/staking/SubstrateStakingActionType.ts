@@ -7,7 +7,6 @@ export enum SubstrateStakingActionType {
     REBOND = 'rebond', 
     BOND_EXTRA = 'bond_extra', 
     WITHDRAW_UNBONDED = 'withdraw_unbonded', 
-    COLLECT_REWARDS = 'collect_rewards',
     CHANGE_REWARD_DESTINATION = 'change_reward_destination',
     CHANGE_CONTROLLER = 'change_controller'
 }
