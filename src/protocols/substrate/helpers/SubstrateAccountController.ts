@@ -268,7 +268,9 @@ export class SubstrateAccountController {
         const address = SubstrateAddress.from(accountId, this.network)
 
         const results = await Promise.all([
-            this.nodeClient.getValidatorReward(eraIndex),
+            this.nodeClient.getValidatorReward(eraIndex).then(async (result) => {
+                return result ? result : await this.nodeClient.getValidatorReward(eraIndex - 1)
+            }),
             this.nodeClient.getRewardPoints(eraIndex),
             this.nodeClient.getStakersClipped(eraIndex, address),
             this.nodeClient.getValidatorPrefs(eraIndex, address)
