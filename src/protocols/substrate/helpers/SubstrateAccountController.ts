@@ -88,19 +88,20 @@ export class SubstrateAccountController {
 
     public async getValidatorDetails(accountId: SubstrateAccountId): Promise<SubstrateValidatorDetails> {
         const address = SubstrateAddress.from(accountId, this.network)
-        const currentEra = await this.nodeClient.getCurrentEraIndex()
+        const activeEra = await this.nodeClient.getActiveEraInfo()
 
         let identity: SubstrateRegistration | undefined
         let status: SubstrateValidatorStatus | undefined
         let exposure: SubstrateExposure | undefined
         let validatorPrefs: SubstrateValidatorPrefs | undefined
         let lastEraReward: SubstrateValidatorRewardDetails | undefined
-        if (currentEra) {            
+        if (activeEra) {          
+            const activeEraIndex = activeEra.index.toNumber()  
             const results = await Promise.all([
                 this.nodeClient.getIdentityOf(address).catch(_ => null),
                 this.nodeClient.getValidators(),
-                this.nodeClient.getValidatorPrefs(currentEra.toNumber(), address),
-                this.nodeClient.getValidatorExposure(address)
+                this.nodeClient.getValidatorPrefs(activeEraIndex, address),
+                this.nodeClient.getValidatorExposure(activeEraIndex, address)
             ])
 
             identity = results[0] || undefined
@@ -108,7 +109,7 @@ export class SubstrateAccountController {
             validatorPrefs = results[2] || undefined
             exposure = results[3] || undefined
 
-            lastEraReward = (await this.getEraValidatorReward(address, currentEra.toNumber() - 1)) || undefined
+            lastEraReward = (await this.getEraValidatorReward(address, activeEraIndex - 1)) || undefined
 
             // TODO: check if reaped
             if (currentValidators && currentValidators.find(current => current.compare(address) == 0)) {
