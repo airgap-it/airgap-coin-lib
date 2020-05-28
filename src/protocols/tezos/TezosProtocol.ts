@@ -1023,7 +1023,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
           metadata.internal_operation_results.forEach((internalOperation: RunOperationInternalOperationResult) => {
             if (internalOperation?.result) {
               if (internalOperation.result.errors) {
-                throw new ErrorWithData('Internal operation errors', result.errors)
+                throw new ErrorWithData('Internal operation errors', internalOperation.result.errors)
               }
 
               gasLimit += Number(internalOperation.result.consumed_gas)
