@@ -5,6 +5,7 @@ import * as cryptocompare from '../dependencies/src/cryptocompare-0.5.0/index'
 import { AirGapTransactionStatus } from '../interfaces/IAirGapTransaction'
 
 import { AirGapWallet } from './AirGapWallet'
+import { FeeDefaults } from '../protocols/ICoinProtocol'
 
 export enum TimeUnit {
   Hours = 'hours',
@@ -220,11 +221,11 @@ export class AirGapMarketWallet extends AirGapWallet {
     return transactions
   }
 
-  public async getMaxTransferValue(fee: string): Promise<BigNumber> {
+  public async getMaxTransferValue(recipients: string[], fee?: string): Promise<BigNumber> {
     if (this.isExtendedPublicKey) {
-      return new BigNumber(await this.coinProtocol.estimateMaxTransactionValueFromExtendedPublicKey(this.publicKey, fee))
+      return new BigNumber(await this.coinProtocol.estimateMaxTransactionValueFromExtendedPublicKey(this.publicKey, recipients, fee))
     } else {
-      return new BigNumber(await this.coinProtocol.estimateMaxTransactionValueFromPublicKey(this.publicKey, fee))
+      return new BigNumber(await this.coinProtocol.estimateMaxTransactionValueFromPublicKey(this.publicKey, recipients, fee))
     }
   }
 
@@ -237,6 +238,17 @@ export class AirGapMarketWallet extends AirGapWallet {
       }
 
       return this.coinProtocol.prepareTransactionFromPublicKey(this.publicKey, recipients, values, fee, data)
+    }
+  }
+
+  public async estimateFees(recipients: string[], values: string[], data?: unknown): Promise<FeeDefaults> {
+    if (this.isExtendedPublicKey) {
+      return this.coinProtocol.estimateFeeDefaultsFromExtendedPublicKey(this.publicKey, recipients, values, data)
+    } else {
+      if (this.addressIndex) {
+        data = { addressIndex: this.addressIndex }
+      }
+      return this.coinProtocol.estimateFeeDefaultsFromPublicKey(this.publicKey, recipients, values, data)
     }
   }
 

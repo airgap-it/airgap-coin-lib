@@ -376,14 +376,33 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
     return this.getBalanceOfAddresses(addresses)
   }
 
-  public async estimateMaxTransactionValueFromExtendedPublicKey(extendedPublicKey: string, fee: string): Promise<string> {
-    const balance = await this.getBalanceOfExtendedPublicKey(extendedPublicKey)
-    return this.estimateMaxTransactionValue(new BigNumber(balance), new BigNumber(fee)).toFixed()
+  public async estimateMaxTransactionValueFromExtendedPublicKey(extendedPublicKey: string, recipients: string[], fee?: string): Promise<string> {
+    return this.getBalanceOfExtendedPublicKey(extendedPublicKey)
   }
 
-  public async estimateMaxTransactionValueFromPublicKey(publicKey: string, fee: string): Promise<string> {
-    const balance = await this.getBalanceOfPublicKey(publicKey)
-    return this.estimateMaxTransactionValue(new BigNumber(balance), new BigNumber(fee)).toFixed()
+  public async estimateMaxTransactionValueFromPublicKey(publicKey: string, recipients: string[], fee?: string): Promise<string> {
+    return this.getBalanceOfPublicKey(publicKey)
+  }
+
+  public async estimateFeeDefaultsFromExtendedPublicKey(publicKey: string, recipients: string[], values: string[], data?: any): Promise<FeeDefaults> {
+    const result = (await axios.get(`${this.baseApiUrl}/api/v2/estimatefee/5`)).data.result
+    const estimatedFee = new BigNumber(result)
+    if (estimatedFee.isZero()) {
+      return this.feeDefaults
+    }
+    const feeStepFactor = new BigNumber(0.5)
+    const mediumFee = estimatedFee
+    const lowFee = mediumFee.minus(mediumFee.times(feeStepFactor)).integerValue(BigNumber.ROUND_FLOOR)
+    const highFee = mediumFee.plus(mediumFee.times(feeStepFactor)).integerValue(BigNumber.ROUND_FLOOR)
+    return {
+      low: lowFee.shiftedBy(-this.feeDecimals).toFixed(),
+      medium: mediumFee.shiftedBy(-this.feeDecimals).toFixed(),
+      high: highFee.shiftedBy(-this.feeDecimals).toFixed()
+    }
+  }
+
+  public async estimateFeeDefaultsFromPublicKey(publicKey: string, recipients: string[], values: string[], data?: any): Promise<FeeDefaults> {
+    return Promise.reject('estimating fee defaults using non extended public key not implemented')
   }
 
   public async prepareTransactionFromExtendedPublicKey(
@@ -722,13 +741,5 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
 
   public async getTransactionStatuses(transactionHashes: string[]): Promise<AirGapTransactionStatus[]> {
     return Promise.reject('Transaction status not implemented')
-  }
-
-  private estimateMaxTransactionValue(balance: BigNumber, fee: BigNumber): BigNumber {
-    let amountWithoutFees = balance.minus(fee)
-    if (amountWithoutFees.isNegative()) {
-      amountWithoutFees = new BigNumber(0)
-    }
-    return amountWithoutFees
   }
 }

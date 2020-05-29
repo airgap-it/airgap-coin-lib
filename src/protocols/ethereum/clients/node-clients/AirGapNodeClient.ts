@@ -1,5 +1,5 @@
 import { RPCBody } from '../../../../data/RPCBody'
-import axios, { AxiosResponse } from '../../../../dependencies/src/axios-0.19.0/index'
+import axios from '../../../../dependencies/src/axios-0.19.0/index'
 import { BigNumber } from '../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { AirGapTransactionStatus } from '../../../../interfaces/IAirGapTransaction'
 import { RPCConvertible } from '../../../cosmos/CosmosTransaction'
@@ -20,6 +20,12 @@ class EthereumRPCBody extends RPCBody implements RPCConvertible {
       id: this.id
     })
   }
+}
+
+interface EthereumRPCResponse {
+  id: number 
+  jsonrpc: string 
+  result: any
 }
 
 export class EthereumRPCData {
@@ -129,67 +135,65 @@ export class AirGapNodeClient extends EthereumNodeClient {
   public async fetchBalance(address: string): Promise<BigNumber> {
     const body = new EthereumRPCBody('eth_getBalance', [address, EthereumRPCBody.blockLatest])
 
-    return this.send(body, response => {
-      const balance: string = response.data.result
-
-      return new BigNumber(balance)
-    })
+    const response = await this.send(body)
+    return new BigNumber(response.result)
   }
 
   public async fetchTransactionCount(address: string): Promise<number> {
     const body = new EthereumRPCBody('eth_getTransactionCount', [address, EthereumRPCBody.blockLatest])
 
-    return this.send(body, response => {
-      const count: string = response.data.result
-
-      return new BigNumber(count).toNumber()
-    })
+    const response = await this.send(body)
+    return (new BigNumber(response.result)).toNumber()
   }
 
   public async sendSignedTransaction(transaction: string): Promise<string> {
     const body = new EthereumRPCBody('eth_sendRawTransaction', [transaction])
 
-    return this.send(body, response => {
-      return response.data.result
-    })
+    return (await this.send(body)).result
   }
 
   public async getTransactionStatus(transactionHash: string): Promise<AirGapTransactionStatus> {
     const body = new EthereumRPCBody('eth_getTransactionReceipt', [transactionHash])
-    return this.send(body, response => {
-      return response.data.result.status === '0x1' ? AirGapTransactionStatus.APPLIED : AirGapTransactionStatus.FAILED
-    })
+
+    const response = await this.send(body)
+    return response.result.status === '0x1' ? AirGapTransactionStatus.APPLIED : AirGapTransactionStatus.FAILED
   }
 
   public async callBalanceOf(contractAddress: string, address: string): Promise<BigNumber> {
     const data = new EthereumRPCDataBalanceOf(address)
     const body = new EthereumRPCBody('eth_call', [{ to: contractAddress, data: data.abiEncoded() }, EthereumRPCBody.blockLatest])
 
-    return this.send(body, response => {
-      return new BigNumber(response.data.result)
-    })
+    const response =  await this.send(body)
+    return new BigNumber(response.result)
   }
 
-  public async estimateTransferGas(contractAddress: string, fromAddress: string, toAddress: string, hexAmount: string): Promise<number> {
-    const data = new EthereumRPCDataTransfer(toAddress, hexAmount)
+  public async estimateTransactionGas(fromAddress: string, toAddress: string, amount?: string, data?: string, gas?: string): Promise<BigNumber> {
     const body = new EthereumRPCBody('eth_estimateGas', [
-      { from: fromAddress, to: contractAddress, data: data.abiEncoded() },
-      EthereumRPCBody.blockLatest
+      { from: fromAddress, to: toAddress, gas: gas, value: amount, data: data }
     ])
 
-    return this.send(body, response => {
-      return new BigNumber(response.data.result).toNumber()
-    })
+    const response =  await this.send(body)
+    return new BigNumber(response.result)
   }
 
-  private async send<Result>(body: EthereumRPCBody, responseHandler: (response: AxiosResponse) => Result): Promise<Result> {
-    return new Promise((resolve, reject) => {
-      axios
-        .post(this.baseURL, body.toRPCBody())
-        .then(response => {
-          resolve(responseHandler(response))
-        })
-        .catch(reject)
-    })
+  public async estimateTransferGas(contractAddress: string, fromAddress: string, toAddress: string, hexAmount: string): Promise<BigNumber> {
+    const data = new EthereumRPCDataTransfer(toAddress, hexAmount)
+    const result = this.estimateTransactionGas(fromAddress, contractAddress, undefined, data.abiEncoded())
+    return result
+  }
+
+  public async getGasPrice(): Promise<BigNumber> {
+    const body = new EthereumRPCBody('eth_gasPrice', [])
+
+    const response = await this.send(body)
+    return new BigNumber(response.result)
+  }
+
+  private async send(body: EthereumRPCBody): Promise<EthereumRPCResponse> {
+    const data = (await axios.post(this.baseURL, body.toRPCBody())).data
+    if (data.error !== undefined) {
+      throw new Error(data.error.message)
+    }
+    return data
   }
 }
