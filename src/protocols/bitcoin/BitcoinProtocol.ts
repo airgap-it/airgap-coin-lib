@@ -2,15 +2,15 @@ import * as assert from 'assert'
 
 import axios from '../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
 import * as bitcoinJS from '../../dependencies/src/bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac/src/index'
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
-import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
+import { AirGapTransactionStatus, IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 import { Network } from '../../networks'
 import { UnsignedTransaction } from '../../serializer/schemas/definitions/transaction-sign-request'
 import { SignedBitcoinTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-bitcoin'
 import { RawBitcoinTransaction } from '../../serializer/types'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
-import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
 
 const DUST_AMOUNT: number = 50
 
@@ -60,6 +60,8 @@ export class BitcoinProtocol implements ICoinProtocol {
   public baseApiUrl: string
   public bitcoinJSLib: any
 
+  private feeEstimationUrl = `https://blockstream.info/api/fee-estimates`
+
   constructor(network: Network = bitcoinJS.networks.bitcoin, baseApiUrl: string = 'https://insight.bitpay.com', bitcoinJSLib = bitcoinJS) {
     this.network = network
     this.baseApiUrl = baseApiUrl
@@ -78,7 +80,7 @@ export class BitcoinProtocol implements ICoinProtocol {
     const secret = mnemonicToSeed(mnemonic, password)
     return this.getPublicKeyFromHexSecret(secret, derivationPath)
   }
-  
+
   public getPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<Buffer> {
     const secret = mnemonicToSeed(mnemonic, password)
     return this.getPrivateKeyFromHexSecret(secret, derivationPath)
@@ -91,7 +93,7 @@ export class BitcoinProtocol implements ICoinProtocol {
 
   public async getPublicKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
     const bitcoinNode = this.bitcoinJSLib.HDNode.fromSeedHex(secret, this.network)
-
+    
     return bitcoinNode
       .derivePath(derivationPath)
       .neutered()
@@ -172,7 +174,7 @@ export class BitcoinProtocol implements ICoinProtocol {
     return transactionBuilder.build().toHex()
   }
 
-  public async signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: RawBitcoinTransaction): Promise<string> {
+  public async signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: RawBitcoinTransaction, verifyChangeAddress: boolean = true): Promise<string> {
     const transactionBuilder = new this.bitcoinJSLib.TransactionBuilder(this.network)
     const node = this.bitcoinJSLib.HDNode.fromBase58(extendedPrivateKey, this.network)
 
@@ -185,7 +187,7 @@ export class BitcoinProtocol implements ICoinProtocol {
 
     for (const output of transaction.outs) {
       let changeAddressIsValid: boolean = false
-      if (output.isChange) {
+      if (output.isChange && verifyChangeAddress) {
         if (output.derivationPath) {
           const generatedChangeAddress: string[] = await this.getAddressesFromExtendedPublicKey(
             extendedPrivateKey,
@@ -322,14 +324,31 @@ export class BitcoinProtocol implements ICoinProtocol {
     return this.getBalanceOfAddresses(addresses)
   }
 
-  public async estimateMaxTransactionValueFromExtendedPublicKey(extendedPublicKey: string, fee: string): Promise<string> {
-    const balance = await this.getBalanceOfExtendedPublicKey(extendedPublicKey)
-    return this.estimateMaxTransactionValue(new BigNumber(balance), new BigNumber(fee)).toFixed()
+  public async estimateMaxTransactionValueFromExtendedPublicKey(extendedPublicKey: string, recipients: string[], fee?: string): Promise<string> {
+    return this.getBalanceOfExtendedPublicKey(extendedPublicKey)
   }
 
-  public async estimateMaxTransactionValueFromPublicKey(publicKey: string, fee: string): Promise<string> {
-    const balance = await this.getBalanceOfPublicKey(publicKey)
-    return this.estimateMaxTransactionValue(new BigNumber(balance), new BigNumber(fee)).toFixed()
+  public async estimateMaxTransactionValueFromPublicKey(publicKey: string, recipients: string[], fee?: string): Promise<string> {
+    return this.getBalanceOfPublicKey(publicKey)
+  }
+
+  public async estimateFeeDefaultsFromExtendedPublicKey(publicKey: string, recipients: string[], values: string[], data?: any): Promise<FeeDefaults> {
+    const estimatedFees = (await axios.get(this.feeEstimationUrl)).data
+    const transation = await this.prepareTransactionFromExtendedPublicKey(publicKey, 0, recipients, values, '0')
+    const fakeSignedLength = (await this.signWithExtendedPrivateKey("xprv9y52jGU1NsKDGq7cHcQjBeVC4sYff3jEzNywXk37wxUbMpsNg1RFDrBCZSZQD3nb79jpMDEdadtWgoPrZgr1SUriLUie3SVvVRKZDNfQKNv", transation, false)).length / 2
+    const bnTransactionLength = new BigNumber(fakeSignedLength)
+    const mediumFee = new BigNumber(estimatedFees['6']).times(bnTransactionLength).integerValue()
+    const lowFee = new BigNumber(estimatedFees['12']).times(bnTransactionLength).integerValue()
+    const highFee = new BigNumber(estimatedFees['1']).times(bnTransactionLength).integerValue()
+    return {
+      low: lowFee.shiftedBy(-this.feeDecimals).toFixed(),
+      medium: mediumFee.integerValue(BigNumber.ROUND_FLOOR).shiftedBy(-this.feeDecimals).toFixed(),
+      high: highFee.shiftedBy(-this.feeDecimals).toFixed()
+    }
+  }
+
+  public async estimateFeeDefaultsFromPublicKey(publicKey: string, recipients: string[], values: string[], data?: any): Promise<FeeDefaults> {
+    return Promise.reject('estimating fee defaults using non extended public key not implemented')
   }
 
   public async prepareTransactionFromExtendedPublicKey(
@@ -617,11 +636,7 @@ export class BitcoinProtocol implements ICoinProtocol {
     return Promise.reject('Message verification not implemented')
   }
 
-  private estimateMaxTransactionValue(balance: BigNumber, fee: BigNumber): BigNumber {
-    let amountWithoutFees = balance.minus(fee)
-    if (amountWithoutFees.isNegative()) {
-      amountWithoutFees = new BigNumber(0)
-    }
-    return amountWithoutFees
+  public async getTransactionStatuses(transactionHashes: string[]): Promise<AirGapTransactionStatus[]> {
+    return Promise.reject('Transaction status not implemented')
   }
 }

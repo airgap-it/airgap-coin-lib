@@ -5,7 +5,7 @@ import { EthereumProtocol } from '../protocols/ethereum/EthereumProtocol'
 import { GroestlcoinProtocol } from '../protocols/groestlcoin/GroestlcoinProtocol'
 import { ICoinProtocol } from '../protocols/ICoinProtocol'
 import { TezosProtocol } from '../protocols/tezos/TezosProtocol'
-// import { KusamaProtocol } from '../protocols/substrate/implementations/KusamaProtocol'
+import { KusamaProtocol } from '../protocols/substrate/implementations/KusamaProtocol'
 
 const protocols: ICoinProtocol[] = []
 
@@ -20,7 +20,7 @@ const supportedProtocols: () => ICoinProtocol[] = (): ICoinProtocol[] => {
       new GroestlcoinProtocol(),
       new TezosProtocol(),
       new CosmosProtocol(),
-      // new KusamaProtocol()
+      new KusamaProtocol()
     )
   }
 

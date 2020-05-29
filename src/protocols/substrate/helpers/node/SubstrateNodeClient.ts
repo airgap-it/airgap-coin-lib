@@ -179,9 +179,7 @@ export class SubstrateNodeClient {
             )
     }
 
-    public async getValidatorExposure(address: SubstrateAddress): Promise<SubstrateExposure | null> {
-        const eraIndex = await this.getCurrentEraIndex() || 0
-
+    public async getValidatorExposure(eraIndex: number, address: SubstrateAddress): Promise<SubstrateExposure | null> {
         return this.fromStorage('Staking', 'ErasStakers', SCALEInt.from(eraIndex, 32), SCALEAccountId.from(address, this.network))
             .then(item => item ? SubstrateExposure.decode(this.network, item) : null)
     }

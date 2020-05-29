@@ -2,20 +2,20 @@ import * as sodium from 'libsodium-wrappers'
 
 import axios from '../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
 import * as bs58check from '../../dependencies/src/bs58check-2.1.2/index'
 import { generateWalletUsingDerivationPath } from '../../dependencies/src/hd-wallet-js-b216450e56954a6e82ace0aade9474673de5d9d5/src/index'
 import * as rlp from '../../dependencies/src/rlp-2.2.3/index'
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
-import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
+import { AirGapTransactionStatus, IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 import { UnsignedAeternityTransaction } from '../../serializer/schemas/definitions/transaction-sign-request-aeternity'
 import { SignedAeternityTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-aeternity'
 import { RawAeternityTransaction } from '../../serializer/types'
 import bs64check from '../../utils/base64Check'
 import { padStart } from '../../utils/padStart'
 import { EthereumUtils } from '../ethereum/utils/utils'
-import { CurrencyUnit, ICoinProtocol } from '../ICoinProtocol'
+import { CurrencyUnit, ICoinProtocol, FeeDefaults } from '../ICoinProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
-import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
 
 export class AeternityProtocol extends NonExtendedProtocol implements ICoinProtocol {
   public symbol: string = 'AE'
@@ -54,6 +54,8 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
   public defaultNetworkId: string = 'ae_mainnet'
 
   public epochMiddleware: string = 'https://ae-epoch-rpc-proxy.gke.papers.tech'
+
+  private feesURL: string = 'https://api-airgap.gke.papers.tech/fees'
 
   constructor(public epochRPC: string = 'https://ae-epoch-rpc-proxy.gke.papers.tech') {
     super()
@@ -260,14 +262,30 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
     return this.getBalanceOfAddresses(addresses)
   }
 
-  public async estimateMaxTransactionValueFromPublicKey(publicKey: string, fee: string): Promise<string> {
+  public async estimateMaxTransactionValueFromPublicKey(publicKey: string, recipients: string[], fee?: string): Promise<string> {
     const balance = await this.getBalanceOfPublicKey(publicKey)
+    const balanceWrapper = new BigNumber(balance)
+    
+    let maxFee: BigNumber
+    if (fee !== undefined) {
+      maxFee = new BigNumber(fee)
+    } else {
+      const estimatedFeeDefaults = await this.estimateFeeDefaultsFromPublicKey(publicKey, recipients, [balance])
+      maxFee = new BigNumber(estimatedFeeDefaults.medium).shiftedBy(this.decimals)
+      if (maxFee.gte(balanceWrapper)) {
+        maxFee = new BigNumber(0)
+      }
+    }
 
-    let amountWithoutFees = new BigNumber(balance).minus(new BigNumber(fee))
+    let amountWithoutFees = balanceWrapper.minus(maxFee)
     if (amountWithoutFees.isNegative()) {
       amountWithoutFees = new BigNumber(0)
     }
     return amountWithoutFees.toFixed()
+  }
+
+  public async estimateFeeDefaultsFromPublicKey(publicKey: string, recipients: string[], values: string[], data?: any): Promise<FeeDefaults> {
+    return (await axios.get(this.feesURL)).data
   }
 
   public async prepareTransactionFromPublicKey(
@@ -357,5 +375,9 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
 
   public async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
     return Promise.reject('Message verification not implemented')
+  }
+
+  public async getTransactionStatuses(transactionHashes: string[]): Promise<AirGapTransactionStatus[]> {
+    return Promise.reject('Transaction status not implemented')
   }
 }

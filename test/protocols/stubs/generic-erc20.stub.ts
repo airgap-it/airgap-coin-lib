@@ -30,7 +30,7 @@ export class GenericERC20ProtocolStub implements ProtocolHTTPStub {
     sinon
       .stub(protocol, 'estimateGas')
       .withArgs(sinon.match.any)
-      .returns(Promise.resolve('31705'))
+      .returns(Promise.resolve(new BigNumber('31705')))
   }
   public noBalanceStub(testProtocolSpec: TestProtocolSpec, protocol: GenericERC20) {
     sinon
@@ -46,6 +46,6 @@ export class GenericERC20ProtocolStub implements ProtocolHTTPStub {
     sinon
       .stub(protocol, 'estimateGas')
       .withArgs(sinon.match.any)
-      .returns(Promise.resolve(new BigNumber(0).toFixed()))
+      .returns(Promise.resolve(new BigNumber(0)))
   }
 }

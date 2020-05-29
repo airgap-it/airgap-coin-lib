@@ -10,7 +10,6 @@ export interface SubstrateNominatorRewardDetails {
     amount: string
     exposures: [string, number][]
     timestamp: number
-    collected: boolean
 }
 
 export type SubstrateStakingStatus = 'bonded' | 'nominating' | 'nominating_inactive'

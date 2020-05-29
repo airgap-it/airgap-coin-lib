@@ -4,6 +4,11 @@ export enum AirGapTransactionType {
   UNDELEGATE = 'Undelegate'
 }
 
+export enum AirGapTransactionStatus {
+  APPLIED = 'applied',
+  FAILED = 'failed'
+}
+
 export interface IAirGapTransaction {
   from: string[]
   to: string[]
@@ -19,5 +24,7 @@ export interface IAirGapTransaction {
   data?: string
 
   extra?: any
+  status?: AirGapTransactionStatus
+
   transactionDetails?: any
 }

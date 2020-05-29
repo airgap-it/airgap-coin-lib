@@ -1,5 +1,5 @@
 import { IAirGapSignedTransaction } from '../interfaces/IAirGapSignedTransaction'
-import { IAirGapTransaction } from '../interfaces/IAirGapTransaction'
+import { AirGapTransactionStatus, IAirGapTransaction } from '../interfaces/IAirGapTransaction'
 import { UnsignedTransaction } from '../serializer/schemas/definitions/transaction-sign-request'
 import { SignedTransaction } from '../serializer/schemas/definitions/transaction-sign-response'
 
@@ -53,7 +53,7 @@ export interface ICoinProtocol {
   getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<Buffer>
 
   getExtendedPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<string>
-  
+
   getAddressFromPublicKey(publicKey: string): Promise<string>
   getAddressesFromPublicKey(publicKey: string): Promise<string[]> // broadcaster knows this (both broadcaster and signer)
   getAddressFromExtendedPublicKey(
@@ -81,9 +81,14 @@ export interface ICoinProtocol {
   getBalanceOfPublicKey(publicKey: string): Promise<string>
   getBalanceOfExtendedPublicKey(extendedPublicKey: string, offset: number): Promise<string>
   getAvailableBalanceOfAddresses(addresses: string[]): Promise<string>
+  getTransactionStatuses(transactionHash: string[]): Promise<AirGapTransactionStatus[]>
 
-  estimateMaxTransactionValueFromExtendedPublicKey(extendedPublicKey: string, fee: string): Promise<string>
-  estimateMaxTransactionValueFromPublicKey(publicKey: string, fee: string): Promise<string>
+  estimateMaxTransactionValueFromExtendedPublicKey(extendedPublicKey: string, recipients: string[], fee?: string): Promise<string>
+  estimateMaxTransactionValueFromPublicKey(publicKey: string, recipients: string[], fee?: string): Promise<string>
+  
+  estimateFeeDefaultsFromExtendedPublicKey(publicKey: string, recipients: string[], values: string[], data?: any): Promise<FeeDefaults>
+  estimateFeeDefaultsFromPublicKey(publicKey: string, recipients: string[], values: string[], data?: any): Promise<FeeDefaults>
+
   prepareTransactionFromExtendedPublicKey(
     extendedPublicKey: string,
     offset: number,

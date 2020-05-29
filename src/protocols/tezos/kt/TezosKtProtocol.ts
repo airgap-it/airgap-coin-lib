@@ -7,6 +7,7 @@ import { TezosTransactionOperation } from '../types/operations/Transaction'
 import { TezosOperation } from '../types/operations/TezosOperation'
 import { TezosOperationType } from '../types/TezosOperationType'
 import { TezosWrappedOperation } from '../types/TezosWrappedOperation'
+import { FeeDefaults } from '../../ICoinProtocol'
 
 export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
   public identifier: string = 'xtz-kt'
@@ -57,6 +58,19 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     })
 
     return ktAddresses.reverse()
+  }
+
+  public async estimateMaxTransactionValueFromPublicKey(publicKey: string, recipients: string[], fee?: string): Promise<string> {
+    return this.getBalanceOfPublicKey(publicKey)
+  }
+
+  public async estimateFeeDefaultsFromPublicKey(publicKey: string, recipients: string[], values: string[], data?: any): Promise<FeeDefaults> {
+    const fee = this.migrationFee.shiftedBy(-this.feeDecimals).toFixed()
+      return {
+        low: fee,
+        medium: fee,
+        high: fee
+      }
   }
 
   public async prepareTransactionFromPublicKey(

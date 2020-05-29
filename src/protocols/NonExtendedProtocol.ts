@@ -1,4 +1,5 @@
 import { IAirGapTransaction } from '../interfaces/IAirGapTransaction'
+import { FeeDefaults } from './ICoinProtocol'
 
 export abstract class NonExtendedProtocol {
   public getExtendedPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
@@ -34,8 +35,12 @@ export abstract class NonExtendedProtocol {
     return Promise.resolve([])
   }
 
-  public estimateMaxTransactionValueFromExtendedPublicKey(extendedPublicKey: string, fee: string): Promise<string> {
+  public estimateMaxTransactionValueFromExtendedPublicKey(extendedPublicKey: string, recipients: string[], fee: string): Promise<string> {
     return Promise.reject('estimating max value using extended public key not implemented')
+  }
+
+  public estimateFeeDefaultsFromExtendedPublicKey(publicKey: string, recipients: string[], values: string[], data?: any): Promise<FeeDefaults> {
+    return Promise.reject('estimating fee defaults using extended public key not implemented')
   }
 
   public getTransactionsFromExtendedPublicKey(extendedPublicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]> {
