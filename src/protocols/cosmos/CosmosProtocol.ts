@@ -47,12 +47,11 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
   public marketSymbol: string = 'atom'
   public feeSymbol: string = 'atom'
   public feeDefaults: FeeDefaults = {
-    // TODO: verify if these values are ok
     low: '0.0005',
     medium: '0.005',
     high: '0.0075'
   }
-  public decimals: number = 6 // TODO: verify these values
+  public decimals: number = 6
   public feeDecimals: number = 6
   public identifier: string = 'cosmos'
   public units: CurrencyUnit[] = [
@@ -273,15 +272,32 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
     ).toString(10)
   }
 
-  public async estimateMaxTransactionValueFromPublicKey(publicKey: string, fee: string): Promise<string> {
+  public async estimateMaxTransactionValueFromPublicKey(publicKey: string, recipients: string[], fee?: string): Promise<string> {
     const address = await this.getAddressFromPublicKey(publicKey)
     const balance = await this.getAvailableBalanceOfAddresses([address])
 
-    let amountWithoutFees = new BigNumber(balance).minus(new BigNumber(fee))
+    const balanceWrapper = new BigNumber(balance)
+    
+    let maxFee: BigNumber
+    if (fee !== undefined) {
+      maxFee = new BigNumber(fee)
+    } else {
+      const estimatedFeeDefaults = await this.estimateFeeDefaultsFromPublicKey(publicKey, recipients, [balance])
+      maxFee = new BigNumber(estimatedFeeDefaults.medium).shiftedBy(this.decimals)
+      if (maxFee.gte(balanceWrapper)) {
+        maxFee = new BigNumber(0)
+      }
+    }
+
+    let amountWithoutFees = balanceWrapper.minus(maxFee)
     if (amountWithoutFees.isNegative()) {
       amountWithoutFees = new BigNumber(0)
     }
     return amountWithoutFees.toFixed()
+  }
+
+  public async estimateFeeDefaultsFromPublicKey(publicKey: string, recipients: string[], values: string[], data?: any): Promise<FeeDefaults> {
+    return this.feeDefaults
   }
 
   public async prepareTransactionFromPublicKey(

@@ -15,19 +15,19 @@ export class EthereumRopstenTestProtocolSpec extends TestProtocolSpec {
   public txs = [
     {
       amount: '1000000000000000000',
-      fee: '420000000000000',
+      fee: '420000000029730',
       to: ['0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e'],
       from: ['0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e'],
       unsignedTx: {
         nonce: '0x50',
-        gasPrice: '0x4a817c800',
-        gasLimit: '0x5208',
+        gasPrice: '0x3159709f2',
+        gasLimit: '0x7bd9',
         to: '0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e',
         value: '0xde0b6b3a7640000',
         chainId: 3
       },
       signedTx:
-        'f86c508504a817c800825208944a1e1d37462a422873bfccb1e705b05cc4bd922e880de0b6b3a7640000802aa09270214b35e31fb9cbb106c35ff34b4abad14c77f69d98b039be9c6a6382884aa066fd4b84461179e4daf0da72caba8ce569f48893af160201bf26157f7f532c84'
+        'f86c508503159709f2827bd9944a1e1d37462a422873bfccb1e705b05cc4bd922e880de0b6b3a7640000802aa0441be11a678fdcb4fdd70c203f6d35bf0a0d59baa98af7c3fcc288138febdfefa05193efea4682c08cb1c255c4bc989fd2fd32c7c618ab10094adb582aff9e9369'
     }
   ]
 }

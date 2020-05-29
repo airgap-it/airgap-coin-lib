@@ -32,7 +32,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
   public feeSymbol: string = 'eth'
 
   public feeDefaults: FeeDefaults = {
-    low: '0.00021', // 21000 Gas * 2 Gwei
+    low: '0.00021', // 21000 Gas * 10 Gwei
     medium: '0.000315', // 21000 Gas * 15 Gwei
     high: '0.00084' // 21000 Gas * 40 Gwei
   }
@@ -252,8 +252,12 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     return this.getBalanceOfAddresses(addresses)
   }
 
-  public estimateMaxTransactionValueFromExtendedPublicKey(extendedPublicKey: string, fee: string): Promise<string> {
+  public estimateMaxTransactionValueFromExtendedPublicKey(extendedPublicKey: string, recipients: string[], fee?: string): Promise<string> {
     return Promise.reject('estimating max value using extended public key not implemented')
+  }
+
+  public async estimateFeeDefaultsFromExtendedPublicKey(publicKey: string, recipients: string[], values: string[], data?: any): Promise<FeeDefaults> {
+    return Promise.reject('estimating default fees using extended public key not implemented')
   }
 
   public prepareTransactionFromExtendedPublicKey(
@@ -266,14 +270,54 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     return Promise.reject('extended public tx for ether not implemented')
   }
 
-  public async estimateMaxTransactionValueFromPublicKey(publicKey: string, fee: string): Promise<string> {
+  public async estimateMaxTransactionValueFromPublicKey(publicKey: string, recipients: string[], fee?: string): Promise<string> {
     const balance = await this.getBalanceOfPublicKey(publicKey)
+    const balanceWrapper = new BigNumber(balance)
+    
+    let maxFee: BigNumber
+    if (fee !== undefined) {
+      maxFee = new BigNumber(fee)
+    } else {
+      const estimatedFeeDefaults = await this.estimateFeeDefaultsFromPublicKey(publicKey, recipients, [balance])
+      maxFee = new BigNumber(estimatedFeeDefaults.medium).shiftedBy(this.decimals)
+      if (maxFee.gte(balanceWrapper)) {
+        maxFee = new BigNumber(0)
+      }
+    }
 
-    let amountWithoutFees = new BigNumber(balance).minus(new BigNumber(fee))
+    let amountWithoutFees = balanceWrapper.minus(maxFee)
     if (amountWithoutFees.isNegative()) {
       amountWithoutFees = new BigNumber(0)
     }
     return amountWithoutFees.toFixed()
+  }
+
+  public async estimateFeeDefaultsFromPublicKey(publicKey: string, recipients: string[], values: string[], data?: any): Promise<FeeDefaults> {
+    if (recipients.length !== values.length) {
+      return Promise.reject('recipients length does not match with values')
+    }
+    if (recipients.length !== 1) {
+      return Promise.reject('you cannot have 0 recipients')
+    }
+    const address: string = await this.getAddressFromPublicKey(publicKey)
+    const estimatedGas = await this.configuration.nodeClient.estimateTransactionGas(
+      address, 
+      recipients[0], 
+      EthereumUtils.toHex(values[0]), 
+      undefined, 
+      EthereumUtils.toHex("21000")
+    )
+    const gasPrise = await this.configuration.nodeClient.getGasPrice()
+    const feeStepFactor = new BigNumber(0.5)
+    const estimatedFee = estimatedGas.times(gasPrise)
+    const lowFee = estimatedFee.minus(estimatedFee.times(feeStepFactor).integerValue(BigNumber.ROUND_FLOOR))
+    const mediumFee = estimatedFee
+    const highFee = mediumFee.plus(mediumFee.times(feeStepFactor).integerValue(BigNumber.ROUND_FLOOR))
+    return {
+      low: lowFee.shiftedBy(-this.feeDecimals).toFixed(),
+      medium: mediumFee.shiftedBy(-this.feeDecimals).toFixed(),
+      high: highFee.shiftedBy(-this.feeDecimals).toFixed()
+    }
   }
 
   public async prepareTransactionFromPublicKey(
@@ -296,8 +340,10 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
       return Promise.reject('you cannot have 0 recipients')
     }
 
+    const amount = EthereumUtils.toHex(wrappedValues[0].toFixed())
+
     const balance = await this.getBalanceOfPublicKey(publicKey)
-    const gasLimit = new BigNumber(21000)
+    const gasLimit = await this.configuration.nodeClient.estimateTransactionGas(address, recipients[0], amount, undefined, EthereumUtils.toHex("21000"))
     const gasPrice = wrappedFee.div(gasLimit).integerValue(BigNumber.ROUND_CEIL)
     if (new BigNumber(balance).gte(new BigNumber(wrappedValues[0].plus(wrappedFee)))) {
       const txCount = await this.configuration.nodeClient.fetchTransactionCount(address)
@@ -306,7 +352,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
         gasLimit: EthereumUtils.toHex(gasLimit.toFixed()),
         gasPrice: EthereumUtils.toHex(gasPrice.toFixed()), // 10 Gwei
         to: recipients[0],
-        value: EthereumUtils.toHex(wrappedValues[0].toFixed()),
+        value: amount,
         chainId: this.configuration.chainID,
         data: '0x'
       }

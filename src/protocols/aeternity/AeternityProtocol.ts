@@ -14,7 +14,7 @@ import { RawAeternityTransaction } from '../../serializer/types'
 import bs64check from '../../utils/base64Check'
 import { padStart } from '../../utils/padStart'
 import { EthereumUtils } from '../ethereum/utils/utils'
-import { CurrencyUnit, ICoinProtocol } from '../ICoinProtocol'
+import { CurrencyUnit, ICoinProtocol, FeeDefaults } from '../ICoinProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
 
 export class AeternityProtocol extends NonExtendedProtocol implements ICoinProtocol {
@@ -54,6 +54,8 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
   public defaultNetworkId: string = 'ae_mainnet'
 
   public epochMiddleware: string = 'https://ae-epoch-rpc-proxy.gke.papers.tech'
+
+  private feesURL: string = 'https://api-airgap.gke.papers.tech/fees'
 
   constructor(public epochRPC: string = 'https://ae-epoch-rpc-proxy.gke.papers.tech') {
     super()
@@ -260,14 +262,30 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
     return this.getBalanceOfAddresses(addresses)
   }
 
-  public async estimateMaxTransactionValueFromPublicKey(publicKey: string, fee: string): Promise<string> {
+  public async estimateMaxTransactionValueFromPublicKey(publicKey: string, recipients: string[], fee?: string): Promise<string> {
     const balance = await this.getBalanceOfPublicKey(publicKey)
+    const balanceWrapper = new BigNumber(balance)
+    
+    let maxFee: BigNumber
+    if (fee !== undefined) {
+      maxFee = new BigNumber(fee)
+    } else {
+      const estimatedFeeDefaults = await this.estimateFeeDefaultsFromPublicKey(publicKey, recipients, [balance])
+      maxFee = new BigNumber(estimatedFeeDefaults.medium).shiftedBy(this.decimals)
+      if (maxFee.gte(balanceWrapper)) {
+        maxFee = new BigNumber(0)
+      }
+    }
 
-    let amountWithoutFees = new BigNumber(balance).minus(new BigNumber(fee))
+    let amountWithoutFees = balanceWrapper.minus(maxFee)
     if (amountWithoutFees.isNegative()) {
       amountWithoutFees = new BigNumber(0)
     }
     return amountWithoutFees.toFixed()
+  }
+
+  public async estimateFeeDefaultsFromPublicKey(publicKey: string, recipients: string[], values: string[], data?: any): Promise<FeeDefaults> {
+    return (await axios.get(this.feesURL)).data
   }
 
   public async prepareTransactionFromPublicKey(

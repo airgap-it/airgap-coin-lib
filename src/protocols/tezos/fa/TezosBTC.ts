@@ -24,8 +24,8 @@ export class TezosBTC extends TezosFAProtocol {
       identifier: 'xtz-btc',
       feeDefaults: {
         low: '0.100',
-        medium: '0.300',
-        high: '0.500'
+        medium: '0.200',
+        high: '0.300'
       },
       decimals: 8,
       contractAddress: contractAddress,

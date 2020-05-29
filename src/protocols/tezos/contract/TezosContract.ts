@@ -85,9 +85,10 @@ export class TezosContract {
     return this.methodList
   }
 
-  public async methodForSelector(selector: TezosContractMethodSelector): Promise<TezosContractMethod> {
+  public async methodForSelector(selector: TezosContractMethodSelector, fallbackEntrypointName?: string): Promise<TezosContractMethod> {
     if (selector.path.length === 0) {
-      return new TezosContractMethod(selector, TezosContract.defaultMethodName)
+      console.log('selector empty, using using fallback entrypoint name')
+      return new TezosContractMethod(selector, fallbackEntrypointName ? fallbackEntrypointName : TezosContract.defaultMethodName)
     }
     await this.fetchScriptIfNeeded()
     
@@ -95,7 +96,8 @@ export class TezosContract {
     for (const pathComponent of selector.path) {
       const prim = (current.prim as string).toLowerCase()
       if (prim !== 'or' || !Array.isArray(current.args) || current.args.length !== 2) {
-        throw new Error('Cannot find method')
+        console.log('unexpected root, using using fallback entrypoint name')
+        return new TezosContractMethod(selector, fallbackEntrypointName ? fallbackEntrypointName : TezosContract.defaultMethodName)//throw new Error('Cannot find method')
       }
       switch (pathComponent) {
         case TezosContractMethodSelectorPathComponent.LEFT:
@@ -109,7 +111,8 @@ export class TezosContract {
 
     const annots = current.annots
     if (!Array.isArray(annots) || annots.length === 0) {
-      throw new Error('Cannot find method')  
+      console.log('no annotation, using using fallback entrypoint name')
+      return new TezosContractMethod(selector, fallbackEntrypointName ? fallbackEntrypointName : TezosContract.defaultMethodName)//throw new Error('Cannot find method')  
     }
     const methodName: string = annots.find((annot: string) => annot.startsWith('%'))
     return new TezosContractMethod(selector, methodName.substring(1))
