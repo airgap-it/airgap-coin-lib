@@ -20,9 +20,9 @@ export class KusamaProtocol extends SubstrateProtocol {
     public identifier: string = 'kusama';
 
     public feeDefaults: FeeDefaults = {
-        low: '0.01', // 10 000 000 000
-        medium: '0.01',
-        high: '0.01'
+        low: '0.001', // 1 000 000 000
+        medium: '0.001',
+        high: '0.001'
     }
 
     public units: CurrencyUnit[] = [

@@ -195,7 +195,7 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
     }
   }
 
-  private async fetchEndorsementOperations(cycle: number, bakerAddress: string): Promise<import('../TezosProtocol').TezosEndorsingRight[]> {
+  private async fetchEndorsementOperations(cycle: number, bakerAddress: string): Promise<TezosEndorsingRight[]> {
     const cycleStartLevel = cycle * this.tezosNodeConstants.blocks_per_cycle
     const cycleEndLevel = cycleStartLevel + this.tezosNodeConstants.blocks_per_cycle - 1
     const query = {
