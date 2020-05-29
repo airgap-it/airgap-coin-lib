@@ -109,10 +109,14 @@ export class TezosContract {
 
     const annots = current.annots
     if (!Array.isArray(annots) || annots.length === 0) {
-      return new TezosContractMethod(selector, fallbackEntrypointName ? fallbackEntrypointName : TezosContract.defaultMethodName)
+      return new TezosContractMethod(selector, fallbackEntrypointName ?? selector.stringValue())
     }
     const methodName: string = annots.find((annot: string) => annot.startsWith('%'))
-    return new TezosContractMethod(selector, methodName.substring(1))
+    if (methodName && methodName.length > 1) {
+      return new TezosContractMethod(selector, methodName.substring(1))
+    } else {
+      return new TezosContractMethod(selector, fallbackEntrypointName ?? selector.stringValue())
+    }
   }
 
   private async fetchScriptIfNeeded(): Promise<void> {

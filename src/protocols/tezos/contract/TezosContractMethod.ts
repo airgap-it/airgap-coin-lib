@@ -21,6 +21,19 @@ export class TezosContractMethodSelector {
     this.path.push(component)
   }
 
+  public stringValue(): string {
+    return this.path.reduce((current, next) => {  
+      switch (next) {
+        case TezosContractMethodSelectorPathComponent.LEFT:
+          return current + 'L'
+        case TezosContractMethodSelectorPathComponent.RIGHT:
+          return current + 'R'
+        default:
+          return current
+      }
+    }, '')
+  }
+
   public copy(): TezosContractMethodSelector {
     return new TezosContractMethodSelector(this.path.slice())
   }
