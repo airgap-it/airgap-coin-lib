@@ -677,7 +677,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       const airGapTx2 = result.airGapTxs[1]
 
       expect(airGapTx.transactionDetails.amount).to.equal('0')
-      expect(airGapTx.transactionDetails.fee).to.equal('35258')
+      expect(airGapTx.transactionDetails.fee).to.equal('35308')
       expect(airGapTx.transactionDetails.gas_limit).to.equal('350000')
       expect(airGapTx.transactionDetails.storage_limit).to.equal('0')
       expect(airGapTx.transactionDetails.source).to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
@@ -695,7 +695,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       expect(airGapTx.to.length).to.equal(1)
       expect(airGapTx.to[0]).to.equal('tz1MJx9vhaNRSimcuXPK2rW4fLccQnDAnVKJ')
       expect(airGapTx.amount).to.equal('10')
-      expect(airGapTx.fee).to.equal('35258')
+      expect(airGapTx.fee).to.equal('35308')
     })
 
     it('will throw an error if the number of recipients and amounts do not match', async () => {

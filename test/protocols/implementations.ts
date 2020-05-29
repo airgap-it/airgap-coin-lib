@@ -1,6 +1,6 @@
-import * as BIP39 from '../../src/dependencies/src/bip39-2.5.0/index'
-
 import { ICoinProtocol } from '../../src'
+import * as BIP39 from '../../src/dependencies/src/bip39-2.5.0/index'
+import { AirGapTransactionStatus } from '../../src/interfaces/IAirGapTransaction'
 import { IACMessageType } from '../../src/serializer/interfaces'
 import { IACMessageDefinitionObject } from '../../src/serializer/message'
 
@@ -37,6 +37,8 @@ abstract class TestProtocolSpec {
     signedTx: string
   }[] = []
   public messages = [{ message: 'test', signature: '' }]
+
+  public transactionStatusTests: { hashes: string[]; expectedResults: AirGapTransactionStatus[] }[] = []
 
   public seed(): string {
     return BIP39.mnemonicToSeedHex(mnemonic)

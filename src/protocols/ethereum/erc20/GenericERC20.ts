@@ -11,6 +11,7 @@ import { BaseEthereumProtocol } from '../BaseEthereumProtocol'
 import { EtherscanInfoClient } from '../clients/info-clients/EtherscanInfoClient'
 import { AirGapNodeClient, EthereumRPCDataTransfer } from '../clients/node-clients/AirGapNodeClient'
 import { EthereumUtils } from '../utils/utils'
+import { FeeDefaults } from '../../ICoinProtocol'
 
 const EthereumTransaction = require('../../../dependencies/src/ethereumjs-tx-1.3.7/index')
 
@@ -70,14 +71,39 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, Ethersc
     return super.signWithPrivateKey(privateKey, transaction)
   }
 
-  private async estimateGas(source: string, recipient: string, hexValue: string): Promise<string> {
-    const gasEstimate: number = await this.configuration.nodeClient.estimateTransferGas(this.contractAddress, source, recipient, hexValue)
-
-    return gasEstimate.toFixed()
+  private async estimateGas(source: string, recipient: string, hexValue: string): Promise<BigNumber> {
+    const result =  await this.configuration.nodeClient.estimateTransferGas(this.contractAddress, source, recipient, hexValue)
+    return result
   }
 
-  public async estimateMaxTransactionValueFromPublicKey(publicKey: string, fee: string): Promise<string> {
+  public async estimateMaxTransactionValueFromPublicKey(publicKey: string, recipients: string[], fee?: string): Promise<string> {
     return this.getBalanceOfPublicKey(publicKey)
+  }
+
+  public async estimateFeeDefaultsFromPublicKey(publicKey: string, recipients: string[], values: string[], data?: any): Promise<FeeDefaults> {
+    if (recipients.length !== values.length) {
+      return Promise.reject('recipients length does not match with values')
+    }
+    if (recipients.length !== 1) {
+      return Promise.reject('you cannot have 0 recipients')
+    }
+    const address: string = await this.getAddressFromPublicKey(publicKey)
+    const estimatedGas = await this.estimateGas(
+      address,
+      recipients[0],
+      EthereumUtils.toHex(values[0])
+    )
+    const gasPrise = await this.configuration.nodeClient.getGasPrice()
+    const feeStepFactor = new BigNumber(0.5)
+    const estimatedFee = estimatedGas.times(gasPrise)
+    const lowFee = estimatedFee.minus(estimatedFee.times(feeStepFactor).integerValue(BigNumber.ROUND_FLOOR))
+    const mediumFee = estimatedFee
+    const highFee = mediumFee.plus(mediumFee.times(feeStepFactor).integerValue(BigNumber.ROUND_FLOOR))
+    return {
+      low: lowFee.shiftedBy(-this.feeDecimals).toFixed(),
+      medium: mediumFee.shiftedBy(-this.feeDecimals).toFixed(),
+      high: highFee.shiftedBy(-this.feeDecimals).toFixed()
+    }
   }
 
   public async prepareTransactionFromPublicKey(
@@ -103,23 +129,20 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, Ethersc
       const ethBalance: BigNumber = new BigNumber(await super.getBalanceOfPublicKey(publicKey))
       const address: string = await this.getAddressFromPublicKey(publicKey)
 
-      const estimatedAmount: string = await this.estimateGas(
+      const estimatedGas = await this.estimateGas(
         address,
         recipients[0],
-        EthereumUtils.toHex(wrappedValues[0].toFixed()).toString()
+        EthereumUtils.toHex(wrappedValues[0].toFixed())
       )
-
-      // re-cast to our own big-number
-      const gasAmount: BigNumber = new BigNumber(estimatedAmount)
 
       if (ethBalance.isGreaterThanOrEqualTo(wrappedFee)) {
         const txCount: number = await this.configuration.nodeClient.fetchTransactionCount(address)
         const gasPrice: BigNumber = wrappedFee.isEqualTo(0)
           ? new BigNumber(0)
-          : wrappedFee.div(gasAmount).integerValue(BigNumber.ROUND_CEIL)
+          : wrappedFee.div(estimatedGas).integerValue(BigNumber.ROUND_CEIL)
         const transaction: RawEthereumTransaction = {
           nonce: EthereumUtils.toHex(txCount),
-          gasLimit: EthereumUtils.toHex(gasAmount.toFixed()),
+          gasLimit: EthereumUtils.toHex(estimatedGas.toFixed()),
           gasPrice: EthereumUtils.toHex(gasPrice.toFixed()),
           to: this.contractAddress,
           value: EthereumUtils.toHex(new BigNumber(0).toFixed()),
