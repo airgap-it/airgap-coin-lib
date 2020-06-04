@@ -1,8 +1,10 @@
 // import { TezosFAProtocol } from '../src/protocols/tezos/fa/TezosFAProtocol'
-import { TezosBTC } from '../src/protocols/tezos/fa/TezosBTC'
+// import { TezosBTC } from '../src/protocols/tezos/fa/TezosBTC'
+import { TezosUSD } from '../src/protocols/tezos/fa/TezosUSD'
 // import { TezosStaker } from '../src/protocols/tezos/fa/TezosStaker'
 
-const contract = new TezosBTC('KT1PWx2mnDueood7fEmfbBDKx1D9BAnnXitn', 'https://tezos-node.prod.gke.papers.tech', 'https://tezos-mainnet-conseil-1.megan.papers.tech')
+// const contract = new TezosBTC('KT1PWx2mnDueood7fEmfbBDKx1D9BAnnXitn', 'https://tezos-node.prod.gke.papers.tech', 'https://tezos-mainnet-conseil-1.megan.papers.tech')
+const contract = new TezosUSD()
 
 // contract
 //   .transfer(
@@ -19,7 +21,7 @@ const contract = new TezosBTC('KT1PWx2mnDueood7fEmfbBDKx1D9BAnnXitn', 'https://t
 
 // contract.getTransactions(10).then(console.log).catch(console.error)
 
-// contract.fetchTokenHolders().then(console.log).catch(console.error)
+contract.fetchTokenHolders().then(console.log).catch(console.error)
 
 // const body = '{"predicates":[{"field":"parameters_entrypoints","operation":"eq","set":["transfer"],"inverse":true},{"field":"parameters","operation":"isnull","set":[""],"inverse":true},{"field":"kind","operation":"eq","set":["transaction"],"inverse":false},{"field":"destination","operation":"eq","set":["KT1PWx2mnDueood7fEmfbBDKx1D9BAnnXitn"],"inverse":false}],"orderBy":[{"field":"block_level","direction":"desc"}],"limit":100}'
 // Axios.post('https://tezos-mainnet-conseil-1.megan.papers.tech/v2/data/tezos/mainnet/operations', body, { headers: { 'Content-Type': 'application/json', apiKey: 'airgap123' } }).then(response => {
@@ -29,7 +31,7 @@ const contract = new TezosBTC('KT1PWx2mnDueood7fEmfbBDKx1D9BAnnXitn', 'https://t
 //     })
 // })
 
-contract.getBalance('tz1aqsunnQ9ECPAfvRaWeMfiNFhF3s8M15sy', 'tz1Mj7RzPmMAqDUNFBn5t5VbXmWW4cSUAdtT').then(console.log).catch(console.error)
+// contract.getBalance('tz1aqsunnQ9ECPAfvRaWeMfiNFhF3s8M15sy', 'tz1Mj7RzPmMAqDUNFBn5t5VbXmWW4cSUAdtT').then(console.log).catch(console.error)
 
 // contract.getAllowance('tz1aqsunnQ9ECPAfvRaWeMfiNFhF3s8M15sy', 'tz1grSQDByRpnVs7sPtaprNZRp531ZKz6Jmm').then(result => {
 //     console.log('ALLOWANCE', result)

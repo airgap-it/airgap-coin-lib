@@ -3,6 +3,9 @@ import * as bigInt from '../../dependencies/src/big-integer-1.6.45/BigInteger'
 import { TezosContractPair } from './contract/TezosContractPair'
 import { TezosContractList } from './contract/TezosContractList'
 import { TezosContractEntity } from './contract/TezosContractEntity'
+import { TezosContractInt } from './contract/TezosContractInt'
+import { TezosContractString } from './contract/TezosContractString'
+import { TezosContractBytes } from './contract/TezosContractBytes'
 
 export type TezosContractType = string | number | TezosContractPair
 
@@ -42,13 +45,14 @@ export class TezosUtils {
     }
   }
 
-  public static parseHex(rawHex: string | string[]): string | number | TezosContractEntity {
+  public static parseHex(rawHex: string | string[]): TezosContractEntity {
     let hex: string[]
     if (typeof rawHex === 'string') {
       hex = TezosUtils.hexStringToArray(rawHex)
     } else {
       hex = rawHex
     }
+    console.log('HEX', hex)
     const type = hex.shift()
     switch (type) {
       case '07': // prim
@@ -68,16 +72,19 @@ export class TezosUtils {
           }
           intBytes.push(byte)
         } while (parseInt(byte, 16) >= 127)
-        return TezosUtils.decodeSignedInt(intBytes.join(''))
+        return new TezosContractInt(TezosUtils.decodeSignedInt(intBytes.join('')))
       case '01': // string
-        const lengthBytes = TezosUtils.hexToLength(hex.splice(0, 4))
-        return TezosUtils.hexToString(hex.splice(0, lengthBytes))
+        const stringLength = TezosUtils.hexToLength(hex.splice(0, 4))
+        return new TezosContractString(TezosUtils.hexToString(hex.splice(0, stringLength)))
       case '05': // single arg prim
         return TezosUtils.parseHex(hex)
       case '02': // list
         return TezosUtils.parseList(hex)
+      case '0a': // bytes
+      const bytesLength = TezosUtils.hexToLength(hex.splice(0, 4))
+      return new TezosContractBytes(hex.splice(0, bytesLength).join(''))
       default:
-        throw new Error('Type not supported')
+        throw new Error(`Type not supported ${type}`)
     }
   }
 

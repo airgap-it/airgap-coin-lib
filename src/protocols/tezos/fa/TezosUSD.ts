@@ -2,8 +2,15 @@ import { TezosBTCDetails } from './../../../serializer/constants'
 import { TezosFAProtocol } from './TezosFAProtocol'
 import { TezosNetwork } from '../TezosProtocol'
 import { TezosUtils } from '../TezosUtils'
+import { TezosContractBytes } from '../contract/TezosContractBytes'
+import { TezosContractPair } from '../contract/TezosContractPair'
+import { TezosContractInt } from '../contract/TezosContractInt'
+import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 
 export class TezosUSD extends TezosFAProtocol {
+
+  private static bigMapKeyLedgerPrefix = "0x05070701000000066c65646765720a00000016"
+
   constructor(
     contractAddress: string = TezosBTCDetails.CONTRACT_ADDRESS,
     jsonRPCAPI?: string,
@@ -33,26 +40,27 @@ export class TezosUSD extends TezosFAProtocol {
   }
 
   public async fetchTokenHolders(): Promise<{address: string, amount: string}[]> {
-    const values = await this.contract.bigMapValues([])
+    const values = await this.contract.bigMapValues([{
+      field: 'key' as const,
+      operation: "startsWith" as const,
+      set: [TezosUSD.bigMapKeyLedgerPrefix]
+    }])
     return values.map((value) => {
+      console.log('Value', value)
+      const address = (TezosUtils.parseHex(value.key) as TezosContractPair).second as TezosContractBytes
+      console.log('Address', address)
+      if (address === undefined) {
+        return {
+          address: '',
+          amount: '0'
+        }
+      }
+      console.log('Address', address)
+      const amount = (TezosUtils.parseHex(value.value as string) as TezosContractPair).first as TezosContractInt
       return {
-        address: TezosUtils.parseAddress(value.key.substring(2)),
-        amount: value.value ? this.bigMapValueToBalance(value.value) : '0'
+        address: TezosUtils.parseAddress(address.value),
+        amount: new BigNumber(amount.value).toFixed()
       }
     }).filter((value) => value.amount !== '0')
-  }
-
-  private bigMapValueToBalance(value: string): string {
-    const firstSpaceIndex = value.indexOf(' ')
-    if (firstSpaceIndex === -1) {
-      throw Error('Cannot parse balance')
-    }
-    let balance = value.slice(firstSpaceIndex + 1)
-    const secondSpaceIndex = balance.indexOf(' ')
-    if (secondSpaceIndex === -1) {
-      throw Error('Cannot parse balance')
-    }
-    balance = balance.slice(0, secondSpaceIndex)
-    return `${parseInt(balance)}`
   }
 }

@@ -14,6 +14,11 @@ import { TezosContractPair } from '../contract/TezosContractPair'
 import { TezosContractEntrypoint } from '../contract/TezosContractEntrypoint'
 import { TezosContractUnit } from '../contract/TezosContractUnit'
 import { TezosContractMethodSelector } from '../contract/TezosContractMethod'
+import { TezosContractInt } from '../contract/TezosContractInt'
+import { TezosContractString } from '../contract/TezosContractString'
+import { TezosUtils } from '../TezosUtils'
+import { TezosContractBytes } from '../contract/TezosContractBytes'
+import { TezosContractEntity } from '../contract/TezosContractEntity'
 
 export interface TezosFAProtocolConfiguration {
   symbol: string
@@ -134,7 +139,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
 
     const transferCalls: TezosContractCall[] = []
     for (let i: number = 0; i < recipients.length; i++) {
-      const args = new TezosContractPair(fromAddress, new TezosContractPair(recipients[i], new BigNumber(values[i]).toNumber()))
+      const args = new TezosContractPair(new TezosContractString(fromAddress), new TezosContractPair(new TezosContractString(recipients[i]), new TezosContractInt(new BigNumber(values[i]).toNumber())))
       transferCalls.push(new TezosContractCall(TezosContractEntrypoint.transfer, args))
     }
 
@@ -147,7 +152,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     } else if (source === undefined) {
       source = address
     }
-    const args = new TezosContractPair(address, callbackContract)
+    const args = new TezosContractPair(new TezosContractString(address), new TezosContractString(callbackContract))
     const getBalanceCall = new TezosContractCall(TezosContractEntrypoint.balance, args)
     return this.runContractCall(getBalanceCall, source)
   }
@@ -163,7 +168,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     } else if (source === undefined) {
       source = spenderAddress
     }
-    const args = new TezosContractPair(new TezosContractPair(ownerAddress, spenderAddress), callbackContract)
+    const args = new TezosContractPair(new TezosContractPair(new TezosContractString(ownerAddress), new TezosContractString(spenderAddress)), new TezosContractString(callbackContract))
     const getAllowanceCall = new TezosContractCall(TezosContractEntrypoint.allowance, args)
     return this.runContractCall(getAllowanceCall, source)
   }
@@ -172,7 +177,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     if (source === undefined) {
       source = this.defaultSourceAddress
     }
-    const args = new TezosContractPair(new TezosContractUnit(), callbackContract)
+    const args = new TezosContractPair(new TezosContractUnit(), new TezosContractString(callbackContract))
     const getTotalSupplyCall = new TezosContractCall(TezosContractEntrypoint.totalsupply, args)
     return this.runContractCall(getTotalSupplyCall, source)
   }
@@ -181,7 +186,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     if (source === undefined) {
       source = this.defaultSourceAddress
     }
-    const args = new TezosContractPair(new TezosContractUnit(), callbackContract)
+    const args = new TezosContractPair(new TezosContractUnit(), new TezosContractString(callbackContract))
     const getTotalMintedCall = new TezosContractCall(TezosContractEntrypoint.totalminted, args)
     return this.runContractCall(getTotalMintedCall, source)
   }
@@ -190,7 +195,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     if (source === undefined) {
       source = this.defaultSourceAddress
     }
-    const args = new TezosContractPair(new TezosContractUnit(), callbackContract)
+    const args = new TezosContractPair(new TezosContractUnit(), new TezosContractString(callbackContract))
     const getTotalBurnedCall = new TezosContractCall(TezosContractEntrypoint.totalburned, args)
     return this.runContractCall(getTotalBurnedCall, source)
   }
@@ -202,13 +207,13 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     fee: string,
     publicKey: string
   ): Promise<RawTezosTransaction> {
-    const args = new TezosContractPair(fromAddress, new TezosContractPair(toAddress, new BigNumber(amount).toNumber()))
+    const args = new TezosContractPair(new TezosContractString(fromAddress), new TezosContractPair(new TezosContractString(toAddress), new TezosContractInt(new BigNumber(amount).toNumber())))
     const transferCall = new TezosContractCall(TezosContractEntrypoint.transfer, args)
     return this.prepareContractCall([transferCall], fee, publicKey)
   }
 
   public async approve(spenderAddress: string, amount: string, fee: string, publicKey: string): Promise<RawTezosTransaction> {
-    const args = new TezosContractPair(spenderAddress, new BigNumber(amount).toNumber())
+    const args = new TezosContractPair(new TezosContractString(spenderAddress), new TezosContractInt(new BigNumber(amount).toNumber()))
     const transferCall = new TezosContractCall(TezosContractEntrypoint.approve, args)
     return this.prepareContractCall([transferCall], fee, publicKey)
   }
@@ -361,15 +366,23 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
       throw new Error('Only calls to the transfer entrypoint can be converted to IAirGapTransaction')
     }
     const contractCall = TezosContractCall.fromJSON(parameters)
-    const amount = (contractCall.args.second as TezosContractPair).second as number
-    const from = contractCall.args.first as string
-    const to = (contractCall.args.second as TezosContractPair).first as string
+    const amount = ((contractCall.args.second as TezosContractPair).second as TezosContractInt).value
+    const from = this.getAddressFromContractCallParameter(contractCall.args.first)
+    const to = this.getAddressFromContractCallParameter(contractCall.args.second)
     return {
       amount: new BigNumber(amount).toFixed(), // in tzbtc
       from: from,
       to: to
     }
   }
+
+  private getAddressFromContractCallParameter(parameter: TezosContractEntity): string {
+    if (parameter instanceof TezosContractString) {
+      return (parameter as TezosContractString).value
+    } else {
+      return TezosUtils.parseAddress((parameter as TezosContractBytes).value)
+    }
+  } 
 
   private parseParameters(parameters: string): any {
     const toBeRemoved = 'Unparsable code: '

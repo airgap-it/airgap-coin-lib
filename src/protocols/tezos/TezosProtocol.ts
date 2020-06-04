@@ -1535,7 +1535,11 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   public async calculatePayout(address: string, rewards: TezosRewards): Promise<TezosPayoutInfo> {
     const result = (await this.calculatePayoutForAddresses([address], rewards)).pop()
     if (result === undefined) {
-      throw new Error(`cannot calculate payout for ${address}`)
+      return {
+        delegator: address,
+        share: '0',
+        payout: '0'
+      }
     }
 
     return result
