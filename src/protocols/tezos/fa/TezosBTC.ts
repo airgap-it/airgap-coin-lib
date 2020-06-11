@@ -48,7 +48,12 @@ export class TezosBTC extends TezosFAProtocol {
     return values.map((bigMapEntry) => {
       const addressHex = bigMapEntry.key.substring(TezosBTC.bigMapKeyLedgerPrefix.length)
       const address = TezosUtils.parseAddress(addressHex)
-      let value: TezosContractEntity = bigMapEntry.value !== null ? TezosUtils.parseHex(bigMapEntry.value) : new TezosContractInt(0)
+      let value: TezosContractEntity = new TezosContractInt(0)
+      try {
+        if (bigMapEntry.value) {
+          value = TezosUtils.parseHex(bigMapEntry.value)
+        }
+      } catch {}
       if (value instanceof TezosContractPair) {
         value = value.first
       }

@@ -214,7 +214,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
    */
   constructor(
     public jsonRPCAPI: string = 'https://tezos-node.prod.gke.papers.tech',
-    public baseApiUrl: string = 'https://tezos-mainnet-conseil-1.megan.papers.tech',
+    public baseApiUrl: string = 'https://tezos-mainnet-conseil.prod.gke.papers.tech',
     public network: TezosNetwork = TezosNetwork.MAINNET,
     readonly baseApiNetwork: string = network,
     apiKey?: string

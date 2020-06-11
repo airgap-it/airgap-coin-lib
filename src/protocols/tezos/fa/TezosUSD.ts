@@ -46,16 +46,16 @@ export class TezosUSD extends TezosFAProtocol {
       set: [TezosUSD.bigMapKeyLedgerPrefix]
     }])
     return values.map((value) => {
-      console.log('Value', value)
+      if (!value.value) {
+        
+      }
       const address = (TezosUtils.parseHex(value.key) as TezosContractPair).second as TezosContractBytes
-      console.log('Address', address)
       if (address === undefined) {
         return {
           address: '',
           amount: '0'
         }
       }
-      console.log('Address', address)
       const amount = (TezosUtils.parseHex(value.value as string) as TezosContractPair).first as TezosContractInt
       return {
         address: TezosUtils.parseAddress(address.value),

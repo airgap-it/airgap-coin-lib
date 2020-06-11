@@ -4,7 +4,7 @@ import { FeeDefaults, CurrencyUnit } from '../../ICoinProtocol'
 import { SubstrateNodeClient } from '../helpers/node/SubstrateNodeClient'
 import { SubstrateBlockExplorerClient } from '../helpers/blockexplorer/SubstrateBlockExplorerClient'
 
-const NODE_URL = 'https://polkadot-kusama-node-1.kubernetes.papers.tech'
+const NODE_URL = 'https://polkadot-kusama-node.prod.gke.papers.tech'
 
 const BLOCK_EXPLORER_URL = 'https://polkascan.io/pre/kusama'
 const BLOCK_EXPLORER_API = 'https://api-01.polkascan.io/kusama/api/v1'
