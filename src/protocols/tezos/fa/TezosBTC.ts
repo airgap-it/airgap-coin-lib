@@ -18,7 +18,7 @@ export class TezosBTC extends TezosFAProtocol {
     network?: TezosNetwork
   ) {
     super({
-      symbol: 'TZBTC',
+      symbol: 'tzBTC',
       name: 'Tezos BTC',
       marketSymbol: 'btc',
       identifier: 'xtz-btc',
@@ -37,7 +37,7 @@ export class TezosBTC extends TezosFAProtocol {
     })
   }
 
-  public async fetchTokenHolders(): Promise<{address: string, amount: string}[]> {
+  public async fetchTokenHolders(): Promise<{ address: string, amount: string }[]> {
     const values = await this.contract.bigMapValues([{
       field: 'key' as const,
       operation: "startsWith" as const,
