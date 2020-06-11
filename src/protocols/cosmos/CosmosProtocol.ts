@@ -565,8 +565,8 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
 
     const totalBalance = results[0]
     const availableBalance = new BigNumber(results[1])
-    const delegations = results[2]
-    const rewardDetails = results[3]
+    const delegations = results[2] ?? []
+    const rewardDetails = results[3] ?? []
 
     const unclaimedRewards = rewardDetails
       .map(details => [
