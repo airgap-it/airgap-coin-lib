@@ -1285,25 +1285,16 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     const timestamp: Date = new Date(mostRecentBlock.header.timestamp)
 
     const delegationInfo: DelegationRewardInfo[] = await Promise.all(
-      frozenBalance.map(async obj => {
-        const { data: delegatedBalanceAtCycle } = await axios.get(
-          `${this.jsonRPCAPI}/chains/main/blocks/${(obj.cycle - 6) * TezosProtocol.BLOCKS_PER_CYCLE[this.network]}/context/contracts/${
-            delegatorAddress ? delegatorAddress : bakerAddress
-          }/balance`
-        )
-
-        const { data: stakingBalanceAtCycle } = await axios.get(
-          `${this.jsonRPCAPI}/chains/main/blocks/${(obj.cycle - 6) *
-            TezosProtocol.BLOCKS_PER_CYCLE[this.network]}/context/delegates/${bakerAddress}/staking_balance`
-        )
-
+      frozenBalance.slice(0, 5).map(async obj => {
+        const rewards = await this.calculateRewards(bakerAddress, obj.cycle, mostRecentCycle)
+        const payout = await this.calculatePayout(delegatorAddress ?? bakerAddress, rewards)
         return {
           cycle: obj.cycle,
           totalRewards: new BigNumber(obj.rewards),
           totalFees: new BigNumber(obj.fees),
           deposit: new BigNumber(obj.deposit),
           delegatedBalance: new BigNumber(delegatedBalanceAtCycle),
-          stakingBalance: new BigNumber(stakingBalanceAtCycle),
+          stakingBalance: rewards.stakingBalance,
           reward: new BigNumber(obj.rewards).plus(obj.fees).multipliedBy(new BigNumber(delegatedBalanceAtCycle).div(stakingBalanceAtCycle)),
           payout: new Date(
             timestamp.getTime() + (obj.cycle - lastConfirmedCycle) * TezosProtocol.BLOCKS_PER_CYCLE[this.network] * 60 * 1000
