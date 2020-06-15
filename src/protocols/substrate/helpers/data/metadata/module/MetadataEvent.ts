@@ -1,9 +1,8 @@
+import { SubstrateNetwork } from '../../../../SubstrateNetwork'
+import { SCALEDecoder, SCALEDecodeResult } from '../../scale/SCALEDecoder'
+import { SCALEArray } from '../../scale/type/SCALEArray'
 import { SCALEClass } from '../../scale/type/SCALEClass'
 import { SCALEString } from '../../scale/type/SCALEString'
-import { SCALEDecodeResult } from '../../scale/SCALEDecoder'
-import { SCALEArray } from '../../scale/type/SCALEArray'
-import { SCALEDecoder } from '../../scale/SCALEDecoder'
-import { SubstrateNetwork } from '../../../../SubstrateNetwork'
 
 export class MetadataEvent extends SCALEClass {
   public static decode(network: SubstrateNetwork, raw: string): SCALEDecodeResult<MetadataEvent> {
@@ -19,7 +18,7 @@ export class MetadataEvent extends SCALEClass {
     }
   }
 
-  scaleFields = [this.name, this.args, this.docs]
+  public scaleFields = [this.name, this.args, this.docs]
 
   private constructor(readonly name: SCALEString, readonly args: SCALEArray<SCALEString>, readonly docs: SCALEArray<SCALEString>) {
     super()

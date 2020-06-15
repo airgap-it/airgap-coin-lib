@@ -1,12 +1,11 @@
-import { SCALEClass } from '../../../scale/type/SCALEClass'
-import { SCALEDecodeResult, DecoderMethod } from '../../../scale/SCALEDecoder'
-import { SCALEEnum } from '../../../scale/type/SCALEEnum'
-import { SCALEDecoder } from '../../../scale/SCALEDecoder'
-import { SCALEType } from '../../../scale/type/SCALEType'
-import { SCALEString } from '../../../scale/type/SCALEString'
-import { SCALEBoolean } from '../../../scale/type/SCALEBoolean'
-import { SubstrateStorageEntryHasher } from '../../../../node/storage/SubstrateStorageEntry'
 import { SubstrateNetwork } from '../../../../../SubstrateNetwork'
+import { SubstrateStorageEntryHasher } from '../../../../node/storage/SubstrateStorageEntry'
+import { DecoderMethod, SCALEDecoder, SCALEDecodeResult } from '../../../scale/SCALEDecoder'
+import { SCALEBoolean } from '../../../scale/type/SCALEBoolean'
+import { SCALEClass } from '../../../scale/type/SCALEClass'
+import { SCALEEnum } from '../../../scale/type/SCALEEnum'
+import { SCALEString } from '../../../scale/type/SCALEString'
+import { SCALEType } from '../../../scale/type/SCALEType'
 
 enum StorageEntryType {
   Plain = 0,
@@ -34,6 +33,7 @@ export abstract class MetadataStorageEntryType extends SCALEClass {
     }
 
     const decoded = decoderMethod(network, raw.slice(2))
+
     return {
       bytesDecoded: 1 + decoded.bytesDecoded,
       decoded: decoded.decoded
@@ -53,6 +53,7 @@ export class MetadataStorageEntryPlain extends MetadataStorageEntryType {
     const decoder = new SCALEDecoder(network, raw)
 
     const name = decoder.decodeNextString()
+
     return {
       bytesDecoded: name.bytesDecoded,
       decoded: new MetadataStorageEntryPlain(name.decoded)

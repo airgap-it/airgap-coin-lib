@@ -1,8 +1,8 @@
+import { SubstrateNetwork } from '../../../SubstrateNetwork'
+import { SCALEDecoder, SCALEDecodeResult } from '../scale/SCALEDecoder'
 import { SCALEClass } from '../scale/type/SCALEClass'
 import { SCALEEnum } from '../scale/type/SCALEEnum'
 import { SCALEHash } from '../scale/type/SCALEHash'
-import { SCALEDecodeResult, SCALEDecoder } from '../scale/SCALEDecoder'
-import { SubstrateNetwork } from '../../../SubstrateNetwork'
 
 const SIGNATURE_BITS = 64 * 8 // 64 bytes
 

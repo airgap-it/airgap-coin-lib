@@ -6,12 +6,12 @@ import { UnsignedTransaction } from '../../../serializer/schemas/definitions/tra
 import { UnsignedEthereumTransaction } from '../../../serializer/schemas/definitions/transaction-sign-request-ethereum'
 import { SignedEthereumTransaction } from '../../../serializer/schemas/definitions/transaction-sign-response-ethereum'
 import { RawEthereumTransaction } from '../../../serializer/types'
+import { FeeDefaults } from '../../ICoinProtocol'
 import { ICoinSubProtocol, SubProtocolType } from '../../ICoinSubProtocol'
 import { BaseEthereumProtocol } from '../BaseEthereumProtocol'
 import { EtherscanInfoClient } from '../clients/info-clients/EtherscanInfoClient'
 import { AirGapNodeClient, EthereumRPCDataTransfer } from '../clients/node-clients/AirGapNodeClient'
 import { EthereumUtils } from '../utils/utils'
-import { FeeDefaults } from '../../ICoinProtocol'
 
 const EthereumTransaction = require('../../../dependencies/src/ethereumjs-tx-1.3.7/index')
 
@@ -73,6 +73,7 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, Ethersc
 
   private async estimateGas(source: string, recipient: string, hexValue: string): Promise<BigNumber> {
     const result = await this.configuration.nodeClient.estimateTransferGas(this.contractAddress, source, recipient, hexValue)
+
     return result
   }
 
@@ -100,6 +101,7 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, Ethersc
     const lowFee = estimatedFee.minus(estimatedFee.times(feeStepFactor).integerValue(BigNumber.ROUND_FLOOR))
     const mediumFee = estimatedFee
     const highFee = mediumFee.plus(mediumFee.times(feeStepFactor).integerValue(BigNumber.ROUND_FLOOR))
+
     return {
       low: lowFee.shiftedBy(-this.feeDecimals).toFixed(),
       medium: mediumFee.shiftedBy(-this.feeDecimals).toFixed(),

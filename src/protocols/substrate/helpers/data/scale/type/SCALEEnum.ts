@@ -1,7 +1,9 @@
-import { SCALEType } from './SCALEType'
-import { SCALEDecodeResult } from '../SCALEDecoder'
 import { isNumber } from 'util'
+
 import { stripHexPrefix, toHexStringRaw } from '../../../../../../utils/hex'
+import { SCALEDecodeResult } from '../SCALEDecoder'
+
+import { SCALEType } from './SCALEType'
 
 export class SCALEEnum<T> extends SCALEType {
   public static from<T>(value: T): SCALEEnum<T> {

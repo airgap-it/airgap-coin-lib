@@ -1,7 +1,8 @@
-import { SCALEType } from './SCALEType'
-import { SCALEDecodeResult } from '../SCALEDecoder'
 import BigNumber from '../../../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
-import { stripHexPrefix, changeEndianness, toHexStringRaw } from '../../../../../../utils/hex'
+import { changeEndianness, stripHexPrefix, toHexStringRaw } from '../../../../../../utils/hex'
+import { SCALEDecodeResult } from '../SCALEDecoder'
+
+import { SCALEType } from './SCALEType'
 
 const IMMORTAL_ENCODED = '00'
 const ERA_DEFAULT_PERIOD = 50 // 5 min at 6s block times
@@ -37,6 +38,7 @@ export class SCALEEra extends SCALEType {
 
   public static decode(hex: string): SCALEDecodeResult<SCALEEra> {
     const _hex = stripHexPrefix(hex)
+
     return _hex.substr(0, 2) === IMMORTAL_ENCODED ? SCALEEra.decodeImmortal() : SCALEEra.decodeMortal(_hex)
   }
 

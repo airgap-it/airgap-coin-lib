@@ -1,8 +1,9 @@
-import { waitReady, sr25519KeypairFromSeed, sr25519DeriveKeypairHard, sr25519DeriveKeypairSoft } from '@polkadot/wasm-crypto'
+import { sr25519DeriveKeypairHard, sr25519DeriveKeypairSoft, sr25519KeypairFromSeed, waitReady } from '@polkadot/wasm-crypto'
+import { isString } from 'util'
 
 import { KeyPair } from '../data/KeyPair'
-import { stripHexPrefix, toHexStringRaw, changeEndianness } from './hex'
-import { isString } from 'util'
+
+import { changeEndianness, stripHexPrefix, toHexStringRaw } from './hex'
 
 interface DeriveJunction {
   chainCode: Uint8Array
@@ -29,6 +30,7 @@ function getChainCode(value: string): Uint8Array {
 function createDeriveJunction(value: string): DeriveJunction {
   const isHard = (['h', `'`] as any).includes(value.slice(-1))
   const code = isHard ? value.slice(0, -1) : value
+
   return {
     chainCode: getChainCode(code),
     isHard
@@ -40,9 +42,10 @@ function deriveFromPath(keyPair: Uint8Array, path: string): Buffer {
     return Buffer.from(keyPair)
   }
 
-  const deriveJunctions = path.split('/').map((value) => createDeriveJunction(value))
+  const deriveJunctions = path.split('/').map(createDeriveJunction)
   const derived = deriveJunctions.reduce((pair, junction) => {
     const deriveKeypair = junction.isHard ? sr25519DeriveKeypairHard : sr25519DeriveKeypairSoft
+
     return deriveKeypair(pair, junction.chainCode)
   }, keyPair)
 

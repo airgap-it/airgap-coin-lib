@@ -1,6 +1,6 @@
-import { SCALEDecodeResult, SCALEDecoder } from '../scale/SCALEDecoder'
-import { SCALEInt } from '../scale/type/SCALEInt'
 import { SubstrateNetwork } from '../../../SubstrateNetwork'
+import { SCALEDecoder, SCALEDecodeResult } from '../scale/SCALEDecoder'
+import { SCALEInt } from '../scale/type/SCALEInt'
 
 class SubstrateAccountData {
   public static decode(network: SubstrateNetwork, raw: string): SCALEDecodeResult<SubstrateAccountData> {

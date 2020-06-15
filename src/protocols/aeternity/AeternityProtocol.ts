@@ -14,7 +14,7 @@ import { RawAeternityTransaction } from '../../serializer/types'
 import bs64check from '../../utils/base64Check'
 import { padStart } from '../../utils/padStart'
 import { EthereumUtils } from '../ethereum/utils/utils'
-import { CurrencyUnit, ICoinProtocol, FeeDefaults } from '../ICoinProtocol'
+import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
 
 export class AeternityProtocol extends NonExtendedProtocol implements ICoinProtocol {
@@ -55,7 +55,7 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
 
   public epochMiddleware: string = 'https://ae-epoch-rpc-proxy.gke.papers.tech'
 
-  private feesURL: string = 'https://api-airgap.gke.papers.tech/fees'
+  private readonly feesURL: string = 'https://api-airgap.gke.papers.tech/fees'
 
   constructor(public epochRPC: string = 'https://ae-epoch-rpc-proxy.gke.papers.tech') {
     super()
@@ -71,11 +71,13 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
 
   public async getPublicKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
     const secret = mnemonicToSeed(mnemonic, password)
+
     return this.getPublicKeyFromHexSecret(secret, derivationPath)
   }
 
   public async getPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<Buffer> {
     const secret = mnemonicToSeed(mnemonic, password)
+
     return this.getPrivateKeyFromHexSecret(secret, derivationPath)
   }
 
@@ -281,6 +283,7 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
     if (amountWithoutFees.isNegative()) {
       amountWithoutFees = new BigNumber(0)
     }
+
     return amountWithoutFees.toFixed()
   }
 

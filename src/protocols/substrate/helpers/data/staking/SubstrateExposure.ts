@@ -1,9 +1,9 @@
-import { SCALEArray } from '../scale/type/SCALEArray'
-import { SCALETuple } from '../scale/type/SCALETuple'
-import { SCALEAccountId } from '../scale/type/SCALEAccountId'
-import { SCALEDecoder } from '../scale/SCALEDecoder'
-import { SCALECompactInt } from '../scale/type/SCALECompactInt'
 import { SubstrateNetwork } from '../../../SubstrateNetwork'
+import { SCALEDecoder } from '../scale/SCALEDecoder'
+import { SCALEAccountId } from '../scale/type/SCALEAccountId'
+import { SCALEArray } from '../scale/type/SCALEArray'
+import { SCALECompactInt } from '../scale/type/SCALECompactInt'
+import { SCALETuple } from '../scale/type/SCALETuple'
 
 export class SubstrateExposure {
   public static decode(network: SubstrateNetwork, raw: string): SubstrateExposure {

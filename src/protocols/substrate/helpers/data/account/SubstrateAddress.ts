@@ -1,7 +1,8 @@
-import bs58 = require('../../../../../dependencies/src/bs58-4.0.1')
-import { hexToBytes, isHex } from '../../../../../utils/hex'
-import { blake2bAsBytes } from '../../../../../utils/blake2b'
 import { isString } from 'util'
+
+import bs58 = require('../../../../../dependencies/src/bs58-4.0.1')
+import { blake2bAsBytes } from '../../../../../utils/blake2b'
+import { hexToBytes, isHex } from '../../../../../utils/hex'
 import { SubstrateNetwork } from '../../../SubstrateNetwork'
 
 // If changed, the test address in `test/protocols/specs/kusama.ts` must be changed accordingly
@@ -73,6 +74,7 @@ export class SubstrateAddress {
 
   private static generateChecksum(input: Buffer): Buffer {
     const prefixBuffer = Buffer.from(SS58_PREFIX)
+
     return Buffer.from(blake2bAsBytes(Buffer.concat([prefixBuffer, input]), 512))
   }
 
@@ -94,6 +96,7 @@ export class SubstrateAddress {
     if (!this.encoded) {
       this.encoded = bs58.encode(Buffer.concat([this.version, this.payload, this.checksum]))
     }
+
     return this.encoded!
   }
 

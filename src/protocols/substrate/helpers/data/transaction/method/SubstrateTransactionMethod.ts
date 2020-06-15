@@ -1,11 +1,12 @@
-import { SCALEClass } from '../../scale/type/SCALEClass'
-import { SCALEType } from '../../scale/type/SCALEType'
-import { SCALEInt } from '../../scale/type/SCALEInt'
-import { SCALEDecodeResult, SCALEDecoder } from '../../scale/SCALEDecoder'
-import { SubstrateTransactionType } from '../SubstrateTransaction'
-import { SubstrateTransactionMethodArgsFactory, SubstrateTransactionMethodArgsDecoder } from './SubstrateTransactionMethodArgs'
 import { IAirGapTransaction } from '../../../../../..'
 import { SubstrateNetwork } from '../../../../SubstrateNetwork'
+import { SCALEDecoder, SCALEDecodeResult } from '../../scale/SCALEDecoder'
+import { SCALEClass } from '../../scale/type/SCALEClass'
+import { SCALEInt } from '../../scale/type/SCALEInt'
+import { SCALEType } from '../../scale/type/SCALEType'
+import { SubstrateTransactionType } from '../SubstrateTransaction'
+
+import { SubstrateTransactionMethodArgsDecoder, SubstrateTransactionMethodArgsFactory } from './SubstrateTransactionMethodArgs'
 
 export class SubstrateTransactionMethod extends SCALEClass {
   public static create(

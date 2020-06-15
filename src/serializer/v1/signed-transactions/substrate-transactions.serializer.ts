@@ -1,7 +1,7 @@
 import {
-  SignedTransactionSerializer,
-  SignedTransaction,
   SerializedSyncProtocolSignedTransaction,
+  SignedTransaction,
+  SignedTransactionSerializer,
   SyncProtocolSignedTransactionKeys
 } from '../signed-transaction.serializer'
 import { toBuffer } from '../utils/toBuffer'

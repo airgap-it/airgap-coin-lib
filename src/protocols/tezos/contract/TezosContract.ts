@@ -1,5 +1,6 @@
 import axios, { AxiosResponse } from '../../../dependencies/src/axios-0.19.0/index'
-import { TezosContractMethodSelectorPathComponent, TezosContractMethod, TezosContractMethodSelector } from './TezosContractMethod'
+
+import { TezosContractMethod, TezosContractMethodSelector, TezosContractMethodSelectorPathComponent } from './TezosContractMethod'
 
 export class TezosContract {
   public static defaultMethodName = 'default'
@@ -13,15 +14,16 @@ export class TezosContract {
 
   private get parameter(): any {
     const code: any[] = this.script.code
+
     return code.find((val) => val.prim === 'parameter')
   }
 
   constructor(
-    private address: string,
-    private nodeRPCURL: string,
-    private conseilAPIURL: string,
-    private conseilNetwork: string,
-    private conseilAPIKey: string
+    private readonly address: string,
+    private readonly nodeRPCURL: string,
+    private readonly conseilAPIURL: string,
+    private readonly conseilNetwork: string,
+    private readonly conseilAPIKey: string
   ) {}
 
   public async bigMapValue(key: string, isKeyHash: boolean = false): Promise<string | null> {
@@ -46,21 +48,24 @@ export class TezosContract {
         set: [key]
       })
     }
-    return await this.conseilRequest<{ value: string | null }[]>('/big_map_contents', {
+
+    return this.conseilRequest<{ value: string | null }[]>('/big_map_contents', {
       fields: ['value'],
-      predicates: predicates,
+      predicates,
       limit: 1
     }).then((response) => {
       const results = response.data
       if (results.length === 0) {
         return null
       }
+
       return results[0].value
     })
   }
 
   public async bigMapValues(predicates: BigMapValuePredicate[]): Promise<{ key: string; value: string | null }[]> {
     await this.fetchBigMapIDIfNeeded()
+
     return (
       await this.conseilRequest<{ key: string; value: string | null }[]>('/big_map_contents', {
         fields: ['key', 'value'],
@@ -83,6 +88,7 @@ export class TezosContract {
     }
     await this.fetchScriptIfNeeded()
     this.methodList = this.extractMethods(this.parameter)
+
     return this.methodList
   }
 
@@ -126,12 +132,14 @@ export class TezosContract {
     }
     if (this.pendingScriptPromise !== undefined) {
       await this.pendingScriptPromise
+
       return
     }
     this.pendingScriptPromise = axios
       .get(this.nodeURL(`/chains/main/blocks/head/context/contracts/${this.address}/script`))
       .then((result) => {
         this.pendingScriptPromise = undefined
+
         return result.data
       })
       .catch((error) => {
@@ -147,6 +155,7 @@ export class TezosContract {
     }
     if (this.pendingBigMapIDPromise !== undefined) {
       await this.pendingBigMapIDPromise
+
       return
     }
     this.pendingBigMapIDPromise = this.conseilRequest<{ big_map_id: number }[]>('/originated_account_maps', {
@@ -166,6 +175,7 @@ export class TezosContract {
         if (results.length === 0) {
           throw new Error('BigMap ID not found')
         }
+
         return results[0].big_map_id
       })
       .catch((error) => {
@@ -177,6 +187,7 @@ export class TezosContract {
 
   private extractMethods(parameters: any): TezosContractMethod[] {
     const root = parameters.args[0]
+
     return this.searchMethods(root)
   }
 
@@ -196,12 +207,14 @@ export class TezosContract {
     if (prim === 'or') {
       const left = this.searchMethods(val.args[0], TezosContractMethodSelectorPathComponent.LEFT, selector)
       const right = this.searchMethods(val.args[1], TezosContractMethodSelectorPathComponent.RIGHT, selector)
+
       return left.concat(right)
     }
 
     const annots = val.annots
     if (Array.isArray(annots) && annots.length > 0) {
       const methodName: string = annots.find((annot: string) => annot.startsWith('%'))
+
       return [new TezosContractMethod(selector, methodName.substring(1))]
     }
 

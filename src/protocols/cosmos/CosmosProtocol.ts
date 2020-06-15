@@ -1,3 +1,6 @@
+import { isArray } from 'util'
+
+import { KeyPair } from '../../data/KeyPair'
 import BECH32 = require('../../dependencies/src/bech32-1.1.3/index')
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { BIP32Interface, fromSeed } from '../../dependencies/src/bip32-2.0.4/src/index'
@@ -8,8 +11,9 @@ import * as sha from '../../dependencies/src/sha.js-2.4.11/index'
 import { AirGapTransactionStatus, IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 import { SignedCosmosTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-cosmos'
 import { UnsignedCosmosTransaction } from '../../serializer/types'
+import { assertFields } from '../../utils/assert'
+import { DelegateeDetails, DelegationDetails, DelegatorAction, DelegatorDetails, ICoinDelegateProtocol } from '../ICoinDelegateProtocol'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
-import { ICoinDelegateProtocol, DelegatorAction, DelegationDetails, DelegateeDetails, DelegatorDetails } from '../ICoinDelegateProtocol'
 import { ICoinSubProtocol } from '../ICoinSubProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
 
@@ -25,14 +29,11 @@ import {
   CosmosDelegation,
   CosmosNodeClient,
   CosmosNodeInfo,
-  CosmosValidator,
+  CosmosRewardDetails,
   CosmosUnbondingDelegation,
-  CosmosRewardDetails
+  CosmosValidator
 } from './CosmosNodeClient'
 import { CosmosTransaction } from './CosmosTransaction'
-import { KeyPair } from '../../data/KeyPair'
-import { assertFields } from '../../utils/assert'
-import { isArray } from 'util'
 
 export enum CosmosDelegationActionType {
   DELEGATE = 'delegate',
@@ -291,6 +292,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
     if (amountWithoutFees.isNegative()) {
       amountWithoutFees = new BigNumber(0)
     }
+
     return amountWithoutFees.toFixed()
   }
 
@@ -349,6 +351,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
 
   public async getDefaultDelegatee(): Promise<string> {
     const validators = await this.nodeClient.fetchValidators()
+
     return validators.length > 0 ? validators[0].operator_address : ''
   }
 
@@ -358,6 +361,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
 
   public async getCurrentDelegateesForAddress(address: string): Promise<string[]> {
     const delegations = await this.nodeClient.fetchDelegations(address)
+
     return delegations.map((delegation) => delegation.validator_address)
   }
 
@@ -378,6 +382,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
 
   public async isAddressDelegating(address: string): Promise<boolean> {
     const delegations = await this.nodeClient.fetchDelegations(address)
+
     return delegations.length > 0
   }
 
@@ -418,14 +423,17 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
     switch (type) {
       case CosmosDelegationActionType.DELEGATE:
         assertFields(`${CosmosDelegationActionType[type]} action`, data, 'validator', 'amount')
+
         return [await this.delegate(publicKey, data.validator, data.amount)]
       case CosmosDelegationActionType.UNDELEGATE:
         assertFields(`${CosmosDelegationActionType[type]} action`, data, 'validator', 'amount')
+
         return [await this.undelegate(publicKey, data.validator, data.amount)]
       case CosmosDelegationActionType.WITHDRAW_ALL_REWARDS:
         return [await this.withdrawDelegationRewards(publicKey)]
       case CosmosDelegationActionType.WITHDRAW_VALIDATOR_REWARDS:
         assertFields(`${CosmosDelegationActionType[type]} action`, data, 'validator')
+
         return [await this.withdrawDelegationRewards(publicKey, [data.validator])]
       default:
         return Promise.reject(`Delegator action type ${type} is not supported.`)

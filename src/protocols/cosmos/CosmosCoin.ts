@@ -6,7 +6,7 @@ export interface CosmosCoinJSON {
 }
 
 export class CosmosCoin implements JSONConvertible, RPCConvertible {
-  private static supportedDenominations = ['uatom']
+  private static readonly supportedDenominations = ['uatom']
   public readonly denom: string
   public readonly amount: string
 
@@ -26,6 +26,7 @@ export class CosmosCoin implements JSONConvertible, RPCConvertible {
     if (!CosmosCoin.supportedDenominations.includes(json.denom)) {
       throw new Error('Unsupported cosmos denomination')
     }
+
     return new CosmosCoin(json.denom, json.amount)
   }
 

@@ -1,7 +1,8 @@
-import { SCALEType } from './SCALEType'
-import { DecoderMethod, SCALEDecodeResult } from '../SCALEDecoder'
 import { stripHexPrefix } from '../../../../../../utils/hex'
 import { SubstrateNetwork } from '../../../../SubstrateNetwork'
+import { DecoderMethod, SCALEDecodeResult } from '../SCALEDecoder'
+
+import { SCALEType } from './SCALEType'
 
 export class SCALETuple<T extends SCALEType, R extends SCALEType> extends SCALEType {
   public static from<T extends SCALEType, R extends SCALEType>(first: T, second: R): SCALETuple<T, R>

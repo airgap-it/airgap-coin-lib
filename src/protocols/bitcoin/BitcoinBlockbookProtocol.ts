@@ -149,16 +149,19 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
 
   public async getPublicKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
     const secret = mnemonicToSeed(mnemonic, password)
+
     return this.getPublicKeyFromHexSecret(secret, derivationPath)
   }
 
   public async getPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<Buffer> {
     const secret = mnemonicToSeed(mnemonic, password)
+
     return this.getPrivateKeyFromHexSecret(secret, derivationPath)
   }
 
   public async getExtendedPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
     const secret = mnemonicToSeed(mnemonic, password)
+
     return this.getExtendedPrivateKeyFromHexSecret(secret, derivationPath)
   }
 
@@ -393,6 +396,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
     const mediumFee = estimatedFee
     const lowFee = mediumFee.minus(mediumFee.times(feeStepFactor)).integerValue(BigNumber.ROUND_FLOOR)
     const highFee = mediumFee.plus(mediumFee.times(feeStepFactor)).integerValue(BigNumber.ROUND_FLOOR)
+
     return {
       low: lowFee.shiftedBy(-this.feeDecimals).toFixed(),
       medium: mediumFee.shiftedBy(-this.feeDecimals).toFixed(),

@@ -3,9 +3,9 @@ import Axios from '../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../dependencies/src/bignumber.js-9.0.0/bignumber'
 import * as cryptocompare from '../dependencies/src/cryptocompare-0.5.0/index'
 import { AirGapTransactionStatus } from '../interfaces/IAirGapTransaction'
+import { FeeDefaults } from '../protocols/ICoinProtocol'
 
 import { AirGapWallet } from './AirGapWallet'
-import { FeeDefaults } from '../protocols/ICoinProtocol'
 
 export enum TimeUnit {
   Hours = 'hours',
@@ -199,7 +199,8 @@ export class AirGapMarketWallet extends AirGapWallet {
     } else {
       transactions = await this.coinProtocol.getTransactionsFromPublicKey(this.publicKey, limit, offset)
     }
-    return await this.txsIncludingStatus(transactions)
+
+    return this.txsIncludingStatus(transactions)
   }
 
   private async txsIncludingStatus(transactions: IAirGapTransaction[]): Promise<IAirGapTransaction[]> {
@@ -248,6 +249,7 @@ export class AirGapMarketWallet extends AirGapWallet {
       if (this.addressIndex) {
         data = { addressIndex: this.addressIndex }
       }
+
       return this.coinProtocol.estimateFeeDefaultsFromPublicKey(this.publicKey, recipients, values, data)
     }
   }

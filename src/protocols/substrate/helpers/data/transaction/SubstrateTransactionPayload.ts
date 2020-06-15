@@ -1,13 +1,14 @@
-import { SCALEClass } from '../scale/type/SCALEClass'
-import { SCALEInt } from '../scale/type/SCALEInt'
-import { SCALEHash } from '../scale/type/SCALEHash'
-import { SCALEEra } from '../scale/type/SCALEEra'
-import { SCALECompactInt } from '../scale/type/SCALECompactInt'
-import { SubstrateTransaction, SubstrateTransactionType } from './SubstrateTransaction'
-import { SCALEDecodeResult, SCALEDecoder } from '../scale/SCALEDecoder'
-import { SubstrateTransactionMethod } from './method/SubstrateTransactionMethod'
 import BigNumber from '../../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { SubstrateNetwork } from '../../../SubstrateNetwork'
+import { SCALEDecoder, SCALEDecodeResult } from '../scale/SCALEDecoder'
+import { SCALEClass } from '../scale/type/SCALEClass'
+import { SCALECompactInt } from '../scale/type/SCALECompactInt'
+import { SCALEEra } from '../scale/type/SCALEEra'
+import { SCALEHash } from '../scale/type/SCALEHash'
+import { SCALEInt } from '../scale/type/SCALEInt'
+
+import { SubstrateTransactionMethod } from './method/SubstrateTransactionMethod'
+import { SubstrateTransaction, SubstrateTransactionType } from './SubstrateTransaction'
 
 interface PayloadConfig {
   lastHash: string

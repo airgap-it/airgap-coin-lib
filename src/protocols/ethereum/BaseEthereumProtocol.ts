@@ -1,4 +1,5 @@
 import { BigNumber } from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
 import * as bitcoinJS from '../../dependencies/src/bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac/src/index'
 import * as ethUtil from '../../dependencies/src/ethereumjs-util-5.2.0/index'
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
@@ -9,7 +10,6 @@ import { SignedEthereumTransaction } from '../../serializer/schemas/definitions/
 import { RawEthereumTransaction } from '../../serializer/types'
 import { getSubProtocolsByIdentifier } from '../../utils/subProtocols'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
-import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
 
 import { EthereumInfoClient } from './clients/info-clients/InfoClient'
 import { EthereumNodeClient } from './clients/node-clients/NodeClient'
@@ -87,11 +87,13 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
 
   public async getPublicKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
     const secret = mnemonicToSeed(mnemonic, password)
+
     return this.getPublicKeyFromHexSecret(secret, derivationPath)
   }
 
   public async getPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<Buffer> {
     const secret = mnemonicToSeed(mnemonic, password)
+
     return this.getPrivateKeyFromHexSecret(secret, derivationPath)
   }
 
@@ -284,6 +286,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     if (amountWithoutFees.isNegative()) {
       amountWithoutFees = new BigNumber(0)
     }
+
     return amountWithoutFees.toFixed()
   }
 
@@ -313,6 +316,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     const lowFee = estimatedFee.minus(estimatedFee.times(feeStepFactor).integerValue(BigNumber.ROUND_FLOOR))
     const mediumFee = estimatedFee
     const highFee = mediumFee.plus(mediumFee.times(feeStepFactor).integerValue(BigNumber.ROUND_FLOOR))
+
     return {
       low: lowFee.shiftedBy(-this.feeDecimals).toFixed(),
       medium: mediumFee.shiftedBy(-this.feeDecimals).toFixed(),

@@ -1,8 +1,9 @@
-import { SCALEType } from './SCALEType'
-import { SCALECompactInt } from './SCALECompactInt'
-import { DecoderMethod, SCALEDecodeResult } from '../SCALEDecoder'
 import { stripHexPrefix } from '../../../../../../utils/hex'
 import { SubstrateNetwork } from '../../../../SubstrateNetwork'
+import { DecoderMethod, SCALEDecodeResult } from '../SCALEDecoder'
+
+import { SCALECompactInt } from './SCALECompactInt'
+import { SCALEType } from './SCALEType'
 
 export class SCALEArray<T extends SCALEType> extends SCALEType {
   public static from<T extends SCALEType>(elements: T[]): SCALEArray<T> {

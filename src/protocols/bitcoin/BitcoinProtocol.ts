@@ -60,7 +60,7 @@ export class BitcoinProtocol implements ICoinProtocol {
   public baseApiUrl: string
   public bitcoinJSLib: any
 
-  private feeEstimationUrl = `https://blockstream.info/api/fee-estimates`
+  private readonly feeEstimationUrl = `https://blockstream.info/api/fee-estimates`
 
   constructor(network: Network = bitcoinJS.networks.bitcoin, baseApiUrl: string = 'https://insight.bitpay.com', bitcoinJSLib = bitcoinJS) {
     this.network = network
@@ -78,16 +78,19 @@ export class BitcoinProtocol implements ICoinProtocol {
 
   public getPublicKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
     const secret = mnemonicToSeed(mnemonic, password)
+
     return this.getPublicKeyFromHexSecret(secret, derivationPath)
   }
 
   public getPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<Buffer> {
     const secret = mnemonicToSeed(mnemonic, password)
+
     return this.getPrivateKeyFromHexSecret(secret, derivationPath)
   }
 
   public getExtendedPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
     const secret = mnemonicToSeed(mnemonic, password)
+
     return this.getExtendedPrivateKeyFromHexSecret(secret, derivationPath)
   }
 
@@ -350,6 +353,7 @@ export class BitcoinProtocol implements ICoinProtocol {
     const mediumFee = new BigNumber(estimatedFees['6']).times(bnTransactionLength).integerValue()
     const lowFee = new BigNumber(estimatedFees['12']).times(bnTransactionLength).integerValue()
     const highFee = new BigNumber(estimatedFees['1']).times(bnTransactionLength).integerValue()
+
     return {
       low: lowFee.shiftedBy(-this.feeDecimals).toFixed(),
       medium: mediumFee.integerValue(BigNumber.ROUND_FLOOR).shiftedBy(-this.feeDecimals).toFixed(),

@@ -1,15 +1,15 @@
-import { SCALEClass } from '../../scale/type/SCALEClass'
-import { MetadataConstant } from './MetadataConstants'
-import { MetadataStorage } from './storage/MetadataStorage'
-import { MetadataCall } from './MetadataCall'
-import { MetadataEvent } from './MetadataEvent'
-import { MetadataError } from './MetadataError'
-import { SCALEString } from '../../scale/type/SCALEString'
-import { SCALEOptional } from '../../scale/type/SCALEOptional'
-import { SCALEArray } from '../../scale/type/SCALEArray'
-import { SCALEDecodeResult } from '../../scale/SCALEDecoder'
-import { SCALEDecoder } from '../../scale/SCALEDecoder'
 import { SubstrateNetwork } from '../../../../SubstrateNetwork'
+import { SCALEDecoder, SCALEDecodeResult } from '../../scale/SCALEDecoder'
+import { SCALEArray } from '../../scale/type/SCALEArray'
+import { SCALEClass } from '../../scale/type/SCALEClass'
+import { SCALEOptional } from '../../scale/type/SCALEOptional'
+import { SCALEString } from '../../scale/type/SCALEString'
+
+import { MetadataCall } from './MetadataCall'
+import { MetadataConstant } from './MetadataConstants'
+import { MetadataError } from './MetadataError'
+import { MetadataEvent } from './MetadataEvent'
+import { MetadataStorage } from './storage/MetadataStorage'
 
 export class MetadataModule extends SCALEClass {
   public static decode(network: SubstrateNetwork, raw: string): SCALEDecodeResult<MetadataModule> {

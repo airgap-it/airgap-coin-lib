@@ -1,17 +1,19 @@
-import { SubstrateNodeClient } from './node/SubstrateNodeClient'
+import { sr25519Sign, waitReady } from '@polkadot/wasm-crypto'
+
+import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { blake2bAsBytes } from '../../../utils/blake2b'
+import { SubstrateNetwork } from '../SubstrateNetwork'
+
+import { SubstrateAccountId, SubstrateAddress } from './data/account/SubstrateAddress'
+import { SCALEDecoder } from './data/scale/SCALEDecoder'
+import { SCALEArray } from './data/scale/type/SCALEArray'
+import { SCALEBytes } from './data/scale/type/SCALEBytes'
+import { SCALECompactInt } from './data/scale/type/SCALECompactInt'
+import { SCALEEnum } from './data/scale/type/SCALEEnum'
+import { SubstrateTransactionMethod } from './data/transaction/method/SubstrateTransactionMethod'
 import { SubstrateTransaction, SubstrateTransactionType } from './data/transaction/SubstrateTransaction'
 import { SubstrateTransactionPayload } from './data/transaction/SubstrateTransactionPayload'
-import { waitReady, sr25519Sign } from '@polkadot/wasm-crypto'
-import { blake2bAsBytes } from '../../../utils/blake2b'
-import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
-import { SCALEEnum } from './data/scale/type/SCALEEnum'
-import { SCALECompactInt } from './data/scale/type/SCALECompactInt'
-import { SCALEBytes } from './data/scale/type/SCALEBytes'
-import { SCALEArray } from './data/scale/type/SCALEArray'
-import { SCALEDecoder } from './data/scale/SCALEDecoder'
-import { SubstrateAddress, SubstrateAccountId } from './data/account/SubstrateAddress'
-import { SubstrateTransactionMethod } from './data/transaction/method/SubstrateTransactionMethod'
-import { SubstrateNetwork } from '../SubstrateNetwork'
+import { SubstrateNodeClient } from './node/SubstrateNodeClient'
 
 interface SubstrateTransactionDetails {
   fee: BigNumber
@@ -85,6 +87,7 @@ export class SubstrateTransactionController {
     payload: SubstrateTransactionPayload
   ): Promise<SubstrateTransaction> {
     const signature = await this.signPayload(privateKey, transaction.signer.asBytes(), payload.encode())
+
     return SubstrateTransaction.fromTransaction(transaction, { signature })
   }
 
@@ -146,6 +149,7 @@ export class SubstrateTransactionController {
     }
 
     const safetyFactor = 1.2
+
     return fees.reduce((sum: BigNumber, next) => sum.plus(next!), new BigNumber(0)).multipliedBy(safetyFactor)
   }
 

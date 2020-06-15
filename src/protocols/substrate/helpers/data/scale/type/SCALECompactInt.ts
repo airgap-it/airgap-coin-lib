@@ -1,10 +1,12 @@
-import { SCALEType } from './SCALEType'
-import { SCALEDecodeResult } from '../SCALEDecoder'
-import BigNumber from '../../../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
-import { stripHexPrefix, changeEndianness } from '../../../../../../utils/hex'
-import { padStart } from '../../../../../../utils/padStart'
-import { SCALEInt } from './SCALEInt'
 import { isNumber } from 'util'
+
+import BigNumber from '../../../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { changeEndianness, stripHexPrefix } from '../../../../../../utils/hex'
+import { padStart } from '../../../../../../utils/padStart'
+import { SCALEDecodeResult } from '../SCALEDecoder'
+
+import { SCALEInt } from './SCALEInt'
+import { SCALEType } from './SCALEType'
 
 type Number = SCALECompactInt | SCALEInt | BigNumber | number
 

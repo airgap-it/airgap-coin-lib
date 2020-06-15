@@ -1,4 +1,5 @@
 import blake2b = require('../dependencies/src/blake2b-6268e6dd678661e0acc4359e9171b97eb1ebf8ac')
+
 import { addHexPrefix, hexToBytes } from './hex'
 
 export function blake2bAsHex(
@@ -8,6 +9,7 @@ export function blake2bAsHex(
 ): string {
   const hash = blake2bAsBytes(data, bitLength)
   const hex = Buffer.from(hash).toString('hex')
+
   return config.withPrefix ? addHexPrefix(hex) : hex
 }
 

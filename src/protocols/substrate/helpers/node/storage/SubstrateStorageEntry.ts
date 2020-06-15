@@ -1,13 +1,13 @@
+import { blake2bAsHex } from '../../../../../utils/blake2b'
 import { bytesToHex } from '../../../../../utils/hex'
 import { xxhashAsHex } from '../../../../../utils/xxhash'
-import { blake2bAsHex } from '../../../../../utils/blake2b'
-import { SCALEType } from '../../data/scale/type/SCALEType'
 import {
-  MetadataStorageEntryType,
-  MetadataStorageEntryPlain,
+  MetadataStorageEntryDoubleMap,
   MetadataStorageEntryMap,
-  MetadataStorageEntryDoubleMap
+  MetadataStorageEntryPlain,
+  MetadataStorageEntryType
 } from '../../data/metadata/module/storage/MetadataStorageEntryType'
+import { SCALEType } from '../../data/scale/type/SCALEType'
 
 export enum SubstrateStorageEntryHasher {
   BLAKE2_128 = 0,
@@ -92,6 +92,7 @@ export class SubstrateMapStorageEntry extends SubstrateStorageEntry {
 
   protected async hashArgs(args: SCALEType[]): Promise<string> {
     const hasherMethod = hasherMethods.get(this.hasher)
+
     return hasherMethod ? hasherMethod(args[0].encode()) : ''
   }
 }
@@ -108,6 +109,7 @@ export class SubstrateDoubleMapStorageEntry extends SubstrateStorageEntry {
   protected async hashArgs(args: SCALEType[]): Promise<string> {
     const firstHasherMethod = hasherMethods.get(this.firstHasher)
     const secondHasherMethod = hasherMethods.get(this.secondHasher)
+
     return firstHasherMethod && secondHasherMethod
       ? Promise.all([firstHasherMethod(args[0].encode()), secondHasherMethod(args[1].encode())]).then(
           ([firstHash, secondHash]) => firstHash + secondHash

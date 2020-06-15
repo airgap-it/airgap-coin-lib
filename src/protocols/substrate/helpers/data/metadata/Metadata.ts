@@ -1,9 +1,10 @@
-import { MetadataModule } from './module/MetadataModule'
+import { SubstrateNetwork } from '../../../SubstrateNetwork'
+import { SCALEDecoder } from '../scale/SCALEDecoder'
+import { SCALEArray } from '../scale/type/SCALEArray'
 import { SCALEClass } from '../scale/type/SCALEClass'
 import { SCALEInt } from '../scale/type/SCALEInt'
-import { SCALEArray } from '../scale/type/SCALEArray'
-import { SCALEDecoder } from '../scale/SCALEDecoder'
-import { SubstrateNetwork } from '../../../SubstrateNetwork'
+
+import { MetadataModule } from './module/MetadataModule'
 
 const MAGIC_NUMBER = '6174656d' // `meta` in hex
 const EXPECTED_VERSION = 11

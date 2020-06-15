@@ -1,7 +1,8 @@
+import { isString } from 'util'
+
 import BigNumber from '../dependencies/src/bignumber.js-9.0.0/bignumber'
 
 import { padStart } from './padStart'
-import { isString } from 'util'
 
 const HEX_PREFIX = '0x'
 const HEX_REGEX = new RegExp(`^(${HEX_PREFIX})?[0-9a-fA-F]*$`)
@@ -58,6 +59,7 @@ export function bytesToHex(bytes: Uint8Array | Buffer | string, config?: { withP
     const buffer = Buffer.isBuffer(bytes) ? bytes : Buffer.from(bytes)
     hex = buffer.toString('hex')
   }
+
   return config?.withPrefix ? addHexPrefix(hex) : hex
 }
 

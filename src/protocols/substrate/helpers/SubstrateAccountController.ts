@@ -1,36 +1,39 @@
-import { SubstrateNodeClient } from './node/SubstrateNodeClient'
-import { KeyPair } from '../../../data/KeyPair'
 import { bip39ToMiniSecret } from '@polkadot/wasm-crypto'
-import { createSr25519KeyPair } from '../../../utils/sr25519'
-import { SubstrateAddress, SubstrateAccountId } from './data/account/SubstrateAddress'
+
+import { KeyPair } from '../../../data/KeyPair'
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { createSr25519KeyPair } from '../../../utils/sr25519'
 import { DelegatorAction } from '../../ICoinDelegateProtocol'
-import { SubstrateStakingActionType } from './data/staking/SubstrateStakingActionType'
-import {
-  SubstrateValidatorDetails,
-  SubstrateValidatorStatus,
-  SubstrateValidatorRewardDetails
-} from './data/staking/SubstrateValidatorDetails'
-import {
-  SubstrateNominatorDetails,
-  SubstrateStakingDetails,
-  SubstrateStakingStatus,
-  SubstrateNominatorRewardDetails,
-  SubstrateLockedDetails
-} from './data/staking/SubstrateNominatorDetails'
-import { SubstrateNominations } from './data/staking/SubstrateNominations'
-import { SubstrateStakingLedger } from './data/staking/SubstrateStakingLedger'
+import { SubstrateNetwork } from '../SubstrateNetwork'
+
+import { SubstrateAccountId, SubstrateAddress } from './data/account/SubstrateAddress'
+import { SubstrateRegistration } from './data/account/SubstrateRegistration'
 import { SubstrateActiveEraInfo } from './data/staking/SubstrateActiveEraInfo'
 import { SubstrateExposure } from './data/staking/SubstrateExposure'
-import { SubstrateRegistration } from './data/account/SubstrateRegistration'
+import { SubstrateNominations } from './data/staking/SubstrateNominations'
+import {
+  SubstrateLockedDetails,
+  SubstrateNominatorDetails,
+  SubstrateNominatorRewardDetails,
+  SubstrateStakingDetails,
+  SubstrateStakingStatus
+} from './data/staking/SubstrateNominatorDetails'
+import { SubstrateStakingActionType } from './data/staking/SubstrateStakingActionType'
+import { SubstrateStakingLedger } from './data/staking/SubstrateStakingLedger'
+import {
+  SubstrateValidatorDetails,
+  SubstrateValidatorRewardDetails,
+  SubstrateValidatorStatus
+} from './data/staking/SubstrateValidatorDetails'
 import { SubstrateValidatorPrefs } from './data/staking/SubstrateValidatorPrefs'
-import { SubstrateNetwork } from '../SubstrateNetwork'
+import { SubstrateNodeClient } from './node/SubstrateNodeClient'
 
 export class SubstrateAccountController {
   constructor(readonly network: SubstrateNetwork, readonly nodeClient: SubstrateNodeClient) {}
 
   public async createKeyPairFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<KeyPair> {
     const secret = bip39ToMiniSecret(mnemonic, password || '')
+
     return this.createKeyPairFromHexSecret(Buffer.from(secret).toString('hex'), derivationPath)
   }
 
@@ -76,11 +79,13 @@ export class SubstrateAccountController {
 
   public async isBonded(accountId: SubstrateAccountId): Promise<boolean> {
     const bonded = await this.nodeClient.getBonded(SubstrateAddress.from(accountId, this.network))
+
     return bonded != null
   }
 
   public async isNominating(accountId: SubstrateAccountId): Promise<boolean> {
     const nominations = await this.nodeClient.getNominations(SubstrateAddress.from(accountId, this.network))
+
     return nominations != null
   }
 
@@ -264,7 +269,7 @@ export class SubstrateAccountController {
 
     const results = await Promise.all([
       this.nodeClient.getValidatorReward(eraIndex).then(async (result) => {
-        return result ? result : await this.nodeClient.getValidatorReward(eraIndex - 1)
+        return result ? result : this.nodeClient.getValidatorReward(eraIndex - 1)
       }),
       this.nodeClient.getRewardPoints(eraIndex),
       this.nodeClient.getStakersClipped(eraIndex, address),
@@ -331,6 +336,7 @@ export class SubstrateAccountController {
         })
       )
     )
+
     return rewards.filter((reward) => reward)
   }
 
@@ -474,7 +480,7 @@ export class SubstrateAccountController {
 
   private partitionArray<T>(array: T[], predicate: (value: T) => boolean): [T[], T[]] {
     const partitioned: [T[], T[]] = [[], []]
-    for (let item of array) {
+    for (const item of array) {
       const index = predicate(item) ? 0 : 1
       partitioned[index].push(item)
     }

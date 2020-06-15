@@ -1,4 +1,5 @@
 import { IAirGapTransaction } from '../interfaces/IAirGapTransaction'
+
 import { FeeDefaults } from './ICoinProtocol'
 
 export abstract class NonExtendedProtocol {

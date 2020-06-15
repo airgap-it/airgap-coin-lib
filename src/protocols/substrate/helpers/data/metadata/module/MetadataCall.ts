@@ -1,9 +1,8 @@
+import { SubstrateNetwork } from '../../../../SubstrateNetwork'
+import { SCALEDecoder, SCALEDecodeResult } from '../../scale/SCALEDecoder'
+import { SCALEArray } from '../../scale/type/SCALEArray'
 import { SCALEClass } from '../../scale/type/SCALEClass'
 import { SCALEString } from '../../scale/type/SCALEString'
-import { SCALEArray } from '../../scale/type/SCALEArray'
-import { SCALEDecodeResult } from '../../scale/SCALEDecoder'
-import { SCALEDecoder } from '../../scale/SCALEDecoder'
-import { SubstrateNetwork } from '../../../../SubstrateNetwork'
 
 class MetadataCallArgument extends SCALEClass {
   public static decode(network: SubstrateNetwork, raw: string): SCALEDecodeResult<MetadataCallArgument> {

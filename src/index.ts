@@ -1,7 +1,6 @@
-// tslint:disable
+// tslint:disable:ordered-imports
 // This needs to be imported first, otherwise the tests won't run anymore
 import { EthereumProtocol } from './protocols/ethereum/EthereumProtocol'
-// tslint:enable
 
 import { ProtocolNotSupported, ProtocolVersionMismatch, SerializerVersionMismatch, TypeNotSupported } from './errors'
 import { IAirGapTransaction } from './interfaces/IAirGapTransaction'
@@ -15,18 +14,25 @@ import { EthereumClassicProtocol } from './protocols/ethereum/EthereumClassicPro
 import { EthereumRopstenProtocol } from './protocols/ethereum/EthereumRopstenProtocol'
 import { GroestlcoinProtocol } from './protocols/groestlcoin/GroestlcoinProtocol'
 import { GroestlcoinTestnetProtocol } from './protocols/groestlcoin/GroestlcoinTestnetProtocol'
+import { ICoinDelegateProtocol } from './protocols/ICoinDelegateProtocol'
 import { ICoinProtocol } from './protocols/ICoinProtocol'
 import { ICoinSubProtocol } from './protocols/ICoinSubProtocol'
-import { ICoinDelegateProtocol } from './protocols/ICoinDelegateProtocol'
 import { LitecoinProtocol } from './protocols/litecoin/LitecoinProtocol'
+import { SubstratePayee } from './protocols/substrate/helpers/data/staking/SubstratePayee'
+import { KusamaProtocol } from './protocols/substrate/implementations/KusamaProtocol'
+import { PolkadotProtocol } from './protocols/substrate/implementations/PolkadotProtocol'
+import { SubstrateProtocol } from './protocols/substrate/SubstrateProtocol'
+import { TezosBTC } from './protocols/tezos/fa/TezosBTC'
+import { TezosFAProtocol, TezosTransactionCursor, TezosTransactionResult } from './protocols/tezos/fa/TezosFAProtocol'
+import { TezosStaker } from './protocols/tezos/fa/TezosStaker'
 import { TezosKtProtocol } from './protocols/tezos/kt/TezosKtProtocol'
 import {
   BakerInfo,
   DelegationInfo,
   DelegationRewardInfo,
-  TezosProtocol,
+  TezosDelegatorAction,
   TezosPayoutInfo,
-  TezosDelegatorAction
+  TezosProtocol
 } from './protocols/tezos/TezosProtocol'
 import { IACMessageType } from './serializer/interfaces'
 import { IACMessageDefinitionObject } from './serializer/message'
@@ -52,13 +58,7 @@ import { addSubProtocol, getSubProtocolsByIdentifier } from './utils/subProtocol
 import { addSupportedProtocol, supportedProtocols } from './utils/supportedProtocols'
 import { AirGapMarketWallet } from './wallet/AirGapMarketWallet'
 import { AirGapWallet } from './wallet/AirGapWallet'
-import { TezosFAProtocol, TezosTransactionResult, TezosTransactionCursor } from './protocols/tezos/fa/TezosFAProtocol'
-import { TezosBTC } from './protocols/tezos/fa/TezosBTC'
-import { SubstrateProtocol } from './protocols/substrate/SubstrateProtocol'
-import { SubstratePayee } from './protocols/substrate/helpers/data/staking/SubstratePayee'
-import { PolkadotProtocol } from './protocols/substrate/implementations/PolkadotProtocol'
-import { KusamaProtocol } from './protocols/substrate/implementations/KusamaProtocol'
-import { TezosStaker } from './protocols/tezos/fa/TezosStaker'
+// tslint:enable:ordered-imports
 
 export {
   addSupportedProtocol,

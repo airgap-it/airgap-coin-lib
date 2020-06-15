@@ -1,11 +1,11 @@
-import { SCALEClass } from '../../../scale/type/SCALEClass'
-import { SCALEString } from '../../../scale/type/SCALEString'
-import { SCALEArray } from '../../../scale/type/SCALEArray'
-import { SCALEDecoder } from '../../../scale/SCALEDecoder'
-import { SCALEDecodeResult } from '../../../scale/SCALEDecoder'
-import { MetadataStorageEntry } from './MetadataStorageEntry'
 import { stripHexPrefix } from '../../../../../../../utils/hex'
 import { SubstrateNetwork } from '../../../../../SubstrateNetwork'
+import { SCALEDecoder, SCALEDecodeResult } from '../../../scale/SCALEDecoder'
+import { SCALEArray } from '../../../scale/type/SCALEArray'
+import { SCALEClass } from '../../../scale/type/SCALEClass'
+import { SCALEString } from '../../../scale/type/SCALEString'
+
+import { MetadataStorageEntry } from './MetadataStorageEntry'
 
 export class MetadataStorage extends SCALEClass {
   public static decode(network: SubstrateNetwork, raw: string): SCALEDecodeResult<MetadataStorage> {

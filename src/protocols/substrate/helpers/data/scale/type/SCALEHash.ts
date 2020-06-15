@@ -1,7 +1,9 @@
-import { SCALEType } from './SCALEType'
-import { SCALEDecodeResult } from '../SCALEDecoder'
 import { isString } from 'util'
+
 import { isHex, stripHexPrefix } from '../../../../../../utils/hex'
+import { SCALEDecodeResult } from '../SCALEDecoder'
+
+import { SCALEType } from './SCALEType'
 
 export class SCALEHash extends SCALEType {
   public static empty(bitLength: number = 0): SCALEHash {

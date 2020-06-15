@@ -1,7 +1,8 @@
-import { SCALEType } from './SCALEType'
-import { DecoderMethod, SCALEDecodeResult } from '../SCALEDecoder'
 import { stripHexPrefix, toHexStringRaw } from '../../../../../../utils/hex'
 import { SubstrateNetwork } from '../../../../SubstrateNetwork'
+import { DecoderMethod, SCALEDecodeResult } from '../SCALEDecoder'
+
+import { SCALEType } from './SCALEType'
 
 enum Optional {
   None = 0,
@@ -33,6 +34,7 @@ export class SCALEOptional<T extends SCALEType> extends SCALEType {
         }
       case Optional.Some:
         const value = decodeValue(network, _hex.slice(2))
+
         return {
           bytesDecoded: 1 + value.bytesDecoded,
           decoded: SCALEOptional.from(value.decoded)
