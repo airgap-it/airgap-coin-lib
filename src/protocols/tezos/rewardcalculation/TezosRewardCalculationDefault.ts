@@ -41,6 +41,7 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
       deposit: string
       bakingRewardsDetails: { level: number; amount: string; deposit: string; fees?: string }[]
       endorsingRewardsDetails: { level: number; amount: string; deposit: string }[]
+      endorsingRightsCount: number
     }
 
     if (cycle < currentCycle) {
@@ -79,7 +80,8 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
       delegatedContracts: bakerInfo.delegated_contracts,
       bakingRewardsDetails: computedRewards.bakingRewardsDetails,
       endorsingRewardsDetails: computedRewards.endorsingRewardsDetails,
-      deposit: computedRewards.deposit
+      deposit: computedRewards.deposit,
+      endorsingRightsCount: computedRewards.endorsingRightsCount
     }
   }
 
@@ -95,6 +97,7 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
     deposit: string
     bakingRewardsDetails: { level: number; amount: string; deposit: string; fees?: string | undefined }[]
     endorsingRewardsDetails: { level: number; amount: string; deposit: string }[]
+    endorsingRightsCount: number
   }> {
     let computedBakingRewards: TezosBakingRewards = {
       totalBakingRewards: '0',
@@ -109,7 +112,7 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
     let fees = '0'
     let totalRewards = '0'
     let deposit = '0'
-    let totalEndorsingRights = '0'
+    let endorsingRightsCount = 0
 
     if (breakdownRewards) {
       const bakedBlocks = await this.fetchBlocksForBaker(bakerAddress, cycle)
@@ -120,7 +123,7 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
 
       const endorsingOperations = await this.fetchEndorsementOperations(cycle, bakerAddress)
       computedEndorsingRewards = await this.computeEndorsingRewards(endorsingOperations, false)
-      totalEndorsingRights = endorsingOperations.reduce((current, next) => current + next.number_of_slots, 0).toFixed()
+      endorsingRightsCount = endorsingOperations.reduce((current, next) => current + next.number_of_slots, 0)
     }
 
     const frozenBalance = (await this.fetchFrozenBalances((cycle + 1) * this.tezosNodeConstants.blocks_per_cycle, bakerAddress)).find(
@@ -140,6 +143,7 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
       fees,
       bakingRewardsDetails: computedBakingRewards.rewardsDetails,
       endorsingRewardsDetails: computedEndorsingRewards.rewardsDetails,
+      endorsingRightsCount,
       deposit: deposit
     }
   }
@@ -157,6 +161,7 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
     deposit: string
     bakingRewardsDetails: { level: number; amount: string; deposit: string; fees?: string | undefined }[]
     endorsingRewardsDetails: { level: number; amount: string; deposit: string }[]
+    endorsingRightsCount: number
   }> {
     let computedBakingRewards: TezosBakingRewards = {
       totalBakingRewards: '0',
@@ -170,6 +175,7 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
 
     let fees = '0'
     let totalRewards = '0'
+    let endorsingRightsCount = 0
 
     if (cycle - currentCycle > 5) {
       throw new Error('Provided cycle is invalid')
@@ -180,6 +186,7 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
       computedBakingRewards = await this.computeBakingRewards(bakingRights, true)
       const endorsingRights = await this.fetchEndorsingRights(bakerAddress, cycle)
       computedEndorsingRewards = await this.computeEndorsingRewards(endorsingRights, true)
+      endorsingRightsCount = endorsingRights.reduce((current, next) => current + next.number_of_slots, 0)
     }
 
     totalRewards = new BigNumber(computedBakingRewards.totalBakingRewards)
@@ -200,6 +207,7 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
       fees,
       bakingRewardsDetails: computedBakingRewards.rewardsDetails,
       endorsingRewardsDetails: computedEndorsingRewards.rewardsDetails,
+      endorsingRightsCount,
       deposit: '0'
     }
   }
@@ -439,7 +447,7 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
       return {
         level: endorsingRight.level,
         delegate: bakerAddress,
-        number_of_slots: endorsingRight.count_slot
+        number_of_slots: Number(endorsingRight.count_slot)
       }
     })
   }

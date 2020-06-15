@@ -1720,6 +1720,7 @@ export interface TezosRewards {
   delegatedContracts: string[]
   bakingRewardsDetails: { level: number; amount: string; deposit: string; fees?: string }[]
   endorsingRewardsDetails: { level: number; amount: string; deposit: string }[]
+  endorsingRightsCount: number
 }
 
 export interface TezosBakerInfo {
