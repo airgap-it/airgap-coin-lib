@@ -81,6 +81,7 @@ export interface TezosPayoutInfo {
   delegator: string
   share: string
   payout: string
+  balance: string
 }
 
 // run_operation response
@@ -1282,20 +1283,27 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     const { data: mostRecentBlock } = await axios.get(
       `${this.jsonRPCAPI}/chains/main/blocks/${mostRecentCycle * TezosProtocol.BLOCKS_PER_CYCLE[this.network]}`
     )
-    const timestamp: Date = new Date(mostRecentBlock.header.timestamp)
 
+    const timestamp: Date = new Date(mostRecentBlock.header.timestamp)
+    const address = delegatorAddress ?? bakerAddress
     const delegationInfo: DelegationRewardInfo[] = await Promise.all(
       frozenBalance.slice(0, 5).map(async obj => {
         const rewards = await this.calculateRewards(bakerAddress, obj.cycle, mostRecentCycle, false)
-        const payout = await this.calculatePayout(delegatorAddress ?? bakerAddress, rewards)
+        let delegatedBalance = "0"
+        let payoutAmount = "0"
+        if (rewards.delegatedContracts.includes(address)) {
+          const payout = await this.calculatePayout(address, rewards)
+          delegatedBalance = payout.balance
+          payoutAmount = payout.payout
+        }
         return {
           cycle: obj.cycle,
           totalRewards: new BigNumber(obj.rewards),
           totalFees: new BigNumber(obj.fees),
           deposit: new BigNumber(obj.deposit),
-          delegatedBalance: new BigNumber(delegatedBalanceAtCycle),
-          stakingBalance: rewards.stakingBalance,
-          reward: new BigNumber(obj.rewards).plus(obj.fees).multipliedBy(new BigNumber(delegatedBalanceAtCycle).div(stakingBalanceAtCycle)),
+          delegatedBalance: new BigNumber(delegatedBalance),
+          stakingBalance: new BigNumber(rewards.stakingBalance),
+          reward: new BigNumber(payoutAmount),
           payout: new Date(
             timestamp.getTime() + (obj.cycle - lastConfirmedCycle) * TezosProtocol.BLOCKS_PER_CYCLE[this.network] * 60 * 1000
           )
@@ -1546,7 +1554,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       result.push({
         delegator: balance.address,
         share: share.toFixed(),
-        payout: payoutAmount.toFixed()
+        payout: payoutAmount.toFixed(),
+        balance: amount.toFixed()
       })
     }
 
