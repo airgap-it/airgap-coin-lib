@@ -33,7 +33,7 @@ describe('Base64Check', () => {
       test2: 'test2'
     }
 
-    const txArray = Object.keys(txObj).map(a => txObj[a])
+    const txArray = Object.keys(txObj).map((a) => txObj[a])
 
     const rlpEncoded = rlp.encode(txArray)
     const hashed = bs64check.encode(rlpEncoded)

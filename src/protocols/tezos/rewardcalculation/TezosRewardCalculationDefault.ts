@@ -1,18 +1,18 @@
+import axios from '../../../dependencies/src/axios-0.19.0/index'
+import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import {
-  TezosRewards,
-  TezosRewardsCalculations,
   TezosBakerInfo,
   TezosBakingRewards,
-  TezosEndorsingRewards,
   TezosBakingRight,
+  TezosEndorsingRewards,
   TezosEndorsingRight,
+  TezosFrozenBalance,
   TezosNodeConstants,
   TezosNodeConstantsV1,
-  TezosFrozenBalance,
-  TezosProtocol
+  TezosProtocol,
+  TezosRewards,
+  TezosRewardsCalculations
 } from '../TezosProtocol'
-import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
-import axios from '../../../dependencies/src/axios-0.19.0/index'
 
 export class TezosRewardsCalculationDefault implements TezosRewardsCalculations {
   protected tezosNodeConstants: TezosNodeConstants
@@ -27,8 +27,8 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
     ).data as TezosNodeConstantsV1
   }
 
-  async calculateRewards(bakerAddress: string, cycle: number, currentCycleIn?: number): Promise<TezosRewards> {
-    const currentCycle = currentCycleIn ?? await this.protocol.fetchCurrentCycle()
+  public async calculateRewards(bakerAddress: string, cycle: number, currentCycleIn?: number): Promise<TezosRewards> {
+    const currentCycle = currentCycleIn ?? (await this.protocol.fetchCurrentCycle())
     const calculatingLevel = cycle * TezosProtocol.BLOCKS_PER_CYCLE[this.protocol.network]
 
     await this.getConstants(calculatingLevel, currentCycle < cycle)
@@ -63,12 +63,12 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
       endorsingRewards: computedRewards.endorsingRewards,
 
       bakingDeposits: computedRewards.bakingRewardsDetails
-        .map(detail => (detail && detail.deposit ? (detail.deposit ? parseInt(detail.deposit) : 0) : 0))
+        .map((detail) => (detail && detail.deposit ? (detail.deposit ? parseInt(detail.deposit) : 0) : 0))
         .reduce((a, b) => a + b, 0)
         .toString(),
 
       endorsingDeposits: computedRewards.endorsingRewardsDetails
-        .map(detail => (detail && detail.deposit ? (detail.deposit ? parseInt(detail.deposit) : 0) : 0))
+        .map((detail) => (detail && detail.deposit ? (detail.deposit ? parseInt(detail.deposit) : 0) : 0))
         .reduce((a, b) => a + b, 0)
         .toString(),
 
@@ -118,7 +118,7 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
     computedEndorsingRewards = await this.computeEndorsingRewards(endorsingOperations, false)
 
     const frozenBalance = (await this.fetchFrozenBalances((cycle + 1) * this.tezosNodeConstants.blocks_per_cycle, bakerAddress)).find(
-      fb => fb.cycle == cycle
+      (fb) => fb.cycle == cycle
     )
 
     if (frozenBalance) {
@@ -134,7 +134,7 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
       fees,
       bakingRewardsDetails: computedBakingRewards.rewardsDetails,
       endorsingRewardsDetails: computedEndorsingRewards.rewardsDetails,
-      deposit: deposit
+      deposit
     }
   }
 
@@ -240,17 +240,18 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
     isFutureCycle: boolean
   ): Promise<TezosBakingRewards> {
     let result = new BigNumber(0)
-    let rewardsByLevel: { level: number; amount: string; deposit: string; fees?: string }[] = []
+    const rewardsByLevel: { level: number; amount: string; deposit: string; fees?: string }[] = []
     result = new BigNumber(bakingRights.length * (((this.tezosNodeConstants as TezosNodeConstantsV1).block_reward as unknown) as number))
+
     return { totalBakingRewards: result.toFixed(), rewardsDetails: rewardsByLevel }
   }
 
   // be aware this function IS NOT identical to the one in TezosRewardCalculation005
   protected async computeEndorsingRewards(endorsingRights: TezosEndorsingRight[], isFutureCycle: boolean): Promise<TezosEndorsingRewards> {
     let priorities: { priority: number; level: number }[] = []
-    let rewardsByLevel: { level: number; amount: string; deposit: string }[] = []
+    const rewardsByLevel: { level: number; amount: string; deposit: string }[] = []
     if (!isFutureCycle) {
-      const levels = endorsingRights.map(er => {
+      const levels = endorsingRights.map((er) => {
         return er.level
       })
       if (levels.length > 0) {
@@ -261,7 +262,7 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
     const result = endorsingRights.reduce((current, next) => {
       let priority = 0
       if (!isFutureCycle) {
-        const block = priorities.find(p => p.level === next.level)
+        const block = priorities.find((p) => p.level === next.level)
         if (block === undefined) {
           throw new Error('Cannot find block priority')
         }
@@ -275,6 +276,7 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
         amount: reward.toFixed(),
         deposit: this.tezosNodeConstants.endorsement_security_deposit
       })
+
       return current.plus(reward)
     }, new BigNumber(0))
 
@@ -284,6 +286,7 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
   protected specificEndorsingCalculation(priority: number, number_of_slots: number) {
     const multiplier = new BigNumber((this.tezosNodeConstants as TezosNodeConstantsV1).endorsement_reward).div(new BigNumber(priority + 1))
     const reward: BigNumber = new BigNumber(number_of_slots).times(multiplier)
+
     return reward
   }
 
@@ -354,7 +357,7 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
       `${this.protocol.jsonRPCAPI}/chains/main/blocks/${blockLevel}/helpers/endorsing_rights?cycle=${cycle}&delegate=${bakerAddress}`
     )
 
-    return endorsingRightsResult.data.map(endorsingRight => {
+    return endorsingRightsResult.data.map((endorsingRight) => {
       return {
         level: endorsingRight.level,
         delegate: endorsingRight.delegate,
@@ -394,6 +397,7 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
     for (const op of result.data) {
       map.set(op.block_level, op)
     }
+
     return map
   }
 

@@ -22,7 +22,7 @@ export class TransactionListQuery {
             },
             {
               match_phrase: {
-                "tx.value.msg.type": "cosmos-sdk/MsgSend"
+                'tx.value.msg.type': 'cosmos-sdk/MsgSend'
               }
             }
           ]

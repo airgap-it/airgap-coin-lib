@@ -17,7 +17,7 @@ export class FullPayload implements Payload {
     if (type === PayloadType.DECODED) {
       this.messages = object as IACMessageDefinitionObject[]
     } else if (type === PayloadType.ENCODED) {
-      this.messages = (object as Buffer[]).map(buffer => new Message(PayloadType.ENCODED, (buffer as any) as Buffer[]).asJson())
+      this.messages = (object as Buffer[]).map((buffer) => new Message(PayloadType.ENCODED, (buffer as any) as Buffer[]).asJson())
     } else {
       assertNever(type)
       throw new Error('UNKNOWN PAYLOAD TYPE')
