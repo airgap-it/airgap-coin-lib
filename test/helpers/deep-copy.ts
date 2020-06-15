@@ -22,7 +22,7 @@ export function deepCopy(obj) {
           default:
             // Some other kind of object, deep-copy its
             // properties into a new object
-            rv = Object.keys(obj).reduce(function(prev, key) {
+            rv = Object.keys(obj).reduce(function (prev, key) {
               prev[key] = deepCopy(obj[key])
               return prev
             }, {})

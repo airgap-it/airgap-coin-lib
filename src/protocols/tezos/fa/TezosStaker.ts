@@ -3,7 +3,6 @@ import { TezosNetwork } from '../TezosProtocol'
 import { TezosUtils } from '../TezosUtils'
 
 export class TezosStaker extends TezosFAProtocol {
-
   constructor(
     contractAddress: string = 'KT1EctCuorV2NfVb1XTQgvzJ88MQtWP8cMMv',
     jsonRPCAPI?: string,
@@ -31,13 +30,15 @@ export class TezosStaker extends TezosFAProtocol {
     })
   }
 
-  public async fetchTokenHolders(): Promise<{address: string, amount: string}[]> {
+  public async fetchTokenHolders(): Promise<{ address: string; amount: string }[]> {
     const values = await this.contract.bigMapValues([])
-    return values.map((value) => {
-      return {
-        address: TezosUtils.parseAddress(value.key.substring(2)),
-        amount: value.value !== null ? value.value : '0'
-      }
-    }).filter((value) => value.amount !== '0')
+    return values
+      .map((value) => {
+        return {
+          address: TezosUtils.parseAddress(value.key.substring(2)),
+          amount: value.value !== null ? value.value : '0'
+        }
+      })
+      .filter((value) => value.amount !== '0')
   }
 }

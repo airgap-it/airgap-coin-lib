@@ -165,10 +165,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
   public async getPublicKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
     const bitcoinNode = this.bitcoinJSLib.HDNode.fromSeedHex(secret, this.network)
 
-    return bitcoinNode
-      .derivePath(derivationPath)
-      .neutered()
-      .toBase58()
+    return bitcoinNode.derivePath(derivationPath).neutered().toBase58()
   }
 
   public async getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<Buffer> {
@@ -210,14 +207,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
     const node = this.bitcoinJSLib.HDNode.fromBase58(extendedPublicKey, this.network)
     const generatorArray = Array.from(new Array(addressCount), (x, i) => i + offset)
 
-    return Promise.all(
-      generatorArray.map(x =>
-        node
-          .derive(visibilityDerivationIndex)
-          .derive(x)
-          .getAddress()
-      )
-    )
+    return Promise.all(generatorArray.map((x) => node.derive(visibilityDerivationIndex).derive(x).getAddress()))
   }
 
   public async signWithPrivateKey(privateKey: Buffer, transaction: RawBitcoinTransaction): Promise<IAirGapSignedTransaction> {
@@ -305,11 +295,11 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
 
     return [
       {
-        from: transaction.ins.map(obj => obj.address),
-        to: transaction.outs.filter(obj => !obj.isChange).map(obj => obj.recipient),
+        from: transaction.ins.map((obj) => obj.address),
+        to: transaction.outs.filter((obj) => !obj.isChange).map((obj) => obj.recipient),
         amount: transaction.outs
-          .filter(obj => !obj.isChange)
-          .map(obj => new BigNumber(obj.value))
+          .filter((obj) => !obj.isChange)
+          .map((obj) => new BigNumber(obj.value))
           .reduce((accumulator, currentValue) => accumulator.plus(currentValue))
           .toString(10),
         fee: feeCalculator.toString(10),
@@ -332,7 +322,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
     }
 
     const bitcoinTx = this.bitcoinJSLib.Transaction.fromHex(signedTx.transaction)
-    bitcoinTx.outs.forEach(output => {
+    bitcoinTx.outs.forEach((output) => {
       const address = this.bitcoinJSLib.address.fromOutputScript(output.script, this.network)
       // only works if one output is target and rest is change, but this way we can filter out change addresses
       if (new BigNumber(output.value).isEqualTo(signedTx.amount)) {
@@ -376,7 +366,11 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
     return this.getBalanceOfAddresses(addresses)
   }
 
-  public async estimateMaxTransactionValueFromExtendedPublicKey(extendedPublicKey: string, recipients: string[], fee?: string): Promise<string> {
+  public async estimateMaxTransactionValueFromExtendedPublicKey(
+    extendedPublicKey: string,
+    recipients: string[],
+    fee?: string
+  ): Promise<string> {
     return this.getBalanceOfExtendedPublicKey(extendedPublicKey)
   }
 
@@ -384,7 +378,12 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
     return this.getBalanceOfPublicKey(publicKey)
   }
 
-  public async estimateFeeDefaultsFromExtendedPublicKey(publicKey: string, recipients: string[], values: string[], data?: any): Promise<FeeDefaults> {
+  public async estimateFeeDefaultsFromExtendedPublicKey(
+    publicKey: string,
+    recipients: string[],
+    values: string[],
+    data?: any
+  ): Promise<FeeDefaults> {
     const result = (await axios.get(`${this.baseApiUrl}/api/v2/estimatefee/5`)).data.result
     const estimatedFee = new BigNumber(result)
     if (estimatedFee.isZero()) {
@@ -401,7 +400,12 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
     }
   }
 
-  public async estimateFeeDefaultsFromPublicKey(publicKey: string, recipients: string[], values: string[], data?: any): Promise<FeeDefaults> {
+  public async estimateFeeDefaultsFromPublicKey(
+    publicKey: string,
+    recipients: string[],
+    values: string[],
+    data?: any
+  ): Promise<FeeDefaults> {
     return Promise.reject('estimating fee defaults using non extended public key not implemented')
   }
 
@@ -604,7 +608,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
       }
     )
 
-    const ourAddresses = (data.tokens || []).filter(token => token.type === 'XPUBAddress').map(token => token.name)
+    const ourAddresses = (data.tokens || []).filter((token) => token.type === 'XPUBAddress').map((token) => token.name)
 
     const airGapTransactions: IAirGapTransaction[] = []
 

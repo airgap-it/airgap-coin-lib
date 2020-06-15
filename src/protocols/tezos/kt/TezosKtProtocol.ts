@@ -64,13 +64,18 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     return this.getBalanceOfPublicKey(publicKey)
   }
 
-  public async estimateFeeDefaultsFromPublicKey(publicKey: string, recipients: string[], values: string[], data?: any): Promise<FeeDefaults> {
+  public async estimateFeeDefaultsFromPublicKey(
+    publicKey: string,
+    recipients: string[],
+    values: string[],
+    data?: any
+  ): Promise<FeeDefaults> {
     const fee = this.migrationFee.shiftedBy(-this.feeDecimals).toFixed()
-      return {
-        low: fee,
-        medium: fee,
-        high: fee
-      }
+    return {
+      low: fee,
+      medium: fee,
+      high: fee
+    }
   }
 
   public async prepareTransactionFromPublicKey(

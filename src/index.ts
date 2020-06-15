@@ -20,13 +20,13 @@ import { ICoinSubProtocol } from './protocols/ICoinSubProtocol'
 import { ICoinDelegateProtocol } from './protocols/ICoinDelegateProtocol'
 import { LitecoinProtocol } from './protocols/litecoin/LitecoinProtocol'
 import { TezosKtProtocol } from './protocols/tezos/kt/TezosKtProtocol'
-import { 
-  BakerInfo, 
-  DelegationInfo, 
-  DelegationRewardInfo, 
-  TezosProtocol, 
-  TezosPayoutInfo, 
-  TezosDelegatorAction 
+import {
+  BakerInfo,
+  DelegationInfo,
+  DelegationRewardInfo,
+  TezosProtocol,
+  TezosPayoutInfo,
+  TezosDelegatorAction
 } from './protocols/tezos/TezosProtocol'
 import { IACMessageType } from './serializer/interfaces'
 import { IACMessageDefinitionObject } from './serializer/message'

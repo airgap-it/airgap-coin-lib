@@ -16,7 +16,7 @@ const unsignedTransactionConstraints = {
   }
 }
 const success = () => undefined
-const error = errors => errors
+const error = (errors) => errors
 
 const signedTransactionConstraints = {
   transaction: {
@@ -38,7 +38,7 @@ export class TezosBTCTransactionValidator extends TransactionValidator {
       const rawTx: RawTezosTransaction = unsignedTx.transaction
       validateSyncScheme({})
 
-      unforged.contents.forEach(async operation => {
+      unforged.contents.forEach(async (operation) => {
         const spendTransaction = operation as TezosTransactionOperation
         if (spendTransaction.destination !== TezosBTCDetails.CONTRACT_ADDRESS) {
           return reject(

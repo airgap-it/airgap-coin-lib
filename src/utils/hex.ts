@@ -32,7 +32,7 @@ export function toHexStringRaw(value: number | BigNumber, bitLength: number = 8)
 
   let targetLength = hexString.length >= nibbleLength ? hexString.length : nibbleLength
   targetLength = targetLength % 2 == 0 ? targetLength : targetLength + 1
-  
+
   return padStart(value.toString(16), targetLength, '0')
 }
 
@@ -64,7 +64,7 @@ export function bytesToHex(bytes: Uint8Array | Buffer | string, config?: { withP
 export function changeEndianness(hex: string): string {
   let _hex = stripHexPrefix(hex)
   _hex = _hex.length % 2 != 0 ? '0' + _hex : _hex
-  
+
   const bytes = _hex.match(/.{2}/g) || []
 
   return bytes.reverse().join('')

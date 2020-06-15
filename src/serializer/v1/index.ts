@@ -23,7 +23,7 @@ export function unsignedTransactionSerializerByProtocolIdentifier(protocolIdenti
     kusama: SubstrateUnsignedTransactionsSerializer
   }
 
-  const protocol = Object.keys(implementedSerializers).find(protocol => protocolIdentifier.startsWith(protocol))
+  const protocol = Object.keys(implementedSerializers).find((protocol) => protocolIdentifier.startsWith(protocol))
 
   if (!protocol) {
     throw new ProtocolNotSupported()
@@ -43,7 +43,7 @@ export function signedTransactionSerializerByProtocolIdentifier(protocolIdentifi
     kusama: SubstrateSignedTransactionSerializer
   }
 
-  const protocol = Object.keys(implementedSerializers).find(protocol => protocolIdentifier.startsWith(protocol))
+  const protocol = Object.keys(implementedSerializers).find((protocol) => protocolIdentifier.startsWith(protocol))
 
   if (!protocol) {
     throw new ProtocolNotSupported()

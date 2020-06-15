@@ -93,11 +93,8 @@ export class BitcoinProtocol implements ICoinProtocol {
 
   public async getPublicKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
     const bitcoinNode = this.bitcoinJSLib.HDNode.fromSeedHex(secret, this.network)
-    
-    return bitcoinNode
-      .derivePath(derivationPath)
-      .neutered()
-      .toBase58()
+
+    return bitcoinNode.derivePath(derivationPath).neutered().toBase58()
   }
 
   public async getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<Buffer> {
@@ -139,14 +136,7 @@ export class BitcoinProtocol implements ICoinProtocol {
     const node = this.bitcoinJSLib.HDNode.fromBase58(extendedPublicKey, this.network)
     const generatorArray = Array.from(new Array(addressCount), (x, i) => i + offset)
 
-    return Promise.all(
-      generatorArray.map(x =>
-        node
-          .derive(visibilityDerivationIndex)
-          .derive(x)
-          .getAddress()
-      )
-    )
+    return Promise.all(generatorArray.map((x) => node.derive(visibilityDerivationIndex).derive(x).getAddress()))
   }
 
   public async signWithPrivateKey(privateKey: Buffer, transaction: RawBitcoinTransaction): Promise<IAirGapSignedTransaction> {
@@ -174,7 +164,11 @@ export class BitcoinProtocol implements ICoinProtocol {
     return transactionBuilder.build().toHex()
   }
 
-  public async signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: RawBitcoinTransaction, verifyChangeAddress: boolean = true): Promise<string> {
+  public async signWithExtendedPrivateKey(
+    extendedPrivateKey: string,
+    transaction: RawBitcoinTransaction,
+    verifyChangeAddress: boolean = true
+  ): Promise<string> {
     const transactionBuilder = new this.bitcoinJSLib.TransactionBuilder(this.network)
     const node = this.bitcoinJSLib.HDNode.fromBase58(extendedPrivateKey, this.network)
 
@@ -235,11 +229,11 @@ export class BitcoinProtocol implements ICoinProtocol {
 
     return [
       {
-        from: transaction.ins.map(obj => obj.address),
-        to: transaction.outs.filter(obj => !obj.isChange).map(obj => obj.recipient),
+        from: transaction.ins.map((obj) => obj.address),
+        to: transaction.outs.filter((obj) => !obj.isChange).map((obj) => obj.recipient),
         amount: transaction.outs
-          .filter(obj => !obj.isChange)
-          .map(obj => new BigNumber(obj.value))
+          .filter((obj) => !obj.isChange)
+          .map((obj) => new BigNumber(obj.value))
           .reduce((accumulator, currentValue) => accumulator.plus(currentValue))
           .toString(10),
         fee: feeCalculator.toString(10),
@@ -262,7 +256,7 @@ export class BitcoinProtocol implements ICoinProtocol {
     }
 
     const bitcoinTx = this.bitcoinJSLib.Transaction.fromHex(signedTx.transaction)
-    bitcoinTx.outs.forEach(output => {
+    bitcoinTx.outs.forEach((output) => {
       const address = this.bitcoinJSLib.address.fromOutputScript(output.script, this.network)
       // only works if one output is target and rest is change, but this way we can filter out change addresses
       if (new BigNumber(output.value).isEqualTo(signedTx.amount)) {
@@ -324,7 +318,11 @@ export class BitcoinProtocol implements ICoinProtocol {
     return this.getBalanceOfAddresses(addresses)
   }
 
-  public async estimateMaxTransactionValueFromExtendedPublicKey(extendedPublicKey: string, recipients: string[], fee?: string): Promise<string> {
+  public async estimateMaxTransactionValueFromExtendedPublicKey(
+    extendedPublicKey: string,
+    recipients: string[],
+    fee?: string
+  ): Promise<string> {
     return this.getBalanceOfExtendedPublicKey(extendedPublicKey)
   }
 
@@ -332,10 +330,22 @@ export class BitcoinProtocol implements ICoinProtocol {
     return this.getBalanceOfPublicKey(publicKey)
   }
 
-  public async estimateFeeDefaultsFromExtendedPublicKey(publicKey: string, recipients: string[], values: string[], data?: any): Promise<FeeDefaults> {
+  public async estimateFeeDefaultsFromExtendedPublicKey(
+    publicKey: string,
+    recipients: string[],
+    values: string[],
+    data?: any
+  ): Promise<FeeDefaults> {
     const estimatedFees = (await axios.get(this.feeEstimationUrl)).data
     const transation = await this.prepareTransactionFromExtendedPublicKey(publicKey, 0, recipients, values, '0')
-    const fakeSignedLength = (await this.signWithExtendedPrivateKey("xprv9y52jGU1NsKDGq7cHcQjBeVC4sYff3jEzNywXk37wxUbMpsNg1RFDrBCZSZQD3nb79jpMDEdadtWgoPrZgr1SUriLUie3SVvVRKZDNfQKNv", transation, false)).length / 2
+    const fakeSignedLength =
+      (
+        await this.signWithExtendedPrivateKey(
+          'xprv9y52jGU1NsKDGq7cHcQjBeVC4sYff3jEzNywXk37wxUbMpsNg1RFDrBCZSZQD3nb79jpMDEdadtWgoPrZgr1SUriLUie3SVvVRKZDNfQKNv',
+          transation,
+          false
+        )
+      ).length / 2
     const bnTransactionLength = new BigNumber(fakeSignedLength)
     const mediumFee = new BigNumber(estimatedFees['6']).times(bnTransactionLength).integerValue()
     const lowFee = new BigNumber(estimatedFees['12']).times(bnTransactionLength).integerValue()
@@ -347,7 +357,12 @@ export class BitcoinProtocol implements ICoinProtocol {
     }
   }
 
-  public async estimateFeeDefaultsFromPublicKey(publicKey: string, recipients: string[], values: string[], data?: any): Promise<FeeDefaults> {
+  public async estimateFeeDefaultsFromPublicKey(
+    publicKey: string,
+    recipients: string[],
+    values: string[],
+    data?: any
+  ): Promise<FeeDefaults> {
     return Promise.reject('estimating fee defaults using non extended public key not implemented')
   }
 
@@ -533,7 +548,7 @@ export class BitcoinProtocol implements ICoinProtocol {
       params.append('rawtx', rawTransaction)
       axios
         .post(this.baseApiUrl + '/api/tx/send', params)
-        .then(response => {
+        .then((response) => {
           const payload = response.data
           resolve(payload.txid)
         })

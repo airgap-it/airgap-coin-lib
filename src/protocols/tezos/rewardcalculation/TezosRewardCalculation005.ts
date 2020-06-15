@@ -13,7 +13,7 @@ export class TezosRewardsCalculation005 extends TezosRewardsCalculationDefault {
   ): Promise<TezosBakingRewards> {
     let result = new BigNumber(0)
     let rewardsByLevel: { level: number; amount: string; deposit: string; fees?: string }[] = []
-    const levels = bakingRights.map(br => br.level)
+    const levels = bakingRights.map((br) => br.level)
     let endorsementCountsAndFees: Map<number, { sum_number_of_slots: string; block_level: number; sum_fee: number }> | undefined = undefined
     if (!isFutureCycle) {
       endorsementCountsAndFees = await this.fetchEndorsementOperationCountAndTotalFees(levels)
@@ -56,7 +56,7 @@ export class TezosRewardsCalculation005 extends TezosRewardsCalculationDefault {
     let priorities: { priority: number; level: number }[] = []
     let rewardsByLevel: { level: number; amount: string; deposit: string }[] = []
     if (!isFutureCycle) {
-      const levels = endorsingRights.map(er => {
+      const levels = endorsingRights.map((er) => {
         return er.block_level!
       })
       if (levels.length > 0) {
@@ -67,7 +67,7 @@ export class TezosRewardsCalculation005 extends TezosRewardsCalculationDefault {
     const result = endorsingRights.reduce((current, next) => {
       let priority = 0
       if (!isFutureCycle) {
-        const block = priorities.find(p => p.level === next.block_level!)
+        const block = priorities.find((p) => p.level === next.block_level!)
         if (block === undefined) {
           throw new Error('Cannot find block priority')
         }

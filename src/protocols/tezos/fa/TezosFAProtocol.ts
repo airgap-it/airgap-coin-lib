@@ -64,7 +64,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     this.contract = new TezosContract(this.contractAddress, this.jsonRPCAPI, this.baseApiUrl, this.baseApiNetwork, this.headers.apiKey)
   }
 
-  public async bigMapValue(key: string, isKeyHash: boolean = false): Promise<string|null> {
+  public async bigMapValue(key: string, isKeyHash: boolean = false): Promise<string | null> {
     return this.contract.bigMapValue(key, isKeyHash)
   }
 
@@ -82,7 +82,12 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     return this.getBalanceOfPublicKey(publicKey)
   }
 
-  public async estimateFeeDefaultsFromPublicKey(publicKey: string, recipients: string[], values: string[], data?: any): Promise<FeeDefaults> {
+  public async estimateFeeDefaultsFromPublicKey(
+    publicKey: string,
+    recipients: string[],
+    values: string[],
+    data?: any
+  ): Promise<FeeDefaults> {
     // return this.feeDefaults
     if (recipients.length !== values.length) {
       throw new Error('length of recipients and values does not match!')
@@ -223,9 +228,9 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     if (offset !== 0) {
       return []
     }
-    
+
     const allTransactions = await Promise.all(
-      addresses.map(address => {
+      addresses.map((address) => {
         const body = {
           predicates: [
             {
@@ -267,7 +272,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
             // incoming txs
             headers: this.headers
           })
-          .then(response => response.data)
+          .then((response) => response.data)
           .catch(() => {
             return []
           })
@@ -334,7 +339,10 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     }
   }
 
-  public async normalizeTransactionParameters(parameters: string, fallbackEntrypointName?: string): Promise<{entrypoint: string, value: any}> {
+  public async normalizeTransactionParameters(
+    parameters: string,
+    fallbackEntrypointName?: string
+  ): Promise<{ entrypoint: string; value: any }> {
     const parsedParameters = this.parseParameters(parameters)
     if (parsedParameters.entrypoint !== undefined && parsedParameters.entrypoint !== TezosContract.defaultMethodName) {
       return {
@@ -343,7 +351,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
       }
     }
     const params = parsedParameters.value !== undefined ? parsedParameters.value : parsedParameters
-    const {selector, value} = TezosContractMethodSelector.fromJSON(params)
+    const { selector, value } = TezosContractMethodSelector.fromJSON(params)
     const method = await this.contract.methodForSelector(selector, fallbackEntrypointName)
     return {
       entrypoint: method.name,
@@ -351,12 +359,12 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     }
   }
 
-  public async fetchTokenHolders(): Promise<{address: string, amount: string}[]> {
+  public async fetchTokenHolders(): Promise<{ address: string; amount: string }[]> {
     // there is no standard way to fetch token holders for now, every subclass needs to implement its own logic
     return []
   }
 
-  public transferDetailsFromParameters(parameters: {entrypoint: string, value: any}): {from: string, to: string, amount: string } {
+  public transferDetailsFromParameters(parameters: { entrypoint: string; value: any }): { from: string; to: string; amount: string } {
     if (parameters.entrypoint !== TezosContractEntrypoint.transfer.name) {
       throw new Error('Only calls to the transfer entrypoint can be converted to IAirGapTransaction')
     }
@@ -437,7 +445,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
   }
 
   private async prepareContractCall(contractCalls: TezosContractCall[], fee: string, publicKey: string): Promise<RawTezosTransaction> {
-    const operations: TezosOperation[] = contractCalls.map(contractCall => {
+    const operations: TezosOperation[] = contractCalls.map((contractCall) => {
       return {
         kind: TezosOperationType.TRANSACTION,
         fee: fee,

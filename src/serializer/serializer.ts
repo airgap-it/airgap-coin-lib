@@ -98,7 +98,7 @@ export class Serializer {
       .map((el: Payload) => (el as FullPayload).asJson())
       .reduce((pv: IACMessageDefinitionObject[], cv: IACMessageDefinitionObject[]) => pv.concat(...cv), [] as IACMessageDefinitionObject[])
     return await Promise.all(
-      deserializedIACMessageDefinitionObjects.map(object => {
+      deserializedIACMessageDefinitionObjects.map((object) => {
         const unsignedTx = object.payload as UnsignedTransaction
         const validator = this.serializationValidatorByProtocolIdentifier(object.protocol)
         return validator.validateUnsignedTransaction(unsignedTx)
@@ -121,8 +121,8 @@ export class Serializer {
       'xtz-btc': TezosBTCTransactionValidator
     }
 
-    const exactMatch = Object.keys(validators).find(protocol => protocolIdentifier === protocol)
-    const startsWith = Object.keys(validators).find(protocol => protocolIdentifier.startsWith(protocol))
+    const exactMatch = Object.keys(validators).find((protocol) => protocolIdentifier === protocol)
+    const startsWith = Object.keys(validators).find((protocol) => protocolIdentifier.startsWith(protocol))
     let validator = exactMatch ? exactMatch : startsWith
     if (!validator) {
       throw Error(`Validator not implemented for ${protocolIdentifier}, ${exactMatch}, ${startsWith}, ${validator}`)

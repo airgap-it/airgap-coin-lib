@@ -294,7 +294,7 @@ validators.isValidAeternityTx = (transaction: unknown) => {
 }
 
 validators.isValidAeternityAccount = (accountIdentifier: string) => {
-  return new Promise(async resolve => {
+  return new Promise(async (resolve) => {
     if (accountIdentifier === null || typeof accountIdentifier === 'undefined') {
       resolve()
     }

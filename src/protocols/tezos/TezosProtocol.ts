@@ -294,7 +294,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       return []
     }
     const allTransactions = await Promise.all(
-      addresses.map(address => {
+      addresses.map((address) => {
         const getRequestBody = (field: string, set: string) => {
           return {
             predicates: [
@@ -529,7 +529,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   public async estimateMaxTransactionValueFromPublicKey(publicKey: string, recipients: string[], fee?: string): Promise<string> {
     const balance = await this.getBalanceOfPublicKey(publicKey)
     const balanceWrapper = new BigNumber(balance)
-    
+
     let maxFee: BigNumber
     if (fee !== undefined) {
       maxFee = new BigNumber(fee)
@@ -548,7 +548,12 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     return amountWithoutFees.toFixed()
   }
 
-  public async estimateFeeDefaultsFromPublicKey(publicKey: string, recipients: string[], values: string[], data?: any): Promise<FeeDefaults> {
+  public async estimateFeeDefaultsFromPublicKey(
+    publicKey: string,
+    recipients: string[],
+    values: string[],
+    data?: any
+  ): Promise<FeeDefaults> {
     if (recipients.length !== values.length) {
       throw new Error('length of recipients and values does not match!')
     }
@@ -572,15 +577,16 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
   protected async estimateFeeDefaultsForOperations(publicKey: string, operations: TezosOperation[]): Promise<FeeDefaults> {
     const estimated = await this.prepareOperations(publicKey, operations)
-    const hasReveal = estimated.contents.some(op => op.kind === TezosOperationType.REVEAL)
-    const estimatedFee = estimated.contents.reduce((current, next: any) => {
-      if (next.fee !== undefined) {
-        return current.plus(new BigNumber(next['fee']))
-      }
-      return current
-    }, new BigNumber(0))
-    .minus(hasReveal ? this.revealFee : 0)
-    .div(hasReveal ? estimated.contents.length - 1 : estimated.contents.length)
+    const hasReveal = estimated.contents.some((op) => op.kind === TezosOperationType.REVEAL)
+    const estimatedFee = estimated.contents
+      .reduce((current, next: any) => {
+        if (next.fee !== undefined) {
+          return current.plus(new BigNumber(next['fee']))
+        }
+        return current
+      }, new BigNumber(0))
+      .minus(hasReveal ? this.revealFee : 0)
+      .div(hasReveal ? estimated.contents.length - 1 : estimated.contents.length)
 
     const feeStepFactor = new BigNumber(0.1)
     const lowFee = estimatedFee.minus(estimatedFee.times(feeStepFactor).integerValue(BigNumber.ROUND_FLOOR))
@@ -862,7 +868,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     }
 
     const rewards = isDelegating
-      ? rewardInfo.map(reward => ({
+      ? rewardInfo.map((reward) => ({
           index: reward.cycle,
           amount: reward.reward.toFixed(),
           collected: reward.payout < new Date(),
@@ -898,7 +904,11 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     }
   }
 
-  public async prepareOperations(publicKey: string, operationRequests: TezosOperation[], overrideFees: boolean = true): Promise<TezosWrappedOperation> {
+  public async prepareOperations(
+    publicKey: string,
+    operationRequests: TezosOperation[],
+    overrideFees: boolean = true
+  ): Promise<TezosWrappedOperation> {
     let counter: BigNumber = new BigNumber(1)
     let branch: string
 
@@ -1040,7 +1050,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     return this.estimateAndReplaceLimitsAndFee(tezosWrappedOperation, overrideFees)
   }
 
-  public async estimateAndReplaceLimitsAndFee(tezosWrappedOperation: TezosWrappedOperation, overrideFees: boolean = true): Promise<TezosWrappedOperation> {
+  public async estimateAndReplaceLimitsAndFee(
+    tezosWrappedOperation: TezosWrappedOperation,
+    overrideFees: boolean = true
+  ): Promise<TezosWrappedOperation> {
     const fakeSignature: string = 'sigUHx32f9wesZ1n2BWpixXz4AQaZggEtchaQNHYGRCoWNAXx45WGW2ua3apUUUAGMLPwAU41QoaFCzVSL61VaessLg4YbbP'
 
     const { data: block }: AxiosResponse<{ chain_id: string }> = await axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/`)
@@ -1127,12 +1140,14 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     })
 
     if (overrideFees) {
-      const fee: number = (MINIMAL_FEE +
+      const fee: number =
+        MINIMAL_FEE +
         MINIMAL_FEE_PER_BYTE * Math.ceil((forgedOperation.length + 128) / 2) + // 128 is the length of a hex signature
-        MINIMAL_FEE_PER_GAS_UNIT * gasLimitTotal) + 100 // add 100 for safety
-      
+        MINIMAL_FEE_PER_GAS_UNIT * gasLimitTotal +
+        100 // add 100 for safety
+
       const feePerOperation: number = Math.ceil(fee / tezosWrappedOperation.contents.length)
-  
+
       tezosWrappedOperation.contents.forEach((operation: TezosOperation) => {
         if ((operation as TezosTransactionOperation).fee) {
           ;(operation as TezosTransactionOperation).fee = feePerOperation.toString()
@@ -1285,7 +1300,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     const timestamp: Date = new Date(mostRecentBlock.header.timestamp)
 
     const delegationInfo: DelegationRewardInfo[] = await Promise.all(
-      frozenBalance.map(async obj => {
+      frozenBalance.map(async (obj) => {
         const { data: delegatedBalanceAtCycle } = await axios.get(
           `${this.jsonRPCAPI}/chains/main/blocks/${(obj.cycle - 6) * TezosProtocol.BLOCKS_PER_CYCLE[this.network]}/context/contracts/${
             delegatorAddress ? delegatorAddress : bakerAddress
@@ -1293,8 +1308,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
         )
 
         const { data: stakingBalanceAtCycle } = await axios.get(
-          `${this.jsonRPCAPI}/chains/main/blocks/${(obj.cycle - 6) *
-            TezosProtocol.BLOCKS_PER_CYCLE[this.network]}/context/delegates/${bakerAddress}/staking_balance`
+          `${this.jsonRPCAPI}/chains/main/blocks/${
+            (obj.cycle - 6) * TezosProtocol.BLOCKS_PER_CYCLE[this.network]
+          }/context/delegates/${bakerAddress}/staking_balance`
         )
 
         return {
@@ -1472,7 +1488,12 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     return localForger.forge(tezosWrappedOperation as any)
   }
 
-  public async createRevealOperation(counter: BigNumber, publicKey: string, address: string, fee: string = this.revealFee.toFixed()): Promise<TezosRevealOperation> {
+  public async createRevealOperation(
+    counter: BigNumber,
+    publicKey: string,
+    address: string,
+    fee: string = this.revealFee.toFixed()
+  ): Promise<TezosRevealOperation> {
     const operation: TezosRevealOperation = {
       kind: TezosOperationType.REVEAL,
       fee: fee,
@@ -1593,7 +1614,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       headers: this.headers
     })
 
-    return result.data.map(account => {
+    return result.data.map((account) => {
       return {
         address: account.account_id,
         balance: new BigNumber(account.balance)

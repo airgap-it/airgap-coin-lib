@@ -1,4 +1,4 @@
-import { TezosContractEntity } from "./TezosContractEntity"
+import { TezosContractEntity } from './TezosContractEntity'
 
 export enum TezosContractEntrypointName {
   BALANCE = 'getBalance',

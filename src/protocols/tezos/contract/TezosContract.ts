@@ -2,7 +2,6 @@ import axios, { AxiosResponse } from '../../../dependencies/src/axios-0.19.0/ind
 import { TezosContractMethodSelectorPathComponent, TezosContractMethod, TezosContractMethodSelector } from './TezosContractMethod'
 
 export class TezosContract {
-
   public static defaultMethodName = 'default'
 
   private script: any | undefined
@@ -18,37 +17,37 @@ export class TezosContract {
   }
 
   constructor(
-    private address: string, 
-    private nodeRPCURL: string, 
-    private conseilAPIURL: string, 
+    private address: string,
+    private nodeRPCURL: string,
+    private conseilAPIURL: string,
     private conseilNetwork: string,
     private conseilAPIKey: string
   ) {}
 
-  public async bigMapValue(key: string, isKeyHash: boolean = false): Promise<string|null> {
+  public async bigMapValue(key: string, isKeyHash: boolean = false): Promise<string | null> {
     await this.fetchBigMapIDIfNeeded()
-    const predicates: {field: string, operation: string, set: any[]}[] = [
+    const predicates: { field: string; operation: string; set: any[] }[] = [
       {
-        field: "big_map_id",
-        operation: "eq",
+        field: 'big_map_id',
+        operation: 'eq',
         set: [this.bigMapID]
       }
     ]
     if (isKeyHash) {
       predicates.push({
-        field: "key_hash",
-        operation: "eq",
+        field: 'key_hash',
+        operation: 'eq',
         set: [key]
       })
     } else {
       predicates.push({
-        field: "key",
-        operation: "eq",
+        field: 'key',
+        operation: 'eq',
         set: [key]
       })
     }
-    return await this.conseilRequest<{value: string|null}[]>('/big_map_contents', {
-      fields: ["value"],
+    return await this.conseilRequest<{ value: string | null }[]>('/big_map_contents', {
+      fields: ['value'],
       predicates: predicates,
       limit: 1
     }).then((response) => {
@@ -60,20 +59,22 @@ export class TezosContract {
     })
   }
 
-  public async bigMapValues(predicates: BigMapValuePredicate[]): Promise<{key: string, value: string|null}[]> {
+  public async bigMapValues(predicates: BigMapValuePredicate[]): Promise<{ key: string; value: string | null }[]> {
     await this.fetchBigMapIDIfNeeded()
-    return (await this.conseilRequest<{key: string, value: string|null}[]>('/big_map_contents', {
-      fields: ["key", "value"],
-      predicates: [
-        {
-          field: "big_map_id",
-          operation: "eq",
-          set: [this.bigMapID],
-          inverse: false
-        },
-        ...predicates
-      ]
-    })).data
+    return (
+      await this.conseilRequest<{ key: string; value: string | null }[]>('/big_map_contents', {
+        fields: ['key', 'value'],
+        predicates: [
+          {
+            field: 'big_map_id',
+            operation: 'eq',
+            set: [this.bigMapID],
+            inverse: false
+          },
+          ...predicates
+        ]
+      })
+    ).data
   }
 
   public async methods(): Promise<TezosContractMethod[]> {
@@ -90,7 +91,7 @@ export class TezosContract {
       return new TezosContractMethod(selector, fallbackEntrypointName ? fallbackEntrypointName : TezosContract.defaultMethodName)
     }
     await this.fetchScriptIfNeeded()
-    
+
     let current = this.parameter.args[0]
     for (const pathComponent of selector.path) {
       const prim = (current.prim as string).toLowerCase()
@@ -127,13 +128,16 @@ export class TezosContract {
       await this.pendingScriptPromise
       return
     }
-    this.pendingScriptPromise = axios.get(this.nodeURL(`/chains/main/blocks/head/context/contracts/${this.address}/script`)).then((result) => {
-      this.pendingScriptPromise = undefined
-      return result.data
-    }).catch((error) => {
-      this.pendingScriptPromise = undefined
-      throw error
-    })
+    this.pendingScriptPromise = axios
+      .get(this.nodeURL(`/chains/main/blocks/head/context/contracts/${this.address}/script`))
+      .then((result) => {
+        this.pendingScriptPromise = undefined
+        return result.data
+      })
+      .catch((error) => {
+        this.pendingScriptPromise = undefined
+        throw error
+      })
     this.script = await this.pendingScriptPromise
   }
 
@@ -145,27 +149,29 @@ export class TezosContract {
       await this.pendingBigMapIDPromise
       return
     }
-    this.pendingBigMapIDPromise = this.conseilRequest<{big_map_id: number}[]>('/originated_account_maps', {
-      fields: ["big_map_id"],
+    this.pendingBigMapIDPromise = this.conseilRequest<{ big_map_id: number }[]>('/originated_account_maps', {
+      fields: ['big_map_id'],
       predicates: [
         {
-          field: "account_id",
-          operation: "eq",
+          field: 'account_id',
+          operation: 'eq',
           set: [this.address]
         }
       ],
       limit: 1
-    }).then((response) => { 
-      this.pendingBigMapIDPromise = undefined
-      const results = response.data
-      if (results.length === 0) {
-        throw new Error('BigMap ID not found')
-      }
-      return results[0].big_map_id
-    }).catch((error) => {
-      this.pendingBigMapIDPromise = undefined
-      throw error
     })
+      .then((response) => {
+        this.pendingBigMapIDPromise = undefined
+        const results = response.data
+        if (results.length === 0) {
+          throw new Error('BigMap ID not found')
+        }
+        return results[0].big_map_id
+      })
+      .catch((error) => {
+        this.pendingBigMapIDPromise = undefined
+        throw error
+      })
     this.bigMapID = await this.pendingBigMapIDPromise
   }
 
@@ -174,8 +180,13 @@ export class TezosContract {
     return this.searchMethods(root)
   }
 
-  private searchMethods(val: any, path?: TezosContractMethodSelectorPathComponent, currentSelector?: TezosContractMethodSelector): TezosContractMethod[] {
-    const selector: TezosContractMethodSelector = currentSelector !== undefined ? currentSelector.copy() : new TezosContractMethodSelector([])
+  private searchMethods(
+    val: any,
+    path?: TezosContractMethodSelectorPathComponent,
+    currentSelector?: TezosContractMethodSelector
+  ): TezosContractMethod[] {
+    const selector: TezosContractMethodSelector =
+      currentSelector !== undefined ? currentSelector.copy() : new TezosContractMethodSelector([])
     if (path !== undefined) {
       selector.add(path)
     }
@@ -191,9 +202,7 @@ export class TezosContract {
     const annots = val.annots
     if (Array.isArray(annots) && annots.length > 0) {
       const methodName: string = annots.find((annot: string) => annot.startsWith('%'))
-      return [
-        new TezosContractMethod(selector, methodName.substring(1))
-      ]
+      return [new TezosContractMethod(selector, methodName.substring(1))]
     }
 
     throw new Error('Cannot parse parameters')
@@ -215,8 +224,8 @@ export class TezosContract {
 }
 
 export interface BigMapValuePredicate {
-  field: 'key' | 'key_hash' | 'value' 
+  field: 'key' | 'key_hash' | 'value'
   operation: 'in' | 'between' | 'like' | 'lt' | 'gt' | 'eq' | 'startsWith' | 'endsWith' | 'before' | 'after'
-  set: any[] 
-  inverse?: boolean 
+  set: any[]
+  inverse?: boolean
 }

@@ -28,7 +28,7 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
   }
 
   async calculateRewards(bakerAddress: string, cycle: number, currentCycleIn?: number): Promise<TezosRewards> {
-    const currentCycle = currentCycleIn ?? await this.protocol.fetchCurrentCycle()
+    const currentCycle = currentCycleIn ?? (await this.protocol.fetchCurrentCycle())
     const calculatingLevel = cycle * TezosProtocol.BLOCKS_PER_CYCLE[this.protocol.network]
 
     await this.getConstants(calculatingLevel, currentCycle < cycle)
@@ -63,12 +63,12 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
       endorsingRewards: computedRewards.endorsingRewards,
 
       bakingDeposits: computedRewards.bakingRewardsDetails
-        .map(detail => (detail && detail.deposit ? (detail.deposit ? parseInt(detail.deposit) : 0) : 0))
+        .map((detail) => (detail && detail.deposit ? (detail.deposit ? parseInt(detail.deposit) : 0) : 0))
         .reduce((a, b) => a + b, 0)
         .toString(),
 
       endorsingDeposits: computedRewards.endorsingRewardsDetails
-        .map(detail => (detail && detail.deposit ? (detail.deposit ? parseInt(detail.deposit) : 0) : 0))
+        .map((detail) => (detail && detail.deposit ? (detail.deposit ? parseInt(detail.deposit) : 0) : 0))
         .reduce((a, b) => a + b, 0)
         .toString(),
 
@@ -118,7 +118,7 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
     computedEndorsingRewards = await this.computeEndorsingRewards(endorsingOperations, false)
 
     const frozenBalance = (await this.fetchFrozenBalances((cycle + 1) * this.tezosNodeConstants.blocks_per_cycle, bakerAddress)).find(
-      fb => fb.cycle == cycle
+      (fb) => fb.cycle == cycle
     )
 
     if (frozenBalance) {
@@ -250,7 +250,7 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
     let priorities: { priority: number; level: number }[] = []
     let rewardsByLevel: { level: number; amount: string; deposit: string }[] = []
     if (!isFutureCycle) {
-      const levels = endorsingRights.map(er => {
+      const levels = endorsingRights.map((er) => {
         return er.level
       })
       if (levels.length > 0) {
@@ -261,7 +261,7 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
     const result = endorsingRights.reduce((current, next) => {
       let priority = 0
       if (!isFutureCycle) {
-        const block = priorities.find(p => p.level === next.level)
+        const block = priorities.find((p) => p.level === next.level)
         if (block === undefined) {
           throw new Error('Cannot find block priority')
         }
@@ -354,7 +354,7 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
       `${this.protocol.jsonRPCAPI}/chains/main/blocks/${blockLevel}/helpers/endorsing_rights?cycle=${cycle}&delegate=${bakerAddress}`
     )
 
-    return endorsingRightsResult.data.map(endorsingRight => {
+    return endorsingRightsResult.data.map((endorsingRight) => {
       return {
         level: endorsingRight.level,
         delegate: endorsingRight.delegate,
