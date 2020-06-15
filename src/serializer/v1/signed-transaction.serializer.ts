@@ -3,8 +3,8 @@ import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { SerializedSignedAeternityTransaction } from './signed-transactions/aeternity-transactions.serializer'
 import { SerializedSignedBitcoinTransaction } from './signed-transactions/bitcoin-transactions.serializer'
 import { SerializedSignedEthereumTransaction } from './signed-transactions/ethereum-transactions.serializer'
-import { SerializedSignedTezosTransaction } from './signed-transactions/tezos-transactions.serializer'
 import { SerializedSignedSubstrateTransaction } from './signed-transactions/substrate-transactions.serializer'
+import { SerializedSignedTezosTransaction } from './signed-transactions/tezos-transactions.serializer'
 
 export abstract class SignedTransactionSerializer {
   public abstract serialize(unsignedTx: SignedTransaction): SerializedSyncProtocolSignedTransaction

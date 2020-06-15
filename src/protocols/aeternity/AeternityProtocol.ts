@@ -14,7 +14,7 @@ import { RawAeternityTransaction } from '../../serializer/types'
 import bs64check from '../../utils/base64Check'
 import { padStart } from '../../utils/padStart'
 import { EthereumUtils } from '../ethereum/utils/utils'
-import { CurrencyUnit, ICoinProtocol, FeeDefaults } from '../ICoinProtocol'
+import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
 
 export class AeternityProtocol extends NonExtendedProtocol implements ICoinProtocol {
@@ -55,7 +55,7 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
 
   public epochMiddleware: string = 'https://ae-epoch-rpc-proxy.gke.papers.tech'
 
-  private feesURL: string = 'https://api-airgap.gke.papers.tech/fees'
+  private readonly feesURL: string = 'https://api-airgap.gke.papers.tech/fees'
 
   constructor(public epochRPC: string = 'https://ae-epoch-rpc-proxy.gke.papers.tech') {
     super()
@@ -71,11 +71,13 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
 
   public async getPublicKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
     const secret = mnemonicToSeed(mnemonic, password)
+
     return this.getPublicKeyFromHexSecret(secret, derivationPath)
   }
 
   public async getPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<Buffer> {
     const secret = mnemonicToSeed(mnemonic, password)
+
     return this.getPrivateKeyFromHexSecret(secret, derivationPath)
   }
 
@@ -119,18 +121,18 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
 
   public async getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
     const allTransactions = await Promise.all(
-      addresses.map(address => {
+      addresses.map((address) => {
         return axios.get(`${this.epochMiddleware}/middleware/transactions/account/${address}`)
       })
     )
 
     const transactions: any[] = [].concat(
-      ...allTransactions.map(axiosData => {
+      ...allTransactions.map((axiosData) => {
         return axiosData.data || []
       })
     )
 
-    return transactions.map(obj => {
+    return transactions.map((obj) => {
       const parsedTimestamp = parseInt(obj.time, 10)
       const airGapTx: IAirGapTransaction = {
         amount: new BigNumber(obj.tx.amount).toString(10),
@@ -169,7 +171,7 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
       transaction: rawTx
     }
 
-    const txArray = Object.keys(txObj).map(a => txObj[a])
+    const txArray = Object.keys(txObj).map((a) => txObj[a])
 
     const rlpEncodedTx = rlp.encode(txArray)
     const signedEncodedTx = `tx_${bs64check.encode(rlpEncodedTx)}`
@@ -265,7 +267,7 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
   public async estimateMaxTransactionValueFromPublicKey(publicKey: string, recipients: string[], fee?: string): Promise<string> {
     const balance = await this.getBalanceOfPublicKey(publicKey)
     const balanceWrapper = new BigNumber(balance)
-    
+
     let maxFee: BigNumber
     if (fee !== undefined) {
       maxFee = new BigNumber(fee)
@@ -281,10 +283,16 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
     if (amountWithoutFees.isNegative()) {
       amountWithoutFees = new BigNumber(0)
     }
+
     return amountWithoutFees.toFixed()
   }
 
-  public async estimateFeeDefaultsFromPublicKey(publicKey: string, recipients: string[], values: string[], data?: any): Promise<FeeDefaults> {
+  public async estimateFeeDefaultsFromPublicKey(
+    publicKey: string,
+    recipients: string[],
+    values: string[],
+    data?: any
+  ): Promise<FeeDefaults> {
     return (await axios.get(this.feesURL)).data
   }
 
@@ -330,7 +338,7 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
       payload: Buffer.from(payload || '')
     }
 
-    const txArray = Object.keys(txObj).map(a => txObj[a])
+    const txArray = Object.keys(txObj).map((a) => txObj[a])
     const rlpEncodedTx = rlp.encode(txArray)
     const preparedTx = `tx_${bs64check.encode(rlpEncodedTx)}`
 

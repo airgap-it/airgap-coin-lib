@@ -1,5 +1,5 @@
 export enum SubstratePayee {
-    STAKED = 0,
-    STASH,
-    CONTROLLER
+  STAKED = 0,
+  STASH,
+  CONTROLLER
 }

@@ -1,4 +1,4 @@
-import { TezosContractEntity } from "./TezosContractEntity"
+import { TezosContractEntity } from './TezosContractEntity'
 
 export enum TezosContractEntrypointName {
   BALANCE = 'getBalance',
@@ -11,26 +11,26 @@ export enum TezosContractEntrypointName {
 }
 
 export class TezosContractEntrypoint extends TezosContractEntity {
-  static transfer = new TezosContractEntrypoint(TezosContractEntrypointName.TRANSFER)
-  static balance = new TezosContractEntrypoint(TezosContractEntrypointName.BALANCE)
-  static allowance = new TezosContractEntrypoint(TezosContractEntrypointName.ALLOWANCE)
-  static approve = new TezosContractEntrypoint(TezosContractEntrypointName.APPROVE)
-  static totalsupply = new TezosContractEntrypoint(TezosContractEntrypointName.TOTAL_SUPPLY)
-  static totalminted = new TezosContractEntrypoint(TezosContractEntrypointName.TOTAL_MINTED)
-  static totalburned = new TezosContractEntrypoint(TezosContractEntrypointName.TOTAL_BURNED)
+  public static transfer = new TezosContractEntrypoint(TezosContractEntrypointName.TRANSFER)
+  public static balance = new TezosContractEntrypoint(TezosContractEntrypointName.BALANCE)
+  public static allowance = new TezosContractEntrypoint(TezosContractEntrypointName.ALLOWANCE)
+  public static approve = new TezosContractEntrypoint(TezosContractEntrypointName.APPROVE)
+  public static totalsupply = new TezosContractEntrypoint(TezosContractEntrypointName.TOTAL_SUPPLY)
+  public static totalminted = new TezosContractEntrypoint(TezosContractEntrypointName.TOTAL_MINTED)
+  public static totalburned = new TezosContractEntrypoint(TezosContractEntrypointName.TOTAL_BURNED)
 
-  readonly name: TezosContractEntrypointName
+  public readonly name: TezosContractEntrypointName
 
   constructor(name: TezosContractEntrypointName) {
     super()
     this.name = name
   }
 
-  toJSON(): any {
+  public toJSON(): any {
     return `${this.name}`
   }
 
-  static fromJSON(json: any): TezosContractEntrypoint {
+  public static fromJSON(json: any): TezosContractEntrypoint {
     if (typeof json !== 'string') {
       throw new Error('expected a string as input')
     }
@@ -49,7 +49,7 @@ export class TezosContractEntrypoint extends TezosContractEntity {
     }
   }
 
-  static fromString(name: string): TezosContractEntrypoint {
+  public static fromString(name: string): TezosContractEntrypoint {
     switch (name) {
       case TezosContractEntrypointName.BALANCE:
         return TezosContractEntrypoint.balance
