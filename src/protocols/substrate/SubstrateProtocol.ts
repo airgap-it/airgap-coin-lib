@@ -1,23 +1,25 @@
-import { FeeDefaults, CurrencyUnit } from '../ICoinProtocol'
-import { ICoinDelegateProtocol, DelegationDetails, DelegateeDetails, DelegatorDetails } from '../ICoinDelegateProtocol'
-import { NonExtendedProtocol } from '../NonExtendedProtocol'
-import { SubstrateNodeClient } from './helpers/node/SubstrateNodeClient'
-import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { isString } from 'util'
+
 import { IAirGapTransaction } from '../..'
-import { SubstrateTransactionType } from './helpers/data/transaction/SubstrateTransaction'
+import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { AirGapTransactionStatus } from '../../interfaces/IAirGapTransaction'
 import { UnsignedSubstrateTransaction } from '../../serializer/schemas/definitions/transaction-sign-request-substrate'
 import { SignedSubstrateTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-substrate'
-import { SubstratePayee } from './helpers/data/staking/SubstratePayee'
-import { isString } from 'util'
 import { RawSubstrateTransaction } from '../../serializer/types'
+import { assertFields } from '../../utils/assert'
+import { DelegateeDetails, DelegationDetails, DelegatorDetails, ICoinDelegateProtocol } from '../ICoinDelegateProtocol'
+import { CurrencyUnit, FeeDefaults } from '../ICoinProtocol'
+import { NonExtendedProtocol } from '../NonExtendedProtocol'
+
+import { SubstrateBlockExplorerClient } from './helpers/blockexplorer/SubstrateBlockExplorerClient'
+import { SubstrateAddress } from './helpers/data/account/SubstrateAddress'
+import { SubstratePayee } from './helpers/data/staking/SubstratePayee'
+import { SubstrateStakingActionType } from './helpers/data/staking/SubstrateStakingActionType'
+import { SubstrateTransactionType } from './helpers/data/transaction/SubstrateTransaction'
+import { SubstrateNodeClient } from './helpers/node/SubstrateNodeClient'
 import { SubstrateAccountController } from './helpers/SubstrateAccountController'
 import { SubstrateTransactionController } from './helpers/SubstrateTransactionController'
-import { SubstrateBlockExplorerClient } from './helpers/blockexplorer/SubstrateBlockExplorerClient'
-import { SubstrateStakingActionType } from './helpers/data/staking/SubstrateStakingActionType'
-import { SubstrateAddress } from './helpers/data/account/SubstrateAddress'
 import { SubstrateNetwork } from './SubstrateNetwork'
-import { assertFields } from '../../utils/assert'
-import { AirGapTransactionStatus } from '../../interfaces/IAirGapTransaction'
 
 export abstract class SubstrateProtocol extends NonExtendedProtocol implements ICoinDelegateProtocol {
   public abstract symbol: string
@@ -61,21 +63,25 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
 
   public async getPublicKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
     const keyPair = await this.accountController.createKeyPairFromMnemonic(mnemonic, derivationPath, password)
+
     return keyPair.publicKey.toString('hex')
   }
 
   public async getPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<Buffer> {
     const keyPair = await this.accountController.createKeyPairFromMnemonic(mnemonic, derivationPath, password)
+
     return keyPair.privateKey
   }
 
   public async getPublicKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
     const keyPair = await this.accountController.createKeyPairFromHexSecret(secret, derivationPath)
+
     return keyPair.publicKey.toString('hex')
   }
 
   public async getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<Buffer> {
     const keyPair = await this.accountController.createKeyPairFromHexSecret(secret, derivationPath)
+
     return keyPair.privateKey
   }
 
@@ -89,6 +95,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
 
   public async getTransactionsFromPublicKey(publicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]> {
     const addresses = await this.getAddressesFromPublicKey(publicKey)
+
     return this.getTransactionsFromAddresses(addresses, limit, offset)
   }
 
@@ -243,12 +250,14 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
       return txs[0].type !== SubstrateTransactionType.SUBMIT_BATCH ? txHashes[0] : ''
     } catch (error) {
       console.warn(`Transaction #${error.index} submit failure`, error)
+
       return Promise.reject(`Error while submitting transaction #${error.index}: ${SubstrateTransactionType[txs[error.index].type]}.`)
     }
   }
 
   public async getDefaultDelegatee(): Promise<string> {
     const validators = await this.nodeClient.getValidators()
+
     return validators ? validators[0].toString() : ''
   }
 
@@ -262,6 +271,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
 
   public async getDelegateeDetails(address: string): Promise<DelegateeDetails> {
     const validatorDetails = await this.accountController.getValidatorDetails(address)
+
     return {
       name: validatorDetails.name || '',
       status: validatorDetails.status || '',
@@ -322,23 +332,29 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     switch (type) {
       case SubstrateStakingActionType.BOND_NOMINATE:
         assertFields(`${SubstrateStakingActionType[type]} action`, data, 'targets', 'value', 'payee')
+
         return this.prepareDelegation(publicKey, data.tip || 0, data.targets, data.controller || publicKey, data.value, data.payee)
       case SubstrateStakingActionType.NOMINATE:
         assertFields(`${SubstrateStakingActionType[type]} action`, data, 'targets')
+
         return this.prepareDelegation(publicKey, data.tip || 0, data.targets)
       case SubstrateStakingActionType.CANCEL_NOMINATION:
         return this.prepareCancelDelegation(publicKey, data.tip || 0, data.value)
       case SubstrateStakingActionType.CHANGE_NOMINATION:
         assertFields(`${SubstrateStakingActionType[type]} action`, data, 'targets')
+
         return this.prepareChangeValidator(publicKey, data.tip || 0, data.targets)
       case SubstrateStakingActionType.UNBOND:
         assertFields(`${SubstrateStakingActionType[type]} action`, data, 'value')
+
         return this.prepareUnbond(publicKey, data.tip || 0, data.value)
       case SubstrateStakingActionType.REBOND:
         assertFields(`${SubstrateStakingActionType[type]} action`, data, 'value')
+
         return this.prepareRebond(publicKey, data.tip || 0, data.value)
       case SubstrateStakingActionType.BOND_EXTRA:
         assertFields(`${SubstrateStakingActionType[type]} action`, data, 'value')
+
         return this.prepareBondExtra(publicKey, data.tip || 0, data.value)
       case SubstrateStakingActionType.WITHDRAW_UNBONDED:
         return this.prepareWithdrawUnbonded(publicKey, data.tip || 0)
@@ -452,7 +468,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
         type: SubstrateTransactionType.UNBOND,
         tip,
         args: {
-          value: BigNumber.isBigNumber(value) ? value : new BigNumber(value!)
+          value: BigNumber.isBigNumber(value) ? value : new BigNumber(value)
         }
       }
     ])
@@ -472,7 +488,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
         type: SubstrateTransactionType.REBOND,
         tip,
         args: {
-          value: BigNumber.isBigNumber(value) ? value : new BigNumber(value!)
+          value: BigNumber.isBigNumber(value) ? value : new BigNumber(value)
         }
       }
     ])
@@ -566,7 +582,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     const isNominating = results[1]
     const transferableBalance = results[2]
 
-    let requiredTransactions: [SubstrateTransactionType, any][] = []
+    const requiredTransactions: [SubstrateTransactionType, any][] = []
 
     if (intention === 'transfer') {
       requiredTransactions.push([

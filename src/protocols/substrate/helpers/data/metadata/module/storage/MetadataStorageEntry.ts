@@ -1,12 +1,12 @@
-import { SCALEClass } from '../../../scale/type/SCALEClass'
-import { SCALEDecodeResult } from '../../../scale/SCALEDecoder'
-import { SCALEString } from '../../../scale/type/SCALEString'
-import { SCALEDecoder } from '../../../scale/SCALEDecoder'
-import { SCALEEnum } from '../../../scale/type/SCALEEnum'
-import { MetadataStorageEntryType } from './MetadataStorageEntryType'
-import { SCALEBytes } from '../../../scale/type/SCALEBytes'
-import { SCALEArray } from '../../../scale/type/SCALEArray'
 import { SubstrateNetwork } from '../../../../../SubstrateNetwork'
+import { SCALEDecoder, SCALEDecodeResult } from '../../../scale/SCALEDecoder'
+import { SCALEArray } from '../../../scale/type/SCALEArray'
+import { SCALEBytes } from '../../../scale/type/SCALEBytes'
+import { SCALEClass } from '../../../scale/type/SCALEClass'
+import { SCALEEnum } from '../../../scale/type/SCALEEnum'
+import { SCALEString } from '../../../scale/type/SCALEString'
+
+import { MetadataStorageEntryType } from './MetadataStorageEntryType'
 
 enum StorageEntryModifier {
   Optional = 0,

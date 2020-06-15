@@ -1,9 +1,11 @@
-import { SCALEType } from './SCALEType'
-import { SCALEDecodeResult } from '../SCALEDecoder'
-import BigNumber from '../../../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
-import { stripHexPrefix, changeEndianness, toHexStringRaw } from '../../../../../../utils/hex'
 import { isNumber } from 'util'
+
+import BigNumber from '../../../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { changeEndianness, stripHexPrefix, toHexStringRaw } from '../../../../../../utils/hex'
+import { SCALEDecodeResult } from '../SCALEDecoder'
+
 import { SCALECompactInt } from './SCALECompactInt'
+import { SCALEType } from './SCALEType'
 
 type Number = SCALECompactInt | SCALEInt | BigNumber | number
 
@@ -19,6 +21,7 @@ export class SCALEInt extends SCALEType {
     _hex = changeEndianness(stripHexPrefix(hex).substr(0, nibbles))
 
     const decoded = new BigNumber(_hex, 16)
+
     return {
       bytesDecoded: Math.ceil(nibbles / 2),
       decoded: SCALEInt.from(decoded, bitLength)
@@ -75,6 +78,7 @@ export class SCALEInt extends SCALEType {
 
   protected _encode(): string {
     const hex = toHexStringRaw(this.value, this.bitLength)
+
     return changeEndianness(hex)
   }
 

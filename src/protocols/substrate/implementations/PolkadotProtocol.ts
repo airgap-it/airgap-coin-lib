@@ -1,8 +1,8 @@
-import { SubstrateProtocol } from '../SubstrateProtocol'
-import { SubstrateNetwork } from '../SubstrateNetwork'
-import { FeeDefaults, CurrencyUnit } from '../../ICoinProtocol'
-import { SubstrateNodeClient } from '../helpers/node/SubstrateNodeClient'
+import { CurrencyUnit, FeeDefaults } from '../../ICoinProtocol'
 import { SubstrateBlockExplorerClient } from '../helpers/blockexplorer/SubstrateBlockExplorerClient'
+import { SubstrateNodeClient } from '../helpers/node/SubstrateNodeClient'
+import { SubstrateNetwork } from '../SubstrateNetwork'
+import { SubstrateProtocol } from '../SubstrateProtocol'
 
 const NODE_URL = ''
 

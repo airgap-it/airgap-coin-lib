@@ -1,8 +1,9 @@
-import * as bs58check from '../../dependencies/src/bs58check-2.1.2/index'
 import * as bigInt from '../../dependencies/src/big-integer-1.6.45/BigInteger'
-import { TezosContractPair } from './contract/TezosContractPair'
-import { TezosContractList } from './contract/TezosContractList'
+import * as bs58check from '../../dependencies/src/bs58check-2.1.2/index'
+
 import { TezosContractEntity } from './contract/TezosContractEntity'
+import { TezosContractList } from './contract/TezosContractList'
+import { TezosContractPair } from './contract/TezosContractPair'
 
 export type TezosContractType = string | number | TezosContractPair
 
@@ -68,9 +69,11 @@ export class TezosUtils {
           }
           intBytes.push(byte)
         } while (parseInt(byte, 16) >= 127)
+
         return TezosUtils.decodeSignedInt(intBytes.join(''))
       case '01': // string
         const lengthBytes = TezosUtils.hexToLength(hex.splice(0, 4))
+
         return TezosUtils.hexToString(hex.splice(0, lengthBytes))
       case '05': // single arg prim
         return TezosUtils.parseHex(hex)
@@ -104,12 +107,14 @@ export class TezosUtils {
     if (hexBytes === null) {
       throw new Error('Cannot parse contract code')
     }
+
     return hexBytes
   }
 
   private static parsePair(hex: string[]): TezosContractPair {
     const first = TezosUtils.parseHex(hex)
     const second = TezosUtils.parseHex(hex)
+
     return new TezosContractPair(first, second)
   }
 
@@ -123,6 +128,7 @@ export class TezosUtils {
         items.push(item)
       }
     }
+
     return new TezosContractList(items)
   }
 
@@ -135,12 +141,14 @@ export class TezosUtils {
       if (next === '00') {
         return previous
       }
+
       return `${previous}${next}`
     }, '')
 
     if (stringValue.length > 0) {
       return parseInt(stringValue, 16)
     }
+
     return 0
   }
 

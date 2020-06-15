@@ -1,6 +1,6 @@
+import { SubstrateNetwork } from '../../../SubstrateNetwork'
 import { SCALEDecoder } from '../scale/SCALEDecoder'
 import { SCALECompactInt } from '../scale/type/SCALECompactInt'
-import { SubstrateNetwork } from '../../../SubstrateNetwork'
 
 export class SubstrateValidatorPrefs {
   public static decode(network: SubstrateNetwork, raw: string): SubstrateValidatorPrefs {

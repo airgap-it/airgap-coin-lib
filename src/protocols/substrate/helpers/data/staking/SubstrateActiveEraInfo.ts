@@ -1,7 +1,7 @@
-import { SCALEInt } from '../scale/type/SCALEInt'
-import { SCALEDecoder } from '../scale/SCALEDecoder'
-import { SCALEOptional } from '../scale/type/SCALEOptional'
 import { SubstrateNetwork } from '../../../SubstrateNetwork'
+import { SCALEDecoder } from '../scale/SCALEDecoder'
+import { SCALEInt } from '../scale/type/SCALEInt'
+import { SCALEOptional } from '../scale/type/SCALEOptional'
 
 export class SubstrateActiveEraInfo {
   public static decode(network: SubstrateNetwork, raw: string): SubstrateActiveEraInfo {

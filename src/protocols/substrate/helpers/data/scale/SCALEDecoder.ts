@@ -1,19 +1,21 @@
-import { SCALEType } from './type/SCALEType'
+import { isString } from 'util'
+
+import { stripHexPrefix } from '../../../../../utils/hex'
+import { SubstrateNetwork } from '../../../SubstrateNetwork'
+
 import { SCALEAccountId } from './type/SCALEAccountId'
 import { SCALEArray } from './type/SCALEArray'
 import { SCALEBoolean } from './type/SCALEBoolean'
 import { SCALEBytes } from './type/SCALEBytes'
 import { SCALECompactInt } from './type/SCALECompactInt'
+import { SCALEEnum } from './type/SCALEEnum'
 import { SCALEEra } from './type/SCALEEra'
 import { SCALEHash } from './type/SCALEHash'
 import { SCALEInt } from './type/SCALEInt'
 import { SCALEOptional } from './type/SCALEOptional'
 import { SCALEString } from './type/SCALEString'
 import { SCALETuple } from './type/SCALETuple'
-import { SCALEEnum } from './type/SCALEEnum'
-import { stripHexPrefix } from '../../../../../utils/hex'
-import { isString } from 'util'
-import { SubstrateNetwork } from '../../../SubstrateNetwork'
+import { SCALEType } from './type/SCALEType'
 
 export type DecoderMethod<T> = (network: SubstrateNetwork, hex: string) => SCALEDecodeResult<T>
 export type DecoderPartialMethod<T> = (hex: string) => SCALEDecodeResult<T>
@@ -92,6 +94,7 @@ export class SCALEDecoder {
   private decodeNextValue<T>(decoderMethod: DecoderMethod<T>, nibbleLength?: number): SCALEDecodeResult<T> {
     const decoded = decoderMethod(this.network, this.hex.substr(0, nibbleLength))
     this.moveCursor(decoded.bytesDecoded)
+
     return decoded
   }
 

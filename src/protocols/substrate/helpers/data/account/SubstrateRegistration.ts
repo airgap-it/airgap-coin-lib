@@ -1,12 +1,12 @@
-import { SCALEArray } from '../scale/type/SCALEArray'
-import { SCALETuple } from '../scale/type/SCALETuple'
-import { SCALEInt } from '../scale/type/SCALEInt'
-import { SCALEEnum } from '../scale/type/SCALEEnum'
-import { SCALEDecoder, SCALEDecodeResult } from '../scale/SCALEDecoder'
-import { SCALEHash } from '../scale/type/SCALEHash'
 import { hexToBytes } from '../../../../../utils/hex'
-import { SCALEBytes } from '../scale/type/SCALEBytes'
 import { SubstrateNetwork } from '../../../SubstrateNetwork'
+import { SCALEDecoder, SCALEDecodeResult } from '../scale/SCALEDecoder'
+import { SCALEArray } from '../scale/type/SCALEArray'
+import { SCALEBytes } from '../scale/type/SCALEBytes'
+import { SCALEEnum } from '../scale/type/SCALEEnum'
+import { SCALEHash } from '../scale/type/SCALEHash'
+import { SCALEInt } from '../scale/type/SCALEInt'
+import { SCALETuple } from '../scale/type/SCALETuple'
 
 enum SubstrateJudgment {
   UNKNOWN = 0,
@@ -119,6 +119,7 @@ export class SubstrateRegistration {
             const balance = SCALEInt.decode(second.slice(0, bytesDecoded * 2), 128)
             bytesDecoded += balance.bytesDecoded
           }
+
           return {
             bytesDecoded,
             decoded: value.decoded

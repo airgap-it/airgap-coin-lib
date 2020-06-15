@@ -36,11 +36,13 @@ export class SubstrateNodeCache {
             lastInvalidated: new Date().getTime()
           })
         }
+
         return value
       })
       .finally(() => this.promises.delete(key))
 
     this.promises.set(key, newPromise)
+
     return newPromise
   }
 

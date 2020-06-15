@@ -1,10 +1,10 @@
+import { SubstrateNetwork } from '../../../SubstrateNetwork'
 import { SCALEDecoder } from '../scale/SCALEDecoder'
-import { SCALETuple } from '../scale/type/SCALETuple'
 import { SCALEAccountId } from '../scale/type/SCALEAccountId'
 import { SCALEArray } from '../scale/type/SCALEArray'
 import { SCALECompactInt } from '../scale/type/SCALECompactInt'
 import { SCALEInt } from '../scale/type/SCALEInt'
-import { SubstrateNetwork } from '../../../SubstrateNetwork'
+import { SCALETuple } from '../scale/type/SCALETuple'
 
 export class SubstrateStakingLedger {
   public static decode(network: SubstrateNetwork, raw: string): SubstrateStakingLedger {

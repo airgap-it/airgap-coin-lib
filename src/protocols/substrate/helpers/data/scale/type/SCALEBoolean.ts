@@ -1,6 +1,7 @@
-import { SCALEType } from './SCALEType'
-import { SCALEDecodeResult } from '../SCALEDecoder'
 import { stripHexPrefix, toHexStringRaw } from '../../../../../../utils/hex'
+import { SCALEDecodeResult } from '../SCALEDecoder'
+
+import { SCALEType } from './SCALEType'
 
 export class SCALEBoolean extends SCALEType {
   public static from(value: boolean | number): SCALEBoolean {
@@ -11,6 +12,7 @@ export class SCALEBoolean extends SCALEType {
     const _hex = stripHexPrefix(hex)
 
     const value = parseInt(_hex.substr(0, 2), 16)
+
     return {
       bytesDecoded: 1,
       decoded: SCALEBoolean.from(value)

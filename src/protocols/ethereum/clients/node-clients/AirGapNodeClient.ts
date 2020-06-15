@@ -136,6 +136,7 @@ export class AirGapNodeClient extends EthereumNodeClient {
     const body = new EthereumRPCBody('eth_getBalance', [address, EthereumRPCBody.blockLatest])
 
     const response = await this.send(body)
+
     return new BigNumber(response.result)
   }
 
@@ -143,6 +144,7 @@ export class AirGapNodeClient extends EthereumNodeClient {
     const body = new EthereumRPCBody('eth_getTransactionCount', [address, EthereumRPCBody.blockLatest])
 
     const response = await this.send(body)
+
     return new BigNumber(response.result).toNumber()
   }
 
@@ -156,6 +158,7 @@ export class AirGapNodeClient extends EthereumNodeClient {
     const body = new EthereumRPCBody('eth_getTransactionReceipt', [transactionHash])
 
     const response = await this.send(body)
+
     return response.result.status === '0x1' ? AirGapTransactionStatus.APPLIED : AirGapTransactionStatus.FAILED
   }
 
@@ -164,6 +167,7 @@ export class AirGapNodeClient extends EthereumNodeClient {
     const body = new EthereumRPCBody('eth_call', [{ to: contractAddress, data: data.abiEncoded() }, EthereumRPCBody.blockLatest])
 
     const response = await this.send(body)
+
     return new BigNumber(response.result)
   }
 
@@ -174,15 +178,17 @@ export class AirGapNodeClient extends EthereumNodeClient {
     data?: string,
     gas?: string
   ): Promise<BigNumber> {
-    const body = new EthereumRPCBody('eth_estimateGas', [{ from: fromAddress, to: toAddress, gas: gas, value: amount, data: data }])
+    const body = new EthereumRPCBody('eth_estimateGas', [{ from: fromAddress, to: toAddress, gas, value: amount, data }])
 
     const response = await this.send(body)
+
     return new BigNumber(response.result)
   }
 
   public async estimateTransferGas(contractAddress: string, fromAddress: string, toAddress: string, hexAmount: string): Promise<BigNumber> {
     const data = new EthereumRPCDataTransfer(toAddress, hexAmount)
     const result = this.estimateTransactionGas(fromAddress, contractAddress, undefined, data.abiEncoded())
+
     return result
   }
 
@@ -190,6 +196,7 @@ export class AirGapNodeClient extends EthereumNodeClient {
     const body = new EthereumRPCBody('eth_gasPrice', [])
 
     const response = await this.send(body)
+
     return new BigNumber(response.result)
   }
 
@@ -198,6 +205,7 @@ export class AirGapNodeClient extends EthereumNodeClient {
     if (data.error !== undefined) {
       throw new Error(data.error.message)
     }
+
     return data
   }
 }

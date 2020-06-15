@@ -1,9 +1,9 @@
-import { SCALEArray } from '../scale/type/SCALEArray'
-import { SCALETuple } from '../scale/type/SCALETuple'
-import { SCALEAccountId } from '../scale/type/SCALEAccountId'
-import { SCALEInt } from '../scale/type/SCALEInt'
-import { SCALEDecoder } from '../scale/SCALEDecoder'
 import { SubstrateNetwork } from '../../../SubstrateNetwork'
+import { SCALEDecoder } from '../scale/SCALEDecoder'
+import { SCALEAccountId } from '../scale/type/SCALEAccountId'
+import { SCALEArray } from '../scale/type/SCALEArray'
+import { SCALEInt } from '../scale/type/SCALEInt'
+import { SCALETuple } from '../scale/type/SCALETuple'
 
 export class SubstrateEraRewardPoints {
   public static decode(network: SubstrateNetwork, raw: string): SubstrateEraRewardPoints {

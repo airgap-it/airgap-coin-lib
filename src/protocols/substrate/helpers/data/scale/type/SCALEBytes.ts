@@ -1,8 +1,10 @@
-import { SCALEType } from './SCALEType'
-import { SCALEDecodeResult } from '../SCALEDecoder'
-import { SCALECompactInt } from './SCALECompactInt'
 import { isString } from 'util'
+
 import { isHex, stripHexPrefix } from '../../../../../../utils/hex'
+import { SCALEDecodeResult } from '../SCALEDecoder'
+
+import { SCALECompactInt } from './SCALECompactInt'
+import { SCALEType } from './SCALEType'
 
 export class SCALEBytes extends SCALEType {
   public static from(bytes: string | Buffer | Uint8Array): SCALEBytes {
@@ -19,7 +21,7 @@ export class SCALEBytes extends SCALEType {
   }
 
   public static decode(hex: string): SCALEDecodeResult<SCALEBytes> {
-    let _hex = stripHexPrefix(hex)
+    const _hex = stripHexPrefix(hex)
 
     const length = SCALECompactInt.decode(_hex)
     const bytes = _hex.substr(length.bytesDecoded * 2, length.decoded.toNumber() * 2)

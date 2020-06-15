@@ -1,12 +1,14 @@
-import { SCALEType } from './SCALEType'
-import { SCALEDecodeResult } from '../SCALEDecoder'
-import { stripHexPrefix, bytesToHex } from '../../../../../../utils/hex'
-import { SubstrateAddress } from '../../account/SubstrateAddress'
+import { bytesToHex, stripHexPrefix } from '../../../../../../utils/hex'
 import { SubstrateNetwork } from '../../../../SubstrateNetwork'
+import { SubstrateAddress } from '../../account/SubstrateAddress'
+import { SCALEDecodeResult } from '../SCALEDecoder'
+
+import { SCALEType } from './SCALEType'
 
 export class SCALEAccountId extends SCALEType {
   public static from(value: string | Uint8Array | Buffer | SubstrateAddress, network: SubstrateNetwork): SCALEAccountId {
     const address: SubstrateAddress = value instanceof SubstrateAddress ? value : SubstrateAddress.from(bytesToHex(value), network)
+
     return new SCALEAccountId(address)
   }
 

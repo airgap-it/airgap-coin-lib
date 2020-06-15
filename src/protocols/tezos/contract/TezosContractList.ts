@@ -5,7 +5,7 @@ export class TezosContractList extends TezosContractEntity {
     super()
   }
 
-  toJSON() {
+  public toJSON() {
     return this.items.map((item) => {
       switch (typeof item) {
         case 'string':
@@ -13,7 +13,7 @@ export class TezosContractList extends TezosContractEntity {
         case 'number':
           return { int: item.toString() }
         default:
-          return (item as TezosContractEntity).toJSON()
+          return item.toJSON()
       }
     })
   }

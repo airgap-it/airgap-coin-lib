@@ -49,6 +49,7 @@ export class TezosContractMethodSelector {
         break
       }
     }
-    return { selector: selector, value: current }
+
+    return { selector, value: current }
   }
 }

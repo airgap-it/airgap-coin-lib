@@ -1,8 +1,8 @@
 import { IAirGapTransaction } from '../../..'
+import { AirGapTransactionType } from '../../../interfaces/IAirGapTransaction'
 import { CosmosCoin } from '../CosmosCoin'
 
 import { CosmosMessage, CosmosMessageJSON, CosmosMessageType, CosmosMessageTypeIndex } from './CosmosMessage'
-import { AirGapTransactionType } from '../../../interfaces/IAirGapTransaction'
 
 export class CosmosDelegateMessage implements CosmosMessage {
   public readonly delegatorAddress: string

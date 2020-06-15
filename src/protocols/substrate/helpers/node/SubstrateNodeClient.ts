@@ -1,48 +1,47 @@
+import { RPCBody } from '../../../../data/RPCBody'
 import axios from '../../../../dependencies/src/axios-0.19.0'
 import BigNumber from '../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { addHexPrefix, bytesToHex, stripHexPrefix, toHexString } from '../../../../utils/hex'
+import { SubstrateNetwork } from '../../SubstrateNetwork'
+import { SubstrateAccountInfo } from '../data/account/SubstrateAccountInfo'
+import { SubstrateAddress } from '../data/account/SubstrateAddress'
+import { SubstrateRegistration } from '../data/account/SubstrateRegistration'
+import { Metadata } from '../data/metadata/Metadata'
+import { MetadataCall } from '../data/metadata/module/MetadataCall'
+import { MetadataConstant } from '../data/metadata/module/MetadataConstants'
+import { MetadataStorage } from '../data/metadata/module/storage/MetadataStorage'
+import { SCALEAccountId } from '../data/scale/type/SCALEAccountId'
+import { SCALEArray } from '../data/scale/type/SCALEArray'
+import { SCALEEnum } from '../data/scale/type/SCALEEnum'
+import { SCALEInt } from '../data/scale/type/SCALEInt'
+import { SCALEType } from '../data/scale/type/SCALEType'
+import { SubstrateActiveEraInfo } from '../data/staking/SubstrateActiveEraInfo'
+import { SubstrateEraRewardPoints } from '../data/staking/SubstrateEraRewardPoints'
+import { SubstrateExposure } from '../data/staking/SubstrateExposure'
+import { SubstrateNominations } from '../data/staking/SubstrateNominations'
+import { SubstratePayee } from '../data/staking/SubstratePayee'
+import { SubstrateStakingLedger } from '../data/staking/SubstrateStakingLedger'
+import { SubstrateValidatorPrefs } from '../data/staking/SubstrateValidatorPrefs'
+import { SubstrateTransactionType } from '../data/transaction/SubstrateTransaction'
 
+import { SubstrateCallId } from './call/SubstrateCallId'
+import { SubstrateConstant } from './constant/SubstrateConstant'
+import { SubstrateStorageEntry } from './storage/SubstrateStorageEntry'
+import { SubstrateNodeCache } from './SubstrateNodeCache'
 import {
-  SubstrateRpcModuleName,
-  SubstrateRpcMethodName,
-  SubstrateStorageModuleName,
-  SubstrateStorageEntryName,
   SubstrateCallModuleName,
   SubstrateCallName,
   SubstrateConstantModuleName,
   SubstrateConstantName,
+  SubstrateRpcMethodName,
+  SubstrateRpcModuleName,
+  SubstrateStorageEntryName,
+  SubstrateStorageModuleName,
   supportedCallEndpoints,
-  supportedStorageEntries,
   supportedCalls,
-  supportedConstants
+  supportedConstants,
+  supportedStorageEntries
 } from './supported'
-
-import { SubstrateStorageEntry } from './storage/SubstrateStorageEntry'
-import { SubstrateCallId } from './call/SubstrateCallId'
-import { SubstrateConstant } from './constant/SubstrateConstant'
-import { RPCBody } from '../../../../data/RPCBody'
-import { addHexPrefix, bytesToHex, stripHexPrefix, toHexString } from '../../../../utils/hex'
-import { Metadata } from '../data/metadata/Metadata'
-import { SubstrateAddress } from '../data/account/SubstrateAddress'
-import { SubstrateAccountInfo } from '../data/account/SubstrateAccountInfo'
-import { SCALEType } from '../data/scale/type/SCALEType'
-import { SCALEAccountId } from '../data/scale/type/SCALEAccountId'
-import { MetadataStorage } from '../data/metadata/module/storage/MetadataStorage'
-import { MetadataCall } from '../data/metadata/module/MetadataCall'
-import { MetadataConstant } from '../data/metadata/module/MetadataConstants'
-import { SubstrateNodeCache } from './SubstrateNodeCache'
-import { SCALEInt } from '../data/scale/type/SCALEInt'
-import { SubstrateTransactionType } from '../data/transaction/SubstrateTransaction'
-import { SubstrateNominations } from '../data/staking/SubstrateNominations'
-import { SubstrateStakingLedger } from '../data/staking/SubstrateStakingLedger'
-import { SubstrateEraRewardPoints } from '../data/staking/SubstrateEraRewardPoints'
-import { SubstratePayee } from '../data/staking/SubstratePayee'
-import { SCALEEnum } from '../data/scale/type/SCALEEnum'
-import { SCALEArray } from '../data/scale/type/SCALEArray'
-import { SubstrateRegistration } from '../data/account/SubstrateRegistration'
-import { SubstrateActiveEraInfo } from '../data/staking/SubstrateActiveEraInfo'
-import { SubstrateExposure } from '../data/staking/SubstrateExposure'
-import { SubstrateValidatorPrefs } from '../data/staking/SubstrateValidatorPrefs'
-import { SubstrateNetwork } from '../../SubstrateNetwork'
 
 interface ConnectionConfig {
   allowCache: boolean
@@ -82,6 +81,7 @@ export class SubstrateNodeClient {
     if (methodName && callName) {
       callId = await this.getCallId(methodName, callName)
     }
+
     return callId ? callId : Promise.reject('Could not find requested item.')
   }
 
@@ -283,7 +283,7 @@ export class SubstrateNodeClient {
         const metadata = Metadata.decode(this.network, metadataEncoded)
 
         let callModuleIndex = 0
-        for (let module of metadata.modules.elements) {
+        for (const module of metadata.modules.elements) {
           const moduleName = module.name.value
 
           const storagePrefix = module.storage.value?.prefix?.value
@@ -358,15 +358,7 @@ export class SubstrateNodeClient {
     const key = `${endpoint}$${params.join('')}`
 
     return this.cache.get(key).catch(() => {
-      const promise = axios
-        .post(
-          this.baseURL,
-          new RPCBody(
-            endpoint,
-            params.map((param) => addHexPrefix(param))
-          )
-        )
-        .then((response) => response.data.result)
+      const promise = axios.post(this.baseURL, new RPCBody(endpoint, params.map(addHexPrefix))).then((response) => response.data.result)
 
       return this.cache.save(key, promise, { cacheValue: config.allowCache })
     })

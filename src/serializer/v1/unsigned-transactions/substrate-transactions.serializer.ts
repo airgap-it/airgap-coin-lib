@@ -1,10 +1,10 @@
-import {
-  UnsignedTransactionSerializer,
-  UnsignedTransaction,
-  SerializedSyncProtocolTransaction,
-  SyncProtocolUnsignedTransactionKeys
-} from '../unsigned-transaction.serializer'
 import { toBuffer } from '../../utils/toBuffer'
+import {
+  SerializedSyncProtocolTransaction,
+  SyncProtocolUnsignedTransactionKeys,
+  UnsignedTransaction,
+  UnsignedTransactionSerializer
+} from '../unsigned-transaction.serializer'
 
 export type SerializedUnsignedSubstrateTransaction = [Buffer]
 

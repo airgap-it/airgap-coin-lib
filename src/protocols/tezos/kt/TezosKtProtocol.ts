@@ -1,13 +1,13 @@
 import axios, { AxiosResponse } from '../../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { RawTezosTransaction } from '../../../serializer/types'
+import { FeeDefaults } from '../../ICoinProtocol'
 import { ICoinSubProtocol, SubProtocolType } from '../../ICoinSubProtocol'
 import { TezosProtocol } from '../TezosProtocol'
-import { TezosTransactionOperation } from '../types/operations/Transaction'
 import { TezosOperation } from '../types/operations/TezosOperation'
+import { TezosTransactionOperation } from '../types/operations/Transaction'
 import { TezosOperationType } from '../types/TezosOperationType'
 import { TezosWrappedOperation } from '../types/TezosWrappedOperation'
-import { FeeDefaults } from '../../ICoinProtocol'
 
 export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
   public identifier: string = 'xtz-kt'
@@ -71,6 +71,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     data?: any
   ): Promise<FeeDefaults> {
     const fee = this.migrationFee.shiftedBy(-this.feeDecimals).toFixed()
+
     return {
       low: fee,
       medium: fee,

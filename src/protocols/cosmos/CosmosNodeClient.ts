@@ -116,6 +116,7 @@ export class CosmosNodeClient {
             this.fetchTotalDelegatedAmount(address)
           ])
         ).reduce((current, next) => current.plus(next), new BigNumber(availableBalance))
+
         return totalBalance.decimalPlaces(0, BigNumber.ROUND_FLOOR)
       } else {
         return new BigNumber(availableBalance).decimalPlaces(0, BigNumber.ROUND_FLOOR)
@@ -161,6 +162,7 @@ export class CosmosNodeClient {
 
   public async fetchTotalDelegatedAmount(address: string): Promise<BigNumber> {
     const delegations = await this.fetchDelegations(address)
+
     return delegations
       .reduce((current, next) => current.plus(new BigNumber(next.balance)), new BigNumber(0))
       .decimalPlaces(0, BigNumber.ROUND_FLOOR)
@@ -192,6 +194,7 @@ export class CosmosNodeClient {
   public async fetchUnbondingDelegations(delegatorAddress: string): Promise<CosmosUnbondingDelegation[]> {
     const response = await Axios.get(this.url(`/staking/delegators/${delegatorAddress}/unbonding_delegations`))
     const unbondingDelegations = response.data.result as CosmosUnbondingDelegation[]
+
     return unbondingDelegations
   }
 
@@ -199,10 +202,12 @@ export class CosmosNodeClient {
     const unbondingDelegations: CosmosUnbondingDelegation[] = await this.fetchUnbondingDelegations(address)
     if (unbondingDelegations) {
       const unbondings = unbondingDelegations.map((delegation) => delegation.entries).reduce((current, next) => current.concat(next), [])
+
       return unbondings
         .reduce((current, next) => current.plus(new BigNumber(next.balance)), new BigNumber(0))
         .decimalPlaces(0, BigNumber.ROUND_FLOOR)
     }
+
     return new BigNumber(0)
   }
 

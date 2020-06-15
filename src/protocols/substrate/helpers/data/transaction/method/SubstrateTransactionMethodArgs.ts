@@ -1,18 +1,19 @@
-import { SubstrateTransactionType } from '../SubstrateTransaction'
-import { SCALEType } from '../../scale/type/SCALEType'
-import { SCALEDecodeResult, SCALEDecoder } from '../../scale/SCALEDecoder'
+import BigNumber from '../../../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { IAirGapTransaction } from '../../../../../../interfaces/IAirGapTransaction'
+import { assertFields } from '../../../../../../utils/assert'
+import { SubstrateNetwork } from '../../../../SubstrateNetwork'
+import { SubstrateAccountId, SubstrateAddress } from '../../account/SubstrateAddress'
+import { SCALEDecoder, SCALEDecodeResult } from '../../scale/SCALEDecoder'
 import { SCALEAccountId } from '../../scale/type/SCALEAccountId'
+import { SCALEArray } from '../../scale/type/SCALEArray'
 import { SCALECompactInt } from '../../scale/type/SCALECompactInt'
 import { SCALEEnum } from '../../scale/type/SCALEEnum'
-import { SCALEArray } from '../../scale/type/SCALEArray'
-import { SubstrateAddress, SubstrateAccountId } from '../../account/SubstrateAddress'
-import BigNumber from '../../../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { SCALEInt } from '../../scale/type/SCALEInt'
-import { SubstrateTransactionMethod } from './SubstrateTransactionMethod'
+import { SCALEType } from '../../scale/type/SCALEType'
 import { SubstratePayee } from '../../staking/SubstratePayee'
-import { IAirGapTransaction } from '../../../../../../interfaces/IAirGapTransaction'
-import { SubstrateNetwork } from '../../../../SubstrateNetwork'
-import { assertFields } from '../../../../../../utils/assert'
+import { SubstrateTransactionType } from '../SubstrateTransaction'
+
+import { SubstrateTransactionMethod } from './SubstrateTransactionMethod'
 
 interface TransferArgs {
   to: SubstrateAccountId
@@ -67,37 +68,47 @@ export abstract class SubstrateTransactionMethodArgsFactory<T> {
     switch (type) {
       case SubstrateTransactionType.TRANSFER:
         assertFields('transfer', args, 'to', 'value')
+
         return new TransferArgsFactory(network, args)
       case SubstrateTransactionType.BOND:
         assertFields('bond', args, 'controller', 'value', 'payee')
+
         return new BondArgsFactory(network, args)
       case SubstrateTransactionType.UNBOND:
         assertFields('unbond', args, 'value')
+
         return new UnbondArgsFactory(network, args)
       case SubstrateTransactionType.REBOND:
         assertFields('rebond', args, 'value')
+
         return new RebondArgsFactory(network, args)
       case SubstrateTransactionType.BOND_EXTRA:
         assertFields('bondExtra', args, 'value')
+
         return new BondExtraArgsFactory(network, args)
       case SubstrateTransactionType.WITHDRAW_UNBONDED:
         return new WithdrawUnbondedArgsFactory(network, args)
       case SubstrateTransactionType.NOMINATE:
         assertFields('nominate', args, 'targets')
+
         return new NominateArgsFactory(network, args)
       case SubstrateTransactionType.CANCEL_NOMINATION:
         return new StopNominatingArgsFactory(network, args)
       case SubstrateTransactionType.COLLECT_PAYOUT:
         assertFields('collectPayout', args, 'eraIndex', 'validators')
+
         return new PayoutStakersArgsFactory(network, args)
       case SubstrateTransactionType.SET_PAYEE:
         assertFields('setPayee', args, 'payee')
+
         return new SetPayeeArgsFactory(network, args)
       case SubstrateTransactionType.SET_CONTROLLER:
         assertFields('setController', args, 'controller')
+
         return new SetControllerArgsFactory(network, args)
       case SubstrateTransactionType.SUBMIT_BATCH:
         assertFields('submitBatch', args, 'calls')
+
         return new SubmitBatchArgsFactory(network, args)
     }
   }
@@ -140,6 +151,7 @@ export abstract class SubstrateTransactionMethodArgsDecoder<T> {
 
   public decode(network: SubstrateNetwork, raw: string): SCALEDecodeResult<T> {
     const decoder = new SCALEDecoder(network, raw)
+
     return this._decode(decoder)
   }
 
