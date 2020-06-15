@@ -1286,7 +1286,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
     const delegationInfo: DelegationRewardInfo[] = await Promise.all(
       frozenBalance.slice(0, 5).map(async obj => {
-        const rewards = await this.calculateRewards(bakerAddress, obj.cycle, mostRecentCycle)
+        const rewards = await this.calculateRewards(bakerAddress, obj.cycle, mostRecentCycle, false)
         const payout = await this.calculatePayout(delegatorAddress ?? bakerAddress, rewards)
         return {
           cycle: obj.cycle,
@@ -1492,7 +1492,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
   private static readonly FIRST_005_CYCLE: number = 160
   private static readonly FIRST_006_CYCLE: number = 208
-  public async calculateRewards(bakerAddress: string, cycle: number, currentCycle?: number): Promise<TezosRewards> {
+  public async calculateRewards(bakerAddress: string, cycle: number, currentCycle?: number, breakDownRewards: boolean = true): Promise<TezosRewards> {
     const is005 = this.network !== TezosNetwork.MAINNET || cycle >= TezosProtocol.FIRST_005_CYCLE
     const is006 = this.network === TezosNetwork.CARTHAGENET || cycle >= TezosProtocol.FIRST_006_CYCLE
     let rewardCalculation: TezosRewardsCalculations
@@ -1504,7 +1504,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       rewardCalculation = new TezosRewardsCalculationDefault(this)
     }
 
-    return rewardCalculation.calculateRewards(bakerAddress, cycle, currentCycle)
+    return rewardCalculation.calculateRewards(bakerAddress, cycle, breakDownRewards, currentCycle)
   }
 
   public async calculatePayouts(rewards: TezosRewards, offsetOrAddresses: number | string[], limit?: number): Promise<TezosPayoutInfo[]> {
@@ -1693,7 +1693,7 @@ export interface TezosEndorsingRight {
 
 export interface TezosRewardsCalculations {
   protocol: TezosProtocol
-  calculateRewards(bakerAddress: string, cycle: number, currentCycleIn?: number): Promise<TezosRewards>
+  calculateRewards(bakerAddress: string, cycle: number, breakDownRewards: boolean, currentCycleIn?: number): Promise<TezosRewards>
 }
 
 export interface TezosRewards {

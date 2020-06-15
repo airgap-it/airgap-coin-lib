@@ -27,7 +27,7 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
     ).data as TezosNodeConstantsV1
   }
 
-  async calculateRewards(bakerAddress: string, cycle: number, currentCycleIn?: number): Promise<TezosRewards> {
+  async calculateRewards(bakerAddress: string, cycle: number, breakdownRewards: boolean = true, currentCycleIn?: number): Promise<TezosRewards> {
     const currentCycle = currentCycleIn ?? await this.protocol.fetchCurrentCycle()
     const calculatingLevel = cycle * TezosProtocol.BLOCKS_PER_CYCLE[this.protocol.network]
 
@@ -44,9 +44,9 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
     }
 
     if (cycle < currentCycle) {
-      computedRewards = await this.calculatePastRewards(bakerAddress, cycle)
+      computedRewards = await this.calculatePastRewards(bakerAddress, cycle, breakdownRewards)
     } else {
-      computedRewards = await this.calculateFutureRewards(bakerAddress, cycle, currentCycle)
+      computedRewards = await this.calculateFutureRewards(bakerAddress, cycle, currentCycle, breakdownRewards)
     }
 
     const snapshotLevel = await this.computeSnapshotBlockLevel(Math.min(cycle, currentCycle))
@@ -85,7 +85,8 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
 
   private async calculatePastRewards(
     bakerAddress: string,
-    cycle: number
+    cycle: number,
+    breakdownRewards: boolean
   ): Promise<{
     bakingRewards: string
     endorsingRewards: string
@@ -108,14 +109,17 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
     let fees = '0'
     let totalRewards = '0'
     let deposit = '0'
-    const bakedBlocks = await this.fetchBlocksForBaker(bakerAddress, cycle)
 
-    if (bakedBlocks.length > 0) {
-      computedBakingRewards = await this.computeBakingRewards(bakedBlocks, false)
+    if (breakdownRewards) {
+      const bakedBlocks = await this.fetchBlocksForBaker(bakerAddress, cycle)
+
+      if (bakedBlocks.length > 0) {
+        computedBakingRewards = await this.computeBakingRewards(bakedBlocks, false)
+      }
+
+      const endorsingOperations = await this.fetchEndorsementOperations(cycle, bakerAddress)
+      computedEndorsingRewards = await this.computeEndorsingRewards(endorsingOperations, false)
     }
-
-    const endorsingOperations = await this.fetchEndorsementOperations(cycle, bakerAddress)
-    computedEndorsingRewards = await this.computeEndorsingRewards(endorsingOperations, false)
 
     const frozenBalance = (await this.fetchFrozenBalances((cycle + 1) * this.tezosNodeConstants.blocks_per_cycle, bakerAddress)).find(
       fb => fb.cycle == cycle
@@ -141,7 +145,8 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
   private async calculateFutureRewards(
     bakerAddress: string,
     cycle: number,
-    currentCycle: number
+    currentCycle: number,
+    breakdownRewards: boolean
   ): Promise<{
     bakingRewards: string
     endorsingRewards: string
@@ -168,10 +173,12 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
       throw new Error('Provided cycle is invalid')
     }
 
-    const bakingRights = await this.fetchBakingRights(bakerAddress, currentCycle * this.tezosNodeConstants.blocks_per_cycle, cycle, 1)
-    computedBakingRewards = await this.computeBakingRewards(bakingRights, true)
-    const endorsingRights = await this.fetchEndorsingRights(bakerAddress, currentCycle * this.tezosNodeConstants.blocks_per_cycle, cycle)
-    computedEndorsingRewards = await this.computeEndorsingRewards(endorsingRights, true)
+    if (breakdownRewards) {
+      const bakingRights = await this.fetchBakingRights(bakerAddress, currentCycle * this.tezosNodeConstants.blocks_per_cycle, cycle, 1)
+      computedBakingRewards = await this.computeBakingRewards(bakingRights, true)
+      const endorsingRights = await this.fetchEndorsingRights(bakerAddress, currentCycle * this.tezosNodeConstants.blocks_per_cycle, cycle)
+      computedEndorsingRewards = await this.computeEndorsingRewards(endorsingRights, true)
+    }
 
     totalRewards = new BigNumber(computedBakingRewards.totalBakingRewards)
       .plus(new BigNumber(computedEndorsingRewards.totalEndorsingRewards))
