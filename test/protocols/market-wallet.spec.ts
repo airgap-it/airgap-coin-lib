@@ -5,24 +5,24 @@ import * as sinon from 'sinon'
 
 import axios from '../../src/dependencies/src/axios-0.19.0/index'
 import {
-  AirGapMarketWallet,
-  BitcoinProtocol,
-  EthereumProtocol,
-  ICoinProtocol,
   addSupportedProtocol,
   AeternityProtocol,
+  AirGapMarketWallet,
+  BitcoinProtocol,
+  CosmosProtocol,
+  EthereumProtocol,
   GroestlcoinProtocol,
-  TezosProtocol,
-  CosmosProtocol
+  ICoinProtocol,
+  TezosProtocol
 } from '../../src/index'
 import { NetworkType } from '../../src/utils/Network'
 
-addSupportedProtocol(new AeternityProtocol(), {} as any)
-addSupportedProtocol(new BitcoinProtocol(), {} as any)
-addSupportedProtocol(new EthereumProtocol(), {} as any)
-addSupportedProtocol(new GroestlcoinProtocol(), {} as any)
-addSupportedProtocol(new TezosProtocol(), {} as any)
-addSupportedProtocol(new CosmosProtocol(), {} as any)
+addSupportedProtocol(new AeternityProtocol())
+addSupportedProtocol(new BitcoinProtocol())
+addSupportedProtocol(new EthereumProtocol())
+addSupportedProtocol(new GroestlcoinProtocol())
+addSupportedProtocol(new TezosProtocol())
+addSupportedProtocol(new CosmosProtocol())
 
 // use chai-as-promised plugin
 chai.use(chaiAsPromised)

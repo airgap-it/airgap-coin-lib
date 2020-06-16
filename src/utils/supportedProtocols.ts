@@ -1,6 +1,6 @@
 import { ICoinProtocol } from '../protocols/ICoinProtocol'
 
-import { ChainNetwork, isNetworkEqual } from './Network'
+import { isNetworkEqual } from './Network'
 
 const protocols: ICoinProtocol[] = []
 
@@ -8,17 +8,16 @@ const supportedProtocols: () => ICoinProtocol[] = (): ICoinProtocol[] => {
   return protocols
 }
 
-const addSupportedProtocol: (newProtocol: ICoinProtocol, network: ChainNetwork) => void = (
-  newProtocol: ICoinProtocol,
-  network: ChainNetwork
-): void => {
+const addSupportedProtocol: (newProtocol: ICoinProtocol) => void = (newProtocol: ICoinProtocol): void => {
   if (
     supportedProtocols().find(
-      (protocolWrapper: ICoinProtocol) =>
-        protocolWrapper.identifier === newProtocol.identifier && isNetworkEqual(protocolWrapper.chainNetwork, network)
+      (protocol: ICoinProtocol) =>
+        protocol.identifier === newProtocol.identifier && isNetworkEqual(protocol.chainNetwork, newProtocol.chainNetwork)
     )
   ) {
-    throw new Error(`protocol ${newProtocol.name} on network ${network.type}(${network.rpcUrl}) already exists`)
+    throw new Error(
+      `protocol ${newProtocol.name} on network ${newProtocol.chainNetwork.type}(${newProtocol.chainNetwork.rpcUrl}) already exists`
+    )
   }
 
   protocols.push(newProtocol)
