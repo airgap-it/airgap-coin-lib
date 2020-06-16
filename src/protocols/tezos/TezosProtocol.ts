@@ -1313,8 +1313,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     const delegationInfo: DelegationRewardInfo[] = await Promise.all(
       frozenBalance.slice(0, 5).map(async (obj) => {
         const rewards = await this.calculateRewards(bakerAddress, obj.cycle, mostRecentCycle, false)
-        let delegatedBalance = "0"
-        let payoutAmount = "0"
+        let delegatedBalance = '0'
+        let payoutAmount = '0'
         if (rewards.delegatedContracts.includes(address)) {
           const payout = await this.calculatePayout(address, rewards)
           delegatedBalance = payout.balance
@@ -1529,7 +1529,12 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
   private static readonly FIRST_005_CYCLE: number = 160
   private static readonly FIRST_006_CYCLE: number = 208
-  public async calculateRewards(bakerAddress: string, cycle: number, currentCycle?: number, breakDownRewards: boolean = true): Promise<TezosRewards> {
+  public async calculateRewards(
+    bakerAddress: string,
+    cycle: number,
+    currentCycle?: number,
+    breakDownRewards: boolean = true
+  ): Promise<TezosRewards> {
     const is005 = this.network !== TezosNetwork.MAINNET || cycle >= TezosProtocol.FIRST_005_CYCLE
     const is006 = this.network === TezosNetwork.CARTHAGENET || cycle >= TezosProtocol.FIRST_006_CYCLE
     let rewardCalculation: TezosRewardsCalculations

@@ -1,5 +1,4 @@
 import { sr25519DeriveKeypairHard, sr25519DeriveKeypairSoft, sr25519KeypairFromSeed, waitReady } from '@polkadot/wasm-crypto'
-import { isString } from 'util'
 
 import { KeyPair } from '../data/KeyPair'
 
@@ -56,7 +55,7 @@ export async function createSr25519KeyPair(secret: string | Uint8Array, derivati
   assertProperDerivationPath(derivationPath)
   await waitReady()
 
-  const seed = isString(secret) ? Buffer.from(stripHexPrefix(secret), 'hex') : secret
+  const seed = typeof secret === 'string' ? Buffer.from(stripHexPrefix(secret), 'hex') : secret
   const keyPair = sr25519KeypairFromSeed(seed.subarray(0, 32)) // 32-bit seed is required
   const derivedKeyPair = deriveFromPath(keyPair, derivationPath.slice(2))
 

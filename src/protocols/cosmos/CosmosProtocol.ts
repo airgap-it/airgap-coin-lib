@@ -1,5 +1,3 @@
-import { isArray } from 'util'
-
 import { KeyPair } from '../../data/KeyPair'
 import BECH32 = require('../../dependencies/src/bech32-1.1.3/index')
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
@@ -456,7 +454,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
     const account: CosmosAccount = await this.nodeClient.fetchAccount(address)
     const message: CosmosDelegateMessage = new CosmosDelegateMessage(
       address,
-      isArray(validatorAddress) ? validatorAddress[0] : validatorAddress,
+      Array.isArray(validatorAddress) ? validatorAddress[0] : validatorAddress,
       new CosmosCoin('uatom', amount),
       undelegate
     )
@@ -568,9 +566,9 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
       this.getBalanceOfAddresses([address]),
       this.getAvailableBalanceOfAddresses([address]),
       this.nodeClient.fetchDelegations(address).catch(() => [] as CosmosDelegation[]),
-      this.nodeClient.fetchRewardDetails(address).catch(() => [] as CosmosRewardDetails[]),
+      this.nodeClient.fetchRewardDetails(address).catch(() => [] as CosmosRewardDetails[])
     ])
-    
+
     const totalBalance = results[0]
     const availableBalance = new BigNumber(results[1])
     const delegations = results[2]

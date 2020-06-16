@@ -1,5 +1,3 @@
-import { isString } from 'util'
-
 import { IAirGapTransaction } from '../..'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { AirGapTransactionStatus } from '../../interfaces/IAirGapTransaction'
@@ -389,7 +387,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
               args: {
                 controller,
                 value: BigNumber.isBigNumber(value) ? value : new BigNumber(value!),
-                payee: isString(payee) ? SubstratePayee[payee] : payee
+                payee: typeof payee === 'string' ? SubstratePayee[payee] : payee
               }
             }
           ]
@@ -398,7 +396,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
         type: SubstrateTransactionType.NOMINATE,
         tip,
         args: {
-          targets: isString(targets) ? [targets] : targets
+          targets: typeof targets === 'string' ? [targets] : targets
         }
       }
     ])
@@ -448,7 +446,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
         type: SubstrateTransactionType.NOMINATE,
         tip,
         args: {
-          targets: isString(targets) ? [targets] : targets
+          targets: typeof targets === 'string' ? [targets] : targets
         }
       }
     ])

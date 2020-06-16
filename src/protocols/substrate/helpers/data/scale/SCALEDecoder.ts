@@ -1,5 +1,3 @@
-import { isString } from 'util'
-
 import { stripHexPrefix } from '../../../../../utils/hex'
 import { SubstrateNetwork } from '../../../SubstrateNetwork'
 
@@ -29,7 +27,7 @@ export class SCALEDecoder {
   private hex: string
 
   constructor(private readonly network: SubstrateNetwork, bytes: string | Uint8Array | Buffer) {
-    this.hex = isString(bytes) ? stripHexPrefix(bytes) : Buffer.from(bytes).toString('hex')
+    this.hex = typeof bytes === 'string' ? stripHexPrefix(bytes) : Buffer.from(bytes).toString('hex')
   }
 
   public decodeNextAccountId(): SCALEDecodeResult<SCALEAccountId> {

@@ -1,5 +1,3 @@
-import { isString } from 'util'
-
 import bs58 = require('../../../../../dependencies/src/bs58-4.0.1')
 import { blake2bAsBytes } from '../../../../../utils/blake2b'
 import { hexToBytes, isHex } from '../../../../../utils/hex'
@@ -36,9 +34,9 @@ export class SubstrateAddress {
   }
 
   public static from(accountId: SubstrateAccountId, network: SubstrateNetwork): SubstrateAddress {
-    if (isString(accountId) && isHex(accountId)) {
+    if (typeof accountId === 'string' && isHex(accountId)) {
       return this.fromPublicKey(accountId, network)
-    } else if (isString(accountId)) {
+    } else if (typeof accountId === 'string') {
       return this.fromEncoded(accountId)
     } else {
       return accountId
@@ -83,9 +81,9 @@ export class SubstrateAddress {
   constructor(readonly version: Buffer, readonly payload: Buffer, readonly checksum: Buffer) {}
 
   public compare(other: SubstrateAccountId): number {
-    if (isString(other) && isHex(other)) {
+    if (typeof other === 'string' && isHex(other)) {
       return this.payload.compare(Buffer.from(other, 'hex'))
-    } else if (isString(other)) {
+    } else if (typeof other === 'string') {
       return this.toString().localeCompare(other)
     } else {
       return this.payload.compare(other.payload)
