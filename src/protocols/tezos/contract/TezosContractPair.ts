@@ -3,9 +3,10 @@ import { TezosContractString } from './TezosContractString'
 import { TezosContractInt } from './TezosContractInt'
 import { TezosContractBytes } from './TezosContractBytes'
 
+
 export class TezosContractPair extends TezosContractEntity {
-  first: TezosContractEntity
-  second: TezosContractEntity
+  public first: TezosContractEntity
+  public second: TezosContractEntity
 
   constructor(first: TezosContractEntity, second: TezosContractEntity) {
     super()
@@ -13,21 +14,22 @@ export class TezosContractPair extends TezosContractEntity {
     this.second = second
   }
 
-  toJSON(): any {
+  public toJSON(): any {
     return {
       prim: 'Pair',
       args: [this.first.toJSON(), this.second.toJSON()]
     }
   }
 
-  static fromJSON(json: any): TezosContractPair {
+  public static fromJSON(json: any): TezosContractPair {
     if (json.prim !== 'Pair') {
       throw new Error('type not supported')
     }
+
     return new TezosContractPair(this.argumentsFromJSON(json.args[0]), this.argumentsFromJSON(json.args[1]))
   }
 
-  static argumentsFromJSON(json: any): TezosContractEntity {
+  public static argumentsFromJSON(json: any): TezosContractEntity {
     if (json.string !== undefined) {
       return new TezosContractString(json.string)
     }

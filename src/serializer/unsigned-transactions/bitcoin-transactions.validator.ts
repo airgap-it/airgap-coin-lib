@@ -40,7 +40,7 @@ const signedTransactionConstraints = {
   }
 }
 const success = () => undefined
-const error = errors => errors
+const error = (errors) => errors
 
 export class BitcoinTransactionValidator extends TransactionValidator {
   public validateUnsignedTransaction(unsignedTx: UnsignedBitcoinTransaction): Promise<any> {

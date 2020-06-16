@@ -52,25 +52,13 @@ describe(`AirGapMarketWallet`, () => {
 */
 
   const stubCoinlibOfWallet = (wallet: AirGapMarketWallet) => {
-    sinon
-      .stub(wallet.coinProtocol, 'getTransactionsFromAddresses')
-      .withArgs()
-      .returns(Promise.resolve(txList))
-    sinon
-      .stub(wallet.coinProtocol, 'getTransactionsFromExtendedPublicKey')
-      .withArgs()
-      .returns(Promise.resolve(txList))
-    sinon
-      .stub(wallet.coinProtocol, 'getTransactionsFromPublicKey')
-      .withArgs()
-      .returns(Promise.resolve(txList))
+    sinon.stub(wallet.coinProtocol, 'getTransactionsFromAddresses').withArgs().returns(Promise.resolve(txList))
+    sinon.stub(wallet.coinProtocol, 'getTransactionsFromExtendedPublicKey').withArgs().returns(Promise.resolve(txList))
+    sinon.stub(wallet.coinProtocol, 'getTransactionsFromPublicKey').withArgs().returns(Promise.resolve(txList))
   }
 
   beforeEach(() => {
-    sinon
-      .stub(axios, 'get')
-      .withArgs(`https://url`)
-      .returns(Promise.resolve(sampleResponse))
+    sinon.stub(axios, 'get').withArgs(`https://url`).returns(Promise.resolve(sampleResponse))
   })
 
   afterEach(() => {

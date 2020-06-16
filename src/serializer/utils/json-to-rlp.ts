@@ -91,12 +91,12 @@ export function jsonToArray(key: string, schema: SchemaItem, value: Object): RLP
       }
 
     case SchemaTypes.ARRAY:
-      return checkType(key, 'array', value, arg => {
-        return arg.map(element => jsonToArray(key, (schema as any).items, element))
+      return checkType(key, 'array', value, (arg) => {
+        return arg.map((element) => jsonToArray(key, (schema as any).items, element))
       })
 
     case SchemaTypes.OBJECT:
-      return checkType(key, 'object', value, arg => {
+      return checkType(key, 'object', value, (arg) => {
         const properties: Object = (schema as any).properties
         const keys: string[] = Object.keys(properties).sort()
 

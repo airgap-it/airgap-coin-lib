@@ -36,7 +36,7 @@ export class BitcoinSignedTransactionSerializer extends SignedTransactionSeriali
     return {
       accountIdentifier: serializedTx[SyncProtocolSignedTransactionKeys.ACCOUNT_IDENTIFIER].toString(),
       transaction: serializedTx[SyncProtocolSignedTransactionKeys.SIGNED_TRANSACTION].toString(),
-      from: serializedTx[SyncProtocolSignedTransactionKeys.FROM].map(obj => obj.toString()),
+      from: serializedTx[SyncProtocolSignedTransactionKeys.FROM].map((obj) => obj.toString()),
       amount: new BigNumber(serializedTx[SyncProtocolSignedTransactionKeys.AMOUNT].toString()),
       fee: new BigNumber(serializedTx[SyncProtocolSignedTransactionKeys.FEE].toString())
     }
