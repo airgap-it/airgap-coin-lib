@@ -54,7 +54,6 @@ export class TezosUtils {
     } else {
       hex = rawHex
     }
-    console.log('HEX', hex)
     const type = hex.shift()
     switch (type) {
       case '07': // prim
