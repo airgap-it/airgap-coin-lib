@@ -179,6 +179,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
   public blockExplorer: string = 'https://tezblock.io'
 
+  // https://gitlab.com/tezos/tezos/-/blob/master/docs/whitedoc/proof_of_stake.rst
+  // cycle has 4096 blocks, which are at least one minute apart
+  public minCycleDuration: number = 4096 * 60 * 1000 // ms
+
   protected readonly transactionFee: BigNumber = new BigNumber('1400')
   protected readonly originationSize: BigNumber = new BigNumber('257')
   protected readonly storageCostPerByte: BigNumber = new BigNumber('1000')
