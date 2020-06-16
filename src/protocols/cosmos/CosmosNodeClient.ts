@@ -213,7 +213,7 @@ export class CosmosNodeClient {
 
   public async fetchRewardDetails(delegatorAddress: string): Promise<CosmosRewardDetails[]> {
     return Axios.get(this.url(`/distribution/delegators/${delegatorAddress}/rewards`))
-      .then((response) => response.data.result.rewards as CosmosRewardDetails[])
+      .then((response) => (response.data.result.rewards ?? []) as CosmosRewardDetails[])
       .catch(() => [])
   }
 

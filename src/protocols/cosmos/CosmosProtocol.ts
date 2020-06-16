@@ -567,10 +567,10 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
     const results = await Promise.all([
       this.getBalanceOfAddresses([address]),
       this.getAvailableBalanceOfAddresses([address]),
-      this.nodeClient.fetchDelegations(address),
-      this.nodeClient.fetchRewardDetails(address).catch(() => [] as CosmosRewardDetails[])
+      this.nodeClient.fetchDelegations(address).catch(() => [] as CosmosDelegation[]),
+      this.nodeClient.fetchRewardDetails(address).catch(() => [] as CosmosRewardDetails[]),
     ])
-
+    
     const totalBalance = results[0]
     const availableBalance = new BigNumber(results[1])
     const delegations = results[2]
