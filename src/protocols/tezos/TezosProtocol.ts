@@ -27,6 +27,7 @@ import { TezosOperation } from './types/operations/TezosOperation'
 import { TezosTransactionOperation } from './types/operations/Transaction'
 import { TezosOperationType } from './types/TezosOperationType'
 import { TezosWrappedOperation } from './types/TezosWrappedOperation'
+import { ChainNetwork, NetworkType } from '../../utils/Network'
 
 const assertNever: (x: never) => void = (x: never): void => undefined
 
@@ -155,6 +156,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   get subProtocols() {
     return getSubProtocolsByIdentifier(this.identifier) as any[] // TODO: Fix typings once apps are compatible with 3.7
   }
+
+  public chainNetwork: ChainNetwork = { type: NetworkType.MAINNET, name: 'Mainnet', rpcUrl: 'https://rpc.localhost.com/' }
 
   // tezbox default
   public feeDefaults: FeeDefaults = {

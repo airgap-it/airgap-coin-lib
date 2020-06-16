@@ -11,6 +11,7 @@ import { UnsignedTransaction } from '../../serializer/schemas/definitions/transa
 import { SignedBitcoinTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-bitcoin'
 import { RawBitcoinTransaction } from '../../serializer/types'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
+import { ChainNetwork, NetworkType } from '../../utils/Network'
 
 const DUST_AMOUNT: number = 50
 
@@ -22,6 +23,8 @@ export class BitcoinProtocol implements ICoinProtocol {
   public feeSymbol: string = 'btc'
 
   public subProtocols = []
+
+  public chainNetwork: ChainNetwork = { type: NetworkType.MAINNET, name: 'Mainnet', rpcUrl: 'https://rpc.localhost.com/' }
 
   public feeDefaults: FeeDefaults = {
     low: '0.00002',

@@ -2,6 +2,7 @@ import { IAirGapSignedTransaction } from '../interfaces/IAirGapSignedTransaction
 import { AirGapTransactionStatus, IAirGapTransaction } from '../interfaces/IAirGapTransaction'
 import { UnsignedTransaction } from '../serializer/schemas/definitions/transaction-sign-request'
 import { SignedTransaction } from '../serializer/schemas/definitions/transaction-sign-response'
+import { ChainNetwork } from '../utils/Network'
 
 import { ICoinSubProtocol } from './ICoinSubProtocol'
 
@@ -20,6 +21,8 @@ export interface ICoinProtocol {
   symbol: string // This will be used in the UI, eg. "ETH", "BTC", "AE"
   name: string // Name of the currency, eg. "Bitcoin", "Aeternity"
   marketSymbol: string // Symbol that is most commonly used by other services such as coinmarketcap or cryptocompare.
+
+  chainNetwork: ChainNetwork
 
   feeSymbol: string
   feeDefaults: FeeDefaults

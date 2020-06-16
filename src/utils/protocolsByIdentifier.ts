@@ -1,9 +1,13 @@
 import { ProtocolNotSupported } from '../errors'
 import { ICoinProtocol } from '../protocols/ICoinProtocol'
 
+import { ChainNetwork, isNetworkEqual } from './Network'
 import { supportedProtocols } from './supportedProtocols'
 
-const getProtocolByIdentifier: (identifier: string) => ICoinProtocol = (identifier: string): ICoinProtocol => {
+const getProtocolByIdentifier: (identifier: string, network: ChainNetwork) => ICoinProtocol = (
+  identifier: string,
+  network: ChainNetwork
+): ICoinProtocol => {
   if (!identifier || typeof identifier !== 'string') {
     throw new Error('No protocol identifier provided')
   }
@@ -17,9 +21,12 @@ const getProtocolByIdentifier: (identifier: string) => ICoinProtocol = (identifi
 
       return protocols
     })
-    .reduce((current: ICoinProtocol[], next: ICoinProtocol[]) => current.concat(next))
+    .reduce((current: ICoinProtocol[], next: ICoinProtocol[]) => current.concat(next), [])
+
   // filter out potential candidates, those where our identifier startsWith the identifier of the protocol
-  const filteredCandidates: ICoinProtocol[] = candidates.filter((protocol: ICoinProtocol) => identifier.startsWith(protocol.identifier))
+  const filteredCandidates: ICoinProtocol[] = candidates.filter(
+    (protocol: ICoinProtocol) => identifier.startsWith(protocol.identifier) && isNetworkEqual(protocol.chainNetwork, network)
+  )
   if (filteredCandidates.length === 0) {
     throw new ProtocolNotSupported()
   }

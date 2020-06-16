@@ -3,7 +3,7 @@ import Axios from '../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../dependencies/src/bignumber.js-9.0.0/bignumber'
 import * as cryptocompare from '../dependencies/src/cryptocompare-0.5.0/index'
 import { AirGapTransactionStatus } from '../interfaces/IAirGapTransaction'
-import { FeeDefaults } from '../protocols/ICoinProtocol'
+import { FeeDefaults, ICoinProtocol } from '../protocols/ICoinProtocol'
 
 import { AirGapWallet } from './AirGapWallet'
 
@@ -37,13 +37,13 @@ export class AirGapMarketWallet extends AirGapWallet {
   public hourlyMarketSample: MarketDataSample[] = []
 
   constructor(
-    public protocolIdentifier: string,
+    public protocol: ICoinProtocol,
     public publicKey: string,
     public isExtendedPublicKey: boolean,
     public derivationPath: string,
     public addressIndex?: number
   ) {
-    super(protocolIdentifier, publicKey, isExtendedPublicKey, derivationPath, addressIndex)
+    super(protocol, publicKey, isExtendedPublicKey, derivationPath, addressIndex)
   }
 
   public synchronize(): Promise<void> {
@@ -63,7 +63,7 @@ export class AirGapMarketWallet extends AirGapWallet {
   public fetchCurrentMarketPrice(baseSymbol = 'USD'): Promise<BigNumber> {
     return new Promise((resolve, reject) => {
       cryptocompare
-        .price(this.coinProtocol.marketSymbol.toUpperCase(), baseSymbol)
+        .price(this.protocol.marketSymbol.toUpperCase(), baseSymbol)
         .then((prices) => {
           this.currentMarketPrice = new BigNumber(prices.USD)
           resolve(this.currentMarketPrice)
@@ -76,7 +76,7 @@ export class AirGapMarketWallet extends AirGapWallet {
 
           console.error('cryptocompare', cryptocompareError)
 
-          const id = symbolMapping[this.coinProtocol.marketSymbol.toLowerCase()]
+          const id = symbolMapping[this.protocol.marketSymbol.toLowerCase()]
           if (id) {
             Axios.get(`https://api.coingecko.com/api/v3/simple/price?ids=${id}&vs_currencies=usd`)
               .then(({ data }) => {
@@ -159,7 +159,7 @@ export class AirGapMarketWallet extends AirGapWallet {
     return addressesToReceive
   }
   public async balanceOf(): Promise<BigNumber> {
-    if (this.protocolIdentifier === 'grs' && this.isExtendedPublicKey) {
+    if (this.protocol.identifier === 'grs' && this.isExtendedPublicKey) {
       /* 
       We should remove this if BTC also uses blockbook. (And change the order of the if/else below)
       
@@ -169,19 +169,19 @@ export class AirGapMarketWallet extends AirGapWallet {
       We can also not simply change the order of the following if/else, because then it would use the xPub method for
       BTC as well, which results in the addresses being derived again, which causes massive lags in the apps.
       */
-      return new BigNumber(await this.coinProtocol.getBalanceOfExtendedPublicKey(this.publicKey, 0))
+      return new BigNumber(await this.protocol.getBalanceOfExtendedPublicKey(this.publicKey, 0))
     } else if (this.addresses.length > 0) {
-      return new BigNumber(await this.coinProtocol.getBalanceOfAddresses(this.addressesToCheck()))
+      return new BigNumber(await this.protocol.getBalanceOfAddresses(this.addressesToCheck()))
     } else if (this.isExtendedPublicKey) {
-      return new BigNumber(await this.coinProtocol.getBalanceOfExtendedPublicKey(this.publicKey, 0))
+      return new BigNumber(await this.protocol.getBalanceOfExtendedPublicKey(this.publicKey, 0))
     } else {
-      return new BigNumber(await this.coinProtocol.getBalanceOfPublicKey(this.publicKey))
+      return new BigNumber(await this.protocol.getBalanceOfPublicKey(this.publicKey))
     }
   }
 
   public async fetchTransactions(limit: number, offset: number): Promise<IAirGapTransaction[]> {
     let transactions: IAirGapTransaction[] = []
-    if (this.protocolIdentifier === 'grs' && this.isExtendedPublicKey) {
+    if (this.protocol.identifier === 'grs' && this.isExtendedPublicKey) {
       /* 
       We should remove this if BTC also uses blockbook. (And change the order of the if/else below)
       
@@ -191,20 +191,20 @@ export class AirGapMarketWallet extends AirGapWallet {
       We can also not simply change the order of the following if/else, because then it would use the xPub method for
       BTC as well, which results in the addresses being derived again, which causes massive lags in the apps.
       */
-      transactions = await this.coinProtocol.getTransactionsFromExtendedPublicKey(this.publicKey, limit, offset)
+      transactions = await this.protocol.getTransactionsFromExtendedPublicKey(this.publicKey, limit, offset)
     } else if (this.addresses.length > 0) {
-      transactions = await this.coinProtocol.getTransactionsFromAddresses(this.addressesToCheck(), limit, offset)
+      transactions = await this.protocol.getTransactionsFromAddresses(this.addressesToCheck(), limit, offset)
     } else if (this.isExtendedPublicKey) {
-      transactions = await this.coinProtocol.getTransactionsFromExtendedPublicKey(this.publicKey, limit, offset)
+      transactions = await this.protocol.getTransactionsFromExtendedPublicKey(this.publicKey, limit, offset)
     } else {
-      transactions = await this.coinProtocol.getTransactionsFromPublicKey(this.publicKey, limit, offset)
+      transactions = await this.protocol.getTransactionsFromPublicKey(this.publicKey, limit, offset)
     }
 
     return this.txsIncludingStatus(transactions)
   }
 
   private async txsIncludingStatus(transactions: IAirGapTransaction[]): Promise<IAirGapTransaction[]> {
-    if (this.protocolIdentifier.toLowerCase() === 'eth' || this.protocolIdentifier.toLowerCase() === 'xtz') {
+    if (this.protocol.identifier.toLowerCase() === 'eth' || this.protocol.identifier.toLowerCase() === 'xtz') {
       const transactionsWithHash: IAirGapTransaction[] = transactions.filter((tx: IAirGapTransaction) => tx.hash)
       const hashes: string[] = transactionsWithHash.map((tx: IAirGapTransaction) => tx.hash).filter(notEmpty) // Extra filter here for typing reasons, should not alter the array because we filter on the line before.
 
@@ -212,7 +212,7 @@ export class AirGapMarketWallet extends AirGapWallet {
         throw new Error('Transaction array lengths do not match!')
       }
 
-      const statuses: AirGapTransactionStatus[] = await this.coinProtocol.getTransactionStatuses(hashes)
+      const statuses: AirGapTransactionStatus[] = await this.protocol.getTransactionStatuses(hashes)
 
       transactionsWithHash.forEach((el: IAirGapTransaction, i: number) => {
         el.status = statuses[i]
@@ -224,33 +224,33 @@ export class AirGapMarketWallet extends AirGapWallet {
 
   public async getMaxTransferValue(recipients: string[], fee?: string): Promise<BigNumber> {
     if (this.isExtendedPublicKey) {
-      return new BigNumber(await this.coinProtocol.estimateMaxTransactionValueFromExtendedPublicKey(this.publicKey, recipients, fee))
+      return new BigNumber(await this.protocol.estimateMaxTransactionValueFromExtendedPublicKey(this.publicKey, recipients, fee))
     } else {
-      return new BigNumber(await this.coinProtocol.estimateMaxTransactionValueFromPublicKey(this.publicKey, recipients, fee))
+      return new BigNumber(await this.protocol.estimateMaxTransactionValueFromPublicKey(this.publicKey, recipients, fee))
     }
   }
 
   public prepareTransaction(recipients: string[], values: string[], fee: string, data?: unknown): Promise<IAirGapTransaction> {
     if (this.isExtendedPublicKey) {
-      return this.coinProtocol.prepareTransactionFromExtendedPublicKey(this.publicKey, 0, recipients, values, fee, data)
+      return this.protocol.prepareTransactionFromExtendedPublicKey(this.publicKey, 0, recipients, values, fee, data)
     } else {
       if (this.addressIndex) {
         data = { addressIndex: this.addressIndex }
       }
 
-      return this.coinProtocol.prepareTransactionFromPublicKey(this.publicKey, recipients, values, fee, data)
+      return this.protocol.prepareTransactionFromPublicKey(this.publicKey, recipients, values, fee, data)
     }
   }
 
   public async estimateFees(recipients: string[], values: string[], data?: unknown): Promise<FeeDefaults> {
     if (this.isExtendedPublicKey) {
-      return this.coinProtocol.estimateFeeDefaultsFromExtendedPublicKey(this.publicKey, recipients, values, data)
+      return this.protocol.estimateFeeDefaultsFromExtendedPublicKey(this.publicKey, recipients, values, data)
     } else {
       if (this.addressIndex) {
         data = { addressIndex: this.addressIndex }
       }
 
-      return this.coinProtocol.estimateFeeDefaultsFromPublicKey(this.publicKey, recipients, values, data)
+      return this.protocol.estimateFeeDefaultsFromPublicKey(this.publicKey, recipients, values, data)
     }
   }
 
@@ -258,17 +258,17 @@ export class AirGapMarketWallet extends AirGapWallet {
     return new Promise((resolve) => {
       let promise: Promise<MarketDataSample>
       if (timeUnit === 'days') {
-        promise = cryptocompare.histoDay(this.coinProtocol.marketSymbol.toUpperCase(), baseSymbol, {
+        promise = cryptocompare.histoDay(this.protocol.marketSymbol.toUpperCase(), baseSymbol, {
           limit: numberOfMinutes - 1,
           timestamp: date
         })
       } else if (timeUnit === 'hours') {
-        promise = cryptocompare.histoHour(this.coinProtocol.marketSymbol.toUpperCase(), baseSymbol, {
+        promise = cryptocompare.histoHour(this.protocol.marketSymbol.toUpperCase(), baseSymbol, {
           limit: numberOfMinutes - 1,
           timestamp: date
         })
       } else if (timeUnit === 'minutes') {
-        promise = cryptocompare.histoMinute(this.coinProtocol.marketSymbol.toUpperCase(), baseSymbol, {
+        promise = cryptocompare.histoMinute(this.protocol.marketSymbol.toUpperCase(), baseSymbol, {
           limit: numberOfMinutes - 1,
           timestamp: date
         })

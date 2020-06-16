@@ -32,6 +32,7 @@ import {
   CosmosValidator
 } from './CosmosNodeClient'
 import { CosmosTransaction } from './CosmosTransaction'
+import { ChainNetwork, NetworkType } from '../../utils/Network'
 
 export enum CosmosDelegationActionType {
   DELEGATE = 'delegate',
@@ -70,6 +71,8 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
   public addressPlaceholder: string = 'cosmos...'
   public blockExplorer: string = 'https://www.mintscan.io'
   public subProtocols?: (ICoinProtocol & ICoinSubProtocol)[] | undefined
+
+  public chainNetwork: ChainNetwork = { type: NetworkType.MAINNET, name: 'Mainnet', rpcUrl: 'https://rpc.localhost.com/' }
 
   private readonly addressPrefix: string = 'cosmos'
   private readonly defaultGas: BigNumber = new BigNumber('200000')

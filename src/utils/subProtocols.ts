@@ -1,8 +1,6 @@
 import { ICoinProtocol } from '../protocols/ICoinProtocol'
 import { ICoinSubProtocol } from '../protocols/ICoinSubProtocol'
 
-import { getProtocolByIdentifier } from './protocolsByIdentifier'
-
 const subProtocolMapper: { [mainProtocolIdentifier: string]: { [subProtocolIdentifier: string]: ICoinSubProtocol } } = {}
 
 const getSubProtocolsByIdentifier: (identifier: string) => ICoinSubProtocol[] = (identifier: string): ICoinSubProtocol[] => {
@@ -13,22 +11,20 @@ const getSubProtocolsByIdentifier: (identifier: string) => ICoinSubProtocol[] = 
   return []
 }
 
-const addSubProtocol: (identifier: string, subProtocol: ICoinProtocol & ICoinSubProtocol) => void = (
-  identifier: string,
+const addSubProtocol: (protocol: ICoinProtocol, subProtocol: ICoinProtocol & ICoinSubProtocol) => void = (
+  protocol: ICoinProtocol,
   subProtocol: ICoinProtocol & ICoinSubProtocol
 ): void => {
-  const protocol: ICoinProtocol = getProtocolByIdentifier(identifier)
-
   if (!subProtocol.identifier.startsWith(protocol.identifier)) {
     throw new Error(`subprotocol ${subProtocol.name} is not supported for protocol ${protocol.identifier}`)
   }
 
   // make sure we can add subprotocols for this identifier
-  if (!subProtocolMapper[identifier]) {
-    subProtocolMapper[identifier] = {}
+  if (!subProtocolMapper[protocol.identifier]) {
+    subProtocolMapper[protocol.identifier] = {}
   }
 
-  subProtocolMapper[identifier][subProtocol.identifier] = subProtocol
+  subProtocolMapper[protocol.identifier][subProtocol.identifier] = subProtocol
 }
 
 export { addSubProtocol, getSubProtocolsByIdentifier }

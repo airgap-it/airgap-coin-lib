@@ -1,6 +1,7 @@
 import * as bitGoUTXO from '../../dependencies/src/bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac/src/index'
 import { BitcoinBlockbookProtocol } from '../bitcoin/BitcoinBlockbookProtocol'
 import { CurrencyUnit, FeeDefaults } from '../ICoinProtocol'
+import { ChainNetwork, NetworkType } from '../../utils/Network'
 
 export class GroestlcoinProtocol extends BitcoinBlockbookProtocol {
   public symbol: string = 'GRS'
@@ -39,6 +40,8 @@ export class GroestlcoinProtocol extends BitcoinBlockbookProtocol {
   public addressPlaceholder: string = 'Fdb...'
 
   public blockExplorer: string = 'https://chainz.cryptoid.info/grs'
+
+  public chainNetwork: ChainNetwork = { type: NetworkType.MAINNET, name: 'Mainnet', rpcUrl: 'https://rpc.localhost.com/' }
 
   constructor() {
     super(bitGoUTXO.networks.groestlcoin, 'https://blockbook.groestlcoin.org', bitGoUTXO)

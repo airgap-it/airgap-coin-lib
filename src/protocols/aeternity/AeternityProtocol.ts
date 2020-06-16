@@ -16,6 +16,7 @@ import { padStart } from '../../utils/padStart'
 import { EthereumUtils } from '../ethereum/utils/utils'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
+import { ChainNetwork, NetworkType } from '../../utils/Network'
 
 export class AeternityProtocol extends NonExtendedProtocol implements ICoinProtocol {
   public symbol: string = 'AE'
@@ -56,6 +57,8 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
   public epochMiddleware: string = 'https://ae-epoch-rpc-proxy.gke.papers.tech'
 
   private readonly feesURL: string = 'https://api-airgap.gke.papers.tech/fees'
+
+  public chainNetwork: ChainNetwork = { type: NetworkType.MAINNET, name: 'Mainnet', rpcUrl: 'https://rpc.localhost.com/' }
 
   constructor(public epochRPC: string = 'https://ae-epoch-rpc-proxy.gke.papers.tech') {
     super()

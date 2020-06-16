@@ -14,6 +14,7 @@ import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
 import { EthereumInfoClient } from './clients/info-clients/InfoClient'
 import { EthereumNodeClient } from './clients/node-clients/NodeClient'
 import { EthereumUtils } from './utils/utils'
+import { ChainNetwork, NetworkType } from '../../utils/Network'
 
 const EthereumTransaction = require('../../dependencies/src/ethereumjs-tx-1.3.7/index')
 
@@ -71,6 +72,8 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
   get subProtocols() {
     return getSubProtocolsByIdentifier(this.identifier) as any[] // TODO: Fix typings once apps are compatible with 3.7
   }
+
+  public chainNetwork: ChainNetwork = { type: NetworkType.MAINNET, name: 'Mainnet', rpcUrl: 'https://rpc.localhost.com/' }
 
   constructor(configuration: EthereumProtocolConfiguration<NodeClient, InfoClient>) {
     this.configuration = configuration

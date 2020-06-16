@@ -11,6 +11,7 @@ import { UnsignedTransaction } from '../../serializer/schemas/definitions/transa
 import { SignedBitcoinTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-bitcoin'
 import { RawBitcoinTransaction } from '../../serializer/types'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
+import { ChainNetwork, NetworkType } from '../../utils/Network'
 
 export interface Vin {
   txid: string
@@ -87,6 +88,13 @@ export interface AddressResponse {
 
 const DUST_AMOUNT: number = 50
 
+// interface BitcoinProtocolOptions {
+//   network: Network
+//   blockExplorer: string
+//   baseApiUrl: string
+//   bitcoinJSLib: string
+// }
+
 export class BitcoinBlockbookProtocol implements ICoinProtocol {
   public symbol: string = 'BTC'
   public name: string = 'Bitcoin'
@@ -95,6 +103,8 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
   public feeSymbol: string = 'btc'
 
   public subProtocols = []
+
+  public chainNetwork: ChainNetwork = { type: NetworkType.MAINNET, name: 'Mainnet', rpcUrl: 'https://rpc.localhost.com/' }
 
   public feeDefaults: FeeDefaults = {
     low: '0.00002',

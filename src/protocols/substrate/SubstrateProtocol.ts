@@ -18,6 +18,7 @@ import { SubstrateNodeClient } from './helpers/node/SubstrateNodeClient'
 import { SubstrateAccountController } from './helpers/SubstrateAccountController'
 import { SubstrateTransactionController } from './helpers/SubstrateTransactionController'
 import { SubstrateNetwork } from './SubstrateNetwork'
+import { ChainNetwork, NetworkType } from '../../utils/Network'
 
 export abstract class SubstrateProtocol extends NonExtendedProtocol implements ICoinDelegateProtocol {
   public abstract symbol: string
@@ -40,6 +41,8 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
   public addressPlaceholder: string = 'ABC...' // TODO: better placeholder?
 
   public blockExplorer: string = this.blockExplorerClient.baseUrl
+
+  public chainNetwork: ChainNetwork = { type: NetworkType.MAINNET, name: 'Mainnet', rpcUrl: 'https://rpc.localhost.com/' }
 
   constructor(
     readonly network: SubstrateNetwork,

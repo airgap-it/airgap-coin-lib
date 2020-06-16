@@ -19,7 +19,7 @@ describe(`SubTokens`, () => {
     // no subtokens should be registered by default
     const currentSubtokenLength = ethereum.subProtocols.length
 
-    addSubProtocol(ethereum.identifier, new GenericERC20(genericConfig))
+    addSubProtocol(ethereum, new GenericERC20(genericConfig))
 
     // no subtokens should be registered by default
     expect(ethereum.subProtocols.length).to.equal(currentSubtokenLength + 1)
@@ -31,7 +31,7 @@ describe(`SubTokens`, () => {
     // no subtokens should be registered by default
     const currentSubtokenLength = tezos.subProtocols.length
 
-    addSubProtocol(tezos.identifier, new TezosKtProtocol())
+    addSubProtocol(tezos, new TezosKtProtocol())
 
     // no subtokens should be registered by default
     expect(tezos.subProtocols.length).to.equal(currentSubtokenLength + 1)

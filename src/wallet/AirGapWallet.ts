@@ -4,16 +4,15 @@ import { getProtocolByIdentifier } from '../utils/protocolsByIdentifier'
 
 export class AirGapWallet implements IAirGapWallet {
   public addresses: string[] = [] // used for cache
-  public coinProtocol: ICoinProtocol
 
   constructor(
-    public protocolIdentifier: string,
+    public protocol: ICoinProtocol,
     public publicKey: string,
     public isExtendedPublicKey: boolean,
     public derivationPath: string,
     public addressIndex?: number
   ) {
-    this.coinProtocol = getProtocolByIdentifier(this.protocolIdentifier)
+    getProtocolByIdentifier(this.protocol.identifier, this.protocol.chainNetwork)
   }
 
   get receivingPublicAddress(): string {
@@ -30,17 +29,17 @@ export class AirGapWallet implements IAirGapWallet {
       }
 
       return [
-        ...(await this.coinProtocol.getAddressesFromExtendedPublicKey(this.publicKey, 0, amount, offset)),
-        ...(await this.coinProtocol.getAddressesFromExtendedPublicKey(this.publicKey, 1, amount, offset))
+        ...(await this.protocol.getAddressesFromExtendedPublicKey(this.publicKey, 0, amount, offset)),
+        ...(await this.protocol.getAddressesFromExtendedPublicKey(this.publicKey, 1, amount, offset))
       ]
     } else {
-      return this.coinProtocol.getAddressesFromPublicKey(this.publicKey)
+      return this.protocol.getAddressesFromPublicKey(this.publicKey)
     }
   }
 
   public toJSON(): any {
-    const json = Object.assign({}, this)
-    delete json.coinProtocol
+    const json = Object.assign({ protocolIdentifier: this.protocol.identifier, chainNetwork: this.protocol.chainNetwork }, this)
+    delete json.protocol
 
     return json
   }
