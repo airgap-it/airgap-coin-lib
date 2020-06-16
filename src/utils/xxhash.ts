@@ -1,4 +1,3 @@
-import { isString } from 'util'
 import xxhash = require('xxhashjs')
 
 import { addHexPrefix, changeEndianness, isHex } from './hex'
@@ -9,7 +8,7 @@ export function xxhashAsHex(
   config: { littleEndian: boolean; withPrefix: boolean } = { littleEndian: true, withPrefix: false }
 ): string {
   const chunks = Math.ceil(bitLength / 64)
-  const buffer = isString(data) && isHex(data) ? Buffer.from(data, 'hex') : Buffer.from(data as any)
+  const buffer = typeof data === 'string' && isHex(data) ? Buffer.from(data, 'hex') : Buffer.from(data as any)
 
   let hex = ''
   for (let seed = 0; seed < chunks; seed++) {

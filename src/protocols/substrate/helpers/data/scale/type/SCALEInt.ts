@@ -1,5 +1,3 @@
-import { isNumber } from 'util'
-
 import BigNumber from '../../../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { changeEndianness, stripHexPrefix, toHexStringRaw } from '../../../../../../utils/hex'
 import { SCALEDecodeResult } from '../SCALEDecoder'
@@ -87,7 +85,7 @@ export class SCALEInt extends SCALEType {
   }
 
   private performOperation<T>(other: Number, operation: (_: number | BigNumber) => T): T {
-    if (isNumber(other) || BigNumber.isBigNumber(other)) {
+    if (typeof other === 'number' || BigNumber.isBigNumber(other)) {
       return operation.apply(this.value, [other])
     } else {
       return this.performOperation(other.value, operation)

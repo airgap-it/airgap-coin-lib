@@ -1,5 +1,3 @@
-import { isNumber } from 'util'
-
 import { stripHexPrefix, toHexStringRaw } from '../../../../../../utils/hex'
 import { SCALEDecodeResult } from '../SCALEDecoder'
 
@@ -7,7 +5,7 @@ import { SCALEType } from './SCALEType'
 
 export class SCALEEnum<T> extends SCALEType {
   public static from<T>(value: T): SCALEEnum<T> {
-    if (!isNumber(value)) {
+    if (!(typeof value === 'number')) {
       throw new Error('Invalid enum value')
     }
 

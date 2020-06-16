@@ -1,5 +1,3 @@
-import { isString } from 'util'
-
 import { isHex, stripHexPrefix } from '../../../../../../utils/hex'
 import { SCALEDecodeResult } from '../SCALEDecoder'
 
@@ -9,9 +7,9 @@ import { SCALEType } from './SCALEType'
 export class SCALEBytes extends SCALEType {
   public static from(bytes: string | Buffer | Uint8Array): SCALEBytes {
     let buffer: Buffer
-    if (isString(bytes) && isHex(bytes)) {
+    if (typeof bytes === 'string' && isHex(bytes)) {
       buffer = Buffer.from(stripHexPrefix(bytes), 'hex')
-    } else if (!isString(bytes)) {
+    } else if (!(typeof bytes === 'string')) {
       buffer = Buffer.from(bytes)
     } else {
       throw new Error('Unknown bytes type.')

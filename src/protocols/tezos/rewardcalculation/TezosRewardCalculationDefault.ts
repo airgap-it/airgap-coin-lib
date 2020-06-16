@@ -27,8 +27,13 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
     ).data as TezosNodeConstantsV1
   }
 
-  public async calculateRewards(bakerAddress: string, cycle: number, breakdownRewards: boolean = true, currentCycleIn?: number): Promise<TezosRewards> {
-    const currentCycle = currentCycleIn ?? await this.protocol.fetchCurrentCycle()
+  public async calculateRewards(
+    bakerAddress: string,
+    cycle: number,
+    breakdownRewards: boolean = true,
+    currentCycleIn?: number
+  ): Promise<TezosRewards> {
+    const currentCycle = currentCycleIn ?? (await this.protocol.fetchCurrentCycle())
     const calculatingLevel = cycle * TezosProtocol.BLOCKS_PER_CYCLE[this.protocol.network]
 
     await this.getConstants(calculatingLevel, currentCycle < cycle)
@@ -212,8 +217,8 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
     }
   }
 
-  private async  fetchEndorsementOperations(cycle: number, bakerAddress: string): Promise<TezosEndorsingRight[]> {
-    const cycleStartLevel = (cycle * this.tezosNodeConstants.blocks_per_cycle) + 1
+  private async fetchEndorsementOperations(cycle: number, bakerAddress: string): Promise<TezosEndorsingRight[]> {
+    const cycleStartLevel = cycle * this.tezosNodeConstants.blocks_per_cycle + 1
     const cycleEndLevel = (cycle + 1) * this.tezosNodeConstants.blocks_per_cycle
     const query = {
       fields: ['level', 'delegate', 'number_of_slots', 'block_level'],
@@ -355,53 +360,46 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
     return result.data
   }
 
-  protected async fetchBakingRights(
-    bakerAddress: string,
-    cycle: number
-  ): Promise<TezosBakingRight[]> {
-    const startLevel = (cycle * this.tezosNodeConstants.blocks_per_cycle) + 1
-    const endLevel = ((cycle + 1) * this.tezosNodeConstants.blocks_per_cycle)
+  protected async fetchBakingRights(bakerAddress: string, cycle: number): Promise<TezosBakingRight[]> {
+    const startLevel = cycle * this.tezosNodeConstants.blocks_per_cycle + 1
+    const endLevel = (cycle + 1) * this.tezosNodeConstants.blocks_per_cycle
 
     const query = {
-      "fields": ["priority", "level"],
-      "predicates":[
-         {
-            "field":"delegate",
-            "operation":"eq",
-            "set":[
-               bakerAddress
-            ]
-         },
-         {
-            "field":"priority",
-            "operation":"eq",
-            "set":[
-               0
-            ]
-         },
-         {
-            "field":"level",
-            "operation":"between",
-            "set":[
-               startLevel, endLevel
-            ]
-         }
+      fields: ['priority', 'level'],
+      predicates: [
+        {
+          field: 'delegate',
+          operation: 'eq',
+          set: [bakerAddress]
+        },
+        {
+          field: 'priority',
+          operation: 'eq',
+          set: [0]
+        },
+        {
+          field: 'level',
+          operation: 'between',
+          set: [startLevel, endLevel]
+        }
       ],
-      "orderBy":[
-         {
-            "field":"level",
-            "direction":"desc"
-         }
+      orderBy: [
+        {
+          field: 'level',
+          direction: 'desc'
+        }
       ],
-      "limit": 10000
+      limit: 10000
     }
-   
 
-    const result = await axios.post(`${this.protocol.baseApiUrl}/v2/data/tezos/${this.protocol.baseApiNetwork}/baking_rights`, query, {
-      headers: this.protocol.headers
-    }).then(result => result.data).catch((error) => [])
+    const result = await axios
+      .post(`${this.protocol.baseApiUrl}/v2/data/tezos/${this.protocol.baseApiNetwork}/baking_rights`, query, {
+        headers: this.protocol.headers
+      })
+      .then((result) => result.data)
+      .catch((error) => [])
 
-    return result.map(bakingRight => {
+    return result.map((bakingRight) => {
       return {
         level: bakingRight.level,
         priority: bakingRight.priority,
@@ -411,40 +409,37 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
   }
 
   protected async fetchEndorsingRights(bakerAddress: string, cycle: number): Promise<TezosEndorsingRight[]> {
-    const startLevel = (cycle * this.tezosNodeConstants.blocks_per_cycle) + 1
-    const endLevel = ((cycle + 1) * this.tezosNodeConstants.blocks_per_cycle)
+    const startLevel = cycle * this.tezosNodeConstants.blocks_per_cycle + 1
+    const endLevel = (cycle + 1) * this.tezosNodeConstants.blocks_per_cycle
     const query = {
-      "fields": [
-          "level"
+      fields: ['level'],
+      predicates: [
+        {
+          field: 'delegate',
+          operation: 'eq',
+          set: [bakerAddress]
+        },
+        {
+          field: 'level',
+          operation: 'between',
+          set: [startLevel, endLevel]
+        }
       ],
-      "predicates": [
-          {
-              "field": "delegate",
-              "operation": "eq",
-              "set": [
-                  bakerAddress
-              ]
-          },
-          {
-              "field": "level",
-              "operation": "between",
-              "set": [
-                  startLevel, endLevel
-              ]
-          }
+      aggregation: [
+        {
+          field: 'slot',
+          function: 'count'
+        }
       ],
-      "aggregation": [
-          {
-            "field": "slot",
-            "function": "count"
-          }
-      ],
-      "limit": 100000
+      limit: 100000
     }
 
-    const result = await axios.post(`${this.protocol.baseApiUrl}/v2/data/tezos/${this.protocol.baseApiNetwork}/endorsing_rights`, query, {
-      headers: this.protocol.headers
-    }).then(result => result.data).catch((error) => [])
+    const result = await axios
+      .post(`${this.protocol.baseApiUrl}/v2/data/tezos/${this.protocol.baseApiNetwork}/endorsing_rights`, query, {
+        headers: this.protocol.headers
+      })
+      .then((result) => result.data)
+      .catch((error) => [])
 
     return result.map((endorsingRight) => {
       return {

@@ -1,5 +1,3 @@
-import { isString } from 'util'
-
 import BigNumber from '../dependencies/src/bignumber.js-9.0.0/bignumber'
 
 import { padStart } from './padStart'
@@ -42,9 +40,9 @@ export function toHexString(value: number | BigNumber, bitLength: number = 8): s
 }
 
 export function hexToBytes(hex: string | Uint8Array | Buffer): Buffer {
-  if (isString(hex) && isHex(hex)) {
+  if (typeof hex === 'string' && isHex(hex)) {
     return Buffer.from(stripHexPrefix(hex), 'hex')
-  } else if (!isString(hex)) {
+  } else if (!(typeof hex === 'string')) {
     return Buffer.from(hex)
   } else {
     return Buffer.from([0])
@@ -53,7 +51,7 @@ export function hexToBytes(hex: string | Uint8Array | Buffer): Buffer {
 
 export function bytesToHex(bytes: Uint8Array | Buffer | string, config?: { withPrefix: boolean }): string {
   let hex: string
-  if (isString(bytes)) {
+  if (typeof bytes === 'string') {
     hex = bytes
   } else {
     const buffer = Buffer.isBuffer(bytes) ? bytes : Buffer.from(bytes)
