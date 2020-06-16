@@ -1,18 +1,13 @@
-import { TezosBTCDetails } from './../../../serializer/constants'
 import { TezosFAProtocol } from './TezosFAProtocol'
 import { TezosNetwork } from '../TezosProtocol'
 import { TezosUtils } from '../TezosUtils'
-import { TezosContractBytes } from '../contract/TezosContractBytes'
-import { TezosContractPair } from '../contract/TezosContractPair'
-import { TezosContractInt } from '../contract/TezosContractInt'
-import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 
 export class TezosUSD extends TezosFAProtocol {
 
-  private static bigMapKeyLedgerPrefix = "0x05070701000000066c65646765720a00000016"
+  private static extractAmountRegex = /Pair ([0-9]+) /
 
   constructor(
-    contractAddress: string = TezosBTCDetails.CONTRACT_ADDRESS,
+    contractAddress: string = "KT1LN4LPSqTMS7Sd2CJw4bbDGRkMv2t68Fy9",
     jsonRPCAPI?: string,
     baseApiUrl?: string,
     baseApiKey?: string,
@@ -39,27 +34,33 @@ export class TezosUSD extends TezosFAProtocol {
     })
   }
 
-  public async fetchTokenHolders(): Promise<{address: string, amount: string}[]> {
-    const values = await this.contract.bigMapValues([{
-      field: 'key' as const,
-      operation: "startsWith" as const,
-      set: [TezosUSD.bigMapKeyLedgerPrefix]
-    }])
+  public async fetchTokenHolders(): Promise<{ address: string, amount: string }[]> {
+    const values = await this.contract.bigMapValues([])
     return values.map((value) => {
-      if (!value.value) {
-        
-      }
-      const address = (TezosUtils.parseHex(value.key) as TezosContractPair).second as TezosContractBytes
-      if (address === undefined) {
+      try {
+        const address = TezosUtils.parseAddress(value.key)
+        if (address === undefined || !value.value) {
+          return {
+            address: '',
+            amount: '0'
+          }
+        }
+        let amount = '0'
+        // unfortunately, conseil returns the big map value as a parsed Michelson instead of the Micheline JSON
+        // so we need to extract the amount using this regex instead of parsing it as a JSON.
+        const match = TezosUSD.extractAmountRegex.exec(value.value as string)
+        if (match) {
+          amount = match[1]
+        }
+        return {
+          address: address,
+          amount
+        }
+      } catch {
         return {
           address: '',
           amount: '0'
         }
-      }
-      const amount = (TezosUtils.parseHex(value.value as string) as TezosContractPair).first as TezosContractInt
-      return {
-        address: TezosUtils.parseAddress(address.value),
-        amount: new BigNumber(amount.value).toFixed()
       }
     }).filter((value) => value.amount !== '0')
   }

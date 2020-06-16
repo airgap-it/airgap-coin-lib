@@ -31,6 +31,9 @@ export class TezosUtils {
   }
 
   public static parseAddress(rawHexAddress: string): string {
+    if (rawHexAddress.startsWith('0x')) {
+      rawHexAddress = rawHexAddress.slice(2)
+    }
     const { result, rest }: { result: string; rest: string } = this.splitAndReturnRest(rawHexAddress, 2)
     const contractIdTag: string = result
     if (contractIdTag === '00') {
