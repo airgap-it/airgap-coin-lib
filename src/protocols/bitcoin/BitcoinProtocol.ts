@@ -24,8 +24,6 @@ export class BitcoinProtocol implements ICoinProtocol {
 
   public subProtocols = []
 
-  public chainNetwork: ChainNetwork = { type: NetworkType.MAINNET, name: 'Mainnet', rpcUrl: 'https://rpc.localhost.com/' }
-
   public feeDefaults: FeeDefaults = {
     low: '0.00002',
     medium: '0.00004',
@@ -65,10 +63,13 @@ export class BitcoinProtocol implements ICoinProtocol {
 
   private readonly feeEstimationUrl = `https://blockstream.info/api/fee-estimates`
 
-  constructor(network: Network = bitcoinJS.networks.bitcoin, baseApiUrl: string = 'https://insight.bitpay.com', bitcoinJSLib = bitcoinJS) {
-    this.network = network
-    this.baseApiUrl = baseApiUrl
-    this.bitcoinJSLib = bitcoinJSLib
+  public readonly chainNetwork: ChainNetwork
+
+  constructor(config?: { chainNetwork?: ChainNetwork; network?: Network; baseApiUrl?: string; bitcoinJSLib? }) {
+    this.chainNetwork = config?.chainNetwork ?? { type: NetworkType.MAINNET, name: 'Mainnet', rpcUrl: 'https://rpc.localhost.com/' }
+    this.network = config?.network ?? bitcoinJS.networks.bitcoin
+    this.baseApiUrl = config?.baseApiUrl ?? 'https://insight.bitpay.com'
+    this.bitcoinJSLib = config?.bitcoinJSLib ?? bitcoinJS
   }
 
   public async getBlockExplorerLinkForAddress(address: string): Promise<string> {

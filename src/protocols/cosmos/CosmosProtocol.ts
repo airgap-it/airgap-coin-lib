@@ -70,18 +70,22 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
   public addressValidationPattern: string = '^(cosmos|cosmosvaloper)[a-zA-Z0-9]{39}$'
   public addressPlaceholder: string = 'cosmos...'
   public blockExplorer: string = 'https://www.mintscan.io'
-  public subProtocols?: (ICoinProtocol & ICoinSubProtocol)[] | undefined
+  public subProtocols?: (ICoinProtocol & ICoinSubProtocol)[]
 
-  public chainNetwork: ChainNetwork = { type: NetworkType.MAINNET, name: 'Mainnet', rpcUrl: 'https://rpc.localhost.com/' }
+  public chainNetwork: ChainNetwork
 
   private readonly addressPrefix: string = 'cosmos'
   private readonly defaultGas: BigNumber = new BigNumber('200000')
 
-  constructor(
-    public readonly infoClient: CosmosInfoClient = new CosmosInfoClient(),
-    public readonly nodeClient: CosmosNodeClient = new CosmosNodeClient('https://cosmos-node.prod.gke.papers.tech', true)
-  ) {
+  public readonly infoClient: CosmosInfoClient
+  public readonly nodeClient: CosmosNodeClient
+
+  constructor(config?: { chainNetwork?: ChainNetwork; infoClient?: CosmosInfoClient; nodeClient?: CosmosNodeClient }) {
     super()
+
+    this.chainNetwork = config?.chainNetwork ?? { type: NetworkType.MAINNET, name: 'Mainnet', rpcUrl: 'https://rpc.localhost.com/' }
+    this.infoClient = config?.infoClient ?? new CosmosInfoClient()
+    this.nodeClient = config?.nodeClient ?? new CosmosNodeClient('https://cosmos-node.prod.gke.papers.tech', true)
   }
 
   public async getBlockExplorerLinkForAddress(address: string): Promise<string> {

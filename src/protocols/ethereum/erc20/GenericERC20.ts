@@ -35,9 +35,11 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, Ethersc
   constructor(config: GenericERC20Configuration) {
     // we probably need another network here, explorer is ok
     super({
-      chainID: config.chainId || 1,
-      nodeClient: new AirGapNodeClient(config.jsonRPCAPI),
-      infoClient: new EtherscanInfoClient(config.infoAPI)
+      configuration: {
+        chainID: config.chainId || 1,
+        nodeClient: new AirGapNodeClient(config.jsonRPCAPI),
+        infoClient: new EtherscanInfoClient(config.infoAPI)
+      }
     })
     this.contractAddress = config.contractAddress
     this.symbol = config.symbol

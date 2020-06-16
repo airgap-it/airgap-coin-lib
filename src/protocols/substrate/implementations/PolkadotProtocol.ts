@@ -3,6 +3,7 @@ import { SubstrateBlockExplorerClient } from '../helpers/blockexplorer/Substrate
 import { SubstrateNodeClient } from '../helpers/node/SubstrateNodeClient'
 import { SubstrateNetwork } from '../SubstrateNetwork'
 import { SubstrateProtocol } from '../SubstrateProtocol'
+import { ChainNetwork } from '../../../utils/Network'
 
 const NODE_URL = ''
 
@@ -50,11 +51,19 @@ export class PolkadotProtocol extends SubstrateProtocol {
 
   public standardDerivationPath: string = `m/44'/354'/0'/0/0` // TODO: verify
 
-  public constructor(
-    network: SubstrateNetwork = SubstrateNetwork.POLKADOT,
-    nodeClient: SubstrateNodeClient = new SubstrateNodeClient(network, NODE_URL),
-    blockExplorerClient: SubstrateBlockExplorerClient = new SubstrateBlockExplorerClient(network, BLOCK_EXPLORER_URL, BLOCK_EXPLORER_API)
-  ) {
-    super(network, nodeClient, blockExplorerClient)
+  public constructor(config?: {
+    chainNetwork: ChainNetwork
+    network: SubstrateNetwork
+    nodeClient: SubstrateNodeClient
+    blockExplorerClient: SubstrateBlockExplorerClient
+  }) {
+    super({
+      chainNetwork: config?.chainNetwork,
+      network: config?.network ?? SubstrateNetwork.POLKADOT,
+      nodeClient: config?.nodeClient ?? new SubstrateNodeClient(config?.network ?? SubstrateNetwork.POLKADOT, NODE_URL),
+      blockExplorerClient:
+        config?.blockExplorerClient ??
+        new SubstrateBlockExplorerClient(config?.network ?? SubstrateNetwork.POLKADOT, BLOCK_EXPLORER_URL, BLOCK_EXPLORER_API)
+    })
   }
 }

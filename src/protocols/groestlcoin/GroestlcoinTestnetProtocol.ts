@@ -3,6 +3,6 @@ import { BitcoinProtocol } from '../bitcoin/BitcoinProtocol'
 
 export class GroestlcoinTestnetProtocol extends BitcoinProtocol {
   constructor() {
-    super(bitGoUTXO.networks.groestlcoin, 'https://blockbook-test.groestlcoin.org/')
+    super({ network: bitGoUTXO.networks.groestlcoin, baseApiUrl: 'https://blockbook-test.groestlcoin.org/' })
   }
 }

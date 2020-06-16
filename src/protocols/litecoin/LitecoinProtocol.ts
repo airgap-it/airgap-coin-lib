@@ -3,6 +3,6 @@ import { BitcoinProtocol } from '../bitcoin/BitcoinProtocol'
 
 export class LitecoinProtocol extends BitcoinProtocol {
   constructor() {
-    super(bitcoinJS.networks.litecoin, 'https://insight.litecore.io')
+    super({ network: bitcoinJS.networks.litecoin, baseApiUrl: 'https://insight.litecore.io' })
   }
 }

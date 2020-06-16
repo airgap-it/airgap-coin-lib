@@ -42,7 +42,7 @@ describe(`ICoinProtocol Aeternity - Custom Tests`, () => {
   beforeEach(() => {
     sinon
       .stub(axios, 'get')
-      .withArgs(`${aeLib.epochMiddleware}/middleware/transactions/account/${aeProtocolSpec.wallet.addresses[0]}`)
+      .withArgs(`${aeLib.epochRPC}/middleware/transactions/account/${aeProtocolSpec.wallet.addresses[0]}`)
       .returns(Promise.resolve(sampleAccountResponse))
   })
 
@@ -57,7 +57,7 @@ describe(`ICoinProtocol Aeternity - Custom Tests`, () => {
     sinon.restore()
     sinon
       .stub(axios, 'get')
-      .withArgs(`${aeLib.epochMiddleware}/middleware/transactions/account/${aeProtocolSpec.wallet.addresses[0]}`)
+      .withArgs(`${aeLib.epochRPC}/middleware/transactions/account/${aeProtocolSpec.wallet.addresses[0]}`)
       .returns(Promise.resolve(responseWithTimestamp))
 
     const transactions = await aeLib.getTransactionsFromAddresses(aeProtocolSpec.wallet.addresses, 0, 0)

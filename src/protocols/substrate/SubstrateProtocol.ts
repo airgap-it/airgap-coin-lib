@@ -40,18 +40,32 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
   public addressValidationPattern: string = '^[a-km-zA-HJ-NP-Z1-9]+$' // TODO: set length?
   public addressPlaceholder: string = 'ABC...' // TODO: better placeholder?
 
-  public blockExplorer: string = this.blockExplorerClient.baseUrl
+  public chainNetwork: ChainNetwork
 
-  public chainNetwork: ChainNetwork = { type: NetworkType.MAINNET, name: 'Mainnet', rpcUrl: 'https://rpc.localhost.com/' }
+  public readonly network: SubstrateNetwork
+  public readonly nodeClient: SubstrateNodeClient
+  public readonly blockExplorerClient: SubstrateBlockExplorerClient
+  public readonly accountController: SubstrateAccountController
+  public readonly transactionController: SubstrateTransactionController
 
-  constructor(
-    readonly network: SubstrateNetwork,
-    readonly nodeClient: SubstrateNodeClient,
-    readonly blockExplorerClient: SubstrateBlockExplorerClient,
-    readonly accountController: SubstrateAccountController = new SubstrateAccountController(network, nodeClient),
-    readonly transactionController: SubstrateTransactionController = new SubstrateTransactionController(network, nodeClient)
-  ) {
+  public blockExplorer: string
+
+  constructor(config: {
+    chainNetwork?: ChainNetwork
+    network: SubstrateNetwork
+    nodeClient: SubstrateNodeClient
+    blockExplorerClient: SubstrateBlockExplorerClient
+    accountController?: SubstrateAccountController
+    transactionController?: SubstrateTransactionController
+  }) {
     super()
+    this.chainNetwork = config.chainNetwork ?? { type: NetworkType.MAINNET, name: 'Mainnet', rpcUrl: 'https://rpc.localhost.com/' }
+    this.network = config.network
+    this.nodeClient = config.nodeClient
+    this.blockExplorerClient = config.blockExplorerClient
+    this.blockExplorer = this.blockExplorerClient.baseUrl
+    this.accountController = config.accountController ?? new SubstrateAccountController(this.network, this.nodeClient)
+    this.transactionController = config.transactionController ?? new SubstrateTransactionController(this.network, this.nodeClient)
   }
 
   public async getBlockExplorerLinkForAddress(address: string): Promise<string> {

@@ -44,7 +44,7 @@ export class GroestlcoinProtocol extends BitcoinBlockbookProtocol {
   public chainNetwork: ChainNetwork = { type: NetworkType.MAINNET, name: 'Mainnet', rpcUrl: 'https://rpc.localhost.com/' }
 
   constructor() {
-    super(bitGoUTXO.networks.groestlcoin, 'https://blockbook.groestlcoin.org', bitGoUTXO)
+    super({ network: bitGoUTXO.networks.groestlcoin, baseApiUrl: 'https://blockbook.groestlcoin.org', bitcoinJSLib: bitGoUTXO })
   }
 
   public async getBlockExplorerLinkForAddress(address: string): Promise<string> {

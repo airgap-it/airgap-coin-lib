@@ -10,8 +10,8 @@ import { Network } from '../../networks'
 import { UnsignedTransaction } from '../../serializer/schemas/definitions/transaction-sign-request'
 import { SignedBitcoinTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-bitcoin'
 import { RawBitcoinTransaction } from '../../serializer/types'
-import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
 import { ChainNetwork, NetworkType } from '../../utils/Network'
+import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
 
 export interface Vin {
   txid: string
@@ -104,8 +104,6 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
 
   public subProtocols = []
 
-  public chainNetwork: ChainNetwork = { type: NetworkType.MAINNET, name: 'Mainnet', rpcUrl: 'https://rpc.localhost.com/' }
-
   public feeDefaults: FeeDefaults = {
     low: '0.00002',
     medium: '0.00004',
@@ -143,10 +141,13 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
   public baseApiUrl: string
   public bitcoinJSLib: any
 
-  constructor(network: Network = bitcoinJS.networks.bitcoin, baseApiUrl: string = 'https://btc1.trezor.io', bitcoinJSLib = bitcoinJS) {
-    this.network = network
-    this.baseApiUrl = `https://cors-proxy.airgap.prod.gke.papers.tech/proxy?url=${baseApiUrl}`
-    this.bitcoinJSLib = bitcoinJSLib
+  public readonly chainNetwork: ChainNetwork
+
+  constructor(config?: { chainNetwork?: ChainNetwork; network?: Network; baseApiUrl?: string; bitcoinJSLib? }) {
+    this.chainNetwork = config?.chainNetwork ?? { type: NetworkType.MAINNET, name: 'Mainnet', rpcUrl: 'https://rpc.localhost.com/' }
+    this.network = config?.network ?? bitcoinJS.networks.bitcoin
+    this.baseApiUrl = `https://cors-proxy.airgap.prod.gke.papers.tech/proxy?url=${config?.baseApiUrl ?? 'https://btc1.trezor.io'}`
+    this.bitcoinJSLib = config?.bitcoinJSLib ?? bitcoinJS
   }
 
   public async getBlockExplorerLinkForAddress(address: string): Promise<string> {

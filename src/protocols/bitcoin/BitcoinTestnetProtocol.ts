@@ -9,6 +9,6 @@ export class BitcoinTestnetProtocol extends BitcoinProtocol {
   public addressValidationPattern = '^..[13][a-km-zA-HJ-NP-Z1-9]{25,34}$'
 
   constructor() {
-    super(bitcoinJS.networks.testnet, 'https://test-insight.bitpay.com')
+    super({ network: bitcoinJS.networks.testnet, baseApiUrl: 'https://test-insight.bitpay.com' })
   }
 }

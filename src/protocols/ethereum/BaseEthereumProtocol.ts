@@ -73,10 +73,11 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     return getSubProtocolsByIdentifier(this.identifier) as any[] // TODO: Fix typings once apps are compatible with 3.7
   }
 
-  public chainNetwork: ChainNetwork = { type: NetworkType.MAINNET, name: 'Mainnet', rpcUrl: 'https://rpc.localhost.com/' }
+  public chainNetwork: ChainNetwork
 
-  constructor(configuration: EthereumProtocolConfiguration<NodeClient, InfoClient>) {
-    this.configuration = configuration
+  constructor(config: { chainNetwork?: ChainNetwork; configuration: EthereumProtocolConfiguration<NodeClient, InfoClient> }) {
+    this.chainNetwork = config?.chainNetwork ?? { type: NetworkType.MAINNET, name: 'Mainnet', rpcUrl: 'https://rpc.localhost.com/' }
+    this.configuration = config.configuration
     this.network = bitcoinJS.networks.bitcoin
   }
 

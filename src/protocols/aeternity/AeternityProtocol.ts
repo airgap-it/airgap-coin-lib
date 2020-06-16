@@ -54,14 +54,17 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
   // ae specifics
   public defaultNetworkId: string = 'ae_mainnet'
 
-  public epochMiddleware: string = 'https://ae-epoch-rpc-proxy.gke.papers.tech'
+  public epochRPC: string
 
   private readonly feesURL: string = 'https://api-airgap.gke.papers.tech/fees'
 
-  public chainNetwork: ChainNetwork = { type: NetworkType.MAINNET, name: 'Mainnet', rpcUrl: 'https://rpc.localhost.com/' }
+  public readonly chainNetwork: ChainNetwork
 
-  constructor(public epochRPC: string = 'https://ae-epoch-rpc-proxy.gke.papers.tech') {
+  constructor(config?: { chainNetwork?: ChainNetwork; epochRPC?: string }) {
     super()
+
+    this.chainNetwork = config?.chainNetwork ?? { type: NetworkType.MAINNET, name: 'Mainnet', rpcUrl: 'https://rpc.localhost.com/' }
+    this.epochRPC = config?.epochRPC ?? 'https://ae-epoch-rpc-proxy.gke.papers.tech'
   }
 
   public async getBlockExplorerLinkForAddress(address: string): Promise<string> {
@@ -125,7 +128,7 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
   public async getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
     const allTransactions = await Promise.all(
       addresses.map((address) => {
-        return axios.get(`${this.epochMiddleware}/middleware/transactions/account/${address}`)
+        return axios.get(`${this.epochRPC}/middleware/transactions/account/${address}`)
       })
     )
 
