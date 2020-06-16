@@ -39,7 +39,7 @@ export class CosmosTransaction implements JSONConvertible, RPCConvertible {
       chainID: this.chainID,
       fee: this.fee.toJSON(),
       memo: this.memo,
-      messages: this.messages.map(value => value.toJSON()),
+      messages: this.messages.map((value) => value.toJSON()),
       sequence: this.sequence
     }
   }
@@ -50,13 +50,13 @@ export class CosmosTransaction implements JSONConvertible, RPCConvertible {
       chain_id: this.chainID,
       fee: this.fee.toRPCBody(),
       memo: this.memo,
-      msgs: this.messages.map(value => value.toRPCBody()),
+      msgs: this.messages.map((value) => value.toRPCBody()),
       sequence: this.sequence
     }
   }
 
   public toAirGapTransactions(identifier: string): IAirGapTransaction[] {
-    const fee = this.fee.amount.map(value => new BigNumber(value.amount)).reduce((prev, next) => prev.plus(next))
+    const fee = this.fee.amount.map((value) => new BigNumber(value.amount)).reduce((prev, next) => prev.plus(next))
 
     return this.messages
       .map((message: CosmosMessage) => message.toAirGapTransaction(identifier, fee.toString(10)))
@@ -74,7 +74,7 @@ export class CosmosTransaction implements JSONConvertible, RPCConvertible {
   }
 
   public static fromJSON(json: SerializableUnsignedCosmosTransaction): CosmosTransaction {
-    const messages: CosmosMessage[] = json.transaction.messages.map(value => {
+    const messages: CosmosMessage[] = json.transaction.messages.map((value) => {
       const type: CosmosMessageTypeIndex = value.type
       switch (type) {
         case CosmosMessageType.Send.index:
@@ -100,7 +100,7 @@ export class CosmosTransaction implements JSONConvertible, RPCConvertible {
   }
 
   public static fromRPCBody(json: any): CosmosTransaction {
-    const messages: CosmosMessage[] = json.msgs.map(value => {
+    const messages: CosmosMessage[] = json.msgs.map((value) => {
       const type: string = value.type
       switch (type) {
         case CosmosMessageType.Send.value:

@@ -1,4 +1,5 @@
 import { IAirGapTransaction } from '../interfaces/IAirGapTransaction'
+
 import { FeeDefaults } from './ICoinProtocol'
 
 export abstract class NonExtendedProtocol {
@@ -39,7 +40,12 @@ export abstract class NonExtendedProtocol {
     return Promise.reject('estimating max value using extended public key not implemented')
   }
 
-  public estimateFeeDefaultsFromExtendedPublicKey(publicKey: string, recipients: string[], values: string[], data?: any): Promise<FeeDefaults> {
+  public estimateFeeDefaultsFromExtendedPublicKey(
+    publicKey: string,
+    recipients: string[],
+    values: string[],
+    data?: any
+  ): Promise<FeeDefaults> {
     return Promise.reject('estimating fee defaults using extended public key not implemented')
   }
 

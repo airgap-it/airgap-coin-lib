@@ -1,4 +1,4 @@
 export interface KeyPair {
-    publicKey: Buffer
-    privateKey: Buffer
-  }
+  publicKey: Buffer
+  privateKey: Buffer
+}

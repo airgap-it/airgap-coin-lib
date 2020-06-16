@@ -1,7 +1,7 @@
-import { TezosContractEntity } from "./TezosContractEntity";
+import { TezosContractEntity } from './TezosContractEntity'
 
 export class TezosContractUnit extends TezosContractEntity {
-  toJSON() {
+  public toJSON() {
     return { prim: 'Unit' }
   }
 }

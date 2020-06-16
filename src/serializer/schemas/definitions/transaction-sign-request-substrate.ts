@@ -1,9 +1,9 @@
-import { UnsignedTransaction } from "./transaction-sign-request";
+import { UnsignedTransaction } from './transaction-sign-request'
 
 interface RawSubstrateTransaction {
-    encoded: string
+  encoded: string
 }
 
 export interface UnsignedSubstrateTransaction extends UnsignedTransaction {
-    transaction: RawSubstrateTransaction
+  transaction: RawSubstrateTransaction
 }

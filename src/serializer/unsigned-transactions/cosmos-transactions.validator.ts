@@ -33,9 +33,9 @@ export class CosmosTransactionValidator extends TransactionValidator {
     // const rawTx: RawTezosTransaction = unsignedTx.transaction
     validateSyncScheme({})
 
-    return undefined //async(rawTx, unsignedTransactionConstraints).then(success, error)
+    return undefined // async(rawTx, unsignedTransactionConstraints).then(success, error)
   }
   public async validateSignedTransaction(signedTx: SignedTezosTransaction): Promise<any> {
-    return undefined //async(signedTx, signedTransactionConstraints).then(success, error)
+    return undefined // async(signedTx, signedTransactionConstraints).then(success, error)
   }
 }

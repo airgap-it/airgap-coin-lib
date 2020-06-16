@@ -48,10 +48,10 @@ export interface CosmosUnbondingDelegation {
   delegator_address: string
   validator_address: string
   entries: {
-      creation_height: string
-      completion_time: string
-      initial_balance: string
-      balance: string
+    creation_height: string
+    completion_time: string
+    initial_balance: string
+    balance: string
   }[]
 }
 
@@ -95,7 +95,7 @@ export interface CosmosBroadcastSignedTransactionResponse {
 export interface CosmosRewardDetails {
   validator_address: string
   reward: {
-    denom: string,
+    denom: string
     amount: number
   }[]
 }
@@ -109,11 +109,14 @@ export class CosmosNodeClient {
     if (data.length > 0) {
       const availableBalance = data[0].amount
       if (totalBalance) {
-        const totalBalance = (await Promise.all([
-          this.fetchTotalReward(address),
-          this.fetchTotalUnbondingAmount(address),
-          this.fetchTotalDelegatedAmount(address)
-        ])).reduce((current, next) => current.plus(next), new BigNumber(availableBalance))
+        const totalBalance = (
+          await Promise.all([
+            this.fetchTotalReward(address),
+            this.fetchTotalUnbondingAmount(address),
+            this.fetchTotalDelegatedAmount(address)
+          ])
+        ).reduce((current, next) => current.plus(next), new BigNumber(availableBalance))
+
         return totalBalance.decimalPlaces(0, BigNumber.ROUND_FLOOR)
       } else {
         return new BigNumber(availableBalance).decimalPlaces(0, BigNumber.ROUND_FLOOR)
@@ -136,7 +139,7 @@ export class CosmosNodeClient {
         'Content-type': 'application/json'
       }
     })
-    
+
     return response.data.txhash
   }
 
@@ -159,7 +162,10 @@ export class CosmosNodeClient {
 
   public async fetchTotalDelegatedAmount(address: string): Promise<BigNumber> {
     const delegations = await this.fetchDelegations(address)
-    return delegations.reduce((current, next) => current.plus(new BigNumber(next.balance)), new BigNumber(0)).decimalPlaces(0, BigNumber.ROUND_FLOOR)
+
+    return delegations
+      .reduce((current, next) => current.plus(new BigNumber(next.balance)), new BigNumber(0))
+      .decimalPlaces(0, BigNumber.ROUND_FLOOR)
   }
 
   public async fetchValidator(address: string): Promise<CosmosValidator> {
@@ -188,30 +194,34 @@ export class CosmosNodeClient {
   public async fetchUnbondingDelegations(delegatorAddress: string): Promise<CosmosUnbondingDelegation[]> {
     const response = await Axios.get(this.url(`/staking/delegators/${delegatorAddress}/unbonding_delegations`))
     const unbondingDelegations = response.data.result as CosmosUnbondingDelegation[]
+
     return unbondingDelegations
   }
 
   public async fetchTotalUnbondingAmount(address: string): Promise<BigNumber> {
     const unbondingDelegations: CosmosUnbondingDelegation[] = await this.fetchUnbondingDelegations(address)
     if (unbondingDelegations) {
-      const unbondings = unbondingDelegations.map(delegation => delegation.entries).reduce((current, next) => current.concat(next), [])
-      return unbondings.reduce((current, next) => current.plus(new BigNumber(next.balance)), new BigNumber(0)).decimalPlaces(0, BigNumber.ROUND_FLOOR)
+      const unbondings = unbondingDelegations.map((delegation) => delegation.entries).reduce((current, next) => current.concat(next), [])
+
+      return unbondings
+        .reduce((current, next) => current.plus(new BigNumber(next.balance)), new BigNumber(0))
+        .decimalPlaces(0, BigNumber.ROUND_FLOOR)
     }
+
     return new BigNumber(0)
   }
 
   public async fetchRewardDetails(delegatorAddress: string): Promise<CosmosRewardDetails[]> {
     return Axios.get(this.url(`/distribution/delegators/${delegatorAddress}/rewards`))
-      .then(response => response.data.result.rewards as CosmosRewardDetails[])
+      .then((response) => (response.data.result.rewards ?? []) as CosmosRewardDetails[])
       .catch(() => [])
-      
   }
 
   public async fetchTotalReward(delegatorAddress: string): Promise<BigNumber> {
     const totalRewards = await Axios.get(this.url(`/distribution/delegators/${delegatorAddress}/rewards`))
-    .then(response => response.data.result.total as { denom: string; amount: string }[])
-    .catch(() => [])
-    
+      .then((response) => response.data.result.total as { denom: string; amount: string }[])
+      .catch(() => [])
+
     if (totalRewards.length > 0) {
       return new BigNumber(totalRewards[0].amount).decimalPlaces(0, BigNumber.ROUND_FLOOR)
     }
@@ -221,8 +231,8 @@ export class CosmosNodeClient {
 
   public async fetchRewardForDelegation(delegatorAddress: string, validatorAddress: string): Promise<BigNumber> {
     const totalRewards = await Axios.get(this.url(`/distribution/delegators/${delegatorAddress}/rewards/${validatorAddress}`))
-    .then(response => response.data.result as { denom: string; amount: string }[])
-    .catch(() => [])
+      .then((response) => response.data.result as { denom: string; amount: string }[])
+      .catch(() => [])
     if (totalRewards.length > 0) {
       return new BigNumber(totalRewards[0].amount).decimalPlaces(0, BigNumber.ROUND_FLOOR)
     }

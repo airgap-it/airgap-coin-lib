@@ -15,7 +15,7 @@ interface PayloadTypeReturnType {
 }
 
 function isBufferArray(arg: unknown): arg is Buffer[] {
-  return Array.isArray(arg) && arg.every(el => el instanceof Buffer)
+  return Array.isArray(arg) && arg.every((el) => el instanceof Buffer)
 }
 
 function isDecodedChunkedPayload(arg: unknown): arg is DecodedChunkedPayload {

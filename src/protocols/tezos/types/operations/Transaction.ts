@@ -1,4 +1,5 @@
 import { TezosOperationType } from '../TezosOperationType'
+
 import { TezosOperation } from './TezosOperation'
 
 export type MichelsonPrimitives =

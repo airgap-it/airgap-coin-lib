@@ -118,27 +118,29 @@ export class CosmosInfoClient {
     }
     const transactions: IAirGapTransaction[][] = response.data.hits.hits.map((hit: Hit) => {
       const transaction: Tx = hit._source.tx
-      const timestamp = (new Date(hit._source.timestamp)).getTime() / 1000
+      const timestamp = new Date(hit._source.timestamp).getTime() / 1000
       const fee: BigNumber = transaction.value.fee.amount
         .map((coin: Amount) => new BigNumber(coin.amount))
         .reduce((current: BigNumber, next: BigNumber) => current.plus(next))
-      const result: IAirGapTransaction[] = transaction.value.msg.filter((message: Msg) => message.type === 'cosmos-sdk/MsgSend').map((message: Msg) => {
-        const destination: string = message.value.to_address
+      const result: IAirGapTransaction[] = transaction.value.msg
+        .filter((message: Msg) => message.type === 'cosmos-sdk/MsgSend')
+        .map((message: Msg) => {
+          const destination: string = message.value.to_address
 
-        return {
-          amount: message.value.amount
-            .map((coin: Amount) => new BigNumber(coin.amount))
-            .reduce((current: BigNumber, next: BigNumber) => current.plus(next))
-            .toString(10),
-          to: [destination],
-          from: [message.value.from_address],
-          isInbound: destination === address,
-          fee: fee.toString(10),
-          protocolIdentifier: identifier,
-          hash: hit._source.hash,
-          timestamp
-        }
-      })
+          return {
+            amount: message.value.amount
+              .map((coin: Amount) => new BigNumber(coin.amount))
+              .reduce((current: BigNumber, next: BigNumber) => current.plus(next))
+              .toString(10),
+            to: [destination],
+            from: [message.value.from_address],
+            isInbound: destination === address,
+            fee: fee.toString(10),
+            protocolIdentifier: identifier,
+            hash: hit._source.hash,
+            timestamp
+          }
+        })
 
       return result
     })

@@ -36,8 +36,8 @@ export class BitcoinUnsignedTransactionSerializer extends UnsignedTransactionSer
   public serialize(unsignedTx: UnsignedBitcoinTransaction): SerializedSyncProtocolTransaction {
     const toSerialize = [
       [
-        [...unsignedTx.transaction.ins.map(input => [input.txId, input.value, input.vout, input.address, input.derivationPath])],
-        [...unsignedTx.transaction.outs.map(output => [output.isChange, output.recipient, output.value])]
+        [...unsignedTx.transaction.ins.map((input) => [input.txId, input.value, input.vout, input.address, input.derivationPath])],
+        [...unsignedTx.transaction.outs.map((output) => [output.isChange, output.recipient, output.value])]
       ],
       unsignedTx.publicKey, // publicKey
       unsignedTx.callback ? unsignedTx.callback : 'airgap-wallet://?d=' // callback-scheme
@@ -54,7 +54,7 @@ export class BitcoinUnsignedTransactionSerializer extends UnsignedTransactionSer
 
     return {
       transaction: {
-        ins: inputs.map(val => {
+        ins: inputs.map((val) => {
           const input: IInTransaction = {
             txId: val[0].toString(),
             value: new BigNumber(val[1].toString()),
@@ -65,7 +65,7 @@ export class BitcoinUnsignedTransactionSerializer extends UnsignedTransactionSer
 
           return input
         }),
-        outs: outputs.map(val => {
+        outs: outputs.map((val) => {
           const output: IOutTransaction = {
             isChange: val[0].toString() === '0' ? false : true,
             recipient: val[1].toString(),

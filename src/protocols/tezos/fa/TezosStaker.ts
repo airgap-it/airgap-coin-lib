@@ -1,9 +1,9 @@
-import { TezosFAProtocol } from './TezosFAProtocol'
 import { TezosNetwork } from '../TezosProtocol'
 import { TezosUtils } from '../TezosUtils'
 
-export class TezosStaker extends TezosFAProtocol {
+import { TezosFAProtocol } from './TezosFAProtocol'
 
+export class TezosStaker extends TezosFAProtocol {
   constructor(
     contractAddress: string = 'KT1EctCuorV2NfVb1XTQgvzJ88MQtWP8cMMv',
     jsonRPCAPI?: string,
@@ -22,22 +22,25 @@ export class TezosStaker extends TezosFAProtocol {
         medium: '0.300',
         high: '0.500'
       },
-      contractAddress: contractAddress,
-      jsonRPCAPI: jsonRPCAPI,
-      baseApiUrl: baseApiUrl,
-      baseApiKey: baseApiKey,
-      baseApiNetwork: baseApiNetwork,
-      network: network
+      contractAddress,
+      jsonRPCAPI,
+      baseApiUrl,
+      baseApiKey,
+      baseApiNetwork,
+      network
     })
   }
 
-  public async fetchTokenHolders(): Promise<{address: string, amount: string}[]> {
+  public async fetchTokenHolders(): Promise<{ address: string; amount: string }[]> {
     const values = await this.contract.bigMapValues([])
-    return values.map((value) => {
-      return {
-        address: TezosUtils.parseAddress(value.key.substring(2)),
-        amount: value.value !== null ? value.value : '0'
-      }
-    }).filter((value) => value.amount !== '0')
+
+    return values
+      .map((value) => {
+        return {
+          address: TezosUtils.parseAddress(value.key.substring(2)),
+          amount: value.value !== null ? value.value : '0'
+        }
+      })
+      .filter((value) => value.amount !== '0')
   }
 }

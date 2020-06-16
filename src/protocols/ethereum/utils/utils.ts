@@ -42,9 +42,7 @@ export class EthereumUtils {
       valueInBytes = EthereumUtils.hexToBytes(value)
     }
 
-    const hash: string = createKeccakHash('keccak256')
-      .update(valueInBytes)
-      .digest('hex')
+    const hash: string = createKeccakHash('keccak256').update(valueInBytes).digest('hex')
     const returnValue: string = `0x${hash}`
 
     if (returnValue === EthereumUtils.SHA3_NULL_S) {
@@ -135,15 +133,9 @@ export class EthereumUtils {
 
     // remove \u0000 padding from either side
     str = str.replace(/^(?:\u0000)*/, '')
-    str = str
-      .split('')
-      .reverse()
-      .join('')
+    str = str.split('').reverse().join('')
     str = str.replace(/^(?:\u0000)*/, '')
-    str = str
-      .split('')
-      .reverse()
-      .join('')
+    str = str.split('').reverse().join('')
 
     for (let i = 0; i < str.length; i++) {
       const code: number = str.charCodeAt(i)
