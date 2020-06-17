@@ -249,7 +249,7 @@ validators.isValidBitcoinTxString = (transaction: string) => {
   }
   try {
     const protocol = new BitcoinProtocol()
-    const bitcoinJSLib = protocol.bitcoinJSLib
+    const bitcoinJSLib = protocol.options.config.bitcoinJSLib
     bitcoinJSLib.Transaction.fromHex(transaction)
 
     return null

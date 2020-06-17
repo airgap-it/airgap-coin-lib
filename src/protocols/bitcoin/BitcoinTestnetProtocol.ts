@@ -1,6 +1,14 @@
 import * as bitcoinJS from '../../dependencies/src/bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac/src/index'
+import { NetworkType } from '../../utils/ProtocolNetwork'
 
 import { BitcoinProtocol } from './BitcoinProtocol'
+import {
+  BitcoinProtocolConfig,
+  BitcoinProtocolNetwork,
+  BitcoinProtocolNetworkExtras,
+  BitcoinProtocolOptions,
+  BlockcypherBlockExplorer
+} from './BitcoinProtocolOptions'
 
 export class BitcoinTestnetProtocol extends BitcoinProtocol {
   public name = 'Bitcoin Testnet'
@@ -9,6 +17,17 @@ export class BitcoinTestnetProtocol extends BitcoinProtocol {
   public addressValidationPattern = '^..[13][a-km-zA-HJ-NP-Z1-9]{25,34}$'
 
   constructor() {
-    super({ network: bitcoinJS.networks.testnet, baseApiUrl: 'https://test-insight.bitpay.com' })
+    super(
+      new BitcoinProtocolOptions(
+        new BitcoinProtocolNetwork(
+          'Testnet',
+          NetworkType.TESTNET,
+          '',
+          new BlockcypherBlockExplorer('https://live.blockcypher.com/btc-testnet'),
+          new BitcoinProtocolNetworkExtras('https://test-insight.bitpay.com', bitcoinJS.networks.testnet)
+        ),
+        new BitcoinProtocolConfig()
+      )
+    )
   }
 }

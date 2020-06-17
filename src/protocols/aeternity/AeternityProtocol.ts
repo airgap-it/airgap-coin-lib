@@ -16,7 +16,8 @@ import { padStart } from '../../utils/padStart'
 import { EthereumUtils } from '../ethereum/utils/utils'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
-import { ChainNetwork, NetworkType } from '../../utils/Network'
+
+import { AeternityProtocolOptions } from './AeternityProtocolOptions'
 
 export class AeternityProtocol extends NonExtendedProtocol implements ICoinProtocol {
   public symbol: string = 'AE'
@@ -49,30 +50,21 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
   public addressValidationPattern: string = '^ak_+[1-9A-Za-z]{49,50}$'
   public addressPlaceholder: string = 'ak_abc...'
 
-  public blockExplorer: string = 'https://mainnet.aeternal.io'
-
   // ae specifics
   public defaultNetworkId: string = 'ae_mainnet'
 
-  public epochRPC: string
-
   private readonly feesURL: string = 'https://api-airgap.gke.papers.tech/fees'
 
-  public readonly chainNetwork: ChainNetwork
-
-  constructor(config?: { chainNetwork?: ChainNetwork; epochRPC?: string }) {
+  constructor(public readonly options: AeternityProtocolOptions = new AeternityProtocolOptions()) {
     super()
-
-    this.chainNetwork = config?.chainNetwork ?? { type: NetworkType.MAINNET, name: 'Mainnet', rpcUrl: 'https://rpc.localhost.com/' }
-    this.epochRPC = config?.epochRPC ?? 'https://ae-epoch-rpc-proxy.gke.papers.tech'
   }
 
   public async getBlockExplorerLinkForAddress(address: string): Promise<string> {
-    return `${this.blockExplorer}/account/transactions/{{address}}/`.replace('{{address}}', address)
+    return this.options.network.blockExplorer.getAddressLink(address)
   }
 
   public async getBlockExplorerLinkForTxId(txId: string): Promise<string> {
-    return `${this.blockExplorer}/transactions/{{txId}}/`.replace('{{txId}}', txId)
+    return this.options.network.blockExplorer.getTransactionLink(txId)
   }
 
   public async getPublicKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
@@ -128,7 +120,7 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
   public async getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
     const allTransactions = await Promise.all(
       addresses.map((address) => {
-        return axios.get(`${this.epochRPC}/middleware/transactions/account/${address}`)
+        return axios.get(`${this.options.network.rpcUrl}/middleware/transactions/account/${address}`)
       })
     )
 
@@ -247,7 +239,7 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
 
     for (const address of addresses) {
       try {
-        const { data } = await axios.get(`${this.epochRPC}/v2/accounts/${address}`)
+        const { data } = await axios.get(`${this.options.network.rpcUrl}/v2/accounts/${address}`)
         balance = balance.plus(new BigNumber(data.balance))
       } catch (error) {
         // if node returns 404 (which means 'no account found'), go with 0 balance
@@ -314,7 +306,7 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
     const address: string = await this.getAddressFromPublicKey(publicKey)
 
     try {
-      const { data: accountResponse } = await axios.get(`${this.epochRPC}/v2/accounts/${address}`)
+      const { data: accountResponse } = await axios.get(`${this.options.network.rpcUrl}/v2/accounts/${address}`)
       nonce = accountResponse.nonce + 1
     } catch (error) {
       // if node returns 404 (which means 'no account found'), go with nonce 0
@@ -369,7 +361,7 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
 
   public async broadcastTransaction(rawTransaction: string): Promise<string> {
     const { data } = await axios.post(
-      `${this.epochRPC}/v2/transactions`,
+      `${this.options.network.rpcUrl}/v2/transactions`,
       { tx: rawTransaction },
       { headers: { 'Content-Type': 'application/json' } }
     )

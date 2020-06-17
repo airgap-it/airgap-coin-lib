@@ -12,11 +12,11 @@ const addSupportedProtocol: (newProtocol: ICoinProtocol) => void = (newProtocol:
   if (
     supportedProtocols().find(
       (protocol: ICoinProtocol) =>
-        protocol.identifier === newProtocol.identifier && isNetworkEqual(protocol.chainNetwork, newProtocol.chainNetwork)
+        protocol.identifier === newProtocol.identifier && isNetworkEqual(protocol.options.network, newProtocol.options.network)
     )
   ) {
     throw new Error(
-      `protocol ${newProtocol.name} on network ${newProtocol.chainNetwork.type}(${newProtocol.chainNetwork.rpcUrl}) already exists`
+      `protocol ${newProtocol.name} on network ${newProtocol.options.network.type}(${newProtocol.options.network.rpcUrl}) already exists`
     )
   }
 

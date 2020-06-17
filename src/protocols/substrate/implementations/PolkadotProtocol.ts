@@ -1,14 +1,8 @@
 import { CurrencyUnit, FeeDefaults } from '../../ICoinProtocol'
-import { SubstrateBlockExplorerClient } from '../helpers/blockexplorer/SubstrateBlockExplorerClient'
-import { SubstrateNodeClient } from '../helpers/node/SubstrateNodeClient'
-import { SubstrateNetwork } from '../SubstrateNetwork'
 import { SubstrateProtocol } from '../SubstrateProtocol'
-import { ChainNetwork } from '../../../utils/Network'
+import { SubstrateProtocolOptions } from '../SubstrateProtocolOptions'
 
-const NODE_URL = ''
-
-const BLOCK_EXPLORER_URL = ''
-const BLOCK_EXPLORER_API = ''
+import { PolkadotProtocolOptions } from './PolkadotProtocolOptions'
 
 export class PolkadotProtocol extends SubstrateProtocol {
   public symbol: string = 'DOT'
@@ -51,19 +45,7 @@ export class PolkadotProtocol extends SubstrateProtocol {
 
   public standardDerivationPath: string = `m/44'/354'/0'/0/0` // TODO: verify
 
-  public constructor(config?: {
-    chainNetwork: ChainNetwork
-    network: SubstrateNetwork
-    nodeClient: SubstrateNodeClient
-    blockExplorerClient: SubstrateBlockExplorerClient
-  }) {
-    super({
-      chainNetwork: config?.chainNetwork,
-      network: config?.network ?? SubstrateNetwork.POLKADOT,
-      nodeClient: config?.nodeClient ?? new SubstrateNodeClient(config?.network ?? SubstrateNetwork.POLKADOT, NODE_URL),
-      blockExplorerClient:
-        config?.blockExplorerClient ??
-        new SubstrateBlockExplorerClient(config?.network ?? SubstrateNetwork.POLKADOT, BLOCK_EXPLORER_URL, BLOCK_EXPLORER_API)
-    })
+  public constructor(public readonly options: SubstrateProtocolOptions = new PolkadotProtocolOptions()) {
+    super(options)
   }
 }

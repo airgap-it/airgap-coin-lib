@@ -1,7 +1,7 @@
-import * as bitGoUTXO from '../../dependencies/src/bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac/src/index'
 import { BitcoinBlockbookProtocol } from '../bitcoin/BitcoinBlockbookProtocol'
 import { CurrencyUnit, FeeDefaults } from '../ICoinProtocol'
-import { ChainNetwork, NetworkType } from '../../utils/Network'
+
+import { GroestlcoinProtocolOptions } from './GroestlcoinProtocolOptions'
 
 export class GroestlcoinProtocol extends BitcoinBlockbookProtocol {
   public symbol: string = 'GRS'
@@ -39,19 +39,7 @@ export class GroestlcoinProtocol extends BitcoinBlockbookProtocol {
   public addressValidationPattern: string = '^([F3][a-km-zA-HJ-NP-Z1-9]{33}|grs1[a-zA-HJ-NP-Z0-9]{39})$'
   public addressPlaceholder: string = 'Fdb...'
 
-  public blockExplorer: string = 'https://chainz.cryptoid.info/grs'
-
-  public chainNetwork: ChainNetwork = { type: NetworkType.MAINNET, name: 'Mainnet', rpcUrl: 'https://rpc.localhost.com/' }
-
-  constructor() {
-    super({ network: bitGoUTXO.networks.groestlcoin, baseApiUrl: 'https://blockbook.groestlcoin.org', bitcoinJSLib: bitGoUTXO })
-  }
-
-  public async getBlockExplorerLinkForAddress(address: string): Promise<string> {
-    return `${this.blockExplorer}/address.dws?{{address}}.htm`.replace('{{address}}', address)
-  }
-
-  public async getBlockExplorerLinkForTxId(txId: string): Promise<string> {
-    return `${this.blockExplorer}/tx.dws?{{txId}}.htm`.replace('{{txId}}', txId)
+  constructor(public readonly options: GroestlcoinProtocolOptions = new GroestlcoinProtocolOptions()) {
+    super(options)
   }
 }

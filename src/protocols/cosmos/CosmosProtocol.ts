@@ -31,8 +31,8 @@ import {
   CosmosUnbondingDelegation,
   CosmosValidator
 } from './CosmosNodeClient'
+import { CosmosProtocolOptions } from './CosmosProtocolOptions'
 import { CosmosTransaction } from './CosmosTransaction'
-import { ChainNetwork, NetworkType } from '../../utils/Network'
 
 export enum CosmosDelegationActionType {
   DELEGATE = 'delegate',
@@ -69,31 +69,29 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
   public addressIsCaseSensitive: boolean = false
   public addressValidationPattern: string = '^(cosmos|cosmosvaloper)[a-zA-Z0-9]{39}$'
   public addressPlaceholder: string = 'cosmos...'
-  public blockExplorer: string = 'https://www.mintscan.io'
-  public subProtocols?: (ICoinProtocol & ICoinSubProtocol)[]
 
-  public chainNetwork: ChainNetwork
+  public subProtocols?: (ICoinProtocol & ICoinSubProtocol)[]
 
   private readonly addressPrefix: string = 'cosmos'
   private readonly defaultGas: BigNumber = new BigNumber('200000')
 
-  public readonly infoClient: CosmosInfoClient
-  public readonly nodeClient: CosmosNodeClient
+  get infoClient(): CosmosInfoClient {
+    return this.options.config.infoClient
+  }
+  get nodeClient(): CosmosNodeClient {
+    return this.options.config.nodeClient
+  }
 
-  constructor(config?: { chainNetwork?: ChainNetwork; infoClient?: CosmosInfoClient; nodeClient?: CosmosNodeClient }) {
+  constructor(public readonly options: CosmosProtocolOptions = new CosmosProtocolOptions()) {
     super()
-
-    this.chainNetwork = config?.chainNetwork ?? { type: NetworkType.MAINNET, name: 'Mainnet', rpcUrl: 'https://rpc.localhost.com/' }
-    this.infoClient = config?.infoClient ?? new CosmosInfoClient()
-    this.nodeClient = config?.nodeClient ?? new CosmosNodeClient('https://cosmos-node.prod.gke.papers.tech', true)
   }
 
   public async getBlockExplorerLinkForAddress(address: string): Promise<string> {
-    return `${this.blockExplorer}/account/${address}`
+    return this.options.network.blockExplorer.getAddressLink(address)
   }
 
   public async getBlockExplorerLinkForTxId(txId: string): Promise<string> {
-    return `${this.blockExplorer}/txs/${txId}`
+    return this.options.network.blockExplorer.getTransactionLink(txId)
   }
 
   public generateKeyPair(mnemonic: string, derivationPath: string = this.standardDerivationPath, password?: string): KeyPair {

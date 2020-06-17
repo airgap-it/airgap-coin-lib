@@ -52,7 +52,8 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
   private readonly defaultSourceAddress: string = 'tz1Mj7RzPmMAqDUNFBn5t5VbXmWW4cSUAdtT'
 
   constructor(configuration: TezosFAProtocolConfiguration) {
-    super(configuration.jsonRPCAPI, configuration.baseApiUrl, configuration.network, configuration.baseApiNetwork, configuration.baseApiKey)
+    super() // TODO: Change to new options
+    // super(configuration.jsonRPCAPI, configuration.baseApiUrl, configuration.network, configuration.baseApiNetwork, configuration.baseApiKey)
     this.contractAddress = configuration.contractAddress
     this.symbol = configuration.symbol
     this.name = configuration.name
@@ -428,7 +429,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
   }
 
   private callbackContract(): string {
-    let result = this.defaultCallbackContractMap.get(this.network)
+    let result = this.defaultCallbackContractMap.get(this.options.network.extras.network)
     if (result === undefined) {
       result = ''
     }

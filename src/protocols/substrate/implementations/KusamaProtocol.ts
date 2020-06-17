@@ -1,14 +1,8 @@
 import { CurrencyUnit, FeeDefaults } from '../../ICoinProtocol'
-import { SubstrateBlockExplorerClient } from '../helpers/blockexplorer/SubstrateBlockExplorerClient'
-import { SubstrateNodeClient } from '../helpers/node/SubstrateNodeClient'
-import { SubstrateNetwork } from '../SubstrateNetwork'
 import { SubstrateProtocol } from '../SubstrateProtocol'
-import { ChainNetwork } from '../../../utils/Network'
+import { SubstrateProtocolOptions } from '../SubstrateProtocolOptions'
 
-const NODE_URL = 'https://polkadot-kusama-node.prod.gke.papers.tech'
-
-const BLOCK_EXPLORER_URL = 'https://polkascan.io/pre/kusama'
-const BLOCK_EXPLORER_API = 'https://api-01.polkascan.io/kusama/api/v1'
+import { KusamaProtocolOptions } from './KusamaProtocolOptions'
 
 export class KusamaProtocol extends SubstrateProtocol {
   public symbol: string = 'KSM'
@@ -51,19 +45,7 @@ export class KusamaProtocol extends SubstrateProtocol {
 
   public standardDerivationPath: string = `m/44'/434'/0'/0/0` // TODO: verify
 
-  public constructor(config?: {
-    chainNetwork: ChainNetwork
-    network: SubstrateNetwork
-    nodeClient: SubstrateNodeClient
-    blockExplorerClient: SubstrateBlockExplorerClient
-  }) {
-    super({
-      chainNetwork: config?.chainNetwork,
-      network: config?.network ?? SubstrateNetwork.KUSAMA,
-      nodeClient: config?.nodeClient ?? new SubstrateNodeClient(config?.network ?? SubstrateNetwork.KUSAMA, NODE_URL),
-      blockExplorerClient:
-        config?.blockExplorerClient ??
-        new SubstrateBlockExplorerClient(config?.network ?? SubstrateNetwork.KUSAMA, BLOCK_EXPLORER_URL, BLOCK_EXPLORER_API)
-    })
+  public constructor(public readonly options: SubstrateProtocolOptions = new KusamaProtocolOptions()) {
+    super(options)
   }
 }

@@ -1,18 +1,8 @@
-export enum NetworkType {
-  MAINNET = 'MAINNET',
-  TESTNET = 'TESTNET',
-  CUSTOM = 'CUSTOM'
-}
+import { ProtocolNetwork } from './ProtocolNetwork'
 
-export interface ChainNetwork {
-  type: NetworkType
-  name: string
-  rpcUrl: string
-}
-
-export const isNetworkEqual: (network1: ChainNetwork, network2: ChainNetwork) => boolean = (
-  network1: ChainNetwork,
-  network2: ChainNetwork
+export const isNetworkEqual: (network1: ProtocolNetwork, network2: ProtocolNetwork) => boolean = (
+  network1: ProtocolNetwork,
+  network2: ProtocolNetwork
 ): boolean => {
-  return network1.name === network2.name && network1.type === network2.type && network1.name === network2.name
+  return network1.name === network2.name && network1.type === network2.type && network1.rpcUrl === network2.rpcUrl
 }

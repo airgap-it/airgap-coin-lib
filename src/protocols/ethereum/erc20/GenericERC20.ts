@@ -12,6 +12,7 @@ import { BaseEthereumProtocol } from '../BaseEthereumProtocol'
 import { EtherscanInfoClient } from '../clients/info-clients/EtherscanInfoClient'
 import { AirGapNodeClient, EthereumRPCDataTransfer } from '../clients/node-clients/AirGapNodeClient'
 import { EthereumUtils } from '../utils/utils'
+import { EthereumProtocolOptions, EthereumProtocolNetwork, EthereumProtocolConfig } from '../EthereumProtocolOptions'
 
 const EthereumTransaction = require('../../../dependencies/src/ethereumjs-tx-1.3.7/index')
 
@@ -34,13 +35,13 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, Ethersc
 
   constructor(config: GenericERC20Configuration) {
     // we probably need another network here, explorer is ok
-    super({
-      configuration: {
-        chainID: config.chainId || 1,
-        nodeClient: new AirGapNodeClient(config.jsonRPCAPI),
-        infoClient: new EtherscanInfoClient(config.infoAPI)
-      }
-    })
+    super(
+      new EthereumProtocolOptions(
+        new EthereumProtocolNetwork(),
+        new EthereumProtocolConfig(config.chainId || 1, new AirGapNodeClient(config.jsonRPCAPI), new EtherscanInfoClient(config.infoAPI))
+      )
+    )
+
     this.contractAddress = config.contractAddress
     this.symbol = config.symbol
     this.name = config.name
@@ -58,7 +59,7 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, Ethersc
   public async getBalanceOfAddresses(addresses: string[]): Promise<string> {
     const balances: BigNumber[] = await Promise.all(
       addresses.map((address: string) => {
-        return this.configuration.nodeClient.callBalanceOf(this.contractAddress, address)
+        return this.options.config.nodeClient.callBalanceOf(this.contractAddress, address)
       })
     )
 
@@ -74,7 +75,7 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, Ethersc
   }
 
   private async estimateGas(source: string, recipient: string, hexValue: string): Promise<BigNumber> {
-    const result = await this.configuration.nodeClient.estimateTransferGas(this.contractAddress, source, recipient, hexValue)
+    const result = await this.options.config.nodeClient.estimateTransferGas(this.contractAddress, source, recipient, hexValue)
 
     return result
   }
@@ -97,7 +98,7 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, Ethersc
     }
     const address: string = await this.getAddressFromPublicKey(publicKey)
     const estimatedGas = await this.estimateGas(address, recipients[0], EthereumUtils.toHex(values[0]))
-    const gasPrise = await this.configuration.nodeClient.getGasPrice()
+    const gasPrise = await this.options.config.nodeClient.getGasPrice()
     const feeStepFactor = new BigNumber(0.5)
     const estimatedFee = estimatedGas.times(gasPrise)
     const lowFee = estimatedFee.minus(estimatedFee.times(feeStepFactor).integerValue(BigNumber.ROUND_FLOOR))
@@ -137,7 +138,7 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, Ethersc
       const estimatedGas = await this.estimateGas(address, recipients[0], EthereumUtils.toHex(wrappedValues[0].toFixed()))
 
       if (ethBalance.isGreaterThanOrEqualTo(wrappedFee)) {
-        const txCount: number = await this.configuration.nodeClient.fetchTransactionCount(address)
+        const txCount: number = await this.options.config.nodeClient.fetchTransactionCount(address)
         const gasPrice: BigNumber = wrappedFee.isEqualTo(0)
           ? new BigNumber(0)
           : wrappedFee.div(estimatedGas).integerValue(BigNumber.ROUND_CEIL)
@@ -147,7 +148,7 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, Ethersc
           gasPrice: EthereumUtils.toHex(gasPrice.toFixed()),
           to: this.contractAddress,
           value: EthereumUtils.toHex(new BigNumber(0).toFixed()),
-          chainId: this.configuration.chainID,
+          chainId: this.options.config.chainID,
           data: new EthereumRPCDataTransfer(recipients[0], EthereumUtils.toHex(wrappedValues[0].toFixed())).abiEncoded()
         }
 
@@ -166,7 +167,7 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, Ethersc
     return new Promise((overallResolve, overallReject) => {
       const promises: Promise<IAirGapTransaction[]>[] = []
       for (const address of addresses) {
-        promises.push(this.configuration.infoClient.fetchContractTransactions(this.identifier, this.contractAddress, address, page, limit))
+        promises.push(this.options.config.infoClient.fetchContractTransactions(this.identifier, this.contractAddress, address, page, limit))
       }
       Promise.all(promises)
         .then((values) => {

@@ -17,7 +17,6 @@ import { GroestlcoinTestnetProtocol } from './protocols/groestlcoin/GroestlcoinT
 import { ICoinDelegateProtocol } from './protocols/ICoinDelegateProtocol'
 import { ICoinProtocol } from './protocols/ICoinProtocol'
 import { ICoinSubProtocol } from './protocols/ICoinSubProtocol'
-import { LitecoinProtocol } from './protocols/litecoin/LitecoinProtocol'
 import { SubstratePayee } from './protocols/substrate/helpers/data/staking/SubstratePayee'
 import { KusamaProtocol } from './protocols/substrate/implementations/KusamaProtocol'
 import { PolkadotProtocol } from './protocols/substrate/implementations/PolkadotProtocol'
@@ -76,7 +75,6 @@ export {
   BitcoinTestnetProtocol,
   GroestlcoinProtocol,
   GroestlcoinTestnetProtocol,
-  LitecoinProtocol,
   EthereumProtocol,
   EthereumRopstenProtocol,
   EthereumClassicProtocol,

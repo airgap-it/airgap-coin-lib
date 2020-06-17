@@ -1,16 +1,21 @@
 import { ProtocolNotSupported } from '../errors'
 import { ICoinProtocol } from '../protocols/ICoinProtocol'
 
-import { ChainNetwork, isNetworkEqual } from './Network'
+import { isNetworkEqual } from './Network'
+import { ProtocolNetwork } from './ProtocolNetwork'
+import { getProtocolOptionsByIdentifier } from './protocolOptionsByIdentifier'
 import { supportedProtocols } from './supportedProtocols'
 
-const getProtocolByIdentifier: (identifier: string, network: ChainNetwork) => ICoinProtocol = (
+const getProtocolByIdentifier: (identifier: string, network?: ProtocolNetwork) => ICoinProtocol = (
   identifier: string,
-  network: ChainNetwork
+  network?: ProtocolNetwork
 ): ICoinProtocol => {
   if (!identifier || typeof identifier !== 'string') {
     throw new Error('No protocol identifier provided')
   }
+
+  const targetNetwork: ProtocolNetwork = network ? network : getProtocolOptionsByIdentifier(identifier).network
+
   // create a complete list of all protocols and subprotocols
   const candidates: ICoinProtocol[] = supportedProtocols()
     .map((protocol: ICoinProtocol) => {
@@ -25,7 +30,7 @@ const getProtocolByIdentifier: (identifier: string, network: ChainNetwork) => IC
 
   // filter out potential candidates, those where our identifier startsWith the identifier of the protocol
   const filteredCandidates: ICoinProtocol[] = candidates.filter(
-    (protocol: ICoinProtocol) => identifier.startsWith(protocol.identifier) && isNetworkEqual(protocol.chainNetwork, network)
+    (protocol: ICoinProtocol) => identifier.startsWith(protocol.identifier) && isNetworkEqual(protocol.options.network, targetNetwork)
   )
   if (filteredCandidates.length === 0) {
     throw new ProtocolNotSupported()

@@ -4,8 +4,8 @@ import { SubstrateNetwork } from '../../SubstrateNetwork'
 import { SubstrateAddress } from '../data/account/SubstrateAddress'
 
 export class SubstrateBlockExplorerClient {
-  public accountInfoUrl = `${this.baseUrl}/account`
-  public transactionInfoUrl = `${this.baseUrl}/extrinsic`
+  public accountInfoUrl = `${this.baseUrl}/account` // TODO: Remove overlap with ProtocolBlockExplorer
+  public transactionInfoUrl = `${this.baseUrl}/extrinsic` // TODO: Remove overlap with ProtocolBlockExplorer
 
   constructor(readonly network: SubstrateNetwork, readonly baseUrl: string, readonly apiUrl: string) {}
 
