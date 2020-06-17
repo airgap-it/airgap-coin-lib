@@ -71,8 +71,8 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
       })
 
       it('should contain blockexplorer url', async () => {
-        expect(blockExplorerLinkAddress).to.contain(protocol.lib.blockExplorer)
-        expect(blockExplorerLinkTxId).to.contain(protocol.lib.blockExplorer)
+        expect(blockExplorerLinkAddress).to.contain(protocol.lib.options.network.blockExplorer.blockExplorer)
+        expect(blockExplorerLinkTxId).to.contain(protocol.lib.options.network.blockExplorer.blockExplorer)
       })
 
       it('should not contain placeholder brackets', async () => {
@@ -254,7 +254,7 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
 
         txs.forEach((tx, index) => {
           if (protocol.lib instanceof SubstrateProtocol) {
-            const decoded = (protocol.lib as SubstrateProtocol).transactionController.decodeDetails(tx)[0]
+            const decoded = (protocol.lib as SubstrateProtocol).options.config.transactionController.decodeDetails(tx)[0]
 
             const signature = decoded.transaction.signature.signature.value
             const payload = Buffer.from(decoded.payload.encode(), 'hex')

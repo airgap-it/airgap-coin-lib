@@ -18,12 +18,12 @@ export class GenericERC20ProtocolStub implements ProtocolHTTPStub {
       .returns(Promise.resolve(new BigNumber(100000000000000000000)))
 
     sinon
-      .stub(protocol.configuration.nodeClient, 'fetchTransactionCount')
+      .stub(protocol.options.config.nodeClient, 'fetchTransactionCount')
       .withArgs(testProtocolSpec.wallet.addresses[0])
       .returns(Promise.resolve(80))
 
     sinon
-      .stub(protocol.configuration.nodeClient, 'fetchBalance')
+      .stub(protocol.options.config.nodeClient, 'fetchBalance')
       .withArgs(testProtocolSpec.wallet.addresses[0])
       .returns(Promise.resolve('100000000000000000000'))
 

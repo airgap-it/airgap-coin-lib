@@ -7,19 +7,19 @@ import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
 export class EthereumProtocolStub implements ProtocolHTTPStub {
   public registerStub(testProtocolSpec: TestProtocolSpec, protocol: EthereumProtocol) {
     sinon
-      .stub(protocol.configuration.nodeClient, 'fetchTransactionCount')
+      .stub(protocol.options.config.nodeClient, 'fetchTransactionCount')
       .withArgs(testProtocolSpec.wallet.addresses[0])
       .returns(Promise.resolve(0))
     sinon
-      .stub(protocol.configuration.nodeClient, 'fetchBalance')
+      .stub(protocol.options.config.nodeClient, 'fetchBalance')
       .withArgs(testProtocolSpec.wallet.addresses[0])
       .returns(Promise.resolve('100000000000000000000'))
     sinon
-      .stub(protocol.configuration.nodeClient, 'estimateTransactionGas')
+      .stub(protocol.options.config.nodeClient, 'estimateTransactionGas')
       .withArgs(testProtocolSpec.wallet.addresses[0])
       .returns(Promise.resolve(new BigNumber('0x5208')))
     sinon
-      .stub(protocol.configuration.nodeClient, 'getGasPrice')
+      .stub(protocol.options.config.nodeClient, 'getGasPrice')
       .withArgs(testProtocolSpec.wallet.addresses[0])
       .returns(Promise.resolve(new BigNumber('0x4a817c800')))
   }
@@ -29,11 +29,11 @@ export class EthereumProtocolStub implements ProtocolHTTPStub {
       .withArgs(sinon.match.any)
       .returns(Promise.resolve(new BigNumber(0)))
     sinon
-      .stub(protocol.configuration.nodeClient, 'estimateTransactionGas')
+      .stub(protocol.options.config.nodeClient, 'estimateTransactionGas')
       .withArgs(testProtocolSpec.wallet.addresses[0])
       .returns(Promise.resolve(new BigNumber('0x5208')))
     sinon
-      .stub(protocol.configuration.nodeClient, 'getGasPrice')
+      .stub(protocol.options.config.nodeClient, 'getGasPrice')
       .withArgs(testProtocolSpec.wallet.addresses[0])
       .returns(Promise.resolve(new BigNumber('0x4a817c800')))
   }
