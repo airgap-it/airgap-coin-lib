@@ -48,7 +48,10 @@ export class PolkadotProtocol extends SubstrateProtocol {
     }
   ]
 
-  public standardDerivationPath: string = `m/44'/354'/0'/0/0` // TODO: verify
+  public standardDerivationPath: string = `m/44'/354'/0'/0/0`
+
+  public addressValidationPattern: string = '^1[a-km-zA-HJ-NP-Z1-9]+$'
+  public addressPlaceholder: string = `1ABC...`
 
   public constructor(
     network: SubstrateNetwork = SubstrateNetwork.POLKADOT,

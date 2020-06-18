@@ -36,8 +36,9 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
   public supportsHD: boolean = false
 
   public addressIsCaseSensitive: boolean = false
-  public addressValidationPattern: string = '^[a-km-zA-HJ-NP-Z1-9]+$' // TODO: set length?
-  public addressPlaceholder: string = 'ABC...' // TODO: better placeholder?
+
+  public addressValidationPattern: string = '^5[a-km-zA-HJ-NP-Z1-9]+$'
+  public addressPlaceholder: string = `5ABC...`
 
   public blockExplorer: string = this.blockExplorerClient.baseUrl
 
