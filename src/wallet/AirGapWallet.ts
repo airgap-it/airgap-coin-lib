@@ -27,6 +27,13 @@ export class AirGapWallet implements IAirGapWallet {
     return this.addresses[this.addressIndex !== undefined ? this.addressIndex : 0]
   }
 
+  public async setProtocol(protocol: ICoinProtocol): Promise<void> {
+    if (this.protocol.identifier !== protocol.identifier) {
+      throw new Error('Can only set same protocol with a different network')
+    }
+    this.protocol = protocol
+  }
+
   public async deriveAddresses(amount: number = 50): Promise<string[]> {
     if (this.isExtendedPublicKey) {
       const parts: string[] = this.derivationPath.split('/')

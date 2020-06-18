@@ -4,6 +4,7 @@ import BigNumber from '../dependencies/src/bignumber.js-9.0.0/bignumber'
 import * as cryptocompare from '../dependencies/src/cryptocompare-0.5.0/index'
 import { AirGapTransactionStatus } from '../interfaces/IAirGapTransaction'
 import { FeeDefaults, ICoinProtocol } from '../protocols/ICoinProtocol'
+import { NetworkType } from '../utils/ProtocolNetwork'
 
 import { AirGapWallet } from './AirGapWallet'
 
@@ -29,7 +30,15 @@ function notEmpty<TValue>(value: TValue | null | undefined): value is TValue {
 
 export class AirGapMarketWallet extends AirGapWallet {
   public currentBalance: BigNumber | undefined
-  public currentMarketPrice: BigNumber | undefined
+  public _currentMarketPrice: BigNumber | undefined
+
+  get currentMarketPrice(): BigNumber | undefined {
+    return this._currentMarketPrice
+  }
+
+  set currentMarketPrice(marketPrice: BigNumber | undefined) {
+    this._currentMarketPrice = this.protocol.options.network.type === NetworkType.MAINNET ? marketPrice : new BigNumber(0)
+  }
 
   public marketSample: MarketDataSample[] = []
   public minuteMarketSample: MarketDataSample[] = []
@@ -58,6 +67,13 @@ export class AirGapMarketWallet extends AirGapWallet {
           reject(error)
         })
     })
+  }
+
+  public async setProtocol(protocol: ICoinProtocol): Promise<void> {
+    await super.setProtocol(protocol)
+    this.currentBalance = undefined
+    this.currentMarketPrice = undefined
+    await this.synchronize()
   }
 
   public fetchCurrentMarketPrice(baseSymbol = 'USD'): Promise<BigNumber> {
