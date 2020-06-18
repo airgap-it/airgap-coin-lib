@@ -166,7 +166,7 @@ export class SubstrateTransactionController {
       this.createTransaction(type, accountId, tip, args, chainHeight, nonce),
       this.nodeClient.getLastBlockHash(),
       this.nodeClient.getFirstBlockHash(),
-      this.nodeClient.getSpecVersion()
+      this.nodeClient.getRuntimeVersion()
     ])
 
     if (results.some((result) => result === null)) {
@@ -182,10 +182,11 @@ export class SubstrateTransactionController {
 
     const lastHash = results[1]!
     const genesisHash = results[2]!
-    const specVersion = results[3]!
+    const runtimeVersion = results[3]!
 
     const payload = SubstrateTransactionPayload.create(transaction, {
-      specVersion,
+      specVersion: runtimeVersion.specVersion,
+      transactionVersion: runtimeVersion.transactionVersion,
       genesisHash,
       lastHash
     })
