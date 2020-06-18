@@ -15,7 +15,11 @@ export class SubstrateBlockExplorerClient {
     )
 
     return response.data.data
-      .filter((transfer) => transfer.type === 'balancetransfer')
+      .filter((transfer) => 
+        transfer.type === 'balancetransfer' && 
+        transfer.attributes.sender.type && 
+        transfer.attributes.sender.type === 'account'
+      )
       .map((transfer) => {
         const destination = SubstrateAddress.fromPublicKey(transfer.attributes.destination.id, this.network).toString()
 
