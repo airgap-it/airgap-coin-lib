@@ -4,10 +4,10 @@ import { SubstrateNodeClient } from '../helpers/node/SubstrateNodeClient'
 import { SubstrateNetwork } from '../SubstrateNetwork'
 import { SubstrateProtocol } from '../SubstrateProtocol'
 
-const NODE_URL = ''
+const NODE_URL = 'https://polkadot-cc1.kubernetes.papers.tech'
 
-const BLOCK_EXPLORER_URL = ''
-const BLOCK_EXPLORER_API = ''
+const BLOCK_EXPLORER_URL = 'https://polkascan.io/polkadot-cc1'
+const BLOCK_EXPLORER_API = 'https://api-01.polkascan.io/polkadot/api/v1'
 
 export class PolkadotProtocol extends SubstrateProtocol {
   public symbol: string = 'DOT'

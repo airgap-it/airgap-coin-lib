@@ -6,7 +6,7 @@ import { SubstrateProtocol } from '../SubstrateProtocol'
 
 const NODE_URL = 'https://polkadot-kusama-node.prod.gke.papers.tech'
 
-const BLOCK_EXPLORER_URL = 'https://polkascan.io/pre/kusama'
+const BLOCK_EXPLORER_URL = 'https://polkascan.io/kusama'
 const BLOCK_EXPLORER_API = 'https://api-01.polkascan.io/kusama/api/v1'
 
 export class KusamaProtocol extends SubstrateProtocol {
