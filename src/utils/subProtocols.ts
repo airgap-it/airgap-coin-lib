@@ -60,6 +60,25 @@ const addSubProtocol: (protocol: ICoinProtocol, subProtocol: ICoinSubProtocol) =
   subProtocolMapper[protocolAndNetworkIdentifier][subProtocol.identifier] = subProtocol
 }
 
-// TODO: add remove method
+const removeSubProtocol: (protocol: ICoinProtocol, subProtocol: ICoinSubProtocol) => void = (
+  protocol: ICoinProtocol,
+  subProtocol: ICoinSubProtocol
+): void => {
+  if (!subProtocol.identifier.startsWith(protocol.identifier)) {
+    throw new Error(`subprotocol ${subProtocol.name} is not supported for protocol ${protocol.identifier}`)
+  }
 
-export { addSubProtocol, getSubProtocolsByIdentifier }
+  if (!isNetworkEqual(protocol.options.network, subProtocol.options.network)) {
+    throw new Error(`subprotocol ${subProtocol.name} needs to have the same network as main protocol`)
+  }
+
+  const protocolAndNetworkIdentifier: string = getProtocolAndNetworkIdentifier(protocol.identifier, protocol.options.network)
+
+  if (!subProtocolMapper[protocolAndNetworkIdentifier]) {
+    return
+  }
+
+  delete subProtocolMapper[protocolAndNetworkIdentifier][subProtocol.identifier]
+} // TODO: Add tests
+
+export { addSubProtocol, removeSubProtocol, getSubProtocolsByIdentifier }

@@ -23,4 +23,15 @@ const addSupportedProtocol: (newProtocol: ICoinProtocol) => void = (newProtocol:
   protocols.push(newProtocol)
 }
 
-export { addSupportedProtocol, supportedProtocols }
+const removeSupportedProtocol: (protocolToRemove: ICoinProtocol) => void = (protocolToRemove: ICoinProtocol): void => {
+  for (let index: number = 0; index < protocols.length; index++) {
+    if (
+      protocols[index].identifier === protocolToRemove.identifier &&
+      isNetworkEqual(protocols[index].options.network, protocolToRemove.options.network)
+    ) {
+      protocols.splice(index, 1)
+    }
+  }
+} // TODO: Add tests
+
+export { addSupportedProtocol, removeSupportedProtocol, supportedProtocols }
