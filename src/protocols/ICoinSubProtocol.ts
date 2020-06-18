@@ -1,4 +1,4 @@
-import { ICoinProtocol } from '..'
+import { ICoinProtocol } from './ICoinProtocol'
 
 export enum SubProtocolType {
   ACCOUNT = 'account',

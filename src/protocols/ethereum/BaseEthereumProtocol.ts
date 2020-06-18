@@ -1,4 +1,3 @@
-import { ICoinSubProtocol } from '../..'
 import { BigNumber } from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
 import * as bitcoinJS from '../../dependencies/src/bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac/src/index'
@@ -9,14 +8,15 @@ import { Network } from '../../networks'
 import { UnsignedTransaction } from '../../serializer/schemas/definitions/transaction-sign-request'
 import { SignedEthereumTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-ethereum'
 import { RawEthereumTransaction } from '../../serializer/types'
+import { MainProtocolSymbols, ProtocolSymbols } from '../../utils/ProtocolSymbols'
 import { getSubProtocolsByIdentifier } from '../../utils/subProtocols'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
+import { ICoinSubProtocol } from '../ICoinSubProtocol'
 
 import { EthereumInfoClient } from './clients/info-clients/InfoClient'
 import { EthereumNodeClient } from './clients/node-clients/NodeClient'
 import { EthereumProtocolOptions } from './EthereumProtocolOptions'
 import { EthereumUtils } from './utils/utils'
-import { ProtocolSymbols, MainProtocolSymbols } from '../../utils/ProtocolSymbols'
 
 const EthereumTransaction = require('../../dependencies/src/ethereumjs-tx-1.3.7/index')
 

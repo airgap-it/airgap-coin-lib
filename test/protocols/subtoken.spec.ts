@@ -11,7 +11,7 @@ describe(`SubTokens`, () => {
       symbol: 'Test-Symbol',
       name: 'SuperTestToken',
       marketSymbol: 'test-market-symbol',
-      identifier: 'eth-erc20-test',
+      identifier: 'eth-erc20-test' as any,
       contractAddress: '0x5ca9a71b1d01849c0a95490cc00559717fcf0d1d',
       decimals: 18
     }

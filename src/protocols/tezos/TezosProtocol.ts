@@ -12,9 +12,11 @@ import { UnsignedTezosTransaction } from '../../serializer/schemas/definitions/t
 import { SignedTezosTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-tezos'
 import { RawTezosTransaction } from '../../serializer/types'
 import { ErrorWithData } from '../../utils/ErrorWithData'
+import { MainProtocolSymbols, ProtocolSymbols } from '../../utils/ProtocolSymbols'
 import { getSubProtocolsByIdentifier } from '../../utils/subProtocols'
 import { DelegateeDetails, DelegationDetails, DelegatorAction, DelegatorDetails, ICoinDelegateProtocol } from '../ICoinDelegateProtocol'
 import { CurrencyUnit, FeeDefaults } from '../ICoinProtocol'
+import { ICoinSubProtocol } from '../ICoinSubProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
 
 import { TezosRewardsCalculation005 } from './rewardcalculation/TezosRewardCalculation005'
@@ -28,8 +30,6 @@ import { TezosOperation } from './types/operations/TezosOperation'
 import { TezosTransactionOperation } from './types/operations/Transaction'
 import { TezosOperationType } from './types/TezosOperationType'
 import { TezosWrappedOperation } from './types/TezosWrappedOperation'
-import { ICoinSubProtocol } from '../..'
-import { MainProtocolSymbols, ProtocolSymbols } from '../../utils/ProtocolSymbols'
 
 const assertNever: (x: never) => void = (x: never): void => undefined
 
