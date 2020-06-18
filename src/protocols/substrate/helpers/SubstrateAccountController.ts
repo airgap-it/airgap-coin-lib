@@ -123,7 +123,6 @@ export class SubstrateAccountController {
 
       lastEraReward = (await this.getEraValidatorReward(address, activeEraIndex - 1)) || undefined
 
-      // TODO: check if reaped
       if (currentValidators && currentValidators.find((current) => current.compare(address) == 0)) {
         status = 'Active'
       } else if (currentValidators) {
