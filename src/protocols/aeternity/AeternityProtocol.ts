@@ -13,6 +13,7 @@ import { SignedAeternityTransaction } from '../../serializer/schemas/definitions
 import { RawAeternityTransaction } from '../../serializer/types'
 import bs64check from '../../utils/base64Check'
 import { padStart } from '../../utils/padStart'
+import { MainProtocolSymbols, ProtocolSymbols } from '../../utils/ProtocolSymbols'
 import { EthereumUtils } from '../ethereum/utils/utils'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
@@ -28,7 +29,7 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
 
   public decimals: number = 18
   public feeDecimals: number = 18
-  public identifier: string = 'ae'
+  public identifier: ProtocolSymbols = MainProtocolSymbols.AE
 
   public feeDefaults = {
     low: '0.00021',

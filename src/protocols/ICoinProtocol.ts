@@ -3,6 +3,7 @@ import { AirGapTransactionStatus, IAirGapTransaction } from '../interfaces/IAirG
 import { UnsignedTransaction } from '../serializer/schemas/definitions/transaction-sign-request'
 import { SignedTransaction } from '../serializer/schemas/definitions/transaction-sign-response'
 import { ProtocolOptions } from '../utils/ProtocolOptions'
+import { ProtocolSymbols } from '../utils/ProtocolSymbols'
 
 import { ICoinSubProtocol } from './ICoinSubProtocol'
 
@@ -26,7 +27,7 @@ export interface ICoinProtocol {
   feeDefaults: FeeDefaults
   decimals: number
   feeDecimals: number
-  identifier: string
+  identifier: ProtocolSymbols
 
   units: { unitSymbol: string; factor: string }[]
 
@@ -38,7 +39,7 @@ export interface ICoinProtocol {
   addressPlaceholder: string
 
   // can have sub-protocols defined
-  subProtocols?: (ICoinProtocol & ICoinSubProtocol)[]
+  subProtocols?: ICoinSubProtocol[]
 
   options: ProtocolOptions
 

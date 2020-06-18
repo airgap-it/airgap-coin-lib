@@ -28,6 +28,8 @@ import { TezosOperation } from './types/operations/TezosOperation'
 import { TezosTransactionOperation } from './types/operations/Transaction'
 import { TezosOperationType } from './types/TezosOperationType'
 import { TezosWrappedOperation } from './types/TezosWrappedOperation'
+import { ICoinSubProtocol } from '../..'
+import { MainProtocolSymbols, ProtocolSymbols } from '../../utils/ProtocolSymbols'
 
 const assertNever: (x: never) => void = (x: never): void => undefined
 
@@ -151,10 +153,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
   public decimals: number = 6
   public feeDecimals: number = 6 // micro tez is the smallest, 1000000 microtez is 1 tez
-  public identifier: string = 'xtz'
+  public identifier: ProtocolSymbols = MainProtocolSymbols.XTZ
 
-  get subProtocols() {
-    return getSubProtocolsByIdentifier(this.identifier) as any[] // TODO: Fix typings once apps are compatible with 3.7
+  get subProtocols(): ICoinSubProtocol[] {
+    return getSubProtocolsByIdentifier(this.identifier, this.options.network)
   }
 
   // tezbox default

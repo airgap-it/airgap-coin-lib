@@ -4,10 +4,11 @@ import { ICoinProtocol } from '../protocols/ICoinProtocol'
 import { isNetworkEqual } from './Network'
 import { ProtocolNetwork } from './ProtocolNetwork'
 import { getProtocolOptionsByIdentifier } from './protocolOptionsByIdentifier'
+import { ProtocolSymbols } from './ProtocolSymbols'
 import { supportedProtocols } from './supportedProtocols'
 
-const getProtocolByIdentifier: (identifier: string, network?: ProtocolNetwork) => ICoinProtocol = (
-  identifier: string,
+const getProtocolByIdentifier: (identifier: ProtocolSymbols, network?: ProtocolNetwork) => ICoinProtocol = (
+  identifier: ProtocolSymbols,
   network?: ProtocolNetwork
 ): ICoinProtocol => {
   if (!identifier || typeof identifier !== 'string') {

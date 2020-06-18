@@ -33,6 +33,7 @@ import {
 } from './CosmosNodeClient'
 import { CosmosProtocolOptions } from './CosmosProtocolOptions'
 import { CosmosTransaction } from './CosmosTransaction'
+import { MainProtocolSymbols, ProtocolSymbols } from '../../utils/ProtocolSymbols'
 
 export enum CosmosDelegationActionType {
   DELEGATE = 'delegate',
@@ -53,7 +54,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
   }
   public decimals: number = 6
   public feeDecimals: number = 6
-  public identifier: string = 'cosmos'
+  public identifier: ProtocolSymbols = MainProtocolSymbols.COSMOS
   public units: CurrencyUnit[] = [
     {
       unitSymbol: 'atom',

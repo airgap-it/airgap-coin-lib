@@ -11,6 +11,7 @@ import { RawBitcoinTransaction } from '../../serializer/types'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
 
 import { BitcoinProtocolOptions } from './BitcoinProtocolOptions'
+import { ProtocolSymbols, MainProtocolSymbols } from '../../utils/ProtocolSymbols'
 
 const DUST_AMOUNT: number = 50
 
@@ -30,7 +31,7 @@ export class BitcoinProtocol implements ICoinProtocol {
   }
   public decimals: number = 8
   public feeDecimals: number = 8
-  public identifier: string = 'btc'
+  public identifier: ProtocolSymbols = MainProtocolSymbols.BTC
   public units: CurrencyUnit[] = [
     {
       unitSymbol: 'BTC',

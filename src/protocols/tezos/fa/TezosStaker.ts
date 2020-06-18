@@ -2,6 +2,7 @@ import { TezosNetwork } from '../TezosProtocol'
 import { TezosUtils } from '../TezosUtils'
 
 import { TezosFAProtocol } from './TezosFAProtocol'
+import { SubProtocolSymbols } from '../../../utils/ProtocolSymbols'
 
 export class TezosStaker extends TezosFAProtocol {
   constructor(
@@ -16,7 +17,7 @@ export class TezosStaker extends TezosFAProtocol {
       symbol: 'STKR',
       name: 'Staker',
       marketSymbol: 'stkr',
-      identifier: 'xtz-stkr',
+      identifier: SubProtocolSymbols.XTZ_STKR,
       feeDefaults: {
         low: '0.100',
         medium: '0.300',

@@ -1,3 +1,4 @@
+import { MainProtocolSymbols, ProtocolSymbols } from '../../../utils/ProtocolSymbols'
 import { CurrencyUnit, FeeDefaults } from '../../ICoinProtocol'
 import { SubstrateProtocol } from '../SubstrateProtocol'
 import { SubstrateProtocolOptions } from '../SubstrateProtocolOptions'
@@ -12,7 +13,7 @@ export class KusamaProtocol extends SubstrateProtocol {
 
   public decimals: number = 12
   public feeDecimals: number = 12
-  public identifier: string = 'kusama'
+  public identifier: ProtocolSymbols = MainProtocolSymbols.KUSAMA
 
   public feeDefaults: FeeDefaults = {
     low: '0.001', // 1 000 000 000

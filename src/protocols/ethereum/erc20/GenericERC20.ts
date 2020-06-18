@@ -6,13 +6,14 @@ import { UnsignedTransaction } from '../../../serializer/schemas/definitions/tra
 import { UnsignedEthereumTransaction } from '../../../serializer/schemas/definitions/transaction-sign-request-ethereum'
 import { SignedEthereumTransaction } from '../../../serializer/schemas/definitions/transaction-sign-response-ethereum'
 import { RawEthereumTransaction } from '../../../serializer/types'
+import { ProtocolSymbols } from '../../../utils/ProtocolSymbols'
 import { FeeDefaults } from '../../ICoinProtocol'
 import { ICoinSubProtocol, SubProtocolType } from '../../ICoinSubProtocol'
 import { BaseEthereumProtocol } from '../BaseEthereumProtocol'
 import { EtherscanInfoClient } from '../clients/info-clients/EtherscanInfoClient'
 import { AirGapNodeClient, EthereumRPCDataTransfer } from '../clients/node-clients/AirGapNodeClient'
+import { EthereumProtocolConfig, EthereumProtocolNetwork, EthereumProtocolOptions } from '../EthereumProtocolOptions'
 import { EthereumUtils } from '../utils/utils'
-import { EthereumProtocolOptions, EthereumProtocolNetwork, EthereumProtocolConfig } from '../EthereumProtocolOptions'
 
 const EthereumTransaction = require('../../../dependencies/src/ethereumjs-tx-1.3.7/index')
 
@@ -20,7 +21,7 @@ export interface GenericERC20Configuration {
   symbol: string
   name: string
   marketSymbol: string
-  identifier: string
+  identifier: ProtocolSymbols
   contractAddress: string
   decimals?: number
   jsonRPCAPI?: string

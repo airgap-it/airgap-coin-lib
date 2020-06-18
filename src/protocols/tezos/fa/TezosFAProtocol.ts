@@ -2,6 +2,7 @@ import axios, { AxiosResponse } from '../../../dependencies/src/axios-0.19.0/ind
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { IAirGapTransaction } from '../../../interfaces/IAirGapTransaction'
 import { RawTezosTransaction } from '../../../serializer/types'
+import { ProtocolSymbols } from '../../../utils/ProtocolSymbols'
 import { ICoinSubProtocol, SubProtocolType } from '../../ICoinSubProtocol'
 import { TezosContract } from '../contract/TezosContract'
 import { TezosContractCall } from '../contract/TezosContractCall'
@@ -20,7 +21,7 @@ export interface TezosFAProtocolConfiguration {
   symbol: string
   name: string
   marketSymbol: string
-  identifier: string
+  identifier: ProtocolSymbols
   contractAddress: string
   feeDefaults: FeeDefaults
   decimals?: number
@@ -43,7 +44,7 @@ export interface TezosTransactionCursor {
 export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
   public readonly isSubProtocol: boolean = true
   public readonly subProtocolType: SubProtocolType = SubProtocolType.TOKEN
-  public readonly identifier: string
+  public readonly identifier: ProtocolSymbols
   public readonly contractAddress: string
 
   protected readonly contract: TezosContract

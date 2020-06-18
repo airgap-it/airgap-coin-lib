@@ -6,30 +6,41 @@ import { GroestlcoinProtocolOptions } from '../protocols/groestlcoin/Groestlcoin
 import { KusamaProtocolOptions } from '../protocols/substrate/implementations/KusamaProtocolOptions'
 import { PolkadotProtocolOptions } from '../protocols/substrate/implementations/PolkadotProtocolOptions'
 import { TezosProtocolOptions } from '../protocols/tezos/TezosProtocolOptions'
+import { assertNever } from '../serializer/message'
 
 import { ProtocolOptions } from './ProtocolOptions'
+import { MainProtocolSymbols, ProtocolSymbols, SubProtocolSymbols } from './ProtocolSymbols'
 
-const getProtocolOptionsByIdentifier: (identifier: string) => ProtocolOptions = (identifier: string): ProtocolOptions => {
+const getProtocolOptionsByIdentifier: (identifier: ProtocolSymbols) => ProtocolOptions = (identifier: ProtocolSymbols): ProtocolOptions => {
   switch (identifier) {
-    case 'ae':
+    case MainProtocolSymbols.AE:
       return new AeternityProtocolOptions()
-    case 'btc':
+    case MainProtocolSymbols.BTC:
       return new BitcoinProtocolOptions()
-    case 'eth':
+    case MainProtocolSymbols.ETH:
+    case SubProtocolSymbols.ETH_ERC20:
       return new EthereumProtocolOptions()
-    case 'grs':
+    case MainProtocolSymbols.GRS:
       return new GroestlcoinProtocolOptions()
-    case 'cosmos':
+    case MainProtocolSymbols.COSMOS:
       return new CosmosProtocolOptions()
-    case 'polkadot':
+    case MainProtocolSymbols.POLKADOT:
       return new PolkadotProtocolOptions()
-    case 'kusama':
+    case MainProtocolSymbols.KUSAMA:
       return new KusamaProtocolOptions()
-    case 'xtz':
+    case MainProtocolSymbols.XTZ:
+    case SubProtocolSymbols.XTZ_KT:
+    case SubProtocolSymbols.XTZ_BTC:
+    case SubProtocolSymbols.XTZ_STKR:
       return new TezosProtocolOptions()
 
     default:
-      throw new Error('No protocol options found')
+      // Maybe we get an identifier of a sub-protocol that is not in the known list. In that case, get the options of the parent
+      if ((identifier as string).includes('-')) {
+        return getProtocolOptionsByIdentifier((identifier as string).split('-')[0] as any)
+      }
+      assertNever(identifier)
+      throw new Error(`No protocol options found for ${identifier}`)
   }
 }
 

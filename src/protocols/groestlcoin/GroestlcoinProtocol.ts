@@ -1,3 +1,4 @@
+import { MainProtocolSymbols, ProtocolSymbols } from '../../utils/ProtocolSymbols'
 import { BitcoinBlockbookProtocol } from '../bitcoin/BitcoinBlockbookProtocol'
 import { CurrencyUnit, FeeDefaults } from '../ICoinProtocol'
 
@@ -17,7 +18,7 @@ export class GroestlcoinProtocol extends BitcoinBlockbookProtocol {
   }
   public decimals: number = 8
   public feeDecimals: number = 8
-  public identifier: string = 'grs'
+  public identifier: ProtocolSymbols = MainProtocolSymbols.GRS
   public units: CurrencyUnit[] = [
     {
       unitSymbol: 'GRS',

@@ -11,6 +11,7 @@ import { RawBitcoinTransaction } from '../../serializer/types'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
 
 import { BitcoinBlockbookProtocolOptions } from './BitcoinBlockbookProtocolOptions'
+import { MainProtocolSymbols, ProtocolSymbols } from '../../utils/ProtocolSymbols'
 
 export interface Vin {
   txid: string
@@ -103,7 +104,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
   }
   public decimals: number = 8
   public feeDecimals: number = 8
-  public identifier: string = 'btc'
+  public identifier: ProtocolSymbols = MainProtocolSymbols.BTC
   public units: CurrencyUnit[] = [
     {
       unitSymbol: 'BTC',

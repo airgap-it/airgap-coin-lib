@@ -5,6 +5,7 @@ import { UnsignedSubstrateTransaction } from '../../serializer/schemas/definitio
 import { SignedSubstrateTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-substrate'
 import { RawSubstrateTransaction } from '../../serializer/types'
 import { assertFields } from '../../utils/assert'
+import { ProtocolSymbols } from '../../utils/ProtocolSymbols'
 import { DelegateeDetails, DelegationDetails, DelegatorDetails, ICoinDelegateProtocol } from '../ICoinDelegateProtocol'
 import { CurrencyUnit, FeeDefaults } from '../ICoinProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
@@ -23,7 +24,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
 
   public abstract decimals: number
   public abstract feeDecimals: number
-  public abstract identifier: string
+  public abstract identifier: ProtocolSymbols
 
   public abstract feeDefaults: FeeDefaults
   public abstract units: CurrencyUnit[]

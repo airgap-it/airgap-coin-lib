@@ -1,3 +1,4 @@
+import { ICoinSubProtocol } from '../..'
 import { BigNumber } from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
 import * as bitcoinJS from '../../dependencies/src/bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac/src/index'
@@ -15,6 +16,7 @@ import { EthereumInfoClient } from './clients/info-clients/InfoClient'
 import { EthereumNodeClient } from './clients/node-clients/NodeClient'
 import { EthereumProtocolOptions } from './EthereumProtocolOptions'
 import { EthereumUtils } from './utils/utils'
+import { ProtocolSymbols, MainProtocolSymbols } from '../../utils/ProtocolSymbols'
 
 const EthereumTransaction = require('../../dependencies/src/ethereumjs-tx-1.3.7/index')
 
@@ -34,7 +36,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
 
   public decimals: number = 18
   public feeDecimals: number = 18
-  public identifier: string = 'eth'
+  public identifier: ProtocolSymbols = MainProtocolSymbols.ETH
 
   public units: CurrencyUnit[] = [
     {
@@ -60,8 +62,8 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
 
   public network: Network
 
-  get subProtocols() {
-    return getSubProtocolsByIdentifier(this.identifier) as any[] // TODO: Fix typings once apps are compatible with 3.7
+  get subProtocols(): ICoinSubProtocol[] {
+    return getSubProtocolsByIdentifier(this.identifier, this.options.network)
   }
 
   constructor(public readonly options: EthereumProtocolOptions = new EthereumProtocolOptions()) {

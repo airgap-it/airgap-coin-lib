@@ -1,3 +1,4 @@
+import { SubProtocolSymbols } from '../../../utils/ProtocolSymbols'
 import { TezosContractEntity } from '../contract/TezosContractEntity'
 import { TezosContractPair } from '../contract/TezosContractPair'
 import { TezosNetwork } from '../TezosProtocol'
@@ -21,7 +22,7 @@ export class TezosBTC extends TezosFAProtocol {
       symbol: 'tzBTC',
       name: 'Tezos BTC',
       marketSymbol: 'btc',
-      identifier: 'xtz-btc',
+      identifier: SubProtocolSymbols.XTZ_BTC,
       feeDefaults: {
         low: '0.100',
         medium: '0.200',

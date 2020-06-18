@@ -1,3 +1,4 @@
+import { MainProtocolSymbols, ProtocolSymbols } from '../../../utils/ProtocolSymbols'
 import { CurrencyUnit, FeeDefaults } from '../../ICoinProtocol'
 import { SubstrateProtocol } from '../SubstrateProtocol'
 import { SubstrateProtocolOptions } from '../SubstrateProtocolOptions'
@@ -12,7 +13,7 @@ export class PolkadotProtocol extends SubstrateProtocol {
 
   public decimals: number = 12
   public feeDecimals: number = 12
-  public identifier: string = 'polkadot'
+  public identifier: ProtocolSymbols = MainProtocolSymbols.POLKADOT
 
   public feeDefaults: FeeDefaults = {
     low: '0.01', // 10 000 000 000
