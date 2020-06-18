@@ -2,7 +2,7 @@ import { IAirGapWallet } from '../interfaces/IAirGapWallet'
 import { ICoinProtocol } from '../protocols/ICoinProtocol'
 import { ProtocolSymbols } from '../utils/ProtocolSymbols'
 
-interface SerializedAirGapWallet {
+export interface SerializedAirGapWallet {
   protocolIdentifier: ProtocolSymbols
   networkIdentifier: string
   publicKey: string
