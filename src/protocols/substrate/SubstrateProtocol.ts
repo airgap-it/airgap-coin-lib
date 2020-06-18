@@ -516,13 +516,16 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
   }
 
   public async prepareWithdrawUnbonded(publicKey: string, tip: string | number | BigNumber): Promise<RawSubstrateTransaction[]> {
-    const transferableBalance = await this.accountController.getTransferableBalance(publicKey)
+    const [transferableBalance, slashingSpansNumber] = await Promise.all([
+      this.accountController.getTransferableBalance(publicKey),
+      this.accountController.getSlashingSpansNumber(publicKey)
+    ])
 
     const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, transferableBalance, [
       {
         type: SubstrateTransactionType.WITHDRAW_UNBONDED,
         tip,
-        args: {}
+        args: { slashingSpansNumber }
       }
     ])
 

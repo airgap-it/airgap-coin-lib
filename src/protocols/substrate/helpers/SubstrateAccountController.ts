@@ -188,6 +188,12 @@ export class SubstrateAccountController {
     }
   }
 
+  public async getSlashingSpansNumber(accountId: SubstrateAccountId): Promise<number> {
+    const slashingSpans = await this.nodeClient.getSlashingSpan(SubstrateAddress.from(accountId, this.network))
+
+    return slashingSpans ? slashingSpans.prior.elements.length + 1 : 0
+  }
+
   private async getStakingDetails(
     accountId: SubstrateAccountId,
     stakingLedger: SubstrateStakingLedger | null,

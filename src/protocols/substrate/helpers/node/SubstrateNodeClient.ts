@@ -42,6 +42,7 @@ import {
   supportedConstants,
   supportedStorageEntries
 } from './supported'
+import { SubstrateSlashingSpan } from '../data/staking/SubstrateSlashingSpan'
 
 interface ConnectionConfig {
   allowCache: boolean
@@ -225,6 +226,12 @@ export class SubstrateNodeClient {
 
   public async getActiveEraInfo(): Promise<SubstrateActiveEraInfo | null> {
     return this.fromStorage('Staking', 'ActiveEra').then((item) => (item ? SubstrateActiveEraInfo.decode(this.network, item) : null))
+  }
+
+  public async getSlashingSpan(address: SubstrateAddress): Promise<SubstrateSlashingSpan | null> {
+    return this.fromStorage('Staking', 'SlashingSpans', SCALEAccountId.from(address, this.network)).then((item) => 
+      item ? SubstrateSlashingSpan.decode(this.network, item) : null
+    )
   }
 
   public async submitTransaction(encoded: string): Promise<string> {
