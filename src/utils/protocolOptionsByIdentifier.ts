@@ -5,7 +5,8 @@ import { EthereumProtocolOptions } from '../protocols/ethereum/EthereumProtocolO
 import { GroestlcoinProtocolOptions } from '../protocols/groestlcoin/GroestlcoinProtocolOptions'
 import { KusamaProtocolOptions } from '../protocols/substrate/implementations/KusamaProtocolOptions'
 import { PolkadotProtocolOptions } from '../protocols/substrate/implementations/PolkadotProtocolOptions'
-import { TezosProtocolOptions } from '../protocols/tezos/TezosProtocolOptions'
+import { TezosBTCProtocolConfig, TezosFAProtocolOptions, TezosStakerProtocolConfig } from '../protocols/tezos/fa/TezosFAProtocolOptions'
+import { TezosProtocolNetwork, TezosProtocolOptions } from '../protocols/tezos/TezosProtocolOptions'
 import { assertNever } from '../serializer/message'
 
 import { ProtocolOptions } from './ProtocolOptions'
@@ -30,9 +31,11 @@ const getProtocolOptionsByIdentifier: (identifier: ProtocolSymbols) => ProtocolO
       return new KusamaProtocolOptions()
     case MainProtocolSymbols.XTZ:
     case SubProtocolSymbols.XTZ_KT:
-    case SubProtocolSymbols.XTZ_BTC:
-    case SubProtocolSymbols.XTZ_STKR:
       return new TezosProtocolOptions()
+    case SubProtocolSymbols.XTZ_BTC:
+      return new TezosFAProtocolOptions(new TezosProtocolNetwork(), new TezosBTCProtocolConfig())
+    case SubProtocolSymbols.XTZ_STKR:
+      return new TezosFAProtocolOptions(new TezosProtocolNetwork(), new TezosStakerProtocolConfig())
 
     default:
       // Maybe we get an identifier of a sub-protocol that is not in the known list. In that case, get the options of the parent

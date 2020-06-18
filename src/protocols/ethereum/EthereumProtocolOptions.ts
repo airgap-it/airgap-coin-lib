@@ -1,11 +1,12 @@
 import { ProtocolBlockExplorer } from '../../utils/ProtocolBlockExplorer'
 import { NetworkType, ProtocolNetwork } from '../../utils/ProtocolNetwork'
 import { ProtocolOptions } from '../../utils/ProtocolOptions'
+import { SubProtocolSymbols } from '../../utils/ProtocolSymbols'
 
-import { EthereumInfoClient } from './clients/info-clients/InfoClient'
-import { EthereumNodeClient } from './clients/node-clients/NodeClient'
-import { AirGapNodeClient } from './clients/node-clients/AirGapNodeClient'
 import { EtherscanInfoClient } from './clients/info-clients/EtherscanInfoClient'
+import { EthereumInfoClient } from './clients/info-clients/InfoClient'
+import { AirGapNodeClient } from './clients/node-clients/AirGapNodeClient'
+import { EthereumNodeClient } from './clients/node-clients/NodeClient'
 
 // tslint:disable:max-classes-per-file
 
@@ -55,5 +56,26 @@ export class EthereumProtocolOptions implements ProtocolOptions<EthereumProtocol
   constructor(
     public readonly network: EthereumProtocolNetwork = new EthereumProtocolNetwork(),
     public readonly config: EthereumProtocolConfig = new EthereumProtocolConfig()
+  ) {}
+}
+
+export class EthereumERC20ProtocolConfig extends EthereumProtocolConfig {
+  constructor(
+    public readonly symbol: string,
+    public readonly name: string,
+    public readonly marketSymbol: string,
+    public readonly identifier: SubProtocolSymbols,
+    public readonly contractAddress: string,
+    public readonly decimals: number,
+    public readonly ethereumConfig: EthereumProtocolConfig = new EthereumProtocolConfig()
+  ) {
+    super(ethereumConfig.chainID, ethereumConfig.nodeClient, ethereumConfig.infoClient)
+  }
+}
+
+export class EthereumERC20ProtocolOptions implements ProtocolOptions<EthereumERC20ProtocolConfig> {
+  constructor(
+    public readonly network: EthereumProtocolNetwork = new EthereumProtocolNetwork(),
+    public readonly config: EthereumERC20ProtocolConfig
   ) {}
 }

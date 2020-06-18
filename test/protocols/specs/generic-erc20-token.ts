@@ -1,6 +1,5 @@
-import BigNumber from '../../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
-
 import { addSubProtocol, EthereumProtocol } from '../../../src'
+import BigNumber from '../../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
 import { ERC20Token } from '../../../src/protocols/ethereum/erc20/ERC20'
 import { TestProtocolSpec } from '../implementations'
 import { GenericERC20ProtocolStub } from '../stubs/generic-erc20.stub'

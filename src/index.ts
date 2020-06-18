@@ -9,7 +9,7 @@ import { AeternityProtocol } from './protocols/aeternity/AeternityProtocol'
 import { BitcoinProtocol } from './protocols/bitcoin/BitcoinProtocol'
 import { BitcoinTestnetProtocol } from './protocols/bitcoin/BitcoinTestnetProtocol'
 import { CosmosProtocol } from './protocols/cosmos/CosmosProtocol'
-import { GenericERC20, GenericERC20Configuration } from './protocols/ethereum/erc20/GenericERC20'
+import { GenericERC20 } from './protocols/ethereum/erc20/GenericERC20'
 import { EthereumClassicProtocol } from './protocols/ethereum/EthereumClassicProtocol'
 import { EthereumRopstenProtocol } from './protocols/ethereum/EthereumRopstenProtocol'
 import { GroestlcoinProtocol } from './protocols/groestlcoin/GroestlcoinProtocol'
@@ -100,7 +100,6 @@ export {
   SubstratePayee,
   TezosDelegatorAction,
   // sub protocols configs,
-  GenericERC20Configuration,
   TypeNotSupported,
   SerializerVersionMismatch,
   ProtocolNotSupported,

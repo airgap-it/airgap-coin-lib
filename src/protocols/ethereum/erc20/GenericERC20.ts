@@ -6,49 +6,30 @@ import { UnsignedTransaction } from '../../../serializer/schemas/definitions/tra
 import { UnsignedEthereumTransaction } from '../../../serializer/schemas/definitions/transaction-sign-request-ethereum'
 import { SignedEthereumTransaction } from '../../../serializer/schemas/definitions/transaction-sign-response-ethereum'
 import { RawEthereumTransaction } from '../../../serializer/types'
-import { ProtocolSymbols } from '../../../utils/ProtocolSymbols'
 import { FeeDefaults } from '../../ICoinProtocol'
 import { ICoinSubProtocol, SubProtocolType } from '../../ICoinSubProtocol'
 import { BaseEthereumProtocol } from '../BaseEthereumProtocol'
 import { EtherscanInfoClient } from '../clients/info-clients/EtherscanInfoClient'
 import { AirGapNodeClient, EthereumRPCDataTransfer } from '../clients/node-clients/AirGapNodeClient'
-import { EthereumProtocolConfig, EthereumProtocolNetwork, EthereumProtocolOptions } from '../EthereumProtocolOptions'
+import { EthereumERC20ProtocolOptions } from '../EthereumProtocolOptions'
 import { EthereumUtils } from '../utils/utils'
 
 const EthereumTransaction = require('../../../dependencies/src/ethereumjs-tx-1.3.7/index')
-
-export interface GenericERC20Configuration {
-  symbol: string
-  name: string
-  marketSymbol: string
-  identifier: ProtocolSymbols
-  contractAddress: string
-  decimals?: number
-  jsonRPCAPI?: string
-  infoAPI?: string
-  chainId?: number
-}
 
 export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, EtherscanInfoClient> implements ICoinSubProtocol {
   public isSubProtocol: boolean = true
   public subProtocolType: SubProtocolType = SubProtocolType.TOKEN
   public readonly contractAddress: string
 
-  constructor(config: GenericERC20Configuration) {
-    // we probably need another network here, explorer is ok
-    super(
-      new EthereumProtocolOptions(
-        new EthereumProtocolNetwork(),
-        new EthereumProtocolConfig(config.chainId || 1, new AirGapNodeClient(config.jsonRPCAPI), new EtherscanInfoClient(config.infoAPI))
-      )
-    )
+  constructor(public readonly options: EthereumERC20ProtocolOptions) {
+    super(options)
 
-    this.contractAddress = config.contractAddress
-    this.symbol = config.symbol
-    this.name = config.name
-    this.marketSymbol = config.marketSymbol
-    this.identifier = config.identifier
-    this.decimals = config.decimals || this.decimals
+    this.contractAddress = options.config.contractAddress
+    this.symbol = options.config.symbol
+    this.name = options.config.name
+    this.marketSymbol = options.config.marketSymbol
+    this.identifier = options.config.identifier
+    this.decimals = options.config.decimals
   }
 
   public async getBalanceOfPublicKey(publicKey: string): Promise<string> {

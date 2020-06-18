@@ -46,7 +46,16 @@ export class TezosProtocolNetwork extends ProtocolNetwork<TezosProtocolNetworkEx
   }
 }
 
-export class TezosProtocolOptions implements ProtocolOptions<undefined> {
+export class TezosProtocolConfig {
+  constructor() {
+    //
+  }
+}
+
+export class TezosProtocolOptions implements ProtocolOptions<TezosProtocolConfig> {
   // tslint:disable-next-line:no-unnecessary-initializer
-  constructor(public readonly network: TezosProtocolNetwork = new TezosProtocolNetwork(), public readonly config: undefined = undefined) {}
+  constructor(
+    public readonly network: TezosProtocolNetwork = new TezosProtocolNetwork(),
+    public readonly config: TezosProtocolConfig = new TezosProtocolConfig()
+  ) {}
 }

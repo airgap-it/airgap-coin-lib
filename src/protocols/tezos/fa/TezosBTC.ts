@@ -1,41 +1,18 @@
-import { SubProtocolSymbols } from '../../../utils/ProtocolSymbols'
 import { TezosContractEntity } from '../contract/TezosContractEntity'
 import { TezosContractPair } from '../contract/TezosContractPair'
-import { TezosNetwork } from '../TezosProtocol'
+import { TezosProtocolNetwork } from '../TezosProtocolOptions'
 import { TezosUtils } from '../TezosUtils'
 
-import { TezosBTCDetails } from './../../../serializer/constants'
 import { TezosFAProtocol } from './TezosFAProtocol'
+import { TezosBTCProtocolConfig, TezosFAProtocolOptions } from './TezosFAProtocolOptions'
 
 export class TezosBTC extends TezosFAProtocol {
-  private static readonly bigMapKeyLedgerPrefix = '0x05070701000000066c65646765720a00000016'
+  private static readonly bigMapKeyLedgerPrefix: string = '0x05070701000000066c65646765720a00000016'
 
   constructor(
-    contractAddress: string = TezosBTCDetails.CONTRACT_ADDRESS,
-    jsonRPCAPI?: string,
-    baseApiUrl?: string,
-    baseApiKey?: string,
-    baseApiNetwork?: string,
-    network?: TezosNetwork
+    public readonly options: TezosFAProtocolOptions = new TezosFAProtocolOptions(new TezosProtocolNetwork(), new TezosBTCProtocolConfig())
   ) {
-    super({
-      symbol: 'tzBTC',
-      name: 'Tezos BTC',
-      marketSymbol: 'btc',
-      identifier: SubProtocolSymbols.XTZ_BTC,
-      feeDefaults: {
-        low: '0.100',
-        medium: '0.200',
-        high: '0.300'
-      },
-      decimals: 8,
-      contractAddress,
-      jsonRPCAPI,
-      baseApiUrl,
-      baseApiKey,
-      baseApiNetwork,
-      network
-    })
+    super(options)
   }
 
   public async fetchTokenHolders(): Promise<{ address: string; amount: string }[]> {
