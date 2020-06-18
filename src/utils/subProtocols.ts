@@ -14,7 +14,7 @@ const getProtocolAndNetworkIdentifier: (identifier: ProtocolSymbols, network: Pr
   identifier: ProtocolSymbols,
   network: ProtocolNetwork
 ): string => {
-  return `${identifier}:${network.name}-${network.type}-${network.rpcUrl}`
+  return `${identifier}:${network.identifier}`
 }
 
 const getSubProtocolsByIdentifier: (identifier: ProtocolSymbols, network?: ProtocolNetwork) => ICoinSubProtocol[] = (
@@ -59,5 +59,7 @@ const addSubProtocol: (protocol: ICoinProtocol, subProtocol: ICoinSubProtocol) =
 
   subProtocolMapper[protocolAndNetworkIdentifier][subProtocol.identifier] = subProtocol
 }
+
+// TODO: add remove method
 
 export { addSubProtocol, getSubProtocolsByIdentifier }

@@ -45,14 +45,16 @@ export class KusamaProtocolConfig {
   ) {}
 }
 
-export class KusamaProtocolNetwork implements ProtocolNetwork<KusamaProtocolNetworkExtras> {
+export class KusamaProtocolNetwork extends ProtocolNetwork<KusamaProtocolNetworkExtras> {
   constructor(
     public readonly name: string = MAINNET_NAME,
     public readonly type: NetworkType = NetworkType.MAINNET,
     public readonly rpcUrl: string = NODE_URL,
     public readonly blockExplorer: ProtocolBlockExplorer = new PolkascanBlockExplorer(),
     public readonly extras: KusamaProtocolNetworkExtras = new KusamaProtocolNetworkExtras()
-  ) {}
+  ) {
+    super(name, type, rpcUrl, blockExplorer, extras)
+  }
 }
 
 export class KusamaProtocolOptions implements ProtocolOptions<KusamaProtocolConfig> {

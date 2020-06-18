@@ -1,5 +1,6 @@
 import { IAirGapTransaction } from '../../..'
 import { AirGapTransactionType } from '../../../interfaces/IAirGapTransaction'
+import { ProtocolSymbols } from '../../../utils/ProtocolSymbols'
 import { CosmosCoin } from '../CosmosCoin'
 
 import { CosmosMessage, CosmosMessageJSON, CosmosMessageType, CosmosMessageTypeIndex } from './CosmosMessage'
@@ -47,7 +48,7 @@ export class CosmosDelegateMessage implements CosmosMessage {
     }
   }
 
-  public toAirGapTransaction(identifier: string, fee: string): IAirGapTransaction {
+  public toAirGapTransaction(identifier: ProtocolSymbols, fee: string): IAirGapTransaction {
     return {
       amount: this.amount.amount,
       from: [this.delegatorAddress],

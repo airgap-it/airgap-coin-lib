@@ -37,14 +37,16 @@ export class SubstrateProtocolConfig {
   ) {}
 }
 
-export class SubstrateProtocolNetwork implements ProtocolNetwork<SubstrateProtocolNetworkExtras> {
+export class SubstrateProtocolNetwork extends ProtocolNetwork<SubstrateProtocolNetworkExtras> {
   constructor(
     public readonly name: string = MAINNET_NAME,
     public readonly type: NetworkType = NetworkType.MAINNET,
     public readonly rpcUrl: string,
     public readonly blockExplorer: ProtocolBlockExplorer,
     public readonly extras: SubstrateProtocolNetworkExtras
-  ) {}
+  ) {
+    super(name, type, rpcUrl, blockExplorer, extras)
+  }
 }
 
 export class SubstrateProtocolOptions implements ProtocolOptions<SubstrateProtocolConfig> {

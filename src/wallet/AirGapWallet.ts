@@ -1,8 +1,10 @@
 import { IAirGapWallet } from '../interfaces/IAirGapWallet'
 import { ICoinProtocol } from '../protocols/ICoinProtocol'
+import { ProtocolSymbols } from '../utils/ProtocolSymbols'
 
 interface SerializedAirGapWallet {
-  protocolIdentifier: string
+  protocolIdentifier: ProtocolSymbols
+  networkIdentifier: string
   publicKey: string
   isExtendedPublicKey: boolean
   derivationPath: string
@@ -44,7 +46,10 @@ export class AirGapWallet implements IAirGapWallet {
   }
 
   public toJSON(): SerializedAirGapWallet {
-    const json = Object.assign({ protocolIdentifier: this.protocol.identifier, protocolNetwork: this.protocol.options.network }, this)
+    const json: SerializedAirGapWallet & { protocol: ICoinProtocol } = Object.assign(
+      { protocolIdentifier: this.protocol.identifier, networkIdentifier: this.protocol.options.network.identifier },
+      this
+    )
     delete json.protocol
 
     return json

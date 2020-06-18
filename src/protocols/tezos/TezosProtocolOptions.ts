@@ -34,14 +34,16 @@ export class TezblockBlockExplorer implements ProtocolBlockExplorer {
   }
 }
 
-export class TezosProtocolNetwork implements ProtocolNetwork<TezosProtocolNetworkExtras> {
+export class TezosProtocolNetwork extends ProtocolNetwork<TezosProtocolNetworkExtras> {
   constructor(
     public readonly name: string = MAINNET_NAME,
     public readonly type: NetworkType = NetworkType.MAINNET,
     public readonly rpcUrl: string = NODE_URL,
     public readonly blockExplorer: ProtocolBlockExplorer = new TezblockBlockExplorer(),
     public readonly extras: TezosProtocolNetworkExtras = new TezosProtocolNetworkExtras()
-  ) {}
+  ) {
+    super(name, type, rpcUrl, blockExplorer, extras)
+  }
 }
 
 export class TezosProtocolOptions implements ProtocolOptions<undefined> {

@@ -1,6 +1,7 @@
 import Axios from '../../../../dependencies/src/axios-0.19.0/index'
 import { BigNumber } from '../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { IAirGapTransaction } from '../../../../interfaces/IAirGapTransaction'
+import { ProtocolSymbols } from '../../../../utils/ProtocolSymbols'
 
 import { EthereumInfoClient } from './InfoClient'
 
@@ -9,7 +10,7 @@ export class EtherscanInfoClient extends EthereumInfoClient {
     super(baseURL)
   }
 
-  public async fetchTransactions(identifier: string, address: string, page: number, limit: number): Promise<IAirGapTransaction[]> {
+  public async fetchTransactions(identifier: ProtocolSymbols, address: string, page: number, limit: number): Promise<IAirGapTransaction[]> {
     const airGapTransactions: IAirGapTransaction[] = []
 
     const response = await Axios.get(
@@ -37,7 +38,7 @@ export class EtherscanInfoClient extends EthereumInfoClient {
   }
 
   public async fetchContractTransactions(
-    identifier: string,
+    identifier: ProtocolSymbols,
     contractAddress: string,
     address: string,
     page: number,

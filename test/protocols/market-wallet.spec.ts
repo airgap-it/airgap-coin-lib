@@ -217,7 +217,7 @@ describe(`AirGapMarketWallet`, () => {
     const json = wallet.toJSON()
     expect(json).to.deep.equal({
       protocolIdentifier: 'eth',
-      protocolNetwork: new EthereumProtocolOptions().network,
+      networkIdentifier: new EthereumProtocolOptions().network.identifier,
       publicKey: '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       isExtendedPublicKey: false,
       derivationPath: "m/44'/60'/0'/0/0",

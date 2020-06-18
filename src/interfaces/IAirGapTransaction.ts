@@ -1,3 +1,5 @@
+import { ProtocolSymbols } from '../utils/ProtocolSymbols'
+
 export enum AirGapTransactionType {
   SPEND = 'Spend Transaction',
   DELEGATE = 'Delegation',
@@ -17,7 +19,7 @@ export interface IAirGapTransaction {
   fee: string
   timestamp?: number
 
-  protocolIdentifier: string
+  protocolIdentifier: ProtocolSymbols
 
   hash?: string
   blockHeight?: string

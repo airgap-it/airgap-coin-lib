@@ -31,14 +31,16 @@ export class EtherscanBlockExplorer implements ProtocolBlockExplorer {
   }
 }
 
-export class EthereumProtocolNetwork implements ProtocolNetwork<EthereumProtocolNetworkExtras> {
+export class EthereumProtocolNetwork extends ProtocolNetwork<EthereumProtocolNetworkExtras> {
   constructor(
     public readonly name: string = MAINNET_NAME,
     public readonly type: NetworkType = NetworkType.MAINNET,
     public readonly rpcUrl: string = NODE_URL,
     public readonly blockExplorer: ProtocolBlockExplorer = new EtherscanBlockExplorer(),
     public readonly extras: EthereumProtocolNetworkExtras = new EthereumProtocolNetworkExtras()
-  ) {}
+  ) {
+    super(name, type, rpcUrl, blockExplorer, extras)
+  }
 }
 
 export class EthereumProtocolConfig {

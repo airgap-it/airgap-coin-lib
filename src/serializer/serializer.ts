@@ -1,4 +1,5 @@
 import { CosmosTransaction } from '../protocols/cosmos/CosmosTransaction'
+import { MainProtocolSymbols, ProtocolSymbols, SubProtocolSymbols } from '../utils/ProtocolSymbols'
 
 import { IACProtocol } from './inter-app-communication-protocol'
 import { IACMessageType } from './interfaces'
@@ -50,7 +51,7 @@ export enum IACPayloadType {
 export class Serializer {
   private static readonly schemas: Map<string, SchemaInfo> = new Map()
 
-  public static addSchema(schemaName: string, schema: SchemaInfo, protocol?: string): void {
+  public static addSchema(schemaName: string, schema: SchemaInfo, protocol?: ProtocolSymbols): void {
     const protocolSpecificSchemaName: string = Serializer.getSchemName(schemaName, protocol)
 
     if (this.schemas.has(protocolSpecificSchemaName)) {
@@ -110,8 +111,9 @@ export class Serializer {
     })
   }
 
-  public serializationValidatorByProtocolIdentifier(protocolIdentifier: string): TransactionValidator {
-    const validators = {
+  public serializationValidatorByProtocolIdentifier(protocolIdentifier: ProtocolSymbols): TransactionValidator {
+    const validators: { [key in ProtocolSymbols]?: any } = {
+      // TODO: Exhaustive list?
       eth: EthereumTransactionValidator,
       btc: BitcoinTransactionValidator,
       grs: BitcoinTransactionValidator,
@@ -144,28 +146,40 @@ Serializer.addSchema(IACMessageType.MessageSignRequest.toString(), { schema: mes
 Serializer.addSchema(IACMessageType.MessageSignResponse.toString(), { schema: messageSignResponse })
 
 // TODO: Make sure that we have a schema for every protocol we support
-Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema: unsignedTransactionAeternity }, 'ae')
-Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema: unsignedTransactionBitcoin }, 'btc')
-Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema: unsignedTransactionBitcoin }, 'grs')
+Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema: unsignedTransactionAeternity }, MainProtocolSymbols.AE)
+Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema: unsignedTransactionBitcoin }, MainProtocolSymbols.BTC)
+Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema: unsignedTransactionBitcoin }, MainProtocolSymbols.GRS)
 Serializer.addSchema(
   IACMessageType.TransactionSignRequest.toString(),
   { schema: unsignedTransactionCosmos, transformer: unsignedTransactionTransformerCosmos },
-  'cosmos'
+  MainProtocolSymbols.COSMOS
 )
-Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema: unsignedTransactionEthereum }, 'eth')
-Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema: unsignedTransactionEthereum }, 'eth-erc20')
-Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema: unsignedTransactionTezos }, 'xtz')
-Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema: unsignedTransactionTezos }, 'xtz-btc')
-Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema: unsignedTransactionSubstrate }, 'polkadot')
-Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema: unsignedTransactionSubstrate }, 'kusama')
+Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema: unsignedTransactionEthereum }, MainProtocolSymbols.ETH)
+Serializer.addSchema(
+  IACMessageType.TransactionSignRequest.toString(),
+  { schema: unsignedTransactionEthereum },
+  SubProtocolSymbols.ETH_ERC20
+)
+Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema: unsignedTransactionTezos }, MainProtocolSymbols.XTZ)
+Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema: unsignedTransactionTezos }, SubProtocolSymbols.XTZ_BTC)
+Serializer.addSchema(
+  IACMessageType.TransactionSignRequest.toString(),
+  { schema: unsignedTransactionSubstrate },
+  MainProtocolSymbols.POLKADOT
+)
+Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema: unsignedTransactionSubstrate }, MainProtocolSymbols.KUSAMA)
 
-Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionAeternity }, 'ae')
-Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionBitcoin }, 'btc')
-Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionBitcoin }, 'grs')
-Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionCosmos }, 'cosmos')
-Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionEthereum }, 'eth')
-Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionEthereum }, 'eth-erc20')
-Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionTezos }, 'xtz')
-Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionTezos }, 'xtz-btc')
-Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionSubstrate }, 'polkadot')
-Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionSubstrate }, 'kusama')
+Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionAeternity }, MainProtocolSymbols.AE)
+Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionBitcoin }, MainProtocolSymbols.BTC)
+Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionBitcoin }, MainProtocolSymbols.GRS)
+Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionCosmos }, MainProtocolSymbols.COSMOS)
+Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionEthereum }, MainProtocolSymbols.ETH)
+Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionEthereum }, SubProtocolSymbols.ETH_ERC20)
+Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionTezos }, MainProtocolSymbols.XTZ)
+Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionTezos }, SubProtocolSymbols.XTZ_BTC)
+Serializer.addSchema(
+  IACMessageType.TransactionSignResponse.toString(),
+  { schema: signedTransactionSubstrate },
+  MainProtocolSymbols.POLKADOT
+)
+Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionSubstrate }, MainProtocolSymbols.KUSAMA)

@@ -21,7 +21,7 @@ export class AeternalBlockExplorer implements ProtocolBlockExplorer {
   }
 }
 
-export class AeternityProtocolNetwork implements ProtocolNetwork<undefined> {
+export class AeternityProtocolNetwork extends ProtocolNetwork<undefined> {
   constructor(
     public readonly name: string = MAINNET_NAME,
     public readonly type: NetworkType = NetworkType.MAINNET,
@@ -29,7 +29,9 @@ export class AeternityProtocolNetwork implements ProtocolNetwork<undefined> {
     public readonly blockExplorer: ProtocolBlockExplorer = new AeternalBlockExplorer(),
     // tslint:disable-next-line:no-unnecessary-initializer
     public readonly extras: undefined = undefined
-  ) {}
+  ) {
+    super(name, type, rpcUrl, blockExplorer, extras)
+  }
 }
 
 export class AeternityProtocolOptions implements ProtocolOptions<undefined> {

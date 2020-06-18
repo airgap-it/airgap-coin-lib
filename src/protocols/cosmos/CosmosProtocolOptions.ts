@@ -24,7 +24,7 @@ export class MintscanBlockExplorer implements ProtocolBlockExplorer {
   }
 }
 
-export class CosmosProtocolNetwork implements ProtocolNetwork<undefined> {
+export class CosmosProtocolNetwork extends ProtocolNetwork<undefined> {
   constructor(
     public readonly name: string = MAINNET_NAME,
     public readonly type: NetworkType = NetworkType.MAINNET,
@@ -32,7 +32,9 @@ export class CosmosProtocolNetwork implements ProtocolNetwork<undefined> {
     public readonly blockExplorer: ProtocolBlockExplorer = new MintscanBlockExplorer(),
     // tslint:disable-next-line:no-unnecessary-initializer
     public readonly extras: undefined = undefined
-  ) {}
+  ) {
+    super(name, type, rpcUrl, blockExplorer, extras)
+  }
 }
 
 export class CosmosProtocolConfig {
