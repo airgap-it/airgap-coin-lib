@@ -1,14 +1,7 @@
 // https://tezos.gitlab.io/whitedoc/micheline.html#bnf-grammar
 // https://tezos.gitlab.io/whitedoc/micheline.html#conversion-to-json
 
-import { MichelsonType } from '../michelson/types'
-import { ITezosContractCode } from '../TezosContractCode'
-
-export interface MichelineContractNode {
-  prim: keyof ITezosContractCode
-  args: MichelineNode[]
-}
-export type MichelineContract = MichelineContractNode[]
+import { MichelsonType } from '../michelson/MichelsonType'
 
 export type MichelineNode = 
   MichelinePrimitive<'int'> |

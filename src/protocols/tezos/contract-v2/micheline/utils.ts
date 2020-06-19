@@ -1,4 +1,4 @@
-import { MichelineNode, MichelinePrimitive, MichelinePrimitiveApplication } from './types'
+import { MichelineNode, MichelinePrimitive, MichelinePrimitiveApplication } from './MichelineNode'
 
 export function isMichelineNode(node: unknown): node is MichelineNode {
   return isMichelineNodeRecursive(node, 0)
