@@ -427,6 +427,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
       from: [from],
       isInbound: inbound,
       protocolIdentifier: this.identifier,
+      networkIdentifier: this.options.network.identifier,
       to: [to],
       hash: transaction.operation_group_hash,
       timestamp: transaction.timestamp / 1000,

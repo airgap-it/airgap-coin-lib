@@ -1,7 +1,6 @@
-import { IAirGapTransaction } from '../../..'
+import { CosmosProtocol, IAirGapTransaction } from '../../..'
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { AirGapTransactionType } from '../../../interfaces/IAirGapTransaction'
-import { ProtocolSymbols } from '../../../utils/ProtocolSymbols'
 import { CosmosCoin, CosmosCoinJSON } from '../CosmosCoin'
 
 import { CosmosMessage, CosmosMessageJSON, CosmosMessageType } from './CosmosMessage'
@@ -47,7 +46,7 @@ export class CosmosSendMessage implements CosmosMessage {
     }
   }
 
-  public toAirGapTransaction(identifier: ProtocolSymbols, fee: string): IAirGapTransaction {
+  public toAirGapTransaction(protocol: CosmosProtocol, fee: string): IAirGapTransaction {
     return {
       amount: this.amount
         .map((value: CosmosCoin) => new BigNumber(value.amount))
@@ -57,7 +56,8 @@ export class CosmosSendMessage implements CosmosMessage {
       from: [this.fromAddress],
       isInbound: false,
       fee,
-      protocolIdentifier: identifier,
+      protocolIdentifier: protocol.identifier,
+      networkIdentifier: protocol.options.network.identifier,
       transactionDetails: this.toRPCBody(),
       extra: {
         type: AirGapTransactionType.SPEND

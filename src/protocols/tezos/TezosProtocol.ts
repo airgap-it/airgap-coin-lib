@@ -396,6 +396,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
           from: [transaction.source],
           isInbound: addresses.indexOf(transaction.destination) !== -1,
           protocolIdentifier: this.identifier,
+          networkIdentifier: this.options.network.identifier,
           to: [transaction.destination],
           hash: transaction.operation_group_hash,
           timestamp: transaction.timestamp / 1000,
@@ -507,6 +508,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
         from,
         isInbound: false,
         protocolIdentifier: this.identifier,
+        networkIdentifier: this.options.network.identifier,
         to,
         transactionDetails: tezosOperation
       }

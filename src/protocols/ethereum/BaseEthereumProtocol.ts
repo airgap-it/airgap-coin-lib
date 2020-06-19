@@ -180,6 +180,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
         amount: new BigNumber(transaction.value).toString(10),
         fee: new BigNumber(transaction.gasLimit).multipliedBy(new BigNumber(transaction.gasPrice)).toString(10),
         protocolIdentifier: this.identifier,
+        networkIdentifier: this.options.network.identifier,
         isInbound: false,
         data: transaction.data,
         transactionDetails: unsignedTx
@@ -202,6 +203,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
         amount: new BigNumber(parseInt(hexValue, 16)).toString(10),
         fee: new BigNumber(parseInt(hexGasLimit, 16)).multipliedBy(new BigNumber(parseInt(hexGasPrice, 16))).toString(10),
         protocolIdentifier: this.identifier,
+        networkIdentifier: this.options.network.identifier,
         isInbound: ethTx.toCreationAddress(),
         hash: `0x${ethTx.hash().toString('hex')}`,
         data: `0x${ethTx.data.toString('hex')}`,
@@ -394,7 +396,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     return new Promise((overallResolve, overallReject) => {
       const promises: Promise<IAirGapTransaction[]>[] = []
       for (const address of addresses) {
-        promises.push(this.options.config.infoClient.fetchTransactions(this.identifier, address, page, limit))
+        promises.push(this.options.config.infoClient.fetchTransactions(this, address, page, limit))
       }
       Promise.all(promises)
         .then((values) => {

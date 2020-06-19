@@ -149,7 +149,7 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, Ethersc
     return new Promise((overallResolve, overallReject) => {
       const promises: Promise<IAirGapTransaction[]>[] = []
       for (const address of addresses) {
-        promises.push(this.options.config.infoClient.fetchContractTransactions(this.identifier, this.contractAddress, address, page, limit))
+        promises.push(this.options.config.infoClient.fetchContractTransactions(this, this.contractAddress, address, page, limit))
       }
       Promise.all(promises)
         .then((values) => {

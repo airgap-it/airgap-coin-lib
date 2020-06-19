@@ -288,6 +288,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
           fee: new BigNumber(1420),
           from: ['tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'],
           isInbound: true,
+          networkIdentifier: 'MAINNET-Mainnet-https://tezos-node.prod.gke.papers.tech',
           timestamp: 1561035943,
           protocolIdentifier: tezosLib.identifier,
           to: ['tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'],

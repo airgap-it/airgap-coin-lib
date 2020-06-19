@@ -232,6 +232,7 @@ export class BitcoinProtocol implements ICoinProtocol {
           .toString(10),
         fee: feeCalculator.toString(10),
         protocolIdentifier: this.identifier,
+        networkIdentifier: this.options.network.identifier,
         isInbound: false,
         transactionDetails: unsignedTx.transaction
       }
@@ -245,6 +246,7 @@ export class BitcoinProtocol implements ICoinProtocol {
       amount: signedTx.amount,
       fee: signedTx.fee,
       protocolIdentifier: this.identifier,
+      networkIdentifier: this.options.network.identifier,
       isInbound: false,
       transactionDetails: signedTx.transaction
     }
@@ -632,6 +634,7 @@ export class BitcoinProtocol implements ICoinProtocol {
         fee: new BigNumber(transaction.fees).shiftedBy(this.feeDecimals).toString(10),
         blockHeight: transaction.blockheight,
         protocolIdentifier: this.identifier,
+        networkIdentifier: this.options.network.identifier,
         timestamp: transaction.time
       }
 

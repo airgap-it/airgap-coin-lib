@@ -1,3 +1,4 @@
+import { EthereumProtocol } from '../../../..'
 import { IAirGapTransaction } from '../../../../interfaces/IAirGapTransaction'
 
 export abstract class EthereumInfoClient {
@@ -7,9 +8,14 @@ export abstract class EthereumInfoClient {
     this.baseURL = baseURL
   }
 
-  public abstract async fetchTransactions(identifier: string, address: string, page: number, limit: number): Promise<IAirGapTransaction[]>
+  public abstract async fetchTransactions(
+    protocol: EthereumProtocol,
+    address: string,
+    page: number,
+    limit: number
+  ): Promise<IAirGapTransaction[]>
   public abstract async fetchContractTransactions(
-    identifier: string,
+    protocol: EthereumProtocol,
     contractAddress: string,
     address: string,
     page: number,

@@ -1,5 +1,4 @@
-import { IAirGapTransaction } from '../../..'
-import { ProtocolSymbols } from '../../../utils/ProtocolSymbols'
+import { CosmosProtocol, IAirGapTransaction } from '../../..'
 
 import { CosmosMessage, CosmosMessageJSON, CosmosMessageType } from './CosmosMessage'
 
@@ -13,14 +12,15 @@ export class CosmosWithdrawDelegationRewardMessage implements CosmosMessage {
     this.validatorAddress = validatorAddress
   }
 
-  public toAirGapTransaction(identifier: ProtocolSymbols, fee: string): IAirGapTransaction {
+  public toAirGapTransaction(protocol: CosmosProtocol, fee: string): IAirGapTransaction {
     return {
       from: [this.delegatorAddress],
       to: [this.validatorAddress],
       amount: '0',
       isInbound: false,
       fee,
-      protocolIdentifier: identifier,
+      protocolIdentifier: protocol.identifier,
+      networkIdentifier: protocol.options.network.identifier,
       transactionDetails: this.toRPCBody()
     }
   }

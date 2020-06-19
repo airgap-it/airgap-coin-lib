@@ -1,7 +1,7 @@
+import { CosmosProtocol } from '../..'
 import Axios, { AxiosResponse } from '../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
-import { ProtocolSymbols } from '../../utils/ProtocolSymbols'
 
 import { TransactionListQuery } from './CosmosTransactionListQuery'
 
@@ -108,12 +108,7 @@ export class CosmosInfoClient {
     this.baseURL = baseURL
   }
 
-  public async fetchTransactions(
-    identifier: ProtocolSymbols,
-    address: string,
-    offset: number,
-    limit: number
-  ): Promise<IAirGapTransaction[]> {
+  public async fetchTransactions(protocol: CosmosProtocol, address: string, offset: number, limit: number): Promise<IAirGapTransaction[]> {
     const query: TransactionListQuery = new TransactionListQuery(offset, limit, address)
     const response: AxiosResponse<CosmosTransactionsResponse> = await Axios.post(
       `${this.baseURL}/cosmos/v1/getTxsByAddr`,
@@ -142,7 +137,8 @@ export class CosmosInfoClient {
             from: [message.value.from_address],
             isInbound: destination === address,
             fee: fee.toString(10),
-            protocolIdentifier: identifier,
+            protocolIdentifier: protocol.identifier,
+            networkIdentifier: protocol.options.network.identifier,
             hash: hit._source.hash,
             timestamp
           }

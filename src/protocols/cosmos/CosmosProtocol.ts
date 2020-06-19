@@ -163,7 +163,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
   public async getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
     const promises: Promise<IAirGapTransaction[]>[] = []
     for (const address of addresses) {
-      promises.push(this.infoClient.fetchTransactions(this.identifier, address, offset, limit))
+      promises.push(this.infoClient.fetchTransactions(this, address, offset, limit))
     }
 
     return Promise.all(promises).then((transactions) => transactions.reduce((current, next) => current.concat(next)))
@@ -201,7 +201,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
   }
 
   public async getTransactionDetails(transaction: UnsignedCosmosTransaction): Promise<IAirGapTransaction[]> {
-    const result = transaction.transaction.toAirGapTransactions(this.identifier)
+    const result = transaction.transaction.toAirGapTransactions(this)
 
     return result
   }
@@ -219,16 +219,16 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
           case CosmosMessageType.Send.value:
             const sendMessage = CosmosSendMessage.fromRPCBody(message)
 
-            return sendMessage.toAirGapTransaction(this.identifier, fee)
+            return sendMessage.toAirGapTransaction(this, fee)
           case CosmosMessageType.Undelegate.value:
           case CosmosMessageType.Delegate.value:
             const delegateMessage = CosmosDelegateMessage.fromRPCBody(message)
 
-            return delegateMessage.toAirGapTransaction(this.identifier, fee)
+            return delegateMessage.toAirGapTransaction(this, fee)
           case CosmosMessageType.WithdrawDelegationReward.value:
             const withdrawMessage = CosmosWithdrawDelegationRewardMessage.fromRPCBody(message)
 
-            return withdrawMessage.toAirGapTransaction(this.identifier, fee)
+            return withdrawMessage.toAirGapTransaction(this, fee)
           default:
             throw Error('Unknown transaction')
         }
