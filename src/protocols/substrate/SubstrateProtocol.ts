@@ -619,7 +619,12 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
             value: transferableBalance
           }
         ],
-        [SubstrateTransactionType.WITHDRAW_UNBONDED, {}]
+        [
+          SubstrateTransactionType.WITHDRAW_UNBONDED, 
+          {
+            slashingSpansNumber: 0
+          }
+        ]
       )
     } else if (isBonded) {
       requiredTransactions.push(
@@ -629,7 +634,12 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
             value: transferableBalance
           }
         ],
-        [SubstrateTransactionType.WITHDRAW_UNBONDED, {}]
+        [
+          SubstrateTransactionType.WITHDRAW_UNBONDED,
+          {
+            slashingSpansNumber: 0
+          }
+        ]
       )
     }
 
