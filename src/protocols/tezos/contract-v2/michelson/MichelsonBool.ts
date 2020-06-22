@@ -1,5 +1,5 @@
 import { MichelsonTypeMapping } from './MichelsonTypeMapping'
-import { MichelineNode } from '../micheline/MichelineNode'
+import { MichelineDataNode } from '../micheline/MichelineNode'
 import { invalidArgumentTypeError } from '../../../../utils/error'
 
 export class MichelsonBool extends MichelsonTypeMapping {
@@ -15,14 +15,9 @@ export class MichelsonBool extends MichelsonTypeMapping {
     super()
   }
 
-  public toMichelineJSON(): MichelineNode {
+  public toMichelineJSON(): MichelineDataNode {
     return {
-      prim: 'bool',
-      args: [
-        {
-          string: this.value ? 'True' : 'False'
-        }
-      ]
+      prim: this.value ? 'True' : 'False',
     }
   }
 }

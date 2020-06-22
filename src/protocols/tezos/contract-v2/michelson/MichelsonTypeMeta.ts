@@ -2,12 +2,30 @@
 
 import { MichelsonType, michelsonTypeFactories } from './MichelsonType'
 import { MichelsonTypeMapping } from './MichelsonTypeMapping'
-import { MichelineNode } from '../micheline/MichelineNode'
+import { MichelineTypeNode } from '../micheline/MichelineNode'
 import { isMichelinePrimitiveApplication } from '../micheline/utils'
 
 const ANNOTATION_PREFIX_ARG = ':'
 
 export class MichelsonTypeMeta {
+  public static fromMichelineNode(node: MichelineTypeNode): MichelsonTypeMeta | undefined {
+    if (!isMichelinePrimitiveApplication(node)) {
+      return undefined
+    }
+
+    const argsMeta: MichelsonTypeMeta[] = node.args 
+      ? node.args
+          .map((arg: MichelineTypeNode) => this.fromMichelineNode(arg))
+          .filter((meta: MichelsonTypeMeta | undefined) => meta !== undefined) as MichelsonTypeMeta[]
+      : []
+
+    return this.from(node.prim, node.annots || [], argsMeta)
+  }
+
+  public static from(type: MichelsonType, annots: string[], argsMeta: MichelsonTypeMeta[]): MichelsonTypeMeta {
+    return argsMeta.length === 0 ? new MichelsonTypeMeta(type, annots) : new MichelsonGenericTypeMeta(type, argsMeta, annots)
+  }
+
   constructor(readonly type: MichelsonType, readonly annots: string[] = []) {}
 
   public createValue(...values: unknown[]): MichelsonTypeMapping {
@@ -50,25 +68,5 @@ export class MichelsonGenericTypeMeta extends MichelsonTypeMeta {
     })
 
     return michelsonTypeFactories[this.type](value, ...genericFactories)
-  }
-}
-
-export class MichelsonTypeMetaFactory {
-  public static fromMichelineNode(node: MichelineNode): MichelsonTypeMeta | undefined {
-    if (!isMichelinePrimitiveApplication(node)) {
-      return undefined
-    }
-
-    const argsMeta: MichelsonTypeMeta[] = node.args 
-      ? node.args
-          .map((arg: MichelineNode) => MichelsonTypeMetaFactory.fromMichelineNode(arg))
-          .filter((meta: MichelsonTypeMeta | undefined) => meta !== undefined) as MichelsonTypeMeta[]
-      : []
-
-    return MichelsonTypeMetaFactory.from(node.prim, node.annots || [], argsMeta)
-  }
-
-  public static from(type: MichelsonType, annots: string[], argsMeta: MichelsonTypeMeta[]): MichelsonTypeMeta {
-    return argsMeta.length === 0 ? new MichelsonTypeMeta(type, annots) : new MichelsonGenericTypeMeta(type, argsMeta, annots)
   }
 }

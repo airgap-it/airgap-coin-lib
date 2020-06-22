@@ -1,5 +1,5 @@
 import { MichelsonTypeMapping } from './MichelsonTypeMapping'
-import { MichelineNode } from '../micheline/MichelineNode'
+import { MichelineDataNode } from '../micheline/MichelineNode'
 import { invalidArgumentTypeError } from '../../../../utils/error'
 
 export class MichelsonString extends MichelsonTypeMapping {
@@ -15,7 +15,7 @@ export class MichelsonString extends MichelsonTypeMapping {
     super()
   }
 
-  public toMichelineJSON(): MichelineNode {
+  public toMichelineJSON(): MichelineDataNode {
     return {
       string: this.value
     }

@@ -1,5 +1,5 @@
-import { MichelineNode } from '../micheline/MichelineNode'
+import { MichelineDataNode } from '../micheline/MichelineNode'
 
 export abstract class MichelsonTypeMapping {
-  public abstract toMichelineJSON(): MichelineNode
+  public abstract toMichelineJSON(): MichelineDataNode
 }

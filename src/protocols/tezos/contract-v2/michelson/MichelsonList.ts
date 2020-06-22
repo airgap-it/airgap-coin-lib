@@ -1,5 +1,5 @@
 import { MichelsonTypeMapping } from './MichelsonTypeMapping'
-import { MichelineNode } from '../micheline/MichelineNode'
+import { MichelineDataNode } from '../micheline/MichelineNode'
 import { invalidArgumentTypeError } from '../../../../utils/error'
 
 export class MichelsonList extends MichelsonTypeMapping {
@@ -9,7 +9,7 @@ export class MichelsonList extends MichelsonTypeMapping {
     }
 
     if (typeof args[1] !== 'function') {
-      throw new Error('MichelsonList: unkown generic mapping factory function.')
+      throw new Error('MichelsonList: unknown generic mapping factory function.')
     }
 
     const mappingFunction = args[1]
@@ -19,7 +19,7 @@ export class MichelsonList extends MichelsonTypeMapping {
     })
 
     if (elements.some((element: unknown) => !(element instanceof MichelsonTypeMapping))) {
-      throw new Error('MichelsonList: unkown generic mapping type.')
+      throw new Error('MichelsonList: unknown generic mapping type.')
     }
 
     return new MichelsonList(elements as MichelsonTypeMapping[])
@@ -29,10 +29,7 @@ export class MichelsonList extends MichelsonTypeMapping {
     super()
   }
 
-  public toMichelineJSON(): MichelineNode {
-    return {
-      prim: 'list',
-      args: this.elements.map((element: MichelsonTypeMapping) => element.toMichelineJSON())
-    }
+  public toMichelineJSON(): MichelineDataNode {
+    return this.elements.map((element: MichelsonTypeMapping) => element.toMichelineJSON())
   }
 }

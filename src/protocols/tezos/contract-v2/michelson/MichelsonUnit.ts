@@ -1,14 +1,14 @@
 import { MichelsonTypeMapping } from './MichelsonTypeMapping'
-import { MichelineNode } from '../micheline/MichelineNode'
+import { MichelineDataNode } from '../micheline/MichelineNode'
 
 export class MichelsonUnit extends MichelsonTypeMapping {
   public static from(): MichelsonUnit {
     return new MichelsonUnit()
   }
 
-  public toMichelineJSON(): MichelineNode {
+  public toMichelineJSON(): MichelineDataNode {
     return {
-      prim: 'unit'
+      prim: 'Unit'
     }
   }
 }
