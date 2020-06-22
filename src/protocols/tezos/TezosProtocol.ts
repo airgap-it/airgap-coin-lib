@@ -449,6 +449,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
           // FA 1.2 support
           if (
             tezosSpendOperation.parameters?.entrypoint === 'transfer' &&
+            (tezosSpendOperation.parameters?.value as any).args &&
             (tezosSpendOperation.parameters?.value as any).args.length === 2
           ) {
             const value = tezosSpendOperation.parameters?.value as any
