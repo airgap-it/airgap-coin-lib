@@ -19,8 +19,8 @@ const supportedProtocols: () => ICoinProtocol[] = (): ICoinProtocol[] => {
       new EthereumProtocol(),
       new GroestlcoinProtocol(),
       new TezosProtocol(),
-      new CosmosProtocol(),
-      new KusamaProtocol()
+      new KusamaProtocol(),
+      new CosmosProtocol()
     )
   }
 

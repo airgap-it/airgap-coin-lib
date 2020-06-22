@@ -56,7 +56,7 @@ const signedTransactionConstraints = {
   }
 }
 const success = () => undefined
-const error = errors => errors
+const error = (errors) => errors
 
 export class EthereumTransactionValidator extends TransactionValidator {
   public validateUnsignedTransaction(unsignedTx: UnsignedEthereumTransaction): Promise<any> {

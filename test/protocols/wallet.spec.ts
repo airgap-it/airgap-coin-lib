@@ -19,10 +19,7 @@ describe(`AirGapWallet`, () => {
   })
 
   beforeEach(() => {
-    sinon
-      .stub(axios, 'get')
-      .withArgs(`https://url`)
-      .returns(Promise.resolve(sampleResponse))
+    sinon.stub(axios, 'get').withArgs(`https://url`).returns(Promise.resolve(sampleResponse))
   })
 
   afterEach(() => {

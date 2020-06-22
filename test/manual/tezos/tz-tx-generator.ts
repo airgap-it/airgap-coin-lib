@@ -71,6 +71,6 @@ promise()
   .then(() => {
     'Awaiting...'
   })
-  .catch(err => {
+  .catch((err) => {
     console.warn(err)
   })

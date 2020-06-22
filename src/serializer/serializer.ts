@@ -1,21 +1,21 @@
 import { CosmosTransaction } from '../protocols/cosmos/CosmosTransaction'
-import { UnsignedTransaction } from './schemas/definitions/transaction-sign-request'
+
 import { IACProtocol } from './inter-app-communication-protocol'
 import { IACMessageType } from './interfaces'
 import { IACMessageDefinitionObject } from './message'
 import { FullPayload } from './payloads/full-payload'
 import { Payload } from './payloads/payload'
+import { UnsignedTransaction } from './schemas/definitions/transaction-sign-request'
 import { SerializableUnsignedCosmosTransaction } from './schemas/definitions/transaction-sign-request-cosmos'
 import { SchemaInfo, SchemaRoot } from './schemas/schema'
-
-import { EthereumTransactionValidator } from './unsigned-transactions/ethereum-transactions.validator'
-import { BitcoinTransactionValidator } from './unsigned-transactions/bitcoin-transactions.validator'
 import { AeternityTransactionValidator } from './unsigned-transactions/aeternity-transactions.validator'
-import { TezosTransactionValidator } from './unsigned-transactions/tezos-transactions.validator'
-import { TransactionValidator } from './validators/transactions.validator'
-import { TezosBTCTransactionValidator } from './unsigned-transactions/xtz-btc-transactions.validator'
+import { BitcoinTransactionValidator } from './unsigned-transactions/bitcoin-transactions.validator'
 import { CosmosTransactionValidator } from './unsigned-transactions/cosmos-transactions.validator'
+import { EthereumTransactionValidator } from './unsigned-transactions/ethereum-transactions.validator'
 import { SubstrateTransactionValidator } from './unsigned-transactions/substrate-transactions.validator'
+import { TezosTransactionValidator } from './unsigned-transactions/tezos-transactions.validator'
+import { TezosBTCTransactionValidator } from './unsigned-transactions/xtz-btc-transactions.validator'
+import { TransactionValidator } from './validators/transactions.validator'
 
 const accountShareResponse: SchemaRoot = require('./schemas/generated/account-share-response.json')
 
@@ -97,10 +97,12 @@ export class Serializer {
       .map((el: IACProtocol) => el.payload)
       .map((el: Payload) => (el as FullPayload).asJson())
       .reduce((pv: IACMessageDefinitionObject[], cv: IACMessageDefinitionObject[]) => pv.concat(...cv), [] as IACMessageDefinitionObject[])
-    return await Promise.all(
-      deserializedIACMessageDefinitionObjects.map(object => {
+
+    return Promise.all(
+      deserializedIACMessageDefinitionObjects.map((object) => {
         const unsignedTx = object.payload as UnsignedTransaction
         const validator = this.serializationValidatorByProtocolIdentifier(object.protocol)
+
         return validator.validateUnsignedTransaction(unsignedTx)
       })
     ).then(() => {
@@ -121,12 +123,13 @@ export class Serializer {
       'xtz-btc': TezosBTCTransactionValidator
     }
 
-    const exactMatch = Object.keys(validators).find(protocol => protocolIdentifier === protocol)
-    const startsWith = Object.keys(validators).find(protocol => protocolIdentifier.startsWith(protocol))
-    let validator = exactMatch ? exactMatch : startsWith
+    const exactMatch = Object.keys(validators).find((protocol) => protocolIdentifier === protocol)
+    const startsWith = Object.keys(validators).find((protocol) => protocolIdentifier.startsWith(protocol))
+    const validator = exactMatch ? exactMatch : startsWith
     if (!validator) {
       throw Error(`Validator not implemented for ${protocolIdentifier}, ${exactMatch}, ${startsWith}, ${validator}`)
     }
+
     return new validators[validator]()
   }
 }

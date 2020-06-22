@@ -111,7 +111,7 @@ export class IACProtocol {
       const arr: Buffer[] = sortedChunks.map((chunk: ChunkedPayload) => chunk.buffer)
 
       const result: { availablePages: number[]; totalPages: number } = {
-        availablePages: sortedChunks.map(a => a.currentPage),
+        availablePages: sortedChunks.map((a) => a.currentPage),
         totalPages: sortedChunks[0].total
       }
 

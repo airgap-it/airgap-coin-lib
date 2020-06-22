@@ -1,4 +1,5 @@
 import { BigNumber } from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
 import * as bitcoinJS from '../../dependencies/src/bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac/src/index'
 import * as ethUtil from '../../dependencies/src/ethereumjs-util-5.2.0/index'
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
@@ -9,7 +10,6 @@ import { SignedEthereumTransaction } from '../../serializer/schemas/definitions/
 import { RawEthereumTransaction } from '../../serializer/types'
 import { getSubProtocolsByIdentifier } from '../../utils/subProtocols'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
-import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
 
 import { EthereumInfoClient } from './clients/info-clients/InfoClient'
 import { EthereumNodeClient } from './clients/node-clients/NodeClient'
@@ -87,11 +87,13 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
 
   public async getPublicKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
     const secret = mnemonicToSeed(mnemonic, password)
+
     return this.getPublicKeyFromHexSecret(secret, derivationPath)
   }
 
   public async getPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<Buffer> {
     const secret = mnemonicToSeed(mnemonic, password)
+
     return this.getPrivateKeyFromHexSecret(secret, derivationPath)
   }
 
@@ -102,11 +104,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
   public async getPublicKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
     const ethereumNode = bitcoinJS.HDNode.fromSeedHex(secret, this.network)
 
-    return ethereumNode
-      .derivePath(derivationPath)
-      .neutered()
-      .getPublicKeyBuffer()
-      .toString('hex')
+    return ethereumNode.derivePath(derivationPath).neutered().getPublicKeyBuffer().toString('hex')
   }
 
   public async getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<Buffer> {
@@ -159,14 +157,8 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     const generatorArray = [addressCount].map((x, i) => i + offset)
 
     return Promise.all(
-      generatorArray.map(x =>
-        this.getAddressFromPublicKey(
-          node
-            .derive(visibilityDerivationIndex)
-            .derive(x)
-            .getPublicKeyBuffer()
-            .toString('hex')
-        )
+      generatorArray.map((x) =>
+        this.getAddressFromPublicKey(node.derive(visibilityDerivationIndex).derive(x).getPublicKeyBuffer().toString('hex'))
       )
     )
   }
@@ -256,7 +248,12 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     return Promise.reject('estimating max value using extended public key not implemented')
   }
 
-  public async estimateFeeDefaultsFromExtendedPublicKey(publicKey: string, recipients: string[], values: string[], data?: any): Promise<FeeDefaults> {
+  public async estimateFeeDefaultsFromExtendedPublicKey(
+    publicKey: string,
+    recipients: string[],
+    values: string[],
+    data?: any
+  ): Promise<FeeDefaults> {
     return Promise.reject('estimating default fees using extended public key not implemented')
   }
 
@@ -273,7 +270,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
   public async estimateMaxTransactionValueFromPublicKey(publicKey: string, recipients: string[], fee?: string): Promise<string> {
     const balance = await this.getBalanceOfPublicKey(publicKey)
     const balanceWrapper = new BigNumber(balance)
-    
+
     let maxFee: BigNumber
     if (fee !== undefined) {
       maxFee = new BigNumber(fee)
@@ -289,10 +286,16 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     if (amountWithoutFees.isNegative()) {
       amountWithoutFees = new BigNumber(0)
     }
+
     return amountWithoutFees.toFixed()
   }
 
-  public async estimateFeeDefaultsFromPublicKey(publicKey: string, recipients: string[], values: string[], data?: any): Promise<FeeDefaults> {
+  public async estimateFeeDefaultsFromPublicKey(
+    publicKey: string,
+    recipients: string[],
+    values: string[],
+    data?: any
+  ): Promise<FeeDefaults> {
     if (recipients.length !== values.length) {
       return Promise.reject('recipients length does not match with values')
     }
@@ -301,11 +304,11 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     }
     const address: string = await this.getAddressFromPublicKey(publicKey)
     const estimatedGas = await this.configuration.nodeClient.estimateTransactionGas(
-      address, 
-      recipients[0], 
-      EthereumUtils.toHex(values[0]), 
-      undefined, 
-      EthereumUtils.toHex("21000")
+      address,
+      recipients[0],
+      EthereumUtils.toHex(values[0]),
+      undefined,
+      EthereumUtils.toHex('21000')
     )
     const gasPrise = await this.configuration.nodeClient.getGasPrice()
     const feeStepFactor = new BigNumber(0.5)
@@ -313,6 +316,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     const lowFee = estimatedFee.minus(estimatedFee.times(feeStepFactor).integerValue(BigNumber.ROUND_FLOOR))
     const mediumFee = estimatedFee
     const highFee = mediumFee.plus(mediumFee.times(feeStepFactor).integerValue(BigNumber.ROUND_FLOOR))
+
     return {
       low: lowFee.shiftedBy(-this.feeDecimals).toFixed(),
       medium: mediumFee.shiftedBy(-this.feeDecimals).toFixed(),
@@ -343,7 +347,13 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     const amount = EthereumUtils.toHex(wrappedValues[0].toFixed())
 
     const balance = await this.getBalanceOfPublicKey(publicKey)
-    const gasLimit = await this.configuration.nodeClient.estimateTransactionGas(address, recipients[0], amount, undefined, EthereumUtils.toHex("21000"))
+    const gasLimit = await this.configuration.nodeClient.estimateTransactionGas(
+      address,
+      recipients[0],
+      amount,
+      undefined,
+      EthereumUtils.toHex('21000')
+    )
     const gasPrice = wrappedFee.div(gasLimit).integerValue(BigNumber.ROUND_CEIL)
     if (new BigNumber(balance).gte(new BigNumber(wrappedValues[0].plus(wrappedFee)))) {
       const txCount = await this.configuration.nodeClient.fetchTransactionCount(address)
@@ -394,7 +404,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
         promises.push(this.configuration.infoClient.fetchTransactions(this.identifier, address, page, limit))
       }
       Promise.all(promises)
-        .then(values => {
+        .then((values) => {
           overallResolve(
             values.reduce((a, b) => {
               return a.concat(b)

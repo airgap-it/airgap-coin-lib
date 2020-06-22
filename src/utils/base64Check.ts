@@ -1,6 +1,6 @@
 import * as createHash from '../dependencies/src/create-hash-1.2.0/index'
 
-const sha256hash = input => {
+const sha256hash = (input) => {
   const hash = createHash('sha256')
   hash.update(input)
 

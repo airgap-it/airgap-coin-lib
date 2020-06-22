@@ -1,4 +1,4 @@
 export enum SubstrateNetwork {
-    POLKADOT, 
-    KUSAMA
+  POLKADOT,
+  KUSAMA
 }

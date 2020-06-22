@@ -10,17 +10,17 @@ import {
   validate,
   validators
 } from '../../dependencies/src/validate.js-0.13.1/validate'
+import { KusamaProtocol } from '../../protocols/substrate/implementations/KusamaProtocol'
 import bs64check from '../../utils/base64Check'
 import { UnsignedTezosTransaction } from '../schemas/definitions/transaction-sign-request-tezos'
 import { SignedEthereumTransaction } from '../schemas/definitions/transaction-sign-response-ethereum'
+import { SignedSubstrateTransaction } from '../schemas/definitions/transaction-sign-response-substrate'
 import { SignedTezosTransaction } from '../schemas/definitions/transaction-sign-response-tezos'
 import { RawTezosTransaction } from '../types'
 
 import { AeternityProtocol } from './../../protocols/aeternity/AeternityProtocol'
 import { BitcoinProtocol } from './../../protocols/bitcoin/BitcoinProtocol'
 import { TezosProtocol } from './../../protocols/tezos/TezosProtocol'
-import { SignedSubstrateTransaction } from '../schemas/definitions/transaction-sign-response-substrate'
-import { KusamaProtocol } from '../../protocols/substrate/implementations/KusamaProtocol'
 
 validators.type = (value, options, key, attributes) => {
   // allow empty values by default (needs to be checked by "presence" check)
@@ -294,7 +294,7 @@ validators.isValidAeternityTx = (transaction: unknown) => {
 }
 
 validators.isValidAeternityAccount = (accountIdentifier: string) => {
-  return new Promise(async resolve => {
+  return new Promise(async (resolve) => {
     if (accountIdentifier === null || typeof accountIdentifier === 'undefined') {
       resolve()
     }

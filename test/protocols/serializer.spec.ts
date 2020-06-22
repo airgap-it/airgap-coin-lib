@@ -33,14 +33,14 @@ protocols.forEach((protocol: TestProtocolSpec) => {
           .then((serializedTx: string[]) => {
             syncProtocol
               .deserialize(serializedTx)
-              .then(deserializedTx => {
+              .then((deserializedTx) => {
                 expect(JSON.parse(JSON.stringify(protocol.unsignedTransaction(tx)))).to.deep.equal(
                   JSON.parse(JSON.stringify(deserializedTx))
                 )
               })
-              .catch(err => console.error(err))
+              .catch((err) => console.error(err))
           })
-          .catch(err => console.error(err))
+          .catch((err) => console.error(err))
       }
     })
     /*

@@ -3,9 +3,9 @@ import Axios from '../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../dependencies/src/bignumber.js-9.0.0/bignumber'
 import * as cryptocompare from '../dependencies/src/cryptocompare-0.5.0/index'
 import { AirGapTransactionStatus } from '../interfaces/IAirGapTransaction'
+import { FeeDefaults } from '../protocols/ICoinProtocol'
 
 import { AirGapWallet } from './AirGapWallet'
-import { FeeDefaults } from '../protocols/ICoinProtocol'
 
 export enum TimeUnit {
   Hours = 'hours',
@@ -49,12 +49,12 @@ export class AirGapMarketWallet extends AirGapWallet {
   public synchronize(): Promise<void> {
     return new Promise((resolve, reject) => {
       Promise.all([this.balanceOf(), this.fetchCurrentMarketPrice()])
-        .then(results => {
+        .then((results) => {
           this.currentBalance = results[0]
           this.currentMarketPrice = results[1]
           resolve()
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error)
         })
     })
@@ -64,11 +64,11 @@ export class AirGapMarketWallet extends AirGapWallet {
     return new Promise((resolve, reject) => {
       cryptocompare
         .price(this.coinProtocol.marketSymbol.toUpperCase(), baseSymbol)
-        .then(prices => {
+        .then((prices) => {
           this.currentMarketPrice = new BigNumber(prices.USD)
           resolve(this.currentMarketPrice)
         })
-        .catch(cryptocompareError => {
+        .catch((cryptocompareError) => {
           // TODO: Remove once cryptocompare supports xchf
           const symbolMapping = {
             xchf: 'cryptofranc'
@@ -83,7 +83,7 @@ export class AirGapMarketWallet extends AirGapWallet {
                 this.currentMarketPrice = new BigNumber(data[id].usd)
                 resolve(this.currentMarketPrice)
               })
-              .catch(coinGeckoError => {
+              .catch((coinGeckoError) => {
                 console.error(coinGeckoError)
               })
           }
@@ -94,9 +94,9 @@ export class AirGapMarketWallet extends AirGapWallet {
   public fetchDailyMarketPrices(numberOfDays: number, date: Date, baseSymbol = 'USD'): Promise<MarketDataSample[]> {
     this.dailyMarketSample = []
 
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       this.algoSelector(numberOfDays, TimeUnit.Days, date, baseSymbol)
-        .then(marketSample => {
+        .then((marketSample) => {
           this.dailyMarketSample = marketSample
           resolve(this.dailyMarketSample)
         })
@@ -107,9 +107,9 @@ export class AirGapMarketWallet extends AirGapWallet {
   public fetchHourlyMarketPrices(numberOfHours: number, date: Date, baseSymbol = 'USD'): Promise<MarketDataSample[]> {
     this.hourlyMarketSample = []
 
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       this.algoSelector(numberOfHours, TimeUnit.Hours, date, baseSymbol)
-        .then(marketSample => {
+        .then((marketSample) => {
           this.hourlyMarketSample = marketSample
           resolve(this.hourlyMarketSample)
         })
@@ -120,9 +120,9 @@ export class AirGapMarketWallet extends AirGapWallet {
   public fetchMinutesMarketPrices(numberOfMinutes: number, date: Date, baseSymbol = 'USD'): Promise<MarketDataSample[]> {
     this.minuteMarketSample = []
 
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       this.algoSelector(numberOfMinutes, TimeUnit.Minutes, date, baseSymbol)
-        .then(marketSample => {
+        .then((marketSample) => {
           this.minuteMarketSample = marketSample
           resolve(this.minuteMarketSample)
         })
@@ -135,15 +135,15 @@ export class AirGapMarketWallet extends AirGapWallet {
       if (this.currentMarketPrice) {
         const price = this.currentMarketPrice
         this.balanceOf()
-          .then(balance => {
+          .then((balance) => {
             resolve(new BigNumber(balance.toNumber() * price.toNumber()))
           })
           .catch(reject)
       } else {
         this.fetchCurrentMarketPrice()
-          .then(price => {
+          .then((price) => {
             this.balanceOf()
-              .then(balance => {
+              .then((balance) => {
                 resolve(new BigNumber(balance.toNumber() * price.toNumber()))
               })
               .catch(reject)
@@ -199,7 +199,8 @@ export class AirGapMarketWallet extends AirGapWallet {
     } else {
       transactions = await this.coinProtocol.getTransactionsFromPublicKey(this.publicKey, limit, offset)
     }
-    return await this.txsIncludingStatus(transactions)
+
+    return this.txsIncludingStatus(transactions)
   }
 
   private async txsIncludingStatus(transactions: IAirGapTransaction[]): Promise<IAirGapTransaction[]> {
@@ -248,12 +249,13 @@ export class AirGapMarketWallet extends AirGapWallet {
       if (this.addressIndex) {
         data = { addressIndex: this.addressIndex }
       }
+
       return this.coinProtocol.estimateFeeDefaultsFromPublicKey(this.publicKey, recipients, values, data)
     }
   }
 
   private algoSelector(numberOfMinutes: number, timeUnit: TimeUnit, date: Date, baseSymbol: string = 'USD'): Promise<MarketDataSample[]> {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       let promise: Promise<MarketDataSample>
       if (timeUnit === 'days') {
         promise = cryptocompare.histoDay(this.coinProtocol.marketSymbol.toUpperCase(), baseSymbol, {
@@ -274,7 +276,7 @@ export class AirGapMarketWallet extends AirGapWallet {
         promise = Promise.reject('Invalid time unit')
       }
       promise
-        .then(prices => {
+        .then((prices) => {
           for (const idx in prices) {
             const marketDataObject = {
               time: prices[idx].time,

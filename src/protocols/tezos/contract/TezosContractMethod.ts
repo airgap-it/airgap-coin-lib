@@ -1,9 +1,5 @@
 export class TezosContractMethod {
-
-  constructor(
-    public selector: TezosContractMethodSelector,
-    public name: string
-  ) { }
+  constructor(public selector: TezosContractMethodSelector, public name: string) {}
 }
 
 export enum TezosContractMethodSelectorPathComponent {
@@ -12,20 +8,30 @@ export enum TezosContractMethodSelectorPathComponent {
 }
 
 export class TezosContractMethodSelector {
-
-  constructor(
-    public path: TezosContractMethodSelectorPathComponent[]
-  ) { }
+  constructor(public path: TezosContractMethodSelectorPathComponent[]) {}
 
   public add(component: TezosContractMethodSelectorPathComponent) {
     this.path.push(component)
+  }
+
+  public stringValue(): string {
+    return this.path.reduce((current, next) => {
+      switch (next) {
+        case TezosContractMethodSelectorPathComponent.LEFT:
+          return current + 'L'
+        case TezosContractMethodSelectorPathComponent.RIGHT:
+          return current + 'R'
+        default:
+          return current
+      }
+    }, '')
   }
 
   public copy(): TezosContractMethodSelector {
     return new TezosContractMethodSelector(this.path.slice())
   }
 
-  public static fromJSON(json: any): {selector: TezosContractMethodSelector, value: any} {
+  public static fromJSON(json: any): { selector: TezosContractMethodSelector; value: any } {
     const selector = new TezosContractMethodSelector([])
     let current = json
     while (current.prim !== undefined) {
@@ -43,6 +49,7 @@ export class TezosContractMethodSelector {
         break
       }
     }
-    return {selector: selector, value: current}
+
+    return { selector, value: current }
   }
 }
