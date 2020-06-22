@@ -7,7 +7,7 @@ import { TezosContractParameters } from './TezosContractParameters'
 export class TezosContract {
   private static readonly defaultEntrypoint = 'default'
 
-  public entrypoints?: Map<string, TezosContractEntrypoint> = new Map()
+  public entrypoints?: Map<string, TezosContractEntrypoint>
   public entrypointsPromise?: Promise<void>
 
   constructor(
@@ -19,7 +19,7 @@ export class TezosContract {
   ) {}
 
   // TODO: types
-  public async createContractCall(entrypointName: string, ...args: any[]): Promise<TezosContractParameters> {
+  public async createContractCall(entrypointName: string, ...args: unknown[]): Promise<TezosContractParameters> {
     await this.waitForEntrypoints()
 
     const entrypoint: TezosContractEntrypoint | undefined = this.entrypoints?.get(entrypointName)
@@ -30,26 +30,17 @@ export class TezosContract {
     return this.createContractParameters(entrypoint, args)
   }
 
-  private createDefaultContractParameters(_args: any[]): TezosContractParameters {
+  private createDefaultContractParameters(_args: unknown[]): TezosContractParameters {
     return {
       entrypoint: TezosContract.defaultEntrypoint,
       value: {}
     }
   }
 
-  private createContractParameters(entrypoint: TezosContractEntrypoint, args: any[]): TezosContractParameters {
-    const argNames: string[] = entrypoint.namedArgs ? Array.from(entrypoint.namedArgs.keys()) : []
-
-    let value: any = {}
-    if (args.length === 1 && typeof args === 'object' && argNames.every((name: string) => name in args)) {
-
-    } else {
-      
-    }
-
+  private createContractParameters(entrypoint: TezosContractEntrypoint, args: unknown[]): TezosContractParameters {
     return {
       entrypoint: entrypoint.name,
-      value
+      value: entrypoint.type.createValue(...args).toMichelineJSON()
     }
   }
 

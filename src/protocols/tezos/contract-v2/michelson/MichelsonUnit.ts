@@ -1,11 +1,8 @@
-import { MichelsonTypeMapping } from './MichelsonType'
+import { MichelsonTypeMapping } from './MichelsonTypeMapping'
 import { MichelineNode } from '../micheline/MichelineNode'
-import { assertTypes } from '../../../../utils/assert'
 
 export class MichelsonUnit extends MichelsonTypeMapping {
-  public static from(...args: any[]): MichelsonUnit {
-    assertTypes('MichelsonUnit', [], args)
-
+  public static from(): MichelsonUnit {
     return new MichelsonUnit()
   }
 

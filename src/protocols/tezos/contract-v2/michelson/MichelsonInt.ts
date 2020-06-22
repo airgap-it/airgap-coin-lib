@@ -1,10 +1,12 @@
-import { MichelsonTypeMapping } from './MichelsonType'
+import { MichelsonTypeMapping } from './MichelsonTypeMapping'
 import { MichelineNode } from '../micheline/MichelineNode'
-import { assertTypes } from '../../../../utils/assert'
+import { invalidArgumentTypeError } from '../../../../utils/error'
 
 export class MichelsonInt extends MichelsonTypeMapping {
-  public static from(...args: any[]): MichelsonInt {
-    assertTypes('MichelsonInt', "number", args)
+  public static from(...args: unknown[]): MichelsonInt {
+    if (typeof args[0] !== 'number') {
+      throw invalidArgumentTypeError('MichelsonInt', 'number', typeof args[0])
+    }
 
     return new MichelsonInt(args[0])
   }

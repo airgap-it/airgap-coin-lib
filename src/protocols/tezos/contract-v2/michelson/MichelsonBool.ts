@@ -1,10 +1,12 @@
-import { MichelsonTypeMapping } from './MichelsonType'
+import { MichelsonTypeMapping } from './MichelsonTypeMapping'
 import { MichelineNode } from '../micheline/MichelineNode'
-import { assertTypes } from '../../../../utils/assert'
+import { invalidArgumentTypeError } from '../../../../utils/error'
 
 export class MichelsonBool extends MichelsonTypeMapping {
-  public static from(...args: any[]): MichelsonBool {
-    assertTypes('MichelsonBool', 'boolean', args)
+  public static from(...args: unknown[]): MichelsonBool {
+    if (typeof args[0] !== 'boolean') {
+      throw invalidArgumentTypeError('MichelsonBool', 'boolean', typeof args[0])
+    }
 
     return new MichelsonBool(args[0])
   }

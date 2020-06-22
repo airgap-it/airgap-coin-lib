@@ -1,11 +1,12 @@
-import { MichelsonTypeMapping } from './MichelsonType'
+import { MichelsonTypeMapping } from './MichelsonTypeMapping'
 import { hexToBytes } from '../../../../utils/hex'
 import { MichelineNode } from '../micheline/MichelineNode'
+import { invalidArgumentTypeError } from '../../../../utils/error'
 
 export class MichelsonBytes extends MichelsonTypeMapping {
-  public static from(...args: any[]): MichelsonBytes {
-    if (args.length !== 1 || typeof args[0] !== 'string' || Buffer.isBuffer(args[0])) {
-      throw new Error('MichelsonBytes: expected string or Buffer')
+  public static from(...args: unknown[]): MichelsonBytes {
+    if (typeof args[0] !== 'string' || Buffer.isBuffer(args[0])) {
+      throw invalidArgumentTypeError('MichelsonBytes', 'string or Buffer', `${typeof args[0]}: ${args[0]}`)
     }
 
     return new MichelsonBytes(hexToBytes(args[0]))

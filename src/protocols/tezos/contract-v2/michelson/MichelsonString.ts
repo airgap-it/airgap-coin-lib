@@ -1,10 +1,12 @@
-import { MichelsonTypeMapping } from './MichelsonType'
+import { MichelsonTypeMapping } from './MichelsonTypeMapping'
 import { MichelineNode } from '../micheline/MichelineNode'
-import { assertTypes } from '../../../../utils/assert'
+import { invalidArgumentTypeError } from '../../../../utils/error'
 
 export class MichelsonString extends MichelsonTypeMapping {
-  public static from(...args: any[]): MichelsonString {
-    assertTypes('MichelsonString', "string", args)
+  public static from(...args: unknown[]): MichelsonString {
+    if (typeof args[0] !== 'string') {
+      throw invalidArgumentTypeError('MichelsonString', 'string', typeof args[0])
+    }
 
     return new MichelsonString(args[0])
   }

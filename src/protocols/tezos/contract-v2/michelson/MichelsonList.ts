@@ -1,20 +1,28 @@
-import { MichelsonTypeMapping, MichelsonType, michelsonTypeMappings } from './MichelsonType'
+import { MichelsonTypeMapping } from './MichelsonTypeMapping'
 import { MichelineNode } from '../micheline/MichelineNode'
+import { invalidArgumentTypeError } from '../../../../utils/error'
 
 export class MichelsonList extends MichelsonTypeMapping {
-  public static from(...args: any[]): MichelsonList {
-    if (args.length === 0 || !(args[0] in michelsonTypeMappings)) {
-      throw new Error('MichelsonList: expected MichelsonType, any[]')
+  public static from(...args: unknown[]): MichelsonList {
+    if (!Array.isArray(args[0])) {
+      throw invalidArgumentTypeError('MichelsonList', 'array', typeof args[0])
     }
 
-    const type: MichelsonType = args[0]
-    const list = args.length === 1 && Array.isArray(args[0]) ? args[0] : args
+    if (typeof args[1] !== 'function') {
+      throw new Error('MichelsonList: unkown generic mapping factory function.')
+    }
 
-    const typeMapper = michelsonTypeMappings[type] as (...args: any[]) => MichelsonTypeMapping
-    
-    const elements: MichelsonTypeMapping[] = list.map(typeMapper)
+    const mappingFunction = args[1]
 
-    return new MichelsonList(elements)
+    const elements: unknown[] = args[0].map((element: unknown) => {
+      return element instanceof MichelsonTypeMapping ? element : mappingFunction(element)
+    })
+
+    if (elements.some((element: unknown) => !(element instanceof MichelsonTypeMapping))) {
+      throw new Error('MichelsonList: unkown generic mapping type.')
+    }
+
+    return new MichelsonList(elements as MichelsonTypeMapping[])
   }
 
   constructor(readonly elements: MichelsonTypeMapping[]) {
