@@ -1,8 +1,9 @@
 import { TezosContractEntity } from '../contract/TezosContractEntity'
 import { TezosContractPair } from '../contract/TezosContractPair'
+import { TezosContractInt } from '../contract/TezosContractInt'
+import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { TezosNetwork } from '../TezosProtocol'
 import { TezosUtils } from '../TezosUtils'
-
 import { TezosBTCDetails } from './../../../serializer/constants'
 import { TezosFAProtocol } from './TezosFAProtocol'
 
@@ -50,9 +51,11 @@ export class TezosBTC extends TezosFAProtocol {
       .map((bigMapEntry) => {
         const addressHex = bigMapEntry.key.substring(TezosBTC.bigMapKeyLedgerPrefix.length)
         const address = TezosUtils.parseAddress(addressHex)
-        let value: number | string | TezosContractEntity = '0'
+        let value: TezosContractEntity = new TezosContractInt(0)
         try {
-          value = bigMapEntry.value ? TezosUtils.parseHex(bigMapEntry.value) : '0'
+          if (bigMapEntry.value) {
+            value = TezosUtils.parseHex(bigMapEntry.value)
+          }
         } catch {}
         if (value instanceof TezosContractPair) {
           value = value.first
@@ -60,7 +63,7 @@ export class TezosBTC extends TezosFAProtocol {
 
         return {
           address,
-          amount: (value as number).toString()
+          amount: new BigNumber((value as TezosContractInt).value).toFixed()
         }
       })
       .filter((value) => value.amount !== '0')

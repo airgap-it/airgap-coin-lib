@@ -1,12 +1,14 @@
-import { TezosUtils } from '../TezosUtils'
-
 import { TezosContractEntity } from './TezosContractEntity'
+import { TezosContractString } from './TezosContractString'
+import { TezosContractInt } from './TezosContractInt'
+import { TezosContractBytes } from './TezosContractBytes'
+
 
 export class TezosContractPair extends TezosContractEntity {
-  public first: string | number | TezosContractEntity
-  public second: string | number | TezosContractEntity
+  public first: TezosContractEntity
+  public second: TezosContractEntity
 
-  constructor(first: string | number | TezosContractEntity, second: string | number | TezosContractEntity) {
+  constructor(first: TezosContractEntity, second: TezosContractEntity) {
     super()
     this.first = first
     this.second = second
@@ -15,7 +17,7 @@ export class TezosContractPair extends TezosContractEntity {
   public toJSON(): any {
     return {
       prim: 'Pair',
-      args: [this.jsonEncodedArg(this.first), this.jsonEncodedArg(this.second)]
+      args: [this.first.toJSON(), this.second.toJSON()]
     }
   }
 
@@ -27,30 +29,19 @@ export class TezosContractPair extends TezosContractEntity {
     return new TezosContractPair(this.argumentsFromJSON(json.args[0]), this.argumentsFromJSON(json.args[1]))
   }
 
-  public static argumentsFromJSON(json: any): string | number | TezosContractPair {
+  public static argumentsFromJSON(json: any): TezosContractEntity {
     if (json.string !== undefined) {
-      return json.string
+      return new TezosContractString(json.string)
     }
     if (json.int !== undefined) {
-      return parseInt(json.int)
+      return new TezosContractInt(json.int)
     }
     if (json.bytes !== undefined) {
-      return TezosUtils.parseAddress(json.bytes)
+      return new TezosContractBytes(json.bytes)
     }
-    if (json.prim !== undefined) {
+    if (json.prim === 'Pair') {
       return TezosContractPair.fromJSON(json)
     }
     throw new Error('type not supported')
-  }
-
-  private jsonEncodedArg(arg: string | number | TezosContractEntity): any {
-    switch (typeof arg) {
-      case 'string':
-        return { string: arg }
-      case 'number':
-        return { int: arg.toString() }
-      default:
-        return arg.toJSON()
-    }
   }
 }
