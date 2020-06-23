@@ -1,8 +1,7 @@
-import { CryptographyClient } from '../CryptographyClient'
-
 import * as sodium from 'libsodium-wrappers'
 
 import * as bs58check from '../../dependencies/src/bs58check-2.1.2'
+import { CryptographyClient } from '../CryptographyClient'
 
 export class TezosCryptographyClient extends CryptographyClient {
   constructor(public readonly edsigPrefix: Uint8Array = new Uint8Array([9, 245, 205, 134, 18])) {
@@ -12,7 +11,7 @@ export class TezosCryptographyClient extends CryptographyClient {
   public async signMessage(message: string, privateKey: Buffer): Promise<string> {
     await sodium.ready
     const rawSignature: Uint8Array = sodium.crypto_sign_detached(sodium.from_string(message), privateKey)
-    const signature: string = bs58check.encode(Buffer.concat([Buffer.from(this.edsigPrefix), rawSignature]))
+    const signature: string = bs58check.encode(Buffer.concat([Buffer.from(this.edsigPrefix), Buffer.from(rawSignature)]))
 
     return signature
   }
@@ -22,8 +21,8 @@ export class TezosCryptographyClient extends CryptographyClient {
 
     let rawSignature: Uint8Array
     if (signature.startsWith('edsig')) {
-      const edsigPrefixLength = this.edsigPrefix.length
-      const decoded = bs58check.decode(signature)
+      const edsigPrefixLength: number = this.edsigPrefix.length
+      const decoded: Buffer = bs58check.decode(signature)
 
       rawSignature = new Uint8Array(decoded.slice(edsigPrefixLength, decoded.length))
     } else {
