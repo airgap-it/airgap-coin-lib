@@ -31,7 +31,7 @@ export abstract class MichelsonOr extends MichelsonTypeMapping {
     firstMappingFunction: Function, 
     secondMappingFunction: Function
   ): MichelsonOr {
-    if (micheline.prim !== 'Left' && micheline.prim !== 'Right') {
+    if (!this.isOr(micheline)) {
       throw invalidArgumentTypeError('MichelsonOr', 'prim: Left | Right', `prim: ${micheline.prim}`)
     }
 
@@ -62,6 +62,16 @@ export abstract class MichelsonOr extends MichelsonTypeMapping {
     } else {
       throw new Error(`MichelsonOr: unknown type ${unkownValue[0]}, expected 'Left' or 'Right'.`)
     }
+  }
+
+  public static isOr(unknownValue: unknown): unknownValue is MichelsonOr {
+    return (
+      unknownValue instanceof MichelsonOr || 
+      (
+        isMichelinePrimitiveApplication(unknownValue) && 
+        (unknownValue.prim === 'Left' || unknownValue.prim === 'Right')
+      )
+    )
   }
 
   private static create(type: MichelsonOrType, value: unknown, mappingFunction: Function): MichelsonOr {

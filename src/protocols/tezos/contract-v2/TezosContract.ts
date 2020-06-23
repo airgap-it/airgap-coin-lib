@@ -1,9 +1,10 @@
 import axios, { AxiosResponse } from '../../../dependencies/src/axios-0.19.0/index'
 
 import { TezosContractEntrypoint } from './TezosContractEntrypoint'
-import { MichelineTypeNode, MichelinePrimitiveApplication } from './micheline/MichelineNode'
+import { MichelineTypeNode, MichelinePrimitiveApplication, MichelineDataNode } from './micheline/MichelineNode'
 import { TezosContractCall, TezosContractCallJSON } from './TezosContractCall'
 import { MichelsonTypeMapping } from './michelson/MichelsonTypeMapping'
+import { MichelsonOr } from './michelson/MichelsonOr'
 
 interface BigMapValuePredicate {
   field: 'key' | 'key_hash' | 'value'
@@ -131,13 +132,48 @@ export class TezosContract {
     return this.createEntrypointContractCall(entrypoint, json.value)
   }
 
+  public async normalizeContractCallParameters(
+    json: Partial<TezosContractCallJSON> & Pick<TezosContractCallJSON, 'value'> | MichelineDataNode, 
+    fallbackEntrypoint?: string
+  ): Promise<TezosContractCallJSON> {
+    const entrypoint: string | undefined = 'entrypoint' in json ? json.entrypoint : undefined
+    const value: MichelineDataNode = 'value' in json ? json.value : json
+
+    if (entrypoint !== undefined && entrypoint !== TezosContract.DEFAULT_ENTRYPOINT) {
+      return {
+        entrypoint,
+        value
+      }
+    }
+
+    if (!MichelsonOr.isOr(value)) {
+      return {
+        entrypoint: fallbackEntrypoint ?? TezosContract.DEFAULT_ENTRYPOINT,
+        value
+      }
+    }
+
+    await this.waitForEntrypoints()
+
+    const defaultEntrypoint: TezosContractEntrypoint | undefined = this.entrypoints?.get(TezosContract.DEFAULT_ENTRYPOINT)
+    if (!defaultEntrypoint) {
+      throw new Error('Could not fetch default entrypoint.')
+    }
+
+    // TODO: return proper normalizaton
+    return {
+      entrypoint: fallbackEntrypoint ?? TezosContract.DEFAULT_ENTRYPOINT,
+      value
+    }
+  }
+
   private createDefaultContractCall(...args: unknown[]): TezosContractCall {
     return new TezosContractCall(TezosContract.DEFAULT_ENTRYPOINT, args[0] instanceof MichelsonTypeMapping ? args[0] : undefined)
   }
 
   private createEntrypointContractCall(entrypoint: TezosContractEntrypoint, ...args: unknown[]): TezosContractCall {
     const parameterRegistry: Map<string, MichelsonTypeMapping> = new Map()
-    
+
     return new TezosContractCall(entrypoint.name, entrypoint.type.createValue(parameterRegistry, ...args), parameterRegistry)
   }
 

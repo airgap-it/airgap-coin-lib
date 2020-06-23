@@ -7,6 +7,7 @@ export enum TezosContractMethodSelectorPathComponent {
   RIGHT = 'right'
 }
 
+// tslint:disable-next-line: max-classes-per-file
 export class TezosContractMethodSelector {
   constructor(public path: TezosContractMethodSelectorPathComponent[]) {}
 
