@@ -10,9 +10,13 @@ export class EthereumCryptographyClient extends CryptographyClient {
     super()
   }
 
-  public async signMessage(message: string, privateKey: Buffer): Promise<string> {
+  public async signMessage(message: string, keypair: { privateKey: Buffer }): Promise<string> {
+    if (!keypair.privateKey) {
+      throw new Error(`Private key not provided`)
+    }
+
     const messageBuffer: Buffer = EthereumJSUtils.hashPersonalMessage(EthereumJSUtils.toBuffer(message))
-    const signature: { v: string; r: string; s: string } = EthereumJSUtils.ecsign(messageBuffer, privateKey)
+    const signature: { v: string; r: string; s: string } = EthereumJSUtils.ecsign(messageBuffer, keypair.privateKey)
 
     return EthereumJSUtils.toRpcSig(signature.v, signature.r, signature.s)
   }

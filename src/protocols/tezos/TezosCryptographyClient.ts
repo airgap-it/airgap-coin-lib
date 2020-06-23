@@ -8,9 +8,9 @@ export class TezosCryptographyClient extends CryptographyClient {
     super()
   }
 
-  public async signMessage(message: string, privateKey: Buffer): Promise<string> {
+  public async signMessage(message: string, keypair: { privateKey: Buffer }): Promise<string> {
     await sodium.ready
-    const rawSignature: Uint8Array = sodium.crypto_sign_detached(sodium.from_string(message), privateKey)
+    const rawSignature: Uint8Array = sodium.crypto_sign_detached(sodium.from_string(message), keypair.privateKey)
     const signature: string = bs58check.encode(Buffer.concat([Buffer.from(this.edsigPrefix), Buffer.from(rawSignature)]))
 
     return signature

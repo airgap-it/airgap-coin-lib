@@ -367,20 +367,28 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
         sinon.restore()
       })
 
-      itIf(protocol.messages, 'signMessage - Is able to sign a message using a PrivateKey', async () => {
-        const privateKey = await protocol.lib.getPrivateKeyFromMnemonic(protocol.mnemonic(), protocol.lib.standardDerivationPath)
+      itIf(
+        protocol.messages.length > 0 && protocol.lib.identifier !== 'kusama',
+        'signMessage - Is able to sign a message using a PrivateKey',
+        async () => {
+          const publicKey = await protocol.lib.getPublicKeyFromMnemonic(protocol.mnemonic(), protocol.lib.standardDerivationPath)
+          const privateKey = await protocol.lib.getPrivateKeyFromMnemonic(protocol.mnemonic(), protocol.lib.standardDerivationPath)
 
-        for (const messageObject of protocol.messages) {
-          try {
-            const signature = await protocol.lib.signMessage(messageObject.message, privateKey)
-            expect(signature).to.equal(messageObject.signature)
-          } catch (e) {
-            expect(e.message).to.equal('Method not implemented.')
+          for (const messageObject of protocol.messages) {
+            try {
+              const signature = await protocol.lib.signMessage(messageObject.message, {
+                publicKey: Buffer.from(publicKey, 'hex'),
+                privateKey
+              })
+              expect(signature).to.equal(messageObject.signature)
+            } catch (e) {
+              expect(e.message).to.equal('Method not implemented.')
+            }
           }
         }
-      })
+      )
 
-      itIf(protocol.messages, 'verifyMessage - Is able to verify a message using a PublicKey', async () => {
+      itIf(protocol.messages.length > 0, 'verifyMessage - Is able to verify a message using a PublicKey', async () => {
         const publicKey = await protocol.lib.getPublicKeyFromMnemonic(protocol.mnemonic(), protocol.lib.standardDerivationPath)
         const publicKeyBuffer = Buffer.from(publicKey, 'hex')
 
@@ -395,14 +403,17 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
         }
       })
 
-      itIf(protocol.messages, 'signMessage and verifyMessage - Is able to sign and verify a message', async () => {
+      itIf(protocol.messages.length > 0, 'signMessage and verifyMessage - Is able to sign and verify a message', async () => {
         const privateKey = await protocol.lib.getPrivateKeyFromMnemonic(protocol.mnemonic(), protocol.lib.standardDerivationPath)
         const publicKey = await protocol.lib.getPublicKeyFromMnemonic(protocol.mnemonic(), protocol.lib.standardDerivationPath)
         const publicKeyBuffer = Buffer.from(publicKey, 'hex')
 
         for (const messageObject of protocol.messages) {
           try {
-            const signature = await protocol.lib.signMessage(messageObject.message, privateKey)
+            const signature = await protocol.lib.signMessage(messageObject.message, {
+              publicKey: Buffer.from(publicKey, 'hex'),
+              privateKey
+            })
             const signatureIsValid = await protocol.lib.verifyMessage(messageObject.message, signature, publicKeyBuffer)
 
             expect(signatureIsValid, 'first signature is invalid').to.be.true

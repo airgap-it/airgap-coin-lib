@@ -416,8 +416,8 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     })
   }
 
-  public async signMessage(message: string, privateKey: Buffer): Promise<string> {
-    return new EthereumCryptographyClient(this).signMessage(message, privateKey)
+  public async signMessage(message: string, keypair: { privateKey: Buffer }): Promise<string> {
+    return new EthereumCryptographyClient(this).signMessage(message, keypair)
   }
 
   public async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {

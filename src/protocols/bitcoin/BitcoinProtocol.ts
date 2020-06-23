@@ -647,7 +647,7 @@ export class BitcoinProtocol implements ICoinProtocol {
     return false
   }
 
-  public async signMessage(message: string, privateKey: Buffer): Promise<string> {
+  public async signMessage(message: string, keypair: { privateKey: Buffer }): Promise<string> {
     throw new Error('Method not implemented.')
   }
 

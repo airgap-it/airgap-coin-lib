@@ -17,6 +17,7 @@ import { SubstrateTransactionType } from './helpers/data/transaction/SubstrateTr
 import { SubstrateNodeClient } from './helpers/node/SubstrateNodeClient'
 import { SubstrateAccountController } from './helpers/SubstrateAccountController'
 import { SubstrateTransactionController } from './helpers/SubstrateTransactionController'
+import { SubstrateCryptographyClient } from './SubstrateCryptographyClient'
 import { SubstrateNetwork } from './SubstrateNetwork'
 
 export abstract class SubstrateProtocol extends NonExtendedProtocol implements ICoinDelegateProtocol {
@@ -620,7 +621,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
           }
         ],
         [
-          SubstrateTransactionType.WITHDRAW_UNBONDED, 
+          SubstrateTransactionType.WITHDRAW_UNBONDED,
           {
             slashingSpansNumber: 0
           }
@@ -650,12 +651,12 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     return requiredTransactions
   }
 
-  public signMessage(message: string, privateKey: Buffer): Promise<string> {
-    throw new Error('Method not implemented.')
+  public async signMessage(message: string, keypair: { publicKey: Buffer; privateKey: Buffer }): Promise<string> {
+    return new SubstrateCryptographyClient(this).signMessage(message, keypair)
   }
 
-  public verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
-    throw new Error('Method not implemented.')
+  public async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
+    return new SubstrateCryptographyClient(this).verifyMessage(message, signature, publicKey)
   }
 
   public async getTransactionStatuses(transactionHashes: string[]): Promise<AirGapTransactionStatus[]> {

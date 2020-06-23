@@ -1647,14 +1647,12 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     })
   }
 
-  public async signMessage(message: string, privateKey: Buffer): Promise<string> {
-    const client = new TezosCryptographyClient(this.tezosPrefixes.edsig)
-    return client.signMessage(message, privateKey)
+  public async signMessage(message: string, keypair: { privateKey: Buffer }): Promise<string> {
+    return new TezosCryptographyClient(this.tezosPrefixes.edsig).signMessage(message, keypair)
   }
 
   public async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
-    const client = new TezosCryptographyClient(this.tezosPrefixes.edsig)
-    return client.verifyMessage(message, signature, publicKey)
+    return new TezosCryptographyClient(this.tezosPrefixes.edsig).verifyMessage(message, signature, publicKey)
   }
 
   public async getTransactionStatuses(transactionHashes: string[]): Promise<AirGapTransactionStatus[]> {

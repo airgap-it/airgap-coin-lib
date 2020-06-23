@@ -91,4 +91,12 @@ export class KusamaTestProtocolSpec extends TestProtocolSpec {
   public mnemonic(): string {
     return 'food talent voyage degree siege clever account medal film remind good kind'
   }
+
+  public messages = [
+    {
+      message: 'example message',
+      signature:
+        '0x30094f45a892156fe1f79254674fdebe69da314b72371f3665aecdc486fd6233b7729571bf12765bb80cf07bd81846634a5a2e60045f492a492e2b40eee8ac8b'
+    }
+  ]
 }
