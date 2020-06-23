@@ -2,7 +2,7 @@ import axios, { AxiosResponse } from '../../../dependencies/src/axios-0.19.0/ind
 
 import { TezosContractEntrypoint } from './TezosContractEntrypoint'
 import { MichelineTypeNode, MichelinePrimitiveApplication } from './micheline/MichelineNode'
-import { TezosContractParameters } from './TezosContractParameters'
+import { TezosContractCall } from './TezosContractCall'
 import { MichelsonTypeMapping } from './michelson/MichelsonTypeMapping'
 
 interface TezosContractCode extends MichelinePrimitiveApplication<any> {
@@ -10,7 +10,7 @@ interface TezosContractCode extends MichelinePrimitiveApplication<any> {
   args: MichelineTypeNode[]
 }
 
-export interface TezosContractConfig {
+export interface TezosContractConfiguration {
   address: string
   nodeRPCURL: string
   conseilAPIURL: string
@@ -35,35 +35,35 @@ export class TezosContract {
 
   private readonly parseDefaultEntrypoint: boolean
 
-  constructor(config: TezosContractConfig) {
-    this.address = config.address
-    this.nodeRPCURL = config.nodeRPCURL
-    this.conseilAPIURL = config.conseilAPIURL
-    this.conseilNetwork = config.conseilNetwork
-    this.conseilAPIKey = config.conseilAPIKey
+  constructor(configuration: TezosContractConfiguration) {
+    this.address = configuration.address
+    this.nodeRPCURL = configuration.nodeRPCURL
+    this.conseilAPIURL = configuration.conseilAPIURL
+    this.conseilNetwork = configuration.conseilNetwork
+    this.conseilAPIKey = configuration.conseilAPIKey
 
-    this.parseDefaultEntrypoint = config.parseDefaultEntrypoint !== undefined ? config.parseDefaultEntrypoint : true
+    this.parseDefaultEntrypoint = configuration.parseDefaultEntrypoint !== undefined ? configuration.parseDefaultEntrypoint : true
   }
 
-  public async createContractCall(entrypointName: string, ...args: unknown[]): Promise<TezosContractParameters> {
+  public async createContractCall(entrypointName: string, ...args: unknown[]): Promise<TezosContractCall> {
     await this.waitForEntrypoints()
 
     const entrypoint: TezosContractEntrypoint | undefined = this.entrypoints?.get(entrypointName)
     if (!entrypoint) {
-      return this.createDefaultContractParameters(args)
+      return this.createDefaultContractCall(args)
     }
 
-    return this.createContractParameters(entrypoint || TezosContract.DEFAULT_ENTRYPOINT, args)
+    return this.createEntrypointContractCall(entrypoint || TezosContract.DEFAULT_ENTRYPOINT, args)
   }
 
-  private createDefaultContractParameters(args: unknown[]): TezosContractParameters {
+  private createDefaultContractCall(args: unknown[]): TezosContractCall {
     return {
       entrypoint: TezosContract.DEFAULT_ENTRYPOINT,
       value: args instanceof MichelsonTypeMapping ? args.toMichelineJSON() : {}
     }
   }
 
-  private createContractParameters(entrypoint: TezosContractEntrypoint, args: unknown[]): TezosContractParameters {
+  private createEntrypointContractCall(entrypoint: TezosContractEntrypoint, args: unknown[]): TezosContractCall {
     return {
       entrypoint: entrypoint.name,
       value: entrypoint.type.createValue(...args).toMichelineJSON()
