@@ -1,10 +1,10 @@
-import { MichelineTypeNode, MichelinePrimitive, MichelinePrimitiveApplication } from './MichelineNode'
+import { MichelineNode, MichelinePrimitive, MichelinePrimitiveApplication } from './MichelineNode'
 
-export function isMichelineNode(node: unknown): node is MichelineTypeNode {
+export function isMichelineNode(node: unknown): node is MichelineNode<any> {
   return isMichelineNodeRecursive(node, 0)
 }
 
-function isMichelineNodeRecursive(node: unknown, recursionLevel: number): node is MichelineTypeNode {
+function isMichelineNodeRecursive(node: unknown, recursionLevel: number): node is MichelineNode<any> {
   return (
     isMichelinePrimitive('int', node) || 
     isMichelinePrimitive('string', node) || 
@@ -23,11 +23,11 @@ export function isMichelinePrimitiveApplication(node: unknown): node is Michelin
 }
 
 const MAX_CHECK_RECURSION_DEPTH: number = 1
-export function isMichelineSequence(node: unknown, recursive: boolean = true): node is MichelineTypeNode[] {
+export function isMichelineSequence(node: unknown, recursive: boolean = true): node is MichelineNode<any>[] {
   return isMichelineSequenceRecursive(node, recursive ? 0 : MAX_CHECK_RECURSION_DEPTH + 1)
 }
 
-function isMichelineSequenceRecursive(node: unknown, recursionLevel: number): node is MichelineTypeNode[] {
+function isMichelineSequenceRecursive(node: unknown, recursionLevel: number): node is MichelineNode<any>[] {
   return (
     Array.isArray(node) && 
     (

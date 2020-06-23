@@ -1,9 +1,10 @@
 // tslint:disable: max-classes-per-file
 
-import { MichelsonType, michelsonTypeFactories } from './MichelsonType'
-import { MichelsonTypeMapping } from './MichelsonTypeMapping'
 import { MichelineTypeNode } from '../micheline/MichelineNode'
 import { isMichelinePrimitiveApplication } from '../micheline/utils'
+
+import { MichelsonType, michelsonTypeFactories } from './MichelsonType'
+import { MichelsonTypeMapping } from './MichelsonTypeMapping'
 
 const ANNOTATION_PREFIX_ARG = ':'
 
@@ -28,30 +29,38 @@ export class MichelsonTypeMeta {
 
   constructor(readonly type: MichelsonType, readonly annots: string[] = []) {}
 
-  public createValue(...values: unknown[]): MichelsonTypeMapping {
+  public createValue(registry: Map<string, MichelsonTypeMapping>, ...values: unknown[]): MichelsonTypeMapping {
     if (values[0] instanceof MichelsonTypeMapping) {
       return values[0]
     }
 
-    const value: unknown = this.getRawValue(values)
+    const raw: unknown = this.getRawValue(values)
+    const value: MichelsonTypeMapping = michelsonTypeFactories[this.type](raw)
 
-    return michelsonTypeFactories[this.type](value)
+    this.saveValueInRegistry(value, registry)
+
+    return value
   }
 
   protected getRawValue(values: unknown[]): unknown {
     const argName: string | undefined = this.getAnnotation(ANNOTATION_PREFIX_ARG)
 
-    if (values[0] instanceof Object && argName && argName in values[0]) {
-      return values[0][argName]
-    } else {
-      return values[0]
-    }
+    return values[0] instanceof Object && argName && argName in values[0]
+      ? values[0][argName]
+      : values[0]
   }
 
   protected getAnnotation(prefix: string): string | undefined {
     const annotation: string | undefined = this.annots.find((annot: string) => annot.startsWith(prefix))
 
     return annotation?.slice(prefix.length)
+  }
+
+  protected saveValueInRegistry<T>(value: T, registry: Map<string, T>): void {
+    const argName: string | undefined = this.getAnnotation(ANNOTATION_PREFIX_ARG)
+    if (argName) {
+      registry.set(argName, value)
+    }
   }
 }
 
@@ -60,17 +69,22 @@ export class MichelsonGenericTypeMeta extends MichelsonTypeMeta {
     super(type, annots)
   }
 
-  public createValue(...values: unknown[]): MichelsonTypeMapping {
+  public createValue(registry: Map<string, MichelsonTypeMapping>, ...values: unknown[]): MichelsonTypeMapping {
     if (values[0] instanceof MichelsonTypeMapping) {
       return values[0]
     }
 
-    const value: unknown = this.getRawValue(values)
+    const raw: unknown = this.getRawValue(values)
 
-    const genericFactories = this.generics.map((genericMeta: MichelsonTypeMeta) => {
-      return (genericValue: unknown) => genericMeta.createValue(genericValue)
-    })
+    const genericFactories: ((genericValue: unknown) => MichelsonTypeMapping)[] = 
+      this.generics.map((genericMeta: MichelsonTypeMeta) => {
+        return (genericValue: unknown): MichelsonTypeMapping => genericMeta.createValue(registry, genericValue)
+      })
 
-    return michelsonTypeFactories[this.type](value, ...genericFactories)
+    const value: MichelsonTypeMapping = michelsonTypeFactories[this.type](raw, ...genericFactories)
+
+    this.saveValueInRegistry(value, registry)
+
+    return value
   }
 }

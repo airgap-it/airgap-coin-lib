@@ -1,5 +1,3 @@
-import { MichelsonTypeMapping } from './MichelsonTypeMapping'
-
 import { MichelsonAddress } from './MichelsonAddress'
 import { MichelsonBool } from './MichelsonBool'
 import { MichelsonBytes } from './MichelsonBytes'
@@ -9,6 +7,7 @@ import { MichelsonOption } from './MichelsonOption'
 import { MichelsonOr } from './MichelsonOr'
 import { MichelsonPair } from './MichelsonPair'
 import { MichelsonString } from './MichelsonString'
+import { MichelsonTypeMapping } from './MichelsonTypeMapping'
 import { MichelsonUnit } from './MichelsonUnit'
 
 export const michelsonTypeFactories = {
@@ -22,7 +21,7 @@ export const michelsonTypeFactories = {
   timestamp: (): MichelsonTypeMapping => notSupported('timestamp'),
   address: (...args: unknown[]): MichelsonTypeMapping => MichelsonAddress.from(...args),
   key: (): MichelsonTypeMapping => notSupported('key'),
-  unit: (): MichelsonTypeMapping => MichelsonUnit.from(),
+  unit: (...args: unknown[]): MichelsonTypeMapping => MichelsonUnit.from(...args),
   signature: (): MichelsonTypeMapping => notSupported('signature'),
   option: (...args: unknown[]): MichelsonTypeMapping => MichelsonOption.from(...args),
   list: (...args: unknown[]): MichelsonTypeMapping => MichelsonList.from(...args),

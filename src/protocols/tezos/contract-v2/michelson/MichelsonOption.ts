@@ -1,7 +1,9 @@
-import { MichelsonTypeMapping } from './MichelsonTypeMapping'
 // tslint:disable: max-classes-per-file
+import { MichelineDataNode, MichelinePrimitiveApplication } from '../micheline/MichelineNode'
+import { isMichelinePrimitiveApplication } from '../micheline/utils'
 
-import { MichelineDataNode } from '../micheline/MichelineNode'
+import { MichelsonData } from './MichelsonData'
+import { MichelsonTypeMapping } from './MichelsonTypeMapping'
 
 export type MichelsonOptionType = 'Some' | 'None'
 
@@ -9,18 +11,27 @@ export abstract class MichelsonOption extends MichelsonTypeMapping {
   protected abstract type: MichelsonOptionType
 
   public static from(...args: unknown[]): MichelsonOption {
-    if (args[0] === undefined || args[0] === null) {
+    if (typeof args[1] !== 'function') {
+      throw new Error('MichelsonOption: unknown generic mapping factory function.')
+    }
+
+    return isMichelinePrimitiveApplication(args[0])
+      ? this.fromMicheline(args[0], args[1])
+      : this.fromUnknown(args[0], args[1])
+  }
+
+  public static fromMicheline(micheline: MichelinePrimitiveApplication<MichelsonData>, mappingFunction: Function): MichelsonOption {
+    return this.fromUnknown(micheline.prim === 'Some' && micheline.args ? micheline.args[0] : null, mappingFunction)
+  }
+
+  public static fromUnknown(unknownValue: unknown, mappingFunction: Function): MichelsonOption {
+    if (unknownValue === undefined || unknownValue === null) {
       return new MichelsonNone()
     }
 
-    if (!(args[1] instanceof Function)) {
-      throw new Error('MichelsonPair: unknown generic mapping factory function.')
-    }
-
-    const value: unknown = args[0] instanceof MichelsonTypeMapping ? args[0] : args[1](args[0])
-
+    const value: unknown = unknownValue instanceof MichelsonTypeMapping ? unknownValue : mappingFunction(unknownValue)
     if (!(value instanceof MichelsonTypeMapping)) {
-      throw new Error('MichelsonPair: unknown generic mapping type.')
+      throw new Error('MichelsonOption: unknown generic mapping type.')
     }
 
     return new MichelsonSome(value)

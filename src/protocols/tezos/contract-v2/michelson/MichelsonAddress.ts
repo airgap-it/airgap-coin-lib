@@ -1,25 +1,41 @@
-import { MichelsonTypeMapping } from './MichelsonTypeMapping'
-import { MichelineDataNode } from '../micheline/MichelineNode'
-import { MichelsonString } from './MichelsonString'
-import { MichelsonBytes } from './MichelsonBytes'
 import { isHex } from '../../../../utils/hex'
+import { MichelineDataNode, MichelinePrimitive } from '../micheline/MichelineNode'
+import { isMichelinePrimitive } from '../micheline/utils'
+
+import { MichelsonBytes } from './MichelsonBytes'
+import { MichelsonString } from './MichelsonString'
+import { MichelsonTypeMapping } from './MichelsonTypeMapping'
 
 export class MichelsonAddress extends MichelsonTypeMapping {
+  constructor(readonly address: MichelsonString | MichelsonBytes) {
+    super()
+  }
+
   public static from(...args: unknown[]): MichelsonAddress {
+    return isMichelinePrimitive('string', args[0]) || isMichelinePrimitive('bytes', args[0])
+      ? this.fromMicheline(args[0])
+      : this.fromUnknown(args[0])
+  }
+
+  public static fromMicheline(micheline: MichelinePrimitive<'string'> | MichelinePrimitive<'bytes'>): MichelsonAddress {
+    const value: MichelsonString | MichelsonBytes = isMichelinePrimitive('string', micheline)
+      ? MichelsonString.fromMicheline(micheline) 
+      : MichelsonBytes.fromMicheline(micheline)
+
+    return new MichelsonAddress(value)
+  }
+
+  public static fromUnknown(unknownValue: unknown): MichelsonAddress {
     let value: MichelsonString | MichelsonBytes
-    if (typeof args[0] === 'string' && (args[0].toLowerCase().startsWith('tz') || args[0].toLowerCase().startsWith('kt'))) {
-      value = MichelsonString.from(...args)
-    } else if ((typeof args[0] === 'string' && isHex(args[0])) || Buffer.isBuffer(args[0])) {
-      value = MichelsonBytes.from(...args)
+    if (typeof unknownValue === 'string' && (unknownValue.toLowerCase().startsWith('tz') || unknownValue.toLowerCase().startsWith('kt'))) {
+      value = MichelsonString.from(unknownValue)
+    } else if ((typeof unknownValue === 'string' && isHex(unknownValue)) || Buffer.isBuffer(unknownValue)) {
+      value = MichelsonBytes.from(unknownValue)
     } else {
       throw new Error('MichelsonAddress: invalid value.')
     }
 
     return new MichelsonAddress(value)
-  }
-
-  constructor(readonly address: MichelsonString | MichelsonBytes) {
-    super()
   }
 
   public toMichelineJSON(): MichelineDataNode {

@@ -1,8 +1,13 @@
-import { MichelsonTypeMapping } from './MichelsonTypeMapping'
-import { MichelineDataNode } from '../micheline/MichelineNode'
 import { invalidArgumentTypeError } from '../../../../utils/error'
+import { MichelineDataNode } from '../micheline/MichelineNode'
+
+import { MichelsonTypeMapping } from './MichelsonTypeMapping'
 
 export class MichelsonList extends MichelsonTypeMapping {
+  constructor(readonly elements: MichelsonTypeMapping[]) {
+    super()
+  }
+
   public static from(...args: unknown[]): MichelsonList {
     if (!Array.isArray(args[0])) {
       throw invalidArgumentTypeError('MichelsonList', 'array', typeof args[0])
@@ -12,7 +17,7 @@ export class MichelsonList extends MichelsonTypeMapping {
       throw new Error('MichelsonList: unknown generic mapping factory function.')
     }
 
-    const mappingFunction = args[1]
+    const mappingFunction: Function = args[1]
 
     const elements: unknown[] = args[0].map((element: unknown) => {
       return element instanceof MichelsonTypeMapping ? element : mappingFunction(element)
@@ -23,10 +28,6 @@ export class MichelsonList extends MichelsonTypeMapping {
     }
 
     return new MichelsonList(elements as MichelsonTypeMapping[])
-  }
-
-  constructor(readonly elements: MichelsonTypeMapping[]) {
-    super()
   }
 
   public toMichelineJSON(): MichelineDataNode {
