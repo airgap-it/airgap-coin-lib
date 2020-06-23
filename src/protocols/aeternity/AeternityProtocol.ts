@@ -16,6 +16,7 @@ import { padStart } from '../../utils/padStart'
 import { EthereumUtils } from '../ethereum/utils/utils'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
+import { AeternityCryptographyClient } from './AeternityCryptographyClient'
 
 export class AeternityProtocol extends NonExtendedProtocol implements ICoinProtocol {
   public symbol: string = 'AE'
@@ -378,13 +379,12 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
   }
 
   public async signMessage(message: string, keypair: { privateKey: Buffer }): Promise<string> {
-    throw new Error('Method not implemented.')
+    return new AeternityCryptographyClient().signMessage(message, keypair)
   }
 
   public async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
-    throw new Error('Method not implemented.')
+    return new AeternityCryptographyClient().verifyMessage(message, signature, publicKey)
   }
-
   public async getTransactionStatuses(transactionHashes: string[]): Promise<AirGapTransactionStatus[]> {
     return Promise.reject('Transaction status not implemented')
   }
