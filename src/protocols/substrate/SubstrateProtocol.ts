@@ -652,11 +652,11 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
   }
 
   public async signMessage(message: string, keypair: { publicKey: Buffer; privateKey: Buffer }): Promise<string> {
-    return new SubstrateCryptographyClient(this).signMessage(message, keypair)
+    return new SubstrateCryptographyClient().signMessage(message, keypair)
   }
 
   public async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
-    return new SubstrateCryptographyClient(this).verifyMessage(message, signature, publicKey)
+    return new SubstrateCryptographyClient().verifyMessage(message, signature, publicKey)
   }
 
   public async getTransactionStatuses(transactionHashes: string[]): Promise<AirGapTransactionStatus[]> {

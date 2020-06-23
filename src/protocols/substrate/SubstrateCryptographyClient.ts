@@ -1,20 +1,27 @@
-import { schnorrkelSign, signatureVerify } from '@polkadot/util-crypto'
+import { assert, u8aToU8a } from '@polkadot/util'
+import { sr25519Sign, sr25519Verify } from '@polkadot/wasm-crypto'
 
-import { SubstrateProtocol } from '../..'
 import { CryptographyClient } from '../CryptographyClient'
 
 export class SubstrateCryptographyClient extends CryptographyClient {
-  constructor(private readonly protocol: SubstrateProtocol) {
+  constructor() {
     super()
   }
 
   public async signMessage(message: string, keypair: { publicKey: Buffer; privateKey: Buffer }): Promise<string> {
-    const rawSignature: Uint8Array = schnorrkelSign(message, { publicKey: keypair.publicKey, secretKey: keypair.privateKey })
+    assert(keypair.publicKey?.length === 32, 'Expected a valid publicKey, 32-bytes')
+    assert(keypair.privateKey?.length === 64, 'Expected a valid secretKey, 64-bytes')
 
-    return `0x${Buffer.from(rawSignature).toString('hex')}`
+    const messageU8a: Uint8Array = u8aToU8a(message)
+
+    return `0x${Buffer.from(sr25519Sign(keypair.publicKey, keypair.privateKey, messageU8a)).toString('hex')}`
   }
 
   public async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
-    return signatureVerify(message, signature, await this.protocol.getAddressFromPublicKey(publicKey.toString('hex'))).isValid
+    const messageU8a: Uint8Array = u8aToU8a(message)
+    const publicKeyU8a: Uint8Array = u8aToU8a(publicKey)
+    const signatureU8a: Uint8Array = u8aToU8a(signature)
+
+    return sr25519Verify(signatureU8a, messageU8a, publicKeyU8a)
   }
 }
