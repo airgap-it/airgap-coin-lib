@@ -123,7 +123,6 @@ export class SubstrateAccountController {
 
       lastEraReward = (await this.getEraValidatorReward(address, activeEraIndex - 1)) || undefined
 
-      // TODO: check if reaped
       if (currentValidators && currentValidators.find((current) => current.compare(address) == 0)) {
         status = 'Active'
       } else if (currentValidators) {
@@ -187,6 +186,12 @@ export class SubstrateAccountController {
       availableActions,
       stakingDetails: stakingDetails || undefined
     }
+  }
+
+  public async getSlashingSpansNumber(accountId: SubstrateAccountId): Promise<number> {
+    const slashingSpans = await this.nodeClient.getSlashingSpan(SubstrateAddress.from(accountId, this.network))
+
+    return slashingSpans ? slashingSpans.prior.elements.length + 1 : 0
   }
 
   private async getStakingDetails(

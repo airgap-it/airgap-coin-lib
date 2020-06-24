@@ -14,6 +14,7 @@ interface PayloadConfig {
   lastHash: string
   genesisHash: string
   specVersion: number | BigNumber
+  transactionVersion: number | BigNumber
 }
 
 export class SubstrateTransactionPayload extends SCALEClass {
@@ -24,6 +25,7 @@ export class SubstrateTransactionPayload extends SCALEClass {
       transaction.nonce,
       transaction.tip,
       SCALEInt.from(config.specVersion, 32),
+      SCALEInt.from(config.transactionVersion, 32),
       SCALEHash.from(config.genesisHash),
       SCALEHash.from(transaction.era.isMortal ? config.lastHash : config.genesisHash)
     )
@@ -41,6 +43,7 @@ export class SubstrateTransactionPayload extends SCALEClass {
     const nonce = decoder.decodeNextCompactInt()
     const tip = decoder.decodeNextCompactInt()
     const specVersion = decoder.decodeNextInt(32)
+    const transactionVersion = decoder.decodeNextInt(32)
     const genesisHash = decoder.decodeNextHash(256)
     const blockHash = decoder.decodeNextHash(256)
 
@@ -51,6 +54,7 @@ export class SubstrateTransactionPayload extends SCALEClass {
         nonce.bytesDecoded +
         tip.bytesDecoded +
         specVersion.bytesDecoded +
+        transactionVersion.bytesDecoded +
         genesisHash.bytesDecoded +
         blockHash.bytesDecoded,
       decoded: new SubstrateTransactionPayload(
@@ -59,13 +63,23 @@ export class SubstrateTransactionPayload extends SCALEClass {
         nonce.decoded,
         tip.decoded,
         specVersion.decoded,
+        transactionVersion.decoded,
         genesisHash.decoded,
         blockHash.decoded
       )
     }
   }
 
-  protected readonly scaleFields = [this.method, this.era, this.nonce, this.tip, this.specVersion, this.genesisHash, this.blockHash]
+  protected readonly scaleFields = [
+    this.method, 
+    this.era, 
+    this.nonce, 
+    this.tip, 
+    this.specVersion, 
+    this.transactionVersion, 
+    this.genesisHash, 
+    this.blockHash
+  ]
 
   private constructor(
     readonly method: SubstrateTransactionMethod,
@@ -73,6 +87,7 @@ export class SubstrateTransactionPayload extends SCALEClass {
     readonly nonce: SCALECompactInt,
     readonly tip: SCALECompactInt,
     readonly specVersion: SCALEInt,
+    readonly transactionVersion: SCALEInt,
     readonly genesisHash: SCALEHash,
     readonly blockHash: SCALEHash
   ) {

@@ -10,11 +10,13 @@ import { MichelsonString } from '../contract/michelson/MichelsonString'
 import { TezosContract } from '../contract/TezosContract'
 import { TezosContractCall, TezosContractCallJSON } from '../contract/TezosContractCall'
 import { TezosNetwork, TezosProtocol } from '../TezosProtocol'
+import { TezosUtils } from '../TezosUtils'
 import { TezosOperation } from '../types/operations/TezosOperation'
 import { TezosOperationType } from '../types/TezosOperationType'
 import { TezosWrappedOperation } from '../types/TezosWrappedOperation'
 
 import { FeeDefaults } from './../../ICoinProtocol'
+import { MichelsonInt } from '../contract/michelson/MichelsonInt'
 
 enum ContractEntrypointName {
   BALANCE = 'getBalance',
@@ -410,12 +412,12 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
       throw new Error('Only calls to the transfer entrypoint can be converted to IAirGapTransaction')
     }
     const contractCall: TezosContractCall = await this.contract.parseContractCall(parameters)
-    const amount: string | undefined = contractCall.argument<MichelsonString>('value')?.value
+    const amount: BigNumber | undefined = contractCall.argument<MichelsonInt>('value')?.value
 
     const fromAddress: MichelsonString | MichelsonBytes | undefined = contractCall.argument<MichelsonAddress>('from')?.address
     let from: string | undefined
     if (fromAddress && Buffer.isBuffer(fromAddress.value)) {
-      from = await this.getAddressFromPublicKey(fromAddress.value.toString('hex')) 
+      from = TezosUtils.parseAddress(fromAddress.value.toString('hex'))
     } else if (fromAddress && typeof fromAddress.value === 'string') {
       from = fromAddress.value
     }
@@ -423,7 +425,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     const toAddress: MichelsonString | MichelsonBytes | undefined = contractCall.argument<MichelsonAddress>('to')?.address
     let to: string | undefined
     if (toAddress && Buffer.isBuffer(toAddress.value)) {
-      to = await this.getAddressFromPublicKey(toAddress.value.toString('hex')) 
+      to = TezosUtils.parseAddress(toAddress?.value.toString('hex')) 
     } else if (toAddress && typeof toAddress.value === 'string') {
       to = toAddress.value
     }

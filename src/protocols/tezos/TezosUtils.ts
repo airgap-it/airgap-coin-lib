@@ -1,6 +1,7 @@
 import * as bigInt from '../../dependencies/src/big-integer-1.6.45/BigInteger'
 import * as bs58check from '../../dependencies/src/bs58check-2.1.2/index'
 
+import { MichelsonBytes } from './contract/michelson/MichelsonBytes'
 import { MichelsonInt } from './contract/michelson/MichelsonInt'
 import { MichelsonList } from './contract/michelson/MichelsonList'
 import { MichelsonPair } from './contract/michelson/MichelsonPair'
@@ -31,6 +32,9 @@ export class TezosUtils {
   }
 
   public static parseAddress(rawHexAddress: string): string {
+    if (rawHexAddress.startsWith('0x')) {
+      rawHexAddress = rawHexAddress.slice(2)
+    }
     const { result, rest }: { result: string; rest: string } = this.splitAndReturnRest(rawHexAddress, 2)
     const contractIdTag: string = result
     if (contractIdTag === '00') {
@@ -44,7 +48,7 @@ export class TezosUtils {
     }
   }
 
-  public static parseHex(rawHex: string | string[]): string | number | MichelsonTypeMapping {
+  public static parseHex(rawHex: string | string[]): MichelsonTypeMapping {
     let hex: string[]
     if (typeof rawHex === 'string') {
       hex = TezosUtils.hexStringToArray(rawHex)
@@ -70,18 +74,19 @@ export class TezosUtils {
           }
           intBytes.push(byte)
         } while (parseInt(byte, 16) >= 127)
-
-        return TezosUtils.decodeSignedInt(intBytes.join(''))
+        return MichelsonInt.from(TezosUtils.decodeSignedInt(intBytes.join('')))
       case '01': // string
-        const lengthBytes = TezosUtils.hexToLength(hex.splice(0, 4))
-
-        return TezosUtils.hexToString(hex.splice(0, lengthBytes))
+        const stringLength = TezosUtils.hexToLength(hex.splice(0, 4))
+        return MichelsonString.from(TezosUtils.hexToString(hex.splice(0, stringLength)))
       case '05': // single arg prim
         return TezosUtils.parseHex(hex)
       case '02': // list
         return TezosUtils.parseList(hex)
+      case '0a': // bytes
+      const bytesLength = TezosUtils.hexToLength(hex.splice(0, 4))
+      return MichelsonBytes.from(hex.splice(0, bytesLength).join(''))
       default:
-        throw new Error('Type not supported')
+        throw new Error(`Type not supported ${type}`)
     }
   }
 
@@ -116,21 +121,11 @@ export class TezosUtils {
     const first = TezosUtils.parseHex(hex)
     const second = TezosUtils.parseHex(hex)
 
-    const mappingFunction = (value: string | number | MichelsonTypeMapping) => {
-      if (typeof value === 'string') {
-        return new MichelsonString(value)
-      } else if (typeof value === 'number') {
-        return new MichelsonInt(value)
-      } else {
-        return value
-      }
-    }
-
-    return MichelsonPair.from([first, second], mappingFunction, mappingFunction)
+    return MichelsonPair.from([first, second])
   }
 
   private static parseList(hex: string[]): MichelsonList {
-    const items: (string | number | MichelsonTypeMapping)[] = []
+    const items: MichelsonTypeMapping[] = []
     const lengthBytes = TezosUtils.hexToLength(hex.splice(0, 4))
     if (lengthBytes > 0) {
       const listBytes = hex.splice(0, lengthBytes)
@@ -140,18 +135,7 @@ export class TezosUtils {
       }
     }
 
-    return MichelsonList.from(
-      items, 
-      (item: string | number | MichelsonTypeMapping) => {
-        if (typeof item === 'string') {
-          return new MichelsonString(item)
-        } else if (typeof item === 'number') {
-          return new MichelsonInt(item)
-        } else {
-          return item
-        }
-      }
-    )
+    return MichelsonList.from(items)
   }
 
   private static hexToString(hex: string[]): string {

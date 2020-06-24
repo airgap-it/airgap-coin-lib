@@ -1,3 +1,5 @@
+import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { MichelsonInt } from '../contract/michelson/MichelsonInt'
 import { MichelsonPair } from '../contract/michelson/MichelsonPair'
 import { MichelsonTypeMapping } from '../contract/michelson/MichelsonTypeMapping'
 import { TezosNetwork } from '../TezosProtocol'
@@ -50,17 +52,24 @@ export class TezosBTC extends TezosFAProtocol {
       .map((bigMapEntry) => {
         const addressHex = bigMapEntry.key.substring(TezosBTC.bigMapKeyLedgerPrefix.length)
         const address = TezosUtils.parseAddress(addressHex)
-        let value: number | string | MichelsonTypeMapping = '0'
+        let value: MichelsonTypeMapping = MichelsonInt.from(0)
         try {
-          value = bigMapEntry.value ? TezosUtils.parseHex(bigMapEntry.value) : '0'
+          if (bigMapEntry.value) {
+            value = TezosUtils.parseHex(bigMapEntry.value)
+          }
         } catch {}
+
         if (value instanceof MichelsonPair) {
           value = value.first.get()
         }
 
+        const amount: BigNumber = value instanceof MichelsonInt
+          ? value.value
+          : new BigNumber(0) 
+
         return {
           address,
-          amount: (value as number).toString()
+          amount: amount.toFixed()
         }
       })
       .filter((value) => value.amount !== '0')

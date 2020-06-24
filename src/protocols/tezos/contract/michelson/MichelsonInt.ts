@@ -1,3 +1,4 @@
+import BigNumber from '../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { invalidArgumentTypeError } from '../../../../utils/error'
 import { MichelineDataNode, MichelinePrimitive } from '../micheline/MichelineNode'
 import { isMichelinePrimitive } from '../micheline/utils'
@@ -5,7 +6,7 @@ import { isMichelinePrimitive } from '../micheline/utils'
 import { MichelsonTypeMapping } from './MichelsonTypeMapping'
 
 export class MichelsonInt extends MichelsonTypeMapping {
-  constructor(readonly value: number) {
+  constructor(readonly value: BigNumber) {
     super()
   }
 
@@ -20,11 +21,11 @@ export class MichelsonInt extends MichelsonTypeMapping {
   }
 
   public static fromUnknown(unknownValue: unknown): MichelsonInt {
-    if (typeof unknownValue !== 'number') {
-      throw invalidArgumentTypeError('MichelsonInt', 'number', typeof unknownValue)
+    if (typeof unknownValue !== 'number' && typeof unknownValue !== 'string' && !BigNumber.isBigNumber(unknownValue)) {
+      throw invalidArgumentTypeError('MichelsonInt', 'number or string or BigNumber', typeof unknownValue)
     }
 
-    return new MichelsonInt(unknownValue)
+    return new MichelsonInt(BigNumber.isBigNumber(unknownValue) ? unknownValue : new BigNumber(unknownValue))
   }
 
   public toMichelineJSON(): MichelineDataNode {

@@ -9,18 +9,22 @@ export class MichelsonList extends MichelsonTypeMapping {
     super()
   }
 
-  public static from(items: unknown, mappingFunction: unknown): MichelsonList {
+  public static from(items: unknown, mappingFunction?: unknown): MichelsonList {
     if (!Array.isArray(items)) {
       throw invalidArgumentTypeError('MichelsonList', 'array', typeof items)
     }
 
-    if (typeof mappingFunction !== 'function') {
+    if (items.some((item: unknown) => !(item instanceof MichelsonTypeMapping)) && typeof mappingFunction !== 'function') {
       throw new Error('MichelsonList: unknown generic mapping factory function.')
     }
 
     const lazyList: Lazy<MichelsonTypeMapping[]> = new Lazy(() => {
       const elements: unknown[] = items.map((element: unknown) => {
-        return element instanceof MichelsonTypeMapping ? element : mappingFunction(element)
+        if (element instanceof MichelsonTypeMapping) {
+          return element
+        } else {
+          return typeof mappingFunction === 'function' ?  mappingFunction(element) : undefined
+        }
       })
   
       if (elements.some((element: unknown) => !(element instanceof MichelsonTypeMapping))) {

@@ -17,8 +17,8 @@ export abstract class MichelsonOr extends MichelsonTypeMapping {
     super()
   }
 
-  public static from(or: unknown, firstMappingFunction: unknown, secondMappingFunction: unknown): MichelsonOr {
-    if (typeof firstMappingFunction !== 'function' || typeof secondMappingFunction !== 'function') {
+  public static from(or: unknown, firstMappingFunction?: unknown, secondMappingFunction?: unknown): MichelsonOr {
+    if (!(or instanceof MichelsonTypeMapping) && typeof firstMappingFunction !== 'function' || typeof secondMappingFunction !== 'function') {
       throw new Error('MichelsonPair: unknown generic mapping factory functions.')
     }
 
@@ -29,8 +29,8 @@ export abstract class MichelsonOr extends MichelsonTypeMapping {
 
   public static fromMicheline(
     micheline: MichelinePrimitiveApplication<MichelsonData>,
-    firstMappingFunction: Function, 
-    secondMappingFunction: Function
+    firstMappingFunction: unknown, 
+    secondMappingFunction: unknown
   ): MichelsonOr {
     if (!this.isOr(micheline)) {
       throw invalidArgumentTypeError('MichelsonOr', 'prim: Left | Right', `prim: ${micheline.prim}`)
@@ -43,7 +43,7 @@ export abstract class MichelsonOr extends MichelsonTypeMapping {
     return this.fromUnknown([micheline.prim, micheline.args[0]], firstMappingFunction, secondMappingFunction)
   }
 
-  public static fromUnknown(unkownValue: unknown, firstMappingFunction: Function, secondMappingFunction: Function): MichelsonOr {
+  public static fromUnknown(unkownValue: unknown, firstMappingFunction: unknown, secondMappingFunction: unknown): MichelsonOr {
     if (
       !(unkownValue instanceof MichelsonOr) && 
       (!Array.isArray(unkownValue) || unkownValue.length !== 2 || typeof unkownValue[0] !== 'string')
@@ -75,11 +75,11 @@ export abstract class MichelsonOr extends MichelsonTypeMapping {
     )
   }
 
-  private static create(type: MichelsonOrType, value: unknown, mappingFunction: Function): MichelsonOr {
+  private static create(type: MichelsonOrType, value: unknown, mappingFunction: unknown): MichelsonOr {
     const lazyValue: Lazy<MichelsonTypeMapping> = value instanceof MichelsonTypeMapping
       ? new Lazy(() => value)
       : new Lazy(() => {
-          const mappedValue: unknown = mappingFunction(value)
+          const mappedValue: unknown = typeof mappingFunction === 'function' ? mappingFunction(value) : undefined
 
           if (!(mappedValue instanceof MichelsonTypeMapping)) {
             throw new Error('MichelsonOr: unknown generic mapping type.')
