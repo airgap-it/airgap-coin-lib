@@ -1,3 +1,5 @@
+import * as bitcoinJSMessage from 'bitcoinjs-message'
+
 import axios from '../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
@@ -742,11 +744,11 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
   }
 
   public async signMessage(message: string, keypair: { privateKey: Buffer }): Promise<string> {
-    return new BitcoinCryptographyClient(this).signMessage(message, keypair)
+    return new BitcoinCryptographyClient(this, bitcoinJSMessage).signMessage(message, keypair)
   }
 
   public async verifyMessage(message: string, signature: string, publicKey: string): Promise<boolean> {
-    return new BitcoinCryptographyClient(this).verifyMessage(message, signature, publicKey)
+    return new BitcoinCryptographyClient(this, bitcoinJSMessage).verifyMessage(message, signature, publicKey)
   }
 
   public async getTransactionStatuses(transactionHashes: string[]): Promise<AirGapTransactionStatus[]> {

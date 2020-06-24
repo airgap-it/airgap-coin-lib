@@ -39,6 +39,7 @@
     "@polkadot/wasm-crypto": "0.20.1",
     "@taquito/local-forging": "6.1.1-beta.0",
     "bitcoinjs-message": "2.1.1",
+    "groestlcoinjs-message": "2.1.0",
     "libsodium-wrappers": "0.7.6",
     "xxhashjs": "0.2.2"
   },
