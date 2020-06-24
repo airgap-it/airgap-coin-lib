@@ -5,7 +5,8 @@ import { MichelineTypeNode, MichelinePrimitiveApplication, MichelineDataNode } f
 import { TezosContractCall, TezosContractCallJSON } from './TezosContractCall'
 import { MichelsonTypeMapping } from './michelson/MichelsonTypeMapping'
 import { MichelsonOr } from './michelson/MichelsonOr'
-import { MichelsonTypeMetaCreateValueConfiguration, MichelsonTypeMeta, META_ANNOTATION_PREFIX_ARG } from './michelson/MichelsonTypeMeta'
+import { MichelsonTypeMetaCreateValueConfiguration, MichelsonTypeMeta, META_ANNOTATION_PREFIX_ARG, META_ANNOTATION_PREFIX_ENTRYPOINT } from './michelson/MichelsonTypeMeta'
+import { isMichelineNode } from './micheline/utils'
 
 interface BigMapValuePredicate {
   field: 'key' | 'key_hash' | 'value'
@@ -171,9 +172,25 @@ export class TezosContract {
       throw new Error('Could not fetch default entrypoint.')
     }
 
+    let normalizedEntrypoint: [string, MichelineDataNode] | undefined
+    defaultEntrypoint.type.createValue({
+      beforeNext: (meta: MichelsonTypeMeta, raw: unknown): void => {
+        const entrypointName: string | undefined = meta.getAnnotation(META_ANNOTATION_PREFIX_ENTRYPOINT)
+        if (entrypointName && isMichelineNode(raw)) {
+          normalizedEntrypoint = [entrypointName, raw]
+        }
+      },
+      onNext: (_meta: MichelsonTypeMeta, _raw: unknown, michelsonValue: MichelsonTypeMapping): void => {
+        if (michelsonValue instanceof MichelsonOr) {
+          michelsonValue.eval()
+        }
+      },
+      values: value
+    })
+
     return {
-      entrypoint: fallbackEntrypoint ?? defaultEntrypoint.name,
-      value
+      entrypoint: normalizedEntrypoint ? normalizedEntrypoint[0] : (fallbackEntrypoint ?? defaultEntrypoint.name),
+      value: normalizedEntrypoint ? normalizedEntrypoint[1] : value
     }
   }
 
