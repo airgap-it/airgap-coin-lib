@@ -1,11 +1,12 @@
 import * as bigInt from '../../dependencies/src/big-integer-1.6.45/BigInteger'
 import * as bs58check from '../../dependencies/src/bs58check-2.1.2/index'
 
-import { TezosContractEntity } from './contract/TezosContractEntity'
-import { TezosContractList } from './contract/TezosContractList'
-import { TezosContractPair } from './contract/TezosContractPair'
+import { MichelsonInt } from './contract/michelson/MichelsonInt'
+import { MichelsonList } from './contract/michelson/MichelsonList'
+import { MichelsonPair } from './contract/michelson/MichelsonPair'
+import { MichelsonString } from './contract/michelson/MichelsonString'
+import { MichelsonTypeMapping } from './contract/michelson/MichelsonTypeMapping'
 
-export type TezosContractType = string | number | TezosContractPair
 
 export class TezosUtils {
   // Tezos - We need to wrap these in Buffer due to non-compatible browser polyfills
@@ -43,7 +44,7 @@ export class TezosUtils {
     }
   }
 
-  public static parseHex(rawHex: string | string[]): string | number | TezosContractEntity {
+  public static parseHex(rawHex: string | string[]): string | number | MichelsonTypeMapping {
     let hex: string[]
     if (typeof rawHex === 'string') {
       hex = TezosUtils.hexStringToArray(rawHex)
@@ -111,15 +112,25 @@ export class TezosUtils {
     return hexBytes
   }
 
-  private static parsePair(hex: string[]): TezosContractPair {
+  private static parsePair(hex: string[]): MichelsonPair {
     const first = TezosUtils.parseHex(hex)
     const second = TezosUtils.parseHex(hex)
 
-    return new TezosContractPair(first, second)
+    const mappingFunction = (value: string | number | MichelsonTypeMapping) => {
+      if (typeof value === 'string') {
+        return new MichelsonString(value)
+      } else if (typeof value === 'number') {
+        return new MichelsonInt(value)
+      } else {
+        return value
+      }
+    }
+
+    return MichelsonPair.from([first, second], mappingFunction, mappingFunction)
   }
 
-  private static parseList(hex: string[]): TezosContractList {
-    const items: (string | number | TezosContractEntity)[] = []
+  private static parseList(hex: string[]): MichelsonList {
+    const items: (string | number | MichelsonTypeMapping)[] = []
     const lengthBytes = TezosUtils.hexToLength(hex.splice(0, 4))
     if (lengthBytes > 0) {
       const listBytes = hex.splice(0, lengthBytes)
@@ -129,7 +140,18 @@ export class TezosUtils {
       }
     }
 
-    return new TezosContractList(items)
+    return MichelsonList.from(
+      items, 
+      (item: string | number | MichelsonTypeMapping) => {
+        if (typeof item === 'string') {
+          return new MichelsonString(item)
+        } else if (typeof item === 'number') {
+          return new MichelsonInt(item)
+        } else {
+          return item
+        }
+      }
+    )
   }
 
   private static hexToString(hex: string[]): string {

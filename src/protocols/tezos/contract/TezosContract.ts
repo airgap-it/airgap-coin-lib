@@ -1,33 +1,70 @@
 import axios, { AxiosResponse } from '../../../dependencies/src/axios-0.19.0/index'
 
-import { TezosContractMethod, TezosContractMethodSelector, TezosContractMethodSelectorPathComponent } from './TezosContractMethod'
+import { MichelineDataNode, MichelinePrimitiveApplication, MichelineTypeNode } from './micheline/MichelineNode'
+import { isMichelineNode } from './micheline/utils'
+import { MichelsonOr } from './michelson/MichelsonOr'
+import { MichelsonTypeMapping } from './michelson/MichelsonTypeMapping'
+import { 
+  META_ANNOTATION_PREFIX_ARG, 
+  META_ANNOTATION_PREFIX_ENTRYPOINT, 
+  MichelsonTypeMeta, 
+  MichelsonTypeMetaCreateValueConfiguration 
+} from './michelson/MichelsonTypeMeta'
+import { TezosContractCall, TezosContractCallJSON } from './TezosContractCall'
+import { TezosContractEntrypoint } from './TezosContractEntrypoint'
+
+interface BigMapValuePredicate {
+  field: 'key' | 'key_hash' | 'value'
+  operation: 'in' | 'between' | 'like' | 'lt' | 'gt' | 'eq' | 'startsWith' | 'endsWith' | 'before' | 'after'
+  set: any[]
+  inverse?: boolean
+}
+
+interface TezosContractCode extends MichelinePrimitiveApplication<any> {
+  prim: 'parameter' | 'storage'
+  args: MichelineTypeNode[]
+}
+
+export interface TezosContractConfiguration {
+  address: string
+  nodeRPCURL: string
+  conseilAPIURL: string
+  conseilNetwork: string
+  conseilAPIKey: string
+
+  parseDefaultEntrypoint?: boolean
+}
 
 export class TezosContract {
-  public static defaultMethodName = 'default'
+  private static readonly DEFAULT_ENTRYPOINT = 'default'
 
-  private script: any | undefined
-  private methodList: TezosContractMethod[] | undefined
-  private bigMapID: number | undefined
+  public entrypoints?: Map<string, TezosContractEntrypoint>
+  public entrypointsPromise?: Promise<void>
 
-  private pendingScriptPromise: Promise<any> | undefined
-  private pendingBigMapIDPromise: Promise<number> | undefined
+  public bigMapID?: number
+  public bigMapIDPromise?: Promise<void>
 
-  private get parameter(): any {
-    const code: any[] = this.script.code
+  private readonly address: string
+  private readonly nodeRPCURL: string
+  private readonly conseilAPIURL: string
+  private readonly conseilNetwork: string
+  private readonly conseilAPIKey: string
 
-    return code.find((val) => val.prim === 'parameter')
+  private readonly parseDefaultEntrypoint: boolean
+
+  constructor(configuration: TezosContractConfiguration) {
+    this.address = configuration.address
+    this.nodeRPCURL = configuration.nodeRPCURL
+    this.conseilAPIURL = configuration.conseilAPIURL
+    this.conseilNetwork = configuration.conseilNetwork
+    this.conseilAPIKey = configuration.conseilAPIKey
+
+    this.parseDefaultEntrypoint = configuration.parseDefaultEntrypoint !== undefined ? configuration.parseDefaultEntrypoint : true
   }
 
-  constructor(
-    private readonly address: string,
-    private readonly nodeRPCURL: string,
-    private readonly conseilAPIURL: string,
-    private readonly conseilNetwork: string,
-    private readonly conseilAPIKey: string
-  ) {}
-
   public async bigMapValue(key: string, isKeyHash: boolean = false): Promise<string | null> {
-    await this.fetchBigMapIDIfNeeded()
+    await this.waitForBigMapID()
+
     const predicates: { field: string; operation: string; set: any[] }[] = [
       {
         field: 'big_map_id',
@@ -49,196 +86,216 @@ export class TezosContract {
       })
     }
 
-    return this.conseilRequest<{ value: string | null }[]>('/big_map_contents', {
+    const response: Record<'value', string | null>[] = await this.apiRequest('/big_map_contents', {
       fields: ['value'],
       predicates,
       limit: 1
-    }).then((response) => {
-      const results = response.data
-      if (results.length === 0) {
-        return null
-      }
-
-      return results[0].value
     })
+
+    if (response.length === 0) {
+      return null
+    }
+
+    return response[0].value
   }
 
   public async bigMapValues(predicates: BigMapValuePredicate[]): Promise<{ key: string; value: string | null }[]> {
-    await this.fetchBigMapIDIfNeeded()
+    await this.waitForBigMapID()
 
-    return (
-      await this.conseilRequest<{ key: string; value: string | null }[]>('/big_map_contents', {
-        fields: ['key', 'value'],
-        predicates: [
-          {
-            field: 'big_map_id',
-            operation: 'eq',
-            set: [this.bigMapID],
-            inverse: false
-          },
-          ...predicates
-        ]
-      })
-    ).data
+    return this.apiRequest<{ key: string; value: string | null }[]>('/big_map_contents', {
+      fields: ['key', 'value'],
+      predicates: [
+        {
+          field: 'big_map_id',
+          operation: 'eq',
+          set: [this.bigMapID],
+          inverse: false
+        },
+        ...predicates
+      ]
+    })
   }
 
-  public async methods(): Promise<TezosContractMethod[]> {
-    if (this.methodList !== undefined) {
-      return this.methodList
-    }
-    await this.fetchScriptIfNeeded()
-    this.methodList = this.extractMethods(this.parameter)
+  public async createContractCall(entrypointName: string, ...args: unknown[]): Promise<TezosContractCall> {
+    await this.waitForEntrypoints()
 
-    return this.methodList
+    const entrypoint: TezosContractEntrypoint | undefined = this.entrypoints?.get(entrypointName)
+    if (!entrypoint) {
+      return this.createDefaultContractCall(...args)
+    }
+
+    return this.createEntrypointContractCall(entrypoint, { values: args })
   }
 
-  public async methodForSelector(selector: TezosContractMethodSelector, fallbackEntrypointName?: string): Promise<TezosContractMethod> {
-    if (selector.path.length === 0) {
-      return new TezosContractMethod(selector, fallbackEntrypointName ? fallbackEntrypointName : TezosContract.defaultMethodName)
-    }
-    await this.fetchScriptIfNeeded()
+  public async parseContractCall(json: TezosContractCallJSON): Promise<TezosContractCall> {
+    await this.waitForEntrypoints()
 
-    let current = this.parameter.args[0]
-    for (const pathComponent of selector.path) {
-      const prim = (current.prim as string).toLowerCase()
-      if (prim !== 'or' || !Array.isArray(current.args) || current.args.length !== 2) {
-        return new TezosContractMethod(selector, fallbackEntrypointName ? fallbackEntrypointName : TezosContract.defaultMethodName)
+    const entrypoint: TezosContractEntrypoint | undefined = this.entrypoints?.get(json.entrypoint)
+    if (!entrypoint) {
+      return Promise.reject(`Couldn't parse the contract call, unknown entrypoint: ${json.entrypoint}`)
+    }
+
+    const parameterRegistry: Map<string, MichelsonTypeMapping> = new Map()
+
+    return this.createEntrypointContractCall(entrypoint, {
+      lazyEval: false,
+      onNext: (meta: MichelsonTypeMeta, _raw: unknown, value: MichelsonTypeMapping): void => {
+        const argName: string | undefined = meta.getAnnotation(META_ANNOTATION_PREFIX_ARG)
+        if (argName) {
+          parameterRegistry.set(argName, value)
+        }
+      },
+      values: json.value,
+    }, parameterRegistry)
+  }
+
+  public async normalizeContractCallParameters(
+    json: Partial<TezosContractCallJSON> & Pick<TezosContractCallJSON, 'value'> | MichelineDataNode, 
+    fallbackEntrypoint?: string
+  ): Promise<TezosContractCallJSON> {
+    const entrypoint: string | undefined = 'entrypoint' in json ? json.entrypoint : undefined
+    const value: MichelineDataNode = 'value' in json ? json.value : json
+
+    if (entrypoint !== undefined && entrypoint !== TezosContract.DEFAULT_ENTRYPOINT) {
+      return {
+        entrypoint,
+        value
       }
-      switch (pathComponent) {
-        case TezosContractMethodSelectorPathComponent.LEFT:
-          current = current.args[0]
-          break
-        case TezosContractMethodSelectorPathComponent.RIGHT:
-          current = current.args[1]
-          break
+    }
+
+    if (!MichelsonOr.isOr(value)) {
+      return {
+        entrypoint: fallbackEntrypoint ?? TezosContract.DEFAULT_ENTRYPOINT,
+        value
       }
     }
 
-    const annots = current.annots
-    if (!Array.isArray(annots) || annots.length === 0) {
-      return new TezosContractMethod(selector, fallbackEntrypointName ?? selector.stringValue())
+    await this.waitForEntrypoints()
+
+    const defaultEntrypoint: TezosContractEntrypoint | undefined = this.entrypoints?.get(TezosContract.DEFAULT_ENTRYPOINT)
+    if (!defaultEntrypoint) {
+      throw new Error('Could not fetch default entrypoint.')
     }
-    const methodName: string = annots.find((annot: string) => annot.startsWith('%'))
-    if (methodName && methodName.length > 1) {
-      return new TezosContractMethod(selector, methodName.substring(1))
-    } else {
-      return new TezosContractMethod(selector, fallbackEntrypointName ?? selector.stringValue())
+
+    let normalizedEntrypoint: [string, MichelineDataNode] | undefined
+    defaultEntrypoint.type.createValue({
+      beforeNext: (meta: MichelsonTypeMeta, raw: unknown): void => {
+        const entrypointName: string | undefined = meta.getAnnotation(META_ANNOTATION_PREFIX_ENTRYPOINT)
+        if (entrypointName && isMichelineNode(raw)) {
+          normalizedEntrypoint = [entrypointName, raw]
+        }
+      },
+      onNext: (_meta: MichelsonTypeMeta, _raw: unknown, michelsonValue: MichelsonTypeMapping): void => {
+        if (michelsonValue instanceof MichelsonOr) {
+          michelsonValue.eval()
+        }
+      },
+      values: value
+    })
+
+    return {
+      entrypoint: normalizedEntrypoint ? normalizedEntrypoint[0] : (fallbackEntrypoint ?? defaultEntrypoint.name),
+      value: normalizedEntrypoint ? normalizedEntrypoint[1] : value
     }
   }
 
-  private async fetchScriptIfNeeded(): Promise<void> {
-    if (this.script !== undefined) {
-      return
-    }
-    if (this.pendingScriptPromise !== undefined) {
-      await this.pendingScriptPromise
-
-      return
-    }
-    this.pendingScriptPromise = axios
-      .get(this.nodeURL(`/chains/main/blocks/head/context/contracts/${this.address}/script`))
-      .then((result) => {
-        this.pendingScriptPromise = undefined
-
-        return result.data
-      })
-      .catch((error) => {
-        this.pendingScriptPromise = undefined
-        throw error
-      })
-    this.script = await this.pendingScriptPromise
+  private createDefaultContractCall(...args: unknown[]): TezosContractCall {
+    return new TezosContractCall(TezosContract.DEFAULT_ENTRYPOINT, args[0] instanceof MichelsonTypeMapping ? args[0] : undefined)
   }
 
-  private async fetchBigMapIDIfNeeded(): Promise<void> {
+  private createEntrypointContractCall(
+    entrypoint: TezosContractEntrypoint, 
+    configuration: MichelsonTypeMetaCreateValueConfiguration,
+    parameterRegistry?: Map<string, MichelsonTypeMapping>
+  ): TezosContractCall {
+    return new TezosContractCall(entrypoint.name, entrypoint.type.createValue(configuration), parameterRegistry)
+  }
+
+  private async waitForBigMapID(): Promise<void> {
     if (this.bigMapID !== undefined) {
       return
     }
-    if (this.pendingBigMapIDPromise !== undefined) {
-      await this.pendingBigMapIDPromise
 
+    if (this.bigMapIDPromise === undefined) {
+      this.bigMapIDPromise = this.apiRequest<Record<'big_map_id', number>[]>('/originated_account_maps', {
+        fields: ['big_map_id'],
+        predicates: [
+          {
+            field: 'account_id',
+            operation: 'eq',
+            set: [this.address]
+          }
+        ],
+        limit: 1
+      })
+        .then((bigMapIDResponse) => {
+          if (bigMapIDResponse.length === 0) {
+            throw new Error('BigMap ID not found')
+          }
+
+          this.bigMapID = bigMapIDResponse[0].big_map_id
+        })
+        .finally(() => {
+          this.bigMapIDPromise = undefined
+        })
+    }
+
+    return this.bigMapIDPromise
+  }
+
+  private async waitForEntrypoints(): Promise<void> {
+    if (this.entrypoints !== undefined) {
       return
     }
-    this.pendingBigMapIDPromise = this.conseilRequest<{ big_map_id: number }[]>('/originated_account_maps', {
-      fields: ['big_map_id'],
-      predicates: [
-        {
-          field: 'account_id',
-          operation: 'eq',
-          set: [this.address]
-        }
-      ],
-      limit: 1
-    })
-      .then((response) => {
-        this.pendingBigMapIDPromise = undefined
-        const results = response.data
-        if (results.length === 0) {
-          throw new Error('BigMap ID not found')
+
+    if (this.entrypointsPromise === undefined) {
+      const codePromise: Promise<Record<'code', TezosContractCode[]>> = this.nodeRequest('script')
+      const entrypointsPromise: Promise<Record<'entrypoints', Record<string, MichelineTypeNode>>> = this.nodeRequest('entrypoints')
+
+      this.entrypointsPromise = Promise.all([
+        this.parseDefaultEntrypoint ? codePromise : undefined, 
+        entrypointsPromise
+      ]).then(([codeResponse, entrypointsResponse]) => {
+        if (codeResponse && entrypointsResponse.entrypoints[TezosContract.DEFAULT_ENTRYPOINT] === undefined) {
+          const parameter = codeResponse.code.find((primitiveApplication) => primitiveApplication.prim === 'parameter')
+          if (parameter) {
+            entrypointsResponse.entrypoints[TezosContract.DEFAULT_ENTRYPOINT] = parameter.args ? parameter.args[0] : []
+          }
         }
 
-        return results[0].big_map_id
+        this.entrypoints = new Map(
+          TezosContractEntrypoint.fromJSON(entrypointsResponse.entrypoints).map((entrypoint: TezosContractEntrypoint) => 
+            [entrypoint.name, entrypoint]
+          )
+        )
+      }).finally(() => {
+        this.entrypointsPromise = undefined
       })
-      .catch((error) => {
-        this.pendingBigMapIDPromise = undefined
-        throw error
-      })
-    this.bigMapID = await this.pendingBigMapIDPromise
-  }
-
-  private extractMethods(parameters: any): TezosContractMethod[] {
-    const root = parameters.args[0]
-
-    return this.searchMethods(root)
-  }
-
-  private searchMethods(
-    val: any,
-    path?: TezosContractMethodSelectorPathComponent,
-    currentSelector?: TezosContractMethodSelector
-  ): TezosContractMethod[] {
-    const selector: TezosContractMethodSelector =
-      currentSelector !== undefined ? currentSelector.copy() : new TezosContractMethodSelector([])
-    if (path !== undefined) {
-      selector.add(path)
     }
 
-    const prim = (val.prim as string).toLowerCase()
-
-    if (prim === 'or') {
-      const left = this.searchMethods(val.args[0], TezosContractMethodSelectorPathComponent.LEFT, selector)
-      const right = this.searchMethods(val.args[1], TezosContractMethodSelectorPathComponent.RIGHT, selector)
-
-      return left.concat(right)
-    }
-
-    const annots = val.annots
-    if (Array.isArray(annots) && annots.length > 0) {
-      const methodName: string = annots.find((annot: string) => annot.startsWith('%'))
-
-      return [new TezosContractMethod(selector, methodName.substring(1))]
-    }
-
-    throw new Error('Cannot parse parameters')
+    return this.entrypointsPromise
   }
 
-  private nodeURL(path: string): string {
-    return `${this.nodeRPCURL}${path}`
+  private async nodeRequest<T>(endpoint: string): Promise<T> {
+    const response: AxiosResponse<T> = await axios.get(
+      `${this.nodeRPCURL}/chains/main/blocks/head/context/contracts/${this.address}/${endpoint}`
+    )
+
+    return response.data
   }
 
-  private conseilURL(path: string): string {
-    return `${this.conseilAPIURL}/v2/data/tezos/${this.conseilNetwork}${path}`
-  }
+  private async apiRequest<T>(endpoint: string, body: any): Promise<T> {
+    const response: AxiosResponse<T> = await axios.post(
+      `${this.conseilAPIURL}/v2/data/tezos/${this.conseilNetwork}/${endpoint}`, 
+      body, 
+      {
+        headers: { 
+          'Content-Type': 'application/json', 
+          apiKey: this.conseilAPIKey
+        }
+      }
+    )
 
-  private conseilRequest<Result>(path: string, body: any): Promise<AxiosResponse<Result>> {
-    return axios.post(this.conseilURL(path), body, {
-      headers: { 'Content-Type': 'application/json', apiKey: this.conseilAPIKey }
-    })
+    return response.data
   }
-}
-
-export interface BigMapValuePredicate {
-  field: 'key' | 'key_hash' | 'value'
-  operation: 'in' | 'between' | 'like' | 'lt' | 'gt' | 'eq' | 'startsWith' | 'endsWith' | 'before' | 'after'
-  set: any[]
-  inverse?: boolean
 }

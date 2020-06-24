@@ -1,5 +1,5 @@
-import { TezosContractEntity } from '../contract/TezosContractEntity'
-import { TezosContractPair } from '../contract/TezosContractPair'
+import { MichelsonPair } from '../contract/michelson/MichelsonPair'
+import { MichelsonTypeMapping } from '../contract/michelson/MichelsonTypeMapping'
 import { TezosNetwork } from '../TezosProtocol'
 import { TezosUtils } from '../TezosUtils'
 
@@ -50,12 +50,12 @@ export class TezosBTC extends TezosFAProtocol {
       .map((bigMapEntry) => {
         const addressHex = bigMapEntry.key.substring(TezosBTC.bigMapKeyLedgerPrefix.length)
         const address = TezosUtils.parseAddress(addressHex)
-        let value: number | string | TezosContractEntity = '0'
+        let value: number | string | MichelsonTypeMapping = '0'
         try {
           value = bigMapEntry.value ? TezosUtils.parseHex(bigMapEntry.value) : '0'
         } catch {}
-        if (value instanceof TezosContractPair) {
-          value = value.first
+        if (value instanceof MichelsonPair) {
+          value = value.first.get()
         }
 
         return {

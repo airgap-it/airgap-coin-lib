@@ -2,18 +2,41 @@ import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { TezosTransactionOperation } from '../types/operations/Transaction'
 import { TezosOperationType } from '../types/TezosOperationType'
 
-import { TezosContractEntity } from './TezosContractEntity'
-import { TezosContractEntrypoint } from './TezosContractEntrypoint'
-import { TezosContractPair } from './TezosContractPair'
+import { MichelineDataNode } from './micheline/MichelineNode'
+import { MichelsonTypeMapping } from './michelson/MichelsonTypeMapping'
 
-export class TezosContractCall extends TezosContractEntity {
-  public readonly entrypoint: TezosContractEntrypoint
-  public readonly args: TezosContractPair
+export interface TezosContractCallJSON {
+  entrypoint: string
+  value: MichelineDataNode
+}
+export interface TezosRPCOperationBody {
+  operation: TezosRPCOperation
+  chain_id: string
+}
 
-  constructor(entrypoint: TezosContractEntrypoint, args: TezosContractPair) {
-    super()
-    this.entrypoint = entrypoint
-    this.args = args
+export interface TezosRPCOperation {
+  branch: string
+  contents: TezosTransactionOperation[]
+  signature: string
+}
+
+export class TezosContractCall {
+
+  constructor(
+    readonly entrypoint: string, 
+    readonly value: MichelsonTypeMapping | undefined,
+    readonly parameterRegistry?: Map<string, MichelsonTypeMapping>
+  ) {}
+
+  public argument<T extends MichelsonTypeMapping>(name: string): T | undefined {
+    return this.parameterRegistry?.get(name) as T
+  }
+
+  public toJSON(): TezosContractCallJSON {
+    return {
+      entrypoint: this.entrypoint,
+      value: this.value ? this.value.toMichelineJSON() : []
+    }
   }
 
   public toOperationJSONBody(
@@ -45,29 +68,4 @@ export class TezosContractCall extends TezosContractEntity {
       }
     }
   }
-
-  public toJSON(): any {
-    return {
-      entrypoint: this.entrypoint.toJSON(),
-      value: this.args.toJSON()
-    }
-  }
-
-  public static fromJSON(json: any): TezosContractCall {
-    const entrypoint = TezosContractEntrypoint.fromJSON(json.entrypoint)
-    const args = TezosContractPair.fromJSON(json.value)
-
-    return new TezosContractCall(entrypoint, args)
-  }
-}
-
-export interface TezosRPCOperationBody {
-  operation: TezosRPCOperation
-  chain_id: string
-}
-
-export interface TezosRPCOperation {
-  branch: string
-  contents: TezosTransactionOperation[]
-  signature: string
 }
