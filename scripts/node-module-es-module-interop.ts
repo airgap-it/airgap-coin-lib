@@ -7,9 +7,7 @@ const replaceInFile: (file: string, src: string, dest: string) => void = (file: 
 }
 
 replaceInFile(`./node_modules/@polkadot/util/bn/max.d.ts`, `import BN from 'bn.js';`, `import * as BN from 'bn.js';`)
-replaceInFile(`./node_modules/@polkadot/util/bn/consts.d.ts`, `import BN from 'bn.js';`, `import * as BN from 'bn.js';`)
 replaceInFile(`./node_modules/@polkadot/util/bn/min.d.ts`, `import BN from 'bn.js';`, `import * as BN from 'bn.js';`)
-replaceInFile(`./node_modules/@polkadot/util/bn/sqrt.d.ts`, `import BN from 'bn.js';`, `import * as BN from 'bn.js';`)
 replaceInFile(`./node_modules/@polkadot/util/bn/toBn.d.ts`, `import BN from 'bn.js';`, `import * as BN from 'bn.js';`)
 replaceInFile(`./node_modules/@polkadot/util/bn/toHex.d.ts`, `import BN from 'bn.js';`, `import * as BN from 'bn.js';`)
 replaceInFile(`./node_modules/@polkadot/util/bn/toU8a.d.ts`, `import BN from 'bn.js';`, `import * as BN from 'bn.js';`)
@@ -22,4 +20,4 @@ replaceInFile(`./node_modules/@polkadot/util/hex/toBn.d.ts`, `import BN from 'bn
 replaceInFile(`./node_modules/@polkadot/util/is/bn.d.ts`, `import BN from 'bn.js';`, `import * as BN from 'bn.js';`)
 replaceInFile(`./node_modules/@polkadot/util/u8a/toBn.d.ts`, `import BN from 'bn.js';`, `import * as BN from 'bn.js';`)
 
-replaceInFile(`./node_modules/@polkadot/util/types.d.ts`, `import type BN from 'bn.js';`, `import * as BN from 'bn.js';`)
+replaceInFile(`./node_modules/@polkadot/util/types.d.ts`, `import BN from 'bn.js';`, `import * as BN from 'bn.js';`)
