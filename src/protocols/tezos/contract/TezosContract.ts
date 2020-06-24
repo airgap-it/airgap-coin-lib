@@ -116,15 +116,15 @@ export class TezosContract {
     })
   }
 
-  public async createContractCall(entrypointName: string, ...args: unknown[]): Promise<TezosContractCall> {
+  public async createContractCall(entrypointName: string, value: unknown): Promise<TezosContractCall> {
     await this.waitForEntrypoints()
 
     const entrypoint: TezosContractEntrypoint | undefined = this.entrypoints?.get(entrypointName)
     if (!entrypoint) {
-      return this.createDefaultContractCall(...args)
+      return this.createDefaultContractCall(value)
     }
 
-    return this.createEntrypointContractCall(entrypoint, { values: args })
+    return this.createEntrypointContractCall(entrypoint, value)
   }
 
   public async parseContractCall(json: TezosTransactionParameters): Promise<TezosContractCall> {
@@ -137,7 +137,7 @@ export class TezosContract {
 
     const parameterRegistry: Map<string, MichelsonType> = new Map()
 
-    return this.createEntrypointContractCall(entrypoint, {
+    return this.createEntrypointContractCall(entrypoint, json.value, {
       lazyEval: false,
       onNext: (meta: MichelsonTypeMeta, _raw: unknown, value: MichelsonType): void => {
         const argName: string | undefined = meta.getAnnotation(MichelsonAnnotationPrefix.ARG)
@@ -145,7 +145,6 @@ export class TezosContract {
           parameterRegistry.set(argName, value)
         }
       },
-      values: json.value,
     }, parameterRegistry)
   }
 
@@ -178,7 +177,7 @@ export class TezosContract {
     }
 
     let normalizedEntrypoint: [string, MichelineNode] | undefined
-    defaultEntrypoint.type.createValue({
+    defaultEntrypoint.type.createValue(value, {
       beforeNext: (meta: MichelsonTypeMeta, raw: unknown): void => {
         const entrypointName: string | undefined = meta.getAnnotation(MichelsonAnnotationPrefix.ENTRYPOINT)
         if (entrypointName && isMichelineNode(raw)) {
@@ -189,8 +188,7 @@ export class TezosContract {
         if (michelsonValue instanceof MichelsonOr) {
           michelsonValue.eval()
         }
-      },
-      values: value
+      }
     })
 
     return {
@@ -199,16 +197,17 @@ export class TezosContract {
     }
   }
 
-  private createDefaultContractCall(...args: unknown[]): TezosContractCall {
-    return new TezosContractCall(TezosContract.DEFAULT_ENTRYPOINT, args[0] instanceof MichelsonType ? args[0] : undefined)
+  private createDefaultContractCall(value: unknown): TezosContractCall {
+    return new TezosContractCall(TezosContract.DEFAULT_ENTRYPOINT, value instanceof MichelsonType ? value : undefined)
   }
 
   private createEntrypointContractCall(
-    entrypoint: TezosContractEntrypoint, 
-    configuration: MichelsonTypeMetaCreateValueConfiguration,
+    entrypoint: TezosContractEntrypoint,
+    value: unknown,
+    configuration: MichelsonTypeMetaCreateValueConfiguration = {},
     parameterRegistry?: Map<string, MichelsonType>
   ): TezosContractCall {
-    return new TezosContractCall(entrypoint.name, entrypoint.type.createValue(configuration), parameterRegistry)
+    return new TezosContractCall(entrypoint.name, entrypoint.type.createValue(value, configuration), parameterRegistry)
   }
 
   private async waitForBigMapID(): Promise<void> {
