@@ -1651,7 +1651,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     return new TezosCryptographyClient(this.tezosPrefixes.edsig).signMessage(message, keypair)
   }
 
-  public async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
+  public async verifyMessage(message: string, signature: string, publicKey: string): Promise<boolean> {
     return new TezosCryptographyClient(this.tezosPrefixes.edsig).verifyMessage(message, signature, publicKey)
   }
 

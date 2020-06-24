@@ -649,7 +649,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
     return new CosmosCryptographyClient().signMessage(message, keypair)
   }
 
-  public async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
+  public async verifyMessage(message: string, signature: string, publicKey: string): Promise<boolean> {
     return new CosmosCryptographyClient().verifyMessage(message, signature, publicKey)
   }
 

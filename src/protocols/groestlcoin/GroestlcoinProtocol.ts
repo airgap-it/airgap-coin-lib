@@ -51,4 +51,12 @@ export class GroestlcoinProtocol extends BitcoinBlockbookProtocol {
   public async getBlockExplorerLinkForTxId(txId: string): Promise<string> {
     return `${this.blockExplorer}/tx.dws?{{txId}}.htm`.replace('{{txId}}', txId)
   }
+
+  public async signMessage(message: string, keypair: { publicKey: string; privateKey: Buffer }): Promise<string> {
+    throw new Error('Method not implemented.')
+  }
+
+  public async verifyMessage(message: string, signature: string, publicKey: string): Promise<boolean> {
+    throw new Error('Method not implemented.')
+  }
 }

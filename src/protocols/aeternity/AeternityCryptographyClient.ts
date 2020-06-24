@@ -26,12 +26,12 @@ export class AeternityCryptographyClient extends CryptographyClient {
     return Buffer.from(rawSignature).toString('hex')
   }
 
-  public async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
+  public async verifyMessage(message: string, signature: string, publicKey: string): Promise<boolean> {
     await sodium.ready
 
     const rawSignature: Buffer = Buffer.from(signature, 'hex')
     const messageBuffer: Buffer = personalMessageToBinary(message)
 
-    return sodium.crypto_sign_verify_detached(rawSignature, messageBuffer, publicKey)
+    return sodium.crypto_sign_verify_detached(rawSignature, messageBuffer, Buffer.from(publicKey, 'hex'))
   }
 }

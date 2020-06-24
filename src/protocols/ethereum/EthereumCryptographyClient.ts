@@ -21,7 +21,7 @@ export class EthereumCryptographyClient extends CryptographyClient {
     return EthereumJSUtils.toRpcSig(signature.v, signature.r, signature.s)
   }
 
-  public async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
+  public async verifyMessage(message: string, signature: string, publicKey: string): Promise<boolean> {
     const msgBuffer: Buffer = EthereumJSUtils.toBuffer(message)
     const msgHash: string = EthereumJSUtils.hashPersonalMessage(msgBuffer)
     const signatureBuffer: Buffer = EthereumJSUtils.toBuffer(signature)

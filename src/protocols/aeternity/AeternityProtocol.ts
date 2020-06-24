@@ -382,7 +382,7 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
     return new AeternityCryptographyClient().signMessage(message, keypair)
   }
 
-  public async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
+  public async verifyMessage(message: string, signature: string, publicKey: string): Promise<boolean> {
     return new AeternityCryptographyClient().verifyMessage(message, signature, publicKey)
   }
   public async getTransactionStatuses(transactionHashes: string[]): Promise<AirGapTransactionStatus[]> {

@@ -15,12 +15,12 @@ export class CosmosCryptographyClient extends CryptographyClient {
     return `0x${Buffer.from(signed.signature).toString('hex')}`
   }
 
-  public async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
+  public async verifyMessage(message: string, signature: string, publicKey: string): Promise<boolean> {
     const rawSignature: Buffer = Buffer.from(signature.slice(2), 'hex')
 
     const sha256Hash: string = sha('sha256').update(Buffer.from(message)).digest()
     const messageHash: Buffer = Buffer.from(sha256Hash)
 
-    return SECP256K1.verify(messageHash, rawSignature, publicKey)
+    return SECP256K1.verify(messageHash, rawSignature, Buffer.from(publicKey, 'hex'))
   }
 }

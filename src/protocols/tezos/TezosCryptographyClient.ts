@@ -16,7 +16,7 @@ export class TezosCryptographyClient extends CryptographyClient {
     return signature
   }
 
-  public async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
+  public async verifyMessage(message: string, signature: string, publicKey: string): Promise<boolean> {
     await sodium.ready
 
     let rawSignature: Uint8Array
@@ -29,7 +29,7 @@ export class TezosCryptographyClient extends CryptographyClient {
       throw new Error(`invalid signature: ${signature}`)
     }
 
-    const isValidSignature: boolean = sodium.crypto_sign_verify_detached(rawSignature, message, publicKey)
+    const isValidSignature: boolean = sodium.crypto_sign_verify_detached(rawSignature, message, Buffer.from(publicKey, 'hex'))
 
     return isValidSignature
   }

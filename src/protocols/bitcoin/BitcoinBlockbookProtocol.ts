@@ -12,6 +12,8 @@ import { SignedBitcoinTransaction } from '../../serializer/schemas/definitions/t
 import { RawBitcoinTransaction } from '../../serializer/types'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
 
+import { BitcoinCryptographyClient } from './BitcoinCryptographyClient'
+
 export interface Vin {
   txid: string
   sequence: any
@@ -740,11 +742,11 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
   }
 
   public async signMessage(message: string, keypair: { privateKey: Buffer }): Promise<string> {
-    throw new Error('Method not implemented.')
+    return new BitcoinCryptographyClient(this).signMessage(message, keypair)
   }
 
-  public async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
-    throw new Error('Method not implemented.')
+  public async verifyMessage(message: string, signature: string, publicKey: string): Promise<boolean> {
+    return new BitcoinCryptographyClient(this).verifyMessage(message, signature, publicKey)
   }
 
   public async getTransactionStatuses(transactionHashes: string[]): Promise<AirGapTransactionStatus[]> {

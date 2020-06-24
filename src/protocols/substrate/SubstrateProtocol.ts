@@ -651,11 +651,11 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     return requiredTransactions
   }
 
-  public async signMessage(message: string, keypair: { publicKey: Buffer; privateKey: Buffer }): Promise<string> {
+  public async signMessage(message: string, keypair: { publicKey: string; privateKey: Buffer }): Promise<string> {
     return new SubstrateCryptographyClient().signMessage(message, keypair)
   }
 
-  public async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
+  public async verifyMessage(message: string, signature: string, publicKey: string): Promise<boolean> {
     return new SubstrateCryptographyClient().verifyMessage(message, signature, publicKey)
   }
 
