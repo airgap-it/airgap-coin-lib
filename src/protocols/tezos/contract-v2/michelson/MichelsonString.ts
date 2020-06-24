@@ -9,10 +9,10 @@ export class MichelsonString extends MichelsonTypeMapping {
     super()
   }
 
-  public static from(...args: unknown[]): MichelsonString {
-    return isMichelinePrimitive('string', args[0])
-      ? this.fromMicheline(args[0])
-      : this.fromUnknown(args[0])
+  public static from(value: unknown): MichelsonString {
+    return isMichelinePrimitive('string', value)
+      ? this.fromMicheline(value)
+      : this.fromUnknown(value)
   }
 
   public static fromMicheline(micheline: MichelinePrimitive<'string'>): MichelsonString {

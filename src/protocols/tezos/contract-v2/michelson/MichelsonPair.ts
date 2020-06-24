@@ -1,8 +1,8 @@
+import { Lazy } from '../../../../data/Lazy'
 import { invalidArgumentTypeError } from '../../../../utils/error'
 import { MichelineDataNode, MichelinePrimitiveApplication } from '../micheline/MichelineNode'
 import { isMichelinePrimitiveApplication } from '../micheline/utils'
 
-import { Lazy } from './Lazy'
 import { MichelsonData } from './MichelsonData'
 import { MichelsonTypeMapping } from './MichelsonTypeMapping'
 
@@ -11,14 +11,14 @@ export class MichelsonPair extends MichelsonTypeMapping {
     super()
   }
 
-  public static from(...args: unknown[]): MichelsonPair {
-    if (typeof args[1] !== 'function' || typeof args[2] !== 'function') {
+  public static from(pair: unknown, firstMappingFunction: unknown, secondMappingFunction: unknown): MichelsonPair {
+    if (typeof firstMappingFunction !== 'function' || typeof secondMappingFunction !== 'function') {
       throw new Error('MichelsonPair: unknown generic mapping factory functions.')
     }
 
-    return isMichelinePrimitiveApplication(args[0])
-      ? this.fromMicheline(args[0], args[1], args[2])
-      : this.fromUnknown(args[0], args[1], args[2])
+    return isMichelinePrimitiveApplication(pair)
+      ? this.fromMicheline(pair, firstMappingFunction, secondMappingFunction)
+      : this.fromUnknown(pair, firstMappingFunction, secondMappingFunction)
   }
 
   public static fromMicheline(

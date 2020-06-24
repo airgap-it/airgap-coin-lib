@@ -10,10 +10,10 @@ export class MichelsonBytes extends MichelsonTypeMapping {
     super()
   }
 
-  public static from(...args: unknown[]): MichelsonBytes {
-    return isMichelinePrimitive('bytes', args[0])
-      ? this.fromMicheline(args[0])
-      : this.fromUnknown(args[0])
+  public static from(value: unknown): MichelsonBytes {
+    return isMichelinePrimitive('bytes', value)
+      ? this.fromMicheline(value)
+      : this.fromUnknown(value)
   }
 
   public static fromMicheline(micheline: MichelinePrimitive<'bytes'>): MichelsonBytes {

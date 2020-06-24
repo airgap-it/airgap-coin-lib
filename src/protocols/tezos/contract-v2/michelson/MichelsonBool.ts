@@ -10,10 +10,10 @@ export class MichelsonBool extends MichelsonTypeMapping {
     super()
   }
 
-  public static from(...args: unknown[]): MichelsonBool {
-    return isMichelinePrimitiveApplication(args[0])
-      ? this.fromMicheline(args[0])
-      : this.fromRaw(args[0])
+  public static from(value: unknown): MichelsonBool {
+    return isMichelinePrimitiveApplication(value)
+      ? this.fromMicheline(value)
+      : this.fromRaw(value)
   }
 
   public static fromMicheline(micheline: MichelinePrimitiveApplication<MichelsonData>): MichelsonBool {

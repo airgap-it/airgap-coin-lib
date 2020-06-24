@@ -11,10 +11,10 @@ export class MichelsonAddress extends MichelsonTypeMapping {
     super()
   }
 
-  public static from(...args: unknown[]): MichelsonAddress {
-    return isMichelinePrimitive('string', args[0]) || isMichelinePrimitive('bytes', args[0])
-      ? this.fromMicheline(args[0])
-      : this.fromUnknown(args[0])
+  public static from(value: unknown): MichelsonAddress {
+    return isMichelinePrimitive('string', value) || isMichelinePrimitive('bytes', value)
+      ? this.fromMicheline(value)
+      : this.fromUnknown(value)
   }
 
   public static fromMicheline(micheline: MichelinePrimitive<'string'> | MichelinePrimitive<'bytes'>): MichelsonAddress {

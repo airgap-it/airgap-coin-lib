@@ -1,12 +1,17 @@
 import axios, { AxiosResponse } from '../../../dependencies/src/axios-0.19.0/index'
 
-import { TezosContractEntrypoint } from './TezosContractEntrypoint'
-import { MichelineTypeNode, MichelinePrimitiveApplication, MichelineDataNode } from './micheline/MichelineNode'
-import { TezosContractCall, TezosContractCallJSON } from './TezosContractCall'
-import { MichelsonTypeMapping } from './michelson/MichelsonTypeMapping'
-import { MichelsonOr } from './michelson/MichelsonOr'
-import { MichelsonTypeMetaCreateValueConfiguration, MichelsonTypeMeta, META_ANNOTATION_PREFIX_ARG, META_ANNOTATION_PREFIX_ENTRYPOINT } from './michelson/MichelsonTypeMeta'
+import { MichelineDataNode, MichelinePrimitiveApplication, MichelineTypeNode } from './micheline/MichelineNode'
 import { isMichelineNode } from './micheline/utils'
+import { MichelsonOr } from './michelson/MichelsonOr'
+import { MichelsonTypeMapping } from './michelson/MichelsonTypeMapping'
+import { 
+  META_ANNOTATION_PREFIX_ARG, 
+  META_ANNOTATION_PREFIX_ENTRYPOINT, 
+  MichelsonTypeMeta, 
+  MichelsonTypeMetaCreateValueConfiguration 
+} from './michelson/MichelsonTypeMeta'
+import { TezosContractCall, TezosContractCallJSON } from './TezosContractCall'
+import { TezosContractEntrypoint } from './TezosContractEntrypoint'
 
 interface BigMapValuePredicate {
   field: 'key' | 'key_hash' | 'value'

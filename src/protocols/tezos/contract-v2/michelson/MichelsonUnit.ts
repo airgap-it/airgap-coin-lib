@@ -6,9 +6,9 @@ import { MichelsonData } from './MichelsonData'
 import { MichelsonTypeMapping } from './MichelsonTypeMapping'
 
 export class MichelsonUnit extends MichelsonTypeMapping {
-  public static from(...args: unknown[]): MichelsonUnit {
-    return isMichelinePrimitiveApplication(args[0])
-      ? this.fromMicheline(args[0])
+  public static from(value: unknown): MichelsonUnit {
+    return isMichelinePrimitiveApplication(value)
+      ? this.fromMicheline(value)
       : new MichelsonUnit()
   }
 

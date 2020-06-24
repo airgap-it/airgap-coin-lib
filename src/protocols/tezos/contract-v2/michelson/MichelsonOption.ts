@@ -1,24 +1,24 @@
 // tslint:disable: max-classes-per-file
+import { Lazy } from '../../../../data/Lazy'
 import { MichelineDataNode, MichelinePrimitiveApplication } from '../micheline/MichelineNode'
 import { isMichelinePrimitiveApplication } from '../micheline/utils'
 
 import { MichelsonData } from './MichelsonData'
 import { MichelsonTypeMapping } from './MichelsonTypeMapping'
-import { Lazy } from './Lazy'
 
 export type MichelsonOptionType = 'Some' | 'None'
 
 export abstract class MichelsonOption extends MichelsonTypeMapping {
   protected abstract type: MichelsonOptionType
 
-  public static from(...args: unknown[]): MichelsonOption {
-    if (typeof args[1] !== 'function') {
+  public static from(value: unknown, mappingFunction: unknown): MichelsonOption {
+    if (typeof mappingFunction !== 'function') {
       throw new Error('MichelsonOption: unknown generic mapping factory function.')
     }
 
-    return isMichelinePrimitiveApplication(args[0])
-      ? this.fromMicheline(args[0], args[1])
-      : this.fromUnknown(args[0], args[1])
+    return isMichelinePrimitiveApplication(value)
+      ? this.fromMicheline(value, mappingFunction)
+      : this.fromUnknown(value, mappingFunction)
   }
 
   public static fromMicheline(micheline: MichelinePrimitiveApplication<MichelsonData>, mappingFunction: Function): MichelsonOption {

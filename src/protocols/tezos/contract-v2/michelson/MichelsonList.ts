@@ -1,7 +1,7 @@
+import { Lazy } from '../../../../data/Lazy'
 import { invalidArgumentTypeError } from '../../../../utils/error'
 import { MichelineDataNode } from '../micheline/MichelineNode'
 
-import { Lazy } from './Lazy'
 import { MichelsonTypeMapping } from './MichelsonTypeMapping'
 
 export class MichelsonList extends MichelsonTypeMapping {
@@ -9,20 +9,17 @@ export class MichelsonList extends MichelsonTypeMapping {
     super()
   }
 
-  public static from(...args: unknown[]): MichelsonList {
-    if (!Array.isArray(args[0])) {
-      throw invalidArgumentTypeError('MichelsonList', 'array', typeof args[0])
+  public static from(items: unknown, mappingFunction: unknown): MichelsonList {
+    if (!Array.isArray(items)) {
+      throw invalidArgumentTypeError('MichelsonList', 'array', typeof items)
     }
 
-    if (typeof args[1] !== 'function') {
+    if (typeof mappingFunction !== 'function') {
       throw new Error('MichelsonList: unknown generic mapping factory function.')
     }
 
-    const list: unknown[] = args[0]
-    const mappingFunction: Function = args[1]
-
     const lazyList: Lazy<MichelsonTypeMapping[]> = new Lazy(() => {
-      const elements: unknown[] = list.map((element: unknown) => {
+      const elements: unknown[] = items.map((element: unknown) => {
         return element instanceof MichelsonTypeMapping ? element : mappingFunction(element)
       })
   

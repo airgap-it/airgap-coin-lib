@@ -9,10 +9,10 @@ export class MichelsonInt extends MichelsonTypeMapping {
     super()
   }
 
-  public static from(...args: unknown[]): MichelsonInt {
-    return isMichelinePrimitive('int', args[0])
-      ? this.fromMicheline(args[0])
-      : this.fromUnknown(args[0])
+  public static from(value: unknown): MichelsonInt {
+    return isMichelinePrimitive('int', value)
+      ? this.fromMicheline(value)
+      : this.fromUnknown(value)
   }
 
   public static fromMicheline(micheline: MichelinePrimitive<'int'>): MichelsonInt {
