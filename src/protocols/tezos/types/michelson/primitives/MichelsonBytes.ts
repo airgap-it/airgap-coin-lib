@@ -1,11 +1,10 @@
-import { invalidArgumentTypeError } from '../../../../utils/error'
-import { hexToBytes } from '../../../../utils/hex'
-import { MichelineDataNode, MichelinePrimitive } from '../micheline/MichelineNode'
-import { isMichelinePrimitive } from '../micheline/utils'
+import { invalidArgumentTypeError } from '../../../../../utils/error'
+import { hexToBytes } from '../../../../../utils/hex'
+import { MichelineDataNode, MichelinePrimitive } from '../../micheline/MichelineNode'
+import { isMichelinePrimitive } from '../../utils'
+import { MichelsonType } from '../MichelsonType'
 
-import { MichelsonTypeMapping } from './MichelsonTypeMapping'
-
-export class MichelsonBytes extends MichelsonTypeMapping {
+export class MichelsonBytes extends MichelsonType {
   constructor(readonly value: Buffer) {
     super()
   }

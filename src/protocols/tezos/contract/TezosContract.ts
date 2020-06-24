@@ -1,16 +1,16 @@
 import axios, { AxiosResponse } from '../../../dependencies/src/axios-0.19.0/index'
+import { MichelineDataNode, MichelineNode, MichelinePrimitiveApplication, MichelineTypeNode } from '../types/micheline/MichelineNode'
+import { MichelsonOr } from '../types/michelson/generics/MichelsonOr'
+import { MichelsonType } from '../types/michelson/MichelsonType'
+import {
+  MichelsonAnnotationPrefix,
+  MichelsonTypeMeta,
+  MichelsonTypeMetaCreateValueConfiguration
+} from '../types/michelson/MichelsonTypeMeta'
+import { TezosTransactionParameters } from '../types/operations/Transaction'
+import { isMichelineNode } from '../types/utils'
 
-import { MichelineDataNode, MichelinePrimitiveApplication, MichelineTypeNode } from './micheline/MichelineNode'
-import { isMichelineNode } from './micheline/utils'
-import { MichelsonOr } from './michelson/MichelsonOr'
-import { MichelsonTypeMapping } from './michelson/MichelsonTypeMapping'
-import { 
-  META_ANNOTATION_PREFIX_ARG, 
-  META_ANNOTATION_PREFIX_ENTRYPOINT, 
-  MichelsonTypeMeta, 
-  MichelsonTypeMetaCreateValueConfiguration 
-} from './michelson/MichelsonTypeMeta'
-import { TezosContractCall, TezosContractCallJSON } from './TezosContractCall'
+import { TezosContractCall } from './TezosContractCall'
 import { TezosContractEntrypoint } from './TezosContractEntrypoint'
 
 interface BigMapValuePredicate {
@@ -127,7 +127,7 @@ export class TezosContract {
     return this.createEntrypointContractCall(entrypoint, { values: args })
   }
 
-  public async parseContractCall(json: TezosContractCallJSON): Promise<TezosContractCall> {
+  public async parseContractCall(json: TezosTransactionParameters): Promise<TezosContractCall> {
     await this.waitForEntrypoints()
 
     const entrypoint: TezosContractEntrypoint | undefined = this.entrypoints?.get(json.entrypoint)
@@ -135,12 +135,12 @@ export class TezosContract {
       return Promise.reject(`Couldn't parse the contract call, unknown entrypoint: ${json.entrypoint}`)
     }
 
-    const parameterRegistry: Map<string, MichelsonTypeMapping> = new Map()
+    const parameterRegistry: Map<string, MichelsonType> = new Map()
 
     return this.createEntrypointContractCall(entrypoint, {
       lazyEval: false,
-      onNext: (meta: MichelsonTypeMeta, _raw: unknown, value: MichelsonTypeMapping): void => {
-        const argName: string | undefined = meta.getAnnotation(META_ANNOTATION_PREFIX_ARG)
+      onNext: (meta: MichelsonTypeMeta, _raw: unknown, value: MichelsonType): void => {
+        const argName: string | undefined = meta.getAnnotation(MichelsonAnnotationPrefix.ARG)
         if (argName) {
           parameterRegistry.set(argName, value)
         }
@@ -150,11 +150,11 @@ export class TezosContract {
   }
 
   public async normalizeContractCallParameters(
-    json: Partial<TezosContractCallJSON> & Pick<TezosContractCallJSON, 'value'> | MichelineDataNode, 
+    json: Partial<TezosTransactionParameters> & Pick<TezosTransactionParameters, 'value'> | MichelineDataNode, 
     fallbackEntrypoint?: string
-  ): Promise<TezosContractCallJSON> {
+  ): Promise<TezosTransactionParameters> {
     const entrypoint: string | undefined = 'entrypoint' in json ? json.entrypoint : undefined
-    const value: MichelineDataNode = 'value' in json ? json.value : json
+    const value: MichelineNode = 'value' in json ? json.value : json
 
     if (entrypoint !== undefined && entrypoint !== TezosContract.DEFAULT_ENTRYPOINT) {
       return {
@@ -177,15 +177,15 @@ export class TezosContract {
       throw new Error('Could not fetch default entrypoint.')
     }
 
-    let normalizedEntrypoint: [string, MichelineDataNode] | undefined
+    let normalizedEntrypoint: [string, MichelineNode] | undefined
     defaultEntrypoint.type.createValue({
       beforeNext: (meta: MichelsonTypeMeta, raw: unknown): void => {
-        const entrypointName: string | undefined = meta.getAnnotation(META_ANNOTATION_PREFIX_ENTRYPOINT)
+        const entrypointName: string | undefined = meta.getAnnotation(MichelsonAnnotationPrefix.ENTRYPOINT)
         if (entrypointName && isMichelineNode(raw)) {
           normalizedEntrypoint = [entrypointName, raw]
         }
       },
-      onNext: (_meta: MichelsonTypeMeta, _raw: unknown, michelsonValue: MichelsonTypeMapping): void => {
+      onNext: (_meta: MichelsonTypeMeta, _raw: unknown, michelsonValue: MichelsonType): void => {
         if (michelsonValue instanceof MichelsonOr) {
           michelsonValue.eval()
         }
@@ -200,13 +200,13 @@ export class TezosContract {
   }
 
   private createDefaultContractCall(...args: unknown[]): TezosContractCall {
-    return new TezosContractCall(TezosContract.DEFAULT_ENTRYPOINT, args[0] instanceof MichelsonTypeMapping ? args[0] : undefined)
+    return new TezosContractCall(TezosContract.DEFAULT_ENTRYPOINT, args[0] instanceof MichelsonType ? args[0] : undefined)
   }
 
   private createEntrypointContractCall(
     entrypoint: TezosContractEntrypoint, 
     configuration: MichelsonTypeMetaCreateValueConfiguration,
-    parameterRegistry?: Map<string, MichelsonTypeMapping>
+    parameterRegistry?: Map<string, MichelsonType>
   ): TezosContractCall {
     return new TezosContractCall(entrypoint.name, entrypoint.type.createValue(configuration), parameterRegistry)
   }

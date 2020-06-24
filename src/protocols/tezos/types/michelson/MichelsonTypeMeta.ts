@@ -1,19 +1,22 @@
 // tslint:disable: max-classes-per-file
 
-import { MichelineTypeNode } from '../micheline/MichelineNode'
-import { isMichelinePrimitiveApplication } from '../micheline/utils'
+import { MichelineTypeNode } from '../../types/micheline/MichelineNode'
+import { MichelsonGrammarType } from '../../types/michelson/grammar/MichelsonGrammarType'
+import { isMichelinePrimitiveApplication } from '../utils'
 
-import { MichelsonType, michelsonTypeFactories } from './MichelsonType'
-import { MichelsonTypeMapping } from './MichelsonTypeMapping'
+import { michelsonTypeFactories } from './factories'
+import { MichelsonType } from './MichelsonType'
 
-export const META_ANNOTATION_PREFIX_ARG = ':'
-export const META_ANNOTATION_PREFIX_ENTRYPOINT = '%'
+export enum MichelsonAnnotationPrefix {
+  ARG = ':',
+  ENTRYPOINT = '%'
+}
 
 export interface MichelsonTypeMetaCreateValueConfiguration {
   lazyEval?: boolean
 
   beforeNext?: (meta: MichelsonTypeMeta, raw: unknown) => void
-  onNext?: (meta: MichelsonTypeMeta, raw: unknown, value: MichelsonTypeMapping) => void
+  onNext?: (meta: MichelsonTypeMeta, raw: unknown, value: MichelsonType) => void
 
   values: unknown | unknown[]
 }
@@ -33,16 +36,16 @@ export class MichelsonTypeMeta {
     return this.from(node.prim, node.annots || [], argsMeta)
   }
 
-  public static from(type: MichelsonType, annots: string[], argsMeta: MichelsonTypeMeta[]): MichelsonTypeMeta {
+  public static from(type: MichelsonGrammarType, annots: string[], argsMeta: MichelsonTypeMeta[]): MichelsonTypeMeta {
     return argsMeta.length === 0 ? new MichelsonTypeMeta(type, annots) : new MichelsonGenericTypeMeta(type, argsMeta, annots)
   }
 
-  constructor(readonly type: MichelsonType, readonly annots: string[] = []) {}
+  constructor(readonly type: MichelsonGrammarType, readonly annots: string[] = []) {}
 
-  public createValue(configuration: MichelsonTypeMetaCreateValueConfiguration): MichelsonTypeMapping {
+  public createValue(configuration: MichelsonTypeMetaCreateValueConfiguration): MichelsonType {
     const values: unknown[] = Array.isArray(configuration.values) ? configuration.values : [configuration.values]
 
-    if (values[0] instanceof MichelsonTypeMapping) {
+    if (values[0] instanceof MichelsonType) {
       return values[0]
     }
 
@@ -52,7 +55,7 @@ export class MichelsonTypeMeta {
       configuration.beforeNext(this, raw)
     }
 
-    const value: MichelsonTypeMapping = michelsonTypeFactories[this.type](raw)
+    const value: MichelsonType = michelsonTypeFactories[this.type](raw)
 
     if (!(configuration.lazyEval ?? true)) {
       value.eval()
@@ -65,14 +68,14 @@ export class MichelsonTypeMeta {
     return value
   }
 
-  public getAnnotation(prefix: string): string | undefined {
+  public getAnnotation(prefix: MichelsonAnnotationPrefix): string | undefined {
     const annotation: string | undefined = this.annots.find((annot: string) => annot.startsWith(prefix))
 
     return annotation?.slice(prefix.length)
   }
 
   protected getRawValue(values: unknown[]): unknown {
-    const argName: string | undefined = this.getAnnotation(META_ANNOTATION_PREFIX_ARG)
+    const argName: string | undefined = this.getAnnotation(MichelsonAnnotationPrefix.ARG)
 
     return values[0] instanceof Object && argName && argName in values[0]
       ? values[0][argName]
@@ -81,13 +84,13 @@ export class MichelsonTypeMeta {
 }
 
 export class MichelsonGenericTypeMeta extends MichelsonTypeMeta {
-  constructor(type: MichelsonType, readonly generics: MichelsonTypeMeta[], annots: string[] = []) {
+  constructor(type: MichelsonGrammarType, readonly generics: MichelsonTypeMeta[], annots: string[] = []) {
     super(type, annots)
   }
 
-  public createValue(configuration: MichelsonTypeMetaCreateValueConfiguration): MichelsonTypeMapping {
+  public createValue(configuration: MichelsonTypeMetaCreateValueConfiguration): MichelsonType {
     const values: unknown[] = Array.isArray(configuration.values) ? configuration.values : [configuration.values]
-    if (values[0] instanceof MichelsonTypeMapping) {
+    if (values[0] instanceof MichelsonType) {
       return values[0]
     }
 
@@ -97,15 +100,15 @@ export class MichelsonGenericTypeMeta extends MichelsonTypeMeta {
       configuration.beforeNext(this, raw)
     }
 
-    const genericFactories: ((genericValue: unknown) => MichelsonTypeMapping)[] = 
+    const genericFactories: ((genericValue: unknown) => MichelsonType)[] = 
       this.generics.map((genericMeta: MichelsonTypeMeta) => {
-        return (genericValue: unknown): MichelsonTypeMapping => genericMeta.createValue({
+        return (genericValue: unknown): MichelsonType => genericMeta.createValue({
           ...configuration,
           values: genericValue
         })
       })
 
-    const value: MichelsonTypeMapping = michelsonTypeFactories[this.type](raw, ...genericFactories)
+    const value: MichelsonType = michelsonTypeFactories[this.type](raw, ...genericFactories)
 
     if (!(configuration.lazyEval ?? true)) {
       value.eval()

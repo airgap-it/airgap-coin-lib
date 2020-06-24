@@ -1,10 +1,9 @@
-import { invalidArgumentTypeError } from '../../../../utils/error'
-import { MichelineDataNode, MichelinePrimitive } from '../micheline/MichelineNode'
-import { isMichelinePrimitive } from '../micheline/utils'
+import { invalidArgumentTypeError } from '../../../../../utils/error'
+import { MichelineDataNode, MichelinePrimitive } from '../../micheline/MichelineNode'
+import { isMichelinePrimitive } from '../../utils'
+import { MichelsonType } from '../MichelsonType'
 
-import { MichelsonTypeMapping } from './MichelsonTypeMapping'
-
-export class MichelsonString extends MichelsonTypeMapping {
+export class MichelsonString extends MichelsonType {
   constructor(readonly value: string) {
     super()
   }

@@ -3,20 +3,21 @@ import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { IAirGapTransaction } from '../../../interfaces/IAirGapTransaction'
 import { RawTezosTransaction } from '../../../serializer/types'
 import { ICoinSubProtocol, SubProtocolType } from '../../ICoinSubProtocol'
-import { isMichelineNode } from '../contract/micheline/utils'
-import { MichelsonAddress } from '../contract/michelson/MichelsonAddress'
-import { MichelsonBytes } from '../contract/michelson/MichelsonBytes'
-import { MichelsonString } from '../contract/michelson/MichelsonString'
 import { TezosContract } from '../contract/TezosContract'
-import { TezosContractCall, TezosContractCallJSON } from '../contract/TezosContractCall'
+import { TezosContractCall } from '../contract/TezosContractCall'
 import { TezosNetwork, TezosProtocol } from '../TezosProtocol'
 import { TezosUtils } from '../TezosUtils'
+import { MichelsonAddress } from '../types/michelson/primitives/MichelsonAddress'
+import { MichelsonBytes } from '../types/michelson/primitives/MichelsonBytes'
+import { MichelsonInt } from '../types/michelson/primitives/MichelsonInt'
+import { MichelsonString } from '../types/michelson/primitives/MichelsonString'
 import { TezosOperation } from '../types/operations/TezosOperation'
+import { TezosTransactionParameters, TezosWrappedTransactionOperation } from '../types/operations/Transaction'
 import { TezosOperationType } from '../types/TezosOperationType'
 import { TezosWrappedOperation } from '../types/TezosWrappedOperation'
+import { isMichelineNode } from '../types/utils'
 
 import { FeeDefaults } from './../../ICoinProtocol'
-import { MichelsonInt } from '../contract/michelson/MichelsonInt'
 
 enum ContractEntrypointName {
   BALANCE = 'getBalance',
@@ -393,7 +394,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
   public async normalizeTransactionParameters(
     parameters: string,
     fallbackEntrypointName?: string
-  ): Promise<TezosContractCallJSON> {
+  ): Promise<TezosTransactionParameters> {
     const parsedParameters: unknown = this.parseParameters(parameters)
     if (!(parsedParameters instanceof Object && 'value' in parsedParameters) || !isMichelineNode(parsedParameters)) {
       throw new Error('Invalid parameters.')
@@ -407,7 +408,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     return []
   }
 
-  public async transferDetailsFromParameters(parameters: TezosContractCallJSON): Promise<{ from: string; to: string; amount: string }> {
+  public async transferDetailsFromParameters(parameters: TezosTransactionParameters): Promise<{ from: string; to: string; amount: string }> {
     if (parameters.entrypoint !== ContractEntrypointName.TRANSFER) {
       throw new Error('Only calls to the transfer entrypoint can be converted to IAirGapTransaction')
     }
@@ -454,7 +455,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
       throw new Error('Transaction parameters are invalid.')
     }
 
-    const transferData: TezosContractCallJSON = {
+    const transferData: TezosTransactionParameters = {
       entrypoint: transaction.parameters_entrypoints,
       value: parsedParameters
     }
@@ -495,7 +496,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     const counter = new BigNumber(results[0].data).plus(1)
     const branch = results[1].data.hash
     const chainID = results[1].data.chain_id
-    const body = contractCall.toOperationJSONBody(chainID, branch, counter, source, this.contractAddress)
+    const body = this.prepareMockContractCall(contractCall, chainID, branch, counter, source, this.contractAddress)
     try {
       const response = await axios.post(this.url('/chains/main/blocks/head/helpers/scripts/run_operation'), body, {
         headers: { 'Content-Type': 'application/json' }
@@ -536,6 +537,37 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     } catch (error) {
       console.error(error.message)
       throw new Error('Forging Tezos TX failed.')
+    }
+  }
+
+  private prepareMockContractCall(
+    contractCall: TezosContractCall,
+    chainID: string,
+    branch: string,
+    counter: BigNumber,
+    source: string,
+    contractAddress: string,
+    fee: string = '0'
+  ): { chain_id: string, operation: TezosWrappedTransactionOperation } {
+    return {
+      chain_id: chainID,
+      operation: {
+        branch,
+        signature: 'sigUHx32f9wesZ1n2BWpixXz4AQaZggEtchaQNHYGRCoWNAXx45WGW2ua3apUUUAGMLPwAU41QoaFCzVSL61VaessLg4YbbP', // signature will not be checked, so it is ok to always use this one
+        contents: [
+          {
+            kind: TezosOperationType.TRANSACTION,
+            counter: counter.toFixed(),
+            amount: '0',
+            source,
+            destination: contractAddress,
+            fee,
+            gas_limit: '400000',
+            storage_limit: '60000',
+            parameters: contractCall.toJSON()
+          }
+        ]
+      }
     }
   }
 

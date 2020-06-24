@@ -1,12 +1,12 @@
-import { isHex } from '../../../../utils/hex'
-import { MichelineDataNode, MichelinePrimitive } from '../micheline/MichelineNode'
-import { isMichelinePrimitive } from '../micheline/utils'
+import { isHex } from '../../../../../utils/hex'
+import { MichelineDataNode, MichelinePrimitive } from '../../micheline/MichelineNode'
+import { isMichelinePrimitive } from '../../utils'
+import { MichelsonType } from '../MichelsonType'
 
 import { MichelsonBytes } from './MichelsonBytes'
 import { MichelsonString } from './MichelsonString'
-import { MichelsonTypeMapping } from './MichelsonTypeMapping'
 
-export class MichelsonAddress extends MichelsonTypeMapping {
+export class MichelsonAddress extends MichelsonType {
   constructor(readonly address: MichelsonString | MichelsonBytes) {
     super()
   }

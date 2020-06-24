@@ -1,12 +1,12 @@
 import * as bigInt from '../../dependencies/src/big-integer-1.6.45/BigInteger'
 import * as bs58check from '../../dependencies/src/bs58check-2.1.2/index'
 
-import { MichelsonBytes } from './contract/michelson/MichelsonBytes'
-import { MichelsonInt } from './contract/michelson/MichelsonInt'
-import { MichelsonList } from './contract/michelson/MichelsonList'
-import { MichelsonPair } from './contract/michelson/MichelsonPair'
-import { MichelsonString } from './contract/michelson/MichelsonString'
-import { MichelsonTypeMapping } from './contract/michelson/MichelsonTypeMapping'
+import { MichelsonList } from './types/michelson/generics/MichelsonList'
+import { MichelsonPair } from './types/michelson/generics/MichelsonPair'
+import { MichelsonType } from './types/michelson/MichelsonType'
+import { MichelsonBytes } from './types/michelson/primitives/MichelsonBytes'
+import { MichelsonInt } from './types/michelson/primitives/MichelsonInt'
+import { MichelsonString } from './types/michelson/primitives/MichelsonString'
 
 
 export class TezosUtils {
@@ -48,7 +48,7 @@ export class TezosUtils {
     }
   }
 
-  public static parseHex(rawHex: string | string[]): MichelsonTypeMapping {
+  public static parseHex(rawHex: string | string[]): MichelsonType {
     let hex: string[]
     if (typeof rawHex === 'string') {
       hex = TezosUtils.hexStringToArray(rawHex)
@@ -125,7 +125,7 @@ export class TezosUtils {
   }
 
   private static parseList(hex: string[]): MichelsonList {
-    const items: MichelsonTypeMapping[] = []
+    const items: MichelsonType[] = []
     const lengthBytes = TezosUtils.hexToLength(hex.splice(0, 4))
     if (lengthBytes > 0) {
       const listBytes = hex.splice(0, lengthBytes)

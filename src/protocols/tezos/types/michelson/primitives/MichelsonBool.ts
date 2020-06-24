@@ -1,11 +1,10 @@
-import { invalidArgumentTypeError } from '../../../../utils/error'
-import { MichelineDataNode, MichelinePrimitiveApplication } from '../micheline/MichelineNode'
-import { isMichelinePrimitiveApplication } from '../micheline/utils'
+import { invalidArgumentTypeError } from '../../../../../utils/error'
+import { MichelineDataNode, MichelinePrimitiveApplication } from '../../micheline/MichelineNode'
+import { isMichelinePrimitiveApplication } from '../../utils'
+import { MichelsonGrammarData } from '../grammar/MichelsonGrammarData'
+import { MichelsonType } from '../MichelsonType'
 
-import { MichelsonData } from './MichelsonData'
-import { MichelsonTypeMapping } from './MichelsonTypeMapping'
-
-export class MichelsonBool extends MichelsonTypeMapping {
+export class MichelsonBool extends MichelsonType {
   constructor(readonly value: boolean) {
     super()
   }
@@ -16,7 +15,7 @@ export class MichelsonBool extends MichelsonTypeMapping {
       : this.fromRaw(value)
   }
 
-  public static fromMicheline(micheline: MichelinePrimitiveApplication<MichelsonData>): MichelsonBool {
+  public static fromMicheline(micheline: MichelinePrimitiveApplication<MichelsonGrammarData>): MichelsonBool {
     if (micheline.prim !== 'True' && micheline.prim !== 'False') {
       throw invalidArgumentTypeError('MichelsonBool', 'prim: True | False', `prim: ${micheline.prim}`)
     }

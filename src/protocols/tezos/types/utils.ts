@@ -1,10 +1,10 @@
-import { MichelineNode, MichelinePrimitive, MichelinePrimitiveApplication } from './MichelineNode'
+import { MichelineNode, MichelinePrimitive, MichelinePrimitiveApplication } from './micheline/MichelineNode'
 
-export function isMichelineNode(node: unknown): node is MichelineNode<any> {
+export function isMichelineNode(node: unknown): node is MichelineNode {
   return isMichelineNodeRecursive(node, 0)
 }
 
-function isMichelineNodeRecursive(node: unknown, recursionLevel: number): node is MichelineNode<any> {
+function isMichelineNodeRecursive(node: unknown, recursionLevel: number): node is MichelineNode {
   return (
     isMichelinePrimitive('int', node) || 
     isMichelinePrimitive('string', node) || 
@@ -22,12 +22,12 @@ export function isMichelinePrimitiveApplication(node: unknown): node is Michelin
   return node instanceof Object && 'prim' in node
 }
 
-const MAX_CHECK_RECURSION_DEPTH: number = 1
-export function isMichelineSequence(node: unknown, recursive: boolean = true): node is MichelineNode<any>[] {
-  return isMichelineSequenceRecursive(node, recursive ? 0 : MAX_CHECK_RECURSION_DEPTH + 1)
+const MICHELINE_MAX_CHECK_RECURSION_DEPTH: number = 1
+export function isMichelineSequence(node: unknown, recursive: boolean = true): node is MichelineNode[] {
+  return isMichelineSequenceRecursive(node, recursive ? 0 : MICHELINE_MAX_CHECK_RECURSION_DEPTH + 1)
 }
 
-function isMichelineSequenceRecursive(node: unknown, recursionLevel: number): node is MichelineNode<any>[] {
+function isMichelineSequenceRecursive(node: unknown, recursionLevel: number): node is MichelineNode[] {
   return (
     Array.isArray(node) && 
     (
@@ -35,7 +35,7 @@ function isMichelineSequenceRecursive(node: unknown, recursionLevel: number): no
 
       // for simplicity and to avoid too many recursive calls for complex structures
       // after the `MAX_CHECK_RECURSION_DEPTH`th level has been reached, we assume every array is a valid Micheline sequence
-      recursionLevel > MAX_CHECK_RECURSION_DEPTH ||
+      recursionLevel > MICHELINE_MAX_CHECK_RECURSION_DEPTH ||
       node.every((element: unknown) => isMichelineNodeRecursive(element, recursionLevel + 1))
     )
   )

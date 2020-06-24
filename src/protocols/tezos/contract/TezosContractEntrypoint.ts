@@ -1,6 +1,6 @@
-import { MichelsonTypeMeta } from './michelson/MichelsonTypeMeta'
-import { MichelineTypeNode } from './micheline/MichelineNode'
-import { isMichelinePrimitiveApplication } from './micheline/utils'
+import { MichelineTypeNode } from '../types/micheline/MichelineNode'
+import { MichelsonTypeMeta } from '../types/michelson/MichelsonTypeMeta'
+import { isMichelinePrimitiveApplication } from '../types/utils'
 
 export class TezosContractEntrypoint {
 

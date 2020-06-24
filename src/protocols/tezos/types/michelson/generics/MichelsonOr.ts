@@ -1,24 +1,22 @@
 // tslint:disable: max-classes-per-file
-
-import { Lazy } from '../../../../data/Lazy'
-import { invalidArgumentTypeError } from '../../../../utils/error'
-import { MichelineDataNode, MichelinePrimitiveApplication } from '../micheline/MichelineNode'
-import { isMichelinePrimitiveApplication } from '../micheline/utils'
-
-import { MichelsonData } from './MichelsonData'
-import { MichelsonTypeMapping } from './MichelsonTypeMapping'
+import { Lazy } from '../../../../../data/Lazy'
+import { invalidArgumentTypeError } from '../../../../../utils/error'
+import { MichelineDataNode, MichelinePrimitiveApplication } from '../../micheline/MichelineNode'
+import { isMichelinePrimitiveApplication } from '../../utils'
+import { MichelsonGrammarData } from '../grammar/MichelsonGrammarData'
+import { MichelsonType } from '../MichelsonType'
 
 export type MichelsonOrType = 'Left' | 'Right'
 
-export abstract class MichelsonOr extends MichelsonTypeMapping {
+export abstract class MichelsonOr extends MichelsonType {
   protected abstract type: MichelsonOrType
 
-  constructor(readonly value: Lazy<MichelsonTypeMapping>) {
+  constructor(readonly value: Lazy<MichelsonType>) {
     super()
   }
 
   public static from(or: unknown, firstMappingFunction?: unknown, secondMappingFunction?: unknown): MichelsonOr {
-    if (!(or instanceof MichelsonTypeMapping) && typeof firstMappingFunction !== 'function' || typeof secondMappingFunction !== 'function') {
+    if (!(or instanceof MichelsonType) && typeof firstMappingFunction !== 'function' || typeof secondMappingFunction !== 'function') {
       throw new Error('MichelsonPair: unknown generic mapping factory functions.')
     }
 
@@ -28,7 +26,7 @@ export abstract class MichelsonOr extends MichelsonTypeMapping {
   }
 
   public static fromMicheline(
-    micheline: MichelinePrimitiveApplication<MichelsonData>,
+    micheline: MichelinePrimitiveApplication<MichelsonGrammarData>,
     firstMappingFunction: unknown, 
     secondMappingFunction: unknown
   ): MichelsonOr {
@@ -76,12 +74,12 @@ export abstract class MichelsonOr extends MichelsonTypeMapping {
   }
 
   private static create(type: MichelsonOrType, value: unknown, mappingFunction: unknown): MichelsonOr {
-    const lazyValue: Lazy<MichelsonTypeMapping> = value instanceof MichelsonTypeMapping
+    const lazyValue: Lazy<MichelsonType> = value instanceof MichelsonType
       ? new Lazy(() => value)
       : new Lazy(() => {
           const mappedValue: unknown = typeof mappingFunction === 'function' ? mappingFunction(value) : undefined
 
-          if (!(mappedValue instanceof MichelsonTypeMapping)) {
+          if (!(mappedValue instanceof MichelsonType)) {
             throw new Error('MichelsonOr: unknown generic mapping type.')
           }
 

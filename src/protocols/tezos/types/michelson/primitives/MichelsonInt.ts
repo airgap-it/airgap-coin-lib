@@ -1,11 +1,10 @@
-import BigNumber from '../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
-import { invalidArgumentTypeError } from '../../../../utils/error'
-import { MichelineDataNode, MichelinePrimitive } from '../micheline/MichelineNode'
-import { isMichelinePrimitive } from '../micheline/utils'
+import BigNumber from '../../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { invalidArgumentTypeError } from '../../../../../utils/error'
+import { MichelineDataNode, MichelinePrimitive } from '../../micheline/MichelineNode'
+import { isMichelinePrimitive } from '../../utils'
+import { MichelsonType } from '../MichelsonType'
 
-import { MichelsonTypeMapping } from './MichelsonTypeMapping'
-
-export class MichelsonInt extends MichelsonTypeMapping {
+export class MichelsonInt extends MichelsonType {
   constructor(readonly value: BigNumber) {
     super()
   }
