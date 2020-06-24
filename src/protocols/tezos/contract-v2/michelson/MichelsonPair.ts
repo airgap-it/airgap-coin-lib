@@ -2,11 +2,12 @@ import { invalidArgumentTypeError } from '../../../../utils/error'
 import { MichelineDataNode, MichelinePrimitiveApplication } from '../micheline/MichelineNode'
 import { isMichelinePrimitiveApplication } from '../micheline/utils'
 
+import { Lazy } from './Lazy'
 import { MichelsonData } from './MichelsonData'
 import { MichelsonTypeMapping } from './MichelsonTypeMapping'
 
 export class MichelsonPair extends MichelsonTypeMapping {
-  constructor(readonly first: MichelsonTypeMapping, readonly second: MichelsonTypeMapping) {
+  constructor(readonly first: Lazy<MichelsonTypeMapping>, readonly second: Lazy<MichelsonTypeMapping>) {
     super()
   }
 
@@ -41,38 +42,39 @@ export class MichelsonPair extends MichelsonTypeMapping {
       throw invalidArgumentTypeError('MichelsonPair', 'tuple or object', `${typeof unknownValue}: ${unknownValue}`)
     }
 
-    const [first, second]: [unknown, unknown] = Array.isArray(unknownValue) 
-      ? this.getPairfromTuple(unknownValue as [unknown, unknown], firstMappingFunction, secondMappingFunction)
-      : this.getPairFromObject(unknownValue, firstMappingFunction, secondMappingFunction)
-
-    if (!(first instanceof MichelsonTypeMapping) || !(second instanceof MichelsonTypeMapping)) {
-      throw new Error('MichelsonPair: unknown generic mapping type.')
-    }
+    const [first, second]: [Lazy<MichelsonTypeMapping>, Lazy<MichelsonTypeMapping>] = Array.isArray(unknownValue) 
+      ? [this.getValue(unknownValue[0], firstMappingFunction), this.getValue(unknownValue[1], secondMappingFunction)]
+      : [this.getValue(unknownValue, firstMappingFunction), this.getValue(unknownValue, secondMappingFunction)]
 
     return new MichelsonPair(first, second)
   }
 
-  private static getPairfromTuple(pair: [unknown, unknown], firstFactory: Function, secondFactory: Function): [unknown, unknown] {
-    const first: unknown = pair instanceof MichelsonTypeMapping ? pair[0] : firstFactory(pair[0])
-    const second: unknown = pair instanceof MichelsonTypeMapping ? pair[1] : secondFactory(pair[1])
+  private static getValue(unknownValue: unknown, mappingFactory: Function): Lazy<MichelsonTypeMapping> {
+    return unknownValue instanceof MichelsonTypeMapping
+      ? new Lazy(() => unknownValue)
+      : new Lazy(() => {
+        const value: unknown = mappingFactory(unknownValue)
 
-    return [first, second]
-  }
+        if (!(value instanceof MichelsonTypeMapping)) {
+          throw new Error('MichelsonPair: unknown generic mapping type.')
+        }        
 
-  private static getPairFromObject(object: unknown, firstFactory: Function, secondFactory: Function): [unknown, unknown] {
-    const first: unknown = firstFactory(object)
-    const second: unknown = secondFactory(object)
-
-    return [first, second]
+        return value
+      })
   }
 
   public toMichelineJSON(): MichelineDataNode {
     return {
       prim: 'Pair',
       args: [
-        this.first.toMichelineJSON(),
-        this.second.toMichelineJSON()
+        this.first.get().toMichelineJSON(),
+        this.second.get().toMichelineJSON()
       ]
     }
+  }
+
+  public eval(): void {
+    this.first.get()
+    this.second.get()
   }
 }

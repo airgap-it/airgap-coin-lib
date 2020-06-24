@@ -4,6 +4,7 @@ import { isMichelinePrimitiveApplication } from '../micheline/utils'
 
 import { MichelsonData } from './MichelsonData'
 import { MichelsonTypeMapping } from './MichelsonTypeMapping'
+import { Lazy } from './Lazy'
 
 export type MichelsonOptionType = 'Some' | 'None'
 
@@ -29,19 +30,26 @@ export abstract class MichelsonOption extends MichelsonTypeMapping {
       return new MichelsonNone()
     }
 
-    const value: unknown = unknownValue instanceof MichelsonTypeMapping ? unknownValue : mappingFunction(unknownValue)
-    if (!(value instanceof MichelsonTypeMapping)) {
-      throw new Error('MichelsonOption: unknown generic mapping type.')
-    }
+    const lazyValue: Lazy<MichelsonTypeMapping> = unknownValue instanceof MichelsonTypeMapping
+      ? new Lazy(() => unknownValue)
+      : new Lazy(() => {
+          const value: unknown = mappingFunction(unknownValue)
 
-    return new MichelsonSome(value)
+          if (!(value instanceof MichelsonTypeMapping)) {
+            throw new Error('MichelsonOption: unknown generic mapping type.')
+          }
+
+          return value
+        })
+
+    return new MichelsonSome(lazyValue)
   }
 }
 
 export class MichelsonSome extends MichelsonOption {
   protected type: MichelsonOptionType = 'Some'
 
-  constructor(readonly value: MichelsonTypeMapping) {
+  constructor(readonly value: Lazy<MichelsonTypeMapping>) {
     super()
   }
 
@@ -49,9 +57,13 @@ export class MichelsonSome extends MichelsonOption {
     return {
       prim: 'Some',
       args: [
-        this.value.toMichelineJSON()
+        this.value.get().toMichelineJSON()
       ]
     }
+  }
+
+  public eval(): void {
+    this.value.get()
   }
 }
 

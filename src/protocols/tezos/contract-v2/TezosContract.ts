@@ -5,6 +5,7 @@ import { MichelineTypeNode, MichelinePrimitiveApplication, MichelineDataNode } f
 import { TezosContractCall, TezosContractCallJSON } from './TezosContractCall'
 import { MichelsonTypeMapping } from './michelson/MichelsonTypeMapping'
 import { MichelsonOr } from './michelson/MichelsonOr'
+import { MichelsonTypeMetaValueConfiguration } from './michelson/MichelsonTypeMeta'
 
 interface BigMapValuePredicate {
   field: 'key' | 'key_hash' | 'value'
@@ -118,7 +119,7 @@ export class TezosContract {
       return this.createDefaultContractCall(...args)
     }
 
-    return this.createEntrypointContractCall(entrypoint, ...args)
+    return this.createEntrypointContractCall(entrypoint, { values: args })
   }
 
   public async parseContractCall(json: TezosContractCallJSON): Promise<TezosContractCall> {
@@ -129,7 +130,11 @@ export class TezosContract {
       return Promise.reject(`Couldn't parse the contract call, unknown entrypoint: ${json.entrypoint}`)
     }
 
-    return this.createEntrypointContractCall(entrypoint, json.value)
+    return this.createEntrypointContractCall(entrypoint, {
+      registry: new Map(),
+      lazyEval: false, 
+      values: json.value,
+    })
   }
 
   public async normalizeContractCallParameters(
@@ -171,10 +176,11 @@ export class TezosContract {
     return new TezosContractCall(TezosContract.DEFAULT_ENTRYPOINT, args[0] instanceof MichelsonTypeMapping ? args[0] : undefined)
   }
 
-  private createEntrypointContractCall(entrypoint: TezosContractEntrypoint, ...args: unknown[]): TezosContractCall {
-    const parameterRegistry: Map<string, MichelsonTypeMapping> = new Map()
-
-    return new TezosContractCall(entrypoint.name, entrypoint.type.createValue(parameterRegistry, ...args), parameterRegistry)
+  private createEntrypointContractCall(
+    entrypoint: TezosContractEntrypoint, 
+    configuration: MichelsonTypeMetaValueConfiguration
+  ): TezosContractCall {
+    return new TezosContractCall(entrypoint.name, entrypoint.type.createValue(configuration), configuration.registry)
   }
 
   private async waitForBigMapID(): Promise<void> {

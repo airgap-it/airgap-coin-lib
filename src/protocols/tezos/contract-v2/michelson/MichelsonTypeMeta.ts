@@ -8,6 +8,13 @@ import { MichelsonTypeMapping } from './MichelsonTypeMapping'
 
 const ANNOTATION_PREFIX_ARG = ':'
 
+export interface MichelsonTypeMetaValueConfiguration {
+  registry?: Map<string, MichelsonTypeMapping>
+  lazyEval?: boolean
+
+  values: unknown | unknown[]
+}
+
 export class MichelsonTypeMeta {
   public static fromMichelineNode(node: MichelineTypeNode): MichelsonTypeMeta | undefined {
     if (!isMichelinePrimitiveApplication(node)) {
@@ -29,15 +36,22 @@ export class MichelsonTypeMeta {
 
   constructor(readonly type: MichelsonType, readonly annots: string[] = []) {}
 
-  public createValue(registry: Map<string, MichelsonTypeMapping>, ...values: unknown[]): MichelsonTypeMapping {
+  public createValue(configuration: MichelsonTypeMetaValueConfiguration): MichelsonTypeMapping {
+    const values: unknown[] = Array.isArray(configuration.values) ? configuration.values : [configuration.values]
+
     if (values[0] instanceof MichelsonTypeMapping) {
       return values[0]
     }
 
     const raw: unknown = this.getRawValue(values)
     const value: MichelsonTypeMapping = michelsonTypeFactories[this.type](raw)
+    if (!(configuration.lazyEval ?? true)) {
+      value.eval()
+    }
 
-    this.saveValueInRegistry(value, registry)
+    if (configuration.registry) {
+      this.saveValueInRegistry(value, configuration.registry)
+    }
 
     return value
   }
@@ -69,7 +83,8 @@ export class MichelsonGenericTypeMeta extends MichelsonTypeMeta {
     super(type, annots)
   }
 
-  public createValue(registry: Map<string, MichelsonTypeMapping>, ...values: unknown[]): MichelsonTypeMapping {
+  public createValue(configuration: MichelsonTypeMetaValueConfiguration): MichelsonTypeMapping {
+    const values: unknown[] = Array.isArray(configuration.values) ? configuration.values : [configuration.values]
     if (values[0] instanceof MichelsonTypeMapping) {
       return values[0]
     }
@@ -78,12 +93,21 @@ export class MichelsonGenericTypeMeta extends MichelsonTypeMeta {
 
     const genericFactories: ((genericValue: unknown) => MichelsonTypeMapping)[] = 
       this.generics.map((genericMeta: MichelsonTypeMeta) => {
-        return (genericValue: unknown): MichelsonTypeMapping => genericMeta.createValue(registry, genericValue)
+        return (genericValue: unknown): MichelsonTypeMapping => genericMeta.createValue({
+          registry: configuration.registry,
+          lazyEval: configuration.lazyEval,
+          values: genericValue
+        })
       })
 
     const value: MichelsonTypeMapping = michelsonTypeFactories[this.type](raw, ...genericFactories)
+    if (!(configuration.lazyEval ?? true)) {
+      value.eval()
+    }
 
-    this.saveValueInRegistry(value, registry)
+    if (configuration.registry) {
+      this.saveValueInRegistry(value, configuration.registry)
+    }
 
     return value
   }

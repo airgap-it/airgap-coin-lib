@@ -25,11 +25,11 @@ export class TezosContractCall {
   constructor(
     readonly entrypoint: string, 
     readonly value: MichelsonTypeMapping | undefined,
-    readonly parameterRegistry: Map<string, MichelsonTypeMapping> = new Map()
+    readonly parameterRegistry?: Map<string, MichelsonTypeMapping>
   ) {}
 
   public argument<T extends MichelsonTypeMapping>(name: string): T | undefined {
-    return this.parameterRegistry.get(name) as T
+    return this.parameterRegistry?.get(name) as T
   }
 
   public toJSON(): TezosContractCallJSON {

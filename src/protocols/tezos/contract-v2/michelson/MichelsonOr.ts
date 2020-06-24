@@ -4,6 +4,7 @@ import { invalidArgumentTypeError } from '../../../../utils/error'
 import { MichelineDataNode, MichelinePrimitiveApplication } from '../micheline/MichelineNode'
 import { isMichelinePrimitiveApplication } from '../micheline/utils'
 
+import { Lazy } from './Lazy'
 import { MichelsonData } from './MichelsonData'
 import { MichelsonTypeMapping } from './MichelsonTypeMapping'
 
@@ -12,7 +13,7 @@ export type MichelsonOrType = 'Left' | 'Right'
 export abstract class MichelsonOr extends MichelsonTypeMapping {
   protected abstract type: MichelsonOrType
 
-  constructor(readonly value: MichelsonTypeMapping) {
+  constructor(readonly value: Lazy<MichelsonTypeMapping>) {
     super()
   }
 
@@ -75,22 +76,32 @@ export abstract class MichelsonOr extends MichelsonTypeMapping {
   }
 
   private static create(type: MichelsonOrType, value: unknown, mappingFunction: Function): MichelsonOr {
-    const mappedValue: unknown = value instanceof MichelsonTypeMapping ? value : mappingFunction(value)
+    const lazyValue: Lazy<MichelsonTypeMapping> = value instanceof MichelsonTypeMapping
+      ? new Lazy(() => value)
+      : new Lazy(() => {
+          const mappedValue: unknown = mappingFunction(value)
 
-    if (!(mappedValue instanceof MichelsonTypeMapping)) {
-      throw new Error('MichelsonOr: unknown generic mapping type.')
-    }
+          if (!(mappedValue instanceof MichelsonTypeMapping)) {
+            throw new Error('MichelsonOr: unknown generic mapping type.')
+          }
 
-    return type === 'Left' ? new MichelsonLeft(mappedValue) : new MichelsonRight(mappedValue)
+          return mappedValue
+        })
+
+    return type === 'Left' ? new MichelsonLeft(lazyValue) : new MichelsonRight(lazyValue)
   }
 
   public toMichelineJSON(): MichelineDataNode {
     return {
       prim: this.type,
       args: [
-        this.value.toMichelineJSON()
+        this.value.get().toMichelineJSON()
       ]
     }
+  }
+
+  public eval(): void {
+    this.value.get()
   }
 }
 
