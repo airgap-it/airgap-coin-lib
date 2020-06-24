@@ -1,5 +1,3 @@
-import * as assert from 'assert'
-
 import axios from '../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
@@ -494,7 +492,9 @@ export class BitcoinProtocol implements ICoinProtocol {
       outs: []
     }
 
-    assert(recipients.length === wrappedValues.length)
+    if (recipients.length !== wrappedValues.length) {
+      throw new Error('Recipient and value length does not match.')
+    }
     const address = await this.getAddressFromPublicKey(publicKey)
 
     const { data: utxos } = await axios.get(this.baseApiUrl + '/api/addrs/' + address + '/utxo', { responseType: 'json' })
