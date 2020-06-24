@@ -5,7 +5,7 @@ import { MichelineTypeNode, MichelinePrimitiveApplication, MichelineDataNode } f
 import { TezosContractCall, TezosContractCallJSON } from './TezosContractCall'
 import { MichelsonTypeMapping } from './michelson/MichelsonTypeMapping'
 import { MichelsonOr } from './michelson/MichelsonOr'
-import { MichelsonTypeMetaValueConfiguration } from './michelson/MichelsonTypeMeta'
+import { MichelsonTypeMetaCreateValueConfiguration, MichelsonTypeMeta, META_ANNOTATION_PREFIX_ARG } from './michelson/MichelsonTypeMeta'
 
 interface BigMapValuePredicate {
   field: 'key' | 'key_hash' | 'value'
@@ -40,10 +40,9 @@ export class TezosContract {
 
   private readonly address: string
   private readonly nodeRPCURL: string
-  // TODO: set private when used
-  public readonly conseilAPIURL: string
-  public readonly conseilNetwork: string
-  public readonly conseilAPIKey: string
+  private readonly conseilAPIURL: string
+  private readonly conseilNetwork: string
+  private readonly conseilAPIKey: string
 
   private readonly parseDefaultEntrypoint: boolean
 
@@ -130,11 +129,18 @@ export class TezosContract {
       return Promise.reject(`Couldn't parse the contract call, unknown entrypoint: ${json.entrypoint}`)
     }
 
+    const parameterRegistry: Map<string, MichelsonTypeMapping> = new Map()
+
     return this.createEntrypointContractCall(entrypoint, {
-      registry: new Map(),
-      lazyEval: false, 
+      lazyEval: false,
+      onNext: (meta: MichelsonTypeMeta, _raw: unknown, value: MichelsonTypeMapping): void => {
+        const argName: string | undefined = meta.getAnnotation(META_ANNOTATION_PREFIX_ARG)
+        if (argName) {
+          parameterRegistry.set(argName, value)
+        }
+      },
       values: json.value,
-    })
+    }, parameterRegistry)
   }
 
   public async normalizeContractCallParameters(
@@ -165,9 +171,8 @@ export class TezosContract {
       throw new Error('Could not fetch default entrypoint.')
     }
 
-    // TODO: return proper normalizaton
     return {
-      entrypoint: fallbackEntrypoint ?? TezosContract.DEFAULT_ENTRYPOINT,
+      entrypoint: fallbackEntrypoint ?? defaultEntrypoint.name,
       value
     }
   }
@@ -178,9 +183,10 @@ export class TezosContract {
 
   private createEntrypointContractCall(
     entrypoint: TezosContractEntrypoint, 
-    configuration: MichelsonTypeMetaValueConfiguration
+    configuration: MichelsonTypeMetaCreateValueConfiguration,
+    parameterRegistry?: Map<string, MichelsonTypeMapping>
   ): TezosContractCall {
-    return new TezosContractCall(entrypoint.name, entrypoint.type.createValue(configuration), configuration.registry)
+    return new TezosContractCall(entrypoint.name, entrypoint.type.createValue(configuration), parameterRegistry)
   }
 
   private async waitForBigMapID(): Promise<void> {

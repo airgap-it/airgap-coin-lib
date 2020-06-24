@@ -6,11 +6,14 @@ import { isMichelinePrimitiveApplication } from '../micheline/utils'
 import { MichelsonType, michelsonTypeFactories } from './MichelsonType'
 import { MichelsonTypeMapping } from './MichelsonTypeMapping'
 
-const ANNOTATION_PREFIX_ARG = ':'
+export const META_ANNOTATION_PREFIX_ARG = ':'
+export const META_ANNOTATION_PREFIX_ENTRYPOINT = '%'
 
-export interface MichelsonTypeMetaValueConfiguration {
-  registry?: Map<string, MichelsonTypeMapping>
+export interface MichelsonTypeMetaCreateValueConfiguration {
   lazyEval?: boolean
+
+  beforeNext?: (meta: MichelsonTypeMeta, raw: unknown) => void
+  onNext?: (meta: MichelsonTypeMeta, raw: unknown, value: MichelsonTypeMapping) => void
 
   values: unknown | unknown[]
 }
@@ -36,7 +39,7 @@ export class MichelsonTypeMeta {
 
   constructor(readonly type: MichelsonType, readonly annots: string[] = []) {}
 
-  public createValue(configuration: MichelsonTypeMetaValueConfiguration): MichelsonTypeMapping {
+  public createValue(configuration: MichelsonTypeMetaCreateValueConfiguration): MichelsonTypeMapping {
     const values: unknown[] = Array.isArray(configuration.values) ? configuration.values : [configuration.values]
 
     if (values[0] instanceof MichelsonTypeMapping) {
@@ -44,37 +47,36 @@ export class MichelsonTypeMeta {
     }
 
     const raw: unknown = this.getRawValue(values)
+
+    if (configuration.beforeNext) {
+      configuration.beforeNext(this, raw)
+    }
+
     const value: MichelsonTypeMapping = michelsonTypeFactories[this.type](raw)
+
     if (!(configuration.lazyEval ?? true)) {
       value.eval()
     }
 
-    if (configuration.registry) {
-      this.saveValueInRegistry(value, configuration.registry)
+    if (configuration.onNext) {
+      configuration.onNext(this, raw, value)
     }
 
     return value
   }
 
-  protected getRawValue(values: unknown[]): unknown {
-    const argName: string | undefined = this.getAnnotation(ANNOTATION_PREFIX_ARG)
-
-    return values[0] instanceof Object && argName && argName in values[0]
-      ? values[0][argName]
-      : values[0]
-  }
-
-  protected getAnnotation(prefix: string): string | undefined {
+  public getAnnotation(prefix: string): string | undefined {
     const annotation: string | undefined = this.annots.find((annot: string) => annot.startsWith(prefix))
 
     return annotation?.slice(prefix.length)
   }
 
-  protected saveValueInRegistry<T>(value: T, registry: Map<string, T>): void {
-    const argName: string | undefined = this.getAnnotation(ANNOTATION_PREFIX_ARG)
-    if (argName) {
-      registry.set(argName, value)
-    }
+  protected getRawValue(values: unknown[]): unknown {
+    const argName: string | undefined = this.getAnnotation(META_ANNOTATION_PREFIX_ARG)
+
+    return values[0] instanceof Object && argName && argName in values[0]
+      ? values[0][argName]
+      : values[0]
   }
 }
 
@@ -83,7 +85,7 @@ export class MichelsonGenericTypeMeta extends MichelsonTypeMeta {
     super(type, annots)
   }
 
-  public createValue(configuration: MichelsonTypeMetaValueConfiguration): MichelsonTypeMapping {
+  public createValue(configuration: MichelsonTypeMetaCreateValueConfiguration): MichelsonTypeMapping {
     const values: unknown[] = Array.isArray(configuration.values) ? configuration.values : [configuration.values]
     if (values[0] instanceof MichelsonTypeMapping) {
       return values[0]
@@ -91,22 +93,26 @@ export class MichelsonGenericTypeMeta extends MichelsonTypeMeta {
 
     const raw: unknown = this.getRawValue(values)
 
+    if (configuration.beforeNext) {
+      configuration.beforeNext(this, raw)
+    }
+
     const genericFactories: ((genericValue: unknown) => MichelsonTypeMapping)[] = 
       this.generics.map((genericMeta: MichelsonTypeMeta) => {
         return (genericValue: unknown): MichelsonTypeMapping => genericMeta.createValue({
-          registry: configuration.registry,
-          lazyEval: configuration.lazyEval,
+          ...configuration,
           values: genericValue
         })
       })
 
     const value: MichelsonTypeMapping = michelsonTypeFactories[this.type](raw, ...genericFactories)
+
     if (!(configuration.lazyEval ?? true)) {
       value.eval()
     }
 
-    if (configuration.registry) {
-      this.saveValueInRegistry(value, configuration.registry)
+    if (configuration.onNext) {
+      configuration.onNext(this, raw, value)
     }
 
     return value
