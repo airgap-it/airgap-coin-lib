@@ -59,7 +59,7 @@ export class TezosContract {
     this.conseilNetwork = configuration.conseilNetwork
     this.conseilAPIKey = configuration.conseilAPIKey
 
-    this.parseDefaultEntrypoint = configuration.parseDefaultEntrypoint !== undefined ? configuration.parseDefaultEntrypoint : true
+    this.parseDefaultEntrypoint = configuration.parseDefaultEntrypoint ?? true
   }
 
   public async bigMapValue(key: string, isKeyHash: boolean = false): Promise<string | null> {
