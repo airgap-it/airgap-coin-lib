@@ -6,19 +6,19 @@ import { MessageSignResponse } from './schemas/definitions/message-sign-response
 import { UnsignedAeternityTransaction } from './schemas/definitions/transaction-sign-request-aeternity'
 import { UnsignedBitcoinTransaction } from './schemas/definitions/transaction-sign-request-bitcoin'
 import { UnsignedEthereumTransaction } from './schemas/definitions/transaction-sign-request-ethereum'
+import { UnsignedSubstrateTransaction } from './schemas/definitions/transaction-sign-request-substrate'
 import { UnsignedTezosTransaction } from './schemas/definitions/transaction-sign-request-tezos'
 import { SignedAeternityTransaction } from './schemas/definitions/transaction-sign-response-aeternity'
 import { SignedBitcoinTransaction } from './schemas/definitions/transaction-sign-response-bitcoin'
 import { SignedCosmosTransaction } from './schemas/definitions/transaction-sign-response-cosmos'
 import { SignedEthereumTransaction } from './schemas/definitions/transaction-sign-response-ethereum'
+import { SignedSubstrateTransaction } from './schemas/definitions/transaction-sign-response-substrate'
 import { SignedTezosTransaction } from './schemas/definitions/transaction-sign-response-tezos'
 import { SchemaItem, SchemaTransformer } from './schemas/schema'
 import { Serializer } from './serializer'
 import { UnsignedCosmosTransaction } from './types'
 import { jsonToArray, rlpArrayToJson, unwrapSchema } from './utils/json-to-rlp'
 import { RLPData } from './utils/toBuffer'
-import { UnsignedSubstrateTransaction } from './schemas/definitions/transaction-sign-request-substrate'
-import { SignedSubstrateTransaction } from './schemas/definitions/transaction-sign-response-substrate'
 
 export const assertNever: (x: never) => void = (x: never): void => undefined
 

@@ -180,9 +180,9 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
           protocol.txs[0].fee
         )
 
-        protocol.txs.forEach(tx => {
+        protocol.txs.forEach((tx) => {
           if (tx.properties) {
-            tx.properties.forEach(property => {
+            tx.properties.forEach((property) => {
               expect(preparedTx).to.have.property(property)
             })
           }
@@ -202,9 +202,9 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
             protocol.txs[0].fee
           )
 
-          protocol.txs.forEach(tx => {
+          protocol.txs.forEach((tx) => {
             if (tx.properties) {
-              tx.properties.forEach(property => {
+              tx.properties.forEach((property) => {
                 expect(preparedTx).to.have.property(property)
               })
             }
@@ -328,13 +328,13 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
           const airgapTx: IAirGapTransaction = airgapTxs[0]
 
           expect(
-            airgapTx.to.map(obj => obj.toLowerCase()),
+            airgapTx.to.map((obj) => obj.toLowerCase()),
             'from'
-          ).to.deep.equal(tx.to.map(obj => obj.toLowerCase()))
+          ).to.deep.equal(tx.to.map((obj) => obj.toLowerCase()))
           expect(
-            airgapTx.from.sort().map(obj => obj.toLowerCase()),
+            airgapTx.from.sort().map((obj) => obj.toLowerCase()),
             'to'
-          ).to.deep.equal(tx.from.sort().map(obj => obj.toLowerCase()))
+          ).to.deep.equal(tx.from.sort().map((obj) => obj.toLowerCase()))
 
           expect(airgapTx.amount).to.deep.equal(protocol.txs[0].amount)
           expect(airgapTx.fee).to.deep.equal(protocol.txs[0].fee)

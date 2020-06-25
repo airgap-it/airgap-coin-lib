@@ -1,3 +1,3 @@
 export abstract class TezosContractEntity {
-  abstract toJSON(): any
+  public abstract toJSON(): any
 }

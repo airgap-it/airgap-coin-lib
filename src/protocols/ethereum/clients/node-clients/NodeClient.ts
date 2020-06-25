@@ -20,6 +20,12 @@ export abstract class EthereumNodeClient {
     hexAmount: string
   ): Promise<BigNumber>
 
-  public abstract async estimateTransactionGas(fromAddress: string, toAddress: string, amount?: string, data?: string, gas?: string): Promise<BigNumber>
+  public abstract async estimateTransactionGas(
+    fromAddress: string,
+    toAddress: string,
+    amount?: string,
+    data?: string,
+    gas?: string
+  ): Promise<BigNumber>
   public abstract async getGasPrice(): Promise<BigNumber>
 }
