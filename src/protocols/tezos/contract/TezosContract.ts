@@ -140,8 +140,8 @@ export class TezosContract {
     return this.createEntrypointContractCall(entrypoint, json.value, {
       lazyEval: false,
       onNext: (meta: MichelsonTypeMeta, _raw: unknown, value: MichelsonType): void => {
-        const argName: string | undefined = meta.getAnnotation(MichelsonAnnotationPrefix.ARG)
-        if (argName) {
+        const argName: string | undefined = meta.getAnnotation(MichelsonAnnotationPrefix.TYPE, MichelsonAnnotationPrefix.FIELD)
+        if (argName && this.entrypoints?.has(argName)) {
           parameterRegistry.set(argName, value)
         }
       },
@@ -179,7 +179,7 @@ export class TezosContract {
     let normalizedEntrypoint: [string, MichelineNode] | undefined
     defaultEntrypoint.type.createValue(value, {
       beforeNext: (meta: MichelsonTypeMeta, raw: unknown): void => {
-        const entrypointName: string | undefined = meta.getAnnotation(MichelsonAnnotationPrefix.ENTRYPOINT)
+        const entrypointName: string | undefined = meta.getAnnotation(MichelsonAnnotationPrefix.FIELD)
         if (entrypointName && isMichelineNode(raw)) {
           normalizedEntrypoint = [entrypointName, raw]
         }

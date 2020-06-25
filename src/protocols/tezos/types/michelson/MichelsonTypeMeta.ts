@@ -9,8 +9,9 @@ import { michelsonTypeFactories } from './factories'
 import { MichelsonType } from './MichelsonType'
 
 export enum MichelsonAnnotationPrefix {
-  ARG = ':',
-  ENTRYPOINT = '%'
+  TYPE = ':',
+  VARIABLE = '@',
+  FIELD = '%'
 }
 
 export interface MichelsonTypeMetaCreateValueConfiguration {
@@ -69,14 +70,21 @@ export class MichelsonTypeMeta {
     return michelsonValue
   }
 
-  public getAnnotation(prefix: MichelsonAnnotationPrefix): string | undefined {
-    const annotation: string | undefined = this.annots.find((annot: string) => annot.startsWith(prefix))
+  public getAnnotation(...prefixes: MichelsonAnnotationPrefix[]): string | undefined {
+    for (const annot of this.annots) {
+      const matchedPrefix: MichelsonAnnotationPrefix | undefined = 
+        prefixes.find((prefix: MichelsonAnnotationPrefix) => annot.startsWith(prefix))
+      
+      if (matchedPrefix !== undefined) {
+        return annot.slice(matchedPrefix.length)
+      }
+    }
 
-    return annotation?.slice(prefix.length)
+    return undefined
   }
 
   protected getRawValue(value: unknown): unknown {
-    const argName: string | undefined = this.getAnnotation(MichelsonAnnotationPrefix.ARG)
+    const argName: string | undefined = this.getAnnotation(MichelsonAnnotationPrefix.TYPE, MichelsonAnnotationPrefix.FIELD)
 
     return value instanceof Object && argName && argName in value
       ? value[argName]
