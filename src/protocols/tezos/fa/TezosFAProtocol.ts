@@ -6,11 +6,6 @@ import { ICoinSubProtocol, SubProtocolType } from '../../ICoinSubProtocol'
 import { TezosContract } from '../contract/TezosContract'
 import { TezosContractCall } from '../contract/TezosContractCall'
 import { TezosNetwork, TezosProtocol } from '../TezosProtocol'
-import { TezosUtils } from '../TezosUtils'
-import { MichelsonAddress } from '../types/michelson/primitives/MichelsonAddress'
-import { MichelsonBytes } from '../types/michelson/primitives/MichelsonBytes'
-import { MichelsonInt } from '../types/michelson/primitives/MichelsonInt'
-import { MichelsonString } from '../types/michelson/primitives/MichelsonString'
 import { TezosOperation } from '../types/operations/TezosOperation'
 import { TezosTransactionParameters, TezosWrappedTransactionOperation } from '../types/operations/Transaction'
 import { TezosOperationType } from '../types/TezosOperationType'
@@ -19,29 +14,26 @@ import { isMichelineNode } from '../types/utils'
 
 import { FeeDefaults } from './../../ICoinProtocol'
 
-enum ContractEntrypointName {
-  BALANCE = 'getBalance',
-  ALLOWANCE = 'getAllowance',
-  APPROVE = 'approve',
-  TRANSFER = 'transfer',
-  TOTAL_SUPPLY = 'getTotalSupply',
-  TOTAL_MINTED = 'getTotalMinted',
-  TOTAL_BURNED = 'getTotalBurned'
-}
-
 export interface TezosFAProtocolConfiguration {
   symbol: string
   name: string
   marketSymbol: string
   identifier: string
+
   contractAddress: string
+
   feeDefaults: FeeDefaults
   decimals?: number
+
   jsonRPCAPI?: string
-  baseApiUrl?: string
+
   network?: TezosNetwork
+
+  baseApiUrl?: string
   baseApiKey?: string
   baseApiNetwork?: string
+
+  callbackDefaults?: [TezosNetwork, string][]
 }
 
 export interface TezosTransactionResult {
@@ -53,7 +45,7 @@ export interface TezosTransactionCursor {
   lastBlockLevel: number
 }
 
-export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
+export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
   public readonly isSubProtocol: boolean = true
   public readonly subProtocolType: SubProtocolType = SubProtocolType.TOKEN
   public readonly identifier: string
@@ -61,8 +53,9 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
 
   protected readonly contract: TezosContract
 
+  protected readonly defaultSourceAddress: string = 'tz1Mj7RzPmMAqDUNFBn5t5VbXmWW4cSUAdtT'
+
   private readonly defaultCallbackContractMap = new Map<TezosNetwork, string>()
-  private readonly defaultSourceAddress: string = 'tz1Mj7RzPmMAqDUNFBn5t5VbXmWW4cSUAdtT'
 
   constructor(configuration: TezosFAProtocolConfiguration) {
     super(configuration.jsonRPCAPI, configuration.baseApiUrl, configuration.network, configuration.baseApiNetwork, configuration.baseApiKey)
@@ -73,8 +66,11 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     this.identifier = configuration.identifier
     this.feeDefaults = configuration.feeDefaults
     this.decimals = configuration.decimals || this.decimals
-    this.defaultCallbackContractMap.set(TezosNetwork.MAINNET, 'KT19ptNzn4MVAN45KUUNpyL5AdLVhujk815u')
-    this.defaultCallbackContractMap.set(TezosNetwork.CARTHAGENET, 'KT1J8FmFLSgMz5H2vexFmsCtTLVod9V49iyW')
+
+    configuration.callbackDefaults?.forEach(([network, address]: [TezosNetwork, string]) => {
+      this.defaultCallbackContractMap.set(network, address)
+    })
+    
     this.contract = new TezosContract({
       address: this.contractAddress,
       nodeRPCURL: this.jsonRPCAPI,
@@ -84,187 +80,14 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     })
   }
 
+  public abstract async transactionDetailsFromParameters(parameters: TezosTransactionParameters): Promise<Partial<IAirGapTransaction>[]>
+
   public async bigMapValue(key: string, isKeyHash: boolean = false): Promise<string | null> {
     return this.contract.bigMapValue(key, isKeyHash)
   }
 
-  public async getBalanceOfAddresses(addresses: string[]): Promise<string> {
-    const promises: Promise<string>[] = []
-    for (const address of addresses) {
-      promises.push(this.getBalance(address, this.defaultSourceAddress))
-    }
-    const results: string[] = await Promise.all(promises)
-
-    return results.reduce((current, next) => current.plus(new BigNumber(next)), new BigNumber(0)).toFixed()
-  }
-
   public async estimateMaxTransactionValueFromPublicKey(publicKey: string, recipients: string[], fee?: string): Promise<string> {
     return this.getBalanceOfPublicKey(publicKey)
-  }
-
-  public async estimateFeeDefaultsFromPublicKey(
-    publicKey: string,
-    recipients: string[],
-    values: string[],
-    data?: any
-  ): Promise<FeeDefaults> {
-    // return this.feeDefaults
-    if (recipients.length !== values.length) {
-      throw new Error('length of recipients and values does not match!')
-    }
-    const transferCalls = await this.createTransferCalls(publicKey, recipients, values, this.feeDefaults.medium, data)
-    const operations: TezosOperation[] = transferCalls.map((transferCall: TezosContractCall) => {
-      return {
-        kind: TezosOperationType.TRANSACTION,
-        amount: '0',
-        destination: this.contractAddress,
-        parameters: transferCall.toJSON(),
-        fee: '0'
-      }
-    })
-
-    return this.estimateFeeDefaultsForOperations(publicKey, operations)
-  }
-
-  public async prepareTransactionFromPublicKey(
-    publicKey: string,
-    recipients: string[],
-    values: string[],
-    fee: string,
-    data?: { addressIndex: number }
-  ): Promise<RawTezosTransaction> {
-    const transferCalls = await this.createTransferCalls(publicKey, recipients, values, fee, data)
-
-    return this.prepareContractCall(transferCalls, fee, publicKey)
-  }
-
-  private async createTransferCalls(
-    publicKey: string,
-    recipients: string[],
-    values: string[],
-    fee: string,
-    data?: { addressIndex: number }
-  ): Promise<TezosContractCall[]> {
-    if (recipients.length !== values.length) {
-      throw new Error('length of recipients and values does not match!')
-    }
-
-    // check if we got an address-index
-    const addressIndex: number = data && data.addressIndex ? data.addressIndex : 0
-    const addresses: string[] = await this.getAddressesFromPublicKey(publicKey)
-
-    if (!addresses[addressIndex]) {
-      throw new Error('no kt-address with this index exists')
-    }
-
-    const fromAddress: string = addresses[addressIndex]
-
-    const transferCalls: TezosContractCall[] = []
-    for (let i: number = 0; i < recipients.length; i++) {
-      const transferCall = await this.contract.createContractCall(ContractEntrypointName.TRANSFER, {
-        from: fromAddress,
-        to: recipients[i],
-        value: new BigNumber(values[i]).toNumber()
-      })
-      transferCalls.push(transferCall)
-    }
-
-    return transferCalls
-  }
-
-  public async getBalance(address: string, source?: string, callbackContract: string = this.callbackContract()): Promise<string> {
-    if (address.toLowerCase().startsWith('kt') && (source === undefined || source.toLowerCase().startsWith('kt'))) {
-      source = this.defaultSourceAddress
-    } else if (source === undefined) {
-      source = address
-    }
-
-    const getBalanceCall = await this.contract.createContractCall(ContractEntrypointName.BALANCE, [{
-      owner: address
-    }, callbackContract])
-
-    return this.runContractCall(getBalanceCall, source)
-  }
-
-  public async getAllowance(
-    ownerAddress: string,
-    spenderAddress: string,
-    callbackContract: string = this.callbackContract(),
-    source?: string
-  ): Promise<string> {
-    if (spenderAddress.toLowerCase().startsWith('kt') && (source === undefined || source.toLowerCase().startsWith('kt'))) {
-      source = this.defaultSourceAddress
-    } else if (source === undefined) {
-      source = spenderAddress
-    }
-    const getAllowanceCall = await this.contract.createContractCall(ContractEntrypointName.ALLOWANCE, [{
-      owner: ownerAddress,
-      spender: spenderAddress
-    }, callbackContract])
-
-    return this.runContractCall(getAllowanceCall, source)
-  }
-
-  public async getTotalSupply(source?: string, callbackContract: string = this.callbackContract()) {
-    if (source === undefined) {
-      source = this.defaultSourceAddress
-    }
-
-    const getTotalSupplyCall = await this.contract.createContractCall(ContractEntrypointName.TOTAL_SUPPLY, [
-      [], 
-      callbackContract
-    ])
-
-    return this.runContractCall(getTotalSupplyCall, source)
-  }
-
-  public async getTotalMinted(source?: string, callbackContract: string = this.callbackContract()) {
-    if (source === undefined) {
-      source = this.defaultSourceAddress
-    }
-    const getTotalMintedCall = await this.contract.createContractCall(ContractEntrypointName.TOTAL_MINTED, [
-      [],
-      callbackContract
-    ])
-
-    return this.runContractCall(getTotalMintedCall, source)
-  }
-
-  public async getTotalBurned(source?: string, callbackContract: string = this.callbackContract()) {
-    if (source === undefined) {
-      source = this.defaultSourceAddress
-    }
-    const getTotalBurnedCall = await this.contract.createContractCall(ContractEntrypointName.TOTAL_BURNED, [
-      [],
-      callbackContract
-    ])
-
-    return this.runContractCall(getTotalBurnedCall, source)
-  }
-
-  public async transfer(
-    fromAddress: string,
-    toAddress: string,
-    amount: string,
-    fee: string,
-    publicKey: string
-  ): Promise<RawTezosTransaction> {
-    const transferCall = await this.contract.createContractCall(ContractEntrypointName.TRANSFER, {
-      from: fromAddress,
-      to: toAddress,
-      value: new BigNumber(amount).toNumber()
-    })
-
-    return this.prepareContractCall([transferCall], fee, publicKey)
-  }
-
-  public async approve(spenderAddress: string, amount: string, fee: string, publicKey: string): Promise<RawTezosTransaction> {
-    const approveCall = await this.contract.createContractCall(ContractEntrypointName.APPROVE, {
-      spender: spenderAddress,
-      value: new BigNumber(amount).toNumber()
-    })
-
-    return this.prepareContractCall([approveCall], fee, publicKey)
   }
 
   public async getTransactionsFromPublicKey(publicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]> {
@@ -329,12 +152,14 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
       })
     )
 
-    return Promise.all(allTransactions
+    return Promise.all<IAirGapTransaction[]>(allTransactions
       .reduce((current, next) => current.concat(next))
       .map((transaction: any) => {
-        return this.transactionToAirGapTransaction(transaction, addresses)
+        return this.transactionToAirGapTransactions(transaction, addresses)
       })
-    )
+    ).then((transactions: IAirGapTransaction[][]) => {
+      return transactions.reduce((flatten: IAirGapTransaction[], toFlatten: IAirGapTransaction[]) => flatten.concat(toFlatten), [])
+    })
   }
 
   public async getTransactions(limit: number, cursor?: TezosTransactionCursor): Promise<TezosTransactionResult> {
@@ -378,9 +203,11 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     const response = await axios.post(`${this.baseApiUrl}/v2/data/tezos/${this.baseApiNetwork}/operations`, body, {
       headers: this.headers
     })
-    const transactions: IAirGapTransaction[] = await Promise.all(response.data.map((transaction: any) => {
-      return this.transactionToAirGapTransaction(transaction)
-    }))
+    const transactions: IAirGapTransaction[] = await Promise.all<IAirGapTransaction[]>(response.data.map((transaction: any) => {
+      return this.transactionToAirGapTransactions(transaction)
+    })).then((transactions: IAirGapTransaction[][]) => {
+      return transactions.reduce((flatten: IAirGapTransaction[], toFlatten: IAirGapTransaction[]) => flatten.concat(toFlatten), [])
+    })
     const lastEntryBlockLevel: number = response.data.length > 0 ? response.data[response.data.length - 1].block_level : 0
 
     return {
@@ -408,36 +235,6 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     return []
   }
 
-  public async transferDetailsFromParameters(parameters: TezosTransactionParameters): Promise<{ from: string; to: string; amount: string }> {
-    if (parameters.entrypoint !== ContractEntrypointName.TRANSFER) {
-      throw new Error('Only calls to the transfer entrypoint can be converted to IAirGapTransaction')
-    }
-    const contractCall: TezosContractCall = await this.contract.parseContractCall(parameters)
-    const amount: BigNumber | undefined = contractCall.argument<MichelsonInt>('value')?.value
-
-    const fromAddress: MichelsonString | MichelsonBytes | undefined = contractCall.argument<MichelsonAddress>('from')?.address
-    let from: string | undefined
-    if (fromAddress && Buffer.isBuffer(fromAddress.value)) {
-      from = TezosUtils.parseAddress(fromAddress.value.toString('hex'))
-    } else if (fromAddress && typeof fromAddress.value === 'string') {
-      from = fromAddress.value
-    }
-
-    const toAddress: MichelsonString | MichelsonBytes | undefined = contractCall.argument<MichelsonAddress>('to')?.address
-    let to: string | undefined
-    if (toAddress && Buffer.isBuffer(toAddress.value)) {
-      to = TezosUtils.parseAddress(toAddress?.value.toString('hex')) 
-    } else if (toAddress && typeof toAddress.value === 'string') {
-      to = toAddress.value
-    }
-
-    return {
-      amount: new BigNumber(amount || NaN).toFixed(), // in tzbtc
-      from: from || '',
-      to: to || ''
-    }
-  }
-
   private parseParameters(parameters: string): unknown {
     const toBeRemoved = 'Unparsable code: '
     if (parameters.startsWith(toBeRemoved)) {
@@ -447,7 +244,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     return JSON.parse(parameters)
   }
 
-  private async transactionToAirGapTransaction(transaction: any, sourceAddresses?: string[]): Promise<IAirGapTransaction> {
+  private async transactionToAirGapTransactions(transaction: any, sourceAddresses?: string[]): Promise<IAirGapTransaction[]> {
     const parameters: string = transaction.parameters_micheline ?? transaction.parameters
     const parsedParameters: unknown = this.parseParameters(parameters)
 
@@ -460,35 +257,32 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
       value: parsedParameters
     }
 
-    const { from, to, amount } = await this.transferDetailsFromParameters(transferData)
-    const inbound = sourceAddresses !== undefined ? sourceAddresses.indexOf(to) !== -1 : false
+    const partialDetails: Partial<IAirGapTransaction>[] = await this.transactionDetailsFromParameters(transferData)
 
-    return {
-      amount: new BigNumber(amount).toFixed(), // in tzbtc
-      fee: new BigNumber(transaction.fee ?? 0).toFixed(), // in xtz
-      from: [from],
-      isInbound: inbound,
-      protocolIdentifier: this.identifier,
-      to: [to],
-      hash: transaction.operation_group_hash,
-      timestamp: transaction.timestamp / 1000,
-      blockHeight: transaction.block_level,
-      extra: {
-        status: transaction.status
+    return partialDetails.map((details: Partial<IAirGapTransaction>) => {
+      const inbound: boolean = sourceAddresses !== undefined && details.to && details.to.length === 1
+      ? sourceAddresses.indexOf(details.to[0]) !== -1 
+      : false
+
+      return {
+        amount: new BigNumber(0).toFixed(), // in tzbtc
+        fee: new BigNumber(transaction.fee ?? 0).toFixed(), // in xtz
+        from: [],
+        isInbound: inbound,
+        protocolIdentifier: this.identifier,
+        to: [],
+        hash: transaction.operation_group_hash,
+        timestamp: transaction.timestamp / 1000,
+        blockHeight: transaction.block_level,
+        extra: {
+          status: transaction.status
+        },
+        ...details
       }
-    }
+    })
   }
 
-  private callbackContract(): string {
-    let result = this.defaultCallbackContractMap.get(this.network)
-    if (result === undefined) {
-      result = ''
-    }
-
-    return result
-  }
-
-  private async runContractCall(contractCall: TezosContractCall, source: string): Promise<string> {
+  protected async runContractCall(contractCall: TezosContractCall, source: string): Promise<string> {
     const results: AxiosResponse[] = await Promise.all([
       axios.get(this.url(`/chains/main/blocks/head/context/contracts/${source}/counter`)),
       axios.get(this.url('/chains/main/blocks/head/'))
@@ -514,7 +308,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     }
   }
 
-  private async prepareContractCall(
+  protected async prepareContractCall(
     contractCalls: TezosContractCall[], 
     fee: string, 
     publicKey: string
@@ -538,6 +332,18 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
       console.error(error.message)
       throw new Error('Forging Tezos TX failed.')
     }
+  }
+
+  protected callbackContract(): string {
+    return this.defaultCallbackContractMap.get(this.network) ?? ''
+  }
+  
+  protected requireSource(source?: string, defaultSource?: string, ...excludedPrefixes: string[]): string {
+    const _source = source ?? defaultSource
+
+    return _source === undefined || excludedPrefixes.some((excluded: string) => _source.toLowerCase().startsWith(excluded.toLowerCase()))
+      ? this.defaultSourceAddress
+      : _source
   }
 
   private prepareMockContractCall(

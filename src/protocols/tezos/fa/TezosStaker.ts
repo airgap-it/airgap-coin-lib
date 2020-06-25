@@ -1,9 +1,9 @@
 import { TezosNetwork } from '../TezosProtocol'
 import { TezosUtils } from '../TezosUtils'
 
-import { TezosFAProtocol } from './TezosFAProtocol'
+import { TezosFA12Protocol } from './TezosFA12Protocol'
 
-export class TezosStaker extends TezosFAProtocol {
+export class TezosStaker extends TezosFA12Protocol {
   constructor(
     contractAddress: string = 'KT1EctCuorV2NfVb1XTQgvzJ88MQtWP8cMMv',
     jsonRPCAPI?: string,

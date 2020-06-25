@@ -1,8 +1,9 @@
-import { TezosFAProtocol } from './TezosFAProtocol'
 import { TezosNetwork } from '../TezosProtocol'
 import { TezosUtils } from '../TezosUtils'
 
-export class TezosUSD extends TezosFAProtocol {
+import { TezosFA12Protocol } from './TezosFA12Protocol'
+
+export class TezosUSD extends TezosFA12Protocol {
 
   private static extractAmountRegex = /Pair ([0-9]+) /
 

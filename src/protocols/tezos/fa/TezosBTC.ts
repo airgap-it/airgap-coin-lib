@@ -6,9 +6,9 @@ import { MichelsonType } from '../types/michelson/MichelsonType'
 import { MichelsonInt } from '../types/michelson/primitives/MichelsonInt'
 
 import { TezosBTCDetails } from './../../../serializer/constants'
-import { TezosFAProtocol } from './TezosFAProtocol'
+import { TezosFA12Protocol } from './TezosFA12Protocol'
 
-export class TezosBTC extends TezosFAProtocol {
+export class TezosBTC extends TezosFA12Protocol {
   private static readonly bigMapKeyLedgerPrefix = '0x05070701000000066c65646765720a00000016'
 
   constructor(
