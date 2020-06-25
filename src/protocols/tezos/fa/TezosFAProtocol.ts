@@ -388,7 +388,6 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     }
     const contractCall = TezosContractCall.fromJSON(parameters)
     const amount = ((contractCall.args.second as TezosContractPair).second as TezosContractInt).value
-    console.log('ARGS', contractCall.args)
     const from = this.getAddressFromContractCallParameter(contractCall.args.first)
     const to = this.getAddressFromContractCallParameter((contractCall.args.second as TezosContractPair).first)
     return {
@@ -399,12 +398,9 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
   }
 
   private getAddressFromContractCallParameter(parameter: TezosContractEntity): string {
-    console.log('PARAMETER', parameter)
     if (parameter instanceof TezosContractString) {
-      console.log('is string')
       return (parameter as TezosContractString).value
     } else {
-      console.log('is bytes')
       return TezosUtils.parseAddress((parameter as TezosContractBytes).value)
     }
   } 
@@ -424,7 +420,6 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
       entrypoint: transaction.parameters_entrypoints,
       value: this.parseParameters(parameters)
     }
-    console.log('LOOKING AT', JSON.stringify(transferData, undefined, 2));
     const { from, to, amount } = this.transferDetailsFromParameters(transferData)
     const inbound = sourceAddresses !== undefined ? sourceAddresses.indexOf(transferData.value.args[1].args[0].string) !== -1 : false
 
