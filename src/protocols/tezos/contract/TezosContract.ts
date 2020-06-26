@@ -207,6 +207,7 @@ export class TezosContract {
     configuration: MichelsonTypeMetaCreateValueConfiguration = {},
     parameterRegistry?: Map<string, MichelsonType>
   ): TezosContractCall {
+    // TODO: optimize so paths can be reused, e.g if creating value for `default` while more specific entrypoints have been already evaluated
     return new TezosContractCall(entrypoint.name, entrypoint.type.createValue(value, configuration), parameterRegistry)
   }
 

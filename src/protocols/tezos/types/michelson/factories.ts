@@ -31,7 +31,7 @@ export const michelsonTypeFactories: Record<MichelsonGrammarType, (...args: unkn
   contract: (...args: unknown[]): MichelsonType => MichelsonAddress.from(args[0]),
   pair: (...args: unknown[]): MichelsonType => MichelsonPair.from(args[0], args[1], args[2]),
   or: (...args: unknown[]): MichelsonType => MichelsonOr.from(args[0], args[1], args[2]),
-  lambda: (): MichelsonType => notSupported('lambda'),
+  lambda: (...args: unknown[]): MichelsonType => MichelsonAddress.from(args[0]), // check if correct
   map: (): MichelsonType => notSupported('map'),
   big_map: (): MichelsonType => notSupported('big_map'),
   chain_id: (): MichelsonType => notSupported('chain_id'),
