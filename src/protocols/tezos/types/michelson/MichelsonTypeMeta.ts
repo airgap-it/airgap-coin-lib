@@ -1,7 +1,7 @@
 // tslint:disable: max-classes-per-file
 
 import { Lazy } from '../../../../data/Lazy'
-import { MichelineTypeNode, MichelinePrimitiveApplication } from '../../types/micheline/MichelineNode'
+import { MichelinePrimitiveApplication, MichelineTypeNode } from '../../types/micheline/MichelineNode'
 import { MichelsonGrammarType } from '../../types/michelson/grammar/MichelsonGrammarType'
 import { isMichelinePrimitiveApplication } from '../utils'
 
@@ -22,7 +22,11 @@ export interface MichelsonTypeMetaCreateValueConfiguration {
 }
 
 export class MichelsonTypeMeta {
-  constructor(readonly type: MichelsonGrammarType, readonly annots: string[] = []) {}
+  constructor(
+    public readonly type: MichelsonGrammarType, 
+    public readonly parent?: MichelsonGenericTypeMeta, 
+    public readonly annots: string[] = []
+  ) {}
 
   public static fromMichelineNode(node: MichelineTypeNode): MichelsonTypeMeta | undefined {
     if (!isMichelinePrimitiveApplication(node)) {
@@ -32,18 +36,27 @@ export class MichelsonTypeMeta {
     return this.fromMichelinePrimitiveApplication(node)
   }
 
-  public static fromMichelinePrimitiveApplication(primitiveApplication: MichelinePrimitiveApplication<any>): MichelsonTypeMeta {
-    const argsMeta: Lazy<MichelsonTypeMeta>[] = primitiveApplication.args 
-      ? primitiveApplication.args
-          .filter(isMichelinePrimitiveApplication)
-          .map((arg: MichelinePrimitiveApplication<any>) => new Lazy(() => this.fromMichelinePrimitiveApplication(arg)))
-      : []
-
-    return this.from(primitiveApplication.prim, primitiveApplication.annots || [], argsMeta)
+  public static fromMichelinePrimitiveApplication(
+    primitiveApplication: MichelinePrimitiveApplication<any>,
+    parent?: MichelsonGenericTypeMeta
+  ): MichelsonTypeMeta {
+    return this.from(
+      primitiveApplication.prim, 
+      primitiveApplication.annots ?? [], 
+      primitiveApplication.args?.filter(isMichelinePrimitiveApplication) ?? [],
+      parent
+    )
   }
 
-  public static from(type: MichelsonGrammarType, annots: string[], argsMeta: Lazy<MichelsonTypeMeta>[]): MichelsonTypeMeta {
-    return argsMeta.length === 0 ? new MichelsonTypeMeta(type, annots) : new MichelsonGenericTypeMeta(type, argsMeta, annots)
+  public static from(
+    type: MichelsonGrammarType, 
+    annots: string[], 
+    args: MichelinePrimitiveApplication<any>[], 
+    parent?: MichelsonGenericTypeMeta
+  ): MichelsonTypeMeta {
+    return args.length === 0 
+      ? new MichelsonTypeMeta(type, parent, annots) 
+      : new MichelsonGenericTypeMeta(type, args, parent, annots)
   }
 
   public createValue(value: unknown, configuration: MichelsonTypeMetaCreateValueConfiguration = {}): MichelsonType {
@@ -93,8 +106,19 @@ export class MichelsonTypeMeta {
 }
 
 export class MichelsonGenericTypeMeta extends MichelsonTypeMeta {
-  constructor(type: MichelsonGrammarType, readonly generics: Lazy<MichelsonTypeMeta>[], annots: string[] = []) {
-    super(type, annots)
+  public readonly generics: Lazy<MichelsonTypeMeta>[]
+
+  constructor(
+    type: MichelsonGrammarType, 
+    genericTypes: MichelinePrimitiveApplication<any>[], 
+    parent?: MichelsonGenericTypeMeta, 
+    annots: string[] = []
+  ) {
+    super(type, parent, annots)
+
+    this.generics = genericTypes.map((type: MichelinePrimitiveApplication<any>) => { 
+      return new Lazy(() => MichelsonTypeMeta.fromMichelinePrimitiveApplication(type, this))
+    })
   }
 
   public createValue(value: unknown, configuration: MichelsonTypeMetaCreateValueConfiguration): MichelsonType {

@@ -87,29 +87,36 @@ export class TezosFA12Protocol extends TezosFAProtocol {
       throw new Error('Only calls to the transfer entrypoint can be converted to IAirGapTransaction')
     }
     const contractCall: TezosContractCall = await this.contract.parseContractCall(parameters)
-    const amount: BigNumber | undefined = contractCall.argument<MichelsonInt>('value')?.value
+    
+    return contractCall.args().map((callArguments: Record<string, unknown>) => {
+      if (!this.isTransferRequest(callArguments)) {
+        return {}
+      }
 
-    const fromAddress: MichelsonString | MichelsonBytes | undefined = contractCall.argument<MichelsonAddress>('from')?.address
-    let from: string | undefined
-    if (fromAddress && Buffer.isBuffer(fromAddress.value)) {
-      from = TezosUtils.parseAddress(fromAddress.value.toString('hex'))
-    } else if (fromAddress && typeof fromAddress.value === 'string') {
-      from = fromAddress.value
-    }
+      const amount: BigNumber = callArguments.value.value
 
-    const toAddress: MichelsonString | MichelsonBytes | undefined = contractCall.argument<MichelsonAddress>('to')?.address
-    let to: string | undefined
-    if (toAddress && Buffer.isBuffer(toAddress.value)) {
-      to = TezosUtils.parseAddress(toAddress?.value.toString('hex')) 
-    } else if (toAddress && typeof toAddress.value === 'string') {
-      to = toAddress.value
-    }
+      const fromAddress: MichelsonString | MichelsonBytes = callArguments.from.address
+      let from: string | undefined
+      if (Buffer.isBuffer(fromAddress.value)) {
+        from = TezosUtils.parseAddress(fromAddress.value.toString('hex'))
+      } else if (fromAddress && typeof fromAddress.value === 'string') {
+        from = fromAddress.value
+      }
 
-    return [{
-      amount: new BigNumber(amount || NaN).toFixed(), // in tzbtc
-      from: [from || ''],
-      to: [to || '']
-    }]
+      const toAddress: MichelsonString | MichelsonBytes = callArguments.to.address
+      let to: string | undefined
+      if (Buffer.isBuffer(toAddress.value)) {
+        to = TezosUtils.parseAddress(toAddress?.value.toString('hex'))
+      } else if (toAddress && typeof toAddress.value === 'string') {
+        to = toAddress.value
+      }
+
+      return {
+        amount: new BigNumber(amount).toFixed(), // in tzbtc
+        from: [from || ''],
+        to: [to || '']
+      }
+    })
   }
 
   public async getBalance(address: string, source?: string, callbackContract: string = this.callbackContract()): Promise<string> {
@@ -218,5 +225,16 @@ export class TezosFA12Protocol extends TezosFAProtocol {
     }
 
     return transferCalls
+  }
+
+  private isTransferRequest(obj: unknown): obj is { from: MichelsonAddress, to: MichelsonAddress, value: MichelsonInt } {
+    const anyObj: any = obj as any
+
+    return (
+      anyObj instanceof Object &&
+      anyObj.from instanceof MichelsonAddress &&
+      anyObj.to instanceof MichelsonAddress &&
+      anyObj.value instanceof MichelsonInt
+    )
   }
 }

@@ -1,12 +1,19 @@
+import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { IAirGapTransaction } from '../../../interfaces/IAirGapTransaction'
 import { RawTezosTransaction } from '../../../serializer/types'
+import { FeeDefaults } from '../../ICoinProtocol'
 import { TezosContractCall } from '../contract/TezosContractCall'
 import { TezosNetwork } from '../TezosProtocol'
+import { TezosUtils } from '../TezosUtils'
+import { MichelsonAddress } from '../types/michelson/primitives/MichelsonAddress'
+import { MichelsonBytes } from '../types/michelson/primitives/MichelsonBytes'
+import { MichelsonInt } from '../types/michelson/primitives/MichelsonInt'
+import { MichelsonString } from '../types/michelson/primitives/MichelsonString'
 import { TezosTransactionParameters } from '../types/operations/Transaction'
 
 import { TezosFAProtocol, TezosFAProtocolConfiguration } from './TezosFAProtocol'
 
-enum ContractEntrypointName {
+enum FA2ContractEntrypointName {
   BALANCE = 'balance_of',
   TRANSFER = 'transfer',
   UPDATE_OPERATORS = 'update_operators',
@@ -46,8 +53,79 @@ export class TezosFA2Protocol extends TezosFAProtocol {
     })
   }
 
-  public transactionDetailsFromParameters(parameters: TezosTransactionParameters): Promise<Partial<IAirGapTransaction>[]> {
+  public async getBalanceOfAddresses(addresses: string[]): Promise<string> {
     throw new Error('Method not implemented.')
+  }
+
+  public async estimateFeeDefaultsFromPublicKey(
+    publicKey: string,
+    recipients: string[],
+    values: string[],
+    data?: any
+  ): Promise<FeeDefaults> {
+    // return this.feeDefaults
+    if (recipients.length !== values.length) {
+      throw new Error('length of recipients and values does not match!')
+    }
+    throw new Error('Method not implemented.')
+  }
+
+  public async prepareTransactionFromPublicKey(
+    publicKey: string,
+    recipients: string[],
+    values: string[],
+    fee: string,
+    data?: { addressIndex: number }
+  ): Promise<RawTezosTransaction> {
+    throw new Error('Method not implemented.')
+  }
+
+  public async transactionDetailsFromParameters(parameters: TezosTransactionParameters): Promise<Partial<IAirGapTransaction>[]> {
+    if (parameters.entrypoint !== FA2ContractEntrypointName.TRANSFER) {
+      throw new Error('Only calls to the transfer entrypoint can be converted to IAirGapTransaction')
+    }
+    
+    const contractCall: TezosContractCall = await this.contract.parseContractCall(parameters)
+
+    return contractCall.args().map((callArguments: unknown) => {
+      if (!this.isTransferRequest(callArguments)) {
+        return {}
+      }
+
+      const fromAddress: MichelsonString | MichelsonBytes = callArguments.from_.address
+      let from: string | undefined
+      if (Buffer.isBuffer(fromAddress.value)) {
+        from = TezosUtils.parseAddress(fromAddress.value.toString('hex'))
+      } else if (fromAddress && typeof fromAddress.value === 'string') {
+        from = fromAddress.value
+      }
+
+
+      const recipientsWithAmount: [string, BigNumber][] = callArguments.txs.map((tx) => {
+        const toAddress: MichelsonString | MichelsonBytes = tx.to_.address
+
+        let stringAddress: string | undefined
+        if (Buffer.isBuffer(toAddress.value)) {
+          stringAddress = TezosUtils.parseAddress(toAddress?.value.toString('hex'))
+        } else if (toAddress && typeof toAddress.value === 'string') {
+          stringAddress = toAddress.value
+        }
+
+        return [stringAddress, tx.amount.value] as [string | undefined, BigNumber]
+      }).filter(([address, _]: [string | undefined, BigNumber]) => address !== undefined) as [string, BigNumber][]
+
+      const amount: BigNumber = recipientsWithAmount.reduce(
+        (sum: BigNumber, [_, next]: [string, BigNumber]) => sum.plus(next),
+        new BigNumber(0)
+      )
+      const to: string[] = recipientsWithAmount.map(([recipient, _]: [string, BigNumber]) => recipient)
+
+      return {
+        amount: amount.toFixed(),
+        from: [from || ''],
+        to
+      }
+    })
   }
 
   public async balanceOf(
@@ -56,7 +134,7 @@ export class TezosFA2Protocol extends TezosFAProtocol {
     callbackContract: string = this.callbackContract()
   ): Promise<string> {
     const balanceOfCall: TezosContractCall = await this.contract.createContractCall(
-      ContractEntrypointName.BALANCE, 
+      FA2ContractEntrypointName.BALANCE, 
       {
         requests: balanceRequests.map((request: TezosFA2BalanceOfRequest) => {
           return {
@@ -77,7 +155,7 @@ export class TezosFA2Protocol extends TezosFAProtocol {
     publicKey: string
   ): Promise<RawTezosTransaction> {
     const transferCall: TezosContractCall = await this.contract.createContractCall(
-      ContractEntrypointName.TRANSFER,
+      FA2ContractEntrypointName.TRANSFER,
       transferRequests.map((request: TezosFA2TransferRequest) => {
         return {
           from_: request.from,
@@ -101,7 +179,7 @@ export class TezosFA2Protocol extends TezosFAProtocol {
     publicKey: string
   ): Promise<RawTezosTransaction> {
     const updateCall: TezosContractCall = await this.contract.createContractCall(
-      ContractEntrypointName.UPDATE_OPERATORS,
+      FA2ContractEntrypointName.UPDATE_OPERATORS,
       updateRequests.map((request: TezosFA2UpdateOperatorRequest) => {
         return {
           [`${request.operation}_operator`]: {
@@ -117,7 +195,7 @@ export class TezosFA2Protocol extends TezosFAProtocol {
 
   public async tokenMetadataRegistry(source?: string, callbackContract: string = this.callbackContract()): Promise<string> {
     const tokenMetadataRegistryCall: TezosContractCall = await this.contract.createContractCall(
-      ContractEntrypointName.TOKEN_METADATA_REGISTRY,
+      FA2ContractEntrypointName.TOKEN_METADATA_REGISTRY,
       callbackContract
     )
 
@@ -130,7 +208,7 @@ export class TezosFA2Protocol extends TezosFAProtocol {
     callbackContract: string = this.callbackContract()
   ): Promise<string> {
     const tokenMetadataCall: TezosContractCall = await this.contract.createContractCall(
-      ContractEntrypointName.TOKEN_METADATA,
+      FA2ContractEntrypointName.TOKEN_METADATA,
       {
         token_ids: tokenIDs,
         handler: callbackContract
@@ -138,5 +216,20 @@ export class TezosFA2Protocol extends TezosFAProtocol {
     )
 
     return this.runContractCall(tokenMetadataCall, this.requireSource(source))
+  }
+
+  private isTransferRequest(obj: unknown): obj is { 
+    from_: MichelsonAddress, txs: { to_: MichelsonAddress, token_id: MichelsonInt, amount: MichelsonInt }[]
+  } {
+    const anyObj = obj as any
+    
+    return (
+      anyObj instanceof Object &&
+      anyObj.from_ !== undefined &&
+      Array.isArray(anyObj.txs) &&
+      anyObj.txs.every((tx: any) => 
+        tx instanceof Object && tx.to_ !== undefined && tx.token_id !== undefined && tx.amount !== undefined
+      )
+    )
   }
 }

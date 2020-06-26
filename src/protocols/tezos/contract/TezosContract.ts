@@ -4,6 +4,7 @@ import { MichelsonOr } from '../types/michelson/generics/MichelsonOr'
 import { MichelsonType } from '../types/michelson/MichelsonType'
 import {
   MichelsonAnnotationPrefix,
+  MichelsonGenericTypeMeta,
   MichelsonTypeMeta,
   MichelsonTypeMetaCreateValueConfiguration
 } from '../types/michelson/MichelsonTypeMeta'
@@ -135,17 +136,14 @@ export class TezosContract {
       return Promise.reject(`Couldn't parse the contract call, unknown entrypoint: ${json.entrypoint}`)
     }
 
-    const parameterRegistry: Map<string, MichelsonType> = new Map()
+    const namedValues: Map<MichelsonGenericTypeMeta, [MichelsonType | MichelsonGenericTypeMeta, string | undefined][]> = new Map()
 
     return this.createEntrypointContractCall(entrypoint, json.value, {
       lazyEval: false,
       onNext: (meta: MichelsonTypeMeta, _raw: unknown, value: MichelsonType): void => {
-        const argName: string | undefined = meta.getAnnotation(MichelsonAnnotationPrefix.TYPE, MichelsonAnnotationPrefix.FIELD)
-        if (argName && this.entrypoints?.has(argName)) {
-          parameterRegistry.set(argName, value)
-        }
+        this.saveNamedValue(namedValues, meta, value)
       },
-    }, parameterRegistry)
+    }, namedValues)
   }
 
   public async normalizeContractCallParameters(
@@ -205,10 +203,10 @@ export class TezosContract {
     entrypoint: TezosContractEntrypoint,
     value: unknown,
     configuration: MichelsonTypeMetaCreateValueConfiguration = {},
-    parameterRegistry?: Map<string, MichelsonType>
+    namedValues?: Map<MichelsonGenericTypeMeta, [MichelsonType | MichelsonGenericTypeMeta, string | undefined][]>
   ): TezosContractCall {
     // TODO: optimize so paths can be reused, e.g if creating value for `default` while more specific entrypoints have been already evaluated
-    return new TezosContractCall(entrypoint.name, entrypoint.type.createValue(value, configuration), parameterRegistry)
+    return new TezosContractCall(entrypoint, entrypoint.type.createValue(value, configuration), namedValues)
   }
 
   private async waitForBigMapID(): Promise<void> {
@@ -241,6 +239,32 @@ export class TezosContract {
     }
 
     return this.bigMapIDPromise
+  }
+
+  private saveNamedValue(
+    registry: Map<MichelsonGenericTypeMeta, [MichelsonType | MichelsonGenericTypeMeta, string | undefined][]>,
+    meta: MichelsonTypeMeta,
+    michelsonValue: MichelsonType
+  ): void {
+    if (!meta.parent && !(meta instanceof MichelsonGenericTypeMeta)) {
+      return
+    }
+
+    const argName: string | undefined = meta.getAnnotation(MichelsonAnnotationPrefix.TYPE, MichelsonAnnotationPrefix.FIELD)
+    const genericMetas: MichelsonGenericTypeMeta[] = [
+      meta.parent, 
+      meta
+    ].filter((typeMeta: MichelsonTypeMeta | undefined) => typeMeta instanceof MichelsonGenericTypeMeta) as MichelsonGenericTypeMeta[]
+
+    genericMetas.forEach((genericMeta: MichelsonGenericTypeMeta) => {
+      if (!registry.has(genericMeta)) {
+        registry.set(genericMeta, [])
+      }
+    })
+
+    if (meta.parent) {
+      registry.get(meta.parent)?.push([meta instanceof MichelsonGenericTypeMeta ? meta : michelsonValue, argName])
+    }
   }
 
   private async waitForEntrypoints(): Promise<void> {
