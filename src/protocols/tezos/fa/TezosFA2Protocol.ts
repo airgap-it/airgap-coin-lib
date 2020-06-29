@@ -6,7 +6,10 @@ import { FeeDefaults } from '../../ICoinProtocol'
 import { TezosContractCall } from '../contract/TezosContractCall'
 import { TezosNetwork } from '../TezosProtocol'
 import { TezosUtils } from '../TezosUtils'
+import { MichelineDataNode, MichelineNode } from '../types/micheline/MichelineNode'
 import { TezosTransactionParameters } from '../types/operations/Transaction'
+import { TezosOperationType } from '../types/TezosOperationType'
+import { isMichelinePrimitive, isMichelineSequence } from '../types/utils'
 
 import { TezosFAProtocol, TezosFAProtocolConfiguration } from './TezosFAProtocol'
 
@@ -51,7 +54,14 @@ export class TezosFA2Protocol extends TezosFAProtocol {
   }
 
   public async getBalanceOfAddresses(addresses: string[]): Promise<string> {
-    throw new Error('Method not implemented.')
+    const tokenID: number = 0 // set better default tokenID?
+    
+    return this.balanceOf(addresses.map((address: string) => {
+      return {
+        address,
+        tokenID
+      }
+    }, this.defaultSourceAddress))
   }
 
   public async estimateFeeDefaultsFromPublicKey(
@@ -64,7 +74,17 @@ export class TezosFA2Protocol extends TezosFAProtocol {
     if (recipients.length !== values.length) {
       throw new Error('length of recipients and values does not match!')
     }
-    throw new Error('Method not implemented.')
+
+    const transferCall: TezosContractCall = await this.createTransferCall(publicKey, recipients, values, this.feeDefaults.medium, data)
+    const operation = {
+      kind: TezosOperationType.TRANSACTION,
+      amount: '0',
+      destination: this.contractAddress,
+      parameters: transferCall.toJSON(),
+      fee: '0'
+    }
+
+    return this.estimateFeeDefaultsForOperations(publicKey, [operation])
   }
 
   public async prepareTransactionFromPublicKey(
@@ -72,9 +92,11 @@ export class TezosFA2Protocol extends TezosFAProtocol {
     recipients: string[],
     values: string[],
     fee: string,
-    data?: { addressIndex: number }
+    data?: any
   ): Promise<RawTezosTransaction> {
-    throw new Error('Method not implemented.')
+    const transferCall: TezosContractCall = await this.createTransferCall(publicKey, recipients, values, fee, data)
+
+    return this.prepareContractCall([transferCall], fee, publicKey)
   }
 
   public async transactionDetailsFromParameters(parameters: TezosTransactionParameters): Promise<Partial<IAirGapTransaction>[]> {
@@ -129,7 +151,17 @@ export class TezosFA2Protocol extends TezosFAProtocol {
       }
     )
 
-    return this.runContractCall(balanceOfCall, this.requireSource(source))
+    const results: MichelineDataNode = await this.runContractCall(balanceOfCall, this.requireSource(source))
+    if (isMichelinePrimitive('int', results)) {
+      return results.int
+    } else if (isMichelineSequence(results)) {
+      return results
+        .map((balance: MichelineNode) => isMichelinePrimitive('int', balance) ? new BigNumber(balance.int) : 0)
+        .reduce((sum: BigNumber, next: BigNumber | number) => sum.plus(next), new BigNumber(0))
+        .toFixed()
+    } else {
+      return '0'
+    }
   }
 
   public async transfer(
@@ -182,7 +214,15 @@ export class TezosFA2Protocol extends TezosFAProtocol {
       callbackContract
     )
 
-    return this.runContractCall(tokenMetadataRegistryCall, this.requireSource(source))
+    const result: MichelineDataNode = await this.runContractCall(tokenMetadataRegistryCall, this.requireSource(source)).catch(() => [])
+   
+    if (isMichelinePrimitive('string', result)) {
+      return result.string
+    } else if (isMichelinePrimitive('bytes', result)) {
+      return TezosUtils.parseAddress(result.bytes)
+    } else {
+      return ''
+    }
   }
 
   public async tokenMetadata(
@@ -198,7 +238,51 @@ export class TezosFA2Protocol extends TezosFAProtocol {
       }
     )
 
-    return this.runContractCall(tokenMetadataCall, this.requireSource(source))
+    const result: MichelineDataNode = await this.runContractCall(tokenMetadataCall, this.requireSource(source))
+
+    if (isMichelinePrimitive('string', result)) {
+      return result.string
+    } else {
+      return ''
+    }
+  }
+
+  private async createTransferCall(
+    publicKey: string,
+    recipients: string[],
+    values: string[],
+    fee: string,
+    data?: { addressIndex: number, tokenID: number }
+  ): Promise<TezosContractCall> {
+    if (recipients.length !== values.length) {
+      throw new Error('length of recipients and values does not match!')
+    }
+
+    const addressIndex: number = data && data.addressIndex !== undefined ? data.addressIndex : 0
+    const tokenID: number = data && data.tokenID !== undefined ? data.tokenID : 0
+    const addresses: string[] = await this.getAddressesFromPublicKey(publicKey)
+
+    if (!addresses[addressIndex]) {
+      throw new Error('no kt-address with this index exists')
+    }
+
+    const fromAddress: string = addresses[addressIndex]
+    const recipientsWithValues: [string, string][] = recipients.map((recipient: string, index: number) => [recipient, values[index]])
+
+    const transferCall: TezosContractCall = await this.contract.createContractCall(FA2ContractEntrypointName.TRANSFER, [
+      {
+        from_: fromAddress,
+        txs: recipientsWithValues.map(([recipient, value]: [string, string]) => {
+          return {
+            to_: recipient,
+            token_id: tokenID,
+            amount: value
+          }
+        })
+      }
+    ])
+
+    return transferCall
   }
 
   private isTransferRequest(obj: unknown): obj is { 

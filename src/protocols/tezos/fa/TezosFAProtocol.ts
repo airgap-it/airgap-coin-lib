@@ -13,6 +13,7 @@ import { TezosWrappedOperation } from '../types/TezosWrappedOperation'
 import { isMichelineNode } from '../types/utils'
 
 import { FeeDefaults } from './../../ICoinProtocol'
+import { MichelineDataNode } from '../types/micheline/MichelineNode'
 
 export interface TezosFAProtocolConfiguration {
   symbol: string
@@ -282,7 +283,7 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
     })
   }
 
-  protected async runContractCall(contractCall: TezosContractCall, source: string): Promise<string> {
+  protected async runContractCall(contractCall: TezosContractCall, source: string): Promise<MichelineDataNode> {
     const results: AxiosResponse[] = await Promise.all([
       axios.get(this.url(`/chains/main/blocks/head/context/contracts/${source}/counter`)),
       axios.get(this.url('/chains/main/blocks/head/'))
@@ -297,14 +298,13 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
       })
       const metadata = response.data.contents[0].metadata
       if (metadata.internal_operation_results !== undefined && metadata.operation_result.status === 'applied') {
-        return metadata.internal_operation_results[0].parameters.value.int
+        return metadata.internal_operation_results[0].parameters.value 
       } else {
         throw new Error(metadata.operation_result.errors[0].id)
       }
     } catch (runOperationError) {
       console.error(runOperationError)
-
-      return '0'
+      throw runOperationError
     }
   }
 

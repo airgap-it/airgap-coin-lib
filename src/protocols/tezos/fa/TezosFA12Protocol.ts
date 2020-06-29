@@ -9,6 +9,7 @@ import { TezosUtils } from '../TezosUtils'
 import { TezosOperation } from '../types/operations/TezosOperation'
 import { TezosTransactionParameters } from '../types/operations/Transaction'
 import { TezosOperationType } from '../types/TezosOperationType'
+import { isMichelinePrimitive } from '../types/utils'
 
 import { TezosFAProtocol, TezosFAProtocolConfiguration } from './TezosFAProtocol'
 
@@ -102,7 +103,7 @@ export class TezosFA12Protocol extends TezosFAProtocol {
       owner: address
     }, callbackContract])
 
-    return this.runContractCall(getBalanceCall, this.requireSource(source, address, 'kt'))
+    return this.simulateContractCall(getBalanceCall, this.requireSource(source, address, 'kt'))
   }
 
   public async getAllowance(
@@ -116,7 +117,7 @@ export class TezosFA12Protocol extends TezosFAProtocol {
       spender: spenderAddress
     }, callbackContract])
 
-    return this.runContractCall(getAllowanceCall, this.requireSource(source, spenderAddress, 'kt'))
+    return this.simulateContractCall(getAllowanceCall, this.requireSource(source, spenderAddress, 'kt'))
   }
 
   public async getTotalSupply(source?: string, callbackContract: string = this.callbackContract()) {
@@ -171,6 +172,20 @@ export class TezosFA12Protocol extends TezosFAProtocol {
     return this.prepareContractCall([approveCall], fee, publicKey)
   }
 
+  private async simulateContractCall(transferCall: TezosContractCall, source: string): Promise<string> {
+    try {
+      const operationResult = await this.runContractCall(transferCall, source)
+
+      if (isMichelinePrimitive('int', operationResult)) {
+        return operationResult.int
+      }
+    } catch {
+
+    }
+
+    return '0'
+  }
+
   private async createTransferCalls(
     publicKey: string,
     recipients: string[],
@@ -183,7 +198,7 @@ export class TezosFA12Protocol extends TezosFAProtocol {
     }
 
     // check if we got an address-index
-    const addressIndex: number = data && data.addressIndex ? data.addressIndex : 0
+    const addressIndex: number = data && data.addressIndex !== undefined ? data.addressIndex : 0
     const addresses: string[] = await this.getAddressesFromPublicKey(publicKey)
 
     if (!addresses[addressIndex]) {
