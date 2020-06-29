@@ -12,7 +12,7 @@ const BLOCK_EXPLORER_API = 'https://api-01.polkascan.io/polkadot/api/v1'
 export class PolkadotProtocol extends SubstrateProtocol {
   public symbol: string = 'DOT'
   public name: string = 'Polkadot'
-  public marketSymbol: string = 'DOT'
+  public marketSymbol: string = '' // empty until cryptocompare supports Polkadot or we change the provider
   public feeSymbol: string = 'DOT'
 
   public decimals: number = 12
