@@ -96,7 +96,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
       .reduce((flatten, toFlatten) => flatten.concat(toFlatten), [])
       .map((tx) => ({
         protocolIdentifier: this.identifier,
-        networkIdentifier: this.options.network.identifier,
+        networkIdentifier: this.options.network,
         from: [],
         to: [],
         isInbound: false,
@@ -302,10 +302,10 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     nominatorDetails.rewards =
       nominatorDetails.delegatees.length > 0 && nominatorDetails.stakingDetails
         ? nominatorDetails.stakingDetails.rewards.map((reward) => ({
-            index: reward.eraIndex,
-            amount: reward.amount,
-            timestamp: reward.timestamp
-          }))
+          index: reward.eraIndex,
+          amount: reward.amount,
+          timestamp: reward.timestamp
+        }))
         : []
 
     return {
@@ -377,16 +377,16 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     const encoded = await this.options.config.transactionController.prepareSubmittableTransactions(publicKey, available, [
       ...(bondFirst
         ? [
-            {
-              type: SubstrateTransactionType.BOND,
-              tip,
-              args: {
-                controller,
-                value: BigNumber.isBigNumber(value) ? value : new BigNumber(value!),
-                payee: typeof payee === 'string' ? SubstratePayee[payee] : payee
-              }
+          {
+            type: SubstrateTransactionType.BOND,
+            tip,
+            args: {
+              controller,
+              value: BigNumber.isBigNumber(value) ? value : new BigNumber(value!),
+              payee: typeof payee === 'string' ? SubstratePayee[payee] : payee
             }
-          ]
+          }
+        ]
         : []),
       {
         type: SubstrateTransactionType.NOMINATE,
@@ -417,14 +417,14 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
       ...(keepController
         ? []
         : [
-            {
-              type: SubstrateTransactionType.UNBOND,
-              tip,
-              args: {
-                value: BigNumber.isBigNumber(value) ? value : new BigNumber(value!)
-              }
+          {
+            type: SubstrateTransactionType.UNBOND,
+            tip,
+            args: {
+              value: BigNumber.isBigNumber(value) ? value : new BigNumber(value!)
             }
-          ])
+          }
+        ])
     ])
 
     return [{ encoded }]
@@ -555,7 +555,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
           amount: '',
           fee: tx.fee.toString(),
           protocolIdentifier: this.identifier,
-          networkIdentifier: this.options.network.identifier,
+          networkIdentifier: this.options.network,
           isInbound: false,
           ...part
         }))

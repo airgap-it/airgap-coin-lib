@@ -55,7 +55,7 @@ export class CosmosDelegateMessage implements CosmosMessage {
       isInbound: false,
       fee,
       protocolIdentifier: protocol.identifier,
-      networkIdentifier: protocol.options.network.identifier,
+      networkIdentifier: protocol.options.network,
       transactionDetails: this.toRPCBody(),
       extra: {
         type: this.type.index === CosmosMessageTypeIndex.DELEGATE ? AirGapTransactionType.DELEGATE : AirGapTransactionType.UNDELEGATE

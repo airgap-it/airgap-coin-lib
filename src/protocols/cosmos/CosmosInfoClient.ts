@@ -138,7 +138,7 @@ export class CosmosInfoClient {
             isInbound: destination === address,
             fee: fee.toString(10),
             protocolIdentifier: protocol.identifier,
-            networkIdentifier: protocol.options.network.identifier,
+            networkIdentifier: protocol.options.network,
             hash: hit._source.hash,
             timestamp
           }

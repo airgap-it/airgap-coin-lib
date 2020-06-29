@@ -128,7 +128,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
   public addressValidationPattern: string = '^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$'
   public addressPlaceholder: string = '1ABC...'
 
-  constructor(public readonly options: BitcoinBlockbookProtocolOptions = new BitcoinBlockbookProtocolOptions()) {}
+  constructor(public readonly options: BitcoinBlockbookProtocolOptions = new BitcoinBlockbookProtocolOptions()) { }
 
   public async getBlockExplorerLinkForAddress(address: string): Promise<string> {
     return this.options.network.blockExplorer.getAddressLink(address)
@@ -298,7 +298,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
           .toString(10),
         fee: feeCalculator.toString(10),
         protocolIdentifier: this.identifier,
-        networkIdentifier: this.options.network.identifier,
+        networkIdentifier: this.options.network,
         isInbound: false,
         transactionDetails: unsignedTx.transaction
       }
@@ -312,7 +312,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
       amount: signedTx.amount,
       fee: signedTx.fee,
       protocolIdentifier: this.identifier,
-      networkIdentifier: this.options.network.identifier,
+      networkIdentifier: this.options.network,
       isInbound: false,
       transactionDetails: signedTx.transaction
     }
@@ -653,7 +653,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
         fee: new BigNumber(transaction.fees).toString(10),
         blockHeight: transaction.blockheight.toString(),
         protocolIdentifier: this.identifier,
-        networkIdentifier: this.options.network.identifier,
+        networkIdentifier: this.options.network,
         timestamp: transaction.blocktime
       }
 
@@ -716,7 +716,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
         fee: new BigNumber(transaction.fees).shiftedBy(this.feeDecimals).toString(10),
         blockHeight: transaction.blockheight.toString(),
         protocolIdentifier: this.identifier,
-        networkIdentifier: this.options.network.identifier,
+        networkIdentifier: this.options.network,
         timestamp: transaction.blocktime
       }
 

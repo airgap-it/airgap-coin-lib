@@ -1,4 +1,5 @@
 import { ProtocolSymbols } from '../utils/ProtocolSymbols'
+import { ProtocolNetwork } from '../utils/ProtocolNetwork';
 
 export enum AirGapTransactionType {
   SPEND = 'Spend Transaction',
@@ -20,7 +21,7 @@ export interface IAirGapTransaction {
   timestamp?: number
 
   protocolIdentifier: ProtocolSymbols
-  networkIdentifier: string
+  networkIdentifier: ProtocolNetwork
 
   hash?: string
   blockHeight?: string

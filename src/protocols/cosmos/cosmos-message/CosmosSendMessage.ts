@@ -57,7 +57,7 @@ export class CosmosSendMessage implements CosmosMessage {
       isInbound: false,
       fee,
       protocolIdentifier: protocol.identifier,
-      networkIdentifier: protocol.options.network.identifier,
+      networkIdentifier: protocol.options.network,
       transactionDetails: this.toRPCBody(),
       extra: {
         type: AirGapTransactionType.SPEND

@@ -203,15 +203,15 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     edsig: Buffer
     branch: Buffer
   } = {
-    tz1: Buffer.from(new Uint8Array([6, 161, 159])),
-    tz2: Buffer.from(new Uint8Array([6, 161, 161])),
-    tz3: Buffer.from(new Uint8Array([6, 161, 164])),
-    kt: Buffer.from(new Uint8Array([2, 90, 121])),
-    edpk: Buffer.from(new Uint8Array([13, 15, 37, 217])),
-    edsk: Buffer.from(new Uint8Array([43, 246, 78, 7])),
-    edsig: Buffer.from(new Uint8Array([9, 245, 205, 134, 18])),
-    branch: Buffer.from(new Uint8Array([1, 52]))
-  }
+      tz1: Buffer.from(new Uint8Array([6, 161, 159])),
+      tz2: Buffer.from(new Uint8Array([6, 161, 161])),
+      tz3: Buffer.from(new Uint8Array([6, 161, 164])),
+      kt: Buffer.from(new Uint8Array([2, 90, 121])),
+      edpk: Buffer.from(new Uint8Array([13, 15, 37, 217])),
+      edsk: Buffer.from(new Uint8Array([43, 246, 78, 7])),
+      edsig: Buffer.from(new Uint8Array([9, 245, 205, 134, 18])),
+      branch: Buffer.from(new Uint8Array([1, 52]))
+    }
 
   public get jsonRPCAPI(): string {
     // TODO: Remove if it works
@@ -396,7 +396,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
           from: [transaction.source],
           isInbound: addresses.indexOf(transaction.destination) !== -1,
           protocolIdentifier: this.identifier,
-          networkIdentifier: this.options.network.identifier,
+          networkIdentifier: this.options.network,
           to: [transaction.destination],
           hash: transaction.operation_group_hash,
           timestamp: transaction.timestamp / 1000,
@@ -508,7 +508,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
         from,
         isInbound: false,
         protocolIdentifier: this.identifier,
-        networkIdentifier: this.options.network.identifier,
+        networkIdentifier: this.options.network,
         to,
         transactionDetails: tezosOperation
       }
@@ -898,11 +898,11 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
     const rewards = isDelegating
       ? rewardInfo.map((reward) => ({
-          index: reward.cycle,
-          amount: reward.reward.toFixed(),
-          collected: reward.payout < new Date(),
-          timestamp: reward.payout.getTime()
-        }))
+        index: reward.cycle,
+        amount: reward.reward.toFixed(),
+        collected: reward.payout < new Date(),
+        timestamp: reward.payout.getTime()
+      }))
       : []
 
     return {
@@ -1159,10 +1159,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
         }
 
         if ((operation as any).gas_limit) {
-          ;(operation as any).gas_limit = gasLimit.toString()
+          ; (operation as any).gas_limit = gasLimit.toString()
         }
         if ((operation as any).storage_limit) {
-          ;(operation as any).storage_limit = storageLimit.toString()
+          ; (operation as any).storage_limit = storageLimit.toString()
         }
 
         gasLimitTotal += gasLimit
@@ -1180,7 +1180,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
       tezosWrappedOperation.contents.forEach((operation: TezosOperation) => {
         if ((operation as TezosTransactionOperation).fee) {
-          ;(operation as TezosTransactionOperation).fee = feePerOperation.toString()
+          ; (operation as TezosTransactionOperation).fee = feePerOperation.toString()
         }
       })
     }
@@ -1326,7 +1326,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
     const { data: mostRecentBlock } = await axios.get(
       `${this.options.network.rpcUrl}/chains/main/blocks/${
-        mostRecentCycle * TezosProtocol.BLOCKS_PER_CYCLE[this.options.network.extras.network]
+      mostRecentCycle * TezosProtocol.BLOCKS_PER_CYCLE[this.options.network.extras.network]
       }`
     )
 
@@ -1352,7 +1352,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
           reward: new BigNumber(payoutAmount),
           payout: new Date(
             timestamp.getTime() +
-              (obj.cycle - lastConfirmedCycle) * TezosProtocol.BLOCKS_PER_CYCLE[this.options.network.extras.network] * 60 * 1000
+            (obj.cycle - lastConfirmedCycle) * TezosProtocol.BLOCKS_PER_CYCLE[this.options.network.extras.network] * 60 * 1000
           )
         }
       })

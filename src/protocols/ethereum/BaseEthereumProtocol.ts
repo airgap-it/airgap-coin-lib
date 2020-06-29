@@ -180,7 +180,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
         amount: new BigNumber(transaction.value).toString(10),
         fee: new BigNumber(transaction.gasLimit).multipliedBy(new BigNumber(transaction.gasPrice)).toString(10),
         protocolIdentifier: this.identifier,
-        networkIdentifier: this.options.network.identifier,
+        networkIdentifier: this.options.network,
         isInbound: false,
         data: transaction.data,
         transactionDetails: unsignedTx
@@ -203,7 +203,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
         amount: new BigNumber(parseInt(hexValue, 16)).toString(10),
         fee: new BigNumber(parseInt(hexGasLimit, 16)).multipliedBy(new BigNumber(parseInt(hexGasPrice, 16))).toString(10),
         protocolIdentifier: this.identifier,
-        networkIdentifier: this.options.network.identifier,
+        networkIdentifier: this.options.network,
         isInbound: ethTx.toCreationAddress(),
         hash: `0x${ethTx.hash().toString('hex')}`,
         data: `0x${ethTx.data.toString('hex')}`,
