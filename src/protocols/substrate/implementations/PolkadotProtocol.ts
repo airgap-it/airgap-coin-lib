@@ -53,6 +53,8 @@ export class PolkadotProtocol extends SubstrateProtocol {
   public addressValidationPattern: string = '^1[a-km-zA-HJ-NP-Z1-9]+$'
   public addressPlaceholder: string = `1ABC...`
 
+  protected defaultValidator: string = '12C9U6zSSoZ6pgwR2ksFyBLgQH6v7dkqqPCRyHceoP8MJRo2'
+
   public constructor(
     network: SubstrateNetwork = SubstrateNetwork.POLKADOT,
     nodeClient: SubstrateNodeClient = new SubstrateNodeClient(network, NODE_URL),
