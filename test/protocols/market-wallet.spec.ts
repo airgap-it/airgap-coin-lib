@@ -4,6 +4,7 @@ import 'mocha'
 import * as sinon from 'sinon'
 
 import axios from '../../src/dependencies/src/axios-0.19.0/index'
+import BigNumber from '../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
 import {
   addSupportedProtocol,
   AeternityProtocol,
@@ -12,9 +13,13 @@ import {
   CosmosProtocol,
   EthereumProtocol,
   GroestlcoinProtocol,
+  ICoinProtocol,
   TezosProtocol
 } from '../../src/index'
 import { EthereumProtocolOptions } from '../../src/protocols/ethereum/EthereumProtocolOptions'
+import { AirGapWalletPriceService, TimeUnit } from '../../src/wallet/AirGapMarketWallet'
+import { MarketDataSample } from '../../dist/wallet/AirGapMarketWallet'
+import { MainProtocolSymbols } from '../../dist/utils/ProtocolSymbols'
 
 addSupportedProtocol(new AeternityProtocol())
 addSupportedProtocol(new BitcoinProtocol())
@@ -30,6 +35,16 @@ const expect = chai.expect
 const protocol = new EthereumProtocol()
 const xPubProtocol = new BitcoinProtocol()
 
+class AirGapPriceService implements AirGapWalletPriceService {
+  public async getCurrentMarketPrice(protocol: ICoinProtocol, baseSymbol: string): Promise<BigNumber> {
+    throw new Error("Method not implemented.")
+  }
+  public async getMarketPricesOverTime(protocol: ICoinProtocol, timeUnit: TimeUnit, numberOfMinutes: number, date: Date, baseSymbol: string): Promise<MarketDataSample[]> {
+    throw new Error("Method not implemented.")
+  }
+
+}
+
 describe(`AirGapMarketWallet`, () => {
   const sampleResponse: Readonly<any> = Object.freeze({
     data: {}
@@ -42,7 +57,8 @@ describe(`AirGapMarketWallet`, () => {
       protocol,
       '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       false,
-      protocol.standardDerivationPath
+      protocol.standardDerivationPath,
+      new AirGapPriceService()
     )
     wallet.addresses = ['address']
     return wallet
@@ -53,7 +69,8 @@ describe(`AirGapMarketWallet`, () => {
       protocol,
       '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       false,
-      protocol.standardDerivationPath
+      protocol.standardDerivationPath,
+      new AirGapPriceService()
     )
   }
 
@@ -116,7 +133,8 @@ describe(`AirGapMarketWallet`, () => {
       xPubProtocol,
       'xpub6CzH93BB4aueZX2bP88tvsvE8Cz2bHeGVAZSD5fmnk8roYBZCGbwwSA7ChiRr65jncuPH8qBQA9nBwi2Qtz1Uqt8wuHvof9SAcPpFxpe1GV',
       true,
-      xPubProtocol.standardDerivationPath
+      xPubProtocol.standardDerivationPath,
+      new AirGapPriceService()
     )
 
     stubCoinlibOfWallet(wallet)
@@ -145,7 +163,8 @@ describe(`AirGapMarketWallet`, () => {
       protocol,
       '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       false,
-      protocol.standardDerivationPath
+      protocol.standardDerivationPath,
+      new AirGapPriceService()
     )
 
     const address = wallet.receivingPublicAddress
@@ -157,7 +176,8 @@ describe(`AirGapMarketWallet`, () => {
       protocol,
       '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       false,
-      protocol.standardDerivationPath
+      protocol.standardDerivationPath,
+      new AirGapPriceService()
     )
 
     const [address] = await wallet.deriveAddresses(1)
@@ -169,7 +189,8 @@ describe(`AirGapMarketWallet`, () => {
       protocol,
       '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       false,
-      protocol.standardDerivationPath
+      protocol.standardDerivationPath,
+      new AirGapPriceService()
     )
 
     const [address] = await wallet.deriveAddresses(1)
@@ -183,7 +204,8 @@ describe(`AirGapMarketWallet`, () => {
       xPubProtocol,
       'xpub6CzH93BB4aueZX2bP88tvsvE8Cz2bHeGVAZSD5fmnk8roYBZCGbwwSA7ChiRr65jncuPH8qBQA9nBwi2Qtz1Uqt8wuHvof9SAcPpFxpe1GV',
       true,
-      xPubProtocol.standardDerivationPath
+      xPubProtocol.standardDerivationPath,
+      new AirGapPriceService()
     )
 
     const [address] = await wallet.deriveAddresses(1)
@@ -197,7 +219,8 @@ describe(`AirGapMarketWallet`, () => {
       xPubProtocol,
       'xpub6CzH93BB4aueZX2bP88tvsvE8Cz2bHeGVAZSD5fmnk8roYBZCGbwwSA7ChiRr65jncuPH8qBQA9nBwi2Qtz1Uqt8wuHvof9SAcPpFxpe1GV',
       true,
-      xPubProtocol.standardDerivationPath.substring(0, xPubProtocol.standardDerivationPath.length - 1)
+      xPubProtocol.standardDerivationPath.substring(0, xPubProtocol.standardDerivationPath.length - 1),
+      new AirGapPriceService()
     )
 
     const [address] = await wallet.deriveAddresses(1)
@@ -211,22 +234,20 @@ describe(`AirGapMarketWallet`, () => {
       protocol,
       '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       false,
-      protocol.standardDerivationPath
+      protocol.standardDerivationPath,
+      new AirGapPriceService()
     )
 
     const json = wallet.toJSON()
-    expect(json).to.deep.equal({
-      protocolIdentifier: 'eth',
+    expect({ ...json, priceService: undefined }).to.deep.include({
+      protocolIdentifier: MainProtocolSymbols.ETH,
       networkIdentifier: new EthereumProtocolOptions().network.identifier,
       publicKey: '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       isExtendedPublicKey: false,
+      priceService: undefined,
       derivationPath: "m/44'/60'/0'/0/0",
       addressIndex: undefined,
-      addresses: [],
-      dailyMarketSample: [],
-      hourlyMarketSample: [],
-      marketSample: [],
-      minuteMarketSample: []
+      addresses: []
     })
   })
 })

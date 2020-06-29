@@ -21,7 +21,7 @@ export class AirGapWallet implements IAirGapWallet {
     public isExtendedPublicKey: boolean,
     public derivationPath: string,
     public addressIndex?: number
-  ) {}
+  ) { }
 
   get receivingPublicAddress(): string {
     return this.addresses[this.addressIndex !== undefined ? this.addressIndex : 0]

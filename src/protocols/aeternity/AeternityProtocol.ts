@@ -139,7 +139,7 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
         from: [obj.tx.sender_id],
         isInbound: addresses.indexOf(obj.tx.recipient_id) !== -1,
         protocolIdentifier: this.identifier,
-        networkIdentifier: this.options.network,
+        network: this.options.network,
         to: [obj.tx.recipient_id],
         hash: obj.hash,
         blockHeight: obj.block_height
@@ -212,7 +212,7 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
       from: [await this.getAddressFromPublicKey(rlpDecodedTx[2].slice(1).toString('hex'))],
       isInbound: false,
       protocolIdentifier: this.identifier,
-      networkIdentifier: this.options.network,
+      network: this.options.network,
       to: [await this.getAddressFromPublicKey(rlpDecodedTx[3].slice(1).toString('hex'))],
       data: (rlpDecodedTx[8] || '').toString('utf8'),
       transactionDetails: unsignedTx.transaction

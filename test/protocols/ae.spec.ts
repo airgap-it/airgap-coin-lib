@@ -50,7 +50,7 @@ describe(`ICoinProtocol Aeternity - Custom Tests`, () => {
     sinon.restore()
   })
 
-  it("will include the timestamp if it's availalbe", async () => {
+  it("will include the timestamp if it's available", async () => {
     const responseWithTimestamp = JSON.parse(JSON.stringify(sampleAccountResponse))
     responseWithTimestamp.data[0].time = 1543450515994
 
@@ -62,14 +62,14 @@ describe(`ICoinProtocol Aeternity - Custom Tests`, () => {
 
     const transactions = await aeLib.getTransactionsFromAddresses(aeProtocolSpec.wallet.addresses, 0, 0)
 
-    expect(transactions).to.deep.equal([
+    expect(transactions.map(transaction => ({ ...transaction, network: undefined }))).to.deep.eq([
       {
         amount: new BigNumber(aeProtocolSpec.txs[0].amount).toString(),
         fee: new BigNumber(aeProtocolSpec.txs[0].fee).toString(),
         from: aeProtocolSpec.wallet.addresses,
         isInbound: true,
         protocolIdentifier: aeLib.identifier,
-        networkIdentifier: 'MAINNET-Mainnet-https://ae-epoch-rpc-proxy.gke.papers.tech',
+        network: undefined,
         to: aeProtocolSpec.wallet.addresses,
         hash: 'th_z8bNzdugQdpiRUVXUmQbxoy5dLLEFLG6StBY95jF1KdXrRxiq',
         blockHeight: 443,
@@ -77,25 +77,48 @@ describe(`ICoinProtocol Aeternity - Custom Tests`, () => {
         data: '"create account" 1'
       }
     ])
+
+
+    expect(transactions.map(transaction => ({ ...transaction.network, blockExplorer: undefined, extras: undefined }))).to.deep.eq([
+      {
+        blockExplorer: undefined,
+        extras: undefined,
+        name: "Mainnet",
+        rpcUrl: "https://ae-epoch-rpc-proxy.gke.papers.tech",
+        type: "MAINNET"
+      }
+    ])
   })
 
   it('can give a list of transactions from endpoints', async () => {
     const transactions = await aeLib.getTransactionsFromAddresses(aeProtocolSpec.wallet.addresses, 0, 0)
 
-    expect(transactions).to.deep.equal([
+    expect(transactions.map(transaction => ({ ...transaction, network: undefined }))).to.deep.eq([
       {
         amount: new BigNumber(aeProtocolSpec.txs[0].amount).toString(),
         fee: new BigNumber(aeProtocolSpec.txs[0].fee).toString(),
         from: aeProtocolSpec.wallet.addresses,
         isInbound: true,
         protocolIdentifier: aeLib.identifier,
-        networkIdentifier: 'MAINNET-Mainnet-https://ae-epoch-rpc-proxy.gke.papers.tech',
+        network: undefined,
         to: aeProtocolSpec.wallet.addresses,
         hash: 'th_z8bNzdugQdpiRUVXUmQbxoy5dLLEFLG6StBY95jF1KdXrRxiq',
         blockHeight: 443,
         data: '"create account" 1'
       }
     ])
+
+
+    expect(transactions.map(transaction => ({ ...transaction.network, blockExplorer: undefined, extras: undefined }))).to.deep.eq([
+      {
+        blockExplorer: undefined,
+        extras: undefined,
+        name: "Mainnet",
+        rpcUrl: "https://ae-epoch-rpc-proxy.gke.papers.tech",
+        type: "MAINNET"
+      }
+    ])
+
   })
 
   it('can convert a b64 encoded TX back to b58', async () => {

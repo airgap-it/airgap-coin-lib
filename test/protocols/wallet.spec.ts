@@ -6,6 +6,7 @@ import * as sinon from 'sinon'
 import axios from '../../src/dependencies/src/axios-0.19.0/index'
 import { AirGapWallet, BitcoinProtocol, EthereumProtocol } from '../../src/index'
 import { EthereumProtocolOptions } from '../../src/protocols/ethereum/EthereumProtocolOptions'
+import { MainProtocolSymbols } from '../../src/utils/ProtocolSymbols'
 
 // use chai-as-promised plugin
 chai.use(chaiAsPromised)
@@ -118,7 +119,7 @@ describe(`AirGapWallet`, () => {
 
     const json = wallet.toJSON()
     expect(json).to.deep.equal({
-      protocolIdentifier: 'eth',
+      protocolIdentifier: MainProtocolSymbols.ETH,
       networkIdentifier: new EthereumProtocolOptions().network.identifier,
       publicKey: '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       isExtendedPublicKey: false,

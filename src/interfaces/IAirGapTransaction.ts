@@ -21,7 +21,8 @@ export interface IAirGapTransaction {
   timestamp?: number
 
   protocolIdentifier: ProtocolSymbols
-  networkIdentifier: ProtocolNetwork
+
+  network: ProtocolNetwork
 
   hash?: string
   blockHeight?: string

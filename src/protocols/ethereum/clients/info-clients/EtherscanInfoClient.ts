@@ -28,7 +28,7 @@ export class EtherscanInfoClient extends EthereumInfoClient {
         fee: fee.toString(10),
         blockHeight: transaction.blockNumber,
         protocolIdentifier: protocol.identifier,
-        networkIdentifier: protocol.options.network,
+        network: protocol.options.network,
         timestamp: parseInt(transaction.timeStamp, 10)
       }
 
@@ -60,7 +60,7 @@ export class EtherscanInfoClient extends EthereumInfoClient {
         isInbound: transaction.to.toLowerCase() === address.toLowerCase(),
         blockHeight: transaction.blockNumber,
         protocolIdentifier: protocol.identifier,
-        networkIdentifier: protocol.options.network,
+        network: protocol.options.network,
         amount: new BigNumber(transaction.value).toString(10),
         fee: fee.toString(10),
         timestamp: parseInt(transaction.timeStamp, 10)

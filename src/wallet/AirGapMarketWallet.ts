@@ -1,7 +1,5 @@
 import { IAirGapTransaction } from '..'
-import Axios from '../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../dependencies/src/bignumber.js-9.0.0/bignumber'
-import * as cryptocompare from '../dependencies/src/cryptocompare-0.5.0/index'
 import { AirGapTransactionStatus } from '../interfaces/IAirGapTransaction'
 import { FeeDefaults, ICoinProtocol } from '../protocols/ICoinProtocol'
 import { NetworkType } from '../utils/ProtocolNetwork'
@@ -19,9 +17,13 @@ export interface MarketDataSample {
   close: number
   high: number
   low: number
-  open: number
   volumefrom: string
   volumeto: number
+}
+
+export interface AirGapWalletPriceService {
+  getCurrentMarketPrice(protocol: ICoinProtocol, baseSymbol: string): Promise<BigNumber>
+  getMarketPricesOverTime(protocol: ICoinProtocol, timeUnit: TimeUnit, numberOfMinutes: number, date: Date, baseSymbol: string): Promise<MarketDataSample[]>
 }
 
 function notEmpty<TValue>(value: TValue | null | undefined): value is TValue {
@@ -31,6 +33,7 @@ function notEmpty<TValue>(value: TValue | null | undefined): value is TValue {
 export class AirGapMarketWallet extends AirGapWallet {
   public currentBalance: BigNumber | undefined
   public _currentMarketPrice: BigNumber | undefined
+  public _marketPriceOverTime: MarketDataSample[] | undefined
 
   get currentMarketPrice(): BigNumber | undefined {
     return this._currentMarketPrice
@@ -40,17 +43,28 @@ export class AirGapMarketWallet extends AirGapWallet {
     this._currentMarketPrice = this.protocol.options.network.type === NetworkType.MAINNET ? marketPrice : new BigNumber(0)
   }
 
-  public marketSample: MarketDataSample[] = []
-  public minuteMarketSample: MarketDataSample[] = []
-  public dailyMarketSample: MarketDataSample[] = []
-  public hourlyMarketSample: MarketDataSample[] = []
+  get marketPriceOverTime(): MarketDataSample[] | undefined {
+    return this._marketPriceOverTime
+  }
+
+  set marketPriceOverTime(marketPrices: MarketDataSample[] | undefined) {
+    this._marketPriceOverTime = this.protocol.options.network.type === NetworkType.MAINNET ? marketPrices : marketPrices?.map(() => ({
+      time: 0,
+      close: 0,
+      high: 0,
+      low: 0,
+      volumefrom: '0',
+      volumeto: 0
+    }))
+  }
 
   constructor(
     public protocol: ICoinProtocol,
     public publicKey: string,
     public isExtendedPublicKey: boolean,
     public derivationPath: string,
-    public addressIndex?: number
+    public priceService: AirGapWalletPriceService,
+    public addressIndex?: number,
   ) {
     super(protocol, publicKey, isExtendedPublicKey, derivationPath, addressIndex)
   }
@@ -76,97 +90,16 @@ export class AirGapMarketWallet extends AirGapWallet {
     await this.synchronize()
   }
 
-  public fetchCurrentMarketPrice(baseSymbol = 'USD'): Promise<BigNumber> {
-    return new Promise((resolve, reject) => {
-      cryptocompare
-        .price(this.protocol.marketSymbol.toUpperCase(), baseSymbol)
-        .then((prices) => {
-          this.currentMarketPrice = new BigNumber(prices.USD)
-          resolve(this.currentMarketPrice)
-        })
-        .catch((cryptocompareError) => {
-          // TODO: Remove once cryptocompare supports xchf
-          const symbolMapping = {
-            xchf: 'cryptofranc'
-          }
+  public async fetchCurrentMarketPrice(baseSymbol = 'USD'): Promise<BigNumber> {
+    this.currentMarketPrice = await this.priceService.getCurrentMarketPrice(this.protocol, baseSymbol)
 
-          console.error('cryptocompare', cryptocompareError)
-
-          const id = symbolMapping[this.protocol.marketSymbol.toLowerCase()]
-          if (id) {
-            Axios.get(`https://api.coingecko.com/api/v3/simple/price?ids=${id}&vs_currencies=usd`)
-              .then(({ data }) => {
-                this.currentMarketPrice = new BigNumber(data[id].usd)
-                resolve(this.currentMarketPrice)
-              })
-              .catch((coinGeckoError) => {
-                console.error(coinGeckoError)
-              })
-          }
-        })
-    })
+    return this.currentMarketPrice
   }
 
-  public fetchDailyMarketPrices(numberOfDays: number, date: Date, baseSymbol = 'USD'): Promise<MarketDataSample[]> {
-    this.dailyMarketSample = []
+  public async getMarketPricesOverTime(timeUnit: TimeUnit, numberOfMinutes: number, date: Date, baseSymbol: string = 'USD') {
+    this.marketPriceOverTime = await this.priceService.getMarketPricesOverTime(this.protocol, timeUnit, numberOfMinutes, date, baseSymbol)
 
-    return new Promise((resolve) => {
-      this.algoSelector(numberOfDays, TimeUnit.Days, date, baseSymbol)
-        .then((marketSample) => {
-          this.dailyMarketSample = marketSample
-          resolve(this.dailyMarketSample)
-        })
-        .catch()
-    })
-  }
-
-  public fetchHourlyMarketPrices(numberOfHours: number, date: Date, baseSymbol = 'USD'): Promise<MarketDataSample[]> {
-    this.hourlyMarketSample = []
-
-    return new Promise((resolve) => {
-      this.algoSelector(numberOfHours, TimeUnit.Hours, date, baseSymbol)
-        .then((marketSample) => {
-          this.hourlyMarketSample = marketSample
-          resolve(this.hourlyMarketSample)
-        })
-        .catch()
-    })
-  }
-
-  public fetchMinutesMarketPrices(numberOfMinutes: number, date: Date, baseSymbol = 'USD'): Promise<MarketDataSample[]> {
-    this.minuteMarketSample = []
-
-    return new Promise((resolve) => {
-      this.algoSelector(numberOfMinutes, TimeUnit.Minutes, date, baseSymbol)
-        .then((marketSample) => {
-          this.minuteMarketSample = marketSample
-          resolve(this.minuteMarketSample)
-        })
-        .catch()
-    })
-  }
-
-  public fetchWalletValue(): Promise<BigNumber> {
-    return new Promise((resolve, reject) => {
-      if (this.currentMarketPrice) {
-        const price = this.currentMarketPrice
-        this.balanceOf()
-          .then((balance) => {
-            resolve(new BigNumber(balance.toNumber() * price.toNumber()))
-          })
-          .catch(reject)
-      } else {
-        this.fetchCurrentMarketPrice()
-          .then((price) => {
-            this.balanceOf()
-              .then((balance) => {
-                resolve(new BigNumber(balance.toNumber() * price.toNumber()))
-              })
-              .catch(reject)
-          })
-          .catch(reject)
-      }
-    })
+    return this.marketPriceOverTime
   }
 
   private addressesToCheck(): string[] {
@@ -268,45 +201,5 @@ export class AirGapMarketWallet extends AirGapWallet {
 
       return this.protocol.estimateFeeDefaultsFromPublicKey(this.publicKey, recipients, values, data)
     }
-  }
-
-  private algoSelector(numberOfMinutes: number, timeUnit: TimeUnit, date: Date, baseSymbol: string = 'USD'): Promise<MarketDataSample[]> {
-    return new Promise((resolve) => {
-      let promise: Promise<MarketDataSample>
-      if (timeUnit === 'days') {
-        promise = cryptocompare.histoDay(this.protocol.marketSymbol.toUpperCase(), baseSymbol, {
-          limit: numberOfMinutes - 1,
-          timestamp: date
-        })
-      } else if (timeUnit === 'hours') {
-        promise = cryptocompare.histoHour(this.protocol.marketSymbol.toUpperCase(), baseSymbol, {
-          limit: numberOfMinutes - 1,
-          timestamp: date
-        })
-      } else if (timeUnit === 'minutes') {
-        promise = cryptocompare.histoMinute(this.protocol.marketSymbol.toUpperCase(), baseSymbol, {
-          limit: numberOfMinutes - 1,
-          timestamp: date
-        })
-      } else {
-        promise = Promise.reject('Invalid time unit')
-      }
-      promise
-        .then((prices) => {
-          for (const idx in prices) {
-            const marketDataObject = {
-              time: prices[idx].time,
-              close: prices[idx].close,
-              high: prices[idx].high,
-              low: prices[idx].low,
-              volumefrom: prices[idx].volumefrom,
-              volumeto: prices[idx].volumeto
-            } as MarketDataSample
-            this.marketSample.push(marketDataObject)
-          }
-          resolve(this.marketSample)
-        })
-        .catch(console.error)
-    })
   }
 }

@@ -96,7 +96,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
       .reduce((flatten, toFlatten) => flatten.concat(toFlatten), [])
       .map((tx) => ({
         protocolIdentifier: this.identifier,
-        networkIdentifier: this.options.network,
+        network: this.options.network,
         from: [],
         to: [],
         isInbound: false,
@@ -555,7 +555,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
           amount: '',
           fee: tx.fee.toString(),
           protocolIdentifier: this.identifier,
-          networkIdentifier: this.options.network,
+          network: this.options.network,
           isInbound: false,
           ...part
         }))
