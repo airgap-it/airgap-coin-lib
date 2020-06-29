@@ -5,8 +5,8 @@ import { isMichelinePrimitive } from '../../utils'
 import { MichelsonType } from '../MichelsonType'
 
 export class MichelsonBytes extends MichelsonType {
-  constructor(readonly value: Buffer) {
-    super()
+  constructor(readonly value: Buffer, name?: string) {
+    super(name)
   }
 
   public static from(value: unknown): MichelsonBytes {
@@ -25,6 +25,10 @@ export class MichelsonBytes extends MichelsonType {
     }
 
     return new MichelsonBytes(hexToBytes(unknownValue))
+  }
+
+  public asRawValue(): Record<string, string> | string {
+    return this.name ? { [this.name]: this.value.toString('hex') } : this.value.toString('hex')
   }
 
   public toMichelineJSON(): MichelineDataNode {

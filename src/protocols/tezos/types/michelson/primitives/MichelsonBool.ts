@@ -5,8 +5,8 @@ import { MichelsonGrammarData } from '../grammar/MichelsonGrammarData'
 import { MichelsonType } from '../MichelsonType'
 
 export class MichelsonBool extends MichelsonType {
-  constructor(readonly value: boolean) {
-    super()
+  constructor(readonly value: boolean, name?: string) {
+    super(name)
   }
 
   public static from(value: unknown): MichelsonBool {
@@ -29,6 +29,10 @@ export class MichelsonBool extends MichelsonType {
     }
 
     return new MichelsonBool(raw)
+  }
+
+  public asRawValue(): Record<string, boolean> | boolean {
+    return this.name ? { [this.name]: this.value } : this.value
   }
 
   public toMichelineJSON(): MichelineDataNode {

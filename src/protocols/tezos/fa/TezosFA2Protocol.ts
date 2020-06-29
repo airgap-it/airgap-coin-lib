@@ -1,14 +1,11 @@
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { IAirGapTransaction } from '../../../interfaces/IAirGapTransaction'
 import { RawTezosTransaction } from '../../../serializer/types'
+import { isHex } from '../../../utils/hex'
 import { FeeDefaults } from '../../ICoinProtocol'
 import { TezosContractCall } from '../contract/TezosContractCall'
 import { TezosNetwork } from '../TezosProtocol'
 import { TezosUtils } from '../TezosUtils'
-import { MichelsonAddress } from '../types/michelson/primitives/MichelsonAddress'
-import { MichelsonBytes } from '../types/michelson/primitives/MichelsonBytes'
-import { MichelsonInt } from '../types/michelson/primitives/MichelsonInt'
-import { MichelsonString } from '../types/michelson/primitives/MichelsonString'
 import { TezosTransactionParameters } from '../types/operations/Transaction'
 
 import { TezosFAProtocol, TezosFAProtocolConfiguration } from './TezosFAProtocol'
@@ -92,27 +89,13 @@ export class TezosFA2Protocol extends TezosFAProtocol {
         return {}
       }
 
-      const fromAddress: MichelsonString | MichelsonBytes = callArguments.from_.address
-      let from: string | undefined
-      if (Buffer.isBuffer(fromAddress.value)) {
-        from = TezosUtils.parseAddress(fromAddress.value.toString('hex'))
-      } else if (fromAddress && typeof fromAddress.value === 'string') {
-        from = fromAddress.value
-      }
-
+      const from: string = isHex(callArguments.from_) ? TezosUtils.parseAddress(callArguments.from_) : callArguments.from_
 
       const recipientsWithAmount: [string, BigNumber][] = callArguments.txs.map((tx) => {
-        const toAddress: MichelsonString | MichelsonBytes = tx.to_.address
+        const to: string = isHex(tx.to_) ? TezosUtils.parseAddress(tx.to_) : tx.to_
 
-        let stringAddress: string | undefined
-        if (Buffer.isBuffer(toAddress.value)) {
-          stringAddress = TezosUtils.parseAddress(toAddress?.value.toString('hex'))
-        } else if (toAddress && typeof toAddress.value === 'string') {
-          stringAddress = toAddress.value
-        }
-
-        return [stringAddress, tx.amount.value] as [string | undefined, BigNumber]
-      }).filter(([address, _]: [string | undefined, BigNumber]) => address !== undefined) as [string, BigNumber][]
+        return [to, tx.amount] as [string, BigNumber]
+      })
 
       const amount: BigNumber = recipientsWithAmount.reduce(
         (sum: BigNumber, [_, next]: [string, BigNumber]) => sum.plus(next),
@@ -122,7 +105,7 @@ export class TezosFA2Protocol extends TezosFAProtocol {
 
       return {
         amount: amount.toFixed(),
-        from: [from || ''],
+        from: [from],
         to
       }
     })
@@ -219,16 +202,16 @@ export class TezosFA2Protocol extends TezosFAProtocol {
   }
 
   private isTransferRequest(obj: unknown): obj is { 
-    from_: MichelsonAddress, txs: { to_: MichelsonAddress, token_id: MichelsonInt, amount: MichelsonInt }[]
+    from_: string, txs: { to_: string, token_id: BigNumber, amount: BigNumber }[]
   } {
     const anyObj = obj as any
     
     return (
       anyObj instanceof Object &&
-      anyObj.from_ !== undefined &&
+      typeof anyObj.from_ === 'string' &&
       Array.isArray(anyObj.txs) &&
       anyObj.txs.every((tx: any) => 
-        tx instanceof Object && tx.to_ !== undefined && tx.token_id !== undefined && tx.amount !== undefined
+        tx instanceof Object && typeof tx.to_ === 'string' && BigNumber.isBigNumber(tx.token_id) && BigNumber.isBigNumber(tx.amount)
       )
     )
   }

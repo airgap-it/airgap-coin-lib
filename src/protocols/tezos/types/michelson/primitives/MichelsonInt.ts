@@ -5,8 +5,8 @@ import { isMichelinePrimitive } from '../../utils'
 import { MichelsonType } from '../MichelsonType'
 
 export class MichelsonInt extends MichelsonType {
-  constructor(readonly value: BigNumber) {
-    super()
+  constructor(readonly value: BigNumber, name?: string) {
+    super(name)
   }
 
   public static from(value: unknown): MichelsonInt {
@@ -25,6 +25,10 @@ export class MichelsonInt extends MichelsonType {
     }
 
     return new MichelsonInt(BigNumber.isBigNumber(unknownValue) ? unknownValue : new BigNumber(unknownValue))
+  }
+
+  public asRawValue(): Record<string, BigNumber> | BigNumber {
+    return this.name ? { [this.name]: this.value } : this.value
   }
 
   public toMichelineJSON(): MichelineDataNode {

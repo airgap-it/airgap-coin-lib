@@ -7,8 +7,8 @@ import { MichelsonBytes } from './MichelsonBytes'
 import { MichelsonString } from './MichelsonString'
 
 export class MichelsonAddress extends MichelsonType {
-  constructor(readonly address: MichelsonString | MichelsonBytes) {
-    super()
+  constructor(readonly address: MichelsonString | MichelsonBytes, name?: string) {
+    super(name)
   }
 
   public static from(value: unknown): MichelsonAddress {
@@ -36,6 +36,12 @@ export class MichelsonAddress extends MichelsonType {
     }
 
     return new MichelsonAddress(value)
+  }
+
+  public asRawValue(): Record<string, string>  | string {
+    const value: string = Buffer.isBuffer(this.address.value) ? this.address.value.toString('hex') : this.address.value
+
+    return this.name ? { [this.name]: value } : value
   }
 
   public toMichelineJSON(): MichelineDataNode {

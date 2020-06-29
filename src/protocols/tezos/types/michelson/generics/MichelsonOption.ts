@@ -49,8 +49,14 @@ export abstract class MichelsonOption extends MichelsonType {
 export class MichelsonSome extends MichelsonOption {
   protected type: MichelsonOptionType = 'Some'
 
-  constructor(readonly value: Lazy<MichelsonType>) {
-    super()
+  constructor(readonly value: Lazy<MichelsonType>, name?: string) {
+    super(name)
+  }
+
+  public asRawValue(): any {
+    const value = this.value.get().asRawValue()
+
+    return this.name ? { [this.name]: value } : value
   }
 
   public toMichelineJSON(): MichelineDataNode {
@@ -69,6 +75,10 @@ export class MichelsonSome extends MichelsonOption {
 
 export class MichelsonNone extends MichelsonOption {
   protected type: MichelsonOptionType = 'None'
+
+  public asRawValue(): Record<string, null> | null {
+    return this.name ? { [this.name]: null } : null
+  }
 
   public toMichelineJSON(): MichelineDataNode {
     return {

@@ -4,8 +4,8 @@ import { MichelineDataNode } from '../../micheline/MichelineNode'
 import { MichelsonType } from '../MichelsonType'
 
 export class MichelsonList extends MichelsonType {
-  constructor(readonly elements: Lazy<MichelsonType[]>) {
-    super()
+  constructor(readonly elements: Lazy<MichelsonType[]>, name?: string) {
+    super(name)
   }
 
   public static from(items: unknown, mappingFunction?: unknown): MichelsonList {
@@ -34,6 +34,12 @@ export class MichelsonList extends MichelsonType {
     })
 
     return new MichelsonList(lazyList)
+  }
+
+  public asRawValue(): Record<string, Record<string, any>[]> | Record<string, any>[] {
+    const value = this.elements.get().map((element: MichelsonType) => element.asRawValue())
+
+    return this.name ? { [this.name]: value } : value
   }
 
   public toMichelineJSON(): MichelineDataNode {

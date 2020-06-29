@@ -4,10 +4,11 @@ import { MichelineDataNode, MichelinePrimitiveApplication } from '../../michelin
 import { isMichelinePrimitiveApplication } from '../../utils'
 import { MichelsonGrammarData } from '../grammar/MichelsonGrammarData'
 import { MichelsonType } from '../MichelsonType'
+import { isRecord } from '../../../../../utils/type'
 
 export class MichelsonPair extends MichelsonType {
-  constructor(readonly first: Lazy<MichelsonType>, readonly second: Lazy<MichelsonType>) {
-    super()
+  constructor(readonly first: Lazy<MichelsonType>, readonly second: Lazy<MichelsonType>, name?: string) {
+    super(name)
   }
 
   public static from(pair: MichelsonType | unknown, firstMappingFunction?: unknown, secondMappingFunction?: unknown): MichelsonPair {
@@ -46,13 +47,13 @@ export class MichelsonPair extends MichelsonType {
     }
 
     const [first, second]: [Lazy<MichelsonType>, Lazy<MichelsonType>] = Array.isArray(unknownValue) 
-      ? [this.getValue(unknownValue[0], firstMappingFunction), this.getValue(unknownValue[1], secondMappingFunction)]
-      : [this.getValue(unknownValue, firstMappingFunction), this.getValue(unknownValue, secondMappingFunction)]
+      ? [this.asRawValue(unknownValue[0], firstMappingFunction), this.asRawValue(unknownValue[1], secondMappingFunction)]
+      : [this.asRawValue(unknownValue, firstMappingFunction), this.asRawValue(unknownValue, secondMappingFunction)]
 
     return new MichelsonPair(first, second)
   }
 
-  private static getValue(unknownValue: unknown, mappingFactory: unknown): Lazy<MichelsonType> {
+  private static asRawValue(unknownValue: unknown, mappingFactory: unknown): Lazy<MichelsonType> {
     return unknownValue instanceof MichelsonType
       ? new Lazy(() => unknownValue)
       : new Lazy(() => {
@@ -64,6 +65,17 @@ export class MichelsonPair extends MichelsonType {
 
         return value
       })
+  }
+
+  public asRawValue(): Record<string, any> | [any, any] {
+    const first = this.first.get().asRawValue()
+    const second = this.second.get().asRawValue()
+
+    const value: Record<string, any> | [any, any] = isRecord(first) && isRecord(second)
+      ? Object.assign(first, second)
+      : [first, second]
+
+    return this.name ? { [this.name]: value } : value
   }
 
   public toMichelineJSON(): MichelineDataNode {

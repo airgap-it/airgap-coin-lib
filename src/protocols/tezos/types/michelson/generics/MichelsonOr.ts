@@ -11,8 +11,8 @@ export type MichelsonOrType = 'Left' | 'Right'
 export abstract class MichelsonOr extends MichelsonType {
   protected abstract type: MichelsonOrType
 
-  constructor(readonly value: Lazy<MichelsonType>) {
-    super()
+  constructor(readonly value: Lazy<MichelsonType>, name?: string) {
+    super(name)
   }
 
   public static from(or: unknown, firstMappingFunction?: unknown, secondMappingFunction?: unknown): MichelsonOr {
@@ -87,6 +87,10 @@ export abstract class MichelsonOr extends MichelsonType {
         })
 
     return type === 'Left' ? new MichelsonLeft(lazyValue) : new MichelsonRight(lazyValue)
+  }
+
+  public asRawValue(): Record<string, any> | any {
+    return this.name ? { [this.name]: this.value.get().asRawValue() } : this.value.get().asRawValue()
   }
 
   public toMichelineJSON(): MichelineDataNode {

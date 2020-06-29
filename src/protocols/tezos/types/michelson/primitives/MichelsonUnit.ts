@@ -18,6 +18,10 @@ export class MichelsonUnit extends MichelsonType {
 
     return new MichelsonUnit()
   }
+  
+  public asRawValue(): any {
+    return undefined
+  }
 
   public toMichelineJSON(): MichelineDataNode {
     return {
