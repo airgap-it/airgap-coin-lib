@@ -4,7 +4,7 @@ import { SubstrateNodeClient } from '../helpers/node/SubstrateNodeClient'
 import { SubstrateNetwork } from '../SubstrateNetwork'
 import { SubstrateProtocol } from '../SubstrateProtocol'
 
-const NODE_URL = 'https://polkadot-cc1.kubernetes.papers.tech'
+const NODE_URL = 'https://polkadot-node.prod.gke.papers.tech'
 
 const BLOCK_EXPLORER_URL = 'https://polkascan.io/polkadot-cc1'
 const BLOCK_EXPLORER_API = 'https://api-01.polkascan.io/polkadot/api/v1'
