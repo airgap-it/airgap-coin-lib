@@ -11,13 +11,13 @@ const NODE_URL: string = 'https://ae-epoch-rpc-proxy.gke.papers.tech'
 const BLOCK_EXPLORER_URL: string = 'https://mainnet.aeternal.io'
 
 export class AeternalBlockExplorer implements ProtocolBlockExplorer {
-  constructor(public readonly blockExplorer: string = BLOCK_EXPLORER_URL) {}
+  constructor(public readonly blockExplorer: string = BLOCK_EXPLORER_URL) { }
 
   public async getAddressLink(address: string): Promise<string> {
     return `${this.blockExplorer}/account/transactions/${address}`
   }
   public async getTransactionLink(transactionId: string): Promise<string> {
-    return `${this.blockExplorer}/transaction/${transactionId}`
+    return `${this.blockExplorer}/transactions/${transactionId}`
   }
 }
 
@@ -39,5 +39,5 @@ export class AeternityProtocolOptions implements ProtocolOptions<undefined> {
     public readonly network: AeternityProtocolNetwork = new AeternityProtocolNetwork(),
     // tslint:disable-next-line:no-unnecessary-initializer
     public readonly config: undefined = undefined
-  ) {}
+  ) { }
 }
