@@ -11,7 +11,7 @@ import { SignedCosmosTransaction } from '../../serializer/schemas/definitions/tr
 import { UnsignedCosmosTransaction } from '../../serializer/types'
 import { assertFields } from '../../utils/assert'
 import { DelegateeDetails, DelegationDetails, DelegatorAction, DelegatorDetails, ICoinDelegateProtocol } from '../ICoinDelegateProtocol'
-import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
+import { CurrencyUnit, FeeDefaults } from '../ICoinProtocol'
 import { ICoinSubProtocol } from '../ICoinSubProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
 
@@ -71,7 +71,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
   public addressValidationPattern: string = '^(cosmos|cosmosvaloper)[a-zA-Z0-9]{39}$'
   public addressPlaceholder: string = 'cosmos...'
 
-  public subProtocols?: (ICoinProtocol & ICoinSubProtocol)[]
+  public subProtocols?: ICoinSubProtocol[]
 
   private readonly addressPrefix: string = 'cosmos'
   private readonly defaultGas: BigNumber = new BigNumber('200000')
