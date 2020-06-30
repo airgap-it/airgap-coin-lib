@@ -966,7 +966,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
       const recipient: string | undefined = (operationRequest as TezosTransactionOperation).destination
       let receivingBalance: BigNumber | undefined
-      if (recipient) {
+      if (recipient && recipient.toLowerCase().startsWith('tz')) {
         receivingBalance = new BigNumber(await this.getBalanceOfAddresses([recipient]))
       }
 

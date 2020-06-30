@@ -5,14 +5,14 @@ import { MichelsonGrammarData } from '../grammar/MichelsonGrammarData'
 import { MichelsonType } from '../MichelsonType'
 
 export class MichelsonBool extends MichelsonType {
-  constructor(readonly value: boolean, name?: string) {
+  constructor(public readonly value: boolean, name?: string) {
     super(name)
   }
 
   public static from(value: unknown): MichelsonBool {
     return isMichelinePrimitiveApplication(value)
-      ? this.fromMicheline(value)
-      : this.fromRaw(value)
+      ? MichelsonBool.fromMicheline(value)
+      : MichelsonBool.fromUnknown(value)
   }
 
   public static fromMicheline(micheline: MichelinePrimitiveApplication<MichelsonGrammarData>): MichelsonBool {
@@ -23,12 +23,16 @@ export class MichelsonBool extends MichelsonType {
     return new MichelsonBool(micheline.prim === 'True')
   }
 
-  public static fromRaw(raw: unknown): MichelsonBool {
-    if (typeof raw !== 'boolean') {
-      throw invalidArgumentTypeError('MichelsonBool', 'boolean', typeof raw)
+  public static fromUnknown(unknownValue: unknown): MichelsonBool {
+    if (unknownValue instanceof MichelsonBool) {
+      return unknownValue
     }
 
-    return new MichelsonBool(raw)
+    if (typeof unknownValue !== 'boolean') {
+      throw invalidArgumentTypeError('MichelsonBool', 'boolean', typeof unknownValue)
+    }
+
+    return new MichelsonBool(unknownValue)
   }
 
   public asRawValue(): Record<string, boolean> | boolean {

@@ -6,9 +6,13 @@ import { MichelsonType } from '../MichelsonType'
 
 export class MichelsonUnit extends MichelsonType {
   public static from(value: unknown): MichelsonUnit {
-    return isMichelinePrimitiveApplication(value)
-      ? this.fromMicheline(value)
-      : new MichelsonUnit()
+    if (value instanceof MichelsonUnit) {
+      return value
+    } else if (isMichelinePrimitiveApplication(value)) {
+      return MichelsonUnit.fromMicheline(value)
+    } else {
+      return new MichelsonUnit()
+    }
   }
 
   public static fromMicheline(micheline: MichelinePrimitiveApplication<MichelsonGrammarData>): MichelsonUnit {

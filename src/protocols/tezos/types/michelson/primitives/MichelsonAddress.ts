@@ -7,14 +7,14 @@ import { MichelsonBytes } from './MichelsonBytes'
 import { MichelsonString } from './MichelsonString'
 
 export class MichelsonAddress extends MichelsonType {
-  constructor(readonly address: MichelsonString | MichelsonBytes, name?: string) {
+  constructor(public readonly address: MichelsonString | MichelsonBytes, name?: string) {
     super(name)
   }
 
   public static from(value: unknown): MichelsonAddress {
     return isMichelinePrimitive('string', value) || isMichelinePrimitive('bytes', value)
-      ? this.fromMicheline(value)
-      : this.fromUnknown(value)
+      ? MichelsonAddress.fromMicheline(value)
+      : MichelsonAddress.fromUnknown(value)
   }
 
   public static fromMicheline(micheline: MichelinePrimitive<'string'> | MichelinePrimitive<'bytes'>): MichelsonAddress {
@@ -26,6 +26,10 @@ export class MichelsonAddress extends MichelsonType {
   }
 
   public static fromUnknown(unknownValue: unknown): MichelsonAddress {
+    if (unknownValue instanceof MichelsonAddress) {
+      return unknownValue
+    }
+
     let value: MichelsonString | MichelsonBytes
     if (typeof unknownValue === 'string' && (unknownValue.toLowerCase().startsWith('tz') || unknownValue.toLowerCase().startsWith('kt'))) {
       value = MichelsonString.from(unknownValue)

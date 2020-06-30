@@ -5,21 +5,25 @@ import { isMichelinePrimitive } from '../../utils'
 import { MichelsonType } from '../MichelsonType'
 
 export class MichelsonBytes extends MichelsonType {
-  constructor(readonly value: Buffer, name?: string) {
+  constructor(public readonly value: Buffer, name?: string) {
     super(name)
   }
 
   public static from(value: unknown): MichelsonBytes {
     return isMichelinePrimitive('bytes', value)
-      ? this.fromMicheline(value)
-      : this.fromUnknown(value)
+      ? MichelsonBytes.fromMicheline(value)
+      : MichelsonBytes.fromUnknown(value)
   }
 
   public static fromMicheline(micheline: MichelinePrimitive<'bytes'>): MichelsonBytes {
-    return this.fromUnknown(micheline.bytes)
+    return MichelsonBytes.fromUnknown(micheline.bytes)
   }
 
   public static fromUnknown(unknownValue: unknown): MichelsonBytes {
+    if (unknownValue instanceof MichelsonBytes) {
+      return unknownValue
+    }
+
     if (typeof unknownValue !== 'string' && !Buffer.isBuffer(unknownValue)) {
       throw invalidArgumentTypeError('MichelsonBytes', 'string or Buffer', `${typeof unknownValue}: ${unknownValue}`)
     }

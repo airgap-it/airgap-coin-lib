@@ -31,7 +31,9 @@ export class TezosUtils {
     branch: Buffer.from(new Uint8Array([1, 52]))
   }
 
-  public static parseAddress(rawHexAddress: string): string {
+  public static parseAddress(bytes: string | Buffer): string {
+    let rawHexAddress: string = typeof bytes === 'string' ? bytes : bytes.toString('hex')
+
     if (rawHexAddress.startsWith('0x')) {
       rawHexAddress = rawHexAddress.slice(2)
     }

@@ -6,7 +6,15 @@ import { FeeDefaults } from '../../ICoinProtocol'
 import { TezosContractCall } from '../contract/TezosContractCall'
 import { TezosNetwork } from '../TezosProtocol'
 import { TezosUtils } from '../TezosUtils'
-import { MichelineDataNode, MichelineNode } from '../types/micheline/MichelineNode'
+import { TezosFA2BalanceOfRequest } from '../types/fa/TezosFA2BalanceOfRequest'
+import { TezosFA2BalanceOfResponse } from '../types/fa/TezosFA2BalanceOfResponse'
+import { TezosFA2TransferRequest } from '../types/fa/TezosFA2TransferRequest'
+import { TezosFA2UpdateOperatorRequest } from '../types/fa/TezosFA2UpdateOperatorRequest'
+import { MichelineDataNode } from '../types/micheline/MichelineNode'
+import { MichelsonPair } from '../types/michelson/generics/MichelsonPair'
+import { MichelsonAddress } from '../types/michelson/primitives/MichelsonAddress'
+import { MichelsonInt } from '../types/michelson/primitives/MichelsonInt'
+import { MichelsonString } from '../types/michelson/primitives/MichelsonString'
 import { TezosTransactionParameters } from '../types/operations/Transaction'
 import { TezosOperationType } from '../types/TezosOperationType'
 import { isMichelinePrimitive, isMichelineSequence } from '../types/utils'
@@ -21,47 +29,46 @@ enum FA2ContractEntrypointName {
   TOKEN_METADATA = 'token_metadata'
 }
 
-export interface TezosFA2BalanceOfRequest {
-  address: string
-  tokenID: number
-}
-
-export interface TezosFA2TransferRequest {
-  from: string
-  txs: {
-    to: string
-    tokenID: number
-    amount: string
-  }[]
-}
-
-export interface TezosFA2UpdateOperatorRequest {
-  operation: 'add' | 'remove'
-  owner: string
-  operator: string
+export interface TezosFA2ProtocolConfiguration extends TezosFAProtocolConfiguration {
+  tokenID?: number
 }
 
 export class TezosFA2Protocol extends TezosFAProtocol {
-  constructor(configuration: TezosFAProtocolConfiguration) {
-    super({
-      // TODO: set proper addresses
-      callbackDefaults: [
-        [TezosNetwork.MAINNET, ''],
-        [TezosNetwork.CARTHAGENET, '']
-      ],
-      ...configuration
-    })
+  public readonly tokenID?: number
+
+  private readonly defaultCallbackContract: Partial<Record<TezosNetwork, Partial<Record<FA2ContractEntrypointName, string>>>>
+
+  constructor(configuration: TezosFA2ProtocolConfiguration) {
+    super(configuration)
+
+    this.tokenID = configuration.tokenID
+
+    this.defaultCallbackContract = {
+      [TezosNetwork.MAINNET]: {
+        [FA2ContractEntrypointName.BALANCE]: '',
+        [FA2ContractEntrypointName.TOKEN_METADATA_REGISTRY]: ''
+      },
+      [TezosNetwork.CARTHAGENET]: {
+        [FA2ContractEntrypointName.BALANCE]: 'KT1HZqHf5XKW4aAJc7UZvdYgq4zfZRYb5dAs',
+        [FA2ContractEntrypointName.TOKEN_METADATA_REGISTRY]: 'KT1H2uaYTUhrfMC3TcmJXkocv1qhK8fRkVfR'
+      }
+    }
   }
 
   public async getBalanceOfAddresses(addresses: string[]): Promise<string> {
-    const tokenID: number = 0 // set better default tokenID?
-    
-    return this.balanceOf(addresses.map((address: string) => {
+    const tokenID: number | undefined = this.tokenID
+    if (tokenID === undefined) {
+      throw new Error("Can't check the balance, no tokenID has been provided.")
+    }
+
+    const results: TezosFA2BalanceOfResponse[] = await this.balanceOf(addresses.map((address: string) => {
       return {
         address,
         tokenID
       }
     }, this.defaultSourceAddress))
+
+    return results.reduce((sum: BigNumber, next: TezosFA2BalanceOfResponse) => sum.plus(next.amount), new BigNumber(0)).toFixed()
   }
 
   public async estimateFeeDefaultsFromPublicKey(
@@ -136,8 +143,8 @@ export class TezosFA2Protocol extends TezosFAProtocol {
   public async balanceOf(
     balanceRequests: TezosFA2BalanceOfRequest[],
     source?: string,
-    callbackContract: string = this.callbackContract()
-  ): Promise<string> {
+    callbackContract: string = this.callbackContract(FA2ContractEntrypointName.BALANCE)
+  ): Promise<TezosFA2BalanceOfResponse[]> {
     const balanceOfCall: TezosContractCall = await this.contract.createContractCall(
       FA2ContractEntrypointName.BALANCE, 
       {
@@ -152,15 +159,30 @@ export class TezosFA2Protocol extends TezosFAProtocol {
     )
 
     const results: MichelineDataNode = await this.runContractCall(balanceOfCall, this.requireSource(source))
-    if (isMichelinePrimitive('int', results)) {
-      return results.int
-    } else if (isMichelineSequence(results)) {
-      return results
-        .map((balance: MichelineNode) => isMichelinePrimitive('int', balance) ? new BigNumber(balance.int) : 0)
-        .reduce((sum: BigNumber, next: BigNumber | number) => sum.plus(next), new BigNumber(0))
-        .toFixed()
+    if (isMichelineSequence(results)) {
+      return results.map((node: MichelineDataNode) => {
+          try {
+            const pair: MichelsonPair = MichelsonPair.from(node, (value: unknown) => MichelsonPair.from(value, MichelsonAddress.from, MichelsonInt.from), MichelsonInt.from)
+
+            const accountWithTokenID: MichelsonPair = MichelsonPair.from(pair.first.get())
+            const account: MichelsonAddress = MichelsonAddress.from(accountWithTokenID.first.get())
+            const tokenID: MichelsonInt = MichelsonInt.from(accountWithTokenID.second.get())
+
+            const amount: MichelsonInt = MichelsonInt.from(pair.second.get())
+
+            return {
+              address: account.address instanceof MichelsonString ? account.address.value : TezosUtils.parseAddress(account.address.value),
+              tokenID: tokenID.value.toNumber(),
+              amount: amount.value.toFixed()
+            }
+          } catch(error) {
+            console.warn(error)
+
+            return undefined
+          }
+        }).filter((balanceOfResults: TezosFA2BalanceOfResponse | undefined) => balanceOfResults !== undefined) as TezosFA2BalanceOfResponse[]
     } else {
-      return '0'
+      return []
     }
   }
 
@@ -208,7 +230,7 @@ export class TezosFA2Protocol extends TezosFAProtocol {
     return this.prepareContractCall([updateCall], fee, publicKey)
   }
 
-  public async tokenMetadataRegistry(source?: string, callbackContract: string = this.callbackContract()): Promise<string> {
+  public async tokenMetadataRegistry(source?: string, callbackContract: string = this.callbackContract(FA2ContractEntrypointName.TOKEN_METADATA_REGISTRY)): Promise<string> {
     const tokenMetadataRegistryCall: TezosContractCall = await this.contract.createContractCall(
       FA2ContractEntrypointName.TOKEN_METADATA_REGISTRY,
       callbackContract
@@ -225,10 +247,11 @@ export class TezosFA2Protocol extends TezosFAProtocol {
     }
   }
 
+  // TODO: check handler
   public async tokenMetadata(
     tokenIDs: number[], 
     source?: string, 
-    callbackContract: string = this.callbackContract()
+    callbackContract: string = this.callbackContract(FA2ContractEntrypointName.TOKEN_METADATA_REGISTRY)
   ): Promise<string> {
     const tokenMetadataCall: TezosContractCall = await this.contract.createContractCall(
       FA2ContractEntrypointName.TOKEN_METADATA,
@@ -283,6 +306,13 @@ export class TezosFA2Protocol extends TezosFAProtocol {
     ])
 
     return transferCall
+  }
+
+  protected callbackContract(entrypoint: FA2ContractEntrypointName): string {
+    const networkCallbacks: Partial<Record<FA2ContractEntrypointName, string>> | undefined = this.defaultCallbackContract[this.network]
+    const callback: string | undefined = networkCallbacks ? networkCallbacks[entrypoint] : undefined
+
+    return callback ?? ''
   }
 
   private isTransferRequest(obj: unknown): obj is { 

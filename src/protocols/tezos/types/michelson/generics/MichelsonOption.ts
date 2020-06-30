@@ -12,17 +12,21 @@ export abstract class MichelsonOption extends MichelsonType {
   protected abstract type: MichelsonOptionType
 
   public static from(value: unknown, mappingFunction?: unknown): MichelsonOption {
+    if (value instanceof MichelsonOption) {
+      return value
+    }
+
     if (!(value instanceof MichelsonType) && typeof mappingFunction !== 'function') {
       throw new Error('MichelsonOption: unknown generic mapping factory function.')
     }
 
     return isMichelinePrimitiveApplication(value)
-      ? this.fromMicheline(value, mappingFunction)
-      : this.fromUnknown(value, mappingFunction)
+      ? MichelsonOption.fromMicheline(value, mappingFunction)
+      : MichelsonOption.fromUnknown(value, mappingFunction)
   }
 
   public static fromMicheline(micheline: MichelinePrimitiveApplication<MichelsonGrammarData>, mappingFunction: unknown): MichelsonOption {
-    return this.fromUnknown(micheline.prim === 'Some' && micheline.args ? micheline.args[0] : null, mappingFunction)
+    return MichelsonOption.fromUnknown(micheline.prim === 'Some' && micheline.args ? micheline.args[0] : null, mappingFunction)
   }
 
   public static fromUnknown(unknownValue: unknown, mappingFunction: unknown): MichelsonOption {
@@ -49,7 +53,7 @@ export abstract class MichelsonOption extends MichelsonType {
 export class MichelsonSome extends MichelsonOption {
   protected type: MichelsonOptionType = 'Some'
 
-  constructor(readonly value: Lazy<MichelsonType>, name?: string) {
+  constructor(public readonly value: Lazy<MichelsonType>, name?: string) {
     super(name)
   }
 

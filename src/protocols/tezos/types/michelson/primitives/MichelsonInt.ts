@@ -5,21 +5,25 @@ import { isMichelinePrimitive } from '../../utils'
 import { MichelsonType } from '../MichelsonType'
 
 export class MichelsonInt extends MichelsonType {
-  constructor(readonly value: BigNumber, name?: string) {
+  constructor(public readonly value: BigNumber, name?: string) {
     super(name)
   }
 
   public static from(value: unknown): MichelsonInt {
     return isMichelinePrimitive('int', value)
-      ? this.fromMicheline(value)
-      : this.fromUnknown(value)
+      ? MichelsonInt.fromMicheline(value)
+      : MichelsonInt.fromUnknown(value)
   }
 
   public static fromMicheline(micheline: MichelinePrimitive<'int'>): MichelsonInt {
-    return this.fromUnknown(parseInt(micheline.int, 10))
+    return MichelsonInt.fromUnknown(parseInt(micheline.int, 10))
   }
 
   public static fromUnknown(unknownValue: unknown): MichelsonInt {
+    if (unknownValue instanceof MichelsonInt) {
+      return unknownValue
+    }
+
     if (typeof unknownValue !== 'number' && typeof unknownValue !== 'string' && !BigNumber.isBigNumber(unknownValue)) {
       throw invalidArgumentTypeError('MichelsonInt', 'number or string or BigNumber', typeof unknownValue)
     }

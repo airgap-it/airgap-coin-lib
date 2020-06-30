@@ -6,6 +6,7 @@ import { ICoinSubProtocol, SubProtocolType } from '../../ICoinSubProtocol'
 import { TezosContract } from '../contract/TezosContract'
 import { TezosContractCall } from '../contract/TezosContractCall'
 import { TezosNetwork, TezosProtocol } from '../TezosProtocol'
+import { MichelineDataNode } from '../types/micheline/MichelineNode'
 import { TezosOperation } from '../types/operations/TezosOperation'
 import { TezosTransactionParameters, TezosWrappedTransactionOperation } from '../types/operations/Transaction'
 import { TezosOperationType } from '../types/TezosOperationType'
@@ -13,7 +14,6 @@ import { TezosWrappedOperation } from '../types/TezosWrappedOperation'
 import { isMichelineNode } from '../types/utils'
 
 import { FeeDefaults } from './../../ICoinProtocol'
-import { MichelineDataNode } from '../types/micheline/MichelineNode'
 
 export interface TezosFAProtocolConfiguration {
   symbol: string
@@ -33,8 +33,6 @@ export interface TezosFAProtocolConfiguration {
   baseApiUrl?: string
   baseApiKey?: string
   baseApiNetwork?: string
-
-  callbackDefaults?: [TezosNetwork, string][]
 }
 
 export interface TezosTransactionResult {
@@ -56,8 +54,6 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
 
   protected readonly defaultSourceAddress: string = 'tz1Mj7RzPmMAqDUNFBn5t5VbXmWW4cSUAdtT'
 
-  private readonly defaultCallbackContractMap = new Map<TezosNetwork, string>()
-
   constructor(configuration: TezosFAProtocolConfiguration) {
     super(configuration.jsonRPCAPI, configuration.baseApiUrl, configuration.network, configuration.baseApiNetwork, configuration.baseApiKey)
     this.contractAddress = configuration.contractAddress
@@ -67,10 +63,6 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
     this.identifier = configuration.identifier
     this.feeDefaults = configuration.feeDefaults
     this.decimals = configuration.decimals || this.decimals
-
-    configuration.callbackDefaults?.forEach(([network, address]: [TezosNetwork, string]) => {
-      this.defaultCallbackContractMap.set(network, address)
-    })
     
     this.contract = new TezosContract({
       address: this.contractAddress,
@@ -332,10 +324,6 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
       console.error(error.message)
       throw new Error('Forging Tezos TX failed.')
     }
-  }
-
-  protected callbackContract(): string {
-    return this.defaultCallbackContractMap.get(this.network) ?? ''
   }
   
   protected requireSource(source?: string, defaultSource?: string, ...excludedPrefixes: string[]): string {

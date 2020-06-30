@@ -4,21 +4,25 @@ import { MichelineDataNode } from '../../micheline/MichelineNode'
 import { MichelsonType } from '../MichelsonType'
 
 export class MichelsonList extends MichelsonType {
-  constructor(readonly elements: Lazy<MichelsonType[]>, name?: string) {
+  constructor(public readonly elements: Lazy<MichelsonType[]>, name?: string) {
     super(name)
   }
 
-  public static from(items: unknown, mappingFunction?: unknown): MichelsonList {
-    if (!Array.isArray(items)) {
-      throw invalidArgumentTypeError('MichelsonList', 'array', typeof items)
+  public static from(value: unknown, mappingFunction?: unknown): MichelsonList {
+    if (value instanceof MichelsonList) {
+      return value
     }
 
-    if (items.some((item: unknown) => !(item instanceof MichelsonType)) && typeof mappingFunction !== 'function') {
+    if (!Array.isArray(value)) {
+      throw invalidArgumentTypeError('MichelsonList', 'array', typeof value)
+    }
+
+    if (value.some((item: unknown) => !(item instanceof MichelsonType)) && typeof mappingFunction !== 'function') {
       throw new Error('MichelsonList: unknown generic mapping factory function.')
     }
 
     const lazyList: Lazy<MichelsonType[]> = new Lazy(() => {
-      const elements: unknown[] = items.map((element: unknown) => {
+      const elements: unknown[] = value.map((element: unknown) => {
         if (element instanceof MichelsonType) {
           return element
         } else {
@@ -37,7 +41,7 @@ export class MichelsonList extends MichelsonType {
   }
 
   public asRawValue(): Record<string, Record<string, any>[]> | Record<string, any>[] {
-    const value = this.elements.get().map((element: MichelsonType) => element.asRawValue())
+    const value: any[] = this.elements.get().map((element: MichelsonType) => element.asRawValue())
 
     return this.name ? { [this.name]: value } : value
   }

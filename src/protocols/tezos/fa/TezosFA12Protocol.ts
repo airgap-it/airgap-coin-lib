@@ -24,14 +24,13 @@ enum FA12ContractEntrypointName {
 }
 
 export class TezosFA12Protocol extends TezosFAProtocol {
+  private readonly defaultCallbackContractMap: Map<TezosNetwork, string> = new Map()
+
   constructor(configuration: TezosFAProtocolConfiguration) {
-    super({
-      callbackDefaults: [
-        [TezosNetwork.MAINNET, 'KT19ptNzn4MVAN45KUUNpyL5AdLVhujk815u'],
-        [TezosNetwork.CARTHAGENET, 'KT1J8FmFLSgMz5H2vexFmsCtTLVod9V49iyW']
-      ],
-      ...configuration
-    })
+    super(configuration)
+
+    this.defaultCallbackContractMap.set(TezosNetwork.MAINNET, 'KT19ptNzn4MVAN45KUUNpyL5AdLVhujk815u')
+    this.defaultCallbackContractMap.set(TezosNetwork.CARTHAGENET, 'KT1J8FmFLSgMz5H2vexFmsCtTLVod9V49iyW')
   }
 
   public async getBalanceOfAddresses(addresses: string[]): Promise<string> {
@@ -218,6 +217,10 @@ export class TezosFA12Protocol extends TezosFAProtocol {
     }
 
     return transferCalls
+  }
+
+  protected callbackContract(): string {
+    return this.defaultCallbackContractMap.get(this.network) ?? ''
   }
 
   private isTransferRequest(obj: unknown): obj is { from: string, to: string, value: BigNumber } {
