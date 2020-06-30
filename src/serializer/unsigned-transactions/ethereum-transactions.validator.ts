@@ -26,7 +26,7 @@ const unsignedTransactionConstraints = {
     type: 'String',
     isHexStringWithPrefix: true,
     format: {
-      pattern: '^0x[a-fA-F0-9]{40}$', // Should be new EthereumProtocol().addressValidationPattern, but then it doesn't run
+      pattern: '^0x[a-fA-F0-9]{40}$', // Should be new EthereumProtocol().addressValidationPattern, but then there is a runtime issue because of circular dependencies
       flags: 'i',
       message: 'is not a valid ethereum address'
     }

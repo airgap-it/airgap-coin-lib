@@ -213,16 +213,14 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       branch: Buffer.from(new Uint8Array([1, 52]))
     }
 
+  // TODO: Should we remove these getters and replace the calls to `this.options.network...`?
   public get jsonRPCAPI(): string {
-    // TODO: Remove if it works
     return this.options.network.rpcUrl
   }
   public get baseApiUrl(): string {
-    // TODO: Remove if it works
     return this.options.network.extras.conseilUrl
   }
   public get baseApiNetwork(): string {
-    // TODO: Remove if it works
     return this.options.network.extras.conseilNetwork
   }
 
