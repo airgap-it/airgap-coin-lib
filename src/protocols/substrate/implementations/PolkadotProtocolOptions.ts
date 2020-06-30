@@ -11,17 +11,17 @@ import { SubstrateNetwork } from '../SubstrateNetwork'
 
 const MAINNET_NAME: string = 'Mainnet'
 
-const NODE_URL: string = ''
+const NODE_URL: string = 'https://polkadot-cc1.kubernetes.papers.tech'
 
-const BLOCK_EXPLORER_URL: string = ''
-const BLOCK_EXPLORER_API: string = ''
+const BLOCK_EXPLORER_URL: string = 'https://polkascan.io/polkadot-cc1'
+const BLOCK_EXPLORER_API: string = 'https://api-01.polkascan.io/polkadot/api/v1'
 
 export class PolkadotProtocolNetworkExtras {
-  constructor(public readonly apiUrl: string = BLOCK_EXPLORER_API) {}
+  constructor(public readonly apiUrl: string = BLOCK_EXPLORER_API) { }
 }
 
 export class PolkascanBlockExplorer implements ProtocolBlockExplorer {
-  constructor(public readonly blockExplorer: string = BLOCK_EXPLORER_URL) {}
+  constructor(public readonly blockExplorer: string = BLOCK_EXPLORER_URL) { }
 
   public async getAddressLink(address: string): Promise<string> {
     return `${this.blockExplorer}/account/${address}`
@@ -42,7 +42,7 @@ export class PolkadotProtocolConfig {
     ),
     public readonly accountController: SubstrateAccountController = new SubstrateAccountController(network, nodeClient),
     public readonly transactionController: SubstrateTransactionController = new SubstrateTransactionController(network, nodeClient)
-  ) {}
+  ) { }
 }
 
 export class PolkadotProtocolNetwork extends ProtocolNetwork<PolkadotProtocolNetworkExtras> {
@@ -61,5 +61,5 @@ export class PolkadotProtocolOptions implements ProtocolOptions<PolkadotProtocol
   constructor(
     public readonly network: PolkadotProtocolNetwork = new PolkadotProtocolNetwork(),
     public readonly config: PolkadotProtocolConfig = new PolkadotProtocolConfig()
-  ) {}
+  ) { }
 }

@@ -13,15 +13,15 @@ const MAINNET_NAME: string = 'Mainnet'
 
 const NODE_URL: string = 'https://polkadot-kusama-node.prod.gke.papers.tech'
 
-const BLOCK_EXPLORER_URL: string = 'https://polkascan.io/pre/kusama'
+const BLOCK_EXPLORER_URL: string = 'https://polkascan.io/kusama'
 const BLOCK_EXPLORER_API: string = 'https://api-01.polkascan.io/kusama/api/v1'
 
 export class KusamaProtocolNetworkExtras {
-  constructor(public readonly apiUrl: string = BLOCK_EXPLORER_API) {}
+  constructor(public readonly apiUrl: string = BLOCK_EXPLORER_API) { }
 }
 
 export class PolkascanBlockExplorer implements ProtocolBlockExplorer {
-  constructor(public readonly blockExplorer: string = BLOCK_EXPLORER_URL) {}
+  constructor(public readonly blockExplorer: string = BLOCK_EXPLORER_URL) { }
 
   public async getAddressLink(address: string): Promise<string> {
     return `${this.blockExplorer}/account/${address}`
@@ -42,7 +42,7 @@ export class KusamaProtocolConfig {
     ),
     public readonly accountController: SubstrateAccountController = new SubstrateAccountController(network, nodeClient),
     public readonly transactionController: SubstrateTransactionController = new SubstrateTransactionController(network, nodeClient)
-  ) {}
+  ) { }
 }
 
 export class KusamaProtocolNetwork extends ProtocolNetwork<KusamaProtocolNetworkExtras> {
@@ -61,5 +61,5 @@ export class KusamaProtocolOptions implements ProtocolOptions<KusamaProtocolConf
   constructor(
     public readonly network: KusamaProtocolNetwork = new KusamaProtocolNetwork(),
     public readonly config: KusamaProtocolConfig = new KusamaProtocolConfig()
-  ) {}
+  ) { }
 }
