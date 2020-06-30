@@ -12,7 +12,7 @@ import { SignedBitcoinTransaction } from '../../serializer/schemas/definitions/t
 import { RawBitcoinTransaction } from '../../serializer/types'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
 
-import { BitcoinCryptographyClient } from './BitcoinCryptographyClient'
+import { BitcoinCryptoClient } from './BitcoinCryptoClient'
 
 export interface Vin {
   txid: string
@@ -744,11 +744,11 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
   }
 
   public async signMessage(message: string, keypair: { privateKey: Buffer }): Promise<string> {
-    return new BitcoinCryptographyClient(this, bitcoinJSMessage).signMessage(message, keypair)
+    return new BitcoinCryptoClient(this, bitcoinJSMessage).signMessage(message, keypair)
   }
 
   public async verifyMessage(message: string, signature: string, publicKey: string): Promise<boolean> {
-    return new BitcoinCryptographyClient(this, bitcoinJSMessage).verifyMessage(message, signature, publicKey)
+    return new BitcoinCryptoClient(this, bitcoinJSMessage).verifyMessage(message, signature, publicKey)
   }
 
   public async getTransactionStatuses(transactionHashes: string[]): Promise<AirGapTransactionStatus[]> {

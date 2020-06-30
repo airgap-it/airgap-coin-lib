@@ -1,8 +1,8 @@
 import SECP256K1 = require('../../dependencies/src/secp256k1-3.7.1/elliptic')
 import * as sha from '../../dependencies/src/sha.js-2.4.11/index'
-import { CryptographyClient } from '../CryptographyClient'
+import { CryptoClient } from '../CryptoClient'
 
-export class CosmosCryptographyClient extends CryptographyClient {
+export class CosmosCryptoClient extends CryptoClient {
   constructor() {
     super()
   }

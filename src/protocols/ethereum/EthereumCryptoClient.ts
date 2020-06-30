@@ -1,11 +1,11 @@
 import * as EthereumJSUtils from '../../dependencies/src/ethereumjs-util-5.2.0/index'
-import { CryptographyClient } from '../CryptographyClient'
+import { CryptoClient } from '../CryptoClient'
 
 import { BaseEthereumProtocol } from './BaseEthereumProtocol'
 import { EthereumInfoClient } from './clients/info-clients/InfoClient'
 import { EthereumNodeClient } from './clients/node-clients/NodeClient'
 
-export class EthereumCryptographyClient extends CryptographyClient {
+export class EthereumCryptoClient extends CryptoClient {
   constructor(private readonly protocol: BaseEthereumProtocol<EthereumNodeClient, EthereumInfoClient>) {
     super()
   }

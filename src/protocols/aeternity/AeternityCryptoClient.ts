@@ -1,6 +1,6 @@
 import * as sodium from 'libsodium-wrappers'
 
-import { CryptographyClient } from '../CryptographyClient'
+import { CryptoClient } from '../CryptoClient'
 
 const personalMessageToBinary = (message: string): Buffer => {
   const prefix: Buffer = Buffer.from('‎Æternity Signed Message:\n', 'utf8')
@@ -12,7 +12,7 @@ const personalMessageToBinary = (message: string): Buffer => {
   return Buffer.concat([Buffer.from([prefix.length]), prefix, Buffer.from([messageBuffer.length]), messageBuffer])
 }
 
-export class AeternityCryptographyClient extends CryptographyClient {
+export class AeternityCryptoClient extends CryptoClient {
   constructor() {
     super()
   }

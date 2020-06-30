@@ -1,7 +1,7 @@
 import { ICoinProtocol } from '../..'
-import { CryptographyClient } from '../CryptographyClient'
+import { CryptoClient } from '../CryptoClient'
 
-export class BitcoinCryptographyClient extends CryptographyClient {
+export class BitcoinCryptoClient extends CryptoClient {
   constructor(private readonly protocol: ICoinProtocol, private readonly bitcoinJSMessage: any) {
     super()
   }

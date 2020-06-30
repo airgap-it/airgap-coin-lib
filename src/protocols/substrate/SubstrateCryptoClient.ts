@@ -1,9 +1,9 @@
 import { assert, u8aToU8a } from '@polkadot/util'
 import { sr25519Sign, sr25519Verify } from '@polkadot/wasm-crypto'
 
-import { CryptographyClient } from '../CryptographyClient'
+import { CryptoClient } from '../CryptoClient'
 
-export class SubstrateCryptographyClient extends CryptographyClient {
+export class SubstrateCryptoClient extends CryptoClient {
   constructor() {
     super()
   }
