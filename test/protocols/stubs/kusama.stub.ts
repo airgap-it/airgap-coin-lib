@@ -74,6 +74,6 @@ export class KusamaProtocolStub implements ProtocolHTTPStub {
 
     sinon.stub(protocol.options.config.nodeClient, 'getCurrentHeight').returns(Promise.resolve(new BigNumber(3192)))
 
-    sinon.stub(protocol.options.config.nodeClient, 'getSpecVersion').returns(Promise.resolve(4))
+    sinon.stub(protocol.options.config.nodeClient, 'getRuntimeVersion').returns(Promise.resolve({ specVersion: 4, transactionVersion: 1 }))
   }
 }

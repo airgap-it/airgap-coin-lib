@@ -42,6 +42,8 @@ import {
   supportedConstants,
   supportedStorageEntries
 } from './supported'
+import { SubstrateSlashingSpan } from '../data/staking/SubstrateSlashingSpan'
+import { SubstrateRuntimeVersion } from '../data/state/SubstrateRuntimeVersion'
 
 interface ConnectionConfig {
   allowCache: boolean
@@ -126,8 +128,8 @@ export class SubstrateNodeClient {
     return this.fromStorage('Staking', 'CurrentEra').then((item) => (item ? SCALEInt.decode(item).decoded.value : null))
   }
 
-  public async getSpecVersion(): Promise<number> {
-    return this.send('state', 'getRuntimeVersion').then((result) => result.specVersion)
+  public async getRuntimeVersion(): Promise<SubstrateRuntimeVersion | null> {
+    return this.send('state', 'getRuntimeVersion').catch(() => null)
   }
 
   public async getBonded(address: SubstrateAddress): Promise<SubstrateAddress | null> {
@@ -225,6 +227,12 @@ export class SubstrateNodeClient {
 
   public async getActiveEraInfo(): Promise<SubstrateActiveEraInfo | null> {
     return this.fromStorage('Staking', 'ActiveEra').then((item) => (item ? SubstrateActiveEraInfo.decode(this.network, item) : null))
+  }
+
+  public async getSlashingSpan(address: SubstrateAddress): Promise<SubstrateSlashingSpan | null> {
+    return this.fromStorage('Staking', 'SlashingSpans', SCALEAccountId.from(address, this.network)).then((item) => 
+      item ? SubstrateSlashingSpan.decode(this.network, item) : null
+    )
   }
 
   public async submitTransaction(encoded: string): Promise<string> {

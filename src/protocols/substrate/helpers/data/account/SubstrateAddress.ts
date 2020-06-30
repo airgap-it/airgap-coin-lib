@@ -44,7 +44,9 @@ export class SubstrateAddress {
   }
 
   public static fromPublicKey(payload: Buffer | Uint8Array | string, network: SubstrateNetwork): SubstrateAddress {
-    return this.fromPayload(hexToBytes(payload), SS58Format.get(network) || 42)
+    const ss58Format = SS58Format.get(network)
+
+    return this.fromPayload(hexToBytes(payload), ss58Format !== undefined ? ss58Format : 42)
   }
 
   public static fromEncoded(encoded: string): SubstrateAddress {

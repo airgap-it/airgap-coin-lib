@@ -460,6 +460,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
           // FA 1.2 support
           if (
             tezosSpendOperation.parameters?.entrypoint === 'transfer' &&
+            (tezosSpendOperation.parameters?.value as any).args &&
             (tezosSpendOperation.parameters?.value as any).args.length === 2
           ) {
             const value = tezosSpendOperation.parameters?.value as any
@@ -1590,7 +1591,12 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   public async calculatePayout(address: string, rewards: TezosRewards): Promise<TezosPayoutInfo> {
     const result = (await this.calculatePayoutForAddresses([address], rewards)).pop()
     if (result === undefined) {
-      throw new Error(`cannot calculate payout for ${address}`)
+      return {
+        delegator: address,
+        share: '0',
+        payout: '0',
+        balance: '0'
+      }
     }
 
     return result
