@@ -5,7 +5,7 @@ import { EthereumProtocolNetwork, EthereumProtocolOptions } from '../protocols/e
 import { GroestlcoinProtocolNetwork, GroestlcoinProtocolOptions } from '../protocols/groestlcoin/GroestlcoinProtocolOptions'
 import { KusamaProtocolNetwork, KusamaProtocolOptions } from '../protocols/substrate/implementations/KusamaProtocolOptions'
 import { PolkadotProtocolNetwork, PolkadotProtocolOptions } from '../protocols/substrate/implementations/PolkadotProtocolOptions'
-import { TezosBTCProtocolConfig, TezosFAProtocolOptions, TezosStakerProtocolConfig } from '../protocols/tezos/fa/TezosFAProtocolOptions'
+import { TezosBTCProtocolConfig, TezosFAProtocolOptions, TezosStakerProtocolConfig, TezosUSDProtocolConfig } from '../protocols/tezos/fa/TezosFAProtocolOptions'
 import { TezosProtocolNetwork, TezosProtocolOptions } from '../protocols/tezos/TezosProtocolOptions'
 import { assertNever } from '../serializer/message'
 
@@ -41,6 +41,11 @@ const getProtocolOptionsByIdentifier: (identifier: ProtocolSymbols, network?: Pr
       return new TezosFAProtocolOptions(
         network ? (network as TezosProtocolNetwork) : new TezosProtocolNetwork(),
         new TezosBTCProtocolConfig()
+      )
+    case SubProtocolSymbols.XTZ_USD:
+      return new TezosFAProtocolOptions(
+        network ? (network as TezosProtocolNetwork) : new TezosProtocolNetwork(),
+        new TezosUSDProtocolConfig()
       )
     case SubProtocolSymbols.XTZ_STKR:
       return new TezosFAProtocolOptions(

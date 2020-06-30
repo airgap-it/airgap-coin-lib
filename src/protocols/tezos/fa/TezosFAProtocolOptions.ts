@@ -56,7 +56,25 @@ export class TezosStakerProtocolConfig extends TezosFAProtocolConfig {
   }
 }
 
+export class TezosUSDProtocolConfig extends TezosFAProtocolConfig {
+  constructor(
+    symbol: string = 'USDtz',
+    name: string = 'USD Tez',
+    marketSymbol: string = 'USDtz',
+    identifier: ProtocolSymbols = SubProtocolSymbols.XTZ_USD,
+    contractAddress: string = 'KT1LN4LPSqTMS7Sd2CJw4bbDGRkMv2t68Fy9',
+    feeDefaults: FeeDefaults = {
+      low: '0.100',
+      medium: '0.300',
+      high: '0.500'
+    },
+    decimals: number = 8
+  ) {
+    super(symbol, name, marketSymbol, identifier, contractAddress, feeDefaults, decimals)
+  }
+}
+
 export class TezosFAProtocolOptions implements ProtocolOptions<TezosFAProtocolConfig> {
   // tslint:disable-next-line:no-unnecessary-initializer
-  constructor(public readonly network: TezosProtocolNetwork = new TezosProtocolNetwork(), public readonly config: TezosFAProtocolConfig) {}
+  constructor(public readonly network: TezosProtocolNetwork = new TezosProtocolNetwork(), public readonly config: TezosFAProtocolConfig) { }
 }
