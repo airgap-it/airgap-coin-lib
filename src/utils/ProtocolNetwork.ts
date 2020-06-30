@@ -1,4 +1,12 @@
 import { ProtocolBlockExplorer } from './ProtocolBlockExplorer'
+import * as createHash from '../dependencies/src/create-hash-1.2.0/index'
+
+const sha256hashShort: (input: string) => string = (input: string): string => {
+  const hash = createHash('sha256')
+  hash.update(input)
+
+  return hash.digest('base64').slice(0, 10)
+}
 
 export enum NetworkType {
   MAINNET = 'MAINNET',
@@ -6,13 +14,9 @@ export enum NetworkType {
   CUSTOM = 'CUSTOM'
 }
 
-const hash: (str: string) => string = (str: string): string => {
-  return str // TODO: Hash
-}
-
 export abstract class ProtocolNetwork<T = unknown> {
   get identifier(): string {
-    const hashed: string = hash(`${this.name}-${this.rpcUrl}`)
+    const hashed: string = sha256hashShort(`${this.name}-${this.rpcUrl}`)
 
     return `${this.type}-${hashed}`
   }
