@@ -1,11 +1,9 @@
 import { MichelsonType } from '../types/michelson/MichelsonType'
 import { TezosTransactionParameters } from '../types/operations/Transaction'
 
-import { TezosContractEntrypoint } from './TezosContractEntrypoint'
-
 export class TezosContractCall {
   constructor(
-    readonly entrypoint: string | TezosContractEntrypoint, 
+    readonly entrypoint: string, 
     readonly michelsonValue: MichelsonType | undefined
   ) {}
 
@@ -15,7 +13,7 @@ export class TezosContractCall {
 
   public toJSON(): TezosTransactionParameters {
     return {
-      entrypoint: typeof this.entrypoint === 'string' ? this.entrypoint : this.entrypoint.name,
+      entrypoint: this.entrypoint,
       value: this.michelsonValue ? this.michelsonValue.toMichelineJSON() : []
     }
   }

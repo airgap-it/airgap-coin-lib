@@ -31,8 +31,6 @@ export interface TezosContractConfiguration {
   conseilAPIURL: string
   conseilNetwork: string
   conseilAPIKey: string
-
-  parseDefaultEntrypoint?: boolean
 }
 
 export class TezosContract {
@@ -50,16 +48,12 @@ export class TezosContract {
   private readonly conseilNetwork: string
   private readonly conseilAPIKey: string
 
-  private readonly parseDefaultEntrypoint: boolean
-
   constructor(configuration: TezosContractConfiguration) {
     this.address = configuration.address
     this.nodeRPCURL = configuration.nodeRPCURL
     this.conseilAPIURL = configuration.conseilAPIURL
     this.conseilNetwork = configuration.conseilNetwork
     this.conseilAPIKey = configuration.conseilAPIKey
-
-    this.parseDefaultEntrypoint = configuration.parseDefaultEntrypoint ?? true
   }
 
   public async bigMapValue(key: string, isKeyHash: boolean = false): Promise<string | null> {
@@ -204,8 +198,7 @@ export class TezosContract {
     value: unknown,
     configuration: MichelsonTypeMetaCreateValueConfiguration = {}
   ): TezosContractCall {
-    // TODO: optimize so paths can be reused, e.g if creating value for `default` while more specific entrypoints have been already evaluated
-    return new TezosContractCall(entrypoint, entrypoint.type.createValue(value, configuration))
+    return new TezosContractCall(entrypoint.name, entrypoint.type.createValue(value, configuration))
   }
 
   private async waitForBigMapID(): Promise<void> {
@@ -250,10 +243,10 @@ export class TezosContract {
       const entrypointsPromise: Promise<Record<'entrypoints', Record<string, MichelineTypeNode>>> = this.nodeRequest('entrypoints')
 
       this.entrypointsPromise = Promise.all([
-        this.parseDefaultEntrypoint ? codePromise : undefined, 
+        codePromise, 
         entrypointsPromise
       ]).then(([codeResponse, entrypointsResponse]) => {
-        if (codeResponse && entrypointsResponse.entrypoints[TezosContract.DEFAULT_ENTRYPOINT] === undefined) {
+        if (entrypointsResponse.entrypoints[TezosContract.DEFAULT_ENTRYPOINT] === undefined) {
           const parameter = codeResponse.code.find((primitiveApplication) => primitiveApplication.prim === 'parameter')
           if (parameter) {
             entrypointsResponse.entrypoints[TezosContract.DEFAULT_ENTRYPOINT] = parameter.args ? parameter.args[0] : []
