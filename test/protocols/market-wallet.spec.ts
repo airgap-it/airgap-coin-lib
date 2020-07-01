@@ -244,7 +244,6 @@ describe(`AirGapMarketWallet`, () => {
       networkIdentifier: new EthereumProtocolOptions().network.identifier,
       publicKey: '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       isExtendedPublicKey: false,
-      priceService: undefined,
       derivationPath: "m/44'/60'/0'/0/0",
       addressIndex: undefined,
       addresses: []

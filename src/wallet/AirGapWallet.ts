@@ -53,12 +53,14 @@ export class AirGapWallet implements IAirGapWallet {
   }
 
   public toJSON(): SerializedAirGapWallet {
-    const json: SerializedAirGapWallet & { protocol: ICoinProtocol } = Object.assign(
-      { protocolIdentifier: this.protocol.identifier, networkIdentifier: this.protocol.options.network.identifier },
-      this
-    )
-    delete json.protocol
-
-    return json
+    return {
+      protocolIdentifier: this.protocol.identifier,
+      networkIdentifier: this.protocol.options.network.identifier,
+      publicKey: this.publicKey,
+      isExtendedPublicKey: this.isExtendedPublicKey,
+      derivationPath: this.derivationPath,
+      addresses: this.addresses,
+      addressIndex: this.addressIndex
+    }
   }
 }
