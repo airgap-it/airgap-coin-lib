@@ -247,27 +247,21 @@ export class TezosFA2Protocol extends TezosFAProtocol {
     }
   }
 
-  // TODO: check handler
   public async tokenMetadata(
     tokenIDs: number[], 
-    source?: string, 
-    callbackContract: string = this.callbackContract(FA2ContractEntrypointName.TOKEN_METADATA_REGISTRY)
-  ): Promise<string> {
+    handler: string,
+    fee: string,
+    publicKey: string
+  ): Promise<RawTezosTransaction> {
     const tokenMetadataCall: TezosContractCall = await this.contract.createContractCall(
       FA2ContractEntrypointName.TOKEN_METADATA,
       {
         token_ids: tokenIDs,
-        handler: callbackContract
+        handler
       }
     )
 
-    const result: MichelineDataNode = await this.runContractCall(tokenMetadataCall, this.requireSource(source))
-
-    if (isMichelinePrimitive('string', result)) {
-      return result.string
-    } else {
-      return ''
-    }
+    return this.prepareContractCall([tokenMetadataCall], fee, publicKey)
   }
 
   private async createTransferCall(
