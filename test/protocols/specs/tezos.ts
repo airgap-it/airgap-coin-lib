@@ -155,7 +155,7 @@ export class TezosTestProtocolSpec extends TestProtocolSpec {
   public messages = [
     {
       message: 'example message',
-      signature: 'edsigtky3mXr3Q5bUqk1iUFyg1Yey6V6bep8QXkd4uUTtoT9QhA8wE5u6MphsEM5bz79NQNjog8MQ8ze1mhr7mDpWz2x9L1RBh9'
+      signature: 'edsigtexcZ9uMhqxRvPUaTdBukx2GAdwwi93VW1ULYEWXZPWViUMqR155kFeoCUqqUV97y11EM5J4AjbJriYWCXaDX6i9o9Gxde'
     }
   ]
 }

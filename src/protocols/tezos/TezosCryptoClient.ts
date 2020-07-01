@@ -10,7 +10,9 @@ export class TezosCryptoClient extends CryptoClient {
 
   public async signMessage(message: string, keypair: { privateKey: Buffer }): Promise<string> {
     await sodium.ready
-    const rawSignature: Uint8Array = sodium.crypto_sign_detached(sodium.from_string(message), keypair.privateKey)
+
+    const hash: Buffer = sodium.crypto_generichash(32, sodium.from_string(message))
+    const rawSignature: Uint8Array = sodium.crypto_sign_detached(hash, keypair.privateKey)
     const signature: string = bs58check.encode(Buffer.concat([Buffer.from(this.edsigPrefix), Buffer.from(rawSignature)]))
 
     return signature
@@ -29,7 +31,8 @@ export class TezosCryptoClient extends CryptoClient {
       throw new Error(`invalid signature: ${signature}`)
     }
 
-    const isValidSignature: boolean = sodium.crypto_sign_verify_detached(rawSignature, message, Buffer.from(publicKey, 'hex'))
+    const hash: Buffer = sodium.crypto_generichash(32, sodium.from_string(message))
+    const isValidSignature: boolean = sodium.crypto_sign_verify_detached(rawSignature, hash, Buffer.from(publicKey, 'hex'))
 
     return isValidSignature
   }
