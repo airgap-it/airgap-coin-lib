@@ -57,7 +57,7 @@ export class BitcoinProtocol implements ICoinProtocol {
 
   private readonly feeEstimationUrl = `https://blockstream.info/api/fee-estimates`
 
-  constructor(public readonly options: BitcoinProtocolOptions = new BitcoinProtocolOptions()) { }
+  constructor(public readonly options: BitcoinProtocolOptions = new BitcoinProtocolOptions()) {}
 
   public async getBlockExplorerLinkForAddress(address: string): Promise<string> {
     return this.options.network.blockExplorer.getAddressLink(address)

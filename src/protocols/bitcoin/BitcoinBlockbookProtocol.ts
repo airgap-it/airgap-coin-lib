@@ -128,7 +128,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
   public addressValidationPattern: string = '^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$'
   public addressPlaceholder: string = '1ABC...'
 
-  constructor(public readonly options: BitcoinBlockbookProtocolOptions = new BitcoinBlockbookProtocolOptions()) { }
+  constructor(public readonly options: BitcoinBlockbookProtocolOptions = new BitcoinBlockbookProtocolOptions()) {}
 
   public async getBlockExplorerLinkForAddress(address: string): Promise<string> {
     return this.options.network.blockExplorer.getAddressLink(address)

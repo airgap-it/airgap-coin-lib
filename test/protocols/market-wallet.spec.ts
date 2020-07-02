@@ -37,12 +37,17 @@ const xPubProtocol = new BitcoinProtocol()
 
 class AirGapPriceService implements AirGapWalletPriceService {
   public async getCurrentMarketPrice(protocol: ICoinProtocol, baseSymbol: string): Promise<BigNumber> {
-    throw new Error("Method not implemented.")
+    throw new Error('Method not implemented.')
   }
-  public async getMarketPricesOverTime(protocol: ICoinProtocol, timeUnit: TimeUnit, numberOfMinutes: number, date: Date, baseSymbol: string): Promise<MarketDataSample[]> {
-    throw new Error("Method not implemented.")
+  public async getMarketPricesOverTime(
+    protocol: ICoinProtocol,
+    timeUnit: TimeUnit,
+    numberOfMinutes: number,
+    date: Date,
+    baseSymbol: string
+  ): Promise<MarketDataSample[]> {
+    throw new Error('Method not implemented.')
   }
-
 }
 
 describe(`AirGapMarketWallet`, () => {

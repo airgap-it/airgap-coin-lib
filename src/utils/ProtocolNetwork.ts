@@ -27,5 +27,5 @@ export abstract class ProtocolNetwork<T = unknown> {
     public readonly rpcUrl: string,
     public readonly blockExplorer: ProtocolBlockExplorer,
     public readonly extras: T
-  ) { }
+  ) {}
 }

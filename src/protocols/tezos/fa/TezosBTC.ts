@@ -35,7 +35,7 @@ export class TezosBTC extends TezosFAProtocol {
           if (bigMapEntry.value) {
             value = TezosUtils.parseHex(bigMapEntry.value)
           }
-        } catch { }
+        } catch {}
         if (value instanceof TezosContractPair) {
           value = value.first
         }

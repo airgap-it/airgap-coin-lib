@@ -157,7 +157,10 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
 
     const transferCalls: TezosContractCall[] = []
     for (let i: number = 0; i < recipients.length; i++) {
-      const args = new TezosContractPair(new TezosContractString(fromAddress), new TezosContractPair(new TezosContractString(recipients[i]), new TezosContractInt(new BigNumber(values[i]).toNumber())))
+      const args = new TezosContractPair(
+        new TezosContractString(fromAddress),
+        new TezosContractPair(new TezosContractString(recipients[i]), new TezosContractInt(new BigNumber(values[i]).toNumber()))
+      )
       transferCalls.push(new TezosContractCall(TezosContractEntrypoint.transfer, args))
     }
 
@@ -187,7 +190,10 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     } else if (source === undefined) {
       source = spenderAddress
     }
-    const args = new TezosContractPair(new TezosContractPair(new TezosContractString(ownerAddress), new TezosContractString(spenderAddress)), new TezosContractString(callbackContract))
+    const args = new TezosContractPair(
+      new TezosContractPair(new TezosContractString(ownerAddress), new TezosContractString(spenderAddress)),
+      new TezosContractString(callbackContract)
+    )
     const getAllowanceCall = new TezosContractCall(TezosContractEntrypoint.allowance, args)
 
     return this.runContractCall(getAllowanceCall, source)
@@ -230,7 +236,10 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     fee: string,
     publicKey: string
   ): Promise<RawTezosTransaction> {
-    const args = new TezosContractPair(new TezosContractString(fromAddress), new TezosContractPair(new TezosContractString(toAddress), new TezosContractInt(new BigNumber(amount).toNumber())))
+    const args = new TezosContractPair(
+      new TezosContractString(fromAddress),
+      new TezosContractPair(new TezosContractString(toAddress), new TezosContractInt(new BigNumber(amount).toNumber()))
+    )
     const transferCall = new TezosContractCall(TezosContractEntrypoint.transfer, args)
 
     return this.prepareContractCall([transferCall], fee, publicKey)
@@ -413,7 +422,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     } else {
       return TezosUtils.parseAddress((parameter as TezosContractBytes).value)
     }
-  } 
+  }
 
   private parseParameters(parameters: string): any {
     const toBeRemoved = 'Unparsable code: '

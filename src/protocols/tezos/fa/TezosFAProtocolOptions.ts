@@ -76,5 +76,5 @@ export class TezosUSDProtocolConfig extends TezosFAProtocolConfig {
 
 export class TezosFAProtocolOptions implements ProtocolOptions<TezosFAProtocolConfig> {
   // tslint:disable-next-line:no-unnecessary-initializer
-  constructor(public readonly network: TezosProtocolNetwork = new TezosProtocolNetwork(), public readonly config: TezosFAProtocolConfig) { }
+  constructor(public readonly network: TezosProtocolNetwork = new TezosProtocolNetwork(), public readonly config: TezosFAProtocolConfig) {}
 }

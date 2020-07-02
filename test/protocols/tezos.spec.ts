@@ -261,7 +261,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       expect(operation3.destination).to.equal('KT1J5mFAxxzAYDLjYeVXkLcyEzNGRZ3kuFGq')
     })
 
-    it('can unforge a delegation TX', async () => { })
+    it('can unforge a delegation TX', async () => {})
 
     it('can give a list of transactions from Conseil API', async () => {
       const stub = sinon.stub(axios, 'post')
@@ -282,7 +282,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       )
       const transactions = await tezosLib.getTransactionsFromAddresses(tezosProtocolSpec.wallet.addresses, 20, 0)
 
-      expect(transactions.map(transaction => ({ ...transaction, network: undefined }))).to.deep.eq([
+      expect(transactions.map((transaction) => ({ ...transaction, network: undefined }))).to.deep.eq([
         {
           amount: new BigNumber(1000000),
           fee: new BigNumber(1420),
@@ -297,14 +297,13 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         }
       ])
 
-
-      expect(transactions.map(transaction => ({ ...transaction.network, blockExplorer: undefined, extras: undefined }))).to.deep.eq([
+      expect(transactions.map((transaction) => ({ ...transaction.network, blockExplorer: undefined, extras: undefined }))).to.deep.eq([
         {
-          "blockExplorer": undefined,
-          "extras": undefined,
-          "name": "Mainnet",
-          "rpcUrl": "https://tezos-node.prod.gke.papers.tech",
-          "type": "MAINNET"
+          blockExplorer: undefined,
+          extras: undefined,
+          name: 'Mainnet',
+          rpcUrl: 'https://tezos-node.prod.gke.papers.tech',
+          type: 'MAINNET'
         }
       ])
     })

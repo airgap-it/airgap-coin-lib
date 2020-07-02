@@ -24,7 +24,13 @@ export interface MarketDataSample {
 
 export interface AirGapWalletPriceService {
   getCurrentMarketPrice(protocol: ICoinProtocol, baseSymbol: string): Promise<BigNumber>
-  getMarketPricesOverTime(protocol: ICoinProtocol, timeUnit: TimeUnit, numberOfMinutes: number, date: Date, baseSymbol: string): Promise<MarketDataSample[]>
+  getMarketPricesOverTime(
+    protocol: ICoinProtocol,
+    timeUnit: TimeUnit,
+    numberOfMinutes: number,
+    date: Date,
+    baseSymbol: string
+  ): Promise<MarketDataSample[]>
 }
 
 function notEmpty<TValue>(value: TValue | null | undefined): value is TValue {
@@ -49,14 +55,17 @@ export class AirGapMarketWallet extends AirGapWallet {
   }
 
   set marketPriceOverTime(marketPrices: MarketDataSample[] | undefined) {
-    this._marketPriceOverTime = this.protocol.options.network.type === NetworkType.MAINNET ? marketPrices : marketPrices?.map(() => ({
-      time: 0,
-      close: 0,
-      high: 0,
-      low: 0,
-      volumefrom: '0',
-      volumeto: 0
-    }))
+    this._marketPriceOverTime =
+      this.protocol.options.network.type === NetworkType.MAINNET
+        ? marketPrices
+        : marketPrices?.map(() => ({
+            time: 0,
+            close: 0,
+            high: 0,
+            low: 0,
+            volumefrom: '0',
+            volumeto: 0
+          }))
   }
 
   constructor(
@@ -65,7 +74,7 @@ export class AirGapMarketWallet extends AirGapWallet {
     public isExtendedPublicKey: boolean,
     public derivationPath: string,
     public priceService: AirGapWalletPriceService,
-    public addressIndex?: number,
+    public addressIndex?: number
   ) {
     super(protocol, publicKey, isExtendedPublicKey, derivationPath, addressIndex)
   }
@@ -154,7 +163,10 @@ export class AirGapMarketWallet extends AirGapWallet {
   }
 
   private async txsIncludingStatus(transactions: IAirGapTransaction[]): Promise<IAirGapTransaction[]> {
-    if (this.protocol.identifier.toLowerCase() === MainProtocolSymbols.ETH || this.protocol.identifier.toLowerCase() === MainProtocolSymbols.XTZ) {
+    if (
+      this.protocol.identifier.toLowerCase() === MainProtocolSymbols.ETH ||
+      this.protocol.identifier.toLowerCase() === MainProtocolSymbols.XTZ
+    ) {
       const transactionsWithHash: IAirGapTransaction[] = transactions.filter((tx: IAirGapTransaction) => tx.hash)
       const hashes: string[] = transactionsWithHash.map((tx: IAirGapTransaction) => tx.hash).filter(notEmpty) // Extra filter here for typing reasons, should not alter the array because we filter on the line before.
 

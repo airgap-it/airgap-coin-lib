@@ -62,7 +62,7 @@ describe(`ICoinProtocol Aeternity - Custom Tests`, () => {
 
     const transactions = await aeLib.getTransactionsFromAddresses(aeProtocolSpec.wallet.addresses, 0, 0)
 
-    expect(transactions.map(transaction => ({ ...transaction, network: undefined }))).to.deep.eq([
+    expect(transactions.map((transaction) => ({ ...transaction, network: undefined }))).to.deep.eq([
       {
         amount: new BigNumber(aeProtocolSpec.txs[0].amount).toString(),
         fee: new BigNumber(aeProtocolSpec.txs[0].fee).toString(),
@@ -78,14 +78,13 @@ describe(`ICoinProtocol Aeternity - Custom Tests`, () => {
       }
     ])
 
-
-    expect(transactions.map(transaction => ({ ...transaction.network, blockExplorer: undefined, extras: undefined }))).to.deep.eq([
+    expect(transactions.map((transaction) => ({ ...transaction.network, blockExplorer: undefined, extras: undefined }))).to.deep.eq([
       {
         blockExplorer: undefined,
         extras: undefined,
-        name: "Mainnet",
-        rpcUrl: "https://ae-epoch-rpc-proxy.gke.papers.tech",
-        type: "MAINNET"
+        name: 'Mainnet',
+        rpcUrl: 'https://ae-epoch-rpc-proxy.gke.papers.tech',
+        type: 'MAINNET'
       }
     ])
   })
@@ -93,7 +92,7 @@ describe(`ICoinProtocol Aeternity - Custom Tests`, () => {
   it('can give a list of transactions from endpoints', async () => {
     const transactions = await aeLib.getTransactionsFromAddresses(aeProtocolSpec.wallet.addresses, 0, 0)
 
-    expect(transactions.map(transaction => ({ ...transaction, network: undefined }))).to.deep.eq([
+    expect(transactions.map((transaction) => ({ ...transaction, network: undefined }))).to.deep.eq([
       {
         amount: new BigNumber(aeProtocolSpec.txs[0].amount).toString(),
         fee: new BigNumber(aeProtocolSpec.txs[0].fee).toString(),
@@ -108,17 +107,15 @@ describe(`ICoinProtocol Aeternity - Custom Tests`, () => {
       }
     ])
 
-
-    expect(transactions.map(transaction => ({ ...transaction.network, blockExplorer: undefined, extras: undefined }))).to.deep.eq([
+    expect(transactions.map((transaction) => ({ ...transaction.network, blockExplorer: undefined, extras: undefined }))).to.deep.eq([
       {
         blockExplorer: undefined,
         extras: undefined,
-        name: "Mainnet",
-        rpcUrl: "https://ae-epoch-rpc-proxy.gke.papers.tech",
-        type: "MAINNET"
+        name: 'Mainnet',
+        rpcUrl: 'https://ae-epoch-rpc-proxy.gke.papers.tech',
+        type: 'MAINNET'
       }
     ])
-
   })
 
   it('can convert a b64 encoded TX back to b58', async () => {

@@ -1,5 +1,5 @@
+import { ProtocolNetwork } from '../utils/ProtocolNetwork'
 import { ProtocolSymbols } from '../utils/ProtocolSymbols'
-import { ProtocolNetwork } from '../utils/ProtocolNetwork';
 
 export enum AirGapTransactionType {
   SPEND = 'Spend Transaction',
