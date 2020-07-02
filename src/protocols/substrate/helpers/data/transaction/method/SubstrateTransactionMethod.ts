@@ -65,7 +65,7 @@ export class SubstrateTransactionMethod extends SCALEClass {
           let valueString = value.toString()
           try {
             valueString = JSON.parse(valueString)
-          } catch { }
+          } catch {}
 
           return Object.assign(prev, {
             [key]: valueString

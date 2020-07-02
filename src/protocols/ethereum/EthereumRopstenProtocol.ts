@@ -8,10 +8,16 @@ export class EthereumRopstenProtocol extends BaseEthereumProtocol<AirGapNodeClie
     // we probably need another network here, explorer is ok
     super(
       new EthereumProtocolOptions(
-        new EthereumProtocolNetwork(undefined, undefined, undefined, undefined, new EthereumProtocolNetworkExtras(3,
-          new AirGapNodeClient('https://ropsten.infura.io'),
-          new EtherscanInfoClient('https://api-ropsten.etherscan.io/'))
-
+        new EthereumProtocolNetwork(
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          new EthereumProtocolNetworkExtras(
+            3,
+            new AirGapNodeClient('https://ropsten.infura.io'),
+            new EtherscanInfoClient('https://api-ropsten.etherscan.io/')
+          )
         )
       )
     )

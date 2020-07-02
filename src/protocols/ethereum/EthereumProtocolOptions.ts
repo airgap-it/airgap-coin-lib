@@ -21,11 +21,11 @@ export class EthereumProtocolNetworkExtras {
     public readonly chainID: number = 1,
     public readonly nodeClient: EthereumNodeClient = new AirGapNodeClient(),
     public readonly infoClient: EthereumInfoClient = new EtherscanInfoClient()
-  ) { }
+  ) {}
 }
 
 export class EtherscanBlockExplorer implements ProtocolBlockExplorer {
-  constructor(public readonly blockExplorer: string = BLOCK_EXPLORER_URL) { }
+  constructor(public readonly blockExplorer: string = BLOCK_EXPLORER_URL) {}
 
   public async getAddressLink(address: string): Promise<string> {
     return `${this.blockExplorer}/address/${address}`
@@ -48,14 +48,14 @@ export class EthereumProtocolNetwork extends ProtocolNetwork<EthereumProtocolNet
 }
 
 export class EthereumProtocolConfig {
-  constructor() { }
+  constructor() {}
 }
 
 export class EthereumProtocolOptions implements ProtocolOptions<EthereumProtocolConfig> {
   constructor(
     public readonly network: EthereumProtocolNetwork = new EthereumProtocolNetwork(),
     public readonly config: EthereumProtocolConfig = new EthereumProtocolConfig()
-  ) { }
+  ) {}
 }
 
 export class EthereumERC20ProtocolConfig {
@@ -65,13 +65,13 @@ export class EthereumERC20ProtocolConfig {
     public readonly marketSymbol: string,
     public readonly identifier: SubProtocolSymbols,
     public readonly contractAddress: string,
-    public readonly decimals: number,
-  ) { }
+    public readonly decimals: number
+  ) {}
 }
 
 export class EthereumERC20ProtocolOptions implements ProtocolOptions<EthereumERC20ProtocolConfig> {
   constructor(
     public readonly network: EthereumProtocolNetwork = new EthereumProtocolNetwork(),
     public readonly config: EthereumERC20ProtocolConfig
-  ) { }
+  ) {}
 }

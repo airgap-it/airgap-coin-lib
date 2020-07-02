@@ -58,13 +58,13 @@ export class AirGapMarketWallet extends AirGapWallet {
       this.protocol.options.network.type === NetworkType.MAINNET
         ? marketPrices
         : marketPrices?.map(() => ({
-          time: 0,
-          close: 0,
-          high: 0,
-          low: 0,
-          volumefrom: '0',
-          volumeto: 0
-        }))
+            time: 0,
+            close: 0,
+            high: 0,
+            low: 0,
+            volumefrom: '0',
+            volumeto: 0
+          }))
   }
 
   constructor(
