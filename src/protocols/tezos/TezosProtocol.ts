@@ -212,7 +212,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     branch: Buffer.from(new Uint8Array([1, 52]))
   }
 
-  public readonly headers = { 'Content-Type': 'application/json', apiKey: 'airgap123' }
+  public readonly headers = { 'Content-Type': 'application/json', apiKey: 'airgap00391' }
 
   /**
    * Tezos Implemention of ICoinProtocol
