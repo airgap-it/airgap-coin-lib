@@ -47,11 +47,11 @@ export class PolkadotProtocolConfig {
 
 export class PolkadotProtocolNetwork extends ProtocolNetwork<PolkadotProtocolNetworkExtras> {
   constructor(
-    public readonly name: string = MAINNET_NAME,
-    public readonly type: NetworkType = NetworkType.MAINNET,
-    public readonly rpcUrl: string = NODE_URL,
-    public readonly blockExplorer: ProtocolBlockExplorer = new PolkascanBlockExplorer(),
-    public readonly extras: PolkadotProtocolNetworkExtras = new PolkadotProtocolNetworkExtras()
+    name: string = MAINNET_NAME,
+    type: NetworkType = NetworkType.MAINNET,
+    rpcUrl: string = NODE_URL,
+    blockExplorer: ProtocolBlockExplorer = new PolkascanBlockExplorer(),
+    extras: PolkadotProtocolNetworkExtras = new PolkadotProtocolNetworkExtras()
   ) {
     super(name, type, rpcUrl, blockExplorer, extras)
   }

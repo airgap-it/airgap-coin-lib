@@ -29,11 +29,11 @@ export class CryptoidBlockExplorer implements ProtocolBlockExplorer {
 
 export class GroestlcoinProtocolNetwork extends ProtocolNetwork<GroestlcoinProtocolNetworkExtras> {
   constructor(
-    public readonly name: string = MAINNET_NAME,
-    public readonly type: NetworkType = NetworkType.MAINNET,
-    public readonly rpcUrl: string = NODE_URL,
-    public readonly blockExplorer: ProtocolBlockExplorer = new CryptoidBlockExplorer(),
-    public readonly extras: GroestlcoinProtocolNetworkExtras = new GroestlcoinProtocolNetworkExtras()
+    name: string = MAINNET_NAME,
+    type: NetworkType = NetworkType.MAINNET,
+    rpcUrl: string = NODE_URL,
+    blockExplorer: ProtocolBlockExplorer = new CryptoidBlockExplorer(),
+    extras: GroestlcoinProtocolNetworkExtras = new GroestlcoinProtocolNetworkExtras()
   ) {
     super(name, type, rpcUrl, blockExplorer, extras)
   }

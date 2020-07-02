@@ -29,11 +29,11 @@ export class BlockcypherBlockExplorer implements ProtocolBlockExplorer {
 
 export class BitcoinBlockbookProtocolNetwork extends ProtocolNetwork<BitcoinBlockbookProtocolNetworkExtras> {
   constructor(
-    public readonly name: string = MAINNET_NAME,
-    public readonly type: NetworkType = NetworkType.MAINNET,
-    public readonly rpcUrl: string = NODE_URL,
-    public readonly blockExplorer: ProtocolBlockExplorer = new BlockcypherBlockExplorer(),
-    public readonly extras: BitcoinBlockbookProtocolNetworkExtras = new BitcoinBlockbookProtocolNetworkExtras()
+    name: string = MAINNET_NAME,
+    type: NetworkType = NetworkType.MAINNET,
+    rpcUrl: string = NODE_URL,
+    blockExplorer: ProtocolBlockExplorer = new BlockcypherBlockExplorer(),
+    extras: BitcoinBlockbookProtocolNetworkExtras = new BitcoinBlockbookProtocolNetworkExtras()
   ) {
     super(name, type, rpcUrl, blockExplorer, extras)
   }

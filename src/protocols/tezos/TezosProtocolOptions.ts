@@ -36,11 +36,11 @@ export class TezblockBlockExplorer implements ProtocolBlockExplorer {
 
 export class TezosProtocolNetwork extends ProtocolNetwork<TezosProtocolNetworkExtras> {
   constructor(
-    public readonly name: string = MAINNET_NAME,
-    public readonly type: NetworkType = NetworkType.MAINNET,
-    public readonly rpcUrl: string = NODE_URL,
-    public readonly blockExplorer: ProtocolBlockExplorer = new TezblockBlockExplorer(),
-    public readonly extras: TezosProtocolNetworkExtras = new TezosProtocolNetworkExtras()
+    name: string = MAINNET_NAME,
+    type: NetworkType = NetworkType.MAINNET,
+    rpcUrl: string = NODE_URL,
+    blockExplorer: ProtocolBlockExplorer = new TezblockBlockExplorer(),
+    extras: TezosProtocolNetworkExtras = new TezosProtocolNetworkExtras()
   ) {
     super(name, type, rpcUrl, blockExplorer, extras)
   }

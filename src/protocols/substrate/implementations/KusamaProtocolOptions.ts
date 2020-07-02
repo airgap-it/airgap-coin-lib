@@ -47,11 +47,11 @@ export class KusamaProtocolConfig {
 
 export class KusamaProtocolNetwork extends ProtocolNetwork<KusamaProtocolNetworkExtras> {
   constructor(
-    public readonly name: string = MAINNET_NAME,
-    public readonly type: NetworkType = NetworkType.MAINNET,
-    public readonly rpcUrl: string = NODE_URL,
-    public readonly blockExplorer: ProtocolBlockExplorer = new PolkascanBlockExplorer(),
-    public readonly extras: KusamaProtocolNetworkExtras = new KusamaProtocolNetworkExtras()
+    name: string = MAINNET_NAME,
+    type: NetworkType = NetworkType.MAINNET,
+    rpcUrl: string = NODE_URL,
+    blockExplorer: ProtocolBlockExplorer = new PolkascanBlockExplorer(),
+    extras: KusamaProtocolNetworkExtras = new KusamaProtocolNetworkExtras()
   ) {
     super(name, type, rpcUrl, blockExplorer, extras)
   }

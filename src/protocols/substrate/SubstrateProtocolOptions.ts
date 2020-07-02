@@ -39,11 +39,11 @@ export class SubstrateProtocolConfig {
 
 export class SubstrateProtocolNetwork extends ProtocolNetwork<SubstrateProtocolNetworkExtras> {
   constructor(
-    public readonly name: string = MAINNET_NAME,
-    public readonly type: NetworkType = NetworkType.MAINNET,
-    public readonly rpcUrl: string,
-    public readonly blockExplorer: ProtocolBlockExplorer,
-    public readonly extras: SubstrateProtocolNetworkExtras
+    name: string = MAINNET_NAME,
+    type: NetworkType = NetworkType.MAINNET,
+    rpcUrl: string,
+    blockExplorer: ProtocolBlockExplorer,
+    extras: SubstrateProtocolNetworkExtras
   ) {
     super(name, type, rpcUrl, blockExplorer, extras)
   }
