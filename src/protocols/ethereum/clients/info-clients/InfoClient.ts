@@ -1,5 +1,5 @@
-import { EthereumProtocol } from '../../../..'
 import { IAirGapTransaction } from '../../../../interfaces/IAirGapTransaction'
+import { EthereumProtocol } from '../../EthereumProtocol'
 
 export abstract class EthereumInfoClient {
   public baseURL: string

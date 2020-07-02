@@ -1,7 +1,7 @@
-import { EthereumProtocol } from '../../../..'
 import Axios from '../../../../dependencies/src/axios-0.19.0/index'
 import { BigNumber } from '../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { IAirGapTransaction } from '../../../../interfaces/IAirGapTransaction'
+import { EthereumProtocol } from '../../EthereumProtocol'
 
 import { EthereumInfoClient } from './InfoClient'
 

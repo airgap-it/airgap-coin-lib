@@ -1,6 +1,5 @@
-import { IAirGapTransaction } from '..'
 import BigNumber from '../dependencies/src/bignumber.js-9.0.0/bignumber'
-import { AirGapTransactionStatus } from '../interfaces/IAirGapTransaction'
+import { AirGapTransactionStatus, IAirGapTransaction } from '../interfaces/IAirGapTransaction'
 import { FeeDefaults, ICoinProtocol } from '../protocols/ICoinProtocol'
 import { NetworkType } from '../utils/ProtocolNetwork'
 import { MainProtocolSymbols } from '../utils/ProtocolSymbols'
@@ -59,13 +58,13 @@ export class AirGapMarketWallet extends AirGapWallet {
       this.protocol.options.network.type === NetworkType.MAINNET
         ? marketPrices
         : marketPrices?.map(() => ({
-            time: 0,
-            close: 0,
-            high: 0,
-            low: 0,
-            volumefrom: '0',
-            volumeto: 0
-          }))
+          time: 0,
+          close: 0,
+          high: 0,
+          low: 0,
+          volumefrom: '0',
+          volumeto: 0
+        }))
   }
 
   constructor(

@@ -1,4 +1,3 @@
-import { EthereumProtocol } from '../..'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import {
   isArray,
@@ -10,6 +9,7 @@ import {
   validate,
   validators
 } from '../../dependencies/src/validate.js-0.13.1/validate'
+import { EthereumProtocol } from '../../protocols/ethereum/EthereumProtocol'
 import { KusamaProtocol } from '../../protocols/substrate/implementations/KusamaProtocol'
 import bs64check from '../../utils/base64Check'
 import { UnsignedTezosTransaction } from '../schemas/definitions/transaction-sign-request-tezos'

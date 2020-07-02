@@ -1,4 +1,4 @@
-import { IAirGapTransaction } from '../../../../../..'
+import { IAirGapTransaction } from '../../../../../../interfaces/IAirGapTransaction'
 import { SubstrateNetwork } from '../../../../SubstrateNetwork'
 import { SCALEDecoder, SCALEDecodeResult } from '../../scale/SCALEDecoder'
 import { SCALEClass } from '../../scale/type/SCALEClass'
@@ -65,7 +65,7 @@ export class SubstrateTransactionMethod extends SCALEClass {
           let valueString = value.toString()
           try {
             valueString = JSON.parse(valueString)
-          } catch {}
+          } catch { }
 
           return Object.assign(prev, {
             [key]: valueString

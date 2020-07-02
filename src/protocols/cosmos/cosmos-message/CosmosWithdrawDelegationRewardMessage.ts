@@ -1,4 +1,5 @@
-import { CosmosProtocol, IAirGapTransaction } from '../../..'
+import { IAirGapTransaction } from '../../../interfaces/IAirGapTransaction'
+import { CosmosProtocol } from '../CosmosProtocol'
 
 import { CosmosMessage, CosmosMessageJSON, CosmosMessageType } from './CosmosMessage'
 

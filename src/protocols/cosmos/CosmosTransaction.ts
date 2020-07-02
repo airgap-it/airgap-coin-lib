@@ -7,7 +7,7 @@ import { CosmosMessage, CosmosMessageType, CosmosMessageTypeIndex } from './cosm
 import { CosmosSendMessage } from './cosmos-message/CosmosSendMessage'
 import { CosmosWithdrawDelegationRewardMessage } from './cosmos-message/CosmosWithdrawDelegationRewardMessage'
 import { CosmosFee } from './CosmosFee'
-import { CosmosProtocol } from '../..'
+import { CosmosProtocol } from './CosmosProtocol'
 
 export interface JSONConvertible {
   toJSON(): any

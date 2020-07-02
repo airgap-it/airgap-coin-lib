@@ -1,6 +1,6 @@
 import { ICoinProtocol } from '../protocols/ICoinProtocol'
 
-export interface IAirGapWallet {
+export interface IAirGapWallet { // TODO: Can this interface be removed?
   addresses: string[]
   protocol: ICoinProtocol
 

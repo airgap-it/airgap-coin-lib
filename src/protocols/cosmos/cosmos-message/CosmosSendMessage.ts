@@ -1,7 +1,7 @@
-import { CosmosProtocol, IAirGapTransaction } from '../../..'
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
-import { AirGapTransactionType } from '../../../interfaces/IAirGapTransaction'
+import { AirGapTransactionType, IAirGapTransaction } from '../../../interfaces/IAirGapTransaction'
 import { CosmosCoin, CosmosCoinJSON } from '../CosmosCoin'
+import { CosmosProtocol } from '../CosmosProtocol'
 
 import { CosmosMessage, CosmosMessageJSON, CosmosMessageType } from './CosmosMessage'
 

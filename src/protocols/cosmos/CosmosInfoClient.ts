@@ -1,8 +1,8 @@
-import { CosmosProtocol } from '../..'
 import Axios, { AxiosResponse } from '../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 
+import { CosmosProtocol } from './CosmosProtocol'
 import { TransactionListQuery } from './CosmosTransactionListQuery'
 
 interface Shards {
