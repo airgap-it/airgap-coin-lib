@@ -6,6 +6,7 @@ import { ICoinSubProtocol, SubProtocolType } from '../../ICoinSubProtocol'
 import { TezosContract } from '../contract/TezosContract'
 import { TezosContractCall } from '../contract/TezosContractCall'
 import { TezosNetwork, TezosProtocol } from '../TezosProtocol'
+import { BigMapResponse } from '../types/fa/BigMapResult'
 import { MichelineDataNode } from '../types/micheline/MichelineNode'
 import { TezosOperation } from '../types/operations/TezosOperation'
 import { TezosTransactionParameters, TezosWrappedTransactionOperation } from '../types/operations/Transaction'
@@ -75,8 +76,19 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
 
   public abstract async transactionDetailsFromParameters(parameters: TezosTransactionParameters): Promise<Partial<IAirGapTransaction>[]>
 
-  public async bigMapValue(key: string, isKeyHash: boolean = false): Promise<string | null> {
-    return this.contract.bigMapValue(key, isKeyHash)
+  public async bigMapValue(key: string, isKeyHash: boolean = false, bigMapID?: number): Promise<string | null> {
+    const result: BigMapResponse[] = await this.contract.bigMapValues({
+      bigMapID,
+      predicates: [
+        {
+          field: isKeyHash ? 'key_hash' : 'key',
+          operation: 'eq',
+          set: [key]
+        }
+      ]
+    })
+
+    return result.length > 0 ? result[0].value : null
   }
 
   public async estimateMaxTransactionValueFromPublicKey(publicKey: string, recipients: string[], fee?: string): Promise<string> {

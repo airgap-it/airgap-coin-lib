@@ -6,8 +6,10 @@ import { FeeDefaults } from '../../ICoinProtocol'
 import { TezosContractCall } from '../contract/TezosContractCall'
 import { TezosNetwork } from '../TezosProtocol'
 import { TezosUtils } from '../TezosUtils'
+import { BigMapResponse } from '../types/fa/BigMapResult'
 import { TezosFA2BalanceOfRequest } from '../types/fa/TezosFA2BalanceOfRequest'
 import { TezosFA2BalanceOfResponse } from '../types/fa/TezosFA2BalanceOfResponse'
+import { TezosFA2TokenMetadata } from '../types/fa/TezosFA2TokenMetadata'
 import { TezosFA2TransferRequest } from '../types/fa/TezosFA2TransferRequest'
 import { TezosFA2UpdateOperatorRequest } from '../types/fa/TezosFA2UpdateOperatorRequest'
 import { MichelineDataNode } from '../types/micheline/MichelineNode'
@@ -31,10 +33,21 @@ enum FA2ContractEntrypointName {
 
 export interface TezosFA2ProtocolConfiguration extends TezosFAProtocolConfiguration {
   tokenID?: number
+
+  tokenMetadataBigMapID?: number
+  tokenMetadataBigMapName?: string
+  tokenMetadataBigMapRegex?: RegExp
 }
 
 export class TezosFA2Protocol extends TezosFAProtocol {
+  private static DEFAULT_TOKEN_METADATA_BIG_MAP_NAME = 'token_metadata'
+  private static DEFAULT_TOKEN_METADATA_BIG_MAP_VALUE_REGEX = /Pair\s\(Pair\s(?<tokenID>\d+)\s\(Pair\s\"(?<symbol>\w*)\"\s\(Pair\s\"(?<name>\w*)\"\s\(Pair\s(?<decimals>\d*)\s\{(?<extras>.*)\}\)\)\)\)/ // temporary until we get Micheline JSON from the API
+
   public readonly tokenID?: number
+
+  public readonly tokenMetadataBigMapID?: number
+  public readonly tokenMetadataBigMapName: string
+  public readonly tokenMedatadaBigMapValueRegex: RegExp
 
   private readonly defaultCallbackContract: Partial<Record<TezosNetwork, Partial<Record<FA2ContractEntrypointName, string>>>>
 
@@ -42,6 +55,10 @@ export class TezosFA2Protocol extends TezosFAProtocol {
     super(configuration)
 
     this.tokenID = configuration.tokenID
+    
+    this.tokenMetadataBigMapID = configuration.tokenMetadataBigMapID
+    this.tokenMetadataBigMapName = configuration.tokenMetadataBigMapName ?? TezosFA2Protocol.DEFAULT_TOKEN_METADATA_BIG_MAP_NAME
+    this.tokenMedatadaBigMapValueRegex = configuration.tokenMetadataBigMapRegex ?? TezosFA2Protocol.DEFAULT_TOKEN_METADATA_BIG_MAP_VALUE_REGEX
 
     this.defaultCallbackContract = {
       [TezosNetwork.MAINNET]: {
@@ -264,6 +281,37 @@ export class TezosFA2Protocol extends TezosFAProtocol {
     return this.prepareContractCall([tokenMetadataCall], fee, publicKey)
   }
 
+  public async getTokenMetadata(tokenIDs?: number[]): Promise<TezosFA2TokenMetadata[]> {
+    const metadataResponse: BigMapResponse[] = await this.contract.bigMapValues({
+      bigMapID: this.tokenMetadataBigMapID, // temporarily until we cannot search by a big map's annotation
+      predicates: tokenIDs 
+        ? [
+            {
+              field: 'key',
+              operation: 'in',
+              set: tokenIDs
+            }
+          ] 
+        : undefined
+    })
+
+    return metadataResponse
+      .map((response: BigMapResponse) => {
+        const match = response.value ? this.tokenMedatadaBigMapValueRegex.exec(response.value) : null
+
+        return match && this.isTokenMetadata(match.groups) 
+          ? {
+              tokenID: new BigNumber(match.groups.tokenID).toNumber(),
+              symbol: match.groups.symbol,
+              name: match.groups.name,
+              decimals: new BigNumber(match.groups.decimals).toNumber(),
+              extras: match.groups.extras
+            }
+          : null
+      })
+      .filter((metadata: TezosFA2TokenMetadata | null) => metadata !== null) as TezosFA2TokenMetadata[]
+  }
+
   private async createTransferCall(
     publicKey: string,
     recipients: string[],
@@ -321,6 +369,17 @@ export class TezosFA2Protocol extends TezosFAProtocol {
       anyObj.txs.every((tx: any) => 
         tx instanceof Object && typeof tx.to_ === 'string' && BigNumber.isBigNumber(tx.token_id) && BigNumber.isBigNumber(tx.amount)
       )
+    )
+  }
+
+  private isTokenMetadata(obj: unknown): obj is TezosFA2TokenMetadata {
+    return (
+      typeof obj === 'object' && 
+      obj !== null &&
+      'tokenID' in obj && 
+      'symbol' in obj && 
+      'name' in obj && 
+      'decimals' in obj
     )
   }
 }

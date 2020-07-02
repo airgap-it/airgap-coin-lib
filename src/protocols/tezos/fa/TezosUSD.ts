@@ -26,17 +26,17 @@ export class TezosUSD extends TezosFA12Protocol {
         high: '0.300'
       },
       decimals: 8,
-      contractAddress: contractAddress,
-      jsonRPCAPI: jsonRPCAPI,
-      baseApiUrl: baseApiUrl,
-      baseApiKey: baseApiKey,
-      baseApiNetwork: baseApiNetwork,
-      network: network
+      contractAddress,
+      jsonRPCAPI,
+      baseApiUrl,
+      baseApiKey,
+      baseApiNetwork,
+      network
     })
   }
 
   public async fetchTokenHolders(): Promise<{ address: string, amount: string }[]> {
-    const values = await this.contract.bigMapValues([])
+    const values = await this.contract.bigMapValues()
     return values.map((value) => {
       try {
         const address = TezosUtils.parseAddress(value.key)

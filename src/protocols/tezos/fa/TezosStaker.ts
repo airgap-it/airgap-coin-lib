@@ -32,7 +32,7 @@ export class TezosStaker extends TezosFA12Protocol {
   }
 
   public async fetchTokenHolders(): Promise<{ address: string; amount: string }[]> {
-    const values = await this.contract.bigMapValues([])
+    const values = await this.contract.bigMapValues()
 
     return values
       .map((value) => {

@@ -40,13 +40,15 @@ export class TezosBTC extends TezosFA12Protocol {
   }
 
   public async fetchTokenHolders(): Promise<{ address: string; amount: string }[]> {
-    const values = await this.contract.bigMapValues([
-      {
-        field: 'key' as const,
-        operation: 'startsWith' as const,
-        set: [TezosBTC.bigMapKeyLedgerPrefix]
-      }
-    ])
+    const values = await this.contract.bigMapValues({
+      predicates: [
+        {
+          field: 'key',
+          operation: 'startsWith',
+          set: [TezosBTC.bigMapKeyLedgerPrefix]
+        }
+      ]
+    })
 
     return values
       .map((bigMapEntry) => {

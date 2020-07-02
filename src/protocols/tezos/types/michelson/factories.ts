@@ -18,7 +18,7 @@ export const michelsonTypeFactories: Record<MichelsonGrammarType, (...args: unkn
   bytes: (...args: unknown[]): MichelsonType => MichelsonBytes.from(args[0]),
   mutez: (): MichelsonType => notSupported('mutez'),
   bool: (...args: unknown[]): MichelsonType => MichelsonBool.from(args[0]),
-  key_hash: (): MichelsonType => notSupported('key_hash'),
+  key_hash: (...args: unknown[]): MichelsonType => MichelsonString.from(args[0]),
   timestamp: (): MichelsonType => notSupported('timestamp'),
   address: (...args: unknown[]): MichelsonType => MichelsonAddress.from(args[0]),
   key: (): MichelsonType => notSupported('key'),

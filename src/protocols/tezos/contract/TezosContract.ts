@@ -1,5 +1,8 @@
 import axios, { AxiosResponse } from '../../../dependencies/src/axios-0.19.0/index'
-import { MichelineDataNode, MichelineNode, MichelinePrimitiveApplication, MichelineTypeNode } from '../types/micheline/MichelineNode'
+import { BigMapPredicate } from '../types/fa/BigMapPredicate'
+import { BigMapRequest } from '../types/fa/BigMapRequest'
+import { BigMapResponse } from '../types/fa/BigMapResult'
+import { MichelineDataNode, MichelineNode, MichelineTypeNode } from '../types/micheline/MichelineNode'
 import { MichelsonOr } from '../types/michelson/generics/MichelsonOr'
 import { MichelsonType } from '../types/michelson/MichelsonType'
 import {
@@ -8,22 +11,11 @@ import {
   MichelsonTypeMetaCreateValueConfiguration
 } from '../types/michelson/MichelsonTypeMeta'
 import { TezosTransactionParameters } from '../types/operations/Transaction'
+import { TezosContractCode } from '../types/TezosContractCode'
 import { isMichelineNode } from '../types/utils'
 
 import { TezosContractCall } from './TezosContractCall'
 import { TezosContractEntrypoint } from './TezosContractEntrypoint'
-
-interface BigMapValuePredicate {
-  field: 'key' | 'key_hash' | 'value'
-  operation: 'in' | 'between' | 'like' | 'lt' | 'gt' | 'eq' | 'startsWith' | 'endsWith' | 'before' | 'after'
-  set: any[]
-  inverse?: boolean
-}
-
-interface TezosContractCode extends MichelinePrimitiveApplication<any> {
-  prim: 'parameter' | 'storage'
-  args: MichelineTypeNode[]
-}
 
 export interface TezosContractConfiguration {
   address: string
@@ -39,8 +31,8 @@ export class TezosContract {
   public entrypoints?: Map<string, TezosContractEntrypoint>
   public entrypointsPromise?: Promise<void>
 
-  public bigMapID?: number
-  public bigMapIDPromise?: Promise<void>
+  public bigMapIDs?: number[]
+  public bigMapIDsPromise?: Promise<void>
 
   private readonly address: string
   private readonly nodeRPCURL: string
@@ -56,57 +48,21 @@ export class TezosContract {
     this.conseilAPIKey = configuration.conseilAPIKey
   }
 
-  public async bigMapValue(key: string, isKeyHash: boolean = false): Promise<string | null> {
-    await this.waitForBigMapID()
+  public async bigMapValues(request: BigMapRequest = {}): Promise<BigMapResponse[]> {
+    const bigMapID: number = request?.bigMapID ?? await this.getBigMapID(request.bigMapFilter)
 
     const predicates: { field: string; operation: string; set: any[] }[] = [
       {
         field: 'big_map_id',
         operation: 'eq',
-        set: [this.bigMapID]
-      }
+        set: [bigMapID]
+      },
+      ...(request.predicates ?? [])
     ]
-    if (isKeyHash) {
-      predicates.push({
-        field: 'key_hash',
-        operation: 'eq',
-        set: [key]
-      })
-    } else {
-      predicates.push({
-        field: 'key',
-        operation: 'eq',
-        set: [key]
-      })
-    }
 
-    const response: Record<'value', string | null>[] = await this.apiRequest('/big_map_contents', {
-      fields: ['value'],
-      predicates,
-      limit: 1
-    })
-
-    if (response.length === 0) {
-      return null
-    }
-
-    return response[0].value
-  }
-
-  public async bigMapValues(predicates: BigMapValuePredicate[]): Promise<{ key: string; value: string | null }[]> {
-    await this.waitForBigMapID()
-
-    return this.apiRequest<{ key: string; value: string | null }[]>('/big_map_contents', {
-      fields: ['key', 'value'],
-      predicates: [
-        {
-          field: 'big_map_id',
-          operation: 'eq',
-          set: [this.bigMapID],
-          inverse: false
-        },
-        ...predicates
-      ]
+    return this.apiRequest('big_map_contents', {
+      fields: ['key', 'key_hash', 'value'],
+      predicates
     })
   }
 
@@ -201,13 +157,47 @@ export class TezosContract {
     return new TezosContractCall(entrypoint.name, entrypoint.type.createValue(value, configuration))
   }
 
-  private async waitForBigMapID(): Promise<void> {
-    if (this.bigMapID !== undefined) {
+  private async getBigMapID(predicates?: BigMapPredicate[]): Promise<number> {
+    await this.waitForBigMapIDs()
+
+    if (this.bigMapIDs?.length === 1) {
+      return this.bigMapIDs[0]
+    }
+
+    if (!predicates) {
+      throw new Error("Contract has more that one BigMap, provide ID or predicates to select one.")
+    }
+
+    const response = await this.apiRequest<Record<'big_map_id', number>[]>('big_maps', {
+      fields: ['big_map_id'],
+      predicates: [
+        {
+          field: 'big_map_id',
+          operation: 'in',
+          set: this.bigMapIDs
+        },
+        ...predicates
+      ]
+    })
+
+    if (response.length === 0) {
+      throw new Error('BigMap ID not found')
+    }
+
+    if (response.length > 1) {
+      throw new Error("More than one BigMap ID has been found for the predicates.")
+    }
+
+    return response[0].big_map_id
+  }
+
+  private async waitForBigMapIDs(): Promise<void> {
+    if (this.bigMapIDs !== undefined) {
       return
     }
 
-    if (this.bigMapIDPromise === undefined) {
-      this.bigMapIDPromise = this.apiRequest<Record<'big_map_id', number>[]>('/originated_account_maps', {
+    if (this.bigMapIDsPromise === undefined) {
+      this.bigMapIDsPromise = this.apiRequest<Record<'big_map_id', number>[]>('originated_account_maps', {
         fields: ['big_map_id'],
         predicates: [
           {
@@ -215,22 +205,21 @@ export class TezosContract {
             operation: 'eq',
             set: [this.address]
           }
-        ],
-        limit: 1
+        ]
       })
-        .then((bigMapIDResponse) => {
-          if (bigMapIDResponse.length === 0) {
-            throw new Error('BigMap ID not found')
+        .then((response) => {
+          if (response.length === 0) {
+            throw new Error('BigMap IDs not found')
           }
 
-          this.bigMapID = bigMapIDResponse[0].big_map_id
+          this.bigMapIDs = response.map((entry) => entry.big_map_id)
         })
         .finally(() => {
-          this.bigMapIDPromise = undefined
+          this.bigMapIDsPromise = undefined
         })
     }
 
-    return this.bigMapIDPromise
+    return this.bigMapIDsPromise
   }
 
   private async waitForEntrypoints(): Promise<void> {
