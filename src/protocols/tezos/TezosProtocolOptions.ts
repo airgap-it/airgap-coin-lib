@@ -12,7 +12,7 @@ const NODE_URL: string = 'https://tezos-node.prod.gke.papers.tech'
 
 const BLOCK_EXPLORER_URL: string = 'https://tezblock.io'
 const INDEXER_API: string = 'https://tezos-mainnet-conseil.prod.gke.papers.tech'
-const INDEXER_APIKEY: string = 'airgap123'
+const INDEXER_APIKEY: string = 'airgap00391'
 
 export class TezosProtocolNetworkExtras {
   constructor(
@@ -20,11 +20,11 @@ export class TezosProtocolNetworkExtras {
     public readonly conseilUrl: string = INDEXER_API,
     public readonly conseilNetwork: TezosNetwork = TezosNetwork.MAINNET,
     public readonly conseilApiKey: string = INDEXER_APIKEY
-  ) {}
+  ) { }
 }
 
 export class TezblockBlockExplorer implements ProtocolBlockExplorer {
-  constructor(public readonly blockExplorer: string = BLOCK_EXPLORER_URL) {}
+  constructor(public readonly blockExplorer: string = BLOCK_EXPLORER_URL) { }
 
   public async getAddressLink(address: string): Promise<string> {
     return `${this.blockExplorer}/account/${address}`
@@ -57,5 +57,5 @@ export class TezosProtocolOptions implements ProtocolOptions<TezosProtocolConfig
   constructor(
     public readonly network: TezosProtocolNetwork = new TezosProtocolNetwork(),
     public readonly config: TezosProtocolConfig = new TezosProtocolConfig()
-  ) {}
+  ) { }
 }
