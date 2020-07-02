@@ -3,6 +3,7 @@ import BigNumber from '../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { AirGapTransactionStatus } from '../interfaces/IAirGapTransaction'
 import { FeeDefaults, ICoinProtocol } from '../protocols/ICoinProtocol'
 import { NetworkType } from '../utils/ProtocolNetwork'
+import { MainProtocolSymbols } from '../utils/ProtocolSymbols'
 
 import { AirGapWallet } from './AirGapWallet'
 
@@ -108,7 +109,7 @@ export class AirGapMarketWallet extends AirGapWallet {
     return addressesToReceive
   }
   public async balanceOf(): Promise<BigNumber> {
-    if (this.protocol.identifier === 'grs' && this.isExtendedPublicKey) {
+    if (this.protocol.identifier === MainProtocolSymbols.GRS && this.isExtendedPublicKey) {
       /* 
       We should remove this if BTC also uses blockbook. (And change the order of the if/else below)
       
@@ -130,7 +131,7 @@ export class AirGapMarketWallet extends AirGapWallet {
 
   public async fetchTransactions(limit: number, offset: number): Promise<IAirGapTransaction[]> {
     let transactions: IAirGapTransaction[] = []
-    if (this.protocol.identifier === 'grs' && this.isExtendedPublicKey) {
+    if (this.protocol.identifier === MainProtocolSymbols.GRS && this.isExtendedPublicKey) {
       /* 
       We should remove this if BTC also uses blockbook. (And change the order of the if/else below)
       
@@ -153,7 +154,7 @@ export class AirGapMarketWallet extends AirGapWallet {
   }
 
   private async txsIncludingStatus(transactions: IAirGapTransaction[]): Promise<IAirGapTransaction[]> {
-    if (this.protocol.identifier.toLowerCase() === 'eth' || this.protocol.identifier.toLowerCase() === 'xtz') {
+    if (this.protocol.identifier.toLowerCase() === MainProtocolSymbols.ETH || this.protocol.identifier.toLowerCase() === MainProtocolSymbols.XTZ) {
       const transactionsWithHash: IAirGapTransaction[] = transactions.filter((tx: IAirGapTransaction) => tx.hash)
       const hashes: string[] = transactionsWithHash.map((tx: IAirGapTransaction) => tx.hash).filter(notEmpty) // Extra filter here for typing reasons, should not alter the array because we filter on the line before.
 
