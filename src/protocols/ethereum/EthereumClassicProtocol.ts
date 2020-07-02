@@ -1,7 +1,7 @@
 import { BaseEthereumProtocol } from './BaseEthereumProtocol'
 import { EtherscanInfoClient } from './clients/info-clients/EtherscanInfoClient'
 import { AirGapNodeClient } from './clients/node-clients/AirGapNodeClient'
-import { EthereumProtocolConfig, EthereumProtocolNetwork, EthereumProtocolOptions } from './EthereumProtocolOptions'
+import { EthereumProtocolNetwork, EthereumProtocolNetworkExtras, EthereumProtocolOptions } from './EthereumProtocolOptions'
 
 export class EthereumClassicProtocol extends BaseEthereumProtocol<AirGapNodeClient, EtherscanInfoClient> {
   constructor() {
@@ -9,12 +9,9 @@ export class EthereumClassicProtocol extends BaseEthereumProtocol<AirGapNodeClie
 
     super(
       new EthereumProtocolOptions(
-        new EthereumProtocolNetwork(),
-        new EthereumProtocolConfig(
-          61,
+        new EthereumProtocolNetwork(undefined, undefined, undefined, undefined, new EthereumProtocolNetworkExtras(61,
           new AirGapNodeClient('https://mew.epool.io'),
-          new EtherscanInfoClient('https://classic.trustwalletapp.com')
-        )
+          new EtherscanInfoClient('https://classic.trustwalletapp.com'))),
       )
     )
   }

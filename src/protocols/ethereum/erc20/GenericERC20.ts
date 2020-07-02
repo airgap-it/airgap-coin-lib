@@ -41,7 +41,7 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, Ethersc
   public async getBalanceOfAddresses(addresses: string[]): Promise<string> {
     const balances: BigNumber[] = await Promise.all(
       addresses.map((address: string) => {
-        return this.options.config.nodeClient.callBalanceOf(this.contractAddress, address)
+        return this.options.network.extras.nodeClient.callBalanceOf(this.contractAddress, address)
       })
     )
 
@@ -57,7 +57,7 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, Ethersc
   }
 
   private async estimateGas(source: string, recipient: string, hexValue: string): Promise<BigNumber> {
-    const result = await this.options.config.nodeClient.estimateTransferGas(this.contractAddress, source, recipient, hexValue)
+    const result = await this.options.network.extras.nodeClient.estimateTransferGas(this.contractAddress, source, recipient, hexValue)
 
     return result
   }
@@ -80,7 +80,7 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, Ethersc
     }
     const address: string = await this.getAddressFromPublicKey(publicKey)
     const estimatedGas = await this.estimateGas(address, recipients[0], EthereumUtils.toHex(values[0]))
-    const gasPrise = await this.options.config.nodeClient.getGasPrice()
+    const gasPrise = await this.options.network.extras.nodeClient.getGasPrice()
     const feeStepFactor = new BigNumber(0.5)
     const estimatedFee = estimatedGas.times(gasPrise)
     const lowFee = estimatedFee.minus(estimatedFee.times(feeStepFactor).integerValue(BigNumber.ROUND_FLOOR))
@@ -120,7 +120,7 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, Ethersc
       const estimatedGas = await this.estimateGas(address, recipients[0], EthereumUtils.toHex(wrappedValues[0].toFixed()))
 
       if (ethBalance.isGreaterThanOrEqualTo(wrappedFee)) {
-        const txCount: number = await this.options.config.nodeClient.fetchTransactionCount(address)
+        const txCount: number = await this.options.network.extras.nodeClient.fetchTransactionCount(address)
         const gasPrice: BigNumber = wrappedFee.isEqualTo(0)
           ? new BigNumber(0)
           : wrappedFee.div(estimatedGas).integerValue(BigNumber.ROUND_CEIL)
@@ -130,7 +130,7 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, Ethersc
           gasPrice: EthereumUtils.toHex(gasPrice.toFixed()),
           to: this.contractAddress,
           value: EthereumUtils.toHex(new BigNumber(0).toFixed()),
-          chainId: this.options.config.chainID,
+          chainId: this.options.network.extras.chainID,
           data: new EthereumRPCDataTransfer(recipients[0], EthereumUtils.toHex(wrappedValues[0].toFixed())).abiEncoded()
         }
 
@@ -149,7 +149,7 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, Ethersc
     return new Promise((overallResolve, overallReject) => {
       const promises: Promise<IAirGapTransaction[]>[] = []
       for (const address of addresses) {
-        promises.push(this.options.config.infoClient.fetchContractTransactions(this, this.contractAddress, address, page, limit))
+        promises.push(this.options.network.extras.infoClient.fetchContractTransactions(this, this.contractAddress, address, page, limit))
       }
       Promise.all(promises)
         .then((values) => {

@@ -1,9 +1,9 @@
-import BigNumber from '../../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
 import * as sinon from 'sinon'
 
+import BigNumber from '../../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
+import { GenericERC20 } from '../../../src/protocols/ethereum/erc20/GenericERC20'
 import { EthereumProtocol } from '../../../src/protocols/ethereum/EthereumProtocol'
 import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
-import { GenericERC20 } from '../../../src/protocols/ethereum/erc20/GenericERC20'
 
 export class GenericERC20ProtocolStub implements ProtocolHTTPStub {
   public registerStub(testProtocolSpec: TestProtocolSpec, protocol: EthereumProtocol) {
@@ -18,12 +18,12 @@ export class GenericERC20ProtocolStub implements ProtocolHTTPStub {
       .returns(Promise.resolve(new BigNumber(100000000000000000000)))
 
     sinon
-      .stub(protocol.options.config.nodeClient, 'fetchTransactionCount')
+      .stub(protocol.options.network.extras.nodeClient, 'fetchTransactionCount')
       .withArgs(testProtocolSpec.wallet.addresses[0])
       .returns(Promise.resolve(80))
 
     sinon
-      .stub(protocol.options.config.nodeClient, 'fetchBalance')
+      .stub(protocol.options.network.extras.nodeClient, 'fetchBalance')
       .withArgs(testProtocolSpec.wallet.addresses[0])
       .returns(Promise.resolve('100000000000000000000'))
 

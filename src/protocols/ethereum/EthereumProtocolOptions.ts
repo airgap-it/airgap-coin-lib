@@ -12,17 +12,20 @@ import { EthereumNodeClient } from './clients/node-clients/NodeClient'
 
 const MAINNET_NAME: string = 'Mainnet'
 
-const NODE_URL: string = 'https://tezos-node.prod.gke.papers.tech'
+const NODE_URL: string = 'https://eth-rpc-proxy.airgap.prod.gke.papers.tech'
 
 const BLOCK_EXPLORER_URL: string = 'https://etherscan.io'
-const INDEXER_API: string = 'https://tezos-mainnet-conseil.prod.gke.papers.tech'
 
 export class EthereumProtocolNetworkExtras {
-  constructor(public readonly apiUrl: string = INDEXER_API) {}
+  constructor(
+    public readonly chainID: number = 1,
+    public readonly nodeClient: EthereumNodeClient = new AirGapNodeClient(),
+    public readonly infoClient: EthereumInfoClient = new EtherscanInfoClient()
+  ) { }
 }
 
 export class EtherscanBlockExplorer implements ProtocolBlockExplorer {
-  constructor(public readonly blockExplorer: string = BLOCK_EXPLORER_URL) {}
+  constructor(public readonly blockExplorer: string = BLOCK_EXPLORER_URL) { }
 
   public async getAddressLink(address: string): Promise<string> {
     return `${this.blockExplorer}/address/${address}`
@@ -45,21 +48,17 @@ export class EthereumProtocolNetwork extends ProtocolNetwork<EthereumProtocolNet
 }
 
 export class EthereumProtocolConfig {
-  constructor(
-    public readonly chainID: number = 1,
-    public readonly nodeClient: EthereumNodeClient = new AirGapNodeClient(),
-    public readonly infoClient: EthereumInfoClient = new EtherscanInfoClient()
-  ) {}
+  constructor() { }
 }
 
 export class EthereumProtocolOptions implements ProtocolOptions<EthereumProtocolConfig> {
   constructor(
     public readonly network: EthereumProtocolNetwork = new EthereumProtocolNetwork(),
     public readonly config: EthereumProtocolConfig = new EthereumProtocolConfig()
-  ) {}
+  ) { }
 }
 
-export class EthereumERC20ProtocolConfig extends EthereumProtocolConfig {
+export class EthereumERC20ProtocolConfig {
   constructor(
     public readonly symbol: string,
     public readonly name: string,
@@ -67,15 +66,12 @@ export class EthereumERC20ProtocolConfig extends EthereumProtocolConfig {
     public readonly identifier: SubProtocolSymbols,
     public readonly contractAddress: string,
     public readonly decimals: number,
-    public readonly ethereumConfig: EthereumProtocolConfig = new EthereumProtocolConfig()
-  ) {
-    super(ethereumConfig.chainID, ethereumConfig.nodeClient, ethereumConfig.infoClient)
-  }
+  ) { }
 }
 
 export class EthereumERC20ProtocolOptions implements ProtocolOptions<EthereumERC20ProtocolConfig> {
   constructor(
     public readonly network: EthereumProtocolNetwork = new EthereumProtocolNetwork(),
     public readonly config: EthereumERC20ProtocolConfig
-  ) {}
+  ) { }
 }

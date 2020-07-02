@@ -20,11 +20,11 @@ export class TezosProtocolNetworkExtras {
     public readonly conseilUrl: string = INDEXER_API,
     public readonly conseilNetwork: TezosNetwork = TezosNetwork.MAINNET,
     public readonly conseilApiKey: string = INDEXER_APIKEY
-  ) {}
+  ) { }
 }
 
 export class TezblockBlockExplorer implements ProtocolBlockExplorer {
-  constructor(public readonly blockExplorer: string = BLOCK_EXPLORER_URL) {}
+  constructor(public readonly blockExplorer: string = BLOCK_EXPLORER_URL) { }
 
   public async getAddressLink(address: string): Promise<string> {
     return `${this.blockExplorer}/account/${address}`
@@ -46,6 +46,7 @@ export class TezosProtocolNetwork extends ProtocolNetwork<TezosProtocolNetworkEx
   }
 }
 
+// This is used for the TezosFAProtocolConfig
 export class TezosProtocolConfig {
   constructor() {
     //
@@ -57,5 +58,5 @@ export class TezosProtocolOptions implements ProtocolOptions<TezosProtocolConfig
   constructor(
     public readonly network: TezosProtocolNetwork = new TezosProtocolNetwork(),
     public readonly config: TezosProtocolConfig = new TezosProtocolConfig()
-  ) {}
+  ) { }
 }
