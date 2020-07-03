@@ -230,7 +230,7 @@ export class SubstrateNodeClient {
   }
 
   public async getSlashingSpan(address: SubstrateAddress): Promise<SubstrateSlashingSpan | null> {
-    return this.fromStorage('Staking', 'SlashingSpans', SCALEAccountId.from(address, this.network)).then((item) => 
+    return this.fromStorage('Staking', 'SlashingSpans', SCALEAccountId.from(address, this.network)).then((item) =>
       item ? SubstrateSlashingSpan.decode(this.network, item) : null
     )
   }

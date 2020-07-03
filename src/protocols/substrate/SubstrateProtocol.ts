@@ -260,7 +260,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     if (this.defaultValidator) {
       return this.defaultValidator
     }
-    
+
     const validators = await this.nodeClient.getValidators()
 
     return validators ? validators[0].toString() : ''
@@ -626,7 +626,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
           }
         ],
         [
-          SubstrateTransactionType.WITHDRAW_UNBONDED, 
+          SubstrateTransactionType.WITHDRAW_UNBONDED,
           {
             slashingSpansNumber: 0
           }
