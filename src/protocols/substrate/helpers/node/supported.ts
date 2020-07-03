@@ -21,7 +21,8 @@ export const supportedStorageEntries = {
     'ErasStakersClipped',
     'ErasValidatorPrefs',
     'ErasValidatorReward',
-    'ErasRewardPoints'
+    'ErasRewardPoints',
+    'SlashingSpans'
   ] as const,
   Session: ['Validators'] as const,
   System: ['Account'] as const

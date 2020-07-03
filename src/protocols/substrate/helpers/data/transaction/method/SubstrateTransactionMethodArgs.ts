@@ -15,6 +15,8 @@ import { SubstrateTransactionType } from '../SubstrateTransaction'
 
 import { SubstrateTransactionMethod } from './SubstrateTransactionMethod'
 
+// tslint:disable: max-classes-per-file
+
 interface TransferArgs {
   to: SubstrateAccountId
   value: number | BigNumber
@@ -38,7 +40,9 @@ interface BondExtraArgs {
   value: number | BigNumber
 }
 
-interface WithdrawUnbondedArgs {}
+interface WithdrawUnbondedArgs {
+  slashingSpansNumber: number
+}
 
 interface NominateArgs {
   targets: SubstrateAccountId[]
@@ -87,6 +91,8 @@ export abstract class SubstrateTransactionMethodArgsFactory<T> {
 
         return new BondExtraArgsFactory(network, args)
       case SubstrateTransactionType.WITHDRAW_UNBONDED:
+        assertFields('withdrawUnbonded', args, 'slashingSpansNumber')
+
         return new WithdrawUnbondedArgsFactory(network, args)
       case SubstrateTransactionType.NOMINATE:
         assertFields('nominate', args, 'targets')
@@ -306,7 +312,7 @@ class BondExtraArgsDecoder extends SubstrateTransactionMethodArgsDecoder<BondExt
 
 class WithdrawUnbondedArgsFactory extends SubstrateTransactionMethodArgsFactory<WithdrawUnbondedArgs> {
   public createFields(): [string, SCALEType][] {
-    return []
+    return [['slashingSpansNumber', SCALEInt.from(this.args.slashingSpansNumber, 32)]]
   }
   public createToAirGapTransactionParts(): () => Partial<IAirGapTransaction>[] {
     return () => []
@@ -315,9 +321,13 @@ class WithdrawUnbondedArgsFactory extends SubstrateTransactionMethodArgsFactory<
 
 class WithdrawUnbondedArgsDecoder extends SubstrateTransactionMethodArgsDecoder<WithdrawUnbondedArgs> {
   protected _decode(decoder: SCALEDecoder): SCALEDecodeResult<WithdrawUnbondedArgs> {
+    const slashingSpansNumber = decoder.decodeNextInt(32)
+
     return {
-      bytesDecoded: 0,
-      decoded: {}
+      bytesDecoded: slashingSpansNumber.bytesDecoded,
+      decoded: {
+        slashingSpansNumber: slashingSpansNumber.decoded.toNumber()
+      }
     }
   }
 }

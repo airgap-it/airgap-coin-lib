@@ -36,10 +36,13 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
   public supportsHD: boolean = false
 
   public addressIsCaseSensitive: boolean = false
-  public addressValidationPattern: string = '^[a-km-zA-HJ-NP-Z1-9]+$' // TODO: set length?
-  public addressPlaceholder: string = 'ABC...' // TODO: better placeholder?
+
+  public addressValidationPattern: string = '^5[a-km-zA-HJ-NP-Z1-9]+$'
+  public addressPlaceholder: string = `5ABC...`
 
   public blockExplorer: string = this.blockExplorerClient.baseUrl
+
+  protected defaultValidator?: string
 
   constructor(
     readonly network: SubstrateNetwork,
@@ -254,6 +257,10 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
   }
 
   public async getDefaultDelegatee(): Promise<string> {
+    if (this.defaultValidator) {
+      return this.defaultValidator
+    }
+
     const validators = await this.nodeClient.getValidators()
 
     return validators ? validators[0].toString() : ''
@@ -515,13 +522,16 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
   }
 
   public async prepareWithdrawUnbonded(publicKey: string, tip: string | number | BigNumber): Promise<RawSubstrateTransaction[]> {
-    const transferableBalance = await this.accountController.getTransferableBalance(publicKey)
+    const [transferableBalance, slashingSpansNumber] = await Promise.all([
+      this.accountController.getTransferableBalance(publicKey),
+      this.accountController.getSlashingSpansNumber(publicKey)
+    ])
 
     const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, transferableBalance, [
       {
         type: SubstrateTransactionType.WITHDRAW_UNBONDED,
         tip,
-        args: {}
+        args: { slashingSpansNumber }
       }
     ])
 
@@ -615,7 +625,12 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
             value: transferableBalance
           }
         ],
-        [SubstrateTransactionType.WITHDRAW_UNBONDED, {}]
+        [
+          SubstrateTransactionType.WITHDRAW_UNBONDED,
+          {
+            slashingSpansNumber: 0
+          }
+        ]
       )
     } else if (isBonded) {
       requiredTransactions.push(
@@ -625,7 +640,12 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
             value: transferableBalance
           }
         ],
-        [SubstrateTransactionType.WITHDRAW_UNBONDED, {}]
+        [
+          SubstrateTransactionType.WITHDRAW_UNBONDED,
+          {
+            slashingSpansNumber: 0
+          }
+        ]
       )
     }
 

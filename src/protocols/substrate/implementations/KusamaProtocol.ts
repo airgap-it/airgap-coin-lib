@@ -6,7 +6,7 @@ import { SubstrateProtocol } from '../SubstrateProtocol'
 
 const NODE_URL = 'https://polkadot-kusama-node.prod.gke.papers.tech'
 
-const BLOCK_EXPLORER_URL = 'https://polkascan.io/pre/kusama'
+const BLOCK_EXPLORER_URL = 'https://polkascan.io/kusama'
 const BLOCK_EXPLORER_API = 'https://api-01.polkascan.io/kusama/api/v1'
 
 export class KusamaProtocol extends SubstrateProtocol {
@@ -48,7 +48,12 @@ export class KusamaProtocol extends SubstrateProtocol {
     }
   ]
 
-  public standardDerivationPath: string = `m/44'/434'/0'/0/0` // TODO: verify
+  public standardDerivationPath: string = `m/44'/434'/0'/0/0`
+
+  public addressValidationPattern: string = '^[C-HJ][a-km-zA-HJ-NP-Z1-9]+$'
+  public addressPlaceholder: string = `C/D/E/F/G/H/J...` // TODO: set better placeholder?
+
+  protected defaultValidator: string = 'GcqKn3HHodwcFc3Pg3Evcbc43m7qJNMiMv744e5WMSS7TGn'
 
   public constructor(
     network: SubstrateNetwork = SubstrateNetwork.KUSAMA,

@@ -44,14 +44,14 @@ export class KusamaTestProtocolSpec extends TestProtocolSpec {
       fee: '1000000000',
       unsignedTx: {
         encoded:
-          '041504' + // number of txs + tx length
+          '042504' + // number of txs + tx length
           '00' + // type
           '02286bee' + // fee
           // transaction
           '3902' + // length
           '84' + // signed flag (not signed)
           '52e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10' + // AccountId signer
-          '01' + // signature type (sr25519)
+          '00' + // signature type (sr25519)
           '0000000000000000000000000000000000000000000000000000000000000000' + // signature
           '0000000000000000000000000000000000000000000000000000000000000000' + // signature
           '8503' + // era
@@ -61,10 +61,10 @@ export class KusamaTestProtocolSpec extends TestProtocolSpec {
           '52e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10' + // AccountId destination
           '070010a5d4e8' + // value
           // payload
-          '040052e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10070010a5d4e88503040004000000d51522c9ef7ba4e0990f7a4527de79afcac992ab97abbbc36722f8a27189b17033a7a745849347ce3008c07268be63d8cefd3ef61de0c7318e88a577fb7d26a9'
+          '040052e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10070010a5d4e8850304000400000001000000d51522c9ef7ba4e0990f7a4527de79afcac992ab97abbbc36722f8a27189b17033a7a745849347ce3008c07268be63d8cefd3ef61de0c7318e88a577fb7d26a9'
       },
       signedTx:
-        '041504' + // number of txs + tx length
+        '042504' + // number of txs + tx length
         '00' + // type
         '02286bee' + // fee
         // transaction
@@ -81,7 +81,7 @@ export class KusamaTestProtocolSpec extends TestProtocolSpec {
         '52e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10' + // AccountId destination
         '070010a5d4e8' + // value
         // payload
-        '040052e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10070010a5d4e88503040004000000d51522c9ef7ba4e0990f7a4527de79afcac992ab97abbbc36722f8a27189b17033a7a745849347ce3008c07268be63d8cefd3ef61de0c7318e88a577fb7d26a9'
+        '040052e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10070010a5d4e8850304000400000001000000d51522c9ef7ba4e0990f7a4527de79afcac992ab97abbbc36722f8a27189b17033a7a745849347ce3008c07268be63d8cefd3ef61de0c7318e88a577fb7d26a9'
     }
   ]
 

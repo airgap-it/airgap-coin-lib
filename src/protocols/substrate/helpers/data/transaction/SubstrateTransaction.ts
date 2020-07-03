@@ -27,7 +27,7 @@ interface SubstrateTransactionConfig {
   methodId: SubstrateCallId
   era: EraConfig | null
   nonce: number | BigNumber
-  signature?: string | Uint8Array | Buffer
+  signature?: SubstrateSignature
 }
 
 export enum SubstrateTransactionType {
@@ -55,7 +55,7 @@ export class SubstrateTransaction extends SCALEClass {
       network,
       type,
       SCALEAccountId.from(config.from, network),
-      SubstrateSignature.create(SubstrateSignatureType.Sr25519, config.signature),
+      config.signature || SubstrateSignature.create(SubstrateSignatureType.Ed25519, config.signature),
       config.era ? SCALEEra.Mortal(config.era) : SCALEEra.Immortal(),
       SCALECompactInt.from(config.nonce),
       SCALECompactInt.from(config.tip),
@@ -68,7 +68,7 @@ export class SubstrateTransaction extends SCALEClass {
       transaction.network,
       transaction.type,
       config && config.from ? SCALEAccountId.from(config.from, transaction.network) : transaction.signer,
-      SubstrateSignature.create(transaction.signature.type.value, config ? config.signature : undefined),
+      config?.signature || transaction.signature,
       config && config.era ? SCALEEra.Mortal(config.era) : transaction.era,
       config && config.nonce ? SCALECompactInt.from(config.nonce) : transaction.nonce,
       config && config.tip ? SCALECompactInt.from(config.tip) : transaction.tip,
