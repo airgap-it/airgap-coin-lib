@@ -132,7 +132,7 @@ export class SubstrateAccountController {
 
     return {
       address: address.toString(),
-      name: identity ? identity.identityInfo.display : undefined,
+      name: identity ? identity.identityInfo.display.toString() : undefined,
       status: status || undefined,
       ownStash: exposure ? exposure.own.toString() : undefined,
       totalStakingBalance: exposure ? exposure.total.toString() : undefined,
