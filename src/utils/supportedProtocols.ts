@@ -6,6 +6,7 @@ import { GroestlcoinProtocol } from '../protocols/groestlcoin/GroestlcoinProtoco
 import { ICoinProtocol } from '../protocols/ICoinProtocol'
 import { TezosProtocol } from '../protocols/tezos/TezosProtocol'
 import { KusamaProtocol } from '../protocols/substrate/implementations/KusamaProtocol'
+import { PolkadotProtocol } from '../protocols/substrate/implementations/PolkadotProtocol'
 
 const protocols: ICoinProtocol[] = []
 
@@ -20,6 +21,7 @@ const supportedProtocols: () => ICoinProtocol[] = (): ICoinProtocol[] => {
       new GroestlcoinProtocol(),
       new TezosProtocol(),
       new KusamaProtocol(),
+      new PolkadotProtocol(),
       new CosmosProtocol()
     )
   }

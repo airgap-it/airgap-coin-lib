@@ -4,6 +4,6 @@ export interface SubstrateRuntimeVersion {
   authoringVersion: number
   specVersion: number
   implVersion: number
-  apis: [string, number][],
+  apis: [string, number][]
   transactionVersion: number
 }

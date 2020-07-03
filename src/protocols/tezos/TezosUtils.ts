@@ -82,8 +82,8 @@ export class TezosUtils {
       case '02': // list
         return TezosUtils.parseList(hex)
       case '0a': // bytes
-      const bytesLength = TezosUtils.hexToLength(hex.splice(0, 4))
-      return new TezosContractBytes(hex.splice(0, bytesLength).join(''))
+        const bytesLength = TezosUtils.hexToLength(hex.splice(0, 4))
+        return new TezosContractBytes(hex.splice(0, bytesLength).join(''))
       default:
         throw new Error(`Type not supported ${type}`)
     }

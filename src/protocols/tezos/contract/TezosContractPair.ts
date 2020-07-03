@@ -1,8 +1,7 @@
-import { TezosContractEntity } from './TezosContractEntity'
-import { TezosContractString } from './TezosContractString'
-import { TezosContractInt } from './TezosContractInt'
 import { TezosContractBytes } from './TezosContractBytes'
-
+import { TezosContractEntity } from './TezosContractEntity'
+import { TezosContractInt } from './TezosContractInt'
+import { TezosContractString } from './TezosContractString'
 
 export class TezosContractPair extends TezosContractEntity {
   public first: TezosContractEntity
