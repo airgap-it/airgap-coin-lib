@@ -15,16 +15,24 @@ export class SubstrateBlockExplorerClient {
     )
 
     return response.data.data
-      .filter((transfer) => 
-        transfer.type === 'balancetransfer' && 
-        transfer.attributes.sender.type && 
-        transfer.attributes.sender.type === 'account'
+      .filter(
+        (transfer) =>
+          transfer.type === 'balancetransfer' &&
+          (transfer.attributes.event_id.toLowerCase() === 'transfer' || transfer.attributes.event_id.toLowerCase() === 'reward')
       )
       .map((transfer) => {
-        const destination = SubstrateAddress.fromPublicKey(transfer.attributes.destination.id, this.network).toString()
+        const attributes = transfer.attributes
+
+        const from = attributes.sender?.id !== undefined
+          ? SubstrateAddress.fromPublicKey(attributes.sender.id, this.network).toString()
+          : attributes.sender.name
+
+        const destination = attributes.destination?.id !== undefined && attributes.destination?.type === 'account'
+          ? SubstrateAddress.fromPublicKey(attributes.destination.id, this.network).toString()
+          : address
 
         return {
-          from: [SubstrateAddress.fromPublicKey(transfer.attributes.sender.id, this.network).toString()],
+          from: [from],
           to: [destination],
           isInbound: address.includes(destination),
           amount: transfer.attributes.value,
