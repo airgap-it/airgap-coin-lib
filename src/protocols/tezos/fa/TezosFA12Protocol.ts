@@ -13,14 +13,12 @@ import { isMichelinePrimitive } from '../types/utils'
 
 import { TezosFAProtocol, TezosFAProtocolConfiguration } from './TezosFAProtocol'
 
-enum FA12ContractEntrypointName {
+enum TezosFA12ContractEntrypoint {
   BALANCE = 'getBalance',
   ALLOWANCE = 'getAllowance',
   APPROVE = 'approve',
   TRANSFER = 'transfer',
   TOTAL_SUPPLY = 'getTotalSupply',
-  TOTAL_MINTED = 'getTotalMinted',
-  TOTAL_BURNED = 'getTotalBurned'
 }
 
 export class TezosFA12Protocol extends TezosFAProtocol {
@@ -80,7 +78,7 @@ export class TezosFA12Protocol extends TezosFAProtocol {
   }
 
   public async transactionDetailsFromParameters(parameters: TezosTransactionParameters): Promise<Partial<IAirGapTransaction>[]> {
-    if (parameters.entrypoint !== FA12ContractEntrypointName.TRANSFER) {
+    if (parameters.entrypoint !== TezosFA12ContractEntrypoint.TRANSFER) {
       throw new Error('Only calls to the transfer entrypoint can be converted to IAirGapTransaction')
     }
     const contractCall: TezosContractCall = await this.contract.parseContractCall(parameters)
@@ -98,7 +96,7 @@ export class TezosFA12Protocol extends TezosFAProtocol {
   }
 
   public async getBalance(address: string, source?: string, callbackContract: string = this.callbackContract()): Promise<string> {
-    const getBalanceCall = await this.contract.createContractCall(FA12ContractEntrypointName.BALANCE, [{
+    const getBalanceCall = await this.contract.createContractCall(TezosFA12ContractEntrypoint.BALANCE, [{
       owner: address
     }, callbackContract])
 
@@ -111,7 +109,7 @@ export class TezosFA12Protocol extends TezosFAProtocol {
     callbackContract: string = this.callbackContract(),
     source?: string
   ): Promise<string> {
-    const getAllowanceCall = await this.contract.createContractCall(FA12ContractEntrypointName.ALLOWANCE, [{
+    const getAllowanceCall = await this.contract.createContractCall(TezosFA12ContractEntrypoint.ALLOWANCE, [{
       owner: ownerAddress,
       spender: spenderAddress
     }, callbackContract])
@@ -120,30 +118,12 @@ export class TezosFA12Protocol extends TezosFAProtocol {
   }
 
   public async getTotalSupply(source?: string, callbackContract: string = this.callbackContract()): Promise<string> {
-    const getTotalSupplyCall = await this.contract.createContractCall(FA12ContractEntrypointName.TOTAL_SUPPLY, [
+    const getTotalSupplyCall = await this.contract.createContractCall(TezosFA12ContractEntrypoint.TOTAL_SUPPLY, [
       [], 
       callbackContract
     ])
 
     return this.getContractCallIntResult(getTotalSupplyCall, this.requireSource(source))
-  }
-
-  public async getTotalMinted(source?: string, callbackContract: string = this.callbackContract()): Promise<string> {
-    const getTotalMintedCall = await this.contract.createContractCall(FA12ContractEntrypointName.TOTAL_MINTED, [
-      [],
-      callbackContract
-    ])
-
-    return this.getContractCallIntResult(getTotalMintedCall, this.requireSource(source))
-  }
-
-  public async getTotalBurned(source?: string, callbackContract: string = this.callbackContract()): Promise<string> {
-    const getTotalBurnedCall = await this.contract.createContractCall(FA12ContractEntrypointName.TOTAL_BURNED, [
-      [],
-      callbackContract
-    ])
-
-    return this.getContractCallIntResult(getTotalBurnedCall, this.requireSource(source))
   }
 
   public async transfer(
@@ -153,7 +133,7 @@ export class TezosFA12Protocol extends TezosFAProtocol {
     fee: string,
     publicKey: string
   ): Promise<RawTezosTransaction> {
-    const transferCall = await this.contract.createContractCall(FA12ContractEntrypointName.TRANSFER, {
+    const transferCall = await this.contract.createContractCall(TezosFA12ContractEntrypoint.TRANSFER, {
       from: fromAddress,
       to: toAddress,
       value: new BigNumber(amount).toNumber()
@@ -163,7 +143,7 @@ export class TezosFA12Protocol extends TezosFAProtocol {
   }
 
   public async approve(spenderAddress: string, amount: string, fee: string, publicKey: string): Promise<RawTezosTransaction> {
-    const approveCall = await this.contract.createContractCall(FA12ContractEntrypointName.APPROVE, {
+    const approveCall = await this.contract.createContractCall(TezosFA12ContractEntrypoint.APPROVE, {
       spender: spenderAddress,
       value: new BigNumber(amount).toNumber()
     })
@@ -171,7 +151,7 @@ export class TezosFA12Protocol extends TezosFAProtocol {
     return this.prepareContractCall([approveCall], fee, publicKey)
   }
 
-  private async getContractCallIntResult(transferCall: TezosContractCall, source: string): Promise<string> {
+  protected async getContractCallIntResult(transferCall: TezosContractCall, source: string): Promise<string> {
     try {
       const operationResult = await this.runContractCall(transferCall, source)
 
@@ -206,7 +186,7 @@ export class TezosFA12Protocol extends TezosFAProtocol {
 
     const transferCalls: TezosContractCall[] = []
     for (let i: number = 0; i < recipients.length; i++) {
-      const transferCall = await this.contract.createContractCall(FA12ContractEntrypointName.TRANSFER, {
+      const transferCall = await this.contract.createContractCall(TezosFA12ContractEntrypoint.TRANSFER, {
         from: fromAddress,
         to: recipients[i],
         value: new BigNumber(values[i]).toNumber()

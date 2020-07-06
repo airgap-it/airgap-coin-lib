@@ -23,7 +23,7 @@ import { isMichelinePrimitive, isMichelineSequence } from '../types/utils'
 
 import { TezosFAProtocol, TezosFAProtocolConfiguration } from './TezosFAProtocol'
 
-enum FA2ContractEntrypointName {
+enum TezosFA2ContractEntrypoint {
   BALANCE = 'balance_of',
   TRANSFER = 'transfer',
   UPDATE_OPERATORS = 'update_operators',
@@ -49,7 +49,7 @@ export class TezosFA2Protocol extends TezosFAProtocol {
   public readonly tokenMetadataBigMapName: string
   public readonly tokenMedatadaBigMapValueRegex: RegExp
 
-  private readonly defaultCallbackContract: Partial<Record<TezosNetwork, Partial<Record<FA2ContractEntrypointName, string>>>>
+  private readonly defaultCallbackContract: Partial<Record<TezosNetwork, Partial<Record<TezosFA2ContractEntrypoint, string>>>>
 
   constructor(configuration: TezosFA2ProtocolConfiguration) {
     super(configuration)
@@ -62,12 +62,12 @@ export class TezosFA2Protocol extends TezosFAProtocol {
 
     this.defaultCallbackContract = {
       [TezosNetwork.MAINNET]: {
-        [FA2ContractEntrypointName.BALANCE]: '',
-        [FA2ContractEntrypointName.TOKEN_METADATA_REGISTRY]: ''
+        [TezosFA2ContractEntrypoint.BALANCE]: '',
+        [TezosFA2ContractEntrypoint.TOKEN_METADATA_REGISTRY]: ''
       },
       [TezosNetwork.CARTHAGENET]: {
-        [FA2ContractEntrypointName.BALANCE]: 'KT1HZqHf5XKW4aAJc7UZvdYgq4zfZRYb5dAs',
-        [FA2ContractEntrypointName.TOKEN_METADATA_REGISTRY]: 'KT1H2uaYTUhrfMC3TcmJXkocv1qhK8fRkVfR'
+        [TezosFA2ContractEntrypoint.BALANCE]: 'KT1HZqHf5XKW4aAJc7UZvdYgq4zfZRYb5dAs',
+        [TezosFA2ContractEntrypoint.TOKEN_METADATA_REGISTRY]: 'KT1H2uaYTUhrfMC3TcmJXkocv1qhK8fRkVfR'
       }
     }
   }
@@ -124,7 +124,7 @@ export class TezosFA2Protocol extends TezosFAProtocol {
   }
 
   public async transactionDetailsFromParameters(parameters: TezosTransactionParameters): Promise<Partial<IAirGapTransaction>[]> {
-    if (parameters.entrypoint !== FA2ContractEntrypointName.TRANSFER) {
+    if (parameters.entrypoint !== TezosFA2ContractEntrypoint.TRANSFER) {
       throw new Error('Only calls to the transfer entrypoint can be converted to IAirGapTransaction')
     }
     
@@ -160,10 +160,10 @@ export class TezosFA2Protocol extends TezosFAProtocol {
   public async balanceOf(
     balanceRequests: TezosFA2BalanceOfRequest[],
     source?: string,
-    callbackContract: string = this.callbackContract(FA2ContractEntrypointName.BALANCE)
+    callbackContract: string = this.callbackContract(TezosFA2ContractEntrypoint.BALANCE)
   ): Promise<TezosFA2BalanceOfResponse[]> {
     const balanceOfCall: TezosContractCall = await this.contract.createContractCall(
-      FA2ContractEntrypointName.BALANCE, 
+      TezosFA2ContractEntrypoint.BALANCE, 
       {
         requests: balanceRequests.map((request: TezosFA2BalanceOfRequest) => {
           return {
@@ -209,7 +209,7 @@ export class TezosFA2Protocol extends TezosFAProtocol {
     publicKey: string
   ): Promise<RawTezosTransaction> {
     const transferCall: TezosContractCall = await this.contract.createContractCall(
-      FA2ContractEntrypointName.TRANSFER,
+      TezosFA2ContractEntrypoint.TRANSFER,
       transferRequests.map((request: TezosFA2TransferRequest) => {
         return {
           from_: request.from,
@@ -233,7 +233,7 @@ export class TezosFA2Protocol extends TezosFAProtocol {
     publicKey: string
   ): Promise<RawTezosTransaction> {
     const updateCall: TezosContractCall = await this.contract.createContractCall(
-      FA2ContractEntrypointName.UPDATE_OPERATORS,
+      TezosFA2ContractEntrypoint.UPDATE_OPERATORS,
       updateRequests.map((request: TezosFA2UpdateOperatorRequest) => {
         return {
           [`${request.operation}_operator`]: {
@@ -247,9 +247,9 @@ export class TezosFA2Protocol extends TezosFAProtocol {
     return this.prepareContractCall([updateCall], fee, publicKey)
   }
 
-  public async tokenMetadataRegistry(source?: string, callbackContract: string = this.callbackContract(FA2ContractEntrypointName.TOKEN_METADATA_REGISTRY)): Promise<string> {
+  public async tokenMetadataRegistry(source?: string, callbackContract: string = this.callbackContract(TezosFA2ContractEntrypoint.TOKEN_METADATA_REGISTRY)): Promise<string> {
     const tokenMetadataRegistryCall: TezosContractCall = await this.contract.createContractCall(
-      FA2ContractEntrypointName.TOKEN_METADATA_REGISTRY,
+      TezosFA2ContractEntrypoint.TOKEN_METADATA_REGISTRY,
       callbackContract
     )
 
@@ -271,7 +271,7 @@ export class TezosFA2Protocol extends TezosFAProtocol {
     publicKey: string
   ): Promise<RawTezosTransaction> {
     const tokenMetadataCall: TezosContractCall = await this.contract.createContractCall(
-      FA2ContractEntrypointName.TOKEN_METADATA,
+      TezosFA2ContractEntrypoint.TOKEN_METADATA,
       {
         token_ids: tokenIDs,
         handler
@@ -334,7 +334,7 @@ export class TezosFA2Protocol extends TezosFAProtocol {
     const fromAddress: string = addresses[addressIndex]
     const recipientsWithValues: [string, string][] = recipients.map((recipient: string, index: number) => [recipient, values[index]])
 
-    const transferCall: TezosContractCall = await this.contract.createContractCall(FA2ContractEntrypointName.TRANSFER, [
+    const transferCall: TezosContractCall = await this.contract.createContractCall(TezosFA2ContractEntrypoint.TRANSFER, [
       {
         from_: fromAddress,
         txs: recipientsWithValues.map(([recipient, value]: [string, string]) => {
@@ -350,8 +350,8 @@ export class TezosFA2Protocol extends TezosFAProtocol {
     return transferCall
   }
 
-  protected callbackContract(entrypoint: FA2ContractEntrypointName): string {
-    const networkCallbacks: Partial<Record<FA2ContractEntrypointName, string>> | undefined = this.defaultCallbackContract[this.network]
+  protected callbackContract(entrypoint: TezosFA2ContractEntrypoint): string {
+    const networkCallbacks: Partial<Record<TezosFA2ContractEntrypoint, string>> | undefined = this.defaultCallbackContract[this.network]
     const callback: string | undefined = networkCallbacks ? networkCallbacks[entrypoint] : undefined
 
     return callback ?? ''

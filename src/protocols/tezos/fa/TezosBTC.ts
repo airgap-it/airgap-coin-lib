@@ -8,6 +8,11 @@ import { MichelsonInt } from '../types/michelson/primitives/MichelsonInt'
 import { TezosBTCDetails } from './../../../serializer/constants'
 import { TezosFA12Protocol } from './TezosFA12Protocol'
 
+enum TezosBTCContractEntrypoint {
+  TOTAL_MINTED = 'getTotalMinted',
+  TOTAL_BURNED = 'getTotalBurned'
+}
+
 export class TezosBTC extends TezosFA12Protocol {
   private static readonly bigMapKeyLedgerPrefix = '0x05070701000000066c65646765720a00000016'
 
@@ -37,6 +42,24 @@ export class TezosBTC extends TezosFA12Protocol {
       baseApiNetwork,
       network
     })
+  }
+
+  public async getTotalMinted(source?: string, callbackContract: string = this.callbackContract()): Promise<string> {
+    const getTotalMintedCall = await this.contract.createContractCall(TezosBTCContractEntrypoint.TOTAL_MINTED, [
+      [],
+      callbackContract
+    ])
+
+    return this.getContractCallIntResult(getTotalMintedCall, this.requireSource(source))
+  }
+
+  public async getTotalBurned(source?: string, callbackContract: string = this.callbackContract()): Promise<string> {
+    const getTotalBurnedCall = await this.contract.createContractCall(TezosBTCContractEntrypoint.TOTAL_BURNED, [
+      [],
+      callbackContract
+    ])
+
+    return this.getContractCallIntResult(getTotalBurnedCall, this.requireSource(source))
   }
 
   public async fetchTokenHolders(): Promise<{ address: string; amount: string }[]> {
