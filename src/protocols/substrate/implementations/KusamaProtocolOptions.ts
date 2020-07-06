@@ -3,7 +3,7 @@
 import { ProtocolBlockExplorer } from '../../../utils/ProtocolBlockExplorer'
 import { NetworkType, ProtocolNetwork } from '../../../utils/ProtocolNetwork'
 import { SubstrateNetwork } from '../SubstrateNetwork'
-import { SubstrateProtocolConfig, SubstrateProtocolOptions } from '../SubstrateProtocolOptions'
+import { PolkascanBlockExplorer, SubstrateProtocolConfig, SubstrateProtocolOptions } from '../SubstrateProtocolOptions'
 
 const MAINNET_NAME: string = 'Mainnet'
 
@@ -16,14 +16,9 @@ export class KusamaProtocolNetworkExtras {
   constructor(public readonly apiUrl: string = BLOCK_EXPLORER_API, public readonly network: SubstrateNetwork = SubstrateNetwork.KUSAMA) {}
 }
 
-export class PolkascanBlockExplorer implements ProtocolBlockExplorer {
-  constructor(public readonly blockExplorer: string = BLOCK_EXPLORER_URL) {}
-
-  public async getAddressLink(address: string): Promise<string> {
-    return `${this.blockExplorer}/account/${address}`
-  }
-  public async getTransactionLink(transactionId: string): Promise<string> {
-    return `${this.blockExplorer}/extrinsic/${transactionId}`
+export class KusamaPolkascanBlockExplorer extends PolkascanBlockExplorer {
+  constructor(blockExplorer: string = BLOCK_EXPLORER_URL) {
+    super(blockExplorer)
   }
 }
 
@@ -38,7 +33,7 @@ export class KusamaProtocolNetwork extends ProtocolNetwork<KusamaProtocolNetwork
     name: string = MAINNET_NAME,
     type: NetworkType = NetworkType.MAINNET,
     rpcUrl: string = NODE_URL,
-    blockExplorer: ProtocolBlockExplorer = new PolkascanBlockExplorer(),
+    blockExplorer: ProtocolBlockExplorer = new KusamaPolkascanBlockExplorer(),
     extras: KusamaProtocolNetworkExtras = new KusamaProtocolNetworkExtras()
   ) {
     super(name, type, rpcUrl, blockExplorer, extras)
