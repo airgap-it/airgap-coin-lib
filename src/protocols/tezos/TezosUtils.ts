@@ -1,12 +1,12 @@
 import * as bigInt from '../../dependencies/src/big-integer-1.6.45/BigInteger'
 import * as bs58check from '../../dependencies/src/bs58check-2.1.2/index'
 
+import { TezosContractBytes } from './contract/TezosContractBytes'
 import { TezosContractEntity } from './contract/TezosContractEntity'
 import { TezosContractInt } from './contract/TezosContractInt'
-import { TezosContractString } from './contract/TezosContractString'
-import { TezosContractBytes } from './contract/TezosContractBytes'
 import { TezosContractList } from './contract/TezosContractList'
 import { TezosContractPair } from './contract/TezosContractPair'
+import { TezosContractString } from './contract/TezosContractString'
 
 export class TezosUtils {
   // Tezos - We need to wrap these in Buffer due to non-compatible browser polyfills

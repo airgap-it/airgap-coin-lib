@@ -17,6 +17,7 @@ import { SubstrateTransactionType } from './helpers/data/transaction/SubstrateTr
 import { SubstrateNodeClient } from './helpers/node/SubstrateNodeClient'
 import { SubstrateAccountController } from './helpers/SubstrateAccountController'
 import { SubstrateTransactionController } from './helpers/SubstrateTransactionController'
+import { SubstrateCryptoClient } from './SubstrateCryptoClient'
 import { SubstrateNetwork } from './SubstrateNetwork'
 
 export abstract class SubstrateProtocol extends NonExtendedProtocol implements ICoinDelegateProtocol {
@@ -313,10 +314,10 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     nominatorDetails.rewards =
       nominatorDetails.delegatees.length > 0 && nominatorDetails.stakingDetails
         ? nominatorDetails.stakingDetails.rewards.map((reward) => ({
-            index: reward.eraIndex,
-            amount: reward.amount,
-            timestamp: reward.timestamp
-          }))
+          index: reward.eraIndex,
+          amount: reward.amount,
+          timestamp: reward.timestamp
+        }))
         : []
 
     return {
@@ -388,16 +389,16 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, available, [
       ...(bondFirst
         ? [
-            {
-              type: SubstrateTransactionType.BOND,
-              tip,
-              args: {
-                controller,
-                value: BigNumber.isBigNumber(value) ? value : new BigNumber(value!),
-                payee: typeof payee === 'string' ? SubstratePayee[payee] : payee
-              }
+          {
+            type: SubstrateTransactionType.BOND,
+            tip,
+            args: {
+              controller,
+              value: BigNumber.isBigNumber(value) ? value : new BigNumber(value!),
+              payee: typeof payee === 'string' ? SubstratePayee[payee] : payee
             }
-          ]
+          }
+        ]
         : []),
       {
         type: SubstrateTransactionType.NOMINATE,
@@ -428,14 +429,14 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
       ...(keepController
         ? []
         : [
-            {
-              type: SubstrateTransactionType.UNBOND,
-              tip,
-              args: {
-                value: BigNumber.isBigNumber(value) ? value : new BigNumber(value!)
-              }
+          {
+            type: SubstrateTransactionType.UNBOND,
+            tip,
+            args: {
+              value: BigNumber.isBigNumber(value) ? value : new BigNumber(value!)
             }
-          ])
+          }
+        ])
     ])
 
     return [{ encoded }]
@@ -656,12 +657,12 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     return requiredTransactions
   }
 
-  public signMessage(message: string, privateKey: Buffer): Promise<string> {
-    throw new Error('Method not implemented.')
+  public async signMessage(message: string, keypair: { publicKey: string; privateKey: Buffer }): Promise<string> {
+    return new SubstrateCryptoClient().signMessage(message, keypair)
   }
 
-  public verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
-    throw new Error('Method not implemented.')
+  public async verifyMessage(message: string, signature: string, publicKey: string): Promise<boolean> {
+    return new SubstrateCryptoClient().verifyMessage(message, signature, publicKey)
   }
 
   public async getTransactionStatuses(transactionHashes: string[]): Promise<AirGapTransactionStatus[]> {

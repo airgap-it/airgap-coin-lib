@@ -1,4 +1,4 @@
-import * as assert from 'assert'
+import * as bitcoinJSMessage from 'bitcoinjs-message'
 
 import axios from '../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
@@ -11,6 +11,8 @@ import { UnsignedTransaction } from '../../serializer/schemas/definitions/transa
 import { SignedBitcoinTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-bitcoin'
 import { RawBitcoinTransaction } from '../../serializer/types'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
+
+import { BitcoinCryptoClient } from './BitcoinCryptoClient'
 
 export interface Vin {
   txid: string
@@ -532,7 +534,9 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
       outs: []
     }
 
-    assert(recipients.length === wrappedValues.length)
+    if (recipients.length !== wrappedValues.length) {
+      throw new Error('Recipient and value length does not match.')
+    }
     const address = await this.getAddressFromPublicKey(publicKey)
 
     interface UTXOResponse {
@@ -739,12 +743,12 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
     return false
   }
 
-  public async signMessage(message: string, privateKey: Buffer): Promise<string> {
-    return Promise.reject('Message signing not implemented')
+  public async signMessage(message: string, keypair: { privateKey: Buffer }): Promise<string> {
+    return new BitcoinCryptoClient(this, bitcoinJSMessage).signMessage(message, keypair)
   }
 
-  public async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
-    return Promise.reject('Message verification not implemented')
+  public async verifyMessage(message: string, signature: string, publicKey: string): Promise<boolean> {
+    return new BitcoinCryptoClient(this, bitcoinJSMessage).verifyMessage(message, signature, publicKey)
   }
 
   public async getTransactionStatuses(transactionHashes: string[]): Promise<AirGapTransactionStatus[]> {

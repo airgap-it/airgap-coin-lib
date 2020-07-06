@@ -100,6 +100,6 @@ export interface ICoinProtocol {
   prepareTransactionFromPublicKey(publicKey: string, recipients: string[], values: string[], fee: string, data?: any): Promise<any> // only broadcaster
   broadcastTransaction(rawTransaction: any): Promise<string>
 
-  signMessage(message: string, privateKey: Buffer): Promise<string> // Returns signature
-  verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean>
+  signMessage(message: string, keypair: { publicKey?: string; privateKey: Buffer }): Promise<string> // Returns signature
+  verifyMessage(message: string, signature: string, publicKey: string): Promise<boolean>
 }

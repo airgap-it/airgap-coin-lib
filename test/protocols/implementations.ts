@@ -36,7 +36,7 @@ abstract class TestProtocolSpec {
     unsignedTx: any
     signedTx: string
   }[] = []
-  public messages = [{ message: 'test', signature: '' }]
+  public messages: { message: string; signature: string }[] = []
 
   public transactionStatusTests: { hashes: string[]; expectedResults: AirGapTransactionStatus[] }[] = []
 

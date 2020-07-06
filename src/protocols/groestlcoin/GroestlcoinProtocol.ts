@@ -1,6 +1,8 @@
+import * as groestlcoinJSMessage from 'groestlcoinjs-message'
 import * as bitGoUTXO from '../../dependencies/src/bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac/src/index'
 import { BitcoinBlockbookProtocol } from '../bitcoin/BitcoinBlockbookProtocol'
 import { CurrencyUnit, FeeDefaults } from '../ICoinProtocol'
+import { BitcoinCryptoClient } from '../bitcoin/BitcoinCryptoClient'
 
 export class GroestlcoinProtocol extends BitcoinBlockbookProtocol {
   public symbol: string = 'GRS'
@@ -50,5 +52,13 @@ export class GroestlcoinProtocol extends BitcoinBlockbookProtocol {
 
   public async getBlockExplorerLinkForTxId(txId: string): Promise<string> {
     return `${this.blockExplorer}/tx.dws?{{txId}}.htm`.replace('{{txId}}', txId)
+  }
+
+  public async signMessage(message: string, keypair: { privateKey: Buffer }): Promise<string> {
+    return new BitcoinCryptoClient(this, groestlcoinJSMessage).signMessage(message, keypair)
+  }
+
+  public async verifyMessage(message: string, signature: string, publicKey: string): Promise<boolean> {
+    return new BitcoinCryptoClient(this, groestlcoinJSMessage).verifyMessage(message, signature, publicKey)
   }
 }

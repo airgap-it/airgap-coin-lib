@@ -27,6 +27,7 @@ import { TezosOperation } from './types/operations/TezosOperation'
 import { TezosTransactionOperation } from './types/operations/Transaction'
 import { TezosOperationType } from './types/TezosOperationType'
 import { TezosWrappedOperation } from './types/TezosWrappedOperation'
+import { TezosCryptoClient } from './TezosCryptoClient'
 
 const assertNever: (x: never) => void = (x: never): void => undefined
 
@@ -202,15 +203,15 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     edsig: Buffer
     branch: Buffer
   } = {
-    tz1: Buffer.from(new Uint8Array([6, 161, 159])),
-    tz2: Buffer.from(new Uint8Array([6, 161, 161])),
-    tz3: Buffer.from(new Uint8Array([6, 161, 164])),
-    kt: Buffer.from(new Uint8Array([2, 90, 121])),
-    edpk: Buffer.from(new Uint8Array([13, 15, 37, 217])),
-    edsk: Buffer.from(new Uint8Array([43, 246, 78, 7])),
-    edsig: Buffer.from(new Uint8Array([9, 245, 205, 134, 18])),
-    branch: Buffer.from(new Uint8Array([1, 52]))
-  }
+      tz1: Buffer.from(new Uint8Array([6, 161, 159])),
+      tz2: Buffer.from(new Uint8Array([6, 161, 161])),
+      tz3: Buffer.from(new Uint8Array([6, 161, 164])),
+      kt: Buffer.from(new Uint8Array([2, 90, 121])),
+      edpk: Buffer.from(new Uint8Array([13, 15, 37, 217])),
+      edsk: Buffer.from(new Uint8Array([43, 246, 78, 7])),
+      edsig: Buffer.from(new Uint8Array([9, 245, 205, 134, 18])),
+      branch: Buffer.from(new Uint8Array([1, 52]))
+    }
 
   public readonly headers = { 'Content-Type': 'application/json', apiKey: 'airgap00391' }
 
@@ -883,11 +884,11 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
     const rewards = isDelegating
       ? rewardInfo.map((reward) => ({
-          index: reward.cycle,
-          amount: reward.reward.toFixed(),
-          collected: reward.payout < new Date(),
-          timestamp: reward.payout.getTime()
-        }))
+        index: reward.cycle,
+        amount: reward.reward.toFixed(),
+        collected: reward.payout < new Date(),
+        timestamp: reward.payout.getTime()
+      }))
       : []
 
     return {
@@ -1144,10 +1145,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
         }
 
         if ((operation as any).gas_limit) {
-          ;(operation as any).gas_limit = gasLimit.toString()
+          ; (operation as any).gas_limit = gasLimit.toString()
         }
         if ((operation as any).storage_limit) {
-          ;(operation as any).storage_limit = storageLimit.toString()
+          ; (operation as any).storage_limit = storageLimit.toString()
         }
 
         gasLimitTotal += gasLimit
@@ -1165,7 +1166,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
       tezosWrappedOperation.contents.forEach((operation: TezosOperation) => {
         if ((operation as TezosTransactionOperation).fee) {
-          ;(operation as TezosTransactionOperation).fee = feePerOperation.toString()
+          ; (operation as TezosTransactionOperation).fee = feePerOperation.toString()
         }
       })
     }
@@ -1646,12 +1647,12 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     })
   }
 
-  public async signMessage(message: string, privateKey: Buffer): Promise<string> {
-    return Promise.reject('Message signing not implemented')
+  public async signMessage(message: string, keypair: { privateKey: Buffer }): Promise<string> {
+    return new TezosCryptoClient(this.tezosPrefixes.edsig).signMessage(message, keypair)
   }
 
-  public async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
-    return Promise.reject('Message verification not implemented')
+  public async verifyMessage(message: string, signature: string, publicKey: string): Promise<boolean> {
+    return new TezosCryptoClient(this.tezosPrefixes.edsig).verifyMessage(message, signature, publicKey)
   }
 
   public async getTransactionStatuses(transactionHashes: string[]): Promise<AirGapTransactionStatus[]> {
@@ -1703,23 +1704,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       return statusGroups[txHash]
     })
   }
-  /*
-  async signMessage(message: string, privateKey: Buffer): Promise<string> {
-    await sodium.ready
-    const signature = sodium.crypto_sign_detached(sodium.from_string(message), privateKey)
-    const hexSignature = Buffer.from(signature).toString('hex')
-
-    return hexSignature
-  }
-
-  async verifyMessage(message: string, hexSignature: string, publicKey: Buffer): Promise<boolean> {
-    await sodium.ready
-    const signature = new Uint8Array(Buffer.from(hexSignature, 'hex'))
-    const isValidSignature = sodium.crypto_sign_verify_detached(signature, message, publicKey)
-
-    return isValidSignature
-  }
-  */
 }
 
 export interface TezosBakingRight {

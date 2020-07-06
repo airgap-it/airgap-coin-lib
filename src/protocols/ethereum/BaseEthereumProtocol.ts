@@ -13,6 +13,7 @@ import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
 
 import { EthereumInfoClient } from './clients/info-clients/InfoClient'
 import { EthereumNodeClient } from './clients/node-clients/NodeClient'
+import { EthereumCryptoClient } from './EthereumCryptoClient'
 import { EthereumUtils } from './utils/utils'
 
 const EthereumTransaction = require('../../dependencies/src/ethereumjs-tx-1.3.7/index')
@@ -415,12 +416,12 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     })
   }
 
-  public async signMessage(message: string, privateKey: Buffer): Promise<string> {
-    return Promise.reject('Message signing not implemented')
+  public async signMessage(message: string, keypair: { privateKey: Buffer }): Promise<string> {
+    return new EthereumCryptoClient(this).signMessage(message, keypair)
   }
 
-  public async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
-    return Promise.reject('Message verification not implemented')
+  public async verifyMessage(message: string, signature: string, publicKey: string): Promise<boolean> {
+    return new EthereumCryptoClient(this).verifyMessage(message, signature, publicKey)
   }
 
   public async getTransactionStatuses(transactionHashes: string[]): Promise<AirGapTransactionStatus[]> {
