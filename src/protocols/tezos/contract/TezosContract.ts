@@ -2,7 +2,7 @@ import axios, { AxiosResponse } from '../../../dependencies/src/axios-0.19.0/ind
 import { BigMapPredicate } from '../types/fa/BigMapPredicate'
 import { BigMapRequest } from '../types/fa/BigMapRequest'
 import { BigMapResponse } from '../types/fa/BigMapResult'
-import { MichelineDataNode, MichelineNode, MichelineTypeNode } from '../types/micheline/MichelineNode'
+import { MichelineNode, MichelineTypeNode } from '../types/micheline/MichelineNode'
 import { MichelsonOr } from '../types/michelson/generics/MichelsonOr'
 import { MichelsonType } from '../types/michelson/MichelsonType'
 import {
@@ -97,7 +97,7 @@ export class TezosContract {
   }
 
   public async normalizeContractCallParameters(
-    json: Partial<TezosTransactionParameters> & Pick<TezosTransactionParameters, 'value'> | MichelineDataNode, 
+    json: Partial<TezosTransactionParameters> & Pick<TezosTransactionParameters, 'value'> | MichelineNode, 
     fallbackEntrypoint?: string
   ): Promise<TezosTransactionParameters> {
     const entrypoint: string | undefined = 'entrypoint' in json ? json.entrypoint : undefined

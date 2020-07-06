@@ -228,7 +228,8 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
     fallbackEntrypointName?: string
   ): Promise<TezosTransactionParameters> {
     const parsedParameters: unknown = this.parseParameters(parameters)
-    if (!(parsedParameters instanceof Object && 'value' in parsedParameters) || !isMichelineNode(parsedParameters)) {
+  
+    if (!(parsedParameters instanceof Object && 'value' in parsedParameters) && !isMichelineNode(parsedParameters)) {
       throw new Error('Invalid parameters.')
     }
 
