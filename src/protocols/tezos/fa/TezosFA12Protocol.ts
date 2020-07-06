@@ -102,7 +102,7 @@ export class TezosFA12Protocol extends TezosFAProtocol {
       owner: address
     }, callbackContract])
 
-    return this.simulateContractCall(getBalanceCall, this.requireSource(source, address, 'kt'))
+    return this.getContractCallIntResult(getBalanceCall, this.requireSource(source, address, 'kt'))
   }
 
   public async getAllowance(
@@ -116,34 +116,34 @@ export class TezosFA12Protocol extends TezosFAProtocol {
       spender: spenderAddress
     }, callbackContract])
 
-    return this.simulateContractCall(getAllowanceCall, this.requireSource(source, spenderAddress, 'kt'))
+    return this.getContractCallIntResult(getAllowanceCall, this.requireSource(source, spenderAddress, 'kt'))
   }
 
-  public async getTotalSupply(source?: string, callbackContract: string = this.callbackContract()) {
+  public async getTotalSupply(source?: string, callbackContract: string = this.callbackContract()): Promise<string> {
     const getTotalSupplyCall = await this.contract.createContractCall(FA12ContractEntrypointName.TOTAL_SUPPLY, [
       [], 
       callbackContract
     ])
 
-    return this.runContractCall(getTotalSupplyCall, this.requireSource(source))
+    return this.getContractCallIntResult(getTotalSupplyCall, this.requireSource(source))
   }
 
-  public async getTotalMinted(source?: string, callbackContract: string = this.callbackContract()) {
+  public async getTotalMinted(source?: string, callbackContract: string = this.callbackContract()): Promise<string> {
     const getTotalMintedCall = await this.contract.createContractCall(FA12ContractEntrypointName.TOTAL_MINTED, [
       [],
       callbackContract
     ])
 
-    return this.runContractCall(getTotalMintedCall, this.requireSource(source))
+    return this.getContractCallIntResult(getTotalMintedCall, this.requireSource(source))
   }
 
-  public async getTotalBurned(source?: string, callbackContract: string = this.callbackContract()) {
+  public async getTotalBurned(source?: string, callbackContract: string = this.callbackContract()): Promise<string> {
     const getTotalBurnedCall = await this.contract.createContractCall(FA12ContractEntrypointName.TOTAL_BURNED, [
       [],
       callbackContract
     ])
 
-    return this.runContractCall(getTotalBurnedCall, this.requireSource(source))
+    return this.getContractCallIntResult(getTotalBurnedCall, this.requireSource(source))
   }
 
   public async transfer(
@@ -171,16 +171,14 @@ export class TezosFA12Protocol extends TezosFAProtocol {
     return this.prepareContractCall([approveCall], fee, publicKey)
   }
 
-  private async simulateContractCall(transferCall: TezosContractCall, source: string): Promise<string> {
+  private async getContractCallIntResult(transferCall: TezosContractCall, source: string): Promise<string> {
     try {
       const operationResult = await this.runContractCall(transferCall, source)
 
       if (isMichelinePrimitive('int', operationResult)) {
         return operationResult.int
       }
-    } catch {
-
-    }
+    } catch {}
 
     return '0'
   }
