@@ -3,6 +3,7 @@ import axios from '../../../../dependencies/src/axios-0.19.0/index'
 import { BigNumber } from '../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { AirGapTransactionStatus } from '../../../../interfaces/IAirGapTransaction'
 import { RPCConvertible } from '../../../cosmos/CosmosTransaction'
+import { NODE_URL } from '../../EthereumProtocolOptions'
 import { EthereumUtils } from '../../utils/utils'
 
 import { EthereumNodeClient } from './NodeClient'
@@ -128,7 +129,7 @@ export class EthereumRPCDataTransfer extends EthereumRPCData {
 }
 
 export class AirGapNodeClient extends EthereumNodeClient {
-  constructor(baseURL: string = 'https://eth-rpc-proxy.airgap.prod.gke.papers.tech') {
+  constructor(baseURL: string = NODE_URL) {
     super(baseURL)
   }
 

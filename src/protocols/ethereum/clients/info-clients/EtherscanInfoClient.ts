@@ -1,15 +1,17 @@
 import Axios from '../../../../dependencies/src/axios-0.19.0/index'
 import { BigNumber } from '../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { IAirGapTransaction } from '../../../../interfaces/IAirGapTransaction'
+import { EthereumProtocol } from '../../EthereumProtocol'
+import { BLOCK_EXPLORER_API } from '../../EthereumProtocolOptions'
 
 import { EthereumInfoClient } from './InfoClient'
 
 export class EtherscanInfoClient extends EthereumInfoClient {
-  constructor(baseURL: string = 'https://api.etherscan.io') {
+  constructor(baseURL: string = BLOCK_EXPLORER_API) {
     super(baseURL)
   }
 
-  public async fetchTransactions(identifier: string, address: string, page: number, limit: number): Promise<IAirGapTransaction[]> {
+  public async fetchTransactions(protocol: EthereumProtocol, address: string, page: number, limit: number): Promise<IAirGapTransaction[]> {
     const airGapTransactions: IAirGapTransaction[] = []
 
     const response = await Axios.get(
@@ -26,7 +28,8 @@ export class EtherscanInfoClient extends EthereumInfoClient {
         amount: new BigNumber(transaction.value).toString(10),
         fee: fee.toString(10),
         blockHeight: transaction.blockNumber,
-        protocolIdentifier: identifier,
+        protocolIdentifier: protocol.identifier,
+        network: protocol.options.network,
         timestamp: parseInt(transaction.timeStamp, 10)
       }
 
@@ -37,7 +40,7 @@ export class EtherscanInfoClient extends EthereumInfoClient {
   }
 
   public async fetchContractTransactions(
-    identifier: string,
+    protocol: EthereumProtocol,
     contractAddress: string,
     address: string,
     page: number,
@@ -57,7 +60,8 @@ export class EtherscanInfoClient extends EthereumInfoClient {
         to: [transaction.to],
         isInbound: transaction.to.toLowerCase() === address.toLowerCase(),
         blockHeight: transaction.blockNumber,
-        protocolIdentifier: identifier,
+        protocolIdentifier: protocol.identifier,
+        network: protocol.options.network,
         amount: new BigNumber(transaction.value).toString(10),
         fee: fee.toString(10),
         timestamp: parseInt(transaction.timeStamp, 10)

@@ -4,10 +4,7 @@ import { SubstrateNetwork } from '../../SubstrateNetwork'
 import { SubstrateAddress } from '../data/account/SubstrateAddress'
 
 export class SubstrateBlockExplorerClient {
-  public accountInfoUrl = `${this.baseUrl}/account`
-  public transactionInfoUrl = `${this.baseUrl}/extrinsic`
-
-  constructor(readonly network: SubstrateNetwork, readonly baseUrl: string, readonly apiUrl: string) {}
+  constructor(readonly network: SubstrateNetwork, readonly apiUrl: string) {}
 
   public async getTransactions(address: string, size: number, pageNumber: number): Promise<Partial<IAirGapTransaction[]>> {
     const response = await axios.get(

@@ -1,6 +1,6 @@
-import { IAirGapTransaction } from '../../..'
-import { AirGapTransactionType } from '../../../interfaces/IAirGapTransaction'
+import { AirGapTransactionType, IAirGapTransaction } from '../../../interfaces/IAirGapTransaction'
 import { CosmosCoin } from '../CosmosCoin'
+import { CosmosProtocol } from '../CosmosProtocol'
 
 import { CosmosMessage, CosmosMessageJSON, CosmosMessageType, CosmosMessageTypeIndex } from './CosmosMessage'
 
@@ -47,14 +47,15 @@ export class CosmosDelegateMessage implements CosmosMessage {
     }
   }
 
-  public toAirGapTransaction(identifier: string, fee: string): IAirGapTransaction {
+  public toAirGapTransaction(protocol: CosmosProtocol, fee: string): IAirGapTransaction {
     return {
       amount: this.amount.amount,
       from: [this.delegatorAddress],
       to: [this.validatorAddress],
       isInbound: false,
       fee,
-      protocolIdentifier: identifier,
+      protocolIdentifier: protocol.identifier,
+      network: protocol.options.network,
       transactionDetails: this.toRPCBody(),
       extra: {
         type: this.type.index === CosmosMessageTypeIndex.DELEGATE ? AirGapTransactionType.DELEGATE : AirGapTransactionType.UNDELEGATE
