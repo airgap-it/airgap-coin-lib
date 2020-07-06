@@ -188,4 +188,12 @@ export class EthereumTestProtocolSpec extends TestProtocolSpec {
   ]
 
   public validator = new EthereumTransactionValidator()
+
+  public messages = [
+    {
+      message: 'example message',
+      signature:
+        '0xa1f6730159726cd8def8058a5651e680328d898e26b81c2378079185b30ccb2e7e1e369cd82a9d55f2c8abdb0cbb1bfe07f0585327c475a1c35c83c6d32a8d2901'
+    }
+  ]
 }

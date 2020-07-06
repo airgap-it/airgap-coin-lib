@@ -408,7 +408,7 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     const contractCall = TezosContractCall.fromJSON(parameters)
     const amount = ((contractCall.args.second as TezosContractPair).second as TezosContractInt).value
     const from = this.getAddressFromContractCallParameter(contractCall.args.first)
-    const to = this.getAddressFromContractCallParameter(contractCall.args.second)
+    const to = this.getAddressFromContractCallParameter((contractCall.args.second as TezosContractPair).first)
     return {
       amount: new BigNumber(amount).toFixed(), // in tzbtc
       from,

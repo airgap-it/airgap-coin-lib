@@ -14,6 +14,11 @@ import { SubstratePayee } from './helpers/data/staking/SubstratePayee'
 import { SubstrateStakingActionType } from './helpers/data/staking/SubstrateStakingActionType'
 import { SubstrateTransactionType } from './helpers/data/transaction/SubstrateTransaction'
 import { SubstrateProtocolOptions } from './SubstrateProtocolOptions'
+import { SubstrateNodeClient } from './helpers/node/SubstrateNodeClient'
+import { SubstrateAccountController } from './helpers/SubstrateAccountController'
+import { SubstrateTransactionController } from './helpers/SubstrateTransactionController'
+import { SubstrateCryptoClient } from './SubstrateCryptoClient'
+import { SubstrateNetwork } from './SubstrateNetwork'
 
 export abstract class SubstrateProtocol extends NonExtendedProtocol implements ICoinDelegateProtocol {
   public abstract symbol: string
@@ -35,6 +40,8 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
 
   public addressValidationPattern: string = '^5[a-km-zA-HJ-NP-Z1-9]+$'
   public addressPlaceholder: string = `5ABC...`
+
+  protected defaultValidator?: string
 
   constructor(public readonly options: SubstrateProtocolOptions) {
     super()
@@ -250,6 +257,10 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
   }
 
   public async getDefaultDelegatee(): Promise<string> {
+    if (this.defaultValidator) {
+      return this.defaultValidator
+    }
+
     const validators = await this.options.config.nodeClient.getValidators()
 
     return validators ? validators[0].toString() : ''
@@ -646,12 +657,12 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     return requiredTransactions
   }
 
-  public signMessage(message: string, privateKey: Buffer): Promise<string> {
-    throw new Error('Method not implemented.')
+  public async signMessage(message: string, keypair: { publicKey: string; privateKey: Buffer }): Promise<string> {
+    return new SubstrateCryptoClient().signMessage(message, keypair)
   }
 
-  public verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
-    throw new Error('Method not implemented.')
+  public async verifyMessage(message: string, signature: string, publicKey: string): Promise<boolean> {
+    return new SubstrateCryptoClient().verifyMessage(message, signature, publicKey)
   }
 
   public async getTransactionStatuses(transactionHashes: string[]): Promise<AirGapTransactionStatus[]> {

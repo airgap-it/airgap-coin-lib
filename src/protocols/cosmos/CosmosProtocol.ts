@@ -20,6 +20,7 @@ import { CosmosMessageType } from './cosmos-message/CosmosMessage'
 import { CosmosSendMessage } from './cosmos-message/CosmosSendMessage'
 import { CosmosWithdrawDelegationRewardMessage } from './cosmos-message/CosmosWithdrawDelegationRewardMessage'
 import { CosmosCoin } from './CosmosCoin'
+import { CosmosCryptoClient } from './CosmosCryptoClient'
 import { CosmosFee } from './CosmosFee'
 import { CosmosInfoClient } from './CosmosInfoClient'
 import {
@@ -650,12 +651,12 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
     return actions
   }
 
-  public async signMessage(message: string, privateKey: Buffer): Promise<string> {
-    throw new Error('Method not implemented.')
+  public async signMessage(message: string, keypair: { privateKey: Buffer }): Promise<string> {
+    return new CosmosCryptoClient().signMessage(message, keypair)
   }
 
-  public async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
-    throw new Error('Method not implemented.')
+  public async verifyMessage(message: string, signature: string, publicKey: string): Promise<boolean> {
+    return new CosmosCryptoClient().verifyMessage(message, signature, publicKey)
   }
 
   public async getTransactionStatuses(transactionHashes: string[]): Promise<AirGapTransactionStatus[]> {

@@ -814,4 +814,11 @@ export class BitcoinProtocolSpec extends TestProtocolSpec {
 
     return protocol
   }
+
+  public messages = [
+    {
+      message: 'example message',
+      signature: 'IBktb5pV1sOtX15/qK8IyocO0i1Bbxf+v+ZqCryg477QVYykBA4U4iXcpgjfJwagHi+OaXXpOStd8v86VVp87j0='
+    }
+  ]
 }

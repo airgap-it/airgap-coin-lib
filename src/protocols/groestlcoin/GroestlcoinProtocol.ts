@@ -1,5 +1,8 @@
+import * as groestlcoinJSMessage from 'groestlcoinjs-message'
+
 import { MainProtocolSymbols, ProtocolSymbols } from '../../utils/ProtocolSymbols'
 import { BitcoinBlockbookProtocol } from '../bitcoin/BitcoinBlockbookProtocol'
+import { BitcoinCryptoClient } from '../bitcoin/BitcoinCryptoClient'
 import { CurrencyUnit, FeeDefaults } from '../ICoinProtocol'
 
 import { GroestlcoinProtocolOptions } from './GroestlcoinProtocolOptions'
@@ -42,5 +45,13 @@ export class GroestlcoinProtocol extends BitcoinBlockbookProtocol {
 
   constructor(public readonly options: GroestlcoinProtocolOptions = new GroestlcoinProtocolOptions()) {
     super(options)
+  }
+
+  public async signMessage(message: string, keypair: { privateKey: Buffer }): Promise<string> {
+    return new BitcoinCryptoClient(this, groestlcoinJSMessage).signMessage(message, keypair)
+  }
+
+  public async verifyMessage(message: string, signature: string, publicKey: string): Promise<boolean> {
+    return new BitcoinCryptoClient(this, groestlcoinJSMessage).verifyMessage(message, signature, publicKey)
   }
 }

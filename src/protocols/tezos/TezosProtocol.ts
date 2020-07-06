@@ -30,6 +30,7 @@ import { TezosOperation } from './types/operations/TezosOperation'
 import { TezosTransactionOperation } from './types/operations/Transaction'
 import { TezosOperationType } from './types/TezosOperationType'
 import { TezosWrappedOperation } from './types/TezosWrappedOperation'
+import { TezosCryptoClient } from './TezosCryptoClient'
 
 const assertNever: (x: never) => void = (x: never): void => undefined
 
@@ -224,7 +225,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     return this.options.network.extras.conseilNetwork
   }
 
-  public readonly headers = { 'Content-Type': 'application/json', apiKey: 'airgap123' }
+  public readonly headers = { 'Content-Type': 'application/json', apiKey: 'airgap00391' }
 
   constructor(public readonly options: TezosProtocolOptions = new TezosProtocolOptions()) {
     super()
@@ -1667,12 +1668,12 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     })
   }
 
-  public async signMessage(message: string, privateKey: Buffer): Promise<string> {
-    return Promise.reject('Message signing not implemented')
+  public async signMessage(message: string, keypair: { privateKey: Buffer }): Promise<string> {
+    return new TezosCryptoClient(this.tezosPrefixes.edsig).signMessage(message, keypair)
   }
 
-  public async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
-    return Promise.reject('Message verification not implemented')
+  public async verifyMessage(message: string, signature: string, publicKey: string): Promise<boolean> {
+    return new TezosCryptoClient(this.tezosPrefixes.edsig).verifyMessage(message, signature, publicKey)
   }
 
   public async getTransactionStatuses(transactionHashes: string[]): Promise<AirGapTransactionStatus[]> {
@@ -1724,23 +1725,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       return statusGroups[txHash]
     })
   }
-  /*
-  async signMessage(message: string, privateKey: Buffer): Promise<string> {
-    await sodium.ready
-    const signature = sodium.crypto_sign_detached(sodium.from_string(message), privateKey)
-    const hexSignature = Buffer.from(signature).toString('hex')
-
-    return hexSignature
-  }
-
-  async verifyMessage(message: string, hexSignature: string, publicKey: Buffer): Promise<boolean> {
-    await sodium.ready
-    const signature = new Uint8Array(Buffer.from(hexSignature, 'hex'))
-    const isValidSignature = sodium.crypto_sign_verify_detached(signature, message, publicKey)
-
-    return isValidSignature
-  }
-  */
 }
 
 export interface TezosBakingRight {
