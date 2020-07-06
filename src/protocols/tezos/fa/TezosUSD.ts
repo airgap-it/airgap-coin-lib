@@ -4,11 +4,10 @@ import { TezosUtils } from '../TezosUtils'
 import { TezosFA12Protocol } from './TezosFA12Protocol'
 
 export class TezosUSD extends TezosFA12Protocol {
-
   private static extractAmountRegex = /Pair ([0-9]+) /
 
   constructor(
-    contractAddress: string = "KT1LN4LPSqTMS7Sd2CJw4bbDGRkMv2t68Fy9",
+    contractAddress: string = 'KT1LN4LPSqTMS7Sd2CJw4bbDGRkMv2t68Fy9',
     jsonRPCAPI?: string,
     baseApiUrl?: string,
     baseApiKey?: string,
@@ -63,6 +62,7 @@ export class TezosUSD extends TezosFA12Protocol {
           amount: '0'
         }
       }
-    }).filter((value) => value.amount !== '0')
+    })
+    .filter((value) => value.amount !== '0')
   }
 }

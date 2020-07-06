@@ -62,6 +62,10 @@ export class AirGapMarketWallet extends AirGapWallet {
 
   public fetchCurrentMarketPrice(baseSymbol = 'USD'): Promise<BigNumber> {
     return new Promise((resolve, reject) => {
+      if (this.coinProtocol.marketSymbol.length === 0) {
+        resolve(new BigNumber(0))
+      }
+
       cryptocompare
         .price(this.coinProtocol.marketSymbol.toUpperCase(), baseSymbol)
         .then((prices) => {
@@ -256,6 +260,10 @@ export class AirGapMarketWallet extends AirGapWallet {
 
   private algoSelector(numberOfMinutes: number, timeUnit: TimeUnit, date: Date, baseSymbol: string = 'USD'): Promise<MarketDataSample[]> {
     return new Promise((resolve) => {
+      if (this.coinProtocol.marketSymbol.length === 0) {
+        resolve([])
+      }
+
       let promise: Promise<MarketDataSample>
       if (timeUnit === 'days') {
         promise = cryptocompare.histoDay(this.coinProtocol.marketSymbol.toUpperCase(), baseSymbol, {
