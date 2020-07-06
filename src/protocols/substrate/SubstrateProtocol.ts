@@ -13,12 +13,8 @@ import { SubstrateAddress } from './helpers/data/account/SubstrateAddress'
 import { SubstratePayee } from './helpers/data/staking/SubstratePayee'
 import { SubstrateStakingActionType } from './helpers/data/staking/SubstrateStakingActionType'
 import { SubstrateTransactionType } from './helpers/data/transaction/SubstrateTransaction'
-import { SubstrateProtocolOptions } from './SubstrateProtocolOptions'
-import { SubstrateNodeClient } from './helpers/node/SubstrateNodeClient'
-import { SubstrateAccountController } from './helpers/SubstrateAccountController'
-import { SubstrateTransactionController } from './helpers/SubstrateTransactionController'
 import { SubstrateCryptoClient } from './SubstrateCryptoClient'
-import { SubstrateNetwork } from './SubstrateNetwork'
+import { SubstrateProtocolOptions } from './SubstrateProtocolOptions'
 
 export abstract class SubstrateProtocol extends NonExtendedProtocol implements ICoinDelegateProtocol {
   public abstract symbol: string
