@@ -1,5 +1,4 @@
 import { IACMessageType } from './interfaces'
-import { PayloadType } from './payloads/payload'
 import { AccountShareResponse } from './schemas/definitions/account-share-response'
 import { MessageSignRequest } from './schemas/definitions/message-sign-request'
 import { MessageSignResponse } from './schemas/definitions/message-sign-response'
@@ -14,7 +13,7 @@ import { SignedCosmosTransaction } from './schemas/definitions/transaction-sign-
 import { SignedEthereumTransaction } from './schemas/definitions/transaction-sign-response-ethereum'
 import { SignedSubstrateTransaction } from './schemas/definitions/transaction-sign-response-substrate'
 import { SignedTezosTransaction } from './schemas/definitions/transaction-sign-response-tezos'
-import { SchemaItem, SchemaTransformer } from './schemas/schema'
+import { SchemaInfo, SchemaItem, SchemaTransformer } from './schemas/schema'
 import { Serializer } from './serializer'
 import { UnsignedCosmosTransaction } from './types'
 import { jsonToArray, rlpArrayToJson, unwrapSchema } from './utils/json-to-rlp'
@@ -54,37 +53,21 @@ export interface MessageDefinitionArray {
 }
 
 export class Message implements IACMessageDefinitionObject {
-  private readonly version: string = '0' // TODO: Version depending on the message type
+  private readonly version: string // TODO: Version depending on the message type
   private readonly schema: SchemaItem
-  private readonly schemaTransformer: SchemaTransformer | undefined
 
-  public readonly type: number
+  public readonly type: IACMessageType
   public readonly protocol: string
   public readonly payload: IACMessages
 
-  constructor(type: PayloadType, object: Buffer[] | IACMessageDefinitionObject) {
-    if (type === PayloadType.DECODED) {
-      const x = object as IACMessageDefinitionObject
-      this.type = x.type
-      this.protocol = x.protocol
-      this.payload = x.payload
-      const schemaInfo = Serializer.getSchema(this.type.toString(), this.protocol)
-      this.schema = unwrapSchema(schemaInfo.schema)
-      this.schemaTransformer = schemaInfo.transformer
-    } else if (type === PayloadType.ENCODED) {
-      const x = object as Buffer[]
-      this.version = x[0].toString()
-      this.type = parseInt(x[1].toString(), 10)
-      this.protocol = x[2].toString()
-      const schemaInfo = Serializer.getSchema(this.type.toString(), this.protocol)
-      this.schema = unwrapSchema(schemaInfo.schema)
-      this.schemaTransformer = schemaInfo.transformer
-      const json: IACMessages = (rlpArrayToJson(this.schema, x[3] as RLPData) as any) as IACMessages
-      this.payload = this.schemaTransformer ? this.schemaTransformer(json) : json
-    } else {
-      assertNever(type)
-      throw new Error('UNKNOWN PAYLOAD TYPE')
-    }
+  constructor(type: IACMessageType, protocol: string, payload: IACMessages, version: string = '0') {
+    this.type = type
+    this.protocol = protocol
+    this.payload = payload
+    this.version = version
+
+    const schemaInfo: SchemaInfo = Serializer.getSchema(this.type.toString(), this.protocol)
+    this.schema = unwrapSchema(schemaInfo.schema)
   }
 
   public asJson(): IACMessageDefinitionObject {
@@ -99,5 +82,23 @@ export class Message implements IACMessageDefinitionObject {
     const array: RLPData = jsonToArray('root', this.schema, this.payload)
 
     return [this.version, this.type.toString(), this.protocol, array]
+  }
+
+  public static fromDecoded(object: IACMessageDefinitionObject): Message {
+    return new Message(object.type, object.protocol, object.payload)
+  }
+
+  public static fromEncoded(buf: MessageDefinitionArray): Message {
+    const version: string = buf[0].toString()
+    const type: number = parseInt(buf[1].toString(), 10)
+    const protocol: string = buf[2].toString()
+    const encodedPayload: RLPData = buf[3]
+    const schemaInfo: SchemaInfo = Serializer.getSchema(type.toString(), protocol)
+    const schema: SchemaItem = unwrapSchema(schemaInfo.schema)
+    const schemaTransformer: SchemaTransformer | undefined = schemaInfo.transformer
+    const json: IACMessages = (rlpArrayToJson(schema, encodedPayload) as any) as IACMessages
+    const payload: IACMessages = schemaTransformer ? schemaTransformer(json) : json
+
+    return new Message(type, protocol, payload, version)
   }
 }

@@ -83,7 +83,7 @@ export class Serializer {
         return Serializer.getSchema(message.type.toString(), message.protocol)
       })
     ) {
-      const iacps: IACProtocol[] = IACProtocol.create(JSON.parse(JSON.stringify(messages)), chunkSize)
+      const iacps: IACProtocol[] = IACProtocol.fromDecoded(JSON.parse(JSON.stringify(messages)), chunkSize)
 
       return iacps.map((iac: IACProtocol) => iac.encoded())
     } else {
@@ -92,7 +92,7 @@ export class Serializer {
   }
 
   public async deserialize(data: string[]): Promise<IACMessageDefinitionObject[]> {
-    const result: IACProtocol[] = IACProtocol.createFromEncoded(data)
+    const result: IACProtocol[] = IACProtocol.fromEncoded(data)
     const deserializedIACMessageDefinitionObjects = result
       .map((el: IACProtocol) => el.payload)
       .map((el: Payload) => (el as FullPayload).asJson())

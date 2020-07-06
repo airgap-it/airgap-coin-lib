@@ -1,10 +1,10 @@
 import * as bs58check from '../dependencies/src/bs58check-2.1.2/index'
 import * as rlp from '../dependencies/src/rlp-2.2.3/index'
 
-import { assertNever, IACMessageDefinitionObject } from './message'
+import { IACMessageDefinitionObject } from './message'
 import { ChunkedPayload } from './payloads/chunked-payload'
 import { FullPayload } from './payloads/full-payload'
-import { Payload, PayloadType } from './payloads/payload'
+import { Payload } from './payloads/payload'
 import { IACPayloadType } from './serializer'
 
 export type IACProtocolVersion = number
@@ -20,25 +20,15 @@ export class IACProtocol {
   public readonly payloadType: IACPayloadType
   public payload: Payload
 
-  constructor(type: PayloadType, data: string | Payload) {
-    if (type === PayloadType.DECODED) {
-      if (data instanceof FullPayload) {
-        this.payloadType = IACPayloadType.FULL
-        this.payload = data
-      } else if (data instanceof ChunkedPayload) {
-        this.payloadType = IACPayloadType.CHUNKED
-        this.payload = data
-      } else {
-        throw new Error('IACPayloadType not supported')
-      }
-    } else if (type === PayloadType.ENCODED) {
-      // Encoded string and we need to decode it
-      // We can then initialize it either as Chunked or Full
+  constructor(data: Payload) {
+    if (data instanceof FullPayload) {
       this.payloadType = IACPayloadType.FULL
-      this.payload = new FullPayload(PayloadType.ENCODED, data as any) // TODO: Placeholder
+      this.payload = data
+    } else if (data instanceof ChunkedPayload) {
+      this.payloadType = IACPayloadType.CHUNKED
+      this.payload = data
     } else {
-      assertNever(type)
-      throw new Error('UNKNOWN PAYLOAD TYPE')
+      throw new Error('Unknown Payload type!')
     }
   }
 
@@ -50,8 +40,8 @@ export class IACProtocol {
     return bs58check.encode(rlp.encode([this.version.toString(), this.payloadType.toString(), this.payload.asArray() as any]) as any)
   }
 
-  public static create(data: IACMessageDefinitionObject[], chunkSize: number = 0): IACProtocol[] {
-    const payload: FullPayload = new FullPayload(PayloadType.DECODED, data)
+  public static fromDecoded(data: IACMessageDefinitionObject[], chunkSize: number = 0): IACProtocol[] {
+    const payload: FullPayload = FullPayload.fromDecoded(data)
 
     const rawPayload: Buffer = payload.asBuffer()
 
@@ -67,17 +57,14 @@ export class IACProtocol {
 
       return chunks.map(
         (chunk: Buffer, index: number) =>
-          new IACProtocol(
-            PayloadType.DECODED,
-            new ChunkedPayload(PayloadType.DECODED, { currentPage: index, total: chunks.length, payload: chunk })
-          )
+          new IACProtocol(ChunkedPayload.fromDecoded({ currentPage: index, total: chunks.length, payload: chunk }))
       )
     } else {
-      return [new IACProtocol(PayloadType.DECODED, payload)]
+      return [new IACProtocol(payload)]
     }
   }
 
-  public static createFromEncoded(data: string[]): IACProtocol[] {
+  public static fromEncoded(data: string[]): IACProtocol[] {
     const chunked: ChunkedPayload[] = []
     let finalPayload: Payload | undefined
 
@@ -93,14 +80,14 @@ export class IACProtocol {
         throw new Error('NOT SAME TYPE')
       }
 
-      const payload: Buffer[] = (decoded[2] as any) as Buffer[]
-
       if (type === '0') {
         // full
-        finalPayload = new FullPayload(PayloadType.ENCODED, payload)
+        const payload: Buffer[] = (decoded[2] as any) as Buffer[]
+        finalPayload = FullPayload.fromEncoded(payload)
       } else if (type === '1') {
         // chunked
-        chunked.push(new ChunkedPayload(PayloadType.ENCODED, payload))
+        const payload: [Buffer, Buffer, Buffer] = (decoded[2] as any) as [Buffer, Buffer, Buffer]
+        chunked.push(ChunkedPayload.fromEncoded(payload))
       } else {
         throw new Error('EMPTY ARRAY')
       }
@@ -119,9 +106,9 @@ export class IACProtocol {
         throw result
       }
 
-      finalPayload = new FullPayload(PayloadType.ENCODED, rlp.decode(Buffer.concat(arr)))
+      finalPayload = FullPayload.fromEncoded(rlp.decode(Buffer.concat(arr)))
     }
 
-    return [new IACProtocol(PayloadType.DECODED, finalPayload)]
+    return [new IACProtocol(finalPayload)]
   }
 }

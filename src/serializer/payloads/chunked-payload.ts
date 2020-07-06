@@ -1,7 +1,6 @@
-import { assertNever } from '../message'
 import { RLPData } from '../utils/toBuffer'
 
-import { Payload, PayloadType } from './payload'
+import { Payload } from './payload'
 
 interface DecodedChunkedPayload {
   currentPage: number
@@ -9,13 +8,8 @@ interface DecodedChunkedPayload {
   payload: Buffer
 }
 
-interface PayloadTypeReturnType {
-  [PayloadType.ENCODED]: Buffer[]
-  [PayloadType.DECODED]: DecodedChunkedPayload
-}
-
 function isBufferArray(arg: unknown): arg is Buffer[] {
-  return Array.isArray(arg) && arg.every((el) => el instanceof Buffer)
+  return Array.isArray(arg) && arg.every((el: unknown) => el instanceof Buffer)
 }
 
 function isDecodedChunkedPayload(arg: unknown): arg is DecodedChunkedPayload {
@@ -44,32 +38,35 @@ export class ChunkedPayload implements Payload {
   public total: number
   public buffer: Buffer
 
-  constructor(type: PayloadType, object: PayloadTypeReturnType[PayloadType]) {
-    if (type === PayloadType.DECODED) {
-      if (!isDecodedChunkedPayload(object)) {
-        throw new Error('UNEXPECTED TYPE OF PAYLOAD IN CHUNKED PAYLOAD CONSTRUCTOR')
-      }
-      this.currentPage = object.currentPage
-      this.total = object.total
-      this.buffer = object.payload
-    } else if (type === PayloadType.ENCODED) {
-      if (!isBufferArray(object)) {
-        throw new Error('UNEXPECTED TYPE OF PAYLOAD IN CHUNKED PAYLOAD CONSTRUCTOR')
-      }
-      if (object.length !== 3) {
-        throw new Error('INVALID CHUNKED PAYLOAD, NOT THE RIGHT AMOUNT OF ELEMENTS IN ARRAY')
-      }
+  constructor(currentPage: number, total: number, buffer: Buffer) {
+    this.currentPage = currentPage
+    this.total = total
+    this.buffer = buffer
+  }
 
-      // We know here that the buffer has the following signature
-      // [currentPage, totalPages, payload]: [Buffer, Buffer, Buffer]
-
-      this.currentPage = getIntFromBuffer(object[0])
-      this.total = getIntFromBuffer(object[1])
-      this.buffer = object[2]
-    } else {
-      assertNever(type)
-      throw new Error('UNKNOWN PAYLOAD TYPE')
+  public static fromDecoded(object: DecodedChunkedPayload): ChunkedPayload {
+    if (!isDecodedChunkedPayload(object)) {
+      throw new Error('UNEXPECTED TYPE OF PAYLOAD IN CHUNKED PAYLOAD CONSTRUCTOR')
     }
+
+    return new ChunkedPayload(object.currentPage, object.total, object.payload)
+  }
+  public static fromEncoded(buf: [Buffer, Buffer, Buffer]): ChunkedPayload {
+    if (!isBufferArray(buf)) {
+      throw new Error('UNEXPECTED TYPE OF PAYLOAD IN CHUNKED PAYLOAD CONSTRUCTOR')
+    }
+    if (buf.length !== 3) {
+      throw new Error('INVALID CHUNKED PAYLOAD, NOT THE RIGHT AMOUNT OF ELEMENTS IN ARRAY')
+    }
+
+    // We know here that the buffer has the following signature
+    // [currentPage, totalPages, payload]: [Buffer, Buffer, Buffer]
+
+    const currentPage: number = getIntFromBuffer(buf[0])
+    const total: number = getIntFromBuffer(buf[1])
+    const payload: Buffer = buf[2]
+
+    return new ChunkedPayload(currentPage, total, payload)
   }
 
   public asArray(): RLPData {
