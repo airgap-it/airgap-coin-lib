@@ -254,7 +254,7 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
 
         txs.forEach((tx, index) => {
           if (protocol.lib instanceof SubstrateProtocol) {
-            const decoded = (protocol.lib as SubstrateProtocol).options.config.transactionController.decodeDetails(tx)[0]
+            const decoded = (protocol.lib as SubstrateProtocol).options.transactionController.decodeDetails(tx)[0]
 
             const signature = decoded.transaction.signature.signature.value
             const payload = Buffer.from(decoded.payload.encode(), 'hex')

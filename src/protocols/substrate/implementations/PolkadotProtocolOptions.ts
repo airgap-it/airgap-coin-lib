@@ -2,12 +2,8 @@
 
 import { ProtocolBlockExplorer } from '../../../utils/ProtocolBlockExplorer'
 import { NetworkType, ProtocolNetwork } from '../../../utils/ProtocolNetwork'
-import { ProtocolOptions } from '../../../utils/ProtocolOptions'
-import { SubstrateBlockExplorerClient } from '../helpers/blockexplorer/SubstrateBlockExplorerClient'
-import { SubstrateNodeClient } from '../helpers/node/SubstrateNodeClient'
-import { SubstrateAccountController } from '../helpers/SubstrateAccountController'
-import { SubstrateTransactionController } from '../helpers/SubstrateTransactionController'
 import { SubstrateNetwork } from '../SubstrateNetwork'
+import { SubstrateProtocolConfig, SubstrateProtocolOptions } from '../SubstrateProtocolOptions'
 
 const MAINNET_NAME: string = 'Mainnet'
 
@@ -17,7 +13,7 @@ const BLOCK_EXPLORER_URL: string = 'https://polkascan.io/polkadot-cc1'
 const BLOCK_EXPLORER_API: string = 'https://api-01.polkascan.io/polkadot/api/v1'
 
 export class PolkadotProtocolNetworkExtras {
-  constructor(public readonly apiUrl: string = BLOCK_EXPLORER_API) {}
+  constructor(public readonly apiUrl: string = BLOCK_EXPLORER_API, public readonly network: SubstrateNetwork = SubstrateNetwork.POLKADOT) {}
 }
 
 export class PolkascanBlockExplorer implements ProtocolBlockExplorer {
@@ -31,18 +27,10 @@ export class PolkascanBlockExplorer implements ProtocolBlockExplorer {
   }
 }
 
-export class PolkadotProtocolConfig {
-  constructor(
-    public readonly network: SubstrateNetwork = SubstrateNetwork.POLKADOT,
-    public readonly nodeClient: SubstrateNodeClient = new SubstrateNodeClient(network, NODE_URL),
-    public readonly blockExplorerClient: SubstrateBlockExplorerClient = new SubstrateBlockExplorerClient(
-      network,
-      BLOCK_EXPLORER_URL,
-      BLOCK_EXPLORER_API
-    ),
-    public readonly accountController: SubstrateAccountController = new SubstrateAccountController(network, nodeClient),
-    public readonly transactionController: SubstrateTransactionController = new SubstrateTransactionController(network, nodeClient)
-  ) {}
+export class PolkadotProtocolConfig extends SubstrateProtocolConfig {
+  constructor() {
+    super()
+  }
 }
 
 export class PolkadotProtocolNetwork extends ProtocolNetwork<PolkadotProtocolNetworkExtras> {
@@ -57,9 +45,11 @@ export class PolkadotProtocolNetwork extends ProtocolNetwork<PolkadotProtocolNet
   }
 }
 
-export class PolkadotProtocolOptions implements ProtocolOptions<PolkadotProtocolConfig> {
+export class PolkadotProtocolOptions extends SubstrateProtocolOptions<PolkadotProtocolConfig> {
   constructor(
     public readonly network: PolkadotProtocolNetwork = new PolkadotProtocolNetwork(),
     public readonly config: PolkadotProtocolConfig = new PolkadotProtocolConfig()
-  ) {}
+  ) {
+    super(network, config)
+  }
 }

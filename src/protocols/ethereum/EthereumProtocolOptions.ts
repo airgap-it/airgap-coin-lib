@@ -12,16 +12,13 @@ import { EthereumNodeClient } from './clients/node-clients/NodeClient'
 
 const MAINNET_NAME: string = 'Mainnet'
 
-const NODE_URL: string = 'https://eth-rpc-proxy.airgap.prod.gke.papers.tech'
+export const NODE_URL: string = 'https://eth-rpc-proxy.airgap.prod.gke.papers.tech'
 
 const BLOCK_EXPLORER_URL: string = 'https://etherscan.io'
+export const BLOCK_EXPLORER_API: string = 'https://api.etherscan.io'
 
 export class EthereumProtocolNetworkExtras {
-  constructor(
-    public readonly chainID: number = 1,
-    public readonly nodeClient: EthereumNodeClient = new AirGapNodeClient(),
-    public readonly infoClient: EthereumInfoClient = new EtherscanInfoClient()
-  ) {}
+  constructor(public readonly chainID: number = 1, public readonly blockExplorerApi: string = BLOCK_EXPLORER_API) {}
 }
 
 export class EtherscanBlockExplorer implements ProtocolBlockExplorer {
@@ -52,10 +49,16 @@ export class EthereumProtocolConfig {
 }
 
 export class EthereumProtocolOptions implements ProtocolOptions<EthereumProtocolConfig> {
+  public readonly nodeClient: EthereumNodeClient
+  public readonly infoClient: EthereumInfoClient
+
   constructor(
     public readonly network: EthereumProtocolNetwork = new EthereumProtocolNetwork(),
     public readonly config: EthereumProtocolConfig = new EthereumProtocolConfig()
-  ) {}
+  ) {
+    this.nodeClient = new AirGapNodeClient(network.rpcUrl)
+    this.infoClient = new EtherscanInfoClient(network.extras.blockExplorerApi)
+  }
 }
 
 export class EthereumERC20ProtocolConfig {
@@ -69,9 +72,11 @@ export class EthereumERC20ProtocolConfig {
   ) {}
 }
 
-export class EthereumERC20ProtocolOptions implements ProtocolOptions<EthereumERC20ProtocolConfig> {
+export class EthereumERC20ProtocolOptions extends EthereumProtocolOptions {
   constructor(
     public readonly network: EthereumProtocolNetwork = new EthereumProtocolNetwork(),
     public readonly config: EthereumERC20ProtocolConfig
-  ) {}
+  ) {
+    super(network, config)
+  }
 }

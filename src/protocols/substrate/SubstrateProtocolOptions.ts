@@ -13,7 +13,7 @@ import { SubstrateNetwork } from './SubstrateNetwork'
 const MAINNET_NAME: string = 'Mainnet'
 
 export class SubstrateProtocolNetworkExtras {
-  constructor(public readonly apiUrl: string) {}
+  constructor(public readonly apiUrl: string, public readonly network: SubstrateNetwork) {}
 }
 
 export class PolkascanBlockExplorer implements ProtocolBlockExplorer {
@@ -28,13 +28,7 @@ export class PolkascanBlockExplorer implements ProtocolBlockExplorer {
 }
 
 export class SubstrateProtocolConfig {
-  constructor(
-    public readonly network: SubstrateNetwork,
-    public readonly nodeClient: SubstrateNodeClient,
-    public readonly blockExplorerClient: SubstrateBlockExplorerClient,
-    public readonly accountController: SubstrateAccountController = new SubstrateAccountController(network, nodeClient),
-    public readonly transactionController: SubstrateTransactionController = new SubstrateTransactionController(network, nodeClient)
-  ) {}
+  constructor() {}
 }
 
 export class SubstrateProtocolNetwork extends ProtocolNetwork<SubstrateProtocolNetworkExtras> {
@@ -49,6 +43,16 @@ export class SubstrateProtocolNetwork extends ProtocolNetwork<SubstrateProtocolN
   }
 }
 
-export class SubstrateProtocolOptions implements ProtocolOptions<SubstrateProtocolConfig> {
-  constructor(public readonly network: SubstrateProtocolNetwork, public readonly config: SubstrateProtocolConfig) {}
+export class SubstrateProtocolOptions<T extends SubstrateProtocolConfig = SubstrateProtocolConfig> implements ProtocolOptions<T> {
+  public readonly nodeClient: SubstrateNodeClient
+  public readonly blockExplorerClient: SubstrateBlockExplorerClient
+  public readonly accountController: SubstrateAccountController
+  public readonly transactionController: SubstrateTransactionController
+
+  constructor(public readonly network: SubstrateProtocolNetwork, public readonly config: T) {
+    this.nodeClient = new SubstrateNodeClient(network.extras.network, network.rpcUrl)
+    this.blockExplorerClient = new SubstrateBlockExplorerClient(network.extras.network, network.extras.apiUrl)
+    this.accountController = new SubstrateAccountController(network.extras.network, this.nodeClient)
+    this.transactionController = new SubstrateTransactionController(network.extras.network, this.nodeClient)
+  }
 }

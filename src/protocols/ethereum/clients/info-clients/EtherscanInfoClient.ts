@@ -2,11 +2,12 @@ import Axios from '../../../../dependencies/src/axios-0.19.0/index'
 import { BigNumber } from '../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { IAirGapTransaction } from '../../../../interfaces/IAirGapTransaction'
 import { EthereumProtocol } from '../../EthereumProtocol'
+import { BLOCK_EXPLORER_API } from '../../EthereumProtocolOptions'
 
 import { EthereumInfoClient } from './InfoClient'
 
 export class EtherscanInfoClient extends EthereumInfoClient {
-  constructor(baseURL: string = 'https://api.etherscan.io') {
+  constructor(baseURL: string = BLOCK_EXPLORER_API) {
     super(baseURL)
   }
 

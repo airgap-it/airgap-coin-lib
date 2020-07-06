@@ -12,13 +12,9 @@ export class EthereumClassicProtocol extends BaseEthereumProtocol<AirGapNodeClie
         new EthereumProtocolNetwork(
           undefined,
           undefined,
+          'https://mew.epool.io',
           undefined,
-          undefined,
-          new EthereumProtocolNetworkExtras(
-            61,
-            new AirGapNodeClient('https://mew.epool.io'),
-            new EtherscanInfoClient('https://classic.trustwalletapp.com')
-          )
+          new EthereumProtocolNetworkExtras(61, 'https://classic.trustwalletapp.com')
         )
       )
     )

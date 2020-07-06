@@ -8,12 +8,12 @@ import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
 export class KusamaProtocolStub implements ProtocolHTTPStub {
   public registerStub(testProtocolSpec: TestProtocolSpec, protocol: KusamaProtocol): void {
     sinon
-      .stub(protocol.options.config.accountController, 'getBalance')
+      .stub(protocol.options.accountController, 'getBalance')
       .withArgs(sinon.match.any)
       .returns(Promise.resolve(new BigNumber(10000000000000)))
 
     sinon
-      .stub(protocol.options.config.accountController, 'getTransferableBalance')
+      .stub(protocol.options.accountController, 'getTransferableBalance')
       .withArgs(sinon.match.any)
       .returns(Promise.resolve(new BigNumber(10000000000000)))
 
@@ -22,7 +22,7 @@ export class KusamaProtocolStub implements ProtocolHTTPStub {
 
   public noBalanceStub(testProtocolSpec: TestProtocolSpec, protocol: KusamaProtocol): void {
     sinon
-      .stub(protocol.options.config.accountController, 'getTransferableBalance')
+      .stub(protocol.options.accountController, 'getTransferableBalance')
       .withArgs(sinon.match.any)
       .returns(Promise.resolve(new BigNumber(0)))
 
@@ -33,7 +33,7 @@ export class KusamaProtocolStub implements ProtocolHTTPStub {
     sinon.stub(protocol, 'standardDerivationPath').value('m/')
 
     sinon
-      .stub(protocol.options.config.nodeClient, 'getTransactionMetadata')
+      .stub(protocol.options.nodeClient, 'getTransactionMetadata')
       .withArgs(SubstrateTransactionType.TRANSFER)
       .returns(Promise.resolve({ moduleIndex: 4, callIndex: 0 }))
       .withArgs(SubstrateTransactionType.BOND)
@@ -45,12 +45,10 @@ export class KusamaProtocolStub implements ProtocolHTTPStub {
       .withArgs(SubstrateTransactionType.CANCEL_NOMINATION)
       .returns(Promise.resolve({ moduleIndex: 6, callIndex: 6 }))
 
-    sinon
-      .stub(protocol.options.config.nodeClient, 'getTransferFeeEstimate')
-      .returns(Promise.resolve(new BigNumber(testProtocolSpec.txs[0].fee)))
+    sinon.stub(protocol.options.nodeClient, 'getTransferFeeEstimate').returns(Promise.resolve(new BigNumber(testProtocolSpec.txs[0].fee)))
 
     sinon
-      .stub(protocol.options.config.nodeClient, 'getAccountInfo')
+      .stub(protocol.options.nodeClient, 'getAccountInfo')
       .withArgs(sinon.match.any)
       .returns(
         Promise.resolve({
@@ -65,15 +63,15 @@ export class KusamaProtocolStub implements ProtocolHTTPStub {
       )
 
     sinon
-      .stub(protocol.options.config.nodeClient, 'getFirstBlockHash')
+      .stub(protocol.options.nodeClient, 'getFirstBlockHash')
       .returns(Promise.resolve('0xd51522c9ef7ba4e0990f7a4527de79afcac992ab97abbbc36722f8a27189b170'))
 
     sinon
-      .stub(protocol.options.config.nodeClient, 'getLastBlockHash')
+      .stub(protocol.options.nodeClient, 'getLastBlockHash')
       .returns(Promise.resolve('0x33a7a745849347ce3008c07268be63d8cefd3ef61de0c7318e88a577fb7d26a9'))
 
-    sinon.stub(protocol.options.config.nodeClient, 'getCurrentHeight').returns(Promise.resolve(new BigNumber(3192)))
+    sinon.stub(protocol.options.nodeClient, 'getCurrentHeight').returns(Promise.resolve(new BigNumber(3192)))
 
-    sinon.stub(protocol.options.config.nodeClient, 'getRuntimeVersion').returns(Promise.resolve({ specVersion: 4, transactionVersion: 1 }))
+    sinon.stub(protocol.options.nodeClient, 'getRuntimeVersion').returns(Promise.resolve({ specVersion: 4, transactionVersion: 1 }))
   }
 }

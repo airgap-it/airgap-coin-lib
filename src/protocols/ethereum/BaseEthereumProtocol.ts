@@ -225,7 +225,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
   public async getBalanceOfAddresses(addresses: string[]): Promise<string> {
     const balances: BigNumber[] = await Promise.all(
       addresses.map((address: string) => {
-        return this.options.network.extras.nodeClient.fetchBalance(address)
+        return this.options.nodeClient.fetchBalance(address)
       })
     )
 
@@ -299,14 +299,14 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
       return Promise.reject('you cannot have 0 recipients')
     }
     const address: string = await this.getAddressFromPublicKey(publicKey)
-    const estimatedGas = await this.options.network.extras.nodeClient.estimateTransactionGas(
+    const estimatedGas = await this.options.nodeClient.estimateTransactionGas(
       address,
       recipients[0],
       EthereumUtils.toHex(values[0]),
       undefined,
       EthereumUtils.toHex('21000')
     )
-    const gasPrise = await this.options.network.extras.nodeClient.getGasPrice()
+    const gasPrise = await this.options.nodeClient.getGasPrice()
     const feeStepFactor = new BigNumber(0.5)
     const estimatedFee = estimatedGas.times(gasPrise)
     const lowFee = estimatedFee.minus(estimatedFee.times(feeStepFactor).integerValue(BigNumber.ROUND_FLOOR))
@@ -343,7 +343,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     const amount = EthereumUtils.toHex(wrappedValues[0].toFixed())
 
     const balance = await this.getBalanceOfPublicKey(publicKey)
-    const gasLimit = await this.options.network.extras.nodeClient.estimateTransactionGas(
+    const gasLimit = await this.options.nodeClient.estimateTransactionGas(
       address,
       recipients[0],
       amount,
@@ -352,7 +352,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     )
     const gasPrice = wrappedFee.div(gasLimit).integerValue(BigNumber.ROUND_CEIL)
     if (new BigNumber(balance).gte(new BigNumber(wrappedValues[0].plus(wrappedFee)))) {
-      const txCount = await this.options.network.extras.nodeClient.fetchTransactionCount(address)
+      const txCount = await this.options.nodeClient.fetchTransactionCount(address)
       const transaction: RawEthereumTransaction = {
         nonce: EthereumUtils.toHex(txCount),
         gasLimit: EthereumUtils.toHex(gasLimit.toFixed()),
@@ -370,7 +370,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
   }
 
   public async broadcastTransaction(rawTransaction: string): Promise<string> {
-    return this.options.network.extras.nodeClient.sendSignedTransaction(`0x${rawTransaction}`)
+    return this.options.nodeClient.sendSignedTransaction(`0x${rawTransaction}`)
   }
 
   public getTransactionsFromExtendedPublicKey(extendedPublicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]> {
@@ -397,7 +397,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     return new Promise((overallResolve, overallReject) => {
       const promises: Promise<IAirGapTransaction[]>[] = []
       for (const address of addresses) {
-        promises.push(this.options.network.extras.infoClient.fetchTransactions(this, address, page, limit))
+        promises.push(this.options.infoClient.fetchTransactions(this, address, page, limit))
       }
       Promise.all(promises)
         .then((values) => {
@@ -421,7 +421,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
 
   public async getTransactionStatuses(transactionHashes: string[]): Promise<AirGapTransactionStatus[]> {
     const statusPromises: Promise<AirGapTransactionStatus>[] = transactionHashes.map((txHash: string) => {
-      return this.options.network.extras.nodeClient.getTransactionStatus(txHash)
+      return this.options.nodeClient.getTransactionStatus(txHash)
     })
 
     return Promise.all(statusPromises)

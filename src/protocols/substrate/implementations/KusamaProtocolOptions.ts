@@ -2,12 +2,8 @@
 
 import { ProtocolBlockExplorer } from '../../../utils/ProtocolBlockExplorer'
 import { NetworkType, ProtocolNetwork } from '../../../utils/ProtocolNetwork'
-import { ProtocolOptions } from '../../../utils/ProtocolOptions'
-import { SubstrateBlockExplorerClient } from '../helpers/blockexplorer/SubstrateBlockExplorerClient'
-import { SubstrateNodeClient } from '../helpers/node/SubstrateNodeClient'
-import { SubstrateAccountController } from '../helpers/SubstrateAccountController'
-import { SubstrateTransactionController } from '../helpers/SubstrateTransactionController'
 import { SubstrateNetwork } from '../SubstrateNetwork'
+import { SubstrateProtocolConfig, SubstrateProtocolOptions } from '../SubstrateProtocolOptions'
 
 const MAINNET_NAME: string = 'Mainnet'
 
@@ -17,7 +13,7 @@ const BLOCK_EXPLORER_URL: string = 'https://polkascan.io/kusama'
 const BLOCK_EXPLORER_API: string = 'https://api-01.polkascan.io/kusama/api/v1'
 
 export class KusamaProtocolNetworkExtras {
-  constructor(public readonly apiUrl: string = BLOCK_EXPLORER_API) {}
+  constructor(public readonly apiUrl: string = BLOCK_EXPLORER_API, public readonly network: SubstrateNetwork = SubstrateNetwork.KUSAMA) {}
 }
 
 export class PolkascanBlockExplorer implements ProtocolBlockExplorer {
@@ -31,18 +27,10 @@ export class PolkascanBlockExplorer implements ProtocolBlockExplorer {
   }
 }
 
-export class KusamaProtocolConfig {
-  constructor(
-    public readonly network: SubstrateNetwork = SubstrateNetwork.KUSAMA,
-    public readonly nodeClient: SubstrateNodeClient = new SubstrateNodeClient(network, NODE_URL),
-    public readonly blockExplorerClient: SubstrateBlockExplorerClient = new SubstrateBlockExplorerClient(
-      network,
-      BLOCK_EXPLORER_URL,
-      BLOCK_EXPLORER_API
-    ),
-    public readonly accountController: SubstrateAccountController = new SubstrateAccountController(network, nodeClient),
-    public readonly transactionController: SubstrateTransactionController = new SubstrateTransactionController(network, nodeClient)
-  ) {}
+export class KusamaProtocolConfig extends SubstrateProtocolConfig {
+  constructor() {
+    super()
+  }
 }
 
 export class KusamaProtocolNetwork extends ProtocolNetwork<KusamaProtocolNetworkExtras> {
@@ -57,9 +45,11 @@ export class KusamaProtocolNetwork extends ProtocolNetwork<KusamaProtocolNetwork
   }
 }
 
-export class KusamaProtocolOptions implements ProtocolOptions<KusamaProtocolConfig> {
+export class KusamaProtocolOptions extends SubstrateProtocolOptions<KusamaProtocolConfig> {
   constructor(
     public readonly network: KusamaProtocolNetwork = new KusamaProtocolNetwork(),
     public readonly config: KusamaProtocolConfig = new KusamaProtocolConfig()
-  ) {}
+  ) {
+    super(network, config)
+  }
 }

@@ -7,19 +7,19 @@ import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
 export class EthereumRopstenProtocolStub implements ProtocolHTTPStub {
   public registerStub(testProtocolSpec: TestProtocolSpec, protocol: EthereumProtocol) {
     sinon
-      .stub(protocol.options.network.extras.nodeClient, 'fetchTransactionCount')
+      .stub(protocol.options.nodeClient, 'fetchTransactionCount')
       .withArgs(testProtocolSpec.wallet.addresses[0])
       .returns(Promise.resolve(80))
     sinon
-      .stub(protocol.options.network.extras.nodeClient, 'fetchBalance')
+      .stub(protocol.options.nodeClient, 'fetchBalance')
       .withArgs(testProtocolSpec.wallet.addresses[0])
       .returns(Promise.resolve('100000000000000000000'))
     sinon
-      .stub(protocol.options.network.extras.nodeClient, 'estimateTransactionGas')
+      .stub(protocol.options.nodeClient, 'estimateTransactionGas')
       .withArgs(testProtocolSpec.wallet.addresses[0])
       .returns(Promise.resolve(new BigNumber(31705)))
     sinon
-      .stub(protocol.options.network.extras.nodeClient, 'getGasPrice')
+      .stub(protocol.options.nodeClient, 'getGasPrice')
       .withArgs(testProtocolSpec.wallet.addresses[0])
       .returns(Promise.resolve(new BigNumber('0x3159709f2')))
   }
@@ -29,11 +29,11 @@ export class EthereumRopstenProtocolStub implements ProtocolHTTPStub {
       .withArgs(sinon.match.any)
       .returns(Promise.resolve(new BigNumber(0)))
     sinon
-      .stub(protocol.options.network.extras.nodeClient, 'estimateTransactionGas')
+      .stub(protocol.options.nodeClient, 'estimateTransactionGas')
       .withArgs(testProtocolSpec.wallet.addresses[0])
       .returns(Promise.resolve(new BigNumber(31705)))
     sinon
-      .stub(protocol.options.network.extras.nodeClient, 'getGasPrice')
+      .stub(protocol.options.nodeClient, 'getGasPrice')
       .withArgs(testProtocolSpec.wallet.addresses[0])
       .returns(Promise.resolve(new BigNumber('0x3159709f2')))
   }
