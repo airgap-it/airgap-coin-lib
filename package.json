@@ -19,7 +19,7 @@
     "url": "https://github.com/airgap-it/airgap-coin-lib"
   },
   "scripts": {
-    "build": "node scripts/node-module-es-module-interop.js && tsc && node scripts/copy-files-after-build.js && node scripts/make-ts-declaration-files-backwards-compatible.js && npm run browserify",
+    "build": "node scripts/node-module-es-module-interop.js && tsc && node scripts/copy-files-after-build.js && node scripts/make-ts-declaration-files-backwards-compatible.js",
     "build-scripts": "tsc scripts/*.ts",
     "lint": "tslint -c ./tslint.json --project ./tsconfig.json --format stylish --fix",
     "lint:prettier": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
