@@ -20,6 +20,9 @@
           },
           "type": "array"
         },
+        "id": {
+          "type": "string"
+        },
         "to": {
           "items": {
             "type": "string"
@@ -35,6 +38,7 @@
         "amount",
         "fee",
         "from",
+        "id",
         "to",
         "transaction"
       ],

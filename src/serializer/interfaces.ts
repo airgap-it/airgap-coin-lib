@@ -6,5 +6,19 @@ export enum IACMessageType {
   TransactionSignRequest = 5,
   TransactionSignResponse = 6,
   MessageSignRequest = 7,
-  MessageSignResponse = 8
+  MessageSignResponse = 8,
+  MessageEncryptRequest = 9,
+  MessageEncryptResponse = 10,
+  MultisigRequest = 11,
+  MultisigResponse = 12,
+  ItemStoreRequest = 13,
+  ItemStoreResponse = 14,
+  ItemRetrieveRequest = 15,
+  ItemRetrieveResponse = 16,
+  PairRequest = 17,
+  PairResponse = 18,
+  ConfigSetRequest = 19,
+  ConfigSetResponse = 20,
+  RecoveryShareRequest = 21,
+  RecoveryShareResponse = 22
 }

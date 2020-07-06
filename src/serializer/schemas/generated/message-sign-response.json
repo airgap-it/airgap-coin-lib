@@ -8,6 +8,9 @@
         "callbackURL": {
           "type": "string"
         },
+        "id": {
+          "type": "string"
+        },
         "message": {
           "type": "string"
         },
@@ -22,6 +25,7 @@
         }
       },
       "required": [
+        "id",
         "message",
         "signature",
         "ttl",

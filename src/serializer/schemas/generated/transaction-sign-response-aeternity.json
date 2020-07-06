@@ -8,12 +8,16 @@
         "accountIdentifier": {
           "type": "string"
         },
+        "id": {
+          "type": "string"
+        },
         "transaction": {
           "type": "string"
         }
       },
       "required": [
         "accountIdentifier",
+        "id",
         "transaction"
       ],
       "type": "object"

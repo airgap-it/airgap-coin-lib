@@ -1,4 +1,5 @@
 export interface MessageSignResponse {
+  id: string // Message ID used to match request/reaponse
   message: string // Message to be signed
   signature: string // Signature of the message
   ttl: string // Blockheight or timestamp to prevent replay attacks
