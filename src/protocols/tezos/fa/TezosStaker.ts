@@ -1,10 +1,9 @@
 import { TezosNetwork } from '../TezosProtocol'
 import { TezosUtils } from '../TezosUtils'
 
-import { TezosFA12Protocol } from './TezosFA12Protocol'
-import { RawTezosTransaction } from '../../../serializer/v1/unsigned-transactions/tezos-transactions.serializer'
+import { TezosFA1Protocol } from './TezosFA1Protocol'
 
-export class TezosStaker extends TezosFA12Protocol {
+export class TezosStaker extends TezosFA1Protocol {
   constructor(
     contractAddress: string = 'KT1EctCuorV2NfVb1XTQgvzJ88MQtWP8cMMv',
     jsonRPCAPI?: string,
@@ -43,18 +42,5 @@ export class TezosStaker extends TezosFA12Protocol {
         }
       })
       .filter((value) => value.amount !== '0')
-  }
-
-  public async getAllowance(
-    ownerAddress: string,
-    spenderAddress: string,
-    callbackContract: string = this.callbackContract(),
-    source?: string
-  ): Promise<string> {
-    throw new Error('Entrypoint `getAllowance` is not supported')
-  }
-
-  public async approve(spenderAddress: string, amount: string, fee: string, publicKey: string): Promise<RawTezosTransaction> {
-    throw new Error('Entrypoint `approve` is not supported')
   }
 }
