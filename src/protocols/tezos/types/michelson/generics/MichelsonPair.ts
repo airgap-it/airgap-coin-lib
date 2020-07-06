@@ -16,10 +16,6 @@ export class MichelsonPair extends MichelsonType {
       return pair
     }
 
-    if (!(pair instanceof MichelsonType) && typeof firstMappingFunction !== 'function' || typeof secondMappingFunction !== 'function') {
-      throw new Error('MichelsonPair: unknown generic mapping factory functions.')
-    }
-
     return isMichelinePrimitiveApplication(pair)
       ? MichelsonPair.fromMicheline(pair, firstMappingFunction, secondMappingFunction)
       : MichelsonPair.fromUnknown(pair, firstMappingFunction, secondMappingFunction)
@@ -58,6 +54,10 @@ export class MichelsonPair extends MichelsonType {
   }
 
   private static asRawValue(unknownValue: unknown, mappingFactory: unknown): Lazy<MichelsonType> {
+    if (!(unknownValue instanceof MichelsonType) && typeof mappingFactory !== 'function') {
+      throw new Error('MichelsonPair: unknown generic mapping factory function.')
+    }
+
     return unknownValue instanceof MichelsonType
       ? new Lazy(() => unknownValue)
       : new Lazy(() => {
