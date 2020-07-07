@@ -1,12 +1,12 @@
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
-import { TezosNetwork } from '../TezosProtocol'
+import { TezosProtocolNetwork } from '../TezosProtocolOptions'
 import { TezosUtils } from '../TezosUtils'
 import { MichelsonPair } from '../types/michelson/generics/MichelsonPair'
 import { MichelsonType } from '../types/michelson/MichelsonType'
 import { MichelsonInt } from '../types/michelson/primitives/MichelsonInt'
 
-import { TezosBTCDetails } from './../../../serializer/constants'
 import { TezosFA12Protocol } from './TezosFA12Protocol'
+import { TezosBTCProtocolConfig, TezosFAProtocolOptions } from './TezosFAProtocolOptions'
 
 enum TezosBTCContractEntrypoint {
   TOTAL_MINTED = 'getTotalMinted',
@@ -14,34 +14,12 @@ enum TezosBTCContractEntrypoint {
 }
 
 export class TezosBTC extends TezosFA12Protocol {
-  private static readonly bigMapKeyLedgerPrefix = '0x05070701000000066c65646765720a00000016'
+  private static readonly bigMapKeyLedgerPrefix: string = '0x05070701000000066c65646765720a00000016'
 
   constructor(
-    contractAddress: string = TezosBTCDetails.CONTRACT_ADDRESS,
-    jsonRPCAPI?: string,
-    baseApiUrl?: string,
-    baseApiKey?: string,
-    baseApiNetwork?: string,
-    network?: TezosNetwork
+    public readonly options: TezosFAProtocolOptions = new TezosFAProtocolOptions(new TezosProtocolNetwork(), new TezosBTCProtocolConfig())
   ) {
-    super({
-      symbol: 'tzBTC',
-      name: 'Tezos BTC',
-      marketSymbol: 'btc',
-      identifier: 'xtz-btc',
-      feeDefaults: {
-        low: '0.100',
-        medium: '0.200',
-        high: '0.300'
-      },
-      decimals: 8,
-      contractAddress,
-      jsonRPCAPI,
-      baseApiUrl,
-      baseApiKey,
-      baseApiNetwork,
-      network
-    })
+    super(options)
   }
 
   public async getTotalMinted(source?: string, callbackContract: string = this.callbackContract()): Promise<string> {

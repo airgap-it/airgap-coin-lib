@@ -17,14 +17,6 @@ import { isMichelineNode } from '../types/utils'
 import { TezosContractCall } from './TezosContractCall'
 import { TezosContractEntrypoint } from './TezosContractEntrypoint'
 
-export interface TezosContractConfiguration {
-  address: string
-  nodeRPCURL: string
-  conseilAPIURL: string
-  conseilNetwork: string
-  conseilAPIKey: string
-}
-
 export class TezosContract {
   private static readonly DEFAULT_ENTRYPOINT = 'default'
 
@@ -34,22 +26,16 @@ export class TezosContract {
   public bigMapIDs?: number[]
   public bigMapIDsPromise?: Promise<void>
 
-  private readonly address: string
-  private readonly nodeRPCURL: string
-  private readonly conseilAPIURL: string
-  private readonly conseilNetwork: string
-  private readonly conseilAPIKey: string
-
-  constructor(configuration: TezosContractConfiguration) {
-    this.address = configuration.address
-    this.nodeRPCURL = configuration.nodeRPCURL
-    this.conseilAPIURL = configuration.conseilAPIURL
-    this.conseilNetwork = configuration.conseilNetwork
-    this.conseilAPIKey = configuration.conseilAPIKey
-  }
+  constructor(
+    private readonly address: string,
+    private readonly nodeRPCURL: string,
+    private readonly conseilAPIURL: string,
+    private readonly conseilNetwork: string,
+    private readonly conseilAPIKey: string
+  ) {}
 
   public async bigMapValues(request: BigMapRequest = {}): Promise<BigMapResponse[]> {
-    const bigMapID: number = request?.bigMapID ?? await this.getBigMapID(request.bigMapFilter)
+    const bigMapID: number = request?.bigMapID ?? (await this.getBigMapID(request.bigMapFilter))
 
     const predicates: { field: string; operation: string; set: any[] }[] = [
       {
@@ -92,12 +78,12 @@ export class TezosContract {
         if (argName) {
           value.setName(argName)
         }
-      },
+      }
     })
   }
 
   public async normalizeContractCallParameters(
-    json: Partial<TezosTransactionParameters> & Pick<TezosTransactionParameters, 'value'> | MichelineNode, 
+    json: (Partial<TezosTransactionParameters> & Pick<TezosTransactionParameters, 'value'>) | MichelineNode,
     fallbackEntrypoint?: string
   ): Promise<TezosTransactionParameters> {
     const entrypoint: string | undefined = 'entrypoint' in json ? json.entrypoint : undefined
@@ -140,7 +126,7 @@ export class TezosContract {
     })
 
     return {
-      entrypoint: normalizedEntrypoint ? normalizedEntrypoint[0] : (fallbackEntrypoint ?? defaultEntrypoint.name),
+      entrypoint: normalizedEntrypoint ? normalizedEntrypoint[0] : fallbackEntrypoint ?? defaultEntrypoint.name,
       value: normalizedEntrypoint ? normalizedEntrypoint[1] : value
     }
   }
@@ -165,7 +151,7 @@ export class TezosContract {
     }
 
     if (!predicates) {
-      throw new Error("Contract has more that one BigMap, provide ID or predicates to select one.")
+      throw new Error('Contract has more that one BigMap, provide ID or predicates to select one.')
     }
 
     const response = await this.apiRequest<Record<'big_map_id', number>[]>('big_maps', {
@@ -185,7 +171,7 @@ export class TezosContract {
     }
 
     if (response.length > 1) {
-      throw new Error("More than one BigMap ID has been found for the predicates.")
+      throw new Error('More than one BigMap ID has been found for the predicates.')
     }
 
     return response[0].big_map_id
@@ -231,25 +217,25 @@ export class TezosContract {
       const codePromise: Promise<Record<'code', TezosContractCode[]>> = this.nodeRequest('script')
       const entrypointsPromise: Promise<Record<'entrypoints', Record<string, MichelineTypeNode>>> = this.nodeRequest('entrypoints')
 
-      this.entrypointsPromise = Promise.all([
-        codePromise, 
-        entrypointsPromise
-      ]).then(([codeResponse, entrypointsResponse]) => {
-        if (entrypointsResponse.entrypoints[TezosContract.DEFAULT_ENTRYPOINT] === undefined) {
-          const parameter = codeResponse.code.find((primitiveApplication) => primitiveApplication.prim === 'parameter')
-          if (parameter) {
-            entrypointsResponse.entrypoints[TezosContract.DEFAULT_ENTRYPOINT] = parameter.args ? parameter.args[0] : []
+      this.entrypointsPromise = Promise.all([codePromise, entrypointsPromise])
+        .then(([codeResponse, entrypointsResponse]) => {
+          if (entrypointsResponse.entrypoints[TezosContract.DEFAULT_ENTRYPOINT] === undefined) {
+            const parameter = codeResponse.code.find((primitiveApplication) => primitiveApplication.prim === 'parameter')
+            if (parameter) {
+              entrypointsResponse.entrypoints[TezosContract.DEFAULT_ENTRYPOINT] = parameter.args ? parameter.args[0] : []
+            }
           }
-        }
 
-        this.entrypoints = new Map(
-          TezosContractEntrypoint.fromJSON(entrypointsResponse.entrypoints).map((entrypoint: TezosContractEntrypoint) => 
-            [entrypoint.name, entrypoint]
+          this.entrypoints = new Map(
+            TezosContractEntrypoint.fromJSON(entrypointsResponse.entrypoints).map((entrypoint: TezosContractEntrypoint) => [
+              entrypoint.name,
+              entrypoint
+            ])
           )
-        )
-      }).finally(() => {
-        this.entrypointsPromise = undefined
-      })
+        })
+        .finally(() => {
+          this.entrypointsPromise = undefined
+        })
     }
 
     return this.entrypointsPromise
@@ -264,16 +250,12 @@ export class TezosContract {
   }
 
   private async apiRequest<T>(endpoint: string, body: any): Promise<T> {
-    const response: AxiosResponse<T> = await axios.post(
-      `${this.conseilAPIURL}/v2/data/tezos/${this.conseilNetwork}/${endpoint}`, 
-      body, 
-      {
-        headers: { 
-          'Content-Type': 'application/json', 
-          apiKey: this.conseilAPIKey
-        }
+    const response: AxiosResponse<T> = await axios.post(`${this.conseilAPIURL}/v2/data/tezos/${this.conseilNetwork}/${endpoint}`, body, {
+      headers: {
+        'Content-Type': 'application/json',
+        apiKey: this.conseilAPIKey
       }
-    )
+    })
 
     return response.data
   }

@@ -21,7 +21,8 @@ import { TezosTransactionParameters } from '../types/operations/Transaction'
 import { TezosOperationType } from '../types/TezosOperationType'
 import { isMichelinePrimitive, isMichelineSequence } from '../types/utils'
 
-import { TezosFAProtocol, TezosFAProtocolConfiguration } from './TezosFAProtocol'
+import { TezosFAProtocol } from './TezosFAProtocol'
+import { TezosFA2ProtocolOptions } from './TezosFAProtocolOptions'
 
 enum TezosFA2ContractEntrypoint {
   BALANCE = 'balance_of',
@@ -29,14 +30,6 @@ enum TezosFA2ContractEntrypoint {
   UPDATE_OPERATORS = 'update_operators',
   TOKEN_METADATA_REGISTRY = 'token_metadata_regitry', // TODO: set proper entrypoint name when the typo is fixed in the test contract
   TOKEN_METADATA = 'token_metadata'
-}
-
-export interface TezosFA2ProtocolConfiguration extends TezosFAProtocolConfiguration {
-  tokenID?: number
-
-  tokenMetadataBigMapID?: number
-  tokenMetadataBigMapName?: string
-  tokenMetadataBigMapRegex?: RegExp
 }
 
 export class TezosFA2Protocol extends TezosFAProtocol {
@@ -51,14 +44,14 @@ export class TezosFA2Protocol extends TezosFAProtocol {
 
   private readonly defaultCallbackContract: Partial<Record<TezosNetwork, Partial<Record<TezosFA2ContractEntrypoint, string>>>>
 
-  constructor(configuration: TezosFA2ProtocolConfiguration) {
-    super(configuration)
+  constructor(options: TezosFA2ProtocolOptions) {
+    super(options)
 
-    this.tokenID = configuration.tokenID
+    this.tokenID = options.config.tokenID
     
-    this.tokenMetadataBigMapID = configuration.tokenMetadataBigMapID
-    this.tokenMetadataBigMapName = configuration.tokenMetadataBigMapName ?? TezosFA2Protocol.DEFAULT_TOKEN_METADATA_BIG_MAP_NAME
-    this.tokenMedatadaBigMapValueRegex = configuration.tokenMetadataBigMapRegex ?? TezosFA2Protocol.DEFAULT_TOKEN_METADATA_BIG_MAP_VALUE_REGEX
+    this.tokenMetadataBigMapID = options.config.tokenMetadataBigMapID
+    this.tokenMetadataBigMapName = options.config.tokenMetadataBigMapName ?? TezosFA2Protocol.DEFAULT_TOKEN_METADATA_BIG_MAP_NAME
+    this.tokenMedatadaBigMapValueRegex = options.config.tokenMetadataBigMapRegex ?? TezosFA2Protocol.DEFAULT_TOKEN_METADATA_BIG_MAP_VALUE_REGEX
 
     this.defaultCallbackContract = {
       [TezosNetwork.MAINNET]: {
@@ -351,7 +344,9 @@ export class TezosFA2Protocol extends TezosFAProtocol {
   }
 
   protected callbackContract(entrypoint: TezosFA2ContractEntrypoint): string {
-    const networkCallbacks: Partial<Record<TezosFA2ContractEntrypoint, string>> | undefined = this.defaultCallbackContract[this.network]
+    const networkCallbacks: Partial<Record<TezosFA2ContractEntrypoint, string>> | undefined = this.defaultCallbackContract[
+      this.options.network.extras.network
+    ]
     const callback: string | undefined = networkCallbacks ? networkCallbacks[entrypoint] : undefined
 
     return callback ?? ''

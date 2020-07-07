@@ -1,5 +1,5 @@
-import { TezosProtocol } from '../..'
 import { async } from '../../dependencies/src/validate.js-0.13.1/validate'
+import { TezosProtocol } from '../../protocols/tezos/TezosProtocol'
 import { TezosTransactionOperation } from '../../protocols/tezos/types/operations/Transaction'
 import { TezosBTCDetails } from '../constants'
 import { UnsignedTezosTransaction } from '../schemas/definitions/transaction-sign-request-tezos'

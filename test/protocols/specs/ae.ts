@@ -193,4 +193,12 @@ export class AETestProtocolSpec extends TestProtocolSpec {
   ]
 
   public validator: AeternityTransactionValidator = new AeternityTransactionValidator()
+
+  public messages = [
+    {
+      message: 'example message',
+      signature:
+        '8f1c4ab15b7e26a602e711fe58d55636423790ffbeb50bfbd48d9277ddac918d9941f731c0b537d8c126686a64a93c54b32001158951e981de33b7431798860b'
+    }
+  ]
 }

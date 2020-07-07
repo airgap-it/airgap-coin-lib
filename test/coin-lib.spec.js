@@ -16,13 +16,10 @@ const validateTxHelper = require('./helpers/validate-tx')
 const sinon = require('sinon')
 const axios = require('../dist/dependencies/src/axios-0.19.0/index')
 
-describe('Extended Public Derivation Logic', function() {
-  it('should return the correct bitcoin address from extended public key', function(done) {
+describe('Extended Public Derivation Logic', function () {
+  it('should return the correct bitcoin address from extended public key', function (done) {
     const bitcoinHdNode = bitcoinJS.HDNode.fromSeedBuffer(masterSeed, bitcoinJS.networks.bitcoin)
-    const extendedPublicKey = bitcoinHdNode
-      .derivePath("m/44'/0'/0'")
-      .neutered()
-      .toBase58()
+    const extendedPublicKey = bitcoinHdNode.derivePath("m/44'/0'/0'").neutered().toBase58()
     // if you call "neutered" it will make sure only the extended public is being used
     // the actual derivation path of the first address is "m/44'/0'/0'/0/0" (it's not hardened (') because hardened keys cannot be derived from public information)
     const bitcoin = new CoinLib.BitcoinProtocol()
@@ -31,150 +28,132 @@ describe('Extended Public Derivation Logic', function() {
       bitcoin.getAddressFromExtendedPublicKey(extendedPublicKey, 0, 0),
       bitcoin.getAddressFromExtendedPublicKey(extendedPublicKey, 0, 1)
     ])
-      .then(results => {
+      .then((results) => {
         assert.equal(results[0], '15B2gX2x1eqFKgR44nCe1i33ursGKP4Qpi')
         assert.equal(results[1], '15srTWTrucPWSUGFZY2LWaYobwpDLknz49') // m/44'/0'/0'/0/0
         done()
       })
-      .catch(error => {
+      .catch((error) => {
         done(error)
       })
   })
-  it('should return the correct litecoin address from extended public key', function(done) {
-    const litecoinHdNode = bitcoinJS.HDNode.fromSeedBuffer(masterSeed, bitcoinJS.networks.litecoin)
-    const extendedPublicKey = litecoinHdNode
-      .derivePath("m/44'/2'/0'")
-      .neutered()
-      .toBase58()
-    const litecoin = new CoinLib.LitecoinProtocol()
+  // it('should return the correct litecoin address from extended public key', function(done) {
+  //   const litecoinHdNode = bitcoinJS.HDNode.fromSeedBuffer(masterSeed, bitcoinJS.networks.litecoin)
+  //   const extendedPublicKey = litecoinHdNode
+  //     .derivePath("m/44'/2'/0'")
+  //     .neutered()
+  //     .toBase58()
+  //   const litecoin = new CoinLib.LitecoinProtocol()
 
-    Promise.all([
-      litecoin.getAddressFromExtendedPublicKey(extendedPublicKey, 0, 0),
-      litecoin.getAddressFromExtendedPublicKey(extendedPublicKey, 0, 1)
-    ])
-      .then(results => {
-        assert.equal(results[0], 'LaKxMHETSaWsigMYs88J6ibEGZnLRNWWH1') // m/44'/2'/0'/0/0
-        assert.equal(results[1], 'LQUaS2G2FGB2fnoNmon6ERv94JAk6GR29R') /// m/44'/2'/0'/0/1
-        done()
-      })
-      .catch(error => {
-        done(error)
-      })
-  })
-  it('should return the correct bitcointestnet address from extended public key', function(done) {
+  //   Promise.all([
+  //     litecoin.getAddressFromExtendedPublicKey(extendedPublicKey, 0, 0),
+  //     litecoin.getAddressFromExtendedPublicKey(extendedPublicKey, 0, 1)
+  //   ])
+  //     .then(results => {
+  //       assert.equal(results[0], 'LaKxMHETSaWsigMYs88J6ibEGZnLRNWWH1') // m/44'/2'/0'/0/0
+  //       assert.equal(results[1], 'LQUaS2G2FGB2fnoNmon6ERv94JAk6GR29R') /// m/44'/2'/0'/0/1
+  //       done()
+  //     })
+  //     .catch(error => {
+  //       done(error)
+  //     })
+  // })
+  it('should return the correct bitcointestnet address from extended public key', function (done) {
     const bitcoinTestnetHdNode = bitcoinJS.HDNode.fromSeedBuffer(masterSeed, bitcoinJS.networks.testnet)
-    const extendedPublicKey = bitcoinTestnetHdNode
-      .derivePath("m/44'/1'/0'")
-      .neutered()
-      .toBase58()
+    const extendedPublicKey = bitcoinTestnetHdNode.derivePath("m/44'/1'/0'").neutered().toBase58()
     const bitcointestnet = new CoinLib.BitcoinTestnetProtocol()
 
     Promise.all([
       bitcointestnet.getAddressFromExtendedPublicKey(extendedPublicKey, 0, 0),
       bitcointestnet.getAddressFromExtendedPublicKey(extendedPublicKey, 0, 1)
     ])
-      .then(results => {
+      .then((results) => {
         assert.equal(results[0], 'mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k') // m/44'/1'/0'/0/0
         assert.equal(results[1], 'moK2Ws7YvK3LRppzCuLRVfDkpvZiw7T4cu') // m/44'/1'/0'/0/1
         done()
       })
-      .catch(error => {
+      .catch((error) => {
         done(error)
       })
   })
-  it('should return the correct ethereum address from extended public key', function(done) {
+  it('should return the correct ethereum address from extended public key', function (done) {
     const bitcoinHdNode = bitcoinJS.HDNode.fromSeedBuffer(masterSeed, bitcoinJS.networks.bitcoin)
-    const publicKey = bitcoinHdNode
-      .derivePath("m/44'/60'/0'")
-      .neutered()
-      .toBase58()
+    const publicKey = bitcoinHdNode.derivePath("m/44'/60'/0'").neutered().toBase58()
     const eth = new CoinLib.EthereumProtocol()
 
     eth
       .getAddressFromExtendedPublicKey(publicKey, 0, 0)
-      .then(address => {
+      .then((address) => {
         assert.equal(address, '0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e')
         done()
       })
-      .catch(error => {
+      .catch((error) => {
         done(error)
       })
   })
 })
 
-describe('Public Derivation Logic', function() {
-  it('should return the correct bitcoin address from public key', function(done) {
+describe('Public Derivation Logic', function () {
+  it('should return the correct bitcoin address from public key', function (done) {
     const bitcoinHdNode = bitcoinJS.HDNode.fromSeedBuffer(masterSeed, bitcoinJS.networks.bitcoin)
-    const publicKey = bitcoinHdNode
-      .derivePath("m/44'/0'/0'/0/0")
-      .neutered()
-      .toBase58()
+    const publicKey = bitcoinHdNode.derivePath("m/44'/0'/0'/0/0").neutered().toBase58()
     const bitcoin = new CoinLib.BitcoinProtocol()
     bitcoin
       .getAddressFromPublicKey(publicKey)
-      .then(address => {
+      .then((address) => {
         assert.equal(address, '15B2gX2x1eqFKgR44nCe1i33ursGKP4Qpi')
         done()
       })
-      .catch(error => {
+      .catch((error) => {
         done(error)
       })
   })
-  it('should return the correct litecoin address from public key', function(done) {
-    const litecoinHdNode = bitcoinJS.HDNode.fromSeedBuffer(masterSeed, bitcoinJS.networks.litecoin)
-    const publicKey = litecoinHdNode
-      .derivePath("m/44'/2'/0'/0/0")
-      .neutered()
-      .toBase58()
-    const litecoin = new CoinLib.LitecoinProtocol()
-    litecoin
-      .getAddressFromPublicKey(publicKey)
-      .then(address => {
-        assert.equal(address, 'LaKxMHETSaWsigMYs88J6ibEGZnLRNWWH1')
-        done()
-      })
-      .catch(error => {
-        done(error)
-      })
-  })
-  it('should return the correct bitcointestnet address from extended public key', function(done) {
+  // it('should return the correct litecoin address from public key', function (done) {
+  //   const litecoinHdNode = bitcoinJS.HDNode.fromSeedBuffer(masterSeed, bitcoinJS.networks.litecoin)
+  //   const publicKey = litecoinHdNode.derivePath("m/44'/2'/0'/0/0").neutered().toBase58()
+  //   const litecoin = new CoinLib.LitecoinProtocol()
+  //   litecoin
+  //     .getAddressFromPublicKey(publicKey)
+  //     .then((address) => {
+  //       assert.equal(address, 'LaKxMHETSaWsigMYs88J6ibEGZnLRNWWH1')
+  //       done()
+  //     })
+  //     .catch((error) => {
+  //       done(error)
+  //     })
+  // })
+  it('should return the correct bitcointestnet address from extended public key', function (done) {
     const bitcoinTestnetHdNode = bitcoinJS.HDNode.fromSeedBuffer(masterSeed, bitcoinJS.networks.testnet)
-    const publicKey = bitcoinTestnetHdNode
-      .derivePath("m/44'/1'/0'/0/0")
-      .neutered()
-      .toBase58()
+    const publicKey = bitcoinTestnetHdNode.derivePath("m/44'/1'/0'/0/0").neutered().toBase58()
     const bitcointestnet = new CoinLib.BitcoinTestnetProtocol()
     bitcointestnet
       .getAddressFromPublicKey(publicKey)
-      .then(address => {
+      .then((address) => {
         assert.equal(address, 'mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k')
         done()
       })
-      .catch(error => {
+      .catch((error) => {
         done(error)
       })
   })
-  it('should return the correct ethereum address from extended public key', function(done) {
+  it('should return the correct ethereum address from extended public key', function (done) {
     const bitcoinHdNode = bitcoinJS.HDNode.fromSeedBuffer(masterSeed, networks.eth)
-    const publicKey = bitcoinHdNode
-      .derivePath("m/44'/60'/0'/0/0")
-      .neutered()
-      .getPublicKeyBuffer()
+    const publicKey = bitcoinHdNode.derivePath("m/44'/60'/0'/0/0").neutered().getPublicKeyBuffer()
     const eth = new CoinLib.EthereumProtocol()
 
     eth
       .getAddressFromPublicKey(publicKey)
-      .then(address => {
+      .then((address) => {
         assert.equal(address, '0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e')
         done()
       })
-      .catch(error => {
+      .catch((error) => {
         done(error)
       })
   })
 })
 
-describe('Balance Of', function() {
+describe('Balance Of', function () {
   /*
   TODO: Commented out because the testnet API is down
   it('should return the correct bitcointestnet balance', function(done) {
@@ -229,7 +208,7 @@ describe('Balance Of', function() {
   })
   */
 
-  it('should return the correct bitcoin balance given an address', function(done) {
+  it('should return the correct bitcoin balance given an address', function (done) {
     const address = '122zHqVVaY21SEjSPeHqVVs9qFDwTV3duS'
     const bitcoin = new CoinLib.BitcoinProtocol()
 
@@ -355,7 +334,7 @@ describe('Balance Of', function() {
 
     bitcoin
       .getBalanceOfAddresses([address])
-      .then(value => {
+      .then((value) => {
         assert.equal(value.toString(10), '545454692003')
         sinon.restore()
         done()
@@ -364,7 +343,7 @@ describe('Balance Of', function() {
   })
 })
 
-describe('Raw Transaction Prepare', function() {
+describe('Raw Transaction Prepare', function () {
   /*
   TODO: Commented out because the testnet API is down
   it('should return a correct bitcointestnet transaction', function(done) {
@@ -418,8 +397,8 @@ describe('Raw Transaction Prepare', function() {
 */
 })
 
-describe('Secret to Public Key Logic', function() {
-  it('should return the correct ethereum public key for a given secret', async function() {
+describe('Secret to Public Key Logic', function () {
+  it('should return the correct ethereum public key for a given secret', async function () {
     const mnemonicPhrase = 'spot tiny surge pond spider defense tenant husband input vivid six reunion squirrel frequent syrup'
     const derivationPath = `m/44'/60'/0'/0/0'`
     const publicKey = '0x03529b67e7631415fe420b7dc4ef7da2e3d3794ebd12d0ec26e756106f24bc05f4'
@@ -428,7 +407,7 @@ describe('Secret to Public Key Logic', function() {
     assert.equal('0x' + publicKeyBuffer.toString('hex'), publicKey)
   })
 
-  it('should return the correct bitcoin extended public key for a given secret', async function() {
+  it('should return the correct bitcoin extended public key for a given secret', async function () {
     const mnemonicPhrase = 'spot tiny surge pond spider defense tenant husband input vivid six reunion squirrel frequent syrup'
     const derivationPath = `m/44'/0'/0'`
     const publicKey = 'xpub6BhAi6AdpiSy91gRMSkgHARUukwbt4tQxGR3uf6La7Gtzw1zRmjkeVtA7a7EGHBR11uiQUtTJHbAsLQvnSDDn652j8aDwuWceJkZqphSvnX'
@@ -441,8 +420,8 @@ describe('Secret to Public Key Logic', function() {
   })
 })
 
-describe('Secret to Private Key Logic', function() {
-  it('should return the correct ethereum private key for a given secret', async function() {
+describe('Secret to Private Key Logic', function () {
+  it('should return the correct ethereum private key for a given secret', async function () {
     const mnemonicPhrase = 'spot tiny surge pond spider defense tenant husband input vivid six reunion squirrel frequent syrup'
     const derivationPath = `m/44'/60'/0'/0/0`
     const privateKey = '0x0134c240a31c801e65ece657bb695e232de25232b82ff29238d344309ec6af29'
@@ -451,7 +430,7 @@ describe('Secret to Private Key Logic', function() {
     assert.equal('0x' + privateKeyBuffer.toString('hex'), privateKey)
   })
 
-  it('should return the correct bitcoin extended private key for a given secret', async function() {
+  it('should return the correct bitcoin extended private key for a given secret', async function () {
     const mnemonicPhrase = 'spot tiny surge pond spider defense tenant husband input vivid six reunion squirrel frequent syrup'
     const derivationPath = `m/44'/0'/0'`
     const privateKey = 'xprv9xhpJadjzLtfvXbxFRDfv2UkMj77UcAZb3VT7Ggj1mjv88gqtERW6hZgGGwAWaqdUZ26s6UPcUugMpjSTWm1gay1KkqQxtBf45fLyAHn7bX'
@@ -464,7 +443,7 @@ describe('Secret to Private Key Logic', function() {
   })
 })
 
-describe('List Transactions', function() {
+describe('List Transactions', function () {
   /*
   TODO: commented out because api.trustwallet.com is unreliable
   it('should return the correct ethereum transactions given an address', function(done) {
@@ -480,25 +459,25 @@ describe('List Transactions', function() {
       .catch(done)
   })
   */
-  it('should return the correct bitcoin transactions given an address', function(done) {
+  it('should return the correct bitcoin transactions given an address', function (done) {
     const address = '1N2KZxQwK7Scnvf7bJ7yigYRopJMjFQ4B2'
     const bitcoin = new CoinLib.BitcoinProtocol()
 
     bitcoin
       .getTransactionsFromAddresses([address], 20, 0)
-      .then(transactions => {
+      .then((transactions) => {
         validateTxHelper(transactions[0])
         done()
       })
       .catch(done)
   })
 
-  it('should return the correct bitcoin transactions given an live address', function(done) {
+  it('should return the correct bitcoin transactions given an live address', function (done) {
     const bitcoin = new CoinLib.BitcoinProtocol()
 
     bitcoin
       .getTransactionsFromAddresses(['14KJNpguYfoeZEaqbmqL2qjrCADerHTNKr'], 20, 0)
-      .then(transactions => {
+      .then((transactions) => {
         validateTxHelper(transactions[0])
         done()
       })
@@ -555,8 +534,8 @@ describe('List Transactions', function() {
 
   */
 })
-describe('Transaction Detail Logic', function(done) {
-  it('should correctly give details to an ethereum tx', function(done) {
+describe('Transaction Detail Logic', function (done) {
+  it('should correctly give details to an ethereum tx', function (done) {
     const tx = {
       nonce: '0x00',
       gasPrice: '0x04a817c800',
@@ -580,12 +559,12 @@ describe('Transaction Detail Logic', function(done) {
         assert.equal(airGapTx.amount, '1000000000000000000', 'amount was not properly extracted')
         done()
       })
-      .catch(error => {
+      .catch((error) => {
         done(error)
       })
   })
 
-  it('should correctly give details to a bitcoin tx', function(done) {
+  it('should correctly give details to a bitcoin tx', function (done) {
     const tx = {
       ins: [
         {
@@ -634,7 +613,7 @@ describe('Transaction Detail Logic', function(done) {
         assert.equal(airGapTx.amount, '10', 'amount was not properly extracted')
         done()
       })
-      .catch(error => {
+      .catch((error) => {
         done(error)
       })
   })

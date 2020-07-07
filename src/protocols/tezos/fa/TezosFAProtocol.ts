@@ -2,6 +2,7 @@ import axios, { AxiosResponse } from '../../../dependencies/src/axios-0.19.0/ind
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { IAirGapTransaction } from '../../../interfaces/IAirGapTransaction'
 import { RawTezosTransaction } from '../../../serializer/types'
+import { ProtocolSymbols } from '../../../utils/ProtocolSymbols'
 import { ICoinSubProtocol, SubProtocolType } from '../../ICoinSubProtocol'
 import { TezosContract } from '../contract/TezosContract'
 import { TezosContractCall } from '../contract/TezosContractCall'
@@ -15,13 +16,13 @@ import { TezosWrappedOperation } from '../types/TezosWrappedOperation'
 import { isMichelineNode } from '../types/utils'
 
 import { FeeDefaults } from './../../ICoinProtocol'
+import { TezosFAProtocolOptions } from './TezosFAProtocolOptions'
 
 export interface TezosFAProtocolConfiguration {
   symbol: string
   name: string
   marketSymbol: string
-  identifier: string
-
+  identifier: ProtocolSymbols
   contractAddress: string
 
   feeDefaults: FeeDefaults
@@ -48,30 +49,30 @@ export interface TezosTransactionCursor {
 export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
   public readonly isSubProtocol: boolean = true
   public readonly subProtocolType: SubProtocolType = SubProtocolType.TOKEN
-  public readonly identifier: string
+  public readonly identifier: ProtocolSymbols
   public readonly contractAddress: string
 
   protected readonly contract: TezosContract
 
   protected readonly defaultSourceAddress: string = 'tz1Mj7RzPmMAqDUNFBn5t5VbXmWW4cSUAdtT'
 
-  constructor(configuration: TezosFAProtocolConfiguration) {
-    super(configuration.jsonRPCAPI, configuration.baseApiUrl, configuration.network, configuration.baseApiNetwork, configuration.baseApiKey)
-    this.contractAddress = configuration.contractAddress
-    this.symbol = configuration.symbol
-    this.name = configuration.name
-    this.marketSymbol = configuration.marketSymbol
-    this.identifier = configuration.identifier
-    this.feeDefaults = configuration.feeDefaults
-    this.decimals = configuration.decimals || this.decimals
-    
-    this.contract = new TezosContract({
-      address: this.contractAddress,
-      nodeRPCURL: this.jsonRPCAPI,
-      conseilAPIURL: this.baseApiUrl,
-      conseilNetwork: this.baseApiNetwork,
-      conseilAPIKey: this.headers.apiKey
-    })
+  constructor(public readonly options: TezosFAProtocolOptions) {
+    super()
+    this.contractAddress = this.options.config.contractAddress
+    this.symbol = this.options.config.symbol
+    this.name = this.options.config.name
+    this.marketSymbol = this.options.config.marketSymbol
+    this.identifier = this.options.config.identifier
+    this.feeDefaults = this.options.config.feeDefaults
+    this.decimals = this.options.config.decimals
+
+    this.contract = new TezosContract(
+      this.options.config.contractAddress,
+      this.options.network.rpcUrl,
+      this.options.network.extras.conseilUrl,
+      this.options.network.extras.conseilNetwork,
+      this.options.network.extras.conseilApiKey
+    )
   }
 
   public abstract async transactionDetailsFromParameters(parameters: TezosTransactionParameters): Promise<Partial<IAirGapTransaction>[]>
@@ -267,8 +268,8 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
 
     return partialDetails.map((details: Partial<IAirGapTransaction>) => {
       const inbound: boolean = sourceAddresses !== undefined && details.to && details.to.length === 1
-      ? sourceAddresses.indexOf(details.to[0]) !== -1 
-      : false
+        ? sourceAddresses.indexOf(details.to[0]) !== -1
+        : false
 
       return {
         amount: new BigNumber(0).toFixed(), // in tzbtc
@@ -276,6 +277,7 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
         from: [],
         isInbound: inbound,
         protocolIdentifier: this.identifier,
+        network: this.options.network,
         to: [],
         hash: transaction.operation_group_hash,
         timestamp: transaction.timestamp / 1000,

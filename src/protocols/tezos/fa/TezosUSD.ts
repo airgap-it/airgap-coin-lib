@@ -1,37 +1,16 @@
-import { TezosNetwork } from '../TezosProtocol'
+import { TezosProtocolNetwork } from '../TezosProtocolOptions'
 import { TezosUtils } from '../TezosUtils'
 
 import { TezosFA12Protocol } from './TezosFA12Protocol'
+import { TezosFAProtocolOptions, TezosUSDProtocolConfig } from './TezosFAProtocolOptions'
 
 export class TezosUSD extends TezosFA12Protocol {
   private static extractAmountRegex = /Pair ([0-9]+) /
 
   constructor(
-    contractAddress: string = 'KT1LN4LPSqTMS7Sd2CJw4bbDGRkMv2t68Fy9',
-    jsonRPCAPI?: string,
-    baseApiUrl?: string,
-    baseApiKey?: string,
-    baseApiNetwork?: string,
-    network?: TezosNetwork
+    public readonly options: TezosFAProtocolOptions = new TezosFAProtocolOptions(new TezosProtocolNetwork(), new TezosUSDProtocolConfig())
   ) {
-    super({
-      symbol: 'USDtz',
-      name: 'USD Tez',
-      marketSymbol: 'USDtz',
-      identifier: 'xtz-usd',
-      feeDefaults: {
-        low: '0.100',
-        medium: '0.200',
-        high: '0.300'
-      },
-      decimals: 8,
-      contractAddress,
-      jsonRPCAPI,
-      baseApiUrl,
-      baseApiKey,
-      baseApiNetwork,
-      network
-    })
+    super(options)
   }
 
   public async fetchTokenHolders(): Promise<{ address: string, amount: string }[]> {

@@ -11,7 +11,8 @@ import { TezosTransactionParameters } from '../types/operations/Transaction'
 import { TezosOperationType } from '../types/TezosOperationType'
 import { isMichelinePrimitive } from '../types/utils'
 
-import { TezosFAProtocol, TezosFAProtocolConfiguration } from './TezosFAProtocol'
+import { TezosFAProtocol } from './TezosFAProtocol'
+import { TezosFAProtocolOptions } from './TezosFAProtocolOptions'
 
 enum TezosFA1ContractEntrypoint {
   BALANCE = 'getBalance',
@@ -22,8 +23,8 @@ enum TezosFA1ContractEntrypoint {
 export class TezosFA1Protocol extends TezosFAProtocol {
   private readonly defaultCallbackContractMap: Map<TezosNetwork, string> = new Map()
 
-  constructor(configuration: TezosFAProtocolConfiguration) {
-    super(configuration)
+  constructor(options: TezosFAProtocolOptions) {
+    super(options)
 
     this.defaultCallbackContractMap.set(TezosNetwork.MAINNET, 'KT19ptNzn4MVAN45KUUNpyL5AdLVhujk815u')
     this.defaultCallbackContractMap.set(TezosNetwork.CARTHAGENET, 'KT1J8FmFLSgMz5H2vexFmsCtTLVod9V49iyW')
@@ -173,7 +174,7 @@ export class TezosFA1Protocol extends TezosFAProtocol {
   }
 
   protected callbackContract(): string {
-    return this.defaultCallbackContractMap.get(this.network) ?? ''
+    return this.defaultCallbackContractMap.get(this.options.network.extras.network) ?? ''
   }
 
   private isTransferRequest(obj: unknown): obj is { from: string, to: string, value: BigNumber } {

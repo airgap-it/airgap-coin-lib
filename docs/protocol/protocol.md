@@ -73,7 +73,7 @@ export interface IAirGapTransaction {
   fee: BigNumber
   timestamp?: number
 
-  protocolIdentifier: string
+  protocolIdentifier: ProtocolSymbols
 
   hash?: string
   blockHeight?: string

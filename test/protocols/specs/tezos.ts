@@ -151,4 +151,11 @@ export class TezosTestProtocolSpec extends TestProtocolSpec {
   ]
 
   public validator = new TezosTransactionValidator()
+
+  public messages = [
+    {
+      message: 'example message',
+      signature: 'edsigtexcZ9uMhqxRvPUaTdBukx2GAdwwi93VW1ULYEWXZPWViUMqR155kFeoCUqqUV97y11EM5J4AjbJriYWCXaDX6i9o9Gxde'
+    }
+  ]
 }

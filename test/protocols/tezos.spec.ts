@@ -282,17 +282,28 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       )
       const transactions = await tezosLib.getTransactionsFromAddresses(tezosProtocolSpec.wallet.addresses, 20, 0)
 
-      expect(transactions).to.deep.equal([
+      expect(transactions.map((transaction) => ({ ...transaction, network: undefined }))).to.deep.eq([
         {
           amount: new BigNumber(1000000),
           fee: new BigNumber(1420),
           from: ['tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'],
           isInbound: true,
+          network: undefined,
           timestamp: 1561035943,
           protocolIdentifier: tezosLib.identifier,
           to: ['tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'],
           hash: 'ooNNmftGhsUriHVWYgHGq6AE3F2sHZFYaCq41NQZSeUdm1UZEAP',
           blockHeight: 261513
+        }
+      ])
+
+      expect(transactions.map((transaction) => ({ ...transaction.network, blockExplorer: undefined, extras: undefined }))).to.deep.eq([
+        {
+          blockExplorer: undefined,
+          extras: undefined,
+          name: 'Mainnet',
+          rpcUrl: 'https://tezos-node.prod.gke.papers.tech',
+          type: 'MAINNET'
         }
       ])
     })
