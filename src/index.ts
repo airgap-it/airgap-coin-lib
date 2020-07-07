@@ -58,6 +58,7 @@ import { addSubProtocol, getSubProtocolsByIdentifier } from './utils/subProtocol
 import { addSupportedProtocol, supportedProtocols } from './utils/supportedProtocols'
 import { AirGapMarketWallet } from './wallet/AirGapMarketWallet'
 import { AirGapWallet } from './wallet/AirGapWallet'
+import { TezosUSD } from './protocols/tezos/fa/TezosUSD'
 // tslint:enable:ordered-imports
 
 export {
@@ -87,6 +88,7 @@ export {
   TezosFAProtocol,
   TezosBTC,
   TezosStaker,
+  TezosUSD,
   TezosTransactionResult,
   TezosTransactionCursor,
   CosmosProtocol,
