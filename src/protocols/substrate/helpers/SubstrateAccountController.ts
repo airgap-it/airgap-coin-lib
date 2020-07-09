@@ -447,21 +447,24 @@ export class SubstrateAccountController {
           args: ['targets', 'controller', 'value', 'payee']
         })
       } else {
-        availableActions.push(
-          {
-            type: SubstrateStakingActionType.BOND_EXTRA,
-            args: ['value']
-          },
-          {
-            type: SubstrateStakingActionType.NOMINATE,
-            args: ['targets']
-          },
-          {
-            type: SubstrateStakingActionType.UNBOND,
-            args: ['value']
-          }
-        )
+        availableActions.push({
+          type: SubstrateStakingActionType.BOND_EXTRA,
+          args: ['value']
+        })
       }
+    }
+
+    if (isBonded && !isDelegating) {
+      availableActions.push(
+        {
+          type: SubstrateStakingActionType.NOMINATE,
+          args: ['targets']
+        },
+        {
+          type: SubstrateStakingActionType.UNBOND,
+          args: ['value']
+        }
+      )
     }
 
     if (isDelegating) {
