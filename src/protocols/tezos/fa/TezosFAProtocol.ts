@@ -6,7 +6,7 @@ import { ProtocolSymbols } from '../../../utils/ProtocolSymbols'
 import { ICoinSubProtocol, SubProtocolType } from '../../ICoinSubProtocol'
 import { TezosContract } from '../contract/TezosContract'
 import { TezosContractCall } from '../contract/TezosContractCall'
-import { TezosNetwork, TezosProtocol } from '../TezosProtocol'
+import { TezosProtocol } from '../TezosProtocol'
 import { BigMapResponse } from '../types/fa/BigMapResult'
 import { MichelineDataNode } from '../types/micheline/MichelineNode'
 import { TezosOperation } from '../types/operations/TezosOperation'
@@ -14,28 +14,7 @@ import { TezosTransactionParameters, TezosWrappedTransactionOperation } from '..
 import { TezosOperationType } from '../types/TezosOperationType'
 import { TezosWrappedOperation } from '../types/TezosWrappedOperation'
 import { isMichelineNode } from '../types/utils'
-
-import { FeeDefaults } from './../../ICoinProtocol'
 import { TezosFAProtocolOptions } from './TezosFAProtocolOptions'
-
-export interface TezosFAProtocolConfiguration {
-  symbol: string
-  name: string
-  marketSymbol: string
-  identifier: ProtocolSymbols
-  contractAddress: string
-
-  feeDefaults: FeeDefaults
-  decimals?: number
-
-  jsonRPCAPI?: string
-
-  network?: TezosNetwork
-
-  baseApiUrl?: string
-  baseApiKey?: string
-  baseApiNetwork?: string
-}
 
 export interface TezosTransactionResult {
   transactions: IAirGapTransaction[]
