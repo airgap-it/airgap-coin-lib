@@ -1,6 +1,6 @@
 import xxhash = require('xxhashjs')
 
-import { addHexPrefix, changeEndianness, isHex } from './hex'
+import { addHexPrefix, changeEndianness, isHex, toHexStringRaw } from './hex'
 
 export function xxhashAsHex(
   data: string | Uint8Array | Buffer,
@@ -12,7 +12,7 @@ export function xxhashAsHex(
 
   let hex = ''
   for (let seed = 0; seed < chunks; seed++) {
-    const hash = xxhash.h64(buffer, seed).toString(16)
+    const hash = toHexStringRaw(xxhash.h64(buffer, seed), 64)
     hex += config.littleEndian ? changeEndianness(hash) : hash
   }
 
