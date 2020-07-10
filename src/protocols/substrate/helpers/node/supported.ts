@@ -9,7 +9,7 @@ export const supportedRpcMethods = {
 
 // to keep the generated API as minimal required
 export const supportedStorageEntries = {
-  Identity: ['IdentityOf'] as const,
+  Identity: ['IdentityOf', 'SuperOf', 'SubsOf'] as const,
   Staking: [
     'Bonded',
     'Ledger',

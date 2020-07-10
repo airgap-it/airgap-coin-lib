@@ -6,6 +6,7 @@ import { SCALEArray } from './type/SCALEArray'
 import { SCALEBoolean } from './type/SCALEBoolean'
 import { SCALEBytes } from './type/SCALEBytes'
 import { SCALECompactInt } from './type/SCALECompactInt'
+import { SCALEData } from './type/SCALEData'
 import { SCALEEnum } from './type/SCALEEnum'
 import { SCALEEra } from './type/SCALEEra'
 import { SCALEHash } from './type/SCALEHash'
@@ -79,6 +80,10 @@ export class SCALEDecoder {
 
   public decodeNextEnum<T>(getEnumValue: (value: number) => T | null): SCALEDecodeResult<SCALEEnum<T>> {
     return this.decodeNextValue((_, hex) => SCALEEnum.decode(hex, getEnumValue))
+  }
+
+  public decodeNextData(): SCALEDecodeResult<SCALEData> {
+    return this.decodeNextValue((_, hex) => SCALEData.decode(hex))
   }
 
   public decodeNextObject<T>(decoderMethod: DecoderMethod<T>): SCALEDecodeResult<T> {

@@ -7,7 +7,7 @@ import { DelegatorAction } from '../../ICoinDelegateProtocol'
 import { SubstrateNetwork } from '../SubstrateNetwork'
 
 import { SubstrateAccountId, SubstrateAddress } from './data/account/SubstrateAddress'
-import { SubstrateRegistration } from './data/account/SubstrateRegistration'
+import { SubstrateIdentityInfo } from './data/account/SubstrateRegistration'
 import { SubstrateActiveEraInfo } from './data/staking/SubstrateActiveEraInfo'
 import { SubstrateExposure } from './data/staking/SubstrateExposure'
 import { SubstrateNominations } from './data/staking/SubstrateNominations'
@@ -102,7 +102,7 @@ export class SubstrateAccountController {
     const address = SubstrateAddress.from(accountId, this.network)
     const activeEra = await this.nodeClient.getActiveEraInfo()
 
-    let identity: SubstrateRegistration | undefined
+    let identity: SubstrateIdentityInfo | undefined
     let status: SubstrateValidatorStatus | undefined
     let exposure: SubstrateExposure | undefined
     let validatorPrefs: SubstrateValidatorPrefs | undefined
@@ -110,7 +110,7 @@ export class SubstrateAccountController {
     if (activeEra) {
       const activeEraIndex = activeEra.index.toNumber()
       const results = await Promise.all([
-        this.nodeClient.getIdentityOf(address).catch((_) => null),
+        this.getAccountIdentityInfo(address),
         this.nodeClient.getValidators(),
         this.nodeClient.getValidatorPrefs(activeEraIndex, address),
         this.nodeClient.getValidatorExposure(activeEraIndex, address)
@@ -132,7 +132,7 @@ export class SubstrateAccountController {
 
     return {
       address: address.toString(),
-      name: identity ? identity.identityInfo.display : undefined,
+      name: identity ? identity.display.toString() : undefined,
       status: status || undefined,
       ownStash: exposure ? exposure.own.toString() : undefined,
       totalStakingBalance: exposure ? exposure.total.toString() : undefined,
@@ -447,21 +447,24 @@ export class SubstrateAccountController {
           args: ['targets', 'controller', 'value', 'payee']
         })
       } else {
-        availableActions.push(
-          {
-            type: SubstrateStakingActionType.BOND_EXTRA,
-            args: ['value']
-          },
-          {
-            type: SubstrateStakingActionType.NOMINATE,
-            args: ['targets']
-          },
-          {
-            type: SubstrateStakingActionType.UNBOND,
-            args: ['value']
-          }
-        )
+        availableActions.push({
+          type: SubstrateStakingActionType.BOND_EXTRA,
+          args: ['value']
+        })
       }
+    }
+
+    if (isBonded && !isDelegating) {
+      availableActions.push(
+        {
+          type: SubstrateStakingActionType.NOMINATE,
+          args: ['targets']
+        },
+        {
+          type: SubstrateStakingActionType.UNBOND,
+          args: ['value']
+        }
+      )
     }
 
     if (isDelegating) {
@@ -491,6 +494,22 @@ export class SubstrateAccountController {
     availableActions.sort((a, b) => a.type - b.type)
 
     return availableActions
+  }
+
+  private async getAccountIdentityInfo(address: SubstrateAddress): Promise<SubstrateIdentityInfo | null> {
+    try {
+      const registration = await this.nodeClient.getIdentityOf(address)
+
+      if (registration) {
+        return registration.identityInfo
+      }
+
+      const superOf = await this.nodeClient.getSuperOf(address)
+
+      return superOf ? this.getAccountIdentityInfo(superOf.first.address) : null
+    } catch {
+      return null
+    }
   }
 
   private partitionArray<T>(array: T[], predicate: (value: T) => boolean): [T[], T[]] {
