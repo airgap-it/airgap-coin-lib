@@ -1,10 +1,10 @@
 import { TezosProtocolNetwork } from '../TezosProtocolOptions'
 import { TezosUtils } from '../TezosUtils'
 
-import { TezosFAProtocol } from './TezosFAProtocol'
+import { TezosFA1Protocol } from './TezosFA1Protocol'
 import { TezosFAProtocolOptions, TezosStakerProtocolConfig } from './TezosFAProtocolOptions'
 
-export class TezosStaker extends TezosFAProtocol {
+export class TezosStaker extends TezosFA1Protocol {
   constructor(
     public readonly options: TezosFAProtocolOptions = new TezosFAProtocolOptions(
       new TezosProtocolNetwork(),
@@ -15,7 +15,7 @@ export class TezosStaker extends TezosFAProtocol {
   }
 
   public async fetchTokenHolders(): Promise<{ address: string; amount: string }[]> {
-    const values = await this.contract.bigMapValues([])
+    const values = await this.contract.bigMapValues()
 
     return values
       .map((value) => {

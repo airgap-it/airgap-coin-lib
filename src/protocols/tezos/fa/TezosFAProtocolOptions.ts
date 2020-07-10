@@ -20,6 +20,24 @@ export class TezosFAProtocolConfig extends TezosProtocolConfig {
   }
 }
 
+export class TezosFA2ProtocolConfig extends TezosFAProtocolConfig {
+  constructor(
+    public readonly symbol: string,
+    public readonly name: string,
+    public readonly marketSymbol: string,
+    public readonly identifier: ProtocolSymbols,
+    public readonly contractAddress: string,
+    public readonly feeDefaults: FeeDefaults,
+    public readonly decimals: number,
+    public readonly tokenID?: number,
+    public readonly tokenMetadataBigMapID?: number,
+    public readonly tokenMetadataBigMapName?: string,
+    public readonly tokenMetadataBigMapRegex?: RegExp
+  ) {
+    super(symbol, name, marketSymbol, identifier, contractAddress, feeDefaults, decimals)
+  }
+}
+
 export class TezosBTCProtocolConfig extends TezosFAProtocolConfig {
   constructor(
     symbol: string = 'tzBTC',
@@ -50,7 +68,7 @@ export class TezosStakerProtocolConfig extends TezosFAProtocolConfig {
       medium: '0.300',
       high: '0.500'
     },
-    decimals: number = 8
+    decimals: number = 6
   ) {
     super(symbol, name, marketSymbol, identifier, contractAddress, feeDefaults, decimals)
   }
@@ -77,4 +95,9 @@ export class TezosUSDProtocolConfig extends TezosFAProtocolConfig {
 export class TezosFAProtocolOptions implements ProtocolOptions<TezosFAProtocolConfig> {
   // tslint:disable-next-line:no-unnecessary-initializer
   constructor(public readonly network: TezosProtocolNetwork = new TezosProtocolNetwork(), public readonly config: TezosFAProtocolConfig) {}
+}
+
+export class TezosFA2ProtocolOptions implements ProtocolOptions<TezosFA2ProtocolConfig> {
+  // tslint:disable-next-line:no-unnecessary-initializer
+  constructor(public readonly network: TezosProtocolNetwork = new TezosProtocolNetwork(), public readonly config: TezosFA2ProtocolConfig) {}
 }

@@ -1,14 +1,19 @@
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
-import { TezosContractEntity } from '../contract/TezosContractEntity'
-import { TezosContractInt } from '../contract/TezosContractInt'
-import { TezosContractPair } from '../contract/TezosContractPair'
 import { TezosProtocolNetwork } from '../TezosProtocolOptions'
 import { TezosUtils } from '../TezosUtils'
+import { MichelsonPair } from '../types/michelson/generics/MichelsonPair'
+import { MichelsonType } from '../types/michelson/MichelsonType'
+import { MichelsonInt } from '../types/michelson/primitives/MichelsonInt'
 
-import { TezosFAProtocol } from './TezosFAProtocol'
+import { TezosFA12Protocol } from './TezosFA12Protocol'
 import { TezosBTCProtocolConfig, TezosFAProtocolOptions } from './TezosFAProtocolOptions'
 
-export class TezosBTC extends TezosFAProtocol {
+enum TezosBTCContractEntrypoint {
+  TOTAL_MINTED = 'getTotalMinted',
+  TOTAL_BURNED = 'getTotalBurned'
+}
+
+export class TezosBTC extends TezosFA12Protocol {
   private static readonly bigMapKeyLedgerPrefix: string = '0x05070701000000066c65646765720a00000016'
 
   constructor(
@@ -17,32 +22,57 @@ export class TezosBTC extends TezosFAProtocol {
     super(options)
   }
 
-  public async fetchTokenHolders(): Promise<{ address: string; amount: string }[]> {
-    const values = await this.contract.bigMapValues([
-      {
-        field: 'key' as const,
-        operation: 'startsWith' as const,
-        set: [TezosBTC.bigMapKeyLedgerPrefix]
-      }
+  public async getTotalMinted(source?: string, callbackContract: string = this.callbackContract()): Promise<string> {
+    const getTotalMintedCall = await this.contract.createContractCall(TezosBTCContractEntrypoint.TOTAL_MINTED, [
+      [],
+      callbackContract
     ])
+
+    return this.getContractCallIntResult(getTotalMintedCall, this.requireSource(source))
+  }
+
+  public async getTotalBurned(source?: string, callbackContract: string = this.callbackContract()): Promise<string> {
+    const getTotalBurnedCall = await this.contract.createContractCall(TezosBTCContractEntrypoint.TOTAL_BURNED, [
+      [],
+      callbackContract
+    ])
+
+    return this.getContractCallIntResult(getTotalBurnedCall, this.requireSource(source))
+  }
+
+  public async fetchTokenHolders(): Promise<{ address: string; amount: string }[]> {
+    const values = await this.contract.bigMapValues({
+      predicates: [
+        {
+          field: 'key',
+          operation: 'startsWith',
+          set: [TezosBTC.bigMapKeyLedgerPrefix]
+        }
+      ]
+    })
 
     return values
       .map((bigMapEntry) => {
         const addressHex = bigMapEntry.key.substring(TezosBTC.bigMapKeyLedgerPrefix.length)
         const address = TezosUtils.parseAddress(addressHex)
-        let value: TezosContractEntity = new TezosContractInt(0)
+        let value: MichelsonType = MichelsonInt.from(0)
         try {
           if (bigMapEntry.value) {
             value = TezosUtils.parseHex(bigMapEntry.value)
           }
         } catch {}
-        if (value instanceof TezosContractPair) {
-          value = value.first
+
+        if (value instanceof MichelsonPair) {
+          value = value.first.get()
         }
+
+        const amount: BigNumber = value instanceof MichelsonInt
+          ? value.value
+          : new BigNumber(0) 
 
         return {
           address,
-          amount: new BigNumber((value as TezosContractInt).value).toFixed()
+          amount: amount.toFixed()
         }
       })
       .filter((value) => value.amount !== '0')
