@@ -1,3 +1,5 @@
+import { ProtocolSymbols } from '../utils/ProtocolSymbols'
+
 import { IACMessageType } from './interfaces'
 import { PayloadType } from './payloads/payload'
 import { AccountShareResponse } from './schemas/definitions/account-share-response'
@@ -42,14 +44,14 @@ export type IACMessages =
 // tslint:disable-next-line:interface-name
 export interface IACMessageDefinitionObject {
   type: IACMessageType
-  protocol: string
+  protocol: ProtocolSymbols
   payload: IACMessages
 }
 
 export interface MessageDefinitionArray {
   [0]: string // Version
   [1]: string // Type
-  [2]: string // Protocol
+  [2]: ProtocolSymbols // Protocol
   [3]: RLPData // Message
 }
 
@@ -59,7 +61,7 @@ export class Message implements IACMessageDefinitionObject {
   private readonly schemaTransformer: SchemaTransformer | undefined
 
   public readonly type: number
-  public readonly protocol: string
+  public readonly protocol: ProtocolSymbols
   public readonly payload: IACMessages
 
   constructor(type: PayloadType, object: Buffer[] | IACMessageDefinitionObject) {
@@ -75,7 +77,7 @@ export class Message implements IACMessageDefinitionObject {
       const x = object as Buffer[]
       this.version = x[0].toString()
       this.type = parseInt(x[1].toString(), 10)
-      this.protocol = x[2].toString()
+      this.protocol = x[2].toString() as ProtocolSymbols // TODO: Validate
       const schemaInfo = Serializer.getSchema(this.type.toString(), this.protocol)
       this.schema = unwrapSchema(schemaInfo.schema)
       this.schemaTransformer = schemaInfo.transformer

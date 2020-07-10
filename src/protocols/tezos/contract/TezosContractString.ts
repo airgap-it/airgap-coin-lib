@@ -1,7 +1,6 @@
-import { TezosContractEntity } from "./TezosContractEntity";
+import { TezosContractEntity } from './TezosContractEntity'
 
 export class TezosContractString extends TezosContractEntity {
-
   value: string
 
   constructor(value: string) {

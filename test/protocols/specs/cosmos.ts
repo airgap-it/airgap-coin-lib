@@ -70,4 +70,12 @@ export class CosmosTestProtocolSpec extends TestProtocolSpec {
   public invalidSignedTransactionValues: { property: string; testName: string; values: { value: any; expectedError: any }[] }[] = []
 
   public validSignedTransactions: SignedCosmosTransaction[] = []
+
+  public messages = [
+    {
+      message: 'example message',
+      signature:
+        '0x849eed49b0baaee51bcc9b62f95616856c1aefa3e40fab315db05d397cf064822028a1d0b7c04d1c60372dae7134ed453b3707977805edd21c108a311baad06c'
+    }
+  ]
 }

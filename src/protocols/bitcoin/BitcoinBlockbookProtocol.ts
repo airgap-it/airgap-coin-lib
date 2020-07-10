@@ -1,16 +1,18 @@
-import * as assert from 'assert'
+import * as bitcoinJSMessage from 'bitcoinjs-message'
 
 import axios from '../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
-import * as bitcoinJS from '../../dependencies/src/bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac/src/index'
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
 import { AirGapTransactionStatus, IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
-import { Network } from '../../networks'
 import { UnsignedTransaction } from '../../serializer/schemas/definitions/transaction-sign-request'
 import { SignedBitcoinTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-bitcoin'
 import { RawBitcoinTransaction } from '../../serializer/types'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
+import { MainProtocolSymbols, ProtocolSymbols } from '../../utils/ProtocolSymbols'
+
+import { BitcoinBlockbookProtocolOptions } from './BitcoinBlockbookProtocolOptions'
+import { BitcoinCryptoClient } from './BitcoinCryptoClient'
 
 export interface Vin {
   txid: string
@@ -103,7 +105,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
   }
   public decimals: number = 8
   public feeDecimals: number = 8
-  public identifier: string = 'btc'
+  public identifier: ProtocolSymbols = MainProtocolSymbols.BTC
   public units: CurrencyUnit[] = [
     {
       unitSymbol: 'BTC',
@@ -127,24 +129,14 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
   public addressValidationPattern: string = '^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$'
   public addressPlaceholder: string = '1ABC...'
 
-  public blockExplorer: string = 'https://live.blockcypher.com/btc'
-
-  public network: any // TODO: fix type definition
-  public baseApiUrl: string
-  public bitcoinJSLib: any
-
-  constructor(network: Network = bitcoinJS.networks.bitcoin, baseApiUrl: string = 'https://btc1.trezor.io', bitcoinJSLib = bitcoinJS) {
-    this.network = network
-    this.baseApiUrl = `https://cors-proxy.airgap.prod.gke.papers.tech/proxy?url=${baseApiUrl}`
-    this.bitcoinJSLib = bitcoinJSLib
-  }
+  constructor(public readonly options: BitcoinBlockbookProtocolOptions = new BitcoinBlockbookProtocolOptions()) {}
 
   public async getBlockExplorerLinkForAddress(address: string): Promise<string> {
-    return `${this.blockExplorer}/address/{{address}}/`.replace('{{address}}', address)
+    return this.options.network.blockExplorer.getAddressLink(address)
   }
 
   public async getBlockExplorerLinkForTxId(txId: string): Promise<string> {
-    return `${this.blockExplorer}/tx/{{txId}}/`.replace('{{txId}}', txId)
+    return this.options.network.blockExplorer.getTransactionLink(txId)
   }
 
   public async getPublicKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
@@ -166,26 +158,26 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
   }
 
   public async getPublicKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
-    const bitcoinNode = this.bitcoinJSLib.HDNode.fromSeedHex(secret, this.network)
+    const bitcoinNode = this.options.config.bitcoinJSLib.HDNode.fromSeedHex(secret, this.options.network.extras.network)
 
     return bitcoinNode.derivePath(derivationPath).neutered().toBase58()
   }
 
   public async getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<Buffer> {
-    const bitcoinNode = this.bitcoinJSLib.HDNode.fromSeedHex(secret, this.network)
+    const bitcoinNode = this.options.config.bitcoinJSLib.HDNode.fromSeedHex(secret, this.options.network.extras.network)
 
     return bitcoinNode.derivePath(derivationPath).keyPair.d.toBuffer(32)
   }
 
   public async getExtendedPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
-    const bitcoinNode = this.bitcoinJSLib.HDNode.fromSeedHex(secret, this.network)
+    const bitcoinNode = this.options.config.bitcoinJSLib.HDNode.fromSeedHex(secret, this.options.network.extras.network)
 
     return bitcoinNode.derivePath(derivationPath).toBase58()
   }
 
   public async getAddressFromPublicKey(publicKey: string): Promise<string> {
     // broadcaster knows this (both broadcaster and signer)
-    return this.bitcoinJSLib.HDNode.fromBase58(publicKey, this.network).getAddress()
+    return this.options.config.bitcoinJSLib.HDNode.fromBase58(publicKey, this.options.network.extras.network).getAddress()
   }
 
   public async getAddressesFromPublicKey(publicKey: string): Promise<string[]> {
@@ -194,7 +186,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
 
   public getAddressFromExtendedPublicKey(extendedPublicKey: string, visibilityDerivationIndex, addressDerivationIndex) {
     // broadcaster knows this (both broadcaster and signer)
-    return this.bitcoinJSLib.HDNode.fromBase58(extendedPublicKey, this.network)
+    return this.options.config.bitcoinJSLib.HDNode.fromBase58(extendedPublicKey, this.options.network.extras.network)
       .derive(visibilityDerivationIndex)
       .derive(addressDerivationIndex)
       .getAddress()
@@ -207,14 +199,14 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
     offset: number
   ): Promise<string[]> {
     // broadcaster knows this (both broadcaster and signer)
-    const node = this.bitcoinJSLib.HDNode.fromBase58(extendedPublicKey, this.network)
+    const node = this.options.config.bitcoinJSLib.HDNode.fromBase58(extendedPublicKey, this.options.network.extras.network)
     const generatorArray = Array.from(new Array(addressCount), (x, i) => i + offset)
 
     return Promise.all(generatorArray.map((x) => node.derive(visibilityDerivationIndex).derive(x).getAddress()))
   }
 
   public async signWithPrivateKey(privateKey: Buffer, transaction: RawBitcoinTransaction): Promise<IAirGapSignedTransaction> {
-    const transactionBuilder = new this.bitcoinJSLib.TransactionBuilder(this.network)
+    const transactionBuilder = new this.options.config.bitcoinJSLib.TransactionBuilder(this.options.network.extras.network)
 
     for (const input of transaction.ins) {
       transactionBuilder.addInput(input.txId, input.vout)
@@ -239,8 +231,8 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
   }
 
   public async signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: RawBitcoinTransaction): Promise<string> {
-    const transactionBuilder = new this.bitcoinJSLib.TransactionBuilder(this.network)
-    const node = this.bitcoinJSLib.HDNode.fromBase58(extendedPrivateKey, this.network)
+    const transactionBuilder = new this.options.config.bitcoinJSLib.TransactionBuilder(this.options.network.extras.network)
+    const node = this.options.config.bitcoinJSLib.HDNode.fromBase58(extendedPrivateKey, this.options.network.extras.network)
 
     for (const input of transaction.ins) {
       transactionBuilder.addInput(input.txId, input.vout)
@@ -307,6 +299,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
           .toString(10),
         fee: feeCalculator.toString(10),
         protocolIdentifier: this.identifier,
+        network: this.options.network,
         isInbound: false,
         transactionDetails: unsignedTx.transaction
       }
@@ -320,13 +313,14 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
       amount: signedTx.amount,
       fee: signedTx.fee,
       protocolIdentifier: this.identifier,
+      network: this.options.network,
       isInbound: false,
       transactionDetails: signedTx.transaction
     }
 
-    const bitcoinTx = this.bitcoinJSLib.Transaction.fromHex(signedTx.transaction)
+    const bitcoinTx = this.options.config.bitcoinJSLib.Transaction.fromHex(signedTx.transaction)
     bitcoinTx.outs.forEach((output) => {
-      const address = this.bitcoinJSLib.address.fromOutputScript(output.script, this.network)
+      const address = this.options.config.bitcoinJSLib.address.fromOutputScript(output.script, this.options.network.extras.network)
       // only works if one output is target and rest is change, but this way we can filter out change addresses
       if (new BigNumber(output.value).isEqualTo(signedTx.amount)) {
         tx.to.push(address)
@@ -341,7 +335,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
 
     // The API doesn't support batch checking of balances, so we have to do it manually
     for (const address of addresses) {
-      const { data } = await axios.get(`${this.baseApiUrl}/api/v2/address/${address}?details=basic`, {
+      const { data } = await axios.get(`${this.options.network.extras.indexerApi}/api/v2/address/${address}?details=basic`, {
         responseType: 'json'
       })
 
@@ -358,7 +352,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
   }
 
   public async getBalanceOfExtendedPublicKey(extendedPublicKey: string, offset: number = 0): Promise<string> {
-    const { data } = await axios.get(`${this.baseApiUrl}/api/v2/xpub/${extendedPublicKey}?pageSize=1`, {
+    const { data } = await axios.get(`${this.options.network.extras.indexerApi}/api/v2/xpub/${extendedPublicKey}?pageSize=1`, {
       responseType: 'json'
     })
 
@@ -387,7 +381,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
     values: string[],
     data?: any
   ): Promise<FeeDefaults> {
-    const result = (await axios.get(`${this.baseApiUrl}/api/v2/estimatefee/5`)).data.result
+    const result = (await axios.get(`${this.options.network.extras.indexerApi}/api/v2/estimatefee/5`)).data.result
     const estimatedFee = new BigNumber(result)
     if (estimatedFee.isZero()) {
       return this.feeDefaults
@@ -438,7 +432,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
     derivedAddresses.push(...internalAddresses.slice(0, -1)) // we don't add the last one
     derivedAddresses.push(...externalAddresses.slice(0, -1)) // we don't add the last one to make change address possible
 
-    const { data: utxos } = await axios.get(`${this.baseApiUrl}/api/v2/utxo/${extendedPublicKey}`, {
+    const { data: utxos } = await axios.get(`${this.options.network.extras.indexerApi}/api/v2/utxo/${extendedPublicKey}`, {
       responseType: 'json'
     })
 
@@ -487,7 +481,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
       // tx.addOutput(recipients[i], values[i])
     }
 
-    const { data: transactions } = await axios.get(`${this.baseApiUrl}/api/v2/utxo/${extendedPublicKey}`, {
+    const { data: transactions } = await axios.get(`${this.options.network.extras.indexerApi}/api/v2/utxo/${extendedPublicKey}`, {
       responseType: 'json'
     })
 
@@ -532,7 +526,9 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
       outs: []
     }
 
-    assert(recipients.length === wrappedValues.length)
+    if (recipients.length !== wrappedValues.length) {
+      throw new Error('Recipient and value length does not match.')
+    }
     const address = await this.getAddressFromPublicKey(publicKey)
 
     interface UTXOResponse {
@@ -543,7 +539,9 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
       confirmations: number
     }
 
-    const { data: utxos } = await axios.get<UTXOResponse[]>(`${this.baseApiUrl}/api/v2/utxo/${address}`, { responseType: 'json' })
+    const { data: utxos } = await axios.get<UTXOResponse[]>(`${this.options.network.extras.indexerApi}/api/v2/utxo/${address}`, {
+      responseType: 'json'
+    })
     const totalRequiredBalance: BigNumber = wrappedValues
       .reduce((accumulator: BigNumber, currentValue: BigNumber) => accumulator.plus(currentValue))
       .plus(wrappedFee)
@@ -594,7 +592,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
   }
 
   public async broadcastTransaction(rawTransaction: string): Promise<string> {
-    const { data } = await axios.post(this.baseApiUrl + '/api/v2/sendtx/', rawTransaction)
+    const { data } = await axios.post(this.options.network.extras.indexerApi + '/api/v2/sendtx/', rawTransaction)
 
     return data.result
   }
@@ -606,7 +604,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
     addressOffset = 0
   ): Promise<IAirGapTransaction[]> {
     const { data }: { data: XPubResponse } = await axios.get(
-      this.baseApiUrl + '/api/v2/xpub/' + extendedPublicKey + '?details=txs&tokens=used',
+      this.options.network.extras.indexerApi + '/api/v2/xpub/' + extendedPublicKey + '?details=txs&tokens=used',
       {
         responseType: 'json'
       }
@@ -658,6 +656,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
         fee: new BigNumber(transaction.fees).toString(10),
         blockHeight: transaction.blockheight.toString(),
         protocolIdentifier: this.identifier,
+        network: this.options.network,
         timestamp: transaction.blocktime
       }
 
@@ -674,7 +673,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
   public async getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
     const airGapTransactions: IAirGapTransaction[] = []
 
-    const { data } = await axios.get<AddressResponse>(`${this.baseApiUrl}/api/v2/utxo/${addresses[0]}?details=txs`, {
+    const { data } = await axios.get<AddressResponse>(`${this.options.network.extras.indexerApi}/api/v2/utxo/${addresses[0]}?details=txs`, {
       responseType: 'json'
     })
 
@@ -720,6 +719,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
         fee: new BigNumber(transaction.fees).shiftedBy(this.feeDecimals).toString(10),
         blockHeight: transaction.blockheight.toString(),
         protocolIdentifier: this.identifier,
+        network: this.options.network,
         timestamp: transaction.blocktime
       }
 
@@ -739,12 +739,12 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
     return false
   }
 
-  public async signMessage(message: string, privateKey: Buffer): Promise<string> {
-    return Promise.reject('Message signing not implemented')
+  public async signMessage(message: string, keypair: { privateKey: Buffer }): Promise<string> {
+    return new BitcoinCryptoClient(this, bitcoinJSMessage).signMessage(message, keypair)
   }
 
-  public async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
-    return Promise.reject('Message verification not implemented')
+  public async verifyMessage(message: string, signature: string, publicKey: string): Promise<boolean> {
+    return new BitcoinCryptoClient(this, bitcoinJSMessage).verifyMessage(message, signature, publicKey)
   }
 
   public async getTransactionStatuses(transactionHashes: string[]): Promise<AirGapTransactionStatus[]> {

@@ -1,3 +1,5 @@
+import { MainProtocolSymbols, ProtocolSymbols } from '../../utils/ProtocolSymbols'
+
 import { ProtocolNotSupported } from './errors'
 import { SignedTransactionSerializer } from './signed-transaction.serializer'
 import { AeternitySignedTransactionSerializer } from './signed-transactions/aeternity-transactions.serializer'
@@ -12,8 +14,9 @@ import { EthereumUnsignedTransactionSerializer } from './unsigned-transactions/e
 import { SubstrateUnsignedTransactionsSerializer } from './unsigned-transactions/substrate-transactions.serializer'
 import { TezosUnsignedTransactionSerializer } from './unsigned-transactions/tezos-transactions.serializer'
 
-export function unsignedTransactionSerializerByProtocolIdentifier(protocolIdentifier: string): UnsignedTransactionSerializer {
-  const implementedSerializers = {
+export function unsignedTransactionSerializerByProtocolIdentifier(protocolIdentifier: ProtocolSymbols): UnsignedTransactionSerializer {
+  const implementedSerializers: { [key in MainProtocolSymbols]?: typeof UnsignedTransactionSerializer } = {
+    // TODO: Cosmos is missing?
     eth: EthereumUnsignedTransactionSerializer,
     btc: BitcoinUnsignedTransactionSerializer,
     grs: BitcoinUnsignedTransactionSerializer,
@@ -32,8 +35,9 @@ export function unsignedTransactionSerializerByProtocolIdentifier(protocolIdenti
   return new implementedSerializers[protocol]()
 }
 
-export function signedTransactionSerializerByProtocolIdentifier(protocolIdentifier: string): SignedTransactionSerializer {
-  const implementedSerializers = {
+export function signedTransactionSerializerByProtocolIdentifier(protocolIdentifier: ProtocolSymbols): SignedTransactionSerializer {
+  const implementedSerializers: { [key in MainProtocolSymbols]?: typeof SignedTransactionSerializer } = {
+    // TODO: Cosmos is missing?
     eth: EthereumSignedTransactionSerializer,
     btc: BitcoinSignedTransactionSerializer,
     grs: BitcoinSignedTransactionSerializer,

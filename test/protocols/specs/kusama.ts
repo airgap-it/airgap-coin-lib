@@ -30,7 +30,8 @@ export class KusamaTestProtocolSpec extends TestProtocolSpec {
   ]
 
   public wallet = {
-    privateKey: 'd08bc6388fdeb30fc34a8e0286384bd5a84b838222bb9b012fc227d7473fc87aa2913d02297653ce859ccd6b2c057f7e57c9ef6cc359300a891c581fb6d03141',
+    privateKey:
+      'd08bc6388fdeb30fc34a8e0286384bd5a84b838222bb9b012fc227d7473fc87aa2913d02297653ce859ccd6b2c057f7e57c9ef6cc359300a891c581fb6d03141',
     publicKey: '52e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10',
     addresses: ['ESzXrcSsbM3Jxzuz2zczuYgCXsxQrqPw29AR2doaxZdzemT']
   }
@@ -43,7 +44,7 @@ export class KusamaTestProtocolSpec extends TestProtocolSpec {
       fee: '1000000000',
       unsignedTx: {
         encoded:
-          '042504' + // number of txs + tx length 
+          '042504' + // number of txs + tx length
           '00' + // type
           '02286bee' + // fee
           // transaction
@@ -54,7 +55,7 @@ export class KusamaTestProtocolSpec extends TestProtocolSpec {
           '0000000000000000000000000000000000000000000000000000000000000000' + // signature
           '0000000000000000000000000000000000000000000000000000000000000000' + // signature
           '8503' + // era
-          '04' +  // nonce
+          '04' + // nonce
           '00' + // tip
           '0400' + // moduleId + callId
           '52e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10' + // AccountId destination
@@ -63,7 +64,7 @@ export class KusamaTestProtocolSpec extends TestProtocolSpec {
           '040052e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10070010a5d4e8850304000400000001000000d51522c9ef7ba4e0990f7a4527de79afcac992ab97abbbc36722f8a27189b17033a7a745849347ce3008c07268be63d8cefd3ef61de0c7318e88a577fb7d26a9'
       },
       signedTx:
-        '042504' + // number of txs + tx length 
+        '042504' + // number of txs + tx length
         '00' + // type
         '02286bee' + // fee
         // transaction
@@ -91,4 +92,12 @@ export class KusamaTestProtocolSpec extends TestProtocolSpec {
   public mnemonic(): string {
     return 'food talent voyage degree siege clever account medal film remind good kind'
   }
+
+  public messages = [
+    {
+      message: 'example message',
+      signature:
+        '0x30094f45a892156fe1f79254674fdebe69da314b72371f3665aecdc486fd6233b7729571bf12765bb80cf07bd81846634a5a2e60045f492a492e2b40eee8ac8b'
+    }
+  ]
 }

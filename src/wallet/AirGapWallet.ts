@@ -1,23 +1,37 @@
 import { IAirGapWallet } from '../interfaces/IAirGapWallet'
 import { ICoinProtocol } from '../protocols/ICoinProtocol'
-import { getProtocolByIdentifier } from '../utils/protocolsByIdentifier'
+import { ProtocolSymbols } from '../utils/ProtocolSymbols'
+
+export interface SerializedAirGapWallet {
+  protocolIdentifier: ProtocolSymbols
+  networkIdentifier: string
+  publicKey: string
+  isExtendedPublicKey: boolean
+  derivationPath: string
+  addresses: string[]
+  addressIndex?: number
+}
 
 export class AirGapWallet implements IAirGapWallet {
   public addresses: string[] = [] // used for cache
-  public coinProtocol: ICoinProtocol
 
   constructor(
-    public protocolIdentifier: string,
+    public protocol: ICoinProtocol,
     public publicKey: string,
     public isExtendedPublicKey: boolean,
     public derivationPath: string,
     public addressIndex?: number
-  ) {
-    this.coinProtocol = getProtocolByIdentifier(this.protocolIdentifier)
-  }
+  ) {}
 
   get receivingPublicAddress(): string {
     return this.addresses[this.addressIndex !== undefined ? this.addressIndex : 0]
+  }
+
+  public async setProtocol(protocol: ICoinProtocol): Promise<void> {
+    if (this.protocol.identifier !== protocol.identifier) {
+      throw new Error('Can only set same protocol with a different network')
+    }
+    this.protocol = protocol
   }
 
   public async deriveAddresses(amount: number = 50): Promise<string[]> {
@@ -30,18 +44,23 @@ export class AirGapWallet implements IAirGapWallet {
       }
 
       return [
-        ...(await this.coinProtocol.getAddressesFromExtendedPublicKey(this.publicKey, 0, amount, offset)),
-        ...(await this.coinProtocol.getAddressesFromExtendedPublicKey(this.publicKey, 1, amount, offset))
+        ...(await this.protocol.getAddressesFromExtendedPublicKey(this.publicKey, 0, amount, offset)),
+        ...(await this.protocol.getAddressesFromExtendedPublicKey(this.publicKey, 1, amount, offset))
       ]
     } else {
-      return this.coinProtocol.getAddressesFromPublicKey(this.publicKey)
+      return this.protocol.getAddressesFromPublicKey(this.publicKey)
     }
   }
 
-  public toJSON(): any {
-    const json = Object.assign({}, this)
-    delete json.coinProtocol
-
-    return json
+  public toJSON(): SerializedAirGapWallet {
+    return {
+      protocolIdentifier: this.protocol.identifier,
+      networkIdentifier: this.protocol.options.network.identifier,
+      publicKey: this.publicKey,
+      isExtendedPublicKey: this.isExtendedPublicKey,
+      derivationPath: this.derivationPath,
+      addresses: this.addresses,
+      addressIndex: this.addressIndex
+    }
   }
 }

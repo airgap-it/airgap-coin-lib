@@ -8,20 +8,18 @@ import { Network } from '../../networks'
 import { UnsignedTransaction } from '../../serializer/schemas/definitions/transaction-sign-request'
 import { SignedEthereumTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-ethereum'
 import { RawEthereumTransaction } from '../../serializer/types'
+import { MainProtocolSymbols, ProtocolSymbols } from '../../utils/ProtocolSymbols'
 import { getSubProtocolsByIdentifier } from '../../utils/subProtocols'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
+import { ICoinSubProtocol } from '../ICoinSubProtocol'
 
 import { EthereumInfoClient } from './clients/info-clients/InfoClient'
 import { EthereumNodeClient } from './clients/node-clients/NodeClient'
+import { EthereumCryptoClient } from './EthereumCryptoClient'
+import { EthereumProtocolOptions } from './EthereumProtocolOptions'
 import { EthereumUtils } from './utils/utils'
 
 const EthereumTransaction = require('../../dependencies/src/ethereumjs-tx-1.3.7/index')
-
-export interface EthereumProtocolConfiguration<NodeClient extends EthereumNodeClient, InfoClient extends EthereumInfoClient> {
-  chainID: number
-  nodeClient: NodeClient
-  infoClient: InfoClient
-}
 
 export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient, InfoClient extends EthereumInfoClient>
   implements ICoinProtocol {
@@ -39,7 +37,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
 
   public decimals: number = 18
   public feeDecimals: number = 18
-  public identifier: string = 'eth'
+  public identifier: ProtocolSymbols = MainProtocolSymbols.ETH
 
   public units: CurrencyUnit[] = [
     {
@@ -63,26 +61,22 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
   public addressValidationPattern: string = '^0x[a-fA-F0-9]{40}$'
   public addressPlaceholder: string = '0xabc...'
 
-  public blockExplorer: string = 'https://etherscan.io'
-
   public network: Network
-  public configuration: EthereumProtocolConfiguration<NodeClient, InfoClient>
 
-  get subProtocols() {
-    return getSubProtocolsByIdentifier(this.identifier) as any[] // TODO: Fix typings once apps are compatible with 3.7
+  get subProtocols(): ICoinSubProtocol[] {
+    return getSubProtocolsByIdentifier(this.identifier, this.options.network)
   }
 
-  constructor(configuration: EthereumProtocolConfiguration<NodeClient, InfoClient>) {
-    this.configuration = configuration
+  constructor(public readonly options: EthereumProtocolOptions = new EthereumProtocolOptions()) {
     this.network = bitcoinJS.networks.bitcoin
   }
 
   public async getBlockExplorerLinkForAddress(address: string): Promise<string> {
-    return `${this.blockExplorer}/address/{{address}}`.replace('{{address}}', address)
+    return this.options.network.blockExplorer.getAddressLink(address)
   }
 
   public async getBlockExplorerLinkForTxId(txId: string): Promise<string> {
-    return `${this.blockExplorer}/tx/{{txId}}`.replace('{{txId}}', txId)
+    return this.options.network.blockExplorer.getTransactionLink(txId)
   }
 
   public async getPublicKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
@@ -187,6 +181,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
         amount: new BigNumber(transaction.value).toString(10),
         fee: new BigNumber(transaction.gasLimit).multipliedBy(new BigNumber(transaction.gasPrice)).toString(10),
         protocolIdentifier: this.identifier,
+        network: this.options.network,
         isInbound: false,
         data: transaction.data,
         transactionDetails: unsignedTx
@@ -209,6 +204,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
         amount: new BigNumber(parseInt(hexValue, 16)).toString(10),
         fee: new BigNumber(parseInt(hexGasLimit, 16)).multipliedBy(new BigNumber(parseInt(hexGasPrice, 16))).toString(10),
         protocolIdentifier: this.identifier,
+        network: this.options.network,
         isInbound: ethTx.toCreationAddress(),
         hash: `0x${ethTx.hash().toString('hex')}`,
         data: `0x${ethTx.data.toString('hex')}`,
@@ -229,7 +225,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
   public async getBalanceOfAddresses(addresses: string[]): Promise<string> {
     const balances: BigNumber[] = await Promise.all(
       addresses.map((address: string) => {
-        return this.configuration.nodeClient.fetchBalance(address)
+        return this.options.nodeClient.fetchBalance(address)
       })
     )
 
@@ -303,14 +299,14 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
       return Promise.reject('you cannot have 0 recipients')
     }
     const address: string = await this.getAddressFromPublicKey(publicKey)
-    const estimatedGas = await this.configuration.nodeClient.estimateTransactionGas(
+    const estimatedGas = await this.options.nodeClient.estimateTransactionGas(
       address,
       recipients[0],
       EthereumUtils.toHex(values[0]),
       undefined,
       EthereumUtils.toHex('21000')
     )
-    const gasPrise = await this.configuration.nodeClient.getGasPrice()
+    const gasPrise = await this.options.nodeClient.getGasPrice()
     const feeStepFactor = new BigNumber(0.5)
     const estimatedFee = estimatedGas.times(gasPrise)
     const lowFee = estimatedFee.minus(estimatedFee.times(feeStepFactor).integerValue(BigNumber.ROUND_FLOOR))
@@ -347,7 +343,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     const amount = EthereumUtils.toHex(wrappedValues[0].toFixed())
 
     const balance = await this.getBalanceOfPublicKey(publicKey)
-    const gasLimit = await this.configuration.nodeClient.estimateTransactionGas(
+    const gasLimit = await this.options.nodeClient.estimateTransactionGas(
       address,
       recipients[0],
       amount,
@@ -356,14 +352,14 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     )
     const gasPrice = wrappedFee.div(gasLimit).integerValue(BigNumber.ROUND_CEIL)
     if (new BigNumber(balance).gte(new BigNumber(wrappedValues[0].plus(wrappedFee)))) {
-      const txCount = await this.configuration.nodeClient.fetchTransactionCount(address)
+      const txCount = await this.options.nodeClient.fetchTransactionCount(address)
       const transaction: RawEthereumTransaction = {
         nonce: EthereumUtils.toHex(txCount),
         gasLimit: EthereumUtils.toHex(gasLimit.toFixed()),
         gasPrice: EthereumUtils.toHex(gasPrice.toFixed()), // 10 Gwei
         to: recipients[0],
         value: amount,
-        chainId: this.configuration.chainID,
+        chainId: this.options.network.extras.chainID,
         data: '0x'
       }
 
@@ -374,7 +370,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
   }
 
   public async broadcastTransaction(rawTransaction: string): Promise<string> {
-    return this.configuration.nodeClient.sendSignedTransaction(`0x${rawTransaction}`)
+    return this.options.nodeClient.sendSignedTransaction(`0x${rawTransaction}`)
   }
 
   public getTransactionsFromExtendedPublicKey(extendedPublicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]> {
@@ -401,7 +397,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     return new Promise((overallResolve, overallReject) => {
       const promises: Promise<IAirGapTransaction[]>[] = []
       for (const address of addresses) {
-        promises.push(this.configuration.infoClient.fetchTransactions(this.identifier, address, page, limit))
+        promises.push(this.options.infoClient.fetchTransactions(this, address, page, limit))
       }
       Promise.all(promises)
         .then((values) => {
@@ -415,17 +411,17 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     })
   }
 
-  public async signMessage(message: string, privateKey: Buffer): Promise<string> {
-    return Promise.reject('Message signing not implemented')
+  public async signMessage(message: string, keypair: { privateKey: Buffer }): Promise<string> {
+    return new EthereumCryptoClient(this).signMessage(message, keypair)
   }
 
-  public async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
-    return Promise.reject('Message verification not implemented')
+  public async verifyMessage(message: string, signature: string, publicKey: string): Promise<boolean> {
+    return new EthereumCryptoClient(this).verifyMessage(message, signature, publicKey)
   }
 
   public async getTransactionStatuses(transactionHashes: string[]): Promise<AirGapTransactionStatus[]> {
     const statusPromises: Promise<AirGapTransactionStatus>[] = transactionHashes.map((txHash: string) => {
-      return this.configuration.nodeClient.getTransactionStatus(txHash)
+      return this.options.nodeClient.getTransactionStatus(txHash)
     })
 
     return Promise.all(statusPromises)
