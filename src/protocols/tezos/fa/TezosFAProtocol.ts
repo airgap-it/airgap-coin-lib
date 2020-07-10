@@ -216,11 +216,6 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
     return this.contract.normalizeContractCallParameters(parsedParameters, fallbackEntrypointName)
   }
 
-  public async fetchTokenHolders(): Promise<{ address: string; amount: string }[]> {
-    // there is no standard way to fetch token holders for now, every subclass needs to implement its own logic
-    return []
-  }
-
   private parseParameters(parameters: string): unknown {
     const toBeRemoved = 'Unparsable code: '
     if (parameters.startsWith(toBeRemoved)) {

@@ -305,6 +305,11 @@ export class TezosFA2Protocol extends TezosFAProtocol {
       .filter((metadata: TezosFA2TokenMetadata | null) => metadata !== null) as TezosFA2TokenMetadata[]
   }
 
+  public async fetchTokenHolders(tokenIDs: number[]): Promise<{ address: string; amount: string, tokenID: number }[]> {
+    // there is no standard way to fetch token holders for now, every subclass needs to implement its own logic
+    return []
+  }
+
   private async createTransferCall(
     publicKey: string,
     recipients: string[],

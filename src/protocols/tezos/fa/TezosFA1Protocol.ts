@@ -127,6 +127,11 @@ export class TezosFA1Protocol extends TezosFAProtocol {
     return this.prepareContractCall([transferCall], fee, publicKey)
   }
 
+  public async fetchTokenHolders(): Promise<{ address: string; amount: string }[]> {
+    // there is no standard way to fetch token holders for now, every subclass needs to implement its own logic
+    return []
+  }
+
   protected async getContractCallIntResult(transferCall: TezosContractCall, source: string): Promise<string> {
     try {
       const operationResult = await this.runContractCall(transferCall, source)
