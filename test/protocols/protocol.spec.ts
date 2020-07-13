@@ -71,8 +71,8 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
       })
 
       it('should contain blockexplorer url', async () => {
-        expect(blockExplorerLinkAddress).to.contain(protocol.lib.blockExplorer)
-        expect(blockExplorerLinkTxId).to.contain(protocol.lib.blockExplorer)
+        expect(blockExplorerLinkAddress).to.contain(protocol.lib.options.network.blockExplorer.blockExplorer)
+        expect(blockExplorerLinkTxId).to.contain(protocol.lib.options.network.blockExplorer.blockExplorer)
       })
 
       it('should not contain placeholder brackets', async () => {
@@ -180,9 +180,9 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
           protocol.txs[0].fee
         )
 
-        protocol.txs.forEach(tx => {
+        protocol.txs.forEach((tx) => {
           if (tx.properties) {
-            tx.properties.forEach(property => {
+            tx.properties.forEach((property) => {
               expect(preparedTx).to.have.property(property)
             })
           }
@@ -202,9 +202,9 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
             protocol.txs[0].fee
           )
 
-          protocol.txs.forEach(tx => {
+          protocol.txs.forEach((tx) => {
             if (tx.properties) {
-              tx.properties.forEach(property => {
+              tx.properties.forEach((property) => {
                 expect(preparedTx).to.have.property(property)
               })
             }
@@ -254,7 +254,7 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
 
         txs.forEach((tx, index) => {
           if (protocol.lib instanceof SubstrateProtocol) {
-            const decoded = (protocol.lib as SubstrateProtocol).transactionController.decodeDetails(tx)[0]
+            const decoded = (protocol.lib as SubstrateProtocol).options.transactionController.decodeDetails(tx)[0]
 
             const signature = decoded.transaction.signature.signature.value
             const payload = Buffer.from(decoded.payload.encode(), 'hex')
@@ -328,13 +328,13 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
           const airgapTx: IAirGapTransaction = airgapTxs[0]
 
           expect(
-            airgapTx.to.map(obj => obj.toLowerCase()),
+            airgapTx.to.map((obj) => obj.toLowerCase()),
             'from'
-          ).to.deep.equal(tx.to.map(obj => obj.toLowerCase()))
+          ).to.deep.equal(tx.to.map((obj) => obj.toLowerCase()))
           expect(
-            airgapTx.from.sort().map(obj => obj.toLowerCase()),
+            airgapTx.from.sort().map((obj) => obj.toLowerCase()),
             'to'
-          ).to.deep.equal(tx.from.sort().map(obj => obj.toLowerCase()))
+          ).to.deep.equal(tx.from.sort().map((obj) => obj.toLowerCase()))
 
           expect(airgapTx.amount).to.deep.equal(protocol.txs[0].amount)
           expect(airgapTx.fee).to.deep.equal(protocol.txs[0].fee)
@@ -361,71 +361,68 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
         }
       })
     })
+
+    describe(`Sign Message`, () => {
+      afterEach(async () => {
+        sinon.restore()
+      })
+
+      itIf(
+        protocol.messages.length > 0 && protocol.lib.identifier !== 'kusama',
+        'signMessage - Is able to sign a message using a PrivateKey',
+        async () => {
+          const publicKey = await protocol.lib.getPublicKeyFromMnemonic(protocol.mnemonic(), protocol.lib.standardDerivationPath)
+          const privateKey = await protocol.lib.getPrivateKeyFromMnemonic(protocol.mnemonic(), protocol.lib.standardDerivationPath)
+
+          for (const messageObject of protocol.messages) {
+            try {
+              const signature = await protocol.lib.signMessage(messageObject.message, {
+                publicKey,
+                privateKey
+              })
+              expect(signature).to.equal(messageObject.signature)
+            } catch (e) {
+              expect(e.message).to.equal('Method not implemented.')
+            }
+          }
+        }
+      )
+
+      itIf(protocol.messages.length > 0, 'verifyMessage - Is able to verify a message using a PublicKey', async () => {
+        const publicKey = await protocol.lib.getPublicKeyFromMnemonic(protocol.mnemonic(), protocol.lib.standardDerivationPath)
+
+        for (const messageObject of protocol.messages) {
+          try {
+            const signatureIsValid = await protocol.lib.verifyMessage(messageObject.message, messageObject.signature, publicKey)
+
+            expect(signatureIsValid).to.be.true
+          } catch (e) {
+            expect(e.message).to.equal('Method not implemented.')
+          }
+        }
+      })
+
+      itIf(protocol.messages.length > 0, 'signMessage and verifyMessage - Is able to sign and verify a message', async () => {
+        const privateKey = await protocol.lib.getPrivateKeyFromMnemonic(protocol.mnemonic(), protocol.lib.standardDerivationPath)
+        const publicKey = await protocol.lib.getPublicKeyFromMnemonic(protocol.mnemonic(), protocol.lib.standardDerivationPath)
+
+        for (const messageObject of protocol.messages) {
+          try {
+            const signature = await protocol.lib.signMessage(messageObject.message, {
+              publicKey,
+              privateKey
+            })
+            const signatureIsValid = await protocol.lib.verifyMessage(messageObject.message, signature, publicKey)
+
+            expect(signatureIsValid, 'first signature is invalid').to.be.true
+
+            const signature2IsValid = await protocol.lib.verifyMessage(`different-message-${messageObject.message}`, signature, publicKey)
+            expect(signature2IsValid, 'second signature is invalid').to.be.false
+          } catch (e) {
+            expect(e.message).to.equal('Method not implemented.')
+          }
+        }
+      })
+    })
   })
-
-  // describe(`Sign Message`, () => {
-  //   afterEach(async () => {
-  //     sinon.restore()
-  //   })
-
-  //   itIf(protocol.messages, 'signMessage - Is able to sign a message using a PrivateKey', async () => {
-  //     // const privateKey = protocol.lib.getPrivateKeyFromMnemonic(protocol.mnemonic(), protocol.lib.standardDerivationPath)
-
-  //     protocol.messages.forEach(async messageObject => {
-  //       try {
-  //         // const signature = await protocol.lib.signMessage(messageObject.message, privateKey)
-  //         // TODO: Verify signature
-  //         // expect(signature).to.equal(messageObject.signature)
-  //       } catch (e) {
-  //         expect(e).to.equal('Message signing not implemented')
-  //       }
-  //     })
-  //   })
-
-  //   itIf(protocol.messages, 'verifyMessage - Is able to verify a message using a PublicKey', async () => {
-  //     // const privateKey = protocol.lib.getPrivateKeyFromMnemonic(protocol.mnemonic(), protocol.lib.standardDerivationPath)
-  //     // const publicKey = protocol.lib.getPublicKeyFromMnemonic(protocol.mnemonic(), protocol.lib.standardDerivationPath)
-  //     // const publicKeyBuffer = Buffer.from(publicKey, 'hex')
-
-  //     protocol.messages.forEach(async messageObject => {
-  //       try {
-  //         /*
-  //         const signatureIsValid = await protocol.lib.verifyMessage(
-  //           messageObject.message,
-  //           Buffer.from(messageObject.signature) as any,
-  //           publicKeyBuffer
-  //         )
-  //         */
-  //         // TODO: Verify signature
-  //         // expect(signatureIsValid).to.be.true
-  //       } catch (e) {
-  //         expect(e).to.equal('Message signing not implemented')
-  //       }
-  //     })
-  //   })
-
-  //   itIf(protocol.messages, 'signMessage and verifyMessage - Is able to sign and verify a message', async () => {
-  //     const privateKey = protocol.lib.getPrivateKeyFromMnemonic(protocol.mnemonic(), protocol.lib.standardDerivationPath)
-  //     const publicKey = protocol.lib.getPublicKeyFromMnemonic(protocol.mnemonic(), protocol.lib.standardDerivationPath)
-  //     const publicKeyBuffer = Buffer.from(publicKey, 'hex')
-
-  //     protocol.messages.forEach(async messageObject => {
-  //       try {
-  //         const signature = await protocol.lib.signMessage(messageObject.message, privateKey)
-  //         const signatureIsValid = await protocol.lib.verifyMessage(messageObject.message, signature, publicKeyBuffer)
-
-  //         expect(signatureIsValid).to.be.true
-
-  //         const signature2IsValid = await protocol.lib.verifyMessage(
-  //           `different-message-${messageObject.message}`,
-  //           signature,
-  //           publicKeyBuffer
-  //         )
-  //         expect(signature2IsValid).to.be.false
-  //       } catch (e) {
-  //         expect(e).to.equal('Message signing not implemented')
-  //       }
-  //     })
-  //   })
-  // })
 })

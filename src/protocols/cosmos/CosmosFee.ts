@@ -12,7 +12,7 @@ export class CosmosFee implements JSONConvertible, RPCConvertible {
 
   public toJSON() {
     return {
-      amount: this.amount.map(value => value.toJSON()),
+      amount: this.amount.map((value) => value.toJSON()),
       gas: this.gas
     }
   }
@@ -26,7 +26,7 @@ export class CosmosFee implements JSONConvertible, RPCConvertible {
 
   public toRPCBody(): any {
     return {
-      amount: this.amount.map(value => value.toRPCBody()),
+      amount: this.amount.map((value) => value.toRPCBody()),
       gas: this.gas
     }
   }

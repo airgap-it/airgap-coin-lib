@@ -1,10 +1,13 @@
-import * as bs58check from '../../dependencies/src/bs58check-2.1.2/index'
 import * as bigInt from '../../dependencies/src/big-integer-1.6.45/BigInteger'
-import { TezosContractPair } from './contract/TezosContractPair'
-import { TezosContractList } from './contract/TezosContractList'
-import { TezosContractEntity } from './contract/TezosContractEntity'
+import * as bs58check from '../../dependencies/src/bs58check-2.1.2/index'
 
-export type TezosContractType = string | number | TezosContractPair
+import { MichelsonList } from './types/michelson/generics/MichelsonList'
+import { MichelsonPair } from './types/michelson/generics/MichelsonPair'
+import { MichelsonType } from './types/michelson/MichelsonType'
+import { MichelsonBytes } from './types/michelson/primitives/MichelsonBytes'
+import { MichelsonInt } from './types/michelson/primitives/MichelsonInt'
+import { MichelsonString } from './types/michelson/primitives/MichelsonString'
+
 
 export class TezosUtils {
   // Tezos - We need to wrap these in Buffer due to non-compatible browser polyfills
@@ -18,17 +21,22 @@ export class TezosUtils {
     edsig: Buffer
     branch: Buffer
   } = {
-      tz1: Buffer.from(new Uint8Array([6, 161, 159])),
-      tz2: Buffer.from(new Uint8Array([6, 161, 161])),
-      tz3: Buffer.from(new Uint8Array([6, 161, 164])),
-      kt: Buffer.from(new Uint8Array([2, 90, 121])),
-      edpk: Buffer.from(new Uint8Array([13, 15, 37, 217])),
-      edsk: Buffer.from(new Uint8Array([43, 246, 78, 7])),
-      edsig: Buffer.from(new Uint8Array([9, 245, 205, 134, 18])),
-      branch: Buffer.from(new Uint8Array([1, 52]))
-    }
+    tz1: Buffer.from(new Uint8Array([6, 161, 159])),
+    tz2: Buffer.from(new Uint8Array([6, 161, 161])),
+    tz3: Buffer.from(new Uint8Array([6, 161, 164])),
+    kt: Buffer.from(new Uint8Array([2, 90, 121])),
+    edpk: Buffer.from(new Uint8Array([13, 15, 37, 217])),
+    edsk: Buffer.from(new Uint8Array([43, 246, 78, 7])),
+    edsig: Buffer.from(new Uint8Array([9, 245, 205, 134, 18])),
+    branch: Buffer.from(new Uint8Array([1, 52]))
+  }
 
-  public static parseAddress(rawHexAddress: string): string {
+  public static parseAddress(bytes: string | Buffer): string {
+    let rawHexAddress: string = typeof bytes === 'string' ? bytes : bytes.toString('hex')
+
+    if (rawHexAddress.startsWith('0x')) {
+      rawHexAddress = rawHexAddress.slice(2)
+    }
     const { result, rest }: { result: string; rest: string } = this.splitAndReturnRest(rawHexAddress, 2)
     const contractIdTag: string = result
     if (contractIdTag === '00') {
@@ -42,7 +50,7 @@ export class TezosUtils {
     }
   }
 
-  public static parseHex(rawHex: string | string[]): string | number | TezosContractEntity {
+  public static parseHex(rawHex: string | string[]): MichelsonType {
     let hex: string[]
     if (typeof rawHex === 'string') {
       hex = TezosUtils.hexStringToArray(rawHex)
@@ -68,16 +76,19 @@ export class TezosUtils {
           }
           intBytes.push(byte)
         } while (parseInt(byte, 16) >= 127)
-        return TezosUtils.decodeSignedInt(intBytes.join(''))
+        return MichelsonInt.from(TezosUtils.decodeSignedInt(intBytes.join('')))
       case '01': // string
-        const lengthBytes = TezosUtils.hexToLength(hex.splice(0, 4))
-        return TezosUtils.hexToString(hex.splice(0, lengthBytes))
+        const stringLength = TezosUtils.hexToLength(hex.splice(0, 4))
+        return MichelsonString.from(TezosUtils.hexToString(hex.splice(0, stringLength)))
       case '05': // single arg prim
         return TezosUtils.parseHex(hex)
       case '02': // list
         return TezosUtils.parseList(hex)
+      case '0a': // bytes
+        const bytesLength = TezosUtils.hexToLength(hex.splice(0, 4))
+        return MichelsonBytes.from(hex.splice(0, bytesLength).join(''))
       default:
-        throw new Error('Type not supported')
+        throw new Error(`Type not supported ${type}`)
     }
   }
 
@@ -104,17 +115,19 @@ export class TezosUtils {
     if (hexBytes === null) {
       throw new Error('Cannot parse contract code')
     }
+
     return hexBytes
   }
 
-  private static parsePair(hex: string[]): TezosContractPair {
+  private static parsePair(hex: string[]): MichelsonPair {
     const first = TezosUtils.parseHex(hex)
     const second = TezosUtils.parseHex(hex)
-    return new TezosContractPair(first, second)
+
+    return MichelsonPair.from([first, second])
   }
 
-  private static parseList(hex: string[]): TezosContractList {
-    const items: (string | number | TezosContractEntity)[] = []
+  private static parseList(hex: string[]): MichelsonList {
+    const items: MichelsonType[] = []
     const lengthBytes = TezosUtils.hexToLength(hex.splice(0, 4))
     if (lengthBytes > 0) {
       const listBytes = hex.splice(0, lengthBytes)
@@ -123,11 +136,12 @@ export class TezosUtils {
         items.push(item)
       }
     }
-    return new TezosContractList(items)
+
+    return MichelsonList.from(items)
   }
 
   private static hexToString(hex: string[]): string {
-    return hex.map(byte => String.fromCharCode(parseInt(byte, 16))).join('')
+    return hex.map((byte) => String.fromCharCode(parseInt(byte, 16))).join('')
   }
 
   private static hexToLength(hex: string[]): number {
@@ -135,12 +149,14 @@ export class TezosUtils {
       if (next === '00') {
         return previous
       }
+
       return `${previous}${next}`
     }, '')
 
     if (stringValue.length > 0) {
       return parseInt(stringValue, 16)
     }
+
     return 0
   }
 

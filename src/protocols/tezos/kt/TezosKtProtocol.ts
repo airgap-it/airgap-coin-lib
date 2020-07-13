@@ -1,16 +1,17 @@
 import axios, { AxiosResponse } from '../../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { RawTezosTransaction } from '../../../serializer/types'
+import { ProtocolSymbols, SubProtocolSymbols } from '../../../utils/ProtocolSymbols'
+import { FeeDefaults } from '../../ICoinProtocol'
 import { ICoinSubProtocol, SubProtocolType } from '../../ICoinSubProtocol'
 import { TezosProtocol } from '../TezosProtocol'
-import { TezosTransactionOperation } from '../types/operations/Transaction'
 import { TezosOperation } from '../types/operations/TezosOperation'
+import { TezosTransactionOperation } from '../types/operations/Transaction'
 import { TezosOperationType } from '../types/TezosOperationType'
 import { TezosWrappedOperation } from '../types/TezosWrappedOperation'
-import { FeeDefaults } from '../../ICoinProtocol'
 
 export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
-  public identifier: string = 'xtz-kt'
+  public identifier: ProtocolSymbols = SubProtocolSymbols.XTZ_KT
   public isSubProtocol: boolean = true
   public subProtocolType: SubProtocolType = SubProtocolType.ACCOUNT
   public addressValidationPattern: string = '^(tz1|KT1)[1-9A-Za-z]{33}$'
@@ -64,13 +65,19 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     return this.getBalanceOfPublicKey(publicKey)
   }
 
-  public async estimateFeeDefaultsFromPublicKey(publicKey: string, recipients: string[], values: string[], data?: any): Promise<FeeDefaults> {
+  public async estimateFeeDefaultsFromPublicKey(
+    publicKey: string,
+    recipients: string[],
+    values: string[],
+    data?: any
+  ): Promise<FeeDefaults> {
     const fee = this.migrationFee.shiftedBy(-this.feeDecimals).toFixed()
-      return {
-        low: fee,
-        medium: fee,
-        high: fee
-      }
+
+    return {
+      low: fee,
+      medium: fee,
+      high: fee
+    }
   }
 
   public async prepareTransactionFromPublicKey(

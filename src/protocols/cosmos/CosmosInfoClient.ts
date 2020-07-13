@@ -2,6 +2,7 @@ import Axios, { AxiosResponse } from '../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 
+import { CosmosProtocol } from './CosmosProtocol'
 import { TransactionListQuery } from './CosmosTransactionListQuery'
 
 interface Shards {
@@ -107,7 +108,7 @@ export class CosmosInfoClient {
     this.baseURL = baseURL
   }
 
-  public async fetchTransactions(identifier: string, address: string, offset: number, limit: number): Promise<IAirGapTransaction[]> {
+  public async fetchTransactions(protocol: CosmosProtocol, address: string, offset: number, limit: number): Promise<IAirGapTransaction[]> {
     const query: TransactionListQuery = new TransactionListQuery(offset, limit, address)
     const response: AxiosResponse<CosmosTransactionsResponse> = await Axios.post(
       `${this.baseURL}/cosmos/v1/getTxsByAddr`,
@@ -118,27 +119,30 @@ export class CosmosInfoClient {
     }
     const transactions: IAirGapTransaction[][] = response.data.hits.hits.map((hit: Hit) => {
       const transaction: Tx = hit._source.tx
-      const timestamp = (new Date(hit._source.timestamp)).getTime() / 1000
+      const timestamp = new Date(hit._source.timestamp).getTime() / 1000
       const fee: BigNumber = transaction.value.fee.amount
         .map((coin: Amount) => new BigNumber(coin.amount))
         .reduce((current: BigNumber, next: BigNumber) => current.plus(next))
-      const result: IAirGapTransaction[] = transaction.value.msg.filter((message: Msg) => message.type === 'cosmos-sdk/MsgSend').map((message: Msg) => {
-        const destination: string = message.value.to_address
+      const result: IAirGapTransaction[] = transaction.value.msg
+        .filter((message: Msg) => message.type === 'cosmos-sdk/MsgSend')
+        .map((message: Msg) => {
+          const destination: string = message.value.to_address
 
-        return {
-          amount: message.value.amount
-            .map((coin: Amount) => new BigNumber(coin.amount))
-            .reduce((current: BigNumber, next: BigNumber) => current.plus(next))
-            .toString(10),
-          to: [destination],
-          from: [message.value.from_address],
-          isInbound: destination === address,
-          fee: fee.toString(10),
-          protocolIdentifier: identifier,
-          hash: hit._source.hash,
-          timestamp
-        }
-      })
+          return {
+            amount: message.value.amount
+              .map((coin: Amount) => new BigNumber(coin.amount))
+              .reduce((current: BigNumber, next: BigNumber) => current.plus(next))
+              .toString(10),
+            to: [destination],
+            from: [message.value.from_address],
+            isInbound: destination === address,
+            fee: fee.toString(10),
+            protocolIdentifier: protocol.identifier,
+            network: protocol.options.network,
+            hash: hit._source.hash,
+            timestamp
+          }
+        })
 
       return result
     })

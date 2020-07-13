@@ -1,8 +1,9 @@
 import { ICoinProtocol } from '../protocols/ICoinProtocol'
 
 export interface IAirGapWallet {
+  // TODO: Can this interface be removed?
   addresses: string[]
-  coinProtocol: ICoinProtocol
+  protocol: ICoinProtocol
 
   deriveAddresses(amount: number): Promise<string[]>
 }

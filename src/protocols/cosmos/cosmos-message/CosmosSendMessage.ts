@@ -1,9 +1,9 @@
-import { IAirGapTransaction } from '../../..'
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { AirGapTransactionType, IAirGapTransaction } from '../../../interfaces/IAirGapTransaction'
 import { CosmosCoin, CosmosCoinJSON } from '../CosmosCoin'
+import { CosmosProtocol } from '../CosmosProtocol'
 
 import { CosmosMessage, CosmosMessageJSON, CosmosMessageType } from './CosmosMessage'
-import { AirGapTransactionType } from '../../../interfaces/IAirGapTransaction'
 
 export class CosmosSendMessage implements CosmosMessage {
   public readonly fromAddress: string
@@ -46,7 +46,7 @@ export class CosmosSendMessage implements CosmosMessage {
     }
   }
 
-  public toAirGapTransaction(identifier: string, fee: string): IAirGapTransaction {
+  public toAirGapTransaction(protocol: CosmosProtocol, fee: string): IAirGapTransaction {
     return {
       amount: this.amount
         .map((value: CosmosCoin) => new BigNumber(value.amount))
@@ -56,7 +56,8 @@ export class CosmosSendMessage implements CosmosMessage {
       from: [this.fromAddress],
       isInbound: false,
       fee,
-      protocolIdentifier: identifier,
+      protocolIdentifier: protocol.identifier,
+      network: protocol.options.network,
       transactionDetails: this.toRPCBody(),
       extra: {
         type: AirGapTransactionType.SPEND
@@ -68,7 +69,7 @@ export class CosmosSendMessage implements CosmosMessage {
     return new CosmosSendMessage(
       json.value.from_address,
       json.value.to_address,
-      json.value.amount.map(value => CosmosCoin.fromRPCBody(value))
+      json.value.amount.map((value) => CosmosCoin.fromRPCBody(value))
     )
   }
 }

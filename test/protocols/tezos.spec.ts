@@ -25,7 +25,7 @@ const prepareTxHelper = async (rawTezosTx: RawTezosTransaction) => {
 
   const unforgedTransaction = await tezosLib.unforgeUnsignedTezosWrappedOperation(rawTezosTx.binaryTransaction)
 
-  const spendOperation = unforgedTransaction.contents.find(content => content.kind === TezosOperationType.TRANSACTION)
+  const spendOperation = unforgedTransaction.contents.find((content) => content.kind === TezosOperationType.TRANSACTION)
   if (spendOperation) {
     const spendTransaction: TezosTransactionOperation = spendOperation as TezosTransactionOperation
 
@@ -38,7 +38,7 @@ const prepareTxHelper = async (rawTezosTx: RawTezosTransaction) => {
     }
   }
 
-  const originationOperation = unforgedTransaction.contents.find(content => content.kind === TezosOperationType.ORIGINATION)
+  const originationOperation = unforgedTransaction.contents.find((content) => content.kind === TezosOperationType.ORIGINATION)
   if (originationOperation) {
     const originationTransaction: TezosOriginationOperation = originationOperation as TezosOriginationOperation
     return {
@@ -261,7 +261,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       expect(operation3.destination).to.equal('KT1J5mFAxxzAYDLjYeVXkLcyEzNGRZ3kuFGq')
     })
 
-    it('can unforge a delegation TX', async () => { })
+    it('can unforge a delegation TX', async () => {})
 
     it('can give a list of transactions from Conseil API', async () => {
       const stub = sinon.stub(axios, 'post')
@@ -282,17 +282,28 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       )
       const transactions = await tezosLib.getTransactionsFromAddresses(tezosProtocolSpec.wallet.addresses, 20, 0)
 
-      expect(transactions).to.deep.equal([
+      expect(transactions.map((transaction) => ({ ...transaction, network: undefined }))).to.deep.eq([
         {
           amount: new BigNumber(1000000),
           fee: new BigNumber(1420),
           from: ['tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'],
           isInbound: true,
+          network: undefined,
           timestamp: 1561035943,
           protocolIdentifier: tezosLib.identifier,
           to: ['tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'],
           hash: 'ooNNmftGhsUriHVWYgHGq6AE3F2sHZFYaCq41NQZSeUdm1UZEAP',
           blockHeight: 261513
+        }
+      ])
+
+      expect(transactions.map((transaction) => ({ ...transaction.network, blockExplorer: undefined, extras: undefined }))).to.deep.eq([
+        {
+          blockExplorer: undefined,
+          extras: undefined,
+          name: 'Mainnet',
+          rpcUrl: 'https://tezos-node.prod.gke.papers.tech',
+          type: 'MAINNET'
         }
       ])
     })
@@ -477,7 +488,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
     it('will correctly prepare a single operation group if below the threshold', async () => {
       const numberOfOperations: number = 50
       const result = await prepareSpend(
-        [...Array(numberOfOperations)].map(x => 'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy'),
+        [...Array(numberOfOperations)].map((x) => 'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy'),
         [...Array(numberOfOperations)].map((v, i) => i.toString()),
         '1'
       )
@@ -488,7 +499,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       const numberOfOperations: number = 51
 
       return prepareSpend(
-        [...Array(numberOfOperations)].map(x => 'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy'),
+        [...Array(numberOfOperations)].map((x) => 'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy'),
         [...Array(numberOfOperations)].map((v, i) => i.toString()),
         '1'
       ).catch((error: Error) =>
@@ -507,7 +518,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
 
       const transactions = await protocol.prepareTransactionsFromPublicKey(
         tezosProtocolSpec.wallet.publicKey,
-        [...Array(numberOfOperations)].map(x => 'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy'),
+        [...Array(numberOfOperations)].map((x) => 'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy'),
         [...Array(numberOfOperations)].map((v, i) => i.toString()),
         '1'
       )
@@ -525,7 +536,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
 
       const transactions = await protocol.prepareTransactionsFromPublicKey(
         tezosProtocolSpec.wallet.publicKey,
-        [...Array(numberOfOperations)].map(x => 'tz1MJx9vhaNRSimcuXPK2rW4fLccQnDAnVKJ'),
+        [...Array(numberOfOperations)].map((x) => 'tz1MJx9vhaNRSimcuXPK2rW4fLccQnDAnVKJ'),
         [...Array(numberOfOperations)].map((v, i) => i.toString()),
         '1'
       )
@@ -554,67 +565,64 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
     // TODO: add test to test the add reveal to spend transactions
 
     it('will prepare an FA 1.2 transaction', async () => {
-      stub
-        .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/`)
-        .returns(Promise.resolve({
+      stub.withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/`).returns(
+        Promise.resolve({
           data: {
-            "protocol": "PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb",
-            "chain_id": "NetXdQprcVkpaWU",
-            "hash": "BKuTvcx5LJQgtiNXbd4py3RFRE4x7EYjTFwJjVjj4XP7h2vSxs6",
-            "header": {
-              "level": 940455,
-              "proto": 6,
-              "predecessor": "BLurthGbZXstELdA3hXtGAA5kXxgtxmfUpzCq7bzpPVB92u9g1z",
-              "timestamp": "2020-05-06T10:41:32Z",
-              "validation_pass": 4,
-              "operations_hash": "LLoajfGAHirmjbJWjX81gNiZPqyv8pqEyUx7FAygiYBXLQ18H2kX8",
-              "fitness": ["01", "00000000000459a7"],
-              "context": "CoVNfjwSR78ChDuvVpRW6Lvjq6nwC6UsyrZzhDgrU2ZMiPYXNjYy",
-              "priority": 0,
-              "proof_of_work_nonce": "0639894462090000",
-              "signature": "sigjnLFcgqv8QC1QwNhPgg4WomUGtL4nQ68u3GavKXLLWyFcf8g2ceaT6FeuRRVGcdDY7qj7MBo2iUo83L1rtroQKMhqZbw2"
+            protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
+            chain_id: 'NetXdQprcVkpaWU',
+            hash: 'BKuTvcx5LJQgtiNXbd4py3RFRE4x7EYjTFwJjVjj4XP7h2vSxs6',
+            header: {
+              level: 940455,
+              proto: 6,
+              predecessor: 'BLurthGbZXstELdA3hXtGAA5kXxgtxmfUpzCq7bzpPVB92u9g1z',
+              timestamp: '2020-05-06T10:41:32Z',
+              validation_pass: 4,
+              operations_hash: 'LLoajfGAHirmjbJWjX81gNiZPqyv8pqEyUx7FAygiYBXLQ18H2kX8',
+              fitness: ['01', '00000000000459a7'],
+              context: 'CoVNfjwSR78ChDuvVpRW6Lvjq6nwC6UsyrZzhDgrU2ZMiPYXNjYy',
+              priority: 0,
+              proof_of_work_nonce: '0639894462090000',
+              signature: 'sigjnLFcgqv8QC1QwNhPgg4WomUGtL4nQ68u3GavKXLLWyFcf8g2ceaT6FeuRRVGcdDY7qj7MBo2iUo83L1rtroQKMhqZbw2'
             },
-            "metadata": {
-              "protocol": "PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb",
-              "next_protocol": "PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb",
-              "test_chain_status": { "status": "not_running" },
-              "max_operations_ttl": 60,
-              "max_operation_data_length": 16384,
-              "max_block_header_length": 238,
-              "max_operation_list_length": [{
-                "max_size": 32768,
-                "max_op": 32
+            metadata: {
+              protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
+              next_protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
+              test_chain_status: { status: 'not_running' },
+              max_operations_ttl: 60,
+              max_operation_data_length: 16384,
+              max_block_header_length: 238,
+              max_operation_list_length: [
+                {
+                  max_size: 32768,
+                  max_op: 32
+                },
+                { max_size: 32768 },
+                {
+                  max_size: 135168,
+                  max_op: 132
+                },
+                { max_size: 524288 }
+              ],
+              baker: 'tz1Kt4P8BCaP93AEV4eA7gmpRryWt5hznjCP',
+              level: {
+                level: 940455,
+                level_position: 940454,
+                cycle: 229,
+                cycle_position: 2470,
+                voting_period: 28,
+                voting_period_position: 22950,
+                expected_commitment: false
               },
-              { "max_size": 32768 },
-              {
-                "max_size": 135168,
-                "max_op": 132
-              },
-              { "max_size": 524288 }],
-              "baker": "tz1Kt4P8BCaP93AEV4eA7gmpRryWt5hznjCP",
-              "level": {
-                "level": 940455,
-                "level_position": 940454,
-                "cycle": 229,
-                "cycle_position": 2470,
-                "voting_period": 28,
-                "voting_period_position": 22950,
-                "expected_commitment": false
-              },
-              "voting_period_kind": "proposal",
-              "nonce_hash": null,
-              "consumed_gas": "0",
-              "deactivated": [],
-              "balance_updates": []
+              voting_period_kind: 'proposal',
+              nonce_hash: null,
+              consumed_gas: '0',
+              deactivated: [],
+              balance_updates: []
             },
-            "operations": [
-              [],
-              [],
-              [],
-              []
-            ]
+            operations: [[], [], [], []]
           }
-        }))
+        })
+      )
 
       const tx = {
         kind: 'transaction',
@@ -656,9 +664,16 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       }
 
       const postStub = sinon.stub(axios, 'post')
-      postStub
-        .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`)
-        .returns(Promise.resolve({ data: { contents: [{ ...tx, metadata }, { ...tx, metadata }] } }))
+      postStub.withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`).returns(
+        Promise.resolve({
+          data: {
+            contents: [
+              { ...tx, metadata },
+              { ...tx, metadata }
+            ]
+          }
+        })
+      )
 
       const protocol = new TezosProtocol()
       const incompleteTransaction: any[] = [tx, tx]
@@ -703,21 +718,24 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy/balance`)
         .returns(Promise.resolve({ data: 0 }))
 
-      return prepareSpend(['KT1X6SSqro2zUo1Wa7X5BnDWBvfBxZ6feUnc', 'KT1QLtQ54dKzcfwxMHmEM6PC8tooUg6MxDZ3'], ['12345'], '111').catch(
-        (error: Error) =>
-          expect(error)
-            .to.be.an('error')
-            .with.property('message', 'length of recipients and values does not match!')
-      )
+      return prepareSpend(
+        ['KT1X6SSqro2zUo1Wa7X5BnDWBvfBxZ6feUnc', 'KT1QLtQ54dKzcfwxMHmEM6PC8tooUg6MxDZ3'],
+        ['12345'],
+        '111'
+      ).catch((error: Error) => expect(error).to.be.an('error').with.property('message', 'length of recipients and values does not match!'))
     })
   })
 
   describe('TransactionDetails', () => {
     it('correctly get transaction details from a forged, unsigned transaction', async () => {
-      const forgedUnsignedTransaction: string = 'e879f5c6312b85da97cbb3bcb14dd515f29b407a0cc08b70fbcdece5bb49d8b06e00bf97f5f1dbfd6ada0cf986d0a812f1bf0a572abc8c0bbe8139bc5000ff0012548f71994cb2ce18072d0dcb568fe35fb74930'
+      const forgedUnsignedTransaction: string =
+        'e879f5c6312b85da97cbb3bcb14dd515f29b407a0cc08b70fbcdece5bb49d8b06e00bf97f5f1dbfd6ada0cf986d0a812f1bf0a572abc8c0bbe8139bc5000ff0012548f71994cb2ce18072d0dcb568fe35fb74930'
 
       const protocol: TezosProtocol = new TezosProtocol()
-      const details: IAirGapTransaction[] = await protocol.getTransactionDetails({ publicKey: '', transaction: { binaryTransaction: forgedUnsignedTransaction } })
+      const details: IAirGapTransaction[] = await protocol.getTransactionDetails({
+        publicKey: '',
+        transaction: { binaryTransaction: forgedUnsignedTransaction }
+      })
 
       expect(details[0].amount).to.equal('0')
       expect(details[0].fee).to.equal('1420')

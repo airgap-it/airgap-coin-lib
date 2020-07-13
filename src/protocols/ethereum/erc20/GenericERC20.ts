@@ -6,45 +6,30 @@ import { UnsignedTransaction } from '../../../serializer/schemas/definitions/tra
 import { UnsignedEthereumTransaction } from '../../../serializer/schemas/definitions/transaction-sign-request-ethereum'
 import { SignedEthereumTransaction } from '../../../serializer/schemas/definitions/transaction-sign-response-ethereum'
 import { RawEthereumTransaction } from '../../../serializer/types'
+import { FeeDefaults } from '../../ICoinProtocol'
 import { ICoinSubProtocol, SubProtocolType } from '../../ICoinSubProtocol'
 import { BaseEthereumProtocol } from '../BaseEthereumProtocol'
 import { EtherscanInfoClient } from '../clients/info-clients/EtherscanInfoClient'
 import { AirGapNodeClient, EthereumRPCDataTransfer } from '../clients/node-clients/AirGapNodeClient'
+import { EthereumERC20ProtocolOptions } from '../EthereumProtocolOptions'
 import { EthereumUtils } from '../utils/utils'
-import { FeeDefaults } from '../../ICoinProtocol'
 
 const EthereumTransaction = require('../../../dependencies/src/ethereumjs-tx-1.3.7/index')
-
-export interface GenericERC20Configuration {
-  symbol: string
-  name: string
-  marketSymbol: string
-  identifier: string
-  contractAddress: string
-  decimals?: number
-  jsonRPCAPI?: string
-  infoAPI?: string
-  chainId?: number
-}
 
 export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, EtherscanInfoClient> implements ICoinSubProtocol {
   public isSubProtocol: boolean = true
   public subProtocolType: SubProtocolType = SubProtocolType.TOKEN
   public readonly contractAddress: string
 
-  constructor(config: GenericERC20Configuration) {
-    // we probably need another network here, explorer is ok
-    super({
-      chainID: config.chainId || 1,
-      nodeClient: new AirGapNodeClient(config.jsonRPCAPI),
-      infoClient: new EtherscanInfoClient(config.infoAPI)
-    })
-    this.contractAddress = config.contractAddress
-    this.symbol = config.symbol
-    this.name = config.name
-    this.marketSymbol = config.marketSymbol
-    this.identifier = config.identifier
-    this.decimals = config.decimals || this.decimals
+  constructor(public readonly options: EthereumERC20ProtocolOptions) {
+    super(options)
+
+    this.contractAddress = options.config.contractAddress
+    this.symbol = options.config.symbol
+    this.name = options.config.name
+    this.marketSymbol = options.config.marketSymbol
+    this.identifier = options.config.identifier
+    this.decimals = options.config.decimals
   }
 
   public async getBalanceOfPublicKey(publicKey: string): Promise<string> {
@@ -56,7 +41,7 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, Ethersc
   public async getBalanceOfAddresses(addresses: string[]): Promise<string> {
     const balances: BigNumber[] = await Promise.all(
       addresses.map((address: string) => {
-        return this.configuration.nodeClient.callBalanceOf(this.contractAddress, address)
+        return this.options.nodeClient.callBalanceOf(this.contractAddress, address)
       })
     )
 
@@ -72,7 +57,8 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, Ethersc
   }
 
   private async estimateGas(source: string, recipient: string, hexValue: string): Promise<BigNumber> {
-    const result =  await this.configuration.nodeClient.estimateTransferGas(this.contractAddress, source, recipient, hexValue)
+    const result = await this.options.nodeClient.estimateTransferGas(this.contractAddress, source, recipient, hexValue)
+
     return result
   }
 
@@ -80,7 +66,12 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, Ethersc
     return this.getBalanceOfPublicKey(publicKey)
   }
 
-  public async estimateFeeDefaultsFromPublicKey(publicKey: string, recipients: string[], values: string[], data?: any): Promise<FeeDefaults> {
+  public async estimateFeeDefaultsFromPublicKey(
+    publicKey: string,
+    recipients: string[],
+    values: string[],
+    data?: any
+  ): Promise<FeeDefaults> {
     if (recipients.length !== values.length) {
       return Promise.reject('recipients length does not match with values')
     }
@@ -88,17 +79,14 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, Ethersc
       return Promise.reject('you cannot have 0 recipients')
     }
     const address: string = await this.getAddressFromPublicKey(publicKey)
-    const estimatedGas = await this.estimateGas(
-      address,
-      recipients[0],
-      EthereumUtils.toHex(values[0])
-    )
-    const gasPrise = await this.configuration.nodeClient.getGasPrice()
+    const estimatedGas = await this.estimateGas(address, recipients[0], EthereumUtils.toHex(values[0]))
+    const gasPrise = await this.options.nodeClient.getGasPrice()
     const feeStepFactor = new BigNumber(0.5)
     const estimatedFee = estimatedGas.times(gasPrise)
     const lowFee = estimatedFee.minus(estimatedFee.times(feeStepFactor).integerValue(BigNumber.ROUND_FLOOR))
     const mediumFee = estimatedFee
     const highFee = mediumFee.plus(mediumFee.times(feeStepFactor).integerValue(BigNumber.ROUND_FLOOR))
+
     return {
       low: lowFee.shiftedBy(-this.feeDecimals).toFixed(),
       medium: mediumFee.shiftedBy(-this.feeDecimals).toFixed(),
@@ -129,14 +117,10 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, Ethersc
       const ethBalance: BigNumber = new BigNumber(await super.getBalanceOfPublicKey(publicKey))
       const address: string = await this.getAddressFromPublicKey(publicKey)
 
-      const estimatedGas = await this.estimateGas(
-        address,
-        recipients[0],
-        EthereumUtils.toHex(wrappedValues[0].toFixed())
-      )
+      const estimatedGas = await this.estimateGas(address, recipients[0], EthereumUtils.toHex(wrappedValues[0].toFixed()))
 
       if (ethBalance.isGreaterThanOrEqualTo(wrappedFee)) {
-        const txCount: number = await this.configuration.nodeClient.fetchTransactionCount(address)
+        const txCount: number = await this.options.nodeClient.fetchTransactionCount(address)
         const gasPrice: BigNumber = wrappedFee.isEqualTo(0)
           ? new BigNumber(0)
           : wrappedFee.div(estimatedGas).integerValue(BigNumber.ROUND_CEIL)
@@ -146,7 +130,7 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, Ethersc
           gasPrice: EthereumUtils.toHex(gasPrice.toFixed()),
           to: this.contractAddress,
           value: EthereumUtils.toHex(new BigNumber(0).toFixed()),
-          chainId: this.configuration.chainID,
+          chainId: this.options.network.extras.chainID,
           data: new EthereumRPCDataTransfer(recipients[0], EthereumUtils.toHex(wrappedValues[0].toFixed())).abiEncoded()
         }
 
@@ -165,10 +149,10 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, Ethersc
     return new Promise((overallResolve, overallReject) => {
       const promises: Promise<IAirGapTransaction[]>[] = []
       for (const address of addresses) {
-        promises.push(this.configuration.infoClient.fetchContractTransactions(this.identifier, this.contractAddress, address, page, limit))
+        promises.push(this.options.infoClient.fetchContractTransactions(this, this.contractAddress, address, page, limit))
       }
       Promise.all(promises)
-        .then(values => {
+        .then((values) => {
           overallResolve(
             values.reduce((a, b) => {
               return a.concat(b)

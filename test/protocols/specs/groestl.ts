@@ -82,4 +82,11 @@ export class GroestlcoinProtocolSpec extends TestProtocolSpec {
 
     return protocol
   }
+
+  public messages = [
+    {
+      message: 'example message',
+      signature: 'IGplImxLTrtKuTACWK0TzvSNBgjkxxiCU8Wuk801l8Pga4Xv85LJb33SGCWSxWKd5mlCNjmdiprw+GIbjXBhHpc='
+    }
+  ]
 }

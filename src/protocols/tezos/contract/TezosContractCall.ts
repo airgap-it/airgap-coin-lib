@@ -1,71 +1,20 @@
-import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
-import { TezosContractPair } from './TezosContractPair'
-import { TezosContractEntrypoint } from './TezosContractEntrypoint'
-import { TezosContractEntity } from './TezosContractEntity'
-import { TezosTransactionOperation } from '../types/operations/Transaction'
-import { TezosOperationType } from '../types/TezosOperationType'
+import { MichelsonType } from '../types/michelson/MichelsonType'
+import { TezosTransactionParameters } from '../types/operations/Transaction'
 
-export class TezosContractCall extends TezosContractEntity {
-  readonly entrypoint: TezosContractEntrypoint
-  readonly args: TezosContractPair
+export class TezosContractCall {
+  constructor(
+    readonly entrypoint: string, 
+    readonly michelsonValue: MichelsonType | undefined
+  ) {}
 
-  constructor(entrypoint: TezosContractEntrypoint, args: TezosContractPair) {
-    super()
-    this.entrypoint = entrypoint
-    this.args = args
+  public args(): any | undefined {
+    return this.michelsonValue?.asRawValue()
   }
 
-  toOperationJSONBody(
-    chainID: string,
-    branch: string,
-    counter: BigNumber,
-    source: string,
-    contractAddress: string,
-    fee: string = '0'
-  ): TezosRPCOperationBody {
+  public toJSON(): TezosTransactionParameters {
     return {
-      chain_id: chainID,
-      operation: {
-        branch: branch,
-        signature: 'sigUHx32f9wesZ1n2BWpixXz4AQaZggEtchaQNHYGRCoWNAXx45WGW2ua3apUUUAGMLPwAU41QoaFCzVSL61VaessLg4YbbP', // signature will not be checked, so it is ok to always use this one
-        contents: [
-          {
-            kind: TezosOperationType.TRANSACTION,
-            counter: counter.toFixed(),
-            amount: '0',
-            source: source,
-            destination: contractAddress,
-            fee: fee,
-            gas_limit: '400000',
-            storage_limit: '60000',
-            parameters: this.toJSON()
-          }
-        ]
-      }
+      entrypoint: this.entrypoint,
+      value: this.michelsonValue ? this.michelsonValue.toMichelineJSON() : []
     }
   }
-
-  toJSON(): any {
-    return {
-      entrypoint: this.entrypoint.toJSON(),
-      value: this.args.toJSON()
-    }
-  }
-
-  static fromJSON(json: any): TezosContractCall {
-    const entrypoint = TezosContractEntrypoint.fromJSON(json.entrypoint)
-    const args = TezosContractPair.fromJSON(json.value)
-    return new TezosContractCall(entrypoint, args)
-  }
-}
-
-export interface TezosRPCOperationBody {
-  operation: TezosRPCOperation
-  chain_id: string
-}
-
-export interface TezosRPCOperation {
-  branch: string
-  contents: TezosTransactionOperation[]
-  signature: string
 }
