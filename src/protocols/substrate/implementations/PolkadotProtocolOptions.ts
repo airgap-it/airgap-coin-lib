@@ -10,7 +10,7 @@ const MAINNET_NAME: string = 'Mainnet'
 const NODE_URL: string = 'https://polkadot-node.prod.gke.papers.tech'
 
 const BLOCK_EXPLORER_URL: string = 'https://polkascan.io/polkadot-cc1'
-const BLOCK_EXPLORER_API: string = 'https://api-01.polkascan.io/polkadot/api/v1'
+const BLOCK_EXPLORER_API: string = 'https://polkadot-cc1.subscan.io/api/scan'
 
 export class PolkadotProtocolNetworkExtras {
   constructor(public readonly apiUrl: string = BLOCK_EXPLORER_API, public readonly network: SubstrateNetwork = SubstrateNetwork.POLKADOT) {}

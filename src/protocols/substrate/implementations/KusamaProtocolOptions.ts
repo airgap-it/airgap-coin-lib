@@ -10,7 +10,7 @@ const MAINNET_NAME: string = 'Mainnet'
 const NODE_URL: string = 'https://polkadot-kusama-node.prod.gke.papers.tech'
 
 const BLOCK_EXPLORER_URL: string = 'https://polkascan.io/kusama'
-const BLOCK_EXPLORER_API: string = 'https://api-01.polkascan.io/kusama/api/v1'
+const BLOCK_EXPLORER_API = 'https://kusama.subscan.io/api/scan'
 
 export class KusamaProtocolNetworkExtras {
   constructor(public readonly apiUrl: string = BLOCK_EXPLORER_API, public readonly network: SubstrateNetwork = SubstrateNetwork.KUSAMA) {}
