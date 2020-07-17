@@ -3,6 +3,7 @@
   "version": "0.9.0-beta.9",
   "description": "The airgap-coin-lib is setup in a way that prepare, signing and broadcasting are willingfully separated.",
   "main": "dist/index.js",
+  "unpkg": "dist/airgap-coin-lib.min.js",
   "types": "dist/index.d.ts",
   "keywords": [
     "airgap",
@@ -31,7 +32,7 @@
     "prepare": "npm run build",
     "install-test-dependencies": "node scripts/install-test-deps.js && npm install",
     "install-build-dependencies": "node scripts/install-build-deps.js && npm install",
-    "browserify": "browserify"
+    "browserify": "browserify ./dist/index.js -s airgapCoinLib > ./dist/airgap-coin-lib.min.js"
   },
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
