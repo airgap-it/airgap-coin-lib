@@ -435,10 +435,10 @@ export class SubstrateAccountController {
     const currentValidators = nominations?.targets?.elements?.map((target) => target.asAddress()) || []
     const validatorAddresses = validatorIds.map((id) => SubstrateAddress.from(id, this.network).toString())
 
-    const isBonded = stakingDetails !== null
+    const isBonded = new BigNumber(stakingDetails?.active ?? 0).gt(0)
     const isDelegating = nominations !== null
 
-    const hasFundsToWithdraw = new BigNumber(stakingDetails?.unlocked || 0).gt(0)
+    const hasFundsToWithdraw = new BigNumber(stakingDetails?.unlocked ?? 0).gt(0)
 
     if (maxDelegationValue.gt(minDelegationValue)) {
       if (!isBonded) {

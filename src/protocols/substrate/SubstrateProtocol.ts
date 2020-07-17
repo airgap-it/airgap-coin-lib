@@ -91,7 +91,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
 
   public async getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
     const pageNumber = Math.ceil(offset / limit) + 1
-    const txs = await Promise.all(addresses.map((address) => this.options.blockExplorerClient.getTransactions(address, limit, pageNumber)))
+    const txs = await Promise.all(addresses.map((address) => this.options.blockExplorerClient.getTransactions(address, limit, pageNumber, this.decimals)))
 
     return txs
       .reduce((flatten, toFlatten) => flatten.concat(toFlatten), [])
