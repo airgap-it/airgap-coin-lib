@@ -777,7 +777,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       const spendOperation: TezosTransactionOperation = {
         kind: TezosOperationType.TRANSACTION,
         fee: adjustedFee.toFixed(),
-        gas_limit: '10300',
+        gas_limit: recipients[i].toLowerCase().startsWith('kt') ? '15385' : '10300',
         storage_limit: receivingBalance.isZero() && recipients[i].toLowerCase().startsWith('tz') ? '300' : '0', // taken from eztz
         amount: wrappedValues[i].toFixed(),
         counter: counter.plus(i).toFixed(),

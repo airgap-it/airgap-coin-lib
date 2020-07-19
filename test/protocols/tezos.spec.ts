@@ -343,7 +343,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       expect(result.airGapTxs[0].amount).to.equal('100000')
       expect(result.airGapTxs[0].fee).to.equal('1920') // 500 mutez is added because in babylon this is sent to a contract
       expect(result.rawTezosTx.binaryTransaction).to.equal(
-        'e4b7e31c04d23e3a10ea20e11bd0ebb4bde16f632c1d94779fd5849a34ec42a36c0091a9d2b003f19cf5a1f38f04f1000ab482d33176800fcffe37bc5000a08d0601ba4e7349ac25dc5eb2df5a43fceacc58963df4f50000'
+        'e4b7e31c04d23e3a10ea20e11bd0ebb4bde16f632c1d94779fd5849a34ec42a36c0091a9d2b003f19cf5a1f38f04f1000ab482d33176800fcffe37997800a08d0601ba4e7349ac25dc5eb2df5a43fceacc58963df4f50000'
       )
     })
 
