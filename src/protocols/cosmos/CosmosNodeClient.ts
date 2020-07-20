@@ -101,7 +101,7 @@ export interface CosmosRewardDetails {
 }
 
 export class CosmosNodeClient {
-  constructor(public readonly baseURL: string, public useCORSProxy: boolean = false) {}
+  constructor(public readonly baseURL: string, public useCORSProxy: boolean = true) {}
 
   public async fetchBalance(address: string, totalBalance?: boolean): Promise<BigNumber> {
     const response = await Axios.get(this.url(`/bank/balances/${address}`))
