@@ -1,69 +1,78 @@
-import { TezosContractEntity } from '../contract/TezosContractEntity'
-import { TezosContractPair } from '../contract/TezosContractPair'
-import { TezosContractInt } from '../contract/TezosContractInt'
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
-import { TezosNetwork } from '../TezosProtocol'
+import { TezosProtocolNetwork } from '../TezosProtocolOptions'
 import { TezosUtils } from '../TezosUtils'
-import { TezosBTCDetails } from './../../../serializer/constants'
-import { TezosFAProtocol } from './TezosFAProtocol'
+import { MichelsonPair } from '../types/michelson/generics/MichelsonPair'
+import { MichelsonType } from '../types/michelson/MichelsonType'
+import { MichelsonInt } from '../types/michelson/primitives/MichelsonInt'
 
-export class TezosBTC extends TezosFAProtocol {
-  private static readonly bigMapKeyLedgerPrefix = '0x05070701000000066c65646765720a00000016'
+import { TezosFA12Protocol } from './TezosFA12Protocol'
+import { TezosBTCProtocolConfig, TezosFAProtocolOptions } from './TezosFAProtocolOptions'
+
+enum TezosBTCContractEntrypoint {
+  TOTAL_MINTED = 'getTotalMinted',
+  TOTAL_BURNED = 'getTotalBurned'
+}
+
+export class TezosBTC extends TezosFA12Protocol {
+  private static readonly bigMapKeyLedgerPrefix: string = '0x05070701000000066c65646765720a00000016'
 
   constructor(
-    contractAddress: string = TezosBTCDetails.CONTRACT_ADDRESS,
-    jsonRPCAPI?: string,
-    baseApiUrl?: string,
-    baseApiKey?: string,
-    baseApiNetwork?: string,
-    network?: TezosNetwork
+    public readonly options: TezosFAProtocolOptions = new TezosFAProtocolOptions(new TezosProtocolNetwork(), new TezosBTCProtocolConfig())
   ) {
-    super({
-      symbol: 'tzBTC',
-      name: 'Tezos BTC',
-      marketSymbol: 'btc',
-      identifier: 'xtz-btc',
-      feeDefaults: {
-        low: '0.100',
-        medium: '0.200',
-        high: '0.300'
-      },
-      decimals: 8,
-      contractAddress,
-      jsonRPCAPI,
-      baseApiUrl,
-      baseApiKey,
-      baseApiNetwork,
-      network
-    })
+    super(options)
+  }
+
+  public async getTotalMinted(source?: string, callbackContract: string = this.callbackContract()): Promise<string> {
+    const getTotalMintedCall = await this.contract.createContractCall(TezosBTCContractEntrypoint.TOTAL_MINTED, [
+      [],
+      callbackContract
+    ])
+
+    return this.getContractCallIntResult(getTotalMintedCall, this.requireSource(source))
+  }
+
+  public async getTotalBurned(source?: string, callbackContract: string = this.callbackContract()): Promise<string> {
+    const getTotalBurnedCall = await this.contract.createContractCall(TezosBTCContractEntrypoint.TOTAL_BURNED, [
+      [],
+      callbackContract
+    ])
+
+    return this.getContractCallIntResult(getTotalBurnedCall, this.requireSource(source))
   }
 
   public async fetchTokenHolders(): Promise<{ address: string; amount: string }[]> {
-    const values = await this.contract.bigMapValues([
-      {
-        field: 'key' as const,
-        operation: 'startsWith' as const,
-        set: [TezosBTC.bigMapKeyLedgerPrefix]
-      }
-    ])
+    const values = await this.contract.bigMapValues({
+      predicates: [
+        {
+          field: 'key',
+          operation: 'startsWith',
+          set: [TezosBTC.bigMapKeyLedgerPrefix]
+        }
+      ]
+    })
 
     return values
       .map((bigMapEntry) => {
         const addressHex = bigMapEntry.key.substring(TezosBTC.bigMapKeyLedgerPrefix.length)
         const address = TezosUtils.parseAddress(addressHex)
-        let value: TezosContractEntity = new TezosContractInt(0)
+        let value: MichelsonType = MichelsonInt.from(0)
         try {
           if (bigMapEntry.value) {
             value = TezosUtils.parseHex(bigMapEntry.value)
           }
         } catch {}
-        if (value instanceof TezosContractPair) {
-          value = value.first
+
+        if (value instanceof MichelsonPair) {
+          value = value.first.get()
         }
+
+        const amount: BigNumber = value instanceof MichelsonInt
+          ? value.value
+          : new BigNumber(0) 
 
         return {
           address,
-          amount: new BigNumber((value as TezosContractInt).value).toFixed()
+          amount: amount.toFixed()
         }
       })
       .filter((value) => value.amount !== '0')

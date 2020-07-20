@@ -1,5 +1,4 @@
 import { async } from '../../dependencies/src/validate.js-0.13.1/validate'
-import { EthereumProtocol } from '../../protocols/ethereum/EthereumProtocol'
 import { UnsignedEthereumTransaction } from '../schemas/definitions/transaction-sign-request-ethereum'
 import { SignedEthereumTransaction } from '../schemas/definitions/transaction-sign-response-ethereum'
 import { RawEthereumTransaction } from '../types'
@@ -27,7 +26,7 @@ const unsignedTransactionConstraints = {
     type: 'String',
     isHexStringWithPrefix: true,
     format: {
-      pattern: new EthereumProtocol().addressValidationPattern,
+      pattern: '^0x[a-fA-F0-9]{40}$', // Should be new EthereumProtocol().addressValidationPattern, but then there is a runtime issue because of circular dependencies
       flags: 'i',
       message: 'is not a valid ethereum address'
     }

@@ -1,5 +1,6 @@
 import * as bs58check from '../../dependencies/src/bs58check-2.1.2/index'
 import * as rlp from '../../dependencies/src/rlp-2.2.3/index'
+import { ProtocolSymbols } from '../../utils/ProtocolSymbols'
 
 import { signedTransactionSerializerByProtocolIdentifier, unsignedTransactionSerializerByProtocolIdentifier } from '.'
 import { SERIALIZER_VERSION } from './constants'
@@ -37,7 +38,7 @@ export interface SerializedSyncProtocol extends Array<Buffer | SerializedSyncPro
 export interface DeserializedSyncProtocol {
   version?: number
   type: EncodedType
-  protocol: string
+  protocol: ProtocolSymbols
   payload: UnsignedTransaction | SyncWalletRequest | SignedTransaction
 }
 
@@ -92,7 +93,7 @@ export class SyncProtocolUtils {
     }
 
     const type = parseInt(rlpDecodedTx[SyncProtocolKeys.TYPE].toString(), 10)
-    const protocol = rlpDecodedTx[SyncProtocolKeys.PROTOCOL].toString()
+    const protocol = rlpDecodedTx[SyncProtocolKeys.PROTOCOL].toString() as ProtocolSymbols // TODO: Verify
     const payload = rlpDecodedTx[SyncProtocolKeys.PAYLOAD]
 
     let typedPayload

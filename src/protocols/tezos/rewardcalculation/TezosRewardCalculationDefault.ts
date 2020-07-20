@@ -34,7 +34,7 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
     currentCycleIn?: number
   ): Promise<TezosRewards> {
     const currentCycle = currentCycleIn ?? (await this.protocol.fetchCurrentCycle())
-    const calculatingLevel = cycle * TezosProtocol.BLOCKS_PER_CYCLE[this.protocol.network]
+    const calculatingLevel = cycle * TezosProtocol.BLOCKS_PER_CYCLE[this.protocol.options.network.extras.network]
 
     await this.getConstants(calculatingLevel, currentCycle < cycle)
 

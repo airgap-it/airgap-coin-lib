@@ -1,5 +1,6 @@
-import { IAirGapTransaction } from '../../..'
+import { IAirGapTransaction } from '../../../interfaces/IAirGapTransaction'
 import { CosmosCoinJSON } from '../CosmosCoin'
+import { CosmosProtocol } from '../CosmosProtocol'
 import { JSONConvertible, RPCConvertible } from '../CosmosTransaction'
 
 export interface CosmosMessageJSON {
@@ -49,7 +50,7 @@ export class CosmosMessageType {
 export interface CosmosMessage extends JSONConvertible, RPCConvertible {
   type: CosmosMessageType
 
-  toAirGapTransaction(identifier: string, fee: string): IAirGapTransaction
+  toAirGapTransaction(protocol: CosmosProtocol, fee: string): IAirGapTransaction
 
   toJSON(): CosmosMessageJSON
 }

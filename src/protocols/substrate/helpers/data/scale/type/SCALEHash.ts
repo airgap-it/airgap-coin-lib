@@ -19,7 +19,7 @@ export class SCALEHash extends SCALEType {
     } else if (!(typeof bytes === 'string')) {
       buffer = Buffer.from(bytes)
     } else {
-      throw new Error('Unknown bytes type.')
+      throw new Error('SCALEHash#from: Unknown bytes type.')
     }
 
     return new SCALEHash(buffer)

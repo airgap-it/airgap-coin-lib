@@ -57,7 +57,7 @@ export class SCALEEra extends SCALEType {
     const phase = (encoded >> 4) * quantizeFactor
 
     if (period < 4 || period < phase) {
-      throw new Error('Invalid mortal era')
+      throw new Error('SCALEEra#decodeMortal: Invalid mortal era')
     }
 
     return {

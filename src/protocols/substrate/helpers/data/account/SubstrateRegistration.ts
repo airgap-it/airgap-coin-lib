@@ -1,8 +1,7 @@
-import { hexToBytes } from '../../../../../utils/hex'
 import { SubstrateNetwork } from '../../../SubstrateNetwork'
 import { SCALEDecoder, SCALEDecodeResult } from '../scale/SCALEDecoder'
 import { SCALEArray } from '../scale/type/SCALEArray'
-import { SCALEBytes } from '../scale/type/SCALEBytes'
+import { SCALEData } from '../scale/type/SCALEData'
 import { SCALEEnum } from '../scale/type/SCALEEnum'
 import { SCALEHash } from '../scale/type/SCALEHash'
 import { SCALEInt } from '../scale/type/SCALEInt'
@@ -22,35 +21,22 @@ export class SubstrateIdentityInfo {
   public static decode(network: SubstrateNetwork, raw: string): SCALEDecodeResult<SubstrateIdentityInfo> {
     const decoder = new SCALEDecoder(network, raw)
 
-    const dataDecodeMethod = (_, hex) => {
-      const encoded = hexToBytes(hex)
-      const indicator = encoded[0]
-
-      let bytes: number
-      if (indicator === 0) {
-        bytes = 1
-      } else if (indicator >= 1 && indicator <= 33) {
-        const length = indicator - 1
-        bytes = length + 1
-      } else {
-        bytes = 32 + 1
-      }
-
-      return {
-        bytesDecoded: bytes,
-        decoded: SCALEBytes.from(encoded.subarray(1, bytes))
-      }
-    }
-
-    const additional = decoder.decodeNextArray((network, hex) => SCALETuple.decode(network, hex, dataDecodeMethod, dataDecodeMethod))
-    const display = decoder.decodeNextObject(dataDecodeMethod)
-    const legal = decoder.decodeNextObject(dataDecodeMethod)
-    const web = decoder.decodeNextObject(dataDecodeMethod)
-    const riot = decoder.decodeNextObject(dataDecodeMethod)
-    const email = decoder.decodeNextObject(dataDecodeMethod)
+    const additional = decoder.decodeNextArray((network, hex) =>
+      SCALETuple.decode(
+        network,
+        hex,
+        (_, hex) => SCALEData.decode(hex),
+        (_, hex) => SCALEData.decode(hex)
+      )
+    )
+    const display = decoder.decodeNextData()
+    const legal = decoder.decodeNextData()
+    const web = decoder.decodeNextData()
+    const riot = decoder.decodeNextData()
+    const email = decoder.decodeNextData()
     const fingerprint = decoder.decodeNextOptional((_, hex) => SCALEHash.decode(hex, 20))
-    const image = decoder.decodeNextObject(dataDecodeMethod)
-    const twitter = decoder.decodeNextObject(dataDecodeMethod)
+    const image = decoder.decodeNextData()
+    const twitter = decoder.decodeNextData()
 
     return {
       bytesDecoded:
@@ -75,32 +61,15 @@ export class SubstrateIdentityInfo {
     }
   }
 
-  public readonly display: string
-  public readonly legal: string
-  public readonly web: string
-  public readonly riot: string
-  public readonly email: string
-  public readonly image: string
-  public readonly twitter: string
-
   private constructor(
-    readonly displayRaw: SCALEBytes,
-    readonly legalRaw: SCALEBytes,
-    readonly webRaw: SCALEBytes,
-    readonly riotRaw: SCALEBytes,
-    readonly emailRaw: SCALEBytes,
-    readonly imageRaw: SCALEBytes,
-    readonly twitterRaw: SCALEBytes
-  ) {
-    const textDecoder = new TextDecoder()
-    this.display = textDecoder.decode(displayRaw.bytes)
-    this.legal = textDecoder.decode(legalRaw.bytes)
-    this.web = textDecoder.decode(webRaw.bytes)
-    this.riot = textDecoder.decode(riotRaw.bytes)
-    this.email = textDecoder.decode(emailRaw.bytes)
-    this.image = textDecoder.decode(imageRaw.bytes)
-    this.twitter = textDecoder.decode(twitterRaw.bytes)
-  }
+    readonly display: SCALEData,
+    readonly legal: SCALEData,
+    readonly web: SCALEData,
+    readonly riot: SCALEData,
+    readonly email: SCALEData,
+    readonly image: SCALEData,
+    readonly twitter: SCALEData
+  ) {}
 }
 
 export class SubstrateRegistration {

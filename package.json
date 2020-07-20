@@ -1,8 +1,9 @@
 {
   "name": "airgap-coin-lib",
-  "version": "0.8.8",
+  "version": "0.9.0",
   "description": "The airgap-coin-lib is setup in a way that prepare, signing and broadcasting are willingfully separated.",
   "main": "dist/index.js",
+  "unpkg": "dist/airgap-coin-lib.min.js",
   "types": "dist/index.d.ts",
   "keywords": [
     "airgap",
@@ -18,7 +19,7 @@
     "url": "https://github.com/airgap-it/airgap-coin-lib"
   },
   "scripts": {
-    "build": "tsc && node scripts/copy-files-after-build.js && node scripts/make-ts-declaration-files-backwards-compatible.js",
+    "build": "node scripts/node-module-es-module-interop.js && tsc && node scripts/copy-files-after-build.js && node scripts/make-ts-declaration-files-backwards-compatible.js",
     "build-scripts": "tsc scripts/*.ts",
     "lint": "tslint -c ./tslint.json --project ./tsconfig.json --format stylish --fix",
     "lint:prettier": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -31,15 +32,17 @@
     "prepare": "npm run build",
     "install-test-dependencies": "node scripts/install-test-deps.js && npm install",
     "install-build-dependencies": "node scripts/install-build-deps.js && npm install",
-    "browserify": "browserify"
+    "browserify": "browserify ./dist/index.js -s airgapCoinLib > ./dist/airgap-coin-lib.min.js"
   },
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
-    "@taquito/local-forging": "^6.1.1-beta.0",
+    "@polkadot/util": "2.0.1",
+    "@polkadot/wasm-crypto": "0.20.1",
+    "@taquito/local-forging": "6.1.1-beta.0",
+    "bitcoinjs-message": "2.1.1",
+    "groestlcoinjs-message": "2.1.0",
     "libsodium-wrappers": "0.7.6",
-    "@polkadot/util": "^2.0.1",
-    "@polkadot/wasm-crypto": "^0.20.1",
-    "xxhashjs": "^0.2.2"
+    "xxhashjs": "0.2.2"
   },
   "localDependencies": {
     "hd-wallet-js": "b216450e56954a6e82ace0aade9474673de5d9d5",

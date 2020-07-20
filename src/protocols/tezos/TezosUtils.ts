@@ -1,12 +1,13 @@
 import * as bigInt from '../../dependencies/src/big-integer-1.6.45/BigInteger'
 import * as bs58check from '../../dependencies/src/bs58check-2.1.2/index'
 
-import { TezosContractEntity } from './contract/TezosContractEntity'
-import { TezosContractInt } from './contract/TezosContractInt'
-import { TezosContractString } from './contract/TezosContractString'
-import { TezosContractBytes } from './contract/TezosContractBytes'
-import { TezosContractList } from './contract/TezosContractList'
-import { TezosContractPair } from './contract/TezosContractPair'
+import { MichelsonList } from './types/michelson/generics/MichelsonList'
+import { MichelsonPair } from './types/michelson/generics/MichelsonPair'
+import { MichelsonType } from './types/michelson/MichelsonType'
+import { MichelsonBytes } from './types/michelson/primitives/MichelsonBytes'
+import { MichelsonInt } from './types/michelson/primitives/MichelsonInt'
+import { MichelsonString } from './types/michelson/primitives/MichelsonString'
+
 
 export class TezosUtils {
   // Tezos - We need to wrap these in Buffer due to non-compatible browser polyfills
@@ -30,7 +31,9 @@ export class TezosUtils {
     branch: Buffer.from(new Uint8Array([1, 52]))
   }
 
-  public static parseAddress(rawHexAddress: string): string {
+  public static parseAddress(bytes: string | Buffer): string {
+    let rawHexAddress: string = typeof bytes === 'string' ? bytes : bytes.toString('hex')
+
     if (rawHexAddress.startsWith('0x')) {
       rawHexAddress = rawHexAddress.slice(2)
     }
@@ -47,7 +50,7 @@ export class TezosUtils {
     }
   }
 
-  public static parseHex(rawHex: string | string[]): TezosContractEntity {
+  public static parseHex(rawHex: string | string[]): MichelsonType {
     let hex: string[]
     if (typeof rawHex === 'string') {
       hex = TezosUtils.hexStringToArray(rawHex)
@@ -73,17 +76,17 @@ export class TezosUtils {
           }
           intBytes.push(byte)
         } while (parseInt(byte, 16) >= 127)
-        return new TezosContractInt(TezosUtils.decodeSignedInt(intBytes.join('')))
+        return MichelsonInt.from(TezosUtils.decodeSignedInt(intBytes.join('')))
       case '01': // string
         const stringLength = TezosUtils.hexToLength(hex.splice(0, 4))
-        return new TezosContractString(TezosUtils.hexToString(hex.splice(0, stringLength)))
+        return MichelsonString.from(TezosUtils.hexToString(hex.splice(0, stringLength)))
       case '05': // single arg prim
         return TezosUtils.parseHex(hex)
       case '02': // list
         return TezosUtils.parseList(hex)
       case '0a': // bytes
         const bytesLength = TezosUtils.hexToLength(hex.splice(0, 4))
-        return new TezosContractBytes(hex.splice(0, bytesLength).join(''))
+        return MichelsonBytes.from(hex.splice(0, bytesLength).join(''))
       default:
         throw new Error(`Type not supported ${type}`)
     }
@@ -116,15 +119,15 @@ export class TezosUtils {
     return hexBytes
   }
 
-  private static parsePair(hex: string[]): TezosContractPair {
+  private static parsePair(hex: string[]): MichelsonPair {
     const first = TezosUtils.parseHex(hex)
     const second = TezosUtils.parseHex(hex)
 
-    return new TezosContractPair(first, second)
+    return MichelsonPair.from([first, second])
   }
 
-  private static parseList(hex: string[]): TezosContractList {
-    const items: (string | number | TezosContractEntity)[] = []
+  private static parseList(hex: string[]): MichelsonList {
+    const items: MichelsonType[] = []
     const lengthBytes = TezosUtils.hexToLength(hex.splice(0, 4))
     if (lengthBytes > 0) {
       const listBytes = hex.splice(0, lengthBytes)
@@ -134,7 +137,7 @@ export class TezosUtils {
       }
     }
 
-    return new TezosContractList(items)
+    return MichelsonList.from(items)
   }
 
   private static hexToString(hex: string[]): string {

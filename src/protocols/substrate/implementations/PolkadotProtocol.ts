@@ -1,13 +1,9 @@
+import { MainProtocolSymbols, ProtocolSymbols } from '../../../utils/ProtocolSymbols'
 import { CurrencyUnit, FeeDefaults } from '../../ICoinProtocol'
-import { SubstrateBlockExplorerClient } from '../helpers/blockexplorer/SubstrateBlockExplorerClient'
-import { SubstrateNodeClient } from '../helpers/node/SubstrateNodeClient'
-import { SubstrateNetwork } from '../SubstrateNetwork'
 import { SubstrateProtocol } from '../SubstrateProtocol'
+import { SubstrateProtocolOptions } from '../SubstrateProtocolOptions'
 
-const NODE_URL = 'https://polkadot-node.prod.gke.papers.tech'
-
-const BLOCK_EXPLORER_URL = 'https://polkascan.io/polkadot-cc1'
-const BLOCK_EXPLORER_API = 'https://api-01.polkascan.io/polkadot/api/v1'
+import { PolkadotProtocolOptions } from './PolkadotProtocolOptions'
 
 export class PolkadotProtocol extends SubstrateProtocol {
   public symbol: string = 'DOT'
@@ -17,7 +13,7 @@ export class PolkadotProtocol extends SubstrateProtocol {
 
   public decimals: number = 12
   public feeDecimals: number = 12
-  public identifier: string = 'polkadot'
+  public identifier: ProtocolSymbols = MainProtocolSymbols.POLKADOT
 
   public feeDefaults: FeeDefaults = {
     low: '0.01', // 10 000 000 000
@@ -55,11 +51,7 @@ export class PolkadotProtocol extends SubstrateProtocol {
 
   protected defaultValidator: string = '12C9U6zSSoZ6pgwR2ksFyBLgQH6v7dkqqPCRyHceoP8MJRo2'
 
-  public constructor(
-    network: SubstrateNetwork = SubstrateNetwork.POLKADOT,
-    nodeClient: SubstrateNodeClient = new SubstrateNodeClient(network, NODE_URL),
-    blockExplorerClient: SubstrateBlockExplorerClient = new SubstrateBlockExplorerClient(network, BLOCK_EXPLORER_URL, BLOCK_EXPLORER_API)
-  ) {
-    super(network, nodeClient, blockExplorerClient)
+  public constructor(public readonly options: SubstrateProtocolOptions = new PolkadotProtocolOptions()) {
+    super(options)
   }
 }

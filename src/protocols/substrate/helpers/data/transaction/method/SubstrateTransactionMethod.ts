@@ -1,4 +1,4 @@
-import { IAirGapTransaction } from '../../../../../..'
+import { IAirGapTransaction } from '../../../../../../interfaces/IAirGapTransaction'
 import { SubstrateNetwork } from '../../../../SubstrateNetwork'
 import { SCALEDecoder, SCALEDecodeResult } from '../../scale/SCALEDecoder'
 import { SCALEClass } from '../../scale/type/SCALEClass'

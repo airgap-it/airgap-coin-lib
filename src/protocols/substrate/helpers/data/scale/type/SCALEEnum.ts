@@ -6,7 +6,7 @@ import { SCALEType } from './SCALEType'
 export class SCALEEnum<T> extends SCALEType {
   public static from<T>(value: T): SCALEEnum<T> {
     if (!(typeof value === 'number')) {
-      throw new Error('Invalid enum value')
+      throw new Error('SCALEEnum#from: Invalid enum value')
     }
 
     return new SCALEEnum(value)
@@ -19,7 +19,7 @@ export class SCALEEnum<T> extends SCALEType {
     const enumValue = getEnumValue(value)
 
     if (enumValue === null) {
-      throw new Error('Unknown enum value')
+      throw new Error('SCALEEnum#decode: Unknown enum value')
     }
 
     return {

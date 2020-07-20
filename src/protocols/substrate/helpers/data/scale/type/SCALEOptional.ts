@@ -4,7 +4,7 @@ import { DecoderMethod, SCALEDecodeResult } from '../SCALEDecoder'
 
 import { SCALEType } from './SCALEType'
 
-enum Optional {
+export enum SCALEOptionalType {
   None = 0,
   Some
 }
@@ -27,12 +27,12 @@ export class SCALEOptional<T extends SCALEType> extends SCALEType {
 
     const prefix = parseInt(_hex.substr(0, 2), 16)
     switch (prefix) {
-      case Optional.None:
+      case SCALEOptionalType.None:
         return {
           bytesDecoded: 1,
           decoded: SCALEOptional.empty()
         }
-      case Optional.Some:
+      case SCALEOptionalType.Some:
         const value = decodeValue(network, _hex.slice(2))
 
         return {
@@ -40,11 +40,11 @@ export class SCALEOptional<T extends SCALEType> extends SCALEType {
           decoded: SCALEOptional.from(value.decoded)
         }
       default:
-        throw new Error('Unknown optional type')
+        throw new Error('SCALEOptional#decode: Unknown optional type')
     }
   }
 
-  private readonly type: Optional
+  private readonly type: SCALEOptionalType
 
   private constructor(readonly value: T | null) {
     super()

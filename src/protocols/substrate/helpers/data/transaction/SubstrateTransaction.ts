@@ -146,6 +146,9 @@ export class SubstrateTransaction extends SCALEClass {
     const airGapTransaction = {
       from: [this.signer.asAddress()],
       to: [this.signer.asAddress()],
+      extra: this.type !== SubstrateTransactionType.TRANSFER
+        ? { type: SubstrateTransactionType[this.type] }
+        : undefined,
       transactionDetails: JSON.parse(this.toString())
     }
     const parts = this.method.toAirGapTransactionParts()

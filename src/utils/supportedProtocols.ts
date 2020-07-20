@@ -1,40 +1,37 @@
-import { AeternityProtocol } from '../protocols/aeternity/AeternityProtocol'
-import { BitcoinProtocol } from '../protocols/bitcoin/BitcoinProtocol'
-import { CosmosProtocol } from '../protocols/cosmos/CosmosProtocol'
-import { EthereumProtocol } from '../protocols/ethereum/EthereumProtocol'
-import { GroestlcoinProtocol } from '../protocols/groestlcoin/GroestlcoinProtocol'
 import { ICoinProtocol } from '../protocols/ICoinProtocol'
-import { TezosProtocol } from '../protocols/tezos/TezosProtocol'
-import { KusamaProtocol } from '../protocols/substrate/implementations/KusamaProtocol'
-import { PolkadotProtocol } from '../protocols/substrate/implementations/PolkadotProtocol'
+
+import { isNetworkEqual } from './Network'
 
 const protocols: ICoinProtocol[] = []
 
 const supportedProtocols: () => ICoinProtocol[] = (): ICoinProtocol[] => {
-  if (protocols.length === 0) {
-    // We cannot assign the protocols outside a function because the compiler complains
-    // The reason is that we have a circular dependency in the EthereumProtocol.
-    protocols.push(
-      new AeternityProtocol(),
-      new BitcoinProtocol(),
-      new EthereumProtocol(),
-      new GroestlcoinProtocol(),
-      new TezosProtocol(),
-      new KusamaProtocol(),
-      new PolkadotProtocol(),
-      new CosmosProtocol()
-    )
-  }
-
   return protocols
 }
 
 const addSupportedProtocol: (newProtocol: ICoinProtocol) => void = (newProtocol: ICoinProtocol): void => {
-  if (supportedProtocols().find((protocol: ICoinProtocol) => protocol.identifier === newProtocol.identifier)) {
-    throw new Error(`protocol ${newProtocol.name} already exists`)
+  if (
+    supportedProtocols().find(
+      (protocol: ICoinProtocol) =>
+        protocol.identifier === newProtocol.identifier && isNetworkEqual(protocol.options.network, newProtocol.options.network)
+    )
+  ) {
+    throw new Error(
+      `protocol ${newProtocol.name} on network ${newProtocol.options.network.type}(${newProtocol.options.network.rpcUrl}) already exists`
+    )
   }
 
   protocols.push(newProtocol)
 }
 
-export { addSupportedProtocol, supportedProtocols }
+const removeSupportedProtocol: (protocolToRemove: ICoinProtocol) => void = (protocolToRemove: ICoinProtocol): void => {
+  for (let index: number = 0; index < protocols.length; index++) {
+    if (
+      protocols[index].identifier === protocolToRemove.identifier &&
+      isNetworkEqual(protocols[index].options.network, protocolToRemove.options.network)
+    ) {
+      protocols.splice(index, 1)
+    }
+  }
+} // TODO: Add tests
+
+export { addSupportedProtocol, removeSupportedProtocol, supportedProtocols }

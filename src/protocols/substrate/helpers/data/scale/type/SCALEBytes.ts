@@ -12,7 +12,7 @@ export class SCALEBytes extends SCALEType {
     } else if (!(typeof bytes === 'string')) {
       buffer = Buffer.from(bytes)
     } else {
-      throw new Error('Unknown bytes type.')
+      throw new Error('SCALEBytes#from: Unknown bytes type.')
     }
 
     return new SCALEBytes(buffer)

@@ -13,9 +13,13 @@ import { SignedAeternityTransaction } from '../../serializer/schemas/definitions
 import { RawAeternityTransaction } from '../../serializer/types'
 import bs64check from '../../utils/base64Check'
 import { padStart } from '../../utils/padStart'
+import { MainProtocolSymbols, ProtocolSymbols } from '../../utils/ProtocolSymbols'
 import { EthereumUtils } from '../ethereum/utils/utils'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
+import { AeternityCryptoClient } from './AeternityCryptoClient'
+
+import { AeternityProtocolOptions } from './AeternityProtocolOptions'
 
 export class AeternityProtocol extends NonExtendedProtocol implements ICoinProtocol {
   public symbol: string = 'AE'
@@ -26,7 +30,7 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
 
   public decimals: number = 18
   public feeDecimals: number = 18
-  public identifier: string = 'ae'
+  public identifier: ProtocolSymbols = MainProtocolSymbols.AE
 
   public feeDefaults = {
     low: '0.00021',
@@ -48,25 +52,21 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
   public addressValidationPattern: string = '^ak_+[1-9A-Za-z]{49,50}$'
   public addressPlaceholder: string = 'ak_abc...'
 
-  public blockExplorer: string = 'https://mainnet.aeternal.io'
-
   // ae specifics
   public defaultNetworkId: string = 'ae_mainnet'
 
-  public epochMiddleware: string = 'https://ae-epoch-rpc-proxy.gke.papers.tech'
-
   private readonly feesURL: string = 'https://api-airgap.gke.papers.tech/fees'
 
-  constructor(public epochRPC: string = 'https://ae-epoch-rpc-proxy.gke.papers.tech') {
+  constructor(public readonly options: AeternityProtocolOptions = new AeternityProtocolOptions()) {
     super()
   }
 
   public async getBlockExplorerLinkForAddress(address: string): Promise<string> {
-    return `${this.blockExplorer}/account/transactions/{{address}}/`.replace('{{address}}', address)
+    return this.options.network.blockExplorer.getAddressLink(address)
   }
 
   public async getBlockExplorerLinkForTxId(txId: string): Promise<string> {
-    return `${this.blockExplorer}/transactions/{{txId}}/`.replace('{{txId}}', txId)
+    return this.options.network.blockExplorer.getTransactionLink(txId)
   }
 
   public async getPublicKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
@@ -122,7 +122,7 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
   public async getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
     const allTransactions = await Promise.all(
       addresses.map((address) => {
-        return axios.get(`${this.epochMiddleware}/middleware/transactions/account/${address}`)
+        return axios.get(`${this.options.network.rpcUrl}/middleware/transactions/account/${address}`)
       })
     )
 
@@ -140,6 +140,7 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
         from: [obj.tx.sender_id],
         isInbound: addresses.indexOf(obj.tx.recipient_id) !== -1,
         protocolIdentifier: this.identifier,
+        network: this.options.network,
         to: [obj.tx.recipient_id],
         hash: obj.hash,
         blockHeight: obj.block_height
@@ -212,6 +213,7 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
       from: [await this.getAddressFromPublicKey(rlpDecodedTx[2].slice(1).toString('hex'))],
       isInbound: false,
       protocolIdentifier: this.identifier,
+      network: this.options.network,
       to: [await this.getAddressFromPublicKey(rlpDecodedTx[3].slice(1).toString('hex'))],
       data: (rlpDecodedTx[8] || '').toString('utf8'),
       transactionDetails: unsignedTx.transaction
@@ -241,7 +243,7 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
 
     for (const address of addresses) {
       try {
-        const { data } = await axios.get(`${this.epochRPC}/v2/accounts/${address}`)
+        const { data } = await axios.get(`${this.options.network.rpcUrl}/v2/accounts/${address}`)
         balance = balance.plus(new BigNumber(data.balance))
       } catch (error) {
         // if node returns 404 (which means 'no account found'), go with 0 balance
@@ -308,7 +310,7 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
     const address: string = await this.getAddressFromPublicKey(publicKey)
 
     try {
-      const { data: accountResponse } = await axios.get(`${this.epochRPC}/v2/accounts/${address}`)
+      const { data: accountResponse } = await axios.get(`${this.options.network.rpcUrl}/v2/accounts/${address}`)
       nonce = accountResponse.nonce + 1
     } catch (error) {
       // if node returns 404 (which means 'no account found'), go with nonce 0
@@ -363,7 +365,7 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
 
   public async broadcastTransaction(rawTransaction: string): Promise<string> {
     const { data } = await axios.post(
-      `${this.epochRPC}/v2/transactions`,
+      `${this.options.network.rpcUrl}/v2/transactions`,
       { tx: rawTransaction },
       { headers: { 'Content-Type': 'application/json' } }
     )
@@ -377,14 +379,13 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
     return Buffer.from(padStart(hexString, hexString.length % 2 === 0 ? hexString.length : hexString.length + 1, '0'), 'hex')
   }
 
-  public async signMessage(message: string, privateKey: Buffer): Promise<string> {
-    return Promise.reject('Message signing not implemented')
+  public async signMessage(message: string, keypair: { privateKey: Buffer }): Promise<string> {
+    return new AeternityCryptoClient().signMessage(message, keypair)
   }
 
-  public async verifyMessage(message: string, signature: string, publicKey: Buffer): Promise<boolean> {
-    return Promise.reject('Message verification not implemented')
+  public async verifyMessage(message: string, signature: string, publicKey: string): Promise<boolean> {
+    return new AeternityCryptoClient().verifyMessage(message, signature, publicKey)
   }
-
   public async getTransactionStatuses(transactionHashes: string[]): Promise<AirGapTransactionStatus[]> {
     return Promise.reject('Transaction status not implemented')
   }
