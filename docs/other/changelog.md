@@ -1,30 +1,99 @@
 ### 0.9.0 (2020-07-17)
 
+### Feature
+
+- **all**: add sign/verify to all protocols
+- **xtz**: testnet support
+- **xtz**: FA2 support
+
 ### 0.8.8 (2020-07-07)
+
+### Feature
+
+- **polkadot/kusama**: add support for polkadot and kusama
 
 ### 0.8.7 (2020-07-03)
 
+### Feature
+
+- **cosmos**: add support for fetching delegator details
+
 ### 0.8.6 (2020-06-16)
+
+### Bugfix
+
+- **xtz**: fix issue when fetching delegator details
 
 ### 0.8.5 (2020-06-11)
 
+### Feature
+
+- **all**: update libsodium
+
 ### 0.8.4 (2020-06-04)
+
+### Feature
+
+- **xtz**: TezosUSD
+- **cosmos**: use CORS proxy
 
 ### 0.8.3 (2020-05-29)
 
+### Feature
+
+- **all**: fee estimation
+
 ### 0.8.2 (2020-05-07)
+
+### Feature
+
+- **xtz**: add FA 1.2 support
+- **xtz**: add staker token
 
 ### 0.8.1 (2020-05-06)
 
+### Feature
+
+- **xtz**: add gas_limit estimation
+
 ### 0.8.0 (2020-04-24)
+
+### Feature
+
+- **substrate**: add substrate protocol (polkadot and kusama)
+- **xtz**: add taquito local forging
+- **all**: add delegate interface
+- **all**: add methods for getting keypair from mnemonic
 
 ### 0.7.7 (2020-04-24)
 
+### Feature
+
 ### 0.7.6 (2020-04-15)
+
+### Feature
+
+- **eth**: add etherscan api key
 
 ### 0.7.5 (2020-04-02)
 
+### Feature
+
+- **tezos**: add tzbtc
+
+### Bugfix
+
+- **cosmos**: fetch balance fix
+
 ### 0.7.4 (2020-03-12)
+
+### Feature
+
+- **tezos**: prepare transactions with multiple operations
+
+### Bugfix
+
+- **eth**: balance not loading
 
 ### 0.7.3 (2020-03-10)
 
@@ -34,7 +103,15 @@
 
 ### 0.7.2 (2020-02-06)
 
+### Bugfix
+
+- **all**: resolve circular dependency
+
 ### 0.7.1 (2020-02-06)
+
+### Feature
+
+- **tezos**: add `prepareOperations` method
 
 ### 0.7.0 (2020-01-30)
 
@@ -80,7 +157,7 @@
 
 ### Breaking Changes
 
-- **BigNumber:** remove `BigNumber` type in all public APIs. Now, all methods will take `strings` and return `strings` instead of `BigNumber`s. 
+- **BigNumber:** remove `BigNumber` type in all public APIs. Now, all methods will take `strings` and return `strings` instead of `BigNumber`s.
 - **serializer:** a new serializer has been added (the old one is still accessible but the imports paths are different). The old one will be removed in the next version.
 - **getTransactionDetails and getTransactionDetailsFromSigned:** now return an array of `IAirGapTransaction`s
 - **IAirGapTransaction:** `meta` property renamed to `extras`
