@@ -2,10 +2,11 @@
 
 Each protocol of `airgap-coin-lib` implements the `ICoinProtocol`, a unified interface that allows to
 
-- Generate transactions (currently mostly simple spend)
+- Generate keypairs and addresses from a mnemonic
+- Prepare transactions
 - Sign transactions
-- Fetch transactions details of individual transactions
-- Fetch all transactions from a specific publickey or extended publickey
+- Fetch transaction details of individual transactions
+- Fetch all transactions from a publicKey or address
 
 ## Preparing a Transaction
 

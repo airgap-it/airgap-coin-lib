@@ -1,5 +1,7 @@
 # Serialization / Deserialization
 
+NOTE: The following documentation refers to version 1 of the serializer. Version 2 is available but not documented yet.
+
 ## Request to sign a transaction
 
 This can be used to request for example [Airgap Vault](https://github.com/airgap-it/airgap-vault) to sign a transation.
