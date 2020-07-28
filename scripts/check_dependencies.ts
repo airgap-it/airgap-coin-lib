@@ -1,8 +1,8 @@
 import { existsSync, readFileSync } from 'fs'
 import { request } from 'https'
-import * as semver from './check_dependencies_semver'
 
 import { copyFileAndCreateFolder, createFolderIfNotExists, writeFileAndCreateFolder } from './check_dependencies_fs'
+import * as semver from './check_dependencies_semver'
 
 function httpGet(params) {
   return new Promise((resolve, reject) => {
@@ -105,7 +105,7 @@ function log(color: string, ...message: any[]): void {
     console.log(color, ...message)
   }
 }
-
+// tslint:disable:cyclomatic-complexity
 export const validateDepsJson = async (depsFile: DepsFile) => {
   log(`
 #############################
@@ -445,7 +445,7 @@ const replaceImports = async (depsFile: DepsFile) => {
             }
             const relativePath = `${levelUpString.repeat(levels + 1)}${dependencyDefinition.name}-${dependencyDefinition.version}/${
               dependencyDefinition.entrypoint
-            }`
+              }`
 
             fileContent = replaceWithinContainer(fileContent, dependencyDefinition.name, relativePath)
           }
