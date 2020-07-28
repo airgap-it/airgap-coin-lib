@@ -1264,7 +1264,7 @@
   },
   "xxhashjs-0.2.2": {
     "name": "xxhashjs",
-    "entrypoint": "js",
+    "entrypoint": "lib/index",
     "version": "0.2.2",
     "repository": "pierrec/js-xxhash",
     "commitHash": "267dcd45215e9e33a157cc76e895b366e51185da",
@@ -1279,7 +1279,7 @@
   },
   "cuint-0.2.2": {
     "name": "cuint",
-    "entrypoint": "js",
+    "entrypoint": "index",
     "version": "0.2.2",
     "repository": "pierrec/js-cuint",
     "commitHash": "c0b4092dace55de831c1254bd8ae965cfcc281f9",

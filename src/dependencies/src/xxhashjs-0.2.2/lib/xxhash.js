@@ -4,7 +4,7 @@ xxHash implementation in pure Javascript
 Copyright (C) 2013, Pierre Curto
 MIT license
 */
-var UINT32 = require('../../cuint-0.2.2/js').UINT32
+var UINT32 = require('../../cuint-0.2.2/index').UINT32
 
 /*
 	Merged this sequence of method calls as it speeds up
