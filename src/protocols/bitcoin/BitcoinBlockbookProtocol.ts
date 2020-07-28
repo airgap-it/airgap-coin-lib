@@ -1,5 +1,4 @@
-import * as bitcoinJSMessage from 'bitcoinjs-message'
-
+import * as bitcoinJSMessage from '../../dependencies/src/bitcoinjs-message-2.1.1/index'
 import axios from '../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
@@ -129,7 +128,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
   public addressValidationPattern: string = '^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$'
   public addressPlaceholder: string = '1ABC...'
 
-  constructor(public readonly options: BitcoinBlockbookProtocolOptions = new BitcoinBlockbookProtocolOptions()) {}
+  constructor(public readonly options: BitcoinBlockbookProtocolOptions = new BitcoinBlockbookProtocolOptions()) { }
 
   public async getBlockExplorerLinkForAddress(address: string): Promise<string> {
     return this.options.network.blockExplorer.getAddressLink(address)

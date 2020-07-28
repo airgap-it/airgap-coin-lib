@@ -1,4 +1,4 @@
-import * as bitcoinJSMessage from 'bitcoinjs-message'
+import * as bitcoinJSMessage from '../../dependencies/src/bitcoinjs-message-2.1.1/index'
 
 import axios from '../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
@@ -58,7 +58,7 @@ export class BitcoinProtocol implements ICoinProtocol {
 
   private readonly feeEstimationUrl = `https://blockstream.info/api/fee-estimates`
 
-  constructor(public readonly options: BitcoinProtocolOptions = new BitcoinProtocolOptions()) {}
+  constructor(public readonly options: BitcoinProtocolOptions = new BitcoinProtocolOptions()) { }
 
   public async getBlockExplorerLinkForAddress(address: string): Promise<string> {
     return this.options.network.blockExplorer.getAddressLink(address)

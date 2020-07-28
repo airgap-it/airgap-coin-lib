@@ -1316,5 +1316,23 @@
     "files": [
       "index.js"
     ]
+  },
+  "bitcoinjs-message-2.1.1": {
+    "name": "bitcoinjs-message",
+    "entrypoint": "index",
+    "version": "2.1.1",
+    "repository": "bitcoinjs/bitcoinjs-message",
+    "commitHash": "6ea1734e7dc5df79e6f88586e62ffe9a1c5ea093",
+    "files": [
+      "index.js"
+    ],
+    "deps": [
+      "bech32-1.1.3",
+      "bs58check-2.1.2",
+      "buffer-equals-1.0.4",
+      "create-hash-1.2.0",
+      "secp256k1-3.7.1",
+      "varuint-bitcoin-1.1.2"
+    ]
   }
 }
