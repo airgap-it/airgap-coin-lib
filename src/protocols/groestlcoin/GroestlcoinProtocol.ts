@@ -1,4 +1,4 @@
-import * as groestlcoinJSMessage from 'groestlcoinjs-message'
+import * as groestlcoinJSMessage from '../../dependencies/src/groestlcoinjs-message-2.1.0/index'
 
 import { MainProtocolSymbols, ProtocolSymbols } from '../../utils/ProtocolSymbols'
 import { BitcoinBlockbookProtocol } from '../bitcoin/BitcoinBlockbookProtocol'
