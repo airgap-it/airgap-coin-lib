@@ -437,7 +437,7 @@ const replaceImports = async (depsFile: DepsFile) => {
           if (!dependencyDefinition) {
             console.log('WOOPS', dependency)
           } else {
-            const levels = (file.match(/\//g) || []).length
+            const levels = (file.match(/\//g) || []).length + (prop.includes('/') ? 1 : 0)
             const levelUpString = '../'
 
             if (dependencyDefinition.entrypoint === '') {
