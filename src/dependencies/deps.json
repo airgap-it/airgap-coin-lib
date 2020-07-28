@@ -1294,17 +1294,34 @@
     "entrypoint": "index",
     "version": "2.1.0",
     "repository": "Groestlcoin/groestlcoinjs-message",
-    "commitHash": "c322792a9a3db529fb9e6e9a3b518490ccd4501c",
+    "commitHash": "5f705d69370a29be3fa49ae3cdeaf4bcf758c41d",
     "files": [
       "index.js"
     ],
     "deps": [
       "bech32-1.1.3",
-      "bs58check-2.1.2",
+      "bs58grscheck-2.1.2",
       "buffer-equals-1.0.4",
       "create-hash-1.2.0",
       "secp256k1-3.7.1",
       "varuint-bitcoin-1.1.2"
+    ]
+  },
+  "bs58grscheck-2.1.2": {
+    "name": "bs58grscheck",
+    "entrypoint": "index",
+    "version": "2.1.2",
+    "repository": "Groestlcoin/bs58grscheck",
+    "commitHash": "8ff31333a7626161c1484b461c20710bb9f97b93",
+    "files": [
+      "index.js",
+      "base.js"
+    ],
+    "deps": [
+      "bs58-4.0.1",
+      "create-hash-1.2.0",
+      "groestl-hash-js-ef6a04f1c4d2f0448f0882b5f213ef7a0659baee",
+      "safe-buffer-5.2.0"
     ]
   },
   "buffer-equals-1.0.4": {
