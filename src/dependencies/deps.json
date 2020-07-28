@@ -1288,5 +1288,33 @@
       "lib/uint32.js",
       "lib/uint64.js"
     ]
+  },
+  "groestlcoinjs-message-2.1.0": {
+    "name": "groestlcoinjs-message",
+    "entrypoint": "index",
+    "version": "2.1.0",
+    "repository": "Groestlcoin/groestlcoinjs-message",
+    "commitHash": "c322792a9a3db529fb9e6e9a3b518490ccd4501c",
+    "files": [
+      "index.js"
+    ],
+    "deps": [
+      "bech32-1.1.3",
+      "bs58check-2.1.2",
+      "buffer-equals-1.0.4",
+      "create-hash-1.2.0",
+      "secp256k1-3.7.1",
+      "varuint-bitcoin-1.1.2"
+    ]
+  },
+  "buffer-equals-1.0.4": {
+    "name": "buffer-equals",
+    "entrypoint": "index",
+    "version": "1.0.4",
+    "repository": "sindresorhus/buffer-equals",
+    "commitHash": "b4d25112f5e4700eb5cf083b4dd76c3b04ae2c8d",
+    "files": [
+      "index.js"
+    ]
   }
 }

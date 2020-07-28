@@ -46,7 +46,6 @@
     "@polkadot/wasm-crypto": "0.20.1",
     "@taquito/local-forging": "6.1.1-beta.0",
     "bitcoinjs-message": "2.1.1",
-    "groestlcoinjs-message": "2.1.0",
     "libsodium-wrappers": "0.7.6"
   },
   "localDependencies": {
@@ -63,12 +62,13 @@
     "cryptocompare": "0.5.0",
     "ethereumjs-tx": "1.3.7",
     "ethereumjs-util": "5.2.0",
-    "xxhashjs": "0.2.2",
+    "groestlcoinjs-message": "2.1.0",
     "rlp": "2.2.3",
     "ripemd160": "2.0.2",
     "secp256k1": "3.7.1",
     "validate.js": "0.13.1",
-    "utf8": "3.0.0"
+    "utf8": "3.0.0",
+    "xxhashjs": "0.2.2"
   },
   "devDependencies": {
     "@taquito/taquito": "^6.1.1-beta.0",
