@@ -1261,5 +1261,32 @@
         "reason": "Only used in node"
       }
     ]
+  },
+  "xxhashjs-0.2.2": {
+    "name": "xxhashjs",
+    "entrypoint": "js",
+    "version": "0.2.2",
+    "repository": "pierrec/js-xxhash",
+    "commitHash": "267dcd45215e9e33a157cc76e895b366e51185da",
+    "files": [
+      "lib/index.js",
+      "lib/xxhash.js",
+      "lib/xxhash64.js"
+    ],
+    "deps": [
+      "cuint-0.2.2"
+    ]
+  },
+  "cuint-0.2.2": {
+    "name": "cuint",
+    "entrypoint": "js",
+    "version": "0.2.2",
+    "repository": "pierrec/js-cuint",
+    "commitHash": "c0b4092dace55de831c1254bd8ae965cfcc281f9",
+    "files": [
+      "index.js",
+      "lib/uint32.js",
+      "lib/uint64.js"
+    ]
   }
 }

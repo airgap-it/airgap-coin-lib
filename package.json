@@ -47,8 +47,7 @@
     "@taquito/local-forging": "6.1.1-beta.0",
     "bitcoinjs-message": "2.1.1",
     "groestlcoinjs-message": "2.1.0",
-    "libsodium-wrappers": "0.7.6",
-    "xxhashjs": "0.2.2"
+    "libsodium-wrappers": "0.7.6"
   },
   "localDependencies": {
     "hd-wallet-js": "b216450e56954a6e82ace0aade9474673de5d9d5",
@@ -62,9 +61,9 @@
     "bs58check": "2.1.2",
     "create-hash": "1.2.0",
     "cryptocompare": "0.5.0",
-    "eth-lib": "0.2.7",
     "ethereumjs-tx": "1.3.7",
     "ethereumjs-util": "5.2.0",
+    "xxhashjs": "0.2.2",
     "rlp": "2.2.3",
     "ripemd160": "2.0.2",
     "secp256k1": "3.7.1",
