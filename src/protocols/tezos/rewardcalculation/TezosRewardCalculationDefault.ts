@@ -313,7 +313,7 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
   }
 
   private async computeSnapshotBlockLevel(cycle: number, blockLevel?: number | 'head'): Promise<number> {
-    const level = blockLevel === undefined ? cycle * this.tezosNodeConstants.blocks_per_cycle : blockLevel
+    const level = blockLevel === undefined ? (cycle * this.tezosNodeConstants.blocks_per_cycle) + 1 : blockLevel
     const snapshotNumberResult = await axios.get(
       `${this.protocol.jsonRPCAPI}/chains/main/blocks/${level}/context/raw/json/cycle/${cycle}/roll_snapshot`
     )
