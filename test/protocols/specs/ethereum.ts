@@ -1,5 +1,5 @@
-import { EthereumProtocol } from '../../../src'
 import { AirGapTransactionStatus } from '../../../src/interfaces/IAirGapTransaction'
+import { EthereumProtocol } from '../../../src/protocols/ethereum/EthereumProtocol'
 import { SignedEthereumTransaction } from '../../../src/serializer/schemas/definitions/transaction-sign-response-ethereum'
 import { RawEthereumTransaction } from '../../../src/serializer/types'
 import { TestProtocolSpec } from '../implementations'

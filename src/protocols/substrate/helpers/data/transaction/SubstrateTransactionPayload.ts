@@ -71,13 +71,13 @@ export class SubstrateTransactionPayload extends SCALEClass {
   }
 
   protected readonly scaleFields = [
-    this.method, 
-    this.era, 
-    this.nonce, 
-    this.tip, 
-    this.specVersion, 
-    this.transactionVersion, 
-    this.genesisHash, 
+    this.method,
+    this.era,
+    this.nonce,
+    this.tip,
+    this.specVersion,
+    this.transactionVersion,
+    this.genesisHash,
     this.blockHash
   ]
 

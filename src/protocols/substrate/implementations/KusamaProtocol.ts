@@ -1,13 +1,9 @@
+import { MainProtocolSymbols, ProtocolSymbols } from '../../../utils/ProtocolSymbols'
 import { CurrencyUnit, FeeDefaults } from '../../ICoinProtocol'
-import { SubstrateBlockExplorerClient } from '../helpers/blockexplorer/SubstrateBlockExplorerClient'
-import { SubstrateNodeClient } from '../helpers/node/SubstrateNodeClient'
-import { SubstrateNetwork } from '../SubstrateNetwork'
 import { SubstrateProtocol } from '../SubstrateProtocol'
+import { SubstrateProtocolOptions } from '../SubstrateProtocolOptions'
 
-const NODE_URL = 'https://polkadot-kusama-node.prod.gke.papers.tech'
-
-const BLOCK_EXPLORER_URL = 'https://polkascan.io/kusama'
-const BLOCK_EXPLORER_API = 'https://api-01.polkascan.io/kusama/api/v1'
+import { KusamaProtocolOptions } from './KusamaProtocolOptions'
 
 export class KusamaProtocol extends SubstrateProtocol {
   public symbol: string = 'KSM'
@@ -17,7 +13,7 @@ export class KusamaProtocol extends SubstrateProtocol {
 
   public decimals: number = 12
   public feeDecimals: number = 12
-  public identifier: string = 'kusama'
+  public identifier: ProtocolSymbols = MainProtocolSymbols.KUSAMA
 
   public feeDefaults: FeeDefaults = {
     low: '0.001', // 1 000 000 000
@@ -53,11 +49,9 @@ export class KusamaProtocol extends SubstrateProtocol {
   public addressValidationPattern: string = '^[C-HJ][a-km-zA-HJ-NP-Z1-9]+$'
   public addressPlaceholder: string = `C/D/E/F/G/H/J...` // TODO: set better placeholder?
 
-  public constructor(
-    network: SubstrateNetwork = SubstrateNetwork.KUSAMA,
-    nodeClient: SubstrateNodeClient = new SubstrateNodeClient(network, NODE_URL),
-    blockExplorerClient: SubstrateBlockExplorerClient = new SubstrateBlockExplorerClient(network, BLOCK_EXPLORER_URL, BLOCK_EXPLORER_API)
-  ) {
-    super(network, nodeClient, blockExplorerClient)
+  protected defaultValidator: string = 'GcqKn3HHodwcFc3Pg3Evcbc43m7qJNMiMv744e5WMSS7TGn'
+
+  public constructor(public readonly options: SubstrateProtocolOptions = new KusamaProtocolOptions()) {
+    super(options)
   }
 }

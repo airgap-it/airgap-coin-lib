@@ -101,7 +101,7 @@ export interface CosmosRewardDetails {
 }
 
 export class CosmosNodeClient {
-  constructor(public readonly baseURL: string, public useCORSProxy: boolean = false) {}
+  constructor(public readonly baseURL: string, public useCORSProxy: boolean = true) {}
 
   public async fetchBalance(address: string, totalBalance?: boolean): Promise<BigNumber> {
     const response = await Axios.get(this.url(`/bank/balances/${address}`))
@@ -150,14 +150,14 @@ export class CosmosNodeClient {
     return account
   }
 
-  public async fetchDelegations(address: string): Promise<CosmosDelegation[]> {
+  public async fetchDelegations(address: string, filterEmpty: boolean = true): Promise<CosmosDelegation[]> {
     const response = await Axios.get(this.url(`/staking/delegators/${address}/delegations`))
     if (response.data === null) {
       return []
     }
     const delegations = response.data.result as CosmosDelegation[]
 
-    return delegations
+    return filterEmpty ? delegations.filter((delegation: CosmosDelegation) => new BigNumber(delegation.balance).gt(0)) : delegations
   }
 
   public async fetchTotalDelegatedAmount(address: string): Promise<BigNumber> {

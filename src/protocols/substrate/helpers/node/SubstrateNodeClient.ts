@@ -44,6 +44,9 @@ import {
 } from './supported'
 import { SubstrateSlashingSpan } from '../data/staking/SubstrateSlashingSpan'
 import { SubstrateRuntimeVersion } from '../data/state/SubstrateRuntimeVersion'
+import { SCALETuple } from '../data/scale/type/SCALETuple'
+import { SCALEData } from '../data/scale/type/SCALEData'
+import { SCALECompactInt } from '../data/scale/type/SCALECompactInt'
 
 interface ConnectionConfig {
   allowCache: boolean
@@ -198,6 +201,32 @@ export class SubstrateNodeClient {
     )
   }
 
+  public async getSuperOf(address: SubstrateAddress): Promise<SCALETuple<SCALEAccountId, SCALEData> | null> {
+    return this.fromStorage('Identity', 'SuperOf', SCALEAccountId.from(address, this.network)).then((item) =>
+      item
+        ? SCALETuple.decode(
+            this.network,
+            item,
+            (network, hex) => SCALEAccountId.decode(network, hex),
+            (_, hex) => SCALEData.decode(hex)
+          ).decoded
+        : null
+    )
+  }
+
+  public async getSubsOf(address: SubstrateAddress): Promise<SCALETuple<SCALECompactInt, SCALEArray<SCALEAccountId>> | null> {
+    return this.fromStorage('Identity', 'SubsOf', SCALEAccountId.from(address, this.network)).then((item) =>
+      item
+        ? SCALETuple.decode(
+            this.network,
+            item,
+            (_, hex) => SCALECompactInt.decode(hex),
+            (network, hex) => SCALEArray.decode(network, hex, (innerNetwork, innerHex) => SCALEAccountId.decode(innerNetwork, innerHex))
+          ).decoded
+        : null
+    )
+  }
+
   public async getValidatorPrefs(eraIndex: number, address: SubstrateAddress): Promise<SubstrateValidatorPrefs | null> {
     return this.fromStorage(
       'Staking',
@@ -230,7 +259,7 @@ export class SubstrateNodeClient {
   }
 
   public async getSlashingSpan(address: SubstrateAddress): Promise<SubstrateSlashingSpan | null> {
-    return this.fromStorage('Staking', 'SlashingSpans', SCALEAccountId.from(address, this.network)).then((item) => 
+    return this.fromStorage('Staking', 'SlashingSpans', SCALEAccountId.from(address, this.network)).then((item) =>
       item ? SubstrateSlashingSpan.decode(this.network, item) : null
     )
   }

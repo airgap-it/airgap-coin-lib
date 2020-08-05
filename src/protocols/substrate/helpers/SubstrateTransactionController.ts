@@ -200,9 +200,9 @@ export class SubstrateTransactionController {
   }
 
   private async signPayload(
-    privateKey: Buffer, 
-    publicKey: Buffer, 
-    payload: string, 
+    privateKey: Buffer,
+    publicKey: Buffer,
+    payload: string,
     signatureType: SubstrateSignatureType = SubstrateSignatureType.Sr25519
   ): Promise<SubstrateSignature> {
     switch (signatureType) {
@@ -215,7 +215,7 @@ export class SubstrateTransactionController {
 
   private async signSr25519Payload(privateKey: Buffer, publicKey: Buffer, payload: string): Promise<SubstrateSignature> {
     await waitReady()
-        
+
     const payloadBuffer = Buffer.from(payload, 'hex')
     const message = payloadBuffer.length > 256 ? blake2bAsBytes(payloadBuffer, 256) : payloadBuffer
 

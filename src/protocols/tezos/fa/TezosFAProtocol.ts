@@ -2,39 +2,19 @@ import axios, { AxiosResponse } from '../../../dependencies/src/axios-0.19.0/ind
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { IAirGapTransaction } from '../../../interfaces/IAirGapTransaction'
 import { RawTezosTransaction } from '../../../serializer/types'
+import { ProtocolSymbols } from '../../../utils/ProtocolSymbols'
 import { ICoinSubProtocol, SubProtocolType } from '../../ICoinSubProtocol'
 import { TezosContract } from '../contract/TezosContract'
 import { TezosContractCall } from '../contract/TezosContractCall'
-import { TezosContractEntrypoint } from '../contract/TezosContractEntrypoint'
-import { TezosContractMethodSelector } from '../contract/TezosContractMethod'
-import { TezosContractInt } from '../contract/TezosContractInt'
-import { TezosContractString } from '../contract/TezosContractString'
-import { TezosUtils } from '../TezosUtils'
-import { TezosContractBytes } from '../contract/TezosContractBytes'
-import { TezosContractEntity } from '../contract/TezosContractEntity'
-import { TezosContractPair } from '../contract/TezosContractPair'
-import { TezosContractUnit } from '../contract/TezosContractUnit'
-import { TezosNetwork, TezosProtocol } from '../TezosProtocol'
+import { TezosProtocol } from '../TezosProtocol'
+import { BigMapResponse } from '../types/fa/BigMapResult'
+import { MichelineDataNode } from '../types/micheline/MichelineNode'
 import { TezosOperation } from '../types/operations/TezosOperation'
+import { TezosTransactionParameters, TezosWrappedTransactionOperation } from '../types/operations/Transaction'
 import { TezosOperationType } from '../types/TezosOperationType'
 import { TezosWrappedOperation } from '../types/TezosWrappedOperation'
-
-import { FeeDefaults } from './../../ICoinProtocol'
-
-export interface TezosFAProtocolConfiguration {
-  symbol: string
-  name: string
-  marketSymbol: string
-  identifier: string
-  contractAddress: string
-  feeDefaults: FeeDefaults
-  decimals?: number
-  jsonRPCAPI?: string
-  baseApiUrl?: string
-  network?: TezosNetwork
-  baseApiKey?: string
-  baseApiNetwork?: string
-}
+import { isMichelineNode } from '../types/utils'
+import { TezosFAProtocolOptions } from './TezosFAProtocolOptions'
 
 export interface TezosTransactionResult {
   transactions: IAirGapTransaction[]
@@ -45,192 +25,54 @@ export interface TezosTransactionCursor {
   lastBlockLevel: number
 }
 
-export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
+export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
   public readonly isSubProtocol: boolean = true
   public readonly subProtocolType: SubProtocolType = SubProtocolType.TOKEN
-  public readonly identifier: string
+  public readonly identifier: ProtocolSymbols
   public readonly contractAddress: string
 
   protected readonly contract: TezosContract
 
-  private readonly defaultCallbackContractMap = new Map<TezosNetwork, string>()
-  private readonly defaultSourceAddress: string = 'tz1Mj7RzPmMAqDUNFBn5t5VbXmWW4cSUAdtT'
+  protected readonly defaultSourceAddress: string = 'tz1Mj7RzPmMAqDUNFBn5t5VbXmWW4cSUAdtT'
 
-  constructor(configuration: TezosFAProtocolConfiguration) {
-    super(configuration.jsonRPCAPI, configuration.baseApiUrl, configuration.network, configuration.baseApiNetwork, configuration.baseApiKey)
-    this.contractAddress = configuration.contractAddress
-    this.symbol = configuration.symbol
-    this.name = configuration.name
-    this.marketSymbol = configuration.marketSymbol
-    this.identifier = configuration.identifier
-    this.feeDefaults = configuration.feeDefaults
-    this.decimals = configuration.decimals || this.decimals
-    this.defaultCallbackContractMap.set(TezosNetwork.MAINNET, 'KT19ptNzn4MVAN45KUUNpyL5AdLVhujk815u')
-    this.defaultCallbackContractMap.set(TezosNetwork.CARTHAGENET, 'KT1J8FmFLSgMz5H2vexFmsCtTLVod9V49iyW')
-    this.contract = new TezosContract(this.contractAddress, this.jsonRPCAPI, this.baseApiUrl, this.baseApiNetwork, this.headers.apiKey)
+  constructor(public readonly options: TezosFAProtocolOptions) {
+    super()
+    this.contractAddress = this.options.config.contractAddress
+    this.symbol = this.options.config.symbol
+    this.name = this.options.config.name
+    this.marketSymbol = this.options.config.marketSymbol
+    this.identifier = this.options.config.identifier
+    this.feeDefaults = this.options.config.feeDefaults
+    this.decimals = this.options.config.decimals
+
+    this.contract = new TezosContract(
+      this.options.config.contractAddress,
+      this.options.network.rpcUrl,
+      this.options.network.extras.conseilUrl,
+      this.options.network.extras.conseilNetwork,
+      this.options.network.extras.conseilApiKey
+    )
   }
 
-  public async bigMapValue(key: string, isKeyHash: boolean = false): Promise<string | null> {
-    return this.contract.bigMapValue(key, isKeyHash)
-  }
+  public abstract async transactionDetailsFromParameters(parameters: TezosTransactionParameters): Promise<Partial<IAirGapTransaction>[]>
 
-  public async getBalanceOfAddresses(addresses: string[]): Promise<string> {
-    const promises: Promise<string>[] = []
-    for (const address of addresses) {
-      promises.push(this.getBalance(address, this.defaultSourceAddress))
-    }
-    const results: string[] = await Promise.all(promises)
+  public async bigMapValue(key: string, isKeyHash: boolean = false, bigMapID?: number): Promise<string | null> {
+    const result: BigMapResponse[] = await this.contract.bigMapValues({
+      bigMapID,
+      predicates: [
+        {
+          field: isKeyHash ? 'key_hash' : 'key',
+          operation: 'eq',
+          set: [key]
+        }
+      ]
+    })
 
-    return results.reduce((current, next) => current.plus(new BigNumber(next)), new BigNumber(0)).toFixed()
+    return result.length > 0 ? result[0].value : null
   }
 
   public async estimateMaxTransactionValueFromPublicKey(publicKey: string, recipients: string[], fee?: string): Promise<string> {
     return this.getBalanceOfPublicKey(publicKey)
-  }
-
-  public async estimateFeeDefaultsFromPublicKey(
-    publicKey: string,
-    recipients: string[],
-    values: string[],
-    data?: any
-  ): Promise<FeeDefaults> {
-    // return this.feeDefaults
-    if (recipients.length !== values.length) {
-      throw new Error('length of recipients and values does not match!')
-    }
-    const transferCalls = await this.createTransferCalls(publicKey, recipients, values, this.feeDefaults.medium, data)
-    const operations: TezosOperation[] = transferCalls.map((transfer) => {
-      return {
-        kind: TezosOperationType.TRANSACTION,
-        amount: '0',
-        destination: this.contractAddress,
-        parameters: transfer.toJSON(),
-        fee: '0'
-      }
-    })
-
-    return this.estimateFeeDefaultsForOperations(publicKey, operations)
-  }
-
-  public async prepareTransactionFromPublicKey(
-    publicKey: string,
-    recipients: string[],
-    values: string[],
-    fee: string,
-    data?: { addressIndex: number }
-  ): Promise<RawTezosTransaction> {
-    const transferCalls = await this.createTransferCalls(publicKey, recipients, values, fee, data)
-
-    return this.prepareContractCall(transferCalls, fee, publicKey)
-  }
-
-  private async createTransferCalls(
-    publicKey: string,
-    recipients: string[],
-    values: string[],
-    fee: string,
-    data?: { addressIndex: number }
-  ): Promise<TezosContractCall[]> {
-    if (recipients.length !== values.length) {
-      throw new Error('length of recipients and values does not match!')
-    }
-
-    // check if we got an address-index
-    const addressIndex: number = data && data.addressIndex ? data.addressIndex : 0
-    const addresses: string[] = await this.getAddressesFromPublicKey(publicKey)
-
-    if (!addresses[addressIndex]) {
-      throw new Error('no kt-address with this index exists')
-    }
-
-    const fromAddress: string = addresses[addressIndex]
-
-    const transferCalls: TezosContractCall[] = []
-    for (let i: number = 0; i < recipients.length; i++) {
-      const args = new TezosContractPair(new TezosContractString(fromAddress), new TezosContractPair(new TezosContractString(recipients[i]), new TezosContractInt(new BigNumber(values[i]).toNumber())))
-      transferCalls.push(new TezosContractCall(TezosContractEntrypoint.transfer, args))
-    }
-
-    return transferCalls
-  }
-
-  public async getBalance(address: string, source?: string, callbackContract: string = this.callbackContract()): Promise<string> {
-    if (address.toLowerCase().startsWith('kt') && (source === undefined || source.toLowerCase().startsWith('kt'))) {
-      source = this.defaultSourceAddress
-    } else if (source === undefined) {
-      source = address
-    }
-    const args = new TezosContractPair(new TezosContractString(address), new TezosContractString(callbackContract))
-    const getBalanceCall = new TezosContractCall(TezosContractEntrypoint.balance, args)
-
-    return this.runContractCall(getBalanceCall, source)
-  }
-
-  public async getAllowance(
-    ownerAddress: string,
-    spenderAddress: string,
-    callbackContract: string = this.callbackContract(),
-    source?: string
-  ): Promise<string> {
-    if (spenderAddress.toLowerCase().startsWith('kt') && (source === undefined || source.toLowerCase().startsWith('kt'))) {
-      source = this.defaultSourceAddress
-    } else if (source === undefined) {
-      source = spenderAddress
-    }
-    const args = new TezosContractPair(new TezosContractPair(new TezosContractString(ownerAddress), new TezosContractString(spenderAddress)), new TezosContractString(callbackContract))
-    const getAllowanceCall = new TezosContractCall(TezosContractEntrypoint.allowance, args)
-
-    return this.runContractCall(getAllowanceCall, source)
-  }
-
-  public async getTotalSupply(source?: string, callbackContract: string = this.callbackContract()) {
-    if (source === undefined) {
-      source = this.defaultSourceAddress
-    }
-    const args = new TezosContractPair(new TezosContractUnit(), new TezosContractString(callbackContract))
-    const getTotalSupplyCall = new TezosContractCall(TezosContractEntrypoint.totalsupply, args)
-
-    return this.runContractCall(getTotalSupplyCall, source)
-  }
-
-  public async getTotalMinted(source?: string, callbackContract: string = this.callbackContract()) {
-    if (source === undefined) {
-      source = this.defaultSourceAddress
-    }
-    const args = new TezosContractPair(new TezosContractUnit(), new TezosContractString(callbackContract))
-    const getTotalMintedCall = new TezosContractCall(TezosContractEntrypoint.totalminted, args)
-
-    return this.runContractCall(getTotalMintedCall, source)
-  }
-
-  public async getTotalBurned(source?: string, callbackContract: string = this.callbackContract()) {
-    if (source === undefined) {
-      source = this.defaultSourceAddress
-    }
-    const args = new TezosContractPair(new TezosContractUnit(), new TezosContractString(callbackContract))
-    const getTotalBurnedCall = new TezosContractCall(TezosContractEntrypoint.totalburned, args)
-
-    return this.runContractCall(getTotalBurnedCall, source)
-  }
-
-  public async transfer(
-    fromAddress: string,
-    toAddress: string,
-    amount: string,
-    fee: string,
-    publicKey: string
-  ): Promise<RawTezosTransaction> {
-    const args = new TezosContractPair(new TezosContractString(fromAddress), new TezosContractPair(new TezosContractString(toAddress), new TezosContractInt(new BigNumber(amount).toNumber())))
-    const transferCall = new TezosContractCall(TezosContractEntrypoint.transfer, args)
-
-    return this.prepareContractCall([transferCall], fee, publicKey)
-  }
-
-  public async approve(spenderAddress: string, amount: string, fee: string, publicKey: string): Promise<RawTezosTransaction> {
-    const args = new TezosContractPair(new TezosContractString(spenderAddress), new TezosContractInt(new BigNumber(amount).toNumber()))
-    const transferCall = new TezosContractCall(TezosContractEntrypoint.approve, args)
-
-    return this.prepareContractCall([transferCall], fee, publicKey)
   }
 
   public async getTransactionsFromPublicKey(publicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]> {
@@ -295,11 +137,14 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
       })
     )
 
-    return allTransactions
+    return Promise.all<IAirGapTransaction[]>(allTransactions
       .reduce((current, next) => current.concat(next))
       .map((transaction: any) => {
-        return this.transactionToAirGapTransaction(transaction, addresses)
+        return this.transactionToAirGapTransactions(transaction, addresses)
       })
+    ).then((transactions: IAirGapTransaction[][]) => {
+      return transactions.reduce((flatten: IAirGapTransaction[], toFlatten: IAirGapTransaction[]) => flatten.concat(toFlatten), [])
+    })
   }
 
   public async getTransactions(limit: number, cursor?: TezosTransactionCursor): Promise<TezosTransactionResult> {
@@ -343,8 +188,10 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     const response = await axios.post(`${this.baseApiUrl}/v2/data/tezos/${this.baseApiNetwork}/operations`, body, {
       headers: this.headers
     })
-    const transactions: IAirGapTransaction[] = response.data.map((transaction: any) => {
-      return this.transactionToAirGapTransaction(transaction)
+    const transactions: IAirGapTransaction[] = await Promise.all<IAirGapTransaction[]>(response.data.map((transaction: any) => {
+      return this.transactionToAirGapTransactions(transaction)
+    })).then((transactions: IAirGapTransaction[][]) => {
+      return transactions.reduce((flatten: IAirGapTransaction[], toFlatten: IAirGapTransaction[]) => flatten.concat(toFlatten), [])
     })
     const lastEntryBlockLevel: number = response.data.length > 0 ? response.data[response.data.length - 1].block_level : 0
 
@@ -359,53 +206,17 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
   public async normalizeTransactionParameters(
     parameters: string,
     fallbackEntrypointName?: string
-  ): Promise<{ entrypoint: string; value: any }> {
-    const parsedParameters = this.parseParameters(parameters)
-    if (parsedParameters.entrypoint !== undefined && parsedParameters.entrypoint !== TezosContract.defaultMethodName) {
-      return {
-        entrypoint: parsedParameters.entrypoint,
-        value: parsedParameters.value
-      }
+  ): Promise<TezosTransactionParameters> {
+    const parsedParameters: unknown = this.parseParameters(parameters)
+  
+    if (!(parsedParameters instanceof Object && 'value' in parsedParameters) && !isMichelineNode(parsedParameters)) {
+      throw new Error('Invalid parameters.')
     }
-    const params = parsedParameters.value !== undefined ? parsedParameters.value : parsedParameters
-    const { selector, value } = TezosContractMethodSelector.fromJSON(params)
-    const method = await this.contract.methodForSelector(selector, fallbackEntrypointName)
 
-    return {
-      entrypoint: method.name,
-      value
-    }
+    return this.contract.normalizeContractCallParameters(parsedParameters, fallbackEntrypointName)
   }
 
-  public async fetchTokenHolders(): Promise<{ address: string; amount: string }[]> {
-    // there is no standard way to fetch token holders for now, every subclass needs to implement its own logic
-    return []
-  }
-
-  public transferDetailsFromParameters(parameters: { entrypoint: string; value: any }): { from: string; to: string; amount: string } {
-    if (parameters.entrypoint !== TezosContractEntrypoint.transfer.name) {
-      throw new Error('Only calls to the transfer entrypoint can be converted to IAirGapTransaction')
-    }
-    const contractCall = TezosContractCall.fromJSON(parameters)
-    const amount = ((contractCall.args.second as TezosContractPair).second as TezosContractInt).value
-    const from = this.getAddressFromContractCallParameter(contractCall.args.first)
-    const to = this.getAddressFromContractCallParameter(contractCall.args.second)
-    return {
-      amount: new BigNumber(amount).toFixed(), // in tzbtc
-      from,
-      to
-    }
-  }
-
-  private getAddressFromContractCallParameter(parameter: TezosContractEntity): string {
-    if (parameter instanceof TezosContractString) {
-      return (parameter as TezosContractString).value
-    } else {
-      return TezosUtils.parseAddress((parameter as TezosContractBytes).value)
-    }
-  } 
-
-  private parseParameters(parameters: string): any {
+  private parseParameters(parameters: string): unknown {
     const toBeRemoved = 'Unparsable code: '
     if (parameters.startsWith(toBeRemoved)) {
       parameters = parameters.slice(toBeRemoved.length)
@@ -414,41 +225,46 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     return JSON.parse(parameters)
   }
 
-  private transactionToAirGapTransaction(transaction: any, sourceAddresses?: string[]): IAirGapTransaction {
+  private async transactionToAirGapTransactions(transaction: any, sourceAddresses?: string[]): Promise<IAirGapTransaction[]> {
     const parameters: string = transaction.parameters_micheline ?? transaction.parameters
-    const transferData = {
+    const parsedParameters: unknown = this.parseParameters(parameters)
+
+    if (!isMichelineNode(parsedParameters)) {
+      throw new Error('Transaction parameters are invalid.')
+    }
+
+    const transferData: TezosTransactionParameters = {
       entrypoint: transaction.parameters_entrypoints,
-      value: this.parseParameters(parameters)
+      value: parsedParameters
     }
-    const { from, to, amount } = this.transferDetailsFromParameters(transferData)
-    const inbound = sourceAddresses !== undefined ? sourceAddresses.indexOf(transferData.value.args[1].args[0].string) !== -1 : false
 
-    return {
-      amount: new BigNumber(amount).toFixed(), // in tzbtc
-      fee: new BigNumber(transaction.fee ?? 0).toFixed(), // in xtz
-      from: [from],
-      isInbound: inbound,
-      protocolIdentifier: this.identifier,
-      to: [to],
-      hash: transaction.operation_group_hash,
-      timestamp: transaction.timestamp / 1000,
-      blockHeight: transaction.block_level,
-      extra: {
-        status: transaction.status
+    const partialDetails: Partial<IAirGapTransaction>[] = await this.transactionDetailsFromParameters(transferData)
+
+    return partialDetails.map((details: Partial<IAirGapTransaction>) => {
+      const inbound: boolean = sourceAddresses !== undefined && details.to && details.to.length === 1
+        ? sourceAddresses.indexOf(details.to[0]) !== -1
+        : false
+
+      return {
+        amount: new BigNumber(0).toFixed(), // in tzbtc
+        fee: new BigNumber(transaction.fee ?? 0).toFixed(), // in xtz
+        from: [],
+        isInbound: inbound,
+        protocolIdentifier: this.identifier,
+        network: this.options.network,
+        to: [],
+        hash: transaction.operation_group_hash,
+        timestamp: transaction.timestamp / 1000,
+        blockHeight: transaction.block_level,
+        extra: {
+          status: transaction.status
+        },
+        ...details
       }
-    }
+    })
   }
 
-  private callbackContract(): string {
-    let result = this.defaultCallbackContractMap.get(this.network)
-    if (result === undefined) {
-      result = ''
-    }
-
-    return result
-  }
-
-  private async runContractCall(contractCall: TezosContractCall, source: string): Promise<string> {
+  protected async runContractCall(contractCall: TezosContractCall, source: string): Promise<MichelineDataNode> {
     const results: AxiosResponse[] = await Promise.all([
       axios.get(this.url(`/chains/main/blocks/head/context/contracts/${source}/counter`)),
       axios.get(this.url('/chains/main/blocks/head/'))
@@ -456,26 +272,29 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     const counter = new BigNumber(results[0].data).plus(1)
     const branch = results[1].data.hash
     const chainID = results[1].data.chain_id
-    const body = contractCall.toOperationJSONBody(chainID, branch, counter, source, this.contractAddress)
+    const body = this.prepareMockContractCall(contractCall, chainID, branch, counter, source, this.contractAddress)
     try {
       const response = await axios.post(this.url('/chains/main/blocks/head/helpers/scripts/run_operation'), body, {
         headers: { 'Content-Type': 'application/json' }
       })
       const metadata = response.data.contents[0].metadata
       if (metadata.internal_operation_results !== undefined && metadata.operation_result.status === 'applied') {
-        return metadata.internal_operation_results[0].parameters.value.int
+        return metadata.internal_operation_results[0].parameters.value 
       } else {
         throw new Error(metadata.operation_result.errors[0].id)
       }
     } catch (runOperationError) {
       console.error(runOperationError)
-
-      return '0'
+      throw runOperationError
     }
   }
 
-  private async prepareContractCall(contractCalls: TezosContractCall[], fee: string, publicKey: string): Promise<RawTezosTransaction> {
-    const operations: TezosOperation[] = contractCalls.map((contractCall) => {
+  protected async prepareContractCall(
+    contractCalls: TezosContractCall[], 
+    fee: string, 
+    publicKey: string
+  ): Promise<RawTezosTransaction> {
+    const operations: TezosOperation[] = contractCalls.map((contractCall: TezosContractCall) => {
       return {
         kind: TezosOperationType.TRANSACTION,
         fee,
@@ -493,6 +312,45 @@ export class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
     } catch (error) {
       console.error(error.message)
       throw new Error('Forging Tezos TX failed.')
+    }
+  }
+  
+  protected requireSource(source?: string, defaultSource?: string, ...excludedPrefixes: string[]): string {
+    const _source = source ?? defaultSource
+
+    return _source === undefined || excludedPrefixes.some((excluded: string) => _source.toLowerCase().startsWith(excluded.toLowerCase()))
+      ? this.defaultSourceAddress
+      : _source
+  }
+
+  private prepareMockContractCall(
+    contractCall: TezosContractCall,
+    chainID: string,
+    branch: string,
+    counter: BigNumber,
+    source: string,
+    contractAddress: string,
+    fee: string = '0'
+  ): { chain_id: string, operation: TezosWrappedTransactionOperation } {
+    return {
+      chain_id: chainID,
+      operation: {
+        branch,
+        signature: 'sigUHx32f9wesZ1n2BWpixXz4AQaZggEtchaQNHYGRCoWNAXx45WGW2ua3apUUUAGMLPwAU41QoaFCzVSL61VaessLg4YbbP', // signature will not be checked, so it is ok to always use this one
+        contents: [
+          {
+            kind: TezosOperationType.TRANSACTION,
+            counter: counter.toFixed(),
+            amount: '0',
+            source,
+            destination: contractAddress,
+            fee,
+            gas_limit: '400000',
+            storage_limit: '60000',
+            parameters: contractCall.toJSON()
+          }
+        ]
+      }
     }
   }
 

@@ -9,7 +9,7 @@ import { AeternityProtocol } from './protocols/aeternity/AeternityProtocol'
 import { BitcoinProtocol } from './protocols/bitcoin/BitcoinProtocol'
 import { BitcoinTestnetProtocol } from './protocols/bitcoin/BitcoinTestnetProtocol'
 import { CosmosProtocol } from './protocols/cosmos/CosmosProtocol'
-import { GenericERC20, GenericERC20Configuration } from './protocols/ethereum/erc20/GenericERC20'
+import { GenericERC20 } from './protocols/ethereum/erc20/GenericERC20'
 import { EthereumClassicProtocol } from './protocols/ethereum/EthereumClassicProtocol'
 import { EthereumRopstenProtocol } from './protocols/ethereum/EthereumRopstenProtocol'
 import { GroestlcoinProtocol } from './protocols/groestlcoin/GroestlcoinProtocol'
@@ -17,7 +17,6 @@ import { GroestlcoinTestnetProtocol } from './protocols/groestlcoin/GroestlcoinT
 import { ICoinDelegateProtocol } from './protocols/ICoinDelegateProtocol'
 import { ICoinProtocol } from './protocols/ICoinProtocol'
 import { ICoinSubProtocol } from './protocols/ICoinSubProtocol'
-import { LitecoinProtocol } from './protocols/litecoin/LitecoinProtocol'
 import { SubstratePayee } from './protocols/substrate/helpers/data/staking/SubstratePayee'
 import { KusamaProtocol } from './protocols/substrate/implementations/KusamaProtocol'
 import { PolkadotProtocol } from './protocols/substrate/implementations/PolkadotProtocol'
@@ -26,6 +25,7 @@ import { TezosBTC } from './protocols/tezos/fa/TezosBTC'
 import { TezosFAProtocol, TezosTransactionCursor, TezosTransactionResult } from './protocols/tezos/fa/TezosFAProtocol'
 import { TezosStaker } from './protocols/tezos/fa/TezosStaker'
 import { TezosKtProtocol } from './protocols/tezos/kt/TezosKtProtocol'
+import { TezosUSD } from './protocols/tezos/fa/TezosUSD'
 import {
   BakerInfo,
   DelegationInfo,
@@ -58,13 +58,91 @@ import { addSubProtocol, getSubProtocolsByIdentifier } from './utils/subProtocol
 import { addSupportedProtocol, supportedProtocols } from './utils/supportedProtocols'
 import { AirGapMarketWallet } from './wallet/AirGapMarketWallet'
 import { AirGapWallet } from './wallet/AirGapWallet'
+import { AeternityProtocolOptions, AeternalBlockExplorer, AeternityProtocolNetwork } from './protocols/aeternity/AeternityProtocolOptions'
+import { AeternityCryptoClient } from './protocols/aeternity/AeternityCryptoClient'
+import { BitcoinBlockbookProtocol } from './protocols/bitcoin/BitcoinBlockbookProtocol'
+import { BitcoinCryptoClient } from './protocols/bitcoin/BitcoinCryptoClient'
+import {
+  BitcoinBlockbookProtocolNetworkExtras,
+  BitcoinBlockbookProtocolNetwork,
+  BitcoinBlockbookProtocolConfig,
+  BlockcypherBlockExplorer,
+  BitcoinBlockbookProtocolOptions
+} from './protocols/bitcoin/BitcoinBlockbookProtocolOptions'
+import {
+  BitcoinProtocolNetworkExtras,
+  BitcoinProtocolNetwork,
+  BitcoinProtocolConfig,
+  BitcoinProtocolOptions
+} from './protocols/bitcoin/BitcoinProtocolOptions'
+import { CosmosCryptoClient } from './protocols/cosmos/CosmosCryptoClient'
+import {
+  MintscanBlockExplorer,
+  CosmosProtocolNetwork,
+  CosmosProtocolConfig,
+  CosmosProtocolOptions
+} from './protocols/cosmos/CosmosProtocolOptions'
+import { EthereumCryptoClient } from './protocols/ethereum/EthereumCryptoClient'
+import { SubstrateCryptoClient } from './protocols/substrate/SubstrateCryptoClient'
+import { TezosCryptoClient } from './protocols/tezos/TezosCryptoClient'
+import {
+  EthereumProtocolNetworkExtras,
+  EtherscanBlockExplorer,
+  EthereumProtocolNetwork,
+  EthereumProtocolConfig,
+  EthereumProtocolOptions,
+  EthereumERC20ProtocolConfig,
+  EthereumERC20ProtocolOptions
+} from './protocols/ethereum/EthereumProtocolOptions'
+import { ProtocolBlockExplorer } from './utils/ProtocolBlockExplorer'
+import { ProtocolNetwork } from './utils/ProtocolNetwork'
+import {
+  GroestlcoinProtocolNetworkExtras,
+  CryptoidBlockExplorer,
+  GroestlcoinProtocolNetwork,
+  GroestlcoinProtocolConfig,
+  GroestlcoinProtocolOptions
+} from './protocols/groestlcoin/GroestlcoinProtocolOptions'
+import {
+  SubstrateProtocolNetworkExtras,
+  PolkascanBlockExplorer,
+  SubstrateProtocolConfig,
+  SubstrateProtocolNetwork,
+  SubstrateProtocolOptions
+} from './protocols/substrate/SubstrateProtocolOptions'
+import {
+  KusamaProtocolNetworkExtras,
+  KusamaPolkascanBlockExplorer,
+  KusamaProtocolConfig,
+  KusamaProtocolNetwork,
+  KusamaProtocolOptions
+} from './protocols/substrate/implementations/KusamaProtocolOptions'
+import {
+  PolkadotProtocolNetworkExtras,
+  PolkadotPolkascanBlockExplorer,
+  PolkadotProtocolConfig,
+  PolkadotProtocolNetwork,
+  PolkadotProtocolOptions
+} from './protocols/substrate/implementations/PolkadotProtocolOptions'
+import { CryptoClient } from './protocols/CryptoClient'
+import {
+  TezosProtocolNetworkExtras,
+  TezblockBlockExplorer,
+  TezosProtocolNetwork,
+  TezosProtocolConfig,
+  TezosProtocolOptions
+} from './protocols/tezos/TezosProtocolOptions'
+import {
+  TezosFAProtocolConfig,
+  TezosBTCProtocolConfig,
+  TezosStakerProtocolConfig,
+  TezosUSDProtocolConfig,
+  TezosFAProtocolOptions
+} from './protocols/tezos/fa/TezosFAProtocolOptions'
 // tslint:enable:ordered-imports
 
+// Core
 export {
-  addSupportedProtocol,
-  getProtocolByIdentifier,
-  getSubProtocolsByIdentifier,
-  supportedProtocols,
   AirGapWallet,
   AirGapMarketWallet,
   IAirGapWallet,
@@ -72,46 +150,115 @@ export {
   ICoinProtocol,
   ICoinSubProtocol,
   ICoinDelegateProtocol,
+  CryptoClient,
+  ProtocolBlockExplorer,
+  ProtocolNetwork
+}
+
+// Aeternity
+export { AeternityProtocol, AeternityCryptoClient, AeternityProtocolOptions, AeternalBlockExplorer, AeternityProtocolNetwork }
+
+// Bitcoin
+export {
   BitcoinProtocol,
   BitcoinTestnetProtocol,
-  GroestlcoinProtocol,
-  GroestlcoinTestnetProtocol,
-  LitecoinProtocol,
+  BitcoinBlockbookProtocol,
+  BitcoinCryptoClient,
+  BitcoinBlockbookProtocolNetworkExtras,
+  BlockcypherBlockExplorer,
+  BitcoinBlockbookProtocolNetwork,
+  BitcoinBlockbookProtocolConfig,
+  BitcoinBlockbookProtocolOptions,
+  BitcoinProtocolNetworkExtras,
+  BitcoinProtocolNetwork,
+  BitcoinProtocolConfig,
+  BitcoinProtocolOptions
+}
+
+// Cosmos
+export { CosmosProtocol, CosmosCryptoClient, MintscanBlockExplorer, CosmosProtocolNetwork, CosmosProtocolConfig, CosmosProtocolOptions }
+
+// Ethereum
+export {
   EthereumProtocol,
   EthereumRopstenProtocol,
   EthereumClassicProtocol,
   GenericERC20,
-  AeternityProtocol,
+  EthereumCryptoClient,
+  EthereumProtocolNetworkExtras,
+  EtherscanBlockExplorer,
+  EthereumProtocolNetwork,
+  EthereumProtocolConfig,
+  EthereumProtocolOptions,
+  EthereumERC20ProtocolConfig,
+  EthereumERC20ProtocolOptions
+}
+
+// Groestlcoin
+export {
+  GroestlcoinProtocol,
+  GroestlcoinTestnetProtocol,
+  GroestlcoinProtocolNetworkExtras,
+  CryptoidBlockExplorer,
+  GroestlcoinProtocolNetwork,
+  GroestlcoinProtocolConfig,
+  GroestlcoinProtocolOptions
+}
+
+// Substrate
+export {
+  SubstrateProtocol,
+  PolkadotProtocol,
+  KusamaProtocol,
+  SubstratePayee,
+  SubstrateCryptoClient,
+  SubstrateProtocolNetworkExtras,
+  PolkascanBlockExplorer,
+  SubstrateProtocolConfig,
+  SubstrateProtocolNetwork,
+  SubstrateProtocolOptions,
+  KusamaProtocolNetworkExtras,
+  KusamaPolkascanBlockExplorer,
+  KusamaProtocolConfig,
+  KusamaProtocolNetwork,
+  KusamaProtocolOptions,
+  PolkadotProtocolNetworkExtras,
+  PolkadotPolkascanBlockExplorer,
+  PolkadotProtocolConfig,
+  PolkadotProtocolNetwork,
+  PolkadotProtocolOptions
+}
+
+// Tezos
+export {
   TezosProtocol,
   TezosKtProtocol,
   TezosFAProtocol,
   TezosBTC,
   TezosStaker,
+  TezosUSD,
   TezosTransactionResult,
   TezosTransactionCursor,
-  CosmosProtocol,
-  SubstrateProtocol,
-  PolkadotProtocol,
-  KusamaProtocol,
-  // tezos-specific configuration
   BakerInfo,
   DelegationRewardInfo,
   DelegationInfo,
   TezosPayoutInfo,
-  // substrate specific
-  SubstratePayee,
   TezosDelegatorAction,
-  // sub protocols configs,
-  GenericERC20Configuration,
-  TypeNotSupported,
-  SerializerVersionMismatch,
-  ProtocolNotSupported,
-  ProtocolVersionMismatch,
-  // libsodium ready
-  isCoinlibReady,
-  // sub-protocols
-  addSubProtocol,
-  // serializer
+  TezosCryptoClient,
+  TezosProtocolNetworkExtras,
+  TezblockBlockExplorer,
+  TezosProtocolNetwork,
+  TezosProtocolConfig,
+  TezosProtocolOptions,
+  TezosFAProtocolConfig,
+  TezosBTCProtocolConfig,
+  TezosStakerProtocolConfig,
+  TezosUSDProtocolConfig,
+  TezosFAProtocolOptions
+}
+
+// Serializer
+export {
   IACMessageType,
   IACMessageDefinitionObject,
   AccountShareResponse,
@@ -131,4 +278,21 @@ export {
   SignedTezosTransaction,
   IACPayloadType,
   Serializer
+}
+
+// Helper
+export {
+  addSupportedProtocol,
+  getProtocolByIdentifier,
+  getSubProtocolsByIdentifier,
+  supportedProtocols,
+  // sub protocols configs,
+  TypeNotSupported,
+  SerializerVersionMismatch,
+  ProtocolNotSupported,
+  ProtocolVersionMismatch,
+  // libsodium ready
+  isCoinlibReady,
+  // sub-protocols
+  addSubProtocol
 }

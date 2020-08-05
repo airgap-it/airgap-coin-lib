@@ -7,6 +7,7 @@ import { CosmosMessage, CosmosMessageType, CosmosMessageTypeIndex } from './cosm
 import { CosmosSendMessage } from './cosmos-message/CosmosSendMessage'
 import { CosmosWithdrawDelegationRewardMessage } from './cosmos-message/CosmosWithdrawDelegationRewardMessage'
 import { CosmosFee } from './CosmosFee'
+import { CosmosProtocol } from './CosmosProtocol'
 
 export interface JSONConvertible {
   toJSON(): any
@@ -55,11 +56,11 @@ export class CosmosTransaction implements JSONConvertible, RPCConvertible {
     }
   }
 
-  public toAirGapTransactions(identifier: string): IAirGapTransaction[] {
+  public toAirGapTransactions(protocol: CosmosProtocol): IAirGapTransaction[] {
     const fee = this.fee.amount.map((value) => new BigNumber(value.amount)).reduce((prev, next) => prev.plus(next))
 
     return this.messages
-      .map((message: CosmosMessage) => message.toAirGapTransaction(identifier, fee.toString(10)))
+      .map((message: CosmosMessage) => message.toAirGapTransaction(protocol, fee.toString(10)))
       .map((tx: IAirGapTransaction) => {
         if (!tx.transactionDetails) {
           tx.transactionDetails = {}

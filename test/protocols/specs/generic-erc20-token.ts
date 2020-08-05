@@ -1,13 +1,14 @@
+import { addSubProtocol, EthereumProtocol } from '../../../src'
 import BigNumber from '../../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
-
-import { addSubProtocol } from '../../../src'
 import { ERC20Token } from '../../../src/protocols/ethereum/erc20/ERC20'
 import { TestProtocolSpec } from '../implementations'
 import { GenericERC20ProtocolStub } from '../stubs/generic-erc20.stub'
 
 const protocol = ERC20Token
 
-addSubProtocol('eth', protocol)
+const ethProtocol = new EthereumProtocol()
+
+addSubProtocol(ethProtocol, protocol)
 
 export class GenericERC20TokenTestProtocolSpec extends TestProtocolSpec {
   public name = 'Generic ERC20 Token'

@@ -282,17 +282,28 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       )
       const transactions = await tezosLib.getTransactionsFromAddresses(tezosProtocolSpec.wallet.addresses, 20, 0)
 
-      expect(transactions).to.deep.equal([
+      expect(transactions.map((transaction) => ({ ...transaction, network: undefined }))).to.deep.eq([
         {
           amount: new BigNumber(1000000),
           fee: new BigNumber(1420),
           from: ['tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'],
           isInbound: true,
+          network: undefined,
           timestamp: 1561035943,
           protocolIdentifier: tezosLib.identifier,
           to: ['tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'],
           hash: 'ooNNmftGhsUriHVWYgHGq6AE3F2sHZFYaCq41NQZSeUdm1UZEAP',
           blockHeight: 261513
+        }
+      ])
+
+      expect(transactions.map((transaction) => ({ ...transaction.network, blockExplorer: undefined, extras: undefined }))).to.deep.eq([
+        {
+          blockExplorer: undefined,
+          extras: undefined,
+          name: 'Mainnet',
+          rpcUrl: 'https://tezos-node.prod.gke.papers.tech',
+          type: 'MAINNET'
         }
       ])
     })
@@ -332,7 +343,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       expect(result.airGapTxs[0].amount).to.equal('100000')
       expect(result.airGapTxs[0].fee).to.equal('1920') // 500 mutez is added because in babylon this is sent to a contract
       expect(result.rawTezosTx.binaryTransaction).to.equal(
-        'e4b7e31c04d23e3a10ea20e11bd0ebb4bde16f632c1d94779fd5849a34ec42a36c0091a9d2b003f19cf5a1f38f04f1000ab482d33176800fcffe37bc5000a08d0601ba4e7349ac25dc5eb2df5a43fceacc58963df4f50000'
+        'e4b7e31c04d23e3a10ea20e11bd0ebb4bde16f632c1d94779fd5849a34ec42a36c0091a9d2b003f19cf5a1f38f04f1000ab482d33176800fcffe37997800a08d0601ba4e7349ac25dc5eb2df5a43fceacc58963df4f50000'
       )
     })
 

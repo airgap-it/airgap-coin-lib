@@ -25,4 +25,8 @@ RUN export NODE_ENV=production
 # build
 RUN npm run build
 
+# browserify
+RUN npm i -D browserify
+RUN npm run browserify
+
 CMD ["npm", "run", "test"]

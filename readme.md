@@ -9,11 +9,11 @@ The `airgap-coin-lib` is a protocol-agnostic library that allows easy handling o
 
 It implements operations such as preparing, signing and broadcasting transactions for a range of protocols.
 
-The library consists of a shared interface for all implements protocols. This is especially useful in the context of AirGap. The following operations are specified:
+The library consists of a shared interface for all implemented protocols. This is especially useful in the context of AirGap because methods are designed to support offline key management and signing. The following core operations are specified:
 
-- prepareTransaction - This is done on the wallet (online) side. Either a public key or extended public key is used and will fetch the required information from the network
-- signTransaction - This is done on the vault (offline) side. The output of "prepareTransaction" is the input for this method (hence the output of "prepareTransaction" is transferred via URL scheme (same-device) or QR code (2-device-setup)).
-- broadcastTransaction - This is done on the wallet (online) side. The output of "signTransaction" is the input for this method (hence the output of "signTransaction" is transferred via URL scheme (same-device) or QR code (2-device-setup)).
+- `prepareTransaction` - This is done on AirGap Wallet (online) side. Either a public key or extended public key is used and will fetch the required information from the network.
+- `signTransaction` - This is done in AirGap Vault (offline) side. The output of "prepareTransaction" is the input for this method (hence the output of "prepareTransaction" is transferred via URL scheme (same-device) or QR code (2-device-setup)).
+- `broadcastTransaction` - This is done in AirGap Wallet (online) side. The output of "signTransaction" is the input for this method (hence the output of "signTransaction" is transferred via URL scheme (same-device) or QR code (2-device-setup)).
 
 ## Supported Protocols
 
@@ -35,20 +35,33 @@ Currently supported are:
 - Aeternity
 - Tezos
 - Groestlcoin
+- Cosmos
+- Polkadot
+- Kusama
 
 ## Features
+
+### Protocols
 
 The way the interface was designed is to allow stateless calls. This means the class itself stores very little state itself.
 All required input comes from the method params (public key, extended public key, etc...)
 
-Currently we support for Bitcoin-like protocols:
+Currently we support for Bitcoin-like (UTXO) protocols:
 
-- Single Address Wallets
+- Single Address Wallets (deprecated)
 - HD Wallets
 
-Currently we support for Ethereum-like protocols:
+Currently we support for Ethereum-like (Account-based) protocols:
 
-- Single Address Wallets (HD-Wallets make no sense for account-based protocols)
+- Single Address Wallets
+
+### Delegation
+
+There is a different interface that can be implemented if the protocol supports delegation. The delegation flow usually requires some changes in the user interface of the AirGap Wallet as well.
+
+### Inter App Communication
+
+A serializer is included that encodes JSON structures with RLP and base58check. Those strings can then be sent to the other app, either through QR codes or a URL. The serializer can only serialize messages in predefined formats, so new message types have to be added when new protocols are added.
 
 ## Synchronising information between wallet and vault
 
@@ -64,11 +77,11 @@ For the single address wallet we only need to share the public key. For HD Walle
 ### Requirements
 
 ```
-npm >= 5
-NodeJS >= 8
+npm >= 6
+NodeJS >= 12
 ```
 
-Everything else gets installed automatically using `npm install`.
+Build dependencies get installed using `npm install`.
 
 ### Clone and Run
 
@@ -76,5 +89,25 @@ Everything else gets installed automatically using `npm install`.
 $ git clone https://github.com/airgap-it/airgap-coin-lib.git
 $ cd airgap-coin-lib
 $ npm install
+```
+
+To run the tests, you will have to install the test dependencies
+
+```
+$ npm run install-test-dependencies
 $ npm test
 ```
+
+To remove the test dependencies and clean up the `package.json` and `package-lock.json`, execute this command
+
+```
+$ npm run install-build-dependencies
+```
+
+### Contributing
+
+We welcome contributions from the community. Simple readme updates or bugfixes can be addressed with a PR directly.
+
+For larger changes like new protocols, new features or larger refactorings, please contact us first by opening an issue. This project is under constant development and until version `1.x.x` has been reached, there will be frequent breaking changes. So make sure to take a look at the `develop` branch.
+
+Regarding new protocols / currencies, we cannot guarantee that they will be merged, but we're more than happy to discuss the details of a specific integration in a github issue.

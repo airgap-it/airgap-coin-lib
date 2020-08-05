@@ -1,38 +1,21 @@
-import { TezosNetwork } from '../TezosProtocol'
+import { TezosProtocolNetwork } from '../TezosProtocolOptions'
 import { TezosUtils } from '../TezosUtils'
 
-import { TezosFAProtocol } from './TezosFAProtocol'
+import { TezosFA1Protocol } from './TezosFA1Protocol'
+import { TezosFAProtocolOptions, TezosStakerProtocolConfig } from './TezosFAProtocolOptions'
 
-export class TezosStaker extends TezosFAProtocol {
+export class TezosStaker extends TezosFA1Protocol {
   constructor(
-    contractAddress: string = 'KT1EctCuorV2NfVb1XTQgvzJ88MQtWP8cMMv',
-    jsonRPCAPI?: string,
-    baseApiUrl?: string,
-    baseApiKey?: string,
-    baseApiNetwork?: string,
-    network?: TezosNetwork
+    public readonly options: TezosFAProtocolOptions = new TezosFAProtocolOptions(
+      new TezosProtocolNetwork(),
+      new TezosStakerProtocolConfig()
+    )
   ) {
-    super({
-      symbol: 'STKR',
-      name: 'Staker',
-      marketSymbol: 'stkr',
-      identifier: 'xtz-stkr',
-      feeDefaults: {
-        low: '0.100',
-        medium: '0.300',
-        high: '0.500'
-      },
-      contractAddress,
-      jsonRPCAPI,
-      baseApiUrl,
-      baseApiKey,
-      baseApiNetwork,
-      network
-    })
+    super(options)
   }
 
   public async fetchTokenHolders(): Promise<{ address: string; amount: string }[]> {
-    const values = await this.contract.bigMapValues([])
+    const values = await this.contract.bigMapValues()
 
     return values
       .map((value) => {

@@ -11,7 +11,7 @@ import { SignedCosmosTransaction } from '../../serializer/schemas/definitions/tr
 import { UnsignedCosmosTransaction } from '../../serializer/types'
 import { assertFields } from '../../utils/assert'
 import { DelegateeDetails, DelegationDetails, DelegatorAction, DelegatorDetails, ICoinDelegateProtocol } from '../ICoinDelegateProtocol'
-import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
+import { CurrencyUnit, FeeDefaults } from '../ICoinProtocol'
 import { ICoinSubProtocol } from '../ICoinSubProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
 
@@ -32,7 +32,9 @@ import {
   CosmosUnbondingDelegation,
   CosmosValidator
 } from './CosmosNodeClient'
+import { CosmosProtocolOptions } from './CosmosProtocolOptions'
 import { CosmosTransaction } from './CosmosTransaction'
+import { MainProtocolSymbols, ProtocolSymbols } from '../../utils/ProtocolSymbols'
 
 export enum CosmosDelegationActionType {
   DELEGATE = 'delegate',
@@ -53,7 +55,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
   }
   public decimals: number = 6
   public feeDecimals: number = 6
-  public identifier: string = 'cosmos'
+  public identifier: ProtocolSymbols = MainProtocolSymbols.COSMOS
   public units: CurrencyUnit[] = [
     {
       unitSymbol: 'atom',
@@ -69,25 +71,29 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
   public addressIsCaseSensitive: boolean = false
   public addressValidationPattern: string = '^(cosmos|cosmosvaloper)[a-zA-Z0-9]{39}$'
   public addressPlaceholder: string = 'cosmos...'
-  public blockExplorer: string = 'https://www.mintscan.io'
-  public subProtocols?: (ICoinProtocol & ICoinSubProtocol)[] | undefined
+
+  public subProtocols?: ICoinSubProtocol[]
 
   private readonly addressPrefix: string = 'cosmos'
   private readonly defaultGas: BigNumber = new BigNumber('200000')
 
-  constructor(
-    public readonly infoClient: CosmosInfoClient = new CosmosInfoClient(),
-    public readonly nodeClient: CosmosNodeClient = new CosmosNodeClient('https://cosmos-node.prod.gke.papers.tech', true)
-  ) {
+  get infoClient(): CosmosInfoClient {
+    return this.options.config.infoClient
+  }
+  get nodeClient(): CosmosNodeClient {
+    return this.options.config.nodeClient
+  }
+
+  constructor(public readonly options: CosmosProtocolOptions = new CosmosProtocolOptions()) {
     super()
   }
 
   public async getBlockExplorerLinkForAddress(address: string): Promise<string> {
-    return `${this.blockExplorer}/account/${address}`
+    return this.options.network.blockExplorer.getAddressLink(address)
   }
 
   public async getBlockExplorerLinkForTxId(txId: string): Promise<string> {
-    return `${this.blockExplorer}/txs/${txId}`
+    return this.options.network.blockExplorer.getTransactionLink(txId)
   }
 
   public generateKeyPair(mnemonic: string, derivationPath: string = this.standardDerivationPath, password?: string): KeyPair {
@@ -158,7 +164,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
   public async getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
     const promises: Promise<IAirGapTransaction[]>[] = []
     for (const address of addresses) {
-      promises.push(this.infoClient.fetchTransactions(this.identifier, address, offset, limit))
+      promises.push(this.infoClient.fetchTransactions(this, address, offset, limit))
     }
 
     return Promise.all(promises).then((transactions) => transactions.reduce((current, next) => current.concat(next)))
@@ -196,7 +202,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
   }
 
   public async getTransactionDetails(transaction: UnsignedCosmosTransaction): Promise<IAirGapTransaction[]> {
-    const result = transaction.transaction.toAirGapTransactions(this.identifier)
+    const result = transaction.transaction.toAirGapTransactions(this)
 
     return result
   }
@@ -214,16 +220,16 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
           case CosmosMessageType.Send.value:
             const sendMessage = CosmosSendMessage.fromRPCBody(message)
 
-            return sendMessage.toAirGapTransaction(this.identifier, fee)
+            return sendMessage.toAirGapTransaction(this, fee)
           case CosmosMessageType.Undelegate.value:
           case CosmosMessageType.Delegate.value:
             const delegateMessage = CosmosDelegateMessage.fromRPCBody(message)
 
-            return delegateMessage.toAirGapTransaction(this.identifier, fee)
+            return delegateMessage.toAirGapTransaction(this, fee)
           case CosmosMessageType.WithdrawDelegationReward.value:
             const withdrawMessage = CosmosWithdrawDelegationRewardMessage.fromRPCBody(message)
 
-            return withdrawMessage.toAirGapTransaction(this.identifier, fee)
+            return withdrawMessage.toAirGapTransaction(this, fee)
           default:
             throw Error('Unknown transaction')
         }

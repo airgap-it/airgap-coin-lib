@@ -1,4 +1,4 @@
-import { TezosKtProtocol } from '..'
+import { TezosKtProtocol } from '../protocols/tezos/kt/TezosKtProtocol'
 
 import { Action } from './Action'
 

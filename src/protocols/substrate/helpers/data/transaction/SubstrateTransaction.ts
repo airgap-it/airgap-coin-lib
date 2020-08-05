@@ -21,12 +21,12 @@ const BIT_SIGNED = 128
 const BIT_UNSIGNED = 128 // TODO: change to 0 if payment_queryInfo recognizes the transaction, at the moment it returns "No such variant in enum Call" error
 
 interface SubstrateTransactionConfig {
-  from: SubstrateAccountId,
-  args: any,
-  tip: number | BigNumber,
-  methodId: SubstrateCallId,
-  era: EraConfig | null,
-  nonce: number | BigNumber,
+  from: SubstrateAccountId
+  args: any
+  tip: number | BigNumber
+  methodId: SubstrateCallId
+  era: EraConfig | null
+  nonce: number | BigNumber
   signature?: SubstrateSignature
 }
 
@@ -47,18 +47,18 @@ export enum SubstrateTransactionType {
 
 export class SubstrateTransaction extends SCALEClass {
   public static create(
-    network: SubstrateNetwork, 
-    type: SubstrateTransactionType, 
+    network: SubstrateNetwork,
+    type: SubstrateTransactionType,
     config: SubstrateTransactionConfig
   ): SubstrateTransaction {
     return new SubstrateTransaction(
       network,
       type,
-      SCALEAccountId.from(config.from, network), 
-      config.signature || SubstrateSignature.create(SubstrateSignatureType.Ed25519, config.signature), 
+      SCALEAccountId.from(config.from, network),
+      config.signature || SubstrateSignature.create(SubstrateSignatureType.Ed25519, config.signature),
       config.era ? SCALEEra.Mortal(config.era) : SCALEEra.Immortal(),
       SCALECompactInt.from(config.nonce),
-      SCALECompactInt.from(config.tip), 
+      SCALECompactInt.from(config.tip),
       SubstrateTransactionMethod.create(network, type, config.methodId.moduleIndex, config.methodId.callIndex, config.args)
     )
   }
@@ -68,18 +68,18 @@ export class SubstrateTransaction extends SCALEClass {
       transaction.network,
       transaction.type,
       config && config.from ? SCALEAccountId.from(config.from, transaction.network) : transaction.signer,
-      config?.signature || transaction.signature, 
+      config?.signature || transaction.signature,
       config && config.era ? SCALEEra.Mortal(config.era) : transaction.era,
       config && config.nonce ? SCALECompactInt.from(config.nonce) : transaction.nonce,
       config && config.tip ? SCALECompactInt.from(config.tip) : transaction.tip,
       config && config.args && config.methodId
         ? SubstrateTransactionMethod.create(
             transaction.network,
-            transaction.type, 
-            config.methodId.moduleIndex, 
-            config.methodId.callIndex, 
+            transaction.type,
+            config.methodId.moduleIndex,
+            config.methodId.callIndex,
             config.args
-          ) 
+          )
         : transaction.method
     )
   }
@@ -146,6 +146,9 @@ export class SubstrateTransaction extends SCALEClass {
     const airGapTransaction = {
       from: [this.signer.asAddress()],
       to: [this.signer.asAddress()],
+      extra: this.type !== SubstrateTransactionType.TRANSFER
+        ? { type: SubstrateTransactionType[this.type] }
+        : undefined,
       transactionDetails: JSON.parse(this.toString())
     }
     const parts = this.method.toAirGapTransactionParts()
