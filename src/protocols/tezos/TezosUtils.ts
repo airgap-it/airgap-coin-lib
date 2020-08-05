@@ -46,7 +46,7 @@ export class TezosUtils {
       // kt address
       return this.prefixAndBase58CheckEncode(rest.slice(0, -2), this.tezosPrefixes.kt)
     } else {
-      throw new Error('address format not supported')
+      throw new Error(`address format not supported (${rawHexAddress})`)
     }
   }
 
@@ -171,10 +171,15 @@ export class TezosUtils {
     // tz1 address
     const { result, rest }: { result: string; rest: string } = this.splitAndReturnRest(rawHexAddress, 2)
     const publicKeyHashTag: string = result
-    if (publicKeyHashTag === '00') {
-      return this.prefixAndBase58CheckEncode(rest, this.tezosPrefixes.tz1)
-    } else {
-      throw new Error('address format not supported')
+    switch (publicKeyHashTag) {
+      case '00':
+        return this.prefixAndBase58CheckEncode(rest, this.tezosPrefixes.tz1)
+      case '01':
+        return this.prefixAndBase58CheckEncode(rest, this.tezosPrefixes.tz2)
+      case '02':
+        return this.prefixAndBase58CheckEncode(rest, this.tezosPrefixes.tz3)
+      default:
+        throw new Error(`address format not supported (${rawHexAddress})`)
     }
   }
 
