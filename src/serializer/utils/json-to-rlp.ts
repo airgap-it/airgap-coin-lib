@@ -150,7 +150,14 @@ function decode(schemaItem: SchemaItem, decoded: any): any {
       return undefined
 
     case SchemaTypes.ARRAY:
-      return decoded.map((decodedElement: RLPData) => decode((schemaItem as any).items, decodedElement))
+      return decoded.map((decodedElement: RLPData, index: number) => {
+        const items = (schemaItem as any).items
+        if (Array.isArray(items)) {
+          return decode(items[index], decodedElement)
+        } else {
+          return decode(items, decodedElement)
+        }
+      })
 
     case SchemaTypes.OBJECT:
       return rlpArrayToJson((schemaItem as any).properties, decoded)
