@@ -5,7 +5,7 @@ VERSION=$(node -pe 'JSON.parse(process.argv[1]).version.indexOf("beta")' "$(cat 
 
 if [ "$VERSION" = "-1" ]
 then
-  npm publish
+  npm publish --tag old
 else
   echo "version is beta, using --tag next"
   npm publish --tag next
