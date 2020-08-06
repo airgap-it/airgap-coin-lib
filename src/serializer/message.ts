@@ -1,4 +1,4 @@
-import { ProtocolSymbols } from '../utils/ProtocolSymbols'
+import { ProtocolSymbols, MainProtocolSymbols } from '../utils/ProtocolSymbols'
 
 import { IACMessageType } from './interfaces'
 import { AccountShareResponse } from './schemas/definitions/account-share-response'
@@ -50,11 +50,11 @@ export interface IACMessageDefinitionObject {
 }
 
 export interface MessageDefinitionArray {
-  [0]: string // Version
-  [1]: string // Type
-  [2]: string // Id
-  [3]: ProtocolSymbols // Protocol
-  [4]: RLPData // Message
+  [0]: Buffer // string // Version
+  [1]: Buffer // string // Type
+  [2]: Buffer // ProtocolSymbols // Protocol
+  [3]: Buffer // string // Id
+  [4]: Buffer // RLPData // Message
 }
 
 export class Message implements IACMessageDefinitionObject {
@@ -97,12 +97,12 @@ export class Message implements IACMessageDefinitionObject {
   }
 
   public static fromEncoded(buf: MessageDefinitionArray): Message {
-    const version: string = buf[0].toString()
-    const type: number = parseInt(buf[1].toString(), 10)
-    const id: string = buf[2].toString()
-    const protocol: ProtocolSymbols = buf[3].toString() as ProtocolSymbols
-    const encodedPayload: RLPData = buf[4]
-    // TODO: Add checks to check data above
+    const version: string = this.parseVersion(buf[0])
+    const type: IACMessageType = this.parseType(buf[1])
+    const protocol: ProtocolSymbols = this.parseProtocol(buf[2])
+    const id: string = this.parseId(buf[3])
+    const encodedPayload: RLPData = this.parsePayload(buf[4])
+
     const schemaInfo: SchemaInfo = Serializer.getSchema(type.toString(), protocol)
     const schema: SchemaItem = unwrapSchema(schemaInfo.schema)
     const schemaTransformer: SchemaTransformer | undefined = schemaInfo.transformer
@@ -110,5 +110,69 @@ export class Message implements IACMessageDefinitionObject {
     const payload: IACMessages = schemaTransformer ? schemaTransformer(json) : json
 
     return new Message(type, protocol, payload, id, version)
+  }
+
+  private static parseVersion(buffer: Buffer): string {
+    return this.validateProperty<string, string>(
+      'Version',
+      buffer,
+      (buf: Buffer) => buf.toString(),
+      (val: string) => val === '0' || val === '1'
+    )
+  }
+
+  private static parseType(buffer: Buffer): IACMessageType {
+    return this.validateProperty<IACMessageType, number>(
+      'Type',
+      buffer,
+      (buf: Buffer) => parseInt(buf.toString(), 10),
+      (val: number) => !!IACMessageType[val]
+    )
+  }
+
+  private static parseProtocol(buffer: Buffer): ProtocolSymbols {
+    return this.validateProperty<ProtocolSymbols, string>(
+      'Protocol',
+      buffer,
+      (buf: Buffer) => buf.toString(),
+      (val: string) => Object.values(MainProtocolSymbols).some((value: string) => value === val)
+    )
+  }
+
+  private static parseId(buffer: Buffer): string {
+    return this.validateProperty<string, string>(
+      'Id',
+      buffer,
+      (buf: Buffer) => buf.toString(),
+      (val: string) => val.length === 36
+    )
+  }
+
+  private static parsePayload(buffer: Buffer): string {
+    return this.validateProperty<string, string>(
+      'Payload',
+      buffer,
+      (buf: Buffer) => buf.toString(),
+      (val: string) => val.length === 36
+    )
+  }
+
+  private static validateProperty<T, U>(
+    property: string,
+    buffer: Buffer,
+    parse: (buffer: Buffer) => U,
+    validate: (value: U) => boolean
+  ): T {
+    if (typeof buffer === 'undefined') {
+      throw Error(`${property} is empty`)
+    }
+
+    const parsed: U = parse(buffer)
+
+    if (validate(parsed)) {
+      return (parsed as unknown) as T // TODO: Use type guard?
+    }
+
+    throw new Error(`${property} is invalid: "${parsed}"`)
   }
 }
