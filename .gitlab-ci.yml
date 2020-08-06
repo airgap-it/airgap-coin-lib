@@ -85,6 +85,7 @@ publish:
   stage: publish
   only:
     - master
+    - tags
   when: manual
   before_script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
