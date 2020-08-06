@@ -4,7 +4,7 @@ import { SchemaDefinition, SchemaItem, SchemaRoot, SchemaTypes } from '../schema
 import { RLPData } from './toBuffer'
 
 function log(...args: unknown[]): void {
-  const loggingEnabled: boolean = false
+  const loggingEnabled: boolean = true
   if (loggingEnabled) {
     // tslint:disable-next-line:no-console
     console.log(...args)
@@ -92,7 +92,14 @@ export function jsonToArray(key: string, schema: SchemaItem, value: Object): RLP
 
     case SchemaTypes.ARRAY:
       return checkType(key, 'array', value, (arg) => {
-        return arg.map((element) => jsonToArray(key, (schema as any).items, element))
+        return arg.map((element, index) => {
+          const items = (schema as any).items
+          if (Array.isArray(items)) {
+            return jsonToArray(key, items[index], element)
+          } else {
+            return jsonToArray(key, items, element)
+          }
+        })
       })
 
     case SchemaTypes.OBJECT:
@@ -117,6 +124,42 @@ export function jsonToArray(key: string, schema: SchemaItem, value: Object): RLP
   }
 }
 
+function decode(schemaItem: SchemaItem, decoded: any): any {
+  const type: SchemaTypes = getTypeFromSchemaDefinition(schemaItem)
+  switch (type) {
+    case SchemaTypes.BOOLEAN:
+      if (decoded.toString() !== '') {
+        return decoded.toString() === '1'
+      }
+      break
+
+    case SchemaTypes.STRING:
+      return decoded.toString()
+
+    case SchemaTypes.HEX_STRING:
+      return `0x${decoded.toString()}`
+
+    case SchemaTypes.NUMBER:
+    case SchemaTypes.INTEGER:
+      if (decoded.toString() !== '') {
+        return parseInt(decoded.toString(), 10)
+      }
+      break
+
+    case SchemaTypes.NULL:
+      return undefined
+
+    case SchemaTypes.ARRAY:
+      return decoded.map((decodedElement: RLPData) => decode((schemaItem as any).items, decodedElement))
+
+    case SchemaTypes.OBJECT:
+      return rlpArrayToJson((schemaItem as any).properties, decoded)
+
+    default:
+      assertNever(type)
+  }
+}
+
 export function rlpArrayToJson(schema: SchemaItem, decoded: RLPData): { [key: string]: unknown } {
   const outObject: { [key: string]: unknown } = {}
 
@@ -135,46 +178,8 @@ export function rlpArrayToJson(schema: SchemaItem, decoded: RLPData): { [key: st
 
   for (let i: number = 0; i < keys.length; i++) {
     const key: string = keys[i]
-    const type: SchemaTypes = getTypeFromSchemaDefinition(schema[key])
-    switch (type) {
-      case SchemaTypes.BOOLEAN:
-        if (decoded[i].toString() !== '') {
-          outObject[key] = decoded[i].toString() === '1'
-        }
-        break
-
-      case SchemaTypes.STRING:
-        outObject[key] = decoded[i].toString()
-        break
-
-      case SchemaTypes.HEX_STRING:
-        outObject[key] = `0x${decoded[i].toString()}`
-        break
-
-      case SchemaTypes.NUMBER:
-      case SchemaTypes.INTEGER:
-        if (decoded[i].toString() !== '') {
-          outObject[key] = parseInt(decoded[i].toString(), 10)
-        }
-        break
-
-      case SchemaTypes.NULL:
-        outObject[key] = undefined
-        break
-
-      case SchemaTypes.ARRAY:
-        outObject[key] = decoded[i].map((decodedElement: RLPData) => rlpArrayToJson(schema[key].items, decodedElement))
-        break
-
-      case SchemaTypes.OBJECT:
-        outObject[key] = rlpArrayToJson(schema[key].properties, decoded[i])
-        break
-
-      default:
-        assertNever(type)
-
-        return {}
-    }
+    log(schema)
+    outObject[key] = decode(schema[key], decoded[i])
   }
 
   return outObject
