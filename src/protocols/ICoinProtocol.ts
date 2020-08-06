@@ -1,7 +1,7 @@
 import { IAirGapSignedTransaction } from '../interfaces/IAirGapSignedTransaction'
 import { AirGapTransactionStatus, IAirGapTransaction } from '../interfaces/IAirGapTransaction'
-import { UnsignedTransaction } from '../serializer/schemas/definitions/transaction-sign-request'
-import { SignedTransaction } from '../serializer/schemas/definitions/transaction-sign-response'
+import { SignedTransaction } from '../serializer/schemas/definitions/signed-transaction'
+import { UnsignedTransaction } from '../serializer/schemas/definitions/unsigned-transaction'
 import { ProtocolOptions } from '../utils/ProtocolOptions'
 import { ProtocolSymbols } from '../utils/ProtocolSymbols'
 

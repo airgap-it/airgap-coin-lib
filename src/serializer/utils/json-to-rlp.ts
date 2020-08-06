@@ -7,7 +7,7 @@ function log(...args: unknown[]): void {
   const loggingEnabled: boolean = false
   if (loggingEnabled) {
     // tslint:disable-next-line:no-console
-    console.log(args)
+    console.log(...args)
   }
 }
 
@@ -120,8 +120,13 @@ export function jsonToArray(key: string, schema: SchemaItem, value: Object): RLP
 export function rlpArrayToJson(schema: SchemaItem, decoded: RLPData): { [key: string]: unknown } {
   const outObject: { [key: string]: unknown } = {}
 
-  if ((schema as any).type === SchemaTypes.OBJECT) {
-    return rlpArrayToJson((schema as any).properties, decoded)
+  if (schema.type === SchemaTypes.OBJECT) {
+    const newShema: SchemaItem | undefined = schema.properties
+    if (newShema) {
+      return rlpArrayToJson(newShema, decoded)
+    } else {
+      throw new Error('Shema not available.')
+    }
   }
 
   const keys: string[] = Object.keys(schema).sort()

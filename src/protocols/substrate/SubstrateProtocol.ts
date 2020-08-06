@@ -1,7 +1,7 @@
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { AirGapTransactionStatus, IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
-import { UnsignedSubstrateTransaction } from '../../serializer/schemas/definitions/transaction-sign-request-substrate'
-import { SignedSubstrateTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-substrate'
+import { SignedSubstrateTransaction } from '../../serializer/schemas/definitions/signed-transaction-substrate'
+import { UnsignedSubstrateTransaction } from '../../serializer/schemas/definitions/unsigned-transaction-substrate'
 import { RawSubstrateTransaction } from '../../serializer/types'
 import { assertFields } from '../../utils/assert'
 import { ProtocolSymbols } from '../../utils/ProtocolSymbols'
@@ -91,7 +91,9 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
 
   public async getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
     const pageNumber = Math.ceil(offset / limit) + 1
-    const txs = await Promise.all(addresses.map((address) => this.options.blockExplorerClient.getTransactions(address, limit, pageNumber, this.decimals)))
+    const txs = await Promise.all(
+      addresses.map((address) => this.options.blockExplorerClient.getTransactions(address, limit, pageNumber, this.decimals))
+    )
 
     return txs
       .reduce((flatten, toFlatten) => flatten.concat(toFlatten), [])

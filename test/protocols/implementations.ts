@@ -51,6 +51,7 @@ abstract class TestProtocolSpec {
   public unsignedTransaction(tx: any): IACMessageDefinitionObject[] {
     return [
       {
+        id: 'test',
         protocol: this.lib.identifier,
         type: IACMessageType.TransactionSignRequest,
         payload: {
@@ -65,6 +66,7 @@ abstract class TestProtocolSpec {
   public signedTransaction(tx: any): IACMessageDefinitionObject[] {
     return [
       {
+        id: 'test',
         protocol: this.lib.identifier,
         type: IACMessageType.TransactionSignResponse,
         payload: {
@@ -78,9 +80,11 @@ abstract class TestProtocolSpec {
   public syncWallet(): IACMessageDefinitionObject[] {
     return [
       {
+        id: 'test',
         protocol: this.lib.identifier,
         type: IACMessageType.AccountShareResponse,
         payload: {
+          group: 'group1',
           publicKey: this.wallet.publicKey,
           isExtendedPublicKey: this.lib.supportsHD,
           derivationPath: this.lib.standardDerivationPath

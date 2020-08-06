@@ -1,6 +1,6 @@
 import { BitcoinProtocol } from '../../../src'
 import { IACMessageDefinitionObject } from '../../../src/serializer/message'
-import { SignedBitcoinTransaction } from '../../../src/serializer/schemas/definitions/transaction-sign-response-bitcoin'
+import { SignedBitcoinTransaction } from '../../../src/serializer/schemas/definitions/signed-transaction-bitcoin'
 import { RawBitcoinTransaction } from '../../../src/serializer/types'
 import { TestProtocolSpec } from '../implementations'
 import { BitcoinProtocolStub } from '../stubs/bitcoin.stub'

@@ -1,6 +1,6 @@
 import { CosmosTransaction } from '../protocols/cosmos/CosmosTransaction'
 
-import { UnsignedTransaction } from './schemas/definitions/transaction-sign-request'
+import { UnsignedTransaction } from './schemas/definitions/unsigned-transaction'
 
 export interface RawTezosTransaction {
   binaryTransaction: string

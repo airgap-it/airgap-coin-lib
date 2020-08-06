@@ -6,8 +6,8 @@ import { IACMessageType } from './interfaces'
 import { IACMessageDefinitionObject } from './message'
 import { FullPayload } from './payloads/full-payload'
 import { Payload } from './payloads/payload'
-import { UnsignedTransaction } from './schemas/definitions/transaction-sign-request'
-import { SerializableUnsignedCosmosTransaction } from './schemas/definitions/transaction-sign-request-cosmos'
+import { UnsignedTransaction } from './schemas/definitions/unsigned-transaction'
+import { SerializableUnsignedCosmosTransaction } from './schemas/definitions/unsigned-transaction-cosmos'
 import { SchemaInfo, SchemaRoot } from './schemas/schema'
 import { AeternityTransactionValidator } from './unsigned-transactions/aeternity-transactions.validator'
 import { BitcoinTransactionValidator } from './unsigned-transactions/bitcoin-transactions.validator'
@@ -132,7 +132,7 @@ export class Serializer {
       throw Error(`Validator not implemented for ${protocolIdentifier}, ${exactMatch}, ${startsWith}, ${validator}`)
     }
 
-    return new validators[validator]()
+    return new validators[validator ?? 'eth']()
   }
 }
 

@@ -1,9 +1,6 @@
 export interface MessageSignRequest {
-  id: string // Message ID used to match request/reaponse
   message: string // Message to be signed
-  publicKey: string // Allows wallet to pre-select signing identity
   protocol: string // Protocol used for signing
-  ttl: string // Blockheight or timestamp to prevent replay attacks
-  origin: string // eg. airgap.it
-  callbackURL: string // eg. https://airgap.it/?signedMessage=
+  publicKey: string // Allows wallet to pre-select signing identity
+  callbackURL: string // eg. https://airgap.it/?signedMessage={{data}}
 }

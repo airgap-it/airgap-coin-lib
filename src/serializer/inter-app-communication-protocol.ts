@@ -42,7 +42,6 @@ export class IACProtocol {
 
   public static fromDecoded(data: IACMessageDefinitionObject[], chunkSize: number = 0): IACProtocol[] {
     const payload: FullPayload = FullPayload.fromDecoded(data)
-
     const rawPayload: Buffer = payload.asBuffer()
 
     if (chunkSize > 0 && rawPayload.length > chunkSize) {

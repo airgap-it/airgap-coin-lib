@@ -4,103 +4,111 @@ import { IACMessageType } from './interfaces'
 import { AccountShareResponse } from './schemas/definitions/account-share-response'
 import { MessageSignRequest } from './schemas/definitions/message-sign-request'
 import { MessageSignResponse } from './schemas/definitions/message-sign-response'
-import { UnsignedAeternityTransaction } from './schemas/definitions/transaction-sign-request-aeternity'
-import { UnsignedBitcoinTransaction } from './schemas/definitions/transaction-sign-request-bitcoin'
-import { UnsignedEthereumTransaction } from './schemas/definitions/transaction-sign-request-ethereum'
-import { UnsignedSubstrateTransaction } from './schemas/definitions/transaction-sign-request-substrate'
-import { UnsignedTezosTransaction } from './schemas/definitions/transaction-sign-request-tezos'
-import { SignedAeternityTransaction } from './schemas/definitions/transaction-sign-response-aeternity'
-import { SignedBitcoinTransaction } from './schemas/definitions/transaction-sign-response-bitcoin'
-import { SignedCosmosTransaction } from './schemas/definitions/transaction-sign-response-cosmos'
-import { SignedEthereumTransaction } from './schemas/definitions/transaction-sign-response-ethereum'
-import { SignedSubstrateTransaction } from './schemas/definitions/transaction-sign-response-substrate'
-import { SignedTezosTransaction } from './schemas/definitions/transaction-sign-response-tezos'
+import { SignedAeternityTransaction } from './schemas/definitions/signed-transaction-aeternity'
+import { SignedBitcoinTransaction } from './schemas/definitions/signed-transaction-bitcoin'
+import { SignedCosmosTransaction } from './schemas/definitions/signed-transaction-cosmos'
+import { SignedEthereumTransaction } from './schemas/definitions/signed-transaction-ethereum'
+import { SignedSubstrateTransaction } from './schemas/definitions/signed-transaction-substrate'
+import { SignedTezosTransaction } from './schemas/definitions/signed-transaction-tezos'
+import { UnsignedAeternityTransaction } from './schemas/definitions/unsigned-transaction-aeternity'
+import { UnsignedBitcoinTransaction } from './schemas/definitions/unsigned-transaction-bitcoin'
+import { UnsignedEthereumTransaction } from './schemas/definitions/unsigned-transaction-ethereum'
+import { UnsignedSubstrateTransaction } from './schemas/definitions/unsigned-transaction-substrate'
+import { UnsignedTezosTransaction } from './schemas/definitions/unsigned-transaction-tezos'
 import { SchemaInfo, SchemaItem, SchemaTransformer } from './schemas/schema'
 import { Serializer } from './serializer'
 import { UnsignedCosmosTransaction } from './types'
+import { generateGUID } from './utils/generateUUID'
 import { jsonToArray, rlpArrayToJson, unwrapSchema } from './utils/json-to-rlp'
 import { RLPData } from './utils/toBuffer'
 
 export const assertNever: (x: never) => void = (x: never): void => undefined
 
 export type IACMessages =
-	| AccountShareResponse
-	| MessageSignRequest
-	| MessageSignResponse
-	| UnsignedTezosTransaction
-	| UnsignedAeternityTransaction
-	| UnsignedBitcoinTransaction
-	| UnsignedCosmosTransaction
-	| UnsignedEthereumTransaction
-	| UnsignedSubstrateTransaction
-	| SignedTezosTransaction
-	| SignedAeternityTransaction
-	| SignedBitcoinTransaction
-	| SignedCosmosTransaction
-	| SignedEthereumTransaction
-	| SignedSubstrateTransaction
+  | AccountShareResponse
+  | MessageSignRequest
+  | MessageSignResponse
+  | UnsignedTezosTransaction
+  | UnsignedAeternityTransaction
+  | UnsignedBitcoinTransaction
+  | UnsignedCosmosTransaction
+  | UnsignedEthereumTransaction
+  | UnsignedSubstrateTransaction
+  | SignedTezosTransaction
+  | SignedAeternityTransaction
+  | SignedBitcoinTransaction
+  | SignedCosmosTransaction
+  | SignedEthereumTransaction
+  | SignedSubstrateTransaction
 
 // tslint:disable-next-line:interface-name
 export interface IACMessageDefinitionObject {
-	type: IACMessageType
-	protocol: ProtocolSymbols
-	payload: IACMessages
+  id: string
+  type: IACMessageType
+  protocol: ProtocolSymbols
+  payload: IACMessages
 }
 
 export interface MessageDefinitionArray {
-	[0]: string // Version
-	[1]: string // Type
-	[2]: ProtocolSymbols // Protocol
-	[3]: RLPData // Message
+  [0]: string // Version
+  [1]: string // Type
+  [2]: string // Id
+  [3]: ProtocolSymbols // Protocol
+  [4]: RLPData // Message
 }
 
 export class Message implements IACMessageDefinitionObject {
-	private readonly version: string // TODO: Version depending on the message type
-	private readonly schema: SchemaItem
+  private readonly version: string // TODO: Version depending on the message type
+  private readonly schema: SchemaItem
 
-	public readonly type: IACMessageType
-	public readonly protocol: ProtocolSymbols
-	public readonly payload: IACMessages
+  public readonly id: string
+  public readonly type: IACMessageType
+  public readonly protocol: ProtocolSymbols
+  public readonly payload: IACMessages
 
-	constructor(type: IACMessageType, protocol: ProtocolSymbols, payload: IACMessages, version: string = '0') {
-		this.type = type
-		this.protocol = protocol
-		this.payload = payload
-		this.version = version
+  constructor(type: IACMessageType, protocol: ProtocolSymbols, payload: IACMessages, id: string = generateGUID(), version: string = '0') {
+    this.id = id
+    this.type = type
+    this.protocol = protocol
+    this.payload = payload
+    this.version = version
 
-		const schemaInfo: SchemaInfo = Serializer.getSchema(this.type.toString(), this.protocol)
-		this.schema = unwrapSchema(schemaInfo.schema)
-	}
+    const schemaInfo: SchemaInfo = Serializer.getSchema(this.type.toString(), this.protocol)
+    this.schema = unwrapSchema(schemaInfo.schema)
+  }
 
-	public asJson(): IACMessageDefinitionObject {
-		return {
-			type: this.type,
-			protocol: this.protocol,
-			payload: this.payload
-		}
-	}
+  public asJson(): IACMessageDefinitionObject {
+    return {
+      type: this.type,
+      protocol: this.protocol,
+      id: this.id,
+      payload: this.payload
+    }
+  }
 
-	public asArray(): RLPData /* it could be MessageDefinitionArray */ {
-		const array: RLPData = jsonToArray('root', this.schema, this.payload)
+  public asArray(): RLPData /* it could be MessageDefinitionArray */ {
+    const array: RLPData = jsonToArray('root', this.schema, this.payload)
 
-		return [this.version, this.type.toString(), this.protocol, array]
-	}
+    return [this.version, this.type.toString(), this.id, this.protocol, array]
+  }
 
-	public static fromDecoded(object: IACMessageDefinitionObject): Message {
-		return new Message(object.type, object.protocol, object.payload)
-	}
+  public static fromDecoded(object: IACMessageDefinitionObject): Message {
+    return new Message(object.type, object.protocol, object.payload, object.id)
+  }
 
-	public static fromEncoded(buf: MessageDefinitionArray): Message {
-		const version: string = buf[0].toString()
-		const type: number = parseInt(buf[1].toString(), 10)
-		const protocol: ProtocolSymbols = buf[2].toString() as ProtocolSymbols
-		const encodedPayload: RLPData = buf[3]
-		const schemaInfo: SchemaInfo = Serializer.getSchema(type.toString(), protocol)
-		const schema: SchemaItem = unwrapSchema(schemaInfo.schema)
-		const schemaTransformer: SchemaTransformer | undefined = schemaInfo.transformer
-		const json: IACMessages = (rlpArrayToJson(schema, encodedPayload) as any) as IACMessages
-		const payload: IACMessages = schemaTransformer ? schemaTransformer(json) : json
+  public static fromEncoded(buf: MessageDefinitionArray): Message {
+    const version: string = buf[0].toString()
+    const type: number = parseInt(buf[1].toString(), 10)
+    const id: string = buf[2].toString()
+    const protocol: ProtocolSymbols = buf[3].toString() as ProtocolSymbols
+    const encodedPayload: RLPData = buf[4]
+    // TODO: Add checks to check data above
+    const schemaInfo: SchemaInfo = Serializer.getSchema(type.toString(), protocol)
+    const schema: SchemaItem = unwrapSchema(schemaInfo.schema)
+    const schemaTransformer: SchemaTransformer | undefined = schemaInfo.transformer
+    const json: IACMessages = (rlpArrayToJson(schema, encodedPayload) as any) as IACMessages
+    const payload: IACMessages = schemaTransformer ? schemaTransformer(json) : json
 
-		return new Message(type, protocol, payload, version)
-	}
+    return new Message(type, protocol, payload, id, version)
+  }
 }

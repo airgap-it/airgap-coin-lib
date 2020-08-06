@@ -26,13 +26,7 @@ export class FullPayload implements Payload {
   }
 
   public asArray(): RLPData /* TODO: Fix type */ {
-    return this.messages.map((message: IACMessageDefinitionObject) =>
-      Message.fromDecoded({
-        type: message.type,
-        protocol: message.protocol,
-        payload: message.payload
-      }).asArray()
-    )
+    return this.messages.map((message: IACMessageDefinitionObject) => Message.fromDecoded(message).asArray())
   }
 
   public asBuffer(): Buffer {

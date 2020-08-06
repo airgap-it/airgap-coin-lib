@@ -1,17 +1,17 @@
 import { expect } from 'chai'
 import 'mocha'
 
-// import { IACMessageDefinitionObject } from '../../src/serializer/message'
 import { Serializer } from '../../src/serializer/serializer'
 
 import { TestProtocolSpec } from './implementations'
-import { EthereumTestProtocolSpec } from './specs/ethereum'
-
 import { AETestProtocolSpec } from './specs/ae'
 import { BitcoinProtocolSpec } from './specs/bitcoin'
 import { CosmosTestProtocolSpec } from './specs/cosmos'
+import { EthereumTestProtocolSpec } from './specs/ethereum'
 import { GenericERC20TokenTestProtocolSpec } from './specs/generic-erc20-token'
 import { TezosTestProtocolSpec } from './specs/tezos'
+
+// import { IACMessageDefinitionObject } from '../../src/serializer/message'
 
 const protocols = [
   new EthereumTestProtocolSpec(),
@@ -34,9 +34,7 @@ protocols.forEach((protocol: TestProtocolSpec) => {
             syncProtocol
               .deserialize(serializedTx)
               .then((deserializedTx) => {
-                expect(JSON.parse(JSON.stringify(protocol.unsignedTransaction(tx)))).to.deep.equal(
-                  JSON.parse(JSON.stringify(deserializedTx))
-                )
+                expect(JSON.parse(JSON.stringify(protocol.unsignedTransaction(tx)))).to.deep.eq(JSON.parse(JSON.stringify(deserializedTx)))
               })
               .catch((err) => console.error(err))
           })
