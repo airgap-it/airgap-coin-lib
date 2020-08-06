@@ -89,7 +89,7 @@ export class Message implements IACMessageDefinitionObject {
   public asArray(): RLPData /* it could be MessageDefinitionArray */ {
     const array: RLPData = jsonToArray('root', this.schema, this.payload)
 
-    return [this.version, this.type.toString(), this.id, this.protocol, array]
+    return [this.version, this.type.toString(), this.protocol, this.id, array]
   }
 
   public static fromDecoded(object: IACMessageDefinitionObject): Message {
@@ -122,11 +122,19 @@ export class Message implements IACMessageDefinitionObject {
   }
 
   private static parseType(buffer: Buffer): IACMessageType {
-    return this.validateProperty<IACMessageType, number>(
+    return this.validateProperty<IACMessageType, string>(
       'Type',
       buffer,
-      (buf: Buffer) => parseInt(buf.toString(), 10),
-      (val: number) => !!IACMessageType[val]
+      (buf: Buffer) => buf.toString(),
+      (val: string) => {
+        try {
+          Serializer.getSchema(val)
+
+          return true
+        } catch (error) {
+          return false
+        }
+      }
     )
   }
 
@@ -135,7 +143,7 @@ export class Message implements IACMessageDefinitionObject {
       'Protocol',
       buffer,
       (buf: Buffer) => buf.toString(),
-      (val: string) => Object.values(MainProtocolSymbols).some((value: string) => value === val)
+      (val: string) => val.length === 0 || Object.values(MainProtocolSymbols).some((value: string) => value === val)
     )
   }
 
