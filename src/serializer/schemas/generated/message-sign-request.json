@@ -8,28 +8,20 @@
         "callbackURL": {
           "type": "string"
         },
-        "id": {
-          "type": "string"
-        },
         "message": {
           "type": "string"
         },
-        "origin": {
+        "protocol": {
           "type": "string"
         },
         "publicKey": {
           "type": "string"
-        },
-        "ttl": {
-          "type": "string"
         }
       },
       "required": [
-        "id",
         "message",
+        "protocol",
         "publicKey",
-        "ttl",
-        "origin",
         "callbackURL"
       ],
       "type": "object"

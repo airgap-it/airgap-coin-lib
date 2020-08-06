@@ -8,9 +8,6 @@
         "callback": {
           "type": "string"
         },
-        "id": {
-          "type": "string"
-        },
         "publicKey": {
           "type": "string"
         },
@@ -28,7 +25,6 @@
         }
       },
       "required": [
-        "id",
         "publicKey",
         "transaction"
       ],

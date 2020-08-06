@@ -29,17 +29,17 @@ export function unwrapSchema(schema: SchemaRoot): SchemaItem {
 
 function typeError(key: string, expectedType: string, value: unknown): Error {
   return new InvalidSchemaType(
-    `${key}: expected type "${expectedType}", but got "${typeof value}", ${typeof value === 'object' ? JSON.stringify(value) : value}`
+    `${key}: expected type "${expectedType}", but got "${typeof value}", value: ${
+      typeof value === 'object' ? JSON.stringify(value) : value
+    }`
   )
 }
 
-function checkType<T>(key: string, expectedType: string, value: unknown, callback: (arg: any) => RLPData): RLPData {
+function checkType(key: string, expectedType: string, value: unknown, callback: (arg: any) => RLPData): RLPData {
   if (expectedType === 'array' && Array.isArray(value)) {
     return callback(value)
-  } else if (typeof value === expectedType) {
+  } else if (typeof value === expectedType && !Array.isArray(value)) {
     return callback(value)
-  } else if (typeof value === 'undefined') {
-    return ''
   } else {
     throw typeError(key, expectedType, value)
   }
@@ -62,6 +62,10 @@ export function jsonToArray(key: string, schema: SchemaItem, value: Object): RLP
     case SchemaTypes.HEX_STRING:
       return checkType(key, 'string', value, (arg: string): string => {
         log(`Parsing key ${key} as string, which results in ${arg}`)
+
+        if (!arg.startsWith('0x')) {
+          throw new Error('Invalid Hex String')
+        }
 
         return arg.substr(2) // Remove the '0x'
       })

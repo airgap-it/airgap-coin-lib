@@ -1,20 +1,16 @@
 {
-  "$ref": "#/definitions/SignedEthereumTransaction",
+  "$ref": "#/definitions/StringMessage",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
-    "SignedEthereumTransaction": {
+    "StringMessage": {
       "additionalProperties": false,
       "properties": {
-        "accountIdentifier": {
-          "type": "string"
-        },
-        "transaction": {
+        "x": {
           "type": "string"
         }
       },
       "required": [
-        "accountIdentifier",
-        "transaction"
+        "x"
       ],
       "type": "object"
     }

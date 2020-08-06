@@ -1,32 +1,25 @@
 {
-  "$ref": "#/definitions/UnsignedTezosTransaction",
+  "$ref": "#/definitions/ObjectMessage",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
-    "UnsignedTezosTransaction": {
+    "ObjectMessage": {
       "additionalProperties": false,
       "properties": {
-        "callback": {
-          "type": "string"
-        },
-        "publicKey": {
-          "type": "string"
-        },
-        "transaction": {
+        "x": {
           "additionalProperties": false,
           "properties": {
-            "binaryTransaction": {
+            "name": {
               "type": "string"
             }
           },
           "required": [
-            "binaryTransaction"
+            "name"
           ],
           "type": "object"
         }
       },
       "required": [
-        "publicKey",
-        "transaction"
+        "x"
       ],
       "type": "object"
     }

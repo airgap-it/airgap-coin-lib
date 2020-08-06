@@ -11,9 +11,6 @@
         "accountIdentifier": {
           "type": "string"
         },
-        "id": {
-          "type": "string"
-        },
         "transaction": {
           "$ref": "#/definitions/IAirGapSignedTransaction",
           "type": "string"
@@ -21,7 +18,6 @@
       },
       "required": [
         "accountIdentifier",
-        "id",
         "transaction"
       ],
       "type": "object"
