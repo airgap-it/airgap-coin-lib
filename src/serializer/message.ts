@@ -149,11 +149,11 @@ export class Message implements IACMessageDefinitionObject {
   }
 
   private static parsePayload(buffer: Buffer): string {
-    return this.validateProperty<string, string>(
+    return this.validateProperty<string, Buffer>(
       'Payload',
       buffer,
-      (buf: Buffer) => buf.toString(),
-      (val: string) => val.length === 36
+      (buf: Buffer) => buf,
+      () => true
     )
   }
 
