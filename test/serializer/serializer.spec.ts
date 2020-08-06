@@ -58,7 +58,7 @@ const test = async <T>(type: string, payload: T, expectedError?: string): Promis
   }
 }
 
-describe.only(`Serializer`, async () => {
+describe(`Serializer`, async () => {
   it('should correctly serialize and deserialize a string message', async () => {
     await test<StringMessage>('string-message', {
       x: 'str1'
