@@ -27,18 +27,18 @@ const stringMessage: SchemaRoot = require('./schemas/generated/string-message.js
 chai.use(chaiAsPromised)
 const expect: Chai.ExpectStatic = chai.expect
 
-Serializer.addSchema('any-message', { schema: anyMessage })
-Serializer.addSchema('array-message', { schema: arrayMessage })
-Serializer.addSchema('boolean-message', { schema: booleanMessage })
-Serializer.addSchema('complex-message', { schema: complexMessage })
-Serializer.addSchema('number-message', { schema: numberMessage })
-Serializer.addSchema('object-message', { schema: objectMessage })
-Serializer.addSchema('simple-message', { schema: simpleMessage })
-Serializer.addSchema('string-message', { schema: stringMessage })
+Serializer.addSchema((1000).toString(), { schema: anyMessage })
+Serializer.addSchema((1001).toString(), { schema: arrayMessage })
+Serializer.addSchema((1002).toString(), { schema: booleanMessage })
+Serializer.addSchema((1003).toString(), { schema: complexMessage })
+Serializer.addSchema((1004).toString(), { schema: numberMessage })
+Serializer.addSchema((1005).toString(), { schema: objectMessage })
+Serializer.addSchema((1006).toString(), { schema: simpleMessage })
+Serializer.addSchema((1007).toString(), { schema: stringMessage })
 
 const serializer: Serializer = new Serializer()
 
-const test = async <T>(type: string, payload: T, expectedError?: string): Promise<void> => {
+const test = async <T>(type: number, payload: T, expectedError?: string): Promise<void> => {
   const message: any = {
     id: 'random__id',
     type,
@@ -60,42 +60,42 @@ const test = async <T>(type: string, payload: T, expectedError?: string): Promis
 
 describe(`Serializer`, async () => {
   it('should correctly serialize and deserialize a string message', async () => {
-    await test<StringMessage>('string-message', {
+    await test<StringMessage>(1007, {
       x: 'str1'
     })
-    await test<StringMessage>('string-message', {
+    await test<StringMessage>(1007, {
       x: ''
     })
     await test<StringMessage>(
-      'string-message',
+      1007,
       {
         x: 1 as any
       },
       `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "string", but got "number", value: 1`
     )
     await test<StringMessage>(
-      'string-message',
+      1007,
       {
         x: true as any
       },
       `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "string", but got "boolean", value: true`
     )
     await test<StringMessage>(
-      'string-message',
+      1007,
       {
         x: undefined as any
       },
       `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "string", but got "undefined", value: undefined`
     )
     await test<StringMessage>(
-      'string-message',
+      1007,
       {
         x: [] as any
       },
       `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "string", but got "object", value: []`
     )
     await test<StringMessage>(
-      'string-message',
+      1007,
       {
         x: {} as any
       },
@@ -104,52 +104,52 @@ describe(`Serializer`, async () => {
   })
 
   it('should correctly serialize and deserialize a number message', async () => {
-    await test<NumberMessage>('number-message', {
+    await test<NumberMessage>(1004, {
       x: 1
     })
-    await test<NumberMessage>('number-message', {
+    await test<NumberMessage>(1004, {
       x: 0
     })
-    await test<NumberMessage>('number-message', {
+    await test<NumberMessage>(1004, {
       x: -1
     })
     await test<NumberMessage>(
-      'number-message',
+      1004,
       {
         x: 'str1' as any
       },
       `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "number", but got "string", value: str1`
     )
     await test<NumberMessage>(
-      'number-message',
+      1004,
       {
         x: '' as any
       },
       `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "number", but got "string", value: `
     )
     await test<NumberMessage>(
-      'number-message',
+      1004,
       {
         x: true as any
       },
       `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "number", but got "boolean", value: true`
     )
     await test<NumberMessage>(
-      'number-message',
+      1004,
       {
         x: undefined as any
       },
       `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "number", but got "undefined", value: undefined`
     )
     await test<NumberMessage>(
-      'number-message',
+      1004,
       {
         x: [] as any
       },
       `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "number", but got "object", value: []`
     )
     await test<NumberMessage>(
-      'number-message',
+      1004,
       {
         x: {} as any
       },
@@ -158,49 +158,49 @@ describe(`Serializer`, async () => {
   })
 
   it('should correctly serialize and deserialize a boolean message', async () => {
-    await test<BooleanMessage>('boolean-message', {
+    await test<BooleanMessage>(1002, {
       x: true as any
     })
-    await test<BooleanMessage>('boolean-message', {
+    await test<BooleanMessage>(1002, {
       x: false as any
     })
     await test<BooleanMessage>(
-      'boolean-message',
+      1002,
       {
         x: 'str1' as any
       },
       `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "boolean", but got "string", value: str1`
     )
     await test<BooleanMessage>(
-      'boolean-message',
+      1002,
       {
         x: '' as any
       },
       `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "boolean", but got "string", value: `
     )
     await test<BooleanMessage>(
-      'boolean-message',
+      1002,
       {
         x: 1 as any
       },
       `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "boolean", but got "number", value: 1`
     )
     await test<BooleanMessage>(
-      'boolean-message',
+      1002,
       {
         x: undefined as any
       },
       `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "boolean", but got "undefined", value: undefined`
     )
     await test<BooleanMessage>(
-      'boolean-message',
+      1002,
       {
         x: [] as any
       },
       `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "boolean", but got "object", value: []`
     )
     await test<BooleanMessage>(
-      'boolean-message',
+      1002,
       {
         x: {} as any
       },
@@ -209,70 +209,70 @@ describe(`Serializer`, async () => {
   })
 
   it('should correctly serialize and deserialize an array message', async () => {
-    await test<ArrayMessage>('array-message', {
+    await test<ArrayMessage>(1001, {
       x: []
     })
-    await test<ArrayMessage>('array-message', {
+    await test<ArrayMessage>(1001, {
       x: ['str1', 'str2', 'str3']
     })
     await test<ArrayMessage>(
-      'array-message',
+      1001,
       {
         x: ['str1', 1] as any
       },
       `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "string", but got "number", value: 1`
     )
     await test<ArrayMessage>(
-      'array-message',
+      1001,
       {
         x: [undefined, undefined] as any
       },
       `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "string", but got "object", value: null`
     )
     await test<ArrayMessage>(
-      'array-message',
+      1001,
       {
         x: [1, 2, 3] as any
       },
       `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "string", but got "number", value: 1`
     )
     await test<ArrayMessage>(
-      'array-message',
+      1001,
       {
         x: 'str1' as any
       },
       `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "array", but got "string", value: str1`
     )
     await test<ArrayMessage>(
-      'array-message',
+      1001,
       {
         x: '' as any
       },
       `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "array", but got "string", value: `
     )
     await test<ArrayMessage>(
-      'array-message',
+      1001,
       {
         x: 1 as any
       },
       `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "array", but got "number", value: 1`
     )
     await test<ArrayMessage>(
-      'array-message',
+      1001,
       {
         x: true as any
       },
       `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "array", but got "boolean", value: true`
     )
     await test<ArrayMessage>(
-      'array-message',
+      1001,
       {
         x: undefined as any
       },
       `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "array", but got "undefined", value: undefined`
     )
     await test<ArrayMessage>(
-      'array-message',
+      1001,
       {
         x: {} as any
       },
@@ -281,13 +281,13 @@ describe(`Serializer`, async () => {
   })
 
   it('should correctly serialize and deserialize an object message', async () => {
-    await test<ObjectMessage>('object-message', {
+    await test<ObjectMessage>(1005, {
       x: {
         name: 'str1'
       } as any
     })
     await test<ObjectMessage>(
-      'object-message',
+      1005,
       {
         x: {
           x: 1
@@ -296,49 +296,49 @@ describe(`Serializer`, async () => {
       `Error: serializer(INVALID_SCHEMA_TYPE): name: expected type "string", but got "undefined", value: undefined`
     )
     await test<ObjectMessage>(
-      'object-message',
+      1005,
       {
         x: {} as any
       },
       `Error: serializer(INVALID_SCHEMA_TYPE): name: expected type "string", but got "undefined", value: undefined`
     )
     await test<ObjectMessage>(
-      'object-message',
+      1005,
       {
         x: 'str1' as any
       },
       `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "object", but got "string", value: str1`
     )
     await test<ObjectMessage>(
-      'object-message',
+      1005,
       {
         x: '' as any
       },
       `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "object", but got "string", value: `
     )
     await test<ObjectMessage>(
-      'object-message',
+      1005,
       {
         x: 1 as any
       },
       `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "object", but got "number", value: 1`
     )
     await test<ObjectMessage>(
-      'object-message',
+      1005,
       {
         x: true as any
       },
       `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "object", but got "boolean", value: true`
     )
     await test<ObjectMessage>(
-      'object-message',
+      1005,
       {
         x: undefined as any
       },
       `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "object", but got "undefined", value: undefined`
     )
     await test<ObjectMessage>(
-      'object-message',
+      1005,
       {
         x: [] as any
       },
@@ -347,42 +347,42 @@ describe(`Serializer`, async () => {
   })
 
   // it('should correctly serialize and deserialize an any message', async () => {
-  //   await test<AnyMessage>('any-message', {
+  //   await test<AnyMessage>(1000, {
   //     x: 'str1'
   //   })
-  //   await test<AnyMessage>('any-message', {
+  //   await test<AnyMessage>(1000, {
   //     x: ''
   //   })
   //   await test<AnyMessage>(
-  //     'any-message',
+  //     1000,
   //     {
   //       x: 1 as any
   //     },
   //     `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "string", but got "number", value: 1`
   //   )
   //   await test<AnyMessage>(
-  //     'any-message',
+  //     1000,
   //     {
   //       x: true as any
   //     },
   //     `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "string", but got "boolean", value: true`
   //   )
   //   await test<AnyMessage>(
-  //     'any-message',
+  //     1000,
   //     {
   //       x: undefined as any
   //     },
   //     `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "string", but got "undefined", value: undefined`
   //   )
   //   await test<AnyMessage>(
-  //     'any-message',
+  //     1000,
   //     {
   //       x: [] as any
   //     },
   //     `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "string", but got "object", value: []`
   //   )
   //   await test<AnyMessage>(
-  //     'any-message',
+  //     1000,
   //     {
   //       x: {} as any
   //     },
@@ -405,14 +405,14 @@ describe(`Serializer`, async () => {
       arr3: [true, false]
     }
 
-    await test('simple-message', payload)
+    await test(1006, payload)
   })
 
   it('should give an error if not all parameters are provided', async () => {
     try {
       const message = {
         id: 'random__id',
-        type: 'complex-message',
+        type: 1003,
         protocol: '',
         payload: {
           name: 'test'
@@ -471,7 +471,7 @@ describe(`Serializer`, async () => {
 
     const message = {
       id: 'random__id',
-      type: 'complex-message',
+      type: 1003,
       protocol: '',
       payload
     } as any
@@ -489,7 +489,7 @@ describe(`Serializer`, async () => {
     expect(await serializer.deserialize(serialized3), '20 byte chunks').to.deep.eq([message])
 
     const serialized4: string[] = await serializer.serialize([message], 1)
-    expect(serialized4.length).to.equal(220)
+    expect(serialized4.length).to.equal(209)
     expect(await serializer.deserialize(serialized4), '1 byte chunks').to.deep.eq([message])
   })
 })

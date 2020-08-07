@@ -130,13 +130,13 @@ export class Message implements IACMessageDefinitionObject {
   }
 
   private static parseType(buffer: Buffer): IACMessageType {
-    return this.validateProperty<IACMessageType, string>(
+    return this.validateProperty<IACMessageType, number>(
       'Type',
       buffer,
-      (buf: Buffer) => buf.toString(),
-      (val: string) => {
+      (buf: Buffer) => parseInt(buf.toString(), 10),
+      (val: number) => {
         try {
-          Serializer.getSchema(val, MainProtocolSymbols.ETH) // TODO: Remove hardcoded protocol
+          Serializer.getSchema(val.toString(), MainProtocolSymbols.ETH) // TODO: Remove hardcoded protocol
 
           return true
         } catch (error) {

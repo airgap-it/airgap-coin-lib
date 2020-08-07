@@ -28,13 +28,20 @@ protocols.forEach((protocol: TestProtocolSpec) => {
   describe(`Serialization Protocol for ${protocol.name}`, () => {
     it(`should be able to serialize a transaction to a airgap protocol string`, async () => {
       for (const tx of protocol.txs) {
+        const txBefore = protocol.unsignedTransaction(tx)
         syncProtocol
-          .serialize(protocol.unsignedTransaction(tx))
+          .serialize(txBefore)
           .then((serializedTx: string[]) => {
             syncProtocol
               .deserialize(serializedTx)
               .then((deserializedTx) => {
-                expect(JSON.parse(JSON.stringify(protocol.unsignedTransaction(tx)))).to.deep.eq(JSON.parse(JSON.stringify(deserializedTx)))
+                const objExpected = JSON.parse(JSON.stringify(deserializedTx[0]))
+                const objActual = JSON.parse(JSON.stringify(txBefore[0]))
+                expect(objExpected).to.deep.eq(objActual)
+                expect(objExpected.id).to.deep.eq(objActual.id)
+                expect(objExpected.type).to.deep.eq(objActual.type)
+                expect(objExpected.protocol).to.deep.eq(objActual.protocol)
+                expect(objExpected.payload).to.deep.eq(objActual.payload)
               })
               .catch((err) => console.error(err))
           })
