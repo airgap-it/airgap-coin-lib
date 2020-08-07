@@ -1,0 +1,49 @@
+{
+  "$ref": "#/definitions/TupleMessage",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "TupleMessage": {
+      "additionalProperties": false,
+      "properties": {
+        "x": {
+          "items": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name"
+              ],
+              "type": "object"
+            },
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          ],
+          "maxItems": 5,
+          "minItems": 5,
+          "type": "array"
+        }
+      },
+      "required": [
+        "x"
+      ],
+      "type": "object"
+    }
+  }
+}

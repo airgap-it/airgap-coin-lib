@@ -13,6 +13,7 @@ import { NumberMessage } from './schemas/NumberMessage'
 import { ObjectMessage } from './schemas/ObjectMessage'
 import { SimpleMessage } from './schemas/SimpleMessage'
 import { StringMessage } from './schemas/StringMessage'
+import { TupleMessage } from './schemas/TupleMessage'
 
 const anyMessage: SchemaRoot = require('./schemas/generated/any-message.json')
 const arrayMessage: SchemaRoot = require('./schemas/generated/array-message.json')
@@ -22,6 +23,7 @@ const numberMessage: SchemaRoot = require('./schemas/generated/number-message.js
 const objectMessage: SchemaRoot = require('./schemas/generated/object-message.json')
 const simpleMessage: SchemaRoot = require('./schemas/generated/simple-message.json')
 const stringMessage: SchemaRoot = require('./schemas/generated/string-message.json')
+const tupleMessage: SchemaRoot = require('./schemas/generated/tuple-message.json')
 
 // use chai-as-promised plugin
 chai.use(chaiAsPromised)
@@ -35,6 +37,7 @@ Serializer.addSchema(1004, { schema: numberMessage })
 Serializer.addSchema(1005, { schema: objectMessage })
 Serializer.addSchema(1006, { schema: simpleMessage })
 Serializer.addSchema(1007, { schema: stringMessage })
+Serializer.addSchema(1008, { schema: tupleMessage })
 
 const serializer: Serializer = new Serializer()
 
@@ -389,6 +392,75 @@ describe(`Serializer`, async () => {
   //     `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "string", but got "object", value: {}`
   //   )
   // })
+
+  it('should correctly serialize and deserialize a tuple message', async () => {
+    await test<TupleMessage>(1008, {
+      x: ['str', 1, true, { name: 'str' }, ['str']]
+    })
+    await test<TupleMessage>(
+      1008,
+      {
+        x: 'str1' as any
+      },
+      `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "array", but got "string", value: str1`
+    )
+    await test<TupleMessage>(
+      1008,
+      {
+        x: 1 as any
+      },
+      `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "array", but got "number", value: 1`
+    )
+    await test<TupleMessage>(
+      1008,
+      {
+        x: true as any
+      },
+      `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "array", but got "boolean", value: true`
+    )
+    await test<TupleMessage>(
+      1008,
+      {
+        x: undefined as any
+      },
+      `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "array", but got "undefined", value: undefined`
+    )
+    await test<TupleMessage>(
+      1008,
+      {
+        x: [] as any
+      },
+      `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "string", but got "undefined", value: `
+    )
+    await test<TupleMessage>(
+      1008,
+      {
+        x: {} as any
+      },
+      `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "array", but got "object", value: {}`
+    )
+    await test<TupleMessage>(
+      1008,
+      {
+        x: ['str', 1, true, { name: 1 } as any, []]
+      },
+      `Error: serializer(INVALID_SCHEMA_TYPE): name: expected type "string", but got "number", value: 1`
+    )
+    await test<TupleMessage>(
+      1008,
+      {
+        x: [1, 'str', true, { name: 'str' }, []] as any
+      },
+      `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "string", but got "number", value: 1`
+    )
+    await test<TupleMessage>(
+      1008,
+      {
+        x: ['str', 1, true, { name: 'str' }, [1]] as any
+      },
+      `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "string", but got "number", value: 1`
+    )
+  })
 
   it('should correctly serialize and deserialize a simple message', async () => {
     const payload: SimpleMessage = {
