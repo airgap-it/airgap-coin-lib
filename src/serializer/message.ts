@@ -1,4 +1,4 @@
-import { ProtocolSymbols, MainProtocolSymbols } from '../utils/ProtocolSymbols'
+import { MainProtocolSymbols, ProtocolSymbols } from '../utils/ProtocolSymbols'
 
 import { IACMessageType } from './interfaces'
 import { AccountShareResponse } from './schemas/definitions/account-share-response'
@@ -81,7 +81,7 @@ export class Message implements IACMessageDefinitionObject {
     this.payload = payload
     this.version = version
 
-    const schemaInfo: SchemaInfo = Serializer.getSchema(this.type.toString(), this.protocol)
+    const schemaInfo: SchemaInfo = Serializer.getSchema(this.type, this.protocol)
     this.schema = unwrapSchema(schemaInfo.schema)
   }
 
@@ -111,7 +111,7 @@ export class Message implements IACMessageDefinitionObject {
     const id: string = this.parseId(buf[3])
     const encodedPayload: RLPData = this.parsePayload(buf[4])
 
-    const schemaInfo: SchemaInfo = Serializer.getSchema(type.toString(), protocol)
+    const schemaInfo: SchemaInfo = Serializer.getSchema(type, protocol)
     const schema: SchemaItem = unwrapSchema(schemaInfo.schema)
     const schemaTransformer: SchemaTransformer | undefined = schemaInfo.transformer
     const json: IACMessages = (rlpArrayToJson(schema, encodedPayload) as any) as IACMessages
@@ -136,7 +136,7 @@ export class Message implements IACMessageDefinitionObject {
       (buf: Buffer) => parseInt(buf.toString(), 10),
       (val: number) => {
         try {
-          Serializer.getSchema(val.toString(), MainProtocolSymbols.ETH) // TODO: Remove hardcoded protocol
+          Serializer.getSchema(val, MainProtocolSymbols.ETH) // TODO: Remove hardcoded protocol
 
           return true
         } catch (error) {

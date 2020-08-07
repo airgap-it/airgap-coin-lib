@@ -27,14 +27,14 @@ const stringMessage: SchemaRoot = require('./schemas/generated/string-message.js
 chai.use(chaiAsPromised)
 const expect: Chai.ExpectStatic = chai.expect
 
-Serializer.addSchema((1000).toString(), { schema: anyMessage })
-Serializer.addSchema((1001).toString(), { schema: arrayMessage })
-Serializer.addSchema((1002).toString(), { schema: booleanMessage })
-Serializer.addSchema((1003).toString(), { schema: complexMessage })
-Serializer.addSchema((1004).toString(), { schema: numberMessage })
-Serializer.addSchema((1005).toString(), { schema: objectMessage })
-Serializer.addSchema((1006).toString(), { schema: simpleMessage })
-Serializer.addSchema((1007).toString(), { schema: stringMessage })
+Serializer.addSchema(1000, { schema: anyMessage })
+Serializer.addSchema(1001, { schema: arrayMessage })
+Serializer.addSchema(1002, { schema: booleanMessage })
+Serializer.addSchema(1003, { schema: complexMessage })
+Serializer.addSchema(1004, { schema: numberMessage })
+Serializer.addSchema(1005, { schema: objectMessage })
+Serializer.addSchema(1006, { schema: simpleMessage })
+Serializer.addSchema(1007, { schema: stringMessage })
 
 const serializer: Serializer = new Serializer()
 
