@@ -40,7 +40,7 @@ const serializer: Serializer = new Serializer()
 
 const test = async <T>(type: string, payload: T, expectedError?: string): Promise<void> => {
   const message: any = {
-    id: '43e5a42b-375d-451f-a39e-7a8ade553c1f',
+    id: 'random__id',
     type,
     protocol: '',
     payload
@@ -411,7 +411,7 @@ describe(`Serializer`, async () => {
   it('should give an error if not all parameters are provided', async () => {
     try {
       const message = {
-        id: '43e5a42b-375d-451f-a39e-7a8ade553c1f',
+        id: 'random__id',
         type: 'complex-message',
         protocol: '',
         payload: {
@@ -470,7 +470,7 @@ describe(`Serializer`, async () => {
     }
 
     const message = {
-      id: '43e5a42b-375d-451f-a39e-7a8ade553c1f',
+      id: 'random__id',
       type: 'complex-message',
       protocol: '',
       payload
@@ -485,11 +485,11 @@ describe(`Serializer`, async () => {
     expect(await serializer.deserialize(serialized2), '200 byte chunks').to.deep.eq([message])
 
     const serialized3: string[] = await serializer.serialize([message], 20)
-    expect(serialized3.length).to.equal(13)
+    expect(serialized3.length).to.equal(11)
     expect(await serializer.deserialize(serialized3), '20 byte chunks').to.deep.eq([message])
 
     const serialized4: string[] = await serializer.serialize([message], 1)
-    expect(serialized4.length).to.equal(246)
+    expect(serialized4.length).to.equal(220)
     expect(await serializer.deserialize(serialized4), '1 byte chunks').to.deep.eq([message])
   })
 })

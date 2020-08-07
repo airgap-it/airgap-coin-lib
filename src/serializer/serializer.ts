@@ -60,7 +60,7 @@ export class Serializer {
     this.schemas.set(protocolSpecificSchemaName, schema)
   }
 
-  public static getSchema(schemaName: string, protocol?: string): SchemaInfo {
+  public static getSchema(schemaName: string, protocol?: ProtocolSymbols): SchemaInfo {
     const protocolSpecificSchemaName: string = Serializer.getSchemName(schemaName, protocol)
 
     // Try to get the protocol specific scheme, if it doesn't exist fall back to the generic one
@@ -74,7 +74,7 @@ export class Serializer {
     return schema
   }
 
-  private static getSchemName(schemaName: string, protocol?: string): string {
+  private static getSchemName(schemaName: string, protocol?: ProtocolSymbols): string {
     return protocol ? `${schemaName}-${protocol}` : schemaName
   }
 
@@ -128,9 +128,10 @@ export class Serializer {
     const exactMatch = Object.keys(validators).find((protocol) => protocolIdentifier === protocol)
     const startsWith = Object.keys(validators).find((protocol) => protocolIdentifier.startsWith(protocol))
     const validator = exactMatch ? exactMatch : startsWith
-    if (!validator) {
-      throw Error(`Validator not implemented for ${protocolIdentifier}, ${exactMatch}, ${startsWith}, ${validator}`)
-    }
+    // TODO: Only use validator if it's a transaction
+    // if (!validator) {
+    //   throw Error(`Validator not implemented for ${protocolIdentifier}, ${exactMatch}, ${startsWith}, ${validator}`)
+    // }
 
     return new validators[validator ?? 'eth']()
   }

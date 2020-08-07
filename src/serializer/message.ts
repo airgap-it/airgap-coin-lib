@@ -18,9 +18,11 @@ import { UnsignedTezosTransaction } from './schemas/definitions/unsigned-transac
 import { SchemaInfo, SchemaItem, SchemaTransformer } from './schemas/schema'
 import { Serializer } from './serializer'
 import { UnsignedCosmosTransaction } from './types'
-import { generateGUID } from './utils/generateUUID'
+import { generateId } from './utils/generateId'
 import { jsonToArray, rlpArrayToJson, unwrapSchema } from './utils/json-to-rlp'
 import { RLPData } from './utils/toBuffer'
+
+const ID_LENGTH: number = 10
 
 export const assertNever: (x: never) => void = (x: never): void => undefined
 
@@ -66,7 +68,13 @@ export class Message implements IACMessageDefinitionObject {
   public readonly protocol: ProtocolSymbols
   public readonly payload: IACMessages
 
-  constructor(type: IACMessageType, protocol: ProtocolSymbols, payload: IACMessages, id: string = generateGUID(), version: string = '0') {
+  constructor(
+    type: IACMessageType,
+    protocol: ProtocolSymbols,
+    payload: IACMessages,
+    id: string = generateId(ID_LENGTH),
+    version: string = '0'
+  ) {
     this.id = id
     this.type = type
     this.protocol = protocol
@@ -128,7 +136,7 @@ export class Message implements IACMessageDefinitionObject {
       (buf: Buffer) => buf.toString(),
       (val: string) => {
         try {
-          Serializer.getSchema(val)
+          Serializer.getSchema(val, MainProtocolSymbols.ETH) // TODO: Remove hardcoded protocol
 
           return true
         } catch (error) {
@@ -143,7 +151,7 @@ export class Message implements IACMessageDefinitionObject {
       'Protocol',
       buffer,
       (buf: Buffer) => buf.toString(),
-      (val: string) => val.length === 0 || Object.values(MainProtocolSymbols).some((value: string) => value === val)
+      (val: string) => val.length === 0 || Object.values(MainProtocolSymbols).some((value: string) => val.split('-')[0] === value)
     )
   }
 
@@ -152,7 +160,7 @@ export class Message implements IACMessageDefinitionObject {
       'Id',
       buffer,
       (buf: Buffer) => buf.toString(),
-      (val: string) => val.length === 36
+      (val: string) => val.length === ID_LENGTH
     )
   }
 

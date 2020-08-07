@@ -4,7 +4,7 @@ import { SchemaDefinition, SchemaItem, SchemaRoot, SchemaTypes } from '../schema
 import { RLPData } from './toBuffer'
 
 function log(...args: unknown[]): void {
-  const loggingEnabled: boolean = true
+  const loggingEnabled: boolean = false
   if (loggingEnabled) {
     // tslint:disable-next-line:no-console
     console.log(...args)

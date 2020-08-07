@@ -11,16 +11,12 @@
         "message": {
           "type": "string"
         },
-        "protocol": {
-          "type": "string"
-        },
         "publicKey": {
           "type": "string"
         }
       },
       "required": [
         "message",
-        "protocol",
         "publicKey",
         "callbackURL"
       ],
