@@ -313,7 +313,8 @@ validators.isValidTezosUnsignedTransaction = (binaryTx: string) => {
   const rawTx: RawTezosTransaction = { binaryTransaction: binaryTx }
   const unsignedTx: UnsignedTezosTransaction = {
     transaction: rawTx,
-    publicKey: ''
+    publicKey: '',
+    callbackURL: ''
   }
 
   return new Promise(async (resolve, reject) => {
@@ -365,7 +366,8 @@ validators.isValidTezosSignedTransaction = (signedTransaction: string) => {
 validators.isValidSubstrateUnsignedTransaction = (encoded: string) => {
   const unsignedTx = {
     transaction: { encoded },
-    publicKey: ''
+    publicKey: '',
+    callbackURL: ''
   }
 
   return new Promise(async (resolve, reject) => {

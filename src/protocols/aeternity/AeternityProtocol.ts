@@ -228,7 +228,7 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
 
     const unsignedAeternityTransaction: UnsignedAeternityTransaction = {
       publicKey: '',
-      callback: '',
+      callbackURL: '',
       transaction: {
         networkId: 'ae_mainnet',
         transaction: `tx_${bs64check.encode(rlpDecodedTx[3])}`
