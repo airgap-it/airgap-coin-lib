@@ -178,7 +178,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   public standardDerivationPath: string = `m/44h/1729h/0h/0h`
 
   public addressIsCaseSensitive: boolean = true
-  public addressValidationPattern: string = '^(tz1|KT1)[1-9A-Za-z]{33}$'
+  public addressValidationPattern: string = '^(tz1|tz2|tz3|KT1)[1-9A-Za-z]{33}$'
   public addressPlaceholder: string = 'tz1...'
 
   // https://gitlab.com/tezos/tezos/-/blob/master/docs/whitedoc/proof_of_stake.rst
