@@ -42,7 +42,7 @@ describe(`ICoinProtocol Aeternity - Custom Tests`, () => {
   beforeEach(() => {
     sinon
       .stub(axios, 'get')
-      .withArgs(`${aeLib.options.network.rpcUrl}/middleware/transactions/account/${aeProtocolSpec.wallet.addresses[0]}`)
+      .withArgs(`${aeLib.options.network.rpcUrl}/middleware/transactions/account/${aeProtocolSpec.wallet.addresses[0]}?page=1&limit=1`)
       .returns(Promise.resolve(sampleAccountResponse))
   })
 
@@ -57,10 +57,10 @@ describe(`ICoinProtocol Aeternity - Custom Tests`, () => {
     sinon.restore()
     sinon
       .stub(axios, 'get')
-      .withArgs(`${aeLib.options.network.rpcUrl}/middleware/transactions/account/${aeProtocolSpec.wallet.addresses[0]}`)
+      .withArgs(`${aeLib.options.network.rpcUrl}/middleware/transactions/account/${aeProtocolSpec.wallet.addresses[0]}?page=1&limit=1`)
       .returns(Promise.resolve(responseWithTimestamp))
 
-    const transactions = await aeLib.getTransactionsFromAddresses(aeProtocolSpec.wallet.addresses, 0, 0)
+    const transactions = await (await aeLib.getTransactionsFromAddresses(aeProtocolSpec.wallet.addresses, 1)).transactions
 
     expect(transactions.map((transaction) => ({ ...transaction, network: undefined }))).to.deep.eq([
       {
@@ -90,7 +90,7 @@ describe(`ICoinProtocol Aeternity - Custom Tests`, () => {
   })
 
   it('can give a list of transactions from endpoints', async () => {
-    const transactions = await aeLib.getTransactionsFromAddresses(aeProtocolSpec.wallet.addresses, 0, 0)
+    const transactions = await (await aeLib.getTransactionsFromAddresses(aeProtocolSpec.wallet.addresses, 1)).transactions
 
     expect(transactions.map((transaction) => ({ ...transaction, network: undefined }))).to.deep.eq([
       {

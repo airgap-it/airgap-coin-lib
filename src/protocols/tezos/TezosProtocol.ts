@@ -1,3 +1,5 @@
+import { TezosTransactionResult } from './types/TezosTransactionResult'
+import { TezosTransactionCursor } from './types/TezosTransactionCursor'
 import { localForger } from '@taquito/local-forging'
 import * as sodium from 'libsodium-wrappers'
 
@@ -292,21 +294,25 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     return [address]
   }
 
-  public async getTransactionsFromPublicKey(publicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]> {
+  public async getTransactionsFromPublicKey(
+    publicKey: string,
+    limit: number,
+    cursor?: TezosTransactionCursor
+  ): Promise<TezosTransactionResult> {
     const addresses: string[] = await this.getAddressesFromPublicKey(publicKey)
 
-    return this.getTransactionsFromAddresses(addresses, limit, offset)
+    return this.getTransactionsFromAddresses(addresses, limit, cursor)
   }
 
-  public async getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
-    // TODO: implement pagination
-    if (offset !== 0) {
-      return []
-    }
-    const allTransactions = await Promise.all(
+  public async getTransactionsFromAddresses(
+    addresses: string[],
+    limit: number,
+    cursor?: TezosTransactionCursor
+  ): Promise<TezosTransactionResult> {
+    let allTransactions = await Promise.all(
       addresses.map((address) => {
         const getRequestBody = (field: string, set: string) => {
-          return {
+          const body = {
             predicates: [
               {
                 field,
@@ -329,6 +335,15 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
             ],
             limit
           }
+          if (cursor && cursor.lastBlockLevel) {
+            body.predicates.push({
+              field: 'block_level',
+              operation: 'lt',
+              set: [cursor.lastBlockLevel.toString()],
+              inverse: false
+            })
+          }
+          return body
         }
 
         return new Promise<any>(async (resolve, reject) => {
@@ -386,7 +401,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       })
     )
 
-    return allTransactions
+    allTransactions = allTransactions
       .reduce((current, next) => current.concat(next))
       .map((transaction: any) => {
         return {
@@ -402,6 +417,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
           blockHeight: transaction.block_level
         }
       })
+    const lastEntryBlockLevel = allTransactions.length > 0 ? allTransactions[allTransactions.length - 1].blockHeight : 0
+    return { transactions: allTransactions, cursor: { lastBlockLevel: lastEntryBlockLevel } }
   }
 
   public async signWithPrivateKey(privateKey: Buffer, transaction: RawTezosTransaction): Promise<IAirGapSignedTransaction> {

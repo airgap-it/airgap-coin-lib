@@ -300,7 +300,7 @@ validators.isValidAeternityAccount = (accountIdentifier: string) => {
     }
     try {
       const protocol = new AeternityProtocol()
-      await protocol.getTransactionsFromPublicKey(accountIdentifier, 1, 0)
+      await protocol.getTransactionsFromPublicKey(accountIdentifier, 1)
       resolve()
     } catch (error) {
       resolve('not a valid Aeternity account')

@@ -22,7 +22,7 @@ import { KusamaProtocol } from './protocols/substrate/implementations/KusamaProt
 import { PolkadotProtocol } from './protocols/substrate/implementations/PolkadotProtocol'
 import { SubstrateProtocol } from './protocols/substrate/SubstrateProtocol'
 import { TezosBTC } from './protocols/tezos/fa/TezosBTC'
-import { TezosFAProtocol, TezosTransactionCursor, TezosTransactionResult } from './protocols/tezos/fa/TezosFAProtocol'
+import { TezosFAProtocol } from './protocols/tezos/fa/TezosFAProtocol'
 import { TezosStaker } from './protocols/tezos/fa/TezosStaker'
 import { TezosKtProtocol } from './protocols/tezos/kt/TezosKtProtocol'
 import { TezosUSD } from './protocols/tezos/fa/TezosUSD'
@@ -139,6 +139,8 @@ import {
   TezosUSDProtocolConfig,
   TezosFAProtocolOptions
 } from './protocols/tezos/fa/TezosFAProtocolOptions'
+import { TezosTransactionResult } from './protocols/tezos/types/TezosTransactionResult'
+import { TezosTransactionCursor } from './protocols/tezos/types/TezosTransactionCursor'
 // tslint:enable:ordered-imports
 
 // Core

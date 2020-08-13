@@ -1,5 +1,6 @@
+import { IProtocolTransactionCursor } from './../interfaces/IAirGapTransaction'
 import { IAirGapSignedTransaction } from '../interfaces/IAirGapSignedTransaction'
-import { AirGapTransactionStatus, IAirGapTransaction } from '../interfaces/IAirGapTransaction'
+import { AirGapTransactionStatus, IAirGapTransaction, IAirGapTransactionResult } from '../interfaces/IAirGapTransaction'
 import { UnsignedTransaction } from '../serializer/schemas/definitions/transaction-sign-request'
 import { SignedTransaction } from '../serializer/schemas/definitions/transaction-sign-response'
 import { ProtocolOptions } from '../utils/ProtocolOptions'
@@ -70,9 +71,13 @@ export interface ICoinProtocol {
     offset: number
   ): Promise<string[]> // broadcaster knows this (both broadcaster and signer)
 
-  getTransactionsFromPublicKey(publicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]>
-  getTransactionsFromExtendedPublicKey(extendedPublicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]>
-  getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]>
+  getTransactionsFromPublicKey(publicKey: string, limit: number, cursor?: IProtocolTransactionCursor): Promise<IAirGapTransactionResult>
+  getTransactionsFromExtendedPublicKey(
+    extendedPublicKey: string,
+    limit: number,
+    cursor: IProtocolTransactionCursor | any
+  ): Promise<IAirGapTransactionResult>
+  getTransactionsFromAddresses(addresses: string[], limit: number, cursor?: IProtocolTransactionCursor): Promise<IAirGapTransactionResult>
 
   signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: any): Promise<IAirGapSignedTransaction> // broadcaster proxies this operation
   signWithPrivateKey(privateKey: Buffer, transaction: any): Promise<IAirGapSignedTransaction> // broadcaster proxies this operation
