@@ -75,7 +75,7 @@ export interface ICoinProtocol {
   getTransactionsFromExtendedPublicKey(
     extendedPublicKey: string,
     limit: number,
-    cursor: IProtocolTransactionCursor | any
+    cursor?: IProtocolTransactionCursor
   ): Promise<IAirGapTransactionResult>
   getTransactionsFromAddresses(addresses: string[], limit: number, cursor?: IProtocolTransactionCursor): Promise<IAirGapTransactionResult>
 
