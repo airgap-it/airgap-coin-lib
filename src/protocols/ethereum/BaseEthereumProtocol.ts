@@ -377,7 +377,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
   public getTransactionsFromExtendedPublicKey(
     extendedPublicKey: string,
     limit: number,
-    offset: number
+    cursor: EthereumTransactionCursor
   ): Promise<EthereumTransactionResult> {
     return Promise.reject('extended public transaction list for ether not implemented')
   }
