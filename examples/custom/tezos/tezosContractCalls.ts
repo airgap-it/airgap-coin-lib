@@ -1,5 +1,5 @@
 // import { TezosFAProtocol } from '../src/protocols/tezos/fa/TezosFAProtocol'
-import { TezosBTC } from '../src/protocols/tezos/fa/TezosBTC'
+import { TezosBTC } from '../../../src/protocols/tezos/fa/TezosBTC'
 // import { TezosUSD } from '../src/protocols/tezos/fa/TezosUSD'
 // import { TezosStaker } from '../src/protocols/tezos/fa/TezosStaker'
 
@@ -31,7 +31,7 @@ const contract = new TezosBTC()
 //     })
 // })
 
-contract.getTransactionsFromAddresses(["tz1Mj7RzPmMAqDUNFBn5t5VbXmWW4cSUAdtT"], 10, 0).then(console.log).catch(console.error)
+contract.getTransactionsFromAddresses(['tz1Mj7RzPmMAqDUNFBn5t5VbXmWW4cSUAdtT'], 10, 0).then(console.log).catch(console.error)
 
 // contract.getBalance('tz1aqsunnQ9ECPAfvRaWeMfiNFhF3s8M15sy', 'tz1Mj7RzPmMAqDUNFBn5t5VbXmWW4cSUAdtT').then(console.log).catch(console.error)
 
