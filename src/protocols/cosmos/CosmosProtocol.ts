@@ -1,3 +1,4 @@
+import { CosmosTransactionResult, CosmosTransactionCursor } from './CosmosTypes'
 import { KeyPair } from '../../data/KeyPair'
 import BECH32 = require('../../dependencies/src/bech32-1.1.3/index')
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
@@ -157,17 +158,26 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
     return [await this.getAddressFromPublicKey(publicKey)]
   }
 
-  public async getTransactionsFromPublicKey(publicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]> {
-    return this.getTransactionsFromAddresses([await this.getAddressFromPublicKey(publicKey)], limit, offset)
+  public async getTransactionsFromPublicKey(
+    publicKey: string,
+    limit: number,
+    cursor?: CosmosTransactionCursor
+  ): Promise<CosmosTransactionResult> {
+    return this.getTransactionsFromAddresses([await this.getAddressFromPublicKey(publicKey)], limit, cursor)
   }
 
-  public async getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
+  public async getTransactionsFromAddresses(
+    addresses: string[],
+    limit: number,
+    cursor?: CosmosTransactionCursor
+  ): Promise<CosmosTransactionResult> {
     const promises: Promise<IAirGapTransaction[]>[] = []
     for (const address of addresses) {
-      promises.push(this.infoClient.fetchTransactions(this, address, offset, limit))
+      promises.push(this.infoClient.fetchTransactions(this, address, limit, cursor))
     }
 
-    return Promise.all(promises).then((transactions) => transactions.reduce((current, next) => current.concat(next)))
+    const transactions = await Promise.all(promises).then((transactions) => transactions.reduce((current, next) => current.concat(next)))
+    return { transactions: transactions, cursor: { offset: cursor ? cursor.offset : limit } }
   }
 
   public async signWithPrivateKey(privateKey: Buffer, transaction: CosmosTransaction): Promise<string> {

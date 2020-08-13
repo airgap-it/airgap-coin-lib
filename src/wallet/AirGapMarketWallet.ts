@@ -1,5 +1,10 @@
 import BigNumber from '../dependencies/src/bignumber.js-9.0.0/bignumber'
-import { AirGapTransactionStatus, IAirGapTransaction } from '../interfaces/IAirGapTransaction'
+import {
+  AirGapTransactionStatus,
+  IAirGapTransaction,
+  IProtocolTransactionCursor,
+  IAirGapTransactionResult
+} from '../interfaces/IAirGapTransaction'
 import { FeeDefaults, ICoinProtocol } from '../protocols/ICoinProtocol'
 import { NetworkType } from '../utils/ProtocolNetwork'
 import { MainProtocolSymbols } from '../utils/ProtocolSymbols'
@@ -115,9 +120,9 @@ export class AirGapMarketWallet extends AirGapWallet {
 
   private addressesToCheck(): string[] {
     const addressesToReceive: string[] = this.addressIndex !== undefined ? [this.addresses[this.addressIndex]] : this.addresses
-
     return addressesToReceive
   }
+
   public async balanceOf(): Promise<BigNumber> {
     if (this.protocol.identifier === MainProtocolSymbols.GRS && this.isExtendedPublicKey) {
       /* 
@@ -139,8 +144,9 @@ export class AirGapMarketWallet extends AirGapWallet {
     }
   }
 
-  public async fetchTransactions(limit: number, offset: number): Promise<IAirGapTransaction[]> {
-    let transactions: IAirGapTransaction[] = []
+  public async fetchTransactions(limit: number, cursor?: IProtocolTransactionCursor): Promise<IAirGapTransactionResult> {
+    // let transactions: IAirGapTransaction[] = []
+    let transactionResult: IAirGapTransactionResult
     if (this.protocol.identifier === MainProtocolSymbols.GRS && this.isExtendedPublicKey) {
       /* 
       We should remove this if BTC also uses blockbook. (And change the order of the if/else below)
@@ -151,16 +157,16 @@ export class AirGapMarketWallet extends AirGapWallet {
       We can also not simply change the order of the following if/else, because then it would use the xPub method for
       BTC as well, which results in the addresses being derived again, which causes massive lags in the apps.
       */
-      transactions = await this.protocol.getTransactionsFromExtendedPublicKey(this.publicKey, limit, offset)
+      transactionResult = await this.protocol.getTransactionsFromExtendedPublicKey(this.publicKey, limit, cursor)
     } else if (this.addresses.length > 0) {
-      transactions = await this.protocol.getTransactionsFromAddresses(this.addressesToCheck(), limit, offset)
+      transactionResult = await this.protocol.getTransactionsFromAddresses(this.addressesToCheck(), limit, cursor)
     } else if (this.isExtendedPublicKey) {
-      transactions = await this.protocol.getTransactionsFromExtendedPublicKey(this.publicKey, limit, offset)
+      transactionResult = await this.protocol.getTransactionsFromExtendedPublicKey(this.publicKey, limit, cursor)
     } else {
-      transactions = await this.protocol.getTransactionsFromPublicKey(this.publicKey, limit, offset)
+      transactionResult = await this.protocol.getTransactionsFromPublicKey(this.publicKey, limit, cursor)
     }
-
-    return this.txsIncludingStatus(transactions)
+    transactionResult.transactions = await this.txsIncludingStatus(transactionResult.transactions)
+    return transactionResult
   }
 
   private async txsIncludingStatus(transactions: IAirGapTransaction[]): Promise<IAirGapTransaction[]> {

@@ -18,6 +18,7 @@ import { EthereumNodeClient } from './clients/node-clients/NodeClient'
 import { EthereumCryptoClient } from './EthereumCryptoClient'
 import { EthereumProtocolOptions } from './EthereumProtocolOptions'
 import { EthereumUtils } from './utils/utils'
+import { EthereumTransactionResult, EthereumTransactionCursor } from './EthereumTypes'
 
 const EthereumTransaction = require('../../dependencies/src/ethereumjs-tx-1.3.7/index')
 
@@ -373,37 +374,42 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     return this.options.nodeClient.sendSignedTransaction(`0x${rawTransaction}`)
   }
 
-  public getTransactionsFromExtendedPublicKey(extendedPublicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]> {
+  public getTransactionsFromExtendedPublicKey(
+    extendedPublicKey: string,
+    limit: number,
+    offset: number
+  ): Promise<EthereumTransactionResult> {
     return Promise.reject('extended public transaction list for ether not implemented')
   }
 
-  public async getTransactionsFromPublicKey(publicKey: string, limit: number = 50, offset: number = 0): Promise<IAirGapTransaction[]> {
+  public async getTransactionsFromPublicKey(
+    publicKey: string,
+    limit: number = 50,
+    cursor?: EthereumTransactionCursor
+  ): Promise<EthereumTransactionResult> {
     const address: string = await this.getAddressFromPublicKey(publicKey)
 
-    return this.getTransactionsFromAddresses([address], limit, offset)
+    return this.getTransactionsFromAddresses([address], limit, cursor)
   }
 
-  protected getPageNumber(limit: number, offset: number): number {
-    if (limit <= 0 || offset < 0) {
-      return 1
-    }
-
-    return 1 + Math.floor(offset / limit) // We need +1 here because pages start at 1
-  }
-
-  public getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
-    const page: number = this.getPageNumber(limit, offset)
-
+  public getTransactionsFromAddresses(
+    addresses: string[],
+    limit: number,
+    cursor?: EthereumTransactionCursor
+  ): Promise<EthereumTransactionResult> {
     return new Promise((overallResolve, overallReject) => {
-      const promises: Promise<IAirGapTransaction[]>[] = []
+      const promises: Promise<EthereumTransactionResult>[] = []
       for (const address of addresses) {
-        promises.push(this.options.infoClient.fetchTransactions(this, address, page, limit))
+        promises.push(this.options.infoClient.fetchTransactions(this, address, limit, cursor))
       }
+
       Promise.all(promises)
+
         .then((values) => {
+          const lastBlockLevel = Math.max(...values.map((txResult) => txResult.cursor.lastBlockLevel))
           overallResolve(
             values.reduce((a, b) => {
-              return a.concat(b)
+              return { transactions: a.transactions.concat(b.transactions), cursor: { lastBlockLevel: lastBlockLevel } }
             })
           )
         })

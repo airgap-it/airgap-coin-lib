@@ -7,7 +7,6 @@ import BigNumber from '../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
 import { EthereumTestProtocolSpec } from './specs/ethereum'
 
 const ethProtocolSpec = new EthereumTestProtocolSpec()
-const ethLib = ethProtocolSpec.lib
 
 const txs = [
   {
@@ -45,61 +44,6 @@ const txs = [
       'f86c808504a817c800825208944a1e1d37462a422873bfccb1e705b05cc4bd922e880de0b6b3a76400008026a00678aaa8f8fd478952bf46044589f5489e809c5ae5717dfe6893490b1f98b441a06a82b82dad7c3232968ec3aa2bba32879b3ecdb877934915d7e65e095fe53d5d'
   }
 ]
-describe(`ICoinProtocol Ethereum - Custom Tests`, () => {
-  it('should calculate the correct page', async () => {
-    const values = [
-      {
-        limit: -1,
-        offset: 0,
-        expectedPage: 1
-      },
-      {
-        limit: 0,
-        offset: -1,
-        expectedPage: 1
-      },
-      {
-        limit: 0,
-        offset: 0,
-        expectedPage: 1
-      },
-      {
-        limit: 10,
-        offset: 0,
-        expectedPage: 1
-      },
-      {
-        limit: 10,
-        offset: 5,
-        expectedPage: 1
-      },
-      {
-        limit: 10,
-        offset: 10,
-        expectedPage: 2
-      },
-      {
-        limit: 10,
-        offset: 11,
-        expectedPage: 2
-      },
-      {
-        limit: 10,
-        offset: 19,
-        expectedPage: 2
-      },
-      {
-        limit: 10,
-        offset: 20,
-        expectedPage: 3
-      }
-    ]
-    const ethLib1 = ethLib as any
-    values.forEach((data) => {
-      expect(ethLib1.getPageNumber(data.limit, data.offset)).to.equal(data.expectedPage)
-    })
-  })
-})
 
 describe(`signing should handle hex and decimal values`, async () => {
   it('should derive the same tx amount from a signed and an unsigned tx', async () => {

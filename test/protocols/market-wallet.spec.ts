@@ -55,7 +55,7 @@ describe(`AirGapMarketWallet`, () => {
     data: {}
   })
 
-  const txList = []
+  const txList = { transactions: [] }
 
   const getWalletWithAddresses = () => {
     const wallet = new AirGapMarketWallet(
@@ -65,7 +65,7 @@ describe(`AirGapMarketWallet`, () => {
       protocol.standardDerivationPath,
       new AirGapPriceService()
     )
-    wallet.addresses = ['address']
+    wallet.addresses = ['0x742d35Cc6634C0532925a3b844Bc454e4438f44e']
     return wallet
   }
 
@@ -109,28 +109,28 @@ describe(`AirGapMarketWallet`, () => {
 
     stubCoinlibOfWallet(wallet)
 
-    const transactions = await wallet.fetchTransactions(1, 2)
+    const transactions = await (await wallet.fetchTransactions(1)).transactions
 
     const txFromPubKeyStub = wallet.protocol.getTransactionsFromPublicKey as any
     const txFromAddressesStub = wallet.protocol.getTransactionsFromAddresses as any
 
-    expect(transactions).to.deep.equal(txList)
+    expect(transactions).to.deep.equal(txList.transactions)
     expect(txFromPubKeyStub.callCount).to.equal(0)
     expect(txFromAddressesStub.callCount).to.equal(1)
-    expect(txFromAddressesStub.calledOnceWith(['address'], 1, 2)).to.be.true
+    expect(txFromAddressesStub.calledOnceWith(['0x742d35Cc6634C0532925a3b844Bc454e4438f44e'], 1)).to.be.true
   })
 
   it('should fetch transactions of ETH (public key)', async () => {
     const wallet = getWalletWithPublicKey()
     stubCoinlibOfWallet(wallet)
 
-    const transactions = await wallet.fetchTransactions(0, 0)
+    const transactions = await (await wallet.fetchTransactions(0)).transactions
 
     const stub = wallet.protocol.getTransactionsFromPublicKey as any
 
-    expect(transactions).to.deep.equal(txList)
+    expect(transactions).to.deep.equal(txList.transactions)
     expect(stub.callCount).to.equal(1)
-    expect(stub.calledOnceWith('02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932', 0, 0)).to.be.true
+    expect(stub.calledOnceWith('02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932', 0)).to.be.true
   })
 
   it('should fetch transactions of BTC (extended public key)', async () => {
@@ -144,8 +144,8 @@ describe(`AirGapMarketWallet`, () => {
 
     stubCoinlibOfWallet(wallet)
 
-    const transactions = await wallet.fetchTransactions(0, 0)
-    expect(transactions).to.deep.equal(txList)
+    const transactions = await (await wallet.fetchTransactions(0)).transactions
+    expect(transactions).to.deep.equal(txList.transactions)
   })
 
   // it('should not create wallet with unknown identifier', async () => {
