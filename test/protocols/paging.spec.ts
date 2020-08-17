@@ -13,10 +13,27 @@ import { EthereumTestProtocolSpec } from './specs/ethereum'
 import { GenericERC20TokenTestProtocolSpec } from './specs/generic-erc20-token'
 import { TezosTestProtocolSpec } from './specs/tezos'
 import { KusamaTestProtocolSpec } from './specs/kusama'
+import { GenericERC20 } from '../../src/protocols/ethereum/erc20/GenericERC20'
+import { EthereumERC20ProtocolOptions, EthereumProtocolNetwork, EthereumProtocolNetworkExtras, EthereumERC20ProtocolConfig } from '../../src/protocols/ethereum/EthereumProtocolOptions'
+import { SubProtocolSymbols } from '../../src/utils/ProtocolSymbols'
 
 // use chai-as-promised plugin
 chai.use(chaiAsPromised)
 const expect = chai.expect
+
+const token = new GenericERC20(
+  new EthereumERC20ProtocolOptions(
+    new EthereumProtocolNetwork(undefined, undefined, undefined, undefined, new EthereumProtocolNetworkExtras(3)),
+    new EthereumERC20ProtocolConfig(
+      'ETH-ERC20',
+      'Unknown Ethereum ERC20-Token',
+      'erc20',
+      SubProtocolSymbols.ETH_ERC20,
+      '0xB4272071eCAdd69d933AdcD19cA99fe80664fc08',
+      18
+    )
+  )
+)
 
 const protocols = [
   new CosmosTestProtocolSpec(),
@@ -24,7 +41,7 @@ const protocols = [
   new AETestProtocolSpec(),
   new TezosTestProtocolSpec(),
   new BitcoinProtocolSpec(),
-  new GenericERC20TokenTestProtocolSpec(),
+  new GenericERC20TokenTestProtocolSpec(["0xfd9eeCb127677B1f931D6d49Dfe6626Ffe60370f"], token),
   new GroestlcoinProtocolSpec(),
   new KusamaTestProtocolSpec()
 ]
