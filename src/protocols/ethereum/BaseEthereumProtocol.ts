@@ -406,10 +406,10 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
       Promise.all(promises)
 
         .then((values) => {
-          const lastBlockLevel = Math.max(...values.map((txResult) => txResult.cursor.lastBlockLevel))
+          const page = Math.max(...values.map((txResult) => txResult.cursor.page))
           overallResolve(
             values.reduce((a, b) => {
-              return { transactions: a.transactions.concat(b.transactions), cursor: { lastBlockLevel: lastBlockLevel } }
+              return { transactions: a.transactions.concat(b.transactions), cursor: { page: page } }
             })
           )
         })

@@ -311,20 +311,36 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   ): Promise<TezosTransactionResult> {
     let allTransactions = await Promise.all(
       addresses.map((address) => {
-        const getRequestBody = (field: string, set: string) => {
+        const getRequestBody = () => {
           const body = {
             predicates: [
               {
-                field,
+                field: "source",
                 operation: 'eq',
                 set: [address],
-                inverse: false
+                inverse: false,
+                group: "a"
+              },
+              {
+                field: "destination",
+                operation: 'eq',
+                set: [address],
+                inverse: false,
+                group: "b"
               },
               {
                 field: 'kind',
                 operation: 'eq',
-                set: [set],
-                inverse: false
+                set: ["transaction"],
+                inverse: false,
+                group: "a"
+              },
+              {
+                field: 'kind',
+                operation: 'eq',
+                set: ["transaction"],
+                inverse: false,
+                group: "b"
               }
             ],
             orderBy: [
@@ -340,28 +356,25 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
               field: 'block_level',
               operation: 'lt',
               set: [cursor.lastBlockLevel.toString()],
-              inverse: false
+              inverse: false,
+              group: "a"
+            })
+            body.predicates.push({
+              field: 'block_level',
+              operation: 'lt',
+              set: [cursor.lastBlockLevel.toString()],
+              inverse: false,
+              group: "b"
             })
           }
           return body
         }
 
         return new Promise<any>(async (resolve, reject) => {
-          const fromPromise = axios
+          const result = await axios
             .post(
               `${this.options.network.extras.conseilUrl}/v2/data/tezos/${this.options.network.extras.conseilNetwork}/operations`,
-              getRequestBody('source', 'transaction'),
-              {
-                headers: this.headers
-              }
-            )
-            .catch(() => {
-              return { data: [] }
-            })
-          const toPromise = axios
-            .post(
-              `${this.options.network.extras.conseilUrl}/v2/data/tezos/${this.options.network.extras.conseilNetwork}/operations`,
-              getRequestBody('destination', 'transaction'),
+              getRequestBody(),
               {
                 headers: this.headers
               }
@@ -377,8 +390,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
             operation_group_hash: string
           }
 
-          const [to, from] = await Promise.all([fromPromise, toPromise])
-          const transactions: any[] = (to.data.concat(from.data) as ConseilOperation[]).reduce((pv: ConseilOperation[], cv) => {
+          const transactions: any[] = (result.data as ConseilOperation[]).reduce((pv: ConseilOperation[], cv) => {
             // Filter out all duplicates
             if (
               !pv.find(
