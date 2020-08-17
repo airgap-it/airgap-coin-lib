@@ -1,3 +1,4 @@
+import { TezosNetwork } from './../TezosProtocol'
 import axios, { AxiosResponse } from '../../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { IAirGapTransaction } from '../../../interfaces/IAirGapTransaction'
@@ -15,14 +16,23 @@ import { TezosOperationType } from '../types/TezosOperationType'
 import { TezosWrappedOperation } from '../types/TezosWrappedOperation'
 import { isMichelineNode } from '../types/utils'
 import { TezosFAProtocolOptions } from './TezosFAProtocolOptions'
+import { TezosTransactionCursor } from '../types/TezosTransactionCursor'
+import { TezosTransactionResult } from '../types/TezosTransactionResult'
+import { FeeDefaults } from '../../ICoinProtocol'
 
-export interface TezosTransactionResult {
-  transactions: IAirGapTransaction[]
-  cursor: TezosTransactionCursor
-}
-
-export interface TezosTransactionCursor {
-  lastBlockLevel: number
+export interface TezosFAProtocolConfiguration {
+  symbol: string
+  name: string
+  marketSymbol: string
+  identifier: ProtocolSymbols
+  contractAddress: string
+  feeDefaults: FeeDefaults
+  decimals?: number
+  jsonRPCAPI?: string
+  baseApiUrl?: string
+  network?: TezosNetwork
+  baseApiKey?: string
+  baseApiNetwork?: string
 }
 
 export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
@@ -75,19 +85,22 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
     return this.getBalanceOfPublicKey(publicKey)
   }
 
-  public async getTransactionsFromPublicKey(publicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]> {
+  public async getTransactionsFromPublicKey(
+    publicKey: string,
+    limit: number,
+    cursor?: TezosTransactionCursor
+  ): Promise<TezosTransactionResult> {
     const addresses: string[] = await this.getAddressesFromPublicKey(publicKey)
 
-    return this.getTransactionsFromAddresses(addresses, limit, offset)
+    return this.getTransactionsFromAddresses(addresses, limit, cursor)
   }
 
-  public async getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
-    // TODO: implement pagination
-    if (offset !== 0) {
-      return []
-    }
-
-    const allTransactions = await Promise.all(
+  public async getTransactionsFromAddresses(
+    addresses: string[],
+    limit: number,
+    cursor?: TezosTransactionCursor
+  ): Promise<TezosTransactionResult> {
+    let allTransactions = await Promise.all(
       addresses.map((address) => {
         const body = {
           predicates: [
@@ -124,6 +137,14 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
           ],
           limit
         }
+        if (cursor && cursor.lastBlockLevel) {
+          body.predicates.push({
+            field: 'block_level',
+            operation: 'lt',
+            set: [cursor.lastBlockLevel.toString()],
+            inverse: false
+          })
+        }
 
         return axios
           .post(`${this.baseApiUrl}/v2/data/tezos/${this.baseApiNetwork}/operations`, body, {
@@ -136,15 +157,23 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
           })
       })
     )
+    const lastEntryBlockLevel: number = allTransactions.length > 0 ? allTransactions[allTransactions.length - 1].block_level : 0
 
-    return Promise.all<IAirGapTransaction[]>(allTransactions
-      .reduce((current, next) => current.concat(next))
-      .map((transaction: any) => {
-        return this.transactionToAirGapTransactions(transaction, addresses)
-      })
+    const transactions = await Promise.all<IAirGapTransaction[]>(
+      allTransactions
+        .reduce((current, next) => current.concat(next))
+        .map((transaction: any) => {
+          return this.transactionToAirGapTransactions(transaction, addresses)
+        })
     ).then((transactions: IAirGapTransaction[][]) => {
       return transactions.reduce((flatten: IAirGapTransaction[], toFlatten: IAirGapTransaction[]) => flatten.concat(toFlatten), [])
     })
+    return {
+      transactions,
+      cursor: {
+        lastBlockLevel: lastEntryBlockLevel
+      }
+    }
   }
 
   public async getTransactions(limit: number, cursor?: TezosTransactionCursor): Promise<TezosTransactionResult> {
@@ -188,9 +217,11 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
     const response = await axios.post(`${this.baseApiUrl}/v2/data/tezos/${this.baseApiNetwork}/operations`, body, {
       headers: this.headers
     })
-    const transactions: IAirGapTransaction[] = await Promise.all<IAirGapTransaction[]>(response.data.map((transaction: any) => {
-      return this.transactionToAirGapTransactions(transaction)
-    })).then((transactions: IAirGapTransaction[][]) => {
+    const transactions: IAirGapTransaction[] = await Promise.all<IAirGapTransaction[]>(
+      response.data.map((transaction: any) => {
+        return this.transactionToAirGapTransactions(transaction)
+      })
+    ).then((transactions: IAirGapTransaction[][]) => {
       return transactions.reduce((flatten: IAirGapTransaction[], toFlatten: IAirGapTransaction[]) => flatten.concat(toFlatten), [])
     })
     const lastEntryBlockLevel: number = response.data.length > 0 ? response.data[response.data.length - 1].block_level : 0
@@ -203,12 +234,9 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
     }
   }
 
-  public async normalizeTransactionParameters(
-    parameters: string,
-    fallbackEntrypointName?: string
-  ): Promise<TezosTransactionParameters> {
+  public async normalizeTransactionParameters(parameters: string, fallbackEntrypointName?: string): Promise<TezosTransactionParameters> {
     const parsedParameters: unknown = this.parseParameters(parameters)
-  
+
     if (!(parsedParameters instanceof Object && 'value' in parsedParameters) && !isMichelineNode(parsedParameters)) {
       throw new Error('Invalid parameters.')
     }
@@ -241,9 +269,8 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
     const partialDetails: Partial<IAirGapTransaction>[] = await this.transactionDetailsFromParameters(transferData)
 
     return partialDetails.map((details: Partial<IAirGapTransaction>) => {
-      const inbound: boolean = sourceAddresses !== undefined && details.to && details.to.length === 1
-        ? sourceAddresses.indexOf(details.to[0]) !== -1
-        : false
+      const inbound: boolean =
+        sourceAddresses !== undefined && details.to && details.to.length === 1 ? sourceAddresses.indexOf(details.to[0]) !== -1 : false
 
       return {
         amount: new BigNumber(0).toFixed(), // in tzbtc
@@ -279,7 +306,7 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
       })
       const metadata = response.data.contents[0].metadata
       if (metadata.internal_operation_results !== undefined && metadata.operation_result.status === 'applied') {
-        return metadata.internal_operation_results[0].parameters.value 
+        return metadata.internal_operation_results[0].parameters.value
       } else {
         throw new Error(metadata.operation_result.errors[0].id)
       }
@@ -289,11 +316,7 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
     }
   }
 
-  protected async prepareContractCall(
-    contractCalls: TezosContractCall[], 
-    fee: string, 
-    publicKey: string
-  ): Promise<RawTezosTransaction> {
+  protected async prepareContractCall(contractCalls: TezosContractCall[], fee: string, publicKey: string): Promise<RawTezosTransaction> {
     const operations: TezosOperation[] = contractCalls.map((contractCall: TezosContractCall) => {
       return {
         kind: TezosOperationType.TRANSACTION,
@@ -314,7 +337,7 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
       throw new Error('Forging Tezos TX failed.')
     }
   }
-  
+
   protected requireSource(source?: string, defaultSource?: string, ...excludedPrefixes: string[]): string {
     const _source = source ?? defaultSource
 
@@ -331,7 +354,7 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
     source: string,
     contractAddress: string,
     fee: string = '0'
-  ): { chain_id: string, operation: TezosWrappedTransactionOperation } {
+  ): { chain_id: string; operation: TezosWrappedTransactionOperation } {
     return {
       chain_id: chainID,
       operation: {

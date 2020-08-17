@@ -280,7 +280,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
           ]
         })
       )
-      const transactions = await tezosLib.getTransactionsFromAddresses(tezosProtocolSpec.wallet.addresses, 20, 0)
+      const transactions = await (await tezosLib.getTransactionsFromAddresses(tezosProtocolSpec.wallet.addresses, 20)).transactions
 
       expect(transactions.map((transaction) => ({ ...transaction, network: undefined }))).to.deep.eq([
         {

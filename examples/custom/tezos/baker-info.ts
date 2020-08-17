@@ -1,6 +1,6 @@
 // tslint:disable:no-console
 
-import { BakerInfo, TezosKtProtocol } from '../src'
+import { BakerInfo, TezosKtProtocol } from '../../../src'
 
 const kt: TezosKtProtocol = new TezosKtProtocol()
 

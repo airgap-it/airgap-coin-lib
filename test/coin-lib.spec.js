@@ -465,8 +465,8 @@ describe('List Transactions', function () {
 
     bitcoin
       .getTransactionsFromAddresses([address], 20, 0)
-      .then((transactions) => {
-        validateTxHelper(transactions[0])
+      .then((transactionResult) => {
+        validateTxHelper(transactionResult.transactions[0])
         done()
       })
       .catch(done)
@@ -477,8 +477,8 @@ describe('List Transactions', function () {
 
     bitcoin
       .getTransactionsFromAddresses(['14KJNpguYfoeZEaqbmqL2qjrCADerHTNKr'], 20, 0)
-      .then((transactions) => {
-        validateTxHelper(transactions[0])
+      .then((transactionResult) => {
+        validateTxHelper(transactionResult.transactions[0])
         done()
       })
       .catch(done)

@@ -1,3 +1,4 @@
+import { BitcoinTransactionCursor, BitcoinTransactionResult } from './BitcoinTypes'
 import * as bitcoinJSMessage from 'bitcoinjs-message'
 
 import axios from '../../dependencies/src/axios-0.19.0/index'
@@ -572,28 +573,42 @@ export class BitcoinProtocol implements ICoinProtocol {
   public async getTransactionsFromExtendedPublicKey(
     extendedPublicKey: string,
     limit: number,
-    offset: number,
+    cursor?: BitcoinTransactionCursor,
     addressOffset = 0
-  ): Promise<IAirGapTransaction[]> {
+  ): Promise<BitcoinTransactionResult> {
     const derivedAddresses: string[] = []
     derivedAddresses.push(...(await this.getAddressesFromExtendedPublicKey(extendedPublicKey, 1, 100, addressOffset)))
     derivedAddresses.push(...(await this.getAddressesFromExtendedPublicKey(extendedPublicKey, 0, 100, addressOffset)))
 
-    return this.getTransactionsFromAddresses(derivedAddresses, limit, offset)
+    return this.getTransactionsFromAddresses(derivedAddresses, limit, cursor)
   }
 
-  public async getTransactionsFromPublicKey(publicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]> {
-    return this.getTransactionsFromAddresses([await this.getAddressFromPublicKey(publicKey)], limit, offset)
+  public async getTransactionsFromPublicKey(
+    publicKey: string,
+    limit: number,
+    cursor?: BitcoinTransactionCursor
+  ): Promise<BitcoinTransactionResult> {
+    return this.getTransactionsFromAddresses([await this.getAddressFromPublicKey(publicKey)], limit, cursor)
   }
 
-  public async getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
+  public async getTransactionsFromAddresses(
+    addresses: string[],
+    limit: number,
+    cursor?: BitcoinTransactionCursor
+  ): Promise<BitcoinTransactionResult> {
     const airGapTransactions: IAirGapTransaction[] = []
-    const { data: transactions } = await axios.get(
-      this.options.network.extras.indexerApi + '/api/addrs/' + addresses.join(',') + '/txs?from=' + offset + '&to=' + (offset + limit),
-      {
-        responseType: 'json'
-      }
-    )
+    const url = cursor
+      ? this.options.network.extras.indexerApi +
+        '/api/addrs/' +
+        addresses.join(',') +
+        '/txs?from=' +
+        cursor.offset +
+        '&to=' +
+        (cursor.offset + limit)
+      : this.options.network.extras.indexerApi + '/api/addrs/' + addresses.join(',') + '/txs?from=0&to=' + limit
+    const { data: transactions } = await axios.get(url, {
+      responseType: 'json'
+    })
 
     for (const transaction of transactions.items) {
       const tempAirGapTransactionFrom: string[] = []
@@ -644,7 +659,7 @@ export class BitcoinProtocol implements ICoinProtocol {
       airGapTransactions.push(airGapTransaction)
     }
 
-    return airGapTransactions
+    return { transactions: airGapTransactions, cursor: cursor ? { offset: cursor.offset + limit } : { offset: limit } }
   }
 
   private containsSome(needles: any[], haystack: any[]): boolean {

@@ -17,7 +17,7 @@ export class KusamaTestProtocolSpec extends TestProtocolSpec {
   public stub = new KusamaProtocolStub()
 
   public validAddresses = [
-    'HPHKjs6S6wY8TwcGpFXZaSeJ9siPZ3thzy7WM8D8egm5wCb',
+    'EEWyMLHgwtemr48spFNnS3U2XjaYswqAYAbadx2jr9ppp4X',
     'HTy49kysog4fCwjsCeZXzEFQ1YyuwfUpJS6UhS9jRKtaWKM',
     'CjEiyp4VU7o5pvSXCvLbKjd8xohwmTtgRysiuKssu4Ye7K5',
     'GHszz6ePQwec9voFXNe7h2DmkcgwGvPKzY2LbdksHimHmAp',

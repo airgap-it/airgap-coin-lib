@@ -8,7 +8,7 @@ export class GroestlcoinProtocolSpec extends TestProtocolSpec {
   public lib = new GroestlcoinProtocol()
   public stub = new GroestlcoinProtocolStub()
   public validAddresses = [
-    'Fo5wJdoDwg7XvDi7ntnMwWv15Vc1UMA7Bz',
+    '3E2p6qP9vh4hFfuVQLsxTAziRDDHJ5DnQj',
     'Fdbvoe7cvqhUieb5ReFeCdhQxhSXuKjDDq',
     '34mYVANQZhdhVpEh3uodhBUUkbW75NFmN9',
     '38vZLCc9MmY5ATUGDBbpW4iGyU2KswjTup',
