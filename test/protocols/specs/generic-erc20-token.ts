@@ -44,7 +44,7 @@ export class GenericERC20TokenTestProtocolSpec extends TestProtocolSpec {
 
   constructor(validAddresses: string[] = ['0xb752b6dfe409ca926c78b1595bcf7442160c07c7'], lib: GenericERC20 = ERC20Token) {
     super()
-    this.lib = protocol
+    this.lib = lib
     this.validAddresses = validAddresses
   }
 }
