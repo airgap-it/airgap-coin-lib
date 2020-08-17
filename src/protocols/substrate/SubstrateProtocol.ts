@@ -113,7 +113,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
         ...tx
       }))
 
-    return { transactions, cursor: { page: cursor ? cursor.page : 2 } }
+    return { transactions, cursor: { page: cursor ? cursor.page + 1 : 1 } }
   }
 
   public async signWithPrivateKey(privateKey: Buffer, rawTransaction: RawSubstrateTransaction): Promise<string> {

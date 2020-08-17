@@ -20,9 +20,7 @@ export class EtherscanInfoClient extends EthereumInfoClient {
     const airGapTransactions: IAirGapTransaction[] = []
 
     const url = cursor
-      ? `${this.baseURL}/api?module=account&action=txlist&address=${address}&page=1&offset=${limit}&endblock=${
-          cursor.lastBlockLevel - 1
-        }&sort=desc&apiKey=P63MEHEYBM5BGEG5WFN76VPNCET8B2MAP7`
+      ? `${this.baseURL}/api?module=account&action=txlist&address=${address}&page=${cursor.page}&offset=${limit}&sort=desc&apiKey=P63MEHEYBM5BGEG5WFN76VPNCET8B2MAP7`
       : `${this.baseURL}/api?module=account&action=txlist&address=${address}&page=1&offset=${limit}&sort=desc&apiKey=P63MEHEYBM5BGEG5WFN76VPNCET8B2MAP7`
 
     const response = await Axios.get(url)
@@ -44,12 +42,11 @@ export class EtherscanInfoClient extends EthereumInfoClient {
 
       airGapTransactions.push(airGapTransaction)
     }
-    const lastEntryBlockLevel =
-      airGapTransactions.length > 0 ? transactionResponse.result[transactionResponse.result.length - 1].blockNumber : 0
+
     return {
       transactions: airGapTransactions,
       cursor: {
-        lastBlockLevel: Number(lastEntryBlockLevel)
+        page: cursor ? cursor.page + 1 : 2
       }
     }
   }
@@ -58,14 +55,16 @@ export class EtherscanInfoClient extends EthereumInfoClient {
     protocol: EthereumProtocol,
     contractAddress: string,
     address: string,
-    page: number,
-    limit: number
-  ): Promise<IAirGapTransaction[]> {
+    limit: number,
+    cursor?: EthereumTransactionCursor
+  ): Promise<EthereumTransactionResult> {
     const airGapTransactions: IAirGapTransaction[] = []
 
-    const response = await Axios.get(
-      `${this.baseURL}/api?module=account&action=tokentx&address=${address}&contractAddress=${contractAddress}&page=${page}&offset=${limit}&sort=desc&apiKey=P63MEHEYBM5BGEG5WFN76VPNCET8B2MAP7`
-    )
+    const url = cursor
+      ? `${this.baseURL}/api?module=account&action=tokentx&address=${address}&contractAddress=${contractAddress}&page=${cursor.page}&offset=${limit}&sort=desc&apiKey=P63MEHEYBM5BGEG5WFN76VPNCET8B2MAP7`
+      : `${this.baseURL}/api?module=account&action=tokentx&address=${address}&contractAddress=${contractAddress}&page=1&offset=${limit}&sort=desc&apiKey=P63MEHEYBM5BGEG5WFN76VPNCET8B2MAP7`
+
+    const response = await Axios.get(url)
     const transactionResponse = response.data
     for (const transaction of transactionResponse.result) {
       const fee: BigNumber = new BigNumber(transaction.gas).times(new BigNumber(transaction.gasPrice))
@@ -85,6 +84,11 @@ export class EtherscanInfoClient extends EthereumInfoClient {
       airGapTransactions.push(airGapTransaction)
     }
 
-    return airGapTransactions
+    return {
+      transactions: airGapTransactions,
+      cursor: {
+        page: cursor ? cursor.page + 1 : 2
+      }
+    }
   }
 }

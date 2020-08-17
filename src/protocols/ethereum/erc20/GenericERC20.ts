@@ -152,15 +152,15 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, Ethersc
     return new Promise((overallResolve, overallReject) => {
       const promises: Promise<EthereumTransactionResult>[] = []
       for (const address of addresses) {
-        promises.push(this.options.infoClient.fetchTransactions(this, address, limit, cursor))
+        promises.push(this.options.infoClient.fetchContractTransactions(this, this.contractAddress, address, limit, cursor))
       }
 
       Promise.all(promises)
         .then((values) => {
-          const lastBlockLevel = Math.max(...values.map((txResult) => txResult.cursor.lastBlockLevel))
+          const page = Math.max(...values.map((txResult) => txResult.cursor.page))
           overallResolve(
             values.reduce((a, b) => {
-              return { transactions: a.transactions.concat(b.transactions), cursor: { lastBlockLevel: lastBlockLevel } }
+              return { transactions: a.transactions.concat(b.transactions), cursor: { page: page } }
             })
           )
         })
