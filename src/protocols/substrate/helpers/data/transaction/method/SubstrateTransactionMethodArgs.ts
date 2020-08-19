@@ -1,3 +1,4 @@
+// tslint:disable: max-classes-per-file
 import BigNumber from '../../../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { IAirGapTransaction } from '../../../../../../interfaces/IAirGapTransaction'
 import { assertFields } from '../../../../../../utils/assert'
@@ -14,8 +15,6 @@ import { SubstratePayee } from '../../staking/SubstratePayee'
 import { SubstrateTransactionType } from '../SubstrateTransaction'
 
 import { SubstrateTransactionMethod } from './SubstrateTransactionMethod'
-
-// tslint:disable: max-classes-per-file
 
 interface TransferArgs {
   to: SubstrateAccountId
@@ -69,6 +68,7 @@ interface SubmitBatchArgs {
 
 export abstract class SubstrateTransactionMethodArgsFactory<T> {
   public static create(network: SubstrateNetwork, type: SubstrateTransactionType, args: any): SubstrateTransactionMethodArgsFactory<any> {
+    // tslint:disable-next-line: switch-default
     switch (type) {
       case SubstrateTransactionType.TRANSFER:
         assertFields('transfer', args, 'to', 'value')
@@ -127,6 +127,7 @@ export abstract class SubstrateTransactionMethodArgsFactory<T> {
 
 export abstract class SubstrateTransactionMethodArgsDecoder<T> {
   public static create(type: SubstrateTransactionType): SubstrateTransactionMethodArgsDecoder<any> {
+    // tslint:disable-next-line: switch-default
     switch (type) {
       case SubstrateTransactionType.TRANSFER:
         return new TransferArgsDecoder()
