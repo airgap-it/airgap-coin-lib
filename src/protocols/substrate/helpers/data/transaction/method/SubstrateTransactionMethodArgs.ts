@@ -50,8 +50,8 @@ interface NominateArgs {
 interface StopNominatingArgs {}
 
 interface PayoutStakersArgs {
-  eraIndex: number | BigNumber
   validator: SubstrateAccountId
+  era: number | BigNumber
 }
 
 interface SetPayeeArgs {
@@ -380,8 +380,8 @@ class StopNominatingArgsDecoder extends SubstrateTransactionMethodArgsDecoder<St
 class PayoutStakersArgsFactory extends SubstrateTransactionMethodArgsFactory<PayoutStakersArgs> {
   public createFields(): [string, SCALEType][] {
     return [
-      ['eraIndex', SCALEInt.from(this.args.eraIndex, 32)],
-      ['validator', SCALEAccountId.from(this.args.validator, this.network)]
+      ['validatorStash', SCALEAccountId.from(this.args.validator, this.network)],
+      ['era', SCALEInt.from(this.args.era, 32)]
     ]
   }
   public createToAirGapTransactionParts(): () => Partial<IAirGapTransaction>[] {
@@ -391,14 +391,14 @@ class PayoutStakersArgsFactory extends SubstrateTransactionMethodArgsFactory<Pay
 
 class PayoutStakersArgsDecoder extends SubstrateTransactionMethodArgsDecoder<PayoutStakersArgs> {
   protected _decode(decoder: SCALEDecoder): SCALEDecodeResult<PayoutStakersArgs> {
-    const eraIndex = decoder.decodeNextInt(32)
-    const validator = decoder.decodeNextAccountId()
+    const validatorStash = decoder.decodeNextAccountId()
+    const era = decoder.decodeNextInt(32)
 
     return {
-      bytesDecoded: eraIndex.bytesDecoded + validator.bytesDecoded,
+      bytesDecoded: era.bytesDecoded + validatorStash.bytesDecoded,
       decoded: {
-        eraIndex: eraIndex.decoded.value,
-        validator: validator.decoded.address
+        validator: validatorStash.decoded.address,
+        era: era.decoded.value,
       }
     }
   }
