@@ -19,6 +19,7 @@ import { SCALEInt } from '../data/scale/type/SCALEInt'
 import { SCALETuple } from '../data/scale/type/SCALETuple'
 import { SCALEType } from '../data/scale/type/SCALEType'
 import { SubstrateActiveEraInfo } from '../data/staking/SubstrateActiveEraInfo'
+import { SubstrateEraElectionStatus } from '../data/staking/SubstrateEraElectionStatus'
 import { SubstrateEraRewardPoints } from '../data/staking/SubstrateEraRewardPoints'
 import { SubstrateExposure } from '../data/staking/SubstrateExposure'
 import { SubstrateNominations } from '../data/staking/SubstrateNominations'
@@ -189,6 +190,12 @@ export class SubstrateNodeClient {
       SCALEInt.from(eraIndex, 32),
       SCALEAccountId.from(address, this.network)
     ).then((item) => (item ? SubstrateExposure.decode(this.network, item) : null))
+  }
+
+  public async getElectionStatus(): Promise<SubstrateEraElectionStatus | null> {
+    return this.fromStorage('Staking', 'EraElectionStatus').then((item) =>
+      item ? SubstrateEraElectionStatus.decode(this.network, item) : null
+    )
   }
 
   public async getIdentityOf(address: SubstrateAddress): Promise<SubstrateRegistration | null> {

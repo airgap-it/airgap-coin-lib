@@ -17,6 +17,7 @@ export const supportedStorageEntries = {
     'Nominators',
     'CurrentEra',
     'ActiveEra',
+    'EraElectionStatus',
     'ErasStakers',
     'ErasStakersClipped',
     'ErasValidatorPrefs',
