@@ -1,7 +1,7 @@
 import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 
 export interface EthereumTransactionCursor {
-  lastBlockLevel: number
+  page: number
 }
 
 export interface EthereumTransactionResult {

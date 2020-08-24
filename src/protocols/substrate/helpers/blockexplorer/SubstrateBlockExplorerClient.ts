@@ -13,7 +13,7 @@ export class SubstrateBlockExplorerClient {
     protocolDecimals: number,
     cursor?: SubstrateTransactionCursor
   ): Promise<IAirGapTransaction[]> {
-    const body = cursor ? { row: limit, page: cursor.page - 1, address: address } : { row: limit, page: 0, address: address }
+    const body = cursor ? { row: limit, page: cursor.page, address: address } : { row: limit, page: 0, address: address }
     const responses = await Promise.all([
       axios.post(`${this.apiUrl}/transfers`, body),
       axios.post(`${this.apiUrl}/account/reward_slash`, body)
