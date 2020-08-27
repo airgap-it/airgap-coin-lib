@@ -12,16 +12,22 @@ import { MetadataConstant } from '../data/metadata/module/MetadataConstants'
 import { MetadataStorage } from '../data/metadata/module/storage/MetadataStorage'
 import { SCALEAccountId } from '../data/scale/type/SCALEAccountId'
 import { SCALEArray } from '../data/scale/type/SCALEArray'
+import { SCALECompactInt } from '../data/scale/type/SCALECompactInt'
+import { SCALEData } from '../data/scale/type/SCALEData'
 import { SCALEEnum } from '../data/scale/type/SCALEEnum'
 import { SCALEInt } from '../data/scale/type/SCALEInt'
+import { SCALETuple } from '../data/scale/type/SCALETuple'
 import { SCALEType } from '../data/scale/type/SCALEType'
 import { SubstrateActiveEraInfo } from '../data/staking/SubstrateActiveEraInfo'
+import { SubstrateEraElectionStatus } from '../data/staking/SubstrateEraElectionStatus'
 import { SubstrateEraRewardPoints } from '../data/staking/SubstrateEraRewardPoints'
 import { SubstrateExposure } from '../data/staking/SubstrateExposure'
 import { SubstrateNominations } from '../data/staking/SubstrateNominations'
 import { SubstratePayee } from '../data/staking/SubstratePayee'
+import { SubstrateSlashingSpans } from '../data/staking/SubstrateSlashingSpans'
 import { SubstrateStakingLedger } from '../data/staking/SubstrateStakingLedger'
 import { SubstrateValidatorPrefs } from '../data/staking/SubstrateValidatorPrefs'
+import { SubstrateRuntimeVersion } from '../data/state/SubstrateRuntimeVersion'
 import { SubstrateTransactionType } from '../data/transaction/SubstrateTransaction'
 
 import { SubstrateCallId } from './call/SubstrateCallId'
@@ -42,11 +48,6 @@ import {
   supportedConstants,
   supportedStorageEntries
 } from './supported'
-import { SubstrateSlashingSpan } from '../data/staking/SubstrateSlashingSpan'
-import { SubstrateRuntimeVersion } from '../data/state/SubstrateRuntimeVersion'
-import { SCALETuple } from '../data/scale/type/SCALETuple'
-import { SCALEData } from '../data/scale/type/SCALEData'
-import { SCALECompactInt } from '../data/scale/type/SCALECompactInt'
 
 interface ConnectionConfig {
   allowCache: boolean
@@ -109,10 +110,6 @@ export class SubstrateNodeClient {
     }
 
     return fee
-  }
-
-  public async getBaseTransactionFee(): Promise<BigNumber | null> {
-    return this.getConstant('TransactionPayment', 'TransactionBaseFee').then((constant) => SCALEInt.decode(constant).decoded.value)
   }
 
   public async getFirstBlockHash(): Promise<string | null> {
@@ -195,6 +192,12 @@ export class SubstrateNodeClient {
     ).then((item) => (item ? SubstrateExposure.decode(this.network, item) : null))
   }
 
+  public async getElectionStatus(): Promise<SubstrateEraElectionStatus | null> {
+    return this.fromStorage('Staking', 'EraElectionStatus').then((item) =>
+      item ? SubstrateEraElectionStatus.decode(this.network, item) : null
+    )
+  }
+
   public async getIdentityOf(address: SubstrateAddress): Promise<SubstrateRegistration | null> {
     return this.fromStorage('Identity', 'IdentityOf', SCALEAccountId.from(address, this.network)).then((item) =>
       item ? SubstrateRegistration.decode(this.network, item) : null
@@ -258,9 +261,9 @@ export class SubstrateNodeClient {
     return this.fromStorage('Staking', 'ActiveEra').then((item) => (item ? SubstrateActiveEraInfo.decode(this.network, item) : null))
   }
 
-  public async getSlashingSpan(address: SubstrateAddress): Promise<SubstrateSlashingSpan | null> {
+  public async getSlashingSpan(address: SubstrateAddress): Promise<SubstrateSlashingSpans | null> {
     return this.fromStorage('Staking', 'SlashingSpans', SCALEAccountId.from(address, this.network)).then((item) =>
-      item ? SubstrateSlashingSpan.decode(this.network, item) : null
+      item ? SubstrateSlashingSpans.decode(this.network, item) : null
     )
   }
 

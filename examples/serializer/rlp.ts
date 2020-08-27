@@ -1,8 +1,8 @@
 // tslint:disable:no-any
 // tslint:disable:no-console
 
-import * as bs58check from '../src/dependencies/src/bs58check-2.1.2'
-import * as rlp from '../src/dependencies/src/rlp-2.2.3/index'
+import * as bs58check from '../../src/dependencies/src/bs58check-2.1.2'
+import * as rlp from '../../src/dependencies/src/rlp-2.2.3/index'
 
 const encoded: string = bs58check.encode(
   rlp.encode([
@@ -29,4 +29,7 @@ console.log('Encoded RLP:', encoded)
 
 const decoded: any[] = rlp.decode(bs58check.decode(encoded))
 
-console.log('Decoded RLP:', decoded.map((x: Buffer) => x.toString()))
+console.log(
+  'Decoded RLP:',
+  decoded.map((x: Buffer) => x.toString())
+)

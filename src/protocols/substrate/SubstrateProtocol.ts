@@ -15,6 +15,7 @@ import { SubstrateStakingActionType } from './helpers/data/staking/SubstrateStak
 import { SubstrateTransactionType } from './helpers/data/transaction/SubstrateTransaction'
 import { SubstrateCryptoClient } from './SubstrateCryptoClient'
 import { SubstrateProtocolOptions } from './SubstrateProtocolOptions'
+import { SubstrateTransactionResult, SubstrateTransactionCursor } from './SubstrateTypes'
 
 export abstract class SubstrateProtocol extends NonExtendedProtocol implements ICoinDelegateProtocol {
   public abstract symbol: string
@@ -83,17 +84,23 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     return [await this.getAddressFromPublicKey(publicKey)]
   }
 
-  public async getTransactionsFromPublicKey(publicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]> {
+  public async getTransactionsFromPublicKey(
+    publicKey: string,
+    limit: number,
+    cursor?: SubstrateTransactionCursor
+  ): Promise<SubstrateTransactionResult> {
     const addresses = await this.getAddressesFromPublicKey(publicKey)
 
-    return this.getTransactionsFromAddresses(addresses, limit, offset)
+    return this.getTransactionsFromAddresses(addresses, limit, cursor)
   }
 
-  public async getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
-    const pageNumber = Math.ceil(offset / limit) + 1
-    const txs = await Promise.all(addresses.map((address) => this.options.blockExplorerClient.getTransactions(address, limit, pageNumber, this.decimals)))
+  public async getTransactionsFromAddresses(addresses: string[],
+    limit: number,
+    cursor?: SubstrateTransactionCursor
+  ): Promise<SubstrateTransactionResult> {
+    const txs: Partial<IAirGapTransaction[]>[] = await Promise.all(addresses.map((address) => this.options.blockExplorerClient.getTransactions(address, limit, this.decimals, cursor)))
 
-    return txs
+    const transactions = txs
       .reduce((flatten, toFlatten) => flatten.concat(toFlatten), [])
       .map((tx) => ({
         protocolIdentifier: this.identifier,
@@ -105,6 +112,8 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
         fee: '',
         ...tx
       }))
+
+    return { transactions, cursor: { page: cursor ? cursor.page + 1 : 1 } }
   }
 
   public async signWithPrivateKey(privateKey: Buffer, rawTransaction: RawSubstrateTransaction): Promise<string> {
@@ -305,10 +314,10 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     nominatorDetails.rewards =
       nominatorDetails.delegatees.length > 0 && nominatorDetails.stakingDetails
         ? nominatorDetails.stakingDetails.rewards.map((reward) => ({
-            index: reward.eraIndex,
-            amount: reward.amount,
-            timestamp: reward.timestamp
-          }))
+          index: reward.eraIndex,
+          amount: reward.amount,
+          timestamp: reward.timestamp
+        }))
         : []
 
     return {
@@ -380,16 +389,16 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     const encoded = await this.options.transactionController.prepareSubmittableTransactions(publicKey, available, [
       ...(bondFirst
         ? [
-            {
-              type: SubstrateTransactionType.BOND,
-              tip,
-              args: {
-                controller,
-                value: BigNumber.isBigNumber(value) ? value : new BigNumber(value!),
-                payee: typeof payee === 'string' ? SubstratePayee[payee] : payee
-              }
+          {
+            type: SubstrateTransactionType.BOND,
+            tip,
+            args: {
+              controller,
+              value: BigNumber.isBigNumber(value) ? value : new BigNumber(value!),
+              payee: typeof payee === 'string' ? SubstratePayee[payee] : payee
             }
-          ]
+          }
+        ]
         : []),
       {
         type: SubstrateTransactionType.NOMINATE,
@@ -420,14 +429,14 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
       ...(keepController
         ? []
         : [
-            {
-              type: SubstrateTransactionType.UNBOND,
-              tip,
-              args: {
-                value: BigNumber.isBigNumber(value) ? value : new BigNumber(value!)
-              }
+          {
+            type: SubstrateTransactionType.UNBOND,
+            tip,
+            args: {
+              value: BigNumber.isBigNumber(value) ? value : new BigNumber(value!)
             }
-          ])
+          }
+        ])
     ])
 
     return [{ encoded }]

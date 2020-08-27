@@ -1,5 +1,5 @@
-import { CosmosProtocol } from '../../src'
-import * as BIP39 from '../../src/dependencies/src/bip39-2.5.0/index'
+import { CosmosProtocol } from '../../../src'
+import * as BIP39 from '../../../src/dependencies/src/bip39-2.5.0/index'
 
 const protocol: CosmosProtocol = new CosmosProtocol()
 
@@ -12,10 +12,10 @@ const pubKey = protocol.getPublicKeyFromHexSecret(seed, protocol.standardDerivat
 
 protocol
   .prepareTransactionFromPublicKey(pubKey, ['cosmos1w3mea9ghfdc3r7ax45mehl2tcqw9p0vnlhl0p6'], ['2'], '1')
-  .then(tx => {
+  .then((tx) => {
     console.log(JSON.stringify(tx))
-    protocol.signWithPrivateKey(secKey, tx).then(signed => {
+    protocol.signWithPrivateKey(secKey, tx).then((signed) => {
       console.log('signed', signed)
     })
   })
-  .catch(error => console.log(error))
+  .catch((error) => console.log(error))

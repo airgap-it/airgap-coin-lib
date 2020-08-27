@@ -1,3 +1,4 @@
+// tslint:disable: max-classes-per-file
 import { SubstrateNetwork } from '../../../SubstrateNetwork'
 import { SCALEDecoder, SCALEDecodeResult } from '../scale/SCALEDecoder'
 import { SCALEInt } from '../scale/type/SCALEInt'

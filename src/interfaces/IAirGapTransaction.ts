@@ -1,5 +1,11 @@
+import { CosmosTransactionCursor } from './../protocols/cosmos/CosmosTypes'
+import { SubstrateTransactionCursor } from './../protocols/substrate/SubstrateTypes'
+import { TezosTransactionCursor } from './../protocols/tezos/types/TezosTransactionCursor'
+import { BitcoinTransactionCursor, BitcoinBlockbookTransactionCursor } from './../protocols/bitcoin/BitcoinTypes'
 import { ProtocolNetwork } from '../utils/ProtocolNetwork'
 import { ProtocolSymbols } from '../utils/ProtocolSymbols'
+import { EthereumTransactionCursor } from '../protocols/ethereum/EthereumTypes'
+import { AeternityTransactionCursor } from '../protocols/aeternity/AeternityTypes'
 
 export enum AirGapTransactionType {
   SPEND = 'Spend Transaction',
@@ -32,4 +38,18 @@ export interface IAirGapTransaction {
   status?: AirGapTransactionStatus
 
   transactionDetails?: any
+}
+
+export type IProtocolTransactionCursor =
+  | EthereumTransactionCursor
+  | BitcoinTransactionCursor
+  | TezosTransactionCursor
+  | AeternityTransactionCursor
+  | SubstrateTransactionCursor
+  | CosmosTransactionCursor
+  | BitcoinBlockbookTransactionCursor
+
+export interface IAirGapTransactionResult {
+  transactions: IAirGapTransaction[]
+  cursor: IProtocolTransactionCursor
 }
