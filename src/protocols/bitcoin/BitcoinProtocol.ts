@@ -1,6 +1,6 @@
 import { BitcoinTransactionCursor, BitcoinTransactionResult } from './BitcoinTypes'
-import * as bitcoinJSMessage from 'bitcoinjs-message'
 
+import * as bitcoinJSMessage from '../../dependencies/src/bitcoinjs-message-2.1.1/index'
 import axios from '../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
@@ -59,7 +59,7 @@ export class BitcoinProtocol implements ICoinProtocol {
 
   private readonly feeEstimationUrl = `https://blockstream.info/api/fee-estimates`
 
-  constructor(public readonly options: BitcoinProtocolOptions = new BitcoinProtocolOptions()) { }
+  constructor(public readonly options: BitcoinProtocolOptions = new BitcoinProtocolOptions()) {}
 
   public async getBlockExplorerLinkForAddress(address: string): Promise<string> {
     return this.options.network.blockExplorer.getAddressLink(address)
@@ -599,12 +599,12 @@ export class BitcoinProtocol implements ICoinProtocol {
     const airGapTransactions: IAirGapTransaction[] = []
     const url = cursor
       ? this.options.network.extras.indexerApi +
-      '/api/addrs/' +
-      addresses.join(',') +
-      '/txs?from=' +
-      cursor.offset +
-      '&to=' +
-      (cursor.offset + limit)
+        '/api/addrs/' +
+        addresses.join(',') +
+        '/txs?from=' +
+        cursor.offset +
+        '&to=' +
+        (cursor.offset + limit)
       : this.options.network.extras.indexerApi + '/api/addrs/' + addresses.join(',') + '/txs?from=0&to=' + limit
     const { data: transactions } = await axios.get(url, {
       responseType: 'json'
