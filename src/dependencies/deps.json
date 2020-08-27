@@ -1051,7 +1051,7 @@
       "bn.js-4.11.8",
       "create-hash-1.2.0",
       "drbg.js-1.0.1",
-      "elliptic-6.5.1",
+      "elliptic-6.5.3",
       "nan-2.14.0",
       "safe-buffer-5.2.0"
     ],
@@ -1086,12 +1086,12 @@
       }
     ]
   },
-  "elliptic-6.5.1": {
+  "elliptic-6.5.3": {
     "name": "elliptic",
     "entrypoint": "lib/elliptic",
-    "version": "6.5.1",
+    "version": "6.5.3",
     "repository": "indutny/elliptic",
-    "commitHash": "71e4e8e2f5b8f0bdbfbe106c72cc9fbc746d3d60",
+    "commitHash": "8647803dc3d90506aa03021737f7b061ba959ae1",
     "files": [
       "package.json",
       "lib/elliptic.js",
@@ -1251,7 +1251,7 @@
     "deps": [
       "bn.js-4.11.8",
       "create-hmac-1.1.7",
-      "elliptic-6.5.1",
+      "elliptic-6.5.3",
       "wif-2.0.6",
       "nan-2.14.0"
     ],
