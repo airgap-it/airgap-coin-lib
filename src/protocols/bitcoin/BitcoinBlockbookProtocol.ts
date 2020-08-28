@@ -1,6 +1,6 @@
 import { BitcoinBlockbookTransactionCursor, BitcoinBlockbookTransactionResult } from './BitcoinTypes'
-import * as bitcoinJSMessage from 'bitcoinjs-message'
 
+import * as bitcoinJSMessage from '../../dependencies/src/bitcoinjs-message-2.1.1/index'
 import axios from '../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'

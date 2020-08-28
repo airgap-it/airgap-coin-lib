@@ -1,0 +1,38 @@
+{
+    "name": "buffer-equals",
+    "version": "1.0.4",
+    "description": "Node.js 0.12 buffer.equals() ponyfill",
+    "license": "MIT",
+    "repository": "sindresorhus/buffer-equals",
+    "author": {
+        "name": "Sindre Sorhus",
+        "email": "sindresorhus@gmail.com",
+        "url": "sindresorhus.com"
+    },
+    "engines": {
+        "node": ">=0.10.0"
+    },
+    "scripts": {
+        "test": "xo && ava"
+    },
+    "files": [
+        "index.js"
+    ],
+    "keywords": [
+        "builtin",
+        "core",
+        "ponyfill",
+        "polyfill",
+        "shim",
+        "buffer",
+        "buffers",
+        "equals",
+        "equal",
+        "compare",
+        "comparison"
+    ],
+    "devDependencies": {
+        "ava": "*",
+        "xo": "*"
+    }
+}
