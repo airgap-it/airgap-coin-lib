@@ -804,11 +804,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
         throw new Error('not enough balance')
       }
 
-      const adjustedFee: BigNumber = recipients[0].toLowerCase().startsWith('kt') ? wrappedFee.plus(500) : wrappedFee
-
       const spendOperation: TezosTransactionOperation = {
         kind: TezosOperationType.TRANSACTION,
-        fee: adjustedFee.toFixed(),
+        fee: wrappedFee.toFixed(),
         gas_limit: GAS_LIMIT_PLACEHOLDER,
         storage_limit: STORAGE_LIMIT_PLACEHOLDER,
         amount: wrappedValues[i].toFixed(),
