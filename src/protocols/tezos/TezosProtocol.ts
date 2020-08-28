@@ -206,15 +206,15 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     edsig: Buffer
     branch: Buffer
   } = {
-    tz1: Buffer.from(new Uint8Array([6, 161, 159])),
-    tz2: Buffer.from(new Uint8Array([6, 161, 161])),
-    tz3: Buffer.from(new Uint8Array([6, 161, 164])),
-    kt: Buffer.from(new Uint8Array([2, 90, 121])),
-    edpk: Buffer.from(new Uint8Array([13, 15, 37, 217])),
-    edsk: Buffer.from(new Uint8Array([43, 246, 78, 7])),
-    edsig: Buffer.from(new Uint8Array([9, 245, 205, 134, 18])),
-    branch: Buffer.from(new Uint8Array([1, 52]))
-  }
+      tz1: Buffer.from(new Uint8Array([6, 161, 159])),
+      tz2: Buffer.from(new Uint8Array([6, 161, 161])),
+      tz3: Buffer.from(new Uint8Array([6, 161, 164])),
+      kt: Buffer.from(new Uint8Array([2, 90, 121])),
+      edpk: Buffer.from(new Uint8Array([13, 15, 37, 217])),
+      edsk: Buffer.from(new Uint8Array([43, 246, 78, 7])),
+      edsig: Buffer.from(new Uint8Array([9, 245, 205, 134, 18])),
+      branch: Buffer.from(new Uint8Array([1, 52]))
+    }
 
   // TODO: Should we remove these getters and replace the calls to `this.options.network...`?
   public get jsonRPCAPI(): string {
@@ -665,6 +665,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     if (recipients.length !== values.length) {
       throw new Error('length of recipients and values does not match!')
     }
+
     if (recipients.length > MAX_OPERATIONS_PER_GROUP) {
       throw new Error(
         `this transaction exceeds the maximum allowed number of transactions per operation (${MAX_OPERATIONS_PER_GROUP}). Please use the "prepareTransactionsFromPublicKey" method instead.`
@@ -808,8 +809,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       const spendOperation: TezosTransactionOperation = {
         kind: TezosOperationType.TRANSACTION,
         fee: adjustedFee.toFixed(),
-        gas_limit: recipients[i].toLowerCase().startsWith('kt') ? '15385' : '10300',
-        storage_limit: receivingBalance.isZero() && recipients[i].toLowerCase().startsWith('tz') ? '300' : '0', // taken from eztz
+        gas_limit: GAS_LIMIT_PLACEHOLDER,
+        storage_limit: STORAGE_LIMIT_PLACEHOLDER,
         amount: wrappedValues[i].toFixed(),
         counter: counter.plus(i).toFixed(),
         destination: recipients[i],
@@ -929,11 +930,11 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
     const rewards = isDelegating
       ? rewardInfo.map((reward) => ({
-          index: reward.cycle,
-          amount: reward.reward.toFixed(),
-          collected: reward.payout < new Date(),
-          timestamp: reward.payout.getTime()
-        }))
+        index: reward.cycle,
+        amount: reward.reward.toFixed(),
+        collected: reward.payout < new Date(),
+        timestamp: reward.payout.getTime()
+      }))
       : []
 
     return {
@@ -1196,10 +1197,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
         }
 
         if ((operation as any).gas_limit) {
-          ;(operation as any).gas_limit = gasLimit.toString()
+          ; (operation as any).gas_limit = gasLimit.toString()
         }
         if ((operation as any).storage_limit) {
-          ;(operation as any).storage_limit = storageLimit.toString()
+          ; (operation as any).storage_limit = storageLimit.toString()
         }
 
         gasLimitTotal += gasLimit
@@ -1217,7 +1218,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
       tezosWrappedOperation.contents.forEach((operation: TezosOperation) => {
         if ((operation as TezosTransactionOperation).fee) {
-          ;(operation as TezosTransactionOperation).fee = feePerOperation.toString()
+          ; (operation as TezosTransactionOperation).fee = feePerOperation.toString()
         }
       })
     }
@@ -1363,7 +1364,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
     const { data: mostRecentBlock } = await axios.get(
       `${this.options.network.rpcUrl}/chains/main/blocks/${
-        mostRecentCycle * TezosProtocol.BLOCKS_PER_CYCLE[this.options.network.extras.network]
+      mostRecentCycle * TezosProtocol.BLOCKS_PER_CYCLE[this.options.network.extras.network]
       }`
     )
 
@@ -1389,7 +1390,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
           reward: new BigNumber(payoutAmount),
           payout: new Date(
             timestamp.getTime() +
-              (obj.cycle - lastConfirmedCycle) * TezosProtocol.BLOCKS_PER_CYCLE[this.options.network.extras.network] * 60 * 1000
+            (obj.cycle - lastConfirmedCycle) * TezosProtocol.BLOCKS_PER_CYCLE[this.options.network.extras.network] * 60 * 1000
           )
         }
       })
