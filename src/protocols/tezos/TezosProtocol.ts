@@ -665,7 +665,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     if (recipients.length !== values.length) {
       throw new Error('length of recipients and values does not match!')
     }
-
     if (recipients.length > MAX_OPERATIONS_PER_GROUP) {
       throw new Error(
         `this transaction exceeds the maximum allowed number of transactions per operation (${MAX_OPERATIONS_PER_GROUP}). Please use the "prepareTransactionsFromPublicKey" method instead.`
@@ -746,12 +745,15 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
       const operationsGroup = allOperations.slice(start, end)
 
-      wrappedOperations.push(
-        await this.forgeAndWrapOperations({
+      const wrappedOperationWithEstimatedGas: TezosWrappedOperation = await this.estimateAndReplaceLimitsAndFee(
+        {
           branch,
           contents: operationsGroup
-        })
+        },
+        false
       )
+
+      wrappedOperations.push(await this.forgeAndWrapOperations(wrappedOperationWithEstimatedGas))
     }
 
     return wrappedOperations
@@ -765,7 +767,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     address: string,
     counter: BigNumber,
     balance: BigNumber
-  ) {
+  ): Promise<TezosOperation[]> {
     const amountUsedByPreviousOperations: BigNumber = this.getAmountUsedByPreviousOperations(previousOperations)
 
     const operations: TezosOperation[] = []
@@ -1136,6 +1138,12 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
         console.error('runOperationError', runOperationError.response ? runOperationError.response : runOperationError)
         throw new ErrorWithData('Run operation error', runOperationError.response ? runOperationError.response : runOperationError)
       })
+
+    if (tezosWrappedOperation.contents.length !== response.data.contents.length) {
+      throw new Error(
+        `Run Operation did not return same number of operations. Locally we have ${tezosWrappedOperation.contents.length}, but got back ${response.data.contents.length}`
+      )
+    }
 
     tezosWrappedOperation.contents.forEach((content: TezosOperation, i: number) => {
       const metadata: RunOperationMetadata = response.data.contents[i].metadata

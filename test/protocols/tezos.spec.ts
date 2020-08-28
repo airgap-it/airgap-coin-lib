@@ -3,7 +3,6 @@ import 'mocha'
 import * as sinon from 'sinon'
 
 import { IAirGapTransaction, isCoinlibReady, TezosProtocol } from '../../src'
-import axios from '../../src/dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
 import { RawTezosTransaction } from '../../src/serializer/types'
 import { TezosTestProtocolSpec } from '../protocols/specs/tezos'
@@ -13,6 +12,7 @@ import { TezosOriginationOperation } from '../../src/protocols/tezos/types/opera
 import { TezosWrappedOperation } from '../../src/protocols/tezos/types/TezosWrappedOperation'
 import { TezosRevealOperation } from '../../src/protocols/tezos/types/operations/Reveal'
 import { RunOperationMetadata } from '../../src/protocols/tezos/TezosProtocol'
+import { TezosProtocolStub } from './stubs/tezos.stub'
 
 const tezosProtocolSpec = new TezosTestProtocolSpec()
 const tezosLib = tezosProtocolSpec.lib
@@ -65,9 +65,15 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
   })
 
   describe('TX Lists', () => {
+    let getStub
+    let postStub
+
     beforeEach(() => {
-      sinon
-        .stub(axios, 'get')
+      const res = new TezosProtocolStub().registerStub(new TezosTestProtocolSpec(), tezosLib)
+      getStub = res.getStub
+      postStub = res.postStub
+
+      getStub
         .withArgs(`${tezosLib.baseApiUrl}/v3/operations/${tezosProtocolSpec.wallet.addresses[0]}?type=Transaction&p=0&number=20`)
         .returns(
           Promise.resolve({
@@ -261,11 +267,10 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       expect(operation3.destination).to.equal('KT1J5mFAxxzAYDLjYeVXkLcyEzNGRZ3kuFGq')
     })
 
-    it('can unforge a delegation TX', async () => {})
+    it('can unforge a delegation TX', async () => { })
 
     it('can give a list of transactions from Conseil API', async () => {
-      const stub = sinon.stub(axios, 'post')
-      stub.withArgs(`${tezosLib.baseApiUrl}/v2/data/tezos/mainnet/operations`).returns(
+      postStub.withArgs(`${tezosLib.baseApiUrl}/v2/data/tezos/mainnet/operations`).returns(
         Promise.resolve({
           data: [
             {
@@ -310,28 +315,55 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
   })
 
   describe('KT1 Prepare/Sign', () => {
+    let getStub
+    let postStub
+
     beforeEach(async () => {
       await isCoinlibReady()
-      const stub = sinon.stub(axios, 'get')
 
-      stub
+      const res = new TezosProtocolStub().registerStub(new TezosTestProtocolSpec(), tezosLib)
+      getStub = res.getStub
+      postStub = res.postStub
+
+      getStub
         .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L/counter`)
         .returns(Promise.resolve({ data: 917326 }))
-      stub
+      getStub
         .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/hash`)
         .returns(Promise.resolve({ data: 'BMT1dwxYkLbssY34irU2LbSHEAYBZ3KfqtYCixaZoMoaarhx3Ko' }))
-      stub
+      getStub
         .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L/balance`)
         .returns(Promise.resolve({ data: 100000000 }))
-      stub
+      getStub
         .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy/balance`)
         .returns(Promise.resolve({ data: 0 }))
-      stub
+      getStub
         .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L/manager_key`)
         .returns(Promise.resolve({ data: { key: 'test-key' } }))
     })
 
     it('will properly prepare a TX to a KT1 address', async () => {
+      postStub
+        .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`)
+        .returns(Promise.resolve({
+          data: {
+            contents: [{
+              kind: 'transaction',
+              metadata: {
+                balance_updates: [],
+                operation_result: {
+                  status: 'applied',
+                  balance_updates: [],
+                  consumed_gas: '15385',
+                  paid_storage_size_diff: '0'
+                },
+                internal_operation_results: [],
+              }
+            }],
+            signature: ''
+          }
+        }))
+
       const result = await prepareSpend(
         ['KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy'],
         ['100000'], // send so much funds that it should deduct, given it is a 0-balance receiver (which it is not)
@@ -360,39 +392,65 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
   })
 
   describe('Address Init', () => {
+    let getStub
+    let postStub
+
     // const sendFee = new BigNumber('1400')
     // const revealFee = new BigNumber('1300')
     const initializationFee: BigNumber = new BigNumber('257000')
     // const originationBurn = new BigNumber('257000')
-    let stub
 
     beforeEach(async () => {
       await isCoinlibReady()
       sinon.restore()
-      stub = sinon.stub(axios, 'get')
 
-      stub
+      const res = new TezosProtocolStub().registerStub(new TezosTestProtocolSpec(), tezosLib)
+      getStub = res.getStub
+      postStub = res.postStub
+
+      getStub
         .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${tezosProtocolSpec.wallet.addresses[0]}/counter`)
         .returns(Promise.resolve({ data: 917315 }))
-      stub
+      getStub
         .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/hash`)
         .returns(Promise.resolve({ data: 'BMJyc7ga9kLV3vH4kbn6GXbBNjRkLEJVSyovoXyY84Er1zMmKKT' }))
-      stub
+      getStub
         .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${tezosProtocolSpec.wallet.addresses[0]}/balance`)
         .returns(Promise.resolve({ data: 1000000 }))
-      stub
+      getStub
         .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/tz1bgWdfd9YS7pTkNgZTNs26c33nBHwSYW6S/balance`)
         .returns(Promise.resolve({ data: 0 }))
-      stub
+      getStub
         .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/tz1d75oB6T4zUMexzkr5WscGktZ1Nss1JrT7/balance`)
         .returns(Promise.resolve({ data: 0.1 }))
-      stub
+      getStub
         .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${tezosProtocolSpec.wallet.addresses[0]}/manager_key`)
         .returns(Promise.resolve({ data: { key: 'test-key' } }))
     })
 
     describe('Spend', () => {
       it('will deduct fee to initialize empty tz1 receiving address, if amount + fee === balance', async () => {
+        postStub
+          .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`)
+          .returns(Promise.resolve({
+            data: {
+              contents: [{
+                kind: 'transaction',
+                metadata: {
+                  balance_updates: [],
+                  operation_result: {
+                    status: 'applied',
+                    balance_updates: [],
+                    consumed_gas: '10300',
+                    paid_storage_size_diff: '300'
+                  },
+                  internal_operation_results: [],
+                }
+              }],
+              signature: ''
+            }
+          }))
+
         const address = 'tz1bgWdfd9YS7pTkNgZTNs26c33nBHwSYW6S'
         const amount = '900000'
         const fee = '100000'
@@ -415,6 +473,27 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       })
 
       it('will not deduct fee if enough funds are available on the account', async () => {
+        postStub
+          .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`)
+          .returns(Promise.resolve({
+            data: {
+              contents: [{
+                kind: 'transaction',
+                metadata: {
+                  balance_updates: [],
+                  operation_result: {
+                    status: 'applied',
+                    balance_updates: [],
+                    consumed_gas: '10300',
+                    paid_storage_size_diff: '300'
+                  },
+                  internal_operation_results: [],
+                }
+              }],
+              signature: ''
+            }
+          }))
+
         const result = await prepareSpend(
           ['tz1bgWdfd9YS7pTkNgZTNs26c33nBHwSYW6S'],
           ['100000'], // send so much funds that it should deduct, given it is a 0-balance receiver (which it is not)
@@ -463,9 +542,32 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
     })
 
     it('will prepare a transaction with multiple spend operations to KT addresses', async () => {
-      stub
+      getStub
         .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy/balance`)
         .returns(Promise.resolve({ data: 0 }))
+
+      const txRunOperation = {
+        kind: 'transaction',
+        metadata: {
+          balance_updates: [],
+          operation_result: {
+            status: 'applied',
+            balance_updates: [],
+            consumed_gas: '10300',
+            paid_storage_size_diff: '0'
+          },
+          internal_operation_results: [],
+        }
+      }
+
+      postStub
+        .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`)
+        .returns(Promise.resolve({
+          data: {
+            contents: [txRunOperation, txRunOperation],
+            signature: ''
+          }
+        }))
 
       const result = await prepareSpend(
         ['KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy', 'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy'],
@@ -474,6 +576,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       )
 
       // check that storage is properly set
+      expect(result.spendTransaction.gas_limit).to.equal('10300')
       expect(result.spendTransaction.storage_limit).to.equal('0')
 
       expect(result.airGapTxs.length).to.equal(2)
@@ -486,7 +589,31 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
     })
 
     it('will correctly prepare a single operation group if below the threshold', async () => {
+      const txRunOperation = {
+        kind: 'transaction',
+        metadata: {
+          balance_updates: [],
+          operation_result: {
+            status: 'applied',
+            balance_updates: [],
+            consumed_gas: '10300',
+            paid_storage_size_diff: '0'
+          },
+          internal_operation_results: [],
+        }
+      }
+
       const numberOfOperations: number = 50
+
+      postStub
+        .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`)
+        .returns(Promise.resolve({
+          data: {
+            contents: [...Array(numberOfOperations)].map((x) => txRunOperation),
+            signature: ''
+          }
+        }))
+
       const result = await prepareSpend(
         [...Array(numberOfOperations)].map((x) => 'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy'),
         [...Array(numberOfOperations)].map((v, i) => i.toString()),
@@ -497,6 +624,30 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
 
     it('will throw an error if number of operations is above the threshold for a single operation group', async () => {
       const numberOfOperations: number = 51
+
+      const txRunOperation = {
+        kind: 'transaction',
+        metadata: {
+          balance_updates: [],
+          operation_result: {
+            status: 'applied',
+            balance_updates: [],
+            consumed_gas: '10300',
+            paid_storage_size_diff: '0'
+          },
+          internal_operation_results: [],
+        }
+      }
+
+      postStub
+        .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`)
+        .returns(Promise.resolve({
+          data: {
+            contents: [...Array(numberOfOperations)].map((x) => txRunOperation),
+            signature: ''
+          }
+        }))
+
 
       return prepareSpend(
         [...Array(numberOfOperations)].map((x) => 'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy'),
@@ -516,6 +667,30 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       const numberOfOperations: number = 50
       const protocol = new TezosProtocol()
 
+      const txRunOperation = {
+        kind: 'transaction',
+        metadata: {
+          balance_updates: [],
+          operation_result: {
+            status: 'applied',
+            balance_updates: [],
+            consumed_gas: '10300',
+            paid_storage_size_diff: '0'
+          },
+          internal_operation_results: [],
+        }
+      }
+
+      postStub
+        .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`)
+        .returns(Promise.resolve({
+          data: {
+            contents: [...Array(numberOfOperations)].map((x) => txRunOperation),
+            signature: ''
+          }
+        }))
+
+
       const transactions = await protocol.prepareTransactionsFromPublicKey(
         tezosProtocolSpec.wallet.publicKey,
         [...Array(numberOfOperations)].map((x) => 'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy'),
@@ -533,6 +708,38 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
     it('will return 2 operation groups when calling prepareTransactionsFromPublicKey with a number of operations above the threshold', async () => {
       const numberOfOperations: number = 201
       const protocol = new TezosProtocol()
+
+      const txRunOperation = {
+        kind: 'transaction',
+        metadata: {
+          balance_updates: [],
+          operation_result: {
+            status: 'applied',
+            balance_updates: [],
+            consumed_gas: '10300',
+            paid_storage_size_diff: '0'
+          },
+          internal_operation_results: [],
+        }
+      }
+
+      postStub
+        .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`)
+        .onCall(0).returns(Promise.resolve({
+          data: {
+            contents: [...Array(200)].map((x) => txRunOperation),
+            signature: ''
+          }
+        }))
+      postStub
+        .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`)
+        .onCall(1).returns(Promise.resolve({
+          data: {
+            contents: [...Array(1)].map((x) => txRunOperation),
+            signature: ''
+          }
+        }))
+
 
       const transactions = await protocol.prepareTransactionsFromPublicKey(
         tezosProtocolSpec.wallet.publicKey,
@@ -565,7 +772,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
     // TODO: add test to test the add reveal to spend transactions
 
     it('will prepare an FA 1.2 transaction', async () => {
-      stub.withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/`).returns(
+      getStub.withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/`).returns(
         Promise.resolve({
           data: {
             protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
@@ -663,7 +870,6 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         }
       }
 
-      const postStub = sinon.stub(axios, 'post')
       postStub.withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`).returns(
         Promise.resolve({
           data: {
@@ -714,7 +920,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
     })
 
     it('will throw an error if the number of recipients and amounts do not match', async () => {
-      stub
+      getStub
         .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy/balance`)
         .returns(Promise.resolve({ data: 0 }))
 
