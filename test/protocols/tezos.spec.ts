@@ -267,7 +267,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       expect(operation3.destination).to.equal('KT1J5mFAxxzAYDLjYeVXkLcyEzNGRZ3kuFGq')
     })
 
-    it('can unforge a delegation TX', async () => { })
+    it('can unforge a delegation TX', async () => {})
 
     it('can give a list of transactions from Conseil API', async () => {
       postStub.withArgs(`${tezosLib.baseApiUrl}/v2/data/tezos/mainnet/operations`).returns(
@@ -343,26 +343,28 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
     })
 
     it('will properly prepare a TX to a KT1 address', async () => {
-      postStub
-        .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`)
-        .returns(Promise.resolve({
+      postStub.withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`).returns(
+        Promise.resolve({
           data: {
-            contents: [{
-              kind: 'transaction',
-              metadata: {
-                balance_updates: [],
-                operation_result: {
-                  status: 'applied',
+            contents: [
+              {
+                kind: 'transaction',
+                metadata: {
                   balance_updates: [],
-                  consumed_gas: '15385',
-                  paid_storage_size_diff: '0'
-                },
-                internal_operation_results: [],
+                  operation_result: {
+                    status: 'applied',
+                    balance_updates: [],
+                    consumed_gas: '15385',
+                    paid_storage_size_diff: '0'
+                  },
+                  internal_operation_results: []
+                }
               }
-            }],
+            ],
             signature: ''
           }
-        }))
+        })
+      )
 
       const result = await prepareSpend(
         ['KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy'],
@@ -430,26 +432,28 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
 
     describe('Spend', () => {
       it('will deduct fee to initialize empty tz1 receiving address, if amount + fee === balance', async () => {
-        postStub
-          .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`)
-          .returns(Promise.resolve({
+        postStub.withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`).returns(
+          Promise.resolve({
             data: {
-              contents: [{
-                kind: 'transaction',
-                metadata: {
-                  balance_updates: [],
-                  operation_result: {
-                    status: 'applied',
+              contents: [
+                {
+                  kind: 'transaction',
+                  metadata: {
                     balance_updates: [],
-                    consumed_gas: '10300',
-                    paid_storage_size_diff: '300'
-                  },
-                  internal_operation_results: [],
+                    operation_result: {
+                      status: 'applied',
+                      balance_updates: [],
+                      consumed_gas: '10300',
+                      paid_storage_size_diff: '300'
+                    },
+                    internal_operation_results: []
+                  }
                 }
-              }],
+              ],
               signature: ''
             }
-          }))
+          })
+        )
 
         const address = 'tz1bgWdfd9YS7pTkNgZTNs26c33nBHwSYW6S'
         const amount = '900000'
@@ -473,26 +477,28 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       })
 
       it('will not deduct fee if enough funds are available on the account', async () => {
-        postStub
-          .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`)
-          .returns(Promise.resolve({
+        postStub.withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`).returns(
+          Promise.resolve({
             data: {
-              contents: [{
-                kind: 'transaction',
-                metadata: {
-                  balance_updates: [],
-                  operation_result: {
-                    status: 'applied',
+              contents: [
+                {
+                  kind: 'transaction',
+                  metadata: {
                     balance_updates: [],
-                    consumed_gas: '10300',
-                    paid_storage_size_diff: '300'
-                  },
-                  internal_operation_results: [],
+                    operation_result: {
+                      status: 'applied',
+                      balance_updates: [],
+                      consumed_gas: '10300',
+                      paid_storage_size_diff: '300'
+                    },
+                    internal_operation_results: []
+                  }
                 }
-              }],
+              ],
               signature: ''
             }
-          }))
+          })
+        )
 
         const result = await prepareSpend(
           ['tz1bgWdfd9YS7pTkNgZTNs26c33nBHwSYW6S'],
@@ -556,18 +562,18 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
             consumed_gas: '10300',
             paid_storage_size_diff: '0'
           },
-          internal_operation_results: [],
+          internal_operation_results: []
         }
       }
 
-      postStub
-        .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`)
-        .returns(Promise.resolve({
+      postStub.withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`).returns(
+        Promise.resolve({
           data: {
             contents: [txRunOperation, txRunOperation],
             signature: ''
           }
-        }))
+        })
+      )
 
       const result = await prepareSpend(
         ['KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy', 'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy'],
@@ -599,20 +605,20 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
             consumed_gas: '10300',
             paid_storage_size_diff: '0'
           },
-          internal_operation_results: [],
+          internal_operation_results: []
         }
       }
 
       const numberOfOperations: number = 50
 
-      postStub
-        .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`)
-        .returns(Promise.resolve({
+      postStub.withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`).returns(
+        Promise.resolve({
           data: {
             contents: [...Array(numberOfOperations)].map((x) => txRunOperation),
             signature: ''
           }
-        }))
+        })
+      )
 
       const result = await prepareSpend(
         [...Array(numberOfOperations)].map((x) => 'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy'),
@@ -635,19 +641,18 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
             consumed_gas: '10300',
             paid_storage_size_diff: '0'
           },
-          internal_operation_results: [],
+          internal_operation_results: []
         }
       }
 
-      postStub
-        .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`)
-        .returns(Promise.resolve({
+      postStub.withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`).returns(
+        Promise.resolve({
           data: {
             contents: [...Array(numberOfOperations)].map((x) => txRunOperation),
             signature: ''
           }
-        }))
-
+        })
+      )
 
       return prepareSpend(
         [...Array(numberOfOperations)].map((x) => 'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy'),
@@ -677,19 +682,18 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
             consumed_gas: '10300',
             paid_storage_size_diff: '0'
           },
-          internal_operation_results: [],
+          internal_operation_results: []
         }
       }
 
-      postStub
-        .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`)
-        .returns(Promise.resolve({
+      postStub.withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`).returns(
+        Promise.resolve({
           data: {
             contents: [...Array(numberOfOperations)].map((x) => txRunOperation),
             signature: ''
           }
-        }))
-
+        })
+      )
 
       const transactions = await protocol.prepareTransactionsFromPublicKey(
         tezosProtocolSpec.wallet.publicKey,
@@ -719,27 +723,32 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
             consumed_gas: '10300',
             paid_storage_size_diff: '0'
           },
-          internal_operation_results: [],
+          internal_operation_results: []
         }
       }
 
       postStub
         .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`)
-        .onCall(0).returns(Promise.resolve({
-          data: {
-            contents: [...Array(200)].map((x) => txRunOperation),
-            signature: ''
-          }
-        }))
+        .onCall(0)
+        .returns(
+          Promise.resolve({
+            data: {
+              contents: [...Array(200)].map((x) => txRunOperation),
+              signature: ''
+            }
+          })
+        )
       postStub
         .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`)
-        .onCall(1).returns(Promise.resolve({
-          data: {
-            contents: [...Array(1)].map((x) => txRunOperation),
-            signature: ''
-          }
-        }))
-
+        .onCall(1)
+        .returns(
+          Promise.resolve({
+            data: {
+              contents: [...Array(1)].map((x) => txRunOperation),
+              signature: ''
+            }
+          })
+        )
 
       const transactions = await protocol.prepareTransactionsFromPublicKey(
         tezosProtocolSpec.wallet.publicKey,
