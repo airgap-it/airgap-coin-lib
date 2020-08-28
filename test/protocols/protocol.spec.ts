@@ -358,7 +358,7 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
       it('getTransactionStatus - Is able to get transaction status', async () => {
         for (const test of protocol.transactionStatusTests) {
           // Stub specific hashes
-          const getTransactionStub = sinon.stub(AirGapNodeClient.prototype, "getTransactionStatus")
+          const getTransactionStub = sinon.stub(AirGapNodeClient.prototype, 'getTransactionStatus')
           test.hashes.forEach((hash: string, index: number) => {
             getTransactionStub.withArgs(hash).returns(test.expectedResults[index])
           })

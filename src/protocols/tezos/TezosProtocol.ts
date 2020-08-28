@@ -746,12 +746,15 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
       const operationsGroup = allOperations.slice(start, end)
 
-      wrappedOperations.push(
-        await this.forgeAndWrapOperations({
+      const wrappedOperationWithEstimatedGas: TezosWrappedOperation = await this.estimateAndReplaceLimitsAndFee(
+        {
           branch,
           contents: operationsGroup
-        })
+        },
+        false
       )
+
+      wrappedOperations.push(await this.forgeAndWrapOperations(wrappedOperationWithEstimatedGas))
     }
 
     return wrappedOperations
@@ -765,7 +768,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     address: string,
     counter: BigNumber,
     balance: BigNumber
-  ) {
+  ): Promise<TezosOperation[]> {
     const amountUsedByPreviousOperations: BigNumber = this.getAmountUsedByPreviousOperations(previousOperations)
 
     const operations: TezosOperation[] = []
@@ -806,8 +809,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       const spendOperation: TezosTransactionOperation = {
         kind: TezosOperationType.TRANSACTION,
         fee: adjustedFee.toFixed(),
-        gas_limit: recipients[i].toLowerCase().startsWith('kt') ? '15385' : '10300',
-        storage_limit: receivingBalance.isZero() && recipients[i].toLowerCase().startsWith('tz') ? '300' : '0', // taken from eztz
+        gas_limit: GAS_LIMIT_PLACEHOLDER,
+        storage_limit: STORAGE_LIMIT_PLACEHOLDER,
         amount: wrappedValues[i].toFixed(),
         counter: counter.plus(i).toFixed(),
         destination: recipients[i],
@@ -1136,6 +1139,12 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
         console.error('runOperationError', runOperationError.response ? runOperationError.response : runOperationError)
         throw new ErrorWithData('Run operation error', runOperationError.response ? runOperationError.response : runOperationError)
       })
+
+    if (tezosWrappedOperation.contents.length !== response.data.contents.length) {
+      throw new Error(
+        `Run Operation did not return same number of operations. Locally we have ${tezosWrappedOperation.contents.length}, but got back ${response.data.contents.length}`
+      )
+    }
 
     tezosWrappedOperation.contents.forEach((content: TezosOperation, i: number) => {
       const metadata: RunOperationMetadata = response.data.contents[i].metadata
