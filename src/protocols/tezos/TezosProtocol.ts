@@ -1,6 +1,6 @@
 import { TezosTransactionResult } from './types/TezosTransactionResult'
 import { TezosTransactionCursor } from './types/TezosTransactionCursor'
-import { localForger } from '@taquito/local-forging'
+import { localForger } from '../../dependencies/src/@taquito/local-forging-6.3.5-beta.0/packages/taquito-local-forging/src/taquito-local-forging'
 import * as sodium from 'libsodium-wrappers'
 
 import axios, { AxiosError, AxiosResponse } from '../../dependencies/src/axios-0.19.0/index'
@@ -315,32 +315,32 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
           const body = {
             predicates: [
               {
-                field: "source",
+                field: 'source',
                 operation: 'eq',
                 set: [address],
                 inverse: false,
-                group: "a"
+                group: 'a'
               },
               {
-                field: "destination",
+                field: 'destination',
                 operation: 'eq',
                 set: [address],
                 inverse: false,
-                group: "b"
+                group: 'b'
               },
               {
                 field: 'kind',
                 operation: 'eq',
-                set: ["transaction"],
+                set: ['transaction'],
                 inverse: false,
-                group: "a"
+                group: 'a'
               },
               {
                 field: 'kind',
                 operation: 'eq',
-                set: ["transaction"],
+                set: ['transaction'],
                 inverse: false,
-                group: "b"
+                group: 'b'
               }
             ],
             orderBy: [
@@ -357,14 +357,14 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
               operation: 'lt',
               set: [cursor.lastBlockLevel.toString()],
               inverse: false,
-              group: "a"
+              group: 'a'
             })
             body.predicates.push({
               field: 'block_level',
               operation: 'lt',
               set: [cursor.lastBlockLevel.toString()],
               inverse: false,
-              group: "b"
+              group: 'b'
             })
           }
           return body

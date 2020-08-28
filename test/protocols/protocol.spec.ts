@@ -19,6 +19,8 @@ import { TezosTestProtocolSpec } from './specs/tezos'
 import { KusamaTestProtocolSpec } from './specs/kusama'
 import { sr25519Verify } from '@polkadot/wasm-crypto'
 
+import { AirGapNodeClient } from '../../src/protocols/ethereum/clients/node-clients/AirGapNodeClient'
+
 // use chai-as-promised plugin
 chai.use(chaiAsPromised)
 const expect = chai.expect
@@ -355,8 +357,14 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
 
       it('getTransactionStatus - Is able to get transaction status', async () => {
         for (const test of protocol.transactionStatusTests) {
+          // Stub specific hashes
+          const getTransactionStub = sinon.stub(AirGapNodeClient.prototype, "getTransactionStatus")
+          test.hashes.forEach((hash: string, index: number) => {
+            getTransactionStub.withArgs(hash).returns(test.expectedResults[index])
+          })
+          getTransactionStub.returns(test.expectedResults[0])
           const statuses: string[] = await protocol.lib.getTransactionStatuses(test.hashes)
-
+          sinon.restore()
           expect(statuses, 'transactionStatus').to.deep.equal(test.expectedResults)
         }
       })
