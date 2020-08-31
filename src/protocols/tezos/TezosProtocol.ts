@@ -1,6 +1,6 @@
 import { TezosTransactionResult } from './types/TezosTransactionResult'
 import { TezosTransactionCursor } from './types/TezosTransactionCursor'
-import { localForger } from '@taquito/local-forging'
+import { localForger } from '../../dependencies/src/@taquito/local-forging-6.3.5-beta.0/packages/taquito-local-forging/src/taquito-local-forging'
 import * as sodium from 'libsodium-wrappers'
 
 import axios, { AxiosError, AxiosResponse } from '../../dependencies/src/axios-0.19.0/index'
@@ -315,32 +315,32 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
           const body = {
             predicates: [
               {
-                field: "source",
+                field: 'source',
                 operation: 'eq',
                 set: [address],
                 inverse: false,
-                group: "a"
+                group: 'a'
               },
               {
-                field: "destination",
+                field: 'destination',
                 operation: 'eq',
                 set: [address],
                 inverse: false,
-                group: "b"
+                group: 'b'
               },
               {
                 field: 'kind',
                 operation: 'eq',
-                set: ["transaction"],
+                set: ['transaction'],
                 inverse: false,
-                group: "a"
+                group: 'a'
               },
               {
                 field: 'kind',
                 operation: 'eq',
-                set: ["transaction"],
+                set: ['transaction'],
                 inverse: false,
-                group: "b"
+                group: 'b'
               }
             ],
             orderBy: [
@@ -357,14 +357,14 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
               operation: 'lt',
               set: [cursor.lastBlockLevel.toString()],
               inverse: false,
-              group: "a"
+              group: 'a'
             })
             body.predicates.push({
               field: 'block_level',
               operation: 'lt',
               set: [cursor.lastBlockLevel.toString()],
               inverse: false,
-              group: "b"
+              group: 'b'
             })
           }
           return body
@@ -616,7 +616,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       const recipient = recipients[i]
       const transaction: Partial<TezosTransactionOperation> = {
         kind: TezosOperationType.TRANSACTION,
-        amount: BigNumber.min(value, 1).toFixed(), // for fee estimation purposes, the value of amount us not really important, we we put the lowset amount possible (1 mutez) to avoid "balance_too_low" or "empty_implicit_delegated_contract" errors
+        amount: value,
         destination: recipient,
         fee: '0'
       }
@@ -746,12 +746,15 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
       const operationsGroup = allOperations.slice(start, end)
 
-      wrappedOperations.push(
-        await this.forgeAndWrapOperations({
+      const wrappedOperationWithEstimatedGas: TezosWrappedOperation = await this.estimateAndReplaceLimitsAndFee(
+        {
           branch,
           contents: operationsGroup
-        })
+        },
+        false
       )
+
+      wrappedOperations.push(await this.forgeAndWrapOperations(wrappedOperationWithEstimatedGas))
     }
 
     return wrappedOperations
@@ -765,7 +768,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     address: string,
     counter: BigNumber,
     balance: BigNumber
-  ) {
+  ): Promise<TezosOperation[]> {
     const amountUsedByPreviousOperations: BigNumber = this.getAmountUsedByPreviousOperations(previousOperations)
 
     const operations: TezosOperation[] = []
@@ -801,13 +804,11 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
         throw new Error('not enough balance')
       }
 
-      const adjustedFee: BigNumber = recipients[0].toLowerCase().startsWith('kt') ? wrappedFee.plus(500) : wrappedFee
-
       const spendOperation: TezosTransactionOperation = {
         kind: TezosOperationType.TRANSACTION,
-        fee: adjustedFee.toFixed(),
-        gas_limit: recipients[i].toLowerCase().startsWith('kt') ? '15385' : '10300',
-        storage_limit: receivingBalance.isZero() && recipients[i].toLowerCase().startsWith('tz') ? '300' : '0', // taken from eztz
+        fee: wrappedFee.toFixed(),
+        gas_limit: GAS_LIMIT_PLACEHOLDER,
+        storage_limit: STORAGE_LIMIT_PLACEHOLDER,
         amount: wrappedValues[i].toFixed(),
         counter: counter.plus(i).toFixed(),
         destination: recipients[i],
@@ -1136,6 +1137,12 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
         console.error('runOperationError', runOperationError.response ? runOperationError.response : runOperationError)
         throw new ErrorWithData('Run operation error', runOperationError.response ? runOperationError.response : runOperationError)
       })
+
+    if (tezosWrappedOperation.contents.length !== response.data.contents.length) {
+      throw new Error(
+        `Run Operation did not return same number of operations. Locally we have ${tezosWrappedOperation.contents.length}, but got back ${response.data.contents.length}`
+      )
+    }
 
     tezosWrappedOperation.contents.forEach((content: TezosOperation, i: number) => {
       const metadata: RunOperationMetadata = response.data.contents[i].metadata

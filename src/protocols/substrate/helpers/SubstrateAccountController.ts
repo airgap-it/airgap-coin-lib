@@ -9,6 +9,7 @@ import { SubstrateNetwork } from '../SubstrateNetwork'
 import { SubstrateAccountId, SubstrateAddress } from './data/account/SubstrateAddress'
 import { SubstrateIdentityInfo } from './data/account/SubstrateRegistration'
 import { SubstrateActiveEraInfo } from './data/staking/SubstrateActiveEraInfo'
+import { SubstrateElectionStatus } from './data/staking/SubstrateEraElectionStatus'
 import { SubstrateExposure } from './data/staking/SubstrateExposure'
 import { SubstrateNominations } from './data/staking/SubstrateNominations'
 import {
@@ -438,9 +439,12 @@ export class SubstrateAccountController {
     const isBonded = new BigNumber(stakingDetails?.active ?? 0).gt(0)
     const isDelegating = nominations !== null
 
+    const electionStatus = await this.nodeClient.getElectionStatus().then((eraElectionStatus) => eraElectionStatus?.status.value)
+    const isElectionClosed = electionStatus === SubstrateElectionStatus.CLOSED
+
     const hasFundsToWithdraw = new BigNumber(stakingDetails?.unlocked ?? 0).gt(0)
 
-    if (maxDelegationValue.gt(minDelegationValue)) {
+    if (maxDelegationValue.gt(minDelegationValue) && isElectionClosed) {
       if (!isBonded) {
         availableActions.push({
           type: SubstrateStakingActionType.BOND_NOMINATE,
@@ -454,7 +458,7 @@ export class SubstrateAccountController {
       }
     }
 
-    if (isBonded && !isDelegating) {
+    if (isBonded && !isDelegating && isElectionClosed) {
       availableActions.push(
         {
           type: SubstrateStakingActionType.NOMINATE,
@@ -467,7 +471,7 @@ export class SubstrateAccountController {
       )
     }
 
-    if (isDelegating) {
+    if (isDelegating && isElectionClosed) {
       if (
         validatorAddresses.every((validator) => currentValidators.includes(validator)) &&
         validatorAddresses.length === currentValidators.length
@@ -484,7 +488,7 @@ export class SubstrateAccountController {
       }
     }
 
-    if (hasFundsToWithdraw) {
+    if (hasFundsToWithdraw && isElectionClosed) {
       availableActions.push({
         type: SubstrateStakingActionType.WITHDRAW_UNBONDED,
         args: []
