@@ -616,7 +616,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       const recipient = recipients[i]
       const transaction: Partial<TezosTransactionOperation> = {
         kind: TezosOperationType.TRANSACTION,
-        amount: BigNumber.min(value, 1).toFixed(), // for fee estimation purposes, the value of amount us not really important, we we put the lowset amount possible (1 mutez) to avoid "balance_too_low" or "empty_implicit_delegated_contract" errors
+        amount: value,
         destination: recipient,
         fee: '0'
       }
