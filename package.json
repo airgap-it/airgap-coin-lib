@@ -1,6 +1,6 @@
 {
   "name": "airgap-coin-lib",
-  "version": "0.9.4-beta.2",
+  "version": "0.9.4",
   "description": "The airgap-coin-lib is a protocol agnostic library to prepare, sign and broadcast cryptocurrency transactions.",
   "main": "dist/index.js",
   "unpkg": "dist/airgap-coin-lib.min.js",
@@ -44,17 +44,15 @@
   "dependencies": {
     "@polkadot/util": "2.0.1",
     "@polkadot/wasm-crypto": "0.20.1",
-    "@taquito/local-forging": "6.1.1-beta.0",
-    "bitcoinjs-message": "2.1.1",
-    "groestlcoinjs-message": "2.1.0",
-    "libsodium-wrappers": "0.7.6",
-    "xxhashjs": "0.2.2"
+    "libsodium-wrappers": "0.7.6"
   },
   "localDependencies": {
+    "@taquito/local-forging": "6.3.5-beta.0",
     "hd-wallet-js": "b216450e56954a6e82ace0aade9474673de5d9d5",
     "axios": "0.19.0",
     "bech32": "1.1.3",
     "big-integer": "1.6.45",
+    "bitcoinjs-message": "2.1.1",
     "bignumber.js": "9.0.0",
     "bip32": "2.0.4",
     "bip39": "2.5.0",
@@ -62,23 +60,22 @@
     "bs58check": "2.1.2",
     "create-hash": "1.2.0",
     "cryptocompare": "0.5.0",
-    "eth-lib": "0.2.7",
     "ethereumjs-tx": "1.3.7",
     "ethereumjs-util": "5.2.0",
+    "groestlcoinjs-message": "2.1.0",
     "rlp": "2.2.3",
     "ripemd160": "2.0.2",
     "secp256k1": "3.7.1",
     "validate.js": "0.13.1",
-    "utf8": "3.0.0"
+    "utf8": "3.0.0",
+    "xxhashjs": "0.2.2"
   },
   "devDependencies": {
-    "@taquito/taquito": "^6.1.1-beta.0",
     "@types/node": "12.12.6",
     "typescript": "3.7.2",
     "sonarqube-scanner": "2.5.0"
   },
   "buildDependencies": {
-    "@taquito/taquito": "^6.1.1-beta.0",
     "@types/node": "12.12.6",
     "typescript": "3.7.2",
     "sonarqube-scanner": "2.5.0"
