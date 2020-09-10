@@ -541,7 +541,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
 
   public async estimateMaxDelegationValueFromAddress(address: string): Promise<string> {
     const results = await Promise.all([
-      this.options.accountController.getTransferableBalance(address),
+      this.options.accountController.getTransferableBalance(address, false),
       this.getFutureRequiredTransactions(address, 'delegate')
     ])
 

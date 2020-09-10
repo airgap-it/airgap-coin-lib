@@ -149,7 +149,7 @@ export class SubstrateAccountController {
 
     const results = await Promise.all([
       this.getBalance(address),
-      this.getTransferableBalance(address),
+      this.getTransferableBalance(address, false),
       this.nodeClient.getStakingLedger(address),
       this.nodeClient.getNominations(address),
       this.nodeClient.getActiveEraInfo(),
