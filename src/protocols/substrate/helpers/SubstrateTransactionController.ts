@@ -48,7 +48,7 @@ export class SubstrateTransactionController {
     )
 
     const totalFee = txs.map((tx) => tx.fee).reduce((total, next) => total.plus(next), new BigNumber(0))
-    console.log(`Total fee: ${totalFee}`)
+
     if (new BigNumber(available).lt(totalFee)) {
       throw new Error(`Not enough balance (${available} < ${totalFee})`)
     }
@@ -132,20 +132,17 @@ export class SubstrateTransactionController {
     if (partialEstimate) {
       this.nodeClient.saveLastFee(transaction.type, partialEstimate)
     }
-    
-    const result = partialEstimate?.plus(transaction.tip.value) || null
-    console.log(`Calculated fee for ${transaction.type}: ${result}`)
-    return result
+
+    return partialEstimate?.plus(transaction.tip.value) || null
   }
 
   public async estimateTransactionFees(transationTypes: [SubstrateTransactionType, any][]): Promise<BigNumber | null> {
     const fees = await Promise.all(
       transationTypes
         .map(([type, args]) => [type, args, this.nodeClient.getSavedLastFee(type, 'largest')] as [SubstrateTransactionType, any, BigNumber])
-        // .map(async ([type, args, fee]) =>
-        //   fee ? fee : this.calculateTransactionFee(await this.createTransaction(type, SubstrateAddress.createPlaceholder(), 0, args))
-        // )
-        .map(async ([type, args, fee]) => this.calculateTransactionFee(await this.createTransaction(type, SubstrateAddress.createPlaceholder(), 0, args)))
+        .map(async ([type, args, fee]) =>
+          fee ? fee : this.calculateTransactionFee(await this.createTransaction(type, SubstrateAddress.createPlaceholder(), 0, args))
+        )
     )
 
     if (fees.some((fee) => fee === null)) {

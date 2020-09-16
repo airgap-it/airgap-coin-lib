@@ -154,7 +154,7 @@ export class SubstrateAccountController {
       this.nodeClient.getNominations(address),
       this.nodeClient.getActiveEraInfo(),
       this.nodeClient.getExpectedEraDuration(),
-      new BigNumber(0)//this.nodeClient.getExistentialDeposit()
+      new BigNumber(0) // TODO: Was "this.nodeClient.getExistentialDeposit()" before. Now that we don't respect the existentialDeposit for delegations anymore, this wasn't needed anymore
     ])
 
     const balance = results[0]
@@ -164,7 +164,7 @@ export class SubstrateAccountController {
     const activeEra = results[4]
     const expectedEraDuration = results[5]
     // const existentialDeposit = results[6]
-    const minDelegationValue = results[6]
+    const minDelegationValue = results[6] // TODO: This was renamed
 
     if (!balance || !transferableBalance || !activeEra || !expectedEraDuration || !minDelegationValue) {
       return Promise.reject('Could not fetch nominator details.')
