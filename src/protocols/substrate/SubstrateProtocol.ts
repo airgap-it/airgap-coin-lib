@@ -191,7 +191,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
       value: new BigNumber(value)
     })
     const fee = await this.options.transactionController.calculateTransactionFee(transaction)
-
+    console.log(`Estimate FEE: ${fee}`)
     if (!fee) {
       return Promise.reject('Could not fetch all necessary data.')
     }
@@ -218,6 +218,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
 
     const transferableBalance = await this.options.accountController.getTransferableBalance(publicKey)
     const totalValue = values.map((value) => new BigNumber(value)).reduce((total, next) => total.plus(next), new BigNumber(0))
+    
     const available = new BigNumber(transferableBalance).minus(totalValue)
 
     const encoded = await this.options.transactionController.prepareSubmittableTransactions(
@@ -381,9 +382,11 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     value?: string | number | BigNumber,
     payee?: string | SubstratePayee
   ): Promise<RawSubstrateTransaction[]> {
-    const transferableBalance = await this.options.accountController.getTransferableBalance(publicKey)
+    const transferableBalance = await this.options.accountController.getTransferableBalance(publicKey, false)
     const available = new BigNumber(transferableBalance).minus(value || 0)
-
+    console.log(`transferableBalance: ${transferableBalance}`)
+    console.log(`amount: ${value}`)
+    console.log(`available: ${available}`)
     const bondFirst = controller !== undefined && value !== undefined && payee !== undefined
 
     const encoded = await this.options.transactionController.prepareSubmittableTransactions(publicKey, available, [
@@ -549,7 +552,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     const futureTransactions = results[1]
 
     const feeEstimate = await this.options.transactionController.estimateTransactionFees(futureTransactions)
-
+    console.log(`Estimated fee: ${feeEstimate}`)
     if (!feeEstimate) {
       return Promise.reject('Could not estimate max value.')
     }
@@ -593,7 +596,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     const transferableBalance = results[2]
 
     const requiredTransactions: [SubstrateTransactionType, any][] = []
-
+    console.log(`Future transactions for intention: ${intention}, isBonded: ${isBonded}`)
     if (intention === 'transfer') {
       requiredTransactions.push([
         SubstrateTransactionType.TRANSFER,

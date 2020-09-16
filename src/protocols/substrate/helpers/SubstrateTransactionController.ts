@@ -48,9 +48,9 @@ export class SubstrateTransactionController {
     )
 
     const totalFee = txs.map((tx) => tx.fee).reduce((total, next) => total.plus(next), new BigNumber(0))
-
+    console.log(`Total fee: ${totalFee}`)
     if (new BigNumber(available).lt(totalFee)) {
-      throw new Error('Not enough balance')
+      throw new Error(`Not enough balance (${available} < ${totalFee})`)
     }
 
     return this.encodeDetails(txs)
@@ -132,8 +132,10 @@ export class SubstrateTransactionController {
     if (partialEstimate) {
       this.nodeClient.saveLastFee(transaction.type, partialEstimate)
     }
-
-    return partialEstimate?.plus(transaction.tip.value) || null
+    
+    const result = partialEstimate?.plus(transaction.tip.value) || null
+    console.log(`Calculated fee for ${transaction.type}: ${result}`)
+    return result
   }
 
   public async estimateTransactionFees(transationTypes: [SubstrateTransactionType, any][]): Promise<BigNumber | null> {
