@@ -50,7 +50,7 @@ export class SubstrateTransactionController {
     const totalFee = txs.map((tx) => tx.fee).reduce((total, next) => total.plus(next), new BigNumber(0))
 
     if (new BigNumber(available).lt(totalFee)) {
-      throw new Error(`Not enough balance (${available} < ${totalFee})`)
+      throw new Error(`Not enough balance`)
     }
 
     return this.encodeDetails(txs)
