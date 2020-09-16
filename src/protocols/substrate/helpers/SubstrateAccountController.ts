@@ -154,7 +154,7 @@ export class SubstrateAccountController {
       this.nodeClient.getNominations(address),
       this.nodeClient.getActiveEraInfo(),
       this.nodeClient.getExpectedEraDuration(),
-      this.nodeClient.getExistentialDeposit()
+      new BigNumber(0)//this.nodeClient.getExistentialDeposit()
     ])
 
     const balance = results[0]
@@ -163,9 +163,10 @@ export class SubstrateAccountController {
     const nominations = results[3]
     const activeEra = results[4]
     const expectedEraDuration = results[5]
-    const existentialDeposit = results[6]
+    // const existentialDeposit = results[6]
+    const minDelegationValue = results[6]
 
-    if (!balance || !transferableBalance || !activeEra || !expectedEraDuration || !existentialDeposit) {
+    if (!balance || !transferableBalance || !activeEra || !expectedEraDuration || !minDelegationValue) {
       return Promise.reject('Could not fetch nominator details.')
     }
 
@@ -176,7 +177,7 @@ export class SubstrateAccountController {
       stakingDetails,
       nominations,
       validatorIds || validators,
-      existentialDeposit,
+      minDelegationValue,
       transferableBalance
     )
 

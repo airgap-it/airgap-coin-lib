@@ -142,9 +142,10 @@ export class SubstrateTransactionController {
     const fees = await Promise.all(
       transationTypes
         .map(([type, args]) => [type, args, this.nodeClient.getSavedLastFee(type, 'largest')] as [SubstrateTransactionType, any, BigNumber])
-        .map(async ([type, args, fee]) =>
-          fee ? fee : this.calculateTransactionFee(await this.createTransaction(type, SubstrateAddress.createPlaceholder(), 0, args))
-        )
+        // .map(async ([type, args, fee]) =>
+        //   fee ? fee : this.calculateTransactionFee(await this.createTransaction(type, SubstrateAddress.createPlaceholder(), 0, args))
+        // )
+        .map(async ([type, args, fee]) => this.calculateTransactionFee(await this.createTransaction(type, SubstrateAddress.createPlaceholder(), 0, args)))
     )
 
     if (fees.some((fee) => fee === null)) {

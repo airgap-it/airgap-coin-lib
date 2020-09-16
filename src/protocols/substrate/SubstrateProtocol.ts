@@ -335,7 +335,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     if (!data) {
       data = {}
     }
-
+    console.log(`PREPARING DELEGATION TYPE: ${type}`)
     switch (type) {
       case SubstrateStakingActionType.BOND_NOMINATE:
         assertFields(`${SubstrateStakingActionType[type]} action`, data, 'targets', 'value', 'payee')
@@ -596,7 +596,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     const transferableBalance = results[2]
 
     const requiredTransactions: [SubstrateTransactionType, any][] = []
-    console.log(`Future transactions for intention: ${intention}, isBonded: ${isBonded}`)
+    console.log(`Future transactions for intention: ${intention}, isBonded: ${isBonded}, isNominating: ${isNominating}`)
     if (intention === 'transfer') {
       requiredTransactions.push([
         SubstrateTransactionType.TRANSFER,
@@ -606,8 +606,8 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
         }
       ])
     }
-
-    if (!isBonded && intention === 'delegate') {
+    // TODO: Hey Julia, I changed this from isBonded to isNominating to make things work, but this "fix" needs to be double checked
+    if (!isNominating && intention === 'delegate') {
       requiredTransactions.push(
         [
           SubstrateTransactionType.BOND,
@@ -637,7 +637,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
           }
         ]
       )
-    } else if (isBonded) {
+    } else if (isBonded) { // TODO: this could be optimized, in case isBonded is true but we actually only unbonding
       requiredTransactions.push(
         [
           SubstrateTransactionType.UNBOND,
