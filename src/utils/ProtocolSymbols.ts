@@ -9,6 +9,14 @@ export enum MainProtocolSymbols {
   KUSAMA = 'kusama'
 }
 
+export enum FeaturedSubProtocolSymbols {
+  XTZ_KT = 'xtz-kt',
+  XTZ_BTC = 'xtz-btc',
+  XTZ_USD = 'xtz-usd',
+  XTZ_STKR = 'xtz-stkr',
+  XCHF = 'eth-erc20-xchf'
+}
+
 export enum SubProtocolSymbols {
   XTZ_KT = 'xtz-kt',
   XTZ_BTC = 'xtz-btc',
