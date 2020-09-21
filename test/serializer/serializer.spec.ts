@@ -5,7 +5,7 @@ import 'mocha'
 import { Serializer } from '../../src'
 import { SchemaRoot } from '../../src/serializer/schemas/schema'
 
-// import { AnyMessage } from './schemas/AnyMessage'
+import { AnyMessage } from './schemas/AnyMessage'
 import { ArrayMessage } from './schemas/ArrayMessage'
 import { BooleanMessage } from './schemas/BooleanMessage'
 import { ComplexMessage } from './schemas/ComplexMessage'
@@ -349,49 +349,49 @@ describe(`Serializer`, async () => {
     )
   })
 
-  // it('should correctly serialize and deserialize an any message', async () => {
-  //   await test<AnyMessage>(1000, {
-  //     x: 'str1'
-  //   })
-  //   await test<AnyMessage>(1000, {
-  //     x: ''
-  //   })
-  //   await test<AnyMessage>(
-  //     1000,
-  //     {
-  //       x: 1 as any
-  //     },
-  //     `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "string", but got "number", value: 1`
-  //   )
-  //   await test<AnyMessage>(
-  //     1000,
-  //     {
-  //       x: true as any
-  //     },
-  //     `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "string", but got "boolean", value: true`
-  //   )
-  //   await test<AnyMessage>(
-  //     1000,
-  //     {
-  //       x: undefined as any
-  //     },
-  //     `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "string", but got "undefined", value: undefined`
-  //   )
-  //   await test<AnyMessage>(
-  //     1000,
-  //     {
-  //       x: [] as any
-  //     },
-  //     `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "string", but got "object", value: []`
-  //   )
-  //   await test<AnyMessage>(
-  //     1000,
-  //     {
-  //       x: {} as any
-  //     },
-  //     `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "string", but got "object", value: {}`
-  //   )
-  // })
+  it('should correctly serialize and deserialize an any message', async () => {
+    await test<AnyMessage>(1000, {
+      x: 'str1'
+    })
+    await test<AnyMessage>(1000, {
+      x: ''
+    })
+    await test<AnyMessage>(
+      1000,
+      {
+        x: 1 as any
+      },
+      `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "string", but got "number", value: 1`
+    )
+    await test<AnyMessage>(
+      1000,
+      {
+        x: true as any
+      },
+      `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "string", but got "boolean", value: true`
+    )
+    await test<AnyMessage>(
+      1000,
+      {
+        x: undefined as any
+      },
+      `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "string", but got "undefined", value: undefined`
+    )
+    await test<AnyMessage>(
+      1000,
+      {
+        x: [] as any
+      },
+      `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "string", but got "object", value: []`
+    )
+    await test<AnyMessage>(
+      1000,
+      {
+        x: {} as any
+      },
+      `Error: serializer(INVALID_SCHEMA_TYPE): x: expected type "string", but got "object", value: {}`
+    )
+  })
 
   it('should correctly serialize and deserialize a tuple message', async () => {
     await test<TupleMessage>(1008, {

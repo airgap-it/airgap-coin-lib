@@ -17,8 +17,7 @@
       },
       "required": [
         "message",
-        "publicKey",
-        "callbackURL"
+        "publicKey"
       ],
       "type": "object"
     }

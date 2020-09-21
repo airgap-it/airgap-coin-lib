@@ -46,7 +46,7 @@ function checkType(key: string, expectedType: string, value: unknown, callback: 
 }
 
 function getTypeFromSchemaDefinition(schema: SchemaItem | undefined): SchemaTypes {
-  return schema?.type ?? /* schema?.$ref === "#/definitions/HexString" ? */ SchemaTypes.HEX_STRING
+  return schema?.type ?? (schema?.$ref === '#/definitions/HexString' ? SchemaTypes.HEX_STRING : SchemaTypes.STRING)
 }
 
 export function jsonToArray(key: string, schema: SchemaItem, value: Object): RLPData {

@@ -3,5 +3,5 @@ export interface MultisigRequest {
   transaction: string // The transaction to be signed
   signature: string // The signature of the other peers
   publicKey: string // Public key to sign the transaction
-  callbackURL: string // eg. https://airgap.it/?data={{data}}
+  callbackURL?: string // eg. https://airgap.it/?data={{data}}
 }
