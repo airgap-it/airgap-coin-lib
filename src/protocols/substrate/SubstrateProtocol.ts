@@ -13,6 +13,7 @@ import { SubstrateAddress } from './helpers/data/account/SubstrateAddress'
 import { SubstratePayee } from './helpers/data/staking/SubstratePayee'
 import { SubstrateStakingActionType } from './helpers/data/staking/SubstrateStakingActionType'
 import { SubstrateTransactionType } from './helpers/data/transaction/SubstrateTransaction'
+import { SubstrateTransactionConfig } from './helpers/SubstrateTransactionController'
 import { SubstrateCryptoClient } from './SubstrateCryptoClient'
 import { SubstrateProtocolOptions } from './SubstrateProtocolOptions'
 import { SubstrateTransactionResult, SubstrateTransactionCursor } from './SubstrateTypes'
@@ -330,6 +331,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     }
   }
 
+  // tslint:disable-next-line: cyclomatic-complexity
   public async prepareDelegatorActionFromPublicKey(
     publicKey: string,
     type: SubstrateStakingActionType,
@@ -344,6 +346,10 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
         assertFields(`${SubstrateStakingActionType[type]} action`, data, 'targets', 'value', 'payee')
 
         return this.prepareDelegation(publicKey, data.tip || 0, data.targets, data.controller || publicKey, data.value, data.payee)
+      case SubstrateStakingActionType.REBOND_NOMINATE:
+        assertFields(`${SubstrateStakingActionType[type]} action`, data, 'targets', 'value')
+
+        return this.prepareRebondNominate(publicKey, data.tip || 0, data.targets, data.value)
       case SubstrateStakingActionType.NOMINATE:
         assertFields(`${SubstrateStakingActionType[type]} action`, data, 'targets')
 
@@ -416,12 +422,65 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     return [{ encoded }]
   }
 
+  public async prepareRebondNominate(
+    publicKey: string,
+    tip: string | number | BigNumber,
+    targets: string[] | string,
+    value: string | number | BigNumber
+  ): Promise<RawSubstrateTransaction[]> {
+    const [transferableBalance, lockedBalance] = await Promise.all([
+      this.options.accountController.getTransferableBalance(publicKey, false),
+      this.options.accountController.getUnlockingBalance(publicKey)
+    ])
+
+    const toDelegate = BigNumber.isBigNumber(value) ? value : new BigNumber(value)
+
+    const configs: SubstrateTransactionConfig[] = []
+    if (toDelegate.gt(lockedBalance)) {
+      configs.push(
+        {
+          type: SubstrateTransactionType.REBOND,
+          tip,
+          args: {
+            value: lockedBalance
+          }
+        },
+        {
+          type: SubstrateTransactionType.BOND_EXTRA,
+          tip,
+          args: {
+            value: toDelegate.minus(lockedBalance)
+          }
+        },
+      )
+    } else {
+      configs.push({
+        type: SubstrateTransactionType.REBOND,
+        tip,
+        args: {
+          value: toDelegate
+        }
+      })
+    }
+    configs.push({
+      type: SubstrateTransactionType.NOMINATE,
+      tip,
+      args: {
+        targets: typeof targets === 'string' ? [targets] : targets
+      }
+    })
+
+    const encoded = await this.options.transactionController.prepareSubmittableTransactions(publicKey, transferableBalance, configs)
+
+    return [{ encoded }]
+  }
+
   public async prepareCancelDelegation(
     publicKey: string,
     tip: string | number | BigNumber,
     value?: string | number | BigNumber
   ): Promise<RawSubstrateTransaction[]> {
-    const transferableBalance = await this.options.accountController.getTransferableBalance(publicKey)
+    const transferableBalance = await this.options.accountController.getTransferableBalance(publicKey, false)
     const keepController = value === undefined
 
     const encoded = await this.options.transactionController.prepareSubmittableTransactions(publicKey, transferableBalance, [
@@ -451,7 +510,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     tip: string | number | BigNumber,
     targets: string[] | string
   ): Promise<RawSubstrateTransaction[]> {
-    const transferableBalance = await this.options.accountController.getTransferableBalance(publicKey)
+    const transferableBalance = await this.options.accountController.getTransferableBalance(publicKey, false)
 
     const encoded = await this.options.transactionController.prepareSubmittableTransactions(publicKey, transferableBalance, [
       {
@@ -471,7 +530,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     tip: string | number | BigNumber,
     value: string | number | BigNumber
   ): Promise<RawSubstrateTransaction[]> {
-    const transferableBalance = await this.options.accountController.getTransferableBalance(publicKey)
+    const transferableBalance = await this.options.accountController.getTransferableBalance(publicKey, false)
 
     const encoded = await this.options.transactionController.prepareSubmittableTransactions(publicKey, transferableBalance, [
       {
@@ -491,7 +550,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     tip: string | number | BigNumber,
     value: string | number | BigNumber
   ): Promise<RawSubstrateTransaction[]> {
-    const transferableBalance = await this.options.accountController.getTransferableBalance(publicKey)
+    const transferableBalance = await this.options.accountController.getTransferableBalance(publicKey, false)
 
     const encoded = await this.options.transactionController.prepareSubmittableTransactions(publicKey, transferableBalance, [
       {
@@ -511,7 +570,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     tip: string | number | BigNumber,
     value: string | number | BigNumber
   ): Promise<RawSubstrateTransaction[]> {
-    const transferableBalance = await this.options.accountController.getTransferableBalance(publicKey)
+    const transferableBalance = await this.options.accountController.getTransferableBalance(publicKey, false)
 
     const encoded = await this.options.transactionController.prepareSubmittableTransactions(publicKey, transferableBalance, [
       {
@@ -589,12 +648,16 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     const results = await Promise.all([
       this.options.accountController.isBonded(publicKey),
       this.options.accountController.isNominating(publicKey),
-      this.options.accountController.getTransferableBalance(publicKey)
+      this.options.accountController.getTransferableBalance(publicKey),
+      this.options.accountController.getUnlockingBalance(publicKey)
     ])
 
     const isBonded = results[0]
     const isNominating = results[1]
     const transferableBalance = results[2]
+    const unlockingBalance = results[3]
+
+    const isUnbonding = unlockingBalance.gt(0)
 
     const requiredTransactions: [SubstrateTransactionType, any][] = []
 
@@ -607,8 +670,8 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
         }
       ])
     }
-    // TODO: Changed from isBonded to isNominating to make things work, but this "fix" needs to be double checked
-    if (!isNominating && intention === 'delegate') {
+    if (!isBonded && !isUnbonding && intention === 'delegate') {
+      // not delegated & unbond
       requiredTransactions.push(
         [
           SubstrateTransactionType.BOND,
@@ -638,8 +701,35 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
           }
         ]
       )
+    } else if (isUnbonding && intention === 'delegate') {
+      requiredTransactions.push(
+        [
+          SubstrateTransactionType.REBOND,
+          {
+            value: unlockingBalance
+          }
+        ],
+        [
+          SubstrateTransactionType.NOMINATE,
+          {
+            targets: [SubstrateAddress.createPlaceholder()]
+          }
+        ],
+        [SubstrateTransactionType.CANCEL_NOMINATION, {}],
+        [
+          SubstrateTransactionType.UNBOND,
+          {
+            value: transferableBalance
+          }
+        ],
+        [
+          SubstrateTransactionType.WITHDRAW_UNBONDED,
+          {
+            slashingSpansNumber: 0
+          }
+        ]
+      )
     } else if (isBonded) {
-      // TODO: We have to handle the case here where our funds are already unbonding. Then we don't need to save the "unbond" fee
       requiredTransactions.push(
         [
           SubstrateTransactionType.UNBOND,

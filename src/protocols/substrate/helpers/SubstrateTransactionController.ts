@@ -16,13 +16,13 @@ import { SubstrateTransaction, SubstrateTransactionType } from './data/transacti
 import { SubstrateTransactionPayload } from './data/transaction/SubstrateTransactionPayload'
 import { SubstrateNodeClient } from './node/SubstrateNodeClient'
 
-interface SubstrateTransactionDetails {
+export interface SubstrateTransactionDetails {
   fee: BigNumber
   transaction: SubstrateTransaction
   payload: SubstrateTransactionPayload
 }
 
-interface SubstrateTransactionConfig {
+export interface SubstrateTransactionConfig {
   type: SubstrateTransactionType
   tip: string | number | BigNumber
   args: any

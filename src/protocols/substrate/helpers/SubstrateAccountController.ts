@@ -48,11 +48,8 @@ export class SubstrateAccountController {
 
   public async getBalance(accountId: SubstrateAccountId): Promise<BigNumber> {
     const accountInfo = await this.nodeClient.getAccountInfo(SubstrateAddress.from(accountId, this.network))
-    if (!accountInfo) {
-      return new BigNumber(0)
-    }
 
-    return accountInfo.data.free.value
+    return accountInfo?.data.free.value ?? new BigNumber(0)
   }
 
   public async getTransferableBalance(accountId: SubstrateAccountId, excludeExistentialDeposit: boolean = true): Promise<BigNumber> {
@@ -76,6 +73,12 @@ export class SubstrateAccountController {
       .minus(reserved)
       .minus(locked)
       .minus(minBalance || 0)
+  }
+
+  public async getUnlockingBalance(accountId: SubstrateAccountId): Promise<BigNumber> {
+    const stakingDetails = await this.nodeClient.getStakingLedger(SubstrateAddress.from(accountId, this.network))
+
+    return stakingDetails?.unlocking.elements.map(entry => entry.first.value).reduce((sum, next) => sum.plus(next), new BigNumber(0)) ?? new BigNumber(0)
   }
 
   public async isBonded(accountId: SubstrateAccountId): Promise<boolean> {
@@ -154,7 +157,7 @@ export class SubstrateAccountController {
       this.nodeClient.getNominations(address),
       this.nodeClient.getActiveEraInfo(),
       this.nodeClient.getExpectedEraDuration(),
-      new BigNumber(0) // TODO: Was "this.nodeClient.getExistentialDeposit()" before. Now that we don't respect the existentialDeposit for delegations anymore, this wasn't needed anymore
+      this.nodeClient.getExistentialDeposit()
     ])
 
     const balance = results[0]
@@ -163,10 +166,8 @@ export class SubstrateAccountController {
     const nominations = results[3]
     const activeEra = results[4]
     const expectedEraDuration = results[5]
-    // const existentialDeposit = results[6]
-    const minDelegationValue = results[6] // TODO: This was renamed
 
-    if (!balance || !transferableBalance || !activeEra || !expectedEraDuration || !minDelegationValue) {
+    if (!balance || !transferableBalance || !activeEra || !expectedEraDuration) {
       return Promise.reject('Could not fetch nominator details.')
     }
 
@@ -177,7 +178,6 @@ export class SubstrateAccountController {
       stakingDetails,
       nominations,
       validatorIds || validators,
-      minDelegationValue,
       transferableBalance
     )
 
@@ -425,11 +425,11 @@ export class SubstrateAccountController {
     return new BigNumber(1).minus(validatorCommission.dividedBy(1_000_000_000)).multipliedBy(validatorReward).multipliedBy(nominatorShare)
   }
 
+  // tslint:disable-next-line: cyclomatic-complexity
   private async getAvailableStakingActions(
     stakingDetails: SubstrateStakingDetails | null,
     nominations: SubstrateNominations | null,
     validatorIds: SubstrateAccountId[],
-    minDelegationValue: BigNumber,
     maxDelegationValue: BigNumber
   ): Promise<DelegatorAction[]> {
     const availableActions: DelegatorAction[] = []
@@ -439,27 +439,31 @@ export class SubstrateAccountController {
 
     const isBonded = new BigNumber(stakingDetails?.active ?? 0).gt(0)
     const isDelegating = nominations !== null
+    const isUnbonding = stakingDetails && stakingDetails.locked.length > 0
+
+    const minBondingValue = await this.nodeClient.getExistentialDeposit()
+    const minDelegationValue = new BigNumber(1)
 
     const electionStatus = await this.nodeClient.getElectionStatus().then((eraElectionStatus) => eraElectionStatus?.status.value)
     const isElectionClosed = electionStatus === SubstrateElectionStatus.CLOSED
 
     const hasFundsToWithdraw = new BigNumber(stakingDetails?.unlocked ?? 0).gt(0)
 
-    if (maxDelegationValue.gt(minDelegationValue) && isElectionClosed) {
-      if (!isBonded) {
-        availableActions.push({
-          type: SubstrateStakingActionType.BOND_NOMINATE,
-          args: ['targets', 'controller', 'value', 'payee']
-        })
-      } else {
-        availableActions.push({
-          type: SubstrateStakingActionType.BOND_EXTRA,
-          args: ['value']
-        })
-      }
+    if (maxDelegationValue.gt(minBondingValue) && !isBonded && !isUnbonding && isElectionClosed) {
+      availableActions.push({
+        type: SubstrateStakingActionType.BOND_NOMINATE,
+        args: ['targets', 'controller', 'value', 'payee']
+      })
     }
 
-    if (isBonded && !isDelegating && isElectionClosed) {
+    if (maxDelegationValue.gt(minDelegationValue) && isBonded && !isUnbonding && isElectionClosed) {
+      availableActions.push({
+        type: SubstrateStakingActionType.BOND_EXTRA,
+        args: ['value']
+      })
+    }
+
+    if (isBonded && !isDelegating && !isUnbonding && isElectionClosed) {
       availableActions.push(
         {
           type: SubstrateStakingActionType.NOMINATE,
@@ -470,6 +474,13 @@ export class SubstrateAccountController {
           args: ['value']
         }
       )
+    }
+
+    if (isUnbonding && !isDelegating && isElectionClosed) {
+      availableActions.push({
+        type: SubstrateStakingActionType.REBOND_NOMINATE,
+        args: ['targets', 'value']
+      })
     }
 
     if (isDelegating && isElectionClosed) {

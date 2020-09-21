@@ -1,5 +1,6 @@
 export enum SubstrateStakingActionType {
   BOND_NOMINATE = 'bond_nominate',
+  REBOND_NOMINATE = 'rebond_nominate',
   NOMINATE = 'nominate',
   CANCEL_NOMINATION = 'cancel_nomination',
   CHANGE_NOMINATION = 'change_nomination',
