@@ -56,7 +56,7 @@ abstract class TestProtocolSpec {
         type: IACMessageType.TransactionSignRequest,
         payload: {
           publicKey: this.wallet.publicKey,
-          callback: 'airgap-wallet://?d=',
+          callbackURL: 'airgap-wallet://?d=',
           transaction: tx.unsignedTx
         }
       }
