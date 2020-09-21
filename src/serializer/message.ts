@@ -73,7 +73,7 @@ export class Message implements IACMessageDefinitionObject {
     protocol: ProtocolSymbols,
     payload: IACMessages,
     id: string = generateId(ID_LENGTH),
-    version: string = '0'
+    version: string = '1'
   ) {
     this.id = id
     this.type = type
@@ -108,8 +108,13 @@ export class Message implements IACMessageDefinitionObject {
     const version: string = this.parseVersion(buf[0])
     const type: IACMessageType = this.parseType(buf[1])
     const protocol: ProtocolSymbols = this.parseProtocol(buf[2])
-    const id: string = this.parseId(buf[3])
-    const encodedPayload: RLPData = this.parsePayload(buf[4])
+
+    // Backwards compatiblity for version 0, before we had an ID
+    const idBuf: Buffer | undefined = version === '1' ? buf[3] : Buffer.from(generateId(ID_LENGTH))
+    const payloadBuf: Buffer | undefined = version === '1' ? buf[4] : buf[3]
+    // End Backwards compatibility
+    const id: string = this.parseId(idBuf)
+    const encodedPayload: RLPData = this.parsePayload(payloadBuf)
 
     const schemaInfo: SchemaInfo = Serializer.getSchema(type, protocol)
     const schema: SchemaItem = unwrapSchema(schemaInfo.schema)

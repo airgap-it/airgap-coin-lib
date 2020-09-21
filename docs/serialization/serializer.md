@@ -88,8 +88,3 @@ const deserializedSync = await syncProtocol.deserialize(syncString)
 ```
 
 `deserializedSync` is of type `DeserializedSyncProtocol`, having a member that exposes the `EncodedType` of content (`type`), as well as the payload. The payload in this case would be a `SignedTransaction`, consisting of public key, callback-url and the signed transaction string.
-
-# New Serializer
-
-## Messages
-
