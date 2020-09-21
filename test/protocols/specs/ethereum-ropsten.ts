@@ -6,7 +6,7 @@ export class EthereumRopstenTestProtocolSpec extends TestProtocolSpec {
   public name = 'EthereumRopsten'
   public lib = new EthereumRopstenProtocol()
   public stub = new EthereumRopstenProtocolStub()
-  public validAddresses = []
+  public validAddresses = ['0xc10aC90B30105A739701689A1404b407A8370FDE']
   public wallet = {
     privateKey: '832d58a77ad222b8d9b75322e66d97e46b7dcfab3f25f6c1dd79ec13e046c7bc',
     publicKey: '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',

@@ -1,3 +1,4 @@
+// tslint:disable: max-classes-per-file
 import { blake2bAsHex } from '../../../../../utils/blake2b'
 import { bytesToHex } from '../../../../../utils/hex'
 import { xxhashAsHex } from '../../../../../utils/xxhash'

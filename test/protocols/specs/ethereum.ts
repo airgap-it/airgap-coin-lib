@@ -12,7 +12,7 @@ export class EthereumTestProtocolSpec extends TestProtocolSpec {
   public lib = new EthereumProtocol()
   public stub = new EthereumProtocolStub()
   public validAddresses = [
-    '0x8743Dc4A423E33Cb2f5808c0039E56D764b03257',
+    '0x5e4e92788a7aE425100D869657aE91891af019BC',
     '0xEC7eF91eFB3737fc2749c0107fd428F6a878884c',
     '0xE8911B6Ad03Fc76A3248F1eA9babe85E5Cde086c',
     '0x14D8fB603edCb2d4038Aab0d0fa224E0c4D9c6f9',
@@ -48,8 +48,14 @@ export class EthereumTestProtocolSpec extends TestProtocolSpec {
     }
   ]
   public transactionStatusTests: { hashes: string[]; expectedResults: AirGapTransactionStatus[] }[] = [
-    { hashes: ['0x20904cf629692c925a235e98ccf5b317c56bbc069c0941b9e45af2f35a5b612b'], expectedResults: [AirGapTransactionStatus.APPLIED] },
-    { hashes: ['0x4a50a2d30b2ab022819ff6407ccfcfb3905406729fed82208e2d07ed92cedbe1'], expectedResults: [AirGapTransactionStatus.FAILED] },
+    {
+      hashes: ['0x20904cf629692c925a235e98ccf5b317c56bbc069c0941b9e45af2f35a5b612b'],
+      expectedResults: [AirGapTransactionStatus.APPLIED]
+    },
+    {
+      hashes: ['0x4a50a2d30b2ab022819ff6407ccfcfb3905406729fed82208e2d07ed92cedbe1'],
+      expectedResults: [AirGapTransactionStatus.FAILED]
+    },
     {
       hashes: [
         '0x20904cf629692c925a235e98ccf5b317c56bbc069c0941b9e45af2f35a5b612b',

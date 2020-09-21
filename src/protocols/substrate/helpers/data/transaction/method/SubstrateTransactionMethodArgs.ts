@@ -1,3 +1,4 @@
+// tslint:disable: max-classes-per-file
 import BigNumber from '../../../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { IAirGapTransaction } from '../../../../../../interfaces/IAirGapTransaction'
 import { assertFields } from '../../../../../../utils/assert'
@@ -14,8 +15,6 @@ import { SubstratePayee } from '../../staking/SubstratePayee'
 import { SubstrateTransactionType } from '../SubstrateTransaction'
 
 import { SubstrateTransactionMethod } from './SubstrateTransactionMethod'
-
-// tslint:disable: max-classes-per-file
 
 interface TransferArgs {
   to: SubstrateAccountId
@@ -51,8 +50,8 @@ interface NominateArgs {
 interface StopNominatingArgs {}
 
 interface PayoutStakersArgs {
-  eraIndex: number | BigNumber
   validator: SubstrateAccountId
+  era: number | BigNumber
 }
 
 interface SetPayeeArgs {
@@ -69,6 +68,7 @@ interface SubmitBatchArgs {
 
 export abstract class SubstrateTransactionMethodArgsFactory<T> {
   public static create(network: SubstrateNetwork, type: SubstrateTransactionType, args: any): SubstrateTransactionMethodArgsFactory<any> {
+    // tslint:disable-next-line: switch-default
     switch (type) {
       case SubstrateTransactionType.TRANSFER:
         assertFields('transfer', args, 'to', 'value')
@@ -127,6 +127,7 @@ export abstract class SubstrateTransactionMethodArgsFactory<T> {
 
 export abstract class SubstrateTransactionMethodArgsDecoder<T> {
   public static create(type: SubstrateTransactionType): SubstrateTransactionMethodArgsDecoder<any> {
+    // tslint:disable-next-line: switch-default
     switch (type) {
       case SubstrateTransactionType.TRANSFER:
         return new TransferArgsDecoder()
@@ -379,8 +380,8 @@ class StopNominatingArgsDecoder extends SubstrateTransactionMethodArgsDecoder<St
 class PayoutStakersArgsFactory extends SubstrateTransactionMethodArgsFactory<PayoutStakersArgs> {
   public createFields(): [string, SCALEType][] {
     return [
-      ['eraIndex', SCALEInt.from(this.args.eraIndex, 32)],
-      ['validator', SCALEAccountId.from(this.args.validator, this.network)]
+      ['validatorStash', SCALEAccountId.from(this.args.validator, this.network)],
+      ['era', SCALEInt.from(this.args.era, 32)]
     ]
   }
   public createToAirGapTransactionParts(): () => Partial<IAirGapTransaction>[] {
@@ -390,14 +391,14 @@ class PayoutStakersArgsFactory extends SubstrateTransactionMethodArgsFactory<Pay
 
 class PayoutStakersArgsDecoder extends SubstrateTransactionMethodArgsDecoder<PayoutStakersArgs> {
   protected _decode(decoder: SCALEDecoder): SCALEDecodeResult<PayoutStakersArgs> {
-    const eraIndex = decoder.decodeNextInt(32)
-    const validator = decoder.decodeNextAccountId()
+    const validatorStash = decoder.decodeNextAccountId()
+    const era = decoder.decodeNextInt(32)
 
     return {
-      bytesDecoded: eraIndex.bytesDecoded + validator.bytesDecoded,
+      bytesDecoded: era.bytesDecoded + validatorStash.bytesDecoded,
       decoded: {
-        eraIndex: eraIndex.decoded.value,
-        validator: validator.decoded.address
+        validator: validatorStash.decoded.address,
+        era: era.decoded.value,
       }
     }
   }

@@ -17,6 +17,7 @@ export const supportedStorageEntries = {
     'Nominators',
     'CurrentEra',
     'ActiveEra',
+    'EraElectionStatus',
     'ErasStakers',
     'ErasStakersClipped',
     'ErasValidatorPrefs',
@@ -47,8 +48,7 @@ export const supportedCalls = {
 export const supportedConstants = {
   Babe: ['EpochDuration', 'ExpectedBlockTime'] as const,
   Balances: ['ExistentialDeposit'] as const,
-  Staking: ['SessionsPerEra'] as const,
-  TransactionPayment: ['TransactionBaseFee'] as const
+  Staking: ['SessionsPerEra'] as const
 }
 
 export type SubstrateRpcModuleName = keyof typeof supportedRpcMethods

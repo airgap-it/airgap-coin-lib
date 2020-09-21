@@ -1,3 +1,4 @@
+import { AeternityTransactionResult, AeternityTransactionCursor } from './AeternityTypes'
 import * as sodium from 'libsodium-wrappers'
 
 import axios from '../../dependencies/src/axios-0.19.0/index'
@@ -115,24 +116,34 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
     return [address]
   }
 
-  public async getTransactionsFromPublicKey(publicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]> {
-    return this.getTransactionsFromAddresses([await this.getAddressFromPublicKey(publicKey)], limit, offset)
+  public async getTransactionsFromPublicKey(
+    publicKey: string,
+    limit: number,
+    cursor?: AeternityTransactionCursor
+  ): Promise<AeternityTransactionResult> {
+    return this.getTransactionsFromAddresses([await this.getAddressFromPublicKey(publicKey)], limit, cursor)
   }
 
-  public async getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
+  public async getTransactionsFromAddresses(
+    addresses: string[],
+    limit: number,
+    cursor?: AeternityTransactionCursor
+  ): Promise<AeternityTransactionResult> {
     const allTransactions = await Promise.all(
       addresses.map((address) => {
-        return axios.get(`${this.options.network.rpcUrl}/middleware/transactions/account/${address}`)
+        const url = cursor
+          ? `${this.options.network.rpcUrl}/middleware/transactions/account/${address}?page=${cursor.page}&limit=${limit}`
+          : `${this.options.network.rpcUrl}/middleware/transactions/account/${address}?page=1&limit=${limit}`
+        return axios.get(url)
       })
     )
 
-    const transactions: any[] = [].concat(
+    let transactions: any[] = [].concat(
       ...allTransactions.map((axiosData) => {
         return axiosData.data || []
       })
     )
-
-    return transactions.map((obj) => {
+    transactions = transactions.map((obj) => {
       const parsedTimestamp = parseInt(obj.time, 10)
       const airGapTx: IAirGapTransaction = {
         amount: new BigNumber(obj.tx.amount).toString(10),
@@ -156,6 +167,15 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
 
       return airGapTx
     })
+    return { transactions, cursor: { page: cursor ? cursor.page + 1 : 2 } }
+  }
+
+  protected getPageNumber(limit: number, offset: number): number {
+    if (limit <= 0 || offset < 0) {
+      return 1
+    }
+
+    return 1 + Math.floor(offset / limit) // We need +1 here because pages start at 1
   }
 
   public async signWithPrivateKey(privateKey: Buffer, transaction: RawAeternityTransaction): Promise<IAirGapSignedTransaction> {

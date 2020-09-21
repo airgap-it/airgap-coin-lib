@@ -1,3 +1,4 @@
+import { EthereumTransactionResult, EthereumTransactionCursor } from './../EthereumTypes'
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import * as ethUtil from '../../../dependencies/src/ethereumjs-util-5.2.0/index'
 import { IAirGapSignedTransaction } from '../../../interfaces/IAirGapSignedTransaction'
@@ -143,19 +144,23 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, Ethersc
     }
   }
 
-  public getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
-    const page: number = Math.ceil(offset / limit)
-
+  public getTransactionsFromAddresses(
+    addresses: string[],
+    limit: number,
+    cursor?: EthereumTransactionCursor
+  ): Promise<EthereumTransactionResult> {
     return new Promise((overallResolve, overallReject) => {
-      const promises: Promise<IAirGapTransaction[]>[] = []
+      const promises: Promise<EthereumTransactionResult>[] = []
       for (const address of addresses) {
-        promises.push(this.options.infoClient.fetchContractTransactions(this, this.contractAddress, address, page, limit))
+        promises.push(this.options.infoClient.fetchContractTransactions(this, this.contractAddress, address, limit, cursor))
       }
+
       Promise.all(promises)
         .then((values) => {
+          const page = Math.max(...values.map((txResult) => txResult.cursor.page))
           overallResolve(
             values.reduce((a, b) => {
-              return a.concat(b)
+              return { transactions: a.transactions.concat(b.transactions), cursor: { page: page } }
             })
           )
         })

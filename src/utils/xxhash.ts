@@ -1,4 +1,4 @@
-import xxhash = require('xxhashjs')
+import xxhash = require('../dependencies/src/xxhashjs-0.2.2/lib/index')
 
 import { addHexPrefix, changeEndianness, isHex, toHexStringRaw } from './hex'
 
