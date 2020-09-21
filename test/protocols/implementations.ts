@@ -56,8 +56,8 @@ abstract class TestProtocolSpec {
         type: IACMessageType.TransactionSignRequest,
         payload: {
           publicKey: this.wallet.publicKey,
-          callbackURL: 'airgap-wallet://?d=',
-          transaction: tx.unsignedTx
+          transaction: tx.unsignedTx,
+          callbackURL: 'airgap-wallet://?d='
         }
       }
     ]
@@ -84,7 +84,7 @@ abstract class TestProtocolSpec {
         protocol: this.lib.identifier,
         type: IACMessageType.AccountShareResponse,
         payload: {
-          group: 'group1',
+          // TODO: Add after breaking change: group: 'group1',
           publicKey: this.wallet.publicKey,
           isExtendedPublicKey: this.lib.supportsHD,
           derivationPath: this.lib.standardDerivationPath

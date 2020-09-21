@@ -8,7 +8,7 @@
     "UnsignedEthereumTransaction": {
       "additionalProperties": false,
       "properties": {
-        "callback": {
+        "callbackURL": {
           "type": "string"
         },
         "publicKey": {

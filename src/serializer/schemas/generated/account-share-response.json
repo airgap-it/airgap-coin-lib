@@ -8,9 +8,6 @@
         "derivationPath": {
           "type": "string"
         },
-        "group": {
-          "type": "string"
-        },
         "isExtendedPublicKey": {
           "type": "boolean"
         },
@@ -21,8 +18,7 @@
       "required": [
         "publicKey",
         "derivationPath",
-        "isExtendedPublicKey",
-        "group"
+        "isExtendedPublicKey"
       ],
       "type": "object"
     }
