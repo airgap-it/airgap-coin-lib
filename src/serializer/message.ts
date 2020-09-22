@@ -1,3 +1,4 @@
+import { SerializerError, SerializerErrorType } from '../errors'
 import { MainProtocolSymbols, ProtocolSymbols } from '../utils/ProtocolSymbols'
 
 import { IACMessageType } from './interfaces'
@@ -55,8 +56,8 @@ export interface MessageDefinitionArray {
   [0]: Buffer // string // Version
   [1]: Buffer // string // Type
   [2]: Buffer // ProtocolSymbols // Protocol
-  [3]: Buffer // string // Id
-  [4]: Buffer // RLPData // Message
+  [3]: Buffer // RLPData // Message
+  [4]: Buffer // string // Session ID
 }
 
 export class Message implements IACMessageDefinitionObject {
@@ -73,7 +74,7 @@ export class Message implements IACMessageDefinitionObject {
     protocol: ProtocolSymbols,
     payload: IACMessages,
     id: string = generateId(ID_LENGTH),
-    version: string = '0'
+    version: string = '1'
   ) {
     this.id = id
     this.type = type
@@ -97,7 +98,7 @@ export class Message implements IACMessageDefinitionObject {
   public asArray(): RLPData /* it could be MessageDefinitionArray */ {
     const array: RLPData = jsonToArray('root', this.schema, this.payload)
 
-    return [this.version, this.type.toString(), this.protocol, this.id, array]
+    return [this.version, this.type.toString(), this.protocol, array, this.id]
   }
 
   public static fromDecoded(object: IACMessageDefinitionObject): Message {
@@ -108,8 +109,13 @@ export class Message implements IACMessageDefinitionObject {
     const version: string = this.parseVersion(buf[0])
     const type: IACMessageType = this.parseType(buf[1])
     const protocol: ProtocolSymbols = this.parseProtocol(buf[2])
-    const id: string = this.parseId(buf[3])
-    const encodedPayload: RLPData = this.parsePayload(buf[4])
+
+    // Backwards compatiblity for version 0, before we had an ID
+    const idBuf: Buffer | undefined = version === '0' ? Buffer.from(generateId(ID_LENGTH)) : buf[4]
+    // End Backwards compatibility
+
+    const id: string = this.parseId(idBuf)
+    const encodedPayload: RLPData = this.parsePayload(buf[3])
 
     const schemaInfo: SchemaInfo = Serializer.getSchema(type, protocol)
     const schema: SchemaItem = unwrapSchema(schemaInfo.schema)
@@ -180,7 +186,7 @@ export class Message implements IACMessageDefinitionObject {
     validate: (value: U) => boolean
   ): T {
     if (typeof buffer === 'undefined') {
-      throw Error(`${property} is empty`)
+      throw new SerializerError(SerializerErrorType.PROPERTY_IS_EMPTY, `${property} is empty`)
     }
 
     const parsed: U = parse(buffer)
@@ -189,6 +195,6 @@ export class Message implements IACMessageDefinitionObject {
       return (parsed as unknown) as T // TODO: Use type guard?
     }
 
-    throw new Error(`${property} is invalid: "${parsed}"`)
+    throw new SerializerError(SerializerErrorType.PROPERTY_IS_EMPTY, `${property} is invalid: "${parsed}"`)
   }
 }

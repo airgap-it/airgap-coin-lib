@@ -1,4 +1,4 @@
-import { InvalidSchemaType } from '../../errors'
+import { InvalidHexString, InvalidSchemaType, InvalidString } from '../../errors'
 import { SchemaDefinition, SchemaItem, SchemaRoot, SchemaTypes } from '../schemas/schema'
 
 import { RLPData } from './toBuffer'
@@ -46,7 +46,7 @@ function checkType(key: string, expectedType: string, value: unknown, callback: 
 }
 
 function getTypeFromSchemaDefinition(schema: SchemaItem | undefined): SchemaTypes {
-  return schema?.type ?? /* schema?.$ref === "#/definitions/HexString" ? */ SchemaTypes.HEX_STRING
+  return schema?.type ?? (schema?.$ref === '#/definitions/HexString' ? SchemaTypes.HEX_STRING : SchemaTypes.STRING)
 }
 
 export function jsonToArray(key: string, schema: SchemaItem, value: Object): RLPData {
@@ -56,15 +56,21 @@ export function jsonToArray(key: string, schema: SchemaItem, value: Object): RLP
       return checkType(key, 'string', value, (arg: string): string => {
         log(`Parsing key ${key} as string, which results in ${arg}`)
 
+        if (arg.startsWith('0x')) {
+          throw new InvalidString(
+            `string "${value}" starts with "0x". This causes problems with RLP. Please use the "HexString" type instead of "string"`
+          )
+        }
+
         return arg
       })
 
     case SchemaTypes.HEX_STRING:
       return checkType(key, 'string', value, (arg: string): string => {
-        log(`Parsing key ${key} as string, which results in ${arg}`)
+        log(`Parsing key ${key} as hex-string, which results in ${arg}`)
 
         if (!arg.startsWith('0x')) {
-          throw new Error('Invalid Hex String')
+          throw new InvalidHexString(`"${value}" does not start with "0x"`)
         }
 
         return arg.substr(2) // Remove the '0x'

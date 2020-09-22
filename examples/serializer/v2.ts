@@ -81,7 +81,7 @@ const ethSignTransactionRequest: IACMessageDefinitionObject = {
       value: '0x0'
     },
     publicKey: '1',
-    callback: '2'
+    callbackURL: '2'
   }
 }
 

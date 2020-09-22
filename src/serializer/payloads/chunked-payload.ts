@@ -1,3 +1,4 @@
+import { SerializerError, SerializerErrorType } from '../../errors'
 import { RLPData } from '../utils/toBuffer'
 
 import { Payload } from './payload'
@@ -46,17 +47,17 @@ export class ChunkedPayload implements Payload {
 
   public static fromDecoded(object: DecodedChunkedPayload): ChunkedPayload {
     if (!isDecodedChunkedPayload(object)) {
-      throw new Error('UNEXPECTED TYPE OF PAYLOAD IN CHUNKED PAYLOAD CONSTRUCTOR')
+      throw new SerializerError(SerializerErrorType.UNEXPECTED_PAYLOAD, `Object does not match "Chunked serializer" interface`)
     }
 
     return new ChunkedPayload(object.currentPage, object.total, object.payload)
   }
   public static fromEncoded(buf: [Buffer, Buffer, Buffer]): ChunkedPayload {
     if (!isBufferArray(buf)) {
-      throw new Error('UNEXPECTED TYPE OF PAYLOAD IN CHUNKED PAYLOAD CONSTRUCTOR')
+      throw new SerializerError(SerializerErrorType.UNEXPECTED_PAYLOAD, `Input value is not a buffer array`)
     }
     if (buf.length !== 3) {
-      throw new Error('INVALID CHUNKED PAYLOAD, NOT THE RIGHT AMOUNT OF ELEMENTS IN ARRAY')
+      throw new SerializerError(SerializerErrorType.UNEXPECTED_PAYLOAD, `Input value does not have the right length`)
     }
 
     // We know here that the buffer has the following signature

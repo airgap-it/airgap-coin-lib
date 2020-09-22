@@ -7,20 +7,48 @@ import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
 
 export class TezosProtocolStub implements ProtocolHTTPStub {
   public registerStub(testProtocolSpec: TestProtocolSpec, protocol: TezosProtocol) {
-    const stub = sinon.stub(axios, 'get')
+    const getStub = sinon.stub(axios, 'get')
+    const postStub = sinon.stub(axios, 'post')
 
-    stub
+    getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/`).returns(Promise.resolve({ data: { chain_id: 'NetXdQprcVkpaWU' } }))
+
+    postStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`).returns(
+      Promise.resolve({
+        data: {
+          contents: [
+            {
+              kind: 'transaction',
+              metadata: {
+                balance_updates: [],
+                operation_result: {
+                  status: 'applied',
+                  balance_updates: [],
+                  consumed_gas: '10300',
+                  paid_storage_size_diff: '0'
+                },
+                internal_operation_results: []
+              }
+            }
+          ],
+          signature: ''
+        }
+      })
+    )
+
+    getStub
       .withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${testProtocolSpec.wallet.addresses[0]}/counter`)
       .returns(Promise.resolve({ data: 917315 }))
-    stub
+    getStub
       .withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/hash`)
       .returns(Promise.resolve({ data: 'BMJyc7ga9kLV3vH4kbn6GXbBNjRkLEJVSyovoXyY84Er1zMmKKT' }))
-    stub
+    getStub
       .withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${testProtocolSpec.wallet.addresses[0]}/balance`)
       .returns(Promise.resolve({ data: 100000000 }))
-    stub
+    getStub
       .withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${testProtocolSpec.wallet.addresses[0]}/manager_key`)
       .returns(Promise.resolve({ data: { key: 'test-key' } }))
+
+    return { getStub, postStub }
   }
   public noBalanceStub(testProtocolSpec: TestProtocolSpec, protocol: TezosProtocol) {
     sinon

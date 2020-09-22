@@ -1,3 +1,4 @@
+// tslint:disable: max-classes-per-file
 import { SubstrateNetwork } from '../../../SubstrateNetwork'
 import { SCALEDecoder, SCALEDecodeResult } from '../scale/SCALEDecoder'
 import { SCALEArray } from '../scale/type/SCALEArray'
@@ -7,7 +8,7 @@ import { SCALEHash } from '../scale/type/SCALEHash'
 import { SCALEInt } from '../scale/type/SCALEInt'
 import { SCALETuple } from '../scale/type/SCALETuple'
 
-enum SubstrateJudgment {
+enum SubstrateJudgement {
   UNKNOWN = 0,
   FEE_PAID,
   REASONABLE,
@@ -76,15 +77,15 @@ export class SubstrateRegistration {
   public static decode(network: SubstrateNetwork, raw: string): SubstrateRegistration {
     const decoder = new SCALEDecoder(network, raw)
 
-    const judgments = decoder.decodeNextArray((network, hex) =>
+    const judgements = decoder.decodeNextArray((network, hex) =>
       SCALETuple.decode(
         network,
         hex,
         (_, first) => SCALEInt.decode(first, 32),
         (_, second) => {
-          const value = SCALEEnum.decode(second, (value) => SubstrateJudgment[SubstrateJudgment[value]])
+          const value = SCALEEnum.decode(second, (value) => SubstrateJudgement[SubstrateJudgement[value]])
           let bytesDecoded = value.bytesDecoded
-          if (value.decoded.value === SubstrateJudgment.FEE_PAID) {
+          if (value.decoded.value === SubstrateJudgement.FEE_PAID) {
             const balance = SCALEInt.decode(second.slice(0, bytesDecoded * 2), 128)
             bytesDecoded += balance.bytesDecoded
           }
@@ -99,11 +100,11 @@ export class SubstrateRegistration {
     const deposit = decoder.decodeNextInt(128)
     const identityInfo = decoder.decodeNextObject(SubstrateIdentityInfo.decode)
 
-    return new SubstrateRegistration(judgments.decoded, deposit.decoded, identityInfo.decoded)
+    return new SubstrateRegistration(judgements.decoded, deposit.decoded, identityInfo.decoded)
   }
 
   private constructor(
-    readonly judgments: SCALEArray<SCALETuple<SCALEInt, SCALEEnum<SubstrateJudgment>>>,
+    readonly judgements: SCALEArray<SCALETuple<SCALEInt, SCALEEnum<SubstrateJudgement>>>,
     readonly deposit: SCALEInt,
     readonly identityInfo: SubstrateIdentityInfo
   ) {}

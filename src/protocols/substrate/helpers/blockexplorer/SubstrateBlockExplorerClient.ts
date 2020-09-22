@@ -1,3 +1,4 @@
+import { SubstrateTransactionCursor } from './../../SubstrateTypes'
 import axios from '../../../../dependencies/src/axios-0.19.0'
 import BigNumber from '../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { IAirGapTransaction, AirGapTransactionStatus } from '../../../../interfaces/IAirGapTransaction'
@@ -6,12 +7,18 @@ import { SubstrateNetwork } from '../../SubstrateNetwork'
 export class SubstrateBlockExplorerClient {
   constructor(readonly network: SubstrateNetwork, readonly apiUrl: string) {}
 
-  public async getTransactions(address: string, size: number, pageNumber: number, protocolDecimals: number): Promise<IAirGapTransaction[]> {
-    const body = { row: size, page: pageNumber - 1, address }
+  public async getTransactions(
+    address: string,
+    limit: number,
+    protocolDecimals: number,
+    cursor?: SubstrateTransactionCursor
+  ): Promise<IAirGapTransaction[]> {
+    const body = cursor ? { row: limit, page: cursor.page, address: address } : { row: limit, page: 0, address: address }
     const responses = await Promise.all([
       axios.post(`${this.apiUrl}/transfers`, body),
       axios.post(`${this.apiUrl}/account/reward_slash`, body)
     ])
+
     const transfers = responses[0].data.data?.transfers
     const rewardSlash = responses[1].data.data?.list
 
@@ -28,9 +35,7 @@ export class SubstrateBlockExplorerClient {
               fee: tx.fee,
               hash: tx.hash,
               blockHeight: tx.block_num,
-              status: tx.success !== undefined 
-                ? tx.success ? AirGapTransactionStatus.APPLIED : AirGapTransactionStatus.FAILED
-                : undefined
+              status: tx.success !== undefined ? (tx.success ? AirGapTransactionStatus.APPLIED : AirGapTransactionStatus.FAILED) : undefined
             }
           })
       : []
@@ -53,6 +58,8 @@ export class SubstrateBlockExplorerClient {
           })
       : []
 
-    return airGapTransfers.concat(airGapPayouts)
+    return airGapTransfers
+      .concat(airGapPayouts)
+      .sort((a, b) => (a.timestamp !== undefined && b.timestamp !== undefined ? b.timestamp - a.timestamp : 0))
   }
 }

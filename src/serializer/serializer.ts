@@ -1,3 +1,4 @@
+import { SerializerError, SerializerErrorType } from '../errors'
 import { CosmosTransaction } from '../protocols/cosmos/CosmosTransaction'
 import { MainProtocolSymbols, ProtocolSymbols, SubProtocolSymbols } from '../utils/ProtocolSymbols'
 
@@ -55,7 +56,7 @@ export class Serializer {
     const protocolSpecificSchemaName: string = Serializer.getSchemName(schemaId, protocol)
 
     if (this.schemas.has(protocolSpecificSchemaName)) {
-      throw new Error(`Schema ${protocolSpecificSchemaName} already exists`)
+      throw new SerializerError(SerializerErrorType.SCHEMA_ALREADY_EXISTS, `Schema ${protocolSpecificSchemaName} already exists`)
     }
     this.schemas.set(protocolSpecificSchemaName, schema)
   }
@@ -68,7 +69,7 @@ export class Serializer {
       this.schemas.get(protocolSpecificSchemaName) ?? this.schemas.get(Serializer.getSchemName(schemaId))
 
     if (!schema) {
-      throw new Error(`Schema ${protocolSpecificSchemaName} does not exist`)
+      throw new SerializerError(SerializerErrorType.SCHEMA_DOES_NOT_EXISTS, `Schema ${protocolSpecificSchemaName} does not exist`)
     }
 
     return schema
@@ -88,21 +89,21 @@ export class Serializer {
 
       return iacps.map((iac: IACProtocol) => iac.encoded())
     } else {
-      throw Error('Unknown schema')
+      throw new SerializerError(SerializerErrorType.SCHEMA_DOES_NOT_EXISTS, `Unknown schema`)
     }
   }
 
   public async deserialize(data: string[]): Promise<IACMessageDefinitionObject[]> {
     const result: IACProtocol[] = IACProtocol.fromEncoded(data)
-    const deserializedIACMessageDefinitionObjects = result
+    const deserializedIACMessageDefinitionObjects: IACMessageDefinitionObject[] = result
       .map((el: IACProtocol) => el.payload)
       .map((el: Payload) => (el as FullPayload).asJson())
       .reduce((pv: IACMessageDefinitionObject[], cv: IACMessageDefinitionObject[]) => pv.concat(...cv), [] as IACMessageDefinitionObject[])
 
     return Promise.all(
-      deserializedIACMessageDefinitionObjects.map((object) => {
-        const unsignedTx = object.payload as UnsignedTransaction
-        const validator = this.serializationValidatorByProtocolIdentifier(object.protocol)
+      deserializedIACMessageDefinitionObjects.map((object: IACMessageDefinitionObject) => {
+        const unsignedTx: UnsignedTransaction = object.payload as UnsignedTransaction
+        const validator: TransactionValidator = this.serializationValidatorByProtocolIdentifier(object.protocol)
 
         return validator.validateUnsignedTransaction(unsignedTx)
       })

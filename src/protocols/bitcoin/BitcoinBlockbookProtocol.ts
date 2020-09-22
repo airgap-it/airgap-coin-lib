@@ -1,5 +1,6 @@
-import * as bitcoinJSMessage from 'bitcoinjs-message'
+import { BitcoinBlockbookTransactionCursor, BitcoinBlockbookTransactionResult } from './BitcoinTypes'
 
+import * as bitcoinJSMessage from '../../dependencies/src/bitcoinjs-message-2.1.1/index'
 import axios from '../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
@@ -37,7 +38,7 @@ export interface Transaction {
   vin: Vin[]
   vout: Vout[]
   blockhash: string
-  blockheight: number
+  blockHeight: number
   confirmations: number
   blocktime: number
   value: string
@@ -600,9 +601,9 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
   public async getTransactionsFromExtendedPublicKey(
     extendedPublicKey: string,
     limit: number,
-    offset: number,
+    cursor?: BitcoinBlockbookTransactionCursor,
     addressOffset = 0
-  ): Promise<IAirGapTransaction[]> {
+  ): Promise<BitcoinBlockbookTransactionResult> {
     const { data }: { data: XPubResponse } = await axios.get(
       this.options.network.extras.indexerApi + '/api/v2/xpub/' + extendedPublicKey + '?details=txs&tokens=used',
       {
@@ -654,7 +655,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
         isInbound: tempAirGapTransactionIsInbound,
         amount: amount.toString(10),
         fee: new BigNumber(transaction.fees).toString(10),
-        blockHeight: transaction.blockheight.toString(),
+        blockHeight: transaction.blockHeight.toString(),
         protocolIdentifier: this.identifier,
         network: this.options.network,
         timestamp: transaction.blocktime
@@ -663,17 +664,33 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
       airGapTransactions.push(airGapTransaction)
     }
 
-    return airGapTransactions
+    return {
+      transactions: airGapTransactions,
+      cursor: {
+        page: cursor ? cursor.page + 1 : 2
+      }
+    }
   }
 
-  public async getTransactionsFromPublicKey(publicKey: string, limit: number, offset: number): Promise<IAirGapTransaction[]> {
-    return this.getTransactionsFromAddresses([await this.getAddressFromPublicKey(publicKey)], limit, offset)
+  public async getTransactionsFromPublicKey(
+    publicKey: string,
+    limit: number,
+    cursor?: BitcoinBlockbookTransactionCursor
+  ): Promise<BitcoinBlockbookTransactionResult> {
+    return this.getTransactionsFromAddresses([await this.getAddressFromPublicKey(publicKey)], limit, cursor)
   }
 
-  public async getTransactionsFromAddresses(addresses: string[], limit: number, offset: number): Promise<IAirGapTransaction[]> {
+  public async getTransactionsFromAddresses(
+    addresses: string[],
+    limit: number,
+    cursor?: BitcoinBlockbookTransactionCursor
+  ): Promise<BitcoinBlockbookTransactionResult> {
     const airGapTransactions: IAirGapTransaction[] = []
 
-    const { data } = await axios.get<AddressResponse>(`${this.options.network.extras.indexerApi}/api/v2/utxo/${addresses[0]}?details=txs`, {
+    const url = cursor
+      ? `${this.options.network.extras.indexerApi}/api/v2/address/${addresses[0]}?page=${cursor.page}&pageSize=${limit}&details=txs`
+      : `${this.options.network.extras.indexerApi}/api/v2/address/${addresses[0]}?page=1&pageSize=${limit}&details=txs`
+    const { data } = await axios.get<AddressResponse>(url, {
       responseType: 'json'
     })
 
@@ -685,11 +702,11 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
       let amount = new BigNumber(0)
 
       for (const vin of transaction.vin) {
-        if (this.containsSome(vin.addresses, addresses)) {
+        if (vin.addresses && this.containsSome(vin.addresses, addresses)) {
           tempAirGapTransactionIsInbound = false
         }
         tempAirGapTransactionFrom.push(...vin.addresses)
-        amount = amount.plus(vin.value)
+        amount = vin.value ? amount.plus(vin.value) : amount
       }
 
       for (const vout of transaction.vout) {
@@ -717,7 +734,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
         isInbound: tempAirGapTransactionIsInbound,
         amount: amount.toString(10),
         fee: new BigNumber(transaction.fees).shiftedBy(this.feeDecimals).toString(10),
-        blockHeight: transaction.blockheight.toString(),
+        blockHeight: transaction.blockHeight.toString(),
         protocolIdentifier: this.identifier,
         network: this.options.network,
         timestamp: transaction.blocktime
@@ -726,7 +743,12 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
       airGapTransactions.push(airGapTransaction)
     }
 
-    return airGapTransactions
+    return {
+      transactions: airGapTransactions,
+      cursor: {
+        page: cursor ? cursor.page + 1 : 2
+      }
+    }
   }
 
   private containsSome(needles: any[], haystack: any[]): boolean {
