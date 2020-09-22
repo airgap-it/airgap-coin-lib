@@ -11,9 +11,8 @@ const expect: Chai.ExpectStatic = chai.expect
 const testData = [
   {
     message: {
-      id: 'TuNhidUG9E',
       type: 4,
-      protocol: 'ae',
+      protocol: 'xtz',
       payload: {
         publicKey: '3874b66ba5d9649082526b39260626796ec2a7364d07cc9bc44b7ca62414166b',
         derivationPath: 'm/44h/457h/0h/0h/0h',
@@ -21,14 +20,13 @@ const testData = [
       }
     },
     result: [
-      'QEBGNJUDkpZevtiV5ZYBid6PYVsoy27T7LczQGovTxNuCcQ8syCANuaGEwUquBeWXS9pwRpirsT8GwXf7TD3s27ZyXDg8oR6kcE6Vbg1PNL5YSqvKggKCqWf26pSJTaygpnp7TBJZjaoUQFw3DqYDiwMkt9m8pQs'
+      '2cervBwKDgab7dYghELbogqDoz6kxk8bCnwVr2cCQeaAUZC73pVWc2Q91cWQjVvG1Xqfakth5xBVSHrokhdb86H6xdtcKQnJjZiCuGVWB5v6XYcUSVXeF1CqHj4pom3sym8uuu5cy3jzX1bdzNo'
     ]
   },
   {
     message: {
-      id: 'jrH6G6j1L9',
       type: 4,
-      protocol: 'ae',
+      protocol: 'xtz',
       payload: {
         publicKey: '3874b66ba5d9649082526b39260626796ec2a7364d07cc9bc44b7ca62414166b',
         derivationPath: 'm/44h/457h/0h/0h/0h',
@@ -36,16 +34,14 @@ const testData = [
       }
     },
     result: [
-      'FmwWgLpsgsoHhvzX8RpZCLuadybt82ZomtD4rAxcnyQ9dCyLJv4pv1KRk95LPMonSYnBFJG9YX8uWTXe3jccy',
-      'FmwWgLpsoou4XDEDjKacXQFNaYwYvQtNUHdC4u4TJGsVhaswmHVWQLD7NjL4jbq8XwxJcqJLRJP95JvoLPSEN',
-      '3tRVFxw8NhtU7vUNAijpfZopmi4a'
+      'FmwWgLpsgrEBoZw7WCZ6JS4MkFFrkEHn4Ajq2QEJEk83qAaqAhw93CHdcTwhK7tAKZBta2hCu6x9nc6eXavNd',
+      'kojrhCXhvkv5exe5pL6oyaZfLdHXVkYV7rTogxrj7B8xuz5fj5gJejrxc3NyErpN7L3vgDd5kEppF3RXfq'
     ]
   },
   {
     message: {
-      id: 'FIacMdP7V7',
       type: 4,
-      protocol: 'btc',
+      protocol: 'xtz',
       payload: {
         publicKey: 'xpub6C8QAa1sHBz38wamg7f1MaF3hrGy9PbASdZ9agpYDYS8DQnYDdhQN458iVQBWpVbCgadtg65E4xLpjPoV2uxTiNdf3PnziySrWnoCauG2PN',
         derivationPath: "m/44'/0'/0'",
@@ -53,14 +49,13 @@ const testData = [
       }
     },
     result: [
-      '66ds3Rvy92D8gFd9dpatACJrYj3goYAhEZkY6NoX4AAZfetmZ95reAnhpAgnEM4D9JsxXdw3DwfX9vuBQPoWAqgMVaZZaFDrPCsHprUNdNXLo3u8rQhqTdXCF76JvhPVXWcnJDqGHZdbB7DEoQB4hRnyy7QQUmATgzJke4oT1yLBKCXvMFM2CCUjQ6Keddjxpgr8LhZRiNjpn3duWEnUME9'
+      '5f4YF67Jfi4qfWP7T4Sh5bmyxnd9jSu4yWBU2Ym4vmnHHyDDnccNoBc9hbkQe4oPFr2GUUeyYXYMNm5qQLFbNDNVFhpwGj5C25sNPtPo1hCUM74SqGrTPYo5GmGoirrpC84A35zBPw33XWeFmhB3ff4pdboeNFW4W1qcWJpeBvh87A54HpFahhdUHvXawN129qpYs2t5'
     ]
   },
   {
     message: {
-      id: 'RS4jrBosji',
       type: 4,
-      protocol: 'btc',
+      protocol: 'xtz',
       payload: {
         publicKey: 'xpub6C8QAa1sHBz38wamg7f1MaF3hrGy9PbASdZ9agpYDYS8DQnYDdhQN458iVQBWpVbCgadtg65E4xLpjPoV2uxTiNdf3PnziySrWnoCauG2PN',
         derivationPath: "m/44'/0'/0'",
@@ -68,16 +63,15 @@ const testData = [
       }
     },
     result: [
-      'FmwWgLpsgsoHifNYEuL33YBzszvnwNPjnnPnycD97b27fTSCjbqe8eGQP11V6y3nHmeKBhPC3F8nYSHYvqgZV',
+      'FmwWgLpsgsoHiTiaqMrEKs5SjwxPoJSg6AHEb5CEbsxW98TfjEsv8YAwAnJW9yEonmdnj4XAZ2NNmYwum52ot',
       'FmwWgLpsoou3xySMq2nfg3RczkmsLYtTqwoYHjhKcjvP7C4ijBUGzY9Fn5KahqvfthjdA4YxMbPhbQj2XJtdG',
-      'kojrhCZHPKEYxUoLPYbEASuwbTdSychmxswR2efjwF1k7WEQcUMX6qnDNJQujg4mSboMFrVk9rGCWuLsww'
+      'fF3vrSs8swCuXbRLfAGqkJqmB19pLtxDdNJBuMGTqH4hDFfce5KDtCPqRGgoL3qbmyA'
     ]
   },
   {
     message: {
-      id: 'PUvatKiEI3',
       type: 4,
-      protocol: 'cosmos',
+      protocol: 'xtz',
       payload: {
         publicKey: '020c4a25d3a5526691c097eff7e9c44bcdd25ba982c7d6704e05eee88e83f61d61',
         derivationPath: "m/44'/118'/0'/0/0",
@@ -85,14 +79,13 @@ const testData = [
       }
     },
     result: [
-      '3d11L5MFzJ49DMJjsoz8HA9Xx77Lyiuy1XDStrJo8gKjq52UK1KAi8GCYXMkKYZP8FgcczE98Z52SRPqcKHQhhgCTjeDxxaZUHzGUMcuHiDSaarZsQene5cXWp5n3fquPNET9oYbYAw2Fe2usasrTJu8ftLnLHA2yLTHZc'
+      '2cervBwKDgab7dYghELbogqCRjxWSrEw98Sw78o88wHtvAv5n8dibG7kvgVUfrtyRbuYKFoxNvZ3YygXmW5wasPa6RrYcuZqegbggUNUjaiF6nzq8hLM3cfUDg3DSE2GcaP9fKXbHsoDP9WwYzU'
     ]
   },
   {
     message: {
-      id: 'h0uHpSM0fr',
       type: 4,
-      protocol: 'cosmos',
+      protocol: 'xtz',
       payload: {
         publicKey: '020c4a25d3a5526691c097eff7e9c44bcdd25ba982c7d6704e05eee88e83f61d61',
         derivationPath: "m/44'/118'/0'/0/0",
@@ -100,16 +93,14 @@ const testData = [
       }
     },
     result: [
-      'FmwWgLpsgsoHi1EKe5NWKn2UY4bKY9BP8yryGj4gZjGGHC1bEToJfXTegybaVgFoxX5toXyhSD1nnzqEGyrKv',
-      'FmwWgLpsoou4Mw2p5npwqBjqcGmfNx96bofgKTkSGUK6x341GzznyzjykHHHuAjNAHNo1hK2FQbG4tE1L2Pgv',
-      'LFhi4Jim1CUyt2xKVS9nYYrKxqHLffXjn'
+      'FmwWgLpsgrEBoZw7WCZ6JS4MkFFriJ194qXJMs9NK31sHRi2DdeSXp55QsbVKpGireTndfLwHJw1uKpnGXMRT',
+      'kojrhCXhvkwKRaWYjCYSrMa653res7SL8zSTcireAwRsH4LJrUsfCaTy5s1R8134w6G5ZuLiKfd5Y5tdLJ'
     ]
   },
   {
     message: {
-      id: '6g67VUX3rq',
       type: 4,
-      protocol: 'eth',
+      protocol: 'xtz',
       payload: {
         publicKey: '03d79f5ab62e51c7b2960a204e81714826867fa030b1cd74b6ec9931995f130795',
         derivationPath: "m/44'/60'/0'/0/0",
@@ -117,14 +108,13 @@ const testData = [
       }
     },
     result: [
-      'QEBGNJUDkpZevtisHzUmTQkS4QFehuPKq9nYbvMtGvr4vuJ5SKZY6vqHUAckZQd27uAEaAgF2pegxfbhQ4CvhuyzdQ2MnnSHUqPFrysmDqoBxpE3gXTMUfTTvEZ56qJyxQsjPKjeNBk3gdNjVsew5WhgTXZ1DYku'
+      'NDdvRykiZcgZDjPKrLxp6vFqBVNePL8ehjwvnW4i5EffB5CAxvvZBih3doZDxopQge2tw4GdCAbnDSvmYCr5H6rFSM9838wM3iPqe5GSveWFgWegfK2DAaocyxEEBvHPi6PVKdfbSfR81XbLd'
     ]
   },
   {
     message: {
-      id: '1lJ8EHyFgC',
       type: 4,
-      protocol: 'eth',
+      protocol: 'xtz',
       payload: {
         publicKey: '03d79f5ab62e51c7b2960a204e81714826867fa030b1cd74b6ec9931995f130795',
         derivationPath: "m/44'/60'/0'/0/0",
@@ -132,16 +122,14 @@ const testData = [
       }
     },
     result: [
-      'FmwWgLpsgsoHhvzX8RpZEWGBYScu5vAPo7ufRYb447pzUgDYFohYurVQNFuqcHz3p5LzWmZCn1NfkyCG9WvgX',
-      'FmwWgLpsoou4bxfwm59Vh1xUjCZZJBZ7BCxx14rrgjCHYVXwSH4BWYK23TfpF96bYA1w5MaYKeVGMzB127Uxd',
-      '3tRVFxw8NhsyAxE8cizVpMgdKQan'
+      'FmwWgLpsgrEBoYsfNnfc4CvZnyhmHcZqKDrpC26hEwKdHffqEG6RTixGVagmKC3KiExhGyH3VqsTGypP3RqD3',
+      'AtJqRLnpuJdcwtV2HhheusbRVEvAS4ZC7K8GP1wzaN9tpwtDoWakuDzbs6Ueongdz2UAMxB9tqD18hAUN'
     ]
   },
   {
     message: {
-      id: 'LP1sCbsmyT',
       type: 4,
-      protocol: 'grs',
+      protocol: 'xtz',
       payload: {
         publicKey: 'xpub6DFzZR4RHVHG3A16dwMZWYYXTwg5dxerVFtpQFTixfhidujP9XqAeWkGPaH8LhPGpm4Dv3WgpBcrjsqxqhzdr39ZgvTdQzQPjE48u8hxciJ',
         derivationPath: "m/44'/17'/0'",
@@ -149,14 +137,13 @@ const testData = [
       }
     },
     result: [
-      'PVttrMLstECaVRyXyKXNzZuakmHEUVA4gTUUmJvHufvqhiRhXk4sDStFdLMPjty3JTKkgBDcdECfQVef6xhA3A1NYLSVDJebBCZba9hzzWjaHaMb3XNY47NKXPmgcTcq3oDnFKAEHhJJGTfRvGKiWzWyMjSDZ4BMaqh7SyHEijgR9Tz3DhiH4BH9UZ4XnmLqsK3YHqUqKfB3vGPEZkKzQTxS'
+      'MZ1hvMj9jMSXcYwZk3iogGHTnPpnT7xya3zDeioK59KYEdpL2VpE1PFSQqXTWm6zbsKv5Gj4KugXmSHw5YwT1A4LzZa5MbcPHDZdzS3bxx3XQApFLAszaqiB2VNuwoK2jYFKfVKaiabGydFjDdjVSSZRbLbNNSfmFcRTvPMsSyCRAmToo4ZBr6Vo2MpxLKMSTLMFrVqNQ'
     ]
   },
   {
     message: {
-      id: '7shAOs6Xql',
       type: 4,
-      protocol: 'grs',
+      protocol: 'xtz',
       payload: {
         publicKey: 'xpub6DFzZR4RHVHG3A16dwMZWYYXTwg5dxerVFtpQFTixfhidujP9XqAeWkGPaH8LhPGpm4Dv3WgpBcrjsqxqhzdr39ZgvTdQzQPjE48u8hxciJ',
         derivationPath: "m/44'/17'/0'",
@@ -164,16 +151,15 @@ const testData = [
       }
     },
     result: [
-      'FmwWgLpsgsoHigRzNKDXHojNKTFfwwQoXXx8QzjnnuwkPJPUJuSEukd5eZKjZsjb5GBRdiV8n5rmNohSu261g',
+      'FmwWgLpsgsoHiUn2xmjia6DEhDWVDysyqmwikvqyApzp8NtkNQhKCA4eA6QALHMU9CWpi591kHiWUTDgraJGB',
       'FmwWgLpsoou6E9V8nXR5SdS8Tkt2jFBdJN5AfJJgP18WE3VjRZdyqQBY15mnwzYGB18pe6qm92PyrNfYWHznt',
-      'FmwWgLpsvk1BqMA3svDbNRFxoA6sTeFY1aE6xS2QnfigJhDk7UTNMK7YVrwjkvz3DSNHzpZj6ENAe2biRDdMg'
+      '3vWTx4y3CqmzK18JsyqjhhgZz9983LrjN35QWyVqQx54h7x7wogUNmD9P9tHW8zCrShMr'
     ]
   },
   {
     message: {
-      id: 'wDxeoJzbC7',
       type: 4,
-      protocol: 'polkadot',
+      protocol: 'xtz',
       payload: {
         publicKey: '62af6bc3692698152918c618c9e9f995972ac299654d404998d6ec8055f6272c',
         derivationPath: "m/44'/354'/0'/0/0",
@@ -181,14 +167,13 @@ const testData = [
       }
     },
     result: [
-      '3d11L5MFzJ49DMJpwGVHs7ZhFoVts5n32HV55r7X5rJbARYJNiSFis9cDch1M3qcwZypE69hPcYXo6wHNpZnXFSVVtdyHEJoqCFGVYsKP8bJ9G2AH7T4qWdeUUUgVUt3BjjfGfzsvHbncQG7RMK8MdtSqMyUautwpK6iSv'
+      '5op5c6ufhBzafCMERhTpzNT6NTq3Rxx2vFiH2AAEzJjMDw3YuDZqVBb4L7hVTmcqDit77nYsy8JGTNHPp63cRGYL15StPpzDL84zA7JWBC5HbPmNwgvuRfg3YH7DhBfjGUnc4S7EcuCYZMXA'
     ]
   },
   {
     message: {
-      id: 'tZ4Df8w5hy',
       type: 4,
-      protocol: 'polkadot',
+      protocol: 'xtz',
       payload: {
         publicKey: '62af6bc3692698152918c618c9e9f995972ac299654d404998d6ec8055f6272c',
         derivationPath: "m/44'/354'/0'/0/0",
@@ -196,16 +181,14 @@ const testData = [
       }
     },
     result: [
-      'FmwWgLpsgsoHi1EKe5NWQ96JzwqU7R9m2G4aL8U3BtgDom35cR2qVzTpiFY85bF8UXTRgqF8MATLbwMmoV6Pz',
-      'FmwWgLpsoou4bzo3SHb4uxDRij2HKk4Yi9JURsoxEHVCBZM2f9ZBkCnvDiMDTaPRHNNs5LGtp3wNVCkaCoCMZ',
-      'LFhi4Jim1CSucAQ2PiXGtBGbxB1VBdx6z'
+      'FmwWgLpsgrEBoXpDFNn7oynmqi9ftsRAYwNgLJaGSqeixozXawwZGGhgjtKyhk7kxTD6T7c9vnEV12ZdxJYZv',
+      '3EN264ymrRziDC5oZpNo1K44XnzpXkWuYyy39KNiq2QHZxKYHiiSbstFR3QshcvkYvKS8QbMyL4V4xbE'
     ]
   },
   {
     message: {
-      id: 'ypOgLVKMm8',
       type: 4,
-      protocol: 'kusama',
+      protocol: 'xtz',
       payload: {
         publicKey: 'dc17d447b04b542c082177e9e499db2f474a41e772e43f5f1fd3a8fc1e3b332a',
         derivationPath: "m/44'/434'/0'/0/0",
@@ -213,14 +196,13 @@ const testData = [
       }
     },
     result: [
-      '8oWwx6VEgkDxDwkjbrDaKtqV8tKjGrr8Kb37xsNorGCMDqdNRiUkxGZ39x9MEAyMoUAfXJa4tU7CWbGyJM9jXkWyfY9afwu7WMw3MHCaLHSySEWrMaWbmw5SopAZ7EN1WKg2VX42tqXu99fKAc4wuxCbiM9ZBaBXMR4'
+      '5op5c6ufhBzafCMERhTpzNT6NTq3Rxx2vTvqnXYUoBsbTiFQDQvb6A7Ya912mHWkVigNUeWia8Bfi7up56sXo27ezenuiC6qudNFRZKfYJTR5Ga15mMXgfVgUHAkqUU9UuZ4KUsYNBpKZ6Yb'
     ]
   },
   {
     message: {
-      id: 'DDcpocOwSp',
       type: 4,
-      protocol: 'kusama',
+      protocol: 'xtz',
       payload: {
         publicKey: 'dc17d447b04b542c082177e9e499db2f474a41e772e43f5f1fd3a8fc1e3b332a',
         derivationPath: "m/44'/434'/0'/0/0",
@@ -228,14 +210,12 @@ const testData = [
       }
     },
     result: [
-      'FmwWgLpsgsoHhy7RPFbXqPdD3js4MjbYyoYYmnyVk9yeiHSz9mrRewfUW92nfkyC9HyhBekdJE8fEtRgYo5RH',
-      'FmwWgLpsoou443mZHh3U7onRPdLi1DHD3Qzs1n1QkkoJqkNLqZvbLkizJ2zMkz8TG7YgSm6pAojRV3QvRySu4',
-      'yn8ax9ANzLCdWCP522cauTjGDCupVi'
+      'FmwWgLpsgrEBoXpDFNn7oynmqi9ftsRAYwNgLJg1V166c4QXAcqRH91dwo8F3FuA777PLYFbs1sqFzsKyt9Fq',
+      '3EN264ymrRzf4wWSwzqKLNREgfH3EXYwpRK9VhCSE4UQLnrdNcz1yoVrasTK9mnxCN6zs6x336QiQHj5'
     ]
   },
   {
     message: {
-      id: 'IFdjGO2eKP',
       type: 4,
       protocol: 'xtz',
       payload: {
@@ -245,12 +225,11 @@ const testData = [
       }
     },
     result: [
-      '6GDUDKbtxw8oJvcGdDxxA2FRrdW93P8pFcMAqWAW2xXe1PDwpTMckdBSCFFQhDzRoFg7cJYPznsBwZBoKHT7kQ8tEDxpTJB7hDiS5P9otq8JPZcSP5MfCU9DP8emJ1gRRUHJtzMHCuMbuuMBx8k1y8h7TZDv2yQ'
+      '5op5c6ufhBzafCMERhTpzNT6NTq3S3arg2k3jxEWMvCHPY6ZU88W5Qtym5Vbv4GafxDN952udKyKaiQTTWGSzsw3jJ8Tntq37WwXSKk2PL5UcBbrk4UCD6SZ8fWdtxVTF5of9r8pr8ZDfLqV'
     ]
   },
   {
     message: {
-      id: 'EUD7whRc7n',
       type: 4,
       protocol: 'xtz',
       payload: {
@@ -260,19 +239,20 @@ const testData = [
       }
     },
     result: [
-      'FmwWgLpsgsoHhuw511w4zSHbWy5MHsiXiK5SWuQ9FXvpvBYaNbtg1asegx1ziRPw1SdH8bTkTNadiSWchByC4',
-      'FmwWgLpsoou4CZhkzT5BJTNpNvu3HsYYUtEhY7ijAzkrN1mtzH6SyPqmHXwCqdfSVxTKKgaT8KtW3iL8ZUszP',
-      'ekR2AcRtRjKqmnakY9149sJNpT'
+      'FmwWgLpsgrEBoXpDFNn7oynmqi9ftsRAYwQrggqouvNxtC6A99FykuHuQPk21oBvrLsMtXwdqkjFkWfiue2X2',
+      '3EN264ymrRzSVSpVgu1a1cwgjY1zpNu4YT3CoGPH2MMb6GLo1RqEuNnXY9NZiSi9xbD8oFrFYs6Hr9Ht'
     ]
   }
 ]
 
-describe(`Serializer V2, Message V1 deserialization`, async () => {
+describe(`Serializer V2, Message V0 deserialization`, async () => {
   testData.map((data) => {
-    return it(`Protocol: ${data.message.protocol}, Id: ${data.message.id}, (full / chunked)`, async () => {
+    return it(`Protocol: ${data.message.protocol}, (full / chunked)`, async () => {
       const serializer: Serializer = new Serializer()
 
       const reconstructed: IACMessageDefinitionObject[] = await serializer.deserialize(data.result)
+
+      ;(data.message as any).id = reconstructed[0].id // The old serializer doesn't have an ID, so a random one is generated
 
       expect(reconstructed[0]).to.deep.equal(data.message)
     })

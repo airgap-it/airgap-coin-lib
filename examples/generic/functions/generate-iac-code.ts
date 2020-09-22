@@ -23,7 +23,7 @@ export const generateIACCode: (
     payload: {
       publicKey,
       derivationPath: protocol.standardDerivationPath, // This could be replaced by the default derivation path
-      isExtendedPublicKey: protocol.identifier === 'btc' || protocol.identifier === 'grs'
+      isExtendedPublicKey: protocol.identifier === MainProtocolSymbols.BTC || protocol.identifier === MainProtocolSymbols.GRS
     }
   }
 
