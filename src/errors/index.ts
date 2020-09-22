@@ -1,6 +1,6 @@
 import { CoinlibError, Domain } from './coinlib-error'
 
-enum SerializerErrors {
+export enum SerializerErrorType {
   SERIALIZER_VERSION_MISMATCH = 'SERIALIZER_VERSION_MISMATCH',
   PROTOCOL_NOT_SUPPORTED = 'PROTOCOL_NOT_SUPPORTED',
   PROTOCOL_VERSION_MISMATCH = 'PROTOCOL_VERSION_MISMATCH',
@@ -8,7 +8,15 @@ enum SerializerErrors {
   INVALID_SCHEMA = 'INVALID_SCHEMA',
   INVALID_SCHEMA_TYPE = 'INVALID_SCHEMA_TYPE',
   INVALID_HEX_STRING = 'INVALID_HEX_STRING',
-  INVALID_STRING = 'INVALID_STRING'
+  INVALID_STRING = 'INVALID_STRING',
+  SCHEMA_ALREADY_EXISTS = 'SCHEMA_ALREADY_EXISTS',
+  SCHEMA_DOES_NOT_EXISTS = 'SCHEMA_DOES_NOT_EXISTS',
+  UNEXPECTED_PAYLOAD = 'UNEXPECTED_PAYLOAD',
+  PAYLOAD_TYPE_UNKNOWN = 'PAYLOAD_TYPE_UNKNOWN',
+  PAYLOAD_TYPE_MISMATCH = 'PAYLOAD_TYPE_MISMATCH',
+  PAYLOAD_TYPE_NOT_SUPPORTED = 'PAYLOAD_TYPE_NOT_SUPPORTED',
+  PROPERTY_IS_EMPTY = 'PROPERTY_IS_EMPTY',
+  PROPERTY_INVALID = 'PROPERTY_INVALID'
 }
 
 export class SerializerError extends CoinlibError {
@@ -24,7 +32,7 @@ export class SerializerError extends CoinlibError {
  */
 export class SerializerVersionMismatch extends SerializerError {
   constructor(description?: string) {
-    super(SerializerErrors.SERIALIZER_VERSION_MISMATCH, description)
+    super(SerializerErrorType.SERIALIZER_VERSION_MISMATCH, description)
   }
 }
 
@@ -33,7 +41,7 @@ export class SerializerVersionMismatch extends SerializerError {
  */
 export class ProtocolNotSupported extends SerializerError {
   constructor(description?: string) {
-    super(SerializerErrors.PROTOCOL_NOT_SUPPORTED, description)
+    super(SerializerErrorType.PROTOCOL_NOT_SUPPORTED, description)
   }
 }
 
@@ -42,7 +50,7 @@ export class ProtocolNotSupported extends SerializerError {
  */
 export class ProtocolVersionMismatch extends SerializerError {
   constructor(description?: string) {
-    super(SerializerErrors.PROTOCOL_VERSION_MISMATCH, description)
+    super(SerializerErrorType.PROTOCOL_VERSION_MISMATCH, description)
   }
 }
 
@@ -51,7 +59,7 @@ export class ProtocolVersionMismatch extends SerializerError {
  */
 export class TypeNotSupported extends SerializerError {
   constructor(description?: string) {
-    super(SerializerErrors.TYPE_NOT_SUPPORTED, description)
+    super(SerializerErrorType.TYPE_NOT_SUPPORTED, description)
   }
 }
 
@@ -60,7 +68,7 @@ export class TypeNotSupported extends SerializerError {
  */
 export class InvalidSchema extends SerializerError {
   constructor(description?: string) {
-    super(SerializerErrors.INVALID_SCHEMA, description)
+    super(SerializerErrorType.INVALID_SCHEMA, description)
   }
 }
 
@@ -69,7 +77,7 @@ export class InvalidSchema extends SerializerError {
  */
 export class InvalidSchemaType extends SerializerError {
   constructor(description?: string) {
-    super(SerializerErrors.INVALID_SCHEMA_TYPE, description)
+    super(SerializerErrorType.INVALID_SCHEMA_TYPE, description)
   }
 }
 
@@ -78,7 +86,7 @@ export class InvalidSchemaType extends SerializerError {
  */
 export class InvalidHexString extends SerializerError {
   constructor(description?: string) {
-    super(SerializerErrors.INVALID_HEX_STRING, description)
+    super(SerializerErrorType.INVALID_HEX_STRING, description)
   }
 }
 
@@ -87,6 +95,6 @@ export class InvalidHexString extends SerializerError {
  */
 export class InvalidString extends SerializerError {
   constructor(description?: string) {
-    super(SerializerErrors.INVALID_STRING, description)
+    super(SerializerErrorType.INVALID_STRING, description)
   }
 }

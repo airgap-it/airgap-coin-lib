@@ -1,3 +1,4 @@
+import { SerializerError, SerializerErrorType } from '../errors'
 import { MainProtocolSymbols, ProtocolSymbols } from '../utils/ProtocolSymbols'
 
 import { IACMessageType } from './interfaces'
@@ -185,7 +186,7 @@ export class Message implements IACMessageDefinitionObject {
     validate: (value: U) => boolean
   ): T {
     if (typeof buffer === 'undefined') {
-      throw Error(`${property} is empty`)
+      throw new SerializerError(SerializerErrorType.PROPERTY_IS_EMPTY, `${property} is empty`)
     }
 
     const parsed: U = parse(buffer)
@@ -194,6 +195,6 @@ export class Message implements IACMessageDefinitionObject {
       return (parsed as unknown) as T // TODO: Use type guard?
     }
 
-    throw new Error(`${property} is invalid: "${parsed}"`)
+    throw new SerializerError(SerializerErrorType.PROPERTY_IS_EMPTY, `${property} is invalid: "${parsed}"`)
   }
 }

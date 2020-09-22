@@ -1,5 +1,6 @@
 import * as bs58check from '../dependencies/src/bs58check-2.1.2/index'
 import * as rlp from '../dependencies/src/rlp-2.2.3/index'
+import { SerializerError, SerializerErrorType } from '../errors'
 
 import { IACMessageDefinitionObject } from './message'
 import { ChunkedPayload } from './payloads/chunked-payload'
@@ -28,7 +29,7 @@ export class IACProtocol {
       this.payloadType = IACPayloadType.CHUNKED
       this.payload = data
     } else {
-      throw new Error('Unknown Payload type!')
+      throw new SerializerError(SerializerErrorType.PAYLOAD_TYPE_UNKNOWN, `Is neither "Full" nor "Chunked".`)
     }
   }
 
@@ -68,27 +69,25 @@ export class IACProtocol {
     let finalPayload: Payload | undefined
 
     // make sure that all are the same type
-    let globalType: string | undefined
+    let globalType: number | undefined
     data.forEach((entry: string) => {
       const decoded: Buffer[] = rlp.decode(bs58check.decode(entry))
       // const version: string = decoded[0].toString()
-      const type: string = decoded[1].toString()
+      const type: number = parseInt(decoded[1].toString(), 10)
 
-      globalType = globalType || type
+      globalType = globalType ?? type
       if (globalType !== type) {
-        throw new Error('NOT SAME TYPE')
+        throw new SerializerError(SerializerErrorType.PAYLOAD_TYPE_MISMATCH, 'All types within a group must either be "full" or "chunked".')
       }
 
-      if (type === '0') {
-        // full
+      if (type === IACPayloadType.FULL) {
         const payload: Buffer[] = (decoded[2] as any) as Buffer[]
         finalPayload = FullPayload.fromEncoded(payload)
-      } else if (type === '1') {
-        // chunked
+      } else if (type === IACPayloadType.CHUNKED) {
         const payload: [Buffer, Buffer, Buffer] = (decoded[2] as any) as [Buffer, Buffer, Buffer]
         chunked.push(ChunkedPayload.fromEncoded(payload))
       } else {
-        throw new Error('EMPTY ARRAY')
+        throw new SerializerError(SerializerErrorType.PAYLOAD_TYPE_NOT_SUPPORTED, `Type "${type}" is unknown.`)
       }
     })
 
