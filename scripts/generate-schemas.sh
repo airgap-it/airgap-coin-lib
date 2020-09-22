@@ -1,5 +1,7 @@
 #!/bin/bash
 
+./node_modules/.bin/ts-json-schema-generator --path 'src/serializer/schemas/definitions/account-share-request.ts' --tsconfig 'tsconfig.json' > src/serializer/schemas/generated/account-share-request.json
+
 ./node_modules/.bin/ts-json-schema-generator --path 'src/serializer/schemas/definitions/account-share-response.ts' --tsconfig 'tsconfig.json' > src/serializer/schemas/generated/account-share-response.json
 
 ./node_modules/.bin/ts-json-schema-generator --path 'src/serializer/schemas/definitions/message-sign-request.ts' --tsconfig 'tsconfig.json' > src/serializer/schemas/generated/message-sign-request.json

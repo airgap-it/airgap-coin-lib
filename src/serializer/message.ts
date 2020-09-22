@@ -56,8 +56,8 @@ export interface MessageDefinitionArray {
   [0]: Buffer // string // Version
   [1]: Buffer // string // Type
   [2]: Buffer // ProtocolSymbols // Protocol
-  [3]: Buffer // string // Id
-  [4]: Buffer // RLPData // Message
+  [3]: Buffer // RLPData // Message
+  [4]: Buffer // string // Session ID
 }
 
 export class Message implements IACMessageDefinitionObject {
@@ -98,7 +98,7 @@ export class Message implements IACMessageDefinitionObject {
   public asArray(): RLPData /* it could be MessageDefinitionArray */ {
     const array: RLPData = jsonToArray('root', this.schema, this.payload)
 
-    return [this.version, this.type.toString(), this.protocol, this.id, array]
+    return [this.version, this.type.toString(), this.protocol, array, this.id]
   }
 
   public static fromDecoded(object: IACMessageDefinitionObject): Message {
@@ -111,11 +111,11 @@ export class Message implements IACMessageDefinitionObject {
     const protocol: ProtocolSymbols = this.parseProtocol(buf[2])
 
     // Backwards compatiblity for version 0, before we had an ID
-    const idBuf: Buffer | undefined = version === '1' ? buf[3] : Buffer.from(generateId(ID_LENGTH))
-    const payloadBuf: Buffer | undefined = version === '1' ? buf[4] : buf[3]
+    const idBuf: Buffer | undefined = version === '0' ? Buffer.from(generateId(ID_LENGTH)) : buf[4]
     // End Backwards compatibility
+
     const id: string = this.parseId(idBuf)
-    const encodedPayload: RLPData = this.parsePayload(payloadBuf)
+    const encodedPayload: RLPData = this.parsePayload(buf[3])
 
     const schemaInfo: SchemaInfo = Serializer.getSchema(type, protocol)
     const schema: SchemaItem = unwrapSchema(schemaInfo.schema)
