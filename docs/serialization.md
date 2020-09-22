@@ -137,3 +137,91 @@ A simple wrapper that splits up the playload into multiple chunks could look lik
 ```
 
 The app would then have to collect all chunks, and pass them into the deserializer together, which will then strip away the metadata, merge the chunks and decode the underlying data.
+
+## Serializer Versions
+
+### Legacy
+
+The legacy serializer can be found in the `SyncProtocolUtils`.
+
+### Version 0
+
+Same as Version 1, but without the random ID on the message level.
+
+### Version 1
+
+#### Message
+
+RLP
+
+```
+[
+  1, // MessageVersion
+  4, // MessageType
+  "btc", // Protocol
+  [                 // Payload depending on the MessageType
+    "m/0",          // derivationPath
+    0,              // isExtendedPublicKey: false
+    "my-public-key" // publicKey
+  ]
+  "random__id" // A 10 digit, random message ID
+]
+```
+
+```
+{
+  version: 1,
+  protocol: "btc",
+  type: IACMessageType.AccountShareResponse,
+  payload: {
+    derivationPath: "m/0"
+    isExtendedPublicKey: false,
+    publicKey: "my-public-key",
+  },
+  id: 'random__id'
+}
+
+```
+
+#### Full Payload
+
+```
+[
+  1, // ProtocolVersion
+  1, // SerializationType: Full or Chunked
+  [
+    // Array of Messages
+    [
+      1, // MessageVersion
+      2, // MessageType
+      "ae", // Protocol
+      "payload" // Payload depending on the MessageType
+      "random__id" // Random message ID
+    ],
+    [
+      1, // MessageVersion
+      3, // MessageType
+      "ae", // Protocol
+      "payload" // Payload depending on the MessageType
+      "random__id" // Random message ID
+    ]
+  ]
+];
+```
+
+#### Chunked Payload
+
+```
+[
+  1, // ProtocolVersion
+  1, // SerializationType: Full or Chunked
+  [
+    // Array of Messages
+    [
+      1, // Current Page
+      4, // Number of pages
+      "payload of current chunk as string"
+    ]
+  ]
+];
+```

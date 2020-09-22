@@ -94,15 +94,15 @@ export class Serializer {
 
   public async deserialize(data: string[]): Promise<IACMessageDefinitionObject[]> {
     const result: IACProtocol[] = IACProtocol.fromEncoded(data)
-    const deserializedIACMessageDefinitionObjects = result
+    const deserializedIACMessageDefinitionObjects: IACMessageDefinitionObject[] = result
       .map((el: IACProtocol) => el.payload)
       .map((el: Payload) => (el as FullPayload).asJson())
       .reduce((pv: IACMessageDefinitionObject[], cv: IACMessageDefinitionObject[]) => pv.concat(...cv), [] as IACMessageDefinitionObject[])
 
     return Promise.all(
-      deserializedIACMessageDefinitionObjects.map((object) => {
-        const unsignedTx = object.payload as UnsignedTransaction
-        const validator = this.serializationValidatorByProtocolIdentifier(object.protocol)
+      deserializedIACMessageDefinitionObjects.map((object: IACMessageDefinitionObject) => {
+        const unsignedTx: UnsignedTransaction = object.payload as UnsignedTransaction
+        const validator: TransactionValidator = this.serializationValidatorByProtocolIdentifier(object.protocol)
 
         return validator.validateUnsignedTransaction(unsignedTx)
       })
