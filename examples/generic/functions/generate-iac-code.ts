@@ -19,7 +19,7 @@ export const generateIACCode: (
   const accountShareMessage: IACMessageDefinitionObject = {
     id: generateId(10),
     type: IACMessageType.AccountShareResponse,
-    protocol: MainProtocolSymbols.XTZ,
+    protocol: protocol.identifier,
     payload: {
       publicKey,
       derivationPath: protocol.standardDerivationPath, // This could be replaced by the default derivation path
