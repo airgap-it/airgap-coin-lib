@@ -483,6 +483,13 @@ export class SubstrateAccountController {
       })
     }
 
+    if (isUnbonding && isDelegating && isElectionClosed) {
+      availableActions.push({
+        type: SubstrateStakingActionType.REBOND_EXTRA,
+        args: ['value']
+      })
+    }
+
     if (isDelegating && isElectionClosed) {
       if (
         validatorAddresses.every((validator) => currentValidators.includes(validator)) &&

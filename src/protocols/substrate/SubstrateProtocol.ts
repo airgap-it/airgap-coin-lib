@@ -372,6 +372,10 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
         assertFields(`${SubstrateStakingActionType[type]} action`, data, 'value')
 
         return this.prepareBondExtra(publicKey, data.tip || 0, data.value)
+      case SubstrateStakingActionType.REBOND_EXTRA:
+        assertFields(`${SubstrateStakingActionType[type]} action`, data, 'value')
+
+        return this.prepareRebondExtra(publicKey, data.tip || 0, data.value)
       case SubstrateStakingActionType.WITHDRAW_UNBONDED:
         return this.prepareWithdrawUnbonded(publicKey, data.tip || 0)
       case SubstrateStakingActionType.CHANGE_REWARD_DESTINATION:
@@ -581,6 +585,49 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
         }
       }
     ])
+
+    return [{ encoded }]
+  }
+
+  public async prepareRebondExtra(
+    publicKey: string,
+    tip: string | number | BigNumber,
+    value: string | number | BigNumber
+  ): Promise<RawSubstrateTransaction[]> {
+    const [transferableBalance, lockedBalance] = await Promise.all([
+      this.options.accountController.getTransferableBalance(publicKey, false),
+      this.options.accountController.getUnlockingBalance(publicKey)
+    ])
+
+    const toDelegate = BigNumber.isBigNumber(value) ? value : new BigNumber(value)
+
+    const configs: SubstrateTransactionConfig[] =
+      toDelegate.gt(lockedBalance)
+      ? [
+          {
+            type: SubstrateTransactionType.REBOND,
+            tip,
+            args: {
+              value: lockedBalance
+            }
+          },
+          {
+            type: SubstrateTransactionType.BOND_EXTRA,
+            tip,
+            args: {
+              value: toDelegate.minus(lockedBalance)
+            }
+          },
+        ]
+      : [{
+          type: SubstrateTransactionType.REBOND,
+          tip,
+          args: {
+            value: toDelegate
+          }
+        }]
+
+    const encoded = await this.options.transactionController.prepareSubmittableTransactions(publicKey, transferableBalance, configs)
 
     return [{ encoded }]
   }
