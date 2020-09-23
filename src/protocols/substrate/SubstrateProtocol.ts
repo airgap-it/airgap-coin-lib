@@ -9,7 +9,7 @@ import { DelegateeDetails, DelegationDetails, DelegatorDetails, ICoinDelegatePro
 import { CurrencyUnit, FeeDefaults } from '../ICoinProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
 
-import { SubstrateAddress } from './helpers/data/account/SubstrateAddress'
+import { SubstrateAccountId, SubstrateAddress } from './helpers/data/account/SubstrateAddress'
 import { SubstratePayee } from './helpers/data/staking/SubstratePayee'
 import { SubstrateStakingActionType } from './helpers/data/staking/SubstrateStakingActionType'
 import { SubstrateTransactionType } from './helpers/data/transaction/SubstrateTransaction'
@@ -669,34 +669,15 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     return (maxValue.gte(0) ? maxValue : new BigNumber(0)).toString(10)
   }
 
-  private async getTransactionDetailsFromEncoded(encoded: string): Promise<IAirGapTransaction[]> {
-    const txs = this.options.transactionController.decodeDetails(encoded)
-
-    return txs
-      .map((tx) => {
-        return tx.transaction.toAirGapTransactions().map((part) => ({
-          from: [],
-          to: [],
-          amount: '',
-          fee: tx.fee.toString(),
-          protocolIdentifier: this.identifier,
-          network: this.options.network,
-          isInbound: false,
-          ...part
-        }))
-      })
-      .reduce((flatten, toFlatten) => flatten.concat(toFlatten), [])
-  }
-
-  private async getFutureRequiredTransactions(
-    publicKey: string,
+  public async getFutureRequiredTransactions(
+    accountId: SubstrateAccountId,
     intention: 'check' | 'transfer' | 'delegate'
   ): Promise<[SubstrateTransactionType, any][]> {
     const results = await Promise.all([
-      this.options.accountController.isBonded(publicKey),
-      this.options.accountController.isNominating(publicKey),
-      this.options.accountController.getTransferableBalance(publicKey),
-      this.options.accountController.getUnlockingBalance(publicKey)
+      this.options.accountController.isBonded(accountId),
+      this.options.accountController.isNominating(accountId),
+      this.options.accountController.getTransferableBalance(accountId),
+      this.options.accountController.getUnlockingBalance(accountId)
     ])
 
     const isBonded = results[0]
@@ -798,6 +779,25 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     }
 
     return requiredTransactions
+  }
+
+  private async getTransactionDetailsFromEncoded(encoded: string): Promise<IAirGapTransaction[]> {
+    const txs = this.options.transactionController.decodeDetails(encoded)
+
+    return txs
+      .map((tx) => {
+        return tx.transaction.toAirGapTransactions().map((part) => ({
+          from: [],
+          to: [],
+          amount: '',
+          fee: tx.fee.toString(),
+          protocolIdentifier: this.identifier,
+          network: this.options.network,
+          isInbound: false,
+          ...part
+        }))
+      })
+      .reduce((flatten, toFlatten) => flatten.concat(toFlatten), [])
   }
 
   public async signMessage(message: string, keypair: { publicKey: string; privateKey: Buffer }): Promise<string> {
