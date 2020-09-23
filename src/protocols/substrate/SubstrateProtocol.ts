@@ -16,7 +16,7 @@ import { SubstrateTransactionType } from './helpers/data/transaction/SubstrateTr
 import { SubstrateTransactionConfig } from './helpers/SubstrateTransactionController'
 import { SubstrateCryptoClient } from './SubstrateCryptoClient'
 import { SubstrateProtocolOptions } from './SubstrateProtocolOptions'
-import { SubstrateTransactionResult, SubstrateTransactionCursor } from './SubstrateTypes'
+import { SubstrateTransactionCursor, SubstrateTransactionResult } from './SubstrateTypes'
 
 export abstract class SubstrateProtocol extends NonExtendedProtocol implements ICoinDelegateProtocol {
   public abstract symbol: string
@@ -166,7 +166,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     const transferableBalance = results[0]
     const futureTransactions = results[1]
 
-    const feeEstimate = await this.options.transactionController.estimateTransactionFees(futureTransactions)
+    const feeEstimate = await this.options.transactionController.estimateTransactionFees(publicKey, futureTransactions)
 
     if (!feeEstimate) {
       return Promise.reject('Could not estimate max value.')
@@ -658,7 +658,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     const transferableBalance = results[0]
     const futureTransactions = results[1]
 
-    const feeEstimate = await this.options.transactionController.estimateTransactionFees(futureTransactions)
+    const feeEstimate = await this.options.transactionController.estimateTransactionFees(address, futureTransactions)
 
     if (!feeEstimate) {
       return Promise.reject('Could not estimate max value.')
@@ -766,7 +766,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
         [
           SubstrateTransactionType.UNBOND,
           {
-            value: transferableBalance
+            value: transferableBalance.plus(unlockingBalance)
           }
         ],
         [

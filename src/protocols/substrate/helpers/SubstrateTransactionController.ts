@@ -136,12 +136,12 @@ export class SubstrateTransactionController {
     return partialEstimate?.plus(transaction.tip.value) || null
   }
 
-  public async estimateTransactionFees(transationTypes: [SubstrateTransactionType, any][]): Promise<BigNumber | null> {
+  public async estimateTransactionFees(accountId: SubstrateAccountId, transationTypes: [SubstrateTransactionType, any][]): Promise<BigNumber | null> {
     const fees = await Promise.all(
       transationTypes
         .map(([type, args]) => [type, args, this.nodeClient.getSavedLastFee(type, 'largest')] as [SubstrateTransactionType, any, BigNumber])
         .map(async ([type, args, fee]) =>
-          fee ? fee : this.calculateTransactionFee(await this.createTransaction(type, SubstrateAddress.createPlaceholder(), 0, args))
+          fee ? fee : this.calculateTransactionFee(await this.createTransaction(type, SubstrateAddress.from(accountId, this.network), 0, args))
         )
     )
 
