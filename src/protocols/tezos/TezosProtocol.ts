@@ -580,13 +580,13 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
   public async estimateMaxTransactionValueFromPublicKey(publicKey: string, recipients: string[], fee?: string): Promise<string> {
     const balance = await this.getBalanceOfPublicKey(publicKey)
-    const balanceWrapper = new BigNumber(balance)
+    const balanceWrapper = (new BigNumber(balance)).minus(1) // Tezos accounts can never be empty. We must leave at least 1 mutez behind.
 
     let maxFee: BigNumber
     if (fee !== undefined) {
       maxFee = new BigNumber(fee)
     } else {
-      const estimatedFeeDefaults = await this.estimateFeeDefaultsFromPublicKey(publicKey, recipients, [balance])
+      const estimatedFeeDefaults = await this.estimateFeeDefaultsFromPublicKey(publicKey, recipients, [balanceWrapper.toFixed()])
       maxFee = new BigNumber(estimatedFeeDefaults.medium).shiftedBy(this.decimals)
       if (maxFee.gte(balanceWrapper)) {
         maxFee = new BigNumber(0)
@@ -1150,7 +1150,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
         const operation: TezosOperation = content
 
         const result: RunOperationOperationResult = metadata.operation_result
-
         let gasLimit: number = 0
         let storageLimit: number = 0
 
