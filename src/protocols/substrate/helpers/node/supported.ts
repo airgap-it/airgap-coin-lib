@@ -40,7 +40,8 @@ export const supportedCalls = {
     'chill',
     'set_payee',
     'set_controller',
-    'payout_stakers'
+    'payout_stakers',
+    'rebond'
   ] as const,
   Utility: ['batch'] as const
 }
@@ -82,6 +83,7 @@ export const supportedCallEndpoints: Map<SubstrateTransactionType, [SubstrateCal
   createCallEndpointEntry(SubstrateTransactionType.COLLECT_PAYOUT, 'Staking', 'payout_stakers'),
   createCallEndpointEntry(SubstrateTransactionType.SET_PAYEE, 'Staking', 'set_payee'),
   createCallEndpointEntry(SubstrateTransactionType.SET_CONTROLLER, 'Staking', 'set_controller'),
+  createCallEndpointEntry(SubstrateTransactionType.REBOND, 'Staking', 'rebond'),
   createCallEndpointEntry(SubstrateTransactionType.SUBMIT_BATCH, 'Utility', 'batch')
 ])
 

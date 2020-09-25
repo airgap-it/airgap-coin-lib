@@ -580,13 +580,13 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
   public async estimateMaxTransactionValueFromPublicKey(publicKey: string, recipients: string[], fee?: string): Promise<string> {
     const balance = await this.getBalanceOfPublicKey(publicKey)
-    const balanceWrapper = new BigNumber(balance)
+    const balanceWrapper = (new BigNumber(balance)).minus(1) // Tezos accounts can never be empty. We must leave at least 1 mutez behind.
 
     let maxFee: BigNumber
     if (fee !== undefined) {
       maxFee = new BigNumber(fee)
     } else {
-      const estimatedFeeDefaults = await this.estimateFeeDefaultsFromPublicKey(publicKey, recipients, [balance])
+      const estimatedFeeDefaults = await this.estimateFeeDefaultsFromPublicKey(publicKey, recipients, [balanceWrapper.toFixed()])
       maxFee = new BigNumber(estimatedFeeDefaults.medium).shiftedBy(this.decimals)
       if (maxFee.gte(balanceWrapper)) {
         maxFee = new BigNumber(0)
@@ -616,7 +616,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       const recipient = recipients[i]
       const transaction: Partial<TezosTransactionOperation> = {
         kind: TezosOperationType.TRANSACTION,
-        amount: BigNumber.min(value, 1).toFixed(), // for fee estimation purposes, the value of amount us not really important, we we put the lowset amount possible (1 mutez) to avoid "balance_too_low" or "empty_implicit_delegated_contract" errors
+        amount: value,
         destination: recipient,
         fee: '0'
       }
@@ -804,11 +804,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
         throw new Error('not enough balance')
       }
 
-      const adjustedFee: BigNumber = recipients[0].toLowerCase().startsWith('kt') ? wrappedFee.plus(500) : wrappedFee
-
       const spendOperation: TezosTransactionOperation = {
         kind: TezosOperationType.TRANSACTION,
-        fee: adjustedFee.toFixed(),
+        fee: wrappedFee.toFixed(),
         gas_limit: GAS_LIMIT_PLACEHOLDER,
         storage_limit: STORAGE_LIMIT_PLACEHOLDER,
         amount: wrappedValues[i].toFixed(),
@@ -1152,7 +1150,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
         const operation: TezosOperation = content
 
         const result: RunOperationOperationResult = metadata.operation_result
-
         let gasLimit: number = 0
         let storageLimit: number = 0
 

@@ -86,7 +86,7 @@ export class TezosUSDProtocolConfig extends TezosFAProtocolConfig {
       medium: '0.300',
       high: '0.500'
     },
-    decimals: number = 8
+    decimals: number = 6
   ) {
     super(symbol, name, marketSymbol, identifier, contractAddress, feeDefaults, decimals)
   }

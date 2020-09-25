@@ -1,8 +1,8 @@
 image: docker:latest
 
 variables:
-  IMAGE_TAG_LATEST: $CI_REGISTRY_IMAGE:latest
-  IMAGE_TAG_CURRENT: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+  GOOGLE_TAG: eu.gcr.io/papers-kubernetes/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$CI_COMMIT_SHA
+  GOOGLE_TAG_LATEST: eu.gcr.io/papers-kubernetes/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:latest
 
 stages:
   - build
@@ -12,26 +12,20 @@ stages:
 
 build:
   stage: build
-  before_script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
   script:
-    - docker build --cache-from $IMAGE_TAG_LATEST -t $IMAGE_TAG_LATEST .
-    - docker tag $IMAGE_TAG_LATEST $IMAGE_TAG_CURRENT
-    - docker push $IMAGE_TAG_CURRENT
-    - docker push $IMAGE_TAG_LATEST
+    - docker build -t $GOOGLE_TAG .
   tags:
     - docker
 
 unit:
   stage: test
   before_script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker rm -f unit-$CI_COMMIT_SHA || true
     - docker rm -f unit-legacy-$CI_COMMIT_SHA || true
   script:
-    - docker run --name unit-$CI_COMMIT_SHA $IMAGE_TAG_CURRENT /bin/bash -c "npm run install-test-dependencies; npm run test-ci"
-    - docker run --name unit-legacy-$CI_COMMIT_SHA $IMAGE_TAG_CURRENT /bin/bash -c "npm run install-test-dependencies; npm run test-legacy"
-    - docker run --name lint-$CI_COMMIT_SHA $IMAGE_TAG_CURRENT /bin/bash -c "npm run install-test-dependencies; npm run lint-ci"
+    - docker run --name unit-$CI_COMMIT_SHA $GOOGLE_TAG /bin/bash -c "npm run install-test-dependencies; npm run test-ci"
+    - docker run --name unit-legacy-$CI_COMMIT_SHA $GOOGLE_TAG /bin/bash -c "npm run install-test-dependencies; npm run test-legacy"
+    - docker run --name lint-$CI_COMMIT_SHA $GOOGLE_TAG /bin/bash -c "npm run install-test-dependencies; npm run lint-ci"
     - docker cp unit-$CI_COMMIT_SHA:/app/coverage/lcov.info lcov.info
     - docker cp lint-$CI_COMMIT_SHA:/app/lintReport.json lintReport.json
   after_script:
@@ -47,10 +41,8 @@ unit:
 
 qa:
   stage: qa
-  before_script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
   script:
-    - docker create --name qa-$CI_PIPELINE_ID $IMAGE_TAG_CURRENT npm run sonar-scanner -- -X
+    - docker create --name qa-$CI_PIPELINE_ID $GOOGLE_TAG npm run sonar-scanner -- -X
       -Dsonar.typescript.lcov.reportPaths=lcov.info
       -Dsonar.typescript.tslint.reportPaths=lintReport.json
       -Dsonar.test.inclusions=**/*.spec.ts
@@ -74,10 +66,8 @@ qa:
 publish_beta:
   stage: publish
   when: manual
-  before_script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
   script:
-    - docker run --env NPM_AUTH_TOKEN --name unit-$CI_COMMIT_SHA $IMAGE_TAG_CURRENT ./npm-ci-publish-beta-only.sh
+    - docker run --env NPM_AUTH_TOKEN --name unit-$CI_COMMIT_SHA $GOOGLE_TAG ./npm-ci-publish-beta-only.sh
   tags:
     - docker
 
@@ -86,9 +76,7 @@ publish:
   only:
     - master
   when: manual
-  before_script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
   script:
-    - docker run --env NPM_AUTH_TOKEN --name unit-$CI_COMMIT_SHA $IMAGE_TAG_CURRENT ./npm-ci-publish.sh
+    - docker run --env NPM_AUTH_TOKEN --name unit-$CI_COMMIT_SHA $GOOGLE_TAG ./npm-ci-publish.sh
   tags:
     - docker
