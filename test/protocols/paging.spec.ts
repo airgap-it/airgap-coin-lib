@@ -75,7 +75,7 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
       expect(nextTransactions.transactions.map((tx) => tx.hash).length).to.be.eq(limit)
       expect(nextTransactions.transactions.map((tx) => tx.hash).length).to.be.eq(limit)
 
-      expect(transactionResult.transactions[0].hash).not.to.be.eq(nextTransactions.transactions[0].hash)
+      expect(transactionResult.transactions[0].hash).not.to.eq(nextTransactions.transactions[0].hash)
     })
   })
 })
