@@ -1,20 +1,23 @@
-import { GroestlcoinProtocolSpec } from './specs/groestl'
 import * as chai from 'chai'
 import * as chaiAsPromised from 'chai-as-promised'
 import 'mocha'
 import * as sinon from 'sinon'
-
-import { TestProtocolSpec } from './implementations'
-import { AETestProtocolSpec } from './specs/ae'
 import { BitcoinProtocolSpec } from './specs/bitcoin'
+import { TestProtocolSpec } from './implementations'
 import { CosmosTestProtocolSpec } from './specs/cosmos'
+import { GroestlcoinProtocolSpec } from './specs/groestl'
+import { AETestProtocolSpec } from './specs/ae'
 import { EthereumTestProtocolSpec } from './specs/ethereum'
-
 import { GenericERC20TokenTestProtocolSpec } from './specs/generic-erc20-token'
 import { TezosTestProtocolSpec } from './specs/tezos'
 import { KusamaTestProtocolSpec } from './specs/kusama'
 import { GenericERC20 } from '../../src/protocols/ethereum/erc20/GenericERC20'
-import { EthereumERC20ProtocolOptions, EthereumProtocolNetwork, EthereumProtocolNetworkExtras, EthereumERC20ProtocolConfig } from '../../src/protocols/ethereum/EthereumProtocolOptions'
+import {
+  EthereumERC20ProtocolOptions,
+  EthereumProtocolNetwork,
+  EthereumProtocolNetworkExtras,
+  EthereumERC20ProtocolConfig
+} from '../../src/protocols/ethereum/EthereumProtocolOptions'
 import { SubProtocolSymbols } from '../../src/utils/ProtocolSymbols'
 
 // use chai-as-promised plugin
@@ -36,18 +39,27 @@ const token = new GenericERC20(
 )
 
 const protocols = [
+  new TezosTestProtocolSpec(),
+  new BitcoinProtocolSpec(),
   new CosmosTestProtocolSpec(),
   new EthereumTestProtocolSpec(),
   new AETestProtocolSpec(),
-  new TezosTestProtocolSpec(),
-  new BitcoinProtocolSpec(),
-  new GenericERC20TokenTestProtocolSpec(["0xfd9eeCb127677B1f931D6d49Dfe6626Ffe60370f"], token),
+  new GenericERC20TokenTestProtocolSpec(['0xfd9eeCb127677B1f931D6d49Dfe6626Ffe60370f'], token),
   new GroestlcoinProtocolSpec(),
   new KusamaTestProtocolSpec()
 ]
 
 protocols.forEach(async (protocol: TestProtocolSpec) => {
   describe(`Transaction Paging`, () => {
+    beforeEach(async () => {
+      sinon
+        .stub(protocol.lib, 'getTransactionsFromAddresses')
+        .onFirstCall()
+        .returns(protocol.transactionResult)
+        .onSecondCall()
+        .returns(protocol.nextTransactionResult)
+    })
+
     afterEach(async () => {
       sinon.restore()
     })
@@ -56,7 +68,6 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
       const limit = 2
       const address = protocol.validAddresses[0]
       const transactionResult = await protocol.lib.getTransactionsFromAddresses([address], limit)
-
       const nextTransactions = await protocol.lib.getTransactionsFromAddresses([address], limit, transactionResult.cursor)
 
       expect(transactionResult.transactions.length).to.be.eq(limit)
@@ -64,7 +75,7 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
       expect(nextTransactions.transactions.map((tx) => tx.hash).length).to.be.eq(limit)
       expect(nextTransactions.transactions.map((tx) => tx.hash).length).to.be.eq(limit)
 
-      expect(transactionResult.transactions[0].hash).not.to.eq(nextTransactions.transactions[0].hash)
+      expect(transactionResult.transactions[0].hash).not.to.be.eq(nextTransactions.transactions[0].hash)
     })
   })
 })
