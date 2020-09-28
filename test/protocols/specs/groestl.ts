@@ -89,4 +89,132 @@ export class GroestlcoinProtocolSpec extends TestProtocolSpec {
       signature: 'IGplImxLTrtKuTACWK0TzvSNBgjkxxiCU8Wuk801l8Pga4Xv85LJb33SGCWSxWKd5mlCNjmdiprw+GIbjXBhHpc='
     }
   ]
+
+  public transactionResult = {
+    transactions: [
+      {
+        hash: '1dac97c6f8f2023f972142ea646a493a64b521cf2b200b633113eb0061bb7ce8',
+        from: [],
+        to: ['3E2p6qP9vh4hFfuVQLsxTAziRDDHJ5DnQj', 'OP_RETURN aa21a9ede2f61c3f71d1defd3fa999dfa36953755c690689799962b48bebd836974e8cf9'],
+        isInbound: true,
+        amount: '0',
+        fee: '0',
+        blockHeight: '3270952',
+        protocolIdentifier: 'grs',
+        network: {
+          name: 'Mainnet',
+          type: 'MAINNET',
+          rpcUrl: '',
+          blockExplorer: { blockExplorer: 'https://chainz.cryptoid.info/grs' },
+          extras: {
+            indexerApi: 'https://cors-proxy.airgap.prod.gke.papers.tech/proxy?url=https://blockbook.groestlcoin.org',
+            network: {
+              messagePrefix: '\u001cGroestlCoin Signed Message:\n',
+              bech32: 'grs',
+              bip32: { public: 76067358, private: 76066276 },
+              pubKeyHash: 36,
+              scriptHash: 5,
+              wif: 128,
+              coin: 'grs',
+              hashFunctions: {}
+            }
+          }
+        }
+      },
+      {
+        hash: '09e04b794209c48411318f4e69b085903978c800284bb643b0095a249c199de0',
+        from: [],
+        to: ['3E2p6qP9vh4hFfuVQLsxTAziRDDHJ5DnQj', 'OP_RETURN aa21a9ede2f61c3f71d1defd3fa999dfa36953755c690689799962b48bebd836974e8cf9'],
+        isInbound: true,
+        amount: '0',
+        fee: '0',
+        blockHeight: '3270951',
+        protocolIdentifier: 'grs',
+        network: {
+          name: 'Mainnet',
+          type: 'MAINNET',
+          rpcUrl: '',
+          blockExplorer: { blockExplorer: 'https://chainz.cryptoid.info/grs' },
+          extras: {
+            indexerApi: 'https://cors-proxy.airgap.prod.gke.papers.tech/proxy?url=https://blockbook.groestlcoin.org',
+            network: {
+              messagePrefix: '\u001cGroestlCoin Signed Message:\n',
+              bech32: 'grs',
+              bip32: { public: 76067358, private: 76066276 },
+              pubKeyHash: 36,
+              scriptHash: 5,
+              wif: 128,
+              coin: 'grs',
+              hashFunctions: {}
+            }
+          }
+        }
+      }
+    ],
+    cursor: { page: 2 }
+  }
+
+  public nextTransactionResult = {
+    transactions: [
+      {
+        hash: '5f71b88f3143ea4a3e54c36fd1eff6810774a6a4bc817c13e29ca77e40126781',
+        from: [],
+        to: ['3E2p6qP9vh4hFfuVQLsxTAziRDDHJ5DnQj', 'OP_RETURN aa21a9ede2f61c3f71d1defd3fa999dfa36953755c690689799962b48bebd836974e8cf9'],
+        isInbound: true,
+        amount: '0',
+        fee: '0',
+        blockHeight: '3270950',
+        protocolIdentifier: 'grs',
+        network: {
+          name: 'Mainnet',
+          type: 'MAINNET',
+          rpcUrl: '',
+          blockExplorer: { blockExplorer: 'https://chainz.cryptoid.info/grs' },
+          extras: {
+            indexerApi: 'https://cors-proxy.airgap.prod.gke.papers.tech/proxy?url=https://blockbook.groestlcoin.org',
+            network: {
+              messagePrefix: '\u001cGroestlCoin Signed Message:\n',
+              bech32: 'grs',
+              bip32: { public: 76067358, private: 76066276 },
+              pubKeyHash: 36,
+              scriptHash: 5,
+              wif: 128,
+              coin: 'grs',
+              hashFunctions: {}
+            }
+          }
+        }
+      },
+      {
+        hash: '47f95dd5a9eb091fcf73ea5ac01e8b2fd115e59f8c6966752744593c07b74422',
+        from: [],
+        to: ['3E2p6qP9vh4hFfuVQLsxTAziRDDHJ5DnQj', 'OP_RETURN aa21a9ede2f61c3f71d1defd3fa999dfa36953755c690689799962b48bebd836974e8cf9'],
+        isInbound: true,
+        amount: '0',
+        fee: '0',
+        blockHeight: '3270949',
+        protocolIdentifier: 'grs',
+        network: {
+          name: 'Mainnet',
+          type: 'MAINNET',
+          rpcUrl: '',
+          blockExplorer: { blockExplorer: 'https://chainz.cryptoid.info/grs' },
+          extras: {
+            indexerApi: 'https://cors-proxy.airgap.prod.gke.papers.tech/proxy?url=https://blockbook.groestlcoin.org',
+            network: {
+              messagePrefix: '\u001cGroestlCoin Signed Message:\n',
+              bech32: 'grs',
+              bip32: { public: 76067358, private: 76066276 },
+              pubKeyHash: 36,
+              scriptHash: 5,
+              wif: 128,
+              coin: 'grs',
+              hashFunctions: {}
+            }
+          }
+        }
+      }
+    ],
+    cursor: { page: 3 }
+  }
 }

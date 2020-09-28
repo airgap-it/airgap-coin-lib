@@ -78,4 +78,80 @@ export class CosmosTestProtocolSpec extends TestProtocolSpec {
         '0x849eed49b0baaee51bcc9b62f95616856c1aefa3e40fab315db05d397cf064822028a1d0b7c04d1c60372dae7134ed453b3707977805edd21c108a311baad06c'
     }
   ]
+
+  public transactionResult = {
+    transactions: [
+      {
+        amount: '100000000',
+        to: ['cosmos1z3g2nr8m285apqcmelhrk800unkhfrn5x9hccx'],
+        from: ['cosmos14nzyt8wmx4g6zkeluelukamgsh5v4xgnmeq9y4'],
+        isInbound: false,
+        fee: '3575',
+        protocolIdentifier: 'cosmos',
+        network: {
+          name: 'Mainnet',
+          type: 'MAINNET',
+          rpcUrl: 'https://cosmos-node.prod.gke.papers.tech',
+          blockExplorer: { blockExplorer: 'https://www.mintscan.io' }
+        },
+        hash: 'ff2beaf71f523ae46b36296d190b68b634ab651c50d7395b1d85c580be516ada',
+        timestamp: 1590678838.928
+      },
+      {
+        amount: '86995000',
+        to: ['cosmos14nzyt8wmx4g6zkeluelukamgsh5v4xgnmeq9y4'],
+        from: ['cosmos1yeygh0y8rfyufdczhzytcl3pehsnxv9d3wsnlg'],
+        isInbound: true,
+        fee: '5000',
+        protocolIdentifier: 'cosmos',
+        network: {
+          name: 'Mainnet',
+          type: 'MAINNET',
+          rpcUrl: 'https://cosmos-node.prod.gke.papers.tech',
+          blockExplorer: { blockExplorer: 'https://www.mintscan.io' }
+        },
+        hash: '0d0182b387dad3f03c60a00199ebabc7389956c3b6cba436c042de54894cb5d1',
+        timestamp: 1588943379.552
+      }
+    ],
+    cursor: { offset: 2 }
+  }
+
+  public nextTransactionResult = {
+    transactions: [
+      {
+        amount: '7000000',
+        to: ['cosmos1latzme6xf6s8tsrymuu6laf2ks2humqv2tkd9a'],
+        from: ['cosmos14nzyt8wmx4g6zkeluelukamgsh5v4xgnmeq9y4'],
+        isInbound: false,
+        fee: '2000',
+        protocolIdentifier: 'cosmos',
+        network: {
+          name: 'Mainnet',
+          type: 'MAINNET',
+          rpcUrl: 'https://cosmos-node.prod.gke.papers.tech',
+          blockExplorer: { blockExplorer: 'https://www.mintscan.io' }
+        },
+        hash: '99ff1544d7e7e8b6df7f57775b1de048d5d05864fa44d83b122711e5eaad12b1',
+        timestamp: 1588667488.229
+      },
+      {
+        amount: '20000000',
+        to: ['cosmos14nzyt8wmx4g6zkeluelukamgsh5v4xgnmeq9y4'],
+        from: ['cosmos1ffve0zx389ffl80ae9t8jmghcjuzdlqrh2fhh2'],
+        isInbound: true,
+        fee: '5000',
+        protocolIdentifier: 'cosmos',
+        network: {
+          name: 'Mainnet',
+          type: 'MAINNET',
+          rpcUrl: 'https://cosmos-node.prod.gke.papers.tech',
+          blockExplorer: { blockExplorer: 'https://www.mintscan.io' }
+        },
+        hash: 'b21dfccd5945b1b404db22450b2ec8604b1784cd0a8771ef88001a478aa17e0d',
+        timestamp: 1588601992.692
+      }
+    ],
+    cursor: { offset: 4 }
+  }
 }

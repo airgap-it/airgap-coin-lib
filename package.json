@@ -92,6 +92,8 @@
     "@types/semver": "6.0.2",
     "@types/underscore": "1.8.9",
     "ajv": "6.10.2",
+    "axios": "0.20.0",
+    "axios-mock-adapter": "^1.18.2",
     "browserify": "16.5.0",
     "chai": "4.2.0",
     "chai-as-promised": "7.1.1",

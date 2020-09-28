@@ -201,4 +201,88 @@ export class AETestProtocolSpec extends TestProtocolSpec {
         '8f1c4ab15b7e26a602e711fe58d55636423790ffbeb50bfbd48d9277ddac918d9941f731c0b537d8c126686a64a93c54b32001158951e981de33b7431798860b'
     }
   ]
+
+  public transactionResult = {
+    transactions: [
+      {
+        amount: '5463861640000000000',
+        fee: '40000000000000',
+        from: ['ak_542o93BKHiANzqNaFj6UurrJuDuxU61zCGr9LJCwtTUg34kWt'],
+        isInbound: false,
+        protocolIdentifier: 'ae',
+        network: {
+          name: 'Mainnet',
+          type: 'MAINNET',
+          rpcUrl: 'https://ae-epoch-rpc-proxy.gke.papers.tech',
+          blockExplorer: { blockExplorer: 'https://mainnet.aeternal.io' }
+        },
+        to: ['ak_g5NtGtyg946tfKaDmyKmknb3QvyznwmUW3v5NbpYazgXnEF48'],
+        hash: 'th_8GqdPPQtcytYgSbDLUymZCdeb1BLGn6nHpehSpFntVdpnRGQt',
+        blockHeight: 318929,
+        data: 'ba_Xfbg4g==',
+        timestamp: 1601001689
+      },
+      {
+        amount: '5173537550000000000',
+        fee: '40000000000000',
+        from: ['ak_542o93BKHiANzqNaFj6UurrJuDuxU61zCGr9LJCwtTUg34kWt'],
+        isInbound: false,
+        protocolIdentifier: 'ae',
+        network: {
+          name: 'Mainnet',
+          type: 'MAINNET',
+          rpcUrl: 'https://ae-epoch-rpc-proxy.gke.papers.tech',
+          blockExplorer: { blockExplorer: 'https://mainnet.aeternal.io' }
+        },
+        to: ['ak_2QtZsJwQNqs5dphXpNwSJvGXboFwK8mVGzhoV4wWv6pw3D4wK'],
+        hash: 'th_2AKfgL5QigXqS4XoRJW48FWsRTgkDLSstJEvLgiFccJ5jijdHE',
+        blockHeight: 318929,
+        data: 'ba_Xfbg4g==',
+        timestamp: 1601001689
+      }
+    ],
+    cursor: { page: 2 }
+  }
+
+  public nextTransactionResult = {
+    transactions: [
+      {
+        amount: '6374579630000000000',
+        fee: '40000000000000',
+        from: ['ak_542o93BKHiANzqNaFj6UurrJuDuxU61zCGr9LJCwtTUg34kWt'],
+        isInbound: false,
+        protocolIdentifier: 'ae',
+        network: {
+          name: 'Mainnet',
+          type: 'MAINNET',
+          rpcUrl: 'https://ae-epoch-rpc-proxy.gke.papers.tech',
+          blockExplorer: { blockExplorer: 'https://mainnet.aeternal.io' }
+        },
+        to: ['ak_1Grirjn4xNChWCkuiUkiBBqBrPpR99S2VDzciDb4wy3UdCmgk'],
+        hash: 'th_2PB8zHjtxcr3zVrVnsL1mXof9ryTMrfokkafCCHR8UMVLxzACt',
+        blockHeight: 318928,
+        data: 'ba_Xfbg4g==',
+        timestamp: 1601001648
+      },
+      {
+        amount: '6519645480000000000',
+        fee: '40000000000000',
+        from: ['ak_542o93BKHiANzqNaFj6UurrJuDuxU61zCGr9LJCwtTUg34kWt'],
+        isInbound: false,
+        protocolIdentifier: 'ae',
+        network: {
+          name: 'Mainnet',
+          type: 'MAINNET',
+          rpcUrl: 'https://ae-epoch-rpc-proxy.gke.papers.tech',
+          blockExplorer: { blockExplorer: 'https://mainnet.aeternal.io' }
+        },
+        to: ['ak_gWvfN1TRmWTxTM3WRqzaKRPuc1zgk6aqyKQaKToDmFa2SPMhE'],
+        hash: 'th_UxJEH9fG4icVVAoQXR7UrN4MBybsPhPCk4PXPs9h3uw8m9cZC',
+        blockHeight: 318928,
+        data: 'ba_Xfbg4g==',
+        timestamp: 1601001645
+      }
+    ],
+    cursor: { page: 3 }
+  }
 }

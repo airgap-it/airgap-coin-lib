@@ -40,6 +40,43 @@ abstract class TestProtocolSpec {
 
   public transactionStatusTests: { hashes: string[]; expectedResults: AirGapTransactionStatus[] }[] = []
 
+  public transactionResult: {
+    transactions: {
+      to: string[]
+      from: string[]
+      amount: string
+      fee: string
+      protocolIdentifier: string
+      isInbound: boolean
+      network: any
+      blockHeight?: string | number
+      hash: string
+      timestamp?: number
+    }[]
+    cursor: any
+  } = {
+    transactions: [{ to: [''], from: [''], amount: '', fee: '', protocolIdentifier: '', isInbound: true, network: {}, hash: '' }],
+    cursor: ''
+  }
+  public nextTransactionResult: {
+    transactions: {
+      to: string[]
+      from: string[]
+      amount: string
+      fee: string
+      protocolIdentifier: string
+      isInbound: boolean
+      network: any
+      blockHeight?: string | number
+      hash: string
+      timestamp?: number
+    }[]
+    cursor: any
+  } = {
+    transactions: [{ to: [''], from: [''], amount: '', fee: '', protocolIdentifier: '', isInbound: true, network: {}, hash: '' }],
+    cursor: ''
+  }
+
   public seed(): string {
     return BIP39.mnemonicToSeedHex(mnemonic)
   }

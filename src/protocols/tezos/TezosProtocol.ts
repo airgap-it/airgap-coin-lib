@@ -789,7 +789,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
         // We have to supply an additional 0.257 XTZ fee for storage_limit costs, which gets automatically deducted from the sender so we just have to make sure enough balance is around
         if (balance.isLessThan(this.activationBurn.plus(wrappedFee))) {
           // If we don't have enough funds to pay the activation + fee, we throw an error
-          throw new Error('Not enough funds to pay activation burn!')
+          throw new Error('Insufficient balance to pay activation burn!')
         } else if (balance.isLessThan(wrappedValues[i].plus(wrappedFee).plus(this.activationBurn))) {
           // Check whether the sender has enough to cover the amount to send + fee + activation
           // If not, we deduct it from amount sent to make room for the activation burn
