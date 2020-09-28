@@ -53,7 +53,6 @@ export interface BakerInfo {
   balance: BigNumber
   delegatedBalance: BigNumber
   stakingBalance: BigNumber
-  bakingActive: boolean
   selfBond: BigNumber
   bakerCapacity: BigNumber
   bakerUsage: BigNumber
@@ -849,10 +848,13 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   }
 
   public async getDelegateeDetails(address: string): Promise<DelegateeDetails> {
-    const bakerInfo = await this.bakerInfo(address)
+    const response: AxiosResponse = await axios.get(
+      `${this.options.network.rpcUrl}/chains/main/blocks/head/context/delegates/${address}/deactivated`
+    )
+    const isBakingActive: boolean = !response.data
 
     return {
-      status: bakerInfo.bakingActive ? 'Active' : 'Inactive',
+      status: isBakingActive ? 'Active' : 'Inactive',
       address
     }
   }
@@ -1313,14 +1315,12 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     const results: AxiosResponse[] = await Promise.all([
       axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/delegates/${tzAddress}/balance`),
       axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/delegates/${tzAddress}/delegated_balance`),
-      axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/delegates/${tzAddress}/staking_balance`),
-      axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/delegates/${tzAddress}/deactivated`)
+      axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/delegates/${tzAddress}/staking_balance`)
     ])
 
     const tzBalance: BigNumber = new BigNumber(results[0].data)
     const delegatedBalance: BigNumber = new BigNumber(results[1].data)
     const stakingBalance: BigNumber = new BigNumber(results[2].data)
-    const isBakingActive: boolean = !results[3].data // we need to negate as the query is "deactivated"
 
     // calculate the self bond of the baker
     const selfBond: BigNumber = stakingBalance.minus(delegatedBalance)
@@ -1332,7 +1332,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       balance: tzBalance,
       delegatedBalance,
       stakingBalance,
-      bakingActive: isBakingActive,
       selfBond,
       bakerCapacity: stakingBalance.div(stakingCapacity),
       bakerUsage: stakingCapacity
