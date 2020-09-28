@@ -158,4 +158,108 @@ export class TezosTestProtocolSpec extends TestProtocolSpec {
       signature: 'edsigtexcZ9uMhqxRvPUaTdBukx2GAdwwi93VW1ULYEWXZPWViUMqR155kFeoCUqqUV97y11EM5J4AjbJriYWCXaDX6i9o9Gxde'
     }
   ]
+
+  public transactionResult = {
+    transactions: [
+      {
+        amount: '6000000000',
+        fee: '1286',
+        from: ['tz1MecudVJnFZN5FSrriu8ULz2d6dDTR7KaM'],
+        isInbound: false,
+        protocolIdentifier: 'xtz',
+        network: {
+          name: 'Mainnet',
+          type: 'MAINNET',
+          rpcUrl: 'https://tezos-node.prod.gke.papers.tech',
+          blockExplorer: { blockExplorer: 'https://tezblock.io' },
+          extras: {
+            network: 'mainnet',
+            conseilUrl: 'https://tezos-mainnet-conseil.prod.gke.papers.tech',
+            conseilNetwork: 'mainnet',
+            conseilApiKey: 'airgap00391'
+          }
+        },
+        to: ['tz1hKEdkf39K1gwBKVj9XP1JZawCRvcAQ2cw'],
+        hash: 'ood1nAAiTBvQGHE9HgTk34nzcuvH9gKUQkHx5MWZQfJuBzJieam',
+        timestamp: 1597250505,
+        blockHeight: 1081253
+      },
+      {
+        amount: '10000000000',
+        fee: '1793',
+        from: ['tz1MecudVJnFZN5FSrriu8ULz2d6dDTR7KaM'],
+        isInbound: false,
+        protocolIdentifier: 'xtz',
+        network: {
+          name: 'Mainnet',
+          type: 'MAINNET',
+          rpcUrl: 'https://tezos-node.prod.gke.papers.tech',
+          blockExplorer: { blockExplorer: 'https://tezblock.io' },
+          extras: {
+            network: 'mainnet',
+            conseilUrl: 'https://tezos-mainnet-conseil.prod.gke.papers.tech',
+            conseilNetwork: 'mainnet',
+            conseilApiKey: 'airgap00391'
+          }
+        },
+        to: ['KT1Lf3ZFWvvAHtfq5BUzdbJkWuopxs45VHmE'],
+        hash: 'ooSd3mKv6Cx2Pg7T8igMj8FCiC8EGFdy5Do2WsZxDmVmeUF8HMk',
+        timestamp: 1593091604,
+        blockHeight: 1012300
+      }
+    ],
+    cursor: { lastBlockLevel: 1012300 }
+  }
+
+  public nextTransactionResult = {
+    transactions: [
+      {
+        amount: '70000',
+        fee: '1791',
+        from: ['tz1MecudVJnFZN5FSrriu8ULz2d6dDTR7KaM'],
+        isInbound: false,
+        protocolIdentifier: 'xtz',
+        network: {
+          name: 'Mainnet',
+          type: 'MAINNET',
+          rpcUrl: 'https://tezos-node.prod.gke.papers.tech',
+          blockExplorer: { blockExplorer: 'https://tezblock.io' },
+          extras: {
+            network: 'mainnet',
+            conseilUrl: 'https://tezos-mainnet-conseil.prod.gke.papers.tech',
+            conseilNetwork: 'mainnet',
+            conseilApiKey: 'airgap00391'
+          }
+        },
+        to: ['KT1BPbWDn2TR4rrWGi9bN1bkWNPjffQFXzSK'],
+        hash: 'ood2vkniyLTyuj6tgjmXLk5kLXrioozrwWJw1EJah6dxBfp9HuV',
+        timestamp: 1592837842,
+        blockHeight: 1008088
+      },
+      {
+        amount: '270000',
+        fee: '1791',
+        from: ['tz1MecudVJnFZN5FSrriu8ULz2d6dDTR7KaM'],
+        isInbound: false,
+        protocolIdentifier: 'xtz',
+        network: {
+          name: 'Mainnet',
+          type: 'MAINNET',
+          rpcUrl: 'https://tezos-node.prod.gke.papers.tech',
+          blockExplorer: { blockExplorer: 'https://tezblock.io' },
+          extras: {
+            network: 'mainnet',
+            conseilUrl: 'https://tezos-mainnet-conseil.prod.gke.papers.tech',
+            conseilNetwork: 'mainnet',
+            conseilApiKey: 'airgap00391'
+          }
+        },
+        to: ['KT1SU43prfFHSx4oqaqV3QwGCRE8BcNToSwr'],
+        hash: 'opQVM8FPTHKPiXW4DihjYiomyT7dMKFkUjuyMaczAryk7hy1SXz',
+        timestamp: 1592837782,
+        blockHeight: 1008087
+      }
+    ],
+    cursor: { lastBlockLevel: 1008087 }
+  }
 }

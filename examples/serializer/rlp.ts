@@ -23,7 +23,7 @@ const encoded: string = bs58check.encode(
         'payload' // Payload depending on the MessageType
       ]
     ]
-  ] as any)
+  ])
 )
 console.log('Encoded RLP:', encoded)
 

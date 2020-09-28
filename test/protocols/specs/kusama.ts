@@ -100,4 +100,91 @@ export class KusamaTestProtocolSpec extends TestProtocolSpec {
         '0x30094f45a892156fe1f79254674fdebe69da314b72371f3665aecdc486fd6233b7729571bf12765bb80cf07bd81846634a5a2e60045f492a492e2b40eee8ac8b'
     }
   ]
+
+  public transactionResult = {
+    transactions: [
+      {
+        protocolIdentifier: 'kusama',
+        network: {
+          name: 'Mainnet',
+          type: 'MAINNET',
+          rpcUrl: 'https://polkadot-kusama-node.prod.gke.papers.tech',
+          blockExplorer: { blockExplorer: 'https://polkascan.io/kusama' },
+          extras: { apiUrl: 'https://kusama.subscan.io/api/scan', network: 1 }
+        },
+        from: ['GzgRTyefkykqf72gC8hGgDVa7p1MYTDyCwFjTsVc53FxZi7'],
+        to: ['EEWyMLHgwtemr48spFNnS3U2XjaYswqAYAbadx2jr9ppp4X'],
+        isInbound: true,
+        amount: '99977416667634',
+        fee: '2583332366',
+        timestamp: 1601036370,
+        hash: '0x33482af443df63c3b0c9b5920b0723256a1e69602bba0bbe50cae3cb469084a5',
+        blockHeight: 4200705,
+        status: 'applied'
+      },
+      {
+        protocolIdentifier: 'kusama',
+        network: {
+          name: 'Mainnet',
+          type: 'MAINNET',
+          rpcUrl: 'https://polkadot-kusama-node.prod.gke.papers.tech',
+          blockExplorer: { blockExplorer: 'https://polkascan.io/kusama' },
+          extras: { apiUrl: 'https://kusama.subscan.io/api/scan', network: 1 }
+        },
+        from: ['EEWyMLHgwtemr48spFNnS3U2XjaYswqAYAbadx2jr9ppp4X'],
+        to: ['Dz5JAFYyLigyGnhDyrT5bJ6u8TxagA2muR1UFz7xQVVcfWA'],
+        isInbound: false,
+        amount: '1020000000000',
+        fee: '2583332366',
+        timestamp: 1601034570,
+        hash: '0xffef69ea4dbceef33bd904a2aaf92129cca4435642d7f71e85dbccb91d53c3af',
+        blockHeight: 4200409,
+        status: 'applied'
+      }
+    ],
+    cursor: { page: 1 }
+  }
+  public nextTransactionResult = {
+    transactions: [
+      {
+        protocolIdentifier: 'kusama',
+        network: {
+          name: 'Mainnet',
+          type: 'MAINNET',
+          rpcUrl: 'https://polkadot-kusama-node.prod.gke.papers.tech',
+          blockExplorer: { blockExplorer: 'https://polkascan.io/kusama' },
+          extras: { apiUrl: 'https://kusama.subscan.io/api/scan', network: 1 }
+        },
+        from: ['EEWyMLHgwtemr48spFNnS3U2XjaYswqAYAbadx2jr9ppp4X'],
+        to: ['DxAN9aGS117GJQNGSnaoPw5YVRCZD67DXC8aBzhJk9joK7X'],
+        isInbound: false,
+        amount: '15966000000000',
+        fee: '2599999026',
+        timestamp: 1601030652,
+        hash: '0xd02429787c9f28692018a2147ad093222857e686563c1166a1338fa9b624b9d3',
+        blockHeight: 4199759,
+        status: 'applied'
+      },
+      {
+        protocolIdentifier: 'kusama',
+        network: {
+          name: 'Mainnet',
+          type: 'MAINNET',
+          rpcUrl: 'https://polkadot-kusama-node.prod.gke.papers.tech',
+          blockExplorer: { blockExplorer: 'https://polkascan.io/kusama' },
+          extras: { apiUrl: 'https://kusama.subscan.io/api/scan', network: 1 }
+        },
+        from: ['EEWyMLHgwtemr48spFNnS3U2XjaYswqAYAbadx2jr9ppp4X'],
+        to: ['DxAN9aGS117GJQNGSnaoPw5YVRCZD67DXC8aBzhJk9joK7X'],
+        isInbound: false,
+        amount: '3800000000000',
+        fee: '2599999026',
+        timestamp: 1601030412,
+        hash: '0x898a890d48861039715bd8d0671593ddf62c539f4b566fcab02859ff2b172c64',
+        blockHeight: 4199719,
+        status: 'applied'
+      }
+    ],
+    cursor: { page: 2 }
+  }
 }

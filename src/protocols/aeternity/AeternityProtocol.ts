@@ -9,8 +9,8 @@ import { generateWalletUsingDerivationPath } from '../../dependencies/src/hd-wal
 import * as rlp from '../../dependencies/src/rlp-2.2.3/index'
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
 import { AirGapTransactionStatus, IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
-import { UnsignedAeternityTransaction } from '../../serializer/schemas/definitions/transaction-sign-request-aeternity'
-import { SignedAeternityTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-aeternity'
+import { SignedAeternityTransaction } from '../../serializer/schemas/definitions/signed-transaction-aeternity'
+import { UnsignedAeternityTransaction } from '../../serializer/schemas/definitions/unsigned-transaction-aeternity'
 import { RawAeternityTransaction } from '../../serializer/types'
 import bs64check from '../../utils/base64Check'
 import { padStart } from '../../utils/padStart'
@@ -248,7 +248,6 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
 
     const unsignedAeternityTransaction: UnsignedAeternityTransaction = {
       publicKey: '',
-      callback: '',
       transaction: {
         networkId: 'ae_mainnet',
         transaction: `tx_${bs64check.encode(rlpDecodedTx[3])}`

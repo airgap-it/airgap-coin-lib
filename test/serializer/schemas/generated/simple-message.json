@@ -1,0 +1,68 @@
+{
+  "$ref": "#/definitions/SimpleMessage",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "SimpleMessage": {
+      "additionalProperties": false,
+      "properties": {
+        "arr1": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "arr2": {
+          "items": {
+            "type": "number"
+          },
+          "type": "array"
+        },
+        "arr3": {
+          "items": {
+            "type": "boolean"
+          },
+          "type": "array"
+        },
+        "bool": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "obj": {
+          "additionalProperties": false,
+          "properties": {
+            "bool": {
+              "type": "boolean"
+            },
+            "name": {
+              "type": "string"
+            },
+            "test": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "name",
+            "test",
+            "bool"
+          ],
+          "type": "object"
+        },
+        "test": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "name",
+        "test",
+        "bool",
+        "obj",
+        "arr1",
+        "arr2",
+        "arr3"
+      ],
+      "type": "object"
+    }
+  }
+}

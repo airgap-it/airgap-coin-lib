@@ -1,6 +1,6 @@
 import { async } from '../../dependencies/src/validate.js-0.13.1/validate'
-import { UnsignedEthereumTransaction } from '../schemas/definitions/transaction-sign-request-ethereum'
-import { SignedEthereumTransaction } from '../schemas/definitions/transaction-sign-response-ethereum'
+import { SignedEthereumTransaction } from '../schemas/definitions/signed-transaction-ethereum'
+import { UnsignedEthereumTransaction } from '../schemas/definitions/unsigned-transaction-ethereum'
 import { RawEthereumTransaction } from '../types'
 import { TransactionValidator } from '../validators/transactions.validator'
 import { validateSyncScheme } from '../validators/validators'

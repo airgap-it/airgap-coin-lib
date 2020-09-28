@@ -1,0 +1,21 @@
+{
+  "$ref": "#/definitions/HexMessage",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "HexMessage": {
+      "additionalProperties": false,
+      "properties": {
+        "x": {
+          "$ref": "#/definitions/HexString"
+        }
+      },
+      "required": [
+        "x"
+      ],
+      "type": "object"
+    },
+    "HexString": {
+      "type": "string"
+    }
+  }
+}

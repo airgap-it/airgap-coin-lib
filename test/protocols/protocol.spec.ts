@@ -3,7 +3,7 @@ import * as chaiAsPromised from 'chai-as-promised'
 import 'mocha'
 import * as sinon from 'sinon'
 
-import { IAirGapTransaction, SubstrateProtocol } from '../../src'
+import { IAirGapTransaction, SubstrateProtocol, TezosProtocol } from '../../src'
 
 import { TestProtocolSpec } from './implementations'
 import { AETestProtocolSpec } from './specs/ae'
@@ -48,7 +48,7 @@ const protocols = [
   new BitcoinTestProtocolSpec(),
   new GenericERC20TokenTestProtocolSpec(),
   new GroestlcoinProtocolSpec(),
-  new KusamaTestProtocolSpec()
+  new KusamaTestProtocolSpec(),
 ]
 
 const itIf = (condition, title, test) => {
@@ -356,16 +356,22 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
       })
 
       it('getTransactionStatus - Is able to get transaction status', async () => {
-        for (const test of protocol.transactionStatusTests) {
+        const tzStatuses = [['applied'], ['failed'], ['applied', 'failed']]
+        const tests = protocol.transactionStatusTests
+
+        for (let i = 0; i < tests.length; i++) {
+          sinon.stub(TezosProtocol.prototype, 'getTransactionStatuses').returns(tzStatuses[i])
+
           // Stub specific hashes
           const getTransactionStub = sinon.stub(AirGapNodeClient.prototype, 'getTransactionStatus')
-          test.hashes.forEach((hash: string, index: number) => {
-            getTransactionStub.withArgs(hash).returns(test.expectedResults[index])
+          tests[i].hashes.forEach((hash: string, index: number) => {
+            getTransactionStub.withArgs(hash).returns(tests[i].expectedResults[index])
           })
-          getTransactionStub.returns(test.expectedResults[0])
-          const statuses: string[] = await protocol.lib.getTransactionStatuses(test.hashes)
+          getTransactionStub.returns(tests[i].expectedResults[0])
+
+          const statuses: string[] = await protocol.lib.getTransactionStatuses(tests[i].hashes)
           sinon.restore()
-          expect(statuses, 'transactionStatus').to.deep.equal(test.expectedResults)
+          expect(statuses, 'transactionStatus').to.deep.equal(tests[i].expectedResults)
         }
       })
     })

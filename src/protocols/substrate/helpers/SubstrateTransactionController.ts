@@ -16,13 +16,13 @@ import { SubstrateTransaction, SubstrateTransactionType } from './data/transacti
 import { SubstrateTransactionPayload } from './data/transaction/SubstrateTransactionPayload'
 import { SubstrateNodeClient } from './node/SubstrateNodeClient'
 
-interface SubstrateTransactionDetails {
+export interface SubstrateTransactionDetails {
   fee: BigNumber
   transaction: SubstrateTransaction
   payload: SubstrateTransactionPayload
 }
 
-interface SubstrateTransactionConfig {
+export interface SubstrateTransactionConfig {
   type: SubstrateTransactionType
   tip: string | number | BigNumber
   args: any
@@ -50,7 +50,7 @@ export class SubstrateTransactionController {
     const totalFee = txs.map((tx) => tx.fee).reduce((total, next) => total.plus(next), new BigNumber(0))
 
     if (new BigNumber(available).lt(totalFee)) {
-      throw new Error('Not enough balance')
+      throw new Error(`Not enough balance`)
     }
 
     return this.encodeDetails(txs)
@@ -136,12 +136,12 @@ export class SubstrateTransactionController {
     return partialEstimate?.plus(transaction.tip.value) || null
   }
 
-  public async estimateTransactionFees(transationTypes: [SubstrateTransactionType, any][]): Promise<BigNumber | null> {
+  public async estimateTransactionFees(accountId: SubstrateAccountId, transationTypes: [SubstrateTransactionType, any][]): Promise<BigNumber | null> {
     const fees = await Promise.all(
       transationTypes
         .map(([type, args]) => [type, args, this.nodeClient.getSavedLastFee(type, 'largest')] as [SubstrateTransactionType, any, BigNumber])
         .map(async ([type, args, fee]) =>
-          fee ? fee : this.calculateTransactionFee(await this.createTransaction(type, SubstrateAddress.createPlaceholder(), 0, args))
+          fee ? fee : this.calculateTransactionFee(await this.createTransaction(type, SubstrateAddress.from(accountId, this.network), 0, args))
         )
     )
 

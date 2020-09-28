@@ -8,7 +8,7 @@ import RIPEMD160 = require('../../dependencies/src/ripemd160-2.0.2/index')
 import SECP256K1 = require('../../dependencies/src/secp256k1-3.7.1/elliptic')
 import * as sha from '../../dependencies/src/sha.js-2.4.11/index'
 import { AirGapTransactionStatus, IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
-import { SignedCosmosTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-cosmos'
+import { SignedCosmosTransaction } from '../../serializer/schemas/definitions/signed-transaction-cosmos'
 import { UnsignedCosmosTransaction } from '../../serializer/types'
 import { assertFields } from '../../utils/assert'
 import { DelegateeDetails, DelegationDetails, DelegatorAction, DelegatorDetails, ICoinDelegateProtocol } from '../ICoinDelegateProtocol'

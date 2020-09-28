@@ -10,8 +10,8 @@ import * as bs58check from '../../dependencies/src/bs58check-2.1.2/index'
 import { generateWalletUsingDerivationPath } from '../../dependencies/src/hd-wallet-js-b216450e56954a6e82ace0aade9474673de5d9d5/src/index'
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
 import { AirGapTransactionStatus, IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
-import { UnsignedTezosTransaction } from '../../serializer/schemas/definitions/transaction-sign-request-tezos'
-import { SignedTezosTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-tezos'
+import { SignedTezosTransaction } from '../../serializer/schemas/definitions/signed-transaction-tezos'
+import { UnsignedTezosTransaction } from '../../serializer/schemas/definitions/unsigned-transaction-tezos'
 import { RawTezosTransaction } from '../../serializer/types'
 import { ErrorWithData } from '../../utils/ErrorWithData'
 import { MainProtocolSymbols, ProtocolSymbols } from '../../utils/ProtocolSymbols'
@@ -53,7 +53,6 @@ export interface BakerInfo {
   balance: BigNumber
   delegatedBalance: BigNumber
   stakingBalance: BigNumber
-  bakingActive: boolean
   selfBond: BigNumber
   bakerCapacity: BigNumber
   bakerUsage: BigNumber
@@ -580,13 +579,13 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
   public async estimateMaxTransactionValueFromPublicKey(publicKey: string, recipients: string[], fee?: string): Promise<string> {
     const balance = await this.getBalanceOfPublicKey(publicKey)
-    const balanceWrapper = new BigNumber(balance)
+    const balanceWrapper = (new BigNumber(balance)).minus(1) // Tezos accounts can never be empty. We must leave at least 1 mutez behind.
 
     let maxFee: BigNumber
     if (fee !== undefined) {
       maxFee = new BigNumber(fee)
     } else {
-      const estimatedFeeDefaults = await this.estimateFeeDefaultsFromPublicKey(publicKey, recipients, [balance])
+      const estimatedFeeDefaults = await this.estimateFeeDefaultsFromPublicKey(publicKey, recipients, [balanceWrapper.toFixed()])
       maxFee = new BigNumber(estimatedFeeDefaults.medium).shiftedBy(this.decimals)
       if (maxFee.gte(balanceWrapper)) {
         maxFee = new BigNumber(0)
@@ -789,7 +788,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
         // We have to supply an additional 0.257 XTZ fee for storage_limit costs, which gets automatically deducted from the sender so we just have to make sure enough balance is around
         if (balance.isLessThan(this.activationBurn.plus(wrappedFee))) {
           // If we don't have enough funds to pay the activation + fee, we throw an error
-          throw new Error('Not enough funds to pay activation burn!')
+          throw new Error('Insufficient balance to pay activation burn!')
         } else if (balance.isLessThan(wrappedValues[i].plus(wrappedFee).plus(this.activationBurn))) {
           // Check whether the sender has enough to cover the amount to send + fee + activation
           // If not, we deduct it from amount sent to make room for the activation burn
@@ -849,10 +848,13 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   }
 
   public async getDelegateeDetails(address: string): Promise<DelegateeDetails> {
-    const bakerInfo = await this.bakerInfo(address)
+    const response: AxiosResponse = await axios.get(
+      `${this.options.network.rpcUrl}/chains/main/blocks/head/context/delegates/${address}/deactivated`
+    )
+    const isBakingActive: boolean = !response.data
 
     return {
-      status: bakerInfo.bakingActive ? 'Active' : 'Inactive',
+      status: isBakingActive ? 'Active' : 'Inactive',
       address
     }
   }
@@ -1150,7 +1152,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
         const operation: TezosOperation = content
 
         const result: RunOperationOperationResult = metadata.operation_result
-
         let gasLimit: number = 0
         let storageLimit: number = 0
 
@@ -1314,14 +1315,12 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     const results: AxiosResponse[] = await Promise.all([
       axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/delegates/${tzAddress}/balance`),
       axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/delegates/${tzAddress}/delegated_balance`),
-      axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/delegates/${tzAddress}/staking_balance`),
-      axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/delegates/${tzAddress}/deactivated`)
+      axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/delegates/${tzAddress}/staking_balance`)
     ])
 
     const tzBalance: BigNumber = new BigNumber(results[0].data)
     const delegatedBalance: BigNumber = new BigNumber(results[1].data)
     const stakingBalance: BigNumber = new BigNumber(results[2].data)
-    const isBakingActive: boolean = !results[3].data // we need to negate as the query is "deactivated"
 
     // calculate the self bond of the baker
     const selfBond: BigNumber = stakingBalance.minus(delegatedBalance)
@@ -1333,7 +1332,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       balance: tzBalance,
       delegatedBalance,
       stakingBalance,
-      bakingActive: isBakingActive,
       selfBond,
       bakerCapacity: stakingBalance.div(stakingCapacity),
       bakerUsage: stakingCapacity

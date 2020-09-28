@@ -1,7 +1,7 @@
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { AirGapTransactionStatus, IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
-import { UnsignedSubstrateTransaction } from '../../serializer/schemas/definitions/transaction-sign-request-substrate'
-import { SignedSubstrateTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-substrate'
+import { SignedSubstrateTransaction } from '../../serializer/schemas/definitions/signed-transaction-substrate'
+import { UnsignedSubstrateTransaction } from '../../serializer/schemas/definitions/unsigned-transaction-substrate'
 import { RawSubstrateTransaction } from '../../serializer/types'
 import { assertFields } from '../../utils/assert'
 import { ProtocolSymbols } from '../../utils/ProtocolSymbols'
@@ -9,13 +9,14 @@ import { DelegateeDetails, DelegationDetails, DelegatorDetails, ICoinDelegatePro
 import { CurrencyUnit, FeeDefaults } from '../ICoinProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
 
-import { SubstrateAddress } from './helpers/data/account/SubstrateAddress'
+import { SubstrateAccountId, SubstrateAddress } from './helpers/data/account/SubstrateAddress'
 import { SubstratePayee } from './helpers/data/staking/SubstratePayee'
 import { SubstrateStakingActionType } from './helpers/data/staking/SubstrateStakingActionType'
 import { SubstrateTransactionType } from './helpers/data/transaction/SubstrateTransaction'
+import { SubstrateTransactionConfig } from './helpers/SubstrateTransactionController'
 import { SubstrateCryptoClient } from './SubstrateCryptoClient'
 import { SubstrateProtocolOptions } from './SubstrateProtocolOptions'
-import { SubstrateTransactionResult, SubstrateTransactionCursor } from './SubstrateTypes'
+import { SubstrateTransactionCursor, SubstrateTransactionResult } from './SubstrateTypes'
 
 export abstract class SubstrateProtocol extends NonExtendedProtocol implements ICoinDelegateProtocol {
   public abstract symbol: string
@@ -94,11 +95,14 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     return this.getTransactionsFromAddresses(addresses, limit, cursor)
   }
 
-  public async getTransactionsFromAddresses(addresses: string[],
+  public async getTransactionsFromAddresses(
+    addresses: string[],
     limit: number,
     cursor?: SubstrateTransactionCursor
   ): Promise<SubstrateTransactionResult> {
-    const txs: Partial<IAirGapTransaction[]>[] = await Promise.all(addresses.map((address) => this.options.blockExplorerClient.getTransactions(address, limit, this.decimals, cursor)))
+    const txs: Partial<IAirGapTransaction[]>[] = await Promise.all(
+      addresses.map((address) => this.options.blockExplorerClient.getTransactions(address, limit, this.decimals, cursor))
+    )
 
     const transactions = txs
       .reduce((flatten, toFlatten) => flatten.concat(toFlatten), [])
@@ -162,7 +166,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     const transferableBalance = results[0]
     const futureTransactions = results[1]
 
-    const feeEstimate = await this.options.transactionController.estimateTransactionFees(futureTransactions)
+    const feeEstimate = await this.options.transactionController.estimateTransactionFees(publicKey, futureTransactions)
 
     if (!feeEstimate) {
       return Promise.reject('Could not estimate max value.')
@@ -218,6 +222,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
 
     const transferableBalance = await this.options.accountController.getTransferableBalance(publicKey)
     const totalValue = values.map((value) => new BigNumber(value)).reduce((total, next) => total.plus(next), new BigNumber(0))
+
     const available = new BigNumber(transferableBalance).minus(totalValue)
 
     const encoded = await this.options.transactionController.prepareSubmittableTransactions(
@@ -314,10 +319,10 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     nominatorDetails.rewards =
       nominatorDetails.delegatees.length > 0 && nominatorDetails.stakingDetails
         ? nominatorDetails.stakingDetails.rewards.map((reward) => ({
-          index: reward.eraIndex,
-          amount: reward.amount,
-          timestamp: reward.timestamp
-        }))
+            index: reward.eraIndex,
+            amount: reward.amount,
+            timestamp: reward.timestamp
+          }))
         : []
 
     return {
@@ -326,6 +331,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     }
   }
 
+  // tslint:disable-next-line: cyclomatic-complexity
   public async prepareDelegatorActionFromPublicKey(
     publicKey: string,
     type: SubstrateStakingActionType,
@@ -340,6 +346,10 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
         assertFields(`${SubstrateStakingActionType[type]} action`, data, 'targets', 'value', 'payee')
 
         return this.prepareDelegation(publicKey, data.tip || 0, data.targets, data.controller || publicKey, data.value, data.payee)
+      case SubstrateStakingActionType.REBOND_NOMINATE:
+        assertFields(`${SubstrateStakingActionType[type]} action`, data, 'targets', 'value')
+
+        return this.prepareRebondNominate(publicKey, data.tip || 0, data.targets, data.value)
       case SubstrateStakingActionType.NOMINATE:
         assertFields(`${SubstrateStakingActionType[type]} action`, data, 'targets')
 
@@ -362,6 +372,10 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
         assertFields(`${SubstrateStakingActionType[type]} action`, data, 'value')
 
         return this.prepareBondExtra(publicKey, data.tip || 0, data.value)
+      case SubstrateStakingActionType.REBOND_EXTRA:
+        assertFields(`${SubstrateStakingActionType[type]} action`, data, 'value')
+
+        return this.prepareRebondExtra(publicKey, data.tip || 0, data.value)
       case SubstrateStakingActionType.WITHDRAW_UNBONDED:
         return this.prepareWithdrawUnbonded(publicKey, data.tip || 0)
       case SubstrateStakingActionType.CHANGE_REWARD_DESTINATION:
@@ -381,7 +395,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     value?: string | number | BigNumber,
     payee?: string | SubstratePayee
   ): Promise<RawSubstrateTransaction[]> {
-    const transferableBalance = await this.options.accountController.getTransferableBalance(publicKey)
+    const transferableBalance = await this.options.accountController.getTransferableBalance(publicKey, false)
     const available = new BigNumber(transferableBalance).minus(value || 0)
 
     const bondFirst = controller !== undefined && value !== undefined && payee !== undefined
@@ -389,16 +403,16 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     const encoded = await this.options.transactionController.prepareSubmittableTransactions(publicKey, available, [
       ...(bondFirst
         ? [
-          {
-            type: SubstrateTransactionType.BOND,
-            tip,
-            args: {
-              controller,
-              value: BigNumber.isBigNumber(value) ? value : new BigNumber(value!),
-              payee: typeof payee === 'string' ? SubstratePayee[payee] : payee
+            {
+              type: SubstrateTransactionType.BOND,
+              tip,
+              args: {
+                controller,
+                value: BigNumber.isBigNumber(value) ? value : new BigNumber(value!),
+                payee: typeof payee === 'string' ? SubstratePayee[payee] : payee
+              }
             }
-          }
-        ]
+          ]
         : []),
       {
         type: SubstrateTransactionType.NOMINATE,
@@ -412,12 +426,65 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     return [{ encoded }]
   }
 
+  public async prepareRebondNominate(
+    publicKey: string,
+    tip: string | number | BigNumber,
+    targets: string[] | string,
+    value: string | number | BigNumber
+  ): Promise<RawSubstrateTransaction[]> {
+    const [transferableBalance, lockedBalance] = await Promise.all([
+      this.options.accountController.getTransferableBalance(publicKey, false),
+      this.options.accountController.getUnlockingBalance(publicKey)
+    ])
+
+    const toDelegate = BigNumber.isBigNumber(value) ? value : new BigNumber(value)
+
+    const configs: SubstrateTransactionConfig[] = []
+    if (toDelegate.gt(lockedBalance)) {
+      configs.push(
+        {
+          type: SubstrateTransactionType.REBOND,
+          tip,
+          args: {
+            value: lockedBalance
+          }
+        },
+        {
+          type: SubstrateTransactionType.BOND_EXTRA,
+          tip,
+          args: {
+            value: toDelegate.minus(lockedBalance)
+          }
+        },
+      )
+    } else {
+      configs.push({
+        type: SubstrateTransactionType.REBOND,
+        tip,
+        args: {
+          value: toDelegate
+        }
+      })
+    }
+    configs.push({
+      type: SubstrateTransactionType.NOMINATE,
+      tip,
+      args: {
+        targets: typeof targets === 'string' ? [targets] : targets
+      }
+    })
+
+    const encoded = await this.options.transactionController.prepareSubmittableTransactions(publicKey, transferableBalance, configs)
+
+    return [{ encoded }]
+  }
+
   public async prepareCancelDelegation(
     publicKey: string,
     tip: string | number | BigNumber,
     value?: string | number | BigNumber
   ): Promise<RawSubstrateTransaction[]> {
-    const transferableBalance = await this.options.accountController.getTransferableBalance(publicKey)
+    const transferableBalance = await this.options.accountController.getTransferableBalance(publicKey, false)
     const keepController = value === undefined
 
     const encoded = await this.options.transactionController.prepareSubmittableTransactions(publicKey, transferableBalance, [
@@ -429,14 +496,14 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
       ...(keepController
         ? []
         : [
-          {
-            type: SubstrateTransactionType.UNBOND,
-            tip,
-            args: {
-              value: BigNumber.isBigNumber(value) ? value : new BigNumber(value!)
+            {
+              type: SubstrateTransactionType.UNBOND,
+              tip,
+              args: {
+                value: BigNumber.isBigNumber(value) ? value : new BigNumber(value!)
+              }
             }
-          }
-        ])
+          ])
     ])
 
     return [{ encoded }]
@@ -447,7 +514,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     tip: string | number | BigNumber,
     targets: string[] | string
   ): Promise<RawSubstrateTransaction[]> {
-    const transferableBalance = await this.options.accountController.getTransferableBalance(publicKey)
+    const transferableBalance = await this.options.accountController.getTransferableBalance(publicKey, false)
 
     const encoded = await this.options.transactionController.prepareSubmittableTransactions(publicKey, transferableBalance, [
       {
@@ -467,7 +534,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     tip: string | number | BigNumber,
     value: string | number | BigNumber
   ): Promise<RawSubstrateTransaction[]> {
-    const transferableBalance = await this.options.accountController.getTransferableBalance(publicKey)
+    const transferableBalance = await this.options.accountController.getTransferableBalance(publicKey, false)
 
     const encoded = await this.options.transactionController.prepareSubmittableTransactions(publicKey, transferableBalance, [
       {
@@ -487,7 +554,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     tip: string | number | BigNumber,
     value: string | number | BigNumber
   ): Promise<RawSubstrateTransaction[]> {
-    const transferableBalance = await this.options.accountController.getTransferableBalance(publicKey)
+    const transferableBalance = await this.options.accountController.getTransferableBalance(publicKey, false)
 
     const encoded = await this.options.transactionController.prepareSubmittableTransactions(publicKey, transferableBalance, [
       {
@@ -507,7 +574,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     tip: string | number | BigNumber,
     value: string | number | BigNumber
   ): Promise<RawSubstrateTransaction[]> {
-    const transferableBalance = await this.options.accountController.getTransferableBalance(publicKey)
+    const transferableBalance = await this.options.accountController.getTransferableBalance(publicKey, false)
 
     const encoded = await this.options.transactionController.prepareSubmittableTransactions(publicKey, transferableBalance, [
       {
@@ -518,6 +585,49 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
         }
       }
     ])
+
+    return [{ encoded }]
+  }
+
+  public async prepareRebondExtra(
+    publicKey: string,
+    tip: string | number | BigNumber,
+    value: string | number | BigNumber
+  ): Promise<RawSubstrateTransaction[]> {
+    const [transferableBalance, lockedBalance] = await Promise.all([
+      this.options.accountController.getTransferableBalance(publicKey, false),
+      this.options.accountController.getUnlockingBalance(publicKey)
+    ])
+
+    const toDelegate = BigNumber.isBigNumber(value) ? value : new BigNumber(value)
+
+    const configs: SubstrateTransactionConfig[] =
+      toDelegate.gt(lockedBalance)
+      ? [
+          {
+            type: SubstrateTransactionType.REBOND,
+            tip,
+            args: {
+              value: lockedBalance
+            }
+          },
+          {
+            type: SubstrateTransactionType.BOND_EXTRA,
+            tip,
+            args: {
+              value: toDelegate.minus(lockedBalance)
+            }
+          },
+        ]
+      : [{
+          type: SubstrateTransactionType.REBOND,
+          tip,
+          args: {
+            value: toDelegate
+          }
+        }]
+
+    const encoded = await this.options.transactionController.prepareSubmittableTransactions(publicKey, transferableBalance, configs)
 
     return [{ encoded }]
   }
@@ -548,7 +658,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     const transferableBalance = results[0]
     const futureTransactions = results[1]
 
-    const feeEstimate = await this.options.transactionController.estimateTransactionFees(futureTransactions)
+    const feeEstimate = await this.options.transactionController.estimateTransactionFees(address, futureTransactions)
 
     if (!feeEstimate) {
       return Promise.reject('Could not estimate max value.')
@@ -559,38 +669,23 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     return (maxValue.gte(0) ? maxValue : new BigNumber(0)).toString(10)
   }
 
-  private async getTransactionDetailsFromEncoded(encoded: string): Promise<IAirGapTransaction[]> {
-    const txs = this.options.transactionController.decodeDetails(encoded)
-
-    return txs
-      .map((tx) => {
-        return tx.transaction.toAirGapTransactions().map((part) => ({
-          from: [],
-          to: [],
-          amount: '',
-          fee: tx.fee.toString(),
-          protocolIdentifier: this.identifier,
-          network: this.options.network,
-          isInbound: false,
-          ...part
-        }))
-      })
-      .reduce((flatten, toFlatten) => flatten.concat(toFlatten), [])
-  }
-
-  private async getFutureRequiredTransactions(
-    publicKey: string,
+  public async getFutureRequiredTransactions(
+    accountId: SubstrateAccountId,
     intention: 'check' | 'transfer' | 'delegate'
   ): Promise<[SubstrateTransactionType, any][]> {
     const results = await Promise.all([
-      this.options.accountController.isBonded(publicKey),
-      this.options.accountController.isNominating(publicKey),
-      this.options.accountController.getTransferableBalance(publicKey)
+      this.options.accountController.isBonded(accountId),
+      this.options.accountController.isNominating(accountId),
+      this.options.accountController.getTransferableBalance(accountId),
+      this.options.accountController.getUnlockingBalance(accountId)
     ])
 
     const isBonded = results[0]
     const isNominating = results[1]
     const transferableBalance = results[2]
+    const unlockingBalance = results[3]
+
+    const isUnbonding = unlockingBalance.gt(0)
 
     const requiredTransactions: [SubstrateTransactionType, any][] = []
 
@@ -603,8 +698,8 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
         }
       ])
     }
-
-    if (!isBonded && intention === 'delegate') {
+    if (!isBonded && !isUnbonding && intention === 'delegate') {
+      // not delegated & unbond
       requiredTransactions.push(
         [
           SubstrateTransactionType.BOND,
@@ -625,6 +720,34 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
           SubstrateTransactionType.UNBOND,
           {
             value: transferableBalance
+          }
+        ],
+        [
+          SubstrateTransactionType.WITHDRAW_UNBONDED,
+          {
+            slashingSpansNumber: 0
+          }
+        ]
+      )
+    } else if (isUnbonding && intention === 'delegate') {
+      requiredTransactions.push(
+        [
+          SubstrateTransactionType.REBOND,
+          {
+            value: unlockingBalance
+          }
+        ],
+        [
+          SubstrateTransactionType.NOMINATE,
+          {
+            targets: [SubstrateAddress.createPlaceholder()]
+          }
+        ],
+        [SubstrateTransactionType.CANCEL_NOMINATION, {}],
+        [
+          SubstrateTransactionType.UNBOND,
+          {
+            value: transferableBalance.plus(unlockingBalance)
           }
         ],
         [
@@ -656,6 +779,25 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     }
 
     return requiredTransactions
+  }
+
+  private async getTransactionDetailsFromEncoded(encoded: string): Promise<IAirGapTransaction[]> {
+    const txs = this.options.transactionController.decodeDetails(encoded)
+
+    return txs
+      .map((tx) => {
+        return tx.transaction.toAirGapTransactions().map((part) => ({
+          from: [],
+          to: [],
+          amount: '',
+          fee: tx.fee.toString(),
+          protocolIdentifier: this.identifier,
+          network: this.options.network,
+          isInbound: false,
+          ...part
+        }))
+      })
+      .reduce((flatten, toFlatten) => flatten.concat(toFlatten), [])
   }
 
   public async signMessage(message: string, keypair: { publicKey: string; privateKey: Buffer }): Promise<string> {

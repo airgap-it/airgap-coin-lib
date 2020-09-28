@@ -1,6 +1,6 @@
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
-import { SerializableUnsignedCosmosTransaction } from '../../serializer/schemas/definitions/transaction-sign-request-cosmos'
+import { SerializableUnsignedCosmosTransaction } from '../../serializer/schemas/definitions/unsigned-transaction-cosmos'
 
 import { CosmosDelegateMessage } from './cosmos-message/CosmosDelegateMessage'
 import { CosmosMessage, CosmosMessageType, CosmosMessageTypeIndex } from './cosmos-message/CosmosMessage'

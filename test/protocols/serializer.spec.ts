@@ -1,17 +1,17 @@
 import { expect } from 'chai'
 import 'mocha'
 
-// import { IACMessageDefinitionObject } from '../../src/serializer/message'
 import { Serializer } from '../../src/serializer/serializer'
 
 import { TestProtocolSpec } from './implementations'
-import { EthereumTestProtocolSpec } from './specs/ethereum'
-
 import { AETestProtocolSpec } from './specs/ae'
 import { BitcoinProtocolSpec } from './specs/bitcoin'
 import { CosmosTestProtocolSpec } from './specs/cosmos'
+import { EthereumTestProtocolSpec } from './specs/ethereum'
 import { GenericERC20TokenTestProtocolSpec } from './specs/generic-erc20-token'
 import { TezosTestProtocolSpec } from './specs/tezos'
+
+// import { IACMessageDefinitionObject } from '../../src/serializer/message'
 
 const protocols = [
   new EthereumTestProtocolSpec(),
@@ -28,15 +28,20 @@ protocols.forEach((protocol: TestProtocolSpec) => {
   describe(`Serialization Protocol for ${protocol.name}`, () => {
     it(`should be able to serialize a transaction to a airgap protocol string`, async () => {
       for (const tx of protocol.txs) {
+        const txBefore = protocol.unsignedTransaction(tx)
         syncProtocol
-          .serialize(protocol.unsignedTransaction(tx))
+          .serialize(txBefore)
           .then((serializedTx: string[]) => {
             syncProtocol
               .deserialize(serializedTx)
               .then((deserializedTx) => {
-                expect(JSON.parse(JSON.stringify(protocol.unsignedTransaction(tx)))).to.deep.equal(
-                  JSON.parse(JSON.stringify(deserializedTx))
-                )
+                const objExpected = JSON.parse(JSON.stringify(deserializedTx[0]))
+                const objActual = JSON.parse(JSON.stringify(txBefore[0]))
+                expect(objExpected).to.deep.eq(objActual)
+                expect(objExpected.id).to.deep.eq(objActual.id)
+                expect(objExpected.type).to.deep.eq(objActual.type)
+                expect(objExpected.protocol).to.deep.eq(objActual.protocol)
+                expect(objExpected.payload).to.deep.eq(objActual.payload)
               })
               .catch((err) => console.error(err))
           })

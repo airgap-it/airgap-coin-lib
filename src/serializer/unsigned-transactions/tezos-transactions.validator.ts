@@ -1,6 +1,6 @@
 import { async } from '../../dependencies/src/validate.js-0.13.1/validate'
-import { UnsignedTezosTransaction } from '../schemas/definitions/transaction-sign-request-tezos'
-import { SignedTezosTransaction } from '../schemas/definitions/transaction-sign-response-tezos'
+import { SignedTezosTransaction } from '../schemas/definitions/signed-transaction-tezos'
+import { UnsignedTezosTransaction } from '../schemas/definitions/unsigned-transaction-tezos'
 import { RawTezosTransaction } from '../types'
 import { TransactionValidator } from '../validators/transactions.validator'
 import { validateSyncScheme } from '../validators/validators'
