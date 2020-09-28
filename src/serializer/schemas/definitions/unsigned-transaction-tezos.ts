@@ -1,4 +1,4 @@
-import { UnsignedTransaction } from './transaction-sign-request'
+import { UnsignedTransaction } from './unsigned-transaction'
 
 interface RawTezosTransaction {
   binaryTransaction: string

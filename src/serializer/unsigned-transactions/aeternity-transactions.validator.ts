@@ -1,6 +1,6 @@
 import { async } from '../../dependencies/src/validate.js-0.13.1/validate'
-import { UnsignedAeternityTransaction } from '../schemas/definitions/transaction-sign-request-aeternity'
-import { SignedAeternityTransaction } from '../schemas/definitions/transaction-sign-response-aeternity'
+import { SignedAeternityTransaction } from '../schemas/definitions/signed-transaction-aeternity'
+import { UnsignedAeternityTransaction } from '../schemas/definitions/unsigned-transaction-aeternity'
 import { RawAeternityTransaction } from '../types'
 import { TransactionValidator } from '../validators/transactions.validator'
 import { validateSyncScheme } from '../validators/validators'

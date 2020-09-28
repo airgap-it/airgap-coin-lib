@@ -12,10 +12,10 @@ import {
 import { EthereumProtocol } from '../../protocols/ethereum/EthereumProtocol'
 import { KusamaProtocol } from '../../protocols/substrate/implementations/KusamaProtocol'
 import bs64check from '../../utils/base64Check'
-import { UnsignedTezosTransaction } from '../schemas/definitions/transaction-sign-request-tezos'
-import { SignedEthereumTransaction } from '../schemas/definitions/transaction-sign-response-ethereum'
-import { SignedSubstrateTransaction } from '../schemas/definitions/transaction-sign-response-substrate'
-import { SignedTezosTransaction } from '../schemas/definitions/transaction-sign-response-tezos'
+import { SignedEthereumTransaction } from '../schemas/definitions/signed-transaction-ethereum'
+import { SignedSubstrateTransaction } from '../schemas/definitions/signed-transaction-substrate'
+import { SignedTezosTransaction } from '../schemas/definitions/signed-transaction-tezos'
+import { UnsignedTezosTransaction } from '../schemas/definitions/unsigned-transaction-tezos'
 import { RawTezosTransaction } from '../types'
 
 import { AeternityProtocol } from './../../protocols/aeternity/AeternityProtocol'
@@ -313,7 +313,8 @@ validators.isValidTezosUnsignedTransaction = (binaryTx: string) => {
   const rawTx: RawTezosTransaction = { binaryTransaction: binaryTx }
   const unsignedTx: UnsignedTezosTransaction = {
     transaction: rawTx,
-    publicKey: ''
+    publicKey: '',
+    callbackURL: ''
   }
 
   return new Promise(async (resolve, reject) => {
@@ -365,7 +366,8 @@ validators.isValidTezosSignedTransaction = (signedTransaction: string) => {
 validators.isValidSubstrateUnsignedTransaction = (encoded: string) => {
   const unsignedTx = {
     transaction: { encoded },
-    publicKey: ''
+    publicKey: '',
+    callbackURL: ''
   }
 
   return new Promise(async (resolve, reject) => {

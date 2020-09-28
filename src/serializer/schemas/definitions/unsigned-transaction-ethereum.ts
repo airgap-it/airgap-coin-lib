@@ -1,5 +1,5 @@
 import { HexString } from './hex-string'
-import { UnsignedTransaction } from './transaction-sign-request'
+import { UnsignedTransaction } from './unsigned-transaction'
 
 interface RawEthereumTransaction {
   nonce: HexString

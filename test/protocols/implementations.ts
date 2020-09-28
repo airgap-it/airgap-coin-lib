@@ -88,12 +88,13 @@ abstract class TestProtocolSpec {
   public unsignedTransaction(tx: any): IACMessageDefinitionObject[] {
     return [
       {
+        id: 'random__id',
         protocol: this.lib.identifier,
         type: IACMessageType.TransactionSignRequest,
         payload: {
           publicKey: this.wallet.publicKey,
-          callback: 'airgap-wallet://?d=',
-          transaction: tx.unsignedTx
+          transaction: tx.unsignedTx,
+          callbackURL: 'airgap-wallet://?d='
         }
       }
     ]
@@ -102,6 +103,7 @@ abstract class TestProtocolSpec {
   public signedTransaction(tx: any): IACMessageDefinitionObject[] {
     return [
       {
+        id: 'random__id',
         protocol: this.lib.identifier,
         type: IACMessageType.TransactionSignResponse,
         payload: {
@@ -115,9 +117,11 @@ abstract class TestProtocolSpec {
   public syncWallet(): IACMessageDefinitionObject[] {
     return [
       {
+        id: 'random__id',
         protocol: this.lib.identifier,
         type: IACMessageType.AccountShareResponse,
         payload: {
+          // TODO: Add after breaking change: group: 'group1',
           publicKey: this.wallet.publicKey,
           isExtendedPublicKey: this.lib.supportsHD,
           derivationPath: this.lib.standardDerivationPath

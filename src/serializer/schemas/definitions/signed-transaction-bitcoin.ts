@@ -1,4 +1,4 @@
-import { SignedTransaction } from './transaction-sign-response'
+import { SignedTransaction } from './signed-transaction'
 
 export interface SignedBitcoinTransaction extends SignedTransaction {
   from: string[]
