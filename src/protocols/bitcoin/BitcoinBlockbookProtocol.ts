@@ -383,7 +383,7 @@ export class BitcoinBlockbookProtocol implements ICoinProtocol {
     data?: any
   ): Promise<FeeDefaults> {
     const result = (await axios.get(`${this.options.network.extras.indexerApi}/api/v2/estimatefee/5`)).data.result
-    const estimatedFee = new BigNumber(result)
+    const estimatedFee = new BigNumber(result).shiftedBy(this.feeDecimals)
     if (estimatedFee.isZero()) {
       return this.feeDefaults
     }
