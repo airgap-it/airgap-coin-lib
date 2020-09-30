@@ -21,7 +21,7 @@ export class BitcoinProtocolStub implements ProtocolHTTPStub {
               height: 1353085,
               confirmations: 132951,
               address: '15B2gX2x1eqFKgR44nCe1i33ursGKP4Qpi',
-              path: '0/0'
+              path: "m/44'/0'/0'/0/0"
             },
             {
               txid: 'cc69b832b6d922a04bf9653bbd12335a78f82fc09be7536f2378bbad8554039d',
@@ -30,7 +30,7 @@ export class BitcoinProtocolStub implements ProtocolHTTPStub {
               height: 1296906,
               confirmations: 189130,
               address: '1QKqr9wjki9K9tF9NxigbwgHeLXHT682sc',
-              path: '1/2'
+              path: "m/44'/0'/0'/1/2"
             }
           ]
         })

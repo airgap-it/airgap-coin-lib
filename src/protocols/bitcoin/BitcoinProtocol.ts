@@ -195,7 +195,11 @@ export class BitcoinProtocol implements ICoinProtocol {
     return [await this.getAddressFromPublicKey(publicKey)]
   }
 
-  public getAddressFromExtendedPublicKey(extendedPublicKey: string, visibilityDerivationIndex, addressDerivationIndex) {
+  public getAddressFromExtendedPublicKey(
+    extendedPublicKey: string,
+    visibilityDerivationIndex: number,
+    addressDerivationIndex: number
+  ): Promise<string> {
     // broadcaster knows this (both broadcaster and signer)
     return this.options.config.bitcoinJSLib.HDNode.fromBase58(extendedPublicKey, this.options.network.extras.network)
       .derive(visibilityDerivationIndex)
@@ -437,6 +441,7 @@ export class BitcoinProtocol implements ICoinProtocol {
       throw new Error('recipients do not match values')
     }
 
+    console.log(`${this.options.network.extras.indexerApi}/api/v2/utxo/${extendedPublicKey}?confirmed=true`)
     const { data: utxos }: { data: UTXOResponse[] } = await axios.get<UTXOResponse[]>(
       `${this.options.network.extras.indexerApi}/api/v2/utxo/${extendedPublicKey}?confirmed=true`,
       {
@@ -453,7 +458,7 @@ export class BitcoinProtocol implements ICoinProtocol {
       .plus(wrappedFee)
     let valueAccumulator: BigNumber = new BigNumber(0)
 
-    const getPathIndexes = (path: string = "m/44'/0'/0'/0/0"): [number, number] => {
+    const getPathIndexes = (path: string): [number, number] => {
       const result = path
         .split('/')
         .slice(-2)
@@ -480,6 +485,8 @@ export class BitcoinProtocol implements ICoinProtocol {
           address: utxo.address,
           derivationPath: indexes.join('/')
         })
+      } else {
+        throw new Error('Invalid address returned from API')
       }
 
       if (valueAccumulator.isGreaterThanOrEqualTo(totalRequiredBalance)) {
@@ -502,6 +509,7 @@ export class BitcoinProtocol implements ICoinProtocol {
     }
 
     const lastUsedInternalAddress: number = Math.max(
+      -1,
       ...utxos
         .map((utxo: UTXOResponse) => getPathIndexes(utxo.path))
         .filter((indexes: [number, number]) => indexes[0] === 1)
