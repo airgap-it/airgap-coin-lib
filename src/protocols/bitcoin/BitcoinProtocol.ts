@@ -15,6 +15,16 @@ import { MainProtocolSymbols, ProtocolSymbols } from '../../utils/ProtocolSymbol
 import { BitcoinProtocolOptions } from './BitcoinProtocolOptions'
 import { BitcoinCryptoClient } from './BitcoinCryptoClient'
 
+interface UTXOResponse {
+  txid: string
+  vout: number
+  value: string
+  height: number
+  confirmations: number
+  address: string
+  path: string
+}
+
 export interface Vin {
   txid: string
   sequence: any
@@ -427,15 +437,12 @@ export class BitcoinProtocol implements ICoinProtocol {
       throw new Error('recipients do not match values')
     }
 
-    const derivedAddresses: string[] = []
-    const internalAddresses = await this.getAddressesFromExtendedPublicKey(extendedPublicKey, 1, 101, offset)
-    const externalAddresses = await this.getAddressesFromExtendedPublicKey(extendedPublicKey, 0, 101, offset)
-    derivedAddresses.push(...internalAddresses.slice(0, -1)) // we don't add the last one
-    derivedAddresses.push(...externalAddresses.slice(0, -1)) // we don't add the last one to make change address possible
-
-    const { data: utxos } = await axios.get(`${this.options.network.extras.indexerApi}/api/v2/utxo/${extendedPublicKey}`, {
-      responseType: 'json'
-    })
+    const { data: utxos }: { data: UTXOResponse[] } = await axios.get<UTXOResponse[]>(
+      `${this.options.network.extras.indexerApi}/api/v2/utxo/${extendedPublicKey}?confirmed=true`,
+      {
+        responseType: 'json'
+      }
+    )
 
     if (utxos.length <= 0) {
       throw new Error('not enough balance') // no transactions found on those addresses, probably won't find anything in the next ones
@@ -446,18 +453,32 @@ export class BitcoinProtocol implements ICoinProtocol {
       .plus(wrappedFee)
     let valueAccumulator: BigNumber = new BigNumber(0)
 
+    const getPathIndexes = (path: string = "m/44'/0'/0'/0/0"): [number, number] => {
+      const result = path
+        .split('/')
+        .slice(-2)
+        .map((item) => parseInt(item))
+        .filter((item) => !isNaN(item))
+
+      if (result.length !== 2) {
+        throw new Error('Unexpected path format')
+      }
+
+      return [result[0], result[1]]
+    }
+
     for (const utxo of utxos) {
       valueAccumulator = valueAccumulator.plus(utxo.value)
-      if (derivedAddresses.indexOf(utxo.address) >= 0) {
+      const indexes: [number, number] = getPathIndexes(utxo.path)
+
+      const derivedAddress: string = await this.getAddressFromExtendedPublicKey(extendedPublicKey, indexes[0], indexes[1])
+      if (derivedAddress === utxo.address) {
         transaction.ins.push({
           txId: utxo.txid,
           value: new BigNumber(utxo.value).toString(10),
           vout: utxo.vout,
           address: utxo.address,
-          derivationPath:
-            externalAddresses.indexOf(utxo.address) >= 0
-              ? `0/${externalAddresses.indexOf(utxo.address) + offset}`
-              : `1/${internalAddresses.indexOf(utxo.address) + offset}`
+          derivationPath: indexes.join('/')
         })
       }
 
@@ -470,7 +491,6 @@ export class BitcoinProtocol implements ICoinProtocol {
       throw new Error('not enough balance')
     }
 
-    // tx.addInput(utxo.txid, utxo.vout)
     for (let i = 0; i < recipients.length; i++) {
       transaction.outs.push({
         recipient: recipients[i],
@@ -479,36 +499,29 @@ export class BitcoinProtocol implements ICoinProtocol {
         derivationPath: '' // TODO: Remove this as soon as our serializer supports optional properties
       })
       valueAccumulator = valueAccumulator.minus(wrappedValues[i])
-      // tx.addOutput(recipients[i], values[i])
     }
 
-    const { data: transactions } = await axios.get(`${this.options.network.extras.indexerApi}/api/v2/utxo/${extendedPublicKey}`, {
-      responseType: 'json'
-    })
-
-    let maxIndex: number = -1
-    for (const item of transactions) {
-      for (const vout of item.vout) {
-        for (const address of vout.scriptPubKey.addresses) {
-          maxIndex = Math.max(maxIndex, internalAddresses.indexOf(address))
-        }
-      }
-    }
+    const lastUsedInternalAddress: number = Math.max(
+      ...utxos
+        .map((utxo: UTXOResponse) => getPathIndexes(utxo.path))
+        .filter((indexes: [number, number]) => indexes[0] === 1)
+        .map((indexes: [number, number]) => indexes[1])
+    )
 
     // If the change is considered dust, the transaction will fail.
     // Dust is a variable value around 300-600 satoshis, depending on the configuration.
     // We set a low fee here to not block any transactions, but it might still fail due to "dust".
     const changeValue: BigNumber = valueAccumulator.minus(wrappedFee)
     if (changeValue.isGreaterThan(new BigNumber(DUST_AMOUNT))) {
-      const internalAddressIndex: number = Math.min(maxIndex + 1, internalAddresses.length - 1)
+      const changeAddressIndex: number = lastUsedInternalAddress + 1
+      const derivedAddress: string = await this.getAddressFromExtendedPublicKey(extendedPublicKey, 1, changeAddressIndex)
       transaction.outs.push({
-        recipient: internalAddresses[internalAddressIndex],
+        recipient: derivedAddress,
         isChange: true,
         value: changeValue.toString(10),
-        derivationPath: (internalAddressIndex + offset).toString()
+        derivationPath: changeAddressIndex.toString()
       })
     }
-    // tx.addOutput(internalAddresses[maxIndex + 1], valueAccumulator - fee) //this is why we sliced the arrays earlier
 
     return transaction
   }
@@ -531,14 +544,6 @@ export class BitcoinProtocol implements ICoinProtocol {
       throw new Error('Recipient and value length does not match.')
     }
     const address = await this.getAddressFromPublicKey(publicKey)
-
-    interface UTXOResponse {
-      txid: string
-      vout: number
-      value: string
-      height: number
-      confirmations: number
-    }
 
     const { data: utxos } = await axios.get<UTXOResponse[]>(`${this.options.network.extras.indexerApi}/api/v2/utxo/${address}`, {
       responseType: 'json'
@@ -567,7 +572,7 @@ export class BitcoinProtocol implements ICoinProtocol {
     }
 
     // tx.addInput(utxo.txid, utxo.vout)
-    for (let i = 0; i < recipients.length; i++) {
+    for (let i: number = 0; i < recipients.length; i++) {
       transaction.outs.push({
         recipient: recipients[i],
         isChange: false,
