@@ -1,7 +1,7 @@
 import * as bitcoinJS from '../../dependencies/src/bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac/src/index'
 import { NetworkType } from '../../utils/ProtocolNetwork'
 
-import { BlockcypherBlockExplorer } from './BitcoinBlockbookProtocolOptions'
+import { BlockcypherBlockExplorer } from './BitcoinProtocolOptions'
 import { BitcoinProtocol } from './BitcoinProtocol'
 import {
   BitcoinProtocolConfig,

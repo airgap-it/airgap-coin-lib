@@ -3,18 +3,28 @@ import { ProtocolBlockExplorer } from '../../utils/ProtocolBlockExplorer'
 import { NetworkType, ProtocolNetwork } from '../../utils/ProtocolNetwork'
 import { ProtocolOptions } from '../../utils/ProtocolOptions'
 
-import { BlockcypherBlockExplorer } from './BitcoinBlockbookProtocolOptions'
-
 // tslint:disable:max-classes-per-file
 
 const MAINNET_NAME: string = 'Mainnet'
 
 const NODE_URL: string = ''
 
-const INDEXER_API: string = 'https://insight.bitpay.com'
+const BLOCK_EXPLORER_URL: string = 'https://live.blockcypher.com/btc'
+const INDEXER_API: string = `https://cors-proxy.airgap.prod.gke.papers.tech/proxy?url=${'https://btc1.trezor.io'}`
 
 export class BitcoinProtocolNetworkExtras {
   constructor(public readonly indexerApi: string = INDEXER_API, public readonly network: any = bitcoinJS.networks.bitcoin) {}
+}
+
+export class BlockcypherBlockExplorer implements ProtocolBlockExplorer {
+  constructor(public readonly blockExplorer: string = BLOCK_EXPLORER_URL) {}
+
+  public async getAddressLink(address: string): Promise<string> {
+    return `${this.blockExplorer}/address/${address}/`
+  }
+  public async getTransactionLink(transactionId: string): Promise<string> {
+    return `${this.blockExplorer}/tx/${transactionId}`
+  }
 }
 
 export class BitcoinProtocolNetwork extends ProtocolNetwork<BitcoinProtocolNetworkExtras> {
