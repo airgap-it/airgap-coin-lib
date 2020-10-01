@@ -821,4 +821,114 @@ export class BitcoinProtocolSpec extends TestProtocolSpec {
       signature: 'IBktb5pV1sOtX15/qK8IyocO0i1Bbxf+v+ZqCryg477QVYykBA4U4iXcpgjfJwagHi+OaXXpOStd8v86VVp87j0='
     }
   ]
+
+  public transactionResult = {
+    transactions: [
+      {
+        hash: 'e5785a893c7fc3adb7b5c31026cbf8abb59bab1a09989d8f4fff67963de1064b',
+        from: ['1NDyJtNTjmwk5xPNhjgAMu4HDHigtobu1s', '1NDyJtNTjmwk5xPNhjgAMu4HDHigtobu1s'],
+        to: [
+          '1EWYGkA7WfvJxBFwk4B4qNtjXHinbBG7Um',
+          '3Qa1qpKGmBcEQXVRFhjKGdVVNhuuRKdcS4',
+          '38ziQS6rVB7DCvvocswEPJkc5vH2zzg8DQ',
+          '3FVhYoGQDR1qtYiLY26zvivQQNyqXb81XD',
+          '12Gffh8SVQEHt1KgyuKpL9JfTe84K5k8mu',
+          '3G1oSVGiB5WDDAuK4yNXFrVNRGHWHsK5aZ',
+          '3AMA8TRLx7LRvgaPMXDvKS14TQrg36QijU',
+          '1KPBHXiCQ9yZ2CJmLo7HpBG1vs675ivz3o',
+          '1JgLnhs6eB6b5dtNEDDaX8LDzrfEzSkZVW',
+          '3NiRhh4V4Pm4wCuLqLJN1NGHwVmQq7rM5z',
+          '1AMaW6fzuz6Np2KB7eRrv1dSEYeffXNfn1',
+          '39KoX6qxHHGcGUAooAA5a9AW6W1g5CQBKf',
+          '16GGJpscpKPXeuRwWtR1HbGmKkkaVDgMq9'
+        ],
+        isInbound: true,
+        amount: '9584316',
+        fee: '79600',
+        blockHeight: 649920,
+        protocolIdentifier: 'btc',
+        network: {
+          name: 'Mainnet',
+          type: 'MAINNET',
+          rpcUrl: '',
+          blockExplorer: { blockExplorer: 'https://live.blockcypher.com/btc' },
+          extras: {}
+        },
+        timestamp: 1601034739
+      },
+      {
+        hash: '8859b4c7a8d1b5ce921301630203b3b58703c4c324fa568c73a8ea7cdfa8630d',
+        from: ['3FVhYoGQDR1qtYiLY26zvivQQNyqXb81XD', '3PswdY2pgWBrbx2Eg5kmJLV3HgTBA6z2jF'],
+        to: ['14sdXZcacodeg1TV992xhpXb51FnF6eJ6G', '3QpMdwyHJAiwTrap8Q4foKXso3sBSniD1t'],
+        isInbound: false,
+        amount: '147958402',
+        fee: '4512',
+        blockHeight: 620423,
+        protocolIdentifier: 'btc',
+        network: {
+          name: 'Mainnet',
+          type: 'MAINNET',
+          rpcUrl: '',
+          blockExplorer: { blockExplorer: 'https://live.blockcypher.com/btc' },
+          extras: {}
+        },
+        timestamp: 1583466141
+      }
+    ],
+    cursor: { offset: 2 }
+  }
+
+  public nextTransactionResult = {
+    transactions: [
+      {
+        hash: '72df92f031ee47f75ce3e1fcf5377a844fc636e359a9338c70920ccea939a785',
+        from: ['14xKAdxwvjCAyzhPZvRZRHMdpUqKbnetVD', '38nbkw1c5kVJvE6ZzuKBYdKfMQd5MYNusX', '1KT7JVS92BkRkEPWGwAD9pAgQrJKmnUR1F'],
+        to: ['3HDS7wmufAvmRLfEh48CjCB2XqqHN2M3YJ', '3FVhYoGQDR1qtYiLY26zvivQQNyqXb81XD'],
+        isInbound: true,
+        amount: '147920000',
+        fee: '1395',
+        blockHeight: 617775,
+        protocolIdentifier: 'btc',
+        network: {
+          name: 'Mainnet',
+          type: 'MAINNET',
+          rpcUrl: '',
+          blockExplorer: { blockExplorer: 'https://live.blockcypher.com/btc' },
+          extras: {
+            indexerApi: 'https://insight.bitpay.com',
+            network: {
+              messagePrefix: '\u0018Bitcoin Signed Message:\n',
+              bech32: 'bc',
+              bip32: { public: 76067358, private: 76066276 },
+              pubKeyHash: 0,
+              scriptHash: 5,
+              wif: 128,
+              coin: 'btc',
+              hashFunctions: {}
+            }
+          }
+        },
+        timestamp: 1581943495
+      },
+      {
+        hash: '1eb83fb1d61e07968bc0f5daf7c1586293df222947a1c320254da7a93babfdc7',
+        from: ['31vBBCBPkCPHpCV618Lr61myaFzQs35cm8', '3FVhYoGQDR1qtYiLY26zvivQQNyqXb81XD'],
+        to: ['159PiitWiC7q3wYXYx5qmPr4xcpJjjkhS5', '3PswdY2pgWBrbx2Eg5kmJLV3HgTBA6z2jF'],
+        isInbound: false,
+        amount: '148042914',
+        fee: '8460',
+        blockHeight: 617204,
+        protocolIdentifier: 'btc',
+        network: {
+          name: 'Mainnet',
+          type: 'MAINNET',
+          rpcUrl: '',
+          blockExplorer: { blockExplorer: 'https://live.blockcypher.com/btc' },
+          extras: {}
+        },
+        timestamp: 1581598043
+      }
+    ],
+    cursor: { offset: 4 }
+  }
 }
