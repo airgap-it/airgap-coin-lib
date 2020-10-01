@@ -64,14 +64,14 @@ export class AirGapMarketWallet extends AirGapWallet {
       this.protocol.options.network.type === NetworkType.MAINNET
         ? marketPrices
         : marketPrices?.map(() => ({
-          time: 0,
-          close: 0,
-          high: 0,
-          low: 0,
-          open: 0,
-          volumefrom: 0,
-          volumeto: 0
-        }))
+            time: 0,
+            close: 0,
+            high: 0,
+            low: 0,
+            open: 0,
+            volumefrom: 0,
+            volumeto: 0
+          }))
   }
 
   constructor(
@@ -124,7 +124,11 @@ export class AirGapMarketWallet extends AirGapWallet {
   }
 
   public async balanceOf(): Promise<BigNumber> {
-    if (this.protocol.identifier === MainProtocolSymbols.GRS && this.isExtendedPublicKey) {
+    if (
+      (this.protocol.identifier === MainProtocolSymbols.BTC || this.protocol.identifier === MainProtocolSymbols.GRS) &&
+      this.isExtendedPublicKey
+    ) {
+      // TODO: Remove and test
       /* 
       We should remove this if BTC also uses blockbook. (And change the order of the if/else below)
       
@@ -147,7 +151,11 @@ export class AirGapMarketWallet extends AirGapWallet {
   public async fetchTransactions(limit: number, cursor?: IProtocolTransactionCursor): Promise<IAirGapTransactionResult> {
     // let transactions: IAirGapTransaction[] = []
     let transactionResult: IAirGapTransactionResult
-    if (this.protocol.identifier === MainProtocolSymbols.GRS && this.isExtendedPublicKey) {
+    if (
+      (this.protocol.identifier === MainProtocolSymbols.BTC || this.protocol.identifier === MainProtocolSymbols.GRS) &&
+      this.isExtendedPublicKey
+    ) {
+      // TODO: Remove and test
       /* 
       We should remove this if BTC also uses blockbook. (And change the order of the if/else below)
       

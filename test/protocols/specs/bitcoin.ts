@@ -53,14 +53,14 @@ export class BitcoinProtocolSpec extends TestProtocolSpec {
             value: '10'
           },
           {
-            derivationPath: '100',
-            recipient: '18MwerXaLVrTshUSJyg8ZZAq2LhJwia9QE',
+            derivationPath: '3',
+            recipient: '1KVA7HX16cef46Lpsi67v8ZV4y6bAiTmLt',
             isChange: true,
             value: '32391989'
           }
         ]
       },
-      signedTx: `01000000027bcda7b76bc47ab562a79cb36198cefe364b66cf913426b7932e84120822108a000000006a47304402202a449911bc9c0deb77fc326fed98bd10d0d70a650bbb7e20964dfaac5ae7ca07022020c2af3ce6a6f2686f72e4fbf0ee582a14e5344d9825aec445d341931dae65d601210311a202c95426b8aafdd7b482e53a363935eb6491b8bcd8991f16abc810f68868ffffffff9d035485adbb78236f53e79bc02ff8785a3312bd3b65f94ba022d9b632b869cc000000006b483045022100f515e7d18601cf1fe263d872ead795ddf5d019c11dab0ad63d737a724bc0d82402204fdaf34ed9d2f7eb765177261b7370063a35385f2a95d685d97e9951dc6ce6b0012102f5ec5458a1d3ce47e87e606df057e6efdfa4c3190b492b115418376865682cacffffffff020a000000000000001976a9142dc610f6d5bfca59507d0dddb986eacfe5c3ed8b88ac3543ee01000000001976a91450bed24b350241ac16f72144cfa4849138013aed88ac00000000`
+      signedTx: `01000000027bcda7b76bc47ab562a79cb36198cefe364b66cf913426b7932e84120822108a000000006a473044022020196ef19bf59e57334f679a725d8e4ead38121d70da56ff3cb09e96fd3eef49022077f11913dc6c4feca173079578729efa814745e7baa6dce8cda668277c15501501210311a202c95426b8aafdd7b482e53a363935eb6491b8bcd8991f16abc810f68868ffffffff9d035485adbb78236f53e79bc02ff8785a3312bd3b65f94ba022d9b632b869cc000000006a4730440220278602b82b439124b2bffe2e7e14ddaf1ab3ab2fc96bafcd91240c5cbffeaf5102207f27fab5172d9159af1f5ad974e73e1b8c5faffffab83ec9211d24f08cece18d012102f5ec5458a1d3ce47e87e606df057e6efdfa4c3190b492b115418376865682cacffffffff020a000000000000001976a9142dc610f6d5bfca59507d0dddb986eacfe5c3ed8b88ac3543ee01000000001976a914cac583a9ff2b5c2ac8ea3d5d0a37cc56e99d16f488ac00000000`
     }
   ]
   public validRawTransactions: RawBitcoinTransaction[] = [
@@ -803,7 +803,6 @@ export class BitcoinProtocolSpec extends TestProtocolSpec {
       ]
     }
   ]
-
   public validator: BitcoinTransactionValidator = new BitcoinTransactionValidator()
 
   public signedTransaction(tx: any): IACMessageDefinitionObject[] {
@@ -822,150 +821,4 @@ export class BitcoinProtocolSpec extends TestProtocolSpec {
       signature: 'IBktb5pV1sOtX15/qK8IyocO0i1Bbxf+v+ZqCryg477QVYykBA4U4iXcpgjfJwagHi+OaXXpOStd8v86VVp87j0='
     }
   ]
-
-  public transactionResult = {
-    transactions: [
-      {
-        hash: 'e5785a893c7fc3adb7b5c31026cbf8abb59bab1a09989d8f4fff67963de1064b',
-        from: ['1NDyJtNTjmwk5xPNhjgAMu4HDHigtobu1s', '1NDyJtNTjmwk5xPNhjgAMu4HDHigtobu1s'],
-        to: [
-          '1EWYGkA7WfvJxBFwk4B4qNtjXHinbBG7Um',
-          '3Qa1qpKGmBcEQXVRFhjKGdVVNhuuRKdcS4',
-          '38ziQS6rVB7DCvvocswEPJkc5vH2zzg8DQ',
-          '3FVhYoGQDR1qtYiLY26zvivQQNyqXb81XD',
-          '12Gffh8SVQEHt1KgyuKpL9JfTe84K5k8mu',
-          '3G1oSVGiB5WDDAuK4yNXFrVNRGHWHsK5aZ',
-          '3AMA8TRLx7LRvgaPMXDvKS14TQrg36QijU',
-          '1KPBHXiCQ9yZ2CJmLo7HpBG1vs675ivz3o',
-          '1JgLnhs6eB6b5dtNEDDaX8LDzrfEzSkZVW',
-          '3NiRhh4V4Pm4wCuLqLJN1NGHwVmQq7rM5z',
-          '1AMaW6fzuz6Np2KB7eRrv1dSEYeffXNfn1',
-          '39KoX6qxHHGcGUAooAA5a9AW6W1g5CQBKf',
-          '16GGJpscpKPXeuRwWtR1HbGmKkkaVDgMq9'
-        ],
-        isInbound: true,
-        amount: '9584316',
-        fee: '79600',
-        blockHeight: 649920,
-        protocolIdentifier: 'btc',
-        network: {
-          name: 'Mainnet',
-          type: 'MAINNET',
-          rpcUrl: '',
-          blockExplorer: { blockExplorer: 'https://live.blockcypher.com/btc' },
-          extras: {
-            indexerApi: 'https://insight.bitpay.com',
-            network: {
-              messagePrefix: '\u0018Bitcoin Signed Message:\n',
-              bech32: 'bc',
-              bip32: { public: 76067358, private: 76066276 },
-              pubKeyHash: 0,
-              scriptHash: 5,
-              wif: 128,
-              coin: 'btc',
-              hashFunctions: {}
-            }
-          }
-        },
-        timestamp: 1601034739
-      },
-      {
-        hash: '8859b4c7a8d1b5ce921301630203b3b58703c4c324fa568c73a8ea7cdfa8630d',
-        from: ['3FVhYoGQDR1qtYiLY26zvivQQNyqXb81XD', '3PswdY2pgWBrbx2Eg5kmJLV3HgTBA6z2jF'],
-        to: ['14sdXZcacodeg1TV992xhpXb51FnF6eJ6G', '3QpMdwyHJAiwTrap8Q4foKXso3sBSniD1t'],
-        isInbound: false,
-        amount: '147958402',
-        fee: '4512',
-        blockHeight: 620423,
-        protocolIdentifier: 'btc',
-        network: {
-          name: 'Mainnet',
-          type: 'MAINNET',
-          rpcUrl: '',
-          blockExplorer: { blockExplorer: 'https://live.blockcypher.com/btc' },
-          extras: {
-            indexerApi: 'https://insight.bitpay.com',
-            network: {
-              messagePrefix: '\u0018Bitcoin Signed Message:\n',
-              bech32: 'bc',
-              bip32: { public: 76067358, private: 76066276 },
-              pubKeyHash: 0,
-              scriptHash: 5,
-              wif: 128,
-              coin: 'btc',
-              hashFunctions: {}
-            }
-          }
-        },
-        timestamp: 1583466141
-      }
-    ],
-    cursor: { offset: 2 }
-  }
-
-  public nextTransactionResult = {
-    transactions: [
-      {
-        hash: '72df92f031ee47f75ce3e1fcf5377a844fc636e359a9338c70920ccea939a785',
-        from: ['14xKAdxwvjCAyzhPZvRZRHMdpUqKbnetVD', '38nbkw1c5kVJvE6ZzuKBYdKfMQd5MYNusX', '1KT7JVS92BkRkEPWGwAD9pAgQrJKmnUR1F'],
-        to: ['3HDS7wmufAvmRLfEh48CjCB2XqqHN2M3YJ', '3FVhYoGQDR1qtYiLY26zvivQQNyqXb81XD'],
-        isInbound: true,
-        amount: '147920000',
-        fee: '1395',
-        blockHeight: 617775,
-        protocolIdentifier: 'btc',
-        network: {
-          name: 'Mainnet',
-          type: 'MAINNET',
-          rpcUrl: '',
-          blockExplorer: { blockExplorer: 'https://live.blockcypher.com/btc' },
-          extras: {
-            indexerApi: 'https://insight.bitpay.com',
-            network: {
-              messagePrefix: '\u0018Bitcoin Signed Message:\n',
-              bech32: 'bc',
-              bip32: { public: 76067358, private: 76066276 },
-              pubKeyHash: 0,
-              scriptHash: 5,
-              wif: 128,
-              coin: 'btc',
-              hashFunctions: {}
-            }
-          }
-        },
-        timestamp: 1581943495
-      },
-      {
-        hash: '1eb83fb1d61e07968bc0f5daf7c1586293df222947a1c320254da7a93babfdc7',
-        from: ['31vBBCBPkCPHpCV618Lr61myaFzQs35cm8', '3FVhYoGQDR1qtYiLY26zvivQQNyqXb81XD'],
-        to: ['159PiitWiC7q3wYXYx5qmPr4xcpJjjkhS5', '3PswdY2pgWBrbx2Eg5kmJLV3HgTBA6z2jF'],
-        isInbound: false,
-        amount: '148042914',
-        fee: '8460',
-        blockHeight: 617204,
-        protocolIdentifier: 'btc',
-        network: {
-          name: 'Mainnet',
-          type: 'MAINNET',
-          rpcUrl: '',
-          blockExplorer: { blockExplorer: 'https://live.blockcypher.com/btc' },
-          extras: {
-            indexerApi: 'https://insight.bitpay.com',
-            network: {
-              messagePrefix: '\u0018Bitcoin Signed Message:\n',
-              bech32: 'bc',
-              bip32: { public: 76067358, private: 76066276 },
-              pubKeyHash: 0,
-              scriptHash: 5,
-              wif: 128,
-              coin: 'btc',
-              hashFunctions: {}
-            }
-          }
-        },
-        timestamp: 1581598043
-      }
-    ],
-    cursor: { offset: 4 }
-  }
 }
