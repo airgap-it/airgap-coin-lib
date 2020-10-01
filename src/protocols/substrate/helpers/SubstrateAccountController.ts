@@ -240,7 +240,7 @@ export class SubstrateAccountController {
     activeEra: SubstrateActiveEraInfo,
     expectedEraDuration: BigNumber
   ): { locked: SubstrateLockedDetails[]; unlocked: string } {
-    const [locked, unlocked] = this.partitionArray(unlocking, ([_, era]) => activeEra.index.lte(era))
+    const [locked, unlocked] = this.partitionArray(unlocking, ([_, era]) => activeEra.index.lt(era))
 
     const lockedDetails = locked.map(([value, era]: [BigNumber, BigNumber]) => {
       const eraStart = activeEra.start.value?.value || new BigNumber(0)
