@@ -53,14 +53,14 @@ export class BitcoinProtocolSpec extends TestProtocolSpec {
             value: '10'
           },
           {
-            derivationPath: '100',
-            recipient: '18MwerXaLVrTshUSJyg8ZZAq2LhJwia9QE',
+            derivationPath: '3',
+            recipient: '1KVA7HX16cef46Lpsi67v8ZV4y6bAiTmLt',
             isChange: true,
             value: '32391989'
           }
         ]
       },
-      signedTx: `01000000027bcda7b76bc47ab562a79cb36198cefe364b66cf913426b7932e84120822108a000000006a47304402202a449911bc9c0deb77fc326fed98bd10d0d70a650bbb7e20964dfaac5ae7ca07022020c2af3ce6a6f2686f72e4fbf0ee582a14e5344d9825aec445d341931dae65d601210311a202c95426b8aafdd7b482e53a363935eb6491b8bcd8991f16abc810f68868ffffffff9d035485adbb78236f53e79bc02ff8785a3312bd3b65f94ba022d9b632b869cc000000006b483045022100f515e7d18601cf1fe263d872ead795ddf5d019c11dab0ad63d737a724bc0d82402204fdaf34ed9d2f7eb765177261b7370063a35385f2a95d685d97e9951dc6ce6b0012102f5ec5458a1d3ce47e87e606df057e6efdfa4c3190b492b115418376865682cacffffffff020a000000000000001976a9142dc610f6d5bfca59507d0dddb986eacfe5c3ed8b88ac3543ee01000000001976a91450bed24b350241ac16f72144cfa4849138013aed88ac00000000`
+      signedTx: `01000000027bcda7b76bc47ab562a79cb36198cefe364b66cf913426b7932e84120822108a000000006a473044022020196ef19bf59e57334f679a725d8e4ead38121d70da56ff3cb09e96fd3eef49022077f11913dc6c4feca173079578729efa814745e7baa6dce8cda668277c15501501210311a202c95426b8aafdd7b482e53a363935eb6491b8bcd8991f16abc810f68868ffffffff9d035485adbb78236f53e79bc02ff8785a3312bd3b65f94ba022d9b632b869cc000000006a4730440220278602b82b439124b2bffe2e7e14ddaf1ab3ab2fc96bafcd91240c5cbffeaf5102207f27fab5172d9159af1f5ad974e73e1b8c5faffffab83ec9211d24f08cece18d012102f5ec5458a1d3ce47e87e606df057e6efdfa4c3190b492b115418376865682cacffffffff020a000000000000001976a9142dc610f6d5bfca59507d0dddb986eacfe5c3ed8b88ac3543ee01000000001976a914cac583a9ff2b5c2ac8ea3d5d0a37cc56e99d16f488ac00000000`
     }
   ]
   public validRawTransactions: RawBitcoinTransaction[] = [
@@ -803,7 +803,6 @@ export class BitcoinProtocolSpec extends TestProtocolSpec {
       ]
     }
   ]
-
   public validator: BitcoinTransactionValidator = new BitcoinTransactionValidator()
 
   public signedTransaction(tx: any): IACMessageDefinitionObject[] {
@@ -853,19 +852,7 @@ export class BitcoinProtocolSpec extends TestProtocolSpec {
           type: 'MAINNET',
           rpcUrl: '',
           blockExplorer: { blockExplorer: 'https://live.blockcypher.com/btc' },
-          extras: {
-            indexerApi: 'https://insight.bitpay.com',
-            network: {
-              messagePrefix: '\u0018Bitcoin Signed Message:\n',
-              bech32: 'bc',
-              bip32: { public: 76067358, private: 76066276 },
-              pubKeyHash: 0,
-              scriptHash: 5,
-              wif: 128,
-              coin: 'btc',
-              hashFunctions: {}
-            }
-          }
+          extras: {}
         },
         timestamp: 1601034739
       },
@@ -883,19 +870,7 @@ export class BitcoinProtocolSpec extends TestProtocolSpec {
           type: 'MAINNET',
           rpcUrl: '',
           blockExplorer: { blockExplorer: 'https://live.blockcypher.com/btc' },
-          extras: {
-            indexerApi: 'https://insight.bitpay.com',
-            network: {
-              messagePrefix: '\u0018Bitcoin Signed Message:\n',
-              bech32: 'bc',
-              bip32: { public: 76067358, private: 76066276 },
-              pubKeyHash: 0,
-              scriptHash: 5,
-              wif: 128,
-              coin: 'btc',
-              hashFunctions: {}
-            }
-          }
+          extras: {}
         },
         timestamp: 1583466141
       }
@@ -949,19 +924,7 @@ export class BitcoinProtocolSpec extends TestProtocolSpec {
           type: 'MAINNET',
           rpcUrl: '',
           blockExplorer: { blockExplorer: 'https://live.blockcypher.com/btc' },
-          extras: {
-            indexerApi: 'https://insight.bitpay.com',
-            network: {
-              messagePrefix: '\u0018Bitcoin Signed Message:\n',
-              bech32: 'bc',
-              bip32: { public: 76067358, private: 76066276 },
-              pubKeyHash: 0,
-              scriptHash: 5,
-              wif: 128,
-              coin: 'btc',
-              hashFunctions: {}
-            }
-          }
+          extras: {}
         },
         timestamp: 1581598043
       }
