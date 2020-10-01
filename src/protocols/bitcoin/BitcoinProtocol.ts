@@ -50,7 +50,7 @@ export interface Transaction {
   blockhash: string
   blockHeight: number
   confirmations: number
-  blocktime: number
+  blockTime: number
   value: string
   valueIn: string
   fees: string
@@ -617,8 +617,9 @@ export class BitcoinProtocol implements ICoinProtocol {
     cursor?: BitcoinBlockbookTransactionCursor,
     addressOffset = 0
   ): Promise<BitcoinBlockbookTransactionResult> {
+    const page = cursor?.page ?? 1
     const { data }: { data: XPubResponse } = await axios.get(
-      this.options.network.extras.indexerApi + '/api/v2/xpub/' + extendedPublicKey + '?details=txs&tokens=used',
+      this.options.network.extras.indexerApi + '/api/v2/xpub/' + extendedPublicKey + `?details=txs&tokens=used&pageSize=${limit}&page=${page}`,
       {
         responseType: 'json'
       }
@@ -627,54 +628,56 @@ export class BitcoinProtocol implements ICoinProtocol {
     const ourAddresses = (data.tokens || []).filter((token) => token.type === 'XPUBAddress').map((token) => token.name)
 
     const airGapTransactions: IAirGapTransaction[] = []
-
-    for (const transaction of data.transactions || []) {
-      const tempAirGapTransactionFrom: string[] = []
-      const tempAirGapTransactionTo: string[] = []
-      let tempAirGapTransactionIsInbound: boolean = true
-
-      let amount = new BigNumber(0)
-
-      for (const vin of transaction.vin) {
-        if (this.containsSome(vin.addresses, ourAddresses)) {
-          tempAirGapTransactionIsInbound = false
-        }
-        tempAirGapTransactionFrom.push(...vin.addresses)
-        amount = amount.plus(vin.value)
-      }
-
-      for (const vout of transaction.vout) {
-        if (vout.addresses) {
-          tempAirGapTransactionTo.push(...vout.addresses)
-          // If receiving address is our address, and transaction is outbound => our change
-          if (this.containsSome(vout.addresses, ourAddresses) && !tempAirGapTransactionIsInbound) {
-            // remove only if related to this address
-            amount = amount.minus(vout.value)
+    
+    if (data.page == page) {
+      for (const transaction of data.transactions || []) {
+        const tempAirGapTransactionFrom: string[] = []
+        const tempAirGapTransactionTo: string[] = []
+        let tempAirGapTransactionIsInbound: boolean = true
+  
+        let amount = new BigNumber(0)
+  
+        for (const vin of transaction.vin) {
+          if (this.containsSome(vin.addresses, ourAddresses)) {
+            tempAirGapTransactionIsInbound = false
           }
-          // If receiving address is not ours, and transaction isbound => senders change
-          if (!this.containsSome(vout.addresses, ourAddresses) && tempAirGapTransactionIsInbound) {
-            amount = amount.minus(vout.value)
+          tempAirGapTransactionFrom.push(...vin.addresses)
+          amount = amount.plus(vin.value)
+        }
+  
+        for (const vout of transaction.vout) {
+          if (vout.addresses) {
+            tempAirGapTransactionTo.push(...vout.addresses)
+            // If receiving address is our address, and transaction is outbound => our change
+            if (this.containsSome(vout.addresses, ourAddresses) && !tempAirGapTransactionIsInbound) {
+              // remove only if related to this address
+              amount = amount.minus(vout.value)
+            }
+            // If receiving address is not ours, and transaction isbound => senders change
+            if (!this.containsSome(vout.addresses, ourAddresses) && tempAirGapTransactionIsInbound) {
+              amount = amount.minus(vout.value)
+            }
           }
         }
+  
+        // deduct fee from amount
+        amount = amount.minus(transaction.fees)
+  
+        const airGapTransaction: IAirGapTransaction = {
+          hash: transaction.txid,
+          from: tempAirGapTransactionFrom,
+          to: tempAirGapTransactionTo,
+          isInbound: tempAirGapTransactionIsInbound,
+          amount: amount.toString(10),
+          fee: new BigNumber(transaction.fees).toString(10),
+          blockHeight: transaction.blockHeight.toString(),
+          protocolIdentifier: this.identifier,
+          network: this.options.network,
+          timestamp: transaction.blockTime
+        }
+  
+        airGapTransactions.push(airGapTransaction)
       }
-
-      // deduct fee from amount
-      amount = amount.minus(transaction.fees)
-
-      const airGapTransaction: IAirGapTransaction = {
-        hash: transaction.txid,
-        from: tempAirGapTransactionFrom,
-        to: tempAirGapTransactionTo,
-        isInbound: tempAirGapTransactionIsInbound,
-        amount: amount.toString(10),
-        fee: new BigNumber(transaction.fees).toString(10),
-        blockHeight: transaction.blockHeight.toString(),
-        protocolIdentifier: this.identifier,
-        network: this.options.network,
-        timestamp: transaction.blocktime
-      }
-
-      airGapTransactions.push(airGapTransaction)
     }
 
     return {
@@ -699,61 +702,61 @@ export class BitcoinProtocol implements ICoinProtocol {
     cursor?: BitcoinBlockbookTransactionCursor
   ): Promise<BitcoinBlockbookTransactionResult> {
     const airGapTransactions: IAirGapTransaction[] = []
-
-    const url = cursor
-      ? `${this.options.network.extras.indexerApi}/api/v2/address/${addresses[0]}?page=${cursor.page}&pageSize=${limit}&details=txs`
-      : `${this.options.network.extras.indexerApi}/api/v2/address/${addresses[0]}?page=1&pageSize=${limit}&details=txs`
+    const page = cursor?.page ?? 1
+    const url = `${this.options.network.extras.indexerApi}/api/v2/address/${addresses[0]}?page=${page}&pageSize=${limit}&details=txs`
     const { data } = await axios.get<AddressResponse>(url, {
       responseType: 'json'
     })
-
-    for (const transaction of data.transactions || []) {
-      const tempAirGapTransactionFrom: string[] = []
-      const tempAirGapTransactionTo: string[] = []
-      let tempAirGapTransactionIsInbound: boolean = true
-
-      let amount = new BigNumber(0)
-
-      for (const vin of transaction.vin) {
-        if (vin.addresses && this.containsSome(vin.addresses, addresses)) {
-          tempAirGapTransactionIsInbound = false
-        }
-        tempAirGapTransactionFrom.push(...vin.addresses)
-        amount = vin.value ? amount.plus(vin.value) : amount
-      }
-
-      for (const vout of transaction.vout) {
-        if (vout.addresses) {
-          tempAirGapTransactionTo.push(...vout.addresses)
-          // If receiving address is our address, and transaction is outbound => our change
-          if (this.containsSome(vout.addresses, addresses) && !tempAirGapTransactionIsInbound) {
-            // remove only if related to this address
-            amount = amount.minus(new BigNumber(vout.value).shiftedBy(this.decimals))
+    
+    if (data.page == page) {
+      for (const transaction of data.transactions || []) {
+        const tempAirGapTransactionFrom: string[] = []
+        const tempAirGapTransactionTo: string[] = []
+        let tempAirGapTransactionIsInbound: boolean = true
+  
+        let amount = new BigNumber(0)
+  
+        for (const vin of transaction.vin) {
+          if (vin.addresses && this.containsSome(vin.addresses, addresses)) {
+            tempAirGapTransactionIsInbound = false
           }
-          // If receiving address is not ours, and transaction isbound => senders change
-          if (!this.containsSome(vout.addresses, addresses) && tempAirGapTransactionIsInbound) {
-            amount = amount.minus(new BigNumber(vout.value).shiftedBy(this.decimals))
+          tempAirGapTransactionFrom.push(...vin.addresses)
+          amount = vin.value ? amount.plus(vin.value) : amount
+        }
+  
+        for (const vout of transaction.vout) {
+          if (vout.addresses) {
+            tempAirGapTransactionTo.push(...vout.addresses)
+            // If receiving address is our address, and transaction is outbound => our change
+            if (this.containsSome(vout.addresses, addresses) && !tempAirGapTransactionIsInbound) {
+              // remove only if related to this address
+              amount = amount.minus(new BigNumber(vout.value).shiftedBy(this.decimals))
+            }
+            // If receiving address is not ours, and transaction isbound => senders change
+            if (!this.containsSome(vout.addresses, addresses) && tempAirGapTransactionIsInbound) {
+              amount = amount.minus(new BigNumber(vout.value).shiftedBy(this.decimals))
+            }
           }
         }
+  
+        // deduct fee from amount
+        amount = amount.minus(new BigNumber(transaction.fees).shiftedBy(this.feeDecimals))
+  
+        const airGapTransaction: IAirGapTransaction = {
+          hash: transaction.txid,
+          from: tempAirGapTransactionFrom,
+          to: tempAirGapTransactionTo,
+          isInbound: tempAirGapTransactionIsInbound,
+          amount: amount.toString(10),
+          fee: new BigNumber(transaction.fees).shiftedBy(this.feeDecimals).toString(10),
+          blockHeight: transaction.blockHeight.toString(),
+          protocolIdentifier: this.identifier,
+          network: this.options.network,
+          timestamp: transaction.blockTime
+        }
+  
+        airGapTransactions.push(airGapTransaction)
       }
-
-      // deduct fee from amount
-      amount = amount.minus(new BigNumber(transaction.fees).shiftedBy(this.feeDecimals))
-
-      const airGapTransaction: IAirGapTransaction = {
-        hash: transaction.txid,
-        from: tempAirGapTransactionFrom,
-        to: tempAirGapTransactionTo,
-        isInbound: tempAirGapTransactionIsInbound,
-        amount: amount.toString(10),
-        fee: new BigNumber(transaction.fees).shiftedBy(this.feeDecimals).toString(10),
-        blockHeight: transaction.blockHeight.toString(),
-        protocolIdentifier: this.identifier,
-        network: this.options.network,
-        timestamp: transaction.blocktime
-      }
-
-      airGapTransactions.push(airGapTransaction)
     }
 
     return {
