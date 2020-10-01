@@ -1,4 +1,4 @@
-import { BitcoinTransactionCursor, BitcoinTransactionResult } from './BitcoinTypes'
+import { BitcoinBlockbookTransactionCursor, BitcoinBlockbookTransactionResult } from './BitcoinTypes'
 
 import * as bitcoinJSMessage from '../../dependencies/src/bitcoinjs-message-2.1.1/index'
 import axios from '../../dependencies/src/axios-0.19.0/index'
@@ -9,11 +9,94 @@ import { AirGapTransactionStatus, IAirGapTransaction } from '../../interfaces/IA
 import { UnsignedTransaction } from '../../serializer/schemas/definitions/transaction-sign-request'
 import { SignedBitcoinTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-bitcoin'
 import { RawBitcoinTransaction } from '../../serializer/types'
-import { MainProtocolSymbols, ProtocolSymbols } from '../../utils/ProtocolSymbols'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
+import { MainProtocolSymbols, ProtocolSymbols } from '../../utils/ProtocolSymbols'
 
-import { BitcoinCryptoClient } from './BitcoinCryptoClient'
 import { BitcoinProtocolOptions } from './BitcoinProtocolOptions'
+import { BitcoinCryptoClient } from './BitcoinCryptoClient'
+
+interface UTXOResponse {
+  txid: string
+  vout: number
+  value: string
+  height: number
+  confirmations: number
+  address: string
+  path: string
+}
+
+export interface Vin {
+  txid: string
+  sequence: any
+  n: number
+  addresses: string[]
+  value: string
+  hex: string
+}
+
+export interface Vout {
+  value: string
+  n: number
+  hex: string
+  addresses: string[]
+  spent?: boolean
+}
+
+export interface Transaction {
+  txid: string
+  version: number
+  vin: Vin[]
+  vout: Vout[]
+  blockhash: string
+  blockHeight: number
+  confirmations: number
+  blockTime: number
+  value: string
+  valueIn: string
+  fees: string
+  hex: string
+}
+
+export interface Token {
+  type: string
+  name: string
+  path: string
+  transfers: number
+  decimals: number
+  balance: string
+  totalReceived: string
+  totalSent: string
+}
+
+export interface XPubResponse {
+  page: number
+  totalPages: number
+  itemsOnPage: number
+  address: string
+  balance: string
+  totalReceived: string
+  totalSent: string
+  unconfirmedBalance: string
+  unconfirmedTxs: number
+  txs: number
+  transactions?: Transaction[]
+  totalTokens?: number
+  tokens?: Token[]
+}
+
+export interface AddressResponse {
+  page: number
+  totalPages: number
+  itemsOnPage: number
+  address: string
+  balance: string
+  totalReceived: string
+  totalSent: string
+  unconfirmedBalance: string
+  unconfirmedTxs: number
+  txs: number
+  transactions?: Transaction[]
+}
 
 const DUST_AMOUNT: number = 50
 
@@ -57,8 +140,6 @@ export class BitcoinProtocol implements ICoinProtocol {
   public addressValidationPattern: string = '^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$'
   public addressPlaceholder: string = '1ABC...'
 
-  private readonly feeEstimationUrl = `https://blockstream.info/api/fee-estimates`
-
   constructor(public readonly options: BitcoinProtocolOptions = new BitcoinProtocolOptions()) {}
 
   public async getBlockExplorerLinkForAddress(address: string): Promise<string> {
@@ -69,19 +150,19 @@ export class BitcoinProtocol implements ICoinProtocol {
     return this.options.network.blockExplorer.getTransactionLink(txId)
   }
 
-  public getPublicKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
+  public async getPublicKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
     const secret = mnemonicToSeed(mnemonic, password)
 
     return this.getPublicKeyFromHexSecret(secret, derivationPath)
   }
 
-  public getPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<Buffer> {
+  public async getPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<Buffer> {
     const secret = mnemonicToSeed(mnemonic, password)
 
     return this.getPrivateKeyFromHexSecret(secret, derivationPath)
   }
 
-  public getExtendedPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
+  public async getExtendedPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
     const secret = mnemonicToSeed(mnemonic, password)
 
     return this.getExtendedPrivateKeyFromHexSecret(secret, derivationPath)
@@ -114,7 +195,11 @@ export class BitcoinProtocol implements ICoinProtocol {
     return [await this.getAddressFromPublicKey(publicKey)]
   }
 
-  public getAddressFromExtendedPublicKey(extendedPublicKey: string, visibilityDerivationIndex, addressDerivationIndex) {
+  public getAddressFromExtendedPublicKey(
+    extendedPublicKey: string,
+    visibilityDerivationIndex: number,
+    addressDerivationIndex: number
+  ): Promise<string> {
     // broadcaster knows this (both broadcaster and signer)
     return this.options.config.bitcoinJSLib.HDNode.fromBase58(extendedPublicKey, this.options.network.extras.network)
       .derive(visibilityDerivationIndex)
@@ -160,24 +245,19 @@ export class BitcoinProtocol implements ICoinProtocol {
     return transactionBuilder.build().toHex()
   }
 
-  public async signWithExtendedPrivateKey(
-    extendedPrivateKey: string,
-    transaction: RawBitcoinTransaction,
-    verifyChangeAddress: boolean = true
-  ): Promise<string> {
+  public async signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: RawBitcoinTransaction): Promise<string> {
     const transactionBuilder = new this.options.config.bitcoinJSLib.TransactionBuilder(this.options.network.extras.network)
     const node = this.options.config.bitcoinJSLib.HDNode.fromBase58(extendedPrivateKey, this.options.network.extras.network)
 
     for (const input of transaction.ins) {
       transactionBuilder.addInput(input.txId, input.vout)
     }
-
     const changeAddressBatchSize: number = 10
     const changeAddressMaxAddresses: number = 500
 
     for (const output of transaction.outs) {
       let changeAddressIsValid: boolean = false
-      if (output.isChange && verifyChangeAddress) {
+      if (output.isChange) {
         if (output.derivationPath) {
           const generatedChangeAddress: string[] = await this.getAddressesFromExtendedPublicKey(
             extendedPrivateKey,
@@ -266,14 +346,15 @@ export class BitcoinProtocol implements ICoinProtocol {
   }
 
   public async getBalanceOfAddresses(addresses: string[]): Promise<string> {
-    const response = await axios.get(`${this.options.network.extras.indexerApi}/api/addrs/${addresses.join(',')}/utxo`, {
-      responseType: 'json'
-    })
-
-    const utxos = response.data
     let valueAccumulator: BigNumber = new BigNumber(0)
-    for (const utxo of utxos) {
-      valueAccumulator = valueAccumulator.plus(new BigNumber(utxo.satoshis))
+
+    // The API doesn't support batch checking of balances, so we have to do it manually
+    for (const address of addresses) {
+      const { data } = await axios.get(`${this.options.network.extras.indexerApi}/api/v2/address/${address}?details=basic`, {
+        responseType: 'json'
+      })
+
+      valueAccumulator = valueAccumulator.plus(new BigNumber(data.balance))
     }
 
     return valueAccumulator.toString(10)
@@ -286,35 +367,11 @@ export class BitcoinProtocol implements ICoinProtocol {
   }
 
   public async getBalanceOfExtendedPublicKey(extendedPublicKey: string, offset: number = 0): Promise<string> {
-    const derivedAddresses: string[][] = []
-    const internalAddresses = await this.getAddressesFromExtendedPublicKey(extendedPublicKey, 1, 20, offset)
-    const externalAddresses = await this.getAddressesFromExtendedPublicKey(extendedPublicKey, 0, 20, offset)
-    derivedAddresses.push(internalAddresses) // we don't add the last one
-    derivedAddresses.push(externalAddresses) // we don't add the last one to make change address possible
-
-    const { data: utxos } = await axios.get(this.options.network.extras.indexerApi + '/api/addrs/' + derivedAddresses.join(',') + '/utxo', {
+    const { data } = await axios.get(`${this.options.network.extras.indexerApi}/api/v2/xpub/${extendedPublicKey}?pageSize=1`, {
       responseType: 'json'
     })
 
-    let valueAccumulator: BigNumber = new BigNumber(0)
-    for (const utxo of utxos) {
-      valueAccumulator = valueAccumulator.plus(utxo.satoshis)
-    }
-
-    const { data: transactions } = await axios.get(
-      this.options.network.extras.indexerApi + '/api/addrs/' + derivedAddresses.join(',') + '/txs?from=0&to=1',
-      {
-        responseType: 'json'
-      }
-    )
-
-    if (transactions.items.length > 0) {
-      const value = await this.getBalanceOfExtendedPublicKey(extendedPublicKey, offset + 100)
-
-      return valueAccumulator.plus(value).toString(10)
-    } else {
-      return valueAccumulator.toString(10)
-    }
+    return data.balance
   }
 
   public async getAvailableBalanceOfAddresses(addresses: string[]): Promise<string> {
@@ -339,24 +396,19 @@ export class BitcoinProtocol implements ICoinProtocol {
     values: string[],
     data?: any
   ): Promise<FeeDefaults> {
-    const estimatedFees = (await axios.get(this.feeEstimationUrl)).data
-    const transation = await this.prepareTransactionFromExtendedPublicKey(publicKey, 0, recipients, values, '0')
-    const fakeSignedLength =
-      (
-        await this.signWithExtendedPrivateKey(
-          'xprv9y52jGU1NsKDGq7cHcQjBeVC4sYff3jEzNywXk37wxUbMpsNg1RFDrBCZSZQD3nb79jpMDEdadtWgoPrZgr1SUriLUie3SVvVRKZDNfQKNv',
-          transation,
-          false
-        )
-      ).length / 2
-    const bnTransactionLength = new BigNumber(fakeSignedLength)
-    const mediumFee = new BigNumber(estimatedFees['6']).times(bnTransactionLength).integerValue()
-    const lowFee = new BigNumber(estimatedFees['12']).times(bnTransactionLength).integerValue()
-    const highFee = new BigNumber(estimatedFees['1']).times(bnTransactionLength).integerValue()
+    const result = (await axios.get(`${this.options.network.extras.indexerApi}/api/v2/estimatefee/5`)).data.result
+    const estimatedFee = new BigNumber(result).shiftedBy(this.feeDecimals)
+    if (estimatedFee.isZero()) {
+      return this.feeDefaults
+    }
+    const feeStepFactor = new BigNumber(0.5)
+    const mediumFee = estimatedFee
+    const lowFee = mediumFee.minus(mediumFee.times(feeStepFactor)).integerValue(BigNumber.ROUND_FLOOR)
+    const highFee = mediumFee.plus(mediumFee.times(feeStepFactor)).integerValue(BigNumber.ROUND_FLOOR)
 
     return {
       low: lowFee.shiftedBy(-this.feeDecimals).toFixed(),
-      medium: mediumFee.integerValue(BigNumber.ROUND_FLOOR).shiftedBy(-this.feeDecimals).toFixed(),
+      medium: mediumFee.shiftedBy(-this.feeDecimals).toFixed(),
       high: highFee.shiftedBy(-this.feeDecimals).toFixed()
     }
   }
@@ -389,34 +441,52 @@ export class BitcoinProtocol implements ICoinProtocol {
       throw new Error('recipients do not match values')
     }
 
-    const derivedAddresses: string[] = []
-    const internalAddresses = await this.getAddressesFromExtendedPublicKey(extendedPublicKey, 1, 101, offset)
-    const externalAddresses = await this.getAddressesFromExtendedPublicKey(extendedPublicKey, 0, 101, offset)
-    derivedAddresses.push(...internalAddresses.slice(0, -1)) // we don't add the last one
-    derivedAddresses.push(...externalAddresses.slice(0, -1)) // we don't add the last one to make change address possible
+    console.log(`${this.options.network.extras.indexerApi}/api/v2/utxo/${extendedPublicKey}?confirmed=true`)
+    const { data: utxos }: { data: UTXOResponse[] } = await axios.get<UTXOResponse[]>(
+      `${this.options.network.extras.indexerApi}/api/v2/utxo/${extendedPublicKey}?confirmed=true`,
+      {
+        responseType: 'json'
+      }
+    )
 
-    const { data: utxos } = await axios.get(this.options.network.extras.indexerApi + '/api/addrs/' + derivedAddresses.join(',') + '/utxo', {
-      responseType: 'json'
-    })
+    if (utxos.length <= 0) {
+      throw new Error('not enough balance') // no transactions found on those addresses, probably won't find anything in the next ones
+    }
 
     const totalRequiredBalance: BigNumber = wrappedValues
       .reduce((accumulator: BigNumber, currentValue: BigNumber) => accumulator.plus(currentValue))
       .plus(wrappedFee)
     let valueAccumulator: BigNumber = new BigNumber(0)
 
+    const getPathIndexes = (path: string): [number, number] => {
+      const result = path
+        .split('/')
+        .slice(-2)
+        .map((item) => parseInt(item))
+        .filter((item) => !isNaN(item))
+
+      if (result.length !== 2) {
+        throw new Error('Unexpected path format')
+      }
+
+      return [result[0], result[1]]
+    }
+
     for (const utxo of utxos) {
-      valueAccumulator = valueAccumulator.plus(new BigNumber(utxo.satoshis))
-      if (derivedAddresses.indexOf(utxo.address) >= 0) {
+      valueAccumulator = valueAccumulator.plus(utxo.value)
+      const indexes: [number, number] = getPathIndexes(utxo.path)
+
+      const derivedAddress: string = await this.getAddressFromExtendedPublicKey(extendedPublicKey, indexes[0], indexes[1])
+      if (derivedAddress === utxo.address) {
         transaction.ins.push({
           txId: utxo.txid,
-          value: new BigNumber(utxo.satoshis).toString(10),
+          value: new BigNumber(utxo.value).toString(10),
           vout: utxo.vout,
           address: utxo.address,
-          derivationPath:
-            externalAddresses.indexOf(utxo.address) >= 0
-              ? '0/' + (externalAddresses.indexOf(utxo.address) + offset)
-              : '1/' + (internalAddresses.indexOf(utxo.address) + offset)
+          derivationPath: indexes.join('/')
         })
+      } else {
+        throw new Error('Invalid address returned from API')
       }
 
       if (valueAccumulator.isGreaterThanOrEqualTo(totalRequiredBalance)) {
@@ -425,21 +495,10 @@ export class BitcoinProtocol implements ICoinProtocol {
     }
 
     if (valueAccumulator.isLessThan(totalRequiredBalance)) {
-      const { data: transactions } = await axios.get(
-        this.options.network.extras.indexerApi + '/api/addrs/' + internalAddresses.join(',') + '/txs?from=0&to=1',
-        {
-          responseType: 'json'
-        }
-      )
-      if (transactions.items.length <= 0) {
-        throw new Error('not enough balance') // no transactions found on those addresses, probably won't find anything in the next ones
-      }
-
-      return this.prepareTransactionFromExtendedPublicKey(extendedPublicKey, offset + 10, recipients, values, fee) // recursion needed to navigate through HD wallet
+      throw new Error('not enough balance')
     }
 
-    // tx.addInput(utxo.txid, utxo.vout)
-    for (let i: number = 0; i < recipients.length; i++) {
+    for (let i = 0; i < recipients.length; i++) {
       transaction.outs.push({
         recipient: recipients[i],
         isChange: false,
@@ -447,39 +506,30 @@ export class BitcoinProtocol implements ICoinProtocol {
         derivationPath: '' // TODO: Remove this as soon as our serializer supports optional properties
       })
       valueAccumulator = valueAccumulator.minus(wrappedValues[i])
-      // tx.addOutput(recipients[i], values[i])
     }
 
-    const { data: transactions } = await axios.get(
-      this.options.network.extras.indexerApi + '/api/addrs/' + internalAddresses.join(',') + '/txs',
-      {
-        responseType: 'json'
-      }
+    const lastUsedInternalAddress: number = Math.max(
+      -1,
+      ...utxos
+        .map((utxo: UTXOResponse) => getPathIndexes(utxo.path))
+        .filter((indexes: [number, number]) => indexes[0] === 1)
+        .map((indexes: [number, number]) => indexes[1])
     )
-
-    let maxIndex: number = -1
-    for (const item of transactions.items) {
-      for (const vout of item.vout) {
-        for (const address of vout.scriptPubKey.addresses) {
-          maxIndex = Math.max(maxIndex, internalAddresses.indexOf(address))
-        }
-      }
-    }
 
     // If the change is considered dust, the transaction will fail.
     // Dust is a variable value around 300-600 satoshis, depending on the configuration.
     // We set a low fee here to not block any transactions, but it might still fail due to "dust".
     const changeValue: BigNumber = valueAccumulator.minus(wrappedFee)
     if (changeValue.isGreaterThan(new BigNumber(DUST_AMOUNT))) {
-      const internalAddressIndex: number = Math.min(maxIndex + 1, internalAddresses.length - 1)
+      const changeAddressIndex: number = lastUsedInternalAddress + 1
+      const derivedAddress: string = await this.getAddressFromExtendedPublicKey(extendedPublicKey, 1, changeAddressIndex)
       transaction.outs.push({
-        recipient: internalAddresses[internalAddressIndex],
+        recipient: derivedAddress,
         isChange: true,
         value: changeValue.toString(10),
-        derivationPath: (internalAddressIndex + offset).toString()
+        derivationPath: changeAddressIndex.toString()
       })
     }
-    // tx.addOutput(internalAddresses[maxIndex + 1], valueAccumulator - fee) //this is why we sliced the arrays earlier
 
     return transaction
   }
@@ -503,23 +553,22 @@ export class BitcoinProtocol implements ICoinProtocol {
     }
     const address = await this.getAddressFromPublicKey(publicKey)
 
-    const { data: utxos } = await axios.get(this.options.network.extras.indexerApi + '/api/addrs/' + address + '/utxo', {
+    const { data: utxos } = await axios.get<UTXOResponse[]>(`${this.options.network.extras.indexerApi}/api/v2/utxo/${address}`, {
       responseType: 'json'
     })
     const totalRequiredBalance: BigNumber = wrappedValues
       .reduce((accumulator: BigNumber, currentValue: BigNumber) => accumulator.plus(currentValue))
       .plus(wrappedFee)
+
     let valueAccumulator: BigNumber = new BigNumber(0)
     for (const utxo of utxos) {
-      valueAccumulator = valueAccumulator.plus(new BigNumber(utxo.satoshis))
-      if (address === utxo.address) {
-        transaction.ins.push({
-          txId: utxo.txid,
-          value: new BigNumber(utxo.satoshis).toString(10),
-          vout: utxo.vout,
-          address: utxo.address
-        })
-      }
+      valueAccumulator = valueAccumulator.plus(new BigNumber(utxo.value))
+      transaction.ins.push({
+        txId: utxo.txid,
+        value: new BigNumber(utxo.value).toString(10),
+        vout: utxo.vout,
+        address
+      })
 
       if (valueAccumulator.isGreaterThanOrEqualTo(totalRequiredBalance)) {
         break
@@ -556,110 +605,166 @@ export class BitcoinProtocol implements ICoinProtocol {
     return transaction
   }
 
-  public broadcastTransaction(rawTransaction: string): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const params = new URLSearchParams() // Fix for axios content-type
-      params.append('rawtx', rawTransaction)
-      axios
-        .post(this.options.network.extras.indexerApi + '/api/tx/send', params)
-        .then((response) => {
-          const payload = response.data
-          resolve(payload.txid)
-        })
-        .catch(reject)
-    })
+  public async broadcastTransaction(rawTransaction: string): Promise<string> {
+    const { data } = await axios.post(this.options.network.extras.indexerApi + '/api/v2/sendtx/', rawTransaction)
+
+    return data.result
   }
 
   public async getTransactionsFromExtendedPublicKey(
     extendedPublicKey: string,
     limit: number,
-    cursor?: BitcoinTransactionCursor,
+    cursor?: BitcoinBlockbookTransactionCursor,
     addressOffset = 0
-  ): Promise<BitcoinTransactionResult> {
-    const derivedAddresses: string[] = []
-    derivedAddresses.push(...(await this.getAddressesFromExtendedPublicKey(extendedPublicKey, 1, 100, addressOffset)))
-    derivedAddresses.push(...(await this.getAddressesFromExtendedPublicKey(extendedPublicKey, 0, 100, addressOffset)))
+  ): Promise<BitcoinBlockbookTransactionResult> {
+    const page = cursor?.page ?? 1
+    const { data }: { data: XPubResponse } = await axios.get(
+      this.options.network.extras.indexerApi + '/api/v2/xpub/' + extendedPublicKey + `?details=txs&tokens=used&pageSize=${limit}&page=${page}`,
+      {
+        responseType: 'json'
+      }
+    )
 
-    return this.getTransactionsFromAddresses(derivedAddresses, limit, cursor)
+    const ourAddresses = (data.tokens || []).filter((token) => token.type === 'XPUBAddress').map((token) => token.name)
+
+    const airGapTransactions: IAirGapTransaction[] = []
+    
+    if (data.page == page) {
+      for (const transaction of data.transactions || []) {
+        const tempAirGapTransactionFrom: string[] = []
+        const tempAirGapTransactionTo: string[] = []
+        let tempAirGapTransactionIsInbound: boolean = true
+  
+        let amount = new BigNumber(0)
+  
+        for (const vin of transaction.vin) {
+          if (this.containsSome(vin.addresses, ourAddresses)) {
+            tempAirGapTransactionIsInbound = false
+          }
+          tempAirGapTransactionFrom.push(...vin.addresses)
+          amount = amount.plus(vin.value)
+        }
+  
+        for (const vout of transaction.vout) {
+          if (vout.addresses) {
+            tempAirGapTransactionTo.push(...vout.addresses)
+            // If receiving address is our address, and transaction is outbound => our change
+            if (this.containsSome(vout.addresses, ourAddresses) && !tempAirGapTransactionIsInbound) {
+              // remove only if related to this address
+              amount = amount.minus(vout.value)
+            }
+            // If receiving address is not ours, and transaction isbound => senders change
+            if (!this.containsSome(vout.addresses, ourAddresses) && tempAirGapTransactionIsInbound) {
+              amount = amount.minus(vout.value)
+            }
+          }
+        }
+  
+        // deduct fee from amount
+        amount = amount.minus(transaction.fees)
+  
+        const airGapTransaction: IAirGapTransaction = {
+          hash: transaction.txid,
+          from: tempAirGapTransactionFrom,
+          to: tempAirGapTransactionTo,
+          isInbound: tempAirGapTransactionIsInbound,
+          amount: amount.toString(10),
+          fee: new BigNumber(transaction.fees).toString(10),
+          blockHeight: transaction.blockHeight.toString(),
+          protocolIdentifier: this.identifier,
+          network: this.options.network,
+          timestamp: transaction.blockTime
+        }
+  
+        airGapTransactions.push(airGapTransaction)
+      }
+    }
+
+    return {
+      transactions: airGapTransactions,
+      cursor: {
+        page: cursor ? cursor.page + 1 : 2
+      }
+    }
   }
 
   public async getTransactionsFromPublicKey(
     publicKey: string,
     limit: number,
-    cursor?: BitcoinTransactionCursor
-  ): Promise<BitcoinTransactionResult> {
+    cursor?: BitcoinBlockbookTransactionCursor
+  ): Promise<BitcoinBlockbookTransactionResult> {
     return this.getTransactionsFromAddresses([await this.getAddressFromPublicKey(publicKey)], limit, cursor)
   }
 
   public async getTransactionsFromAddresses(
     addresses: string[],
     limit: number,
-    cursor?: BitcoinTransactionCursor
-  ): Promise<BitcoinTransactionResult> {
+    cursor?: BitcoinBlockbookTransactionCursor
+  ): Promise<BitcoinBlockbookTransactionResult> {
     const airGapTransactions: IAirGapTransaction[] = []
-    const url = cursor
-      ? this.options.network.extras.indexerApi +
-        '/api/addrs/' +
-        addresses.join(',') +
-        '/txs?from=' +
-        cursor.offset +
-        '&to=' +
-        (cursor.offset + limit)
-      : this.options.network.extras.indexerApi + '/api/addrs/' + addresses.join(',') + '/txs?from=0&to=' + limit
-    const { data: transactions } = await axios.get(url, {
+    const page = cursor?.page ?? 1
+    const url = `${this.options.network.extras.indexerApi}/api/v2/address/${addresses[0]}?page=${page}&pageSize=${limit}&details=txs`
+    const { data } = await axios.get<AddressResponse>(url, {
       responseType: 'json'
     })
-
-    for (const transaction of transactions.items) {
-      const tempAirGapTransactionFrom: string[] = []
-      const tempAirGapTransactionTo: string[] = []
-      let tempAirGapTransactionIsInbound: boolean = true
-
-      let amount = new BigNumber(0)
-
-      for (const vin of transaction.vin) {
-        if (addresses.indexOf(vin.addr) > -1) {
-          tempAirGapTransactionIsInbound = false
-        }
-        tempAirGapTransactionFrom.push(vin.addr)
-        amount = amount.plus(vin.valueSat)
-      }
-
-      for (const vout of transaction.vout) {
-        if (vout.scriptPubKey.addresses) {
-          tempAirGapTransactionTo.push(...vout.scriptPubKey.addresses)
-          // If receiving address is our address, and transaction is outbound => our change
-          if (this.containsSome(vout.scriptPubKey.addresses, addresses) && !tempAirGapTransactionIsInbound) {
-            // remove only if related to this address
-            amount = amount.minus(new BigNumber(vout.value).shiftedBy(this.decimals))
+    
+    if (data.page == page) {
+      for (const transaction of data.transactions || []) {
+        const tempAirGapTransactionFrom: string[] = []
+        const tempAirGapTransactionTo: string[] = []
+        let tempAirGapTransactionIsInbound: boolean = true
+  
+        let amount = new BigNumber(0)
+  
+        for (const vin of transaction.vin) {
+          if (vin.addresses && this.containsSome(vin.addresses, addresses)) {
+            tempAirGapTransactionIsInbound = false
           }
-          // If receiving address is not ours, and transaction isbound => senders change
-          if (!this.containsSome(vout.scriptPubKey.addresses, addresses) && tempAirGapTransactionIsInbound) {
-            amount = amount.minus(new BigNumber(vout.value).shiftedBy(this.decimals))
+          tempAirGapTransactionFrom.push(...vin.addresses)
+          amount = vin.value ? amount.plus(vin.value) : amount
+        }
+  
+        for (const vout of transaction.vout) {
+          if (vout.addresses) {
+            tempAirGapTransactionTo.push(...vout.addresses)
+            // If receiving address is our address, and transaction is outbound => our change
+            if (this.containsSome(vout.addresses, addresses) && !tempAirGapTransactionIsInbound) {
+              // remove only if related to this address
+              amount = amount.minus(new BigNumber(vout.value).shiftedBy(this.decimals))
+            }
+            // If receiving address is not ours, and transaction isbound => senders change
+            if (!this.containsSome(vout.addresses, addresses) && tempAirGapTransactionIsInbound) {
+              amount = amount.minus(new BigNumber(vout.value).shiftedBy(this.decimals))
+            }
           }
         }
+  
+        // deduct fee from amount
+        amount = amount.minus(new BigNumber(transaction.fees).shiftedBy(this.feeDecimals))
+  
+        const airGapTransaction: IAirGapTransaction = {
+          hash: transaction.txid,
+          from: tempAirGapTransactionFrom,
+          to: tempAirGapTransactionTo,
+          isInbound: tempAirGapTransactionIsInbound,
+          amount: amount.toString(10),
+          fee: new BigNumber(transaction.fees).shiftedBy(this.feeDecimals).toString(10),
+          blockHeight: transaction.blockHeight.toString(),
+          protocolIdentifier: this.identifier,
+          network: this.options.network,
+          timestamp: transaction.blockTime
+        }
+  
+        airGapTransactions.push(airGapTransaction)
       }
-
-      // deduct fee from amount
-      amount = amount.minus(new BigNumber(transaction.fees).shiftedBy(this.feeDecimals))
-
-      const airGapTransaction: IAirGapTransaction = {
-        hash: transaction.txid,
-        from: tempAirGapTransactionFrom,
-        to: tempAirGapTransactionTo,
-        isInbound: tempAirGapTransactionIsInbound,
-        amount: amount.toString(10),
-        fee: new BigNumber(transaction.fees).shiftedBy(this.feeDecimals).toString(10),
-        blockHeight: transaction.blockheight,
-        protocolIdentifier: this.identifier,
-        network: this.options.network,
-        timestamp: transaction.time
-      }
-
-      airGapTransactions.push(airGapTransaction)
     }
 
-    return { transactions: airGapTransactions, cursor: cursor ? { offset: cursor.offset + limit } : { offset: limit } }
+    return {
+      transactions: airGapTransactions,
+      cursor: {
+        page: cursor ? cursor.page + 1 : 2
+      }
+    }
   }
 
   private containsSome(needles: any[], haystack: any[]): boolean {
