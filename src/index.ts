@@ -134,6 +134,7 @@ import {
 } from './protocols/tezos/fa/TezosFAProtocolOptions'
 import { TezosTransactionResult } from './protocols/tezos/types/TezosTransactionResult'
 import { TezosTransactionCursor } from './protocols/tezos/types/TezosTransactionCursor'
+import { generateId } from "./serializer/utils/generateId"
 // tslint:enable:ordered-imports
 
 // Core
@@ -284,5 +285,6 @@ export {
   // libsodium ready
   isCoinlibReady,
   // sub-protocols
-  addSubProtocol
+  addSubProtocol,
+  generateId,
 }
