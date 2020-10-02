@@ -135,6 +135,7 @@ import {
 import { TezosTransactionResult } from './protocols/tezos/types/TezosTransactionResult'
 import { TezosTransactionCursor } from './protocols/tezos/types/TezosTransactionCursor'
 import { generateId } from "./serializer/utils/generateId"
+import { MainProtocolSymbols, SubProtocolSymbols } from "./utils/ProtocolSymbols"
 // tslint:enable:ordered-imports
 
 // Core
@@ -148,7 +149,9 @@ export {
   ICoinDelegateProtocol,
   CryptoClient,
   ProtocolBlockExplorer,
-  ProtocolNetwork
+  ProtocolNetwork,
+  MainProtocolSymbols,
+  SubProtocolSymbols
 }
 
 // Aeternity
@@ -286,5 +289,5 @@ export {
   isCoinlibReady,
   // sub-protocols
   addSubProtocol,
-  generateId,
+  generateId
 }
