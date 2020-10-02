@@ -29,6 +29,7 @@ const getProtocolOptionsByIdentifier: (identifier: ProtocolSymbols, network?: Pr
     case MainProtocolSymbols.BTC:
       return new BitcoinProtocolOptions(network ? (network as BitcoinProtocolNetwork) : new BitcoinProtocolNetwork())
     case MainProtocolSymbols.ETH:
+    case SubProtocolSymbols.ETH_ERC20_XCHF:
     case SubProtocolSymbols.ETH_ERC20:
       return new EthereumProtocolOptions(network ? (network as EthereumProtocolNetwork) : new EthereumProtocolNetwork())
     case MainProtocolSymbols.GRS:
