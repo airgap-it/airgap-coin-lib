@@ -1,9 +1,9 @@
 import * as bitcoinJS from '../../dependencies/src/bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac/src/index'
 import { NetworkType } from '../../utils/ProtocolNetwork'
 
-import { BlockcypherBlockExplorer } from './BitcoinBlockbookProtocolOptions'
 import { BitcoinProtocol } from './BitcoinProtocol'
 import {
+  BlockcypherBlockExplorer,
   BitcoinProtocolConfig,
   BitcoinProtocolNetwork,
   BitcoinProtocolNetworkExtras,
@@ -24,7 +24,10 @@ export class BitcoinTestnetProtocol extends BitcoinProtocol {
           NetworkType.TESTNET,
           '',
           new BlockcypherBlockExplorer('https://live.blockcypher.com/btc-testnet'),
-          new BitcoinProtocolNetworkExtras('https://test-insight.bitpay.com', bitcoinJS.networks.testnet)
+          new BitcoinProtocolNetworkExtras(
+            `https://cors-proxy.airgap.prod.gke.papers.tech/proxy?url=${'https://tbtc1.trezor.io'}`,
+            bitcoinJS.networks.testnet
+          )
         ),
         new BitcoinProtocolConfig()
       )

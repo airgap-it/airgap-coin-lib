@@ -60,19 +60,12 @@ import { AirGapMarketWallet } from './wallet/AirGapMarketWallet'
 import { AirGapWallet } from './wallet/AirGapWallet'
 import { AeternityProtocolOptions, AeternalBlockExplorer, AeternityProtocolNetwork } from './protocols/aeternity/AeternityProtocolOptions'
 import { AeternityCryptoClient } from './protocols/aeternity/AeternityCryptoClient'
-import { BitcoinBlockbookProtocol } from './protocols/bitcoin/BitcoinBlockbookProtocol'
 import { BitcoinCryptoClient } from './protocols/bitcoin/BitcoinCryptoClient'
-import {
-  BitcoinBlockbookProtocolNetworkExtras,
-  BitcoinBlockbookProtocolNetwork,
-  BitcoinBlockbookProtocolConfig,
-  BlockcypherBlockExplorer,
-  BitcoinBlockbookProtocolOptions
-} from './protocols/bitcoin/BitcoinBlockbookProtocolOptions'
 import {
   BitcoinProtocolNetworkExtras,
   BitcoinProtocolNetwork,
   BitcoinProtocolConfig,
+  BlockcypherBlockExplorer,
   BitcoinProtocolOptions
 } from './protocols/bitcoin/BitcoinProtocolOptions'
 import { CosmosCryptoClient } from './protocols/cosmos/CosmosCryptoClient'
@@ -164,14 +157,9 @@ export { AeternityProtocol, AeternityCryptoClient, AeternityProtocolOptions, Aet
 export {
   BitcoinProtocol,
   BitcoinTestnetProtocol,
-  BitcoinBlockbookProtocol,
   BitcoinCryptoClient,
-  BitcoinBlockbookProtocolNetworkExtras,
-  BlockcypherBlockExplorer,
-  BitcoinBlockbookProtocolNetwork,
-  BitcoinBlockbookProtocolConfig,
-  BitcoinBlockbookProtocolOptions,
   BitcoinProtocolNetworkExtras,
+  BlockcypherBlockExplorer,
   BitcoinProtocolNetwork,
   BitcoinProtocolConfig,
   BitcoinProtocolOptions

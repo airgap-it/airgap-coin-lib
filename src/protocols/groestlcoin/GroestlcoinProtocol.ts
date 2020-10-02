@@ -1,13 +1,13 @@
 import * as groestlcoinJSMessage from '../../dependencies/src/groestlcoinjs-message-2.1.0/index'
 
 import { MainProtocolSymbols, ProtocolSymbols } from '../../utils/ProtocolSymbols'
-import { BitcoinBlockbookProtocol } from '../bitcoin/BitcoinBlockbookProtocol'
+import { BitcoinProtocol } from '../bitcoin/BitcoinProtocol'
 import { BitcoinCryptoClient } from '../bitcoin/BitcoinCryptoClient'
 import { CurrencyUnit, FeeDefaults } from '../ICoinProtocol'
 
 import { GroestlcoinProtocolOptions } from './GroestlcoinProtocolOptions'
 
-export class GroestlcoinProtocol extends BitcoinBlockbookProtocol {
+export class GroestlcoinProtocol extends BitcoinProtocol {
   public symbol: string = 'GRS'
   public name: string = 'Groestlcoin'
   public marketSymbol: string = 'grs'

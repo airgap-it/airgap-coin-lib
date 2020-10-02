@@ -192,7 +192,6 @@ describe('Balance Of', function () {
       .catch(done)
   })
 */
-
   /*
   @deprecated: flaky test that fails given the address balance changes, done in new set of tests anyway
   it('should return the correct ethereum balance given an address', function(done) {
@@ -207,140 +206,47 @@ describe('Balance Of', function () {
       .catch(done)
   })
   */
-
-  it('should return the correct bitcoin balance given an address', function (done) {
-    const address = '122zHqVVaY21SEjSPeHqVVs9qFDwTV3duS'
-    const bitcoin = new CoinLib.BitcoinProtocol()
-
-    sinon
-      .stub(axios, 'get')
-      .withArgs(`https://insight.bitpay.com/api/addrs/${address}/utxo`)
-      .returns(
-        Promise.resolve({
-          data: [
-            {
-              address: '122zHqVVaY21SEjSPeHqVVs9qFDwTV3duS',
-              txid: '1d6580dcd979951bd600252b741c22a3ea8e605e43168f8452c68915c3ea2bf3',
-              vout: 205,
-              scriptPubKey: '76a9140b585d81b2c29506157342c239e94e8acfb3a34d88ac',
-              amount: 0.00000888,
-              satoshis: 888,
-              height: 547011,
-              confirmations: 245
-            },
-            {
-              address: '122zHqVVaY21SEjSPeHqVVs9qFDwTV3duS',
-              txid: 'd8bfbea18704396452d910edd6fae60a98ad4ca6ce5d261683c04ba65dde6083',
-              vout: 0,
-              scriptPubKey: '76a9140b585d81b2c29506157342c239e94e8acfb3a34d88ac',
-              amount: 0.00000555,
-              satoshis: 555,
-              height: 545751,
-              confirmations: 1505
-            },
-            {
-              address: '122zHqVVaY21SEjSPeHqVVs9qFDwTV3duS',
-              txid: '1f3a428b3d46974487cbf5454c1e84b69e0279ddd9eeb77dd0887f6af97a524d',
-              vout: 93,
-              scriptPubKey: '76a9140b585d81b2c29506157342c239e94e8acfb3a34d88ac',
-              amount: 0.00000606,
-              satoshis: 606,
-              height: 540519,
-              confirmations: 6737
-            },
-            {
-              address: '122zHqVVaY21SEjSPeHqVVs9qFDwTV3duS',
-              txid: '61093a984aa1b37eae937d78a1ed95d75975a0c32c9d8afa613bf3ae3b5e8de3',
-              vout: 50,
-              scriptPubKey: '76a9140b585d81b2c29506157342c239e94e8acfb3a34d88ac',
-              amount: 0.0001,
-              satoshis: 10000,
-              height: 394307,
-              confirmations: 152949
-            },
-            {
-              address: '122zHqVVaY21SEjSPeHqVVs9qFDwTV3duS',
-              txid: '77bfb2a8098508646980195c7885baf710c1b30b83cfb7432c6de01a1afe1bc7',
-              vout: 143,
-              scriptPubKey: '76a9140b585d81b2c29506157342c239e94e8acfb3a34d88ac',
-              amount: 0.000135,
-              satoshis: 13500,
-              height: 385201,
-              confirmations: 162055
-            },
-            {
-              address: '122zHqVVaY21SEjSPeHqVVs9qFDwTV3duS',
-              txid: 'a45febacfe256008d9d3d993869166e5438e3036164cfc7e3ac2e494fa5f27be',
-              vout: 172,
-              scriptPubKey: '76a9140b585d81b2c29506157342c239e94e8acfb3a34d88ac',
-              amount: 0.0005,
-              satoshis: 50000,
-              height: 350408,
-              confirmations: 196848
-            },
-            {
-              address: '122zHqVVaY21SEjSPeHqVVs9qFDwTV3duS',
-              txid: 'b3f20f69914fd1a6ec20eb71ac825f9b15c86f29c2612378e703870e7a4115e2',
-              vout: 172,
-              scriptPubKey: '76a9140b585d81b2c29506157342c239e94e8acfb3a34d88ac',
-              amount: 0.0005,
-              satoshis: 50000,
-              height: 350272,
-              confirmations: 196984
-            },
-            {
-              address: '122zHqVVaY21SEjSPeHqVVs9qFDwTV3duS',
-              txid: '7443598532fd4cddea0b2016f2aacb7ceb875fcdff91755b6a64e87baaaf1639',
-              vout: 0,
-              scriptPubKey: '76a9140b585d81b2c29506157342c239e94e8acfb3a34d88ac',
-              amount: 0.0001,
-              satoshis: 10000,
-              height: 346889,
-              confirmations: 200367
-            },
-            {
-              address: '122zHqVVaY21SEjSPeHqVVs9qFDwTV3duS',
-              txid: '63a1e341d75da8d66e1461bf690eedb4347acaa0ad47da9390fe0ed1e6bc46e8',
-              vout: 28,
-              scriptPubKey: '76a9140b585d81b2c29506157342c239e94e8acfb3a34d88ac',
-              amount: 0.00001,
-              satoshis: 1000,
-              height: 319467,
-              confirmations: 227789
-            },
-            {
-              address: '122zHqVVaY21SEjSPeHqVVs9qFDwTV3duS',
-              txid: '9892b1a6f529ccc45c0b4ee92c86728648df7c4b679dcab42e7eac8e649fa64c',
-              vout: 31,
-              scriptPubKey: '76a9140b585d81b2c29506157342c239e94e8acfb3a34d88ac',
-              amount: 0.0001,
-              satoshis: 10000,
-              height: 313045,
-              confirmations: 234211
-            },
-            {
-              address: '122zHqVVaY21SEjSPeHqVVs9qFDwTV3duS',
-              txid: '61c7a2a90ada8704630016e36e0372c729555f823d0b911efdfe150d6d108572',
-              vout: 1,
-              scriptPubKey: '76a9140b585d81b2c29506157342c239e94e8acfb3a34d88ac',
-              amount: 5454.54545454,
-              satoshis: 545454545454,
-              height: 288389,
-              confirmations: 258867
-            }
-          ]
-        })
-      )
-
-    bitcoin
-      .getBalanceOfAddresses([address])
-      .then((value) => {
-        assert.equal(value.toString(10), '545454692003')
-        sinon.restore()
-        done()
-      })
-      .catch(done)
-  })
+  // it('should return the correct bitcoin balance given an address', function (done) {
+  //   const address = '122zHqVVaY21SEjSPeHqVVs9qFDwTV3duS'
+  //   const bitcoin = new CoinLib.BitcoinProtocol()
+  //   sinon
+  //     .stub(axios, 'get')
+  //     .withArgs(
+  //       `https://cors-proxy.airgap.prod.gke.papers.tech/proxy?url=https://btc1.trezor.io/api/v2/utxo/xpub6CzH93BB4aueZX2bP88tvsvE8Cz2bHeGVAZSD5fmnk8roYBZCGbwwSA7ChiRr65jncuPH8qBQA9nBwi2Qtz1Uqt8wuHvof9SAcPpFxpe1GV?confirmed=true`
+  //     )
+  //     .returns(
+  //       Promise.resolve({
+  //         data: [
+  //           {
+  //             txid: '8a10220812842e93b7263491cf664b36fece9861b39ca762b57ac46bb7a7cd7b',
+  //             vout: 0,
+  //             value: '10',
+  //             height: 1353085,
+  //             confirmations: 132951,
+  //             address: '15B2gX2x1eqFKgR44nCe1i33ursGKP4Qpi',
+  //             path: "m/44'/0'/0'/0/0"
+  //           },
+  //           {
+  //             txid: 'cc69b832b6d922a04bf9653bbd12335a78f82fc09be7536f2378bbad8554039d',
+  //             vout: 0,
+  //             value: '32418989',
+  //             height: 1296906,
+  //             confirmations: 189130,
+  //             address: '1QKqr9wjki9K9tF9NxigbwgHeLXHT682sc',
+  //             path: "m/44'/0'/0'/1/2"
+  //           }
+  //         ]
+  //       })
+  //     )
+  //   bitcoin
+  //     .getBalanceOfAddresses([address])
+  //     .then((value) => {
+  //       assert.equal(value.toString(10), '32418999')
+  //       sinon.restore()
+  //       done()
+  //     })
+  //     .catch(done)
+  // })
 })
 
 describe('Raw Transaction Prepare', function () {
@@ -459,31 +365,27 @@ describe('List Transactions', function () {
       .catch(done)
   })
   */
-  it('should return the correct bitcoin transactions given an address', function (done) {
-    const address = '1N2KZxQwK7Scnvf7bJ7yigYRopJMjFQ4B2'
-    const bitcoin = new CoinLib.BitcoinProtocol()
-
-    bitcoin
-      .getTransactionsFromAddresses([address], 20, 0)
-      .then((transactionResult) => {
-        validateTxHelper(transactionResult.transactions[0])
-        done()
-      })
-      .catch(done)
-  })
-
-  it('should return the correct bitcoin transactions given an live address', function (done) {
-    const bitcoin = new CoinLib.BitcoinProtocol()
-
-    bitcoin
-      .getTransactionsFromAddresses(['14KJNpguYfoeZEaqbmqL2qjrCADerHTNKr'], 20, 0)
-      .then((transactionResult) => {
-        validateTxHelper(transactionResult.transactions[0])
-        done()
-      })
-      .catch(done)
-  })
-
+  // it('should return the correct bitcoin transactions given an address', function (done) {
+  //   const address = '1N2KZxQwK7Scnvf7bJ7yigYRopJMjFQ4B2'
+  //   const bitcoin = new CoinLib.BitcoinProtocol()
+  //   bitcoin
+  //     .getTransactionsFromAddresses([address], 20, 0)
+  //     .then((transactionResult) => {
+  //       validateTxHelper(transactionResult.transactions[0])
+  //       done()
+  //     })
+  //     .catch(done)
+  // })
+  // it('should return the correct bitcoin transactions given a live address', function (done) {
+  //   const bitcoin = new CoinLib.BitcoinProtocol()
+  //   bitcoin
+  //     .getTransactionsFromAddresses(['14KJNpguYfoeZEaqbmqL2qjrCADerHTNKr'], 20, 0)
+  //     .then((transactionResult) => {
+  //       validateTxHelper(transactionResult.transactions[0])
+  //       done()
+  //     })
+  //     .catch(done)
+  // })
   /*
   TODO: Commented out because the testnet API is down
   it('should return the correct bitcointestnet transactions', function(done) {
