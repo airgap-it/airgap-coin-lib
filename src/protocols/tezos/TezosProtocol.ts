@@ -312,6 +312,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       addresses.map((address) => {
         const getRequestBody = () => {
           const body = {
+            fields: ["status", "amount", "fee", "source", "destination", "operation_group_hash", "timestamp", "block_level"],
             predicates: [
               {
                 field: 'source',
@@ -368,7 +369,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
           }
           return body
         }
-
+        // AirGapTransactionStatus.APPLIED : AirGapTransactionStatus.FAILED
         return new Promise<any>(async (resolve, reject) => {
           const result = await axios
             .post(
@@ -381,33 +382,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
             .catch(() => {
               return { data: [] }
             })
-
-          interface ConseilOperation {
-            amount: string
-            source: string
-            destination: string
-            operation_group_hash: string
-          }
-
-          const transactions: any[] = (result.data as ConseilOperation[]).reduce((pv: ConseilOperation[], cv) => {
-            // Filter out all duplicates
-            if (
-              !pv.find(
-                (el: ConseilOperation) =>
-                  el.amount === cv.amount &&
-                  el.source === cv.source &&
-                  el.destination === cv.destination &&
-                  el.operation_group_hash === cv.operation_group_hash
-              )
-            ) {
-              pv.push(cv)
-            }
-
-            return pv
-          }, [])
-          transactions.sort((a, b) => b.timestamp - a.timestamp)
-          transactions.length = Math.min(limit, transactions.length) // Because we concat from and to, we have to omit some results
-          resolve(transactions)
+            
+            resolve(result.data)
         })
       })
     )
@@ -425,7 +401,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
           to: [transaction.destination],
           hash: transaction.operation_group_hash,
           timestamp: transaction.timestamp / 1000,
-          blockHeight: transaction.block_level
+          blockHeight: transaction.block_level,
+          status: transaction.status === 'applied' ? AirGapTransactionStatus.APPLIED : AirGapTransactionStatus.FAILED
         }
       })
     const lastEntryBlockLevel = allTransactions.length > 0 ? allTransactions[allTransactions.length - 1].blockHeight : 0

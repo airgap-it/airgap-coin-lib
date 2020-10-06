@@ -1,6 +1,6 @@
 import Axios from '../../../../dependencies/src/axios-0.19.0/index'
 import { BigNumber } from '../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
-import { IAirGapTransaction } from '../../../../interfaces/IAirGapTransaction'
+import { AirGapTransactionStatus, IAirGapTransaction } from '../../../../interfaces/IAirGapTransaction'
 import { EthereumProtocol } from '../../EthereumProtocol'
 import { BLOCK_EXPLORER_API } from '../../EthereumProtocolOptions'
 import { EthereumInfoClient } from './InfoClient'
@@ -78,7 +78,8 @@ export class EtherscanInfoClient extends EthereumInfoClient {
         network: protocol.options.network,
         amount: new BigNumber(transaction.value).toString(10),
         fee: fee.toString(10),
-        timestamp: parseInt(transaction.timeStamp, 10)
+        timestamp: parseInt(transaction.timeStamp, 10),
+        status: transaction.txreceipt_status === "1" ? AirGapTransactionStatus.APPLIED : AirGapTransactionStatus.FAILED
       }
 
       airGapTransactions.push(airGapTransaction)
