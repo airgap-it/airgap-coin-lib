@@ -13,6 +13,7 @@ import { TezosWrappedOperation } from '../../src/protocols/tezos/types/TezosWrap
 import { TezosRevealOperation } from '../../src/protocols/tezos/types/operations/Reveal'
 import { RunOperationMetadata } from '../../src/protocols/tezos/TezosProtocol'
 import { TezosProtocolStub } from './stubs/tezos.stub'
+import { AirGapTransactionStatus } from '../../src/interfaces/IAirGapTransaction'
 
 const tezosProtocolSpec = new TezosTestProtocolSpec()
 const tezosLib = tezosProtocolSpec.lib
@@ -280,7 +281,8 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
               operation_group_hash: 'ooNNmftGhsUriHVWYgHGq6AE3F2sHZFYaCq41NQZSeUdm1UZEAP',
               amount: 1000000,
               destination: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L',
-              fee: 1420
+              fee: 1420,
+              status: 'applied'
             }
           ]
         })
@@ -298,7 +300,8 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
           protocolIdentifier: tezosLib.identifier,
           to: ['tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'],
           hash: 'ooNNmftGhsUriHVWYgHGq6AE3F2sHZFYaCq41NQZSeUdm1UZEAP',
-          blockHeight: 261513
+          blockHeight: 261513,
+          status: AirGapTransactionStatus.APPLIED
         }
       ])
 
