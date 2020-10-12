@@ -1,9 +1,9 @@
-import { stripHexPrefix } from '../../../../../../../utils/hex'
-import { SubstrateNetwork } from '../../../../../SubstrateNetwork'
-import { SCALEDecoder, SCALEDecodeResult } from '../../../scale/SCALEDecoder'
-import { SCALEArray } from '../../../scale/type/SCALEArray'
-import { SCALEClass } from '../../../scale/type/SCALEClass'
-import { SCALEString } from '../../../scale/type/SCALEString'
+import { stripHexPrefix } from '../../../../../../../../utils/hex'
+import { SubstrateNetwork } from '../../../../../../SubstrateNetwork'
+import { SCALEDecoder, SCALEDecodeResult } from '../../../../scale/SCALEDecoder'
+import { SCALEArray } from '../../../../scale/type/SCALEArray'
+import { SCALEClass } from '../../../../scale/type/SCALEClass'
+import { SCALEString } from '../../../../scale/type/SCALEString'
 
 import { MetadataStorageEntry } from './MetadataStorageEntry'
 

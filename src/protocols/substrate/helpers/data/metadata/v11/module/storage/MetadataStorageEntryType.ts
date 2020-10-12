@@ -1,11 +1,12 @@
-import { SubstrateNetwork } from '../../../../../SubstrateNetwork'
-import { SubstrateStorageEntryHasher } from '../../../../node/storage/SubstrateStorageEntry'
-import { DecoderMethod, SCALEDecoder, SCALEDecodeResult } from '../../../scale/SCALEDecoder'
-import { SCALEBoolean } from '../../../scale/type/SCALEBoolean'
-import { SCALEClass } from '../../../scale/type/SCALEClass'
-import { SCALEEnum } from '../../../scale/type/SCALEEnum'
-import { SCALEString } from '../../../scale/type/SCALEString'
-import { SCALEType } from '../../../scale/type/SCALEType'
+// tslint:disable: max-classes-per-file
+import { SubstrateNetwork } from '../../../../../../SubstrateNetwork'
+import { DecoderMethod, SCALEDecoder, SCALEDecodeResult } from '../../../../scale/SCALEDecoder'
+import { SCALEBoolean } from '../../../../scale/type/SCALEBoolean'
+import { SCALEClass } from '../../../../scale/type/SCALEClass'
+import { SCALEEnum } from '../../../../scale/type/SCALEEnum'
+import { SCALEString } from '../../../../scale/type/SCALEString'
+import { SCALEType } from '../../../../scale/type/SCALEType'
+import { SubstrateDoubleMapStorageEntry, SubstrateMapStorageEntry, SubstratePlainStorageEntry, SubstrateStorageEntry, SubstrateStorageEntryHasher } from '../../../decorator/storage/SubstrateStorageEntry'
 
 enum StorageEntryType {
   Plain = 0,
@@ -46,6 +47,8 @@ export abstract class MetadataStorageEntryType extends SCALEClass {
   protected get scaleFields(): SCALEType[] {
     return [this.type, ...this._scaleFields]
   }
+
+  public abstract decorate(moduleName: string, prefix: string): SubstrateStorageEntry
 }
 
 export class MetadataStorageEntryPlain extends MetadataStorageEntryType {
@@ -65,6 +68,10 @@ export class MetadataStorageEntryPlain extends MetadataStorageEntryType {
 
   private constructor(readonly name: SCALEString) {
     super()
+  }
+
+  public decorate(moduleName: string, prefix: string): SubstrateStorageEntry {
+    return new SubstratePlainStorageEntry(moduleName, prefix)
   }
 }
 
@@ -93,6 +100,10 @@ export class MetadataStorageEntryMap extends MetadataStorageEntryType {
     readonly isLinked: SCALEBoolean
   ) {
     super()
+  }
+
+  public decorate(moduleName: string, prefix: string): SubstrateStorageEntry {
+    return new SubstrateMapStorageEntry(moduleName, prefix, this.hasher.value)
   }
 }
 
@@ -123,5 +134,9 @@ export class MetadataStorageEntryDoubleMap extends MetadataStorageEntryType {
     readonly hasher2: SCALEEnum<SubstrateStorageEntryHasher>
   ) {
     super()
+  }
+
+  public decorate(moduleName: string, prefix: string): SubstrateStorageEntry {
+    return new SubstrateDoubleMapStorageEntry(moduleName, prefix, this.hasher1.value, this.hasher2.value)
   }
 }

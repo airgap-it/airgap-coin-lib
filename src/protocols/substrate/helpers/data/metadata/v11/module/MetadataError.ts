@@ -1,8 +1,8 @@
-import { SubstrateNetwork } from '../../../../SubstrateNetwork'
-import { SCALEDecoder, SCALEDecodeResult } from '../../scale/SCALEDecoder'
-import { SCALEArray } from '../../scale/type/SCALEArray'
-import { SCALEClass } from '../../scale/type/SCALEClass'
-import { SCALEString } from '../../scale/type/SCALEString'
+import { SubstrateNetwork } from '../../../../../SubstrateNetwork'
+import { SCALEDecoder, SCALEDecodeResult } from '../../../scale/SCALEDecoder'
+import { SCALEArray } from '../../../scale/type/SCALEArray'
+import { SCALEClass } from '../../../scale/type/SCALEClass'
+import { SCALEString } from '../../../scale/type/SCALEString'
 
 export class MetadataError extends SCALEClass {
   public static decode(network: SubstrateNetwork, raw: string): SCALEDecodeResult<MetadataError> {

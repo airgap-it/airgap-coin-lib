@@ -11,7 +11,7 @@ export enum SCALEOptionalType {
 
 export class SCALEOptional<T extends SCALEType> extends SCALEType {
   public static empty<T extends SCALEType>(): SCALEOptional<T> {
-    return new SCALEOptional<T>(null)
+    return new SCALEOptional<T>(undefined)
   }
 
   public static from<T extends SCALEType>(value: T): SCALEOptional<T> {
@@ -46,7 +46,7 @@ export class SCALEOptional<T extends SCALEType> extends SCALEType {
 
   private readonly type: SCALEOptionalType
 
-  private constructor(readonly value: T | null) {
+  private constructor(readonly value: T | undefined) {
     super()
     this.type = value ? 1 : 0
   }
@@ -56,6 +56,6 @@ export class SCALEOptional<T extends SCALEType> extends SCALEType {
   }
 
   protected _encode(): string {
-    return toHexStringRaw(this.type, 2) + this.value?.encode() || ''
+    return toHexStringRaw(this.type, 2) + (this.value?.encode() || '')
   }
 }

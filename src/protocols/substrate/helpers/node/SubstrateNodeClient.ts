@@ -6,10 +6,9 @@ import { SubstrateNetwork } from '../../SubstrateNetwork'
 import { SubstrateAccountInfo } from '../data/account/SubstrateAccountInfo'
 import { SubstrateAddress } from '../data/account/SubstrateAddress'
 import { SubstrateRegistration } from '../data/account/SubstrateRegistration'
+import { SubstrateCall } from '../data/metadata/decorator/call/SubstrateCall'
+import { MetadataDecorator } from '../data/metadata/decorator/MetadataDecorator'
 import { Metadata } from '../data/metadata/Metadata'
-import { MetadataCall } from '../data/metadata/module/MetadataCall'
-import { MetadataConstant } from '../data/metadata/module/MetadataConstants'
-import { MetadataStorage } from '../data/metadata/module/storage/MetadataStorage'
 import { SCALEAccountId } from '../data/scale/type/SCALEAccountId'
 import { SCALEArray } from '../data/scale/type/SCALEArray'
 import { SCALECompactInt } from '../data/scale/type/SCALECompactInt'
@@ -30,9 +29,6 @@ import { SubstrateValidatorPrefs } from '../data/staking/SubstrateValidatorPrefs
 import { SubstrateRuntimeVersion } from '../data/state/SubstrateRuntimeVersion'
 import { SubstrateTransactionType } from '../data/transaction/SubstrateTransaction'
 
-import { SubstrateCallId } from './call/SubstrateCallId'
-import { SubstrateConstant } from './constant/SubstrateConstant'
-import { SubstrateStorageEntry } from './storage/SubstrateStorageEntry'
 import { SubstrateNodeCache } from './SubstrateNodeCache'
 import {
   SubstrateCallModuleName,
@@ -44,9 +40,6 @@ import {
   SubstrateStorageEntryName,
   SubstrateStorageModuleName,
   supportedCallEndpoints,
-  supportedCalls,
-  supportedConstants,
-  supportedStorageEntries
 } from './supported'
 
 interface ConnectionConfig {
@@ -56,10 +49,7 @@ interface ConnectionConfig {
 const CACHE_DEFAULT_EXPIRATION_TIME = 3000 // 3s
 
 export class SubstrateNodeClient {
-  private readonly storageEntries: Map<string, SubstrateStorageEntry> = new Map()
-  private readonly calls: Map<string, SubstrateCallId> = new Map()
-  private readonly constants: Map<string, SubstrateConstant> = new Map()
-
+  private metadata: MetadataDecorator | undefined
   private readonly lastFees: Map<SubstrateTransactionType, BigNumber> = new Map()
 
   private initApiPromise: Promise<void> | null = null
@@ -80,15 +70,15 @@ export class SubstrateNodeClient {
     return this.getConstant('Balances', 'ExistentialDeposit').then((constant) => SCALEInt.decode(constant).decoded.value)
   }
 
-  public async getTransactionMetadata(type: SubstrateTransactionType): Promise<SubstrateCallId> {
+  public async getTransactionMetadata(type: SubstrateTransactionType): Promise<SubstrateCall> {
     const [methodName, callName] = supportedCallEndpoints.get(type) || [null, null]
 
-    let callId: SubstrateCallId | null = null
+    let call: SubstrateCall | null = null
     if (methodName && callName) {
-      callId = await this.getCallId(methodName, callName)
+      call = await this.getCall(methodName, callName)
     }
 
-    return callId ? callId : Promise.reject('Could not find requested item.')
+    return call ? call : Promise.reject('Could not find requested item.')
   }
 
   public async getTransferFeeEstimate(transactionBytes: Uint8Array | string): Promise<BigNumber | null> {
@@ -281,28 +271,26 @@ export class SubstrateNodeClient {
     ...args: SCALEType[]
   ): Promise<string | null> {
     await this.initApi()
-    const key = this.createMapKey(moduleName, entryName)
-    const storageEntry = this.storageEntries.get(key)
+    const storageEntry = this.metadata?.storageEntry(moduleName, entryName)
 
     if (!storageEntry) {
       return Promise.reject(`Could not find requested item: ${moduleName} ${entryName}`)
     }
 
-    const hash = await storageEntry.hash(moduleName, entryName, ...args)
+    const hash = await storageEntry.hash(...args)
     const result = await this.send('state', 'getStorage', [hash])
 
     return result
   }
 
-  private async getCallId<M extends SubstrateCallModuleName, C extends SubstrateCallName<M>>(
+  private async getCall<M extends SubstrateCallModuleName, C extends SubstrateCallName<M>>(
     moduleName: M,
     callName: C
-  ): Promise<SubstrateCallId> {
+  ): Promise<SubstrateCall> {
     await this.initApi()
-    const key = this.createMapKey(moduleName, callName)
-    const callId = this.calls.get(key)
+    const call = this.metadata?.call(moduleName, callName)
 
-    return callId ? callId : Promise.reject(`Could not find requested item: ${moduleName} ${callName}`)
+    return call ? call : Promise.reject(`Could not find requested item: ${moduleName} ${callName}`)
   }
 
   private async getConstant<M extends SubstrateConstantModuleName, C extends SubstrateConstantName<M>>(
@@ -310,8 +298,7 @@ export class SubstrateNodeClient {
     constantName: C
   ): Promise<string> {
     await this.initApi()
-    const key = this.createMapKey(moduleName, constantName)
-    const constant = this.constants.get(key)
+    const constant = this.metadata?.constant(moduleName, constantName)
 
     return constant ? constant.value.toString('hex') : Promise.reject(`Could not find requested item: ${moduleName} ${constantName}`)
   }
@@ -320,29 +307,7 @@ export class SubstrateNodeClient {
     if (!this.initApiPromise) {
       this.initApiPromise = new Promise(async (resolve) => {
         const metadataEncoded = await this.send('state', 'getMetadata')
-        const metadata = Metadata.decode(this.network, metadataEncoded)
-
-        let callModuleIndex = 0
-        for (const module of metadata.modules.elements) {
-          const moduleName = module.name.value
-
-          const storagePrefix = module.storage.value?.prefix?.value
-          if (storagePrefix && Object.keys(supportedStorageEntries).includes(storagePrefix)) {
-            this.initStorageEntries(module.storage.value)
-          }
-
-          if (Object.keys(supportedCalls).includes(moduleName)) {
-            this.initCalls(moduleName, callModuleIndex, module.calls.value?.elements || [])
-          }
-
-          if (Object.keys(supportedConstants).includes(moduleName)) {
-            this.initConstants(moduleName, module.constants.elements)
-          }
-
-          if (module.calls.value !== null) {
-            callModuleIndex += 1
-          }
-        }
+        this.metadata = Metadata.decode(this.network, metadataEncoded).decorate()
 
         resolve()
       }).then(async () => {
@@ -354,38 +319,10 @@ export class SubstrateNodeClient {
     return this.initApiPromise
   }
 
-  private initStorageEntries(storage: MetadataStorage | null) {
-    if (storage) {
-      const storageEntries = storage.storageEntries.elements
-        .filter((entry) => supportedStorageEntries[storage.prefix.value].includes(entry.name.value))
-        .map((entry) => [entry.name.value, SubstrateStorageEntry.fromMetadata(entry.type)] as [string, SubstrateStorageEntry])
-
-      storageEntries.forEach(([name, entry]) => {
-        this.storageEntries.set(this.createMapKey(storage.prefix.value, name), entry)
-      })
-    }
-  }
-
-  private initCalls(moduleName: string, moduleIndex: number, calls: MetadataCall[]) {
-    calls.forEach((call, index) => {
-      this.calls.set(this.createMapKey(moduleName, call.name.value), new SubstrateCallId(moduleIndex, index))
-    })
-  }
-
-  private initConstants(moduleName: string, constants: MetadataConstant[]) {
-    constants.forEach((constant) => {
-      this.constants.set(this.createMapKey(moduleName, constant.name.value), SubstrateConstant.fromMetadata(constant))
-    })
-  }
-
   private async initCache(): Promise<void> {
     const blockTime = await this.getConstant('Babe', 'ExpectedBlockTime').then((constant) => SCALEInt.decode(constant).decoded.toNumber())
 
     this.cache.expirationTime = Math.floor(blockTime / 3)
-  }
-
-  private createMapKey(module: string, item: string): string {
-    return `${module}_${item}`
   }
 
   private async send<T extends SubstrateRpcModuleName, S extends SubstrateRpcMethodName<T>>(

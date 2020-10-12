@@ -1,10 +1,10 @@
-import { SubstrateNetwork } from '../../../../../SubstrateNetwork'
-import { SCALEDecoder, SCALEDecodeResult } from '../../../scale/SCALEDecoder'
-import { SCALEArray } from '../../../scale/type/SCALEArray'
-import { SCALEBytes } from '../../../scale/type/SCALEBytes'
-import { SCALEClass } from '../../../scale/type/SCALEClass'
-import { SCALEEnum } from '../../../scale/type/SCALEEnum'
-import { SCALEString } from '../../../scale/type/SCALEString'
+import { SubstrateNetwork } from '../../../../../../SubstrateNetwork'
+import { SCALEDecoder, SCALEDecodeResult } from '../../../../scale/SCALEDecoder'
+import { SCALEArray } from '../../../../scale/type/SCALEArray'
+import { SCALEBytes } from '../../../../scale/type/SCALEBytes'
+import { SCALEClass } from '../../../../scale/type/SCALEClass'
+import { SCALEEnum } from '../../../../scale/type/SCALEEnum'
+import { SCALEString } from '../../../../scale/type/SCALEString'
 
 import { MetadataStorageEntryType } from './MetadataStorageEntryType'
 
