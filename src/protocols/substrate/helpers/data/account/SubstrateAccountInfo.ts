@@ -22,14 +22,26 @@ class SubstrateAccountData {
 }
 
 export class SubstrateAccountInfo {
-  public static decode(network: SubstrateNetwork, raw: string): SubstrateAccountInfo {
+  public static decode(network: SubstrateNetwork, runtimeVersion: number | undefined, raw: string): SubstrateAccountInfo {
     const decoder = new SCALEDecoder(network, raw)
 
     const nonce = decoder.decodeNextInt(32)
-    const refcount = decoder.decodeNextInt(8)
+    const refcount = decoder.decodeNextInt(this.migrateRefcountLength(network, runtimeVersion))
     const data = decoder.decodeNextObject(SubstrateAccountData.decode)
 
     return new SubstrateAccountInfo(nonce.decoded, refcount.decoded, data.decoded)
+  }
+
+  private static migrateRefcountLength(network: SubstrateNetwork, runtimeVersion: number | undefined): number {
+    if (runtimeVersion === undefined) {
+      return 32
+    }
+
+    if (network === SubstrateNetwork.KUSAMA && runtimeVersion >= 2025 || network === SubstrateNetwork.POLKADOT && runtimeVersion >= 25) {
+      return 32
+    } else {
+      return 8
+    }
   }
 
   private constructor(readonly nonce: SCALEInt, readonly refcount: SCALEInt, readonly data: SubstrateAccountData) {}

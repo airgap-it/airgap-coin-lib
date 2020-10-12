@@ -185,6 +185,8 @@ export class SubstrateTransactionController {
     const genesisHash = results[2]!
     const runtimeVersion = results[3]!
 
+    console.log(runtimeVersion)
+
     const payload = SubstrateTransactionPayload.create(transaction, {
       specVersion: runtimeVersion.specVersion,
       transactionVersion: runtimeVersion.transactionVersion,

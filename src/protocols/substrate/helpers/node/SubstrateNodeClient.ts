@@ -50,6 +50,7 @@ const CACHE_DEFAULT_EXPIRATION_TIME = 3000 // 3s
 
 export class SubstrateNodeClient {
   private metadata: MetadataDecorator | undefined
+  private runtimeVersion: number | undefined
   private readonly lastFees: Map<SubstrateTransactionType, BigNumber> = new Map()
 
   private initApiPromise: Promise<void> | null = null
@@ -62,7 +63,7 @@ export class SubstrateNodeClient {
 
   public async getAccountInfo(address: SubstrateAddress): Promise<SubstrateAccountInfo | null> {
     return this.fromStorage('System', 'Account', SCALEAccountId.from(address, this.network)).then((item) =>
-      item ? SubstrateAccountInfo.decode(this.network, item) : null
+      item ? SubstrateAccountInfo.decode(this.network, this.runtimeVersion, item) : null
     )
   }
 
@@ -130,13 +131,13 @@ export class SubstrateNodeClient {
 
   public async getNominations(address: SubstrateAddress): Promise<SubstrateNominations | null> {
     return this.fromStorage('Staking', 'Nominators', SCALEAccountId.from(address, this.network)).then((item) =>
-      item ? SubstrateNominations.decode(this.network, item) : null
+      item ? SubstrateNominations.decode(this.network, this.runtimeVersion, item) : null
     )
   }
 
   public async getRewardPoints(eraIndex: number): Promise<SubstrateEraRewardPoints | null> {
     return this.fromStorage('Staking', 'ErasRewardPoints', SCALEInt.from(eraIndex, 32)).then((item) =>
-      item ? SubstrateEraRewardPoints.decode(this.network, item) : null
+      item ? SubstrateEraRewardPoints.decode(this.network, this.runtimeVersion, item) : null
     )
   }
 
@@ -152,7 +153,7 @@ export class SubstrateNodeClient {
       'ErasStakersClipped',
       SCALEInt.from(eraIndex, 32),
       SCALEAccountId.from(validator, this.network)
-    ).then((item) => (item ? SubstrateExposure.decode(this.network, item) : null))
+    ).then((item) => (item ? SubstrateExposure.decode(this.network, this.runtimeVersion, item) : null))
   }
 
   public async getRewardDestination(address: SubstrateAddress): Promise<SubstratePayee | null> {
@@ -163,7 +164,7 @@ export class SubstrateNodeClient {
 
   public async getStakingLedger(address: SubstrateAddress): Promise<SubstrateStakingLedger | null> {
     return this.fromStorage('Staking', 'Ledger', SCALEAccountId.from(address, this.network)).then((item) =>
-      item ? SubstrateStakingLedger.decode(this.network, item) : null
+      item ? SubstrateStakingLedger.decode(this.network, this.runtimeVersion, item) : null
     )
   }
 
@@ -179,18 +180,18 @@ export class SubstrateNodeClient {
       'ErasStakers',
       SCALEInt.from(eraIndex, 32),
       SCALEAccountId.from(address, this.network)
-    ).then((item) => (item ? SubstrateExposure.decode(this.network, item) : null))
+    ).then((item) => (item ? SubstrateExposure.decode(this.network, this.runtimeVersion, item) : null))
   }
 
   public async getElectionStatus(): Promise<SubstrateEraElectionStatus | null> {
     return this.fromStorage('Staking', 'EraElectionStatus').then((item) =>
-      item ? SubstrateEraElectionStatus.decode(this.network, item) : null
+      item ? SubstrateEraElectionStatus.decode(this.network, this.runtimeVersion, item) : null
     )
   }
 
   public async getIdentityOf(address: SubstrateAddress): Promise<SubstrateRegistration | null> {
     return this.fromStorage('Identity', 'IdentityOf', SCALEAccountId.from(address, this.network)).then((item) =>
-      item ? SubstrateRegistration.decode(this.network, item) : null
+      item ? SubstrateRegistration.decode(this.network, this.runtimeVersion, item) : null
     )
   }
 
@@ -226,7 +227,7 @@ export class SubstrateNodeClient {
       'ErasValidatorPrefs',
       SCALEInt.from(eraIndex, 32),
       SCALEAccountId.from(address, this.network)
-    ).then((item) => (item ? SubstrateValidatorPrefs.decode(this.network, item) : null))
+    ).then((item) => (item ? SubstrateValidatorPrefs.decode(this.network, this.runtimeVersion, item) : null))
   }
 
   public async getExpectedEraDuration(): Promise<BigNumber | null> {
@@ -248,12 +249,14 @@ export class SubstrateNodeClient {
   }
 
   public async getActiveEraInfo(): Promise<SubstrateActiveEraInfo | null> {
-    return this.fromStorage('Staking', 'ActiveEra').then((item) => (item ? SubstrateActiveEraInfo.decode(this.network, item) : null))
+    return this.fromStorage('Staking', 'ActiveEra').then((item) =>
+      item ? SubstrateActiveEraInfo.decode(this.network, this.runtimeVersion, item) : null
+    )
   }
 
   public async getSlashingSpan(address: SubstrateAddress): Promise<SubstrateSlashingSpans | null> {
     return this.fromStorage('Staking', 'SlashingSpans', SCALEAccountId.from(address, this.network)).then((item) =>
-      item ? SubstrateSlashingSpans.decode(this.network, item) : null
+      item ? SubstrateSlashingSpans.decode(this.network, this.runtimeVersion, item) : null
     )
   }
 
@@ -305,14 +308,26 @@ export class SubstrateNodeClient {
 
   private async initApi(): Promise<void> {
     if (!this.initApiPromise) {
-      this.initApiPromise = new Promise(async (resolve) => {
-        const metadataEncoded = await this.send('state', 'getMetadata')
+      const initApiPromise = new Promise(async (resolve, reject) => {
+        const [metadataEncoded, runtimeVersion] = await Promise.all([
+          this.send('state', 'getMetadata'),
+          this.getRuntimeVersion()
+        ])
         this.metadata = Metadata.decode(this.network, metadataEncoded).decorate()
+        if (!runtimeVersion) {
+          reject("Could not fetch runtime version from the node")
+        }
+        this.runtimeVersion = runtimeVersion?.specVersion
 
         resolve()
       }).then(async () => {
         this.initApiPromise = Promise.resolve()
         await this.initCache()
+      })
+
+      this.initApiPromise = initApiPromise.catch((error) => {
+        console.warn(error)
+        this.initApiPromise = initApiPromise // retry once
       })
     }
 
