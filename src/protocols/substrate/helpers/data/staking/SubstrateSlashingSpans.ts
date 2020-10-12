@@ -4,7 +4,7 @@ import { SCALEInt } from '../scale/type/SCALEInt'
 import { SCALEArray } from '../scale/type/SCALEArray'
 
 export class SubstrateSlashingSpans {
-  public static decode(network: SubstrateNetwork, raw: string): SubstrateSlashingSpans {
+  public static decode(network: SubstrateNetwork, runtimeVersion: number | undefined, raw: string): SubstrateSlashingSpans {
     const decoder = new SCALEDecoder(network, raw)
 
     const spanIndex = decoder.decodeNextInt(32)
