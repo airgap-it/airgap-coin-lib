@@ -5,8 +5,8 @@ import { SCALEBytes } from '../../../scale/type/SCALEBytes'
 import { SCALEClass } from '../../../scale/type/SCALEClass'
 import { SCALEString } from '../../../scale/type/SCALEString'
 
-export class MetadataConstant extends SCALEClass {
-  public static decode(network: SubstrateNetwork, raw: string): SCALEDecodeResult<MetadataConstant> {
+export class MetadataV11Constant extends SCALEClass {
+  public static decode(network: SubstrateNetwork, raw: string): SCALEDecodeResult<MetadataV11Constant> {
     const decoder = new SCALEDecoder(network, raw)
 
     const name = decoder.decodeNextString()
@@ -16,7 +16,7 @@ export class MetadataConstant extends SCALEClass {
 
     return {
       bytesDecoded: name.bytesDecoded + type.bytesDecoded + value.bytesDecoded + docs.bytesDecoded,
-      decoded: new MetadataConstant(name.decoded, type.decoded, value.decoded, docs.decoded)
+      decoded: new MetadataV11Constant(name.decoded, type.decoded, value.decoded, docs.decoded)
     }
   }
 

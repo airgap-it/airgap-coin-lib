@@ -9,11 +9,11 @@ import { MetadataDecorator } from '../decorator/MetadataDecorator'
 import { SubstrateStorageEntry } from '../decorator/storage/SubstrateStorageEntry'
 import { MetadataVersioned } from '../MetadataVersioned'
 
-import { MetadataCall } from './module/MetadataCall'
-import { MetadataConstant } from './module/MetadataConstants'
-import { MetadataModule } from './module/MetadataModule'
-import { MetadataStorage } from './module/storage/MetadataStorage'
-import { MetadataStorageEntry } from './module/storage/MetadataStorageEntry'
+import { MetadataV11Call } from './module/MetadataV11Call'
+import { MetadataV11Constant } from './module/MetadataV11Constants'
+import { MetadataV11Module } from './module/MetadataV11Module'
+import { MetadataV11Storage } from './module/storage/MetadataV11Storage'
+import { MetadataV11StorageEntry } from './module/storage/MetadataV11StorageEntry'
 
 export class MetadataV11 extends MetadataVersioned {
   public static decode(network: SubstrateNetwork, raw: string): MetadataV11 {
@@ -21,7 +21,7 @@ export class MetadataV11 extends MetadataVersioned {
 
     const magicNumber = decoder.decodeNextInt(32) // 32 bits
     const version = decoder.decodeNextInt(8) // 8 bits
-    const modules = decoder.decodeNextArray(MetadataModule.decode)
+    const modules = decoder.decodeNextArray(MetadataV11Module.decode)
 
     return new MetadataV11(magicNumber.decoded, version.decoded, modules.decoded) 
   }
@@ -31,7 +31,7 @@ export class MetadataV11 extends MetadataVersioned {
   protected constructor(
     readonly magicNumber: SCALEInt, 
     readonly version: SCALEInt, 
-    readonly modules: SCALEArray<MetadataModule>
+    readonly modules: SCALEArray<MetadataV11Module>
   ) {
     super()
   }
@@ -75,18 +75,18 @@ export class MetadataV11 extends MetadataVersioned {
     )
   }
 
-  private createDecoratedStorageEntries(storage: MetadataStorage | undefined): SubstrateStorageEntry[] | undefined {
+  private createDecoratedStorageEntries(storage: MetadataV11Storage | undefined): SubstrateStorageEntry[] | undefined {
     if (storage) {
       return storage.storageEntries.elements
-        .filter((entry: MetadataStorageEntry) => supportedStorageEntries[storage.prefix.value].includes(entry.name.value))
-        .map((entry: MetadataStorageEntry) => entry.type.decorate(storage.prefix.value, entry.name.value))
+        .filter((entry: MetadataV11StorageEntry) => supportedStorageEntries[storage.prefix.value].includes(entry.name.value))
+        .map((entry: MetadataV11StorageEntry) => entry.type.decorate(storage.prefix.value, entry.name.value))
     }
 
     return undefined
   }
 
-  private createDecoratedCalls(moduleName: string, moduleIndex: number, calls: MetadataCall[]): SubstrateCall[] {
-    return calls.map((call: MetadataCall, index: number) => {
+  private createDecoratedCalls(moduleName: string, moduleIndex: number, calls: MetadataV11Call[]): SubstrateCall[] {
+    return calls.map((call: MetadataV11Call, index: number) => {
       return {
         moduleName,
         name: call.name.value,
@@ -96,8 +96,8 @@ export class MetadataV11 extends MetadataVersioned {
     })
   }
 
-  private createDecoratedConstants(moduleName: string, constants: MetadataConstant[]): SubstrateConstant[] {
-    return constants.map((constant: MetadataConstant) => {
+  private createDecoratedConstants(moduleName: string, constants: MetadataV11Constant[]): SubstrateConstant[] {
+    return constants.map((constant: MetadataV11Constant) => {
       return {
         moduleName,
         name: constant.name.value,
@@ -106,5 +106,4 @@ export class MetadataV11 extends MetadataVersioned {
       }
     })
   }
-
 }

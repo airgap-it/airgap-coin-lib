@@ -14,20 +14,20 @@ enum StorageEntryType {
   DoubleMap
 }
 
-export abstract class MetadataStorageEntryType extends SCALEClass {
-  public static decode(network: SubstrateNetwork, raw: string): SCALEDecodeResult<MetadataStorageEntryType> {
+export abstract class MetadataV11StorageEntryType extends SCALEClass {
+  public static decode(network: SubstrateNetwork, raw: string): SCALEDecodeResult<MetadataV11StorageEntryType> {
     const prefix = parseInt(raw.substr(0, 2), 16)
 
-    let decoderMethod: DecoderMethod<MetadataStorageEntryType>
+    let decoderMethod: DecoderMethod<MetadataV11StorageEntryType>
     switch (prefix) {
       case 0:
-        decoderMethod = MetadataStorageEntryPlain.decode
+        decoderMethod = MetadataV11StorageEntryPlain.decode
         break
       case 1:
-        decoderMethod = MetadataStorageEntryMap.decode
+        decoderMethod = MetadataV11StorageEntryMap.decode
         break
       case 2:
-        decoderMethod = MetadataStorageEntryDoubleMap.decode
+        decoderMethod = MetadataV11StorageEntryDoubleMap.decode
         break
       default:
         throw new Error('Unkown metadata storage entry type')
@@ -51,15 +51,15 @@ export abstract class MetadataStorageEntryType extends SCALEClass {
   public abstract decorate(moduleName: string, prefix: string): SubstrateStorageEntry
 }
 
-export class MetadataStorageEntryPlain extends MetadataStorageEntryType {
-  public static decode(network: SubstrateNetwork, raw: string): SCALEDecodeResult<MetadataStorageEntryPlain> {
+export class MetadataV11StorageEntryPlain extends MetadataV11StorageEntryType {
+  public static decode(network: SubstrateNetwork, raw: string): SCALEDecodeResult<MetadataV11StorageEntryPlain> {
     const decoder = new SCALEDecoder(network, raw)
 
     const name = decoder.decodeNextString()
 
     return {
       bytesDecoded: name.bytesDecoded,
-      decoded: new MetadataStorageEntryPlain(name.decoded)
+      decoded: new MetadataV11StorageEntryPlain(name.decoded)
     }
   }
 
@@ -75,29 +75,29 @@ export class MetadataStorageEntryPlain extends MetadataStorageEntryType {
   }
 }
 
-export class MetadataStorageEntryMap extends MetadataStorageEntryType {
-  public static decode(network: SubstrateNetwork, raw: string): SCALEDecodeResult<MetadataStorageEntryMap> {
+export class MetadataV11StorageEntryMap extends MetadataV11StorageEntryType {
+  public static decode(network: SubstrateNetwork, raw: string): SCALEDecodeResult<MetadataV11StorageEntryMap> {
     const decoder = new SCALEDecoder(network, raw)
 
     const hasher = decoder.decodeNextEnum((value) => SubstrateStorageEntryHasher[SubstrateStorageEntryHasher[value]])
     const key = decoder.decodeNextString()
     const value = decoder.decodeNextString()
-    const isLinked = decoder.decodeNextBoolean()
+    const unused = decoder.decodeNextBoolean()
 
     return {
-      bytesDecoded: hasher.bytesDecoded + key.bytesDecoded + value.bytesDecoded + isLinked.bytesDecoded,
-      decoded: new MetadataStorageEntryMap(hasher.decoded, key.decoded, value.decoded, isLinked.decoded)
+      bytesDecoded: hasher.bytesDecoded + key.bytesDecoded + value.bytesDecoded + unused.bytesDecoded,
+      decoded: new MetadataV11StorageEntryMap(hasher.decoded, key.decoded, value.decoded, unused.decoded)
     }
   }
 
   protected readonly type = SCALEEnum.from(StorageEntryType.Map)
-  protected readonly _scaleFields = [this.hasher, this.key, this.value, this.isLinked]
+  protected readonly _scaleFields = [this.hasher, this.key, this.value, this.unused]
 
   private constructor(
     readonly hasher: SCALEEnum<SubstrateStorageEntryHasher>,
     readonly key: SCALEString,
     readonly value: SCALEString,
-    readonly isLinked: SCALEBoolean
+    readonly unused: SCALEBoolean
   ) {
     super()
   }
@@ -107,8 +107,8 @@ export class MetadataStorageEntryMap extends MetadataStorageEntryType {
   }
 }
 
-export class MetadataStorageEntryDoubleMap extends MetadataStorageEntryType {
-  public static decode(network: SubstrateNetwork, raw: string): SCALEDecodeResult<MetadataStorageEntryDoubleMap> {
+export class MetadataV11StorageEntryDoubleMap extends MetadataV11StorageEntryType {
+  public static decode(network: SubstrateNetwork, raw: string): SCALEDecodeResult<MetadataV11StorageEntryDoubleMap> {
     const decoder = new SCALEDecoder(network, raw)
 
     const hasher1 = decoder.decodeNextEnum((value) => SubstrateStorageEntryHasher[SubstrateStorageEntryHasher[value]])
@@ -119,7 +119,7 @@ export class MetadataStorageEntryDoubleMap extends MetadataStorageEntryType {
 
     return {
       bytesDecoded: hasher1.bytesDecoded + key1.bytesDecoded + key2.bytesDecoded + value.bytesDecoded + hasher2.bytesDecoded,
-      decoded: new MetadataStorageEntryDoubleMap(hasher1.decoded, key1.decoded, key2.decoded, value.decoded, hasher2.decoded)
+      decoded: new MetadataV11StorageEntryDoubleMap(hasher1.decoded, key1.decoded, key2.decoded, value.decoded, hasher2.decoded)
     }
   }
 

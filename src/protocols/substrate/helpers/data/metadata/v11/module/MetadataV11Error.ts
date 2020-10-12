@@ -4,8 +4,8 @@ import { SCALEArray } from '../../../scale/type/SCALEArray'
 import { SCALEClass } from '../../../scale/type/SCALEClass'
 import { SCALEString } from '../../../scale/type/SCALEString'
 
-export class MetadataError extends SCALEClass {
-  public static decode(network: SubstrateNetwork, raw: string): SCALEDecodeResult<MetadataError> {
+export class MetadataV11Error extends SCALEClass {
+  public static decode(network: SubstrateNetwork, raw: string): SCALEDecodeResult<MetadataV11Error> {
     const decoder = new SCALEDecoder(network, raw)
 
     const name = decoder.decodeNextString()
@@ -13,7 +13,7 @@ export class MetadataError extends SCALEClass {
 
     return {
       bytesDecoded: name.bytesDecoded + docs.bytesDecoded,
-      decoded: new MetadataError(name.decoded, docs.decoded)
+      decoded: new MetadataV11Error(name.decoded, docs.decoded)
     }
   }
 

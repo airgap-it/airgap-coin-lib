@@ -1,11 +1,12 @@
+// tslint:disable: max-classes-per-file
 import { SubstrateNetwork } from '../../../../../SubstrateNetwork'
 import { SCALEDecoder, SCALEDecodeResult } from '../../../scale/SCALEDecoder'
 import { SCALEArray } from '../../../scale/type/SCALEArray'
 import { SCALEClass } from '../../../scale/type/SCALEClass'
 import { SCALEString } from '../../../scale/type/SCALEString'
 
-class MetadataCallArgument extends SCALEClass {
-  public static decode(network: SubstrateNetwork, raw: string): SCALEDecodeResult<MetadataCallArgument> {
+class MetadataV11CallArgument extends SCALEClass {
+  public static decode(network: SubstrateNetwork, raw: string): SCALEDecodeResult<MetadataV11CallArgument> {
     const decoder = new SCALEDecoder(network, raw)
 
     const name = decoder.decodeNextString()
@@ -13,7 +14,7 @@ class MetadataCallArgument extends SCALEClass {
 
     return {
       bytesDecoded: name.bytesDecoded + type.bytesDecoded,
-      decoded: new MetadataCallArgument(name.decoded, type.decoded)
+      decoded: new MetadataV11CallArgument(name.decoded, type.decoded)
     }
   }
 
@@ -24,23 +25,23 @@ class MetadataCallArgument extends SCALEClass {
   }
 }
 
-export class MetadataCall extends SCALEClass {
-  public static decode(network: SubstrateNetwork, raw: string): SCALEDecodeResult<MetadataCall> {
+export class MetadataV11Call extends SCALEClass {
+  public static decode(network: SubstrateNetwork, raw: string): SCALEDecodeResult<MetadataV11Call> {
     const decoder = new SCALEDecoder(network, raw)
 
     const name = decoder.decodeNextString()
-    const args = decoder.decodeNextArray(MetadataCallArgument.decode)
+    const args = decoder.decodeNextArray(MetadataV11CallArgument.decode)
     const docs = decoder.decodeNextArray((_, hex) => SCALEString.decode(hex))
 
     return {
       bytesDecoded: name.bytesDecoded + args.bytesDecoded + docs.bytesDecoded,
-      decoded: new MetadataCall(name.decoded, args.decoded, docs.decoded)
+      decoded: new MetadataV11Call(name.decoded, args.decoded, docs.decoded)
     }
   }
 
   protected scaleFields = [this.name, this.args]
 
-  private constructor(readonly name: SCALEString, readonly args: SCALEArray<MetadataCallArgument>, readonly docs: SCALEArray<SCALEString>) {
+  private constructor(readonly name: SCALEString, readonly args: SCALEArray<MetadataV11CallArgument>, readonly docs: SCALEArray<SCALEString>) {
     super()
   }
 }

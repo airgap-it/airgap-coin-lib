@@ -4,8 +4,8 @@ import { SCALEArray } from '../../../scale/type/SCALEArray'
 import { SCALEClass } from '../../../scale/type/SCALEClass'
 import { SCALEString } from '../../../scale/type/SCALEString'
 
-export class MetadataEvent extends SCALEClass {
-  public static decode(network: SubstrateNetwork, raw: string): SCALEDecodeResult<MetadataEvent> {
+export class MetadataV12Event extends SCALEClass {
+  public static decode(network: SubstrateNetwork, raw: string): SCALEDecodeResult<MetadataV12Event> {
     const decoder = new SCALEDecoder(network, raw)
 
     const name = decoder.decodeNextString()
@@ -14,7 +14,7 @@ export class MetadataEvent extends SCALEClass {
 
     return {
       bytesDecoded: name.bytesDecoded + args.bytesDecoded + docs.bytesDecoded,
-      decoded: new MetadataEvent(name.decoded, args.decoded, docs.decoded)
+      decoded: new MetadataV12Event(name.decoded, args.decoded, docs.decoded)
     }
   }
 
