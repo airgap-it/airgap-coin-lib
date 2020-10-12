@@ -4,6 +4,7 @@ import { SCALEArray } from '../../../scale/type/SCALEArray'
 import { SCALEClass } from '../../../scale/type/SCALEClass'
 import { SCALEOptional } from '../../../scale/type/SCALEOptional'
 import { SCALEString } from '../../../scale/type/SCALEString'
+import { SCALEType } from '../../../scale/type/SCALEType'
 
 import { MetadataV11Call } from './MetadataV11Call'
 import { MetadataV11Constant } from './MetadataV11Constants'
@@ -29,9 +30,9 @@ export class MetadataV11Module extends SCALEClass {
     }
   }
 
-  protected scaleFields = [this.name, this.storage, this.calls, this.events, this.constants, this.errors]
+  protected scaleFields: SCALEType[] = [this.name, this.storage, this.calls, this.events, this.constants, this.errors]
 
-  private constructor(
+  protected constructor(
     readonly name: SCALEString,
     readonly storage: SCALEOptional<MetadataV11Storage>,
     readonly calls: SCALEOptional<SCALEArray<MetadataV11Call>>,

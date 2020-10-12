@@ -3,6 +3,7 @@ import { supportedCalls, supportedConstants, supportedStorageEntries } from '../
 import { SCALEDecoder } from '../../scale/SCALEDecoder'
 import { SCALEArray } from '../../scale/type/SCALEArray'
 import { SCALEInt } from '../../scale/type/SCALEInt'
+import { SCALEType } from '../../scale/type/SCALEType'
 import { SubstrateCall } from '../decorator/call/SubstrateCall'
 import { SubstrateConstant } from '../decorator/constant/SubstrateConstant'
 import { MetadataDecorator } from '../decorator/MetadataDecorator'
@@ -26,7 +27,7 @@ export class MetadataV11 extends MetadataVersioned {
     return new MetadataV11(magicNumber.decoded, version.decoded, modules.decoded) 
   }
 
-  protected scaleFields = [this.magicNumber, this.version, this.modules]
+  protected scaleFields: SCALEType[] = [this.magicNumber, this.version, this.modules]
 
   protected constructor(
     readonly magicNumber: SCALEInt, 

@@ -1,61 +1,49 @@
 import { SubstrateNetwork } from '../../../../../SubstrateNetwork'
 import { SCALEDecoder, SCALEDecodeResult } from '../../../scale/SCALEDecoder'
 import { SCALEArray } from '../../../scale/type/SCALEArray'
-import { SCALEClass } from '../../../scale/type/SCALEClass'
 import { SCALEInt } from '../../../scale/type/SCALEInt'
 import { SCALEOptional } from '../../../scale/type/SCALEOptional'
 import { SCALEString } from '../../../scale/type/SCALEString'
+import { SCALEType } from '../../../scale/type/SCALEType'
+import { MetadataV11Call } from '../../v11/module/MetadataV11Call'
+import { MetadataV11Constant } from '../../v11/module/MetadataV11Constants'
+import { MetadataV11Error } from '../../v11/module/MetadataV11Error'
+import { MetadataV11Event } from '../../v11/module/MetadataV11Event'
+import { MetadataV11Module } from '../../v11/module/MetadataV11Module'
+import { MetadataV11Storage } from '../../v11/module/storage/MetadataV11Storage'
 
-import { MetadataV12Call } from './MetadataV12Call'
-import { MetadataV12Constant } from './MetadataV12Constants'
-import { MetadataV12Error } from './MetadataV12Error'
-import { MetadataV12Event } from './MetadataV12Event'
-import { MetadataV12Storage } from './storage/MetadataV12Storage'
-
-export class MetadataV12Module extends SCALEClass {
+export class MetadataV12Module extends MetadataV11Module {
   public static decode(network: SubstrateNetwork, raw: string): SCALEDecodeResult<MetadataV12Module> {
     const decoder = new SCALEDecoder(network, raw)
 
-    const name = decoder.decodeNextString()
-    const storage = decoder.decodeNextOptional(MetadataV12Storage.decode)
-    const calls = decoder.decodeNextOptional((network, hex) => SCALEArray.decode(network, hex, MetadataV12Call.decode))
-    const events = decoder.decodeNextOptional((network, hex) => SCALEArray.decode(network, hex, MetadataV12Event.decode))
-    const constants = decoder.decodeNextArray(MetadataV12Constant.decode)
-    const errors = decoder.decodeNextArray(MetadataV12Error.decode)
+    const v11 = decoder.decodeNextObject(MetadataV11Module.decode)
     const index = decoder.decodeNextInt(8)
 
     return {
-      bytesDecoded:
-        name.bytesDecoded + 
-        storage.bytesDecoded + 
-        calls.bytesDecoded + 
-        events.bytesDecoded + 
-        constants.bytesDecoded + 
-        errors.bytesDecoded +
-        index.bytesDecoded,
+      bytesDecoded: v11.bytesDecoded + index.bytesDecoded,
       decoded: new MetadataV12Module(
-        name.decoded, 
-        storage.decoded, 
-        calls.decoded, 
-        events.decoded, 
-        constants.decoded, 
-        errors.decoded, 
+        v11.decoded.name, 
+        v11.decoded.storage, 
+        v11.decoded.calls, 
+        v11.decoded.events, 
+        v11.decoded.constants, 
+        v11.decoded.errors, 
         index.decoded
       )
     }
   }
 
-  protected scaleFields = [this.name, this.storage, this.calls, this.events, this.constants, this.errors]
+  protected scaleFields: SCALEType[] = [this.name, this.storage, this.calls, this.events, this.constants, this.errors, this.index]
 
-  private constructor(
-    readonly name: SCALEString,
-    readonly storage: SCALEOptional<MetadataV12Storage>,
-    readonly calls: SCALEOptional<SCALEArray<MetadataV12Call>>,
-    readonly events: SCALEOptional<SCALEArray<MetadataV12Event>>,
-    readonly constants: SCALEArray<MetadataV12Constant>,
-    readonly errors: SCALEArray<MetadataV12Error>,
+  protected constructor(
+    name: SCALEString,
+    storage: SCALEOptional<MetadataV11Storage>,
+    calls: SCALEOptional<SCALEArray<MetadataV11Call>>,
+    events: SCALEOptional<SCALEArray<MetadataV11Event>>,
+    constants: SCALEArray<MetadataV11Constant>,
+    errors: SCALEArray<MetadataV11Error>,
     readonly index: SCALEInt
   ) {
-    super()
+    super(name, storage, calls, events, constants, errors)
   }
 }

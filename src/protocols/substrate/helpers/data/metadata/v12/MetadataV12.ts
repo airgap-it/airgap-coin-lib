@@ -8,12 +8,12 @@ import { SubstrateConstant } from '../decorator/constant/SubstrateConstant'
 import { MetadataDecorator } from '../decorator/MetadataDecorator'
 import { SubstrateStorageEntry } from '../decorator/storage/SubstrateStorageEntry'
 import { MetadataVersioned } from '../MetadataVersioned'
+import { MetadataV11Call } from '../v11/module/MetadataV11Call'
+import { MetadataV11Constant } from '../v11/module/MetadataV11Constants'
+import { MetadataV11Storage } from '../v11/module/storage/MetadataV11Storage'
+import { MetadataV11StorageEntry } from '../v11/module/storage/MetadataV11StorageEntry'
 
-import { MetadataV12Call } from './module/MetadataV12Call'
-import { MetadataV12Constant } from './module/MetadataV12Constants'
 import { MetadataV12Module } from './module/MetadataV12Module'
-import { MetadataV12Storage } from './module/storage/MetadataV12Storage'
-import { MetadataV12StorageEntry } from './module/storage/MetadataV12StorageEntry'
 
 export class MetadataV12 extends MetadataVersioned {
   public static decode(network: SubstrateNetwork, raw: string): MetadataV12 {
@@ -75,18 +75,18 @@ export class MetadataV12 extends MetadataVersioned {
     )
   }
 
-  private createDecoratedStorageEntries(storage: MetadataV12Storage | undefined): SubstrateStorageEntry[] | undefined {
+  private createDecoratedStorageEntries(storage: MetadataV11Storage | undefined): SubstrateStorageEntry[] | undefined {
     if (storage) {
       return storage.storageEntries.elements
-        .filter((entry: MetadataV12StorageEntry) => supportedStorageEntries[storage.prefix.value].includes(entry.name.value))
-        .map((entry: MetadataV12StorageEntry) => entry.type.decorate(storage.prefix.value, entry.name.value))
+        .filter((entry: MetadataV11StorageEntry) => supportedStorageEntries[storage.prefix.value].includes(entry.name.value))
+        .map((entry: MetadataV11StorageEntry) => entry.type.decorate(storage.prefix.value, entry.name.value))
     }
 
     return undefined
   }
 
-  private createDecoratedCalls(moduleName: string, moduleIndex: number, calls: MetadataV12Call[]): SubstrateCall[] {
-    return calls.map((call: MetadataV12Call, index: number) => {
+  private createDecoratedCalls(moduleName: string, moduleIndex: number, calls: MetadataV11Call[]): SubstrateCall[] {
+    return calls.map((call: MetadataV11Call, index: number) => {
       return {
         moduleName,
         name: call.name.value,
@@ -96,8 +96,8 @@ export class MetadataV12 extends MetadataVersioned {
     })
   }
 
-  private createDecoratedConstants(moduleName: string, constants: MetadataV12Constant[]): SubstrateConstant[] {
-    return constants.map((constant: MetadataV12Constant) => {
+  private createDecoratedConstants(moduleName: string, constants: MetadataV11Constant[]): SubstrateConstant[] {
+    return constants.map((constant: MetadataV11Constant) => {
       return {
         moduleName,
         name: constant.name.value,
