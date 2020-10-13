@@ -74,7 +74,7 @@ export class SubstrateIdentityInfo {
 }
 
 export class SubstrateRegistration {
-  public static decode(network: SubstrateNetwork, raw: string): SubstrateRegistration {
+  public static decode(network: SubstrateNetwork, runtimeVersion: number | undefined, raw: string): SubstrateRegistration {
     const decoder = new SCALEDecoder(network, raw)
 
     const judgements = decoder.decodeNextArray((network, hex) =>

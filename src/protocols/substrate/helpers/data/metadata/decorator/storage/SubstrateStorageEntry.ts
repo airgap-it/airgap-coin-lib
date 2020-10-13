@@ -1,14 +1,8 @@
 // tslint:disable: max-classes-per-file
-import { blake2bAsHex } from '../../../../../utils/blake2b'
-import { bytesToHex } from '../../../../../utils/hex'
-import { xxhashAsHex } from '../../../../../utils/xxhash'
-import {
-  MetadataStorageEntryDoubleMap,
-  MetadataStorageEntryMap,
-  MetadataStorageEntryPlain,
-  MetadataStorageEntryType
-} from '../../data/metadata/module/storage/MetadataStorageEntryType'
-import { SCALEType } from '../../data/scale/type/SCALEType'
+import { blake2bAsHex } from '../../../../../../../utils/blake2b'
+import { bytesToHex } from '../../../../../../../utils/hex'
+import { xxhashAsHex } from '../../../../../../../utils/xxhash'
+import { SCALEType } from '../../../scale/type/SCALEType'
 
 export enum SubstrateStorageEntryHasher {
   BLAKE2_128 = 0,
@@ -32,27 +26,15 @@ const hasherMethods = new Map([
 
 const PREFIX_TRIE_HASH_SIZE = 128
 export abstract class SubstrateStorageEntry {
-  public static fromMetadata(entryType: MetadataStorageEntryType): SubstrateStorageEntry {
-    if (entryType instanceof MetadataStorageEntryPlain) {
-      return new SubstratePlainStorageEntry()
-    }
-    if (entryType instanceof MetadataStorageEntryMap) {
-      return new SubstrateMapStorageEntry(entryType.hasher.value)
-    }
-    if (entryType instanceof MetadataStorageEntryDoubleMap) {
-      return new SubstrateDoubleMapStorageEntry(entryType.hasher1.value, entryType.hasher2.value)
-    }
-
-    throw new Error('Unknown storage entry type.')
-  }
-
   private readonly storageHash: Map<string, string> = new Map()
 
-  public async hash(module: string, prefix: string, ...args: SCALEType[]): Promise<string> {
-    const rawKey = module + prefix + (await this.argsToKeys(args))
+  public constructor(public readonly moduleName: string, public readonly prefix: string) {}
+
+  public async hash(...args: SCALEType[]): Promise<string> {
+    const rawKey = this.moduleName + this.prefix + (await this.argsToKeys(args))
 
     if (!this.storageHash.get(rawKey)) {
-      const prefixTrie = await this.hashPrefixTrie(module, prefix)
+      const prefixTrie = await this.hashPrefixTrie()
       const itemHash = await this.hashArgs(args)
 
       this.storageHash.set(rawKey, prefixTrie + itemHash)
@@ -64,9 +46,9 @@ export abstract class SubstrateStorageEntry {
   protected abstract argsToKeys(args: SCALEType[]): Promise<string>
   protected abstract hashArgs(args: SCALEType[]): Promise<string>
 
-  private async hashPrefixTrie(module: string, prefix: string): Promise<string> {
-    const moduleHash = xxhashAsHex(module, PREFIX_TRIE_HASH_SIZE)
-    const storageHash = xxhashAsHex(prefix, PREFIX_TRIE_HASH_SIZE)
+  private async hashPrefixTrie(): Promise<string> {
+    const moduleHash = xxhashAsHex(this.moduleName, PREFIX_TRIE_HASH_SIZE)
+    const storageHash = xxhashAsHex(this.prefix, PREFIX_TRIE_HASH_SIZE)
 
     return moduleHash + storageHash
   }
@@ -83,8 +65,12 @@ export class SubstratePlainStorageEntry extends SubstrateStorageEntry {
 }
 
 export class SubstrateMapStorageEntry extends SubstrateStorageEntry {
-  public constructor(public readonly hasher: SubstrateStorageEntryHasher) {
-    super()
+  public constructor(
+    module: string, 
+    prefix: string,
+    public readonly hasher: SubstrateStorageEntryHasher
+  ) {
+    super(module, prefix)
   }
 
   protected async argsToKeys(args: SCALEType[]): Promise<string> {
@@ -99,8 +85,13 @@ export class SubstrateMapStorageEntry extends SubstrateStorageEntry {
 }
 
 export class SubstrateDoubleMapStorageEntry extends SubstrateStorageEntry {
-  public constructor(public readonly firstHasher: SubstrateStorageEntryHasher, public readonly secondHasher: SubstrateStorageEntryHasher) {
-    super()
+  public constructor(
+    module: string, 
+    prefix: string,
+    public readonly firstHasher: SubstrateStorageEntryHasher, 
+    public readonly secondHasher: SubstrateStorageEntryHasher
+  ) {
+    super(module, prefix)
   }
 
   protected async argsToKeys(args: SCALEType[]): Promise<string> {

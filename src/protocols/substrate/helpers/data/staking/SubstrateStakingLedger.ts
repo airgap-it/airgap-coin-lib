@@ -7,7 +7,7 @@ import { SCALEInt } from '../scale/type/SCALEInt'
 import { SCALETuple } from '../scale/type/SCALETuple'
 
 export class SubstrateStakingLedger {
-  public static decode(network: SubstrateNetwork, raw: string): SubstrateStakingLedger {
+  public static decode(network: SubstrateNetwork, runtimeVersion: number | undefined, raw: string): SubstrateStakingLedger {
     const decoder = new SCALEDecoder(network, raw)
 
     const stash = decoder.decodeNextAccountId()

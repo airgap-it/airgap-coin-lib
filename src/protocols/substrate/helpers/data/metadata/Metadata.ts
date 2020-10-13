@@ -1,15 +1,14 @@
 import { SubstrateNetwork } from '../../../SubstrateNetwork'
 import { SCALEDecoder } from '../scale/SCALEDecoder'
-import { SCALEArray } from '../scale/type/SCALEArray'
-import { SCALEClass } from '../scale/type/SCALEClass'
-import { SCALEInt } from '../scale/type/SCALEInt'
 
-import { MetadataModule } from './module/MetadataModule'
+import { MetadataDecorator } from './decorator/MetadataDecorator'
+import { MetadataVersioned } from './MetadataVersioned'
+import { MetadataV11 } from './v11/MetadataV11'
+import { MetadataV12 } from './v12/MetadataV12'
 
 const MAGIC_NUMBER = '6174656d' // `meta` in hex
-const EXPECTED_VERSION = 11
 
-export class Metadata extends SCALEClass {
+export class Metadata {
   public static decode(network: SubstrateNetwork, raw: string): Metadata {
     const decoder = new SCALEDecoder(network, raw)
 
@@ -17,11 +16,20 @@ export class Metadata extends SCALEClass {
     this.assertMagicNumber(magicNumber.decoded.toNumber())
 
     const version = decoder.decodeNextInt(8) // 8 bits
-    this.assertVersion(version.decoded.toNumber())
 
-    const modules = decoder.decodeNextArray(MetadataModule.decode)
+    let versioned: MetadataVersioned
+    switch(version.decoded.toNumber()) {
+      case 12:
+        versioned = MetadataV12.decode(network, raw)
+        break
+      case 11:
+        versioned = MetadataV11.decode(network, raw)
+        break
+      default:
+        throw new Error(`Error while parsing metadata, metadata version ${version} is not supported`)
+    }
 
-    return new Metadata(magicNumber.decoded, version.decoded, modules.decoded)
+    return new Metadata(versioned)
   }
 
   private static assertMagicNumber(magicNumber: number) {
@@ -30,15 +38,10 @@ export class Metadata extends SCALEClass {
     }
   }
 
-  private static assertVersion(version: number) {
-    if (version !== EXPECTED_VERSION) {
-      throw new Error(`Error while parsing metadata, metadata version ${EXPECTED_VERSION} was expected, got ${version}`)
-    }
-  }
 
-  protected scaleFields = [this.magicNumber, this.version, this.modules]
+  private constructor(readonly versioned: MetadataVersioned) {}
 
-  private constructor(readonly magicNumber: SCALEInt, readonly version: SCALEInt, readonly modules: SCALEArray<MetadataModule>) {
-    super()
+  public decorate(): MetadataDecorator {
+    return this.versioned.decorate()
   }
 }
