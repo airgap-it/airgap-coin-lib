@@ -6,7 +6,7 @@ import { SCALECompactInt } from '../scale/type/SCALECompactInt'
 import { SCALETuple } from '../scale/type/SCALETuple'
 
 export class SubstrateExposure {
-  public static decode(network: SubstrateNetwork, raw: string): SubstrateExposure {
+  public static decode(network: SubstrateNetwork, runtimeVersion: number | undefined, raw: string): SubstrateExposure {
     const decoder = new SCALEDecoder(network, raw)
 
     const total = decoder.decodeNextCompactInt()

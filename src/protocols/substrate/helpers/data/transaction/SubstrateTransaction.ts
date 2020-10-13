@@ -2,7 +2,7 @@ import BigNumber from '../../../../../dependencies/src/bignumber.js-9.0.0/bignum
 import { IAirGapTransaction } from '../../../../../interfaces/IAirGapTransaction'
 import { stripHexPrefix } from '../../../../../utils/hex'
 import { SubstrateNetwork } from '../../../SubstrateNetwork'
-import { SubstrateCallId } from '../../node/call/SubstrateCallId'
+import { SubstrateCall } from '../metadata/decorator/call/SubstrateCall'
 import { SubstrateAccountId } from '../account/SubstrateAddress'
 import { SCALEDecoder, SCALEDecodeResult } from '../scale/SCALEDecoder'
 import { SCALEAccountId } from '../scale/type/SCALEAccountId'
@@ -24,7 +24,7 @@ interface SubstrateTransactionConfig {
   from: SubstrateAccountId
   args: any
   tip: number | BigNumber
-  methodId: SubstrateCallId
+  methodId: SubstrateCall
   era: EraConfig | null
   nonce: number | BigNumber
   signature?: SubstrateSignature
