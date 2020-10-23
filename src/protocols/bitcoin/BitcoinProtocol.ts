@@ -14,6 +14,7 @@ import { MainProtocolSymbols, ProtocolSymbols } from '../../utils/ProtocolSymbol
 
 import { BitcoinProtocolOptions } from './BitcoinProtocolOptions'
 import { BitcoinCryptoClient } from './BitcoinCryptoClient'
+import { ICoinSubProtocol } from '../ICoinSubProtocol'
 
 interface UTXOResponse {
   txid: string
@@ -372,6 +373,10 @@ export class BitcoinProtocol implements ICoinProtocol {
     })
 
     return data.balance
+  }
+
+  public async getBalanceOfPublicKeyForSubProtocols(publicKey: string, subProtocols: ICoinSubProtocol[]): Promise<string[]> {
+    throw Promise.reject('get balance of sub protocols not supported')
   }
 
   public async getAvailableBalanceOfAddresses(addresses: string[]): Promise<string> {

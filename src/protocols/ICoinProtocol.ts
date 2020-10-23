@@ -89,6 +89,7 @@ export interface ICoinProtocol {
   getBalanceOfExtendedPublicKey(extendedPublicKey: string, offset: number): Promise<string>
   getAvailableBalanceOfAddresses(addresses: string[]): Promise<string>
   getTransactionStatuses(transactionHash: string[]): Promise<AirGapTransactionStatus[]>
+  getBalanceOfPublicKeyForSubProtocols(publicKey: string, subProtocols: ICoinSubProtocol[]): Promise<string[]>
 
   estimateMaxTransactionValueFromExtendedPublicKey(extendedPublicKey: string, recipients: string[], fee?: string): Promise<string>
   estimateMaxTransactionValueFromPublicKey(publicKey: string, recipients: string[], fee?: string): Promise<string>

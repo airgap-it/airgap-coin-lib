@@ -21,6 +21,7 @@ import { NonExtendedProtocol } from '../NonExtendedProtocol'
 import { AeternityCryptoClient } from './AeternityCryptoClient'
 
 import { AeternityProtocolOptions } from './AeternityProtocolOptions'
+import { ICoinSubProtocol } from '../ICoinSubProtocol'
 
 export class AeternityProtocol extends NonExtendedProtocol implements ICoinProtocol {
   public symbol: string = 'AE'
@@ -279,6 +280,10 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
     const address = await this.getAddressFromPublicKey(publicKey)
 
     return this.getBalanceOfAddresses([address])
+  }
+
+  public async getBalanceOfPublicKeyForSubProtocols(publicKey: string, subProtocols: ICoinSubProtocol[]): Promise<string[]> {
+    throw Promise.reject('get balance of sub protocols not supported')
   }
 
   public async getAvailableBalanceOfAddresses(addresses: string[]): Promise<string> {

@@ -8,4 +8,5 @@ export enum SubProtocolType {
 export interface ICoinSubProtocol extends ICoinProtocol {
   isSubProtocol: boolean
   subProtocolType: SubProtocolType
+  contractAddress?: string
 }
