@@ -177,6 +177,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
     }
 
     const transactions = await Promise.all(promises).then((transactions) => transactions.reduce((current, next) => current.concat(next)))
+    
     return { transactions: transactions, cursor: { offset: cursor ? (cursor.offset + limit) : limit } }
   }
 
