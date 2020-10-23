@@ -271,6 +271,10 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
     return this.getBalance(addresses, false)
   }
 
+  public async getBalanceOfPublicKeyForSubProtocols(publicKey: string, subProtocols: ICoinSubProtocol[]): Promise<string[]> {
+    throw Promise.reject('get balance of sub protocols not supported')
+  }
+
   private async getBalance(addresses: string[], totalBalance: boolean = true): Promise<string> {
     const promises: Promise<BigNumber>[] = []
     for (const address of addresses) {

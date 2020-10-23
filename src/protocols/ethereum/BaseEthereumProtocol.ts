@@ -11,7 +11,7 @@ import { RawEthereumTransaction } from '../../serializer/types'
 import { MainProtocolSymbols, ProtocolSymbols } from '../../utils/ProtocolSymbols'
 import { getSubProtocolsByIdentifier } from '../../utils/subProtocols'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
-import { ICoinSubProtocol } from '../ICoinSubProtocol'
+import { ICoinSubProtocol, SubProtocolType } from '../ICoinSubProtocol'
 
 import { EthereumInfoClient } from './clients/info-clients/InfoClient'
 import { EthereumNodeClient } from './clients/node-clients/NodeClient'
@@ -231,6 +231,19 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     )
 
     return balances.reduce((a: BigNumber, b: BigNumber) => a.plus(b)).toString(10)
+  }
+
+  public async getBalanceOfPublicKeyForSubProtocols(publicKey: string, subProtocols: ICoinSubProtocol[]): Promise<string[]> {
+    const address: string = await this.getAddressFromPublicKey(publicKey)
+    const contractAddresses = subProtocols.map(subProtocol => {
+      if (subProtocol.subProtocolType === SubProtocolType.TOKEN && subProtocol.contractAddress) {
+        return subProtocol.contractAddress
+      } else {
+        throw Error('can only retrieve balance of ERC20 tokens')
+      }
+    })
+    const balances = await this.options.nodeClient.callBalanceOfOnContracts(contractAddresses, address)
+    return contractAddresses.map(contractAddresse => balances[contractAddresse]?.toFixed() ?? "0")
   }
 
   public getBalanceOfExtendedPublicKey(extendedPublicKey: string, offset: number = 0): Promise<string> {

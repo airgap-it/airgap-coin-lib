@@ -14,19 +14,27 @@ class EthereumRPCBody extends RPCBody implements RPCConvertible {
   public static blockPending: string = 'pending'
 
   public toRPCBody(): string {
-    return JSON.stringify({
+    return JSON.stringify(this.toJSON())
+  }
+
+  public toJSON(): any {
+    return {
       jsonrpc: this.jsonrpc,
       method: this.method,
       params: this.params,
       id: this.id
-    })
+    }
   }
 }
 
 interface EthereumRPCResponse {
   id: number
   jsonrpc: string
-  result: any
+  result?: any
+  error?: {
+    code: number,
+    message: string
+  }
 }
 
 export class EthereumRPCData {
@@ -164,12 +172,24 @@ export class AirGapNodeClient extends EthereumNodeClient {
   }
 
   public async callBalanceOf(contractAddress: string, address: string): Promise<BigNumber> {
-    const data = new EthereumRPCDataBalanceOf(address)
-    const body = new EthereumRPCBody('eth_call', [{ to: contractAddress, data: data.abiEncoded() }, EthereumRPCBody.blockLatest])
-
+    const body = this.balanceOfBody(contractAddress, address)
     const response = await this.send(body)
-
     return new BigNumber(response.result)
+  }
+
+  public async callBalanceOfOnContracts(contractAddresses: string[], address: string): Promise<{[contractAddress: string]: BigNumber}> {
+    const bodies = contractAddresses.map((contractAddress, index) => this.balanceOfBody(contractAddress, address, index))
+    const responses = await this.batchSend(bodies)
+    const result: {[contractAddress: string]: BigNumber} = {}
+    responses.forEach(response => {
+      result[contractAddresses[response.id]] = new BigNumber(response.result ?? 0)
+    })
+    return result
+  }
+
+  private balanceOfBody(contractAddress: string, address: string, id: number = 0): EthereumRPCBody {
+    const data = new EthereumRPCDataBalanceOf(address)
+    return new EthereumRPCBody('eth_call', [{ to: contractAddress, data: data.abiEncoded() }, EthereumRPCBody.blockLatest], id)
   }
 
   public async estimateTransactionGas(
@@ -206,7 +226,11 @@ export class AirGapNodeClient extends EthereumNodeClient {
     if (data.error !== undefined) {
       throw new Error(data.error.message)
     }
+    return data
+  }
 
+  private async batchSend(bodies: EthereumRPCBody[]): Promise<EthereumRPCResponse[]> {
+    const data = (await axios.post(this.baseURL, JSON.stringify(bodies.map(body => body.toJSON())))).data
     return data
   }
 }
