@@ -11,22 +11,13 @@
         "message": {
           "type": "string"
         },
-        "origin": {
-          "type": "string"
-        },
         "publicKey": {
-          "type": "string"
-        },
-        "ttl": {
           "type": "string"
         }
       },
       "required": [
         "message",
-        "publicKey",
-        "ttl",
-        "origin",
-        "callbackURL"
+        "publicKey"
       ],
       "type": "object"
     }

@@ -15,7 +15,7 @@ import { EthereumRopstenProtocol } from './protocols/ethereum/EthereumRopstenPro
 import { GroestlcoinProtocol } from './protocols/groestlcoin/GroestlcoinProtocol'
 import { GroestlcoinTestnetProtocol } from './protocols/groestlcoin/GroestlcoinTestnetProtocol'
 import { ICoinDelegateProtocol } from './protocols/ICoinDelegateProtocol'
-import { ICoinProtocol } from './protocols/ICoinProtocol'
+import { FeeDefaults, ICoinProtocol } from './protocols/ICoinProtocol'
 import { ICoinSubProtocol } from './protocols/ICoinSubProtocol'
 import { SubstratePayee } from './protocols/substrate/helpers/data/staking/SubstratePayee'
 import { KusamaProtocol } from './protocols/substrate/implementations/KusamaProtocol'
@@ -31,6 +31,7 @@ import {
   DelegationInfo,
   DelegationRewardInfo,
   TezosDelegatorAction,
+  TezosNetwork,
   TezosPayoutInfo,
   TezosProtocol
 } from './protocols/tezos/TezosProtocol'
@@ -39,17 +40,17 @@ import { IACMessageDefinitionObject } from './serializer/message'
 import { AccountShareResponse } from './serializer/schemas/definitions/account-share-response'
 import { MessageSignRequest } from './serializer/schemas/definitions/message-sign-request'
 import { MessageSignResponse } from './serializer/schemas/definitions/message-sign-response'
-import { UnsignedTransaction } from './serializer/schemas/definitions/transaction-sign-request'
-import { UnsignedAeternityTransaction } from './serializer/schemas/definitions/transaction-sign-request-aeternity'
-import { UnsignedBitcoinTransaction } from './serializer/schemas/definitions/transaction-sign-request-bitcoin'
-import { UnsignedEthereumTransaction } from './serializer/schemas/definitions/transaction-sign-request-ethereum'
-import { UnsignedTezosTransaction } from './serializer/schemas/definitions/transaction-sign-request-tezos'
-import { SignedTransaction } from './serializer/schemas/definitions/transaction-sign-response'
-import { SignedAeternityTransaction } from './serializer/schemas/definitions/transaction-sign-response-aeternity'
-import { SignedBitcoinTransaction } from './serializer/schemas/definitions/transaction-sign-response-bitcoin'
-import { SignedCosmosTransaction } from './serializer/schemas/definitions/transaction-sign-response-cosmos'
-import { SignedEthereumTransaction } from './serializer/schemas/definitions/transaction-sign-response-ethereum'
-import { SignedTezosTransaction } from './serializer/schemas/definitions/transaction-sign-response-tezos'
+import { SignedTransaction } from './serializer/schemas/definitions/signed-transaction'
+import { SignedAeternityTransaction } from './serializer/schemas/definitions/signed-transaction-aeternity'
+import { SignedBitcoinTransaction } from './serializer/schemas/definitions/signed-transaction-bitcoin'
+import { SignedCosmosTransaction } from './serializer/schemas/definitions/signed-transaction-cosmos'
+import { SignedEthereumTransaction } from './serializer/schemas/definitions/signed-transaction-ethereum'
+import { SignedTezosTransaction } from './serializer/schemas/definitions/signed-transaction-tezos'
+import { UnsignedTransaction } from './serializer/schemas/definitions/unsigned-transaction'
+import { UnsignedAeternityTransaction } from './serializer/schemas/definitions/unsigned-transaction-aeternity'
+import { UnsignedBitcoinTransaction } from './serializer/schemas/definitions/unsigned-transaction-bitcoin'
+import { UnsignedEthereumTransaction } from './serializer/schemas/definitions/unsigned-transaction-ethereum'
+import { UnsignedTezosTransaction } from './serializer/schemas/definitions/unsigned-transaction-tezos'
 import { IACPayloadType, Serializer } from './serializer/serializer'
 import { UnsignedCosmosTransaction } from './serializer/types'
 import { isCoinlibReady } from './utils/coinlibReady'
@@ -88,7 +89,7 @@ import {
   EthereumERC20ProtocolOptions
 } from './protocols/ethereum/EthereumProtocolOptions'
 import { ProtocolBlockExplorer } from './utils/ProtocolBlockExplorer'
-import { ProtocolNetwork } from './utils/ProtocolNetwork'
+import { NetworkType, ProtocolNetwork } from './utils/ProtocolNetwork'
 import {
   GroestlcoinProtocolNetworkExtras,
   CryptoidBlockExplorer,
@@ -134,6 +135,8 @@ import {
 } from './protocols/tezos/fa/TezosFAProtocolOptions'
 import { TezosTransactionResult } from './protocols/tezos/types/TezosTransactionResult'
 import { TezosTransactionCursor } from './protocols/tezos/types/TezosTransactionCursor'
+import { generateId } from "./serializer/utils/generateId"
+import { ProtocolSymbols, MainProtocolSymbols, SubProtocolSymbols } from "./utils/ProtocolSymbols"
 // tslint:enable:ordered-imports
 
 // Core
@@ -147,7 +150,12 @@ export {
   ICoinDelegateProtocol,
   CryptoClient,
   ProtocolBlockExplorer,
-  ProtocolNetwork
+  ProtocolNetwork,
+  ProtocolSymbols,
+  MainProtocolSymbols,
+  SubProtocolSymbols,
+  NetworkType,
+  FeeDefaults
 }
 
 // Aeternity
@@ -244,7 +252,8 @@ export {
   TezosBTCProtocolConfig,
   TezosStakerProtocolConfig,
   TezosUSDProtocolConfig,
-  TezosFAProtocolOptions
+  TezosFAProtocolOptions,
+  TezosNetwork
 }
 
 // Serializer
@@ -284,5 +293,6 @@ export {
   // libsodium ready
   isCoinlibReady,
   // sub-protocols
-  addSubProtocol
+  addSubProtocol,
+  generateId
 }

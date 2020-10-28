@@ -1,12 +1,13 @@
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { AirGapTransactionStatus, IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
-import { UnsignedSubstrateTransaction } from '../../serializer/schemas/definitions/transaction-sign-request-substrate'
-import { SignedSubstrateTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-substrate'
+import { SignedSubstrateTransaction } from '../../serializer/schemas/definitions/signed-transaction-substrate'
+import { UnsignedSubstrateTransaction } from '../../serializer/schemas/definitions/unsigned-transaction-substrate'
 import { RawSubstrateTransaction } from '../../serializer/types'
 import { assertFields } from '../../utils/assert'
 import { ProtocolSymbols } from '../../utils/ProtocolSymbols'
 import { DelegateeDetails, DelegationDetails, DelegatorDetails, ICoinDelegateProtocol } from '../ICoinDelegateProtocol'
 import { CurrencyUnit, FeeDefaults } from '../ICoinProtocol'
+import { ICoinSubProtocol } from '../ICoinSubProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
 
 import { SubstrateAccountId, SubstrateAddress } from './helpers/data/account/SubstrateAddress'
@@ -155,6 +156,10 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
 
   public async getBalanceOfPublicKey(publicKey: string): Promise<string> {
     return this.getBalanceOfAddresses([await this.getAddressFromPublicKey(publicKey)])
+  }
+
+  public async getBalanceOfPublicKeyForSubProtocols(publicKey: string, subProtocols: ICoinSubProtocol[]): Promise<string[]> {
+    throw Promise.reject('get balance of sub protocols not supported')
   }
 
   public async estimateMaxTransactionValueFromPublicKey(publicKey: string, recipients: string[], fee?: string): Promise<string> {

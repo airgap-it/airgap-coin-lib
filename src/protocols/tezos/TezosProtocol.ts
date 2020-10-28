@@ -10,8 +10,8 @@ import * as bs58check from '../../dependencies/src/bs58check-2.1.2/index'
 import { generateWalletUsingDerivationPath } from '../../dependencies/src/hd-wallet-js-b216450e56954a6e82ace0aade9474673de5d9d5/src/index'
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
 import { AirGapTransactionStatus, IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
-import { UnsignedTezosTransaction } from '../../serializer/schemas/definitions/transaction-sign-request-tezos'
-import { SignedTezosTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-tezos'
+import { SignedTezosTransaction } from '../../serializer/schemas/definitions/signed-transaction-tezos'
+import { UnsignedTezosTransaction } from '../../serializer/schemas/definitions/unsigned-transaction-tezos'
 import { RawTezosTransaction } from '../../serializer/types'
 import { ErrorWithData } from '../../utils/ErrorWithData'
 import { MainProtocolSymbols, ProtocolSymbols } from '../../utils/ProtocolSymbols'
@@ -53,7 +53,6 @@ export interface BakerInfo {
   balance: BigNumber
   delegatedBalance: BigNumber
   stakingBalance: BigNumber
-  bakingActive: boolean
   selfBond: BigNumber
   bakerCapacity: BigNumber
   bakerUsage: BigNumber
@@ -313,6 +312,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       addresses.map((address) => {
         const getRequestBody = () => {
           const body = {
+            fields: ["status", "amount", "fee", "source", "destination", "operation_group_hash", "timestamp", "block_level"],
             predicates: [
               {
                 field: 'source',
@@ -369,7 +369,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
           }
           return body
         }
-
+        // AirGapTransactionStatus.APPLIED : AirGapTransactionStatus.FAILED
         return new Promise<any>(async (resolve, reject) => {
           const result = await axios
             .post(
@@ -382,33 +382,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
             .catch(() => {
               return { data: [] }
             })
-
-          interface ConseilOperation {
-            amount: string
-            source: string
-            destination: string
-            operation_group_hash: string
-          }
-
-          const transactions: any[] = (result.data as ConseilOperation[]).reduce((pv: ConseilOperation[], cv) => {
-            // Filter out all duplicates
-            if (
-              !pv.find(
-                (el: ConseilOperation) =>
-                  el.amount === cv.amount &&
-                  el.source === cv.source &&
-                  el.destination === cv.destination &&
-                  el.operation_group_hash === cv.operation_group_hash
-              )
-            ) {
-              pv.push(cv)
-            }
-
-            return pv
-          }, [])
-          transactions.sort((a, b) => b.timestamp - a.timestamp)
-          transactions.length = Math.min(limit, transactions.length) // Because we concat from and to, we have to omit some results
-          resolve(transactions)
+            
+            resolve(result.data)
         })
       })
     )
@@ -426,7 +401,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
           to: [transaction.destination],
           hash: transaction.operation_group_hash,
           timestamp: transaction.timestamp / 1000,
-          blockHeight: transaction.block_level
+          blockHeight: transaction.block_level,
+          status: transaction.status === 'applied' ? AirGapTransactionStatus.APPLIED : AirGapTransactionStatus.FAILED
         }
       })
     const lastEntryBlockLevel = allTransactions.length > 0 ? allTransactions[allTransactions.length - 1].blockHeight : 0
@@ -572,6 +548,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     const address: string = await this.getAddressFromPublicKey(publicKey)
 
     return this.getBalanceOfAddresses([address])
+  }
+
+  public async getBalanceOfPublicKeyForSubProtocols(publicKey: string, subProtocols: ICoinSubProtocol[]): Promise<string[]> {
+    return await Promise.all(subProtocols.map(subProtocol => subProtocol.getBalanceOfPublicKey(publicKey).catch(() => "0")))
   }
 
   public async getAvailableBalanceOfAddresses(addresses: string[]): Promise<string> {
@@ -789,7 +769,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
         // We have to supply an additional 0.257 XTZ fee for storage_limit costs, which gets automatically deducted from the sender so we just have to make sure enough balance is around
         if (balance.isLessThan(this.activationBurn.plus(wrappedFee))) {
           // If we don't have enough funds to pay the activation + fee, we throw an error
-          throw new Error('Not enough funds to pay activation burn!')
+          throw new Error('Insufficient balance to pay activation burn!')
         } else if (balance.isLessThan(wrappedValues[i].plus(wrappedFee).plus(this.activationBurn))) {
           // Check whether the sender has enough to cover the amount to send + fee + activation
           // If not, we deduct it from amount sent to make room for the activation burn
@@ -849,10 +829,13 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   }
 
   public async getDelegateeDetails(address: string): Promise<DelegateeDetails> {
-    const bakerInfo = await this.bakerInfo(address)
+    const response: AxiosResponse = await axios.get(
+      `${this.options.network.rpcUrl}/chains/main/blocks/head/context/delegates/${address}/deactivated`
+    )
+    const isBakingActive: boolean = !response.data
 
     return {
-      status: bakerInfo.bakingActive ? 'Active' : 'Inactive',
+      status: isBakingActive ? 'Active' : 'Inactive',
       address
     }
   }
@@ -1313,14 +1296,12 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     const results: AxiosResponse[] = await Promise.all([
       axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/delegates/${tzAddress}/balance`),
       axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/delegates/${tzAddress}/delegated_balance`),
-      axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/delegates/${tzAddress}/staking_balance`),
-      axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/delegates/${tzAddress}/deactivated`)
+      axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/delegates/${tzAddress}/staking_balance`)
     ])
 
     const tzBalance: BigNumber = new BigNumber(results[0].data)
     const delegatedBalance: BigNumber = new BigNumber(results[1].data)
     const stakingBalance: BigNumber = new BigNumber(results[2].data)
-    const isBakingActive: boolean = !results[3].data // we need to negate as the query is "deactivated"
 
     // calculate the self bond of the baker
     const selfBond: BigNumber = stakingBalance.minus(delegatedBalance)
@@ -1332,7 +1313,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       balance: tzBalance,
       delegatedBalance,
       stakingBalance,
-      bakingActive: isBakingActive,
       selfBond,
       bakerCapacity: stakingBalance.div(stakingCapacity),
       bakerUsage: stakingCapacity

@@ -1,3 +1,4 @@
+import { SerializerError, SerializerErrorType } from '../errors'
 import { CosmosTransaction } from '../protocols/cosmos/CosmosTransaction'
 import { MainProtocolSymbols, ProtocolSymbols, SubProtocolSymbols } from '../utils/ProtocolSymbols'
 
@@ -6,8 +7,8 @@ import { IACMessageType } from './interfaces'
 import { IACMessageDefinitionObject } from './message'
 import { FullPayload } from './payloads/full-payload'
 import { Payload } from './payloads/payload'
-import { UnsignedTransaction } from './schemas/definitions/transaction-sign-request'
-import { SerializableUnsignedCosmosTransaction } from './schemas/definitions/transaction-sign-request-cosmos'
+import { UnsignedTransaction } from './schemas/definitions/unsigned-transaction'
+import { SerializableUnsignedCosmosTransaction } from './schemas/definitions/unsigned-transaction-cosmos'
 import { SchemaInfo, SchemaRoot } from './schemas/schema'
 import { AeternityTransactionValidator } from './unsigned-transactions/aeternity-transactions.validator'
 import { BitcoinTransactionValidator } from './unsigned-transactions/bitcoin-transactions.validator'
@@ -51,58 +52,58 @@ export enum IACPayloadType {
 export class Serializer {
   private static readonly schemas: Map<string, SchemaInfo> = new Map()
 
-  public static addSchema(schemaName: string, schema: SchemaInfo, protocol?: ProtocolSymbols): void {
-    const protocolSpecificSchemaName: string = Serializer.getSchemName(schemaName, protocol)
+  public static addSchema(schemaId: number, schema: SchemaInfo, protocol?: ProtocolSymbols): void {
+    const protocolSpecificSchemaName: string = Serializer.getSchemName(schemaId, protocol)
 
     if (this.schemas.has(protocolSpecificSchemaName)) {
-      throw new Error(`Schema ${protocolSpecificSchemaName} already exists`)
+      throw new SerializerError(SerializerErrorType.SCHEMA_ALREADY_EXISTS, `Schema ${protocolSpecificSchemaName} already exists`)
     }
     this.schemas.set(protocolSpecificSchemaName, schema)
   }
 
-  public static getSchema(schemaName: string, protocol?: string): SchemaInfo {
-    const protocolSpecificSchemaName: string = Serializer.getSchemName(schemaName, protocol)
+  public static getSchema(schemaId: number, protocol?: ProtocolSymbols): SchemaInfo {
+    const protocolSpecificSchemaName: string = Serializer.getSchemName(schemaId, protocol)
 
     // Try to get the protocol specific scheme, if it doesn't exist fall back to the generic one
     const schema: SchemaInfo | undefined =
-      this.schemas.get(protocolSpecificSchemaName) ?? this.schemas.get(Serializer.getSchemName(schemaName))
+      this.schemas.get(protocolSpecificSchemaName) ?? this.schemas.get(Serializer.getSchemName(schemaId))
 
     if (!schema) {
-      throw new Error(`Schema ${protocolSpecificSchemaName} does not exist`)
+      throw new SerializerError(SerializerErrorType.SCHEMA_DOES_NOT_EXISTS, `Schema ${protocolSpecificSchemaName} does not exist`)
     }
 
     return schema
   }
 
-  private static getSchemName(schemaName: string, protocol?: string): string {
-    return protocol ? `${schemaName}-${protocol}` : schemaName
+  private static getSchemName(schemaId: number, protocol?: ProtocolSymbols): string {
+    return protocol ? `${schemaId}-${protocol}` : schemaId.toString()
   }
 
   public async serialize(messages: IACMessageDefinitionObject[], chunkSize: number = 0): Promise<string[]> {
     if (
       messages.every((message: IACMessageDefinitionObject) => {
-        return Serializer.getSchema(message.type.toString(), message.protocol)
+        return Serializer.getSchema(message.type, message.protocol)
       })
     ) {
-      const iacps: IACProtocol[] = IACProtocol.create(JSON.parse(JSON.stringify(messages)), chunkSize)
+      const iacps: IACProtocol[] = IACProtocol.fromDecoded(JSON.parse(JSON.stringify(messages)), chunkSize)
 
       return iacps.map((iac: IACProtocol) => iac.encoded())
     } else {
-      throw Error('Unknown schema')
+      throw new SerializerError(SerializerErrorType.SCHEMA_DOES_NOT_EXISTS, `Unknown schema`)
     }
   }
 
   public async deserialize(data: string[]): Promise<IACMessageDefinitionObject[]> {
-    const result: IACProtocol[] = IACProtocol.createFromEncoded(data)
-    const deserializedIACMessageDefinitionObjects = result
+    const result: IACProtocol[] = IACProtocol.fromEncoded(data)
+    const deserializedIACMessageDefinitionObjects: IACMessageDefinitionObject[] = result
       .map((el: IACProtocol) => el.payload)
       .map((el: Payload) => (el as FullPayload).asJson())
       .reduce((pv: IACMessageDefinitionObject[], cv: IACMessageDefinitionObject[]) => pv.concat(...cv), [] as IACMessageDefinitionObject[])
 
     return Promise.all(
-      deserializedIACMessageDefinitionObjects.map((object) => {
-        const unsignedTx = object.payload as UnsignedTransaction
-        const validator = this.serializationValidatorByProtocolIdentifier(object.protocol)
+      deserializedIACMessageDefinitionObjects.map((object: IACMessageDefinitionObject) => {
+        const unsignedTx: UnsignedTransaction = object.payload as UnsignedTransaction
+        const validator: TransactionValidator = this.serializationValidatorByProtocolIdentifier(object.protocol)
 
         return validator.validateUnsignedTransaction(unsignedTx)
       })
@@ -128,58 +129,47 @@ export class Serializer {
     const exactMatch = Object.keys(validators).find((protocol) => protocolIdentifier === protocol)
     const startsWith = Object.keys(validators).find((protocol) => protocolIdentifier.startsWith(protocol))
     const validator = exactMatch ? exactMatch : startsWith
-    if (!validator) {
-      throw Error(`Validator not implemented for ${protocolIdentifier}, ${exactMatch}, ${startsWith}, ${validator}`)
-    }
+    // TODO: Only use validator if it's a transaction
+    // if (!validator) {
+    //   throw Error(`Validator not implemented for ${protocolIdentifier}, ${exactMatch}, ${startsWith}, ${validator}`)
+    // }
 
-    return new validators[validator]()
+    return new validators[validator ?? 'eth']()
   }
 }
 
-// Serializer.addSchema(IACMessageType.MetadataRequest.toString(), '')
-// Serializer.addSchema(IACMessageType.MetadataResponse.toString(), '')
+// Serializer.addSchema(IACMessageType.MetadataRequest, '')
+// Serializer.addSchema(IACMessageType.MetadataResponse, '')
 
-// Serializer.addSchema(IACMessageType.AccountShareRequest.toString(), accountShareRequest)
-Serializer.addSchema(IACMessageType.AccountShareResponse.toString(), { schema: accountShareResponse })
+// Serializer.addSchema(IACMessageType.AccountShareRequest, accountShareRequest)
+Serializer.addSchema(IACMessageType.AccountShareResponse, { schema: accountShareResponse })
 
-Serializer.addSchema(IACMessageType.MessageSignRequest.toString(), { schema: messageSignRequest })
-Serializer.addSchema(IACMessageType.MessageSignResponse.toString(), { schema: messageSignResponse })
+Serializer.addSchema(IACMessageType.MessageSignRequest, { schema: messageSignRequest })
+Serializer.addSchema(IACMessageType.MessageSignResponse, { schema: messageSignResponse })
 
 // TODO: Make sure that we have a schema for every protocol we support
-Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema: unsignedTransactionAeternity }, MainProtocolSymbols.AE)
-Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema: unsignedTransactionBitcoin }, MainProtocolSymbols.BTC)
-Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema: unsignedTransactionBitcoin }, MainProtocolSymbols.GRS)
+Serializer.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionAeternity }, MainProtocolSymbols.AE)
+Serializer.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionBitcoin }, MainProtocolSymbols.BTC)
+Serializer.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionBitcoin }, MainProtocolSymbols.GRS)
 Serializer.addSchema(
-  IACMessageType.TransactionSignRequest.toString(),
+  IACMessageType.TransactionSignRequest,
   { schema: unsignedTransactionCosmos, transformer: unsignedTransactionTransformerCosmos },
   MainProtocolSymbols.COSMOS
 )
-Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema: unsignedTransactionEthereum }, MainProtocolSymbols.ETH)
-Serializer.addSchema(
-  IACMessageType.TransactionSignRequest.toString(),
-  { schema: unsignedTransactionEthereum },
-  SubProtocolSymbols.ETH_ERC20
-)
-Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema: unsignedTransactionTezos }, MainProtocolSymbols.XTZ)
-Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema: unsignedTransactionTezos }, SubProtocolSymbols.XTZ_BTC)
-Serializer.addSchema(
-  IACMessageType.TransactionSignRequest.toString(),
-  { schema: unsignedTransactionSubstrate },
-  MainProtocolSymbols.POLKADOT
-)
-Serializer.addSchema(IACMessageType.TransactionSignRequest.toString(), { schema: unsignedTransactionSubstrate }, MainProtocolSymbols.KUSAMA)
+Serializer.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionEthereum }, MainProtocolSymbols.ETH)
+Serializer.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionEthereum }, SubProtocolSymbols.ETH_ERC20)
+Serializer.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionTezos }, MainProtocolSymbols.XTZ)
+Serializer.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionTezos }, SubProtocolSymbols.XTZ_BTC)
+Serializer.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionSubstrate }, MainProtocolSymbols.POLKADOT)
+Serializer.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionSubstrate }, MainProtocolSymbols.KUSAMA)
 
-Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionAeternity }, MainProtocolSymbols.AE)
-Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionBitcoin }, MainProtocolSymbols.BTC)
-Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionBitcoin }, MainProtocolSymbols.GRS)
-Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionCosmos }, MainProtocolSymbols.COSMOS)
-Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionEthereum }, MainProtocolSymbols.ETH)
-Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionEthereum }, SubProtocolSymbols.ETH_ERC20)
-Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionTezos }, MainProtocolSymbols.XTZ)
-Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionTezos }, SubProtocolSymbols.XTZ_BTC)
-Serializer.addSchema(
-  IACMessageType.TransactionSignResponse.toString(),
-  { schema: signedTransactionSubstrate },
-  MainProtocolSymbols.POLKADOT
-)
-Serializer.addSchema(IACMessageType.TransactionSignResponse.toString(), { schema: signedTransactionSubstrate }, MainProtocolSymbols.KUSAMA)
+Serializer.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionAeternity }, MainProtocolSymbols.AE)
+Serializer.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionBitcoin }, MainProtocolSymbols.BTC)
+Serializer.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionBitcoin }, MainProtocolSymbols.GRS)
+Serializer.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionCosmos }, MainProtocolSymbols.COSMOS)
+Serializer.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionEthereum }, MainProtocolSymbols.ETH)
+Serializer.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionEthereum }, SubProtocolSymbols.ETH_ERC20)
+Serializer.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionTezos }, MainProtocolSymbols.XTZ)
+Serializer.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionTezos }, SubProtocolSymbols.XTZ_BTC)
+Serializer.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionSubstrate }, MainProtocolSymbols.POLKADOT)
+Serializer.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionSubstrate }, MainProtocolSymbols.KUSAMA)

@@ -6,14 +6,15 @@ import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
 import { AirGapTransactionStatus, IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
-import { UnsignedTransaction } from '../../serializer/schemas/definitions/transaction-sign-request'
-import { SignedBitcoinTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-bitcoin'
+import { SignedBitcoinTransaction } from '../../serializer/schemas/definitions/signed-transaction-bitcoin'
+import { UnsignedTransaction } from '../../serializer/schemas/definitions/unsigned-transaction'
 import { RawBitcoinTransaction } from '../../serializer/types'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
 import { MainProtocolSymbols, ProtocolSymbols } from '../../utils/ProtocolSymbols'
 
 import { BitcoinProtocolOptions } from './BitcoinProtocolOptions'
 import { BitcoinCryptoClient } from './BitcoinCryptoClient'
+import { ICoinSubProtocol } from '../ICoinSubProtocol'
 
 interface UTXOResponse {
   txid: string
@@ -372,6 +373,10 @@ export class BitcoinProtocol implements ICoinProtocol {
     })
 
     return data.balance
+  }
+
+  public async getBalanceOfPublicKeyForSubProtocols(publicKey: string, subProtocols: ICoinSubProtocol[]): Promise<string[]> {
+    throw Promise.reject('get balance of sub protocols not supported')
   }
 
   public async getAvailableBalanceOfAddresses(addresses: string[]): Promise<string> {

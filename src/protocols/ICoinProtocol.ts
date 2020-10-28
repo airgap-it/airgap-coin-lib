@@ -1,11 +1,11 @@
-import { IProtocolTransactionCursor } from './../interfaces/IAirGapTransaction'
 import { IAirGapSignedTransaction } from '../interfaces/IAirGapSignedTransaction'
 import { AirGapTransactionStatus, IAirGapTransaction, IAirGapTransactionResult } from '../interfaces/IAirGapTransaction'
-import { UnsignedTransaction } from '../serializer/schemas/definitions/transaction-sign-request'
-import { SignedTransaction } from '../serializer/schemas/definitions/transaction-sign-response'
+import { SignedTransaction } from '../serializer/schemas/definitions/signed-transaction'
+import { UnsignedTransaction } from '../serializer/schemas/definitions/unsigned-transaction'
 import { ProtocolOptions } from '../utils/ProtocolOptions'
 import { ProtocolSymbols } from '../utils/ProtocolSymbols'
 
+import { IProtocolTransactionCursor } from './../interfaces/IAirGapTransaction'
 import { ICoinSubProtocol } from './ICoinSubProtocol'
 
 export interface FeeDefaults {
@@ -89,6 +89,7 @@ export interface ICoinProtocol {
   getBalanceOfExtendedPublicKey(extendedPublicKey: string, offset: number): Promise<string>
   getAvailableBalanceOfAddresses(addresses: string[]): Promise<string>
   getTransactionStatuses(transactionHash: string[]): Promise<AirGapTransactionStatus[]>
+  getBalanceOfPublicKeyForSubProtocols(publicKey: string, subProtocols: ICoinSubProtocol[]): Promise<string[]>
 
   estimateMaxTransactionValueFromExtendedPublicKey(extendedPublicKey: string, recipients: string[], fee?: string): Promise<string>
   estimateMaxTransactionValueFromPublicKey(publicKey: string, recipients: string[], fee?: string): Promise<string>

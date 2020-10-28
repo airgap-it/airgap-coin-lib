@@ -40,6 +40,43 @@ abstract class TestProtocolSpec {
 
   public transactionStatusTests: { hashes: string[]; expectedResults: AirGapTransactionStatus[] }[] = []
 
+  public transactionResult: {
+    transactions: {
+      to: string[]
+      from: string[]
+      amount: string
+      fee: string
+      protocolIdentifier: string
+      isInbound: boolean
+      network: any
+      blockHeight?: string | number
+      hash: string
+      timestamp?: number
+    }[]
+    cursor: any
+  } = {
+    transactions: [{ to: [''], from: [''], amount: '', fee: '', protocolIdentifier: '', isInbound: true, network: {}, hash: '' }],
+    cursor: ''
+  }
+  public nextTransactionResult: {
+    transactions: {
+      to: string[]
+      from: string[]
+      amount: string
+      fee: string
+      protocolIdentifier: string
+      isInbound: boolean
+      network: any
+      blockHeight?: string | number
+      hash: string
+      timestamp?: number
+    }[]
+    cursor: any
+  } = {
+    transactions: [{ to: [''], from: [''], amount: '', fee: '', protocolIdentifier: '', isInbound: true, network: {}, hash: '' }],
+    cursor: ''
+  }
+
   public seed(): string {
     return BIP39.mnemonicToSeedHex(mnemonic)
   }
@@ -51,12 +88,13 @@ abstract class TestProtocolSpec {
   public unsignedTransaction(tx: any): IACMessageDefinitionObject[] {
     return [
       {
+        id: 'random__id',
         protocol: this.lib.identifier,
         type: IACMessageType.TransactionSignRequest,
         payload: {
           publicKey: this.wallet.publicKey,
-          callback: 'airgap-wallet://?d=',
-          transaction: tx.unsignedTx
+          transaction: tx.unsignedTx,
+          callbackURL: 'airgap-wallet://?d='
         }
       }
     ]
@@ -65,6 +103,7 @@ abstract class TestProtocolSpec {
   public signedTransaction(tx: any): IACMessageDefinitionObject[] {
     return [
       {
+        id: 'random__id',
         protocol: this.lib.identifier,
         type: IACMessageType.TransactionSignResponse,
         payload: {
@@ -78,9 +117,11 @@ abstract class TestProtocolSpec {
   public syncWallet(): IACMessageDefinitionObject[] {
     return [
       {
+        id: 'random__id',
         protocol: this.lib.identifier,
         type: IACMessageType.AccountShareResponse,
         payload: {
+          // TODO: Add after breaking change: group: 'group1',
           publicKey: this.wallet.publicKey,
           isExtendedPublicKey: this.lib.supportsHD,
           derivationPath: this.lib.standardDerivationPath

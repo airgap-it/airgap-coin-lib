@@ -42,6 +42,90 @@ export class GenericERC20TokenTestProtocolSpec extends TestProtocolSpec {
     }
   ]
 
+  public transactionResult = {
+    transactions: [
+      {
+        hash: '0x8cd4c5bc3ab89cebc8c6fa4e96353c2808ccab2c489fae53d4c7beb006be469d',
+        from: ['0xfd9eecb127677b1f931d6d49dfe6626ffe60370f'],
+        to: ['0xfd9eecb127677b1f931d6d49dfe6626ffe60370f'],
+        isInbound: true,
+        amount: '10000000000000',
+        fee: '1470000000000000',
+        blockHeight: '10755916',
+        protocolIdentifier: 'eth',
+        network: {
+          name: 'Mainnet',
+          type: 'MAINNET',
+          rpcUrl: 'https://eth-rpc-proxy.airgap.prod.gke.papers.tech',
+          blockExplorer: { blockExplorer: 'https://etherscan.io' },
+          extras: { chainID: 1, blockExplorerApi: 'https://api.etherscan.io' }
+        },
+        timestamp: 1598707831
+      },
+      {
+        hash: '0x5440a643326e86e823f6394a43a4227283af7384ef8a87f65d50a75364444a10',
+        from: ['0xfd9eecb127677b1f931d6d49dfe6626ffe60370f'],
+        to: ['0xb4272071ecadd69d933adcd19ca99fe80664fc08'],
+        isInbound: false,
+        amount: '0',
+        fee: '2837693250000000',
+        blockHeight: '10492200',
+        protocolIdentifier: 'eth',
+        network: {
+          name: 'Mainnet',
+          type: 'MAINNET',
+          rpcUrl: 'https://eth-rpc-proxy.airgap.prod.gke.papers.tech',
+          blockExplorer: { blockExplorer: 'https://etherscan.io' },
+          extras: { chainID: 1, blockExplorerApi: 'https://api.etherscan.io' }
+        },
+        timestamp: 1595191919
+      }
+    ],
+    cursor: { page: 2 }
+  }
+
+  public nextTransactionResult = {
+    transactions: [
+      {
+        hash: '0x9140eed9857ef5d044e6f0fca3b78ab7d3521e73a0aa20a08ccffddfd769e230',
+        from: ['0xfd9eecb127677b1f931d6d49dfe6626ffe60370f'],
+        to: ['0x428b038a03a266da61961a617038188a79f945da'],
+        isInbound: false,
+        amount: '5000000000000000',
+        fee: '504000000000000',
+        blockHeight: '10388875',
+        protocolIdentifier: 'eth',
+        network: {
+          name: 'Mainnet',
+          type: 'MAINNET',
+          rpcUrl: 'https://eth-rpc-proxy.airgap.prod.gke.papers.tech',
+          blockExplorer: { blockExplorer: 'https://etherscan.io' },
+          extras: { chainID: 1, blockExplorerApi: 'https://api.etherscan.io' }
+        },
+        timestamp: 1593811434
+      },
+      {
+        hash: '0xa870b02578647ccd36bcfa705b77cd886569fb0e455635f75fbda8e7cc3f40ce',
+        from: ['0xfd9eecb127677b1f931d6d49dfe6626ffe60370f'],
+        to: ['0x8860a60f7538a2bc06c433823b64a8bf5e987fa0'],
+        isInbound: false,
+        amount: '10000000000000000',
+        fee: '861000000000000',
+        blockHeight: '10381041',
+        protocolIdentifier: 'eth',
+        network: {
+          name: 'Mainnet',
+          type: 'MAINNET',
+          rpcUrl: 'https://eth-rpc-proxy.airgap.prod.gke.papers.tech',
+          blockExplorer: { blockExplorer: 'https://etherscan.io' },
+          extras: { chainID: 1, blockExplorerApi: 'https://api.etherscan.io' }
+        },
+        timestamp: 1593706914
+      }
+    ],
+    cursor: { page: 3 }
+  }
+
   constructor(validAddresses: string[] = ['0xb752b6dfe409ca926c78b1595bcf7442160c07c7'], lib: GenericERC20 = ERC20Token) {
     super()
     this.lib = lib

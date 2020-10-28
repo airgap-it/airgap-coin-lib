@@ -28,4 +28,6 @@ export abstract class EthereumNodeClient {
     gas?: string
   ): Promise<BigNumber>
   public abstract async getGasPrice(): Promise<BigNumber>
+
+  public abstract async callBalanceOfOnContracts(contractAddresses: string[], address: string): Promise<{[contractAddress: string]: BigNumber}>
 }

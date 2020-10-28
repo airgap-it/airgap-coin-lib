@@ -25,6 +25,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     const tz1address: string = await super.getAddressFromPublicKey(publicKey)
     const getRequestBody = (field: string, set: string) => {
       return {
+        fields: ["originated_contracts"],
         predicates: [
           {
             field,

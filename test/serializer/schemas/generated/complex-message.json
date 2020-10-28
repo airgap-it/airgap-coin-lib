@@ -1,0 +1,356 @@
+{
+  "$ref": "#/definitions/ComplexMessage",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ComplexMessage": {
+      "additionalProperties": false,
+      "properties": {
+        "arr1": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "arr2": {
+          "items": {
+            "type": "number"
+          },
+          "type": "array"
+        },
+        "arr3": {
+          "items": {
+            "type": "boolean"
+          },
+          "type": "array"
+        },
+        "arr4": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "bool": {
+                "type": "boolean"
+              },
+              "name": {
+                "type": "string"
+              },
+              "test": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "name",
+              "test",
+              "bool"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "arr5": {
+          "items": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "bool": {
+                  "type": "boolean"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "test": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "name",
+                "test",
+                "bool"
+              ],
+              "type": "object"
+            }
+          ],
+          "maxItems": 6,
+          "minItems": 6,
+          "type": "array"
+        },
+        "bool": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "obj1": {
+          "additionalProperties": false,
+          "properties": {
+            "bool": {
+              "type": "boolean"
+            },
+            "name": {
+              "type": "string"
+            },
+            "test": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "name",
+            "test",
+            "bool"
+          ],
+          "type": "object"
+        },
+        "obj2": {
+          "additionalProperties": false,
+          "properties": {
+            "arr1": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "arr2": {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            "arr3": {
+              "items": {
+                "type": "boolean"
+              },
+              "type": "array"
+            },
+            "arr4": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "bool": {
+                    "type": "boolean"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "test": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "name",
+                  "test",
+                  "bool"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "arr5": {
+              "items": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "bool": {
+                      "type": "boolean"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "test": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "test",
+                    "bool"
+                  ],
+                  "type": "object"
+                }
+              ],
+              "maxItems": 6,
+              "minItems": 6,
+              "type": "array"
+            },
+            "bool": {
+              "type": "boolean"
+            },
+            "name": {
+              "type": "string"
+            },
+            "obj1": {
+              "additionalProperties": false,
+              "properties": {
+                "bool": {
+                  "type": "boolean"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "test": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "name",
+                "test",
+                "bool"
+              ],
+              "type": "object"
+            },
+            "test": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "name",
+            "test",
+            "bool",
+            "obj1",
+            "arr1",
+            "arr2",
+            "arr3",
+            "arr4",
+            "arr5"
+          ],
+          "type": "object"
+        },
+        "obj3": {
+          "additionalProperties": false,
+          "properties": {
+            "arr1": {
+              "items": {
+                "items": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "type": "array"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "arr1"
+          ],
+          "type": "object"
+        },
+        "obj4": {
+          "additionalProperties": false,
+          "properties": {
+            "arr1": {
+              "items": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "arr1": {
+                      "items": [
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "name"
+                          ],
+                          "type": "object"
+                        }
+                      ],
+                      "maxItems": 1,
+                      "minItems": 1,
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "arr1"
+                  ],
+                  "type": "object"
+                },
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "arr1": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "name"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "arr1"
+                  ],
+                  "type": "object"
+                }
+              ],
+              "maxItems": 2,
+              "minItems": 2,
+              "type": "array"
+            }
+          },
+          "required": [
+            "arr1"
+          ],
+          "type": "object"
+        },
+        "test": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "name",
+        "test",
+        "bool",
+        "obj1",
+        "arr1",
+        "arr2",
+        "arr3",
+        "arr4",
+        "arr5",
+        "obj2",
+        "obj3",
+        "obj4"
+      ],
+      "type": "object"
+    }
+  }
+}

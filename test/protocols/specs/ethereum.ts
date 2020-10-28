@@ -1,6 +1,6 @@
 import { AirGapTransactionStatus } from '../../../src/interfaces/IAirGapTransaction'
 import { EthereumProtocol } from '../../../src/protocols/ethereum/EthereumProtocol'
-import { SignedEthereumTransaction } from '../../../src/serializer/schemas/definitions/transaction-sign-response-ethereum'
+import { SignedEthereumTransaction } from '../../../src/serializer/schemas/definitions/signed-transaction-ethereum'
 import { RawEthereumTransaction } from '../../../src/serializer/types'
 import { TestProtocolSpec } from '../implementations'
 import { EthereumProtocolStub } from '../stubs/ethereum.stub'
@@ -202,4 +202,88 @@ export class EthereumTestProtocolSpec extends TestProtocolSpec {
         '0xa1f6730159726cd8def8058a5651e680328d898e26b81c2378079185b30ccb2e7e1e369cd82a9d55f2c8abdb0cbb1bfe07f0585327c475a1c35c83c6d32a8d2901'
     }
   ]
+
+  public transactionResult = {
+    transactions: [
+      {
+        hash: '0x4fb2f67e23e8f69d4733555c0606bfb2cadf5ba3d0672340a170663fc46c9a91',
+        from: ['0x5e4e92788a7ae425100d869657ae91891af019bc'],
+        to: ['0xe6fa0df04f68f5ae04688406f73735b3727473c6'],
+        isInbound: false,
+        amount: '100536909000000000',
+        fee: '2987932000000000',
+        blockHeight: '10599922',
+        protocolIdentifier: 'eth',
+        network: {
+          name: 'Mainnet',
+          type: 'MAINNET',
+          rpcUrl: 'https://eth-rpc-proxy.airgap.prod.gke.papers.tech',
+          blockExplorer: { blockExplorer: 'https://etherscan.io' },
+          extras: { chainID: 1, blockExplorerApi: 'https://api.etherscan.io' }
+        },
+        timestamp: 1596633063
+      },
+      {
+        hash: '0xb7818798bc510e9416288a72ddf32ef84586d7a1bb28605fbdae0a601c333864',
+        from: ['0x3d31577baa04ad402b5ee6b12bd116e67eeda435'],
+        to: ['0x5e4e92788a7ae425100d869657ae91891af019bc'],
+        isInbound: true,
+        amount: '103000000000000000',
+        fee: '1386000000000000',
+        blockHeight: '10599853',
+        protocolIdentifier: 'eth',
+        network: {
+          name: 'Mainnet',
+          type: 'MAINNET',
+          rpcUrl: 'https://eth-rpc-proxy.airgap.prod.gke.papers.tech',
+          blockExplorer: { blockExplorer: 'https://etherscan.io' },
+          extras: { chainID: 1, blockExplorerApi: 'https://api.etherscan.io' }
+        },
+        timestamp: 1596632134
+      }
+    ],
+    cursor: { page: 2 }
+  }
+
+  public nextTransactionResult = {
+    transactions: [
+      {
+        hash: '0x70f36faa9b6a95af9badeaf72770e098fcbba9ca82f2c126d0d6a6af0f121654',
+        from: ['0x5e4e92788a7ae425100d869657ae91891af019bc'],
+        to: ['0xe6fa0df04f68f5ae04688406f73735b3727473c6'],
+        isInbound: false,
+        amount: '354435688000000000',
+        fee: '2274396000000000',
+        blockHeight: '10483321',
+        protocolIdentifier: 'eth',
+        network: {
+          name: 'Mainnet',
+          type: 'MAINNET',
+          rpcUrl: 'https://eth-rpc-proxy.airgap.prod.gke.papers.tech',
+          blockExplorer: { blockExplorer: 'https://etherscan.io' },
+          extras: { chainID: 1, blockExplorerApi: 'https://api.etherscan.io' }
+        },
+        timestamp: 1595073399
+      },
+      {
+        hash: '0xf4f5f089d1f7a521a5b3bf7ae7848a444ca7cf9238e37bade83aa2879c08c9e0',
+        from: ['0x5e4e92788a7ae425100d869657ae91891af019bc'],
+        to: ['0x5acc84a3e955bdd76467d3348077d003f00ffb97'],
+        isInbound: false,
+        amount: '100000000000000000',
+        fee: '5831476000000000',
+        blockHeight: '10467688',
+        protocolIdentifier: 'eth',
+        network: {
+          name: 'Mainnet',
+          type: 'MAINNET',
+          rpcUrl: 'https://eth-rpc-proxy.airgap.prod.gke.papers.tech',
+          blockExplorer: { blockExplorer: 'https://etherscan.io' },
+          extras: { chainID: 1, blockExplorerApi: 'https://api.etherscan.io' }
+        },
+        timestamp: 1594864275
+      }
+    ],
+    cursor: { page: 3 }
+  }
 }

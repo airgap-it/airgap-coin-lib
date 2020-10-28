@@ -8,7 +8,7 @@ import RIPEMD160 = require('../../dependencies/src/ripemd160-2.0.2/index')
 import SECP256K1 = require('../../dependencies/src/secp256k1-3.7.1/elliptic')
 import * as sha from '../../dependencies/src/sha.js-2.4.11/index'
 import { AirGapTransactionStatus, IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
-import { SignedCosmosTransaction } from '../../serializer/schemas/definitions/transaction-sign-response-cosmos'
+import { SignedCosmosTransaction } from '../../serializer/schemas/definitions/signed-transaction-cosmos'
 import { UnsignedCosmosTransaction } from '../../serializer/types'
 import { assertFields } from '../../utils/assert'
 import { DelegateeDetails, DelegationDetails, DelegatorAction, DelegatorDetails, ICoinDelegateProtocol } from '../ICoinDelegateProtocol'
@@ -177,6 +177,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
     }
 
     const transactions = await Promise.all(promises).then((transactions) => transactions.reduce((current, next) => current.concat(next)))
+    
     return { transactions: transactions, cursor: { offset: cursor ? (cursor.offset + limit) : limit } }
   }
 
@@ -269,6 +270,10 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
 
   public async getAvailableBalanceOfAddresses(addresses: string[]): Promise<string> {
     return this.getBalance(addresses, false)
+  }
+
+  public async getBalanceOfPublicKeyForSubProtocols(publicKey: string, subProtocols: ICoinSubProtocol[]): Promise<string[]> {
+    throw Promise.reject('get balance of sub protocols not supported')
   }
 
   private async getBalance(addresses: string[], totalBalance: boolean = true): Promise<string> {

@@ -1,6 +1,5 @@
 import BigNumber from '../dependencies/src/bignumber.js-9.0.0/bignumber'
 import {
-  AirGapTransactionStatus,
   IAirGapTransaction,
   IProtocolTransactionCursor,
   IAirGapTransactionResult
@@ -38,14 +37,12 @@ export interface AirGapWalletPriceService {
   ): Promise<MarketDataSample[]>
 }
 
-function notEmpty<TValue>(value: TValue | null | undefined): value is TValue {
-  return value !== null && value !== undefined
-}
-
 export class AirGapMarketWallet extends AirGapWallet {
   public currentBalance: BigNumber | undefined
   public _currentMarketPrice: BigNumber | undefined
   public _marketPriceOverTime: MarketDataSample[] | undefined
+
+  private synchronizePromise?: Promise<void>
 
   get currentMarketPrice(): BigNumber | undefined {
     return this._currentMarketPrice
@@ -85,18 +82,23 @@ export class AirGapMarketWallet extends AirGapWallet {
     super(protocol, publicKey, isExtendedPublicKey, derivationPath, addressIndex)
   }
 
-  public synchronize(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      Promise.all([this.balanceOf(), this.fetchCurrentMarketPrice()])
-        .then((results) => {
-          this.currentBalance = results[0]
-          this.currentMarketPrice = results[1]
-          resolve()
-        })
-        .catch((error) => {
-          reject(error)
-        })
-    })
+  public async synchronize(): Promise<void> {
+    if (this.synchronizePromise === undefined) {
+      this.synchronizePromise = new Promise((resolve, reject) => {
+        Promise.all([this.balanceOf(), this.fetchCurrentMarketPrice()])
+          .then((results) => {
+            this.currentBalance = results[0]
+            this.currentMarketPrice = results[1]
+            this.synchronizePromise = undefined
+            resolve()
+          })
+          .catch((error) => {
+            this.synchronizePromise = undefined
+            reject(error)
+          })
+      })
+    }
+    return this.synchronizePromise
   }
 
   public async setProtocol(protocol: ICoinProtocol): Promise<void> {
@@ -173,30 +175,8 @@ export class AirGapMarketWallet extends AirGapWallet {
     } else {
       transactionResult = await this.protocol.getTransactionsFromPublicKey(this.publicKey, limit, cursor)
     }
-    transactionResult.transactions = await this.txsIncludingStatus(transactionResult.transactions)
+
     return transactionResult
-  }
-
-  private async txsIncludingStatus(transactions: IAirGapTransaction[]): Promise<IAirGapTransaction[]> {
-    if (
-      this.protocol.identifier.toLowerCase() === MainProtocolSymbols.ETH ||
-      this.protocol.identifier.toLowerCase() === MainProtocolSymbols.XTZ
-    ) {
-      const transactionsWithHash: IAirGapTransaction[] = transactions.filter((tx: IAirGapTransaction) => tx.hash)
-      const hashes: string[] = transactionsWithHash.map((tx: IAirGapTransaction) => tx.hash).filter(notEmpty) // Extra filter here for typing reasons, should not alter the array because we filter on the line before.
-
-      if (transactionsWithHash.length !== hashes.length) {
-        throw new Error('Transaction array lengths do not match!')
-      }
-
-      const statuses: AirGapTransactionStatus[] = await this.protocol.getTransactionStatuses(hashes)
-
-      transactionsWithHash.forEach((el: IAirGapTransaction, i: number) => {
-        el.status = statuses[i]
-      })
-    }
-
-    return transactions
   }
 
   public async getMaxTransferValue(recipients: string[], fee?: string): Promise<BigNumber> {

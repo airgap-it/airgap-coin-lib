@@ -50,10 +50,22 @@ export class TezosProtocolStub implements ProtocolHTTPStub {
 
     return { getStub, postStub }
   }
+
   public noBalanceStub(testProtocolSpec: TestProtocolSpec, protocol: TezosProtocol) {
     sinon
       .stub(protocol, 'getBalanceOfPublicKey')
       .withArgs(sinon.match.any)
       .returns(Promise.resolve(new BigNumber(0)))
+    const getStub = sinon.stub(axios, 'get')
+
+    getStub
+      .withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${testProtocolSpec.wallet.addresses[0]}/counter`)
+      .returns(Promise.resolve({ data: 917315 }))
+    getStub
+      .withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/hash`)
+      .returns(Promise.resolve({ data: 'BMJyc7ga9kLV3vH4kbn6GXbBNjRkLEJVSyovoXyY84Er1zMmKKT' }))
+    getStub
+      .withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${testProtocolSpec.wallet.addresses[0]}/manager_key`)
+      .returns(Promise.resolve({ data: { key: 'test-key' } }))
   }
 }
