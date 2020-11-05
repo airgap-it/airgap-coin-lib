@@ -53,7 +53,7 @@ export class Serializer {
   private static readonly schemas: Map<string, SchemaInfo> = new Map()
 
   public static addSchema(schemaId: number, schema: SchemaInfo, protocol?: ProtocolSymbols): void {
-    const protocolSpecificSchemaName: string = Serializer.getSchemName(schemaId, protocol)
+    const protocolSpecificSchemaName: string = Serializer.getSchemaName(schemaId, protocol)
 
     if (this.schemas.has(protocolSpecificSchemaName)) {
       throw new SerializerError(SerializerErrorType.SCHEMA_ALREADY_EXISTS, `Schema ${protocolSpecificSchemaName} already exists`)
@@ -62,11 +62,11 @@ export class Serializer {
   }
 
   public static getSchema(schemaId: number, protocol?: ProtocolSymbols): SchemaInfo {
-    const protocolSpecificSchemaName: string = Serializer.getSchemName(schemaId, protocol)
+    const protocolSpecificSchemaName: string = Serializer.getSchemaName(schemaId, protocol)
 
     // Try to get the protocol specific scheme, if it doesn't exist fall back to the generic one
     const schema: SchemaInfo | undefined =
-      this.schemas.get(protocolSpecificSchemaName) ?? this.schemas.get(Serializer.getSchemName(schemaId))
+      this.schemas.get(protocolSpecificSchemaName) ?? this.schemas.get(Serializer.getSchemaName(schemaId))
 
     if (!schema) {
       throw new SerializerError(SerializerErrorType.SCHEMA_DOES_NOT_EXISTS, `Schema ${protocolSpecificSchemaName} does not exist`)
@@ -75,7 +75,14 @@ export class Serializer {
     return schema
   }
 
-  private static getSchemName(schemaId: number, protocol?: ProtocolSymbols): string {
+  private static getSchemaName(schemaId: number, protocol?: ProtocolSymbols): string {
+    const schemaName = `${schemaId}-${protocol}`
+    if (protocol !== undefined && schemaId === IACMessageType.TransactionSignRequest || schemaId === IACMessageType.TransactionSignResponse) {
+      const split = schemaName.split('-')
+      if (split.length >= 3 && `${split[1]}-${split[2]}` === SubProtocolSymbols.ETH_ERC20) {
+        return `${schemaId}-${SubProtocolSymbols.ETH_ERC20}`
+      }
+    }
     return protocol ? `${schemaId}-${protocol}` : schemaId.toString()
   }
 
