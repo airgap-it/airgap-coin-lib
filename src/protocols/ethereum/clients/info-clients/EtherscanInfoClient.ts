@@ -25,6 +25,9 @@ export class EtherscanInfoClient extends EthereumInfoClient {
 
     const response = await Axios.get(url)
     const transactionResponse = response.data
+    if (transactionResponse.status === "0") {
+      throw Error(transactionResponse.message)
+    }
     for (const transaction of transactionResponse.result) {
       const fee: BigNumber = new BigNumber(transaction.gas).times(new BigNumber(transaction.gasPrice))
       const airGapTransaction: IAirGapTransaction = {
@@ -37,7 +40,8 @@ export class EtherscanInfoClient extends EthereumInfoClient {
         blockHeight: transaction.blockNumber,
         protocolIdentifier: protocol.identifier,
         network: protocol.options.network,
-        timestamp: parseInt(transaction.timeStamp, 10)
+        timestamp: parseInt(transaction.timeStamp, 10),
+        status: transaction.txreceipt_status === undefined || transaction.txreceipt_status === "1" ? AirGapTransactionStatus.APPLIED : AirGapTransactionStatus.FAILED
       }
 
       airGapTransactions.push(airGapTransaction)
@@ -66,6 +70,9 @@ export class EtherscanInfoClient extends EthereumInfoClient {
 
     const response = await Axios.get(url)
     const transactionResponse = response.data
+    if (transactionResponse.status === "0") {
+      throw Error(transactionResponse.message)
+    }
     for (const transaction of transactionResponse.result) {
       const fee: BigNumber = new BigNumber(transaction.gas).times(new BigNumber(transaction.gasPrice))
       const airGapTransaction: IAirGapTransaction = {
@@ -79,7 +86,7 @@ export class EtherscanInfoClient extends EthereumInfoClient {
         amount: new BigNumber(transaction.value).toString(10),
         fee: fee.toString(10),
         timestamp: parseInt(transaction.timeStamp, 10),
-        status: transaction.txreceipt_status === "1" ? AirGapTransactionStatus.APPLIED : AirGapTransactionStatus.FAILED
+        status: transaction.txreceipt_status === undefined || transaction.txreceipt_status === "1" ? AirGapTransactionStatus.APPLIED : AirGapTransactionStatus.FAILED
       }
 
       airGapTransactions.push(airGapTransaction)

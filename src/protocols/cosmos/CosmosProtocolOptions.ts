@@ -17,10 +17,10 @@ export class MintscanBlockExplorer implements ProtocolBlockExplorer {
   constructor(public readonly blockExplorer: string = BLOCK_EXPLORER_URL) {}
 
   public async getAddressLink(address: string): Promise<string> {
-    return `${this.blockExplorer}/address/${address}/`
+    return `${this.blockExplorer}/cosmos/account/${address}/`
   }
   public async getTransactionLink(transactionId: string): Promise<string> {
-    return `${this.blockExplorer}/txs/${transactionId}`
+    return `${this.blockExplorer}/cosmos/txs/${transactionId}`
   }
 }
 
