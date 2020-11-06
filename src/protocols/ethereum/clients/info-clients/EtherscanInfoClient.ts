@@ -25,6 +25,9 @@ export class EtherscanInfoClient extends EthereumInfoClient {
 
     const response = await Axios.get(url)
     const transactionResponse = response.data
+    if (transactionResponse.status === "0") {
+      throw Error(transactionResponse.message)
+    }
     for (const transaction of transactionResponse.result) {
       const fee: BigNumber = new BigNumber(transaction.gas).times(new BigNumber(transaction.gasPrice))
       const airGapTransaction: IAirGapTransaction = {
@@ -67,6 +70,9 @@ export class EtherscanInfoClient extends EthereumInfoClient {
 
     const response = await Axios.get(url)
     const transactionResponse = response.data
+    if (transactionResponse.status === "0") {
+      throw Error(transactionResponse.message)
+    }
     for (const transaction of transactionResponse.result) {
       const fee: BigNumber = new BigNumber(transaction.gas).times(new BigNumber(transaction.gasPrice))
       const airGapTransaction: IAirGapTransaction = {
