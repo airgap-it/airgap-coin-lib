@@ -639,7 +639,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
 
   public async prepareWithdrawUnbonded(publicKey: string, tip: string | number | BigNumber): Promise<RawSubstrateTransaction[]> {
     const [transferableBalance, slashingSpansNumber] = await Promise.all([
-      this.options.accountController.getTransferableBalance(publicKey),
+      this.options.accountController.getTransferableBalance(publicKey, false),
       this.options.accountController.getSlashingSpansNumber(publicKey)
     ])
 
