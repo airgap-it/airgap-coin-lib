@@ -144,7 +144,8 @@ const SELF_BOND_REQUIREMENT: number = 0.0825
 export enum TezosNetwork {
   MAINNET = 'mainnet',
   BABYLONNET = 'babylonnet',
-  CARTHAGENET = 'carthagenet'
+  CARTHAGENET = 'carthagenet',
+  DELPHINET = 'delphinet'
 }
 
 export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateProtocol {
@@ -1573,8 +1574,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     currentCycle?: number,
     breakDownRewards: boolean = true
   ): Promise<TezosRewards> {
-    const is005 = this.options.network.extras.network !== TezosNetwork.MAINNET || cycle >= TezosProtocol.FIRST_005_CYCLE
-    const is006 = this.options.network.extras.network === TezosNetwork.CARTHAGENET || cycle >= TezosProtocol.FIRST_006_CYCLE
+    const is005 = this.options.network.extras.network === TezosNetwork.MAINNET && cycle >= TezosProtocol.FIRST_005_CYCLE
+    const is006 = this.options.network.extras.network !== TezosNetwork.MAINNET || cycle >= TezosProtocol.FIRST_006_CYCLE
     let rewardCalculation: TezosRewardsCalculations
     if (is006) {
       rewardCalculation = new TezosRewardsCalculation006(this)
