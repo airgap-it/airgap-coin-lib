@@ -5,6 +5,7 @@ import { EthereumProtocol } from '../../EthereumProtocol'
 import { BLOCK_EXPLORER_API } from '../../EthereumProtocolOptions'
 import { EthereumInfoClient } from './InfoClient'
 import { EthereumTransactionCursor, EthereumTransactionResult } from '../../EthereumTypes'
+import { isArray } from '../../../../dependencies/src/validate.js-0.13.1/validate'
 
 export class EtherscanInfoClient extends EthereumInfoClient {
   constructor(baseURL: string = BLOCK_EXPLORER_API) {
@@ -25,10 +26,11 @@ export class EtherscanInfoClient extends EthereumInfoClient {
 
     const response = await Axios.get(url)
     const transactionResponse = response.data
-    if (transactionResponse.status === "0") {
+    const transactions = transactionResponse.result
+    if (transactionResponse.status === "0" && (transactions === undefined || !isArray(transactions))) {
       throw Error(transactionResponse.message)
     }
-    for (const transaction of transactionResponse.result) {
+    for (const transaction of transactions) {
       const fee: BigNumber = new BigNumber(transaction.gas).times(new BigNumber(transaction.gasPrice))
       const airGapTransaction: IAirGapTransaction = {
         hash: transaction.hash,
@@ -70,10 +72,11 @@ export class EtherscanInfoClient extends EthereumInfoClient {
 
     const response = await Axios.get(url)
     const transactionResponse = response.data
-    if (transactionResponse.status === "0") {
+    const transactions = transactionResponse.result
+    if (transactionResponse.status === "0" && (transactions === undefined || !isArray(transactions))) {
       throw Error(transactionResponse.message)
     }
-    for (const transaction of transactionResponse.result) {
+    for (const transaction of transactions) {
       const fee: BigNumber = new BigNumber(transaction.gas).times(new BigNumber(transaction.gasPrice))
       const airGapTransaction: IAirGapTransaction = {
         hash: transaction.hash,
