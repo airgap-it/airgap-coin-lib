@@ -9,21 +9,21 @@ export class MichelsonBool extends MichelsonType {
     super(name)
   }
 
-  public static from(value: unknown): MichelsonBool {
+  public static from(value: unknown, name?: string): MichelsonBool {
     return isMichelinePrimitiveApplication(value)
-      ? MichelsonBool.fromMicheline(value)
-      : MichelsonBool.fromUnknown(value)
+      ? MichelsonBool.fromMicheline(value, name)
+      : MichelsonBool.fromUnknown(value, name)
   }
 
-  public static fromMicheline(micheline: MichelinePrimitiveApplication<MichelsonGrammarData>): MichelsonBool {
+  public static fromMicheline(micheline: MichelinePrimitiveApplication<MichelsonGrammarData>, name?: string): MichelsonBool {
     if (micheline.prim !== 'True' && micheline.prim !== 'False') {
       throw invalidArgumentTypeError('MichelsonBool', 'prim: True | False', `prim: ${micheline.prim}`)
     }
     
-    return new MichelsonBool(micheline.prim === 'True')
+    return new MichelsonBool(micheline.prim === 'True', name)
   }
 
-  public static fromUnknown(unknownValue: unknown): MichelsonBool {
+  public static fromUnknown(unknownValue: unknown, name?: string): MichelsonBool {
     if (unknownValue instanceof MichelsonBool) {
       return unknownValue
     }
@@ -32,7 +32,7 @@ export class MichelsonBool extends MichelsonType {
       throw invalidArgumentTypeError('MichelsonBool', 'boolean', typeof unknownValue)
     }
 
-    return new MichelsonBool(unknownValue)
+    return new MichelsonBool(unknownValue, name)
   }
 
   public asRawValue(): Record<string, boolean> | boolean {

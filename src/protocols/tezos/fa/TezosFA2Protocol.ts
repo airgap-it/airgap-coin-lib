@@ -23,6 +23,7 @@ import { isMichelinePrimitive, isMichelineSequence } from '../types/utils'
 
 import { TezosFAProtocol } from './TezosFAProtocol'
 import { TezosFA2ProtocolOptions } from './TezosFAProtocolOptions'
+import { MichelsonList } from '../types/michelson/generics/MichelsonList'
 
 enum TezosFA2ContractEntrypoint {
   BALANCE = 'balance_of',
@@ -116,38 +117,72 @@ export class TezosFA2Protocol extends TezosFAProtocol {
     return this.prepareContractCall([transferCall], fee, publicKey)
   }
 
-  public async transactionDetailsFromParameters(parameters: TezosTransactionParameters): Promise<Partial<IAirGapTransaction>[]> {
+  public transactionDetailsFromParameters(parameters: TezosTransactionParameters): Partial<IAirGapTransaction>[] {
+    const defaultDetails = {
+      extra: {
+        type: parameters.entrypoint
+      }
+    }
+
     if (parameters.entrypoint !== TezosFA2ContractEntrypoint.TRANSFER) {
-      throw new Error('Only calls to the transfer entrypoint can be converted to IAirGapTransaction')
+      console.warn('Only calls to the transfer entrypoint can be converted to IAirGapTransaction')
+
+      return [defaultDetails]
     }
     
-    const contractCall: TezosContractCall = await this.contract.parseContractCall(parameters)
+    try {
+      const callArgumentsList = MichelsonList.from(
+        parameters.value,
+        (pairJSON: string) => MichelsonPair.from(
+          pairJSON,
+          (fromJSON: string) => MichelsonAddress.from(fromJSON, 'from_'),
+          (txsJSON: string) => MichelsonList.from(
+            txsJSON,
+            (pairJSON: string) => MichelsonPair.from(
+              pairJSON,
+              (toJSON: string) => MichelsonAddress.from(toJSON, 'to_'),
+              (pairJSON: string) => MichelsonPair.from(
+                pairJSON,
+                (tokenJSON: string) => MichelsonInt.from(tokenJSON, 'token_id'),
+                (amountJSON: string) => MichelsonInt.from(amountJSON, 'amount')
+              )
+            ),
+            'txs'
+          ),
+        )
+      ).asRawValue()
 
-    return contractCall.args().map((callArguments: unknown) => {
-      if (!this.isTransferRequest(callArguments)) {
-        return {}
-      }
+    return Array.isArray(callArgumentsList)
+      ? callArgumentsList.map((callArguments: unknown) => {
+          if (!this.isTransferRequest(callArguments)) {
+            return []
+          }
 
-      const from: string = isHex(callArguments.from_) ? TezosUtils.parseAddress(callArguments.from_) : callArguments.from_
+          const from: string = isHex(callArguments.from_) ? TezosUtils.parseAddress(callArguments.from_) : callArguments.from_
 
-      const recipientsWithAmount: [string, BigNumber][] = callArguments.txs.map((tx) => {
-        const to: string = isHex(tx.to_) ? TezosUtils.parseAddress(tx.to_) : tx.to_
+          const transferDetails: [string, BigNumber, BigNumber][] = callArguments.txs.map((tx) => {
+            const to: string = isHex(tx.to_) ? TezosUtils.parseAddress(tx.to_) : tx.to_
 
-        return [to, tx.amount] as [string, BigNumber]
-      })
+            return [to, tx.token_id, tx.amount] as [string, BigNumber, BigNumber]
+          })
 
-      const amount: BigNumber = recipientsWithAmount.reduce(
-        (sum: BigNumber, [_, next]: [string, BigNumber]) => sum.plus(next),
-        new BigNumber(0)
-      )
-      const to: string[] = recipientsWithAmount.map(([recipient, _]: [string, BigNumber]) => recipient)
-
-      return {
-        amount: amount.toFixed(),
-        from: [from],
-        to
-      }
-    })
+          return transferDetails.map(([to, tokenID, amount]: [string, BigNumber, BigNumber]) => {
+            return {
+              ...defaultDetails,
+              amount: amount.toFixed(),
+              from: [from],
+              to: [to],
+              extra: {
+                type: parameters.entrypoint,
+                assetID: (this.tokenID === undefined || !tokenID.eq(this.tokenID)) ? tokenID.toString() : undefined
+              }
+            }
+          })
+        }).reduce((flatten: Partial<IAirGapTransaction>[], next: Partial<IAirGapTransaction>[]) => flatten.concat(next), [])
+      : [defaultDetails]
+    } catch {
+      return [defaultDetails]
+    }
   }
 
   public async balanceOf(

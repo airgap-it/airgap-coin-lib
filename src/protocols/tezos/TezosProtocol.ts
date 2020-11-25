@@ -33,8 +33,7 @@ import { TezosTransactionOperation } from './types/operations/Transaction'
 import { TezosOperationType } from './types/TezosOperationType'
 import { TezosWrappedOperation } from './types/TezosWrappedOperation'
 import { TezosCryptoClient } from './TezosCryptoClient'
-
-const assertNever: (x: never) => void = (x: never): void => undefined
+import { assertNever } from '../../utils/assert'
 
 const MAX_OPERATIONS_PER_GROUP: number = 200
 const GAS_LIMIT_PLACEHOLDER: string = '1040000'
@@ -438,91 +437,86 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     return this.getAirGapTxFromWrappedOperations(wrappedOperations)
   }
 
-  public getAirGapTxFromWrappedOperations(wrappedOperations: TezosWrappedOperation): IAirGapTransaction[] {
-    const airGapTxs: IAirGapTransaction[] = []
-
+  public async getAirGapTxFromWrappedOperations(wrappedOperations: TezosWrappedOperation): Promise<IAirGapTransaction[]> {
     const assertNever: (x: never) => void = (x: never): void => undefined
 
-    for (let i: number = 0; i < wrappedOperations.contents.length; i++) {
-      const tezosOperation: TezosOperation = wrappedOperations.contents[i]
-      let operation: TezosRevealOperation | TezosTransactionOperation | TezosOriginationOperation | TezosDelegationOperation | undefined
+    return Promise.all(
+      wrappedOperations.contents.map(async (tezosOperation: TezosOperation) => {
+        let operation: TezosRevealOperation | TezosTransactionOperation | TezosOriginationOperation | TezosDelegationOperation | undefined
 
-      let amount: BigNumber = new BigNumber(0)
-      let to: string[] = []
-      let from: string[] = []
+        let partialTxs: Partial<IAirGapTransaction>[] = []
 
-      switch (tezosOperation.kind) {
-        case TezosOperationType.REVEAL:
-          operation = tezosOperation as TezosRevealOperation
-          from = [operation.source]
-          to = ['Reveal']
-          break
-        case TezosOperationType.TRANSACTION:
-          const tezosSpendOperation: TezosTransactionOperation = tezosOperation as TezosTransactionOperation
-          operation = tezosSpendOperation
-          from = [operation.source]
-          amount = new BigNumber(tezosSpendOperation.amount)
-          to = [tezosSpendOperation.destination] // contract destination but should be the address of actual receiver
+        switch (tezosOperation.kind) {
+          case TezosOperationType.REVEAL:
+            operation = tezosOperation as TezosRevealOperation
+            partialTxs = [
+              {
+                from: [operation.source],
+                to: ['Reveal']
+              }
+            ]
+            break
+          case TezosOperationType.TRANSACTION:
+            const tezosSpendOperation: TezosTransactionOperation = tezosOperation as TezosTransactionOperation
+            operation = tezosSpendOperation
+            partialTxs = await this.getTransactionOperationDetails(tezosSpendOperation)
+            break
+          case TezosOperationType.ORIGINATION:
+            {
+              const tezosOriginationOperation: TezosOriginationOperation = tezosOperation as TezosOriginationOperation
+              operation = tezosOriginationOperation
+              const delegate: string | undefined = tezosOriginationOperation.delegate
+              partialTxs = [
+                {
+                  from: [operation.source],
+                  amount: new BigNumber(tezosOriginationOperation.balance).toFixed(),
+                  to: [delegate ? `Delegate: ${delegate}` : 'Origination']
+                }
+              ]
+            }
+            break
+          case TezosOperationType.DELEGATION:
+            {
+              operation = tezosOperation as TezosDelegationOperation
+              const delegate: string | undefined = operation.delegate
+              partialTxs = [
+                {
+                  from: [operation.source],
+                  to: [delegate ? delegate : 'Undelegate']
+                }
+              ]
+            }
+            break
+          case TezosOperationType.ENDORSEMENT:
+          case TezosOperationType.SEED_NONCE_REVELATION:
+          case TezosOperationType.DOUBLE_ENDORSEMENT_EVIDENCE:
+          case TezosOperationType.DOUBLE_BAKING_EVIDENCE:
+          case TezosOperationType.ACTIVATE_ACCOUNT:
+          case TezosOperationType.PROPOSALS:
+          case TezosOperationType.BALLOT:
+            throw new Error('operation not supported: ' + tezosOperation.kind)
+          default:
+            assertNever(tezosOperation.kind) // Exhaustive switch
+            throw new Error('no operation to unforge found')
+        }
 
-          // FA 1.2 support
-          if (
-            tezosSpendOperation.parameters?.entrypoint === 'transfer' &&
-            (tezosSpendOperation.parameters?.value as any).args &&
-            (tezosSpendOperation.parameters?.value as any).args.length === 2
-          ) {
-            const value = tezosSpendOperation.parameters?.value as any
-            from = [value.args[0].string]
-            to = [value.args[1].args[0].string]
-            amount = value.args[1].args[1].int
+        return partialTxs.map((partialTx: Partial<IAirGapTransaction>) => {
+          return {
+            amount: '0',
+            fee: operation !== undefined ? new BigNumber(operation.fee).toString(10) : '0',
+            from: [],
+            isInbound: false,
+            protocolIdentifier: this.identifier,
+            network: this.options.network,
+            to: [],
+            transactionDetails: tezosOperation,
+            ...partialTx
           }
-
-          break
-        case TezosOperationType.ORIGINATION:
-          {
-            const tezosOriginationOperation: TezosOriginationOperation = tezosOperation as TezosOriginationOperation
-            operation = tezosOriginationOperation
-            from = [operation.source]
-            amount = new BigNumber(tezosOriginationOperation.balance)
-            const delegate: string | undefined = tezosOriginationOperation.delegate
-            to = [delegate ? `Delegate: ${delegate}` : 'Origination']
-          }
-          break
-        case TezosOperationType.DELEGATION:
-          {
-            operation = tezosOperation as TezosDelegationOperation
-            const delegate: string | undefined = operation.delegate
-            from = [operation.source]
-            to = [delegate ? delegate : 'Undelegate']
-          }
-          break
-        case TezosOperationType.ENDORSEMENT:
-        case TezosOperationType.SEED_NONCE_REVELATION:
-        case TezosOperationType.DOUBLE_ENDORSEMENT_EVIDENCE:
-        case TezosOperationType.DOUBLE_BAKING_EVIDENCE:
-        case TezosOperationType.ACTIVATE_ACCOUNT:
-        case TezosOperationType.PROPOSALS:
-        case TezosOperationType.BALLOT:
-          throw new Error('operation not supported: ' + tezosOperation.kind)
-        default:
-          assertNever(tezosOperation.kind) // Exhaustive switch
-          throw new Error('no operation to unforge found')
-      }
-
-      const airgapTx: IAirGapTransaction = {
-        amount: amount.toString(10),
-        fee: new BigNumber(operation.fee).toString(10),
-        from,
-        isInbound: false,
-        protocolIdentifier: this.identifier,
-        network: this.options.network,
-        to,
-        transactionDetails: tezosOperation
-      }
-
-      airGapTxs.push(airgapTx)
-    }
-
-    return airGapTxs
+        })
+      })
+    ).then((airGapTxs: IAirGapTransaction[][]) =>
+      airGapTxs.reduce((flatten: IAirGapTransaction[], next: IAirGapTransaction[]) => flatten.concat(next), [])
+    )
   }
 
   public async getBalanceOfAddresses(addresses: string[]): Promise<string> {
@@ -739,6 +733,16 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     }
 
     return wrappedOperations
+  }
+
+  protected async getTransactionOperationDetails(transactionOperation: TezosTransactionOperation): Promise<Partial<IAirGapTransaction>[]> {
+    return [
+      {
+        from: [transactionOperation.source],
+        amount: new BigNumber(transactionOperation.amount).toFixed(),
+        to: [transactionOperation.destination] // contract destination but should be the address of actual receiver
+      }
+    ]
   }
 
   private async createTransactionOperations(
@@ -1568,6 +1572,13 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
   private static readonly FIRST_005_CYCLE: number = 160
   private static readonly FIRST_006_CYCLE: number = 208
+
+  private rewardCalculations = {
+    alpha: new TezosRewardsCalculationDefault(this),
+    babylon: new TezosRewardsCalculation005(this),
+    cartha: new TezosRewardsCalculation006(this)
+  }
+
   public async calculateRewards(
     bakerAddress: string,
     cycle: number,
@@ -1578,11 +1589,11 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     const is006 = this.options.network.extras.network !== TezosNetwork.MAINNET || cycle >= TezosProtocol.FIRST_006_CYCLE
     let rewardCalculation: TezosRewardsCalculations
     if (is006) {
-      rewardCalculation = new TezosRewardsCalculation006(this)
+      rewardCalculation = this.rewardCalculations.cartha
     } else if (is005) {
-      rewardCalculation = new TezosRewardsCalculation005(this)
+      rewardCalculation = this.rewardCalculations.babylon
     } else {
-      rewardCalculation = new TezosRewardsCalculationDefault(this)
+      rewardCalculation = this.rewardCalculations.alpha
     }
 
     return rewardCalculation.calculateRewards(bakerAddress, cycle, breakDownRewards, currentCycle)

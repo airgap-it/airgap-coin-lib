@@ -15,7 +15,7 @@ export abstract class MichelsonOr extends MichelsonType {
     super(name)
   }
 
-  public static from(or: unknown, firstMappingFunction?: unknown, secondMappingFunction?: unknown): MichelsonOr {
+  public static from(or: unknown, firstMappingFunction?: unknown, secondMappingFunction?: unknown, name?: string): MichelsonOr {
     if (or instanceof MichelsonOr) {
       return or
     }
@@ -25,14 +25,15 @@ export abstract class MichelsonOr extends MichelsonType {
     }
 
     return isMichelinePrimitiveApplication(or)
-      ? MichelsonOr.fromMicheline(or, firstMappingFunction, secondMappingFunction)
-      : MichelsonOr.fromUnknown(or, firstMappingFunction, secondMappingFunction)
+      ? MichelsonOr.fromMicheline(or, firstMappingFunction, secondMappingFunction, name)
+      : MichelsonOr.fromUnknown(or, firstMappingFunction, secondMappingFunction, name)
   }
 
   public static fromMicheline(
     micheline: MichelinePrimitiveApplication<MichelsonGrammarData>,
     firstMappingFunction: unknown, 
-    secondMappingFunction: unknown
+    secondMappingFunction: unknown,
+    name?: string
   ): MichelsonOr {
     if (!MichelsonOr.isOr(micheline)) {
       throw invalidArgumentTypeError('MichelsonOr', 'prim: Left | Right', `prim: ${micheline.prim}`)
@@ -42,19 +43,19 @@ export abstract class MichelsonOr extends MichelsonType {
       throw invalidArgumentTypeError('MichelsonOr', 'args: <array>', 'args: undefined')
     }
    
-    return MichelsonOr.fromUnknown([micheline.prim, micheline.args[0]], firstMappingFunction, secondMappingFunction)
+    return MichelsonOr.fromUnknown([micheline.prim, micheline.args[0]], firstMappingFunction, secondMappingFunction, name)
   }
 
-  public static fromUnknown(unknownValue: unknown, firstMappingFunction: unknown, secondMappingFunction: unknown): MichelsonOr {
+  public static fromUnknown(unknownValue: unknown, firstMappingFunction: unknown, secondMappingFunction: unknown, name?: string): MichelsonOr {
     if ((!Array.isArray(unknownValue) || unknownValue.length !== 2 || typeof unknownValue[0] !== 'string')) {
       throw invalidArgumentTypeError('MichelsonOr', "MichelsonOr or tuple<'Left' | 'Right', any>", `${typeof unknownValue}: ${unknownValue}`)
     }
 
     const type: string = unknownValue[0]
     if (type.toLowerCase() === 'left' || type.toLowerCase() === 'l') {
-      return MichelsonOr.create('Left', unknownValue[1], firstMappingFunction)
+      return MichelsonOr.create('Left', unknownValue[1], firstMappingFunction, name)
     } else if (type.toLowerCase() === 'right' || type.toLowerCase() === 'r') {
-      return MichelsonOr.create('Right', unknownValue[1], secondMappingFunction)
+      return MichelsonOr.create('Right', unknownValue[1], secondMappingFunction, name)
     } else {
       throw new Error(`MichelsonOr: unknown type ${unknownValue[0]}, expected 'Left' or 'Right'.`)
     }
@@ -70,7 +71,7 @@ export abstract class MichelsonOr extends MichelsonType {
     )
   }
 
-  private static create(type: MichelsonOrType, value: unknown, mappingFunction: unknown): MichelsonOr {
+  private static create(type: MichelsonOrType, value: unknown, mappingFunction: unknown, name?: string): MichelsonOr {
     const lazyValue: Lazy<MichelsonType> = value instanceof MichelsonType
       ? new Lazy(() => value)
       : new Lazy(() => {
@@ -83,7 +84,7 @@ export abstract class MichelsonOr extends MichelsonType {
           return mappedValue
         })
 
-    return type === 'Left' ? new MichelsonLeft(lazyValue) : new MichelsonRight(lazyValue)
+    return type === 'Left' ? new MichelsonLeft(lazyValue, name) : new MichelsonRight(lazyValue, name)
   }
 
   public asRawValue(): Record<string, any> | any {

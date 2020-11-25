@@ -11,7 +11,7 @@ export type MichelsonOptionType = 'Some' | 'None'
 export abstract class MichelsonOption extends MichelsonType {
   protected abstract type: MichelsonOptionType
 
-  public static from(value: unknown, mappingFunction?: unknown): MichelsonOption {
+  public static from(value: unknown, mappingFunction?: unknown, name?: string): MichelsonOption {
     if (value instanceof MichelsonOption) {
       return value
     }
@@ -21,32 +21,37 @@ export abstract class MichelsonOption extends MichelsonType {
     }
 
     return isMichelinePrimitiveApplication(value)
-      ? MichelsonOption.fromMicheline(value, mappingFunction)
-      : MichelsonOption.fromUnknown(value, mappingFunction)
+      ? MichelsonOption.fromMicheline(value, mappingFunction, name)
+      : MichelsonOption.fromUnknown(value, mappingFunction, name)
   }
 
-  public static fromMicheline(micheline: MichelinePrimitiveApplication<MichelsonGrammarData>, mappingFunction: unknown): MichelsonOption {
-    return MichelsonOption.fromUnknown(micheline.prim === 'Some' && micheline.args ? micheline.args[0] : null, mappingFunction)
+  public static fromMicheline(
+    micheline: MichelinePrimitiveApplication<MichelsonGrammarData>,
+    mappingFunction: unknown,
+    name?: string
+  ): MichelsonOption {
+    return MichelsonOption.fromUnknown(micheline.prim === 'Some' && micheline.args ? micheline.args[0] : null, mappingFunction, name)
   }
 
-  public static fromUnknown(unknownValue: unknown, mappingFunction: unknown): MichelsonOption {
+  public static fromUnknown(unknownValue: unknown, mappingFunction: unknown, name?: string): MichelsonOption {
     if (unknownValue === undefined || unknownValue === null) {
-      return new MichelsonNone()
+      return new MichelsonNone(name)
     }
 
-    const lazyValue: Lazy<MichelsonType> = unknownValue instanceof MichelsonType
-      ? new Lazy(() => unknownValue)
-      : new Lazy(() => {
-          const value: unknown = typeof mappingFunction === 'function' ? mappingFunction(unknownValue) : undefined
+    const lazyValue: Lazy<MichelsonType> =
+      unknownValue instanceof MichelsonType
+        ? new Lazy(() => unknownValue)
+        : new Lazy(() => {
+            const value: unknown = typeof mappingFunction === 'function' ? mappingFunction(unknownValue) : undefined
 
-          if (!(value instanceof MichelsonType)) {
-            throw new Error('MichelsonOption: unknown generic mapping type.')
-          }
+            if (!(value instanceof MichelsonType)) {
+              throw new Error('MichelsonOption: unknown generic mapping type.')
+            }
 
-          return value
-        })
+            return value
+          })
 
-    return new MichelsonSome(lazyValue)
+    return new MichelsonSome(lazyValue, name)
   }
 }
 
@@ -66,9 +71,7 @@ export class MichelsonSome extends MichelsonOption {
   public toMichelineJSON(): MichelineDataNode {
     return {
       prim: 'Some',
-      args: [
-        this.value.get().toMichelineJSON()
-      ]
+      args: [this.value.get().toMichelineJSON()]
     }
   }
 
@@ -90,4 +93,3 @@ export class MichelsonNone extends MichelsonOption {
     }
   }
 }
-
