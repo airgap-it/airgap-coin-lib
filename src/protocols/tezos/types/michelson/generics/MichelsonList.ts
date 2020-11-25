@@ -8,7 +8,7 @@ export class MichelsonList extends MichelsonType {
     super(name)
   }
 
-  public static from(value: unknown, mappingFunction?: unknown): MichelsonList {
+  public static from(value: unknown, mappingFunction?: unknown, name?: string): MichelsonList {
     if (value instanceof MichelsonList) {
       return value
     }
@@ -37,7 +37,7 @@ export class MichelsonList extends MichelsonType {
       return elements as MichelsonType[]
     })
 
-    return new MichelsonList(lazyList)
+    return new MichelsonList(lazyList, name)
   }
 
   public asRawValue(): Record<string, Record<string, any>[]> | Record<string, any>[] {

@@ -1,4 +1,5 @@
 import { InvalidHexString, InvalidSchemaType, InvalidString } from '../../errors'
+import { assertNever } from '../../utils/assert'
 import { SchemaDefinition, SchemaItem, SchemaRoot, SchemaTypes } from '../schemas/schema'
 
 import { RLPData } from './toBuffer'
@@ -10,8 +11,6 @@ function log(...args: unknown[]): void {
     console.log(...args)
   }
 }
-
-const assertNever: (x: never) => void = (x: never): void => undefined
 
 export function getDefinitionByRefPath(schema: SchemaRoot, refPath: string): SchemaItem {
   const mainDefinitionName: string = refPath.split('/').slice(-1)[0]

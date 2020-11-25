@@ -9,17 +9,17 @@ export class MichelsonBytes extends MichelsonType {
     super(name)
   }
 
-  public static from(value: unknown): MichelsonBytes {
+  public static from(value: unknown, name?: string): MichelsonBytes {
     return isMichelinePrimitive('bytes', value)
-      ? MichelsonBytes.fromMicheline(value)
-      : MichelsonBytes.fromUnknown(value)
+      ? MichelsonBytes.fromMicheline(value, name)
+      : MichelsonBytes.fromUnknown(value, name)
   }
 
-  public static fromMicheline(micheline: MichelinePrimitive<'bytes'>): MichelsonBytes {
-    return MichelsonBytes.fromUnknown(micheline.bytes)
+  public static fromMicheline(micheline: MichelinePrimitive<'bytes'>, name?: string): MichelsonBytes {
+    return MichelsonBytes.fromUnknown(micheline.bytes, name)
   }
 
-  public static fromUnknown(unknownValue: unknown): MichelsonBytes {
+  public static fromUnknown(unknownValue: unknown, name?: string): MichelsonBytes {
     if (unknownValue instanceof MichelsonBytes) {
       return unknownValue
     }
@@ -28,7 +28,7 @@ export class MichelsonBytes extends MichelsonType {
       throw invalidArgumentTypeError('MichelsonBytes', 'string or Buffer', `${typeof unknownValue}: ${unknownValue}`)
     }
 
-    return new MichelsonBytes(hexToBytes(unknownValue))
+    return new MichelsonBytes(hexToBytes(unknownValue), name)
   }
 
   public asRawValue(): Record<string, string> | string {

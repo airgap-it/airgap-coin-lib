@@ -1,6 +1,11 @@
-import { SignedTezosTransaction, TezosProtocol } from '../../../src/'
+import { SignedTezosTransaction, TezosFAProtocolConfig, TezosFAProtocolOptions, TezosProtocol, TezosProtocolNetwork } from '../../../src/'
 import { AirGapTransactionStatus } from '../../../src/interfaces/IAirGapTransaction'
+import { TezosFA12Protocol } from '../../../src/protocols/tezos/fa/TezosFA12Protocol'
+import { TezosFA1Protocol } from '../../../src/protocols/tezos/fa/TezosFA1Protocol'
+import { TezosFA2Protocol } from '../../../src/protocols/tezos/fa/TezosFA2Protocol'
+import { TezosFA2ProtocolConfig, TezosFA2ProtocolOptions } from '../../../src/protocols/tezos/fa/TezosFAProtocolOptions'
 import { RawTezosTransaction } from '../../../src/serializer/types'
+import { ProtocolSymbols } from '../../../src/utils/ProtocolSymbols'
 import { TestProtocolSpec } from '../implementations'
 import { TezosProtocolStub } from '../stubs/tezos.stub'
 
@@ -13,6 +18,24 @@ import { TezosTransactionValidator } from './../../../src/serializer/unsigned-tr
 export class TezosTestProtocolSpec extends TestProtocolSpec {
   public name = 'Tezos'
   public lib = new TezosProtocol()
+  public fa1 = new TezosFA1Protocol(
+    new TezosFAProtocolOptions(
+      new TezosProtocolNetwork(), 
+      new TezosFAProtocolConfig('', '', '', '' as ProtocolSymbols, '', { low: '', medium: '', high: '' }, 0)
+    )
+  )
+  public fa12 = new TezosFA12Protocol(
+    new TezosFAProtocolOptions(
+      new TezosProtocolNetwork(), 
+      new TezosFAProtocolConfig('', '', '', '' as ProtocolSymbols, '', { low: '', medium: '', high: '' }, 0)
+    )
+  )
+  public fa2 = new TezosFA2Protocol(
+    new TezosFA2ProtocolOptions(
+      new TezosProtocolNetwork(), 
+      new TezosFA2ProtocolConfig('', '', '', '' as ProtocolSymbols, '', { low: '', medium: '', high: '' }, 0)
+    )
+  )
   public stub = new TezosProtocolStub()
   public validAddresses = [
     'tz1MecudVJnFZN5FSrriu8ULz2d6dDTR7KaM',

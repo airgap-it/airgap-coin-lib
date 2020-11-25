@@ -11,20 +11,21 @@ export class MichelsonPair extends MichelsonType {
     super(name)
   }
 
-  public static from(pair: unknown, firstMappingFunction?: unknown, secondMappingFunction?: unknown): MichelsonPair {
+  public static from(pair: unknown, firstMappingFunction?: unknown, secondMappingFunction?: unknown, name?: string): MichelsonPair {
     if (pair instanceof MichelsonPair) {
       return pair
     }
 
     return isMichelinePrimitiveApplication(pair)
-      ? MichelsonPair.fromMicheline(pair, firstMappingFunction, secondMappingFunction)
-      : MichelsonPair.fromUnknown(pair, firstMappingFunction, secondMappingFunction)
+      ? MichelsonPair.fromMicheline(pair, firstMappingFunction, secondMappingFunction, name)
+      : MichelsonPair.fromUnknown(pair, firstMappingFunction, secondMappingFunction, name)
   }
 
   public static fromMicheline(
     micheline: MichelinePrimitiveApplication<MichelsonGrammarData>,
     firstMappingFunction: unknown, 
-    secondMappingFunction: unknown
+    secondMappingFunction: unknown,
+    name?: string
   ): MichelsonPair {
     if (micheline.prim !== 'Pair') {
       throw invalidArgumentTypeError('MichelsonPair', 'prim: Pair', `prim: ${micheline.prim}`)
@@ -34,13 +35,14 @@ export class MichelsonPair extends MichelsonType {
       throw invalidArgumentTypeError('MichelsonPair', 'args: <tuple>', 'args: undefined | <array>')
     }
     
-    return MichelsonPair.fromUnknown(micheline.args, firstMappingFunction, secondMappingFunction)
+    return MichelsonPair.fromUnknown(micheline.args, firstMappingFunction, secondMappingFunction, name)
   }
 
   public static fromUnknown(
     unknownValue: MichelsonType | unknown, 
     firstMappingFunction: unknown, 
-    secondMappingFunction: unknown
+    secondMappingFunction: unknown,
+    name?: string
   ): MichelsonPair {
     if (!(unknownValue instanceof Object) && (!Array.isArray(unknownValue) || unknownValue.length !== 2)) {
       throw invalidArgumentTypeError('MichelsonPair', 'tuple or object', `${typeof unknownValue}: ${unknownValue}`)
@@ -50,7 +52,7 @@ export class MichelsonPair extends MichelsonType {
       ? [MichelsonPair.asRawValue(unknownValue[0], firstMappingFunction), MichelsonPair.asRawValue(unknownValue[1], secondMappingFunction)]
       : [MichelsonPair.asRawValue(unknownValue, firstMappingFunction), MichelsonPair.asRawValue(unknownValue, secondMappingFunction)]
 
-    return new MichelsonPair(first, second)
+    return new MichelsonPair(first, second, name)
   }
 
   private static asRawValue(unknownValue: unknown, mappingFactory: unknown): Lazy<MichelsonType> {

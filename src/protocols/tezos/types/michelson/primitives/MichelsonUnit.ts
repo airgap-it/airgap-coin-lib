@@ -5,22 +5,22 @@ import { MichelsonGrammarData } from '../grammar/MichelsonGrammarData'
 import { MichelsonType } from '../MichelsonType'
 
 export class MichelsonUnit extends MichelsonType {
-  public static from(value: unknown): MichelsonUnit {
+  public static from(value: unknown, name?: string): MichelsonUnit {
     if (value instanceof MichelsonUnit) {
       return value
     } else if (isMichelinePrimitiveApplication(value)) {
-      return MichelsonUnit.fromMicheline(value)
+      return MichelsonUnit.fromMicheline(value, name)
     } else {
       return new MichelsonUnit()
     }
   }
 
-  public static fromMicheline(micheline: MichelinePrimitiveApplication<MichelsonGrammarData>): MichelsonUnit {
+  public static fromMicheline(micheline: MichelinePrimitiveApplication<MichelsonGrammarData>, name?: string): MichelsonUnit {
     if (micheline.prim !== 'Unit') {
       throw invalidArgumentTypeError('MichelsonUnit', 'prim: Unit', `prim: ${micheline.prim}`)
     }
 
-    return new MichelsonUnit()
+    return new MichelsonUnit(name)
   }
   
   public asRawValue(): any {

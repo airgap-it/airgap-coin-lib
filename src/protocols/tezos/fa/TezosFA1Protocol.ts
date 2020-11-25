@@ -13,6 +13,9 @@ import { isMichelinePrimitive } from '../types/utils'
 
 import { TezosFAProtocol } from './TezosFAProtocol'
 import { TezosFAProtocolOptions } from './TezosFAProtocolOptions'
+import { MichelsonAddress } from '../types/michelson/primitives/MichelsonAddress'
+import { MichelsonPair } from '../types/michelson/generics/MichelsonPair'
+import { MichelsonInt } from '../types/michelson/primitives/MichelsonInt'
 
 enum TezosFA1ContractEntrypoint {
   BALANCE = 'getBalance',
@@ -76,22 +79,41 @@ export class TezosFA1Protocol extends TezosFAProtocol {
     return this.prepareContractCall(transferCalls, fee, publicKey)
   }
 
-  public async transactionDetailsFromParameters(parameters: TezosTransactionParameters): Promise<Partial<IAirGapTransaction>[]> {
-    if (parameters.entrypoint !== TezosFA1ContractEntrypoint.TRANSFER) {
-      throw new Error('Only calls to the transfer entrypoint can be converted to IAirGapTransaction')
-    }
-    const contractCall: TezosContractCall = await this.contract.parseContractCall(parameters)
-    const callArguments = contractCall.args()
-    
-    if (!this.isTransferRequest(callArguments)) {
-      return []
+  public transactionDetailsFromParameters(parameters: TezosTransactionParameters): Partial<IAirGapTransaction>[] {
+    const defaultDetails = {
+      extra: {
+        type: parameters.entrypoint
+      }
     }
 
-    return [{
-      amount: callArguments.value.toFixed(), // in tzbtc
-      from: [isHex(callArguments.from) ? TezosUtils.parseAddress(callArguments.from) : callArguments.from],
-      to: [isHex(callArguments.to) ? TezosUtils.parseAddress(callArguments.to) : callArguments.to]
-    }]
+    if (parameters.entrypoint !== TezosFA1ContractEntrypoint.TRANSFER) {
+      console.warn('Only calls to the transfer entrypoint can be converted to IAirGapTransaction')
+
+      return [defaultDetails]
+    }
+
+    try {
+      const callArguments = MichelsonPair.from(
+        parameters.value, 
+        (fromJSON: string) => MichelsonAddress.from(fromJSON, 'from'), 
+        (pairJSON: string) => MichelsonPair.from(pairJSON, 
+          (toJSON: string) => MichelsonAddress.from(toJSON, 'to'), 
+          (valueJSON: string) => MichelsonInt.from(valueJSON, 'value'))
+      ).asRawValue()
+      
+      if (!this.isTransferRequest(callArguments)) {
+        return [defaultDetails]
+      }
+
+      return [{
+        ...defaultDetails,
+        amount: callArguments.value.toFixed(), // in tzbtc
+        from: [isHex(callArguments.from) ? TezosUtils.parseAddress(callArguments.from) : callArguments.from],
+        to: [isHex(callArguments.to) ? TezosUtils.parseAddress(callArguments.to) : callArguments.to]
+      }]
+    } catch {
+      return [defaultDetails]
+    }
   }
 
   public async getBalance(address: string, source?: string, callbackContract: string = this.callbackContract()): Promise<string> {

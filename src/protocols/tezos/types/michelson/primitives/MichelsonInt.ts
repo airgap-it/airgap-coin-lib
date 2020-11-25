@@ -9,17 +9,17 @@ export class MichelsonInt extends MichelsonType {
     super(name)
   }
 
-  public static from(value: unknown): MichelsonInt {
+  public static from(value: unknown, name?: string): MichelsonInt {
     return isMichelinePrimitive('int', value)
-      ? MichelsonInt.fromMicheline(value)
-      : MichelsonInt.fromUnknown(value)
+      ? MichelsonInt.fromMicheline(value, name)
+      : MichelsonInt.fromUnknown(value, name)
   }
 
-  public static fromMicheline(micheline: MichelinePrimitive<'int'>): MichelsonInt {
-    return MichelsonInt.fromUnknown(parseInt(micheline.int, 10))
+  public static fromMicheline(micheline: MichelinePrimitive<'int'>, name?: string): MichelsonInt {
+    return MichelsonInt.fromUnknown(parseInt(micheline.int, 10), name)
   }
 
-  public static fromUnknown(unknownValue: unknown): MichelsonInt {
+  public static fromUnknown(unknownValue: unknown, name?: string): MichelsonInt {
     if (unknownValue instanceof MichelsonInt) {
       return unknownValue
     }
@@ -28,7 +28,7 @@ export class MichelsonInt extends MichelsonType {
       throw invalidArgumentTypeError('MichelsonInt', 'number or string or BigNumber', typeof unknownValue)
     }
 
-    return new MichelsonInt(BigNumber.isBigNumber(unknownValue) ? unknownValue : new BigNumber(unknownValue))
+    return new MichelsonInt(BigNumber.isBigNumber(unknownValue) ? unknownValue : new BigNumber(unknownValue), name)
   }
 
   public asRawValue(): Record<string, BigNumber> | BigNumber {

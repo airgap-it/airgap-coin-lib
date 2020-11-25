@@ -5,4 +5,6 @@ export interface BigMapRequest {
   predicates?: BigMapPredicate[]
 
   bigMapFilter?: BigMapPredicate[]
+
+  limit?: number
 }

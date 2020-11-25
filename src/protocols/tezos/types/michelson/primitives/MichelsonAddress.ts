@@ -11,21 +11,21 @@ export class MichelsonAddress extends MichelsonType {
     super(name)
   }
 
-  public static from(value: unknown): MichelsonAddress {
+  public static from(value: unknown, name?: string): MichelsonAddress {
     return isMichelinePrimitive('string', value) || isMichelinePrimitive('bytes', value)
-      ? MichelsonAddress.fromMicheline(value)
-      : MichelsonAddress.fromUnknown(value)
+      ? MichelsonAddress.fromMicheline(value, name)
+      : MichelsonAddress.fromUnknown(value, name)
   }
 
-  public static fromMicheline(micheline: MichelinePrimitive<'string'> | MichelinePrimitive<'bytes'>): MichelsonAddress {
+  public static fromMicheline(micheline: MichelinePrimitive<'string'> | MichelinePrimitive<'bytes'>, name?: string): MichelsonAddress {
     const value: MichelsonString | MichelsonBytes = isMichelinePrimitive('string', micheline)
       ? MichelsonString.fromMicheline(micheline) 
       : MichelsonBytes.fromMicheline(micheline)
 
-    return new MichelsonAddress(value)
+    return new MichelsonAddress(value, name)
   }
 
-  public static fromUnknown(unknownValue: unknown): MichelsonAddress {
+  public static fromUnknown(unknownValue: unknown, name?: string): MichelsonAddress {
     if (unknownValue instanceof MichelsonAddress) {
       return unknownValue
     }
@@ -39,7 +39,7 @@ export class MichelsonAddress extends MichelsonType {
       throw new Error('MichelsonAddress: invalid value.')
     }
 
-    return new MichelsonAddress(value)
+    return new MichelsonAddress(value, name)
   }
 
   public asRawValue(): Record<string, string>  | string {
