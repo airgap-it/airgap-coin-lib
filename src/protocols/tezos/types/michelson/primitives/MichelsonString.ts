@@ -8,17 +8,17 @@ export class MichelsonString extends MichelsonType {
     super(name)
   }
 
-  public static from(value: unknown): MichelsonString {
+  public static from(value: unknown, name?: string): MichelsonString {
     return isMichelinePrimitive('string', value)
-      ? MichelsonString.fromMicheline(value)
-      : MichelsonString.fromUnknown(value)
+      ? MichelsonString.fromMicheline(value, name)
+      : MichelsonString.fromUnknown(value, name)
   }
 
-  public static fromMicheline(micheline: MichelinePrimitive<'string'>): MichelsonString {
-    return MichelsonString.fromUnknown(micheline.string)
+  public static fromMicheline(micheline: MichelinePrimitive<'string'>, name?: string): MichelsonString {
+    return MichelsonString.fromUnknown(micheline.string, name)
   }
 
-  public static fromUnknown(unknownValue: unknown): MichelsonString {
+  public static fromUnknown(unknownValue: unknown, name?: string): MichelsonString {
     if (unknownValue instanceof MichelsonString) {
       return unknownValue
     }
@@ -27,7 +27,7 @@ export class MichelsonString extends MichelsonType {
       throw invalidArgumentTypeError('MichelsonString', 'string', typeof unknownValue)
     }
 
-    return new MichelsonString(unknownValue)
+    return new MichelsonString(unknownValue, name)
   }
 
   public asRawValue(): Record<string, string> | string {

@@ -48,7 +48,8 @@ export class TezosContract {
 
     return this.apiRequest('big_map_contents', {
       fields: ['key', 'key_hash', 'value'],
-      predicates
+      predicates,
+      limit: request.limit ?? 100000
     })
   }
 

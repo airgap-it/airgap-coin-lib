@@ -12,7 +12,7 @@ import {
   TezosUSDProtocolConfig
 } from '../protocols/tezos/fa/TezosFAProtocolOptions'
 import { TezosProtocolNetwork, TezosProtocolOptions } from '../protocols/tezos/TezosProtocolOptions'
-import { assertNever } from '../serializer/message'
+import { assertNever } from './assert'
 
 import { ProtocolNetwork } from './ProtocolNetwork'
 import { ProtocolOptions } from './ProtocolOptions'

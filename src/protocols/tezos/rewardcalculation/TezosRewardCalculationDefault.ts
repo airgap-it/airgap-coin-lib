@@ -360,12 +360,42 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
     return result.data
   }
 
+  private blockLevelFieldNameMap = new Map<'baking_rights' | 'endorsing_rights', string>()
+  private fetchBlockLevelFieldPromise?: Promise<string>
+
+  private async fetchBlockLevelFieldName(entity: 'baking_rights' | 'endorsing_rights' ): Promise<string> {
+    const result = this.blockLevelFieldNameMap.get(entity)
+    if (result) {
+      return result
+    }
+
+    if (this.fetchBlockLevelFieldPromise) {
+      return this.fetchBlockLevelFieldPromise
+    }
+
+    this.fetchBlockLevelFieldPromise = axios.get(`${this.protocol.baseApiUrl}/v2/metadata/tezos/${this.protocol.baseApiNetwork}/${entity}/attributes`, {
+      headers: this.protocol.headers
+    }).then(response => {
+      let name = 'block_level'
+      const fieldNames: string[] = response.data.map(metadata => metadata.name)
+      if (fieldNames.includes('level')) {
+        name = 'level'
+      }
+      this.blockLevelFieldNameMap.set(entity, name)
+      return name
+    }).finally( () => {
+      this.fetchBlockLevelFieldPromise = undefined
+    })
+
+    return this.fetchBlockLevelFieldPromise
+  }
+
   protected async fetchBakingRights(bakerAddress: string, cycle: number): Promise<TezosBakingRight[]> {
     const startLevel = this.cycleToBlockLevel(cycle)
     const endLevel = startLevel + this.tezosNodeConstants.blocks_per_cycle
-
+    const blockLevelFieldName = await this.fetchBlockLevelFieldName('baking_rights')
     const query = {
-      fields: ['priority', 'level'],
+      fields: ['priority', blockLevelFieldName],
       predicates: [
         {
           field: 'delegate',
@@ -378,14 +408,14 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
           set: [0]
         },
         {
-          field: 'level',
+          field: blockLevelFieldName,
           operation: 'between',
           set: [startLevel, endLevel]
         }
       ],
       orderBy: [
         {
-          field: 'level',
+          field: blockLevelFieldName,
           direction: 'desc'
         }
       ],
@@ -411,8 +441,9 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
   protected async fetchEndorsingRights(bakerAddress: string, cycle: number): Promise<TezosEndorsingRight[]> {
     const startLevel = this.cycleToBlockLevel(cycle)
     const endLevel = startLevel + this.tezosNodeConstants.blocks_per_cycle
+    const blockLevelFieldName = await this.fetchBlockLevelFieldName('endorsing_rights')
     const query = {
-      fields: ['level'],
+      fields: [blockLevelFieldName],
       predicates: [
         {
           field: 'delegate',
@@ -420,7 +451,7 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
           set: [bakerAddress]
         },
         {
-          field: 'level',
+          field: blockLevelFieldName,
           operation: 'between',
           set: [startLevel, endLevel]
         }

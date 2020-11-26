@@ -18,13 +18,13 @@ import { AirGapTransactionStatus } from '../../src/interfaces/IAirGapTransaction
 const tezosProtocolSpec = new TezosTestProtocolSpec()
 const tezosLib = tezosProtocolSpec.lib
 
-const prepareTxHelper = async (rawTezosTx: RawTezosTransaction) => {
-  const airGapTxs = await tezosLib.getTransactionDetails({
+const prepareTxHelper = async (rawTezosTx: RawTezosTransaction, protocol: TezosProtocol = tezosLib) => {
+  const airGapTxs = await protocol.getTransactionDetails({
     transaction: rawTezosTx,
     publicKey: tezosProtocolSpec.wallet.publicKey
   })
 
-  const unforgedTransaction = await tezosLib.unforgeUnsignedTezosWrappedOperation(rawTezosTx.binaryTransaction)
+  const unforgedTransaction = await protocol.unforgeUnsignedTezosWrappedOperation(rawTezosTx.binaryTransaction)
 
   const spendOperation = unforgedTransaction.contents.find((content) => content.kind === TezosOperationType.TRANSACTION)
   if (spendOperation) {
@@ -842,6 +842,45 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
           }
         })
       )
+      const protocol = tezosProtocolSpec.fa12
+      getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/script`).returns(
+        Promise.resolve({
+          data: { 
+            code: [] 
+          }
+        })
+      )
+
+      getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/entrypoints`).returns(
+        Promise.resolve({
+          data: {
+            entrypoints: {
+              transfer: {
+                prim: 'pair',
+                args: [
+                  {
+                    prim: 'address',
+                    annots: [':from']
+                  },
+                  {
+                    prim: 'pair',
+                    args: [
+                      {
+                        prim: 'address',
+                        annots: [':to']
+                      },
+                      {
+                        prim: 'nat',
+                        annots: [':value']
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        })
+      )
 
       const tx = {
         kind: 'transaction',
@@ -893,13 +932,12 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         })
       )
 
-      const protocol = new TezosProtocol()
       const incompleteTransaction: any[] = [tx, tx]
 
       const transaction = await protocol.prepareOperations(tezosProtocolSpec.wallet.publicKey, incompleteTransaction)
       const forged = await protocol.forgeAndWrapOperations(transaction)
 
-      const result = await prepareTxHelper(forged)
+      const result = await prepareTxHelper(forged, protocol)
 
       // check that storage is properly set
       // expect(result.spendTransaction.storage_limit).to.equal('0')

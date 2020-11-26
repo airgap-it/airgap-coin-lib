@@ -25,8 +25,6 @@ import { RLPData } from './utils/toBuffer'
 
 const ID_LENGTH: number = 10
 
-export const assertNever: (x: never) => void = (x: never): void => undefined
-
 export type IACMessages =
   | AccountShareResponse
   | MessageSignRequest

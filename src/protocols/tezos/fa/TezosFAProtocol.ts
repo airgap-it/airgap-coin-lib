@@ -11,7 +11,7 @@ import { TezosProtocol } from '../TezosProtocol'
 import { BigMapResponse } from '../types/fa/BigMapResult'
 import { MichelineDataNode } from '../types/micheline/MichelineNode'
 import { TezosOperation } from '../types/operations/TezosOperation'
-import { TezosTransactionParameters, TezosWrappedTransactionOperation } from '../types/operations/Transaction'
+import { TezosTransactionParameters, TezosWrappedTransactionOperation, TezosTransactionOperation } from '../types/operations/Transaction'
 import { TezosOperationType } from '../types/TezosOperationType'
 import { TezosWrappedOperation } from '../types/TezosWrappedOperation'
 import { isMichelineNode } from '../types/utils'
@@ -64,7 +64,7 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
     )
   }
 
-  public abstract async transactionDetailsFromParameters(parameters: TezosTransactionParameters): Promise<Partial<IAirGapTransaction>[]>
+  public abstract transactionDetailsFromParameters(parameters: TezosTransactionParameters): Partial<IAirGapTransaction>[]
 
   public async bigMapValue(key: string, isKeyHash: boolean = false, bigMapID?: number): Promise<string | null> {
     const result: BigMapResponse[] = await this.contract.bigMapValues({
@@ -159,15 +159,11 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
     )
     const lastEntryBlockLevel: number = allTransactions.length > 0 ? allTransactions[allTransactions.length - 1].block_level : 0
 
-    const transactions = await Promise.all<IAirGapTransaction[]>(
-      allTransactions
-        .reduce((current, next) => current.concat(next))
-        .map((transaction: any) => {
-          return this.transactionToAirGapTransactions(transaction, addresses)
-        })
-    ).then((transactions: IAirGapTransaction[][]) => {
-      return transactions.reduce((flatten: IAirGapTransaction[], toFlatten: IAirGapTransaction[]) => flatten.concat(toFlatten), [])
-    })
+    const transactions = allTransactions
+      .reduce((current, next) => current.concat(next))
+      .map((transaction: any) => this.transactionToAirGapTransactions(transaction, addresses))
+      .reduce((flatten: IAirGapTransaction[], toFlatten: IAirGapTransaction[]) => flatten.concat(toFlatten), [])
+
     return {
       transactions,
       cursor: {
@@ -217,13 +213,11 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
     const response = await axios.post(`${this.baseApiUrl}/v2/data/tezos/${this.baseApiNetwork}/operations`, body, {
       headers: this.headers
     })
-    const transactions: IAirGapTransaction[] = await Promise.all<IAirGapTransaction[]>(
-      response.data.map((transaction: any) => {
-        return this.transactionToAirGapTransactions(transaction)
-      })
-    ).then((transactions: IAirGapTransaction[][]) => {
-      return transactions.reduce((flatten: IAirGapTransaction[], toFlatten: IAirGapTransaction[]) => flatten.concat(toFlatten), [])
-    })
+    
+    const transactions: IAirGapTransaction[] = response.data
+      .map((transaction: any) => this.transactionToAirGapTransactions(transaction))
+      .reduce((flatten: IAirGapTransaction[], toFlatten: IAirGapTransaction[]) => flatten.concat(toFlatten), [])
+      
     const lastEntryBlockLevel: number = response.data.length > 0 ? response.data[response.data.length - 1].block_level : 0
 
     return {
@@ -244,6 +238,28 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
     return this.contract.normalizeContractCallParameters(parsedParameters, fallbackEntrypointName)
   }
 
+  protected async getTransactionOperationDetails(transactionOperation: TezosTransactionOperation): Promise<Partial<IAirGapTransaction>[]> {
+    let partials: Partial<IAirGapTransaction>[] = []
+    try {
+      partials = transactionOperation.parameters
+        ? this.transactionDetailsFromParameters(transactionOperation.parameters) ?? []
+        : []
+    } catch {}
+
+    if (partials.length === 0) {
+      partials.push({})
+    }
+
+    return partials.map((partial: Partial<IAirGapTransaction>) => {
+      return {
+        from: [transactionOperation.source],
+        amount: transactionOperation.amount,
+        to: [transactionOperation.destination],
+        ...partial
+      }
+    })
+  }
+
   private parseParameters(parameters: string): unknown {
     const toBeRemoved = 'Unparsable code: '
     if (parameters.startsWith(toBeRemoved)) {
@@ -253,7 +269,7 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
     return JSON.parse(parameters)
   }
 
-  private async transactionToAirGapTransactions(transaction: any, sourceAddresses?: string[]): Promise<IAirGapTransaction[]> {
+  private transactionToAirGapTransactions(transaction: any, sourceAddresses?: string[]): IAirGapTransaction[] {
     const parameters: string = transaction.parameters_micheline ?? transaction.parameters
     const parsedParameters: unknown = this.parseParameters(parameters)
 
@@ -266,7 +282,7 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
       value: parsedParameters
     }
 
-    const partialDetails: Partial<IAirGapTransaction>[] = await this.transactionDetailsFromParameters(transferData)
+    const partialDetails: Partial<IAirGapTransaction>[] = this.transactionDetailsFromParameters(transferData)
 
     return partialDetails.map((details: Partial<IAirGapTransaction>) => {
       const inbound: boolean =
@@ -283,9 +299,7 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
         hash: transaction.operation_group_hash,
         timestamp: transaction.timestamp / 1000,
         blockHeight: transaction.block_level,
-        extra: {
-          status: transaction.status
-        },
+        status: transaction.status,
         ...details
       }
     })

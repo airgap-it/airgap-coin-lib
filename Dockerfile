@@ -1,4 +1,4 @@
-FROM node:8-slim
+FROM node:14-slim
 
 RUN apt-get update && apt-get install -yq git python build-essential
 

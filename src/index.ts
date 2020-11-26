@@ -131,12 +131,18 @@ import {
   TezosBTCProtocolConfig,
   TezosStakerProtocolConfig,
   TezosUSDProtocolConfig,
-  TezosFAProtocolOptions
+  TezosFAProtocolOptions,
+  TezosFA2ProtocolConfig,
+  TezosFA2ProtocolOptions
 } from './protocols/tezos/fa/TezosFAProtocolOptions'
 import { TezosTransactionResult } from './protocols/tezos/types/TezosTransactionResult'
 import { TezosTransactionCursor } from './protocols/tezos/types/TezosTransactionCursor'
 import { generateId } from "./serializer/utils/generateId"
 import { ProtocolSymbols, MainProtocolSymbols, SubProtocolSymbols } from "./utils/ProtocolSymbols"
+import { TezosUtils } from './protocols/tezos/TezosUtils'
+import { TezosFA2Protocol } from './protocols/tezos/fa/TezosFA2Protocol'
+import { TezosFA1Protocol } from './protocols/tezos/fa/TezosFA1Protocol'
+import { TezosFA12Protocol } from './protocols/tezos/fa/TezosFA12Protocol'
 // tslint:enable:ordered-imports
 
 // Core
@@ -232,6 +238,9 @@ export {
   TezosProtocol,
   TezosKtProtocol,
   TezosFAProtocol,
+  TezosFA1Protocol,
+  TezosFA12Protocol,
+  TezosFA2Protocol,
   TezosBTC,
   TezosStaker,
   TezosUSD,
@@ -249,11 +258,14 @@ export {
   TezosProtocolConfig,
   TezosProtocolOptions,
   TezosFAProtocolConfig,
+  TezosFA2ProtocolConfig,
   TezosBTCProtocolConfig,
   TezosStakerProtocolConfig,
   TezosUSDProtocolConfig,
   TezosFAProtocolOptions,
-  TezosNetwork
+  TezosFA2ProtocolOptions,
+  TezosNetwork,
+  TezosUtils
 }
 
 // Serializer
