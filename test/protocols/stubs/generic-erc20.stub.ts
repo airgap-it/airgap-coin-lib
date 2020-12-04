@@ -13,6 +13,11 @@ export class GenericERC20ProtocolStub implements ProtocolHTTPStub {
       .returns(Promise.resolve(new BigNumber(100000000000000000000)))
 
     sinon
+      .stub(Object.getPrototypeOf(Object.getPrototypeOf(protocol)), 'getBalanceOfAddresses')
+      .withArgs(sinon.match.any)
+      .returns(Promise.resolve(new BigNumber(100000000000000000000)))
+
+    sinon
       .stub(protocol, 'getBalanceOfPublicKey')
       .withArgs(sinon.match.any)
       .returns(Promise.resolve(new BigNumber(100000000000000000000)))
