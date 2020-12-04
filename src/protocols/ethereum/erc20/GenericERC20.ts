@@ -115,11 +115,11 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, Ethersc
     const balance: BigNumber = new BigNumber(await this.getBalanceOfPublicKey(publicKey))
 
     if (balance.isGreaterThanOrEqualTo(wrappedValues[0])) {
-      const ethBalance: BigNumber = new BigNumber(await super.getBalanceOfPublicKey(publicKey))
       const address: string = await this.getAddressFromPublicKey(publicKey)
+      const ethBalance: BigNumber = new BigNumber(await super.getBalanceOfAddresses([address]))
 
       const estimatedGas = await this.estimateGas(address, recipients[0], EthereumUtils.toHex(wrappedValues[0].toFixed()))
-
+      
       if (ethBalance.isGreaterThanOrEqualTo(wrappedFee)) {
         const txCount: number = await this.options.nodeClient.fetchTransactionCount(address)
         const gasPrice: BigNumber = wrappedFee.isEqualTo(0)
