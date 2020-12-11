@@ -121,7 +121,7 @@ interface RunOperationInternalOperationResult {
     paid_storage_size_diff?: string
     originated_contracts?: string[]
     allocated_destination_contract?: boolean
-  },
+  }
   parameters?: {
     entrypoint: string
     value: unknown
@@ -146,8 +146,6 @@ const SELF_BOND_REQUIREMENT: number = 0.0825
 
 export enum TezosNetwork {
   MAINNET = 'mainnet',
-  BABYLONNET = 'babylonnet',
-  CARTHAGENET = 'carthagenet',
   DELPHINET = 'delphinet'
 }
 
@@ -316,7 +314,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       addresses.map((address) => {
         const getRequestBody = () => {
           const body = {
-            fields: ["status", "amount", "fee", "source", "destination", "operation_group_hash", "timestamp", "block_level"],
+            fields: ['status', 'amount', 'fee', 'source', 'destination', 'operation_group_hash', 'timestamp', 'block_level'],
             predicates: [
               {
                 field: 'source',
@@ -386,8 +384,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
             .catch(() => {
               return { data: [] }
             })
-            
-            resolve(result.data)
+
+          resolve(result.data)
         })
       })
     )
@@ -550,7 +548,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   }
 
   public async getBalanceOfPublicKeyForSubProtocols(publicKey: string, subProtocols: ICoinSubProtocol[]): Promise<string[]> {
-    return await Promise.all(subProtocols.map(subProtocol => subProtocol.getBalanceOfPublicKey(publicKey).catch(() => "0")))
+    return await Promise.all(subProtocols.map((subProtocol) => subProtocol.getBalanceOfPublicKey(publicKey).catch(() => '0')))
   }
 
   public async getAvailableBalanceOfAddresses(addresses: string[]): Promise<string> {
@@ -559,7 +557,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
   public async estimateMaxTransactionValueFromPublicKey(publicKey: string, recipients: string[], fee?: string): Promise<string> {
     const balance = await this.getBalanceOfPublicKey(publicKey)
-    const balanceWrapper = (new BigNumber(balance)).minus(1) // Tezos accounts can never be empty. We must leave at least 1 mutez behind.
+    const balanceWrapper = new BigNumber(balance).minus(1) // Tezos accounts can never be empty. We must leave at least 1 mutez behind.
 
     let maxFee: BigNumber
     if (fee !== undefined) {
@@ -1664,8 +1662,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
   public static readonly BLOCKS_PER_CYCLE = {
     mainnet: 4096,
-    babylonnet: 2048,
-    carthagenet: 2048
+    delphinet: 2048,
+    edonet: 2048
   }
 
   private async fetchBalances(addresses: string[], blockLevel: number): Promise<{ address: string; balance: BigNumber }[]> {

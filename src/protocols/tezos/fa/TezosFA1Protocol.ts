@@ -30,7 +30,7 @@ export class TezosFA1Protocol extends TezosFAProtocol {
     super(options)
 
     this.defaultCallbackContractMap.set(TezosNetwork.MAINNET, 'KT19ptNzn4MVAN45KUUNpyL5AdLVhujk815u')
-    this.defaultCallbackContractMap.set(TezosNetwork.CARTHAGENET, 'KT1J8FmFLSgMz5H2vexFmsCtTLVod9V49iyW')
+    this.defaultCallbackContractMap.set(TezosNetwork.DELPHINET, 'KT1FEfp83DLZkY6sc4x78n4BQp8hRszHwGBk')
   }
 
   public async getBalanceOfAddresses(addresses: string[]): Promise<string> {
