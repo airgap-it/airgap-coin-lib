@@ -121,6 +121,10 @@ interface RunOperationInternalOperationResult {
     paid_storage_size_diff?: string
     originated_contracts?: string[]
     allocated_destination_contract?: boolean
+  },
+  parameters?: {
+    entrypoint: string
+    value: unknown
   }
 }
 
