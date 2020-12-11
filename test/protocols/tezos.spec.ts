@@ -969,6 +969,1139 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       expect(airGapTx.fee).to.equal('35308')
     })
 
+    it('will prepare an FA2 transaction from public key', async () => {
+      getStub.withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/`).returns(
+        Promise.resolve({
+          data: {
+            protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
+            chain_id: 'NetXdQprcVkpaWU',
+            hash: 'BKuTvcx5LJQgtiNXbd4py3RFRE4x7EYjTFwJjVjj4XP7h2vSxs6',
+            header: {
+              level: 940455,
+              proto: 6,
+              predecessor: 'BLurthGbZXstELdA3hXtGAA5kXxgtxmfUpzCq7bzpPVB92u9g1z',
+              timestamp: '2020-05-06T10:41:32Z',
+              validation_pass: 4,
+              operations_hash: 'LLoajfGAHirmjbJWjX81gNiZPqyv8pqEyUx7FAygiYBXLQ18H2kX8',
+              fitness: ['01', '00000000000459a7'],
+              context: 'CoVNfjwSR78ChDuvVpRW6Lvjq6nwC6UsyrZzhDgrU2ZMiPYXNjYy',
+              priority: 0,
+              proof_of_work_nonce: '0639894462090000',
+              signature: 'sigjnLFcgqv8QC1QwNhPgg4WomUGtL4nQ68u3GavKXLLWyFcf8g2ceaT6FeuRRVGcdDY7qj7MBo2iUo83L1rtroQKMhqZbw2'
+            },
+            metadata: {
+              protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
+              next_protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
+              test_chain_status: { status: 'not_running' },
+              max_operations_ttl: 60,
+              max_operation_data_length: 16384,
+              max_block_header_length: 238,
+              max_operation_list_length: [
+                {
+                  max_size: 32768,
+                  max_op: 32
+                },
+                { max_size: 32768 },
+                {
+                  max_size: 135168,
+                  max_op: 132
+                },
+                { max_size: 524288 }
+              ],
+              baker: 'tz1Kt4P8BCaP93AEV4eA7gmpRryWt5hznjCP',
+              level: {
+                level: 940455,
+                level_position: 940454,
+                cycle: 229,
+                cycle_position: 2470,
+                voting_period: 28,
+                voting_period_position: 22950,
+                expected_commitment: false
+              },
+              voting_period_kind: 'proposal',
+              nonce_hash: null,
+              consumed_gas: '0',
+              deactivated: [],
+              balance_updates: []
+            },
+            operations: [[], [], [], []]
+          }
+        })
+      )
+
+      const protocol = tezosProtocolSpec.fa2
+      getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/script`).returns(
+        Promise.resolve({
+          data: { 
+            code: [] 
+          }
+        })
+      )
+
+      getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/entrypoints`).returns(
+        Promise.resolve({
+          data: {
+            entrypoints: {
+              transfer: {
+                prim: 'list',
+                args: [
+                  {
+                    prim: 'pair',
+                    args: [
+                      {
+                        prim: 'address',
+                        annots: ['%from_']
+                      },
+                      {
+                        prim: 'list',
+                        args: [
+                          {
+                            prim: 'pair',
+                            args: [
+                              {
+                                prim: 'address',
+                                annots: ['%to_']
+                              },
+                              {
+                                prim: 'pair',
+                                args: [
+                                  {
+                                    prim: 'nat',
+                                    annots: ['%token_id']
+                                  },
+                                  {
+                                    prim: 'nat',
+                                    annots: ['%amount']
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ],
+                        annots: ['%txs']
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        })
+      )
+
+      const metadata: RunOperationMetadata = {
+        balance_updates: [],
+        operation_result: {
+          status: 'applied',
+          balance_updates: [],
+          consumed_gas: '350000'
+        }
+      }
+
+      postStub.withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`).returns(
+        Promise.resolve({
+          data: {
+            contents: [
+              {
+                kind: 'transaction',
+                amount: '0',
+                fee: '35308',
+                storage_limit: '60000',
+                destination: protocol.contractAddress, 
+                metadata 
+              }
+            ]
+          }
+        })
+      )
+
+      const transaction = await protocol.prepareTransactionFromPublicKey(
+        tezosProtocolSpec.wallet.publicKey,
+        ['tz1MecudVJnFZN5FSrriu8ULz2d6dDTR7KaM', 'tz1awXW7wuXy21c66vBudMXQVAPgRnqqwgTH'],
+        ['100', '200'],
+        '500000'
+      )
+
+      const result = await prepareTxHelper(transaction, protocol)
+      const airGapTx = result.airGapTxs[0]
+
+      expect(airGapTx.transactionDetails.amount).to.equal('0')
+      expect(airGapTx.transactionDetails.fee).to.equal('500000')
+      expect(airGapTx.transactionDetails.gas_limit).to.equal('350000')
+      expect(airGapTx.transactionDetails.storage_limit).to.equal('0')
+      expect(airGapTx.transactionDetails.source).to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
+      expect(airGapTx.transactionDetails.destination).to.equal(protocol.contractAddress)
+      expect(airGapTx.transactionDetails.parameters).to.not.be.undefined
+      expect(airGapTx.transactionDetails.parameters.entrypoint).to.equal('transfer')
+      expect(airGapTx.transactionDetails.parameters.value[0].args[0].string).to.equal(tezosProtocolSpec.wallet.addresses[0])
+      expect(airGapTx.transactionDetails.parameters.value[0].args[1][0].args[0].string).to.equal('tz1MecudVJnFZN5FSrriu8ULz2d6dDTR7KaM')
+      expect(airGapTx.transactionDetails.parameters.value[0].args[1][0].args[1].args[0].int).to.equal('0')
+      expect(airGapTx.transactionDetails.parameters.value[0].args[1][0].args[1].args[1].int).to.equal('100')
+      expect(airGapTx.transactionDetails.parameters.value[0].args[1][1].args[0].string).to.equal('tz1awXW7wuXy21c66vBudMXQVAPgRnqqwgTH')
+      expect(airGapTx.transactionDetails.parameters.value[0].args[1][1].args[1].args[0].int).to.equal('0')
+      expect(airGapTx.transactionDetails.parameters.value[0].args[1][1].args[1].args[1].int).to.equal('200')
+    })
+
+    it('will prepare an FA2 transfer transaction', async () => {
+      getStub.withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/`).returns(
+        Promise.resolve({
+          data: {
+            protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
+            chain_id: 'NetXdQprcVkpaWU',
+            hash: 'BKuTvcx5LJQgtiNXbd4py3RFRE4x7EYjTFwJjVjj4XP7h2vSxs6',
+            header: {
+              level: 940455,
+              proto: 6,
+              predecessor: 'BLurthGbZXstELdA3hXtGAA5kXxgtxmfUpzCq7bzpPVB92u9g1z',
+              timestamp: '2020-05-06T10:41:32Z',
+              validation_pass: 4,
+              operations_hash: 'LLoajfGAHirmjbJWjX81gNiZPqyv8pqEyUx7FAygiYBXLQ18H2kX8',
+              fitness: ['01', '00000000000459a7'],
+              context: 'CoVNfjwSR78ChDuvVpRW6Lvjq6nwC6UsyrZzhDgrU2ZMiPYXNjYy',
+              priority: 0,
+              proof_of_work_nonce: '0639894462090000',
+              signature: 'sigjnLFcgqv8QC1QwNhPgg4WomUGtL4nQ68u3GavKXLLWyFcf8g2ceaT6FeuRRVGcdDY7qj7MBo2iUo83L1rtroQKMhqZbw2'
+            },
+            metadata: {
+              protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
+              next_protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
+              test_chain_status: { status: 'not_running' },
+              max_operations_ttl: 60,
+              max_operation_data_length: 16384,
+              max_block_header_length: 238,
+              max_operation_list_length: [
+                {
+                  max_size: 32768,
+                  max_op: 32
+                },
+                { max_size: 32768 },
+                {
+                  max_size: 135168,
+                  max_op: 132
+                },
+                { max_size: 524288 }
+              ],
+              baker: 'tz1Kt4P8BCaP93AEV4eA7gmpRryWt5hznjCP',
+              level: {
+                level: 940455,
+                level_position: 940454,
+                cycle: 229,
+                cycle_position: 2470,
+                voting_period: 28,
+                voting_period_position: 22950,
+                expected_commitment: false
+              },
+              voting_period_kind: 'proposal',
+              nonce_hash: null,
+              consumed_gas: '0',
+              deactivated: [],
+              balance_updates: []
+            },
+            operations: [[], [], [], []]
+          }
+        })
+      )
+
+      const protocol = tezosProtocolSpec.fa2
+      getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/script`).returns(
+        Promise.resolve({
+          data: { 
+            code: [] 
+          }
+        })
+      )
+
+      getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/entrypoints`).returns(
+        Promise.resolve({
+          data: {
+            entrypoints: {
+              transfer: {
+                prim: 'list',
+                args: [
+                  {
+                    prim: 'pair',
+                    args: [
+                      {
+                        prim: 'address',
+                        annots: ['%from_']
+                      },
+                      {
+                        prim: 'list',
+                        args: [
+                          {
+                            prim: 'pair',
+                            args: [
+                              {
+                                prim: 'address',
+                                annots: ['%to_']
+                              },
+                              {
+                                prim: 'pair',
+                                args: [
+                                  {
+                                    prim: 'nat',
+                                    annots: ['%token_id']
+                                  },
+                                  {
+                                    prim: 'nat',
+                                    annots: ['%amount']
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ],
+                        annots: ['%txs']
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        })
+      )
+
+      const metadata: RunOperationMetadata = {
+        balance_updates: [],
+        operation_result: {
+          status: 'applied',
+          balance_updates: [],
+          consumed_gas: '350000'
+        }
+      }
+
+      postStub.withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`).returns(
+        Promise.resolve({
+          data: {
+            contents: [
+              {
+                kind: 'transaction',
+                amount: '0',
+                fee: '35308',
+                storage_limit: '60000',
+                destination: protocol.contractAddress, 
+                metadata 
+              }
+            ]
+          }
+        })
+      )
+
+      const transaction = await protocol.transfer([
+        {
+          from: 'tz1MecudVJnFZN5FSrriu8ULz2d6dDTR7KaM',
+          txs: [
+            {
+              to: 'tz1awXW7wuXy21c66vBudMXQVAPgRnqqwgTH',
+              amount: '100',
+              tokenID: 10
+            },
+            {
+              to: 'tz1Yju7jmmsaUiG9qQLoYv35v5pHgnWoLWbt',
+              amount: '110',
+              tokenID: 11
+            }
+          ]
+        },
+        {
+          from: 'tz1Xsrfv6hn86fp88YfRs6xcKwt2nTqxVZYM',
+          txs: [
+            {
+              to: 'tz1NpWrAyDL9k2Lmnyxcgr9xuJakbBxdq7FB',
+              amount: '200',
+              tokenID: 20
+            }
+          ]
+        }
+      ], '500000', tezosProtocolSpec.wallet.publicKey)
+
+      const result = await prepareTxHelper(transaction, protocol)
+      const airGapTx = result.airGapTxs[0]
+
+      expect(airGapTx.transactionDetails.amount).to.equal('0')
+      expect(airGapTx.transactionDetails.fee).to.equal('500000')
+      expect(airGapTx.transactionDetails.gas_limit).to.equal('350000')
+      expect(airGapTx.transactionDetails.storage_limit).to.equal('0')
+      expect(airGapTx.transactionDetails.source).to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
+      expect(airGapTx.transactionDetails.destination).to.equal(protocol.contractAddress)
+      expect(airGapTx.transactionDetails.parameters).to.not.be.undefined
+      expect(airGapTx.transactionDetails.parameters.entrypoint).to.equal('transfer')
+      expect(airGapTx.transactionDetails.parameters.value[0].args[0].string).to.equal('tz1MecudVJnFZN5FSrriu8ULz2d6dDTR7KaM')
+      expect(airGapTx.transactionDetails.parameters.value[0].args[1][0].args[0].string).to.equal('tz1awXW7wuXy21c66vBudMXQVAPgRnqqwgTH')
+      expect(airGapTx.transactionDetails.parameters.value[0].args[1][0].args[1].args[0].int).to.equal('10')
+      expect(airGapTx.transactionDetails.parameters.value[0].args[1][0].args[1].args[1].int).to.equal('100')
+      expect(airGapTx.transactionDetails.parameters.value[0].args[1][1].args[0].string).to.equal('tz1Yju7jmmsaUiG9qQLoYv35v5pHgnWoLWbt')
+      expect(airGapTx.transactionDetails.parameters.value[0].args[1][1].args[1].args[0].int).to.equal('11')
+      expect(airGapTx.transactionDetails.parameters.value[0].args[1][1].args[1].args[1].int).to.equal('110')
+      expect(airGapTx.transactionDetails.parameters.value[1].args[0].string).to.equal('tz1Xsrfv6hn86fp88YfRs6xcKwt2nTqxVZYM')
+      expect(airGapTx.transactionDetails.parameters.value[1].args[1][0].args[0].string).to.equal('tz1NpWrAyDL9k2Lmnyxcgr9xuJakbBxdq7FB')
+      expect(airGapTx.transactionDetails.parameters.value[1].args[1][0].args[1].args[0].int).to.equal('20')
+      expect(airGapTx.transactionDetails.parameters.value[1].args[1][0].args[1].args[1].int).to.equal('200')
+    })
+
+    it('will prepare an FA2 update operators transaction', async () => {
+      getStub.withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/`).returns(
+        Promise.resolve({
+          data: {
+            protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
+            chain_id: 'NetXdQprcVkpaWU',
+            hash: 'BKuTvcx5LJQgtiNXbd4py3RFRE4x7EYjTFwJjVjj4XP7h2vSxs6',
+            header: {
+              level: 940455,
+              proto: 6,
+              predecessor: 'BLurthGbZXstELdA3hXtGAA5kXxgtxmfUpzCq7bzpPVB92u9g1z',
+              timestamp: '2020-05-06T10:41:32Z',
+              validation_pass: 4,
+              operations_hash: 'LLoajfGAHirmjbJWjX81gNiZPqyv8pqEyUx7FAygiYBXLQ18H2kX8',
+              fitness: ['01', '00000000000459a7'],
+              context: 'CoVNfjwSR78ChDuvVpRW6Lvjq6nwC6UsyrZzhDgrU2ZMiPYXNjYy',
+              priority: 0,
+              proof_of_work_nonce: '0639894462090000',
+              signature: 'sigjnLFcgqv8QC1QwNhPgg4WomUGtL4nQ68u3GavKXLLWyFcf8g2ceaT6FeuRRVGcdDY7qj7MBo2iUo83L1rtroQKMhqZbw2'
+            },
+            metadata: {
+              protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
+              next_protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
+              test_chain_status: { status: 'not_running' },
+              max_operations_ttl: 60,
+              max_operation_data_length: 16384,
+              max_block_header_length: 238,
+              max_operation_list_length: [
+                {
+                  max_size: 32768,
+                  max_op: 32
+                },
+                { max_size: 32768 },
+                {
+                  max_size: 135168,
+                  max_op: 132
+                },
+                { max_size: 524288 }
+              ],
+              baker: 'tz1Kt4P8BCaP93AEV4eA7gmpRryWt5hznjCP',
+              level: {
+                level: 940455,
+                level_position: 940454,
+                cycle: 229,
+                cycle_position: 2470,
+                voting_period: 28,
+                voting_period_position: 22950,
+                expected_commitment: false
+              },
+              voting_period_kind: 'proposal',
+              nonce_hash: null,
+              consumed_gas: '0',
+              deactivated: [],
+              balance_updates: []
+            },
+            operations: [[], [], [], []]
+          }
+        })
+      )
+
+      const protocol = tezosProtocolSpec.fa2
+      getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/script`).returns(
+        Promise.resolve({
+          data: { 
+            code: [] 
+          }
+        })
+      )
+
+      getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/entrypoints`).returns(
+        Promise.resolve({
+          data: {
+            entrypoints: {
+              update_operators: {
+                prim: 'list',
+                args: [
+                  {
+                    prim: 'or',
+                    args: [
+                      {
+                        prim: 'pair',
+                        args: [
+                          {
+                            prim: 'address',
+                            annots: ['%owner']
+                          },
+                          {
+                            prim: 'pair',
+                            args: [
+                              {
+                                prim: 'address',
+                                annots: ['%operator']
+                              },
+                              {
+                                prim: 'nat',
+                                annots: ['%token_id']
+                              }
+                            ]
+                          }
+                        ],
+                        annots: ['%add_operator']
+                      },
+                      {
+                        prim: 'pair',
+                        args: [
+                          {
+                            prim: 'address',
+                            annots: ['%owner']
+                          },
+                          {
+                            prim: 'pair',
+                            args: [
+                              {
+                                prim: 'address',
+                                annots: ['%operator']
+                              },
+                              {
+                                prim: 'nat',
+                                annots: ['%token_id']
+                              }
+                            ]
+                          }
+                        ],
+                        annots: ['%remove_operator']
+                      }
+                    ],
+                  }
+                ]
+              }
+            }
+          }
+        })
+      )
+
+      const metadata: RunOperationMetadata = {
+        balance_updates: [],
+        operation_result: {
+          status: 'applied',
+          balance_updates: [],
+          consumed_gas: '350000'
+        }
+      }
+
+      postStub.withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`).returns(
+        Promise.resolve({
+          data: {
+            contents: [
+              {
+                kind: 'transaction',
+                amount: '0',
+                fee: '35308',
+                storage_limit: '60000',
+                destination: protocol.contractAddress, 
+                metadata 
+              }
+            ]
+          }
+        })
+      )
+
+      const transaction = await protocol.updateOperators([
+        {
+          operation: 'add',
+          owner: 'tz1MecudVJnFZN5FSrriu8ULz2d6dDTR7KaM',
+          operator: 'tz1awXW7wuXy21c66vBudMXQVAPgRnqqwgTH',
+          tokenId: 0
+        },
+        {
+          operation: 'remove',
+          owner: 'tz1Yju7jmmsaUiG9qQLoYv35v5pHgnWoLWbt',
+          operator: 'tz1Xsrfv6hn86fp88YfRs6xcKwt2nTqxVZYM',
+          tokenId: 1
+        }
+      ], '500000', tezosProtocolSpec.wallet.publicKey)
+
+      const result = await prepareTxHelper(transaction, protocol)
+      const airGapTx = result.airGapTxs[0]
+
+      expect(airGapTx.transactionDetails.amount).to.equal('0')
+      expect(airGapTx.transactionDetails.fee).to.equal('500000')
+      expect(airGapTx.transactionDetails.gas_limit).to.equal('350000')
+      expect(airGapTx.transactionDetails.storage_limit).to.equal('0')
+      expect(airGapTx.transactionDetails.source).to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
+      expect(airGapTx.transactionDetails.destination).to.equal(protocol.contractAddress)
+      expect(airGapTx.transactionDetails.parameters).to.not.be.undefined
+      expect(airGapTx.transactionDetails.parameters.entrypoint).to.equal('update_operators')
+      expect(airGapTx.transactionDetails.parameters.value[0].args[0].args[0].string).to.equal('tz1MecudVJnFZN5FSrriu8ULz2d6dDTR7KaM')
+      expect(airGapTx.transactionDetails.parameters.value[0].args[0].args[1].args[0].string).to.equal('tz1awXW7wuXy21c66vBudMXQVAPgRnqqwgTH')
+      expect(airGapTx.transactionDetails.parameters.value[0].args[0].args[1].args[1].int).to.equal('0')
+      expect(airGapTx.transactionDetails.parameters.value[1].args[0].args[0].string).to.equal('tz1Yju7jmmsaUiG9qQLoYv35v5pHgnWoLWbt')
+      expect(airGapTx.transactionDetails.parameters.value[1].args[0].args[1].args[0].string).to.equal('tz1Xsrfv6hn86fp88YfRs6xcKwt2nTqxVZYM')
+      expect(airGapTx.transactionDetails.parameters.value[1].args[0].args[1].args[1].int).to.equal('1')
+    })
+
+    it('will prepare an FA2 token metadata transaction', async () => {
+      getStub.withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/`).returns(
+        Promise.resolve({
+          data: {
+            protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
+            chain_id: 'NetXdQprcVkpaWU',
+            hash: 'BKuTvcx5LJQgtiNXbd4py3RFRE4x7EYjTFwJjVjj4XP7h2vSxs6',
+            header: {
+              level: 940455,
+              proto: 6,
+              predecessor: 'BLurthGbZXstELdA3hXtGAA5kXxgtxmfUpzCq7bzpPVB92u9g1z',
+              timestamp: '2020-05-06T10:41:32Z',
+              validation_pass: 4,
+              operations_hash: 'LLoajfGAHirmjbJWjX81gNiZPqyv8pqEyUx7FAygiYBXLQ18H2kX8',
+              fitness: ['01', '00000000000459a7'],
+              context: 'CoVNfjwSR78ChDuvVpRW6Lvjq6nwC6UsyrZzhDgrU2ZMiPYXNjYy',
+              priority: 0,
+              proof_of_work_nonce: '0639894462090000',
+              signature: 'sigjnLFcgqv8QC1QwNhPgg4WomUGtL4nQ68u3GavKXLLWyFcf8g2ceaT6FeuRRVGcdDY7qj7MBo2iUo83L1rtroQKMhqZbw2'
+            },
+            metadata: {
+              protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
+              next_protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
+              test_chain_status: { status: 'not_running' },
+              max_operations_ttl: 60,
+              max_operation_data_length: 16384,
+              max_block_header_length: 238,
+              max_operation_list_length: [
+                {
+                  max_size: 32768,
+                  max_op: 32
+                },
+                { max_size: 32768 },
+                {
+                  max_size: 135168,
+                  max_op: 132
+                },
+                { max_size: 524288 }
+              ],
+              baker: 'tz1Kt4P8BCaP93AEV4eA7gmpRryWt5hznjCP',
+              level: {
+                level: 940455,
+                level_position: 940454,
+                cycle: 229,
+                cycle_position: 2470,
+                voting_period: 28,
+                voting_period_position: 22950,
+                expected_commitment: false
+              },
+              voting_period_kind: 'proposal',
+              nonce_hash: null,
+              consumed_gas: '0',
+              deactivated: [],
+              balance_updates: []
+            },
+            operations: [[], [], [], []]
+          }
+        })
+      )
+
+      const protocol = tezosProtocolSpec.fa2
+      getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/script`).returns(
+        Promise.resolve({
+          data: { 
+            code: [] 
+          }
+        })
+      )
+
+      getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/entrypoints`).returns(
+        Promise.resolve({
+          data: {
+            entrypoints: {
+              token_metadata: {
+                prim: 'pair',
+                args: [
+                  {
+                    prim: 'list',
+                    args: [
+                      {
+                        prim: 'nat'
+                      }
+                    ],
+                    annots: ['%token_ids']
+                  },
+                  {
+                    prim: 'lambda',
+                    args: [
+                      {
+                        prim: 'list',
+                        args: [
+                          {
+                            prim: "pair",
+                            args: [
+                              {
+                                prim: 'nat',
+                                annots: ['%token_id']
+                              },
+                              {
+                                prim: 'pair',
+                                args: [
+                                  {
+                                    prim: 'string',
+                                    annots: ['%symbol']
+                                  },
+                                  {
+                                    prim: 'pair',
+                                    args: [
+                                      {
+                                        prim: 'string',
+                                        annots: ['%name']
+                                      },
+                                      {
+                                        prim: 'pair',
+                                        args: [
+                                          {
+                                            prim: 'nat',
+                                            annots: ['%decimals']
+                                          },
+                                          {
+                                            prim: 'map',
+                                            args: [
+                                              {
+                                                prim: 'string'
+                                              },
+                                              {
+                                                prim: 'string'
+                                              }
+                                            ],
+                                            annots: ['%extras']
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        prim: 'unit'
+                      }
+                    ],
+                    annots: ['%handler']
+                  }
+                ]
+              }
+            }
+          }
+        })
+      )
+
+      const metadata: RunOperationMetadata = {
+        balance_updates: [],
+        operation_result: {
+          status: 'applied',
+          balance_updates: [],
+          consumed_gas: '350000'
+        }
+      }
+
+      postStub.withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`).returns(
+        Promise.resolve({
+          data: {
+            contents: [
+              {
+                kind: 'transaction',
+                amount: '0',
+                fee: '35308',
+                storage_limit: '60000',
+                destination: protocol.contractAddress, 
+                metadata 
+              }
+            ]
+          }
+        })
+      )
+
+      const transaction = await protocol.tokenMetadata([0, 1, 2], 'handler', '500000', tezosProtocolSpec.wallet.publicKey)
+
+      const result = await prepareTxHelper(transaction, protocol)
+      const airGapTx = result.airGapTxs[0]
+
+      expect(airGapTx.transactionDetails.amount).to.equal('0')
+      expect(airGapTx.transactionDetails.fee).to.equal('500000')
+      expect(airGapTx.transactionDetails.gas_limit).to.equal('350000')
+      expect(airGapTx.transactionDetails.storage_limit).to.equal('0')
+      expect(airGapTx.transactionDetails.source).to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
+      expect(airGapTx.transactionDetails.destination).to.equal(protocol.contractAddress)
+      expect(airGapTx.transactionDetails.parameters).to.not.be.undefined
+      expect(airGapTx.transactionDetails.parameters.entrypoint).to.equal('token_metadata')
+      expect(airGapTx.transactionDetails.parameters.value.args[0][0].int).to.equal('0')
+      expect(airGapTx.transactionDetails.parameters.value.args[0][1].int).to.equal('1')
+      expect(airGapTx.transactionDetails.parameters.value.args[0][2].int).to.equal('2')
+      expect(airGapTx.transactionDetails.parameters.value.args[1].string).to.equal('handler')
+    })
+
+    it('will check FA2 balance', async () => {
+      getStub.withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/`).returns(
+        Promise.resolve({
+          data: {
+            protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
+            chain_id: 'NetXdQprcVkpaWU',
+            hash: 'BKuTvcx5LJQgtiNXbd4py3RFRE4x7EYjTFwJjVjj4XP7h2vSxs6',
+            header: {
+              level: 940455,
+              proto: 6,
+              predecessor: 'BLurthGbZXstELdA3hXtGAA5kXxgtxmfUpzCq7bzpPVB92u9g1z',
+              timestamp: '2020-05-06T10:41:32Z',
+              validation_pass: 4,
+              operations_hash: 'LLoajfGAHirmjbJWjX81gNiZPqyv8pqEyUx7FAygiYBXLQ18H2kX8',
+              fitness: ['01', '00000000000459a7'],
+              context: 'CoVNfjwSR78ChDuvVpRW6Lvjq6nwC6UsyrZzhDgrU2ZMiPYXNjYy',
+              priority: 0,
+              proof_of_work_nonce: '0639894462090000',
+              signature: 'sigjnLFcgqv8QC1QwNhPgg4WomUGtL4nQ68u3GavKXLLWyFcf8g2ceaT6FeuRRVGcdDY7qj7MBo2iUo83L1rtroQKMhqZbw2'
+            },
+            metadata: {
+              protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
+              next_protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
+              test_chain_status: { status: 'not_running' },
+              max_operations_ttl: 60,
+              max_operation_data_length: 16384,
+              max_block_header_length: 238,
+              max_operation_list_length: [
+                {
+                  max_size: 32768,
+                  max_op: 32
+                },
+                { max_size: 32768 },
+                {
+                  max_size: 135168,
+                  max_op: 132
+                },
+                { max_size: 524288 }
+              ],
+              baker: 'tz1Kt4P8BCaP93AEV4eA7gmpRryWt5hznjCP',
+              level: {
+                level: 940455,
+                level_position: 940454,
+                cycle: 229,
+                cycle_position: 2470,
+                voting_period: 28,
+                voting_period_position: 22950,
+                expected_commitment: false
+              },
+              voting_period_kind: 'proposal',
+              nonce_hash: null,
+              consumed_gas: '0',
+              deactivated: [],
+              balance_updates: []
+            },
+            operations: [[], [], [], []]
+          }
+        })
+      )
+
+      const protocol = tezosProtocolSpec.fa2
+      getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/script`).returns(
+        Promise.resolve({
+          data: { 
+            code: [] 
+          }
+        })
+      )
+
+      getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/entrypoints`).returns(
+        Promise.resolve({
+          data: {
+            entrypoints: {
+              balance_of: {
+                prim: 'pair',
+                args: [
+                  {
+                    prim: 'list',
+                    args: [
+                      {
+                        prim: 'pair',
+                        args: [
+                          {
+                            prim: 'address',
+                            annots: ['%owner']
+                          },
+                          {
+                            prim: 'nat',
+                            annots: ['%token_id']
+                          }
+                        ]
+                      }
+                    ],
+                    annots: ['%requests']
+                  },
+                  {
+                    prim: 'contract',
+                    args: [
+                      {
+                        prim: 'list',
+                        args: [
+                          {
+                            prim: 'pair',
+                            args: [
+                              {
+                                prim: 'pair',
+                                args: [
+                                  {
+                                    prim: 'address',
+                                    annots: ['%owner']
+                                  },
+                                  {
+                                    prim: 'nat',
+                                    annots: ['%token_id']
+                                  }
+                                ],
+                                annots: ['%request']
+                              },
+                              {
+                                prim: 'nat',
+                                annots: ['%balance']
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ],
+                    annots: ['%callback']
+                  }
+                ]
+              }
+            }
+          }
+        })
+      )
+
+      const metadata: RunOperationMetadata = {
+        balance_updates: [],
+        operation_result: {
+          status: 'applied',
+          balance_updates: [],
+          consumed_gas: '350000'
+        },
+        internal_operation_results: [
+          {
+            parameters: {
+              entrypoint: 'default',
+              value: [
+                {
+                  prim: 'Pair',
+                  args: [
+                    {
+                      prim: 'Pair',
+                      args: [
+                        {
+                          string: 'tz1MecudVJnFZN5FSrriu8ULz2d6dDTR7KaM'
+                        },
+                        {
+                          int: '0'
+                        }
+                      ]
+                    },
+                    {
+                      int: 100
+                    }
+                  ]
+                },
+                {
+                  prim: 'Pair',
+                  args: [
+                    {
+                      prim: 'Pair',
+                      args: [
+                        {
+                          string: 'tz1awXW7wuXy21c66vBudMXQVAPgRnqqwgTH'
+                        },
+                        {
+                          int: '1'
+                        }
+                      ]
+                    },
+                    {
+                      int: 110
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+
+      postStub.withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`).returns(
+        Promise.resolve({
+          data: {
+            contents: [
+              {
+                kind: 'transaction',
+                amount: '0',
+                fee: '35308',
+                storage_limit: '60000',
+                destination: protocol.contractAddress,
+                metadata 
+              }
+            ]
+          }
+        })
+      )
+
+      const source = 'tz1Yju7jmmsaUiG9qQLoYv35v5pHgnWoLWbt'
+      getStub.withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${source}/counter`).returns(
+        Promise.resolve({
+          data: 0
+        })
+      )
+
+      const balanceResults = await protocol.balanceOf([
+        {
+          address: 'tz1MecudVJnFZN5FSrriu8ULz2d6dDTR7KaM',
+          tokenID: 0
+        },
+        {
+          address: 'tz1awXW7wuXy21c66vBudMXQVAPgRnqqwgTH',
+          tokenID: 1
+        }
+      ], source, 'KT1B3vuScLjXeesTAYo19LdnnLgGqyYZtgae')
+
+      expect(balanceResults.length).to.equal(2)
+      expect(balanceResults[0].address).to.equal('tz1MecudVJnFZN5FSrriu8ULz2d6dDTR7KaM')
+      expect(balanceResults[0].tokenID).to.equal(0)
+      expect(balanceResults[0].amount).to.equal('100')
+      expect(balanceResults[1].address).to.equal('tz1awXW7wuXy21c66vBudMXQVAPgRnqqwgTH')
+      expect(balanceResults[1].tokenID).to.equal(1)
+      expect(balanceResults[1].amount).to.equal('110')
+    })
+
+    it('will gets FA2 token metadata address', async () => {
+      getStub.withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/`).returns(
+        Promise.resolve({
+          data: {
+            protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
+            chain_id: 'NetXdQprcVkpaWU',
+            hash: 'BKuTvcx5LJQgtiNXbd4py3RFRE4x7EYjTFwJjVjj4XP7h2vSxs6',
+            header: {
+              level: 940455,
+              proto: 6,
+              predecessor: 'BLurthGbZXstELdA3hXtGAA5kXxgtxmfUpzCq7bzpPVB92u9g1z',
+              timestamp: '2020-05-06T10:41:32Z',
+              validation_pass: 4,
+              operations_hash: 'LLoajfGAHirmjbJWjX81gNiZPqyv8pqEyUx7FAygiYBXLQ18H2kX8',
+              fitness: ['01', '00000000000459a7'],
+              context: 'CoVNfjwSR78ChDuvVpRW6Lvjq6nwC6UsyrZzhDgrU2ZMiPYXNjYy',
+              priority: 0,
+              proof_of_work_nonce: '0639894462090000',
+              signature: 'sigjnLFcgqv8QC1QwNhPgg4WomUGtL4nQ68u3GavKXLLWyFcf8g2ceaT6FeuRRVGcdDY7qj7MBo2iUo83L1rtroQKMhqZbw2'
+            },
+            metadata: {
+              protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
+              next_protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
+              test_chain_status: { status: 'not_running' },
+              max_operations_ttl: 60,
+              max_operation_data_length: 16384,
+              max_block_header_length: 238,
+              max_operation_list_length: [
+                {
+                  max_size: 32768,
+                  max_op: 32
+                },
+                { max_size: 32768 },
+                {
+                  max_size: 135168,
+                  max_op: 132
+                },
+                { max_size: 524288 }
+              ],
+              baker: 'tz1Kt4P8BCaP93AEV4eA7gmpRryWt5hznjCP',
+              level: {
+                level: 940455,
+                level_position: 940454,
+                cycle: 229,
+                cycle_position: 2470,
+                voting_period: 28,
+                voting_period_position: 22950,
+                expected_commitment: false
+              },
+              voting_period_kind: 'proposal',
+              nonce_hash: null,
+              consumed_gas: '0',
+              deactivated: [],
+              balance_updates: []
+            },
+            operations: [[], [], [], []]
+          }
+        })
+      )
+
+      const protocol = tezosProtocolSpec.fa2
+      getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/script`).returns(
+        Promise.resolve({
+          data: { 
+            code: [] 
+          }
+        })
+      )
+
+      getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/entrypoints`).returns(
+        Promise.resolve({
+          data: {
+            entrypoints: {
+              token_metadata_registry: {
+                prim: 'contract',
+                args: [
+                  {
+                    prim: 'address'
+                  }
+                ]
+              }
+            }
+          }
+        })
+      )
+
+      const metadata: RunOperationMetadata = {
+        balance_updates: [],
+        operation_result: {
+          status: 'applied',
+          balance_updates: [],
+          consumed_gas: '350000'
+        },
+        internal_operation_results: [
+          {
+            parameters: {
+              entrypoint: 'default',
+              value: {
+                string: 'tz1MecudVJnFZN5FSrriu8ULz2d6dDTR7KaM'
+              }
+            }
+          }
+        ]
+      }
+
+      postStub.withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`).returns(
+        Promise.resolve({
+          data: {
+            contents: [
+              {
+                kind: 'transaction',
+                amount: '0',
+                fee: '35308',
+                storage_limit: '60000',
+                destination: protocol.contractAddress,
+                metadata 
+              }
+            ]
+          }
+        })
+      )
+
+      const source = 'tz1Yju7jmmsaUiG9qQLoYv35v5pHgnWoLWbt'
+      getStub.withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${source}/counter`).returns(
+        Promise.resolve({
+          data: 0
+        })
+      )
+
+      const tokenMetadataRegistry = await protocol.tokenMetadataRegistry(source, 'KT1B3vuScLjXeesTAYo19LdnnLgGqyYZtgae')
+      expect(tokenMetadataRegistry).to.equal('tz1MecudVJnFZN5FSrriu8ULz2d6dDTR7KaM')
+    })
+
     it('will throw an error if the number of recipients and amounts do not match', async () => {
       getStub
         .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy/balance`)
