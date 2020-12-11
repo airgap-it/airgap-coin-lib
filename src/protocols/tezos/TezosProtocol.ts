@@ -146,7 +146,8 @@ const SELF_BOND_REQUIREMENT: number = 0.0825
 
 export enum TezosNetwork {
   MAINNET = 'mainnet',
-  DELPHINET = 'delphinet'
+  DELPHINET = 'delphinet',
+  EDONET = 'edonet'
 }
 
 export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateProtocol {

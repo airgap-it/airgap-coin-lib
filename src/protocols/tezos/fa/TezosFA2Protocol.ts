@@ -62,6 +62,10 @@ export class TezosFA2Protocol extends TezosFAProtocol {
       [TezosNetwork.DELPHINET]: {
         [TezosFA2ContractEntrypoint.BALANCE]: 'KT1LQRsAjvUmP4PQi5WXGFyGWPWwbevCLuiw',
         [TezosFA2ContractEntrypoint.TOKEN_METADATA_REGISTRY]: 'KT1VnbvGMNg21xGDqJtW2UkzHyyAB21GV4oy'
+      },
+      [TezosNetwork.EDONET]: {
+        [TezosFA2ContractEntrypoint.BALANCE]: 'KT1UEyZsmSga2KcNkpGbWX6nvGAVHtBpT5is',
+        [TezosFA2ContractEntrypoint.TOKEN_METADATA_REGISTRY]: 'KT1MMhwbCMfwzDUu4ur3SEpaf6njn2nsMDBt'
       }
     }
   }
