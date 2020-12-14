@@ -29,7 +29,7 @@ enum TezosFA2ContractEntrypoint {
   BALANCE = 'balance_of',
   TRANSFER = 'transfer',
   UPDATE_OPERATORS = 'update_operators',
-  TOKEN_METADATA_REGISTRY = 'token_metadata_regitry', // TODO: set proper entrypoint name when the typo is fixed in the test contract
+  TOKEN_METADATA_REGISTRY = 'token_metadata_registry',
   TOKEN_METADATA = 'token_metadata'
 }
 
@@ -56,12 +56,12 @@ export class TezosFA2Protocol extends TezosFAProtocol {
 
     this.defaultCallbackContract = {
       [TezosNetwork.MAINNET]: {
-        [TezosFA2ContractEntrypoint.BALANCE]: '',
-        [TezosFA2ContractEntrypoint.TOKEN_METADATA_REGISTRY]: ''
+        [TezosFA2ContractEntrypoint.BALANCE]: 'KT1LyHDYnML5eCuTEVCTynUpivwG6ns6khiG',
+        [TezosFA2ContractEntrypoint.TOKEN_METADATA_REGISTRY]: 'KT1L16VBmW8tkovhLmonhfvf6dtTZya6k6af'
       },
-      [TezosNetwork.CARTHAGENET]: {
-        [TezosFA2ContractEntrypoint.BALANCE]: 'KT1HZqHf5XKW4aAJc7UZvdYgq4zfZRYb5dAs',
-        [TezosFA2ContractEntrypoint.TOKEN_METADATA_REGISTRY]: 'KT1H2uaYTUhrfMC3TcmJXkocv1qhK8fRkVfR'
+      [TezosNetwork.DELPHINET]: {
+        [TezosFA2ContractEntrypoint.BALANCE]: 'KT1LQRsAjvUmP4PQi5WXGFyGWPWwbevCLuiw',
+        [TezosFA2ContractEntrypoint.TOKEN_METADATA_REGISTRY]: 'KT1VnbvGMNg21xGDqJtW2UkzHyyAB21GV4oy'
       }
     }
   }
@@ -263,19 +263,25 @@ export class TezosFA2Protocol extends TezosFAProtocol {
     const updateCall: TezosContractCall = await this.contract.createContractCall(
       TezosFA2ContractEntrypoint.UPDATE_OPERATORS,
       updateRequests.map((request: TezosFA2UpdateOperatorRequest) => {
-        return {
+        const args = {
           [`${request.operation}_operator`]: {
             owner: request.owner,
-            operator: request.operator
+            operator: request.operator,
+            token_id: request.tokenId
           }
         }
+
+        return [request.operation === 'add' ? 'Left' : 'Right', args]
       })
     )
 
     return this.prepareContractCall([updateCall], fee, publicKey)
   }
 
-  public async tokenMetadataRegistry(source?: string, callbackContract: string = this.callbackContract(TezosFA2ContractEntrypoint.TOKEN_METADATA_REGISTRY)): Promise<string> {
+  public async tokenMetadataRegistry(
+    source?: string, 
+    callbackContract: string = this.callbackContract(TezosFA2ContractEntrypoint.TOKEN_METADATA_REGISTRY)
+  ): Promise<string> {
     const tokenMetadataRegistryCall: TezosContractCall = await this.contract.createContractCall(
       TezosFA2ContractEntrypoint.TOKEN_METADATA_REGISTRY,
       callbackContract
