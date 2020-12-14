@@ -34,6 +34,10 @@ Currently supported are:
   - Generic ERC20 Tokens
 - Aeternity
 - Tezos
+  - FA1.2 tokens
+    - tzBTC
+    - USDtz
+  - FA2 tokens
 - Groestlcoin
 - Cosmos
 - Polkadot
@@ -43,7 +47,7 @@ Currently supported are:
 
 ### Protocols
 
-The way the interface was designed is to allow stateless calls. This means the class itself stores very little state itself.
+The way the interface was designed is to allow stateless calls. This means the class stores very little state itself.
 All required input comes from the method params (public key, extended public key, etc...)
 
 Currently we support for Bitcoin-like (UTXO) protocols:
@@ -62,6 +66,10 @@ There is a different interface that can be implemented if the protocol supports 
 ### Inter App Communication
 
 A serializer is included that encodes JSON structures with RLP and base58check. Those strings can then be sent to the other app, either through QR codes or a URL. The serializer can only serialize messages in predefined formats, so new message types have to be added when new protocols are added.
+
+### Tezos FA1.2 and FA2 tokens
+
+It is possible to interact (fetch balances, create transfers, etc.) with an FA1.2 and FA2 smart contracts using the `TezosFA12Protocol` and `TezosFA2Protocol` classes. An example on how to use them can be found in `examples/custom/protocols/tezos/fa2-smart-contract.ts`.
 
 ## Synchronising information between wallet and vault
 
