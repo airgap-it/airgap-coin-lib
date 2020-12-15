@@ -363,7 +363,7 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
   private blockLevelFieldNameMap = new Map<'baking_rights' | 'endorsing_rights', string>()
   private fetchBlockLevelFieldPromise?: Promise<string>
 
-  private async fetchBlockLevelFieldName(entity: 'baking_rights' | 'endorsing_rights' ): Promise<string> {
+  private async fetchBlockLevelFieldName(entity: 'baking_rights' | 'endorsing_rights'): Promise<string> {
     const result = this.blockLevelFieldNameMap.get(entity)
     if (result) {
       return result
@@ -383,7 +383,7 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
       }
       this.blockLevelFieldNameMap.set(entity, name)
       return name
-    }).finally( () => {
+    }).finally(() => {
       this.fetchBlockLevelFieldPromise = undefined
     })
 
@@ -431,7 +431,7 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
 
     return result.map((bakingRight) => {
       return {
-        level: bakingRight.level,
+        level: bakingRight[blockLevelFieldName],
         priority: bakingRight.priority,
         delegate: bakerAddress
       }
@@ -474,7 +474,7 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
 
     return result.map((endorsingRight) => {
       return {
-        level: endorsingRight.level,
+        level: endorsingRight[blockLevelFieldName],
         delegate: bakerAddress,
         number_of_slots: Number(endorsingRight.count_slot)
       }
