@@ -15,4 +15,5 @@ export interface SubstrateValidatorDetails extends DelegateeDetails {
   totalStakingBalance?: string
   commission?: string
   lastEraReward?: SubstrateValidatorRewardDetails
+  nominators: number
 }

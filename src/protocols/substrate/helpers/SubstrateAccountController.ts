@@ -8,10 +8,12 @@ import { SubstrateNetwork } from '../SubstrateNetwork'
 
 import { SubstrateAccountId, SubstrateAddress } from './data/account/SubstrateAddress'
 import { SubstrateIdentityInfo } from './data/account/SubstrateRegistration'
+import { SCALEAccountId } from './data/scale/type/SCALEAccountId'
 import { SubstrateActiveEraInfo } from './data/staking/SubstrateActiveEraInfo'
 import { SubstrateElectionStatus } from './data/staking/SubstrateEraElectionStatus'
 import { SubstrateExposure } from './data/staking/SubstrateExposure'
 import { SubstrateNominations } from './data/staking/SubstrateNominations'
+import { SubstrateNominationStatus } from './data/staking/SubstrateNominationStatus'
 import {
   SubstrateLockedDetails,
   SubstrateNominatorDetails,
@@ -147,7 +149,8 @@ export class SubstrateAccountController {
       commission: validatorPrefs
         ? validatorPrefs.commission.value.dividedBy(1_000_000_000).toString() // commission is Perbill (parts per billion)
         : undefined,
-      lastEraReward
+      lastEraReward,
+      nominators: exposure?.others.elements.length ?? 0
     }
   }
 
@@ -194,6 +197,53 @@ export class SubstrateAccountController {
     }
   }
 
+  public async getNominationStatus(
+    nominator: SubstrateAccountId, 
+    validator: SubstrateAccountId, 
+    era?: number
+  ): Promise<SubstrateNominationStatus | undefined> {
+    const eraIndex: number | undefined = era !== undefined
+      ? era
+      : (await this.nodeClient.getActiveEraInfo())?.index.toNumber()
+    
+    if (eraIndex === undefined) {
+      return Promise.reject('Could not fetch active era')
+    }
+
+    const nominations = await this.nodeClient.getNominations(SubstrateAddress.from(nominator, this.network))
+    if (nominations === null || !nominations.targets.elements.some((target: SCALEAccountId) => target.asAddress() === validator)) {
+      return undefined
+    }
+
+    const exposure: SubstrateExposure | null = await this.nodeClient.getValidatorExposure(
+      eraIndex, 
+      SubstrateAddress.from(validator, this.network)
+    )
+
+    if (!exposure) {
+      return Promise.reject('Could not fetch exposure')
+    }
+
+    const isActive: boolean = exposure.others.elements.some((element) => element.first.asAddress() === nominator.toString())
+    if (!isActive) {
+      return SubstrateNominationStatus.INACTIVE
+    }
+    
+    const isOversubscribed: boolean = exposure.others.elements.length > 256
+    if (isOversubscribed) {
+      const position: number = exposure.others.elements
+        .sort((a, b) => b.second.value.minus(a.second.value).toNumber())
+        .map((exposure) => exposure.first.asAddress())
+        .indexOf(nominator.toString())
+
+      if (position > 256) {
+        return SubstrateNominationStatus.OVERSUBSCRIBED
+      }
+    }
+
+    return SubstrateNominationStatus.ACTIVE
+  }
+
   public async getSlashingSpansNumber(accountId: SubstrateAccountId): Promise<number> {
     const slashingSpans = await this.nodeClient.getSlashingSpan(SubstrateAddress.from(accountId, this.network))
 
@@ -216,17 +266,14 @@ export class SubstrateAccountController {
       activeEra,
       expectedEraDuration
     )
+    
+    const results = await Promise.all([
+      this.getStakingStatus(accountId, nominations, activeEra.index.toNumber()),
+      nominations ? this.getNominatorRewards(accountId, nominations.targets.elements.map((id) => id.address), activeEra, 5) : []
+    ])
 
-    const stakingStatus = this.getStakingStatus(nominations, activeEra.index.toNumber())
-
-    const rewards = nominations
-      ? await this.getNominatorRewards(
-          accountId,
-          nominations.targets.elements.map((id) => id.address),
-          activeEra,
-          5
-        )
-      : []
+    const stakingStatus = results[0]
+    const rewards = results[1]
 
     return {
       total: stakingLedger.total.toString(),
@@ -265,13 +312,28 @@ export class SubstrateAccountController {
     }
   }
 
-  private getStakingStatus(nominations: SubstrateNominations | null, eraIndex: number): SubstrateStakingStatus {
+  private async getStakingStatus(
+    nominator: SubstrateAccountId, 
+    nominations: SubstrateNominations | null, 
+    eraIndex: number
+  ): Promise<SubstrateStakingStatus> {
+    const isWaitingForNomination: boolean = nominations?.submittedIn.gte(eraIndex) ?? false
+
+    let hasActiveNominations: boolean = false
+    if (!isWaitingForNomination && nominations) {
+      hasActiveNominations = (await Promise.all(
+        nominations.targets.elements.map((target: SCALEAccountId) => this.getNominationStatus(nominator, target.asAddress(), eraIndex))
+      )).some((status: SubstrateNominationStatus | undefined) => status === SubstrateNominationStatus.ACTIVE)
+    }
+    
     if (nominations === null) {
       return 'bonded'
-    } else if (nominations.submittedIn.lt(eraIndex)) {
+    } else if (hasActiveNominations) {
       return 'nominating'
-    } else {
+    } else if (!isWaitingForNomination && !hasActiveNominations) {
       return 'nominating_inactive'
+    } else {
+      return 'nominating_waiting'
     }
   }
 
