@@ -12,7 +12,7 @@ export interface SubstrateNominatorRewardDetails {
   timestamp: number
 }
 
-export type SubstrateStakingStatus = 'bonded' | 'nominating' | 'nominating_inactive'
+export type SubstrateStakingStatus = 'bonded' | 'nominating' | 'nominating_waiting' | 'nominating_inactive'
 
 export interface SubstrateStakingDetails {
   total: string
