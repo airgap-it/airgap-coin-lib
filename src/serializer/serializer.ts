@@ -77,7 +77,10 @@ export class Serializer {
 
   private static getSchemaName(schemaId: number, protocol?: ProtocolSymbols): string {
     const schemaName = `${schemaId}-${protocol}`
-    if (protocol !== undefined && schemaId === IACMessageType.TransactionSignRequest || schemaId === IACMessageType.TransactionSignResponse) {
+    if (
+      (protocol !== undefined && schemaId === IACMessageType.TransactionSignRequest) ||
+      schemaId === IACMessageType.TransactionSignResponse
+    ) {
       const split = schemaName.split('-')
       if (split.length >= 3 && `${split[1]}-${split[2]}` === SubProtocolSymbols.ETH_ERC20) {
         return `${schemaId}-${SubProtocolSymbols.ETH_ERC20}`
@@ -86,13 +89,17 @@ export class Serializer {
     return protocol ? `${schemaId}-${protocol}` : schemaId.toString()
   }
 
-  public async serialize(messages: IACMessageDefinitionObject[], chunkSize: number = 0): Promise<string[]> {
+  public async serialize(
+    messages: IACMessageDefinitionObject[],
+    singleChunkSize: number = 0,
+    multiChunkSize: number = 0
+  ): Promise<string[]> {
     if (
       messages.every((message: IACMessageDefinitionObject) => {
         return Serializer.getSchema(message.type, message.protocol)
       })
     ) {
-      const iacps: IACProtocol[] = IACProtocol.fromDecoded(JSON.parse(JSON.stringify(messages)), chunkSize)
+      const iacps: IACProtocol[] = IACProtocol.fromDecoded(JSON.parse(JSON.stringify(messages)), singleChunkSize, multiChunkSize)
 
       return iacps.map((iac: IACProtocol) => iac.encoded())
     } else {
