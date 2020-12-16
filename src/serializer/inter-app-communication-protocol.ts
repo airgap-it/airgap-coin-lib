@@ -41,18 +41,17 @@ export class IACProtocol {
     return bs58check.encode(rlp.encode([this.version.toString(), this.payloadType.toString(), this.payload.asArray() as any]) as any)
   }
 
-  public static fromDecoded(data: IACMessageDefinitionObject[], chunkSize: number = 0): IACProtocol[] {
+  public static fromDecoded(data: IACMessageDefinitionObject[], singleChunkSize: number = 0, multiChunkSize: number = 0): IACProtocol[] {
     const payload: FullPayload = FullPayload.fromDecoded(data)
     const rawPayload: Buffer = payload.asBuffer()
-
-    if (chunkSize > 0 && rawPayload.length > chunkSize) {
+    if (singleChunkSize > 0 && rawPayload.length > singleChunkSize) {
       const chunks: Buffer[] = []
       const nodeBuffer: Buffer = rawPayload
       const bufferLength: number = rawPayload.length
 
       let i: number = 0
       while (i < bufferLength) {
-        chunks.push(nodeBuffer.slice(i, (i += chunkSize)))
+        chunks.push(nodeBuffer.slice(i, (i += multiChunkSize)))
       }
 
       return chunks.map(

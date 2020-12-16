@@ -1,23 +1,20 @@
 import { expect } from 'chai'
 import 'mocha'
+import { FullPayload } from '../../src/serializer/payloads/full-payload'
 
 import { Serializer } from '../../src/serializer/serializer'
 
 import { TestProtocolSpec } from './implementations'
 import { AETestProtocolSpec } from './specs/ae'
 import { BitcoinProtocolSpec } from './specs/bitcoin'
-import { CosmosTestProtocolSpec } from './specs/cosmos'
 import { EthereumTestProtocolSpec } from './specs/ethereum'
 import { GenericERC20TokenTestProtocolSpec } from './specs/generic-erc20-token'
 import { TezosTestProtocolSpec } from './specs/tezos'
-
-// import { IACMessageDefinitionObject } from '../../src/serializer/message'
 
 const protocols = [
   new EthereumTestProtocolSpec(),
   new BitcoinProtocolSpec(),
   new AETestProtocolSpec(),
-  new CosmosTestProtocolSpec(),
   new TezosTestProtocolSpec(),
   new GenericERC20TokenTestProtocolSpec()
 ]
@@ -48,26 +45,47 @@ protocols.forEach((protocol: TestProtocolSpec) => {
           .catch((err) => console.error(err))
       }
     })
-    /*
-    it(`should be able to properly extract amount/fee using getTransactionDetails in combination with the coin-lib`, async () => {
-      for (const tx of protocol.txs) {
-        const serializedTx = syncProtocol.serialize(protocol.unsignedTransaction(tx))
-        const deserializedTxs = syncProtocol.deserialize(serializedTx)
-        const deserializedTx = deserializedTxs[0]
 
-        const airGapTxs: IAirGapTransaction[] = await protocol.lib.getTransactionDetails(deserializedTx.data as UnsignedTransaction)
-
-        if (airGapTxs.length !== 1) {
-          throw new Error('Unexpected number of transactions')
+    it.only(`should break serialized transaction into correct number of chunks`, async () => {
+      const chunkSizeCombos = [
+        {
+          singleChunkSize: 350,
+          multiChunkSize: 100
+        },
+        {
+          singleChunkSize: 200,
+          multiChunkSize: 100
+        },
+        {
+          singleChunkSize: 350,
+          multiChunkSize: 200
+        },
+        {
+          singleChunkSize: 500,
+          multiChunkSize: 10
+        },
+        {
+          singleChunkSize: 10,
+          multiChunkSize: 200
         }
-
-        const airGapTx: IAirGapTransaction = airGapTxs[0]
-
-        expect(airGapTx.from).to.deep.equal(protocol.wallet.addresses)
-        expect(airGapTx.amount).to.deep.equal(tx.amount)
-        expect(airGapTx.fee).to.deep.equal(tx.fee)
+      ]
+      for (const tx of protocol.txs) {
+        for (const chunkSizeCombo of chunkSizeCombos) {
+          const data = protocol.unsignedTransaction(tx)
+          const payload: FullPayload = FullPayload.fromDecoded(data)
+          const rawPayload: Buffer = payload.asBuffer()
+          const bytes = rawPayload.length
+          const serializedTx = await syncProtocol.serialize(data, chunkSizeCombo.singleChunkSize, chunkSizeCombo.multiChunkSize)
+          if (bytes < chunkSizeCombo.singleChunkSize) {
+            expect(serializedTx.length).to.eq(1) // it fits into one QR!
+          } else {
+            // many QRs needed
+            expect(serializedTx.length).to.eq(Math.ceil(rawPayload.length / chunkSizeCombo.multiChunkSize))
+          }
+        }
       }
     })
+    /*
 
     it(`should be able to properly extract amount/fee using from signedTx in combination with the coin-lib`, async () => {
       for (const tx of protocol.txs) {
