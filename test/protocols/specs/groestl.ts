@@ -90,6 +90,21 @@ export class GroestlcoinProtocolSpec extends TestProtocolSpec {
     }
   ]
 
+  public encryptAsymmetric = [
+    {
+      message: 'example message',
+      encrypted:
+        '040f85434d002580b2844a0209e02d93ecc87a54aa141b3c8f1e82d5a1abfd59cb536ca26a5ab100e057438199e73ce16437f59eec4d12a3934c3baefa136027ebabf31948252b240aa1efb3ef61b8050db03e6c17885e5df9994647b8c242473da3e644b30416a9657fcc9244f1558c'
+    }
+  ]
+
+  public encryptAES = [
+    {
+      message: 'example message',
+      encrypted: '41651d96e6bd7845f46c6214b787a502!24df07915ae8231fda1eac8c6f0c24!acf0b139906c9999481aa5dcaaf203d1'
+    }
+  ]
+
   public transactionResult = {
     transactions: [
       {

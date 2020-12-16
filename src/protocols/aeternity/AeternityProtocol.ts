@@ -18,8 +18,8 @@ import { MainProtocolSymbols, ProtocolSymbols } from '../../utils/ProtocolSymbol
 import { EthereumUtils } from '../ethereum/utils/utils'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
-import { AeternityCryptoClient } from './AeternityCryptoClient'
 
+import { AeternityCryptoClient } from './AeternityCryptoClient'
 import { AeternityProtocolOptions } from './AeternityProtocolOptions'
 import { ICoinSubProtocol } from '../ICoinSubProtocol'
 
@@ -58,6 +58,8 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
   public defaultNetworkId: string = 'ae_mainnet'
 
   private readonly feesURL: string = 'https://api-airgap.gke.papers.tech/fees'
+
+  public readonly cryptoClient: AeternityCryptoClient = new AeternityCryptoClient()
 
   constructor(public readonly options: AeternityProtocolOptions = new AeternityProtocolOptions()) {
     super()
@@ -404,12 +406,29 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
   }
 
   public async signMessage(message: string, keypair: { privateKey: Buffer }): Promise<string> {
-    return new AeternityCryptoClient().signMessage(message, keypair)
+    return this.cryptoClient.signMessage(message, keypair)
   }
 
   public async verifyMessage(message: string, signature: string, publicKey: string): Promise<boolean> {
-    return new AeternityCryptoClient().verifyMessage(message, signature, publicKey)
+    return this.cryptoClient.verifyMessage(message, signature, publicKey)
   }
+
+  public async encryptAsymmetric(message: string, publicKey: string): Promise<string> {
+    return this.cryptoClient.encryptAsymmetric(message, publicKey)
+  }
+
+  public async decryptAsymmetric(message: string, keypair: { publicKey: string; privateKey: Buffer }): Promise<string> {
+    return this.cryptoClient.decryptAsymmetric(message, keypair)
+  }
+
+  public async encryptAES(message: string, privateKey: Buffer): Promise<string> {
+    return this.cryptoClient.encryptAES(message, privateKey)
+  }
+
+  public async decryptAES(message: string, privateKey: Buffer): Promise<string> {
+    return this.cryptoClient.decryptAES(message, privateKey)
+  }
+
   public async getTransactionStatuses(transactionHashes: string[]): Promise<AirGapTransactionStatus[]> {
     return Promise.reject('Transaction status not implemented')
   }

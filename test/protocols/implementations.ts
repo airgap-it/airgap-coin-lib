@@ -37,6 +37,8 @@ abstract class TestProtocolSpec {
     signedTx: string
   }[] = []
   public messages: { message: string; signature: string }[] = []
+  public encryptAsymmetric: { message: string; encrypted: string }[] = []
+  public encryptAES: { message: string; encrypted: string }[] = []
 
   public transactionStatusTests: { hashes: string[]; expectedResults: AirGapTransactionStatus[] }[] = []
 

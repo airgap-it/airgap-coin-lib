@@ -22,7 +22,7 @@ export class TezosTestProtocolSpec extends TestProtocolSpec {
   public get fa1() {
     return new TezosFA1Protocol(
       new TezosFAProtocolOptions(
-        new TezosProtocolNetwork(), 
+        new TezosProtocolNetwork(),
         new TezosFAProtocolConfig('', '', '', '' as ProtocolSymbols, '', { low: '', medium: '', high: '' }, 0)
       )
     )
@@ -31,7 +31,7 @@ export class TezosTestProtocolSpec extends TestProtocolSpec {
   public get fa12() {
     return new TezosFA12Protocol(
       new TezosFAProtocolOptions(
-        new TezosProtocolNetwork(), 
+        new TezosProtocolNetwork(),
         new TezosFAProtocolConfig('', '', '', '' as ProtocolSymbols, '', { low: '', medium: '', high: '' }, 0)
       )
     )
@@ -40,7 +40,7 @@ export class TezosTestProtocolSpec extends TestProtocolSpec {
   public get fa2() {
     return new TezosFA2Protocol(
       new TezosFA2ProtocolOptions(
-        new TezosProtocolNetwork(), 
+        new TezosProtocolNetwork(),
         new TezosFA2ProtocolConfig('', '', '', '' as ProtocolSymbols, 'KT1Eso7AdpjrHd4rCz9rGxf92tSm3fEDAkdx', { low: '', medium: '', high: '' }, 0)
       )
     )
@@ -189,6 +189,21 @@ export class TezosTestProtocolSpec extends TestProtocolSpec {
     {
       message: 'example message',
       signature: 'edsigtexcZ9uMhqxRvPUaTdBukx2GAdwwi93VW1ULYEWXZPWViUMqR155kFeoCUqqUV97y11EM5J4AjbJriYWCXaDX6i9o9Gxde'
+    }
+  ]
+
+  public encryptAsymmetric = [
+    {
+      message: 'example message',
+      encrypted:
+        '0a7323bd4a98437b2c586733b91bde72ac062d0437062ff0b1d0390c3689855705f021bfcc28388a9e4e2c7dd159ee4db3e7ec93f7bbe65685c07eecfc0b58'
+    }
+  ]
+
+  public encryptAES = [
+    {
+      message: 'example message',
+      encrypted: '66d61968bb57ff709c571c52ec25f5d8!8f50c743642317a0ecff076fc5ea7c!0db54d642df745113a1dce524b0a7bc6'
     }
   ]
 

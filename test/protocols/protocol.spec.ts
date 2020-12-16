@@ -438,5 +438,113 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
         }
       })
     })
+
+    describe(`Encrypt Message Asymmetric`, () => {
+      afterEach(async () => {
+        sinon.restore()
+      })
+
+      itIf(protocol.encryptAsymmetric.length > 0, 'encryptAsymmetric - Is able to encrypt a message using a PublicKey', async () => {
+        // This test probably doesn't serve much of a purpose
+        const publicKey = await protocol.lib.getPublicKeyFromMnemonic(protocol.mnemonic(), protocol.lib.standardDerivationPath)
+
+        for (const messageObject of protocol.encryptAsymmetric) {
+          try {
+            const encryptedPayload = await protocol.lib.encryptAsymmetric(messageObject.message, publicKey)
+            expect(encryptedPayload.length).to.equal(messageObject.encrypted.length)
+          } catch (e) {
+            expect(e.message).to.equal('Method not implemented.')
+          }
+        }
+      })
+
+      itIf(protocol.encryptAsymmetric.length > 0, 'decryptAsymmetric - Is able to decrypt a message using a PrivateKey', async () => {
+        const publicKey = await protocol.lib.getPublicKeyFromMnemonic(protocol.mnemonic(), protocol.lib.standardDerivationPath)
+        const privateKey =
+          protocol.lib.identifier === 'btc' || protocol.lib.identifier === 'grs'
+            ? await protocol.lib.getExtendedPrivateKeyFromMnemonic(protocol.mnemonic(), protocol.lib.standardDerivationPath)
+            : await protocol.lib.getPrivateKeyFromMnemonic(protocol.mnemonic(), protocol.lib.standardDerivationPath)
+
+        for (const messageObject of protocol.encryptAsymmetric) {
+          try {
+            const decryptedPayload = await protocol.lib.decryptAsymmetric(messageObject.encrypted, {
+              publicKey,
+              privateKey
+            } as any)
+            expect(decryptedPayload).to.equal(messageObject.message)
+          } catch (e) {
+            expect(e.message).to.equal('Method not implemented.')
+          }
+        }
+      })
+
+      itIf(
+        protocol.encryptAsymmetric.length > 0,
+        'encryptAsymmetric and decryptAsymmetric - Is able to encrypt and decrypt a message',
+        async () => {
+          const publicKey = await protocol.lib.getPublicKeyFromMnemonic(protocol.mnemonic(), protocol.lib.standardDerivationPath)
+          const privateKey =
+            protocol.lib.identifier === 'btc' || protocol.lib.identifier === 'grs'
+              ? await protocol.lib.getExtendedPrivateKeyFromMnemonic(protocol.mnemonic(), protocol.lib.standardDerivationPath)
+              : await protocol.lib.getPrivateKeyFromMnemonic(protocol.mnemonic(), protocol.lib.standardDerivationPath)
+
+          for (const messageObject of protocol.encryptAsymmetric) {
+            const encryptedPayload = await protocol.lib.encryptAsymmetric(messageObject.message, publicKey)
+
+            try {
+              const decryptedPayload = await protocol.lib.decryptAsymmetric(encryptedPayload, {
+                publicKey,
+                privateKey
+              } as any)
+
+              expect(decryptedPayload).to.equal(messageObject.message)
+            } catch (e) {
+              expect(e.message).to.equal('Method not implemented.')
+            }
+          }
+        }
+      )
+    })
+
+    describe(`Encrypt Message Symmetric`, () => {
+      afterEach(async () => {
+        sinon.restore()
+      })
+
+      itIf(protocol.encryptAES.length > 0, 'decryptAES - Is able to encrypt a message using a PrivateKey', async () => {
+        const privateKey =
+          protocol.lib.identifier === 'btc' || protocol.lib.identifier === 'grs'
+            ? await protocol.lib.getExtendedPrivateKeyFromMnemonic(protocol.mnemonic(), protocol.lib.standardDerivationPath)
+            : await protocol.lib.getPrivateKeyFromMnemonic(protocol.mnemonic(), protocol.lib.standardDerivationPath)
+
+        for (const messageObject of protocol.encryptAES) {
+          try {
+            const decryptedPayload = await protocol.lib.decryptAES(messageObject.encrypted, privateKey as any)
+            expect(decryptedPayload).to.equal(messageObject.message)
+          } catch (e) {
+            expect(e.message).to.equal('Method not implemented.')
+          }
+        }
+      })
+
+      itIf(protocol.encryptAES.length > 0, 'encryptAES and decryptAES - Is able to encrypt and decrypt a message', async () => {
+        const privateKey =
+          protocol.lib.identifier === 'btc' || protocol.lib.identifier === 'grs'
+            ? await protocol.lib.getExtendedPrivateKeyFromMnemonic(protocol.mnemonic(), protocol.lib.standardDerivationPath)
+            : await protocol.lib.getPrivateKeyFromMnemonic(protocol.mnemonic(), protocol.lib.standardDerivationPath)
+
+        for (const messageObject of protocol.encryptAES) {
+          const encryptedPayload = await protocol.lib.encryptAES(messageObject.message, privateKey as any)
+
+          try {
+            const decryptedPayload = await protocol.lib.decryptAES(encryptedPayload, privateKey as any)
+
+            expect(decryptedPayload).to.equal(messageObject.message)
+          } catch (e) {
+            expect(e.message).to.equal('Method not implemented.')
+          }
+        }
+      })
+    })
   })
 })

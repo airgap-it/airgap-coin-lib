@@ -1,4 +1,3 @@
-import { CosmosTransactionResult, CosmosTransactionCursor } from './CosmosTypes'
 import { KeyPair } from '../../data/KeyPair'
 import BECH32 = require('../../dependencies/src/bech32-1.1.3/index')
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
@@ -11,6 +10,7 @@ import { AirGapTransactionStatus, IAirGapTransaction } from '../../interfaces/IA
 import { SignedCosmosTransaction } from '../../serializer/schemas/definitions/signed-transaction-cosmos'
 import { UnsignedCosmosTransaction } from '../../serializer/types'
 import { assertFields } from '../../utils/assert'
+import { MainProtocolSymbols, ProtocolSymbols } from '../../utils/ProtocolSymbols'
 import { DelegateeDetails, DelegationDetails, DelegatorAction, DelegatorDetails, ICoinDelegateProtocol } from '../ICoinDelegateProtocol'
 import { CurrencyUnit, FeeDefaults } from '../ICoinProtocol'
 import { ICoinSubProtocol } from '../ICoinSubProtocol'
@@ -35,7 +35,7 @@ import {
 } from './CosmosNodeClient'
 import { CosmosProtocolOptions } from './CosmosProtocolOptions'
 import { CosmosTransaction } from './CosmosTransaction'
-import { MainProtocolSymbols, ProtocolSymbols } from '../../utils/ProtocolSymbols'
+import { CosmosTransactionCursor, CosmosTransactionResult } from './CosmosTypes'
 
 export enum CosmosDelegationActionType {
   DELEGATE = 'delegate',
@@ -77,6 +77,8 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
 
   private readonly addressPrefix: string = 'cosmos'
   private readonly defaultGas: BigNumber = new BigNumber('200000')
+
+  public readonly cryptoClient: CosmosCryptoClient = new CosmosCryptoClient()
 
   get infoClient(): CosmosInfoClient {
     return this.options.config.infoClient
@@ -177,7 +179,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
     }
 
     const transactions = await Promise.all(promises).then((transactions) => transactions.reduce((current, next) => current.concat(next)))
-    
+
     return { transactions: transactions, cursor: { offset: cursor ? (cursor.offset + limit) : limit } }
   }
 
@@ -667,11 +669,27 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
   }
 
   public async signMessage(message: string, keypair: { privateKey: Buffer }): Promise<string> {
-    return new CosmosCryptoClient().signMessage(message, keypair)
+    return this.cryptoClient.signMessage(message, keypair)
   }
 
   public async verifyMessage(message: string, signature: string, publicKey: string): Promise<boolean> {
-    return new CosmosCryptoClient().verifyMessage(message, signature, publicKey)
+    return this.cryptoClient.verifyMessage(message, signature, publicKey)
+  }
+
+  public async encryptAsymmetric(message: string, publicKey: string): Promise<string> {
+    return this.cryptoClient.encryptAsymmetric(message, publicKey)
+  }
+
+  public async decryptAsymmetric(message: string, keypair: { publicKey: string; privateKey: Buffer }): Promise<string> {
+    return this.cryptoClient.decryptAsymmetric(message, keypair)
+  }
+
+  public async encryptAES(message: string, privateKey: Buffer): Promise<string> {
+    return this.cryptoClient.encryptAES(message, privateKey)
+  }
+
+  public async decryptAES(message: string, privateKey: Buffer): Promise<string> {
+    return this.cryptoClient.decryptAES(message, privateKey)
   }
 
   public async getTransactionStatuses(transactionHashes: string[]): Promise<AirGapTransactionStatus[]> {

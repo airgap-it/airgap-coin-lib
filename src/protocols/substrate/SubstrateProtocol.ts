@@ -42,6 +42,8 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
 
   protected defaultValidator?: string
 
+  public readonly cryptoClient: SubstrateCryptoClient = new SubstrateCryptoClient()
+
   constructor(public readonly options: SubstrateProtocolOptions) {
     super()
   }
@@ -808,11 +810,35 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
   }
 
   public async signMessage(message: string, keypair: { publicKey: string; privateKey: Buffer }): Promise<string> {
-    return new SubstrateCryptoClient().signMessage(message, keypair)
+    return this.cryptoClient.signMessage(message, keypair)
   }
 
   public async verifyMessage(message: string, signature: string, publicKey: string): Promise<boolean> {
-    return new SubstrateCryptoClient().verifyMessage(message, signature, publicKey)
+    return this.cryptoClient.verifyMessage(message, signature, publicKey)
+  }
+
+  public async encryptAsymmetric(message: string, publicKey: string): Promise<string> {
+    return this.cryptoClient.encryptAsymmetric(message, publicKey)
+  }
+
+  public async decryptAsymmetric(message: string, keypair: { publicKey: string; privateKey: Buffer }): Promise<string> {
+    return this.cryptoClient.decryptAsymmetric(message, keypair)
+  }
+
+  public async encryptAES(message: string, privateKey: Buffer): Promise<string> {
+    // https://github.com/w3f/schnorrkel/blob/master/src/keys.rs
+    // https://github.com/polkadot-js/wasm/blob/master/packages/wasm-crypto/src/sr25519.rs
+    const key: Buffer = privateKey.slice(0, 32) // Substrate key is 32 bytes key + 32 bytes nonce
+
+    return this.cryptoClient.encryptAES(message, key)
+  }
+
+  public async decryptAES(message: string, privateKey: Buffer): Promise<string> {
+    // https://github.com/w3f/schnorrkel/blob/master/src/keys.rs
+    // https://github.com/polkadot-js/wasm/blob/master/packages/wasm-crypto/src/sr25519.rs
+    const key: Buffer = privateKey.slice(0, 32) // Substrate key is 32 bytes key + 32 bytes nonce
+
+    return this.cryptoClient.decryptAES(message, key)
   }
 
   public async getTransactionStatuses(transactionHashes: string[]): Promise<AirGapTransactionStatus[]> {

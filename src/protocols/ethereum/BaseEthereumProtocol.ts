@@ -17,8 +17,8 @@ import { EthereumInfoClient } from './clients/info-clients/InfoClient'
 import { EthereumNodeClient } from './clients/node-clients/NodeClient'
 import { EthereumCryptoClient } from './EthereumCryptoClient'
 import { EthereumProtocolOptions } from './EthereumProtocolOptions'
+import { EthereumTransactionCursor, EthereumTransactionResult } from './EthereumTypes'
 import { EthereumUtils } from './utils/utils'
-import { EthereumTransactionResult, EthereumTransactionCursor } from './EthereumTypes'
 
 const EthereumTransaction = require('../../dependencies/src/ethereumjs-tx-1.3.7/index')
 
@@ -64,11 +64,14 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
 
   public network: Network
 
+  public readonly cryptoClient: EthereumCryptoClient
+
   get subProtocols(): ICoinSubProtocol[] {
     return getSubProtocolsByIdentifier(this.identifier, this.options.network)
   }
 
   constructor(public readonly options: EthereumProtocolOptions = new EthereumProtocolOptions()) {
+    this.cryptoClient = new EthereumCryptoClient(this)
     this.network = bitcoinJS.networks.bitcoin
   }
 
@@ -431,11 +434,27 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
   }
 
   public async signMessage(message: string, keypair: { privateKey: Buffer }): Promise<string> {
-    return new EthereumCryptoClient(this).signMessage(message, keypair)
+    return this.cryptoClient.signMessage(message, keypair)
   }
 
   public async verifyMessage(message: string, signature: string, publicKey: string): Promise<boolean> {
-    return new EthereumCryptoClient(this).verifyMessage(message, signature, publicKey)
+    return this.cryptoClient.verifyMessage(message, signature, publicKey)
+  }
+
+  public async encryptAsymmetric(message: string, publicKey: string): Promise<string> {
+    return this.cryptoClient.encryptAsymmetric(message, publicKey)
+  }
+
+  public async decryptAsymmetric(message: string, keypair: { publicKey: string; privateKey: Buffer }): Promise<string> {
+    return this.cryptoClient.decryptAsymmetric(message, keypair)
+  }
+
+  public async encryptAES(message: string, privateKey: Buffer): Promise<string> {
+    return this.cryptoClient.encryptAES(message, privateKey)
+  }
+
+  public async decryptAES(message: string, privateKey: Buffer): Promise<string> {
+    return this.cryptoClient.decryptAES(message, privateKey)
   }
 
   public async getTransactionStatuses(transactionHashes: string[]): Promise<AirGapTransactionStatus[]> {

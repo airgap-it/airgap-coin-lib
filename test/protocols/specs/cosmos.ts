@@ -79,6 +79,21 @@ export class CosmosTestProtocolSpec extends TestProtocolSpec {
     }
   ]
 
+  public encryptAsymmetric = [
+    {
+      message: 'example message',
+      encrypted:
+        '047e5af00e417b238dcd4e242ab19979143ee480b819aab6cc7e2e8ac34c9aa1980901a1ceef1f4702ce2615bf3dd43889890885596a5ecc59f257548b707ff980846f631845d132ea522b65f647ceef576cc942653034621a071790fffb864e2731d22219069ae0cb2d8825087d223c'
+    }
+  ]
+
+  public encryptAES = [
+    {
+      message: 'example message',
+      encrypted: '3efdb8f9bbeb8ec879d6716a8a3f39d1!149c7f768d53e31f9ca4a6253c4599!1434b649dd17124fc8ebdc05ef50da48'
+    }
+  ]
+
   public transactionResult = {
     transactions: [
       {
