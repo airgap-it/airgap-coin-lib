@@ -203,6 +203,21 @@ export class EthereumTestProtocolSpec extends TestProtocolSpec {
     }
   ]
 
+  public encryptAsymmetric = [
+    {
+      message: 'example message',
+      encrypted:
+        '047042daec1e399e3a5310cb045a789e212bb197098352ee7f8f2a273453ce837048f27ddd390655b0169f0769c8cb1e62c5bbef5bce95272829695abb9e6803974b6ae6cb550a638e079793c30b8e7fb1cb91c8f43097740d867034fb1a1c3c074451aba2c1d884c02875d0df266b03'
+    }
+  ]
+
+  public encryptAES = [
+    {
+      message: 'example message',
+      encrypted: '8b209a372e8b3fd1ee6054769a4b5ce3!9da458363d5f4c8a9b9093569d0590!fa8fb2bb3addee77c43d1b9e82dcb050'
+    }
+  ]
+
   public transactionResult = {
     transactions: [
       {

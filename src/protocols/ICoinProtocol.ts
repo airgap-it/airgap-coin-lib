@@ -1,3 +1,4 @@
+import { CryptoClient } from '..'
 import { IAirGapSignedTransaction } from '../interfaces/IAirGapSignedTransaction'
 import { AirGapTransactionStatus, IAirGapTransaction, IAirGapTransactionResult } from '../interfaces/IAirGapTransaction'
 import { SignedTransaction } from '../serializer/schemas/definitions/signed-transaction'
@@ -43,6 +44,8 @@ export interface ICoinProtocol {
   subProtocols?: ICoinSubProtocol[]
 
   options: ProtocolOptions
+
+  cryptoClient: CryptoClient
 
   getBlockExplorerLinkForAddress(address: string): Promise<string>
   getBlockExplorerLinkForTxId(txId: string): Promise<string>
@@ -110,4 +113,10 @@ export interface ICoinProtocol {
 
   signMessage(message: string, keypair: { publicKey?: string; privateKey: Buffer }): Promise<string> // Returns signature
   verifyMessage(message: string, signature: string, publicKey: string): Promise<boolean>
+
+  encryptAsymmetric(payload: string, publicKey: string): Promise<string>
+  decryptAsymmetric(encryptedPayload: string, keypair: { publicKey?: string; privateKey: Buffer }): Promise<string>
+
+  encryptAES(payload: string, privateKey: Buffer): Promise<string>
+  decryptAES(encryptedPayload: string, privateKey: Buffer): Promise<string>
 }

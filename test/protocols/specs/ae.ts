@@ -202,6 +202,21 @@ export class AETestProtocolSpec extends TestProtocolSpec {
     }
   ]
 
+  public encryptAsymmetric = [
+    {
+      message: 'example message',
+      encrypted:
+        '82dd0e57687055051fd37f23e3258ffadcf6d11852d73ed4bfd424042ef0de354cd258753716009226f97105902debf679726ebd4e4dfa6a3b24384f69db8b'
+    }
+  ]
+
+  public encryptAES = [
+    {
+      message: 'example message',
+      encrypted: '2a879823564ba9fad11c244490460b3a!01485f7509c725c7ba037b01227cb0!aa2e42f1d02675091659a0735f2a1dea'
+    }
+  ]
+
   public transactionResult = {
     transactions: [
       {

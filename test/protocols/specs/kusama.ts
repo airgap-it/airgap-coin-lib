@@ -101,6 +101,13 @@ export class KusamaTestProtocolSpec extends TestProtocolSpec {
     }
   ]
 
+  public encryptAES = [
+    {
+      message: 'example message',
+      encrypted: 'b9a7091ad33077761052c00f44227a9a!ff56d06348ae96d9df03f811667a08!2b08382f04eb77bf66c5cab27d06f25a'
+    }
+  ]
+
   public transactionResult = {
     transactions: [
       {

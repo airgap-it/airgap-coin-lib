@@ -1,5 +1,4 @@
 import * as groestlcoinJSMessage from '../../dependencies/src/groestlcoinjs-message-2.1.0/index'
-
 import { MainProtocolSymbols, ProtocolSymbols } from '../../utils/ProtocolSymbols'
 import { BitcoinProtocol } from '../bitcoin/BitcoinProtocol'
 import { BitcoinCryptoClient } from '../bitcoin/BitcoinCryptoClient'
@@ -43,15 +42,10 @@ export class GroestlcoinProtocol extends BitcoinProtocol {
   public addressValidationPattern: string = '^([F3][a-km-zA-HJ-NP-Z1-9]{33}|grs1[a-zA-HJ-NP-Z0-9]{39})$'
   public addressPlaceholder: string = 'Fdb...'
 
+  public readonly cryptoClient: BitcoinCryptoClient
+
   constructor(public readonly options: GroestlcoinProtocolOptions = new GroestlcoinProtocolOptions()) {
     super(options)
-  }
-
-  public async signMessage(message: string, keypair: { privateKey: Buffer }): Promise<string> {
-    return new BitcoinCryptoClient(this, groestlcoinJSMessage).signMessage(message, keypair)
-  }
-
-  public async verifyMessage(message: string, signature: string, publicKey: string): Promise<boolean> {
-    return new BitcoinCryptoClient(this, groestlcoinJSMessage).verifyMessage(message, signature, publicKey)
+    this.cryptoClient = new BitcoinCryptoClient(this, groestlcoinJSMessage)
   }
 }

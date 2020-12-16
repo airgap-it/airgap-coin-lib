@@ -1,8 +1,6 @@
-import { TezosTransactionResult } from './types/TezosTransactionResult'
-import { TezosTransactionCursor } from './types/TezosTransactionCursor'
-import { localForger } from '../../dependencies/src/@taquito/local-forging-6.3.5-beta.0/packages/taquito-local-forging/src/taquito-local-forging'
 import * as sodium from 'libsodium-wrappers'
 
+import { localForger } from '../../dependencies/src/@taquito/local-forging-6.3.5-beta.0/packages/taquito-local-forging/src/taquito-local-forging'
 import axios, { AxiosError, AxiosResponse } from '../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
@@ -24,6 +22,7 @@ import { NonExtendedProtocol } from '../NonExtendedProtocol'
 import { TezosRewardsCalculation005 } from './rewardcalculation/TezosRewardCalculation005'
 import { TezosRewardsCalculation006 } from './rewardcalculation/TezosRewardCalculation006'
 import { TezosRewardsCalculationDefault } from './rewardcalculation/TezosRewardCalculationDefault'
+import { TezosCryptoClient } from './TezosCryptoClient'
 import { TezosProtocolOptions } from './TezosProtocolOptions'
 import { TezosDelegationOperation } from './types/operations/Delegation'
 import { TezosOriginationOperation } from './types/operations/Origination'
@@ -31,8 +30,9 @@ import { TezosRevealOperation } from './types/operations/Reveal'
 import { TezosOperation } from './types/operations/TezosOperation'
 import { TezosTransactionOperation } from './types/operations/Transaction'
 import { TezosOperationType } from './types/TezosOperationType'
+import { TezosTransactionCursor } from './types/TezosTransactionCursor'
+import { TezosTransactionResult } from './types/TezosTransactionResult'
 import { TezosWrappedOperation } from './types/TezosWrappedOperation'
-import { TezosCryptoClient } from './TezosCryptoClient'
 import { assertNever } from '../../utils/assert'
 
 const MAX_OPERATIONS_PER_GROUP: number = 200
@@ -208,15 +208,17 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     edsig: Buffer
     branch: Buffer
   } = {
-    tz1: Buffer.from(new Uint8Array([6, 161, 159])),
-    tz2: Buffer.from(new Uint8Array([6, 161, 161])),
-    tz3: Buffer.from(new Uint8Array([6, 161, 164])),
-    kt: Buffer.from(new Uint8Array([2, 90, 121])),
-    edpk: Buffer.from(new Uint8Array([13, 15, 37, 217])),
-    edsk: Buffer.from(new Uint8Array([43, 246, 78, 7])),
-    edsig: Buffer.from(new Uint8Array([9, 245, 205, 134, 18])),
-    branch: Buffer.from(new Uint8Array([1, 52]))
-  }
+      tz1: Buffer.from(new Uint8Array([6, 161, 159])),
+      tz2: Buffer.from(new Uint8Array([6, 161, 161])),
+      tz3: Buffer.from(new Uint8Array([6, 161, 164])),
+      kt: Buffer.from(new Uint8Array([2, 90, 121])),
+      edpk: Buffer.from(new Uint8Array([13, 15, 37, 217])),
+      edsk: Buffer.from(new Uint8Array([43, 246, 78, 7])),
+      edsig: Buffer.from(new Uint8Array([9, 245, 205, 134, 18])),
+      branch: Buffer.from(new Uint8Array([1, 52]))
+    }
+
+  public readonly cryptoClient: TezosCryptoClient = new TezosCryptoClient(this.tezosPrefixes.edsig)
 
   // TODO: Should we remove these getters and replace the calls to `this.options.network...`?
   public get jsonRPCAPI(): string {
@@ -919,11 +921,11 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
     const rewards = isDelegating
       ? rewardInfo.map((reward) => ({
-          index: reward.cycle,
-          amount: reward.reward.toFixed(),
-          collected: reward.payout < new Date(),
-          timestamp: reward.payout.getTime()
-        }))
+        index: reward.cycle,
+        amount: reward.reward.toFixed(),
+        collected: reward.payout < new Date(),
+        timestamp: reward.payout.getTime()
+      }))
       : []
 
     return {
@@ -1185,10 +1187,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
         }
 
         if ((operation as any).gas_limit) {
-          ;(operation as any).gas_limit = gasLimit.toString()
+          ; (operation as any).gas_limit = gasLimit.toString()
         }
         if ((operation as any).storage_limit) {
-          ;(operation as any).storage_limit = storageLimit.toString()
+          ; (operation as any).storage_limit = storageLimit.toString()
         }
 
         gasLimitTotal += gasLimit
@@ -1206,7 +1208,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
       tezosWrappedOperation.contents.forEach((operation: TezosOperation) => {
         if ((operation as TezosTransactionOperation).fee) {
-          ;(operation as TezosTransactionOperation).fee = feePerOperation.toString()
+          ; (operation as TezosTransactionOperation).fee = feePerOperation.toString()
         }
       })
     }
@@ -1348,8 +1350,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     const mostRecentCycle: number = frozenBalance[frozenBalance.length - 1].cycle
 
     const { data: mostRecentBlock } = await axios.get(
-      `${this.options.network.rpcUrl}/chains/main/blocks/${
-        mostRecentCycle * TezosProtocol.BLOCKS_PER_CYCLE[this.options.network.extras.network]
+      `${this.options.network.rpcUrl}/chains/main/blocks/${mostRecentCycle * TezosProtocol.BLOCKS_PER_CYCLE[this.options.network.extras.network]
       }`
     )
 
@@ -1375,7 +1376,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
           reward: new BigNumber(payoutAmount),
           payout: new Date(
             timestamp.getTime() +
-              (obj.cycle - lastConfirmedCycle) * TezosProtocol.BLOCKS_PER_CYCLE[this.options.network.extras.network] * 60 * 1000
+            (obj.cycle - lastConfirmedCycle) * TezosProtocol.BLOCKS_PER_CYCLE[this.options.network.extras.network] * 60 * 1000
           )
         }
       })
@@ -1699,11 +1700,27 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   }
 
   public async signMessage(message: string, keypair: { privateKey: Buffer }): Promise<string> {
-    return new TezosCryptoClient(this.tezosPrefixes.edsig).signMessage(message, keypair)
+    return this.cryptoClient.signMessage(message, keypair)
   }
 
   public async verifyMessage(message: string, signature: string, publicKey: string): Promise<boolean> {
-    return new TezosCryptoClient(this.tezosPrefixes.edsig).verifyMessage(message, signature, publicKey)
+    return this.cryptoClient.verifyMessage(message, signature, publicKey)
+  }
+
+  public async encryptAsymmetric(message: string, publicKey: string): Promise<string> {
+    return this.cryptoClient.encryptAsymmetric(message, publicKey)
+  }
+
+  public async decryptAsymmetric(message: string, keypair: { publicKey: string; privateKey: Buffer }): Promise<string> {
+    return this.cryptoClient.decryptAsymmetric(message, keypair)
+  }
+
+  public async encryptAES(message: string, privateKey: Buffer): Promise<string> {
+    return this.cryptoClient.encryptAES(message, privateKey)
+  }
+
+  public async decryptAES(message: string, privateKey: Buffer): Promise<string> {
+    return this.cryptoClient.decryptAES(message, privateKey)
   }
 
   public async getTransactionStatuses(transactionHashes: string[]): Promise<AirGapTransactionStatus[]> {

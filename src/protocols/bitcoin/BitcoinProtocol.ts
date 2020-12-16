@@ -1,9 +1,9 @@
 import { BitcoinBlockbookTransactionCursor, BitcoinBlockbookTransactionResult } from './BitcoinTypes'
 
-import * as bitcoinJSMessage from '../../dependencies/src/bitcoinjs-message-2.1.1/index'
 import axios from '../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
+import * as bitcoinJSMessage from '../../dependencies/src/bitcoinjs-message-2.1.1/index'
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
 import { AirGapTransactionStatus, IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 import { SignedBitcoinTransaction } from '../../serializer/schemas/definitions/signed-transaction-bitcoin'
@@ -141,7 +141,11 @@ export class BitcoinProtocol implements ICoinProtocol {
   public addressValidationPattern: string = '^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$'
   public addressPlaceholder: string = '1ABC...'
 
-  constructor(public readonly options: BitcoinProtocolOptions = new BitcoinProtocolOptions()) {}
+  public readonly cryptoClient: BitcoinCryptoClient
+
+  constructor(public readonly options: BitcoinProtocolOptions = new BitcoinProtocolOptions()) {
+    this.cryptoClient = new BitcoinCryptoClient(this, bitcoinJSMessage)
+  }
 
   public async getBlockExplorerLinkForAddress(address: string): Promise<string> {
     return this.options.network.blockExplorer.getAddressLink(address)
@@ -633,15 +637,15 @@ export class BitcoinProtocol implements ICoinProtocol {
     const ourAddresses = (data.tokens || []).filter((token) => token.type === 'XPUBAddress').map((token) => token.name)
 
     const airGapTransactions: IAirGapTransaction[] = []
-    
+
     if (data.page == page) {
       for (const transaction of data.transactions || []) {
         const tempAirGapTransactionFrom: string[] = []
         const tempAirGapTransactionTo: string[] = []
         let tempAirGapTransactionIsInbound: boolean = true
-  
+
         let amount = new BigNumber(0)
-  
+
         for (const vin of transaction.vin) {
           if (this.containsSome(vin.addresses, ourAddresses)) {
             tempAirGapTransactionIsInbound = false
@@ -649,7 +653,7 @@ export class BitcoinProtocol implements ICoinProtocol {
           tempAirGapTransactionFrom.push(...vin.addresses)
           amount = amount.plus(vin.value)
         }
-  
+
         for (const vout of transaction.vout) {
           if (vout.addresses) {
             tempAirGapTransactionTo.push(...vout.addresses)
@@ -664,10 +668,10 @@ export class BitcoinProtocol implements ICoinProtocol {
             }
           }
         }
-  
+
         // deduct fee from amount
         amount = amount.minus(transaction.fees)
-  
+
         const airGapTransaction: IAirGapTransaction = {
           hash: transaction.txid,
           from: tempAirGapTransactionFrom,
@@ -680,7 +684,7 @@ export class BitcoinProtocol implements ICoinProtocol {
           network: this.options.network,
           timestamp: transaction.blockTime
         }
-  
+
         airGapTransactions.push(airGapTransaction)
       }
     }
@@ -712,15 +716,15 @@ export class BitcoinProtocol implements ICoinProtocol {
     const { data } = await axios.get<AddressResponse>(url, {
       responseType: 'json'
     })
-    
+
     if (data.page == page) {
       for (const transaction of data.transactions || []) {
         const tempAirGapTransactionFrom: string[] = []
         const tempAirGapTransactionTo: string[] = []
         let tempAirGapTransactionIsInbound: boolean = true
-  
+
         let amount = new BigNumber(0)
-  
+
         for (const vin of transaction.vin) {
           if (vin.addresses && this.containsSome(vin.addresses, addresses)) {
             tempAirGapTransactionIsInbound = false
@@ -728,7 +732,7 @@ export class BitcoinProtocol implements ICoinProtocol {
           tempAirGapTransactionFrom.push(...vin.addresses)
           amount = vin.value ? amount.plus(vin.value) : amount
         }
-  
+
         for (const vout of transaction.vout) {
           if (vout.addresses) {
             tempAirGapTransactionTo.push(...vout.addresses)
@@ -743,10 +747,10 @@ export class BitcoinProtocol implements ICoinProtocol {
             }
           }
         }
-  
+
         // deduct fee from amount
         amount = amount.minus(new BigNumber(transaction.fees).shiftedBy(this.feeDecimals))
-  
+
         const airGapTransaction: IAirGapTransaction = {
           hash: transaction.txid,
           from: tempAirGapTransactionFrom,
@@ -759,7 +763,7 @@ export class BitcoinProtocol implements ICoinProtocol {
           network: this.options.network,
           timestamp: transaction.blockTime
         }
-  
+
         airGapTransactions.push(airGapTransaction)
       }
     }
@@ -783,11 +787,40 @@ export class BitcoinProtocol implements ICoinProtocol {
   }
 
   public async signMessage(message: string, keypair: { privateKey: Buffer }): Promise<string> {
-    return new BitcoinCryptoClient(this, bitcoinJSMessage).signMessage(message, keypair)
+    return this.cryptoClient.signMessage(message, keypair)
   }
 
   public async verifyMessage(message: string, signature: string, publicKey: string): Promise<boolean> {
-    return new BitcoinCryptoClient(this, bitcoinJSMessage).verifyMessage(message, signature, publicKey)
+    return this.cryptoClient.verifyMessage(message, signature, publicKey)
+  }
+
+  public async encryptAsymmetric(message: string, publicKey: string): Promise<string> {
+    const childPublicKey: Buffer = this.options.config.bitcoinJSLib.HDNode.fromBase58(publicKey, this.options.network.extras.network)
+      .derive(0)
+      .derive(0)
+      .getPublicKeyBuffer()
+
+    return this.cryptoClient.encryptAsymmetric(message, childPublicKey as any)
+  }
+
+  public async decryptAsymmetric(message: string, keypair: { publicKey: string; privateKey: Buffer }): Promise<string> {
+    const childPrivateKey: Buffer = this.options.config.bitcoinJSLib.HDNode.fromBase58(
+      keypair.privateKey.toString('hex'),
+      this.options.network.extras.network
+    )
+      .derive(0)
+      .derive(0)
+      .keyPair.d.toBuffer(32)
+
+    return this.cryptoClient.decryptAsymmetric(message, { publicKey: '', privateKey: childPrivateKey })
+  }
+
+  public async encryptAES(message: string, privateKey: Buffer): Promise<string> {
+    return this.cryptoClient.encryptAES(message, privateKey)
+  }
+
+  public async decryptAES(message: string, privateKey: Buffer): Promise<string> {
+    return this.cryptoClient.decryptAES(message, privateKey)
   }
 
   public async getTransactionStatuses(transactionHashes: string[]): Promise<AirGapTransactionStatus[]> {

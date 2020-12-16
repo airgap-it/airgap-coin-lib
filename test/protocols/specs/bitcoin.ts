@@ -822,6 +822,21 @@ export class BitcoinProtocolSpec extends TestProtocolSpec {
     }
   ]
 
+  public encryptAsymmetric = [
+    {
+      message: 'example message',
+      encrypted:
+        '04304d211a7dd38b49e8bddf0c5b28f813f398927effab15e394c8bb21801003fd7f2e2846d09325c04b8f979f133d75e32f73f3faca761305fa01c021d931e901b9989df63b2845d87de830696311bc73b19997aee66ed129a92745d1714c0734d7171f15af3e64a1f62be46a455b9c'
+    }
+  ]
+
+  public encryptAES = [
+    {
+      message: 'example message',
+      encrypted: '0d19df9aa03a6b1f743f87f3b76031fb!5b1912552bf8f16ebc6cd038c2813a!249df7a0583417db3f02bd934084d2fa'
+    }
+  ]
+
   public transactionResult = {
     transactions: [
       {

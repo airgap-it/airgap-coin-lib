@@ -3,6 +3,10 @@
 import { ICoinProtocol, TezosProtocol } from '../../src'
 
 import { all } from './functions/all'
+import { decryptAES } from './functions/decrypt-aes'
+import { decryptAsymmetric } from './functions/decrypt-asymmetric'
+import { encryptAES } from './functions/encrypt-aes'
+import { encryptAsymmetric } from './functions/encrypt-asymmetric'
 
 const mnemonic: string = ''
 
@@ -27,3 +31,9 @@ const message: string = 'this is a message'
 all(protocol, mnemonic, recipient, amount, fee, unsignedTx, signedTx, message).catch((error: Error) => {
   console.error('getTransactionDetailsFromSigned', error)
 })
+;(async () => {
+  const encrypted = await encryptAsymmetric(protocol, mnemonic, message)
+  const decrypted = await decryptAsymmetric(protocol, mnemonic, encrypted)
+  const encryptedAES = await encryptAES(protocol, mnemonic, message)
+  const decryptedAES = await decryptAES(protocol, mnemonic, encryptedAES)
+})().catch()

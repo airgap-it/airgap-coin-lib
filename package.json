@@ -44,6 +44,7 @@
   "dependencies": {
     "@polkadot/util": "2.0.1",
     "@polkadot/wasm-crypto": "0.20.1",
+    "eciesjs": "0.3.6",
     "libsodium-wrappers": "0.7.6"
   },
   "localDependencies": {
