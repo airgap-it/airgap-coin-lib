@@ -26,7 +26,14 @@
     "browserify": "lerna run browserify --stream"
   },
   "devDependencies": {
-    "@types/node": "12.12.6"
+    "@polkadot/util": "2.0.1",
+    "@polkadot/wasm-crypto": "0.20.1",
+    "@types/node": "12.12.6",
+    "eciesjs": "0.3.6",
+    "lerna": "^3.22.1",
+    "libsodium-wrappers": "0.7.6",
+    "sonarqube-scanner": "2.5.0",
+    "typescript": "3.7.2"
   },
   "buildDependencies": {
     "@polkadot/util": "2.0.1",
