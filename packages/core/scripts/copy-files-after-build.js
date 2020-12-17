@@ -87,3 +87,4 @@ var findFilesOnLevel = function (base) { return __awaiter(void 0, void 0, void 0
 }); };
 findFilesOnLevel('./src/dependencies/src').then(function () { })["catch"](console.error);
 findFilesOnLevel('./src/serializer/schemas').then(function () { })["catch"](console.error);
+fs_1.copyFileSync('./package.json', './dist/package.json');
