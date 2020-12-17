@@ -11,6 +11,3 @@ dist
 node_modules
 npm-ci-publish-beta-only.sh
 npm-ci-publish.sh
-
-# Ignore downloaded dependencies:
-src/dependencies
