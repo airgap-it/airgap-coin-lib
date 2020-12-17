@@ -22,6 +22,9 @@ RUN chmod +x ./npm-ci-publish.sh
 # set to production
 RUN export NODE_ENV=production
 
+# bootstrap
+RUN npx lerna bootstrap
+
 # build
 RUN npm run build
 
