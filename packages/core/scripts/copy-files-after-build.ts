@@ -1,6 +1,7 @@
 import { mkdirSync, copyFileSync, readdirSync, lstatSync, existsSync } from 'fs'
 import { dirname, join, sep } from 'path'
 
+const dist = '../../dist/core'
 const findFilesOnLevel = async (base: string) => {
 	const files: string[] = []
 	const filesInFolder = readdirSync(base)
@@ -16,7 +17,7 @@ const findFilesOnLevel = async (base: string) => {
 				.reduce((prevPath, folder) => {
 					const currentPath = join(prevPath, folder, sep);
 					if (currentPath === 'src/') {
-						return 'dist/'
+						return dist
 					}
 
 					if (!existsSync(currentPath)){
@@ -26,9 +27,9 @@ const findFilesOnLevel = async (base: string) => {
 					return currentPath;
 				}, '');
 
-			console.log('Copying file', path.replace('./src', './dist'))
+			console.log('Copying file', path.replace('./src', dist))
 
-			copyFileSync(path, path.replace('./src', './dist'))
+			copyFileSync(path, path.replace('./src', dist))
 		}
 	}
 	return files

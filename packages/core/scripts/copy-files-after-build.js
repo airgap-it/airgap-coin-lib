@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -34,11 +35,11 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var _this = this;
 exports.__esModule = true;
 var fs_1 = require("fs");
 var path_1 = require("path");
-var findFilesOnLevel = function (base) { return __awaiter(_this, void 0, void 0, function () {
+var dist = '../../dist/core';
+var findFilesOnLevel = function (base) { return __awaiter(void 0, void 0, void 0, function () {
     var files, filesInFolder, _i, filesInFolder_1, file, path, isDirectory, _a, _b, _c;
     return __generator(this, function (_d) {
         switch (_d.label) {
@@ -67,15 +68,15 @@ var findFilesOnLevel = function (base) { return __awaiter(_this, void 0, void 0,
                         .reduce(function (prevPath, folder) {
                         var currentPath = path_1.join(prevPath, folder, path_1.sep);
                         if (currentPath === 'src/') {
-                            return 'dist/';
+                            return dist;
                         }
                         if (!fs_1.existsSync(currentPath)) {
                             fs_1.mkdirSync(currentPath);
                         }
                         return currentPath;
                     }, '');
-                    console.log('Copying file', path.replace('./src', './dist'));
-                    fs_1.copyFileSync(path, path.replace('./src', './dist'));
+                    console.log('Copying file', path.replace('./src', dist));
+                    fs_1.copyFileSync(path, path.replace('./src', dist));
                 }
                 _d.label = 4;
             case 4:
