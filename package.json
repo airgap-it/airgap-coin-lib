@@ -23,7 +23,12 @@
     "prepare": "lerna bootstrap && npm run build",
     "install-test-dependencies": "node scripts/install-test-deps.js && npm install",
     "install-build-dependencies": "node scripts/install-build-deps.js && npm install",
-    "browserify": "lerna run browserify --stream"
+    "browserify": "lerna run browserify --stream",
+    "bump:version": "lerna version --no-git-tag-version",
+    "bump:major": "lerna version --no-git-tag-version major --yes",
+    "bump:minor": "lerna version --no-git-tag-version minor --yes",
+    "bump:patch": "lerna version --no-git-tag-version patch --yes",
+    "bump:beta": "lerna version --no-git-tag-version prerelease --preid beta --yes"
   },
   "devDependencies": {
     "@polkadot/util": "2.0.1",

@@ -84,5 +84,6 @@
     "report-dir": "../../coverage/core",
     "sourceMap": true,
     "instrument": true
-  }
+  },
+  "gitHead": "8e8feb6788204501b7173aa825f5456c2a5f185b"
 }

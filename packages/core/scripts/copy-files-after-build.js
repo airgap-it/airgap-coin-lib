@@ -38,7 +38,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 exports.__esModule = true;
 var fs_1 = require("fs");
 var path_1 = require("path");
-var dist = '../../dist/core';
 var findFilesOnLevel = function (base) { return __awaiter(void 0, void 0, void 0, function () {
     var files, filesInFolder, _i, filesInFolder_1, file, path, isDirectory, _a, _b, _c;
     return __generator(this, function (_d) {
@@ -68,15 +67,15 @@ var findFilesOnLevel = function (base) { return __awaiter(void 0, void 0, void 0
                         .reduce(function (prevPath, folder) {
                         var currentPath = path_1.join(prevPath, folder, path_1.sep);
                         if (currentPath === 'src/') {
-                            return dist;
+                            return 'dist/';
                         }
                         if (!fs_1.existsSync(currentPath)) {
                             fs_1.mkdirSync(currentPath);
                         }
                         return currentPath;
                     }, '');
-                    console.log('Copying file', path.replace('./src', dist));
-                    fs_1.copyFileSync(path, path.replace('./src', dist));
+                    console.log('Copying file', path.replace('./src', './dist'));
+                    fs_1.copyFileSync(path, path.replace('./src', './dist'));
                 }
                 _d.label = 4;
             case 4:

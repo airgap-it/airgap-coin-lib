@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -34,12 +35,18 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var _this = this;
+var __spreadArrays = (this && this.__spreadArrays) || function () {
+    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+    for (var r = Array(s), k = 0, i = 0; i < il; i++)
+        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
+            r[k] = a[j];
+    return r;
+};
 exports.__esModule = true;
 var fs_1 = require("fs");
 var https_1 = require("https");
-var semver = require("./check_dependencies_semver");
 var check_dependencies_fs_1 = require("./check_dependencies_fs");
+var semver = require("./check_dependencies_semver");
 function httpGet(params) {
     return new Promise(function (resolve, reject) {
         var req = https_1.request(params, function (res) {
@@ -97,13 +104,14 @@ function log(color) {
     };
     var hasColor = colors[color];
     if (hasColor) {
-        console.log.apply(console, [colors[color] + "%s\u001B[0m"].concat(message));
+        console.log.apply(console, __spreadArrays([colors[color] + "%s\u001B[0m"], message));
     }
     else {
-        console.log.apply(console, [color].concat(message));
+        console.log.apply(console, __spreadArrays([color], message));
     }
 }
-exports.validateDepsJson = function (depsFile) { return __awaiter(_this, void 0, void 0, function () {
+// tslint:disable:cyclomatic-complexity
+exports.validateDepsJson = function (depsFile) { return __awaiter(void 0, void 0, void 0, function () {
     var verificationFailed, packageJson, topLevelPackages, keys, _loop_1, _i, keys_1, prop;
     return __generator(this, function (_a) {
         log("\n#############################\n##                         ##\n## VALIDATING DEPENDENCIES ##\n##                         ##\n#############################\n");
@@ -232,7 +240,7 @@ var simpleHash = function (s) {
         .split('=')
         .join('');
 };
-var downloadFile = function (url) { return __awaiter(_this, void 0, void 0, function () {
+var downloadFile = function (url) { return __awaiter(void 0, void 0, void 0, function () {
     var cachePath, cacheFile, fileExists, response, error_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
@@ -283,7 +291,7 @@ var downloadFile = function (url) { return __awaiter(_this, void 0, void 0, func
 //     })
 //   })
 // }
-exports.getPackageJsonForDepsFiles = function (depsFile) { return __awaiter(_this, void 0, void 0, function () {
+exports.getPackageJsonForDepsFiles = function (depsFile) { return __awaiter(void 0, void 0, void 0, function () {
     var _i, _a, prop, localPath, fileExists, urlCommit, data;
     return __generator(this, function (_b) {
         switch (_b.label) {
@@ -315,7 +323,7 @@ exports.getPackageJsonForDepsFiles = function (depsFile) { return __awaiter(_thi
         }
     });
 }); };
-exports.getFilesForDepsFile = function (depsFile) { return __awaiter(_this, void 0, void 0, function () {
+exports.getFilesForDepsFile = function (depsFile) { return __awaiter(void 0, void 0, void 0, function () {
     var _i, _a, prop, _loop_3, _b, _c, file, state_1;
     return __generator(this, function (_d) {
         switch (_d.label) {
@@ -392,7 +400,7 @@ var replaceWithinContainer = function (content, before, after) {
     }
     return content;
 };
-var replaceImports = function (depsFile) { return __awaiter(_this, void 0, void 0, function () {
+var replaceImports = function (depsFile) { return __awaiter(void 0, void 0, void 0, function () {
     var _i, _a, prop, predefinedReplacements, _loop_4, _b, _c, file;
     return __generator(this, function (_d) {
         for (_i = 0, _a = Object.keys(depsFile); _i < _a.length; _i++) {
@@ -434,7 +442,7 @@ var replaceImports = function (depsFile) { return __awaiter(_this, void 0, void 
                             console.log('WOOPS', dependency);
                         }
                         else {
-                            var levels = (file.match(/\//g) || []).length;
+                            var levels = (file.match(/\//g) || []).length + (prop.includes('/') ? 1 : 0);
                             var levelUpString = '../';
                             if (dependencyDefinition.entrypoint === '') {
                                 dependencyDefinition.entrypoint = 'index';
