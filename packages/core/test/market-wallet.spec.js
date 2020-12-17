@@ -1,7 +1,7 @@
 global.fetch = require('node-fetch') // cryptocompare needs fetch internally
 const chai = require('chai')
 const expect = chai.expect
-const CoinLib = require('../dist/index')
+const CoinLib = require('../../../dist/core/index')
 
 const btcProtocol = new CoinLib.BitcoinProtocol()
 

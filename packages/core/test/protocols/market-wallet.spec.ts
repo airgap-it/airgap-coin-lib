@@ -14,12 +14,11 @@ import {
   EthereumProtocol,
   GroestlcoinProtocol,
   ICoinProtocol,
+  MainProtocolSymbols,
   TezosProtocol
 } from '../../src/index'
 import { EthereumProtocolOptions } from '../../src/protocols/ethereum/EthereumProtocolOptions'
-import { AirGapWalletPriceService, TimeUnit } from '../../src/wallet/AirGapMarketWallet'
-import { MarketDataSample } from '../../dist/wallet/AirGapMarketWallet'
-import { MainProtocolSymbols } from '../../dist/utils/ProtocolSymbols'
+import { AirGapWalletPriceService, MarketDataSample, TimeUnit } from '../../src/wallet/AirGapMarketWallet'
 
 addSupportedProtocol(new AeternityProtocol())
 addSupportedProtocol(new BitcoinProtocol())

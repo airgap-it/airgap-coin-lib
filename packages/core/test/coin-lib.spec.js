@@ -1,20 +1,20 @@
-const BIP39 = require('../dist/dependencies/src/bip39-2.5.0/index')
+const BIP39 = require('../../../dist/core/dependencies/src/bip39-2.5.0/index')
 const assert = require('assert')
-const networks = require('../dist/networks')
+const networks = require('../../../dist/core/networks')
 
-const bitcoinJS = require('../dist/dependencies/src/bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac/src/index')
+const bitcoinJS = require('../../../dist/core/dependencies/src/bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac/src/index')
 
-const BigNumber = require('../dist/dependencies/src/bignumber.js-9.0.0/bignumber')
+const BigNumber = require('../../../dist/core/dependencies/src/bignumber.js-9.0.0/bignumber')
 
 const mnemonicPhrase = 'spell device they juice trial skirt amazing boat badge steak usage february virus art survey' // this is what the user writes down and what is saved by secure storage?
 const masterSeed = BIP39.mnemonicToSeed(mnemonicPhrase)
 
-const CoinLib = require('../dist/index')
+const CoinLib = require('../../../dist/core/index')
 
 const validateTxHelper = require('./helpers/validate-tx')
 
 const sinon = require('sinon')
-const axios = require('../dist/dependencies/src/axios-0.19.0/index')
+const axios = require('../../../dist/core/dependencies/src/axios-0.19.0/index')
 
 describe('Extended Public Derivation Logic', function () {
   it('should return the correct bitcoin address from extended public key', function (done) {
