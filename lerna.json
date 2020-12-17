@@ -2,5 +2,17 @@
   "packages": [
     "packages/*"
   ],
-  "version": "0.0.0"
+  "version": "0.9.15-beta.0",
+  "command": {
+    "publish": {
+      "ignoreChanges": [
+        "*.sh",
+        "*.md",
+        "*.yml",
+        ".*",
+        "tsconfig.json",
+        "tslint.json"
+      ]
+    }
+  }
 }
