@@ -9,10 +9,6 @@
     ],
     "module": "commonjs",
     "declaration": true,
-    "outDir": "./dist",
-    "typeRoots": [
-      "./node_modules/@types"
-    ],
     "types": [
       "node"
     ],
@@ -32,11 +28,10 @@
     "noImplicitReturns": true /* Report error when not all code paths in function return a value. */,
     "noFallthroughCasesInSwitch": true /* Report errors for fallthrough cases in switch statement. */
   },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "src/dependencies/cache/**/*",
-    "src/dependencies/github/**/*"
-  ]
+  "paths": {
+    "core": [
+      "packages/core/dist/core",
+      "packages/core/dist"
+    ]
+  }
 }

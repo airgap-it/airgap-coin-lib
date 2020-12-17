@@ -2,9 +2,6 @@
   "name": "@airgap/coinlib-core",
   "version": "0.9.15-beta.0",
   "description": "The @airgap/coinlib-core is a protocol agnostic library to prepare, sign and broadcast cryptocurrency transactions.",
-  "main": "dist/index.js",
-  "unpkg": "dist/airgap-coin-lib.min.js",
-  "types": "dist/index.d.ts",
   "keywords": [
     "airgap",
     "blockchain",
@@ -34,11 +31,7 @@
     "test": "nyc mocha --require ts-node/register --require source-map-support/register --full-trace --timeout 40000 ./test/**/**.spec.ts",
     "test-ci": "nyc --reporter=lcov npm test",
     "test-legacy": "npm run build && mocha --full-trace --timeout 40000 ./test/**/**.spec.js",
-    "sonar-scanner": "sonar-scanner",
-    "prepare": "npm run build",
-    "install-test-dependencies": "node scripts/install-test-deps.js && npm install",
-    "install-build-dependencies": "node scripts/install-build-deps.js && npm install",
-    "browserify": "browserify ./dist/index.js -s airgapCoinLib > ./dist/airgap-coin-lib.min.js"
+    "browserify": "browserify ../../dist/core/index.js -s airgapCoinLib > ../../dist/core/airgap-coin-lib.min.js"
   },
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
@@ -71,54 +64,6 @@
     "utf8": "3.0.0",
     "xxhashjs": "0.2.2"
   },
-  "devDependencies": {
-    "@types/node": "12.12.6",
-    "lerna": "^3.22.1",
-    "sonarqube-scanner": "2.5.0",
-    "typescript": "3.7.2"
-  },
-  "buildDependencies": {
-    "@types/node": "12.12.6",
-    "typescript": "3.7.2",
-    "sonarqube-scanner": "2.5.0"
-  },
-  "testDependencies": {
-    "@types/assert": "0.0.31",
-    "@types/bip39": "2.4.0",
-    "@types/chai": "4.1.7",
-    "@types/chai-as-promised": "7.1.0",
-    "@types/ethereumjs-util": "5.2.0",
-    "@types/jasmine": "2.8.9",
-    "@types/mocha": "5.2.5",
-    "@types/node": "12.12.6",
-    "@types/semver": "6.0.2",
-    "@types/underscore": "1.8.9",
-    "ajv": "6.10.2",
-    "axios": "0.20.0",
-    "axios-mock-adapter": "^1.18.2",
-    "browserify": "16.5.0",
-    "chai": "4.2.0",
-    "chai-as-promised": "7.1.1",
-    "husky": "3.0.9",
-    "istanbul": "0.4.5",
-    "mocha": "5.2.0",
-    "node-fetch": "2.2.0",
-    "nyc": "12.0.2",
-    "prettier": "2.0.5",
-    "pretty-quick": "2.0.1",
-    "qrcode-terminal": "0.12.0",
-    "semver": "6.3.0",
-    "sinon": "6.3.5",
-    "sonarqube-scanner": "2.5.0",
-    "ts-json-schema-generator": "0.56.0",
-    "ts-node": "8.5.0",
-    "tslint": "5.20.1",
-    "tslint-config-prettier": "1.18.0",
-    "tslint-config-valorsoft": "2.2.1"
-  },
-  "files": [
-    "/dist"
-  ],
   "nyc": {
     "include": [
       "src/**/*.ts"
