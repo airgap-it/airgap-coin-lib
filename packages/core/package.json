@@ -31,7 +31,7 @@
     "test": "nyc mocha --require ts-node/register --require source-map-support/register --full-trace --timeout 40000 ./test/**/**.spec.ts",
     "test-ci": "nyc --reporter=lcov npm test",
     "test-legacy": "npm run build && mocha --full-trace --timeout 40000 ./test/**/**.spec.js",
-    "browserify": "browserify ../../dist/core/index.js -s airgapCoinLib > ../../dist/core/airgap-coin-lib.min.js"
+    "browserify": "browserify ../../dist/core/index.js -s airgapCoinLib > ../../dist/core/airgap-coinlib-core.min.js"
   },
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
