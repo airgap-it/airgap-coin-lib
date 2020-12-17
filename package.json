@@ -20,7 +20,7 @@
     "test-ci": "lerna run test-ci --stream",
     "test-legacy": "lerna run test-legacy --stream",
     "sonar-scanner": "sonar-scanner",
-    "prepare": "npm run build",
+    "prepare": "lerna bootstrap && npm run build",
     "install-test-dependencies": "node scripts/install-test-deps.js && npm install",
     "install-build-dependencies": "node scripts/install-build-deps.js && npm install",
     "browserify": "lerna run browserify --stream"
