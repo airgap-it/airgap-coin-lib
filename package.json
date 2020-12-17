@@ -14,7 +14,7 @@
     "build-scripts": "tsc scripts/*.ts && lerna run build-scripts --stream",
     "lint": "lerna run lint --stream",
     "lint:prettier": "lerna run lint:prettier --stream",
-    "lint-ci": "lerna run lint-cli --stream",
+    "lint-ci": "lerna run lint-ci --stream",
     "lint-ci:prettier": "lerna run lint-ci:prettier --stream",
     "test": "lerna run test --stream",
     "test-ci": "lerna run test-ci --stream",
