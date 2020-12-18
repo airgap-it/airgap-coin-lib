@@ -3,17 +3,6 @@ import * as sodium from 'libsodium-wrappers'
 import * as bs58check from '../../dependencies/src/bs58check-2.1.2'
 import { Ed25519CryptoClient } from '../Ed25519CryptoClient'
 
-function isHex(str: string): boolean {
-  const legend = '0123456789abcdef';
-  for (let i = 0; i < str.length; i++) {
-    if (legend.includes(str[i])) {
-      continue;
-    };
-    return false;
-  };
-  return true;
-};
-
 export class TezosCryptoClient extends Ed25519CryptoClient {
   constructor(public readonly edsigPrefix: Uint8Array = new Uint8Array([9, 245, 205, 134, 18])) {
     super()
@@ -53,9 +42,22 @@ export class TezosCryptoClient extends Ed25519CryptoClient {
   }
 
   private async toBuffer(message: string): Promise<Buffer> {
-    return isHex(message) ? // Check if the string is a hex string
-      Buffer.from(message, 'hex') // If yes, then we interpret it as hex
-      : sodium.from_string(message) // If not, then we let sodium convert it to a buffer (this is not compatible with the tezos-cli)
+    if (message.length % 2 !== 0) {
+      return sodium.from_string(message)
+    }
 
+    let adjustedMessage = message
+
+    if (message.startsWith('0x')) {
+      adjustedMessage = message.slice(2)
+    }
+
+    const buffer = Buffer.from(adjustedMessage, 'hex')
+
+    if (buffer.length === adjustedMessage.length / 2) {
+      return buffer
+    }
+
+    return sodium.from_string(message)
   }
 }
