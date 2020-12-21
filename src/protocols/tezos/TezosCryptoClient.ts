@@ -41,7 +41,7 @@ export class TezosCryptoClient extends Ed25519CryptoClient {
     return isValidSignature
   }
 
-  private async toBuffer(message: string): Promise<Buffer> {
+  public async toBuffer(message: string): Promise<Buffer> {
     if (message.length % 2 !== 0) {
       return sodium.from_string(message)
     }
