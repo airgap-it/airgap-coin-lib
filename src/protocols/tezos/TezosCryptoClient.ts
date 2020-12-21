@@ -11,7 +11,9 @@ export class TezosCryptoClient extends Ed25519CryptoClient {
   public async signMessage(message: string, keypair: { privateKey: Buffer }): Promise<string> {
     await sodium.ready
 
-    const hash: Buffer = sodium.crypto_generichash(32, sodium.from_string(message))
+    const bufferMessage = await this.toBuffer(message)
+
+    const hash: Buffer = sodium.crypto_generichash(32, bufferMessage)
     const rawSignature: Uint8Array = sodium.crypto_sign_detached(hash, keypair.privateKey)
     const signature: string = bs58check.encode(Buffer.concat([Buffer.from(this.edsigPrefix), Buffer.from(rawSignature)]))
 
@@ -31,9 +33,31 @@ export class TezosCryptoClient extends Ed25519CryptoClient {
       throw new Error(`invalid signature: ${signature}`)
     }
 
-    const hash: Buffer = sodium.crypto_generichash(32, sodium.from_string(message))
+    const bufferMessage = await this.toBuffer(message)
+
+    const hash: Buffer = sodium.crypto_generichash(32, bufferMessage)
     const isValidSignature: boolean = sodium.crypto_sign_verify_detached(rawSignature, hash, Buffer.from(publicKey, 'hex'))
 
     return isValidSignature
+  }
+
+  public async toBuffer(message: string): Promise<Buffer> {
+    if (message.length % 2 !== 0) {
+      return sodium.from_string(message)
+    }
+
+    let adjustedMessage = message
+
+    if (message.startsWith('0x')) {
+      adjustedMessage = message.slice(2)
+    }
+
+    const buffer = Buffer.from(adjustedMessage, 'hex')
+
+    if (buffer.length === adjustedMessage.length / 2) {
+      return buffer
+    }
+
+    return sodium.from_string(message)
   }
 }
