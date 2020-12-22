@@ -8,7 +8,9 @@ export enum ActionState {
 }
 
 export abstract class Action<Result, Context> {
-  public readonly identifier: string = 'action'
+  public get identifier(): string {
+    return 'action'
+  }
 
   public readonly context: Context
   public result?: Result
