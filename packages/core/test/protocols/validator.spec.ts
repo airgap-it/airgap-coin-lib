@@ -76,7 +76,7 @@ describe('Validators', () => {
   })
 
   describe('Sync Scheme', () => {
-    const validScheme = {
+    const validScheme: { version: number, type: number, protocol?: string, payload: unknown } = {
       version: 1,
       type: 1,
       protocol: 'ETH',
