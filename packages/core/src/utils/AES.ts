@@ -7,7 +7,7 @@ export class AES {
     public readonly KEY_DERIVATION_ITERATION_COUNT: number = 10000,
     public readonly ALGORITHM: 'aes-256-gcm' = 'aes-256-gcm',
     public readonly encoding: 'base64' | 'hex' = 'hex'
-  ) {}
+  ) { }
 
   public async encryptString(plainText: string, privateKey: Buffer): Promise<string> {
     if (!plainText || plainText.length === 0) {
@@ -80,7 +80,7 @@ export class AES {
   }
 
   private deriveKeyFromPrivateKey(privateKey: Buffer): Promise<Buffer> {
-    return new Promise((resolve: (value?: Buffer | PromiseLike<Buffer> | undefined) => void, reject: (reason?: unknown) => void): void => {
+    return new Promise((resolve: (value: Buffer | PromiseLike<Buffer>) => void, reject: (reason?: unknown) => void): void => {
       crypto.pbkdf2(privateKey, '', this.KEY_DERIVATION_ITERATION_COUNT, 32, 'sha512', (pbkdf2Error: Error | null, key: Buffer) => {
         if (pbkdf2Error) {
           reject(pbkdf2Error)

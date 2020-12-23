@@ -34,7 +34,7 @@ export class SCALEBytes extends SCALEType {
     super()
   }
 
-  public toString(encoding: string = 'hex'): string {
+  public toString(encoding: BufferEncoding = 'hex'): string {
     return this.bytes.toString(encoding)
   }
 

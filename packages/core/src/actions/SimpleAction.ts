@@ -1,7 +1,9 @@
 import { Action } from './Action'
 
 export class SimpleAction<Result> extends Action<Result, void> {
-  public readonly identifier: string = 'simple-action'
+  get identifier(): string {
+    return 'simple-action'
+  }
 
   private readonly promise: () => Promise<Result>
 

@@ -31,16 +31,16 @@
     "bump:beta": "lerna version --no-git-tag-version prerelease --preid beta --yes"
   },
   "devDependencies": {
-    "@types/node": "12.12.6",
-    "lerna": "^3.22.1",
-    "sonarqube-scanner": "2.5.0",
-    "typescript": "3.7.2"
+    "@types/node": "14.14.14",
+    "lerna": "3.22.1",
+    "sonarqube-scanner": "2.8.0",
+    "typescript": "4.1.3"
   },
   "buildDependencies": {
-    "@types/node": "12.12.6",
-    "lerna": "^3.22.1",
-    "sonarqube-scanner": "2.5.0",
-    "typescript": "3.7.2"
+    "@types/node": "14.14.14",
+    "lerna": "3.22.1",
+    "sonarqube-scanner": "2.8.0",
+    "typescript": "4.1.3"
   },
   "testDependencies": {
     "@types/assert": "0.0.31",

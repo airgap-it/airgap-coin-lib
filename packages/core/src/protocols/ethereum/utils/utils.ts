@@ -124,7 +124,11 @@ export class EthereumUtils {
   }
 
   private static isBigNumber(value: unknown): boolean {
-    return value && BigNumber.isBigNumber(value)
+    if (!value) {
+      return false
+    } else {
+      return BigNumber.isBigNumber(value)
+    }
   }
 
   private static utf8ToHex(value: string): string {

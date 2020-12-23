@@ -8,13 +8,13 @@ export abstract class EthereumInfoClient {
     this.baseURL = baseURL
   }
 
-  public abstract async fetchTransactions(
+  public abstract fetchTransactions(
     protocol: EthereumProtocol,
     address: string,
     limit: number,
     cursor?: EthereumTransactionCursor
   ): Promise<EthereumTransactionResult>
-  public abstract async fetchContractTransactions(
+  public abstract fetchContractTransactions(
     protocol: EthereumProtocol,
     contractAddress: string,
     address: string,

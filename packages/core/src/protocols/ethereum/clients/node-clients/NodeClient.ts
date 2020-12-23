@@ -8,26 +8,26 @@ export abstract class EthereumNodeClient {
     this.baseURL = baseURL
   }
 
-  public abstract async fetchBalance(address: string): Promise<BigNumber>
-  public abstract async fetchTransactionCount(address: string): Promise<number>
-  public abstract async sendSignedTransaction(transaction: string): Promise<string>
-  public abstract async callBalanceOf(contractAddress: string, address: string): Promise<BigNumber>
-  public abstract async getTransactionStatus(transactionHash: string): Promise<AirGapTransactionStatus>
-  public abstract async estimateTransferGas(
+  public abstract fetchBalance(address: string): Promise<BigNumber>
+  public abstract fetchTransactionCount(address: string): Promise<number>
+  public abstract sendSignedTransaction(transaction: string): Promise<string>
+  public abstract callBalanceOf(contractAddress: string, address: string): Promise<BigNumber>
+  public abstract getTransactionStatus(transactionHash: string): Promise<AirGapTransactionStatus>
+  public abstract estimateTransferGas(
     contractAddress: string,
     fromAddress: string,
     toAddress: string,
     hexAmount: string
   ): Promise<BigNumber>
 
-  public abstract async estimateTransactionGas(
+  public abstract estimateTransactionGas(
     fromAddress: string,
     toAddress: string,
     amount?: string,
     data?: string,
     gas?: string
   ): Promise<BigNumber>
-  public abstract async getGasPrice(): Promise<BigNumber>
+  public abstract getGasPrice(): Promise<BigNumber>
 
-  public abstract async callBalanceOfOnContracts(contractAddresses: string[], address: string): Promise<{[contractAddress: string]: BigNumber}>
+  public abstract callBalanceOfOnContracts(contractAddresses: string[], address: string): Promise<{ [contractAddress: string]: BigNumber }>
 }

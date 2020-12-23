@@ -55,7 +55,7 @@ export abstract class Action<Result, Context> {
     }
   }
 
-  protected abstract async perform(): Promise<Result>
+  protected abstract perform(): Promise<Result>
 
   protected addValidTransition(from: ActionState, to: ActionState): void {
     this.stateMachine.addValidStateTransition(from, to)

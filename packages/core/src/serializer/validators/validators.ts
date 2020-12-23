@@ -89,9 +89,9 @@ validators.isPublicKey = (value: unknown) => {
 
 validators.isValidEthereumTransactionString = (transaction: string) => {
   // console.log(binaryTransaction)
-  return new Promise(async (resolve, reject) => {
+  return new Promise<void>(async (resolve, reject) => {
     if (transaction === null || typeof transaction === 'undefined') {
-      resolve('not a valid Ethereum transaction')
+      reject('not a valid Ethereum transaction')
     }
     const signedTx: SignedEthereumTransaction = {
       accountIdentifier: '',
@@ -107,7 +107,7 @@ validators.isValidEthereumTransactionString = (transaction: string) => {
       resolve()
     } catch (error) {
       // console.log(error)
-      resolve('not a valid Ethereum transaction')
+      reject('not a valid Ethereum transaction')
     }
   })
 }
@@ -294,16 +294,16 @@ validators.isValidAeternityTx = (transaction: unknown) => {
 }
 
 validators.isValidAeternityAccount = (accountIdentifier: string) => {
-  return new Promise(async (resolve) => {
+  return new Promise<void>(async (resolve, reject) => {
     if (accountIdentifier === null || typeof accountIdentifier === 'undefined') {
-      resolve()
+      reject()
     }
     try {
       const protocol = new AeternityProtocol()
       await protocol.getTransactionsFromPublicKey(accountIdentifier, 1)
       resolve()
     } catch (error) {
-      resolve('not a valid Aeternity account')
+      reject('not a valid Aeternity account')
     }
   })
 }
@@ -317,9 +317,9 @@ validators.isValidTezosUnsignedTransaction = (binaryTx: string) => {
     callbackURL: ''
   }
 
-  return new Promise(async (resolve, reject) => {
+  return new Promise<void>(async (resolve, reject) => {
     if (binaryTx === null || typeof binaryTx === 'undefined') {
-      resolve('not a valid Tezos transaction')
+      reject('not a valid Tezos transaction')
     }
     const protocol = new TezosProtocol()
     // allow empty values by default (needs to be checked by "presence" check)
@@ -331,7 +331,7 @@ validators.isValidTezosUnsignedTransaction = (binaryTx: string) => {
       resolve()
     } catch (error) {
       // console.log(error)
-      resolve('not a valid Tezos transaction')
+      reject('not a valid Tezos transaction')
     }
   })
 }
@@ -342,9 +342,9 @@ validators.isValidTezosSignedTransaction = (signedTransaction: string) => {
     transaction: signedTransaction
   }
 
-  return new Promise(async (resolve, reject) => {
+  return new Promise<void>(async (resolve, reject) => {
     if (signedTransaction === null || typeof signedTransaction === 'undefined') {
-      resolve('not a valid Tezos transaction')
+      reject('not a valid Tezos transaction')
     }
     const protocol = new TezosProtocol()
     // allow empty values by default (needs to be checked by "presence" check)
@@ -356,7 +356,7 @@ validators.isValidTezosSignedTransaction = (signedTransaction: string) => {
       resolve()
     } catch (error) {
       // console.log(error)
-      resolve('not a valid Tezos transaction')
+      reject('not a valid Tezos transaction')
     }
   })
 }
@@ -370,9 +370,9 @@ validators.isValidSubstrateUnsignedTransaction = (encoded: string) => {
     callbackURL: ''
   }
 
-  return new Promise(async (resolve, reject) => {
+  return new Promise<void>(async (resolve, reject) => {
     if (encoded === null || typeof encoded === 'undefined') {
-      resolve('not a valid Substrate transaction')
+      reject('not a valid Substrate transaction')
     }
 
     const protocol = new KusamaProtocol()
@@ -381,7 +381,7 @@ validators.isValidSubstrateUnsignedTransaction = (encoded: string) => {
       await protocol.getTransactionDetails(unsignedTx)
       resolve()
     } catch (error) {
-      resolve('not a valid Substrate transaction')
+      reject('not a valid Substrate transaction')
     }
   })
 }
@@ -392,16 +392,16 @@ validators.isValidSubstrateSignedTransaction = (transaction: string) => {
     transaction
   }
 
-  return new Promise(async (resolve, reject) => {
+  return new Promise<void>(async (resolve, reject) => {
     if (transaction === null || typeof transaction === 'undefined') {
-      resolve('not a valid Substrate transaction')
+      reject('not a valid Substrate transaction')
     }
     const protocol = new KusamaProtocol()
     try {
       await protocol.getTransactionDetailsFromSigned(signedTx)
       resolve()
     } catch (error) {
-      resolve('not a valid Substrate transaction')
+      reject('not a valid Substrate transaction')
     }
   })
 }

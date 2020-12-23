@@ -1,8 +1,8 @@
 import { AES } from '../utils/AES'
 
 export abstract class CryptoClient {
-  public abstract async signMessage(message: string, keypair: { publicKey?: string; privateKey: Buffer }): Promise<string>
-  public abstract async verifyMessage(message: string, signature: string, publicKey: string): Promise<boolean>
+  public abstract signMessage(message: string, keypair: { publicKey?: string; privateKey: Buffer }): Promise<string>
+  public abstract verifyMessage(message: string, signature: string, publicKey: string): Promise<boolean>
 
   public async encryptAES(payload: string, privateKey: Buffer): Promise<string> {
     return new AES().encryptString(payload, privateKey)

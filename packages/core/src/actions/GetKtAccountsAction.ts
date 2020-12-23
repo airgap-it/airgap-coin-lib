@@ -7,7 +7,9 @@ export interface ImportAccoutActionContext {
 }
 
 export class ImportAccountAction extends Action<string[], ImportAccoutActionContext> {
-  public readonly identifier: string = 'tezos-import-account-action'
+  get identifier(): string {
+    return 'tezos-import-account-action'
+  }
 
   protected async perform(): Promise<string[]> {
     const protocol: TezosKtProtocol = new TezosKtProtocol()

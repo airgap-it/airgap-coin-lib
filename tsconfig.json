@@ -1,20 +1,13 @@
 {
   "compilerOptions": {
     "target": "es5",
-    "lib": [
-      "es2015",
-      "es7",
-      "es2017.string",
-      "dom"
-    ],
+    "lib": ["es2015", "es7", "es2017.string", "dom"],
     "module": "commonjs",
     "declaration": true,
-    "types": [
-      "node"
-    ],
+    "types": ["node"],
     "sourceMap": true,
     /* Strict Type-Checking Options */
-    // "strict": true /* Enable all strict type-checking options. */
+    // "strict": true /* Enable all strict type-checking options. */,
     // "noImplicitAny": true /* Raise error on expressions and declarations with an implied 'any' type. */,
     "strictNullChecks": true /* Enable strict null checks. */,
     "strictFunctionTypes": true /* Enable strict checking of function types. */,

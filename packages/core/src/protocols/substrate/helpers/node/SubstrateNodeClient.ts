@@ -59,7 +59,7 @@ export class SubstrateNodeClient {
     private readonly network: SubstrateNetwork,
     private readonly baseURL: string,
     private readonly cache: SubstrateNodeCache = new SubstrateNodeCache(CACHE_DEFAULT_EXPIRATION_TIME)
-  ) {}
+  ) { }
 
   public async getAccountInfo(address: SubstrateAddress): Promise<SubstrateAccountInfo | null> {
     return this.fromStorage('System', 'Account', SCALEAccountId.from(address, this.network)).then((item) =>
@@ -199,11 +199,11 @@ export class SubstrateNodeClient {
     return this.fromStorage('Identity', 'SuperOf', SCALEAccountId.from(address, this.network)).then((item) =>
       item
         ? SCALETuple.decode(
-            this.network,
-            item,
-            (network, hex) => SCALEAccountId.decode(network, hex),
-            (_, hex) => SCALEData.decode(hex)
-          ).decoded
+          this.network,
+          item,
+          (network, hex) => SCALEAccountId.decode(network, hex),
+          (_, hex) => SCALEData.decode(hex)
+        ).decoded
         : null
     )
   }
@@ -212,11 +212,11 @@ export class SubstrateNodeClient {
     return this.fromStorage('Identity', 'SubsOf', SCALEAccountId.from(address, this.network)).then((item) =>
       item
         ? SCALETuple.decode(
-            this.network,
-            item,
-            (_, hex) => SCALECompactInt.decode(hex),
-            (network, hex) => SCALEArray.decode(network, hex, (innerNetwork, innerHex) => SCALEAccountId.decode(innerNetwork, innerHex))
-          ).decoded
+          this.network,
+          item,
+          (_, hex) => SCALECompactInt.decode(hex),
+          (network, hex) => SCALEArray.decode(network, hex, (innerNetwork, innerHex) => SCALEAccountId.decode(innerNetwork, innerHex))
+        ).decoded
         : null
     )
   }
@@ -308,7 +308,7 @@ export class SubstrateNodeClient {
 
   private async initApi(): Promise<void> {
     if (!this.initApiPromise) {
-      const initApiPromise = new Promise(async (resolve, reject) => {
+      const initApiPromise = new Promise<void>(async (resolve, reject) => {
         const [metadataEncoded, runtimeVersion] = await Promise.all([
           this.send('state', 'getMetadata'),
           this.getRuntimeVersion()
