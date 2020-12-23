@@ -628,7 +628,10 @@ export class BitcoinProtocol implements ICoinProtocol {
   ): Promise<BitcoinBlockbookTransactionResult> {
     const page = cursor?.page ?? 1
     const { data }: { data: XPubResponse } = await axios.get(
-      this.options.network.extras.indexerApi + '/api/v2/xpub/' + extendedPublicKey + `?details=txs&tokens=used&pageSize=${limit}&page=${page}`,
+      this.options.network.extras.indexerApi +
+        '/api/v2/xpub/' +
+        extendedPublicKey +
+        `?details=txs&tokens=used&pageSize=${limit}&page=${page}`,
       {
         responseType: 'json'
       }
@@ -739,17 +742,17 @@ export class BitcoinProtocol implements ICoinProtocol {
             // If receiving address is our address, and transaction is outbound => our change
             if (this.containsSome(vout.addresses, addresses) && !tempAirGapTransactionIsInbound) {
               // remove only if related to this address
-              amount = amount.minus(new BigNumber(vout.value).shiftedBy(this.decimals))
+              amount = amount.minus(new BigNumber(vout.value))
             }
             // If receiving address is not ours, and transaction isbound => senders change
             if (!this.containsSome(vout.addresses, addresses) && tempAirGapTransactionIsInbound) {
-              amount = amount.minus(new BigNumber(vout.value).shiftedBy(this.decimals))
+              amount = amount.minus(new BigNumber(vout.value))
             }
           }
         }
 
         // deduct fee from amount
-        amount = amount.minus(new BigNumber(transaction.fees).shiftedBy(this.feeDecimals))
+        amount = amount.minus(new BigNumber(transaction.fees))
 
         const airGapTransaction: IAirGapTransaction = {
           hash: transaction.txid,
@@ -757,7 +760,7 @@ export class BitcoinProtocol implements ICoinProtocol {
           to: tempAirGapTransactionTo,
           isInbound: tempAirGapTransactionIsInbound,
           amount: amount.toString(10),
-          fee: new BigNumber(transaction.fees).shiftedBy(this.feeDecimals).toString(10),
+          fee: new BigNumber(transaction.fees).toString(10),
           blockHeight: transaction.blockHeight.toString(),
           protocolIdentifier: this.identifier,
           network: this.options.network,
