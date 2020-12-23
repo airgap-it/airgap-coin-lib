@@ -63,4 +63,7 @@ typings/
 .next
 .vscode
 
+# tslint reports
+lint-reports
+
 dist/

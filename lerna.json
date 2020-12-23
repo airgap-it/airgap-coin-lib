@@ -1,0 +1,18 @@
+{
+  "packages": [
+    "packages/*"
+  ],
+  "version": "0.10.0-beta.1",
+  "command": {
+    "publish": {
+      "ignoreChanges": [
+        "*.sh",
+        "*.md",
+        "*.yml",
+        ".*",
+        "tsconfig.json",
+        "tslint.json"
+      ]
+    }
+  }
+}
