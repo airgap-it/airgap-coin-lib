@@ -11,9 +11,9 @@ export class TezosCryptoClient extends Ed25519CryptoClient {
   public async signMessage(message: string, keypair: { privateKey: Buffer }): Promise<string> {
     await sodium.ready
 
-    const bufferMessage = await this.toBuffer(message)
+    const bufferMessage: Buffer = await this.toBuffer(message)
 
-    const hash: Buffer = sodium.crypto_generichash(32, bufferMessage)
+    const hash: Buffer = await this.hash(bufferMessage)
     const rawSignature: Uint8Array = sodium.crypto_sign_detached(hash, keypair.privateKey)
     const signature: string = bs58check.encode(Buffer.concat([Buffer.from(this.edsigPrefix), Buffer.from(rawSignature)]))
 
@@ -59,5 +59,11 @@ export class TezosCryptoClient extends Ed25519CryptoClient {
     }
 
     return sodium.from_string(message)
+  }
+
+  public async hash(message: Buffer, size: number = 32): Promise<Buffer> {
+    await sodium.ready
+    
+    return sodium.crypto_generichash(size, message)
   }
 }
