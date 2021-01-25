@@ -57,7 +57,7 @@ export class SubstrateAccountController {
   public async getTransferableBalance(
     accountId: SubstrateAccountId, 
     excludeExistentialDeposit: boolean = true,
-    excludeLocks: boolean = true,
+    ignoreFees: boolean = true,
   ): Promise<BigNumber> {
     const results = await Promise.all([
       this.nodeClient.getAccountInfo(SubstrateAddress.from(accountId, this.network)),
@@ -73,7 +73,7 @@ export class SubstrateAccountController {
 
     const free = accountInfo.data.free.value
     const reserved = accountInfo.data.reserved.value
-    const locked = excludeLocks ? accountInfo.data.miscFrozen.value : new BigNumber(0)
+    const locked = ignoreFees ? accountInfo.data.miscFrozen.value : accountInfo.data.feeFrozen.value
 
     return free
       .minus(reserved)
