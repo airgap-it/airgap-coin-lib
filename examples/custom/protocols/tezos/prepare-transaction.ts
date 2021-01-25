@@ -1,4 +1,4 @@
-import { TezosProtocol } from '../../src/index'
+import { TezosProtocol } from '../../../../packages/core/src/index'
 
 const tezosProtocol = new TezosProtocol()
 

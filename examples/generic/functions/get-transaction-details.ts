@@ -1,6 +1,6 @@
 // tslint:disable:no-console
 
-import { IAirGapTransaction, ICoinProtocol } from '../../../src'
+import { IAirGapTransaction, ICoinProtocol } from '../../../packages/core/src'
 
 export const getTransactionDetailsFromSigned: (
   protocol: ICoinProtocol,

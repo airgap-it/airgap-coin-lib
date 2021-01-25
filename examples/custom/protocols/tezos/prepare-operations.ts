@@ -1,5 +1,5 @@
-import { TezosProtocol } from '../../../../src/index'
-import { TezosOperationType } from '../../../../src/protocols/tezos/types/TezosOperationType'
+import { TezosProtocol } from '../../../../packages/core/src/index'
+import { TezosOperationType } from '../../../../packages/core/src/protocols/tezos/types/TezosOperationType'
 
 const tezosProtocol = new TezosProtocol()
 

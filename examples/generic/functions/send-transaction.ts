@@ -1,7 +1,7 @@
 // tslint:disable:no-console
 // tslint:disable:no-any
 
-import { ICoinProtocol } from '../../../src'
+import { ICoinProtocol } from '../../../packages/core/src'
 
 export const send: (protocol: ICoinProtocol, mnemonic: string, recipient: string, amount: string, fee: string) => Promise<string> = async (
   protocol: ICoinProtocol,

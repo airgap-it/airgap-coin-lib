@@ -1,4 +1,11 @@
-import { TezosFA2Protocol, TezosProtocolNetwork, TezosFA2ProtocolConfig, SubProtocolSymbols, TezosFA2ProtocolOptions, NetworkType } from "../../../../src"
+import {
+  TezosFA2Protocol,
+  TezosProtocolNetwork,
+  TezosFA2ProtocolConfig,
+  SubProtocolSymbols,
+  TezosFA2ProtocolOptions,
+  NetworkType
+} from '../../../../packages/core/src'
 
 (
     async () => {

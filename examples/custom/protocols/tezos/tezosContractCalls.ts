@@ -1,7 +1,7 @@
-// import { TezosFAProtocol } from '../src/protocols/tezos/fa/TezosFAProtocol'
-import { TezosBTC } from '../../../src/protocols/tezos/fa/TezosBTC'
-// import { TezosUSD } from '../src/protocols/tezos/fa/TezosUSD'
-// import { TezosStaker } from '../src/protocols/tezos/fa/TezosStaker'
+// import { TezosFAProtocol } from '../../../../packages/core/src/protocols/tezos/fa/TezosFAProtocol'
+import { TezosBTC } from '../../../../packages/core/src/protocols/tezos/fa/TezosBTC'
+// import { TezosUSD } from '../../../../packages/core/src/protocols/tezos/fa/TezosUSD'
+// import { TezosStaker } from '../../../../packages/core/src/protocols/tezos/fa/TezosStaker'
 
 // const contract = new TezosBTC('KT1PWx2mnDueood7fEmfbBDKx1D9BAnnXitn', 'https://tezos-node.prod.gke.papers.tech', 'https://tezos-mainnet-conseil-1.megan.papers.tech')
 const contract = new TezosBTC()
