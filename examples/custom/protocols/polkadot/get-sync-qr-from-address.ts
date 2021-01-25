@@ -1,8 +1,7 @@
-import { generateId, IACMessageDefinitionObject, IACMessageType, Serializer } from '../../../../src'
-import * as bs58check from '../../../../src/dependencies/src/bs58check-2.1.2'
-import { SubstrateAddress } from '../../../../src/protocols/substrate/helpers/data/account/SubstrateAddress'
-import { SubstrateNetwork } from '../../../../src/protocols/substrate/SubstrateNetwork'
-import { MainProtocolSymbols } from '../../../../src/utils/ProtocolSymbols'
+import { generateId, IACMessageDefinitionObject, IACMessageType, Serializer } from '../../../../packages/core/src'
+import { SubstrateAddress } from '../../../../packages/core/src/protocols/substrate/helpers/data/account/SubstrateAddress'
+import { SubstrateNetwork } from '../../../../packages/core/src/protocols/substrate/SubstrateNetwork'
+import { MainProtocolSymbols } from '../../../../packages/core/src/utils/ProtocolSymbols'
 
 const address: string = '12QceCDMHcK6qgnxLJsMBQPLAA6iX8WCuSx7dChcsNNnBtKg'
 

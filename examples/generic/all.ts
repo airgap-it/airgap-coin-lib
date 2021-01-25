@@ -11,7 +11,7 @@ import {
   KusamaProtocol,
   PolkadotProtocol,
   TezosProtocol
-} from '../../src'
+} from '../../packages/core/src'
 
 import { generateIACCode } from './functions/generate-iac-code'
 

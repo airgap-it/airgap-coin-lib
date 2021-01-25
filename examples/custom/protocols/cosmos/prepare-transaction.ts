@@ -1,5 +1,5 @@
-import { CosmosProtocol } from '../../../src'
-import * as BIP39 from '../../../src/dependencies/src/bip39-2.5.0/index'
+import { CosmosProtocol } from '../../../../packages/core/src'
+import * as BIP39 from '../../../../packages/core/src/dependencies/src/bip39-2.5.0/index'
 
 const protocol: CosmosProtocol = new CosmosProtocol()
 

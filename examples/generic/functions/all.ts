@@ -1,6 +1,6 @@
 // tslint:disable:no-console
 
-import { ICoinProtocol } from '../../../src'
+import { ICoinProtocol } from '../../../packages/core/src'
 
 import { getTransactionDetails, getTransactionDetailsFromSigned } from './get-transaction-details'
 import { send } from './send-transaction'

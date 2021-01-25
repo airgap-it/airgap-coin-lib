@@ -1,6 +1,6 @@
-import { send } from '../../generic/functions/send-transaction'
-import { getTransactionDetailsFromSigned } from '../../generic/functions/get-transaction-details'
-import { TezosProtocol } from '../../../src'
+import { TezosProtocol } from '../../../../packages/core/src'
+import { getTransactionDetailsFromSigned } from '../../../generic/functions/get-transaction-details'
+import { send } from '../../../generic/functions/send-transaction'
 
 const protocol = new TezosProtocol()
 

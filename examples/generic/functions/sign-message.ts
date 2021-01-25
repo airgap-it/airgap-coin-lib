@@ -1,6 +1,6 @@
 // tslint:disable:no-console
 
-import { ICoinProtocol } from '../../../src'
+import { ICoinProtocol } from '../../../packages/core/src'
 
 export const sign: (protocol: ICoinProtocol, mnemonic: string, message: string) => Promise<string> = async (
   protocol: ICoinProtocol,
