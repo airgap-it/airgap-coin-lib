@@ -1,3 +1,4 @@
+import { AxiosError } from '../../dependencies/src/axios-0.19.0'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { AirGapTransactionStatus, IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 import { SignedSubstrateTransaction } from '../../serializer/schemas/definitions/signed-transaction-substrate'
@@ -253,19 +254,17 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
 
     try {
       const txHashes = await Promise.all(
-        txs.map((tx, index) =>
-          this.options.nodeClient.submitTransaction(tx.encode()).catch((error) => {
-            error.index = index
-            throw error
-          })
-        )
+        txs.map((tx)=> this.options.nodeClient.submitTransaction(tx.encode()))
       )
 
-      return txs[0].type !== SubstrateTransactionType.SUBMIT_BATCH ? txHashes[0] : ''
+      return txs[0]?.type !== SubstrateTransactionType.SUBMIT_BATCH ? txHashes[0] : ''
     } catch (error) {
-      console.warn(`Transaction #${error.index} submit failure`, error)
-
-      return Promise.reject(`Error while submitting transaction #${error.index}: ${SubstrateTransactionType[txs[error.index].type]}.`)
+      const axiosError = error as AxiosError
+      if (axiosError.response !== undefined && axiosError.response.data !== undefined) {
+        throw new Error(axiosError.response.data)
+      } else {
+        throw error
+      }
     }
   }
 

@@ -261,7 +261,7 @@ export class SubstrateNodeClient {
   }
 
   public async submitTransaction(encoded: string): Promise<string> {
-    return this.send('author', 'submitExtrinsic', [encoded])
+    return this.send('author', 'submitExtrinsic', [encoded], { allowCache: false })
   }
 
   private async getBlockHash(blockNumber?: number): Promise<string | null> {
@@ -350,7 +350,17 @@ export class SubstrateNodeClient {
     const key = `${endpoint}$${params.join('')}`
 
     return this.cache.get(key).catch(() => {
-      const promise = axios.post(this.baseURL, new RPCBody(endpoint, params.map(addHexPrefix))).then((response) => response.data.result)
+      const promise = axios.post(this.baseURL, new RPCBody(endpoint, params.map(addHexPrefix)))
+        .then((response) => {
+          if (response.data.error !== undefined) {
+            const error = response.data.error
+            console.error(error)
+
+            throw new Error(error.message ?? 'Unknown error')
+          }
+
+          return response.data.result
+        })
 
       return this.cache.save(key, promise, { cacheValue: config.allowCache })
     })
