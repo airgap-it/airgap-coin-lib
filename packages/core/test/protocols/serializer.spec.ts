@@ -46,7 +46,7 @@ protocols.forEach((protocol: TestProtocolSpec) => {
       }
     })
 
-    it.only(`should break serialized transaction into correct number of chunks`, async () => {
+    it(`should break serialized transaction into correct number of chunks`, async () => {
       const chunkSizeCombos = [
         {
           singleChunkSize: 350,

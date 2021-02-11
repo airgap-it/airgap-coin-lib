@@ -15,7 +15,7 @@ export class SCALEInt extends SCALEType {
   public static decode(hex: string, bitLength?: number): SCALEDecodeResult<SCALEInt> {
     let _hex = stripHexPrefix(hex)
 
-    const nibbles = bitLength ? Math.ceil(bitLength / 4) : _hex.length
+    const nibbles = bitLength !== undefined ? Math.ceil(bitLength / 4) : _hex.length
     _hex = changeEndianness(stripHexPrefix(hex).substr(0, nibbles))
 
     const decoded = new BigNumber(_hex, 16)

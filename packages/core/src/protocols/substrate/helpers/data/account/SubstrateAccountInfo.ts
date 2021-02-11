@@ -25,24 +25,40 @@ export class SubstrateAccountInfo {
   public static decode(network: SubstrateNetwork, runtimeVersion: number | undefined, raw: string): SubstrateAccountInfo {
     const decoder = new SCALEDecoder(network, raw)
 
+    const [consumersLenght, producersLength]: [number, number] = this.migrateConsumersProducersLengths(network, runtimeVersion);
+
     const nonce = decoder.decodeNextInt(32)
-    const refcount = decoder.decodeNextInt(this.migrateRefcountLength(network, runtimeVersion))
+    const consumers = decoder.decodeNextInt(consumersLenght)
+    const producers = decoder.decodeNextInt(producersLength)
     const data = decoder.decodeNextObject(SubstrateAccountData.decode)
 
-    return new SubstrateAccountInfo(nonce.decoded, refcount.decoded, data.decoded)
+    return new SubstrateAccountInfo(nonce.decoded, consumers.decoded, producers.decoded, data.decoded)
   }
 
-  private static migrateRefcountLength(network: SubstrateNetwork, runtimeVersion: number | undefined): number {
+  private static migrateConsumersProducersLengths(network: SubstrateNetwork, runtimeVersion: number | undefined): [number, number] {
     if (runtimeVersion === undefined) {
-      return 32
+      return [32, 32]
     }
 
-    if (network === SubstrateNetwork.KUSAMA && runtimeVersion >= 2025 || network === SubstrateNetwork.POLKADOT && runtimeVersion >= 25) {
-      return 32
+    if (
+      (network === SubstrateNetwork.KUSAMA && runtimeVersion >= 2028) ||
+      (network === SubstrateNetwork.POLKADOT && runtimeVersion >= 28)
+    ) {
+      return [32, 32]
+    } else if (
+      (network === SubstrateNetwork.KUSAMA && runtimeVersion >= 2025) ||
+      (network === SubstrateNetwork.POLKADOT && runtimeVersion >= 25)
+    ) {
+      return [32, 0]
     } else {
-      return 8
+      return [8, 0]
     }
   }
 
-  private constructor(readonly nonce: SCALEInt, readonly refcount: SCALEInt, readonly data: SubstrateAccountData) {}
+  private constructor(
+    readonly nonce: SCALEInt, 
+    readonly consumers: SCALEInt, 
+    readonly providers: SCALEInt, 
+    readonly data: SubstrateAccountData
+  ) {}
 }

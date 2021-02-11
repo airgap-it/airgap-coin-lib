@@ -41,7 +41,15 @@ export class TezosTestProtocolSpec extends TestProtocolSpec {
     return new TezosFA2Protocol(
       new TezosFA2ProtocolOptions(
         new TezosProtocolNetwork(),
-        new TezosFA2ProtocolConfig('', '', '', '' as ProtocolSymbols, 'KT1Eso7AdpjrHd4rCz9rGxf92tSm3fEDAkdx', { low: '', medium: '', high: '' }, 0)
+        new TezosFA2ProtocolConfig(
+          '',
+          '',
+          '',
+          '' as ProtocolSymbols,
+          'KT1Eso7AdpjrHd4rCz9rGxf92tSm3fEDAkdx',
+          { low: '', medium: '', high: '' },
+          0
+        )
       )
     )
   }
@@ -79,6 +87,65 @@ export class TezosTestProtocolSpec extends TestProtocolSpec {
         'd2794ab875a213d0f89e6fc3cf7df9c7188f888cb7fa435c054b85b1778bb9556c0091a9d2b003f19cf5a1f38f04f1000ab482d331768c0bc4fe37bc5000c0843d000091a9d2b003f19cf5a1f38f04f1000ab482d3317600b6e3e3a70996ef1e9414324d291f3d50f63c4f32b32fc1abd4dbe2d2ce55ca47598aead75b94c9a691d7b3f1912220db0118c18e141cacc84e39147aabfad60e'
     }
   ]
+
+  public revealedAddressConfig = {
+    manager_key: 'edpkuAJhbFLfJ4zWbQQWTZNGDg7hrcG1m1CBSWVB3iDHChjuzeaZB6',
+    balance: 209328,
+    toAddress: 'tz1d75oB6T4zUMexzkr5WscGktZ1Nss1JrT7',
+    run_operation: {
+      contents: [
+        {
+          kind: 'transaction',
+          metadata: {
+            balance_updates: [],
+            operation_result: {
+              status: 'applied',
+              balance_updates: [],
+              consumed_gas: '10300',
+              paid_storage_size_diff: '0'
+            },
+            internal_operation_results: []
+          }
+        }
+      ],
+      signature: ''
+    }
+  }
+
+  public unrevealedAddressConfig = {
+    manager_key: null,
+    balance: 10000,
+    toAddress: 'tz1NFLre8tvn7QGUv9kqc5rNUuAuYzi7REpU',
+    run_operation: {
+      contents: [
+        {
+          kind: 'reveal',
+          metadata: {
+            balance_updates: [],
+            operation_result: {
+              status: 'applied',
+              consumed_gas: '1000',
+              consumed_milligas: '1000000'
+            }
+          }
+        },
+        {
+          kind: 'transaction',
+          metadata: {
+            balance_updates: [],
+            operation_result: {
+              status: 'applied',
+              balance_updates: [],
+              consumed_gas: '10300',
+              paid_storage_size_diff: '0'
+            },
+            internal_operation_results: []
+          }
+        }
+      ],
+      signature: ''
+    }
+  }
 
   public transactionStatusTests: { hashes: string[]; expectedResults: AirGapTransactionStatus[] }[] = [
     { hashes: ['op7mhXwjNMjfP2yDhDWRMxwu2oYyE44pdv9y6JeVFvaTcjpgAAD'], expectedResults: [AirGapTransactionStatus.APPLIED] },

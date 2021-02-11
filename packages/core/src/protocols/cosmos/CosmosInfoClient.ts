@@ -5,47 +5,47 @@ import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 
 import { CosmosProtocol } from './CosmosProtocol'
 export interface Attribute {
-  key: string;
-  value: string;
+  key: string
+  value: string
 }
 
 export interface Event {
-  type: string;
-  attributes: Attribute[];
+  type: string
+  attributes: Attribute[]
 }
 
 export interface Log {
-  msg_index: number;
-  log: string;
-  events: Event[];
+  msg_index: number
+  log: string
+  events: Event[]
 }
 
 export interface Amount {
-  denom: string;
-  amount: string;
+  denom: string
+  amount: string
 }
 
 export interface Value {
-  amount: Amount[];
-  to_address: string;
-  from_address: string;
+  amount: Amount[]
+  to_address: string
+  from_address: string
 }
 export interface Fee {
-  gas: string;
-  amount: Amount[];
+  gas: string
+  amount: Amount[]
 }
 
 export interface CosmosTransactionsResponse {
-  id: number;
-  height: number;
-  tx_hash: string;
-  logs: Log[];
-  msg: Msg[];
-  fee: Fee;
-  gas_wanted: number;
-  gas_used: number;
-  memo: string;
-  timestamp: Date;
+  id: number
+  height: number
+  tx_hash: string
+  logs: Log[]
+  msg: Msg[]
+  fee: Fee
+  gas_wanted: number
+  gas_used: number
+  memo: string
+  timestamp: Date
 }
 interface MsgTypeValue {
   from_address: string
@@ -57,7 +57,6 @@ interface Msg {
   type: string
   value: MsgTypeValue
 }
-
 
 export class CosmosInfoClient {
   public baseURL: string
@@ -72,42 +71,43 @@ export class CosmosInfoClient {
     limit: number,
     cursor?: CosmosTransactionCursor
   ): Promise<IAirGapTransaction[]> {
+    let nestedTransactions: IAirGapTransaction[][] = [[]]
     if (cursor) {
       return []
     }
-    const response: AxiosResponse<CosmosTransactionsResponse[]> = await Axios.get(
-      `${this.baseURL}/account/txs/${address}`,
-    )
+    const response: AxiosResponse<CosmosTransactionsResponse[]> = await Axios.get(`${this.baseURL}/account/txs/${address}`)
 
-    const transactions: IAirGapTransaction[][] = response.data.map((transaction) => {
-      const timestamp = new Date(transaction.timestamp).getTime() / 1000
-      const fee: BigNumber = transaction.fee.amount
-        .map((coin: Amount) => new BigNumber(coin.amount))
-        .reduce((current: BigNumber, next: BigNumber) => current.plus(next))
-      const result: IAirGapTransaction[] = transaction.msg
-        .filter((message: Msg) => message.type === 'cosmos-sdk/MsgSend')
-        .map((message: Msg) => {
-          const destination: string = message.value.to_address
+    if (response && response.data) {
+      nestedTransactions = response.data.map((transaction) => {
+        const timestamp = new Date(transaction.timestamp).getTime() / 1000
+        const fee: BigNumber = transaction.fee.amount
+          .map((coin: Amount) => new BigNumber(coin.amount))
+          .reduce((current: BigNumber, next: BigNumber) => current.plus(next))
+        const result: IAirGapTransaction[] = transaction.msg
+          .filter((message: Msg) => message.type === 'cosmos-sdk/MsgSend')
+          .map((message: Msg) => {
+            const destination: string = message.value.to_address
 
-          return {
-            amount: message.value.amount
-              .map((coin: Amount) => new BigNumber(coin.amount))
-              .reduce((current: BigNumber, next: BigNumber) => current.plus(next))
-              .toString(10),
-            to: [destination],
-            from: [message.value.from_address],
-            isInbound: destination === address,
-            fee: fee.toString(10),
-            protocolIdentifier: protocol.identifier,
-            network: protocol.options.network,
-            hash: transaction.tx_hash,
-            timestamp
-          }
-        })
+            return {
+              amount: message.value.amount
+                .map((coin: Amount) => new BigNumber(coin.amount))
+                .reduce((current: BigNumber, next: BigNumber) => current.plus(next))
+                .toString(10),
+              to: [destination],
+              from: [message.value.from_address],
+              isInbound: destination === address,
+              fee: fee.toString(10),
+              protocolIdentifier: protocol.identifier,
+              network: protocol.options.network,
+              hash: transaction.tx_hash,
+              timestamp
+            }
+          })
 
-      return result
-    })
+        return result
+      })
+    }
 
-    return transactions.reduce((current, next) => current.concat(next))
+    return nestedTransactions.length ? nestedTransactions.reduce((current, next) => current.concat(next)) : []
   }
 }
