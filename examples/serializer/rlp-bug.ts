@@ -1,7 +1,7 @@
 // tslint:disable:no-any
 // tslint:disable:no-console
 
-import * as rlp from '../../src/dependencies/src/rlp-2.2.3/index'
+import * as rlp from '../../packages/core/src/dependencies/src/rlp-2.2.3/index'
 
 const encoded: Buffer = rlp.encode([
   '1234', // string

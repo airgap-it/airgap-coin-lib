@@ -1,0 +1,92 @@
+{
+  "name": "@airgap/coinlib-core",
+  "version": "0.10.0",
+  "description": "The @airgap/coinlib-core is a protocol agnostic library to prepare, sign and broadcast cryptocurrency transactions.",
+  "keywords": [
+    "airgap",
+    "blockchain",
+    "crypto",
+    "bitcoin",
+    "ethereum",
+    "aeternity",
+    "groestlcoin",
+    "tezos",
+    "cosmos",
+    "polkadot",
+    "kusama"
+  ],
+  "license": "MIT",
+  "homepage": "https://www.airgap.it",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/airgap-it/airgap-coin-lib"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "node scripts/node-module-es-module-interop.js && tsc && node scripts/copy-files-after-build.js && node scripts/make-ts-declaration-files-backwards-compatible.js",
+    "build-scripts": "tsc scripts/*.ts",
+    "lint": "tslint -c ./tslint.json --project ./tsconfig.json --format stylish --fix",
+    "lint:prettier": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "lint-ci": "tslint -t json -o ../../lint-reports/core.json --project . || true",
+    "lint-ci:prettier": "prettier \"src/**/*.ts\" \"test/**/*.ts\" --list-different",
+    "test": "nyc mocha --require ts-node/register --require source-map-support/register --full-trace --timeout 40000 ./test/**/**.spec.ts",
+    "test-ci": "nyc --reporter=lcov npm test",
+    "test-legacy": "npm run build && mocha --full-trace --timeout 40000 ./test/**/**.spec.js",
+    "browserify": "browserify ./dist/index.js -s airgapCoinLib > ./dist/airgap-coinlib-core.min.js"
+  },
+  "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
+  "dependencies": {
+    "@polkadot/util": "2.0.1",
+    "@polkadot/wasm-crypto": "0.20.1",
+    "eciesjs": "0.3.6",
+    "libsodium-wrappers": "0.7.6"
+  },
+  "localDependencies": {
+    "@taquito/local-forging": "6.3.5-beta.0",
+    "hd-wallet-js": "b216450e56954a6e82ace0aade9474673de5d9d5",
+    "axios": "0.19.0",
+    "bech32": "1.1.3",
+    "big-integer": "1.6.45",
+    "bitcoinjs-message": "2.1.1",
+    "bignumber.js": "9.0.0",
+    "bip32": "2.0.4",
+    "bip39": "2.5.0",
+    "bitgo-utxo-lib": "5d91049fd7a988382df81c8260e244ee56d57aac",
+    "bs58check": "2.1.2",
+    "create-hash": "1.2.0",
+    "cryptocompare": "0.5.0",
+    "ethereumjs-tx": "1.3.7",
+    "ethereumjs-util": "5.2.0",
+    "groestlcoinjs-message": "2.1.0",
+    "rlp": "2.2.3",
+    "ripemd160": "2.0.2",
+    "secp256k1": "3.7.1",
+    "validate.js": "0.13.1",
+    "utf8": "3.0.0",
+    "xxhashjs": "0.2.2"
+  },
+  "nyc": {
+    "include": [
+      "src/**/*.ts"
+    ],
+    "exclude": [
+      "test/**/*.spec.ts"
+    ],
+    "extension": [
+      ".ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ],
+    "reporter": [
+      "text",
+      "text-summary"
+    ],
+    "report-dir": "../../coverage/core",
+    "sourceMap": true,
+    "instrument": true
+  },
+  "gitHead": "8e8feb6788204501b7173aa825f5456c2a5f185b"
+}

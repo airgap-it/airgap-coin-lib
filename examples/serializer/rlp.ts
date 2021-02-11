@@ -1,8 +1,8 @@
 // tslint:disable:no-any
 // tslint:disable:no-console
 
-import * as bs58check from '../../src/dependencies/src/bs58check-2.1.2'
-import * as rlp from '../../src/dependencies/src/rlp-2.2.3/index'
+import * as bs58check from '../../packages/core/src/dependencies/src/bs58check-2.1.2'
+import * as rlp from '../../packages/core/src/dependencies/src/rlp-2.2.3/index'
 
 const encoded: string = bs58check.encode(
   rlp.encode([

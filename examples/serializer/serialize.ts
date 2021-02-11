@@ -1,7 +1,7 @@
 // tslint:disable:no-console
 
-import { DeserializedSyncProtocol, SyncProtocolUtils } from '../../src'
-import { EncodedType } from '../../src/serializer/serializer'
+import { DeserializedSyncProtocol, SyncProtocolUtils } from '../../packages/core/src'
+import { EncodedType } from '../../packages/core/src/serializer/serializer'
 
 const json: DeserializedSyncProtocol = {
   version: 1,
