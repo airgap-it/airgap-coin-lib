@@ -4,11 +4,11 @@
 import { MichelsonGrammarData } from '../michelson/grammar/MichelsonGrammarData'
 import { MichelsonGrammarType } from '../michelson/grammar/MichelsonGrammarType'
 
-type MichelineGenericNode<T extends MichelsonGrammarType | MichelsonGrammarData> =
+export type MichelineGenericNode<T extends MichelsonGrammarType | MichelsonGrammarData> =
   MichelinePrimitive<'int'> |
   MichelinePrimitive<'string'> |
   MichelinePrimitive<'bytes'> |
-  MichelinePrimitiveApplication<T> | 
+  MichelinePrimitiveApplication<T> |
   MichelineGenericNode<T>[]
 
 export type MichelineNode = MichelineGenericNode<MichelsonGrammarType | MichelsonGrammarData>

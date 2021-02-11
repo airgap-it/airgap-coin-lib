@@ -17,8 +17,13 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
   public addressValidationPattern: string = '^(tz1|KT1)[1-9A-Za-z]{33}$'
   public migrationFee: BigNumber = new BigNumber(5000)
 
-  public async getAddressFromPublicKey(publicKey: string): Promise<string> {
-    return (await this.getAddressesFromPublicKey(publicKey))[0]
+  public async getAddressFromPublicKey(publicKey: string, addressIndex?: number): Promise<string> {
+    const addresses = await this.getAddressesFromPublicKey(publicKey)
+    const index = addressIndex ?? 0
+    if (index >= addresses.length) {
+      throw Error('No address for the specified index exists')
+    }
+    return addresses[index]
   }
 
   public async getAddressesFromPublicKey(publicKey: string): Promise<string[]> {
@@ -62,8 +67,9 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     return ktAddresses.reverse()
   }
 
-  public async estimateMaxTransactionValueFromPublicKey(publicKey: string, recipients: string[], fee?: string): Promise<string> {
-    return this.getBalanceOfPublicKey(publicKey)
+  public async estimateMaxTransactionValueFromPublicKey(publicKey: string, recipients: string[], fee?: string, addressIndex?: number): Promise<string> {
+    const address = await this.getAddressFromPublicKey(publicKey, addressIndex)
+    return this.getBalanceOfAddresses([address])
   }
 
   public async estimateFeeDefaultsFromPublicKey(

@@ -18,7 +18,7 @@ import {
   TezosProtocol
 } from '../../src/index'
 import { EthereumProtocolOptions } from '../../src/protocols/ethereum/EthereumProtocolOptions'
-import { AirGapWalletPriceService, MarketDataSample, TimeUnit } from '../../src/wallet/AirGapMarketWallet'
+import { AirGapWalletPriceService } from '../../src/wallet/AirGapMarketWallet'
 
 addSupportedProtocol(new AeternityProtocol())
 addSupportedProtocol(new BitcoinProtocol())
@@ -36,15 +36,6 @@ const xPubProtocol = new BitcoinProtocol()
 
 class AirGapPriceService implements AirGapWalletPriceService {
   public async getCurrentMarketPrice(protocol: ICoinProtocol, baseSymbol: string): Promise<BigNumber> {
-    throw new Error('Method not implemented.')
-  }
-  public async getMarketPricesOverTime(
-    protocol: ICoinProtocol,
-    timeUnit: TimeUnit,
-    numberOfMinutes: number,
-    date: Date,
-    baseSymbol: string
-  ): Promise<MarketDataSample[]> {
     throw new Error('Method not implemented.')
   }
 }

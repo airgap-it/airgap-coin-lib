@@ -39,6 +39,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
   public decimals: number = 18
   public feeDecimals: number = 18
   public identifier: ProtocolSymbols = MainProtocolSymbols.ETH
+  protected readonly MAX_GAS_ESTIMATE: string = '300000'
 
   public units: CurrencyUnit[] = [
     {
@@ -238,7 +239,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
 
   public async getBalanceOfPublicKeyForSubProtocols(publicKey: string, subProtocols: ICoinSubProtocol[]): Promise<string[]> {
     const address: string = await this.getAddressFromPublicKey(publicKey)
-    const contractAddresses = subProtocols.map(subProtocol => {
+    const contractAddresses = subProtocols.map((subProtocol) => {
       if (subProtocol.subProtocolType === SubProtocolType.TOKEN && subProtocol.contractAddress) {
         return subProtocol.contractAddress
       } else {
@@ -246,7 +247,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
       }
     })
     const balances = await this.options.nodeClient.callBalanceOfOnContracts(contractAddresses, address)
-    return contractAddresses.map(contractAddresse => balances[contractAddresse]?.toFixed() ?? "0")
+    return contractAddresses.map((contractAddresse) => balances[contractAddresse]?.toFixed() ?? '0')
   }
 
   public getBalanceOfExtendedPublicKey(extendedPublicKey: string, offset: number = 0): Promise<string> {
@@ -321,7 +322,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
       recipients[0],
       EthereumUtils.toHex(values[0]),
       undefined,
-      EthereumUtils.toHex('21000')
+      EthereumUtils.toHex(this.MAX_GAS_ESTIMATE)
     )
     const gasPrise = await this.options.nodeClient.getGasPrice()
     const feeStepFactor = new BigNumber(0.5)
@@ -365,7 +366,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
       recipients[0],
       amount,
       undefined,
-      EthereumUtils.toHex('21000')
+      EthereumUtils.toHex(this.MAX_GAS_ESTIMATE)
     )
     const gasPrice = wrappedFee.div(gasLimit).integerValue(BigNumber.ROUND_CEIL)
     if (new BigNumber(balance).gte(new BigNumber(wrappedValues[0].plus(wrappedFee)))) {

@@ -14,6 +14,7 @@ import { TezosRevealOperation } from '../../src/protocols/tezos/types/operations
 import { RunOperationMetadata } from '../../src/protocols/tezos/TezosProtocol'
 import { TezosProtocolStub } from './stubs/tezos.stub'
 import { AirGapTransactionStatus } from '../../src/interfaces/IAirGapTransaction'
+import { TezosOperation } from '../../src/protocols/tezos/types/operations/TezosOperation'
 
 const tezosProtocolSpec = new TezosTestProtocolSpec()
 const tezosLib = tezosProtocolSpec.lib
@@ -518,6 +519,90 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         expect(result.airGapTxs[0].fee).to.equal('100000')
       })
 
+      it('will correctly calculate the max transaction value for both revealed and unrevealed accounts', async () => {
+        const address = tezosProtocolSpec.wallet.addresses[0]
+        const configs = [tezosProtocolSpec.revealedAddressConfig, tezosProtocolSpec.unrevealedAddressConfig]
+
+        getStub
+          .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/counter`)
+          .returns(Promise.resolve({ data: '10147076' }))
+        getStub
+          .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/hash`)
+          .returns(Promise.resolve({ data: 'BLKAx9imSqD5t1qyu3K1cuZwVzddZRjuHpa8w94fh1aUmPgMohM' }))
+
+        for (let config of configs) {
+          getStub
+            .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/balance`)
+            .returns(Promise.resolve({ data: config.balance }))
+          getStub
+            .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/manager_key`)
+            .returns(Promise.resolve({ data: config.manager_key }))
+          postStub
+            .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`)
+            .returns(Promise.resolve({ data: config.run_operation }))
+
+          const estimatedFeeDefaults = await tezosLib.estimateFeeDefaultsFromPublicKey(
+            tezosProtocolSpec.wallet.publicKey,
+            [config.toAddress],
+            [new BigNumber(config.balance).toString()]
+          )
+
+          // in case the account is unrevealed, maxFee includes the revealFee of 1300
+          const maxFee = new BigNumber(estimatedFeeDefaults.medium).shiftedBy(tezosLib.decimals).toNumber()
+          const maxTransfer = await tezosLib.estimateMaxTransactionValueFromPublicKey(tezosProtocolSpec.wallet.publicKey, [
+            config.toAddress
+          ])
+
+          expect(new BigNumber(maxTransfer).toNumber()).to.equal(new BigNumber(config.balance - maxFee - 1).toNumber())
+        }
+      })
+
+      it('will correctly prepare operations for an unrevealed address', async () => {
+        const address = tezosProtocolSpec.wallet.addresses[0]
+
+        getStub
+          .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/counter`)
+          .returns(Promise.resolve({ data: '10147076' }))
+        getStub
+          .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/hash`)
+          .returns(Promise.resolve({ data: 'BLKAx9imSqD5t1qyu3K1cuZwVzddZRjuHpa8w94fh1aUmPgMohM' }))
+        getStub
+          .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/balance`)
+          .returns(Promise.resolve({ data: tezosProtocolSpec.unrevealedAddressConfig.balance }))
+        getStub
+          .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/manager_key`)
+          .returns(Promise.resolve({ data: tezosProtocolSpec.unrevealedAddressConfig.manager_key }))
+        postStub
+          .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`)
+          .returns(Promise.resolve({ data: tezosProtocolSpec.unrevealedAddressConfig.run_operation }))
+
+        const operationRequest = {
+          kind: 'transaction',
+          amount: tezosProtocolSpec.unrevealedAddressConfig.balance - 1,
+          destination: 'tz1MJx9vhaNRSimcuXPK2rW4fLccQnDAnVKJ',
+          fee: '0'
+        } as TezosOperation
+
+        const tezosWrappedOperation = await tezosLib.prepareOperations(tezosProtocolSpec.wallet.publicKey, [operationRequest])
+
+        const containsRevealOperation = tezosWrappedOperation.contents.some(
+          (tezosOperation: TezosOperation) => tezosOperation.kind === TezosOperationType.REVEAL
+        )
+
+        expect(containsRevealOperation).eq(true)
+
+        const transactions = tezosWrappedOperation.contents.filter(
+          (tezosOperation: TezosOperation) => tezosOperation.kind === TezosOperationType.TRANSACTION
+        )
+
+        const revealFee = 1300
+        const totalAmount = transactions
+          .map((transaction) => (transaction as TezosTransactionOperation).amount)
+          .reduce((a, b) => new BigNumber(a).plus(b).toString())
+
+        expect(totalAmount).eq(new BigNumber(tezosProtocolSpec.unrevealedAddressConfig.balance - 1).minus(revealFee).toString())
+      })
+
       it('will not mess with anything, given the receiving account has balance already', async () => {
         const result = await prepareSpend(
           ['tz1d75oB6T4zUMexzkr5WscGktZ1Nss1JrT7'],
@@ -845,8 +930,8 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       const protocol = tezosProtocolSpec.fa12
       getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/script`).returns(
         Promise.resolve({
-          data: { 
-            code: [] 
+          data: {
+            code: []
           }
         })
       )
@@ -1032,8 +1117,8 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       const protocol = tezosProtocolSpec.fa2
       getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/script`).returns(
         Promise.resolve({
-          data: { 
-            code: [] 
+          data: {
+            code: []
           }
         })
       )
@@ -1107,8 +1192,8 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
                 amount: '0',
                 fee: '35308',
                 storage_limit: '60000',
-                destination: protocol.contractAddress, 
-                metadata 
+                destination: protocol.contractAddress,
+                metadata
               }
             ]
           }
@@ -1205,8 +1290,8 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       const protocol = tezosProtocolSpec.fa2
       getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/script`).returns(
         Promise.resolve({
-          data: { 
-            code: [] 
+          data: {
+            code: []
           }
         })
       )
@@ -1280,41 +1365,45 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
                 amount: '0',
                 fee: '35308',
                 storage_limit: '60000',
-                destination: protocol.contractAddress, 
-                metadata 
+                destination: protocol.contractAddress,
+                metadata
               }
             ]
           }
         })
       )
 
-      const transaction = await protocol.transfer([
-        {
-          from: 'tz1MecudVJnFZN5FSrriu8ULz2d6dDTR7KaM',
-          txs: [
-            {
-              to: 'tz1awXW7wuXy21c66vBudMXQVAPgRnqqwgTH',
-              amount: '100',
-              tokenID: 10
-            },
-            {
-              to: 'tz1Yju7jmmsaUiG9qQLoYv35v5pHgnWoLWbt',
-              amount: '110',
-              tokenID: 11
-            }
-          ]
-        },
-        {
-          from: 'tz1Xsrfv6hn86fp88YfRs6xcKwt2nTqxVZYM',
-          txs: [
-            {
-              to: 'tz1NpWrAyDL9k2Lmnyxcgr9xuJakbBxdq7FB',
-              amount: '200',
-              tokenID: 20
-            }
-          ]
-        }
-      ], '500000', tezosProtocolSpec.wallet.publicKey)
+      const transaction = await protocol.transfer(
+        [
+          {
+            from: 'tz1MecudVJnFZN5FSrriu8ULz2d6dDTR7KaM',
+            txs: [
+              {
+                to: 'tz1awXW7wuXy21c66vBudMXQVAPgRnqqwgTH',
+                amount: '100',
+                tokenID: 10
+              },
+              {
+                to: 'tz1Yju7jmmsaUiG9qQLoYv35v5pHgnWoLWbt',
+                amount: '110',
+                tokenID: 11
+              }
+            ]
+          },
+          {
+            from: 'tz1Xsrfv6hn86fp88YfRs6xcKwt2nTqxVZYM',
+            txs: [
+              {
+                to: 'tz1NpWrAyDL9k2Lmnyxcgr9xuJakbBxdq7FB',
+                amount: '200',
+                tokenID: 20
+              }
+            ]
+          }
+        ],
+        '500000',
+        tezosProtocolSpec.wallet.publicKey
+      )
 
       const result = await prepareTxHelper(transaction, protocol)
       const airGapTx = result.airGapTxs[0]
@@ -1403,8 +1492,8 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       const protocol = tezosProtocolSpec.fa2
       getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/script`).returns(
         Promise.resolve({
-          data: { 
-            code: [] 
+          data: {
+            code: []
           }
         })
       )
@@ -1465,7 +1554,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
                         ],
                         annots: ['%remove_operator']
                       }
-                    ],
+                    ]
                   }
                 ]
               }
@@ -1492,28 +1581,32 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
                 amount: '0',
                 fee: '35308',
                 storage_limit: '60000',
-                destination: protocol.contractAddress, 
-                metadata 
+                destination: protocol.contractAddress,
+                metadata
               }
             ]
           }
         })
       )
 
-      const transaction = await protocol.updateOperators([
-        {
-          operation: 'add',
-          owner: 'tz1MecudVJnFZN5FSrriu8ULz2d6dDTR7KaM',
-          operator: 'tz1awXW7wuXy21c66vBudMXQVAPgRnqqwgTH',
-          tokenId: 0
-        },
-        {
-          operation: 'remove',
-          owner: 'tz1Yju7jmmsaUiG9qQLoYv35v5pHgnWoLWbt',
-          operator: 'tz1Xsrfv6hn86fp88YfRs6xcKwt2nTqxVZYM',
-          tokenId: 1
-        }
-      ], '500000', tezosProtocolSpec.wallet.publicKey)
+      const transaction = await protocol.updateOperators(
+        [
+          {
+            operation: 'add',
+            owner: 'tz1MecudVJnFZN5FSrriu8ULz2d6dDTR7KaM',
+            operator: 'tz1awXW7wuXy21c66vBudMXQVAPgRnqqwgTH',
+            tokenId: 0
+          },
+          {
+            operation: 'remove',
+            owner: 'tz1Yju7jmmsaUiG9qQLoYv35v5pHgnWoLWbt',
+            operator: 'tz1Xsrfv6hn86fp88YfRs6xcKwt2nTqxVZYM',
+            tokenId: 1
+          }
+        ],
+        '500000',
+        tezosProtocolSpec.wallet.publicKey
+      )
 
       const result = await prepareTxHelper(transaction, protocol)
       const airGapTx = result.airGapTxs[0]
@@ -1527,10 +1620,14 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       expect(airGapTx.transactionDetails.parameters).to.not.be.undefined
       expect(airGapTx.transactionDetails.parameters.entrypoint).to.equal('update_operators')
       expect(airGapTx.transactionDetails.parameters.value[0].args[0].args[0].string).to.equal('tz1MecudVJnFZN5FSrriu8ULz2d6dDTR7KaM')
-      expect(airGapTx.transactionDetails.parameters.value[0].args[0].args[1].args[0].string).to.equal('tz1awXW7wuXy21c66vBudMXQVAPgRnqqwgTH')
+      expect(airGapTx.transactionDetails.parameters.value[0].args[0].args[1].args[0].string).to.equal(
+        'tz1awXW7wuXy21c66vBudMXQVAPgRnqqwgTH'
+      )
       expect(airGapTx.transactionDetails.parameters.value[0].args[0].args[1].args[1].int).to.equal('0')
       expect(airGapTx.transactionDetails.parameters.value[1].args[0].args[0].string).to.equal('tz1Yju7jmmsaUiG9qQLoYv35v5pHgnWoLWbt')
-      expect(airGapTx.transactionDetails.parameters.value[1].args[0].args[1].args[0].string).to.equal('tz1Xsrfv6hn86fp88YfRs6xcKwt2nTqxVZYM')
+      expect(airGapTx.transactionDetails.parameters.value[1].args[0].args[1].args[0].string).to.equal(
+        'tz1Xsrfv6hn86fp88YfRs6xcKwt2nTqxVZYM'
+      )
       expect(airGapTx.transactionDetails.parameters.value[1].args[0].args[1].args[1].int).to.equal('1')
     })
 
@@ -1597,8 +1694,8 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       const protocol = tezosProtocolSpec.fa2
       getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/script`).returns(
         Promise.resolve({
-          data: { 
-            code: [] 
+          data: {
+            code: []
           }
         })
       )
@@ -1626,7 +1723,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
                         prim: 'list',
                         args: [
                           {
-                            prim: "pair",
+                            prim: 'pair',
                             args: [
                               {
                                 prim: 'nat',
@@ -1706,8 +1803,8 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
                 amount: '0',
                 fee: '35308',
                 storage_limit: '60000',
-                destination: protocol.contractAddress, 
-                metadata 
+                destination: protocol.contractAddress,
+                metadata
               }
             ]
           }
@@ -1796,8 +1893,8 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       const protocol = tezosProtocolSpec.fa2
       getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/script`).returns(
         Promise.resolve({
-          data: { 
-            code: [] 
+          data: {
+            code: []
           }
         })
       )
@@ -1935,7 +2032,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
                 fee: '35308',
                 storage_limit: '60000',
                 destination: protocol.contractAddress,
-                metadata 
+                metadata
               }
             ]
           }
@@ -1949,16 +2046,20 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         })
       )
 
-      const balanceResults = await protocol.balanceOf([
-        {
-          address: 'tz1MecudVJnFZN5FSrriu8ULz2d6dDTR7KaM',
-          tokenID: 0
-        },
-        {
-          address: 'tz1awXW7wuXy21c66vBudMXQVAPgRnqqwgTH',
-          tokenID: 1
-        }
-      ], source, 'KT1B3vuScLjXeesTAYo19LdnnLgGqyYZtgae')
+      const balanceResults = await protocol.balanceOf(
+        [
+          {
+            address: 'tz1MecudVJnFZN5FSrriu8ULz2d6dDTR7KaM',
+            tokenID: 0
+          },
+          {
+            address: 'tz1awXW7wuXy21c66vBudMXQVAPgRnqqwgTH',
+            tokenID: 1
+          }
+        ],
+        source,
+        'KT1B3vuScLjXeesTAYo19LdnnLgGqyYZtgae'
+      )
 
       expect(balanceResults.length).to.equal(2)
       expect(balanceResults[0].address).to.equal('tz1MecudVJnFZN5FSrriu8ULz2d6dDTR7KaM')
@@ -2032,8 +2133,8 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       const protocol = tezosProtocolSpec.fa2
       getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/script`).returns(
         Promise.resolve({
-          data: { 
-            code: [] 
+          data: {
+            code: []
           }
         })
       )
@@ -2084,7 +2185,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
                 fee: '35308',
                 storage_limit: '60000',
                 destination: protocol.contractAddress,
-                metadata 
+                metadata
               }
             ]
           }

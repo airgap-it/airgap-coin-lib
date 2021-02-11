@@ -88,14 +88,14 @@ export interface ICoinProtocol {
   getTransactionDetailsFromSigned(transaction: SignedTransaction): Promise<IAirGapTransaction[]> // out of signed transaction
 
   getBalanceOfAddresses(addresses: string[]): Promise<string>
-  getBalanceOfPublicKey(publicKey: string): Promise<string>
+  getBalanceOfPublicKey(publicKey: string, addressIndex?: number): Promise<string>
   getBalanceOfExtendedPublicKey(extendedPublicKey: string, offset: number): Promise<string>
   getAvailableBalanceOfAddresses(addresses: string[]): Promise<string>
   getTransactionStatuses(transactionHash: string[]): Promise<AirGapTransactionStatus[]>
   getBalanceOfPublicKeyForSubProtocols(publicKey: string, subProtocols: ICoinSubProtocol[]): Promise<string[]>
 
   estimateMaxTransactionValueFromExtendedPublicKey(extendedPublicKey: string, recipients: string[], fee?: string): Promise<string>
-  estimateMaxTransactionValueFromPublicKey(publicKey: string, recipients: string[], fee?: string): Promise<string>
+  estimateMaxTransactionValueFromPublicKey(publicKey: string, recipients: string[], fee?: string, addressIndex?: number): Promise<string>
 
   estimateFeeDefaultsFromExtendedPublicKey(publicKey: string, recipients: string[], values: string[], data?: any): Promise<FeeDefaults>
   estimateFeeDefaultsFromPublicKey(publicKey: string, recipients: string[], values: string[], data?: any): Promise<FeeDefaults>

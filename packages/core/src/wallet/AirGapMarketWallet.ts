@@ -1,46 +1,24 @@
 import BigNumber from '../dependencies/src/bignumber.js-9.0.0/bignumber'
-import {
-  IAirGapTransaction,
-  IProtocolTransactionCursor,
-  IAirGapTransactionResult
-} from '../interfaces/IAirGapTransaction'
+import { IAirGapTransaction, IProtocolTransactionCursor, IAirGapTransactionResult } from '../interfaces/IAirGapTransaction'
 import { FeeDefaults, ICoinProtocol } from '../protocols/ICoinProtocol'
 import { NetworkType } from '../utils/ProtocolNetwork'
 import { MainProtocolSymbols } from '../utils/ProtocolSymbols'
 
 import { AirGapWallet } from './AirGapWallet'
 
-export enum TimeUnit {
-  Hours = 'hours',
-  Days = 'days',
-  Minutes = 'minutes'
-}
-
-export interface MarketDataSample {
-  time: number
-  close: number
-  high: number
-  low: number
-  open: number
-  volumefrom: number
-  volumeto: number
+export enum TimeInterval {
+  HOURS = '24h',
+  DAYS = '7d',
+  MONTH = '30d'
 }
 
 export interface AirGapWalletPriceService {
   getCurrentMarketPrice(protocol: ICoinProtocol, baseSymbol: string): Promise<BigNumber>
-  getMarketPricesOverTime(
-    protocol: ICoinProtocol,
-    timeUnit: TimeUnit,
-    numberOfMinutes: number,
-    date: Date,
-    baseSymbol: string
-  ): Promise<MarketDataSample[]>
 }
 
 export class AirGapMarketWallet extends AirGapWallet {
   public currentBalance: BigNumber | undefined
   public _currentMarketPrice: BigNumber | undefined
-  public _marketPriceOverTime: MarketDataSample[] | undefined
 
   private synchronizePromise?: Promise<void>
 
@@ -50,25 +28,6 @@ export class AirGapMarketWallet extends AirGapWallet {
 
   set currentMarketPrice(marketPrice: BigNumber | undefined) {
     this._currentMarketPrice = this.protocol.options.network.type === NetworkType.MAINNET ? marketPrice : new BigNumber(0)
-  }
-
-  get marketPriceOverTime(): MarketDataSample[] | undefined {
-    return this._marketPriceOverTime
-  }
-
-  set marketPriceOverTime(marketPrices: MarketDataSample[] | undefined) {
-    this._marketPriceOverTime =
-      this.protocol.options.network.type === NetworkType.MAINNET
-        ? marketPrices
-        : marketPrices?.map(() => ({
-            time: 0,
-            close: 0,
-            high: 0,
-            low: 0,
-            open: 0,
-            volumefrom: 0,
-            volumeto: 0
-          }))
   }
 
   constructor(
@@ -112,12 +71,6 @@ export class AirGapMarketWallet extends AirGapWallet {
     this.currentMarketPrice = await this.priceService.getCurrentMarketPrice(this.protocol, baseSymbol)
 
     return this.currentMarketPrice
-  }
-
-  public async getMarketPricesOverTime(timeUnit: TimeUnit, numberOfMinutes: number, date: Date, baseSymbol: string = 'USD') {
-    this.marketPriceOverTime = await this.priceService.getMarketPricesOverTime(this.protocol, timeUnit, numberOfMinutes, date, baseSymbol)
-
-    return this.marketPriceOverTime
   }
 
   private addressesToCheck(): string[] {
@@ -183,7 +136,7 @@ export class AirGapMarketWallet extends AirGapWallet {
     if (this.isExtendedPublicKey) {
       return new BigNumber(await this.protocol.estimateMaxTransactionValueFromExtendedPublicKey(this.publicKey, recipients, fee))
     } else {
-      return new BigNumber(await this.protocol.estimateMaxTransactionValueFromPublicKey(this.publicKey, recipients, fee))
+      return new BigNumber(await this.protocol.estimateMaxTransactionValueFromPublicKey(this.publicKey, recipients, fee, this.addressIndex))
     }
   }
 
