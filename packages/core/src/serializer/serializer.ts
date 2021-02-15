@@ -7,7 +7,6 @@ import { IACMessageType } from './interfaces'
 import { IACMessageDefinitionObject } from './message'
 import { FullPayload } from './payloads/full-payload'
 import { Payload } from './payloads/payload'
-import { UnsignedTransaction } from './schemas/definitions/unsigned-transaction'
 import { SerializableUnsignedCosmosTransaction } from './schemas/definitions/unsigned-transaction-cosmos'
 import { SchemaInfo, SchemaRoot } from './schemas/schema'
 import { AeternityTransactionValidator } from './unsigned-transactions/aeternity-transactions.validator'
@@ -114,16 +113,7 @@ export class Serializer {
       .map((el: Payload) => (el as FullPayload).asJson())
       .reduce((pv: IACMessageDefinitionObject[], cv: IACMessageDefinitionObject[]) => pv.concat(...cv), [] as IACMessageDefinitionObject[])
 
-    return Promise.all(
-      deserializedIACMessageDefinitionObjects.map((object: IACMessageDefinitionObject) => {
-        const unsignedTx: UnsignedTransaction = object.payload as UnsignedTransaction
-        const validator: TransactionValidator = this.serializationValidatorByProtocolIdentifier(object.protocol)
-
-        return validator.validateUnsignedTransaction(unsignedTx)
-      })
-    ).then(() => {
-      return deserializedIACMessageDefinitionObjects
-    })
+    return deserializedIACMessageDefinitionObjects
   }
 
   public serializationValidatorByProtocolIdentifier(protocolIdentifier: ProtocolSymbols): TransactionValidator {

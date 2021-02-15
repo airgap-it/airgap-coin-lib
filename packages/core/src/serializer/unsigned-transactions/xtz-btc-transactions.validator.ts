@@ -31,6 +31,7 @@ const signedTransactionConstraints = {
 }
 
 export class TezosBTCTransactionValidator extends TransactionValidator {
+
   public async validateUnsignedTransaction(unsignedTx: UnsignedTezosTransaction): Promise<any> {
     return new Promise(async (resolve, reject) => {
       const protocol = new TezosBTC()
