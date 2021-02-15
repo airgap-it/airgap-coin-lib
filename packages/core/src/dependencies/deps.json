@@ -1352,12 +1352,12 @@
       "varuint-bitcoin-1.1.2"
     ]
   },
-  "@taquito/local-forging-6.3.5-beta.0": {
+  "@taquito/local-forging-8.0.1-beta.1": {
     "name": "@taquito/local-forging",
     "entrypoint": "packages/taquito-local-forging/src/taquito-local-forging",
-    "version": "6.3.5-beta.0",
+    "version": "8.0.1-beta.1",
     "repository": "ecadlabs/taquito",
-    "commitHash": "01de22eb132acb5bedf83b4741214ba5445937fd",
+    "commitHash": "7476a279b438d0c836899d5dcc18b88a0b518689",
     "files": [
       "packages/taquito/src/forger/interface.ts",
       "packages/taquito-rpc/src/types.ts",
@@ -1373,7 +1373,7 @@
       "packages/taquito-local-forging/src/utils.ts"
     ],
     "deps": [
-      "@taquito/utils-6.3.5-beta.0",
+      "@taquito/utils-8.0.1-beta.1",
       "bignumber.js-9.0.0"
     ],
     "replaceInFiles": [
@@ -1439,12 +1439,12 @@
       }
     ]
   },
-  "@taquito/utils-6.3.5-beta.0": {
+  "@taquito/utils-8.0.1-beta.1": {
     "name": "@taquito/utils",
     "entrypoint": "packages/taquito-utils/src/taquito-utils",
-    "version": "6.3.5-beta.0",
+    "version": "8.0.1-beta.1",
     "repository": "ecadlabs/taquito",
-    "commitHash": "01de22eb132acb5bedf83b4741214ba5445937fd",
+    "commitHash": "7476a279b438d0c836899d5dcc18b88a0b518689",
     "files": [
       "packages/taquito-utils/src/constants.ts",
       "packages/taquito-utils/src/taquito-utils.ts",

@@ -5,7 +5,7 @@ import {
   Prefix,
   prefix as prefixMap,
   prefixLength,
-} from '../../../../../@taquito/utils-6.3.5-beta.0/packages/taquito-utils/src/taquito-utils';
+} from '../../../../../@taquito/utils-8.0.1-beta.1/packages/taquito-utils/src/taquito-utils';
 import BigNumber from '../../../../../bignumber.js-9.0.0/bignumber';
 import { entrypointMapping, entrypointMappingReverse, ENTRYPOINT_MAX_LENGTH } from './constants';
 import { extractRequiredLen, valueDecoder, valueEncoder, MichelsonValue } from './michelson/codec';
