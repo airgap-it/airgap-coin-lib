@@ -1,6 +1,6 @@
 import * as sodium from 'libsodium-wrappers'
 
-import { localForger } from '../../dependencies/src/@taquito/local-forging-6.3.5-beta.0/packages/taquito-local-forging/src/taquito-local-forging'
+import { localForger } from '../../dependencies/src/@taquito/local-forging-8.0.1-beta.1/packages/taquito-local-forging/src/taquito-local-forging'
 import axios, { AxiosError, AxiosResponse } from '../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
