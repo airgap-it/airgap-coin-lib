@@ -49,7 +49,7 @@ export class TezosFA2Protocol extends TezosFAProtocol {
     super(options)
 
     this.tokenID = options.config.tokenID
-    
+
     this.tokenMetadataBigMapID = options.config.tokenMetadataBigMapID
     this.tokenMetadataBigMapName = options.config.tokenMetadataBigMapName ?? TezosFA2Protocol.DEFAULT_TOKEN_METADATA_BIG_MAP_NAME
     this.tokenMedatadaBigMapValueRegex = options.config.tokenMetadataBigMapRegex ?? TezosFA2Protocol.DEFAULT_TOKEN_METADATA_BIG_MAP_VALUE_REGEX
@@ -133,20 +133,23 @@ export class TezosFA2Protocol extends TezosFAProtocol {
 
       return [defaultDetails]
     }
-    
+
     try {
       const callArgumentsList = MichelsonList.from(
         parameters.value,
         (pairJSON: string) => MichelsonPair.from(
           pairJSON,
+          undefined,
           (fromJSON: string) => MichelsonAddress.from(fromJSON, 'from_'),
           (txsJSON: string) => MichelsonList.from(
             txsJSON,
             (pairJSON: string) => MichelsonPair.from(
               pairJSON,
+              undefined,
               (toJSON: string) => MichelsonAddress.from(toJSON, 'to_'),
               (pairJSON: string) => MichelsonPair.from(
                 pairJSON,
+                undefined,
                 (tokenJSON: string) => MichelsonInt.from(tokenJSON, 'token_id'),
                 (amountJSON: string) => MichelsonInt.from(amountJSON, 'amount')
               )
@@ -156,8 +159,8 @@ export class TezosFA2Protocol extends TezosFAProtocol {
         )
       ).asRawValue()
 
-    return Array.isArray(callArgumentsList)
-      ? callArgumentsList.map((callArguments: unknown) => {
+      return Array.isArray(callArgumentsList)
+        ? callArgumentsList.map((callArguments: unknown) => {
           if (!this.isTransferRequest(callArguments)) {
             return []
           }
@@ -183,7 +186,7 @@ export class TezosFA2Protocol extends TezosFAProtocol {
             }
           })
         }).reduce((flatten: Partial<IAirGapTransaction>[], next: Partial<IAirGapTransaction>[]) => flatten.concat(next), [])
-      : [defaultDetails]
+        : [defaultDetails]
     } catch {
       return [defaultDetails]
     }
@@ -195,7 +198,7 @@ export class TezosFA2Protocol extends TezosFAProtocol {
     callbackContract: string = this.callbackContract(TezosFA2ContractEntrypoint.BALANCE)
   ): Promise<TezosFA2BalanceOfResponse[]> {
     const balanceOfCall: TezosContractCall = await this.contract.createContractCall(
-      TezosFA2ContractEntrypoint.BALANCE, 
+      TezosFA2ContractEntrypoint.BALANCE,
       {
         requests: balanceRequests.map((request: TezosFA2BalanceOfRequest) => {
           return {
@@ -210,26 +213,26 @@ export class TezosFA2Protocol extends TezosFAProtocol {
     const results: MichelineDataNode = await this.runContractCall(balanceOfCall, this.requireSource(source))
     if (isMichelineSequence(results)) {
       return results.map((node: MichelineDataNode) => {
-          try {
-            const pair: MichelsonPair = MichelsonPair.from(node, (value: unknown) => MichelsonPair.from(value, MichelsonAddress.from, MichelsonInt.from), MichelsonInt.from)
+        try {
+          const pair: MichelsonPair = MichelsonPair.from(node, undefined, (value: unknown) => MichelsonPair.from(value, undefined, MichelsonAddress.from, MichelsonInt.from), MichelsonInt.from)
 
-            const accountWithTokenID: MichelsonPair = MichelsonPair.from(pair.first.get())
-            const account: MichelsonAddress = MichelsonAddress.from(accountWithTokenID.first.get())
-            const tokenID: MichelsonInt = MichelsonInt.from(accountWithTokenID.second.get())
+          const accountWithTokenID: MichelsonPair = MichelsonPair.from(pair.items[0].get())
+          const account: MichelsonAddress = MichelsonAddress.from(accountWithTokenID.items[0].get())
+          const tokenID: MichelsonInt = MichelsonInt.from(accountWithTokenID.items[1].get())
 
-            const amount: MichelsonInt = MichelsonInt.from(pair.second.get())
+          const amount: MichelsonInt = MichelsonInt.from(pair.items[1].get())
 
-            return {
-              address: account.address instanceof MichelsonString ? account.address.value : TezosUtils.parseAddress(account.address.value),
-              tokenID: tokenID.value.toNumber(),
-              amount: amount.value.toFixed()
-            }
-          } catch(error) {
-            console.warn(error)
-
-            return undefined
+          return {
+            address: account.address instanceof MichelsonString ? account.address.value : TezosUtils.parseAddress(account.address.value),
+            tokenID: tokenID.value.toNumber(),
+            amount: amount.value.toFixed()
           }
-        }).filter((balanceOfResults: TezosFA2BalanceOfResponse | undefined) => balanceOfResults !== undefined) as TezosFA2BalanceOfResponse[]
+        } catch (error) {
+          console.warn(error)
+
+          return undefined
+        }
+      }).filter((balanceOfResults: TezosFA2BalanceOfResponse | undefined) => balanceOfResults !== undefined) as TezosFA2BalanceOfResponse[]
     } else {
       return []
     }
@@ -283,7 +286,7 @@ export class TezosFA2Protocol extends TezosFAProtocol {
   }
 
   public async tokenMetadataRegistry(
-    source?: string, 
+    source?: string,
     callbackContract: string = this.callbackContract(TezosFA2ContractEntrypoint.TOKEN_METADATA_REGISTRY)
   ): Promise<string> {
     const tokenMetadataRegistryCall: TezosContractCall = await this.contract.createContractCall(
@@ -292,7 +295,7 @@ export class TezosFA2Protocol extends TezosFAProtocol {
     )
 
     const result: MichelineDataNode = await this.runContractCall(tokenMetadataRegistryCall, this.requireSource(source)).catch(() => [])
-   
+
     if (isMichelinePrimitive('string', result)) {
       return result.string
     } else if (isMichelinePrimitive('bytes', result)) {
@@ -303,7 +306,7 @@ export class TezosFA2Protocol extends TezosFAProtocol {
   }
 
   public async tokenMetadata(
-    tokenIDs: number[], 
+    tokenIDs: number[],
     handler: string,
     fee: string,
     publicKey: string
@@ -322,14 +325,14 @@ export class TezosFA2Protocol extends TezosFAProtocol {
   public async getTokenMetadata(tokenIDs?: number[]): Promise<TezosFA2TokenMetadata[]> {
     const metadataResponse: BigMapResponse[] = await this.contract.bigMapValues({
       bigMapID: this.tokenMetadataBigMapID, // temporarily until we cannot search by a big map's annotation
-      predicates: tokenIDs 
+      predicates: tokenIDs
         ? [
-            {
-              field: 'key',
-              operation: 'in',
-              set: tokenIDs
-            }
-          ] 
+          {
+            field: 'key',
+            operation: 'in',
+            set: tokenIDs
+          }
+        ]
         : undefined
     })
 
@@ -337,14 +340,14 @@ export class TezosFA2Protocol extends TezosFAProtocol {
       .map((response: BigMapResponse) => {
         const match = response.value ? this.tokenMedatadaBigMapValueRegex.exec(response.value) : null
 
-        return match && this.isTokenMetadata(match.groups) 
+        return match && this.isTokenMetadata(match.groups)
           ? {
-              tokenID: new BigNumber(match.groups.tokenID).toNumber(),
-              symbol: match.groups.symbol,
-              name: match.groups.name,
-              decimals: new BigNumber(match.groups.decimals).toNumber(),
-              extras: match.groups.extras
-            }
+            tokenID: new BigNumber(match.groups.tokenID).toNumber(),
+            symbol: match.groups.symbol,
+            name: match.groups.name,
+            decimals: new BigNumber(match.groups.decimals).toNumber(),
+            extras: match.groups.extras
+          }
           : null
       })
       .filter((metadata: TezosFA2TokenMetadata | null) => metadata !== null) as TezosFA2TokenMetadata[]
@@ -402,16 +405,16 @@ export class TezosFA2Protocol extends TezosFAProtocol {
     return callback ?? ''
   }
 
-  private isTransferRequest(obj: unknown): obj is { 
+  private isTransferRequest(obj: unknown): obj is {
     from_: string, txs: { to_: string, token_id: BigNumber, amount: BigNumber }[]
   } {
     const anyObj = obj as any
-    
+
     return (
       anyObj instanceof Object &&
       typeof anyObj.from_ === 'string' &&
       Array.isArray(anyObj.txs) &&
-      anyObj.txs.every((tx: any) => 
+      anyObj.txs.every((tx: any) =>
         tx instanceof Object && typeof tx.to_ === 'string' && BigNumber.isBigNumber(tx.token_id) && BigNumber.isBigNumber(tx.amount)
       )
     )
@@ -419,11 +422,11 @@ export class TezosFA2Protocol extends TezosFAProtocol {
 
   private isTokenMetadata(obj: unknown): obj is TezosFA2TokenMetadata {
     return (
-      typeof obj === 'object' && 
+      typeof obj === 'object' &&
       obj !== null &&
-      'tokenID' in obj && 
-      'symbol' in obj && 
-      'name' in obj && 
+      'tokenID' in obj &&
+      'symbol' in obj &&
+      'name' in obj &&
       'decimals' in obj
     )
   }

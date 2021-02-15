@@ -60,15 +60,15 @@ export class TezosBTC extends TezosFA12Protocol {
           if (bigMapEntry.value) {
             value = TezosUtils.parseHex(bigMapEntry.value)
           }
-        } catch {}
+        } catch { }
 
         if (value instanceof MichelsonPair) {
-          value = value.first.get()
+          value = value.items[0].get()
         }
 
         const amount: BigNumber = value instanceof MichelsonInt
           ? value.value
-          : new BigNumber(0) 
+          : new BigNumber(0)
 
         return {
           address,
