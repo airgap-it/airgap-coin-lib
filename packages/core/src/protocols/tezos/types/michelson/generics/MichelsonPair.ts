@@ -7,24 +7,23 @@ import { MichelsonGrammarData } from '../grammar/MichelsonGrammarData'
 import { MichelsonType } from '../MichelsonType'
 
 export class MichelsonPair extends MichelsonType {
-  constructor(public readonly first: Lazy<MichelsonType>, public readonly second: Lazy<MichelsonType>, name?: string) {
+  constructor(public readonly items: Lazy<MichelsonType>[], name?: string) {
     super(name)
   }
 
-  public static from(pair: unknown, firstMappingFunction?: unknown, secondMappingFunction?: unknown, name?: string): MichelsonPair {
+  public static from(pair: unknown, name?: string, ...mappingFunctions: unknown[]): MichelsonPair {
     if (pair instanceof MichelsonPair) {
       return pair
     }
 
     return isMichelinePrimitiveApplication(pair)
-      ? MichelsonPair.fromMicheline(pair, firstMappingFunction, secondMappingFunction, name)
-      : MichelsonPair.fromUnknown(pair, firstMappingFunction, secondMappingFunction, name)
+      ? MichelsonPair.fromMicheline(pair, mappingFunctions, name)
+      : MichelsonPair.fromUnknown(pair, mappingFunctions, name)
   }
 
   public static fromMicheline(
     micheline: MichelinePrimitiveApplication<MichelsonGrammarData>,
-    firstMappingFunction: unknown,
-    secondMappingFunction: unknown,
+    mappingFunctions: unknown[],
     name?: string
   ): MichelsonPair {
     if (micheline.prim !== 'Pair') {
@@ -37,7 +36,7 @@ export class MichelsonPair extends MichelsonType {
 
     let args = this.normalizePairArgs(micheline.args)
 
-    return MichelsonPair.fromUnknown(args, firstMappingFunction, secondMappingFunction, name)
+    return MichelsonPair.fromUnknown(args, mappingFunctions, name)
   }
 
   private static normalizePairArgs(args: MichelineGenericNode<MichelsonGrammarData>[]): MichelineGenericNode<MichelsonGrammarData>[] {
@@ -55,19 +54,18 @@ export class MichelsonPair extends MichelsonType {
 
   public static fromUnknown(
     unknownValue: MichelsonType | unknown,
-    firstMappingFunction: unknown,
-    secondMappingFunction: unknown,
+    mappingFunctions: unknown[],
     name?: string
   ): MichelsonPair {
-    if (!(unknownValue instanceof Object) && (!Array.isArray(unknownValue) || unknownValue.length !== 2)) {
+    if (!(unknownValue instanceof Object) && (!Array.isArray(unknownValue) || unknownValue.length < 2)) {
       throw invalidArgumentTypeError('MichelsonPair', 'tuple or object', `${typeof unknownValue}: ${unknownValue}`)
     }
 
-    const [first, second]: [Lazy<MichelsonType>, Lazy<MichelsonType>] = Array.isArray(unknownValue)
-      ? [MichelsonPair.asRawValue(unknownValue[0], firstMappingFunction), MichelsonPair.asRawValue(unknownValue[1], secondMappingFunction)]
-      : [MichelsonPair.asRawValue(unknownValue, firstMappingFunction), MichelsonPair.asRawValue(unknownValue, secondMappingFunction)]
+    const items: Lazy<MichelsonType>[] = Array.isArray(unknownValue)
+      ? unknownValue.map((value, index) => MichelsonPair.asRawValue(value, mappingFunctions[index]))
+      : mappingFunctions.map(mappingFunction => MichelsonPair.asRawValue(unknownValue, mappingFunction))
 
-    return new MichelsonPair(first, second, name)
+    return (new MichelsonPair(items, name)).normalized()
   }
 
   private static asRawValue(unknownValue: unknown, mappingFactory: unknown): Lazy<MichelsonType> {
@@ -89,12 +87,10 @@ export class MichelsonPair extends MichelsonType {
   }
 
   public asRawValue(): Record<string, any> | [any, any] {
-    const first = this.first.get().asRawValue()
-    const second = this.second.get().asRawValue()
-
-    const value: Record<string, any> | [any, any] = isRecord(first) && isRecord(second)
-      ? Object.assign(first, second)
-      : [first, second]
+    const values = this.items.map(item => item.get().asRawValue())
+    const value: Record<string, any> | any[] = values.every(value => isRecord(value))
+      ? Object.assign(values.splice(0, 1)[0], ...values)
+      : values
 
     return this.name ? { [this.name]: value } : value
   }
@@ -102,15 +98,23 @@ export class MichelsonPair extends MichelsonType {
   public toMichelineJSON(): MichelineDataNode {
     return {
       prim: 'Pair',
-      args: [
-        this.first.get().toMichelineJSON(),
-        this.second.get().toMichelineJSON()
-      ]
+      args: this.items.map(item => item.get().toMichelineJSON())
     }
   }
 
   public eval(): void {
-    this.first.get()
-    this.second.get()
+    this.items.forEach(item => item.get())
+  }
+
+  private normalized(): MichelsonPair {
+    if (this.items.length === 2) {
+      return this
+    }
+    const newItems = [
+      this.items[0],
+      new Lazy(() => (new MichelsonPair(this.items.splice(1))).normalized())
+    ]
+
+    return new MichelsonPair(newItems, this.name)
   }
 }

@@ -95,13 +95,15 @@ export class TezosFA1Protocol extends TezosFAProtocol {
 
     try {
       const callArguments = MichelsonPair.from(
-        parameters.value, 
-        (fromJSON: string) => MichelsonAddress.from(fromJSON, 'from'), 
-        (pairJSON: string) => MichelsonPair.from(pairJSON, 
-          (toJSON: string) => MichelsonAddress.from(toJSON, 'to'), 
+        parameters.value,
+        undefined,
+        (fromJSON: string) => MichelsonAddress.from(fromJSON, 'from'),
+        (pairJSON: string) => MichelsonPair.from(pairJSON,
+          undefined,
+          (toJSON: string) => MichelsonAddress.from(toJSON, 'to'),
           (valueJSON: string) => MichelsonInt.from(valueJSON, 'value'))
       ).asRawValue()
-      
+
       if (!this.isTransferRequest(callArguments)) {
         return [defaultDetails]
       }
@@ -127,7 +129,7 @@ export class TezosFA1Protocol extends TezosFAProtocol {
 
   public async getTotalSupply(source?: string, callbackContract: string = this.callbackContract()): Promise<string> {
     const getTotalSupplyCall = await this.contract.createContractCall(TezosFA1ContractEntrypoint.TOTAL_SUPPLY, [
-      [], 
+      [],
       callbackContract
     ])
 
@@ -162,7 +164,7 @@ export class TezosFA1Protocol extends TezosFAProtocol {
       if (isMichelinePrimitive('int', operationResult)) {
         return operationResult.int
       }
-    } catch {}
+    } catch { }
 
     return '0'
   }
