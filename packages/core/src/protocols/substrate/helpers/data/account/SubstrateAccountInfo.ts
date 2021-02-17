@@ -4,8 +4,8 @@ import { SCALEDecoder, SCALEDecodeResult } from '../scale/SCALEDecoder'
 import { SCALEInt } from '../scale/type/SCALEInt'
 
 class SubstrateAccountData {
-  public static decode(network: SubstrateNetwork, raw: string): SCALEDecodeResult<SubstrateAccountData> {
-    const decoder = new SCALEDecoder(network, raw)
+  public static decode(network: SubstrateNetwork, runtimeVersion: number | undefined, raw: string): SCALEDecodeResult<SubstrateAccountData> {
+    const decoder = new SCALEDecoder(network, runtimeVersion, raw)
 
     const free = decoder.decodeNextInt(128)
     const reserved = decoder.decodeNextInt(128)
@@ -23,7 +23,7 @@ class SubstrateAccountData {
 
 export class SubstrateAccountInfo {
   public static decode(network: SubstrateNetwork, runtimeVersion: number | undefined, raw: string): SubstrateAccountInfo {
-    const decoder = new SCALEDecoder(network, raw)
+    const decoder = new SCALEDecoder(network, runtimeVersion, raw)
 
     const [consumersLenght, producersLength]: [number, number] = this.migrateConsumersProducersLengths(network, runtimeVersion);
 

@@ -8,20 +8,21 @@ import { SCALETuple } from '../scale/type/SCALETuple'
 
 export class SubstrateStakingLedger {
   public static decode(network: SubstrateNetwork, runtimeVersion: number | undefined, raw: string): SubstrateStakingLedger {
-    const decoder = new SCALEDecoder(network, raw)
+    const decoder = new SCALEDecoder(network, runtimeVersion, raw)
 
     const stash = decoder.decodeNextAccountId()
     const total = decoder.decodeNextCompactInt()
     const active = decoder.decodeNextCompactInt()
-    const unlocking = decoder.decodeNextArray((network, hex) =>
+    const unlocking = decoder.decodeNextArray((network, runtimeVersion, hex) =>
       SCALETuple.decode(
         network,
+        runtimeVersion,
         hex,
-        (_, first) => SCALECompactInt.decode(first),
-        (_, second) => SCALECompactInt.decode(second)
+        (_network, _runtimeVersion, first) => SCALECompactInt.decode(first),
+        (_network, _runtimeVersion, second) => SCALECompactInt.decode(second)
       )
     )
-    const claimedRewards = decoder.decodeNextArray((_, hex) => SCALEInt.decode(hex, 32))
+    const claimedRewards = decoder.decodeNextArray((_network, _runtimeVersion, hex) => SCALEInt.decode(hex, 32))
 
     return new SubstrateStakingLedger(stash.decoded, total.decoded, active.decoded, unlocking.decoded, claimedRewards.decoded)
   }

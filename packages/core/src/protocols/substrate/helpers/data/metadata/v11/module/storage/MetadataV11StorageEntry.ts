@@ -14,14 +14,14 @@ enum StorageEntryModifier {
 }
 
 export class MetadataV11StorageEntry extends SCALEClass {
-  public static decode(network: SubstrateNetwork, raw: string): SCALEDecodeResult<MetadataV11StorageEntry> {
-    const decoder = new SCALEDecoder(network, raw)
+  public static decode(network: SubstrateNetwork, runtimeVersion: number | undefined, raw: string): SCALEDecodeResult<MetadataV11StorageEntry> {
+    const decoder = new SCALEDecoder(network, runtimeVersion, raw)
 
     const name = decoder.decodeNextString()
     const modifier = decoder.decodeNextEnum((value) => StorageEntryModifier[StorageEntryModifier[value]])
     const type = decoder.decodeNextObject(MetadataV11StorageEntryType.decode)
     const defaultValue = decoder.decodeNextBytes()
-    const docs = decoder.decodeNextArray((_, hex) => SCALEString.decode(hex))
+    const docs = decoder.decodeNextArray((_network, _runtimeVersion, hex) => SCALEString.decode(hex))
 
     return {
       bytesDecoded: name.bytesDecoded + modifier.bytesDecoded + type.bytesDecoded + defaultValue.bytesDecoded + docs.bytesDecoded,

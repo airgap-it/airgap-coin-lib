@@ -2,7 +2,7 @@ import { isHex, stripHexPrefix } from '../../../../../../utils/hex'
 import { SCALEDecodeResult } from '../SCALEDecoder'
 
 import { SCALECompactInt } from './SCALECompactInt'
-import { SCALEType } from './SCALEType'
+import { SCALEEncodeConfig, SCALEType } from './SCALEType'
 
 export class SCALEBytes extends SCALEType {
   public static from(bytes: string | Buffer | Uint8Array): SCALEBytes {
@@ -38,7 +38,7 @@ export class SCALEBytes extends SCALEType {
     return this.bytes.toString(encoding)
   }
 
-  protected _encode(): string {
-    return SCALECompactInt.from(this.bytes.length).encode() + this.bytes.toString('hex')
+  protected _encode(config?: SCALEEncodeConfig): string {
+    return SCALECompactInt.from(this.bytes.length).encode(config) + this.bytes.toString('hex')
   }
 }

@@ -1,7 +1,7 @@
 import { stripHexPrefix, toHexStringRaw } from '../../../../../../utils/hex'
 import { SCALEDecodeResult } from '../SCALEDecoder'
 
-import { SCALEType } from './SCALEType'
+import { SCALEEncodeConfig, SCALEType } from './SCALEType'
 
 export class SCALEEnum<T> extends SCALEType {
   public static from<T>(value: T): SCALEEnum<T> {
@@ -36,7 +36,7 @@ export class SCALEEnum<T> extends SCALEType {
     return ((this.value as any) as number).toString()
   }
 
-  protected _encode(): string {
+  protected _encode(config?: SCALEEncodeConfig): string {
     return toHexStringRaw((this.value as any) as number)
   }
 }

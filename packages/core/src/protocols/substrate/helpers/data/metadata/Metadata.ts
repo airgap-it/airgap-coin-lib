@@ -9,8 +9,8 @@ import { MetadataV12 } from './v12/MetadataV12'
 const MAGIC_NUMBER = '6174656d' // `meta` in hex
 
 export class Metadata {
-  public static decode(network: SubstrateNetwork, raw: string): Metadata {
-    const decoder = new SCALEDecoder(network, raw)
+  public static decode(network: SubstrateNetwork, runtimeVersion: number | undefined, raw: string): Metadata {
+    const decoder = new SCALEDecoder(network, runtimeVersion, raw)
 
     const magicNumber = decoder.decodeNextInt(32) // 32 bits
     this.assertMagicNumber(magicNumber.decoded.toNumber())
@@ -20,10 +20,10 @@ export class Metadata {
     let versioned: MetadataVersioned
     switch(version.decoded.toNumber()) {
       case 12:
-        versioned = MetadataV12.decode(network, raw)
+        versioned = MetadataV12.decode(network, runtimeVersion, raw)
         break
       case 11:
-        versioned = MetadataV11.decode(network, raw)
+        versioned = MetadataV11.decode(network, runtimeVersion, raw)
         break
       default:
         throw new Error(`Error while parsing metadata, metadata version ${version} is not supported`)

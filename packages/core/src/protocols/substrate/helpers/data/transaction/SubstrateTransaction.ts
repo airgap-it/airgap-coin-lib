@@ -2,16 +2,16 @@ import BigNumber from '../../../../../dependencies/src/bignumber.js-9.0.0/bignum
 import { IAirGapTransaction } from '../../../../../interfaces/IAirGapTransaction'
 import { stripHexPrefix } from '../../../../../utils/hex'
 import { SubstrateNetwork } from '../../../SubstrateNetwork'
-import { SubstrateCall } from '../metadata/decorator/call/SubstrateCall'
 import { SubstrateAccountId } from '../account/SubstrateAddress'
+import { SubstrateCall } from '../metadata/decorator/call/SubstrateCall'
 import { SCALEDecoder, SCALEDecodeResult } from '../scale/SCALEDecoder'
-import { SCALEAccountId } from '../scale/type/SCALEAccountId'
 import { SCALEBytes } from '../scale/type/SCALEBytes'
 import { SCALEClass } from '../scale/type/SCALEClass'
 import { SCALECompactInt } from '../scale/type/SCALECompactInt'
 import { EraConfig, SCALEEra } from '../scale/type/SCALEEra'
 import { SCALEHash } from '../scale/type/SCALEHash'
-import { SCALEType } from '../scale/type/SCALEType'
+import { SCALEMultiAddress, SCALEMultiAddressType } from '../scale/type/SCALEMultiAddress'
+import { SCALEEncodeConfig, SCALEType } from '../scale/type/SCALEType'
 
 import { SubstrateTransactionMethod } from './method/SubstrateTransactionMethod'
 import { SubstrateSignature, SubstrateSignatureType } from './SubstrateSignature'
@@ -54,7 +54,7 @@ export class SubstrateTransaction extends SCALEClass {
     return new SubstrateTransaction(
       network,
       type,
-      SCALEAccountId.from(config.from, network),
+      SCALEMultiAddress.from(config.from, SCALEMultiAddressType.Id, network),
       config.signature || SubstrateSignature.create(SubstrateSignatureType.Ed25519, config.signature),
       config.era ? SCALEEra.Mortal(config.era) : SCALEEra.Immortal(),
       SCALECompactInt.from(config.nonce),
@@ -67,7 +67,7 @@ export class SubstrateTransaction extends SCALEClass {
     return new SubstrateTransaction(
       transaction.network,
       transaction.type,
-      config && config.from ? SCALEAccountId.from(config.from, transaction.network) : transaction.signer,
+      config && config.from ? SCALEMultiAddress.from(config.from, SCALEMultiAddressType.Id, transaction.network) : transaction.signer,
       config?.signature || transaction.signature,
       config && config.era ? SCALEEra.Mortal(config.era) : transaction.era,
       config && config.nonce ? SCALECompactInt.from(config.nonce) : transaction.nonce,
@@ -84,17 +84,24 @@ export class SubstrateTransaction extends SCALEClass {
     )
   }
 
-  public static decode(network: SubstrateNetwork, type: SubstrateTransactionType, raw: string): SCALEDecodeResult<SubstrateTransaction> {
+  public static decode(
+    network: SubstrateNetwork, 
+    runtimeVersion: number | undefined, 
+    type: SubstrateTransactionType, 
+    raw: string
+  ): SCALEDecodeResult<SubstrateTransaction> {
     const bytes = SCALEBytes.decode(stripHexPrefix(raw))
-    const decoder = new SCALEDecoder(network, bytes.decoded.bytes.toString('hex'))
+    const decoder = new SCALEDecoder(network, runtimeVersion, bytes.decoded.bytes.toString('hex'))
 
     decoder.decodeNextHash(8) // signed byte
-    const signer = decoder.decodeNextAccountId()
+    const signer = decoder.decodeNextMultiAccount(SCALEMultiAddressType.Id)
     const signature = decoder.decodeNextObject(SubstrateSignature.decode)
     const era = decoder.decodeNextEra()
     const nonce = decoder.decodeNextCompactInt()
     const tip = decoder.decodeNextCompactInt()
-    const method = decoder.decodeNextObject((network, hex) => SubstrateTransactionMethod.decode(network, type, hex))
+    const method = decoder.decodeNextObject((network, runtimeVersion, hex) =>
+      SubstrateTransactionMethod.decode(network, runtimeVersion, type, hex)
+    )
 
     return {
       bytesDecoded: bytes.bytesDecoded,
@@ -116,7 +123,7 @@ export class SubstrateTransaction extends SCALEClass {
   private constructor(
     readonly network: SubstrateNetwork,
     readonly type: SubstrateTransactionType,
-    readonly signer: SCALEAccountId,
+    readonly signer: SCALEMultiAddress<SCALEMultiAddressType.Id>,
     readonly signature: SubstrateSignature,
     readonly era: SCALEEra,
     readonly nonce: SCALECompactInt,
@@ -144,8 +151,8 @@ export class SubstrateTransaction extends SCALEClass {
 
   public toAirGapTransactions(): Partial<IAirGapTransaction>[] {
     const airGapTransaction = {
-      from: [this.signer.asAddress()],
-      to: [this.signer.asAddress()],
+      from: [this.signer.value.asAddress()],
+      to: [this.signer.value.asAddress()],
       extra: this.type !== SubstrateTransactionType.TRANSFER
         ? { type: SubstrateTransactionType[this.type] }
         : undefined,
@@ -156,13 +163,13 @@ export class SubstrateTransaction extends SCALEClass {
     return parts.length > 0 ? parts.map((part) => Object.assign(airGapTransaction, part)) : [airGapTransaction]
   }
 
-  protected _encode(): string {
-    const typeEncoded = SCALEHash.from(new Uint8Array([VERSION | (this.signature.isSigned ? BIT_SIGNED : BIT_UNSIGNED)])).encode()
+  protected _encode(config?: SCALEEncodeConfig): string {
+    const typeEncoded = SCALEHash.from(new Uint8Array([VERSION | (this.signature.isSigned ? BIT_SIGNED : BIT_UNSIGNED)])).encode(config)
     const bytes = Buffer.from(
-      typeEncoded + this.scaleFields.reduce((encoded: string, struct: SCALEType) => encoded + struct.encode(), ''),
+      typeEncoded + this.scaleFields.reduce((encoded: string, struct: SCALEType) => encoded + struct.encode(config), ''),
       'hex'
     )
 
-    return SCALEBytes.from(bytes).encode()
+    return SCALEBytes.from(bytes).encode(config)
   }
 }

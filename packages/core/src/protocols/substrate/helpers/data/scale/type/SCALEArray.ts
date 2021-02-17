@@ -3,7 +3,7 @@ import { SubstrateNetwork } from '../../../../SubstrateNetwork'
 import { DecoderMethod, SCALEDecodeResult } from '../SCALEDecoder'
 
 import { SCALECompactInt } from './SCALECompactInt'
-import { SCALEType } from './SCALEType'
+import { SCALEEncodeConfig, SCALEType } from './SCALEType'
 
 export class SCALEArray<T extends SCALEType> extends SCALEType {
   public static from<T extends SCALEType>(elements: T[]): SCALEArray<T> {
@@ -12,6 +12,7 @@ export class SCALEArray<T extends SCALEType> extends SCALEType {
 
   public static decode<T extends SCALEType>(
     network: SubstrateNetwork,
+    runtimeVersion: number | undefined,
     hex: string,
     decodeElement: DecoderMethod<T>
   ): SCALEDecodeResult<SCALEArray<T>> {
@@ -24,7 +25,7 @@ export class SCALEArray<T extends SCALEType> extends SCALEType {
     const elements: T[] = []
     let bytesDecoded = 0
     for (let i = 0; i < arrayLength.decoded.toNumber(); i++) {
-      const element = decodeElement(network, _hex)
+      const element = decodeElement(network,runtimeVersion, _hex)
       elements.push(element.decoded)
       bytesDecoded += element.bytesDecoded
       _hex = _hex.slice(element.bytesDecoded * 2)
@@ -53,7 +54,7 @@ export class SCALEArray<T extends SCALEType> extends SCALEType {
     )
   }
 
-  protected _encode(): string {
-    return SCALECompactInt.from(this.elements.length).encode() + this.elements.map((element) => element.encode()).join('')
+  protected _encode(config?: SCALEEncodeConfig): string {
+    return SCALECompactInt.from(this.elements.length).encode(config) + this.elements.map((element) => element.encode(config)).join('')
   }
 }

@@ -2,7 +2,7 @@ import BigNumber from '../../../../../../dependencies/src/bignumber.js-9.0.0/big
 import { changeEndianness, stripHexPrefix, toHexStringRaw } from '../../../../../../utils/hex'
 import { SCALEDecodeResult } from '../SCALEDecoder'
 
-import { SCALEType } from './SCALEType'
+import { SCALEEncodeConfig, SCALEType } from './SCALEType'
 
 const IMMORTAL_ENCODED = '00'
 const ERA_DEFAULT_PERIOD = 50 // 5 min at 6s block times
@@ -82,7 +82,7 @@ export class SCALEEra extends SCALEType {
     )
   }
 
-  protected _encode(): string {
+  protected _encode(config?: SCALEEncodeConfig): string {
     if (!this.isMortal) {
       return IMMORTAL_ENCODED
     }

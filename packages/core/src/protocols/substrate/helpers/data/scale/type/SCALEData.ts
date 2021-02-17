@@ -2,7 +2,7 @@ import { hexToBytes, isHex, stripHexPrefix } from '../../../../../../utils/hex'
 import { SCALEDecodeResult } from '../SCALEDecoder'
 
 import { SCALEBytes } from './SCALEBytes'
-import { SCALEType } from './SCALEType'
+import { SCALEEncodeConfig, SCALEType } from './SCALEType'
 
 export enum SCALEDataType {
   None = 0,
@@ -78,7 +78,7 @@ export class SCALEData extends SCALEType {
         return '' // TODO: add support for other types
     }
   }
-  protected _encode(): string {
+  protected _encode(config?: SCALEEncodeConfig): string {
     if (this.type !== SCALEDataType.None && this.bytes === null) {
       throw new Error(`SCALEData#encode: type is ${SCALEDataType[this.type]} but data is null.`)
     }
@@ -87,7 +87,7 @@ export class SCALEData extends SCALEType {
       case SCALEDataType.None:
         return '0'
       case SCALEDataType.Raw:
-        return SCALEBytes.from(this.bytes!).encode()
+        return SCALEBytes.from(this.bytes!).encode(config)
       default:
         throw new Error(`SCALEData#encode: type ${SCALEDataType[this.type]} is not supported.`)
     }

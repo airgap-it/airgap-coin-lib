@@ -1,10 +1,10 @@
 import BigNumber from '../../../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
-import { changeEndianness, stripHexPrefix } from '../../../../../../utils/hex'
+import { changeEndianness, stripHexPrefix, toHexStringRaw } from '../../../../../../utils/hex'
 import { padStart } from '../../../../../../utils/padStart'
 import { SCALEDecodeResult } from '../SCALEDecoder'
 
 import { SCALEInt } from './SCALEInt'
-import { SCALEType } from './SCALEType'
+import { SCALEEncodeConfig, SCALEType } from './SCALEType'
 
 type Number = SCALECompactInt | SCALEInt | BigNumber | number
 
@@ -86,7 +86,7 @@ export class SCALECompactInt extends SCALEType {
     return this.performOperation(other, BigNumber.prototype.eq)
   }
 
-  protected _encode(): string {
+  protected _encode(config?: SCALEEncodeConfig): string {
     const bits = this.value.toString(2).length
     let mode: number
     if (bits <= 6) {
@@ -103,17 +103,17 @@ export class SCALECompactInt extends SCALEType {
       mode = 3
     }
 
-    let value: BigNumber
-    if (mode == 3) {
-      const bytes = Math.ceil(bits / 8)
-      value = this.value.multipliedBy(64).plus(bytes - 4) // value << 6 + number of bytes less 4
-    } else {
-      value = this.value
-    }
+    const bytes: number = mode === 3
+      ? Math.ceil(bits / 8)
+      : Math.pow(2, mode)
+
+    const value: BigNumber = mode === 3
+      ? this.value.multipliedBy(64).plus(bytes - 4) // value << 6 + number of bytes less 4
+      : this.value
 
     const encodedValue = value.multipliedBy(4).plus(mode) // value << 2 + mode
 
-    return changeEndianness(encodedValue.toString(16))
+    return changeEndianness(toHexStringRaw(encodedValue, bytes * 8))
   }
 
   private applyOperation(other: Number, operation: (_: number | BigNumber) => BigNumber): SCALECompactInt {
