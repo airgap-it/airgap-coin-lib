@@ -2,7 +2,7 @@ import { stripHexPrefix } from '../../../../../../utils/hex'
 import { SCALEDecodeResult } from '../SCALEDecoder'
 
 import { SCALECompactInt } from './SCALECompactInt'
-import { SCALEType } from './SCALEType'
+import { SCALEEncodeConfig, SCALEType } from './SCALEType'
 
 export class SCALEString extends SCALEType {
   public static from(value: string): SCALEString {
@@ -41,7 +41,7 @@ export class SCALEString extends SCALEType {
     return this.value
   }
 
-  protected _encode(): string {
+  protected _encode(config?: SCALEEncodeConfig): string {
     const encoded = new TextEncoder().encode(this.value)
 
     return SCALECompactInt.from(this.value.length).encode() + Buffer.from(encoded).toString('hex')

@@ -1,7 +1,7 @@
 import { stripHexPrefix, toHexStringRaw } from '../../../../../../utils/hex'
 import { SCALEDecodeResult } from '../SCALEDecoder'
 
-import { SCALEType } from './SCALEType'
+import { SCALEEncodeConfig, SCALEType } from './SCALEType'
 
 export class SCALEBoolean extends SCALEType {
   public static from(value: boolean | number): SCALEBoolean {
@@ -27,7 +27,7 @@ export class SCALEBoolean extends SCALEType {
     return String(this.value)
   }
 
-  protected _encode(): string {
+  protected _encode(config?: SCALEEncodeConfig): string {
     return toHexStringRaw(this.value ? 1 : 0)
   }
 }

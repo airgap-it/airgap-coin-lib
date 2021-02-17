@@ -10,6 +10,9 @@ import { SCALEArray } from './data/scale/type/SCALEArray'
 import { SCALEBytes } from './data/scale/type/SCALEBytes'
 import { SCALECompactInt } from './data/scale/type/SCALECompactInt'
 import { SCALEEnum } from './data/scale/type/SCALEEnum'
+import { SCALEInt } from './data/scale/type/SCALEInt'
+import { SCALEOptional } from './data/scale/type/SCALEOptional'
+import { SCALEString } from './data/scale/type/SCALEString'
 import { SubstrateTransactionMethod } from './data/transaction/method/SubstrateTransactionMethod'
 import { SubstrateSignature, SubstrateSignatureType } from './data/transaction/SubstrateSignature'
 import { SubstrateTransaction, SubstrateTransactionType } from './data/transaction/SubstrateTransaction'
@@ -17,9 +20,10 @@ import { SubstrateTransactionPayload } from './data/transaction/SubstrateTransac
 import { SubstrateNodeClient } from './node/SubstrateNodeClient'
 
 export interface SubstrateTransactionDetails {
+  runtimeVersion: number | undefined
   fee: BigNumber
   transaction: SubstrateTransaction
-  payload: SubstrateTransactionPayload
+  payload: string
 }
 
 export interface SubstrateTransactionConfig {
@@ -85,49 +89,67 @@ export class SubstrateTransactionController {
   public async signTransaction(
     privateKey: Buffer,
     transaction: SubstrateTransaction,
-    payload: SubstrateTransactionPayload
+    payload: string
   ): Promise<SubstrateTransaction> {
-    const signature = await this.signPayload(privateKey, transaction.signer.asBytes(), payload.encode())
+    const signature = await this.signPayload(privateKey, transaction.signer.value.asBytes(), payload)
 
     return SubstrateTransaction.fromTransaction(transaction, { signature })
   }
 
   public encodeDetails(txs: SubstrateTransactionDetails[]): string {
     const bytesEncoded = txs.map((tx) => {
-      const scaleTypes = SCALEEnum.from(tx.transaction.type)
+      const scaleRuntimeVersion =
+        tx.runtimeVersion !== undefined ? SCALEOptional.from(SCALEInt.from(tx.runtimeVersion, 32)) : SCALEOptional.empty()
+      const scaleType = SCALEEnum.from(tx.transaction.type)
       const scaleFee = SCALECompactInt.from(tx.fee)
 
-      return SCALEBytes.from(scaleTypes.encode() + scaleFee.encode() + tx.transaction.encode() + tx.payload.encode())
+      return SCALEBytes.from(
+        scaleRuntimeVersion.encode() +
+          scaleType.encode({ network: this.network, runtimeVersion: tx.runtimeVersion }) +
+          scaleFee.encode({ network: this.network, runtimeVersion: tx.runtimeVersion }) +
+          tx.transaction.encode({ network: this.network, runtimeVersion: tx.runtimeVersion }) +
+          SCALEString.from(tx.payload).encode({ network: this.network, runtimeVersion: tx.runtimeVersion })
+      )
     })
 
     return SCALEArray.from(bytesEncoded).encode()
   }
 
   public decodeDetails(serialized: string): SubstrateTransactionDetails[] {
-    const decoder = new SCALEDecoder(this.network, serialized)
+    const decoder = new SCALEDecoder(this.network, undefined, serialized)
 
     const encodedTxs = decoder
-      .decodeNextArray((_, hex) => SCALEBytes.decode(hex))
+      .decodeNextArray((_network, _runtimeVersion, hex) => SCALEBytes.decode(hex))
       .decoded.elements.map((bytesEncoded) => bytesEncoded.bytes.toString('hex'))
 
     return encodedTxs.map((encodedTx) => {
-      const txDecoder = new SCALEDecoder(this.network, encodedTx)
+      const runtimeVersionOptional = SCALEOptional.decode(this.network, undefined, encodedTx, (_network, _runtimeVersion, hex) => SCALEInt.decode(hex, 32))
+
+      const _encodedTx = encodedTx.slice(runtimeVersionOptional.bytesDecoded * 2)
+      const runtimeVersion = runtimeVersionOptional.decoded.value?.toNumber()
+
+      const txDecoder = new SCALEDecoder(this.network, runtimeVersion, _encodedTx)
 
       const type = txDecoder.decodeNextEnum((hex) => SubstrateTransactionType[SubstrateTransactionType[hex]])
       const fee = txDecoder.decodeNextCompactInt()
-      const transaction = txDecoder.decodeNextObject((network, hex) => SubstrateTransaction.decode(network, type.decoded.value, hex))
-      const payload = txDecoder.decodeNextObject((network, hex) => SubstrateTransactionPayload.decode(network, type.decoded.value, hex))
+      const transaction = txDecoder.decodeNextObject((network, runtimeVersion, hex) =>
+        SubstrateTransaction.decode(network, runtimeVersion, type.decoded.value, hex)
+      )
+      const payload = txDecoder.decodeNextString()
 
       return {
+        runtimeVersion,
         fee: fee.decoded.value,
         transaction: transaction.decoded,
-        payload: payload.decoded
+        payload: payload.decoded.value
       }
     })
   }
 
   public async calculateTransactionFee(transaction: SubstrateTransaction): Promise<BigNumber | null> {
-    const partialEstimate = await this.nodeClient.getTransferFeeEstimate(transaction.encode())
+    const runtimeVersion = await this.nodeClient.getRuntimeVersion()
+    const encoded = transaction.encode({ network: this.network, runtimeVersion: runtimeVersion?.specVersion })
+    const partialEstimate = await this.nodeClient.getTransferFeeEstimate(encoded)
 
     if (partialEstimate) {
       this.nodeClient.saveLastFee(transaction.type, partialEstimate)
@@ -193,9 +215,10 @@ export class SubstrateTransactionController {
     })
 
     return {
+      runtimeVersion: runtimeVersion.specVersion,
       fee,
       transaction,
-      payload
+      payload: payload.encode({ network: this.network, runtimeVersion: runtimeVersion.specVersion })
     }
   }
 

@@ -82,8 +82,8 @@ export class SubstrateNodeClient {
     return call ? call : Promise.reject('Could not find requested item.')
   }
 
-  public async getTransferFeeEstimate(transactionBytes: Uint8Array | string): Promise<BigNumber | null> {
-    return this.send('payment', 'queryInfo', [bytesToHex(transactionBytes)]).then((result) =>
+  public async getTransferFeeEstimate(transaction: Uint8Array | string): Promise<BigNumber | null> {
+    return this.send('payment', 'queryInfo', [bytesToHex(transaction)]).then((result) =>
       result ? new BigNumber(result.partialFee) : null
     )
   }
@@ -170,7 +170,11 @@ export class SubstrateNodeClient {
 
   public async getValidators(): Promise<SubstrateAddress[] | null> {
     return this.fromStorage('Session', 'Validators').then((items) =>
-      items ? SCALEArray.decode(this.network, items, SCALEAccountId.decode).decoded.elements.map((encoded) => encoded.address) : null
+      items
+        ? SCALEArray.decode(this.network, this.runtimeVersion, items, (network, _, hex) =>
+            SCALEAccountId.decode(network, hex)
+          ).decoded.elements.map((encoded) => encoded.address)
+        : null
     )
   }
 
@@ -200,9 +204,10 @@ export class SubstrateNodeClient {
       item
         ? SCALETuple.decode(
           this.network,
+          this.runtimeVersion,
           item,
-          (network, hex) => SCALEAccountId.decode(network, hex),
-          (_, hex) => SCALEData.decode(hex)
+          (network, _, hex) => SCALEAccountId.decode(network, hex),
+          (_network, _runtimeVersion, hex) => SCALEData.decode(hex)
         ).decoded
         : null
     )
@@ -212,11 +217,13 @@ export class SubstrateNodeClient {
     return this.fromStorage('Identity', 'SubsOf', SCALEAccountId.from(address, this.network)).then((item) =>
       item
         ? SCALETuple.decode(
-          this.network,
-          item,
-          (_, hex) => SCALECompactInt.decode(hex),
-          (network, hex) => SCALEArray.decode(network, hex, (innerNetwork, innerHex) => SCALEAccountId.decode(innerNetwork, innerHex))
-        ).decoded
+            this.network,
+            this.runtimeVersion,
+            item,
+            (_network, _runtimeVersion, hex) => SCALECompactInt.decode(hex),
+            (network, _, hex) =>
+              SCALEArray.decode(network, _, hex, (innerNetwork, _, innerHex) => SCALEAccountId.decode(innerNetwork, innerHex))
+          ).decoded
         : null
     )
   }
@@ -313,10 +320,10 @@ export class SubstrateNodeClient {
           this.send('state', 'getMetadata'),
           this.getRuntimeVersion()
         ])
-        this.metadata = Metadata.decode(this.network, metadataEncoded).decorate()
         if (!runtimeVersion) {
           reject("Could not fetch runtime version from the node")
         }
+        this.metadata = Metadata.decode(this.network, runtimeVersion?.specVersion, metadataEncoded).decorate()
         this.runtimeVersion = runtimeVersion?.specVersion
 
         resolve()

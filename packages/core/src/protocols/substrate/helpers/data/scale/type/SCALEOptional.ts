@@ -2,7 +2,7 @@ import { stripHexPrefix, toHexStringRaw } from '../../../../../../utils/hex'
 import { SubstrateNetwork } from '../../../../SubstrateNetwork'
 import { DecoderMethod, SCALEDecodeResult } from '../SCALEDecoder'
 
-import { SCALEType } from './SCALEType'
+import { SCALEEncodeConfig, SCALEType } from './SCALEType'
 
 export enum SCALEOptionalType {
   None = 0,
@@ -20,6 +20,7 @@ export class SCALEOptional<T extends SCALEType> extends SCALEType {
 
   public static decode<T extends SCALEType>(
     network: SubstrateNetwork,
+    runtimeVersion: number | undefined,
     hex: string,
     decodeValue: DecoderMethod<T>
   ): SCALEDecodeResult<SCALEOptional<T>> {
@@ -33,7 +34,7 @@ export class SCALEOptional<T extends SCALEType> extends SCALEType {
           decoded: SCALEOptional.empty()
         }
       case SCALEOptionalType.Some:
-        const value = decodeValue(network, _hex.slice(2))
+        const value = decodeValue(network, runtimeVersion, _hex.slice(2))
 
         return {
           bytesDecoded: 1 + value.bytesDecoded,
@@ -55,7 +56,7 @@ export class SCALEOptional<T extends SCALEType> extends SCALEType {
     return `Optional<${this.value?.toString() || 'EMPTY'}>`
   }
 
-  protected _encode(): string {
-    return toHexStringRaw(this.type, 2) + (this.value?.encode() || '')
+  protected _encode(config?: SCALEEncodeConfig): string {
+    return toHexStringRaw(this.type, 2) + (this.value?.encode(config) || '')
   }
 }

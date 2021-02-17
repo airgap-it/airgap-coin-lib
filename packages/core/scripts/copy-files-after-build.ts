@@ -38,4 +38,5 @@ findFilesOnLevel('./src/dependencies/src').then(() => {}).catch(console.error)
 findFilesOnLevel('./src/serializer/schemas').then(() => {}).catch(console.error)
 
 copyFileSync('./package.json', './dist/package.json')
+copyFileSync('./readme.md', './dist/readme.md')
 

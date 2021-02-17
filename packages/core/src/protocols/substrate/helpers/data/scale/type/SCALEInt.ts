@@ -3,7 +3,7 @@ import { changeEndianness, stripHexPrefix, toHexStringRaw } from '../../../../..
 import { SCALEDecodeResult } from '../SCALEDecoder'
 
 import { SCALECompactInt } from './SCALECompactInt'
-import { SCALEType } from './SCALEType'
+import { SCALEEncodeConfig, SCALEType } from './SCALEType'
 
 type Number = SCALECompactInt | SCALEInt | BigNumber | number
 
@@ -74,7 +74,7 @@ export class SCALEInt extends SCALEType {
     return this.performOperation(other, BigNumber.prototype.eq)
   }
 
-  protected _encode(): string {
+  protected _encode(config?: SCALEEncodeConfig): string {
     const hex = toHexStringRaw(this.value, this.bitLength)
 
     return changeEndianness(hex)

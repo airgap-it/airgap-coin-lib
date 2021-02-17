@@ -6,8 +6,12 @@ import { SCALEClass } from '../../../scale/type/SCALEClass'
 import { SCALEString } from '../../../scale/type/SCALEString'
 
 class MetadataV11CallArgument extends SCALEClass {
-  public static decode(network: SubstrateNetwork, raw: string): SCALEDecodeResult<MetadataV11CallArgument> {
-    const decoder = new SCALEDecoder(network, raw)
+  public static decode(
+    network: SubstrateNetwork, 
+    runtimeVersion: number | undefined, 
+    raw: string
+  ): SCALEDecodeResult<MetadataV11CallArgument> {
+    const decoder = new SCALEDecoder(network, runtimeVersion, raw)
 
     const name = decoder.decodeNextString()
     const type = decoder.decodeNextString()
@@ -26,12 +30,12 @@ class MetadataV11CallArgument extends SCALEClass {
 }
 
 export class MetadataV11Call extends SCALEClass {
-  public static decode(network: SubstrateNetwork, raw: string): SCALEDecodeResult<MetadataV11Call> {
-    const decoder = new SCALEDecoder(network, raw)
+  public static decode(network: SubstrateNetwork, runtimeVersion: number | undefined, raw: string): SCALEDecodeResult<MetadataV11Call> {
+    const decoder = new SCALEDecoder(network, runtimeVersion, raw)
 
     const name = decoder.decodeNextString()
     const args = decoder.decodeNextArray(MetadataV11CallArgument.decode)
-    const docs = decoder.decodeNextArray((_, hex) => SCALEString.decode(hex))
+    const docs = decoder.decodeNextArray((_network, _runtimeVersion, hex) => SCALEString.decode(hex))
 
     return {
       bytesDecoded: name.bytesDecoded + args.bytesDecoded + docs.bytesDecoded,

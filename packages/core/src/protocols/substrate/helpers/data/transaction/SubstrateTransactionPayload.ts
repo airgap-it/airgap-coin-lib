@@ -6,6 +6,7 @@ import { SCALECompactInt } from '../scale/type/SCALECompactInt'
 import { SCALEEra } from '../scale/type/SCALEEra'
 import { SCALEHash } from '../scale/type/SCALEHash'
 import { SCALEInt } from '../scale/type/SCALEInt'
+import { SCALEEncodeConfig, SCALEType } from '../scale/type/SCALEType'
 
 import { SubstrateTransactionMethod } from './method/SubstrateTransactionMethod'
 import { SubstrateTransaction, SubstrateTransactionType } from './SubstrateTransaction'
@@ -33,12 +34,15 @@ export class SubstrateTransactionPayload extends SCALEClass {
 
   public static decode(
     network: SubstrateNetwork,
+    runtimeVersion: number | undefined,
     type: SubstrateTransactionType,
     hex: string
   ): SCALEDecodeResult<SubstrateTransactionPayload> {
-    const decoder = new SCALEDecoder(network, hex)
+    const decoder = new SCALEDecoder(network, runtimeVersion, hex)
 
-    const method = decoder.decodeNextObject((network, hex) => SubstrateTransactionMethod.decode(network, type, hex))
+    const method = decoder.decodeNextObject((network, runtimeVersion, hex) =>
+      SubstrateTransactionMethod.decode(network, runtimeVersion, type, hex)
+    )
     const era = decoder.decodeNextEra()
     const nonce = decoder.decodeNextCompactInt()
     const tip = decoder.decodeNextCompactInt()
@@ -92,5 +96,12 @@ export class SubstrateTransactionPayload extends SCALEClass {
     readonly blockHash: SCALEHash
   ) {
     super()
+  }
+
+  protected _encode(config?: SCALEEncodeConfig): string {
+    return this.scaleFields.reduce(
+      (encoded: string, current: SCALEType) => encoded + current.encode({ runtimeVersion: this.specVersion.toNumber(), ...config }),
+      ''
+    )
   }
 }

@@ -10,7 +10,7 @@ export enum SubstrateElectionStatus {
 
 export class SubstrateEraElectionStatus {
   public static decode(network: SubstrateNetwork, runtimeVersion: number | undefined, raw: string): SubstrateEraElectionStatus {
-    const decoder = new SCALEDecoder(network, raw)
+    const decoder = new SCALEDecoder(network, runtimeVersion, raw)
 
     const status = decoder.decodeNextEnum((value) => SubstrateElectionStatus[SubstrateElectionStatus[value]])
 

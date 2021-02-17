@@ -1,7 +1,7 @@
 import { isHex, stripHexPrefix } from '../../../../../../utils/hex'
 import { SCALEDecodeResult } from '../SCALEDecoder'
 
-import { SCALEType } from './SCALEType'
+import { SCALEEncodeConfig, SCALEType } from './SCALEType'
 
 export class SCALEHash extends SCALEType {
   public static empty(bitLength: number = 0): SCALEHash {
@@ -49,7 +49,7 @@ export class SCALEHash extends SCALEType {
     return this.value.toString(encoding)
   }
 
-  protected _encode(): string {
+  protected _encode(config?: SCALEEncodeConfig): string {
     return this.value.toString('hex')
   }
 }
