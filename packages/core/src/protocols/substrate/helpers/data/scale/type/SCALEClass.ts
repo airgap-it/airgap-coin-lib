@@ -1,4 +1,4 @@
-import { SCALEType } from './SCALEType'
+import { SCALEEncodeConfig, SCALEType } from './SCALEType'
 
 export abstract class SCALEClass extends SCALEType {
   protected abstract readonly scaleFields: SCALEType[]
@@ -7,7 +7,7 @@ export abstract class SCALEClass extends SCALEType {
     return `[${this.scaleFields.map((field) => field.toString()).join()}]`
   }
 
-  protected _encode(): string {
-    return this.scaleFields.reduce((encoded: string, current: SCALEType) => encoded + current.encode(), '')
+  protected _encode(config?: SCALEEncodeConfig): string {
+    return this.scaleFields.reduce((encoded: string, current: SCALEType) => encoded + current.encode(config), '')
   }
 }

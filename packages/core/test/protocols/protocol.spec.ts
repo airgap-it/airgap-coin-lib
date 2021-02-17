@@ -259,7 +259,7 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
             const decoded = (protocol.lib as SubstrateProtocol).options.transactionController.decodeDetails(tx)[0]
 
             const signature = decoded.transaction.signature.signature.value
-            const payload = Buffer.from(decoded.payload.encode(), 'hex')
+            const payload = Buffer.from(decoded.payload, 'hex')
             const publicKey = Buffer.from(protocol.wallet.publicKey, 'hex')
 
             expect(sr25519Verify(signature, payload, publicKey)).to.be.true

@@ -5,10 +5,10 @@ import { SCALEOptional } from '../scale/type/SCALEOptional'
 
 export class SubstrateActiveEraInfo {
   public static decode(network: SubstrateNetwork, runtimeVersion: number | undefined, raw: string): SubstrateActiveEraInfo {
-    const decoder = new SCALEDecoder(network, raw)
+    const decoder = new SCALEDecoder(network, runtimeVersion, raw)
 
     const index = decoder.decodeNextInt(32)
-    const start = decoder.decodeNextOptional((_, hex) => SCALEInt.decode(hex, 64))
+    const start = decoder.decodeNextOptional((_network, _runtimeVersion, hex) => SCALEInt.decode(hex, 64))
 
     return new SubstrateActiveEraInfo(index.decoded, start.decoded)
   }

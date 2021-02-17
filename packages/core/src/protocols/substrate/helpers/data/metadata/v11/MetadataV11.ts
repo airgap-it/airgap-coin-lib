@@ -17,8 +17,8 @@ import { MetadataV11Storage } from './module/storage/MetadataV11Storage'
 import { MetadataV11StorageEntry } from './module/storage/MetadataV11StorageEntry'
 
 export class MetadataV11 extends MetadataVersioned {
-  public static decode(network: SubstrateNetwork, raw: string): MetadataV11 {
-    const decoder = new SCALEDecoder(network, raw)
+  public static decode(network: SubstrateNetwork, runtimeVersion: number | undefined, raw: string): MetadataV11 {
+    const decoder = new SCALEDecoder(network, runtimeVersion, raw)
 
     const magicNumber = decoder.decodeNextInt(32) // 32 bits
     const version = decoder.decodeNextInt(8) // 8 bits

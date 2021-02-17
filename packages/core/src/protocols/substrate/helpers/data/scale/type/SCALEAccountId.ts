@@ -3,7 +3,7 @@ import { SubstrateNetwork } from '../../../../SubstrateNetwork'
 import { SubstrateAddress } from '../../account/SubstrateAddress'
 import { SCALEDecodeResult } from '../SCALEDecoder'
 
-import { SCALEType } from './SCALEType'
+import { SCALEEncodeConfig, SCALEType } from './SCALEType'
 
 export class SCALEAccountId extends SCALEType {
   public static from(value: string | Uint8Array | Buffer | SubstrateAddress, network: SubstrateNetwork): SCALEAccountId {
@@ -41,7 +41,7 @@ export class SCALEAccountId extends SCALEType {
     return this.address.getHexPublicKey()
   }
 
-  protected _encode(): string {
+  protected _encode(config?: SCALEEncodeConfig): string {
     return this.address.getHexPublicKey()
   }
 }

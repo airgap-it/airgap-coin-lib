@@ -15,7 +15,11 @@ enum StorageEntryType {
 }
 
 export abstract class MetadataV11StorageEntryType extends SCALEClass {
-  public static decode(network: SubstrateNetwork, raw: string): SCALEDecodeResult<MetadataV11StorageEntryType> {
+  public static decode(
+    network: SubstrateNetwork, 
+    runtimeVersion: number | undefined, 
+    raw: string
+  ): SCALEDecodeResult<MetadataV11StorageEntryType> {
     const prefix = parseInt(raw.substr(0, 2), 16)
 
     let decoderMethod: DecoderMethod<MetadataV11StorageEntryType>
@@ -33,7 +37,7 @@ export abstract class MetadataV11StorageEntryType extends SCALEClass {
         throw new Error('Unkown metadata storage entry type')
     }
 
-    const decoded = decoderMethod(network, raw.slice(2))
+    const decoded = decoderMethod(network, runtimeVersion, raw.slice(2))
 
     return {
       bytesDecoded: 1 + decoded.bytesDecoded,
@@ -52,8 +56,12 @@ export abstract class MetadataV11StorageEntryType extends SCALEClass {
 }
 
 export class MetadataV11StorageEntryPlain extends MetadataV11StorageEntryType {
-  public static decode(network: SubstrateNetwork, raw: string): SCALEDecodeResult<MetadataV11StorageEntryPlain> {
-    const decoder = new SCALEDecoder(network, raw)
+  public static decode(
+    network: SubstrateNetwork, 
+    runtimeVersion: number | undefined, 
+    raw: string
+  ): SCALEDecodeResult<MetadataV11StorageEntryPlain> {
+    const decoder = new SCALEDecoder(network, runtimeVersion, raw)
 
     const name = decoder.decodeNextString()
 
@@ -76,8 +84,12 @@ export class MetadataV11StorageEntryPlain extends MetadataV11StorageEntryType {
 }
 
 export class MetadataV11StorageEntryMap extends MetadataV11StorageEntryType {
-  public static decode(network: SubstrateNetwork, raw: string): SCALEDecodeResult<MetadataV11StorageEntryMap> {
-    const decoder = new SCALEDecoder(network, raw)
+  public static decode(
+    network: SubstrateNetwork, 
+    runtimeVersion: number | undefined, 
+    raw: string
+  ): SCALEDecodeResult<MetadataV11StorageEntryMap> {
+    const decoder = new SCALEDecoder(network, runtimeVersion, raw)
 
     const hasher = decoder.decodeNextEnum((value) => SubstrateStorageEntryHasher[SubstrateStorageEntryHasher[value]])
     const key = decoder.decodeNextString()
@@ -108,8 +120,12 @@ export class MetadataV11StorageEntryMap extends MetadataV11StorageEntryType {
 }
 
 export class MetadataV11StorageEntryDoubleMap extends MetadataV11StorageEntryType {
-  public static decode(network: SubstrateNetwork, raw: string): SCALEDecodeResult<MetadataV11StorageEntryDoubleMap> {
-    const decoder = new SCALEDecoder(network, raw)
+  public static decode(
+    network: SubstrateNetwork, 
+    runtimeVersion: number | undefined, 
+    raw: string
+  ): SCALEDecodeResult<MetadataV11StorageEntryDoubleMap> {
+    const decoder = new SCALEDecoder(network, runtimeVersion, raw)
 
     const hasher1 = decoder.decodeNextEnum((value) => SubstrateStorageEntryHasher[SubstrateStorageEntryHasher[value]])
     const key1 = decoder.decodeNextString()

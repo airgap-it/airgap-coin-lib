@@ -10,6 +10,7 @@ import { SCALEArray } from '../../scale/type/SCALEArray'
 import { SCALECompactInt } from '../../scale/type/SCALECompactInt'
 import { SCALEEnum } from '../../scale/type/SCALEEnum'
 import { SCALEInt } from '../../scale/type/SCALEInt'
+import { SCALEMultiAddress, SCALEMultiAddressType } from '../../scale/type/SCALEMultiAddress'
 import { SCALEType } from '../../scale/type/SCALEType'
 import { SubstratePayee } from '../../staking/SubstratePayee'
 import { SubstrateTransactionType } from '../SubstrateTransaction'
@@ -156,8 +157,8 @@ export abstract class SubstrateTransactionMethodArgsDecoder<T> {
     }
   }
 
-  public decode(network: SubstrateNetwork, raw: string): SCALEDecodeResult<T> {
-    const decoder = new SCALEDecoder(network, raw)
+  public decode(network: SubstrateNetwork, runtimeVersion: number | undefined, raw: string): SCALEDecodeResult<T> {
+    const decoder = new SCALEDecoder(network, runtimeVersion, raw)
 
     return this._decode(decoder)
   }
@@ -168,7 +169,7 @@ export abstract class SubstrateTransactionMethodArgsDecoder<T> {
 class TransferArgsFactory extends SubstrateTransactionMethodArgsFactory<TransferArgs> {
   public createFields(): [string, SCALEType][] {
     return [
-      ['destination', SCALEAccountId.from(this.args.to, this.network)],
+      ['destination', SCALEMultiAddress.from(this.args.to, SCALEMultiAddressType.Id, this.network)],
       ['value', SCALECompactInt.from(this.args.value)]
     ]
   }
@@ -185,7 +186,7 @@ class TransferArgsFactory extends SubstrateTransactionMethodArgsFactory<Transfer
 
 class TransferArgsDecoder extends SubstrateTransactionMethodArgsDecoder<TransferArgs> {
   protected _decode(decoder: SCALEDecoder): SCALEDecodeResult<TransferArgs> {
-    const destination = decoder.decodeNextAccountId()
+    const destination = decoder.decodeNextMultiAccount(SCALEMultiAddressType.Id)
     const value = decoder.decodeNextCompactInt()
 
     return {
@@ -201,7 +202,7 @@ class TransferArgsDecoder extends SubstrateTransactionMethodArgsDecoder<Transfer
 class BondArgsFactory extends SubstrateTransactionMethodArgsFactory<BondArgs> {
   public createFields(): [string, SCALEType][] {
     return [
-      ['controller', SCALEAccountId.from(this.args.controller, this.network)],
+      ['controller', SCALEMultiAddress.from(this.args.controller,  SCALEMultiAddressType.Id, this.network)],
       ['value', SCALECompactInt.from(this.args.value)],
       ['payee', SCALEEnum.from(this.args.payee)]
     ]
@@ -218,7 +219,7 @@ class BondArgsFactory extends SubstrateTransactionMethodArgsFactory<BondArgs> {
 
 class BondArgsDecoder extends SubstrateTransactionMethodArgsDecoder<BondArgs> {
   protected _decode(decoder: SCALEDecoder): SCALEDecodeResult<BondArgs> {
-    const controller = decoder.decodeNextAccountId()
+    const controller = decoder.decodeNextMultiAccount(SCALEMultiAddressType.Id)
     const value = decoder.decodeNextCompactInt()
     const payee = decoder.decodeNextEnum((value) => SubstratePayee[SubstratePayee[value]])
 
@@ -335,7 +336,12 @@ class WithdrawUnbondedArgsDecoder extends SubstrateTransactionMethodArgsDecoder<
 
 class NominateArgsFactory extends SubstrateTransactionMethodArgsFactory<NominateArgs> {
   public createFields(): [string, SCALEType][] {
-    return [['targets', SCALEArray.from(this.args.targets.map((target) => SCALEAccountId.from(target, this.network)))]]
+    return [
+      [
+        'targets',
+        SCALEArray.from(this.args.targets.map((target) => SCALEMultiAddress.from(target, SCALEMultiAddressType.Id, this.network)))
+      ]
+    ]
   }
   public createToAirGapTransactionParts(): () => Partial<IAirGapTransaction>[] {
     return () => [
@@ -348,7 +354,9 @@ class NominateArgsFactory extends SubstrateTransactionMethodArgsFactory<Nominate
 
 class NominateArgsDecoder extends SubstrateTransactionMethodArgsDecoder<NominateArgs> {
   protected _decode(decoder: SCALEDecoder): SCALEDecodeResult<NominateArgs> {
-    const targets = decoder.decodeNextArray(SCALEAccountId.decode)
+    const targets = decoder.decodeNextArray((network, runtimeVersion, hex) =>
+      SCALEMultiAddress.decode(network, hex, SCALEMultiAddressType.Id, runtimeVersion)
+    )
 
     return {
       bytesDecoded: targets.bytesDecoded,
@@ -428,7 +436,7 @@ class SetPayeeArgsDecoder extends SubstrateTransactionMethodArgsDecoder<SetPayee
 
 class SetControllerArgsFactory extends SubstrateTransactionMethodArgsFactory<SetControllerArgs> {
   public createFields(): [string, SCALEType][] {
-    return [['controller', SCALEAccountId.from(this.args.controller, this.network)]]
+    return [['controller', SCALEMultiAddress.from(this.args.controller, SCALEMultiAddressType.Id, this.network)]]
   }
   public createToAirGapTransactionParts(): () => Partial<IAirGapTransaction>[] {
     return () => [
@@ -441,7 +449,7 @@ class SetControllerArgsFactory extends SubstrateTransactionMethodArgsFactory<Set
 
 class SetControllerArgsDecoder extends SubstrateTransactionMethodArgsDecoder<SetControllerArgs> {
   protected _decode(decoder: SCALEDecoder): SCALEDecodeResult<SetControllerArgs> {
-    const controller = decoder.decodeNextAccountId()
+    const controller = decoder.decodeNextMultiAccount(SCALEMultiAddressType.Id)
 
     return {
       bytesDecoded: controller.bytesDecoded,
@@ -465,8 +473,8 @@ class SubmitBatchArgsFactory extends SubstrateTransactionMethodArgsFactory<Submi
 class SubmitBatchArgsDecoder extends SubstrateTransactionMethodArgsDecoder<SubmitBatchArgs> {
   protected _decode(decoder: SCALEDecoder): SCALEDecodeResult<SubmitBatchArgs> {
     // temporary fixed type
-    const calls = decoder.decodeNextArray((network, hex) =>
-      SubstrateTransactionMethod.decode(network, SubstrateTransactionType.COLLECT_PAYOUT, hex)
+    const calls = decoder.decodeNextArray((network, runtimeVersion, hex) =>
+      SubstrateTransactionMethod.decode(network, runtimeVersion, SubstrateTransactionType.COLLECT_PAYOUT, hex)
     )
 
     return {

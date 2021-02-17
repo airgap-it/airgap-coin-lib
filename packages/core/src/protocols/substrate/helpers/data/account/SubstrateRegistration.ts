@@ -19,15 +19,20 @@ enum SubstrateJudgement {
 }
 
 export class SubstrateIdentityInfo {
-  public static decode(network: SubstrateNetwork, raw: string): SCALEDecodeResult<SubstrateIdentityInfo> {
-    const decoder = new SCALEDecoder(network, raw)
+  public static decode(
+    network: SubstrateNetwork, 
+    runtimeVersion: number | undefined, 
+    raw: string
+  ): SCALEDecodeResult<SubstrateIdentityInfo> {
+    const decoder = new SCALEDecoder(network, runtimeVersion, raw)
 
-    const additional = decoder.decodeNextArray((network, hex) =>
+    const additional = decoder.decodeNextArray((network, runtimeVersion, hex) =>
       SCALETuple.decode(
         network,
+        runtimeVersion,
         hex,
-        (_, hex) => SCALEData.decode(hex),
-        (_, hex) => SCALEData.decode(hex)
+        (_network, _runtimeVersion, hex) => SCALEData.decode(hex),
+        (_network, _runtimeVersion, hex) => SCALEData.decode(hex)
       )
     )
     const display = decoder.decodeNextData()
@@ -35,7 +40,7 @@ export class SubstrateIdentityInfo {
     const web = decoder.decodeNextData()
     const riot = decoder.decodeNextData()
     const email = decoder.decodeNextData()
-    const fingerprint = decoder.decodeNextOptional((_, hex) => SCALEHash.decode(hex, 20))
+    const fingerprint = decoder.decodeNextOptional((_network, _runtimeVersion, hex) => SCALEHash.decode(hex, 20))
     const image = decoder.decodeNextData()
     const twitter = decoder.decodeNextData()
 
@@ -75,14 +80,15 @@ export class SubstrateIdentityInfo {
 
 export class SubstrateRegistration {
   public static decode(network: SubstrateNetwork, runtimeVersion: number | undefined, raw: string): SubstrateRegistration {
-    const decoder = new SCALEDecoder(network, raw)
+    const decoder = new SCALEDecoder(network, runtimeVersion, raw)
 
-    const judgements = decoder.decodeNextArray((network, hex) =>
+    const judgements = decoder.decodeNextArray((network, runtimeVersion, hex) =>
       SCALETuple.decode(
         network,
+        runtimeVersion,
         hex,
-        (_, first) => SCALEInt.decode(first, 32),
-        (_, second) => {
+        (_network, _runtimeVersion, first) => SCALEInt.decode(first, 32),
+        (_network, _runtimeVersion, second) => {
           const value = SCALEEnum.decode(second, (value) => SubstrateJudgement[SubstrateJudgement[value]])
           let bytesDecoded = value.bytesDecoded
           if (value.decoded.value === SubstrateJudgement.FEE_PAID) {

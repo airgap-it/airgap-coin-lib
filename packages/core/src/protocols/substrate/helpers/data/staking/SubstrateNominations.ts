@@ -7,9 +7,9 @@ import { SCALEInt } from '../scale/type/SCALEInt'
 
 export class SubstrateNominations {
   public static decode(network: SubstrateNetwork, runtimeVersion: number | undefined, raw: string): SubstrateNominations {
-    const decoder = new SCALEDecoder(network, raw)
+    const decoder = new SCALEDecoder(network, runtimeVersion, raw)
 
-    const targets = decoder.decodeNextArray(SCALEAccountId.decode)
+    const targets = decoder.decodeNextArray((network, _, hex) => SCALEAccountId.decode(network, hex))
     const submittedIn = decoder.decodeNextInt(32)
     const suppressed = decoder.decodeNextBoolean()
 

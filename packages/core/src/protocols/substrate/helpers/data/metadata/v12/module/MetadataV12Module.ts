@@ -13,8 +13,12 @@ import { MetadataV11Module } from '../../v11/module/MetadataV11Module'
 import { MetadataV11Storage } from '../../v11/module/storage/MetadataV11Storage'
 
 export class MetadataV12Module extends MetadataV11Module {
-  public static decode(network: SubstrateNetwork, raw: string): SCALEDecodeResult<MetadataV12Module> {
-    const decoder = new SCALEDecoder(network, raw)
+  public static decode(
+    network: SubstrateNetwork, 
+    runtimeVersion: number | undefined, 
+    raw: string
+  ): SCALEDecodeResult<MetadataV12Module> {
+    const decoder = new SCALEDecoder(network, runtimeVersion, raw)
 
     const v11 = decoder.decodeNextObject(MetadataV11Module.decode)
     const index = decoder.decodeNextInt(8)

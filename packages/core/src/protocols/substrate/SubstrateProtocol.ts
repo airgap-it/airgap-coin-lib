@@ -14,7 +14,7 @@ import { NonExtendedProtocol } from '../NonExtendedProtocol'
 import { SubstrateAccountId, SubstrateAddress } from './helpers/data/account/SubstrateAddress'
 import { SubstratePayee } from './helpers/data/staking/SubstratePayee'
 import { SubstrateStakingActionType } from './helpers/data/staking/SubstrateStakingActionType'
-import { SubstrateTransactionType } from './helpers/data/transaction/SubstrateTransaction'
+import { SubstrateTransaction, SubstrateTransactionType } from './helpers/data/transaction/SubstrateTransaction'
 import { SubstrateTransactionConfig } from './helpers/SubstrateTransactionController'
 import { SubstrateCryptoClient } from './SubstrateCryptoClient'
 import { SubstrateProtocolOptions } from './SubstrateProtocolOptions'
@@ -250,14 +250,18 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
   }
 
   public async broadcastTransaction(encoded: string): Promise<string> {
-    const txs = this.options.transactionController.decodeDetails(encoded).map((tx) => tx.transaction)
+    const txs: [number | undefined, SubstrateTransaction][] = this.options.transactionController
+      .decodeDetails(encoded)
+      .map((tx) => [tx.runtimeVersion, tx.transaction])
 
     try {
       const txHashes = await Promise.all(
-        txs.map((tx)=> this.options.nodeClient.submitTransaction(tx.encode()))
+        txs.map((tx) =>
+          this.options.nodeClient.submitTransaction(tx[1].encode({ network: this.options.network.extras.network, runtimeVersion: tx[0] }))
+        )
       )
 
-      return txs[0]?.type !== SubstrateTransactionType.SUBMIT_BATCH ? txHashes[0] : ''
+      return txs[0][1]?.type !== SubstrateTransactionType.SUBMIT_BATCH ? txHashes[0] : ''
     } catch (error) {
       const axiosError = error as AxiosError
       if (axiosError.response !== undefined && axiosError.response.data !== undefined) {

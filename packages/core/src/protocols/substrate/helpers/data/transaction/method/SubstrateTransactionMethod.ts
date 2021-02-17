@@ -28,16 +28,17 @@ export class SubstrateTransactionMethod extends SCALEClass {
 
   public static decode(
     network: SubstrateNetwork,
+    runtimeVersion: number | undefined,
     type: SubstrateTransactionType,
     raw: string
   ): SCALEDecodeResult<SubstrateTransactionMethod> {
-    const decoder = new SCALEDecoder(network, raw)
+    const decoder = new SCALEDecoder(network, runtimeVersion, raw)
 
     const moduleIndex = decoder.decodeNextInt(8)
     const callIndex = decoder.decodeNextInt(8)
 
     const argsDecoder = SubstrateTransactionMethodArgsDecoder.create(type)
-    const args = decoder.decodeNextObject((network, hex) => argsDecoder.decode(network, hex))
+    const args = decoder.decodeNextObject((network, runtimeVersion, hex) => argsDecoder.decode(network, runtimeVersion, hex))
 
     return {
       bytesDecoded: moduleIndex.bytesDecoded + callIndex.bytesDecoded + args.bytesDecoded,
