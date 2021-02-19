@@ -1,5 +1,6 @@
 import Axios, { AxiosResponse } from '../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { CosmosMessageType } from './cosmos-message/CosmosMessage'
 
 export interface CosmosNodeInfo {
   protocol_version: {
@@ -38,10 +39,15 @@ export interface CosmosAccountCoin {
 }
 
 export interface CosmosDelegation {
-  delegator_address: string
-  validator_address: string
-  shares: string
-  balance: string
+  delegation: {
+    delegator_address: string
+    validator_address: string
+    shares: string
+  }
+  balance: {
+    denom: string
+    amount: string
+  }
 }
 
 export interface CosmosUnbondingDelegation {
@@ -100,8 +106,55 @@ export interface CosmosRewardDetails {
   }[]
 }
 
+export interface CosmosPagedSendTxsResponse {
+  total_count: string
+  count: string
+  page_number: string
+  page_total: string
+  limit: string
+  txs: CosmosSendTx[]
+}
+
+export interface CosmosSendTx {
+  height: string
+  txhash: string
+  gas_wanted: string
+  gas_used: string
+  tx: {
+    type: string
+    value: {
+      msg: [
+        {
+          type: string
+          value: {
+            from_address: string
+            to_address: string
+            amount: [
+              {
+                denom: string
+                amount: string
+              }
+            ]
+          }
+        }
+      ],
+      fee: {
+        amount: [
+          {
+            denom: string
+            amount: string
+          }
+        ],
+        gas: string
+      },
+      memo: string,
+    }
+  }
+  timestamp: string
+}
+
 export class CosmosNodeClient {
-  constructor(public readonly baseURL: string, public useCORSProxy: boolean = true) {}
+  constructor(public readonly baseURL: string, public useCORSProxy: boolean = false) { }
 
   public async fetchBalance(address: string, totalBalance?: boolean): Promise<BigNumber> {
     const response = await Axios.get(this.url(`/bank/balances/${address}`))
@@ -124,6 +177,25 @@ export class CosmosNodeClient {
     } else {
       return new BigNumber(0)
     }
+  }
+
+  public async fetchSendTransactionsFor(address: string, page: number = 1, limit: number = 10, isSender: boolean = true): Promise<CosmosPagedSendTxsResponse> {
+    const response = await Axios.get<CosmosPagedSendTxsResponse>(this.url(`/txs?message.action=send&transfer.${isSender ? 'sender' : 'recipient'}=${address}&page=${page}&limit=${limit}`))
+    const data = response.data
+    const result: CosmosPagedSendTxsResponse = {
+      ...data,
+      txs: data.txs?.map(tx => ({
+        ...tx,
+        tx: {
+          ...tx.tx,
+          value: {
+            ...tx.tx.value,
+            msg: tx.tx.value.msg.filter(msg => msg.type === CosmosMessageType.Send.value) as any
+          }
+        }
+      })) ?? []
+    }
+    return result
   }
 
   public async fetchNodeInfo(): Promise<CosmosNodeInfo> {
@@ -157,14 +229,14 @@ export class CosmosNodeClient {
     }
     const delegations = response.data.result as CosmosDelegation[]
 
-    return filterEmpty ? delegations.filter((delegation: CosmosDelegation) => new BigNumber(delegation.balance).gt(0)) : delegations
+    return filterEmpty ? delegations.filter((delegation: CosmosDelegation) => new BigNumber(delegation.balance.amount).gt(0)) : delegations
   }
 
   public async fetchTotalDelegatedAmount(address: string): Promise<BigNumber> {
     const delegations = await this.fetchDelegations(address)
 
     return delegations
-      .reduce((current, next) => current.plus(new BigNumber(next.balance)), new BigNumber(0))
+      .reduce((current, next) => current.plus(new BigNumber(next.balance.amount)), new BigNumber(0))
       .decimalPlaces(0, BigNumber.ROUND_FLOOR)
   }
 
