@@ -18,7 +18,7 @@ class SubstrateAccountData {
     }
   }
 
-  private constructor(readonly free: SCALEInt, readonly reserved: SCALEInt, readonly miscFrozen: SCALEInt, readonly feeFrozen: SCALEInt) {}
+  private constructor(readonly free: SCALEInt, readonly reserved: SCALEInt, readonly miscFrozen: SCALEInt, readonly feeFrozen: SCALEInt) { }
 }
 
 export class SubstrateAccountInfo {
@@ -56,9 +56,9 @@ export class SubstrateAccountInfo {
   }
 
   private constructor(
-    readonly nonce: SCALEInt, 
-    readonly consumers: SCALEInt, 
-    readonly providers: SCALEInt, 
+    readonly nonce: SCALEInt,
+    readonly consumers: SCALEInt,
+    readonly providers: SCALEInt,
     readonly data: SubstrateAccountData
-  ) {}
+  ) { }
 }

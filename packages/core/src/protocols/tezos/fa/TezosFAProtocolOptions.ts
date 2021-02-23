@@ -1,6 +1,6 @@
 // tslint:disable:max-classes-per-file
 
-import { TezosBTCDetails } from '../../../serializer/constants'
+import { TezosBTCDetails, TezosETHtzDetails, TezosWrappedDetails } from '../../../serializer/constants'
 import { ProtocolOptions } from '../../../utils/ProtocolOptions'
 import { ProtocolSymbols, SubProtocolSymbols } from '../../../utils/ProtocolSymbols'
 import { FeeDefaults } from '../../ICoinProtocol'
@@ -55,6 +55,40 @@ export class TezosBTCProtocolConfig extends TezosFAProtocolConfig {
     super(symbol, name, marketSymbol, identifier, contractAddress, feeDefaults, decimals)
   }
 }
+export class TezosETHtzProtocolConfig extends TezosFAProtocolConfig {
+  constructor(
+    symbol: string = 'ETHtz',
+    name: string = 'ETH Tezos',
+    marketSymbol: string = 'ethtz',
+    identifier: ProtocolSymbols = SubProtocolSymbols.XTZ_ETHTZ,
+    contractAddress: string = TezosETHtzDetails.CONTRACT_ADDRESS,
+    feeDefaults: FeeDefaults = {
+      low: '0.100',
+      medium: '0.200',
+      high: '0.300'
+    },
+    decimals: number = 18
+  ) {
+    super(symbol, name, marketSymbol, identifier, contractAddress, feeDefaults, decimals)
+  }
+}
+export class TezosWrappedProtocolConfig extends TezosFAProtocolConfig {
+  constructor(
+    symbol: string = 'Wtz',
+    name: string = 'Wrapped Tezos',
+    marketSymbol: string = 'wtz',
+    identifier: ProtocolSymbols = SubProtocolSymbols.XTZ_W,
+    contractAddress: string = TezosWrappedDetails.CONTRACT_ADDRESS,
+    feeDefaults: FeeDefaults = {
+      low: '0.100',
+      medium: '0.200',
+      high: '0.300'
+    },
+    decimals: number = 6
+  ) {
+    super(symbol, name, marketSymbol, identifier, contractAddress, feeDefaults, decimals)
+  }
+}
 
 export class TezosStakerProtocolConfig extends TezosFAProtocolConfig {
   constructor(
@@ -94,10 +128,10 @@ export class TezosUSDProtocolConfig extends TezosFAProtocolConfig {
 
 export class TezosFAProtocolOptions implements ProtocolOptions<TezosFAProtocolConfig> {
   // tslint:disable-next-line:no-unnecessary-initializer
-  constructor(public readonly network: TezosProtocolNetwork = new TezosProtocolNetwork(), public readonly config: TezosFAProtocolConfig) {}
+  constructor(public readonly network: TezosProtocolNetwork = new TezosProtocolNetwork(), public readonly config: TezosFAProtocolConfig) { }
 }
 
 export class TezosFA2ProtocolOptions implements ProtocolOptions<TezosFA2ProtocolConfig> {
   // tslint:disable-next-line:no-unnecessary-initializer
-  constructor(public readonly network: TezosProtocolNetwork = new TezosProtocolNetwork(), public readonly config: TezosFA2ProtocolConfig) {}
+  constructor(public readonly network: TezosProtocolNetwork = new TezosProtocolNetwork(), public readonly config: TezosFA2ProtocolConfig) { }
 }
