@@ -1,0 +1,50 @@
+{
+    "name": "eciesjs",
+    "description": "Elliptic Curve Integrated Encryption Scheme for secp256k1",
+    "license": "MIT",
+    "author": {
+        "name": "Weiliang Li",
+        "email": "to.be.impressive@gmail.com",
+        "url": "https://github.com/kigawas"
+    },
+    "keywords": [
+        "secp256k1",
+        "crypto",
+        "elliptic curves",
+        "ecies",
+        "bitcoin",
+        "ethereum",
+        "cryptocurrency"
+    ],
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "tsc",
+        "test": "nyc -r lcov -e .ts mocha -r ts-node/register tests/**/*.test.ts && nyc report --reporter=json"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/ecies/js.git"
+    },
+    "version": "0.3.9",
+    "dependencies": {
+        "@types/secp256k1": "^4.0.1",
+        "futoin-hkdf": "^1.3.2",
+        "secp256k1": "^4.0.2"
+    },
+    "devDependencies": {
+        "@types/chai": "^4.2.14",
+        "@types/mocha": "^8.2.0",
+        "@types/node": "^14.14.12",
+        "axios": "^0.21.0",
+        "chai": "^4.2.0",
+        "codecov": "^3.8.1",
+        "mocha": "^8.2.1",
+        "nyc": "^15.1.0",
+        "ts-node": "^9.1.1",
+        "typescript": "^4.1.3"
+    }
+}

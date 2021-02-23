@@ -1,4 +1,4 @@
-import { decrypt, encrypt } from 'eciesjs'
+import { decrypt, encrypt } from '../dependencies/src/eciesjs-0.3.9/src/index'
 
 import { CryptoClient } from './CryptoClient'
 
