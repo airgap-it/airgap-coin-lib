@@ -7,9 +7,11 @@ import { KusamaProtocolNetwork, KusamaProtocolOptions } from '../protocols/subst
 import { PolkadotProtocolNetwork, PolkadotProtocolOptions } from '../protocols/substrate/implementations/PolkadotProtocolOptions'
 import {
   TezosBTCProtocolConfig,
+  TezosETHtzProtocolConfig,
   TezosFAProtocolOptions,
   TezosStakerProtocolConfig,
-  TezosUSDProtocolConfig
+  TezosUSDProtocolConfig,
+  TezosWrappedProtocolConfig
 } from '../protocols/tezos/fa/TezosFAProtocolOptions'
 import { TezosProtocolNetwork, TezosProtocolOptions } from '../protocols/tezos/TezosProtocolOptions'
 import { assertNever } from './assert'
@@ -47,6 +49,16 @@ const getProtocolOptionsByIdentifier: (identifier: ProtocolSymbols, network?: Pr
       return new TezosFAProtocolOptions(
         network ? (network as TezosProtocolNetwork) : new TezosProtocolNetwork(),
         new TezosBTCProtocolConfig()
+      )
+    case SubProtocolSymbols.XTZ_ETHTZ:
+      return new TezosFAProtocolOptions(
+        network ? (network as TezosProtocolNetwork) : new TezosProtocolNetwork(),
+        new TezosETHtzProtocolConfig()
+      )
+    case SubProtocolSymbols.XTZ_W:
+      return new TezosFAProtocolOptions(
+        network ? (network as TezosProtocolNetwork) : new TezosProtocolNetwork(),
+        new TezosWrappedProtocolConfig()
       )
     case SubProtocolSymbols.XTZ_USD:
       return new TezosFAProtocolOptions(
