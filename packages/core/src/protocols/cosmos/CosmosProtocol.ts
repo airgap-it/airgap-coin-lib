@@ -420,7 +420,6 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
     const address: string = await this.getAddressFromPublicKey(publicKey)
     const nodeInfo: CosmosNodeInfo = await this.nodeClient.fetchNodeInfo()
     const account: CosmosAccount = await this.nodeClient.fetchAccount(address)
-
     const balance: BigNumber = new BigNumber(await this.getAvailableBalanceOfAddresses([address]))
 
     if (balance.lt(values.reduce((pv: BigNumber, cv: string) => pv.plus(cv), wrappedFee))) {
@@ -441,7 +440,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
       memo,
       nodeInfo.network,
       account.value.account_number,
-      account.value.sequence
+      account.value.sequence ?? '0'
     )
 
     return transaction
@@ -568,7 +567,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
       memo !== undefined ? memo : '',
       nodeInfo.network,
       account.value.account_number,
-      account.value.sequence
+      account.value.sequence ?? '0'
     )
   }
 
@@ -604,7 +603,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
       memo !== undefined ? memo : '',
       nodeInfo.network,
       account.value.account_number,
-      account.value.sequence
+      account.value.sequence ?? '0'
     )
   }
 
@@ -616,7 +615,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
       delegatorAddress,
       nodeInfo.network,
       account.value.account_number,
-      account.value.sequence,
+      account.value.sequence ?? '0',
       this.defaultGas,
       fee,
       memo !== undefined ? memo : ''
