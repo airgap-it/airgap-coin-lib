@@ -29,7 +29,7 @@ export interface CosmosAccountValue {
   account_number: string
   address: string
   coins: CosmosAccountCoin[]
-  sequence: string
+  sequence?: string
   public_key?: string
 }
 
