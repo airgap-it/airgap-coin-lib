@@ -1,10 +1,11 @@
-// import { TezosFAProtocol } from '../../../../packages/core/src/protocols/tezos/fa/TezosFAProtocol'
-import { TezosBTC } from '../../../../packages/core/src/protocols/tezos/fa/TezosBTC'
-// import { TezosUSD } from '../../../../packages/core/src/protocols/tezos/fa/TezosUSD'
-// import { TezosStaker } from '../../../../packages/core/src/protocols/tezos/fa/TezosStaker'
+// import { TezosFAProtocol } from '../../../../packages/core/src'
+// import { TezosKolibriUSD } from '../../../../packages/core/src'
+import { TezosBTC } from '../../../../packages/core/src'
+// import { TezosUSD } from '../../../../packages/core/src'
+// import { TezosStaker } from '../../../../packages/core/src'
 
-// const contract = new TezosBTC('KT1PWx2mnDueood7fEmfbBDKx1D9BAnnXitn', 'https://tezos-node.prod.gke.papers.tech', 'https://tezos-mainnet-conseil-1.megan.papers.tech')
 const contract = new TezosBTC()
+// const contract = new TezosKolibriUSD()
 
 // contract
 //   .transfer(
@@ -21,7 +22,10 @@ const contract = new TezosBTC()
 
 // contract.getTransactions(10).then(console.log).catch(console.error)
 
-// contract.fetchTokenHolders().then(console.log).catch(console.error)
+// contract
+//   .fetchTokenHolders()
+//   .then((response) => console.log('response: ', response))
+//   .catch((error) => console.error('error:', error))
 
 // const body = '{"predicates":[{"field":"parameters_entrypoints","operation":"eq","set":["transfer"],"inverse":true},{"field":"parameters","operation":"isnull","set":[""],"inverse":true},{"field":"kind","operation":"eq","set":["transaction"],"inverse":false},{"field":"destination","operation":"eq","set":["KT1PWx2mnDueood7fEmfbBDKx1D9BAnnXitn"],"inverse":false}],"orderBy":[{"field":"block_level","direction":"desc"}],"limit":100}'
 // Axios.post('https://tezos-mainnet-conseil-1.megan.papers.tech/v2/data/tezos/mainnet/operations', body, { headers: { 'Content-Type': 'application/json', apiKey: 'airgap123' } }).then(response => {
@@ -31,7 +35,9 @@ const contract = new TezosBTC()
 //     })
 // })
 
-contract.getTransactionsFromAddresses(['tz1Mj7RzPmMAqDUNFBn5t5VbXmWW4cSUAdtT'], 10, 0).then(console.log).catch(console.error)
+// contract.getTransactionsFromAddresses(['tz1Mj7RzPmMAqDUNFBn5t5VbXmWW4cSUAdtT'], 10).then(console.log).catch(console.error)
+
+contract.fetchTokenHolders().then(console.log).catch(console.error)
 
 // contract.getBalance('tz1aqsunnQ9ECPAfvRaWeMfiNFhF3s8M15sy', 'tz1Mj7RzPmMAqDUNFBn5t5VbXmWW4cSUAdtT').then(console.log).catch(console.error)
 
