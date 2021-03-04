@@ -11,3 +11,6 @@ export enum TezosETHtzDetails {
 export enum TezosWrappedDetails {
   CONTRACT_ADDRESS = 'KT1VYsVfmobT7rsMVivvZ4J8i3bPiqz12NaH'
 }
+export enum TezosKolibriUSDDetails {
+  CONTRACT_ADDRESS = 'KT1K9gCRgaLRFKTErYt1wVxA3Frb9FjasjTV'
+}
