@@ -1,6 +1,6 @@
 // tslint:disable:max-classes-per-file
 
-import { TezosBTCDetails, TezosETHtzDetails, TezosWrappedDetails } from '../../../serializer/constants'
+import { TezosBTCDetails, TezosETHtzDetails, TezosKolibriUSDDetails, TezosWrappedDetails } from '../../../serializer/constants'
 import { ProtocolOptions } from '../../../utils/ProtocolOptions'
 import { ProtocolSymbols, SubProtocolSymbols } from '../../../utils/ProtocolSymbols'
 import { FeeDefaults } from '../../ICoinProtocol'
@@ -89,6 +89,23 @@ export class TezosWrappedProtocolConfig extends TezosFAProtocolConfig {
     super(symbol, name, marketSymbol, identifier, contractAddress, feeDefaults, decimals)
   }
 }
+export class TezosKolibriUSDProtocolConfig extends TezosFAProtocolConfig {
+  constructor(
+    symbol: string = 'kUSD',
+    name: string = 'Kolibri USD Tezos',
+    marketSymbol: string = 'kUSD',
+    identifier: ProtocolSymbols = SubProtocolSymbols.XTZ_KUSD,
+    contractAddress: string = TezosKolibriUSDDetails.CONTRACT_ADDRESS,
+    feeDefaults: FeeDefaults = {
+      low: '0.100',
+      medium: '0.200',
+      high: '0.300'
+    },
+    decimals: number = 6
+  ) {
+    super(symbol, name, marketSymbol, identifier, contractAddress, feeDefaults, decimals)
+  }
+}
 
 export class TezosStakerProtocolConfig extends TezosFAProtocolConfig {
   constructor(
@@ -128,10 +145,10 @@ export class TezosUSDProtocolConfig extends TezosFAProtocolConfig {
 
 export class TezosFAProtocolOptions implements ProtocolOptions<TezosFAProtocolConfig> {
   // tslint:disable-next-line:no-unnecessary-initializer
-  constructor(public readonly network: TezosProtocolNetwork = new TezosProtocolNetwork(), public readonly config: TezosFAProtocolConfig) { }
+  constructor(public readonly network: TezosProtocolNetwork = new TezosProtocolNetwork(), public readonly config: TezosFAProtocolConfig) {}
 }
 
 export class TezosFA2ProtocolOptions implements ProtocolOptions<TezosFA2ProtocolConfig> {
   // tslint:disable-next-line:no-unnecessary-initializer
-  constructor(public readonly network: TezosProtocolNetwork = new TezosProtocolNetwork(), public readonly config: TezosFA2ProtocolConfig) { }
+  constructor(public readonly network: TezosProtocolNetwork = new TezosProtocolNetwork(), public readonly config: TezosFA2ProtocolConfig) {}
 }

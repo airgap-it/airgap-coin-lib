@@ -9,6 +9,7 @@ import {
   TezosBTCProtocolConfig,
   TezosETHtzProtocolConfig,
   TezosFAProtocolOptions,
+  TezosKolibriUSDProtocolConfig,
   TezosStakerProtocolConfig,
   TezosUSDProtocolConfig,
   TezosWrappedProtocolConfig
@@ -59,6 +60,11 @@ const getProtocolOptionsByIdentifier: (identifier: ProtocolSymbols, network?: Pr
       return new TezosFAProtocolOptions(
         network ? (network as TezosProtocolNetwork) : new TezosProtocolNetwork(),
         new TezosWrappedProtocolConfig()
+      )
+    case SubProtocolSymbols.XTZ_KUSD:
+      return new TezosFAProtocolOptions(
+        network ? (network as TezosProtocolNetwork) : new TezosProtocolNetwork(),
+        new TezosKolibriUSDProtocolConfig()
       )
     case SubProtocolSymbols.XTZ_USD:
       return new TezosFAProtocolOptions(

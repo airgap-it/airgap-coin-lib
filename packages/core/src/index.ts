@@ -14,7 +14,13 @@ import { EthereumClassicProtocol } from './protocols/ethereum/EthereumClassicPro
 import { EthereumRopstenProtocol } from './protocols/ethereum/EthereumRopstenProtocol'
 import { GroestlcoinProtocol } from './protocols/groestlcoin/GroestlcoinProtocol'
 import { GroestlcoinTestnetProtocol } from './protocols/groestlcoin/GroestlcoinTestnetProtocol'
-import { DelegateeDetails, DelegatorAction, DelegatorDetails, DelegatorReward, ICoinDelegateProtocol } from './protocols/ICoinDelegateProtocol'
+import {
+  DelegateeDetails,
+  DelegatorAction,
+  DelegatorDetails,
+  DelegatorReward,
+  ICoinDelegateProtocol
+} from './protocols/ICoinDelegateProtocol'
 import { FeeDefaults, ICoinProtocol } from './protocols/ICoinProtocol'
 import { ICoinSubProtocol, SubProtocolType } from './protocols/ICoinSubProtocol'
 import { SubstratePayee } from './protocols/substrate/helpers/data/staking/SubstratePayee'
@@ -52,7 +58,14 @@ import { UnsignedBitcoinTransaction } from './serializer/schemas/definitions/uns
 import { UnsignedEthereumTransaction } from './serializer/schemas/definitions/unsigned-transaction-ethereum'
 import { UnsignedTezosTransaction } from './serializer/schemas/definitions/unsigned-transaction-tezos'
 import { IACPayloadType, Serializer } from './serializer/serializer'
-import { RawAeternityTransaction, RawBitcoinTransaction, RawEthereumTransaction, RawSubstrateTransaction, RawTezosTransaction, UnsignedCosmosTransaction } from './serializer/types'
+import {
+  RawAeternityTransaction,
+  RawBitcoinTransaction,
+  RawEthereumTransaction,
+  RawSubstrateTransaction,
+  RawTezosTransaction,
+  UnsignedCosmosTransaction
+} from './serializer/types'
 import { isCoinlibReady } from './utils/coinlibReady'
 import { isNetworkEqual } from './utils/Network'
 import { getProtocolByIdentifier } from './utils/protocolsByIdentifier'
@@ -137,7 +150,8 @@ import {
   TezosFA2ProtocolConfig,
   TezosFA2ProtocolOptions,
   TezosETHtzProtocolConfig,
-  TezosWrappedProtocolConfig
+  TezosWrappedProtocolConfig,
+  TezosKolibriUSDProtocolConfig
 } from './protocols/tezos/fa/TezosFAProtocolOptions'
 import { TezosTransactionResult } from './protocols/tezos/types/TezosTransactionResult'
 import { TezosTransactionCursor } from './protocols/tezos/types/TezosTransactionCursor'
@@ -166,6 +180,7 @@ import { assertNever } from './utils/assert'
 import { CosmosTransaction } from './protocols/cosmos/CosmosTransaction'
 import { TezosETHtz } from './protocols/tezos/fa/TezosETHtz'
 import { TezosWrapped } from './protocols/tezos/fa/TezosWrapped'
+import { TezosKolibriUSD } from './protocols/tezos/fa/TezosKolibriUSD'
 
 // tslint:enable:ordered-imports
 
@@ -189,7 +204,14 @@ export {
 }
 
 // Aeternity
-export { AeternityProtocol, AeternityCryptoClient, AeternityProtocolOptions, AeternalBlockExplorer, AeternityProtocolNetwork, RawAeternityTransaction }
+export {
+  AeternityProtocol,
+  AeternityCryptoClient,
+  AeternityProtocolOptions,
+  AeternalBlockExplorer,
+  AeternityProtocolNetwork,
+  RawAeternityTransaction
+}
 
 // Bitcoin
 export {
@@ -206,8 +228,16 @@ export {
 
 // Cosmos
 export {
-  CosmosProtocol, CosmosCryptoClient, MintscanBlockExplorer, CosmosProtocolNetwork, CosmosProtocolConfig, CosmosProtocolOptions,
-  CosmosUnbondingDelegation, CosmosValidator, CosmosDelegationActionType, CosmosTransaction
+  CosmosProtocol,
+  CosmosCryptoClient,
+  MintscanBlockExplorer,
+  CosmosProtocolNetwork,
+  CosmosProtocolConfig,
+  CosmosProtocolOptions,
+  CosmosUnbondingDelegation,
+  CosmosValidator,
+  CosmosDelegationActionType,
+  CosmosTransaction
 }
 
 // Ethereum
@@ -267,8 +297,7 @@ export {
   SubstrateStakingActionType,
   SubstrateValidatorDetails,
   SubstrateTransaction,
-  RawSubstrateTransaction,
-
+  RawSubstrateTransaction
 }
 
 // Tezos
@@ -284,6 +313,7 @@ export {
   TezosUSD,
   TezosETHtz as TezosETH,
   TezosWrapped,
+  TezosKolibriUSD,
   TezosTransactionResult,
   TezosTransactionCursor,
   BakerInfo,
@@ -302,6 +332,7 @@ export {
   TezosBTCProtocolConfig,
   TezosETHtzProtocolConfig as TezosETHProtocolConfig,
   TezosWrappedProtocolConfig,
+  TezosKolibriUSDProtocolConfig,
   TezosStakerProtocolConfig,
   TezosUSDProtocolConfig,
   TezosFAProtocolOptions,
@@ -341,14 +372,7 @@ export {
 }
 
 // Action
-export {
-  Action,
-  RepeatableAction,
-  LinkedAction,
-  SimpleAction,
-  ImportAccountAction,
-  ImportAccoutActionContext,
-}
+export { Action, RepeatableAction, LinkedAction, SimpleAction, ImportAccountAction, ImportAccoutActionContext }
 
 // Helper
 export {

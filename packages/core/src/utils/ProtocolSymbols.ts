@@ -13,6 +13,7 @@ export enum SubProtocolSymbols {
   XTZ_KT = 'xtz-kt',
   XTZ_BTC = 'xtz-btc',
   XTZ_USD = 'xtz-usd',
+  XTZ_KUSD = 'xtz-kusd',
   XTZ_STKR = 'xtz-stkr',
   XTZ_ETHTZ = 'xtz-eth',
   XTZ_W = 'xtz-w',
