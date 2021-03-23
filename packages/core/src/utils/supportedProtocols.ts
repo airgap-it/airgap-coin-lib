@@ -1,5 +1,6 @@
+import { InvalidValueError } from '../errors'
+import { Domain } from '../errors/coinlib-error'
 import { ICoinProtocol } from '../protocols/ICoinProtocol'
-
 import { isNetworkEqual } from './Network'
 
 const protocols: ICoinProtocol[] = []
@@ -15,7 +16,8 @@ const addSupportedProtocol: (newProtocol: ICoinProtocol) => void = (newProtocol:
         protocol.identifier === newProtocol.identifier && isNetworkEqual(protocol.options.network, newProtocol.options.network)
     )
   ) {
-    throw new Error(
+    throw new InvalidValueError(
+      Domain.UTILS,
       `protocol ${newProtocol.name} on network ${newProtocol.options.network.type}(${newProtocol.options.network.rpcUrl}) already exists`
     )
   }

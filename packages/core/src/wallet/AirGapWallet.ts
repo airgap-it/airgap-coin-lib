@@ -1,3 +1,5 @@
+import { ConditionViolationError } from '../errors'
+import { Domain } from '../errors/coinlib-error'
 import { IAirGapWallet } from '../interfaces/IAirGapWallet'
 import { ICoinProtocol } from '../protocols/ICoinProtocol'
 import { ProtocolSymbols } from '../utils/ProtocolSymbols'
@@ -29,7 +31,7 @@ export class AirGapWallet implements IAirGapWallet {
 
   public async setProtocol(protocol: ICoinProtocol): Promise<void> {
     if (this.protocol.identifier !== protocol.identifier) {
-      throw new Error('Can only set same protocol with a different network')
+      throw new ConditionViolationError(Domain.WALLET, 'Can only set same protocol with a different network')
     }
     this.protocol = protocol
   }

@@ -1,3 +1,5 @@
+import { InvalidValueError } from '../../../../../../errors'
+import { Domain } from '../../../../../../errors/coinlib-error'
 import { isHex, stripHexPrefix } from '../../../../../../utils/hex'
 import { SCALEDecodeResult } from '../SCALEDecoder'
 
@@ -12,7 +14,7 @@ export class SCALEBytes extends SCALEType {
     } else if (!(typeof bytes === 'string')) {
       buffer = Buffer.from(bytes)
     } else {
-      throw new Error('SCALEBytes#from: Unknown bytes type.')
+      throw new InvalidValueError(Domain.SUBSTRATE, 'SCALEBytes#from: Unknown bytes type.')
     }
 
     return new SCALEBytes(buffer)

@@ -1,6 +1,8 @@
 // tslint:disable: max-classes-per-file
 
 import { Lazy } from '../../../../../data/Lazy'
+import { InvalidValueError } from '../../../../../errors'
+import { Domain } from '../../../../../errors/coinlib-error'
 import { MichelineDataNode, MichelinePrimitiveApplication } from '../../micheline/MichelineNode'
 import { isMichelinePrimitiveApplication } from '../../utils'
 import { MichelsonGrammarData } from '../grammar/MichelsonGrammarData'
@@ -17,7 +19,7 @@ export abstract class MichelsonOption extends MichelsonType {
     }
 
     if (!(value instanceof MichelsonType) && typeof mappingFunction !== 'function') {
-      throw new Error('MichelsonOption: unknown generic mapping factory function.')
+      throw new InvalidValueError(Domain.TEZOS, 'MichelsonPair: unknown generic factory function.')
     }
 
     return isMichelinePrimitiveApplication(value)
@@ -45,7 +47,7 @@ export abstract class MichelsonOption extends MichelsonType {
             const value: unknown = typeof mappingFunction === 'function' ? mappingFunction(unknownValue) : undefined
 
             if (!(value instanceof MichelsonType)) {
-              throw new Error('MichelsonOption: unknown generic mapping type.')
+              throw new InvalidValueError(Domain.TEZOS, 'MichelsonPair: unknown generic mapping type.')
             }
 
             return value

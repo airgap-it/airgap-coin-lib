@@ -1,3 +1,5 @@
+import { InvalidValueError } from '../errors'
+import { Domain } from '../errors/coinlib-error'
 import { StateMachine } from './StateMachine'
 
 export enum ActionState {
@@ -75,6 +77,6 @@ export abstract class Action<Result, Context> {
     if (this.onError) {
       this.onError(error)
     }
-    throw error
+    throw new InvalidValueError(Domain.ACTIONS, error.message)
   }
 }

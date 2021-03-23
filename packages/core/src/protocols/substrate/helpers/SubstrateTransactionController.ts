@@ -1,6 +1,8 @@
 import { sr25519Sign, waitReady } from '@polkadot/wasm-crypto'
 
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { BalanceError } from '../../../errors'
+import { Domain } from '../../../errors/coinlib-error'
 import { blake2bAsBytes } from '../../../utils/blake2b'
 import { SubstrateNetwork } from '../SubstrateNetwork'
 
@@ -54,7 +56,7 @@ export class SubstrateTransactionController {
     const totalFee = txs.map((tx) => tx.fee).reduce((total, next) => total.plus(next), new BigNumber(0))
 
     if (new BigNumber(available).lt(totalFee)) {
-      throw new Error(`Not enough balance`)
+      throw new BalanceError(Domain.SUBSTRATE, `Not enough balance`)
     }
 
     return this.encodeDetails(txs)
@@ -158,12 +160,17 @@ export class SubstrateTransactionController {
     return partialEstimate?.plus(transaction.tip.value) || null
   }
 
-  public async estimateTransactionFees(accountId: SubstrateAccountId, transationTypes: [SubstrateTransactionType, any][]): Promise<BigNumber | null> {
+  public async estimateTransactionFees(
+    accountId: SubstrateAccountId,
+    transationTypes: [SubstrateTransactionType, any][]
+  ): Promise<BigNumber | null> {
     const fees = await Promise.all(
       transationTypes
         .map(([type, args]) => [type, args, this.nodeClient.getSavedLastFee(type, 'largest')] as [SubstrateTransactionType, any, BigNumber])
         .map(async ([type, args, fee]) =>
-          fee ? fee : this.calculateTransactionFee(await this.createTransaction(type, SubstrateAddress.from(accountId, this.network), 0, args))
+          fee
+            ? fee
+            : this.calculateTransactionFee(await this.createTransaction(type, SubstrateAddress.from(accountId, this.network), 0, args))
         )
     )
 

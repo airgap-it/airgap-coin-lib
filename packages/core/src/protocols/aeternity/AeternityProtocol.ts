@@ -22,6 +22,8 @@ import { NonExtendedProtocol } from '../NonExtendedProtocol'
 import { AeternityCryptoClient } from './AeternityCryptoClient'
 import { AeternityProtocolOptions } from './AeternityProtocolOptions'
 import { ICoinSubProtocol } from '../ICoinSubProtocol'
+import { BalanceError, InvalidValueError, NetworkError } from '../../errors'
+import { Domain } from '../../errors/coinlib-error'
 
 export class AeternityProtocol extends NonExtendedProtocol implements ICoinProtocol {
   public symbol: string = 'AE'
@@ -135,15 +137,15 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
     const allTransactions = await Promise.all(
       addresses.map((address) => {
         const url = cursor
-          ? `${this.options.network.rpcUrl}/middleware/transactions/account/${address}?page=${cursor.page}&limit=${limit}`
-          : `${this.options.network.rpcUrl}/middleware/transactions/account/${address}?page=1&limit=${limit}`
+          ? `${this.options.network.rpcUrl}/mdw/txs/backward?account=${address}&page=${cursor.page}&limit=${limit}`
+          : `${this.options.network.rpcUrl}/mdw/txs/backward?account=${address}&page=1&limit=${limit}`
         return axios.get(url)
       })
     )
 
     let transactions: any[] = [].concat(
       ...allTransactions.map((axiosData) => {
-        return axiosData.data || []
+        return axiosData.data.data || []
       })
     )
     transactions = transactions.map((obj) => {
@@ -222,7 +224,7 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
       //
     }
 
-    throw new Error('invalid TX-encoding')
+    throw new InvalidValueError(Domain.AETERNITY, 'invalid TX-encoding')
   }
 
   public async getTransactionDetails(unsignedTx: UnsignedAeternityTransaction): Promise<IAirGapTransaction[]> {
@@ -269,8 +271,11 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
         balance = balance.plus(new BigNumber(data.balance))
       } catch (error) {
         // if node returns 404 (which means 'no account found'), go with 0 balance
-        if (error.response.status !== 404) {
-          throw error
+        if (error.response && error.response.status !== 404) {
+          throw new NetworkError(
+            Domain.AETERNITY,
+            error.response && error.response.data ? error.response.data : `getBalanceOfAddresses() failed with ${error}`
+          )
         }
       }
     }
@@ -341,14 +346,17 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
     } catch (error) {
       // if node returns 404 (which means 'no account found'), go with nonce 0
       if (error.response && error.response.status !== 404) {
-        throw error
+        throw new NetworkError(
+          Domain.AETERNITY,
+          error.response && error.response.data ? error.response.data : `getBalanceOfAddresses() failed with ${error}`
+        )
       }
     }
 
     const balance: BigNumber = new BigNumber(await this.getBalanceOfPublicKey(publicKey))
 
     if (balance.isLessThan(fee)) {
-      throw new Error('not enough balance')
+      throw new BalanceError(Domain.AETERNITY, 'not enough balance')
     }
 
     const sender = publicKey

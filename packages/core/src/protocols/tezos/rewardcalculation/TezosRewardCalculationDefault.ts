@@ -1,5 +1,7 @@
 import axios from '../../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { InvalidValueError } from '../../../errors'
+import { Domain } from '../../../errors/coinlib-error'
 import {
   TezosBakerInfo,
   TezosBakingRewards,
@@ -131,9 +133,7 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
       endorsingRightsCount = endorsingOperations.reduce((current, next) => current + next.number_of_slots, 0)
     }
 
-    const frozenBalance = (await this.fetchFrozenBalances(this.cycleToBlockLevel(cycle + 1), bakerAddress)).find(
-      (fb) => fb.cycle == cycle
-    )
+    const frozenBalance = (await this.fetchFrozenBalances(this.cycleToBlockLevel(cycle + 1), bakerAddress)).find((fb) => fb.cycle == cycle)
 
     if (frozenBalance) {
       fees = frozenBalance.fees
@@ -183,7 +183,7 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
     let endorsingRightsCount = 0
 
     if (cycle - currentCycle > 5) {
-      throw new Error('Provided cycle is invalid')
+      throw new InvalidValueError(Domain.TEZOS, `Provided cycle ${cycle} is invalid`)
     }
 
     if (breakdownRewards) {
@@ -286,7 +286,7 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
       if (!isFutureCycle) {
         const block = priorities.find((p) => p.level === next.level)
         if (block === undefined) {
-          throw new Error('Cannot find block priority')
+          throw new InvalidValueError(Domain.TEZOS, 'Cannot find block priority')
         }
         priority = block.priority
       }
@@ -373,19 +373,22 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
       return this.fetchBlockLevelFieldPromise
     }
 
-    this.fetchBlockLevelFieldPromise = axios.get(`${this.protocol.baseApiUrl}/v2/metadata/tezos/${this.protocol.baseApiNetwork}/${entity}/attributes`, {
-      headers: this.protocol.headers
-    }).then(response => {
-      let name = 'block_level'
-      const fieldNames: string[] = response.data.map(metadata => metadata.name)
-      if (fieldNames.includes('level')) {
-        name = 'level'
-      }
-      this.blockLevelFieldNameMap.set(entity, name)
-      return name
-    }).finally(() => {
-      this.fetchBlockLevelFieldPromise = undefined
-    })
+    this.fetchBlockLevelFieldPromise = axios
+      .get(`${this.protocol.baseApiUrl}/v2/metadata/tezos/${this.protocol.baseApiNetwork}/${entity}/attributes`, {
+        headers: this.protocol.headers
+      })
+      .then((response) => {
+        let name = 'block_level'
+        const fieldNames: string[] = response.data.map((metadata) => metadata.name)
+        if (fieldNames.includes('level')) {
+          name = 'level'
+        }
+        this.blockLevelFieldNameMap.set(entity, name)
+        return name
+      })
+      .finally(() => {
+        this.fetchBlockLevelFieldPromise = undefined
+      })
 
     return this.fetchBlockLevelFieldPromise
   }
@@ -536,7 +539,8 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
   }
 
   private cycleToBlockLevel(cycle: number): number {
-    const blockPerCycle = this.tezosNodeConstants.blocks_per_cycle ?? TezosProtocol.BLOCKS_PER_CYCLE[this.protocol.options.network.extras.network]
-    return (cycle * blockPerCycle) + 1
+    const blockPerCycle =
+      this.tezosNodeConstants.blocks_per_cycle ?? TezosProtocol.BLOCKS_PER_CYCLE[this.protocol.options.network.extras.network]
+    return cycle * blockPerCycle + 1
   }
 }

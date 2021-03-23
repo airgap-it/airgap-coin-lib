@@ -7,6 +7,8 @@ import { RawTezosTransaction } from '../types'
 import { TransactionValidator } from '../validators/transactions.validator'
 import { validateSyncScheme } from '../validators/validators'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { Domain, CoinlibAssertionError } from '../../errors/coinlib-error'
+import { InvalidValueError } from '../../errors'
 
 const unsignedTransactionConstraints = {
   binaryTransaction: {
@@ -31,7 +33,6 @@ const signedTransactionConstraints = {
 }
 
 export class TezosBTCTransactionValidator extends TransactionValidator {
-
   public async validateUnsignedTransaction(unsignedTx: UnsignedTezosTransaction): Promise<any> {
     return new Promise(async (resolve, reject) => {
       const protocol = new TezosBTC()
@@ -63,19 +64,19 @@ export class TezosBTCTransactionValidator extends TransactionValidator {
 
   private assertDestination(protocol: TezosBTC, transaction: TezosTransactionOperation) {
     if (transaction.destination !== protocol.options.config.contractAddress) {
-      throw new Error(`the contract address for a xtz-btc transfer must be ${protocol.options.config.contractAddress}, but is ${transaction.destination}`)
+      throw new CoinlibAssertionError(Domain.TEZOS, 'assertDestination()', transaction.destination, protocol.options.config.contractAddress)
     }
   }
 
   private assertParameters(transaction: TezosTransactionOperation) {
     if (transaction.parameters?.entrypoint === undefined) {
-      throw new Error('a contract transaction for xtz-btc should have an entrypoint defined')
+      throw new InvalidValueError(Domain.TEZOS, 'a contract transaction for xtz-btc should have an entrypoint defined')
     }
   }
 
   private assertNoHiddenXTZAmount(transaction: TezosTransactionOperation) {
     if (!new BigNumber(transaction.amount).eq(0)) {
-      throw new Error('a contract call cannot have the specified amount other than 0')
+      throw new InvalidValueError(Domain.TEZOS, 'a contract call cannot have the specified amount other than 0')
     }
   }
 }

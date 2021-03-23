@@ -1,3 +1,5 @@
+import { NotImplementedError } from '../errors'
+import { Domain } from '../errors/coinlib-error'
 import { AES } from '../utils/AES'
 
 export abstract class CryptoClient {
@@ -12,13 +14,13 @@ export abstract class CryptoClient {
   }
 
   public async encryptAsymmetric(payload: string, publicKey: string): Promise<string> {
-    throw new Error(`not Implemented`)
+    throw new NotImplementedError(Domain.UTILS, `encryptAsymmetric() not Implemented`)
   }
   public async decryptAsymmetric(encryptedPayload: string, keypair: { publicKey?: string; privateKey: Buffer }): Promise<string> {
-    throw new Error(`not Implemented`)
+    throw new NotImplementedError(Domain.UTILS, `decryptAsymmetric() not Implemented`)
   }
 
   public async recoverPublicKeyFromSignature(): Promise<void> {
-    throw new Error(`Recovering public key from signature not supported`)
+    throw new NotImplementedError(Domain.UTILS, `Recovering public key from signature not supported`)
   }
 }

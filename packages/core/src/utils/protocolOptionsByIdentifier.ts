@@ -1,3 +1,5 @@
+import { NotFoundError } from '../errors'
+import { Domain } from '../errors/coinlib-error'
 import { AeternityProtocolNetwork, AeternityProtocolOptions } from '../protocols/aeternity/AeternityProtocolOptions'
 import { BitcoinProtocolNetwork, BitcoinProtocolOptions } from '../protocols/bitcoin/BitcoinProtocolOptions'
 import { CosmosProtocolNetwork, CosmosProtocolOptions } from '../protocols/cosmos/CosmosProtocolOptions'
@@ -83,7 +85,7 @@ const getProtocolOptionsByIdentifier: (identifier: ProtocolSymbols, network?: Pr
         return getProtocolOptionsByIdentifier((identifier as string).split('-')[0] as any)
       }
       assertNever(identifier)
-      throw new Error(`No protocol options found for ${identifier}`)
+      throw new NotFoundError(Domain.UTILS, `No protocol options found for ${identifier}`)
   }
 }
 

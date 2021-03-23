@@ -6,6 +6,8 @@ import { BLOCK_EXPLORER_API } from '../../EthereumProtocolOptions'
 import { EthereumInfoClient } from './InfoClient'
 import { EthereumTransactionCursor, EthereumTransactionResult } from '../../EthereumTypes'
 import { isArray } from '../../../../dependencies/src/validate.js-0.13.1/validate'
+import { NetworkError } from '../../../../errors'
+import { Domain } from '../../../../errors/coinlib-error'
 
 export class EtherscanInfoClient extends EthereumInfoClient {
   constructor(baseURL: string = BLOCK_EXPLORER_API) {
@@ -27,8 +29,8 @@ export class EtherscanInfoClient extends EthereumInfoClient {
     const response = await Axios.get(url)
     const transactionResponse = response.data
     const transactions = transactionResponse.result
-    if (transactionResponse.status === "0" && (transactions === undefined || !isArray(transactions))) {
-      throw Error(transactionResponse.message)
+    if (transactionResponse.status === '0' && (transactions === undefined || !isArray(transactions))) {
+      throw new NetworkError(Domain.ETHEREUM, transactionResponse.message)
     }
     for (const transaction of transactions) {
       const fee: BigNumber = new BigNumber(transaction.gas).times(new BigNumber(transaction.gasPrice))
@@ -43,7 +45,10 @@ export class EtherscanInfoClient extends EthereumInfoClient {
         protocolIdentifier: protocol.identifier,
         network: protocol.options.network,
         timestamp: parseInt(transaction.timeStamp, 10),
-        status: transaction.txreceipt_status === undefined || transaction.txreceipt_status === "1" ? AirGapTransactionStatus.APPLIED : AirGapTransactionStatus.FAILED
+        status:
+          transaction.txreceipt_status === undefined || transaction.txreceipt_status === '1'
+            ? AirGapTransactionStatus.APPLIED
+            : AirGapTransactionStatus.FAILED
       }
 
       airGapTransactions.push(airGapTransaction)
@@ -73,8 +78,8 @@ export class EtherscanInfoClient extends EthereumInfoClient {
     const response = await Axios.get(url)
     const transactionResponse = response.data
     const transactions = transactionResponse.result
-    if (transactionResponse.status === "0" && (transactions === undefined || !isArray(transactions))) {
-      throw Error(transactionResponse.message)
+    if (transactionResponse.status === '0' && (transactions === undefined || !isArray(transactions))) {
+      throw new NetworkError(Domain.ETHEREUM, transactionResponse.message)
     }
     for (const transaction of transactions) {
       const fee: BigNumber = new BigNumber(transaction.gas).times(new BigNumber(transaction.gasPrice))
@@ -89,7 +94,10 @@ export class EtherscanInfoClient extends EthereumInfoClient {
         amount: new BigNumber(transaction.value).toString(10),
         fee: fee.toString(10),
         timestamp: parseInt(transaction.timeStamp, 10),
-        status: transaction.txreceipt_status === undefined || transaction.txreceipt_status === "1" ? AirGapTransactionStatus.APPLIED : AirGapTransactionStatus.FAILED
+        status:
+          transaction.txreceipt_status === undefined || transaction.txreceipt_status === '1'
+            ? AirGapTransactionStatus.APPLIED
+            : AirGapTransactionStatus.FAILED
       }
 
       airGapTransactions.push(airGapTransaction)

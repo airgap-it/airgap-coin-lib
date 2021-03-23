@@ -1,4 +1,6 @@
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { InvalidValueError } from '../../errors'
+import { Domain } from '../../errors/coinlib-error'
 import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 import { SerializableUnsignedCosmosTransaction } from '../../serializer/schemas/definitions/unsigned-transaction-cosmos'
 
@@ -86,7 +88,7 @@ export class CosmosTransaction implements JSONConvertible, RPCConvertible {
         case CosmosMessageType.WithdrawDelegationReward.index:
           return CosmosWithdrawDelegationRewardMessage.fromJSON(value)
         default:
-          throw new Error('Unknown message')
+          throw new InvalidValueError(Domain.COSMOS, 'Unknown message')
       }
     })
 
@@ -112,7 +114,7 @@ export class CosmosTransaction implements JSONConvertible, RPCConvertible {
         case CosmosMessageType.WithdrawDelegationReward.value:
           return CosmosWithdrawDelegationRewardMessage.fromRPCBody(value)
         default:
-          throw new Error('Unknown message')
+          throw new InvalidValueError(Domain.COSMOS, 'Unknown message')
       }
     })
 

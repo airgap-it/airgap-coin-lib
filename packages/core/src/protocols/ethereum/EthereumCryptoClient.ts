@@ -1,4 +1,6 @@
 import * as EthereumJSUtils from '../../dependencies/src/ethereumjs-util-5.2.0/index'
+import { NotFoundError } from '../../errors'
+import { Domain } from '../../errors/coinlib-error'
 import { Secp256k1CryptoClient } from '../Secp256k1CryptoClient'
 
 import { BaseEthereumProtocol } from './BaseEthereumProtocol'
@@ -12,7 +14,7 @@ export class EthereumCryptoClient extends Secp256k1CryptoClient {
 
   public async signMessage(message: string, keypair: { privateKey: Buffer }): Promise<string> {
     if (!keypair.privateKey) {
-      throw new Error(`Private key not provided`)
+      throw new NotFoundError(Domain.ETHEREUM, `Private key not provided`)
     }
 
     const messageBuffer: Buffer = EthereumJSUtils.hashPersonalMessage(EthereumJSUtils.toBuffer(message))

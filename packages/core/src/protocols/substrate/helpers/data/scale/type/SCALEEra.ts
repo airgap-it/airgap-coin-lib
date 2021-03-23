@@ -1,4 +1,6 @@
 import BigNumber from '../../../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { InvalidValueError } from '../../../../../../errors'
+import { Domain } from '../../../../../../errors/coinlib-error'
 import { changeEndianness, stripHexPrefix, toHexStringRaw } from '../../../../../../utils/hex'
 import { SCALEDecodeResult } from '../SCALEDecoder'
 
@@ -57,7 +59,7 @@ export class SCALEEra extends SCALEType {
     const phase = (encoded >> 4) * quantizeFactor
 
     if (period < 4 || period < phase) {
-      throw new Error('SCALEEra#decodeMortal: Invalid mortal era')
+      throw new InvalidValueError(Domain.SUBSTRATE, 'SCALEEra#decodeMortal: Invalid mortal era')
     }
 
     return {

@@ -14,6 +14,8 @@ import { EtherscanInfoClient } from '../clients/info-clients/EtherscanInfoClient
 import { AirGapNodeClient, EthereumRPCDataTransfer } from '../clients/node-clients/AirGapNodeClient'
 import { EthereumERC20ProtocolOptions } from '../EthereumProtocolOptions'
 import { EthereumUtils } from '../utils/utils'
+import { BalanceError, ConditionViolationError } from '../../../errors'
+import { Domain } from '../../../errors/coinlib-error'
 
 const EthereumTransaction = require('../../../dependencies/src/ethereumjs-tx-1.3.7/index')
 
@@ -105,11 +107,11 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, Ethersc
     const wrappedFee: BigNumber = new BigNumber(fee)
 
     if (recipients.length !== wrappedValues.length) {
-      throw new Error('recipients length does not match with values')
+      throw new ConditionViolationError(Domain.ERC20, 'recipients length does not match with values')
     }
 
     if (recipients.length !== 1) {
-      throw new Error('you cannot have 0 recipients')
+      throw new ConditionViolationError(Domain.ERC20, 'you cannot have 0 recipients')
     }
 
     const balance: BigNumber = new BigNumber(await this.getBalanceOfPublicKey(publicKey))
@@ -119,7 +121,7 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, Ethersc
       const ethBalance: BigNumber = new BigNumber(await super.getBalanceOfAddresses([address]))
 
       const estimatedGas = await this.estimateGas(address, recipients[0], EthereumUtils.toHex(wrappedValues[0].toFixed()))
-      
+
       if (ethBalance.isGreaterThanOrEqualTo(wrappedFee)) {
         const txCount: number = await this.options.nodeClient.fetchTransactionCount(address)
         const gasPrice: BigNumber = wrappedFee.isEqualTo(0)
@@ -137,10 +139,10 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, Ethersc
 
         return transaction
       } else {
-        throw new Error('not enough ETH balance')
+        throw new BalanceError(Domain.ERC20, 'not enough ETH balance')
       }
     } else {
-      throw new Error('not enough token balance')
+      throw new BalanceError(Domain.ERC20, 'not enough token balance')
     }
   }
 
@@ -172,7 +174,7 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, Ethersc
     const ethTxs: IAirGapTransaction[] = await super.getTransactionDetailsFromSigned(signedTx)
 
     if (ethTxs.length !== 1) {
-      throw new Error('More than one ETH transaction detected.')
+      throw new ConditionViolationError(Domain.ERC20, 'More than one ETH transaction detected.')
     }
 
     const ethTx: IAirGapTransaction = ethTxs[0]
@@ -190,7 +192,7 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, Ethersc
     const ethTxs: IAirGapTransaction[] = await super.getTransactionDetails(unsignedEthereumTx)
 
     if (ethTxs.length !== 1) {
-      throw new Error('More than one ETH transaction detected.')
+      throw new ConditionViolationError(Domain.ERC20, 'More than one ETH transaction detected.')
     }
 
     const ethTx: IAirGapTransaction = ethTxs[0]
