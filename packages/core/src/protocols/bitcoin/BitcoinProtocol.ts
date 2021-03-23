@@ -15,6 +15,8 @@ import { MainProtocolSymbols, ProtocolSymbols } from '../../utils/ProtocolSymbol
 import { BitcoinProtocolOptions } from './BitcoinProtocolOptions'
 import { BitcoinCryptoClient } from './BitcoinCryptoClient'
 import { ICoinSubProtocol } from '../ICoinSubProtocol'
+import { BalanceError, InvalidValueError, ConditionViolationError, NetworkError } from '../../errors'
+import { Domain } from '../../errors/coinlib-error'
 
 interface UTXOResponse {
   txid: string
@@ -236,7 +238,7 @@ export class BitcoinProtocol implements ICoinProtocol {
       if (output.isChange) {
         const generatedChangeAddress: string = await this.getAddressFromPublicKey(privateKey.toString('hex'))
         if (generatedChangeAddress !== output.recipient) {
-          throw new Error('Change address could not be verified.')
+          throw new ConditionViolationError(Domain.BITCOIN, 'Change address could not be verified.')
         }
       }
 
@@ -281,7 +283,7 @@ export class BitcoinProtocol implements ICoinProtocol {
           }
         }
         if (!changeAddressIsValid) {
-          throw new Error('Change address could not be verified.')
+          throw new InvalidValueError(Domain.BITCOIN, 'Change address could not be verified.')
         }
       }
       transactionBuilder.addOutput(output.recipient, new BigNumber(output.value).toNumber())
@@ -447,7 +449,7 @@ export class BitcoinProtocol implements ICoinProtocol {
     }
 
     if (recipients.length !== wrappedValues.length) {
-      throw new Error('recipients do not match values')
+      throw new ConditionViolationError(Domain.BITCOIN, 'recipients do not match values')
     }
 
     console.log(`${this.options.network.extras.indexerApi}/api/v2/utxo/${extendedPublicKey}?confirmed=true`)
@@ -459,7 +461,7 @@ export class BitcoinProtocol implements ICoinProtocol {
     )
 
     if (utxos.length <= 0) {
-      throw new Error('not enough balance') // no transactions found on those addresses, probably won't find anything in the next ones
+      throw new BalanceError(Domain.BITCOIN, 'not enough balance') // no transactions found on those addresses, probably won't find anything in the next ones
     }
 
     const totalRequiredBalance: BigNumber = wrappedValues
@@ -475,7 +477,7 @@ export class BitcoinProtocol implements ICoinProtocol {
         .filter((item) => !isNaN(item))
 
       if (result.length !== 2) {
-        throw new Error('Unexpected path format')
+        throw new ConditionViolationError(Domain.BITCOIN, 'Unexpected path format')
       }
 
       return [result[0], result[1]]
@@ -495,7 +497,7 @@ export class BitcoinProtocol implements ICoinProtocol {
           derivationPath: indexes.join('/')
         })
       } else {
-        throw new Error('Invalid address returned from API')
+        throw new NetworkError(Domain.BITCOIN, `Invalid address ${utxo.address} returned from API`)
       }
 
       if (valueAccumulator.isGreaterThanOrEqualTo(totalRequiredBalance)) {
@@ -504,7 +506,7 @@ export class BitcoinProtocol implements ICoinProtocol {
     }
 
     if (valueAccumulator.isLessThan(totalRequiredBalance)) {
-      throw new Error('not enough balance')
+      throw new BalanceError(Domain.BITCOIN, 'not enough balance')
     }
 
     for (let i = 0; i < recipients.length; i++) {
@@ -558,7 +560,7 @@ export class BitcoinProtocol implements ICoinProtocol {
     }
 
     if (recipients.length !== wrappedValues.length) {
-      throw new Error('Recipient and value length does not match.')
+      throw new ConditionViolationError(Domain.BITCOIN, 'Recipient and value length does not match.')
     }
     const address = await this.getAddressFromPublicKey(publicKey)
 
@@ -585,7 +587,10 @@ export class BitcoinProtocol implements ICoinProtocol {
     }
 
     if (valueAccumulator.isLessThan(totalRequiredBalance)) {
-      throw new Error(`not enough balance, having ${valueAccumulator.toFixed()} of ${totalRequiredBalance.toFixed()}`)
+      throw new BalanceError(
+        Domain.BITCOIN,
+        `not enough balance, having ${valueAccumulator.toFixed()} of ${totalRequiredBalance.toFixed()}`
+      )
     }
 
     // tx.addInput(utxo.txid, utxo.vout)

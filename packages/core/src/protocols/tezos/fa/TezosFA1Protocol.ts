@@ -16,11 +16,13 @@ import { TezosFAProtocolOptions } from './TezosFAProtocolOptions'
 import { MichelsonAddress } from '../types/michelson/primitives/MichelsonAddress'
 import { MichelsonPair } from '../types/michelson/generics/MichelsonPair'
 import { MichelsonInt } from '../types/michelson/primitives/MichelsonInt'
+import { ConditionViolationError, NotFoundError } from '../../../errors'
+import { Domain } from '../../../errors/coinlib-error'
 
 enum TezosFA1ContractEntrypoint {
   BALANCE = 'getBalance',
   TRANSFER = 'transfer',
-  TOTAL_SUPPLY = 'getTotalSupply',
+  TOTAL_SUPPLY = 'getTotalSupply'
 }
 
 export class TezosFA1Protocol extends TezosFAProtocol {
@@ -52,7 +54,7 @@ export class TezosFA1Protocol extends TezosFAProtocol {
   ): Promise<FeeDefaults> {
     // return this.feeDefaults
     if (recipients.length !== values.length) {
-      throw new Error('length of recipients and values does not match!')
+      throw new ConditionViolationError(Domain.TEZOSFA, 'length of recipients and values does not match!')
     }
     const transferCalls = await this.createTransferCalls(publicKey, recipients, values, this.feeDefaults.medium, data)
     const operations: TezosOperation[] = transferCalls.map((transferCall: TezosContractCall) => {
@@ -98,40 +100,45 @@ export class TezosFA1Protocol extends TezosFAProtocol {
         parameters.value,
         undefined,
         (fromJSON: string) => MichelsonAddress.from(fromJSON, 'from'),
-        (pairJSON: string) => MichelsonPair.from(pairJSON,
-          undefined,
-          (toJSON: string) => MichelsonAddress.from(toJSON, 'to'),
-          (valueJSON: string) => MichelsonInt.from(valueJSON, 'value'))
+        (pairJSON: string) =>
+          MichelsonPair.from(
+            pairJSON,
+            undefined,
+            (toJSON: string) => MichelsonAddress.from(toJSON, 'to'),
+            (valueJSON: string) => MichelsonInt.from(valueJSON, 'value')
+          )
       ).asRawValue()
 
       if (!this.isTransferRequest(callArguments)) {
         return [defaultDetails]
       }
 
-      return [{
-        ...defaultDetails,
-        amount: callArguments.value.toFixed(), // in tzbtc
-        from: [isHex(callArguments.from) ? TezosUtils.parseAddress(callArguments.from) : callArguments.from],
-        to: [isHex(callArguments.to) ? TezosUtils.parseAddress(callArguments.to) : callArguments.to]
-      }]
+      return [
+        {
+          ...defaultDetails,
+          amount: callArguments.value.toFixed(), // in tzbtc
+          from: [isHex(callArguments.from) ? TezosUtils.parseAddress(callArguments.from) : callArguments.from],
+          to: [isHex(callArguments.to) ? TezosUtils.parseAddress(callArguments.to) : callArguments.to]
+        }
+      ]
     } catch {
       return [defaultDetails]
     }
   }
 
   public async getBalance(address: string, source?: string, callbackContract: string = this.callbackContract()): Promise<string> {
-    const getBalanceCall = await this.contract.createContractCall(TezosFA1ContractEntrypoint.BALANCE, [{
-      owner: address
-    }, callbackContract])
+    const getBalanceCall = await this.contract.createContractCall(TezosFA1ContractEntrypoint.BALANCE, [
+      {
+        owner: address
+      },
+      callbackContract
+    ])
 
     return this.getContractCallIntResult(getBalanceCall, this.requireSource(source, address, 'kt'))
   }
 
   public async getTotalSupply(source?: string, callbackContract: string = this.callbackContract()): Promise<string> {
-    const getTotalSupplyCall = await this.contract.createContractCall(TezosFA1ContractEntrypoint.TOTAL_SUPPLY, [
-      [],
-      callbackContract
-    ])
+    const getTotalSupplyCall = await this.contract.createContractCall(TezosFA1ContractEntrypoint.TOTAL_SUPPLY, [[], callbackContract])
 
     return this.getContractCallIntResult(getTotalSupplyCall, this.requireSource(source))
   }
@@ -164,7 +171,7 @@ export class TezosFA1Protocol extends TezosFAProtocol {
       if (isMichelinePrimitive('int', operationResult)) {
         return operationResult.int
       }
-    } catch { }
+    } catch {}
 
     return '0'
   }
@@ -177,7 +184,7 @@ export class TezosFA1Protocol extends TezosFAProtocol {
     data?: { addressIndex: number }
   ): Promise<TezosContractCall[]> {
     if (recipients.length !== values.length) {
-      throw new Error('length of recipients and values does not match!')
+      throw new ConditionViolationError(Domain.TEZOSFA, 'length of recipients and values does not match!')
     }
 
     // check if we got an address-index
@@ -185,7 +192,7 @@ export class TezosFA1Protocol extends TezosFAProtocol {
     const addresses: string[] = await this.getAddressesFromPublicKey(publicKey)
 
     if (!addresses[addressIndex]) {
-      throw new Error('no kt-address with this index exists')
+      throw new NotFoundError(Domain.TEZOSFA, `no kt-address with index ${addressIndex} exists`)
     }
 
     const fromAddress: string = addresses[addressIndex]
@@ -207,14 +214,11 @@ export class TezosFA1Protocol extends TezosFAProtocol {
     return this.defaultCallbackContractMap.get(this.options.network.extras.network) ?? ''
   }
 
-  private isTransferRequest(obj: unknown): obj is { from: string, to: string, value: BigNumber } {
+  private isTransferRequest(obj: unknown): obj is { from: string; to: string; value: BigNumber } {
     const anyObj: any = obj as any
 
     return (
-      anyObj instanceof Object &&
-      typeof anyObj.from === 'string' &&
-      typeof anyObj.to === 'string' &&
-      BigNumber.isBigNumber(anyObj.value)
+      anyObj instanceof Object && typeof anyObj.from === 'string' && typeof anyObj.to === 'string' && BigNumber.isBigNumber(anyObj.value)
     )
   }
 }

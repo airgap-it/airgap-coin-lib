@@ -6,9 +6,9 @@ import { ProtocolOptions } from '../../utils/ProtocolOptions'
 
 const MAINNET_NAME: string = 'Mainnet'
 
-const NODE_URL: string = 'https://ae-epoch-rpc-proxy.gke.papers.tech'
+const NODE_URL: string = 'https://mainnet.aeternity.io'
 
-const BLOCK_EXPLORER_URL: string = 'https://mainnet.aeternal.io'
+const BLOCK_EXPLORER_URL: string = 'https://mainnet.aeternity.io'
 
 export class AeternalBlockExplorer implements ProtocolBlockExplorer {
   constructor(public readonly blockExplorer: string = BLOCK_EXPLORER_URL) {}

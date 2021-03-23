@@ -1,3 +1,5 @@
+import { UnsupportedError } from '../../errors'
+import { Domain } from '../../errors/coinlib-error'
 import { JSONConvertible, RPCConvertible } from './CosmosTransaction'
 
 export interface CosmosCoinJSON {
@@ -24,7 +26,7 @@ export class CosmosCoin implements JSONConvertible, RPCConvertible {
 
   public static fromJSON(json: CosmosCoinJSON): CosmosCoin {
     if (!CosmosCoin.supportedDenominations.includes(json.denom)) {
-      throw new Error('Unsupported cosmos denomination')
+      throw new UnsupportedError(Domain.COSMOS, 'Unsupported cosmos denomination')
     }
 
     return new CosmosCoin(json.denom, json.amount)

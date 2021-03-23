@@ -1,3 +1,5 @@
+import { InvalidValueError } from '../../../errors'
+import { Domain } from '../../../errors/coinlib-error'
 import { IAirGapTransaction } from '../../../interfaces/IAirGapTransaction'
 import { CosmosCoinJSON } from '../CosmosCoin'
 import { CosmosProtocol } from '../CosmosProtocol'
@@ -42,7 +44,7 @@ export class CosmosMessageType {
         this.value = 'cosmos-sdk/MsgWithdrawDelegationReward'
         break
       default:
-        throw new Error('Unknown message type')
+        throw new InvalidValueError(Domain.COSMOS, 'Unknown message')
     }
   }
 }

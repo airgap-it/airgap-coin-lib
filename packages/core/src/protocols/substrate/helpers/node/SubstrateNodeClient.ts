@@ -1,6 +1,8 @@
 import { RPCBody } from '../../../../data/RPCBody'
 import axios from '../../../../dependencies/src/axios-0.19.0'
 import BigNumber from '../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { NetworkError } from '../../../../errors'
+import { Domain } from '../../../../errors/coinlib-error'
 import { addHexPrefix, bytesToHex, stripHexPrefix, toHexString } from '../../../../utils/hex'
 import { SubstrateNetwork } from '../../SubstrateNetwork'
 import { SubstrateAccountInfo } from '../data/account/SubstrateAccountInfo'
@@ -39,7 +41,7 @@ import {
   SubstrateRpcModuleName,
   SubstrateStorageEntryName,
   SubstrateStorageModuleName,
-  supportedCallEndpoints,
+  supportedCallEndpoints
 } from './supported'
 
 interface ConnectionConfig {
@@ -59,7 +61,7 @@ export class SubstrateNodeClient {
     private readonly network: SubstrateNetwork,
     private readonly baseURL: string,
     private readonly cache: SubstrateNodeCache = new SubstrateNodeCache(CACHE_DEFAULT_EXPIRATION_TIME)
-  ) { }
+  ) {}
 
   public async getAccountInfo(address: SubstrateAddress): Promise<SubstrateAccountInfo | null> {
     return this.fromStorage('System', 'Account', SCALEAccountId.from(address, this.network)).then((item) =>
@@ -83,9 +85,7 @@ export class SubstrateNodeClient {
   }
 
   public async getTransferFeeEstimate(transaction: Uint8Array | string): Promise<BigNumber | null> {
-    return this.send('payment', 'queryInfo', [bytesToHex(transaction)]).then((result) =>
-      result ? new BigNumber(result.partialFee) : null
-    )
+    return this.send('payment', 'queryInfo', [bytesToHex(transaction)]).then((result) => (result ? new BigNumber(result.partialFee) : null))
   }
 
   public saveLastFee(type: SubstrateTransactionType, fee: BigNumber) {
@@ -203,12 +203,12 @@ export class SubstrateNodeClient {
     return this.fromStorage('Identity', 'SuperOf', SCALEAccountId.from(address, this.network)).then((item) =>
       item
         ? SCALETuple.decode(
-          this.network,
-          this.runtimeVersion,
-          item,
-          (network, _, hex) => SCALEAccountId.decode(network, hex),
-          (_network, _runtimeVersion, hex) => SCALEData.decode(hex)
-        ).decoded
+            this.network,
+            this.runtimeVersion,
+            item,
+            (network, _, hex) => SCALEAccountId.decode(network, hex),
+            (_network, _runtimeVersion, hex) => SCALEData.decode(hex)
+          ).decoded
         : null
     )
   }
@@ -316,12 +316,9 @@ export class SubstrateNodeClient {
   private async initApi(): Promise<void> {
     if (!this.initApiPromise) {
       const initApiPromise = new Promise<void>(async (resolve, reject) => {
-        const [metadataEncoded, runtimeVersion] = await Promise.all([
-          this.send('state', 'getMetadata'),
-          this.getRuntimeVersion()
-        ])
+        const [metadataEncoded, runtimeVersion] = await Promise.all([this.send('state', 'getMetadata'), this.getRuntimeVersion()])
         if (!runtimeVersion) {
-          reject("Could not fetch runtime version from the node")
+          reject('Could not fetch runtime version from the node')
         }
         this.metadata = Metadata.decode(this.network, runtimeVersion?.specVersion, metadataEncoded).decorate()
         this.runtimeVersion = runtimeVersion?.specVersion
@@ -357,17 +354,14 @@ export class SubstrateNodeClient {
     const key = `${endpoint}$${params.join('')}`
 
     return this.cache.get(key).catch(() => {
-      const promise = axios.post(this.baseURL, new RPCBody(endpoint, params.map(addHexPrefix)))
-        .then((response) => {
-          if (response.data.error !== undefined) {
-            const error = response.data.error
-            console.error(error)
+      const promise = axios.post(this.baseURL, new RPCBody(endpoint, params.map(addHexPrefix))).then((response) => {
+        if (response.data.error !== undefined) {
+          const error = response.data.error
+          throw new NetworkError(Domain.SUBSTRATE, error.message ?? `Unknown error ${error}`)
+        }
 
-            throw new Error(error.message ?? 'Unknown error')
-          }
-
-          return response.data.result
-        })
+        return response.data.result
+      })
 
       return this.cache.save(key, promise, { cacheValue: config.allowCache })
     })

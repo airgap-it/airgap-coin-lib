@@ -1,5 +1,6 @@
 import { Lazy } from '../../../../../data/Lazy'
-import { invalidArgumentTypeError } from '../../../../../utils/error'
+import { InvalidValueError } from '../../../../../errors'
+import { Domain, CoinlibAssertionError } from '../../../../../errors/coinlib-error'
 import { MichelineDataNode } from '../../micheline/MichelineNode'
 import { MichelsonType } from '../MichelsonType'
 
@@ -14,11 +15,11 @@ export class MichelsonList extends MichelsonType {
     }
 
     if (!Array.isArray(value)) {
-      throw invalidArgumentTypeError('MichelsonList', 'array', typeof value)
+      throw new CoinlibAssertionError(Domain.TEZOS, 'MichelsonList', 'array', typeof value)
     }
 
     if (value.some((item: unknown) => !(item instanceof MichelsonType)) && typeof mappingFunction !== 'function') {
-      throw new Error('MichelsonList: unknown generic mapping factory function.')
+      throw new InvalidValueError(Domain.TEZOS, 'MichelsonList: unknown generic mapping factory function.')
     }
 
     const lazyList: Lazy<MichelsonType[]> = new Lazy(() => {
@@ -26,12 +27,12 @@ export class MichelsonList extends MichelsonType {
         if (element instanceof MichelsonType) {
           return element
         } else {
-          return typeof mappingFunction === 'function' ?  mappingFunction(element) : undefined
+          return typeof mappingFunction === 'function' ? mappingFunction(element) : undefined
         }
       })
-  
+
       if (elements.some((element: unknown) => !(element instanceof MichelsonType))) {
-        throw new Error('MichelsonList: unknown generic mapping type.')
+        throw new InvalidValueError(Domain.TEZOS, 'MichelsonList: unknown generic mapping type.')
       }
 
       return elements as MichelsonType[]

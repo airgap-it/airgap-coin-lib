@@ -1,4 +1,6 @@
 // tslint:disable: max-classes-per-file
+import { InvalidValueError } from '../../../../../../../../errors'
+import { Domain } from '../../../../../../../../errors/coinlib-error'
 import { SubstrateNetwork } from '../../../../../../SubstrateNetwork'
 import { DecoderMethod, SCALEDecoder, SCALEDecodeResult } from '../../../../scale/SCALEDecoder'
 import { SCALEBoolean } from '../../../../scale/type/SCALEBoolean'
@@ -6,7 +8,13 @@ import { SCALEClass } from '../../../../scale/type/SCALEClass'
 import { SCALEEnum } from '../../../../scale/type/SCALEEnum'
 import { SCALEString } from '../../../../scale/type/SCALEString'
 import { SCALEType } from '../../../../scale/type/SCALEType'
-import { SubstrateDoubleMapStorageEntry, SubstrateMapStorageEntry, SubstratePlainStorageEntry, SubstrateStorageEntry, SubstrateStorageEntryHasher } from '../../../decorator/storage/SubstrateStorageEntry'
+import {
+  SubstrateDoubleMapStorageEntry,
+  SubstrateMapStorageEntry,
+  SubstratePlainStorageEntry,
+  SubstrateStorageEntry,
+  SubstrateStorageEntryHasher
+} from '../../../decorator/storage/SubstrateStorageEntry'
 
 enum StorageEntryType {
   Plain = 0,
@@ -34,7 +42,7 @@ export abstract class MetadataV11StorageEntryType extends SCALEClass {
         decoderMethod = MetadataV11StorageEntryDoubleMap.decode
         break
       default:
-        throw new Error('Unkown metadata storage entry type')
+        throw new InvalidValueError(Domain.SUBSTRATE, 'Unkown metadata storage entry type')
     }
 
     const decoded = decoderMethod(network, runtimeVersion, raw.slice(2))

@@ -1,5 +1,7 @@
 import * as bigInt from '../../dependencies/src/big-integer-1.6.45/BigInteger'
 import * as bs58check from '../../dependencies/src/bs58check-2.1.2/index'
+import { OperationFailedError, UnsupportedError } from '../../errors'
+import { Domain } from '../../errors/coinlib-error'
 
 import { MichelsonList } from './types/michelson/generics/MichelsonList'
 import { MichelsonPair } from './types/michelson/generics/MichelsonPair'
@@ -7,7 +9,6 @@ import { MichelsonType } from './types/michelson/MichelsonType'
 import { MichelsonBytes } from './types/michelson/primitives/MichelsonBytes'
 import { MichelsonInt } from './types/michelson/primitives/MichelsonInt'
 import { MichelsonString } from './types/michelson/primitives/MichelsonString'
-
 
 export class TezosUtils {
   // Tezos - We need to wrap these in Buffer due to non-compatible browser polyfills
@@ -46,7 +47,7 @@ export class TezosUtils {
       // kt address
       return this.prefixAndBase58CheckEncode(rest.slice(0, -2), this.tezosPrefixes.kt)
     } else {
-      throw new Error(`address format not supported (${rawHexAddress})`)
+      throw new UnsupportedError(Domain.TEZOS, `address format not supported (${rawHexAddress})`)
     }
   }
 
@@ -65,7 +66,7 @@ export class TezosUtils {
           // pair
           return TezosUtils.parsePair(hex)
         }
-        throw new Error('Prim type not supported')
+        throw new UnsupportedError(Domain.TEZOS, 'Prim type not supported')
       case '00': // int
         const intBytes: string[] = []
         let byte: string | undefined
@@ -88,7 +89,7 @@ export class TezosUtils {
         const bytesLength = TezosUtils.hexToLength(hex.splice(0, 4))
         return MichelsonBytes.from(hex.splice(0, bytesLength).join(''))
       default:
-        throw new Error(`Type not supported ${type}`)
+        throw new UnsupportedError(Domain.TEZOS, `Type not supported ${type}`)
     }
   }
 
@@ -113,7 +114,7 @@ export class TezosUtils {
     }
     const hexBytes: RegExpMatchArray | null = hexString.match(/.{2}/g)
     if (hexBytes === null) {
-      throw new Error('Cannot parse contract code')
+      throw new OperationFailedError(Domain.TEZOS, 'Cannot parse contract code')
     }
 
     return hexBytes
@@ -179,7 +180,7 @@ export class TezosUtils {
       case '02':
         return this.prefixAndBase58CheckEncode(rest, this.tezosPrefixes.tz3)
       default:
-        throw new Error(`address format not supported (${rawHexAddress})`)
+        throw new UnsupportedError(Domain.TEZOS, `address format not supported (${rawHexAddress})`)
     }
   }
 

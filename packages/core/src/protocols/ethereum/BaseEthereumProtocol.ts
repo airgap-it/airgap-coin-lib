@@ -2,6 +2,8 @@ import { BigNumber } from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
 import * as bitcoinJS from '../../dependencies/src/bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac/src/index'
 import * as ethUtil from '../../dependencies/src/ethereumjs-util-5.2.0/index'
+import { BalanceError, NotImplementedError, UnsupportedError } from '../../errors'
+import { Domain } from '../../errors/coinlib-error'
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
 import { AirGapTransactionStatus, IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 import { Network } from '../../networks'
@@ -97,7 +99,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
   }
 
   public async getExtendedPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
-    throw new Error('extended private key support for ether not implemented')
+    throw new NotImplementedError(Domain.ETHEREUM, 'extended private key support for ether not implemented')
   }
 
   public async getPublicKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
@@ -113,7 +115,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
   }
 
   public async getExtendedPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
-    throw new Error('extended private key support for ether not implemented')
+    throw new NotImplementedError(Domain.ETHEREUM, 'extended private key support for ether not implemented')
   }
 
   public async getAddressFromPublicKey(publicKey: string | Buffer): Promise<string> {
@@ -243,7 +245,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
       if (subProtocol.subProtocolType === SubProtocolType.TOKEN && subProtocol.contractAddress) {
         return subProtocol.contractAddress
       } else {
-        throw Error('can only retrieve balance of ERC20 tokens')
+        throw new UnsupportedError(Domain.ETHEREUM, 'can only retrieve balance of ERC20 tokens')
       }
     })
     const balances = await this.options.nodeClient.callBalanceOfOnContracts(contractAddresses, address)
@@ -383,7 +385,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
 
       return transaction
     } else {
-      throw new Error('not enough balance')
+      throw new BalanceError(Domain.BITCOIN, 'not enough balance')
     }
   }
 

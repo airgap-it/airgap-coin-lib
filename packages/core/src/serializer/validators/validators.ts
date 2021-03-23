@@ -9,6 +9,8 @@ import {
   validate,
   validators
 } from '../../dependencies/src/validate.js-0.13.1/validate'
+import { NotFoundError } from '../../errors'
+import { Domain } from '../../errors/coinlib-error'
 import { EthereumProtocol } from '../../protocols/ethereum/EthereumProtocol'
 import { KusamaProtocol } from '../../protocols/substrate/implementations/KusamaProtocol'
 import bs64check from '../../utils/base64Check'
@@ -35,7 +37,7 @@ validators.type = (value, options, key, attributes) => {
   }
   */
   if (!validators.type.checks[options]) {
-    throw new Error(`Could not find validator for type ${options}`)
+    throw new NotFoundError(Domain.SERIALIZER, `Could not find validator for type ${options}`)
   }
 
   return validators.type.checks[options](value) ? null : `is not of type "${options}"`

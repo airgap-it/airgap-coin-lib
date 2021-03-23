@@ -1,6 +1,8 @@
 import { sr25519DeriveKeypairHard, sr25519DeriveKeypairSoft, sr25519KeypairFromSeed, waitReady } from '@polkadot/wasm-crypto'
 
 import { KeyPair } from '../data/KeyPair'
+import { InvalidValueError } from '../errors'
+import { Domain } from '../errors/coinlib-error'
 
 import { changeEndianness, stripHexPrefix, toHexStringRaw } from './hex'
 
@@ -11,7 +13,7 @@ interface DeriveJunction {
 
 function assertProperDerivationPath(path: string) {
   if (!(['m', 'm/'] as any).includes(path.slice(0, 2))) {
-    throw new Error('Invalid derivation path')
+    throw new InvalidValueError(Domain.UTILS, 'Invalid derivation path')
   }
 }
 

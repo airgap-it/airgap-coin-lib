@@ -1,3 +1,6 @@
+import { OperationFailedError } from '../errors'
+import { Domain } from '../errors/coinlib-error'
+
 export class StateMachine<S> {
   private state: S
   private readonly validTransitions: Map<S, S[]>
@@ -11,7 +14,7 @@ export class StateMachine<S> {
     if (this.canTransitionTo(state)) {
       this.state = state
     } else {
-      throw new Error(`Invalid state transition: ${this.state} -> ${state}`)
+      throw new OperationFailedError(Domain.ACTIONS, `Invalid state transition: ${this.state} -> ${state}`)
     }
   }
 

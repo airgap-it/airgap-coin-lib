@@ -19,6 +19,99 @@ export enum SerializerErrorType {
   PROPERTY_INVALID = 'PROPERTY_INVALID'
 }
 
+export enum ProtocolErrorType {
+  NETWORK = 'NETWORK',
+  CONDITION_VIOLATION = 'CONDITION_VIOLATION',
+  UNSUPPORTED = 'UNSUPPORTED',
+  NOT_FOUND = 'NOT_FOUND',
+  BALANCE = 'BALANCE',
+  PROPERTY_UNDEFINED = 'PROPERTY_UNDEFINED',
+  OPERATION_FAILED = 'OPERATION_FAILED',
+  NOT_IMPLEMENTED = 'NOT_IMPLEMENTED',
+  INVALID_VALUE = 'INVALID_VALUE'
+}
+
+/**
+ * Gets thrown if an error occurs when making a network request
+ */
+export class NetworkError extends CoinlibError {
+  constructor(domain: Domain, description?: string) {
+    super(domain, ProtocolErrorType.NETWORK, description)
+  }
+}
+
+/**
+ * Gets thrown if a value ist expected to fulfill a certain condition such as having a certain length, but the condition is not satisfied
+ */
+export class ConditionViolationError extends CoinlibError {
+  constructor(domain: Domain, description?: string) {
+    super(domain, ProtocolErrorType.CONDITION_VIOLATION, description)
+  }
+}
+
+/**
+ * Gets thrown if a variable assumes a value for which an operation is not supported
+ */
+export class UnsupportedError extends CoinlibError {
+  constructor(domain: Domain, description?: string) {
+    super(domain, ProtocolErrorType.UNSUPPORTED, description)
+  }
+}
+
+/**
+ * Gets thrown if a variable is unexpectedly undefined
+ */
+export class NotFoundError extends CoinlibError {
+  constructor(domain: Domain, description?: string) {
+    super(domain, ProtocolErrorType.NOT_FOUND, description)
+  }
+}
+
+/**
+ * Gets thrown if an account has an insufficient balance to perform a certain kind of operation
+ */
+export class BalanceError extends CoinlibError {
+  constructor(domain: Domain, description?: string) {
+    super(domain, ProtocolErrorType.BALANCE, description)
+  }
+}
+
+/**
+ * Gets thrown if an accessed object property is undefined
+ */
+export class PropertyUndefinedError extends CoinlibError {
+  constructor(domain: Domain, description?: string) {
+    super(domain, ProtocolErrorType.PROPERTY_UNDEFINED, description)
+  }
+}
+
+/**
+ * Gets thrown if an internal method fails
+ */
+export class OperationFailedError extends CoinlibError {
+  constructor(domain: Domain, description?: string) {
+    super(domain, ProtocolErrorType.OPERATION_FAILED, description)
+  }
+}
+
+/**
+ * Gets thrown if a method is executed which is not implemented
+ */
+export class NotImplementedError extends CoinlibError {
+  constructor(domain: Domain, description?: string) {
+    super(domain, ProtocolErrorType.NOT_IMPLEMENTED, description)
+  }
+}
+
+/**
+ * Gets thrown if a variable has a value which cannot be handled
+ */
+export class InvalidValueError extends CoinlibError {
+  constructor(domain: Domain, description?: string) {
+    super(domain, ProtocolErrorType.INVALID_VALUE, description)
+  }
+}
+
 export class SerializerError extends CoinlibError {
   constructor(code: string, description?: string) {
     super(Domain.SERIALIZER, code, description)

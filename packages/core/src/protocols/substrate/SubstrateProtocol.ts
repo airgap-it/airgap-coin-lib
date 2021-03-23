@@ -1,5 +1,7 @@
 import { AxiosError } from '../../dependencies/src/axios-0.19.0'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { NetworkError } from '../../errors'
+import { Domain } from '../../errors/coinlib-error'
 import { AirGapTransactionStatus, IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 import { SignedSubstrateTransaction } from '../../serializer/schemas/definitions/signed-transaction-substrate'
 import { UnsignedSubstrateTransaction } from '../../serializer/schemas/definitions/unsigned-transaction-substrate'
@@ -264,11 +266,10 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
       return txs[0][1]?.type !== SubstrateTransactionType.SUBMIT_BATCH ? txHashes[0] : ''
     } catch (error) {
       const axiosError = error as AxiosError
-      if (axiosError.response !== undefined && axiosError.response.data !== undefined) {
-        throw new Error(axiosError.response.data)
-      } else {
-        throw error
-      }
+      throw new NetworkError(
+        Domain.SUBSTRATE,
+        axiosError.response && axiosError.response.data ? axiosError.response.data : `broadcastTransaction() failed with ${error}`
+      )
     }
   }
 
@@ -465,7 +466,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
           args: {
             value: toDelegate.minus(lockedBalance)
           }
-        },
+        }
       )
     } else {
       configs.push({
@@ -611,8 +612,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
 
     const toDelegate = BigNumber.isBigNumber(value) ? value : new BigNumber(value)
 
-    const configs: SubstrateTransactionConfig[] =
-      toDelegate.gt(lockedBalance)
+    const configs: SubstrateTransactionConfig[] = toDelegate.gt(lockedBalance)
       ? [
           {
             type: SubstrateTransactionType.REBOND,
@@ -627,15 +627,17 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
             args: {
               value: toDelegate.minus(lockedBalance)
             }
-          },
-        ]
-      : [{
-          type: SubstrateTransactionType.REBOND,
-          tip,
-          args: {
-            value: toDelegate
           }
-        }]
+        ]
+      : [
+          {
+            type: SubstrateTransactionType.REBOND,
+            tip,
+            args: {
+              value: toDelegate
+            }
+          }
+        ]
 
     const encoded = await this.options.transactionController.prepareSubmittableTransactions(publicKey, transferableBalance, configs)
 

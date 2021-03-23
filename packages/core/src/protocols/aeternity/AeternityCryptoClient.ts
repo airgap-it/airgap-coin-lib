@@ -1,4 +1,6 @@
 import * as sodium from 'libsodium-wrappers'
+import { InvalidValueError } from '../../errors'
+import { Domain } from '../../errors/coinlib-error'
 
 import { Ed25519CryptoClient } from '../Ed25519CryptoClient'
 
@@ -6,7 +8,7 @@ const personalMessageToBinary = (message: string): Buffer => {
   const prefix: Buffer = Buffer.from('‎Æternity Signed Message:\n', 'utf8')
   const messageBuffer: Buffer = Buffer.from(message, 'utf8')
   if (messageBuffer.length >= 0xfd) {
-    throw new Error('message too long')
+    throw new InvalidValueError(Domain.AETERNITY, 'message too long')
   }
 
   return Buffer.concat([Buffer.from([prefix.length]), prefix, Buffer.from([messageBuffer.length]), messageBuffer])

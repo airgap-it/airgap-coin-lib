@@ -1,4 +1,6 @@
 import axios, { AxiosResponse } from '../../../dependencies/src/axios-0.19.0/index'
+import { InvalidValueError, NetworkError, NotFoundError } from '../../../errors'
+import { Domain } from '../../../errors/coinlib-error'
 import { BigMapPredicate } from '../types/fa/BigMapPredicate'
 import { BigMapRequest } from '../types/fa/BigMapRequest'
 import { BigMapResponse } from '../types/fa/BigMapResult'
@@ -108,7 +110,7 @@ export class TezosContract {
 
     const defaultEntrypoint: TezosContractEntrypoint | undefined = this.entrypoints?.get(TezosContract.DEFAULT_ENTRYPOINT)
     if (!defaultEntrypoint) {
-      throw new Error('Could not fetch default entrypoint.')
+      throw new InvalidValueError(Domain.TEZOS, 'Could not fetch default entrypoint.')
     }
 
     let normalizedEntrypoint: [string, MichelineNode] | undefined
@@ -152,7 +154,7 @@ export class TezosContract {
     }
 
     if (!predicates) {
-      throw new Error('Contract has more that one BigMap, provide ID or predicates to select one.')
+      throw new InvalidValueError(Domain.TEZOS, 'Contract has more than one BigMap, provide ID or predicates to select one.')
     }
 
     const response = await this.apiRequest<Record<'big_map_id', number>[]>('big_maps', {
@@ -168,11 +170,11 @@ export class TezosContract {
     })
 
     if (response.length === 0) {
-      throw new Error('BigMap ID not found')
+      throw new NetworkError(Domain.TEZOS, 'BigMap ID not found')
     }
 
     if (response.length > 1) {
-      throw new Error('More than one BigMap ID has been found for the predicates.')
+      throw new NetworkError(Domain.TEZOS, 'More than one BigMap ID has been found for the predicates.')
     }
 
     return response[0].big_map_id
@@ -196,7 +198,7 @@ export class TezosContract {
       })
         .then((response) => {
           if (response.length === 0) {
-            throw new Error('BigMap IDs not found')
+            throw new NotFoundError(Domain.TEZOS, 'BigMap IDs not found')
           }
 
           this.bigMapIDs = response.map((entry) => entry.big_map_id)

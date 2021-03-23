@@ -6,6 +6,8 @@ import { mnemonicToSeed, validateMnemonic } from '../../dependencies/src/bip39-2
 import RIPEMD160 = require('../../dependencies/src/ripemd160-2.0.2/index')
 import SECP256K1 = require('../../dependencies/src/secp256k1-3.7.1/elliptic')
 import * as sha from '../../dependencies/src/sha.js-2.4.11/index'
+import { BalanceError, InvalidValueError } from '../../errors'
+import { Domain } from '../../errors/coinlib-error'
 import { AirGapTransactionStatus, IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 import { SignedCosmosTransaction } from '../../serializer/schemas/definitions/signed-transaction-cosmos'
 import { UnsignedCosmosTransaction } from '../../serializer/types'
@@ -108,7 +110,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
     const keys = node.derivePath(derivationPath)
     const privateKey = keys.privateKey
     if (privateKey === undefined) {
-      throw new Error('Cannot generate private key')
+      throw new InvalidValueError(Domain.COSMOS, 'Cannot generate private key')
     }
 
     return {
@@ -176,35 +178,39 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
       if (cursor.sender.page > 1) {
         promises.push(this.nodeClient.fetchSendTransactionsFor(address, cursor.sender.page - 1, cursor.limit, true))
       } else {
-        promises.push(new Promise((resolve) => {
-          resolve({
-            total_count: cursor.sender.totalCount.toFixed(),
-            count: cursor.sender.count.toFixed(),
-            page_number: '0',
-            page_total: cursor.sender.totalPages.toFixed(),
-            limit: cursor.limit.toFixed(),
-            txs: [],
+        promises.push(
+          new Promise((resolve) => {
+            resolve({
+              total_count: cursor.sender.totalCount.toFixed(),
+              count: cursor.sender.count.toFixed(),
+              page_number: '0',
+              page_total: cursor.sender.totalPages.toFixed(),
+              limit: cursor.limit.toFixed(),
+              txs: []
+            })
           })
-        }))
+        )
       }
       if (cursor.receipient.page > 1) {
         promises.push(this.nodeClient.fetchSendTransactionsFor(address, cursor.receipient.page - 1, cursor.limit, false))
       } else {
-        promises.push(new Promise((resolve) => {
-          resolve({
-            total_count: cursor.receipient.totalCount.toFixed(),
-            count: cursor.receipient.count.toFixed(),
-            page_number: '0',
-            page_total: cursor.receipient.totalPages.toFixed(),
-            limit: cursor.limit.toFixed(),
-            txs: [],
+        promises.push(
+          new Promise((resolve) => {
+            resolve({
+              total_count: cursor.receipient.totalCount.toFixed(),
+              count: cursor.receipient.count.toFixed(),
+              page_number: '0',
+              page_total: cursor.receipient.totalPages.toFixed(),
+              limit: cursor.limit.toFixed(),
+              txs: []
+            })
           })
-        }))
+        )
       }
     } else {
       const [sentLastPage, receivedLastPage] = await Promise.all([
-        this.nodeClient.fetchSendTransactionsFor(address, 1, 1, true).then(response => Math.ceil(Number(response.total_count) / limit)),
-        this.nodeClient.fetchSendTransactionsFor(address, 1, 1, false).then(response => Math.ceil(Number(response.total_count) / limit))
+        this.nodeClient.fetchSendTransactionsFor(address, 1, 1, true).then((response) => Math.ceil(Number(response.total_count) / limit)),
+        this.nodeClient.fetchSendTransactionsFor(address, 1, 1, false).then((response) => Math.ceil(Number(response.total_count) / limit))
       ])
 
       promises.push(this.nodeClient.fetchSendTransactionsFor(address, Math.max(1, sentLastPage), limit, true))
@@ -218,22 +224,25 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
     let result: IAirGapTransaction[] = []
     for (const transaction of allTransactions) {
       const timestamp = new Date(transaction.timestamp).getTime() / 1000
-      const fee = transaction.tx.value.fee.amount.filter(coin => coin.denom === 'uatom').map(coin => new BigNumber(coin.amount)).reduce((current, next) => current.plus(next))
+      const fee = transaction.tx.value.fee.amount
+        .filter((coin) => coin.denom === 'uatom')
+        .map((coin) => new BigNumber(coin.amount))
+        .reduce((current, next) => current.plus(next))
       result = result.concat(
-        transaction.tx.value.msg.map(msg => ({
+        transaction.tx.value.msg.map((msg) => ({
           from: [msg.value.from_address],
           to: [msg.value.to_address],
           isInbound: msg.value.to_address === address,
           amount: msg.value.amount
-            .filter(coin => coin.denom === 'uatom')
-            .map(coin => new BigNumber(coin.amount))
+            .filter((coin) => coin.denom === 'uatom')
+            .map((coin) => new BigNumber(coin.amount))
             .reduce((current, next) => current.plus(next))
             .toFixed(),
           fee: fee.toFixed(),
           protocolIdentifier: this.identifier,
           network: this.options.network,
           hash: transaction.txhash,
-          timestamp,
+          timestamp
         }))
       )
     }
@@ -247,13 +256,13 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
           count: Number(sentTransactions.count),
           totalCount: Number(sentTransactions.total_count),
           page: Number(sentTransactions.page_number),
-          totalPages: Number(sentTransactions.page_total),
+          totalPages: Number(sentTransactions.page_total)
         },
         receipient: {
           count: Number(receivedTransactions.count),
           totalCount: Number(receivedTransactions.total_count),
           page: Number(receivedTransactions.page_number),
-          totalPages: Number(receivedTransactions.page_total),
+          totalPages: Number(receivedTransactions.page_total)
         }
       }
     }
@@ -320,7 +329,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
 
             return withdrawMessage.toAirGapTransaction(this, fee)
           default:
-            throw Error('Unknown transaction')
+            throw new InvalidValueError(Domain.COSMOS, 'Unknown transaction')
         }
       })
       .map((tx: IAirGapTransaction) => {
@@ -423,7 +432,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
     const balance: BigNumber = new BigNumber(await this.getAvailableBalanceOfAddresses([address]))
 
     if (balance.lt(values.reduce((pv: BigNumber, cv: string) => pv.plus(cv), wrappedFee))) {
-      throw new Error('not enough balance')
+      throw new BalanceError(Domain.COSMOS, 'not enough balance')
     }
 
     const messages: CosmosSendMessage[] = []
@@ -686,7 +695,9 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
       ? unclaimedRewards.find(([validatorAddress, _]) => validatorAddress === validator)?.[1] || new BigNumber(0)
       : undefined
 
-    const isDelegating = validator ? delegations.some((delegation) => delegation.delegation.validator_address === validator) : delegations.length > 0
+    const isDelegating = validator
+      ? delegations.some((delegation) => delegation.delegation.validator_address === validator)
+      : delegations.length > 0
     const availableActions = this.getAvailableDelegatorActions(
       isDelegating,
       availableBalance,

@@ -19,6 +19,8 @@ import { TezosFAProtocolOptions } from './TezosFAProtocolOptions'
 import { TezosTransactionCursor } from '../types/TezosTransactionCursor'
 import { TezosTransactionResult } from '../types/TezosTransactionResult'
 import { FeeDefaults } from '../../ICoinProtocol'
+import { InvalidValueError, NetworkError, OperationFailedError } from '../../../errors'
+import { Domain } from '../../../errors/coinlib-error'
 
 export interface TezosFAProtocolConfiguration {
   symbol: string
@@ -213,11 +215,11 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
     const response = await axios.post(`${this.baseApiUrl}/v2/data/tezos/${this.baseApiNetwork}/operations`, body, {
       headers: this.headers
     })
-    
+
     const transactions: IAirGapTransaction[] = response.data
       .map((transaction: any) => this.transactionToAirGapTransactions(transaction))
       .reduce((flatten: IAirGapTransaction[], toFlatten: IAirGapTransaction[]) => flatten.concat(toFlatten), [])
-      
+
     const lastEntryBlockLevel: number = response.data.length > 0 ? response.data[response.data.length - 1].block_level : 0
 
     return {
@@ -232,7 +234,7 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
     const parsedParameters: unknown = this.parseParameters(parameters)
 
     if (!(parsedParameters instanceof Object && 'value' in parsedParameters) && !isMichelineNode(parsedParameters)) {
-      throw new Error('Invalid parameters.')
+      throw new InvalidValueError(Domain.TEZOSFA, `Invalid parameters: ${JSON.stringify(parsedParameters)}`)
     }
 
     return this.contract.normalizeContractCallParameters(parsedParameters, fallbackEntrypointName)
@@ -241,9 +243,7 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
   protected async getTransactionOperationDetails(transactionOperation: TezosTransactionOperation): Promise<Partial<IAirGapTransaction>[]> {
     let partials: Partial<IAirGapTransaction>[] = []
     try {
-      partials = transactionOperation.parameters
-        ? this.transactionDetailsFromParameters(transactionOperation.parameters) ?? []
-        : []
+      partials = transactionOperation.parameters ? this.transactionDetailsFromParameters(transactionOperation.parameters) ?? [] : []
     } catch {}
 
     if (partials.length === 0) {
@@ -274,7 +274,7 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
     const parsedParameters: unknown = this.parseParameters(parameters)
 
     if (!isMichelineNode(parsedParameters)) {
-      throw new Error('Transaction parameters are invalid.')
+      throw new InvalidValueError(Domain.TEZOSFA, `Transaction parameters are invalid: ${JSON.stringify(parsedParameters)}`)
     }
 
     const transferData: TezosTransactionParameters = {
@@ -322,11 +322,10 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
       if (metadata.internal_operation_results !== undefined && metadata.operation_result.status === 'applied') {
         return metadata.internal_operation_results[0].parameters.value
       } else {
-        throw new Error(metadata.operation_result.errors[0].id)
+        throw new NetworkError(Domain.TEZOSFA, metadata.operation_result.errors[0].id)
       }
     } catch (runOperationError) {
-      console.error(runOperationError)
-      throw runOperationError
+      throw new NetworkError(Domain.TEZOSFA, runOperationError)
     }
   }
 
@@ -348,7 +347,7 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
       return { binaryTransaction: binaryTx }
     } catch (error) {
       console.error(error.message)
-      throw new Error('Forging Tezos TX failed.')
+      throw new OperationFailedError(Domain.TEZOSFA, 'Forging Tezos TX failed.')
     }
   }
 
