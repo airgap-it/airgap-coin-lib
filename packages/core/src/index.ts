@@ -181,6 +181,7 @@ import { CosmosTransaction } from './protocols/cosmos/CosmosTransaction'
 import { TezosETHtz } from './protocols/tezos/fa/TezosETHtz'
 import { TezosWrapped } from './protocols/tezos/fa/TezosWrapped'
 import { TezosKolibriUSD } from './protocols/tezos/fa/TezosKolibriUSD'
+import { TezosDomains } from './protocols/tezos/domains/TezosDomains'
 
 // tslint:enable:ordered-imports
 
@@ -340,7 +341,8 @@ export {
   TezosNetwork,
   TezosUtils,
   TezosWrappedOperation,
-  RawTezosTransaction
+  RawTezosTransaction,
+  TezosDomains
 }
 
 // Serializer

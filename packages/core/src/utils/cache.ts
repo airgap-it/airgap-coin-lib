@@ -1,13 +1,15 @@
 interface CachedValue<T> {
   value: T
-  lastInvalidated: number
+  timestamp: number
+  validate?: (value: T) => boolean
 }
 
-interface CacheConfig {
+interface CacheConfig<T> {
   cacheValue: boolean
+  validate?: (value: T) => boolean
 }
 
-export class SubstrateNodeCache {
+export class Cache {
   public constructor(public expirationTime: number) {}
 
   private readonly cachedValues: Map<string, CachedValue<any>> = new Map()
@@ -27,13 +29,13 @@ export class SubstrateNodeCache {
     return Promise.reject('No valid cached value.')
   }
 
-  public save(key: string, promise: Promise<any>, config: CacheConfig = { cacheValue: true }): Promise<any> {
+  public async save<T>(key: string, promise: Promise<T>, config: CacheConfig<T> = { cacheValue: true }): Promise<T> {
     const newPromise = promise
       .then((value) => {
         if (value !== undefined && value !== null && config.cacheValue) {
           this.cachedValues.set(key, {
             value,
-            lastInvalidated: new Date().getTime()
+            timestamp: new Date().getTime()
           })
         }
 
@@ -46,8 +48,13 @@ export class SubstrateNodeCache {
     return newPromise
   }
 
+  public delete(key: string) {
+    this.promises.delete(key)
+  }
+
   private isValidOrDelete(key: string, cached: CachedValue<any>): boolean {
-    const expired = cached.lastInvalidated + this.expirationTime < new Date().getTime()
+    const expired =
+      cached.timestamp + this.expirationTime < new Date().getTime() || (cached.validate !== undefined && !cached.validate(cached.value))
 
     if (expired) {
       this.cachedValues.delete(key)

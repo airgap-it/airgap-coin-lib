@@ -9,6 +9,8 @@ import { MichelsonType } from '../MichelsonType'
 
 export type MichelsonOrType = 'Left' | 'Right'
 
+const michelsonRegex = /^(?<type>(Left|Right))\s\(?(?<value>[^()]+)\)?$/
+
 export abstract class MichelsonOr extends MichelsonType {
   protected abstract type: MichelsonOrType
 
@@ -25,9 +27,27 @@ export abstract class MichelsonOr extends MichelsonType {
       throw new InvalidValueError(Domain.TEZOS, 'MichelsonPair: unknown generic mapping factory functions.')
     }
 
-    return isMichelinePrimitiveApplication(or)
-      ? MichelsonOr.fromMicheline(or, firstMappingFunction, secondMappingFunction, name)
-      : MichelsonOr.fromUnknown(or, firstMappingFunction, secondMappingFunction, name)
+    if(isMichelinePrimitiveApplication(or)) {
+      return MichelsonOr.fromMicheline(or, firstMappingFunction, secondMappingFunction, name)
+    } else if (typeof or === 'string' && or.match(michelsonRegex)) {
+      return MichelsonOr.fromMichelson(or, firstMappingFunction, secondMappingFunction, name)
+    } else {
+      return MichelsonOr.fromUnknown(or, firstMappingFunction, secondMappingFunction, name)
+    }
+  }
+
+  public static fromMichelson(
+    michelson: string,
+    firstMappingFunction: unknown,
+    secondMappingFunction: unknown,
+    name?: string
+  ): MichelsonOr {
+    const match: RegExpMatchArray | null = michelson.match(michelsonRegex)
+    if (match === null || match.groups?.type === undefined || match.groups?.value === undefined) {
+      throw new Error('MichelsonOr: invalid Michelson value')
+    }
+
+    return MichelsonOr.fromUnknown([match.groups?.type, match.groups?.value], firstMappingFunction, secondMappingFunction, name)
   }
 
   public static fromMicheline(

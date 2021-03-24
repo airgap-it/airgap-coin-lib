@@ -10,6 +10,8 @@ import { MichelsonType } from '../MichelsonType'
 
 export type MichelsonOptionType = 'Some' | 'None'
 
+const michelsonRegex = /^(?:(?:Some\s\(?(?<value>[^()]+)\)?)|(?:None))$/
+
 export abstract class MichelsonOption extends MichelsonType {
   protected abstract type: MichelsonOptionType
 
@@ -22,9 +24,22 @@ export abstract class MichelsonOption extends MichelsonType {
       throw new InvalidValueError(Domain.TEZOS, 'MichelsonPair: unknown generic factory function.')
     }
 
-    return isMichelinePrimitiveApplication(value)
-      ? MichelsonOption.fromMicheline(value, mappingFunction, name)
-      : MichelsonOption.fromUnknown(value, mappingFunction, name)
+    if (isMichelinePrimitiveApplication(value)) {
+      return MichelsonOption.fromMicheline(value, mappingFunction, name)
+    } else if (typeof value === 'string' && value.match(michelsonRegex)) {
+      return MichelsonOption.fromMichelson(value, mappingFunction, name)
+    } else {
+      return MichelsonOption.fromUnknown(value, mappingFunction, name)
+    }
+  }
+
+  public static fromMichelson(michelson: string, mappingFunction: unknown, name?: string): MichelsonOption {
+    const match: RegExpMatchArray | null = michelson.match(michelsonRegex)
+    if (match === null) {
+      throw new Error('MichelsonOption: invalid Michelson value')
+    }
+
+    return MichelsonOption.fromUnknown(match.groups?.value, mappingFunction, name)
   }
 
   public static fromMicheline(

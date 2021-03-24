@@ -51,6 +51,18 @@ export class TezosUtils {
     }
   }
 
+  public static encodeAddress(address: string): Buffer {
+    if (address.startsWith('tz')) {
+      // tz address
+      return Buffer.concat([Buffer.from([0]), this.encodeTzAddress(address)])
+    } else if (address.startsWith('kt')) {
+      // kt address
+      return Buffer.concat([Buffer.from([1]), this.prefixAndBase58CheckDecode(address, this.tezosPrefixes.kt)])
+    } else {
+      throw new Error(`address format not supported (${address})`)
+    }
+  }
+
   public static parseHex(rawHex: string | string[]): MichelsonType {
     let hex: string[]
     if (typeof rawHex === 'string') {
@@ -184,9 +196,27 @@ export class TezosUtils {
     }
   }
 
+  private static encodeTzAddress(address: string): Buffer {
+    if (address.startsWith('tz1')) {
+      return Buffer.concat([Buffer.from([0]), this.prefixAndBase58CheckDecode(address, this.tezosPrefixes.tz1)])
+    } else if (address.startsWith('tz2')) {
+      return Buffer.concat([Buffer.from([1]), this.prefixAndBase58CheckDecode(address, this.tezosPrefixes.tz2)])
+    } else if (address.startsWith('tz3')) {
+      return Buffer.concat([Buffer.from([2]), this.prefixAndBase58CheckDecode(address, this.tezosPrefixes.tz3)])
+    } else {
+      throw new Error(`address format not supported (${address})`)
+    }
+  }
+
   private static prefixAndBase58CheckEncode(hexStringPayload: string, tezosPrefix: Uint8Array): string {
     const prefixHex: string = Buffer.from(tezosPrefix).toString('hex')
 
     return bs58check.encode(Buffer.from(prefixHex + hexStringPayload, 'hex'))
+  }
+
+  private static prefixAndBase58CheckDecode(address: string, tezosPrefix: Uint8Array): Buffer {
+    const decoded: Buffer = bs58check.decode(address)
+
+    return decoded.slice(tezosPrefix.length)
   }
 }
