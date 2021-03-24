@@ -1,12 +1,15 @@
 import { Lazy } from '../../../../../data/Lazy'
 import { InvalidValueError } from '../../../../../errors'
 import { invalidArgumentTypeError } from '../../../../../utils/error'
+import { extractGroups } from '../../../../../utils/string'
 import { isRecord } from '../../../../../utils/type'
 import { MichelineDataNode, MichelinePrimitiveApplication, MichelineGenericNode } from '../../micheline/MichelineNode'
 import { isMichelinePrimitiveApplication } from '../../utils'
 import { MichelsonGrammarData } from '../grammar/MichelsonGrammarData'
 import { MichelsonType } from '../MichelsonType'
 import { Domain } from '../../../../../errors/coinlib-error'
+
+const michelsonRegex = /^Pair(?<values>(?:\s.+){2,})$/
 
 export class MichelsonPair extends MichelsonType {
   constructor(public readonly items: Lazy<MichelsonType>[], name?: string) {
@@ -18,9 +21,28 @@ export class MichelsonPair extends MichelsonType {
       return pair
     }
 
-    return isMichelinePrimitiveApplication(pair)
-      ? MichelsonPair.fromMicheline(pair, mappingFunctions, name)
-      : MichelsonPair.fromUnknown(pair, mappingFunctions, name)
+    if (isMichelinePrimitiveApplication(pair)) {
+      return MichelsonPair.fromMicheline(pair, mappingFunctions, name)
+    } else if (typeof pair === 'string' && pair.match(michelsonRegex)) {
+      return MichelsonPair.fromMichelson(pair, mappingFunctions, name)
+    } else {
+      return MichelsonPair.fromUnknown(pair, mappingFunctions, name)
+    }
+  }
+
+  public static fromMichelson(michelson: string, mappingFunctions: unknown[], name?: string): MichelsonPair {
+    const match: RegExpMatchArray | null = michelson.match(michelsonRegex)
+    if (match === null) {
+      throw new Error('MichelsonPair: invalid Michelson value')
+    }
+
+    const values: string[] = extractGroups(match?.groups?.values?.trim() ?? '', {
+      groupStart: '(',
+      groupEnd: ')',
+      groupSeparator: ' '
+    })
+
+    return MichelsonPair.fromUnknown(values, mappingFunctions, name)
   }
 
   public static fromMicheline(

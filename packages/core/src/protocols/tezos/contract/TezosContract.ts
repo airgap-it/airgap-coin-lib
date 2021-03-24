@@ -1,10 +1,10 @@
 import axios, { AxiosResponse } from '../../../dependencies/src/axios-0.19.0/index'
+import { BigMapPredicate } from '../types/contract/BigMapPredicate'
+import { BigMapRequest } from '../types/contract/BigMapRequest'
+import { BigMapResponse } from '../types/contract/BigMapResult'
+import { MichelineDataNode, MichelineNode, MichelineTypeNode } from '../types/micheline/MichelineNode'
 import { InvalidValueError, NetworkError, NotFoundError } from '../../../errors'
 import { Domain } from '../../../errors/coinlib-error'
-import { BigMapPredicate } from '../types/fa/BigMapPredicate'
-import { BigMapRequest } from '../types/fa/BigMapRequest'
-import { BigMapResponse } from '../types/fa/BigMapResult'
-import { MichelineNode, MichelineTypeNode } from '../types/micheline/MichelineNode'
 import { MichelsonOr } from '../types/michelson/generics/MichelsonOr'
 import { MichelsonType } from '../types/michelson/MichelsonType'
 import {
@@ -34,7 +34,7 @@ export class TezosContract {
     private readonly conseilAPIURL: string,
     private readonly conseilNetwork: string,
     private readonly conseilAPIKey: string
-  ) {}
+  ) { }
 
   public async bigMapValues(request: BigMapRequest = {}): Promise<BigMapResponse[]> {
     const bigMapID: number = request?.bigMapID ?? (await this.getBigMapID(request.bigMapFilter))
@@ -53,6 +53,10 @@ export class TezosContract {
       predicates,
       limit: request.limit ?? 100000
     })
+  }
+
+  public async storage(): Promise<MichelineDataNode> {
+    return this.nodeRequest('storage')
   }
 
   public async createContractCall(entrypointName: string, value: unknown): Promise<TezosContractCall> {
