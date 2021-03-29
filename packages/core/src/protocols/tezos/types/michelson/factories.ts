@@ -36,7 +36,8 @@ export const michelsonTypeFactories: Record<MichelsonGrammarType, (...args: unkn
   lambda: (...args: unknown[]): MichelsonType => MichelsonString.from(args[0]),
   map: (): MichelsonType => notSupported('map'),
   big_map: (...args: unknown[]): MichelsonType => MichelsonInt.from(args[0]),
-  chain_id: (): MichelsonType => notSupported('chain_id')
+  chain_id: (): MichelsonType => notSupported('chain_id'),
+  sapling_transaction: (...args: unknown[]): MichelsonType => MichelsonBytes.from(args[0])
 }
 
 function notSupported(type: MichelsonGrammarType): MichelsonType {

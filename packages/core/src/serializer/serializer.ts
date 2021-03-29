@@ -28,6 +28,7 @@ const unsignedTransactionBitcoin: SchemaRoot = require('./schemas/generated/tran
 const unsignedTransactionCosmos: SchemaRoot = require('./schemas/generated/transaction-sign-request-cosmos.json')
 const unsignedTransactionEthereum: SchemaRoot = require('./schemas/generated/transaction-sign-request-ethereum.json')
 const unsignedTransactionTezos: SchemaRoot = require('./schemas/generated/transaction-sign-request-tezos.json')
+const unsignedTransactionTezosSapling: SchemaRoot = require('./schemas/generated/transaction-sign-request-tezos-sapling.json')
 const unsignedTransactionSubstrate: SchemaRoot = require('./schemas/generated/transaction-sign-request-substrate.json')
 
 const signedTransactionAeternity: SchemaRoot = require('./schemas/generated/transaction-sign-response-aeternity.json')
@@ -35,6 +36,7 @@ const signedTransactionBitcoin: SchemaRoot = require('./schemas/generated/transa
 const signedTransactionCosmos: SchemaRoot = require('./schemas/generated/transaction-sign-response-cosmos.json')
 const signedTransactionEthereum: SchemaRoot = require('./schemas/generated/transaction-sign-response-ethereum.json')
 const signedTransactionTezos: SchemaRoot = require('./schemas/generated/transaction-sign-response-tezos.json')
+const signedTransactionTezosSapling: SchemaRoot = require('./schemas/generated/transaction-sign-response-tezos-sapling.json')
 const signedTransactionSubstrate: SchemaRoot = require('./schemas/generated/transaction-sign-response-substrate.json')
 
 function unsignedTransactionTransformerCosmos(value: SerializableUnsignedCosmosTransaction): SerializableUnsignedCosmosTransaction {
@@ -163,6 +165,7 @@ Serializer.addSchema(
 Serializer.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionEthereum }, MainProtocolSymbols.ETH)
 Serializer.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionEthereum }, SubProtocolSymbols.ETH_ERC20)
 Serializer.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionTezos }, MainProtocolSymbols.XTZ)
+Serializer.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionTezosSapling }, MainProtocolSymbols.XTZ_SHIELDED)
 Serializer.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionTezos }, SubProtocolSymbols.XTZ_BTC)
 Serializer.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionTezos }, SubProtocolSymbols.XTZ_ETHTZ)
 Serializer.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionTezos }, SubProtocolSymbols.XTZ_KUSD)
@@ -178,6 +181,7 @@ Serializer.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTra
 Serializer.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionEthereum }, MainProtocolSymbols.ETH)
 Serializer.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionEthereum }, SubProtocolSymbols.ETH_ERC20)
 Serializer.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionTezos }, MainProtocolSymbols.XTZ)
+Serializer.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionTezosSapling }, MainProtocolSymbols.XTZ_SHIELDED)
 Serializer.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionTezos }, SubProtocolSymbols.XTZ_BTC)
 Serializer.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionTezos }, SubProtocolSymbols.XTZ_ETHTZ)
 Serializer.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionTezos }, SubProtocolSymbols.XTZ_KUSD)

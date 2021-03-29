@@ -4,18 +4,18 @@ import { RawTezosTransaction } from '../../../serializer/types'
 import { isHex } from '../../../utils/hex'
 import { FeeDefaults } from '../../ICoinProtocol'
 import { TezosContractCall } from '../contract/TezosContractCall'
+import { TezosAddress } from '../TezosAddress'
 import { TezosNetwork } from '../TezosProtocol'
 import { TezosUtils } from '../TezosUtils'
+import { MichelsonPair } from '../types/michelson/generics/MichelsonPair'
+import { MichelsonAddress } from '../types/michelson/primitives/MichelsonAddress'
+import { MichelsonInt } from '../types/michelson/primitives/MichelsonInt'
 import { TezosOperation } from '../types/operations/TezosOperation'
 import { TezosTransactionParameters } from '../types/operations/Transaction'
 import { TezosOperationType } from '../types/TezosOperationType'
 import { isMichelinePrimitive } from '../types/utils'
-
 import { TezosFAProtocol } from './TezosFAProtocol'
 import { TezosFAProtocolOptions } from './TezosFAProtocolOptions'
-import { MichelsonAddress } from '../types/michelson/primitives/MichelsonAddress'
-import { MichelsonPair } from '../types/michelson/generics/MichelsonPair'
-import { MichelsonInt } from '../types/michelson/primitives/MichelsonInt'
 import { ConditionViolationError, NotFoundError } from '../../../errors'
 import { Domain } from '../../../errors/coinlib-error'
 
@@ -171,7 +171,7 @@ export class TezosFA1Protocol extends TezosFAProtocol {
       if (isMichelinePrimitive('int', operationResult)) {
         return operationResult.int
       }
-    } catch {}
+    } catch { }
 
     return '0'
   }
@@ -189,7 +189,7 @@ export class TezosFA1Protocol extends TezosFAProtocol {
 
     // check if we got an address-index
     const addressIndex: number = data && data.addressIndex !== undefined ? data.addressIndex : 0
-    const addresses: string[] = await this.getAddressesFromPublicKey(publicKey)
+    const addresses: string[] = (await this.getAddressesFromPublicKey(publicKey)).map((address: TezosAddress) => address.getValue())
 
     if (!addresses[addressIndex]) {
       throw new NotFoundError(Domain.TEZOSFA, `no kt-address with index ${addressIndex} exists`)

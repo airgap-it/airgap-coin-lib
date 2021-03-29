@@ -3,6 +3,7 @@ export enum MainProtocolSymbols {
   BTC = 'btc',
   ETH = 'eth',
   XTZ = 'xtz',
+  XTZ_SHIELDED = 'xtz_shielded',
   GRS = 'grs',
   COSMOS = 'cosmos',
   POLKADOT = 'polkadot',

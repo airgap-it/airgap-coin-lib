@@ -44,8 +44,8 @@ export class SubstrateAccountController {
     return createSr25519KeyPair(secret, derivationPath)
   }
 
-  public async createAddressFromPublicKey(publicKey: string): Promise<string> {
-    return SubstrateAddress.from(publicKey, this.network).toString()
+  public async createAddressFromPublicKey(publicKey: string): Promise<SubstrateAddress> {
+    return SubstrateAddress.from(publicKey, this.network)
   }
 
   public async getBalance(accountId: SubstrateAccountId): Promise<BigNumber> {
@@ -141,7 +141,7 @@ export class SubstrateAccountController {
     }
 
     return {
-      address: address.toString(),
+      address: address.getValue(),
       name: identity ? identity.display.toString() : undefined,
       status: status || undefined,
       ownStash: exposure ? exposure.own.toString() : undefined,
@@ -189,7 +189,7 @@ export class SubstrateAccountController {
     )
 
     return {
-      address: address.toString(),
+      address: address.getValue(),
       balance: balance.toString(),
       delegatees: validators,
       availableActions,
@@ -469,7 +469,7 @@ export class SubstrateAccountController {
       amount: partialRewards.reduce((sum: BigNumber, next) => sum.plus(next!), new BigNumber(0)).toFixed(0),
       exposures: exposuresWithValidators
         ?.map(([validator, _, exposure]) => [
-          validator.toString(),
+          validator.getValue(),
           exposure?.others.elements.findIndex((element) => element.first.address.compare(accountId) === 0)
         ])
         .filter(([_, index]) => index !== undefined) as [string, number][]
@@ -501,7 +501,7 @@ export class SubstrateAccountController {
     const availableActions: DelegatorAction[] = []
 
     const currentValidators = nominations?.targets?.elements?.map((target) => target.asAddress()) || []
-    const validatorAddresses = validatorIds.map((id) => SubstrateAddress.from(id, this.network).toString())
+    const validatorAddresses = validatorIds.map((id) => SubstrateAddress.from(id, this.network).getValue())
 
     const isBonded = new BigNumber(stakingDetails?.active ?? 0).gt(0)
     const isDelegating = nominations !== null

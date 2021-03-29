@@ -1,6 +1,7 @@
 import BigNumber from '../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { IAirGapTransaction, IProtocolTransactionCursor, IAirGapTransactionResult } from '../interfaces/IAirGapTransaction'
 import { FeeDefaults, ICoinProtocol } from '../protocols/ICoinProtocol'
+import { TezosSaplingProtocol } from '../protocols/tezos/sapling/TezosSaplingProtocol'
 import { NetworkType } from '../utils/ProtocolNetwork'
 import { MainProtocolSymbols } from '../utils/ProtocolSymbols'
 
@@ -94,6 +95,8 @@ export class AirGapMarketWallet extends AirGapWallet {
       BTC as well, which results in the addresses being derived again, which causes massive lags in the apps.
       */
       return new BigNumber(await this.protocol.getBalanceOfExtendedPublicKey(this.publicKey, 0))
+    } else if (this.protocol instanceof TezosSaplingProtocol) {
+      return new BigNumber(await this.protocol.getBalanceOfPublicKey(this.publicKey)) 
     } else if (this.addresses.length > 0) {
       return new BigNumber(await this.protocol.getBalanceOfAddresses(this.addressesToCheck()))
     } else if (this.isExtendedPublicKey) {
@@ -121,6 +124,8 @@ export class AirGapMarketWallet extends AirGapWallet {
       BTC as well, which results in the addresses being derived again, which causes massive lags in the apps.
       */
       transactionResult = await this.protocol.getTransactionsFromExtendedPublicKey(this.publicKey, limit, cursor)
+    } else if (this.protocol instanceof TezosSaplingProtocol) {
+      transactionResult = await this.protocol.getTransactionsFromPublicKey(this.publicKey, limit, cursor)
     } else if (this.addresses.length > 0) {
       transactionResult = await this.protocol.getTransactionsFromAddresses(this.addressesToCheck(), limit, cursor)
     } else if (this.isExtendedPublicKey) {

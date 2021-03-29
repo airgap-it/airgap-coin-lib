@@ -19,6 +19,7 @@ import { EthereumUtils } from '../ethereum/utils/utils'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
 
+import { AeternityAddress } from './AeternityAddress'
 import { AeternityCryptoClient } from './AeternityCryptoClient'
 import { AeternityProtocolOptions } from './AeternityProtocolOptions'
 import { ICoinSubProtocol } from '../ICoinSubProtocol'
@@ -109,16 +110,18 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
     return Buffer.from(secretKey)
   }
 
-  public async getAddressFromPublicKey(publicKey: string): Promise<string> {
-    const base58 = bs58check.encode(Buffer.from(publicKey, 'hex'))
-
-    return `ak_${base58}`
+  public async getAddressFromPublicKey(publicKey: string): Promise<AeternityAddress> {
+    return AeternityAddress.from(publicKey)
   }
 
-  public async getAddressesFromPublicKey(publicKey: string): Promise<string[]> {
+  public async getAddressesFromPublicKey(publicKey: string): Promise<AeternityAddress[]> {
     const address = await this.getAddressFromPublicKey(publicKey)
 
     return [address]
+  }
+
+  public async getNextAddressFromPublicKey(publicKey: string, current: AeternityAddress): Promise<AeternityAddress> {
+    return current
   }
 
   public async getTransactionsFromPublicKey(
@@ -126,7 +129,9 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
     limit: number,
     cursor?: AeternityTransactionCursor
   ): Promise<AeternityTransactionResult> {
-    return this.getTransactionsFromAddresses([await this.getAddressFromPublicKey(publicKey)], limit, cursor)
+    const address: AeternityAddress = await this.getAddressFromPublicKey(publicKey)
+
+    return this.getTransactionsFromAddresses([address.getValue()], limit, cursor)
   }
 
   public async getTransactionsFromAddresses(
@@ -232,14 +237,17 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
     const rlpEncodedTx = this.decodeTx(transaction)
     const rlpDecodedTx = rlp.decode(rlpEncodedTx, false)
 
+    const fromAddress: AeternityAddress = await this.getAddressFromPublicKey(rlpDecodedTx[2].slice(1).toString('hex'))
+    const toAddress: AeternityAddress = await this.getAddressFromPublicKey(rlpDecodedTx[3].slice(1).toString('hex'))
+
     const airgapTx: IAirGapTransaction = {
       amount: new BigNumber(parseInt(rlpDecodedTx[4].toString('hex'), 16)).toString(10),
       fee: new BigNumber(parseInt(rlpDecodedTx[5].toString('hex'), 16)).toString(10),
-      from: [await this.getAddressFromPublicKey(rlpDecodedTx[2].slice(1).toString('hex'))],
+      from: [fromAddress.getValue()],
       isInbound: false,
       protocolIdentifier: this.identifier,
       network: this.options.network,
-      to: [await this.getAddressFromPublicKey(rlpDecodedTx[3].slice(1).toString('hex'))],
+      to: [toAddress.getValue()],
       data: (rlpDecodedTx[8] || '').toString('utf8'),
       transactionDetails: unsignedTx.transaction
     }
@@ -284,9 +292,9 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
   }
 
   public async getBalanceOfPublicKey(publicKey: string): Promise<string> {
-    const address = await this.getAddressFromPublicKey(publicKey)
+    const address: AeternityAddress = await this.getAddressFromPublicKey(publicKey)
 
-    return this.getBalanceOfAddresses([address])
+    return this.getBalanceOfAddresses([address.getValue()])
   }
 
   public async getBalanceOfPublicKeyForSubProtocols(publicKey: string, subProtocols: ICoinSubProtocol[]): Promise<string[]> {
@@ -338,10 +346,10 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
   ): Promise<RawAeternityTransaction> {
     let nonce = 1
 
-    const address: string = await this.getAddressFromPublicKey(publicKey)
+    const address: AeternityAddress = await this.getAddressFromPublicKey(publicKey)
 
     try {
-      const { data: accountResponse } = await axios.get(`${this.options.network.rpcUrl}/v2/accounts/${address}`)
+      const { data: accountResponse } = await axios.get(`${this.options.network.rpcUrl}/v2/accounts/${address.getValue()}`)
       nonce = accountResponse.nonce + 1
     } catch (error) {
       // if node returns 404 (which means 'no account found'), go with nonce 0

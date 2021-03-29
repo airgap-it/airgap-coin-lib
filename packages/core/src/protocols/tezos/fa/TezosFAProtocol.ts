@@ -19,6 +19,7 @@ import { TezosFAProtocolOptions } from './TezosFAProtocolOptions'
 import { TezosTransactionCursor } from '../types/TezosTransactionCursor'
 import { TezosTransactionResult } from '../types/TezosTransactionResult'
 import { FeeDefaults } from '../../ICoinProtocol'
+import { TezosAddress } from '../TezosAddress'
 import { InvalidValueError, NetworkError, OperationFailedError } from '../../../errors'
 import { Domain } from '../../../errors/coinlib-error'
 
@@ -92,7 +93,7 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
     limit: number,
     cursor?: TezosTransactionCursor
   ): Promise<TezosTransactionResult> {
-    const addresses: string[] = await this.getAddressesFromPublicKey(publicKey)
+    const addresses: string[] = (await this.getAddressesFromPublicKey(publicKey)).map((address: TezosAddress) => address.getValue())
 
     return this.getTransactionsFromAddresses(addresses, limit, cursor)
   }
@@ -244,7 +245,7 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
     let partials: Partial<IAirGapTransaction>[] = []
     try {
       partials = transactionOperation.parameters ? this.transactionDetailsFromParameters(transactionOperation.parameters) ?? [] : []
-    } catch {}
+    } catch { }
 
     if (partials.length === 0) {
       partials.push({})

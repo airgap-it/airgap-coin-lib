@@ -1,4 +1,5 @@
 import { ICoinProtocol } from '../..'
+import { CoinAddress } from '../ICoinProtocol'
 import { Secp256k1CryptoClient } from '../Secp256k1CryptoClient'
 
 export class BitcoinCryptoClient extends Secp256k1CryptoClient {
@@ -15,8 +16,8 @@ export class BitcoinCryptoClient extends Secp256k1CryptoClient {
   public async verifyMessage(message: string, signature: string, publicKey: string): Promise<boolean> {
     const rawSignature: Buffer = Buffer.from(signature, 'base64')
 
-    const address: string = await this.protocol.getAddressFromPublicKey(publicKey)
+    const address: CoinAddress = await this.protocol.getAddressFromPublicKey(publicKey)
 
-    return this.bitcoinJSMessage.verify(message, address, rawSignature)
+    return this.bitcoinJSMessage.verify(message, address.getValue(), rawSignature)
   }
 }

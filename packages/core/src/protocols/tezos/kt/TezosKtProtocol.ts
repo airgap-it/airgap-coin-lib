@@ -11,6 +11,8 @@ import { TezosOperation } from '../types/operations/TezosOperation'
 import { TezosTransactionOperation } from '../types/operations/Transaction'
 import { TezosOperationType } from '../types/TezosOperationType'
 import { TezosWrappedOperation } from '../types/TezosWrappedOperation'
+import { TezosKtAddress } from './TezosKtAddress'
+import { TezosUtils } from '../TezosUtils'
 
 export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
   public identifier: ProtocolSymbols = SubProtocolSymbols.XTZ_KT
@@ -19,7 +21,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
   public addressValidationPattern: string = '^(tz1|KT1)[1-9A-Za-z]{33}$'
   public migrationFee: BigNumber = new BigNumber(5000)
 
-  public async getAddressFromPublicKey(publicKey: string, addressIndex?: number): Promise<string> {
+  public async getAddressFromPublicKey(publicKey: string, addressIndex?: number): Promise<TezosKtAddress> {
     const addresses = await this.getAddressesFromPublicKey(publicKey)
     const index = addressIndex ?? 0
     if (index >= addresses.length) {
@@ -28,8 +30,8 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     return addresses[index]
   }
 
-  public async getAddressesFromPublicKey(publicKey: string): Promise<string[]> {
-    const tz1address: string = await super.getAddressFromPublicKey(publicKey)
+  public async getAddressesFromPublicKey(publicKey: string): Promise<TezosKtAddress[]> {
+    const tz1address: string = (await super.getAddressFromPublicKey(publicKey)).getValue()
     const getRequestBody = (field: string, set: string) => {
       return {
         fields: ['originated_contracts'],
@@ -66,7 +68,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
       return origination.originated_contracts
     })
 
-    return ktAddresses.reverse()
+    return Promise.all(ktAddresses.reverse().map((ktAddress: string) => TezosKtAddress.from(ktAddress)))
   }
 
   public async estimateMaxTransactionValueFromPublicKey(
@@ -76,7 +78,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     addressIndex?: number
   ): Promise<string> {
     const address = await this.getAddressFromPublicKey(publicKey, addressIndex)
-    return this.getBalanceOfAddresses([address])
+    return this.getBalanceOfAddresses([address.getValue()])
   }
 
   public async estimateFeeDefaultsFromPublicKey(
@@ -123,7 +125,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
 
     const operations: TezosOperation[] = []
 
-    const address: string = await super.getAddressFromPublicKey(publicKey)
+    const address: string = (await super.getAddressFromPublicKey(publicKey)).getValue()
 
     const balanceOfManager: BigNumber = new BigNumber(await super.getBalanceOfAddresses([address]))
 
@@ -160,7 +162,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
       }
     }
 
-    let hexDestination: string = this.checkAndRemovePrefixToHex(address, this.tezosPrefixes.tz1)
+    let hexDestination: string = this.checkAndRemovePrefixToHex(address, TezosUtils.tezosPrefixes.tz1)
 
     if (hexDestination.length > 42) {
       // must be less or equal 21 bytes

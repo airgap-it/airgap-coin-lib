@@ -20,6 +20,10 @@ export interface CurrencyUnit {
   factor: string
 }
 
+export interface CoinAddress {
+  getValue(): string
+}
+
 export interface ICoinProtocol {
   symbol: string // This will be used in the UI, eg. "ETH", "BTC", "AE"
   name: string // Name of the currency, eg. "Bitcoin", "Aeternity"
@@ -60,19 +64,20 @@ export interface ICoinProtocol {
 
   getExtendedPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<string>
 
-  getAddressFromPublicKey(publicKey: string): Promise<string>
-  getAddressesFromPublicKey(publicKey: string): Promise<string[]> // broadcaster knows this (both broadcaster and signer)
+  getAddressFromPublicKey(publicKey: string): Promise<CoinAddress>
+  getAddressesFromPublicKey(publicKey: string): Promise<CoinAddress[]> // broadcaster knows this (both broadcaster and signer)
   getAddressFromExtendedPublicKey(
     extendedPublicKey: string,
     visibilityDerivationIndex: number,
     addressDerivationIndex: number
-  ): Promise<string> // broadcaster knows this (both broadcaster and signer)
+  ): Promise<CoinAddress> // broadcaster knows this (both broadcaster and signer)
   getAddressesFromExtendedPublicKey(
     extendedPublicKey: string,
     visibilityDerivationIndex: number,
     addressCount: number,
     offset: number
-  ): Promise<string[]> // broadcaster knows this (both broadcaster and signer)
+  ): Promise<CoinAddress[]> // broadcaster knows this (both broadcaster and signer)
+  getNextAddressFromPublicKey(publicKey: string, current: CoinAddress): Promise<CoinAddress>
 
   getTransactionsFromPublicKey(publicKey: string, limit: number, cursor?: IProtocolTransactionCursor): Promise<IAirGapTransactionResult>
   getTransactionsFromExtendedPublicKey(
@@ -84,8 +89,8 @@ export interface ICoinProtocol {
 
   signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: any): Promise<IAirGapSignedTransaction> // broadcaster proxies this operation
   signWithPrivateKey(privateKey: Buffer, transaction: any): Promise<IAirGapSignedTransaction> // broadcaster proxies this operation
-  getTransactionDetails(transaction: UnsignedTransaction): Promise<IAirGapTransaction[]> // out of unsigned transaction
-  getTransactionDetailsFromSigned(transaction: SignedTransaction): Promise<IAirGapTransaction[]> // out of signed transaction
+  getTransactionDetails(transaction: UnsignedTransaction, data?: any): Promise<IAirGapTransaction[]> // out of unsigned transaction
+  getTransactionDetailsFromSigned(transaction: SignedTransaction, data?: any): Promise<IAirGapTransaction[]> // out of signed transaction
 
   getBalanceOfAddresses(addresses: string[]): Promise<string>
   getBalanceOfPublicKey(publicKey: string, addressIndex?: number): Promise<string>

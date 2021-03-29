@@ -1,4 +1,4 @@
-import { FeeDefaults } from './ICoinProtocol'
+import { FeeDefaults, CoinAddress } from './ICoinProtocol'
 import { TezosTransactionResult } from './tezos/types/TezosTransactionResult'
 import { IProtocolTransactionCursor } from '../interfaces/IAirGapTransaction'
 
@@ -23,8 +23,8 @@ export abstract class NonExtendedProtocol {
     extendedPublicKey: string,
     visibilityDerivationIndex: number,
     addressDerivationIndex: number
-  ): Promise<string> {
-    return Promise.resolve('')
+  ): Promise<CoinAddress> {
+    return Promise.resolve({ getValue: () => '' })
   }
 
   public getAddressesFromExtendedPublicKey(
@@ -32,7 +32,7 @@ export abstract class NonExtendedProtocol {
     visibilityDerivationIndex: number,
     addressCount: number,
     offset: number
-  ): Promise<string[]> {
+  ): Promise<CoinAddress[]> {
     return Promise.resolve([])
   }
 

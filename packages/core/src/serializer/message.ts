@@ -11,11 +11,13 @@ import { SignedCosmosTransaction } from './schemas/definitions/signed-transactio
 import { SignedEthereumTransaction } from './schemas/definitions/signed-transaction-ethereum'
 import { SignedSubstrateTransaction } from './schemas/definitions/signed-transaction-substrate'
 import { SignedTezosTransaction } from './schemas/definitions/signed-transaction-tezos'
+import { SignedTezosSaplingTransaction } from './schemas/definitions/signed-transaction-tezos-sapling'
 import { UnsignedAeternityTransaction } from './schemas/definitions/unsigned-transaction-aeternity'
 import { UnsignedBitcoinTransaction } from './schemas/definitions/unsigned-transaction-bitcoin'
 import { UnsignedEthereumTransaction } from './schemas/definitions/unsigned-transaction-ethereum'
 import { UnsignedSubstrateTransaction } from './schemas/definitions/unsigned-transaction-substrate'
 import { UnsignedTezosTransaction } from './schemas/definitions/unsigned-transaction-tezos'
+import { UnsignedTezosSaplingTransaction } from './schemas/definitions/unsigned-transaction-tezos-sapling'
 import { SchemaInfo, SchemaItem, SchemaTransformer } from './schemas/schema'
 import { Serializer } from './serializer'
 import { UnsignedCosmosTransaction } from './types'
@@ -30,12 +32,14 @@ export type IACMessages =
   | MessageSignRequest
   | MessageSignResponse
   | UnsignedTezosTransaction
+  | UnsignedTezosSaplingTransaction
   | UnsignedAeternityTransaction
   | UnsignedBitcoinTransaction
   | UnsignedCosmosTransaction
   | UnsignedEthereumTransaction
   | UnsignedSubstrateTransaction
   | SignedTezosTransaction
+  | SignedTezosSaplingTransaction
   | SignedAeternityTransaction
   | SignedBitcoinTransaction
   | SignedCosmosTransaction

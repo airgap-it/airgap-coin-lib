@@ -1,11 +1,10 @@
 import { invalidArgumentTypeError } from '../../../../../utils/error'
-import { hexToBytes } from '../../../../../utils/hex'
 import { MichelineDataNode, MichelinePrimitive } from '../../micheline/MichelineNode'
 import { isMichelinePrimitive } from '../../utils'
 import { MichelsonType } from '../MichelsonType'
 
 export class MichelsonBytes extends MichelsonType {
-  constructor(public readonly value: Buffer, name?: string) {
+  constructor(public readonly value: Buffer | string, name?: string) {
     super(name)
   }
 
@@ -28,11 +27,13 @@ export class MichelsonBytes extends MichelsonType {
       throw invalidArgumentTypeError('MichelsonBytes', 'string or Buffer', `${typeof unknownValue}: ${unknownValue}`)
     }
 
-    return new MichelsonBytes(hexToBytes(unknownValue), name)
+    return new MichelsonBytes(unknownValue, name)
   }
 
   public asRawValue(): Record<string, string> | string {
-    return this.name ? { [this.name]: this.value.toString('hex') } : this.value.toString('hex')
+    const value: string = typeof this.value === 'string' ? this.value : this.value.toString('hex')
+
+    return this.name ? { [this.name]: value } : value
   }
 
   public toMichelineJSON(): MichelineDataNode {

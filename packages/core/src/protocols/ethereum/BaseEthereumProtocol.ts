@@ -17,6 +17,7 @@ import { ICoinSubProtocol, SubProtocolType } from '../ICoinSubProtocol'
 
 import { EthereumInfoClient } from './clients/info-clients/InfoClient'
 import { EthereumNodeClient } from './clients/node-clients/NodeClient'
+import { EthereumAddress } from './EthereumAddress'
 import { EthereumCryptoClient } from './EthereumCryptoClient'
 import { EthereumProtocolOptions } from './EthereumProtocolOptions'
 import { EthereumTransactionCursor, EthereumTransactionResult } from './EthereumTypes'
@@ -118,17 +119,11 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     throw new NotImplementedError(Domain.ETHEREUM, 'extended private key support for ether not implemented')
   }
 
-  public async getAddressFromPublicKey(publicKey: string | Buffer): Promise<string> {
-    if (typeof publicKey === 'string') {
-      // TODO: Types
-      return ethUtil.toChecksumAddress((ethUtil.pubToAddress(Buffer.from(publicKey, 'hex') as any, true) as any).toString('hex'))
-    }
-
-    // TODO: Types
-    return ethUtil.toChecksumAddress((ethUtil.pubToAddress(publicKey as any, true) as any).toString('hex'))
+  public async getAddressFromPublicKey(publicKey: string | Buffer): Promise<EthereumAddress> {
+    return EthereumAddress.from(publicKey)
   }
 
-  public async getAddressesFromPublicKey(publicKey: string | Buffer): Promise<string[]> {
+  public async getAddressesFromPublicKey(publicKey: string | Buffer): Promise<EthereumAddress[]> {
     const address = await this.getAddressFromPublicKey(publicKey)
 
     return [address]
@@ -138,7 +133,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     extendedPublicKey: string,
     visibilityDerivationIndex: number,
     addressDerivationIndex: number
-  ): Promise<string> {
+  ): Promise<EthereumAddress> {
     return this.getAddressFromPublicKey(
       bitcoinJS.HDNode.fromBase58(extendedPublicKey, this.network)
         .derive(visibilityDerivationIndex)
@@ -153,7 +148,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     visibilityDerivationIndex: number,
     addressCount: number,
     offset: number
-  ): Promise<string[]> {
+  ): Promise<EthereumAddress[]> {
     const node = bitcoinJS.HDNode.fromBase58(extendedPublicKey, this.network)
     const generatorArray = [addressCount].map((x, i) => i + offset)
 
@@ -162,6 +157,10 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
         this.getAddressFromPublicKey(node.derive(visibilityDerivationIndex).derive(x).getPublicKeyBuffer().toString('hex'))
       )
     )
+  }
+
+  public async getNextAddressFromPublicKey(publicKey: string, current: EthereumAddress): Promise<EthereumAddress> {
+    return current
   }
 
   public signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: RawEthereumTransaction): Promise<IAirGapSignedTransaction> {
@@ -180,10 +179,11 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
 
   public async getTransactionDetails(unsignedTx: UnsignedTransaction): Promise<IAirGapTransaction[]> {
     const transaction = unsignedTx.transaction as RawEthereumTransaction
+    const address: EthereumAddress = await this.getAddressFromPublicKey(unsignedTx.publicKey)
 
     return [
       {
-        from: [await this.getAddressFromPublicKey(unsignedTx.publicKey)],
+        from: [address.getValue()],
         to: [transaction.to],
         amount: new BigNumber(transaction.value).toString(10),
         fee: new BigNumber(transaction.gasLimit).multipliedBy(new BigNumber(transaction.gasPrice)).toString(10),
@@ -224,9 +224,9 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
   }
 
   public async getBalanceOfPublicKey(publicKey: string): Promise<string> {
-    const address: string = await this.getAddressFromPublicKey(publicKey)
+    const address: EthereumAddress = await this.getAddressFromPublicKey(publicKey)
 
-    return this.getBalanceOfAddresses([address])
+    return this.getBalanceOfAddresses([address.getValue()])
   }
 
   public async getBalanceOfAddresses(addresses: string[]): Promise<string> {
@@ -240,7 +240,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
   }
 
   public async getBalanceOfPublicKeyForSubProtocols(publicKey: string, subProtocols: ICoinSubProtocol[]): Promise<string[]> {
-    const address: string = await this.getAddressFromPublicKey(publicKey)
+    const address: string = await this.getAddressFromPublicKey(publicKey).then((address: EthereumAddress) => address.getValue())
     const contractAddresses = subProtocols.map((subProtocol) => {
       if (subProtocol.subProtocolType === SubProtocolType.TOKEN && subProtocol.contractAddress) {
         return subProtocol.contractAddress
@@ -318,7 +318,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     if (recipients.length !== 1) {
       return Promise.reject('you cannot have 0 recipients')
     }
-    const address: string = await this.getAddressFromPublicKey(publicKey)
+    const address: string = await this.getAddressFromPublicKey(publicKey).then((address: EthereumAddress) => address.getValue())
     const estimatedGas = await this.options.nodeClient.estimateTransactionGas(
       address,
       recipients[0],
@@ -350,7 +350,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     const wrappedValues: BigNumber[] = values.map((value: string) => new BigNumber(value))
     const wrappedFee: BigNumber = new BigNumber(fee)
 
-    const address: string = await this.getAddressFromPublicKey(publicKey)
+    const address: string = await this.getAddressFromPublicKey(publicKey).then((address: EthereumAddress) => address.getValue())
 
     if (recipients.length !== values.length) {
       return Promise.reject('recipients length does not match with values')
@@ -406,9 +406,9 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     limit: number = 50,
     cursor?: EthereumTransactionCursor
   ): Promise<EthereumTransactionResult> {
-    const address: string = await this.getAddressFromPublicKey(publicKey)
+    const address: EthereumAddress = await this.getAddressFromPublicKey(publicKey)
 
-    return this.getTransactionsFromAddresses([address], limit, cursor)
+    return this.getTransactionsFromAddresses([address.getValue()], limit, cursor)
   }
 
   public getTransactionsFromAddresses(

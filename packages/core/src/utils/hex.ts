@@ -21,18 +21,16 @@ export function isHex(value: string): boolean {
   return HEX_REGEX.test(value)
 }
 
-export function toHexBuffer(value: number | BigNumber): Buffer {
-  return Buffer.from(toHexStringRaw(value), 'hex')
+export function toHexBuffer(value: number | BigNumber, bitLength: number = 8): Buffer {
+  return Buffer.from(toHexStringRaw(value, bitLength), 'hex')
 }
 
 export function toHexStringRaw(value: number | BigNumber, bitLength: number = 8): string {
-  const nibbleLength = Math.ceil(bitLength / 4)
-  const hexString = value.toString(16)
-
-  let targetLength = hexString.length >= nibbleLength ? hexString.length : nibbleLength
-  targetLength = targetLength % 2 == 0 ? targetLength : targetLength + 1
-
-  return padStart(value.toString(16), targetLength, '0')
+  if (new BigNumber(value).isPositive()) {
+    return toHexStringRawPositive(value, bitLength)
+  } else {
+    return toHexStringRawNegative(value, bitLength)
+  }
 }
 
 export function toHexString(value: number | BigNumber, bitLength: number = 8): string {
@@ -68,4 +66,20 @@ export function changeEndianness(hex: string): string {
   const bytes = _hex.match(/.{2}/g) || []
 
   return bytes.reverse().join('')
+}
+
+function toHexStringRawPositive(value: number | BigNumber, bitLength: number): string {
+  const nibbleLength: number = Math.ceil(bitLength / 4)
+  const hexString: string = value.toString(16)
+
+  let targetLength: number = hexString.length >= nibbleLength ? hexString.length : nibbleLength
+  targetLength = targetLength % 2 == 0 ? targetLength : targetLength + 1
+
+  return padStart(hexString, targetLength, '0')
+}
+
+function toHexStringRawNegative(value: number | BigNumber, bitLength: number): string {
+  const value2sComplement: BigInt = BigInt(new BigNumber(2).pow(bitLength).toString()) + BigInt(value)
+
+  return value2sComplement.toString(16)
 }

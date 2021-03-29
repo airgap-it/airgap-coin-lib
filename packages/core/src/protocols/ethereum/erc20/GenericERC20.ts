@@ -14,6 +14,7 @@ import { EtherscanInfoClient } from '../clients/info-clients/EtherscanInfoClient
 import { AirGapNodeClient, EthereumRPCDataTransfer } from '../clients/node-clients/AirGapNodeClient'
 import { EthereumERC20ProtocolOptions } from '../EthereumProtocolOptions'
 import { EthereumUtils } from '../utils/utils'
+import { EthereumAddress } from '../EthereumAddress'
 import { BalanceError, ConditionViolationError } from '../../../errors'
 import { Domain } from '../../../errors/coinlib-error'
 
@@ -36,9 +37,9 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, Ethersc
   }
 
   public async getBalanceOfPublicKey(publicKey: string): Promise<string> {
-    const address: string = await this.getAddressFromPublicKey(publicKey)
+    const address: EthereumAddress = await this.getAddressFromPublicKey(publicKey)
 
-    return this.getBalanceOfAddresses([address])
+    return this.getBalanceOfAddresses([address.getValue()])
   }
 
   public async getBalanceOfAddresses(addresses: string[]): Promise<string> {
@@ -81,7 +82,7 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, Ethersc
     if (recipients.length !== 1) {
       return Promise.reject('you cannot have 0 recipients')
     }
-    const address: string = await this.getAddressFromPublicKey(publicKey)
+    const address: string = (await this.getAddressFromPublicKey(publicKey)).getValue()
     const estimatedGas = await this.estimateGas(address, recipients[0], EthereumUtils.toHex(values[0]))
     const gasPrise = await this.options.nodeClient.getGasPrice()
     const feeStepFactor = new BigNumber(0.5)
@@ -117,7 +118,7 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, Ethersc
     const balance: BigNumber = new BigNumber(await this.getBalanceOfPublicKey(publicKey))
 
     if (balance.isGreaterThanOrEqualTo(wrappedValues[0])) {
-      const address: string = await this.getAddressFromPublicKey(publicKey)
+      const address: string = await this.getAddressFromPublicKey(publicKey).then((address: EthereumAddress) => address.getValue())
       const ethBalance: BigNumber = new BigNumber(await super.getBalanceOfAddresses([address]))
 
       const estimatedGas = await this.estimateGas(address, recipients[0], EthereumUtils.toHex(wrappedValues[0].toFixed()))

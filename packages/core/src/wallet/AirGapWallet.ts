@@ -1,7 +1,7 @@
 import { ConditionViolationError } from '../errors'
 import { Domain } from '../errors/coinlib-error'
 import { IAirGapWallet } from '../interfaces/IAirGapWallet'
-import { ICoinProtocol } from '../protocols/ICoinProtocol'
+import { ICoinProtocol, CoinAddress } from '../protocols/ICoinProtocol'
 import { ProtocolSymbols } from '../utils/ProtocolSymbols'
 
 export interface SerializedAirGapWallet {
@@ -37,6 +37,7 @@ export class AirGapWallet implements IAirGapWallet {
   }
 
   public async deriveAddresses(amount: number = 50): Promise<string[]> {
+    let addresses: CoinAddress[]
     if (this.isExtendedPublicKey) {
       const parts: string[] = this.derivationPath.split('/')
       let offset: number = 0
@@ -45,13 +46,15 @@ export class AirGapWallet implements IAirGapWallet {
         offset = Number.parseInt(parts[parts.length - 1], 10)
       }
 
-      return [
-        ...(await this.protocol.getAddressesFromExtendedPublicKey(this.publicKey, 0, amount, offset)),
-        ...(await this.protocol.getAddressesFromExtendedPublicKey(this.publicKey, 1, amount, offset))
-      ]
+      addresses = (await Promise.all([
+        this.protocol.getAddressesFromExtendedPublicKey(this.publicKey, 0, amount, offset),
+        this.protocol.getAddressesFromExtendedPublicKey(this.publicKey, 1, amount, offset)
+      ])).reduce((flatten, next) => flatten.concat(next), [])
     } else {
-      return this.protocol.getAddressesFromPublicKey(this.publicKey)
+      addresses = await this.protocol.getAddressesFromPublicKey(this.publicKey)
     }
+
+    return addresses.map((address: CoinAddress) => address.getValue())
   }
 
   public toJSON(): SerializedAirGapWallet {

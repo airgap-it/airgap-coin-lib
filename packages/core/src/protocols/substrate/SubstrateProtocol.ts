@@ -83,12 +83,16 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     return keyPair.privateKey
   }
 
-  public async getAddressFromPublicKey(publicKey: string): Promise<string> {
+  public async getAddressFromPublicKey(publicKey: string): Promise<SubstrateAddress> {
     return this.options.accountController.createAddressFromPublicKey(publicKey)
   }
 
-  public async getAddressesFromPublicKey(publicKey: string): Promise<string[]> {
+  public async getAddressesFromPublicKey(publicKey: string): Promise<SubstrateAddress[]> {
     return [await this.getAddressFromPublicKey(publicKey)]
+  }
+
+  public async getNextAddressFromPublicKey(publicKey: string, current: SubstrateAddress): Promise<SubstrateAddress> {
+    return current
   }
 
   public async getTransactionsFromPublicKey(
@@ -97,6 +101,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     cursor?: SubstrateTransactionCursor
   ): Promise<SubstrateTransactionResult> {
     const addresses = await this.getAddressesFromPublicKey(publicKey)
+      .then((addresses: SubstrateAddress[]) => addresses.map((address: SubstrateAddress) => address.getValue()))
 
     return this.getTransactionsFromAddresses(addresses, limit, cursor)
   }
@@ -160,7 +165,9 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
   }
 
   public async getBalanceOfPublicKey(publicKey: string): Promise<string> {
-    return this.getBalanceOfAddresses([await this.getAddressFromPublicKey(publicKey)])
+    const address = await this.getAddressFromPublicKey(publicKey)
+
+    return this.getBalanceOfAddresses([address.getValue()])
   }
 
   public async getBalanceOfPublicKeyForSubProtocols(publicKey: string, subProtocols: ICoinSubProtocol[]): Promise<string[]> {
@@ -280,7 +287,7 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
 
     const validators = await this.options.nodeClient.getValidators()
 
-    return validators ? validators[0].toString() : ''
+    return validators ? validators[0].getValue() : ''
   }
 
   public async getCurrentDelegateesForPublicKey(publicKey: string): Promise<string[]> {
@@ -310,7 +317,9 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
   }
 
   public async getDelegatorDetailsFromPublicKey(publicKey: string): Promise<DelegatorDetails> {
-    return this.getDelegatorDetailsFromAddress(await this.getAddressFromPublicKey(publicKey))
+    const address = await this.getAddressFromPublicKey(publicKey)
+
+    return this.getDelegatorDetailsFromAddress(address.getValue())
   }
 
   public async getDelegatorDetailsFromAddress(address: string): Promise<DelegatorDetails> {
@@ -318,7 +327,9 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
   }
 
   public async getDelegationDetailsFromPublicKey(publicKey: string, delegatees: string[]): Promise<DelegationDetails> {
-    return this.getDelegationDetailsFromAddress(await this.getAddressFromPublicKey(publicKey), delegatees)
+    const address = await this.getAddressFromPublicKey(publicKey)
+
+    return this.getDelegationDetailsFromAddress(address.getValue(), delegatees)
   }
 
   public async getDelegationDetailsFromAddress(address: string, delegatees: string[]): Promise<DelegationDetails> {

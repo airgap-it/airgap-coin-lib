@@ -15,7 +15,8 @@ export type MichelineNode = MichelineGenericNode<MichelsonGrammarType | Michelso
 export type MichelineTypeNode = MichelineGenericNode<MichelsonGrammarType>
 export type MichelineDataNode = MichelineGenericNode<MichelsonGrammarData>
 
-export type MichelinePrimitive<T extends 'int' | 'string' | 'bytes'> = Record<T, string>
+export type MichelinePrimitiveType = 'int' | 'string' | 'bytes'
+export type MichelinePrimitive<T extends MichelinePrimitiveType> = Record<T, string>
 
 export interface MichelinePrimitiveApplication<T extends MichelsonGrammarType | MichelsonGrammarData> {
   prim: T

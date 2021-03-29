@@ -6,6 +6,7 @@ import { Secp256k1CryptoClient } from '../Secp256k1CryptoClient'
 import { BaseEthereumProtocol } from './BaseEthereumProtocol'
 import { EthereumInfoClient } from './clients/info-clients/InfoClient'
 import { EthereumNodeClient } from './clients/node-clients/NodeClient'
+import { EthereumAddress } from './EthereumAddress'
 
 export class EthereumCryptoClient extends Secp256k1CryptoClient {
   constructor(private readonly protocol: BaseEthereumProtocol<EthereumNodeClient, EthereumInfoClient>) {
@@ -32,8 +33,8 @@ export class EthereumCryptoClient extends Secp256k1CryptoClient {
     const recoveredAddressBuffer: Buffer = EthereumJSUtils.publicToAddress(recoveredPublicKey)
     const recoveredAddress: string = EthereumJSUtils.bufferToHex(recoveredAddressBuffer)
 
-    const address: string = await this.protocol.getAddressFromPublicKey(publicKey)
+    const address: EthereumAddress = await this.protocol.getAddressFromPublicKey(publicKey)
 
-    return recoveredAddress.toLowerCase() === address.toLowerCase()
+    return recoveredAddress.toLowerCase() === address.getValue().toLowerCase()
   }
 }

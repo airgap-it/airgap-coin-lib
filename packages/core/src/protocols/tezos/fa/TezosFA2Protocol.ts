@@ -4,6 +4,7 @@ import { RawTezosTransaction } from '../../../serializer/types'
 import { isHex } from '../../../utils/hex'
 import { FeeDefaults } from '../../ICoinProtocol'
 import { TezosContractCall } from '../contract/TezosContractCall'
+import { TezosAddress } from '../TezosAddress'
 import { TezosNetwork } from '../TezosProtocol'
 import { TezosUtils } from '../TezosUtils'
 import { BigMapResponse } from '../types/contract/BigMapResult'
@@ -13,6 +14,7 @@ import { TezosFA2TokenMetadata } from '../types/fa/TezosFA2TokenMetadata'
 import { TezosFA2TransferRequest } from '../types/fa/TezosFA2TransferRequest'
 import { TezosFA2UpdateOperatorRequest } from '../types/fa/TezosFA2UpdateOperatorRequest'
 import { MichelineDataNode } from '../types/micheline/MichelineNode'
+import { MichelsonList } from '../types/michelson/generics/MichelsonList'
 import { MichelsonPair } from '../types/michelson/generics/MichelsonPair'
 import { MichelsonAddress } from '../types/michelson/primitives/MichelsonAddress'
 import { MichelsonInt } from '../types/michelson/primitives/MichelsonInt'
@@ -20,10 +22,8 @@ import { MichelsonString } from '../types/michelson/primitives/MichelsonString'
 import { TezosTransactionParameters } from '../types/operations/Transaction'
 import { TezosOperationType } from '../types/TezosOperationType'
 import { isMichelinePrimitive, isMichelineSequence } from '../types/utils'
-
 import { TezosFAProtocol } from './TezosFAProtocol'
 import { TezosFA2ProtocolOptions } from './TezosFAProtocolOptions'
-import { MichelsonList } from '../types/michelson/generics/MichelsonList'
 import { InvalidValueError, ConditionViolationError, NotFoundError } from '../../../errors'
 import { Domain } from '../../../errors/coinlib-error'
 
@@ -168,33 +168,33 @@ export class TezosFA2Protocol extends TezosFAProtocol {
 
       return Array.isArray(callArgumentsList)
         ? callArgumentsList
-            .map((callArguments: unknown) => {
-              if (!this.isTransferRequest(callArguments)) {
-                return []
-              }
+          .map((callArguments: unknown) => {
+            if (!this.isTransferRequest(callArguments)) {
+              return []
+            }
 
-              const from: string = isHex(callArguments.from_) ? TezosUtils.parseAddress(callArguments.from_) : callArguments.from_
+            const from: string = isHex(callArguments.from_) ? TezosUtils.parseAddress(callArguments.from_) : callArguments.from_
 
-              const transferDetails: [string, BigNumber, BigNumber][] = callArguments.txs.map((tx) => {
-                const to: string = isHex(tx.to_) ? TezosUtils.parseAddress(tx.to_) : tx.to_
+            const transferDetails: [string, BigNumber, BigNumber][] = callArguments.txs.map((tx) => {
+              const to: string = isHex(tx.to_) ? TezosUtils.parseAddress(tx.to_) : tx.to_
 
-                return [to, tx.token_id, tx.amount] as [string, BigNumber, BigNumber]
-              })
-
-              return transferDetails.map(([to, tokenID, amount]: [string, BigNumber, BigNumber]) => {
-                return {
-                  ...defaultDetails,
-                  amount: amount.toFixed(),
-                  from: [from],
-                  to: [to],
-                  extra: {
-                    type: parameters.entrypoint,
-                    assetID: this.tokenID === undefined || !tokenID.eq(this.tokenID) ? tokenID.toString() : undefined
-                  }
-                }
-              })
+              return [to, tx.token_id, tx.amount] as [string, BigNumber, BigNumber]
             })
-            .reduce((flatten: Partial<IAirGapTransaction>[], next: Partial<IAirGapTransaction>[]) => flatten.concat(next), [])
+
+            return transferDetails.map(([to, tokenID, amount]: [string, BigNumber, BigNumber]) => {
+              return {
+                ...defaultDetails,
+                amount: amount.toFixed(),
+                from: [from],
+                to: [to],
+                extra: {
+                  type: parameters.entrypoint,
+                  assetID: this.tokenID === undefined || !tokenID.eq(this.tokenID) ? tokenID.toString() : undefined
+                }
+              }
+            })
+          })
+          .reduce((flatten: Partial<IAirGapTransaction>[], next: Partial<IAirGapTransaction>[]) => flatten.concat(next), [])
         : [defaultDetails]
     } catch {
       return [defaultDetails]
@@ -328,12 +328,12 @@ export class TezosFA2Protocol extends TezosFAProtocol {
       bigMapID: this.tokenMetadataBigMapID, // temporarily until we cannot search by a big map's annotation
       predicates: tokenIDs
         ? [
-            {
-              field: 'key',
-              operation: 'in',
-              set: tokenIDs
-            }
-          ]
+          {
+            field: 'key',
+            operation: 'in',
+            set: tokenIDs
+          }
+        ]
         : undefined
     })
 
@@ -343,12 +343,12 @@ export class TezosFA2Protocol extends TezosFAProtocol {
 
         return match && this.isTokenMetadata(match.groups)
           ? {
-              tokenID: new BigNumber(match.groups.tokenID).toNumber(),
-              symbol: match.groups.symbol,
-              name: match.groups.name,
-              decimals: new BigNumber(match.groups.decimals).toNumber(),
-              extras: match.groups.extras
-            }
+            tokenID: new BigNumber(match.groups.tokenID).toNumber(),
+            symbol: match.groups.symbol,
+            name: match.groups.name,
+            decimals: new BigNumber(match.groups.decimals).toNumber(),
+            extras: match.groups.extras
+          }
           : null
       })
       .filter((metadata: TezosFA2TokenMetadata | null) => metadata !== null) as TezosFA2TokenMetadata[]
@@ -372,7 +372,7 @@ export class TezosFA2Protocol extends TezosFAProtocol {
 
     const addressIndex: number = data && data.addressIndex !== undefined ? data.addressIndex : 0
     const tokenID: number = data && data.tokenID !== undefined ? data.tokenID : 0
-    const addresses: string[] = await this.getAddressesFromPublicKey(publicKey)
+    const addresses: string[] = (await this.getAddressesFromPublicKey(publicKey)).map((address: TezosAddress) => address.getValue())
 
     if (!addresses[addressIndex]) {
       throw new NotFoundError(Domain.TEZOSFA, `no kt-address with index ${addressIndex} exists`)
