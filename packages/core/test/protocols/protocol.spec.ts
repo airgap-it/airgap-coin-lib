@@ -142,10 +142,10 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
           const address = await protocol.lib.getAddressFromPublicKey(publicKey)
 
           // check if address format matches
-          expect(address.match(new RegExp(protocol.lib.addressValidationPattern))).not.to.equal(null)
+          expect(address.getValue().match(new RegExp(protocol.lib.addressValidationPattern))).not.to.equal(null)
 
           // check if address matches to supplied one
-          expect(address).to.equal(protocol.wallet.addresses[0], 'address does not match')
+          expect(address.getValue()).to.equal(protocol.wallet.addresses[0], 'address does not match')
         }
       )
 
@@ -157,10 +157,10 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
           const address = await protocol.lib.getAddressFromExtendedPublicKey(publicKey, 0, 0)
 
           // check if address format matches
-          expect(address.match(new RegExp(protocol.lib.addressValidationPattern))).not.to.equal(null)
+          expect(address.getValue().match(new RegExp(protocol.lib.addressValidationPattern))).not.to.equal(null)
 
           // check if address matches to supplied one
-          expect(address).to.equal(protocol.wallet.addresses[0], 'address does not match')
+          expect(address.getValue()).to.equal(protocol.wallet.addresses[0], 'address does not match')
         }
       )
     })

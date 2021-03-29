@@ -29,8 +29,8 @@ describe('Extended Public Derivation Logic', function () {
       bitcoin.getAddressFromExtendedPublicKey(extendedPublicKey, 0, 1)
     ])
       .then((results) => {
-        assert.equal(results[0], '15B2gX2x1eqFKgR44nCe1i33ursGKP4Qpi')
-        assert.equal(results[1], '15srTWTrucPWSUGFZY2LWaYobwpDLknz49') // m/44'/0'/0'/0/0
+        assert.equal(results[0].getValue(), '15B2gX2x1eqFKgR44nCe1i33ursGKP4Qpi')
+        assert.equal(results[1].getValue(), '15srTWTrucPWSUGFZY2LWaYobwpDLknz49') // m/44'/0'/0'/0/0
         done()
       })
       .catch((error) => {
@@ -50,8 +50,8 @@ describe('Extended Public Derivation Logic', function () {
   //     litecoin.getAddressFromExtendedPublicKey(extendedPublicKey, 0, 1)
   //   ])
   //     .then(results => {
-  //       assert.equal(results[0], 'LaKxMHETSaWsigMYs88J6ibEGZnLRNWWH1') // m/44'/2'/0'/0/0
-  //       assert.equal(results[1], 'LQUaS2G2FGB2fnoNmon6ERv94JAk6GR29R') /// m/44'/2'/0'/0/1
+  //       assert.equal(results[0].getValue(), 'LaKxMHETSaWsigMYs88J6ibEGZnLRNWWH1') // m/44'/2'/0'/0/0
+  //       assert.equal(results[1].getValue(), 'LQUaS2G2FGB2fnoNmon6ERv94JAk6GR29R') /// m/44'/2'/0'/0/1
   //       done()
   //     })
   //     .catch(error => {
@@ -68,8 +68,8 @@ describe('Extended Public Derivation Logic', function () {
       bitcointestnet.getAddressFromExtendedPublicKey(extendedPublicKey, 0, 1)
     ])
       .then((results) => {
-        assert.equal(results[0], 'mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k') // m/44'/1'/0'/0/0
-        assert.equal(results[1], 'moK2Ws7YvK3LRppzCuLRVfDkpvZiw7T4cu') // m/44'/1'/0'/0/1
+        assert.equal(results[0].getValue(), 'mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k') // m/44'/1'/0'/0/0
+        assert.equal(results[1].getValue(), 'moK2Ws7YvK3LRppzCuLRVfDkpvZiw7T4cu') // m/44'/1'/0'/0/1
         done()
       })
       .catch((error) => {
@@ -84,7 +84,7 @@ describe('Extended Public Derivation Logic', function () {
     eth
       .getAddressFromExtendedPublicKey(publicKey, 0, 0)
       .then((address) => {
-        assert.equal(address, '0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e')
+        assert.equal(address.getValue(), '0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e')
         done()
       })
       .catch((error) => {
@@ -101,7 +101,7 @@ describe('Public Derivation Logic', function () {
     bitcoin
       .getAddressFromPublicKey(publicKey)
       .then((address) => {
-        assert.equal(address, '15B2gX2x1eqFKgR44nCe1i33ursGKP4Qpi')
+        assert.equal(address.getValue(), '15B2gX2x1eqFKgR44nCe1i33ursGKP4Qpi')
         done()
       })
       .catch((error) => {
@@ -115,7 +115,7 @@ describe('Public Derivation Logic', function () {
   //   litecoin
   //     .getAddressFromPublicKey(publicKey)
   //     .then((address) => {
-  //       assert.equal(address, 'LaKxMHETSaWsigMYs88J6ibEGZnLRNWWH1')
+  //       assert.equal(address.getValue(), 'LaKxMHETSaWsigMYs88J6ibEGZnLRNWWH1')
   //       done()
   //     })
   //     .catch((error) => {
@@ -129,7 +129,7 @@ describe('Public Derivation Logic', function () {
     bitcointestnet
       .getAddressFromPublicKey(publicKey)
       .then((address) => {
-        assert.equal(address, 'mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k')
+        assert.equal(address.getValue(), 'mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k')
         done()
       })
       .catch((error) => {
@@ -144,7 +144,7 @@ describe('Public Derivation Logic', function () {
     eth
       .getAddressFromPublicKey(publicKey)
       .then((address) => {
-        assert.equal(address, '0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e')
+        assert.equal(address.getValue(), '0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e')
         done()
       })
       .catch((error) => {
@@ -320,9 +320,10 @@ describe('Secret to Public Key Logic', function () {
 
     const bitcoin = new CoinLib.BitcoinProtocol()
     const result = await bitcoin.getPublicKeyFromMnemonic(mnemonicPhrase, derivationPath)
+    const address = await bitcoin.getAddressFromExtendedPublicKey(result, 0, 0)
 
     assert.equal(result, publicKey)
-    assert.equal(await bitcoin.getAddressFromExtendedPublicKey(result, 0, 0), '1DC2NBm8L3QoFhRL9dkrFxFLJjkH2GG9HL')
+    assert.equal(address.getValue(), '1DC2NBm8L3QoFhRL9dkrFxFLJjkH2GG9HL')
   })
 })
 
@@ -343,9 +344,10 @@ describe('Secret to Private Key Logic', function () {
 
     const bitcoin = new CoinLib.BitcoinProtocol()
     const result = await bitcoin.getExtendedPrivateKeyFromMnemonic(mnemonicPhrase, derivationPath)
+    const address = await bitcoin.getAddressFromExtendedPublicKey(result, 0, 0)
 
     assert.equal(result, privateKey)
-    assert.equal(await bitcoin.getAddressFromExtendedPublicKey(result, 0, 0), '1DC2NBm8L3QoFhRL9dkrFxFLJjkH2GG9HL')
+    assert.equal(address.getValue(), '1DC2NBm8L3QoFhRL9dkrFxFLJjkH2GG9HL')
   })
 })
 

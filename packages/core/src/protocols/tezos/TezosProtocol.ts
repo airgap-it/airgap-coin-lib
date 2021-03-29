@@ -6,6 +6,7 @@ import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
 import * as bs58check from '../../dependencies/src/bs58check-2.1.2/index'
 import { generateWalletUsingDerivationPath } from '../../dependencies/src/hd-wallet-js-b216450e56954a6e82ace0aade9474673de5d9d5/src/index'
+import { isArray } from '../../dependencies/src/validate.js-0.13.1/validate'
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
 import { AirGapTransactionStatus, IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 import { SignedTezosTransaction } from '../../serializer/schemas/definitions/signed-transaction-tezos'
@@ -21,8 +22,10 @@ import { NonExtendedProtocol } from '../NonExtendedProtocol'
 import { TezosRewardsCalculation005 } from './rewardcalculation/TezosRewardCalculation005'
 import { TezosRewardsCalculation006 } from './rewardcalculation/TezosRewardCalculation006'
 import { TezosRewardsCalculationDefault } from './rewardcalculation/TezosRewardCalculationDefault'
+import { TezosAddress } from './TezosAddress'
 import { TezosCryptoClient } from './TezosCryptoClient'
 import { TezosProtocolOptions } from './TezosProtocolOptions'
+import { TezosUtils } from './TezosUtils'
 import { TezosDelegationOperation } from './types/operations/Delegation'
 import { TezosOriginationOperation } from './types/operations/Origination'
 import { TezosRevealOperation } from './types/operations/Reveal'
@@ -33,7 +36,6 @@ import { TezosTransactionCursor } from './types/TezosTransactionCursor'
 import { TezosTransactionResult } from './types/TezosTransactionResult'
 import { TezosWrappedOperation } from './types/TezosWrappedOperation'
 import { assertNever } from '../../utils/assert'
-import { isArray } from '../../dependencies/src/validate.js-0.13.1/validate'
 import { Domain } from '../../errors/coinlib-error'
 import {
   NetworkError,
@@ -192,7 +194,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   public standardDerivationPath: string = `m/44h/1729h/0h/0h`
 
   public addressIsCaseSensitive: boolean = true
-  public addressValidationPattern: string = '^(tz1|tz2|tz3|KT1)[1-9A-Za-z]{33}$'
+  public addressValidationPattern: string = '^((tz1|tz2|tz3|KT1)[1-9A-Za-z]{33}|zet1[1-9A-Za-z]{65})$'
   public addressPlaceholder: string = 'tz1...'
 
   // https://gitlab.com/tezos/tezos/-/blob/master/docs/whitedoc/proof_of_stake.rst
@@ -207,28 +209,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   protected readonly activationBurn: BigNumber = this.originationSize.times(this.storageCostPerByte)
   protected readonly originationBurn: BigNumber = this.originationSize.times(this.storageCostPerByte) // https://tezos.stackexchange.com/a/787
 
-  // Tezos - We need to wrap these in Buffer due to non-compatible browser polyfills
-  protected readonly tezosPrefixes: {
-    tz1: Buffer
-    tz2: Buffer
-    tz3: Buffer
-    kt: Buffer
-    edpk: Buffer
-    edsk: Buffer
-    edsig: Buffer
-    branch: Buffer
-  } = {
-      tz1: Buffer.from(new Uint8Array([6, 161, 159])),
-      tz2: Buffer.from(new Uint8Array([6, 161, 161])),
-      tz3: Buffer.from(new Uint8Array([6, 161, 164])),
-      kt: Buffer.from(new Uint8Array([2, 90, 121])),
-      edpk: Buffer.from(new Uint8Array([13, 15, 37, 217])),
-      edsk: Buffer.from(new Uint8Array([43, 246, 78, 7])),
-      edsig: Buffer.from(new Uint8Array([9, 245, 205, 134, 18])),
-      branch: Buffer.from(new Uint8Array([1, 52]))
-    }
-
-  public readonly cryptoClient: TezosCryptoClient = new TezosCryptoClient(this.tezosPrefixes.edsig)
+  public readonly cryptoClient: TezosCryptoClient = new TezosCryptoClient(TezosUtils.tezosPrefixes.edsig)
 
   // TODO: Should we remove these getters and replace the calls to `this.options.network...`?
   public get jsonRPCAPI(): string {
@@ -293,19 +274,18 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     return Buffer.from(secretKey)
   }
 
-  public async getAddressFromPublicKey(publicKey: string): Promise<string> {
-    await sodium.ready
-
-    const payload: Uint8Array = sodium.crypto_generichash(20, Buffer.from(publicKey, 'hex'))
-    const address: string = bs58check.encode(Buffer.concat([this.tezosPrefixes.tz1, Buffer.from(payload)]))
-
-    return address
+  public async getAddressFromPublicKey(publicKey: string): Promise<TezosAddress> {
+    return TezosAddress.fromPublicKey(publicKey)
   }
 
-  public async getAddressesFromPublicKey(publicKey: string): Promise<string[]> {
-    const address: string = await this.getAddressFromPublicKey(publicKey)
+  public async getAddressesFromPublicKey(publicKey: string): Promise<TezosAddress[]> {
+    const address: TezosAddress = await this.getAddressFromPublicKey(publicKey)
 
     return [address]
+  }
+
+  public async getNextAddressFromPublicKey(publicKey: string, current: TezosAddress): Promise<TezosAddress> {
+    return current
   }
 
   public async getTransactionsFromPublicKey(
@@ -314,6 +294,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     cursor?: TezosTransactionCursor
   ): Promise<TezosTransactionResult> {
     const addresses: string[] = await this.getAddressesFromPublicKey(publicKey)
+      .then((addresses: TezosAddress[]) => addresses.map((address: TezosAddress) => address.getValue()))
 
     return this.getTransactionsFromAddresses(addresses, limit, cursor)
   }
@@ -558,9 +539,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   }
 
   public async getBalanceOfPublicKey(publicKey: string): Promise<string> {
-    const address: string = await this.getAddressFromPublicKey(publicKey)
+    const address: TezosAddress = await this.getAddressFromPublicKey(publicKey)
 
-    return this.getBalanceOfAddresses([address])
+    return this.getBalanceOfAddresses([address.getValue()])
   }
 
   public async getBalanceOfPublicKeyForSubProtocols(publicKey: string, subProtocols: ICoinSubProtocol[]): Promise<string[]> {
@@ -726,6 +707,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     // check if we got an address-index
     const addressIndex: number = data && data.addressIndex ? data.addressIndex : 0
     const addresses: string[] = await this.getAddressesFromPublicKey(publicKey)
+      .then((addresses: TezosAddress[]) => addresses.map((address: TezosAddress) => address.getValue()))
 
     if (!addresses[addressIndex]) {
       throw new NotFoundError(Domain.TEZOS, 'no kt-address with this index exists')
@@ -875,7 +857,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   }
 
   public async getCurrentDelegateesForPublicKey(publicKey: string): Promise<string[]> {
-    return this.getCurrentDelegateesForAddress(await this.getAddressFromPublicKey(publicKey))
+    const address = await this.getAddressFromPublicKey(publicKey)
+
+    return this.getCurrentDelegateesForAddress(address.getValue())
   }
 
   public async getCurrentDelegateesForAddress(address: string): Promise<string[]> {
@@ -897,7 +881,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   }
 
   public async isPublicKeyDelegating(publicKey: string): Promise<boolean> {
-    return this.isAddressDelegating(await this.getAddressFromPublicKey(publicKey))
+    const address = await this.getAddressFromPublicKey(publicKey)
+
+    return this.isAddressDelegating(address.getValue())
   }
 
   public async isAddressDelegating(address: string): Promise<boolean> {
@@ -907,7 +893,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   }
 
   public async getDelegatorDetailsFromPublicKey(publicKey: string): Promise<DelegatorDetails> {
-    return this.getDelegatorDetailsFromAddress(await this.getAddressFromPublicKey(publicKey))
+    const address = await this.getAddressFromPublicKey(publicKey)
+
+    return this.getDelegatorDetailsFromAddress(address.getValue())
   }
 
   public async getDelegatorDetailsFromAddress(address: string): Promise<DelegatorDetails> {
@@ -915,7 +903,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   }
 
   public async getDelegationDetailsFromPublicKey(publicKey: string, delegatees: string[]): Promise<DelegationDetails> {
-    return this.getDelegationDetailsFromAddress(await this.getAddressFromPublicKey(publicKey), delegatees)
+    const address = await this.getAddressFromPublicKey(publicKey)
+
+    return this.getDelegationDetailsFromAddress(address.getValue(), delegatees)
   }
 
   public async getDelegationDetailsFromAddress(address: string, delegatees: string[]): Promise<DelegationDetails> {
@@ -1012,7 +1002,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     let branch: string
     const operations: TezosOperation[] = []
 
-    const address: string = await this.getAddressFromPublicKey(publicKey)
+    const address: string = await this.getAddressFromPublicKey(publicKey).then((address: TezosAddress) => address.getValue())
 
     try {
       const results = await Promise.all([
@@ -1446,7 +1436,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     let branch: string = ''
 
     const operations: TezosOperation[] = []
-    const tzAddress: string = await this.getAddressFromPublicKey(publicKey)
+    const tzAddress: string = await this.getAddressFromPublicKey(publicKey).then((address: TezosAddress) => address.getValue())
 
     try {
       const results: AxiosResponse[] = await Promise.all([
@@ -1604,7 +1594,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       gas_limit: '10000', // taken from conseiljs
       storage_limit: '0', // taken from conseiljs
       counter: counter.toFixed(),
-      public_key: bs58check.encode(Buffer.concat([this.tezosPrefixes.edpk, Buffer.from(publicKey, 'hex')])),
+      public_key: bs58check.encode(Buffer.concat([TezosUtils.tezosPrefixes.edpk, Buffer.from(publicKey, 'hex')])),
       source: address
     }
 

@@ -1,8 +1,9 @@
 import axios, { AxiosResponse } from '../../../dependencies/src/axios-0.19.0/index'
+import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { MichelineNode, MichelineTypeNode, MichelineDataNode } from '../types/micheline/MichelineNode'
 import { BigMapPredicate } from '../types/contract/BigMapPredicate'
 import { BigMapRequest } from '../types/contract/BigMapRequest'
 import { BigMapResponse } from '../types/contract/BigMapResult'
-import { MichelineDataNode, MichelineNode, MichelineTypeNode } from '../types/micheline/MichelineNode'
 import { InvalidValueError, NetworkError, NotFoundError } from '../../../errors'
 import { Domain } from '../../../errors/coinlib-error'
 import { MichelsonOr } from '../types/michelson/generics/MichelsonOr'
@@ -59,15 +60,15 @@ export class TezosContract {
     return this.nodeRequest('storage')
   }
 
-  public async createContractCall(entrypointName: string, value: unknown): Promise<TezosContractCall> {
+  public async createContractCall(entrypointName: string, value: unknown, amount?: BigNumber): Promise<TezosContractCall> {
     await this.waitForEntrypoints()
 
     const entrypoint: TezosContractEntrypoint | undefined = this.entrypoints?.get(entrypointName)
     if (!entrypoint) {
-      return this.createDefaultContractCall(value)
+      return this.createDefaultContractCall(value, amount)
     }
 
-    return this.createEntrypointContractCall(entrypoint, value)
+    return this.createEntrypointContractCall(entrypoint, value, undefined, amount)
   }
 
   public async parseContractCall(json: TezosTransactionParameters): Promise<TezosContractCall> {
@@ -87,6 +88,24 @@ export class TezosContract {
         }
       }
     })
+  }
+
+  public areValidParameters(data: unknown): boolean {
+    try {
+      const parameters: unknown = typeof data === 'string' ? JSON.parse(data) : data
+
+      return (parameters instanceof Object && 'entrypoint' in parameters && 'value' in parameters)
+    } catch {
+      return false
+    }
+  }
+
+  public parseParameters(parameters: string): TezosTransactionParameters {
+    if (!this.areValidParameters(parameters)) {
+      throw new Error('Invalid parameters')
+    }
+
+    return JSON.parse(parameters) as TezosTransactionParameters
   }
 
   public async normalizeContractCallParameters(
@@ -138,16 +157,17 @@ export class TezosContract {
     }
   }
 
-  private createDefaultContractCall(value: unknown): TezosContractCall {
-    return new TezosContractCall(TezosContract.DEFAULT_ENTRYPOINT, value instanceof MichelsonType ? value : undefined)
+  private createDefaultContractCall(value: unknown, amount?: BigNumber): TezosContractCall {
+    return new TezosContractCall(TezosContract.DEFAULT_ENTRYPOINT, value instanceof MichelsonType ? value : undefined, amount)
   }
 
   private createEntrypointContractCall(
     entrypoint: TezosContractEntrypoint,
     value: unknown,
-    configuration: MichelsonTypeMetaCreateValueConfiguration = {}
+    configuration: MichelsonTypeMetaCreateValueConfiguration = {},
+    amount?: BigNumber
   ): TezosContractCall {
-    return new TezosContractCall(entrypoint.name, entrypoint.type.createValue(value, configuration))
+    return new TezosContractCall(entrypoint.name, entrypoint.type.createValue(value, configuration), amount)
   }
 
   private async getBigMapID(predicates?: BigMapPredicate[]): Promise<number> {

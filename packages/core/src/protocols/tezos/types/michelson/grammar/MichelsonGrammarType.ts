@@ -24,3 +24,4 @@ export type MichelsonGrammarType =
   | 'map'
   | 'big_map'
   | 'chain_id'
+  | 'sapling_transaction'

@@ -100,8 +100,8 @@ export class MichelsonSome extends MichelsonOption {
 export class MichelsonNone extends MichelsonOption {
   protected type: MichelsonOptionType = 'None'
 
-  public asRawValue(): Record<string, null> | null {
-    return this.name ? { [this.name]: null } : null
+  public asRawValue(): Record<string, undefined> | undefined {
+    return this.name ? { [this.name]: undefined } : undefined
   }
 
   public toMichelineJSON(): MichelineDataNode {

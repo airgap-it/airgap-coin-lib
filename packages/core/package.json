@@ -38,6 +38,7 @@
   },
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
+    "@airgap/sapling-wasm": "0.0.5-beta.10",
     "@polkadot/util": "2.0.1",
     "@polkadot/wasm-crypto": "0.20.1",
     "idna-uts46-hx": "^3.3.1",

@@ -30,7 +30,7 @@ export class SCALEAccountId extends SCALEType {
   }
 
   public asAddress(): string {
-    return this.address.toString()
+    return this.address.getValue()
   }
 
   public asBytes(): Buffer {
