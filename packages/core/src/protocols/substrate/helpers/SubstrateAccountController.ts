@@ -511,7 +511,7 @@ export class SubstrateAccountController {
     const minDelegationValue = new BigNumber(1)
 
     const electionStatus = await this.nodeClient.getElectionStatus().then((eraElectionStatus) => eraElectionStatus?.status.value)
-    const isElectionClosed = electionStatus === SubstrateElectionStatus.CLOSED
+    const isElectionClosed = electionStatus !== SubstrateElectionStatus.OPEN
 
     const hasFundsToWithdraw = new BigNumber(stakingDetails?.unlocked ?? 0).gt(0)
 
