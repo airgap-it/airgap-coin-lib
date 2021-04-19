@@ -221,7 +221,7 @@ export class SubstrateAccountController {
     )
 
     if (!exposure) {
-      return Promise.reject('Could not fetch exposure')
+      return SubstrateNominationStatus.INACTIVE
     }
 
     const isActive: boolean = exposure.others.elements.some((element) => element.first.asAddress() === nominator.toString())
