@@ -221,7 +221,7 @@ export class SubstrateAccountController {
     )
 
     if (!exposure) {
-      return Promise.reject('Could not fetch exposure')
+      return SubstrateNominationStatus.INACTIVE
     }
 
     const isActive: boolean = exposure.others.elements.some((element) => element.first.asAddress() === nominator.toString())
@@ -511,7 +511,7 @@ export class SubstrateAccountController {
     const minDelegationValue = new BigNumber(1)
 
     const electionStatus = await this.nodeClient.getElectionStatus().then((eraElectionStatus) => eraElectionStatus?.status.value)
-    const isElectionClosed = electionStatus === SubstrateElectionStatus.CLOSED
+    const isElectionClosed = electionStatus !== SubstrateElectionStatus.OPEN
 
     const hasFundsToWithdraw = new BigNumber(stakingDetails?.unlocked ?? 0).gt(0)
 
