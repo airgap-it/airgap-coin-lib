@@ -284,7 +284,9 @@ export class SubstrateNodeClient {
     const storageEntry = this.metadata?.storageEntry(moduleName, entryName)
 
     if (!storageEntry) {
-      return Promise.reject(`Could not find requested item: ${moduleName} ${entryName}`)
+      console.warn(`Could not find requested item: ${moduleName} ${entryName}`)
+      
+      return null
     }
 
     const hash = await storageEntry.hash(...args)
