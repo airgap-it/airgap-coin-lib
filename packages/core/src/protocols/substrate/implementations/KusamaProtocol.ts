@@ -47,9 +47,7 @@ export class KusamaProtocol extends SubstrateProtocol {
   public standardDerivationPath: string = `m/44'/434'/0'/0/0`
 
   public addressValidationPattern: string = '^[C-HJ][a-km-zA-HJ-NP-Z1-9]+$'
-  public addressPlaceholder: string = `C/D/E/F/G/H/J...` // TODO: set better placeholder?
-
-  protected defaultValidator: string = 'GcqKn3HHodwcFc3Pg3Evcbc43m7qJNMiMv744e5WMSS7TGn'
+  public addressPlaceholder: string = `C/D/E/F/G/H/J...`
 
   public constructor(public readonly options: SubstrateProtocolOptions = new KusamaProtocolOptions()) {
     super(options)

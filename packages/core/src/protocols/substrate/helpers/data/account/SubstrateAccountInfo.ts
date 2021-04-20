@@ -25,33 +25,44 @@ export class SubstrateAccountInfo {
   public static decode(network: SubstrateNetwork, runtimeVersion: number | undefined, raw: string): SubstrateAccountInfo {
     const decoder = new SCALEDecoder(network, runtimeVersion, raw)
 
-    const [consumersLenght, producersLength]: [number, number] = this.migrateConsumersProducersLengths(network, runtimeVersion);
+    const lengths = this.migrateFieldLengths(network, runtimeVersion);
 
     const nonce = decoder.decodeNextInt(32)
-    const consumers = decoder.decodeNextInt(consumersLenght)
-    const producers = decoder.decodeNextInt(producersLength)
+    const consumers = decoder.decodeNextInt(lengths.consumers)
+    const providers = decoder.decodeNextInt(lengths.providers)
+    const sufficients = decoder.decodeNextInt(lengths.sufficients)
     const data = decoder.decodeNextObject(SubstrateAccountData.decode)
 
-    return new SubstrateAccountInfo(nonce.decoded, consumers.decoded, producers.decoded, data.decoded)
+    return new SubstrateAccountInfo(nonce.decoded, consumers.decoded, providers.decoded, sufficients.decoded, data.decoded)
   }
 
-  private static migrateConsumersProducersLengths(network: SubstrateNetwork, runtimeVersion: number | undefined): [number, number] {
+  private static migrateFieldLengths(
+    network: SubstrateNetwork, 
+    runtimeVersion: number | undefined
+  ): { consumers: number; providers: number; sufficients: number } {
     if (runtimeVersion === undefined) {
-      return [32, 32]
+      return {
+        consumers: 32,
+        providers: 32,
+        sufficients: 32
+      }
     }
 
     if (
-      (network === SubstrateNetwork.KUSAMA && runtimeVersion >= 2028) ||
-      (network === SubstrateNetwork.POLKADOT && runtimeVersion >= 28)
+      (network === SubstrateNetwork.KUSAMA && runtimeVersion >= 2030) ||
+      (network === SubstrateNetwork.POLKADOT && runtimeVersion >= 30)
     ) {
-      return [32, 32]
-    } else if (
-      (network === SubstrateNetwork.KUSAMA && runtimeVersion >= 2025) ||
-      (network === SubstrateNetwork.POLKADOT && runtimeVersion >= 25)
-    ) {
-      return [32, 0]
+      return {
+        consumers: 32,
+        providers: 32,
+        sufficients: 32
+      }
     } else {
-      return [8, 0]
+      return {
+        consumers: 32,
+        providers: 32,
+        sufficients: 0
+      }
     }
   }
 
@@ -59,6 +70,7 @@ export class SubstrateAccountInfo {
     readonly nonce: SCALEInt,
     readonly consumers: SCALEInt,
     readonly providers: SCALEInt,
+    readonly sufficients: SCALEInt,
     readonly data: SubstrateAccountData
   ) { }
 }
