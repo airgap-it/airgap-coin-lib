@@ -1,9 +1,11 @@
+import { sr25519Verify } from '@polkadot/wasm-crypto'
 import * as chai from 'chai'
 import * as chaiAsPromised from 'chai-as-promised'
 import 'mocha'
 import * as sinon from 'sinon'
 
 import { IAirGapTransaction, SubstrateProtocol, TezosProtocol } from '../../src'
+import { AirGapNodeClient } from '../../src/protocols/ethereum/clients/node-clients/AirGapNodeClient'
 
 import { TestProtocolSpec } from './implementations'
 import { AETestProtocolSpec } from './specs/ae'
@@ -15,11 +17,9 @@ import { EthereumClassicTestProtocolSpec } from './specs/ethereum-classic'
 import { EthereumRopstenTestProtocolSpec } from './specs/ethereum-ropsten'
 import { GenericERC20TokenTestProtocolSpec } from './specs/generic-erc20-token'
 import { GroestlcoinProtocolSpec } from './specs/groestl'
-import { TezosTestProtocolSpec } from './specs/tezos'
 import { KusamaTestProtocolSpec } from './specs/kusama'
-import { sr25519Verify } from '@polkadot/wasm-crypto'
-
-import { AirGapNodeClient } from '../../src/protocols/ethereum/clients/node-clients/AirGapNodeClient'
+import { PolkadotTestProtocolSpec } from './specs/polkadot'
+import { TezosTestProtocolSpec } from './specs/tezos'
 
 // use chai-as-promised plugin
 chai.use(chaiAsPromised)
@@ -49,6 +49,7 @@ const protocols = [
   new GenericERC20TokenTestProtocolSpec(),
   new GroestlcoinProtocolSpec(),
   new KusamaTestProtocolSpec(),
+  new PolkadotTestProtocolSpec()
 ]
 
 const itIf = (condition, title, test) => {
@@ -382,7 +383,7 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
       })
 
       itIf(
-        protocol.messages.length > 0 && protocol.lib.identifier !== 'kusama',
+        protocol.messages.length > 0 && protocol.lib.identifier !== 'kusama' && protocol.lib.identifier !== 'polkadot',
         'signMessage - Is able to sign a message using a PrivateKey',
         async () => {
           const publicKey = await protocol.lib.getPublicKeyFromMnemonic(protocol.mnemonic(), protocol.lib.standardDerivationPath)

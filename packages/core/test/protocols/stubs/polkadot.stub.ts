@@ -2,11 +2,11 @@ import * as sinon from 'sinon'
 
 import BigNumber from '../../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
 import { SubstrateTransactionType } from '../../../src/protocols/substrate/helpers/data/transaction/SubstrateTransaction'
-import { KusamaProtocol } from '../../../src/protocols/substrate/implementations/KusamaProtocol'
+import { PolkadotProtocol } from '../../../src/protocols/substrate/implementations/PolkadotProtocol'
 import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
 
-export class KusamaProtocolStub implements ProtocolHTTPStub {
-  public registerStub(testProtocolSpec: TestProtocolSpec, protocol: KusamaProtocol): void {
+export class PolkadotProtocolStub implements ProtocolHTTPStub {
+  public registerStub(testProtocolSpec: TestProtocolSpec, protocol: PolkadotProtocol): void {
     sinon
       .stub(protocol.options.accountController, 'getBalance')
       .withArgs(sinon.match.any)
@@ -20,7 +20,7 @@ export class KusamaProtocolStub implements ProtocolHTTPStub {
     this.registerDefaultStub(testProtocolSpec, protocol)
   }
 
-  public noBalanceStub(testProtocolSpec: TestProtocolSpec, protocol: KusamaProtocol): void {
+  public noBalanceStub(testProtocolSpec: TestProtocolSpec, protocol: PolkadotProtocol): void {
     sinon
       .stub(protocol.options.accountController, 'getTransferableBalance')
       .withArgs(sinon.match.any)
@@ -29,7 +29,7 @@ export class KusamaProtocolStub implements ProtocolHTTPStub {
     this.registerDefaultStub(testProtocolSpec, protocol)
   }
 
-  private registerDefaultStub(testProtocolSpec: TestProtocolSpec, protocol: KusamaProtocol): void {
+  private registerDefaultStub(testProtocolSpec: TestProtocolSpec, protocol: PolkadotProtocol): void {
     sinon.stub(protocol, 'standardDerivationPath').value('m/')
 
     sinon
@@ -72,6 +72,6 @@ export class KusamaProtocolStub implements ProtocolHTTPStub {
 
     sinon.stub(protocol.options.nodeClient, 'getCurrentHeight').returns(Promise.resolve(new BigNumber(3192)))
 
-    sinon.stub(protocol.options.nodeClient, 'getRuntimeVersion').returns(Promise.resolve({ specVersion: 2030, transactionVersion: 1 }))
+    sinon.stub(protocol.options.nodeClient, 'getRuntimeVersion').returns(Promise.resolve({ specVersion: 30, transactionVersion: 1 }))
   }
 }

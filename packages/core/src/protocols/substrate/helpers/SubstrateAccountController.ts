@@ -1,4 +1,4 @@
-import { bip39ToMiniSecret } from '@polkadot/wasm-crypto'
+import { bip39ToMiniSecret, waitReady } from '@polkadot/wasm-crypto'
 
 import { KeyPair } from '../../../data/KeyPair'
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
@@ -35,6 +35,7 @@ export class SubstrateAccountController {
   constructor(readonly network: SubstrateNetwork, readonly nodeClient: SubstrateNodeClient) {}
 
   public async createKeyPairFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<KeyPair> {
+    await waitReady()
     const secret = bip39ToMiniSecret(mnemonic, password || '')
 
     return this.createKeyPairFromHexSecret(Buffer.from(secret).toString('hex'), derivationPath)
