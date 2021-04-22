@@ -1,5 +1,5 @@
 import * as hkdf from "../../../futoin-hkdf-1.3.3/hkdf.js";
-import secp256k1 from "../../../secp256k1-4.0.2/elliptic";
+import * as secp256k1 from "../../../secp256k1-4.0.2/elliptic";
 
 import { decodeHex, getValidSecret } from "../utils";
 import PublicKey from "./PublicKey";

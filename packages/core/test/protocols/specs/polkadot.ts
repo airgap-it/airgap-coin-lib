@@ -1,41 +1,40 @@
-import { KusamaProtocol } from '../../../src/protocols/substrate/implementations/KusamaProtocol'
+import { PolkadotProtocol } from '../../../src/protocols/substrate/implementations/PolkadotProtocol'
 import { SubstrateNetwork } from '../../../src/protocols/substrate/SubstrateNetwork'
 import { TestProtocolSpec } from '../implementations'
-import { KusamaProtocolStub } from '../stubs/kusama.stub'
+import { PolkadotProtocolStub } from '../stubs/polkadot.stub'
 
 /*
  * Test Mnemonic: leopard crouch simple blind castle they elder enact slow rate mad blanket saddle tail silk fury quarter obscure interest exact veteran volcano fabric cherry
  *
  */
 // Test Mnemonic: food talent voyage degree siege clever account medal film remind good kind
-// Derivation path: m/
 // Private Key: d08bc6388fdeb30fc34a8e0286384bd5a84b838222bb9b012fc227d7473fc87aa2913d02297653ce859ccd6b2c057f7e57c9ef6cc359300a891c581fb6d03141
 // Public Key: 52e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10
 // Hex Seed: 55a1417bbfacd64e069b4d07e47fb34ce9ff53b15556698038604f002524aec0
-// Address (Kusama SS58): ESzXrcSsbM3Jxzuz2zczuYgCXsxQrqPw29AR2doaxZdzemT
-export class KusamaTestProtocolSpec extends TestProtocolSpec {
-  public name = 'Kusama'
-  public lib = new KusamaProtocol()
-  public stub = new KusamaProtocolStub()
+// Address (Kusama SS58): 12sg1sXe71bazrBzAyEaF71puZbNJVaMZ92uBfMCfFNfSA9P
+export class PolkadotTestProtocolSpec extends TestProtocolSpec {
+  public name = 'Polkadot'
+  public lib = new PolkadotProtocol()
+  public stub = new PolkadotProtocolStub()
 
   public validAddresses = [
-    'EEWyMLHgwtemr48spFNnS3U2XjaYswqAYAbadx2jr9ppp4X',
-    'HTy49kysog4fCwjsCeZXzEFQ1YyuwfUpJS6UhS9jRKtaWKM',
-    'CjEiyp4VU7o5pvSXCvLbKjd8xohwmTtgRysiuKssu4Ye7K5',
-    'GHszz6ePQwec9voFXNe7h2DmkcgwGvPKzY2LbdksHimHmAp',
-    'F2TTnBLPaccoLimZvVGts4LAoWzQR1EY9NrjPc61gU2Nkje',
-    'CupYGbY1cY8ErcAwQoxp97KKAf1RUPH4m3ZArr7rekfkUoc',
-    'HeCLXHxxN7dKistZLvoaTNGZcY2GXjH9SaGKvVwRyDbvFwW',
-    'GvK1ubf7dbMogDbJH4YibMyyWBbxACtn9SSPEqxMWunBv2E',
-    'G71LDs8bA4xYmhkZK24ndPYRhZfWVXqKtNjq1rb84J8FLfu',
-    'GsUbgMs2f8BvcD5RPRGNZJtByKfqj3PrqSBwp8m1DrVR5s8'
+    '16CuDZEYc5oQkkNXvxq5Q3K44RVwW7DWbw8ZW83H2QG7kc4x',
+    '15ajKAj3bAtjsKyVe55LvGok3fB2WGAC4K1g3zYsahzPumJr',
+    '15VtKrtqtAiptfZwcpagQUNVSKgPTyF8JJJi32JXf4vSkSYC',
+    '143RsnrR7y89kwDWvVWp6iNyGg8TiFUZXWVjSpCYaDMLqE1j',
+    '1rqrUJQBhx6deZYLFd21LtNusPPf6kN8k7AAEanXqPrM58f',
+    '13BjXUHsqAvLJrGDKcEbVzgdGMSobNPBjvLvd8NyiH9iaHCU',
+    '1ZZpAwuPzyWxGTnkUNrA7Pjo6nFYRmMXLk6cwzzUk8Ua9Sv',
+    '1N3hXfu4Ut4bPMq6ciWYAieCiZg5e4Kg5LjMPtMV4WaV7eF',
+    '16Y64EP5JLiM29pCQzDHkdvsCuWA7tYvs7tqSaDs6w3BeJh4',
+    '13wUHTgsup34hQ4e2Rye7sf6Ppn1V5coCZJxyU7jsVdp3uJw'
   ]
 
   public wallet = {
     privateKey:
       'd08bc6388fdeb30fc34a8e0286384bd5a84b838222bb9b012fc227d7473fc87aa2913d02297653ce859ccd6b2c057f7e57c9ef6cc359300a891c581fb6d03141',
     publicKey: '52e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10',
-    addresses: ['ESzXrcSsbM3Jxzuz2zczuYgCXsxQrqPw29AR2doaxZdzemT']
+    addresses: ['12sg1sXe71bazrBzAyEaF71puZbNJVaMZ92uBfMCfFNfSA9P']
   }
 
   public txs = [
@@ -50,7 +49,7 @@ export class KusamaTestProtocolSpec extends TestProtocolSpec {
           '04' + // number of txs
           '2106' + // tx length
           '01' + // optional type (specVersion)
-          'ee070000' + // specVersion
+          '1e000000' + // specVersion
           '00' + // type
           '02286bee' + // fee
           // transaction
@@ -78,7 +77,7 @@ export class KusamaTestProtocolSpec extends TestProtocolSpec {
             '8503'+ // era
             '04' + // nonce
             '00' + // tip
-            'ee070000' + // specVersion
+            '1e000000' + // specVersion
             '01000000' + // transactionVersion
             'd51522c9ef7ba4e0990f7a4527de79afcac992ab97abbbc36722f8a27189b170' + // genesis hash
             '33a7a745849347ce3008c07268be63d8cefd3ef61de0c7318e88a577fb7d26a9' // block hash
@@ -89,7 +88,7 @@ export class KusamaTestProtocolSpec extends TestProtocolSpec {
         '04' + // number of txs
         '2106' + // tx length
         '01' + // optional type (specVersion)
-        'ee070000' + // specVersion
+        '1e000000' + // specVersion
         '00' + // type
         '02286bee' + // fee
         // transaction
@@ -117,7 +116,7 @@ export class KusamaTestProtocolSpec extends TestProtocolSpec {
             '8503'+ // era
             '04' + // nonce
             '00' + // tip
-            'ee070000' + // specVersion
+            '1e000000' + // specVersion
             '01000000' + // transactionVersion
             'd51522c9ef7ba4e0990f7a4527de79afcac992ab97abbbc36722f8a27189b170' + // genesis hash
             '33a7a745849347ce3008c07268be63d8cefd3ef61de0c7318e88a577fb7d26a9' // block hash
@@ -137,30 +136,30 @@ export class KusamaTestProtocolSpec extends TestProtocolSpec {
     {
       message: 'example message',
       signature:
-        '0x30094f45a892156fe1f79254674fdebe69da314b72371f3665aecdc486fd6233b7729571bf12765bb80cf07bd81846634a5a2e60045f492a492e2b40eee8ac8b'
+        '0x98160df00de787087cd9599ff5e59ac8c99af6c53a319a96b0a9e1f6e634ce5fed9db553b759a115c3d9d6fcdd0f11705656bad16ea3ee9f20390f253c7cd58a'
     }
   ]
 
   public encryptAES = [
     {
       message: 'example message',
-      encrypted: 'b9a7091ad33077761052c00f44227a9a!ff56d06348ae96d9df03f811667a08!2b08382f04eb77bf66c5cab27d06f25a'
+      encrypted: 'a3677b19a6ba036288ec2261b620a805!15a385b47009a2b55f587ed9f897e2!f649bbcb1c46c48b0078dc7d40a642a9'
     }
   ]
 
   public transactionResult = {
     transactions: [
       {
-        protocolIdentifier: 'kusama',
+        protocolIdentifier: 'polkadot',
         network: {
           name: 'Mainnet',
           type: 'MAINNET',
-          rpcUrl: 'https://polkadot-kusama-node.prod.gke.papers.tech',
-          blockExplorer: { blockExplorer: 'https://polkascan.io/kusama' },
-          extras: { apiUrl: 'https://kusama.subscan.io/api/scan', network: SubstrateNetwork.KUSAMA }
+          rpcUrl: 'https://polkadot-node.prod.gke.papers.tech',
+          blockExplorer: { blockExplorer: 'https://polkascan.io/polkadot' },
+          extras: { apiUrl: 'https://polkadot.subscan.io/api/scan', network: SubstrateNetwork.POLKADOT }
         },
-        from: ['GzgRTyefkykqf72gC8hGgDVa7p1MYTDyCwFjTsVc53FxZi7'],
-        to: ['EEWyMLHgwtemr48spFNnS3U2XjaYswqAYAbadx2jr9ppp4X'],
+        from: ['16CuDZEYc5oQkkNXvxq5Q3K44RVwW7DWbw8ZW83H2QG7kc4x'],
+        to: ['15ajKAj3bAtjsKyVe55LvGok3fB2WGAC4K1g3zYsahzPumJr'],
         isInbound: true,
         amount: '99977416667634',
         fee: '2583332366',
@@ -174,12 +173,12 @@ export class KusamaTestProtocolSpec extends TestProtocolSpec {
         network: {
           name: 'Mainnet',
           type: 'MAINNET',
-          rpcUrl: 'https://polkadot-kusama-node.prod.gke.papers.tech',
-          blockExplorer: { blockExplorer: 'https://polkascan.io/kusama' },
-          extras: { apiUrl: 'https://kusama.subscan.io/api/scan', network: SubstrateNetwork.KUSAMA }
+          rpcUrl: 'https://polkadot-node.prod.gke.papers.tech',
+          blockExplorer: { blockExplorer: 'https://polkascan.io/polkadot' },
+          extras: { apiUrl: 'https://polkadot.subscan.io/api/scan', network: SubstrateNetwork.POLKADOT }
         },
-        from: ['EEWyMLHgwtemr48spFNnS3U2XjaYswqAYAbadx2jr9ppp4X'],
-        to: ['Dz5JAFYyLigyGnhDyrT5bJ6u8TxagA2muR1UFz7xQVVcfWA'],
+        from: ['16CuDZEYc5oQkkNXvxq5Q3K44RVwW7DWbw8ZW83H2QG7kc4x'],
+        to: ['15ajKAj3bAtjsKyVe55LvGok3fB2WGAC4K1g3zYsahzPumJr'],
         isInbound: false,
         amount: '1020000000000',
         fee: '2583332366',
@@ -198,12 +197,12 @@ export class KusamaTestProtocolSpec extends TestProtocolSpec {
         network: {
           name: 'Mainnet',
           type: 'MAINNET',
-          rpcUrl: 'https://polkadot-kusama-node.prod.gke.papers.tech',
-          blockExplorer: { blockExplorer: 'https://polkascan.io/kusama' },
-          extras: { apiUrl: 'https://kusama.subscan.io/api/scan', network: SubstrateNetwork.KUSAMA }
+          rpcUrl: 'https://polkadot-node.prod.gke.papers.tech',
+          blockExplorer: { blockExplorer: 'https://polkascan.io/polkadot' },
+          extras: { apiUrl: 'https://polkadot.subscan.io/api/scan', network: SubstrateNetwork.POLKADOT }
         },
-        from: ['EEWyMLHgwtemr48spFNnS3U2XjaYswqAYAbadx2jr9ppp4X'],
-        to: ['DxAN9aGS117GJQNGSnaoPw5YVRCZD67DXC8aBzhJk9joK7X'],
+        from: ['16CuDZEYc5oQkkNXvxq5Q3K44RVwW7DWbw8ZW83H2QG7kc4x'],
+        to: ['15ajKAj3bAtjsKyVe55LvGok3fB2WGAC4K1g3zYsahzPumJr'],
         isInbound: false,
         amount: '15966000000000',
         fee: '2599999026',
@@ -217,12 +216,12 @@ export class KusamaTestProtocolSpec extends TestProtocolSpec {
         network: {
           name: 'Mainnet',
           type: 'MAINNET',
-          rpcUrl: 'https://polkadot-kusama-node.prod.gke.papers.tech',
-          blockExplorer: { blockExplorer: 'https://polkascan.io/kusama' },
-          extras: { apiUrl: 'https://kusama.subscan.io/api/scan', network: SubstrateNetwork.KUSAMA }
+          rpcUrl: 'https://polkadot-node.prod.gke.papers.tech',
+          blockExplorer: { blockExplorer: 'https://polkascan.io/polkadot' },
+          extras: { apiUrl: 'https://polkadot.subscan.io/api/scan', network: SubstrateNetwork.POLKADOT }
         },
-        from: ['EEWyMLHgwtemr48spFNnS3U2XjaYswqAYAbadx2jr9ppp4X'],
-        to: ['DxAN9aGS117GJQNGSnaoPw5YVRCZD67DXC8aBzhJk9joK7X'],
+        from: ['16CuDZEYc5oQkkNXvxq5Q3K44RVwW7DWbw8ZW83H2QG7kc4x'],
+        to: ['15ajKAj3bAtjsKyVe55LvGok3fB2WGAC4K1g3zYsahzPumJr'],
         isInbound: false,
         amount: '3800000000000',
         fee: '2599999026',
