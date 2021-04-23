@@ -52,7 +52,7 @@ describe(`ICoinProtocol Aeternity - Custom Tests`, () => {
 
   it("will include the timestamp if it's available", async () => {
     const responseWithTimestamp = JSON.parse(JSON.stringify(sampleAccountResponse))
-    responseWithTimestamp.data[0].time = 1543450515994
+    responseWithTimestamp.data[0].micro_time = 1543450515994
 
     const limit = 1
 
@@ -63,7 +63,7 @@ describe(`ICoinProtocol Aeternity - Custom Tests`, () => {
       .returns(Promise.resolve({ data: responseWithTimestamp }))
 
     const transactions = await (await aeLib.getTransactionsFromAddresses(aeProtocolSpec.wallet.addresses, limit)).transactions
-    
+
     expect(transactions.map((transaction) => ({ ...transaction, network: undefined }))).to.deep.eq([
       {
         amount: new BigNumber(aeProtocolSpec.txs[0].amount).toString(),
@@ -100,7 +100,7 @@ describe(`ICoinProtocol Aeternity - Custom Tests`, () => {
       .stub(axios, 'get')
       .withArgs(`${aeLib.options.network.rpcUrl}/mdw/txs/backward?account=${aeProtocolSpec.wallet.addresses[0]}&page=1&limit=${limit}`)
       .returns(Promise.resolve({ data: responseWithTimestamp }))
-      
+
     const transactions = await (await aeLib.getTransactionsFromAddresses(aeProtocolSpec.wallet.addresses, 1)).transactions
 
     expect(transactions.map((transaction) => ({ ...transaction, network: undefined }))).to.deep.eq([

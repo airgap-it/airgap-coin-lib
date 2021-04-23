@@ -116,10 +116,12 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
   public abstract parseParameters(parameters: TezosTransactionParameters): Promise<TezosSaplingWrappedTransaction[]>
 
   public async initParameters(spendParams: Buffer, outputParams: Buffer): Promise<void> {
-    const externalInitParameters =
-      this.options.config.externalProvider?.initParameters ?? ((_spendParams: Buffer, _outputParams: Buffer) => {})
-
-    await Promise.all([externalInitParameters(spendParams, outputParams), sapling.initParameters(spendParams, outputParams)])
+    const externalInitParameters = this.options.config.externalProvider?.initParameters
+    if (externalInitParameters !== undefined) {
+      await externalInitParameters(spendParams, outputParams)
+    } else {
+      await sapling.initParameters(spendParams, outputParams)
+    }
   }
 
   public async getBlockExplorerLinkForTxId(txId: string): Promise<string> {

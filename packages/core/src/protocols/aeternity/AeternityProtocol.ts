@@ -154,7 +154,7 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
       })
     )
     transactions = transactions.map((obj) => {
-      const parsedTimestamp = parseInt(obj.time, 10)
+      const parsedTimestamp = parseInt(obj.micro_time, 10)
       const airGapTx: IAirGapTransaction = {
         amount: new BigNumber(obj.tx.amount).toString(10),
         fee: new BigNumber(obj.tx.fee).toString(10),
