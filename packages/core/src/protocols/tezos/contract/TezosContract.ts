@@ -1,8 +1,11 @@
 import axios, { AxiosResponse } from '../../../dependencies/src/axios-0.19.0/index'
-import { BigMapPredicate } from '../types/fa/BigMapPredicate'
-import { BigMapRequest } from '../types/fa/BigMapRequest'
-import { BigMapResponse } from '../types/fa/BigMapResult'
-import { MichelineNode, MichelineTypeNode } from '../types/micheline/MichelineNode'
+import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { MichelineNode, MichelineTypeNode, MichelineDataNode } from '../types/micheline/MichelineNode'
+import { BigMapPredicate } from '../types/contract/BigMapPredicate'
+import { BigMapRequest } from '../types/contract/BigMapRequest'
+import { BigMapResponse } from '../types/contract/BigMapResult'
+import { InvalidValueError, NetworkError, NotFoundError } from '../../../errors'
+import { Domain } from '../../../errors/coinlib-error'
 import { MichelsonOr } from '../types/michelson/generics/MichelsonOr'
 import { MichelsonType } from '../types/michelson/MichelsonType'
 import {
@@ -32,7 +35,7 @@ export class TezosContract {
     private readonly conseilAPIURL: string,
     private readonly conseilNetwork: string,
     private readonly conseilAPIKey: string
-  ) {}
+  ) { }
 
   public async bigMapValues(request: BigMapRequest = {}): Promise<BigMapResponse[]> {
     const bigMapID: number = request?.bigMapID ?? (await this.getBigMapID(request.bigMapFilter))
@@ -53,15 +56,19 @@ export class TezosContract {
     })
   }
 
-  public async createContractCall(entrypointName: string, value: unknown): Promise<TezosContractCall> {
+  public async storage(): Promise<MichelineDataNode> {
+    return this.nodeRequest('storage')
+  }
+
+  public async createContractCall(entrypointName: string, value: unknown, amount?: BigNumber): Promise<TezosContractCall> {
     await this.waitForEntrypoints()
 
     const entrypoint: TezosContractEntrypoint | undefined = this.entrypoints?.get(entrypointName)
     if (!entrypoint) {
-      return this.createDefaultContractCall(value)
+      return this.createDefaultContractCall(value, amount)
     }
 
-    return this.createEntrypointContractCall(entrypoint, value)
+    return this.createEntrypointContractCall(entrypoint, value, undefined, amount)
   }
 
   public async parseContractCall(json: TezosTransactionParameters): Promise<TezosContractCall> {
@@ -81,6 +88,24 @@ export class TezosContract {
         }
       }
     })
+  }
+
+  public areValidParameters(data: unknown): boolean {
+    try {
+      const parameters: unknown = typeof data === 'string' ? JSON.parse(data) : data
+
+      return (parameters instanceof Object && 'entrypoint' in parameters && 'value' in parameters)
+    } catch {
+      return false
+    }
+  }
+
+  public parseParameters(parameters: string): TezosTransactionParameters {
+    if (!this.areValidParameters(parameters)) {
+      throw new Error('Invalid parameters')
+    }
+
+    return JSON.parse(parameters) as TezosTransactionParameters
   }
 
   public async normalizeContractCallParameters(
@@ -108,7 +133,7 @@ export class TezosContract {
 
     const defaultEntrypoint: TezosContractEntrypoint | undefined = this.entrypoints?.get(TezosContract.DEFAULT_ENTRYPOINT)
     if (!defaultEntrypoint) {
-      throw new Error('Could not fetch default entrypoint.')
+      throw new InvalidValueError(Domain.TEZOS, 'Could not fetch default entrypoint.')
     }
 
     let normalizedEntrypoint: [string, MichelineNode] | undefined
@@ -132,16 +157,17 @@ export class TezosContract {
     }
   }
 
-  private createDefaultContractCall(value: unknown): TezosContractCall {
-    return new TezosContractCall(TezosContract.DEFAULT_ENTRYPOINT, value instanceof MichelsonType ? value : undefined)
+  private createDefaultContractCall(value: unknown, amount?: BigNumber): TezosContractCall {
+    return new TezosContractCall(TezosContract.DEFAULT_ENTRYPOINT, value instanceof MichelsonType ? value : undefined, amount)
   }
 
   private createEntrypointContractCall(
     entrypoint: TezosContractEntrypoint,
     value: unknown,
-    configuration: MichelsonTypeMetaCreateValueConfiguration = {}
+    configuration: MichelsonTypeMetaCreateValueConfiguration = {},
+    amount?: BigNumber
   ): TezosContractCall {
-    return new TezosContractCall(entrypoint.name, entrypoint.type.createValue(value, configuration))
+    return new TezosContractCall(entrypoint.name, entrypoint.type.createValue(value, configuration), amount)
   }
 
   private async getBigMapID(predicates?: BigMapPredicate[]): Promise<number> {
@@ -152,7 +178,7 @@ export class TezosContract {
     }
 
     if (!predicates) {
-      throw new Error('Contract has more that one BigMap, provide ID or predicates to select one.')
+      throw new InvalidValueError(Domain.TEZOS, 'Contract has more than one BigMap, provide ID or predicates to select one.')
     }
 
     const response = await this.apiRequest<Record<'big_map_id', number>[]>('big_maps', {
@@ -168,11 +194,11 @@ export class TezosContract {
     })
 
     if (response.length === 0) {
-      throw new Error('BigMap ID not found')
+      throw new NetworkError(Domain.TEZOS, 'BigMap ID not found')
     }
 
     if (response.length > 1) {
-      throw new Error('More than one BigMap ID has been found for the predicates.')
+      throw new NetworkError(Domain.TEZOS, 'More than one BigMap ID has been found for the predicates.')
     }
 
     return response[0].big_map_id
@@ -196,7 +222,7 @@ export class TezosContract {
       })
         .then((response) => {
           if (response.length === 0) {
-            throw new Error('BigMap IDs not found')
+            throw new NotFoundError(Domain.TEZOS, 'BigMap IDs not found')
           }
 
           this.bigMapIDs = response.map((entry) => entry.big_map_id)

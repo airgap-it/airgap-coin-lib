@@ -21,7 +21,7 @@ import {
   DelegatorReward,
   ICoinDelegateProtocol
 } from './protocols/ICoinDelegateProtocol'
-import { FeeDefaults, ICoinProtocol } from './protocols/ICoinProtocol'
+import { CoinAddress, FeeDefaults, ICoinProtocol } from './protocols/ICoinProtocol'
 import { ICoinSubProtocol, SubProtocolType } from './protocols/ICoinSubProtocol'
 import { SubstratePayee } from './protocols/substrate/helpers/data/staking/SubstratePayee'
 import { KusamaProtocol } from './protocols/substrate/implementations/KusamaProtocol'
@@ -161,6 +161,8 @@ import { TezosUtils } from './protocols/tezos/TezosUtils'
 import { TezosFA2Protocol } from './protocols/tezos/fa/TezosFA2Protocol'
 import { TezosFA1Protocol } from './protocols/tezos/fa/TezosFA1Protocol'
 import { TezosFA12Protocol } from './protocols/tezos/fa/TezosFA12Protocol'
+import { TezosSaplingProtocol } from './protocols/tezos/sapling/TezosSaplingProtocol'
+import { TezosShieldedTezProtocol } from './protocols/tezos/sapling/TezosShieldedTezProtocol'
 import { DeserializedSyncProtocol, EncodedType, SyncProtocolUtils } from './serializer/v1/serializer'
 import { ImportAccountAction, ImportAccoutActionContext } from './actions/GetKtAccountsAction'
 import { CosmosUnbondingDelegation, CosmosValidator } from './protocols/cosmos/CosmosNodeClient'
@@ -178,9 +180,18 @@ import { RepeatableAction } from './actions/RepeatableAction'
 import { TezosWrappedOperation } from './protocols/tezos/types/TezosWrappedOperation'
 import { assertNever } from './utils/assert'
 import { CosmosTransaction } from './protocols/cosmos/CosmosTransaction'
+import { CosmosAddress } from './protocols/cosmos/CosmosAddress'
 import { TezosETHtz } from './protocols/tezos/fa/TezosETHtz'
 import { TezosWrapped } from './protocols/tezos/fa/TezosWrapped'
 import { TezosKolibriUSD } from './protocols/tezos/fa/TezosKolibriUSD'
+import { TezosSaplingExternalMethodProvider, TezosSaplingProtocolConfig, TezosSaplingProtocolOptions, TezosShieldedTezProtocolConfig } from './protocols/tezos/sapling/TezosSaplingProtocolOptions'
+import { TezosSaplingTransaction } from './protocols/tezos/types/sapling/TezosSaplingTransaction'
+import { TezosDomains } from './protocols/tezos/domains/TezosDomains'
+import { AeternityAddress } from './protocols/aeternity/AeternityAddress'
+import { BitcoinAddress } from './protocols/bitcoin/BitcoinAddress'
+import { EthereumAddress } from './protocols/ethereum/EthereumAddress'
+import { SubstrateAddress } from './protocols/substrate/helpers/data/account/SubstrateAddress'
+import { TezosAddress } from './protocols/tezos/TezosAddress'
 
 // tslint:enable:ordered-imports
 
@@ -193,6 +204,7 @@ export {
   ICoinProtocol,
   ICoinSubProtocol,
   ICoinDelegateProtocol,
+  CoinAddress,
   CryptoClient,
   ProtocolBlockExplorer,
   ProtocolNetwork,
@@ -210,6 +222,7 @@ export {
   AeternityProtocolOptions,
   AeternalBlockExplorer,
   AeternityProtocolNetwork,
+  AeternityAddress,
   RawAeternityTransaction
 }
 
@@ -223,6 +236,7 @@ export {
   BitcoinProtocolNetwork,
   BitcoinProtocolConfig,
   BitcoinProtocolOptions,
+  BitcoinAddress,
   RawBitcoinTransaction
 }
 
@@ -237,6 +251,7 @@ export {
   CosmosUnbondingDelegation,
   CosmosValidator,
   CosmosDelegationActionType,
+  CosmosAddress,
   CosmosTransaction
 }
 
@@ -254,6 +269,7 @@ export {
   EthereumProtocolOptions,
   EthereumERC20ProtocolConfig,
   EthereumERC20ProtocolOptions,
+  EthereumAddress,
   RawEthereumTransaction
 }
 
@@ -297,6 +313,7 @@ export {
   SubstrateStakingActionType,
   SubstrateValidatorDetails,
   SubstrateTransaction,
+  SubstrateAddress,
   RawSubstrateTransaction
 }
 
@@ -338,9 +355,18 @@ export {
   TezosFAProtocolOptions,
   TezosFA2ProtocolOptions,
   TezosNetwork,
+  TezosSaplingProtocol,
+  TezosShieldedTezProtocol,
+  TezosSaplingProtocolOptions,
+  TezosSaplingProtocolConfig,
+  TezosShieldedTezProtocolConfig,
+  TezosSaplingExternalMethodProvider,
+  TezosSaplingTransaction,
   TezosUtils,
   TezosWrappedOperation,
-  RawTezosTransaction
+  TezosAddress,
+  RawTezosTransaction,
+  TezosDomains
 }
 
 // Serializer

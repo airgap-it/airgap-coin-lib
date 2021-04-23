@@ -6,12 +6,12 @@ import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
 import * as bs58check from '../../dependencies/src/bs58check-2.1.2/index'
 import { generateWalletUsingDerivationPath } from '../../dependencies/src/hd-wallet-js-b216450e56954a6e82ace0aade9474673de5d9d5/src/index'
+import { isArray } from '../../dependencies/src/validate.js-0.13.1/validate'
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
 import { AirGapTransactionStatus, IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 import { SignedTezosTransaction } from '../../serializer/schemas/definitions/signed-transaction-tezos'
 import { UnsignedTezosTransaction } from '../../serializer/schemas/definitions/unsigned-transaction-tezos'
 import { RawTezosTransaction } from '../../serializer/types'
-import { ErrorWithData } from '../../utils/ErrorWithData'
 import { MainProtocolSymbols, ProtocolSymbols } from '../../utils/ProtocolSymbols'
 import { getSubProtocolsByIdentifier } from '../../utils/subProtocols'
 import { DelegateeDetails, DelegationDetails, DelegatorAction, DelegatorDetails, ICoinDelegateProtocol } from '../ICoinDelegateProtocol'
@@ -22,8 +22,10 @@ import { NonExtendedProtocol } from '../NonExtendedProtocol'
 import { TezosRewardsCalculation005 } from './rewardcalculation/TezosRewardCalculation005'
 import { TezosRewardsCalculation006 } from './rewardcalculation/TezosRewardCalculation006'
 import { TezosRewardsCalculationDefault } from './rewardcalculation/TezosRewardCalculationDefault'
+import { TezosAddress } from './TezosAddress'
 import { TezosCryptoClient } from './TezosCryptoClient'
 import { TezosProtocolOptions } from './TezosProtocolOptions'
+import { TezosUtils } from './TezosUtils'
 import { TezosDelegationOperation } from './types/operations/Delegation'
 import { TezosOriginationOperation } from './types/operations/Origination'
 import { TezosRevealOperation } from './types/operations/Reveal'
@@ -34,7 +36,16 @@ import { TezosTransactionCursor } from './types/TezosTransactionCursor'
 import { TezosTransactionResult } from './types/TezosTransactionResult'
 import { TezosWrappedOperation } from './types/TezosWrappedOperation'
 import { assertNever } from '../../utils/assert'
-import { isArray } from '../../dependencies/src/validate.js-0.13.1/validate'
+import { Domain } from '../../errors/coinlib-error'
+import {
+  NetworkError,
+  ConditionViolationError,
+  UnsupportedError,
+  NotFoundError,
+  BalanceError,
+  PropertyUndefinedError,
+  OperationFailedError
+} from '../../errors/index'
 
 const MAX_OPERATIONS_PER_GROUP: number = 200
 const GAS_LIMIT_PLACEHOLDER: string = '1040000'
@@ -183,7 +194,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   public standardDerivationPath: string = `m/44h/1729h/0h/0h`
 
   public addressIsCaseSensitive: boolean = true
-  public addressValidationPattern: string = '^(tz1|tz2|tz3|KT1)[1-9A-Za-z]{33}$'
+  public addressValidationPattern: string = '^((tz1|tz2|tz3|KT1)[1-9A-Za-z]{33}|zet1[1-9A-Za-z]{65})$'
   public addressPlaceholder: string = 'tz1...'
 
   // https://gitlab.com/tezos/tezos/-/blob/master/docs/whitedoc/proof_of_stake.rst
@@ -198,28 +209,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   protected readonly activationBurn: BigNumber = this.originationSize.times(this.storageCostPerByte)
   protected readonly originationBurn: BigNumber = this.originationSize.times(this.storageCostPerByte) // https://tezos.stackexchange.com/a/787
 
-  // Tezos - We need to wrap these in Buffer due to non-compatible browser polyfills
-  protected readonly tezosPrefixes: {
-    tz1: Buffer
-    tz2: Buffer
-    tz3: Buffer
-    kt: Buffer
-    edpk: Buffer
-    edsk: Buffer
-    edsig: Buffer
-    branch: Buffer
-  } = {
-      tz1: Buffer.from(new Uint8Array([6, 161, 159])),
-      tz2: Buffer.from(new Uint8Array([6, 161, 161])),
-      tz3: Buffer.from(new Uint8Array([6, 161, 164])),
-      kt: Buffer.from(new Uint8Array([2, 90, 121])),
-      edpk: Buffer.from(new Uint8Array([13, 15, 37, 217])),
-      edsk: Buffer.from(new Uint8Array([43, 246, 78, 7])),
-      edsig: Buffer.from(new Uint8Array([9, 245, 205, 134, 18])),
-      branch: Buffer.from(new Uint8Array([1, 52]))
-    }
-
-  public readonly cryptoClient: TezosCryptoClient = new TezosCryptoClient(this.tezosPrefixes.edsig)
+  public readonly cryptoClient: TezosCryptoClient = new TezosCryptoClient(TezosUtils.tezosPrefixes.edsig)
 
   // TODO: Should we remove these getters and replace the calls to `this.options.network...`?
   public get jsonRPCAPI(): string {
@@ -284,19 +274,18 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     return Buffer.from(secretKey)
   }
 
-  public async getAddressFromPublicKey(publicKey: string): Promise<string> {
-    await sodium.ready
-
-    const payload: Uint8Array = sodium.crypto_generichash(20, Buffer.from(publicKey, 'hex'))
-    const address: string = bs58check.encode(Buffer.concat([this.tezosPrefixes.tz1, Buffer.from(payload)]))
-
-    return address
+  public async getAddressFromPublicKey(publicKey: string): Promise<TezosAddress> {
+    return TezosAddress.fromPublicKey(publicKey)
   }
 
-  public async getAddressesFromPublicKey(publicKey: string): Promise<string[]> {
-    const address: string = await this.getAddressFromPublicKey(publicKey)
+  public async getAddressesFromPublicKey(publicKey: string): Promise<TezosAddress[]> {
+    const address: TezosAddress = await this.getAddressFromPublicKey(publicKey)
 
     return [address]
+  }
+
+  public async getNextAddressFromPublicKey(publicKey: string, current: TezosAddress): Promise<TezosAddress> {
+    return current
   }
 
   public async getTransactionsFromPublicKey(
@@ -305,6 +294,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     cursor?: TezosTransactionCursor
   ): Promise<TezosTransactionResult> {
     const addresses: string[] = await this.getAddressesFromPublicKey(publicKey)
+      .then((addresses: TezosAddress[]) => addresses.map((address: TezosAddress) => address.getValue()))
 
     return this.getTransactionsFromAddresses(addresses, limit, cursor)
   }
@@ -500,10 +490,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
           case TezosOperationType.ACTIVATE_ACCOUNT:
           case TezosOperationType.PROPOSALS:
           case TezosOperationType.BALLOT:
-            throw new Error('operation not supported: ' + tezosOperation.kind)
+            throw new UnsupportedError(Domain.TEZOS, 'operation not supported: ' + tezosOperation.kind)
           default:
             assertNever(tezosOperation.kind) // Exhaustive switch
-            throw new Error('no operation to unforge found')
+            throw new NotFoundError(Domain.TEZOS, 'no operation to unforge found')
         }
 
         return partialTxs.map((partialTx: Partial<IAirGapTransaction>) => {
@@ -537,7 +527,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       } catch (error) {
         // if node returns 404 (which means 'no account found'), go with 0 balance
         if (error.response && error.response.status !== 404) {
-          throw error
+          throw new NetworkError(
+            Domain.TEZOS,
+            error.response && error.response.data ? error.response.data : `getBalanceOfAddresses() failed with ${error}`
+          )
         }
       }
     }
@@ -546,9 +539,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   }
 
   public async getBalanceOfPublicKey(publicKey: string): Promise<string> {
-    const address: string = await this.getAddressFromPublicKey(publicKey)
+    const address: TezosAddress = await this.getAddressFromPublicKey(publicKey)
 
-    return this.getBalanceOfAddresses([address])
+    return this.getBalanceOfAddresses([address.getValue()])
   }
 
   public async getBalanceOfPublicKeyForSubProtocols(publicKey: string, subProtocols: ICoinSubProtocol[]): Promise<string[]> {
@@ -566,8 +559,13 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     return this.estimateMaxTansactionValueWithBalance(publicKey, balanceWrapper, recipients, fee)
   }
 
-  private async estimateMaxTansactionValueWithBalance(publicKey: string, balance: BigNumber, recipients: string[], fee?: string): Promise<string> {
-    let maxFee: BigNumber
+  private async estimateMaxTansactionValueWithBalance(
+    publicKey: string,
+    balance: BigNumber,
+    recipients: string[],
+    fee?: string
+  ): Promise<string> {
+    let maxFee: BigNumber = new BigNumber(0)
     if (fee !== undefined) {
       maxFee = new BigNumber(fee)
     } else {
@@ -579,17 +577,20 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
         }
       } catch (error) {
         if (error.message !== undefined && error.message === 'Operation errors' && isArray(error.data)) {
-          const rpcErrors = error.data as { id: string, kind: string, amount?: string, balance?: string, contract?: string }[]
-          const balanceTooLowError = rpcErrors.find(error => error.id.endsWith('.contract.balance_too_low'))
+          const rpcErrors = error.data as { id: string; kind: string; amount?: string; balance?: string; contract?: string }[]
+          const balanceTooLowError = rpcErrors.find((error) => error.id.endsWith('.contract.balance_too_low'))
           if (balanceTooLowError !== undefined && balanceTooLowError.amount !== undefined && balanceTooLowError.balance !== undefined) {
-            const excess = (new BigNumber(balanceTooLowError.amount)).minus((new BigNumber(balanceTooLowError.balance)).minus(1))
+            const excess = new BigNumber(balanceTooLowError.amount).minus(new BigNumber(balanceTooLowError.balance).minus(1))
             const newMaxBalance = balance.minus(excess)
             if (newMaxBalance.gt(0)) {
               return this.estimateMaxTansactionValueWithBalance(publicKey, newMaxBalance, recipients, fee)
             }
           }
         }
-        throw error
+        throw new NetworkError(
+          Domain.TEZOS,
+          error.response && error.response.data ? error.response.data : `estimateMaxTansactionValueWithBalance() failed with ${error}`
+        )
       }
     }
 
@@ -608,7 +609,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     _data?: any
   ): Promise<FeeDefaults> {
     if (recipients.length !== values.length) {
-      throw new Error('length of recipients and values does not match!')
+      throw new ConditionViolationError(Domain.TEZOS, 'length of recipients and values does not match!')
     }
     const operations: TezosOperation[] = []
     for (let i = 0; i < values.length; ++i) {
@@ -662,11 +663,12 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     data?: { addressIndex: number }
   ): Promise<RawTezosTransaction> {
     if (recipients.length !== values.length) {
-      throw new Error('length of recipients and values does not match!')
+      throw new ConditionViolationError(Domain.TEZOS, 'length of recipients and values does not match!')
     }
 
     if (recipients.length > MAX_OPERATIONS_PER_GROUP) {
-      throw new Error(
+      throw new ConditionViolationError(
+        Domain.TEZOS,
         `this transaction exceeds the maximum allowed number of transactions per operation (${MAX_OPERATIONS_PER_GROUP}). Please use the "prepareTransactionsFromPublicKey" method instead.`
       )
     }
@@ -675,7 +677,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     if (transactions.length === 1) {
       return transactions[0]
     } else {
-      throw new Error('Transaction could not be prepared. More or less than 1 operations have been generated.')
+      throw new ConditionViolationError(
+        Domain.TEZOS,
+        'Transaction could not be prepared. More or less than 1 operations have been generated.'
+      )
     }
   }
 
@@ -691,7 +696,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     const wrappedFee: BigNumber = new BigNumber(fee)
 
     if (recipients.length !== wrappedValues.length) {
-      throw new Error('length of recipients and values does not match!')
+      throw new ConditionViolationError(Domain.TEZOS, 'length of recipients and values does not match!')
     }
 
     let counter: BigNumber = new BigNumber(1)
@@ -702,9 +707,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     // check if we got an address-index
     const addressIndex: number = data && data.addressIndex ? data.addressIndex : 0
     const addresses: string[] = await this.getAddressesFromPublicKey(publicKey)
+      .then((addresses: TezosAddress[]) => addresses.map((address: TezosAddress) => address.getValue()))
 
     if (!addresses[addressIndex]) {
-      throw new Error('no kt-address with this index exists')
+      throw new NotFoundError(Domain.TEZOS, 'no kt-address with this index exists')
     }
 
     const address: string = addresses[addressIndex]
@@ -728,7 +734,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
         counter = counter.plus(1)
       }
     } catch (error) {
-      throw error
+      throw new NetworkError(
+        Domain.TEZOS,
+        error.response && error.response.data ? error.response.data : `prepareTransactionsFromPublicKey() failed with ${error}`
+      )
     }
 
     const balance: BigNumber = new BigNumber(await this.getBalanceOfPublicKey(publicKey))
@@ -799,7 +808,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
         // We have to supply an additional 0.257 XTZ fee for storage_limit costs, which gets automatically deducted from the sender so we just have to make sure enough balance is around
         if (balance.isLessThan(this.activationBurn.plus(wrappedFee))) {
           // If we don't have enough funds to pay the activation + fee, we throw an error
-          throw new Error('Insufficient balance to pay activation burn!')
+          throw new BalanceError(Domain.TEZOS, 'Insufficient balance to pay activation burn!')
         } else if (balance.isLessThan(wrappedValues[i].plus(wrappedFee).plus(this.activationBurn))) {
           // Check whether the sender has enough to cover the amount to send + fee + activation
           // If not, we deduct it from amount sent to make room for the activation burn
@@ -811,7 +820,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
         // Tezos accounts can never be empty. If user tries to send everything, we must leave 1 mutez behind.
         wrappedValues[i] = wrappedValues[i].minus(1)
       } else if (balance.isLessThan(wrappedValues[i].plus(wrappedFee))) {
-        throw new Error('not enough balance')
+        throw new BalanceError(Domain.TEZOS, 'not enough balance')
       }
 
       const spendOperation: TezosTransactionOperation = {
@@ -837,8 +846,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
       return { binaryTransaction: binaryTx }
     } catch (error) {
-      console.warn(error.message)
-      throw new Error('Forging Tezos TX failed.')
+      throw new OperationFailedError(Domain.TEZOS, `Forging Tezos TX failed with ${error.message}`)
     }
   }
 
@@ -849,7 +857,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   }
 
   public async getCurrentDelegateesForPublicKey(publicKey: string): Promise<string[]> {
-    return this.getCurrentDelegateesForAddress(await this.getAddressFromPublicKey(publicKey))
+    const address = await this.getAddressFromPublicKey(publicKey)
+
+    return this.getCurrentDelegateesForAddress(address.getValue())
   }
 
   public async getCurrentDelegateesForAddress(address: string): Promise<string[]> {
@@ -871,7 +881,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   }
 
   public async isPublicKeyDelegating(publicKey: string): Promise<boolean> {
-    return this.isAddressDelegating(await this.getAddressFromPublicKey(publicKey))
+    const address = await this.getAddressFromPublicKey(publicKey)
+
+    return this.isAddressDelegating(address.getValue())
   }
 
   public async isAddressDelegating(address: string): Promise<boolean> {
@@ -881,7 +893,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   }
 
   public async getDelegatorDetailsFromPublicKey(publicKey: string): Promise<DelegatorDetails> {
-    return this.getDelegatorDetailsFromAddress(await this.getAddressFromPublicKey(publicKey))
+    const address = await this.getAddressFromPublicKey(publicKey)
+
+    return this.getDelegatorDetailsFromAddress(address.getValue())
   }
 
   public async getDelegatorDetailsFromAddress(address: string): Promise<DelegatorDetails> {
@@ -889,7 +903,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   }
 
   public async getDelegationDetailsFromPublicKey(publicKey: string, delegatees: string[]): Promise<DelegationDetails> {
-    return this.getDelegationDetailsFromAddress(await this.getAddressFromPublicKey(publicKey), delegatees)
+    const address = await this.getAddressFromPublicKey(publicKey)
+
+    return this.getDelegationDetailsFromAddress(address.getValue(), delegatees)
   }
 
   public async getDelegationDetailsFromAddress(address: string, delegatees: string[]): Promise<DelegationDetails> {
@@ -986,7 +1002,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     let branch: string
     const operations: TezosOperation[] = []
 
-    const address: string = await this.getAddressFromPublicKey(publicKey)
+    const address: string = await this.getAddressFromPublicKey(publicKey).then((address: TezosAddress) => address.getValue())
 
     try {
       const results = await Promise.all([
@@ -1008,7 +1024,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
         counter = counter.plus(1)
       }
     } catch (error) {
-      throw error
+      throw new NetworkError(
+        Domain.TEZOS,
+        error.response && error.response.data ? error.response.data : `prepareOperations() failed with ${error}`
+      )
     }
 
     // tslint:disable:cyclomatic-complexity
@@ -1016,7 +1035,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       // TODO: Handle activation burn
 
       if (!operationRequest.kind) {
-        throw new Error('property "kind" was not defined')
+        throw new PropertyUndefinedError(Domain.TEZOS, 'property "kind" was not defined')
       }
 
       const recipient: string | undefined = (operationRequest as TezosTransactionOperation).destination
@@ -1037,7 +1056,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
           const revealOperation: TezosRevealOperation = operationRequest as TezosRevealOperation
 
           if (!revealOperation.public_key) {
-            throw new Error('property "public_key" was not defined')
+            throw new PropertyUndefinedError(Domain.TEZOS, 'property "public_key" was not defined')
           }
 
           revealOperation.source = revealOperation.source ?? address
@@ -1063,11 +1082,11 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
           const transactionOperation: TezosTransactionOperation = operationRequest as TezosTransactionOperation
 
           if (!transactionOperation.amount) {
-            throw new Error('property "amount" was not defined')
+            throw new PropertyUndefinedError(Domain.TEZOS, 'property "amount" was not defined')
           }
 
           if (!transactionOperation.destination) {
-            throw new Error('property "destination" was not defined')
+            throw new PropertyUndefinedError(Domain.TEZOS, 'property "destination" was not defined')
           }
 
           transactionOperation.source = transactionOperation.source ?? address
@@ -1081,11 +1100,11 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
           const originationOperation: TezosOriginationOperation = operationRequest as TezosOriginationOperation
 
           if (!originationOperation.balance) {
-            throw new Error('property "balance" was not defined')
+            throw new PropertyUndefinedError(Domain.TEZOS, 'property "balance" was not defined')
           }
 
           if (!originationOperation.script) {
-            throw new Error('property "script" was not defined')
+            throw new PropertyUndefinedError(Domain.TEZOS, 'property "script" was not defined')
           }
 
           originationOperation.source = originationOperation.source ?? address
@@ -1106,7 +1125,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
           return operationRequest
         default:
           assertNever(operationRequest.kind)
-          throw new Error(`unsupported operation type "${operationRequest.kind}"`)
+          throw new UnsupportedError(Domain.TEZOS, `unsupported operation type "${operationRequest.kind}"`)
       }
     })
 
@@ -1135,102 +1154,108 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
         signature: fakeSignature // signature will not be checked, so it is ok to always use this one
       }
     }
+    try {
+      const forgedOperation: string = await this.forgeTezosOperation(tezosWrappedOperation)
+      let gasLimitTotal: number = 0
 
-    const forgedOperation: string = await this.forgeTezosOperation(tezosWrappedOperation)
-    let gasLimitTotal: number = 0
+      const response: AxiosResponse<RunOperationResponse> = await axios
+        .post(`${this.options.network.rpcUrl}/chains/main/blocks/head/helpers/scripts/run_operation`, body, {
+          headers: { 'Content-Type': 'application/json' }
+        })
+        .catch((runOperationError: AxiosError) => {
+          throw new NetworkError(
+            Domain.TEZOS,
+            `Run operation error ${runOperationError.response ? runOperationError.response : runOperationError}`
+          )
+        })
 
-    const response: AxiosResponse<RunOperationResponse> = await axios
-      .post(`${this.options.network.rpcUrl}/chains/main/blocks/head/helpers/scripts/run_operation`, body, {
-        headers: { 'Content-Type': 'application/json' }
-      })
-      .catch((runOperationError: AxiosError) => {
-        console.error('runOperationError', runOperationError.response ? runOperationError.response : runOperationError)
-        throw new ErrorWithData('Run operation error', runOperationError.response ? runOperationError.response : runOperationError)
-      })
-
-    if (tezosWrappedOperation.contents.length !== response.data.contents.length) {
-      throw new Error(
-        `Run Operation did not return same number of operations. Locally we have ${tezosWrappedOperation.contents.length}, but got back ${response.data.contents.length}`
-      )
-    }
-
-    tezosWrappedOperation.contents.forEach((content: TezosOperation, i: number) => {
-      const metadata: RunOperationMetadata = response.data.contents[i].metadata
-      if (metadata.operation_result) {
-        const operation: TezosOperation = content
-
-        const result: RunOperationOperationResult = metadata.operation_result
-        let gasLimit: number = 0
-        let storageLimit: number = 0
-
-        // If there are internal operations, we first add gas and storage used of internal operations
-        if (metadata.internal_operation_results) {
-          metadata.internal_operation_results.forEach((internalOperation: RunOperationInternalOperationResult) => {
-            if (internalOperation?.result) {
-              if (internalOperation.result.errors) {
-                throw new ErrorWithData('Internal operation errors', internalOperation.result.errors)
-              }
-
-              gasLimit += Number(internalOperation.result.consumed_gas)
-
-              if (internalOperation.result.paid_storage_size_diff) {
-                storageLimit += Number(internalOperation.result.paid_storage_size_diff)
-              }
-              if (internalOperation.result.originated_contracts) {
-                storageLimit += internalOperation.result.originated_contracts.length * 257
-              }
-              if (internalOperation.result.allocated_destination_contract) {
-                storageLimit += 257
-              }
-            }
-          })
-        }
-
-        if (result.errors) {
-          throw new ErrorWithData('Operation errors', result.errors)
-        }
-
-        // Add gas and storage used by operation
-        gasLimit += Number(result.consumed_gas)
-
-        if (result.paid_storage_size_diff) {
-          storageLimit += Number(result.paid_storage_size_diff)
-        }
-        if (result.originated_contracts) {
-          storageLimit += result.originated_contracts.length * 257
-        }
-        if (result.allocated_destination_contract) {
-          storageLimit += 257
-        }
-
-        if ((operation as any).gas_limit) {
-          ; (operation as any).gas_limit = gasLimit.toString()
-        }
-        if ((operation as any).storage_limit) {
-          ; (operation as any).storage_limit = storageLimit.toString()
-        }
-
-        gasLimitTotal += gasLimit
+      if (tezosWrappedOperation.contents.length !== response.data.contents.length) {
+        throw new ConditionViolationError(
+          Domain.TEZOS,
+          `Run Operation did not return same number of operations. Locally we have ${tezosWrappedOperation.contents.length}, but got back ${response.data.contents.length}`
+        )
       }
-    })
 
-    if (overrideFees) {
-      const fee: number =
-        MINIMAL_FEE +
-        MINIMAL_FEE_PER_BYTE * Math.ceil((forgedOperation.length + 128) / 2) + // 128 is the length of a hex signature
-        MINIMAL_FEE_PER_GAS_UNIT * gasLimitTotal +
-        100 // add 100 for safety
+      tezosWrappedOperation.contents.forEach((content: TezosOperation, i: number) => {
+        const metadata: RunOperationMetadata = response.data.contents[i].metadata
+        if (metadata.operation_result) {
+          const operation: TezosOperation = content
 
-      const feePerOperation: number = Math.ceil(fee / tezosWrappedOperation.contents.length)
+          const result: RunOperationOperationResult = metadata.operation_result
+          let gasLimit: number = 0
+          let storageLimit: number = 0
 
-      tezosWrappedOperation.contents.forEach((operation: TezosOperation) => {
-        if ((operation as TezosTransactionOperation).fee && (operation as TezosRevealOperation).kind !== 'reveal') {
-          ; (operation as TezosTransactionOperation).fee = feePerOperation.toString()
+          // If there are internal operations, we first add gas and storage used of internal operations
+          if (metadata.internal_operation_results) {
+            metadata.internal_operation_results.forEach((internalOperation: RunOperationInternalOperationResult) => {
+              if (internalOperation?.result) {
+                if (internalOperation.result.errors) {
+                  throw new NetworkError(Domain.TEZOS, `Internal operation errors ${internalOperation.result.errors}`)
+                }
+
+                gasLimit += Number(internalOperation.result.consumed_gas)
+
+                if (internalOperation.result.paid_storage_size_diff) {
+                  storageLimit += Number(internalOperation.result.paid_storage_size_diff)
+                }
+                if (internalOperation.result.originated_contracts) {
+                  storageLimit += internalOperation.result.originated_contracts.length * 257
+                }
+                if (internalOperation.result.allocated_destination_contract) {
+                  storageLimit += 257
+                }
+              }
+            })
+          }
+
+          if (result.errors) {
+            throw new NetworkError(Domain.TEZOS, `Operation errors ${result.errors}`)
+          }
+
+          // Add gas and storage used by operation
+          gasLimit += Number(result.consumed_gas)
+
+          if (result.paid_storage_size_diff) {
+            storageLimit += Number(result.paid_storage_size_diff)
+          }
+          if (result.originated_contracts) {
+            storageLimit += result.originated_contracts.length * 257
+          }
+          if (result.allocated_destination_contract) {
+            storageLimit += 257
+          }
+
+          if ((operation as any).gas_limit) {
+            ; (operation as any).gas_limit = gasLimit.toString()
+          }
+          if ((operation as any).storage_limit) {
+            ; (operation as any).storage_limit = storageLimit.toString()
+          }
+
+          gasLimitTotal += gasLimit
         }
       })
-    }
 
-    return tezosWrappedOperation
+      if (overrideFees) {
+        const fee: number =
+          MINIMAL_FEE +
+          MINIMAL_FEE_PER_BYTE * Math.ceil((forgedOperation.length + 128) / 2) + // 128 is the length of a hex signature
+          MINIMAL_FEE_PER_GAS_UNIT * gasLimitTotal +
+          100 // add 100 for safety
+
+        const feePerOperation: number = Math.ceil(fee / tezosWrappedOperation.contents.length)
+
+        tezosWrappedOperation.contents.forEach((operation: TezosOperation) => {
+          if ((operation as TezosTransactionOperation).fee && (operation as TezosRevealOperation).kind !== 'reveal') {
+            ; (operation as TezosTransactionOperation).fee = feePerOperation.toString()
+          }
+        })
+      }
+
+      return tezosWrappedOperation
+    } catch (error) {
+      throw new OperationFailedError(Domain.TEZOS, `Forging Tezos TX failed with ${error.message}`)
+    }
   }
 
   public async getDelegationInfo(delegatedAddress: string, fetchExtraInfo: boolean = true): Promise<DelegationInfo> {
@@ -1317,7 +1342,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       !tzAddress ||
       !(tzAddress.toLowerCase().startsWith('tz1') || tzAddress.toLowerCase().startsWith('tz2') || tzAddress.toLowerCase().startsWith('tz3'))
     ) {
-      throw new Error('non tz-address supplied')
+      throw new ConditionViolationError(Domain.TEZOS, 'non tz-address supplied')
     }
 
     const results: AxiosResponse[] = await Promise.all([
@@ -1352,7 +1377,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     const status: DelegationInfo = await this.getDelegationInfo(address)
 
     if (!status.isDelegated || !status.value) {
-      throw new Error('address not delegated')
+      throw new ConditionViolationError(Domain.TEZOS, 'address not delegated')
     }
 
     return this.getDelegationRewards(status.value, address)
@@ -1408,10 +1433,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
   public async delegate(publicKey: string, delegate?: string | string[]): Promise<RawTezosTransaction> {
     let counter: BigNumber = new BigNumber(1)
-    let branch: string
+    let branch: string = ''
 
     const operations: TezosOperation[] = []
-    const tzAddress: string = await this.getAddressFromPublicKey(publicKey)
+    const tzAddress: string = await this.getAddressFromPublicKey(publicKey).then((address: TezosAddress) => address.getValue())
 
     try {
       const results: AxiosResponse[] = await Promise.all([
@@ -1431,7 +1456,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
         counter = counter.plus(1)
       }
     } catch (error) {
-      throw error
+      throw new NetworkError(Domain.TEZOS, 'could not fetch data from node')
     }
 
     const balance: BigNumber = new BigNumber(await this.getBalanceOfAddresses([tzAddress]))
@@ -1439,7 +1464,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     const fee: BigNumber = new BigNumber(1420)
 
     if (balance.isLessThan(fee)) {
-      throw new Error('not enough balance')
+      throw new BalanceError(Domain.TEZOS, 'not enough balance')
     }
 
     const delegationOperation: TezosDelegationOperation = {
@@ -1464,8 +1489,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
       return { binaryTransaction: binaryTx }
     } catch (error) {
-      console.warn(error)
-      throw new Error('Forging Tezos TX failed.')
+      throw new OperationFailedError(Domain.TEZOS, `Forging Tezos TX failed with ${error.message}`)
     }
   }
 
@@ -1502,7 +1526,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
           break
         default:
           assertNever(operation.kind) // Exhaustive switch
-          throw Error('operation type not supported' + operation.kind)
+          throw new UnsupportedError(Domain.TEZOS, `operation type not supported ${operation.kind}`)
       }
     })
 
@@ -1523,13 +1547,12 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
       // returns hash if successful
       return injectionResponse
-    } catch (err) {
-      const axiosError = err as AxiosError
-      if (axiosError.response !== undefined && axiosError.response.data !== undefined) {
-        throw new Error(`broadcasting failed ${axiosError.response.data}`)
-      } else {
-        throw new Error(`broadcasting failed ${err}`)
-      }
+    } catch (error) {
+      const axiosError = error as AxiosError
+      throw new NetworkError(
+        Domain.TEZOS,
+        axiosError.response && axiosError.response.data ? axiosError.response.data : `broadcastTransaction() failed with ${error}`
+      )
     }
   }
 
@@ -1539,13 +1562,13 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     if (payload.startsWith(prefixHex)) {
       return payload.substring(tezosPrefix.length * 2)
     } else {
-      throw new Error(`payload did not match prefix: ${prefixHex}`)
+      throw new ConditionViolationError(Domain.TEZOS, `payload did not match prefix: ${prefixHex}`)
     }
   }
 
   public async unforgeSignedTezosWrappedOperation(hexString: string): Promise<TezosWrappedOperation> {
     if (hexString.length <= 128) {
-      throw new Error('Not a valid signed transaction')
+      throw new ConditionViolationError(Domain.TEZOS, 'Not a valid signed transaction')
     }
 
     return this.unforgeUnsignedTezosWrappedOperation(hexString.substring(0, hexString.length - 128))
@@ -1571,7 +1594,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       gas_limit: '10000', // taken from conseiljs
       storage_limit: '0', // taken from conseiljs
       counter: counter.toFixed(),
-      public_key: bs58check.encode(Buffer.concat([this.tezosPrefixes.edpk, Buffer.from(publicKey, 'hex')])),
+      public_key: bs58check.encode(Buffer.concat([TezosUtils.tezosPrefixes.edpk, Buffer.from(publicKey, 'hex')])),
       source: address
     }
 
@@ -1624,7 +1647,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     let delegators: string[]
     if (typeof offsetOrAddresses === 'number') {
       if (limit === undefined) {
-        throw new Error('limit parameter is required when providing offset')
+        throw new ConditionViolationError(Domain.TEZOS, 'limit parameter is required when providing offset')
       }
       delegators = rewards.delegatedContracts.slice(
         offsetOrAddresses,

@@ -1,5 +1,7 @@
 import * as bigInt from '../../dependencies/src/big-integer-1.6.45/BigInteger'
 import * as bs58check from '../../dependencies/src/bs58check-2.1.2/index'
+import { OperationFailedError, UnsupportedError } from '../../errors'
+import { Domain } from '../../errors/coinlib-error'
 
 import { MichelsonList } from './types/michelson/generics/MichelsonList'
 import { MichelsonPair } from './types/michelson/generics/MichelsonPair'
@@ -8,10 +10,9 @@ import { MichelsonBytes } from './types/michelson/primitives/MichelsonBytes'
 import { MichelsonInt } from './types/michelson/primitives/MichelsonInt'
 import { MichelsonString } from './types/michelson/primitives/MichelsonString'
 
-
 export class TezosUtils {
   // Tezos - We need to wrap these in Buffer due to non-compatible browser polyfills
-  private static readonly tezosPrefixes: {
+  public static readonly tezosPrefixes: {
     tz1: Buffer
     tz2: Buffer
     tz3: Buffer
@@ -20,16 +21,20 @@ export class TezosUtils {
     edsk: Buffer
     edsig: Buffer
     branch: Buffer
+    sask: Buffer
+    zet1: Buffer
   } = {
-    tz1: Buffer.from(new Uint8Array([6, 161, 159])),
-    tz2: Buffer.from(new Uint8Array([6, 161, 161])),
-    tz3: Buffer.from(new Uint8Array([6, 161, 164])),
-    kt: Buffer.from(new Uint8Array([2, 90, 121])),
-    edpk: Buffer.from(new Uint8Array([13, 15, 37, 217])),
-    edsk: Buffer.from(new Uint8Array([43, 246, 78, 7])),
-    edsig: Buffer.from(new Uint8Array([9, 245, 205, 134, 18])),
-    branch: Buffer.from(new Uint8Array([1, 52]))
-  }
+      tz1: Buffer.from(new Uint8Array([6, 161, 159])),
+      tz2: Buffer.from(new Uint8Array([6, 161, 161])),
+      tz3: Buffer.from(new Uint8Array([6, 161, 164])),
+      kt: Buffer.from(new Uint8Array([2, 90, 121])),
+      edpk: Buffer.from(new Uint8Array([13, 15, 37, 217])),
+      edsk: Buffer.from(new Uint8Array([43, 246, 78, 7])),
+      edsig: Buffer.from(new Uint8Array([9, 245, 205, 134, 18])),
+      branch: Buffer.from(new Uint8Array([1, 52])),
+      sask: Buffer.from(new Uint8Array([11, 237, 20, 92])),
+      zet1: Buffer.from(new Uint8Array([18, 71, 40, 223]))
+    }
 
   public static parseAddress(bytes: string | Buffer): string {
     let rawHexAddress: string = typeof bytes === 'string' ? bytes : bytes.toString('hex')
@@ -46,7 +51,19 @@ export class TezosUtils {
       // kt address
       return this.prefixAndBase58CheckEncode(rest.slice(0, -2), this.tezosPrefixes.kt)
     } else {
-      throw new Error(`address format not supported (${rawHexAddress})`)
+      throw new UnsupportedError(Domain.TEZOS, `address format not supported (${rawHexAddress})`)
+    }
+  }
+
+  public static encodeAddress(address: string): Buffer {
+    if (address.startsWith('tz')) {
+      // tz address
+      return Buffer.concat([Buffer.from([0]), this.encodeTzAddress(address)])
+    } else if (address.startsWith('kt')) {
+      // kt address
+      return Buffer.concat([Buffer.from([1]), this.prefixAndBase58CheckDecode(address, this.tezosPrefixes.kt)])
+    } else {
+      throw new Error(`address format not supported (${address})`)
     }
   }
 
@@ -65,7 +82,7 @@ export class TezosUtils {
           // pair
           return TezosUtils.parsePair(hex)
         }
-        throw new Error('Prim type not supported')
+        throw new UnsupportedError(Domain.TEZOS, 'Prim type not supported')
       case '00': // int
         const intBytes: string[] = []
         let byte: string | undefined
@@ -88,7 +105,7 @@ export class TezosUtils {
         const bytesLength = TezosUtils.hexToLength(hex.splice(0, 4))
         return MichelsonBytes.from(hex.splice(0, bytesLength).join(''))
       default:
-        throw new Error(`Type not supported ${type}`)
+        throw new UnsupportedError(Domain.TEZOS, `Type not supported ${type}`)
     }
   }
 
@@ -113,7 +130,7 @@ export class TezosUtils {
     }
     const hexBytes: RegExpMatchArray | null = hexString.match(/.{2}/g)
     if (hexBytes === null) {
-      throw new Error('Cannot parse contract code')
+      throw new OperationFailedError(Domain.TEZOS, 'Cannot parse contract code')
     }
 
     return hexBytes
@@ -167,7 +184,9 @@ export class TezosUtils {
     return { result, rest }
   }
 
-  private static parseTzAddress(rawHexAddress: string): string {
+  public static parseTzAddress(bytes: string | Buffer): string {
+    const rawHexAddress: string = typeof bytes === 'string' ? bytes : bytes.toString('hex')
+
     // tz1 address
     const { result, rest }: { result: string; rest: string } = this.splitAndReturnRest(rawHexAddress, 2)
     const publicKeyHashTag: string = result
@@ -179,7 +198,19 @@ export class TezosUtils {
       case '02':
         return this.prefixAndBase58CheckEncode(rest, this.tezosPrefixes.tz3)
       default:
-        throw new Error(`address format not supported (${rawHexAddress})`)
+        throw new UnsupportedError(Domain.TEZOS, `address format not supported (${rawHexAddress})`)
+    }
+  }
+
+  private static encodeTzAddress(address: string): Buffer {
+    if (address.startsWith('tz1')) {
+      return Buffer.concat([Buffer.from([0]), this.prefixAndBase58CheckDecode(address, this.tezosPrefixes.tz1)])
+    } else if (address.startsWith('tz2')) {
+      return Buffer.concat([Buffer.from([1]), this.prefixAndBase58CheckDecode(address, this.tezosPrefixes.tz2)])
+    } else if (address.startsWith('tz3')) {
+      return Buffer.concat([Buffer.from([2]), this.prefixAndBase58CheckDecode(address, this.tezosPrefixes.tz3)])
+    } else {
+      throw new Error(`address format not supported (${address})`)
     }
   }
 
@@ -187,5 +218,11 @@ export class TezosUtils {
     const prefixHex: string = Buffer.from(tezosPrefix).toString('hex')
 
     return bs58check.encode(Buffer.from(prefixHex + hexStringPayload, 'hex'))
+  }
+
+  private static prefixAndBase58CheckDecode(address: string, tezosPrefix: Uint8Array): Buffer {
+    const decoded: Buffer = bs58check.decode(address)
+
+    return decoded.slice(tezosPrefix.length)
   }
 }

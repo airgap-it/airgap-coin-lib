@@ -1,12 +1,16 @@
 // tslint:disable: max-classes-per-file
 
 import { Lazy } from '../../../../../data/Lazy'
+import { InvalidValueError } from '../../../../../errors'
+import { Domain } from '../../../../../errors/coinlib-error'
 import { MichelineDataNode, MichelinePrimitiveApplication } from '../../micheline/MichelineNode'
 import { isMichelinePrimitiveApplication } from '../../utils'
 import { MichelsonGrammarData } from '../grammar/MichelsonGrammarData'
 import { MichelsonType } from '../MichelsonType'
 
 export type MichelsonOptionType = 'Some' | 'None'
+
+const michelsonRegex = /^(?:(?:Some\s\(?(?<value>[^()]+)\)?)|(?:None))$/
 
 export abstract class MichelsonOption extends MichelsonType {
   protected abstract type: MichelsonOptionType
@@ -17,12 +21,25 @@ export abstract class MichelsonOption extends MichelsonType {
     }
 
     if (!(value instanceof MichelsonType) && typeof mappingFunction !== 'function') {
-      throw new Error('MichelsonOption: unknown generic mapping factory function.')
+      throw new InvalidValueError(Domain.TEZOS, 'MichelsonPair: unknown generic factory function.')
     }
 
-    return isMichelinePrimitiveApplication(value)
-      ? MichelsonOption.fromMicheline(value, mappingFunction, name)
-      : MichelsonOption.fromUnknown(value, mappingFunction, name)
+    if (isMichelinePrimitiveApplication(value)) {
+      return MichelsonOption.fromMicheline(value, mappingFunction, name)
+    } else if (typeof value === 'string' && value.match(michelsonRegex)) {
+      return MichelsonOption.fromMichelson(value, mappingFunction, name)
+    } else {
+      return MichelsonOption.fromUnknown(value, mappingFunction, name)
+    }
+  }
+
+  public static fromMichelson(michelson: string, mappingFunction: unknown, name?: string): MichelsonOption {
+    const match: RegExpMatchArray | null = michelson.match(michelsonRegex)
+    if (match === null) {
+      throw new Error('MichelsonOption: invalid Michelson value')
+    }
+
+    return MichelsonOption.fromUnknown(match.groups?.value, mappingFunction, name)
   }
 
   public static fromMicheline(
@@ -45,7 +62,7 @@ export abstract class MichelsonOption extends MichelsonType {
             const value: unknown = typeof mappingFunction === 'function' ? mappingFunction(unknownValue) : undefined
 
             if (!(value instanceof MichelsonType)) {
-              throw new Error('MichelsonOption: unknown generic mapping type.')
+              throw new InvalidValueError(Domain.TEZOS, 'MichelsonPair: unknown generic mapping type.')
             }
 
             return value
@@ -83,8 +100,8 @@ export class MichelsonSome extends MichelsonOption {
 export class MichelsonNone extends MichelsonOption {
   protected type: MichelsonOptionType = 'None'
 
-  public asRawValue(): Record<string, null> | null {
-    return this.name ? { [this.name]: null } : null
+  public asRawValue(): Record<string, undefined> | undefined {
+    return this.name ? { [this.name]: undefined } : undefined
   }
 
   public toMichelineJSON(): MichelineDataNode {

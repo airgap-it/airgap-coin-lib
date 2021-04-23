@@ -1,4 +1,6 @@
 import * as createHash from '../dependencies/src/create-hash-1.2.0/index'
+import { ConditionViolationError } from '../errors'
+import { Domain } from '../errors/coinlib-error'
 
 const sha256hash = (input) => {
   const hash = createHash('sha256')
@@ -33,7 +35,7 @@ const bs64check = {
 
     // tslint:disable-next-line:no-bitwise
     if ((checksum[0] ^ newChecksum[0]) | (checksum[1] ^ newChecksum[1]) | (checksum[2] ^ newChecksum[2]) | (checksum[3] ^ newChecksum[3])) {
-      throw new Error('bs64check checksum does not match')
+      throw new ConditionViolationError(Domain.UTILS, 'bs64check checksum does not match')
     }
 
     return payload

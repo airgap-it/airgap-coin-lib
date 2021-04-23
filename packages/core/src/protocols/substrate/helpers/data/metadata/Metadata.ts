@@ -1,3 +1,5 @@
+import { InvalidValueError, UnsupportedError } from '../../../../../errors'
+import { Domain } from '../../../../../errors/coinlib-error'
 import { SubstrateNetwork } from '../../../SubstrateNetwork'
 import { SCALEDecoder } from '../scale/SCALEDecoder'
 
@@ -18,7 +20,7 @@ export class Metadata {
     const version = decoder.decodeNextInt(8) // 8 bits
 
     let versioned: MetadataVersioned
-    switch(version.decoded.toNumber()) {
+    switch (version.decoded.toNumber()) {
       case 12:
         versioned = MetadataV12.decode(network, runtimeVersion, raw)
         break
@@ -26,7 +28,7 @@ export class Metadata {
         versioned = MetadataV11.decode(network, runtimeVersion, raw)
         break
       default:
-        throw new Error(`Error while parsing metadata, metadata version ${version} is not supported`)
+        throw new UnsupportedError(Domain.SUBSTRATE, `Error while parsing metadata, metadata version ${version} is not supported`)
     }
 
     return new Metadata(versioned)
@@ -34,10 +36,9 @@ export class Metadata {
 
   private static assertMagicNumber(magicNumber: number) {
     if (magicNumber !== parseInt(MAGIC_NUMBER, 16)) {
-      throw new Error('Error while parsing metadata, invalid magic number')
+      throw new InvalidValueError(Domain.SUBSTRATE, 'Error while parsing metadata, invalid magic number')
     }
   }
-
 
   private constructor(readonly versioned: MetadataVersioned) {}
 

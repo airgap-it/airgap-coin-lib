@@ -1,4 +1,5 @@
-import { ProtocolNotSupported } from '../errors'
+import { InvalidValueError, ProtocolNotSupported } from '../errors'
+import { Domain } from '../errors/coinlib-error'
 import { ICoinProtocol } from '../protocols/ICoinProtocol'
 
 import { isNetworkEqual } from './Network'
@@ -12,7 +13,7 @@ export const getProtocolByIdentifier: (identifier: ProtocolSymbols, network?: Pr
   network?: ProtocolNetwork
 ): ICoinProtocol => {
   if (!identifier || typeof identifier !== 'string') {
-    throw new Error('No protocol identifier provided')
+    throw new InvalidValueError(Domain.UTILS, 'No protocol identifier provided')
   }
 
   const targetNetwork: ProtocolNetwork = network ? network : getProtocolOptionsByIdentifier(identifier).network

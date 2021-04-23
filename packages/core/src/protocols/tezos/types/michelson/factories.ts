@@ -1,3 +1,5 @@
+import { UnsupportedError } from '../../../../errors'
+import { Domain } from '../../../../errors/coinlib-error'
 import { MichelsonList } from './generics/MichelsonList'
 import { MichelsonOption } from './generics/MichelsonOption'
 import { MichelsonOr } from './generics/MichelsonOr'
@@ -35,8 +37,9 @@ export const michelsonTypeFactories: Record<MichelsonGrammarType, (...args: unkn
   map: (): MichelsonType => notSupported('map'),
   big_map: (...args: unknown[]): MichelsonType => MichelsonInt.from(args[0]),
   chain_id: (): MichelsonType => notSupported('chain_id'),
+  sapling_transaction: (...args: unknown[]): MichelsonType => MichelsonBytes.from(args[0])
 }
 
 function notSupported(type: MichelsonGrammarType): MichelsonType {
-  throw new Error(`Michelson type ${type} is not supported.`)
+  throw new UnsupportedError(Domain.TEZOS, `Michelson type ${type} is not supported.`)
 }

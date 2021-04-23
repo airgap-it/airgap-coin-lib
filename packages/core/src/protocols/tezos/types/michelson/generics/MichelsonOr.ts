@@ -1,12 +1,15 @@
 // tslint:disable: max-classes-per-file
 import { Lazy } from '../../../../../data/Lazy'
-import { invalidArgumentTypeError } from '../../../../../utils/error'
+import { InvalidValueError } from '../../../../../errors'
+import { Domain, CoinlibAssertionError } from '../../../../../errors/coinlib-error'
 import { MichelineDataNode, MichelinePrimitiveApplication } from '../../micheline/MichelineNode'
 import { isMichelinePrimitiveApplication } from '../../utils'
 import { MichelsonGrammarData } from '../grammar/MichelsonGrammarData'
 import { MichelsonType } from '../MichelsonType'
 
 export type MichelsonOrType = 'Left' | 'Right'
+
+const michelsonRegex = /^(?<type>(Left|Right))\s\(?(?<value>[^()]+)\)?$/
 
 export abstract class MichelsonOr extends MichelsonType {
   protected abstract type: MichelsonOrType
@@ -20,35 +23,63 @@ export abstract class MichelsonOr extends MichelsonType {
       return or
     }
 
-    if (!(or instanceof MichelsonType) && typeof firstMappingFunction !== 'function' || typeof secondMappingFunction !== 'function') {
-      throw new Error('MichelsonPair: unknown generic mapping factory functions.')
+    if ((!(or instanceof MichelsonType) && typeof firstMappingFunction !== 'function') || typeof secondMappingFunction !== 'function') {
+      throw new InvalidValueError(Domain.TEZOS, 'MichelsonPair: unknown generic mapping factory functions.')
     }
 
-    return isMichelinePrimitiveApplication(or)
-      ? MichelsonOr.fromMicheline(or, firstMappingFunction, secondMappingFunction, name)
-      : MichelsonOr.fromUnknown(or, firstMappingFunction, secondMappingFunction, name)
+    if(isMichelinePrimitiveApplication(or)) {
+      return MichelsonOr.fromMicheline(or, firstMappingFunction, secondMappingFunction, name)
+    } else if (typeof or === 'string' && or.match(michelsonRegex)) {
+      return MichelsonOr.fromMichelson(or, firstMappingFunction, secondMappingFunction, name)
+    } else {
+      return MichelsonOr.fromUnknown(or, firstMappingFunction, secondMappingFunction, name)
+    }
+  }
+
+  public static fromMichelson(
+    michelson: string,
+    firstMappingFunction: unknown,
+    secondMappingFunction: unknown,
+    name?: string
+  ): MichelsonOr {
+    const match: RegExpMatchArray | null = michelson.match(michelsonRegex)
+    if (match === null || match.groups?.type === undefined || match.groups?.value === undefined) {
+      throw new Error('MichelsonOr: invalid Michelson value')
+    }
+
+    return MichelsonOr.fromUnknown([match.groups?.type, match.groups?.value], firstMappingFunction, secondMappingFunction, name)
   }
 
   public static fromMicheline(
     micheline: MichelinePrimitiveApplication<MichelsonGrammarData>,
-    firstMappingFunction: unknown, 
+    firstMappingFunction: unknown,
     secondMappingFunction: unknown,
     name?: string
   ): MichelsonOr {
     if (!MichelsonOr.isOr(micheline)) {
-      throw invalidArgumentTypeError('MichelsonOr', 'prim: Left | Right', `prim: ${micheline.prim}`)
+      throw new CoinlibAssertionError(Domain.TEZOS, 'MichelsonOr', 'prim: Left | Right', `prim: ${micheline.prim}`)
     }
 
     if (micheline.args === undefined) {
-      throw invalidArgumentTypeError('MichelsonOr', 'args: <array>', 'args: undefined')
+      throw new CoinlibAssertionError(Domain.TEZOS, 'MichelsonOr', 'args: <array>', 'args: undefined')
     }
-   
+
     return MichelsonOr.fromUnknown([micheline.prim, micheline.args[0]], firstMappingFunction, secondMappingFunction, name)
   }
 
-  public static fromUnknown(unknownValue: unknown, firstMappingFunction: unknown, secondMappingFunction: unknown, name?: string): MichelsonOr {
-    if ((!Array.isArray(unknownValue) || unknownValue.length !== 2 || typeof unknownValue[0] !== 'string')) {
-      throw invalidArgumentTypeError('MichelsonOr', "MichelsonOr or tuple<'Left' | 'Right', any>", `${typeof unknownValue}: ${unknownValue}`)
+  public static fromUnknown(
+    unknownValue: unknown,
+    firstMappingFunction: unknown,
+    secondMappingFunction: unknown,
+    name?: string
+  ): MichelsonOr {
+    if (!Array.isArray(unknownValue) || unknownValue.length !== 2 || typeof unknownValue[0] !== 'string') {
+      throw new CoinlibAssertionError(
+        Domain.TEZOS,
+        'MichelsonOr',
+        "MichelsonOr or tuple<'Left' | 'Right', any>",
+        `${typeof unknownValue}: ${unknownValue}`
+      )
     }
 
     const type: string = unknownValue[0]
@@ -57,32 +88,30 @@ export abstract class MichelsonOr extends MichelsonType {
     } else if (type.toLowerCase() === 'right' || type.toLowerCase() === 'r') {
       return MichelsonOr.create('Right', unknownValue[1], secondMappingFunction, name)
     } else {
-      throw new Error(`MichelsonOr: unknown type ${unknownValue[0]}, expected 'Left' or 'Right'.`)
+      throw new CoinlibAssertionError(Domain.TEZOS, 'MichelsonOr', "'Left' or 'Right'", unknownValue[0])
     }
   }
 
   public static isOr(unknownValue: unknown): unknownValue is MichelsonOr {
     return (
-      unknownValue instanceof MichelsonOr || 
-      (
-        isMichelinePrimitiveApplication(unknownValue) && 
-        (unknownValue.prim === 'Left' || unknownValue.prim === 'Right')
-      )
+      unknownValue instanceof MichelsonOr ||
+      (isMichelinePrimitiveApplication(unknownValue) && (unknownValue.prim === 'Left' || unknownValue.prim === 'Right'))
     )
   }
 
   private static create(type: MichelsonOrType, value: unknown, mappingFunction: unknown, name?: string): MichelsonOr {
-    const lazyValue: Lazy<MichelsonType> = value instanceof MichelsonType
-      ? new Lazy(() => value)
-      : new Lazy(() => {
-          const mappedValue: unknown = typeof mappingFunction === 'function' ? mappingFunction(value) : undefined
+    const lazyValue: Lazy<MichelsonType> =
+      value instanceof MichelsonType
+        ? new Lazy(() => value)
+        : new Lazy(() => {
+            const mappedValue: unknown = typeof mappingFunction === 'function' ? mappingFunction(value) : undefined
 
-          if (!(mappedValue instanceof MichelsonType)) {
-            throw new Error('MichelsonOr: unknown generic mapping type.')
-          }
+            if (!(mappedValue instanceof MichelsonType)) {
+              throw new InvalidValueError(Domain.TEZOS, 'MichelsonOr: unknown generic mapping type.')
+            }
 
-          return mappedValue
-        })
+            return mappedValue
+          })
 
     return type === 'Left' ? new MichelsonLeft(lazyValue, name) : new MichelsonRight(lazyValue, name)
   }
@@ -94,9 +123,7 @@ export abstract class MichelsonOr extends MichelsonType {
   public toMichelineJSON(): MichelineDataNode {
     return {
       prim: this.type,
-      args: [
-        this.value.get().toMichelineJSON()
-      ]
+      args: [this.value.get().toMichelineJSON()]
     }
   }
 

@@ -1,9 +1,12 @@
 import * as EthereumJSUtils from '../../dependencies/src/ethereumjs-util-5.2.0/index'
+import { NotFoundError } from '../../errors'
+import { Domain } from '../../errors/coinlib-error'
 import { Secp256k1CryptoClient } from '../Secp256k1CryptoClient'
 
 import { BaseEthereumProtocol } from './BaseEthereumProtocol'
 import { EthereumInfoClient } from './clients/info-clients/InfoClient'
 import { EthereumNodeClient } from './clients/node-clients/NodeClient'
+import { EthereumAddress } from './EthereumAddress'
 
 export class EthereumCryptoClient extends Secp256k1CryptoClient {
   constructor(private readonly protocol: BaseEthereumProtocol<EthereumNodeClient, EthereumInfoClient>) {
@@ -12,7 +15,7 @@ export class EthereumCryptoClient extends Secp256k1CryptoClient {
 
   public async signMessage(message: string, keypair: { privateKey: Buffer }): Promise<string> {
     if (!keypair.privateKey) {
-      throw new Error(`Private key not provided`)
+      throw new NotFoundError(Domain.ETHEREUM, `Private key not provided`)
     }
 
     const messageBuffer: Buffer = EthereumJSUtils.hashPersonalMessage(EthereumJSUtils.toBuffer(message))
@@ -30,8 +33,8 @@ export class EthereumCryptoClient extends Secp256k1CryptoClient {
     const recoveredAddressBuffer: Buffer = EthereumJSUtils.publicToAddress(recoveredPublicKey)
     const recoveredAddress: string = EthereumJSUtils.bufferToHex(recoveredAddressBuffer)
 
-    const address: string = await this.protocol.getAddressFromPublicKey(publicKey)
+    const address: EthereumAddress = await this.protocol.getAddressFromPublicKey(publicKey)
 
-    return recoveredAddress.toLowerCase() === address.toLowerCase()
+    return recoveredAddress.toLowerCase() === address.getValue().toLowerCase()
   }
 }

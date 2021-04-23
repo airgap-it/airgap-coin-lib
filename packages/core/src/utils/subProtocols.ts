@@ -1,3 +1,5 @@
+import { ConditionViolationError, UnsupportedError } from '../errors'
+import { Domain } from '../errors/coinlib-error'
 import { ICoinProtocol } from '../protocols/ICoinProtocol'
 import { ICoinSubProtocol } from '../protocols/ICoinSubProtocol'
 
@@ -22,7 +24,7 @@ const getSubProtocolsByIdentifier: (identifier: ProtocolSymbols, network?: Proto
   network?: ProtocolNetwork
 ): ICoinSubProtocol[] => {
   if (!identifier || typeof identifier !== 'string') {
-    throw new Error('No protocol identifier provided')
+    throw new ConditionViolationError(Domain.SUBPROTOCOLS, 'No protocol identifier provided')
   }
 
   const targetNetwork: ProtocolNetwork = network ? network : getProtocolOptionsByIdentifier(identifier).network
@@ -43,11 +45,14 @@ const addSubProtocol: (protocol: ICoinProtocol, subProtocol: ICoinSubProtocol) =
   subProtocol: ICoinSubProtocol
 ): void => {
   if (!subProtocol.identifier.startsWith(protocol.identifier)) {
-    throw new Error(`subprotocol ${subProtocol.name} is not supported for protocol ${protocol.identifier}`)
+    throw new UnsupportedError(Domain.SUBPROTOCOLS, `subprotocol ${subProtocol.name} is not supported for protocol ${protocol.identifier}`)
   }
 
   if (!isNetworkEqual(protocol.options.network, subProtocol.options.network)) {
-    throw new Error(`subprotocol ${subProtocol.name} needs to have the same network as main protocol`)
+    throw new ConditionViolationError(
+      Domain.SUBPROTOCOLS,
+      `subprotocol ${subProtocol.name} needs to have the same network as main protocol`
+    )
   }
 
   const protocolAndNetworkIdentifier: string = getProtocolAndNetworkIdentifier(protocol.identifier, protocol.options.network)
@@ -65,11 +70,14 @@ const removeSubProtocol: (protocol: ICoinProtocol, subProtocol: ICoinSubProtocol
   subProtocol: ICoinSubProtocol
 ): void => {
   if (!subProtocol.identifier.startsWith(protocol.identifier)) {
-    throw new Error(`subprotocol ${subProtocol.name} is not supported for protocol ${protocol.identifier}`)
+    throw new UnsupportedError(Domain.SUBPROTOCOLS, `subprotocol ${subProtocol.name} is not supported for protocol ${protocol.identifier}`)
   }
 
   if (!isNetworkEqual(protocol.options.network, subProtocol.options.network)) {
-    throw new Error(`subprotocol ${subProtocol.name} needs to have the same network as main protocol`)
+    throw new ConditionViolationError(
+      Domain.SUBPROTOCOLS,
+      `subprotocol ${subProtocol.name} needs to have the same network as main protocol`
+    )
   }
 
   const protocolAndNetworkIdentifier: string = getProtocolAndNetworkIdentifier(protocol.identifier, protocol.options.network)

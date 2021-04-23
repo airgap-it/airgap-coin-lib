@@ -2,6 +2,7 @@ import bs58 = require('../../../../../dependencies/src/bs58-4.0.1')
 import { blake2bAsBytes } from '../../../../../utils/blake2b'
 import { hexToBytes, isHex } from '../../../../../utils/hex'
 import { SubstrateNetwork } from '../../../SubstrateNetwork'
+import { CoinAddress } from '../../../../ICoinProtocol'
 
 // If changed, the test address in `test/protocols/specs/kusama.ts` must be changed accordingly
 const SS58Format: Map<SubstrateNetwork, number> = new Map([
@@ -20,7 +21,7 @@ export type SubstrateAccountId = string | SubstrateAddress
  * 6:  1, 4,  1
  * 35: 1, 32, 2
  */
-export class SubstrateAddress {
+export class SubstrateAddress implements CoinAddress {
   private static placeholder: SubstrateAddress | undefined
   public static createPlaceholder(): SubstrateAddress {
     if (!SubstrateAddress.placeholder) {
@@ -78,7 +79,7 @@ export class SubstrateAddress {
     return Buffer.from(blake2bAsBytes(Buffer.concat([prefixBuffer, input]), 512))
   }
 
-  private encoded: string | null = null
+  private encoded: string | undefined
 
   constructor(readonly version: Buffer, readonly payload: Buffer, readonly checksum: Buffer) {}
 
@@ -86,13 +87,13 @@ export class SubstrateAddress {
     if (typeof other === 'string' && isHex(other)) {
       return this.payload.compare(Buffer.from(other, 'hex'))
     } else if (typeof other === 'string') {
-      return this.toString().localeCompare(other)
+      return this.getValue().localeCompare(other)
     } else {
       return this.payload.compare(other.payload)
     }
   }
 
-  public toString(): string {
+  public getValue(): string {
     if (!this.encoded) {
       this.encoded = bs58.encode(Buffer.concat([this.version, this.payload, this.checksum]))
     }

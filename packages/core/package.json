@@ -1,6 +1,6 @@
 {
   "name": "@airgap/coinlib-core",
-  "version": "0.10.8",
+  "version": "0.11.0",
   "description": "The @airgap/coinlib-core is a protocol agnostic library to prepare, sign and broadcast cryptocurrency transactions.",
   "keywords": [
     "airgap",
@@ -31,15 +31,17 @@
     "lint:prettier": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint-ci": "tslint -t json -o ../../lint-reports/core.json --project . || true",
     "lint-ci:prettier": "prettier \"src/**/*.ts\" \"test/**/*.ts\" --list-different",
-    "test": "nyc mocha --require ts-node/register --require source-map-support/register --full-trace --timeout 40000 ./test/**/**.spec.ts",
+    "test": "nyc mocha --bail --require ts-node/register --require source-map-support/register --full-trace --timeout 40000 ./test/**/**.spec.ts",
     "test-ci": "nyc --reporter=lcov npm test",
     "test-legacy": "npm run build && mocha --full-trace --timeout 40000 ./test/**/**.spec.js",
     "browserify": "browserify ./dist/index.js -s airgapCoinLib > ./dist/airgap-coinlib-core.min.js"
   },
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
+    "@airgap/sapling-wasm": "0.0.5",
     "@polkadot/util": "2.0.1",
     "@polkadot/wasm-crypto": "0.20.1",
+    "idna-uts46-hx": "^3.3.1",
     "libsodium-wrappers": "0.7.6"
   },
   "localDependencies": {

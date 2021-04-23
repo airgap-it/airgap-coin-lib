@@ -3,6 +3,8 @@ import * as sodium from 'libsodium-wrappers'
 import * as bs58check from '../../dependencies/src/bs58check-2.1.2'
 import * as bs58 from '../../dependencies/src/bs58-4.0.1'
 import { Ed25519CryptoClient } from '../Ed25519CryptoClient'
+import { InvalidValueError } from '../../errors'
+import { Domain } from '../../errors/coinlib-error'
 
 export class TezosCryptoClient extends Ed25519CryptoClient {
   constructor(public readonly edsigPrefix: Uint8Array = new Uint8Array([9, 245, 205, 134, 18])) {
@@ -31,7 +33,7 @@ export class TezosCryptoClient extends Ed25519CryptoClient {
 
       rawSignature = new Uint8Array(decoded.slice(edsigPrefixLength, decoded.length))
     } else {
-      throw new Error(`invalid signature: ${signature}`)
+      throw new InvalidValueError(Domain.TEZOS, `invalid signature: ${signature}`)
     }
 
     const bufferMessage = await this.toBuffer(message)

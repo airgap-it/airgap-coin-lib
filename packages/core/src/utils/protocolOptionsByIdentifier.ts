@@ -1,3 +1,5 @@
+import { NotFoundError } from '../errors'
+import { Domain } from '../errors/coinlib-error'
 import { AeternityProtocolNetwork, AeternityProtocolOptions } from '../protocols/aeternity/AeternityProtocolOptions'
 import { BitcoinProtocolNetwork, BitcoinProtocolOptions } from '../protocols/bitcoin/BitcoinProtocolOptions'
 import { CosmosProtocolNetwork, CosmosProtocolOptions } from '../protocols/cosmos/CosmosProtocolOptions'
@@ -14,10 +16,11 @@ import {
   TezosUSDProtocolConfig,
   TezosWrappedProtocolConfig
 } from '../protocols/tezos/fa/TezosFAProtocolOptions'
+import { TezosSaplingProtocolOptions, TezosShieldedTezProtocolConfig } from '../protocols/tezos/sapling/TezosSaplingProtocolOptions'
 import { TezosProtocolNetwork, TezosProtocolOptions } from '../protocols/tezos/TezosProtocolOptions'
 import { assertNever } from './assert'
 
-import { ProtocolNetwork } from './ProtocolNetwork'
+import { NetworkType, ProtocolNetwork } from './ProtocolNetwork'
 import { ProtocolOptions } from './ProtocolOptions'
 import { MainProtocolSymbols, ProtocolSymbols, SubProtocolSymbols } from './ProtocolSymbols'
 
@@ -46,6 +49,13 @@ const getProtocolOptionsByIdentifier: (identifier: ProtocolSymbols, network?: Pr
     case MainProtocolSymbols.XTZ:
     case SubProtocolSymbols.XTZ_KT:
       return new TezosProtocolOptions(network ? (network as TezosProtocolNetwork) : new TezosProtocolNetwork())
+    case MainProtocolSymbols.XTZ_SHIELDED:
+      return new TezosSaplingProtocolOptions(
+        network
+          ? (network as TezosProtocolNetwork)
+          : new TezosProtocolNetwork('Edonet', NetworkType.TESTNET, 'https://tezos-edonet-node.prod.gke.papers.tech'),
+        new TezosShieldedTezProtocolConfig()
+      )
     case SubProtocolSymbols.XTZ_BTC:
       return new TezosFAProtocolOptions(
         network ? (network as TezosProtocolNetwork) : new TezosProtocolNetwork(),
@@ -83,7 +93,7 @@ const getProtocolOptionsByIdentifier: (identifier: ProtocolSymbols, network?: Pr
         return getProtocolOptionsByIdentifier((identifier as string).split('-')[0] as any)
       }
       assertNever(identifier)
-      throw new Error(`No protocol options found for ${identifier}`)
+      throw new NotFoundError(Domain.UTILS, `No protocol options found for ${identifier}`)
   }
 }
 

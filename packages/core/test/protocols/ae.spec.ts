@@ -52,15 +52,17 @@ describe(`ICoinProtocol Aeternity - Custom Tests`, () => {
 
   it("will include the timestamp if it's available", async () => {
     const responseWithTimestamp = JSON.parse(JSON.stringify(sampleAccountResponse))
-    responseWithTimestamp.data[0].time = 1543450515994
+    responseWithTimestamp.data[0].micro_time = 1543450515994
+
+    const limit = 1
 
     sinon.restore()
     sinon
       .stub(axios, 'get')
-      .withArgs(`${aeLib.options.network.rpcUrl}/middleware/transactions/account/${aeProtocolSpec.wallet.addresses[0]}?page=1&limit=1`)
-      .returns(Promise.resolve(responseWithTimestamp))
+      .withArgs(`${aeLib.options.network.rpcUrl}/mdw/txs/backward?account=${aeProtocolSpec.wallet.addresses[0]}&page=1&limit=${limit}`)
+      .returns(Promise.resolve({ data: responseWithTimestamp }))
 
-    const transactions = await (await aeLib.getTransactionsFromAddresses(aeProtocolSpec.wallet.addresses, 1)).transactions
+    const transactions = await (await aeLib.getTransactionsFromAddresses(aeProtocolSpec.wallet.addresses, limit)).transactions
 
     expect(transactions.map((transaction) => ({ ...transaction, network: undefined }))).to.deep.eq([
       {
@@ -83,13 +85,22 @@ describe(`ICoinProtocol Aeternity - Custom Tests`, () => {
         blockExplorer: undefined,
         extras: undefined,
         name: 'Mainnet',
-        rpcUrl: 'https://ae-epoch-rpc-proxy.gke.papers.tech',
+        rpcUrl: 'https://mainnet.aeternity.io',
         type: 'MAINNET'
       }
     ])
   })
 
   it('can give a list of transactions from endpoints', async () => {
+    const responseWithTimestamp = JSON.parse(JSON.stringify(sampleAccountResponse))
+    const limit = 1
+
+    sinon.restore()
+    sinon
+      .stub(axios, 'get')
+      .withArgs(`${aeLib.options.network.rpcUrl}/mdw/txs/backward?account=${aeProtocolSpec.wallet.addresses[0]}&page=1&limit=${limit}`)
+      .returns(Promise.resolve({ data: responseWithTimestamp }))
+
     const transactions = await (await aeLib.getTransactionsFromAddresses(aeProtocolSpec.wallet.addresses, 1)).transactions
 
     expect(transactions.map((transaction) => ({ ...transaction, network: undefined }))).to.deep.eq([
@@ -112,7 +123,7 @@ describe(`ICoinProtocol Aeternity - Custom Tests`, () => {
         blockExplorer: undefined,
         extras: undefined,
         name: 'Mainnet',
-        rpcUrl: 'https://ae-epoch-rpc-proxy.gke.papers.tech',
+        rpcUrl: 'https://mainnet.aeternity.io',
         type: 'MAINNET'
       }
     ])

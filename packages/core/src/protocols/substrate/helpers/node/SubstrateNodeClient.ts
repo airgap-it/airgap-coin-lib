@@ -1,6 +1,9 @@
 import { RPCBody } from '../../../../data/RPCBody'
 import axios from '../../../../dependencies/src/axios-0.19.0'
 import BigNumber from '../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { Cache } from '../../../../utils/cache'
+import { NetworkError } from '../../../../errors'
+import { Domain } from '../../../../errors/coinlib-error'
 import { addHexPrefix, bytesToHex, stripHexPrefix, toHexString } from '../../../../utils/hex'
 import { SubstrateNetwork } from '../../SubstrateNetwork'
 import { SubstrateAccountInfo } from '../data/account/SubstrateAccountInfo'
@@ -29,7 +32,6 @@ import { SubstrateValidatorPrefs } from '../data/staking/SubstrateValidatorPrefs
 import { SubstrateRuntimeVersion } from '../data/state/SubstrateRuntimeVersion'
 import { SubstrateTransactionType } from '../data/transaction/SubstrateTransaction'
 
-import { SubstrateNodeCache } from './SubstrateNodeCache'
 import {
   SubstrateCallModuleName,
   SubstrateCallName,
@@ -39,7 +41,7 @@ import {
   SubstrateRpcModuleName,
   SubstrateStorageEntryName,
   SubstrateStorageModuleName,
-  supportedCallEndpoints,
+  supportedCallEndpoints
 } from './supported'
 
 interface ConnectionConfig {
@@ -58,7 +60,7 @@ export class SubstrateNodeClient {
   public constructor(
     private readonly network: SubstrateNetwork,
     private readonly baseURL: string,
-    private readonly cache: SubstrateNodeCache = new SubstrateNodeCache(CACHE_DEFAULT_EXPIRATION_TIME)
+    private readonly cache: Cache = new Cache(CACHE_DEFAULT_EXPIRATION_TIME)
   ) { }
 
   public async getAccountInfo(address: SubstrateAddress): Promise<SubstrateAccountInfo | null> {
@@ -83,9 +85,7 @@ export class SubstrateNodeClient {
   }
 
   public async getTransferFeeEstimate(transaction: Uint8Array | string): Promise<BigNumber | null> {
-    return this.send('payment', 'queryInfo', [bytesToHex(transaction)]).then((result) =>
-      result ? new BigNumber(result.partialFee) : null
-    )
+    return this.send('payment', 'queryInfo', [bytesToHex(transaction)]).then((result) => (result ? new BigNumber(result.partialFee) : null))
   }
 
   public saveLastFee(type: SubstrateTransactionType, fee: BigNumber) {
@@ -172,8 +172,8 @@ export class SubstrateNodeClient {
     return this.fromStorage('Session', 'Validators').then((items) =>
       items
         ? SCALEArray.decode(this.network, this.runtimeVersion, items, (network, _, hex) =>
-            SCALEAccountId.decode(network, hex)
-          ).decoded.elements.map((encoded) => encoded.address)
+          SCALEAccountId.decode(network, hex)
+        ).decoded.elements.map((encoded) => encoded.address)
         : null
     )
   }
@@ -217,13 +217,13 @@ export class SubstrateNodeClient {
     return this.fromStorage('Identity', 'SubsOf', SCALEAccountId.from(address, this.network)).then((item) =>
       item
         ? SCALETuple.decode(
-            this.network,
-            this.runtimeVersion,
-            item,
-            (_network, _runtimeVersion, hex) => SCALECompactInt.decode(hex),
-            (network, _, hex) =>
-              SCALEArray.decode(network, _, hex, (innerNetwork, _, innerHex) => SCALEAccountId.decode(innerNetwork, innerHex))
-          ).decoded
+          this.network,
+          this.runtimeVersion,
+          item,
+          (_network, _runtimeVersion, hex) => SCALECompactInt.decode(hex),
+          (network, _, hex) =>
+            SCALEArray.decode(network, _, hex, (innerNetwork, _, innerHex) => SCALEAccountId.decode(innerNetwork, innerHex))
+        ).decoded
         : null
     )
   }
@@ -318,12 +318,9 @@ export class SubstrateNodeClient {
   private async initApi(): Promise<void> {
     if (!this.initApiPromise) {
       const initApiPromise = new Promise<void>(async (resolve, reject) => {
-        const [metadataEncoded, runtimeVersion] = await Promise.all([
-          this.send('state', 'getMetadata'),
-          this.getRuntimeVersion()
-        ])
+        const [metadataEncoded, runtimeVersion] = await Promise.all([this.send('state', 'getMetadata'), this.getRuntimeVersion()])
         if (!runtimeVersion) {
-          reject("Could not fetch runtime version from the node")
+          reject('Could not fetch runtime version from the node')
         }
         this.metadata = Metadata.decode(this.network, runtimeVersion?.specVersion, metadataEncoded).decorate()
         this.runtimeVersion = runtimeVersion?.specVersion
@@ -359,17 +356,14 @@ export class SubstrateNodeClient {
     const key = `${endpoint}$${params.join('')}`
 
     return this.cache.get(key).catch(() => {
-      const promise = axios.post(this.baseURL, new RPCBody(endpoint, params.map(addHexPrefix)))
-        .then((response) => {
-          if (response.data.error !== undefined) {
-            const error = response.data.error
-            console.error(error)
+      const promise = axios.post(this.baseURL, new RPCBody(endpoint, params.map(addHexPrefix))).then((response) => {
+        if (response.data.error !== undefined) {
+          const error = response.data.error
+          throw new NetworkError(Domain.SUBSTRATE, error.message ?? `Unknown error ${error}`)
+        }
 
-            throw new Error(error.message ?? 'Unknown error')
-          }
-
-          return response.data.result
-        })
+        return response.data.result
+      })
 
       return this.cache.save(key, promise, { cacheValue: config.allowCache })
     })

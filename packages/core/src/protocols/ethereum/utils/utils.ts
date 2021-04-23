@@ -1,4 +1,6 @@
 import { BigNumber } from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { InvalidValueError } from '../../../errors'
+import { Domain } from '../../../errors/coinlib-error'
 // var _ = require('underscore')
 // var BN = require('../../../dependencies/src/bn.js-4.11.8/bn')
 // var numberToBN = require('number-to-bn')
@@ -58,7 +60,7 @@ export class EthereumUtils {
     }
 
     if (!isFinite(Number(value)) && !EthereumUtils.isHexStrict(value)) {
-      throw new Error(`Given input "${value}" is not a number.`)
+      throw new InvalidValueError(Domain.UTILS, `Given input "${value}" is not a number.`)
     }
 
     // var number = EthereumUtils.toBN(value)
@@ -72,7 +74,7 @@ export class EthereumUtils {
     let hex: string = typeof value === 'number' ? value.toString(16) : value
 
     if (!EthereumUtils.isHexStrict(hex)) {
-      throw new Error(`Given value "${hex}" is not a valid hex string.`)
+      throw new InvalidValueError(Domain.UTILS, `Given value "${hex}" is not a valid hex string.`)
     }
 
     hex = hex.replace(/^0x/i, '')

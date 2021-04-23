@@ -1,4 +1,5 @@
-import { InvalidHexString, InvalidSchemaType, InvalidString } from '../../errors'
+import { InvalidHexString, InvalidSchemaType, InvalidString, NotFoundError } from '../../errors'
+import { Domain } from '../../errors/coinlib-error'
 import { assertNever } from '../../utils/assert'
 import { SchemaDefinition, SchemaItem, SchemaRoot, SchemaTypes } from '../schemas/schema'
 
@@ -184,7 +185,7 @@ export function rlpArrayToJson(schema: SchemaItem, decoded: RLPData): { [key: st
     if (newShema) {
       return rlpArrayToJson(newShema, decoded)
     } else {
-      throw new Error('Shema not available.')
+      throw new NotFoundError(Domain.SERIALIZER, 'Schema not available.')
     }
   }
 

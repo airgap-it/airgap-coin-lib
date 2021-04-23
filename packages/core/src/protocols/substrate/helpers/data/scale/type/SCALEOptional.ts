@@ -1,3 +1,5 @@
+import { InvalidValueError } from '../../../../../../errors'
+import { Domain } from '../../../../../../errors/coinlib-error'
 import { stripHexPrefix, toHexStringRaw } from '../../../../../../utils/hex'
 import { SubstrateNetwork } from '../../../../SubstrateNetwork'
 import { DecoderMethod, SCALEDecodeResult } from '../SCALEDecoder'
@@ -41,7 +43,7 @@ export class SCALEOptional<T extends SCALEType> extends SCALEType {
           decoded: SCALEOptional.from(value.decoded)
         }
       default:
-        throw new Error('SCALEOptional#decode: Unknown optional type')
+        throw new InvalidValueError(Domain.SUBSTRATE, 'SCALEOptional#decode: Unknown optional type')
     }
   }
 

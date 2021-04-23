@@ -1,4 +1,6 @@
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { InvalidValueError } from '../../../errors'
+import { Domain } from '../../../errors/coinlib-error'
 import { TezosBakingRewards, TezosEndorsingRewards, TezosEndorsingRight, TezosNodeConstantsV1, TezosProtocol } from '../TezosProtocol'
 
 import { TezosRewardsCalculationDefault } from './TezosRewardCalculationDefault'
@@ -26,7 +28,7 @@ export class TezosRewardsCalculation005 extends TezosRewardsCalculationDefault {
       if (!isFutureCycle && endorsementCountsAndFees !== undefined) {
         blockEndorsementCountAndFee = endorsementCountsAndFees.get(next.level)
         if (blockEndorsementCountAndFee === undefined) {
-          throw new Error('Cannot find endorsement operation count')
+          throw new InvalidValueError(Domain.TEZOS, 'Cannot find endorsement operation count')
         }
         count = parseInt(blockEndorsementCountAndFee.sum_number_of_slots)
       }
@@ -72,7 +74,7 @@ export class TezosRewardsCalculation005 extends TezosRewardsCalculationDefault {
       if (!isFutureCycle) {
         const block = priorities.find((p) => p.level === next.block_level!)
         if (block === undefined) {
-          throw new Error('Cannot find block priority')
+          throw new InvalidValueError(Domain.TEZOS, 'Cannot find block priority')
         }
         priority = block.priority
       }

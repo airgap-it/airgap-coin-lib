@@ -1,3 +1,5 @@
+import { InvalidValueError } from '../../../../../errors'
+import { Domain } from '../../../../../errors/coinlib-error'
 import { isHex } from '../../../../../utils/hex'
 import { MichelineDataNode, MichelinePrimitive } from '../../micheline/MichelineNode'
 import { isMichelinePrimitive } from '../../utils'
@@ -19,7 +21,7 @@ export class MichelsonAddress extends MichelsonType {
 
   public static fromMicheline(micheline: MichelinePrimitive<'string'> | MichelinePrimitive<'bytes'>, name?: string): MichelsonAddress {
     const value: MichelsonString | MichelsonBytes = isMichelinePrimitive('string', micheline)
-      ? MichelsonString.fromMicheline(micheline) 
+      ? MichelsonString.fromMicheline(micheline)
       : MichelsonBytes.fromMicheline(micheline)
 
     return new MichelsonAddress(value, name)
@@ -36,13 +38,13 @@ export class MichelsonAddress extends MichelsonType {
     } else if ((typeof unknownValue === 'string' && isHex(unknownValue)) || Buffer.isBuffer(unknownValue)) {
       value = MichelsonBytes.from(unknownValue)
     } else {
-      throw new Error('MichelsonAddress: invalid value.')
+      throw new InvalidValueError(Domain.TEZOS, 'MichelsonAddress: invalid value.')
     }
 
     return new MichelsonAddress(value, name)
   }
 
-  public asRawValue(): Record<string, string>  | string {
+  public asRawValue(): Record<string, string> | string {
     const value: string = Buffer.isBuffer(this.address.value) ? this.address.value.toString('hex') : this.address.value
 
     return this.name ? { [this.name]: value } : value
@@ -51,5 +53,4 @@ export class MichelsonAddress extends MichelsonType {
   public toMichelineJSON(): MichelineDataNode {
     return this.address.toMichelineJSON()
   }
-
 }

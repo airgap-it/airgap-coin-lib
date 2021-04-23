@@ -1,5 +1,5 @@
 import { createCipheriv, createDecipheriv, randomBytes } from "crypto";
-import secp256k1 from "../../secp256k1-4.0.2/elliptic";
+import * as secp256k1 from "../../secp256k1-4.0.2/elliptic";
 
 export function remove0x(hex: string): string {
     if (hex.startsWith("0x") || hex.startsWith("0X")) {

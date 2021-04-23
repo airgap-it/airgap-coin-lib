@@ -1,16 +1,18 @@
+import { KusamaProtocol } from '../../../src/protocols/substrate/implementations/KusamaProtocol'
+import { SubstrateNetwork } from '../../../src/protocols/substrate/SubstrateNetwork'
 import { TestProtocolSpec } from '../implementations'
 import { KusamaProtocolStub } from '../stubs/kusama.stub'
-import { KusamaProtocol } from '../../../src/protocols/substrate/implementations/KusamaProtocol'
 
 /*
  * Test Mnemonic: leopard crouch simple blind castle they elder enact slow rate mad blanket saddle tail silk fury quarter obscure interest exact veteran volcano fabric cherry
  *
  */
 // Test Mnemonic: food talent voyage degree siege clever account medal film remind good kind
-// Private Key: c8b52238e081997d95912bf1c609899bc8710d66b517a1b491e75ce30db15616df3729c7fb254aa1656b7026a07012fd8aa869e0c364d1473f78d852dbfc0d85
-// Public Key: c8d937dc1c18a455cd16175b8c67dd64288e73091afb5818d77f0369c768655b
+// Derivation path: m/
+// Private Key: d08bc6388fdeb30fc34a8e0286384bd5a84b838222bb9b012fc227d7473fc87aa2913d02297653ce859ccd6b2c057f7e57c9ef6cc359300a891c581fb6d03141
+// Public Key: 52e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10
 // Hex Seed: 55a1417bbfacd64e069b4d07e47fb34ce9ff53b15556698038604f002524aec0
-// Address (Kusama SS58): H7fd2hRFkbnrAapqAGBABwyypuN5LB9huF79tNJbRaAkb5F
+// Address (Kusama SS58): ESzXrcSsbM3Jxzuz2zczuYgCXsxQrqPw29AR2doaxZdzemT
 export class KusamaTestProtocolSpec extends TestProtocolSpec {
   public name = 'Kusama'
   public lib = new KusamaProtocol()
@@ -44,44 +46,82 @@ export class KusamaTestProtocolSpec extends TestProtocolSpec {
       fee: '1000000000',
       unsignedTx: {
         encoded:
-          '042504' + // number of txs + tx length
+          // tslint:disable-next-line: prefer-template
+          '04' + // number of txs
+          '2106' + // tx length
+          '01' + // optional type (specVersion)
+          'ee070000' + // specVersion
           '00' + // type
           '02286bee' + // fee
           // transaction
-          '3902' + // length
+          '4102' + // length
           '84' + // signed flag (not signed)
+          '00' + // MultiAddress type
           '52e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10' + // AccountId signer
-          '00' + // signature type (sr25519)
+          '00' + // signature type (ed25519)
           '0000000000000000000000000000000000000000000000000000000000000000' + // signature
           '0000000000000000000000000000000000000000000000000000000000000000' + // signature
           '8503' + // era
           '04' + // nonce
           '00' + // tip
           '0400' + // moduleId + callId
+          '00' + // MultiAddress type
           '52e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10' + // AccountId destination
           '070010a5d4e8' + // value
           // payload
-          '040052e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10070010a5d4e8850304000400000001000000d51522c9ef7ba4e0990f7a4527de79afcac992ab97abbbc36722f8a27189b17033a7a745849347ce3008c07268be63d8cefd3ef61de0c7318e88a577fb7d26a9'
+          'a903' + // payload length
+          Buffer.from(
+            '0400' + // moduleId + callId
+            '00' + // MultiAddress type
+            '52e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10' + // AccountId destination
+            '070010a5d4e8' + // value
+            '8503'+ // era
+            '04' + // nonce
+            '00' + // tip
+            'ee070000' + // specVersion
+            '01000000' + // transactionVersion
+            'd51522c9ef7ba4e0990f7a4527de79afcac992ab97abbbc36722f8a27189b170' + // genesis hash
+            '33a7a745849347ce3008c07268be63d8cefd3ef61de0c7318e88a577fb7d26a9' // block hash
+          ).toString('hex') // payload
       },
       signedTx:
-        '042504' + // number of txs + tx length
+        // tslint:disable-next-line: prefer-template
+        '04' + // number of txs
+        '2106' + // tx length
+        '01' + // optional type (specVersion)
+        'ee070000' + // specVersion
         '00' + // type
         '02286bee' + // fee
         // transaction
-        '3902' + // length
+        '4102' + // length
         '84' + // signed flag (signed)
+        '00' + // MultiAddress type
         '52e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10' + // AccountId signer
-        '01' + // signature type (sr25519)
-        '3ca263011746baf6301fafcd530330962e13c4b4d947eeb4b7daf1c8d7915552' + // signature
-        'a36b9904cb734eb72222beaa301bdca12567f351bf9543ebaa1a3bdcabbc5d8a' + // signature
+        '00' + // signature type (ed25519)
+        'e209d71282bbff8af2f4362e4b478d156c9c1df81e2a7d733912525308909a16' + // signature
+        'adf7eb5602136d4b0a9a57acdd07a443f3bc4865c2455bf36f01ff9fa9b4478d' + // signature
         '8503' + // era
         '04' + // nonce
         '00' + // tip
         '0400' + // moduleId + callId
+        '00' + // MultiAddress type
         '52e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10' + // AccountId destination
         '070010a5d4e8' + // value
         // payload
-        '040052e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10070010a5d4e8850304000400000001000000d51522c9ef7ba4e0990f7a4527de79afcac992ab97abbbc36722f8a27189b17033a7a745849347ce3008c07268be63d8cefd3ef61de0c7318e88a577fb7d26a9'
+        'a903' + // payload length
+          Buffer.from(
+            '0400' + // moduleId + callId
+            '00' + // MultiAddress type
+            '52e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10' + // AccountId destination
+            '070010a5d4e8' + // value
+            '8503'+ // era
+            '04' + // nonce
+            '00' + // tip
+            'ee070000' + // specVersion
+            '01000000' + // transactionVersion
+            'd51522c9ef7ba4e0990f7a4527de79afcac992ab97abbbc36722f8a27189b170' + // genesis hash
+            '33a7a745849347ce3008c07268be63d8cefd3ef61de0c7318e88a577fb7d26a9' // block hash
+          ).toString('hex') // payload
     }
   ]
 
@@ -117,7 +157,7 @@ export class KusamaTestProtocolSpec extends TestProtocolSpec {
           type: 'MAINNET',
           rpcUrl: 'https://polkadot-kusama-node.prod.gke.papers.tech',
           blockExplorer: { blockExplorer: 'https://polkascan.io/kusama' },
-          extras: { apiUrl: 'https://kusama.subscan.io/api/scan', network: 1 }
+          extras: { apiUrl: 'https://kusama.subscan.io/api/scan', network: SubstrateNetwork.KUSAMA }
         },
         from: ['GzgRTyefkykqf72gC8hGgDVa7p1MYTDyCwFjTsVc53FxZi7'],
         to: ['EEWyMLHgwtemr48spFNnS3U2XjaYswqAYAbadx2jr9ppp4X'],
@@ -136,7 +176,7 @@ export class KusamaTestProtocolSpec extends TestProtocolSpec {
           type: 'MAINNET',
           rpcUrl: 'https://polkadot-kusama-node.prod.gke.papers.tech',
           blockExplorer: { blockExplorer: 'https://polkascan.io/kusama' },
-          extras: { apiUrl: 'https://kusama.subscan.io/api/scan', network: 1 }
+          extras: { apiUrl: 'https://kusama.subscan.io/api/scan', network: SubstrateNetwork.KUSAMA }
         },
         from: ['EEWyMLHgwtemr48spFNnS3U2XjaYswqAYAbadx2jr9ppp4X'],
         to: ['Dz5JAFYyLigyGnhDyrT5bJ6u8TxagA2muR1UFz7xQVVcfWA'],
@@ -160,7 +200,7 @@ export class KusamaTestProtocolSpec extends TestProtocolSpec {
           type: 'MAINNET',
           rpcUrl: 'https://polkadot-kusama-node.prod.gke.papers.tech',
           blockExplorer: { blockExplorer: 'https://polkascan.io/kusama' },
-          extras: { apiUrl: 'https://kusama.subscan.io/api/scan', network: 1 }
+          extras: { apiUrl: 'https://kusama.subscan.io/api/scan', network: SubstrateNetwork.KUSAMA }
         },
         from: ['EEWyMLHgwtemr48spFNnS3U2XjaYswqAYAbadx2jr9ppp4X'],
         to: ['DxAN9aGS117GJQNGSnaoPw5YVRCZD67DXC8aBzhJk9joK7X'],
@@ -179,7 +219,7 @@ export class KusamaTestProtocolSpec extends TestProtocolSpec {
           type: 'MAINNET',
           rpcUrl: 'https://polkadot-kusama-node.prod.gke.papers.tech',
           blockExplorer: { blockExplorer: 'https://polkascan.io/kusama' },
-          extras: { apiUrl: 'https://kusama.subscan.io/api/scan', network: 1 }
+          extras: { apiUrl: 'https://kusama.subscan.io/api/scan', network: SubstrateNetwork.KUSAMA }
         },
         from: ['EEWyMLHgwtemr48spFNnS3U2XjaYswqAYAbadx2jr9ppp4X'],
         to: ['DxAN9aGS117GJQNGSnaoPw5YVRCZD67DXC8aBzhJk9joK7X'],

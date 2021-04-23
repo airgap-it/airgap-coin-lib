@@ -1,6 +1,8 @@
 import { RPCBody } from '../../../../data/RPCBody'
 import axios from '../../../../dependencies/src/axios-0.19.0/index'
 import { BigNumber } from '../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { InvalidValueError, NetworkError } from '../../../../errors'
+import { Domain } from '../../../../errors/coinlib-error'
 import { AirGapTransactionStatus } from '../../../../interfaces/IAirGapTransaction'
 import { RPCConvertible } from '../../../cosmos/CosmosTransaction'
 import { NODE_URL } from '../../EthereumProtocolOptions'
@@ -32,7 +34,7 @@ interface EthereumRPCResponse {
   jsonrpc: string
   result?: any
   error?: {
-    code: number,
+    code: number
     message: string
   }
 }
@@ -108,7 +110,7 @@ export class EthereumRPCDataTransfer extends EthereumRPCData {
       const data = toAddressOrData
       const methodID = super.abiEncoded()
       if (!data.startsWith(methodID)) {
-        throw new Error('unexpected method ID')
+        throw new InvalidValueError(Domain.ETHEREUM, 'unexpected method ID')
       }
       const params = data.slice(methodID.length)
       const recipient = EthereumRPCData.removeLeadingZeroPadding(params.slice(0, EthereumRPCData.parametersLength))
@@ -177,11 +179,11 @@ export class AirGapNodeClient extends EthereumNodeClient {
     return new BigNumber(response.result)
   }
 
-  public async callBalanceOfOnContracts(contractAddresses: string[], address: string): Promise<{[contractAddress: string]: BigNumber}> {
+  public async callBalanceOfOnContracts(contractAddresses: string[], address: string): Promise<{ [contractAddress: string]: BigNumber }> {
     const bodies = contractAddresses.map((contractAddress, index) => this.balanceOfBody(contractAddress, address, index))
     const responses = await this.batchSend(bodies)
-    const result: {[contractAddress: string]: BigNumber} = {}
-    responses.forEach(response => {
+    const result: { [contractAddress: string]: BigNumber } = {}
+    responses.forEach((response) => {
       result[contractAddresses[response.id]] = new BigNumber(response.result ?? 0)
     })
     return result
@@ -224,13 +226,14 @@ export class AirGapNodeClient extends EthereumNodeClient {
   private async send(body: EthereumRPCBody): Promise<EthereumRPCResponse> {
     const data = (await axios.post(this.baseURL, body.toRPCBody())).data
     if (data.error !== undefined) {
-      throw new Error(data.error.message)
+      throw new NetworkError(Domain.ETHEREUM, data.error.message)
     }
+
     return data
   }
 
   private async batchSend(bodies: EthereumRPCBody[]): Promise<EthereumRPCResponse[]> {
-    const data = (await axios.post(this.baseURL, JSON.stringify(bodies.map(body => body.toJSON())))).data
+    const data = (await axios.post(this.baseURL, JSON.stringify(bodies.map((body) => body.toJSON())))).data
     return data
   }
 }

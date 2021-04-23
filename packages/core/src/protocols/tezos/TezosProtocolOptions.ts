@@ -1,6 +1,7 @@
 import { ProtocolBlockExplorer } from '../../utils/ProtocolBlockExplorer'
 import { NetworkType, ProtocolNetwork } from '../../utils/ProtocolNetwork'
 import { ProtocolOptions } from '../../utils/ProtocolOptions'
+import { TezosDomains } from './domains/TezosDomains'
 
 import { TezosNetwork } from './TezosProtocol'
 
@@ -46,10 +47,8 @@ export class TezosProtocolNetwork extends ProtocolNetwork<TezosProtocolNetworkEx
   }
 }
 
-// This is used for the TezosFAProtocolConfig
 export class TezosProtocolConfig {
-  constructor() {
-    //
+  constructor(public readonly domains?: TezosDomains) {
   }
 }
 

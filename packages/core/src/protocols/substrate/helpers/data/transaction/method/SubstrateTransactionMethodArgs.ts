@@ -177,7 +177,7 @@ class TransferArgsFactory extends SubstrateTransactionMethodArgsFactory<Transfer
   public createToAirGapTransactionParts(): () => Partial<IAirGapTransaction>[] {
     return () => [
       {
-        to: [SubstrateAddress.from(this.args.to, this.network).toString()],
+        to: [SubstrateAddress.from(this.args.to, this.network).getValue()],
         amount: this.args.value.toString()
       }
     ]
@@ -210,7 +210,7 @@ class BondArgsFactory extends SubstrateTransactionMethodArgsFactory<BondArgs> {
   public createToAirGapTransactionParts(): () => Partial<IAirGapTransaction>[] {
     return () => [
       {
-        to: [SubstrateAddress.from(this.args.controller, this.network).toString()],
+        to: [SubstrateAddress.from(this.args.controller, this.network).getValue()],
         amount: this.args.value.toString()
       }
     ]
@@ -346,7 +346,7 @@ class NominateArgsFactory extends SubstrateTransactionMethodArgsFactory<Nominate
   public createToAirGapTransactionParts(): () => Partial<IAirGapTransaction>[] {
     return () => [
       {
-        to: this.args.targets.map((target) => SubstrateAddress.from(target, this.network).toString())
+        to: this.args.targets.map((target) => SubstrateAddress.from(target, this.network).getValue())
       }
     ]
   }
@@ -441,7 +441,7 @@ class SetControllerArgsFactory extends SubstrateTransactionMethodArgsFactory<Set
   public createToAirGapTransactionParts(): () => Partial<IAirGapTransaction>[] {
     return () => [
       {
-        to: [SubstrateAddress.from(this.args.controller, this.network).toString()]
+        to: [SubstrateAddress.from(this.args.controller, this.network).getValue()]
       }
     ]
   }

@@ -1,4 +1,6 @@
 import * as crypto from 'crypto'
+import { InvalidValueError, ConditionViolationError } from '../errors'
+import { Domain } from '../errors/coinlib-error'
 
 // https://github.com/microsoft/botbuilder-js/blob/master/libraries/botframework-config/src/encrypt.ts#L20
 export class AES {
@@ -7,15 +9,15 @@ export class AES {
     public readonly KEY_DERIVATION_ITERATION_COUNT: number = 10000,
     public readonly ALGORITHM: 'aes-256-gcm' = 'aes-256-gcm',
     public readonly encoding: 'base64' | 'hex' = 'hex'
-  ) { }
+  ) {}
 
   public async encryptString(plainText: string, privateKey: Buffer): Promise<string> {
     if (!plainText || plainText.length === 0) {
-      throw new Error('you must pass an input message')
+      throw new ConditionViolationError(Domain.UTILS, 'you must pass an input message')
     }
 
     if (!privateKey || privateKey.length === 0) {
-      throw new Error('you must pass a privateKey')
+      throw new ConditionViolationError(Domain.UTILS, 'you must pass a privateKey')
     }
 
     const keyBytes: Buffer = await this.deriveKeyFromPrivateKey(privateKey)
@@ -41,12 +43,12 @@ export class AES {
     }
 
     if (!privateKey || privateKey.length === 0) {
-      throw new Error('you must pass a privateKey')
+      throw new ConditionViolationError(Domain.UTILS, 'you must pass a privateKey')
     }
 
     const parts: string[] = encryptedValue.split('!')
     if (parts.length !== 3) {
-      throw new Error('The encrypted value is not in a valid format')
+      throw new ConditionViolationError(Domain.UTILS, 'The encrypted value is not in a valid format')
     }
 
     const ivText: string = parts[0]
@@ -58,15 +60,15 @@ export class AES {
     const authTagBytes: Buffer = Buffer.from(authTagText, this.encoding)
 
     if (ivBytes.length !== 16) {
-      throw new Error('The IV length is invalid')
+      throw new InvalidValueError(Domain.UTILS, 'The IV length is invalid')
     }
 
     if (keyBytes.length !== 32) {
-      throw new Error('The key length is invalid')
+      throw new InvalidValueError(Domain.UTILS, 'The key length is invalid')
     }
 
     if (authTagBytes.length !== 16) {
-      throw new Error('The authtag length is invalid')
+      throw new InvalidValueError(Domain.UTILS, 'The authtag length is invalid')
     }
 
     // decrypt using aes256 iv + key + authTag + encryptedText = decryptedText

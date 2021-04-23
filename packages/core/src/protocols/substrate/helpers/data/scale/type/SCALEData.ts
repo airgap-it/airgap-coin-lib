@@ -1,3 +1,5 @@
+import { InvalidValueError, ConditionViolationError, UnsupportedError } from '../../../../../../errors'
+import { Domain } from '../../../../../../errors/coinlib-error'
 import { hexToBytes, isHex, stripHexPrefix } from '../../../../../../utils/hex'
 import { SCALEDecodeResult } from '../SCALEDecoder'
 
@@ -41,16 +43,14 @@ export class SCALEData extends SCALEType {
     } else if (indicator >= 1 && indicator <= 33) {
       bytesDecoded = indicator
       type = SCALEDataType.Raw
-    } else if (indicator >= 34 && indicator <= 37){
+    } else if (indicator >= 34 && indicator <= 37) {
       bytesDecoded = 32 + 1
       type = SCALEDataType[SCALEDataType[indicator - 32]]
     } else {
-      throw new Error('SCALEData#decode: Unknown data type')
+      throw new InvalidValueError(Domain.SUBSTRATE, 'SCALEData#decode: Unknown data type')
     }
 
-    const buffer = type !== SCALEDataType.None 
-      ? SCALEBytes.from(encoded.subarray(1, bytesDecoded)).bytes 
-      : null
+    const buffer = type !== SCALEDataType.None ? SCALEBytes.from(encoded.subarray(1, bytesDecoded)).bytes : null
 
     return {
       bytesDecoded,
@@ -64,7 +64,7 @@ export class SCALEData extends SCALEType {
 
   public toString(): string {
     if (this.type !== SCALEDataType.None && this.bytes === null) {
-      throw new Error(`SCALEData#toString: type is ${SCALEDataType[this.type]} but data is null.`)
+      throw new ConditionViolationError(Domain.SUBSTRATE, `SCALEData#toString: type is ${SCALEDataType[this.type]} but data is null.`)
     }
 
     switch (this.type) {
@@ -80,17 +80,16 @@ export class SCALEData extends SCALEType {
   }
   protected _encode(config?: SCALEEncodeConfig): string {
     if (this.type !== SCALEDataType.None && this.bytes === null) {
-      throw new Error(`SCALEData#encode: type is ${SCALEDataType[this.type]} but data is null.`)
+      throw new ConditionViolationError(Domain.SUBSTRATE, `SCALEData#encode: type is ${SCALEDataType[this.type]} but data is null.`)
     }
-    
+
     switch (this.type) {
       case SCALEDataType.None:
         return '0'
       case SCALEDataType.Raw:
         return SCALEBytes.from(this.bytes!).encode(config)
       default:
-        throw new Error(`SCALEData#encode: type ${SCALEDataType[this.type]} is not supported.`)
+        throw new UnsupportedError(Domain.SUBSTRATE, `SCALEData#encode: type ${SCALEDataType[this.type]} is not supported.`)
     }
   }
-
 }

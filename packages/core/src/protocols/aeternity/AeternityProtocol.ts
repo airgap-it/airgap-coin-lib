@@ -19,9 +19,12 @@ import { EthereumUtils } from '../ethereum/utils/utils'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
 
+import { AeternityAddress } from './AeternityAddress'
 import { AeternityCryptoClient } from './AeternityCryptoClient'
 import { AeternityProtocolOptions } from './AeternityProtocolOptions'
 import { ICoinSubProtocol } from '../ICoinSubProtocol'
+import { BalanceError, InvalidValueError, NetworkError } from '../../errors'
+import { Domain } from '../../errors/coinlib-error'
 
 export class AeternityProtocol extends NonExtendedProtocol implements ICoinProtocol {
   public symbol: string = 'AE'
@@ -107,16 +110,18 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
     return Buffer.from(secretKey)
   }
 
-  public async getAddressFromPublicKey(publicKey: string): Promise<string> {
-    const base58 = bs58check.encode(Buffer.from(publicKey, 'hex'))
-
-    return `ak_${base58}`
+  public async getAddressFromPublicKey(publicKey: string): Promise<AeternityAddress> {
+    return AeternityAddress.from(publicKey)
   }
 
-  public async getAddressesFromPublicKey(publicKey: string): Promise<string[]> {
+  public async getAddressesFromPublicKey(publicKey: string): Promise<AeternityAddress[]> {
     const address = await this.getAddressFromPublicKey(publicKey)
 
     return [address]
+  }
+
+  public async getNextAddressFromPublicKey(publicKey: string, current: AeternityAddress): Promise<AeternityAddress> {
+    return current
   }
 
   public async getTransactionsFromPublicKey(
@@ -124,7 +129,9 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
     limit: number,
     cursor?: AeternityTransactionCursor
   ): Promise<AeternityTransactionResult> {
-    return this.getTransactionsFromAddresses([await this.getAddressFromPublicKey(publicKey)], limit, cursor)
+    const address: AeternityAddress = await this.getAddressFromPublicKey(publicKey)
+
+    return this.getTransactionsFromAddresses([address.getValue()], limit, cursor)
   }
 
   public async getTransactionsFromAddresses(
@@ -135,19 +142,19 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
     const allTransactions = await Promise.all(
       addresses.map((address) => {
         const url = cursor
-          ? `${this.options.network.rpcUrl}/middleware/transactions/account/${address}?page=${cursor.page}&limit=${limit}`
-          : `${this.options.network.rpcUrl}/middleware/transactions/account/${address}?page=1&limit=${limit}`
+          ? `${this.options.network.rpcUrl}/mdw/txs/backward?account=${address}&page=${cursor.page}&limit=${limit}`
+          : `${this.options.network.rpcUrl}/mdw/txs/backward?account=${address}&page=1&limit=${limit}`
         return axios.get(url)
       })
     )
 
     let transactions: any[] = [].concat(
       ...allTransactions.map((axiosData) => {
-        return axiosData.data || []
+        return axiosData.data.data || []
       })
     )
     transactions = transactions.map((obj) => {
-      const parsedTimestamp = parseInt(obj.time, 10)
+      const parsedTimestamp = parseInt(obj.micro_time, 10)
       const airGapTx: IAirGapTransaction = {
         amount: new BigNumber(obj.tx.amount).toString(10),
         fee: new BigNumber(obj.tx.fee).toString(10),
@@ -222,7 +229,7 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
       //
     }
 
-    throw new Error('invalid TX-encoding')
+    throw new InvalidValueError(Domain.AETERNITY, 'invalid TX-encoding')
   }
 
   public async getTransactionDetails(unsignedTx: UnsignedAeternityTransaction): Promise<IAirGapTransaction[]> {
@@ -230,14 +237,17 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
     const rlpEncodedTx = this.decodeTx(transaction)
     const rlpDecodedTx = rlp.decode(rlpEncodedTx, false)
 
+    const fromAddress: AeternityAddress = await this.getAddressFromPublicKey(rlpDecodedTx[2].slice(1).toString('hex'))
+    const toAddress: AeternityAddress = await this.getAddressFromPublicKey(rlpDecodedTx[3].slice(1).toString('hex'))
+
     const airgapTx: IAirGapTransaction = {
       amount: new BigNumber(parseInt(rlpDecodedTx[4].toString('hex'), 16)).toString(10),
       fee: new BigNumber(parseInt(rlpDecodedTx[5].toString('hex'), 16)).toString(10),
-      from: [await this.getAddressFromPublicKey(rlpDecodedTx[2].slice(1).toString('hex'))],
+      from: [fromAddress.getValue()],
       isInbound: false,
       protocolIdentifier: this.identifier,
       network: this.options.network,
-      to: [await this.getAddressFromPublicKey(rlpDecodedTx[3].slice(1).toString('hex'))],
+      to: [toAddress.getValue()],
       data: (rlpDecodedTx[8] || '').toString('utf8'),
       transactionDetails: unsignedTx.transaction
     }
@@ -269,8 +279,11 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
         balance = balance.plus(new BigNumber(data.balance))
       } catch (error) {
         // if node returns 404 (which means 'no account found'), go with 0 balance
-        if (error.response.status !== 404) {
-          throw error
+        if (error.response && error.response.status !== 404) {
+          throw new NetworkError(
+            Domain.AETERNITY,
+            error.response && error.response.data ? error.response.data : `getBalanceOfAddresses() failed with ${error}`
+          )
         }
       }
     }
@@ -279,9 +292,9 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
   }
 
   public async getBalanceOfPublicKey(publicKey: string): Promise<string> {
-    const address = await this.getAddressFromPublicKey(publicKey)
+    const address: AeternityAddress = await this.getAddressFromPublicKey(publicKey)
 
-    return this.getBalanceOfAddresses([address])
+    return this.getBalanceOfAddresses([address.getValue()])
   }
 
   public async getBalanceOfPublicKeyForSubProtocols(publicKey: string, subProtocols: ICoinSubProtocol[]): Promise<string[]> {
@@ -333,22 +346,25 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
   ): Promise<RawAeternityTransaction> {
     let nonce = 1
 
-    const address: string = await this.getAddressFromPublicKey(publicKey)
+    const address: AeternityAddress = await this.getAddressFromPublicKey(publicKey)
 
     try {
-      const { data: accountResponse } = await axios.get(`${this.options.network.rpcUrl}/v2/accounts/${address}`)
+      const { data: accountResponse } = await axios.get(`${this.options.network.rpcUrl}/v2/accounts/${address.getValue()}`)
       nonce = accountResponse.nonce + 1
     } catch (error) {
       // if node returns 404 (which means 'no account found'), go with nonce 0
       if (error.response && error.response.status !== 404) {
-        throw error
+        throw new NetworkError(
+          Domain.AETERNITY,
+          error.response && error.response.data ? error.response.data : `getBalanceOfAddresses() failed with ${error}`
+        )
       }
     }
 
     const balance: BigNumber = new BigNumber(await this.getBalanceOfPublicKey(publicKey))
 
     if (balance.isLessThan(fee)) {
-      throw new Error('not enough balance')
+      throw new BalanceError(Domain.AETERNITY, 'not enough balance')
     }
 
     const sender = publicKey

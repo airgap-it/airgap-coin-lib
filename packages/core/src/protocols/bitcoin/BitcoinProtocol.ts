@@ -12,9 +12,12 @@ import { RawBitcoinTransaction } from '../../serializer/types'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
 import { MainProtocolSymbols, ProtocolSymbols } from '../../utils/ProtocolSymbols'
 
+import { BitcoinAddress } from './BitcoinAddress'
 import { BitcoinProtocolOptions } from './BitcoinProtocolOptions'
 import { BitcoinCryptoClient } from './BitcoinCryptoClient'
 import { ICoinSubProtocol } from '../ICoinSubProtocol'
+import { BalanceError, InvalidValueError, ConditionViolationError, NetworkError } from '../../errors'
+import { Domain } from '../../errors/coinlib-error'
 
 interface UTXOResponse {
   txid: string
@@ -191,38 +194,49 @@ export class BitcoinProtocol implements ICoinProtocol {
     return bitcoinNode.derivePath(derivationPath).toBase58()
   }
 
-  public async getAddressFromPublicKey(publicKey: string): Promise<string> {
+  public async getAddressFromPublicKey(publicKey: string): Promise<BitcoinAddress> {
     // broadcaster knows this (both broadcaster and signer)
-    return this.options.config.bitcoinJSLib.HDNode.fromBase58(publicKey, this.options.network.extras.network).getAddress()
+    const node = this.options.config.bitcoinJSLib.HDNode.fromBase58(publicKey, this.options.network.extras.network)
+
+    return BitcoinAddress.from(node)
   }
 
-  public async getAddressesFromPublicKey(publicKey: string): Promise<string[]> {
+  public async getAddressesFromPublicKey(publicKey: string): Promise<BitcoinAddress[]> {
     return [await this.getAddressFromPublicKey(publicKey)]
   }
 
-  public getAddressFromExtendedPublicKey(
-    extendedPublicKey: string,
-    visibilityDerivationIndex: number,
+  public async getAddressFromExtendedPublicKey(
+    extendedPublicKey: string, 
+    visibilityDerivationIndex: number, 
     addressDerivationIndex: number
-  ): Promise<string> {
+  ): Promise<BitcoinAddress> {
     // broadcaster knows this (both broadcaster and signer)
-    return this.options.config.bitcoinJSLib.HDNode.fromBase58(extendedPublicKey, this.options.network.extras.network)
-      .derive(visibilityDerivationIndex)
-      .derive(addressDerivationIndex)
-      .getAddress()
+    const node = this.options.config.bitcoinJSLib.HDNode.fromBase58(extendedPublicKey, this.options.network.extras.network)
+
+    return BitcoinAddress.from(node, visibilityDerivationIndex, addressDerivationIndex)
   }
 
-  public getAddressesFromExtendedPublicKey(
+  public async getAddressesFromExtendedPublicKey(
     extendedPublicKey: string,
     visibilityDerivationIndex: number,
     addressCount: number,
     offset: number
-  ): Promise<string[]> {
+  ): Promise<BitcoinAddress[]> {
     // broadcaster knows this (both broadcaster and signer)
     const node = this.options.config.bitcoinJSLib.HDNode.fromBase58(extendedPublicKey, this.options.network.extras.network)
-    const generatorArray = Array.from(new Array(addressCount), (x, i) => i + offset)
+    const generatorArray = Array.from(new Array(addressCount), (_, i) => i + offset)
 
-    return Promise.all(generatorArray.map((x) => node.derive(visibilityDerivationIndex).derive(x).getAddress()))
+    return Promise.all(generatorArray.map((x) => BitcoinAddress.from(node, visibilityDerivationIndex, x)))
+  }
+
+  public async getNextAddressFromPublicKey(publicKey: string, current: BitcoinAddress): Promise<BitcoinAddress> {
+    const node = this.options.config.bitcoinJSLib.HDNode.fromBase58(publicKey, this.options.network.extras.network)
+
+    return BitcoinAddress.from(
+      node, 
+      current.visibilityDerivationIndex,
+      current.addressDerivationIndex !== undefined ? current.addressDerivationIndex + 1 : undefined
+    )
   }
 
   public async signWithPrivateKey(privateKey: Buffer, transaction: RawBitcoinTransaction): Promise<IAirGapSignedTransaction> {
@@ -234,9 +248,9 @@ export class BitcoinProtocol implements ICoinProtocol {
 
     for (const output of transaction.outs) {
       if (output.isChange) {
-        const generatedChangeAddress: string = await this.getAddressFromPublicKey(privateKey.toString('hex'))
+        const generatedChangeAddress: string = (await this.getAddressFromPublicKey(privateKey.toString('hex'))).getValue()
         if (generatedChangeAddress !== output.recipient) {
-          throw new Error('Change address could not be verified.')
+          throw new ConditionViolationError(Domain.BITCOIN, 'Change address could not be verified.')
         }
       }
 
@@ -264,16 +278,17 @@ export class BitcoinProtocol implements ICoinProtocol {
       let changeAddressIsValid: boolean = false
       if (output.isChange) {
         if (output.derivationPath) {
-          const generatedChangeAddress: string[] = await this.getAddressesFromExtendedPublicKey(
+          const generatedChangeAddress: string[] = (await this.getAddressesFromExtendedPublicKey(
             extendedPrivateKey,
             1,
             1,
             parseInt(output.derivationPath, 10)
-          )
+          )).map((address: BitcoinAddress) => address.getValue())
           changeAddressIsValid = generatedChangeAddress.includes(output.recipient)
         } else {
           for (let x = 0; x < changeAddressMaxAddresses; x += changeAddressBatchSize) {
-            const addresses: string[] = await this.getAddressesFromExtendedPublicKey(extendedPrivateKey, 1, changeAddressBatchSize, x)
+            const addresses: string[] = (await this.getAddressesFromExtendedPublicKey(extendedPrivateKey, 1, changeAddressBatchSize, x))
+              .map((address: BitcoinAddress) => address.getValue())
             if (addresses.indexOf(output.recipient) >= 0) {
               changeAddressIsValid = true
               x = changeAddressMaxAddresses
@@ -281,7 +296,7 @@ export class BitcoinProtocol implements ICoinProtocol {
           }
         }
         if (!changeAddressIsValid) {
-          throw new Error('Change address could not be verified.')
+          throw new InvalidValueError(Domain.BITCOIN, 'Change address could not be verified.')
         }
       }
       transactionBuilder.addOutput(output.recipient, new BigNumber(output.value).toNumber())
@@ -366,9 +381,9 @@ export class BitcoinProtocol implements ICoinProtocol {
   }
 
   public async getBalanceOfPublicKey(publicKey: string): Promise<string> {
-    const address: string = await this.getAddressFromPublicKey(publicKey)
+    const address: BitcoinAddress = await this.getAddressFromPublicKey(publicKey)
 
-    return this.getBalanceOfAddresses([address])
+    return this.getBalanceOfAddresses([address.getValue()])
   }
 
   public async getBalanceOfExtendedPublicKey(extendedPublicKey: string, offset: number = 0): Promise<string> {
@@ -447,7 +462,7 @@ export class BitcoinProtocol implements ICoinProtocol {
     }
 
     if (recipients.length !== wrappedValues.length) {
-      throw new Error('recipients do not match values')
+      throw new ConditionViolationError(Domain.BITCOIN, 'recipients do not match values')
     }
 
     console.log(`${this.options.network.extras.indexerApi}/api/v2/utxo/${extendedPublicKey}?confirmed=true`)
@@ -459,7 +474,7 @@ export class BitcoinProtocol implements ICoinProtocol {
     )
 
     if (utxos.length <= 0) {
-      throw new Error('not enough balance') // no transactions found on those addresses, probably won't find anything in the next ones
+      throw new BalanceError(Domain.BITCOIN, 'not enough balance') // no transactions found on those addresses, probably won't find anything in the next ones
     }
 
     const totalRequiredBalance: BigNumber = wrappedValues
@@ -475,7 +490,7 @@ export class BitcoinProtocol implements ICoinProtocol {
         .filter((item) => !isNaN(item))
 
       if (result.length !== 2) {
-        throw new Error('Unexpected path format')
+        throw new ConditionViolationError(Domain.BITCOIN, 'Unexpected path format')
       }
 
       return [result[0], result[1]]
@@ -485,8 +500,8 @@ export class BitcoinProtocol implements ICoinProtocol {
       valueAccumulator = valueAccumulator.plus(utxo.value)
       const indexes: [number, number] = getPathIndexes(utxo.path)
 
-      const derivedAddress: string = await this.getAddressFromExtendedPublicKey(extendedPublicKey, indexes[0], indexes[1])
-      if (derivedAddress === utxo.address) {
+      const derivedAddress: BitcoinAddress = await this.getAddressFromExtendedPublicKey(extendedPublicKey, indexes[0], indexes[1])
+      if (derivedAddress.getValue() === utxo.address) {
         transaction.ins.push({
           txId: utxo.txid,
           value: new BigNumber(utxo.value).toString(10),
@@ -495,7 +510,7 @@ export class BitcoinProtocol implements ICoinProtocol {
           derivationPath: indexes.join('/')
         })
       } else {
-        throw new Error('Invalid address returned from API')
+        throw new NetworkError(Domain.BITCOIN, `Invalid address ${utxo.address} returned from API`)
       }
 
       if (valueAccumulator.isGreaterThanOrEqualTo(totalRequiredBalance)) {
@@ -504,7 +519,7 @@ export class BitcoinProtocol implements ICoinProtocol {
     }
 
     if (valueAccumulator.isLessThan(totalRequiredBalance)) {
-      throw new Error('not enough balance')
+      throw new BalanceError(Domain.BITCOIN, 'not enough balance')
     }
 
     for (let i = 0; i < recipients.length; i++) {
@@ -531,9 +546,9 @@ export class BitcoinProtocol implements ICoinProtocol {
     const changeValue: BigNumber = valueAccumulator.minus(wrappedFee)
     if (changeValue.isGreaterThan(new BigNumber(DUST_AMOUNT))) {
       const changeAddressIndex: number = lastUsedInternalAddress + 1
-      const derivedAddress: string = await this.getAddressFromExtendedPublicKey(extendedPublicKey, 1, changeAddressIndex)
+      const derivedAddress: BitcoinAddress = await this.getAddressFromExtendedPublicKey(extendedPublicKey, 1, changeAddressIndex)
       transaction.outs.push({
-        recipient: derivedAddress,
+        recipient: derivedAddress.getValue(),
         isChange: true,
         value: changeValue.toString(10),
         derivationPath: changeAddressIndex.toString()
@@ -558,9 +573,9 @@ export class BitcoinProtocol implements ICoinProtocol {
     }
 
     if (recipients.length !== wrappedValues.length) {
-      throw new Error('Recipient and value length does not match.')
+      throw new ConditionViolationError(Domain.BITCOIN, 'Recipient and value length does not match.')
     }
-    const address = await this.getAddressFromPublicKey(publicKey)
+    const address = (await this.getAddressFromPublicKey(publicKey)).getValue()
 
     const { data: utxos } = await axios.get<UTXOResponse[]>(`${this.options.network.extras.indexerApi}/api/v2/utxo/${address}`, {
       responseType: 'json'
@@ -585,7 +600,10 @@ export class BitcoinProtocol implements ICoinProtocol {
     }
 
     if (valueAccumulator.isLessThan(totalRequiredBalance)) {
-      throw new Error(`not enough balance, having ${valueAccumulator.toFixed()} of ${totalRequiredBalance.toFixed()}`)
+      throw new BalanceError(
+        Domain.BITCOIN,
+        `not enough balance, having ${valueAccumulator.toFixed()} of ${totalRequiredBalance.toFixed()}`
+      )
     }
 
     // tx.addInput(utxo.txid, utxo.vout)
@@ -705,7 +723,9 @@ export class BitcoinProtocol implements ICoinProtocol {
     limit: number,
     cursor?: BitcoinBlockbookTransactionCursor
   ): Promise<BitcoinBlockbookTransactionResult> {
-    return this.getTransactionsFromAddresses([await this.getAddressFromPublicKey(publicKey)], limit, cursor)
+    const address: BitcoinAddress = await this.getAddressFromPublicKey(publicKey)
+
+    return this.getTransactionsFromAddresses([address.getValue()], limit, cursor)
   }
 
   public async getTransactionsFromAddresses(
