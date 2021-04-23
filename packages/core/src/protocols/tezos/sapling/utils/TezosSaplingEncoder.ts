@@ -1,5 +1,5 @@
 import BigNumber from '../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
-import { addHexPrefix, toHexBuffer } from '../../../../utils/hex'
+import { toHexBuffer } from '../../../../utils/hex'
 import { TezosSaplingCiphertext } from '../../types/sapling/TezosSaplingCiphertext'
 import {
   TezosSaplingOutputDescription,
@@ -161,8 +161,12 @@ export class TezosSaplingEncoder {
   }
 
   private decodeBalance(encoded: Buffer): BigNumber {
-    const parsed: BigInt = BigInt.asIntN(64, BigInt(addHexPrefix(encoded.toString('hex'))))
+    const hex: string = encoded.toString('hex')
+    const bigNumber: BigNumber = new BigNumber(hex, 16)
+    const msb: number = (parseInt(hex.slice(0, 2), 16) & 0xff) >> 7
 
-    return new BigNumber(parsed.toString())
+    const isPositive: boolean = msb === 0
+
+    return isPositive ? bigNumber : new BigNumber(2).pow(64).minus(bigNumber).negated()
   }
 }

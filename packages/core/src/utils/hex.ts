@@ -79,7 +79,7 @@ function toHexStringRawPositive(value: number | BigNumber, bitLength: number): s
 }
 
 function toHexStringRawNegative(value: number | BigNumber, bitLength: number): string {
-  const value2sComplement: BigInt = BigInt(new BigNumber(2).pow(bitLength).toString()) + BigInt(value)
+  const value2sComplement: BigNumber = new BigNumber(2).pow(bitLength).minus(new BigNumber(value).abs())
 
   return value2sComplement.toString(16)
 }
