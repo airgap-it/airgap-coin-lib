@@ -32,7 +32,6 @@ export class TezosFA1Protocol extends TezosFAProtocol {
     super(options)
 
     this.defaultCallbackContractMap.set(TezosNetwork.MAINNET, 'KT19ptNzn4MVAN45KUUNpyL5AdLVhujk815u')
-    this.defaultCallbackContractMap.set(TezosNetwork.DELPHINET, 'KT1FEfp83DLZkY6sc4x78n4BQp8hRszHwGBk')
     this.defaultCallbackContractMap.set(TezosNetwork.EDONET, 'KT1ThaM5PK5nrAEKVVWtmccvsKeUdsZMfrxg')
   }
 
@@ -171,7 +170,7 @@ export class TezosFA1Protocol extends TezosFAProtocol {
       if (isMichelinePrimitive('int', operationResult)) {
         return operationResult.int
       }
-    } catch { }
+    } catch {}
 
     return '0'
   }

@@ -159,8 +159,8 @@ const SELF_BOND_REQUIREMENT: number = 0.0825
 
 export enum TezosNetwork {
   MAINNET = 'mainnet',
-  DELPHINET = 'delphinet',
-  EDONET = 'edonet'
+  EDONET = 'edonet',
+  FLORENCENET = 'florencenet'
 }
 
 export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateProtocol {
@@ -988,7 +988,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   public async prepareOperations(
     publicKey: string,
     operationRequests: TezosOperation[],
-    overrideFees: boolean = true
+    overrideParameters: boolean = true
   ): Promise<TezosWrappedOperation> {
     let counter: BigNumber = new BigNumber(1)
     let branch: string
@@ -1123,12 +1123,12 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       contents: operations
     }
 
-    return await this.estimateAndReplaceLimitsAndFee(tezosWrappedOperation, overrideFees)
+    return await this.estimateAndReplaceLimitsAndFee(tezosWrappedOperation, overrideParameters)
   }
 
   public async estimateAndReplaceLimitsAndFee(
     tezosWrappedOperation: TezosWrappedOperation,
-    overrideFees: boolean = true
+    overrideParameters: boolean = true
   ): Promise<TezosWrappedOperation> {
     const fakeSignature: string = 'sigUHx32f9wesZ1n2BWpixXz4AQaZggEtchaQNHYGRCoWNAXx45WGW2ua3apUUUAGMLPwAU41QoaFCzVSL61VaessLg4YbbP'
 
@@ -1208,19 +1208,18 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
         if (result.allocated_destination_contract) {
           storageLimit += 257
         }
-
-        if ((operation as any).gas_limit) {
+        // in prepareTransactionsFromPublicKey() we invoke this method with overrideParameters = false
+        if (((operation as any).gas_limit && overrideParameters) || (operation as any).gas_limit === GAS_LIMIT_PLACEHOLDER) {
           ;(operation as any).gas_limit = gasLimit.toString()
         }
-        if ((operation as any).storage_limit) {
+        if (((operation as any).storage_limit && overrideParameters) || (operation as any).storage_limit === STORAGE_LIMIT_PLACEHOLDER) {
           ;(operation as any).storage_limit = storageLimit.toString()
         }
-
         gasLimitTotal += gasLimit
       }
     })
 
-    if (overrideFees) {
+    if (overrideParameters) {
       const fee: number =
         MINIMAL_FEE +
         MINIMAL_FEE_PER_BYTE * Math.ceil((forgedOperation.length + 128) / 2) + // 128 is the length of a hex signature
@@ -1678,8 +1677,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
   public static readonly BLOCKS_PER_CYCLE = {
     mainnet: 4096,
-    delphinet: 2048,
-    edonet: 2048
+    edonet: 2048,
+    florencenet: 2048
   }
 
   private async fetchBalances(addresses: string[], blockLevel: number): Promise<{ address: string; balance: BigNumber }[]> {
