@@ -1,4 +1,4 @@
-import axios, { AxiosResponse } from '../../../dependencies/src/axios-0.19.0/index'
+import axios, { AxiosError, AxiosResponse } from '../../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { BalanceError, InvalidValueError, NetworkError, NotFoundError, NotImplementedError, OperationFailedError } from '../../../errors'
 import { Domain } from '../../../errors/coinlib-error'
@@ -135,31 +135,25 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
 
     const amount: BigNumber = new BigNumber(await this.getBalanceOfAddresses([destinationContract]))
 
-    try {
-      const results: AxiosResponse[] = await Promise.all([
-        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/counter`),
-        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/hash`),
-        axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/manager_key`)
-      ])
-
-      counter = new BigNumber(results[0].data).plus(1)
-      branch = results[1].data
-
-      const accountManager: string = results[2].data
-
-      // check if we have revealed the address already
-      if (!accountManager) {
-        operations.push(await this.createRevealOperation(counter, publicKey, address))
-        counter = counter.plus(1)
-      }
-    } catch (error) {
-      // if node returns 404 (which means 'no account found'), go with 0 balance
+    const results: AxiosResponse[] | void = await Promise.all([
+      axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/counter`),
+      axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/hash`),
+      axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/manager_key`)
+    ]).catch((error) => {
       if (error.response && error.response.status !== 404) {
-        throw new NetworkError(
-          Domain.TEZOS,
-          error.response && error.response.data ? error.response.data : `migrateKtContract() failed with ${error}`
-        )
+        throw new NetworkError(Domain.TEZOS, error as AxiosError)
       }
+    })
+
+    counter = new BigNumber(results[0].data).plus(1)
+    branch = results[1].data
+
+    const accountManager: string = results[2].data
+
+    // check if we have revealed the address already
+    if (!accountManager) {
+      operations.push(await this.createRevealOperation(counter, publicKey, address))
+      counter = counter.plus(1)
     }
 
     let hexDestination: string = this.checkAndRemovePrefixToHex(address, TezosUtils.tezosPrefixes.tz1)

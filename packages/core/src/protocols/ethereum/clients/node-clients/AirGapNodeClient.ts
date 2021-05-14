@@ -1,5 +1,5 @@
 import { RPCBody } from '../../../../data/RPCBody'
-import axios from '../../../../dependencies/src/axios-0.19.0/index'
+import axios, { AxiosError } from '../../../../dependencies/src/axios-0.19.0/index'
 import { BigNumber } from '../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { InvalidValueError, NetworkError } from '../../../../errors'
 import { Domain } from '../../../../errors/coinlib-error'
@@ -224,12 +224,11 @@ export class AirGapNodeClient extends EthereumNodeClient {
   }
 
   private async send(body: EthereumRPCBody): Promise<EthereumRPCResponse> {
-    const data = (await axios.post(this.baseURL, body.toRPCBody())).data
-    if (data.error !== undefined) {
-      throw new NetworkError(Domain.ETHEREUM, data.error.message)
-    }
+    const response = await axios.post(this.baseURL, body.toRPCBody()).catch((error) => {
+      throw new NetworkError(Domain.TEZOS, error as AxiosError)
+    })
 
-    return data
+    return response.data
   }
 
   private async batchSend(bodies: EthereumRPCBody[]): Promise<EthereumRPCResponse[]> {

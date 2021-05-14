@@ -1,6 +1,6 @@
 import { BitcoinBlockbookTransactionCursor, BitcoinBlockbookTransactionResult } from './BitcoinTypes'
 
-import axios from '../../dependencies/src/axios-0.19.0/index'
+import axios, { AxiosError } from '../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
 import * as bitcoinJSMessage from '../../dependencies/src/bitcoinjs-message-2.1.1/index'
@@ -206,8 +206,8 @@ export class BitcoinProtocol implements ICoinProtocol {
   }
 
   public async getAddressFromExtendedPublicKey(
-    extendedPublicKey: string, 
-    visibilityDerivationIndex: number, 
+    extendedPublicKey: string,
+    visibilityDerivationIndex: number,
     addressDerivationIndex: number
   ): Promise<BitcoinAddress> {
     // broadcaster knows this (both broadcaster and signer)
@@ -233,7 +233,7 @@ export class BitcoinProtocol implements ICoinProtocol {
     const node = this.options.config.bitcoinJSLib.HDNode.fromBase58(publicKey, this.options.network.extras.network)
 
     return BitcoinAddress.from(
-      node, 
+      node,
       current.visibilityDerivationIndex,
       current.addressDerivationIndex !== undefined ? current.addressDerivationIndex + 1 : undefined
     )
@@ -278,17 +278,15 @@ export class BitcoinProtocol implements ICoinProtocol {
       let changeAddressIsValid: boolean = false
       if (output.isChange) {
         if (output.derivationPath) {
-          const generatedChangeAddress: string[] = (await this.getAddressesFromExtendedPublicKey(
-            extendedPrivateKey,
-            1,
-            1,
-            parseInt(output.derivationPath, 10)
-          )).map((address: BitcoinAddress) => address.getValue())
+          const generatedChangeAddress: string[] = (
+            await this.getAddressesFromExtendedPublicKey(extendedPrivateKey, 1, 1, parseInt(output.derivationPath, 10))
+          ).map((address: BitcoinAddress) => address.getValue())
           changeAddressIsValid = generatedChangeAddress.includes(output.recipient)
         } else {
           for (let x = 0; x < changeAddressMaxAddresses; x += changeAddressBatchSize) {
-            const addresses: string[] = (await this.getAddressesFromExtendedPublicKey(extendedPrivateKey, 1, changeAddressBatchSize, x))
-              .map((address: BitcoinAddress) => address.getValue())
+            const addresses: string[] = (
+              await this.getAddressesFromExtendedPublicKey(extendedPrivateKey, 1, changeAddressBatchSize, x)
+            ).map((address: BitcoinAddress) => address.getValue())
             if (addresses.indexOf(output.recipient) >= 0) {
               changeAddressIsValid = true
               x = changeAddressMaxAddresses
@@ -465,13 +463,13 @@ export class BitcoinProtocol implements ICoinProtocol {
       throw new ConditionViolationError(Domain.BITCOIN, 'recipients do not match values')
     }
 
-    console.log(`${this.options.network.extras.indexerApi}/api/v2/utxo/${extendedPublicKey}?confirmed=true`)
-    const { data: utxos }: { data: UTXOResponse[] } = await axios.get<UTXOResponse[]>(
-      `${this.options.network.extras.indexerApi}/api/v2/utxo/${extendedPublicKey}?confirmed=true`,
-      {
+    const { data: utxos }: { data: UTXOResponse[] } = await axios
+      .get<UTXOResponse[]>(`${this.options.network.extras.indexerApi}/api/v2/utxo/${extendedPublicKey}?confirmed=true`, {
         responseType: 'json'
-      }
-    )
+      })
+      .catch((error) => {
+        throw new NetworkError(Domain.BITCOIN, error as AxiosError)
+      })
 
     if (utxos.length <= 0) {
       throw new BalanceError(Domain.BITCOIN, 'not enough balance') // no transactions found on those addresses, probably won't find anything in the next ones
@@ -510,7 +508,7 @@ export class BitcoinProtocol implements ICoinProtocol {
           derivationPath: indexes.join('/')
         })
       } else {
-        throw new NetworkError(Domain.BITCOIN, `Invalid address ${utxo.address} returned from API`)
+        throw new InvalidValueError(Domain.BITCOIN, `Invalid address ${JSON.stringify(utxo.address)} returned from API`)
       }
 
       if (valueAccumulator.isGreaterThanOrEqualTo(totalRequiredBalance)) {

@@ -100,8 +100,9 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     limit: number,
     cursor?: SubstrateTransactionCursor
   ): Promise<SubstrateTransactionResult> {
-    const addresses = await this.getAddressesFromPublicKey(publicKey)
-      .then((addresses: SubstrateAddress[]) => addresses.map((address: SubstrateAddress) => address.getValue()))
+    const addresses = await this.getAddressesFromPublicKey(publicKey).then((addresses: SubstrateAddress[]) =>
+      addresses.map((address: SubstrateAddress) => address.getValue())
+    )
 
     return this.getTransactionsFromAddresses(addresses, limit, cursor)
   }
@@ -263,21 +264,15 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
       .decodeDetails(encoded)
       .map((tx) => [tx.runtimeVersion, tx.transaction])
 
-    try {
-      const txHashes = await Promise.all(
-        txs.map((tx) =>
-          this.options.nodeClient.submitTransaction(tx[1].encode({ network: this.options.network.extras.network, runtimeVersion: tx[0] }))
-        )
+    const txHashes = await Promise.all(
+      txs.map((tx) =>
+        this.options.nodeClient.submitTransaction(tx[1].encode({ network: this.options.network.extras.network, runtimeVersion: tx[0] }))
       )
+    ).catch((error) => {
+      throw new NetworkError(Domain.TEZOS, error as AxiosError)
+    })
 
-      return txs[0][1]?.type !== SubstrateTransactionType.SUBMIT_BATCH ? txHashes[0] : ''
-    } catch (error) {
-      const axiosError = error as AxiosError
-      throw new NetworkError(
-        Domain.SUBSTRATE,
-        axiosError.response && axiosError.response.data ? axiosError.response.data : `broadcastTransaction() failed with ${error}`
-      )
-    }
+    return txs[0][1]?.type !== SubstrateTransactionType.SUBMIT_BATCH ? txHashes[0] : ''
   }
 
   public async getDefaultDelegatee(): Promise<string> {

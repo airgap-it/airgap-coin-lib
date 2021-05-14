@@ -1,7 +1,7 @@
 import { AeternityTransactionResult, AeternityTransactionCursor } from './AeternityTypes'
 import * as sodium from 'libsodium-wrappers'
 
-import axios from '../../dependencies/src/axios-0.19.0/index'
+import axios, { AxiosError } from '../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
 import * as bs58check from '../../dependencies/src/bs58check-2.1.2/index'
@@ -280,10 +280,7 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
       } catch (error) {
         // if node returns 404 (which means 'no account found'), go with 0 balance
         if (error.response && error.response.status !== 404) {
-          throw new NetworkError(
-            Domain.AETERNITY,
-            error.response && error.response.data ? error.response.data : `getBalanceOfAddresses() failed with ${error}`
-          )
+          throw new NetworkError(Domain.AETERNITY, error as AxiosError)
         }
       }
     }
@@ -354,10 +351,7 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
     } catch (error) {
       // if node returns 404 (which means 'no account found'), go with nonce 0
       if (error.response && error.response.status !== 404) {
-        throw new NetworkError(
-          Domain.AETERNITY,
-          error.response && error.response.data ? error.response.data : `getBalanceOfAddresses() failed with ${error}`
-        )
+        throw new NetworkError(Domain.AETERNITY, error as AxiosError)
       }
     }
 

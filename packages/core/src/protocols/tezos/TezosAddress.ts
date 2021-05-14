@@ -6,9 +6,8 @@ import { CoinAddress } from '../ICoinProtocol'
 import { TezosUtils } from './TezosUtils'
 
 export class TezosAddress implements CoinAddress {
-
   protected constructor(private readonly value: string) {}
-  
+
   public static async fromPublicKey(publicKey: string): Promise<TezosAddress> {
     await sodium.ready
 
@@ -20,7 +19,7 @@ export class TezosAddress implements CoinAddress {
 
   public static async fromValue(value: string): Promise<TezosAddress> {
     if (!TezosAddress.isTzAddress(value)) {
-      throw new Error(`Invalid address, expected a 'tz' address, got ${value}`)
+      throw new Error(`Invalid address, expected a 'tz' address, got ${JSON.stringify(value)}`)
     }
 
     return new TezosAddress(value)
@@ -37,5 +36,4 @@ export class TezosAddress implements CoinAddress {
   public getValue(): string {
     return this.value
   }
-
 }

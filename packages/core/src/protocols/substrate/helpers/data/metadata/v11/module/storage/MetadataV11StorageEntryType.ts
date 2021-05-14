@@ -24,8 +24,8 @@ enum StorageEntryType {
 
 export abstract class MetadataV11StorageEntryType extends SCALEClass {
   public static decode(
-    network: SubstrateNetwork, 
-    runtimeVersion: number | undefined, 
+    network: SubstrateNetwork,
+    runtimeVersion: number | undefined,
     raw: string
   ): SCALEDecodeResult<MetadataV11StorageEntryType> {
     const prefix = parseInt(raw.substr(0, 2), 16)
@@ -42,7 +42,7 @@ export abstract class MetadataV11StorageEntryType extends SCALEClass {
         decoderMethod = MetadataV11StorageEntryDoubleMap.decode
         break
       default:
-        throw new InvalidValueError(Domain.SUBSTRATE, 'Unkown metadata storage entry type')
+        throw new InvalidValueError(Domain.SUBSTRATE, 'Unknown metadata storage entry type')
     }
 
     const decoded = decoderMethod(network, runtimeVersion, raw.slice(2))
@@ -65,8 +65,8 @@ export abstract class MetadataV11StorageEntryType extends SCALEClass {
 
 export class MetadataV11StorageEntryPlain extends MetadataV11StorageEntryType {
   public static decode(
-    network: SubstrateNetwork, 
-    runtimeVersion: number | undefined, 
+    network: SubstrateNetwork,
+    runtimeVersion: number | undefined,
     raw: string
   ): SCALEDecodeResult<MetadataV11StorageEntryPlain> {
     const decoder = new SCALEDecoder(network, runtimeVersion, raw)
@@ -93,8 +93,8 @@ export class MetadataV11StorageEntryPlain extends MetadataV11StorageEntryType {
 
 export class MetadataV11StorageEntryMap extends MetadataV11StorageEntryType {
   public static decode(
-    network: SubstrateNetwork, 
-    runtimeVersion: number | undefined, 
+    network: SubstrateNetwork,
+    runtimeVersion: number | undefined,
     raw: string
   ): SCALEDecodeResult<MetadataV11StorageEntryMap> {
     const decoder = new SCALEDecoder(network, runtimeVersion, raw)
@@ -129,8 +129,8 @@ export class MetadataV11StorageEntryMap extends MetadataV11StorageEntryType {
 
 export class MetadataV11StorageEntryDoubleMap extends MetadataV11StorageEntryType {
   public static decode(
-    network: SubstrateNetwork, 
-    runtimeVersion: number | undefined, 
+    network: SubstrateNetwork,
+    runtimeVersion: number | undefined,
     raw: string
   ): SCALEDecodeResult<MetadataV11StorageEntryDoubleMap> {
     const decoder = new SCALEDecoder(network, runtimeVersion, raw)
