@@ -62,10 +62,6 @@ export class TezosFA2Protocol extends TezosFAProtocol {
         [TezosFA2ContractEntrypoint.BALANCE]: 'KT1LyHDYnML5eCuTEVCTynUpivwG6ns6khiG',
         [TezosFA2ContractEntrypoint.TOKEN_METADATA_REGISTRY]: 'KT1L16VBmW8tkovhLmonhfvf6dtTZya6k6af'
       },
-      [TezosNetwork.DELPHINET]: {
-        [TezosFA2ContractEntrypoint.BALANCE]: 'KT1LQRsAjvUmP4PQi5WXGFyGWPWwbevCLuiw',
-        [TezosFA2ContractEntrypoint.TOKEN_METADATA_REGISTRY]: 'KT1VnbvGMNg21xGDqJtW2UkzHyyAB21GV4oy'
-      },
       [TezosNetwork.EDONET]: {
         [TezosFA2ContractEntrypoint.BALANCE]: 'KT1UEyZsmSga2KcNkpGbWX6nvGAVHtBpT5is',
         [TezosFA2ContractEntrypoint.TOKEN_METADATA_REGISTRY]: 'KT1MMhwbCMfwzDUu4ur3SEpaf6njn2nsMDBt'
@@ -168,33 +164,33 @@ export class TezosFA2Protocol extends TezosFAProtocol {
 
       return Array.isArray(callArgumentsList)
         ? callArgumentsList
-          .map((callArguments: unknown) => {
-            if (!this.isTransferRequest(callArguments)) {
-              return []
-            }
-
-            const from: string = isHex(callArguments.from_) ? TezosUtils.parseAddress(callArguments.from_) : callArguments.from_
-
-            const transferDetails: [string, BigNumber, BigNumber][] = callArguments.txs.map((tx) => {
-              const to: string = isHex(tx.to_) ? TezosUtils.parseAddress(tx.to_) : tx.to_
-
-              return [to, tx.token_id, tx.amount] as [string, BigNumber, BigNumber]
-            })
-
-            return transferDetails.map(([to, tokenID, amount]: [string, BigNumber, BigNumber]) => {
-              return {
-                ...defaultDetails,
-                amount: amount.toFixed(),
-                from: [from],
-                to: [to],
-                extra: {
-                  type: parameters.entrypoint,
-                  assetID: this.tokenID === undefined || !tokenID.eq(this.tokenID) ? tokenID.toString() : undefined
-                }
+            .map((callArguments: unknown) => {
+              if (!this.isTransferRequest(callArguments)) {
+                return []
               }
+
+              const from: string = isHex(callArguments.from_) ? TezosUtils.parseAddress(callArguments.from_) : callArguments.from_
+
+              const transferDetails: [string, BigNumber, BigNumber][] = callArguments.txs.map((tx) => {
+                const to: string = isHex(tx.to_) ? TezosUtils.parseAddress(tx.to_) : tx.to_
+
+                return [to, tx.token_id, tx.amount] as [string, BigNumber, BigNumber]
+              })
+
+              return transferDetails.map(([to, tokenID, amount]: [string, BigNumber, BigNumber]) => {
+                return {
+                  ...defaultDetails,
+                  amount: amount.toFixed(),
+                  from: [from],
+                  to: [to],
+                  extra: {
+                    type: parameters.entrypoint,
+                    assetID: this.tokenID === undefined || !tokenID.eq(this.tokenID) ? tokenID.toString() : undefined
+                  }
+                }
+              })
             })
-          })
-          .reduce((flatten: Partial<IAirGapTransaction>[], next: Partial<IAirGapTransaction>[]) => flatten.concat(next), [])
+            .reduce((flatten: Partial<IAirGapTransaction>[], next: Partial<IAirGapTransaction>[]) => flatten.concat(next), [])
         : [defaultDetails]
     } catch {
       return [defaultDetails]
@@ -328,12 +324,12 @@ export class TezosFA2Protocol extends TezosFAProtocol {
       bigMapID: this.tokenMetadataBigMapID, // temporarily until we cannot search by a big map's annotation
       predicates: tokenIDs
         ? [
-          {
-            field: 'key',
-            operation: 'in',
-            set: tokenIDs
-          }
-        ]
+            {
+              field: 'key',
+              operation: 'in',
+              set: tokenIDs
+            }
+          ]
         : undefined
     })
 
@@ -343,12 +339,12 @@ export class TezosFA2Protocol extends TezosFAProtocol {
 
         return match && this.isTokenMetadata(match.groups)
           ? {
-            tokenID: new BigNumber(match.groups.tokenID).toNumber(),
-            symbol: match.groups.symbol,
-            name: match.groups.name,
-            decimals: new BigNumber(match.groups.decimals).toNumber(),
-            extras: match.groups.extras
-          }
+              tokenID: new BigNumber(match.groups.tokenID).toNumber(),
+              symbol: match.groups.symbol,
+              name: match.groups.name,
+              decimals: new BigNumber(match.groups.decimals).toNumber(),
+              extras: match.groups.extras
+            }
           : null
       })
       .filter((metadata: TezosFA2TokenMetadata | null) => metadata !== null) as TezosFA2TokenMetadata[]
