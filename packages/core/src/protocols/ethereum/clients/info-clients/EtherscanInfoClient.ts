@@ -30,7 +30,7 @@ export class EtherscanInfoClient extends EthereumInfoClient {
     const transactionResponse = response.data
     const transactions = transactionResponse.result
     if (transactionResponse.status === '0' && (transactions === undefined || !isArray(transactions))) {
-      throw new NetworkError(Domain.ETHEREUM, transactionResponse.message)
+      throw new NetworkError(Domain.ETHEREUM, { response })
     }
     for (const transaction of transactions) {
       const fee: BigNumber = new BigNumber(transaction.gas).times(new BigNumber(transaction.gasPrice))
@@ -79,7 +79,7 @@ export class EtherscanInfoClient extends EthereumInfoClient {
     const transactionResponse = response.data
     const transactions = transactionResponse.result
     if (transactionResponse.status === '0' && (transactions === undefined || !isArray(transactions))) {
-      throw new NetworkError(Domain.ETHEREUM, transactionResponse.message)
+      throw new NetworkError(Domain.ETHEREUM, { response })
     }
     for (const transaction of transactions) {
       const fee: BigNumber = new BigNumber(transaction.gas).times(new BigNumber(transaction.gasPrice))

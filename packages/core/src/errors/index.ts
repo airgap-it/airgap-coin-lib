@@ -1,3 +1,4 @@
+import { AxiosError } from '../dependencies/src/axios-0.19.0'
 import { CoinlibError, Domain } from './coinlib-error'
 
 export enum SerializerErrorType {
@@ -33,10 +34,23 @@ export enum ProtocolErrorType {
 
 /**
  * Gets thrown if an error occurs when making a network request
+ * Partial<AxiosError> is either an AxiosError or an AxiosResponse,
+ * as we sometimes want to throw an Error even though we get a 200 response
+ * from the API (as in case of internal operation errors for Tezos).
  */
 export class NetworkError extends CoinlibError {
-  constructor(domain: Domain, description?: string) {
-    super(domain, ProtocolErrorType.NETWORK, description)
+  public data: string
+  public status: number | undefined
+  public url: string | undefined
+  public method: string | undefined
+  public requestBody?: unknown
+  constructor(domain: Domain, error: Partial<AxiosError>, description?: string) {
+    super(domain, ProtocolErrorType.NETWORK)
+    this.data = description ?? error.response?.data
+    this.status = error?.response?.status
+    this.url = error.config?.url
+    this.method = error.config?.method
+    this.requestBody = error.config?.data
   }
 }
 

@@ -33,7 +33,7 @@ export class TezosCryptoClient extends Ed25519CryptoClient {
 
       rawSignature = new Uint8Array(decoded.slice(edsigPrefixLength, decoded.length))
     } else {
-      throw new InvalidValueError(Domain.TEZOS, `invalid signature: ${signature}`)
+      throw new InvalidValueError(Domain.TEZOS, `invalid signature: ${JSON.stringify(signature)}`)
     }
 
     const bufferMessage = await this.toBuffer(message)

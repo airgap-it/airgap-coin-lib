@@ -60,7 +60,7 @@ export class EthereumUtils {
     }
 
     if (!isFinite(Number(value)) && !EthereumUtils.isHexStrict(value)) {
-      throw new InvalidValueError(Domain.UTILS, `Given input "${value}" is not a number.`)
+      throw new InvalidValueError(Domain.UTILS, `Given input "${JSON.stringify(value)}" is not a number.`)
     }
 
     // var number = EthereumUtils.toBN(value)
@@ -74,7 +74,7 @@ export class EthereumUtils {
     let hex: string = typeof value === 'number' ? value.toString(16) : value
 
     if (!EthereumUtils.isHexStrict(hex)) {
-      throw new InvalidValueError(Domain.UTILS, `Given value "${hex}" is not a valid hex string.`)
+      throw new InvalidValueError(Domain.UTILS, `Given value "${JSON.stringify(hex)}" is not a valid hex string.`)
     }
 
     hex = hex.replace(/^0x/i, '')

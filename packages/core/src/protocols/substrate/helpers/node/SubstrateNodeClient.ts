@@ -1,5 +1,5 @@
 import { RPCBody } from '../../../../data/RPCBody'
-import axios from '../../../../dependencies/src/axios-0.19.0'
+import axios, { AxiosError } from '../../../../dependencies/src/axios-0.19.0'
 import BigNumber from '../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { Cache } from '../../../../utils/cache'
 import { NetworkError } from '../../../../errors'
@@ -61,7 +61,7 @@ export class SubstrateNodeClient {
     private readonly network: SubstrateNetwork,
     private readonly baseURL: string,
     private readonly cache: Cache = new Cache(CACHE_DEFAULT_EXPIRATION_TIME)
-  ) { }
+  ) {}
 
   public async getAccountInfo(address: SubstrateAddress): Promise<SubstrateAccountInfo | null> {
     return this.fromStorage('System', 'Account', SCALEAccountId.from(address, this.network)).then((item) =>
@@ -172,8 +172,8 @@ export class SubstrateNodeClient {
     return this.fromStorage('Session', 'Validators').then((items) =>
       items
         ? SCALEArray.decode(this.network, this.runtimeVersion, items, (network, _, hex) =>
-          SCALEAccountId.decode(network, hex)
-        ).decoded.elements.map((encoded) => encoded.address)
+            SCALEAccountId.decode(network, hex)
+          ).decoded.elements.map((encoded) => encoded.address)
         : null
     )
   }
@@ -203,12 +203,12 @@ export class SubstrateNodeClient {
     return this.fromStorage('Identity', 'SuperOf', SCALEAccountId.from(address, this.network)).then((item) =>
       item
         ? SCALETuple.decode(
-          this.network,
-          this.runtimeVersion,
-          item,
-          (network, _, hex) => SCALEAccountId.decode(network, hex),
-          (_network, _runtimeVersion, hex) => SCALEData.decode(hex)
-        ).decoded
+            this.network,
+            this.runtimeVersion,
+            item,
+            (network, _, hex) => SCALEAccountId.decode(network, hex),
+            (_network, _runtimeVersion, hex) => SCALEData.decode(hex)
+          ).decoded
         : null
     )
   }
@@ -217,13 +217,13 @@ export class SubstrateNodeClient {
     return this.fromStorage('Identity', 'SubsOf', SCALEAccountId.from(address, this.network)).then((item) =>
       item
         ? SCALETuple.decode(
-          this.network,
-          this.runtimeVersion,
-          item,
-          (_network, _runtimeVersion, hex) => SCALECompactInt.decode(hex),
-          (network, _, hex) =>
-            SCALEArray.decode(network, _, hex, (innerNetwork, _, innerHex) => SCALEAccountId.decode(innerNetwork, innerHex))
-        ).decoded
+            this.network,
+            this.runtimeVersion,
+            item,
+            (_network, _runtimeVersion, hex) => SCALECompactInt.decode(hex),
+            (network, _, hex) =>
+              SCALEArray.decode(network, _, hex, (innerNetwork, _, innerHex) => SCALEAccountId.decode(innerNetwork, innerHex))
+          ).decoded
         : null
     )
   }
@@ -285,7 +285,7 @@ export class SubstrateNodeClient {
 
     if (!storageEntry) {
       console.warn(`Could not find requested item: ${moduleName} ${entryName}`)
-      
+
       return null
     }
 
@@ -356,14 +356,14 @@ export class SubstrateNodeClient {
     const key = `${endpoint}$${params.join('')}`
 
     return this.cache.get(key).catch(() => {
-      const promise = axios.post(this.baseURL, new RPCBody(endpoint, params.map(addHexPrefix))).then((response) => {
-        if (response.data.error !== undefined) {
-          const error = response.data.error
-          throw new NetworkError(Domain.SUBSTRATE, error.message ?? `Unknown error ${error}`)
-        }
-
-        return response.data.result
-      })
+      const promise = axios
+        .post(this.baseURL, new RPCBody(endpoint, params.map(addHexPrefix)))
+        .then((response) => {
+          return response.data.result
+        })
+        .catch((error) => {
+          throw new NetworkError(Domain.SUBSTRATE, error as AxiosError)
+        })
 
       return this.cache.save(key, promise, { cacheValue: config.allowCache })
     })
