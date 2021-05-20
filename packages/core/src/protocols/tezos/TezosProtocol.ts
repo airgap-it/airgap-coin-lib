@@ -51,6 +51,7 @@ import { ErrorWithData } from '../../utils/ErrorWithData'
 const MAX_OPERATIONS_PER_GROUP: number = 200
 const GAS_LIMIT_PLACEHOLDER: string = '1040000'
 const STORAGE_LIMIT_PLACEHOLDER: string = '60000'
+const FEE_PLACEHOLDER: string = '0'
 
 const MINIMAL_FEE: number = 100
 const MINIMAL_FEE_PER_GAS_UNIT: number = 0.1
@@ -1032,7 +1033,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       }
 
       const defaultCounter: string = counter.plus(index).toFixed() // TODO: Handle counter if we have some operations without counters in the array
-      const defaultFee: string = new BigNumber(this.feeDefaults.low).shiftedBy(this.decimals).toFixed()
+      const defaultFee: string = FEE_PLACEHOLDER
       const defaultGasLimit: string = '10300'
       const defaultStorageLimit: string =
         receivingBalance && receivingBalance.isZero() && recipient && recipient.toLowerCase().startsWith('tz') ? '300' : '0' // taken from eztz
@@ -1219,14 +1220,15 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       }
     })
 
-    if (overrideParameters) {
+    if (overrideParameters || tezosWrappedOperation.contents.some((operation) => (operation as any)?.fee === FEE_PLACEHOLDER)) {
       const fee: number =
         MINIMAL_FEE +
         MINIMAL_FEE_PER_BYTE * Math.ceil((forgedOperation.length + 128) / 2) + // 128 is the length of a hex signature
         MINIMAL_FEE_PER_GAS_UNIT * gasLimitTotal +
         100 // add 100 for safety
 
-      const feePerOperation: number = Math.ceil(fee / tezosWrappedOperation.contents.length)
+      const nonRevealOperations = tezosWrappedOperation.contents.filter((operation) => operation.kind !== 'reveal')
+      const feePerOperation: number = Math.ceil(fee / nonRevealOperations.length)
 
       tezosWrappedOperation.contents.forEach((operation: TezosOperation) => {
         if ((operation as TezosTransactionOperation).fee && (operation as TezosRevealOperation).kind !== 'reveal') {
