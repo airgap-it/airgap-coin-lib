@@ -100,7 +100,13 @@ export interface ICoinProtocol {
   getBalanceOfPublicKeyForSubProtocols(publicKey: string, subProtocols: ICoinSubProtocol[]): Promise<string[]>
 
   estimateMaxTransactionValueFromExtendedPublicKey(extendedPublicKey: string, recipients: string[], fee?: string): Promise<string>
-  estimateMaxTransactionValueFromPublicKey(publicKey: string, recipients: string[], fee?: string, addressIndex?: number): Promise<string>
+  estimateMaxTransactionValueFromPublicKey(
+    publicKey: string,
+    recipients: string[],
+    fee?: string,
+    addressIndex?: number,
+    excludeExistentialDeposit?: boolean
+  ): Promise<string>
 
   estimateFeeDefaultsFromExtendedPublicKey(publicKey: string, recipients: string[], values: string[], data?: any): Promise<FeeDefaults>
   estimateFeeDefaultsFromPublicKey(publicKey: string, recipients: string[], values: string[], data?: any): Promise<FeeDefaults>
