@@ -56,9 +56,9 @@ export class SubstrateAccountController {
   }
 
   public async getTransferableBalance(
-    accountId: SubstrateAccountId, 
+    accountId: SubstrateAccountId,
     excludeExistentialDeposit: boolean = true,
-    ignoreFees: boolean = true,
+    ignoreFees: boolean = true
   ): Promise<BigNumber> {
     const results = await Promise.all([
       this.nodeClient.getAccountInfo(SubstrateAddress.from(accountId, this.network)),
@@ -85,7 +85,10 @@ export class SubstrateAccountController {
   public async getUnlockingBalance(accountId: SubstrateAccountId): Promise<BigNumber> {
     const stakingDetails = await this.nodeClient.getStakingLedger(SubstrateAddress.from(accountId, this.network))
 
-    return stakingDetails?.unlocking.elements.map(entry => entry.first.value).reduce((sum, next) => sum.plus(next), new BigNumber(0)) ?? new BigNumber(0)
+    return (
+      stakingDetails?.unlocking.elements.map((entry) => entry.first.value).reduce((sum, next) => sum.plus(next), new BigNumber(0)) ??
+      new BigNumber(0)
+    )
   }
 
   public async isBonded(accountId: SubstrateAccountId): Promise<boolean> {
@@ -199,14 +202,12 @@ export class SubstrateAccountController {
   }
 
   public async getNominationStatus(
-    nominator: SubstrateAccountId, 
-    validator: SubstrateAccountId, 
+    nominator: SubstrateAccountId,
+    validator: SubstrateAccountId,
     era?: number
   ): Promise<SubstrateNominationStatus | undefined> {
-    const eraIndex: number | undefined = era !== undefined
-      ? era
-      : (await this.nodeClient.getActiveEraInfo())?.index.toNumber()
-    
+    const eraIndex: number | undefined = era !== undefined ? era : (await this.nodeClient.getActiveEraInfo())?.index.toNumber()
+
     if (eraIndex === undefined) {
       return Promise.reject('Could not fetch active era')
     }
@@ -217,7 +218,7 @@ export class SubstrateAccountController {
     }
 
     const exposure: SubstrateExposure | null = await this.nodeClient.getValidatorExposure(
-      eraIndex, 
+      eraIndex,
       SubstrateAddress.from(validator, this.network)
     )
 
@@ -229,7 +230,7 @@ export class SubstrateAccountController {
     if (!isActive) {
       return SubstrateNominationStatus.INACTIVE
     }
-    
+
     const isOversubscribed: boolean = exposure.others.elements.length > 256
     if (isOversubscribed) {
       const position: number = exposure.others.elements
@@ -267,10 +268,17 @@ export class SubstrateAccountController {
       activeEra,
       expectedEraDuration
     )
-    
+
     const results = await Promise.all([
       this.getStakingStatus(accountId, nominations, activeEra.index.toNumber()),
-      nominations ? this.getNominatorRewards(accountId, nominations.targets.elements.map((id) => id.address), activeEra, 5) : []
+      nominations
+        ? this.getNominatorRewards(
+            accountId,
+            nominations.targets.elements.map((id) => id.address),
+            activeEra,
+            5
+          )
+        : []
     ])
 
     const stakingStatus = results[0]
@@ -314,19 +322,21 @@ export class SubstrateAccountController {
   }
 
   private async getStakingStatus(
-    nominator: SubstrateAccountId, 
-    nominations: SubstrateNominations | null, 
+    nominator: SubstrateAccountId,
+    nominations: SubstrateNominations | null,
     eraIndex: number
   ): Promise<SubstrateStakingStatus> {
     const isWaitingForNomination: boolean = nominations?.submittedIn.gte(eraIndex) ?? false
 
     let hasActiveNominations: boolean = false
     if (!isWaitingForNomination && nominations) {
-      hasActiveNominations = (await Promise.all(
-        nominations.targets.elements.map((target: SCALEAccountId) => this.getNominationStatus(nominator, target.asAddress(), eraIndex))
-      )).some((status: SubstrateNominationStatus | undefined) => status === SubstrateNominationStatus.ACTIVE)
+      hasActiveNominations = (
+        await Promise.all(
+          nominations.targets.elements.map((target: SCALEAccountId) => this.getNominationStatus(nominator, target.asAddress(), eraIndex))
+        )
+      ).some((status: SubstrateNominationStatus | undefined) => status === SubstrateNominationStatus.ACTIVE)
     }
-    
+
     if (nominations === null) {
       return 'bonded'
     } else if (hasActiveNominations) {

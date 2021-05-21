@@ -175,9 +175,15 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     throw Promise.reject('get balance of sub protocols not supported')
   }
 
-  public async estimateMaxTransactionValueFromPublicKey(publicKey: string, recipients: string[], fee?: string): Promise<string> {
+  public async estimateMaxTransactionValueFromPublicKey(
+    publicKey: string,
+    _recipients: string[],
+    fee?: string,
+    _addressIndex?: number,
+    excludeExistentialDeposit?: boolean
+  ): Promise<string> {
     const results = await Promise.all([
-      this.options.accountController.getTransferableBalance(publicKey),
+      this.options.accountController.getTransferableBalance(publicKey, excludeExistentialDeposit),
       this.getFutureRequiredTransactions(publicKey, 'check')
     ])
 
