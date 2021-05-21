@@ -9,7 +9,7 @@ export class BitcoinTestnetProtocolStub implements ProtocolHTTPStub {
     const stub = sinon.stub(axios, 'get')
     stub
       .withArgs(
-        `https://cors-proxy.airgap.prod.gke.papers.tech/proxy?url=https://tbtc1.trezor.io/api/v2/utxo/tpubDCTJWMKQHnBETTGxJknEjmkiUtPtgbFDANkL55MZPgvu6YPddhRQXQXiqHZdfHwcoVNwTaHmS6DuNjcaYPRqVFkDogJdWSMLpSWSC4pNa3r?confirmed=true`
+        `https://bitcoin.prod.gke.papers.tech/api/v2/utxo/tpubDCTJWMKQHnBETTGxJknEjmkiUtPtgbFDANkL55MZPgvu6YPddhRQXQXiqHZdfHwcoVNwTaHmS6DuNjcaYPRqVFkDogJdWSMLpSWSC4pNa3r?confirmed=true`
       )
       .returns(
         Promise.resolve({
@@ -40,7 +40,7 @@ export class BitcoinTestnetProtocolStub implements ProtocolHTTPStub {
     const stub = sinon.stub(axios, 'get')
     stub
       .withArgs(
-        `https://cors-proxy.airgap.prod.gke.papers.tech/proxy?url=https://tbtc1.trezor.io/api/v2/utxo/tpubDCTJWMKQHnBETTGxJknEjmkiUtPtgbFDANkL55MZPgvu6YPddhRQXQXiqHZdfHwcoVNwTaHmS6DuNjcaYPRqVFkDogJdWSMLpSWSC4pNa3r`
+        `https://bitcoin.prod.gke.papers.tech/api/v2/utxo/tpubDCTJWMKQHnBETTGxJknEjmkiUtPtgbFDANkL55MZPgvu6YPddhRQXQXiqHZdfHwcoVNwTaHmS6DuNjcaYPRqVFkDogJdWSMLpSWSC4pNa3r`
       )
       .returns(
         Promise.resolve({

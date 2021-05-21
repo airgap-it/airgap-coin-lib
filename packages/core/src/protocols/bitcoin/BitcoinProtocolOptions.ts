@@ -10,7 +10,7 @@ const MAINNET_NAME: string = 'Mainnet'
 const NODE_URL: string = ''
 
 const BLOCK_EXPLORER_URL: string = 'https://live.blockcypher.com/btc'
-const INDEXER_API: string = `https://cors-proxy.airgap.prod.gke.papers.tech/proxy?url=${'https://btc1.trezor.io'}`
+const INDEXER_API: string = 'https://bitcoin.prod.gke.papers.tech'
 
 export class BitcoinProtocolNetworkExtras {
   constructor(public readonly indexerApi: string = INDEXER_API, public readonly network: any = bitcoinJS.networks.bitcoin) {}

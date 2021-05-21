@@ -25,7 +25,7 @@ export class BitcoinTestnetProtocol extends BitcoinProtocol {
           '',
           new BlockcypherBlockExplorer('https://live.blockcypher.com/btc-testnet'),
           new BitcoinProtocolNetworkExtras(
-            `https://cors-proxy.airgap.prod.gke.papers.tech/proxy?url=${'https://tbtc1.trezor.io'}`,
+            'https://bitcoin.prod.gke.papers.tech',
             bitcoinJS.networks.testnet
           )
         ),
