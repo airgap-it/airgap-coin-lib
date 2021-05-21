@@ -9,7 +9,7 @@ export class BitcoinProtocolStub implements ProtocolHTTPStub {
     const stub = sinon.stub(axios, 'get')
     stub
       .withArgs(
-        `https://cors-proxy.airgap.prod.gke.papers.tech/proxy?url=https://btc1.trezor.io/api/v2/utxo/xpub6CzH93BB4aueZX2bP88tvsvE8Cz2bHeGVAZSD5fmnk8roYBZCGbwwSA7ChiRr65jncuPH8qBQA9nBwi2Qtz1Uqt8wuHvof9SAcPpFxpe1GV?confirmed=true`
+        `https://bitcoin.prod.gke.papers.tech/api/v2/utxo/xpub6CzH93BB4aueZX2bP88tvsvE8Cz2bHeGVAZSD5fmnk8roYBZCGbwwSA7ChiRr65jncuPH8qBQA9nBwi2Qtz1Uqt8wuHvof9SAcPpFxpe1GV?confirmed=true`
       )
       .returns(
         Promise.resolve({
