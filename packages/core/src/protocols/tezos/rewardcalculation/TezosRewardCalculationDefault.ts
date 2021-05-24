@@ -225,8 +225,8 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
       predicates: [
         {
           field: 'kind',
-          operation: 'eq',
-          set: ['endorsement'],
+          operation: 'in',
+          set: ['endorsement', 'endorsement_with_slot'],
           inverse: false
         },
         {

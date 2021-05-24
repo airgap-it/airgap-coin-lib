@@ -1,5 +1,5 @@
 import { TezosNetwork } from './../TezosProtocol'
-import axios, { AxiosResponse } from '../../../dependencies/src/axios-0.19.0/index'
+import axios, { AxiosError, AxiosResponse } from '../../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { IAirGapTransaction } from '../../../interfaces/IAirGapTransaction'
 import { RawTezosTransaction } from '../../../serializer/types'
@@ -245,7 +245,7 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
     let partials: Partial<IAirGapTransaction>[] = []
     try {
       partials = transactionOperation.parameters ? this.transactionDetailsFromParameters(transactionOperation.parameters) ?? [] : []
-    } catch { }
+    } catch {}
 
     if (partials.length === 0) {
       partials.push({})
@@ -310,7 +310,9 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
     const results: AxiosResponse[] = await Promise.all([
       axios.get(this.url(`/chains/main/blocks/head/context/contracts/${source}/counter`)),
       axios.get(this.url('/chains/main/blocks/head/'))
-    ])
+    ]).catch((error) => {
+      throw new NetworkError(Domain.TEZOS, error as AxiosError)
+    })
     const counter = new BigNumber(results[0].data).plus(1)
     const branch = results[1].data.hash
     const chainID = results[1].data.chain_id
@@ -323,10 +325,10 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
       if (metadata.internal_operation_results !== undefined && metadata.operation_result.status === 'applied') {
         return metadata.internal_operation_results[0].parameters.value
       } else {
-        throw new NetworkError(Domain.TEZOSFA, metadata.operation_result.errors[0].id)
+        throw new NetworkError(Domain.TEZOSFA, { response })
       }
     } catch (runOperationError) {
-      throw new NetworkError(Domain.TEZOSFA, runOperationError)
+      throw new NetworkError(Domain.TEZOSFA, runOperationError as AxiosError)
     }
   }
 

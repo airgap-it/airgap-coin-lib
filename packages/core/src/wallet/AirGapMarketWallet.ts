@@ -96,7 +96,7 @@ export class AirGapMarketWallet extends AirGapWallet {
       */
       return new BigNumber(await this.protocol.getBalanceOfExtendedPublicKey(this.publicKey, 0))
     } else if (this.protocol instanceof TezosSaplingProtocol) {
-      return new BigNumber(await this.protocol.getBalanceOfPublicKey(this.publicKey)) 
+      return new BigNumber(await this.protocol.getBalanceOfPublicKey(this.publicKey))
     } else if (this.addresses.length > 0) {
       return new BigNumber(await this.protocol.getBalanceOfAddresses(this.addressesToCheck()))
     } else if (this.isExtendedPublicKey) {
@@ -137,11 +137,19 @@ export class AirGapMarketWallet extends AirGapWallet {
     return transactionResult
   }
 
-  public async getMaxTransferValue(recipients: string[], fee?: string): Promise<BigNumber> {
+  public async getMaxTransferValue(recipients: string[], fee?: string, excludeExistentialDeposit?: boolean): Promise<BigNumber> {
     if (this.isExtendedPublicKey) {
       return new BigNumber(await this.protocol.estimateMaxTransactionValueFromExtendedPublicKey(this.publicKey, recipients, fee))
     } else {
-      return new BigNumber(await this.protocol.estimateMaxTransactionValueFromPublicKey(this.publicKey, recipients, fee, this.addressIndex))
+      return new BigNumber(
+        await this.protocol.estimateMaxTransactionValueFromPublicKey(
+          this.publicKey,
+          recipients,
+          fee,
+          this.addressIndex,
+          excludeExistentialDeposit
+        )
+      )
     }
   }
 

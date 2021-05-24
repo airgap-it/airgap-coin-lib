@@ -1,4 +1,4 @@
-import axios, { AxiosResponse } from '../../../dependencies/src/axios-0.19.0/index'
+import axios, { AxiosError, AxiosResponse } from '../../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { MichelineNode, MichelineTypeNode, MichelineDataNode } from '../types/micheline/MichelineNode'
 import { BigMapPredicate } from '../types/contract/BigMapPredicate'
@@ -35,7 +35,7 @@ export class TezosContract {
     private readonly conseilAPIURL: string,
     private readonly conseilNetwork: string,
     private readonly conseilAPIKey: string
-  ) { }
+  ) {}
 
   public async bigMapValues(request: BigMapRequest = {}): Promise<BigMapResponse[]> {
     const bigMapID: number = request?.bigMapID ?? (await this.getBigMapID(request.bigMapFilter))
@@ -94,7 +94,7 @@ export class TezosContract {
     try {
       const parameters: unknown = typeof data === 'string' ? JSON.parse(data) : data
 
-      return (parameters instanceof Object && 'entrypoint' in parameters && 'value' in parameters)
+      return parameters instanceof Object && 'entrypoint' in parameters && 'value' in parameters
     } catch {
       return false
     }
@@ -194,11 +194,11 @@ export class TezosContract {
     })
 
     if (response.length === 0) {
-      throw new NetworkError(Domain.TEZOS, 'BigMap ID not found')
+      throw new InvalidValueError(Domain.TEZOS, 'BigMap ID not found')
     }
 
     if (response.length > 1) {
-      throw new NetworkError(Domain.TEZOS, 'More than one BigMap ID has been found for the predicates.')
+      throw new InvalidValueError(Domain.TEZOS, 'More than one BigMap ID has been found for the predicates.')
     }
 
     return response[0].big_map_id
@@ -277,13 +277,16 @@ export class TezosContract {
   }
 
   private async apiRequest<T>(endpoint: string, body: any): Promise<T> {
-    const response: AxiosResponse<T> = await axios.post(`${this.conseilAPIURL}/v2/data/tezos/${this.conseilNetwork}/${endpoint}`, body, {
-      headers: {
-        'Content-Type': 'application/json',
-        apiKey: this.conseilAPIKey
-      }
-    })
-
+    const response: AxiosResponse<T> = await axios
+      .post(`${this.conseilAPIURL}/v2/data/tezos/${this.conseilNetwork}/${endpoint}`, body, {
+        headers: {
+          'Content-Type': 'application/json',
+          apiKey: this.conseilAPIKey
+        }
+      })
+      .catch((error) => {
+        throw new NetworkError(Domain.TEZOS, error as AxiosError)
+      })
     return response.data
   }
 }

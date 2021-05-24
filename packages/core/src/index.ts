@@ -2,7 +2,8 @@
 // This needs to be imported first, otherwise the tests won't run anymore
 import { EthereumProtocol } from './protocols/ethereum/EthereumProtocol'
 
-import { ProtocolNotSupported, ProtocolVersionMismatch, SerializerVersionMismatch, TypeNotSupported } from './errors'
+import { ProtocolNotSupported, ProtocolVersionMismatch, SerializerVersionMismatch, TypeNotSupported, NetworkError } from './errors'
+import { Domain } from './errors/coinlib-error'
 import { IAirGapTransaction, IAirGapTransactionResult, IProtocolTransactionCursor } from './interfaces/IAirGapTransaction'
 import { IAirGapWallet } from './interfaces/IAirGapWallet'
 import { AeternityProtocol } from './protocols/aeternity/AeternityProtocol'
@@ -21,9 +22,10 @@ import {
   DelegatorReward,
   ICoinDelegateProtocol
 } from './protocols/ICoinDelegateProtocol'
-import { CoinAddress, FeeDefaults, ICoinProtocol } from './protocols/ICoinProtocol'
+import { FeeDefaults, ICoinProtocol } from './protocols/ICoinProtocol'
 import { ICoinSubProtocol, SubProtocolType } from './protocols/ICoinSubProtocol'
 import { SubstratePayee } from './protocols/substrate/helpers/data/staking/SubstratePayee'
+import { SubstrateNodeClient } from './protocols/substrate/helpers/node/SubstrateNodeClient'
 import { KusamaProtocol } from './protocols/substrate/implementations/KusamaProtocol'
 import { PolkadotProtocol } from './protocols/substrate/implementations/PolkadotProtocol'
 import { SubstrateProtocol } from './protocols/substrate/SubstrateProtocol'
@@ -119,6 +121,7 @@ import {
   SubstrateProtocolNetwork,
   SubstrateProtocolOptions
 } from './protocols/substrate/SubstrateProtocolOptions'
+import { SubstrateAddress } from './protocols/substrate/helpers/data/account/SubstrateAddress'
 import {
   KusamaProtocolNetworkExtras,
   KusamaPolkascanBlockExplorer,
@@ -163,6 +166,7 @@ import { TezosFA1Protocol } from './protocols/tezos/fa/TezosFA1Protocol'
 import { TezosFA12Protocol } from './protocols/tezos/fa/TezosFA12Protocol'
 import { TezosSaplingProtocol } from './protocols/tezos/sapling/TezosSaplingProtocol'
 import { TezosShieldedTezProtocol } from './protocols/tezos/sapling/TezosShieldedTezProtocol'
+
 import { DeserializedSyncProtocol, EncodedType, SyncProtocolUtils } from './serializer/v1/serializer'
 import { ImportAccountAction, ImportAccoutActionContext } from './actions/GetKtAccountsAction'
 import { CosmosUnbondingDelegation, CosmosValidator } from './protocols/cosmos/CosmosNodeClient'
@@ -181,16 +185,21 @@ import { TezosWrappedOperation } from './protocols/tezos/types/TezosWrappedOpera
 import { assertNever } from './utils/assert'
 import { CosmosTransaction } from './protocols/cosmos/CosmosTransaction'
 import { CosmosAddress } from './protocols/cosmos/CosmosAddress'
+
 import { TezosETHtz } from './protocols/tezos/fa/TezosETHtz'
 import { TezosWrapped } from './protocols/tezos/fa/TezosWrapped'
 import { TezosKolibriUSD } from './protocols/tezos/fa/TezosKolibriUSD'
-import { TezosSaplingExternalMethodProvider, TezosSaplingProtocolConfig, TezosSaplingProtocolOptions, TezosShieldedTezProtocolConfig } from './protocols/tezos/sapling/TezosSaplingProtocolOptions'
+import {
+  TezosSaplingExternalMethodProvider,
+  TezosSaplingProtocolConfig,
+  TezosSaplingProtocolOptions,
+  TezosShieldedTezProtocolConfig
+} from './protocols/tezos/sapling/TezosSaplingProtocolOptions'
 import { TezosSaplingTransaction } from './protocols/tezos/types/sapling/TezosSaplingTransaction'
 import { TezosDomains } from './protocols/tezos/domains/TezosDomains'
 import { AeternityAddress } from './protocols/aeternity/AeternityAddress'
 import { BitcoinAddress } from './protocols/bitcoin/BitcoinAddress'
 import { EthereumAddress } from './protocols/ethereum/EthereumAddress'
-import { SubstrateAddress } from './protocols/substrate/helpers/data/account/SubstrateAddress'
 import { TezosAddress } from './protocols/tezos/TezosAddress'
 
 // tslint:enable:ordered-imports
@@ -204,7 +213,6 @@ export {
   ICoinProtocol,
   ICoinSubProtocol,
   ICoinDelegateProtocol,
-  CoinAddress,
   CryptoClient,
   ProtocolBlockExplorer,
   ProtocolNetwork,
@@ -296,6 +304,7 @@ export {
   SubstrateProtocolConfig,
   SubstrateProtocolNetwork,
   SubstrateProtocolOptions,
+  SubstrateNodeClient,
   KusamaProtocolNetworkExtras,
   KusamaPolkascanBlockExplorer,
   KusamaProtocolConfig,
@@ -412,6 +421,8 @@ export {
   TypeNotSupported,
   SerializerVersionMismatch,
   ProtocolNotSupported,
+  NetworkError,
+  Domain,
   ProtocolVersionMismatch,
   // libsodium ready
   isCoinlibReady,

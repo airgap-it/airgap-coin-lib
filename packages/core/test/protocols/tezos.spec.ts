@@ -606,6 +606,46 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         expect(totalAmount).eq(new BigNumber(tezosProtocolSpec.unrevealedAddressConfig.balance - 1).minus(revealFee).toString())
       })
 
+      it('will correctly prepare operations, taking the specified parameters as is', async () => {
+        const address = tezosProtocolSpec.wallet.addresses[0]
+
+        getStub
+          .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/counter`)
+          .returns(Promise.resolve({ data: '10147076' }))
+        getStub
+          .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/hash`)
+          .returns(Promise.resolve({ data: 'BLKAx9imSqD5t1qyu3K1cuZwVzddZRjuHpa8w94fh1aUmPgMohM' }))
+        getStub
+          .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/balance`)
+          .returns(Promise.resolve({ data: tezosProtocolSpec.revealedAddressConfig.balance }))
+        getStub
+          .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/manager_key`)
+          .returns(Promise.resolve({ data: tezosProtocolSpec.revealedAddressConfig.manager_key }))
+        postStub
+          .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`)
+          .returns(Promise.resolve({ data: tezosProtocolSpec.revealedAddressConfig.run_operation }))
+
+        const setValue = '1008'
+        const operationRequest = {
+          kind: 'transaction',
+          amount: tezosProtocolSpec.revealedAddressConfig.balance - 1,
+          destination: 'tz1MJx9vhaNRSimcuXPK2rW4fLccQnDAnVKJ',
+          fee: setValue,
+          counter: setValue,
+          gas_limit: setValue,
+          storage_limit: setValue
+        } as TezosOperation
+
+        const tezosWrappedOperation = await tezosLib.prepareOperations(tezosProtocolSpec.wallet.publicKey, [operationRequest], false)
+
+        const preparedOperation = tezosWrappedOperation.contents[0] as any
+        expect(preparedOperation.kind).to.equal('transaction')
+        expect(preparedOperation.fee).to.equal(setValue)
+        expect(preparedOperation.gas_limit).to.equal(setValue)
+        expect(preparedOperation.storage_limit).to.equal(setValue)
+        expect(preparedOperation.counter).to.equal(setValue)
+      })
+
       it('will not mess with anything, given the receiving account has balance already', async () => {
         const result = await prepareSpend(
           ['tz1d75oB6T4zUMexzkr5WscGktZ1Nss1JrT7'],
@@ -2215,12 +2255,10 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         ['KT1X6SSqro2zUo1Wa7X5BnDWBvfBxZ6feUnc', 'KT1QLtQ54dKzcfwxMHmEM6PC8tooUg6MxDZ3'],
         ['12345'],
         '111'
-      ).catch((error: Error) => expect(error)
-        .to.be.an('error')
-        .with.property(
-          'message', 
-          new ConditionViolationError(Domain.TEZOS, 'length of recipients and values does not match!').message
-        )
+      ).catch((error: Error) =>
+        expect(error)
+          .to.be.an('error')
+          .with.property('message', new ConditionViolationError(Domain.TEZOS, 'length of recipients and values does not match!').message)
       )
     })
   })
