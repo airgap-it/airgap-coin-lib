@@ -24,3 +24,14 @@ export function chunkedArray<T>(array: T[], chunkSize: number): (T | undefined)[
 export function flattenArray<T>(array: T[][]): T[] {
   return array.reduce((flatten: T[], next: T[]) => flatten.concat(next), [])
 }
+
+export function zippedArrays<T, R>(a1: T[], a2: R[]): [T, R][] {
+  const length: number = Math.min(a1.length, a2.length)
+  const zipped: [T, R][] = new Array(length)
+
+  for (let i = 0; i < length; i++) {
+    zipped[i] = [a1[i], a2[i]]
+  }
+
+  return zipped
+}

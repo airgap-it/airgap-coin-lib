@@ -1,4 +1,5 @@
 // tslint:disable: max-classes-per-file
+import { zippedArrays } from '../../../../../../../utils/array'
 import { blake2bAsHex } from '../../../../../../../utils/blake2b'
 import { bytesToHex } from '../../../../../../../utils/hex'
 import { xxhashAsHex } from '../../../../../../../utils/xxhash'
@@ -107,5 +108,42 @@ export class SubstrateDoubleMapStorageEntry extends SubstrateStorageEntry {
           ([firstHash, secondHash]) => firstHash + secondHash
         )
       : ''
+  }
+}
+
+
+export class SubstrateNMapStorageEntry extends SubstrateStorageEntry {
+  public constructor(
+    module: string, 
+    prefix: string,
+    public readonly hashers: SubstrateStorageEntryHasher[]
+  ) {
+    super(module, prefix)
+  }
+
+  protected async argsToKeys(args: SCALEType[]): Promise<string> {
+    return bytesToHex(args[0].encode()) + bytesToHex(args[1].encode())
+  }
+
+  protected async hashArgs(args: SCALEType[]): Promise<string> {
+    try {
+      const zipped: [SubstrateStorageEntryHasher, SCALEType][] = zippedArrays(this.hashers, args)
+
+      const hashes: string[] = await Promise.all(
+        zipped.map(([hasher, arg]: [SubstrateStorageEntryHasher, SCALEType]) => {
+          const hasherMethod = hasherMethods.get(hasher)
+          if (hasherMethod === undefined) {
+            throw new Error()
+          }
+
+          return hasherMethod(arg.encode())
+        })
+      )
+
+      return hashes.reduce((hash: string, next: string) => hash + next, '')
+    } catch (error) {
+      console.warn(error)
+      return ''
+    }
   }
 }
