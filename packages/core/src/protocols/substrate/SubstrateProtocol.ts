@@ -243,8 +243,8 @@ export abstract class SubstrateProtocol extends NonExtendedProtocol implements I
     }
 
     const recipientsWithValues: [string, string][] = recipients.map((recipient, index) => [recipient, values[index]])
-
-    const transferableBalance = await this.options.accountController.getTransferableBalance(publicKey)
+    const excludeExistentialDeposit = typeof data === 'boolean' ? data : undefined
+    const transferableBalance = await this.options.accountController.getTransferableBalance(publicKey, excludeExistentialDeposit)
     const totalValue = values.map((value) => new BigNumber(value)).reduce((total, next) => total.plus(next), new BigNumber(0))
 
     const available = new BigNumber(transferableBalance).minus(totalValue)
