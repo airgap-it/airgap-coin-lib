@@ -302,7 +302,7 @@ export class CosmosNodeClient {
       .then((response) => response.data.result.total as { denom: string; amount: string }[])
       .catch(() => [])
 
-    if (totalRewards.length > 0) {
+    if (totalRewards?.length > 0) {
       return new BigNumber(totalRewards[0].amount).decimalPlaces(0, BigNumber.ROUND_FLOOR)
     }
 
@@ -313,7 +313,7 @@ export class CosmosNodeClient {
     const totalRewards = await Axios.get(this.url(`/distribution/delegators/${delegatorAddress}/rewards/${validatorAddress}`))
       .then((response) => response.data.result as { denom: string; amount: string }[])
       .catch(() => [])
-    if (totalRewards.length > 0) {
+    if (totalRewards?.length > 0) {
       return new BigNumber(totalRewards[0].amount).decimalPlaces(0, BigNumber.ROUND_FLOOR)
     }
 
