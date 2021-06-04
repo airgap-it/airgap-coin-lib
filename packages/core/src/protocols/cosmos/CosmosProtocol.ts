@@ -694,7 +694,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
       (details) =>
         [
           details.validator_address,
-          details.reward.reduce((total, next) => total.plus(next.amount), new BigNumber(0)).decimalPlaces(0, BigNumber.ROUND_FLOOR)
+          details.reward?.reduce((total, next) => total.plus(next.amount), new BigNumber(0)).decimalPlaces(0, BigNumber.ROUND_FLOOR) ?? new BigNumber(0)
         ] as [string, BigNumber]
     )
 
