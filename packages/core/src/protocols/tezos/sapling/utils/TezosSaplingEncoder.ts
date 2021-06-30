@@ -106,7 +106,7 @@ export class TezosSaplingEncoder {
 
   private decodeDescriptions<T>(bytes: Buffer, decoder: (bytes: Buffer) => T, encoder: (description: T) => Buffer): T[] {
     const descriptions: T[] = []
-    
+
     let next: number = 0
     while (next < bytes.length) {
       const decoded: T = decoder(bytes.slice(next))
@@ -155,7 +155,7 @@ export class TezosSaplingEncoder {
       nonce_out: nonceOut.toString('hex')
     }
   }
-  
+
   public decodeBalanceFromTransaction(transaction: Buffer): BigNumber {
     return this.decodeBalance(transaction.slice(-40).slice(0, 8))
   }

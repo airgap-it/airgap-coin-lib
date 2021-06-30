@@ -48,8 +48,7 @@ export class TezosProtocolNetwork extends ProtocolNetwork<TezosProtocolNetworkEx
 }
 
 export class TezosProtocolConfig {
-  constructor(public readonly domains?: TezosDomains) {
-  }
+  constructor(public readonly domains?: TezosDomains) {}
 }
 
 export class TezosProtocolOptions implements ProtocolOptions<TezosProtocolConfig> {

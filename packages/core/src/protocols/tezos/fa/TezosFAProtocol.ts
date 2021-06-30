@@ -1,9 +1,9 @@
-import { TezosNetwork } from './../TezosProtocol'
 import axios, { AxiosError, AxiosResponse } from '../../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { IAirGapTransaction } from '../../../interfaces/IAirGapTransaction'
 import { RawTezosTransaction } from '../../../serializer/types'
 import { ProtocolSymbols } from '../../../utils/ProtocolSymbols'
+import { FeeDefaults } from '../../ICoinProtocol'
 import { ICoinSubProtocol, SubProtocolType } from '../../ICoinSubProtocol'
 import { TezosContract } from '../contract/TezosContract'
 import { TezosContractCall } from '../contract/TezosContractCall'
@@ -11,14 +11,15 @@ import { TezosProtocol } from '../TezosProtocol'
 import { BigMapResponse } from '../types/contract/BigMapResult'
 import { MichelineDataNode } from '../types/micheline/MichelineNode'
 import { TezosOperation } from '../types/operations/TezosOperation'
-import { TezosTransactionParameters, TezosWrappedTransactionOperation, TezosTransactionOperation } from '../types/operations/Transaction'
+import { TezosTransactionOperation, TezosTransactionParameters, TezosWrappedTransactionOperation } from '../types/operations/Transaction'
 import { TezosOperationType } from '../types/TezosOperationType'
-import { TezosWrappedOperation } from '../types/TezosWrappedOperation'
-import { isMichelineNode } from '../types/utils'
-import { TezosFAProtocolOptions } from './TezosFAProtocolOptions'
 import { TezosTransactionCursor } from '../types/TezosTransactionCursor'
 import { TezosTransactionResult } from '../types/TezosTransactionResult'
-import { FeeDefaults } from '../../ICoinProtocol'
+import { TezosWrappedOperation } from '../types/TezosWrappedOperation'
+import { isMichelineNode } from '../types/utils'
+
+import { TezosNetwork } from './../TezosProtocol'
+import { TezosFAProtocolOptions } from './TezosFAProtocolOptions'
 import { TezosAddress } from '../TezosAddress'
 import { InvalidValueError, NetworkError, OperationFailedError } from '../../../errors'
 import { Domain } from '../../../errors/coinlib-error'
@@ -103,7 +104,7 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
     limit: number,
     cursor?: TezosTransactionCursor
   ): Promise<TezosTransactionResult> {
-    let allTransactions = await Promise.all(
+    const allTransactions = await Promise.all(
       addresses.map((address) => {
         const body = {
           predicates: [

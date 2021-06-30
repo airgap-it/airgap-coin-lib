@@ -3,11 +3,11 @@ import { NetworkType } from '../../utils/ProtocolNetwork'
 
 import { BitcoinProtocol } from './BitcoinProtocol'
 import {
-  BlockcypherBlockExplorer,
   BitcoinProtocolConfig,
   BitcoinProtocolNetwork,
   BitcoinProtocolNetworkExtras,
-  BitcoinProtocolOptions
+  BitcoinProtocolOptions,
+  BlockcypherBlockExplorer
 } from './BitcoinProtocolOptions'
 
 export class BitcoinTestnetProtocol extends BitcoinProtocol {
@@ -24,10 +24,7 @@ export class BitcoinTestnetProtocol extends BitcoinProtocol {
           NetworkType.TESTNET,
           '',
           new BlockcypherBlockExplorer('https://live.blockcypher.com/btc-testnet'),
-          new BitcoinProtocolNetworkExtras(
-            'https://bitcoin.prod.gke.papers.tech',
-            bitcoinJS.networks.testnet
-          )
+          new BitcoinProtocolNetworkExtras('https://bitcoin.prod.gke.papers.tech', bitcoinJS.networks.testnet)
         ),
         new BitcoinProtocolConfig()
       )

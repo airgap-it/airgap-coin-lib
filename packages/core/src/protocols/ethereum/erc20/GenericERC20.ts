@@ -1,4 +1,3 @@
-import { EthereumTransactionResult, EthereumTransactionCursor } from './../EthereumTypes'
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import * as ethUtil from '../../../dependencies/src/ethereumjs-util-5.2.0/index'
 import { IAirGapSignedTransaction } from '../../../interfaces/IAirGapSignedTransaction'
@@ -17,6 +16,8 @@ import { EthereumUtils } from '../utils/utils'
 import { EthereumAddress } from '../EthereumAddress'
 import { BalanceError, ConditionViolationError } from '../../../errors'
 import { Domain } from '../../../errors/coinlib-error'
+
+import { EthereumTransactionCursor, EthereumTransactionResult } from './../EthereumTypes'
 
 const EthereumTransaction = require('../../../dependencies/src/ethereumjs-tx-1.3.7/index')
 
@@ -163,7 +164,7 @@ export class GenericERC20 extends BaseEthereumProtocol<AirGapNodeClient, Ethersc
           const page = Math.max(...values.map((txResult) => txResult.cursor.page))
           overallResolve(
             values.reduce((a, b) => {
-              return { transactions: a.transactions.concat(b.transactions), cursor: { page: page } }
+              return { transactions: a.transactions.concat(b.transactions), cursor: { page } }
             })
           )
         })

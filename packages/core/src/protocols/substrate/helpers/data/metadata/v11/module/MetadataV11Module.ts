@@ -13,11 +13,7 @@ import { MetadataV11Event } from './MetadataV11Event'
 import { MetadataV11Storage } from './storage/MetadataV11Storage'
 
 export class MetadataV11Module extends SCALEClass {
-  public static decode(
-    network: SubstrateNetwork, 
-    runtimeVersion: number | undefined, 
-    raw: string
-  ): SCALEDecodeResult<MetadataV11Module> {
+  public static decode(network: SubstrateNetwork, runtimeVersion: number | undefined, raw: string): SCALEDecodeResult<MetadataV11Module> {
     const decoder = new SCALEDecoder(network, runtimeVersion, raw)
 
     const name = decoder.decodeNextString()

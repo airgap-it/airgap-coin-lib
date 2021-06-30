@@ -1,5 +1,6 @@
 import Axios, { AxiosResponse } from '../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
+
 import { CosmosMessageType } from './cosmos-message/CosmosMessage'
 
 export interface CosmosNodeInfo {
@@ -203,6 +204,7 @@ export class CosmosNodeClient {
           }
         })) ?? []
     }
+
     return result
   }
 

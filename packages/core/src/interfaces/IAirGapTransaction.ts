@@ -1,11 +1,12 @@
+import { AeternityTransactionCursor } from '../protocols/aeternity/AeternityTypes'
+import { EthereumTransactionCursor } from '../protocols/ethereum/EthereumTypes'
+import { ProtocolNetwork } from '../utils/ProtocolNetwork'
+import { ProtocolSymbols } from '../utils/ProtocolSymbols'
+
+import { BitcoinBlockbookTransactionCursor, BitcoinTransactionCursor } from './../protocols/bitcoin/BitcoinTypes'
 import { CosmosTransactionCursor } from './../protocols/cosmos/CosmosTypes'
 import { SubstrateTransactionCursor } from './../protocols/substrate/SubstrateTypes'
 import { TezosTransactionCursor } from './../protocols/tezos/types/TezosTransactionCursor'
-import { BitcoinTransactionCursor, BitcoinBlockbookTransactionCursor } from './../protocols/bitcoin/BitcoinTypes'
-import { ProtocolNetwork } from '../utils/ProtocolNetwork'
-import { ProtocolSymbols } from '../utils/ProtocolSymbols'
-import { EthereumTransactionCursor } from '../protocols/ethereum/EthereumTypes'
-import { AeternityTransactionCursor } from '../protocols/aeternity/AeternityTypes'
 
 export enum AirGapTransactionType {
   SPEND = 'Spend Transaction',

@@ -1,5 +1,6 @@
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { RawTezosTransaction } from '../../../serializer/types'
+
 import { TezosFA1Protocol } from './TezosFA1Protocol'
 
 enum TezosFA12ContractEntrypoint {
@@ -7,21 +8,23 @@ enum TezosFA12ContractEntrypoint {
   ALLOWANCE = 'getAllowance',
   APPROVE = 'approve',
   TRANSFER = 'transfer',
-  TOTAL_SUPPLY = 'getTotalSupply',
+  TOTAL_SUPPLY = 'getTotalSupply'
 }
 
 export class TezosFA12Protocol extends TezosFA1Protocol {
-
   public async getAllowance(
     ownerAddress: string,
     spenderAddress: string,
     callbackContract: string = this.callbackContract(),
     source?: string
   ): Promise<string> {
-    const getAllowanceCall = await this.contract.createContractCall(TezosFA12ContractEntrypoint.ALLOWANCE, [{
-      owner: ownerAddress,
-      spender: spenderAddress
-    }, callbackContract])
+    const getAllowanceCall = await this.contract.createContractCall(TezosFA12ContractEntrypoint.ALLOWANCE, [
+      {
+        owner: ownerAddress,
+        spender: spenderAddress
+      },
+      callbackContract
+    ])
 
     return this.getContractCallIntResult(getAllowanceCall, this.requireSource(source, spenderAddress, 'kt'))
   }

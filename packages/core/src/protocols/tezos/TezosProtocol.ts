@@ -366,8 +366,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
               group: 'b'
             })
           }
+
           return body
         }
+
         // AirGapTransactionStatus.APPLIED : AirGapTransactionStatus.FAILED
         return new Promise<any>(async (resolve, _reject) => {
           const result = await axios
@@ -405,6 +407,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
         }
       })
     const lastEntryBlockLevel = allTransactions.length > 0 ? allTransactions[allTransactions.length - 1].blockHeight : 0
+
     return { transactions: allTransactions, cursor: { lastBlockLevel: lastEntryBlockLevel } }
   }
 
@@ -545,7 +548,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   }
 
   public async getBalanceOfPublicKeyForSubProtocols(publicKey: string, subProtocols: ICoinSubProtocol[]): Promise<string[]> {
-    return await Promise.all(subProtocols.map((subProtocol) => subProtocol.getBalanceOfPublicKey(publicKey).catch(() => '0')))
+    return Promise.all(subProtocols.map((subProtocol) => subProtocol.getBalanceOfPublicKey(publicKey).catch(() => '0')))
   }
 
   public async getAvailableBalanceOfAddresses(addresses: string[]): Promise<string> {
@@ -623,7 +626,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       return this.feeDefaults
     }
 
-    return await this.estimateFeeDefaultsForOperations(publicKey, operations)
+    return this.estimateFeeDefaultsForOperations(publicKey, operations)
   }
 
   protected async estimateFeeDefaultsForOperations(publicKey: string, operations: TezosOperation[]): Promise<FeeDefaults> {
@@ -632,7 +635,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     const estimatedFee = estimated.contents
       .reduce((current, next: any) => {
         if (next.fee !== undefined) {
-          return current.plus(new BigNumber(next['fee']))
+          return current.plus(new BigNumber(next.fee))
         }
 
         return current
@@ -1393,6 +1396,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
           delegatedBalance = payout.balance
           payoutAmount = payout.payout
         }
+
         return {
           cycle: obj.cycle,
           totalRewards: new BigNumber(obj.rewards),
@@ -1592,7 +1596,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   private static readonly FIRST_005_CYCLE: number = 160
   private static readonly FIRST_006_CYCLE: number = 208
 
-  private rewardCalculations = {
+  private readonly rewardCalculations = {
     alpha: new TezosRewardsCalculationDefault(this),
     babylon: new TezosRewardsCalculation005(this),
     cartha: new TezosRewardsCalculation006(this)

@@ -2,13 +2,4 @@
 
 import { MichelsonGrammarInstruction } from './MichelsonGrammarInstruction'
 
-export type MichelsonGrammarData = 
-  | 'Unit' 
-  | 'True' 
-  | 'False' 
-  | 'Pair' 
-  | 'Left' 
-  | 'Right' 
-  | 'Some' 
-  | 'None'
-  | MichelsonGrammarInstruction
+export type MichelsonGrammarData = 'Unit' | 'True' | 'False' | 'Pair' | 'Left' | 'Right' | 'Some' | 'None' | MichelsonGrammarInstruction

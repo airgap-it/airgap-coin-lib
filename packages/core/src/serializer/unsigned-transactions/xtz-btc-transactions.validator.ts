@@ -1,3 +1,4 @@
+import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { async } from '../../dependencies/src/validate.js-0.13.1/validate'
 import { TezosBTC } from '../../protocols/tezos/fa/TezosBTC'
 import { TezosTransactionOperation } from '../../protocols/tezos/types/operations/Transaction'
@@ -6,7 +7,6 @@ import { UnsignedTezosTransaction } from '../schemas/definitions/unsigned-transa
 import { RawTezosTransaction } from '../types'
 import { TransactionValidator } from '../validators/transactions.validator'
 import { validateSyncScheme } from '../validators/validators'
-import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { Domain, CoinlibAssertionError } from '../../errors/coinlib-error'
 import { InvalidValueError } from '../../errors'
 

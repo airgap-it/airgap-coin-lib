@@ -1,11 +1,12 @@
 import Axios from '../../../../dependencies/src/axios-0.19.0/index'
 import { BigNumber } from '../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { isArray } from '../../../../dependencies/src/validate.js-0.13.1/validate'
 import { AirGapTransactionStatus, IAirGapTransaction } from '../../../../interfaces/IAirGapTransaction'
 import { EthereumProtocol } from '../../EthereumProtocol'
 import { BLOCK_EXPLORER_API } from '../../EthereumProtocolOptions'
-import { EthereumInfoClient } from './InfoClient'
 import { EthereumTransactionCursor, EthereumTransactionResult } from '../../EthereumTypes'
-import { isArray } from '../../../../dependencies/src/validate.js-0.13.1/validate'
+
+import { EthereumInfoClient } from './InfoClient'
 import { NetworkError } from '../../../../errors'
 import { Domain } from '../../../../errors/coinlib-error'
 

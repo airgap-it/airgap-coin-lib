@@ -21,7 +21,7 @@ import { UnsignedTezosSaplingTransaction } from './schemas/definitions/unsigned-
 import { SchemaInfo, SchemaItem, SchemaTransformer } from './schemas/schema'
 import { Serializer } from './serializer'
 import { UnsignedCosmosTransaction } from './types'
-import { generateId } from './utils/generateId'
+import { generateIdV2 } from './utils/generateId'
 import { jsonToArray, rlpArrayToJson, unwrapSchema } from './utils/json-to-rlp'
 import { RLPData } from './utils/toBuffer'
 
@@ -75,7 +75,7 @@ export class Message implements IACMessageDefinitionObject {
     type: IACMessageType,
     protocol: ProtocolSymbols,
     payload: IACMessages,
-    id: string = generateId(ID_LENGTH),
+    id: string = generateIdV2(ID_LENGTH),
     version: string = '1'
   ) {
     this.id = id
@@ -113,7 +113,7 @@ export class Message implements IACMessageDefinitionObject {
     const protocol: ProtocolSymbols = this.parseProtocol(buf[2])
 
     // Backwards compatiblity for version 0, before we had an ID
-    const idBuf: Buffer | undefined = version === '0' ? Buffer.from(generateId(ID_LENGTH)) : buf[4]
+    const idBuf: Buffer | undefined = version === '0' ? Buffer.from(generateIdV2(ID_LENGTH)) : buf[4]
     // End Backwards compatibility
 
     const id: string = this.parseId(idBuf)
@@ -122,7 +122,7 @@ export class Message implements IACMessageDefinitionObject {
     const schemaInfo: SchemaInfo = Serializer.getSchema(type, protocol)
     const schema: SchemaItem = unwrapSchema(schemaInfo.schema)
     const schemaTransformer: SchemaTransformer | undefined = schemaInfo.transformer
-    const json: IACMessages = (rlpArrayToJson(schema, encodedPayload) as any) as IACMessages
+    const json: IACMessages = rlpArrayToJson(schema, encodedPayload) as any as IACMessages
     const payload: IACMessages = schemaTransformer ? schemaTransformer(json) : json
 
     return new Message(type, protocol, payload, id, version)
@@ -194,7 +194,7 @@ export class Message implements IACMessageDefinitionObject {
     const parsed: U = parse(buffer)
 
     if (validate(parsed)) {
-      return (parsed as unknown) as T // TODO: Use type guard?
+      return parsed as unknown as T // TODO: Use type guard?
     }
 
     throw new SerializerError(SerializerErrorType.PROPERTY_IS_EMPTY, `${property} is invalid: "${parsed}"`)

@@ -1,5 +1,6 @@
-import { ProtocolBlockExplorer } from './ProtocolBlockExplorer'
 import * as createHash from '../dependencies/src/create-hash-1.2.0/index'
+
+import { ProtocolBlockExplorer } from './ProtocolBlockExplorer'
 
 const sha256hashShort: (input: string) => string = (input: string): string => {
   const hash = createHash('sha256')

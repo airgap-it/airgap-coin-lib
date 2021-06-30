@@ -27,7 +27,7 @@ export abstract class MichelsonOr extends MichelsonType {
       throw new InvalidValueError(Domain.TEZOS, 'MichelsonPair: unknown generic mapping factory functions.')
     }
 
-    if(isMichelinePrimitiveApplication(or)) {
+    if (isMichelinePrimitiveApplication(or)) {
       return MichelsonOr.fromMicheline(or, firstMappingFunction, secondMappingFunction, name)
     } else if (typeof or === 'string' && or.match(michelsonRegex)) {
       return MichelsonOr.fromMichelson(or, firstMappingFunction, secondMappingFunction, name)

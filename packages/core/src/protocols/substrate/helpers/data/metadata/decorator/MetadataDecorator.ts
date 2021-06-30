@@ -8,9 +8,13 @@ export class MetadataDecorator {
   private readonly constants: Map<string, SubstrateConstant>
 
   constructor(storageEntries: SubstrateStorageEntry[], calls: SubstrateCall[], constants: SubstrateConstant[]) {
-    this.storageEntries = new Map(storageEntries.map((entry: SubstrateStorageEntry) => [this.createMapKey(entry.moduleName, entry.prefix), entry]))
+    this.storageEntries = new Map(
+      storageEntries.map((entry: SubstrateStorageEntry) => [this.createMapKey(entry.moduleName, entry.prefix), entry])
+    )
     this.calls = new Map(calls.map((call: SubstrateCall) => [this.createMapKey(call.moduleName, call.name), call]))
-    this.constants = new Map(constants.map((constant: SubstrateConstant) => [this.createMapKey(constant.moduleName, constant.name), constant]))
+    this.constants = new Map(
+      constants.map((constant: SubstrateConstant) => [this.createMapKey(constant.moduleName, constant.name), constant])
+    )
   }
 
   public storageEntry(moduleName: string, entryName: string): SubstrateStorageEntry | undefined {

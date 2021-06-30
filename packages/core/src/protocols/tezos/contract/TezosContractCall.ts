@@ -3,11 +3,7 @@ import { MichelsonType } from '../types/michelson/MichelsonType'
 import { TezosTransactionParameters } from '../types/operations/Transaction'
 
 export class TezosContractCall {
-  constructor(
-    readonly entrypoint: string,
-    readonly michelsonValue: MichelsonType | undefined,
-    readonly amount?: BigNumber
-  ) {}
+  constructor(readonly entrypoint: string, readonly michelsonValue: MichelsonType | undefined, readonly amount?: BigNumber) {}
 
   public args(): any | undefined {
     return this.michelsonValue?.asRawValue()

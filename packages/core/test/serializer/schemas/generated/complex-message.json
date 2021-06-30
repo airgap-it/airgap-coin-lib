@@ -273,20 +273,18 @@
                   "additionalProperties": false,
                   "properties": {
                     "arr1": {
-                      "items": [
-                        {
-                          "additionalProperties": false,
-                          "properties": {
-                            "name": {
-                              "type": "string"
-                            }
-                          },
-                          "required": [
-                            "name"
-                          ],
-                          "type": "object"
-                        }
-                      ],
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "name"
+                        ],
+                        "type": "object"
+                      },
                       "maxItems": 1,
                       "minItems": 1,
                       "type": "array"

@@ -1,6 +1,6 @@
 {
   "name": "@airgap/coinlib-core",
-  "version": "0.11.4",
+  "version": "0.11.5-beta.2",
   "description": "The @airgap/coinlib-core is a protocol agnostic library to prepare, sign and broadcast cryptocurrency transactions.",
   "keywords": [
     "airgap",
@@ -41,8 +41,10 @@
     "@airgap/sapling-wasm": "0.0.5",
     "@polkadot/util": "2.0.1",
     "@polkadot/wasm-crypto": "0.20.1",
-    "idna-uts46-hx": "^3.3.1",
-    "libsodium-wrappers": "0.7.6"
+    "cbor-sync": "^1.0.4",
+    "idna-uts46-hx": "3.4.0",
+    "libsodium-wrappers": "0.7.6",
+    "pako": "2.0.3"
   },
   "localDependencies": {
     "@taquito/local-forging": "8.0.1-beta.1",

@@ -87,6 +87,7 @@ export class Serializer {
         return `${schemaId}-${SubProtocolSymbols.ETH_ERC20}`
       }
     }
+
     return protocol ? `${schemaId}-${protocol}` : schemaId.toString()
   }
 

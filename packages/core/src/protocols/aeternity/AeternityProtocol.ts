@@ -1,4 +1,3 @@
-import { AeternityTransactionResult, AeternityTransactionCursor } from './AeternityTypes'
 import * as sodium from 'libsodium-wrappers'
 
 import axios, { AxiosError } from '../../dependencies/src/axios-0.19.0/index'
@@ -17,12 +16,13 @@ import { padStart } from '../../utils/padStart'
 import { MainProtocolSymbols, ProtocolSymbols } from '../../utils/ProtocolSymbols'
 import { EthereumUtils } from '../ethereum/utils/utils'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
+import { ICoinSubProtocol } from '../ICoinSubProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
 
+import { AeternityTransactionCursor, AeternityTransactionResult } from './AeternityTypes'
 import { AeternityAddress } from './AeternityAddress'
 import { AeternityCryptoClient } from './AeternityCryptoClient'
 import { AeternityProtocolOptions } from './AeternityProtocolOptions'
-import { ICoinSubProtocol } from '../ICoinSubProtocol'
 import { BalanceError, InvalidValueError, NetworkError } from '../../errors'
 import { Domain } from '../../errors/coinlib-error'
 
@@ -177,6 +177,7 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
 
       return airGapTx
     })
+
     return { transactions, cursor: { page: cursor ? cursor.page + 1 : 2 } }
   }
 

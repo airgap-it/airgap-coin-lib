@@ -7,9 +7,9 @@ import { TezosSaplingCiphertext } from '../../types/sapling/TezosSaplingCipherte
 import { TezosSaplingInput } from '../../types/sapling/TezosSaplingInput'
 import { TezosSaplingOutput } from '../../types/sapling/TezosSaplingOutput'
 import { TezosSaplingStateTree } from '../../types/sapling/TezosSaplingStateTree'
-import { 
-  TezosSaplingOutputDescription, 
-  TezosSaplingSpendDescription, 
+import {
+  TezosSaplingOutputDescription,
+  TezosSaplingSpendDescription,
   TezosSaplingTransaction
 } from '../../types/sapling/TezosSaplingTransaction'
 import { TezosSaplingAddress } from '../TezosSaplingAddress'

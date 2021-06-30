@@ -4,7 +4,11 @@ import { SCALEDecoder, SCALEDecodeResult } from '../scale/SCALEDecoder'
 import { SCALEInt } from '../scale/type/SCALEInt'
 
 class SubstrateAccountData {
-  public static decode(network: SubstrateNetwork, runtimeVersion: number | undefined, raw: string): SCALEDecodeResult<SubstrateAccountData> {
+  public static decode(
+    network: SubstrateNetwork,
+    runtimeVersion: number | undefined,
+    raw: string
+  ): SCALEDecodeResult<SubstrateAccountData> {
     const decoder = new SCALEDecoder(network, runtimeVersion, raw)
 
     const free = decoder.decodeNextInt(128)
@@ -18,14 +22,14 @@ class SubstrateAccountData {
     }
   }
 
-  private constructor(readonly free: SCALEInt, readonly reserved: SCALEInt, readonly miscFrozen: SCALEInt, readonly feeFrozen: SCALEInt) { }
+  private constructor(readonly free: SCALEInt, readonly reserved: SCALEInt, readonly miscFrozen: SCALEInt, readonly feeFrozen: SCALEInt) {}
 }
 
 export class SubstrateAccountInfo {
   public static decode(network: SubstrateNetwork, runtimeVersion: number | undefined, raw: string): SubstrateAccountInfo {
     const decoder = new SCALEDecoder(network, runtimeVersion, raw)
 
-    const lengths = this.migrateFieldLengths(network, runtimeVersion);
+    const lengths = this.migrateFieldLengths(network, runtimeVersion)
 
     const nonce = decoder.decodeNextInt(32)
     const consumers = decoder.decodeNextInt(lengths.consumers)
@@ -37,7 +41,7 @@ export class SubstrateAccountInfo {
   }
 
   private static migrateFieldLengths(
-    network: SubstrateNetwork, 
+    network: SubstrateNetwork,
     runtimeVersion: number | undefined
   ): { consumers: number; providers: number; sufficients: number } {
     if (runtimeVersion === undefined) {
@@ -72,5 +76,5 @@ export class SubstrateAccountInfo {
     readonly providers: SCALEInt,
     readonly sufficients: SCALEInt,
     readonly data: SubstrateAccountData
-  ) { }
+  ) {}
 }

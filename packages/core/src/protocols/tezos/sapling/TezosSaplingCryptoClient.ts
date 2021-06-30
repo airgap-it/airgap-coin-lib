@@ -111,11 +111,9 @@ export class TezosSaplingCryptoClient extends Ed25519CryptoClient {
       throw new Error('Not enough data has been provided to decrypt the ciphertext')
     }
 
-    const decrypted: Buffer = Buffer.from(sodium.crypto_secretbox_open_easy(
-      Buffer.from(ciphertext.payload_enc, 'hex'),
-      Buffer.from(ciphertext.nonce_enc, 'hex'),
-      symKey
-    ))
+    const decrypted: Buffer = Buffer.from(
+      sodium.crypto_secretbox_open_easy(Buffer.from(ciphertext.payload_enc, 'hex'), Buffer.from(ciphertext.nonce_enc, 'hex'), symKey)
+    )
 
     const diversifier: Buffer = decrypted.slice(0, 11)
     const amount: BigNumber = new BigNumber(decrypted.slice(11, 19).toString('hex'), 16)
@@ -132,9 +130,9 @@ export class TezosSaplingCryptoClient extends Ed25519CryptoClient {
   }
 
   public async decryptCiphertextOut(
-    viewingKey: Buffer | string, 
+    viewingKey: Buffer | string,
     ciphertext: TezosSaplingCiphertext,
-    commitment: Buffer | string,
+    commitment: Buffer | string
   ): Promise<PayloadOut> {
     await sodium.ready
 
@@ -147,11 +145,9 @@ export class TezosSaplingCryptoClient extends Ed25519CryptoClient {
       key: Buffer.from(this.ockKey)
     })
 
-    const decrypted: Buffer = Buffer.from(sodium.crypto_secretbox_open_easy(
-      Buffer.from(ciphertext.payload_out, 'hex'),
-      Buffer.from(ciphertext.nonce_out, 'hex'),
-      ock
-    ))
+    const decrypted: Buffer = Buffer.from(
+      sodium.crypto_secretbox_open_easy(Buffer.from(ciphertext.payload_out, 'hex'), Buffer.from(ciphertext.nonce_out, 'hex'), ock)
+    )
 
     const pkd: Buffer = decrypted.slice(0, 32)
     const esk: Buffer = decrypted.slice(32)

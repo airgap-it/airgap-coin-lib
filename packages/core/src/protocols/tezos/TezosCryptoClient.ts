@@ -1,7 +1,7 @@
 import * as sodium from 'libsodium-wrappers'
 
-import * as bs58check from '../../dependencies/src/bs58check-2.1.2'
 import * as bs58 from '../../dependencies/src/bs58-4.0.1'
+import * as bs58check from '../../dependencies/src/bs58check-2.1.2'
 import { Ed25519CryptoClient } from '../Ed25519CryptoClient'
 import { InvalidValueError } from '../../errors'
 import { Domain } from '../../errors/coinlib-error'
@@ -73,6 +73,7 @@ export class TezosCryptoClient extends Ed25519CryptoClient {
   public async blake2bLedgerHash(message: string): Promise<string> {
     const buffer = await this.toBuffer(message)
     const hash = await this.hash(buffer)
+
     return bs58.encode(Buffer.from(hash))
   }
 }

@@ -1,7 +1,7 @@
 import * as groestlcoinJSMessage from '../../dependencies/src/groestlcoinjs-message-2.1.0/index'
 import { MainProtocolSymbols, ProtocolSymbols } from '../../utils/ProtocolSymbols'
-import { BitcoinProtocol } from '../bitcoin/BitcoinProtocol'
 import { BitcoinCryptoClient } from '../bitcoin/BitcoinCryptoClient'
+import { BitcoinProtocol } from '../bitcoin/BitcoinProtocol'
 import { CurrencyUnit, FeeDefaults } from '../ICoinProtocol'
 
 import { GroestlcoinProtocolOptions } from './GroestlcoinProtocolOptions'

@@ -6,9 +6,9 @@ const MockAdapter = require('axios-mock-adapter')
 const mock = new MockAdapter(Axios)
 
 mock.onAny().replyOnce((config) => {
-    console.log('UNMOCKED URL, RETURNING ERROR 500', config.url)
+  console.log('UNMOCKED URL, RETURNING ERROR 500', config.url)
 
-    return [500, {}]
+  return [500, {}]
 })
 
 // mock.onAny().passThrough()

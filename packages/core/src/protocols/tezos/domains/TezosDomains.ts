@@ -31,10 +31,10 @@ export class TezosDomains {
 
   constructor(network: TezosProtocolNetwork, contractAddress: string) {
     this.contract = new TezosContract(
-      contractAddress, 
-      network.rpcUrl, 
-      network.extras.conseilUrl, 
-      network.extras.conseilNetwork, 
+      contractAddress,
+      network.rpcUrl,
+      network.extras.conseilUrl,
+      network.extras.conseilNetwork,
       network.extras.conseilApiKey
     )
     this.cache = new Cache(CACHE_DEFAULT_EXPIRATION_TIME)
@@ -42,33 +42,26 @@ export class TezosDomains {
 
   public async nameToAddress(name: string): Promise<string | undefined> {
     const cacheKey: string = this.nameCacheKey(name)
-    const record: TezosDomainsRecord | undefined = await this.cache.get<TezosDomainsRecord | undefined>(cacheKey)
-      .catch(() => {
-        return this.cache.save(
-          cacheKey, 
-          this.resolveName(name), 
-          { 
-            cacheValue: true, 
-            validate: (record: TezosDomainsRecord | undefined) => record !== undefined && !this.checkIfExpired(record) 
-          }
-        )
+    const record: TezosDomainsRecord | undefined = await this.cache.get<TezosDomainsRecord | undefined>(cacheKey).catch(() => {
+      return this.cache.save(cacheKey, this.resolveName(name), {
+        cacheValue: true,
+        validate: (record: TezosDomainsRecord | undefined) => record !== undefined && !this.checkIfExpired(record)
       })
+    })
 
     return record?.address
   }
 
   public async addressToName(address: string): Promise<string | undefined> {
     const cacheKey: string = this.addressCacheKey(address)
-    const reverseRecord: TezosDomainsReverseRecord | undefined = await this.cache.get<TezosDomainsReverseRecord | undefined>(cacheKey)
+    const reverseRecord: TezosDomainsReverseRecord | undefined = await this.cache
+      .get<TezosDomainsReverseRecord | undefined>(cacheKey)
       .catch(() => {
-        return this.cache.save(
-          cacheKey, 
-          this.resolveAddress(address), 
-          { 
-            cacheValue: true,
-            validate: (reverseRecord: TezosDomainsReverseRecord | undefined) => reverseRecord !== undefined && !this.checkIfExpired(reverseRecord)
-          }
-        )
+        return this.cache.save(cacheKey, this.resolveAddress(address), {
+          cacheValue: true,
+          validate: (reverseRecord: TezosDomainsReverseRecord | undefined) =>
+            reverseRecord !== undefined && !this.checkIfExpired(reverseRecord)
+        })
       })
 
     return reverseRecord?.name
@@ -84,7 +77,7 @@ export class TezosDomains {
       // The domain is invalid
       return undefined
     }
-    
+
     const records: BigMapResponse[] = await this.contract.bigMapValues({
       bigMapID: this.bigMapIDs?.records,
       predicates: [
@@ -181,52 +174,61 @@ export class TezosDomains {
     }
 
     if (this.bigMapIDsPromise === undefined) {
-      this.bigMapIDsPromise = this.contract.storage()
+      this.bigMapIDsPromise = this.contract
+        .storage()
         .then((storage) => {
           const parsed = MichelsonPair.from(
             storage,
             undefined,
-            (value1: unknown) => MichelsonPair.from(
-              value1,
-              undefined,
-              (value2: unknown) => MichelsonInt.from(value2, 'actions'),
-              (value2: unknown) => MichelsonPair.from(
-                value2,
-                "store",
-                (value3: unknown) => MichelsonPair.from(
-                  value3,
-                  undefined,
-                  (value4: unknown) => MichelsonPair.from(
-                    value4,
-                    undefined,
-                    (value5: unknown) => MichelsonInt.from(value5, 'data'),
-                    (value5: unknown) => MichelsonInt.from(value5, 'expiryMap')
-                  ),
-                  (value4: unknown) => MichelsonPair.from(
-                    value4,
-                    undefined,
-                    (value5: unknown) => MichelsonInt.from(value5, 'metadata'),
-                    (value5: unknown) => MichelsonInt.from(value5, 'nextTzip12TokenId')
+            (value1: unknown) =>
+              MichelsonPair.from(
+                value1,
+                undefined,
+                (value2: unknown) => MichelsonInt.from(value2, 'actions'),
+                (value2: unknown) =>
+                  MichelsonPair.from(
+                    value2,
+                    'store',
+                    (value3: unknown) =>
+                      MichelsonPair.from(
+                        value3,
+                        undefined,
+                        (value4: unknown) =>
+                          MichelsonPair.from(
+                            value4,
+                            undefined,
+                            (value5: unknown) => MichelsonInt.from(value5, 'data'),
+                            (value5: unknown) => MichelsonInt.from(value5, 'expiryMap')
+                          ),
+                        (value4: unknown) =>
+                          MichelsonPair.from(
+                            value4,
+                            undefined,
+                            (value5: unknown) => MichelsonInt.from(value5, 'metadata'),
+                            (value5: unknown) => MichelsonInt.from(value5, 'nextTzip12TokenId')
+                          )
+                      ),
+                    (value3: unknown) =>
+                      MichelsonPair.from(
+                        value3,
+                        undefined,
+                        (value4: unknown) =>
+                          MichelsonPair.from(
+                            value4,
+                            undefined,
+                            (value5: unknown) => MichelsonAddress.from(value5, 'owner'),
+                            (value5: unknown) => MichelsonInt.from(value5, 'records')
+                          ),
+                        (value4: unknown) =>
+                          MichelsonPair.from(
+                            value4,
+                            undefined,
+                            (value5: unknown) => MichelsonInt.from(value5, 'reverseRecords'),
+                            (value5: unknown) => MichelsonInt.from(value5, 'tzip12Tokens')
+                          )
+                      )
                   )
-                ),
-                (value3: unknown) => MichelsonPair.from(
-                  value3,
-                  undefined,
-                  (value4: unknown) => MichelsonPair.from(
-                    value4,
-                    undefined,
-                    (value5: unknown) => MichelsonAddress.from(value5, 'owner'),
-                    (value5: unknown) => MichelsonInt.from(value5, 'records')
-                  ),
-                  (value4: unknown) => MichelsonPair.from(
-                    value4,
-                    undefined,
-                    (value5: unknown) => MichelsonInt.from(value5, 'reverseRecords'),
-                    (value5: unknown) => MichelsonInt.from(value5, 'tzip12Tokens'),
-                  )
-                )
-              )
-            ),
+              ),
             (value1: unknown) => MichelsonList.from(value1, MichelsonAddress.from, 'trustedSenders')
           ).asRawValue()
 
@@ -253,40 +255,45 @@ export class TezosDomains {
   }
 
   private checkIfExpired(record: TezosDomainsRecord | TezosDomainsReverseRecord): boolean {
-    return record.expiryTimestamp === undefined || record.expiryTimestamp <= (new Date().getTime() / 1000)
+    return record.expiryTimestamp === undefined || record.expiryTimestamp <= new Date().getTime() / 1000
   }
 
   private parseRecord(record: BigMapResponse): TezosDomainsRecord {
     const parsed = MichelsonPair.from(
-      record.value, 
+      record.value,
       undefined,
-      (value1: unknown) => MichelsonPair.from(
-        value1, 
-        undefined,
-        (value2: unknown) => MichelsonPair.from(
-          value2,
+      (value1: unknown) =>
+        MichelsonPair.from(
+          value1,
           undefined,
-          (value3: unknown) => MichelsonOption.from(value3, MichelsonAddress.from, 'address'),
-          (value3: unknown) => MichelsonString.from(value3, 'data') /* ignoring unused map */
+          (value2: unknown) =>
+            MichelsonPair.from(
+              value2,
+              undefined,
+              (value3: unknown) => MichelsonOption.from(value3, MichelsonAddress.from, 'address'),
+              (value3: unknown) => MichelsonString.from(value3, 'data') /* ignoring unused map */
+            ),
+          (value2: unknown) =>
+            MichelsonPair.from(
+              value2,
+              undefined,
+              (value3: unknown) => MichelsonOption.from(value3, MichelsonBytes.from, 'expiryKey'),
+              (value3: unknown) => MichelsonString.from(value3, 'internalData') /* ignoring unused map */
+            )
         ),
-        (value2: unknown) => MichelsonPair.from(
-          value2,
+      (value1: unknown) =>
+        MichelsonPair.from(
+          value1,
           undefined,
-          (value3: unknown) => MichelsonOption.from(value3, MichelsonBytes.from, 'expiryKey'),
-          (value3: unknown) => MichelsonString.from(value3, 'internalData') /* ignoring unused map */
+          (value2: unknown) =>
+            MichelsonPair.from(
+              value2,
+              undefined,
+              (value3: unknown) => MichelsonInt.from(value3, 'level'),
+              (value3: unknown) => MichelsonAddress.from(value3, 'owner')
+            ),
+          (value2: unknown) => MichelsonOption.from(value2, MichelsonInt.from, 'tokenId')
         )
-      ),
-      (value1: unknown) => MichelsonPair.from(
-        value1,
-        undefined,
-        (value2: unknown) => MichelsonPair.from(
-          value2,
-          undefined,
-          (value3: unknown) => MichelsonInt.from(value3, 'level'),
-          (value3: unknown) => MichelsonAddress.from(value3, 'owner') 
-        ),
-        (value2: unknown) => MichelsonOption.from(value2, MichelsonInt.from, 'tokenId')
-      )
     ).asRawValue()
 
     if (Array.isArray(parsed)) {
@@ -306,12 +313,13 @@ export class TezosDomains {
     const parsed = MichelsonPair.from(
       reverseRecord.value,
       undefined,
-      (value1: unknown) => MichelsonPair.from(
-        value1,
-        undefined,
-        (value2: unknown) => MichelsonString.from(value2, 'internalData') /* ignoring unused map */,
-        (value2: unknown) => MichelsonOption.from(value2, MichelsonBytes.from, 'name')
-      ),
+      (value1: unknown) =>
+        MichelsonPair.from(
+          value1,
+          undefined,
+          (value2: unknown) => MichelsonString.from(value2, 'internalData') /* ignoring unused map */,
+          (value2: unknown) => MichelsonOption.from(value2, MichelsonBytes.from, 'name')
+        ),
       (value1: unknown) => MichelsonAddress.from(value1, 'owner')
     ).asRawValue()
 
@@ -328,9 +336,7 @@ export class TezosDomains {
   private parseExpiryTimestamp(expiryKey: BigMapResponse): number | undefined {
     const timestamp = expiryKey.value !== null ? parseInt(expiryKey.value) : undefined
 
-    return timestamp !== undefined && !isNaN(timestamp) 
-      ? timestamp * 1000 /* value returned by the query is in seconds */
-      : undefined
+    return timestamp !== undefined && !isNaN(timestamp) ? timestamp * 1000 /* value returned by the query is in seconds */ : undefined
   }
 
   private nameCacheKey(name: string): string {

@@ -1,5 +1,3 @@
-import { BitcoinBlockbookTransactionCursor, BitcoinBlockbookTransactionResult } from './BitcoinTypes'
-
 import axios, { AxiosError } from '../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
@@ -9,13 +7,14 @@ import { AirGapTransactionStatus, IAirGapTransaction } from '../../interfaces/IA
 import { SignedBitcoinTransaction } from '../../serializer/schemas/definitions/signed-transaction-bitcoin'
 import { UnsignedTransaction } from '../../serializer/schemas/definitions/unsigned-transaction'
 import { RawBitcoinTransaction } from '../../serializer/types'
-import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
 import { MainProtocolSymbols, ProtocolSymbols } from '../../utils/ProtocolSymbols'
+import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
+import { ICoinSubProtocol } from '../ICoinSubProtocol'
 
+import { BitcoinBlockbookTransactionCursor, BitcoinBlockbookTransactionResult } from './BitcoinTypes'
 import { BitcoinAddress } from './BitcoinAddress'
 import { BitcoinProtocolOptions } from './BitcoinProtocolOptions'
 import { BitcoinCryptoClient } from './BitcoinCryptoClient'
-import { ICoinSubProtocol } from '../ICoinSubProtocol'
 import { BalanceError, InvalidValueError, ConditionViolationError, NetworkError } from '../../errors'
 import { Domain } from '../../errors/coinlib-error'
 
@@ -484,7 +483,7 @@ export class BitcoinProtocol implements ICoinProtocol {
       const result = path
         .split('/')
         .slice(-2)
-        .map((item) => parseInt(item))
+        .map((item) => parseInt(item, 10))
         .filter((item) => !isNaN(item))
 
       if (result.length !== 2) {

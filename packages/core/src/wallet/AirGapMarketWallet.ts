@@ -1,11 +1,11 @@
 import BigNumber from '../dependencies/src/bignumber.js-9.0.0/bignumber'
-import { IAirGapTransaction, IProtocolTransactionCursor, IAirGapTransactionResult } from '../interfaces/IAirGapTransaction'
+import { IAirGapTransaction, IAirGapTransactionResult, IProtocolTransactionCursor } from '../interfaces/IAirGapTransaction'
 import { FeeDefaults, ICoinProtocol } from '../protocols/ICoinProtocol'
 import { TezosSaplingProtocol } from '../protocols/tezos/sapling/TezosSaplingProtocol'
 import { NetworkType } from '../utils/ProtocolNetwork'
 import { MainProtocolSymbols } from '../utils/ProtocolSymbols'
 
-import { AirGapWallet } from './AirGapWallet'
+import { AirGapWallet, AirGapWalletStatus } from './AirGapWallet'
 
 export enum TimeInterval {
   HOURS = '24h',
@@ -36,10 +36,12 @@ export class AirGapMarketWallet extends AirGapWallet {
     public publicKey: string,
     public isExtendedPublicKey: boolean,
     public derivationPath: string,
+    public masterFingerprint: string,
+    public status: AirGapWalletStatus,
     public priceService: AirGapWalletPriceService,
     public addressIndex?: number
   ) {
-    super(protocol, publicKey, isExtendedPublicKey, derivationPath, addressIndex)
+    super(protocol, publicKey, isExtendedPublicKey, derivationPath, masterFingerprint, status, addressIndex)
   }
 
   public async synchronize(): Promise<void> {
@@ -58,6 +60,7 @@ export class AirGapMarketWallet extends AirGapWallet {
           })
       })
     }
+
     return this.synchronizePromise
   }
 
@@ -76,6 +79,7 @@ export class AirGapMarketWallet extends AirGapWallet {
 
   private addressesToCheck(): string[] {
     const addressesToReceive: string[] = this.addressIndex !== undefined ? [this.addresses[this.addressIndex]] : this.addresses
+
     return addressesToReceive
   }
 

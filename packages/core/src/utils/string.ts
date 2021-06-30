@@ -1,8 +1,11 @@
-export function extractGroups(str: string, options: {
-  groupStart: string
-  groupEnd: string
-  groupSeparator?: string
-}): string[] {
+export function extractGroups(
+  str: string,
+  options: {
+    groupStart: string
+    groupEnd: string
+    groupSeparator?: string
+  }
+): string[] {
   let start: number | undefined
   let depth: number = 0
 

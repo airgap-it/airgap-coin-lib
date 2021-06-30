@@ -8,11 +8,7 @@ import { SCALEString } from '../../../../scale/type/SCALEString'
 import { MetadataV13StorageEntry } from './MetadataV13StorageEntry'
 
 export class MetadataV13Storage extends SCALEClass {
-  public static decode(
-    network: SubstrateNetwork, 
-    runtimeVersion: number | undefined, 
-    raw: string
-  ): SCALEDecodeResult<MetadataV13Storage> {
+  public static decode(network: SubstrateNetwork, runtimeVersion: number | undefined, raw: string): SCALEDecodeResult<MetadataV13Storage> {
     const decoder = new SCALEDecoder(network, runtimeVersion, stripHexPrefix(raw))
 
     const prefix = decoder.decodeNextString()

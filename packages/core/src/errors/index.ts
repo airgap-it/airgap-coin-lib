@@ -8,6 +8,7 @@ export enum SerializerErrorType {
   TYPE_NOT_SUPPORTED = 'TYPE_NOT_SUPPORTED',
   INVALID_SCHEMA = 'INVALID_SCHEMA',
   INVALID_SCHEMA_TYPE = 'INVALID_SCHEMA_TYPE',
+  INVALID_PAYLOAD = 'INVALID_PAYLOAD',
   INVALID_HEX_STRING = 'INVALID_HEX_STRING',
   INVALID_STRING = 'INVALID_STRING',
   SCHEMA_ALREADY_EXISTS = 'SCHEMA_ALREADY_EXISTS',
@@ -185,6 +186,15 @@ export class InvalidSchema extends SerializerError {
 export class InvalidSchemaType extends SerializerError {
   constructor(description?: string) {
     super(SerializerErrorType.INVALID_SCHEMA_TYPE, description)
+  }
+}
+
+/**
+ * Gets thrown if the payload that is being decoded does not match the schema
+ */
+export class InvalidPayloadError extends SerializerError {
+  constructor(description?: string) {
+    super(SerializerErrorType.INVALID_PAYLOAD, description)
   }
 }
 

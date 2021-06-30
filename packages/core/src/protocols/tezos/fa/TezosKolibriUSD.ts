@@ -5,7 +5,7 @@ import { TezosFA12Protocol } from './TezosFA12Protocol'
 import { TezosFAProtocolOptions, TezosKolibriUSDProtocolConfig } from './TezosFAProtocolOptions'
 
 export class TezosKolibriUSD extends TezosFA12Protocol {
-  private static extractValueRegex = /}\s([0-9]+)$/
+  private static readonly extractValueRegex = /}\s([0-9]+)$/
 
   constructor(
     public readonly options: TezosFAProtocolOptions = new TezosFAProtocolOptions(
@@ -21,6 +21,7 @@ export class TezosKolibriUSD extends TezosFA12Protocol {
       bigMapID: 380
     }
     const values = await this.contract.bigMapValues(request)
+
     return values
       .map((value) => {
         try {
@@ -33,13 +34,13 @@ export class TezosKolibriUSD extends TezosFA12Protocol {
           }
           let amount = '0'
 
-          const match = TezosKolibriUSD.extractValueRegex.exec(value.value as string)
+          const match = TezosKolibriUSD.extractValueRegex.exec(value.value)
           if (match) {
             amount = match[1]
           }
 
           return {
-            address: address,
+            address,
             amount
           }
         } catch {

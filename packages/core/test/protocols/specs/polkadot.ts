@@ -1,5 +1,6 @@
 import { PolkadotProtocol } from '../../../src/protocols/substrate/implementations/PolkadotProtocol'
 import { SubstrateNetwork } from '../../../src/protocols/substrate/SubstrateNetwork'
+import { AirGapWalletStatus } from '../../../src/wallet/AirGapWallet'
 import { TestProtocolSpec } from '../implementations'
 import { PolkadotProtocolStub } from '../stubs/polkadot.stub'
 
@@ -34,7 +35,9 @@ export class PolkadotTestProtocolSpec extends TestProtocolSpec {
     privateKey:
       'd08bc6388fdeb30fc34a8e0286384bd5a84b838222bb9b012fc227d7473fc87aa2913d02297653ce859ccd6b2c057f7e57c9ef6cc359300a891c581fb6d03141',
     publicKey: '52e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10',
-    addresses: ['12sg1sXe71bazrBzAyEaF71puZbNJVaMZ92uBfMCfFNfSA9P']
+    addresses: ['12sg1sXe71bazrBzAyEaF71puZbNJVaMZ92uBfMCfFNfSA9P'],
+    masterFingerprint: 'f4e222fd',
+    status: AirGapWalletStatus.ACTIVE
   }
 
   public txs = [
@@ -71,16 +74,16 @@ export class PolkadotTestProtocolSpec extends TestProtocolSpec {
           'a903' + // payload length
           Buffer.from(
             '0400' + // moduleId + callId
-            '00' + // MultiAddress type
-            '52e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10' + // AccountId destination
-            '070010a5d4e8' + // value
-            '8503'+ // era
-            '04' + // nonce
-            '00' + // tip
-            '1e000000' + // specVersion
-            '01000000' + // transactionVersion
-            'd51522c9ef7ba4e0990f7a4527de79afcac992ab97abbbc36722f8a27189b170' + // genesis hash
-            '33a7a745849347ce3008c07268be63d8cefd3ef61de0c7318e88a577fb7d26a9' // block hash
+              '00' + // MultiAddress type
+              '52e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10' + // AccountId destination
+              '070010a5d4e8' + // value
+              '8503' + // era
+              '04' + // nonce
+              '00' + // tip
+              '1e000000' + // specVersion
+              '01000000' + // transactionVersion
+              'd51522c9ef7ba4e0990f7a4527de79afcac992ab97abbbc36722f8a27189b170' + // genesis hash
+              '33a7a745849347ce3008c07268be63d8cefd3ef61de0c7318e88a577fb7d26a9' // block hash
           ).toString('hex') // payload
       },
       signedTx:
@@ -108,19 +111,19 @@ export class PolkadotTestProtocolSpec extends TestProtocolSpec {
         '070010a5d4e8' + // value
         // payload
         'a903' + // payload length
-          Buffer.from(
-            '0400' + // moduleId + callId
+        Buffer.from(
+          '0400' + // moduleId + callId
             '00' + // MultiAddress type
             '52e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10' + // AccountId destination
             '070010a5d4e8' + // value
-            '8503'+ // era
+            '8503' + // era
             '04' + // nonce
             '00' + // tip
             '1e000000' + // specVersion
             '01000000' + // transactionVersion
             'd51522c9ef7ba4e0990f7a4527de79afcac992ab97abbbc36722f8a27189b170' + // genesis hash
             '33a7a745849347ce3008c07268be63d8cefd3ef61de0c7318e88a577fb7d26a9' // block hash
-          ).toString('hex') // payload
+        ).toString('hex') // payload
     }
   ]
 

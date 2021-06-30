@@ -360,7 +360,7 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
     return result.data
   }
 
-  private blockLevelFieldNameMap = new Map<'baking_rights' | 'endorsing_rights', string>()
+  private readonly blockLevelFieldNameMap = new Map<'baking_rights' | 'endorsing_rights', string>()
   private fetchBlockLevelFieldPromise?: Promise<string>
 
   private async fetchBlockLevelFieldName(entity: 'baking_rights' | 'endorsing_rights'): Promise<string> {
@@ -384,6 +384,7 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
           name = 'level'
         }
         this.blockLevelFieldNameMap.set(entity, name)
+
         return name
       })
       .finally(() => {
@@ -541,6 +542,7 @@ export class TezosRewardsCalculationDefault implements TezosRewardsCalculations 
   private cycleToBlockLevel(cycle: number): number {
     const blockPerCycle =
       this.tezosNodeConstants.blocks_per_cycle ?? TezosProtocol.BLOCKS_PER_CYCLE[this.protocol.options.network.extras.network]
+
     return cycle * blockPerCycle + 1
   }
 }
