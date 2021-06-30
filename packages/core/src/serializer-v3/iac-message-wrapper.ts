@@ -1,6 +1,6 @@
-import { gzip, ungzip } from 'pako'
+import { gzip, ungzip } from '../dependencies/src/pako-2.0.3'
 
-const cbor = require('cbor-sync')
+import { encode, decode } from '../dependencies/src/cbor-sync-1.0.4/index'
 
 import * as bs58check from '../dependencies/src/bs58check-2.1.2/index'
 
@@ -28,7 +28,7 @@ export class IACMessageWrapper {
   public encoded(): string {
     const arr: IACMessageWrapperArrayEncoded = [this.version, this.payload.asArray()]
 
-    const buffer: Buffer = cbor.encode(arr)
+    const buffer: Buffer = encode(arr)
 
     console.log(buffer.toString('hex'))
 
@@ -48,7 +48,7 @@ export class IACMessageWrapper {
 
     const inflated: Uint8Array = ungzip(buffer)
 
-    const decoded: IACMessageWrapperArrayEncoded = cbor.decode(Buffer.from(inflated))
+    const decoded: IACMessageWrapperArrayEncoded = decode(Buffer.from(inflated))
 
     if (parseInt(decoded[0].toString(), 10) !== SERIALIZER_VERSION) {
       throw new Error('Unsupported version')
