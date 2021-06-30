@@ -1,4 +1,4 @@
-import { toUnicode } from 'idna-uts46-hx'
+import { toUnicode } from '../../../dependencies/src/idna-uts46-hx-3.4.0/uts46'
 import { TezosUtils } from '../../..'
 import { addHexPrefix, isHex, stripHexPrefix } from '../../../utils/hex'
 

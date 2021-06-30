@@ -5,10 +5,7 @@
     "version": "9.0.0",
     "repository": "MikeMcl/bignumber.js",
     "commitHash": "986fd70e514e58e86d43bc9944547d82658e47ae",
-    "files": [
-      "bignumber.js",
-      "bignumber.d.ts"
-    ]
+    "files": ["bignumber.js", "bignumber.d.ts"]
   },
   "validate.js-0.13.1": {
     "name": "validate.js",
@@ -16,10 +13,7 @@
     "version": "0.13.1",
     "repository": "ansman/validate.js",
     "commitHash": "40e06a1bafd2ce61dba37779ee77e796ad397b81",
-    "files": [
-      "validate.js",
-      "validate.d.ts"
-    ]
+    "files": ["validate.js", "validate.d.ts"]
   },
   "tweetnacl-1.0.1": {
     "name": "tweetnacl",
@@ -27,10 +21,7 @@
     "version": "1.0.1",
     "repository": "dchest/tweetnacl-js",
     "commitHash": "acab4d4883e7a0be0b230df7b42c0bbd25210d39",
-    "files": [
-      "nacl.js",
-      "nacl.d.ts"
-    ]
+    "files": ["nacl.js", "nacl.d.ts"]
   },
   "tweetnacl-auth-1.0.1": {
     "name": "tweetnacl-auth",
@@ -38,12 +29,8 @@
     "version": "1.0.1",
     "repository": "dchest/tweetnacl-auth-js",
     "commitHash": "f7e7b60a017880a1e7c5e1cf68f422a4c6005cf9",
-    "files": [
-      "nacl-auth.js"
-    ],
-    "deps": [
-      "tweetnacl-1.0.1"
-    ]
+    "files": ["nacl-auth.js"],
+    "deps": ["tweetnacl-1.0.1"]
   },
   "bip32-path-0.4.2": {
     "name": "bip32-path",
@@ -51,9 +38,7 @@
     "version": "0.4.2",
     "repository": "axic/bip32-path",
     "commitHash": "d6d14bf9a848c9c28e23a8d68ad0e1bb3432c03c",
-    "files": [
-      "index.js"
-    ]
+    "files": ["index.js"]
   },
   "hd-wallet-js-b216450e56954a6e82ace0aade9474673de5d9d5": {
     "name": "hd-wallet-js",
@@ -61,24 +46,11 @@
     "version": "b216450e56954a6e82ace0aade9474673de5d9d5",
     "repository": "airgap-it/hd-wallet-js",
     "commitHash": "b216450e56954a6e82ace0aade9474673de5d9d5",
-    "files": [
-      "src/hd-key.js",
-      "src/hd-wallet.js",
-      "src/index.js"
-    ],
+    "files": ["src/hd-key.js", "src/hd-wallet.js", "src/index.js"],
     "renameFiles": [
-      [
-        "src/hd-key.js",
-        "src/hd-key.ts"
-      ],
-      [
-        "src/hd-wallet.js",
-        "src/hd-wallet.ts"
-      ],
-      [
-        "src/index.js",
-        "src/index.ts"
-      ]
+      ["src/hd-key.js", "src/hd-key.ts"],
+      ["src/hd-wallet.js", "src/hd-wallet.ts"],
+      ["src/index.js", "src/index.ts"]
     ],
     "replaceInFiles": [
       {
@@ -123,11 +95,7 @@
         ]
       }
     ],
-    "deps": [
-      "tweetnacl-1.0.1",
-      "tweetnacl-auth-1.0.1",
-      "bip32-path-0.4.2"
-    ],
+    "deps": ["tweetnacl-1.0.1", "tweetnacl-auth-1.0.1", "bip32-path-0.4.2"],
     "ignoredDeps": [
       {
         "module": "@babel/runtime",
@@ -145,9 +113,7 @@
     "version": "0.5.0",
     "repository": "ExodusMovement/cryptocompare",
     "commitHash": "7dbaf1eea531751dbf8b8f2cab339cc747904fab",
-    "files": [
-      "index.js"
-    ]
+    "files": ["index.js"]
   },
   "axios-0.19.0": {
     "name": "axios",
@@ -186,10 +152,7 @@
       "lib/helpers/parseHeaders.js",
       "lib/helpers/spread.js"
     ],
-    "deps": [
-      "follow-redirects-1.5.10",
-      "is-buffer-2.0.3"
-    ]
+    "deps": ["follow-redirects-1.5.10", "is-buffer-2.0.3"]
   },
   "is-buffer-2.0.3": {
     "name": "is-buffer",
@@ -197,9 +160,7 @@
     "version": "2.0.3",
     "repository": "feross/is-buffer",
     "commitHash": "e05c7852e1a978b81c7eb6d677c861a7dc935ead",
-    "files": [
-      "index.js"
-    ]
+    "files": ["index.js"]
   },
   "follow-redirects-1.5.10": {
     "name": "follow-redirects",
@@ -207,14 +168,8 @@
     "version": "1.5.10",
     "repository": "follow-redirects/follow-redirects",
     "commitHash": "91842752013b26ed780f7b04e557c72f02228cde",
-    "files": [
-      "index.js",
-      "http.js",
-      "https.js"
-    ],
-    "deps": [
-      "debug-3.1.0"
-    ]
+    "files": ["index.js", "http.js", "https.js"],
+    "deps": ["debug-3.1.0"]
   },
   "debug-3.1.0": {
     "name": "debug",
@@ -222,13 +177,8 @@
     "version": "3.1.0",
     "repository": "visionmedia/debug",
     "commitHash": "f073e056f33efdd5b311381eb6bca2bc850745bf",
-    "files": [
-      "src/browser.js",
-      "src/debug.js"
-    ],
-    "deps": [
-      "ms-2.1.2"
-    ]
+    "files": ["src/browser.js", "src/debug.js"],
+    "deps": ["ms-2.1.2"]
   },
   "ms-2.1.2": {
     "name": "ms",
@@ -236,9 +186,7 @@
     "version": "2.1.2",
     "repository": "zeit/ms",
     "commitHash": "7920885eb232fbe7a5efdab956d3e7c507c92ddf",
-    "files": [
-      "index.js"
-    ]
+    "files": ["index.js"]
   },
   "create-hash-1.2.0": {
     "name": "create-hash",
@@ -246,18 +194,8 @@
     "version": "1.2.0",
     "repository": "crypto-browserify/createHash",
     "commitHash": "469f2a62f4010d8df777b0009f05d504b6c4cd27",
-    "files": [
-      "browser.js",
-      "index.js",
-      "md5.js"
-    ],
-    "deps": [
-      "cipher-base-1.0.4",
-      "inherits-2.0.4",
-      "ripemd160-2.0.2",
-      "sha.js-2.4.11",
-      "md5.js-1.3.5"
-    ]
+    "files": ["browser.js", "index.js", "md5.js"],
+    "deps": ["cipher-base-1.0.4", "inherits-2.0.4", "ripemd160-2.0.2", "sha.js-2.4.11", "md5.js-1.3.5"]
   },
   "cipher-base-1.0.4": {
     "name": "cipher-base",
@@ -265,13 +203,8 @@
     "version": "1.0.4",
     "repository": "crypto-browserify/cipher-base",
     "commitHash": "bc18dc847050c34f11f7a0472ff13a76b53fedc6",
-    "files": [
-      "index.js"
-    ],
-    "deps": [
-      "safe-buffer-5.2.0",
-      "inherits-2.0.4"
-    ]
+    "files": ["index.js"],
+    "deps": ["safe-buffer-5.2.0", "inherits-2.0.4"]
   },
   "safe-buffer-5.2.0": {
     "name": "safe-buffer",
@@ -279,12 +212,8 @@
     "version": "5.2.0",
     "repository": "feross/safe-buffer",
     "commitHash": "ae53d5b9f06eae8540ca948d14e43ca32692dd8c",
-    "files": [
-      "index.js"
-    ],
-    "TODO": [
-      "index.d.ts"
-    ]
+    "files": ["index.js"],
+    "TODO": ["index.d.ts"]
   },
   "inherits-2.0.4": {
     "name": "inherits",
@@ -292,10 +221,7 @@
     "version": "2.0.4",
     "repository": "isaacs/inherits",
     "commitHash": "9a2c29400c6d491e0b7beefe0c32efa3b462545d",
-    "files": [
-      "inherits.js",
-      "inherits_browser.js"
-    ]
+    "files": ["inherits.js", "inherits_browser.js"]
   },
   "md5.js-1.3.5": {
     "name": "md5.js",
@@ -303,14 +229,8 @@
     "version": "1.3.5",
     "repository": "crypto-browserify/md5.js",
     "commitHash": "48df1d6b8c4af2cf52638092d590c528420c61ed",
-    "files": [
-      "index.js"
-    ],
-    "deps": [
-      "hash-base-3.0.4",
-      "inherits-2.0.4",
-      "safe-buffer-5.2.0"
-    ]
+    "files": ["index.js"],
+    "deps": ["hash-base-3.0.4", "inherits-2.0.4", "safe-buffer-5.2.0"]
   },
   "hash-base-3.0.4": {
     "name": "hash-base",
@@ -318,13 +238,8 @@
     "version": "3.0.4",
     "repository": "crypto-browserify/hash-base",
     "commitHash": "d36440ed0448a654734ae05464d55d34b189a17a",
-    "files": [
-      "index.js"
-    ],
-    "deps": [
-      "inherits-2.0.4",
-      "safe-buffer-5.2.0"
-    ]
+    "files": ["index.js"],
+    "deps": ["inherits-2.0.4", "safe-buffer-5.2.0"]
   },
   "ripemd160-2.0.2": {
     "name": "ripemd160",
@@ -332,13 +247,8 @@
     "version": "2.0.2",
     "repository": "crypto-browserify/ripemd160",
     "commitHash": "3419c6409799d37e0323a556c94d040154657d9d",
-    "files": [
-      "index.js"
-    ],
-    "deps": [
-      "hash-base-3.0.4",
-      "inherits-2.0.4"
-    ]
+    "files": ["index.js"],
+    "deps": ["hash-base-3.0.4", "inherits-2.0.4"]
   },
   "sha.js-2.4.11": {
     "name": "sha.js",
@@ -346,20 +256,8 @@
     "version": "2.4.11",
     "repository": "crypto-browserify/sha.js",
     "commitHash": "105bfe57c69e13c83fcf7a6ca660dd984cb291bf",
-    "files": [
-      "index.js",
-      "hash.js",
-      "sha.js",
-      "sha1.js",
-      "sha224.js",
-      "sha256.js",
-      "sha384.js",
-      "sha512.js"
-    ],
-    "deps": [
-      "inherits-2.0.4",
-      "safe-buffer-5.2.0"
-    ]
+    "files": ["index.js", "hash.js", "sha.js", "sha1.js", "sha224.js", "sha256.js", "sha384.js", "sha512.js"],
+    "deps": ["inherits-2.0.4", "safe-buffer-5.2.0"]
   },
   "bip39-2.5.0": {
     "name": "bip39",
@@ -378,13 +276,7 @@
       "wordlists/chinese_traditional.json",
       "wordlists/chinese_simplified.json"
     ],
-    "deps": [
-      "safe-buffer-5.2.0",
-      "create-hash-1.2.0",
-      "unorm-1.6.0",
-      "pbkdf2-3.0.17",
-      "randombytes-2.1.0"
-    ]
+    "deps": ["safe-buffer-5.2.0", "create-hash-1.2.0", "unorm-1.6.0", "pbkdf2-3.0.17", "randombytes-2.1.0"]
   },
   "pbkdf2-3.0.17": {
     "name": "pbkdf2",
@@ -403,13 +295,7 @@
       "lib/sync-browser.js",
       "lib/sync.js"
     ],
-    "deps": [
-      "create-hash-1.2.0",
-      "create-hmac-1.1.4",
-      "ripemd160-2.0.2",
-      "safe-buffer-5.2.0",
-      "sha.js-2.4.11"
-    ],
+    "deps": ["create-hash-1.2.0", "create-hmac-1.1.4", "ripemd160-2.0.2", "safe-buffer-5.2.0", "sha.js-2.4.11"],
     "TODO": "Check if we need to use browser version"
   },
   "create-hmac-1.1.4": {
@@ -418,10 +304,7 @@
     "version": "1.1.4",
     "repository": "crypto-browserify/createHmac",
     "commitHash": "3c7dd3047b5ab3e3be44d802241d224f0c9e2325",
-    "files": [
-      "browser.js",
-      "index.js"
-    ],
+    "files": ["browser.js", "index.js"],
     "replaceInFiles": [
       {
         "filename": "browser.js",
@@ -434,10 +317,7 @@
         ]
       }
     ],
-    "deps": [
-      "create-hash-1.2.0",
-      "inherits-2.0.4"
-    ]
+    "deps": ["create-hash-1.2.0", "inherits-2.0.4"]
   },
   "create-hmac-1.1.7": {
     "name": "create-hmac",
@@ -445,18 +325,8 @@
     "version": "1.1.7",
     "repository": "crypto-browserify/createHmac",
     "commitHash": "f6e01bb8151fb53bfdccc3a6037c68e0b07127e5",
-    "files": [
-      "browser.js",
-      "legacy.js"
-    ],
-    "deps": [
-      "cipher-base-1.0.4",
-      "create-hash-1.2.0",
-      "inherits-2.0.4",
-      "ripemd160-2.0.2",
-      "safe-buffer-5.2.0",
-      "sha.js-2.4.11"
-    ],
+    "files": ["browser.js", "legacy.js"],
+    "deps": ["cipher-base-1.0.4", "create-hash-1.2.0", "inherits-2.0.4", "ripemd160-2.0.2", "safe-buffer-5.2.0", "sha.js-2.4.11"],
     "replaceInFiles": [
       {
         "filename": "browser.js",
@@ -476,13 +346,8 @@
     "version": "2.1.0",
     "repository": "crypto-browserify/randombytes",
     "commitHash": "f18ded32b209f0d4c637608a11ae042ae96b4c2e",
-    "files": [
-      "index.js",
-      "browser.js"
-    ],
-    "deps": [
-      "safe-buffer-5.2.0"
-    ]
+    "files": ["index.js", "browser.js"],
+    "deps": ["safe-buffer-5.2.0"]
   },
   "rlp-2.2.3": {
     "name": "rlp",
@@ -490,16 +355,9 @@
     "version": "2.2.3",
     "repository": "ethereumjs/rlp",
     "commitHash": "296857a1c1c20a93e1377d221dba0c782d7b65a4",
-    "files": [
-      "index.js"
-    ],
-    "deps": [
-      "safe-buffer-5.2.0",
-      "bn.js-4.11.8"
-    ],
-    "TODO": [
-      "index.d.ts"
-    ]
+    "files": ["index.js"],
+    "deps": ["safe-buffer-5.2.0", "bn.js-4.11.8"],
+    "TODO": ["index.d.ts"]
   },
   "utf8-3.0.0": {
     "name": "utf8",
@@ -507,9 +365,7 @@
     "version": "3.0.0",
     "repository": "mathiasbynens/utf8.js",
     "commitHash": "2ce09544b62f2a274dbcd249473c0986e3660849",
-    "files": [
-      "utf8.js"
-    ]
+    "files": ["utf8.js"]
   },
   "unorm-1.6.0": {
     "name": "unorm",
@@ -517,9 +373,7 @@
     "version": "1.6.0",
     "repository": "walling/unorm",
     "commitHash": "26c36c3ce6cd66d3c5bf7867736cb1f2b49fe6b1",
-    "files": [
-      "lib/unorm.js"
-    ]
+    "files": ["lib/unorm.js"]
   },
   "bn.js-4.11.8": {
     "name": "bn.js",
@@ -527,9 +381,7 @@
     "version": "4.11.8",
     "repository": "indutny/bn.js",
     "commitHash": "c69b4ae8e789e10f7f91811cd4937949ff0d4768",
-    "files": [
-      "lib/bn.js"
-    ]
+    "files": ["lib/bn.js"]
   },
   "ethereumjs-tx-1.3.7": {
     "name": "ethereumjs-tx",
@@ -537,13 +389,8 @@
     "version": "1.3.7",
     "repository": "ethereumjs/ethereumjs-tx",
     "commitHash": "e3fc21467ecb997090f63f154b1407094f173bf2",
-    "files": [
-      "index.js"
-    ],
-    "deps": [
-      "ethereum-common-0.2.1",
-      "ethereumjs-util-5.2.0"
-    ],
+    "files": ["index.js"],
+    "deps": ["ethereum-common-0.2.1", "ethereumjs-util-5.2.0"],
     "replaceInFiles": [
       {
         "filename": "index.js",
@@ -564,18 +411,8 @@
     "version": "5.2.0",
     "repository": "ethereumjs/ethereumjs-util",
     "commitHash": "7e3be1d97b4e11fbc4924836b8c444e644f643ac",
-    "files": [
-      "index.js"
-    ],
-    "deps": [
-      "bn.js-4.11.8",
-      "create-hash-1.2.0",
-      "ethjs-util-0.1.4",
-      "keccak-1.0.2",
-      "rlp-2.2.3",
-      "safe-buffer-5.2.0",
-      "secp256k1-3.7.1"
-    ]
+    "files": ["index.js"],
+    "deps": ["bn.js-4.11.8", "create-hash-1.2.0", "ethjs-util-0.1.4", "keccak-1.0.2", "rlp-2.2.3", "safe-buffer-5.2.0", "secp256k1-3.7.1"]
   },
   "ethjs-util-0.1.4": {
     "name": "ethjs-util",
@@ -583,13 +420,8 @@
     "version": "0.1.4",
     "repository": "ethjs/ethjs-util",
     "commitHash": "e9aede668177b6d1ea62d741ba1c19402bc337b3",
-    "files": [
-      "src/index.js"
-    ],
-    "deps": [
-      "is-hex-prefixed-1.0.0",
-      "strip-hex-prefix-1.0.0"
-    ],
+    "files": ["src/index.js"],
+    "deps": ["is-hex-prefixed-1.0.0", "strip-hex-prefix-1.0.0"],
     "TODO": "Check if we need dist files."
   },
   "is-hex-prefixed-1.0.0": {
@@ -598,9 +430,7 @@
     "version": "1.0.0",
     "repository": "SilentCicero/is-hex-prefixed",
     "commitHash": "2a5a31481e3f8f7cd3217f50c7950b5de589eaba",
-    "files": [
-      "src/index.js"
-    ]
+    "files": ["src/index.js"]
   },
   "strip-hex-prefix-1.0.0": {
     "name": "strip-hex-prefix",
@@ -608,12 +438,8 @@
     "version": "1.0.0",
     "repository": "SilentCicero/strip-hex-prefix",
     "commitHash": "94058ad57053b4be0c7946b1abcbef0ae6c34cc8",
-    "files": [
-      "src/index.js"
-    ],
-    "deps": [
-      "is-hex-prefixed-1.0.0"
-    ]
+    "files": ["src/index.js"],
+    "deps": ["is-hex-prefixed-1.0.0"]
   },
   "keccak-1.0.2": {
     "name": "keccak",
@@ -621,17 +447,8 @@
     "version": "1.0.2",
     "repository": "cryptocoinjs/keccak",
     "commitHash": "e94fbe0af3879d0d9bca5435f35832dcb93137a6",
-    "files": [
-      "js.js",
-      "lib/keccak.js",
-      "lib/keccak-state.js",
-      "lib/api/index.js",
-      "lib/api/keccak.js",
-      "lib/api/shake.js"
-    ],
-    "deps": [
-      "inherits-2.0.4"
-    ],
+    "files": ["js.js", "lib/keccak.js", "lib/keccak-state.js", "lib/api/index.js", "lib/api/keccak.js", "lib/api/shake.js"],
+    "deps": ["inherits-2.0.4"],
     "ignoredDeps": [
       {
         "module": "bindings",
@@ -653,10 +470,7 @@
     "version": "1.6.45",
     "repository": "peterolson/BigInteger.js",
     "commitHash": "4e99b15b7951338f164728377c906caae5a78202",
-    "files": [
-      "BigInteger.js",
-      "BigInteger.d.ts"
-    ]
+    "files": ["BigInteger.js", "BigInteger.d.ts"]
   },
   "bs58check-2.1.2": {
     "name": "bs58check",
@@ -664,15 +478,8 @@
     "version": "2.1.2",
     "repository": "bitcoinjs/bs58check",
     "commitHash": "7dd2b95a5c44e9b574f224268254a7bbecfac2ed",
-    "files": [
-      "index.js",
-      "base.js"
-    ],
-    "deps": [
-      "bs58-4.0.1",
-      "create-hash-1.2.0",
-      "safe-buffer-5.2.0"
-    ]
+    "files": ["index.js", "base.js"],
+    "deps": ["bs58-4.0.1", "create-hash-1.2.0", "safe-buffer-5.2.0"]
   },
   "bs58-4.0.1": {
     "name": "bs58",
@@ -680,13 +487,8 @@
     "version": "4.0.1",
     "repository": "cryptocoinjs/bs58",
     "commitHash": "a1d5dadc1e3544c6852648776179629f96efd1d6",
-    "files": [
-      "index.js"
-    ],
-    "deps": [
-      "base-x-3.0.7",
-      "create-hash-1.2.0"
-    ]
+    "files": ["index.js"],
+    "deps": ["base-x-3.0.7", "create-hash-1.2.0"]
   },
   "base-x-3.0.7": {
     "name": "base-x",
@@ -694,13 +496,8 @@
     "version": "3.0.7",
     "repository": "cryptocoinjs/base-x",
     "commitHash": "9a8183101079fdb0f70ee70079992ec72a830d05",
-    "files": [
-      "src/index.js",
-      "src/index.d.ts"
-    ],
-    "deps": [
-      "safe-buffer-5.2.0"
-    ]
+    "files": ["src/index.js", "src/index.d.ts"],
+    "deps": ["safe-buffer-5.2.0"]
   },
   "bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac": {
     "name": "bitgo-utxo-lib",
@@ -820,9 +617,7 @@
     "version": "0.0.3",
     "repository": "bitcoinjs/bech32",
     "commitHash": "b3bc5d82896c45d046b74ae18ee13681f4212462",
-    "files": [
-      "index.js"
-    ]
+    "files": ["index.js"]
   },
   "bech32-1.1.3": {
     "name": "bech32",
@@ -830,9 +625,7 @@
     "version": "1.1.3",
     "repository": "bitcoinjs/bech32",
     "commitHash": "b91129de18826dc17b82ba11c6762b4627fc3d1c",
-    "files": [
-      "index.js"
-    ]
+    "files": ["index.js"]
   },
   "bigi-1.4.2": {
     "name": "bigi",
@@ -840,12 +633,7 @@
     "version": "1.4.2",
     "repository": "cryptocoinjs/bigi",
     "commitHash": "c25308081c896ff84702303722bf5ecd8b3f78e3",
-    "files": [
-      "lib/bigi.js",
-      "lib/convert.js",
-      "lib/index.js",
-      "package.json"
-    ]
+    "files": ["lib/bigi.js", "lib/convert.js", "lib/index.js", "package.json"]
   },
   "bip66-1.1.5": {
     "name": "bip66",
@@ -853,12 +641,8 @@
     "version": "1.1.5",
     "repository": "bitcoinjs/bip66",
     "commitHash": "9d71107e16878d87605dd2460342119d36d72fb4",
-    "files": [
-      "index.js"
-    ],
-    "deps": [
-      "safe-buffer-5.2.0"
-    ]
+    "files": ["index.js"],
+    "deps": ["safe-buffer-5.2.0"]
   },
   "bitcoin-ops-1.4.1": {
     "name": "bitcoin-ops",
@@ -866,10 +650,7 @@
     "version": "1.4.1",
     "repository": "bitcoinjs/bitcoin-ops",
     "commitHash": "44829aa0450a65c6afd40c62d00a347ae739b9f4",
-    "files": [
-      "index.json",
-      "map.js"
-    ]
+    "files": ["index.json", "map.js"]
   },
   "blake2b-6268e6dd678661e0acc4359e9171b97eb1ebf8ac": {
     "name": "blake2b",
@@ -877,13 +658,8 @@
     "version": "6268e6dd678661e0acc4359e9171b97eb1ebf8ac",
     "repository": "BitGo/blake2b",
     "commitHash": "6268e6dd678661e0acc4359e9171b97eb1ebf8ac",
-    "files": [
-      "index.js"
-    ],
-    "deps": [
-      "blake2b-wasm-193cdb71656c1a6c7f89b05d0327bb9b758d071b",
-      "nanoassert-1.1.0"
-    ]
+    "files": ["index.js"],
+    "deps": ["blake2b-wasm-193cdb71656c1a6c7f89b05d0327bb9b758d071b", "nanoassert-1.1.0"]
   },
   "blake2b-wasm-193cdb71656c1a6c7f89b05d0327bb9b758d071b": {
     "name": "blake2b-wasm",
@@ -891,13 +667,8 @@
     "version": "193cdb71656c1a6c7f89b05d0327bb9b758d071b",
     "repository": "BitGo/blake2b-wasm",
     "commitHash": "193cdb71656c1a6c7f89b05d0327bb9b758d071b",
-    "files": [
-      "index.js",
-      "blake2b.js"
-    ],
-    "deps": [
-      "nanoassert-1.1.0"
-    ]
+    "files": ["index.js", "blake2b.js"],
+    "deps": ["nanoassert-1.1.0"]
   },
   "nanoassert-1.1.0": {
     "name": "nanoassert",
@@ -905,9 +676,7 @@
     "version": "1.1.0",
     "repository": "emilbayes/nanoassert",
     "commitHash": "c2e2231aa88fb872f1fbd72fba50cadfe6b97431",
-    "files": [
-      "index.js"
-    ]
+    "files": ["index.js"]
   },
   "ecurve-1.0.6": {
     "name": "ecurve",
@@ -915,17 +684,8 @@
     "version": "1.0.6",
     "repository": "cryptocoinjs/ecurve",
     "commitHash": "14d72f5f468d53ff33dc13c1c7af350a41d52aab",
-    "files": [
-      "lib/curve.js",
-      "lib/curves.json",
-      "lib/index.js",
-      "lib/names.js",
-      "lib/point.js"
-    ],
-    "deps": [
-      "bigi-1.4.2",
-      "safe-buffer-5.2.0"
-    ]
+    "files": ["lib/curve.js", "lib/curves.json", "lib/index.js", "lib/names.js", "lib/point.js"],
+    "deps": ["bigi-1.4.2", "safe-buffer-5.2.0"]
   },
   "merkle-lib-2.0.10": {
     "name": "merkle-lib",
@@ -933,10 +693,7 @@
     "version": "2.0.10",
     "repository": "bitcoinjs/merkle-lib",
     "commitHash": "3d2205c0130c664bb19f6aa39fecf6d92e9bd8a8",
-    "files": [
-      "index.js",
-      "fastRoot.js"
-    ]
+    "files": ["index.js", "fastRoot.js"]
   },
   "pushdata-bitcoin-1.0.1": {
     "name": "pushdata-bitcoin",
@@ -944,12 +701,8 @@
     "version": "1.0.1",
     "repository": "bitcoinjs/pushdata-bitcoin",
     "commitHash": "bfdfcc5f9a57e8728c5d86420bd040d3b1d1689e",
-    "files": [
-      "index.js"
-    ],
-    "deps": [
-      "bitcoin-ops-1.4.1"
-    ]
+    "files": ["index.js"],
+    "deps": ["bitcoin-ops-1.4.1"]
   },
   "typeforce-1.18.0": {
     "name": "typeforce",
@@ -957,12 +710,7 @@
     "version": "1.18.0",
     "repository": "dcousens/typeforce",
     "commitHash": "29ff3061ba372b0f4eeeda47d5013f13545ea01e",
-    "files": [
-      "errors.js",
-      "extra.js",
-      "index.js",
-      "native.js"
-    ]
+    "files": ["errors.js", "extra.js", "index.js", "native.js"]
   },
   "varuint-bitcoin-1.1.2": {
     "name": "varuint-bitcoin",
@@ -970,13 +718,8 @@
     "version": "1.1.2",
     "repository": "bitcoinjs/varuint-bitcoin",
     "commitHash": "a05cb2cd32be43f6cab477704d60574066e3bb48",
-    "files": [
-      "index.js",
-      "index.d.ts"
-    ],
-    "deps": [
-      "safe-buffer-5.2.0"
-    ]
+    "files": ["index.js", "index.d.ts"],
+    "deps": ["safe-buffer-5.2.0"]
   },
   "wif-2.0.6": {
     "name": "wif",
@@ -984,12 +727,8 @@
     "version": "2.0.6",
     "repository": "bitcoinjs/wif",
     "commitHash": "0330fcaf4d4733a0669ddb7147be9808922cbb3a",
-    "files": [
-      "index.js"
-    ],
-    "deps": [
-      "bs58check-2.1.2"
-    ]
+    "files": ["index.js"],
+    "deps": ["bs58check-2.1.2"]
   },
   "groestl-hash-js-ef6a04f1c4d2f0448f0882b5f213ef7a0659baee": {
     "name": "groestl-hash-js",
@@ -997,15 +736,8 @@
     "version": "ef6a04f1c4d2f0448f0882b5f213ef7a0659baee",
     "repository": "Groestlcoin/groestl-hash-js",
     "commitHash": "ef6a04f1c4d2f0448f0882b5f213ef7a0659baee",
-    "files": [
-      "index.js",
-      "lib/groestl.js",
-      "lib/helper.js",
-      "lib/op.js"
-    ],
-    "deps": [
-      "bs58check-2.1.2"
-    ],
+    "files": ["index.js", "lib/groestl.js", "lib/helper.js", "lib/op.js"],
+    "deps": ["bs58check-2.1.2"],
     "replaceInFiles": [
       {
         "filename": "lib/groestl.js",
@@ -1025,12 +757,7 @@
     "version": "0.2.1",
     "repository": "ethereumjs/common",
     "commitHash": "f1f0a99f6818ab07b6e7704d4defc1b067619552",
-    "files": [
-      "index.js",
-      "params.json",
-      "genesisState.json",
-      "bootstrapNodes.json"
-    ]
+    "files": ["index.js", "params.json", "genesisState.json", "bootstrapNodes.json"]
   },
   "secp256k1-3.7.1": {
     "name": "secp256k1",
@@ -1038,23 +765,8 @@
     "version": "3.7.1",
     "repository": "cryptocoinjs/secp256k1-node",
     "commitHash": "2f1c956d71c39e5667e6285a6dafc15ce28e86f0",
-    "files": [
-      "elliptic.js",
-      "lib/index.js",
-      "lib/assert.js",
-      "lib/der.js",
-      "lib/messages.json",
-      "lib/elliptic/index.js"
-    ],
-    "deps": [
-      "bip66-1.1.5",
-      "bn.js-4.11.8",
-      "create-hash-1.2.0",
-      "drbg.js-1.0.1",
-      "elliptic-6.5.3",
-      "nan-2.14.0",
-      "safe-buffer-5.2.0"
-    ],
+    "files": ["elliptic.js", "lib/index.js", "lib/assert.js", "lib/der.js", "lib/messages.json", "lib/elliptic/index.js"],
+    "deps": ["bip66-1.1.5", "bn.js-4.11.8", "create-hash-1.2.0", "drbg.js-1.0.1", "elliptic-6.5.3", "nan-2.14.0", "safe-buffer-5.2.0"],
     "ignoredDeps": [
       {
         "module": "bindings",
@@ -1068,17 +780,8 @@
     "version": "1.0.1",
     "repository": "cryptocoinjs/drbg.js",
     "commitHash": "4dc077f2c87bccaf0092f949d6c8cbfdc33e658d",
-    "files": [
-      "index.js",
-      "hash.js",
-      "hmac.js",
-      "lib/hash-info.json",
-      "lib/util.js"
-    ],
-    "deps": [
-      "create-hash-1.2.0",
-      "create-hmac-1.1.4"
-    ],
+    "files": ["index.js", "hash.js", "hmac.js", "lib/hash-info.json", "lib/util.js"],
+    "deps": ["create-hash-1.2.0", "create-hmac-1.1.4"],
     "ignoredDeps": [
       {
         "module": "browserify-aes",
@@ -1138,9 +841,7 @@
     "version": "1.1.0",
     "repository": "indutny/brorand",
     "commitHash": "ddc4f9344287769d7e2c2ea987d26bbeec5456b4",
-    "files": [
-      "index.js"
-    ]
+    "files": ["index.js"]
   },
   "hash.js-1.1.7": {
     "name": "hash.js",
@@ -1162,10 +863,7 @@
       "lib/hash/sha/512.js",
       "lib/hash/sha/common.js"
     ],
-    "deps": [
-      "inherits-2.0.4",
-      "minimalistic-assert-1.0.1"
-    ]
+    "deps": ["inherits-2.0.4", "minimalistic-assert-1.0.1"]
   },
   "minimalistic-assert-1.0.1": {
     "name": "minimalistic-assert",
@@ -1173,9 +871,7 @@
     "version": "1.0.1",
     "repository": "calvinmetcalf/minimalistic-assert",
     "commitHash": "33113391ad64bea7a3398074a71d0569d4ae038d",
-    "files": [
-      "index.js"
-    ]
+    "files": ["index.js"]
   },
   "hmac-drbg-1.0.1": {
     "name": "hmac-drbg",
@@ -1183,14 +879,8 @@
     "version": "1.0.1",
     "repository": "indutny/hmac-drbg",
     "commitHash": "2592375270a7a689d3752a6ba7235a47eb234d15",
-    "files": [
-      "lib/hmac-drbg.js"
-    ],
-    "deps": [
-      "hash.js-1.1.7",
-      "minimalistic-assert-1.0.1",
-      "minimalistic-crypto-utils-1.0.1"
-    ]
+    "files": ["lib/hmac-drbg.js"],
+    "deps": ["hash.js-1.1.7", "minimalistic-assert-1.0.1", "minimalistic-crypto-utils-1.0.1"]
   },
   "minimalistic-crypto-utils-1.0.1": {
     "name": "minimalistic-crypto-utils",
@@ -1198,9 +888,7 @@
     "version": "1.0.1",
     "repository": "indutny/minimalistic-crypto-utils",
     "commitHash": "f4f2b13a3ac78d8ee6991994bae89ec93304d225",
-    "files": [
-      "lib/utils.js"
-    ]
+    "files": ["lib/utils.js"]
   },
   "nan-2.14.0": {
     "name": "nan",
@@ -1208,9 +896,7 @@
     "version": "2.14.0",
     "repository": "nodejs/nan",
     "commitHash": "1dcc61bd06d84e389bfd5311b2b1492a14c74201",
-    "files": [
-      "include_dirs.js"
-    ]
+    "files": ["include_dirs.js"]
   },
   "bip32-2.0.4": {
     "name": "bip32",
@@ -1218,19 +904,8 @@
     "version": "2.0.4",
     "repository": "bitcoinjs/bip32",
     "commitHash": "52bc5500bd13fe632bcea93cf602f8f80e057895",
-    "files": [
-      "src/index.js",
-      "src/bip32.js",
-      "src/crypto.js"
-    ],
-    "deps": [
-      "bs58check-2.1.2",
-      "create-hash-1.2.0",
-      "create-hmac-1.1.7",
-      "tiny-secp256k1-1.1.3",
-      "typeforce-1.18.0",
-      "wif-2.0.6"
-    ],
+    "files": ["src/index.js", "src/bip32.js", "src/crypto.js"],
+    "deps": ["bs58check-2.1.2", "create-hash-1.2.0", "create-hmac-1.1.7", "tiny-secp256k1-1.1.3", "typeforce-1.18.0", "wif-2.0.6"],
     "ignoredDeps": [
       {
         "module": "@types/node",
@@ -1244,17 +919,8 @@
     "version": "1.1.3",
     "repository": "bitcoinjs/tiny-secp256k1",
     "commitHash": "86b15340a11bc5c42329078bd5f4e7fd92566036",
-    "files": [
-      "js.js",
-      "rfc6979.js"
-    ],
-    "deps": [
-      "bn.js-4.11.8",
-      "create-hmac-1.1.7",
-      "elliptic-6.5.3",
-      "wif-2.0.6",
-      "nan-2.14.0"
-    ],
+    "files": ["js.js", "rfc6979.js"],
+    "deps": ["bn.js-4.11.8", "create-hmac-1.1.7", "elliptic-6.5.3", "wif-2.0.6", "nan-2.14.0"],
     "ignoredDeps": [
       {
         "module": "bindings",
@@ -1268,14 +934,8 @@
     "version": "0.2.2",
     "repository": "pierrec/js-xxhash",
     "commitHash": "267dcd45215e9e33a157cc76e895b366e51185da",
-    "files": [
-      "lib/index.js",
-      "lib/xxhash.js",
-      "lib/xxhash64.js"
-    ],
-    "deps": [
-      "cuint-0.2.2"
-    ]
+    "files": ["lib/index.js", "lib/xxhash.js", "lib/xxhash64.js"],
+    "deps": ["cuint-0.2.2"]
   },
   "cuint-0.2.2": {
     "name": "cuint",
@@ -1283,11 +943,7 @@
     "version": "0.2.2",
     "repository": "pierrec/js-cuint",
     "commitHash": "c0b4092dace55de831c1254bd8ae965cfcc281f9",
-    "files": [
-      "index.js",
-      "lib/uint32.js",
-      "lib/uint64.js"
-    ]
+    "files": ["index.js", "lib/uint32.js", "lib/uint64.js"]
   },
   "groestlcoinjs-message-2.1.0": {
     "name": "groestlcoinjs-message",
@@ -1295,17 +951,8 @@
     "version": "2.1.0",
     "repository": "Groestlcoin/groestlcoinjs-message",
     "commitHash": "5f705d69370a29be3fa49ae3cdeaf4bcf758c41d",
-    "files": [
-      "index.js"
-    ],
-    "deps": [
-      "bech32-1.1.3",
-      "bs58grscheck-2.1.2",
-      "buffer-equals-1.0.4",
-      "create-hash-1.2.0",
-      "secp256k1-3.7.1",
-      "varuint-bitcoin-1.1.2"
-    ]
+    "files": ["index.js"],
+    "deps": ["bech32-1.1.3", "bs58grscheck-2.1.2", "buffer-equals-1.0.4", "create-hash-1.2.0", "secp256k1-3.7.1", "varuint-bitcoin-1.1.2"]
   },
   "bs58grscheck-2.1.2": {
     "name": "bs58grscheck",
@@ -1313,16 +960,8 @@
     "version": "2.1.2",
     "repository": "Groestlcoin/bs58grscheck",
     "commitHash": "8ff31333a7626161c1484b461c20710bb9f97b93",
-    "files": [
-      "index.js",
-      "base.js"
-    ],
-    "deps": [
-      "bs58-4.0.1",
-      "create-hash-1.2.0",
-      "groestl-hash-js-ef6a04f1c4d2f0448f0882b5f213ef7a0659baee",
-      "safe-buffer-5.2.0"
-    ]
+    "files": ["index.js", "base.js"],
+    "deps": ["bs58-4.0.1", "create-hash-1.2.0", "groestl-hash-js-ef6a04f1c4d2f0448f0882b5f213ef7a0659baee", "safe-buffer-5.2.0"]
   },
   "buffer-equals-1.0.4": {
     "name": "buffer-equals",
@@ -1330,9 +969,7 @@
     "version": "1.0.4",
     "repository": "sindresorhus/buffer-equals",
     "commitHash": "b4d25112f5e4700eb5cf083b4dd76c3b04ae2c8d",
-    "files": [
-      "index.js"
-    ]
+    "files": ["index.js"]
   },
   "bitcoinjs-message-2.1.1": {
     "name": "bitcoinjs-message",
@@ -1340,17 +977,8 @@
     "version": "2.1.1",
     "repository": "bitcoinjs/bitcoinjs-message",
     "commitHash": "6ea1734e7dc5df79e6f88586e62ffe9a1c5ea093",
-    "files": [
-      "index.js"
-    ],
-    "deps": [
-      "bech32-1.1.3",
-      "bs58check-2.1.2",
-      "buffer-equals-1.0.4",
-      "create-hash-1.2.0",
-      "secp256k1-3.7.1",
-      "varuint-bitcoin-1.1.2"
-    ]
+    "files": ["index.js"],
+    "deps": ["bech32-1.1.3", "bs58check-2.1.2", "buffer-equals-1.0.4", "create-hash-1.2.0", "secp256k1-3.7.1", "varuint-bitcoin-1.1.2"]
   },
   "@taquito/local-forging-8.0.1-beta.1": {
     "name": "@taquito/local-forging",
@@ -1372,10 +1000,7 @@
       "packages/taquito-local-forging/src/uint8array-consumer.ts",
       "packages/taquito-local-forging/src/utils.ts"
     ],
-    "deps": [
-      "@taquito/utils-8.0.1-beta.1",
-      "bignumber.js-9.0.0"
-    ],
+    "deps": ["@taquito/utils-8.0.1-beta.1", "bignumber.js-9.0.0"],
     "replaceInFiles": [
       {
         "filename": "packages/taquito-local-forging/src/codec.ts",
@@ -1450,11 +1075,7 @@
       "packages/taquito-utils/src/taquito-utils.ts",
       "packages/taquito-utils/src/validators.ts"
     ],
-    "deps": [
-      "blakejs-1.1.0",
-      "bs58check-2.1.2",
-      "buffer-5.6.0"
-    ]
+    "deps": ["blakejs-1.1.0", "bs58check-2.1.2", "buffer-5.6.0"]
   },
   "blakejs-1.1.0": {
     "name": "blakejs",
@@ -1462,12 +1083,7 @@
     "version": "1.1.0",
     "repository": "dcposch/blakejs",
     "commitHash": "2e7a6bed9b4b1edff98c014275185fb116428fab",
-    "files": [
-      "index.js",
-      "blake2b.js",
-      "blake2s.js",
-      "util.js"
-    ]
+    "files": ["index.js", "blake2b.js", "blake2s.js", "util.js"]
   },
   "buffer-5.6.0": {
     "name": "buffer",
@@ -1475,14 +1091,8 @@
     "version": "5.6.0",
     "repository": "feross/buffer",
     "commitHash": "d7b15a178294ebc85368aac87b0831dc48d6fba8",
-    "files": [
-      "index.js",
-      "index.d.ts"
-    ],
-    "deps": [
-      "base64-js-1.3.1",
-      "ieee754-1.1.13"
-    ]
+    "files": ["index.js", "index.d.ts"],
+    "deps": ["base64-js-1.3.1", "ieee754-1.1.13"]
   },
   "base64-js-1.3.1": {
     "name": "base64-js",
@@ -1490,9 +1100,7 @@
     "version": "1.3.1",
     "repository": "beatgammit/base64-js",
     "commitHash": "3c7872b37c994e1d8ee91314b5975b0730692ff6",
-    "files": [
-      "index.js"
-    ]
+    "files": ["index.js"]
   },
   "ieee754-1.1.13": {
     "name": "ieee754",
@@ -1500,9 +1108,7 @@
     "version": "1.1.13",
     "repository": "feross/ieee754",
     "commitHash": "4971f0e802c2cbdfad7791bd223c53e37b4ebb85",
-    "files": [
-      "index.js"
-    ]
+    "files": ["index.js"]
   },
   "eciesjs-0.3.9": {
     "name": "eciesjs",
@@ -1510,17 +1116,8 @@
     "version": "0.3.9",
     "repository": "ecies/js",
     "commitHash": "4fe6c81c201b4e1e7414cf9c08440956d35a0677",
-    "files": [
-      "src/index.ts",
-      "src/utils.ts",
-      "src/keys/PrivateKey.ts",
-      "src/keys/PublicKey.ts",
-      "src/keys/index.ts"
-    ],
-    "deps": [
-      "futoin-hkdf-1.3.3",
-      "secp256k1-4.0.2"
-    ],
+    "files": ["src/index.ts", "src/utils.ts", "src/keys/PrivateKey.ts", "src/keys/PublicKey.ts", "src/keys/index.ts"],
+    "deps": ["futoin-hkdf-1.3.3", "secp256k1-4.0.2"],
     "ignoredDeps": [
       {
         "module": "@types/secp256k1",
@@ -1535,6 +1132,11 @@
             "from": "import hkdf from \"futoin-hkdf\"",
             "to": "import * as hkdf from \"futoin-hkdf\"",
             "expectedReplacements": 1
+          },
+          {
+            "from": "import secp256k1 from \"secp256k1\"",
+            "to": "import * as secp256k1 from \"secp256k1\"",
+            "expectedReplacements": 1
           }
         ]
       },
@@ -1544,6 +1146,21 @@
           {
             "from": "import hkdf from \"futoin-hkdf\"",
             "to": "import * as hkdf from \"futoin-hkdf\"",
+            "expectedReplacements": 1
+          },
+          {
+            "from": "import secp256k1 from \"secp256k1\"",
+            "to": "import * as secp256k1 from \"secp256k1\"",
+            "expectedReplacements": 1
+          }
+        ]
+      },
+      {
+        "filename": "src/utils.ts",
+        "replacements": [
+          {
+            "from": "import secp256k1 from \"secp256k1\"",
+            "to": "import * as secp256k1 from \"secp256k1\"",
             "expectedReplacements": 1
           }
         ]
@@ -1556,10 +1173,7 @@
     "version": "1.3.3",
     "repository": "futoin/util-js-hkdf",
     "commitHash": "8a6a62040dfb1485912d02c3081f7acf922dbe7d",
-    "files": [
-      "hkdf.js",
-      "hkdf.d.ts"
-    ]
+    "files": ["hkdf.js", "hkdf.d.ts"]
   },
   "secp256k1-4.0.2": {
     "name": "secp256k1",
@@ -1567,14 +1181,8 @@
     "version": "4.0.2",
     "repository": "cryptocoinjs/secp256k1-node",
     "commitHash": "024fbdad3fb64499e8db8b35246c2f0a36afa8c8",
-    "files": [
-      "elliptic.js",
-      "lib/index.js",
-      "lib/elliptic.js"
-    ],
-    "deps": [
-      "elliptic-6.5.3"
-    ],
+    "files": ["elliptic.js", "lib/index.js", "lib/elliptic.js"],
+    "deps": ["elliptic-6.5.3"],
     "ignoredDeps": [
       {
         "module": "node-addon-api",
@@ -1585,5 +1193,56 @@
         "reason": "using pure js implementation, node bindings not necessary."
       }
     ]
+  },
+  "cbor-sync-1.0.4": {
+    "name": "cbor-sync",
+    "entrypoint": "main",
+    "version": "1.0.4",
+    "repository": "PelionIoT/cbor-sync",
+    "commitHash": "35fdf44ce469ec34b7985f8463c806876fdb8d31",
+    "files": ["main.js", "index.d.ts"],
+    "renameFiles": [["main.js", "index.js"]]
+  },
+  "pako-2.0.3": {
+    "name": "pako",
+    "entrypoint": "index",
+    "version": "2.0.3",
+    "repository": "nodeca/pako",
+    "commitHash": "2db010f0a8608e9affedd949f24eb130d9589e93",
+    "files": [
+      "index.js",
+      "lib/deflate.js",
+      "lib/inflate.js",
+      "lib/utils/common.js",
+      "lib/utils/strings.js",
+      "lib/zlib/adler32.js",
+      "lib/zlib/constants.js",
+      "lib/zlib/crc32.js",
+      "lib/zlib/deflate.js",
+      "lib/zlib/gzheader.js",
+      "lib/zlib/inffast.js",
+      "lib/zlib/inflate.js",
+      "lib/zlib/inftrees.js",
+      "lib/zlib/messages.js",
+      "lib/zlib/trees.js",
+      "lib/zlib/zstream.js"
+    ]
+  },
+  "idna-uts46-hx-3.4.0": {
+    "name": "idna-uts46-hx",
+    "entrypoint": "uts46",
+    "version": "3.4.0",
+    "repository": "hexonet/idna-uts46",
+    "commitHash": "f1892a8ae7e57472a73cee1038de3aa9bcaa1c93",
+    "files": ["index.d.ts", "uts46.js", "idna-map.js"],
+    "deps": ["punycode-2.1.1"]
+  },
+  "punycode-2.1.1": {
+    "name": "punycode",
+    "entrypoint": "punycode",
+    "version": "2.1.1",
+    "repository": "bestiejs/punycode.js",
+    "commitHash": "68df855dc42d1086ada161331b3074468e8d848d",
+    "files": ["punycode.js"]
   }
 }

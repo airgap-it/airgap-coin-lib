@@ -105,7 +105,6 @@ export class SerializerV3 {
     } catch {
       throw new Error('Cannot decode data')
     }
-
     const deserializedIACMessageDefinitionObjects: IACMessageDefinitionObjectV3[] = result.payload.asJson()
 
     return deserializedIACMessageDefinitionObjects
