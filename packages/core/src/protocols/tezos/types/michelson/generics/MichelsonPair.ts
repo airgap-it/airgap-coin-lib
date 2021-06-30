@@ -3,7 +3,7 @@ import { InvalidValueError } from '../../../../../errors'
 import { invalidArgumentTypeError } from '../../../../../utils/error'
 import { extractGroups } from '../../../../../utils/string'
 import { isRecord } from '../../../../../utils/type'
-import { MichelineDataNode, MichelinePrimitiveApplication, MichelineGenericNode } from '../../micheline/MichelineNode'
+import { MichelineDataNode, MichelineGenericNode, MichelinePrimitiveApplication } from '../../micheline/MichelineNode'
 import { isMichelinePrimitiveApplication } from '../../utils'
 import { MichelsonGrammarData } from '../grammar/MichelsonGrammarData'
 import { MichelsonType } from '../MichelsonType'
@@ -58,7 +58,7 @@ export class MichelsonPair extends MichelsonType {
       throw invalidArgumentTypeError('MichelsonPair', 'args: <tuple>', 'args: undefined | <array>')
     }
 
-    let args = this.normalizePairArgs(micheline.args)
+    const args = this.normalizePairArgs(micheline.args)
 
     return MichelsonPair.fromUnknown(args, mappingFunctions, name)
   }
@@ -73,6 +73,7 @@ export class MichelsonPair extends MichelsonType {
         }
       ]
     }
+
     return args
   }
 

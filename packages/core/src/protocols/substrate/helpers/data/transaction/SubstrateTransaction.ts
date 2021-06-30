@@ -85,9 +85,9 @@ export class SubstrateTransaction extends SCALEClass {
   }
 
   public static decode(
-    network: SubstrateNetwork, 
-    runtimeVersion: number | undefined, 
-    type: SubstrateTransactionType, 
+    network: SubstrateNetwork,
+    runtimeVersion: number | undefined,
+    type: SubstrateTransactionType,
     raw: string
   ): SCALEDecodeResult<SubstrateTransaction> {
     const bytes = SCALEBytes.decode(stripHexPrefix(raw))
@@ -153,9 +153,7 @@ export class SubstrateTransaction extends SCALEClass {
     const airGapTransaction = {
       from: [this.signer.value.asAddress()],
       to: [this.signer.value.asAddress()],
-      extra: this.type !== SubstrateTransactionType.TRANSFER
-        ? { type: SubstrateTransactionType[this.type] }
-        : undefined,
+      extra: this.type !== SubstrateTransactionType.TRANSFER ? { type: SubstrateTransactionType[this.type] } : undefined,
       transactionDetails: JSON.parse(this.toString())
     }
     const parts = this.method.toAirGapTransactionParts()

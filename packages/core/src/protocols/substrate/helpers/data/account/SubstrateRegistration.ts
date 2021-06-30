@@ -20,8 +20,8 @@ enum SubstrateJudgement {
 
 export class SubstrateIdentityInfo {
   public static decode(
-    network: SubstrateNetwork, 
-    runtimeVersion: number | undefined, 
+    network: SubstrateNetwork,
+    runtimeVersion: number | undefined,
     raw: string
   ): SCALEDecodeResult<SubstrateIdentityInfo> {
     const decoder = new SCALEDecoder(network, runtimeVersion, raw)

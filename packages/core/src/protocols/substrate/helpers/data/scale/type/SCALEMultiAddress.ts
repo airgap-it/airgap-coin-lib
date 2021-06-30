@@ -18,13 +18,17 @@ export enum SCALEMultiAddressType {
   Address20
 }
 
-type SCALEMultiAddressValue<T extends SCALEMultiAddressType> =
-  T extends SCALEMultiAddressType.Id ? SCALEAccountId : 
-  T extends SCALEMultiAddressType.Index ? SCALEInt :
-  T extends SCALEMultiAddressType.Raw ? SCALEBytes :
-  T extends SCALEMultiAddressType.Address32 ? SCALEHash :
-  T extends SCALEMultiAddressType.Address20 ? SCALEHash :
-  never
+type SCALEMultiAddressValue<T extends SCALEMultiAddressType> = T extends SCALEMultiAddressType.Id
+  ? SCALEAccountId
+  : T extends SCALEMultiAddressType.Index
+  ? SCALEInt
+  : T extends SCALEMultiAddressType.Raw
+  ? SCALEBytes
+  : T extends SCALEMultiAddressType.Address32
+  ? SCALEHash
+  : T extends SCALEMultiAddressType.Address20
+  ? SCALEHash
+  : never
 
 export class SCALEMultiAddress<T extends SCALEMultiAddressType> extends SCALEType {
   public static isOfType<T extends SCALEMultiAddressType>(
@@ -35,18 +39,18 @@ export class SCALEMultiAddress<T extends SCALEMultiAddressType> extends SCALETyp
   }
 
   public static from(
-    value: number | string | BigNumber, 
-    type: SCALEMultiAddressType.Index, 
+    value: number | string | BigNumber,
+    type: SCALEMultiAddressType.Index,
     network: SubstrateNetwork
   ): SCALEMultiAddress<SCALEMultiAddressType.Index>
   public static from<T extends Exclude<SCALEMultiAddressType, SCALEMultiAddressType.Index>>(
-    value: string | Uint8Array | Buffer | SubstrateAddress, 
-    type: T, 
+    value: string | Uint8Array | Buffer | SubstrateAddress,
+    type: T,
     network: SubstrateNetwork
-  ): SCALEMultiAddress<T> 
+  ): SCALEMultiAddress<T>
   public static from<T extends SCALEMultiAddressType>(
-    value: number | string | BigNumber | Uint8Array | Buffer | SubstrateAddress, 
-    type: T, 
+    value: number | string | BigNumber | Uint8Array | Buffer | SubstrateAddress,
+    type: T,
     network: SubstrateNetwork
   ): SCALEMultiAddress<T> {
     switch (type) {
@@ -74,7 +78,7 @@ export class SCALEMultiAddress<T extends SCALEMultiAddressType> extends SCALETyp
 
   public static decode<T extends SCALEMultiAddressType = SCALEMultiAddressType>(
     network: SubstrateNetwork,
-    hex: string, 
+    hex: string,
     type?: T,
     runtimeVersion?: number
   ): SCALEDecodeResult<SCALEMultiAddress<T>> {
@@ -100,7 +104,7 @@ export class SCALEMultiAddress<T extends SCALEMultiAddressType> extends SCALETyp
     switch (prefix) {
       case SCALEMultiAddressType.Id:
         const accountId = SCALEAccountId.decode(network, _hex.slice(2))
-  
+
         return {
           bytesDecoded: accountId.bytesDecoded + 1,
           decoded: new SCALEMultiAddress(SCALEMultiAddressType.Id, accountId.decoded) as SCALEMultiAddress<T>
@@ -135,14 +139,14 @@ export class SCALEMultiAddress<T extends SCALEMultiAddressType> extends SCALETyp
         }
       default:
         if (
-          (runtimeVersion === undefined) ||
+          runtimeVersion === undefined ||
           (network === SubstrateNetwork.KUSAMA && runtimeVersion >= 2028) ||
           (network === SubstrateNetwork.POLKADOT && runtimeVersion >= 28)
         ) {
           throw new Error('SCALEMultiAddress#decode: Unknown multi address type')
         } else {
           const accountId = SCALEAccountId.decode(network, _hex)
-    
+
           return {
             bytesDecoded: accountId.bytesDecoded,
             decoded: new SCALEMultiAddress(SCALEMultiAddressType.Id, accountId.decoded) as SCALEMultiAddress<T>
@@ -156,12 +160,13 @@ export class SCALEMultiAddress<T extends SCALEMultiAddressType> extends SCALETyp
   }
 
   public toString(): string {
-    return this.value.toString()  
+    return this.value.toString()
   }
 
   protected _encode(config?: SCALEEncodeConfig): string {
     if (
-      (config?.network === undefined || config?.runtimeVersion === undefined) ||
+      config?.network === undefined ||
+      config?.runtimeVersion === undefined ||
       (config?.network === SubstrateNetwork.KUSAMA && config?.runtimeVersion >= 2028) ||
       (config?.network === SubstrateNetwork.POLKADOT && config?.runtimeVersion >= 28)
     ) {

@@ -10,7 +10,7 @@ export class SubstrateCryptoClient extends Sr25519CryptoClient {
 
   public async signMessage(message: string, keypair: { publicKey: string; privateKey: Buffer }): Promise<string> {
     await waitReady()
-    
+
     const publicKeyBuffer: Buffer = Buffer.from(keypair.publicKey, 'hex')
     assert(publicKeyBuffer?.length === 32, 'Expected a valid publicKey, 32-bytes')
     assert(keypair.privateKey?.length === 64, 'Expected a valid secretKey, 64-bytes')

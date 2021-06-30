@@ -6,6 +6,7 @@ import { TezosFA2Protocol } from '../../../src/protocols/tezos/fa/TezosFA2Protoc
 import { TezosFA2ProtocolConfig, TezosFA2ProtocolOptions } from '../../../src/protocols/tezos/fa/TezosFAProtocolOptions'
 import { RawTezosTransaction } from '../../../src/serializer/types'
 import { ProtocolSymbols } from '../../../src/utils/ProtocolSymbols'
+import { AirGapWalletStatus } from '../../../src/wallet/AirGapWallet'
 import { TestProtocolSpec } from '../implementations'
 import { TezosProtocolStub } from '../stubs/tezos.stub'
 
@@ -71,7 +72,9 @@ export class TezosTestProtocolSpec extends TestProtocolSpec {
     privateKey:
       '2f243e474992bb96b49b2fa7b2c1cba7a804257f0cf13dceb640cf3210d54838cdbc0c3449784bd53907c3c7a06060cf12087e492a7b937f044c6a73b522a234',
     publicKey: 'cdbc0c3449784bd53907c3c7a06060cf12087e492a7b937f044c6a73b522a234',
-    addresses: ['tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L']
+    addresses: ['tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'],
+    masterFingerprint: 'f4e222fd',
+    status: AirGapWalletStatus.ACTIVE
   }
   public txs = [
     {

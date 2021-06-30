@@ -3,6 +3,7 @@ import BigNumber from '../../../src/dependencies/src/bignumber.js-9.0.0/bignumbe
 import { TezosKtProtocol } from '../../../src'
 import { TestProtocolSpec } from '../implementations'
 import { KtTezosProtocolStub } from '../stubs/kt-tezos.stub'
+import { AirGapWalletStatus } from '../../../src/wallet/AirGapWallet'
 
 // Test Mnemonic from using Ledger, 44'/1729'/0'/0'
 // leopard crouch simple blind castle they elder enact slow rate mad blanket saddle tail silk fury quarter obscure interest exact veteran volcano fabric cherry
@@ -28,7 +29,9 @@ export class KtTezosTestProtocolSpec extends TestProtocolSpec {
     privateKey:
       '2f243e474992bb96b49b2fa7b2c1cba7a804257f0cf13dceb640cf3210d54838cdbc0c3449784bd53907c3c7a06060cf12087e492a7b937f044c6a73b522a234',
     publicKey: 'cdbc0c3449784bd53907c3c7a06060cf12087e492a7b937f044c6a73b522a234',
-    addresses: ['KT1HncyWvnY9FcoW8A2KYuauEe5qM1U2ntX8', 'KT1RBMUbb7QSD46VXhAvaMiyVSoys6QZiTxN', 'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy']
+    addresses: ['KT1HncyWvnY9FcoW8A2KYuauEe5qM1U2ntX8', 'KT1RBMUbb7QSD46VXhAvaMiyVSoys6QZiTxN', 'KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy'],
+    masterFingerprint: 'f4e222fd',
+    status: AirGapWalletStatus.ACTIVE
   }
   public txs = [
     {

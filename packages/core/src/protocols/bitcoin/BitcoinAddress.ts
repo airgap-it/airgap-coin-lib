@@ -9,9 +9,10 @@ export class BitcoinAddress implements CoinAddress {
   ) {}
 
   public static from(node: any, visibilityDerivationIndex?: number, addressDerivationIndex?: number): BitcoinAddress {
-    const _node = visibilityDerivationIndex !== undefined && addressDerivationIndex !== undefined
-      ? node.derive(visibilityDerivationIndex).derive(addressDerivationIndex)
-      : node
+    const _node =
+      visibilityDerivationIndex !== undefined && addressDerivationIndex !== undefined
+        ? node.derive(visibilityDerivationIndex).derive(addressDerivationIndex)
+        : node
 
     return new BitcoinAddress(_node.getAddress(), visibilityDerivationIndex, addressDerivationIndex)
   }

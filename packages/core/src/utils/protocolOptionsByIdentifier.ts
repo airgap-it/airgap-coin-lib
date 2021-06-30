@@ -18,8 +18,8 @@ import {
 } from '../protocols/tezos/fa/TezosFAProtocolOptions'
 import { TezosSaplingProtocolOptions, TezosShieldedTezProtocolConfig } from '../protocols/tezos/sapling/TezosSaplingProtocolOptions'
 import { TezosProtocolNetwork, TezosProtocolOptions } from '../protocols/tezos/TezosProtocolOptions'
-import { assertNever } from './assert'
 
+import { assertNever } from './assert'
 import { NetworkType, ProtocolNetwork } from './ProtocolNetwork'
 import { ProtocolOptions } from './ProtocolOptions'
 import { MainProtocolSymbols, ProtocolSymbols, SubProtocolSymbols } from './ProtocolSymbols'

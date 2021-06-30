@@ -1,5 +1,6 @@
 import { BitcoinTestnetProtocol, SignedBitcoinTransaction } from '../../../src'
 import { IACMessageDefinitionObject } from '../../../src/serializer/message'
+import { AirGapWalletStatus } from '../../../src/wallet/AirGapWallet'
 import { TestProtocolSpec } from '../implementations'
 import { BitcoinTestnetProtocolStub } from '../stubs/bitcoin-test.stub'
 
@@ -11,7 +12,9 @@ export class BitcoinTestProtocolSpec extends TestProtocolSpec {
   public wallet = {
     privateKey: 'tprv8fmGMwHA9QVZZzFAR77eLN6bursxXG4Jb59YnZKFyR8WG48s1JbpLuurf7LiRW3NEkkxR1mNmPcY9sWfrYMwFVDQKzJwhirzw8YpmFCYgEq',
     publicKey: 'tpubDCTJWMKQHnBETTGxJknEjmkiUtPtgbFDANkL55MZPgvu6YPddhRQXQXiqHZdfHwcoVNwTaHmS6DuNjcaYPRqVFkDogJdWSMLpSWSC4pNa3r',
-    addresses: ['mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k', 'mtb2Yx8rPUhYxdqPsH9nzT375QtWZ9XJcX']
+    addresses: ['mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k', 'mtb2Yx8rPUhYxdqPsH9nzT375QtWZ9XJcX'],
+    masterFingerprint: '',
+    status: AirGapWalletStatus.ACTIVE
   }
   public txs = [
     {

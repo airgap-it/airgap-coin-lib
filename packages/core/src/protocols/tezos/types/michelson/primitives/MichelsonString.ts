@@ -9,9 +9,7 @@ export class MichelsonString extends MichelsonType {
   }
 
   public static from(value: unknown, name?: string): MichelsonString {
-    return isMichelinePrimitive('string', value)
-      ? MichelsonString.fromMicheline(value, name)
-      : MichelsonString.fromUnknown(value, name)
+    return isMichelinePrimitive('string', value) ? MichelsonString.fromMicheline(value, name) : MichelsonString.fromUnknown(value, name)
   }
 
   public static fromMicheline(micheline: MichelinePrimitive<'string'>, name?: string): MichelsonString {

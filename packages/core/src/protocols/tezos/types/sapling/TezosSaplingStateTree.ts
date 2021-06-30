@@ -2,7 +2,7 @@ export interface TezosSaplingStateTree {
   height: number
   size: number
   root: string
-  tree: MerkleTree 
+  tree: MerkleTree
 }
 
 export type MerkleTree = undefined | string | [string, MerkleTree, MerkleTree]

@@ -1,0 +1,42 @@
+{
+  "$ref": "#/definitions/AccountShareResponse",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "AccountShareResponse": {
+      "additionalProperties": false,
+      "properties": {
+        "derivationPath": {
+          "type": "string"
+        },
+        "groupId": {
+          "type": "string"
+        },
+        "groupLabel": {
+          "type": "string"
+        },
+        "isActive": {
+          "type": "boolean"
+        },
+        "isExtendedPublicKey": {
+          "type": "boolean"
+        },
+        "masterFingerprint": {
+          "type": "string"
+        },
+        "publicKey": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "publicKey",
+        "derivationPath",
+        "isExtendedPublicKey",
+        "masterFingerprint",
+        "isActive",
+        "groupId",
+        "groupLabel"
+      ],
+      "type": "object"
+    }
+  }
+}

@@ -10,16 +10,14 @@ export class MichelsonBool extends MichelsonType {
   }
 
   public static from(value: unknown, name?: string): MichelsonBool {
-    return isMichelinePrimitiveApplication(value)
-      ? MichelsonBool.fromMicheline(value, name)
-      : MichelsonBool.fromUnknown(value, name)
+    return isMichelinePrimitiveApplication(value) ? MichelsonBool.fromMicheline(value, name) : MichelsonBool.fromUnknown(value, name)
   }
 
   public static fromMicheline(micheline: MichelinePrimitiveApplication<MichelsonGrammarData>, name?: string): MichelsonBool {
     if (micheline.prim !== 'True' && micheline.prim !== 'False') {
       throw invalidArgumentTypeError('MichelsonBool', 'prim: True | False', `prim: ${micheline.prim}`)
     }
-    
+
     return new MichelsonBool(micheline.prim === 'True', name)
   }
 
@@ -41,7 +39,7 @@ export class MichelsonBool extends MichelsonType {
 
   public toMichelineJSON(): MichelineDataNode {
     return {
-      prim: this.value ? 'True' : 'False',
+      prim: this.value ? 'True' : 'False'
     }
   }
 }

@@ -1,5 +1,6 @@
 import { GroestlcoinProtocol, SignedBitcoinTransaction } from '../../../src'
 import { IACMessageDefinitionObject } from '../../../src/serializer/message'
+import { AirGapWalletStatus } from '../../../src/wallet/AirGapWallet'
 import { TestProtocolSpec } from '../implementations'
 import { GroestlcoinProtocolStub } from '../stubs/groestlcoin.stub'
 
@@ -29,7 +30,9 @@ export class GroestlcoinProtocolSpec extends TestProtocolSpec {
   public wallet = {
     privateKey: 'xprv9z5bsLrneShz9HWM7scd93351vWbBDjhZrPzAArempXENgjP6sCBdE86mXn2SjhbDP8YDYHeXbjH2tjqk365F8j4fMjsJ44e8bLSYzBeYKf',
     publicKey: 'xpub6D4xGrPgUpGHMmapDu9dWAyoZxM5agTYw5KaxZGGLA4DFV4XeQWSB2Sacmpf4KA2QoEuU2JDtDscuEGeELXEaQE2qXnMHEoyiEBaYmiTTUs',
-    addresses: ['Fo5wJdoDwg7XvDi7ntnMwWv15Vc1UMA7Bz', 'FiEEq7G31QAsFfWFtWbMosVzUGQgtpUJsZ']
+    addresses: ['Fo5wJdoDwg7XvDi7ntnMwWv15Vc1UMA7Bz', 'FiEEq7G31QAsFfWFtWbMosVzUGQgtpUJsZ'],
+    masterFingerprint: '',
+    status: AirGapWalletStatus.ACTIVE
   }
   public txs = [
     {

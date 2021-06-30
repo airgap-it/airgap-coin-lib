@@ -9,9 +9,7 @@ export class MichelsonBytes extends MichelsonType {
   }
 
   public static from(value: unknown, name?: string): MichelsonBytes {
-    return isMichelinePrimitive('bytes', value)
-      ? MichelsonBytes.fromMicheline(value, name)
-      : MichelsonBytes.fromUnknown(value, name)
+    return isMichelinePrimitive('bytes', value) ? MichelsonBytes.fromMicheline(value, name) : MichelsonBytes.fromUnknown(value, name)
   }
 
   public static fromMicheline(micheline: MichelinePrimitive<'bytes'>, name?: string): MichelsonBytes {
@@ -41,5 +39,4 @@ export class MichelsonBytes extends MichelsonType {
       bytes: this.value.toString('hex')
     }
   }
-
 }

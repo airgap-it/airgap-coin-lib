@@ -79,7 +79,9 @@ describe(`Serializer`, async () => {
       {
         x: '0x1234'
       },
-      `${new InvalidString('string "0x1234" starts with "0x". This causes problems with RLP. Please use the "HexString" type instead of "string"')}`
+      `${new InvalidString(
+        'string "0x1234" starts with "0x". This causes problems with RLP. Please use the "HexString" type instead of "string"'
+      )}`
     )
     await test<StringMessage>(
       1008,
@@ -569,9 +571,7 @@ describe(`Serializer`, async () => {
 
       await serializer.serialize([message])
     } catch (error) {
-      expect(error.toString()).to.equal(
-        `${new InvalidSchemaType('arr1: expected type "array", but got "undefined", value: undefined')}`
-      )
+      expect(error.toString()).to.equal(`${new InvalidSchemaType('arr1: expected type "array", but got "undefined", value: undefined')}`)
     }
   })
 

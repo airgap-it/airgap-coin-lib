@@ -176,6 +176,7 @@ export class AirGapNodeClient extends EthereumNodeClient {
   public async callBalanceOf(contractAddress: string, address: string): Promise<BigNumber> {
     const body = this.balanceOfBody(contractAddress, address)
     const response = await this.send(body)
+
     return new BigNumber(response.result)
   }
 
@@ -186,11 +187,13 @@ export class AirGapNodeClient extends EthereumNodeClient {
     responses.forEach((response) => {
       result[contractAddresses[response.id]] = new BigNumber(response.result ?? 0)
     })
+
     return result
   }
 
   private balanceOfBody(contractAddress: string, address: string, id: number = 0): EthereumRPCBody {
     const data = new EthereumRPCDataBalanceOf(address)
+
     return new EthereumRPCBody('eth_call', [{ to: contractAddress, data: data.abiEncoded() }, EthereumRPCBody.blockLatest], id)
   }
 
@@ -233,6 +236,7 @@ export class AirGapNodeClient extends EthereumNodeClient {
 
   private async batchSend(bodies: EthereumRPCBody[]): Promise<EthereumRPCResponse[]> {
     const data = (await axios.post(this.baseURL, JSON.stringify(bodies.map((body) => body.toJSON())))).data
+
     return data
   }
 }

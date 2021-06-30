@@ -25,7 +25,7 @@ export class SCALEArray<T extends SCALEType> extends SCALEType {
     const elements: T[] = []
     let bytesDecoded = 0
     for (let i = 0; i < arrayLength.decoded.toNumber(); i++) {
-      const element = decodeElement(network,runtimeVersion, _hex)
+      const element = decodeElement(network, runtimeVersion, _hex)
       elements.push(element.decoded)
       bytesDecoded += element.bytesDecoded
       _hex = _hex.slice(element.bytesDecoded * 2)

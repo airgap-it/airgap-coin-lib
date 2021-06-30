@@ -17,11 +17,7 @@ export class SubstrateSignature extends SCALEClass {
     return new SubstrateSignature(SCALEEnum.from(type), signature ? SCALEHash.from(signature) : SCALEHash.empty(SIGNATURE_BITS))
   }
 
-  public static decode(
-    network: SubstrateNetwork, 
-    runtimeVersion: number | undefined, 
-    raw: string
-  ): SCALEDecodeResult<SubstrateSignature> {
+  public static decode(network: SubstrateNetwork, runtimeVersion: number | undefined, raw: string): SCALEDecodeResult<SubstrateSignature> {
     const decoder = new SCALEDecoder(network, runtimeVersion, raw)
 
     const type = decoder.decodeNextEnum((value) => SubstrateSignatureType[SubstrateSignatureType[value]])

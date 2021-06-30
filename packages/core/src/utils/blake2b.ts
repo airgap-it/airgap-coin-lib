@@ -5,7 +5,7 @@ import { addHexPrefix, hexToBytes } from './hex'
 export function blake2bAsHex(
   data: Uint8Array | string,
   bitLength: number,
-  config: { withPrefix: boolean, key?: Uint8Array } = { withPrefix: false }
+  config: { withPrefix: boolean; key?: Uint8Array } = { withPrefix: false }
 ): string {
   const hash = blake2bAsBytes(data, bitLength, { key: config.key })
   const hex = Buffer.from(hash).toString('hex')

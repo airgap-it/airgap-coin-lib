@@ -27,6 +27,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     if (index >= addresses.length) {
       throw new NotFoundError(Domain.TEZOS, 'No address for the specified index exists')
     }
+
     return addresses[index]
   }
 

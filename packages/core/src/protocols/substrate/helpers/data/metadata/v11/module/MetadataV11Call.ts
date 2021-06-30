@@ -7,8 +7,8 @@ import { SCALEString } from '../../../scale/type/SCALEString'
 
 class MetadataV11CallArgument extends SCALEClass {
   public static decode(
-    network: SubstrateNetwork, 
-    runtimeVersion: number | undefined, 
+    network: SubstrateNetwork,
+    runtimeVersion: number | undefined,
     raw: string
   ): SCALEDecodeResult<MetadataV11CallArgument> {
     const decoder = new SCALEDecoder(network, runtimeVersion, raw)
@@ -45,7 +45,11 @@ export class MetadataV11Call extends SCALEClass {
 
   protected scaleFields = [this.name, this.args]
 
-  private constructor(readonly name: SCALEString, readonly args: SCALEArray<MetadataV11CallArgument>, readonly docs: SCALEArray<SCALEString>) {
+  private constructor(
+    readonly name: SCALEString,
+    readonly args: SCALEArray<MetadataV11CallArgument>,
+    readonly docs: SCALEArray<SCALEString>
+  ) {
     super()
   }
 }

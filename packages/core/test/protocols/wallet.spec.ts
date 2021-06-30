@@ -7,6 +7,7 @@ import axios from '../../src/dependencies/src/axios-0.19.0/index'
 import { AirGapWallet, BitcoinProtocol, EthereumProtocol } from '../../src/index'
 import { EthereumProtocolOptions } from '../../src/protocols/ethereum/EthereumProtocolOptions'
 import { MainProtocolSymbols } from '../../src/utils/ProtocolSymbols'
+import { AirGapWalletStatus } from '../../src/wallet/AirGapWallet'
 
 // use chai-as-promised plugin
 chai.use(chaiAsPromised)
@@ -48,7 +49,9 @@ describe(`AirGapWallet`, () => {
       protocol,
       '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       false,
-      protocol.standardDerivationPath
+      protocol.standardDerivationPath,
+      '',
+      AirGapWalletStatus.ACTIVE
     )
 
     const address = wallet.receivingPublicAddress
@@ -60,7 +63,9 @@ describe(`AirGapWallet`, () => {
       protocol,
       '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       false,
-      protocol.standardDerivationPath
+      protocol.standardDerivationPath,
+      '',
+      AirGapWalletStatus.ACTIVE
     )
 
     const [address] = await wallet.deriveAddresses(1)
@@ -72,7 +77,9 @@ describe(`AirGapWallet`, () => {
       protocol,
       '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       false,
-      protocol.standardDerivationPath
+      protocol.standardDerivationPath,
+      '',
+      AirGapWalletStatus.ACTIVE
     )
 
     const [address] = await wallet.deriveAddresses(1)
@@ -86,7 +93,9 @@ describe(`AirGapWallet`, () => {
       xPubProtocol,
       'xpub6CzH93BB4aueZX2bP88tvsvE8Cz2bHeGVAZSD5fmnk8roYBZCGbwwSA7ChiRr65jncuPH8qBQA9nBwi2Qtz1Uqt8wuHvof9SAcPpFxpe1GV',
       true,
-      xPubProtocol.standardDerivationPath
+      xPubProtocol.standardDerivationPath,
+      '',
+      AirGapWalletStatus.ACTIVE
     )
 
     const [address] = await wallet.deriveAddresses(1)
@@ -100,7 +109,9 @@ describe(`AirGapWallet`, () => {
       xPubProtocol,
       'xpub6CzH93BB4aueZX2bP88tvsvE8Cz2bHeGVAZSD5fmnk8roYBZCGbwwSA7ChiRr65jncuPH8qBQA9nBwi2Qtz1Uqt8wuHvof9SAcPpFxpe1GV',
       true,
-      xPubProtocol.standardDerivationPath.substring(0, xPubProtocol.standardDerivationPath.length - 1)
+      xPubProtocol.standardDerivationPath.substring(0, xPubProtocol.standardDerivationPath.length - 1),
+      '',
+      AirGapWalletStatus.ACTIVE
     )
 
     const [address] = await wallet.deriveAddresses(1)
@@ -114,7 +125,9 @@ describe(`AirGapWallet`, () => {
       protocol,
       '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       false,
-      protocol.standardDerivationPath
+      protocol.standardDerivationPath,
+      'f4e222fd',
+      AirGapWalletStatus.ACTIVE
     )
 
     const json = wallet.toJSON()
@@ -125,7 +138,9 @@ describe(`AirGapWallet`, () => {
       isExtendedPublicKey: false,
       derivationPath: "m/44'/60'/0'/0/0",
       addressIndex: undefined,
-      addresses: []
+      addresses: [],
+      masterFingerprint: 'f4e222fd',
+      status: AirGapWalletStatus.ACTIVE
     })
   })
 

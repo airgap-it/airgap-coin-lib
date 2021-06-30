@@ -23,19 +23,13 @@ export class TezosBTC extends TezosFA12Protocol {
   }
 
   public async getTotalMinted(source?: string, callbackContract: string = this.callbackContract()): Promise<string> {
-    const getTotalMintedCall = await this.contract.createContractCall(TezosBTCContractEntrypoint.TOTAL_MINTED, [
-      [],
-      callbackContract
-    ])
+    const getTotalMintedCall = await this.contract.createContractCall(TezosBTCContractEntrypoint.TOTAL_MINTED, [[], callbackContract])
 
     return this.getContractCallIntResult(getTotalMintedCall, this.requireSource(source))
   }
 
   public async getTotalBurned(source?: string, callbackContract: string = this.callbackContract()): Promise<string> {
-    const getTotalBurnedCall = await this.contract.createContractCall(TezosBTCContractEntrypoint.TOTAL_BURNED, [
-      [],
-      callbackContract
-    ])
+    const getTotalBurnedCall = await this.contract.createContractCall(TezosBTCContractEntrypoint.TOTAL_BURNED, [[], callbackContract])
 
     return this.getContractCallIntResult(getTotalBurnedCall, this.requireSource(source))
   }
@@ -60,15 +54,13 @@ export class TezosBTC extends TezosFA12Protocol {
           if (bigMapEntry.value) {
             value = TezosUtils.parseHex(bigMapEntry.value)
           }
-        } catch { }
+        } catch {}
 
         if (value instanceof MichelsonPair) {
           value = value.items[0].get()
         }
 
-        const amount: BigNumber = value instanceof MichelsonInt
-          ? value.value
-          : new BigNumber(0)
+        const amount: BigNumber = value instanceof MichelsonInt ? value.value : new BigNumber(0)
 
         return {
           address,

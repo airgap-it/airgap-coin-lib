@@ -88,11 +88,7 @@ export class SubstrateTransactionController {
     return SubstrateTransactionMethod.create(this.network, type, methodId.moduleIndex, methodId.callIndex, args)
   }
 
-  public async signTransaction(
-    privateKey: Buffer,
-    transaction: SubstrateTransaction,
-    payload: string
-  ): Promise<SubstrateTransaction> {
+  public async signTransaction(privateKey: Buffer, transaction: SubstrateTransaction, payload: string): Promise<SubstrateTransaction> {
     const signature = await this.signPayload(privateKey, transaction.signer.value.asBytes(), payload)
 
     return SubstrateTransaction.fromTransaction(transaction, { signature })
@@ -125,7 +121,9 @@ export class SubstrateTransactionController {
       .decoded.elements.map((bytesEncoded) => bytesEncoded.bytes.toString('hex'))
 
     return encodedTxs.map((encodedTx) => {
-      const runtimeVersionOptional = SCALEOptional.decode(this.network, undefined, encodedTx, (_network, _runtimeVersion, hex) => SCALEInt.decode(hex, 32))
+      const runtimeVersionOptional = SCALEOptional.decode(this.network, undefined, encodedTx, (_network, _runtimeVersion, hex) =>
+        SCALEInt.decode(hex, 32)
+      )
 
       const _encodedTx = encodedTx.slice(runtimeVersionOptional.bytesDecoded * 2)
       const runtimeVersion = runtimeVersionOptional.decoded.value?.toNumber()
@@ -203,7 +201,7 @@ export class SubstrateTransactionController {
       return Promise.reject('Could not fetch all necessary data.')
     }
 
-    const transaction = results[0]!
+    const transaction = results[0]
 
     const fee = await this.calculateTransactionFee(transaction)
     if (!fee) {
@@ -250,6 +248,7 @@ export class SubstrateTransactionController {
     const message = payloadBuffer.length > 256 ? blake2bAsBytes(payloadBuffer, 256) : payloadBuffer
 
     const signature = sr25519Sign(publicKey, privateKey, message)
+
     return SubstrateSignature.create(SubstrateSignatureType.Sr25519, signature)
   }
 }

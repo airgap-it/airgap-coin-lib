@@ -36,8 +36,8 @@ enum TezosFA2ContractEntrypoint {
 }
 
 export class TezosFA2Protocol extends TezosFAProtocol {
-  private static DEFAULT_TOKEN_METADATA_BIG_MAP_NAME = 'token_metadata'
-  private static DEFAULT_TOKEN_METADATA_BIG_MAP_VALUE_REGEX = /Pair\s\(Pair\s(?<tokenID>\d+)\s\(Pair\s\"(?<symbol>\w*)\"\s\(Pair\s\"(?<name>\w*)\"\s\(Pair\s(?<decimals>\d*)\s\{(?<extras>.*)\}\)\)\)\)/ // temporary until we get Micheline JSON from the API
+  private static readonly DEFAULT_TOKEN_METADATA_BIG_MAP_NAME = 'token_metadata'
+  private static readonly DEFAULT_TOKEN_METADATA_BIG_MAP_VALUE_REGEX = /Pair\s\(Pair\s(?<tokenID>\d+)\s\(Pair\s\"(?<symbol>\w*)\"\s\(Pair\s\"(?<name>\w*)\"\s\(Pair\s(?<decimals>\d*)\s\{(?<extras>.*)\}\)\)\)\)/ // temporary until we get Micheline JSON from the API
 
   public readonly tokenID?: number
 

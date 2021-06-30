@@ -194,17 +194,19 @@ export class TezosSaplingBookkeeper {
     viewingKey: Buffer | string,
     commitmentsWithCiphertext: [string, TezosSaplingCiphertext, BigNumber][]
   ): Promise<TezosSaplingInput[]> {
-    const inputs: TezosSaplingInput[] = (await Promise.all(
-      commitmentsWithCiphertext.map(async ([commitment, ciphertext, position]: [string, TezosSaplingCiphertext, BigNumber]) => {
-        const decrypted = await this.getIncomingInputFromCiphertext(viewingKey, ciphertext, commitment, position)
+    const inputs: TezosSaplingInput[] = (
+      await Promise.all(
+        commitmentsWithCiphertext.map(async ([commitment, ciphertext, position]: [string, TezosSaplingCiphertext, BigNumber]) => {
+          const decrypted = await this.getIncomingInputFromCiphertext(viewingKey, ciphertext, commitment, position)
 
-        if (decrypted === undefined || !(await this.verifyCommitment(decrypted[1], commitment))) {
-          return undefined
-        }
+          if (decrypted === undefined || !(await this.verifyCommitment(decrypted[1], commitment))) {
+            return undefined
+          }
 
-        return decrypted[1]
-      })
-    )).filter((input: TezosSaplingInput | undefined) => input !== undefined) as TezosSaplingInput[]
+          return decrypted[1]
+        })
+      )
+    ).filter((input: TezosSaplingInput | undefined) => input !== undefined) as TezosSaplingInput[]
 
     return inputs
   }
@@ -213,19 +215,21 @@ export class TezosSaplingBookkeeper {
     viewingKey: Buffer | string,
     commitmentsWithCiphertext: [string, TezosSaplingCiphertext, BigNumber][]
   ): Promise<TezosSaplingInput[]> {
-    const inputs: TezosSaplingInput[] = (await Promise.all(
-      commitmentsWithCiphertext.map(async ([commitment, ciphertext, position]: [string, TezosSaplingCiphertext, BigNumber]) => {
-        const decrypted = await this.getOutgoingInputFromCiphertext(viewingKey, ciphertext, commitment, position)
+    const inputs: TezosSaplingInput[] = (
+      await Promise.all(
+        commitmentsWithCiphertext.map(async ([commitment, ciphertext, position]: [string, TezosSaplingCiphertext, BigNumber]) => {
+          const decrypted = await this.getOutgoingInputFromCiphertext(viewingKey, ciphertext, commitment, position)
 
-        if (decrypted === undefined || (decrypted[1].address !== '' && !(await this.verifyCommitment(decrypted[1], commitment)))) {
-          return undefined
-        }
+          if (decrypted === undefined || (decrypted[1].address !== '' && !(await this.verifyCommitment(decrypted[1], commitment)))) {
+            return undefined
+          }
 
-        return decrypted[1]
-      })
-    )).filter((input: TezosSaplingInput | undefined) => input !== undefined) as TezosSaplingInput[]
+          return decrypted[1]
+        })
+      )
+    ).filter((input: TezosSaplingInput | undefined) => input !== undefined) as TezosSaplingInput[]
 
-    return inputs 
+    return inputs
   }
 
   public async getUnspends(
@@ -236,17 +240,21 @@ export class TezosSaplingBookkeeper {
     const nullifiersSet: Set<string> = new Set(nullifiers.map((nullifier: string) => stripHexPrefix(nullifier)))
 
     const inputs: TezosSaplingInput[] = await this.getInputs(viewingKey, commitmentsWithCiphertext)
-    const unspends: TezosSaplingInput[] = (await Promise.all(inputs.map(async (input: TezosSaplingInput) => {
-      const nullifier: Buffer = await sapling.computeNullifier(
-        viewingKey,
-        (await TezosSaplingAddress.fromValue(input.address)).raw,
-        input.value,
-        input.rcm,
-        input.pos
-      )
+    const unspends: TezosSaplingInput[] = (
+      await Promise.all(
+        inputs.map(async (input: TezosSaplingInput) => {
+          const nullifier: Buffer = await sapling.computeNullifier(
+            viewingKey,
+            (await TezosSaplingAddress.fromValue(input.address)).raw,
+            input.value,
+            input.rcm,
+            input.pos
+          )
 
-      return !nullifiersSet.has(nullifier.toString('hex')) ? input : undefined
-    }))).filter((input: TezosSaplingInput | undefined) => input !== undefined) as TezosSaplingInput[]
+          return !nullifiersSet.has(nullifier.toString('hex')) ? input : undefined
+        })
+      )
+    ).filter((input: TezosSaplingInput | undefined) => input !== undefined) as TezosSaplingInput[]
 
     return unspends
   }
@@ -327,7 +335,11 @@ export class TezosSaplingBookkeeper {
     commitment: string,
     position: BigNumber
   ): Promise<[Buffer, TezosSaplingInput] | undefined> {
-    const inputWithMemo: [Buffer, TezosSaplingInput] | undefined = await this.getReceiverInputFromCiphertext(viewingKey, ciphertext, position)
+    const inputWithMemo: [Buffer, TezosSaplingInput] | undefined = await this.getReceiverInputFromCiphertext(
+      viewingKey,
+      ciphertext,
+      position
+    )
     if (inputWithMemo === undefined) {
       return undefined
     }

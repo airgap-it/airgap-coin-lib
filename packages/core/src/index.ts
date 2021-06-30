@@ -45,7 +45,7 @@ import {
 } from './protocols/tezos/TezosProtocol'
 import { IACMessageType } from './serializer/interfaces'
 import { IACMessageDefinitionObject, Message } from './serializer/message'
-import { AccountShareResponse } from './serializer/schemas/definitions/account-share-response'
+import { AccountShareResponse } from './serializer-v3/schemas/definitions/account-share-response'
 import { MessageSignRequest } from './serializer/schemas/definitions/message-sign-request'
 import { MessageSignResponse } from './serializer/schemas/definitions/message-sign-response'
 import { SignedTransaction } from './serializer/schemas/definitions/signed-transaction'
@@ -59,7 +59,8 @@ import { UnsignedAeternityTransaction } from './serializer/schemas/definitions/u
 import { UnsignedBitcoinTransaction } from './serializer/schemas/definitions/unsigned-transaction-bitcoin'
 import { UnsignedEthereumTransaction } from './serializer/schemas/definitions/unsigned-transaction-ethereum'
 import { UnsignedTezosTransaction } from './serializer/schemas/definitions/unsigned-transaction-tezos'
-import { IACPayloadType, Serializer } from './serializer/serializer'
+import { Serializer } from './serializer/serializer'
+import { SerializerV3 } from './serializer-v3/serializer'
 import {
   RawAeternityTransaction,
   RawBitcoinTransaction,
@@ -75,7 +76,7 @@ import { addSubProtocol, getSubProtocolsByIdentifier } from './utils/subProtocol
 import { getProtocolOptionsByIdentifier } from './utils/protocolOptionsByIdentifier'
 import { addSupportedProtocol, supportedProtocols } from './utils/supportedProtocols'
 import { AirGapMarketWallet, AirGapWalletPriceService, TimeInterval } from './wallet/AirGapMarketWallet'
-import { AirGapWallet, SerializedAirGapWallet } from './wallet/AirGapWallet'
+import { AirGapWallet, AirGapWalletStatus, SerializedAirGapWallet } from './wallet/AirGapWallet'
 import { AeternityProtocolOptions, AeternalBlockExplorer, AeternityProtocolNetwork } from './protocols/aeternity/AeternityProtocolOptions'
 import { AeternityCryptoClient } from './protocols/aeternity/AeternityCryptoClient'
 import { BitcoinCryptoClient } from './protocols/bitcoin/BitcoinCryptoClient'
@@ -158,7 +159,8 @@ import {
 } from './protocols/tezos/fa/TezosFAProtocolOptions'
 import { TezosTransactionResult } from './protocols/tezos/types/TezosTransactionResult'
 import { TezosTransactionCursor } from './protocols/tezos/types/TezosTransactionCursor'
-import { generateId } from './serializer/utils/generateId'
+import { generateId } from './serializer-v3/utils/generateId'
+import { generateIdV2 } from './serializer/utils/generateId'
 import { ProtocolSymbols, MainProtocolSymbols, SubProtocolSymbols } from './utils/ProtocolSymbols'
 import { TezosUtils } from './protocols/tezos/TezosUtils'
 import { TezosFA2Protocol } from './protocols/tezos/fa/TezosFA2Protocol'
@@ -166,8 +168,6 @@ import { TezosFA1Protocol } from './protocols/tezos/fa/TezosFA1Protocol'
 import { TezosFA12Protocol } from './protocols/tezos/fa/TezosFA12Protocol'
 import { TezosSaplingProtocol } from './protocols/tezos/sapling/TezosSaplingProtocol'
 import { TezosShieldedTezProtocol } from './protocols/tezos/sapling/TezosShieldedTezProtocol'
-
-import { DeserializedSyncProtocol, EncodedType, SyncProtocolUtils } from './serializer/v1/serializer'
 import { ImportAccountAction, ImportAccoutActionContext } from './actions/GetKtAccountsAction'
 import { CosmosUnbondingDelegation, CosmosValidator } from './protocols/cosmos/CosmosNodeClient'
 import { SubstrateElectionStatus } from './protocols/substrate/helpers/data/staking/SubstrateEraElectionStatus'
@@ -201,6 +201,7 @@ import { AeternityAddress } from './protocols/aeternity/AeternityAddress'
 import { BitcoinAddress } from './protocols/bitcoin/BitcoinAddress'
 import { EthereumAddress } from './protocols/ethereum/EthereumAddress'
 import { TezosAddress } from './protocols/tezos/TezosAddress'
+import { IACMessageDefinitionObjectV3 } from './serializer-v3/message'
 
 // tslint:enable:ordered-imports
 
@@ -208,6 +209,7 @@ import { TezosAddress } from './protocols/tezos/TezosAddress'
 export {
   AirGapWallet,
   AirGapMarketWallet,
+  AirGapWalletStatus,
   IAirGapWallet,
   IAirGapTransaction,
   ICoinProtocol,
@@ -382,6 +384,7 @@ export {
 export {
   IACMessageType,
   IACMessageDefinitionObject,
+  IACMessageDefinitionObjectV3,
   AccountShareResponse,
   MessageSignRequest,
   MessageSignResponse,
@@ -397,11 +400,8 @@ export {
   SignedCosmosTransaction,
   SignedEthereumTransaction,
   SignedTezosTransaction,
-  IACPayloadType,
   Serializer,
-  DeserializedSyncProtocol,
-  EncodedType,
-  SyncProtocolUtils,
+  SerializerV3,
   Message,
   SerializedAirGapWallet
 }
@@ -429,6 +429,7 @@ export {
   // sub-protocols
   addSubProtocol,
   generateId,
+  generateIdV2,
   TimeInterval,
   DelegateeDetails,
   DelegatorAction,

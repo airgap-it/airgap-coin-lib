@@ -22,7 +22,7 @@ export class MichelsonUnit extends MichelsonType {
 
     return new MichelsonUnit(name)
   }
-  
+
   public asRawValue(): any {
     return undefined
   }

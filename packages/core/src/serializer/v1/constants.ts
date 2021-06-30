@@ -1,7 +1,0 @@
-const SERIALIZER_VERSION = 1
-
-export { SERIALIZER_VERSION }
-
-export enum TezosBTCDetails {
-  CONTRACT_ADDRESS = 'KT1LH2o12xVRwTpJMZ6QJG74Fox8gE9QieFd'
-}
