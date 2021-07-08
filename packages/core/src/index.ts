@@ -45,6 +45,7 @@ import {
 } from './protocols/tezos/TezosProtocol'
 import { IACMessageType } from './serializer/interfaces'
 import { IACMessageDefinitionObject, Message } from './serializer/message'
+import { AccountShareResponse as AccountShareResponseV2 } from './serializer/schemas/definitions/account-share-response'
 import { AccountShareResponse } from './serializer-v3/schemas/definitions/account-share-response'
 import { MessageSignRequest } from './serializer/schemas/definitions/message-sign-request'
 import { MessageSignResponse } from './serializer/schemas/definitions/message-sign-response'
@@ -202,6 +203,8 @@ import { BitcoinAddress } from './protocols/bitcoin/BitcoinAddress'
 import { EthereumAddress } from './protocols/ethereum/EthereumAddress'
 import { TezosAddress } from './protocols/tezos/TezosAddress'
 import { IACMessageDefinitionObjectV3 } from './serializer-v3/message'
+import { IACMessages as IACMessagesV2 } from './serializer/message'
+import { IACMessages } from './serializer-v3/message'
 
 // tslint:enable:ordered-imports
 
@@ -442,3 +445,6 @@ export {
   SubProtocolType,
   assertNever
 }
+
+// TODO: Those can be removed when serializer v2 is removed
+export { IACMessages, IACMessagesV2, AccountShareResponseV2 }
