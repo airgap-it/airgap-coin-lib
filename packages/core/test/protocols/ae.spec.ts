@@ -85,7 +85,7 @@ describe(`ICoinProtocol Aeternity - Custom Tests`, () => {
         blockExplorer: undefined,
         extras: undefined,
         name: 'Mainnet',
-        rpcUrl: 'https://mainnet.aeternity.io',
+        rpcUrl: 'https://explorer.aeternity.io',
         type: 'MAINNET'
       }
     ])
@@ -123,7 +123,7 @@ describe(`ICoinProtocol Aeternity - Custom Tests`, () => {
         blockExplorer: undefined,
         extras: undefined,
         name: 'Mainnet',
-        rpcUrl: 'https://mainnet.aeternity.io',
+        rpcUrl: 'https://explorer.aeternity.io',
         type: 'MAINNET'
       }
     ])
