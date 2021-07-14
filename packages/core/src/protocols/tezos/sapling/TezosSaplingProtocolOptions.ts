@@ -51,7 +51,7 @@ export class TezosShieldedTezProtocolConfig extends TezosSaplingProtocolConfig {
   constructor(
     public readonly name: string = 'Shielded Tez',
     public readonly identifier: ProtocolSymbols = MainProtocolSymbols.XTZ_SHIELDED,
-    public readonly contractAddress: string = 'KT1GNFd4tPtHwMKFzB1QhzKe3CoVbiqkcFmE',
+    public readonly contractAddress: string = 'KT1QVn62fZVBdTo5pWp9kC6d4CcGAQV2k7dW',
     public readonly externalProvider?: TezosSaplingExternalMethodProvider,
     public readonly memoSize: number = 8,
     public readonly merkleTreeHeight: number = 32
