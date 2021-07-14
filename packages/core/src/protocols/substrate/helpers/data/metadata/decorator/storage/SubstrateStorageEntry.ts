@@ -66,11 +66,7 @@ export class SubstratePlainStorageEntry extends SubstrateStorageEntry {
 }
 
 export class SubstrateMapStorageEntry extends SubstrateStorageEntry {
-  public constructor(
-    module: string, 
-    prefix: string,
-    public readonly hasher: SubstrateStorageEntryHasher
-  ) {
+  public constructor(module: string, prefix: string, public readonly hasher: SubstrateStorageEntryHasher) {
     super(module, prefix)
   }
 
@@ -87,9 +83,9 @@ export class SubstrateMapStorageEntry extends SubstrateStorageEntry {
 
 export class SubstrateDoubleMapStorageEntry extends SubstrateStorageEntry {
   public constructor(
-    module: string, 
+    module: string,
     prefix: string,
-    public readonly firstHasher: SubstrateStorageEntryHasher, 
+    public readonly firstHasher: SubstrateStorageEntryHasher,
     public readonly secondHasher: SubstrateStorageEntryHasher
   ) {
     super(module, prefix)
@@ -111,13 +107,8 @@ export class SubstrateDoubleMapStorageEntry extends SubstrateStorageEntry {
   }
 }
 
-
 export class SubstrateNMapStorageEntry extends SubstrateStorageEntry {
-  public constructor(
-    module: string, 
-    prefix: string,
-    public readonly hashers: SubstrateStorageEntryHasher[]
-  ) {
+  public constructor(module: string, prefix: string, public readonly hashers: SubstrateStorageEntryHasher[]) {
     super(module, prefix)
   }
 

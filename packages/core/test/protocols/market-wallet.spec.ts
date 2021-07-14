@@ -19,6 +19,7 @@ import {
 } from '../../src/index'
 import { EthereumProtocolOptions } from '../../src/protocols/ethereum/EthereumProtocolOptions'
 import { AirGapWalletPriceService } from '../../src/wallet/AirGapMarketWallet'
+import { AirGapWalletStatus } from '../../src/wallet/AirGapWallet'
 
 addSupportedProtocol(new AeternityProtocol())
 addSupportedProtocol(new BitcoinProtocol())
@@ -53,6 +54,8 @@ describe(`AirGapMarketWallet`, () => {
       '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       false,
       protocol.standardDerivationPath,
+      '',
+      AirGapWalletStatus.ACTIVE,
       new AirGapPriceService()
     )
     wallet.addresses = ['0x742d35Cc6634C0532925a3b844Bc454e4438f44e']
@@ -65,6 +68,8 @@ describe(`AirGapMarketWallet`, () => {
       '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       false,
       protocol.standardDerivationPath,
+      '',
+      AirGapWalletStatus.ACTIVE,
       new AirGapPriceService()
     )
   }
@@ -129,6 +134,8 @@ describe(`AirGapMarketWallet`, () => {
       'xpub6CzH93BB4aueZX2bP88tvsvE8Cz2bHeGVAZSD5fmnk8roYBZCGbwwSA7ChiRr65jncuPH8qBQA9nBwi2Qtz1Uqt8wuHvof9SAcPpFxpe1GV',
       true,
       xPubProtocol.standardDerivationPath,
+      '',
+      AirGapWalletStatus.ACTIVE,
       new AirGapPriceService()
     )
 
@@ -159,6 +166,8 @@ describe(`AirGapMarketWallet`, () => {
       '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       false,
       protocol.standardDerivationPath,
+      '',
+      AirGapWalletStatus.ACTIVE,
       new AirGapPriceService()
     )
 
@@ -172,6 +181,8 @@ describe(`AirGapMarketWallet`, () => {
       '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       false,
       protocol.standardDerivationPath,
+      '',
+      AirGapWalletStatus.ACTIVE,
       new AirGapPriceService()
     )
 
@@ -185,6 +196,8 @@ describe(`AirGapMarketWallet`, () => {
       '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       false,
       protocol.standardDerivationPath,
+      '',
+      AirGapWalletStatus.ACTIVE,
       new AirGapPriceService()
     )
 
@@ -200,6 +213,8 @@ describe(`AirGapMarketWallet`, () => {
       'xpub6CzH93BB4aueZX2bP88tvsvE8Cz2bHeGVAZSD5fmnk8roYBZCGbwwSA7ChiRr65jncuPH8qBQA9nBwi2Qtz1Uqt8wuHvof9SAcPpFxpe1GV',
       true,
       xPubProtocol.standardDerivationPath,
+      '',
+      AirGapWalletStatus.ACTIVE,
       new AirGapPriceService()
     )
 
@@ -215,6 +230,8 @@ describe(`AirGapMarketWallet`, () => {
       'xpub6CzH93BB4aueZX2bP88tvsvE8Cz2bHeGVAZSD5fmnk8roYBZCGbwwSA7ChiRr65jncuPH8qBQA9nBwi2Qtz1Uqt8wuHvof9SAcPpFxpe1GV',
       true,
       xPubProtocol.standardDerivationPath.substring(0, xPubProtocol.standardDerivationPath.length - 1),
+      '',
+      AirGapWalletStatus.ACTIVE,
       new AirGapPriceService()
     )
 
@@ -230,6 +247,8 @@ describe(`AirGapMarketWallet`, () => {
       '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       false,
       protocol.standardDerivationPath,
+      '',
+      AirGapWalletStatus.ACTIVE,
       new AirGapPriceService()
     )
 

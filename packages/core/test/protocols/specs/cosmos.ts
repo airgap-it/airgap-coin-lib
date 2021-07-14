@@ -3,6 +3,7 @@ import { CosmosSendMessage } from '../../../src/protocols/cosmos/cosmos-message/
 import { CosmosCoin } from '../../../src/protocols/cosmos/CosmosCoin'
 import { CosmosFee } from '../../../src/protocols/cosmos/CosmosFee'
 import { CosmosTransaction } from '../../../src/protocols/cosmos/CosmosTransaction'
+import { AirGapWalletStatus } from '../../../src/wallet/AirGapWallet'
 import { TestProtocolSpec } from '../implementations'
 import { CosmosProtocolStub } from '../stubs/cosmos.stub'
 
@@ -31,7 +32,9 @@ export class CosmosTestProtocolSpec extends TestProtocolSpec {
   public wallet = {
     privateKey: '194ec0f51a1774e5192e159e7c615db6d08d761e11c2c5ac75e21e1c3af15392',
     publicKey: '03df7dfe5b435f96027337e523417e07cce61aa4b9f51bb93aacbdfb54a70a28aa',
-    addresses: ['cosmos1w3mea9ghfdc3r7ax45mehl2tcqw9p0vnlhl0p6']
+    addresses: ['cosmos1w3mea9ghfdc3r7ax45mehl2tcqw9p0vnlhl0p6'],
+    masterFingerprint: '',
+    status: AirGapWalletStatus.ACTIVE
   }
   public txs = [
     {

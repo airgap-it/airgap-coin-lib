@@ -22,8 +22,5 @@ export class SubstrateEraElectionStatus {
     return new SubstrateEraElectionStatus(status.decoded, blockNumber?.decoded)
   }
 
-  constructor(
-    public status: SCALEEnum<SubstrateElectionStatus>,
-    public blockNumber?: SCALEInt
-  ) {}
+  constructor(public status: SCALEEnum<SubstrateElectionStatus>, public blockNumber?: SCALEInt) {}
 }

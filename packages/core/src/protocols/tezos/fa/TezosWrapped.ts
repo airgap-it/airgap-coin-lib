@@ -19,6 +19,7 @@ export class TezosWrapped extends TezosFA12Protocol {
       bigMapID: 257
     }
     const values = await this.contract.bigMapValues(request)
+
     return values
       .map((value) => {
         try {
@@ -34,7 +35,7 @@ export class TezosWrapped extends TezosFA12Protocol {
           amount = value.value
 
           return {
-            address: address,
+            address,
             amount
           }
         } catch {

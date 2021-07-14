@@ -20,7 +20,7 @@ import { TezosSaplingProtocolOptions, TezosShieldedTezProtocolConfig } from './T
 export class TezosShieldedTezProtocol extends TezosSaplingProtocol {
   constructor(
     options: TezosSaplingProtocolOptions = new TezosSaplingProtocolOptions(
-      new TezosProtocolNetwork('Edonet', NetworkType.TESTNET, 'https://tezos-edonet-node.prod.gke.papers.tech'),
+      new TezosProtocolNetwork('Florencenet', NetworkType.TESTNET, 'https://tezos-florencenet-node.prod.gke.papers.tech'),
       new TezosShieldedTezProtocolConfig()
     )
   ) {
@@ -49,40 +49,39 @@ export class TezosShieldedTezProtocol extends TezosSaplingProtocol {
   public async parseParameters(parameters: TezosTransactionParameters): Promise<TezosSaplingWrappedTransaction[]> {
     if (parameters.entrypoint === 'default') {
       try {
-        const callArgumentsList = MichelsonList.from(
-          parameters.value,
-          (pairJSON) => MichelsonPair.from(
+        const callArgumentsList = MichelsonList.from(parameters.value, (pairJSON) =>
+          MichelsonPair.from(
             pairJSON,
             undefined,
             (bytesJSON) => MichelsonBytes.from(bytesJSON, 'tx'),
-            (optionJSON) => MichelsonOption.from(
-              optionJSON,
-              (valueJSON) => {
-                if (isMichelinePrimitive('bytes', valueJSON)) {
-                  return MichelsonBytes.from(valueJSON)
-                } else if (isMichelinePrimitive('string', valueJSON)) {
-                  return MichelsonString.from(valueJSON)
-                } else {
-                  return undefined
-                }
-              },
-              'unshieldTarget'
-            )
+            (optionJSON) =>
+              MichelsonOption.from(
+                optionJSON,
+                (valueJSON) => {
+                  if (isMichelinePrimitive('bytes', valueJSON)) {
+                    return MichelsonBytes.from(valueJSON)
+                  } else if (isMichelinePrimitive('string', valueJSON)) {
+                    return MichelsonString.from(valueJSON)
+                  } else {
+                    return undefined
+                  }
+                },
+                'unshieldTarget'
+              )
           )
         ).asRawValue()
 
         return Array.isArray(callArgumentsList)
           ? Promise.all(
-            callArgumentsList.map(async (args) => ({
-              signed: args.tx,
-              unshieldTarget:
-                args.unshieldTarget
+              callArgumentsList.map(async (args) => ({
+                signed: args.tx,
+                unshieldTarget: args.unshieldTarget
                   ? TezosAddress.isTzAddress(args.unshieldTarget)
                     ? await TezosAddress.fromValue(args.unshieldTarget)
                     : await TezosAddress.fromRawTz(args.unshieldTarget)
                   : undefined
-            }))
-          )
+              }))
+            )
           : []
       } catch (error) {
         console.error(error)

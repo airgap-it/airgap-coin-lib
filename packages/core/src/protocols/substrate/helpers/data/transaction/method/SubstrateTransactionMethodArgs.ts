@@ -202,7 +202,7 @@ class TransferArgsDecoder extends SubstrateTransactionMethodArgsDecoder<Transfer
 class BondArgsFactory extends SubstrateTransactionMethodArgsFactory<BondArgs> {
   public createFields(): [string, SCALEType][] {
     return [
-      ['controller', SCALEMultiAddress.from(this.args.controller,  SCALEMultiAddressType.Id, this.network)],
+      ['controller', SCALEMultiAddress.from(this.args.controller, SCALEMultiAddressType.Id, this.network)],
       ['value', SCALECompactInt.from(this.args.value)],
       ['payee', SCALEEnum.from(this.args.payee)]
     ]
@@ -406,7 +406,7 @@ class PayoutStakersArgsDecoder extends SubstrateTransactionMethodArgsDecoder<Pay
       bytesDecoded: era.bytesDecoded + validatorStash.bytesDecoded,
       decoded: {
         validator: validatorStash.decoded.address,
-        era: era.decoded.value,
+        era: era.decoded.value
       }
     }
   }

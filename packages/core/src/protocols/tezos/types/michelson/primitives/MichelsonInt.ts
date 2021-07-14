@@ -10,9 +10,7 @@ export class MichelsonInt extends MichelsonType {
   }
 
   public static from(value: unknown, name?: string): MichelsonInt {
-    return isMichelinePrimitive('int', value)
-      ? MichelsonInt.fromMicheline(value, name)
-      : MichelsonInt.fromUnknown(value, name)
+    return isMichelinePrimitive('int', value) ? MichelsonInt.fromMicheline(value, name) : MichelsonInt.fromUnknown(value, name)
   }
 
   public static fromMicheline(micheline: MichelinePrimitive<'int'>, name?: string): MichelsonInt {

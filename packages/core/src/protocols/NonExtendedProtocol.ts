@@ -1,6 +1,7 @@
+import { IProtocolTransactionCursor } from '../interfaces/IAirGapTransaction'
+
 import { FeeDefaults, CoinAddress } from './ICoinProtocol'
 import { TezosTransactionResult } from './tezos/types/TezosTransactionResult'
-import { IProtocolTransactionCursor } from '../interfaces/IAirGapTransaction'
 
 export abstract class NonExtendedProtocol {
   public getExtendedPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
@@ -49,7 +50,11 @@ export abstract class NonExtendedProtocol {
     return Promise.reject('estimating fee defaults using extended public key not implemented')
   }
 
-  public getTransactionsFromExtendedPublicKey(extendedPublicKey: string, limit: number, cursor: IProtocolTransactionCursor): Promise<TezosTransactionResult> {
+  public getTransactionsFromExtendedPublicKey(
+    extendedPublicKey: string,
+    limit: number,
+    cursor: IProtocolTransactionCursor
+  ): Promise<TezosTransactionResult> {
     return Promise.reject('fetching txs using extended public key not implemented')
   }
 

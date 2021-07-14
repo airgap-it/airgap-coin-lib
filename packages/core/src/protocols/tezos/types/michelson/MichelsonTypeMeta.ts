@@ -17,8 +17,8 @@ export enum MichelsonAnnotationPrefix {
 export interface MichelsonTypeMetaCreateValueConfiguration {
   lazyEval?: boolean
 
-  beforeNext?: (meta: MichelsonTypeMeta, raw: unknown) => void
-  onNext?: (meta: MichelsonTypeMeta, raw: unknown, value: MichelsonType) => void
+  beforeNext?(meta: MichelsonTypeMeta, raw: unknown): void
+  onNext?(meta: MichelsonTypeMeta, raw: unknown, value: MichelsonType): void
 }
 
 export class MichelsonTypeMeta {
@@ -26,7 +26,7 @@ export class MichelsonTypeMeta {
     public readonly type: MichelsonGrammarType,
     public readonly parent?: MichelsonGenericTypeMeta,
     public readonly annots: string[] = []
-  ) { }
+  ) {}
 
   public static fromMichelineNode(node: MichelineTypeNode): MichelsonTypeMeta | undefined {
     if (!isMichelinePrimitiveApplication(node)) {
@@ -54,9 +54,7 @@ export class MichelsonTypeMeta {
     args: MichelinePrimitiveApplication<any>[],
     parent?: MichelsonGenericTypeMeta
   ): MichelsonTypeMeta {
-    return args.length === 0
-      ? new MichelsonTypeMeta(type, parent, annots)
-      : new MichelsonGenericTypeMeta(type, args, parent, annots)
+    return args.length === 0 ? new MichelsonTypeMeta(type, parent, annots) : new MichelsonGenericTypeMeta(type, args, parent, annots)
   }
 
   public createValue(value: unknown, configuration: MichelsonTypeMetaCreateValueConfiguration = {}): MichelsonType {
@@ -85,8 +83,9 @@ export class MichelsonTypeMeta {
 
   public getAnnotation(...prefixes: MichelsonAnnotationPrefix[]): string | undefined {
     for (const annot of this.annots) {
-      const matchedPrefix: MichelsonAnnotationPrefix | undefined =
-        prefixes.find((prefix: MichelsonAnnotationPrefix) => annot.startsWith(prefix))
+      const matchedPrefix: MichelsonAnnotationPrefix | undefined = prefixes.find((prefix: MichelsonAnnotationPrefix) =>
+        annot.startsWith(prefix)
+      )
 
       if (matchedPrefix !== undefined) {
         return annot.slice(matchedPrefix.length)
@@ -99,9 +98,7 @@ export class MichelsonTypeMeta {
   protected getRawValue(value: unknown): unknown {
     const argName: string | undefined = this.getAnnotation(MichelsonAnnotationPrefix.TYPE, MichelsonAnnotationPrefix.FIELD)
 
-    return value instanceof Object && argName && argName in value
-      ? value[argName]
-      : value
+    return value instanceof Object && argName && argName in value ? value[argName] : value
   }
 }
 
@@ -132,10 +129,9 @@ export class MichelsonGenericTypeMeta extends MichelsonTypeMeta {
       configuration.beforeNext(this, raw)
     }
 
-    const genericFactories: ((genericValue: unknown) => MichelsonType)[] =
-      this.generics.map((genericMeta: Lazy<MichelsonTypeMeta>) => {
-        return (genericValue: unknown): MichelsonType => genericMeta.get().createValue(genericValue, configuration)
-      })
+    const genericFactories: ((genericValue: unknown) => MichelsonType)[] = this.generics.map((genericMeta: Lazy<MichelsonTypeMeta>) => {
+      return (genericValue: unknown): MichelsonType => genericMeta.get().createValue(genericValue, configuration)
+    })
 
     const michelsonValue: MichelsonType = michelsonTypeFactories[this.type](raw, ...genericFactories)
 

@@ -5,7 +5,6 @@ import { TezosAddress } from '../TezosAddress'
 import { TezosUtils } from '../TezosUtils'
 
 export class TezosSaplingAddress extends TezosAddress {
-  
   private constructor(value: string, public readonly raw: Buffer, public readonly diversifierIndex?: string) {
     super(value)
   }
@@ -25,11 +24,7 @@ export class TezosSaplingAddress extends TezosAddress {
   }
 
   public static async fromValue(value: string, diversifierIndex?: string): Promise<TezosSaplingAddress> {
-    return new TezosSaplingAddress(
-      value,
-      bs58check.decode(value).slice(TezosUtils.tezosPrefixes.zet1.length),
-      diversifierIndex
-    )
+    return new TezosSaplingAddress(value, bs58check.decode(value).slice(TezosUtils.tezosPrefixes.zet1.length), diversifierIndex)
   }
 
   public static async next(viewingKey: string, current: TezosSaplingAddress): Promise<TezosSaplingAddress> {

@@ -103,13 +103,12 @@ export class SCALECompactInt extends SCALEType {
       mode = 3
     }
 
-    const bytes: number = mode === 3
-      ? Math.ceil(bits / 8)
-      : Math.pow(2, mode)
+    const bytes: number = mode === 3 ? Math.ceil(bits / 8) : Math.pow(2, mode)
 
-    const value: BigNumber = mode === 3
-      ? this.value.multipliedBy(64).plus(bytes - 4) // value << 6 + number of bytes less 4
-      : this.value
+    const value: BigNumber =
+      mode === 3
+        ? this.value.multipliedBy(64).plus(bytes - 4) // value << 6 + number of bytes less 4
+        : this.value
 
     const encodedValue = value.multipliedBy(4).plus(mode) // value << 2 + mode
 

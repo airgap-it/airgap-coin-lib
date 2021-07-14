@@ -23,16 +23,12 @@ export class MetadataV12 extends MetadataVersioned {
     const version = decoder.decodeNextInt(8) // 8 bits
     const modules = decoder.decodeNextArray(MetadataV12Module.decode)
 
-    return new MetadataV12(magicNumber.decoded, version.decoded, modules.decoded) 
+    return new MetadataV12(magicNumber.decoded, version.decoded, modules.decoded)
   }
 
   protected scaleFields = [this.magicNumber, this.version]
 
-  protected constructor(
-    readonly magicNumber: SCALEInt, 
-    readonly version: SCALEInt, 
-    readonly modules: SCALEArray<MetadataV12Module>
-  ) {
+  protected constructor(readonly magicNumber: SCALEInt, readonly version: SCALEInt, readonly modules: SCALEArray<MetadataV12Module>) {
     super()
   }
 
@@ -71,7 +67,7 @@ export class MetadataV12 extends MetadataVersioned {
     return new MetadataDecorator(
       storageEntries.reduce((flatten: SubstrateStorageEntry[], next: SubstrateStorageEntry[]) => flatten.concat(next), []),
       calls.reduce((flatten: SubstrateCall[], next: SubstrateCall[]) => flatten.concat(next), []),
-      constants.reduce((flatten: SubstrateConstant[], next: SubstrateConstant[]) => flatten.concat(next), []),
+      constants.reduce((flatten: SubstrateConstant[], next: SubstrateConstant[]) => flatten.concat(next), [])
     )
   }
 

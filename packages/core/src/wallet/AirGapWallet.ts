@@ -4,6 +4,12 @@ import { IAirGapWallet } from '../interfaces/IAirGapWallet'
 import { ICoinProtocol, CoinAddress } from '../protocols/ICoinProtocol'
 import { ProtocolSymbols } from '../utils/ProtocolSymbols'
 
+export enum AirGapWalletStatus {
+  ACTIVE = 'active',
+  HIDDEN = 'hidden',
+  DELETED = 'deleted'
+}
+
 export interface SerializedAirGapWallet {
   protocolIdentifier: ProtocolSymbols
   networkIdentifier: string
@@ -11,6 +17,8 @@ export interface SerializedAirGapWallet {
   isExtendedPublicKey: boolean
   derivationPath: string
   addresses: string[]
+  masterFingerprint?: string
+  status?: AirGapWalletStatus
   addressIndex?: number
 }
 
@@ -22,6 +30,8 @@ export class AirGapWallet implements IAirGapWallet {
     public publicKey: string,
     public isExtendedPublicKey: boolean,
     public derivationPath: string,
+    public masterFingerprint: string,
+    public status: AirGapWalletStatus,
     public addressIndex?: number
   ) {}
 
@@ -46,10 +56,12 @@ export class AirGapWallet implements IAirGapWallet {
         offset = Number.parseInt(parts[parts.length - 1], 10)
       }
 
-      addresses = (await Promise.all([
-        this.protocol.getAddressesFromExtendedPublicKey(this.publicKey, 0, amount, offset),
-        this.protocol.getAddressesFromExtendedPublicKey(this.publicKey, 1, amount, offset)
-      ])).reduce((flatten, next) => flatten.concat(next), [])
+      addresses = (
+        await Promise.all([
+          this.protocol.getAddressesFromExtendedPublicKey(this.publicKey, 0, amount, offset),
+          this.protocol.getAddressesFromExtendedPublicKey(this.publicKey, 1, amount, offset)
+        ])
+      ).reduce((flatten, next) => flatten.concat(next), [])
     } else {
       addresses = await this.protocol.getAddressesFromPublicKey(this.publicKey)
     }
@@ -65,6 +77,8 @@ export class AirGapWallet implements IAirGapWallet {
       isExtendedPublicKey: this.isExtendedPublicKey,
       derivationPath: this.derivationPath,
       addresses: this.addresses,
+      masterFingerprint: this.masterFingerprint,
+      status: this.status,
       addressIndex: this.addressIndex
     }
   }

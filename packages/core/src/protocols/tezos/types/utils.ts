@@ -6,10 +6,10 @@ export function isMichelineNode(node: unknown): node is MichelineNode {
 
 function isMichelineNodeRecursive(node: unknown, recursionLevel: number): node is MichelineNode {
   return (
-    isMichelinePrimitive('int', node) || 
-    isMichelinePrimitive('string', node) || 
+    isMichelinePrimitive('int', node) ||
+    isMichelinePrimitive('string', node) ||
     isMichelinePrimitive('bytes', node) ||
-    isMichelinePrimitiveApplication(node) || 
+    isMichelinePrimitiveApplication(node) ||
     isMichelineSequenceRecursive(node, recursionLevel)
   )
 }
@@ -29,14 +29,11 @@ export function isMichelineSequence(node: unknown, recursive: boolean = true): n
 
 function isMichelineSequenceRecursive(node: unknown, recursionLevel: number): node is MichelineNode[] {
   return (
-    Array.isArray(node) && 
-    (
-      node.length === 0 ||
-
+    Array.isArray(node) &&
+    (node.length === 0 ||
       // for simplicity and to avoid too many recursive calls for complex structures
       // after the `MAX_CHECK_RECURSION_DEPTH`th level has been reached, we assume every array is a valid Micheline sequence
       recursionLevel > MICHELINE_MAX_CHECK_RECURSION_DEPTH ||
-      node.every((element: unknown) => isMichelineNodeRecursive(element, recursionLevel + 1))
-    )
+      node.every((element: unknown) => isMichelineNodeRecursive(element, recursionLevel + 1)))
   )
 }

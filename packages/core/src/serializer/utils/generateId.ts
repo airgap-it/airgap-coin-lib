@@ -1,5 +1,5 @@
 // Not very random, but IDs don't have to be because they are only used locally
-export function generateId(length: number): string {
+export function generateIdV2(length: number): string {
   const characters: string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
   const charactersLength: number = characters.length
   let result: string = ''

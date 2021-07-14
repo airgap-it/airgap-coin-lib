@@ -11,7 +11,7 @@ import { MerkleTree, TezosSaplingStateTree } from '../../types/sapling/TezosSapl
 export class TezosSaplingState {
   private readonly uncommitedMerkleHash: string = '0100000000000000000000000000000000000000000000000000000000000000'
   private readonly uncommitedMerkleHashes: LazyAsync<Buffer[]> = new LazyAsync(() => this.createUncommitedMerkleHashes())
-  
+
   private stateTree: TezosSaplingStateTree | undefined
 
   constructor(public readonly treeHeight: number) {}
@@ -48,13 +48,8 @@ export class TezosSaplingState {
     const heightBuffer: Buffer = hexToBytes(changeEndianness(toHexString(stateTree.height)))
     const positionBuffer: Buffer = hexToBytes(changeEndianness(toHexString(position, 64)))
 
-    const neighboringHashes: Buffer[] = await this.getNeighboringHashes(
-      [],
-      stateTree.height,
-      position,
-      stateTree.tree
-    )
-    
+    const neighboringHashes: Buffer[] = await this.getNeighboringHashes([], stateTree.height, position, stateTree.tree)
+
     const witness: Buffer = neighboringHashes
       .map((hash: Buffer) => Buffer.concat([hexToBytes(changeEndianness(toHexString(hash.length))), hash]))
       .reverse()
@@ -68,20 +63,14 @@ export class TezosSaplingState {
       return children[0]
     }
 
-    if (
-      height === this.treeHeight ||
-      children.length > Math.pow(2, this.treeHeight - 1 - height)
-    ) {
+    if (height === this.treeHeight || children.length > Math.pow(2, this.treeHeight - 1 - height)) {
       return Promise.reject('Invalid Merkle tree')
     }
 
     const chunkedChildren: MerkleTree[][] = chunkedArray(children, 2)
     const newChildren: MerkleTree[] = await Promise.all(
       chunkedChildren.map(async (chunk: MerkleTree[]) => {
-        const [lhs, rhs]: [Buffer, Buffer] = await Promise.all([
-          this.getMerkleHash(chunk[0], height),
-          this.getMerkleHash(chunk[1], height)
-        ])
+        const [lhs, rhs]: [Buffer, Buffer] = await Promise.all([this.getMerkleHash(chunk[0], height), this.getMerkleHash(chunk[1], height)])
 
         const parentHash = await sapling.merkleHash(height, lhs, rhs)
 
@@ -121,12 +110,7 @@ export class TezosSaplingState {
     return res
   }
 
-  private async getNeighboringHashes(
-    acc: Buffer[],
-    height: number,
-    position: BigNumber,
-    tree: MerkleTree
-  ): Promise<Buffer[]> {
+  private async getNeighboringHashes(acc: Buffer[], height: number, position: BigNumber, tree: MerkleTree): Promise<Buffer[]> {
     if (typeof tree === 'undefined') {
       return Promise.reject('Invalid tree')
     } else if (typeof tree === 'string') {
@@ -137,12 +121,7 @@ export class TezosSaplingState {
         ? [position, tree[1], tree[2]]
         : [position.minus(full), tree[2], tree[1]]
 
-      return this.getNeighboringHashes(
-        [await this.getMerkleHash(otherTree, height - 1), ...acc],
-        height - 1,
-        nextPosition,
-        nextTree
-      )
+      return this.getNeighboringHashes([await this.getMerkleHash(otherTree, height - 1), ...acc], height - 1, nextPosition, nextTree)
     }
   }
 }

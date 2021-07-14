@@ -30,7 +30,13 @@ export class MetadataV13Module extends SCALEClass {
 
     return {
       bytesDecoded:
-        name.bytesDecoded + storage.bytesDecoded + calls.bytesDecoded + events.bytesDecoded + constants.bytesDecoded + errors.bytesDecoded + index.bytesDecoded,
+        name.bytesDecoded +
+        storage.bytesDecoded +
+        calls.bytesDecoded +
+        events.bytesDecoded +
+        constants.bytesDecoded +
+        errors.bytesDecoded +
+        index.bytesDecoded,
       decoded: new MetadataV13Module(
         name.decoded,
         storage.decoded,
@@ -38,7 +44,7 @@ export class MetadataV13Module extends SCALEClass {
         events.decoded,
         constants.decoded,
         errors.decoded,
-        index.decoded,
+        index.decoded
       )
     }
   }

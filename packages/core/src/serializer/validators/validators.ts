@@ -127,7 +127,7 @@ validators.isValidBitcoinInput = (ins: unknown) => {
   for (let i: number = 0; i < ins.length; i++) {
     const value = ins[i]
     if (!value.hasOwnProperty('txId')) {
-      return 'doesn\'t have property txId '
+      return "doesn't have property txId"
     } else {
       const pattern = RegExp('^[a-fA-F0-9]{64}$')
       if (!pattern.test(value.txId)) {
@@ -135,14 +135,14 @@ validators.isValidBitcoinInput = (ins: unknown) => {
       }
     }
     if (!value.hasOwnProperty('value')) {
-      return 'doesn\'t have property value '
+      return "doesn't have property value"
     } else {
       if (!BigNumber.isBigNumber(value.value)) {
         return 'value not a valid BigNumber'
       }
     }
     if (!value.hasOwnProperty('vout')) {
-      return 'doesn\'t have property vout'
+      return "doesn't have property vout"
     } else {
       if (typeof value.vout !== 'number') {
         return 'vout is not a number'
@@ -151,7 +151,7 @@ validators.isValidBitcoinInput = (ins: unknown) => {
       }
     }
     if (!value.hasOwnProperty('address')) {
-      return 'doesn\'t have property address '
+      return "doesn't have property address"
     } else {
       const pattern = RegExp(new BitcoinProtocol().addressValidationPattern)
 
@@ -160,7 +160,7 @@ validators.isValidBitcoinInput = (ins: unknown) => {
       }
     }
     if (!value.hasOwnProperty('derivationPath')) {
-      return 'doesn\'t have property derivationPath'
+      return "doesn't have property derivationPath"
     } else {
       const protocol = new BitcoinProtocol()
       try {
@@ -187,7 +187,7 @@ validators.isValidBitcoinOutput = (outs: unknown) => {
   for (let i: number = 0; i < outs.length; i++) {
     const value = outs[i]
     if (!value.hasOwnProperty('recipient')) {
-      return 'doesn\'t have property recipient'
+      return "doesn't have property recipient"
     } else {
       const pattern = RegExp(new BitcoinProtocol().addressValidationPattern)
       if (!pattern.test(value.recipient)) {
@@ -195,14 +195,14 @@ validators.isValidBitcoinOutput = (outs: unknown) => {
       }
     }
     if (!value.hasOwnProperty('isChange')) {
-      return 'doesn\'t have property isChange '
+      return "doesn't have property isChange "
     } else {
       if (typeof value.isChange !== 'boolean') {
         return 'change is not a boolean'
       }
     }
     if (!value.hasOwnProperty('value')) {
-      return 'doesn\'t have property value '
+      return "doesn't have property value "
     } else {
       if (!BigNumber.isBigNumber(value.value)) {
         return 'value is not BigNumber'

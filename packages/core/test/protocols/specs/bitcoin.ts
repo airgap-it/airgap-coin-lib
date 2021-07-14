@@ -2,6 +2,7 @@ import { BitcoinProtocol } from '../../../src'
 import { IACMessageDefinitionObject } from '../../../src/serializer/message'
 import { SignedBitcoinTransaction } from '../../../src/serializer/schemas/definitions/signed-transaction-bitcoin'
 import { RawBitcoinTransaction } from '../../../src/serializer/types'
+import { AirGapWalletStatus } from '../../../src/wallet/AirGapWallet'
 import { TestProtocolSpec } from '../implementations'
 import { BitcoinProtocolStub } from '../stubs/bitcoin.stub'
 
@@ -20,7 +21,9 @@ export class BitcoinProtocolSpec extends TestProtocolSpec {
   public wallet = {
     privateKey: 'xprv9yzvjXeHEDMMM2x8H6btZjyVaB9YBpvR7wdqQhGAEQbsvjrQejHhPdqdMRcAE3MqdZcfrSkCGk96YVqPhFHwJqY7VxgPgmMWMehcmHdQJ5h',
     publicKey: 'xpub6CzH93BB4aueZX2bP88tvsvE8Cz2bHeGVAZSD5fmnk8roYBZCGbwwSA7ChiRr65jncuPH8qBQA9nBwi2Qtz1Uqt8wuHvof9SAcPpFxpe1GV',
-    addresses: ['15B2gX2x1eqFKgR44nCe1i33ursGKP4Qpi', '1QKqr9wjki9K9tF9NxigbwgHeLXHT682sc']
+    addresses: ['15B2gX2x1eqFKgR44nCe1i33ursGKP4Qpi', '1QKqr9wjki9K9tF9NxigbwgHeLXHT682sc'],
+    masterFingerprint: '',
+    status: AirGapWalletStatus.ACTIVE
   }
   public txs = [
     {

@@ -3,6 +3,7 @@ import * as BIP39 from '../../src/dependencies/src/bip39-2.5.0/index'
 import { AirGapTransactionStatus } from '../../src/interfaces/IAirGapTransaction'
 import { IACMessageType } from '../../src/serializer/interfaces'
 import { IACMessageDefinitionObject } from '../../src/serializer/message'
+import { AirGapWalletStatus } from '../../src/wallet/AirGapWallet'
 
 const mnemonic: string = 'spell device they juice trial skirt amazing boat badge steak usage february virus art survey'
 
@@ -22,10 +23,14 @@ abstract class TestProtocolSpec {
     privateKey: string
     publicKey: string
     addresses: string[]
+    masterFingerprint: string
+    status: AirGapWalletStatus
   } = {
     privateKey: '',
     publicKey: '',
-    addresses: ['']
+    addresses: [''],
+    masterFingerprint: '',
+    status: AirGapWalletStatus.ACTIVE
   }
   public txs: {
     to: string[]
@@ -123,10 +128,13 @@ abstract class TestProtocolSpec {
         protocol: this.lib.identifier,
         type: IACMessageType.AccountShareResponse,
         payload: {
-          // TODO: Add after breaking change: group: 'group1',
           publicKey: this.wallet.publicKey,
           isExtendedPublicKey: this.lib.supportsHD,
           derivationPath: this.lib.standardDerivationPath
+          // masterFingerprint: this.wallet.masterFingerprint,
+          // isActive: true,
+          // groupId: '0123abcd',
+          // groupLabel: 'My Secret'
         }
       }
     ]

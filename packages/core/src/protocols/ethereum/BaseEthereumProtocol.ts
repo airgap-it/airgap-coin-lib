@@ -249,6 +249,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
       }
     })
     const balances = await this.options.nodeClient.callBalanceOfOnContracts(contractAddresses, address)
+
     return contractAddresses.map((contractAddresse) => balances[contractAddresse]?.toFixed() ?? '0')
   }
 
@@ -428,7 +429,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
           const page = Math.max(...values.map((txResult) => txResult.cursor.page))
           overallResolve(
             values.reduce((a, b) => {
-              return { transactions: a.transactions.concat(b.transactions), cursor: { page: page } }
+              return { transactions: a.transactions.concat(b.transactions), cursor: { page } }
             })
           )
         })

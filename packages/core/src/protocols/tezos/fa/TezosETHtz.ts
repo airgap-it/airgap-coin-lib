@@ -2,10 +2,10 @@ import { TezosProtocolNetwork } from '../TezosProtocolOptions'
 import { TezosUtils } from '../TezosUtils'
 
 import { TezosFA12Protocol } from './TezosFA12Protocol'
-import { TezosFAProtocolOptions, TezosETHtzProtocolConfig } from './TezosFAProtocolOptions'
+import { TezosETHtzProtocolConfig, TezosFAProtocolOptions } from './TezosFAProtocolOptions'
 
 export class TezosETHtz extends TezosFA12Protocol {
-  private static extractAmountRegex = /Pair ([0-9]+) /
+  private static readonly extractAmountRegex = /Pair ([0-9]+) /
 
   constructor(
     public readonly options: TezosFAProtocolOptions = new TezosFAProtocolOptions(new TezosProtocolNetwork(), new TezosETHtzProtocolConfig())
@@ -18,6 +18,7 @@ export class TezosETHtz extends TezosFA12Protocol {
       bigMapID: 199
     }
     const values = await this.contract.bigMapValues(request)
+
     return values
       .map((value) => {
         try {
@@ -30,12 +31,13 @@ export class TezosETHtz extends TezosFA12Protocol {
           }
           let amount = '0'
 
-          const match = TezosETHtz.extractAmountRegex.exec(value.value as string)
+          const match = TezosETHtz.extractAmountRegex.exec(value.value)
           if (match) {
             amount = match[1]
           }
+
           return {
-            address: address,
+            address,
             amount
           }
         } catch {

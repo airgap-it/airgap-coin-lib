@@ -1,4 +1,4 @@
-import { InvalidHexString, InvalidSchemaType, InvalidString, NotFoundError } from '../../errors'
+import { InvalidHexString, InvalidPayloadError, InvalidSchemaType, InvalidString, NotFoundError } from '../../errors'
 import { Domain } from '../../errors/coinlib-error'
 import { assertNever } from '../../utils/assert'
 import { SchemaDefinition, SchemaItem, SchemaRoot, SchemaTypes } from '../schemas/schema'
@@ -129,12 +129,15 @@ export function jsonToArray(key: string, schema: SchemaItem, value: Object): RLP
 
     default:
       assertNever(type)
-
-      return ''
+      throw new InvalidSchemaType()
   }
 }
 
 function decode(schemaItem: SchemaItem, decoded: any): any {
+  if (typeof decoded === 'undefined') {
+    throw new InvalidPayloadError()
+  }
+
   const type: SchemaTypes = getTypeFromSchemaDefinition(schemaItem)
   switch (type) {
     case SchemaTypes.BOOLEAN:
@@ -174,6 +177,7 @@ function decode(schemaItem: SchemaItem, decoded: any): any {
 
     default:
       assertNever(type)
+      throw new InvalidSchemaType()
   }
 }
 
