@@ -20,7 +20,7 @@ import { TezosSaplingProtocolOptions, TezosShieldedTezProtocolConfig } from './T
 export class TezosShieldedTezProtocol extends TezosSaplingProtocol {
   constructor(
     options: TezosSaplingProtocolOptions = new TezosSaplingProtocolOptions(
-      new TezosProtocolNetwork('Edonet', NetworkType.TESTNET, 'https://tezos-edonet-node.prod.gke.papers.tech'),
+      new TezosProtocolNetwork('Florencenet', NetworkType.TESTNET, 'https://tezos-florencenet-node.prod.gke.papers.tech'),
       new TezosShieldedTezProtocolConfig()
     )
   ) {
