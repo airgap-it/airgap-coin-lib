@@ -53,7 +53,7 @@ const getProtocolOptionsByIdentifier: (identifier: ProtocolSymbols, network?: Pr
       return new TezosSaplingProtocolOptions(
         network
           ? (network as TezosProtocolNetwork)
-          : new TezosProtocolNetwork('Edonet', NetworkType.TESTNET, 'https://tezos-edonet-node.prod.gke.papers.tech'),
+          : new TezosProtocolNetwork('Florencenet', NetworkType.TESTNET, 'https://tezos-florencenet-node.prod.gke.papers.tech'),
         new TezosShieldedTezProtocolConfig()
       )
     case SubProtocolSymbols.XTZ_BTC:
