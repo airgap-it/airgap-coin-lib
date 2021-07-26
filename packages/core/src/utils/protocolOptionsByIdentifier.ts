@@ -14,7 +14,9 @@ import {
   TezosKolibriUSDProtocolConfig,
   TezosStakerProtocolConfig,
   TezosUSDProtocolConfig,
-  TezosWrappedProtocolConfig
+  TezosUUSDProtocolConfig,
+  TezosWrappedProtocolConfig,
+  TezosYOUProtocolConfig
 } from '../protocols/tezos/fa/TezosFAProtocolOptions'
 import { TezosSaplingProtocolOptions, TezosShieldedTezProtocolConfig } from '../protocols/tezos/sapling/TezosSaplingProtocolOptions'
 import { TezosProtocolNetwork, TezosProtocolOptions } from '../protocols/tezos/TezosProtocolOptions'
@@ -65,6 +67,16 @@ const getProtocolOptionsByIdentifier: (identifier: ProtocolSymbols, network?: Pr
       return new TezosFAProtocolOptions(
         network ? (network as TezosProtocolNetwork) : new TezosProtocolNetwork(),
         new TezosETHtzProtocolConfig()
+      )
+    case SubProtocolSymbols.XTZ_UUSD:
+      return new TezosFAProtocolOptions(
+        network ? (network as TezosProtocolNetwork) : new TezosProtocolNetwork(),
+        new TezosUUSDProtocolConfig()
+      )
+    case SubProtocolSymbols.XTZ_YOU:
+      return new TezosFAProtocolOptions(
+        network ? (network as TezosProtocolNetwork) : new TezosProtocolNetwork(),
+        new TezosYOUProtocolConfig()
       )
     case SubProtocolSymbols.XTZ_W:
       return new TezosFAProtocolOptions(

@@ -1,6 +1,13 @@
 // tslint:disable:max-classes-per-file
 
-import { TezosBTCDetails, TezosETHtzDetails, TezosKolibriUSDDetails, TezosWrappedDetails } from '../../../serializer/constants'
+import {
+  TezosBTCDetails,
+  TezosETHtzDetails,
+  TezosKolibriUSDDetails,
+  TezosUUSDDetails,
+  TezosWrappedDetails,
+  TezosYOUDetails
+} from '../../../serializer/constants'
 import { ProtocolOptions } from '../../../utils/ProtocolOptions'
 import { ProtocolSymbols, SubProtocolSymbols } from '../../../utils/ProtocolSymbols'
 import { FeeDefaults } from '../../ICoinProtocol'
@@ -140,6 +147,45 @@ export class TezosUSDProtocolConfig extends TezosFAProtocolConfig {
     decimals: number = 6
   ) {
     super(symbol, name, marketSymbol, identifier, contractAddress, feeDefaults, decimals)
+  }
+}
+
+export class TezosUUSDProtocolConfig extends TezosFA2ProtocolConfig {
+  constructor(
+    symbol: string = 'uUSD',
+    name: string = 'youves uUSD',
+    marketSymbol: string = 'uusd',
+    identifier: ProtocolSymbols = SubProtocolSymbols.XTZ_UUSD,
+    contractAddress: string = TezosUUSDDetails.CONTRACT_ADDRESS,
+    feeDefaults: FeeDefaults = {
+      low: '0.100',
+      medium: '0.200',
+      high: '0.300'
+    },
+    decimals: number = 12,
+    tokenId: number = 0,
+    tokenMetadataBigMapID: number = 7708
+  ) {
+    super(symbol, name, marketSymbol, identifier, contractAddress, feeDefaults, decimals, tokenId, tokenMetadataBigMapID)
+  }
+}
+export class TezosYOUProtocolConfig extends TezosFA2ProtocolConfig {
+  constructor(
+    symbol: string = 'YOU',
+    name: string = 'youves YOU Governance',
+    marketSymbol: string = 'you',
+    identifier: ProtocolSymbols = SubProtocolSymbols.XTZ_YOU,
+    contractAddress: string = TezosYOUDetails.CONTRACT_ADDRESS,
+    feeDefaults: FeeDefaults = {
+      low: '0.100',
+      medium: '0.200',
+      high: '0.300'
+    },
+    decimals: number = 12,
+    tokenId: number = 0,
+    tokenMetadataBigMapID: number = 7718
+  ) {
+    super(symbol, name, marketSymbol, identifier, contractAddress, feeDefaults, decimals, tokenId, tokenMetadataBigMapID)
   }
 }
 
