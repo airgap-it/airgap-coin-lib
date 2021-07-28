@@ -161,7 +161,8 @@ const SELF_BOND_REQUIREMENT: number = 0.0825
 export enum TezosNetwork {
   MAINNET = 'mainnet',
   EDONET = 'edonet',
-  FLORENCENET = 'florencenet'
+  FLORENCENET = 'florencenet',
+  GRANADANET = 'granadanet'
 }
 
 export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateProtocol {
@@ -1371,7 +1372,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   }
 
   public async getDelegationRewards(bakerAddress: string, delegatorAddress?: string): Promise<DelegationRewardInfo[]> {
-    const { data: frozenBalance }: AxiosResponse<[{ cycle: number; deposit: string; fees: string; rewards: string }]> = await axios.get(
+    const { data: frozenBalance }: AxiosResponse<TezosFrozenBalance[]> = await axios.get(
       `${this.options.network.rpcUrl}/chains/main/blocks/head/context/delegates/${bakerAddress}/frozen_balance_by_cycle`
     )
 
@@ -1379,9 +1380,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     const mostRecentCycle: number = frozenBalance[frozenBalance.length - 1].cycle
 
     const { data: mostRecentBlock } = await axios.get(
-      `${this.options.network.rpcUrl}/chains/main/blocks/${
-        mostRecentCycle * TezosProtocol.BLOCKS_PER_CYCLE[this.options.network.extras.network]
-      }`
+      `${this.options.network.rpcUrl}/chains/main/blocks/${this.cycleToBlockLevel(mostRecentCycle)}`
     )
 
     const timestamp: Date = new Date(mostRecentBlock.header.timestamp)
@@ -1401,14 +1400,11 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
           cycle: obj.cycle,
           totalRewards: new BigNumber(obj.rewards),
           totalFees: new BigNumber(obj.fees),
-          deposit: new BigNumber(obj.deposit),
+          deposit: new BigNumber(obj.deposit ?? obj.deposits),
           delegatedBalance: new BigNumber(delegatedBalance),
           stakingBalance: new BigNumber(rewards.stakingBalance),
           reward: new BigNumber(payoutAmount),
-          payout: new Date(
-            timestamp.getTime() +
-              (obj.cycle - lastConfirmedCycle) * TezosProtocol.BLOCKS_PER_CYCLE[this.options.network.extras.network] * 60 * 1000
-          )
+          payout: new Date(timestamp.getTime() + this.timeIntervalBetweenCycles(lastConfirmedCycle, obj.cycle))
         }
       })
     )
@@ -1588,13 +1584,55 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
   public async fetchCurrentCycle(): Promise<number> {
     const headMetadata = await this.fetchBlockMetadata('head')
-    const currentCycle: number = headMetadata.level.cycle
+    const currentCycle: number = headMetadata.level_info.cycle
 
     return currentCycle
   }
 
   private static readonly FIRST_005_CYCLE: number = 160
   private static readonly FIRST_006_CYCLE: number = 208
+  private static readonly FIRST_010_CYCLE: number = 388
+
+  private static readonly BLOCKS_PER_CYCLE = {
+    mainnet: [4096, 8192],
+    edonet: [2048],
+    florencenet: [2048],
+    granadanet: [4096]
+  }
+
+  private static readonly TIME_BETWEEN_BLOCKS = {
+    mainnet: [60, 30],
+    edonet: [30],
+    florencenet: [30],
+    granadanet: [30]
+  }
+
+  public timeIntervalBetweenCycles(fromCycle: number, toCycle: number): number {
+    const cycle1 = Math.min(fromCycle, toCycle)
+    const cycle2 = Math.max(fromCycle, toCycle)
+    const timeBetweenBlocks = TezosProtocol.TIME_BETWEEN_BLOCKS[this.options.network.extras.network]
+    const blocksPerCycle = TezosProtocol.BLOCKS_PER_CYCLE[this.options.network.extras.network]
+    if (timeBetweenBlocks.length === 2 && cycle2 > TezosProtocol.FIRST_010_CYCLE) {
+      if (cycle1 < TezosProtocol.FIRST_010_CYCLE) {
+        return (
+          ((TezosProtocol.FIRST_010_CYCLE - cycle1) * blocksPerCycle[0] * timeBetweenBlocks[0] +
+            (cycle2 - TezosProtocol.FIRST_010_CYCLE) * blocksPerCycle[1] * timeBetweenBlocks[1]) *
+          1000
+        )
+      }
+      return (cycle2 - cycle1) * blocksPerCycle[1] * timeBetweenBlocks[1] * 1000
+    }
+    return (cycle2 - cycle1) * blocksPerCycle[0] * timeBetweenBlocks[0] * 1000
+  }
+
+  public cycleToBlockLevel(cycle: number): number {
+    const blocksPerCycle = TezosProtocol.BLOCKS_PER_CYCLE[this.options.network.extras.network]
+    if (blocksPerCycle.length === 2 && cycle > TezosProtocol.FIRST_010_CYCLE) {
+      const cycleBeforeGranada = TezosProtocol.FIRST_010_CYCLE - 1
+      return cycleBeforeGranada * blocksPerCycle[0] + (cycle - cycleBeforeGranada) * blocksPerCycle[1] + 1
+    }
+    return cycle * blocksPerCycle[0] + 1
+  }
 
   private readonly rewardCalculations = {
     alpha: new TezosRewardsCalculationDefault(this),
@@ -1679,12 +1717,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     const result = await axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/${block}/metadata`)
 
     return result.data
-  }
-
-  public static readonly BLOCKS_PER_CYCLE = {
-    mainnet: 4096,
-    edonet: 2048,
-    florencenet: 2048
   }
 
   private async fetchBalances(addresses: string[], blockLevel: number): Promise<{ address: string; balance: BigNumber }[]> {
@@ -1852,7 +1884,8 @@ export interface TezosBakerInfo {
 
 export interface TezosFrozenBalance {
   cycle: number
-  deposit: string
+  deposit?: string
+  deposits: string
   fees: string
   rewards: string
 }
