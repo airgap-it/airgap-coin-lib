@@ -17,6 +17,8 @@ export enum SubProtocolSymbols {
   XTZ_KUSD = 'xtz-kusd',
   XTZ_STKR = 'xtz-stkr',
   XTZ_ETHTZ = 'xtz-eth',
+  XTZ_UUSD = 'xtz-uusd',
+  XTZ_YOU = 'xtz-you',
   XTZ_W = 'xtz-w',
   ETH_ERC20 = 'eth-erc20',
   ETH_ERC20_XCHF = 'eth-erc20-xchf'

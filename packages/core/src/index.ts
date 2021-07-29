@@ -155,6 +155,8 @@ import {
   TezosFA2ProtocolConfig,
   TezosFA2ProtocolOptions,
   TezosETHtzProtocolConfig,
+  TezosUUSDProtocolConfig,
+  TezosYOUProtocolConfig,
   TezosWrappedProtocolConfig,
   TezosKolibriUSDProtocolConfig
 } from './protocols/tezos/fa/TezosFAProtocolOptions'
@@ -188,6 +190,8 @@ import { CosmosTransaction } from './protocols/cosmos/CosmosTransaction'
 import { CosmosAddress } from './protocols/cosmos/CosmosAddress'
 
 import { TezosETHtz } from './protocols/tezos/fa/TezosETHtz'
+import { TezosUUSD } from './protocols/tezos/fa/TezosUUSD'
+import { TezosYOU } from './protocols/tezos/fa/TezosYOU'
 import { TezosWrapped } from './protocols/tezos/fa/TezosWrapped'
 import { TezosKolibriUSD } from './protocols/tezos/fa/TezosKolibriUSD'
 import {
@@ -343,6 +347,8 @@ export {
   TezosStaker,
   TezosUSD,
   TezosETHtz as TezosETH,
+  TezosUUSD,
+  TezosYOU,
   TezosWrapped,
   TezosKolibriUSD,
   TezosTransactionResult,
@@ -362,6 +368,8 @@ export {
   TezosFA2ProtocolConfig,
   TezosBTCProtocolConfig,
   TezosETHtzProtocolConfig as TezosETHProtocolConfig,
+  TezosUUSDProtocolConfig,
+  TezosYOUProtocolConfig,
   TezosWrappedProtocolConfig,
   TezosKolibriUSDProtocolConfig,
   TezosStakerProtocolConfig,
