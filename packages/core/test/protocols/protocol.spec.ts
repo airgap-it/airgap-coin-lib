@@ -1,11 +1,11 @@
-import { sr25519Verify } from '@polkadot/wasm-crypto'
 import * as chai from 'chai'
 import * as chaiAsPromised from 'chai-as-promised'
 import 'mocha'
 import * as sinon from 'sinon'
 
-import { IAirGapTransaction, SubstrateProtocol, TezosProtocol } from '../../src'
+import { IAirGapTransaction } from '../../src/interfaces/IAirGapTransaction'
 import { AirGapNodeClient } from '../../src/protocols/ethereum/clients/node-clients/AirGapNodeClient'
+import { TezosProtocol } from '../../src/protocols/tezos/TezosProtocol'
 
 import { TestProtocolSpec } from './implementations'
 import { AETestProtocolSpec } from './specs/ae'
@@ -18,6 +18,7 @@ import { EthereumRopstenTestProtocolSpec } from './specs/ethereum-ropsten'
 import { GenericERC20TokenTestProtocolSpec } from './specs/generic-erc20-token'
 import { GroestlcoinProtocolSpec } from './specs/groestl'
 import { KusamaTestProtocolSpec } from './specs/kusama'
+import { MoonbaseTestProtocolSpec } from './specs/moonbase'
 import { PolkadotTestProtocolSpec } from './specs/polkadot'
 import { TezosTestProtocolSpec } from './specs/tezos'
 
@@ -49,7 +50,8 @@ const protocols = [
   new GenericERC20TokenTestProtocolSpec(),
   new GroestlcoinProtocolSpec(),
   new KusamaTestProtocolSpec(),
-  new PolkadotTestProtocolSpec()
+  new PolkadotTestProtocolSpec(),
+  new MoonbaseTestProtocolSpec()
 ]
 
 const itIf = (condition, title, test) => {
@@ -255,19 +257,13 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
           txs.push(tx)
         }
 
-        txs.forEach((tx, index) => {
-          if (protocol.lib instanceof SubstrateProtocol) {
-            const decoded = (protocol.lib as SubstrateProtocol).options.transactionController.decodeDetails(tx)[0]
-
-            const signature = decoded.transaction.signature.signature.value
-            const payload = Buffer.from(decoded.payload, 'hex')
-            const publicKey = Buffer.from(protocol.wallet.publicKey, 'hex')
-
-            expect(sr25519Verify(signature, payload, publicKey)).to.be.true
+        for (let index = 0; index < txs.length; index++) {
+          if (protocol.verifySignature) {
+            expect(await protocol.verifySignature(protocol.wallet.publicKey, txs[index])).to.be.true
           } else {
-            expect(tx).to.deep.equal(protocol.txs[index].signedTx)
+            expect(txs[index]).to.deep.equal(protocol.txs[index].signedTx)
           }
-        })
+        }
       })
 
       itIf(protocol.lib.supportsHD, 'signWithExtendedPrivateKey - Is able to sign a transaction using a PrivateKey', async () => {
@@ -279,9 +275,13 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
           txs.push(tx)
         }
 
-        txs.forEach((tx, index) => {
-          expect(tx).to.equal(protocol.txs[index].signedTx)
-        })
+        for (let index = 0; index < txs.length; index++) {
+          if (protocol.verifySignature) {
+            expect(await protocol.verifySignature(protocol.wallet.publicKey, txs[index])).to.be.true
+          } else {
+            expect(txs[index]).to.deep.equal(protocol.txs[index].signedTx)
+          }
+        }
       })
     })
 

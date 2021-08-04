@@ -174,6 +174,8 @@ Serializer.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTr
 Serializer.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionTezos }, SubProtocolSymbols.XTZ_USD)
 Serializer.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionSubstrate }, MainProtocolSymbols.POLKADOT)
 Serializer.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionSubstrate }, MainProtocolSymbols.KUSAMA)
+Serializer.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionSubstrate }, MainProtocolSymbols.MOONBASE)
+Serializer.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionSubstrate }, MainProtocolSymbols.MOONRIVER)
 
 Serializer.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionAeternity }, MainProtocolSymbols.AE)
 Serializer.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionBitcoin }, MainProtocolSymbols.BTC)
@@ -190,3 +192,5 @@ Serializer.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTra
 Serializer.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionTezos }, SubProtocolSymbols.XTZ_USD)
 Serializer.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionSubstrate }, MainProtocolSymbols.POLKADOT)
 Serializer.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionSubstrate }, MainProtocolSymbols.KUSAMA)
+Serializer.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionSubstrate }, MainProtocolSymbols.MOONBASE)
+Serializer.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionSubstrate }, MainProtocolSymbols.MOONRIVER)
