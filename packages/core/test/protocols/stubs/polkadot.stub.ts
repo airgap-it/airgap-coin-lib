@@ -1,8 +1,8 @@
 import * as sinon from 'sinon'
 
 import BigNumber from '../../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
-import { SubstrateTransactionType } from '../../../src/protocols/substrate/helpers/data/transaction/SubstrateTransaction'
-import { PolkadotProtocol } from '../../../src/protocols/substrate/implementations/PolkadotProtocol'
+import { SubstrateTransactionType } from '../../../src/protocols/substrate/common/data/transaction/SubstrateTransaction'
+import { PolkadotProtocol } from '../../../src/protocols/substrate/polkadot/PolkadotProtocol'
 import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
 
 export class PolkadotProtocolStub implements ProtocolHTTPStub {

@@ -5,8 +5,10 @@ import { BitcoinProtocolNetwork, BitcoinProtocolOptions } from '../protocols/bit
 import { CosmosProtocolNetwork, CosmosProtocolOptions } from '../protocols/cosmos/CosmosProtocolOptions'
 import { EthereumProtocolNetwork, EthereumProtocolOptions } from '../protocols/ethereum/EthereumProtocolOptions'
 import { GroestlcoinProtocolNetwork, GroestlcoinProtocolOptions } from '../protocols/groestlcoin/GroestlcoinProtocolOptions'
-import { KusamaProtocolNetwork, KusamaProtocolOptions } from '../protocols/substrate/implementations/KusamaProtocolOptions'
-import { PolkadotProtocolNetwork, PolkadotProtocolOptions } from '../protocols/substrate/implementations/PolkadotProtocolOptions'
+import { KusamaProtocolNetwork, KusamaProtocolOptions } from '../protocols/substrate/kusama/KusamaProtocolOptions'
+import { MoonbaseProtocolNetwork, MoonbaseProtocolOptions } from '../protocols/substrate/moonbeam/moonbase/MoonbaseProtocolOptions'
+import { MoonriverProtocolNetwork, MoonriverProtocolOptions } from '../protocols/substrate/moonbeam/moonriver/MoonriverProtocolOptions'
+import { PolkadotProtocolNetwork, PolkadotProtocolOptions } from '../protocols/substrate/polkadot/PolkadotProtocolOptions'
 import {
   TezosBTCProtocolConfig,
   TezosETHtzProtocolConfig,
@@ -48,6 +50,10 @@ const getProtocolOptionsByIdentifier: (identifier: ProtocolSymbols, network?: Pr
       return new PolkadotProtocolOptions(network ? (network as PolkadotProtocolNetwork) : new PolkadotProtocolNetwork())
     case MainProtocolSymbols.KUSAMA:
       return new KusamaProtocolOptions(network ? (network as KusamaProtocolNetwork) : new KusamaProtocolNetwork())
+    case MainProtocolSymbols.MOONBASE:
+      return new MoonbaseProtocolOptions(network ? (network as MoonbaseProtocolNetwork) : new MoonbaseProtocolNetwork())
+    case MainProtocolSymbols.MOONRIVER:
+      return new MoonriverProtocolOptions(network ? (network as MoonriverProtocolNetwork) : new MoonriverProtocolNetwork())
     case MainProtocolSymbols.XTZ:
     case SubProtocolSymbols.XTZ_KT:
       return new TezosProtocolOptions(network ? (network as TezosProtocolNetwork) : new TezosProtocolNetwork())

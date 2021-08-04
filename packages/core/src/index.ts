@@ -24,11 +24,14 @@ import {
 } from './protocols/ICoinDelegateProtocol'
 import { FeeDefaults, ICoinProtocol } from './protocols/ICoinProtocol'
 import { ICoinSubProtocol, SubProtocolType } from './protocols/ICoinSubProtocol'
-import { SubstratePayee } from './protocols/substrate/helpers/data/staking/SubstratePayee'
-import { SubstrateNodeClient } from './protocols/substrate/helpers/node/SubstrateNodeClient'
-import { KusamaProtocol } from './protocols/substrate/implementations/KusamaProtocol'
-import { PolkadotProtocol } from './protocols/substrate/implementations/PolkadotProtocol'
+import { SubstrateAddress } from './protocols/substrate/common/data/account/SubstrateAddress'
+import { SubstratePayee } from './protocols/substrate/common/data/staking/SubstratePayee'
+import { SubstrateNodeClient } from './protocols/substrate/common/node/SubstrateNodeClient'
+import { SubstrateNetwork } from './protocols/substrate/SubstrateNetwork'
+import { KusamaProtocol } from './protocols/substrate/kusama/KusamaProtocol'
+import { PolkadotProtocol } from './protocols/substrate/polkadot/PolkadotProtocol'
 import { SubstrateProtocol } from './protocols/substrate/SubstrateProtocol'
+import { SubstrateDelegateProtocol } from './protocols/substrate/SubstrateDelegateProtocol'
 import { TezosBTC } from './protocols/tezos/fa/TezosBTC'
 import { TezosFAProtocol } from './protocols/tezos/fa/TezosFAProtocol'
 import { TezosStaker } from './protocols/tezos/fa/TezosStaker'
@@ -123,21 +126,20 @@ import {
   SubstrateProtocolNetwork,
   SubstrateProtocolOptions
 } from './protocols/substrate/SubstrateProtocolOptions'
-import { SubstrateAddress } from './protocols/substrate/helpers/data/account/SubstrateAddress'
 import {
   KusamaProtocolNetworkExtras,
   KusamaPolkascanBlockExplorer,
   KusamaProtocolConfig,
   KusamaProtocolNetwork,
   KusamaProtocolOptions
-} from './protocols/substrate/implementations/KusamaProtocolOptions'
+} from './protocols/substrate/kusama/KusamaProtocolOptions'
 import {
   PolkadotProtocolNetworkExtras,
   PolkadotPolkascanBlockExplorer,
   PolkadotProtocolConfig,
   PolkadotProtocolNetwork,
   PolkadotProtocolOptions
-} from './protocols/substrate/implementations/PolkadotProtocolOptions'
+} from './protocols/substrate/polkadot/PolkadotProtocolOptions'
 import { CryptoClient } from './protocols/CryptoClient'
 import {
   TezosProtocolNetworkExtras,
@@ -173,14 +175,14 @@ import { TezosSaplingProtocol } from './protocols/tezos/sapling/TezosSaplingProt
 import { TezosShieldedTezProtocol } from './protocols/tezos/sapling/TezosShieldedTezProtocol'
 import { ImportAccountAction, ImportAccoutActionContext } from './actions/GetKtAccountsAction'
 import { CosmosUnbondingDelegation, CosmosValidator } from './protocols/cosmos/CosmosNodeClient'
-import { SubstrateElectionStatus } from './protocols/substrate/helpers/data/staking/SubstrateEraElectionStatus'
-import { SubstrateNominationStatus } from './protocols/substrate/helpers/data/staking/SubstrateNominationStatus'
-import { SubstrateNominatorDetails, SubstrateStakingDetails } from './protocols/substrate/helpers/data/staking/SubstrateNominatorDetails'
-import { SubstrateStakingActionType } from './protocols/substrate/helpers/data/staking/SubstrateStakingActionType'
-import { SubstrateValidatorDetails } from './protocols/substrate/helpers/data/staking/SubstrateValidatorDetails'
+import { SubstrateElectionStatus } from './protocols/substrate/common/data/staking/SubstrateEraElectionStatus'
+import { SubstrateNominationStatus } from './protocols/substrate/common/data/staking/SubstrateNominationStatus'
+import { SubstrateNominatorDetails, SubstrateStakingDetails } from './protocols/substrate/common/data/staking/SubstrateNominatorDetails'
+import { SubstrateStakingActionType } from './protocols/substrate/common/data/staking/SubstrateStakingActionType'
+import { SubstrateValidatorDetails } from './protocols/substrate/common/data/staking/SubstrateValidatorDetails'
 import { IAirGapSignedTransaction } from './interfaces/IAirGapSignedTransaction'
 import { Action } from './actions/Action'
-import { SubstrateTransaction } from './protocols/substrate/helpers/data/transaction/SubstrateTransaction'
+import { SubstrateTransaction } from './protocols/substrate/common/data/transaction/SubstrateTransaction'
 import { LinkedAction } from './actions/LinkedAction'
 import { SimpleAction } from './actions/SimpleAction'
 import { RepeatableAction } from './actions/RepeatableAction'
@@ -209,6 +211,11 @@ import { TezosAddress } from './protocols/tezos/TezosAddress'
 import { IACMessageDefinitionObjectV3 } from './serializer-v3/message'
 import { IACMessages as IACMessagesV2 } from './serializer/message'
 import { IACMessages } from './serializer-v3/message'
+import { MoonbaseProtocol } from './protocols/substrate/moonbeam/moonbase/MoonbaseProtocol'
+import { MoonriverProtocol } from './protocols/substrate/moonbeam/moonriver/MoonriverProtocol'
+import { MoonbaseProtocolConfig, MoonbaseProtocolNetwork, MoonbaseProtocolNetworkExtras, MoonbaseProtocolOptions, MoonbaseSubscanBlockExplorer } from './protocols/substrate/moonbeam/moonbase/MoonbaseProtocolOptions'
+import { MoonriverProtocolConfig, MoonriverProtocolNetwork, MoonriverProtocolNetworkExtras, MoonriverProtocolOptions, MoonriverSubscanBlockExplorer } from './protocols/substrate/moonbeam/moonriver/MoonriverProtocolOptions'
+import { MoonbeamProtocol } from './protocols/substrate/moonbeam/MoonbeamProtocol'
 
 // tslint:enable:ordered-imports
 
@@ -304,8 +311,13 @@ export {
 // Substrate
 export {
   SubstrateProtocol,
+  SubstrateDelegateProtocol,
   PolkadotProtocol,
   KusamaProtocol,
+  MoonbeamProtocol,
+  MoonbaseProtocol,
+  MoonriverProtocol,
+  SubstrateNetwork,
   SubstratePayee,
   SubstrateCryptoClient,
   SubstrateProtocolNetworkExtras,
@@ -324,6 +336,16 @@ export {
   PolkadotProtocolConfig,
   PolkadotProtocolNetwork,
   PolkadotProtocolOptions,
+  MoonbaseProtocolNetworkExtras,
+  MoonbaseSubscanBlockExplorer,
+  MoonbaseProtocolConfig,
+  MoonbaseProtocolNetwork,
+  MoonbaseProtocolOptions,
+  MoonriverProtocolNetworkExtras,
+  MoonriverSubscanBlockExplorer,
+  MoonriverProtocolConfig,
+  MoonriverProtocolNetwork,
+  MoonriverProtocolOptions,
   SubstrateElectionStatus,
   SubstrateNominationStatus,
   SubstrateNominatorDetails,

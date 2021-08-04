@@ -1,8 +1,8 @@
 import * as sinon from 'sinon'
 
 import BigNumber from '../../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
-import { SubstrateTransactionType } from '../../../src/protocols/substrate/helpers/data/transaction/SubstrateTransaction'
-import { KusamaProtocol } from '../../../src/protocols/substrate/implementations/KusamaProtocol'
+import { SubstrateTransactionType } from '../../../src/protocols/substrate/common/data/transaction/SubstrateTransaction'
+import { KusamaProtocol } from '../../../src/protocols/substrate/kusama/KusamaProtocol'
 import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
 
 export class KusamaProtocolStub implements ProtocolHTTPStub {

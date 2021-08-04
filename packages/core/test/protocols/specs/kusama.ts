@@ -1,4 +1,6 @@
-import { KusamaProtocol } from '../../../src/protocols/substrate/implementations/KusamaProtocol'
+import { sr25519Verify, waitReady } from '@polkadot/wasm-crypto'
+
+import { KusamaProtocol } from '../../../src/protocols/substrate/kusama/KusamaProtocol'
 import { SubstrateNetwork } from '../../../src/protocols/substrate/SubstrateNetwork'
 import { AirGapWalletStatus } from '../../../src/wallet/AirGapWallet'
 import { TestProtocolSpec } from '../implementations'
@@ -127,6 +129,18 @@ export class KusamaTestProtocolSpec extends TestProtocolSpec {
         ).toString('hex') // payload
     }
   ]
+
+  public verifySignature = async (publicKey: string, tx: any): Promise<boolean> => {
+    await waitReady()
+
+    const decoded = this.lib.options.transactionController.decodeDetails(tx)[0]
+
+    const signature = decoded.transaction.signature.signature.value
+    const payload = Buffer.from(decoded.payload, 'hex')
+    const publicKeyBuffer = Buffer.from(publicKey, 'hex')
+
+    return sr25519Verify(signature, payload, publicKeyBuffer)
+  }
 
   public seed(): string {
     return '55a1417bbfacd64e069b4d07e47fb34ce9ff53b15556698038604f002524aec0'

@@ -84,6 +84,8 @@ abstract class TestProtocolSpec {
     cursor: ''
   }
 
+  public verifySignature?: (publicKey: string, tx: any) => Promise<boolean>
+
   public seed(): string {
     return BIP39.mnemonicToSeedHex(mnemonic)
   }
