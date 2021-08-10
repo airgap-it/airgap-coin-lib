@@ -10,7 +10,7 @@ import {
   validators
 } from '../../dependencies/src/validate.js-0.13.1/validate'
 import { EthereumProtocol } from '../../protocols/ethereum/EthereumProtocol'
-import { KusamaProtocol } from '../../protocols/substrate/implementations/KusamaProtocol'
+import { KusamaProtocol } from '../../protocols/substrate/kusama/KusamaProtocol'
 import bs64check from '../../utils/base64Check'
 import { SignedEthereumTransaction } from '../schemas/definitions/signed-transaction-ethereum'
 import { SignedSubstrateTransaction } from '../schemas/definitions/signed-transaction-substrate'

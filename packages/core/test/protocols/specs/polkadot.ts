@@ -1,4 +1,5 @@
-import { PolkadotProtocol } from '../../../src/protocols/substrate/implementations/PolkadotProtocol'
+import { sr25519Verify, waitReady } from '@polkadot/wasm-crypto'
+import { PolkadotProtocol } from '../../../src/protocols/substrate/polkadot/PolkadotProtocol'
 import { SubstrateNetwork } from '../../../src/protocols/substrate/SubstrateNetwork'
 import { AirGapWalletStatus } from '../../../src/wallet/AirGapWallet'
 import { TestProtocolSpec } from '../implementations'
@@ -12,7 +13,7 @@ import { PolkadotProtocolStub } from '../stubs/polkadot.stub'
 // Private Key: d08bc6388fdeb30fc34a8e0286384bd5a84b838222bb9b012fc227d7473fc87aa2913d02297653ce859ccd6b2c057f7e57c9ef6cc359300a891c581fb6d03141
 // Public Key: 52e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10
 // Hex Seed: 55a1417bbfacd64e069b4d07e47fb34ce9ff53b15556698038604f002524aec0
-// Address (Kusama SS58): 12sg1sXe71bazrBzAyEaF71puZbNJVaMZ92uBfMCfFNfSA9P
+// Address (Polkadot SS58): 12sg1sXe71bazrBzAyEaF71puZbNJVaMZ92uBfMCfFNfSA9P
 export class PolkadotTestProtocolSpec extends TestProtocolSpec {
   public name = 'Polkadot'
   public lib = new PolkadotProtocol()
@@ -127,6 +128,18 @@ export class PolkadotTestProtocolSpec extends TestProtocolSpec {
     }
   ]
 
+  public verifySignature = async (publicKey: string, tx: any): Promise<boolean> => {
+    await waitReady()
+
+    const decoded = this.lib.options.transactionController.decodeDetails(tx)[0]
+
+    const signature = decoded.transaction.signature.signature.value
+    const payload = Buffer.from(decoded.payload, 'hex')
+    const publicKeyBuffer = Buffer.from(publicKey, 'hex')
+
+    return sr25519Verify(signature, payload, publicKeyBuffer)
+  }
+
   public seed(): string {
     return '55a1417bbfacd64e069b4d07e47fb34ce9ff53b15556698038604f002524aec0'
   }
@@ -172,7 +185,7 @@ export class PolkadotTestProtocolSpec extends TestProtocolSpec {
         status: 'applied'
       },
       {
-        protocolIdentifier: 'kusama',
+        protocolIdentifier: 'polkadot',
         network: {
           name: 'Mainnet',
           type: 'MAINNET',
@@ -196,7 +209,7 @@ export class PolkadotTestProtocolSpec extends TestProtocolSpec {
   public nextTransactionResult = {
     transactions: [
       {
-        protocolIdentifier: 'kusama',
+        protocolIdentifier: 'polkadot',
         network: {
           name: 'Mainnet',
           type: 'MAINNET',
@@ -215,7 +228,7 @@ export class PolkadotTestProtocolSpec extends TestProtocolSpec {
         status: 'applied'
       },
       {
-        protocolIdentifier: 'kusama',
+        protocolIdentifier: 'polkadot',
         network: {
           name: 'Mainnet',
           type: 'MAINNET',
