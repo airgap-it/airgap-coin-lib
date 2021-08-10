@@ -1612,7 +1612,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     const cycle2 = Math.max(fromCycle, toCycle)
     const timeBetweenBlocks = TezosProtocol.TIME_BETWEEN_BLOCKS[this.options.network.extras.network]
     const blocksPerCycle = TezosProtocol.BLOCKS_PER_CYCLE[this.options.network.extras.network]
-    if (timeBetweenBlocks.length === 2 && cycle2 > TezosProtocol.FIRST_010_CYCLE) {
+    if (this.options.network.extras.network === TezosNetwork.MAINNET && cycle2 > TezosProtocol.FIRST_010_CYCLE) {
       if (cycle1 < TezosProtocol.FIRST_010_CYCLE) {
         return (
           ((TezosProtocol.FIRST_010_CYCLE - cycle1) * blocksPerCycle[0] * timeBetweenBlocks[0] +
@@ -1627,11 +1627,30 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
   public cycleToBlockLevel(cycle: number): number {
     const blocksPerCycle = TezosProtocol.BLOCKS_PER_CYCLE[this.options.network.extras.network]
-    if (blocksPerCycle.length === 2 && cycle > TezosProtocol.FIRST_010_CYCLE) {
-      const cycleBeforeGranada = TezosProtocol.FIRST_010_CYCLE - 1
-      return cycleBeforeGranada * blocksPerCycle[0] + (cycle - cycleBeforeGranada) * blocksPerCycle[1] + 1
+    if (this.options.network.extras.network === TezosNetwork.MAINNET && cycle > TezosProtocol.FIRST_010_CYCLE) {
+      return TezosProtocol.FIRST_010_CYCLE * blocksPerCycle[0] + (cycle - TezosProtocol.FIRST_010_CYCLE) * blocksPerCycle[1] + 1
     }
     return cycle * blocksPerCycle[0] + 1
+  }
+
+  public blockLevelToCycle(blockLevel: number): number {
+    const blocksPerCycle = TezosProtocol.BLOCKS_PER_CYCLE[this.options.network.extras.network]
+    if (this.options.network.extras.network === TezosNetwork.MAINNET) {
+      const last009BlockLevel = TezosProtocol.FIRST_010_CYCLE * blocksPerCycle[0]
+      if (blockLevel > last009BlockLevel) {
+        const deltaLevels = blockLevel - last009BlockLevel
+        let deltaCycles = Math.floor(deltaLevels / blocksPerCycle[1])
+        if (deltaLevels % blocksPerCycle[1] === 0) {
+          deltaCycles -= 1
+        }
+        return TezosProtocol.FIRST_010_CYCLE + deltaCycles
+      }
+    }
+    let cycle = Math.floor(blockLevel / blocksPerCycle[0])
+    if (blockLevel % blocksPerCycle[0] === 0) {
+      cycle -= 1
+    }
+    return cycle
   }
 
   private readonly rewardCalculations = {
