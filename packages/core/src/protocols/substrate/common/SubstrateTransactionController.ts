@@ -178,9 +178,7 @@ export class SubstrateTransactionController<Network extends SubstrateNetwork> {
       transationTypes
         .map(([type, args]) => [type, args, this.nodeClient.getSavedLastFee(type, 'largest')] as [SubstrateTransactionType, any, BigNumber])
         .map(async ([type, args, fee]) =>
-          fee
-            ? fee
-            : this.calculateTransactionFee(await this.createTransaction(type, this.substrateAddressFrom(accountId), 0, args))
+          fee ? fee : this.calculateTransactionFee(await this.createTransaction(type, this.substrateAddressFrom(accountId), 0, args))
         )
     )
 
@@ -286,10 +284,7 @@ export class SubstrateTransactionController<Network extends SubstrateNetwork> {
   private async signEcdsaPayload(privateKey: Buffer, payload: string): Promise<MoonbeamSignature> {
     const message: Buffer = keccak('keccak256').update(Buffer.from(payload, 'hex')).digest()
     const signatureObj: { signature: Uint8Array; recid?: number } = secp256k1.ecdsaSign(message, privateKey)
-    const signature: Buffer = Buffer.concat([
-      Buffer.from(signatureObj.signature),
-      Buffer.from([signatureObj.recid ?? 0])
-    ])
+    const signature: Buffer = Buffer.concat([Buffer.from(signatureObj.signature), Buffer.from([signatureObj.recid ?? 0])])
 
     return MoonbeamSignature.create(SubstrateSignatureType.Ecdsa, signature)
   }

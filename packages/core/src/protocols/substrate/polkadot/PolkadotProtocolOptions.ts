@@ -6,7 +6,12 @@ import { SubstrateNodeClient } from '../common/node/SubstrateNodeClient'
 import { SubstrateAccountController } from '../common/SubstrateAccountController'
 import { SubstrateTransactionController } from '../common/SubstrateTransactionController'
 import { SubstrateNetwork } from '../SubstrateNetwork'
-import { PolkascanBlockExplorer, SubstrateProtocolConfig, SubstrateProtocolNetworkExtras, SubstrateProtocolOptions } from '../SubstrateProtocolOptions'
+import {
+  PolkascanBlockExplorer,
+  SubstrateProtocolConfig,
+  SubstrateProtocolNetworkExtras,
+  SubstrateProtocolOptions
+} from '../SubstrateProtocolOptions'
 
 const MAINNET_NAME: string = 'Mainnet'
 
@@ -52,8 +57,8 @@ export class PolkadotProtocolOptions extends SubstrateProtocolOptions<SubstrateN
     nodeClient: SubstrateNodeClient<SubstrateNetwork.POLKADOT> = new SubstrateNodeClient(network.extras.network, network.rpcUrl)
   ) {
     super(
-      network, 
-      config, 
+      network,
+      config,
       nodeClient,
       new SubstrateAccountController(network.extras.network, nodeClient),
       new SubstrateTransactionController(network.extras.network, nodeClient)

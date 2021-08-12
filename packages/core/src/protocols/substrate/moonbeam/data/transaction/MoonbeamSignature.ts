@@ -6,17 +6,18 @@ import { SubstrateNetwork } from '../../../SubstrateNetwork'
 
 export class MoonbeamSignature extends SubstrateSignature {
   public static create(
-    type: SubstrateSignatureType = SubstrateSignatureType.Ecdsa, 
+    type: SubstrateSignatureType = SubstrateSignatureType.Ecdsa,
     signature?: string | Uint8Array | Buffer
   ): MoonbeamSignature {
     return new MoonbeamSignature(
-      SCALEEnum.from(type), signature ? SCALEHash.from(signature) : SCALEHash.empty(SUBSTRATE_SIGNATURE_SIZE[type])
+      SCALEEnum.from(type),
+      signature ? SCALEHash.from(signature) : SCALEHash.empty(SUBSTRATE_SIGNATURE_SIZE[type])
     )
   }
-  
+
   public static decode<Network extends SubstrateNetwork>(
-    network: Network, 
-    runtimeVersion: number | undefined, 
+    network: Network,
+    runtimeVersion: number | undefined,
     raw: string
   ): SCALEDecodeResult<SubstrateSignature> {
     const decoder = new SCALEDecoder(network, runtimeVersion, raw)

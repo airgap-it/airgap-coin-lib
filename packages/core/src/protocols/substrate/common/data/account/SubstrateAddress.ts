@@ -14,7 +14,7 @@ const SS58_PREFIX = 'SS58PRE'
  * 35: 1, 32, 2
  */
 export class SubstrateAddress implements SubstrateCompatAddress {
-  private static placeholder: SubstrateAddress| undefined
+  private static placeholder: SubstrateAddress | undefined
   public static createPlaceholder(): SubstrateAddress {
     if (!SubstrateAddress.placeholder) {
       const payload = new Uint8Array(32)

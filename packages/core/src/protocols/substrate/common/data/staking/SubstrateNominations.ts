@@ -7,8 +7,8 @@ import { SCALEInt } from '../scale/type/SCALEInt'
 
 export class SubstrateNominations<Network extends SubstrateNetwork> {
   public static decode<Network extends SubstrateNetwork>(
-    network: Network, 
-    runtimeVersion: number | undefined, 
+    network: Network,
+    runtimeVersion: number | undefined,
     raw: string
   ): SubstrateNominations<Network> {
     const decoder = new SCALEDecoder(network, runtimeVersion, raw)
@@ -21,8 +21,8 @@ export class SubstrateNominations<Network extends SubstrateNetwork> {
   }
 
   private constructor(
-    readonly targets: SCALEArray<SCALEAccountId<Network>>, 
-    readonly submittedIn: SCALEInt, 
+    readonly targets: SCALEArray<SCALEAccountId<Network>>,
+    readonly submittedIn: SCALEInt,
     readonly suppressed: SCALEBoolean
   ) {}
 }

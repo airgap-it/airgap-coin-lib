@@ -52,9 +52,7 @@ export class PolkadotProtocol extends SubstrateDelegateProtocol<SubstrateNetwork
 
   protected defaultValidator: string = '12C9U6zSSoZ6pgwR2ksFyBLgQH6v7dkqqPCRyHceoP8MJRo2'
 
-  public constructor(
-    public readonly options: SubstrateProtocolOptions<SubstrateNetwork.POLKADOT> = new PolkadotProtocolOptions()
-  ) {
+  public constructor(public readonly options: SubstrateProtocolOptions<SubstrateNetwork.POLKADOT> = new PolkadotProtocolOptions()) {
     super(options)
   }
 }

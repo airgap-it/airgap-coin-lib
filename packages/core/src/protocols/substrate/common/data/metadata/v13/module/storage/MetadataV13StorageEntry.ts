@@ -16,7 +16,7 @@ enum StorageEntryModifier {
 export class MetadataV13StorageEntry extends SCALEClass {
   public static decode<Network extends SubstrateNetwork>(
     network: Network,
-    runtimeVersion: number | undefined, 
+    runtimeVersion: number | undefined,
     raw: string
   ): SCALEDecodeResult<MetadataV13StorageEntry> {
     const decoder = new SCALEDecoder(network, runtimeVersion, raw)

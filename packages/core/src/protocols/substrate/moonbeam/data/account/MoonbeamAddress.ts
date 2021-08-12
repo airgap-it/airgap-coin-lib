@@ -19,9 +19,8 @@ export class MoonbeamAddress implements SubstrateCompatAddress {
   }
 
   public static fromBytes(publicKeyOrAddress: string | Uint8Array | Buffer): MoonbeamAddress {
-    const stringValue: string = typeof publicKeyOrAddress === 'string'
-      ? publicKeyOrAddress
-      : Buffer.from(publicKeyOrAddress).toString('hex')
+    const stringValue: string =
+      typeof publicKeyOrAddress === 'string' ? publicKeyOrAddress : Buffer.from(publicKeyOrAddress).toString('hex')
 
     if (!ethUtil.isValidAddress(addHexPrefix(stringValue))) {
       return MoonbeamAddress.fromPublicKey(stringValue)
@@ -31,9 +30,7 @@ export class MoonbeamAddress implements SubstrateCompatAddress {
   }
 
   public static fromPublicKey(publicKey: string | Uint8Array | Buffer): MoonbeamAddress {
-    const buffer: Buffer = typeof publicKey === 'string'
-      ? Buffer.from(stripHexPrefix(publicKey), 'hex')
-      : Buffer.from(publicKey)
+    const buffer: Buffer = typeof publicKey === 'string' ? Buffer.from(stripHexPrefix(publicKey), 'hex') : Buffer.from(publicKey)
 
     const address: string = ethUtil.pubToAddress(buffer, true).toString('hex')
     if (!ethUtil.isValidAddress(addHexPrefix(address))) {

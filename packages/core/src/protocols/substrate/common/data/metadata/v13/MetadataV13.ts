@@ -14,11 +14,7 @@ import { MetadataV13Storage } from './module/storage/MetadataV13Storage'
 import { MetadataV13StorageEntry } from './module/storage/MetadataV13StorageEntry'
 
 export class MetadataV13 extends MetadataVersioned {
-  public static decode<Network extends SubstrateNetwork>(
-    network: Network, 
-    runtimeVersion: number | undefined, 
-    raw: string
-  ): MetadataV13 {
+  public static decode<Network extends SubstrateNetwork>(network: Network, runtimeVersion: number | undefined, raw: string): MetadataV13 {
     const decoder = new SCALEDecoder(network, runtimeVersion, raw)
 
     const magicNumber = decoder.decodeNextInt(32) // 32 bits
@@ -34,11 +30,7 @@ export class MetadataV13 extends MetadataVersioned {
     super()
   }
 
-  public decorate(
-    supportedStorageEntries: Object,
-    supportedCalls: Object,
-    supportedConstants: Object
-  ): MetadataDecorator {
+  public decorate(supportedStorageEntries: Object, supportedCalls: Object, supportedConstants: Object): MetadataDecorator {
     const storageEntries: SubstrateStorageEntry[][] = []
     const calls: SubstrateCall[][] = []
     const constants: SubstrateConstant[][] = []
@@ -58,7 +50,11 @@ export class MetadataV13 extends MetadataVersioned {
       }
 
       if (Object.keys(supportedCalls).includes(moduleName)) {
-        const decoratedCalls: SubstrateCall[] = this.createDecoratedCalls(moduleName, module.index.toNumber(), module.calls.value?.elements || [])
+        const decoratedCalls: SubstrateCall[] = this.createDecoratedCalls(
+          moduleName,
+          module.index.toNumber(),
+          module.calls.value?.elements || []
+        )
         calls.push(decoratedCalls)
       }
 
@@ -76,7 +72,7 @@ export class MetadataV13 extends MetadataVersioned {
   }
 
   private createDecoratedStorageEntries(
-    storage: MetadataV13Storage | undefined, 
+    storage: MetadataV13Storage | undefined,
     supportedStorageEntries: Object
   ): SubstrateStorageEntry[] | undefined {
     if (storage) {

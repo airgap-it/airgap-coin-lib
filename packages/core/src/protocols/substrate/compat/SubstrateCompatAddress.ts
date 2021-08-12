@@ -32,22 +32,20 @@ export interface SCALECompatAddressType extends Record<SubstrateNetwork, SCALETy
   [SubstrateNetwork.MOONBEAM]: SCALEAccountId<SubstrateNetwork.MOONBEAM>
 }
 
-export function substrateAddressFactory<Network extends SubstrateNetwork>(
-  substrateNetwork: Network
-): SubstrateAddressFactory<Network> {
+export function substrateAddressFactory<Network extends SubstrateNetwork>(substrateNetwork: Network): SubstrateAddressFactory<Network> {
   switch (substrateNetwork) {
     case SubstrateNetwork.POLKADOT:
-      return { 
+      return {
         from: PolkadotAddress.from,
         getPlaceholder: PolkadotAddress.getPlaceholder
       } as SubstrateAddressFactory<Network>
     case SubstrateNetwork.KUSAMA:
-      return { 
+      return {
         from: KusamaAddress.from,
         getPlaceholder: KusamaAddress.createPlaceholder
       } as SubstrateAddressFactory<Network>
     case SubstrateNetwork.MOONBEAM:
-      return { 
+      return {
         from: MoonbeamAddress.from,
         getPlaceholder: MoonbeamAddress.getPlaceholder
       } as SubstrateAddressFactory<Network>
@@ -56,24 +54,26 @@ export function substrateAddressFactory<Network extends SubstrateNetwork>(
   }
 }
 
-export function scaleAddressFactory<Network extends SubstrateNetwork>(
-  substrateNetwork: Network
-): SCALEAddressFactory<Network> {
+export function scaleAddressFactory<Network extends SubstrateNetwork>(substrateNetwork: Network): SCALEAddressFactory<Network> {
   switch (substrateNetwork) {
     case SubstrateNetwork.POLKADOT:
-      return { 
-        from: (value: string | Uint8Array | Buffer | SubstrateCompatAddressType[Network], network: Network) => SCALEMultiAddress.from(value, SCALEMultiAddressType.Id, network),
-        decode: (network: Network, runtimeVersion: number | undefined, hex: string) => SCALEMultiAddress.decode(network, hex, SCALEMultiAddressType.Id, runtimeVersion),
+      return {
+        from: (value: string | Uint8Array | Buffer | SubstrateCompatAddressType[Network], network: Network) =>
+          SCALEMultiAddress.from(value, SCALEMultiAddressType.Id, network),
+        decode: (network: Network, runtimeVersion: number | undefined, hex: string) =>
+          SCALEMultiAddress.decode(network, hex, SCALEMultiAddressType.Id, runtimeVersion)
       } as unknown as SCALEAddressFactory<Network>
     case SubstrateNetwork.KUSAMA:
-      return { 
-        from: (value: string | Uint8Array | Buffer | SubstrateCompatAddressType[Network], network: Network) => SCALEMultiAddress.from(value, SCALEMultiAddressType.Id, network),
-        decode: (network: Network, runtimeVersion: number | undefined, hex: string) => SCALEMultiAddress.decode(network, hex, SCALEMultiAddressType.Id, runtimeVersion),
+      return {
+        from: (value: string | Uint8Array | Buffer | SubstrateCompatAddressType[Network], network: Network) =>
+          SCALEMultiAddress.from(value, SCALEMultiAddressType.Id, network),
+        decode: (network: Network, runtimeVersion: number | undefined, hex: string) =>
+          SCALEMultiAddress.decode(network, hex, SCALEMultiAddressType.Id, runtimeVersion)
       } as unknown as SCALEAddressFactory<Network>
     case SubstrateNetwork.MOONBEAM:
-      return { 
+      return {
         from: SCALEAccountId.from,
-        decode: (network: Network, _: number | undefined, hex: string) => SCALEAccountId.decode(network, hex, 20),
+        decode: (network: Network, _: number | undefined, hex: string) => SCALEAccountId.decode(network, hex, 20)
       } as unknown as SCALEAddressFactory<Network>
     default:
       throw new Error('Unknown Substrate network')
@@ -87,10 +87,5 @@ export interface SubstrateCompatAddress extends CoinAddress {
 }
 
 export function isSubstrateCompatAddress(address: unknown): address is SubstrateCompatAddress {
-  return (
-    address instanceof Object && 
-    'compare' in address && 
-    'getBufferBytes' in address && 
-    'getHexBytes' in address
-  )
+  return address instanceof Object && 'compare' in address && 'getBufferBytes' in address && 'getHexBytes' in address
 }

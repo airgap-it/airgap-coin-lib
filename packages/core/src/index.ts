@@ -213,8 +213,20 @@ import { IACMessages as IACMessagesV2 } from './serializer/message'
 import { IACMessages } from './serializer-v3/message'
 import { MoonbaseProtocol } from './protocols/substrate/moonbeam/moonbase/MoonbaseProtocol'
 import { MoonriverProtocol } from './protocols/substrate/moonbeam/moonriver/MoonriverProtocol'
-import { MoonbaseProtocolConfig, MoonbaseProtocolNetwork, MoonbaseProtocolNetworkExtras, MoonbaseProtocolOptions, MoonbaseSubscanBlockExplorer } from './protocols/substrate/moonbeam/moonbase/MoonbaseProtocolOptions'
-import { MoonriverProtocolConfig, MoonriverProtocolNetwork, MoonriverProtocolNetworkExtras, MoonriverProtocolOptions, MoonriverSubscanBlockExplorer } from './protocols/substrate/moonbeam/moonriver/MoonriverProtocolOptions'
+import {
+  MoonbaseProtocolConfig,
+  MoonbaseProtocolNetwork,
+  MoonbaseProtocolNetworkExtras,
+  MoonbaseProtocolOptions,
+  MoonbaseSubscanBlockExplorer
+} from './protocols/substrate/moonbeam/moonbase/MoonbaseProtocolOptions'
+import {
+  MoonriverProtocolConfig,
+  MoonriverProtocolNetwork,
+  MoonriverProtocolNetworkExtras,
+  MoonriverProtocolOptions,
+  MoonriverSubscanBlockExplorer
+} from './protocols/substrate/moonbeam/moonriver/MoonriverProtocolOptions'
 import { MoonbeamProtocol } from './protocols/substrate/moonbeam/MoonbeamProtocol'
 
 // tslint:enable:ordered-imports

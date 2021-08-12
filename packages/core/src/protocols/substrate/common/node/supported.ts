@@ -31,13 +31,7 @@ export const supportedStorageEntries = {
   System: ['Account'] as const,
 
   // Moonbeam
-  ParachainStaking: [
-    'CollatorCommission',
-    'CollatorState2',
-    'NominatorState2',
-    'Round',
-    'SelectedCandidates'
-  ] as const
+  ParachainStaking: ['CollatorCommission', 'CollatorState2', 'NominatorState2', 'Round', 'SelectedCandidates'] as const
 }
 
 export const supportedCalls = {
@@ -57,13 +51,7 @@ export const supportedCalls = {
   Utility: ['batch'] as const,
 
   // Moonbeam
-  ParachainStaking: [
-    'nominate',
-    'leave_nominators',
-    'revoke_nomination',
-    'nominator_bond_more',
-    'nominator_bond_less'
-  ] as const
+  ParachainStaking: ['nominate', 'leave_nominators', 'revoke_nomination', 'nominator_bond_more', 'nominator_bond_less'] as const
 }
 
 export const supportedConstants = {

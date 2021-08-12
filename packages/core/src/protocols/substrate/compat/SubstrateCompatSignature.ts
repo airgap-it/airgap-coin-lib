@@ -5,11 +5,7 @@ import { SubstrateNetwork } from '../SubstrateNetwork'
 
 export interface SubstrateSignatureFactory<Network extends SubstrateNetwork> {
   create(type: SubstrateSignatureType, signature?: string | Uint8Array | Buffer): SubstrateCompatSignatureType[Network]
-  decode(
-    network: Network, 
-    runtimeVersion: number | undefined, 
-    raw: string
-  ): SCALEDecodeResult<SubstrateCompatSignatureType[Network]>
+  decode(network: Network, runtimeVersion: number | undefined, raw: string): SCALEDecodeResult<SubstrateCompatSignatureType[Network]>
 }
 
 export interface SubstrateCompatSignatureType extends Record<SubstrateNetwork, SubstrateSignature> {
@@ -18,22 +14,20 @@ export interface SubstrateCompatSignatureType extends Record<SubstrateNetwork, S
   [SubstrateNetwork.MOONBEAM]: MoonbeamSignature
 }
 
-export function substrateSignatureFactory<Network extends SubstrateNetwork>(
-  substrateNetwork: Network
-): SubstrateSignatureFactory<Network> {
+export function substrateSignatureFactory<Network extends SubstrateNetwork>(substrateNetwork: Network): SubstrateSignatureFactory<Network> {
   switch (substrateNetwork) {
     case SubstrateNetwork.POLKADOT:
-      return { 
+      return {
         create: SubstrateSignature.create,
         decode: SubstrateSignature.decode
       } as unknown as SubstrateSignatureFactory<Network>
     case SubstrateNetwork.KUSAMA:
-      return { 
+      return {
         create: SubstrateSignature.create,
         decode: SubstrateSignature.decode
       } as unknown as SubstrateSignatureFactory<Network>
     case SubstrateNetwork.MOONBEAM:
-      return { 
+      return {
         create: MoonbeamSignature.create,
         decode: MoonbeamSignature.decode
       } as unknown as SubstrateSignatureFactory<Network>

@@ -21,9 +21,7 @@ export abstract class MoonbeamProtocol extends SubstrateDelegateProtocol<Substra
 
   public defaultValidator?: string
 
-  public constructor(
-    public readonly options: MoonbeamProtocolOptions
-  ) {
+  public constructor(public readonly options: MoonbeamProtocolOptions) {
     super(options)
   }
 
@@ -163,7 +161,7 @@ export abstract class MoonbeamProtocol extends SubstrateDelegateProtocol<Substra
           collator,
           amount: new BigNumber(amount),
           collatorNominatorCount: collatorDetails.nominators,
-          nominationCount: nominatorDetails.delegatees.length,
+          nominationCount: nominatorDetails.delegatees.length
         }
       }
     ])
@@ -190,10 +188,7 @@ export abstract class MoonbeamProtocol extends SubstrateDelegateProtocol<Substra
     return [{ encoded }]
   }
 
-  public async prepareCancelAllNominations(
-    publicKey: string,
-    tip: string | number | BigNumber
-  ): Promise<RawSubstrateTransaction[]> {
+  public async prepareCancelAllNominations(publicKey: string, tip: string | number | BigNumber): Promise<RawSubstrateTransaction[]> {
     const results = await Promise.all([
       this.options.accountController.getNominatorDetails(publicKey),
       this.getBalanceOfPublicKey(publicKey)
@@ -254,7 +249,7 @@ export abstract class MoonbeamProtocol extends SubstrateDelegateProtocol<Substra
     } else if (requestedAmount.eq(bondAmount)) {
       return this.prepareCancelNomination(publicKey, tip, candidate)
     }
-    
+
     const encoded = await this.options.transactionController.prepareSubmittableTransactions(publicKey, balance, [
       {
         type: SubstrateTransactionType.M_NOMINATOR_BOND_LESS,
@@ -283,13 +278,13 @@ export abstract class MoonbeamProtocol extends SubstrateDelegateProtocol<Substra
       this.options.accountController.getTransferableBalance(accountId),
       this.options.accountController.getTransferableBalance(accountId, false, false)
     ])
-    
+
     const isNominating = results[0]
     const transferableBalance = results[1]
     const stakingBalance = results[2]
-    
+
     const requiredTransactions: [SubstrateTransactionType, any][] = []
-    
+
     if (intention === 'transfer') {
       requiredTransactions.push([
         SubstrateTransactionType.TRANSFER,
@@ -308,29 +303,27 @@ export abstract class MoonbeamProtocol extends SubstrateDelegateProtocol<Substra
             collator: MoonbeamAddress.getPlaceholder(),
             amount: stakingBalance,
             collatorNominatorCount: 0,
-            nominationCount: 0,
+            nominationCount: 0
           }
         ],
         [
-          SubstrateTransactionType.M_REVOKE_NOMINATION, 
+          SubstrateTransactionType.M_REVOKE_NOMINATION,
           {
             collator: MoonbeamAddress.getPlaceholder()
           }
         ]
       )
     }
-      
+
     if (isNominating && intention === 'delegate') {
-      requiredTransactions.push(
-        [
-          SubstrateTransactionType.M_REVOKE_NOMINATION, 
-          {
-            collator: MoonbeamAddress.getPlaceholder()
-          }
-        ]
-      )
+      requiredTransactions.push([
+        SubstrateTransactionType.M_REVOKE_NOMINATION,
+        {
+          collator: MoonbeamAddress.getPlaceholder()
+        }
+      ])
     }
-        
+
     return requiredTransactions
   }
 }

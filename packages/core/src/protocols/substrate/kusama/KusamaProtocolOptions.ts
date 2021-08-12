@@ -6,7 +6,12 @@ import { SubstrateNodeClient } from '../common/node/SubstrateNodeClient'
 import { SubstrateAccountController } from '../common/SubstrateAccountController'
 import { SubstrateTransactionController } from '../common/SubstrateTransactionController'
 import { SubstrateNetwork } from '../SubstrateNetwork'
-import { PolkascanBlockExplorer, SubstrateProtocolConfig, SubstrateProtocolNetworkExtras, SubstrateProtocolOptions } from '../SubstrateProtocolOptions'
+import {
+  PolkascanBlockExplorer,
+  SubstrateProtocolConfig,
+  SubstrateProtocolNetworkExtras,
+  SubstrateProtocolOptions
+} from '../SubstrateProtocolOptions'
 
 const MAINNET_NAME: string = 'Mainnet'
 
@@ -52,7 +57,7 @@ export class KusamaProtocolOptions extends SubstrateProtocolOptions<SubstrateNet
     nodeClient: SubstrateNodeClient<SubstrateNetwork.KUSAMA> = new SubstrateNodeClient(network.extras.network, network.rpcUrl)
   ) {
     super(
-      network, 
+      network,
       config,
       nodeClient,
       new SubstrateAccountController(network.extras.network, nodeClient),
