@@ -35,10 +35,10 @@ export class SCALEEnum<T> extends SCALEType {
   }
 
   public toString(): string {
-    return ((this.value as any) as number).toString()
+    return (this.value as any as number).toString()
   }
 
   protected _encode(config?: SCALEEncodeConfig): string {
-    return toHexStringRaw((this.value as any) as number)
+    return toHexStringRaw(this.value as any as number)
   }
 }

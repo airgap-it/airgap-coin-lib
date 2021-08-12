@@ -50,9 +50,7 @@ export class KusamaProtocol extends SubstrateDelegateProtocol<SubstrateNetwork.K
   public addressValidationPattern: string = '^[C-HJ][a-km-zA-HJ-NP-Z1-9]+$'
   public addressPlaceholder: string = `C/D/E/F/G/H/J...`
 
-  public constructor(
-    public readonly options: SubstrateProtocolOptions<SubstrateNetwork.KUSAMA> = new KusamaProtocolOptions()
-  ) {
+  public constructor(public readonly options: SubstrateProtocolOptions<SubstrateNetwork.KUSAMA> = new KusamaProtocolOptions()) {
     super(options)
   }
 }

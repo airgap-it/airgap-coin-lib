@@ -2,7 +2,12 @@
 import BigNumber from '../../../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { IAirGapTransaction } from '../../../../../../interfaces/IAirGapTransaction'
 import { assertFields } from '../../../../../../utils/assert'
-import { scaleAddressFactory, SubstrateAccountId, substrateAddressFactory, SubstrateCompatAddressType } from '../../../../compat/SubstrateCompatAddress'
+import {
+  scaleAddressFactory,
+  SubstrateAccountId,
+  substrateAddressFactory,
+  SubstrateCompatAddressType
+} from '../../../../compat/SubstrateCompatAddress'
 import { SubstrateNetwork } from '../../../../SubstrateNetwork'
 import { SCALEDecoder, SCALEDecodeResult } from '../../scale/SCALEDecoder'
 import { SCALEAccountId } from '../../scale/type/SCALEAccountId'
@@ -401,12 +406,7 @@ class WithdrawUnbondedArgsDecoder<Network extends SubstrateNetwork> extends Subs
 
 class NominateArgsFactory<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsFactory<NominateArgs<Network>, Network> {
   public createFields(): [string, SCALEType][] {
-    return [
-      [
-        'targets',
-        SCALEArray.from(this.args.targets.map((target) => scaleAddressFactory(this.network).from(target, this.network)))
-      ]
-    ]
+    return [['targets', SCALEArray.from(this.args.targets.map((target) => scaleAddressFactory(this.network).from(target, this.network)))]]
   }
   public createToAirGapTransactionParts(): () => Partial<IAirGapTransaction>[] {
     return () => [
@@ -569,7 +569,10 @@ class SubmitBatchArgsDecoder<Network extends SubstrateNetwork> extends Substrate
   }
 }
 
-class MoonbeamNominateArgsFactory<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsFactory<MoonbeamNominateArgs<Network>, Network> {
+class MoonbeamNominateArgsFactory<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsFactory<
+  MoonbeamNominateArgs<Network>,
+  Network
+> {
   public createFields(): [string, SCALEType][] {
     return [
       ['collator', SCALEAccountId.from(this.args.collator, this.network)],
@@ -579,14 +582,19 @@ class MoonbeamNominateArgsFactory<Network extends SubstrateNetwork> extends Subs
     ]
   }
   public createToAirGapTransactionParts(): () => Partial<IAirGapTransaction>[] {
-    return () => [{
-      to: [substrateAddressFactory(this.network).from(this.args.collator).getValue()],
-      amount: new BigNumber(this.args.amount).toString()
-    }]
+    return () => [
+      {
+        to: [substrateAddressFactory(this.network).from(this.args.collator).getValue()],
+        amount: new BigNumber(this.args.amount).toString()
+      }
+    ]
   }
 }
 
-class MoonbeamNominateArgsDecoder<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsDecoder<MoonbeamNominateArgs<Network>, Network> {
+class MoonbeamNominateArgsDecoder<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsDecoder<
+  MoonbeamNominateArgs<Network>,
+  Network
+> {
   protected _decode(decoder: SCALEDecoder<Network>): SCALEDecodeResult<MoonbeamNominateArgs<Network>> {
     const collator = decoder.decodeNextAccountId(20)
     const amount = decoder.decodeNextInt(128)
@@ -605,18 +613,22 @@ class MoonbeamNominateArgsDecoder<Network extends SubstrateNetwork> extends Subs
   }
 }
 
-class MoonbeamLeaveNominatorsArgsFactory<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsFactory<MoonbeamLeaveNominatorsArgs, Network> {
+class MoonbeamLeaveNominatorsArgsFactory<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsFactory<
+  MoonbeamLeaveNominatorsArgs,
+  Network
+> {
   public createFields(): [string, SCALEType][] {
-    return [
-      ['nominationCount', SCALEInt.from(this.args.nominationCount, 32)]
-    ]
+    return [['nominationCount', SCALEInt.from(this.args.nominationCount, 32)]]
   }
   public createToAirGapTransactionParts(): () => Partial<IAirGapTransaction>[] {
     return () => []
   }
 }
 
-class MoonbeamLeaveNominatorsArgsDecoder<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsDecoder<MoonbeamLeaveNominatorsArgs, Network> {
+class MoonbeamLeaveNominatorsArgsDecoder<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsDecoder<
+  MoonbeamLeaveNominatorsArgs,
+  Network
+> {
   protected _decode(decoder: SCALEDecoder<Network>): SCALEDecodeResult<MoonbeamLeaveNominatorsArgs> {
     const nominationCount = decoder.decodeNextInt(32)
 
@@ -629,18 +641,26 @@ class MoonbeamLeaveNominatorsArgsDecoder<Network extends SubstrateNetwork> exten
   }
 }
 
-class MoonbeamRevokeNominationArgsFactory<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsFactory<MoonbeamRevokeNominationArgs<Network>, Network> {
+class MoonbeamRevokeNominationArgsFactory<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsFactory<
+  MoonbeamRevokeNominationArgs<Network>,
+  Network
+> {
   public createFields(): [string, SCALEType][] {
     return [['collator', SCALEAccountId.from(this.args.collator, this.network)]]
   }
   public createToAirGapTransactionParts(): () => Partial<IAirGapTransaction>[] {
-    return () => [{
-      to: [substrateAddressFactory(this.network).from(this.args.collator).getValue()]
-    }]
+    return () => [
+      {
+        to: [substrateAddressFactory(this.network).from(this.args.collator).getValue()]
+      }
+    ]
   }
 }
 
-class MoonbeamRevokeNominationArgsDecoder<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsDecoder<MoonbeamRevokeNominationArgs<Network>, Network> {
+class MoonbeamRevokeNominationArgsDecoder<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsDecoder<
+  MoonbeamRevokeNominationArgs<Network>,
+  Network
+> {
   protected _decode(decoder: SCALEDecoder<Network>): SCALEDecodeResult<MoonbeamRevokeNominationArgs<Network>> {
     const collator = decoder.decodeNextAccountId(20)
 
@@ -653,7 +673,10 @@ class MoonbeamRevokeNominationArgsDecoder<Network extends SubstrateNetwork> exte
   }
 }
 
-class MoonbeamNominatorBondMoreArgsFactory<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsFactory<MoonbeamNominatorBondMoreArgs<Network>, Network> {
+class MoonbeamNominatorBondMoreArgsFactory<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsFactory<
+  MoonbeamNominatorBondMoreArgs<Network>,
+  Network
+> {
   public createFields(): [string, SCALEType][] {
     return [
       ['candidate', SCALEAccountId.from(this.args.candidate, this.network)],
@@ -661,14 +684,19 @@ class MoonbeamNominatorBondMoreArgsFactory<Network extends SubstrateNetwork> ext
     ]
   }
   public createToAirGapTransactionParts(): () => Partial<IAirGapTransaction>[] {
-    return () => [{
-      to: [substrateAddressFactory(this.network).from(this.args.candidate).getValue()],
-      amount: new BigNumber(this.args.more).toString()
-    }]
+    return () => [
+      {
+        to: [substrateAddressFactory(this.network).from(this.args.candidate).getValue()],
+        amount: new BigNumber(this.args.more).toString()
+      }
+    ]
   }
 }
 
-class MoonbeamNominatorBondMoreArgsDecoder<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsDecoder<MoonbeamNominatorBondMoreArgs<Network>, Network> {
+class MoonbeamNominatorBondMoreArgsDecoder<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsDecoder<
+  MoonbeamNominatorBondMoreArgs<Network>,
+  Network
+> {
   protected _decode(decoder: SCALEDecoder<Network>): SCALEDecodeResult<MoonbeamNominatorBondMoreArgs<Network>> {
     const candidate = decoder.decodeNextAccountId(20)
     const more = decoder.decodeNextInt(128)
@@ -683,7 +711,10 @@ class MoonbeamNominatorBondMoreArgsDecoder<Network extends SubstrateNetwork> ext
   }
 }
 
-class MoonbeamNominatorBondLessArgsFactory<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsFactory<MoonbeamNominatorBondLessArgs<Network>, Network> {
+class MoonbeamNominatorBondLessArgsFactory<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsFactory<
+  MoonbeamNominatorBondLessArgs<Network>,
+  Network
+> {
   public createFields(): [string, SCALEType][] {
     return [
       ['candidate', SCALEAccountId.from(this.args.candidate, this.network)],
@@ -691,14 +722,19 @@ class MoonbeamNominatorBondLessArgsFactory<Network extends SubstrateNetwork> ext
     ]
   }
   public createToAirGapTransactionParts(): () => Partial<IAirGapTransaction>[] {
-    return () => [{
-      to: [substrateAddressFactory(this.network).from(this.args.candidate).getValue()],
-      amount: new BigNumber(this.args.less).toString()
-    }]
+    return () => [
+      {
+        to: [substrateAddressFactory(this.network).from(this.args.candidate).getValue()],
+        amount: new BigNumber(this.args.less).toString()
+      }
+    ]
   }
 }
 
-class MoonbeamNominatorBondLessArgsDecoder<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsDecoder<MoonbeamNominatorBondLessArgs<Network>, Network> {
+class MoonbeamNominatorBondLessArgsDecoder<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsDecoder<
+  MoonbeamNominatorBondLessArgs<Network>,
+  Network
+> {
   protected _decode(decoder: SCALEDecoder<Network>): SCALEDecodeResult<MoonbeamNominatorBondLessArgs<Network>> {
     const candidate = decoder.decodeNextAccountId(20)
     const more = decoder.decodeNextInt(128)

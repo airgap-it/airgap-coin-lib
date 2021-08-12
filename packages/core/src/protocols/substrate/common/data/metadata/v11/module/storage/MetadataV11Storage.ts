@@ -9,8 +9,8 @@ import { MetadataV11StorageEntry } from './MetadataV11StorageEntry'
 
 export class MetadataV11Storage extends SCALEClass {
   public static decode<Network extends SubstrateNetwork>(
-    network: Network, 
-    runtimeVersion: number | undefined, 
+    network: Network,
+    runtimeVersion: number | undefined,
     raw: string
   ): SCALEDecodeResult<MetadataV11Storage> {
     const decoder = new SCALEDecoder(network, runtimeVersion, stripHexPrefix(raw))

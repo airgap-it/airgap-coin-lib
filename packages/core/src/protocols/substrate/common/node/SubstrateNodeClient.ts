@@ -67,8 +67,8 @@ export class SubstrateNodeClient<Network extends SubstrateNetwork> {
     protected readonly storageEntries: Object = supportedStorageEntries,
     protected readonly calls: Object = supportedCalls,
     protected readonly constants: Object = supportedConstants,
-    protected readonly callEndpoints: SubstrateCallEndpoints = supportedCallEndpoints, 
-    protected readonly cache: Cache = new Cache(CACHE_DEFAULT_EXPIRATION_TIME),
+    protected readonly callEndpoints: SubstrateCallEndpoints = supportedCallEndpoints,
+    protected readonly cache: Cache = new Cache(CACHE_DEFAULT_EXPIRATION_TIME)
   ) {}
 
   public async getAccountInfo(address: SubstrateCompatAddressType[Network]): Promise<SubstrateAccountInfo | null> {
@@ -156,7 +156,7 @@ export class SubstrateNodeClient<Network extends SubstrateNetwork> {
   }
 
   public async getStakersClipped(
-    eraIndex: number, 
+    eraIndex: number,
     validator: SubstrateCompatAddressType[Network]
   ): Promise<SubstrateExposure<Network> | null> {
     return this.fromStorage(
@@ -190,15 +190,12 @@ export class SubstrateNodeClient<Network extends SubstrateNetwork> {
   }
 
   public async getValidatorExposure(
-    eraIndex: number, 
+    eraIndex: number,
     address: SubstrateCompatAddressType[Network]
   ): Promise<SubstrateExposure<Network> | null> {
-    return this.fromStorage(
-      'Staking',
-      'ErasStakers',
-      SCALEInt.from(eraIndex, 32),
-      SCALEAccountId.from(address, this.network)
-    ).then((item) => (item ? SubstrateExposure.decode(this.network, this.runtimeVersion, item) : null))
+    return this.fromStorage('Staking', 'ErasStakers', SCALEInt.from(eraIndex, 32), SCALEAccountId.from(address, this.network)).then(
+      (item) => (item ? SubstrateExposure.decode(this.network, this.runtimeVersion, item) : null)
+    )
   }
 
   public async getElectionStatus(): Promise<SubstrateEraElectionStatus | null> {
@@ -227,7 +224,9 @@ export class SubstrateNodeClient<Network extends SubstrateNetwork> {
     )
   }
 
-  public async getSubsOf(address: SubstrateCompatAddressType[Network]): Promise<SCALETuple<SCALECompactInt, SCALEArray<SCALEAccountId<Network>>> | null> {
+  public async getSubsOf(
+    address: SubstrateCompatAddressType[Network]
+  ): Promise<SCALETuple<SCALECompactInt, SCALEArray<SCALEAccountId<Network>>> | null> {
     return this.fromStorage('Identity', 'SubsOf', SCALEAccountId.from(address, this.network)).then((item) =>
       item
         ? SCALETuple.decode(
@@ -243,12 +242,9 @@ export class SubstrateNodeClient<Network extends SubstrateNetwork> {
   }
 
   public async getValidatorPrefs(eraIndex: number, address: SubstrateCompatAddressType[Network]): Promise<SubstrateValidatorPrefs | null> {
-    return this.fromStorage(
-      'Staking',
-      'ErasValidatorPrefs',
-      SCALEInt.from(eraIndex, 32),
-      SCALEAccountId.from(address, this.network)
-    ).then((item) => (item ? SubstrateValidatorPrefs.decode(this.network, this.runtimeVersion, item) : null))
+    return this.fromStorage('Staking', 'ErasValidatorPrefs', SCALEInt.from(eraIndex, 32), SCALEAccountId.from(address, this.network)).then(
+      (item) => (item ? SubstrateValidatorPrefs.decode(this.network, this.runtimeVersion, item) : null)
+    )
   }
 
   public async getExpectedEraDuration(): Promise<BigNumber | null> {
@@ -359,7 +355,9 @@ export class SubstrateNodeClient<Network extends SubstrateNetwork> {
   }
 
   protected async initCache(): Promise<void> {
-    const blockTime = await this.getConstant('Babe', 'ExpectedBlockTime').then((constant) => SCALEInt.decode(constant).decoded.toNumber()).catch(() => 6000)
+    const blockTime = await this.getConstant('Babe', 'ExpectedBlockTime')
+      .then((constant) => SCALEInt.decode(constant).decoded.toNumber())
+      .catch(() => 6000)
 
     this.cache.expirationTime = Math.floor(blockTime / 3)
   }

@@ -55,16 +55,17 @@ export class SubstrateProtocolNetwork<T extends SubstrateNetwork> extends Protoc
 }
 
 export class SubstrateProtocolOptions<
-  Network extends SubstrateNetwork, 
-  Config extends SubstrateProtocolConfig = SubstrateProtocolConfig, 
+  Network extends SubstrateNetwork,
+  Config extends SubstrateProtocolConfig = SubstrateProtocolConfig,
   NodeClient extends SubstrateNodeClient<Network> = SubstrateNodeClient<Network>,
   AccountController extends SubstrateAccountController<Network, NodeClient> = SubstrateAccountController<Network, NodeClient>,
   TransactionController extends SubstrateTransactionController<Network> = SubstrateTransactionController<Network>
-> implements ProtocolOptions<Config> {
+> implements ProtocolOptions<Config>
+{
   public readonly blockExplorerClient: SubstrateBlockExplorerClient
 
   constructor(
-    public readonly network: SubstrateProtocolNetwork<Network>, 
+    public readonly network: SubstrateProtocolNetwork<Network>,
     public readonly config: Config,
     public readonly nodeClient: NodeClient,
     public readonly accountController: AccountController,

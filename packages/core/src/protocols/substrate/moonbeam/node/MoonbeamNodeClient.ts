@@ -32,7 +32,7 @@ export class MoonbeamNodeClient extends SubstrateNodeClient<SubstrateNetwork.MOO
   }
 
   public async getCollatorCommission(): Promise<BigNumber | null> {
-    return this.fromStorage('ParachainStaking', 'CollatorCommission').then((item) => 
+    return this.fromStorage('ParachainStaking', 'CollatorCommission').then((item) =>
       item ? SCALEInt.decode(item, 32).decoded.value : null
     )
   }
@@ -44,7 +44,7 @@ export class MoonbeamNodeClient extends SubstrateNodeClient<SubstrateNetwork.MOO
   }
 
   public async getMaxCollatorsPerNominator(): Promise<BigNumber | null> {
-    return this.getConstant('ParachainStaking', 'MaxCollatorsPerNominator').then((item) => 
+    return this.getConstant('ParachainStaking', 'MaxCollatorsPerNominator').then((item) =>
       item ? SCALEInt.decode(item, 32).decoded.value : null
     )
   }

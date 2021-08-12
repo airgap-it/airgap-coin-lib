@@ -6,15 +6,12 @@ import { SCALEType } from '../../../common/data/scale/type/SCALEType'
 import { SubstrateNetwork } from '../../../SubstrateNetwork'
 
 export class MoonbeamBond extends SCALEClass {
-  public static decode(
-    runtimeVersion: number | undefined, 
-    raw: string
-  ): SCALEDecodeResult<MoonbeamBond> {
+  public static decode(runtimeVersion: number | undefined, raw: string): SCALEDecodeResult<MoonbeamBond> {
     const decoder = new SCALEDecoder(SubstrateNetwork.MOONBEAM, runtimeVersion, raw)
-    
+
     const owner = decoder.decodeNextAccountId(20)
     const amount = decoder.decodeNextInt(128)
-    
+
     return {
       bytesDecoded: owner.bytesDecoded + amount.bytesDecoded,
       decoded: new MoonbeamBond(owner.decoded, amount.decoded)
@@ -23,10 +20,7 @@ export class MoonbeamBond extends SCALEClass {
 
   protected scaleFields: SCALEType[] = [this.owner, this.amount]
 
-  private constructor(
-    public readonly owner: SCALEAccountId<SubstrateNetwork.MOONBEAM>,
-    public readonly amount: SCALEInt
-  ) {
+  private constructor(public readonly owner: SCALEAccountId<SubstrateNetwork.MOONBEAM>, public readonly amount: SCALEInt) {
     super()
   }
 }

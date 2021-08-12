@@ -54,7 +54,7 @@ export class SubstrateAccountInfo {
 
     if (
       (network === SubstrateNetwork.KUSAMA && runtimeVersion >= 2030) ||
-      (network === SubstrateNetwork.POLKADOT && runtimeVersion >= 30) || 
+      (network === SubstrateNetwork.POLKADOT && runtimeVersion >= 30) ||
       (network === SubstrateNetwork.MOONBEAM && runtimeVersion >= 30)
     ) {
       return {

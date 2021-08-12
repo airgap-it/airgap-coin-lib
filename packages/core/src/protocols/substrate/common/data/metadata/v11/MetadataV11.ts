@@ -16,11 +16,7 @@ import { MetadataV11Storage } from './module/storage/MetadataV11Storage'
 import { MetadataV11StorageEntry } from './module/storage/MetadataV11StorageEntry'
 
 export class MetadataV11 extends MetadataVersioned {
-  public static decode<Network extends SubstrateNetwork>(
-    network: Network, 
-    runtimeVersion: number | undefined, 
-    raw: string
-  ): MetadataV11 {
+  public static decode<Network extends SubstrateNetwork>(network: Network, runtimeVersion: number | undefined, raw: string): MetadataV11 {
     const decoder = new SCALEDecoder(network, runtimeVersion, raw)
 
     const magicNumber = decoder.decodeNextInt(32) // 32 bits
@@ -36,11 +32,7 @@ export class MetadataV11 extends MetadataVersioned {
     super()
   }
 
-  public decorate(
-    supportedStorageEntries: Object,
-    supportedCalls: Object,
-    supportedConstants: Object
-  ): MetadataDecorator {
+  public decorate(supportedStorageEntries: Object, supportedCalls: Object, supportedConstants: Object): MetadataDecorator {
     const storageEntries: SubstrateStorageEntry[][] = []
     const calls: SubstrateCall[][] = []
     const constants: SubstrateConstant[][] = []

@@ -1,5 +1,3 @@
-import * as sodium from 'libsodium-wrappers'
-
 import { localForger } from '../../dependencies/src/@taquito/local-forging-8.0.1-beta.1/packages/taquito-local-forging/src/taquito-local-forging'
 import axios, { AxiosError, AxiosResponse } from '../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
@@ -413,14 +411,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   }
 
   public async signWithPrivateKey(privateKey: Buffer, transaction: RawTezosTransaction): Promise<IAirGapSignedTransaction> {
-    await sodium.ready
-
-    const watermark: string = '03'
-    const watermarkedForgedOperationBytesHex: string = watermark + transaction.binaryTransaction
-    const watermarkedForgedOperationBytes: Buffer = Buffer.from(watermarkedForgedOperationBytesHex, 'hex')
-    const hashedWatermarkedOpBytes: Buffer = sodium.crypto_generichash(32, watermarkedForgedOperationBytes)
-
-    const opSignature: Buffer = sodium.crypto_sign_detached(hashedWatermarkedOpBytes, privateKey)
+    const opSignature: Buffer = await this.cryptoClient.operationSignature(privateKey, transaction)
     const signedOpBytes: Buffer = Buffer.concat([Buffer.from(transaction.binaryTransaction, 'hex'), Buffer.from(opSignature)])
 
     return signedOpBytes.toString('hex')

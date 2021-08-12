@@ -4,7 +4,12 @@ import { KeyPair } from '../../../data/KeyPair'
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { createSr25519KeyPair } from '../../../utils/sr25519'
 import { DelegatorAction } from '../../ICoinDelegateProtocol'
-import { SubstrateAccountId, substrateAddressFactory, SubstrateCompatAddressType, SubstrateCompatAddress } from '../compat/SubstrateCompatAddress'
+import {
+  SubstrateAccountId,
+  substrateAddressFactory,
+  SubstrateCompatAddressType,
+  SubstrateCompatAddress
+} from '../compat/SubstrateCompatAddress'
 import { SubstrateNetwork } from '../SubstrateNetwork'
 
 import { SubstrateIdentityInfo } from './data/account/SubstrateRegistration'
@@ -32,7 +37,6 @@ import { SubstrateValidatorPrefs } from './data/staking/SubstrateValidatorPrefs'
 import { SubstrateNodeClient } from './node/SubstrateNodeClient'
 
 export class SubstrateAccountController<Network extends SubstrateNetwork, NodeClient extends SubstrateNodeClient<Network>> {
-
   constructor(readonly network: Network, readonly nodeClient: NodeClient) {}
 
   public async createKeyPairFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<KeyPair> {
@@ -57,7 +61,7 @@ export class SubstrateAccountController<Network extends SubstrateNetwork, NodeCl
   }
 
   public async getTransferableBalance(
-    accountId: SubstrateAccountId<SubstrateCompatAddressType[Network]>, 
+    accountId: SubstrateAccountId<SubstrateCompatAddressType[Network]>,
     excludeExistentialDeposit: boolean = true,
     ignoreFees: boolean = true
   ): Promise<BigNumber> {
@@ -160,7 +164,7 @@ export class SubstrateAccountController<Network extends SubstrateNetwork, NodeCl
   }
 
   public async getNominatorDetails(
-    accountId: SubstrateAccountId<SubstrateCompatAddressType[Network]>, 
+    accountId: SubstrateAccountId<SubstrateCompatAddressType[Network]>,
     validatorIds?: SubstrateAccountId<SubstrateCompatAddressType[Network]>[]
   ): Promise<SubstrateNominatorDetails> {
     const address = this.substrateAddressFrom(accountId)
@@ -206,8 +210,8 @@ export class SubstrateAccountController<Network extends SubstrateNetwork, NodeCl
   }
 
   public async getNominationStatus(
-    nominator: SubstrateAccountId<SubstrateCompatAddressType[Network]>, 
-    validator: SubstrateAccountId<SubstrateCompatAddressType[Network]>, 
+    nominator: SubstrateAccountId<SubstrateCompatAddressType[Network]>,
+    validator: SubstrateAccountId<SubstrateCompatAddressType[Network]>,
     era?: number
   ): Promise<SubstrateNominationStatus | undefined> {
     const eraIndex: number | undefined = era !== undefined ? era : (await this.nodeClient.getActiveEraInfo())?.index.toNumber()
@@ -222,7 +226,7 @@ export class SubstrateAccountController<Network extends SubstrateNetwork, NodeCl
     }
 
     const exposure: SubstrateExposure<Network> | null = await this.nodeClient.getValidatorExposure(
-      eraIndex, 
+      eraIndex,
       this.substrateAddressFrom(validator)
     )
 
@@ -326,8 +330,8 @@ export class SubstrateAccountController<Network extends SubstrateNetwork, NodeCl
   }
 
   private async getStakingStatus(
-    nominator: SubstrateAccountId<SubstrateCompatAddressType[Network]>, 
-    nominations: SubstrateNominations<Network> | null, 
+    nominator: SubstrateAccountId<SubstrateCompatAddressType[Network]>,
+    nominations: SubstrateNominations<Network> | null,
     eraIndex: number
   ): Promise<SubstrateStakingStatus> {
     const isWaitingForNomination: boolean = nominations?.submittedIn.gte(eraIndex) ?? false
@@ -354,7 +358,10 @@ export class SubstrateAccountController<Network extends SubstrateNetwork, NodeCl
     }
   }
 
-  private async getEraValidatorReward(accountId: SubstrateAccountId<SubstrateCompatAddressType[Network]>, eraIndex: number): Promise<SubstrateValidatorRewardDetails | null> {
+  private async getEraValidatorReward(
+    accountId: SubstrateAccountId<SubstrateCompatAddressType[Network]>,
+    eraIndex: number
+  ): Promise<SubstrateValidatorRewardDetails | null> {
     const address = this.substrateAddressFrom(accountId)
 
     const results = await Promise.all([
@@ -375,7 +382,9 @@ export class SubstrateAccountController<Network extends SubstrateNetwork, NodeCl
     const exposureClipped = results[2]
     const validatorPrefs = results[3]
 
-    const validatorPoints = eraPoints?.individual?.elements?.find((element) => (element.first.address as SubstrateCompatAddress).compare(address))?.second?.value
+    const validatorPoints = eraPoints?.individual?.elements?.find((element) =>
+      (element.first.address as SubstrateCompatAddress).compare(address)
+    )?.second?.value
 
     if (!eraReward || !eraPoints || !exposureClipped || !validatorPrefs || !validatorPoints) {
       return null
@@ -462,8 +471,7 @@ export class SubstrateAccountController<Network extends SubstrateNetwork, NodeCl
 
     const partialRewards = exposuresWithValidators
       .map(([validator, commission, exposure]) => {
-        const validatorPoints = rewardPoints.individual.elements.find((element) => element.first.compare(validator) === 0)?.second
-          ?.value
+        const validatorPoints = rewardPoints.individual.elements.find((element) => element.first.compare(validator) === 0)?.second?.value
 
         const nominatorStake = exposure?.others.elements.find((element) => element.first.compare(accountId) === 0)?.second?.value
 
