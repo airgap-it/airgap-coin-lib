@@ -18,13 +18,17 @@ export enum SCALEMultiAddressType {
   Address20
 }
 
-type SCALEMultiAddressValue<T extends SCALEMultiAddressType, Network extends SubstrateNetwork> =
-  T extends SCALEMultiAddressType.Id ? SCALEAccountId<Network> : 
-  T extends SCALEMultiAddressType.Index ? SCALEInt :
-  T extends SCALEMultiAddressType.Raw ? SCALEBytes :
-  T extends SCALEMultiAddressType.Address32 ? SCALEHash :
-  T extends SCALEMultiAddressType.Address20 ? SCALEHash :
-  never
+type SCALEMultiAddressValue<T extends SCALEMultiAddressType, Network extends SubstrateNetwork> = T extends SCALEMultiAddressType.Id
+  ? SCALEAccountId<Network>
+  : T extends SCALEMultiAddressType.Index
+  ? SCALEInt
+  : T extends SCALEMultiAddressType.Raw
+  ? SCALEBytes
+  : T extends SCALEMultiAddressType.Address32
+  ? SCALEHash
+  : T extends SCALEMultiAddressType.Address20
+  ? SCALEHash
+  : never
 
 export class SCALEMultiAddress<T extends SCALEMultiAddressType, Network extends SubstrateNetwork> extends SCALEType {
   public static isOfType<T extends SCALEMultiAddressType, Network extends SubstrateNetwork>(
@@ -35,18 +39,18 @@ export class SCALEMultiAddress<T extends SCALEMultiAddressType, Network extends 
   }
 
   public static from<Network extends SubstrateNetwork>(
-    value: number | string | BigNumber, 
-    type: SCALEMultiAddressType.Index, 
+    value: number | string | BigNumber,
+    type: SCALEMultiAddressType.Index,
     network: Network
   ): SCALEMultiAddress<SCALEMultiAddressType.Index, Network>
   public static from<T extends Exclude<SCALEMultiAddressType, SCALEMultiAddressType.Index>, Network extends SubstrateNetwork>(
-    value: string | Uint8Array | Buffer | SubstrateCompatAddressType[Network], 
-    type: T, 
+    value: string | Uint8Array | Buffer | SubstrateCompatAddressType[Network],
+    type: T,
     network: Network
-  ): SCALEMultiAddress<T, Network> 
+  ): SCALEMultiAddress<T, Network>
   public static from<T extends SCALEMultiAddressType, Network extends SubstrateNetwork>(
-    value: number | string | BigNumber | Uint8Array | Buffer | SubstrateCompatAddressType[Network], 
-    type: T, 
+    value: number | string | BigNumber | Uint8Array | Buffer | SubstrateCompatAddressType[Network],
+    type: T,
     network: Network
   ): SCALEMultiAddress<T, Network> {
     switch (type) {

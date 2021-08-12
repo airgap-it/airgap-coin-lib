@@ -10,9 +10,10 @@ import { SubstrateTransactionConfig } from './common/SubstrateTransactionControl
 import { SubstrateNetwork } from './SubstrateNetwork'
 import { SubstrateProtocol } from './SubstrateProtocol'
 
-export abstract class SubstrateDelegateProtocol<Network extends SubstrateNetwork> 
-  extends SubstrateProtocol<Network> implements ICoinDelegateProtocol  {
-  
+export abstract class SubstrateDelegateProtocol<Network extends SubstrateNetwork>
+  extends SubstrateProtocol<Network>
+  implements ICoinDelegateProtocol
+{
   protected defaultValidator?: string
 
   public async getDefaultDelegatee(): Promise<string> {

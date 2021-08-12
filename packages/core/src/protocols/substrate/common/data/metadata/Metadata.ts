@@ -12,11 +12,7 @@ import { MetadataV13 } from './v13/MetadataV13'
 const MAGIC_NUMBER = '6174656d' // `meta` in hex
 
 export class Metadata {
-  public static decode<Network extends SubstrateNetwork>(
-    network: Network, 
-    runtimeVersion: number | undefined, 
-    raw: string
-  ): Metadata {
+  public static decode<Network extends SubstrateNetwork>(network: Network, runtimeVersion: number | undefined, raw: string): Metadata {
     const decoder = new SCALEDecoder(network, runtimeVersion, raw)
 
     const magicNumber = decoder.decodeNextInt(32) // 32 bits
@@ -50,11 +46,7 @@ export class Metadata {
 
   private constructor(readonly versioned: MetadataVersioned) {}
 
-  public decorate(
-    supportedStorageEntries: Object,
-    supportedCalls: Object,
-    supportedConstants: Object
-  ): MetadataDecorator {
+  public decorate(supportedStorageEntries: Object, supportedCalls: Object, supportedConstants: Object): MetadataDecorator {
     return this.versioned.decorate(supportedStorageEntries, supportedCalls, supportedConstants)
   }
 }

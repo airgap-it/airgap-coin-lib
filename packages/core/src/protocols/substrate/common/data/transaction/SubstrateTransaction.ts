@@ -1,7 +1,12 @@
 import BigNumber from '../../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { IAirGapTransaction } from '../../../../../interfaces/IAirGapTransaction'
 import { stripHexPrefix } from '../../../../../utils/hex'
-import { scaleAddressFactory, SCALECompatAddressType, SubstrateAccountId, SubstrateCompatAddressType } from '../../../compat/SubstrateCompatAddress'
+import {
+  scaleAddressFactory,
+  SCALECompatAddressType,
+  SubstrateAccountId,
+  SubstrateCompatAddressType
+} from '../../../compat/SubstrateCompatAddress'
 import { SubstrateCompatSignatureType, substrateSignatureFactory } from '../../../compat/SubstrateCompatSignature'
 import { SubstrateNetwork } from '../../../SubstrateNetwork'
 import { SubstrateCall } from '../metadata/decorator/call/SubstrateCall'
@@ -29,23 +34,22 @@ interface SubstrateTransactionConfigBase<Network extends SubstrateNetwork> {
   nonce: number | BigNumber
 }
 
-interface SubstrateTransactionConfigWithSignature<Network extends SubstrateNetwork> 
-  extends SubstrateTransactionConfigBase<Network> {
+interface SubstrateTransactionConfigWithSignature<Network extends SubstrateNetwork> extends SubstrateTransactionConfigBase<Network> {
   signature: SubstrateCompatSignatureType[Network]
 }
 
-interface SubstrateTransactionConfigWithSignatureType<Network extends SubstrateNetwork> 
-  extends SubstrateTransactionConfigBase<Network> {
+interface SubstrateTransactionConfigWithSignatureType<Network extends SubstrateNetwork> extends SubstrateTransactionConfigBase<Network> {
   signatureType: SubstrateSignatureType
 }
 
-type SubstrateTransactionConfig<Network extends SubstrateNetwork> = 
-  | SubstrateTransactionConfigWithSignature<Network> 
+type SubstrateTransactionConfig<Network extends SubstrateNetwork> =
+  | SubstrateTransactionConfigWithSignature<Network>
   | SubstrateTransactionConfigWithSignatureType<Network>
 
-  function isConfigWithSignature<Network extends SubstrateNetwork>(config: Partial<SubstrateTransactionConfig<Network>>): 
-  config is SubstrateTransactionConfigWithSignature<Network> {
-    return (config as SubstrateTransactionConfigWithSignature<Network>).signature !== undefined
+function isConfigWithSignature<Network extends SubstrateNetwork>(
+  config: Partial<SubstrateTransactionConfig<Network>>
+): config is SubstrateTransactionConfigWithSignature<Network> {
+  return (config as SubstrateTransactionConfigWithSignature<Network>).signature !== undefined
 }
 
 export enum SubstrateTransactionType {
@@ -88,7 +92,10 @@ export class SubstrateTransaction<Network extends SubstrateNetwork> extends SCAL
     )
   }
 
-  public static fromTransaction<Network extends SubstrateNetwork>(transaction: SubstrateTransaction<Network>, config?: Partial<SubstrateTransactionConfig<Network>>): SubstrateTransaction<Network> {
+  public static fromTransaction<Network extends SubstrateNetwork>(
+    transaction: SubstrateTransaction<Network>,
+    config?: Partial<SubstrateTransactionConfig<Network>>
+  ): SubstrateTransaction<Network> {
     return new SubstrateTransaction(
       transaction.network,
       transaction.type,
@@ -110,9 +117,9 @@ export class SubstrateTransaction<Network extends SubstrateNetwork> extends SCAL
   }
 
   public static decode<Network extends SubstrateNetwork>(
-    network: Network, 
-    runtimeVersion: number | undefined, 
-    type: SubstrateTransactionType, 
+    network: Network,
+    runtimeVersion: number | undefined,
+    type: SubstrateTransactionType,
     raw: string
   ): SCALEDecodeResult<SubstrateTransaction<Network>> {
     const bytes = SCALEBytes.decode(stripHexPrefix(raw))
@@ -178,9 +185,7 @@ export class SubstrateTransaction<Network extends SubstrateNetwork> extends SCAL
     const airGapTransaction = {
       from: [this.signer.asAddress()],
       to: [this.signer.asAddress()],
-      extra: this.type !== SubstrateTransactionType.TRANSFER
-        ? { type: SubstrateTransactionType[this.type] }
-        : undefined,
+      extra: this.type !== SubstrateTransactionType.TRANSFER ? { type: SubstrateTransactionType[this.type] } : undefined,
       transactionDetails: JSON.parse(this.toString())
     }
     const parts = this.method.toAirGapTransactionParts()

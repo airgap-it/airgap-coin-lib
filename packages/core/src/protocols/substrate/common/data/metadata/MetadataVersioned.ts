@@ -5,9 +5,5 @@ import { MetadataDecorator } from './decorator/MetadataDecorator'
 export abstract class MetadataVersioned {
   public abstract readonly version: SCALEInt
 
-  public abstract decorate(
-    supportedStorageEntries: Object,
-    supportedCalls: Object,
-    supportedConstants: Object
-  ): MetadataDecorator
+  public abstract decorate(supportedStorageEntries: Object, supportedCalls: Object, supportedConstants: Object): MetadataDecorator
 }

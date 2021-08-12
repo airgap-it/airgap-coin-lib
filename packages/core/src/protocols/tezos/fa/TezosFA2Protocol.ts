@@ -23,8 +23,8 @@ import { TezosTransactionParameters } from '../types/operations/Transaction'
 import { TezosOperationType } from '../types/TezosOperationType'
 import { isMichelinePrimitive, isMichelineSequence } from '../types/utils'
 import { TezosFAProtocol } from './TezosFAProtocol'
-import { TezosFA2ProtocolOptions } from './TezosFAProtocolOptions'
-import { InvalidValueError, ConditionViolationError, NotFoundError } from '../../../errors'
+import { TezosFA2ProtocolConfig, TezosFA2ProtocolOptions } from './TezosFAProtocolOptions'
+import { ConditionViolationError, NotFoundError } from '../../../errors'
 import { Domain } from '../../../errors/coinlib-error'
 
 enum TezosFA2ContractEntrypoint {
@@ -37,9 +37,10 @@ enum TezosFA2ContractEntrypoint {
 
 export class TezosFA2Protocol extends TezosFAProtocol {
   private static readonly DEFAULT_TOKEN_METADATA_BIG_MAP_NAME = 'token_metadata'
-  private static readonly DEFAULT_TOKEN_METADATA_BIG_MAP_VALUE_REGEX = /Pair\s\(Pair\s(?<tokenID>\d+)\s\(Pair\s\"(?<symbol>\w*)\"\s\(Pair\s\"(?<name>\w*)\"\s\(Pair\s(?<decimals>\d*)\s\{(?<extras>.*)\}\)\)\)\)/ // temporary until we get Micheline JSON from the API
+  private static readonly DEFAULT_TOKEN_METADATA_BIG_MAP_VALUE_REGEX =
+    /Pair\s\(Pair\s(?<tokenID>\d+)\s\(Pair\s\"(?<symbol>\w*)\"\s\(Pair\s\"(?<name>\w*)\"\s\(Pair\s(?<decimals>\d*)\s\{(?<extras>.*)\}\)\)\)\)/ // temporary until we get Micheline JSON from the API
 
-  public readonly tokenID?: number
+  public readonly tokenID: number
 
   public readonly tokenMetadataBigMapID?: number
   public readonly tokenMetadataBigMapName: string
@@ -50,7 +51,7 @@ export class TezosFA2Protocol extends TezosFAProtocol {
   constructor(options: TezosFA2ProtocolOptions) {
     super(options)
 
-    this.tokenID = options.config.tokenID
+    this.tokenID = options.config.tokenID ?? 0
 
     this.tokenMetadataBigMapID = options.config.tokenMetadataBigMapID
     this.tokenMetadataBigMapName = options.config.tokenMetadataBigMapName ?? TezosFA2Protocol.DEFAULT_TOKEN_METADATA_BIG_MAP_NAME
@@ -70,16 +71,11 @@ export class TezosFA2Protocol extends TezosFAProtocol {
   }
 
   public async getBalanceOfAddresses(addresses: string[]): Promise<string> {
-    const tokenID: number | undefined = this.tokenID
-    if (tokenID === undefined) {
-      throw new InvalidValueError(Domain.TEZOS, "Can't check the balance, no tokenID has been provided.")
-    }
-
     const results: TezosFA2BalanceOfResponse[] = await this.balanceOf(
       addresses.map((address: string) => {
         return {
           address,
-          tokenID
+          tokenID: this.tokenID
         }
       }, this.defaultSourceAddress)
     )
@@ -185,7 +181,7 @@ export class TezosFA2Protocol extends TezosFAProtocol {
                   to: [to],
                   extra: {
                     type: parameters.entrypoint,
-                    assetID: this.tokenID === undefined || !tokenID.eq(this.tokenID) ? tokenID.toString() : undefined
+                    assetID: !tokenID.eq(this.tokenID) ? tokenID.toString() : undefined
                   }
                 }
               })
@@ -319,18 +315,16 @@ export class TezosFA2Protocol extends TezosFAProtocol {
     return this.prepareContractCall([tokenMetadataCall], fee, publicKey)
   }
 
-  public async getTokenMetadata(tokenIDs?: number[]): Promise<TezosFA2TokenMetadata[]> {
+  public async getTokenMetadata(): Promise<TezosFA2TokenMetadata[]> {
     const metadataResponse: BigMapResponse[] = await this.contract.bigMapValues({
       bigMapID: this.tokenMetadataBigMapID, // temporarily until we cannot search by a big map's annotation
-      predicates: tokenIDs
-        ? [
-            {
-              field: 'key',
-              operation: 'in',
-              set: tokenIDs
-            }
-          ]
-        : undefined
+      predicates: [
+        {
+          field: 'key',
+          operation: 'eq',
+          set: [this.tokenID.toFixed()]
+        }
+      ]
     })
 
     return metadataResponse
@@ -350,9 +344,96 @@ export class TezosFA2Protocol extends TezosFAProtocol {
       .filter((metadata: TezosFA2TokenMetadata | null) => metadata !== null) as TezosFA2TokenMetadata[]
   }
 
-  public async fetchTokenHolders(tokenIDs: number[]): Promise<{ address: string; amount: string; tokenID: number }[]> {
-    // there is no standard way to fetch token holders for now, every subclass needs to implement its own logic
-    return []
+  private static readonly extractAddressRegex = /^Pair (0x[0-9a-fA-F]+) [\d]+$/
+
+  public async fetchTokenHolders(): Promise<{ address: string; amount: string }[]> {
+    const tokenID = (this.options.config as TezosFA2ProtocolConfig).tokenID ?? 0
+    const values = await this.contract.bigMapValues({
+      bigMapFilter: [
+        {
+          field: 'key_type',
+          operation: 'eq',
+          set: ['(pair (address %owner) (nat %token_id))']
+        },
+        {
+          field: 'value_type',
+          operation: 'eq',
+          set: ['nat']
+        }
+      ],
+      bigMapID: (this.options.config as TezosFA2ProtocolConfig).ledgerBigMapID,
+      predicates: [
+        {
+          field: 'key',
+          operation: 'endsWith',
+          set: [`${tokenID}`],
+          inverse: false
+        },
+        {
+          field: 'value',
+          operation: 'isnull',
+          set: [],
+          inverse: true
+        }
+      ]
+    })
+    return values
+      .map((value) => {
+        try {
+          let address: string | undefined = undefined
+          const match = TezosFA2Protocol.extractAddressRegex.exec(value.key)
+          if (match) {
+            address = TezosUtils.parseAddress(match[1])
+          }
+          if (address === undefined || !value.value) {
+            return {
+              address: '',
+              amount: '0'
+            }
+          }
+          return {
+            address,
+            amount: value.value
+          }
+        } catch {
+          return {
+            address: '',
+            amount: '0'
+          }
+        }
+      })
+      .filter((value) => value.amount !== '0')
+  }
+
+  public async getTotalSupply(): Promise<string> {
+    const tokenID = (this.options.config as TezosFA2ProtocolConfig).tokenID ?? 0
+    const values = await this.contract.bigMapValues({
+      bigMapFilter: [
+        {
+          field: 'key_type',
+          operation: 'eq',
+          set: ['nat']
+        },
+        {
+          field: 'value_type',
+          operation: 'eq',
+          set: ['nat']
+        }
+      ],
+      bigMapID: (this.options.config as TezosFA2ProtocolConfig).totalSupplyBigMapID,
+      predicates: [
+        {
+          field: 'key',
+          operation: 'eq',
+          set: [`${tokenID}`],
+          inverse: false
+        }
+      ]
+    })
+    if (values.length === 0 || values[0].value === null || values[0].value === undefined) {
+      return '0'
+    }
+    return values[0].value
   }
 
   private async createTransferCall(
@@ -394,17 +475,14 @@ export class TezosFA2Protocol extends TezosFAProtocol {
   }
 
   protected callbackContract(entrypoint: TezosFA2ContractEntrypoint): string {
-    const networkCallbacks: Partial<Record<TezosFA2ContractEntrypoint, string>> | undefined = this.defaultCallbackContract[
-      this.options.network.extras.network
-    ]
+    const networkCallbacks: Partial<Record<TezosFA2ContractEntrypoint, string>> | undefined =
+      this.defaultCallbackContract[this.options.network.extras.network]
     const callback: string | undefined = networkCallbacks ? networkCallbacks[entrypoint] : undefined
 
     return callback ?? ''
   }
 
-  private isTransferRequest(
-    obj: unknown
-  ): obj is {
+  private isTransferRequest(obj: unknown): obj is {
     from_: string
     txs: { to_: string; token_id: BigNumber; amount: BigNumber }[]
   } {

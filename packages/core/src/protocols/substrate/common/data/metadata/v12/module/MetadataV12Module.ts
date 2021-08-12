@@ -14,8 +14,8 @@ import { MetadataV11Storage } from '../../v11/module/storage/MetadataV11Storage'
 
 export class MetadataV12Module extends MetadataV11Module {
   public static decode<Network extends SubstrateNetwork>(
-    network: Network, 
-    runtimeVersion: number | undefined, 
+    network: Network,
+    runtimeVersion: number | undefined,
     raw: string
   ): SCALEDecodeResult<MetadataV12Module> {
     const decoder = new SCALEDecoder(network, runtimeVersion, raw)

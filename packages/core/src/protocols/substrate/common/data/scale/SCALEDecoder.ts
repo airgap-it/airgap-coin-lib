@@ -18,8 +18,11 @@ import { SCALEString } from './type/SCALEString'
 import { SCALETuple } from './type/SCALETuple'
 import { SCALEType } from './type/SCALEType'
 
-export type DecoderMethod<T, Network extends SubstrateNetwork> = 
-  (network: Network, runtimeVersion: number | undefined, hex: string) => SCALEDecodeResult<T>
+export type DecoderMethod<T, Network extends SubstrateNetwork> = (
+  network: Network,
+  runtimeVersion: number | undefined,
+  hex: string
+) => SCALEDecodeResult<T>
 export type DecoderPartialMethod<T> = (hex: string) => SCALEDecodeResult<T>
 
 export interface SCALEDecodeResult<T> {
@@ -30,11 +33,7 @@ export interface SCALEDecodeResult<T> {
 export class SCALEDecoder<Network extends SubstrateNetwork> {
   private hex: string
 
-  constructor(
-    private readonly network: Network,
-    private readonly runtimeVersion: number | undefined,
-    bytes: string | Uint8Array | Buffer
-  ) {
+  constructor(private readonly network: Network, private readonly runtimeVersion: number | undefined, bytes: string | Uint8Array | Buffer) {
     this.hex = typeof bytes === 'string' ? stripHexPrefix(bytes) : Buffer.from(bytes).toString('hex')
   }
 
@@ -78,9 +77,7 @@ export class SCALEDecoder<Network extends SubstrateNetwork> {
     return this.decodeNextValue((network, runtimeVersion, hex) => SCALEMultiAddress.decode(network, hex, type, runtimeVersion))
   }
 
-  public decodeNextOptional<T extends SCALEType>(
-    decoderMethod: DecoderMethod<T, Network>
-  ): SCALEDecodeResult<SCALEOptional<T>> {
+  public decodeNextOptional<T extends SCALEType>(decoderMethod: DecoderMethod<T, Network>): SCALEDecodeResult<SCALEOptional<T>> {
     return this.decodeNextValue((network, runtimeVersion, hex) => SCALEOptional.decode(network, runtimeVersion, hex, decoderMethod))
   }
 

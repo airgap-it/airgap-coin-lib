@@ -7,8 +7,8 @@ import { SCALETuple } from '../scale/type/SCALETuple'
 
 export class SubstrateEraRewardPoints<Network extends SubstrateNetwork> {
   public static decode<Network extends SubstrateNetwork>(
-    network: Network, 
-    runtimeVersion: number | undefined, 
+    network: Network,
+    runtimeVersion: number | undefined,
     raw: string
   ): SubstrateEraRewardPoints<Network> {
     const decoder = new SCALEDecoder(network, runtimeVersion, raw)
@@ -27,8 +27,5 @@ export class SubstrateEraRewardPoints<Network extends SubstrateNetwork> {
     return new SubstrateEraRewardPoints(total.decoded, individual.decoded)
   }
 
-  private constructor(
-    readonly total: SCALEInt, 
-    readonly individual: SCALEArray<SCALETuple<SCALEAccountId<Network>, SCALEInt>>
-  ) {}
+  private constructor(readonly total: SCALEInt, readonly individual: SCALEArray<SCALETuple<SCALEAccountId<Network>, SCALEInt>>) {}
 }

@@ -73,15 +73,15 @@ export class MoonbaseTestProtocolSpec extends TestProtocolSpec {
           '4103' + // payload length
           Buffer.from(
             '0300' + // moduleId + callId
-            'B6bC7946dFd3B9128777414c02296273ee6bBd0e' + // AccountId destination
-            '070010a5d4e8' + // value
-            '8503'+ // era
-            '04' + // nonce
-            '00' + // tip
-            '1e000000' + // specVersion
-            '01000000' + // transactionVersion
-            'd51522c9ef7ba4e0990f7a4527de79afcac992ab97abbbc36722f8a27189b170' + // genesis hash
-            '33a7a745849347ce3008c07268be63d8cefd3ef61de0c7318e88a577fb7d26a9' // block hash
+              'B6bC7946dFd3B9128777414c02296273ee6bBd0e' + // AccountId destination
+              '070010a5d4e8' + // value
+              '8503' + // era
+              '04' + // nonce
+              '00' + // tip
+              '1e000000' + // specVersion
+              '01000000' + // transactionVersion
+              'd51522c9ef7ba4e0990f7a4527de79afcac992ab97abbbc36722f8a27189b170' + // genesis hash
+              '33a7a745849347ce3008c07268be63d8cefd3ef61de0c7318e88a577fb7d26a9' // block hash
           ).toString('hex') // payload
       },
       signedTx:
@@ -106,18 +106,18 @@ export class MoonbaseTestProtocolSpec extends TestProtocolSpec {
         '070010a5d4e8' + // value
         // payload
         '4103' + // payload length
-          Buffer.from(
-            '0300' + // moduleId + callId
+        Buffer.from(
+          '0300' + // moduleId + callId
             'B6bC7946dFd3B9128777414c02296273ee6bBd0e' + // AccountId destination
             '070010a5d4e8' + // value
-            '8503'+ // era
+            '8503' + // era
             '04' + // nonce
             '00' + // tip
             '1e000000' + // specVersion
             '01000000' + // transactionVersion
             'd51522c9ef7ba4e0990f7a4527de79afcac992ab97abbbc36722f8a27189b170' + // genesis hash
             '33a7a745849347ce3008c07268be63d8cefd3ef61de0c7318e88a577fb7d26a9' // block hash
-          ).toString('hex') // payload
+        ).toString('hex') // payload
     }
   ]
 

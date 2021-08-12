@@ -51,9 +51,7 @@ export class MoonriverProtocol extends MoonbeamProtocol {
     }
   ]
 
-  public constructor(
-    public readonly options: MoonriverProtocolOptions = new MoonriverProtocolOptions()
-  ) {
+  public constructor(public readonly options: MoonriverProtocolOptions = new MoonriverProtocolOptions()) {
     super(options)
   }
 }

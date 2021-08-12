@@ -5,6 +5,7 @@ import * as bs58check from '../../dependencies/src/bs58check-2.1.2'
 import { Ed25519CryptoClient } from '../Ed25519CryptoClient'
 import { InvalidValueError } from '../../errors'
 import { Domain } from '../../errors/coinlib-error'
+import { RawTezosTransaction } from '../../serializer/types'
 
 export class TezosCryptoClient extends Ed25519CryptoClient {
   constructor(public readonly edsigPrefix: Uint8Array = new Uint8Array([9, 245, 205, 134, 18])) {
@@ -21,6 +22,17 @@ export class TezosCryptoClient extends Ed25519CryptoClient {
     const signature: string = bs58check.encode(Buffer.concat([Buffer.from(this.edsigPrefix), Buffer.from(rawSignature)]))
 
     return signature
+  }
+
+  public async operationSignature(privateKey: Buffer, transaction: RawTezosTransaction): Promise<Buffer> {
+    await sodium.ready
+
+    const watermark: string = '03'
+    const watermarkedForgedOperationBytesHex: string = watermark + transaction.binaryTransaction
+    const watermarkedForgedOperationBytes: Buffer = Buffer.from(watermarkedForgedOperationBytesHex, 'hex')
+    const hashedWatermarkedOpBytes: Buffer = sodium.crypto_generichash(32, watermarkedForgedOperationBytes)
+
+    return sodium.crypto_sign_detached(hashedWatermarkedOpBytes, privateKey)
   }
 
   public async verifyMessage(message: string, signature: string, publicKey: string): Promise<boolean> {

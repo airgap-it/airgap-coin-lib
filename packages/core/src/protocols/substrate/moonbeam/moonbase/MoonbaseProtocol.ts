@@ -51,9 +51,7 @@ export class MoonbaseProtocol extends MoonbeamProtocol {
     }
   ]
 
-  public constructor(
-    public readonly options: MoonbaseProtocolOptions = new MoonbaseProtocolOptions()
-  ) {
+  public constructor(public readonly options: MoonbaseProtocolOptions = new MoonbaseProtocolOptions()) {
     super(options)
   }
 }

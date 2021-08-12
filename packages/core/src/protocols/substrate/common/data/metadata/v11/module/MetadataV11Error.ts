@@ -6,8 +6,8 @@ import { SCALEString } from '../../../scale/type/SCALEString'
 
 export class MetadataV11Error extends SCALEClass {
   public static decode<Network extends SubstrateNetwork>(
-    network: Network, 
-    runtimeVersion: number | undefined, 
+    network: Network,
+    runtimeVersion: number | undefined,
     raw: string
   ): SCALEDecodeResult<MetadataV11Error> {
     const decoder = new SCALEDecoder(network, runtimeVersion, raw)

@@ -4,7 +4,6 @@ import { SubstrateTransactionController } from '../../common/SubstrateTransactio
 import { SubstrateNetwork } from '../../SubstrateNetwork'
 
 export class MoonbeamTransactionController extends SubstrateTransactionController<SubstrateNetwork.MOONBEAM> {
-
   public getDefaultSignatureType(): SubstrateSignatureType {
     return SubstrateSignatureType.Ecdsa
   }

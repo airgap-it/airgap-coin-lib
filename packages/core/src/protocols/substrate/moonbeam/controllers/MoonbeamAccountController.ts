@@ -54,10 +54,7 @@ export class MoonbeamAccountController extends SubstrateAccountController<Substr
 
   public async getNominatorDetails(accountId: SubstrateAccountId<MoonbeamAddress>): Promise<MoonbeamNominatorDetails> {
     const address = MoonbeamAddress.from(accountId)
-    const results = await Promise.all([
-      this.getBalance(address),
-      this.nodeClient.getNominatorState(address)
-    ])
+    const results = await Promise.all([this.getBalance(address), this.nodeClient.getNominatorState(address)])
 
     const balance = results[0]
     const nominatorState = results[1]
@@ -84,16 +81,13 @@ export class MoonbeamAccountController extends SubstrateAccountController<Substr
       totalBond: totalBond.toString(),
       delegatees: nominatorState?.nominations.elements.map((bond) => bond.owner.asAddress()) ?? [],
       availableActions: await this.getStakingActions(nominatorState?.nominations.elements ?? []),
-      status 
+      status
     }
   }
 
   public async getCollatorDetails(accountId: SubstrateAccountId<MoonbeamAddress>): Promise<MoonbeamCollatorDetails> {
     const address = MoonbeamAddress.from(accountId)
-    const results = await Promise.all([
-      this.nodeClient.getCollatorState(address),
-      this.nodeClient.getCollatorCommission()
-    ])
+    const results = await Promise.all([this.nodeClient.getCollatorState(address), this.nodeClient.getCollatorCommission()])
 
     const collatorState = results[0]
     const commission = results[1]
@@ -102,7 +96,7 @@ export class MoonbeamAccountController extends SubstrateAccountController<Substr
       return Promise.reject('Could not fetch collator details.')
     }
 
-    let status: MoonbeamCollatorDetails["status"]
+    let status: MoonbeamCollatorDetails['status']
     switch (collatorState.status.value) {
       case MoonbeamCollatorStatus.ACTIVE:
         status = 'Active'
@@ -125,7 +119,7 @@ export class MoonbeamAccountController extends SubstrateAccountController<Substr
   }
 
   public async getNominationDetails(
-    accountId: SubstrateAccountId<MoonbeamAddress>, 
+    accountId: SubstrateAccountId<MoonbeamAddress>,
     collator: SubstrateAccountId<MoonbeamAddress>
   ): Promise<MoonbeamNominationDetails> {
     const address = MoonbeamAddress.from(accountId)
@@ -143,11 +137,7 @@ export class MoonbeamAccountController extends SubstrateAccountController<Substr
       return Promise.reject('Could not fetch nomination details.')
     }
 
-    const bond = nominatorState
-      ?.nominations
-      .elements
-      .find((bond) => bond.owner.compare(collator) === 0)
-      ?.amount.value ?? new BigNumber(0)
+    const bond = nominatorState?.nominations.elements.find((bond) => bond.owner.compare(collator) === 0)?.amount.value ?? new BigNumber(0)
     const totalBond = nominatorState?.total.value ?? new BigNumber(0)
 
     let status: MoonbeamNominatorDetails['status']
@@ -176,16 +166,10 @@ export class MoonbeamAccountController extends SubstrateAccountController<Substr
     }
   }
 
-  private async getStakingActions(
-    nominations: MoonbeamBond[], 
-    collator?: MoonbeamCollatorDetails
-  ): Promise<DelegatorAction[]> {
+  private async getStakingActions(nominations: MoonbeamBond[], collator?: MoonbeamCollatorDetails): Promise<DelegatorAction[]> {
     const actions: DelegatorAction[] = []
 
-    const results = await Promise.all([
-      this.nodeClient.getMaxNominatorsPerCollator(),
-      this.nodeClient.getMaxCollatorsPerNominator()
-    ])
+    const results = await Promise.all([this.nodeClient.getMaxNominatorsPerCollator(), this.nodeClient.getMaxCollatorsPerNominator()])
 
     const maxNominators = results[0]
     const maxCollators = results[1]

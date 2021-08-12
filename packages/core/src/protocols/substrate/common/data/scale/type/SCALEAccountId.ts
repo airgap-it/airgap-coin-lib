@@ -23,7 +23,11 @@ export class SCALEAccountId<Network extends SubstrateNetwork> extends SCALEType 
     return new SCALEAccountId(address)
   }
 
-  public static decode<Network extends SubstrateNetwork>(network: Network, hex: string, byteLength: number = 32): SCALEDecodeResult<SCALEAccountId<Network>> {
+  public static decode<Network extends SubstrateNetwork>(
+    network: Network,
+    hex: string,
+    byteLength: number = 32
+  ): SCALEDecodeResult<SCALEAccountId<Network>> {
     const _hex = stripHexPrefix(hex).substr(0, byteLength * 2)
 
     return {
