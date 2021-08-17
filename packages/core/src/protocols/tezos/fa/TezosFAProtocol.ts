@@ -23,6 +23,8 @@ import { TezosFAProtocolOptions } from './TezosFAProtocolOptions'
 import { TezosAddress } from '../TezosAddress'
 import { InvalidValueError, NetworkError, OperationFailedError } from '../../../errors'
 import { Domain } from '../../../errors/coinlib-error'
+import { ConseilPredicate } from '../types/contract/ConseilPredicate'
+import { TezosUtils } from '../TezosUtils'
 
 export interface TezosFAProtocolConfiguration {
   symbol: string
@@ -107,32 +109,7 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
     const allTransactions = await Promise.all(
       addresses.map((address) => {
         const body = {
-          predicates: [
-            {
-              field: 'parameters',
-              operation: 'like',
-              set: [address],
-              inverse: false
-            },
-            {
-              field: 'parameters_entrypoints',
-              operation: 'eq',
-              set: ['transfer'],
-              inverse: false
-            },
-            {
-              field: 'kind',
-              operation: 'eq',
-              set: ['transaction'],
-              inverse: false
-            },
-            {
-              field: 'destination',
-              operation: 'eq',
-              set: [this.contractAddress],
-              inverse: false
-            }
-          ],
+          predicates: [...this.getTransactionQueryPredicates(address, 'string'), ...this.getTransactionQueryPredicates(address, 'bytes')],
           orderBy: [
             {
               field: 'timestamp',
@@ -174,6 +151,41 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
         lastBlockLevel: lastEntryBlockLevel
       }
     }
+  }
+
+  public getTransactionQueryPredicates(address: string, addressQueryType: 'string' | 'bytes'): ConseilPredicate[] {
+    const addressQueryValue: string = addressQueryType === 'bytes' ? TezosUtils.encodeAddress(address).toString('hex') : address
+
+    return [
+      {
+        field: 'parameters',
+        operation: 'like',
+        set: [addressQueryValue],
+        inverse: false,
+        group: addressQueryType
+      },
+      {
+        field: 'parameters_entrypoints',
+        operation: 'eq',
+        set: ['transfer'],
+        inverse: false,
+        group: addressQueryType
+      },
+      {
+        field: 'kind',
+        operation: 'eq',
+        set: ['transaction'],
+        inverse: false,
+        group: addressQueryType
+      },
+      {
+        field: 'destination',
+        operation: 'eq',
+        set: [this.contractAddress],
+        inverse: false,
+        group: addressQueryType
+      }
+    ]
   }
 
   public async getTransactions(limit: number, cursor?: TezosTransactionCursor): Promise<TezosTransactionResult> {

@@ -166,7 +166,7 @@ import { TezosTransactionResult } from './protocols/tezos/types/TezosTransaction
 import { TezosTransactionCursor } from './protocols/tezos/types/TezosTransactionCursor'
 import { generateId } from './serializer-v3/utils/generateId'
 import { generateIdV2 } from './serializer/utils/generateId'
-import { ProtocolSymbols, MainProtocolSymbols, SubProtocolSymbols } from './utils/ProtocolSymbols'
+import { ProtocolSymbols, MainProtocolSymbols, SubProtocolSymbols, isProtocolSymbol, isMainProtocolSymbol, isSubProtocolSymbol } from './utils/ProtocolSymbols'
 import { TezosUtils } from './protocols/tezos/TezosUtils'
 import { TezosFA2Protocol } from './protocols/tezos/fa/TezosFA2Protocol'
 import { TezosFA1Protocol } from './protocols/tezos/fa/TezosFA1Protocol'
@@ -462,6 +462,9 @@ export {
   getProtocolByIdentifier,
   getSubProtocolsByIdentifier,
   supportedProtocols,
+  isProtocolSymbol,
+  isMainProtocolSymbol,
+  isSubProtocolSymbol,
   // sub protocols configs,
   TypeNotSupported,
   SerializerVersionMismatch,

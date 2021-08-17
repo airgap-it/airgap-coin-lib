@@ -27,3 +27,15 @@ export enum SubProtocolSymbols {
 }
 
 export type ProtocolSymbols = MainProtocolSymbols | SubProtocolSymbols
+
+export function isMainProtocolSymbol(identifier: string): identifier is MainProtocolSymbols {
+  return Object.values(MainProtocolSymbols).includes(identifier as MainProtocolSymbols)
+}
+
+export function isSubProtocolSymbol(identifier: string): identifier is SubProtocolSymbols {
+  return Object.values(SubProtocolSymbols).includes(identifier as SubProtocolSymbols)
+}
+
+export function isProtocolSymbol(identifier: string): identifier is ProtocolSymbols {
+  return isMainProtocolSymbol(identifier) || isSubProtocolSymbol(identifier)
+}
