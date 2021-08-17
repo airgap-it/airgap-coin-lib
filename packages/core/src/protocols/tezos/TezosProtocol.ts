@@ -454,7 +454,14 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
           case TezosOperationType.TRANSACTION:
             const tezosSpendOperation: TezosTransactionOperation = tezosOperation as TezosTransactionOperation
             operation = tezosSpendOperation
-            partialTxs = await this.getTransactionOperationDetails(tezosSpendOperation)
+            partialTxs = (await this.getTransactionOperationDetails(tezosSpendOperation))
+              .map((tx: Partial<IAirGapTransaction>) => ({
+                ...tx,
+                extra: {
+                  ...tx.extra,
+                  parameters: tezosSpendOperation.parameters
+                }
+              }))
             break
           case TezosOperationType.ORIGINATION:
             {
@@ -622,7 +629,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     return this.estimateFeeDefaultsForOperations(publicKey, operations)
   }
 
-  protected async estimateFeeDefaultsForOperations(publicKey: string, operations: TezosOperation[]): Promise<FeeDefaults> {
+  public async estimateFeeDefaultsForOperations(publicKey: string, operations: TezosOperation[]): Promise<FeeDefaults> {
     const estimated = await this.prepareOperations(publicKey, operations)
     const hasReveal = estimated.contents.some((op) => op.kind === TezosOperationType.REVEAL)
     const estimatedFee = estimated.contents
