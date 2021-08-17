@@ -125,7 +125,7 @@ export abstract class MoonbeamProtocol extends SubstrateDelegateProtocol<Substra
     amount: string | number | BigNumber
   ): Promise<RawSubstrateTransaction[]> {
     const requestedAmount = new BigNumber(amount)
-    const minAmount = this.getMinDelegationAmount()
+    const minAmount = await this.getMinDelegationAmount(publicKey)
     if (requestedAmount.lt(minAmount)) {
       throw new ConditionViolationError(Domain.SUBSTRATE, `The amount is too low, it has to be at least ${minAmount.toString()}`)
     }
@@ -264,9 +264,8 @@ export abstract class MoonbeamProtocol extends SubstrateDelegateProtocol<Substra
     return [{ encoded }]
   }
 
-  public getMinDelegationAmount(): string {
-    // 5 tokens
-    return new BigNumber(5).shiftedBy(this.decimals).toString()
+  public async getMinDelegationAmount(accountId: SubstrateAccountId<MoonbeamAddress>): Promise<string> {
+    return this.options.accountController.getMinNominationAmount(accountId)
   }
 
   public async getFutureRequiredTransactions(

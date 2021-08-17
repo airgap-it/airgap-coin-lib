@@ -454,14 +454,13 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
           case TezosOperationType.TRANSACTION:
             const tezosSpendOperation: TezosTransactionOperation = tezosOperation as TezosTransactionOperation
             operation = tezosSpendOperation
-            partialTxs = (await this.getTransactionOperationDetails(tezosSpendOperation))
-              .map((tx: Partial<IAirGapTransaction>) => ({
-                ...tx,
-                extra: {
-                  ...tx.extra,
-                  parameters: tezosSpendOperation.parameters
-                }
-              }))
+            partialTxs = (await this.getTransactionOperationDetails(tezosSpendOperation)).map((tx: Partial<IAirGapTransaction>) => ({
+              ...tx,
+              extra: {
+                ...tx.extra,
+                parameters: tezosSpendOperation.parameters
+              }
+            }))
             break
           case TezosOperationType.ORIGINATION:
             {
