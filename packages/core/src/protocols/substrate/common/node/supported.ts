@@ -60,12 +60,7 @@ export const supportedConstants = {
   Staking: ['SessionsPerEra'] as const,
 
   // Moonbeam
-  ParachainStaking: [
-    'MaxNominatorsPerCollator', 
-    'MaxCollatorsPerNominator',
-    'MinNomination',
-    'MinNominatorStk'
-  ] as const
+  ParachainStaking: ['MaxNominatorsPerCollator', 'MaxCollatorsPerNominator', 'MinNomination', 'MinNominatorStk'] as const
 }
 
 export type SubstrateRpcModuleName = keyof typeof supportedRpcMethods

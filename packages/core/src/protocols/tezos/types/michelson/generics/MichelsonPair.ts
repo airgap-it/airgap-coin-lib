@@ -37,8 +37,8 @@ export class MichelsonPair extends MichelsonType {
     }
 
     const values: string[] = extractGroups(match?.groups?.values?.trim() ?? '', {
-      groupStart: '(',
-      groupEnd: ')',
+      groupStart: ['(', '{'],
+      groupEnd: [')', '}'],
       groupSeparator: ' '
     })
 
