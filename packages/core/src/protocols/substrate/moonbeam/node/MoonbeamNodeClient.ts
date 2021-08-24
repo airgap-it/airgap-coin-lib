@@ -48,4 +48,12 @@ export class MoonbeamNodeClient extends SubstrateNodeClient<SubstrateNetwork.MOO
       item ? SCALEInt.decode(item, 32).decoded.value : null
     )
   }
+
+  public async getMinNomination(): Promise<BigNumber | null> {
+    return this.getConstant('ParachainStaking', 'MinNomination').then((item) => (item ? SCALEInt.decode(item).decoded.value : null))
+  }
+
+  public async getMinNominatorStake(): Promise<BigNumber | null> {
+    return this.getConstant('ParachainStaking', 'MinNominatorStk').then((item) => (item ? SCALEInt.decode(item).decoded.value : null))
+  }
 }

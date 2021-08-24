@@ -59,7 +59,7 @@ export class TezosUtils {
     if (address.startsWith('tz')) {
       // tz address
       return Buffer.concat([Buffer.from([0]), this.encodeTzAddress(address)])
-    } else if (address.startsWith('kt')) {
+    } else if (address.startsWith('KT')) {
       // kt address
       return Buffer.concat([Buffer.from([1]), this.prefixAndBase58CheckDecode(address, this.tezosPrefixes.kt)])
     } else {

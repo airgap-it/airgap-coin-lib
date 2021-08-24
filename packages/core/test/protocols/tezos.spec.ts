@@ -841,7 +841,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
     })
 
     it('will return 2 operation groups when calling prepareTransactionsFromPublicKey with a number of operations above the threshold', async () => {
-      const numberOfOperations: number = 201
+      const numberOfOperations: number = 215
       const protocol = new TezosProtocol()
 
       const txRunOperation = {
@@ -875,7 +875,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         .returns(
           Promise.resolve({
             data: {
-              contents: [...Array(1)].map((x) => txRunOperation),
+              contents: [...Array(15)].map((x) => txRunOperation),
               signature: ''
             }
           })
@@ -894,7 +894,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       const result2 = await prepareTxHelper(transactions[1])
 
       expect(result1.airGapTxs.length).to.equal(200)
-      expect(result2.airGapTxs.length).to.equal(1)
+      expect(result2.airGapTxs.length).to.equal(15)
 
       expect(result1.airGapTxs[0].amount, 'result1 first amount').to.equal('0')
       expect(result1.airGapTxs[0].fee, 'result1 first fee').to.equal('1')
@@ -2251,14 +2251,11 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy/balance`)
         .returns(Promise.resolve({ data: 0 }))
 
-      return prepareSpend(
-        ['KT1X6SSqro2zUo1Wa7X5BnDWBvfBxZ6feUnc', 'KT1QLtQ54dKzcfwxMHmEM6PC8tooUg6MxDZ3'],
-        ['12345'],
-        '111'
-      ).catch((error: Error) =>
-        expect(error)
-          .to.be.an('error')
-          .with.property('message', new ConditionViolationError(Domain.TEZOS, 'length of recipients and values does not match!').message)
+      return prepareSpend(['KT1X6SSqro2zUo1Wa7X5BnDWBvfBxZ6feUnc', 'KT1QLtQ54dKzcfwxMHmEM6PC8tooUg6MxDZ3'], ['12345'], '111').catch(
+        (error: Error) =>
+          expect(error)
+            .to.be.an('error')
+            .with.property('message', new ConditionViolationError(Domain.TEZOS, 'length of recipients and values does not match!').message)
       )
     })
   })

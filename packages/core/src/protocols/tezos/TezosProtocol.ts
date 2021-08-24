@@ -47,6 +47,7 @@ import {
 import { ErrorWithData } from '../../utils/ErrorWithData'
 
 const MAX_OPERATIONS_PER_GROUP: number = 200
+const MAX_GAS_PER_BLOCK: number = 5200000
 const GAS_LIMIT_PLACEHOLDER: string = '1040000'
 const STORAGE_LIMIT_PLACEHOLDER: string = '60000'
 const FEE_PLACEHOLDER: string = '0'
@@ -453,7 +454,13 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
           case TezosOperationType.TRANSACTION:
             const tezosSpendOperation: TezosTransactionOperation = tezosOperation as TezosTransactionOperation
             operation = tezosSpendOperation
-            partialTxs = await this.getTransactionOperationDetails(tezosSpendOperation)
+            partialTxs = (await this.getTransactionOperationDetails(tezosSpendOperation)).map((tx: Partial<IAirGapTransaction>) => ({
+              ...tx,
+              extra: {
+                ...tx.extra,
+                parameters: tezosSpendOperation.parameters
+              }
+            }))
             break
           case TezosOperationType.ORIGINATION:
             {
@@ -621,7 +628,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     return this.estimateFeeDefaultsForOperations(publicKey, operations)
   }
 
-  protected async estimateFeeDefaultsForOperations(publicKey: string, operations: TezosOperation[]): Promise<FeeDefaults> {
+  public async estimateFeeDefaultsForOperations(publicKey: string, operations: TezosOperation[]): Promise<FeeDefaults> {
     const estimated = await this.prepareOperations(publicKey, operations)
     const hasReveal = estimated.contents.some((op) => op.kind === TezosOperationType.REVEAL)
     const estimatedFee = estimated.contents
@@ -691,9 +698,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       throw new ConditionViolationError(Domain.TEZOS, 'length of recipients and values does not match!')
     }
 
-    let counter: BigNumber = new BigNumber(1)
-    let branch: string
-
     const operations: TezosOperation[] = []
 
     // check if we got an address-index
@@ -716,10 +720,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       throw new NetworkError(Domain.TEZOS, error as AxiosError)
     })
 
-    counter = new BigNumber(results[0].data).plus(1)
-
-    branch = results[1].data
-
+    const currentCounter = new BigNumber(results[0].data)
+    let counter = currentCounter.plus(1)
+    const branch = results[1].data
     const accountManager: { key: string } = results[2].data
 
     // check if we have revealed the address already
@@ -736,7 +739,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     allOperations = operations.concat(allOperations) // if we have a reveal in operations, we need to make sure it is present in the allOperations array
 
     const numberOfGroups: number = Math.ceil(allOperations.length / operationsPerGroup)
-
+    const startingCounter = numberOfGroups > 1 ? currentCounter.plus(1) : undefined
     for (let i = 0; i < numberOfGroups; i++) {
       const start = i * operationsPerGroup
       const end = start + operationsPerGroup
@@ -748,7 +751,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
           branch,
           contents: operationsGroup
         },
-        false
+        false,
+        startingCounter
       )
 
       wrappedOperations.push(await this.forgeAndWrapOperations(wrappedOperationWithEstimatedGas))
@@ -1124,20 +1128,37 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
   public async estimateAndReplaceLimitsAndFee(
     tezosWrappedOperation: TezosWrappedOperation,
-    overrideParameters: boolean = true
+    overrideParameters: boolean = true,
+    startingCounter?: BigNumber
   ): Promise<TezosWrappedOperation> {
     const fakeSignature: string = 'sigUHx32f9wesZ1n2BWpixXz4AQaZggEtchaQNHYGRCoWNAXx45WGW2ua3apUUUAGMLPwAU41QoaFCzVSL61VaessLg4YbbP'
+    const opKinds = [
+      TezosOperationType.TRANSACTION,
+      TezosOperationType.REVEAL,
+      TezosOperationType.ORIGINATION,
+      TezosOperationType.DELEGATION
+    ]
+    type TezosOp = TezosTransactionOperation | TezosRevealOperation | TezosDelegationOperation | TezosOriginationOperation
+    const contents = tezosWrappedOperation.contents.map((operation, i) => {
+      if (!opKinds.includes(operation.kind)) {
+        return operation
+      }
+      const op = operation as TezosOp
+      const gasValue = new BigNumber(MAX_GAS_PER_BLOCK).dividedToIntegerBy(tezosWrappedOperation.contents.length)
+      const gas_limit = new BigNumber(GAS_LIMIT_PLACEHOLDER).gt(gasValue) ? gasValue : GAS_LIMIT_PLACEHOLDER
+      const counter = startingCounter ? startingCounter.plus(i).toString() : op.counter
+      return { ...operation, gas_limit, counter }
+    })
 
     const { data: block }: AxiosResponse<{ chain_id: string }> = await axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head`)
     const body = {
       chain_id: block.chain_id,
       operation: {
         branch: tezosWrappedOperation.branch,
-        contents: tezosWrappedOperation.contents,
+        contents: contents,
         signature: fakeSignature // signature will not be checked, so it is ok to always use this one
       }
     }
-
     const forgedOperation: string = await this.forgeTezosOperation(tezosWrappedOperation)
     let gasLimitTotal: number = 0
 

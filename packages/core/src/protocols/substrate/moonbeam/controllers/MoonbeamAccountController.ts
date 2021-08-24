@@ -2,6 +2,8 @@ import { KeyPair } from '../../../../data/KeyPair'
 import BigNumber from '../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { mnemonicToSeed } from '../../../../dependencies/src/bip39-2.5.0/index'
 import * as bitcoinJS from '../../../../dependencies/src/bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac/src/index'
+import { OperationFailedError } from '../../../../errors'
+import { Domain } from '../../../../errors/coinlib-error'
 import { DelegatorAction } from '../../../ICoinDelegateProtocol'
 import { SubstrateAccountController } from '../../common/SubstrateAccountController'
 import { SubstrateAccountId } from '../../compat/SubstrateCompatAddress'
@@ -41,6 +43,16 @@ export class MoonbeamAccountController extends SubstrateAccountController<Substr
     const nominatorState = await this.nodeClient.getNominatorState(MoonbeamAddress.from(accountId))
 
     return nominatorState ? nominatorState.nominations.elements.length > 0 : false
+  }
+
+  public async getMinNominationAmount(accountId: SubstrateAccountId<MoonbeamAddress>): Promise<string> {
+    const isNominating = await this.isNominating(accountId)
+    const minAmount = isNominating ? await this.nodeClient.getMinNomination() : await this.nodeClient.getMinNominatorStake()
+    if (!minAmount) {
+      throw new OperationFailedError(Domain.SUBSTRATE, 'Could not fetch network constants')
+    }
+
+    return minAmount.toFixed()
   }
 
   public async getCurrentCollators(accountId: SubstrateAccountId<MoonbeamAddress>): Promise<string[]> {
