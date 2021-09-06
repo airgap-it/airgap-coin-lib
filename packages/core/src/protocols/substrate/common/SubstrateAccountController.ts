@@ -171,7 +171,7 @@ export class SubstrateAccountController<Network extends SubstrateNetwork, NodeCl
 
     const results = await Promise.all([
       this.getBalance(address),
-      this.getTransferableBalance(address, false),
+      this.getTransferableBalance(address, false, false),
       this.nodeClient.getStakingLedger(address),
       this.nodeClient.getNominations(address),
       this.nodeClient.getActiveEraInfo(),
