@@ -24,7 +24,7 @@ import { TezosSaplingProtocolOptions, TezosShieldedTezProtocolConfig } from '../
 import { TezosProtocolNetwork, TezosProtocolOptions } from '../protocols/tezos/TezosProtocolOptions'
 
 import { assertNever } from './assert'
-import { NetworkType, ProtocolNetwork } from './ProtocolNetwork'
+import { ProtocolNetwork } from './ProtocolNetwork'
 import { ProtocolOptions } from './ProtocolOptions'
 import { MainProtocolSymbols, ProtocolSymbols, SubProtocolSymbols } from './ProtocolSymbols'
 
@@ -58,12 +58,9 @@ const getProtocolOptionsByIdentifier: (identifier: ProtocolSymbols, network?: Pr
     case SubProtocolSymbols.XTZ_KT:
       return new TezosProtocolOptions(network ? (network as TezosProtocolNetwork) : new TezosProtocolNetwork())
     case MainProtocolSymbols.XTZ_SHIELDED:
-      return new TezosSaplingProtocolOptions(
-        network
-          ? (network as TezosProtocolNetwork)
-          : new TezosProtocolNetwork('Florencenet', NetworkType.TESTNET, 'https://tezos-florencenet-node.prod.gke.papers.tech'),
-        new TezosShieldedTezProtocolConfig()
-      )
+      return network
+        ? new TezosSaplingProtocolOptions(network as TezosProtocolNetwork, new TezosShieldedTezProtocolConfig())
+        : new TezosSaplingProtocolOptions()
     case SubProtocolSymbols.XTZ_BTC:
       return new TezosFAProtocolOptions(
         network ? (network as TezosProtocolNetwork) : new TezosProtocolNetwork(),
