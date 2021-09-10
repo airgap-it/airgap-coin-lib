@@ -140,7 +140,8 @@ export class BitcoinProtocol implements ICoinProtocol {
   public standardDerivationPath: string = `m/44'/0'/0'`
 
   public addressIsCaseSensitive: boolean = true
-  public addressValidationPattern: string = '^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$'
+  public addressValidationPattern: string = '^(?:[13]{1}[a-km-zA-HJ-NP-Z1-9]{25,34}|bc1[a-z0-9]{39,59})$'
+
   public addressPlaceholder: string = '1ABC...'
 
   public readonly cryptoClient: BitcoinCryptoClient
