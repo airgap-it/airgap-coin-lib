@@ -1,9 +1,7 @@
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { isHex } from '../../../utils/hex'
-import { NetworkType } from '../../../utils/ProtocolNetwork'
 import { TezosContractCall } from '../contract/TezosContractCall'
 import { TezosAddress } from '../TezosAddress'
-import { TezosProtocolNetwork } from '../TezosProtocolOptions'
 import { MichelsonList } from '../types/michelson/generics/MichelsonList'
 import { MichelsonOption } from '../types/michelson/generics/MichelsonOption'
 import { MichelsonPair } from '../types/michelson/generics/MichelsonPair'
@@ -14,16 +12,11 @@ import { TezosSaplingWrappedTransaction } from '../types/sapling/TezosSaplingWra
 import { isMichelinePrimitive } from '../types/utils'
 
 import { TezosSaplingProtocol } from './TezosSaplingProtocol'
-import { TezosSaplingProtocolOptions, TezosShieldedTezProtocolConfig } from './TezosSaplingProtocolOptions'
+import { TezosSaplingProtocolOptions } from './TezosSaplingProtocolOptions'
 
 // An example sapling contract, to be removed
 export class TezosShieldedTezProtocol extends TezosSaplingProtocol {
-  constructor(
-    options: TezosSaplingProtocolOptions = new TezosSaplingProtocolOptions(
-      new TezosProtocolNetwork('Florencenet', NetworkType.TESTNET, 'https://tezos-florencenet-node.prod.gke.papers.tech'),
-      new TezosShieldedTezProtocolConfig()
-    )
-  ) {
+  constructor(options: TezosSaplingProtocolOptions = new TezosSaplingProtocolOptions()) {
     super(options)
   }
 
