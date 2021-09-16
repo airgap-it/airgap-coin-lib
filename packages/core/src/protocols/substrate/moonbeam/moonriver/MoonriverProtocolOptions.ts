@@ -15,7 +15,7 @@ const MAINNET_NAME: string = 'Mainnet'
 const NODE_URL: string = 'https://moonriver-proxy.airgap.prod.gke.papers.tech'
 
 const BLOCK_EXPLORER_URL: string = 'https://moonriver.subscan.io/'
-const BLOCK_EXPLORER_API: string = 'https://moonriver.subscan.io/api/scan'
+const BLOCK_EXPLORER_API: string = 'https://moonriver.subscan.prod.gke.papers.tech/api/scan'
 
 export class MoonriverProtocolConfig extends MoonbeamProtocolConfig {}
 

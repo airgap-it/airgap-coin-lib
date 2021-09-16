@@ -1,4 +1,4 @@
-FROM node:14-slim
+FROM node:15-slim
 
 RUN apt-get update && apt-get install -yq git python build-essential
 
@@ -9,6 +9,11 @@ WORKDIR /app
 # Install app dependencies
 COPY package.json /app
 COPY package-lock.json /app
+COPY packages/core/package.json /app/packages/core/
+COPY packages/core/package-lock.json /app/packages/core/
+COPY packages/core/scripts /app/packages/core/scripts
+COPY scripts /app/scripts
+COPY lerna.json /app
 
 # install dependencies
 RUN npm ci
