@@ -1,11 +1,11 @@
 import axios, { AxiosError, AxiosResponse } from '../../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
-import { MichelineNode, MichelineTypeNode, MichelineDataNode } from '../types/micheline/MichelineNode'
+import { InvalidValueError, NetworkError, NotFoundError } from '../../../errors'
+import { Domain } from '../../../errors/coinlib-error'
 import { BigMapPredicate } from '../types/contract/BigMapPredicate'
 import { BigMapRequest } from '../types/contract/BigMapRequest'
 import { BigMapResponse } from '../types/contract/BigMapResult'
-import { InvalidValueError, NetworkError, NotFoundError } from '../../../errors'
-import { Domain } from '../../../errors/coinlib-error'
+import { MichelineDataNode, MichelineNode, MichelineTypeNode } from '../types/micheline/MichelineNode'
 import { MichelsonOr } from '../types/michelson/generics/MichelsonOr'
 import { MichelsonType } from '../types/michelson/MichelsonType'
 import {
@@ -30,7 +30,7 @@ export class TezosContract {
   public bigMapIDsPromise?: Promise<void>
 
   constructor(
-    private readonly address: string,
+    public readonly address: string,
     private readonly nodeRPCURL: string,
     private readonly conseilAPIURL: string,
     private readonly conseilNetwork: string,
