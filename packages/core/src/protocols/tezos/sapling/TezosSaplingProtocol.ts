@@ -216,7 +216,7 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
     const airGapOutgoing: IAirGapTransaction[] = await Promise.all(
       outgoing.map(async (input: TezosSaplingInput) => ({
         from: [(await this.getAddressFromPublicKey(publicKey)).getValue()],
-        to: ['Shielded Pool'],
+        to: [input.address],
         isInbound: false,
         amount: input.value,
         fee: '0',
