@@ -8,8 +8,8 @@ import { AirGapWalletStatus } from '../../src/wallet/AirGapWallet'
 const mnemonic: string = 'spell device they juice trial skirt amazing boat badge steak usage february virus art survey'
 
 interface ProtocolHTTPStub {
-  registerStub(testProtocolSpec: TestProtocolSpec, protocol: ICoinProtocol): void
-  noBalanceStub(testProtocolSpec: TestProtocolSpec, protocol: ICoinProtocol): void
+  registerStub(testProtocolSpec: TestProtocolSpec, protocol: ICoinProtocol): any
+  noBalanceStub(testProtocolSpec: TestProtocolSpec, protocol: ICoinProtocol): any
 }
 
 abstract class TestProtocolSpec {

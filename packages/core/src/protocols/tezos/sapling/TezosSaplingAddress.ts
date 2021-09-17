@@ -1,4 +1,4 @@
-import { getPaymentAddressFromViewingKey, SaplingPaymentAddress, getNextPaymentAddressFromViewingKey } from '@airgap/sapling-wasm'
+import { getNextPaymentAddressFromViewingKey, getPaymentAddressFromViewingKey, SaplingPaymentAddress } from '@airgap/sapling-wasm'
 
 import * as bs58check from '../../../dependencies/src/bs58check-2.1.2/index'
 import { TezosAddress } from '../TezosAddress'

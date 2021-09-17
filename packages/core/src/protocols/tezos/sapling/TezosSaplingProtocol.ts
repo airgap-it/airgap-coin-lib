@@ -2,7 +2,7 @@ import * as sapling from '@airgap/sapling-wasm'
 import * as sodium from 'libsodium-wrappers'
 
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
-import { mnemonicToSeed } from '../../../dependencies/src/bip39-2.5.0/index'
+import { mnemonicToSeed } from '../../../dependencies/src/bip39-2.5.0'
 import { AirGapTransactionStatus, IAirGapTransaction } from '../../../interfaces/IAirGapTransaction'
 import { SignedTezosTransaction } from '../../../serializer/schemas/definitions/signed-transaction-tezos'
 import { UnsignedTezosTransaction } from '../../../serializer/schemas/definitions/unsigned-transaction-tezos'
@@ -129,15 +129,25 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
   }
 
   public async getPublicKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string | undefined): Promise<string> {
-    const seed = mnemonicToSeed(mnemonic, password)
+    const seed: Buffer = this.getSeedFromMnemonic(mnemonic, password)
 
-    return this.getPublicKeyFromHexSecret(seed, derivationPath)
+    return this.getPublicKeyFromHexSecret(seed.toString('hex'), derivationPath)
   }
 
   public async getPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string | undefined): Promise<Buffer> {
-    const seed = mnemonicToSeed(mnemonic, password)
+    const seed: Buffer = this.getSeedFromMnemonic(mnemonic, password)
 
-    return this.getPrivateKeyFromHexSecret(seed, derivationPath)
+    return this.getPrivateKeyFromHexSecret(seed.toString('hex'), derivationPath)
+  }
+
+  private getSeedFromMnemonic(mnemonic: string, password?: string | undefined): Buffer {
+    const seed: Buffer = mnemonicToSeed(mnemonic, password)
+
+    // We xor the two halves of the BIP-39 seed, as does `tezos-client`
+    const first32: Buffer = seed.slice(0, 32)
+    const second32: Buffer = seed.slice(32)
+
+    return Buffer.from(first32.map((byte, index) => byte ^ second32[index]))
   }
 
   public async getPublicKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
@@ -206,7 +216,7 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
     const airGapOutgoing: IAirGapTransaction[] = await Promise.all(
       outgoing.map(async (input: TezosSaplingInput) => ({
         from: [(await this.getAddressFromPublicKey(publicKey)).getValue()],
-        to: ['Shielded Pool'],
+        to: [input.address],
         isInbound: false,
         amount: input.value,
         fee: '0',

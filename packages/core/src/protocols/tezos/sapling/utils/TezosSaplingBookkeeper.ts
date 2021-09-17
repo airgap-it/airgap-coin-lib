@@ -245,7 +245,9 @@ export class TezosSaplingBookkeeper {
         inputs.map(async (input: TezosSaplingInput) => {
           const nullifier: Buffer = await sapling.computeNullifier(
             viewingKey,
-            (await TezosSaplingAddress.fromValue(input.address)).raw,
+            (
+              await TezosSaplingAddress.fromValue(input.address)
+            ).raw,
             input.value,
             input.rcm,
             input.pos
@@ -314,13 +316,13 @@ export class TezosSaplingBookkeeper {
     position: BigNumber
   ): Promise<[Buffer, TezosSaplingInput] | undefined> {
     try {
-      const { amount, rcm, memo } = await this.cryptoClient.decryptCiphertextEnc(viewingKey, ciphertext, 'sender', commitment)
+      const { amount, address, rcm, memo } = await this.cryptoClient.decryptCiphertextEnc(viewingKey, ciphertext, 'sender', commitment)
 
       const input: TezosSaplingInput = {
         rcm: rcm.toString('hex'),
         pos: position.toString(),
         value: amount.toString(),
-        address: ''
+        address: (await TezosSaplingAddress.fromRaw(address)).getValue()
       }
 
       return [Buffer.from(memo), input]
