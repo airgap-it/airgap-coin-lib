@@ -1,6 +1,6 @@
 {
   "packages": ["packages/*"],
-  "version": "0.11.14",
+  "version": "0.11.15-beta.0",
   "command": {
     "publish": {
       "ignoreChanges": ["*.sh", "*.md", "*.yml", ".*", "tsconfig.json", "tslint.json"]

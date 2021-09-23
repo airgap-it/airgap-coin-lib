@@ -13,6 +13,7 @@ export class MoonriverProtocol extends MoonbeamProtocol {
   public feeDecimals: number = 18
 
   public identifier: ProtocolSymbols = MainProtocolSymbols.MOONRIVER
+  public addressIsCaseSensitive: boolean = false
 
   public feeDefaults: FeeDefaults = {
     low: '0.000000000125',
