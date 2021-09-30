@@ -22,6 +22,7 @@ const messageSignRequest: SchemaRoot = require('./schemas/generated/message-sign
 const messageSignResponse: SchemaRoot = require('./schemas/generated/message-sign-response.json')
 
 const unsignedTransactionAeternity: SchemaRoot = require('./schemas/generated/transaction-sign-request-aeternity.json')
+const unsignedTransactionBitcoinSegwit: SchemaRoot = require('./schemas/generated/transaction-sign-request-bitcoin-segwit.json')
 const unsignedTransactionBitcoin: SchemaRoot = require('./schemas/generated/transaction-sign-request-bitcoin.json')
 const unsignedTransactionCosmos: SchemaRoot = require('./schemas/generated/transaction-sign-request-cosmos.json')
 const unsignedTransactionEthereum: SchemaRoot = require('./schemas/generated/transaction-sign-request-ethereum.json')
@@ -30,6 +31,7 @@ const unsignedTransactionTezosSapling: SchemaRoot = require('./schemas/generated
 const unsignedTransactionSubstrate: SchemaRoot = require('./schemas/generated/transaction-sign-request-substrate.json')
 
 const signedTransactionAeternity: SchemaRoot = require('./schemas/generated/transaction-sign-response-aeternity.json')
+const signedTransactionBitcoinSegwit: SchemaRoot = require('./schemas/generated/transaction-sign-response-bitcoin-segwit.json')
 const signedTransactionBitcoin: SchemaRoot = require('./schemas/generated/transaction-sign-response-bitcoin.json')
 const signedTransactionCosmos: SchemaRoot = require('./schemas/generated/transaction-sign-response-cosmos.json')
 const signedTransactionEthereum: SchemaRoot = require('./schemas/generated/transaction-sign-response-ethereum.json')
@@ -147,6 +149,7 @@ SerializerV3.addSchema(IACMessageType.MessageSignResponse, { schema: messageSign
 
 // TODO: Make sure that we have a schema for every protocol we support
 SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionAeternity }, MainProtocolSymbols.AE)
+SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionBitcoinSegwit }, MainProtocolSymbols.BTC_SEGWIT)
 SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionBitcoin }, MainProtocolSymbols.BTC)
 SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionBitcoin }, MainProtocolSymbols.GRS)
 SerializerV3.addSchema(
@@ -171,6 +174,7 @@ SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsigned
 SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionSubstrate }, MainProtocolSymbols.MOONRIVER)
 
 SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionAeternity }, MainProtocolSymbols.AE)
+SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionBitcoinSegwit }, MainProtocolSymbols.BTC_SEGWIT)
 SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionBitcoin }, MainProtocolSymbols.BTC)
 SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionBitcoin }, MainProtocolSymbols.GRS)
 SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionCosmos }, MainProtocolSymbols.COSMOS)

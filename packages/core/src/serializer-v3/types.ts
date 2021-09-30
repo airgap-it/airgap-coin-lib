@@ -47,6 +47,10 @@ export interface RawBitcoinTransaction {
   outs: IOutTransaction[]
 }
 
+export interface RawBitcoinSegwitTransaction {
+  psbt: string
+}
+
 export interface RawAeternityTransaction {
   networkId: string
   transaction: string

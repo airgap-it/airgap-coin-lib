@@ -19,6 +19,21 @@ export enum AirGapTransactionStatus {
   FAILED = 'failed'
 }
 
+export enum AirGapTransactionWarningType {
+  SUCCESS = 'success',
+  NOTE = 'note',
+  WARNING = 'warning',
+  ERROR = 'error'
+}
+
+export interface AirGapTransactionWarning {
+  type: AirGapTransactionWarningType
+  title: string
+  description: string
+  icon?: string
+  actions?: ({ text: string; link: string } | { text: string; action(): Promise<void> })[]
+}
+
 export interface IAirGapTransaction {
   from: string[]
   to: string[]
@@ -37,6 +52,8 @@ export interface IAirGapTransaction {
 
   extra?: any
   status?: AirGapTransactionStatus
+
+  warnings?: AirGapTransactionWarning[]
 
   transactionDetails?: any
 }

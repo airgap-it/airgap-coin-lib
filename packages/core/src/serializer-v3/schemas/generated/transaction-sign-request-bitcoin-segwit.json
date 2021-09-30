@@ -1,0 +1,29 @@
+{
+  "$ref": "#/definitions/UnsignedBitcoinSegwitTransaction",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "UnsignedBitcoinSegwitTransaction": {
+      "additionalProperties": false,
+      "properties": {
+        "callbackURL": {
+          "type": "string"
+        },
+        "publicKey": {
+          "type": "string"
+        },
+        "transaction": {
+          "additionalProperties": false,
+          "properties": {
+            "psbt": {
+              "type": "string"
+            }
+          },
+          "required": ["psbt"],
+          "type": "object"
+        }
+      },
+      "required": ["publicKey", "transaction"],
+      "type": "object"
+    }
+  }
+}

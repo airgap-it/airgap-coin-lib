@@ -32,7 +32,7 @@ export const getProtocolByIdentifier: (identifier: ProtocolSymbols, network?: Pr
 
   // filter out potential candidates, those where our identifier startsWith the identifier of the protocol
   const filteredCandidates: ICoinProtocol[] = candidates.filter(
-    (protocol: ICoinProtocol) => identifier.startsWith(protocol.identifier) && isNetworkEqual(protocol.options.network, targetNetwork)
+    (protocol: ICoinProtocol) => identifier === protocol.identifier && isNetworkEqual(protocol.options.network, targetNetwork)
   )
   if (filteredCandidates.length === 0) {
     throw new ProtocolNotSupported()

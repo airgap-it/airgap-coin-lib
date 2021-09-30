@@ -37,11 +37,7 @@
                 "type": "number"
               }
             },
-            "required": [
-              "name",
-              "test",
-              "bool"
-            ],
+            "required": ["name", "test", "bool"],
             "type": "object"
           },
           "type": "array"
@@ -76,11 +72,7 @@
                   "type": "number"
                 }
               },
-              "required": [
-                "name",
-                "test",
-                "bool"
-              ],
+              "required": ["name", "test", "bool"],
               "type": "object"
             }
           ],
@@ -107,11 +99,7 @@
               "type": "number"
             }
           },
-          "required": [
-            "name",
-            "test",
-            "bool"
-          ],
+          "required": ["name", "test", "bool"],
           "type": "object"
         },
         "obj2": {
@@ -149,11 +137,7 @@
                     "type": "number"
                   }
                 },
-                "required": [
-                  "name",
-                  "test",
-                  "bool"
-                ],
+                "required": ["name", "test", "bool"],
                 "type": "object"
               },
               "type": "array"
@@ -188,11 +172,7 @@
                       "type": "number"
                     }
                   },
-                  "required": [
-                    "name",
-                    "test",
-                    "bool"
-                  ],
+                  "required": ["name", "test", "bool"],
                   "type": "object"
                 }
               ],
@@ -219,28 +199,14 @@
                   "type": "number"
                 }
               },
-              "required": [
-                "name",
-                "test",
-                "bool"
-              ],
+              "required": ["name", "test", "bool"],
               "type": "object"
             },
             "test": {
               "type": "number"
             }
           },
-          "required": [
-            "name",
-            "test",
-            "bool",
-            "obj1",
-            "arr1",
-            "arr2",
-            "arr3",
-            "arr4",
-            "arr5"
-          ],
+          "required": ["name", "test", "bool", "obj1", "arr1", "arr2", "arr3", "arr4", "arr5"],
           "type": "object"
         },
         "obj3": {
@@ -259,9 +225,7 @@
               "type": "array"
             }
           },
-          "required": [
-            "arr1"
-          ],
+          "required": ["arr1"],
           "type": "object"
         },
         "obj4": {
@@ -273,26 +237,24 @@
                   "additionalProperties": false,
                   "properties": {
                     "arr1": {
-                      "items": {
-                        "additionalProperties": false,
-                        "properties": {
-                          "name": {
-                            "type": "string"
-                          }
-                        },
-                        "required": [
-                          "name"
-                        ],
-                        "type": "object"
-                      },
+                      "items": [
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            }
+                          },
+                          "required": ["name"],
+                          "type": "object"
+                        }
+                      ],
                       "maxItems": 1,
                       "minItems": 1,
                       "type": "array"
                     }
                   },
-                  "required": [
-                    "arr1"
-                  ],
+                  "required": ["arr1"],
                   "type": "object"
                 },
                 {
@@ -306,17 +268,13 @@
                             "type": "string"
                           }
                         },
-                        "required": [
-                          "name"
-                        ],
+                        "required": ["name"],
                         "type": "object"
                       },
                       "type": "array"
                     }
                   },
-                  "required": [
-                    "arr1"
-                  ],
+                  "required": ["arr1"],
                   "type": "object"
                 }
               ],
@@ -325,29 +283,14 @@
               "type": "array"
             }
           },
-          "required": [
-            "arr1"
-          ],
+          "required": ["arr1"],
           "type": "object"
         },
         "test": {
           "type": "number"
         }
       },
-      "required": [
-        "name",
-        "test",
-        "bool",
-        "obj1",
-        "arr1",
-        "arr2",
-        "arr3",
-        "arr4",
-        "arr5",
-        "obj2",
-        "obj3",
-        "obj4"
-      ],
+      "required": ["name", "test", "bool", "obj1", "arr1", "arr2", "arr3", "arr4", "arr5", "obj2", "obj3", "obj4"],
       "type": "object"
     }
   }

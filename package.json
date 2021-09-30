@@ -23,6 +23,7 @@
     "prepare": "husky install && lerna bootstrap",
     "install-test-dependencies": "node scripts/install-test-deps.js && npm install",
     "install-build-dependencies": "node scripts/install-build-deps.js && npm install",
+    "generate-schemas": "./scripts/generate-schemas.sh",
     "browserify": "lerna run browserify --stream",
     "bump:version": "lerna version --no-git-tag-version",
     "bump:major": "lerna version --no-git-tag-version major --yes",
