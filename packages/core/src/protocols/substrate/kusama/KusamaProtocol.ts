@@ -15,6 +15,7 @@ export class KusamaProtocol extends SubstrateDelegateProtocol<SubstrateNetwork.K
   public decimals: number = 12
   public feeDecimals: number = 12
   public identifier: ProtocolSymbols = MainProtocolSymbols.KUSAMA
+  public addressIsCaseSensitive: boolean = true
 
   public feeDefaults: FeeDefaults = {
     low: '0.001', // 1 000 000 000

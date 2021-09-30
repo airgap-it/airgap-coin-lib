@@ -15,6 +15,7 @@ export class PolkadotProtocol extends SubstrateDelegateProtocol<SubstrateNetwork
   public decimals: number = 10
   public feeDecimals: number = 10
   public identifier: ProtocolSymbols = MainProtocolSymbols.POLKADOT
+  public addressIsCaseSensitive: boolean = true
 
   public feeDefaults: FeeDefaults = {
     low: '0.01', // 100 000 000

@@ -2,8 +2,8 @@ import { CoinAddress } from '../ICoinProtocol'
 
 export class BitcoinAddress implements CoinAddress {
   // TODO: types
-  private constructor(
-    private readonly value: string,
+  constructor(
+    protected readonly value: string,
     public readonly visibilityDerivationIndex?: number,
     public readonly addressDerivationIndex?: number
   ) {}

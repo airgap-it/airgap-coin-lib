@@ -35,7 +35,7 @@ export abstract class SubstrateProtocol<Network extends SubstrateNetwork> extend
 
   public supportsHD: boolean = false
 
-  public addressIsCaseSensitive: boolean = false
+  public abstract addressIsCaseSensitive: boolean
 
   public addressValidationPattern: string = '^5[a-km-zA-HJ-NP-Z1-9]+$'
   public addressPlaceholder: string = `5ABC...`

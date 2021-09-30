@@ -95,18 +95,6 @@ describe('ICoinProtocol TezosShieldedTez - Custom Tests', () => {
       ])
     })
 
-    // it('should sign the transaction with the private key', async () => {
-    //   // TODO
-    // })
-
-    // it('should get transaciton details from the unsigned transaction', async () => {
-    //   // TODO
-    // })
-
-    // it('should get transaction details from the signed transaction', async () => {
-    //   // TODO
-    // })
-
     it('should get the balance of the account', async () => {
       const balance: string = await protocol.lib.getBalanceOfPublicKey(protocol.wallet.publicKey)
 
@@ -120,10 +108,6 @@ describe('ICoinProtocol TezosShieldedTez - Custom Tests', () => {
 
       expect(maxValue).to.equal('800000')
     })
-
-    // it('should prepare a transaction from the public key', async () => {
-    //   // TODO
-    // })
 
     it('should wrap the sapling transaction in a Tezos operation', async () => {
       const publicKey: string = protocol.tezos.wallet.publicKey
@@ -171,18 +155,6 @@ describe('ICoinProtocol TezosShieldedTez - Custom Tests', () => {
         expect(wrappedTransaction).to.deep.equal({ binaryTransaction: expected })
       })
     })
-
-    // it('should prepare a shield transaction', async () => {
-    //   // TODO
-    // })
-
-    // it('should prepare an unshield transaction', async () => {
-    //   // TODO
-    // })
-
-    // it('shoukd prepare a sapling transaction', async () => {
-    //   // TODO
-    // })
 
     it('should prepare contract calls', async () => {
       const contractCalls: [TezosSaplingWrappedTransaction[], TezosTransactionParameters[]][] = [
