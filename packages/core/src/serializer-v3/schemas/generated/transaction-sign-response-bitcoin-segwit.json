@@ -1,22 +1,21 @@
 {
-  "$ref": "#/definitions/SignedCosmosTransaction",
+  "$ref": "#/definitions/SignedBitcoinSegwitTransaction",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
-    "IAirGapSignedTransaction": {
-      "type": "string"
-    },
-    "SignedCosmosTransaction": {
+    "SignedBitcoinSegwitTransaction": {
       "additionalProperties": false,
       "properties": {
         "accountIdentifier": {
           "type": "string"
         },
         "transaction": {
-          "$ref": "#/definitions/IAirGapSignedTransaction",
           "type": "string"
         }
       },
-      "required": ["accountIdentifier", "transaction"],
+      "required": [
+        "accountIdentifier",
+        "transaction"
+      ],
       "type": "object"
     }
   }

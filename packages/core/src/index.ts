@@ -218,6 +218,10 @@ import { TezosAddress } from './protocols/tezos/TezosAddress'
 import { IACMessageDefinitionObjectV3 } from './serializer-v3/message'
 import { IACMessages as IACMessagesV2 } from './serializer/message'
 import { IACMessages } from './serializer-v3/message'
+import { bufferFrom } from './utils/buffer'
+import { BitcoinSegwitProtocol } from './protocols/bitcoin/BitcoinSegwitProtocol'
+import { BitcoinSegwitAddress } from './protocols/bitcoin/BitcoinSegwitAddress'
+import { RawBitcoinSegwitTransaction } from './serializer-v3/types'
 import { MoonbaseProtocol } from './protocols/substrate/moonbeam/moonbase/MoonbaseProtocol'
 import { MoonriverProtocol } from './protocols/substrate/moonbeam/moonriver/MoonriverProtocol'
 import {
@@ -235,6 +239,8 @@ import {
   MoonriverSubscanBlockExplorer
 } from './protocols/substrate/moonbeam/moonriver/MoonriverProtocolOptions'
 import { MoonbeamProtocol } from './protocols/substrate/moonbeam/MoonbeamProtocol'
+import { SignedBitcoinSegwitTransaction } from './serializer-v3/schemas/definitions/signed-transaction-bitcoin-segwit'
+import { UnsignedBitcoinSegwitTransaction } from './serializer-v3/schemas/definitions/unsigned-transaction-bitcoin-segwit'
 
 // tslint:enable:ordered-imports
 
@@ -282,6 +288,9 @@ export {
   BitcoinAddress,
   RawBitcoinTransaction
 }
+
+// Bitcoin Segwit
+export { BitcoinSegwitProtocol, BitcoinSegwitAddress, RawBitcoinSegwitTransaction }
 
 // Cosmos
 export {
@@ -444,11 +453,13 @@ export {
   UnsignedTransaction,
   UnsignedAeternityTransaction,
   UnsignedBitcoinTransaction,
+  UnsignedBitcoinSegwitTransaction,
   UnsignedCosmosTransaction,
   UnsignedEthereumTransaction,
   UnsignedTezosTransaction,
   SignedAeternityTransaction,
   SignedBitcoinTransaction,
+  SignedBitcoinSegwitTransaction,
   SignedCosmosTransaction,
   SignedEthereumTransaction,
   SignedTezosTransaction,
@@ -500,3 +511,4 @@ export {
 
 // TODO: Those can be removed when serializer v2 is removed
 export { IACMessages, IACMessagesV2, AccountShareResponseV2 }
+export { bufferFrom } // TODO: Helper method for angular component lib

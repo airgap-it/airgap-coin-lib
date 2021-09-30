@@ -37,6 +37,7 @@ const getProtocolOptionsByIdentifier: (identifier: ProtocolSymbols, network?: Pr
     case MainProtocolSymbols.AE:
       return new AeternityProtocolOptions(network ? (network as AeternityProtocolNetwork) : new AeternityProtocolNetwork())
     case MainProtocolSymbols.BTC:
+    case MainProtocolSymbols.BTC_SEGWIT:
       return new BitcoinProtocolOptions(network ? (network as BitcoinProtocolNetwork) : new BitcoinProtocolNetwork())
     case MainProtocolSymbols.ETH:
     case SubProtocolSymbols.ETH_ERC20_XCHF:

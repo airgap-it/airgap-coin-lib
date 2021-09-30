@@ -117,9 +117,9 @@ export interface ICoinProtocol {
     recipients: string[],
     values: string[],
     fee: string,
-    data?: any
+    extras?: any
   ): Promise<any> // only broadcaster
-  prepareTransactionFromPublicKey(publicKey: string, recipients: string[], values: string[], fee: string, data?: any): Promise<any> // only broadcaster
+  prepareTransactionFromPublicKey(publicKey: string, recipients: string[], values: string[], fee: string, extras?: any): Promise<any> // only broadcaster
   broadcastTransaction(rawTransaction: any): Promise<string>
 
   signMessage(message: string, keypair: { publicKey?: string; privateKey: Buffer }): Promise<string> // Returns signature

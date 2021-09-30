@@ -67,3 +67,5 @@ typings/
 lint-reports
 
 dist/
+
+config.ts

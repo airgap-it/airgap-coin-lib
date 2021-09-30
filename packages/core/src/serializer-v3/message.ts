@@ -7,6 +7,7 @@ import { MessageSignRequest } from './schemas/definitions/message-sign-request'
 import { MessageSignResponse } from './schemas/definitions/message-sign-response'
 import { SignedAeternityTransaction } from './schemas/definitions/signed-transaction-aeternity'
 import { SignedBitcoinTransaction } from './schemas/definitions/signed-transaction-bitcoin'
+import { SignedBitcoinSegwitTransaction } from './schemas/definitions/signed-transaction-bitcoin-segwit'
 import { SignedCosmosTransaction } from './schemas/definitions/signed-transaction-cosmos'
 import { SignedEthereumTransaction } from './schemas/definitions/signed-transaction-ethereum'
 import { SignedSubstrateTransaction } from './schemas/definitions/signed-transaction-substrate'
@@ -14,6 +15,7 @@ import { SignedTezosTransaction } from './schemas/definitions/signed-transaction
 import { SignedTezosSaplingTransaction } from './schemas/definitions/signed-transaction-tezos-sapling'
 import { UnsignedAeternityTransaction } from './schemas/definitions/unsigned-transaction-aeternity'
 import { UnsignedBitcoinTransaction } from './schemas/definitions/unsigned-transaction-bitcoin'
+import { UnsignedBitcoinSegwitTransaction } from './schemas/definitions/unsigned-transaction-bitcoin-segwit'
 import { UnsignedEthereumTransaction } from './schemas/definitions/unsigned-transaction-ethereum'
 import { UnsignedSubstrateTransaction } from './schemas/definitions/unsigned-transaction-substrate'
 import { UnsignedTezosTransaction } from './schemas/definitions/unsigned-transaction-tezos'
@@ -33,6 +35,7 @@ export type IACMessages =
   | UnsignedTezosSaplingTransaction
   | UnsignedAeternityTransaction
   | UnsignedBitcoinTransaction
+  | UnsignedBitcoinSegwitTransaction
   | UnsignedCosmosTransaction
   | UnsignedEthereumTransaction
   | UnsignedSubstrateTransaction
@@ -40,6 +43,7 @@ export type IACMessages =
   | SignedTezosSaplingTransaction
   | SignedAeternityTransaction
   | SignedBitcoinTransaction
+  | SignedBitcoinSegwitTransaction
   | SignedCosmosTransaction
   | SignedEthereumTransaction
   | SignedSubstrateTransaction
@@ -128,7 +132,7 @@ export class Message implements IACMessageDefinitionObjectV3 {
     const schemaInfo: SchemaInfo = SerializerV3.getSchema(type, protocol)
     const schema: SchemaItem = unwrapSchema(schemaInfo.schema)
     const schemaTransformer: SchemaTransformer | undefined = schemaInfo.transformer
-    const json: IACMessages = (rlpArrayToJson(schema, encodedPayload) as any) as IACMessages
+    const json: IACMessages = rlpArrayToJson(schema, encodedPayload) as any as IACMessages
     const payload: IACMessages = schemaTransformer ? schemaTransformer(json) : json
 
     return new Message(type, protocol, payload, id, version)
@@ -172,7 +176,7 @@ export class Message implements IACMessageDefinitionObjectV3 {
     }
 
     if (validate(value)) {
-      return (value as unknown) as T // TODO: Use type guard?
+      return value as unknown as T // TODO: Use type guard?
     }
 
     throw new SerializerError(SerializerErrorType.PROPERTY_IS_EMPTY, `${property} is invalid: "${value}"`)
