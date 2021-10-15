@@ -35,15 +35,15 @@ export class PolkadotProtocolStub implements ProtocolHTTPStub {
     sinon
       .stub(protocol.options.nodeClient, 'getTransactionMetadata')
       .withArgs(SubstrateTransactionType.TRANSFER)
-      .returns(Promise.resolve({ moduleIndex: 4, callIndex: 0 }))
+      .returns(Promise.resolve({ palletIndex: 4, callIndex: 0 }))
       .withArgs(SubstrateTransactionType.BOND)
-      .returns(Promise.resolve({ moduleIndex: 6, callIndex: 0 }))
+      .returns(Promise.resolve({ palletIndex: 6, callIndex: 0 }))
       .withArgs(SubstrateTransactionType.UNBOND)
-      .returns(Promise.resolve({ moduleIndex: 6, callIndex: 2 }))
+      .returns(Promise.resolve({ palletIndex: 6, callIndex: 2 }))
       .withArgs(SubstrateTransactionType.NOMINATE)
-      .returns(Promise.resolve({ moduleIndex: 6, callIndex: 5 }))
+      .returns(Promise.resolve({ palletIndex: 6, callIndex: 5 }))
       .withArgs(SubstrateTransactionType.CANCEL_NOMINATION)
-      .returns(Promise.resolve({ moduleIndex: 6, callIndex: 6 }))
+      .returns(Promise.resolve({ palletIndex: 6, callIndex: 6 }))
 
     sinon.stub(protocol.options.nodeClient, 'getTransferFeeEstimate').returns(Promise.resolve(new BigNumber(testProtocolSpec.txs[0].fee)))
 

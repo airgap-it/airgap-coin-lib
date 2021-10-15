@@ -36,7 +36,7 @@ export abstract class MetadataV13StorageEntryType extends SCALEClass {
     runtimeVersion: number | undefined,
     raw: string
   ): SCALEDecodeResult<MetadataV13StorageEntryType> {
-    const prefix = parseInt(raw.substr(0, 2), 16)
+    const prefix = parseInt(raw.substring(0, 2), 16)
 
     let decoderMethod: DecoderMethod<MetadataV13StorageEntryType, Network>
     switch (prefix) {

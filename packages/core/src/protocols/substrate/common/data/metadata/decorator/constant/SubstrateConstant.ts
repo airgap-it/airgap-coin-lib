@@ -1,5 +1,5 @@
 export interface SubstrateConstant {
-  moduleName: string
+  palletName: string
   name: string
   value: Buffer
   type: string

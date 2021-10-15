@@ -10,7 +10,7 @@ import { SubstrateStorageEntry } from '../decorator/storage/SubstrateStorageEntr
 import { MetadataVersioned } from '../MetadataVersioned'
 
 import { MetadataV11Call } from './module/MetadataV11Call'
-import { MetadataV11Constant } from './module/MetadataV11Constants'
+import { MetadataV11Constant } from './module/MetadataV11Constant'
 import { MetadataV11Module } from './module/MetadataV11Module'
 import { MetadataV11Storage } from './module/storage/MetadataV11Storage'
 import { MetadataV11StorageEntry } from './module/storage/MetadataV11StorageEntry'
@@ -90,9 +90,9 @@ export class MetadataV11 extends MetadataVersioned {
   private createDecoratedCalls(moduleName: string, moduleIndex: number, calls: MetadataV11Call[]): SubstrateCall[] {
     return calls.map((call: MetadataV11Call, index: number) => {
       return {
-        moduleName,
+        palletName: moduleName,
         name: call.name.value,
-        moduleIndex,
+        palletIndex: moduleIndex,
         callIndex: index
       }
     })
@@ -101,7 +101,7 @@ export class MetadataV11 extends MetadataVersioned {
   private createDecoratedConstants(moduleName: string, constants: MetadataV11Constant[]): SubstrateConstant[] {
     return constants.map((constant: MetadataV11Constant) => {
       return {
-        moduleName,
+        palletName: moduleName,
         name: constant.name.value,
         value: constant.value.bytes,
         type: constant.type.value

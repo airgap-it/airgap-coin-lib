@@ -1,6 +1,6 @@
 export interface SubstrateCall {
-  moduleName: string
+  palletName: string
   name: string
-  moduleIndex: number
+  palletIndex: number
   callIndex: number
 }

@@ -9,11 +9,11 @@ export class MetadataDecorator {
 
   constructor(storageEntries: SubstrateStorageEntry[], calls: SubstrateCall[], constants: SubstrateConstant[]) {
     this.storageEntries = new Map(
-      storageEntries.map((entry: SubstrateStorageEntry) => [this.createMapKey(entry.moduleName, entry.prefix), entry])
+      storageEntries.map((entry: SubstrateStorageEntry) => [this.createMapKey(entry.palletName, entry.prefix), entry])
     )
-    this.calls = new Map(calls.map((call: SubstrateCall) => [this.createMapKey(call.moduleName, call.name), call]))
+    this.calls = new Map(calls.map((call: SubstrateCall) => [this.createMapKey(call.palletName, call.name), call]))
     this.constants = new Map(
-      constants.map((constant: SubstrateConstant) => [this.createMapKey(constant.moduleName, constant.name), constant])
+      constants.map((constant: SubstrateConstant) => [this.createMapKey(constant.palletName, constant.name), constant])
     )
   }
 
