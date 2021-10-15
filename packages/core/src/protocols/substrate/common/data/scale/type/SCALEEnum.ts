@@ -17,7 +17,7 @@ export class SCALEEnum<T> extends SCALEType {
   public static decode<T>(hex: string, getEnumValue: (value: number) => T | null): SCALEDecodeResult<SCALEEnum<T>> {
     const _hex = stripHexPrefix(hex)
 
-    const value = parseInt(_hex.substr(0, 2), 16)
+    const value = parseInt(_hex.substring(0, 2), 16)
     const enumValue = getEnumValue(value)
 
     if (enumValue === null) {

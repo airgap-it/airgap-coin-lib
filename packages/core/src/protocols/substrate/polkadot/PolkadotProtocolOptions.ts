@@ -7,7 +7,7 @@ import { SubstrateAccountController } from '../common/SubstrateAccountController
 import { SubstrateTransactionController } from '../common/SubstrateTransactionController'
 import { SubstrateNetwork } from '../SubstrateNetwork'
 import {
-  PolkascanBlockExplorer,
+  SubscanBlockExplorer,
   SubstrateProtocolConfig,
   SubstrateProtocolNetworkExtras,
   SubstrateProtocolOptions
@@ -17,7 +17,7 @@ const MAINNET_NAME: string = 'Mainnet'
 
 const NODE_URL: string = 'https://polkadot-node.prod.gke.papers.tech'
 
-const BLOCK_EXPLORER_URL: string = 'https://polkascan.io/polkadot'
+const BLOCK_EXPLORER_URL: string = 'https://polkadot.subscan.io'
 const BLOCK_EXPLORER_API: string = 'https://polkadot.subscan.prod.gke.papers.tech/api/scan'
 
 export class PolkadotProtocolNetworkExtras extends SubstrateProtocolNetworkExtras<SubstrateNetwork.POLKADOT> {
@@ -26,7 +26,7 @@ export class PolkadotProtocolNetworkExtras extends SubstrateProtocolNetworkExtra
   }
 }
 
-export class PolkadotPolkascanBlockExplorer extends PolkascanBlockExplorer {
+export class PolkadotSubscanBlockExplorer extends SubscanBlockExplorer {
   constructor(blockExplorer: string = BLOCK_EXPLORER_URL) {
     super(blockExplorer)
   }
@@ -43,7 +43,7 @@ export class PolkadotProtocolNetwork extends ProtocolNetwork<PolkadotProtocolNet
     name: string = MAINNET_NAME,
     type: NetworkType = NetworkType.MAINNET,
     rpcUrl: string = NODE_URL,
-    blockExplorer: ProtocolBlockExplorer = new PolkadotPolkascanBlockExplorer(),
+    blockExplorer: ProtocolBlockExplorer = new PolkadotSubscanBlockExplorer(),
     extras: PolkadotProtocolNetworkExtras = new PolkadotProtocolNetworkExtras()
   ) {
     super(name, type, rpcUrl, blockExplorer, extras)

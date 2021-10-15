@@ -16,17 +16,6 @@ export class SubstrateProtocolNetworkExtras<T extends SubstrateNetwork> {
   constructor(public readonly apiUrl: string, public readonly network: T) {}
 }
 
-export class PolkascanBlockExplorer implements ProtocolBlockExplorer {
-  constructor(public readonly blockExplorer: string) {}
-
-  public async getAddressLink(address: string): Promise<string> {
-    return `${this.blockExplorer}/account/${address}`
-  }
-  public async getTransactionLink(transactionId: string): Promise<string> {
-    return `${this.blockExplorer}/transaction/${transactionId}`
-  }
-}
-
 export class SubscanBlockExplorer implements ProtocolBlockExplorer {
   constructor(public readonly blockExplorer: string) {}
 

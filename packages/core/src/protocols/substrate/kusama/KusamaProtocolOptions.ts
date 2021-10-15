@@ -7,7 +7,7 @@ import { SubstrateAccountController } from '../common/SubstrateAccountController
 import { SubstrateTransactionController } from '../common/SubstrateTransactionController'
 import { SubstrateNetwork } from '../SubstrateNetwork'
 import {
-  PolkascanBlockExplorer,
+  SubscanBlockExplorer,
   SubstrateProtocolConfig,
   SubstrateProtocolNetworkExtras,
   SubstrateProtocolOptions
@@ -17,8 +17,8 @@ const MAINNET_NAME: string = 'Mainnet'
 
 const NODE_URL: string = 'https://polkadot-kusama-node.prod.gke.papers.tech'
 
-const BLOCK_EXPLORER_URL: string = 'https://polkascan.io/kusama'
-const BLOCK_EXPLORER_API = 'https://kusama.subscan.prod.gke.papers.tech/api/scan'
+const BLOCK_EXPLORER_URL: string = 'https://kusama.subscan.io'
+const BLOCK_EXPLORER_API: string = 'https://kusama.subscan.prod.gke.papers.tech/api/scan'
 
 export class KusamaProtocolNetworkExtras extends SubstrateProtocolNetworkExtras<SubstrateNetwork.KUSAMA> {
   constructor(public readonly apiUrl: string = BLOCK_EXPLORER_API) {
@@ -26,7 +26,7 @@ export class KusamaProtocolNetworkExtras extends SubstrateProtocolNetworkExtras<
   }
 }
 
-export class KusamaPolkascanBlockExplorer extends PolkascanBlockExplorer {
+export class KusamaSubscanBlockExplorer extends SubscanBlockExplorer {
   constructor(blockExplorer: string = BLOCK_EXPLORER_URL) {
     super(blockExplorer)
   }
@@ -43,7 +43,7 @@ export class KusamaProtocolNetwork extends ProtocolNetwork<KusamaProtocolNetwork
     name: string = MAINNET_NAME,
     type: NetworkType = NetworkType.MAINNET,
     rpcUrl: string = NODE_URL,
-    blockExplorer: ProtocolBlockExplorer = new KusamaPolkascanBlockExplorer(),
+    blockExplorer: ProtocolBlockExplorer = new KusamaSubscanBlockExplorer(),
     extras: KusamaProtocolNetworkExtras = new KusamaProtocolNetworkExtras()
   ) {
     super(name, type, rpcUrl, blockExplorer, extras)

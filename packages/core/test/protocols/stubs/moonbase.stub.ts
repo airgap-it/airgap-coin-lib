@@ -33,7 +33,7 @@ export class MoonbaseProtocolStub implements ProtocolHTTPStub {
     sinon
       .stub(protocol.options.nodeClient, 'getTransactionMetadata')
       .withArgs(SubstrateTransactionType.TRANSFER)
-      .returns(Promise.resolve({ moduleIndex: 3, callIndex: 0 }))
+      .returns(Promise.resolve({ palletIndex: 3, callIndex: 0 }))
 
     sinon.stub(protocol.options.nodeClient, 'getTransferFeeEstimate').returns(Promise.resolve(new BigNumber(testProtocolSpec.txs[0].fee)))
 

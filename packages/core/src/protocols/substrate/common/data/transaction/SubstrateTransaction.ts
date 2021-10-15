@@ -88,7 +88,7 @@ export class SubstrateTransaction<Network extends SubstrateNetwork> extends SCAL
       config.era ? SCALEEra.Mortal(config.era) : SCALEEra.Immortal(),
       SCALECompactInt.from(config.nonce),
       SCALECompactInt.from(config.tip),
-      SubstrateTransactionMethod.create(network, type, config.methodId.moduleIndex, config.methodId.callIndex, config.args)
+      SubstrateTransactionMethod.create(network, type, config.methodId.palletIndex, config.methodId.callIndex, config.args)
     )
   }
 
@@ -108,7 +108,7 @@ export class SubstrateTransaction<Network extends SubstrateNetwork> extends SCAL
         ? SubstrateTransactionMethod.create(
             transaction.network,
             transaction.type,
-            config.methodId.moduleIndex,
+            config.methodId.palletIndex,
             config.methodId.callIndex,
             config.args
           )

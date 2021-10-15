@@ -8,6 +8,7 @@ import { MetadataVersioned } from './MetadataVersioned'
 import { MetadataV11 } from './v11/MetadataV11'
 import { MetadataV12 } from './v12/MetadataV12'
 import { MetadataV13 } from './v13/MetadataV13'
+import { MetadataV14 } from './v14/MetadataV14'
 
 const MAGIC_NUMBER = '6174656d' // `meta` in hex
 
@@ -22,6 +23,9 @@ export class Metadata {
 
     let versioned: MetadataVersioned
     switch (version.decoded.toNumber()) {
+      case 14:
+        versioned = MetadataV14.decode(network, runtimeVersion, raw)
+        break
       case 13:
         versioned = MetadataV13.decode(network, runtimeVersion, raw)
         break

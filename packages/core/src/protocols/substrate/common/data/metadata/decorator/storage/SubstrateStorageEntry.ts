@@ -29,10 +29,10 @@ const PREFIX_TRIE_HASH_SIZE = 128
 export abstract class SubstrateStorageEntry {
   private readonly storageHash: Map<string, string> = new Map()
 
-  public constructor(public readonly moduleName: string, public readonly prefix: string) {}
+  public constructor(public readonly palletName: string, public readonly prefix: string) {}
 
   public async hash(...args: SCALEType[]): Promise<string> {
-    const rawKey = this.moduleName + this.prefix + (await this.argsToKeys(args))
+    const rawKey = this.palletName + this.prefix + (await this.argsToKeys(args))
 
     if (!this.storageHash.get(rawKey)) {
       const prefixTrie = await this.hashPrefixTrie()
@@ -48,7 +48,7 @@ export abstract class SubstrateStorageEntry {
   protected abstract hashArgs(args: SCALEType[]): Promise<string>
 
   private async hashPrefixTrie(): Promise<string> {
-    const moduleHash = xxhashAsHex(this.moduleName, PREFIX_TRIE_HASH_SIZE)
+    const moduleHash = xxhashAsHex(this.palletName, PREFIX_TRIE_HASH_SIZE)
     const storageHash = xxhashAsHex(this.prefix, PREFIX_TRIE_HASH_SIZE)
 
     return moduleHash + storageHash
@@ -66,8 +66,8 @@ export class SubstratePlainStorageEntry extends SubstrateStorageEntry {
 }
 
 export class SubstrateMapStorageEntry extends SubstrateStorageEntry {
-  public constructor(module: string, prefix: string, public readonly hasher: SubstrateStorageEntryHasher) {
-    super(module, prefix)
+  public constructor(pallet: string, prefix: string, public readonly hasher: SubstrateStorageEntryHasher) {
+    super(pallet, prefix)
   }
 
   protected async argsToKeys(args: SCALEType[]): Promise<string> {
@@ -83,12 +83,12 @@ export class SubstrateMapStorageEntry extends SubstrateStorageEntry {
 
 export class SubstrateDoubleMapStorageEntry extends SubstrateStorageEntry {
   public constructor(
-    module: string,
+    pallet: string,
     prefix: string,
     public readonly firstHasher: SubstrateStorageEntryHasher,
     public readonly secondHasher: SubstrateStorageEntryHasher
   ) {
-    super(module, prefix)
+    super(pallet, prefix)
   }
 
   protected async argsToKeys(args: SCALEType[]): Promise<string> {
@@ -108,12 +108,12 @@ export class SubstrateDoubleMapStorageEntry extends SubstrateStorageEntry {
 }
 
 export class SubstrateNMapStorageEntry extends SubstrateStorageEntry {
-  public constructor(module: string, prefix: string, public readonly hashers: SubstrateStorageEntryHasher[]) {
-    super(module, prefix)
+  public constructor(pallet: string, prefix: string, public readonly hashers: SubstrateStorageEntryHasher[]) {
+    super(pallet, prefix)
   }
 
   protected async argsToKeys(args: SCALEType[]): Promise<string> {
-    return bytesToHex(args[0].encode()) + bytesToHex(args[1].encode())
+    return args.reduce((key: string, next: SCALEType) => key + bytesToHex(next.encode()), '')
   }
 
   protected async hashArgs(args: SCALEType[]): Promise<string> {

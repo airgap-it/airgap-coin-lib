@@ -121,21 +121,20 @@ import {
 } from './protocols/groestlcoin/GroestlcoinProtocolOptions'
 import {
   SubstrateProtocolNetworkExtras,
-  PolkascanBlockExplorer,
   SubstrateProtocolConfig,
   SubstrateProtocolNetwork,
   SubstrateProtocolOptions
 } from './protocols/substrate/SubstrateProtocolOptions'
 import {
   KusamaProtocolNetworkExtras,
-  KusamaPolkascanBlockExplorer,
+  KusamaSubscanBlockExplorer,
   KusamaProtocolConfig,
   KusamaProtocolNetwork,
   KusamaProtocolOptions
 } from './protocols/substrate/kusama/KusamaProtocolOptions'
 import {
   PolkadotProtocolNetworkExtras,
-  PolkadotPolkascanBlockExplorer,
+  PolkadotSubscanBlockExplorer,
   PolkadotProtocolConfig,
   PolkadotProtocolNetwork,
   PolkadotProtocolOptions
@@ -349,18 +348,17 @@ export {
   SubstratePayee,
   SubstrateCryptoClient,
   SubstrateProtocolNetworkExtras,
-  PolkascanBlockExplorer,
   SubstrateProtocolConfig,
   SubstrateProtocolNetwork,
   SubstrateProtocolOptions,
   SubstrateNodeClient,
   KusamaProtocolNetworkExtras,
-  KusamaPolkascanBlockExplorer,
+  KusamaSubscanBlockExplorer as KusamaPolkascanBlockExplorer,
   KusamaProtocolConfig,
   KusamaProtocolNetwork,
   KusamaProtocolOptions,
   PolkadotProtocolNetworkExtras,
-  PolkadotPolkascanBlockExplorer,
+  PolkadotSubscanBlockExplorer,
   PolkadotProtocolConfig,
   PolkadotProtocolNetwork,
   PolkadotProtocolOptions,
