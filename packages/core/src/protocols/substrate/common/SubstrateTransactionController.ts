@@ -95,7 +95,7 @@ export class SubstrateTransactionController<Network extends SubstrateNetwork> {
   public async createTransactionMethod(type: SubstrateTransactionType, args: any = {}): Promise<SubstrateTransactionMethod> {
     const methodId = await this.nodeClient.getTransactionMetadata(type)
 
-    return SubstrateTransactionMethod.create(this.network, type, methodId.moduleIndex, methodId.callIndex, args)
+    return SubstrateTransactionMethod.create(this.network, type, methodId.palletIndex, methodId.callIndex, args)
   }
 
   public async signTransaction(

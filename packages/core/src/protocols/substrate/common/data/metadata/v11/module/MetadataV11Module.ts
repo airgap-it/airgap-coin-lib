@@ -7,7 +7,7 @@ import { SCALEString } from '../../../scale/type/SCALEString'
 import { SCALEType } from '../../../scale/type/SCALEType'
 
 import { MetadataV11Call } from './MetadataV11Call'
-import { MetadataV11Constant } from './MetadataV11Constants'
+import { MetadataV11Constant } from './MetadataV11Constant'
 import { MetadataV11Error } from './MetadataV11Error'
 import { MetadataV11Event } from './MetadataV11Event'
 import { MetadataV11Storage } from './storage/MetadataV11Storage'
