@@ -133,20 +133,14 @@ export abstract class MoonbeamProtocol extends SubstrateDelegateProtocol<Substra
     const results = await Promise.all([
       this.options.accountController.getNominatorDetails(publicKey),
       this.options.accountController.getCollatorDetails(collator),
-      this.options.nodeClient.getMaxNominatorsPerCollator(),
       this.options.nodeClient.getMaxCollatorsPerNominator(),
       this.getBalanceOfPublicKey(publicKey)
     ])
 
     const nominatorDetails = results[0]
     const collatorDetails = results[1]
-    const maxNominators = results[2]
-    const maxCollators = results[3]
-    const balance = results[4]
-
-    if (maxNominators?.lte(collatorDetails.nominators)) {
-      throw new ConditionViolationError(Domain.SUBSTRATE, 'This collator cannot have more nominators.')
-    }
+    const maxCollators = results[2]
+    const balance = results[3]
 
     if (maxCollators?.lte(nominatorDetails.delegatees.length)) {
       throw new ConditionViolationError(Domain.SUBSTRATE, 'This nominator cannot nominate more collators.')

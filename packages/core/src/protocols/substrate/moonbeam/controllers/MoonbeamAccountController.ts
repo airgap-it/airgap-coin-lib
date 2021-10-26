@@ -120,9 +120,13 @@ export class MoonbeamAccountController extends SubstrateAccountController<Substr
         status = 'Leaving'
     }
 
+    // top nominators are already sorted (https://github.com/PureStake/moonbeam/blob/v0.13.2/pallets/parachain-staking/src/lib.rs#L152)
+    const topNominations = collatorState.topNominators.elements.map((bond) => bond.amount.value)
+
     return {
       address: address.getValue(),
       status,
+      minEligibleBalance: topNominations[topNominations.length - 1].toString(),
       ownStakingBalance: collatorState.bond.toString(),
       totalStakingBalance: collatorState.totalBacking.toString(),
       commission: commission.dividedBy(1_000_000_000).toString(), // commission is Perbill (parts per billion)
@@ -181,16 +185,10 @@ export class MoonbeamAccountController extends SubstrateAccountController<Substr
   private async getStakingActions(nominations: MoonbeamBond[], collator?: MoonbeamCollatorDetails): Promise<DelegatorAction[]> {
     const actions: DelegatorAction[] = []
 
-    const results = await Promise.all([this.nodeClient.getMaxNominatorsPerCollator(), this.nodeClient.getMaxCollatorsPerNominator()])
-
-    const maxNominators = results[0]
-    const maxCollators = results[1]
+    const maxCollators = await this.nodeClient.getMaxCollatorsPerNominator()
 
     const canNominateCollator =
-      maxCollators?.gt(nominations.length) &&
-      maxNominators?.gt(collator?.nominators ?? 0) &&
-      collator &&
-      !nominations.some((bond) => bond.owner.compare(collator.address) === 0)
+      maxCollators?.gt(nominations.length) && collator && !nominations.some((bond) => bond.owner.compare(collator.address) === 0)
 
     const isNominatingCollator = collator && nominations.some((bond) => bond.owner.compare(collator.address) === 0)
 
