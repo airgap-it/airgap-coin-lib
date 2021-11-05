@@ -13,7 +13,6 @@ import { MichelsonAddress } from '../types/michelson/primitives/MichelsonAddress
 import { MichelsonBytes } from '../types/michelson/primitives/MichelsonBytes'
 import { MichelsonInt } from '../types/michelson/primitives/MichelsonInt'
 import { MichelsonString } from '../types/michelson/primitives/MichelsonString'
-import { MichelsonList } from '../types/michelson/generics/MichelsonList'
 import { Cache } from '../../../utils/cache'
 
 const CACHE_DEFAULT_EXPIRATION_TIME = 5 * 60 * 1000 // 5 min
@@ -32,6 +31,7 @@ export class TezosDomains {
   constructor(network: TezosProtocolNetwork, contractAddress: string) {
     this.contract = new TezosContract(
       contractAddress,
+      network.extras.network,
       network.rpcUrl,
       network.extras.conseilUrl,
       network.extras.conseilNetwork,
@@ -78,7 +78,7 @@ export class TezosDomains {
       return undefined
     }
 
-    const records: BigMapResponse[] = await this.contract.bigMapValues({
+    const records: BigMapResponse[] = await this.contract.conseilBigMapValues({
       bigMapID: this.bigMapIDs?.records,
       predicates: [
         {
@@ -104,7 +104,7 @@ export class TezosDomains {
       return undefined
     }
 
-    const expiryTimestamps: BigMapResponse[] = await this.contract.bigMapValues({
+    const expiryTimestamps: BigMapResponse[] = await this.contract.conseilBigMapValues({
       bigMapID: this.bigMapIDs?.expiryMap,
       predicates: [
         {
@@ -131,7 +131,7 @@ export class TezosDomains {
   private async resolveAddress(address: string): Promise<TezosDomainsReverseRecord | undefined> {
     await this.waitForBigMapIDs()
 
-    const reverseRecords: BigMapResponse[] = await this.contract.bigMapValues({
+    const reverseRecords: BigMapResponse[] = await this.contract.conseilBigMapValues({
       bigMapID: this.bigMapIDs?.reverseRecords,
       predicates: [
         {
@@ -175,71 +175,17 @@ export class TezosDomains {
 
     if (this.bigMapIDsPromise === undefined) {
       this.bigMapIDsPromise = this.contract
-        .storage()
-        .then((storage) => {
-          const parsed = MichelsonPair.from(
-            storage,
-            undefined,
-            (value1: unknown) =>
-              MichelsonPair.from(
-                value1,
-                undefined,
-                (value2: unknown) => MichelsonInt.from(value2, 'actions'),
-                (value2: unknown) =>
-                  MichelsonPair.from(
-                    value2,
-                    'store',
-                    (value3: unknown) =>
-                      MichelsonPair.from(
-                        value3,
-                        undefined,
-                        (value4: unknown) =>
-                          MichelsonPair.from(
-                            value4,
-                            undefined,
-                            (value5: unknown) => MichelsonInt.from(value5, 'data'),
-                            (value5: unknown) => MichelsonInt.from(value5, 'expiryMap')
-                          ),
-                        (value4: unknown) =>
-                          MichelsonPair.from(
-                            value4,
-                            undefined,
-                            (value5: unknown) => MichelsonInt.from(value5, 'metadata'),
-                            (value5: unknown) => MichelsonInt.from(value5, 'nextTzip12TokenId')
-                          )
-                      ),
-                    (value3: unknown) =>
-                      MichelsonPair.from(
-                        value3,
-                        undefined,
-                        (value4: unknown) =>
-                          MichelsonPair.from(
-                            value4,
-                            undefined,
-                            (value5: unknown) => MichelsonAddress.from(value5, 'owner'),
-                            (value5: unknown) => MichelsonInt.from(value5, 'records')
-                          ),
-                        (value4: unknown) =>
-                          MichelsonPair.from(
-                            value4,
-                            undefined,
-                            (value5: unknown) => MichelsonInt.from(value5, 'reverseRecords'),
-                            (value5: unknown) => MichelsonInt.from(value5, 'tzip12Tokens')
-                          )
-                      )
-                  )
-              ),
-            (value1: unknown) => MichelsonList.from(value1, MichelsonAddress.from, 'trustedSenders')
-          ).asRawValue()
-
-          if (Array.isArray(parsed)) {
+        .readStorage()
+        .then((content) => {
+          const parsed = content?.asRawValue()
+          if (parsed === undefined || Array.isArray(parsed)) {
             throw new Error('Failed to parse contract storage')
           }
 
           this.bigMapIDs = {
-            expiryMap: parsed.store.expiryMap,
-            records: parsed.store.records,
-            reverseRecords: parsed.store.reverseRecords
+            expiryMap: parsed.store.expiry_map.toNumber(),
+            records: parsed.store.records.toNumber(),
+            reverseRecords: parsed.store.reverse_records.toNumber()
           }
         })
         .finally(() => {

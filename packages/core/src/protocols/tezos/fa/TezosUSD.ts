@@ -1,10 +1,10 @@
 import { TezosProtocolNetwork } from '../TezosProtocolOptions'
 import { TezosUtils } from '../TezosUtils'
 
-import { TezosFA12Protocol } from './TezosFA12Protocol'
+import { TezosFA1p2Protocol } from './TezosFA1p2Protocol'
 import { TezosFAProtocolOptions, TezosUSDProtocolConfig } from './TezosFAProtocolOptions'
 
-export class TezosUSD extends TezosFA12Protocol {
+export class TezosUSD extends TezosFA1p2Protocol {
   private static readonly extractAmountRegex = /Pair ([0-9]+) /
 
   constructor(
@@ -14,7 +14,7 @@ export class TezosUSD extends TezosFA12Protocol {
   }
 
   public async fetchTokenHolders(): Promise<{ address: string; amount: string }[]> {
-    const values = await this.contract.bigMapValues()
+    const values = await this.contract.conseilBigMapValues()
 
     return values
       .map((value) => {

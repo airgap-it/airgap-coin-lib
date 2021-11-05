@@ -1,6 +1,6 @@
 import { SignedTezosTransaction, TezosFAProtocolConfig, TezosFAProtocolOptions, TezosProtocol, TezosProtocolNetwork } from '../../../src/'
 import { AirGapTransactionStatus } from '../../../src/interfaces/IAirGapTransaction'
-import { TezosFA12Protocol } from '../../../src/protocols/tezos/fa/TezosFA12Protocol'
+import { TezosFA1p2Protocol } from '../../../src/protocols/tezos/fa/TezosFA1p2Protocol'
 import { TezosFA1Protocol } from '../../../src/protocols/tezos/fa/TezosFA1Protocol'
 import { TezosFA2Protocol } from '../../../src/protocols/tezos/fa/TezosFA2Protocol'
 import { TezosFA2ProtocolConfig, TezosFA2ProtocolOptions } from '../../../src/protocols/tezos/fa/TezosFAProtocolOptions'
@@ -24,16 +24,16 @@ export class TezosTestProtocolSpec extends TestProtocolSpec {
     return new TezosFA1Protocol(
       new TezosFAProtocolOptions(
         new TezosProtocolNetwork(),
-        new TezosFAProtocolConfig('', '', '', '' as ProtocolSymbols, '', { low: '', medium: '', high: '' }, 0)
+        new TezosFAProtocolConfig('', '' as ProtocolSymbols, '', '', '', { low: '', medium: '', high: '' }, 0)
       )
     )
   }
 
   public get fa12() {
-    return new TezosFA12Protocol(
+    return new TezosFA1p2Protocol(
       new TezosFAProtocolOptions(
         new TezosProtocolNetwork(),
-        new TezosFAProtocolConfig('', '', '', '' as ProtocolSymbols, '', { low: '', medium: '', high: '' }, 0)
+        new TezosFAProtocolConfig('', '' as ProtocolSymbols, '', '', '', { low: '', medium: '', high: '' }, 0)
       )
     )
   }
@@ -43,11 +43,11 @@ export class TezosTestProtocolSpec extends TestProtocolSpec {
       new TezosFA2ProtocolOptions(
         new TezosProtocolNetwork(),
         new TezosFA2ProtocolConfig(
-          '',
-          '',
-          '',
-          '' as ProtocolSymbols,
           'KT1Eso7AdpjrHd4rCz9rGxf92tSm3fEDAkdx',
+          '' as ProtocolSymbols,
+          '',
+          '',
+          '',
           { low: '', medium: '', high: '' },
           0
         )

@@ -1,11 +1,17 @@
+import * as sodium from 'libsodium-wrappers'
+
 import * as bigInt from '../../dependencies/src/big-integer-1.6.45/BigInteger'
+import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import * as bs58check from '../../dependencies/src/bs58check-2.1.2/index'
 import { OperationFailedError, UnsupportedError } from '../../errors'
 import { Domain } from '../../errors/coinlib-error'
+import { stripHexPrefix } from '../../utils/hex'
+import { TezosNetwork } from './TezosProtocol'
 
 import { MichelsonList } from './types/michelson/generics/MichelsonList'
 import { MichelsonPair } from './types/michelson/generics/MichelsonPair'
 import { MichelsonType } from './types/michelson/MichelsonType'
+import { MichelsonTypeUtils } from './types/michelson/MichelsonTypeUtils'
 import { MichelsonBytes } from './types/michelson/primitives/MichelsonBytes'
 import { MichelsonInt } from './types/michelson/primitives/MichelsonInt'
 import { MichelsonString } from './types/michelson/primitives/MichelsonString'
@@ -23,6 +29,7 @@ export class TezosUtils {
     branch: Buffer
     sask: Buffer
     zet1: Buffer
+    expr: Buffer
   } = {
     tz1: Buffer.from(new Uint8Array([6, 161, 159])),
     tz2: Buffer.from(new Uint8Array([6, 161, 161])),
@@ -33,7 +40,20 @@ export class TezosUtils {
     edsig: Buffer.from(new Uint8Array([9, 245, 205, 134, 18])),
     branch: Buffer.from(new Uint8Array([1, 52])),
     sask: Buffer.from(new Uint8Array([11, 237, 20, 92])),
-    zet1: Buffer.from(new Uint8Array([18, 71, 40, 223]))
+    zet1: Buffer.from(new Uint8Array([18, 71, 40, 223])),
+    expr: Buffer.from(new Uint8Array([13, 44, 64, 27]))
+  }
+
+  public static readonly watermark: {
+    block: string
+    endorsement: string
+    operation: string
+    message: string
+  } = {
+    block: '01',
+    endorsement: '02',
+    operation: '03',
+    message: '05'
   }
 
   public static parseAddress(bytes: string | Buffer): string {
@@ -67,6 +87,10 @@ export class TezosUtils {
     }
   }
 
+  public static packMichelsonType(type: MichelsonType): string {
+    return `${TezosUtils.watermark.message}${type.encode()}`
+  }
+
   public static parseHex(rawHex: string | string[]): MichelsonType {
     let hex: string[]
     if (typeof rawHex === 'string') {
@@ -78,12 +102,11 @@ export class TezosUtils {
     switch (type) {
       case '07': // prim
         const primType = hex.shift()
-        if (primType === '07') {
-          // pair
+        if (primType === MichelsonTypeUtils.primPrefixes.pair.toString('hex')) {
           return TezosUtils.parsePair(hex)
         }
         throw new UnsupportedError(Domain.TEZOS, 'Prim type not supported')
-      case '00': // int
+      case MichelsonTypeUtils.literalPrefixes.int.toString('hex'):
         const intBytes: string[] = []
         let byte: string | undefined
         do {
@@ -95,15 +118,15 @@ export class TezosUtils {
         } while (parseInt(byte, 16) >= 127)
 
         return MichelsonInt.from(TezosUtils.decodeSignedInt(intBytes.join('')))
-      case '01': // string
+      case MichelsonTypeUtils.literalPrefixes.string.toString('hex'):
         const stringLength = TezosUtils.hexToLength(hex.splice(0, 4))
 
         return MichelsonString.from(TezosUtils.hexToString(hex.splice(0, stringLength)))
       case '05': // single arg prim
         return TezosUtils.parseHex(hex)
-      case '02': // list
+      case MichelsonTypeUtils.sequencePrefixes.list.toString('hex'):
         return TezosUtils.parseList(hex)
-      case '0a': // bytes
+      case MichelsonTypeUtils.literalPrefixes.bytes.toString('hex'):
         const bytesLength = TezosUtils.hexToLength(hex.splice(0, 4))
 
         return MichelsonBytes.from(hex.splice(0, bytesLength).join(''))
@@ -112,7 +135,21 @@ export class TezosUtils {
     }
   }
 
-  private static decodeSignedInt(hex: string): number {
+  public static async encodeExpr(value: MichelsonType): Promise<string> {
+    await sodium.ready
+
+    const packed: Buffer = Buffer.from(TezosUtils.packMichelsonType(value), 'hex')
+    const hash: Uint8Array = sodium.crypto_generichash(32, packed)
+
+    return bs58check.encode(Buffer.concat([TezosUtils.tezosPrefixes.expr, Buffer.from(hash)]))
+  }
+
+  public static resolveNetwork(network: string): TezosNetwork | undefined {
+    const knownNetworks: string[] = Object.values(TezosNetwork)
+    return knownNetworks.includes(network) ? (network as TezosNetwork) : undefined
+  }
+
+  private static decodeSignedInt(hex: string): BigNumber {
     const positive = Buffer.from(hex.slice(0, 2), 'hex')[0] & 0x40 ? false : true
     const arr = Buffer.from(hex, 'hex').map((v, i) => (i === 0 ? v & 0x3f : v & 0x7f))
     let n = bigInt.zero
@@ -124,14 +161,11 @@ export class TezosUtils {
       }
     }
 
-    return positive ? n.toJSNumber() : n.negate().toJSNumber()
+    return new BigNumber(positive ? n.toString() : n.negate().toString())
   }
 
   private static hexStringToArray(hexString: string): string[] {
-    if (hexString.startsWith('0x')) {
-      hexString = hexString.slice(2)
-    }
-    const hexBytes: RegExpMatchArray | null = hexString.match(/.{2}/g)
+    const hexBytes: RegExpMatchArray | null = stripHexPrefix(hexString).match(/.{2}/g)
     if (hexBytes === null) {
       throw new OperationFailedError(Domain.TEZOS, 'Cannot parse contract code')
     }

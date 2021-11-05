@@ -1,9 +1,10 @@
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { RawTezosTransaction } from '../../../serializer/types'
+import { TezosFATokenMetadata } from '../types/fa/TezosFATokenMetadata'
 
 import { TezosFA1Protocol } from './TezosFA1Protocol'
 
-enum TezosFA12ContractEntrypoint {
+enum TezosFA1p2ContractEntrypoint {
   BALANCE = 'getBalance',
   ALLOWANCE = 'getAllowance',
   APPROVE = 'approve',
@@ -11,14 +12,18 @@ enum TezosFA12ContractEntrypoint {
   TOTAL_SUPPLY = 'getTotalSupply'
 }
 
-export class TezosFA12Protocol extends TezosFA1Protocol {
+export class TezosFA1p2Protocol extends TezosFA1Protocol {
+  public async getTokenMetadata(): Promise<TezosFATokenMetadata | undefined> {
+    return this.getTokenMetadataForTokenID(0)
+  }
+
   public async getAllowance(
     ownerAddress: string,
     spenderAddress: string,
     callbackContract: string = this.callbackContract(),
     source?: string
   ): Promise<string> {
-    const getAllowanceCall = await this.contract.createContractCall(TezosFA12ContractEntrypoint.ALLOWANCE, [
+    const getAllowanceCall = await this.contract.createContractCall(TezosFA1p2ContractEntrypoint.ALLOWANCE, [
       {
         owner: ownerAddress,
         spender: spenderAddress
@@ -30,7 +35,7 @@ export class TezosFA12Protocol extends TezosFA1Protocol {
   }
 
   public async approve(spenderAddress: string, amount: string, fee: string, publicKey: string): Promise<RawTezosTransaction> {
-    const approveCall = await this.contract.createContractCall(TezosFA12ContractEntrypoint.APPROVE, {
+    const approveCall = await this.contract.createContractCall(TezosFA1p2ContractEntrypoint.APPROVE, {
       spender: spenderAddress,
       value: new BigNumber(amount).toNumber()
     })
