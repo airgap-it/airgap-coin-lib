@@ -6,6 +6,7 @@ import { Ed25519CryptoClient } from '../Ed25519CryptoClient'
 import { InvalidValueError } from '../../errors'
 import { Domain } from '../../errors/coinlib-error'
 import { RawTezosTransaction } from '../../serializer/types'
+import { TezosUtils } from './TezosUtils'
 
 export class TezosCryptoClient extends Ed25519CryptoClient {
   constructor(public readonly edsigPrefix: Uint8Array = new Uint8Array([9, 245, 205, 134, 18])) {
@@ -27,8 +28,7 @@ export class TezosCryptoClient extends Ed25519CryptoClient {
   public async operationSignature(privateKey: Buffer, transaction: RawTezosTransaction): Promise<Buffer> {
     await sodium.ready
 
-    const watermark: string = '03'
-    const watermarkedForgedOperationBytesHex: string = watermark + transaction.binaryTransaction
+    const watermarkedForgedOperationBytesHex: string = TezosUtils.watermark.operation + transaction.binaryTransaction
     const watermarkedForgedOperationBytes: Buffer = Buffer.from(watermarkedForgedOperationBytesHex, 'hex')
     const hashedWatermarkedOpBytes: Buffer = sodium.crypto_generichash(32, watermarkedForgedOperationBytes)
 

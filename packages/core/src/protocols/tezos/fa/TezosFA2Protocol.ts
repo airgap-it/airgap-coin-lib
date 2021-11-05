@@ -7,10 +7,8 @@ import { TezosContractCall } from '../contract/TezosContractCall'
 import { TezosAddress } from '../TezosAddress'
 import { TezosNetwork } from '../TezosProtocol'
 import { TezosUtils } from '../TezosUtils'
-import { BigMapResponse } from '../types/contract/BigMapResult'
 import { TezosFA2BalanceOfRequest } from '../types/fa/TezosFA2BalanceOfRequest'
 import { TezosFA2BalanceOfResponse } from '../types/fa/TezosFA2BalanceOfResponse'
-import { TezosFA2TokenMetadata } from '../types/fa/TezosFA2TokenMetadata'
 import { TezosFA2TransferRequest } from '../types/fa/TezosFA2TransferRequest'
 import { TezosFA2UpdateOperatorRequest } from '../types/fa/TezosFA2UpdateOperatorRequest'
 import { MichelineDataNode } from '../types/micheline/MichelineNode'
@@ -21,51 +19,35 @@ import { MichelsonInt } from '../types/michelson/primitives/MichelsonInt'
 import { MichelsonString } from '../types/michelson/primitives/MichelsonString'
 import { TezosTransactionParameters } from '../types/operations/Transaction'
 import { TezosOperationType } from '../types/TezosOperationType'
-import { isMichelinePrimitive, isMichelineSequence } from '../types/utils'
+import { isMichelineSequence } from '../types/utils'
 import { TezosFAProtocol } from './TezosFAProtocol'
 import { TezosFA2ProtocolConfig, TezosFA2ProtocolOptions } from './TezosFAProtocolOptions'
 import { ConditionViolationError, NotFoundError } from '../../../errors'
 import { Domain } from '../../../errors/coinlib-error'
+import { TezosFATokenMetadata } from '../types/fa/TezosFATokenMetadata'
 
 enum TezosFA2ContractEntrypoint {
   BALANCE = 'balance_of',
   TRANSFER = 'transfer',
-  UPDATE_OPERATORS = 'update_operators',
-  TOKEN_METADATA_REGISTRY = 'token_metadata_registry',
-  TOKEN_METADATA = 'token_metadata'
+  UPDATE_OPERATORS = 'update_operators'
 }
 
 export class TezosFA2Protocol extends TezosFAProtocol {
-  private static readonly DEFAULT_TOKEN_METADATA_BIG_MAP_NAME = 'token_metadata'
-  private static readonly DEFAULT_TOKEN_METADATA_BIG_MAP_VALUE_REGEX =
-    /Pair\s\(Pair\s(?<tokenID>\d+)\s\(Pair\s\"(?<symbol>\w*)\"\s\(Pair\s\"(?<name>\w*)\"\s\(Pair\s(?<decimals>\d*)\s\{(?<extras>.*)\}\)\)\)\)/ // temporary until we get Micheline JSON from the API
-
-  public readonly tokenID: number
-
-  public readonly tokenMetadataBigMapID?: number
-  public readonly tokenMetadataBigMapName: string
-  public readonly tokenMedatadaBigMapValueRegex: RegExp
+  public readonly defaultTokenID: number
 
   private readonly defaultCallbackContract: Partial<Record<TezosNetwork, Partial<Record<TezosFA2ContractEntrypoint, string>>>>
 
   constructor(options: TezosFA2ProtocolOptions) {
     super(options)
 
-    this.tokenID = options.config.tokenID ?? 0
-
-    this.tokenMetadataBigMapID = options.config.tokenMetadataBigMapID
-    this.tokenMetadataBigMapName = options.config.tokenMetadataBigMapName ?? TezosFA2Protocol.DEFAULT_TOKEN_METADATA_BIG_MAP_NAME
-    this.tokenMedatadaBigMapValueRegex =
-      options.config.tokenMetadataBigMapRegex ?? TezosFA2Protocol.DEFAULT_TOKEN_METADATA_BIG_MAP_VALUE_REGEX
+    this.defaultTokenID = options.config.defaultTokenID ?? 0
 
     this.defaultCallbackContract = {
       [TezosNetwork.MAINNET]: {
-        [TezosFA2ContractEntrypoint.BALANCE]: 'KT1LyHDYnML5eCuTEVCTynUpivwG6ns6khiG',
-        [TezosFA2ContractEntrypoint.TOKEN_METADATA_REGISTRY]: 'KT1L16VBmW8tkovhLmonhfvf6dtTZya6k6af'
+        [TezosFA2ContractEntrypoint.BALANCE]: 'KT1LyHDYnML5eCuTEVCTynUpivwG6ns6khiG'
       },
       [TezosNetwork.EDONET]: {
-        [TezosFA2ContractEntrypoint.BALANCE]: 'KT1UEyZsmSga2KcNkpGbWX6nvGAVHtBpT5is',
-        [TezosFA2ContractEntrypoint.TOKEN_METADATA_REGISTRY]: 'KT1MMhwbCMfwzDUu4ur3SEpaf6njn2nsMDBt'
+        [TezosFA2ContractEntrypoint.BALANCE]: 'KT1UEyZsmSga2KcNkpGbWX6nvGAVHtBpT5is'
       }
     }
   }
@@ -75,7 +57,7 @@ export class TezosFA2Protocol extends TezosFAProtocol {
       addresses.map((address: string) => {
         return {
           address,
-          tokenID: this.tokenID
+          tokenID: this.defaultTokenID
         }
       }, this.defaultSourceAddress)
     )
@@ -181,7 +163,7 @@ export class TezosFA2Protocol extends TezosFAProtocol {
                   to: [to],
                   extra: {
                     type: parameters.entrypoint,
-                    assetID: !tokenID.eq(this.tokenID) ? tokenID.toString() : undefined
+                    assetID: !tokenID.eq(this.defaultTokenID) ? tokenID.toString() : undefined
                   }
                 }
               })
@@ -286,69 +268,15 @@ export class TezosFA2Protocol extends TezosFAProtocol {
     return this.prepareContractCall([updateCall], fee, publicKey)
   }
 
-  public async tokenMetadataRegistry(
-    source?: string,
-    callbackContract: string = this.callbackContract(TezosFA2ContractEntrypoint.TOKEN_METADATA_REGISTRY)
-  ): Promise<string> {
-    const tokenMetadataRegistryCall: TezosContractCall = await this.contract.createContractCall(
-      TezosFA2ContractEntrypoint.TOKEN_METADATA_REGISTRY,
-      callbackContract
-    )
-
-    const result: MichelineDataNode = await this.runContractCall(tokenMetadataRegistryCall, this.requireSource(source)).catch(() => [])
-
-    if (isMichelinePrimitive('string', result)) {
-      return result.string
-    } else if (isMichelinePrimitive('bytes', result)) {
-      return TezosUtils.parseAddress(result.bytes)
-    } else {
-      return ''
-    }
-  }
-
-  public async tokenMetadata(tokenIDs: number[], handler: string, fee: string, publicKey: string): Promise<RawTezosTransaction> {
-    const tokenMetadataCall: TezosContractCall = await this.contract.createContractCall(TezosFA2ContractEntrypoint.TOKEN_METADATA, {
-      token_ids: tokenIDs,
-      handler
-    })
-
-    return this.prepareContractCall([tokenMetadataCall], fee, publicKey)
-  }
-
-  public async getTokenMetadata(): Promise<TezosFA2TokenMetadata[]> {
-    const metadataResponse: BigMapResponse[] = await this.contract.bigMapValues({
-      bigMapID: this.tokenMetadataBigMapID, // temporarily until we cannot search by a big map's annotation
-      predicates: [
-        {
-          field: 'key',
-          operation: 'eq',
-          set: [this.tokenID.toFixed()]
-        }
-      ]
-    })
-
-    return metadataResponse
-      .map((response: BigMapResponse) => {
-        const match = response.value ? this.tokenMedatadaBigMapValueRegex.exec(response.value) : null
-
-        return match && this.isTokenMetadata(match.groups)
-          ? {
-              tokenID: new BigNumber(match.groups.tokenID).toNumber(),
-              symbol: match.groups.symbol,
-              name: match.groups.name,
-              decimals: new BigNumber(match.groups.decimals).toNumber(),
-              extras: match.groups.extras
-            }
-          : null
-      })
-      .filter((metadata: TezosFA2TokenMetadata | null) => metadata !== null) as TezosFA2TokenMetadata[]
+  public async getTokenMetadata(tokenID?: number): Promise<TezosFATokenMetadata | undefined> {
+    return this.getTokenMetadataForTokenID(tokenID ?? this.defaultTokenID)
   }
 
   private static readonly extractAddressRegex = /^Pair (0x[0-9a-fA-F]+) [\d]+$/
 
   public async fetchTokenHolders(): Promise<{ address: string; amount: string }[]> {
-    const tokenID = (this.options.config as TezosFA2ProtocolConfig).tokenID ?? 0
-    const values = await this.contract.bigMapValues({
+    const tokenID = (this.options.config as TezosFA2ProtocolConfig).defaultTokenID ?? 0
+    const values = await this.contract.conseilBigMapValues({
       bigMapFilter: [
         {
           field: 'key_type',
@@ -406,8 +334,8 @@ export class TezosFA2Protocol extends TezosFAProtocol {
   }
 
   public async getTotalSupply(): Promise<string> {
-    const tokenID = (this.options.config as TezosFA2ProtocolConfig).tokenID ?? 0
-    const values = await this.contract.bigMapValues({
+    const tokenID = (this.options.config as TezosFA2ProtocolConfig).defaultTokenID ?? 0
+    const values = await this.contract.conseilBigMapValues({
       bigMapFilter: [
         {
           field: 'key_type',
@@ -497,9 +425,5 @@ export class TezosFA2Protocol extends TezosFAProtocol {
           tx instanceof Object && typeof tx.to_ === 'string' && BigNumber.isBigNumber(tx.token_id) && BigNumber.isBigNumber(tx.amount)
       )
     )
-  }
-
-  private isTokenMetadata(obj: unknown): obj is TezosFA2TokenMetadata {
-    return typeof obj === 'object' && obj !== null && 'tokenID' in obj && 'symbol' in obj && 'name' in obj && 'decimals' in obj
   }
 }

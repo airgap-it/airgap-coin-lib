@@ -5,8 +5,8 @@ import { MichelinePrimitiveApplication, MichelineTypeNode } from '../../types/mi
 import { MichelsonGrammarType } from '../../types/michelson/grammar/MichelsonGrammarType'
 import { isMichelinePrimitiveApplication } from '../utils'
 
-import { michelsonTypeFactories } from './factories'
 import { MichelsonType } from './MichelsonType'
+import { MichelsonTypeUtils } from './MichelsonTypeUtils'
 
 export enum MichelsonAnnotationPrefix {
   TYPE = ':',
@@ -16,6 +16,7 @@ export enum MichelsonAnnotationPrefix {
 
 export interface MichelsonTypeMetaCreateValueConfiguration {
   lazyEval?: boolean
+  readAnnots?: boolean
 
   beforeNext?(meta: MichelsonTypeMeta, raw: unknown): void
   onNext?(meta: MichelsonTypeMeta, raw: unknown, value: MichelsonType): void
@@ -68,10 +69,17 @@ export class MichelsonTypeMeta {
       configuration.beforeNext(this, raw)
     }
 
-    const michelsonValue: MichelsonType = michelsonTypeFactories[this.type](raw)
+    const michelsonValue: MichelsonType = this.getMichelsonValue(raw, configuration)
 
     if (!(configuration.lazyEval ?? true)) {
       michelsonValue.eval()
+    }
+
+    if (configuration.readAnnots ?? true) {
+      const name: string | undefined = this.getAnnotation(MichelsonAnnotationPrefix.FIELD, MichelsonAnnotationPrefix.TYPE)
+      if (name) {
+        michelsonValue.setName(name)
+      }
     }
 
     if (configuration.onNext) {
@@ -93,6 +101,10 @@ export class MichelsonTypeMeta {
     }
 
     return undefined
+  }
+
+  protected getMichelsonValue(raw: unknown, _configuration: MichelsonTypeMetaCreateValueConfiguration = {}): MichelsonType {
+    return MichelsonTypeUtils.create(this.type, raw)
   }
 
   protected getRawValue(value: unknown): unknown {
@@ -118,31 +130,11 @@ export class MichelsonGenericTypeMeta extends MichelsonTypeMeta {
     })
   }
 
-  public createValue(value: unknown, configuration: MichelsonTypeMetaCreateValueConfiguration): MichelsonType {
-    if (value instanceof MichelsonType) {
-      return value
-    }
-
-    const raw: unknown = this.getRawValue(value)
-
-    if (configuration.beforeNext) {
-      configuration.beforeNext(this, raw)
-    }
-
+  protected getMichelsonValue(raw: unknown, configuration: MichelsonTypeMetaCreateValueConfiguration = {}): MichelsonType {
     const genericFactories: ((genericValue: unknown) => MichelsonType)[] = this.generics.map((genericMeta: Lazy<MichelsonTypeMeta>) => {
       return (genericValue: unknown): MichelsonType => genericMeta.get().createValue(genericValue, configuration)
     })
 
-    const michelsonValue: MichelsonType = michelsonTypeFactories[this.type](raw, ...genericFactories)
-
-    if (!(configuration.lazyEval ?? true)) {
-      michelsonValue.eval()
-    }
-
-    if (configuration.onNext) {
-      configuration.onNext(this, raw, michelsonValue)
-    }
-
-    return michelsonValue
+    return MichelsonTypeUtils.create(this.type, raw, ...genericFactories)
   }
 }

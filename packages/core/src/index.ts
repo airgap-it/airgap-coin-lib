@@ -176,7 +176,7 @@ import {
 import { TezosUtils } from './protocols/tezos/TezosUtils'
 import { TezosFA2Protocol } from './protocols/tezos/fa/TezosFA2Protocol'
 import { TezosFA1Protocol } from './protocols/tezos/fa/TezosFA1Protocol'
-import { TezosFA12Protocol } from './protocols/tezos/fa/TezosFA12Protocol'
+import { TezosFA1p2Protocol } from './protocols/tezos/fa/TezosFA1p2Protocol'
 import { TezosSaplingProtocol } from './protocols/tezos/sapling/TezosSaplingProtocol'
 import { TezosShieldedTezProtocol } from './protocols/tezos/sapling/TezosShieldedTezProtocol'
 import { ImportAccountAction, ImportAccoutActionContext } from './actions/GetKtAccountsAction'
@@ -389,7 +389,7 @@ export {
   TezosKtProtocol,
   TezosFAProtocol,
   TezosFA1Protocol,
-  TezosFA12Protocol,
+  TezosFA1p2Protocol,
   TezosFA2Protocol,
   TezosBTC,
   TezosStaker,

@@ -1,10 +1,10 @@
 import { TezosProtocolNetwork } from '../TezosProtocolOptions'
 import { TezosUtils } from '../TezosUtils'
 
-import { TezosFA12Protocol } from './TezosFA12Protocol'
+import { TezosFA1p2Protocol } from './TezosFA1p2Protocol'
 import { TezosFAProtocolOptions, TezosWrappedProtocolConfig } from './TezosFAProtocolOptions'
 
-export class TezosWrapped extends TezosFA12Protocol {
+export class TezosWrapped extends TezosFA1p2Protocol {
   constructor(
     public readonly options: TezosFAProtocolOptions = new TezosFAProtocolOptions(
       new TezosProtocolNetwork(),
@@ -18,7 +18,7 @@ export class TezosWrapped extends TezosFA12Protocol {
     const request = {
       bigMapID: 257
     }
-    const values = await this.contract.bigMapValues(request)
+    const values = await this.contract.conseilBigMapValues(request)
 
     return values
       .map((value) => {

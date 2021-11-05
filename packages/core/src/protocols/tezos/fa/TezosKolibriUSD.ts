@@ -1,10 +1,10 @@
 import { TezosProtocolNetwork } from '../TezosProtocolOptions'
 import { TezosUtils } from '../TezosUtils'
 
-import { TezosFA12Protocol } from './TezosFA12Protocol'
+import { TezosFA1p2Protocol } from './TezosFA1p2Protocol'
 import { TezosFAProtocolOptions, TezosKolibriUSDProtocolConfig } from './TezosFAProtocolOptions'
 
-export class TezosKolibriUSD extends TezosFA12Protocol {
+export class TezosKolibriUSD extends TezosFA1p2Protocol {
   private static readonly extractValueRegex = /}\s([0-9]+)$/
 
   constructor(
@@ -20,7 +20,7 @@ export class TezosKolibriUSD extends TezosFA12Protocol {
     const request = {
       bigMapID: 380
     }
-    const values = await this.contract.bigMapValues(request)
+    const values = await this.contract.conseilBigMapValues(request)
 
     return values
       .map((value) => {

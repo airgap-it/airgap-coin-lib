@@ -44,6 +44,10 @@ export class MichelsonAddress extends MichelsonType {
     return new MichelsonAddress(value, name)
   }
 
+  public encode(): string {
+    return this.address.encode()
+  }
+
   public asRawValue(): Record<string, string> | string {
     const value: string = Buffer.isBuffer(this.address.value) ? this.address.value.toString('hex') : this.address.value
 

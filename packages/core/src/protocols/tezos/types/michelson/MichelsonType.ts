@@ -1,3 +1,5 @@
+import { UnsupportedError } from '../../../../errors'
+import { Domain } from '../../../../errors/coinlib-error'
 import { MichelineDataNode } from '../micheline/MichelineNode'
 
 export abstract class MichelsonType {
@@ -8,6 +10,10 @@ export abstract class MichelsonType {
 
   public eval(): void {
     // default implementation, no action required
+  }
+
+  public encode(): string {
+    throw new UnsupportedError(Domain.TEZOS, 'Encoding for this Michelson type is not supported')
   }
 
   public setName(name: string) {

@@ -100,6 +100,7 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
 
     this.contract = new TezosContract(
       this.options.config.contractAddress,
+      this.options.network.extras.network,
       this.options.network.rpcUrl,
       this.options.network.extras.conseilUrl,
       this.options.network.extras.conseilNetwork,

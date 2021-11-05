@@ -42,3 +42,12 @@ export function extractGroups(
 
   return groups
 }
+
+export function trimStart(value: string, char: string): string {
+  const regex = new RegExp(`^${char}+`, 'g')
+  return value.replace(regex, '')
+}
+
+export function capitalize(value: string): string {
+  return value.slice(0, 1).toUpperCase() + value.slice(1).toLowerCase()
+}
