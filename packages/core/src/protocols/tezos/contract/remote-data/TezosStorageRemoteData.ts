@@ -1,4 +1,4 @@
-import { RemoteData } from '../../../../utils/remote-data/RemoteData'
+import { RawData, RemoteData } from '../../../../utils/remote-data/RemoteData'
 import { TezosNetwork } from '../../TezosProtocol'
 import { indexerApi, indexerNetwork, nodeUrl } from '../../TezosProtocolOptions'
 import { TezosUtils } from '../../TezosUtils'
@@ -74,14 +74,17 @@ export class TezosStorageRemoteData<T> extends RemoteData<T> {
   }
 
   public async get(): Promise<T | undefined> {
+    const data: RawData | undefined = await this.getRaw()
+    return data ? JSON.parse(data.bytes.toString()) : undefined
+  }
+
+  public async getRaw(): Promise<RawData | undefined> {
     const bigMapID = await this.contract.findBigMap('metadata')
     if (bigMapID === undefined) {
       return undefined
     }
 
     const contentResponse = await this.contract.bigMapValue(bigMapID, this.key, { prim: 'string' }, { prim: 'bytes' })
-    const contentEncoded = contentResponse ? (contentResponse as MichelsonBytes)?.value : undefined
-
-    return contentEncoded ? JSON.parse(contentEncoded.toString()) : undefined
+    return contentResponse ? { bytes: (contentResponse as MichelsonBytes)?.value } : undefined
   }
 }

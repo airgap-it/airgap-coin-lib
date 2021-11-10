@@ -1,8 +1,8 @@
 // https://github.com/ipfs/in-web-browsers/blob/master/ADDRESSING.md
 
-import axios, { AxiosResponse } from '../../dependencies/src/axios-0.19.0/index'
+import axios, { AxiosResponse, ResponseType } from '../../dependencies/src/axios-0.19.0/index'
 
-import { RemoteData } from './RemoteData'
+import { RawData, RemoteData } from './RemoteData'
 
 const IPFS_SCHEME = 'ipfs'
 const IPFS_HTTP_GATEWAY = 'https://dweb.link/ipfs'
@@ -38,6 +38,16 @@ export class IpfsRemoteData<T> extends RemoteData<T> {
   }
 
   public async get(): Promise<T | undefined> {
+    const response: AxiosResponse<T> | undefined = await this.getData()
+    return response?.data
+  }
+
+  public async getRaw(): Promise<RawData | undefined> {
+    const response: AxiosResponse<ArrayBuffer> | undefined = await this.getData('arraybuffer')
+    return response ? { bytes: Buffer.from(response.data), contentType: response.headers['content-type'] } : undefined
+  }
+
+  private async getData<T>(responseType: ResponseType = 'json'): Promise<AxiosResponse<T> | undefined> {
     if (!IpfsRemoteData.validate(this.uri)) {
       return undefined
     }
@@ -47,7 +57,6 @@ export class IpfsRemoteData<T> extends RemoteData<T> {
       return undefined
     }
 
-    const response: AxiosResponse<T> = await axios.get(uri)
-    return response.data
+    return await axios.get(uri, { responseType })
   }
 }
