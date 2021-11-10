@@ -2,7 +2,7 @@ import axios, { AxiosResponse } from '../../dependencies/src/axios-0.19.0/index'
 import * as sha from '../../dependencies/src/sha.js-2.4.11/index'
 import { stripHexPrefix } from '../hex'
 
-import { RemoteData } from './RemoteData'
+import { RawData, RemoteData } from './RemoteData'
 
 const SHA256_SCHEME = 'sha256'
 
@@ -44,6 +44,16 @@ export class Sha256RemoteData<T> extends RemoteData<T> {
   }
 
   public async get(): Promise<T | undefined> {
+    const data: RawData | undefined = await this.getRaw()
+    if (data === undefined) {
+      return undefined
+    }
+
+    const decoder = new TextDecoder()
+    return JSON.parse(decoder.decode(data.bytes.buffer))
+  }
+
+  public async getRaw(): Promise<RawData | undefined> {
     if (!Sha256RemoteData.validate(this.uri)) {
       return undefined
     }
@@ -55,7 +65,9 @@ export class Sha256RemoteData<T> extends RemoteData<T> {
       return undefined
     }
 
-    const decoder = new TextDecoder()
-    return JSON.parse(decoder.decode(data))
+    return {
+      bytes: Buffer.from(data),
+      contentType: response.headers['content-type']
+    }
   }
 }

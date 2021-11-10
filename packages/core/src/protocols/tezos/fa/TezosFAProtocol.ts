@@ -207,8 +207,18 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
         set: [this.contractAddress],
         inverse: false,
         group: addressQueryType
-      }
+      },
+      ...this.getAdditionalTransactionQueryPredicates(address, addressQueryType).map((predicate) => {
+        return {
+          ...predicate,
+          group: addressQueryType
+        }
+      })
     ]
+  }
+
+  protected getAdditionalTransactionQueryPredicates(address: string, addressQueryType: 'string' | 'bytes'): ConseilPredicate[] {
+    return []
   }
 
   public async getTransactions(limit: number, cursor?: TezosTransactionCursor): Promise<TezosTransactionResult> {
@@ -332,10 +342,24 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
         return [
           tokenID,
           {
+            ...Array.from(tokenInfo.entries()).reduce((obj, next) => {
+              const key = next[0]
+              let value: string | number | boolean = typeof next[1] === 'string' ? hexToBytes(next[1]).toString() : next[1]
+              if (value === 'true') {
+                value = true
+              } else if (value === 'false') {
+                value = false
+              } else if (!isNaN(parseInt(value))) {
+                value = parseInt(value)
+              }
+
+              return Object.assign(obj, {
+                [key]: value
+              })
+            }, {}),
             name: hexToBytes(name).toString(),
             symbol: hexToBytes(symbol).toString(),
-            decimals: parseInt(hexToBytes(decimals).toString()),
-            ...Array.from(tokenInfo.entries()).reduce((obj, next) => Object.assign(obj, { [next[0]]: next[1] }), {})
+            decimals: parseInt(hexToBytes(decimals).toString())
           }
         ]
       })

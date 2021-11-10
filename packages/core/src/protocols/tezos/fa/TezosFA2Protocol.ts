@@ -25,6 +25,7 @@ import { TezosFA2ProtocolConfig, TezosFA2ProtocolOptions } from './TezosFAProtoc
 import { ConditionViolationError, NotFoundError } from '../../../errors'
 import { Domain } from '../../../errors/coinlib-error'
 import { TezosFATokenMetadata } from '../types/fa/TezosFATokenMetadata'
+import { ConseilPredicate } from '../types/contract/ConseilPredicate'
 
 enum TezosFA2ContractEntrypoint {
   BALANCE = 'balance_of',
@@ -155,18 +156,24 @@ export class TezosFA2Protocol extends TezosFAProtocol {
                 return [to, tx.token_id, tx.amount] as [string, BigNumber, BigNumber]
               })
 
-              return transferDetails.map(([to, tokenID, amount]: [string, BigNumber, BigNumber]) => {
-                return {
-                  ...defaultDetails,
-                  amount: amount.toFixed(),
-                  from: [from],
-                  to: [to],
-                  extra: {
-                    type: parameters.entrypoint,
-                    assetID: !tokenID.eq(this.defaultTokenID) ? tokenID.toString() : undefined
+              return transferDetails
+                .map(([to, tokenID, amount]: [string, BigNumber, BigNumber]) => {
+                  if (!tokenID.eq(this.defaultTokenID)) {
+                    return undefined
                   }
-                }
-              })
+
+                  return {
+                    ...defaultDetails,
+                    amount: amount.toFixed(),
+                    from: [from],
+                    to: [to],
+                    extra: {
+                      type: parameters.entrypoint,
+                      assetID: tokenID.toNumber()
+                    }
+                  }
+                })
+                .filter((partialDetails: Partial<IAirGapTransaction> | undefined) => partialDetails !== undefined) as IAirGapTransaction[]
             })
             .reduce((flatten: Partial<IAirGapTransaction>[], next: Partial<IAirGapTransaction>[]) => flatten.concat(next), [])
         : [defaultDetails]
@@ -362,6 +369,17 @@ export class TezosFA2Protocol extends TezosFAProtocol {
       return '0'
     }
     return values[0].value
+  }
+
+  protected getAdditionalTransactionQueryPredicates(_address: string, _addressQueryType: 'string' | 'bytes'): ConseilPredicate[] {
+    return [
+      {
+        field: 'parameters',
+        operation: 'like',
+        set: [`{ ${this.defaultTokenID} }`],
+        inverse: false
+      }
+    ]
   }
 
   private async createTransferCall(
