@@ -29,6 +29,6 @@ export class HttpRemoteData<T> extends RemoteData<T> {
       return undefined
     }
 
-    return await axios.get(this.uri)
+    return await axios.get(this.uri, { responseType })
   }
 }
