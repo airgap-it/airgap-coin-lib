@@ -375,7 +375,7 @@ export class TezosContract {
     const uriEncoded = await this.bigMapValue(bigMapID, '', { prim: 'string' }, { prim: 'bytes' })
     const uri = uriEncoded ? (uriEncoded as MichelsonBytes).value.toString() : undefined
 
-    return uri ? this.remoteDataFactory.create(uri, { contract: this }) : undefined
+    return uri ? this.remoteDataFactory.create(uri.trim(), { contract: this }) : undefined
   }
 
   private async bigMapRequest(bigMapID: number, expr?: string): Promise<unknown | undefined> {

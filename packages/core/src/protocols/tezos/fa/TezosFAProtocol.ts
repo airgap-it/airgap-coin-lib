@@ -375,7 +375,7 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
 
   private createRemoteData(uriEncoded: string): RemoteData<unknown> | undefined {
     // unless otherwise-specified, the encoding of the values must be the direct stream of bytes of the data being stored.
-    let remoteData = this.remoteDataFactory.create(hexToBytes(uriEncoded).toString(), { contract: this.contract })
+    let remoteData = this.remoteDataFactory.create(hexToBytes(uriEncoded).toString().trim(), { contract: this.contract })
     if (!remoteData && uriEncoded.startsWith('05')) {
       // however, sometimes the URI is a packed value
       remoteData = this.remoteDataFactory.create(TezosUtils.parseHex(uriEncoded).asRawValue(), { contract: this.contract })
