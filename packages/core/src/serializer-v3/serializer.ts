@@ -60,9 +60,19 @@ export class SerializerV3 {
   public static getSchema(schemaId: number, protocol?: ProtocolSymbols): SchemaInfo {
     const protocolSpecificSchemaName: string = SerializerV3.getSchemaName(schemaId, protocol)
 
+    let schema: SchemaInfo | undefined
+    if (this.schemas.has(protocolSpecificSchemaName)) {
+      schema = this.schemas.get(protocolSpecificSchemaName)
+    } else if (protocol !== undefined) {
+      const split = protocol.split('-')
+      // if protocol is a sub protocol and there is no schema defined for it, use the main protocol schema as the fallback
+      if (split.length >= 2) {
+        return this.getSchema(schemaId, split[0] as MainProtocolSymbols)
+      }
+    }
+
     // Try to get the protocol specific scheme, if it doesn't exist fall back to the generic one
-    const schema: SchemaInfo | undefined =
-      this.schemas.get(protocolSpecificSchemaName) ?? this.schemas.get(SerializerV3.getSchemaName(schemaId))
+    schema = schema ?? this.schemas.get(SerializerV3.getSchemaName(schemaId))
 
     if (!schema) {
       throw new SerializerError(SerializerErrorType.SCHEMA_DOES_NOT_EXISTS, `Schema ${protocolSpecificSchemaName} does not exist`)
