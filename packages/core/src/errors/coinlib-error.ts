@@ -5,6 +5,7 @@ export enum Domain {
   BITCOIN = 'BITCOIN',
   ETHEREUM = 'ETHEREUM',
   ERC20 = 'ERC20',
+  RSK = 'RSK',
   COSMOS = 'COSMOS',
   SUBSTRATE = 'SUBSTRATE',
   AETERNITY = 'AETERNITY',

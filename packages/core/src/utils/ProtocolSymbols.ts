@@ -3,6 +3,7 @@ export enum MainProtocolSymbols {
   BTC = 'btc',
   BTC_SEGWIT = 'btc_segwit',
   ETH = 'eth',
+  RBTC = 'rbtc',
   XTZ = 'xtz',
   XTZ_SHIELDED = 'xtz_shielded',
   GRS = 'grs',
@@ -29,7 +30,8 @@ export enum SubProtocolSymbols {
   XTZ_WRAP = 'xtz-wrap',
   XTZ_QUIPU = 'xtz-quipu',
   ETH_ERC20 = 'eth-erc20',
-  ETH_ERC20_XCHF = 'eth-erc20-xchf'
+  ETH_ERC20_XCHF = 'eth-erc20-xchf',
+  RBTC_ERC20 = 'rbtc-erc20'
 }
 
 export type ProtocolSymbols = MainProtocolSymbols | SubProtocolSymbols

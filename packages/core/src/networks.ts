@@ -651,6 +651,19 @@ networks.etc = {
   ethereum: true
 }
 
+// TODO: Validate config
+networks.rsk = {
+  messagePrefix: '\x19RSK Signed Message:\n',
+  bip32: {
+    public: 0xffffffff,
+    private: 0xffffffff
+  },
+  scriptHash: 13,
+  pubKeyHash: 0xff,
+  wif: 0xff,
+  ethereum: true
+}
+
 networks.clo = {
   bip32: {
     public: 0xffffffff,

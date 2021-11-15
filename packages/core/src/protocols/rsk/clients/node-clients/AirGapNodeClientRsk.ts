@@ -5,12 +5,12 @@ import { InvalidValueError, NetworkError } from '../../../../errors'
 import { Domain } from '../../../../errors/coinlib-error'
 import { AirGapTransactionStatus } from '../../../../interfaces/IAirGapTransaction'
 import { RPCConvertible } from '../../../cosmos/CosmosTransaction'
-import { NODE_URL } from '../../EthereumProtocolOptions'
-import { EthereumUtils } from '../../utils/utils'
+import { NODE_URL } from '../../RskProtocolOptions'
+import { RskUtils } from '../../utils/utils'
 
-import { EthereumNodeClient } from './NodeClient'
+import { RskNodeClient } from './RskNodeClient'
 
-class EthereumRPCBody extends RPCBody implements RPCConvertible {
+class RskRPCBody extends RPCBody implements RPCConvertible {
   public static blockEarliest: string = 'earliest'
   public static blockLatest: string = 'latest'
   public static blockPending: string = 'pending'
@@ -29,7 +29,7 @@ class EthereumRPCBody extends RPCBody implements RPCConvertible {
   }
 }
 
-interface EthereumRPCResponse {
+interface RskRPCResponse {
   id: number
   jsonrpc: string
   result?: any
@@ -39,7 +39,7 @@ interface EthereumRPCResponse {
   }
 }
 
-export class EthereumRPCData {
+export class RskRPCData {
   // 2 chars = 1 byte hence to get to 32 bytes we need 64 chars
   protected static parametersLength: number = 64
   public methodSignature: string
@@ -49,7 +49,7 @@ export class EthereumRPCData {
   }
 
   public abiEncoded(): string {
-    const hash = EthereumUtils.sha3(this.methodSignature)
+    const hash = RskUtils.sha3(this.methodSignature)
     if (hash === null) {
       return ''
     }
@@ -57,7 +57,7 @@ export class EthereumRPCData {
     return `0x${hash.slice(2, 10)}`
   }
 
-  public static addLeadingZeroPadding(value: string, targetLength: number = EthereumRPCData.parametersLength): string {
+  public static addLeadingZeroPadding(value: string, targetLength: number = RskRPCData.parametersLength): string {
     let result = value
     while (result.length < targetLength) {
       result = '0' + result
@@ -76,12 +76,12 @@ export class EthereumRPCData {
   }
 }
 
-export class EthereumRPCDataBalanceOf extends EthereumRPCData {
+export class RskRPCDataBalanceOf extends RskRPCData {
   public static methodName: string = 'balanceOf'
   public address: string
 
   constructor(address: string) {
-    super(`${EthereumRPCDataBalanceOf.methodName}(address)`)
+    super(`${RskRPCDataBalanceOf.methodName}(address)`)
     this.address = address
   }
 
@@ -91,17 +91,17 @@ export class EthereumRPCDataBalanceOf extends EthereumRPCData {
       srcAddress = srcAddress.slice(2)
     }
 
-    return super.abiEncoded() + EthereumRPCData.addLeadingZeroPadding(srcAddress)
+    return super.abiEncoded() + RskRPCData.addLeadingZeroPadding(srcAddress)
   }
 }
 
-export class EthereumRPCDataTransfer extends EthereumRPCData {
+export class RskRPCDataTransfer extends RskRPCData {
   public static methodName: string = 'transfer'
   public recipient: string
   public amount: string
 
   constructor(toAddressOrData: string, amount?: string) {
-    super(`${EthereumRPCDataTransfer.methodName}(address,uint256)`)
+    super(`${RskRPCDataTransfer.methodName}(address,uint256)`)
     if (amount) {
       const toAddress = toAddressOrData
       this.recipient = toAddress
@@ -110,11 +110,11 @@ export class EthereumRPCDataTransfer extends EthereumRPCData {
       const data = toAddressOrData
       const methodID = super.abiEncoded()
       if (!data.startsWith(methodID)) {
-        throw new InvalidValueError(Domain.ETHEREUM, 'unexpected method ID')
+        throw new InvalidValueError(Domain.RSK, 'unexpected method ID')
       }
       const params = data.slice(methodID.length)
-      const recipient = EthereumRPCData.removeLeadingZeroPadding(params.slice(0, EthereumRPCData.parametersLength))
-      const parsedAmount = EthereumRPCData.removeLeadingZeroPadding(params.slice(EthereumRPCData.parametersLength))
+      const recipient = RskRPCData.removeLeadingZeroPadding(params.slice(0, RskRPCData.parametersLength))
+      const parsedAmount = RskRPCData.removeLeadingZeroPadding(params.slice(RskRPCData.parametersLength))
       this.recipient = `0x${recipient}`
       this.amount = `0x${parsedAmount}`
     }
@@ -132,19 +132,19 @@ export class EthereumRPCDataTransfer extends EthereumRPCData {
 
     return (
       super.abiEncoded() +
-      EthereumRPCData.addLeadingZeroPadding(dstAddress.toLowerCase()) +
-      EthereumRPCData.addLeadingZeroPadding(transferAmount.toLowerCase())
+      RskRPCData.addLeadingZeroPadding(dstAddress.toLowerCase()) +
+      RskRPCData.addLeadingZeroPadding(transferAmount.toLowerCase())
     )
   }
 }
 
-export class AirGapNodeClient extends EthereumNodeClient {
+export class AirGapNodeClientRsk extends RskNodeClient {
   constructor(baseURL: string = NODE_URL) {
     super(baseURL)
   }
 
   public async fetchBalance(address: string): Promise<BigNumber> {
-    const body = new EthereumRPCBody('eth_getBalance', [address, EthereumRPCBody.blockLatest])
+    const body = new RskRPCBody('eth_getBalance', [address, RskRPCBody.blockLatest])
 
     const response = await this.send(body)
 
@@ -152,7 +152,7 @@ export class AirGapNodeClient extends EthereumNodeClient {
   }
 
   public async fetchTransactionCount(address: string): Promise<number> {
-    const body = new EthereumRPCBody('eth_getTransactionCount', [address, EthereumRPCBody.blockLatest])
+    const body = new RskRPCBody('eth_getTransactionCount', [address, RskRPCBody.blockLatest])
 
     const response = await this.send(body)
 
@@ -160,13 +160,13 @@ export class AirGapNodeClient extends EthereumNodeClient {
   }
 
   public async sendSignedTransaction(transaction: string): Promise<string> {
-    const body = new EthereumRPCBody('eth_sendRawTransaction', [transaction])
+    const body = new RskRPCBody('eth_sendRawTransaction', [transaction])
 
     return (await this.send(body)).result
   }
 
   public async getTransactionStatus(transactionHash: string): Promise<AirGapTransactionStatus> {
-    const body = new EthereumRPCBody('eth_getTransactionReceipt', [transactionHash])
+    const body = new RskRPCBody('eth_getTransactionReceipt', [transactionHash])
 
     const response = await this.send(body)
 
@@ -191,10 +191,10 @@ export class AirGapNodeClient extends EthereumNodeClient {
     return result
   }
 
-  private balanceOfBody(contractAddress: string, address: string, id: number = 0): EthereumRPCBody {
-    const data = new EthereumRPCDataBalanceOf(address)
+  private balanceOfBody(contractAddress: string, address: string, id: number = 0): RskRPCBody {
+    const data = new RskRPCDataBalanceOf(address)
 
-    return new EthereumRPCBody('eth_call', [{ to: contractAddress, data: data.abiEncoded() }, EthereumRPCBody.blockLatest], id)
+    return new RskRPCBody('eth_call', [{ to: contractAddress, data: data.abiEncoded() }, RskRPCBody.blockLatest], id)
   }
 
   public async estimateTransactionGas(
@@ -204,7 +204,7 @@ export class AirGapNodeClient extends EthereumNodeClient {
     data?: string,
     gas?: string
   ): Promise<BigNumber> {
-    const body = new EthereumRPCBody('eth_estimateGas', [{ from: fromAddress, to: toAddress, gas, value: amount, data }])
+    const body = new RskRPCBody('eth_estimateGas', [{ from: fromAddress, to: toAddress, gas, value: amount, data }])
 
     const response = await this.send(body)
 
@@ -212,30 +212,40 @@ export class AirGapNodeClient extends EthereumNodeClient {
   }
 
   public async estimateTransferGas(contractAddress: string, fromAddress: string, toAddress: string, hexAmount: string): Promise<BigNumber> {
-    const data = new EthereumRPCDataTransfer(toAddress, hexAmount)
+    const data = new RskRPCDataTransfer(toAddress, hexAmount)
     const result = this.estimateTransactionGas(fromAddress, contractAddress, undefined, data.abiEncoded())
 
     return result
   }
 
   public async getGasPrice(): Promise<BigNumber> {
-    const body = new EthereumRPCBody('eth_gasPrice', [])
+    const body = new RskRPCBody('eth_gasPrice', [])
 
     const response = await this.send(body)
 
     return new BigNumber(response.result)
   }
 
-  private async send(body: EthereumRPCBody): Promise<EthereumRPCResponse> {
-    const response = await axios.post(this.baseURL, body.toRPCBody()).catch((error) => {
-      throw new NetworkError(Domain.ETHEREUM, error as AxiosError)
-    })
+  private async send(body: RskRPCBody): Promise<RskRPCResponse> {
+    const response = await axios
+      .post(
+        this.baseURL,
+        body.toRPCBody(),
+        { headers: { 'Content-Type': 'application/json' } } // RSK node accepts only 'application/json' requests
+      )
+      .catch((error) => {
+        throw new NetworkError(Domain.RSK, error as AxiosError)
+      })
 
     return response.data
   }
 
-  private async batchSend(bodies: EthereumRPCBody[]): Promise<EthereumRPCResponse[]> {
-    const data = (await axios.post(this.baseURL, JSON.stringify(bodies.map((body) => body.toJSON())))).data
+  private async batchSend(bodies: RskRPCBody[]): Promise<RskRPCResponse[]> {
+    const data = (
+      await axios.post(this.baseURL, JSON.stringify(bodies.map((body) => body.toJSON())), {
+        headers: { 'Content-Type': 'application/json' }
+      })
+    ).data
 
     return data
   }

@@ -4,6 +4,7 @@ import { AeternityProtocolNetwork, AeternityProtocolOptions } from '../protocols
 import { BitcoinProtocolNetwork, BitcoinProtocolOptions } from '../protocols/bitcoin/BitcoinProtocolOptions'
 import { CosmosProtocolNetwork, CosmosProtocolOptions } from '../protocols/cosmos/CosmosProtocolOptions'
 import { EthereumProtocolNetwork, EthereumProtocolOptions } from '../protocols/ethereum/EthereumProtocolOptions'
+import { RskProtocolNetwork, RskProtocolOptions } from '../protocols/rsk/RskProtocolOptions'
 import { GroestlcoinProtocolNetwork, GroestlcoinProtocolOptions } from '../protocols/groestlcoin/GroestlcoinProtocolOptions'
 import { KusamaProtocolNetwork, KusamaProtocolOptions } from '../protocols/substrate/kusama/KusamaProtocolOptions'
 import { MoonbaseProtocolNetwork, MoonbaseProtocolOptions } from '../protocols/substrate/moonbeam/moonbase/MoonbaseProtocolOptions'
@@ -48,6 +49,9 @@ const getProtocolOptionsByIdentifier: (identifier: ProtocolSymbols, network?: Pr
     case SubProtocolSymbols.ETH_ERC20_XCHF:
     case SubProtocolSymbols.ETH_ERC20:
       return new EthereumProtocolOptions(network ? (network as EthereumProtocolNetwork) : new EthereumProtocolNetwork())
+    case MainProtocolSymbols.RBTC:
+    case SubProtocolSymbols.RBTC_ERC20:
+      return new RskProtocolOptions(network ? (network as RskProtocolNetwork) : new RskProtocolNetwork())
     case MainProtocolSymbols.GRS:
       return new GroestlcoinProtocolOptions(network ? (network as GroestlcoinProtocolNetwork) : new GroestlcoinProtocolNetwork())
     case MainProtocolSymbols.COSMOS:

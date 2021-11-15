@@ -1,6 +1,7 @@
 // tslint:disable:ordered-imports
 // This needs to be imported first, otherwise the tests won't run anymore
 import { EthereumProtocol } from './protocols/ethereum/EthereumProtocol'
+import { RskProtocol } from './protocols/rsk/RskProtocol'
 
 import { ProtocolNotSupported, ProtocolVersionMismatch, SerializerVersionMismatch, TypeNotSupported, NetworkError } from './errors'
 import { Domain } from './errors/coinlib-error'
@@ -13,6 +14,8 @@ import { CosmosDelegationActionType, CosmosProtocol } from './protocols/cosmos/C
 import { GenericERC20 } from './protocols/ethereum/erc20/GenericERC20'
 import { EthereumClassicProtocol } from './protocols/ethereum/EthereumClassicProtocol'
 import { EthereumRopstenProtocol } from './protocols/ethereum/EthereumRopstenProtocol'
+import { GenericRskERC20 } from './protocols/rsk/erc20/GenericRskERC20'
+import { RskTestnetProtocol } from './protocols/rsk/RskTestnetProtocol'
 import { GroestlcoinProtocol } from './protocols/groestlcoin/GroestlcoinProtocol'
 import { GroestlcoinTestnetProtocol } from './protocols/groestlcoin/GroestlcoinTestnetProtocol'
 import {
@@ -57,11 +60,13 @@ import { SignedAeternityTransaction } from './serializer/schemas/definitions/sig
 import { SignedBitcoinTransaction } from './serializer/schemas/definitions/signed-transaction-bitcoin'
 import { SignedCosmosTransaction } from './serializer/schemas/definitions/signed-transaction-cosmos'
 import { SignedEthereumTransaction } from './serializer/schemas/definitions/signed-transaction-ethereum'
+import { SignedRskTransaction } from './serializer/schemas/definitions/signed-transaction-rsk'
 import { SignedTezosTransaction } from './serializer/schemas/definitions/signed-transaction-tezos'
 import { UnsignedTransaction } from './serializer/schemas/definitions/unsigned-transaction'
 import { UnsignedAeternityTransaction } from './serializer/schemas/definitions/unsigned-transaction-aeternity'
 import { UnsignedBitcoinTransaction } from './serializer/schemas/definitions/unsigned-transaction-bitcoin'
 import { UnsignedEthereumTransaction } from './serializer/schemas/definitions/unsigned-transaction-ethereum'
+import { UnsignedRskTransaction } from './serializer/schemas/definitions/unsigned-transaction-rsk'
 import { UnsignedTezosTransaction } from './serializer/schemas/definitions/unsigned-transaction-tezos'
 import { Serializer } from './serializer/serializer'
 import { SerializerV3 } from './serializer-v3/serializer'
@@ -69,6 +74,7 @@ import {
   RawAeternityTransaction,
   RawBitcoinTransaction,
   RawEthereumTransaction,
+  RawRskTransaction,
   RawSubstrateTransaction,
   RawTezosTransaction,
   UnsignedCosmosTransaction
@@ -101,6 +107,7 @@ import {
   CosmosProtocolOptions
 } from './protocols/cosmos/CosmosProtocolOptions'
 import { EthereumCryptoClient } from './protocols/ethereum/EthereumCryptoClient'
+import { RskCryptoClient } from './protocols/rsk/RskCryptoClient'
 import { SubstrateCryptoClient } from './protocols/substrate/SubstrateCryptoClient'
 import { TezosCryptoClient } from './protocols/tezos/TezosCryptoClient'
 import {
@@ -112,6 +119,15 @@ import {
   EthereumERC20ProtocolConfig,
   EthereumERC20ProtocolOptions
 } from './protocols/ethereum/EthereumProtocolOptions'
+import {
+  RskProtocolNetworkExtras,
+  RskExplorerBlockExplorer,
+  RskProtocolNetwork,
+  RskProtocolConfig,
+  RskProtocolOptions,
+  RskERC20ProtocolConfig,
+  RskERC20ProtocolOptions
+} from './protocols/rsk/RskProtocolOptions'
 import { ProtocolBlockExplorer } from './utils/ProtocolBlockExplorer'
 import { NetworkType, ProtocolNetwork } from './utils/ProtocolNetwork'
 import {
@@ -215,6 +231,7 @@ import { TezosDomains } from './protocols/tezos/domains/TezosDomains'
 import { AeternityAddress } from './protocols/aeternity/AeternityAddress'
 import { BitcoinAddress } from './protocols/bitcoin/BitcoinAddress'
 import { EthereumAddress } from './protocols/ethereum/EthereumAddress'
+import { RskAddress } from './protocols/rsk/RskAddress'
 import { TezosAddress } from './protocols/tezos/TezosAddress'
 import { IACMessageDefinitionObjectV3 } from './serializer-v3/message'
 import { IACMessages as IACMessagesV2 } from './serializer/message'
@@ -331,6 +348,23 @@ export {
   EthereumERC20ProtocolOptions,
   EthereumAddress,
   RawEthereumTransaction
+}
+
+// Rsk
+export {
+  RskProtocol,
+  RskTestnetProtocol,
+  GenericRskERC20,
+  RskCryptoClient,
+  RskProtocolNetworkExtras,
+  RskExplorerBlockExplorer,
+  RskProtocolNetwork,
+  RskProtocolConfig,
+  RskProtocolOptions,
+  RskERC20ProtocolConfig,
+  RskERC20ProtocolOptions,
+  RskAddress,
+  RawRskTransaction
 }
 
 // Groestlcoin
@@ -473,12 +507,14 @@ export {
   UnsignedBitcoinSegwitTransaction,
   UnsignedCosmosTransaction,
   UnsignedEthereumTransaction,
+  UnsignedRskTransaction,
   UnsignedTezosTransaction,
   SignedAeternityTransaction,
   SignedBitcoinTransaction,
   SignedBitcoinSegwitTransaction,
   SignedCosmosTransaction,
   SignedEthereumTransaction,
+  SignedRskTransaction,
   SignedTezosTransaction,
   Serializer,
   SerializerV3,

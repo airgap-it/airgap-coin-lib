@@ -91,6 +91,21 @@ describe('Extended Public Derivation Logic', function () {
         done(error)
       })
   })
+  it('should return the correct rsk address from extended public key', function (done) {
+    const bitcoinHdNode = bitcoinJS.HDNode.fromSeedBuffer(masterSeed, bitcoinJS.networks.bitcoin)
+    const publicKey = bitcoinHdNode.derivePath("m/44'/137'/0'").neutered().toBase58()
+    const rsk = new CoinLib.RskProtocol()
+
+    rsk
+      .getAddressFromExtendedPublicKey(publicKey, 0, 0)
+      .then((address) => {
+        assert.strictEqual(address.getValue(), '0xD9bdC7Af23B68D8a310b95c08dB0454c99E3dC91')
+        done()
+      })
+      .catch((error) => {
+        done(error)
+      })
+  })
 })
 
 describe('Public Derivation Logic', function () {
@@ -145,6 +160,21 @@ describe('Public Derivation Logic', function () {
       .getAddressFromPublicKey(publicKey)
       .then((address) => {
         assert.equal(address.getValue(), '0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e')
+        done()
+      })
+      .catch((error) => {
+        done(error)
+      })
+  })
+  it('should return the correct rsk address from extended public key', function (done) {
+    const bitcoinHdNode = bitcoinJS.HDNode.fromSeedBuffer(masterSeed, networks.eth)
+    const publicKey = bitcoinHdNode.derivePath("m/44'/137'/0'/0/0").neutered().getPublicKeyBuffer()
+    const rsk = new CoinLib.RskProtocol()
+
+    rsk
+      .getAddressFromPublicKey(publicKey)
+      .then((address) => {
+        assert.equal(address.getValue(), '0xD9bdC7Af23B68D8a310b95c08dB0454c99E3dC91')
         done()
       })
       .catch((error) => {
@@ -313,6 +343,15 @@ describe('Secret to Public Key Logic', function () {
     assert.equal('0x' + publicKeyBuffer.toString('hex'), publicKey)
   })
 
+  it('should return the correct rsk public key for a given secret', async function () {
+    const mnemonicPhrase = 'spot tiny surge pond spider defense tenant husband input vivid six reunion squirrel frequent syrup'
+    const derivationPath = `m/44'/137'/0'/0/0'`
+    const publicKey = '0x03dd879d237926f25fd3e539f71610aca0857d4c82a1aaefd695923f5812c27d70'
+
+    const publicKeyBuffer = await new CoinLib.RskProtocol().getPublicKeyFromMnemonic(mnemonicPhrase, derivationPath)
+    assert.equal('0x' + publicKeyBuffer.toString('hex'), publicKey)
+  })
+
   it('should return the correct bitcoin extended public key for a given secret', async function () {
     const mnemonicPhrase = 'spot tiny surge pond spider defense tenant husband input vivid six reunion squirrel frequent syrup'
     const derivationPath = `m/44'/0'/0'`
@@ -334,6 +373,15 @@ describe('Secret to Private Key Logic', function () {
     const privateKey = '0x0134c240a31c801e65ece657bb695e232de25232b82ff29238d344309ec6af29'
 
     const privateKeyBuffer = await new CoinLib.EthereumProtocol().getPrivateKeyFromMnemonic(mnemonicPhrase, derivationPath)
+    assert.equal('0x' + privateKeyBuffer.toString('hex'), privateKey)
+  })
+
+  it('should return the correct rsk private key for a given secret', async function () {
+    const mnemonicPhrase = 'spot tiny surge pond spider defense tenant husband input vivid six reunion squirrel frequent syrup'
+    const derivationPath = `m/44'/137'/0'/0/0`
+    const privateKey = '0x583666b3c91b20f79112547fcb7d3394a11cec548558463b37afc6b8a4b44515'
+
+    const privateKeyBuffer = await new CoinLib.RskProtocol().getPrivateKeyFromMnemonic(mnemonicPhrase, derivationPath)
     assert.equal('0x' + privateKeyBuffer.toString('hex'), privateKey)
   })
 
@@ -458,6 +506,35 @@ describe('Transaction Detail Logic', function (done) {
       })
       .then(([airGapTx]) => {
         assert.deepEqual(airGapTx.from, ['0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e'], 'from-addresses were not properly extracted')
+        assert.deepEqual(airGapTx.to, ['0xf5E54317822EBA2568236EFa7b08065eF15C5d42'], 'to-addresses were not properly extracted')
+        assert.equal(airGapTx.fee, '420000000000000', 'fee was not properly extracted')
+        assert.equal(airGapTx.amount, '1000000000000000000', 'amount was not properly extracted')
+        done()
+      })
+      .catch((error) => {
+        done(error)
+      })
+  })
+
+  it('should correctly give details to an rsk tx', function (done) {
+    const tx = {
+      nonce: '0x00',
+      gasPrice: '0x04a817c800',
+      gasLimit: '0x5208',
+      to: '0xf5E54317822EBA2568236EFa7b08065eF15C5d42',
+      value: '0x0de0b6b3a7640000',
+      data: '0x',
+      chainId: 30
+    }
+    const rsk = new CoinLib.RskProtocol()
+
+    rsk
+      .getTransactionDetails({
+        publicKey: '02d855de9a7d36d1149bea17c9ee0980835e21a65d45cce037b503998d3bc49e58',
+        transaction: tx
+      })
+      .then(([airGapTx]) => {
+        assert.deepEqual(airGapTx.from, ['0xD9bdC7Af23B68D8a310b95c08dB0454c99E3dC91'], 'from-addresses were not properly extracted')
         assert.deepEqual(airGapTx.to, ['0xf5E54317822EBA2568236EFa7b08065eF15C5d42'], 'to-addresses were not properly extracted')
         assert.equal(airGapTx.fee, '420000000000000', 'fee was not properly extracted')
         assert.equal(airGapTx.amount, '1000000000000000000', 'amount was not properly extracted')

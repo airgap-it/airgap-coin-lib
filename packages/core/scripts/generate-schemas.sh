@@ -50,6 +50,7 @@ CURR_DIR=${BASH_SOURCE[0]%/generate-schemas.sh}
 ./node_modules/.bin/ts-json-schema-generator --path "$CURR_DIR/../src/serializer-v3/schemas/definitions/message-sign-response.ts" --tsconfig "tsconfig.json" > "$CURR_DIR/../src/serializer-v3/schemas/generated/message-sign-response.json"
 
 ./node_modules/.bin/ts-json-schema-generator --path "$CURR_DIR/../src/serializer-v3/schemas/definitions/signed-transaction-ethereum.ts" --tsconfig "tsconfig.json" > "$CURR_DIR/../src/serializer-v3/schemas/generated/transaction-sign-response-ethereum.json"
+./node_modules/.bin/ts-json-schema-generator --path "$CURR_DIR/../src/serializer-v3/schemas/definitions/signed-transaction-rsk.ts" --tsconfig "tsconfig.json" > "$CURR_DIR/../src/serializer-v3/schemas/generated/transaction-sign-response-rsk.json"
 ./node_modules/.bin/ts-json-schema-generator --path "$CURR_DIR/../src/serializer-v3/schemas/definitions/signed-transaction-bitcoin.ts" --tsconfig "tsconfig.json" > "$CURR_DIR/../src/serializer-v3/schemas/generated/transaction-sign-response-bitcoin.json"
 ./node_modules/.bin/ts-json-schema-generator --path "$CURR_DIR/../src/serializer-v3/schemas/definitions/signed-transaction-cosmos.ts" --tsconfig "tsconfig.json" > "$CURR_DIR/../src/serializer-v3/schemas/generated/transaction-sign-response-cosmos.json"
 ./node_modules/.bin/ts-json-schema-generator --path "$CURR_DIR/../src/serializer-v3/schemas/definitions/signed-transaction-aeternity.ts" --tsconfig "tsconfig.json" > "$CURR_DIR/../src/serializer-v3/schemas/generated/transaction-sign-response-aeternity.json"
@@ -58,6 +59,7 @@ CURR_DIR=${BASH_SOURCE[0]%/generate-schemas.sh}
 ./node_modules/.bin/ts-json-schema-generator --path "$CURR_DIR/../src/serializer-v3/schemas/definitions/signed-transaction-tezos-sapling.ts" --tsconfig "tsconfig.json" > "$CURR_DIR/../src/serializer-v3/schemas/generated/transaction-sign-response-tezos-sapling.json"
 
 ./node_modules/.bin/ts-json-schema-generator --path "$CURR_DIR/../src/serializer-v3/schemas/definitions/unsigned-transaction-ethereum.ts" --tsconfig "tsconfig.json" > "$CURR_DIR/../src/serializer-v3/schemas/generated/transaction-sign-request-ethereum.json"
+./node_modules/.bin/ts-json-schema-generator --path "$CURR_DIR/../src/serializer-v3/schemas/definitions/unsigned-transaction-rsk.ts" --tsconfig "tsconfig.json" > "$CURR_DIR/../src/serializer-v3/schemas/generated/transaction-sign-request-rsk.json"
 ./node_modules/.bin/ts-json-schema-generator --path "$CURR_DIR/../src/serializer-v3/schemas/definitions/unsigned-transaction-bitcoin.ts" --tsconfig "tsconfig.json" > "$CURR_DIR/../src/serializer-v3/schemas/generated/transaction-sign-request-bitcoin.json"
 ./node_modules/.bin/ts-json-schema-generator --path "$CURR_DIR/../src/serializer-v3/schemas/definitions/unsigned-transaction-cosmos.ts" --tsconfig "tsconfig.json" > "$CURR_DIR/../src/serializer-v3/schemas/generated/transaction-sign-request-cosmos.json"
 ./node_modules/.bin/ts-json-schema-generator --path "$CURR_DIR/../src/serializer-v3/schemas/definitions/unsigned-transaction-aeternity.ts" --tsconfig "tsconfig.json" > "$CURR_DIR/../src/serializer-v3/schemas/generated/transaction-sign-request-aeternity.json"

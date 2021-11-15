@@ -11,8 +11,10 @@ import {
 } from '../../dependencies/src/validate.js-0.13.1/validate'
 import { EthereumProtocol } from '../../protocols/ethereum/EthereumProtocol'
 import { KusamaProtocol } from '../../protocols/substrate/kusama/KusamaProtocol'
+import { RskProtocol } from '../../protocols/rsk/RskProtocol'
 import bs64check from '../../utils/base64Check'
 import { SignedEthereumTransaction } from '../schemas/definitions/signed-transaction-ethereum'
+import { SignedRskTransaction } from '../schemas/definitions/signed-transaction-rsk'
 import { SignedSubstrateTransaction } from '../schemas/definitions/signed-transaction-substrate'
 import { SignedTezosTransaction } from '../schemas/definitions/signed-transaction-tezos'
 import { UnsignedTezosTransaction } from '../schemas/definitions/unsigned-transaction-tezos'
@@ -68,7 +70,7 @@ validators.isHexStringWithPrefix = (value: unknown) => {
 
   const hexWithoutPrefix = value.substr(2)
   if (hexWithoutPrefix.length === 0) {
-    // For ethereum, "0x" is valid
+    // For ethereum and rsk, "0x" is valid
     return null
   }
 
@@ -108,6 +110,33 @@ validators.isValidEthereumTransactionString = (transaction: string) => {
     } catch (error) {
       // console.log(error)
       reject('not a valid Ethereum transaction')
+    }
+  })
+}
+
+// RSK
+
+validators.isValidRskTransactionString = (transaction: string) => {
+  // console.log(binaryTransaction)
+  return new Promise<void>(async (resolve, reject) => {
+    if (transaction === null || typeof transaction === 'undefined') {
+      reject('not a valid Rsk transaction')
+    }
+    const signedTx: SignedRskTransaction = {
+      accountIdentifier: '',
+      transaction
+    }
+    const protocol = new RskProtocol()
+    // allow empty values by default (needs to be checked by "presence" check)
+    if (transaction === null || typeof transaction === 'undefined') {
+      reject()
+    }
+    try {
+      await protocol.getTransactionDetailsFromSigned(signedTx)
+      resolve()
+    } catch (error) {
+      // console.log(error)
+      reject('not a valid Rsk transaction')
     }
   })
 }

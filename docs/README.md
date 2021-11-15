@@ -63,6 +63,8 @@ Currently supported are:
 - Bitcoin
 - Ethereum
   - Generic ERC20 Tokens
+- RSK
+  - Generic ERC20 Tokens
 - Aeternity
 - Tezos
 - Groestlcoin

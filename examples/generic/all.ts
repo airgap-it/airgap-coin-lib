@@ -7,6 +7,7 @@ import {
   BitcoinProtocol,
   CosmosProtocol,
   EthereumProtocol,
+  RskProtocol,
   GroestlcoinProtocol,
   KusamaProtocol,
   PolkadotProtocol,
@@ -19,6 +20,7 @@ const aeternityProtocol = new AeternityProtocol()
 const bitcoinProtocol = new BitcoinProtocol()
 const cosmosProtocol = new CosmosProtocol()
 const ethereumProtocol = new EthereumProtocol()
+const rskProtocol = new RskProtocol()
 const groestlcoinProtocol = new GroestlcoinProtocol()
 const polkadotProtocol = new PolkadotProtocol()
 const kusamaProtocol = new KusamaProtocol()
@@ -33,6 +35,8 @@ setTimeout(() => {
     generateIACCode(cosmosProtocol, mnemonic, 50),
     generateIACCode(ethereumProtocol, mnemonic),
     generateIACCode(ethereumProtocol, mnemonic, 50),
+    generateIACCode(rskProtocol, mnemonic),
+    generateIACCode(rskProtocol, mnemonic, 50),
     generateIACCode(groestlcoinProtocol, mnemonic),
     generateIACCode(groestlcoinProtocol, mnemonic, 50),
     generateIACCode(polkadotProtocol, mnemonic),

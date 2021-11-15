@@ -10,6 +10,7 @@ import { SignedBitcoinTransaction } from './schemas/definitions/signed-transacti
 import { SignedBitcoinSegwitTransaction } from './schemas/definitions/signed-transaction-bitcoin-segwit'
 import { SignedCosmosTransaction } from './schemas/definitions/signed-transaction-cosmos'
 import { SignedEthereumTransaction } from './schemas/definitions/signed-transaction-ethereum'
+import { SignedRskTransaction } from './schemas/definitions/signed-transaction-rsk'
 import { SignedSubstrateTransaction } from './schemas/definitions/signed-transaction-substrate'
 import { SignedTezosTransaction } from './schemas/definitions/signed-transaction-tezos'
 import { SignedTezosSaplingTransaction } from './schemas/definitions/signed-transaction-tezos-sapling'
@@ -17,6 +18,7 @@ import { UnsignedAeternityTransaction } from './schemas/definitions/unsigned-tra
 import { UnsignedBitcoinTransaction } from './schemas/definitions/unsigned-transaction-bitcoin'
 import { UnsignedBitcoinSegwitTransaction } from './schemas/definitions/unsigned-transaction-bitcoin-segwit'
 import { UnsignedEthereumTransaction } from './schemas/definitions/unsigned-transaction-ethereum'
+import { UnsignedRskTransaction } from './schemas/definitions/unsigned-transaction-rsk'
 import { UnsignedSubstrateTransaction } from './schemas/definitions/unsigned-transaction-substrate'
 import { UnsignedTezosTransaction } from './schemas/definitions/unsigned-transaction-tezos'
 import { UnsignedTezosSaplingTransaction } from './schemas/definitions/unsigned-transaction-tezos-sapling'
@@ -38,6 +40,7 @@ export type IACMessages =
   | UnsignedBitcoinSegwitTransaction
   | UnsignedCosmosTransaction
   | UnsignedEthereumTransaction
+  | UnsignedRskTransaction
   | UnsignedSubstrateTransaction
   | SignedTezosTransaction
   | SignedTezosSaplingTransaction
@@ -46,6 +49,7 @@ export type IACMessages =
   | SignedBitcoinSegwitTransaction
   | SignedCosmosTransaction
   | SignedEthereumTransaction
+  | SignedRskTransaction
   | SignedSubstrateTransaction
 
 // tslint:disable-next-line:interface-name
