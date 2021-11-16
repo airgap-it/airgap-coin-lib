@@ -49,6 +49,9 @@ export class TezosFA2Protocol extends TezosFAProtocol {
       },
       [TezosNetwork.EDONET]: {
         [TezosFA2ContractEntrypoint.BALANCE]: 'KT1UEyZsmSga2KcNkpGbWX6nvGAVHtBpT5is'
+      },
+      [TezosNetwork.GRANADANET]: {
+        [TezosFA2ContractEntrypoint.BALANCE]: 'KT1Az142aocNmJYaJKBbtLGY2khUSgYTRieG'
       }
     }
   }
