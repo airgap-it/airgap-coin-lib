@@ -375,10 +375,19 @@ export class SubstrateNodeClient<Network extends SubstrateNetwork> {
       const promise = axios
         .post(this.baseURL, new RPCBody(endpoint, params.map(addHexPrefix)))
         .then((response) => {
-          return response.data.result
+          const data = response.data
+          if (data.error) {
+            throw data.error
+          }
+
+          return data.result
         })
         .catch((error) => {
-          throw new NetworkError(Domain.SUBSTRATE, error as AxiosError)
+          if (typeof error === 'string') {
+            throw new NetworkError(Domain.SUBSTRATE, {}, error)
+          } else {
+            throw new NetworkError(Domain.SUBSTRATE, error as AxiosError)
+          }
         })
 
       return this.cache.save(key, promise, { cacheValue: config.allowCache })
