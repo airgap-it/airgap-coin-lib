@@ -390,14 +390,14 @@ export class TezosFA2Protocol extends TezosFAProtocol {
     recipients: string[],
     values: string[],
     fee: string,
-    data?: { addressIndex: number; tokenID: number }
+    data?: { addressIndex?: number; tokenID?: number }
   ): Promise<TezosContractCall> {
     if (recipients.length !== values.length) {
       throw new ConditionViolationError(Domain.TEZOSFA, 'length of recipients and values does not match!')
     }
 
-    const addressIndex: number = data && data.addressIndex !== undefined ? data.addressIndex : 0
-    const tokenID: number = data && data.tokenID !== undefined ? data.tokenID : 0
+    const addressIndex: number = data?.addressIndex ?? 0
+    const tokenID: number = data?.tokenID ?? this.defaultTokenID ?? 0
     const addresses: string[] = (await this.getAddressesFromPublicKey(publicKey)).map((address: TezosAddress) => address.getValue())
 
     if (!addresses[addressIndex]) {
