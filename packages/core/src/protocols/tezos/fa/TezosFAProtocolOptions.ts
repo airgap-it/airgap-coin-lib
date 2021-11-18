@@ -171,6 +171,7 @@ export class TezosUUSDProtocolConfig extends TezosFA2ProtocolConfig {
     super(contractAddress, identifier, symbol, name, marketSymbol, feeDefaults, decimals, tokenId, tokenMetadataBigMapID, ledgerBigMapID)
   }
 }
+
 export class TezosYOUProtocolConfig extends TezosFA2ProtocolConfig {
   constructor(
     symbol: string = 'YOU',

@@ -9,6 +9,7 @@ import { KusamaProtocolNetwork, KusamaProtocolOptions } from '../protocols/subst
 import { MoonbaseProtocolNetwork, MoonbaseProtocolOptions } from '../protocols/substrate/moonbeam/moonbase/MoonbaseProtocolOptions'
 import { MoonriverProtocolNetwork, MoonriverProtocolOptions } from '../protocols/substrate/moonbeam/moonriver/MoonriverProtocolOptions'
 import { PolkadotProtocolNetwork, PolkadotProtocolOptions } from '../protocols/substrate/polkadot/PolkadotProtocolOptions'
+import { TezosCTezProtocolConfig } from '../protocols/tezos/fa/TezosCTez'
 import {
   TezosBTCProtocolConfig,
   TezosETHtzProtocolConfig,
@@ -20,6 +21,10 @@ import {
   TezosWrappedProtocolConfig,
   TezosYOUProtocolConfig
 } from '../protocols/tezos/fa/TezosFAProtocolOptions'
+import { TezosPlentyProtocolConfig } from '../protocols/tezos/fa/TezosPlanty'
+import { TezosQUIPUProtocolConfig } from '../protocols/tezos/fa/TezosQUIPU'
+import { TezosUDEFIProtocolConfig } from '../protocols/tezos/fa/TezosUDEFI'
+import { TezosWRAPProtocolConfig } from '../protocols/tezos/fa/TezosWRAP'
 import { TezosSaplingProtocolOptions, TezosShieldedTezProtocolConfig } from '../protocols/tezos/sapling/TezosSaplingProtocolOptions'
 import { TezosProtocolNetwork, TezosProtocolOptions } from '../protocols/tezos/TezosProtocolOptions'
 
@@ -102,7 +107,31 @@ const getProtocolOptionsByIdentifier: (identifier: ProtocolSymbols, network?: Pr
         network ? (network as TezosProtocolNetwork) : new TezosProtocolNetwork(),
         new TezosStakerProtocolConfig()
       )
-
+    case SubProtocolSymbols.XTZ_UDEFI:
+      return new TezosFAProtocolOptions(
+        network ? (network as TezosProtocolNetwork) : new TezosProtocolNetwork(),
+        new TezosUDEFIProtocolConfig()
+      )
+    case SubProtocolSymbols.XTZ_CTEZ:
+      return new TezosFAProtocolOptions(
+        network ? (network as TezosProtocolNetwork) : new TezosProtocolNetwork(),
+        new TezosCTezProtocolConfig()
+      )
+    case SubProtocolSymbols.XTZ_PLENTY:
+      return new TezosFAProtocolOptions(
+        network ? (network as TezosProtocolNetwork) : new TezosProtocolNetwork(),
+        new TezosPlentyProtocolConfig()
+      )
+    case SubProtocolSymbols.XTZ_WRAP:
+      return new TezosFAProtocolOptions(
+        network ? (network as TezosProtocolNetwork) : new TezosProtocolNetwork(),
+        new TezosWRAPProtocolConfig()
+      )
+    case SubProtocolSymbols.XTZ_QUIPU:
+      return new TezosFAProtocolOptions(
+        network ? (network as TezosProtocolNetwork) : new TezosProtocolNetwork(),
+        new TezosQUIPUProtocolConfig()
+      )
     default:
       // Maybe we get an identifier of a sub-protocol that is not in the known list. In that case, get the options of the parent
       if ((identifier as string).includes('-')) {

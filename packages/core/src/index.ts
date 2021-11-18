@@ -240,6 +240,11 @@ import {
 import { MoonbeamProtocol } from './protocols/substrate/moonbeam/MoonbeamProtocol'
 import { SignedBitcoinSegwitTransaction } from './serializer-v3/schemas/definitions/signed-transaction-bitcoin-segwit'
 import { UnsignedBitcoinSegwitTransaction } from './serializer-v3/schemas/definitions/unsigned-transaction-bitcoin-segwit'
+import { TezosUDEFI, TezosUDEFIProtocolConfig } from './protocols/tezos/fa/TezosUDEFI'
+import { TezosCTez, TezosCTezProtocolConfig } from './protocols/tezos/fa/TezosCTez'
+import { TezosPlenty, TezosPlentyProtocolConfig } from './protocols/tezos/fa/TezosPlanty'
+import { TezosWRAP, TezosWRAPProtocolConfig } from './protocols/tezos/fa/TezosWRAP'
+import { TezosQUIPU, TezosQUIPUProtocolConfig } from './protocols/tezos/fa/TezosQUIPU'
 
 // tslint:enable:ordered-imports
 
@@ -397,8 +402,13 @@ export {
   TezosETHtz as TezosETH,
   TezosUUSD,
   TezosYOU,
+  TezosUDEFI,
   TezosWrapped,
+  TezosWRAP,
   TezosKolibriUSD,
+  TezosCTez,
+  TezosPlenty,
+  TezosQUIPU,
   TezosTransactionResult,
   TezosTransactionCursor,
   BakerInfo,
@@ -422,6 +432,11 @@ export {
   TezosKolibriUSDProtocolConfig,
   TezosStakerProtocolConfig,
   TezosUSDProtocolConfig,
+  TezosCTezProtocolConfig,
+  TezosPlentyProtocolConfig,
+  TezosUDEFIProtocolConfig,
+  TezosWRAPProtocolConfig,
+  TezosQUIPUProtocolConfig,
   TezosFAProtocolOptions,
   TezosFA2ProtocolOptions,
   TezosNetwork,
