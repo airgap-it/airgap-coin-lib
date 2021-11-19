@@ -25,6 +25,12 @@ import { InvalidValueError, NetworkError, OperationFailedError } from '../../../
 import { Domain } from '../../../errors/coinlib-error'
 import { ConseilPredicate } from '../types/contract/ConseilPredicate'
 import { TezosUtils } from '../TezosUtils'
+import { TezosContractMetadata } from '../types/contract/TezosContractMetadata'
+import { TezosFATokenMetadata } from '../types/fa/TezosFATokenMetadata'
+import { hexToBytes } from '../../../utils/hex'
+import { RemoteDataFactory } from '../../../utils/remote-data/RemoteDataFactory'
+import { TezosContractRemoteDataFactory } from '../contract/remote-data/TezosContractRemoteDataFactory'
+import { RemoteData } from '../../../utils/remote-data/RemoteData'
 
 export interface TezosFAProtocolConfiguration {
   symbol: string
@@ -41,28 +47,41 @@ export interface TezosFAProtocolConfiguration {
   baseApiNetwork?: string
 }
 
+const SYMBOL_GENERIC_FA = 'XTZ'
+const NAME_GENERIC_FA = 'Generic FA'
+const MARKET_SYMBOL_GENERIC_FA = 'xtz'
+const DECIMALS_GENERIC_FA = NaN
+
 export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubProtocol {
   public readonly isSubProtocol: boolean = true
   public readonly subProtocolType: SubProtocolType = SubProtocolType.TOKEN
-  public readonly identifier: ProtocolSymbols
   public readonly contractAddress: string
+  public readonly tokenMetadataBigMapID?: number
 
   protected readonly contract: TezosContract
 
   protected readonly defaultSourceAddress: string = 'tz1Mj7RzPmMAqDUNFBn5t5VbXmWW4cSUAdtT'
+  protected readonly remoteDataFactory: RemoteDataFactory = new TezosContractRemoteDataFactory()
 
   constructor(public readonly options: TezosFAProtocolOptions) {
     super()
     this.contractAddress = this.options.config.contractAddress
-    this.symbol = this.options.config.symbol
-    this.name = this.options.config.name
-    this.marketSymbol = this.options.config.marketSymbol
     this.identifier = this.options.config.identifier
-    this.feeDefaults = this.options.config.feeDefaults
-    this.decimals = this.options.config.decimals
+
+    this.symbol = this.options.config.symbol ?? SYMBOL_GENERIC_FA
+    this.name = this.options.config.name ?? NAME_GENERIC_FA
+    this.marketSymbol = this.options.config.marketSymbol ?? MARKET_SYMBOL_GENERIC_FA
+    this.decimals = this.options.config.decimals ?? DECIMALS_GENERIC_FA
+
+    if (this.options.config.feeDefaults) {
+      this.feeDefaults = this.options.config.feeDefaults
+    }
+
+    this.tokenMetadataBigMapID = options.config.tokenMetadataBigMapID
 
     this.contract = new TezosContract(
       this.options.config.contractAddress,
+      this.options.network.extras.network,
       this.options.network.rpcUrl,
       this.options.network.extras.conseilUrl,
       this.options.network.extras.conseilNetwork,
@@ -73,7 +92,7 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
   public abstract transactionDetailsFromParameters(parameters: TezosTransactionParameters): Partial<IAirGapTransaction>[]
 
   public async bigMapValue(key: string, isKeyHash: boolean = false, bigMapID?: number): Promise<string | null> {
-    const result: BigMapResponse[] = await this.contract.bigMapValues({
+    const result: BigMapResponse[] = await this.contract.conseilBigMapValues({
       bigMapID,
       predicates: [
         {
@@ -85,6 +104,10 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
     })
 
     return result.length > 0 ? result[0].value : null
+  }
+
+  public async contractMetadata(): Promise<TezosContractMetadata | undefined> {
+    return this.contract.metadata()
   }
 
   public async estimateMaxTransactionValueFromPublicKey(publicKey: string, recipients: string[], fee?: string): Promise<string> {
@@ -184,8 +207,18 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
         set: [this.contractAddress],
         inverse: false,
         group: addressQueryType
-      }
+      },
+      ...this.getAdditionalTransactionQueryPredicates(address, addressQueryType).map((predicate) => {
+        return {
+          ...predicate,
+          group: addressQueryType
+        }
+      })
     ]
+  }
+
+  protected getAdditionalTransactionQueryPredicates(address: string, addressQueryType: 'string' | 'bytes'): ConseilPredicate[] {
+    return []
   }
 
   public async getTransactions(limit: number, cursor?: TezosTransactionCursor): Promise<TezosTransactionResult> {
@@ -252,6 +285,103 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
     }
 
     return this.contract.normalizeContractCallParameters(parsedParameters, fallbackEntrypointName)
+  }
+
+  public async getAllTokenMetadata(): Promise<Record<number, TezosFATokenMetadata> | undefined> {
+    const tokenMetadataBigMapID = this.tokenMetadataBigMapID ?? (await this.contract.findBigMap('token_metadata'))
+    if (tokenMetadataBigMapID === undefined) {
+      return undefined
+    }
+
+    const value = await this.contract.bigMapValue(tokenMetadataBigMapID, {
+      prim: 'list',
+      args: [
+        {
+          prim: 'pair',
+          args: [
+            {
+              prim: 'nat',
+              annots: ['%token_id']
+            },
+            {
+              prim: 'map',
+              args: [{ prim: 'string' }, { prim: 'bytes' }],
+              annots: ['%token_info']
+            }
+          ]
+        }
+      ]
+    })
+    const rawValue = value?.asRawValue()
+    const values = Array.isArray(rawValue) ? rawValue : [rawValue]
+    const tokenMetadata = await Promise.all(
+      values.map(async (value) => {
+        const tokenID = value?.token_id?.toNumber()
+        const tokenInfo = value?.token_info as Map<string, string>
+        if (tokenID === undefined || tokenInfo === undefined) {
+          return undefined
+        }
+
+        if (tokenInfo.has('')) {
+          const uriEncoded = tokenInfo.get('')!
+          const remoteData = this.createRemoteData(uriEncoded)
+          const tokenMetdata = await remoteData?.get()
+          if (this.isTokenMetadata(tokenMetdata)) {
+            return [tokenID, tokenMetdata]
+          }
+        }
+
+        const name = tokenInfo.get('name')
+        const symbol = tokenInfo.get('symbol')
+        const decimals = tokenInfo.get('decimals')
+
+        if (!name || !symbol || !decimals) {
+          return undefined
+        }
+
+        return [
+          tokenID,
+          {
+            ...Array.from(tokenInfo.entries()).reduce((obj, next) => {
+              const key = next[0]
+              let value: string | number | boolean = typeof next[1] === 'string' ? hexToBytes(next[1]).toString() : next[1]
+              if (value === 'true') {
+                value = true
+              } else if (value === 'false') {
+                value = false
+              } else if (!isNaN(parseInt(value))) {
+                value = parseInt(value)
+              }
+
+              return Object.assign(obj, {
+                [key]: value
+              })
+            }, {}),
+            name: hexToBytes(name).toString(),
+            symbol: hexToBytes(symbol).toString(),
+            decimals: parseInt(hexToBytes(decimals).toString())
+          }
+        ]
+      })
+    )
+
+    return tokenMetadata.reduce((obj, next) => (next ? Object.assign(obj, { [next[0]]: next[1] }) : obj), {})
+  }
+
+  protected async getTokenMetadataForTokenID(tokenID: number): Promise<TezosFATokenMetadata | undefined> {
+    const tokenMetadata = await this.getAllTokenMetadata()
+    return tokenMetadata ? tokenMetadata[tokenID] : undefined
+  }
+
+  private createRemoteData(uriEncoded: string): RemoteData<unknown> | undefined {
+    // unless otherwise-specified, the encoding of the values must be the direct stream of bytes of the data being stored.
+    let remoteData = this.remoteDataFactory.create(hexToBytes(uriEncoded).toString().trim(), { contract: this.contract })
+    if (!remoteData && uriEncoded.startsWith('05')) {
+      // however, sometimes the URI is a packed value
+      remoteData = this.remoteDataFactory.create(TezosUtils.parseHex(uriEncoded).asRawValue(), { contract: this.contract })
+    }
+
+    return remoteData
   }
 
   protected async getTransactionOperationDetails(transactionOperation: TezosTransactionOperation): Promise<Partial<IAirGapTransaction>[]> {
@@ -408,5 +538,9 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
 
   private url(path: string): string {
     return `${this.jsonRPCAPI}${path}`
+  }
+
+  private isTokenMetadata(obj: unknown): obj is TezosFATokenMetadata {
+    return typeof obj === 'object' && obj !== null && 'symbol' in obj && 'name' in obj && 'decimals' in obj
   }
 }

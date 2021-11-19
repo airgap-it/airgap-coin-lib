@@ -15,7 +15,7 @@ export class TezosStaker extends TezosFA1Protocol {
   }
 
   public async fetchTokenHolders(): Promise<{ address: string; amount: string }[]> {
-    const values = await this.contract.bigMapValues()
+    const values = await this.contract.conseilBigMapValues()
 
     return values
       .map((value) => {

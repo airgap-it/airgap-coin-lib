@@ -15,13 +15,14 @@ import { TezosProtocolConfig, TezosProtocolNetwork } from '../TezosProtocolOptio
 
 export class TezosFAProtocolConfig extends TezosProtocolConfig {
   constructor(
-    public readonly symbol: string,
-    public readonly name: string,
-    public readonly marketSymbol: string,
-    public readonly identifier: ProtocolSymbols,
     public readonly contractAddress: string,
-    public readonly feeDefaults: FeeDefaults,
-    public readonly decimals: number
+    public readonly identifier: ProtocolSymbols,
+    public readonly symbol?: string,
+    public readonly name?: string,
+    public readonly marketSymbol?: string,
+    public readonly feeDefaults?: FeeDefaults,
+    public readonly decimals?: number,
+    public readonly tokenMetadataBigMapID?: number
   ) {
     super()
   }
@@ -29,21 +30,19 @@ export class TezosFAProtocolConfig extends TezosProtocolConfig {
 
 export class TezosFA2ProtocolConfig extends TezosFAProtocolConfig {
   constructor(
-    public readonly symbol: string,
-    public readonly name: string,
-    public readonly marketSymbol: string,
-    public readonly identifier: ProtocolSymbols,
-    public readonly contractAddress: string,
-    public readonly feeDefaults: FeeDefaults,
-    public readonly decimals: number,
-    public readonly tokenID?: number,
-    public readonly tokenMetadataBigMapID?: number,
-    public readonly tokenMetadataBigMapName?: string,
-    public readonly tokenMetadataBigMapRegex?: RegExp,
+    contractAddress: string,
+    identifier: ProtocolSymbols,
+    symbol?: string,
+    name?: string,
+    marketSymbol?: string,
+    feeDefaults?: FeeDefaults,
+    decimals?: number,
+    public readonly defaultTokenID?: number,
+    tokenMetadataBigMapID?: number,
     public readonly ledgerBigMapID?: number,
     public readonly totalSupplyBigMapID?: number
   ) {
-    super(symbol, name, marketSymbol, identifier, contractAddress, feeDefaults, decimals)
+    super(contractAddress, identifier, symbol, name, marketSymbol, feeDefaults, decimals, tokenMetadataBigMapID)
   }
 }
 
@@ -61,7 +60,7 @@ export class TezosBTCProtocolConfig extends TezosFAProtocolConfig {
     },
     decimals: number = 8
   ) {
-    super(symbol, name, marketSymbol, identifier, contractAddress, feeDefaults, decimals)
+    super(contractAddress, identifier, symbol, name, marketSymbol, feeDefaults, decimals)
   }
 }
 export class TezosETHtzProtocolConfig extends TezosFAProtocolConfig {
@@ -78,7 +77,7 @@ export class TezosETHtzProtocolConfig extends TezosFAProtocolConfig {
     },
     decimals: number = 18
   ) {
-    super(symbol, name, marketSymbol, identifier, contractAddress, feeDefaults, decimals)
+    super(contractAddress, identifier, symbol, name, marketSymbol, feeDefaults, decimals)
   }
 }
 export class TezosWrappedProtocolConfig extends TezosFAProtocolConfig {
@@ -95,7 +94,7 @@ export class TezosWrappedProtocolConfig extends TezosFAProtocolConfig {
     },
     decimals: number = 6
   ) {
-    super(symbol, name, marketSymbol, identifier, contractAddress, feeDefaults, decimals)
+    super(contractAddress, identifier, symbol, name, marketSymbol, feeDefaults, decimals)
   }
 }
 export class TezosKolibriUSDProtocolConfig extends TezosFAProtocolConfig {
@@ -112,7 +111,7 @@ export class TezosKolibriUSDProtocolConfig extends TezosFAProtocolConfig {
     },
     decimals: number = 6
   ) {
-    super(symbol, name, marketSymbol, identifier, contractAddress, feeDefaults, decimals)
+    super(contractAddress, identifier, symbol, name, marketSymbol, feeDefaults, decimals)
   }
 }
 
@@ -130,7 +129,7 @@ export class TezosStakerProtocolConfig extends TezosFAProtocolConfig {
     },
     decimals: number = 6
   ) {
-    super(symbol, name, marketSymbol, identifier, contractAddress, feeDefaults, decimals)
+    super(contractAddress, identifier, symbol, name, marketSymbol, feeDefaults, decimals)
   }
 }
 
@@ -148,7 +147,7 @@ export class TezosUSDProtocolConfig extends TezosFAProtocolConfig {
     },
     decimals: number = 6
   ) {
-    super(symbol, name, marketSymbol, identifier, contractAddress, feeDefaults, decimals)
+    super(contractAddress, identifier, symbol, name, marketSymbol, feeDefaults, decimals)
   }
 }
 
@@ -169,22 +168,10 @@ export class TezosUUSDProtocolConfig extends TezosFA2ProtocolConfig {
     tokenMetadataBigMapID: number = 7708,
     ledgerBigMapID: number = 7706
   ) {
-    super(
-      symbol,
-      name,
-      marketSymbol,
-      identifier,
-      contractAddress,
-      feeDefaults,
-      decimals,
-      tokenId,
-      tokenMetadataBigMapID,
-      undefined,
-      undefined,
-      ledgerBigMapID
-    )
+    super(contractAddress, identifier, symbol, name, marketSymbol, feeDefaults, decimals, tokenId, tokenMetadataBigMapID, ledgerBigMapID)
   }
 }
+
 export class TezosYOUProtocolConfig extends TezosFA2ProtocolConfig {
   constructor(
     symbol: string = 'YOU',
@@ -202,20 +189,7 @@ export class TezosYOUProtocolConfig extends TezosFA2ProtocolConfig {
     tokenMetadataBigMapID: number = 7718,
     ledgerBigMapID: number = 7715
   ) {
-    super(
-      symbol,
-      name,
-      marketSymbol,
-      identifier,
-      contractAddress,
-      feeDefaults,
-      decimals,
-      tokenId,
-      tokenMetadataBigMapID,
-      undefined,
-      undefined,
-      ledgerBigMapID
-    )
+    super(contractAddress, identifier, symbol, name, marketSymbol, feeDefaults, decimals, tokenId, tokenMetadataBigMapID, ledgerBigMapID)
   }
 }
 

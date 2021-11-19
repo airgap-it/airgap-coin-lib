@@ -5,7 +5,7 @@ import { MichelsonPair } from '../types/michelson/generics/MichelsonPair'
 import { MichelsonType } from '../types/michelson/MichelsonType'
 import { MichelsonInt } from '../types/michelson/primitives/MichelsonInt'
 
-import { TezosFA12Protocol } from './TezosFA12Protocol'
+import { TezosFA1p2Protocol } from './TezosFA1p2Protocol'
 import { TezosBTCProtocolConfig, TezosFAProtocolOptions } from './TezosFAProtocolOptions'
 
 enum TezosBTCContractEntrypoint {
@@ -13,7 +13,7 @@ enum TezosBTCContractEntrypoint {
   TOTAL_BURNED = 'getTotalBurned'
 }
 
-export class TezosBTC extends TezosFA12Protocol {
+export class TezosBTC extends TezosFA1p2Protocol {
   private static readonly bigMapKeyLedgerPrefix: string = '0x05070701000000066c65646765720a00000016'
 
   constructor(
@@ -35,7 +35,7 @@ export class TezosBTC extends TezosFA12Protocol {
   }
 
   public async fetchTokenHolders(): Promise<{ address: string; amount: string }[]> {
-    const values = await this.contract.bigMapValues({
+    const values = await this.contract.conseilBigMapValues({
       predicates: [
         {
           field: 'key',

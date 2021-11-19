@@ -176,7 +176,7 @@ import {
 import { TezosUtils } from './protocols/tezos/TezosUtils'
 import { TezosFA2Protocol } from './protocols/tezos/fa/TezosFA2Protocol'
 import { TezosFA1Protocol } from './protocols/tezos/fa/TezosFA1Protocol'
-import { TezosFA12Protocol } from './protocols/tezos/fa/TezosFA12Protocol'
+import { TezosFA1p2Protocol } from './protocols/tezos/fa/TezosFA1p2Protocol'
 import { TezosSaplingProtocol } from './protocols/tezos/sapling/TezosSaplingProtocol'
 import { TezosShieldedTezProtocol } from './protocols/tezos/sapling/TezosShieldedTezProtocol'
 import { ImportAccountAction, ImportAccoutActionContext } from './actions/GetKtAccountsAction'
@@ -240,6 +240,11 @@ import {
 import { MoonbeamProtocol } from './protocols/substrate/moonbeam/MoonbeamProtocol'
 import { SignedBitcoinSegwitTransaction } from './serializer-v3/schemas/definitions/signed-transaction-bitcoin-segwit'
 import { UnsignedBitcoinSegwitTransaction } from './serializer-v3/schemas/definitions/unsigned-transaction-bitcoin-segwit'
+import { TezosUDEFI, TezosUDEFIProtocolConfig } from './protocols/tezos/fa/TezosUDEFI'
+import { TezosCTez, TezosCTezProtocolConfig } from './protocols/tezos/fa/TezosCTez'
+import { TezosPlenty, TezosPlentyProtocolConfig } from './protocols/tezos/fa/TezosPlanty'
+import { TezosWRAP, TezosWRAPProtocolConfig } from './protocols/tezos/fa/TezosWRAP'
+import { TezosQUIPU, TezosQUIPUProtocolConfig } from './protocols/tezos/fa/TezosQUIPU'
 
 // tslint:enable:ordered-imports
 
@@ -389,7 +394,7 @@ export {
   TezosKtProtocol,
   TezosFAProtocol,
   TezosFA1Protocol,
-  TezosFA12Protocol,
+  TezosFA1p2Protocol,
   TezosFA2Protocol,
   TezosBTC,
   TezosStaker,
@@ -397,8 +402,13 @@ export {
   TezosETHtz as TezosETH,
   TezosUUSD,
   TezosYOU,
+  TezosUDEFI,
   TezosWrapped,
+  TezosWRAP,
   TezosKolibriUSD,
+  TezosCTez,
+  TezosPlenty,
+  TezosQUIPU,
   TezosTransactionResult,
   TezosTransactionCursor,
   BakerInfo,
@@ -422,6 +432,11 @@ export {
   TezosKolibriUSDProtocolConfig,
   TezosStakerProtocolConfig,
   TezosUSDProtocolConfig,
+  TezosCTezProtocolConfig,
+  TezosPlentyProtocolConfig,
+  TezosUDEFIProtocolConfig,
+  TezosWRAPProtocolConfig,
+  TezosQUIPUProtocolConfig,
   TezosFAProtocolOptions,
   TezosFA2ProtocolOptions,
   TezosNetwork,

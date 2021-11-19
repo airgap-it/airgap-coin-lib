@@ -1,11 +1,16 @@
 import { invalidArgumentTypeError } from '../../../../../utils/error'
+import { bytesToHex, hexToBytes } from '../../../../../utils/hex'
 import { MichelineDataNode, MichelinePrimitive } from '../../micheline/MichelineNode'
 import { isMichelinePrimitive } from '../../utils'
 import { MichelsonType } from '../MichelsonType'
+import { MichelsonTypeUtils } from '../MichelsonTypeUtils'
 
 export class MichelsonBytes extends MichelsonType {
-  constructor(public readonly value: Buffer | string, name?: string) {
+  public readonly value: Buffer
+
+  constructor(value: Buffer | string, name?: string) {
     super(name)
+    this.value = hexToBytes(value)
   }
 
   public static from(value: unknown, name?: string): MichelsonBytes {
@@ -28,15 +33,22 @@ export class MichelsonBytes extends MichelsonType {
     return new MichelsonBytes(unknownValue, name)
   }
 
+  public encode(): string {
+    const length = Buffer.alloc(4)
+    length.writeInt32BE(this.value.length)
+
+    return Buffer.concat([MichelsonTypeUtils.literalPrefixes.bytes, length, this.value]).toString('hex')
+  }
+
   public asRawValue(): Record<string, string> | string {
-    const value: string = typeof this.value === 'string' ? this.value : this.value.toString('hex')
+    const value: string = bytesToHex(this.value)
 
     return this.name ? { [this.name]: value } : value
   }
 
   public toMichelineJSON(): MichelineDataNode {
     return {
-      bytes: this.value.toString('hex')
+      bytes: bytesToHex(this.value)
     }
   }
 }

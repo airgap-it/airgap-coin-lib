@@ -971,13 +971,15 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         })
       )
       const protocol = tezosProtocolSpec.fa12
-      getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/script`).returns(
-        Promise.resolve({
-          data: {
-            code: []
-          }
-        })
-      )
+      postStub
+        .withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/script/normalized`)
+        .returns(
+          Promise.resolve({
+            data: {
+              code: []
+            }
+          })
+        )
 
       getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/entrypoints`).returns(
         Promise.resolve({
@@ -1158,13 +1160,15 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       )
 
       const protocol = tezosProtocolSpec.fa2
-      getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/script`).returns(
-        Promise.resolve({
-          data: {
-            code: []
-          }
-        })
-      )
+      postStub
+        .withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/script/normalized`)
+        .returns(
+          Promise.resolve({
+            data: {
+              code: []
+            }
+          })
+        )
 
       getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/entrypoints`).returns(
         Promise.resolve({
@@ -1331,13 +1335,15 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       )
 
       const protocol = tezosProtocolSpec.fa2
-      getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/script`).returns(
-        Promise.resolve({
-          data: {
-            code: []
-          }
-        })
-      )
+      postStub
+        .withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/script/normalized`)
+        .returns(
+          Promise.resolve({
+            data: {
+              code: []
+            }
+          })
+        )
 
       getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/entrypoints`).returns(
         Promise.resolve({
@@ -1533,13 +1539,15 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       )
 
       const protocol = tezosProtocolSpec.fa2
-      getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/script`).returns(
-        Promise.resolve({
-          data: {
-            code: []
-          }
-        })
-      )
+      postStub
+        .withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/script/normalized`)
+        .returns(
+          Promise.resolve({
+            data: {
+              code: []
+            }
+          })
+        )
 
       getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/entrypoints`).returns(
         Promise.resolve({
@@ -1674,205 +1682,6 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       expect(airGapTx.transactionDetails.parameters.value[1].args[0].args[1].args[1].int).to.equal('1')
     })
 
-    it('will prepare an FA2 token metadata transaction', async () => {
-      getStub.withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/`).returns(
-        Promise.resolve({
-          data: {
-            protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
-            chain_id: 'NetXdQprcVkpaWU',
-            hash: 'BKuTvcx5LJQgtiNXbd4py3RFRE4x7EYjTFwJjVjj4XP7h2vSxs6',
-            header: {
-              level: 940455,
-              proto: 6,
-              predecessor: 'BLurthGbZXstELdA3hXtGAA5kXxgtxmfUpzCq7bzpPVB92u9g1z',
-              timestamp: '2020-05-06T10:41:32Z',
-              validation_pass: 4,
-              operations_hash: 'LLoajfGAHirmjbJWjX81gNiZPqyv8pqEyUx7FAygiYBXLQ18H2kX8',
-              fitness: ['01', '00000000000459a7'],
-              context: 'CoVNfjwSR78ChDuvVpRW6Lvjq6nwC6UsyrZzhDgrU2ZMiPYXNjYy',
-              priority: 0,
-              proof_of_work_nonce: '0639894462090000',
-              signature: 'sigjnLFcgqv8QC1QwNhPgg4WomUGtL4nQ68u3GavKXLLWyFcf8g2ceaT6FeuRRVGcdDY7qj7MBo2iUo83L1rtroQKMhqZbw2'
-            },
-            metadata: {
-              protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
-              next_protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
-              test_chain_status: { status: 'not_running' },
-              max_operations_ttl: 60,
-              max_operation_data_length: 16384,
-              max_block_header_length: 238,
-              max_operation_list_length: [
-                {
-                  max_size: 32768,
-                  max_op: 32
-                },
-                { max_size: 32768 },
-                {
-                  max_size: 135168,
-                  max_op: 132
-                },
-                { max_size: 524288 }
-              ],
-              baker: 'tz1Kt4P8BCaP93AEV4eA7gmpRryWt5hznjCP',
-              level: {
-                level: 940455,
-                level_position: 940454,
-                cycle: 229,
-                cycle_position: 2470,
-                voting_period: 28,
-                voting_period_position: 22950,
-                expected_commitment: false
-              },
-              voting_period_kind: 'proposal',
-              nonce_hash: null,
-              consumed_gas: '0',
-              deactivated: [],
-              balance_updates: []
-            },
-            operations: [[], [], [], []]
-          }
-        })
-      )
-
-      const protocol = tezosProtocolSpec.fa2
-      getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/script`).returns(
-        Promise.resolve({
-          data: {
-            code: []
-          }
-        })
-      )
-
-      getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/entrypoints`).returns(
-        Promise.resolve({
-          data: {
-            entrypoints: {
-              token_metadata: {
-                prim: 'pair',
-                args: [
-                  {
-                    prim: 'list',
-                    args: [
-                      {
-                        prim: 'nat'
-                      }
-                    ],
-                    annots: ['%token_ids']
-                  },
-                  {
-                    prim: 'lambda',
-                    args: [
-                      {
-                        prim: 'list',
-                        args: [
-                          {
-                            prim: 'pair',
-                            args: [
-                              {
-                                prim: 'nat',
-                                annots: ['%token_id']
-                              },
-                              {
-                                prim: 'pair',
-                                args: [
-                                  {
-                                    prim: 'string',
-                                    annots: ['%symbol']
-                                  },
-                                  {
-                                    prim: 'pair',
-                                    args: [
-                                      {
-                                        prim: 'string',
-                                        annots: ['%name']
-                                      },
-                                      {
-                                        prim: 'pair',
-                                        args: [
-                                          {
-                                            prim: 'nat',
-                                            annots: ['%decimals']
-                                          },
-                                          {
-                                            prim: 'map',
-                                            args: [
-                                              {
-                                                prim: 'string'
-                                              },
-                                              {
-                                                prim: 'string'
-                                              }
-                                            ],
-                                            annots: ['%extras']
-                                          }
-                                        ]
-                                      }
-                                    ]
-                                  }
-                                ]
-                              }
-                            ]
-                          }
-                        ]
-                      },
-                      {
-                        prim: 'unit'
-                      }
-                    ],
-                    annots: ['%handler']
-                  }
-                ]
-              }
-            }
-          }
-        })
-      )
-
-      const metadata: RunOperationMetadata = {
-        balance_updates: [],
-        operation_result: {
-          status: 'applied',
-          balance_updates: [],
-          consumed_gas: '350000'
-        }
-      }
-
-      postStub.withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`).returns(
-        Promise.resolve({
-          data: {
-            contents: [
-              {
-                kind: 'transaction',
-                amount: '0',
-                fee: '35308',
-                storage_limit: '60000',
-                destination: protocol.contractAddress,
-                metadata
-              }
-            ]
-          }
-        })
-      )
-
-      const transaction = await protocol.tokenMetadata([0, 1, 2], 'handler', '500000', tezosProtocolSpec.wallet.publicKey)
-
-      const result = await prepareTxHelper(transaction, protocol)
-      const airGapTx = result.airGapTxs[0]
-
-      expect(airGapTx.transactionDetails.amount).to.equal('0')
-      expect(airGapTx.transactionDetails.fee).to.equal('500000')
-      expect(airGapTx.transactionDetails.gas_limit).to.equal('350000')
-      expect(airGapTx.transactionDetails.storage_limit).to.equal('0')
-      expect(airGapTx.transactionDetails.source).to.equal('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
-      expect(airGapTx.transactionDetails.destination).to.equal(protocol.contractAddress)
-      expect(airGapTx.transactionDetails.parameters).to.not.be.undefined
-      expect(airGapTx.transactionDetails.parameters.entrypoint).to.equal('token_metadata')
-      expect(airGapTx.transactionDetails.parameters.value.args[0][0].int).to.equal('0')
-      expect(airGapTx.transactionDetails.parameters.value.args[0][1].int).to.equal('1')
-      expect(airGapTx.transactionDetails.parameters.value.args[0][2].int).to.equal('2')
-      expect(airGapTx.transactionDetails.parameters.value.args[1].string).to.equal('handler')
-    })
-
     it('will check FA2 balance', async () => {
       getStub.withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/`).returns(
         Promise.resolve({
@@ -1934,13 +1743,15 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       )
 
       const protocol = tezosProtocolSpec.fa2
-      getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/script`).returns(
-        Promise.resolve({
-          data: {
-            code: []
-          }
-        })
-      )
+      postStub
+        .withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/script/normalized`)
+        .returns(
+          Promise.resolve({
+            data: {
+              code: []
+            }
+          })
+        )
 
       getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/entrypoints`).returns(
         Promise.resolve({
@@ -2113,149 +1924,19 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       expect(balanceResults[1].amount).to.equal('110')
     })
 
-    it('will gets FA2 token metadata address', async () => {
-      getStub.withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/`).returns(
-        Promise.resolve({
-          data: {
-            protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
-            chain_id: 'NetXdQprcVkpaWU',
-            hash: 'BKuTvcx5LJQgtiNXbd4py3RFRE4x7EYjTFwJjVjj4XP7h2vSxs6',
-            header: {
-              level: 940455,
-              proto: 6,
-              predecessor: 'BLurthGbZXstELdA3hXtGAA5kXxgtxmfUpzCq7bzpPVB92u9g1z',
-              timestamp: '2020-05-06T10:41:32Z',
-              validation_pass: 4,
-              operations_hash: 'LLoajfGAHirmjbJWjX81gNiZPqyv8pqEyUx7FAygiYBXLQ18H2kX8',
-              fitness: ['01', '00000000000459a7'],
-              context: 'CoVNfjwSR78ChDuvVpRW6Lvjq6nwC6UsyrZzhDgrU2ZMiPYXNjYy',
-              priority: 0,
-              proof_of_work_nonce: '0639894462090000',
-              signature: 'sigjnLFcgqv8QC1QwNhPgg4WomUGtL4nQ68u3GavKXLLWyFcf8g2ceaT6FeuRRVGcdDY7qj7MBo2iUo83L1rtroQKMhqZbw2'
-            },
-            metadata: {
-              protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
-              next_protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
-              test_chain_status: { status: 'not_running' },
-              max_operations_ttl: 60,
-              max_operation_data_length: 16384,
-              max_block_header_length: 238,
-              max_operation_list_length: [
-                {
-                  max_size: 32768,
-                  max_op: 32
-                },
-                { max_size: 32768 },
-                {
-                  max_size: 135168,
-                  max_op: 132
-                },
-                { max_size: 524288 }
-              ],
-              baker: 'tz1Kt4P8BCaP93AEV4eA7gmpRryWt5hznjCP',
-              level: {
-                level: 940455,
-                level_position: 940454,
-                cycle: 229,
-                cycle_position: 2470,
-                voting_period: 28,
-                voting_period_position: 22950,
-                expected_commitment: false
-              },
-              voting_period_kind: 'proposal',
-              nonce_hash: null,
-              consumed_gas: '0',
-              deactivated: [],
-              balance_updates: []
-            },
-            operations: [[], [], [], []]
-          }
-        })
-      )
-
-      const protocol = tezosProtocolSpec.fa2
-      getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/script`).returns(
-        Promise.resolve({
-          data: {
-            code: []
-          }
-        })
-      )
-
-      getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/entrypoints`).returns(
-        Promise.resolve({
-          data: {
-            entrypoints: {
-              token_metadata_registry: {
-                prim: 'contract',
-                args: [
-                  {
-                    prim: 'address'
-                  }
-                ]
-              }
-            }
-          }
-        })
-      )
-
-      const metadata: RunOperationMetadata = {
-        balance_updates: [],
-        operation_result: {
-          status: 'applied',
-          balance_updates: [],
-          consumed_gas: '350000'
-        },
-        internal_operation_results: [
-          {
-            parameters: {
-              entrypoint: 'default',
-              value: {
-                string: 'tz1MecudVJnFZN5FSrriu8ULz2d6dDTR7KaM'
-              }
-            }
-          }
-        ]
-      }
-
-      postStub.withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/helpers/scripts/run_operation`).returns(
-        Promise.resolve({
-          data: {
-            contents: [
-              {
-                kind: 'transaction',
-                amount: '0',
-                fee: '35308',
-                storage_limit: '60000',
-                destination: protocol.contractAddress,
-                metadata
-              }
-            ]
-          }
-        })
-      )
-
-      const source = 'tz1Yju7jmmsaUiG9qQLoYv35v5pHgnWoLWbt'
-      getStub.withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${source}/counter`).returns(
-        Promise.resolve({
-          data: 0
-        })
-      )
-
-      const tokenMetadataRegistry = await protocol.tokenMetadataRegistry(source, 'KT1B3vuScLjXeesTAYo19LdnnLgGqyYZtgae')
-      expect(tokenMetadataRegistry).to.equal('tz1MecudVJnFZN5FSrriu8ULz2d6dDTR7KaM')
-    })
-
     it('will throw an error if the number of recipients and amounts do not match', async () => {
       getStub
         .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy/balance`)
         .returns(Promise.resolve({ data: 0 }))
 
-      return prepareSpend(['KT1X6SSqro2zUo1Wa7X5BnDWBvfBxZ6feUnc', 'KT1QLtQ54dKzcfwxMHmEM6PC8tooUg6MxDZ3'], ['12345'], '111').catch(
-        (error: Error) =>
-          expect(error)
-            .to.be.an('error')
-            .with.property('message', new ConditionViolationError(Domain.TEZOS, 'length of recipients and values does not match!').message)
+      return prepareSpend(
+        ['KT1X6SSqro2zUo1Wa7X5BnDWBvfBxZ6feUnc', 'KT1QLtQ54dKzcfwxMHmEM6PC8tooUg6MxDZ3'],
+        ['12345'],
+        '111'
+      ).catch((error: Error) =>
+        expect(error)
+          .to.be.an('error')
+          .with.property('message', new ConditionViolationError(Domain.TEZOS, 'length of recipients and values does not match!').message)
       )
     })
   })

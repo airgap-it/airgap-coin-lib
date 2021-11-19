@@ -26,7 +26,8 @@ import { EthereumUtils } from './utils/utils'
 const EthereumTransaction = require('../../dependencies/src/ethereumjs-tx-1.3.7/index')
 
 export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient, InfoClient extends EthereumInfoClient>
-  implements ICoinProtocol {
+  implements ICoinProtocol
+{
   public symbol: string = 'ETH'
   public name: string = 'Ethereum'
   public marketSymbol: string = 'eth'
@@ -386,7 +387,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
 
       return transaction
     } else {
-      throw new BalanceError(Domain.BITCOIN, 'not enough balance')
+      throw new BalanceError(Domain.ETHEREUM, 'not enough balance')
     }
   }
 

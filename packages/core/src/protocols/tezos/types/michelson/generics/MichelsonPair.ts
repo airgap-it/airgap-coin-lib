@@ -3,11 +3,12 @@ import { InvalidValueError } from '../../../../../errors'
 import { invalidArgumentTypeError } from '../../../../../utils/error'
 import { extractGroups } from '../../../../../utils/string'
 import { isRecord } from '../../../../../utils/type'
-import { MichelineDataNode, MichelineGenericNode, MichelinePrimitiveApplication } from '../../micheline/MichelineNode'
+import { MichelineDataNode, MichelinePrimitiveApplication } from '../../micheline/MichelineNode'
 import { isMichelinePrimitiveApplication } from '../../utils'
 import { MichelsonGrammarData } from '../grammar/MichelsonGrammarData'
 import { MichelsonType } from '../MichelsonType'
 import { Domain } from '../../../../../errors/coinlib-error'
+import { MichelineNodeUtils } from '../../micheline/MichelineNodeUtils'
 
 const michelsonRegex = /^Pair(?<values>(?:\s.+){2,})$/
 
@@ -33,7 +34,7 @@ export class MichelsonPair extends MichelsonType {
   public static fromMichelson(michelson: string, mappingFunctions: unknown[], name?: string): MichelsonPair {
     const match: RegExpMatchArray | null = michelson.match(michelsonRegex)
     if (match === null) {
-      throw new Error('MichelsonPair: invalid Michelson value')
+      throw new InvalidValueError(Domain.TEZOS, 'MichelsonPair: invalid Michelson value.')
     }
 
     const values: string[] = extractGroups(match?.groups?.values?.trim() ?? '', {
@@ -58,23 +59,12 @@ export class MichelsonPair extends MichelsonType {
       throw invalidArgumentTypeError('MichelsonPair', 'args: <tuple>', 'args: undefined | <array>')
     }
 
-    const args = this.normalizePairArgs(micheline.args)
-
-    return MichelsonPair.fromUnknown(args, mappingFunctions, name)
-  }
-
-  private static normalizePairArgs(args: MichelineGenericNode<MichelsonGrammarData>[]): MichelineGenericNode<MichelsonGrammarData>[] {
-    if (args.length > 2) {
-      return [
-        args[0],
-        {
-          prim: 'Pair',
-          args: this.normalizePairArgs(args.slice(1))
-        }
-      ]
+    const normalizedMicheline = MichelineNodeUtils.normalize(micheline)
+    if (!isMichelinePrimitiveApplication(normalizedMicheline)) {
+      throw new InvalidValueError(Domain.TEZOS, 'MichelsonPair: invalid value after normalization')
     }
 
-    return args
+    return MichelsonPair.fromUnknown(normalizedMicheline.args, mappingFunctions, name)
   }
 
   public static fromUnknown(unknownValue: MichelsonType | unknown, mappingFunctions: unknown[], name?: string): MichelsonPair {
