@@ -58,8 +58,10 @@ export class TezosShieldedTezProtocolStub implements ProtocolHTTPStub {
       )
       .returns(Promise.resolve({ data: { key: 'test-key' } }))
 
-    getStub
-      .withArgs(`${protocol.options.network.rpcUrl}/chains/main/blocks/head/context/contracts/${protocol.contract.address}/script`)
+    postStub
+      .withArgs(
+        `${protocol.options.network.rpcUrl}/chains/main/blocks/head/context/contracts/${protocol.contract.address}/script/normalized`
+      )
       .returns(
         Promise.resolve<Record<'data', Record<'code', TezosContractCode[]>>>({
           data: {
