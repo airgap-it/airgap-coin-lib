@@ -971,13 +971,15 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         })
       )
       const protocol = tezosProtocolSpec.fa12
-      getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/script`).returns(
-        Promise.resolve({
-          data: {
-            code: []
-          }
-        })
-      )
+      postStub
+        .withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/script/normalized`)
+        .returns(
+          Promise.resolve({
+            data: {
+              code: []
+            }
+          })
+        )
 
       getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/entrypoints`).returns(
         Promise.resolve({
@@ -1158,13 +1160,15 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       )
 
       const protocol = tezosProtocolSpec.fa2
-      getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/script`).returns(
-        Promise.resolve({
-          data: {
-            code: []
-          }
-        })
-      )
+      postStub
+        .withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/script/normalized`)
+        .returns(
+          Promise.resolve({
+            data: {
+              code: []
+            }
+          })
+        )
 
       getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/entrypoints`).returns(
         Promise.resolve({
@@ -1331,13 +1335,15 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       )
 
       const protocol = tezosProtocolSpec.fa2
-      getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/script`).returns(
-        Promise.resolve({
-          data: {
-            code: []
-          }
-        })
-      )
+      postStub
+        .withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/script/normalized`)
+        .returns(
+          Promise.resolve({
+            data: {
+              code: []
+            }
+          })
+        )
 
       getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/entrypoints`).returns(
         Promise.resolve({
@@ -1533,13 +1539,15 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       )
 
       const protocol = tezosProtocolSpec.fa2
-      getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/script`).returns(
-        Promise.resolve({
-          data: {
-            code: []
-          }
-        })
-      )
+      postStub
+        .withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/script/normalized`)
+        .returns(
+          Promise.resolve({
+            data: {
+              code: []
+            }
+          })
+        )
 
       getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/entrypoints`).returns(
         Promise.resolve({
@@ -1735,13 +1743,15 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
       )
 
       const protocol = tezosProtocolSpec.fa2
-      getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/script`).returns(
-        Promise.resolve({
-          data: {
-            code: []
-          }
-        })
-      )
+      postStub
+        .withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/script/normalized`)
+        .returns(
+          Promise.resolve({
+            data: {
+              code: []
+            }
+          })
+        )
 
       getStub.withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${protocol.contractAddress}/entrypoints`).returns(
         Promise.resolve({
@@ -1919,11 +1929,14 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy/balance`)
         .returns(Promise.resolve({ data: 0 }))
 
-      return prepareSpend(['KT1X6SSqro2zUo1Wa7X5BnDWBvfBxZ6feUnc', 'KT1QLtQ54dKzcfwxMHmEM6PC8tooUg6MxDZ3'], ['12345'], '111').catch(
-        (error: Error) =>
-          expect(error)
-            .to.be.an('error')
-            .with.property('message', new ConditionViolationError(Domain.TEZOS, 'length of recipients and values does not match!').message)
+      return prepareSpend(
+        ['KT1X6SSqro2zUo1Wa7X5BnDWBvfBxZ6feUnc', 'KT1QLtQ54dKzcfwxMHmEM6PC8tooUg6MxDZ3'],
+        ['12345'],
+        '111'
+      ).catch((error: Error) =>
+        expect(error)
+          .to.be.an('error')
+          .with.property('message', new ConditionViolationError(Domain.TEZOS, 'length of recipients and values does not match!').message)
       )
     })
   })

@@ -13,6 +13,7 @@ import { BigMapRequest } from '../types/contract/BigMapRequest'
 import { BigMapResponse } from '../types/contract/BigMapResult'
 import { TezosContractMetadata } from '../types/contract/TezosContractMetadata'
 import { MichelineNode, MichelineTypeNode } from '../types/micheline/MichelineNode'
+import { MichelineNodeUtils } from '../types/micheline/MichelineNodeUtils'
 import { MichelsonOr } from '../types/michelson/generics/MichelsonOr'
 import { MichelsonType } from '../types/michelson/MichelsonType'
 import {
@@ -147,7 +148,7 @@ export class TezosContract {
       return undefined
     }
 
-    const storageContent = await this.contractRequest('/storage')
+    const storageContent = await this.contractRequest('/storage/normalized', { unparsing_mode: 'Optimized_legacy' })
     return this.storage.type.createValue(storageContent)
   }
 
@@ -339,7 +340,9 @@ export class TezosContract {
     }
 
     if (this.codePromise === undefined) {
-      const scriptPromise: Promise<Record<'code', TezosContractCode[]>> = this.contractRequest('/script')
+      const scriptPromise: Promise<Record<'code', TezosContractCode[]>> = this.contractRequest('/script/normalized', {
+        unparsing_mode: 'Optimized_legacy'
+      })
       const entrypointsPromise: Promise<Record<'entrypoints', Record<string, MichelineTypeNode>>> = this.contractRequest('/entrypoints')
 
       this.codePromise = Promise.all([scriptPromise, entrypointsPromise])
@@ -347,7 +350,10 @@ export class TezosContract {
           if (entrypointsResponse.entrypoints[TezosContract.DEFAULT_ENTRYPOINT] === undefined) {
             const parameter = scriptResponse.code.find((primitiveApplication) => primitiveApplication.prim === 'parameter')
             if (parameter) {
-              entrypointsResponse.entrypoints[TezosContract.DEFAULT_ENTRYPOINT] = parameter.args ? parameter.args[0] : []
+              const normalizedParameter = parameter ? this.normalizeContractCode(parameter) : undefined
+              entrypointsResponse.entrypoints[TezosContract.DEFAULT_ENTRYPOINT] = normalizedParameter?.args
+                ? normalizedParameter.args[0]
+                : []
             }
           }
 
@@ -360,7 +366,8 @@ export class TezosContract {
 
           const storage = scriptResponse.code.find((primitiveApplication) => primitiveApplication.prim === 'storage')
           if (storage) {
-            this.storage = TezosContractStorage.fromJSON(storage.args[0])
+            const normalizedStorage = this.normalizeContractCode(storage)
+            this.storage = TezosContractStorage.fromJSON(normalizedStorage.args[0])
           }
         })
         .finally(() => {
@@ -369,6 +376,13 @@ export class TezosContract {
     }
 
     return this.codePromise
+  }
+
+  private normalizeContractCode(code: TezosContractCode): TezosContractCode {
+    return {
+      prim: code.prim,
+      args: code.args?.map((arg) => MichelineNodeUtils.normalize(arg))
+    }
   }
 
   private async getMetadataRemoteData(bigMapID: number): Promise<RemoteData<TezosContractMetadata> | undefined> {
@@ -388,10 +402,16 @@ export class TezosContract {
     return response.data
   }
 
-  private async contractRequest<T>(endpoint: string): Promise<T> {
-    const response: AxiosResponse<T> = await axios.get(
-      `${this.nodeRPCURL}/chains/main/blocks/head/context/contracts/${this.address}/${trimStart(endpoint, '/')}`
-    )
+  private async contractRequest<T>(endpoint: string, body?: any): Promise<T> {
+    const url = `${this.nodeRPCURL}/chains/main/blocks/head/context/contracts/${this.address}/${trimStart(endpoint, '/')}`
+    const response: AxiosResponse<T> =
+      body === undefined
+        ? await axios.get(url)
+        : await axios.post(url, body, {
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          })
 
     return response.data
   }
@@ -407,6 +427,7 @@ export class TezosContract {
       .catch((error) => {
         throw new NetworkError(Domain.TEZOS, error as AxiosError)
       })
+
     return response.data
   }
 }
