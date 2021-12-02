@@ -6,7 +6,6 @@ import * as bs58check from '../../dependencies/src/bs58check-2.1.2/index'
 import { OperationFailedError, UnsupportedError } from '../../errors'
 import { Domain } from '../../errors/coinlib-error'
 import { stripHexPrefix } from '../../utils/hex'
-import { TezosNetwork } from './TezosProtocol'
 
 import { MichelsonList } from './types/michelson/generics/MichelsonList'
 import { MichelsonPair } from './types/michelson/generics/MichelsonPair'
@@ -142,11 +141,6 @@ export class TezosUtils {
     const hash: Uint8Array = sodium.crypto_generichash(32, packed)
 
     return bs58check.encode(Buffer.concat([TezosUtils.tezosPrefixes.expr, Buffer.from(hash)]))
-  }
-
-  public static resolveNetwork(network: string): TezosNetwork | undefined {
-    const knownNetworks: string[] = Object.values(TezosNetwork)
-    return knownNetworks.includes(network) ? (network as TezosNetwork) : undefined
   }
 
   private static decodeSignedInt(hex: string): BigNumber {

@@ -7,7 +7,8 @@ import { ProtocolSymbols } from '../utils/ProtocolSymbols'
 export enum AirGapWalletStatus {
   ACTIVE = 'active',
   HIDDEN = 'hidden',
-  DELETED = 'deleted'
+  DELETED = 'deleted',
+  TRANSIENT = 'transient'
 }
 
 export interface SerializedAirGapWallet {

@@ -8,6 +8,7 @@ import BigNumber from '../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
 import {
   addSupportedProtocol,
   AeternityProtocol,
+  AirGapCoinWallet,
   AirGapMarketWallet,
   BitcoinProtocol,
   CosmosProtocol,
@@ -41,7 +42,7 @@ class AirGapPriceService implements AirGapWalletPriceService {
   }
 }
 
-describe(`AirGapMarketWallet`, () => {
+describe(`AirGapCoinWallet`, () => {
   const sampleResponse: Readonly<any> = Object.freeze({
     data: {}
   })
@@ -49,7 +50,7 @@ describe(`AirGapMarketWallet`, () => {
   const txList = { transactions: [] }
 
   const getWalletWithAddresses = () => {
-    const wallet = new AirGapMarketWallet(
+    const wallet = new AirGapCoinWallet(
       protocol,
       '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       false,
@@ -63,7 +64,7 @@ describe(`AirGapMarketWallet`, () => {
   }
 
   const getWalletWithPublicKey = () => {
-    return new AirGapMarketWallet(
+    return new AirGapCoinWallet(
       protocol,
       '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       false,
@@ -129,7 +130,7 @@ describe(`AirGapMarketWallet`, () => {
   })
 
   it('should fetch transactions of BTC (extended public key)', async () => {
-    const wallet = new AirGapMarketWallet(
+    const wallet = new AirGapCoinWallet(
       xPubProtocol,
       'xpub6CzH93BB4aueZX2bP88tvsvE8Cz2bHeGVAZSD5fmnk8roYBZCGbwwSA7ChiRr65jncuPH8qBQA9nBwi2Qtz1Uqt8wuHvof9SAcPpFxpe1GV',
       true,
@@ -161,7 +162,7 @@ describe(`AirGapMarketWallet`, () => {
   // })
 
   it('should return undefined if no address has been derived', async () => {
-    const wallet = new AirGapMarketWallet(
+    const wallet = new AirGapCoinWallet(
       protocol,
       '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       false,
@@ -176,7 +177,7 @@ describe(`AirGapMarketWallet`, () => {
   })
 
   it('should derive address from public key', async () => {
-    const wallet = new AirGapMarketWallet(
+    const wallet = new AirGapCoinWallet(
       protocol,
       '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       false,
@@ -191,7 +192,7 @@ describe(`AirGapMarketWallet`, () => {
   })
 
   it('should derive address from public key and save it in wallet', async () => {
-    const wallet = new AirGapMarketWallet(
+    const wallet = new AirGapCoinWallet(
       protocol,
       '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       false,
@@ -208,7 +209,7 @@ describe(`AirGapMarketWallet`, () => {
   })
 
   it('should derive address from extended public key and save it in wallet', async () => {
-    const wallet = new AirGapMarketWallet(
+    const wallet = new AirGapCoinWallet(
       xPubProtocol,
       'xpub6CzH93BB4aueZX2bP88tvsvE8Cz2bHeGVAZSD5fmnk8roYBZCGbwwSA7ChiRr65jncuPH8qBQA9nBwi2Qtz1Uqt8wuHvof9SAcPpFxpe1GV',
       true,
@@ -225,7 +226,7 @@ describe(`AirGapMarketWallet`, () => {
   })
 
   it('should derive address from extended public key with offset and save it in wallet', async () => {
-    const wallet = new AirGapMarketWallet(
+    const wallet = new AirGapCoinWallet(
       xPubProtocol,
       'xpub6CzH93BB4aueZX2bP88tvsvE8Cz2bHeGVAZSD5fmnk8roYBZCGbwwSA7ChiRr65jncuPH8qBQA9nBwi2Qtz1Uqt8wuHvof9SAcPpFxpe1GV',
       true,
@@ -242,7 +243,7 @@ describe(`AirGapMarketWallet`, () => {
   })
 
   it('serialize to JSON without circular dependencies', async () => {
-    const wallet = new AirGapMarketWallet(
+    const wallet = new AirGapCoinWallet(
       protocol,
       '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       false,

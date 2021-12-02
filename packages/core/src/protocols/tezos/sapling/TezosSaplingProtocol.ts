@@ -98,14 +98,7 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
     this.cryptoClient = new TezosSaplingCryptoClient(this.tezosProtocol.cryptoClient)
     this.nodeClient = new TezosSaplingNodeClient(this.options.network.rpcUrl, this.options.config.contractAddress)
 
-    this.contract = new TezosContract(
-      this.options.config.contractAddress,
-      this.options.network.extras.network,
-      this.options.network.rpcUrl,
-      this.options.network.extras.conseilUrl,
-      this.options.network.extras.conseilNetwork,
-      this.options.network.extras.conseilApiKey
-    )
+    this.contract = new TezosContract(this.options.config.contractAddress, this.options.network)
 
     this.state = new TezosSaplingState(this.options.config.merkleTreeHeight)
     this.encoder = new TezosSaplingEncoder()

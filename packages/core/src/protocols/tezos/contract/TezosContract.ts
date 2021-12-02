@@ -4,9 +4,8 @@ import { InvalidValueError, NetworkError, NotFoundError } from '../../../errors'
 import { Domain } from '../../../errors/coinlib-error'
 import { recursivelyFind } from '../../../utils/object'
 import { RemoteData } from '../../../utils/remote-data/RemoteData'
-import { RemoteDataFactory } from '../../../utils/remote-data/RemoteDataFactory'
 import { trimStart } from '../../../utils/string'
-import { TezosNetwork } from '../TezosProtocol'
+import { TezosProtocolNetwork, TezosProtocolNetworkResolver } from '../TezosProtocolOptions'
 import { TezosUtils } from '../TezosUtils'
 import { BigMapPredicate } from '../types/contract/BigMapPredicate'
 import { BigMapRequest } from '../types/contract/BigMapRequest'
@@ -25,8 +24,8 @@ import { MichelsonBytes } from '../types/michelson/primitives/MichelsonBytes'
 import { TezosTransactionParameters } from '../types/operations/Transaction'
 import { TezosContractCode } from '../types/TezosContractCode'
 import { isMichelineNode } from '../types/utils'
-import { TezosContractRemoteDataFactory } from './remote-data/TezosContractRemoteDataFactory'
 
+import { TezosContractRemoteDataFactory } from './remote-data/TezosContractRemoteDataFactory'
 import { TezosContractCall } from './TezosContractCall'
 import { TezosContractEntrypoint } from './TezosContractEntrypoint'
 import { TezosContractStorage } from './TezosContractStorage'
@@ -41,35 +40,17 @@ export class TezosContract {
   public bigMapIDs?: number[]
   private bigMapIDsPromise?: Promise<void>
 
-  private readonly remoteDataFactory: RemoteDataFactory = new TezosContractRemoteDataFactory()
+  private readonly remoteDataFactory: TezosContractRemoteDataFactory = new TezosContractRemoteDataFactory()
 
-  constructor(
-    public readonly address: string,
-    public readonly network: TezosNetwork,
-    private readonly nodeRPCURL: string,
-    private readonly conseilAPIURL: string,
-    private readonly conseilNetwork: string,
-    private readonly conseilAPIKey: string
-  ) {}
+  constructor(public readonly address: string, public readonly network: TezosProtocolNetwork) {}
 
   public copy(
     values: {
       address?: string
-      network?: TezosNetwork
-      nodeRPCURL?: string
-      conseilAPIURL?: string
-      conseilNetwork?: string
-      conseilAPIKey?: string
+      network?: TezosProtocolNetwork
     } = {}
   ): TezosContract {
-    return new TezosContract(
-      values.address ?? this.address,
-      values.network ?? this.network,
-      values.nodeRPCURL ?? this.nodeRPCURL,
-      values.conseilAPIURL ?? this.conseilAPIURL,
-      values.conseilNetwork ?? this.conseilNetwork,
-      values.conseilAPIKey ?? this.conseilAPIKey
-    )
+    return new TezosContract(values.address ?? this.address, values.network ?? this.network)
   }
 
   public async findBigMap(name: string): Promise<number | undefined> {
@@ -152,13 +133,13 @@ export class TezosContract {
     return this.storage.type.createValue(storageContent)
   }
 
-  public async metadata(): Promise<TezosContractMetadata | undefined> {
+  public async metadata(networkResolver?: TezosProtocolNetworkResolver): Promise<TezosContractMetadata | undefined> {
     const bigMapID = await this.findBigMap('metadata')
     if (bigMapID === undefined) {
       return undefined
     }
 
-    const remoteData = await this.getMetadataRemoteData(bigMapID)
+    const remoteData = await this.getMetadataRemoteData(bigMapID, networkResolver)
     return remoteData?.get()
   }
 
@@ -385,17 +366,20 @@ export class TezosContract {
     }
   }
 
-  private async getMetadataRemoteData(bigMapID: number): Promise<RemoteData<TezosContractMetadata> | undefined> {
+  private async getMetadataRemoteData(
+    bigMapID: number,
+    networkResolver?: TezosProtocolNetworkResolver
+  ): Promise<RemoteData<TezosContractMetadata> | undefined> {
     const uriEncoded = await this.bigMapValue(bigMapID, '', { prim: 'string' }, { prim: 'bytes' })
     const uri = uriEncoded ? (uriEncoded as MichelsonBytes).value.toString() : undefined
 
-    return uri ? this.remoteDataFactory.create(uri.trim(), { contract: this }) : undefined
+    return uri ? this.remoteDataFactory.create(uri.trim(), { contract: this, networkResolver }) : undefined
   }
 
   private async bigMapRequest(bigMapID: number, expr?: string): Promise<unknown | undefined> {
     const url = expr
-      ? `${this.nodeRPCURL}/chains/main/blocks/head/context/big_maps/${bigMapID}/${expr}`
-      : `${this.nodeRPCURL}/chains/main/blocks/head/context/big_maps/${bigMapID}`
+      ? `${this.network.rpcUrl}/chains/main/blocks/head/context/big_maps/${bigMapID}/${expr}`
+      : `${this.network.rpcUrl}/chains/main/blocks/head/context/big_maps/${bigMapID}`
 
     const response: AxiosResponse<string> = await axios.get(url)
 
@@ -403,7 +387,7 @@ export class TezosContract {
   }
 
   private async contractRequest<T>(endpoint: string, body?: any): Promise<T> {
-    const url = `${this.nodeRPCURL}/chains/main/blocks/head/context/contracts/${this.address}/${trimStart(endpoint, '/')}`
+    const url = `${this.network.rpcUrl}/chains/main/blocks/head/context/contracts/${this.address}/${trimStart(endpoint, '/')}`
     const response: AxiosResponse<T> =
       body === undefined
         ? await axios.get(url)
@@ -418,10 +402,10 @@ export class TezosContract {
 
   private async conseilRequest<T>(endpoint: string, body: any): Promise<T> {
     const response: AxiosResponse<T> = await axios
-      .post(`${this.conseilAPIURL}/v2/data/tezos/${this.conseilNetwork}/${trimStart(endpoint, '/')}`, body, {
+      .post(`${this.network.extras.conseilUrl}/v2/data/tezos/${this.network.extras.conseilNetwork}/${trimStart(endpoint, '/')}`, body, {
         headers: {
           'Content-Type': 'application/json',
-          apiKey: this.conseilAPIKey
+          apiKey: this.network.extras.conseilApiKey
         }
       })
       .catch((error) => {

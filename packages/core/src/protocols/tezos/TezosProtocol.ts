@@ -520,7 +520,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     )
   }
 
-  public async getBalanceOfAddresses(addresses: string[]): Promise<string> {
+  public async getBalanceOfAddresses(addresses: string[], _data?: any): Promise<string> {
     let balance: BigNumber = new BigNumber(0)
 
     for (const address of addresses) {
@@ -540,18 +540,18 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     return balance.toString(10)
   }
 
-  public async getBalanceOfPublicKey(publicKey: string): Promise<string> {
+  public async getBalanceOfPublicKey(publicKey: string, data?: any): Promise<string> {
     const address: TezosAddress = await this.getAddressFromPublicKey(publicKey)
 
-    return this.getBalanceOfAddresses([address.getValue()])
+    return this.getBalanceOfAddresses([address.getValue()], data)
   }
 
   public async getBalanceOfPublicKeyForSubProtocols(publicKey: string, subProtocols: ICoinSubProtocol[]): Promise<string[]> {
     return Promise.all(subProtocols.map((subProtocol) => subProtocol.getBalanceOfPublicKey(publicKey).catch(() => '0')))
   }
 
-  public async getAvailableBalanceOfAddresses(addresses: string[]): Promise<string> {
-    return this.getBalanceOfAddresses(addresses)
+  public async getAvailableBalanceOfAddresses(addresses: string[], data?: any): Promise<string> {
+    return this.getBalanceOfAddresses(addresses, data)
   }
 
   public async estimateMaxTransactionValueFromPublicKey(publicKey: string, recipients: string[], fee?: string): Promise<string> {
