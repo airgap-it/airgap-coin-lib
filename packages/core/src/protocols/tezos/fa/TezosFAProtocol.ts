@@ -1,14 +1,26 @@
 import axios, { AxiosError, AxiosResponse } from '../../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { InvalidValueError, NetworkError, OperationFailedError } from '../../../errors'
+import { Domain } from '../../../errors/coinlib-error'
 import { IAirGapTransaction } from '../../../interfaces/IAirGapTransaction'
 import { RawTezosTransaction } from '../../../serializer/types'
+import { hexToBytes } from '../../../utils/hex'
 import { ProtocolSymbols } from '../../../utils/ProtocolSymbols'
+import { RemoteData } from '../../../utils/remote-data/RemoteData'
+import { RemoteDataFactory } from '../../../utils/remote-data/RemoteDataFactory'
 import { FeeDefaults } from '../../ICoinProtocol'
 import { ICoinSubProtocol, SubProtocolType } from '../../ICoinSubProtocol'
+import { TezosContractRemoteDataFactory } from '../contract/remote-data/TezosContractRemoteDataFactory'
 import { TezosContract } from '../contract/TezosContract'
 import { TezosContractCall } from '../contract/TezosContractCall'
+import { TezosAddress } from '../TezosAddress'
 import { TezosProtocol } from '../TezosProtocol'
+import { TezosProtocolNetworkResolver } from '../TezosProtocolOptions'
+import { TezosUtils } from '../TezosUtils'
 import { BigMapResponse } from '../types/contract/BigMapResult'
+import { ConseilPredicate } from '../types/contract/ConseilPredicate'
+import { TezosContractMetadata } from '../types/contract/TezosContractMetadata'
+import { TezosFATokenMetadata } from '../types/fa/TezosFATokenMetadata'
 import { MichelineDataNode } from '../types/micheline/MichelineNode'
 import { TezosOperation } from '../types/operations/TezosOperation'
 import { TezosTransactionOperation, TezosTransactionParameters, TezosWrappedTransactionOperation } from '../types/operations/Transaction'
@@ -20,17 +32,6 @@ import { isMichelineNode } from '../types/utils'
 
 import { TezosNetwork } from './../TezosProtocol'
 import { TezosFAProtocolOptions } from './TezosFAProtocolOptions'
-import { TezosAddress } from '../TezosAddress'
-import { InvalidValueError, NetworkError, OperationFailedError } from '../../../errors'
-import { Domain } from '../../../errors/coinlib-error'
-import { ConseilPredicate } from '../types/contract/ConseilPredicate'
-import { TezosUtils } from '../TezosUtils'
-import { TezosContractMetadata } from '../types/contract/TezosContractMetadata'
-import { TezosFATokenMetadata } from '../types/fa/TezosFATokenMetadata'
-import { hexToBytes } from '../../../utils/hex'
-import { RemoteDataFactory } from '../../../utils/remote-data/RemoteDataFactory'
-import { TezosContractRemoteDataFactory } from '../contract/remote-data/TezosContractRemoteDataFactory'
-import { RemoteData } from '../../../utils/remote-data/RemoteData'
 
 export interface TezosFAProtocolConfiguration {
   symbol: string
@@ -79,14 +80,7 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
 
     this.tokenMetadataBigMapID = options.config.tokenMetadataBigMapID
 
-    this.contract = new TezosContract(
-      this.options.config.contractAddress,
-      this.options.network.extras.network,
-      this.options.network.rpcUrl,
-      this.options.network.extras.conseilUrl,
-      this.options.network.extras.conseilNetwork,
-      this.options.network.extras.conseilApiKey
-    )
+    this.contract = new TezosContract(this.options.config.contractAddress, this.options.network)
   }
 
   public abstract transactionDetailsFromParameters(parameters: TezosTransactionParameters): Partial<IAirGapTransaction>[]
@@ -106,12 +100,17 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
     return result.length > 0 ? result[0].value : null
   }
 
-  public async contractMetadata(): Promise<TezosContractMetadata | undefined> {
-    return this.contract.metadata()
+  public async contractMetadata(networkResolver?: TezosProtocolNetworkResolver): Promise<TezosContractMetadata | undefined> {
+    return this.contract.metadata(networkResolver)
   }
 
-  public async estimateMaxTransactionValueFromPublicKey(publicKey: string, recipients: string[], fee?: string): Promise<string> {
-    return this.getBalanceOfPublicKey(publicKey)
+  public async estimateMaxTransactionValueFromPublicKey(
+    publicKey: string,
+    recipients: string[],
+    fee?: string,
+    data?: any
+  ): Promise<string> {
+    return this.getBalanceOfPublicKey(publicKey, data)
   }
 
   public async getTransactionsFromPublicKey(

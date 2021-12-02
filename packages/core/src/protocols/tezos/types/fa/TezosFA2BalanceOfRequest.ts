@@ -1,4 +1,4 @@
 export interface TezosFA2BalanceOfRequest {
   address: string
-  tokenID: number
+  tokenID: number | string
 }

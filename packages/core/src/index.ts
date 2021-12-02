@@ -79,7 +79,9 @@ import { getProtocolByIdentifier } from './utils/protocolsByIdentifier'
 import { addSubProtocol, getSubProtocolsByIdentifier } from './utils/subProtocols'
 import { getProtocolOptionsByIdentifier } from './utils/protocolOptionsByIdentifier'
 import { addSupportedProtocol, supportedProtocols } from './utils/supportedProtocols'
-import { AirGapMarketWallet, AirGapWalletPriceService, TimeInterval } from './wallet/AirGapMarketWallet'
+import { AirGapCoinWallet, TimeInterval } from './wallet/AirGapCoinWallet'
+import { AirGapNFTWallet } from './wallet/AirGapNFTWallet'
+import { AirGapMarketWallet, AirGapWalletPriceService } from './wallet/AirGapMarketWallet'
 import { AirGapWallet, AirGapWalletStatus, SerializedAirGapWallet } from './wallet/AirGapWallet'
 import { AeternityProtocolOptions, AeternalBlockExplorer, AeternityProtocolNetwork } from './protocols/aeternity/AeternityProtocolOptions'
 import { AeternityCryptoClient } from './protocols/aeternity/AeternityCryptoClient'
@@ -252,7 +254,9 @@ import { TezosQUIPU, TezosQUIPUProtocolConfig } from './protocols/tezos/fa/Tezos
 export {
   AirGapWallet,
   AirGapMarketWallet,
+  AirGapCoinWallet,
   AirGapWalletStatus,
+  AirGapNFTWallet,
   IAirGapWallet,
   IAirGapTransaction,
   ICoinProtocol,
