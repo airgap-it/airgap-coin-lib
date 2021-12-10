@@ -89,27 +89,41 @@ export interface ICoinProtocol {
 
   signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: any): Promise<IAirGapSignedTransaction> // broadcaster proxies this operation
   signWithPrivateKey(privateKey: Buffer, transaction: any): Promise<IAirGapSignedTransaction> // broadcaster proxies this operation
-  getTransactionDetails(transaction: UnsignedTransaction, data?: any): Promise<IAirGapTransaction[]> // out of unsigned transaction
-  getTransactionDetailsFromSigned(transaction: SignedTransaction, data?: any): Promise<IAirGapTransaction[]> // out of signed transaction
+  getTransactionDetails(transaction: UnsignedTransaction, data?: { [key: string]: unknown }): Promise<IAirGapTransaction[]> // out of unsigned transaction
+  getTransactionDetailsFromSigned(transaction: SignedTransaction, data?: { [key: string]: unknown }): Promise<IAirGapTransaction[]> // out of signed transaction
 
-  getBalanceOfAddresses(addresses: string[]): Promise<string>
-  getBalanceOfPublicKey(publicKey: string, addressIndex?: number): Promise<string>
-  getBalanceOfExtendedPublicKey(extendedPublicKey: string, offset: number): Promise<string>
-  getAvailableBalanceOfAddresses(addresses: string[]): Promise<string>
+  getBalanceOfAddresses(addresses: string[], data?: { [key: string]: unknown }): Promise<string>
+  getBalanceOfPublicKey(publicKey: string, data?: { addressIndex?: number; [key: string]: unknown }): Promise<string>
+  getBalanceOfExtendedPublicKey(extendedPublicKey: string, offset: number, data?: { [key: string]: unknown }): Promise<string>
+  getAvailableBalanceOfAddresses(addresses: string[], data?: { [key: string]: unknown }): Promise<string>
   getTransactionStatuses(transactionHash: string[]): Promise<AirGapTransactionStatus[]>
   getBalanceOfPublicKeyForSubProtocols(publicKey: string, subProtocols: ICoinSubProtocol[]): Promise<string[]>
 
-  estimateMaxTransactionValueFromExtendedPublicKey(extendedPublicKey: string, recipients: string[], fee?: string): Promise<string>
+  estimateMaxTransactionValueFromExtendedPublicKey(
+    extendedPublicKey: string,
+    recipients: string[],
+    fee?: string,
+    data?: { [key: string]: unknown }
+  ): Promise<string>
   estimateMaxTransactionValueFromPublicKey(
     publicKey: string,
     recipients: string[],
     fee?: string,
-    addressIndex?: number,
-    excludeExistentialDeposit?: boolean
+    data?: { addressIndex?: number; [key: string]: unknown }
   ): Promise<string>
 
-  estimateFeeDefaultsFromExtendedPublicKey(publicKey: string, recipients: string[], values: string[], data?: any): Promise<FeeDefaults>
-  estimateFeeDefaultsFromPublicKey(publicKey: string, recipients: string[], values: string[], data?: any): Promise<FeeDefaults>
+  estimateFeeDefaultsFromExtendedPublicKey(
+    publicKey: string,
+    recipients: string[],
+    values: string[],
+    data?: { [key: string]: unknown }
+  ): Promise<FeeDefaults>
+  estimateFeeDefaultsFromPublicKey(
+    publicKey: string,
+    recipients: string[],
+    values: string[],
+    data?: { [key: string]: unknown }
+  ): Promise<FeeDefaults>
 
   prepareTransactionFromExtendedPublicKey(
     extendedPublicKey: string,
@@ -117,9 +131,15 @@ export interface ICoinProtocol {
     recipients: string[],
     values: string[],
     fee: string,
-    extras?: any
+    extras?: { [key: string]: unknown }
   ): Promise<any> // only broadcaster
-  prepareTransactionFromPublicKey(publicKey: string, recipients: string[], values: string[], fee: string, extras?: any): Promise<any> // only broadcaster
+  prepareTransactionFromPublicKey(
+    publicKey: string,
+    recipients: string[],
+    values: string[],
+    fee: string,
+    extras?: { [key: string]: unknown }
+  ): Promise<any> // only broadcaster
   broadcastTransaction(rawTransaction: any): Promise<string>
 
   signMessage(message: string, keypair: { publicKey?: string; privateKey: Buffer }): Promise<string> // Returns signature

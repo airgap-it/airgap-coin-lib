@@ -177,11 +177,10 @@ export abstract class SubstrateProtocol<Network extends SubstrateNetwork> extend
     publicKey: string,
     _recipients: string[],
     fee?: string,
-    _addressIndex?: number,
-    excludeExistentialDeposit?: boolean
+    data?: { excludeExistentialDeposit?: boolean }
   ): Promise<string> {
     const results = await Promise.all([
-      this.options.accountController.getTransferableBalance(publicKey, excludeExistentialDeposit),
+      this.options.accountController.getTransferableBalance(publicKey, data?.excludeExistentialDeposit),
       this.getFutureRequiredTransactions(publicKey, 'check')
     ])
 
@@ -234,14 +233,14 @@ export abstract class SubstrateProtocol<Network extends SubstrateNetwork> extend
     recipients: string[],
     values: string[],
     fee: string,
-    data?: any
+    data?: { excludeExistentialDeposit?: boolean }
   ): Promise<RawSubstrateTransaction> {
     if (recipients.length !== values.length) {
       return Promise.reject("Recipients length doesn't match values length.")
     }
 
     const recipientsWithValues: [string, string][] = recipients.map((recipient, index) => [recipient, values[index]])
-    const excludeExistentialDeposit = typeof data === 'boolean' ? data : undefined
+    const excludeExistentialDeposit = data?.excludeExistentialDeposit
     const transferableBalance = await this.options.accountController.getTransferableBalance(publicKey, excludeExistentialDeposit)
     const totalValue = values.map((value) => new BigNumber(value)).reduce((total, next) => total.plus(next), new BigNumber(0))
 

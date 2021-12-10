@@ -76,9 +76,9 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
     publicKey: string,
     recipients: string[],
     fee?: string,
-    addressIndex?: number
+    data?: { addressIndex?: number }
   ): Promise<string> {
-    const address = await this.getAddressFromPublicKey(publicKey, addressIndex)
+    const address = await this.getAddressFromPublicKey(publicKey, data?.addressIndex)
     return this.getBalanceOfAddresses([address.getValue()])
   }
 

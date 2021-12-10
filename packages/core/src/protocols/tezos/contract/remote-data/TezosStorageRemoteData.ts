@@ -1,7 +1,6 @@
 import { RawData, RemoteData } from '../../../../utils/remote-data/RemoteData'
 import { TezosNetwork } from '../../TezosProtocol'
-import { indexerApi, indexerNetwork, nodeUrl } from '../../TezosProtocolOptions'
-import { TezosUtils } from '../../TezosUtils'
+import { TezosProtocolNetworkResolver } from '../../TezosProtocolOptions'
 import { MichelsonBytes } from '../../types/michelson/primitives/MichelsonBytes'
 import { TezosContract } from '../TezosContract'
 
@@ -18,19 +17,21 @@ function parseUri(uri: string): { address?: string; network?: string; path?: str
   }
 }
 
-function findHostContract(contract: TezosContract, address?: string, network?: string): TezosContract | undefined {
-  if ((address && address !== contract.address) || (network && network !== contract.network)) {
-    const tezosNetwork = network ? TezosUtils.resolveNetwork(network) : undefined
-    if (network && !tezosNetwork) {
+function findHostContract(
+  contract: TezosContract,
+  networkResolver?: TezosProtocolNetworkResolver,
+  address?: string,
+  network?: string
+): TezosContract | undefined {
+  if ((address && address !== contract.address) || (network && network !== contract.network.extras.network)) {
+    const protocolNetwork = network && networkResolver ? networkResolver(network) : undefined
+    if (network && !protocolNetwork) {
       return undefined
     }
 
     return contract.copy({
       address,
-      network: tezosNetwork,
-      nodeRPCURL: tezosNetwork ? nodeUrl(tezosNetwork) : undefined,
-      conseilAPIURL: tezosNetwork ? indexerApi(tezosNetwork) : undefined,
-      conseilNetwork: tezosNetwork ? indexerNetwork(tezosNetwork) : undefined
+      network: protocolNetwork
     })
   } else if (address && address !== contract.address) {
     return contract.copy({ address })
@@ -44,7 +45,11 @@ export class TezosStorageRemoteData<T> extends RemoteData<T> {
     super(uri)
   }
 
-  public static create<T>(uri: string, contract: TezosContract): TezosStorageRemoteData<T> | undefined {
+  public static create<T>(
+    uri: string,
+    contract: TezosContract,
+    networkResolver?: TezosProtocolNetworkResolver
+  ): TezosStorageRemoteData<T> | undefined {
     if (!TezosStorageRemoteData.validate(uri)) {
       return undefined
     }
@@ -54,7 +59,8 @@ export class TezosStorageRemoteData<T> extends RemoteData<T> {
       return undefined
     }
 
-    const hostContract = findHostContract(contract, address, network)
+    const hostContract = findHostContract(contract, networkResolver, address, network)
+
     return hostContract ? new TezosStorageRemoteData(uri, hostContract, decodeURIComponent(path)) : undefined
   }
 
@@ -75,6 +81,7 @@ export class TezosStorageRemoteData<T> extends RemoteData<T> {
 
   public async get(): Promise<T | undefined> {
     const data: RawData | undefined = await this.getRaw()
+
     return data ? JSON.parse(data.bytes.toString()) : undefined
   }
 
@@ -85,6 +92,7 @@ export class TezosStorageRemoteData<T> extends RemoteData<T> {
     }
 
     const contentResponse = await this.contract.bigMapValue(bigMapID, this.key, { prim: 'string' }, { prim: 'bytes' })
+
     return contentResponse ? { bytes: (contentResponse as MichelsonBytes)?.value } : undefined
   }
 }

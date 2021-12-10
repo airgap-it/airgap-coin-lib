@@ -417,7 +417,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
     recipients: string[],
     values: string[],
     fee: string,
-    data?: unknown
+    data?: { memo?: string }
   ): Promise<CosmosTransaction> {
     const wrappedValues: BigNumber[] = values.map((value: string) => new BigNumber(value))
     const wrappedFee: BigNumber = new BigNumber(fee)
@@ -442,7 +442,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
       ])
       messages.push(message)
     }
-    const memo: string = data !== undefined && typeof data === 'string' ? data : ''
+    const memo: string = data?.memo ?? ''
     const transaction: CosmosTransaction = new CosmosTransaction(
       messages,
       new CosmosFee([new CosmosCoin('uatom', wrappedFee.toString(10))], this.defaultGas.toString(10)),

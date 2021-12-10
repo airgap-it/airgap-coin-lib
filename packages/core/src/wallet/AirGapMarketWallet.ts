@@ -3,34 +3,16 @@ import { IAirGapTransaction, IAirGapTransactionResult, IProtocolTransactionCurso
 import { FeeDefaults, ICoinProtocol } from '../protocols/ICoinProtocol'
 import { TezosSaplingProtocol } from '../protocols/tezos/sapling/TezosSaplingProtocol'
 import { TezosSaplingTransactionCursor } from '../protocols/tezos/types/sapling/TezosSaplingTransactionCursor'
-import { NetworkType } from '../utils/ProtocolNetwork'
 import { MainProtocolSymbols } from '../utils/ProtocolSymbols'
 
 import { AirGapWallet, AirGapWalletStatus } from './AirGapWallet'
-
-export enum TimeInterval {
-  HOURS = '24h',
-  DAYS = '7d',
-  MONTH = '30d'
-}
 
 export interface AirGapWalletPriceService {
   getCurrentMarketPrice(protocol: ICoinProtocol, baseSymbol: string): Promise<BigNumber>
 }
 
-export class AirGapMarketWallet extends AirGapWallet {
-  public currentBalance: BigNumber | undefined
-  public _currentMarketPrice: BigNumber | undefined
-
+export abstract class AirGapMarketWallet extends AirGapWallet {
   private synchronizePromise?: Promise<void>
-
-  get currentMarketPrice(): BigNumber | undefined {
-    return this._currentMarketPrice
-  }
-
-  set currentMarketPrice(marketPrice: BigNumber | undefined) {
-    this._currentMarketPrice = this.protocol.options.network.type === NetworkType.MAINNET ? marketPrice : new BigNumber(0)
-  }
 
   constructor(
     public protocol: ICoinProtocol,
@@ -45,72 +27,38 @@ export class AirGapMarketWallet extends AirGapWallet {
     super(protocol, publicKey, isExtendedPublicKey, derivationPath, masterFingerprint, status, addressIndex)
   }
 
-  public async synchronize(): Promise<void> {
-    if (this.synchronizePromise === undefined) {
-      this.synchronizePromise = new Promise((resolve, reject) => {
-        Promise.all([this.balanceOf(), this.fetchCurrentMarketPrice()])
-          .then((results) => {
-            this.currentBalance = results[0]
-            this.currentMarketPrice = results[1]
-            this.synchronizePromise = undefined
-            resolve()
-          })
-          .catch((error) => {
-            this.synchronizePromise = undefined
-            reject(error)
-          })
-      })
-    }
+  public abstract getCurrentBalance(...args: any): BigNumber | undefined
+  public abstract setCurrentBalance(balance: BigNumber | undefined, ...args: any): void
 
-    return this.synchronizePromise
-  }
+  public abstract getCurrentMarketPrice(...args: any): BigNumber | undefined
+  public abstract setCurrentMarketPrice(balance: BigNumber | undefined, ...args: any): void
 
-  public async setProtocol(protocol: ICoinProtocol): Promise<void> {
-    await super.setProtocol(protocol)
-    this.currentBalance = undefined
-    this.currentMarketPrice = undefined
-    await this.synchronize()
-  }
+  public abstract fetchCurrentMarketPrice(...args: any): Promise<BigNumber>
+  public abstract balanceOf(...args: any): Promise<BigNumber>
 
-  public async fetchCurrentMarketPrice(baseSymbol = 'USD'): Promise<BigNumber> {
-    this.currentMarketPrice = await this.priceService.getCurrentMarketPrice(this.protocol, baseSymbol)
+  protected abstract _synchronize(...args: any): Promise<void>
+  protected abstract reset(): void
 
-    return this.currentMarketPrice
-  }
-
-  private addressesToCheck(): string[] {
+  protected addressesToCheck(): string[] {
     const addressesToReceive: string[] = this.addressIndex !== undefined ? [this.addresses[this.addressIndex]] : this.addresses
 
     return addressesToReceive
   }
 
-  public async balanceOf(): Promise<BigNumber> {
-    if (
-      (this.protocol.identifier === MainProtocolSymbols.BTC ||
-        this.protocol.identifier === MainProtocolSymbols.BTC_SEGWIT ||
-        this.protocol.identifier === MainProtocolSymbols.GRS) &&
-      this.isExtendedPublicKey
-    ) {
-      // TODO: Remove and test
-      /* 
-      We should remove this if BTC also uses blockbook. (And change the order of the if/else below)
-      
-      The problem is that we have addresses cached for all protocols. But blockbook (grs) doesn't allow
-      multiple addresses to be checked at once, so we need to xPub key there (or we would do 100s of requests).
+  public async setProtocol(protocol: ICoinProtocol): Promise<void> {
+    await super.setProtocol(protocol)
+    this.reset()
+    await this.synchronize()
+  }
 
-      We can also not simply change the order of the following if/else, because then it would use the xPub method for
-      BTC as well, which results in the addresses being derived again, which causes massive lags in the apps.
-      */
-      return new BigNumber(await this.protocol.getBalanceOfExtendedPublicKey(this.publicKey, 0))
-    } else if (this.protocol instanceof TezosSaplingProtocol) {
-      return new BigNumber(await this.protocol.getBalanceOfPublicKey(this.publicKey))
-    } else if (this.addresses.length > 0) {
-      return new BigNumber(await this.protocol.getBalanceOfAddresses(this.addressesToCheck()))
-    } else if (this.isExtendedPublicKey) {
-      return new BigNumber(await this.protocol.getBalanceOfExtendedPublicKey(this.publicKey, 0))
-    } else {
-      return new BigNumber(await this.protocol.getBalanceOfPublicKey(this.publicKey))
+  public async synchronize(...args: any): Promise<void> {
+    if (this.synchronizePromise === undefined) {
+      this.synchronizePromise = this._synchronize(...args).finally(() => {
+        this.synchronizePromise = undefined
+      })
     }
+
+    return this.synchronizePromise
   }
 
   public async fetchTransactions(limit: number, cursor?: IProtocolTransactionCursor): Promise<IAirGapTransactionResult> {
@@ -146,40 +94,41 @@ export class AirGapMarketWallet extends AirGapWallet {
     return transactionResult
   }
 
-  public async getMaxTransferValue(recipients: string[], fee?: string, excludeExistentialDeposit?: boolean): Promise<BigNumber> {
-    if (this.isExtendedPublicKey) {
-      return new BigNumber(await this.protocol.estimateMaxTransactionValueFromExtendedPublicKey(this.publicKey, recipients, fee))
-    } else {
-      return new BigNumber(
-        await this.protocol.estimateMaxTransactionValueFromPublicKey(
-          this.publicKey,
-          recipients,
-          fee,
-          this.addressIndex,
-          excludeExistentialDeposit
-        )
-      )
-    }
-  }
-
-  public prepareTransaction(recipients: string[], values: string[], fee: string, data?: unknown): Promise<IAirGapTransaction> {
+  public prepareTransaction(
+    recipients: string[],
+    values: string[],
+    fee: string,
+    data?: { [key: string]: unknown }
+  ): Promise<IAirGapTransaction> {
     if (this.isExtendedPublicKey) {
       return this.protocol.prepareTransactionFromExtendedPublicKey(this.publicKey, 0, recipients, values, fee, data)
     } else {
       if (this.addressIndex) {
-        data = { addressIndex: this.addressIndex }
+        data = Object.assign(data, { addressIndex: this.addressIndex })
       }
 
       return this.protocol.prepareTransactionFromPublicKey(this.publicKey, recipients, values, fee, data)
     }
   }
 
-  public async estimateFees(recipients: string[], values: string[], data?: unknown): Promise<FeeDefaults> {
+  public async getMaxTransferValue(recipients: string[], fee?: string, data?: { [key: string]: unknown }): Promise<BigNumber> {
+    if (this.isExtendedPublicKey) {
+      return new BigNumber(await this.protocol.estimateMaxTransactionValueFromExtendedPublicKey(this.publicKey, recipients, fee, data))
+    } else {
+      if (this.addressIndex) {
+        data = Object.assign(data, { addressIndex: this.addressIndex })
+      }
+
+      return new BigNumber(await this.protocol.estimateMaxTransactionValueFromPublicKey(this.publicKey, recipients, fee, data))
+    }
+  }
+
+  public async estimateFees(recipients: string[], values: string[], data?: { [key: string]: unknown }): Promise<FeeDefaults> {
     if (this.isExtendedPublicKey) {
       return this.protocol.estimateFeeDefaultsFromExtendedPublicKey(this.publicKey, recipients, values, data)
     } else {
       if (this.addressIndex) {
-        data = { addressIndex: this.addressIndex }
+        data = Object.assign(data, { addressIndex: this.addressIndex })
       }
 
       return this.protocol.estimateFeeDefaultsFromPublicKey(this.publicKey, recipients, values, data)

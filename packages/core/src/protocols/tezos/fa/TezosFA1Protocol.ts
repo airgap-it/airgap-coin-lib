@@ -26,13 +26,15 @@ enum TezosFA1ContractEntrypoint {
 }
 
 export class TezosFA1Protocol extends TezosFAProtocol {
-  private readonly defaultCallbackContractMap: Map<TezosNetwork, string> = new Map()
+  private readonly defaultCallbackContractMap: Partial<Record<TezosNetwork, string>>
 
   constructor(options: TezosFAProtocolOptions) {
     super(options)
-
-    this.defaultCallbackContractMap.set(TezosNetwork.MAINNET, 'KT19ptNzn4MVAN45KUUNpyL5AdLVhujk815u')
-    this.defaultCallbackContractMap.set(TezosNetwork.EDONET, 'KT1ThaM5PK5nrAEKVVWtmccvsKeUdsZMfrxg')
+    this.defaultCallbackContractMap = {
+      [TezosNetwork.MAINNET]: 'KT19ptNzn4MVAN45KUUNpyL5AdLVhujk815u',
+      [TezosNetwork.GRANADANET]: 'KT1QcauKB7fXaVBh1qWSt5nsfYe4GBo8jJjg',
+      [TezosNetwork.HANGZHOUNET]: 'KT1VY8ggaVFzKEMHh4dS4zigy7b33nKrT1Mh'
+    }
   }
 
   public async getBalanceOfAddresses(addresses: string[]): Promise<string> {
@@ -210,7 +212,7 @@ export class TezosFA1Protocol extends TezosFAProtocol {
   }
 
   protected callbackContract(): string {
-    return this.defaultCallbackContractMap.get(this.options.network.extras.network) ?? ''
+    return this.defaultCallbackContractMap[this.options.network.extras.network] ?? ''
   }
 
   private isTransferRequest(obj: unknown): obj is { from: string; to: string; value: BigNumber } {

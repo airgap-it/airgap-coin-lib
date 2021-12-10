@@ -1,19 +1,18 @@
 import { toUnicode } from '../../../dependencies/src/idna-uts46-hx-3.4.0/uts46'
-import { TezosUtils } from '../../..'
+import { Cache } from '../../../utils/cache'
 import { addHexPrefix, isHex, stripHexPrefix } from '../../../utils/hex'
-
 import { TezosContract } from '../contract/TezosContract'
 import { TezosProtocolNetwork } from '../TezosProtocolOptions'
+import { TezosUtils } from '../TezosUtils'
 import { BigMapResponse } from '../types/contract/BigMapResult'
-import { TezosDomainsReverseRecord } from '../types/domains/TezosDomainsReverseRecord'
 import { TezosDomainsRecord } from '../types/domains/TezosDomainsRecord'
+import { TezosDomainsReverseRecord } from '../types/domains/TezosDomainsReverseRecord'
 import { MichelsonOption } from '../types/michelson/generics/MichelsonOption'
 import { MichelsonPair } from '../types/michelson/generics/MichelsonPair'
 import { MichelsonAddress } from '../types/michelson/primitives/MichelsonAddress'
 import { MichelsonBytes } from '../types/michelson/primitives/MichelsonBytes'
 import { MichelsonInt } from '../types/michelson/primitives/MichelsonInt'
 import { MichelsonString } from '../types/michelson/primitives/MichelsonString'
-import { Cache } from '../../../utils/cache'
 
 const CACHE_DEFAULT_EXPIRATION_TIME = 5 * 60 * 1000 // 5 min
 
@@ -29,14 +28,7 @@ export class TezosDomains {
   private bigMapIDsPromise?: Promise<void>
 
   constructor(network: TezosProtocolNetwork, contractAddress: string) {
-    this.contract = new TezosContract(
-      contractAddress,
-      network.extras.network,
-      network.rpcUrl,
-      network.extras.conseilUrl,
-      network.extras.conseilNetwork,
-      network.extras.conseilApiKey
-    )
+    this.contract = new TezosContract(contractAddress, network)
     this.cache = new Cache(CACHE_DEFAULT_EXPIRATION_TIME)
   }
 

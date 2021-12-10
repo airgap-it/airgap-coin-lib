@@ -161,7 +161,8 @@ export enum TezosNetwork {
   MAINNET = 'mainnet',
   EDONET = 'edonet',
   FLORENCENET = 'florencenet',
-  GRANADANET = 'granadanet'
+  GRANADANET = 'granadanet',
+  HANGZHOUNET = 'hangzhounet'
 }
 
 export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateProtocol {
@@ -520,7 +521,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     )
   }
 
-  public async getBalanceOfAddresses(addresses: string[]): Promise<string> {
+  public async getBalanceOfAddresses(addresses: string[], _data?: any): Promise<string> {
     let balance: BigNumber = new BigNumber(0)
 
     for (const address of addresses) {
@@ -540,18 +541,18 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     return balance.toString(10)
   }
 
-  public async getBalanceOfPublicKey(publicKey: string): Promise<string> {
+  public async getBalanceOfPublicKey(publicKey: string, data?: any): Promise<string> {
     const address: TezosAddress = await this.getAddressFromPublicKey(publicKey)
 
-    return this.getBalanceOfAddresses([address.getValue()])
+    return this.getBalanceOfAddresses([address.getValue()], data)
   }
 
   public async getBalanceOfPublicKeyForSubProtocols(publicKey: string, subProtocols: ICoinSubProtocol[]): Promise<string[]> {
     return Promise.all(subProtocols.map((subProtocol) => subProtocol.getBalanceOfPublicKey(publicKey).catch(() => '0')))
   }
 
-  public async getAvailableBalanceOfAddresses(addresses: string[]): Promise<string> {
-    return this.getBalanceOfAddresses(addresses)
+  public async getAvailableBalanceOfAddresses(addresses: string[], data?: any): Promise<string> {
+    return this.getBalanceOfAddresses(addresses, data)
   }
 
   public async estimateMaxTransactionValueFromPublicKey(publicKey: string, recipients: string[], fee?: string): Promise<string> {
@@ -1605,18 +1606,20 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   private static readonly FIRST_006_CYCLE: number = 208
   private static readonly FIRST_010_CYCLE: number = 388
 
-  private static readonly BLOCKS_PER_CYCLE = {
-    mainnet: [4096, 8192],
-    edonet: [2048],
-    florencenet: [2048],
-    granadanet: [4096]
+  private static readonly BLOCKS_PER_CYCLE: { [key in TezosNetwork]: number[] } = {
+    [TezosNetwork.MAINNET]: [4096, 8192],
+    [TezosNetwork.EDONET]: [2048],
+    [TezosNetwork.FLORENCENET]: [2048],
+    [TezosNetwork.GRANADANET]: [4096],
+    [TezosNetwork.HANGZHOUNET]: [4096]
   }
 
-  private static readonly TIME_BETWEEN_BLOCKS = {
-    mainnet: [60, 30],
-    edonet: [30],
-    florencenet: [30],
-    granadanet: [30]
+  private static readonly TIME_BETWEEN_BLOCKS: { [key in TezosNetwork]: number[] } = {
+    [TezosNetwork.MAINNET]: [60, 30],
+    [TezosNetwork.EDONET]: [30],
+    [TezosNetwork.FLORENCENET]: [30],
+    [TezosNetwork.GRANADANET]: [30],
+    [TezosNetwork.HANGZHOUNET]: [30]
   }
 
   public timeIntervalBetweenCycles(fromCycle: number, toCycle: number): number {

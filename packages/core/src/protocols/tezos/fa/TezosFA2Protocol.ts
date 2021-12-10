@@ -1,4 +1,6 @@
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { ConditionViolationError, NotFoundError } from '../../../errors'
+import { Domain } from '../../../errors/coinlib-error'
 import { IAirGapTransaction } from '../../../interfaces/IAirGapTransaction'
 import { RawTezosTransaction } from '../../../serializer/types'
 import { isHex } from '../../../utils/hex'
@@ -7,10 +9,12 @@ import { TezosContractCall } from '../contract/TezosContractCall'
 import { TezosAddress } from '../TezosAddress'
 import { TezosNetwork } from '../TezosProtocol'
 import { TezosUtils } from '../TezosUtils'
+import { ConseilPredicate } from '../types/contract/ConseilPredicate'
 import { TezosFA2BalanceOfRequest } from '../types/fa/TezosFA2BalanceOfRequest'
 import { TezosFA2BalanceOfResponse } from '../types/fa/TezosFA2BalanceOfResponse'
 import { TezosFA2TransferRequest } from '../types/fa/TezosFA2TransferRequest'
 import { TezosFA2UpdateOperatorRequest } from '../types/fa/TezosFA2UpdateOperatorRequest'
+import { TezosFATokenMetadata } from '../types/fa/TezosFATokenMetadata'
 import { MichelineDataNode } from '../types/micheline/MichelineNode'
 import { MichelsonList } from '../types/michelson/generics/MichelsonList'
 import { MichelsonPair } from '../types/michelson/generics/MichelsonPair'
@@ -20,12 +24,9 @@ import { MichelsonString } from '../types/michelson/primitives/MichelsonString'
 import { TezosTransactionParameters } from '../types/operations/Transaction'
 import { TezosOperationType } from '../types/TezosOperationType'
 import { isMichelineSequence } from '../types/utils'
+
 import { TezosFAProtocol } from './TezosFAProtocol'
 import { TezosFA2ProtocolConfig, TezosFA2ProtocolOptions } from './TezosFAProtocolOptions'
-import { ConditionViolationError, NotFoundError } from '../../../errors'
-import { Domain } from '../../../errors/coinlib-error'
-import { TezosFATokenMetadata } from '../types/fa/TezosFATokenMetadata'
-import { ConseilPredicate } from '../types/contract/ConseilPredicate'
 
 enum TezosFA2ContractEntrypoint {
   BALANCE = 'balance_of',
@@ -34,34 +35,47 @@ enum TezosFA2ContractEntrypoint {
 }
 
 export class TezosFA2Protocol extends TezosFAProtocol {
-  public readonly defaultTokenID: number
+  public readonly tokenID?: number
 
   private readonly defaultCallbackContract: Partial<Record<TezosNetwork, Partial<Record<TezosFA2ContractEntrypoint, string>>>>
 
-  constructor(options: TezosFA2ProtocolOptions) {
+  constructor(public readonly options: TezosFA2ProtocolOptions) {
     super(options)
 
-    this.defaultTokenID = options.config.defaultTokenID ?? 0
+    this.tokenID = options.config.defaultTokenID
 
     this.defaultCallbackContract = {
       [TezosNetwork.MAINNET]: {
         [TezosFA2ContractEntrypoint.BALANCE]: 'KT1LyHDYnML5eCuTEVCTynUpivwG6ns6khiG'
       },
-      [TezosNetwork.EDONET]: {
-        [TezosFA2ContractEntrypoint.BALANCE]: 'KT1UEyZsmSga2KcNkpGbWX6nvGAVHtBpT5is'
-      },
       [TezosNetwork.GRANADANET]: {
         [TezosFA2ContractEntrypoint.BALANCE]: 'KT1Az142aocNmJYaJKBbtLGY2khUSgYTRieG'
+      },
+      [TezosNetwork.HANGZHOUNET]: {
+        [TezosFA2ContractEntrypoint.BALANCE]: 'KT1G4Vo8dzkyNgguxzniHfdXD2wmoAZEaFmg'
       }
     }
   }
 
-  public async getBalanceOfAddresses(addresses: string[]): Promise<string> {
+  public async getBalanceOfPublicKey(
+    publicKey: string,
+    data?: { addressIndex?: number; assetID?: string; [key: string]: any }
+  ): Promise<string> {
+    const address: TezosAddress = await this.getAddressFromPublicKey(publicKey)
+
+    return this.getBalanceOfAddresses([address.getValue()], data)
+  }
+
+  public async getAvailableBalanceOfAddresses(addresses: string[], data?: { assetID?: string; [key: string]: any }): Promise<string> {
+    return this.getBalanceOfAddresses(addresses, data)
+  }
+
+  public async getBalanceOfAddresses(addresses: string[], data?: { assetID?: string; [key: string]: any }): Promise<string> {
     const results: TezosFA2BalanceOfResponse[] = await this.balanceOf(
       addresses.map((address: string) => {
         return {
           address,
-          tokenID: this.defaultTokenID
+          tokenID: data?.assetID ?? this.tokenID ?? 0
         }
       }, this.defaultSourceAddress)
     )
@@ -73,7 +87,7 @@ export class TezosFA2Protocol extends TezosFAProtocol {
     publicKey: string,
     recipients: string[],
     values: string[],
-    data?: any
+    data?: { addressIndex?: number; tokenID?: number }
   ): Promise<FeeDefaults> {
     // return this.feeDefaults
     if (recipients.length !== values.length) {
@@ -97,7 +111,7 @@ export class TezosFA2Protocol extends TezosFAProtocol {
     recipients: string[],
     values: string[],
     fee: string,
-    data?: any
+    data?: { addressIndex?: number; assetID?: number }
   ): Promise<RawTezosTransaction> {
     const transferCall: TezosContractCall = await this.createTransferCall(publicKey, recipients, values, fee, data)
 
@@ -161,7 +175,7 @@ export class TezosFA2Protocol extends TezosFAProtocol {
 
               return transferDetails
                 .map(([to, tokenID, amount]: [string, BigNumber, BigNumber]) => {
-                  if (!tokenID.eq(this.defaultTokenID)) {
+                  if (this.tokenID !== undefined && !tokenID.eq(this.tokenID)) {
                     return undefined
                   }
 
@@ -194,7 +208,7 @@ export class TezosFA2Protocol extends TezosFAProtocol {
       requests: balanceRequests.map((request: TezosFA2BalanceOfRequest) => {
         return {
           owner: request.address,
-          token_id: request.tokenID
+          token_id: typeof request.tokenID === 'string' ? parseInt(request.tokenID, 10) : request.tokenID
         }
       }),
       callback: callbackContract
@@ -279,13 +293,12 @@ export class TezosFA2Protocol extends TezosFAProtocol {
   }
 
   public async getTokenMetadata(tokenID?: number): Promise<TezosFATokenMetadata | undefined> {
-    return this.getTokenMetadataForTokenID(tokenID ?? this.defaultTokenID)
+    return this.getTokenMetadataForTokenID(tokenID ?? this.tokenID ?? 0)
   }
 
   private static readonly extractAddressRegex = /^Pair (0x[0-9a-fA-F]+) [\d]+$/
 
-  public async fetchTokenHolders(): Promise<{ address: string; amount: string }[]> {
-    const tokenID = (this.options.config as TezosFA2ProtocolConfig).defaultTokenID ?? 0
+  public async fetchTokenHolders(tokenID?: number): Promise<{ address: string; amount: string }[]> {
     const values = await this.contract.conseilBigMapValues({
       bigMapFilter: [
         {
@@ -304,7 +317,7 @@ export class TezosFA2Protocol extends TezosFAProtocol {
         {
           field: 'key',
           operation: 'endsWith',
-          set: [`${tokenID}`],
+          set: [`${tokenID ?? this.tokenID ?? 0}`],
           inverse: false
         },
         {
@@ -343,8 +356,7 @@ export class TezosFA2Protocol extends TezosFAProtocol {
       .filter((value) => value.amount !== '0')
   }
 
-  public async getTotalSupply(): Promise<string> {
-    const tokenID = (this.options.config as TezosFA2ProtocolConfig).defaultTokenID ?? 0
+  public async getTotalSupply(tokenID?: number): Promise<string> {
     const values = await this.contract.conseilBigMapValues({
       bigMapFilter: [
         {
@@ -363,7 +375,7 @@ export class TezosFA2Protocol extends TezosFAProtocol {
         {
           field: 'key',
           operation: 'eq',
-          set: [`${tokenID}`],
+          set: [`${tokenID ?? this.tokenID ?? 0}`],
           inverse: false
         }
       ]
@@ -375,14 +387,17 @@ export class TezosFA2Protocol extends TezosFAProtocol {
   }
 
   protected getAdditionalTransactionQueryPredicates(_address: string, _addressQueryType: 'string' | 'bytes'): ConseilPredicate[] {
-    return [
-      {
+    const predicates: ConseilPredicate[] = []
+    if (this.tokenID !== undefined) {
+      predicates.push({
         field: 'parameters',
         operation: 'like',
-        set: [`{ ${this.defaultTokenID} }`],
+        set: [`{ ${this.tokenID} }`],
         inverse: false
-      }
-    ]
+      })
+    }
+
+    return predicates
   }
 
   private async createTransferCall(
@@ -390,14 +405,14 @@ export class TezosFA2Protocol extends TezosFAProtocol {
     recipients: string[],
     values: string[],
     fee: string,
-    data?: { addressIndex?: number; tokenID?: number }
+    data?: { addressIndex?: number; assetID?: number }
   ): Promise<TezosContractCall> {
     if (recipients.length !== values.length) {
       throw new ConditionViolationError(Domain.TEZOSFA, 'length of recipients and values does not match!')
     }
 
     const addressIndex: number = data?.addressIndex ?? 0
-    const tokenID: number = data?.tokenID ?? this.defaultTokenID ?? 0
+    const tokenID: number = data?.assetID ?? this.tokenID ?? 0
     const addresses: string[] = (await this.getAddressesFromPublicKey(publicKey)).map((address: TezosAddress) => address.getValue())
 
     if (!addresses[addressIndex]) {
