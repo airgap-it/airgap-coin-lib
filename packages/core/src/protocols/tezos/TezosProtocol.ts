@@ -161,7 +161,8 @@ export enum TezosNetwork {
   MAINNET = 'mainnet',
   EDONET = 'edonet',
   FLORENCENET = 'florencenet',
-  GRANADANET = 'granadanet'
+  GRANADANET = 'granadanet',
+  HANGZHOUNET = 'hangzhounet'
 }
 
 export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateProtocol {
@@ -1605,18 +1606,20 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   private static readonly FIRST_006_CYCLE: number = 208
   private static readonly FIRST_010_CYCLE: number = 388
 
-  private static readonly BLOCKS_PER_CYCLE = {
-    mainnet: [4096, 8192],
-    edonet: [2048],
-    florencenet: [2048],
-    granadanet: [4096]
+  private static readonly BLOCKS_PER_CYCLE: { [key in TezosNetwork]: number[] } = {
+    [TezosNetwork.MAINNET]: [4096, 8192],
+    [TezosNetwork.EDONET]: [2048],
+    [TezosNetwork.FLORENCENET]: [2048],
+    [TezosNetwork.GRANADANET]: [4096],
+    [TezosNetwork.HANGZHOUNET]: [4096]
   }
 
-  private static readonly TIME_BETWEEN_BLOCKS = {
-    mainnet: [60, 30],
-    edonet: [30],
-    florencenet: [30],
-    granadanet: [30]
+  private static readonly TIME_BETWEEN_BLOCKS: { [key in TezosNetwork]: number[] } = {
+    [TezosNetwork.MAINNET]: [60, 30],
+    [TezosNetwork.EDONET]: [30],
+    [TezosNetwork.FLORENCENET]: [30],
+    [TezosNetwork.GRANADANET]: [30],
+    [TezosNetwork.HANGZHOUNET]: [30]
   }
 
   public timeIntervalBetweenCycles(fromCycle: number, toCycle: number): number {
