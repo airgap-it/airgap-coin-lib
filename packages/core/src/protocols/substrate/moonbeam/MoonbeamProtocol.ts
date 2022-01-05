@@ -3,17 +3,67 @@ import { ConditionViolationError, UnsupportedError } from '../../../errors'
 import { Domain } from '../../../errors/coinlib-error'
 import { RawSubstrateTransaction } from '../../../serializer/types'
 import { assertFields } from '../../../utils/assert'
+import { MainProtocolSymbols, ProtocolSymbols } from '../../../utils/ProtocolSymbols'
 import { DelegateeDetails, DelegationDetails, DelegatorDetails } from '../../ICoinDelegateProtocol'
+import { CurrencyUnit, FeeDefaults } from '../../ICoinProtocol'
 import { SubstrateTransactionType } from '../common/data/transaction/SubstrateTransaction'
 import { SubstrateAccountId } from '../compat/SubstrateCompatAddress'
 import { SubstrateDelegateProtocol } from '../SubstrateDelegateProtocol'
 import { SubstrateNetwork } from '../SubstrateNetwork'
+
 import { MoonbeamAddress } from './data/account/MoonbeamAddress'
 import { MoonbeamStakingActionType } from './data/staking/MoonbeamStakingActionType'
+import { MoonbeamProtocolNetwork, MoonbeamProtocolOptions } from './MoonbeamProtocolOptions'
 
-import { MoonbeamProtocolOptions } from './MoonbeamProtocolOptions'
+export class MoonbeamProtocol extends SubstrateDelegateProtocol<SubstrateNetwork.MOONBEAM> {
+  public symbol: string = 'GLMR'
+  public name: string = 'Moonbeam'
+  public marketSymbol: string = 'GLMR'
+  public feeSymbol: string = 'GLMR'
 
-export abstract class MoonbeamProtocol extends SubstrateDelegateProtocol<SubstrateNetwork.MOONBEAM> {
+  public decimals: number = 18
+  public feeDecimals: number = 18
+
+  public identifier: ProtocolSymbols = MainProtocolSymbols.MOONBEAM
+  public addressIsCaseSensitive: boolean = false
+
+  public feeDefaults: FeeDefaults = {
+    low: '0.000000000125',
+    medium: '0.000000000125',
+    high: '0.000000000125'
+  }
+
+  public units: CurrencyUnit[] = [
+    {
+      unitSymbol: 'GLMR',
+      factor: '1'
+    },
+    {
+      unitSymbol: 'mGLMR',
+      factor: '0.001'
+    },
+    {
+      unitSymbol: 'uGLMR',
+      factor: '0.000001'
+    },
+    {
+      unitSymbol: 'GWEI',
+      factor: '0.000000001'
+    },
+    {
+      unitSymbol: 'MWEI',
+      factor: '0.000000000001'
+    },
+    {
+      unitSymbol: 'kWEI',
+      factor: '0.000000000000001'
+    },
+    {
+      unitSymbol: 'WEI',
+      factor: '0.000000000000000001'
+    }
+  ]
+
   public standardDerivationPath: string = `m/44'/60'/0'/0/0`
 
   public addressValidationPattern: string = '^0x[a-fA-F0-9]{40}$'
@@ -21,7 +71,7 @@ export abstract class MoonbeamProtocol extends SubstrateDelegateProtocol<Substra
 
   public defaultValidator?: string
 
-  public constructor(public readonly options: MoonbeamProtocolOptions) {
+  public constructor(public readonly options: MoonbeamProtocolOptions = new MoonbeamProtocolOptions(new MoonbeamProtocolNetwork())) {
     super(options)
   }
 
@@ -29,7 +79,7 @@ export abstract class MoonbeamProtocol extends SubstrateDelegateProtocol<Substra
     if (this.defaultValidator) {
       return this.defaultValidator
     }
-    const collators: MoonbeamAddress[] | null = await this.options.nodeClient.getCollators()
+    const collators: MoonbeamAddress[] | undefined = await this.options.nodeClient.getCollators()
 
     return collators ? collators[0].getValue() : ''
   }
@@ -53,19 +103,19 @@ export abstract class MoonbeamProtocol extends SubstrateDelegateProtocol<Substra
   }
 
   public async isPublicKeyDelegating(publicKey: string): Promise<boolean> {
-    return this.options.accountController.isNominating(publicKey)
+    return this.options.accountController.isDelegating(publicKey)
   }
 
   public async isAddressDelegating(address: string): Promise<boolean> {
-    return this.options.accountController.isNominating(address)
+    return this.options.accountController.isDelegating(address)
   }
 
   public async getDelegatorDetailsFromPublicKey(publicKey: string): Promise<DelegatorDetails> {
-    return this.options.accountController.getNominatorDetails(publicKey)
+    return this.options.accountController.getDelegatorDetails(publicKey)
   }
 
   public async getDelegatorDetailsFromAddress(address: string): Promise<DelegatorDetails> {
-    return this.options.accountController.getNominatorDetails(address)
+    return this.options.accountController.getDelegatorDetails(address)
   }
 
   public async getDelegationDetailsFromPublicKey(publicKey: string, delegatees: string[]): Promise<DelegationDetails> {
@@ -80,11 +130,11 @@ export abstract class MoonbeamProtocol extends SubstrateDelegateProtocol<Substra
     }
 
     const collator = delegatees[0]
-    const nominationDetails = await this.options.accountController.getNominationDetails(address, collator)
+    const delegationDetails = await this.options.accountController.getDelegationDetails(address, collator)
 
     return {
-      delegator: nominationDetails.nominatorDetails,
-      delegatees: [nominationDetails.collatorDetails]
+      delegator: delegationDetails.delegatorDetails,
+      delegatees: [delegationDetails.collatorDetails]
     }
   }
 
@@ -94,34 +144,54 @@ export abstract class MoonbeamProtocol extends SubstrateDelegateProtocol<Substra
     }
 
     switch (type) {
-      case MoonbeamStakingActionType.NOMINATE:
-        assertFields(`${MoonbeamStakingActionType[type]} action`, data, 'collator', 'amount')
+      case MoonbeamStakingActionType.DELEGATE:
+        assertFields(`${MoonbeamStakingActionType[type]} action`, data, 'candidate', 'amount')
 
-        return this.prepareNomination(publicKey, data.tip ?? 0, data.collator, data.amount)
+        return this.prepareDelegation(publicKey, data.tip ?? 0, data.candidate, data.amount)
       case MoonbeamStakingActionType.BOND_MORE:
         assertFields(`${MoonbeamStakingActionType[type]} action`, data, 'candidate', 'more')
 
-        return this.prepareNominatorBondMore(publicKey, data.tip ?? 0, data.candidate, data.more)
+        return this.prepareDelegatorBondMore(publicKey, data.tip ?? 0, data.candidate, data.more)
 
-      case MoonbeamStakingActionType.BOND_LESS:
+      case MoonbeamStakingActionType.SCHEDULE_BOND_LESS:
         assertFields(`${MoonbeamStakingActionType[type]} action`, data, 'candidate', 'less')
 
-        return this.prepareNominatorBondLess(publicKey, data.tip ?? 0, data.candidate, data.less)
-      case MoonbeamStakingActionType.CANCEL_NOMINATION:
+        return this.prepareScheduleDelegatorBondLess(publicKey, data.tip ?? 0, data.candidate, data.less)
+      case MoonbeamStakingActionType.EXECUTE_BOND_LESS:
+        assertFields(`${MoonbeamStakingActionType[type]} action`, data, 'candidate')
+
+        return this.prepareExecuteDelegatorBondLess(publicKey, data.tip ?? 0, data.candidate)
+      case MoonbeamStakingActionType.CANCEL_BOND_LESS:
+        assertFields(`${MoonbeamStakingActionType[type]} action`, data, 'candidate')
+
+        return this.prepareCancelDelegatorBondLess(publicKey, data.tip ?? 0, data.candidate)
+      case MoonbeamStakingActionType.SCHEDULE_UNDELEGATE:
         assertFields(`${MoonbeamStakingActionType[type]} action`, data, 'collator')
 
-        return this.prepareCancelNomination(publicKey, data.tip ?? 0, data.collator)
-      case MoonbeamStakingActionType.CANCEL_ALL_NOMINATIONS:
-        return this.prepareCancelAllNominations(publicKey, data.tip ?? 0)
+        return this.prepareScheduleUndelegate(publicKey, data.tip ?? 0, data.collator)
+      case MoonbeamStakingActionType.EXECUTE_UNDELEGATE:
+        assertFields(`${MoonbeamStakingActionType[type]} action`, data, 'candidate')
+
+        return this.prepareExecuteUndelegate(publicKey, data.tip ?? 0, data.candidate)
+      case MoonbeamStakingActionType.CANCEL_UNDELEGATE:
+        assertFields(`${MoonbeamStakingActionType[type]} action`, data, 'candidate')
+
+        return this.prepareCancelUndelegate(publicKey, data.tip ?? 0, data.candidate)
+      case MoonbeamStakingActionType.SCHEDULE_UNDELEGATE_ALL:
+        return this.prepareScheduleUndelegateAll(publicKey, data.tip ?? 0)
+      case MoonbeamStakingActionType.EXECUTE_UNDELEGATE_ALL:
+        return this.prepareExecuteUndelegateAll(publicKey, data.tip ?? 0)
+      case MoonbeamStakingActionType.CANCEL_UNDELEGATE_ALL:
+        return this.prepareCancelUndelegateAll(publicKey, data.tip ?? 0)
       default:
         throw new UnsupportedError(Domain.SUBSTRATE, 'Unsupported delegator action.')
     }
   }
 
-  public async prepareNomination(
+  public async prepareDelegation(
     publicKey: string,
     tip: string | number | BigNumber,
-    collator: string,
+    candidate: string,
     amount: string | number | BigNumber
   ): Promise<RawSubstrateTransaction[]> {
     const requestedAmount = new BigNumber(amount)
@@ -131,31 +201,31 @@ export abstract class MoonbeamProtocol extends SubstrateDelegateProtocol<Substra
     }
 
     const results = await Promise.all([
-      this.options.accountController.getNominatorDetails(publicKey),
-      this.options.accountController.getCollatorDetails(collator),
-      this.options.nodeClient.getMaxCollatorsPerNominator(),
+      this.options.accountController.getDelegatorDetails(publicKey),
+      this.options.accountController.getCollatorDetails(candidate),
+      this.options.nodeClient.getMaxDelegationsPerDelegator(),
       this.getBalanceOfPublicKey(publicKey)
     ])
 
-    const nominatorDetails = results[0]
+    const delegatorDetails = results[0]
     const collatorDetails = results[1]
-    const maxCollators = results[2]
+    const maxDelegations = results[2]
     const balance = results[3]
 
-    if (maxCollators?.lte(nominatorDetails.delegatees.length)) {
-      throw new ConditionViolationError(Domain.SUBSTRATE, 'This nominator cannot nominate more collators.')
+    if (maxDelegations?.lte(delegatorDetails.delegatees.length)) {
+      throw new ConditionViolationError(Domain.SUBSTRATE, 'This delegator cannot nominate more collators.')
     }
 
     const available = new BigNumber(balance).minus(amount)
     const encoded = await this.options.transactionController.prepareSubmittableTransactions(publicKey, available, [
       {
-        type: SubstrateTransactionType.M_NOMINATE,
+        type: SubstrateTransactionType.M_DELEGATE,
         tip,
         args: {
-          collator,
+          candidate,
           amount: new BigNumber(amount),
-          collatorNominatorCount: collatorDetails.nominators,
-          nominationCount: nominatorDetails.delegatees.length
+          candidateDelegationCount: collatorDetails.delegators,
+          delegationCount: delegatorDetails.delegatees.length
         }
       }
     ])
@@ -163,7 +233,7 @@ export abstract class MoonbeamProtocol extends SubstrateDelegateProtocol<Substra
     return [{ encoded }]
   }
 
-  public async prepareCancelNomination(
+  public async prepareScheduleUndelegate(
     publicKey: string,
     tip: string | number | BigNumber,
     collator: string
@@ -171,7 +241,7 @@ export abstract class MoonbeamProtocol extends SubstrateDelegateProtocol<Substra
     const balance = await this.getBalanceOfPublicKey(publicKey)
     const encoded = await this.options.transactionController.prepareSubmittableTransactions(publicKey, balance, [
       {
-        type: SubstrateTransactionType.M_REVOKE_NOMINATION,
+        type: SubstrateTransactionType.M_SCHEDULE_REVOKE_DELGATION,
         tip,
         args: {
           collator
@@ -182,21 +252,53 @@ export abstract class MoonbeamProtocol extends SubstrateDelegateProtocol<Substra
     return [{ encoded }]
   }
 
-  public async prepareCancelAllNominations(publicKey: string, tip: string | number | BigNumber): Promise<RawSubstrateTransaction[]> {
-    const results = await Promise.all([
-      this.options.accountController.getNominatorDetails(publicKey),
-      this.getBalanceOfPublicKey(publicKey)
+  public async prepareExecuteUndelegate(
+    publicKey: string,
+    tip: string | number | BigNumber,
+    candidate: string
+  ): Promise<RawSubstrateTransaction[]> {
+    return this.prepareExecuteDelegationRequest(publicKey, tip, candidate)
+  }
+
+  public async prepareCancelUndelegate(
+    publicKey: string,
+    tip: string | number | BigNumber,
+    candidate: string
+  ): Promise<RawSubstrateTransaction[]> {
+    return this.prepareCancelDelegationRequest(publicKey, tip, candidate)
+  }
+
+  public async prepareScheduleUndelegateAll(publicKey: string, tip: string | number | BigNumber): Promise<RawSubstrateTransaction[]> {
+    const balance = await this.getBalanceOfPublicKey(publicKey)
+    const encoded = await this.options.transactionController.prepareSubmittableTransactions(publicKey, balance, [
+      {
+        type: SubstrateTransactionType.M_SCHEDULE_LEAVE_DELEGATORS,
+        tip,
+        args: {}
+      }
     ])
 
-    const nominatorDetails = results[0]
+    return [{ encoded }]
+  }
+
+  public async prepareExecuteUndelegateAll(publicKey: string, tip: string | number | BigNumber): Promise<RawSubstrateTransaction[]> {
+    const results = await Promise.all([
+      this.options.accountController.getDelegatorDetails(publicKey),
+      this.getBalanceOfPublicKey(publicKey),
+      this.getAddressFromPublicKey(publicKey)
+    ])
+
+    const delegatorDetails = results[0]
     const balance = results[1]
+    const delegator = results[2].getValue()
 
     const encoded = await this.options.transactionController.prepareSubmittableTransactions(publicKey, balance, [
       {
-        type: SubstrateTransactionType.M_LEAVE_NOMINATORS,
+        type: SubstrateTransactionType.M_EXECUTE_LEAVE_DELEGATORS,
         tip,
         args: {
-          nominationCount: nominatorDetails.delegatees.length
+          delegator,
+          delegationCount: delegatorDetails.delegatees.length
         }
       }
     ])
@@ -204,7 +306,20 @@ export abstract class MoonbeamProtocol extends SubstrateDelegateProtocol<Substra
     return [{ encoded }]
   }
 
-  public async prepareNominatorBondMore(
+  public async prepareCancelUndelegateAll(publicKey: string, tip: string | number | BigNumber): Promise<RawSubstrateTransaction[]> {
+    const balance = await this.getBalanceOfPublicKey(publicKey)
+    const encoded = await this.options.transactionController.prepareSubmittableTransactions(publicKey, balance, [
+      {
+        type: SubstrateTransactionType.M_CANCEL_LEAVE_DELEGATORS,
+        tip,
+        args: {}
+      }
+    ])
+
+    return [{ encoded }]
+  }
+
+  public async prepareDelegatorBondMore(
     publicKey: string,
     tip: string | number | BigNumber,
     candidate: string,
@@ -214,7 +329,7 @@ export abstract class MoonbeamProtocol extends SubstrateDelegateProtocol<Substra
     const available = new BigNumber(balance).minus(more)
     const encoded = await this.options.transactionController.prepareSubmittableTransactions(publicKey, available, [
       {
-        type: SubstrateTransactionType.M_NOMINATOR_BOND_MORE,
+        type: SubstrateTransactionType.M_DELEGATOR_BOND_MORE,
         tip,
         args: {
           candidate,
@@ -226,27 +341,27 @@ export abstract class MoonbeamProtocol extends SubstrateDelegateProtocol<Substra
     return [{ encoded }]
   }
 
-  public async prepareNominatorBondLess(
+  public async prepareScheduleDelegatorBondLess(
     publicKey: string,
     tip: string | number | BigNumber,
     candidate: string,
     less: string | number | BigNumber
   ): Promise<RawSubstrateTransaction[]> {
-    const [balance, nominationDetails] = await Promise.all([
+    const [balance, delegationDetails] = await Promise.all([
       this.getBalanceOfPublicKey(publicKey),
-      this.options.accountController.getNominationDetails(publicKey, candidate)
+      this.options.accountController.getDelegationDetails(publicKey, candidate)
     ])
-    const bondAmount = new BigNumber(nominationDetails.bond)
+    const bondAmount = new BigNumber(delegationDetails.bond)
     const requestedAmount = new BigNumber(less)
     if (requestedAmount.gt(bondAmount)) {
       throw new ConditionViolationError(Domain.SUBSTRATE, 'Bond less amount too high')
     } else if (requestedAmount.eq(bondAmount)) {
-      return this.prepareCancelNomination(publicKey, tip, candidate)
+      return this.prepareScheduleUndelegate(publicKey, tip, candidate)
     }
 
     const encoded = await this.options.transactionController.prepareSubmittableTransactions(publicKey, balance, [
       {
-        type: SubstrateTransactionType.M_NOMINATOR_BOND_LESS,
+        type: SubstrateTransactionType.M_SCHEDULE_DELEGATOR_BOND_LESS,
         tip,
         args: {
           candidate,
@@ -258,8 +373,67 @@ export abstract class MoonbeamProtocol extends SubstrateDelegateProtocol<Substra
     return [{ encoded }]
   }
 
+  public async prepareExecuteDelegatorBondLess(
+    publicKey: string,
+    tip: string | number | BigNumber,
+    candidate: string
+  ): Promise<RawSubstrateTransaction[]> {
+    return this.prepareExecuteDelegationRequest(publicKey, tip, candidate)
+  }
+
+  public async prepareCancelDelegatorBondLess(
+    publicKey: string,
+    tip: string | number | BigNumber,
+    candidate: string
+  ): Promise<RawSubstrateTransaction[]> {
+    return this.prepareCancelDelegationRequest(publicKey, tip, candidate)
+  }
+
+  private async prepareExecuteDelegationRequest(
+    publicKey: string,
+    tip: string | number | BigNumber,
+    candidate: string
+  ): Promise<RawSubstrateTransaction[]> {
+    const results = await Promise.all([this.getBalanceOfPublicKey(publicKey), this.getAddressFromPublicKey(publicKey)])
+
+    const balance = results[0]
+    const delegator = results[1].getValue()
+
+    const encoded = await this.options.transactionController.prepareSubmittableTransactions(publicKey, balance, [
+      {
+        type: SubstrateTransactionType.M_EXECUTE_DELGATION_REQUEST,
+        tip,
+        args: {
+          delegator,
+          candidate
+        }
+      }
+    ])
+
+    return [{ encoded }]
+  }
+
+  private async prepareCancelDelegationRequest(
+    publicKey: string,
+    tip: string | number | BigNumber,
+    candidate: string
+  ): Promise<RawSubstrateTransaction[]> {
+    const balance = await this.getBalanceOfPublicKey(publicKey)
+    const encoded = await this.options.transactionController.prepareSubmittableTransactions(publicKey, balance, [
+      {
+        type: SubstrateTransactionType.M_CANCEL_DELEGATION_REQUEST,
+        tip,
+        args: {
+          candidate
+        }
+      }
+    ])
+
+    return [{ encoded }]
+  }
+
   public async getMinDelegationAmount(accountId: SubstrateAccountId<MoonbeamAddress>): Promise<string> {
-    return this.options.accountController.getMinNominationAmount(accountId)
+    return this.options.accountController.getMinDelegationAmount(accountId)
   }
 
   public async getFutureRequiredTransactions(
@@ -267,12 +441,12 @@ export abstract class MoonbeamProtocol extends SubstrateDelegateProtocol<Substra
     intention: 'check' | 'transfer' | 'delegate'
   ): Promise<[SubstrateTransactionType, any][]> {
     const results = await Promise.all([
-      this.options.accountController.isNominating(accountId),
+      this.options.accountController.isDelegating(accountId),
       this.options.accountController.getTransferableBalance(accountId),
       this.options.accountController.getTransferableBalance(accountId, false, false)
     ])
 
-    const isNominating = results[0]
+    const isDelegating = results[0]
     const transferableBalance = results[1]
     const stakingBalance = results[2]
 
@@ -287,34 +461,50 @@ export abstract class MoonbeamProtocol extends SubstrateDelegateProtocol<Substra
         }
       ])
     }
-    if (!isNominating && intention === 'delegate') {
+    if (!isDelegating && intention === 'delegate') {
       // not delegated
       requiredTransactions.push(
         [
-          SubstrateTransactionType.M_NOMINATE,
+          SubstrateTransactionType.M_DELEGATE,
           {
             collator: MoonbeamAddress.getPlaceholder(),
             amount: stakingBalance,
-            collatorNominatorCount: 0,
+            collatorDelegatorCount: 0,
             nominationCount: 0
           }
         ],
         [
-          SubstrateTransactionType.M_REVOKE_NOMINATION,
+          SubstrateTransactionType.M_SCHEDULE_REVOKE_DELGATION,
           {
             collator: MoonbeamAddress.getPlaceholder()
+          }
+        ],
+        [
+          SubstrateTransactionType.M_EXECUTE_DELGATION_REQUEST,
+          {
+            delegator: MoonbeamAddress.getPlaceholder(),
+            candidate: MoonbeamAddress.getPlaceholder()
           }
         ]
       )
     }
 
-    if (isNominating && intention === 'delegate') {
-      requiredTransactions.push([
-        SubstrateTransactionType.M_REVOKE_NOMINATION,
-        {
-          collator: MoonbeamAddress.getPlaceholder()
-        }
-      ])
+    if (isDelegating && intention === 'delegate') {
+      requiredTransactions.push(
+        [
+          SubstrateTransactionType.M_SCHEDULE_REVOKE_DELGATION,
+          {
+            collator: MoonbeamAddress.getPlaceholder()
+          }
+        ],
+        [
+          SubstrateTransactionType.M_EXECUTE_DELGATION_REQUEST,
+          {
+            delegator: MoonbeamAddress.getPlaceholder(),
+            candidate: MoonbeamAddress.getPlaceholder()
+          }
+        ]
+      )
     }
 
     return requiredTransactions

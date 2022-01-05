@@ -284,7 +284,7 @@ export abstract class SubstrateProtocol<Network extends SubstrateNetwork> extend
   ): Promise<[SubstrateTransactionType, any][]> {
     const results = await Promise.all([
       this.options.accountController.isBonded(accountId),
-      this.options.accountController.isNominating(accountId),
+      this.options.accountController.isDelegating(accountId),
       this.options.accountController.getTransferableBalance(accountId),
       this.options.accountController.getTransferableBalance(accountId, false, false),
       this.options.accountController.getUnlockingBalance(accountId)
