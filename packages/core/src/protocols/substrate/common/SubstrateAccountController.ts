@@ -57,7 +57,10 @@ export class SubstrateAccountController<Network extends SubstrateNetwork, NodeCl
   public async getBalance(accountId: SubstrateAccountId<SubstrateCompatAddressType[Network]>): Promise<BigNumber> {
     const accountInfo = await this.nodeClient.getAccountInfo(this.substrateAddressFrom(accountId))
 
-    return accountInfo?.data.free.value ?? new BigNumber(0)
+    const free = accountInfo?.data.free.value
+    const reserved = accountInfo?.data.reserved.value
+
+    return free && reserved ? free.plus(reserved) : new BigNumber(0)
   }
 
   public async getTransferableBalance(
@@ -78,13 +81,9 @@ export class SubstrateAccountController<Network extends SubstrateNetwork, NodeCl
     }
 
     const free = accountInfo.data.free.value
-    const reserved = accountInfo.data.reserved.value
     const locked = ignoreFees ? accountInfo.data.miscFrozen.value : accountInfo.data.feeFrozen.value
 
-    return free
-      .minus(reserved)
-      .minus(locked)
-      .minus(minBalance || 0)
+    return free.minus(locked).minus(minBalance || 0)
   }
 
   public async getUnlockingBalance(accountId: SubstrateAccountId<SubstrateCompatAddressType[Network]>): Promise<BigNumber> {
@@ -102,7 +101,7 @@ export class SubstrateAccountController<Network extends SubstrateNetwork, NodeCl
     return bonded != null
   }
 
-  public async isNominating(accountId: SubstrateAccountId<SubstrateCompatAddressType[Network]>): Promise<boolean> {
+  public async isDelegating(accountId: SubstrateAccountId<SubstrateCompatAddressType[Network]>): Promise<boolean> {
     const nominations = await this.nodeClient.getNominations(this.substrateAddressFrom(accountId))
 
     return nominations != null
