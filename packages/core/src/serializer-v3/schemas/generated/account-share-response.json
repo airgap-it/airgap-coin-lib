@@ -27,15 +27,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "publicKey",
-        "derivationPath",
-        "isExtendedPublicKey",
-        "masterFingerprint",
-        "isActive",
-        "groupId",
-        "groupLabel"
-      ],
+      "required": ["publicKey", "derivationPath", "isExtendedPublicKey", "masterFingerprint", "isActive", "groupId", "groupLabel"],
       "type": "object"
     }
   }

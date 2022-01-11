@@ -37,12 +37,7 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "rcm",
-                  "pos",
-                  "value",
-                  "address"
-                ],
+                "required": ["rcm", "pos", "value", "address"],
                 "type": "object"
               },
               "type": "array"
@@ -61,11 +56,7 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "address",
-                  "value",
-                  "memo"
-                ],
+                "required": ["address", "value", "memo"],
                 "type": "object"
               },
               "type": "array"
@@ -101,14 +92,7 @@
                             "type": "string"
                           }
                         },
-                        "required": [
-                          "cv",
-                          "epk",
-                          "payload_enc",
-                          "nonce_enc",
-                          "payload_out",
-                          "nonce_out"
-                        ],
+                        "required": ["cv", "epk", "payload_enc", "nonce_enc", "payload_out", "nonce_out"],
                         "type": "object"
                       }
                     ],
@@ -128,28 +112,15 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "root",
-                "commitments_and_ciphertexts",
-                "nullifiers"
-              ],
+              "required": ["root", "commitments_and_ciphertexts", "nullifiers"],
               "type": "object"
             }
           },
-          "required": [
-            "ins",
-            "outs",
-            "chainId",
-            "stateDiff",
-            "callParameters"
-          ],
+          "required": ["ins", "outs", "chainId", "stateDiff", "callParameters"],
           "type": "object"
         }
       },
-      "required": [
-        "publicKey",
-        "transaction"
-      ],
+      "required": ["publicKey", "transaction"],
       "type": "object"
     }
   }

@@ -12,10 +12,10 @@ import { AETestProtocolSpec } from './specs/ae'
 import { BitcoinProtocolSpec } from './specs/bitcoin'
 import { BitcoinTestProtocolSpec } from './specs/bitcoin-test'
 import { CosmosTestProtocolSpec } from './specs/cosmos'
-import { EthereumTestProtocolSpec } from './specs/ethereum'
-import { EthereumClassicTestProtocolSpec } from './specs/ethereum-classic'
-import { EthereumRopstenTestProtocolSpec } from './specs/ethereum-ropsten'
-import { GenericERC20TokenTestProtocolSpec } from './specs/generic-erc20-token'
+// import { EthereumTestProtocolSpec } from './specs/ethereum'
+// import { EthereumClassicTestProtocolSpec } from './specs/ethereum-classic'
+// import { EthereumRopstenTestProtocolSpec } from './specs/ethereum-ropsten'
+// import { GenericERC20TokenTestProtocolSpec } from './specs/generic-erc20-token'
 import { GroestlcoinProtocolSpec } from './specs/groestl'
 import { KusamaTestProtocolSpec } from './specs/kusama'
 import { MoonbaseTestProtocolSpec } from './specs/moonbase'
@@ -40,14 +40,14 @@ const expect = chai.expect
 
 const protocols = [
   new CosmosTestProtocolSpec(),
-  new EthereumTestProtocolSpec(),
-  new EthereumClassicTestProtocolSpec(),
-  new EthereumRopstenTestProtocolSpec(),
+  // new EthereumTestProtocolSpec(),
+  // new EthereumClassicTestProtocolSpec(),
+  // new EthereumRopstenTestProtocolSpec(),
   new AETestProtocolSpec(),
   new TezosTestProtocolSpec(),
   new BitcoinProtocolSpec(),
   new BitcoinTestProtocolSpec(),
-  new GenericERC20TokenTestProtocolSpec(),
+  // new GenericERC20TokenTestProtocolSpec(),
   new GroestlcoinProtocolSpec(),
   new KusamaTestProtocolSpec(),
   new PolkadotTestProtocolSpec(),
