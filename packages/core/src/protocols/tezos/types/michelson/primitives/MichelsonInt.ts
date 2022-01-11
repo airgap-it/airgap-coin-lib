@@ -1,4 +1,4 @@
-import * as bigInt from '../../../../../dependencies/src/big-integer-1.6.45/BigInteger'
+import bigInt = require('../../../../../dependencies/src/big-integer-1.6.45/BigInteger')
 import BigNumber from '../../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { invalidArgumentTypeError } from '../../../../../utils/error'
 import { MichelineDataNode, MichelinePrimitive } from '../../micheline/MichelineNode'

@@ -1,7 +1,7 @@
 import { sr25519Sign, waitReady } from '@polkadot/wasm-crypto'
 
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
-import * as keccak from '../../../dependencies/src/keccak-1.0.2/js'
+import keccak = require('../../../dependencies/src/keccak-1.0.2/js')
 import * as secp256k1 from '../../../dependencies/src/secp256k1-4.0.2/elliptic'
 import { BalanceError } from '../../../errors'
 import { Domain } from '../../../errors/coinlib-error'
@@ -256,11 +256,11 @@ export class SubstrateTransactionController<Network extends SubstrateNetwork> {
   ): Promise<SubstrateCompatSignatureType[Network]> {
     switch (signatureType) {
       case SubstrateSignatureType.Ed25519:
-        return this.signEd25519Payload(privateKey, publicKey, payload) as unknown as SubstrateCompatSignatureType[Network]
+        return (this.signEd25519Payload(privateKey, publicKey, payload) as unknown) as SubstrateCompatSignatureType[Network]
       case SubstrateSignatureType.Sr25519:
-        return this.signSr25519Payload(privateKey, publicKey, payload) as unknown as SubstrateCompatSignatureType[Network]
+        return (this.signSr25519Payload(privateKey, publicKey, payload) as unknown) as SubstrateCompatSignatureType[Network]
       case SubstrateSignatureType.Ecdsa:
-        return this.signEcdsaPayload(privateKey, payload) as unknown as SubstrateCompatSignatureType[Network]
+        return (this.signEcdsaPayload(privateKey, payload) as unknown) as SubstrateCompatSignatureType[Network]
       default:
         return Promise.reject('Signature type not supported.')
     }

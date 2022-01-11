@@ -1,8 +1,7 @@
-import * as chai from 'chai'
-import * as chaiAsPromised from 'chai-as-promised'
+import chai = require('chai')
+import chaiAsPromised = require('chai-as-promised')
 import 'mocha'
-import * as sinon from 'sinon'
-
+import sinon = require('sinon')
 import axios from '../../src/dependencies/src/axios-0.19.0/index'
 import { AirGapWallet, BitcoinProtocol, EthereumProtocol } from '../../src/index'
 import { EthereumProtocolOptions } from '../../src/protocols/ethereum/EthereumProtocolOptions'

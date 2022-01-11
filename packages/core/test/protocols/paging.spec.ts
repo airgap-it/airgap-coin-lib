@@ -1,7 +1,7 @@
-import * as chai from 'chai'
-import * as chaiAsPromised from 'chai-as-promised'
+import chai = require('chai')
+import chaiAsPromised = require('chai-as-promised')
 import 'mocha'
-import * as sinon from 'sinon'
+import sinon = require('sinon')
 import { BitcoinProtocolSpec } from './specs/bitcoin'
 import { TestProtocolSpec } from './implementations'
 import { CosmosTestProtocolSpec } from './specs/cosmos'

@@ -1,4 +1,5 @@
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { EncodeObject } from '../../../dependencies/src/cosmjs'
 import { AirGapTransactionType, IAirGapTransaction } from '../../../interfaces/IAirGapTransaction'
 import { CosmosCoin, CosmosCoinJSON } from '../CosmosCoin'
 import { CosmosProtocol } from '../CosmosProtocol'
@@ -16,6 +17,25 @@ export class CosmosSendMessage implements CosmosMessage {
     this.fromAddress = fromAddress
     this.toAddress = toAddress
     this.amount = amount
+  }
+
+  public toEncodeObject(): EncodeObject {
+    return {
+      typeUrl: this.type.value,
+      value: {
+        fromAddress: this.fromAddress,
+        toAddress: this.toAddress,
+        amount: [...this.amount]
+      }
+    }
+  }
+
+  public static fromEncodeObject(encodeObject: EncodeObject): CosmosSendMessage {
+    return new CosmosSendMessage(
+      encodeObject.value.fromAddress,
+      encodeObject.value.toAddress,
+      encodeObject.value.amount.map((amount) => new CosmosCoin(amount.denom, amount.amount))
+    )
   }
 
   public toJSON(): CosmosMessageJSON {

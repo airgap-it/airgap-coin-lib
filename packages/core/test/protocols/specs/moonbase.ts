@@ -1,5 +1,5 @@
 import { AirGapWalletStatus, MoonbaseProtocol } from '../../../src'
-import * as keccak from '../../../src/dependencies/src/keccak-1.0.2/js'
+import keccak = require('../../../src/dependencies/src/keccak-1.0.2/js')
 import * as secp256k1 from '../../../src/dependencies/src/secp256k1-4.0.2/elliptic'
 import { SubstrateNetwork } from '../../../src/protocols/substrate/SubstrateNetwork'
 import { TestProtocolSpec } from '../implementations'

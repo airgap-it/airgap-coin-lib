@@ -1,3 +1,4 @@
+import { EncodeObject } from '../../../dependencies/src/cosmjs'
 import { IAirGapTransaction } from '../../../interfaces/IAirGapTransaction'
 import { CosmosProtocol } from '../CosmosProtocol'
 
@@ -11,6 +12,20 @@ export class CosmosWithdrawDelegationRewardMessage implements CosmosMessage {
   constructor(delegatorAddress: string, validatorAddress: string) {
     this.delegatorAddress = delegatorAddress
     this.validatorAddress = validatorAddress
+  }
+
+  public toEncodeObject(): EncodeObject {
+    return {
+      typeUrl: this.type.value,
+      value: {
+        delegatorAddress: this.delegatorAddress,
+        validatorAddress: this.validatorAddress
+      }
+    }
+  }
+
+  public static fromEncodeObject(encodeObject: EncodeObject): CosmosWithdrawDelegationRewardMessage {
+    return new CosmosWithdrawDelegationRewardMessage(encodeObject.value.delegatorAddress, encodeObject.value.validatorAddress)
   }
 
   public toAirGapTransaction(protocol: CosmosProtocol, fee: string): IAirGapTransaction {
