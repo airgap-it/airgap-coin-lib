@@ -3,7 +3,14 @@
   "version": "0.12.5-beta.14",
   "command": {
     "publish": {
-      "ignoreChanges": ["*.sh", "*.md", "*.yml", ".*", "tsconfig.json", "tslint.json"]
+      "ignoreChanges": [
+        "*.sh",
+        "*.md",
+        "*.yml",
+        ".*",
+        "tsconfig.json",
+        "tslint.json"
+      ]
     }
   }
 }

@@ -1,8 +1,11 @@
 {
-  "$ref": "#/definitions/UnsignedAeternityTransaction",
+  "$ref": "#/definitions/UnsignedTypedEthereumTransaction",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
-    "UnsignedAeternityTransaction": {
+    "HexString": {
+      "type": "string"
+    },
+    "UnsignedTypedEthereumTransaction": {
       "additionalProperties": false,
       "properties": {
         "callbackURL": {
@@ -14,14 +17,17 @@
         "transaction": {
           "additionalProperties": false,
           "properties": {
-            "networkId": {
+            "derivationPath": {
               "type": "string"
             },
-            "transaction": {
+            "masterFingerprint": {
               "type": "string"
+            },
+            "serialized": {
+              "$ref": "#/definitions/HexString"
             }
           },
-          "required": ["networkId", "transaction"],
+          "required": ["serialized", "derivationPath", "masterFingerprint"],
           "type": "object"
         }
       },

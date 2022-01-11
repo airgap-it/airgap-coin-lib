@@ -27,6 +27,12 @@ export interface RawEthereumTransaction {
   data: string
 }
 
+export interface RawTypedEthereumTransaction {
+  serialized: string
+  derivationPath: string
+  masterFingerprint: string
+}
+
 export interface IInTransaction {
   txId: string
   value: string

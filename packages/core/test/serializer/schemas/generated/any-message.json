@@ -5,12 +5,9 @@
     "AnyMessage": {
       "additionalProperties": false,
       "properties": {
-        "x": {
-        }
+        "x": {}
       },
-      "required": [
-        "x"
-      ],
+      "required": ["x"],
       "type": "object"
     }
   }

@@ -247,6 +247,7 @@ import { TezosCTez, TezosCTezProtocolConfig } from './protocols/tezos/fa/TezosCT
 import { TezosPlenty, TezosPlentyProtocolConfig } from './protocols/tezos/fa/TezosPlanty'
 import { TezosWRAP, TezosWRAPProtocolConfig } from './protocols/tezos/fa/TezosWRAP'
 import { TezosQUIPU, TezosQUIPUProtocolConfig } from './protocols/tezos/fa/TezosQUIPU'
+import { UnsignedTypedEthereumTransaction } from './serializer-v3/schemas/definitions/unsigned-transaction-ethereum-typed'
 
 // tslint:enable:ordered-imports
 
@@ -473,6 +474,7 @@ export {
   UnsignedBitcoinSegwitTransaction,
   UnsignedCosmosTransaction,
   UnsignedEthereumTransaction,
+  UnsignedTypedEthereumTransaction,
   UnsignedTezosTransaction,
   SignedAeternityTransaction,
   SignedBitcoinTransaction,

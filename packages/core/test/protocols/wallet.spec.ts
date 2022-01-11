@@ -119,12 +119,36 @@ describe(`AirGapWallet`, () => {
     expect(storedAddress).to.equal('15B2gX2x1eqFKgR44nCe1i33ursGKP4Qpi')
   })
 
-  it('serialize to JSON without circular dependencies', async () => {
+  it('serialize to JSON without circular dependencies (HD)', async () => {
+    const wallet = new AirGapWallet(
+      protocol,
+      '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
+      true,
+      protocol.standardDerivationPath,
+      'f4e222fd',
+      AirGapWalletStatus.ACTIVE
+    )
+
+    const json = wallet.toJSON()
+    expect(json).to.deep.equal({
+      protocolIdentifier: MainProtocolSymbols.ETH,
+      networkIdentifier: new EthereumProtocolOptions().network.identifier,
+      publicKey: '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
+      isExtendedPublicKey: true,
+      derivationPath: "m/44'/60'/0'",
+      addressIndex: undefined,
+      addresses: [],
+      masterFingerprint: 'f4e222fd',
+      status: AirGapWalletStatus.ACTIVE
+    })
+  })
+
+  it('serialize to JSON without circular dependencies (non HD)', async () => {
     const wallet = new AirGapWallet(
       protocol,
       '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       false,
-      protocol.standardDerivationPath,
+      `${protocol.standardDerivationPath}/0/0`,
       'f4e222fd',
       AirGapWalletStatus.ACTIVE
     )
