@@ -1,6 +1,6 @@
 import * as sapling from '@airgap/sapling-wasm'
 import { SaplingPartialOutputDescription } from '@airgap/sapling-wasm'
-import * as sodium from 'libsodium-wrappers'
+import sodium = require('libsodium-wrappers')
 
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { blake2bAsBytes } from '../../../utils/blake2b'

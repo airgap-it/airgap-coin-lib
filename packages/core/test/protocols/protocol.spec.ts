@@ -1,7 +1,7 @@
-import * as chai from 'chai'
-import * as chaiAsPromised from 'chai-as-promised'
+import chai = require('chai')
+import chaiAsPromised = require('chai-as-promised')
 import 'mocha'
-import * as sinon from 'sinon'
+import sinon = require('sinon')
 
 import { IAirGapTransaction } from '../../src/interfaces/IAirGapTransaction'
 import { AirGapNodeClient } from '../../src/protocols/ethereum/clients/node-clients/AirGapNodeClient'
@@ -323,13 +323,10 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
             transaction: tx.signedTx
           }
           const airgapTxs: IAirGapTransaction[] = await protocol.lib.getTransactionDetailsFromSigned(transaction)
-
           if (airgapTxs.length !== 1) {
             throw new Error('Unexpected number of transactions')
           }
-
           const airgapTx: IAirGapTransaction = airgapTxs[0]
-
           expect(
             airgapTx.to.map((obj) => obj.toLowerCase()),
             'from'
@@ -338,12 +335,9 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
             airgapTx.from.sort().map((obj) => obj.toLowerCase()),
             'to'
           ).to.deep.equal(tx.from.sort().map((obj) => obj.toLowerCase()))
-
           expect(airgapTx.amount).to.deep.equal(protocol.txs[0].amount)
           expect(airgapTx.fee).to.deep.equal(protocol.txs[0].fee)
-
           expect(airgapTx.protocolIdentifier).to.equal(protocol.lib.identifier)
-
           expect(airgapTx.transactionDetails, 'extras should exist').to.not.be.undefined
         }
       })

@@ -1,8 +1,6 @@
 import Axios, { AxiosResponse } from '../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 
-import { CosmosMessageType } from './cosmos-message/CosmosMessage'
-
 export interface CosmosNodeInfo {
   protocol_version: {
     p2p: string
@@ -94,9 +92,23 @@ export interface CosmosValidatorCommissionRate {
   max_change_rate: string
 }
 
-export interface CosmosBroadcastSignedTransactionResponse {
+export interface TxResponse {
+  height: string
   txhash: string
-  height: number
+  codespace: string
+  code: number
+  data: string
+  raw_log: string
+  logs: any[]
+  info: string
+  gas_wanted: string
+  gas_used: string
+  tx?: any
+  timestamp: string
+}
+
+export interface CosmosBroadcastSignedTransactionResponse {
+  tx_response: TxResponse
 }
 
 export interface CosmosRewardDetails {
@@ -199,7 +211,7 @@ export class CosmosNodeClient {
             ...tx.tx,
             value: {
               ...tx.tx.value,
-              msg: tx.tx.value.msg.filter((msg) => msg.type === CosmosMessageType.Send.value) as any
+              msg: tx.tx.value.msg.filter((msg) => msg.type === 'cosmos-sdk/MsgSend') as any
             }
           }
         })) ?? []
@@ -215,14 +227,21 @@ export class CosmosNodeClient {
     return nodeInfo
   }
 
-  public async broadcastSignedTransaction(transaction: string): Promise<string> {
-    const response: AxiosResponse<CosmosBroadcastSignedTransactionResponse> = await Axios.post(this.url(`/txs`), transaction, {
-      headers: {
-        'Content-type': 'application/json'
+  public async broadcastSignedTransaction(tx_bytes: string): Promise<string> {
+    const response: AxiosResponse<CosmosBroadcastSignedTransactionResponse> = await Axios.post(
+      this.url(`/cosmos/tx/v1beta1/txs`),
+      {
+        tx_bytes,
+        mode: 'BROADCAST_MODE_ASYNC'
+      },
+      {
+        headers: {
+          'Content-type': 'application/json'
+        }
       }
-    })
+    )
 
-    return response.data.txhash
+    return response.data.tx_response.txhash
   }
 
   public async fetchAccount(address: string): Promise<CosmosAccount> {

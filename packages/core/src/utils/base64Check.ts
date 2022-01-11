@@ -1,4 +1,4 @@
-import * as createHash from '../dependencies/src/create-hash-1.2.0/index'
+import createHash = require('../dependencies/src/create-hash-1.2.0/index')
 import { ConditionViolationError } from '../errors'
 import { Domain } from '../errors/coinlib-error'
 

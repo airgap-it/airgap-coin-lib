@@ -1,4 +1,4 @@
-import * as sodium from 'libsodium-wrappers'
+import sodium = require('libsodium-wrappers')
 import { InvalidValueError } from '../../errors'
 import { Domain } from '../../errors/coinlib-error'
 
