@@ -467,10 +467,10 @@ export class MoonbeamProtocol extends SubstrateDelegateProtocol<SubstrateNetwork
         [
           SubstrateTransactionType.M_DELEGATE,
           {
-            collator: MoonbeamAddress.getPlaceholder(),
+            candidate: MoonbeamAddress.getPlaceholder(),
             amount: stakingBalance,
-            collatorDelegatorCount: 0,
-            nominationCount: 0
+            candidateDelegationCount: 0,
+            delegationCount: 0
           }
         ],
         [
