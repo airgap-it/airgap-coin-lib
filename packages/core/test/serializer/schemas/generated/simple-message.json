@@ -42,26 +42,14 @@
               "type": "number"
             }
           },
-          "required": [
-            "name",
-            "test",
-            "bool"
-          ],
+          "required": ["name", "test", "bool"],
           "type": "object"
         },
         "test": {
           "type": "number"
         }
       },
-      "required": [
-        "name",
-        "test",
-        "bool",
-        "obj",
-        "arr1",
-        "arr2",
-        "arr3"
-      ],
+      "required": ["name", "test", "bool", "obj", "arr1", "arr2", "arr3"],
       "type": "object"
     }
   }

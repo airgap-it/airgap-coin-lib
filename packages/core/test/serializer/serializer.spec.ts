@@ -1,7 +1,6 @@
-import * as chai from 'chai'
-import * as chaiAsPromised from 'chai-as-promised'
+import chai = require('chai')
+import chaiAsPromised = require('chai-as-promised')
 import 'mocha'
-
 import { Serializer } from '../../src'
 import { InvalidHexString, InvalidSchemaType, InvalidString } from '../../src/errors'
 import { SchemaRoot } from '../../src/serializer/schemas/schema'

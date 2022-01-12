@@ -1,4 +1,4 @@
-import * as sodium from 'libsodium-wrappers'
+import sodium = require('libsodium-wrappers')
 
 import * as bs58 from '../../dependencies/src/bs58-4.0.1'
 import * as bs58check from '../../dependencies/src/bs58check-2.1.2'

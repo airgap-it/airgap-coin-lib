@@ -4,17 +4,18 @@ import { mnemonicToSeed } from '../../../../dependencies/src/bip39-2.5.0/index'
 import * as bitcoinJS from '../../../../dependencies/src/bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac/src/index'
 import { OperationFailedError } from '../../../../errors'
 import { Domain } from '../../../../errors/coinlib-error'
+import { flattenArray } from '../../../../utils/array'
 import { DelegatorAction } from '../../../ICoinDelegateProtocol'
 import { SubstrateAccountController } from '../../common/SubstrateAccountController'
 import { SubstrateAccountId } from '../../compat/SubstrateCompatAddress'
 import { SubstrateNetwork } from '../../SubstrateNetwork'
 import { MoonbeamAddress } from '../data/account/MoonbeamAddress'
-import { MoonbeamBond } from '../data/staking/MoonbeamBond'
-import { MoonbeamCollatorStatus } from '../data/staking/MoonbeamCollator'
+import { MoonbeamCollatorStatus } from '../data/staking/MoonbeamCollatorCandidate'
 import { MoonbeamCollatorDetails } from '../data/staking/MoonbeamCollatorDetails'
-import { MoonbeamNominationDetails } from '../data/staking/MoonbeamNominationDetails'
-import { MoonbeamNominatorStatus } from '../data/staking/MoonbeamNominator'
-import { MoonbeamNominatorDetails } from '../data/staking/MoonbeamNominatorDetails'
+import { MoonbeamDelegationDetails } from '../data/staking/MoonbeamDelegationDetails'
+import { MoonbeamDelegationChange, MoonbeamDelegationRequest } from '../data/staking/MoonbeamDelegationRequest'
+import { MoonbeamDelegator, MoonbeamDelegatorStatusLeaving, MoonbeamDelegatorStatusRaw } from '../data/staking/MoonbeamDelegator'
+import { MoonbeamDelegatorDetails } from '../data/staking/MoonbeamDelegatorDetails'
 import { MoonbeamStakingActionType } from '../data/staking/MoonbeamStakingActionType'
 import { MoonbeamNodeClient } from '../node/MoonbeamNodeClient'
 
@@ -39,15 +40,15 @@ export class MoonbeamAccountController extends SubstrateAccountController<Substr
     return MoonbeamAddress.from(publicKey)
   }
 
-  public async isNominating(accountId: SubstrateAccountId<MoonbeamAddress>): Promise<boolean> {
-    const nominatorState = await this.nodeClient.getNominatorState(MoonbeamAddress.from(accountId))
+  public async isDelegating(accountId: SubstrateAccountId<MoonbeamAddress>): Promise<boolean> {
+    const delegatorState = await this.nodeClient.getDelegatorState(MoonbeamAddress.from(accountId))
 
-    return nominatorState ? nominatorState.nominations.elements.length > 0 : false
+    return delegatorState ? delegatorState.delegations.elements.length > 0 : false
   }
 
-  public async getMinNominationAmount(accountId: SubstrateAccountId<MoonbeamAddress>): Promise<string> {
-    const isNominating = await this.isNominating(accountId)
-    const minAmount = isNominating ? await this.nodeClient.getMinNomination() : await this.nodeClient.getMinNominatorStake()
+  public async getMinDelegationAmount(accountId: SubstrateAccountId<MoonbeamAddress>): Promise<string> {
+    const isDelegating = await this.isDelegating(accountId)
+    const minAmount = isDelegating ? await this.nodeClient.getMinDelegation() : await this.nodeClient.getMinDelegatorStake()
     if (!minAmount) {
       throw new OperationFailedError(Domain.SUBSTRATE, 'Could not fetch network constants')
     }
@@ -56,33 +57,33 @@ export class MoonbeamAccountController extends SubstrateAccountController<Substr
   }
 
   public async getCurrentCollators(accountId: SubstrateAccountId<MoonbeamAddress>): Promise<string[]> {
-    const nominatorState = await this.nodeClient.getNominatorState(MoonbeamAddress.from(accountId))
-    if (nominatorState) {
-      return nominatorState.nominations.elements.map((collatorDetails) => collatorDetails.owner.asAddress())
+    const delegatorState = await this.nodeClient.getDelegatorState(MoonbeamAddress.from(accountId))
+    if (delegatorState) {
+      return delegatorState.delegations.elements.map((collatorDetails) => collatorDetails.owner.asAddress())
     }
 
     return []
   }
 
-  public async getNominatorDetails(accountId: SubstrateAccountId<MoonbeamAddress>): Promise<MoonbeamNominatorDetails> {
+  public async getDelegatorDetails(accountId: SubstrateAccountId<MoonbeamAddress>): Promise<MoonbeamDelegatorDetails> {
     const address = MoonbeamAddress.from(accountId)
-    const results = await Promise.all([this.getBalance(address), this.nodeClient.getNominatorState(address)])
+    const results = await Promise.all([this.getBalance(address), this.nodeClient.getDelegatorState(address)])
 
     const balance = results[0]
-    const nominatorState = results[1]
+    const delegatorState = results[1]
 
     if (!balance) {
-      return Promise.reject('Could not fetch nominator details.')
+      return Promise.reject('Could not fetch delegator details.')
     }
 
-    const totalBond = nominatorState?.total.value ?? new BigNumber(0)
+    const totalBond = delegatorState?.total.value ?? new BigNumber(0)
 
-    let status: MoonbeamNominatorDetails['status']
-    switch (nominatorState?.status.value) {
-      case MoonbeamNominatorStatus.ACTIVE:
+    let status: MoonbeamDelegatorDetails['status']
+    switch (delegatorState?.status.type.value) {
+      case MoonbeamDelegatorStatusRaw.ACTIVE:
         status = 'Active'
         break
-      case MoonbeamNominatorStatus.LEAVING:
+      case MoonbeamDelegatorStatusRaw.LEAVING:
         status = 'Leaving'
         break
     }
@@ -91,15 +92,15 @@ export class MoonbeamAccountController extends SubstrateAccountController<Substr
       address: address.getValue(),
       balance: balance.toString(),
       totalBond: totalBond.toString(),
-      delegatees: nominatorState?.nominations.elements.map((bond) => bond.owner.asAddress()) ?? [],
-      availableActions: await this.getStakingActions(nominatorState?.nominations.elements ?? []),
+      delegatees: delegatorState?.delegations.elements.map((bond) => bond.owner.asAddress()) ?? [],
+      availableActions: await this.getStakingActions(delegatorState),
       status
     }
   }
 
   public async getCollatorDetails(accountId: SubstrateAccountId<MoonbeamAddress>): Promise<MoonbeamCollatorDetails> {
     const address = MoonbeamAddress.from(accountId)
-    const results = await Promise.all([this.nodeClient.getCollatorState(address), this.nodeClient.getCollatorCommission()])
+    const results = await Promise.all([this.nodeClient.getCandidateState(address), this.nodeClient.getCollatorCommission()])
 
     const collatorState = results[0]
     const commission = results[1]
@@ -120,108 +121,232 @@ export class MoonbeamAccountController extends SubstrateAccountController<Substr
         status = 'Leaving'
     }
 
-    // top nominators are already sorted (https://github.com/PureStake/moonbeam/blob/v0.13.2/pallets/parachain-staking/src/lib.rs#L152)
-    const topNominations = collatorState.topNominators.elements.map((bond) => bond.amount.value)
+    // top delegators are already sorted (https://github.com/PureStake/moonbeam/blob/v0.13.2/pallets/parachain-staking/src/lib.rs#L152)
+    const topDelegations = collatorState.topDelegations.elements.map((bond) => bond.amount.value)
 
     return {
       address: address.getValue(),
       status,
-      minEligibleBalance: topNominations[topNominations.length - 1].toString(),
+      minEligibleBalance: topDelegations[topDelegations.length - 1].toString(),
       ownStakingBalance: collatorState.bond.toString(),
       totalStakingBalance: collatorState.totalBacking.toString(),
       commission: commission.dividedBy(1_000_000_000).toString(), // commission is Perbill (parts per billion)
-      nominators: collatorState.nominators.elements.length
+      delegators: collatorState.delegators.elements.length
     }
   }
 
-  public async getNominationDetails(
+  public async getDelegationDetails(
     accountId: SubstrateAccountId<MoonbeamAddress>,
     collator: SubstrateAccountId<MoonbeamAddress>
-  ): Promise<MoonbeamNominationDetails> {
+  ): Promise<MoonbeamDelegationDetails> {
     const address = MoonbeamAddress.from(accountId)
     const results = await Promise.all([
       this.getBalance(address),
-      this.nodeClient.getNominatorState(address),
-      this.getCollatorDetails(collator)
+      this.nodeClient.getDelegatorState(address),
+      this.getCollatorDetails(collator),
+      this.nodeClient.getRound(),
+      this.nodeClient.getDefaultBlocksPerRound()
     ])
 
     const balance = results[0]
-    const nominatorState = results[1]
+    const delegatorState = results[1]
     const collatorDetails = results[2]
+    const currentRound = results[3]?.current
 
     if (!balance || !collatorDetails) {
-      return Promise.reject('Could not fetch nomination details.')
+      return Promise.reject('Could not fetch delegation details.')
     }
 
-    const bond = nominatorState?.nominations.elements.find((bond) => bond.owner.compare(collator) === 0)?.amount.value ?? new BigNumber(0)
-    const totalBond = nominatorState?.total.value ?? new BigNumber(0)
+    const bond = delegatorState?.delegations.elements.find((bond) => bond.owner.compare(collator) === 0)?.amount.value ?? new BigNumber(0)
+    const totalBond = delegatorState?.total.value ?? new BigNumber(0)
 
-    let status: MoonbeamNominatorDetails['status']
-    switch (nominatorState?.status.value) {
-      case MoonbeamNominatorStatus.ACTIVE:
+    let status: MoonbeamDelegatorDetails['status']
+    switch (delegatorState?.status.type.value) {
+      case MoonbeamDelegatorStatusRaw.ACTIVE:
         status = 'Active'
         break
-      case MoonbeamNominatorStatus.LEAVING:
-        status = 'Leaving'
+      case MoonbeamDelegatorStatusRaw.LEAVING:
+        status = currentRound?.gte((delegatorState.status as MoonbeamDelegatorStatusLeaving).roundIndex) ? 'ReadyToLeave' : 'Leaving'
         break
     }
 
-    const nominatorDetails = {
+    const delegatorDetails = {
       address: address.getValue(),
       balance: balance.toString(),
       totalBond: totalBond.toString(),
-      delegatees: nominatorState?.nominations.elements.map((bond) => bond.owner.asAddress()) ?? [],
-      availableActions: await this.getStakingActions(nominatorState?.nominations.elements ?? [], collatorDetails),
+      delegatees: delegatorState?.delegations.elements.map((bond) => bond.owner.asAddress()) ?? [],
+      availableActions: await this.getStakingActions(delegatorState, collatorDetails),
       status
     }
 
+    const changeRequest = delegatorState?.requests.requests.elements.find(
+      (request) => request.first.asAddress() === collatorDetails.address
+    )?.second
+
     return {
-      nominatorDetails,
+      delegatorDetails,
       collatorDetails,
-      bond: bond.toString()
+      bond: bond.toString(),
+      pendingRequest: changeRequest
+        ? {
+            type: changeRequest.action.value === MoonbeamDelegationChange.REVOKE ? 'revoke' : 'decrease',
+            amount: changeRequest.amount.toString(),
+            executableIn: currentRound
+              ? BigNumber.max(changeRequest.whenExecutable.value.minus(currentRound.value), 0).toNumber()
+              : undefined
+          }
+        : undefined
     }
   }
 
-  private async getStakingActions(nominations: MoonbeamBond[], collator?: MoonbeamCollatorDetails): Promise<DelegatorAction[]> {
+  private async getStakingActions(delegator?: MoonbeamDelegator, collator?: MoonbeamCollatorDetails): Promise<DelegatorAction[]> {
     const actions: DelegatorAction[] = []
 
-    const maxCollators = await this.nodeClient.getMaxCollatorsPerNominator()
+    const scheduledLeaving = delegator
+      ? delegator.status instanceof MoonbeamDelegatorStatusLeaving
+        ? delegator.status.roundIndex.value
+        : undefined
+      : undefined
 
-    const canNominateCollator =
-      maxCollators?.gt(nominations.length) && collator && !nominations.some((bond) => bond.owner.compare(collator.address) === 0)
+    const scheduledRequests =
+      delegator && collator
+        ? delegator.requests.requests.elements.filter((value) => value.first.asAddress() === collator.address).map((value) => value.second)
+        : []
 
-    const isNominatingCollator = collator && nominations.some((bond) => bond.owner.compare(collator.address) === 0)
+    const delegations = delegator?.delegations.elements ?? []
+    const maxDelegations = await this.nodeClient.getMaxDelegationsPerDelegator()
 
-    if (canNominateCollator) {
-      actions.push({
-        type: MoonbeamStakingActionType.NOMINATE,
-        args: ['collator', 'amount']
-      })
+    const canDelegateToCollator =
+      maxDelegations?.gt(delegations.length) && collator && !delegations.some((bond) => bond.owner.compare(collator.address) === 0)
+
+    const isDelegatingCollator = !!collator && delegations.some((bond) => bond.owner.compare(collator.address) === 0)
+
+    const currentRound = scheduledLeaving || scheduledRequests ? (await this.nodeClient.getRound())?.current.value : undefined
+
+    if (canDelegateToCollator && !scheduledLeaving && scheduledRequests.length === 0) {
+      actions.push(...this.getUndelegatedActions())
     }
 
-    if (nominations.length > 0) {
-      actions.push({
-        type: MoonbeamStakingActionType.CANCEL_ALL_NOMINATIONS
-      })
+    if (delegations.length > 0 && !scheduledLeaving && scheduledRequests.length === 0) {
+      actions.push(...this.getDelegatedActions(isDelegatingCollator))
+    }
 
-      if (isNominatingCollator) {
-        actions.push(
-          {
-            type: MoonbeamStakingActionType.BOND_MORE,
-            args: ['candidate', 'more']
-          },
-          {
-            type: MoonbeamStakingActionType.BOND_LESS,
-            args: ['candidate', 'less']
-          },
-          {
-            type: MoonbeamStakingActionType.CANCEL_NOMINATION,
-            args: ['collator']
-          }
-        )
-      }
+    if (scheduledLeaving && currentRound) {
+      actions.push(...(await this.getLeavingActions(currentRound, scheduledLeaving)))
+    }
+
+    if (scheduledRequests.length > 0 && currentRound) {
+      actions.push(...(await this.getRequestActions(currentRound, scheduledRequests)))
     }
 
     return actions
+  }
+
+  private getUndelegatedActions(): DelegatorAction[] {
+    return [
+      {
+        type: MoonbeamStakingActionType.DELEGATE,
+        args: ['candidate', 'amount']
+      }
+    ]
+  }
+
+  private getDelegatedActions(isDelegatingCollator: boolean): DelegatorAction[] {
+    const actions: DelegatorAction[] = []
+
+    actions.push({
+      type: MoonbeamStakingActionType.SCHEDULE_UNDELEGATE_ALL
+    })
+
+    if (isDelegatingCollator) {
+      actions.push(
+        {
+          type: MoonbeamStakingActionType.BOND_MORE,
+          args: ['candidate', 'more']
+        },
+        {
+          type: MoonbeamStakingActionType.SCHEDULE_BOND_LESS,
+          args: ['candidate', 'less']
+        },
+        {
+          type: MoonbeamStakingActionType.SCHEDULE_UNDELEGATE,
+          args: ['collator']
+        }
+      )
+    }
+
+    return actions
+  }
+
+  private async getLeavingActions(currentRound: BigNumber, scheduledLeaving: BigNumber): Promise<DelegatorAction[]> {
+    if (currentRound.gte(scheduledLeaving)) {
+      return [
+        {
+          type: MoonbeamStakingActionType.EXECUTE_UNDELEGATE_ALL
+        }
+      ]
+    } else {
+      return [
+        {
+          type: MoonbeamStakingActionType.CANCEL_UNDELEGATE_ALL
+        }
+      ]
+    }
+  }
+
+  private async getRequestActions(currentRound: BigNumber, scheduledRequests: MoonbeamDelegationRequest[]): Promise<DelegatorAction[]> {
+    const actions = await Promise.all(
+      scheduledRequests.map((request) => {
+        if (request.action.value === MoonbeamDelegationChange.REVOKE) {
+          return this.getRevokeRequestActions(currentRound, request)
+        }
+
+        if (request.action.value === MoonbeamDelegationChange.DECREASE) {
+          return this.getDecreaseRequestActions(currentRound, request)
+        }
+
+        return []
+      })
+    )
+
+    return flattenArray(actions)
+  }
+
+  private async getRevokeRequestActions(currentRound: BigNumber, scheduledRequest: MoonbeamDelegationRequest): Promise<DelegatorAction[]> {
+    if (currentRound.gte(scheduledRequest.whenExecutable.value)) {
+      return [
+        {
+          type: MoonbeamStakingActionType.EXECUTE_UNDELEGATE,
+          args: ['candidate']
+        }
+      ]
+    } else {
+      return [
+        {
+          type: MoonbeamStakingActionType.CANCEL_UNDELEGATE,
+          args: ['candidate']
+        }
+      ]
+    }
+  }
+
+  private async getDecreaseRequestActions(
+    currentRound: BigNumber,
+    scheduledRequest: MoonbeamDelegationRequest
+  ): Promise<DelegatorAction[]> {
+    if (currentRound.gte(scheduledRequest.whenExecutable.value)) {
+      return [
+        {
+          type: MoonbeamStakingActionType.EXECUTE_BOND_LESS,
+          args: ['candidate']
+        }
+      ]
+    } else {
+      return [
+        {
+          type: MoonbeamStakingActionType.CANCEL_BOND_LESS
+        }
+      ]
+    }
   }
 }

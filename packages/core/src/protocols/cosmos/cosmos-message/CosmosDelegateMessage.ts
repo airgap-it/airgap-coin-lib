@@ -1,3 +1,4 @@
+import { EncodeObject } from '../../../dependencies/src/cosmjs'
 import { AirGapTransactionType, IAirGapTransaction } from '../../../interfaces/IAirGapTransaction'
 import { CosmosCoin } from '../CosmosCoin'
 import { CosmosProtocol } from '../CosmosProtocol'
@@ -16,6 +17,27 @@ export class CosmosDelegateMessage implements CosmosMessage {
     this.validatorAddress = validatorAddress
     this.amount = amount
     this.type = undelegate ? CosmosMessageType.Undelegate : CosmosMessageType.Delegate
+  }
+
+  public toEncodeObject(): EncodeObject {
+    return {
+      typeUrl: this.type.value,
+      value: {
+        delegatorAddress: this.delegatorAddress,
+        validatorAddress: this.validatorAddress,
+        amount: this.amount
+      }
+    }
+  }
+
+  public static fromEncodeObject(encodeObject: EncodeObject): CosmosDelegateMessage {
+    const undelegate = encodeObject.typeUrl === CosmosMessageType.Undelegate.value
+    return new CosmosDelegateMessage(
+      encodeObject.value.delegatorAddress,
+      encodeObject.value.validatorAddress,
+      new CosmosCoin(encodeObject.value.amount?.denom ?? 'uatom', encodeObject.value.amount?.amount ?? '0'),
+      undelegate
+    )
   }
 
   public toJSON(): CosmosMessageJSON {

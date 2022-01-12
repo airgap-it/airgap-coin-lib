@@ -39,22 +39,11 @@
               "$ref": "#/definitions/HexString"
             }
           },
-          "required": [
-            "nonce",
-            "gasPrice",
-            "gasLimit",
-            "to",
-            "value",
-            "chainId",
-            "data"
-          ],
+          "required": ["nonce", "gasPrice", "gasLimit", "to", "value", "chainId", "data"],
           "type": "object"
         }
       },
-      "required": [
-        "publicKey",
-        "transaction"
-      ],
+      "required": ["publicKey", "transaction"],
       "type": "object"
     }
   }

@@ -3,7 +3,7 @@ import { Domain } from '../../../errors/coinlib-error'
 import { IAirGapTransaction } from '../../../interfaces/IAirGapTransaction'
 import { CosmosCoinJSON } from '../CosmosCoin'
 import { CosmosProtocol } from '../CosmosProtocol'
-import { JSONConvertible, RPCConvertible } from '../CosmosTransaction'
+import { Encodable, JSONConvertible, RPCConvertible } from '../CosmosTransaction'
 
 export interface CosmosMessageJSON {
   type: CosmosMessageTypeIndex
@@ -32,16 +32,16 @@ export class CosmosMessageType {
     this.index = index
     switch (index) {
       case CosmosMessageTypeIndex.SEND:
-        this.value = 'cosmos-sdk/MsgSend'
+        this.value = '/cosmos.bank.v1beta1.MsgSend'
         break
       case CosmosMessageTypeIndex.DELEGATE:
-        this.value = 'cosmos-sdk/MsgDelegate'
+        this.value = '/cosmos.staking.v1beta1.MsgDelegate'
         break
       case CosmosMessageTypeIndex.UNDELEGATE:
-        this.value = 'cosmos-sdk/MsgUndelegate'
+        this.value = '/cosmos.staking.v1beta1.MsgUndelegate'
         break
       case CosmosMessageTypeIndex.WITHDRAW_DELEGATION_REWARD:
-        this.value = 'cosmos-sdk/MsgWithdrawDelegationReward'
+        this.value = '/cosmos.distribution.v1beta1.MsgWithdrawDelegatorReward'
         break
       default:
         throw new InvalidValueError(Domain.COSMOS, 'Unknown message')
@@ -49,7 +49,7 @@ export class CosmosMessageType {
   }
 }
 
-export interface CosmosMessage extends JSONConvertible, RPCConvertible {
+export interface CosmosMessage extends JSONConvertible, RPCConvertible, Encodable {
   type: CosmosMessageType
 
   toAirGapTransaction(protocol: CosmosProtocol, fee: string): IAirGapTransaction

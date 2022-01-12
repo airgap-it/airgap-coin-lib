@@ -2,12 +2,11 @@
 import { ProtocolBlockExplorer } from '../../../../utils/ProtocolBlockExplorer'
 import { NetworkType } from '../../../../utils/ProtocolNetwork'
 import { SubscanBlockExplorer } from '../../SubstrateProtocolOptions'
-
 import {
+  BaseMoonbeamProtocolNetwork,
+  BaseMoonbeamProtocolOptions,
   MoonbeamProtocolConfig,
-  MoonbeamProtocolNetwork,
-  MoonbeamProtocolNetworkExtras,
-  MoonbeamProtocolOptions
+  MoonbeamProtocolNetworkExtras
 } from '../MoonbeamProtocolOptions'
 
 const MAINNET_NAME: string = 'Mainnet'
@@ -31,7 +30,7 @@ export class MoonriverSubscanBlockExplorer extends SubscanBlockExplorer {
   }
 }
 
-export class MoonriverProtocolNetwork extends MoonbeamProtocolNetwork<MoonriverProtocolNetworkExtras> {
+export class MoonriverProtocolNetwork extends BaseMoonbeamProtocolNetwork<MoonriverProtocolNetworkExtras> {
   constructor(
     name: string = MAINNET_NAME,
     type: NetworkType = NetworkType.MAINNET,
@@ -43,7 +42,7 @@ export class MoonriverProtocolNetwork extends MoonbeamProtocolNetwork<MoonriverP
   }
 }
 
-export class MoonriverProtocolOptions extends MoonbeamProtocolOptions<MoonriverProtocolConfig> {
+export class MoonriverProtocolOptions extends BaseMoonbeamProtocolOptions<MoonriverProtocolConfig> {
   constructor(
     public readonly network: MoonriverProtocolNetwork = new MoonriverProtocolNetwork(),
     public readonly config: MoonriverProtocolConfig = new MoonriverProtocolConfig()

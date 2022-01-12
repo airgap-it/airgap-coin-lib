@@ -1,6 +1,5 @@
-import * as sodium from 'libsodium-wrappers'
-
-import * as bigInt from '../../dependencies/src/big-integer-1.6.45/BigInteger'
+import sodium = require('libsodium-wrappers')
+import bigInt = require('../../dependencies/src/big-integer-1.6.45/BigInteger')
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import * as bs58check from '../../dependencies/src/bs58check-2.1.2/index'
 import { OperationFailedError, UnsupportedError } from '../../errors'
@@ -151,7 +150,7 @@ export class TezosUtils {
       if (i === 0) {
         n = n.or(arr[i])
       } else {
-        n = n.or(bigInt(arr[i]).shiftLeft(7 * i - 1))
+        n = n // .or(bigInt(arr[i]).shiftLeft(7 * i - 1))
       }
     }
 

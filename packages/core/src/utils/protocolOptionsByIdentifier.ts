@@ -7,6 +7,7 @@ import { EthereumProtocolNetwork, EthereumProtocolOptions } from '../protocols/e
 import { GroestlcoinProtocolNetwork, GroestlcoinProtocolOptions } from '../protocols/groestlcoin/GroestlcoinProtocolOptions'
 import { KusamaProtocolNetwork, KusamaProtocolOptions } from '../protocols/substrate/kusama/KusamaProtocolOptions'
 import { MoonbaseProtocolNetwork, MoonbaseProtocolOptions } from '../protocols/substrate/moonbeam/moonbase/MoonbaseProtocolOptions'
+import { MoonbeamProtocolNetwork, MoonbeamProtocolOptions } from '../protocols/substrate/moonbeam/MoonbeamProtocolOptions'
 import { MoonriverProtocolNetwork, MoonriverProtocolOptions } from '../protocols/substrate/moonbeam/moonriver/MoonriverProtocolOptions'
 import { PolkadotProtocolNetwork, PolkadotProtocolOptions } from '../protocols/substrate/polkadot/PolkadotProtocolOptions'
 import { TezosCTezProtocolConfig } from '../protocols/tezos/fa/TezosCTez'
@@ -60,6 +61,8 @@ const getProtocolOptionsByIdentifier: (identifier: ProtocolSymbols, network?: Pr
       return new MoonbaseProtocolOptions(network ? (network as MoonbaseProtocolNetwork) : new MoonbaseProtocolNetwork())
     case MainProtocolSymbols.MOONRIVER:
       return new MoonriverProtocolOptions(network ? (network as MoonriverProtocolNetwork) : new MoonriverProtocolNetwork())
+    case MainProtocolSymbols.MOONBEAM:
+      return new MoonbeamProtocolOptions(network ? (network as MoonbeamProtocolNetwork) : new MoonbeamProtocolNetwork())
     case MainProtocolSymbols.XTZ:
     case SubProtocolSymbols.XTZ_KT:
       return new TezosProtocolOptions(network ? (network as TezosProtocolNetwork) : new TezosProtocolNetwork())

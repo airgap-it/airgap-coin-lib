@@ -45,11 +45,11 @@ export abstract class SubstrateDelegateProtocol<Network extends SubstrateNetwork
   }
 
   public async isPublicKeyDelegating(publicKey: string): Promise<boolean> {
-    return this.options.accountController.isNominating(publicKey)
+    return this.options.accountController.isDelegating(publicKey)
   }
 
   public async isAddressDelegating(address: string): Promise<boolean> {
-    return this.options.accountController.isNominating(address)
+    return this.options.accountController.isDelegating(address)
   }
 
   public async getDelegatorDetailsFromPublicKey(publicKey: string): Promise<DelegatorDetails> {
@@ -103,7 +103,7 @@ export abstract class SubstrateDelegateProtocol<Network extends SubstrateNetwork
       case SubstrateStakingActionType.BOND_NOMINATE:
         assertFields(`${SubstrateStakingActionType[type]} action`, data, 'targets', 'value', 'payee')
 
-        return this.prepareDelegation(publicKey, data.tip || 0, data.targets, data.controller || publicKey, data.value, data.payee)
+        return this.prepareNomination(publicKey, data.tip || 0, data.targets, data.controller || publicKey, data.value, data.payee)
       case SubstrateStakingActionType.REBOND_NOMINATE:
         assertFields(`${SubstrateStakingActionType[type]} action`, data, 'targets', 'value')
 
@@ -111,9 +111,9 @@ export abstract class SubstrateDelegateProtocol<Network extends SubstrateNetwork
       case SubstrateStakingActionType.NOMINATE:
         assertFields(`${SubstrateStakingActionType[type]} action`, data, 'targets')
 
-        return this.prepareDelegation(publicKey, data.tip || 0, data.targets)
+        return this.prepareNomination(publicKey, data.tip || 0, data.targets)
       case SubstrateStakingActionType.CANCEL_NOMINATION:
-        return this.prepareCancelDelegation(publicKey, data.tip || 0, data.value)
+        return this.prepareScheduleUndelegate(publicKey, data.tip || 0, data.value)
       case SubstrateStakingActionType.CHANGE_NOMINATION:
         assertFields(`${SubstrateStakingActionType[type]} action`, data, 'targets')
 
@@ -145,7 +145,7 @@ export abstract class SubstrateDelegateProtocol<Network extends SubstrateNetwork
     }
   }
 
-  public async prepareDelegation(
+  public async prepareNomination(
     publicKey: string,
     tip: string | number | BigNumber,
     targets: string[] | string,
@@ -237,7 +237,7 @@ export abstract class SubstrateDelegateProtocol<Network extends SubstrateNetwork
     return [{ encoded }]
   }
 
-  public async prepareCancelDelegation(
+  public async prepareScheduleUndelegate(
     publicKey: string,
     tip: string | number | BigNumber,
     value?: string | number | BigNumber

@@ -1,4 +1,5 @@
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
+import { EncodeObject } from '../../dependencies/src/cosmjs'
 import { InvalidValueError } from '../../errors'
 import { Domain } from '../../errors/coinlib-error'
 import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
@@ -19,7 +20,11 @@ export interface RPCConvertible {
   toRPCBody(): any
 }
 
-export class CosmosTransaction implements JSONConvertible, RPCConvertible {
+export interface Encodable {
+  toEncodeObject(): EncodeObject
+}
+
+export class CosmosTransaction implements JSONConvertible, RPCConvertible, Encodable {
   public readonly messages: CosmosMessage[]
   public readonly fee: CosmosFee
   public readonly memo: string
@@ -55,6 +60,16 @@ export class CosmosTransaction implements JSONConvertible, RPCConvertible {
       memo: this.memo,
       msgs: this.messages.map((value) => value.toRPCBody()),
       sequence: this.sequence
+    }
+  }
+
+  public toEncodeObject(): EncodeObject {
+    return {
+      typeUrl: '/cosmos.tx.v1beta1.TxBody',
+      value: {
+        messages: this.messages.map((msg) => msg.toEncodeObject()),
+        memo: this.memo
+      }
     }
   }
 

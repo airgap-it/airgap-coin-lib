@@ -1,7 +1,7 @@
-import * as chai from 'chai'
-import * as chaiAsPromised from 'chai-as-promised'
+import chai = require('chai')
+import chaiAsPromised = require('chai-as-promised')
 import 'mocha'
-import * as sinon from 'sinon'
+import sinon = require('sinon')
 
 import { IAirGapTransaction } from '../../src/interfaces/IAirGapTransaction'
 import { AirGapNodeClient } from '../../src/protocols/ethereum/clients/node-clients/AirGapNodeClient'
@@ -12,10 +12,10 @@ import { AETestProtocolSpec } from './specs/ae'
 import { BitcoinProtocolSpec } from './specs/bitcoin'
 import { BitcoinTestProtocolSpec } from './specs/bitcoin-test'
 import { CosmosTestProtocolSpec } from './specs/cosmos'
-import { EthereumTestProtocolSpec } from './specs/ethereum'
-import { EthereumClassicTestProtocolSpec } from './specs/ethereum-classic'
-import { EthereumRopstenTestProtocolSpec } from './specs/ethereum-ropsten'
-import { GenericERC20TokenTestProtocolSpec } from './specs/generic-erc20-token'
+// import { EthereumTestProtocolSpec } from './specs/ethereum'
+// import { EthereumClassicTestProtocolSpec } from './specs/ethereum-classic'
+// import { EthereumRopstenTestProtocolSpec } from './specs/ethereum-ropsten'
+// import { GenericERC20TokenTestProtocolSpec } from './specs/generic-erc20-token'
 import { GroestlcoinProtocolSpec } from './specs/groestl'
 import { KusamaTestProtocolSpec } from './specs/kusama'
 import { MoonbaseTestProtocolSpec } from './specs/moonbase'
@@ -40,14 +40,14 @@ const expect = chai.expect
 
 const protocols = [
   new CosmosTestProtocolSpec(),
-  new EthereumTestProtocolSpec(),
-  new EthereumClassicTestProtocolSpec(),
-  new EthereumRopstenTestProtocolSpec(),
+  // new EthereumTestProtocolSpec(),
+  // new EthereumClassicTestProtocolSpec(),
+  // new EthereumRopstenTestProtocolSpec(),
   new AETestProtocolSpec(),
   new TezosTestProtocolSpec(),
   new BitcoinProtocolSpec(),
   new BitcoinTestProtocolSpec(),
-  new GenericERC20TokenTestProtocolSpec(),
+  // new GenericERC20TokenTestProtocolSpec(),
   new GroestlcoinProtocolSpec(),
   new KusamaTestProtocolSpec(),
   new PolkadotTestProtocolSpec(),
@@ -323,13 +323,10 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
             transaction: tx.signedTx
           }
           const airgapTxs: IAirGapTransaction[] = await protocol.lib.getTransactionDetailsFromSigned(transaction)
-
           if (airgapTxs.length !== 1) {
             throw new Error('Unexpected number of transactions')
           }
-
           const airgapTx: IAirGapTransaction = airgapTxs[0]
-
           expect(
             airgapTx.to.map((obj) => obj.toLowerCase()),
             'from'
@@ -338,12 +335,9 @@ protocols.forEach(async (protocol: TestProtocolSpec) => {
             airgapTx.from.sort().map((obj) => obj.toLowerCase()),
             'to'
           ).to.deep.equal(tx.from.sort().map((obj) => obj.toLowerCase()))
-
           expect(airgapTx.amount).to.deep.equal(protocol.txs[0].amount)
           expect(airgapTx.fee).to.deep.equal(protocol.txs[0].fee)
-
           expect(airgapTx.protocolIdentifier).to.equal(protocol.lib.identifier)
-
           expect(airgapTx.transactionDetails, 'extras should exist').to.not.be.undefined
         }
       })

@@ -1,8 +1,7 @@
-import * as chai from 'chai'
-import * as chaiAsPromised from 'chai-as-promised'
+import chai = require('chai')
+import chaiAsPromised = require('chai-as-promised')
 import 'mocha'
-import * as sinon from 'sinon'
-
+import sinon = require('sinon')
 import axios from '../../src/dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
 import {
@@ -242,12 +241,35 @@ describe(`AirGapCoinWallet`, () => {
     expect(storedAddress).to.equal('15B2gX2x1eqFKgR44nCe1i33ursGKP4Qpi')
   })
 
-  it('serialize to JSON without circular dependencies', async () => {
+  it('serialize to JSON without circular dependencies (HD)', async () => {
+    const wallet = new AirGapCoinWallet(
+      protocol,
+      '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
+      true,
+      protocol.standardDerivationPath,
+      '',
+      AirGapWalletStatus.ACTIVE,
+      new AirGapPriceService()
+    )
+
+    const json = wallet.toJSON()
+    expect({ ...json, priceService: undefined }).to.deep.include({
+      protocolIdentifier: MainProtocolSymbols.ETH,
+      networkIdentifier: new EthereumProtocolOptions().network.identifier,
+      publicKey: '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
+      isExtendedPublicKey: true,
+      derivationPath: "m/44'/60'/0'",
+      addressIndex: undefined,
+      addresses: []
+    })
+  })
+
+  it('serialize to JSON without circular dependencies (non-HD)', async () => {
     const wallet = new AirGapCoinWallet(
       protocol,
       '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       false,
-      protocol.standardDerivationPath,
+      `${protocol.standardDerivationPath}/0/0`,
       '',
       AirGapWalletStatus.ACTIVE,
       new AirGapPriceService()
