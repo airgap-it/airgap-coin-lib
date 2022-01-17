@@ -176,24 +176,35 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
     cursor?: TezosSaplingTransactionCursor
   ): Promise<TezosSaplingTransactionResult> {
     const saplingStateDiff: TezosSaplingStateDiff = await this.nodeClient.getSaplingStateDiff()
-    const page: number = cursor?.page ?? 0
 
-    const adjustedLimit: number = limit * 2
-    const pageStart: number = page * adjustedLimit
-    const pageEnd: number = pageStart + adjustedLimit
+    const incoming: TezosSaplingInput[] = []
+    const outgoing: TezosSaplingInput[] = []
 
-    const commitmentsAndCiphertexts: [string, TezosSaplingCiphertext, BigNumber][] = saplingStateDiff.commitments_and_ciphertexts
-      .map(
-        ([commitment, ciphertext]: [string, TezosSaplingCiphertext], index: number) =>
-          [commitment, ciphertext, new BigNumber(index)] as [string, TezosSaplingCiphertext, BigNumber]
-      )
-      .reverse()
-      .slice(pageStart, pageEnd)
+    let page: number = cursor?.page ?? 0
+    let pageStart: number = page * limit
+    let pageEnd: number = pageStart + limit
 
-    const [incoming, outgoing]: [TezosSaplingInput[], TezosSaplingInput[]] = await Promise.all([
-      this.bookkeeper.getIncomingInputs(publicKey, commitmentsAndCiphertexts),
-      this.bookkeeper.getOutgoingInputs(publicKey, commitmentsAndCiphertexts)
-    ])
+    while (incoming.length + outgoing.length < limit && pageStart < saplingStateDiff.commitments_and_ciphertexts.length) {
+      const commitmentsAndCiphertexts: [string, TezosSaplingCiphertext, BigNumber][] = saplingStateDiff.commitments_and_ciphertexts
+        .map(
+          ([commitment, ciphertext]: [string, TezosSaplingCiphertext], index: number) =>
+            [commitment, ciphertext, new BigNumber(index)] as [string, TezosSaplingCiphertext, BigNumber]
+        )
+        .reverse()
+        .slice(pageStart, pageEnd)
+
+      const inputs: [TezosSaplingInput[], TezosSaplingInput[]] = await Promise.all([
+        this.bookkeeper.getIncomingInputs(publicKey, commitmentsAndCiphertexts),
+        this.bookkeeper.getOutgoingInputs(publicKey, commitmentsAndCiphertexts)
+      ])
+
+      incoming.push(...inputs[0])
+      outgoing.push(...inputs[1])
+
+      page += 1
+      pageStart += limit
+      pageEnd += limit
+    }
 
     const airGapIncoming: IAirGapTransaction[] = await Promise.all(
       incoming.map(async (input: TezosSaplingInput) => ({
