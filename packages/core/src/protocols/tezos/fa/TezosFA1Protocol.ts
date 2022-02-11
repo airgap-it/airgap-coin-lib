@@ -18,6 +18,7 @@ import { TezosFAProtocol } from './TezosFAProtocol'
 import { TezosFAProtocolOptions } from './TezosFAProtocolOptions'
 import { ConditionViolationError, NotFoundError } from '../../../errors'
 import { Domain } from '../../../errors/coinlib-error'
+import { MichelsonString } from '../types/michelson/primitives/MichelsonString'
 
 enum TezosFA1ContractEntrypoint {
   BALANCE = 'getBalance',
@@ -129,10 +130,8 @@ export class TezosFA1Protocol extends TezosFAProtocol {
 
   public async getBalance(address: string, source?: string, callbackContract: string = this.callbackContract()): Promise<string> {
     const getBalanceCall = await this.contract.createContractCall(TezosFA1ContractEntrypoint.BALANCE, [
-      {
-        owner: address
-      },
-      callbackContract
+      new MichelsonAddress(new MichelsonString(address)),
+      new MichelsonAddress(new MichelsonString(callbackContract))
     ])
 
     return this.getContractCallIntResult(getBalanceCall, this.requireSource(source, address, 'kt'))

@@ -11,7 +11,7 @@ import {
 
 const MAINNET_NAME: string = 'Mainnet'
 
-const NODE_URL: string = 'https://rpc.testnet.moonbeam.network'
+const NODE_URL: string = 'https://moonbeam-alpha.api.onfinality.io/public'
 
 const BLOCK_EXPLORER_URL: string = 'https://moonbase.subscan.io'
 const BLOCK_EXPLORER_API: string = 'https://moonbase.subscan.io/api/scan'
