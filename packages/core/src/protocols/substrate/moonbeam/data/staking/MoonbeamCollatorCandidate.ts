@@ -1,3 +1,5 @@
+// TODO: Remove once Moonriver and Moonbeam are updated to runtime 1200.
+
 import { SCALEDecoder } from '../../../common/data/scale/SCALEDecoder'
 import { SCALEAccountId } from '../../../common/data/scale/type/SCALEAccountId'
 import { SCALEArray } from '../../../common/data/scale/type/SCALEArray'
