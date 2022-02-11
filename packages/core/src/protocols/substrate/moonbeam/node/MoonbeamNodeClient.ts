@@ -5,6 +5,7 @@ import { SCALEInt } from '../../common/data/scale/type/SCALEInt'
 import { SubstrateNodeClient } from '../../common/node/SubstrateNodeClient'
 import { SubstrateNetwork } from '../../SubstrateNetwork'
 import { MoonbeamAddress } from '../data/account/MoonbeamAddress'
+import { MoonbeamCandidateMetadata } from '../data/staking/MoonbeamCandidateMetadata'
 import { MoonbeamCollatorCandidate } from '../data/staking/MoonbeamCollatorCandidate'
 import { MoonbeamDelegator } from '../data/staking/MoonbeamDelegator'
 import { MoonbeamRoundInfo } from '../data/staking/MoonbeamRoundInfo'
@@ -32,9 +33,9 @@ export class MoonbeamNodeClient extends SubstrateNodeClient<SubstrateNetwork.MOO
     )
   }
 
-  public async getCandidateState(address: MoonbeamAddress): Promise<MoonbeamCollatorCandidate | undefined> {
-    return this.fromStorage('ParachainStaking', 'CandidateState', SCALEAccountId.from(address, this.network)).then((item) =>
-      item ? MoonbeamCollatorCandidate.decode(this.runtimeVersion, item) : undefined
+  public async getCandidateInfo(address: MoonbeamAddress): Promise<MoonbeamCandidateMetadata | undefined> {
+    return this.fromStorage('ParachainStaking', 'CandidateInfo', SCALEAccountId.from(address, this.network)).then((item) =>
+      item ? MoonbeamCandidateMetadata.decode(this.runtimeVersion, item) : undefined
     )
   }
 
@@ -44,8 +45,14 @@ export class MoonbeamNodeClient extends SubstrateNodeClient<SubstrateNetwork.MOO
     )
   }
 
-  public async getMaxDelegatorsPerCandidate(): Promise<BigNumber | undefined> {
-    return this.getConstant('ParachainStaking', 'MaxDelegatorsPerCandidate').then((item) =>
+  public async getMaxTopDelegationsPerCandidate(): Promise<BigNumber | undefined> {
+    return this.getConstant('ParachainStaking', 'MaxTopDelegationsPerCandidate').then((item) =>
+      item ? SCALEInt.decode(item, 32).decoded.value : undefined
+    )
+  }
+
+  public async getMaxBottomDelegationsPerCandidate(): Promise<BigNumber | undefined> {
+    return this.getConstant('ParachainStaking', 'MaxBottomDelegationsPerCandidate').then((item) =>
       item ? SCALEInt.decode(item, 32).decoded.value : undefined
     )
   }
@@ -91,6 +98,20 @@ export class MoonbeamNodeClient extends SubstrateNodeClient<SubstrateNetwork.MOO
   public async getDefaultBlocksPerRound(): Promise<BigNumber | undefined> {
     return this.getConstant('ParachainStaking', 'DefaultBlocksPerRound').then((item) =>
       item ? SCALEInt.decode(item).decoded.value : undefined
+    )
+  }
+
+  // TODO: Remove once Moonriver and Moonbeam are updated to runtime 1200.
+
+  public async getCandidateState(address: MoonbeamAddress): Promise<MoonbeamCollatorCandidate | undefined> {
+    return this.fromStorage('ParachainStaking', 'CandidateState', SCALEAccountId.from(address, this.network)).then((item) =>
+      item ? MoonbeamCollatorCandidate.decode(this.runtimeVersion, item) : undefined
+    )
+  }
+
+  public async getMaxDelegatorsPerCandidate(): Promise<BigNumber | undefined> {
+    return this.getConstant('ParachainStaking', 'MaxDelegatorsPerCandidate').then((item) =>
+      item ? SCALEInt.decode(item, 32).decoded.value : undefined
     )
   }
 }
