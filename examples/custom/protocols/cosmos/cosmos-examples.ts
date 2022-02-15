@@ -8,11 +8,12 @@ const keyPair = cosmos.generateKeyPair(mnemonic)
 const pubKey = keyPair.publicKey.toString('hex')
 cosmos.getAddressFromPublicKey(pubKey).then((address) => {
   cosmos
-    .prepareTransactionFromPublicKey(pubKey, [address], ["0"], cosmos.feeDefaults.medium, 'testing')
+    .prepareTransactionFromPublicKey(pubKey, [address.getValue()], ['0'], cosmos.feeDefaults.medium, { memo: 'testing' })
     .then((transaction) => {
       cosmos.signWithPrivateKey(keyPair.privateKey, transaction).then((signed) => {
         console.log('Signed Transaction:')
         console.log(signed)
       })
     })
+  cosmos.getBalanceOfAddresses([address.getValue()]).then(console.log).catch(console.error)
 })

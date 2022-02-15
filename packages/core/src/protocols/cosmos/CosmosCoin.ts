@@ -1,3 +1,4 @@
+import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { UnsupportedError } from '../../errors'
 import { Domain } from '../../errors/coinlib-error'
 import { JSONConvertible, RPCConvertible } from './CosmosTransaction'
@@ -30,6 +31,22 @@ export class CosmosCoin implements JSONConvertible, RPCConvertible {
     }
 
     return new CosmosCoin(json.denom, json.amount)
+  }
+
+  public static fromCoins(json: CosmosCoinJSON[]): CosmosCoin[] {
+    return json
+      .map((coinJSON) => {
+        try {
+          return CosmosCoin.fromJSON(coinJSON)
+        } catch {
+          return undefined
+        }
+      })
+      .filter((value) => value !== undefined) as CosmosCoin[]
+  }
+
+  public static sum(coins: CosmosCoin[]): BigNumber {
+    return coins.reduce((current, next) => current.plus(new BigNumber(next.amount)), new BigNumber(0))
   }
 
   public toRPCBody(): any {
