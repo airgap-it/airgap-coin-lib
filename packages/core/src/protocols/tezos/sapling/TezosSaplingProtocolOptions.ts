@@ -7,7 +7,7 @@ import { CurrencyUnit, FeeDefaults } from '../../ICoinProtocol'
 import { TezosProtocolConfig, TezosProtocolNetwork } from '../TezosProtocolOptions'
 import { TezosSaplingTransaction } from '../types/sapling/TezosSaplingTransaction'
 
-const NODE_URL: string = 'https://tezos-hangzhounet-node.prod.gke.papers.tech'
+const NODE_URL: string = 'https://tezos-mainnet-node.prod.gke.papers.tech'
 
 export interface TezosSaplingExternalMethodProvider {
   initParameters?: (spendParams: Buffer, outputParams: Buffer) => Promise<void>
@@ -54,7 +54,7 @@ export class TezosShieldedTezProtocolConfig extends TezosSaplingProtocolConfig {
   constructor(
     public readonly name: string = 'Shielded Tez',
     public readonly identifier: ProtocolSymbols = MainProtocolSymbols.XTZ_SHIELDED,
-    public readonly contractAddress: string = 'KT1THKUU1urnd2siSM9inxcJpsbnVQuYt2qr',
+    public readonly contractAddress: string = 'KT1BUZy6xNbmo5ogfD7nDRMBspfG1EEFfDFW',
     public readonly externalProvider?: TezosSaplingExternalMethodProvider,
     public readonly memoSize: number = 8,
     public readonly merkleTreeHeight: number = 32
@@ -77,7 +77,7 @@ export class TezosShieldedTezProtocolConfig extends TezosSaplingProtocolConfig {
 
 export class TezosSaplingProtocolOptions implements ProtocolOptions<TezosSaplingProtocolConfig> {
   constructor(
-    public network: TezosProtocolNetwork = new TezosProtocolNetwork('Hangzhounet', NetworkType.TESTNET, NODE_URL),
+    public network: TezosProtocolNetwork = new TezosProtocolNetwork('Mainnet', NetworkType.MAINNET, NODE_URL),
     public config: TezosSaplingProtocolConfig = new TezosShieldedTezProtocolConfig()
   ) {}
 }
