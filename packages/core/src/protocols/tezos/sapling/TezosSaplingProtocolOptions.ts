@@ -1,13 +1,10 @@
 // tslint:disable: max-classes-per-file
 import { SaplingPartialOutputDescription, SaplingUnsignedSpendDescription } from '@airgap/sapling-wasm'
-import { NetworkType } from '../../../utils/ProtocolNetwork'
 import { ProtocolOptions } from '../../../utils/ProtocolOptions'
 import { MainProtocolSymbols, ProtocolSymbols } from '../../../utils/ProtocolSymbols'
 import { CurrencyUnit, FeeDefaults } from '../../ICoinProtocol'
 import { TezosProtocolConfig, TezosProtocolNetwork } from '../TezosProtocolOptions'
 import { TezosSaplingTransaction } from '../types/sapling/TezosSaplingTransaction'
-
-const NODE_URL: string = 'https://tezos-mainnet-node.prod.gke.papers.tech'
 
 export interface TezosSaplingExternalMethodProvider {
   initParameters?: (spendParams: Buffer, outputParams: Buffer) => Promise<void>
@@ -77,7 +74,7 @@ export class TezosShieldedTezProtocolConfig extends TezosSaplingProtocolConfig {
 
 export class TezosSaplingProtocolOptions implements ProtocolOptions<TezosSaplingProtocolConfig> {
   constructor(
-    public network: TezosProtocolNetwork = new TezosProtocolNetwork('Mainnet', NetworkType.MAINNET, NODE_URL),
+    public network: TezosProtocolNetwork = new TezosProtocolNetwork(),
     public config: TezosSaplingProtocolConfig = new TezosShieldedTezProtocolConfig()
   ) {}
 }
