@@ -31,16 +31,7 @@ export const supportedStorageEntries = {
   System: ['Account'] as const,
 
   // Moonbeam
-  ParachainStaking: [
-    'CollatorCommission',
-    'CandidateInfo',
-    'DelegatorState',
-    'Round',
-    'SelectedCandidates',
-
-    // TODO: Remove once Moonriver and Moonbeam are updated to runtime 1200.
-    'CandidateState'
-  ] as const
+  ParachainStaking: ['CollatorCommission', 'CandidateInfo', 'DelegatorState', 'Round', 'SelectedCandidates'] as const
 }
 
 export const supportedCalls = {
@@ -91,10 +82,7 @@ export const supportedConstants = {
     'CandidateBondLessDelay',
     'LeaveDelegatorsDelay',
     'RevokeDelegationDelay',
-    'DelegationBondLessDelay',
-
-    // TODO: Remove once Moonriver and Moonbeam are updated to runtime 1200.
-    'MaxDelegatorsPerCandidate'
+    'DelegationBondLessDelay'
   ] as const
 }
 
