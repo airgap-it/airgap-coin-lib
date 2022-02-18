@@ -44,16 +44,21 @@ export class AirGapNFTWallet extends AirGapMarketWallet {
     this.currentMarketPrice = {}
   }
 
-  public async fetchCurrentMarketPrice(_assetID: string, _baseSymbol: string = 'USD'): Promise<BigNumber> {
+  public async fetchCurrentMarketPrice(assetID: string, _baseSymbol: string = 'USD'): Promise<BigNumber> {
     // TODO
-    return new BigNumber(0)
+    const result = new BigNumber(0)
+    this.setCurrentMarketPrice(result, assetID)
+    return result
   }
 
   public async balanceOf(assetID: string): Promise<BigNumber> {
+    let result: BigNumber
     if (this.isExtendedPublicKey) {
-      return new BigNumber(await this.protocol.getBalanceOfExtendedPublicKey(this.publicKey, 0, { assetID }))
+      result = new BigNumber(await this.protocol.getBalanceOfExtendedPublicKey(this.publicKey, 0, { assetID }))
     } else {
-      return new BigNumber(await this.protocol.getBalanceOfPublicKey(this.publicKey, { addressIndex: this.addressIndex, assetID }))
+      result = new BigNumber(await this.protocol.getBalanceOfPublicKey(this.publicKey, { addressIndex: this.addressIndex, assetID }))
     }
+    this.setCurrentBalance(result, assetID)
+    return result
   }
 }
