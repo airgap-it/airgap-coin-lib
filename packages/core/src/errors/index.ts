@@ -30,7 +30,8 @@ export enum ProtocolErrorType {
   PROPERTY_UNDEFINED = 'PROPERTY_UNDEFINED',
   OPERATION_FAILED = 'OPERATION_FAILED',
   NOT_IMPLEMENTED = 'NOT_IMPLEMENTED',
-  INVALID_VALUE = 'INVALID_VALUE'
+  INVALID_VALUE = 'INVALID_VALUE',
+  TRANSACTION_FAILED = 'TRANSACTION_FAILED'
 }
 
 /**
@@ -88,6 +89,12 @@ export class NotFoundError extends CoinlibError {
 export class BalanceError extends CoinlibError {
   constructor(domain: Domain, description?: string) {
     super(domain, ProtocolErrorType.BALANCE, description)
+  }
+}
+
+export class TransactionError extends CoinlibError {
+  constructor(domain: Domain, description?: string, public data?: unknown) {
+    super(domain, ProtocolErrorType.TRANSACTION_FAILED, description)
   }
 }
 

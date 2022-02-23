@@ -2,8 +2,17 @@
 // This needs to be imported first, otherwise the tests won't run anymore
 import { EthereumProtocol } from './protocols/ethereum/EthereumProtocol'
 
-import { ProtocolNotSupported, ProtocolVersionMismatch, SerializerVersionMismatch, TypeNotSupported, NetworkError } from './errors'
-import { Domain } from './errors/coinlib-error'
+import {
+  ProtocolNotSupported,
+  SerializerVersionMismatch,
+  TypeNotSupported,
+  NetworkError,
+  SerializerErrorType,
+  ProtocolErrorType,
+  BalanceError,
+  TransactionError
+} from './errors'
+import { CoinlibError, Domain } from './errors/coinlib-error'
 import { IAirGapTransaction, IAirGapTransactionResult, IProtocolTransactionCursor } from './interfaces/IAirGapTransaction'
 import { IAirGapWallet } from './interfaces/IAirGapWallet'
 import { AeternityProtocol } from './protocols/aeternity/AeternityProtocol'
@@ -507,8 +516,12 @@ export {
   SerializerVersionMismatch,
   ProtocolNotSupported,
   NetworkError,
+  CoinlibError,
+  SerializerErrorType,
+  ProtocolErrorType,
+  BalanceError,
+  TransactionError,
   Domain,
-  ProtocolVersionMismatch,
   // libsodium ready
   isCoinlibReady,
   // sub-protocols
