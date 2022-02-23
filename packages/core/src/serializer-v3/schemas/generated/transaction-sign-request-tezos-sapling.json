@@ -20,6 +20,9 @@
             "chainId": {
               "type": "string"
             },
+            "contractAddress": {
+              "type": "string"
+            },
             "ins": {
               "items": {
                 "additionalProperties": false,
@@ -116,7 +119,7 @@
               "type": "object"
             }
           },
-          "required": ["ins", "outs", "chainId", "stateDiff", "callParameters"],
+          "required": ["ins", "outs", "contractAddress", "chainId", "stateDiff", "callParameters"],
           "type": "object"
         }
       },

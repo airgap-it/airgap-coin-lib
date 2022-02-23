@@ -4,7 +4,6 @@ import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
 import * as bs58check from '../../dependencies/src/bs58check-2.1.2/index'
 import { generateWalletUsingDerivationPath } from '../../dependencies/src/hd-wallet-js-b216450e56954a6e82ace0aade9474673de5d9d5/src/index'
-import { isArray } from '../../dependencies/src/validate.js-0.13.1/validate'
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
 import { AirGapTransactionStatus, IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 import { SignedTezosTransaction } from '../../serializer/schemas/definitions/signed-transaction-tezos'
@@ -42,9 +41,10 @@ import {
   BalanceError,
   PropertyUndefinedError,
   OperationFailedError,
-  NetworkError
+  NetworkError,
+  TransactionError,
+  ProtocolErrorType
 } from '../../errors/index'
-import { ErrorWithData } from '../../utils/ErrorWithData'
 
 const MAX_OPERATIONS_PER_GROUP: number = 200
 const MAX_GAS_PER_BLOCK: number = 5200000
@@ -579,7 +579,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
           maxFee = new BigNumber(0)
         }
       } catch (error) {
-        if (error.message !== undefined && error.message === 'Operation errors' && isArray(error.data)) {
+        if (error.code !== undefined && error.code === ProtocolErrorType.TRANSACTION_FAILED && Array.isArray(error.data)) {
           const rpcErrors = error.data as { id: string; kind: string; amount?: string; balance?: string; contract?: string }[]
           const balanceTooLowError = rpcErrors.find((error) => error.id.endsWith('.contract.balance_too_low'))
           if (balanceTooLowError !== undefined && balanceTooLowError.amount !== undefined && balanceTooLowError.balance !== undefined) {
@@ -1192,7 +1192,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
           metadata.internal_operation_results.forEach((internalOperation: RunOperationInternalOperationResult) => {
             if (internalOperation?.result) {
               if (internalOperation.result.errors) {
-                throw new NetworkError(Domain.TEZOS, { response })
+                throw new TransactionError(Domain.TEZOS, 'An internal operation produced an error', internalOperation.result.errors)
               }
 
               gasLimit += Number(internalOperation.result.consumed_gas)
@@ -1211,7 +1211,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
         }
 
         if (result.errors) {
-          throw new ErrorWithData('Operation errors', result.errors)
+          throw new TransactionError(Domain.TEZOS, 'The operation produced an error', result.errors)
         }
 
         // Add gas and storage used by operation

@@ -1,8 +1,10 @@
 import * as sapling from '@airgap/sapling-wasm'
 import sodium = require('libsodium-wrappers')
+import { Domain } from '../../..'
 
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { mnemonicToSeed } from '../../../dependencies/src/bip39-2.5.0'
+import { BalanceError, ProtocolErrorType } from '../../../errors'
 import { AirGapTransactionStatus, IAirGapTransaction } from '../../../interfaces/IAirGapTransaction'
 import { SignedTezosTransaction } from '../../../serializer/schemas/definitions/signed-transaction-tezos'
 import { UnsignedTezosTransaction } from '../../../serializer/schemas/definitions/unsigned-transaction-tezos'
@@ -243,13 +245,13 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
       transaction.ins,
       transaction.outs,
       stateTree,
-      this.getAntiReplay(transaction.chainId),
+      this.getAntiReplay(transaction.chainId, transaction.contractAddress),
       privateKey
     )
 
     const signed: string = this.encoder.encodeTransaction(forgedTransaction).toString('hex')
 
-    return transaction.callParameters.replace(TezosSaplingProtocol.TRANSACTION_PLACEHOLDER, signed)
+    return transaction.callParameters.replace(Buffer.from(TezosSaplingProtocol.TRANSACTION_PLACEHOLDER, 'utf-8').toString('hex'), signed)
   }
 
   public async getTransactionDetails(
@@ -263,8 +265,19 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
       const from: TezosSaplingAddress = await this.getAddressFromPublicKey(transaction.publicKey)
       const parameters: TezosTransactionParameters = this.contract.parseParameters(tx.callParameters)
       const wrappedTransactions: TezosSaplingWrappedTransaction[] = await this.parseParameters(parameters)
+      const details: IAirGapTransaction[] = this.bookkeeper
+        .getUnsignedTransactionDetails(from, tx.ins, tx.outs, wrappedTransactions)
+        .map((details: IAirGapTransaction) => ({
+          ...details,
+          extra: {
+            ...details.extra,
+            destination: tx.contractAddress,
+            chainId: tx.chainId
+          },
+          transactionDetails: tx
+        }))
 
-      airGapTxs.push(...this.bookkeeper.getUnsignedTransactionDetails(from, tx.ins, tx.outs, wrappedTransactions))
+      airGapTxs.push(...details)
     } else {
       const wrappedOperation: TezosWrappedOperation = await this.tezosProtocol.unforgeUnsignedTezosWrappedOperation(tx.binaryTransaction)
 
@@ -331,7 +344,8 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
           fee: operation.fee,
           protocolIdentifier: this.identifier,
           network: this.options.network,
-          ...partials
+          ...partials,
+          transactionDetails: operation
         }))
       })
     )
@@ -442,8 +456,19 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
 
       return { binaryTransaction: binaryTx }
     } catch (error) {
-      console.error(error.message)
-      throw new Error('Forging Tezos TX failed.')
+      console.error(error)
+      if (error.code !== undefined && error.code === ProtocolErrorType.TRANSACTION_FAILED) {
+        const rpcErrors = error.data as { id: string; kind: string; amount?: string; balance?: string; contract?: string }[]
+        const cannotPayStorageFee = rpcErrors.find((error) => error.id.endsWith('.contract.cannot_pay_storage_fee'))
+        if (cannotPayStorageFee) {
+          throw new BalanceError(Domain.TEZOS, 'Balance too low, cannot pay for storage fee')
+        }
+        const balanceTooLowError = rpcErrors.find((error) => error.id.endsWith('.contract.balance_too_low'))
+        if (balanceTooLowError) {
+          throw new BalanceError(Domain.TEZOS, 'Balance too low')
+        }
+      }
+      throw error
     }
   }
 
@@ -520,17 +545,15 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
       value
     )
 
-    const paybackOutput: TezosSaplingOutput = {
-      address: (await this.getAddressFromPublicKey(viewingKey)).getValue(),
-      value: toSpend.minus(value).toString(),
-      memo: Buffer.alloc(this.options.config.memoSize).toString('hex')
-    }
+    const address: TezosSaplingAddress = await this.getAddressFromPublicKey(viewingKey)
+    const paybackOutput: TezosSaplingOutput | undefined = this.createPaybackOutput(address, toSpend, value)
 
     const contractCall: TezosContractCall = await this.preparePartialContractCall(recipient)
 
     return {
       ins: inputs,
-      outs: [paybackOutput],
+      outs: [paybackOutput].filter((output) => output !== undefined) as TezosSaplingOutput[],
+      contractAddress: this.options.config.contractAddress,
       chainId,
       stateDiff,
       callParameters: JSON.stringify(contractCall.toJSON())
@@ -562,18 +585,10 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
       value
     )
 
-    const paymentOutput: TezosSaplingOutput = {
-      address: (await TezosSaplingAddress.fromValue(recipient)).getValue(),
-      value,
-      memo: Buffer.alloc(this.options.config.memoSize).toString('hex')
-    }
-
     const address: TezosSaplingAddress = await this.getAddressFromPublicKey(viewingKey)
-    const paybackOutput: TezosSaplingOutput = {
-      address: address.getValue(),
-      value: toSpend.minus(value).toString(),
-      memo: Buffer.alloc(this.options.config.memoSize).toString('hex')
-    }
+
+    const paymentOutput: TezosSaplingOutput = this.createPaymentOutput(await TezosSaplingAddress.fromValue(recipient), value)
+    const paybackOutput: TezosSaplingOutput | undefined = this.createPaybackOutput(address, toSpend, value)
 
     const contractCall: TezosContractCall = await this.preparePartialContractCall()
 
@@ -584,7 +599,8 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
 
     return {
       ins: inputs.concat(dummyInputs),
-      outs: [paymentOutput, paybackOutput, ...dummyOutputs],
+      outs: [paymentOutput, paybackOutput, ...dummyOutputs].filter((output) => output !== undefined) as TezosSaplingOutput[],
+      contractAddress: this.options.config.contractAddress,
       chainId,
       stateDiff,
       callParameters: JSON.stringify(contractCall.toJSON())
@@ -621,12 +637,41 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
 
   private async preparePartialContractCall(unshieldTarget?: string): Promise<TezosContractCall> {
     const wrappedTransaction: TezosSaplingWrappedTransaction = {
-      signed: TezosSaplingProtocol.TRANSACTION_PLACEHOLDER,
+      signed: Buffer.from(TezosSaplingProtocol.TRANSACTION_PLACEHOLDER, 'utf-8'),
       unshieldTarget: unshieldTarget !== undefined ? await TezosAddress.fromValue(unshieldTarget) : undefined
     }
     const contractCalls: TezosContractCall[] = await this.prepareContractCalls([wrappedTransaction])
 
     return contractCalls[0]
+  }
+
+  private createPaymentOutput(
+    address: TezosSaplingAddress,
+    value: BigNumber | number | string,
+    memo: Buffer = Buffer.alloc(this.options.config.memoSize)
+  ): TezosSaplingOutput {
+    return {
+      address: address.getValue(),
+      value: new BigNumber(value).toString(),
+      memo: memo.toString('hex')
+    }
+  }
+
+  private createPaybackOutput(
+    address: TezosSaplingAddress,
+    toSpend: BigNumber,
+    value: BigNumber | number | string,
+    memo: Buffer = Buffer.alloc(this.options.config.memoSize)
+  ): TezosSaplingOutput | undefined {
+    const paybackValue: BigNumber = toSpend.minus(value)
+
+    return paybackValue.gt(0)
+      ? {
+          address: address.getValue(),
+          value: paybackValue.toString(),
+          memo: memo.toString('hex')
+        }
+      : undefined
   }
 
   private async createDummyInput(address: TezosSaplingAddress): Promise<TezosSaplingInput> {
@@ -662,8 +707,8 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
     return this.getAddressFromPublicKey(viewingKey)
   }
 
-  private getAntiReplay(chainId: string): string {
-    return this.options.config.contractAddress + chainId
+  private getAntiReplay(chainId: string, contractAddress?: string): string {
+    return (contractAddress ?? this.options.config.contractAddress) + chainId
   }
 
   public async broadcastTransaction(rawTransaction: any): Promise<string> {
@@ -735,6 +780,7 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
       transaction instanceof Object &&
       'ins' in transaction &&
       'outs' in transaction &&
+      'contractAddress' in transaction &&
       'chainId' in transaction &&
       'stateDiff' in transaction &&
       'callParameters' in transaction

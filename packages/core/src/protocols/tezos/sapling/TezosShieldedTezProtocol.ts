@@ -21,9 +21,15 @@ export class TezosShieldedTezProtocol extends TezosSaplingProtocol {
   }
 
   public async prepareContractCalls(transactions: TezosSaplingWrappedTransaction[]): Promise<TezosContractCall[]> {
-    const balances: BigNumber[] = transactions.map((transaction: TezosSaplingWrappedTransaction) =>
-      isHex(transaction.signed) ? this.encoder.decodeBalanceFromTransaction(Buffer.from(transaction.signed, 'hex')) : new BigNumber(0)
-    )
+    const balances: BigNumber[] = transactions.map((transaction: TezosSaplingWrappedTransaction) => {
+      const signedBuffer = Buffer.isBuffer(transaction.signed)
+        ? transaction.signed
+        : isHex(transaction.signed)
+        ? Buffer.from(transaction.signed, 'hex')
+        : undefined
+
+      return signedBuffer ? this.encoder.decodeBalanceFromTransaction(signedBuffer) : new BigNumber(0)
+    })
 
     const callAmount: BigNumber = balances.reduce(
       (sum: BigNumber, next: BigNumber) => (next.isNegative() ? sum.plus(next.negated()) : sum),
