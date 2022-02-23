@@ -25,16 +25,16 @@ import { CosmosAddress } from './CosmosAddress'
 import { CosmosCoin } from './CosmosCoin'
 import { CosmosCryptoClient } from './CosmosCryptoClient'
 import { CosmosFee } from './CosmosFee'
+import { CosmosNodeClient } from './CosmosNodeClient'
 import {
   CosmosAccount,
   CosmosDelegation,
-  CosmosNodeClient,
   CosmosNodeInfo,
   CosmosPagedSendTxsResponse,
   CosmosRewardDetails,
   CosmosUnbondingDelegation,
   CosmosValidator
-} from './CosmosNodeClient'
+} from './CosmosTypes'
 import { CosmosProtocolOptions } from './CosmosProtocolOptions'
 import { CosmosTransaction } from './CosmosTransaction'
 import { CosmosTransactionCursor, CosmosTransactionResult } from './CosmosTypes'

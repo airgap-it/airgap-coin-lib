@@ -1,6 +1,6 @@
 import { TezosAddress } from '../../TezosAddress'
 
 export interface TezosSaplingWrappedTransaction {
-  signed: string
+  signed: string | Buffer
   unshieldTarget?: TezosAddress
 }

@@ -2,8 +2,17 @@
 // This needs to be imported first, otherwise the tests won't run anymore
 import { EthereumProtocol } from './protocols/ethereum/EthereumProtocol'
 
-import { ProtocolNotSupported, ProtocolVersionMismatch, SerializerVersionMismatch, TypeNotSupported, NetworkError } from './errors'
-import { Domain } from './errors/coinlib-error'
+import {
+  ProtocolNotSupported,
+  SerializerVersionMismatch,
+  TypeNotSupported,
+  NetworkError,
+  SerializerErrorType,
+  ProtocolErrorType,
+  BalanceError,
+  TransactionError
+} from './errors'
+import { CoinlibError, Domain } from './errors/coinlib-error'
 import { IAirGapTransaction, IAirGapTransactionResult, IProtocolTransactionCursor } from './interfaces/IAirGapTransaction'
 import { IAirGapWallet } from './interfaces/IAirGapWallet'
 import { AeternityProtocol } from './protocols/aeternity/AeternityProtocol'
@@ -182,7 +191,6 @@ import { TezosFA1p2Protocol } from './protocols/tezos/fa/TezosFA1p2Protocol'
 import { TezosSaplingProtocol } from './protocols/tezos/sapling/TezosSaplingProtocol'
 import { TezosShieldedTezProtocol } from './protocols/tezos/sapling/TezosShieldedTezProtocol'
 import { ImportAccountAction, ImportAccoutActionContext } from './actions/GetKtAccountsAction'
-import { CosmosUnbondingDelegation, CosmosValidator } from './protocols/cosmos/CosmosNodeClient'
 import { SubstrateElectionStatus } from './protocols/substrate/common/data/staking/SubstrateEraElectionStatus'
 import { SubstrateNominationStatus } from './protocols/substrate/common/data/staking/SubstrateNominationStatus'
 import { SubstrateNominatorDetails, SubstrateStakingDetails } from './protocols/substrate/common/data/staking/SubstrateNominatorDetails'
@@ -248,6 +256,7 @@ import { TezosPlenty, TezosPlentyProtocolConfig } from './protocols/tezos/fa/Tez
 import { TezosWRAP, TezosWRAPProtocolConfig } from './protocols/tezos/fa/TezosWRAP'
 import { TezosQUIPU, TezosQUIPUProtocolConfig } from './protocols/tezos/fa/TezosQUIPU'
 import { UnsignedTypedEthereumTransaction } from './serializer-v3/schemas/definitions/unsigned-transaction-ethereum-typed'
+import { CosmosUnbondingDelegation, CosmosValidator } from './protocols/cosmos/CosmosTypes'
 
 // tslint:enable:ordered-imports
 
@@ -507,8 +516,12 @@ export {
   SerializerVersionMismatch,
   ProtocolNotSupported,
   NetworkError,
+  CoinlibError,
+  SerializerErrorType,
+  ProtocolErrorType,
+  BalanceError,
+  TransactionError,
   Domain,
-  ProtocolVersionMismatch,
   // libsodium ready
   isCoinlibReady,
   // sub-protocols

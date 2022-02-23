@@ -99,75 +99,37 @@ export class MoonbeamAccountController extends SubstrateAccountController<Substr
   }
 
   public async getCollatorDetails(accountId: SubstrateAccountId<MoonbeamAddress>): Promise<MoonbeamCollatorDetails> {
-    const runtimeVersion = await this.nodeClient.getRuntimeVersion()
     const address = MoonbeamAddress.from(accountId)
 
-    if (runtimeVersion === null || runtimeVersion.specVersion >= 1200) {
-      const results = await Promise.all([this.nodeClient.getCandidateInfo(address), this.nodeClient.getCollatorCommission()])
+    const results = await Promise.all([this.nodeClient.getCandidateInfo(address), this.nodeClient.getCollatorCommission()])
 
-      const candidateInfo = results[0]
-      const commission = results[1]
+    const candidateInfo = results[0]
+    const commission = results[1]
 
-      if (!candidateInfo || !commission) {
-        return Promise.reject('Could not fetch collator details.')
-      }
+    if (!candidateInfo || !commission) {
+      return Promise.reject('Could not fetch collator details.')
+    }
 
-      let status: MoonbeamCollatorDetails['status']
-      switch (candidateInfo.status.value) {
-        case MoonbeamCollatorStatus.ACTIVE:
-          status = 'Active'
-          break
-        case MoonbeamCollatorStatus.IDLE:
-          status = 'Idle'
-          break
-        case MoonbeamCollatorStatus.LEAVING:
-          status = 'Leaving'
-      }
+    let status: MoonbeamCollatorDetails['status']
+    switch (candidateInfo.status.value) {
+      case MoonbeamCollatorStatus.ACTIVE:
+        status = 'Active'
+        break
+      case MoonbeamCollatorStatus.IDLE:
+        status = 'Idle'
+        break
+      case MoonbeamCollatorStatus.LEAVING:
+        status = 'Leaving'
+    }
 
-      return {
-        address: address.getValue(),
-        status,
-        minEligibleBalance: candidateInfo.lowestTopDelegationAmount.toString(),
-        ownStakingBalance: candidateInfo.bond.toString(),
-        totalStakingBalance: candidateInfo.totalCounted.toString(),
-        commission: commission.dividedBy(1_000_000_000).toString(), // commission is Perbill (parts per billion)
-        delegators: candidateInfo.delegationCount.toNumber()
-      }
-    } else {
-      // TODO: Remove once Moonriver and Moonbeam are updated to runtime 1200.
-      const results = await Promise.all([this.nodeClient.getCandidateState(address), this.nodeClient.getCollatorCommission()])
-
-      const collatorState = results[0]
-      const commission = results[1]
-
-      if (!collatorState || !commission) {
-        return Promise.reject('Could not fetch collator details.')
-      }
-
-      let status: MoonbeamCollatorDetails['status']
-      switch (collatorState.status.value) {
-        case MoonbeamCollatorStatus.ACTIVE:
-          status = 'Active'
-          break
-        case MoonbeamCollatorStatus.IDLE:
-          status = 'Idle'
-          break
-        case MoonbeamCollatorStatus.LEAVING:
-          status = 'Leaving'
-      }
-
-      // top delegators are already sorted (https://github.com/PureStake/moonbeam/blob/v0.13.2/pallets/parachain-staking/src/lib.rs#L152)
-      const topDelegations = collatorState.topDelegations.elements.map((bond) => bond.amount.value)
-
-      return {
-        address: address.getValue(),
-        status,
-        minEligibleBalance: topDelegations[topDelegations.length - 1].toString(),
-        ownStakingBalance: collatorState.bond.toString(),
-        totalStakingBalance: collatorState.totalBacking.toString(),
-        commission: commission.dividedBy(1_000_000_000).toString(), // commission is Perbill (parts per billion)
-        delegators: collatorState.delegators.elements.length
-      }
+    return {
+      address: address.getValue(),
+      status,
+      minEligibleBalance: candidateInfo.lowestTopDelegationAmount.toString(),
+      ownStakingBalance: candidateInfo.bond.toString(),
+      totalStakingBalance: candidateInfo.totalCounted.toString(),
+      commission: commission.dividedBy(1_000_000_000).toString(), // commission is Perbill (parts per billion)
+      delegators: candidateInfo.delegationCount.toNumber()
     }
   }
 

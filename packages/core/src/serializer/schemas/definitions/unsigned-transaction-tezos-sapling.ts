@@ -31,6 +31,7 @@ interface TezosSaplingCiphertext {
 interface RawTezosSaplingTransaction {
   ins: TezosSaplingInput[]
   outs: TezosSaplingOutput[]
+  contractAddress: string
   chainId: string
   stateDiff: TezosSaplingStateDiff
   callParameters: string

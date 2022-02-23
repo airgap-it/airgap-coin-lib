@@ -69,7 +69,10 @@ export class TezosSaplingBookkeeper {
   ): Promise<Partial<IAirGapTransaction>[]> {
     const partials: Partial<IAirGapTransaction>[][] = await Promise.all(
       wrappedTransactions.map(async (wrappedTransaction: TezosSaplingWrappedTransaction) => {
-        const transaction: TezosSaplingTransaction = this.encoder.decodeTransaction(Buffer.from(wrappedTransaction.signed, 'hex'))
+        const signedBuffer = Buffer.isBuffer(wrappedTransaction.signed)
+          ? wrappedTransaction.signed
+          : Buffer.from(wrappedTransaction.signed, 'hex')
+        const transaction: TezosSaplingTransaction = this.encoder.decodeTransaction(signedBuffer)
         const [from, details]: [string | undefined, Partial<IAirGapTransaction>[]] = await this.getTransactionPartialDetails(
           transaction,
           knownViewingKeys
