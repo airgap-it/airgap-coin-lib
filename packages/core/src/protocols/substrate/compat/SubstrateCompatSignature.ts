@@ -12,25 +12,31 @@ export interface SubstrateCompatSignatureType extends Record<SubstrateNetwork, S
   [SubstrateNetwork.POLKADOT]: SubstrateSignature
   [SubstrateNetwork.KUSAMA]: SubstrateSignature
   [SubstrateNetwork.MOONBEAM]: MoonbeamSignature
+  [SubstrateNetwork.ASTAR]: SubstrateSignature
 }
 
 export function substrateSignatureFactory<Network extends SubstrateNetwork>(substrateNetwork: Network): SubstrateSignatureFactory<Network> {
   switch (substrateNetwork) {
     case SubstrateNetwork.POLKADOT:
-      return {
+      return ({
         create: SubstrateSignature.create,
         decode: SubstrateSignature.decode
-      } as unknown as SubstrateSignatureFactory<Network>
+      } as unknown) as SubstrateSignatureFactory<Network>
     case SubstrateNetwork.KUSAMA:
-      return {
+      return ({
         create: SubstrateSignature.create,
         decode: SubstrateSignature.decode
-      } as unknown as SubstrateSignatureFactory<Network>
+      } as unknown) as SubstrateSignatureFactory<Network>
     case SubstrateNetwork.MOONBEAM:
-      return {
+      return ({
         create: MoonbeamSignature.create,
         decode: MoonbeamSignature.decode
-      } as unknown as SubstrateSignatureFactory<Network>
+      } as unknown) as SubstrateSignatureFactory<Network>
+    case SubstrateNetwork.ASTAR:
+      return ({
+        create: SubstrateSignature.create,
+        decode: SubstrateSignature.decode
+      } as unknown) as SubstrateSignatureFactory<Network>
     default:
       throw new Error('Unknown Substrate network')
   }

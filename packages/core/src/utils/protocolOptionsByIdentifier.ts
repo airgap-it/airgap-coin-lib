@@ -5,6 +5,7 @@ import { BitcoinProtocolNetwork, BitcoinProtocolOptions } from '../protocols/bit
 import { CosmosProtocolNetwork, CosmosProtocolOptions } from '../protocols/cosmos/CosmosProtocolOptions'
 import { EthereumProtocolNetwork, EthereumProtocolOptions } from '../protocols/ethereum/EthereumProtocolOptions'
 import { GroestlcoinProtocolNetwork, GroestlcoinProtocolOptions } from '../protocols/groestlcoin/GroestlcoinProtocolOptions'
+import { AstarProtocolNetwork, AstarProtocolOptions } from '../protocols/substrate/astar/AstarProtocolOptions'
 import { KusamaProtocolNetwork, KusamaProtocolOptions } from '../protocols/substrate/kusama/KusamaProtocolOptions'
 import { MoonbaseProtocolNetwork, MoonbaseProtocolOptions } from '../protocols/substrate/moonbeam/moonbase/MoonbaseProtocolOptions'
 import { MoonbeamProtocolNetwork, MoonbeamProtocolOptions } from '../protocols/substrate/moonbeam/MoonbeamProtocolOptions'
@@ -63,6 +64,8 @@ const getProtocolOptionsByIdentifier: (identifier: ProtocolSymbols, network?: Pr
       return new MoonriverProtocolOptions(network ? (network as MoonriverProtocolNetwork) : new MoonriverProtocolNetwork())
     case MainProtocolSymbols.MOONBEAM:
       return new MoonbeamProtocolOptions(network ? (network as MoonbeamProtocolNetwork) : new MoonbeamProtocolNetwork())
+    case MainProtocolSymbols.ASTAR:
+      return new AstarProtocolOptions(network ? (network as AstarProtocolNetwork) : new AstarProtocolNetwork())
     case MainProtocolSymbols.XTZ:
     case SubProtocolSymbols.XTZ_KT:
       return new TezosProtocolOptions(network ? (network as TezosProtocolNetwork) : new TezosProtocolNetwork())

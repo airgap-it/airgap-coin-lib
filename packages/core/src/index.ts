@@ -257,6 +257,7 @@ import { TezosWRAP, TezosWRAPProtocolConfig } from './protocols/tezos/fa/TezosWR
 import { TezosQUIPU, TezosQUIPUProtocolConfig } from './protocols/tezos/fa/TezosQUIPU'
 import { UnsignedTypedEthereumTransaction } from './serializer-v3/schemas/definitions/unsigned-transaction-ethereum-typed'
 import { CosmosUnbondingDelegation, CosmosValidator } from './protocols/cosmos/CosmosTypes'
+import { AstarProtocol } from './protocols/substrate/astar/AstarProtocol'
 
 // tslint:enable:ordered-imports
 
@@ -363,6 +364,7 @@ export {
   MoonbeamProtocol,
   MoonbaseProtocol,
   MoonriverProtocol,
+  AstarProtocol,
   SubstrateNetwork,
   SubstratePayee,
   SubstrateCryptoClient,

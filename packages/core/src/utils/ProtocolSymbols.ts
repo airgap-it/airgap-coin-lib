@@ -11,7 +11,8 @@ export enum MainProtocolSymbols {
   KUSAMA = 'kusama',
   MOONBASE = 'moonbase',
   MOONRIVER = 'moonriver',
-  MOONBEAM = 'moonbeam'
+  MOONBEAM = 'moonbeam',
+  ASTAR = 'astar'
 }
 
 export enum SubProtocolSymbols {

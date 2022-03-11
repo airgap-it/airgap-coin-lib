@@ -187,6 +187,7 @@ SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsigned
 SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionSubstrate }, MainProtocolSymbols.MOONBASE)
 SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionSubstrate }, MainProtocolSymbols.MOONRIVER)
 SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionSubstrate }, MainProtocolSymbols.MOONBEAM)
+SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionSubstrate }, MainProtocolSymbols.ASTAR)
 
 SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionAeternity }, MainProtocolSymbols.AE)
 SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionBitcoinSegwit }, MainProtocolSymbols.BTC_SEGWIT)
@@ -209,3 +210,4 @@ SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedT
 SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionSubstrate }, MainProtocolSymbols.MOONBASE)
 SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionSubstrate }, MainProtocolSymbols.MOONRIVER)
 SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionSubstrate }, MainProtocolSymbols.MOONBEAM)
+SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionSubstrate }, MainProtocolSymbols.ASTAR)

@@ -1,5 +1,6 @@
 export enum SubstrateNetwork {
   POLKADOT,
   KUSAMA,
-  MOONBEAM
+  MOONBEAM,
+  ASTAR
 }
