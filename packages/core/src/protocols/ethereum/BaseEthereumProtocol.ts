@@ -4,7 +4,7 @@ import * as bitcoinJS from '../../dependencies/src/bitgo-utxo-lib-5d91049fd7a988
 import { BalanceError, UnsupportedError } from '../../errors'
 import { Domain } from '../../errors/coinlib-error'
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
-import { AirGapTransactionStatus, IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
+import { AirGapTransactionStatus, AirGapTransactionWarningType, IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 import { Network } from '../../networks'
 import { SignedEthereumTransaction } from '../../serializer/schemas/definitions/signed-transaction-ethereum'
 import { UnsignedTransaction } from '../../serializer/schemas/definitions/unsigned-transaction'
@@ -19,6 +19,7 @@ import { EthereumNodeClient } from './clients/node-clients/NodeClient'
 import { EthereumAddress } from './EthereumAddress'
 import { EthereumCryptoClient } from './EthereumCryptoClient'
 import { EthereumProtocolOptions } from './EthereumProtocolOptions'
+import { EthereumChainIDs } from './EthereumChainIDs'
 import { EthereumTransactionCursor, EthereumTransactionResult } from './EthereumTypes'
 import { EthereumUtils } from './utils/utils'
 
@@ -27,8 +28,7 @@ import Common from '@ethereumjs/common'
 import { FeeMarketEIP1559Transaction, Transaction, TransactionFactory } from '@ethereumjs/tx'
 
 export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient, InfoClient extends EthereumInfoClient>
-  implements ICoinProtocol
-{
+  implements ICoinProtocol {
   public symbol: string = 'ETH'
   public name: string = 'Ethereum'
   public marketSymbol: string = 'eth'
@@ -257,20 +257,36 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
       const ownAddress: EthereumAddress = unsignedTx.publicKey.startsWith('x') // xPub
         ? await this.getAddressFromExtendedPublicKey(unsignedTx.publicKey, Number(dps[dps.length - 2]), Number(dps[dps.length - 1]))
         : await this.getAddressFromPublicKey(unsignedTx.publicKey)
+      const airGapTransaction = {
+        from: [ownAddress.getValue()],
+        to: [transaction.to?.toString() ?? ''],
+        amount: new BigNumber(transaction.value.toString(10)).toString(10),
+        fee: new BigNumber(transaction.gasLimit.toString(10))
+          .multipliedBy(new BigNumber(transaction.maxFeePerGas.toString(10)))
+          .toString(10),
+        protocolIdentifier: this.identifier,
+        network: this.options.network,
+        isInbound: false,
+        data: transaction.data.toString('hex'),
+        transactionDetails: unsignedTx
+      }
 
       return [
         {
-          from: [ownAddress.getValue()],
-          to: [transaction.to?.toString() ?? ''],
-          amount: new BigNumber(transaction.value.toString(10)).toString(10),
-          fee: new BigNumber(transaction.gasLimit.toString(10))
-            .multipliedBy(new BigNumber(transaction.maxFeePerGas.toString(10)))
-            .toString(10),
-          protocolIdentifier: this.identifier,
-          network: this.options.network,
-          isInbound: false,
-          data: transaction.data.toString('hex'),
-          transactionDetails: unsignedTx
+          ...airGapTransaction,
+          ...(transaction.chainId.toNumber() !== 1
+            ? {
+                warnings: [
+                  {
+                    type: AirGapTransactionWarningType.WARNING,
+                    title: 'Chain ID',
+                    description: `Please note that this is not an Ethereum Mainnet transaction, it is from ${
+                      EthereumChainIDs.get(transaction.chainId.toNumber()) ?? `Chain ID ${transaction.chainId.toNumber()}`
+                    }`
+                  }
+                ]
+              }
+            : {})
         }
       ]
     } else {
