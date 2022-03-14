@@ -3,7 +3,8 @@ import { CurrencyUnit } from '../../../ICoinProtocol'
 import { SubstrateNetwork } from '../../SubstrateNetwork'
 import { SubstrateProtocolOptions } from '../../SubstrateProtocolOptions'
 import { AstarProtocol } from '../AstarProtocol'
-import { AstarProtocolOptions } from '../AstarProtocolOptions'
+
+import { ShidenProtocolOptions } from './ShidenProtocolOptions'
 
 export class ShidenProtocol extends AstarProtocol {
   public symbol: string = 'SDN'
@@ -49,7 +50,7 @@ export class ShidenProtocol extends AstarProtocol {
   public addressValidationPattern: string = '^[a-km-zA-HJ-NP-Z1-9]+$'
   public addressPlaceholder: string = `ABC...`
 
-  public constructor(public readonly options: SubstrateProtocolOptions<SubstrateNetwork.ASTAR> = new AstarProtocolOptions()) {
+  public constructor(public readonly options: SubstrateProtocolOptions<SubstrateNetwork.ASTAR> = new ShidenProtocolOptions()) {
     super(options)
   }
 }
