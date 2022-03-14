@@ -1,7 +1,8 @@
 // tslint:disable:max-classes-per-file
 
-import { ProtocolBlockExplorer, SubstrateNodeClient } from '../../..'
+import { ProtocolBlockExplorer } from '../../../utils/ProtocolBlockExplorer'
 import { NetworkType, ProtocolNetwork } from '../../../utils/ProtocolNetwork'
+import { SubstrateNodeClient } from '../common/node/SubstrateNodeClient'
 import { SubstrateAccountController } from '../common/SubstrateAccountController'
 import { SubstrateTransactionController } from '../common/SubstrateTransactionController'
 import { SubstrateNetwork } from '../SubstrateNetwork'
