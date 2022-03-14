@@ -50,10 +50,13 @@ export class AstarProtocolNetwork extends ProtocolNetwork<AstarProtocolNetworkEx
   }
 }
 
-export class AstarProtocolOptions extends SubstrateProtocolOptions<SubstrateNetwork.ASTAR, AstarProtocolConfig> {
+export class BaseAstarProtocolOptions<Config extends AstarProtocolConfig = AstarProtocolConfig> extends SubstrateProtocolOptions<
+  SubstrateNetwork.ASTAR,
+  Config
+> {
   constructor(
-    public readonly network: AstarProtocolNetwork = new AstarProtocolNetwork(),
-    public readonly config: AstarProtocolConfig = new AstarProtocolConfig(),
+    public readonly network: AstarProtocolNetwork,
+    public readonly config: Config,
     nodeClient: SubstrateNodeClient<SubstrateNetwork.ASTAR> = new SubstrateNodeClient(network.extras.network, network.rpcUrl)
   ) {
     super(
@@ -63,5 +66,14 @@ export class AstarProtocolOptions extends SubstrateProtocolOptions<SubstrateNetw
       new SubstrateAccountController(network.extras.network, nodeClient),
       new SubstrateTransactionController(network.extras.network, nodeClient)
     )
+  }
+}
+
+export class AstarProtocolOptions extends BaseAstarProtocolOptions {
+  constructor(
+    public readonly network: AstarProtocolNetwork = new AstarProtocolNetwork(),
+    public readonly config: AstarProtocolConfig = new AstarProtocolConfig()
+  ) {
+    super(network, config)
   }
 }

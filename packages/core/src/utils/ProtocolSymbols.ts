@@ -12,7 +12,8 @@ export enum MainProtocolSymbols {
   MOONBASE = 'moonbase',
   MOONRIVER = 'moonriver',
   MOONBEAM = 'moonbeam',
-  ASTAR = 'astar'
+  ASTAR = 'astar',
+  SHIDEN = 'shiden'
 }
 
 export enum SubProtocolSymbols {
