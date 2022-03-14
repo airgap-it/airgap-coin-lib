@@ -83,19 +83,6 @@ export class SCALEMultiAddress<T extends SCALEMultiAddressType, Network extends 
     runtimeVersion?: number
   ): SCALEDecodeResult<SCALEMultiAddress<T, Network>> {
     const _hex = stripHexPrefix(hex)
-
-    if (
-      runtimeVersion !== undefined &&
-      ((network === SubstrateNetwork.KUSAMA && runtimeVersion < 2028) || (network === SubstrateNetwork.POLKADOT && runtimeVersion < 28))
-    ) {
-      const accountId = SCALEAccountId.decode(network, _hex)
-
-      return {
-        bytesDecoded: accountId.bytesDecoded,
-        decoded: new SCALEMultiAddress(SCALEMultiAddressType.Id, accountId.decoded) as SCALEMultiAddress<T, Network>
-      }
-    }
-
     const prefix = parseInt(_hex.substr(0, 2), 16)
     if (type !== undefined && prefix !== type) {
       throw new Error(`SCALEMultiAddress#decode: Unexpected multi address type ${SCALEMultiAddressType[prefix]}`)
@@ -103,11 +90,11 @@ export class SCALEMultiAddress<T extends SCALEMultiAddressType, Network extends 
 
     switch (prefix) {
       case SCALEMultiAddressType.Id:
-        const accountId = SCALEAccountId.decode(network, _hex.slice(2))
+        const id = SCALEAccountId.decode(network, _hex.slice(2))
 
         return {
-          bytesDecoded: accountId.bytesDecoded + 1,
-          decoded: new SCALEMultiAddress(SCALEMultiAddressType.Id, accountId.decoded) as SCALEMultiAddress<T, Network>
+          bytesDecoded: id.bytesDecoded + 1,
+          decoded: new SCALEMultiAddress(SCALEMultiAddressType.Id, id.decoded) as SCALEMultiAddress<T, Network>
         }
       case SCALEMultiAddressType.Index:
         const index = SCALEInt.decode(_hex.slice(2), 32)
@@ -138,19 +125,11 @@ export class SCALEMultiAddress<T extends SCALEMultiAddressType, Network extends 
           decoded: new SCALEMultiAddress(SCALEMultiAddressType.Address20, bytes20.decoded) as SCALEMultiAddress<T, Network>
         }
       default:
-        if (
-          runtimeVersion === undefined ||
-          (network === SubstrateNetwork.KUSAMA && runtimeVersion >= 2028) ||
-          (network === SubstrateNetwork.POLKADOT && runtimeVersion >= 28)
-        ) {
-          throw new Error('SCALEMultiAddress#decode: Unknown multi address type')
-        } else {
-          const accountId = SCALEAccountId.decode(network, _hex)
+        const accountId = SCALEAccountId.decode(network, _hex)
 
-          return {
-            bytesDecoded: accountId.bytesDecoded,
-            decoded: new SCALEMultiAddress(SCALEMultiAddressType.Id, accountId.decoded) as SCALEMultiAddress<T, Network>
-          }
+        return {
+          bytesDecoded: accountId.bytesDecoded,
+          decoded: new SCALEMultiAddress(SCALEMultiAddressType.Id, accountId.decoded) as SCALEMultiAddress<T, Network>
         }
     }
   }
@@ -184,15 +163,6 @@ export class SCALEMultiAddress<T extends SCALEMultiAddressType, Network extends 
   }
 
   protected _encode(config?: SCALEEncodeConfig): string {
-    if (
-      config?.network === undefined ||
-      config?.runtimeVersion === undefined ||
-      (config?.network === SubstrateNetwork.KUSAMA && config?.runtimeVersion >= 2028) ||
-      (config?.network === SubstrateNetwork.POLKADOT && config?.runtimeVersion >= 28)
-    ) {
-      return toHexStringRaw(this.type, 2) + (this.value?.encode(config) ?? '')
-    } else {
-      return this.value?.encode(config) ?? ''
-    }
+    return toHexStringRaw(this.type, 2) + (this.value?.encode(config) ?? '')
   }
 }

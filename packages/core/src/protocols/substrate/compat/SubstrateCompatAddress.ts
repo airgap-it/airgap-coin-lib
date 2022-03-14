@@ -32,7 +32,7 @@ export interface SCALECompatAddressType extends Record<SubstrateNetwork, SCALETy
   [SubstrateNetwork.POLKADOT]: SCALEMultiAddress<SCALEMultiAddressType.Id, SubstrateNetwork.POLKADOT>
   [SubstrateNetwork.KUSAMA]: SCALEMultiAddress<SCALEMultiAddressType.Id, SubstrateNetwork.KUSAMA>
   [SubstrateNetwork.MOONBEAM]: SCALEAccountId<SubstrateNetwork.MOONBEAM>
-  [SubstrateNetwork.ASTAR]: SCALEAccountId<SubstrateNetwork.ASTAR>
+  [SubstrateNetwork.ASTAR]: SCALEMultiAddress<SCALEMultiAddressType.Id, SubstrateNetwork.ASTAR>
 }
 
 export function substrateAddressFactory<Network extends SubstrateNetwork>(substrateNetwork: Network): SubstrateAddressFactory<Network> {
