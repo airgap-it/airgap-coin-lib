@@ -9,6 +9,7 @@ import { TezosProtocol } from '../../src/protocols/tezos/TezosProtocol'
 
 import { TestProtocolSpec } from './implementations'
 import { AETestProtocolSpec } from './specs/ae'
+import { AstarTestProtocolSpec } from './specs/astar'
 import { BitcoinProtocolSpec } from './specs/bitcoin'
 import { BitcoinTestProtocolSpec } from './specs/bitcoin-test'
 import { CosmosTestProtocolSpec } from './specs/cosmos'
@@ -51,7 +52,8 @@ const protocols = [
   new GroestlcoinProtocolSpec(),
   new KusamaTestProtocolSpec(),
   new PolkadotTestProtocolSpec(),
-  new MoonbeamTestProtocolSpec()
+  new MoonbeamTestProtocolSpec(),
+  new AstarTestProtocolSpec()
 ]
 
 const itIf = (condition, title, test) => {

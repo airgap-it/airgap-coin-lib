@@ -1,39 +1,39 @@
 import { sr25519Verify, waitReady } from '@polkadot/wasm-crypto'
-import { PolkadotProtocol } from '../../../src/protocols/substrate/polkadot/PolkadotProtocol'
+import { AstarProtocol } from '../../../src'
 import { SubstrateNetwork } from '../../../src/protocols/substrate/SubstrateNetwork'
 import { AirGapWalletStatus } from '../../../src/wallet/AirGapWallet'
 import { TestProtocolSpec } from '../implementations'
-import { PolkadotProtocolStub } from '../stubs/polkadot.stub'
+import { AstarProtocolStub } from '../stubs/astar.stub'
 
 // Test Mnemonic: food talent voyage degree siege clever account medal film remind good kind
 // Derivation path: m/
 // Private Key: d08bc6388fdeb30fc34a8e0286384bd5a84b838222bb9b012fc227d7473fc87aa2913d02297653ce859ccd6b2c057f7e57c9ef6cc359300a891c581fb6d03141
 // Public Key: 52e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10
 // Hex Seed: 55a1417bbfacd64e069b4d07e47fb34ce9ff53b15556698038604f002524aec0
-// Address (Polkadot SS58): 12sg1sXe71bazrBzAyEaF71puZbNJVaMZ92uBfMCfFNfSA9P
-export class PolkadotTestProtocolSpec extends TestProtocolSpec {
-  public name = 'Polkadot'
-  public lib = new PolkadotProtocol()
-  public stub = new PolkadotProtocolStub()
+// Address (Astar SS58): XoyJqEf2TyDn9DJhddh8cLx8zJqaQixVqoZG5ZhyXM6qt1R
+export class AstarTestProtocolSpec extends TestProtocolSpec {
+  public name = 'Astar'
+  public lib = new AstarProtocol()
+  public stub = new AstarProtocolStub()
 
   public validAddresses = [
-    '16CuDZEYc5oQkkNXvxq5Q3K44RVwW7DWbw8ZW83H2QG7kc4x',
-    '15ajKAj3bAtjsKyVe55LvGok3fB2WGAC4K1g3zYsahzPumJr',
-    '15VtKrtqtAiptfZwcpagQUNVSKgPTyF8JJJi32JXf4vSkSYC',
-    '143RsnrR7y89kwDWvVWp6iNyGg8TiFUZXWVjSpCYaDMLqE1j',
-    '1rqrUJQBhx6deZYLFd21LtNusPPf6kN8k7AAEanXqPrM58f',
-    '13BjXUHsqAvLJrGDKcEbVzgdGMSobNPBjvLvd8NyiH9iaHCU',
-    '1ZZpAwuPzyWxGTnkUNrA7Pjo6nFYRmMXLk6cwzzUk8Ua9Sv',
-    '1N3hXfu4Ut4bPMq6ciWYAieCiZg5e4Kg5LjMPtMV4WaV7eF',
-    '16Y64EP5JLiM29pCQzDHkdvsCuWA7tYvs7tqSaDs6w3BeJh4',
-    '13wUHTgsup34hQ4e2Rye7sf6Ppn1V5coCZJxyU7jsVdp3uJw'
+    'WfjQDWqxwYBQRdZ6VZYxctAL9Y5ZNEYFawz166kMfQFUT3Z',
+    'a7HAyjvVptLyhSZHpPPpubY2niSBhcHjEFnSvYCE81ZESbP',
+    'b9hYKtdVvT3NY5MoDCUNpGfs1hH3F66V7T6Ka27hNyUTuwy',
+    'anHTwZaPCHN2qcZJ6WVSs2zpBnryfqP9hUKGTwqBBqKP56u',
+    'XrYEhuQ38xaDVMkKBKmuEzTdvaC6ffmDxRquBRPD9H2SQ1o',
+    'WDg5HZJADkTp9NmzhdgiNuWLLgNSh1vejM3oTAGg5ZEjLh4',
+    'ZLu5SLP8SLjsBL1QBN8Go9ij1yZPEjVC9iZwoyspiWX4E6v',
+    'af7qt3Nm5kXyjUN9J9j5e1kFjbKuxj4TE796qj2tQUR3inr',
+    'bTVzqPr5x8XshvBucxRNFrNP6C562UqV57WcXSeGZXJxoH2',
+    'Z1kXvxy6BEpMXitjsewDWNnjGSZYyuA6XM7K9S6e4dnw2P1'
   ]
 
   public wallet = {
     privateKey:
       'd08bc6388fdeb30fc34a8e0286384bd5a84b838222bb9b012fc227d7473fc87aa2913d02297653ce859ccd6b2c057f7e57c9ef6cc359300a891c581fb6d03141',
     publicKey: '52e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10',
-    addresses: ['12sg1sXe71bazrBzAyEaF71puZbNJVaMZ92uBfMCfFNfSA9P'],
+    addresses: ['XoyJqEf2TyDn9DJhddh8cLx8zJqaQixVqoZG5ZhyXM6qt1R'],
     masterFingerprint: 'f4e222fd',
     status: AirGapWalletStatus.ACTIVE
   }
@@ -64,14 +64,14 @@ export class PolkadotTestProtocolSpec extends TestProtocolSpec {
           '8503' + // era
           '04' + // nonce
           '00' + // tip
-          '0400' + // moduleId + callId
+          '1f00' + // moduleId + callId
           '00' + // MultiAddress type
           '52e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10' + // AccountId destination
           '070010a5d4e8' + // value
           // payload
           'a903' + // payload length
           Buffer.from(
-            '0400' + // moduleId + callId
+            '1f00' + // moduleId + callId
               '00' + // MultiAddress type
               '52e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10' + // AccountId destination
               '070010a5d4e8' + // value
@@ -97,9 +97,9 @@ export class PolkadotTestProtocolSpec extends TestProtocolSpec {
         '84' + // signed flag (signed)
         '00' + // MultiAddress type
         '52e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10' + // AccountId signer
-        '00' + // signature type (ed25519)
-        'e209d71282bbff8af2f4362e4b478d156c9c1df81e2a7d733912525308909a16' + // signature
-        'adf7eb5602136d4b0a9a57acdd07a443f3bc4865c2455bf36f01ff9fa9b4478d' + // signature
+        '01' + // signature type (sr25519)
+        'ee2a58943fa268120d6eac3256d34f1b5ecf92b82034492d2d412a45bdd66931' + // signature
+        'c96a8a51c2e6a0d104c65697e52be40b45decb45608216fd3ca2f3a14e74c98b' + // signature
         '8503' + // era
         '04' + // nonce
         '00' + // tip
@@ -145,34 +145,23 @@ export class PolkadotTestProtocolSpec extends TestProtocolSpec {
     return 'food talent voyage degree siege clever account medal film remind good kind'
   }
 
-  public messages = [
-    {
-      message: 'example message',
-      signature:
-        '0x98160df00de787087cd9599ff5e59ac8c99af6c53a319a96b0a9e1f6e634ce5fed9db553b759a115c3d9d6fcdd0f11705656bad16ea3ee9f20390f253c7cd58a'
-    }
-  ]
+  public messages = []
 
-  public encryptAES = [
-    {
-      message: 'example message',
-      encrypted: 'a3677b19a6ba036288ec2261b620a805!15a385b47009a2b55f587ed9f897e2!f649bbcb1c46c48b0078dc7d40a642a9'
-    }
-  ]
+  public encryptAES = []
 
   public transactionResult = {
     transactions: [
       {
-        protocolIdentifier: 'polkadot',
+        protocolIdentifier: 'astar',
         network: {
           name: 'Mainnet',
           type: 'MAINNET',
-          rpcUrl: 'https://polkadot-node.prod.gke.papers.tech',
-          blockExplorer: { blockExplorer: 'https://polkascan.io/polkadot' },
-          extras: { apiUrl: 'https://polkadot.subscan.io/api/scan', network: SubstrateNetwork.POLKADOT }
+          rpcUrl: '',
+          blockExplorer: { blockExplorer: 'https://astar.subscan.io/' },
+          extras: { apiUrl: 'https://astar.subscan.io/api/scan', network: SubstrateNetwork.MOONBEAM }
         },
-        from: ['16CuDZEYc5oQkkNXvxq5Q3K44RVwW7DWbw8ZW83H2QG7kc4x'],
-        to: ['15ajKAj3bAtjsKyVe55LvGok3fB2WGAC4K1g3zYsahzPumJr'],
+        from: ['0x8925639D43eB0298E95FfEfC792E8d23b7d06cbD'],
+        to: ['EEWyMLHgwtemr48spFNnS3U2XjaYswqAYAbadx2jr9ppp4X'],
         isInbound: true,
         amount: '99977416667634',
         fee: '2583332366',
@@ -182,16 +171,16 @@ export class PolkadotTestProtocolSpec extends TestProtocolSpec {
         status: 'applied'
       },
       {
-        protocolIdentifier: 'polkadot',
+        protocolIdentifier: 'astar',
         network: {
           name: 'Mainnet',
           type: 'MAINNET',
-          rpcUrl: 'https://polkadot-node.prod.gke.papers.tech',
-          blockExplorer: { blockExplorer: 'https://polkascan.io/polkadot' },
-          extras: { apiUrl: 'https://polkadot.subscan.io/api/scan', network: SubstrateNetwork.POLKADOT }
+          rpcUrl: '',
+          blockExplorer: { blockExplorer: 'https://astar.subscan.io/' },
+          extras: { apiUrl: 'https://astar.subscan.io/api/scan', network: SubstrateNetwork.MOONBEAM }
         },
-        from: ['16CuDZEYc5oQkkNXvxq5Q3K44RVwW7DWbw8ZW83H2QG7kc4x'],
-        to: ['15ajKAj3bAtjsKyVe55LvGok3fB2WGAC4K1g3zYsahzPumJr'],
+        from: ['0x8925639D43eB0298E95FfEfC792E8d23b7d06cbD'],
+        to: ['0x944e005444aafFE1bC57C9869b51033b7a7630C1'],
         isInbound: false,
         amount: '1020000000000',
         fee: '2583332366',
@@ -206,16 +195,16 @@ export class PolkadotTestProtocolSpec extends TestProtocolSpec {
   public nextTransactionResult = {
     transactions: [
       {
-        protocolIdentifier: 'polkadot',
+        protocolIdentifier: 'astar',
         network: {
           name: 'Mainnet',
           type: 'MAINNET',
-          rpcUrl: 'https://polkadot-node.prod.gke.papers.tech',
-          blockExplorer: { blockExplorer: 'https://polkascan.io/polkadot' },
-          extras: { apiUrl: 'https://polkadot.subscan.io/api/scan', network: SubstrateNetwork.POLKADOT }
+          rpcUrl: '',
+          blockExplorer: { blockExplorer: 'https://astar.subscan.io/' },
+          extras: { apiUrl: 'https://astar.subscan.io/api/scan', network: SubstrateNetwork.MOONBEAM }
         },
-        from: ['16CuDZEYc5oQkkNXvxq5Q3K44RVwW7DWbw8ZW83H2QG7kc4x'],
-        to: ['15ajKAj3bAtjsKyVe55LvGok3fB2WGAC4K1g3zYsahzPumJr'],
+        from: ['WfjQDWqxwYBQRdZ6VZYxctAL9Y5ZNEYFawz166kMfQFUT3Z'],
+        to: ['a7HAyjvVptLyhSZHpPPpubY2niSBhcHjEFnSvYCE81ZESbP'],
         isInbound: false,
         amount: '15966000000000',
         fee: '2599999026',
@@ -225,16 +214,16 @@ export class PolkadotTestProtocolSpec extends TestProtocolSpec {
         status: 'applied'
       },
       {
-        protocolIdentifier: 'polkadot',
+        protocolIdentifier: 'moonbeam',
         network: {
           name: 'Mainnet',
           type: 'MAINNET',
-          rpcUrl: 'https://polkadot-node.prod.gke.papers.tech',
-          blockExplorer: { blockExplorer: 'https://polkascan.io/polkadot' },
-          extras: { apiUrl: 'https://polkadot.subscan.io/api/scan', network: SubstrateNetwork.POLKADOT }
+          rpcUrl: '',
+          blockExplorer: { blockExplorer: 'https://astar.subscan.io/' },
+          extras: { apiUrl: 'https://astar.subscan.io/api/scan', network: SubstrateNetwork.MOONBEAM }
         },
-        from: ['16CuDZEYc5oQkkNXvxq5Q3K44RVwW7DWbw8ZW83H2QG7kc4x'],
-        to: ['15ajKAj3bAtjsKyVe55LvGok3fB2WGAC4K1g3zYsahzPumJr'],
+        from: ['WfjQDWqxwYBQRdZ6VZYxctAL9Y5ZNEYFawz166kMfQFUT3Z'],
+        to: ['a7HAyjvVptLyhSZHpPPpubY2niSBhcHjEFnSvYCE81ZESbP'],
         isInbound: false,
         amount: '3800000000000',
         fee: '2599999026',
