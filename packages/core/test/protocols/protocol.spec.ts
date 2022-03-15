@@ -18,7 +18,7 @@ import { CosmosTestProtocolSpec } from './specs/cosmos'
 // import { GenericERC20TokenTestProtocolSpec } from './specs/generic-erc20-token'
 import { GroestlcoinProtocolSpec } from './specs/groestl'
 import { KusamaTestProtocolSpec } from './specs/kusama'
-import { MoonbaseTestProtocolSpec } from './specs/moonbase'
+import { MoonbeamTestProtocolSpec } from './specs/moonbeam'
 import { PolkadotTestProtocolSpec } from './specs/polkadot'
 import { TezosTestProtocolSpec } from './specs/tezos'
 
@@ -51,7 +51,7 @@ const protocols = [
   new GroestlcoinProtocolSpec(),
   new KusamaTestProtocolSpec(),
   new PolkadotTestProtocolSpec(),
-  new MoonbaseTestProtocolSpec()
+  new MoonbeamTestProtocolSpec()
 ]
 
 const itIf = (condition, title, test) => {

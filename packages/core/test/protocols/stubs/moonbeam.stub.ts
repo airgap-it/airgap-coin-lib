@@ -5,7 +5,7 @@ import { SubstrateTransactionType } from '../../../src/protocols/substrate/commo
 import { MoonbeamProtocol } from '../../../src/protocols/substrate/moonbeam/MoonbeamProtocol'
 import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
 
-export class MoonbaseProtocolStub implements ProtocolHTTPStub {
+export class MoonbeamProtocolStub implements ProtocolHTTPStub {
   public registerStub(testProtocolSpec: TestProtocolSpec, protocol: MoonbeamProtocol): void {
     sinon
       .stub(protocol.options.accountController, 'getBalance')

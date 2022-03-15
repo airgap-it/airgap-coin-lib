@@ -1,24 +1,20 @@
-import { AirGapWalletStatus, MoonbaseProtocol } from '../../../src'
+import { AirGapWalletStatus, MoonbeamProtocol } from '../../../src'
 import keccak = require('../../../src/dependencies/src/keccak-1.0.2/js')
 import * as secp256k1 from '../../../src/dependencies/src/secp256k1-4.0.2/elliptic'
 import { SubstrateNetwork } from '../../../src/protocols/substrate/SubstrateNetwork'
 import { TestProtocolSpec } from '../implementations'
-import { MoonbaseProtocolStub } from '../stubs/moonbase.stub'
+import { MoonbeamProtocolStub } from '../stubs/moonbeam.stub'
 
-/*
- * Test Mnemonic: leopard crouch simple blind castle they elder enact slow rate mad blanket saddle tail silk fury quarter obscure interest exact veteran volcano fabric cherry
- *
- */
 // Test Mnemonic: food talent voyage degree siege clever account medal film remind good kind
 // Derivation path: m/44'/60'/0'/0/0
 // Private Key: 548cef3b36e24a05870d80354900cab73082491907f162b1453f8b14bbf6f61f
 // Public Key: 031bbd0cdadbef925d173e592c80c86d7917076d5b07ce79537867755f5d1dcc57
 // Hex Seed: 55decc156b78772b5ae97cc4a7a4780c4b299d866abed355a8a6649905eadef4d28f76ff7491526addff6c03f3b200ebaa81dacd9f24def6ec88339a19562b91
 // Address: 0xB6bC7946dFd3B9128777414c02296273ee6bBd0e
-export class MoonbaseTestProtocolSpec extends TestProtocolSpec {
+export class MoonbeamTestProtocolSpec extends TestProtocolSpec {
   public name = 'Moonbeam'
-  public lib = new MoonbaseProtocol()
-  public stub = new MoonbaseProtocolStub()
+  public lib = new MoonbeamProtocol()
+  public stub = new MoonbeamProtocolStub()
 
   public validAddresses = [
     '0x8925639D43eB0298E95FfEfC792E8d23b7d06cbD',
@@ -151,8 +147,8 @@ export class MoonbaseTestProtocolSpec extends TestProtocolSpec {
           name: 'Mainnet',
           type: 'MAINNET',
           rpcUrl: 'https://rpc.testnet.moonbeam.network',
-          blockExplorer: { blockExplorer: 'https://moonbase.subscan.io/' },
-          extras: { apiUrl: 'https://moonbase.subscan.io/api/scan', network: SubstrateNetwork.MOONBEAM }
+          blockExplorer: { blockExplorer: 'https://moonbeam.subscan.io/' },
+          extras: { apiUrl: 'https://moonbeam.subscan.io/api/scan', network: SubstrateNetwork.MOONBEAM }
         },
         from: ['0x8925639D43eB0298E95FfEfC792E8d23b7d06cbD'],
         to: ['EEWyMLHgwtemr48spFNnS3U2XjaYswqAYAbadx2jr9ppp4X'],
@@ -170,8 +166,8 @@ export class MoonbaseTestProtocolSpec extends TestProtocolSpec {
           name: 'Mainnet',
           type: 'MAINNET',
           rpcUrl: 'https://rpc.testnet.moonbeam.network',
-          blockExplorer: { blockExplorer: 'https://moonbase.subscan.io/' },
-          extras: { apiUrl: 'https://moonbase.subscan.io/api/scan', network: SubstrateNetwork.MOONBEAM }
+          blockExplorer: { blockExplorer: 'https://moonbeam.subscan.io/' },
+          extras: { apiUrl: 'https://moonbeam.subscan.io/api/scan', network: SubstrateNetwork.MOONBEAM }
         },
         from: ['0x8925639D43eB0298E95FfEfC792E8d23b7d06cbD'],
         to: ['0x944e005444aafFE1bC57C9869b51033b7a7630C1'],
@@ -194,8 +190,8 @@ export class MoonbaseTestProtocolSpec extends TestProtocolSpec {
           name: 'Mainnet',
           type: 'MAINNET',
           rpcUrl: 'https://rpc.testnet.moonbeam.network',
-          blockExplorer: { blockExplorer: 'https://moonbase.subscan.io/' },
-          extras: { apiUrl: 'https://moonbase.subscan.io/api/scan', network: SubstrateNetwork.MOONBEAM }
+          blockExplorer: { blockExplorer: 'https://moonbeam.subscan.io/' },
+          extras: { apiUrl: 'https://moonbeam.subscan.io/api/scan', network: SubstrateNetwork.MOONBEAM }
         },
         from: ['0x8925639D43eB0298E95FfEfC792E8d23b7d06cbD'],
         to: ['0x944e005444aafFE1bC57C9869b51033b7a7630C1'],
@@ -213,8 +209,8 @@ export class MoonbaseTestProtocolSpec extends TestProtocolSpec {
           name: 'Mainnet',
           type: 'MAINNET',
           rpcUrl: 'https://rpc.testnet.moonbeam.network',
-          blockExplorer: { blockExplorer: 'https://moonbase.subscan.io/' },
-          extras: { apiUrl: 'https://moonbase.subscan.io/api/scan', network: SubstrateNetwork.MOONBEAM }
+          blockExplorer: { blockExplorer: 'https://moonbeam.subscan.io/' },
+          extras: { apiUrl: 'https://moonbeam.subscan.io/api/scan', network: SubstrateNetwork.MOONBEAM }
         },
         from: ['0x8925639D43eB0298E95FfEfC792E8d23b7d06cbD'],
         to: ['0x944e005444aafFE1bC57C9869b51033b7a7630C1'],
@@ -230,10 +226,3 @@ export class MoonbaseTestProtocolSpec extends TestProtocolSpec {
     cursor: { page: 2 }
   }
 }
-
-/*
--045105011e0000000002286beed90184b6bc7946dfd3b9128777414c02296273ee6bbd0e6e015cfa75bbeb40b9555fb3e63fc8065f8888adae35d6776029435da40e592650d0b48004dc4ca6556bce3c592b862b0aeea985b1b7039c370ce64508a3c86a1c850304000300b6bc7946dfd3b9128777414c02296273ee6bbd0e070010a5d4e8410330333030423662433739343664466433423931323837373734313463303232393632373365653662426430653037303031306135643465383835303330343030316530303030303030313030303030306435313532326339656637626134653039393066376134353237646537396166636163393932616239376162626263333637323266386132373138396231373033336137613734353834393334376365333030386330373236386265363364386365666433656636316465306337333138653838613537376662376432366139
-
-+045105011e0000000002286beed90184b6bc7946dfd3b9128777414c02296273ee6bbd0e6e015cfa75bbeb40b9555fb3e63fc8065f8888adae35d6776029435da40e5926af2f4b7ffb23b359aa9431c3a6d479d3afc03360fd919c9f88c57847c79278d700850304000300b6bc7946dfd3b9128777414c02296273ee6bbd0e070010a5d4e8410330333030423662433739343664466433423931323837373734313463303232393632373365653662426430653037303031306135643465383835303330343030316530303030303030313030303030306435313532326339656637626134653039393066376134353237646537396166636163393932616239376162626263333637323266386132373138396231373033336137613734353834393334376365333030386330373236386265363364386365666433656636316465306337333138653838613537376662376432366139
-
-*/
