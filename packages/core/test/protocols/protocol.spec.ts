@@ -20,7 +20,9 @@ import { CosmosTestProtocolSpec } from './specs/cosmos'
 import { GroestlcoinProtocolSpec } from './specs/groestl'
 import { KusamaTestProtocolSpec } from './specs/kusama'
 import { MoonbeamTestProtocolSpec } from './specs/moonbeam'
+import { MoonriverTestProtocolSpec } from './specs/moonriver'
 import { PolkadotTestProtocolSpec } from './specs/polkadot'
+import { ShidenTestProtocolSpec } from './specs/shiden'
 import { TezosTestProtocolSpec } from './specs/tezos'
 
 // use chai-as-promised plugin
@@ -53,7 +55,9 @@ const protocols = [
   new KusamaTestProtocolSpec(),
   new PolkadotTestProtocolSpec(),
   new MoonbeamTestProtocolSpec(),
-  new AstarTestProtocolSpec()
+  new MoonriverTestProtocolSpec(),
+  new AstarTestProtocolSpec(),
+  new ShidenTestProtocolSpec()
 ]
 
 const itIf = (condition, title, test) => {

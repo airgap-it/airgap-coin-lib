@@ -1,39 +1,39 @@
-import { sr25519Verify, waitReady } from '@polkadot/wasm-crypto'
-import { AstarProtocol } from '../../../src'
+import { AirGapWalletStatus, MoonriverProtocol } from '../../../src'
+import keccak = require('../../../src/dependencies/src/keccak-1.0.2/js')
+import * as secp256k1 from '../../../src/dependencies/src/secp256k1-4.0.2/elliptic'
 import { SubstrateNetwork } from '../../../src/protocols/substrate/SubstrateNetwork'
-import { AirGapWalletStatus } from '../../../src/wallet/AirGapWallet'
 import { TestProtocolSpec } from '../implementations'
-import { AstarProtocolStub } from '../stubs/astar.stub'
+import { MoonriverProtocolStub } from '../stubs/moonriver.stub'
 
 // Test Mnemonic: food talent voyage degree siege clever account medal film remind good kind
-// Derivation path: m/
-// Private Key: d08bc6388fdeb30fc34a8e0286384bd5a84b838222bb9b012fc227d7473fc87aa2913d02297653ce859ccd6b2c057f7e57c9ef6cc359300a891c581fb6d03141
-// Public Key: 52e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10
-// Hex Seed: 55a1417bbfacd64e069b4d07e47fb34ce9ff53b15556698038604f002524aec0
-// Address (Astar SS58): XoyJqEf2TyDn9DJhddh8cLx8zJqaQixVqoZG5ZhyXM6qt1R
-export class AstarTestProtocolSpec extends TestProtocolSpec {
-  public name = 'Astar'
-  public lib = new AstarProtocol()
-  public stub = new AstarProtocolStub()
+// Derivation path: m/44'/60'/0'/0/0
+// Private Key: 548cef3b36e24a05870d80354900cab73082491907f162b1453f8b14bbf6f61f
+// Public Key: 031bbd0cdadbef925d173e592c80c86d7917076d5b07ce79537867755f5d1dcc57
+// Hex Seed: 55decc156b78772b5ae97cc4a7a4780c4b299d866abed355a8a6649905eadef4d28f76ff7491526addff6c03f3b200ebaa81dacd9f24def6ec88339a19562b91
+// Address: 0xB6bC7946dFd3B9128777414c02296273ee6bBd0e
+export class MoonriverTestProtocolSpec extends TestProtocolSpec {
+  public name = 'Moonriver'
+  public lib = new MoonriverProtocol()
+  public stub = new MoonriverProtocolStub()
 
   public validAddresses = [
-    'WfjQDWqxwYBQRdZ6VZYxctAL9Y5ZNEYFawz166kMfQFUT3Z',
-    'a7HAyjvVptLyhSZHpPPpubY2niSBhcHjEFnSvYCE81ZESbP',
-    'b9hYKtdVvT3NY5MoDCUNpGfs1hH3F66V7T6Ka27hNyUTuwy',
-    'anHTwZaPCHN2qcZJ6WVSs2zpBnryfqP9hUKGTwqBBqKP56u',
-    'XrYEhuQ38xaDVMkKBKmuEzTdvaC6ffmDxRquBRPD9H2SQ1o',
-    'WDg5HZJADkTp9NmzhdgiNuWLLgNSh1vejM3oTAGg5ZEjLh4',
-    'ZLu5SLP8SLjsBL1QBN8Go9ij1yZPEjVC9iZwoyspiWX4E6v',
-    'af7qt3Nm5kXyjUN9J9j5e1kFjbKuxj4TE796qj2tQUR3inr',
-    'bTVzqPr5x8XshvBucxRNFrNP6C562UqV57WcXSeGZXJxoH2',
-    'Z1kXvxy6BEpMXitjsewDWNnjGSZYyuA6XM7K9S6e4dnw2P1'
+    '0x8925639D43eB0298E95FfEfC792E8d23b7d06cbD',
+    '0x944e005444aafFE1bC57C9869b51033b7a7630C1',
+    '0x16dE158cfCF64aa409500F2C82E5305211e0D4e1',
+    '0xaABa95105e402eD13AB4B44738e7279fEDaDd686',
+    '0x8C44c6169d10E5E422C28364c4deeEaD83d72B52',
+    '0xB97224C27b232Dcf150C1f683d3bd01b1817f821',
+    '0xE0f749Bde03E3a2185e51A5A489948Eb371aD53C',
+    '0xdc065b9dcC4E20289A2869ce02Ea039f4c0f252E',
+    '0x82b54235abb1bb90D197437D504Adf07fb93F7D5',
+    '0xe6DFC410C539FEB97D2A1070fedf00dA575c5786',
+    '0xFE73fb832eCD3ad4284D3CafA9265FE836521aB6'
   ]
 
   public wallet = {
-    privateKey:
-      'd08bc6388fdeb30fc34a8e0286384bd5a84b838222bb9b012fc227d7473fc87aa2913d02297653ce859ccd6b2c057f7e57c9ef6cc359300a891c581fb6d03141',
-    publicKey: '52e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10',
-    addresses: ['XoyJqEf2TyDn9DJhddh8cLx8zJqaQixVqoZG5ZhyXM6qt1R'],
+    privateKey: '548cef3b36e24a05870d80354900cab73082491907f162b1453f8b14bbf6f61f',
+    publicKey: '031bbd0cdadbef925d173e592c80c86d7917076d5b07ce79537867755f5d1dcc57',
+    addresses: ['0xB6bC7946dFd3B9128777414c02296273ee6bBd0e'],
     masterFingerprint: 'f4e222fd',
     status: AirGapWalletStatus.ACTIVE
   }
@@ -48,32 +48,28 @@ export class AstarTestProtocolSpec extends TestProtocolSpec {
         encoded:
           // tslint:disable-next-line: prefer-template
           '04' + // number of txs
-          '2106' + // tx length
+          '5105' + // tx length
           '01' + // optional type (specVersion)
           '1e000000' + // specVersion
           '00' + // type
           '02286bee' + // fee
           // transaction
-          '4102' + // length
+          'd901' + // length
           '84' + // signed flag (not signed)
-          '00' + // MultiAddress type
-          '52e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10' + // AccountId signer
-          '00' + // signature type (ed25519)
-          '0000000000000000000000000000000000000000000000000000000000000000' + // signature
-          '0000000000000000000000000000000000000000000000000000000000000000' + // signature
+          'B6bC7946dFd3B9128777414c02296273ee6bBd0e'.toLowerCase() + // AccountId signer
+          '00000000000000000000000000000000000000000000000000000000000000000' + // signature
+          '00000000000000000000000000000000000000000000000000000000000000000' + // signature
           '8503' + // era
           '04' + // nonce
           '00' + // tip
-          '1f00' + // moduleId + callId
-          '00' + // MultiAddress type
-          '52e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10' + // AccountId destination
+          '0300' + // moduleId + callId
+          'B6bC7946dFd3B9128777414c02296273ee6bBd0e'.toLowerCase() + // AccountId destination
           '070010a5d4e8' + // value
           // payload
-          'a903' + // payload length
+          '4103' + // payload length
           Buffer.from(
-            '1f00' + // moduleId + callId
-              '00' + // MultiAddress type
-              '52e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10' + // AccountId destination
+            '0300' + // moduleId + callId
+              'B6bC7946dFd3B9128777414c02296273ee6bBd0e' + // AccountId destination
               '070010a5d4e8' + // value
               '8503' + // era
               '04' + // nonce
@@ -87,32 +83,28 @@ export class AstarTestProtocolSpec extends TestProtocolSpec {
       signedTx:
         // tslint:disable-next-line: prefer-template
         '04' + // number of txs
-        '2106' + // tx length
+        '5105' + // tx length
         '01' + // optional type (specVersion)
         '1e000000' + // specVersion
         '00' + // type
         '02286bee' + // fee
         // transaction
-        '4102' + // length
+        'd901' + // length
         '84' + // signed flag (signed)
-        '00' + // MultiAddress type
-        '52e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10' + // AccountId signer
-        '01' + // signature type (sr25519)
-        'ee2a58943fa268120d6eac3256d34f1b5ecf92b82034492d2d412a45bdd66931' + // signature
-        'c96a8a51c2e6a0d104c65697e52be40b45decb45608216fd3ca2f3a14e74c98b' + // signature
+        'B6bC7946dFd3B9128777414c02296273ee6bBd0e'.toLowerCase() + // AccountId signer
+        '6e015cfa75bbeb40b9555fb3e63fc8065f8888adae35d6776029435da40e5926a' + // signature
+        'f2f4b7ffb23b359aa9431c3a6d479d3afc03360fd919c9f88c57847c79278d700' + // signature
         '8503' + // era
         '04' + // nonce
         '00' + // tip
-        '0400' + // moduleId + callId
-        '00' + // MultiAddress type
-        '52e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10' + // AccountId destination
+        '0300' + // moduleId + callId
+        'B6bC7946dFd3B9128777414c02296273ee6bBd0e'.toLowerCase() + // AccountId destination
         '070010a5d4e8' + // value
         // payload
-        'a903' + // payload length
+        '4103' + // payload length
         Buffer.from(
-          '0400' + // moduleId + callId
-            '00' + // MultiAddress type
-            '52e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10' + // AccountId destination
+          '0300' + // moduleId + callId
+            'B6bC7946dFd3B9128777414c02296273ee6bBd0e' + // AccountId destination
             '070010a5d4e8' + // value
             '8503' + // era
             '04' + // nonce
@@ -126,19 +118,17 @@ export class AstarTestProtocolSpec extends TestProtocolSpec {
   ]
 
   public verifySignature = async (publicKey: string, tx: any): Promise<boolean> => {
-    await waitReady()
-
     const decoded = this.lib.options.transactionController.decodeDetails(tx)[0]
 
     const signature = decoded.transaction.signature.signature.value
-    const payload = Buffer.from(decoded.payload, 'hex')
+    const message = keccak('keccak256').update(Buffer.from(decoded.payload, 'hex')).digest()
     const publicKeyBuffer = Buffer.from(publicKey, 'hex')
 
-    return sr25519Verify(signature, payload, publicKeyBuffer)
+    return secp256k1.ecdsaVerify(signature.slice(0, 64), message, publicKeyBuffer)
   }
 
   public seed(): string {
-    return '55a1417bbfacd64e069b4d07e47fb34ce9ff53b15556698038604f002524aec0'
+    return '55decc156b78772b5ae97cc4a7a4780c4b299d866abed355a8a6649905eadef4d28f76ff7491526addff6c03f3b200ebaa81dacd9f24def6ec88339a19562b91'
   }
 
   public mnemonic(): string {
@@ -152,13 +142,13 @@ export class AstarTestProtocolSpec extends TestProtocolSpec {
   public transactionResult = {
     transactions: [
       {
-        protocolIdentifier: 'astar',
+        protocolIdentifier: 'moonriver',
         network: {
           name: 'Mainnet',
           type: 'MAINNET',
-          rpcUrl: '',
-          blockExplorer: { blockExplorer: 'https://astar.subscan.io/' },
-          extras: { apiUrl: 'https://astar.subscan.io/api/scan', network: SubstrateNetwork.ASTAR }
+          rpcUrl: 'https://rpc.testnet.moonriver.network',
+          blockExplorer: { blockExplorer: 'https://moonriver.subscan.io/' },
+          extras: { apiUrl: 'https://moonriver.subscan.io/api/scan', network: SubstrateNetwork.MOONBEAM }
         },
         from: ['0x8925639D43eB0298E95FfEfC792E8d23b7d06cbD'],
         to: ['EEWyMLHgwtemr48spFNnS3U2XjaYswqAYAbadx2jr9ppp4X'],
@@ -171,13 +161,13 @@ export class AstarTestProtocolSpec extends TestProtocolSpec {
         status: 'applied'
       },
       {
-        protocolIdentifier: 'astar',
+        protocolIdentifier: 'moonriver',
         network: {
           name: 'Mainnet',
           type: 'MAINNET',
-          rpcUrl: '',
-          blockExplorer: { blockExplorer: 'https://astar.subscan.io/' },
-          extras: { apiUrl: 'https://astar.subscan.io/api/scan', network: SubstrateNetwork.ASTAR }
+          rpcUrl: 'https://rpc.testnet.moonriver.network',
+          blockExplorer: { blockExplorer: 'https://moonriver.subscan.io/' },
+          extras: { apiUrl: 'https://moonriver.subscan.io/api/scan', network: SubstrateNetwork.MOONBEAM }
         },
         from: ['0x8925639D43eB0298E95FfEfC792E8d23b7d06cbD'],
         to: ['0x944e005444aafFE1bC57C9869b51033b7a7630C1'],
@@ -195,16 +185,16 @@ export class AstarTestProtocolSpec extends TestProtocolSpec {
   public nextTransactionResult = {
     transactions: [
       {
-        protocolIdentifier: 'astar',
+        protocolIdentifier: 'moonriver',
         network: {
           name: 'Mainnet',
           type: 'MAINNET',
-          rpcUrl: '',
-          blockExplorer: { blockExplorer: 'https://astar.subscan.io/' },
-          extras: { apiUrl: 'https://astar.subscan.io/api/scan', network: SubstrateNetwork.ASTAR }
+          rpcUrl: 'https://rpc.testnet.moonriver.network',
+          blockExplorer: { blockExplorer: 'https://moonriver.subscan.io/' },
+          extras: { apiUrl: 'https://moonriver.subscan.io/api/scan', network: SubstrateNetwork.MOONBEAM }
         },
-        from: ['WfjQDWqxwYBQRdZ6VZYxctAL9Y5ZNEYFawz166kMfQFUT3Z'],
-        to: ['a7HAyjvVptLyhSZHpPPpubY2niSBhcHjEFnSvYCE81ZESbP'],
+        from: ['0x8925639D43eB0298E95FfEfC792E8d23b7d06cbD'],
+        to: ['0x944e005444aafFE1bC57C9869b51033b7a7630C1'],
         isInbound: false,
         amount: '15966000000000',
         fee: '2599999026',
@@ -214,16 +204,16 @@ export class AstarTestProtocolSpec extends TestProtocolSpec {
         status: 'applied'
       },
       {
-        protocolIdentifier: 'astar',
+        protocolIdentifier: 'moonriver',
         network: {
           name: 'Mainnet',
           type: 'MAINNET',
-          rpcUrl: '',
-          blockExplorer: { blockExplorer: 'https://astar.subscan.io/' },
-          extras: { apiUrl: 'https://astar.subscan.io/api/scan', network: SubstrateNetwork.ASTAR }
+          rpcUrl: 'https://rpc.testnet.moonriver.network',
+          blockExplorer: { blockExplorer: 'https://moonriver.subscan.io/' },
+          extras: { apiUrl: 'https://moonriver.subscan.io/api/scan', network: SubstrateNetwork.MOONBEAM }
         },
-        from: ['WfjQDWqxwYBQRdZ6VZYxctAL9Y5ZNEYFawz166kMfQFUT3Z'],
-        to: ['a7HAyjvVptLyhSZHpPPpubY2niSBhcHjEFnSvYCE81ZESbP'],
+        from: ['0x8925639D43eB0298E95FfEfC792E8d23b7d06cbD'],
+        to: ['0x944e005444aafFE1bC57C9869b51033b7a7630C1'],
         isInbound: false,
         amount: '3800000000000',
         fee: '2599999026',

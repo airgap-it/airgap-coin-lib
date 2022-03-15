@@ -1,20 +1,20 @@
 import { sr25519Verify, waitReady } from '@polkadot/wasm-crypto'
-import { AstarProtocol } from '../../../src'
+import { ShidenProtocol } from '../../../src'
 import { SubstrateNetwork } from '../../../src/protocols/substrate/SubstrateNetwork'
 import { AirGapWalletStatus } from '../../../src/wallet/AirGapWallet'
 import { TestProtocolSpec } from '../implementations'
-import { AstarProtocolStub } from '../stubs/astar.stub'
+import { ShidenProtocolStub } from '../stubs/shiden.stub'
 
 // Test Mnemonic: food talent voyage degree siege clever account medal film remind good kind
 // Derivation path: m/
 // Private Key: d08bc6388fdeb30fc34a8e0286384bd5a84b838222bb9b012fc227d7473fc87aa2913d02297653ce859ccd6b2c057f7e57c9ef6cc359300a891c581fb6d03141
 // Public Key: 52e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10
 // Hex Seed: 55a1417bbfacd64e069b4d07e47fb34ce9ff53b15556698038604f002524aec0
-// Address (Astar SS58): XoyJqEf2TyDn9DJhddh8cLx8zJqaQixVqoZG5ZhyXM6qt1R
-export class AstarTestProtocolSpec extends TestProtocolSpec {
-  public name = 'Astar'
-  public lib = new AstarProtocol()
-  public stub = new AstarProtocolStub()
+// Address (Shiden SS58): XoyJqEf2TyDn9DJhddh8cLx8zJqaQixVqoZG5ZhyXM6qt1R
+export class ShidenTestProtocolSpec extends TestProtocolSpec {
+  public name = 'Shiden'
+  public lib = new ShidenProtocol()
+  public stub = new ShidenProtocolStub()
 
   public validAddresses = [
     'WfjQDWqxwYBQRdZ6VZYxctAL9Y5ZNEYFawz166kMfQFUT3Z',
@@ -152,13 +152,13 @@ export class AstarTestProtocolSpec extends TestProtocolSpec {
   public transactionResult = {
     transactions: [
       {
-        protocolIdentifier: 'astar',
+        protocolIdentifier: 'shiden',
         network: {
           name: 'Mainnet',
           type: 'MAINNET',
           rpcUrl: '',
-          blockExplorer: { blockExplorer: 'https://astar.subscan.io/' },
-          extras: { apiUrl: 'https://astar.subscan.io/api/scan', network: SubstrateNetwork.ASTAR }
+          blockExplorer: { blockExplorer: 'https://shiden.subscan.io/' },
+          extras: { apiUrl: 'https://shiden.subscan.io/api/scan', network: SubstrateNetwork.ASTAR }
         },
         from: ['0x8925639D43eB0298E95FfEfC792E8d23b7d06cbD'],
         to: ['EEWyMLHgwtemr48spFNnS3U2XjaYswqAYAbadx2jr9ppp4X'],
@@ -171,13 +171,13 @@ export class AstarTestProtocolSpec extends TestProtocolSpec {
         status: 'applied'
       },
       {
-        protocolIdentifier: 'astar',
+        protocolIdentifier: 'shiden',
         network: {
           name: 'Mainnet',
           type: 'MAINNET',
           rpcUrl: '',
-          blockExplorer: { blockExplorer: 'https://astar.subscan.io/' },
-          extras: { apiUrl: 'https://astar.subscan.io/api/scan', network: SubstrateNetwork.ASTAR }
+          blockExplorer: { blockExplorer: 'https://shiden.subscan.io/' },
+          extras: { apiUrl: 'https://shiden.subscan.io/api/scan', network: SubstrateNetwork.ASTAR }
         },
         from: ['0x8925639D43eB0298E95FfEfC792E8d23b7d06cbD'],
         to: ['0x944e005444aafFE1bC57C9869b51033b7a7630C1'],
@@ -195,13 +195,13 @@ export class AstarTestProtocolSpec extends TestProtocolSpec {
   public nextTransactionResult = {
     transactions: [
       {
-        protocolIdentifier: 'astar',
+        protocolIdentifier: 'shiden',
         network: {
           name: 'Mainnet',
           type: 'MAINNET',
           rpcUrl: '',
-          blockExplorer: { blockExplorer: 'https://astar.subscan.io/' },
-          extras: { apiUrl: 'https://astar.subscan.io/api/scan', network: SubstrateNetwork.ASTAR }
+          blockExplorer: { blockExplorer: 'https://shiden.subscan.io/' },
+          extras: { apiUrl: 'https://shiden.subscan.io/api/scan', network: SubstrateNetwork.ASTAR }
         },
         from: ['WfjQDWqxwYBQRdZ6VZYxctAL9Y5ZNEYFawz166kMfQFUT3Z'],
         to: ['a7HAyjvVptLyhSZHpPPpubY2niSBhcHjEFnSvYCE81ZESbP'],
@@ -214,13 +214,13 @@ export class AstarTestProtocolSpec extends TestProtocolSpec {
         status: 'applied'
       },
       {
-        protocolIdentifier: 'astar',
+        protocolIdentifier: 'shiden',
         network: {
           name: 'Mainnet',
           type: 'MAINNET',
           rpcUrl: '',
-          blockExplorer: { blockExplorer: 'https://astar.subscan.io/' },
-          extras: { apiUrl: 'https://astar.subscan.io/api/scan', network: SubstrateNetwork.ASTAR }
+          blockExplorer: { blockExplorer: 'https://shiden.subscan.io/' },
+          extras: { apiUrl: 'https://shiden.subscan.io/api/scan', network: SubstrateNetwork.ASTAR }
         },
         from: ['WfjQDWqxwYBQRdZ6VZYxctAL9Y5ZNEYFawz166kMfQFUT3Z'],
         to: ['a7HAyjvVptLyhSZHpPPpubY2niSBhcHjEFnSvYCE81ZESbP'],
