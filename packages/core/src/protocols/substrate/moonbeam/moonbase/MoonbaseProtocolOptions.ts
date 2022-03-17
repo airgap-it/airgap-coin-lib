@@ -2,17 +2,16 @@
 import { ProtocolBlockExplorer } from '../../../../utils/ProtocolBlockExplorer'
 import { NetworkType } from '../../../../utils/ProtocolNetwork'
 import { SubscanBlockExplorer } from '../../SubstrateProtocolOptions'
-
 import {
+  BaseMoonbeamProtocolNetwork,
+  BaseMoonbeamProtocolOptions,
   MoonbeamProtocolConfig,
-  MoonbeamProtocolNetwork,
-  MoonbeamProtocolNetworkExtras,
-  MoonbeamProtocolOptions
+  MoonbeamProtocolNetworkExtras
 } from '../MoonbeamProtocolOptions'
 
 const MAINNET_NAME: string = 'Mainnet'
 
-const NODE_URL: string = 'https://rpc.testnet.moonbeam.network'
+const NODE_URL: string = 'https://moonbeam-alpha.api.onfinality.io/public'
 
 const BLOCK_EXPLORER_URL: string = 'https://moonbase.subscan.io'
 const BLOCK_EXPLORER_API: string = 'https://moonbase.subscan.io/api/scan'
@@ -31,7 +30,7 @@ export class MoonbaseSubscanBlockExplorer extends SubscanBlockExplorer {
   }
 }
 
-export class MoonbaseProtocolNetwork extends MoonbeamProtocolNetwork<MoonbaseProtocolNetworkExtras> {
+export class MoonbaseProtocolNetwork extends BaseMoonbeamProtocolNetwork<MoonbaseProtocolNetworkExtras> {
   constructor(
     name: string = MAINNET_NAME,
     type: NetworkType = NetworkType.MAINNET,
@@ -43,7 +42,7 @@ export class MoonbaseProtocolNetwork extends MoonbeamProtocolNetwork<MoonbasePro
   }
 }
 
-export class MoonbaseProtocolOptions extends MoonbeamProtocolOptions<MoonbaseProtocolConfig> {
+export class MoonbaseProtocolOptions extends BaseMoonbeamProtocolOptions<MoonbaseProtocolConfig> {
   constructor(
     public readonly network: MoonbaseProtocolNetwork = new MoonbaseProtocolNetwork(),
     public readonly config: MoonbaseProtocolConfig = new MoonbaseProtocolConfig()

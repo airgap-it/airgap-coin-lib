@@ -69,7 +69,10 @@ export class TezosSaplingBookkeeper {
   ): Promise<Partial<IAirGapTransaction>[]> {
     const partials: Partial<IAirGapTransaction>[][] = await Promise.all(
       wrappedTransactions.map(async (wrappedTransaction: TezosSaplingWrappedTransaction) => {
-        const transaction: TezosSaplingTransaction = this.encoder.decodeTransaction(Buffer.from(wrappedTransaction.signed, 'hex'))
+        const signedBuffer = Buffer.isBuffer(wrappedTransaction.signed)
+          ? wrappedTransaction.signed
+          : Buffer.from(wrappedTransaction.signed, 'hex')
+        const transaction: TezosSaplingTransaction = this.encoder.decodeTransaction(signedBuffer)
         const [from, details]: [string | undefined, Partial<IAirGapTransaction>[]] = await this.getTransactionPartialDetails(
           transaction,
           knownViewingKeys
@@ -245,9 +248,7 @@ export class TezosSaplingBookkeeper {
         inputs.map(async (input: TezosSaplingInput) => {
           const nullifier: Buffer = await sapling.computeNullifier(
             viewingKey,
-            (
-              await TezosSaplingAddress.fromValue(input.address)
-            ).raw,
+            (await TezosSaplingAddress.fromValue(input.address)).raw,
             input.value,
             input.rcm,
             input.pos
@@ -269,7 +270,7 @@ export class TezosSaplingBookkeeper {
       await Promise.all(
         commitmentsWithCiphertext.map(async ([commitment, ciphertext]: [string, TezosSaplingCiphertext], index: number) => {
           const decrypted: [Buffer, TezosSaplingInput] | undefined = await this.getReceiverInputFromCiphertext(
-            Buffer.isBuffer(viewingKey) ? viewingKey : Buffer.from(viewingKey, 'hex'),
+            viewingKey,
             ciphertext,
             new BigNumber(index)
           )

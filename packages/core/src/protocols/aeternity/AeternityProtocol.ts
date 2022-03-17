@@ -1,4 +1,4 @@
-import * as sodium from 'libsodium-wrappers'
+import sodium = require('libsodium-wrappers')
 
 import axios, { AxiosError } from '../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'

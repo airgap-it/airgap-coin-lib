@@ -18,16 +18,11 @@
               "type": "string"
             }
           },
-          "required": [
-            "encoded"
-          ],
+          "required": ["encoded"],
           "type": "object"
         }
       },
-      "required": [
-        "publicKey",
-        "transaction"
-      ],
+      "required": ["publicKey", "transaction"],
       "type": "object"
     }
   }

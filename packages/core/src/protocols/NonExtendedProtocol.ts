@@ -16,7 +16,7 @@ export abstract class NonExtendedProtocol {
     return Promise.reject('extended public balance not implemented')
   }
 
-  public signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: any): Promise<string> {
+  public signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: any, childDerivationPath: string): Promise<string> {
     return Promise.reject('extended private key signing for not implemented')
   }
 

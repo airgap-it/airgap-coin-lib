@@ -1,15 +1,14 @@
 import { BigNumber } from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
 import * as bitcoinJS from '../../dependencies/src/bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac/src/index'
-import * as ethUtil from '../../dependencies/src/ethereumjs-util-5.2.0/index'
-import { BalanceError, NotImplementedError, UnsupportedError } from '../../errors'
+import { BalanceError, UnsupportedError } from '../../errors'
 import { Domain } from '../../errors/coinlib-error'
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
-import { AirGapTransactionStatus, IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
+import { AirGapTransactionStatus, AirGapTransactionWarningType, IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 import { Network } from '../../networks'
 import { SignedEthereumTransaction } from '../../serializer/schemas/definitions/signed-transaction-ethereum'
 import { UnsignedTransaction } from '../../serializer/schemas/definitions/unsigned-transaction'
-import { RawEthereumTransaction } from '../../serializer/types'
+import { RawEthereumTransaction, RawTypedEthereumTransaction } from '../../serializer/types'
 import { MainProtocolSymbols, ProtocolSymbols } from '../../utils/ProtocolSymbols'
 import { getSubProtocolsByIdentifier } from '../../utils/subProtocols'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
@@ -20,14 +19,16 @@ import { EthereumNodeClient } from './clients/node-clients/NodeClient'
 import { EthereumAddress } from './EthereumAddress'
 import { EthereumCryptoClient } from './EthereumCryptoClient'
 import { EthereumProtocolOptions } from './EthereumProtocolOptions'
+import { EthereumChainIDs } from './EthereumChainIDs'
 import { EthereumTransactionCursor, EthereumTransactionResult } from './EthereumTypes'
 import { EthereumUtils } from './utils/utils'
 
-const EthereumTransaction = require('../../dependencies/src/ethereumjs-tx-1.3.7/index')
+import Common from '@ethereumjs/common'
+// TODO: ETH TX and ethereumjs-util-5.2.0 removed
+import { FeeMarketEIP1559Transaction, Transaction, TransactionFactory } from '@ethereumjs/tx'
 
 export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient, InfoClient extends EthereumInfoClient>
-  implements ICoinProtocol
-{
+  implements ICoinProtocol {
   public symbol: string = 'ETH'
   public name: string = 'Ethereum'
   public marketSymbol: string = 'eth'
@@ -101,13 +102,27 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
   }
 
   public async getExtendedPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
-    throw new NotImplementedError(Domain.ETHEREUM, 'extended private key support for ether not implemented')
+    const secret = mnemonicToSeed(mnemonic, password)
+
+    return this.getExtendedPrivateKeyFromHexSecret(secret, derivationPath)
+  }
+
+  public async getExtendedPublicKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
+    const secret = mnemonicToSeed(mnemonic, password)
+
+    return this.getExtendedPublicKeyFromHexSecret(secret, derivationPath)
   }
 
   public async getPublicKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
     const ethereumNode = bitcoinJS.HDNode.fromSeedHex(secret, this.network)
 
     return ethereumNode.derivePath(derivationPath).neutered().getPublicKeyBuffer().toString('hex')
+  }
+
+  public async getExtendedPublicKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
+    const ethereumNode = bitcoinJS.HDNode.fromSeedHex(secret, this.network)
+
+    return ethereumNode.derivePath(derivationPath).neutered().toBase58()
   }
 
   public async getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<Buffer> {
@@ -117,7 +132,9 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
   }
 
   public async getExtendedPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
-    throw new NotImplementedError(Domain.ETHEREUM, 'extended private key support for ether not implemented')
+    const ethereumNode = bitcoinJS.HDNode.fromSeedHex(secret, this.network)
+
+    return ethereumNode.derivePath(derivationPath).toBase58()
   }
 
   public async getAddressFromPublicKey(publicKey: string | Buffer): Promise<EthereumAddress> {
@@ -130,17 +147,25 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     return [address]
   }
 
+  private async getPublicKeyFromExtendedPublicKey(
+    extendedPublicKey: string,
+    visibilityDerivationIndex: number,
+    addressDerivationIndex: number
+  ): Promise<string> {
+    return bitcoinJS.HDNode.fromBase58(extendedPublicKey, this.network)
+      .derive(visibilityDerivationIndex)
+      .derive(addressDerivationIndex)
+      .getPublicKeyBuffer()
+      .toString('hex')
+  }
+
   public async getAddressFromExtendedPublicKey(
     extendedPublicKey: string,
     visibilityDerivationIndex: number,
     addressDerivationIndex: number
   ): Promise<EthereumAddress> {
     return this.getAddressFromPublicKey(
-      bitcoinJS.HDNode.fromBase58(extendedPublicKey, this.network)
-        .derive(visibilityDerivationIndex)
-        .derive(addressDerivationIndex)
-        .getPublicKeyBuffer()
-        .toString('hex')
+      await this.getPublicKeyFromExtendedPublicKey(extendedPublicKey, visibilityDerivationIndex, addressDerivationIndex)
     )
   }
 
@@ -164,64 +189,188 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     return current
   }
 
-  public signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: RawEthereumTransaction): Promise<IAirGapSignedTransaction> {
-    return Promise.reject('extended private key signing for ether not implemented')
+  private async getPrivateKeyFromExtendedPrivateKey(extendedPrivateKey: string, childDerivationPath?: string): Promise<Buffer> {
+    const dp = childDerivationPath ?? '0/0' // This is the default
+
+    if (dp.startsWith('m')) {
+      throw new Error('Received full derivation path, expected child derivation path')
+    }
+
+    if (dp.toLowerCase().includes('h') || dp.includes(`'`)) {
+      throw new Error('Child derivation path cannot include hardened children')
+    }
+
+    return dp
+      .split('/')
+      .reduce((pv: any, cv: string) => pv.derive(Number(cv)), bitcoinJS.HDNode.fromBase58(extendedPrivateKey, this.network))
+      .keyPair.d.toBuffer(32)
+  }
+
+  public async signWithExtendedPrivateKey(
+    extendedPrivateKey: string,
+    untypedTransaction: RawTypedEthereumTransaction | RawEthereumTransaction,
+    childDerivationPath?: string
+  ): Promise<IAirGapSignedTransaction> {
+    const privateKey = await this.getPrivateKeyFromExtendedPrivateKey(extendedPrivateKey, childDerivationPath)
+
+    if (
+      (untypedTransaction as RawTypedEthereumTransaction).serialized &&
+      (untypedTransaction as RawTypedEthereumTransaction).derivationPath
+    ) {
+      const transaction: RawTypedEthereumTransaction = untypedTransaction as RawTypedEthereumTransaction
+      let tx = TransactionFactory.fromSerializedData(Buffer.from(transaction.serialized, 'hex'))
+
+      tx = tx.sign(privateKey)
+
+      return tx.serialize().toString('hex')
+    } else {
+      return this.signWithPrivateKey(privateKey, untypedTransaction as RawEthereumTransaction)
+    }
   }
 
   public async signWithPrivateKey(privateKey: Buffer, transaction: RawEthereumTransaction): Promise<IAirGapSignedTransaction> {
     if (!transaction.value.startsWith('0x')) {
       transaction.value = EthereumUtils.toHex(parseInt(transaction.value, 10))
     }
-    const tx = new EthereumTransaction(transaction)
-    tx.sign(privateKey)
+    let common: Common | undefined
+
+    try {
+      common = new Common({ chain: transaction.chainId })
+    } catch {
+      common = Common.custom({ chainId: transaction.chainId })
+    }
+
+    let tx = TransactionFactory.fromTxData(transaction, { common })
+    tx = tx.sign(privateKey)
 
     return tx.serialize().toString('hex')
   }
 
   public async getTransactionDetails(unsignedTx: UnsignedTransaction): Promise<IAirGapTransaction[]> {
-    const transaction = unsignedTx.transaction as RawEthereumTransaction
-    const address: EthereumAddress = await this.getAddressFromPublicKey(unsignedTx.publicKey)
+    if (unsignedTx.transaction.serialized) {
+      const typedTransaction = unsignedTx.transaction as RawTypedEthereumTransaction
 
-    return [
-      {
-        from: [address.getValue()],
-        to: [transaction.to],
-        amount: new BigNumber(transaction.value).toString(10),
-        fee: new BigNumber(transaction.gasLimit).multipliedBy(new BigNumber(transaction.gasPrice)).toString(10),
+      const transaction: FeeMarketEIP1559Transaction = TransactionFactory.fromSerializedData(
+        Buffer.from(typedTransaction.serialized, 'hex')
+      ) as FeeMarketEIP1559Transaction
+      const dps = typedTransaction.derivationPath.split('/')
+      const ownAddress: EthereumAddress = unsignedTx.publicKey.startsWith('x') // xPub
+        ? await this.getAddressFromExtendedPublicKey(unsignedTx.publicKey, Number(dps[dps.length - 2]), Number(dps[dps.length - 1]))
+        : await this.getAddressFromPublicKey(unsignedTx.publicKey)
+      const airGapTransaction = {
+        from: [ownAddress.getValue()],
+        to: [transaction.to?.toString() ?? ''],
+        amount: new BigNumber(transaction.value.toString(10)).toString(10),
+        fee: new BigNumber(transaction.gasLimit.toString(10))
+          .multipliedBy(new BigNumber(transaction.maxFeePerGas.toString(10)))
+          .toString(10),
         protocolIdentifier: this.identifier,
         network: this.options.network,
         isInbound: false,
-        data: transaction.data,
+        data: transaction.data.toString('hex'),
         transactionDetails: unsignedTx
       }
-    ]
+
+      return [
+        {
+          ...airGapTransaction,
+          ...(transaction.chainId.toNumber() !== 1
+            ? {
+                warnings: [
+                  {
+                    type: AirGapTransactionWarningType.WARNING,
+                    title: 'Chain ID',
+                    description: `Please note that this is not an Ethereum Mainnet transaction, it is from ${
+                      EthereumChainIDs.get(transaction.chainId.toNumber()) ?? `Chain ID ${transaction.chainId.toNumber()}`
+                    }`
+                  }
+                ]
+              }
+            : {})
+        }
+      ]
+    } else {
+      const transaction = unsignedTx.transaction as RawEthereumTransaction
+      const ownAddress: EthereumAddress = unsignedTx.publicKey.startsWith('x') // xPub
+        ? await this.getAddressFromExtendedPublicKey(unsignedTx.publicKey, 0, 0)
+        : await this.getAddressFromPublicKey(unsignedTx.publicKey)
+
+      return [
+        {
+          from: [ownAddress.getValue()],
+          to: [transaction.to],
+          amount: new BigNumber(transaction.value).toString(10),
+          fee: new BigNumber(transaction.gasLimit).multipliedBy(new BigNumber(transaction.gasPrice)).toString(10),
+          protocolIdentifier: this.identifier,
+          network: this.options.network,
+          isInbound: false,
+          data: transaction.data,
+          transactionDetails: unsignedTx
+        }
+      ]
+    }
   }
 
   public async getTransactionDetailsFromSigned(transaction: SignedEthereumTransaction): Promise<IAirGapTransaction[]> {
-    const ethTx = new EthereumTransaction(transaction.transaction)
+    const ethTx = TransactionFactory.fromSerializedData(Buffer.from(transaction.transaction, 'hex'))
 
-    const hexValue = ethTx.value.toString('hex') || '0x0'
-    const hexGasPrice = ethTx.gasPrice.toString('hex') || '0x0'
-    const hexGasLimit = ethTx.gasLimit.toString('hex') || '0x0'
-    const hexNonce = ethTx.nonce.toString('hex') || '0x0'
+    if (ethTx.type === 0) {
+      const tx = ethTx as Transaction
 
-    return [
-      {
-        from: [ethUtil.toChecksumAddress(`0x${ethTx.from.toString('hex')}`)],
-        to: [ethUtil.toChecksumAddress(`0x${ethTx.to.toString('hex')}`)],
-        amount: new BigNumber(parseInt(hexValue, 16)).toString(10),
-        fee: new BigNumber(parseInt(hexGasLimit, 16)).multipliedBy(new BigNumber(parseInt(hexGasPrice, 16))).toString(10),
-        protocolIdentifier: this.identifier,
-        network: this.options.network,
-        isInbound: ethTx.toCreationAddress(),
-        hash: `0x${ethTx.hash().toString('hex')}`,
-        data: `0x${ethTx.data.toString('hex')}`,
-        extra: {
-          nonce: parseInt(hexNonce, 16)
-        },
-        transactionDetails: transaction.transaction
+      const hexValue = tx.value.toString('hex') || '0x0'
+      const hexGasPrice = tx.gasPrice.toString('hex') || '0x0'
+      const hexGasLimit = tx.gasLimit.toString('hex') || '0x0'
+      const hexNonce = tx.nonce.toString('hex') || '0x0'
+      const chainId = tx.common.chainIdBN().toString(10)
+      const to = tx.to
+
+      if (!to) {
+        throw new Error('No "TO" address')
       }
-    ]
+
+      return [
+        {
+          from: [tx.getSenderAddress().toString()],
+          to: [to.toString()],
+          amount: new BigNumber(parseInt(hexValue, 16)).toString(10),
+          fee: new BigNumber(parseInt(hexGasLimit, 16)).multipliedBy(new BigNumber(parseInt(hexGasPrice, 16))).toString(10),
+          protocolIdentifier: this.identifier,
+          network: this.options.network,
+          isInbound: tx.toCreationAddress(),
+          hash: `0x${tx.hash().toString('hex')}`,
+          data: `0x${tx.data.toString('hex')}`,
+          extra: {
+            chainId,
+            nonce: parseInt(hexNonce, 16)
+          },
+          transactionDetails: { raw: transaction.transaction }
+        }
+      ]
+    }
+
+    try {
+      const feeTx = ethTx as FeeMarketEIP1559Transaction
+
+      return [
+        {
+          from: [feeTx.getSenderAddress().toString()],
+          to: [feeTx.to?.toString() ?? ''],
+          amount: new BigNumber(feeTx.value.toString(10)).toString(10),
+          fee: new BigNumber(feeTx.gasLimit.toString(10)).multipliedBy(new BigNumber(feeTx.maxFeePerGas.toString(10))).toString(10),
+          protocolIdentifier: this.identifier,
+          network: this.options.network,
+          isInbound: false,
+          data: feeTx.data.toString('hex'),
+          extra: {
+            chainId: feeTx.chainId.toString(10),
+            nonce: feeTx.nonce.toString(10)
+          },
+          transactionDetails: { raw: transaction.transaction }
+        }
+      ]
+    } catch (e) {
+      throw new Error(`Transaction type "${ethTx.type}" not supported`)
+    }
   }
 
   public async getBalanceOfPublicKey(publicKey: string): Promise<string> {
@@ -254,35 +403,48 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     return contractAddresses.map((contractAddresse) => balances[contractAddresse]?.toFixed() ?? '0')
   }
 
-  public getBalanceOfExtendedPublicKey(extendedPublicKey: string, offset: number = 0): Promise<string> {
-    return Promise.reject('extended public balance for ether not implemented')
+  public async getBalanceOfExtendedPublicKey(extendedPublicKey: string, offset: number = 0): Promise<string> {
+    const publicKey = await this.getPublicKeyFromExtendedPublicKey(extendedPublicKey, 0, 0)
+
+    return this.getBalanceOfPublicKey(publicKey)
   }
 
   public async getAvailableBalanceOfAddresses(addresses: string[]): Promise<string> {
     return this.getBalanceOfAddresses(addresses)
   }
 
-  public estimateMaxTransactionValueFromExtendedPublicKey(extendedPublicKey: string, recipients: string[], fee?: string): Promise<string> {
-    return Promise.reject('estimating max value using extended public key not implemented')
+  public async estimateMaxTransactionValueFromExtendedPublicKey(
+    extendedPublicKey: string,
+    recipients: string[],
+    fee?: string
+  ): Promise<string> {
+    const publicKey = await this.getPublicKeyFromExtendedPublicKey(extendedPublicKey, 0, 0)
+
+    return this.estimateMaxTransactionValueFromPublicKey(publicKey, recipients, fee)
   }
 
   public async estimateFeeDefaultsFromExtendedPublicKey(
-    publicKey: string,
+    extendedPublicKey: string,
     recipients: string[],
     values: string[],
     data?: any
   ): Promise<FeeDefaults> {
-    return Promise.reject('estimating default fees using extended public key not implemented')
+    const publicKey = await this.getPublicKeyFromExtendedPublicKey(extendedPublicKey, 0, 0)
+
+    return this.estimateFeeDefaultsFromPublicKey(publicKey, recipients, values, data)
   }
 
-  public prepareTransactionFromExtendedPublicKey(
+  public async prepareTransactionFromExtendedPublicKey(
     extendedPublicKey: string,
-    offset: number,
+    _offset: number,
     recipients: string[],
     values: string[],
-    fee: string
+    fee: string,
+    data?: any
   ): Promise<RawEthereumTransaction> {
-    return Promise.reject('extended public tx for ether not implemented')
+    const publicKey = await this.getPublicKeyFromExtendedPublicKey(extendedPublicKey, 0, 0)
+
+    return this.prepareTransactionFromPublicKey(publicKey, recipients, values, fee, data)
   }
 
   public async estimateMaxTransactionValueFromPublicKey(publicKey: string, recipients: string[], fee?: string): Promise<string> {
@@ -395,12 +557,14 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     return this.options.nodeClient.sendSignedTransaction(`0x${rawTransaction}`)
   }
 
-  public getTransactionsFromExtendedPublicKey(
+  public async getTransactionsFromExtendedPublicKey(
     extendedPublicKey: string,
     limit: number,
     cursor: EthereumTransactionCursor
   ): Promise<EthereumTransactionResult> {
-    return Promise.reject('extended public transaction list for ether not implemented')
+    const publicKey = await this.getPublicKeyFromExtendedPublicKey(extendedPublicKey, 0, 0)
+
+    return this.getTransactionsFromPublicKey(publicKey, limit, cursor)
   }
 
   public async getTransactionsFromPublicKey(

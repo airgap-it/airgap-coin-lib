@@ -27,7 +27,9 @@ const unsignedTransactionBitcoinSegwit: SchemaRoot = require('./schemas/generate
 const unsignedTransactionBitcoin: SchemaRoot = require('./schemas/generated/transaction-sign-request-bitcoin.json')
 const unsignedTransactionCosmos: SchemaRoot = require('./schemas/generated/transaction-sign-request-cosmos.json')
 const unsignedTransactionEthereum: SchemaRoot = require('./schemas/generated/transaction-sign-request-ethereum.json')
+const unsignedTransactionEthereumTyped: SchemaRoot = require('./schemas/generated/transaction-sign-request-ethereum-typed.json')
 const unsignedTransactionRsk: SchemaRoot = require('./schemas/generated/transaction-sign-request-rsk.json')
+const unsignedTransactionRskTyped: SchemaRoot = require('./schemas/generated/transaction-sign-request-rsk-typed.json')
 const unsignedTransactionTezos: SchemaRoot = require('./schemas/generated/transaction-sign-request-tezos.json')
 const unsignedTransactionTezosSapling: SchemaRoot = require('./schemas/generated/transaction-sign-request-tezos-sapling.json')
 const unsignedTransactionSubstrate: SchemaRoot = require('./schemas/generated/transaction-sign-request-substrate.json')
@@ -49,39 +51,41 @@ function unsignedTransactionTransformerCosmos(value: SerializableUnsignedCosmosT
 }
 
 export class SerializerV3 {
-  private static readonly schemas: Map<string, SchemaInfo> = new Map()
+  private static readonly schemas: Map<string, SchemaInfo[]> = new Map()
 
   public static addSchema(schemaId: number, schema: SchemaInfo, protocol?: ProtocolSymbols): void {
     const protocolSpecificSchemaName: string = SerializerV3.getSchemaName(schemaId, protocol)
 
-    if (this.schemas.has(protocolSpecificSchemaName)) {
+    const schemas = this.schemas.get(protocolSpecificSchemaName) ?? []
+    if (schemas.some((el) => el.schema === schema.schema)) {
       throw new SerializerError(SerializerErrorType.SCHEMA_ALREADY_EXISTS, `Schema ${protocolSpecificSchemaName} already exists`)
     }
-    this.schemas.set(protocolSpecificSchemaName, schema)
+    schemas.push(schema)
+    this.schemas.set(protocolSpecificSchemaName, schemas)
   }
 
-  public static getSchema(schemaId: number, protocol?: ProtocolSymbols): SchemaInfo {
+  public static getSchemas(schemaId: number, protocol?: ProtocolSymbols): SchemaInfo[] {
     const protocolSpecificSchemaName: string = SerializerV3.getSchemaName(schemaId, protocol)
 
-    let schema: SchemaInfo | undefined
+    let schemas: SchemaInfo[] | undefined
     if (this.schemas.has(protocolSpecificSchemaName)) {
-      schema = this.schemas.get(protocolSpecificSchemaName)
+      schemas = this.schemas.get(protocolSpecificSchemaName)
     } else if (protocol !== undefined) {
       const split = protocol.split('-')
       // if protocol is a sub protocol and there is no schema defined for it, use the main protocol schema as the fallback
       if (split.length >= 2) {
-        return this.getSchema(schemaId, split[0] as MainProtocolSymbols)
+        return this.getSchemas(schemaId, split[0] as MainProtocolSymbols)
       }
     }
 
     // Try to get the protocol specific scheme, if it doesn't exist fall back to the generic one
-    schema = schema ?? this.schemas.get(SerializerV3.getSchemaName(schemaId))
+    schemas = schemas !== undefined && schemas.length > 0 ? schemas : this.schemas.get(SerializerV3.getSchemaName(schemaId))
 
-    if (!schema) {
+    if (!schemas) {
       throw new SerializerError(SerializerErrorType.SCHEMA_DOES_NOT_EXISTS, `Schema ${protocolSpecificSchemaName} does not exist`)
     }
 
-    return schema
+    return schemas
   }
 
   private static getSchemaName(schemaId: number, protocol?: ProtocolSymbols): string {
@@ -106,7 +110,7 @@ export class SerializerV3 {
   public async serialize(messages: IACMessageDefinitionObjectV3[]): Promise<string> {
     if (
       messages.every((message: IACMessageDefinitionObjectV3) => {
-        return SerializerV3.getSchema(message.type, message.protocol)
+        return SerializerV3.getSchemas(message.type, message.protocol).length > 0
       })
     ) {
       const iacps: IACMessageWrapper = IACMessageWrapper.fromDecoded(JSON.parse(JSON.stringify(messages)))
@@ -176,8 +180,10 @@ SerializerV3.addSchema(
   MainProtocolSymbols.COSMOS
 )
 SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionEthereum }, MainProtocolSymbols.ETH)
+SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionEthereumTyped }, MainProtocolSymbols.ETH)
 SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionEthereum }, SubProtocolSymbols.ETH_ERC20)
 SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionRsk }, MainProtocolSymbols.RBTC)
+SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionRskTyped }, MainProtocolSymbols.RBTC)
 SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionRsk }, SubProtocolSymbols.RBTC_ERC20)
 SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionTezos }, MainProtocolSymbols.XTZ)
 SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionTezosSapling }, MainProtocolSymbols.XTZ_SHIELDED)
@@ -192,6 +198,7 @@ SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsigned
 SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionSubstrate }, MainProtocolSymbols.KUSAMA)
 SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionSubstrate }, MainProtocolSymbols.MOONBASE)
 SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionSubstrate }, MainProtocolSymbols.MOONRIVER)
+SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionSubstrate }, MainProtocolSymbols.MOONBEAM)
 
 SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionAeternity }, MainProtocolSymbols.AE)
 SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionBitcoinSegwit }, MainProtocolSymbols.BTC_SEGWIT)
@@ -215,3 +222,4 @@ SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedT
 SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionSubstrate }, MainProtocolSymbols.KUSAMA)
 SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionSubstrate }, MainProtocolSymbols.MOONBASE)
 SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionSubstrate }, MainProtocolSymbols.MOONRIVER)
+SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionSubstrate }, MainProtocolSymbols.MOONBEAM)

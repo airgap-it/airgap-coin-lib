@@ -1,4 +1,4 @@
-import * as createHash from '../dependencies/src/create-hash-1.2.0/index'
+import createHash = require('../dependencies/src/create-hash-1.2.0/index')
 
 import { ProtocolBlockExplorer } from './ProtocolBlockExplorer'
 

@@ -1,167 +1,26 @@
 import Axios, { AxiosResponse } from '../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
-
-import { CosmosMessageType } from './cosmos-message/CosmosMessage'
-
-export interface CosmosNodeInfo {
-  protocol_version: {
-    p2p: string
-    block: string
-    app: string
-  }
-  id: string
-  listen_addr: string
-  network: string
-  version: string
-  channels: string
-  moniker: string
-  other: {
-    tx_index: string
-    rpc_address: string
-  }
-}
-
-export interface CosmosAccount {
-  type: string
-  value: CosmosAccountValue
-}
-
-export interface CosmosAccountValue {
-  account_number: string
-  address: string
-  coins: CosmosAccountCoin[]
-  sequence?: string
-  public_key?: string
-}
-
-export interface CosmosAccountCoin {
-  denom: string
-  amount: string
-}
-
-export interface CosmosDelegation {
-  delegation: {
-    delegator_address: string
-    validator_address: string
-    shares: string
-  }
-  balance: {
-    denom: string
-    amount: string
-  }
-}
-
-export interface CosmosUnbondingDelegation {
-  delegator_address: string
-  validator_address: string
-  entries: {
-    creation_height: string
-    completion_time: string
-    initial_balance: string
-    balance: string
-  }[]
-}
-
-export interface CosmosValidator {
-  operator_address: string
-  consensus_pubkey: string
-  jailed: boolean
-  status: number
-  tokens: string
-  delegator_shares: string
-  description: CosmosValidatorDescription
-  unbonding_height: string
-  unbonding_time: string
-  commission: CosmosValidatorCommission
-  min_self_delegation: string
-}
-
-export interface CosmosValidatorDescription {
-  moniker: string
-  identity: string
-  website: string
-  details: string
-}
-
-export interface CosmosValidatorCommission {
-  commission_rates: CosmosValidatorCommissionRate
-  update_time: string
-}
-
-export interface CosmosValidatorCommissionRate {
-  rate: string
-  max_rate: string
-  max_change_rate: string
-}
-
-export interface CosmosBroadcastSignedTransactionResponse {
-  txhash: string
-  height: number
-}
-
-export interface CosmosRewardDetails {
-  validator_address: string
-  reward: {
-    denom: string
-    amount: number
-  }[]
-}
-
-export interface CosmosPagedSendTxsResponse {
-  total_count: string
-  count: string
-  page_number: string
-  page_total: string
-  limit: string
-  txs: CosmosSendTx[]
-}
-
-export interface CosmosSendTx {
-  height: string
-  txhash: string
-  gas_wanted: string
-  gas_used: string
-  tx: {
-    type: string
-    value: {
-      msg: [
-        {
-          type: string
-          value: {
-            from_address: string
-            to_address: string
-            amount: [
-              {
-                denom: string
-                amount: string
-              }
-            ]
-          }
-        }
-      ]
-      fee: {
-        amount: [
-          {
-            denom: string
-            amount: string
-          }
-        ]
-        gas: string
-      }
-      memo: string
-    }
-  }
-  timestamp: string
-}
+import { CosmosCoin } from './CosmosCoin'
+import {
+  CosmosAccount,
+  CosmosAccountCoin,
+  CosmosBroadcastSignedTransactionResponse,
+  CosmosDelegation,
+  CosmosNodeInfo,
+  CosmosPagedSendTxsResponse,
+  CosmosRewardDetails,
+  CosmosUnbondingDelegation,
+  CosmosValidator
+} from './CosmosTypes'
 
 export class CosmosNodeClient {
   constructor(public readonly baseURL: string, public useCORSProxy: boolean = false) {}
 
   public async fetchBalance(address: string, totalBalance?: boolean): Promise<BigNumber> {
     const response = await Axios.get(this.url(`/bank/balances/${address}`))
-    const data: any[] = response.data.result
+    const data: CosmosAccountCoin[] = response.data.result
     if (data.length > 0) {
-      const availableBalance = data[0].amount
+      const availableBalance = CosmosCoin.sum(CosmosCoin.fromCoins(data))
       if (totalBalance) {
         const totalBalance = (
           await Promise.all([
@@ -199,7 +58,7 @@ export class CosmosNodeClient {
             ...tx.tx,
             value: {
               ...tx.tx.value,
-              msg: tx.tx.value.msg.filter((msg) => msg.type === CosmosMessageType.Send.value) as any
+              msg: tx.tx.value.msg.filter((msg) => msg.type === 'cosmos-sdk/MsgSend') as any
             }
           }
         })) ?? []
@@ -215,14 +74,21 @@ export class CosmosNodeClient {
     return nodeInfo
   }
 
-  public async broadcastSignedTransaction(transaction: string): Promise<string> {
-    const response: AxiosResponse<CosmosBroadcastSignedTransactionResponse> = await Axios.post(this.url(`/txs`), transaction, {
-      headers: {
-        'Content-type': 'application/json'
+  public async broadcastSignedTransaction(tx_bytes: string): Promise<string> {
+    const response: AxiosResponse<CosmosBroadcastSignedTransactionResponse> = await Axios.post(
+      this.url(`/cosmos/tx/v1beta1/txs`),
+      {
+        tx_bytes,
+        mode: 'BROADCAST_MODE_ASYNC'
+      },
+      {
+        headers: {
+          'Content-type': 'application/json'
+        }
       }
-    })
+    )
 
-    return response.data.txhash
+    return response.data.tx_response.txhash
   }
 
   public async fetchAccount(address: string): Promise<CosmosAccount> {
@@ -244,10 +110,8 @@ export class CosmosNodeClient {
 
   public async fetchTotalDelegatedAmount(address: string): Promise<BigNumber> {
     const delegations = await this.fetchDelegations(address)
-
-    return delegations
-      .reduce((current, next) => current.plus(new BigNumber(next.balance.amount)), new BigNumber(0))
-      .decimalPlaces(0, BigNumber.ROUND_FLOOR)
+    const balances = delegations.map((delegation) => delegation.balance)
+    return CosmosCoin.sum(CosmosCoin.fromCoins(balances)).decimalPlaces(0, BigNumber.ROUND_FLOOR)
   }
 
   public async fetchValidator(address: string): Promise<CosmosValidator> {
@@ -305,7 +169,7 @@ export class CosmosNodeClient {
       .catch(() => [])
 
     if (totalRewards?.length > 0) {
-      return new BigNumber(totalRewards[0].amount).decimalPlaces(0, BigNumber.ROUND_FLOOR)
+      return CosmosCoin.sum(CosmosCoin.fromCoins(totalRewards)).decimalPlaces(0, BigNumber.ROUND_FLOOR)
     }
 
     return new BigNumber(0)
@@ -316,7 +180,7 @@ export class CosmosNodeClient {
       .then((response) => response.data.result as { denom: string; amount: string }[])
       .catch(() => [])
     if (totalRewards?.length > 0) {
-      return new BigNumber(totalRewards[0].amount).decimalPlaces(0, BigNumber.ROUND_FLOOR)
+      return CosmosCoin.sum(CosmosCoin.fromCoins(totalRewards)).decimalPlaces(0, BigNumber.ROUND_FLOOR)
     }
 
     return new BigNumber(0)

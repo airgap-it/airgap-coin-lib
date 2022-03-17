@@ -15,9 +15,7 @@
           "type": "array"
         }
       },
-      "required": [
-        "protocols"
-      ],
+      "required": ["protocols"],
       "type": "object"
     }
   }

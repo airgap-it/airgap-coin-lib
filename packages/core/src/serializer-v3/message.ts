@@ -18,7 +18,9 @@ import { UnsignedAeternityTransaction } from './schemas/definitions/unsigned-tra
 import { UnsignedBitcoinTransaction } from './schemas/definitions/unsigned-transaction-bitcoin'
 import { UnsignedBitcoinSegwitTransaction } from './schemas/definitions/unsigned-transaction-bitcoin-segwit'
 import { UnsignedEthereumTransaction } from './schemas/definitions/unsigned-transaction-ethereum'
+import { UnsignedTypedEthereumTransaction } from './schemas/definitions/unsigned-transaction-ethereum-typed'
 import { UnsignedRskTransaction } from './schemas/definitions/unsigned-transaction-rsk'
+import { UnsignedTypedRskTransaction } from './schemas/definitions/unsigned-transaction-rsk-typed'
 import { UnsignedSubstrateTransaction } from './schemas/definitions/unsigned-transaction-substrate'
 import { UnsignedTezosTransaction } from './schemas/definitions/unsigned-transaction-tezos'
 import { UnsignedTezosSaplingTransaction } from './schemas/definitions/unsigned-transaction-tezos-sapling'
@@ -40,7 +42,9 @@ export type IACMessages =
   | UnsignedBitcoinSegwitTransaction
   | UnsignedCosmosTransaction
   | UnsignedEthereumTransaction
+  | UnsignedTypedEthereumTransaction
   | UnsignedRskTransaction
+  | UnsignedTypedRskTransaction
   | UnsignedSubstrateTransaction
   | SignedTezosTransaction
   | SignedTezosSaplingTransaction
@@ -82,7 +86,6 @@ export function isMessageDefinitionArray(value: unknown): value is MessageDefini
 
 export class Message implements IACMessageDefinitionObjectV3 {
   private readonly version: number
-  private readonly schema: SchemaItem
 
   public readonly id: number
   public readonly type: IACMessageType
@@ -101,9 +104,6 @@ export class Message implements IACMessageDefinitionObjectV3 {
     this.protocol = protocol
     this.payload = payload
     this.version = version
-
-    const schemaInfo: SchemaInfo = SerializerV3.getSchema(this.type, this.protocol)
-    this.schema = unwrapSchema(schemaInfo.schema)
   }
 
   public asJson(): IACMessageDefinitionObjectV3 {
@@ -116,9 +116,23 @@ export class Message implements IACMessageDefinitionObjectV3 {
   }
 
   public asArray(): MessageDefinitionArray {
-    const array: CBORData = jsonToArray('root', this.schema, this.payload)
+    const schemaInfos: SchemaInfo[] = SerializerV3.getSchemas(this.type, this.protocol)
+    let lastError
+    for (let schemaInfo of schemaInfos) {
+      try {
+        const schema = unwrapSchema(schemaInfo.schema)
+        const array: CBORData = jsonToArray('root', schema, this.payload)
+        return [this.version, this.type, this.protocol, this.id, array]
+      } catch (e) {
+        lastError = e
+      }
+    }
 
-    return [this.version, this.type, this.protocol, this.id, array]
+    if (lastError) {
+      throw lastError
+    }
+
+    throw new Error('NO SCHEMA FOUND')
   }
 
   public static fromDecoded(object: IACMessageDefinitionObjectV3): Message {
@@ -133,13 +147,19 @@ export class Message implements IACMessageDefinitionObjectV3 {
     const id: number = this.validateId(buf[3])
     const encodedPayload: CBORData = this.validatePayload(buf[4])
 
-    const schemaInfo: SchemaInfo = SerializerV3.getSchema(type, protocol)
-    const schema: SchemaItem = unwrapSchema(schemaInfo.schema)
-    const schemaTransformer: SchemaTransformer | undefined = schemaInfo.transformer
-    const json: IACMessages = rlpArrayToJson(schema, encodedPayload) as any as IACMessages
-    const payload: IACMessages = schemaTransformer ? schemaTransformer(json) : json
+    const schemaInfos: SchemaInfo[] = SerializerV3.getSchemas(type, protocol)
+    for (let schemaInfo of schemaInfos) {
+      try {
+        const schema: SchemaItem = unwrapSchema(schemaInfo.schema)
+        const schemaTransformer: SchemaTransformer | undefined = schemaInfo.transformer
+        const json: IACMessages = (rlpArrayToJson(schema, encodedPayload) as any) as IACMessages
 
-    return new Message(type, protocol, payload, id, version)
+        const payload: IACMessages = schemaTransformer ? schemaTransformer(json) : json
+        return new Message(type, protocol, payload, id, version)
+      } catch (e) {}
+    }
+
+    throw new Error('NO SCHEMA MATCHED')
   }
 
   private static validateVersion(version: number): number {
@@ -149,7 +169,7 @@ export class Message implements IACMessageDefinitionObjectV3 {
   private static validateType(value: number, protocol: ProtocolSymbols): IACMessageType {
     return this.validateProperty<IACMessageType, number>('Type', value, (val: number) => {
       try {
-        SerializerV3.getSchema(val, protocol)
+        SerializerV3.getSchemas(val, protocol)
 
         return true
       } catch (error) {
@@ -180,7 +200,7 @@ export class Message implements IACMessageDefinitionObjectV3 {
     }
 
     if (validate(value)) {
-      return value as unknown as T // TODO: Use type guard?
+      return (value as unknown) as T // TODO: Use type guard?
     }
 
     throw new SerializerError(SerializerErrorType.PROPERTY_IS_EMPTY, `${property} is invalid: "${value}"`)

@@ -72,32 +72,53 @@ interface SubmitBatchArgs {
 }
 
 // Moonbeam, TODO: separate
-interface MoonbeamNominateArgs<Network extends SubstrateNetwork> {
-  collator: SubstrateAccountId<SubstrateCompatAddressType[Network]>
+interface MoonbeamDelegateArgs<Network extends SubstrateNetwork> {
+  candidate: SubstrateAccountId<SubstrateCompatAddressType[Network]>
   amount: number | BigNumber
-  collatorNominatorCount: number | BigNumber
-  nominationCount: number | BigNumber
+  candidateDelegationCount: number | BigNumber
+  delegationCount: number | BigNumber
 }
 
-interface MoonbeamLeaveNominatorsArgs {
-  nominationCount: number | BigNumber
+interface MoonbeamScheduleLeaveDelegatorsArgs {}
+
+interface MoonbeamExecuteLeaveDelegatorsArgs<Network extends SubstrateNetwork> {
+  delegator: SubstrateAccountId<SubstrateCompatAddressType[Network]>
+  delegationCount: number | BigNumber
 }
 
-interface MoonbeamRevokeNominationArgs<Network extends SubstrateNetwork> {
+interface MoonbeamCancelLeaveDelegatorsArgs {}
+
+interface MoonbeamScheduleRevokeDelegationArgs<Network extends SubstrateNetwork> {
   collator: SubstrateAccountId<SubstrateCompatAddressType[Network]>
 }
 
-interface MoonbeamNominatorBondMoreArgs<Network extends SubstrateNetwork> {
+interface MoonbeamExecuteDelegationRequestArgs<Network extends SubstrateNetwork> {
+  delegator: SubstrateAccountId<SubstrateCompatAddressType[Network]>
+  candidate: SubstrateAccountId<SubstrateCompatAddressType[Network]>
+}
+
+interface MoonbeamCancelDelegationRequestArgs<Network extends SubstrateNetwork> {
+  candidate: SubstrateAccountId<SubstrateCompatAddressType[Network]>
+}
+
+interface MoonbeamDelegatorBondMoreArgs<Network extends SubstrateNetwork> {
   candidate: SubstrateAccountId<SubstrateCompatAddressType[Network]>
   more: number | BigNumber
 }
 
-interface MoonbeamNominatorBondLessArgs<Network extends SubstrateNetwork> {
+interface MoonbeamScheduleDelegatorBondLessArgs<Network extends SubstrateNetwork> {
   candidate: SubstrateAccountId<SubstrateCompatAddressType[Network]>
   less: number | BigNumber
 }
 
+interface MoonbeamExecuteCandidateBondLessArgs<Network extends SubstrateNetwork> {
+  candidate: SubstrateAccountId<SubstrateCompatAddressType[Network]>
+}
+
+interface MoonbeamCancelCandidateBondLessArgs<Network extends SubstrateNetwork> {}
+
 export abstract class SubstrateTransactionMethodArgsFactory<T, Network extends SubstrateNetwork> {
+  // tslint:disable-next-line: cyclomatic-complexity
   public static create<Network extends SubstrateNetwork>(
     network: Network,
     type: SubstrateTransactionType,
@@ -151,24 +172,45 @@ export abstract class SubstrateTransactionMethodArgsFactory<T, Network extends S
         assertFields('submitBatch', args, 'calls')
 
         return new SubmitBatchArgsFactory(network, args)
-      case SubstrateTransactionType.M_NOMINATE:
-        assertFields('nominate', args, 'collator', 'amount')
 
-        return new MoonbeamNominateArgsFactory(network, args)
-      case SubstrateTransactionType.M_LEAVE_NOMINATORS:
-        return new MoonbeamLeaveNominatorsArgsFactory(network, args)
-      case SubstrateTransactionType.M_REVOKE_NOMINATION:
-        assertFields('revokeNomination', args, 'collator')
+      case SubstrateTransactionType.M_DELEGATE:
+        assertFields('delegate', args, 'candidate', 'amount', 'candidateDelegationCount', 'delegationCount')
 
-        return new MoonbeamRevokeNominationArgsFactory(network, args)
-      case SubstrateTransactionType.M_NOMINATOR_BOND_MORE:
-        assertFields('nominate', args, 'candidate', 'more')
+        return new MoonbeamDelegateArgsFactory(network, args)
+      case SubstrateTransactionType.M_SCHEDULE_LEAVE_DELEGATORS:
+        return new MoonbeamScheduleLeaveDelegatorsArgsFactory(network, args)
+      case SubstrateTransactionType.M_EXECUTE_LEAVE_DELEGATORS:
+        assertFields('executeLeaveDelegators', args, 'delegator', 'delegationCount')
 
-        return new MoonbeamNominatorBondMoreArgsFactory(network, args)
-      case SubstrateTransactionType.M_NOMINATOR_BOND_LESS:
-        assertFields('nominate', args, 'candidate', 'less')
+        return new MoonbeamExecuteLeaveDelegatorsArgsFactory(network, args)
+      case SubstrateTransactionType.M_CANCEL_LEAVE_DELEGATORS:
+        return new MoonbeamCancelLeaveDelegatorsArgsFactory(network, args)
+      case SubstrateTransactionType.M_SCHEDULE_REVOKE_DELGATION:
+        assertFields('scheduleRevokeDelegation', args, 'collator')
 
-        return new MoonbeamNominatorBondLessArgsFactory(network, args)
+        return new MoonbeamScheduleRevokeDelegationArgsFactory(network, args)
+      case SubstrateTransactionType.M_EXECUTE_DELGATION_REQUEST:
+        assertFields('executeDelegationRequest', args, 'delegator', 'candidate')
+
+        return new MoonbeamExecuteDelegationRequestArgsFactory(network, args)
+      case SubstrateTransactionType.M_CANCEL_DELEGATION_REQUEST:
+        assertFields('cancelDelegationRequest', args, 'candidate')
+
+        return new MoonbeamCancelDelegationRequestArgsFactory(network, args)
+      case SubstrateTransactionType.M_DELEGATOR_BOND_MORE:
+        assertFields('delegatorBondMore', args, 'candidate', 'more')
+
+        return new MoonbeamDelegatorBondMoreArgsFactory(network, args)
+      case SubstrateTransactionType.M_SCHEDULE_DELEGATOR_BOND_LESS:
+        assertFields('scheduleDelegatorBondLess', args, 'candidate', 'less')
+
+        return new MoonbeamScheduleDelegatorBondLessArgsFactory(network, args)
+      case SubstrateTransactionType.M_EXECUTE_CANDIDATE_BOND_LESS:
+        assertFields('scheduleDelegatorBondLess', args, 'candidate')
+
+        return new MoonbeamExecuteCandidateBondLessArgsFactory(network, args)
+      case SubstrateTransactionType.M_CANCEL_CANDIDATE_BOND_LESS:
+        return new MoonbeamCancelCandidateBondLessArgsFactory(network, args)
     }
   }
 
@@ -179,6 +221,7 @@ export abstract class SubstrateTransactionMethodArgsFactory<T, Network extends S
 }
 
 export abstract class SubstrateTransactionMethodArgsDecoder<T, Network extends SubstrateNetwork> {
+  // tslint:disable-next-line: cyclomatic-complexity
   public static create<Network extends SubstrateNetwork>(
     type: SubstrateTransactionType
   ): SubstrateTransactionMethodArgsDecoder<any, Network> {
@@ -208,16 +251,29 @@ export abstract class SubstrateTransactionMethodArgsDecoder<T, Network extends S
         return new SetControllerArgsDecoder()
       case SubstrateTransactionType.SUBMIT_BATCH:
         return new SubmitBatchArgsDecoder()
-      case SubstrateTransactionType.M_NOMINATE:
-        return new MoonbeamNominateArgsDecoder()
-      case SubstrateTransactionType.M_LEAVE_NOMINATORS:
-        return new MoonbeamLeaveNominatorsArgsDecoder()
-      case SubstrateTransactionType.M_REVOKE_NOMINATION:
-        return new MoonbeamRevokeNominationArgsDecoder()
-      case SubstrateTransactionType.M_NOMINATOR_BOND_MORE:
-        return new MoonbeamNominatorBondMoreArgsDecoder()
-      case SubstrateTransactionType.M_NOMINATOR_BOND_LESS:
-        return new MoonbeamNominatorBondLessArgsDecoder()
+
+      case SubstrateTransactionType.M_DELEGATE:
+        return new MoonbeamDelegateArgsDecoder()
+      case SubstrateTransactionType.M_SCHEDULE_LEAVE_DELEGATORS:
+        return new MoonbeamScheduleLeaveDelegatorsArgsDecoder()
+      case SubstrateTransactionType.M_EXECUTE_LEAVE_DELEGATORS:
+        return new MoonbeamExecuteLeaveDelegatorsArgsDecoder()
+      case SubstrateTransactionType.M_CANCEL_LEAVE_DELEGATORS:
+        return new MoonbeamCancelLeaveDelegatorsArgsDecoder()
+      case SubstrateTransactionType.M_SCHEDULE_REVOKE_DELGATION:
+        return new MoonbeamScheduleRevokeDelegationArgsDecoder()
+      case SubstrateTransactionType.M_EXECUTE_DELGATION_REQUEST:
+        return new MoonbeamExecuteDelegationRequestArgsDecoder()
+      case SubstrateTransactionType.M_CANCEL_DELEGATION_REQUEST:
+        return new MoonbeamCancelDelegationRequestArgsDecoder()
+      case SubstrateTransactionType.M_DELEGATOR_BOND_MORE:
+        return new MoonbeamDelegatorBondMoreArgsDecoder()
+      case SubstrateTransactionType.M_SCHEDULE_DELEGATOR_BOND_LESS:
+        return new MoonbeamScheduleDelegatorBondLessArgsDecoder()
+      case SubstrateTransactionType.M_EXECUTE_CANDIDATE_BOND_LESS:
+        return new MoonbeamExecuteCandidateBondLessArgsDecoder()
+      case SubstrateTransactionType.M_CANCEL_CANDIDATE_BOND_LESS:
+        return new MoonbeamCancelCandidateBondLessArgsDecoder()
     }
   }
 
@@ -569,80 +625,133 @@ class SubmitBatchArgsDecoder<Network extends SubstrateNetwork> extends Substrate
   }
 }
 
-class MoonbeamNominateArgsFactory<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsFactory<
-  MoonbeamNominateArgs<Network>,
+class MoonbeamDelegateArgsFactory<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsFactory<
+  MoonbeamDelegateArgs<Network>,
   Network
 > {
   public createFields(): [string, SCALEType][] {
     return [
-      ['collator', SCALEAccountId.from(this.args.collator, this.network)],
+      ['collator', SCALEAccountId.from(this.args.candidate, this.network)],
       ['amount', SCALEInt.from(this.args.amount, 128)],
-      ['collatorNominatorCount', SCALEInt.from(this.args.collatorNominatorCount, 32)],
-      ['nominationCount', SCALEInt.from(this.args.nominationCount, 32)]
+      ['candidateDelegationCount', SCALEInt.from(this.args.candidateDelegationCount, 32)],
+      ['delegationCount', SCALEInt.from(this.args.delegationCount, 32)]
     ]
   }
   public createToAirGapTransactionParts(): () => Partial<IAirGapTransaction>[] {
     return () => [
       {
-        to: [substrateAddressFactory(this.network).from(this.args.collator).getValue()],
+        to: [substrateAddressFactory(this.network).from(this.args.candidate).getValue()],
         amount: new BigNumber(this.args.amount).toString()
       }
     ]
   }
 }
 
-class MoonbeamNominateArgsDecoder<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsDecoder<
-  MoonbeamNominateArgs<Network>,
+class MoonbeamDelegateArgsDecoder<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsDecoder<
+  MoonbeamDelegateArgs<Network>,
   Network
 > {
-  protected _decode(decoder: SCALEDecoder<Network>): SCALEDecodeResult<MoonbeamNominateArgs<Network>> {
-    const collator = decoder.decodeNextAccountId(20)
+  protected _decode(decoder: SCALEDecoder<Network>): SCALEDecodeResult<MoonbeamDelegateArgs<Network>> {
+    const candidate = decoder.decodeNextAccountId(20)
     const amount = decoder.decodeNextInt(128)
-    const collatorNominatorCount = decoder.decodeNextInt(32)
-    const nominationCount = decoder.decodeNextInt(32)
+    const candidateDelegationCount = decoder.decodeNextInt(32)
+    const delegationCount = decoder.decodeNextInt(32)
 
     return {
-      bytesDecoded: collator.bytesDecoded + amount.bytesDecoded + collatorNominatorCount.bytesDecoded + nominationCount.bytesDecoded,
+      bytesDecoded: candidate.bytesDecoded + amount.bytesDecoded + candidateDelegationCount.bytesDecoded + delegationCount.bytesDecoded,
       decoded: {
-        collator: collator.decoded.address,
+        candidate: candidate.decoded.address,
         amount: amount.decoded.value,
-        collatorNominatorCount: collatorNominatorCount.decoded.value,
-        nominationCount: nominationCount.decoded.value
+        candidateDelegationCount: candidateDelegationCount.decoded.value,
+        delegationCount: delegationCount.decoded.value
       }
     }
   }
 }
 
-class MoonbeamLeaveNominatorsArgsFactory<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsFactory<
-  MoonbeamLeaveNominatorsArgs,
+class MoonbeamScheduleLeaveDelegatorsArgsFactory<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsFactory<
+  MoonbeamScheduleLeaveDelegatorsArgs,
   Network
 > {
   public createFields(): [string, SCALEType][] {
-    return [['nominationCount', SCALEInt.from(this.args.nominationCount, 32)]]
+    return []
   }
   public createToAirGapTransactionParts(): () => Partial<IAirGapTransaction>[] {
     return () => []
   }
 }
 
-class MoonbeamLeaveNominatorsArgsDecoder<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsDecoder<
-  MoonbeamLeaveNominatorsArgs,
+class MoonbeamScheduleLeaveDelegatorsArgsDecoder<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsDecoder<
+  MoonbeamScheduleLeaveDelegatorsArgs,
   Network
 > {
-  protected _decode(decoder: SCALEDecoder<Network>): SCALEDecodeResult<MoonbeamLeaveNominatorsArgs> {
-    const nominationCount = decoder.decodeNextInt(32)
+  protected _decode(_decoder: SCALEDecoder<Network>): SCALEDecodeResult<MoonbeamScheduleLeaveDelegatorsArgs> {
+    return {
+      bytesDecoded: 0,
+      decoded: {}
+    }
+  }
+}
+
+class MoonbeamExecuteLeaveDelegatorsArgsFactory<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsFactory<
+  MoonbeamExecuteLeaveDelegatorsArgs<Network>,
+  Network
+> {
+  public createFields(): [string, SCALEType][] {
+    return [
+      ['delegator', SCALEAccountId.from(this.args.delegator, this.network)],
+      ['delegationCount', SCALEInt.from(this.args.delegationCount, 32)]
+    ]
+  }
+  public createToAirGapTransactionParts(): () => Partial<IAirGapTransaction>[] {
+    return () => []
+  }
+}
+
+class MoonbeamExecuteLeaveDelegatorsArgsDecoder<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsDecoder<
+  MoonbeamExecuteLeaveDelegatorsArgs<Network>,
+  Network
+> {
+  protected _decode(decoder: SCALEDecoder<Network>): SCALEDecodeResult<MoonbeamExecuteLeaveDelegatorsArgs<Network>> {
+    const delegator = decoder.decodeNextAccountId(20)
+    const delegationCount = decoder.decodeNextInt(32)
 
     return {
-      bytesDecoded: nominationCount.bytesDecoded,
+      bytesDecoded: delegator.bytesDecoded + delegationCount.bytesDecoded,
       decoded: {
-        nominationCount: nominationCount.decoded.value
+        delegator: delegator.decoded.address,
+        delegationCount: delegationCount.decoded.value
       }
     }
   }
 }
 
-class MoonbeamRevokeNominationArgsFactory<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsFactory<
-  MoonbeamRevokeNominationArgs<Network>,
+class MoonbeamCancelLeaveDelegatorsArgsFactory<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsFactory<
+  MoonbeamCancelLeaveDelegatorsArgs,
+  Network
+> {
+  public createFields(): [string, SCALEType][] {
+    return []
+  }
+  public createToAirGapTransactionParts(): () => Partial<IAirGapTransaction>[] {
+    return () => []
+  }
+}
+
+class MoonbeamCancelLeaveDelegatorsArgsDecoder<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsDecoder<
+  MoonbeamCancelLeaveDelegatorsArgs,
+  Network
+> {
+  protected _decode(_decoder: SCALEDecoder<Network>): SCALEDecodeResult<MoonbeamCancelLeaveDelegatorsArgs> {
+    return {
+      bytesDecoded: 0,
+      decoded: {}
+    }
+  }
+}
+
+class MoonbeamScheduleRevokeDelegationArgsFactory<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsFactory<
+  MoonbeamScheduleRevokeDelegationArgs<Network>,
   Network
 > {
   public createFields(): [string, SCALEType][] {
@@ -657,11 +766,11 @@ class MoonbeamRevokeNominationArgsFactory<Network extends SubstrateNetwork> exte
   }
 }
 
-class MoonbeamRevokeNominationArgsDecoder<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsDecoder<
-  MoonbeamRevokeNominationArgs<Network>,
+class MoonbeamScheduleRevokeDelegationArgsDecoder<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsDecoder<
+  MoonbeamScheduleRevokeDelegationArgs<Network>,
   Network
 > {
-  protected _decode(decoder: SCALEDecoder<Network>): SCALEDecodeResult<MoonbeamRevokeNominationArgs<Network>> {
+  protected _decode(decoder: SCALEDecoder<Network>): SCALEDecodeResult<MoonbeamScheduleRevokeDelegationArgs<Network>> {
     const collator = decoder.decodeNextAccountId(20)
 
     return {
@@ -673,8 +782,78 @@ class MoonbeamRevokeNominationArgsDecoder<Network extends SubstrateNetwork> exte
   }
 }
 
-class MoonbeamNominatorBondMoreArgsFactory<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsFactory<
-  MoonbeamNominatorBondMoreArgs<Network>,
+class MoonbeamExecuteDelegationRequestArgsFactory<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsFactory<
+  MoonbeamExecuteDelegationRequestArgs<Network>,
+  Network
+> {
+  public createFields(): [string, SCALEType][] {
+    return [
+      ['delegator', SCALEAccountId.from(this.args.delegator, this.network)],
+      ['candidate', SCALEAccountId.from(this.args.candidate, this.network)]
+    ]
+  }
+  public createToAirGapTransactionParts(): () => Partial<IAirGapTransaction>[] {
+    return () => [
+      {
+        from: [substrateAddressFactory(this.network).from(this.args.delegator).getValue()],
+        to: [substrateAddressFactory(this.network).from(this.args.candidate).getValue()]
+      }
+    ]
+  }
+}
+
+class MoonbeamExecuteDelegationRequestArgsDecoder<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsDecoder<
+  MoonbeamExecuteDelegationRequestArgs<Network>,
+  Network
+> {
+  protected _decode(decoder: SCALEDecoder<Network>): SCALEDecodeResult<MoonbeamExecuteDelegationRequestArgs<Network>> {
+    const delegator = decoder.decodeNextAccountId(20)
+    const candidate = decoder.decodeNextAccountId(20)
+
+    return {
+      bytesDecoded: delegator.bytesDecoded + candidate.bytesDecoded,
+      decoded: {
+        delegator: delegator.decoded.address,
+        candidate: candidate.decoded.address
+      }
+    }
+  }
+}
+
+class MoonbeamCancelDelegationRequestArgsFactory<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsFactory<
+  MoonbeamCancelDelegationRequestArgs<Network>,
+  Network
+> {
+  public createFields(): [string, SCALEType][] {
+    return [['candidate', SCALEAccountId.from(this.args.candidate, this.network)]]
+  }
+  public createToAirGapTransactionParts(): () => Partial<IAirGapTransaction>[] {
+    return () => [
+      {
+        to: [substrateAddressFactory(this.network).from(this.args.candidate).getValue()]
+      }
+    ]
+  }
+}
+
+class MoonbeamCancelDelegationRequestArgsDecoder<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsDecoder<
+  MoonbeamCancelDelegationRequestArgs<Network>,
+  Network
+> {
+  protected _decode(decoder: SCALEDecoder<Network>): SCALEDecodeResult<MoonbeamCancelDelegationRequestArgs<Network>> {
+    const candidate = decoder.decodeNextAccountId(20)
+
+    return {
+      bytesDecoded: candidate.bytesDecoded,
+      decoded: {
+        candidate: candidate.decoded.address
+      }
+    }
+  }
+}
+
+class MoonbeamDelegatorBondMoreArgsFactory<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsFactory<
+  MoonbeamDelegatorBondMoreArgs<Network>,
   Network
 > {
   public createFields(): [string, SCALEType][] {
@@ -693,11 +872,11 @@ class MoonbeamNominatorBondMoreArgsFactory<Network extends SubstrateNetwork> ext
   }
 }
 
-class MoonbeamNominatorBondMoreArgsDecoder<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsDecoder<
-  MoonbeamNominatorBondMoreArgs<Network>,
+class MoonbeamDelegatorBondMoreArgsDecoder<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsDecoder<
+  MoonbeamDelegatorBondMoreArgs<Network>,
   Network
 > {
-  protected _decode(decoder: SCALEDecoder<Network>): SCALEDecodeResult<MoonbeamNominatorBondMoreArgs<Network>> {
+  protected _decode(decoder: SCALEDecoder<Network>): SCALEDecodeResult<MoonbeamDelegatorBondMoreArgs<Network>> {
     const candidate = decoder.decodeNextAccountId(20)
     const more = decoder.decodeNextInt(128)
 
@@ -711,14 +890,14 @@ class MoonbeamNominatorBondMoreArgsDecoder<Network extends SubstrateNetwork> ext
   }
 }
 
-class MoonbeamNominatorBondLessArgsFactory<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsFactory<
-  MoonbeamNominatorBondLessArgs<Network>,
+class MoonbeamScheduleDelegatorBondLessArgsFactory<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsFactory<
+  MoonbeamScheduleDelegatorBondLessArgs<Network>,
   Network
 > {
   public createFields(): [string, SCALEType][] {
     return [
       ['candidate', SCALEAccountId.from(this.args.candidate, this.network)],
-      ['more', SCALEInt.from(this.args.less, 128)]
+      ['less', SCALEInt.from(this.args.less, 128)]
     ]
   }
   public createToAirGapTransactionParts(): () => Partial<IAirGapTransaction>[] {
@@ -731,20 +910,76 @@ class MoonbeamNominatorBondLessArgsFactory<Network extends SubstrateNetwork> ext
   }
 }
 
-class MoonbeamNominatorBondLessArgsDecoder<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsDecoder<
-  MoonbeamNominatorBondLessArgs<Network>,
+class MoonbeamScheduleDelegatorBondLessArgsDecoder<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsDecoder<
+  MoonbeamScheduleDelegatorBondLessArgs<Network>,
   Network
 > {
-  protected _decode(decoder: SCALEDecoder<Network>): SCALEDecodeResult<MoonbeamNominatorBondLessArgs<Network>> {
+  protected _decode(decoder: SCALEDecoder<Network>): SCALEDecodeResult<MoonbeamScheduleDelegatorBondLessArgs<Network>> {
     const candidate = decoder.decodeNextAccountId(20)
-    const more = decoder.decodeNextInt(128)
+    const less = decoder.decodeNextInt(128)
 
     return {
-      bytesDecoded: candidate.bytesDecoded + more.bytesDecoded,
+      bytesDecoded: candidate.bytesDecoded + less.bytesDecoded,
       decoded: {
         candidate: candidate.decoded.address,
-        less: more.decoded.value
+        less: less.decoded.value
       }
+    }
+  }
+}
+
+class MoonbeamExecuteCandidateBondLessArgsFactory<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsFactory<
+  MoonbeamExecuteCandidateBondLessArgs<Network>,
+  Network
+> {
+  public createFields(): [string, SCALEType][] {
+    return [['candidate', SCALEAccountId.from(this.args.candidate, this.network)]]
+  }
+  public createToAirGapTransactionParts(): () => Partial<IAirGapTransaction>[] {
+    return () => [
+      {
+        to: [substrateAddressFactory(this.network).from(this.args.candidate).getValue()]
+      }
+    ]
+  }
+}
+
+class MoonbeamExecuteCandidateBondLessArgsDecoder<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsDecoder<
+  MoonbeamExecuteCandidateBondLessArgs<Network>,
+  Network
+> {
+  protected _decode(decoder: SCALEDecoder<Network>): SCALEDecodeResult<MoonbeamExecuteCandidateBondLessArgs<Network>> {
+    const candidate = decoder.decodeNextAccountId(20)
+
+    return {
+      bytesDecoded: candidate.bytesDecoded,
+      decoded: {
+        candidate: candidate.decoded.address
+      }
+    }
+  }
+}
+
+class MoonbeamCancelCandidateBondLessArgsFactory<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsFactory<
+  MoonbeamCancelCandidateBondLessArgs<Network>,
+  Network
+> {
+  public createFields(): [string, SCALEType][] {
+    return []
+  }
+  public createToAirGapTransactionParts(): () => Partial<IAirGapTransaction>[] {
+    return () => []
+  }
+}
+
+class MoonbeamCancelCandidateBondLessArgsDecoder<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsDecoder<
+  MoonbeamCancelCandidateBondLessArgs<Network>,
+  Network
+> {
+  protected _decode(_decoder: SCALEDecoder<Network>): SCALEDecodeResult<MoonbeamCancelCandidateBondLessArgs<Network>> {
+    return {
+      bytesDecoded: 0,
+      decoded: {}
     }
   }
 }

@@ -51,7 +51,7 @@ export class CosmosTestProtocolSpec extends TestProtocolSpec {
         '0'
       ),
       signedTx:
-        '{"tx":{"msg":[{"type":"cosmos-sdk/MsgSend","value":{"amount":[{"amount":"2","denom":"uatom"}],"from_address":"cosmos1w3mea9ghfdc3r7ax45mehl2tcqw9p0vnlhl0p6","to_address":"cosmos1w3mea9ghfdc3r7ax45mehl2tcqw9p0vnlhl0p6"}}],"fee":{"amount":[{"amount":"1","denom":"uatom"}],"gas":"200000"},"signatures":[{"signature":"WwCyYGN1VRqbF1x5KmSBP4EAcQO9ym2p7xRdpywSzcl4L9ubjj/fZNc1G2PgAShMG6fbu9LKbh6rxftlixjnPQ==","pub_key":{"type":"tendermint/PubKeySecp256k1","value":"A999/ltDX5YCczflI0F+B8zmGqS59Ru5Oqy9+1SnCiiq"}}],"memo":""},"mode":"sync"}'
+        'Co0BCooBChwvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kEmoKLWNvc21vczF3M21lYTlnaGZkYzNyN2F4NDVtZWhsMnRjcXc5cDB2bmxobDBwNhItY29zbW9zMXczbWVhOWdoZmRjM3I3YXg0NW1laGwydGNxdzlwMHZubGhsMHA2GgoKBXVhdG9tEgEyEmIKTgpGCh8vY29zbW9zLmNyeXB0by5zZWNwMjU2azEuUHViS2V5EiMKIQPfff5bQ1+WAnM35SNBfgfM5hqkufUbuTqsvftUpwooqhIECgIIARIQCgoKBXVhdG9tEgExEMCaDBpAqMbDSuzDmyX/7MqXfUYsZUNmlbiXPNUdbTAd7rGn7sld/SqV2LzAXPVtsqYptNYfCYtNVpnhIVQSUp33UD/L1g=='
     }
   ]
   public validRawTransactions: any[] = [

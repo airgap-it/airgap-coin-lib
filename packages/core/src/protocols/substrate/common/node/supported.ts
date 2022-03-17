@@ -31,7 +31,7 @@ export const supportedStorageEntries = {
   System: ['Account'] as const,
 
   // Moonbeam
-  ParachainStaking: ['CollatorCommission', 'CollatorState2', 'NominatorState2', 'Round', 'SelectedCandidates'] as const
+  ParachainStaking: ['CollatorCommission', 'CandidateInfo', 'DelegatorState', 'Round', 'SelectedCandidates'] as const
 }
 
 export const supportedCalls = {
@@ -51,7 +51,19 @@ export const supportedCalls = {
   Utility: ['batch'] as const,
 
   // Moonbeam
-  ParachainStaking: ['nominate', 'leave_nominators', 'revoke_nomination', 'nominator_bond_more', 'nominator_bond_less'] as const
+  ParachainStaking: [
+    'delegate',
+    'schedule_leave_delegators',
+    'execute_leave_delegators',
+    'cancel_leave_delegators',
+    'schedule_revoke_delegation',
+    'execute_delegation_request',
+    'cancel_delegation_request',
+    'delegator_bond_more',
+    'schedule_delegator_bond_less',
+    'execute_candidate_bond_less',
+    'cancel_candidate_bond_less'
+  ] as const
 }
 
 export const supportedConstants = {
@@ -60,7 +72,18 @@ export const supportedConstants = {
   Staking: ['SessionsPerEra'] as const,
 
   // Moonbeam
-  ParachainStaking: ['MaxNominatorsPerCollator', 'MaxCollatorsPerNominator', 'MinNomination', 'MinNominatorStk'] as const
+  ParachainStaking: [
+    'DefaultBlocksPerRound',
+    'MaxTopDelegationsPerCandidate',
+    'MaxBottomDelegationsPerCandidate',
+    'MaxDelegationsPerDelegator',
+    'MinDelegation',
+    'MinDelegatorStk',
+    'CandidateBondLessDelay',
+    'LeaveDelegatorsDelay',
+    'RevokeDelegationDelay',
+    'DelegationBondLessDelay'
+  ] as const
 }
 
 export type SubstrateRpcModuleName = keyof typeof supportedRpcMethods
@@ -99,11 +122,17 @@ export const supportedCallEndpoints: SubstrateCallEndpoints = new Map([
   createCallEndpointEntry(SubstrateTransactionType.SUBMIT_BATCH, 'Utility', 'batch'),
 
   // Moonbeam, TODO: separate
-  createCallEndpointEntry(SubstrateTransactionType.M_NOMINATE, 'ParachainStaking', 'nominate'),
-  createCallEndpointEntry(SubstrateTransactionType.M_LEAVE_NOMINATORS, 'ParachainStaking', 'leave_nominators'),
-  createCallEndpointEntry(SubstrateTransactionType.M_REVOKE_NOMINATION, 'ParachainStaking', 'revoke_nomination'),
-  createCallEndpointEntry(SubstrateTransactionType.M_NOMINATOR_BOND_MORE, 'ParachainStaking', 'nominator_bond_more'),
-  createCallEndpointEntry(SubstrateTransactionType.M_NOMINATOR_BOND_LESS, 'ParachainStaking', 'nominator_bond_less')
+  createCallEndpointEntry(SubstrateTransactionType.M_DELEGATE, 'ParachainStaking', 'delegate'),
+  createCallEndpointEntry(SubstrateTransactionType.M_SCHEDULE_LEAVE_DELEGATORS, 'ParachainStaking', 'schedule_leave_delegators'),
+  createCallEndpointEntry(SubstrateTransactionType.M_EXECUTE_LEAVE_DELEGATORS, 'ParachainStaking', 'execute_leave_delegators'),
+  createCallEndpointEntry(SubstrateTransactionType.M_CANCEL_LEAVE_DELEGATORS, 'ParachainStaking', 'cancel_leave_delegators'),
+  createCallEndpointEntry(SubstrateTransactionType.M_SCHEDULE_REVOKE_DELGATION, 'ParachainStaking', 'schedule_revoke_delegation'),
+  createCallEndpointEntry(SubstrateTransactionType.M_EXECUTE_DELGATION_REQUEST, 'ParachainStaking', 'execute_delegation_request'),
+  createCallEndpointEntry(SubstrateTransactionType.M_CANCEL_DELEGATION_REQUEST, 'ParachainStaking', 'cancel_delegation_request'),
+  createCallEndpointEntry(SubstrateTransactionType.M_DELEGATOR_BOND_MORE, 'ParachainStaking', 'delegator_bond_more'),
+  createCallEndpointEntry(SubstrateTransactionType.M_SCHEDULE_DELEGATOR_BOND_LESS, 'ParachainStaking', 'schedule_delegator_bond_less'),
+  createCallEndpointEntry(SubstrateTransactionType.M_EXECUTE_CANDIDATE_BOND_LESS, 'ParachainStaking', 'execute_candidate_bond_less'),
+  createCallEndpointEntry(SubstrateTransactionType.M_CANCEL_CANDIDATE_BOND_LESS, 'ParachainStaking', 'cancel_candidate_bond_less')
 ])
 
 function createCallEndpointEntry<M extends SubstrateCallModuleName, C extends SubstrateCallName<M>>(

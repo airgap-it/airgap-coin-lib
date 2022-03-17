@@ -1,5 +1,5 @@
 import SECP256K1 = require('../../dependencies/src/secp256k1-3.7.1/elliptic')
-import * as sha from '../../dependencies/src/sha.js-2.4.11/index'
+import sha = require('../../dependencies/src/sha.js-2.4.11/index')
 import { Secp256k1CryptoClient } from '../Secp256k1CryptoClient'
 
 export class CosmosCryptoClient extends Secp256k1CryptoClient {

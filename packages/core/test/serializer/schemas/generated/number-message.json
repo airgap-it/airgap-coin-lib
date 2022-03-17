@@ -9,9 +9,7 @@
           "type": "number"
         }
       },
-      "required": [
-        "x"
-      ],
+      "required": ["x"],
       "type": "object"
     }
   }

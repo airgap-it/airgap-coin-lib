@@ -15,11 +15,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "message",
-        "publicKey",
-        "signature"
-      ],
+      "required": ["message", "publicKey", "signature"],
       "type": "object"
     }
   }

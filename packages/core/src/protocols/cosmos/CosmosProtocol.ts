@@ -2,8 +2,9 @@ import { KeyPair } from '../../data/KeyPair'
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { BIP32Interface, fromSeed } from '../../dependencies/src/bip32-2.0.4/src/index'
 import { mnemonicToSeed, validateMnemonic } from '../../dependencies/src/bip39-2.5.0/index'
+import { decodeTxBytes, encodeTxBytes, prepareSignBytes } from '../../dependencies/src/cosmjs'
 import SECP256K1 = require('../../dependencies/src/secp256k1-3.7.1/elliptic')
-import * as sha from '../../dependencies/src/sha.js-2.4.11/index'
+import sha = require('../../dependencies/src/sha.js-2.4.11/index')
 import { BalanceError, InvalidValueError } from '../../errors'
 import { Domain } from '../../errors/coinlib-error'
 import { AirGapTransactionStatus, IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
@@ -24,16 +25,16 @@ import { CosmosAddress } from './CosmosAddress'
 import { CosmosCoin } from './CosmosCoin'
 import { CosmosCryptoClient } from './CosmosCryptoClient'
 import { CosmosFee } from './CosmosFee'
+import { CosmosNodeClient } from './CosmosNodeClient'
 import {
   CosmosAccount,
   CosmosDelegation,
-  CosmosNodeClient,
   CosmosNodeInfo,
   CosmosPagedSendTxsResponse,
   CosmosRewardDetails,
   CosmosUnbondingDelegation,
   CosmosValidator
-} from './CosmosNodeClient'
+} from './CosmosTypes'
 import { CosmosProtocolOptions } from './CosmosProtocolOptions'
 import { CosmosTransaction } from './CosmosTransaction'
 import { CosmosTransactionCursor, CosmosTransactionResult } from './CosmosTypes'
@@ -268,33 +269,39 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
 
   public async signWithPrivateKey(privateKey: Buffer, transaction: CosmosTransaction): Promise<string> {
     const publicKey = this.getPublicKeyFromPrivateKey(privateKey)
-    const toSign = transaction.toRPCBody()
-    // TODO: check if sorting is needed
-    const sha256Hash: string = sha('sha256')
-      .update(Buffer.from(JSON.stringify(toSign)))
-      .digest()
+    const encodedObject = transaction.toEncodeObject()
+
+    const signBytes = await prepareSignBytes(
+      encodedObject,
+      transaction.fee,
+      Uint8Array.from(publicKey),
+      new BigNumber(transaction.sequence).toNumber(),
+      transaction.chainID,
+      new BigNumber(transaction.accountNumber).toNumber()
+    )
+
+    const sha256Hash: string = sha('sha256').update(signBytes).digest()
     const hash = Buffer.from(sha256Hash)
     const signed = SECP256K1.sign(hash, privateKey)
     const sigBase64 = Buffer.from(signed.signature, 'binary').toString('base64')
-    const signedTransaction = {
-      tx: {
-        msg: toSign.msgs,
-        fee: toSign.fee,
-        signatures: [
-          {
-            signature: sigBase64,
-            pub_key: {
-              type: 'tendermint/PubKeySecp256k1',
-              value: publicKey.toString('base64')
-            }
-          }
-        ],
-        memo: toSign.memo
-      },
-      mode: 'sync'
-    }
 
-    return JSON.stringify(signedTransaction)
+    const txBytes = await encodeTxBytes(
+      encodedObject,
+      transaction.fee,
+      Uint8Array.from(publicKey),
+      new BigNumber(transaction.sequence).toNumber(),
+      {
+        signature: sigBase64,
+        pub_key: {
+          type: 'tendermint/PubKeySecp256k1',
+          value: publicKey.toString('base64')
+        }
+      },
+      transaction.chainID,
+      new BigNumber(transaction.accountNumber).toNumber()
+    )
+
+    return Buffer.from(txBytes).toString('base64')
   }
 
   public async getTransactionDetails(transaction: UnsignedCosmosTransaction): Promise<IAirGapTransaction[]> {
@@ -304,26 +311,28 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
   }
 
   public async getTransactionDetailsFromSigned(transaction: SignedCosmosTransaction): Promise<IAirGapTransaction[]> {
-    const json = JSON.parse(transaction.transaction).tx
-    const fee: string = (json.fee.amount as { amount: string }[])
+    const bytes = Uint8Array.from(Buffer.from(transaction.transaction, 'base64'))
+    const decoded = await decodeTxBytes(bytes)
+
+    const fee: string = (decoded.fee?.amount as { amount: string }[])
       .map(({ amount }: { amount: string }) => new BigNumber(amount))
       .reduce((current: BigNumber, next: BigNumber) => current.plus(next))
       .toString(10)
-    const result = json.msg
+    const result = decoded.messages
       .map((message) => {
-        const type: string = message.type
+        const type: string = message.typeUrl
         switch (type) {
           case CosmosMessageType.Send.value:
-            const sendMessage = CosmosSendMessage.fromRPCBody(message)
+            const sendMessage = CosmosSendMessage.fromEncodeObject(message)
 
             return sendMessage.toAirGapTransaction(this, fee)
           case CosmosMessageType.Undelegate.value:
           case CosmosMessageType.Delegate.value:
-            const delegateMessage = CosmosDelegateMessage.fromRPCBody(message)
+            const delegateMessage = CosmosDelegateMessage.fromEncodeObject(message)
 
             return delegateMessage.toAirGapTransaction(this, fee)
           case CosmosMessageType.WithdrawDelegationReward.value:
-            const withdrawMessage = CosmosWithdrawDelegationRewardMessage.fromRPCBody(message)
+            const withdrawMessage = CosmosWithdrawDelegationRewardMessage.fromEncodeObject(message)
 
             return withdrawMessage.toAirGapTransaction(this, fee)
           default:
@@ -334,10 +343,10 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
         if (!tx.transactionDetails) {
           tx.transactionDetails = {}
         }
-        tx.transactionDetails.accountNumber = json.accountNumber
-        tx.transactionDetails.chainID = json.chainID
-        tx.transactionDetails.memo = json.memo
-        tx.transactionDetails.sequence = json.sequence
+        tx.transactionDetails.memo = decoded.memo
+        if (decoded.signerInfos.length > 0) {
+          tx.transactionDetails.sequence = decoded.signerInfos[0].sequence.toString(10)
+        }
 
         return tx
       })

@@ -11,7 +11,8 @@ export enum MainProtocolSymbols {
   POLKADOT = 'polkadot',
   KUSAMA = 'kusama',
   MOONBASE = 'moonbase',
-  MOONRIVER = 'moonriver'
+  MOONRIVER = 'moonriver',
+  MOONBEAM = 'moonbeam'
 }
 
 export enum SubProtocolSymbols {

@@ -34,10 +34,7 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "denom",
-                      "amount"
-                    ],
+                    "required": ["denom", "amount"],
                     "type": "object"
                   },
                   "type": "array"
@@ -46,10 +43,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "amount",
-                "gas"
-              ],
+              "required": ["amount", "gas"],
               "type": "object"
             },
             "memo": {
@@ -70,10 +64,7 @@
                           "type": "string"
                         }
                       },
-                      "required": [
-                        "denom",
-                        "amount"
-                      ],
+                      "required": ["denom", "amount"],
                       "type": "object"
                     },
                     "type": "array"
@@ -85,21 +76,11 @@
                     "type": "string"
                   },
                   "type": {
-                    "enum": [
-                      0,
-                      1,
-                      2,
-                      3
-                    ],
+                    "enum": [0, 1, 2, 3],
                     "type": "number"
                   }
                 },
-                "required": [
-                  "type",
-                  "amount",
-                  "fromAddress",
-                  "toAddress"
-                ],
+                "required": ["type", "amount", "fromAddress", "toAddress"],
                 "type": "object"
               },
               "type": "array"
@@ -108,21 +89,11 @@
               "type": "string"
             }
           },
-          "required": [
-            "messages",
-            "fee",
-            "memo",
-            "chainID",
-            "accountNumber",
-            "sequence"
-          ],
+          "required": ["messages", "fee", "memo", "chainID", "accountNumber", "sequence"],
           "type": "object"
         }
       },
-      "required": [
-        "publicKey",
-        "transaction"
-      ],
+      "required": ["publicKey", "transaction"],
       "type": "object"
     }
   }

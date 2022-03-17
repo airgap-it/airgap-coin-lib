@@ -12,6 +12,7 @@ export interface RawTezosTransaction {
 export interface RawTezosSaplingTransaction {
   ins: TezosSaplingInput[]
   outs: TezosSaplingOutput[]
+  contractAddress: string
   chainId: string
   stateDiff: TezosSaplingStateDiff
   callParameters: string
@@ -27,6 +28,11 @@ export interface RawEthereumTransaction {
   data: string
 }
 
+export interface RawTypedEthereumTransaction {
+  serialized: string
+  derivationPath: string
+  masterFingerprint: string
+}
 export interface RawRskTransaction {
   nonce: string
   gasPrice: string
@@ -35,6 +41,12 @@ export interface RawRskTransaction {
   value: string
   chainId: number
   data: string
+}
+
+export interface RawTypedRskTransaction {
+  serialized: string
+  derivationPath: string
+  masterFingerprint: string
 }
 
 export interface IInTransaction {

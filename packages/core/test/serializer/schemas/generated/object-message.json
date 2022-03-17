@@ -12,15 +12,11 @@
               "type": "string"
             }
           },
-          "required": [
-            "name"
-          ],
+          "required": ["name"],
           "type": "object"
         }
       },
-      "required": [
-        "x"
-      ],
+      "required": ["x"],
       "type": "object"
     }
   }

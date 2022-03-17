@@ -6,5 +6,5 @@ export interface MoonbeamCollatorDetails extends DelegateeDetails {
   ownStakingBalance: string
   totalStakingBalance: string
   commission: string
-  nominators: number
+  delegators: number
 }

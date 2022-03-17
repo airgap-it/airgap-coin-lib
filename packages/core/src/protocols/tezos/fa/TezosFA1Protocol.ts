@@ -18,6 +18,7 @@ import { TezosFAProtocol } from './TezosFAProtocol'
 import { TezosFAProtocolOptions } from './TezosFAProtocolOptions'
 import { ConditionViolationError, NotFoundError } from '../../../errors'
 import { Domain } from '../../../errors/coinlib-error'
+import { MichelsonString } from '../types/michelson/primitives/MichelsonString'
 
 enum TezosFA1ContractEntrypoint {
   BALANCE = 'getBalance',
@@ -26,13 +27,15 @@ enum TezosFA1ContractEntrypoint {
 }
 
 export class TezosFA1Protocol extends TezosFAProtocol {
-  private readonly defaultCallbackContractMap: Map<TezosNetwork, string> = new Map()
+  private readonly defaultCallbackContractMap: Partial<Record<TezosNetwork, string>>
 
   constructor(options: TezosFAProtocolOptions) {
     super(options)
-
-    this.defaultCallbackContractMap.set(TezosNetwork.MAINNET, 'KT19ptNzn4MVAN45KUUNpyL5AdLVhujk815u')
-    this.defaultCallbackContractMap.set(TezosNetwork.EDONET, 'KT1ThaM5PK5nrAEKVVWtmccvsKeUdsZMfrxg')
+    this.defaultCallbackContractMap = {
+      [TezosNetwork.MAINNET]: 'KT19ptNzn4MVAN45KUUNpyL5AdLVhujk815u',
+      [TezosNetwork.GRANADANET]: 'KT1QcauKB7fXaVBh1qWSt5nsfYe4GBo8jJjg',
+      [TezosNetwork.HANGZHOUNET]: 'KT1VY8ggaVFzKEMHh4dS4zigy7b33nKrT1Mh'
+    }
   }
 
   public async getBalanceOfAddresses(addresses: string[]): Promise<string> {
@@ -127,10 +130,8 @@ export class TezosFA1Protocol extends TezosFAProtocol {
 
   public async getBalance(address: string, source?: string, callbackContract: string = this.callbackContract()): Promise<string> {
     const getBalanceCall = await this.contract.createContractCall(TezosFA1ContractEntrypoint.BALANCE, [
-      {
-        owner: address
-      },
-      callbackContract
+      new MichelsonAddress(new MichelsonString(address)),
+      new MichelsonAddress(new MichelsonString(callbackContract))
     ])
 
     return this.getContractCallIntResult(getBalanceCall, this.requireSource(source, address, 'kt'))
@@ -210,7 +211,7 @@ export class TezosFA1Protocol extends TezosFAProtocol {
   }
 
   protected callbackContract(): string {
-    return this.defaultCallbackContractMap.get(this.options.network.extras.network) ?? ''
+    return this.defaultCallbackContractMap[this.options.network.extras.network] ?? ''
   }
 
   private isTransferRequest(obj: unknown): obj is { from: string; to: string; value: BigNumber } {
