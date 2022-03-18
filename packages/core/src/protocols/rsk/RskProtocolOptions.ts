@@ -15,7 +15,7 @@ const MAINNET_NAME: string = 'RSK Mainnet'
 export const NODE_URL: string = 'https://public-node.rsk.co'
 
 const BLOCK_EXPLORER_URL: string = 'https://explorer.rsk.co'
-export const BLOCK_EXPLORER_API: string = 'https://blockscout.com/rsk/mainnet/' // TODO: Consider adding rsk explorer api
+export const BLOCK_EXPLORER_API: string = 'https://blockscout.com/rsk/mainnet/'
 
 export class RskProtocolNetworkExtras {
   constructor(public readonly chainID: number = 30, public readonly blockExplorerApi: string = BLOCK_EXPLORER_API) {}

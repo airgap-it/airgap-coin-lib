@@ -2,29 +2,32 @@ import { BigNumber } from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { mnemonicToSeed } from '../../dependencies/src/bip39-2.5.0/index'
 import * as bitcoinJS from '../../dependencies/src/bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac/src/index'
 
-import { BalanceError, NotImplementedError, UnsupportedError } from '../../errors'
+import { BalanceError, UnsupportedError } from '../../errors'
 import { Domain } from '../../errors/coinlib-error'
 import { IAirGapSignedTransaction } from '../../interfaces/IAirGapSignedTransaction'
-import { AirGapTransactionStatus, IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
+import { AirGapTransactionStatus, AirGapTransactionWarningType, IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
 import { Network } from '../../networks'
 import { SignedRskTransaction } from '../../serializer/schemas/definitions/signed-transaction-rsk'
 import { UnsignedTransaction } from '../../serializer/schemas/definitions/unsigned-transaction'
-import { RawRskTransaction } from '../../serializer/types'
+import { RawRskTransaction, RawTypedRskTransaction } from '../../serializer/types'
 import { MainProtocolSymbols, ProtocolSymbols } from '../../utils/ProtocolSymbols'
 import { getSubProtocolsByIdentifier } from '../../utils/subProtocols'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../ICoinProtocol'
 import { ICoinSubProtocol, SubProtocolType } from '../ICoinSubProtocol'
 
 import { RskInfoClient } from './clients/info-clients/InfoClient'
-import { RskRPCDataTransfer } from './clients/node-clients/AirGapNodeClientRsk'
 import { RskNodeClient } from './clients/node-clients/RskNodeClient'
 import { RskAddress } from './RskAddress'
 import { RskCryptoClient } from './RskCryptoClient'
 import { RskProtocolOptions } from './RskProtocolOptions'
+import { EthereumChainIDs } from '../ethereum/EthereumChainIDs'
 import { RskTransactionCursor, RskTransactionResult } from './RskTypes'
 import { RskUtils } from './utils/utils'
 
-const RskTransaction = require('../../dependencies/src/ethereumjs-tx-1.3.7/index')
+import { RskRPCDataTransfer } from './clients/node-clients/AirGapNodeClientRsk'
+import Common from '@ethereumjs/common'
+// TODO: ETH TX and ethereumjs-util-5.2.0 removed
+import { FeeMarketEIP1559Transaction, Transaction, TransactionFactory } from '@ethereumjs/tx'
 
 export abstract class BaseRskProtocol<NodeClient extends RskNodeClient, InfoClient extends RskInfoClient> implements ICoinProtocol {
   public symbol: string = 'RBTC'
@@ -101,13 +104,27 @@ export abstract class BaseRskProtocol<NodeClient extends RskNodeClient, InfoClie
   }
 
   public async getExtendedPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
-    throw new NotImplementedError(Domain.RSK, 'extended private key support for `rsk` not implemented')
+    const secret = mnemonicToSeed(mnemonic, password)
+
+    return this.getExtendedPrivateKeyFromHexSecret(secret, derivationPath)
+  }
+
+  public async getExtendedPublicKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
+    const secret = mnemonicToSeed(mnemonic, password)
+
+    return this.getExtendedPublicKeyFromHexSecret(secret, derivationPath)
   }
 
   public async getPublicKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
     const rskNode = bitcoinJS.HDNode.fromSeedHex(secret, this.network)
 
     return rskNode.derivePath(derivationPath).neutered().getPublicKeyBuffer().toString('hex')
+  }
+
+  public async getExtendedPublicKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
+    const ethereumNode = bitcoinJS.HDNode.fromSeedHex(secret, this.network)
+
+    return ethereumNode.derivePath(derivationPath).neutered().toBase58()
   }
 
   public async getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<Buffer> {
@@ -117,7 +134,9 @@ export abstract class BaseRskProtocol<NodeClient extends RskNodeClient, InfoClie
   }
 
   public async getExtendedPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
-    throw new NotImplementedError(Domain.RSK, 'extended private key support for rsk not implemented')
+    const rskNodeNode = bitcoinJS.HDNode.fromSeedHex(secret, this.network)
+
+    return rskNodeNode.derivePath(derivationPath).toBase58()
   }
 
   public async getAddressFromPublicKey(publicKey: string | Buffer): Promise<RskAddress> {
@@ -130,17 +149,25 @@ export abstract class BaseRskProtocol<NodeClient extends RskNodeClient, InfoClie
     return [address]
   }
 
+  private async getPublicKeyFromExtendedPublicKey(
+    extendedPublicKey: string,
+    visibilityDerivationIndex: number,
+    addressDerivationIndex: number
+  ): Promise<string> {
+    return bitcoinJS.HDNode.fromBase58(extendedPublicKey, this.network)
+      .derive(visibilityDerivationIndex)
+      .derive(addressDerivationIndex)
+      .getPublicKeyBuffer()
+      .toString('hex')
+  }
+
   public async getAddressFromExtendedPublicKey(
     extendedPublicKey: string,
     visibilityDerivationIndex: number,
     addressDerivationIndex: number
   ): Promise<RskAddress> {
     return this.getAddressFromPublicKey(
-      bitcoinJS.HDNode.fromBase58(extendedPublicKey, this.network)
-        .derive(visibilityDerivationIndex)
-        .derive(addressDerivationIndex)
-        .getPublicKeyBuffer()
-        .toString('hex')
+      await this.getPublicKeyFromExtendedPublicKey(extendedPublicKey, visibilityDerivationIndex, addressDerivationIndex)
     )
   }
 
@@ -164,64 +191,186 @@ export abstract class BaseRskProtocol<NodeClient extends RskNodeClient, InfoClie
     return current
   }
 
-  public signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: RawRskTransaction): Promise<IAirGapSignedTransaction> {
-    return Promise.reject('extended private key signing for rsk not implemented')
+  private async getPrivateKeyFromExtendedPrivateKey(extendedPrivateKey: string, childDerivationPath?: string): Promise<Buffer> {
+    const dp = childDerivationPath ?? '0/0' // This is the default
+
+    if (dp.startsWith('m')) {
+      throw new Error('Received full derivation path, expected child derivation path')
+    }
+
+    if (dp.toLowerCase().includes('h') || dp.includes(`'`)) {
+      throw new Error('Child derivation path cannot include hardened children')
+    }
+
+    return dp
+      .split('/')
+      .reduce((pv: any, cv: string) => pv.derive(Number(cv)), bitcoinJS.HDNode.fromBase58(extendedPrivateKey, this.network))
+      .keyPair.d.toBuffer(32)
+  }
+
+  public async signWithExtendedPrivateKey(
+    extendedPrivateKey: string,
+    untypedTransaction: RawTypedRskTransaction | RawRskTransaction,
+    childDerivationPath?: string
+  ): Promise<IAirGapSignedTransaction> {
+    const privateKey = await this.getPrivateKeyFromExtendedPrivateKey(extendedPrivateKey, childDerivationPath)
+
+    if ((untypedTransaction as RawTypedRskTransaction).serialized && (untypedTransaction as RawTypedRskTransaction).derivationPath) {
+      const transaction: RawTypedRskTransaction = untypedTransaction as RawTypedRskTransaction
+      let tx = TransactionFactory.fromSerializedData(Buffer.from(transaction.serialized, 'hex'))
+
+      tx = tx.sign(privateKey)
+
+      return tx.serialize().toString('hex')
+    } else {
+      return this.signWithPrivateKey(privateKey, untypedTransaction as RawRskTransaction)
+    }
   }
 
   public async signWithPrivateKey(privateKey: Buffer, transaction: RawRskTransaction): Promise<IAirGapSignedTransaction> {
     if (!transaction.value.startsWith('0x')) {
       transaction.value = RskUtils.toHex(parseInt(transaction.value, 10))
     }
-    const tx = new RskTransaction(transaction)
-    tx.sign(privateKey)
+    let common: Common | undefined
+
+    try {
+      common = new Common({ chain: transaction.chainId })
+    } catch {
+      common = Common.custom({ chainId: transaction.chainId })
+    }
+
+    let tx = TransactionFactory.fromTxData(transaction, { common })
+    tx = tx.sign(privateKey)
 
     return tx.serialize().toString('hex')
   }
 
   public async getTransactionDetails(unsignedTx: UnsignedTransaction): Promise<IAirGapTransaction[]> {
-    const transaction = unsignedTx.transaction as RawRskTransaction
-    const address: RskAddress = await this.getAddressFromPublicKey(unsignedTx.publicKey)
+    if (unsignedTx.transaction.serialized) {
+      const typedTransaction = unsignedTx.transaction as RawTypedRskTransaction
 
-    return [
-      {
-        from: [address.getValue()],
-        to: [transaction.to],
-        amount: new BigNumber(transaction.value).toString(10),
-        fee: new BigNumber(transaction.gasLimit).multipliedBy(new BigNumber(transaction.gasPrice)).toString(10),
+      const transaction: FeeMarketEIP1559Transaction = TransactionFactory.fromSerializedData(
+        Buffer.from(typedTransaction.serialized, 'hex')
+      ) as FeeMarketEIP1559Transaction
+      const dps = typedTransaction.derivationPath.split('/')
+      const ownAddress: RskAddress = unsignedTx.publicKey.startsWith('x') // xPub
+        ? await this.getAddressFromExtendedPublicKey(unsignedTx.publicKey, Number(dps[dps.length - 2]), Number(dps[dps.length - 1]))
+        : await this.getAddressFromPublicKey(unsignedTx.publicKey)
+      const airGapTransaction = {
+        from: [ownAddress.getValue()],
+        to: [transaction.to?.toString() ?? ''],
+        amount: new BigNumber(transaction.value.toString(10)).toString(10),
+        fee: new BigNumber(transaction.gasLimit.toString(10))
+          .multipliedBy(new BigNumber(transaction.maxFeePerGas.toString(10)))
+          .toString(10),
         protocolIdentifier: this.identifier,
         network: this.options.network,
         isInbound: false,
-        data: transaction.data,
+        data: transaction.data.toString('hex'),
         transactionDetails: unsignedTx
       }
-    ]
+
+      return [
+        {
+          ...airGapTransaction,
+          ...(transaction.chainId.toNumber() !== 1
+            ? {
+                warnings: [
+                  {
+                    type: AirGapTransactionWarningType.WARNING,
+                    title: 'Chain ID',
+                    description: `Please note that this is not an Ethereum Mainnet transaction, it is from ${
+                      EthereumChainIDs.get(transaction.chainId.toNumber()) ?? `Chain ID ${transaction.chainId.toNumber()}`
+                    }`
+                  }
+                ]
+              }
+            : {})
+        }
+      ]
+    } else {
+      const transaction = unsignedTx.transaction as RawRskTransaction
+      const ownAddress: RskAddress = unsignedTx.publicKey.startsWith('x') // xPub
+        ? await this.getAddressFromExtendedPublicKey(unsignedTx.publicKey, 0, 0)
+        : await this.getAddressFromPublicKey(unsignedTx.publicKey)
+
+      return [
+        {
+          from: [ownAddress.getValue()],
+          to: [transaction.to],
+          amount: new BigNumber(transaction.value).toString(10),
+          fee: new BigNumber(transaction.gasLimit).multipliedBy(new BigNumber(transaction.gasPrice)).toString(10),
+          protocolIdentifier: this.identifier,
+          network: this.options.network,
+          isInbound: false,
+          data: transaction.data,
+          transactionDetails: unsignedTx
+        }
+      ]
+    }
   }
 
   public async getTransactionDetailsFromSigned(transaction: SignedRskTransaction): Promise<IAirGapTransaction[]> {
-    const rskTx = new RskTransaction(transaction.transaction)
+    const rskTx = TransactionFactory.fromSerializedData(Buffer.from(transaction.transaction, 'hex'))
 
-    const hexValue = rskTx.value.toString('hex') || '0x0'
-    const hexGasPrice = rskTx.gasPrice.toString('hex') || '0x0'
-    const hexGasLimit = rskTx.gasLimit.toString('hex') || '0x0'
-    const hexNonce = rskTx.nonce.toString('hex') || '0x0'
+    if (rskTx.type === 0) {
+      const tx = rskTx as Transaction
 
-    return [
-      {
-        from: [RskUtils.toChecksumAddress(`0x${rskTx.from.toString('hex')}`)],
-        to: [RskUtils.toChecksumAddress(`0x${rskTx.to.toString('hex')}`)],
-        amount: new BigNumber(parseInt(hexValue, 16)).toString(10),
-        fee: new BigNumber(parseInt(hexGasLimit, 16)).multipliedBy(new BigNumber(parseInt(hexGasPrice, 16))).toString(10),
-        protocolIdentifier: this.identifier,
-        network: this.options.network,
-        isInbound: rskTx.toCreationAddress(),
-        hash: `0x${rskTx.hash().toString('hex')}`,
-        data: `0x${rskTx.data.toString('hex')}`,
-        extra: {
-          nonce: parseInt(hexNonce, 16)
-        },
-        transactionDetails: transaction.transaction
+      const hexValue = tx.value.toString('hex') || '0x0'
+      const hexGasPrice = tx.gasPrice.toString('hex') || '0x0'
+      const hexGasLimit = tx.gasLimit.toString('hex') || '0x0'
+      const hexNonce = tx.nonce.toString('hex') || '0x0'
+      const chainId = tx.common.chainIdBN().toString(10)
+      const to = tx.to
+
+      if (!to) {
+        throw new Error('No "TO" address')
       }
-    ]
+
+      return [
+        {
+          from: [tx.getSenderAddress().toString()],
+          to: [to.toString()],
+          amount: new BigNumber(parseInt(hexValue, 16)).toString(10),
+          fee: new BigNumber(parseInt(hexGasLimit, 16)).multipliedBy(new BigNumber(parseInt(hexGasPrice, 16))).toString(10),
+          protocolIdentifier: this.identifier,
+          network: this.options.network,
+          isInbound: tx.toCreationAddress(),
+          hash: `0x${tx.hash().toString('hex')}`,
+          data: `0x${tx.data.toString('hex')}`,
+          extra: {
+            chainId,
+            nonce: parseInt(hexNonce, 16)
+          },
+          transactionDetails: { raw: transaction.transaction }
+        }
+      ]
+    }
+
+    try {
+      // RSK doesn't have EIP1559 transaction type
+      const feeTx = rskTx as FeeMarketEIP1559Transaction
+
+      return [
+        {
+          from: [feeTx.getSenderAddress().toString()],
+          to: [feeTx.to?.toString() ?? ''],
+          amount: new BigNumber(feeTx.value.toString(10)).toString(10),
+          fee: new BigNumber(feeTx.gasLimit.toString(10)).multipliedBy(new BigNumber(feeTx.maxFeePerGas.toString(10))).toString(10),
+          protocolIdentifier: this.identifier,
+          network: this.options.network,
+          isInbound: false,
+          data: feeTx.data.toString('hex'),
+          extra: {
+            chainId: feeTx.chainId.toString(10),
+            nonce: feeTx.nonce.toString(10)
+          },
+          transactionDetails: { raw: transaction.transaction }
+        }
+      ]
+    } catch (e) {
+      throw new Error(`Transaction type "${rskTx.type}" not supported`)
+    }
   }
 
   public async getBalanceOfPublicKey(publicKey: string): Promise<string> {
@@ -254,35 +403,48 @@ export abstract class BaseRskProtocol<NodeClient extends RskNodeClient, InfoClie
     return contractAddresses.map((contractAddress) => balances[contractAddress]?.toFixed() ?? '0')
   }
 
-  public getBalanceOfExtendedPublicKey(extendedPublicKey: string, offset: number = 0): Promise<string> {
-    return Promise.reject('extended public balance for rbtc not implemented')
+  public async getBalanceOfExtendedPublicKey(extendedPublicKey: string, offset: number = 0): Promise<string> {
+    const publicKey = await this.getPublicKeyFromExtendedPublicKey(extendedPublicKey, 0, 0)
+
+    return this.getBalanceOfPublicKey(publicKey)
   }
 
   public async getAvailableBalanceOfAddresses(addresses: string[]): Promise<string> {
     return this.getBalanceOfAddresses(addresses)
   }
 
-  public estimateMaxTransactionValueFromExtendedPublicKey(extendedPublicKey: string, recipients: string[], fee?: string): Promise<string> {
-    return Promise.reject('estimating max value using extended public key not implemented')
+  public async estimateMaxTransactionValueFromExtendedPublicKey(
+    extendedPublicKey: string,
+    recipients: string[],
+    fee?: string
+  ): Promise<string> {
+    const publicKey = await this.getPublicKeyFromExtendedPublicKey(extendedPublicKey, 0, 0)
+
+    return this.estimateMaxTransactionValueFromPublicKey(publicKey, recipients, fee)
   }
 
   public async estimateFeeDefaultsFromExtendedPublicKey(
-    publicKey: string,
+    extendedPublicKey: string,
     recipients: string[],
     values: string[],
     data?: any
   ): Promise<FeeDefaults> {
-    return Promise.reject('estimating default fees using extended public key not implemented')
+    const publicKey = await this.getPublicKeyFromExtendedPublicKey(extendedPublicKey, 0, 0)
+
+    return this.estimateFeeDefaultsFromPublicKey(publicKey, recipients, values, data)
   }
 
-  public prepareTransactionFromExtendedPublicKey(
+  public async prepareTransactionFromExtendedPublicKey(
     extendedPublicKey: string,
-    offset: number,
+    _offset: number,
     recipients: string[],
     values: string[],
-    fee: string
+    fee: string,
+    data?: any
   ): Promise<RawRskTransaction> {
-    return Promise.reject('extended public tx for rbtc not implemented')
+    const publicKey = await this.getPublicKeyFromExtendedPublicKey(extendedPublicKey, 0, 0)
+
+    return this.prepareTransactionFromPublicKey(publicKey, recipients, values, fee, data)
   }
 
   public async estimateMaxTransactionValueFromPublicKey(publicKey: string, recipients: string[], fee?: string): Promise<string> {
@@ -397,12 +559,14 @@ export abstract class BaseRskProtocol<NodeClient extends RskNodeClient, InfoClie
     return this.options.nodeClient.sendSignedTransaction(`0x${rawTransaction}`)
   }
 
-  public getTransactionsFromExtendedPublicKey(
+  public async getTransactionsFromExtendedPublicKey(
     extendedPublicKey: string,
     limit: number,
     cursor: RskTransactionCursor
   ): Promise<RskTransactionResult> {
-    return Promise.reject('extended public transaction list for rsk not implemented')
+    const publicKey = await this.getPublicKeyFromExtendedPublicKey(extendedPublicKey, 0, 0)
+
+    return this.getTransactionsFromPublicKey(publicKey, limit, cursor)
   }
 
   public async getTransactionsFromPublicKey(

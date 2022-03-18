@@ -19,7 +19,7 @@ import { Domain } from '../../../errors/coinlib-error'
 
 import { RskTransactionResult, RskTransactionCursor } from '../RskTypes'
 
-const RskTransaction = require('../../../dependencies/src/ethereumjs-tx-1.3.7/index')
+const EthereumTransaction = require('../../../dependencies/src/ethereumjs-tx-1.3.7/index')
 
 export class GenericRskERC20 extends BaseRskProtocol<AirGapNodeClientRsk, RskExplorerInfoClient> implements ICoinSubProtocol {
   public isSubProtocol: boolean = true
@@ -178,7 +178,7 @@ export class GenericRskERC20 extends BaseRskProtocol<AirGapNodeClientRsk, RskExp
 
     const rskTx: IAirGapTransaction = rskTxs[0]
 
-    const extractedTx = new RskTransaction(signedTx.transaction)
+    const extractedTx = new EthereumTransaction(signedTx.transaction)
     const tokenTransferDetails = new RskRPCDataTransfer(`0x${extractedTx.data.toString('hex')}`)
     rskTx.to = [RskUtils.toChecksumAddress(tokenTransferDetails.recipient)]
     rskTx.amount = new BigNumber(tokenTransferDetails.amount).toString(10)

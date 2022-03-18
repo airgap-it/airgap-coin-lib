@@ -16,7 +16,7 @@ export class EthereumCryptoClient extends Secp256k1CryptoClient {
 
   public async signMessage(message: string, keypair: { privateKey: Buffer }): Promise<string> {
     if (!keypair.privateKey) {
-      throw new NotFoundError(Domain.ETHEREUM, `Private key not provided`)
+      throw new NotFoundError(Domain.RSK, `Private key not provided`)
     }
     try {
       try {
