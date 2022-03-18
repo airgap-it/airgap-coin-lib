@@ -390,7 +390,9 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
   }
 
   public async getBalanceOfPublicKeyForSubProtocols(publicKey: string, subProtocols: ICoinSubProtocol[]): Promise<string[]> {
-    const address: string = await this.getAddressFromPublicKey(publicKey).then((address: EthereumAddress) => address.getValue())
+    const address: string = await this.getAddressFromPublicKey(publicKey)
+      .then((address: EthereumAddress) => address.getValue())
+      .catch(async () => await this.getAddressFromExtendedPublicKey(publicKey, 0, 0).then((address: EthereumAddress) => address.getValue()))
     const contractAddresses = subProtocols.map((subProtocol) => {
       if (subProtocol.subProtocolType === SubProtocolType.TOKEN && subProtocol.contractAddress) {
         return subProtocol.contractAddress
