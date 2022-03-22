@@ -6,7 +6,7 @@ import { AstarProtocolConfig, AstarProtocolNetwork, AstarProtocolNetworkExtras, 
 
 const MAINNET_NAME: string = 'Mainnet'
 
-const NODE_URL: string = 'https://shiden.api.onfinality.io/public'
+const NODE_URL: string = 'https://shiden-proxy.airgap.prod.gke.papers.tech'
 
 const BLOCK_EXPLORER_URL: string = 'https://shiden.subscan.io'
 const BLOCK_EXPLORER_API: string = 'https://shiden.subscan.prod.gke.papers.tech/api/scan'
