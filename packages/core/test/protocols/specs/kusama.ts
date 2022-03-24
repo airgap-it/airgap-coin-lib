@@ -6,10 +6,6 @@ import { AirGapWalletStatus } from '../../../src/wallet/AirGapWallet'
 import { TestProtocolSpec } from '../implementations'
 import { KusamaProtocolStub } from '../stubs/kusama.stub'
 
-/*
- * Test Mnemonic: leopard crouch simple blind castle they elder enact slow rate mad blanket saddle tail silk fury quarter obscure interest exact veteran volcano fabric cherry
- *
- */
 // Test Mnemonic: food talent voyage degree siege clever account medal film remind good kind
 // Derivation path: m/
 // Private Key: d08bc6388fdeb30fc34a8e0286384bd5a84b838222bb9b012fc227d7473fc87aa2913d02297653ce859ccd6b2c057f7e57c9ef6cc359300a891c581fb6d03141

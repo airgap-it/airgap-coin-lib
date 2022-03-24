@@ -181,7 +181,7 @@ export abstract class SubstrateProtocol<Network extends SubstrateNetwork> extend
   ): Promise<string> {
     const results = await Promise.all([
       this.options.accountController.getTransferableBalance(publicKey, data?.excludeExistentialDeposit),
-      this.getFutureRequiredTransactions(publicKey, 'check')
+      this.getFutureRequiredTransactions(publicKey, 'transfer')
     ])
 
     const transferableBalance = results[0]

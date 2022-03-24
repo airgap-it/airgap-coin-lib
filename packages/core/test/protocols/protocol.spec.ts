@@ -9,6 +9,7 @@ import { TezosProtocol } from '../../src/protocols/tezos/TezosProtocol'
 
 import { TestProtocolSpec } from './implementations'
 import { AETestProtocolSpec } from './specs/ae'
+import { AstarTestProtocolSpec } from './specs/astar'
 import { BitcoinProtocolSpec } from './specs/bitcoin'
 import { BitcoinTestProtocolSpec } from './specs/bitcoin-test'
 import { CosmosTestProtocolSpec } from './specs/cosmos'
@@ -18,8 +19,10 @@ import { CosmosTestProtocolSpec } from './specs/cosmos'
 // import { GenericERC20TokenTestProtocolSpec } from './specs/generic-erc20-token'
 import { GroestlcoinProtocolSpec } from './specs/groestl'
 import { KusamaTestProtocolSpec } from './specs/kusama'
-import { MoonbaseTestProtocolSpec } from './specs/moonbase'
+import { MoonbeamTestProtocolSpec } from './specs/moonbeam'
+import { MoonriverTestProtocolSpec } from './specs/moonriver'
 import { PolkadotTestProtocolSpec } from './specs/polkadot'
+import { ShidenTestProtocolSpec } from './specs/shiden'
 import { TezosTestProtocolSpec } from './specs/tezos'
 
 // use chai-as-promised plugin
@@ -51,7 +54,10 @@ const protocols = [
   new GroestlcoinProtocolSpec(),
   new KusamaTestProtocolSpec(),
   new PolkadotTestProtocolSpec(),
-  new MoonbaseTestProtocolSpec()
+  new MoonbeamTestProtocolSpec(),
+  new MoonriverTestProtocolSpec(),
+  new AstarTestProtocolSpec(),
+  new ShidenTestProtocolSpec()
 ]
 
 const itIf = (condition, title, test) => {
