@@ -335,7 +335,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L/counter`)
         .returns(Promise.resolve({ data: 917326 }))
       getStub
-        .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/hash`)
+        .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head~2/hash`)
         .returns(Promise.resolve({ data: 'BMT1dwxYkLbssY34irU2LbSHEAYBZ3KfqtYCixaZoMoaarhx3Ko' }))
       getStub
         .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L/balance`)
@@ -420,7 +420,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${tezosProtocolSpec.wallet.addresses[0]}/counter`)
         .returns(Promise.resolve({ data: 917315 }))
       getStub
-        .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/hash`)
+        .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head~2/hash`)
         .returns(Promise.resolve({ data: 'BMJyc7ga9kLV3vH4kbn6GXbBNjRkLEJVSyovoXyY84Er1zMmKKT' }))
       getStub
         .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${tezosProtocolSpec.wallet.addresses[0]}/balance`)
@@ -529,7 +529,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
           .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/counter`)
           .returns(Promise.resolve({ data: '10147076' }))
         getStub
-          .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/hash`)
+          .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head~2/hash`)
           .returns(Promise.resolve({ data: 'BLKAx9imSqD5t1qyu3K1cuZwVzddZRjuHpa8w94fh1aUmPgMohM' }))
 
         for (let config of configs) {
@@ -567,7 +567,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
           .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/counter`)
           .returns(Promise.resolve({ data: '10147076' }))
         getStub
-          .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/hash`)
+          .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head~2/hash`)
           .returns(Promise.resolve({ data: 'BLKAx9imSqD5t1qyu3K1cuZwVzddZRjuHpa8w94fh1aUmPgMohM' }))
         getStub
           .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/balance`)
@@ -613,7 +613,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
           .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/counter`)
           .returns(Promise.resolve({ data: '10147076' }))
         getStub
-          .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/hash`)
+          .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head~2/hash`)
           .returns(Promise.resolve({ data: 'BLKAx9imSqD5t1qyu3K1cuZwVzddZRjuHpa8w94fh1aUmPgMohM' }))
         getStub
           .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/balance`)
