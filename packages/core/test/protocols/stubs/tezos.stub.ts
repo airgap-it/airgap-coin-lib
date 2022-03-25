@@ -43,7 +43,7 @@ export class TezosProtocolStub implements ProtocolHTTPStub {
       )
       .returns(Promise.resolve({ data: 917315 }))
     getStub
-      .withArgs(`${protocol.options.network.rpcUrl}/chains/main/blocks/head/hash`)
+      .withArgs(`${protocol.options.network.rpcUrl}/chains/main/blocks/head~2/hash`)
       .returns(Promise.resolve({ data: 'BMJyc7ga9kLV3vH4kbn6GXbBNjRkLEJVSyovoXyY84Er1zMmKKT' }))
     getStub
       .withArgs(
@@ -72,7 +72,7 @@ export class TezosProtocolStub implements ProtocolHTTPStub {
       )
       .returns(Promise.resolve({ data: 917315 }))
     getStub
-      .withArgs(`${protocol.options.network.rpcUrl}/chains/main/blocks/head/hash`)
+      .withArgs(`${protocol.options.network.rpcUrl}/chains/main/blocks/head~2/hash`)
       .returns(Promise.resolve({ data: 'BMJyc7ga9kLV3vH4kbn6GXbBNjRkLEJVSyovoXyY84Er1zMmKKT' }))
     getStub
       .withArgs(

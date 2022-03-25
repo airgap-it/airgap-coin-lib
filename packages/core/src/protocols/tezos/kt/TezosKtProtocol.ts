@@ -138,7 +138,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
 
     const results: AxiosResponse[] | void = await Promise.all([
       axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/counter`),
-      axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/hash`),
+      axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head~2/hash`),
       axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/manager_key`)
     ]).catch((error) => {
       if (error.response && error.response.status !== 404) {

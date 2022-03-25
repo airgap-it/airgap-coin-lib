@@ -29,46 +29,13 @@ export class SubstrateAccountInfo {
   public static decode(network: SubstrateNetwork, runtimeVersion: number | undefined, raw: string): SubstrateAccountInfo {
     const decoder = new SCALEDecoder(network, runtimeVersion, raw)
 
-    const lengths = this.migrateFieldLengths(network, runtimeVersion)
-
     const nonce = decoder.decodeNextInt(32)
-    const consumers = decoder.decodeNextInt(lengths.consumers)
-    const providers = decoder.decodeNextInt(lengths.providers)
-    const sufficients = decoder.decodeNextInt(lengths.sufficients)
+    const consumers = decoder.decodeNextInt(32)
+    const providers = decoder.decodeNextInt(32)
+    const sufficients = decoder.decodeNextInt(32)
     const data = decoder.decodeNextObject(SubstrateAccountData.decode)
 
     return new SubstrateAccountInfo(nonce.decoded, consumers.decoded, providers.decoded, sufficients.decoded, data.decoded)
-  }
-
-  private static migrateFieldLengths(
-    network: SubstrateNetwork,
-    runtimeVersion: number | undefined
-  ): { consumers: number; providers: number; sufficients: number } {
-    if (runtimeVersion === undefined) {
-      return {
-        consumers: 32,
-        providers: 32,
-        sufficients: 32
-      }
-    }
-
-    if (
-      (network === SubstrateNetwork.KUSAMA && runtimeVersion >= 2030) ||
-      (network === SubstrateNetwork.POLKADOT && runtimeVersion >= 30) ||
-      (network === SubstrateNetwork.MOONBEAM && runtimeVersion >= 30)
-    ) {
-      return {
-        consumers: 32,
-        providers: 32,
-        sufficients: 32
-      }
-    } else {
-      return {
-        consumers: 32,
-        providers: 32,
-        sufficients: 0
-      }
-    }
   }
 
   private constructor(

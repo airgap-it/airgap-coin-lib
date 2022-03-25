@@ -13,7 +13,7 @@ export class KtTezosProtocolStub implements ProtocolHTTPStub {
       .withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${testProtocolSpec.wallet.addresses[0]}/counter`)
       .returns(Promise.resolve({ data: 917315 }))
     stub
-      .withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/hash`)
+      .withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head~2/hash`)
       .returns(Promise.resolve({ data: 'BMJyc7ga9kLV3vH4kbn6GXbBNjRkLEJVSyovoXyY84Er1zMmKKT' }))
     stub
       .withArgs(`${protocol.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${testProtocolSpec.wallet.addresses[0]}/balance`)

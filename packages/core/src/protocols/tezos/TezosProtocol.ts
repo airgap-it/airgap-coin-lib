@@ -159,9 +159,7 @@ const SELF_BOND_REQUIREMENT: number = 0.0825
 
 export enum TezosNetwork {
   MAINNET = 'mainnet',
-  EDONET = 'edonet',
-  FLORENCENET = 'florencenet',
-  GRANADANET = 'granadanet',
+  ITHACANET = 'ithacanet',
   HANGZHOUNET = 'hangzhounet'
 }
 
@@ -715,7 +713,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
     const results = await Promise.all([
       axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/contracts/${address}/counter`),
-      axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/hash`),
+      axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head~2/hash`),
       axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/contracts/${address}/manager_key`)
     ]).catch((error) => {
       throw new NetworkError(Domain.TEZOS, error as AxiosError)
@@ -921,12 +919,12 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
   private async getDelegatorDetails(address: string, bakerAddress?: string): Promise<DelegatorDetails> {
     const results = await Promise.all([
-      axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/contracts/${address}`),
-      this.getDelegationRewardsForAddress(address).catch(() => [] as DelegationRewardInfo[])
+      axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/contracts/${address}`)
+      // this.getDelegationRewardsForAddress(address).catch(() => [] as DelegationRewardInfo[])
     ])
 
     const accountDetails = results[0].data
-    const rewardInfo = results[1]
+    // const rewardInfo = results[1]
 
     const balance = accountDetails.balance
     const isDelegating = !!accountDetails.delegate
@@ -948,21 +946,21 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       })
     }
 
-    const rewards = isDelegating
-      ? rewardInfo.map((reward) => ({
-          index: reward.cycle,
-          amount: reward.reward.toFixed(),
-          collected: reward.payout < new Date(),
-          timestamp: reward.payout.getTime()
-        }))
-      : []
+    // const rewards = isDelegating
+    //   ? rewardInfo.map((reward) => ({
+    //       index: reward.cycle,
+    //       amount: reward.reward.toFixed(),
+    //       collected: reward.payout < new Date(),
+    //       timestamp: reward.payout.getTime()
+    //     }))
+    //   : []
 
     return {
       address,
       balance,
       delegatees: [accountDetails.delegate],
-      availableActions,
-      rewards
+      availableActions
+      // rewards
     }
   }
 
@@ -999,7 +997,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
     const results = await Promise.all([
       axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/contracts/${address}/counter`),
-      axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/hash`),
+      axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head~2/hash`),
       axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/contracts/${address}/manager_key`)
     ]).catch((error) => {
       throw new NetworkError(Domain.TEZOS, error as AxiosError)
@@ -1344,17 +1342,22 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       throw new ConditionViolationError(Domain.TEZOS, 'non tz-address supplied')
     }
 
-    const results: AxiosResponse[] = await Promise.all([
-      axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/delegates/${tzAddress}/balance`),
+    const results: (AxiosResponse | undefined)[] = await Promise.all([
+      axios
+        .get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/delegates/${tzAddress}/balance`)
+        .catch((_error) => undefined),
+      axios
+        .get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/delegates/${tzAddress}/full_balance`)
+        .catch((_error) => undefined),
       axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/delegates/${tzAddress}/delegated_balance`),
       axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/delegates/${tzAddress}/staking_balance`)
     ]).catch((error) => {
       throw new NetworkError(Domain.TEZOS, error as AxiosError)
     })
 
-    const tzBalance: BigNumber = new BigNumber(results[0].data)
-    const delegatedBalance: BigNumber = new BigNumber(results[1].data)
-    const stakingBalance: BigNumber = new BigNumber(results[2].data)
+    const tzBalance: BigNumber = new BigNumber((results[0] ?? results[1])?.data)
+    const delegatedBalance: BigNumber = new BigNumber(results[2]?.data)
+    const stakingBalance: BigNumber = new BigNumber(results[3]?.data)
 
     // calculate the self bond of the baker
     const selfBond: BigNumber = stakingBalance.minus(delegatedBalance)
@@ -1385,44 +1388,46 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   }
 
   public async getDelegationRewards(bakerAddress: string, delegatorAddress?: string): Promise<DelegationRewardInfo[]> {
-    const { data: frozenBalance }: AxiosResponse<TezosFrozenBalance[]> = await axios.get(
-      `${this.options.network.rpcUrl}/chains/main/blocks/head/context/delegates/${bakerAddress}/frozen_balance_by_cycle`
-    )
+    // TODO: use the adapt logic for ithaca upgrade
+    return []
+    // const { data: frozenBalance }: AxiosResponse<TezosFrozenBalance[]> = await axios.get(
+    //   `${this.options.network.rpcUrl}/chains/main/blocks/head/context/delegates/${bakerAddress}/frozen_balance_by_cycle`
+    // )
 
-    const lastConfirmedCycle: number = frozenBalance[0].cycle - 1
-    const mostRecentCycle: number = frozenBalance[frozenBalance.length - 1].cycle
+    // const lastConfirmedCycle: number = frozenBalance[0].cycle - 1
+    // const mostRecentCycle: number = frozenBalance[frozenBalance.length - 1].cycle
 
-    const { data: mostRecentBlock } = await axios.get(
-      `${this.options.network.rpcUrl}/chains/main/blocks/${this.cycleToBlockLevel(mostRecentCycle)}`
-    )
+    // const { data: mostRecentBlock } = await axios.get(
+    //   `${this.options.network.rpcUrl}/chains/main/blocks/${this.cycleToBlockLevel(mostRecentCycle)}`
+    // )
 
-    const timestamp: Date = new Date(mostRecentBlock.header.timestamp)
-    const address = delegatorAddress ?? bakerAddress
-    const delegationInfo: DelegationRewardInfo[] = await Promise.all(
-      frozenBalance.slice(0, 5).map(async (obj) => {
-        const rewards = await this.calculateRewards(bakerAddress, obj.cycle, mostRecentCycle, false)
-        let delegatedBalance = '0'
-        let payoutAmount = '0'
-        if (rewards.delegatedContracts.includes(address)) {
-          const payout = await this.calculatePayout(address, rewards)
-          delegatedBalance = payout.balance
-          payoutAmount = payout.payout
-        }
+    // const timestamp: Date = new Date(mostRecentBlock.header.timestamp)
+    // const address = delegatorAddress ?? bakerAddress
+    // const delegationInfo: DelegationRewardInfo[] = await Promise.all(
+    //   frozenBalance.slice(0, 5).map(async (obj) => {
+    //     const rewards = await this.calculateRewards(bakerAddress, obj.cycle, mostRecentCycle, false)
+    //     let delegatedBalance = '0'
+    //     let payoutAmount = '0'
+    //     if (rewards.delegatedContracts.includes(address)) {
+    //       const payout = await this.calculatePayout(address, rewards)
+    //       delegatedBalance = payout.balance
+    //       payoutAmount = payout.payout
+    //     }
 
-        return {
-          cycle: obj.cycle,
-          totalRewards: new BigNumber(obj.rewards),
-          totalFees: new BigNumber(obj.fees),
-          deposit: new BigNumber(obj.deposit ?? obj.deposits),
-          delegatedBalance: new BigNumber(delegatedBalance),
-          stakingBalance: new BigNumber(rewards.stakingBalance),
-          reward: new BigNumber(payoutAmount),
-          payout: new Date(timestamp.getTime() + this.timeIntervalBetweenCycles(lastConfirmedCycle, obj.cycle))
-        }
-      })
-    )
+    //     return {
+    //       cycle: obj.cycle,
+    //       totalRewards: new BigNumber(obj.rewards),
+    //       totalFees: new BigNumber(obj.fees),
+    //       deposit: new BigNumber(obj.deposit ?? obj.deposits),
+    //       delegatedBalance: new BigNumber(delegatedBalance),
+    //       stakingBalance: new BigNumber(rewards.stakingBalance),
+    //       reward: new BigNumber(payoutAmount),
+    //       payout: new Date(timestamp.getTime() + this.timeIntervalBetweenCycles(lastConfirmedCycle, obj.cycle))
+    //     }
+    //   })
+    // )
 
-    return delegationInfo
+    // return delegationInfo
   }
 
   public async undelegate(publicKey: string): Promise<RawTezosTransaction> {
@@ -1438,7 +1443,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
     const results: AxiosResponse[] = await Promise.all([
       axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/contracts/${tzAddress}/counter`),
-      axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/hash`),
+      axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head~2/hash`),
       axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/contracts/${tzAddress}/manager_key`)
     ]).catch((error) => {
       throw new NetworkError(Domain.TEZOS, error as AxiosError)
@@ -1608,17 +1613,13 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
   private static readonly BLOCKS_PER_CYCLE: { [key in TezosNetwork]: number[] } = {
     [TezosNetwork.MAINNET]: [4096, 8192],
-    [TezosNetwork.EDONET]: [2048],
-    [TezosNetwork.FLORENCENET]: [2048],
-    [TezosNetwork.GRANADANET]: [4096],
+    [TezosNetwork.ITHACANET]: [4096],
     [TezosNetwork.HANGZHOUNET]: [4096]
   }
 
   private static readonly TIME_BETWEEN_BLOCKS: { [key in TezosNetwork]: number[] } = {
     [TezosNetwork.MAINNET]: [60, 30],
-    [TezosNetwork.EDONET]: [30],
-    [TezosNetwork.FLORENCENET]: [30],
-    [TezosNetwork.GRANADANET]: [30],
+    [TezosNetwork.ITHACANET]: [30],
     [TezosNetwork.HANGZHOUNET]: [30]
   }
 
