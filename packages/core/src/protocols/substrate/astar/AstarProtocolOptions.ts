@@ -15,7 +15,7 @@ import {
 
 const MAINNET_NAME: string = 'Mainnet'
 
-const NODE_URL: string = 'https://astar-proxy.airgap.prod.gke.papers.tech'
+const NODE_URL: string = 'https://astar-node.prod.gke.papers.tech'
 
 const BLOCK_EXPLORER_URL: string = 'https://astar.subscan.io'
 const BLOCK_EXPLORER_API: string = 'https://astar.subscan.prod.gke.papers.tech/api/scan'

@@ -1,6 +1,6 @@
 {
   "name": "@airgap/coinlib-core",
-  "version": "0.12.10-beta.4",
+  "version": "0.13.0",
   "description": "The @airgap/coinlib-core is a protocol agnostic library to prepare, sign and broadcast cryptocurrency transactions.",
   "keywords": [
     "airgap",
