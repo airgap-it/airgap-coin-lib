@@ -13,6 +13,7 @@ import { MoonbeamProtocolNetwork, MoonbeamProtocolOptions } from '../protocols/s
 import { MoonriverProtocolNetwork, MoonriverProtocolOptions } from '../protocols/substrate/moonbeam/moonriver/MoonriverProtocolOptions'
 import { PolkadotProtocolNetwork, PolkadotProtocolOptions } from '../protocols/substrate/polkadot/PolkadotProtocolOptions'
 import { TezosCTezProtocolConfig } from '../protocols/tezos/fa/TezosCTez'
+import { TezosDOGAProtocolConfig } from '../protocols/tezos/fa/TezosDOGA'
 import {
   TezosBTCProtocolConfig,
   TezosETHtzProtocolConfig,
@@ -26,6 +27,7 @@ import {
 } from '../protocols/tezos/fa/TezosFAProtocolOptions'
 import { TezosPlentyProtocolConfig } from '../protocols/tezos/fa/TezosPlanty'
 import { TezosQUIPUProtocolConfig } from '../protocols/tezos/fa/TezosQUIPU'
+import { TezosUBTCProtocolConfig } from '../protocols/tezos/fa/TezosUBTC'
 import { TezosUDEFIProtocolConfig } from '../protocols/tezos/fa/TezosUDEFI'
 import { TezosWRAPProtocolConfig } from '../protocols/tezos/fa/TezosWRAP'
 import { TezosSaplingProtocolOptions, TezosShieldedTezProtocolConfig } from '../protocols/tezos/sapling/TezosSaplingProtocolOptions'
@@ -91,6 +93,11 @@ const getProtocolOptionsByIdentifier: (identifier: ProtocolSymbols, network?: Pr
         network ? (network as TezosProtocolNetwork) : new TezosProtocolNetwork(),
         new TezosUUSDProtocolConfig()
       )
+    case SubProtocolSymbols.XTZ_UBTC:
+      return new TezosFAProtocolOptions(
+        network ? (network as TezosProtocolNetwork) : new TezosProtocolNetwork(),
+        new TezosUBTCProtocolConfig()
+      )
     case SubProtocolSymbols.XTZ_YOU:
       return new TezosFAProtocolOptions(
         network ? (network as TezosProtocolNetwork) : new TezosProtocolNetwork(),
@@ -140,6 +147,11 @@ const getProtocolOptionsByIdentifier: (identifier: ProtocolSymbols, network?: Pr
       return new TezosFAProtocolOptions(
         network ? (network as TezosProtocolNetwork) : new TezosProtocolNetwork(),
         new TezosQUIPUProtocolConfig()
+      )
+    case SubProtocolSymbols.XTZ_DOGA:
+      return new TezosFAProtocolOptions(
+        network ? (network as TezosProtocolNetwork) : new TezosProtocolNetwork(),
+        new TezosDOGAProtocolConfig()
       )
     default:
       // Maybe we get an identifier of a sub-protocol that is not in the known list. In that case, get the options of the parent

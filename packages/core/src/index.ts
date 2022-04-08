@@ -259,6 +259,8 @@ import { UnsignedTypedEthereumTransaction } from './serializer-v3/schemas/defini
 import { CosmosUnbondingDelegation, CosmosValidator } from './protocols/cosmos/CosmosTypes'
 import { AstarProtocol } from './protocols/substrate/astar/AstarProtocol'
 import { ShidenProtocol } from './protocols/substrate/astar/shiden/ShidenProtocol'
+import { TezosUBTC, TezosUBTCProtocolConfig } from './protocols/tezos/fa/TezosUBTC'
+import { TezosDOGA, TezosDOGAProtocolConfig } from './protocols/tezos/fa/TezosDOGA'
 
 // tslint:enable:ordered-imports
 
@@ -421,12 +423,14 @@ export {
   TezosUUSD,
   TezosYOU,
   TezosUDEFI,
+  TezosUBTC,
   TezosWrapped,
   TezosWRAP,
   TezosKolibriUSD,
   TezosCTez,
   TezosPlenty,
   TezosQUIPU,
+  TezosDOGA,
   TezosTransactionResult,
   TezosTransactionCursor,
   BakerInfo,
@@ -453,8 +457,10 @@ export {
   TezosCTezProtocolConfig,
   TezosPlentyProtocolConfig,
   TezosUDEFIProtocolConfig,
+  TezosUBTCProtocolConfig,
   TezosWRAPProtocolConfig,
   TezosQUIPUProtocolConfig,
+  TezosDOGAProtocolConfig,
   TezosFAProtocolOptions,
   TezosFA2ProtocolOptions,
   TezosNetwork,
