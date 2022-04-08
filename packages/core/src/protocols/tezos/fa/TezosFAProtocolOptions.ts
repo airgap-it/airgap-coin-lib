@@ -100,7 +100,7 @@ export class TezosWrappedProtocolConfig extends TezosFAProtocolConfig {
 export class TezosKolibriUSDProtocolConfig extends TezosFAProtocolConfig {
   constructor(
     symbol: string = 'kUSD',
-    name: string = 'Kolibri USD Tezos',
+    name: string = 'Kolibri USD',
     marketSymbol: string = 'kUSD',
     identifier: ProtocolSymbols = SubProtocolSymbols.XTZ_KUSD,
     contractAddress: string = TezosKolibriUSDDetails.CONTRACT_ADDRESS,
@@ -109,7 +109,7 @@ export class TezosKolibriUSDProtocolConfig extends TezosFAProtocolConfig {
       medium: '0.200',
       high: '0.300'
     },
-    decimals: number = 6
+    decimals: number = 18
   ) {
     super(contractAddress, identifier, symbol, name, marketSymbol, feeDefaults, decimals)
   }
