@@ -1,19 +1,16 @@
 import { IAirGapTransaction } from '../../interfaces/IAirGapTransaction'
+import { CosmosCoinJSON } from './CosmosCoin'
 
 export interface CosmosTransactionCursor {
   address: string
   limit: number
   sender: {
-    page: number
-    totalPages: number
-    count: number
-    totalCount: number
+    total: number
+    offset: number
   }
-  receipient: {
-    page: number
-    totalPages: number
-    count: number
-    totalCount: number
+  recipient: {
+    total: number
+    offset: number
   }
 }
 
@@ -113,21 +110,6 @@ export interface CosmosValidatorCommissionRate {
   max_change_rate: string
 }
 
-export interface TxResponse {
-  height: string
-  txhash: string
-  codespace: string
-  code: number
-  data: string
-  raw_log: string
-  logs: any[]
-  info: string
-  gas_wanted: string
-  gas_used: string
-  tx?: any
-  timestamp: string
-}
-
 export interface CosmosBroadcastSignedTransactionResponse {
   tx_response: TxResponse
 }
@@ -138,15 +120,6 @@ export interface CosmosRewardDetails {
     denom: string
     amount: number
   }[]
-}
-
-export interface CosmosPagedSendTxsResponse {
-  total_count: string
-  count: string
-  page_number: string
-  page_total: string
-  limit: string
-  txs: CosmosSendTx[]
 }
 
 export interface CosmosSendTx {
@@ -185,4 +158,196 @@ export interface CosmosSendTx {
     }
   }
   timestamp: string
+}
+
+export interface Amount {
+  denom: string
+  amount: string
+}
+
+export interface Message {
+  '@type': string
+  delegator_address: string
+  validator_address: string
+  from_address: string
+  to_address: string
+  amount: Amount[]
+}
+
+export interface Body {
+  messages: Message[]
+  memo: string
+  timeout_height: string
+  extension_options: any[]
+  non_critical_extension_options: any[]
+}
+
+export interface PublicKey {
+  '@type': string
+  key: string
+}
+
+export interface Single {
+  mode: string
+}
+
+export interface ModeInfo {
+  single: Single
+}
+
+export interface SignerInfo {
+  public_key: PublicKey
+  mode_info: ModeInfo
+  sequence: string
+}
+
+export interface Amount2 {
+  denom: string
+  amount: string
+}
+
+export interface Fee {
+  amount: Amount2[]
+  gas_limit: string
+  payer: string
+  granter: string
+}
+
+export interface AuthInfo {
+  signer_infos: SignerInfo[]
+  fee: Fee
+}
+
+export interface Tx {
+  body: Body
+  auth_info: AuthInfo
+  signatures: string[]
+}
+
+export interface Attribute {
+  key: string
+  value: string
+}
+
+export interface Event {
+  type: string
+  attributes: Attribute[]
+}
+
+export interface Log {
+  msg_index: number
+  log: string
+  events: Event[]
+}
+
+export interface Amount3 {
+  denom: string
+  amount: string
+}
+
+export interface StakingMessage {
+  '@type': string
+  delegator_address: string
+  validator_address: string
+  amount?: CosmosCoinJSON
+}
+
+export interface SendMessage {
+  '@type': string
+  from_address: string
+  to_address: string
+  amount: CosmosCoinJSON[]
+}
+
+export interface Body2 {
+  messages: any
+  memo: string
+  timeout_height: string
+  extension_options: any[]
+  non_critical_extension_options: any[]
+}
+
+export interface PublicKey2 {
+  '@type': string
+  key: string
+}
+
+export interface Single2 {
+  mode: string
+}
+
+export interface ModeInfo2 {
+  single: Single2
+}
+
+export interface SignerInfo2 {
+  public_key: PublicKey2
+  mode_info: ModeInfo2
+  sequence: string
+}
+
+export interface Amount4 {
+  denom: string
+  amount: string
+}
+
+export interface Fee2 {
+  amount: Amount4[]
+  gas_limit: string
+  payer: string
+  granter: string
+}
+
+export interface AuthInfo2 {
+  signer_infos: SignerInfo2[]
+  fee: Fee2
+}
+
+export interface Tx2 {
+  '@type': string
+  body: Body2
+  auth_info: AuthInfo2
+  signatures: string[]
+}
+
+export interface Attribute2 {
+  key: string
+  value: string
+  index: boolean
+}
+
+export interface Event2 {
+  type: string
+  attributes: Attribute2[]
+}
+
+export interface TxResponse {
+  height: string
+  txhash: string
+  codespace: string
+  code: number
+  data: string
+  raw_log: string
+  logs: Log[]
+  info: string
+  gas_wanted: string
+  gas_used: string
+  tx: Tx2
+  timestamp: Date
+  events: Event2[]
+}
+
+export interface Pagination {
+  next_key?: any
+  total: string
+}
+
+export interface CosmosPagedSendTxsResponse {
+  txs: Tx[]
+  tx_responses: TxResponse[]
+  pagination: Pagination
+}
+
+export const calculateTransactionLimit = (limit, selfTotal, otherTotal, selfOffset, otherOffset) => {
+  return Math.min(Math.max(Math.ceil(limit / 2), limit - (otherTotal - otherOffset)), selfTotal - selfOffset)
 }
