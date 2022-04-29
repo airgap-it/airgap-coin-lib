@@ -18,7 +18,7 @@ import { ICoinSubProtocol } from '../ICoinSubProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
 
 import { CosmosDelegateMessage } from './cosmos-message/CosmosDelegateMessage'
-import { CosmosMessageType } from './cosmos-message/CosmosMessage'
+import { CosmosMessageType, CosmosMessageTypeValue } from './cosmos-message/CosmosMessage'
 import { CosmosSendMessage } from './cosmos-message/CosmosSendMessage'
 import { CosmosWithdrawDelegationRewardMessage } from './cosmos-message/CosmosWithdrawDelegationRewardMessage'
 import { CosmosAddress } from './CosmosAddress'
@@ -27,6 +27,7 @@ import { CosmosCryptoClient } from './CosmosCryptoClient'
 import { CosmosFee } from './CosmosFee'
 import { CosmosNodeClient } from './CosmosNodeClient'
 import {
+  calculateTransactionLimit,
   CosmosAccount,
   CosmosDelegation,
   CosmosNodeInfo,
@@ -173,76 +174,118 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
   ): Promise<CosmosTransactionResult> {
     const address = cursor?.address ?? addresses[0]
     const promises: Promise<CosmosPagedSendTxsResponse>[] = []
-    if (cursor !== undefined) {
-      if (cursor.sender.page > 1) {
-        promises.push(this.nodeClient.fetchSendTransactionsFor(address, cursor.sender.page - 1, cursor.limit, true))
+    let senderOffset = 0
+    let recipientOffset = 0
+
+    let senderTotal = 0
+    let recipientTotal = 0
+
+    let senderLimit = 0
+    let recipientLimit = 0
+
+    if (cursor) {
+      senderOffset = cursor.sender.offset
+      recipientOffset = cursor.recipient.offset
+      senderTotal = cursor.sender.total
+      recipientTotal = cursor.recipient.total
+
+      senderLimit = calculateTransactionLimit(limit, senderTotal, recipientTotal, senderOffset, recipientOffset)
+
+      if (senderOffset + senderLimit < senderTotal) {
+        promises.push(this.nodeClient.fetchSendTransactionsFor(address, senderLimit, senderOffset, true))
       } else {
         promises.push(
           new Promise((resolve) => {
-            resolve({
-              total_count: cursor.sender.totalCount.toFixed(),
-              count: cursor.sender.count.toFixed(),
-              page_number: '0',
-              page_total: cursor.sender.totalPages.toFixed(),
-              limit: cursor.limit.toFixed(),
-              txs: []
-            })
+            resolve({ txs: [], tx_responses: [], pagination: { total: String(senderTotal) } })
           })
         )
       }
-      if (cursor.receipient.page > 1) {
-        promises.push(this.nodeClient.fetchSendTransactionsFor(address, cursor.receipient.page - 1, cursor.limit, false))
+
+      recipientLimit = calculateTransactionLimit(limit, recipientTotal, senderTotal, recipientOffset, senderOffset)
+
+      if (recipientOffset + recipientLimit < recipientTotal) {
+        promises.push(this.nodeClient.fetchSendTransactionsFor(address, recipientLimit, recipientOffset, false))
       } else {
         promises.push(
           new Promise((resolve) => {
-            resolve({
-              total_count: cursor.receipient.totalCount.toFixed(),
-              count: cursor.receipient.count.toFixed(),
-              page_number: '0',
-              page_total: cursor.receipient.totalPages.toFixed(),
-              limit: cursor.limit.toFixed(),
-              txs: []
-            })
+            resolve({ txs: [], tx_responses: [], pagination: { total: String(recipientTotal) } })
           })
         )
       }
     } else {
-      const [sentLastPage, receivedLastPage] = await Promise.all([
-        this.nodeClient.fetchSendTransactionsFor(address, 1, 1, true).then((response) => Math.ceil(Number(response.total_count) / limit)),
-        this.nodeClient.fetchSendTransactionsFor(address, 1, 1, false).then((response) => Math.ceil(Number(response.total_count) / limit))
+      ;[senderTotal, recipientTotal] = await Promise.all([
+        this.nodeClient
+          .fetchSendTransactionsFor(address, 1, 1, true)
+          .then((response) => new BigNumber(response.pagination.total).toNumber()),
+        this.nodeClient
+          .fetchSendTransactionsFor(address, 1, 1, false)
+          .then((response) => new BigNumber(response.pagination.total).toNumber())
       ])
 
-      promises.push(this.nodeClient.fetchSendTransactionsFor(address, Math.max(1, sentLastPage), limit, true))
-      promises.push(this.nodeClient.fetchSendTransactionsFor(address, Math.max(1, receivedLastPage), limit, false))
+      senderLimit = calculateTransactionLimit(limit, senderTotal, recipientTotal, senderOffset, recipientOffset)
+      recipientLimit = calculateTransactionLimit(limit, recipientTotal, senderTotal, recipientOffset, senderOffset)
+
+      promises.push(
+        this.nodeClient.fetchSendTransactionsFor(address, senderLimit, senderOffset, true),
+        this.nodeClient.fetchSendTransactionsFor(address, recipientLimit, recipientOffset, false)
+      )
     }
 
     const transactions = await Promise.all(promises)
     const sentTransactions = transactions[0]
     const receivedTransactions = transactions[1]
-    const allTransactions = sentTransactions.txs.concat(receivedTransactions.txs).reverse()
+
+    const allTransactions = sentTransactions?.tx_responses.concat(receivedTransactions?.tx_responses)
     let result: IAirGapTransaction[] = []
+
     for (const transaction of allTransactions) {
       const timestamp = new Date(transaction.timestamp).getTime() / 1000
-      const fee = transaction.tx.value.fee.amount
+      const fee = transaction.tx.auth_info.fee.amount
         .filter((coin) => coin.denom === 'uatom')
         .map((coin) => new BigNumber(coin.amount))
         .reduce((current, next) => current.plus(next))
+
       result = result.concat(
-        transaction.tx.value.msg.map((msg) => ({
-          from: [msg.value.from_address],
-          to: [msg.value.to_address],
-          isInbound: msg.value.to_address === address,
-          amount: msg.value.amount
-            .filter((coin) => coin.denom === 'uatom')
-            .map((coin) => new BigNumber(coin.amount))
-            .reduce((current, next) => current.plus(next))
-            .toFixed(),
-          fee: fee.toFixed(),
-          protocolIdentifier: this.identifier,
-          network: this.options.network,
-          hash: transaction.txhash,
-          timestamp
-        }))
+        transaction.tx.body.messages.map((msg) => {
+          const tx: Partial<IAirGapTransaction> = {
+            fee: fee.toFixed(),
+            protocolIdentifier: this.identifier,
+            network: this.options.network,
+            hash: transaction.txhash,
+            timestamp,
+            isInbound: false,
+            amount: '0'
+          }
+          switch (msg['@type']) {
+            case CosmosMessageTypeValue.UNDELEGATE:
+              return {
+                ...tx,
+                from: [msg.validator_address],
+                to: [msg.delegator_address]
+              }
+            case CosmosMessageTypeValue.WITHDRAW_DELEGATION_REWARD:
+              return {
+                ...tx,
+                from: [msg.delegator_address],
+                to: [msg.validator_address]
+              }
+            case CosmosMessageTypeValue.DELEGATE:
+              return {
+                ...tx,
+                from: [msg.delegator_address],
+                to: [msg.validator_address]
+              }
+
+            default:
+              return {
+                ...tx,
+                from: [msg.from_address],
+                to: [msg.to_address],
+                isInbound: msg.to_address === address,
+                amount: msg.amount[0].amount
+              }
+          }
+        })
       )
     }
 
@@ -252,16 +295,12 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
         address,
         limit,
         sender: {
-          count: Number(sentTransactions.count),
-          totalCount: Number(sentTransactions.total_count),
-          page: Number(sentTransactions.page_number),
-          totalPages: Number(sentTransactions.page_total)
+          total: senderTotal,
+          offset: senderOffset + senderLimit
         },
-        receipient: {
-          count: Number(receivedTransactions.count),
-          totalCount: Number(receivedTransactions.total_count),
-          page: Number(receivedTransactions.page_number),
-          totalPages: Number(receivedTransactions.page_total)
+        recipient: {
+          total: recipientTotal,
+          offset: recipientOffset + recipientLimit
         }
       }
     }

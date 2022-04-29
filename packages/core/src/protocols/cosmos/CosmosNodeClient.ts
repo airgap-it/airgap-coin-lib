@@ -38,33 +38,21 @@ export class CosmosNodeClient {
       return new BigNumber(0)
     }
   }
-
   public async fetchSendTransactionsFor(
     address: string,
-    page: number = 1,
-    limit: number = 10,
+    limit: number,
+    offset: number,
     isSender: boolean = true
   ): Promise<CosmosPagedSendTxsResponse> {
     const response = await Axios.get<CosmosPagedSendTxsResponse>(
-      this.url(`/txs?message.action=send&transfer.${isSender ? 'sender' : 'recipient'}=${address}&page=${page}&limit=${limit}`)
+      this.url(
+        `/cosmos/tx/v1beta1/txs?events=${
+          isSender ? 'transfer.sender' : 'transfer.recipient'
+        }='${address}'&pagination.limit=${limit}&pagination.offset=${offset}&orderBy=ORDER_BY_DESC`
+      )
     )
-    const data = response.data
-    const result: CosmosPagedSendTxsResponse = {
-      ...data,
-      txs:
-        data.txs?.map((tx) => ({
-          ...tx,
-          tx: {
-            ...tx.tx,
-            value: {
-              ...tx.tx.value,
-              msg: tx.tx.value.msg.filter((msg) => msg.type === 'cosmos-sdk/MsgSend') as any
-            }
-          }
-        })) ?? []
-    }
 
-    return result
+    return response.data
   }
 
   public async fetchNodeInfo(): Promise<CosmosNodeInfo> {
