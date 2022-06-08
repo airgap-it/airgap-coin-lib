@@ -11,7 +11,6 @@ import { SCALEType } from '../../../common/data/scale/type/SCALEType'
 import { SubstrateNetwork } from '../../../SubstrateNetwork'
 
 import { MoonbeamBond } from './MoonbeamBond'
-import { MoonbeamPendingDelegationRequests } from './MoonbeamPendingDelegationRequests'
 
 export enum MoonbeamDelegatorStatusRaw {
   ACTIVE = 0,
@@ -101,17 +100,17 @@ export class MoonbeamDelegator {
     const id = decoder.decodeNextAccountId(20)
     const delegations = decoder.decodeNextArray((_, runtimeVersion, hex) => MoonbeamBond.decode(runtimeVersion, hex))
     const total = decoder.decodeNextInt(128)
-    const requests = decoder.decodeNextObject((_, runtimeVersion, hex) => MoonbeamPendingDelegationRequests.decode(runtimeVersion, hex))
+    const lessTotal = decoder.decodeNextInt(128)
     const status = decoder.decodeNextObject(MoonbeamDelegatorStatus.decode)
 
-    return new MoonbeamDelegator(id.decoded, delegations.decoded, total.decoded, requests.decoded, status.decoded)
+    return new MoonbeamDelegator(id.decoded, delegations.decoded, total.decoded, lessTotal.decoded, status.decoded)
   }
 
   private constructor(
     public readonly id: SCALEAccountId<SubstrateNetwork.MOONBEAM>,
     public readonly delegations: SCALEArray<MoonbeamBond>,
     public readonly total: SCALEInt,
-    public readonly requests: MoonbeamPendingDelegationRequests,
+    public readonly lessTotal: SCALEInt,
     public readonly status: MoonbeamDelegatorStatus
   ) {}
 }

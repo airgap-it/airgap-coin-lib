@@ -6,6 +6,7 @@ import { SubstrateNodeClient } from '../../common/node/SubstrateNodeClient'
 import { SubstrateNetwork } from '../../SubstrateNetwork'
 import { MoonbeamAddress } from '../data/account/MoonbeamAddress'
 import { MoonbeamCandidateMetadata } from '../data/staking/MoonbeamCandidateMetadata'
+import { MoonbeamDelegationScheduledRequests } from '../data/staking/MoonbeamDelegationScheduledRequests'
 import { MoonbeamDelegator } from '../data/staking/MoonbeamDelegator'
 import { MoonbeamRoundInfo } from '../data/staking/MoonbeamRoundInfo'
 
@@ -29,6 +30,12 @@ export class MoonbeamNodeClient extends SubstrateNodeClient<SubstrateNetwork.MOO
   public async getDelegatorState(address: MoonbeamAddress): Promise<MoonbeamDelegator | undefined> {
     return this.fromStorage('ParachainStaking', 'DelegatorState', SCALEAccountId.from(address, this.network)).then((item) =>
       item ? MoonbeamDelegator.decode(this.runtimeVersion, item) : undefined
+    )
+  }
+
+  public async getDelegationScheduledRequests(address: MoonbeamAddress): Promise<MoonbeamDelegationScheduledRequests | undefined> {
+    return this.fromStorage('ParachainStaking', 'DelegationScheduledRequests', SCALEAccountId.from(address, this.network)).then((item) =>
+      item ? MoonbeamDelegationScheduledRequests.decode(this.runtimeVersion, item) : undefined
     )
   }
 
