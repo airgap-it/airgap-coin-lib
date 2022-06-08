@@ -1,5 +1,5 @@
 import { RPCBody } from '../../../../data/RPCBody'
-import axios, { AxiosError } from '../../../../dependencies/src/axios-0.19.0'
+import axios, { AxiosError, AxiosResponse } from '../../../../dependencies/src/axios-0.19.0'
 import BigNumber from '../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { Cache } from '../../../../utils/cache'
 import { NetworkError } from '../../../../errors'
@@ -53,6 +53,7 @@ interface ConnectionConfig {
 }
 
 const CACHE_DEFAULT_EXPIRATION_TIME = 3000 // 3s
+const MAX_RETRIES = 3
 
 export class SubstrateNodeClient<Network extends SubstrateNetwork> {
   protected metadata: MetadataDecorator | undefined
@@ -193,9 +194,12 @@ export class SubstrateNodeClient<Network extends SubstrateNetwork> {
     eraIndex: number,
     address: SubstrateCompatAddressType[Network]
   ): Promise<SubstrateExposure<Network> | null> {
-    return this.fromStorage('Staking', 'ErasStakers', SCALEInt.from(eraIndex, 32), SCALEAccountId.from(address, this.network)).then(
-      (item) => (item ? SubstrateExposure.decode(this.network, this.runtimeVersion, item) : null)
-    )
+    return this.fromStorage(
+      'Staking',
+      'ErasStakers',
+      SCALEInt.from(eraIndex, 32),
+      SCALEAccountId.from(address, this.network)
+    ).then((item) => (item ? SubstrateExposure.decode(this.network, this.runtimeVersion, item) : null))
   }
 
   public async getElectionStatus(): Promise<SubstrateEraElectionStatus | null> {
@@ -242,9 +246,12 @@ export class SubstrateNodeClient<Network extends SubstrateNetwork> {
   }
 
   public async getValidatorPrefs(eraIndex: number, address: SubstrateCompatAddressType[Network]): Promise<SubstrateValidatorPrefs | null> {
-    return this.fromStorage('Staking', 'ErasValidatorPrefs', SCALEInt.from(eraIndex, 32), SCALEAccountId.from(address, this.network)).then(
-      (item) => (item ? SubstrateValidatorPrefs.decode(this.network, this.runtimeVersion, item) : null)
-    )
+    return this.fromStorage(
+      'Staking',
+      'ErasValidatorPrefs',
+      SCALEInt.from(eraIndex, 32),
+      SCALEAccountId.from(address, this.network)
+    ).then((item) => (item ? SubstrateValidatorPrefs.decode(this.network, this.runtimeVersion, item) : null))
   }
 
   public async getExpectedEraDuration(): Promise<BigNumber | null> {
@@ -372,25 +379,41 @@ export class SubstrateNodeClient<Network extends SubstrateNetwork> {
     const key = `${endpoint}$${params.join('')}`
 
     return this.cache.get(key).catch(() => {
-      const promise = axios
-        .post(this.baseURL, new RPCBody(endpoint, params.map(addHexPrefix)))
-        .then((response) => {
-          const data = response.data
-          if (data.error) {
-            throw data.error
-          }
-
-          return data.result
-        })
-        .catch((error) => {
-          if (typeof error === 'string') {
-            throw new NetworkError(Domain.SUBSTRATE, {}, error)
-          } else {
-            throw new NetworkError(Domain.SUBSTRATE, error as AxiosError)
-          }
-        })
-
+      const promise = this.sendRepeat(endpoint, params)
       return this.cache.save(key, promise, { cacheValue: config.allowCache })
     })
+  }
+
+  private async sendRepeat(endpoint: string, params: string[], attempts: number = 0): Promise<any> {
+    const handleResponse = (response: AxiosResponse<any>) => {
+      const data = response.data
+      if (data.error) {
+        throw data.error
+      }
+
+      return data.result
+    }
+
+    const handleAxiosError = async (error: AxiosError) => {
+      if (error.response?.status === 500 && attempts < MAX_RETRIES) {
+        return await this.sendRepeat(endpoint, params, attempts + 1)
+      } else {
+        throw new NetworkError(Domain.SUBSTRATE, error)
+      }
+    }
+
+    const handleError = async (error: any) => {
+      if (typeof error === 'string') {
+        throw new NetworkError(Domain.SUBSTRATE, {}, error)
+      } else {
+        const axiosError = error as AxiosError
+        return await handleAxiosError(axiosError)
+      }
+    }
+
+    return axios
+      .post(this.baseURL, new RPCBody(endpoint, params.map(addHexPrefix)))
+      .then(handleResponse)
+      .catch(handleError)
   }
 }
