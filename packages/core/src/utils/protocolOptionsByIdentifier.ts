@@ -12,6 +12,7 @@ import { MoonbaseProtocolNetwork, MoonbaseProtocolOptions } from '../protocols/s
 import { MoonbeamProtocolNetwork, MoonbeamProtocolOptions } from '../protocols/substrate/moonbeam/MoonbeamProtocolOptions'
 import { MoonriverProtocolNetwork, MoonriverProtocolOptions } from '../protocols/substrate/moonbeam/moonriver/MoonriverProtocolOptions'
 import { PolkadotProtocolNetwork, PolkadotProtocolOptions } from '../protocols/substrate/polkadot/PolkadotProtocolOptions'
+import { TezosBTCTezProtocolConfig } from '../protocols/tezos/fa/TezosBTCtez'
 import { TezosCTezProtocolConfig } from '../protocols/tezos/fa/TezosCTez'
 import { TezosDOGAProtocolConfig } from '../protocols/tezos/fa/TezosDOGA'
 import {
@@ -152,6 +153,11 @@ const getProtocolOptionsByIdentifier: (identifier: ProtocolSymbols, network?: Pr
       return new TezosFAProtocolOptions(
         network ? (network as TezosProtocolNetwork) : new TezosProtocolNetwork(),
         new TezosDOGAProtocolConfig()
+      )
+    case SubProtocolSymbols.XTZ_BTC_TEZ:
+      return new TezosFAProtocolOptions(
+        network ? (network as TezosProtocolNetwork) : new TezosProtocolNetwork(),
+        new TezosBTCTezProtocolConfig()
       )
     default:
       // Maybe we get an identifier of a sub-protocol that is not in the known list. In that case, get the options of the parent

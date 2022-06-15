@@ -160,7 +160,7 @@ const SELF_BOND_REQUIREMENT: number = 0.0825
 export enum TezosNetwork {
   MAINNET = 'mainnet',
   ITHACANET = 'ithacanet',
-  HANGZHOUNET = 'hangzhounet'
+  JAKARTANET = 'jakartanet'
 }
 
 export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateProtocol {
@@ -641,9 +641,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       .minus(hasReveal ? this.revealFee : 0)
       .div(hasReveal ? estimated.contents.length - 1 : estimated.contents.length)
 
-    const feeStepFactor = new BigNumber(0.1)
-    const lowFee = estimatedFee.minus(estimatedFee.times(feeStepFactor).integerValue(BigNumber.ROUND_FLOOR))
-    const mediumFee = estimatedFee
+    const feeStepFactor = new BigNumber(0.2)
+    const lowFee = estimatedFee
+    const mediumFee = lowFee.plus(lowFee.times(feeStepFactor).integerValue(BigNumber.ROUND_FLOOR))
     const highFee = mediumFee.plus(mediumFee.times(feeStepFactor).integerValue(BigNumber.ROUND_FLOOR))
 
     return {
@@ -1614,13 +1614,13 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   private static readonly BLOCKS_PER_CYCLE: { [key in TezosNetwork]: number[] } = {
     [TezosNetwork.MAINNET]: [4096, 8192],
     [TezosNetwork.ITHACANET]: [4096],
-    [TezosNetwork.HANGZHOUNET]: [4096]
+    [TezosNetwork.JAKARTANET]: [4096]
   }
 
   private static readonly TIME_BETWEEN_BLOCKS: { [key in TezosNetwork]: number[] } = {
     [TezosNetwork.MAINNET]: [60, 30],
     [TezosNetwork.ITHACANET]: [30],
-    [TezosNetwork.HANGZHOUNET]: [30]
+    [TezosNetwork.JAKARTANET]: [30]
   }
 
   public timeIntervalBetweenCycles(fromCycle: number, toCycle: number): number {
