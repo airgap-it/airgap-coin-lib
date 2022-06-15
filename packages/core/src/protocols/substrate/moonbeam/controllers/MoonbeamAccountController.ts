@@ -13,7 +13,11 @@ import { MoonbeamAddress } from '../data/account/MoonbeamAddress'
 import { MoonbeamCollatorStatus } from '../data/staking/MoonbeamCandidateMetadata'
 import { MoonbeamCollatorDetails } from '../data/staking/MoonbeamCollatorDetails'
 import { MoonbeamDelegationDetails } from '../data/staking/MoonbeamDelegationDetails'
-import { MoonbeamDelegationChange, MoonbeamDelegationRequest } from '../data/staking/MoonbeamDelegationRequest'
+import {
+  MoonbeamDelegationActionRaw,
+  MoonbeamDelegationRequest,
+  MoonbeamDelegationScheduledRequests
+} from '../data/staking/MoonbeamDelegationScheduledRequests'
 import { MoonbeamDelegator, MoonbeamDelegatorStatusLeaving, MoonbeamDelegatorStatusRaw } from '../data/staking/MoonbeamDelegator'
 import { MoonbeamDelegatorDetails } from '../data/staking/MoonbeamDelegatorDetails'
 import { MoonbeamStakingActionType } from '../data/staking/MoonbeamStakingActionType'
@@ -137,19 +141,22 @@ export class MoonbeamAccountController extends SubstrateAccountController<Substr
     accountId: SubstrateAccountId<MoonbeamAddress>,
     collator: SubstrateAccountId<MoonbeamAddress>
   ): Promise<MoonbeamDelegationDetails> {
-    const address = MoonbeamAddress.from(accountId)
+    const delegatorAddress = MoonbeamAddress.from(accountId)
+    const collatorAddress = MoonbeamAddress.from(collator)
+
     const results = await Promise.all([
-      this.getBalance(address),
-      this.nodeClient.getDelegatorState(address),
+      this.getBalance(delegatorAddress),
+      this.nodeClient.getDelegatorState(delegatorAddress),
       this.getCollatorDetails(collator),
-      this.nodeClient.getRound(),
-      this.nodeClient.getDefaultBlocksPerRound()
+      this.nodeClient.getDelegationScheduledRequests(collatorAddress),
+      this.nodeClient.getRound()
     ])
 
     const balance = results[0]
     const delegatorState = results[1]
     const collatorDetails = results[2]
-    const currentRound = results[3]?.current
+    const delegationScheduledRequests = results[3]
+    const currentRound = results[4]?.current
 
     if (!balance || !collatorDetails) {
       return Promise.reject('Could not fetch delegation details.')
@@ -169,17 +176,17 @@ export class MoonbeamAccountController extends SubstrateAccountController<Substr
     }
 
     const delegatorDetails = {
-      address: address.getValue(),
+      address: delegatorAddress.getValue(),
       balance: balance.toString(),
       totalBond: totalBond.toString(),
       delegatees: delegatorState?.delegations.elements.map((bond) => bond.owner.asAddress()) ?? [],
-      availableActions: await this.getStakingActions(delegatorState, collatorDetails),
+      availableActions: await this.getStakingActions(delegatorState, collatorDetails, delegationScheduledRequests),
       status
     }
 
-    const changeRequest = delegatorState?.requests.requests.elements.find(
-      (request) => request.first.asAddress() === collatorDetails.address
-    )?.second
+    const changeRequest = delegationScheduledRequests?.requests.elements.find(
+      (request) => request.delegator.asAddress() === delegatorDetails.address
+    )
 
     return {
       delegatorDetails,
@@ -187,8 +194,8 @@ export class MoonbeamAccountController extends SubstrateAccountController<Substr
       bond: bond.toString(),
       pendingRequest: changeRequest
         ? {
-            type: changeRequest.action.value === MoonbeamDelegationChange.REVOKE ? 'revoke' : 'decrease',
-            amount: changeRequest.amount.toString(),
+            type: changeRequest.action.type.value === MoonbeamDelegationActionRaw.REVOKE ? 'revoke' : 'decrease',
+            amount: changeRequest.action.amount.toString(),
             executableIn: currentRound
               ? BigNumber.max(changeRequest.whenExecutable.value.minus(currentRound.value), 0).toNumber()
               : undefined
@@ -197,19 +204,20 @@ export class MoonbeamAccountController extends SubstrateAccountController<Substr
     }
   }
 
-  private async getStakingActions(delegator?: MoonbeamDelegator, collator?: MoonbeamCollatorDetails): Promise<DelegatorAction[]> {
+  private async getStakingActions(
+    delegator?: MoonbeamDelegator,
+    collator?: MoonbeamCollatorDetails,
+    delegationScheduledRequests?: MoonbeamDelegationScheduledRequests
+  ): Promise<DelegatorAction[]> {
     const actions: DelegatorAction[] = []
 
-    const scheduledLeaving = delegator
-      ? delegator.status instanceof MoonbeamDelegatorStatusLeaving
-        ? delegator.status.roundIndex.value
-        : undefined
-      : undefined
+    const scheduledLeaving = delegator ? await this.getScheduledLeaving(delegator) : undefined
 
-    const scheduledRequests =
-      delegator && collator
-        ? delegator.requests.requests.elements.filter((value) => value.first.asAddress() === collator.address).map((value) => value.second)
+    const scheduledRequests = delegationScheduledRequests
+      ? delegator && collator
+        ? delegationScheduledRequests.requests.elements.filter((value) => value.delegator.asAddress() === delegator.id.asAddress())
         : []
+      : undefined
 
     const delegations = delegator?.delegations.elements ?? []
     const maxDelegations = await this.nodeClient.getMaxDelegationsPerDelegator()
@@ -221,11 +229,11 @@ export class MoonbeamAccountController extends SubstrateAccountController<Substr
 
     const currentRound = scheduledLeaving || scheduledRequests ? (await this.nodeClient.getRound())?.current.value : undefined
 
-    if (canDelegateToCollator && !scheduledLeaving && scheduledRequests.length === 0) {
+    if (canDelegateToCollator && !scheduledLeaving && scheduledRequests?.length === 0) {
       actions.push(...this.getUndelegatedActions())
     }
 
-    if (delegations.length > 0 && !scheduledLeaving && scheduledRequests.length === 0) {
+    if (delegations.length > 0 && !scheduledLeaving && scheduledRequests?.length === 0) {
       actions.push(...this.getDelegatedActions(isDelegatingCollator))
     }
 
@@ -233,11 +241,44 @@ export class MoonbeamAccountController extends SubstrateAccountController<Substr
       actions.push(...(await this.getLeavingActions(currentRound, scheduledLeaving)))
     }
 
-    if (scheduledRequests.length > 0 && currentRound) {
+    if (scheduledRequests && scheduledRequests.length > 0 && currentRound) {
       actions.push(...(await this.getRequestActions(currentRound, scheduledRequests)))
     }
 
     return actions
+  }
+
+  private async getScheduledLeaving(delegator: MoonbeamDelegator): Promise<BigNumber | undefined> {
+    if (delegator.status instanceof MoonbeamDelegatorStatusLeaving) {
+      return delegator.status.roundIndex.value
+    }
+
+    const allDelegationScheduledRequests = await Promise.all(
+      delegator.delegations.elements.map((bond) => {
+        const collator = MoonbeamAddress.from(bond.owner.address)
+        return this.nodeClient.getDelegationScheduledRequests(collator)
+      })
+    )
+
+    return allDelegationScheduledRequests.reduce<BigNumber | undefined>((acc, requests) => {
+      if (acc === undefined) {
+        return undefined
+      }
+
+      const whenExecutable = requests?.requests.elements.find((request) => {
+        request.delegator.asAddress() === delegator.id.asAddress() && request.action.type.value === MoonbeamDelegationActionRaw.REVOKE
+      })?.whenExecutable.value
+
+      if (whenExecutable === undefined) {
+        return undefined
+      }
+
+      if (acc.eq(whenExecutable) || acc.eq(-1)) {
+        return whenExecutable
+      } else {
+        return undefined
+      }
+    }, new BigNumber(-1))
   }
 
   private getUndelegatedActions(): DelegatorAction[] {
@@ -295,11 +336,11 @@ export class MoonbeamAccountController extends SubstrateAccountController<Substr
   private async getRequestActions(currentRound: BigNumber, scheduledRequests: MoonbeamDelegationRequest[]): Promise<DelegatorAction[]> {
     const actions = await Promise.all(
       scheduledRequests.map((request) => {
-        if (request.action.value === MoonbeamDelegationChange.REVOKE) {
+        if (request.action.type.value === MoonbeamDelegationActionRaw.REVOKE) {
           return this.getRevokeRequestActions(currentRound, request)
         }
 
-        if (request.action.value === MoonbeamDelegationChange.DECREASE) {
+        if (request.action.type.value === MoonbeamDelegationActionRaw.DECREASE) {
           return this.getDecreaseRequestActions(currentRound, request)
         }
 

@@ -31,7 +31,14 @@ export const supportedStorageEntries = {
   System: ['Account'] as const,
 
   // Moonbeam
-  ParachainStaking: ['CollatorCommission', 'CandidateInfo', 'DelegatorState', 'Round', 'SelectedCandidates'] as const
+  ParachainStaking: [
+    'CollatorCommission',
+    'CandidateInfo',
+    'DelegatorState',
+    'Round',
+    'SelectedCandidates',
+    'DelegationScheduledRequests'
+  ] as const
 }
 
 export const supportedCalls = {

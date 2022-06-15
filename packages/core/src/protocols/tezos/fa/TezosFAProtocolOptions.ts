@@ -66,7 +66,7 @@ export class TezosBTCProtocolConfig extends TezosFAProtocolConfig {
 export class TezosETHtzProtocolConfig extends TezosFAProtocolConfig {
   constructor(
     symbol: string = 'ETHtz',
-    name: string = 'ETH Tezos',
+    name: string = 'ETHtez',
     marketSymbol: string = 'ethtz',
     identifier: ProtocolSymbols = SubProtocolSymbols.XTZ_ETHTZ,
     contractAddress: string = TezosETHtzDetails.CONTRACT_ADDRESS,

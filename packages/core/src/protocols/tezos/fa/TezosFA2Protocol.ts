@@ -51,8 +51,8 @@ export class TezosFA2Protocol extends TezosFAProtocol {
       [TezosNetwork.ITHACANET]: {
         [TezosFA2ContractEntrypoint.BALANCE]: 'KT1LoNd55CVNnyRdoZa723t9YUC2rRiedmWu'
       },
-      [TezosNetwork.HANGZHOUNET]: {
-        [TezosFA2ContractEntrypoint.BALANCE]: 'KT1G4Vo8dzkyNgguxzniHfdXD2wmoAZEaFmg'
+      [TezosNetwork.JAKARTANET]: {
+        [TezosFA2ContractEntrypoint.BALANCE]: ''
       }
     }
   }
