@@ -30,6 +30,7 @@ import { TezosPlentyProtocolConfig } from '../protocols/tezos/fa/TezosPlanty'
 import { TezosQUIPUProtocolConfig } from '../protocols/tezos/fa/TezosQUIPU'
 import { TezosUBTCProtocolConfig } from '../protocols/tezos/fa/TezosUBTC'
 import { TezosUDEFIProtocolConfig } from '../protocols/tezos/fa/TezosUDEFI'
+import { TezosUSDTProtocolConfig } from '../protocols/tezos/fa/TezosUSDT'
 import { TezosWRAPProtocolConfig } from '../protocols/tezos/fa/TezosWRAP'
 import { TezosSaplingProtocolOptions, TezosShieldedTezProtocolConfig } from '../protocols/tezos/sapling/TezosSaplingProtocolOptions'
 import { TezosProtocolNetwork, TezosProtocolOptions } from '../protocols/tezos/TezosProtocolOptions'
@@ -118,6 +119,11 @@ const getProtocolOptionsByIdentifier: (identifier: ProtocolSymbols, network?: Pr
       return new TezosFAProtocolOptions(
         network ? (network as TezosProtocolNetwork) : new TezosProtocolNetwork(),
         new TezosUSDProtocolConfig()
+      )
+    case SubProtocolSymbols.XTZ_USDT:
+      return new TezosFAProtocolOptions(
+        network ? (network as TezosProtocolNetwork) : new TezosProtocolNetwork(),
+        new TezosUSDTProtocolConfig()
       )
     case SubProtocolSymbols.XTZ_STKR:
       return new TezosFAProtocolOptions(

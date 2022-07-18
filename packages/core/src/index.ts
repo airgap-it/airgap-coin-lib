@@ -46,6 +46,7 @@ import { TezosFAProtocol } from './protocols/tezos/fa/TezosFAProtocol'
 import { TezosStaker } from './protocols/tezos/fa/TezosStaker'
 import { TezosKtProtocol } from './protocols/tezos/kt/TezosKtProtocol'
 import { TezosUSD } from './protocols/tezos/fa/TezosUSD'
+import { TezosUSDT, TezosUSDTProtocolConfig } from './protocols/tezos/fa/TezosUSDT'
 import {
   BakerInfo,
   DelegationInfo,
@@ -420,6 +421,7 @@ export {
   TezosBTC,
   TezosStaker,
   TezosUSD,
+  TezosUSDT,
   TezosETHtz as TezosETH,
   TezosUUSD,
   TezosYOU,
@@ -456,6 +458,7 @@ export {
   TezosKolibriUSDProtocolConfig,
   TezosStakerProtocolConfig,
   TezosUSDProtocolConfig,
+  TezosUSDTProtocolConfig,
   TezosCTezProtocolConfig,
   TezosPlentyProtocolConfig,
   TezosUDEFIProtocolConfig,
