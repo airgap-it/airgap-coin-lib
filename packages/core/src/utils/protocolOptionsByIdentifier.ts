@@ -28,6 +28,7 @@ import {
 } from '../protocols/tezos/fa/TezosFAProtocolOptions'
 import { TezosPlentyProtocolConfig } from '../protocols/tezos/fa/TezosPlanty'
 import { TezosQUIPUProtocolConfig } from '../protocols/tezos/fa/TezosQUIPU'
+import { TezosSIRSProtocolConfig } from '../protocols/tezos/fa/TezosSIRS'
 import { TezosUBTCProtocolConfig } from '../protocols/tezos/fa/TezosUBTC'
 import { TezosUDEFIProtocolConfig } from '../protocols/tezos/fa/TezosUDEFI'
 import { TezosUSDTProtocolConfig } from '../protocols/tezos/fa/TezosUSDT'
@@ -159,6 +160,11 @@ const getProtocolOptionsByIdentifier: (identifier: ProtocolSymbols, network?: Pr
       return new TezosFAProtocolOptions(
         network ? (network as TezosProtocolNetwork) : new TezosProtocolNetwork(),
         new TezosDOGAProtocolConfig()
+      )
+    case SubProtocolSymbols.XTZ_SIRS:
+      return new TezosFAProtocolOptions(
+        network ? (network as TezosProtocolNetwork) : new TezosProtocolNetwork(),
+        new TezosSIRSProtocolConfig()
       )
     case SubProtocolSymbols.XTZ_BTC_TEZ:
       return new TezosFAProtocolOptions(
