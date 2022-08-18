@@ -263,6 +263,7 @@ import { ShidenProtocol } from './protocols/substrate/astar/shiden/ShidenProtoco
 import { TezosUBTC, TezosUBTCProtocolConfig } from './protocols/tezos/fa/TezosUBTC'
 import { TezosDOGA, TezosDOGAProtocolConfig } from './protocols/tezos/fa/TezosDOGA'
 import { TezosBTCTez, TezosBTCTezProtocolConfig } from './protocols/tezos/fa/TezosBTCtez'
+import { TezosSIRS, TezosSIRSProtocolConfig } from './protocols/tezos/fa/TezosSIRS'
 
 // tslint:enable:ordered-imports
 
@@ -435,6 +436,7 @@ export {
   TezosQUIPU,
   TezosDOGA,
   TezosBTCTez,
+  TezosSIRS,
   TezosTransactionResult,
   TezosTransactionCursor,
   BakerInfo,
@@ -466,6 +468,7 @@ export {
   TezosWRAPProtocolConfig,
   TezosQUIPUProtocolConfig,
   TezosDOGAProtocolConfig,
+  TezosSIRSProtocolConfig,
   TezosBTCTezProtocolConfig,
   TezosFAProtocolOptions,
   TezosFA2ProtocolOptions,
