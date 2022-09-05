@@ -1,4 +1,5 @@
 import * as sapling from '@airgap/sapling-wasm'
+import { TezosUtils } from '../../../..'
 
 import BigNumber from '../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { IAirGapTransaction } from '../../../../interfaces/IAirGapTransaction'
@@ -6,11 +7,13 @@ import { flattenArray } from '../../../../utils/array'
 import { stripHexPrefix } from '../../../../utils/hex'
 import { ProtocolNetwork } from '../../../../utils/ProtocolNetwork'
 import { ProtocolSymbols } from '../../../../utils/ProtocolSymbols'
+import { MichelsonType } from '../../types/michelson/MichelsonType'
+import { MichelsonBytes } from '../../types/michelson/primitives/MichelsonBytes'
+import { MichelsonString } from '../../types/michelson/primitives/MichelsonString'
 import { TezosSaplingCiphertext } from '../../types/sapling/TezosSaplingCiphertext'
 import { TezosSaplingInput } from '../../types/sapling/TezosSaplingInput'
 import { TezosSaplingOutput } from '../../types/sapling/TezosSaplingOutput'
 import { TezosSaplingOutputDescription, TezosSaplingTransaction } from '../../types/sapling/TezosSaplingTransaction'
-import { TezosSaplingWrappedTransaction } from '../../types/sapling/TezosSaplingWrappedTransaction'
 import { TezosSaplingAddress } from '../TezosSaplingAddress'
 import { TezosSaplingCryptoClient } from '../TezosSaplingCryptoClient'
 
@@ -28,67 +31,67 @@ export class TezosSaplingBookkeeper {
     sender: TezosSaplingAddress,
     inputs: TezosSaplingInput[],
     outputs: TezosSaplingOutput[],
-    wrappedTransactions: TezosSaplingWrappedTransaction[]
+    unshieldTarget?: string
   ): IAirGapTransaction[] {
-    const outputsDetails: IAirGapTransaction[] = outputs.map((out: TezosSaplingOutput) => ({
-      from: [sender.getValue()],
-      to: [out.address],
-      isInbound: false,
-      amount: out.value,
-      fee: '0',
-      protocolIdentifier: this.identifier,
-      network: this.network
-    }))
+    if (unshieldTarget === undefined) {
+      return outputs.map((out: TezosSaplingOutput) => ({
+        from: [sender.getValue()],
+        to: [out.address],
+        isInbound: false,
+        amount: out.value,
+        fee: '0',
+        protocolIdentifier: this.identifier,
+        network: this.network
+      }))
+    } else {
+      const amount: BigNumber = this.sumNotes(inputs).minus(this.sumNotes(outputs))
 
-    const unshieldDetails: IAirGapTransaction[] = wrappedTransactions
-      .map((wrappedTransaction: TezosSaplingWrappedTransaction) => {
-        if (wrappedTransaction.unshieldTarget === undefined) {
-          return undefined
-        }
-
-        const amount: BigNumber = this.sumNotes(inputs).minus(this.sumNotes(outputs))
-
-        return {
+      return [
+        {
           from: [sender.getValue()],
-          to: [wrappedTransaction.unshieldTarget.getValue()],
+          to: [unshieldTarget],
           isInbound: false,
           amount: amount.toFixed(),
           fee: '0',
           protocolIdentifier: this.identifier,
           network: this.network
         }
-      })
-      .filter((details: IAirGapTransaction | undefined) => details !== undefined) as IAirGapTransaction[]
-
-    return outputsDetails.concat(unshieldDetails)
+      ]
+    }
   }
 
-  public async getWrappedTransactionsPartialDetails(
-    wrappedTransactions: TezosSaplingWrappedTransaction[],
-    knownViewingKeys: string[] = []
-  ): Promise<Partial<IAirGapTransaction>[]> {
+  public async getTransactionsPartialDetails(txs: string[], knownViewingKeys: string[] = []): Promise<Partial<IAirGapTransaction>[]> {
     const partials: Partial<IAirGapTransaction>[][] = await Promise.all(
-      wrappedTransactions.map(async (wrappedTransaction: TezosSaplingWrappedTransaction) => {
-        const signedBuffer = Buffer.isBuffer(wrappedTransaction.signed)
-          ? wrappedTransaction.signed
-          : Buffer.from(wrappedTransaction.signed, 'hex')
+      txs.map(async (tx: string) => {
+        const signedBuffer: Buffer = Buffer.isBuffer(tx) ? tx : Buffer.from(tx, 'hex')
         const transaction: TezosSaplingTransaction = this.encoder.decodeTransaction(signedBuffer)
         const [from, details]: [string | undefined, Partial<IAirGapTransaction>[]] = await this.getTransactionPartialDetails(
           transaction,
           knownViewingKeys
         )
 
-        if (wrappedTransaction.unshieldTarget !== undefined) {
-          let unshieldDetails: Partial<IAirGapTransaction> = {
-            to: [wrappedTransaction.unshieldTarget.getValue()],
-            amount: transaction.balance.toFixed()
+        if (transaction.boundData.length > 0) {
+          const boundDataMichelson: MichelsonType = TezosUtils.unpackMichelsonType(transaction.boundData)
+
+          let unshieldTarget: string | undefined
+          if (boundDataMichelson instanceof MichelsonBytes) {
+            unshieldTarget = TezosUtils.parseTzAddress(boundDataMichelson.value)
+          } else if (boundDataMichelson instanceof MichelsonString) {
+            unshieldTarget = boundDataMichelson.value
           }
 
-          if (from !== undefined) {
-            unshieldDetails = Object.assign(unshieldDetails, { from: [(await TezosSaplingAddress.fromViewingKey(from)).getValue()] })
-          }
+          if (unshieldTarget !== undefined) {
+            let unshieldDetails: Partial<IAirGapTransaction> = {
+              to: [unshieldTarget],
+              amount: transaction.balance.toFixed()
+            }
 
-          details.push(unshieldDetails)
+            if (from !== undefined) {
+              unshieldDetails = Object.assign(unshieldDetails, { from: [(await TezosSaplingAddress.fromViewingKey(from)).getValue()] })
+            }
+
+            details.push(unshieldDetails)
+          }
         }
 
         return details

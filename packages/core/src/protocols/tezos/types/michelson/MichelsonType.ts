@@ -12,7 +12,7 @@ export abstract class MichelsonType {
     // default implementation, no action required
   }
 
-  public encode(): string {
+  public encode(): Buffer {
     throw new UnsupportedError(Domain.TEZOS, 'Encoding for this Michelson type is not supported')
   }
 

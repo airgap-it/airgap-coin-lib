@@ -3,6 +3,7 @@ import { SaplingPartialOutputDescription, SaplingSpendDescription, SaplingUnsign
 
 import BigNumber from '../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { blake2bAsBytes } from '../../../../utils/blake2b'
+import { hexToBytes } from '../../../../utils/hex'
 import { TezosSaplingCiphertext } from '../../types/sapling/TezosSaplingCiphertext'
 import { TezosSaplingInput } from '../../types/sapling/TezosSaplingInput'
 import { TezosSaplingOutput } from '../../types/sapling/TezosSaplingOutput'
@@ -32,6 +33,7 @@ export class TezosSaplingForger {
     outputs: TezosSaplingOutput[],
     merkleTree: TezosSaplingStateTree,
     antiReplay: string,
+    boundData: string = '',
     spendingKey?: Buffer
   ): Promise<TezosSaplingTransaction> {
     return this.withProvingContext(async (context: number) => {
@@ -44,7 +46,7 @@ export class TezosSaplingForger {
       const outputDescriptions: TezosSaplingOutputDescription[] = await this.forgeSaplingOutputs(context, viewingKey, outputs)
 
       const balance: BigNumber = this.calculateTransactionBalance(inputs, outputs)
-      const sighash: Buffer = this.createTransactionSighash(spendDescriptions, outputDescriptions, antiReplay)
+      const sighash: Buffer = this.createTransactionSighash(spendDescriptions, outputDescriptions, antiReplay, boundData)
       const bindingSignature: Buffer = await this.createBindingSignature(context, balance.toFixed(), sighash)
 
       return {
@@ -52,7 +54,8 @@ export class TezosSaplingForger {
         outputDescriptions,
         bindingSignature,
         balance,
-        root: merkleTree.root
+        root: merkleTree.root,
+        boundData
       }
     })
   }
@@ -71,7 +74,9 @@ export class TezosSaplingForger {
       const unsignedSpendDescription: SaplingUnsignedSpendDescription = await this.prepareSpendDescription(
         context,
         spendingKey,
-        (await TezosSaplingAddress.fromValue(input.address)).raw,
+        (
+          await TezosSaplingAddress.fromValue(input.address)
+        ).raw,
         input.rcm,
         ar,
         input.value,
@@ -115,7 +120,9 @@ export class TezosSaplingForger {
       const esk: Buffer = await sapling.randR()
       const outputDescription: SaplingPartialOutputDescription = await this.preparePartialOutputDescription(
         context,
-        (await TezosSaplingAddress.fromValue(output.address)).raw,
+        (
+          await TezosSaplingAddress.fromValue(output.address)
+        ).raw,
         rcm,
         esk,
         output.value
@@ -126,7 +133,7 @@ export class TezosSaplingForger {
         outputDescription,
         rcm,
         esk,
-        new BigNumber(output.value).gt(0) ? viewingKey : undefined
+        output.browsable ? viewingKey : undefined
       )
 
       descriptions.push({
@@ -142,13 +149,16 @@ export class TezosSaplingForger {
   private createTransactionSighash(
     spends: TezosSaplingSpendDescription[],
     outputs: TezosSaplingOutputDescription[],
-    antiReplay: string
+    antiReplay: string,
+    boundData: string
   ): Buffer {
     const spendBytes: Buffer = this.encoder.encodeSpendDescriptions(spends)
     const outputBytes: Buffer = this.encoder.encodeOutputDescriptions(outputs)
 
+    const boundDataBytes: Buffer = hexToBytes(boundData)
+
     return Buffer.from(
-      blake2bAsBytes(Buffer.concat([spendBytes, outputBytes]), 256, {
+      blake2bAsBytes(Buffer.concat([spendBytes, outputBytes, boundDataBytes]), 256, {
         key: Buffer.from(antiReplay)
       })
     )

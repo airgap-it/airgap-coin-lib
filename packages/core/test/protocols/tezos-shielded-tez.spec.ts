@@ -2,12 +2,11 @@ import { expect } from 'chai'
 import { it } from 'mocha'
 import * as sinon from 'sinon'
 
-import { RawTezosTransaction, TezosAddress } from '../../src'
+import { RawTezosTransaction } from '../../src'
 import { TezosContractCall } from '../../src/protocols/tezos/contract/TezosContractCall'
 import { TezosSaplingAddress } from '../../src/protocols/tezos/sapling/TezosSaplingAddress'
 import { TezosTransactionOperation, TezosTransactionParameters } from '../../src/protocols/tezos/types/operations/Transaction'
 import { TezosSaplingTransactionResult } from '../../src/protocols/tezos/types/sapling/TezosSaplingTransactionResult'
-import { TezosSaplingWrappedTransaction } from '../../src/protocols/tezos/types/sapling/TezosSaplingWrappedTransaction'
 import { TezosOperationType } from '../../src/protocols/tezos/types/TezosOperationType'
 
 import { TezosShieldedTezTestProtocolSpec } from './specs/tezos-shielded-tez'
@@ -112,20 +111,17 @@ describe('ICoinProtocol TezosShieldedTez - Custom Tests', () => {
     it('should wrap the sapling transaction in a Tezos operation', async () => {
       const publicKey: string = protocol.tezos.wallet.publicKey
 
-      const saplingTransactions: [TezosSaplingWrappedTransaction[] | string, TezosTransactionParameters][] = [
+      const saplingTransactions: [string[] | string, TezosTransactionParameters][] = [
         [
           [
-            {
-              signed: '00',
-              unshieldTarget: undefined
-            }
+            '0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
           ],
           {
             entrypoint: 'default',
             value: [
               {
-                prim: 'Pair',
-                args: [{ bytes: '00' }, { prim: 'None' }]
+                bytes:
+                  '0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
               }
             ]
           }
@@ -157,21 +153,18 @@ describe('ICoinProtocol TezosShieldedTez - Custom Tests', () => {
     })
 
     it('should prepare contract calls', async () => {
-      const contractCalls: [TezosSaplingWrappedTransaction[], TezosTransactionParameters[]][] = [
+      const contractCalls: [string[], TezosTransactionParameters[]][] = [
         [
           [
-            {
-              signed: '00',
-              unshieldTarget: undefined
-            }
+            '0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
           ],
           [
             {
               entrypoint: 'default',
               value: [
                 {
-                  prim: 'Pair',
-                  args: [{ bytes: '00' }, { prim: 'None' }]
+                  bytes:
+                    '0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
                 }
               ]
             }
@@ -179,63 +172,20 @@ describe('ICoinProtocol TezosShieldedTez - Custom Tests', () => {
         ],
         [
           [
-            {
-              signed: '00',
-              unshieldTarget: await TezosAddress.fromValue('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
-            }
+            '0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+            '0000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
           ],
           [
             {
               entrypoint: 'default',
               value: [
                 {
-                  prim: 'Pair',
-                  args: [
-                    { bytes: '00' },
-                    {
-                      prim: 'Some',
-                      args: [{ string: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L' }]
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        ],
-        [
-          [
-            {
-              signed: '00',
-              unshieldTarget: await TezosAddress.fromValue('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
-            },
-            {
-              signed: '01',
-              unshieldTarget: await TezosAddress.fromValue('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
-            }
-          ],
-          [
-            {
-              entrypoint: 'default',
-              value: [
-                {
-                  prim: 'Pair',
-                  args: [
-                    { bytes: '00' },
-                    {
-                      prim: 'Some',
-                      args: [{ string: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L' }]
-                    }
-                  ]
+                  bytes:
+                    '0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
                 },
                 {
-                  prim: 'Pair',
-                  args: [
-                    { bytes: '01' },
-                    {
-                      prim: 'Some',
-                      args: [{ string: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L' }]
-                    }
-                  ]
+                  bytes:
+                    '0000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
                 }
               ]
             }
@@ -252,22 +202,19 @@ describe('ICoinProtocol TezosShieldedTez - Custom Tests', () => {
     })
 
     it('should parse contract parameters', async () => {
-      const parameters: [TezosTransactionParameters, TezosSaplingWrappedTransaction[]][] = [
+      const parameters: [TezosTransactionParameters, string[]][] = [
         [
           {
             entrypoint: 'default',
             value: [
               {
-                prim: 'Pair',
-                args: [{ bytes: '00' }, { prim: 'None' }]
+                bytes:
+                  '0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
               }
             ]
           },
           [
-            {
-              signed: '00',
-              unshieldTarget: undefined
-            }
+            '0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
           ]
         ],
         [
@@ -275,59 +222,18 @@ describe('ICoinProtocol TezosShieldedTez - Custom Tests', () => {
             entrypoint: 'default',
             value: [
               {
-                prim: 'Pair',
-                args: [
-                  { bytes: '00' },
-                  {
-                    prim: 'Some',
-                    args: [{ string: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L' }]
-                  }
-                ]
-              }
-            ]
-          },
-          [
-            {
-              signed: '00',
-              unshieldTarget: await TezosAddress.fromValue('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
-            }
-          ]
-        ],
-        [
-          {
-            entrypoint: 'default',
-            value: [
-              {
-                prim: 'Pair',
-                args: [
-                  { bytes: '00' },
-                  {
-                    prim: 'Some',
-                    args: [{ string: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L' }]
-                  }
-                ]
+                bytes:
+                  '0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
               },
               {
-                prim: 'Pair',
-                args: [
-                  { bytes: '01' },
-                  {
-                    prim: 'Some',
-                    args: [{ bytes: '0091a9d2b003f19cf5a1f38f04f1000ab482d33176' }]
-                  }
-                ]
+                bytes:
+                  '0000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
               }
             ]
           },
           [
-            {
-              signed: '00',
-              unshieldTarget: await TezosAddress.fromValue('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
-            },
-            {
-              signed: '01',
-              unshieldTarget: await TezosAddress.fromValue('tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L')
-            }
+            '0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+            '0000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
           ]
         ],
         [
@@ -340,7 +246,7 @@ describe('ICoinProtocol TezosShieldedTez - Custom Tests', () => {
       ]
 
       parameters.forEach(async ([parameters, expected]) => {
-        const parsed: TezosSaplingWrappedTransaction[] = await protocol.lib.parseParameters(parameters)
+        const parsed: string[] = await protocol.lib.parseParameters(parameters)
 
         expect(parsed).to.deep.equal(expected)
       })

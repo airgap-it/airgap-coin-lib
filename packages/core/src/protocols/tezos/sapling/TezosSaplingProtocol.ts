@@ -1,15 +1,15 @@
 import * as sapling from '@airgap/sapling-wasm'
 import sodium = require('libsodium-wrappers')
-import { Domain } from '../../..'
+import { Domain, TezosUtils } from '../../..'
 
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { mnemonicToSeed } from '../../../dependencies/src/bip39-2.5.0'
 import { BalanceError, ProtocolErrorType } from '../../../errors'
 import { AirGapTransactionStatus, IAirGapTransaction } from '../../../interfaces/IAirGapTransaction'
+import { RawTezosSaplingTransaction, RawTezosTransaction } from '../../../serializer-v3/types'
 import { SignedTezosTransaction } from '../../../serializer/schemas/definitions/signed-transaction-tezos'
 import { UnsignedTezosTransaction } from '../../../serializer/schemas/definitions/unsigned-transaction-tezos'
 import { UnsignedTezosSaplingTransaction } from '../../../serializer/schemas/definitions/unsigned-transaction-tezos-sapling'
-import { RawTezosSaplingTransaction, RawTezosTransaction } from '../../../serializer/types'
 import { flattenArray } from '../../../utils/array'
 import { ProtocolSymbols } from '../../../utils/ProtocolSymbols'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '../../ICoinProtocol'
@@ -20,6 +20,7 @@ import { TezosContractCall } from '../contract/TezosContractCall'
 import { TezosAddress } from '../TezosAddress'
 import { TezosProtocol } from '../TezosProtocol'
 import { TezosProtocolConfig, TezosProtocolOptions } from '../TezosProtocolOptions'
+import { MichelsonAddress } from '../types/michelson/primitives/MichelsonAddress'
 import { TezosOperation } from '../types/operations/TezosOperation'
 import { TezosTransactionOperation, TezosTransactionParameters } from '../types/operations/Transaction'
 import { TezosSaplingCiphertext } from '../types/sapling/TezosSaplingCiphertext'
@@ -30,7 +31,6 @@ import { TezosSaplingStateTree } from '../types/sapling/TezosSaplingStateTree'
 import { TezosSaplingTransaction } from '../types/sapling/TezosSaplingTransaction'
 import { TezosSaplingTransactionCursor } from '../types/sapling/TezosSaplingTransactionCursor'
 import { TezosSaplingTransactionResult } from '../types/sapling/TezosSaplingTransactionResult'
-import { TezosSaplingWrappedTransaction } from '../types/sapling/TezosSaplingWrappedTransaction'
 import { TezosOperationType } from '../types/TezosOperationType'
 import { TezosWrappedOperation } from '../types/TezosWrappedOperation'
 
@@ -44,8 +44,6 @@ import { TezosSaplingForger } from './utils/TezosSaplingForger'
 import { TezosSaplingState } from './utils/TezosSaplingState'
 
 export abstract class TezosSaplingProtocol extends NonExtendedProtocol implements ICoinProtocol {
-  private static readonly TRANSACTION_PLACEHOLDER: string = 'TRANSACTION_PLACEHOLDER'
-
   public readonly symbol: string
   public readonly name: string
   public readonly marketSymbol: string
@@ -108,8 +106,8 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
     this.bookkeeper = new TezosSaplingBookkeeper(this.identifier, this.options.network, this.cryptoClient, this.encoder)
   }
 
-  public abstract prepareContractCalls(transactions: TezosSaplingWrappedTransaction[]): Promise<TezosContractCall[]>
-  public abstract parseParameters(parameters: TezosTransactionParameters): Promise<TezosSaplingWrappedTransaction[]>
+  public abstract prepareContractCalls(transactions: string[]): Promise<TezosContractCall[]>
+  public abstract parseParameters(parameters: TezosTransactionParameters): Promise<string[]>
 
   public async initParameters(spendParams: Buffer, outputParams: Buffer): Promise<void> {
     const externalInitParameters = this.options.config.externalProvider?.initParameters
@@ -241,17 +239,21 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
   public async signWithPrivateKey(privateKey: Buffer, transaction: RawTezosSaplingTransaction): Promise<string> {
     const stateTree: TezosSaplingStateTree = await this.state.getStateTreeFromStateDiff(transaction.stateDiff)
 
+    const boundData: string | undefined =
+      transaction.unshieldTarget && transaction.unshieldTarget.length > 0
+        ? this.createAddressBoundData(transaction.unshieldTarget)
+        : undefined
+
     const forgedTransaction: TezosSaplingTransaction = await this.forger.forgeSaplingTransaction(
       transaction.ins,
       transaction.outs,
       stateTree,
       this.getAntiReplay(transaction.chainId, transaction.contractAddress),
+      boundData,
       privateKey
     )
 
-    const signed: string = this.encoder.encodeTransaction(forgedTransaction).toString('hex')
-
-    return transaction.callParameters.replace(Buffer.from(TezosSaplingProtocol.TRANSACTION_PLACEHOLDER, 'utf-8').toString('hex'), signed)
+    return this.encoder.encodeTransaction(forgedTransaction).toString('hex')
   }
 
   public async getTransactionDetails(
@@ -262,11 +264,10 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
 
     const airGapTxs: IAirGapTransaction[] = []
     if (this.isRawTezosSaplingTransaction(tx)) {
+      const unshieldTarget = tx.unshieldTarget.length > 0 ? tx.unshieldTarget : undefined
       const from: TezosSaplingAddress = await this.getAddressFromPublicKey(transaction.publicKey)
-      const parameters: TezosTransactionParameters = this.contract.parseParameters(tx.callParameters)
-      const wrappedTransactions: TezosSaplingWrappedTransaction[] = await this.parseParameters(parameters)
       const details: IAirGapTransaction[] = this.bookkeeper
-        .getUnsignedTransactionDetails(from, tx.ins, tx.outs, wrappedTransactions)
+        .getUnsignedTransactionDetails(from, tx.ins, tx.outs, unshieldTarget)
         .map((details: IAirGapTransaction) => ({
           ...details,
           extra: {
@@ -280,7 +281,6 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
       airGapTxs.push(...details)
     } else {
       const wrappedOperation: TezosWrappedOperation = await this.tezosProtocol.unforgeUnsignedTezosWrappedOperation(tx.binaryTransaction)
-
       airGapTxs.push(...(await this.getTransactionDetailsFromWrappedOperation(wrappedOperation, data?.knownViewingKeys)))
     }
 
@@ -292,28 +292,45 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
     data?: { knownViewingKeys: string[] }
   ): Promise<IAirGapTransaction[]> {
     const airGapTxs: IAirGapTransaction[] = []
-    if (this.contract.areValidParameters(transaction.transaction)) {
-      const partialDetails: Partial<IAirGapTransaction>[] = await this.getPartialDetailsFromContractParameters(
-        transaction.transaction,
-        data?.knownViewingKeys
-      )
+    const tx = transaction.transaction
+
+    const defaultDetails: IAirGapTransaction = {
+      from: ['Shielded Pool'],
+      to: ['Shielded Pool'],
+      isInbound: false,
+      amount: '0',
+      fee: '0',
+      protocolIdentifier: this.identifier,
+      network: this.options.network
+    }
+
+    if (this.contract.areValidParameters(tx)) {
+      const partialDetails: Partial<IAirGapTransaction>[] = await this.getPartialDetailsFromContractParameters(tx, data?.knownViewingKeys)
 
       airGapTxs.push(
         ...partialDetails.map((partial: Partial<IAirGapTransaction>) => ({
-          from: ['Shielded Pool'],
-          to: ['Shielded Pool'],
-          isInbound: false,
-          amount: '0',
-          fee: '0',
-          protocolIdentifier: this.identifier,
-          network: this.options.network,
+          ...defaultDetails,
           ...partial
         }))
       )
     } else {
-      const wrappedOperation: TezosWrappedOperation = await this.tezosProtocol.unforgeSignedTezosWrappedOperation(transaction.transaction)
+      try {
+        const wrappedOperation: TezosWrappedOperation = await this.tezosProtocol.unforgeSignedTezosWrappedOperation(tx)
 
-      airGapTxs.push(...(await this.getTransactionDetailsFromWrappedOperation(wrappedOperation, data?.knownViewingKeys)))
+        airGapTxs.push(...(await this.getTransactionDetailsFromWrappedOperation(wrappedOperation, data?.knownViewingKeys)))
+      } catch {
+        const partialDetails: Partial<IAirGapTransaction>[] = await this.bookkeeper.getTransactionsPartialDetails(
+          [tx],
+          data?.knownViewingKeys
+        )
+
+        airGapTxs.push(
+          ...partialDetails.map((partial: Partial<IAirGapTransaction>) => ({
+            ...defaultDetails,
+            ...partial
+          }))
+        )
+      }
     }
 
     return this.filterOutPaybacks(airGapTxs)
@@ -360,9 +377,9 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
     const parameters: TezosTransactionParameters =
       typeof rawOrParsed === 'string' ? this.contract.parseParameters(rawOrParsed) : rawOrParsed
 
-    const wrappedTransactions: TezosSaplingWrappedTransaction[] = await this.parseParameters(parameters)
+    const txs: string[] = await this.parseParameters(parameters)
 
-    return this.bookkeeper.getWrappedTransactionsPartialDetails(wrappedTransactions, knownViewingKeys)
+    return this.bookkeeper.getTransactionsPartialDetails(txs, knownViewingKeys)
   }
 
   private filterOutPaybacks(airGapTxs: IAirGapTransaction[]): IAirGapTransaction[] {
@@ -434,15 +451,16 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
 
   public async wrapSaplingTransactions(
     publicKey: string,
-    transactions: TezosSaplingWrappedTransaction[] | string,
+    transactionsOrString: string[] | string,
     fee: string,
     overrideFees: boolean = false
   ): Promise<RawTezosTransaction> {
     let operations: TezosOperation[]
-    if (typeof transactions === 'string') {
-      const parameters = this.contract.parseParameters(transactions)
+    if (typeof transactionsOrString === 'string' && this.contract.areValidParameters(transactionsOrString)) {
+      const parameters = this.contract.parseParameters(transactionsOrString)
       operations = [this.prepareTezosOperation(parameters, fee) as TezosOperation]
     } else {
+      const transactions = Array.isArray(transactionsOrString) ? transactionsOrString : [transactionsOrString]
       const contractCalls: TezosContractCall[] = await this.prepareContractCalls(transactions)
       operations = contractCalls.map(
         (contractCall: TezosContractCall) =>
@@ -493,34 +511,8 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
     fee: string,
     data?: { overrideFees?: boolean }
   ): Promise<RawTezosTransaction> {
-    if (!TezosSaplingAddress.isZetAddress(recipient)) {
-      return Promise.reject(`Invalid recipient, expected a 'zet' address, got ${recipient}`)
-    }
-
-    const [saplingStateDiff, chainId]: [TezosSaplingStateDiff, string] = await Promise.all([
-      this.nodeClient.getSaplingStateDiff(),
-      this.nodeClient.getChainId()
-    ])
-
-    const output: TezosSaplingOutput = {
-      address: (await TezosSaplingAddress.fromValue(recipient)).getValue(),
-      value,
-      memo: Buffer.alloc(this.options.config.memoSize).toString('hex')
-    }
-
-    const stateTree: TezosSaplingStateTree = await this.state.getStateTreeFromStateDiff(saplingStateDiff, true)
-
-    const forgedTransaction: TezosSaplingTransaction = await this.forger.forgeSaplingTransaction(
-      [],
-      [output],
-      stateTree,
-      this.getAntiReplay(chainId)
-    )
-
-    const encodedTransaction: string = this.encoder.encodeTransaction(forgedTransaction).toString('hex')
-    const wrappedTransaction: TezosSaplingWrappedTransaction = { signed: encodedTransaction }
-
-    return this.wrapSaplingTransactions(publicKey, [wrappedTransaction], fee, data?.overrideFees)
+    const encodedTransaction: string = await this.mint(recipient, value)
+    return this.wrapSaplingTransactions(publicKey, [encodedTransaction], fee, data?.overrideFees)
   }
 
   public async prepareUnshieldTransaction(
@@ -533,30 +525,11 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
       return Promise.reject(`Invalid recpient, expected a 'tz' address, got ${recipient}`)
     }
 
-    const [stateDiff, chainId]: [TezosSaplingStateDiff, string] = await Promise.all([
-      this.nodeClient.getSaplingStateDiff(),
-      this.nodeClient.getChainId()
-    ])
-
-    const [inputs, toSpend]: [TezosSaplingInput[], BigNumber] = await this.chooseInputs(
-      viewingKey,
-      stateDiff.commitments_and_ciphertexts,
-      stateDiff.nullifiers,
-      value
-    )
-
-    const address: TezosSaplingAddress = await this.getAddressFromPublicKey(viewingKey)
-    const paybackOutput: TezosSaplingOutput | undefined = this.createPaybackOutput(address, toSpend, value)
-
-    const contractCall: TezosContractCall = await this.preparePartialContractCall(recipient)
+    const burnTransaction: RawTezosSaplingTransaction = await this.burn(viewingKey, value)
 
     return {
-      ins: inputs,
-      outs: [paybackOutput].filter((output) => output !== undefined) as TezosSaplingOutput[],
-      contractAddress: this.options.config.contractAddress,
-      chainId,
-      stateDiff,
-      callParameters: JSON.stringify(contractCall.toJSON())
+      ...burnTransaction,
+      unshieldTarget: recipient
     }
   }
 
@@ -590,8 +563,6 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
     const paymentOutput: TezosSaplingOutput = this.createPaymentOutput(await TezosSaplingAddress.fromValue(recipient), value)
     const paybackOutput: TezosSaplingOutput | undefined = this.createPaybackOutput(address, toSpend, value)
 
-    const contractCall: TezosContractCall = await this.preparePartialContractCall()
-
     const [dummyInputs, dummyOutputs]: [TezosSaplingInput[], TezosSaplingOutput[]] = await Promise.all([
       Promise.all(Array.from({ length: dummyInputsAmount }, (_v, _k) => this.createDummyInput(address))),
       Promise.all(Array.from({ length: dummyOutputsAmount }, (_v, _k) => this.createDummyOutput()))
@@ -603,7 +574,66 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
       contractAddress: this.options.config.contractAddress,
       chainId,
       stateDiff,
-      callParameters: JSON.stringify(contractCall.toJSON())
+      unshieldTarget: ''
+    }
+  }
+
+  private async mint(recipient: string, value: string): Promise<string> {
+    if (!TezosSaplingAddress.isZetAddress(recipient)) {
+      return Promise.reject(`Invalid recipient, expected a 'zet' address, got ${recipient}`)
+    }
+
+    const [saplingStateDiff, chainId]: [TezosSaplingStateDiff, string] = await Promise.all([
+      this.nodeClient.getSaplingStateDiff(),
+      this.nodeClient.getChainId()
+    ])
+
+    const output: TezosSaplingOutput = {
+      address: (await TezosSaplingAddress.fromValue(recipient)).getValue(),
+      value,
+      memo: Buffer.alloc(this.options.config.memoSize).toString('hex'),
+      browsable: true
+    }
+
+    const stateTree: TezosSaplingStateTree = await this.state.getStateTreeFromStateDiff(saplingStateDiff, true)
+
+    const forgedTransaction: TezosSaplingTransaction = await this.forger.forgeSaplingTransaction(
+      [],
+      [output],
+      stateTree,
+      this.getAntiReplay(chainId)
+    )
+
+    return this.encoder.encodeTransaction(forgedTransaction).toString('hex')
+  }
+
+  private async burn(viewingKey: string, value: string): Promise<RawTezosSaplingTransaction> {
+    const [stateDiff, chainId]: [TezosSaplingStateDiff, string] = await Promise.all([
+      this.nodeClient.getSaplingStateDiff(),
+      this.nodeClient.getChainId()
+    ])
+
+    const [inputs, toSpend]: [TezosSaplingInput[], BigNumber] = await this.chooseInputs(
+      viewingKey,
+      stateDiff.commitments_and_ciphertexts,
+      stateDiff.nullifiers,
+      value
+    )
+
+    const paybackOutput: TezosSaplingOutput = {
+      address: (await this.getAddressFromPublicKey(viewingKey)).getValue(),
+      value: toSpend.minus(value).toString(),
+      memo: Buffer.alloc(this.options.config.memoSize).toString('hex'),
+      browsable: true
+    }
+
+    return {
+      ins: inputs,
+      outs: [paybackOutput],
+      contractAddress: this.options.config.contractAddress,
+      chainId,
+      stateDiff,
+      unshieldTarget: ''
     }
   }
 
@@ -635,16 +665,6 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
     return [chosenUnspends, toSpend]
   }
 
-  private async preparePartialContractCall(unshieldTarget?: string): Promise<TezosContractCall> {
-    const wrappedTransaction: TezosSaplingWrappedTransaction = {
-      signed: Buffer.from(TezosSaplingProtocol.TRANSACTION_PLACEHOLDER, 'utf-8'),
-      unshieldTarget: unshieldTarget !== undefined ? await TezosAddress.fromValue(unshieldTarget) : undefined
-    }
-    const contractCalls: TezosContractCall[] = await this.prepareContractCalls([wrappedTransaction])
-
-    return contractCalls[0]
-  }
-
   private createPaymentOutput(
     address: TezosSaplingAddress,
     value: BigNumber | number | string,
@@ -653,7 +673,8 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
     return {
       address: address.getValue(),
       value: new BigNumber(value).toString(),
-      memo: memo.toString('hex')
+      memo: memo.toString('hex'),
+      browsable: true
     }
   }
 
@@ -669,7 +690,8 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
       ? {
           address: address.getValue(),
           value: paybackValue.toString(),
-          memo: memo.toString('hex')
+          memo: memo.toString('hex'),
+          browsable: true
         }
       : undefined
   }
@@ -694,7 +716,8 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
     return {
       address: address.getValue(),
       value: '0',
-      memo: Buffer.from(memo).toString('hex')
+      memo: Buffer.from(memo).toString('hex'),
+      browsable: false
     }
   }
 
@@ -705,6 +728,12 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
     const viewingKey: string = await this.getPublicKeyFromHexSecret(Buffer.from(seed).toString('hex'), this.standardDerivationPath)
 
     return this.getAddressFromPublicKey(viewingKey)
+  }
+
+  private createAddressBoundData(address: string): string {
+    const michelson: MichelsonAddress = MichelsonAddress.from(TezosUtils.encodeTzAddress(address))
+
+    return TezosUtils.packMichelsonType(michelson)
   }
 
   private getAntiReplay(chainId: string, contractAddress?: string): string {
@@ -782,8 +811,7 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
       'outs' in transaction &&
       'contractAddress' in transaction &&
       'chainId' in transaction &&
-      'stateDiff' in transaction &&
-      'callParameters' in transaction
+      'stateDiff' in transaction
     )
   }
 }
