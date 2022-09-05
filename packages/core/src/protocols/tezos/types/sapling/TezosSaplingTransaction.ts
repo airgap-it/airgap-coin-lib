@@ -22,4 +22,5 @@ export interface TezosSaplingTransaction {
   bindingSignature: Buffer
   balance: BigNumber
   root: string
+  boundData: string
 }

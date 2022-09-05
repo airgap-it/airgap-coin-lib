@@ -37,13 +37,27 @@ export function toHexString(value: number | BigNumber, bitLength: number = 8): s
   return addHexPrefix(toHexStringRaw(value, bitLength))
 }
 
-export function hexToBytes(hex: string | Uint8Array | Buffer): Buffer {
+export function hexToBytes(hex: string | Uint8Array | Buffer, bitLength?: number): Buffer {
+  const byteLength: number | undefined = bitLength !== undefined ? Math.ceil(bitLength / 8) : undefined
+
+  let buffer: Buffer
   if (typeof hex === 'string' && isHex(hex)) {
-    return Buffer.from(stripHexPrefix(hex), 'hex')
+    buffer = Buffer.from(stripHexPrefix(hex), 'hex')
   } else if (!(typeof hex === 'string')) {
-    return Buffer.from(hex)
+    buffer = Buffer.from(hex)
   } else {
-    return Buffer.from([0])
+    buffer = Buffer.from([0])
+  }
+
+  if (byteLength !== undefined && buffer.length < byteLength) {
+    const newBuffer = Buffer.alloc(byteLength, 0)
+
+    const offset = newBuffer.length - buffer.length
+    buffer.copy(newBuffer, offset)
+
+    return newBuffer
+  } else {
+    return buffer
   }
 }
 

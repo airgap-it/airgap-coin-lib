@@ -73,17 +73,8 @@ export class TezosShieldedTezProtocolStub implements ProtocolHTTPStub {
                     prim: 'list',
                     args: [
                       {
-                        prim: 'pair',
-                        args: [
-                          {
-                            prim: 'sapling_transaction',
-                            args: [{ int: '8' }]
-                          },
-                          {
-                            prim: 'option',
-                            args: [{ prim: 'key_hash' }]
-                          }
-                        ]
+                        prim: 'sapling_transaction',
+                        args: [{ int: '8' }]
                       }
                     ]
                   }
