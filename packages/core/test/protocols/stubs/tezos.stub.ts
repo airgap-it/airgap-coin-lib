@@ -25,7 +25,7 @@ export class TezosProtocolStub implements ProtocolHTTPStub {
                 operation_result: {
                   status: 'applied',
                   balance_updates: [],
-                  consumed_gas: '10300',
+                  consumed_milligas: '10300000',
                   paid_storage_size_diff: '0'
                 },
                 internal_operation_results: []

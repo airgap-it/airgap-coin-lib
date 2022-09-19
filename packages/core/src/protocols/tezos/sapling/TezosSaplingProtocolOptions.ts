@@ -78,14 +78,14 @@ export class TezosSaplingProtocolOptions implements ProtocolOptions<TezosSapling
   constructor(
     // public network: TezosProtocolNetwork = new TezosProtocolNetwork(),
     public network: TezosProtocolNetwork = new TezosProtocolNetwork(
-      'Ithacanet',
+      'Ghostnet',
       NetworkType.TESTNET,
-      'https://tezos-ithacanet-node.prod.gke.papers.tech',
-      new TezblockBlockExplorer('https//ithacanet.tezblock.io'),
+      'https://tezos-ghostnet-node.prod.gke.papers.tech',
+      new TezblockBlockExplorer('https//ghostnet.tezblock.io'),
       new TezosProtocolNetworkExtras(
-        TezosNetwork.ITHACANET,
-        'https://tezos-ithacanet-conseil.prod.gke.papers.tech',
-        TezosNetwork.ITHACANET,
+        TezosNetwork.GHOSTNET,
+        'https://tezos-ghostnet-conseil.prod.gke.papers.tech',
+        TezosNetwork.GHOSTNET,
         'airgap00391'
       )
     ),

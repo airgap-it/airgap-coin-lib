@@ -360,7 +360,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
                   operation_result: {
                     status: 'applied',
                     balance_updates: [],
-                    consumed_gas: '15385',
+                    consumed_milligas: '15385000',
                     paid_storage_size_diff: '0'
                   },
                   internal_operation_results: []
@@ -449,7 +449,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
                     operation_result: {
                       status: 'applied',
                       balance_updates: [],
-                      consumed_gas: '10300',
+                      consumed_milligas: '10300000',
                       paid_storage_size_diff: '300'
                     },
                     internal_operation_results: []
@@ -494,7 +494,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
                     operation_result: {
                       status: 'applied',
                       balance_updates: [],
-                      consumed_gas: '10300',
+                      consumed_milligas: '10300000',
                       paid_storage_size_diff: '300'
                     },
                     internal_operation_results: []
@@ -690,7 +690,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
           operation_result: {
             status: 'applied',
             balance_updates: [],
-            consumed_gas: '10300',
+            consumed_milligas: '10300000',
             paid_storage_size_diff: '0'
           },
           internal_operation_results: []
@@ -733,7 +733,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
           operation_result: {
             status: 'applied',
             balance_updates: [],
-            consumed_gas: '10300',
+            consumed_milligas: '10300000',
             paid_storage_size_diff: '0'
           },
           internal_operation_results: []
@@ -769,7 +769,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
           operation_result: {
             status: 'applied',
             balance_updates: [],
-            consumed_gas: '10300',
+            consumed_milligas: '10300000',
             paid_storage_size_diff: '0'
           },
           internal_operation_results: []
@@ -810,7 +810,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
           operation_result: {
             status: 'applied',
             balance_updates: [],
-            consumed_gas: '10300',
+            consumed_milligas: '10300000',
             paid_storage_size_diff: '0'
           },
           internal_operation_results: []
@@ -851,7 +851,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
           operation_result: {
             status: 'applied',
             balance_updates: [],
-            consumed_gas: '10300',
+            consumed_milligas: '10300000',
             paid_storage_size_diff: '0'
           },
           internal_operation_results: []
@@ -962,7 +962,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
               },
               voting_period_kind: 'proposal',
               nonce_hash: null,
-              consumed_gas: '0',
+              consumed_milligas: '0',
               deactivated: [],
               balance_updates: []
             },
@@ -1047,7 +1047,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         operation_result: {
           status: 'applied',
           balance_updates: [],
-          consumed_gas: '350000'
+          consumed_milligas: '350000000'
         }
       }
 
@@ -1150,7 +1150,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
               },
               voting_period_kind: 'proposal',
               nonce_hash: null,
-              consumed_gas: '0',
+              consumed_milligas: '0',
               deactivated: [],
               balance_updates: []
             },
@@ -1226,7 +1226,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         operation_result: {
           status: 'applied',
           balance_updates: [],
-          consumed_gas: '350000'
+          consumed_milligas: '350000000'
         }
       }
 
@@ -1325,7 +1325,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
               },
               voting_period_kind: 'proposal',
               nonce_hash: null,
-              consumed_gas: '0',
+              consumed_milligas: '0',
               deactivated: [],
               balance_updates: []
             },
@@ -1401,7 +1401,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         operation_result: {
           status: 'applied',
           balance_updates: [],
-          consumed_gas: '350000'
+          consumed_milligas: '350000000'
         }
       }
 
@@ -1529,7 +1529,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
               },
               voting_period_kind: 'proposal',
               nonce_hash: null,
-              consumed_gas: '0',
+              consumed_milligas: '0',
               deactivated: [],
               balance_updates: []
             },
@@ -1619,7 +1619,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         operation_result: {
           status: 'applied',
           balance_updates: [],
-          consumed_gas: '350000'
+          consumed_milligas: '350000000'
         }
       }
 
@@ -1733,7 +1733,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
               },
               voting_period_kind: 'proposal',
               nonce_hash: null,
-              consumed_gas: '0',
+              consumed_milligas: '0',
               deactivated: [],
               balance_updates: []
             },
@@ -1825,7 +1825,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         operation_result: {
           status: 'applied',
           balance_updates: [],
-          consumed_gas: '350000'
+          consumed_milligas: '350000000'
         },
         internal_operation_results: [
           {
@@ -1929,14 +1929,11 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy/balance`)
         .returns(Promise.resolve({ data: 0 }))
 
-      return prepareSpend(
-        ['KT1X6SSqro2zUo1Wa7X5BnDWBvfBxZ6feUnc', 'KT1QLtQ54dKzcfwxMHmEM6PC8tooUg6MxDZ3'],
-        ['12345'],
-        '111'
-      ).catch((error: Error) =>
-        expect(error)
-          .to.be.an('error')
-          .with.property('message', new ConditionViolationError(Domain.TEZOS, 'length of recipients and values does not match!').message)
+      return prepareSpend(['KT1X6SSqro2zUo1Wa7X5BnDWBvfBxZ6feUnc', 'KT1QLtQ54dKzcfwxMHmEM6PC8tooUg6MxDZ3'], ['12345'], '111').catch(
+        (error: Error) =>
+          expect(error)
+            .to.be.an('error')
+            .with.property('message', new ConditionViolationError(Domain.TEZOS, 'length of recipients and values does not match!').message)
       )
     })
   })

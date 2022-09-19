@@ -48,11 +48,8 @@ export class TezosFA2Protocol extends TezosFAProtocol {
       [TezosNetwork.MAINNET]: {
         [TezosFA2ContractEntrypoint.BALANCE]: 'KT1LyHDYnML5eCuTEVCTynUpivwG6ns6khiG'
       },
-      [TezosNetwork.ITHACANET]: {
-        [TezosFA2ContractEntrypoint.BALANCE]: 'KT1LoNd55CVNnyRdoZa723t9YUC2rRiedmWu'
-      },
-      [TezosNetwork.JAKARTANET]: {
-        [TezosFA2ContractEntrypoint.BALANCE]: ''
+      [TezosNetwork.GHOSTNET]: {
+        [TezosFA2ContractEntrypoint.BALANCE]: 'KT1D1vHAyMVqfVJoufp6eYTJcJWEFigR3yjr'
       }
     }
   }
@@ -439,17 +436,14 @@ export class TezosFA2Protocol extends TezosFAProtocol {
   }
 
   protected callbackContract(entrypoint: TezosFA2ContractEntrypoint): string {
-    const networkCallbacks: Partial<Record<TezosFA2ContractEntrypoint, string>> | undefined = this.defaultCallbackContract[
-      this.options.network.extras.network
-    ]
+    const networkCallbacks: Partial<Record<TezosFA2ContractEntrypoint, string>> | undefined =
+      this.defaultCallbackContract[this.options.network.extras.network]
     const callback: string | undefined = networkCallbacks ? networkCallbacks[entrypoint] : undefined
 
     return callback ?? ''
   }
 
-  private isTransferRequest(
-    obj: unknown
-  ): obj is {
+  private isTransferRequest(obj: unknown): obj is {
     from_: string
     txs: { to_: string; token_id: BigNumber; amount: BigNumber }[]
   } {
