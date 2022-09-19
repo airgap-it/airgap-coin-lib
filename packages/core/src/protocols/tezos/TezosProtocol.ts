@@ -121,7 +121,7 @@ export interface RunOperationOperationResult {
   status: string
   errors?: unknown
   balance_updates: RunOperationOperationBalanceUpdate[]
-  consumed_gas: string
+  consumed_milligas: string
   paid_storage_size_diff?: string
   originated_contracts?: string[]
   allocated_destination_contract?: boolean
@@ -130,7 +130,7 @@ export interface RunOperationOperationResult {
 interface RunOperationInternalOperationResult {
   result?: {
     errors?: unknown
-    consumed_gas: string
+    consumed_milligas: string
     paid_storage_size_diff?: string
     originated_contracts?: string[]
     allocated_destination_contract?: boolean
@@ -159,8 +159,7 @@ const SELF_BOND_REQUIREMENT: number = 0.0825
 
 export enum TezosNetwork {
   MAINNET = 'mainnet',
-  ITHACANET = 'ithacanet',
-  JAKARTANET = 'jakartanet'
+  GHOSTNET = 'ghostnet'
 }
 
 export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateProtocol {
@@ -495,8 +494,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
           case TezosOperationType.PROPOSALS:
           case TezosOperationType.BALLOT:
             throw new UnsupportedError(Domain.TEZOS, 'operation not supported: ' + JSON.stringify(tezosOperation.kind))
-          default:
-            assertNever(tezosOperation.kind) // Exhaustive switch
+          default: // Exhaustive switch
+            assertNever(tezosOperation.kind)
             throw new NotFoundError(Domain.TEZOS, 'no operation to unforge found')
         }
 
@@ -1193,7 +1192,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
                 throw new TransactionError(Domain.TEZOS, 'An internal operation produced an error', internalOperation.result.errors)
               }
 
-              gasLimit += Number(internalOperation.result.consumed_gas)
+              gasLimit += Math.ceil(Number(internalOperation.result.consumed_milligas) / 1000)
 
               if (internalOperation.result.paid_storage_size_diff) {
                 storageLimit += Number(internalOperation.result.paid_storage_size_diff)
@@ -1213,7 +1212,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
         }
 
         // Add gas and storage used by operation
-        gasLimit += Number(result.consumed_gas)
+        gasLimit += Math.ceil(Number(result.consumed_milligas) / 1000)
 
         if (result.paid_storage_size_diff) {
           storageLimit += Number(result.paid_storage_size_diff)
@@ -1525,8 +1524,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
         case TezosOperationType.PROPOSALS:
         case TezosOperationType.BALLOT:
           break
-        default:
-          assertNever(operation.kind) // Exhaustive switch
+        default: // Exhaustive switch
+          assertNever(operation.kind)
           throw new UnsupportedError(Domain.TEZOS, `operation type not supported ${JSON.stringify(operation.kind)}`)
       }
     })
@@ -1613,14 +1612,12 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
   private static readonly BLOCKS_PER_CYCLE: { [key in TezosNetwork]: number[] } = {
     [TezosNetwork.MAINNET]: [4096, 8192],
-    [TezosNetwork.ITHACANET]: [4096],
-    [TezosNetwork.JAKARTANET]: [4096]
+    [TezosNetwork.GHOSTNET]: [4096]
   }
 
   private static readonly TIME_BETWEEN_BLOCKS: { [key in TezosNetwork]: number[] } = {
     [TezosNetwork.MAINNET]: [60, 30],
-    [TezosNetwork.ITHACANET]: [30],
-    [TezosNetwork.JAKARTANET]: [30]
+    [TezosNetwork.GHOSTNET]: [30]
   }
 
   public timeIntervalBetweenCycles(fromCycle: number, toCycle: number): number {
