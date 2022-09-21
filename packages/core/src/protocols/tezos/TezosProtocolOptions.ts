@@ -4,36 +4,32 @@ import { ProtocolOptions } from '../../utils/ProtocolOptions'
 
 import { TezosDomains } from './domains/TezosDomains'
 import { TezosNetwork } from './TezosProtocol'
+import { TezosProtocolIndexerClient } from './indexerClient/TezosProtocolIndexerClient'
+import { TezosIndexerClient } from './indexerClient/TezosIndexerClient'
 
 // tslint:disable:max-classes-per-file
 
 const MAINNET_NAME: string = 'Mainnet'
 
 const NODE_URL: string = 'https://tezos-node.prod.gke.papers.tech'
-
-const BLOCK_EXPLORER_URL: string = 'https://tezblock.io'
-const INDEXER_API: string = 'https://tezos-mainnet-conseil.prod.gke.papers.tech'
-const INDEXER_APIKEY: string = 'airgap00391'
+const INDEXER_URL: string = 'https://tezos-mainnet-indexer.prod.gke.papers.tech'
+const BLOCK_EXPLORER_URL: string = 'https://tzkt.io'
 
 export type TezosProtocolNetworkResolver = (network: string) => TezosProtocolNetwork
 
-export class TezosProtocolNetworkExtras {
-  constructor(
-    public readonly network: TezosNetwork = TezosNetwork.MAINNET,
-    public readonly conseilUrl: string = INDEXER_API,
-    public readonly conseilNetwork: TezosNetwork = TezosNetwork.MAINNET,
-    public readonly conseilApiKey: string = INDEXER_APIKEY
-  ) {}
+export interface TezosProtocolNetworkExtras {
+  network: TezosNetwork
+  indexerClient: TezosProtocolIndexerClient
 }
 
-export class TezblockBlockExplorer implements ProtocolBlockExplorer {
+export class TezosBlockExplorer implements ProtocolBlockExplorer {
   constructor(public readonly blockExplorer: string = BLOCK_EXPLORER_URL) {}
 
   public async getAddressLink(address: string): Promise<string> {
-    return `${this.blockExplorer}/account/${address}`
+    return `${this.blockExplorer}/${address}`
   }
   public async getTransactionLink(transactionId: string): Promise<string> {
-    return `${this.blockExplorer}/transaction/${transactionId}`
+    return `${this.blockExplorer}/${transactionId}`
   }
 }
 
@@ -42,8 +38,8 @@ export class TezosProtocolNetwork extends ProtocolNetwork<TezosProtocolNetworkEx
     name: string = MAINNET_NAME,
     type: NetworkType = NetworkType.MAINNET,
     rpcUrl: string = NODE_URL,
-    blockExplorer: ProtocolBlockExplorer = new TezblockBlockExplorer(),
-    extras: TezosProtocolNetworkExtras = new TezosProtocolNetworkExtras()
+    blockExplorer: ProtocolBlockExplorer = new TezosBlockExplorer(),
+    extras: TezosProtocolNetworkExtras = { network: TezosNetwork.MAINNET, indexerClient: new TezosIndexerClient(INDEXER_URL) }
   ) {
     super(name, type, rpcUrl, blockExplorer, extras)
   }

@@ -288,7 +288,7 @@ export class TezosTestProtocolSpec extends TestProtocolSpec {
           name: 'Mainnet',
           type: 'MAINNET',
           rpcUrl: 'https://tezos-node.prod.gke.papers.tech',
-          blockExplorer: { blockExplorer: 'https://tezblock.io' },
+          blockExplorer: { blockExplorer: 'https://tzkt.io' },
           extras: {
             network: 'mainnet',
             conseilUrl: 'https://tezos-mainnet-conseil.prod.gke.papers.tech',
@@ -311,7 +311,7 @@ export class TezosTestProtocolSpec extends TestProtocolSpec {
           name: 'Mainnet',
           type: 'MAINNET',
           rpcUrl: 'https://tezos-node.prod.gke.papers.tech',
-          blockExplorer: { blockExplorer: 'https://tezblock.io' },
+          blockExplorer: { blockExplorer: 'https://tzkt.io' },
           extras: {
             network: 'mainnet',
             conseilUrl: 'https://tezos-mainnet-conseil.prod.gke.papers.tech',
@@ -340,7 +340,7 @@ export class TezosTestProtocolSpec extends TestProtocolSpec {
           name: 'Mainnet',
           type: 'MAINNET',
           rpcUrl: 'https://tezos-node.prod.gke.papers.tech',
-          blockExplorer: { blockExplorer: 'https://tezblock.io' },
+          blockExplorer: { blockExplorer: 'https://tzkt.io' },
           extras: {
             network: 'mainnet',
             conseilUrl: 'https://tezos-mainnet-conseil.prod.gke.papers.tech',
@@ -363,7 +363,7 @@ export class TezosTestProtocolSpec extends TestProtocolSpec {
           name: 'Mainnet',
           type: 'MAINNET',
           rpcUrl: 'https://tezos-node.prod.gke.papers.tech',
-          blockExplorer: { blockExplorer: 'https://tezblock.io' },
+          blockExplorer: { blockExplorer: 'https://tzkt.io' },
           extras: {
             network: 'mainnet',
             conseilUrl: 'https://tezos-mainnet-conseil.prod.gke.papers.tech',

@@ -1,6 +1,6 @@
 import { invalidArgumentTypeError } from '../../../../../utils/error'
 import { MichelineDataNode, MichelinePrimitiveApplication } from '../../micheline/MichelineNode'
-import { isMichelinePrimitiveApplication } from '../../utils'
+import { isAnyMichelinePrimitiveApplication } from '../../utils'
 import { MichelsonGrammarData } from '../grammar/MichelsonGrammarData'
 import { MichelsonType } from '../MichelsonType'
 
@@ -8,7 +8,7 @@ export class MichelsonUnit extends MichelsonType {
   public static from(value: unknown, name?: string): MichelsonUnit {
     if (value instanceof MichelsonUnit) {
       return value
-    } else if (isMichelinePrimitiveApplication(value)) {
+    } else if (isAnyMichelinePrimitiveApplication(value)) {
       return MichelsonUnit.fromMicheline(value, name)
     } else {
       return new MichelsonUnit()

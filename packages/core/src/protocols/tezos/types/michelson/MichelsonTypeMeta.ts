@@ -3,7 +3,7 @@
 import { Lazy } from '../../../../data/Lazy'
 import { MichelinePrimitiveApplication, MichelineTypeNode } from '../../types/micheline/MichelineNode'
 import { MichelsonGrammarType } from '../../types/michelson/grammar/MichelsonGrammarType'
-import { isMichelinePrimitiveApplication } from '../utils'
+import { isAnyMichelinePrimitiveApplication } from '../utils'
 
 import { MichelsonType } from './MichelsonType'
 import { MichelsonTypeUtils } from './MichelsonTypeUtils'
@@ -30,7 +30,7 @@ export class MichelsonTypeMeta {
   ) {}
 
   public static fromMichelineNode(node: MichelineTypeNode): MichelsonTypeMeta | undefined {
-    if (!isMichelinePrimitiveApplication(node)) {
+    if (!isAnyMichelinePrimitiveApplication(node)) {
       return undefined
     }
 
@@ -44,7 +44,7 @@ export class MichelsonTypeMeta {
     return this.from(
       primitiveApplication.prim,
       primitiveApplication.annots ?? [],
-      primitiveApplication.args?.filter(isMichelinePrimitiveApplication) ?? [],
+      primitiveApplication.args?.filter(isAnyMichelinePrimitiveApplication) ?? [],
       parent
     )
   }

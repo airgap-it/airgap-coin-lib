@@ -1,6 +1,6 @@
 import { invalidArgumentTypeError } from '../../../../../utils/error'
 import { MichelineDataNode, MichelinePrimitiveApplication } from '../../micheline/MichelineNode'
-import { isMichelinePrimitiveApplication } from '../../utils'
+import { isAnyMichelinePrimitiveApplication } from '../../utils'
 import { MichelsonGrammarData } from '../grammar/MichelsonGrammarData'
 import { MichelsonType } from '../MichelsonType'
 
@@ -10,7 +10,7 @@ export class MichelsonBool extends MichelsonType {
   }
 
   public static from(value: unknown, name?: string): MichelsonBool {
-    return isMichelinePrimitiveApplication(value) ? MichelsonBool.fromMicheline(value, name) : MichelsonBool.fromUnknown(value, name)
+    return isAnyMichelinePrimitiveApplication(value) ? MichelsonBool.fromMicheline(value, name) : MichelsonBool.fromUnknown(value, name)
   }
 
   public static fromMicheline(micheline: MichelinePrimitiveApplication<MichelsonGrammarData>, name?: string): MichelsonBool {

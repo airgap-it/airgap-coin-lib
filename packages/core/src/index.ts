@@ -154,7 +154,7 @@ import {
 import { CryptoClient } from './protocols/CryptoClient'
 import {
   TezosProtocolNetworkExtras,
-  TezblockBlockExplorer,
+  TezosBlockExplorer,
   TezosProtocolNetwork,
   TezosProtocolConfig,
   TezosProtocolOptions
@@ -264,6 +264,7 @@ import { TezosUBTC, TezosUBTCProtocolConfig } from './protocols/tezos/fa/TezosUB
 import { TezosDOGA, TezosDOGAProtocolConfig } from './protocols/tezos/fa/TezosDOGA'
 import { TezosBTCTez, TezosBTCTezProtocolConfig } from './protocols/tezos/fa/TezosBTCtez'
 import { TezosSIRS, TezosSIRSProtocolConfig } from './protocols/tezos/fa/TezosSIRS'
+import { TezosIndexerClient } from './protocols/tezos/indexerClient/TezosIndexerClient'
 
 // tslint:enable:ordered-imports
 
@@ -446,7 +447,7 @@ export {
   TezosDelegatorAction,
   TezosCryptoClient,
   TezosProtocolNetworkExtras,
-  TezblockBlockExplorer,
+  TezosBlockExplorer,
   TezosProtocolNetwork,
   TezosProtocolConfig,
   TezosProtocolOptions,
@@ -484,7 +485,8 @@ export {
   TezosWrappedOperation,
   TezosAddress,
   RawTezosTransaction,
-  TezosDomains
+  TezosDomains,
+  TezosIndexerClient
 }
 
 // Serializer

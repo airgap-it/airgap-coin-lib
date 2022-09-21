@@ -9,7 +9,7 @@ import { TezosContractCall } from '../contract/TezosContractCall'
 import { TezosAddress } from '../TezosAddress'
 import { TezosNetwork } from '../TezosProtocol'
 import { TezosUtils } from '../TezosUtils'
-import { ConseilPredicate } from '../types/contract/ConseilPredicate'
+import { BigMap } from '../types/contract/BigMap'
 import { TezosFA2BalanceOfRequest } from '../types/fa/TezosFA2BalanceOfRequest'
 import { TezosFA2BalanceOfResponse } from '../types/fa/TezosFA2BalanceOfResponse'
 import { TezosFA2TransferRequest } from '../types/fa/TezosFA2TransferRequest'
@@ -23,7 +23,7 @@ import { MichelsonInt } from '../types/michelson/primitives/MichelsonInt'
 import { MichelsonString } from '../types/michelson/primitives/MichelsonString'
 import { TezosTransactionParameters } from '../types/operations/Transaction'
 import { TezosOperationType } from '../types/TezosOperationType'
-import { isMichelineSequence } from '../types/utils'
+import { isMichelinePrimitive, isMichelineSequence, isMichelinePrimitiveApplication } from '../types/utils'
 
 import { TezosFAProtocol } from './TezosFAProtocol'
 import { TezosFA2ProtocolConfig, TezosFA2ProtocolOptions } from './TezosFAProtocolOptions'
@@ -293,108 +293,35 @@ export class TezosFA2Protocol extends TezosFAProtocol {
     return this.getTokenMetadataForTokenID(tokenID ?? this.tokenID ?? 0)
   }
 
-  private static readonly extractAddressRegex = /^Pair (0x[0-9a-fA-F]+) [\d]+$/
-
   public async fetchTokenHolders(tokenID?: number): Promise<{ address: string; amount: string }[]> {
-    const values = await this.contract.conseilBigMapValues({
-      bigMapFilter: [
-        {
-          field: 'key_type',
-          operation: 'eq',
-          set: ['(pair (address %owner) (nat %token_id))']
-        },
-        {
-          field: 'value_type',
-          operation: 'eq',
-          set: ['nat']
-        }
-      ],
-      bigMapID: (this.options.config as TezosFA2ProtocolConfig).ledgerBigMapID,
-      predicates: [
-        {
-          field: 'key',
-          operation: 'endsWith',
-          set: [`${tokenID ?? this.tokenID ?? 0}`],
-          inverse: false
-        },
-        {
-          field: 'value',
-          operation: 'isnull',
-          set: [],
-          inverse: true
-        }
-      ]
+    return this.contract.network.extras.indexerClient.getTokenBalances({
+      contractAddress: this.contract.address,
+      id: tokenID ?? this.tokenID ?? 0
     })
-    return values
-      .map((value) => {
-        try {
-          let address: string | undefined = undefined
-          const match = TezosFA2Protocol.extractAddressRegex.exec(value.key)
-          if (match) {
-            address = TezosUtils.parseAddress(match[1])
-          }
-          if (address === undefined || !value.value) {
-            return {
-              address: '',
-              amount: '0'
-            }
-          }
-          return {
-            address,
-            amount: value.value
-          }
-        } catch {
-          return {
-            address: '',
-            amount: '0'
-          }
-        }
-      })
-      .filter((value) => value.amount !== '0')
   }
 
   public async getTotalSupply(tokenID?: number): Promise<string> {
-    const values = await this.contract.conseilBigMapValues({
-      bigMapFilter: [
-        {
-          field: 'key_type',
-          operation: 'eq',
-          set: ['nat']
-        },
-        {
-          field: 'value_type',
-          operation: 'eq',
-          set: ['nat']
-        }
-      ],
-      bigMapID: (this.options.config as TezosFA2ProtocolConfig).totalSupplyBigMapID,
-      predicates: [
-        {
-          field: 'key',
-          operation: 'eq',
-          set: [`${tokenID ?? this.tokenID ?? 0}`],
-          inverse: false
-        }
-      ]
+    const bigMaps = await this.contract.getBigMaps()
+    const bigMapIndex = (this.options.config as TezosFA2ProtocolConfig).totalSupplyBigMapID
+    let bigMap: BigMap | undefined = undefined
+    if (bigMapIndex !== undefined) {
+      bigMap = bigMaps.find((bigMap) => bigMap.id === bigMapIndex)
+    } else {
+      bigMap = bigMaps.find(
+        (bigMap) =>
+          (bigMap.path === 'total_supply' || bigMap.path.endsWith('.total_supply')) &&
+          isMichelinePrimitiveApplication('nat', bigMap.keyType) &&
+          isMichelinePrimitiveApplication('nat', bigMap.valueType)
+      )
+    }
+    const result = await this.contract.getBigMapValue({
+      bigMap,
+      key: `${tokenID ?? this.tokenID ?? 0}`
     })
-    if (values.length === 0 || values[0].value === null || values[0].value === undefined) {
-      return '0'
+    if (result !== undefined && isMichelinePrimitive('int', result.value)) {
+      return result.value.int
     }
-    return values[0].value
-  }
-
-  protected getAdditionalTransactionQueryPredicates(_address: string, _addressQueryType: 'string' | 'bytes'): ConseilPredicate[] {
-    const predicates: ConseilPredicate[] = []
-    if (this.tokenID !== undefined) {
-      predicates.push({
-        field: 'parameters',
-        operation: 'like',
-        set: [`{ ${this.tokenID} }`],
-        inverse: false
-      })
-    }
-
-    return predicates
+    return '0'
   }
 
   private async createTransferCall(
