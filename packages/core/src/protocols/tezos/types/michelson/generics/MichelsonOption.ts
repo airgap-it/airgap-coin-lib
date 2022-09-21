@@ -4,7 +4,7 @@ import { Lazy } from '../../../../../data/Lazy'
 import { InvalidValueError } from '../../../../../errors'
 import { Domain } from '../../../../../errors/coinlib-error'
 import { MichelineDataNode, MichelinePrimitiveApplication } from '../../micheline/MichelineNode'
-import { isMichelinePrimitiveApplication } from '../../utils'
+import { isAnyMichelinePrimitiveApplication } from '../../utils'
 import { MichelsonGrammarData } from '../grammar/MichelsonGrammarData'
 import { MichelsonType } from '../MichelsonType'
 
@@ -24,7 +24,7 @@ export abstract class MichelsonOption extends MichelsonType {
       throw new InvalidValueError(Domain.TEZOS, 'MichelsonPair: unknown generic factory function.')
     }
 
-    if (isMichelinePrimitiveApplication(value)) {
+    if (isAnyMichelinePrimitiveApplication(value)) {
       return MichelsonOption.fromMicheline(value, mappingFunction, name)
     } else if (typeof value === 'string' && value.match(michelsonRegex)) {
       return MichelsonOption.fromMichelson(value, mappingFunction, name)

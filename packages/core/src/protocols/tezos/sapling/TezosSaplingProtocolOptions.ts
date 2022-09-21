@@ -4,8 +4,9 @@ import { NetworkType } from '../../../utils/ProtocolNetwork'
 import { ProtocolOptions } from '../../../utils/ProtocolOptions'
 import { MainProtocolSymbols, ProtocolSymbols } from '../../../utils/ProtocolSymbols'
 import { CurrencyUnit, FeeDefaults } from '../../ICoinProtocol'
+import { TezosIndexerClient } from '../indexerClient/TezosIndexerClient'
 import { TezosNetwork } from '../TezosProtocol'
-import { TezblockBlockExplorer, TezosProtocolConfig, TezosProtocolNetwork, TezosProtocolNetworkExtras } from '../TezosProtocolOptions'
+import { TezosBlockExplorer, TezosProtocolConfig, TezosProtocolNetwork } from '../TezosProtocolOptions'
 import { TezosSaplingTransaction } from '../types/sapling/TezosSaplingTransaction'
 
 export interface TezosSaplingExternalMethodProvider {
@@ -81,13 +82,11 @@ export class TezosSaplingProtocolOptions implements ProtocolOptions<TezosSapling
       'Ghostnet',
       NetworkType.TESTNET,
       'https://tezos-ghostnet-node.prod.gke.papers.tech',
-      new TezblockBlockExplorer('https//ghostnet.tezblock.io'),
-      new TezosProtocolNetworkExtras(
-        TezosNetwork.GHOSTNET,
-        'https://tezos-ghostnet-conseil.prod.gke.papers.tech',
-        TezosNetwork.GHOSTNET,
-        'airgap00391'
-      )
+      new TezosBlockExplorer('https//ghostnet.tzkt.io'),
+      {
+        network: TezosNetwork.GHOSTNET,
+        indexerClient: new TezosIndexerClient('https://tezos-ghostnet-indexer.prod.gke.papers.tech')
+      }
     ),
     public config: TezosSaplingProtocolConfig = new TezosShieldedTezProtocolConfig()
   ) {}

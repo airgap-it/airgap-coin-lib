@@ -1,13 +1,13 @@
 import { MichelsonGrammarData } from '../michelson/grammar/MichelsonGrammarData'
 import { MichelsonGrammarType } from '../michelson/grammar/MichelsonGrammarType'
-import { isMichelinePrimitiveApplication, isMichelineSequence } from '../utils'
+import { isAnyMichelinePrimitiveApplication, isMichelineSequence } from '../utils'
 import { MichelineGenericNode } from './MichelineNode'
 
 export class MichelineNodeUtils {
   public static normalize<T extends MichelsonGrammarData | MichelsonGrammarType>(node: MichelineGenericNode<T>): MichelineGenericNode<T> {
     if (isMichelineSequence(node, false)) {
       return node.map((value) => MichelineNodeUtils.normalize(value))
-    } else if (isMichelinePrimitiveApplication(node)) {
+    } else if (isAnyMichelinePrimitiveApplication(node)) {
       let args: MichelineGenericNode<T>[] | undefined
       if ((node.prim === 'pair' || node.prim === 'Pair') && node.args && node.args.length > 2) {
         args = [

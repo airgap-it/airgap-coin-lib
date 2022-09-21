@@ -1,10 +1,9 @@
-import { BigMapPredicate } from './BigMapPredicate'
+import { BigMap } from './BigMap'
+import { BigMapEntryFilter } from './BigMapEnrtyFilter'
 
 export interface BigMapRequest {
-  bigMapID?: number
-  predicates?: BigMapPredicate[]
-
-  bigMapFilter?: BigMapPredicate[]
-
+  bigMap?: Omit<BigMap, 'valueType' | 'keyType'>
+  filters?: BigMapEntryFilter[]
+  key?: string
   limit?: number
 }

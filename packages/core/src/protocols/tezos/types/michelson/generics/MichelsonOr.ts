@@ -3,7 +3,7 @@ import { Lazy } from '../../../../../data/Lazy'
 import { InvalidValueError } from '../../../../../errors'
 import { Domain, CoinlibAssertionError } from '../../../../../errors/coinlib-error'
 import { MichelineDataNode, MichelinePrimitiveApplication } from '../../micheline/MichelineNode'
-import { isMichelinePrimitiveApplication } from '../../utils'
+import { isAnyMichelinePrimitiveApplication } from '../../utils'
 import { MichelsonGrammarData } from '../grammar/MichelsonGrammarData'
 import { MichelsonType } from '../MichelsonType'
 
@@ -27,7 +27,7 @@ export abstract class MichelsonOr extends MichelsonType {
       throw new InvalidValueError(Domain.TEZOS, 'MichelsonPair: unknown generic mapping factory functions.')
     }
 
-    if (isMichelinePrimitiveApplication(or)) {
+    if (isAnyMichelinePrimitiveApplication(or)) {
       return MichelsonOr.fromMicheline(or, firstMappingFunction, secondMappingFunction, name)
     } else if (typeof or === 'string' && or.match(michelsonRegex)) {
       return MichelsonOr.fromMichelson(or, firstMappingFunction, secondMappingFunction, name)
@@ -95,7 +95,7 @@ export abstract class MichelsonOr extends MichelsonType {
   public static isOr(unknownValue: unknown): unknownValue is MichelsonOr {
     return (
       unknownValue instanceof MichelsonOr ||
-      (isMichelinePrimitiveApplication(unknownValue) && (unknownValue.prim === 'Left' || unknownValue.prim === 'Right'))
+      (isAnyMichelinePrimitiveApplication(unknownValue) && (unknownValue.prim === 'Left' || unknownValue.prim === 'Right'))
     )
   }
 

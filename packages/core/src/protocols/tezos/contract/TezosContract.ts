@@ -1,15 +1,14 @@
-import axios, { AxiosError, AxiosResponse } from '../../../dependencies/src/axios-0.19.0/index'
+import axios, { AxiosResponse } from '../../../dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../../dependencies/src/bignumber.js-9.0.0/bignumber'
-import { InvalidValueError, NetworkError, NotFoundError } from '../../../errors'
+import { InvalidValueError, NotFoundError } from '../../../errors'
 import { Domain } from '../../../errors/coinlib-error'
 import { recursivelyFind } from '../../../utils/object'
 import { RemoteData } from '../../../utils/remote-data/RemoteData'
 import { trimStart } from '../../../utils/string'
 import { TezosProtocolNetwork, TezosProtocolNetworkResolver } from '../TezosProtocolOptions'
 import { TezosUtils } from '../TezosUtils'
-import { BigMapPredicate } from '../types/contract/BigMapPredicate'
 import { BigMapRequest } from '../types/contract/BigMapRequest'
-import { BigMapResponse } from '../types/contract/BigMapResult'
+import { BigMapEntry } from '../types/contract/BigMapEntry'
 import { TezosContractMetadata } from '../types/contract/TezosContractMetadata'
 import { MichelineNode, MichelineTypeNode } from '../types/micheline/MichelineNode'
 import { MichelineNodeUtils } from '../types/micheline/MichelineNodeUtils'
@@ -29,6 +28,7 @@ import { TezosContractRemoteDataFactory } from './remote-data/TezosContractRemot
 import { TezosContractCall } from './TezosContractCall'
 import { TezosContractEntrypoint } from './TezosContractEntrypoint'
 import { TezosContractStorage } from './TezosContractStorage'
+import { BigMap } from '../types/contract/BigMap'
 
 export class TezosContract {
   private static readonly DEFAULT_ENTRYPOINT = 'default'
@@ -37,8 +37,8 @@ export class TezosContract {
   public storage?: TezosContractStorage
   private codePromise?: Promise<void>
 
-  public bigMapIDs?: number[]
-  private bigMapIDsPromise?: Promise<void>
+  private bigMaps?: BigMap[]
+  private bigMapsPromise?: Promise<void>
 
   private readonly remoteDataFactory: TezosContractRemoteDataFactory = new TezosContractRemoteDataFactory()
 
@@ -104,23 +104,22 @@ export class TezosContract {
       ?.filter((value) => value !== undefined) as MichelsonType[]
   }
 
-  public async conseilBigMapValues(request: BigMapRequest = {}): Promise<BigMapResponse[]> {
-    const bigMapID: number = request?.bigMapID ?? (await this.getBigMapID(request.bigMapFilter))
+  public async getBigMaps(): Promise<BigMap[]> {
+    await this.waitForBigMaps()
+    return this.bigMaps ?? []
+  }
 
-    const predicates: { field: string; operation: string; set: any[] }[] = [
-      {
-        field: 'big_map_id',
-        operation: 'eq',
-        set: [bigMapID]
-      },
-      ...(request.predicates ?? [])
-    ]
+  public async getBigMapValues(request: BigMapRequest = {}): Promise<BigMapEntry[]> {
+    const bigMap = request?.bigMap ?? (await this.getBigMap(request.bigMap?.path))
+    return this.network.extras.indexerClient.getContractBigMapValues(this.address, bigMap, request.filters, request.limit ?? 10000)
+  }
 
-    return this.conseilRequest('/big_map_contents', {
-      fields: ['key', 'key_hash', 'value'],
-      predicates,
-      limit: request.limit ?? 100000
-    })
+  public async getBigMapValue(request: BigMapRequest = {}): Promise<BigMapEntry | undefined> {
+    const bigMap = request?.bigMap ?? (await this.getBigMap(request.bigMap?.path))
+    if (request.key === undefined) {
+      return undefined
+    }
+    return this.network.extras.indexerClient.getContractBigMapValue(this.address, bigMap, request.key, request.limit ?? 10000)
   }
 
   public async readStorage(): Promise<MichelsonType | undefined> {
@@ -250,28 +249,18 @@ export class TezosContract {
     return new TezosContractCall(entrypoint.name, entrypoint.type.createValue(value, configuration), amount)
   }
 
-  private async getBigMapID(predicates?: BigMapPredicate[]): Promise<number> {
-    await this.waitForBigMapIDs()
+  private async getBigMap(path?: string): Promise<BigMap> {
+    await this.waitForBigMaps()
 
-    if (this.bigMapIDs?.length === 1) {
-      return this.bigMapIDs[0]
+    if (this.bigMaps?.length === 1) {
+      return this.bigMaps[0]
     }
 
-    if (!predicates) {
+    if (!path) {
       throw new InvalidValueError(Domain.TEZOS, 'Contract has more than one BigMap, provide ID or predicates to select one.')
     }
 
-    const response = await this.conseilRequest<Record<'big_map_id', number>[]>('/big_maps', {
-      fields: ['big_map_id'],
-      predicates: [
-        {
-          field: 'big_map_id',
-          operation: 'in',
-          set: this.bigMapIDs
-        },
-        ...predicates
-      ]
-    })
+    const response = this.bigMaps?.filter((bigMap) => bigMap.path === path) ?? []
 
     if (response.length === 0) {
       throw new InvalidValueError(Domain.TEZOS, 'BigMap ID not found')
@@ -281,38 +270,29 @@ export class TezosContract {
       throw new InvalidValueError(Domain.TEZOS, 'More than one BigMap ID has been found for the predicates.')
     }
 
-    return response[0].big_map_id
+    return response[0]
   }
 
-  private async waitForBigMapIDs(): Promise<void> {
-    if (this.bigMapIDs !== undefined) {
+  private async waitForBigMaps(): Promise<void> {
+    if (this.bigMaps !== undefined) {
       return
     }
 
-    if (this.bigMapIDsPromise === undefined) {
-      this.bigMapIDsPromise = this.conseilRequest<Record<'big_map_id', number>[]>('/originated_account_maps', {
-        fields: ['big_map_id'],
-        predicates: [
-          {
-            field: 'account_id',
-            operation: 'eq',
-            set: [this.address]
-          }
-        ]
-      })
+    if (this.bigMapsPromise === undefined) {
+      this.bigMapsPromise = this.network.extras.indexerClient
+        .getContractBigMaps(this.address, 1000)
         .then((response) => {
           if (response.length === 0) {
             throw new NotFoundError(Domain.TEZOS, 'BigMap IDs not found')
           }
-
-          this.bigMapIDs = response.map((entry) => entry.big_map_id)
+          this.bigMaps = response
         })
         .finally(() => {
-          this.bigMapIDsPromise = undefined
+          this.bigMapsPromise = undefined
         })
     }
 
-    return this.bigMapIDsPromise
+    return this.bigMapsPromise
   }
 
   private async waitForContractCode(): Promise<void> {
@@ -396,21 +376,6 @@ export class TezosContract {
               'Content-Type': 'application/json'
             }
           })
-
-    return response.data
-  }
-
-  private async conseilRequest<T>(endpoint: string, body: any): Promise<T> {
-    const response: AxiosResponse<T> = await axios
-      .post(`${this.network.extras.conseilUrl}/v2/data/tezos/${this.network.extras.conseilNetwork}/${trimStart(endpoint, '/')}`, body, {
-        headers: {
-          'Content-Type': 'application/json',
-          apiKey: this.network.extras.conseilApiKey
-        }
-      })
-      .catch((error) => {
-        throw new NetworkError(Domain.TEZOS, error as AxiosError)
-      })
 
     return response.data
   }
