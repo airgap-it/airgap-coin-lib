@@ -1,5 +1,5 @@
 import BigNumber from '../../../../dependencies/src/bignumber.js-9.0.0/bignumber'
-import { toHexBuffer } from '../../../../utils/hex'
+import { hexToBytes, toHexBuffer } from '../../../../utils/hex'
 import { TezosSaplingCiphertext } from '../../types/sapling/TezosSaplingCiphertext'
 import {
   TezosSaplingOutputDescription,
@@ -16,9 +16,20 @@ export class TezosSaplingEncoder {
     const outBytes: Buffer = this.encodeOutputDescriptions(transaction.outputDescriptions)
     const outEncoded: Buffer = Buffer.concat([toHexBuffer(outBytes.length, 32), outBytes])
 
+    const bindingSignatureEncoded: Buffer = hexToBytes(transaction.bindingSignature, 128)
     const balanceEncoded: Buffer = toHexBuffer(transaction.balance, 64)
 
-    return Buffer.concat([spendEncoded, outEncoded, transaction.bindingSignature, balanceEncoded, Buffer.from(transaction.root, 'hex')])
+    const boundDataBytes: Buffer = hexToBytes(transaction.boundData)
+    const boundDataEncoded: Buffer = Buffer.concat([toHexBuffer(boundDataBytes.length, 32), boundDataBytes])
+
+    return Buffer.concat([
+      spendEncoded,
+      outEncoded,
+      bindingSignatureEncoded,
+      balanceEncoded,
+      Buffer.from(transaction.root, 'hex'),
+      boundDataEncoded
+    ])
   }
 
   public encodeSpendDescriptions(descriptions: TezosSaplingSpendDescription[]): Buffer {
@@ -77,12 +88,18 @@ export class TezosSaplingEncoder {
     const rootEnd: number = rootStart + 32
     const root: string = transaction.slice(rootStart, rootEnd).toString('hex')
 
+    const boundDataLength: number = transaction.readInt32BE(rootEnd)
+    const boundDataStart: number = rootEnd + 4
+    const boundDataEnd: number = boundDataStart + boundDataLength
+    const boundData: string = transaction.slice(boundDataStart, boundDataEnd).toString('hex')
+
     return {
       spendDescriptions,
       outputDescriptions,
       bindingSignature,
       balance,
-      root
+      root,
+      boundData
     }
   }
 
@@ -156,8 +173,9 @@ export class TezosSaplingEncoder {
     }
   }
 
-  public decodeBalanceFromTransaction(transaction: Buffer): BigNumber {
-    return this.decodeBalance(transaction.slice(-40).slice(0, 8))
+  public decodeBalanceFromTransaction(bytes: Buffer): BigNumber {
+    const transaction = this.decodeTransaction(bytes)
+    return transaction.balance
   }
 
   private decodeBalance(encoded: Buffer): BigNumber {

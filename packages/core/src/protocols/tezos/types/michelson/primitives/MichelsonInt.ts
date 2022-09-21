@@ -34,7 +34,7 @@ export class MichelsonInt extends MichelsonType {
     return new MichelsonInt(BigNumber.isBigNumber(unknownValue) ? unknownValue : new BigNumber(unknownValue), name)
   }
 
-  public encode(): string {
+  public encode(): Buffer {
     let absValue = bigInt(this.value.integerValue().abs().toString())
     const u8Numbers: bigInt.BigInteger[] = []
 
@@ -48,12 +48,10 @@ export class MichelsonInt extends MichelsonType {
 
     u8Numbers[u8Numbers.length - 1] = u8Numbers[u8Numbers.length - 1].and(0b01111111)
 
-    return u8Numbers
-      .reduce(
-        (bytes, next) => Buffer.concat([bytes, Buffer.from(new Uint8Array([next.toJSNumber()]))]),
-        MichelsonTypeUtils.literalPrefixes.int
-      )
-      .toString('hex')
+    return u8Numbers.reduce(
+      (bytes, next) => Buffer.concat([bytes, Buffer.from(new Uint8Array([next.toJSNumber()]))]),
+      MichelsonTypeUtils.literalPrefixes.int
+    )
   }
 
   public asRawValue(): Record<string, BigNumber> | BigNumber {

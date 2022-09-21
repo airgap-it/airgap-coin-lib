@@ -14,9 +14,6 @@
         "transaction": {
           "additionalProperties": false,
           "properties": {
-            "callParameters": {
-              "type": "string"
-            },
             "chainId": {
               "type": "string"
             },
@@ -52,6 +49,9 @@
                   "address": {
                     "type": "string"
                   },
+                  "browsable": {
+                    "type": "boolean"
+                  },
                   "memo": {
                     "type": "string"
                   },
@@ -59,7 +59,7 @@
                     "type": "string"
                   }
                 },
-                "required": ["address", "value", "memo"],
+                "required": ["address", "value", "memo", "browsable"],
                 "type": "object"
               },
               "type": "array"
@@ -117,9 +117,12 @@
               },
               "required": ["root", "commitments_and_ciphertexts", "nullifiers"],
               "type": "object"
+            },
+            "unshieldTarget": {
+              "type": "string"
             }
           },
-          "required": ["ins", "outs", "contractAddress", "chainId", "stateDiff", "callParameters"],
+          "required": ["ins", "outs", "contractAddress", "chainId", "stateDiff", "unshieldTarget"],
           "type": "object"
         }
       },

@@ -4,7 +4,7 @@ import { invalidArgumentTypeError } from '../../../../../utils/error'
 import { extractGroups } from '../../../../../utils/string'
 import { isRecord } from '../../../../../utils/type'
 import { MichelineDataNode, MichelinePrimitiveApplication } from '../../micheline/MichelineNode'
-import { isMichelinePrimitiveApplication } from '../../utils'
+import { isAnyMichelinePrimitiveApplication } from '../../utils'
 import { MichelsonGrammarData } from '../grammar/MichelsonGrammarData'
 import { MichelsonType } from '../MichelsonType'
 import { Domain } from '../../../../../errors/coinlib-error'
@@ -22,7 +22,7 @@ export class MichelsonPair extends MichelsonType {
       return pair
     }
 
-    if (isMichelinePrimitiveApplication(pair)) {
+    if (isAnyMichelinePrimitiveApplication(pair)) {
       return MichelsonPair.fromMicheline(pair, mappingFunctions, name)
     } else if (typeof pair === 'string' && pair.match(michelsonRegex)) {
       return MichelsonPair.fromMichelson(pair, mappingFunctions, name)
@@ -60,7 +60,7 @@ export class MichelsonPair extends MichelsonType {
     }
 
     const normalizedMicheline = MichelineNodeUtils.normalize(micheline)
-    if (!isMichelinePrimitiveApplication(normalizedMicheline)) {
+    if (!isAnyMichelinePrimitiveApplication(normalizedMicheline)) {
       throw new InvalidValueError(Domain.TEZOS, 'MichelsonPair: invalid value after normalization')
     }
 

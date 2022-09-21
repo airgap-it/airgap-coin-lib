@@ -1,3 +1,5 @@
+import { ConditionViolationError } from '../../../../../errors'
+import { Domain } from '../../../../../errors/coinlib-error'
 import { invalidArgumentTypeError } from '../../../../../utils/error'
 import { MichelineDataNode, MichelinePrimitive } from '../../micheline/MichelineNode'
 import { isMichelinePrimitive } from '../../utils'
@@ -29,12 +31,26 @@ export class MichelsonString extends MichelsonType {
     return new MichelsonString(unknownValue, name)
   }
 
-  public encode(): string {
-    const bytes = Buffer.from(this.value)
-    const length = Buffer.alloc(4)
+  public static decode(bytes: Buffer): MichelsonString {
+    const prefix: Buffer = bytes.slice(0, MichelsonTypeUtils.literalPrefixes.string.length)
+    if (!prefix.equals(MichelsonTypeUtils.literalPrefixes.string)) {
+      throw new ConditionViolationError(Domain.TEZOS, 'Invalid encoded MichelsonString.')
+    }
+
+    const length: number = bytes.readInt32BE(prefix.length)
+    const valueStart: number = prefix.length + 4
+    const valueEnd: number = valueStart + length
+    const value: string = bytes.slice(valueStart, valueEnd).toString()
+
+    return new MichelsonString(value)
+  }
+
+  public encode(): Buffer {
+    const bytes: Buffer = Buffer.from(this.value)
+    const length: Buffer = Buffer.alloc(4)
     length.writeInt32BE(bytes.length)
 
-    return Buffer.concat([MichelsonTypeUtils.literalPrefixes.string, length, bytes]).toString('hex')
+    return Buffer.concat([MichelsonTypeUtils.literalPrefixes.string, length, bytes])
   }
 
   public asRawValue(): Record<string, string> | string {

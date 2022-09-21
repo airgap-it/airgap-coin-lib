@@ -11,6 +11,7 @@ interface TezosSaplingOutput {
   address: string
   value: string
   memo: string
+  browsable: boolean
 }
 
 interface TezosSaplingStateDiff {
@@ -34,7 +35,7 @@ interface RawTezosSaplingTransaction {
   contractAddress: string
   chainId: string
   stateDiff: TezosSaplingStateDiff
-  callParameters: string
+  unshieldTarget: string
 }
 
 export interface UnsignedTezosSaplingTransaction extends UnsignedTransaction {

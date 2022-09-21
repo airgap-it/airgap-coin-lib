@@ -1,9 +1,12 @@
 // tslint:disable: max-classes-per-file
 import { SaplingPartialOutputDescription, SaplingUnsignedSpendDescription } from '@airgap/sapling-wasm'
+import { NetworkType } from '../../../utils/ProtocolNetwork'
 import { ProtocolOptions } from '../../../utils/ProtocolOptions'
 import { MainProtocolSymbols, ProtocolSymbols } from '../../../utils/ProtocolSymbols'
 import { CurrencyUnit, FeeDefaults } from '../../ICoinProtocol'
-import { TezosProtocolConfig, TezosProtocolNetwork } from '../TezosProtocolOptions'
+import { TezosIndexerClient } from '../indexerClient/TezosIndexerClient'
+import { TezosNetwork } from '../TezosProtocol'
+import { TezosBlockExplorer, TezosProtocolConfig, TezosProtocolNetwork } from '../TezosProtocolOptions'
 import { TezosSaplingTransaction } from '../types/sapling/TezosSaplingTransaction'
 
 export interface TezosSaplingExternalMethodProvider {
@@ -51,7 +54,7 @@ export class TezosShieldedTezProtocolConfig extends TezosSaplingProtocolConfig {
   constructor(
     public readonly name: string = 'Shielded Tez',
     public readonly identifier: ProtocolSymbols = MainProtocolSymbols.XTZ_SHIELDED,
-    public readonly contractAddress: string = 'KT1BUZy6xNbmo5ogfD7nDRMBspfG1EEFfDFW',
+    public readonly contractAddress: string = 'KT1Wr1z3CwrZamPsazpVXefpEjXUBScUPuHZ',
     public readonly externalProvider?: TezosSaplingExternalMethodProvider,
     public readonly memoSize: number = 8,
     public readonly merkleTreeHeight: number = 32
@@ -74,7 +77,17 @@ export class TezosShieldedTezProtocolConfig extends TezosSaplingProtocolConfig {
 
 export class TezosSaplingProtocolOptions implements ProtocolOptions<TezosSaplingProtocolConfig> {
   constructor(
-    public network: TezosProtocolNetwork = new TezosProtocolNetwork(),
+    // public network: TezosProtocolNetwork = new TezosProtocolNetwork(),
+    public network: TezosProtocolNetwork = new TezosProtocolNetwork(
+      'Ghostnet',
+      NetworkType.TESTNET,
+      'https://tezos-ghostnet-node.prod.gke.papers.tech',
+      new TezosBlockExplorer('https//ghostnet.tzkt.io'),
+      {
+        network: TezosNetwork.GHOSTNET,
+        indexerClient: new TezosIndexerClient('https://tezos-ghostnet-indexer.prod.gke.papers.tech')
+      }
+    ),
     public config: TezosSaplingProtocolConfig = new TezosShieldedTezProtocolConfig()
   ) {}
 }

@@ -33,41 +33,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
 
   public async getAddressesFromPublicKey(publicKey: string): Promise<TezosKtAddress[]> {
     const tz1address: string = (await super.getAddressFromPublicKey(publicKey)).getValue()
-    const getRequestBody = (field: string, set: string) => {
-      return {
-        fields: ['originated_contracts'],
-        predicates: [
-          {
-            field,
-            operation: 'eq',
-            set: [tz1address],
-            inverse: false
-          },
-          {
-            field: 'kind',
-            operation: 'eq',
-            set: [set],
-            inverse: false
-          },
-          {
-            field: 'status',
-            operation: 'eq',
-            set: ['applied'],
-            inverse: false
-          }
-        ]
-      }
-    }
-    const { data } = await axios.post(
-      `${this.baseApiUrl}/v2/data/tezos/mainnet/operations`,
-      getRequestBody('manager_pubkey', 'origination'),
-      {
-        headers: this.headers
-      }
-    )
-    const ktAddresses: string[] = data.map((origination: { originated_contracts: string }) => {
-      return origination.originated_contracts
-    })
+    const ktAddresses: string[] = await this.options.network.extras.indexerClient.getDelegatorContracts(tz1address, 10000)
 
     return Promise.all(ktAddresses.reverse().map((ktAddress: string) => TezosKtAddress.from(ktAddress)))
   }

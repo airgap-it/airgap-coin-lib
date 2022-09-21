@@ -1,3 +1,5 @@
+import { hexToBytes } from '../../../../utils/hex'
+
 import { MichelsonList } from './generics/MichelsonList'
 import { MichelsonMap } from './generics/MichelsonMap'
 import { MichelsonOption } from './generics/MichelsonOption'
@@ -33,6 +35,29 @@ export class MichelsonTypeUtils {
     list: Buffer
   } = {
     list: Buffer.from(new Uint8Array([2]))
+  }
+
+  public static decode(encoded: string | Buffer | Uint8Array): MichelsonType | undefined {
+    const bytes = hexToBytes(encoded)
+    if (bytes.slice(0, this.literalPrefixes.int.length).equals(this.literalPrefixes.int)) {
+      // Not implemented
+      // return MichelsonInt.decode(bytes)
+      return undefined
+    } else if (bytes.slice(0, this.literalPrefixes.string.length).equals(this.literalPrefixes.string)) {
+      return MichelsonString.decode(bytes)
+    } else if (bytes.slice(0, this.literalPrefixes.bytes.length).equals(this.literalPrefixes.bytes)) {
+      return MichelsonBytes.decode(bytes)
+    } else if (bytes.slice(0, this.primPrefixes.pair.length).equals(this.primPrefixes.pair)) {
+      // Not implemented
+      // return MichelsonPair.decode(bytes)
+      return undefined
+    } else if (bytes.slice(0, this.sequencePrefixes.list.length).equals(this.sequencePrefixes.list)) {
+      // Not implemented
+      // return MichelsonList.decode(bytes)
+      return undefined
+    } else {
+      return undefined
+    }
   }
 
   private static readonly michelsonTypeFactories: Record<MichelsonGrammarType, (...args: unknown[]) => MichelsonType> = {

@@ -2,9 +2,9 @@ import sodium = require('libsodium-wrappers')
 import bigInt = require('../../dependencies/src/big-integer-1.6.45/BigInteger')
 import BigNumber from '../../dependencies/src/bignumber.js-9.0.0/bignumber'
 import * as bs58check from '../../dependencies/src/bs58check-2.1.2/index'
-import { OperationFailedError, UnsupportedError } from '../../errors'
+import { ConditionViolationError, OperationFailedError, UnsupportedError } from '../../errors'
 import { Domain } from '../../errors/coinlib-error'
-import { stripHexPrefix } from '../../utils/hex'
+import { hexToBytes, stripHexPrefix } from '../../utils/hex'
 
 import { MichelsonList } from './types/michelson/generics/MichelsonList'
 import { MichelsonPair } from './types/michelson/generics/MichelsonPair'
@@ -86,7 +86,23 @@ export class TezosUtils {
   }
 
   public static packMichelsonType(type: MichelsonType): string {
-    return `${TezosUtils.watermark.message}${type.encode()}`
+    return `${TezosUtils.watermark.message}${type.encode().toString('hex')}`
+  }
+
+  public static unpackMichelsonType(encoded: string): MichelsonType {
+    const bytes: Buffer = hexToBytes(encoded)
+    const watermarkBytes: Buffer = hexToBytes(TezosUtils.watermark.message)
+    const prefix: Buffer = bytes.slice(0, watermarkBytes.length)
+    if (!prefix.equals(watermarkBytes)) {
+      throw new ConditionViolationError(Domain.TEZOS, 'Invalid packed MichelsonType.')
+    }
+
+    const michelsonType: MichelsonType | undefined = MichelsonTypeUtils.decode(bytes.slice(prefix.length))
+    if (michelsonType === undefined) {
+      throw new ConditionViolationError(Domain.TEZOS, 'Could not unpack encoded MichelsonType.')
+    }
+
+    return michelsonType
   }
 
   public static parseHex(rawHex: string | string[]): MichelsonType {
@@ -232,7 +248,7 @@ export class TezosUtils {
     }
   }
 
-  private static encodeTzAddress(address: string): Buffer {
+  public static encodeTzAddress(address: string): Buffer {
     if (address.startsWith('tz1')) {
       return Buffer.concat([Buffer.from([0]), this.prefixAndBase58CheckDecode(address, this.tezosPrefixes.tz1)])
     } else if (address.startsWith('tz2')) {

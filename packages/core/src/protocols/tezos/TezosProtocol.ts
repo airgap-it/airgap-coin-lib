@@ -15,10 +15,6 @@ import { DelegateeDetails, DelegationDetails, DelegatorAction, DelegatorDetails,
 import { CurrencyUnit, FeeDefaults } from '../ICoinProtocol'
 import { ICoinSubProtocol } from '../ICoinSubProtocol'
 import { NonExtendedProtocol } from '../NonExtendedProtocol'
-
-import { TezosRewardsCalculation005 } from './rewardcalculation/TezosRewardCalculation005'
-import { TezosRewardsCalculation006 } from './rewardcalculation/TezosRewardCalculation006'
-import { TezosRewardsCalculationDefault } from './rewardcalculation/TezosRewardCalculationDefault'
 import { TezosAddress } from './TezosAddress'
 import { TezosCryptoClient } from './TezosCryptoClient'
 import { TezosProtocolOptions } from './TezosProtocolOptions'
@@ -121,7 +117,7 @@ export interface RunOperationOperationResult {
   status: string
   errors?: unknown
   balance_updates: RunOperationOperationBalanceUpdate[]
-  consumed_gas: string
+  consumed_milligas: string
   paid_storage_size_diff?: string
   originated_contracts?: string[]
   allocated_destination_contract?: boolean
@@ -130,7 +126,7 @@ export interface RunOperationOperationResult {
 interface RunOperationInternalOperationResult {
   result?: {
     errors?: unknown
-    consumed_gas: string
+    consumed_milligas: string
     paid_storage_size_diff?: string
     originated_contracts?: string[]
     allocated_destination_contract?: boolean
@@ -159,8 +155,7 @@ const SELF_BOND_REQUIREMENT: number = 0.0825
 
 export enum TezosNetwork {
   MAINNET = 'mainnet',
-  ITHACANET = 'ithacanet',
-  JAKARTANET = 'jakartanet'
+  GHOSTNET = 'ghostnet'
 }
 
 export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateProtocol {
@@ -216,19 +211,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   public get jsonRPCAPI(): string {
     return this.options.network.rpcUrl
   }
-  public get baseApiUrl(): string {
-    return this.options.network.extras.conseilUrl
-  }
-  public get baseApiNetwork(): string {
-    return this.options.network.extras.conseilNetwork
-  }
-
-  public readonly headers = { 'Content-Type': 'application/json', apiKey: 'airgap00391' }
 
   constructor(public readonly options: TezosProtocolOptions = new TezosProtocolOptions()) {
     super()
-
-    this.headers.apiKey = options.network.extras.conseilApiKey
   }
 
   public async getBlockExplorerLinkForAddress(address: string): Promise<string> {
@@ -306,108 +291,16 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     limit: number,
     cursor?: TezosTransactionCursor
   ): Promise<TezosTransactionResult> {
-    let allTransactions = await Promise.all(
-      addresses.map((address) => {
-        const getRequestBody = () => {
-          const body = {
-            fields: ['status', 'amount', 'fee', 'source', 'destination', 'operation_group_hash', 'timestamp', 'block_level'],
-            predicates: [
-              {
-                field: 'source',
-                operation: 'eq',
-                set: [address],
-                inverse: false,
-                group: 'a'
-              },
-              {
-                field: 'destination',
-                operation: 'eq',
-                set: [address],
-                inverse: false,
-                group: 'b'
-              },
-              {
-                field: 'kind',
-                operation: 'eq',
-                set: ['transaction'],
-                inverse: false,
-                group: 'a'
-              },
-              {
-                field: 'kind',
-                operation: 'eq',
-                set: ['transaction'],
-                inverse: false,
-                group: 'b'
-              }
-            ],
-            orderBy: [
-              {
-                field: 'block_level',
-                direction: 'desc'
-              }
-            ],
-            limit
-          }
-          if (cursor && cursor.lastBlockLevel) {
-            body.predicates.push({
-              field: 'block_level',
-              operation: 'lt',
-              set: [cursor.lastBlockLevel.toString()],
-              inverse: false,
-              group: 'a'
-            })
-            body.predicates.push({
-              field: 'block_level',
-              operation: 'lt',
-              set: [cursor.lastBlockLevel.toString()],
-              inverse: false,
-              group: 'b'
-            })
-          }
-
-          return body
-        }
-
-        // AirGapTransactionStatus.APPLIED : AirGapTransactionStatus.FAILED
-        return new Promise<any>(async (resolve, _reject) => {
-          const result = await axios
-            .post(
-              `${this.options.network.extras.conseilUrl}/v2/data/tezos/${this.options.network.extras.conseilNetwork}/operations`,
-              getRequestBody(),
-              {
-                headers: this.headers
-              }
-            )
-            .catch(() => {
-              return { data: [] }
-            })
-
-          resolve(result.data)
-        })
-      })
-    )
-
-    allTransactions = allTransactions
-      .reduce((current, next) => current.concat(next))
-      .map((transaction: any) => {
-        return {
-          amount: new BigNumber(transaction.amount),
-          fee: new BigNumber(transaction.fee),
-          from: [transaction.source],
-          isInbound: addresses.indexOf(transaction.destination) !== -1,
-          protocolIdentifier: this.identifier,
-          network: this.options.network,
-          to: [transaction.destination],
-          hash: transaction.operation_group_hash,
-          timestamp: transaction.timestamp / 1000,
-          blockHeight: transaction.block_level,
-          status: transaction.status === 'applied' ? AirGapTransactionStatus.APPLIED : AirGapTransactionStatus.FAILED
-        }
-      })
-    const lastEntryBlockLevel = allTransactions.length > 0 ? allTransactions[allTransactions.length - 1].blockHeight : 0
-
-    return { transactions: allTransactions, cursor: { lastBlockLevel: lastEntryBlockLevel } }
+    const address = addresses[0]
+    const results = await this.options.network.extras.indexerClient.getTransactions(address, limit, cursor?.offset)
+    return {
+      transactions: results.map((transaction) => ({
+        ...transaction,
+        protocolIdentifier: this.identifier,
+        network: this.options.network
+      })),
+      cursor: { offset: (cursor?.offset ?? 0) + results.length }
+    }
   }
 
   public async signWithPrivateKey(privateKey: Buffer, transaction: RawTezosTransaction): Promise<IAirGapSignedTransaction> {
@@ -495,8 +388,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
           case TezosOperationType.PROPOSALS:
           case TezosOperationType.BALLOT:
             throw new UnsupportedError(Domain.TEZOS, 'operation not supported: ' + JSON.stringify(tezosOperation.kind))
-          default:
-            assertNever(tezosOperation.kind) // Exhaustive switch
+          default: // Exhaustive switch
+            assertNever(tezosOperation.kind)
             throw new NotFoundError(Domain.TEZOS, 'no operation to unforge found')
         }
 
@@ -1193,7 +1086,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
                 throw new TransactionError(Domain.TEZOS, 'An internal operation produced an error', internalOperation.result.errors)
               }
 
-              gasLimit += Number(internalOperation.result.consumed_gas)
+              gasLimit += Math.ceil(Number(internalOperation.result.consumed_milligas) / 1000)
 
               if (internalOperation.result.paid_storage_size_diff) {
                 storageLimit += Number(internalOperation.result.paid_storage_size_diff)
@@ -1213,7 +1106,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
         }
 
         // Add gas and storage used by operation
-        gasLimit += Number(result.consumed_gas)
+        gasLimit += Math.ceil(Number(result.consumed_milligas) / 1000)
 
         if (result.paid_storage_size_diff) {
           storageLimit += Number(result.paid_storage_size_diff)
@@ -1262,67 +1155,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
 
     // if the address is delegated, check since when
     if (data.delegate && fetchExtraInfo) {
-      const getDataFromMostRecentTransaction = (transactions): { date: Date; opLevel: number } | void => {
-        if (transactions.length > 0) {
-          const mostRecentTransaction = transactions[0]
-
-          return {
-            date: new Date(mostRecentTransaction.timestamp),
-            opLevel: mostRecentTransaction.block_level
-          }
-        }
-      }
-      const getRequestBody = (field: string, set: string) => {
-        return {
-          predicates: [
-            {
-              field,
-              operation: 'eq',
-              set: [delegatedAddress],
-              inverse: false
-            },
-            {
-              field: 'kind',
-              operation: 'eq',
-              set: [set],
-              inverse: false
-            }
-          ],
-          orderBy: [
-            {
-              field: 'block_level',
-              direction: 'desc'
-            }
-          ]
-        }
-      }
-
-      // We first try to get the data from the lastest delegation
-      // After that try to get it from the origination
-      const transactionSourceUrl = `${this.options.network.extras.conseilUrl}/v2/data/tezos/${this.options.network.extras.conseilNetwork}/operations`
-      const results = await Promise.all([
-        axios
-          .post(transactionSourceUrl, getRequestBody('source', 'delegation'), {
-            headers: this.headers
-          })
-          .catch(() => {
-            return { data: [] }
-          }),
-        axios
-          .post(transactionSourceUrl, getRequestBody('manager_pubkey', 'origination'), {
-            headers: this.headers
-          })
-          .catch(() => {
-            return { data: [] }
-          })
-      ])
-
-      const combinedData = results[0].data.concat(results[1].data)
-
-      const recentTransactionData = getDataFromMostRecentTransaction(combinedData)
+      const recentTransactionData = await this.options.network.extras.indexerClient.getDelegationInfo(delegatedAddress)
       if (recentTransactionData) {
         delegatedDate = recentTransactionData.date
-        delegatedOpLevel = recentTransactionData.opLevel
+        delegatedOpLevel = recentTransactionData.level
       }
     }
 
@@ -1525,8 +1361,8 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
         case TezosOperationType.PROPOSALS:
         case TezosOperationType.BALLOT:
           break
-        default:
-          assertNever(operation.kind) // Exhaustive switch
+        default: // Exhaustive switch
+          assertNever(operation.kind)
           throw new UnsupportedError(Domain.TEZOS, `operation type not supported ${JSON.stringify(operation.kind)}`)
       }
     })
@@ -1607,20 +1443,16 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     return currentCycle
   }
 
-  private static readonly FIRST_005_CYCLE: number = 160
-  private static readonly FIRST_006_CYCLE: number = 208
   private static readonly FIRST_010_CYCLE: number = 388
 
   private static readonly BLOCKS_PER_CYCLE: { [key in TezosNetwork]: number[] } = {
     [TezosNetwork.MAINNET]: [4096, 8192],
-    [TezosNetwork.ITHACANET]: [4096],
-    [TezosNetwork.JAKARTANET]: [4096]
+    [TezosNetwork.GHOSTNET]: [4096]
   }
 
   private static readonly TIME_BETWEEN_BLOCKS: { [key in TezosNetwork]: number[] } = {
     [TezosNetwork.MAINNET]: [60, 30],
-    [TezosNetwork.ITHACANET]: [30],
-    [TezosNetwork.JAKARTANET]: [30]
+    [TezosNetwork.GHOSTNET]: [30]
   }
 
   public timeIntervalBetweenCycles(fromCycle: number, toCycle: number): number {
@@ -1669,120 +1501,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     return cycle
   }
 
-  private readonly rewardCalculations = {
-    alpha: new TezosRewardsCalculationDefault(this),
-    babylon: new TezosRewardsCalculation005(this),
-    cartha: new TezosRewardsCalculation006(this)
-  }
-
-  public async calculateRewards(
-    bakerAddress: string,
-    cycle: number,
-    currentCycle?: number,
-    breakDownRewards: boolean = true
-  ): Promise<TezosRewards> {
-    const is005 = this.options.network.extras.network === TezosNetwork.MAINNET && cycle >= TezosProtocol.FIRST_005_CYCLE
-    const is006 = this.options.network.extras.network !== TezosNetwork.MAINNET || cycle >= TezosProtocol.FIRST_006_CYCLE
-    let rewardCalculation: TezosRewardsCalculations
-    if (is006) {
-      rewardCalculation = this.rewardCalculations.cartha
-    } else if (is005) {
-      rewardCalculation = this.rewardCalculations.babylon
-    } else {
-      rewardCalculation = this.rewardCalculations.alpha
-    }
-
-    return rewardCalculation.calculateRewards(bakerAddress, cycle, breakDownRewards, currentCycle)
-  }
-
-  public async calculatePayouts(rewards: TezosRewards, offsetOrAddresses: number | string[], limit?: number): Promise<TezosPayoutInfo[]> {
-    let delegators: string[]
-    if (typeof offsetOrAddresses === 'number') {
-      if (limit === undefined) {
-        throw new ConditionViolationError(Domain.TEZOS, 'limit parameter is required when providing offset')
-      }
-      delegators = rewards.delegatedContracts.slice(
-        offsetOrAddresses,
-        Math.min(offsetOrAddresses + limit, rewards.delegatedContracts.length)
-      )
-    } else {
-      delegators = offsetOrAddresses
-    }
-
-    return this.calculatePayoutForAddresses(delegators, rewards)
-  }
-
-  public async calculatePayout(address: string, rewards: TezosRewards): Promise<TezosPayoutInfo> {
-    const result = (await this.calculatePayoutForAddresses([address], rewards)).pop()
-    if (result === undefined) {
-      return {
-        delegator: address,
-        share: '0',
-        payout: '0',
-        balance: '0'
-      }
-    }
-
-    return result
-  }
-
-  private async calculatePayoutForAddresses(addresses: string[], rewards: TezosRewards) {
-    const result: TezosPayoutInfo[] = []
-    const totalRewardsBN = new BigNumber(rewards.totalRewards).plus(new BigNumber(rewards.fees))
-    const balances = await this.fetchBalances(addresses, rewards.snapshotBlockLevel)
-    for (const balance of balances) {
-      let amount = balance.balance
-      if (amount === undefined) {
-        amount = new BigNumber(0)
-      }
-      const share = amount.div(rewards.stakingBalance)
-      const payoutAmount = totalRewardsBN.multipliedBy(share)
-      result.push({
-        delegator: balance.address,
-        share: share.toFixed(),
-        payout: payoutAmount.toFixed(),
-        balance: amount.toFixed()
-      })
-    }
-
-    return result
-  }
-
   private async fetchBlockMetadata(block: number | 'head'): Promise<any> {
     const result = await axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/${block}/metadata`)
 
     return result.data
-  }
-
-  private async fetchBalances(addresses: string[], blockLevel: number): Promise<{ address: string; balance: BigNumber }[]> {
-    const body = {
-      fields: ['account_id', 'balance'],
-      predicates: [
-        {
-          field: 'account_id',
-          operation: 'in',
-          set: addresses
-        }
-      ],
-      snapshot: {
-        field: 'block_level',
-        value: blockLevel
-      }
-    }
-    const result = await axios.post(
-      `${this.options.network.extras.conseilUrl}/v2/data/tezos/${this.options.network.extras.conseilNetwork}/accounts_history`,
-      body,
-      {
-        headers: this.headers
-      }
-    )
-
-    return result.data.map((account) => {
-      return {
-        address: account.account_id,
-        balance: new BigNumber(account.balance)
-      }
-    })
   }
 
   public async signMessage(message: string, keypair: { privateKey: Buffer }): Promise<string> {
@@ -1810,53 +1532,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   }
 
   public async getTransactionStatuses(transactionHashes: string[]): Promise<AirGapTransactionStatus[]> {
-    const body = {
-      fields: ['status', 'operation_group_hash'],
-      predicates: [
-        {
-          field: 'operation_group_hash',
-          operation: 'in',
-          set: transactionHashes
-        },
-        {
-          field: 'kind',
-          operation: 'eq',
-          set: ['transaction']
-        }
-      ]
-    }
-
-    const result: AxiosResponse<{ status: string; operation_group_hash: string }[]> = await axios.post(
-      `${this.options.network.extras.conseilUrl}/v2/data/tezos/${this.options.network.extras.conseilNetwork}/operations`,
-      body,
-      {
-        headers: this.headers
-      }
-    )
-
-    const statusGroups: Record<string, AirGapTransactionStatus> = {}
-
-    result.data.forEach((element: { status: string; operation_group_hash: string }) => {
-      const currentStatus: AirGapTransactionStatus =
-        element.status === 'applied' ? AirGapTransactionStatus.APPLIED : AirGapTransactionStatus.FAILED
-
-      if (statusGroups[element.operation_group_hash] === AirGapTransactionStatus.FAILED) {
-        // If status is "failed", we can move on because it will not change anymore
-        return
-      } else if (statusGroups[element.operation_group_hash] === AirGapTransactionStatus.APPLIED) {
-        if (currentStatus === AirGapTransactionStatus.FAILED) {
-          // If the status so far is "applied" but the current one "failed", we need to update the status
-          statusGroups[element.operation_group_hash] = currentStatus
-        }
-      } else {
-        // If no status is set, use the current one
-        statusGroups[element.operation_group_hash] = currentStatus
-      }
-    })
-
-    return transactionHashes.map((txHash: string) => {
-      return statusGroups[txHash]
-    })
+    throw new Error('Method not implemented.')
   }
 }
 
@@ -1884,7 +1560,6 @@ export interface TezosEndorsingRight {
 }
 
 export interface TezosRewardsCalculations {
-  protocol: TezosProtocol
   calculateRewards(bakerAddress: string, cycle: number, breakDownRewards: boolean, currentCycleIn?: number): Promise<TezosRewards>
 }
 

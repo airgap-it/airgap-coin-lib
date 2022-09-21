@@ -1,3 +1,3 @@
 export interface TezosTransactionCursor {
-  lastBlockLevel: number
+  offset: number
 }

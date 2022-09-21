@@ -17,11 +17,9 @@ import { TezosAddress } from '../TezosAddress'
 import { TezosProtocol } from '../TezosProtocol'
 import { TezosProtocolNetworkResolver } from '../TezosProtocolOptions'
 import { TezosUtils } from '../TezosUtils'
-import { BigMapResponse } from '../types/contract/BigMapResult'
-import { ConseilPredicate } from '../types/contract/ConseilPredicate'
 import { TezosContractMetadata } from '../types/contract/TezosContractMetadata'
 import { TezosFATokenMetadata } from '../types/fa/TezosFATokenMetadata'
-import { MichelineDataNode } from '../types/micheline/MichelineNode'
+import { MichelineDataNode, MichelineNode } from '../types/micheline/MichelineNode'
 import { TezosOperation } from '../types/operations/TezosOperation'
 import { TezosTransactionOperation, TezosTransactionParameters, TezosWrappedTransactionOperation } from '../types/operations/Transaction'
 import { TezosOperationType } from '../types/TezosOperationType'
@@ -85,19 +83,18 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
 
   public abstract transactionDetailsFromParameters(parameters: TezosTransactionParameters): Partial<IAirGapTransaction>[]
 
-  public async bigMapValue(key: string, isKeyHash: boolean = false, bigMapID?: number): Promise<string | null> {
-    const result: BigMapResponse[] = await this.contract.conseilBigMapValues({
-      bigMapID,
-      predicates: [
-        {
-          field: isKeyHash ? 'key_hash' : 'key',
-          operation: 'eq',
-          set: [key]
-        }
-      ]
+  public async bigMapValue(key: string, isKeyHash: boolean = false, bigMapID?: number): Promise<MichelineNode | null> {
+    const bigMaps = await this.contract.getBigMaps()
+    const bigMap = bigMapID !== undefined ? bigMaps.find((bigMap) => bigMap.id === bigMapID) : bigMaps[0]
+    if (!bigMap) {
+      return null
+    }
+    const result = await this.contract.getBigMapValue({
+      bigMap,
+      key
     })
 
-    return result.length > 0 ? result[0].value : null
+    return result !== undefined ? result.value : null
   }
 
   public async contractMetadata(networkResolver?: TezosProtocolNetworkResolver): Promise<TezosContractMetadata | undefined> {
@@ -128,150 +125,38 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
     limit: number,
     cursor?: TezosTransactionCursor
   ): Promise<TezosTransactionResult> {
-    const allTransactions = await Promise.all(
-      addresses.map((address) => {
-        const body = {
-          predicates: [...this.getTransactionQueryPredicates(address, 'string'), ...this.getTransactionQueryPredicates(address, 'bytes')],
-          orderBy: [
-            {
-              field: 'timestamp',
-              direction: 'desc'
-            }
-          ],
-          limit
-        }
-        if (cursor && cursor.lastBlockLevel) {
-          body.predicates.push({
-            field: 'block_level',
-            operation: 'lt',
-            set: [cursor.lastBlockLevel.toString()],
-            inverse: false
-          })
-        }
-
-        return axios
-          .post(`${this.baseApiUrl}/v2/data/tezos/${this.baseApiNetwork}/operations`, body, {
-            // incoming txs
-            headers: this.headers
-          })
-          .then((response) => response.data)
-          .catch(() => {
-            return []
-          })
-      })
+    const transactions = await this.contract.network.extras.indexerClient.getTokenTransactionsForAddress(
+      { contractAddress: this.contract.address, id: 0 },
+      addresses[0],
+      limit,
+      cursor?.offset
     )
-    const lastEntryBlockLevel: number = allTransactions.length > 0 ? allTransactions[allTransactions.length - 1].block_level : 0
-
-    const transactions = allTransactions
-      .reduce((current, next) => current.concat(next))
-      .map((transaction: any) => this.transactionToAirGapTransactions(transaction, addresses))
-      .reduce((flatten: IAirGapTransaction[], toFlatten: IAirGapTransaction[]) => flatten.concat(toFlatten), [])
-
     return {
-      transactions,
+      transactions: transactions.map((transaction) => ({
+        ...transaction,
+        protocolIdentifier: this.identifier,
+        network: this.options.network
+      })),
       cursor: {
-        lastBlockLevel: lastEntryBlockLevel
+        offset: (cursor?.offset ?? 0) + transactions.length
       }
     }
   }
 
-  public getTransactionQueryPredicates(address: string, addressQueryType: 'string' | 'bytes'): ConseilPredicate[] {
-    const addressQueryValue: string = addressQueryType === 'bytes' ? TezosUtils.encodeAddress(address).toString('hex') : address
-
-    return [
-      {
-        field: 'parameters',
-        operation: 'like',
-        set: [addressQueryValue],
-        inverse: false,
-        group: addressQueryType
-      },
-      {
-        field: 'parameters_entrypoints',
-        operation: 'eq',
-        set: ['transfer'],
-        inverse: false,
-        group: addressQueryType
-      },
-      {
-        field: 'kind',
-        operation: 'eq',
-        set: ['transaction'],
-        inverse: false,
-        group: addressQueryType
-      },
-      {
-        field: 'destination',
-        operation: 'eq',
-        set: [this.contractAddress],
-        inverse: false,
-        group: addressQueryType
-      },
-      ...this.getAdditionalTransactionQueryPredicates(address, addressQueryType).map((predicate) => {
-        return {
-          ...predicate,
-          group: addressQueryType
-        }
-      })
-    ]
-  }
-
-  protected getAdditionalTransactionQueryPredicates(address: string, addressQueryType: 'string' | 'bytes'): ConseilPredicate[] {
-    return []
-  }
-
   public async getTransactions(limit: number, cursor?: TezosTransactionCursor): Promise<TezosTransactionResult> {
-    const body = {
-      predicates: [
-        {
-          field: 'parameters',
-          operation: 'like',
-          set: ['"transfer"'] as any[],
-          inverse: false
-        },
-        {
-          field: 'kind',
-          operation: 'eq',
-          set: ['transaction'],
-          inverse: false
-        },
-        {
-          field: 'destination',
-          operation: 'eq',
-          set: [this.contractAddress],
-          inverse: false
-        }
-      ],
-      orderBy: [
-        {
-          field: 'block_level',
-          direction: 'desc'
-        }
-      ],
-      limit
-    }
-    if (cursor !== undefined) {
-      body.predicates.push({
-        field: 'block_level',
-        operation: 'lt',
-        set: [cursor.lastBlockLevel],
-        inverse: false
-      })
-    }
-    const response = await axios.post(`${this.baseApiUrl}/v2/data/tezos/${this.baseApiNetwork}/operations`, body, {
-      headers: this.headers
-    })
-
-    const transactions: IAirGapTransaction[] = response.data
-      .map((transaction: any) => this.transactionToAirGapTransactions(transaction))
-      .reduce((flatten: IAirGapTransaction[], toFlatten: IAirGapTransaction[]) => flatten.concat(toFlatten), [])
-
-    const lastEntryBlockLevel: number = response.data.length > 0 ? response.data[response.data.length - 1].block_level : 0
-
+    const transactions = await this.contract.network.extras.indexerClient.getTokenTransactions(
+      { contractAddress: this.contract.address, id: 0 },
+      limit,
+      cursor?.offset
+    )
     return {
-      transactions,
+      transactions: transactions.map((transaction) => ({
+        ...transaction,
+        protocolIdentifier: this.identifier,
+        network: this.options.network
+      })),
       cursor: {
-        lastBlockLevel: lastEntryBlockLevel
+        offset: (cursor?.offset ?? 0) + transactions.length
       }
     }
   }
@@ -410,42 +295,6 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
     }
 
     return JSON.parse(parameters)
-  }
-
-  private transactionToAirGapTransactions(transaction: any, sourceAddresses?: string[]): IAirGapTransaction[] {
-    const parameters: string = transaction.parameters_micheline ?? transaction.parameters
-    const parsedParameters: unknown = this.parseParameters(parameters)
-
-    if (!isMichelineNode(parsedParameters)) {
-      throw new InvalidValueError(Domain.TEZOSFA, `Transaction parameters are invalid: ${JSON.stringify(parsedParameters)}`)
-    }
-
-    const transferData: TezosTransactionParameters = {
-      entrypoint: transaction.parameters_entrypoints,
-      value: parsedParameters
-    }
-
-    const partialDetails: Partial<IAirGapTransaction>[] = this.transactionDetailsFromParameters(transferData)
-
-    return partialDetails.map((details: Partial<IAirGapTransaction>) => {
-      const inbound: boolean =
-        sourceAddresses !== undefined && details.to && details.to.length === 1 ? sourceAddresses.indexOf(details.to[0]) !== -1 : false
-
-      return {
-        amount: new BigNumber(0).toFixed(), // in tzbtc
-        fee: new BigNumber(transaction.fee ?? 0).toFixed(), // in xtz
-        from: [],
-        isInbound: inbound,
-        protocolIdentifier: this.identifier,
-        network: this.options.network,
-        to: [],
-        hash: transaction.operation_group_hash,
-        timestamp: transaction.timestamp / 1000,
-        blockHeight: transaction.block_level,
-        status: transaction.status,
-        ...details
-      }
-    })
   }
 
   protected async runContractCall(contractCall: TezosContractCall, source: string): Promise<MichelineDataNode> {

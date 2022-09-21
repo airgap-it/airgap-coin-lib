@@ -2,7 +2,7 @@ import { Lazy } from '../../../../../data/Lazy'
 import { InvalidValueError } from '../../../../../errors'
 import { Domain } from '../../../../../errors/coinlib-error'
 import { MichelineDataNode, MichelineNode, MichelinePrimitiveApplication } from '../../micheline/MichelineNode'
-import { isMichelinePrimitiveApplication, isMichelineSequence } from '../../utils'
+import { isAnyMichelinePrimitiveApplication, isMichelineSequence } from '../../utils'
 import { MichelsonGrammarData } from '../grammar/MichelsonGrammarData'
 import { MichelsonType } from '../MichelsonType'
 
@@ -38,7 +38,7 @@ export class MichelsonMap extends MichelsonType {
     }
 
     const entries = micheline
-      .filter((node) => isMichelinePrimitiveApplication(node))
+      .filter((node) => isAnyMichelinePrimitiveApplication(node))
       .map((primitiveApplication) =>
         this.createMapEntry(
           primitiveApplication as MichelinePrimitiveApplication<MichelsonGrammarData>,

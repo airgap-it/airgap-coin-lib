@@ -70,85 +70,85 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
 
   describe('TX Lists', () => {
     let getStub
-    let postStub
 
     beforeEach(() => {
       const res = new TezosProtocolStub().registerStub(new TezosTestProtocolSpec(), tezosLib)
       getStub = res.getStub
-      postStub = res.postStub
 
-      getStub
-        .withArgs(`${tezosLib.baseApiUrl}/v3/operations/${tezosProtocolSpec.wallet.addresses[0]}?type=Transaction&p=0&number=20`)
-        .returns(
-          Promise.resolve({
-            data: [
-              {
-                hash: 'ooNNmftGhsUriHVWYgHGq6AE3F2sHZFYaCq41NQZSeUdm1UZEAP',
-                block_hash: 'BMVuKQVUh2hxdgAf7mnXUQuf82BcMxuZjoLNxCi7YSJ4Mzvk7Qe',
-                network_hash: 'NetXdQprcVkpaWU',
-                type: {
-                  kind: 'manager',
-                  source: {
-                    tz: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'
-                  },
-                  operations: [
-                    {
-                      kind: 'transaction',
-                      src: {
-                        tz: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'
-                      },
-                      amount: 1000000,
-                      destination: {
-                        tz: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'
-                      },
-                      failed: false,
-                      internal: false,
-                      burn: 0,
-                      counter: 917316,
-                      fee: 1420,
-                      gas_limit: '10100',
-                      storage_limit: '0',
-                      op_level: 261513,
-                      timestamp: '2019-01-08T10:02:15Z'
-                    }
-                  ]
-                }
-              },
-              {
-                hash: 'ooNNmftGhsUriHVWYgHGq6AE3F2sHZFYaCq41NQZSeUdm1UZEAP',
-                block_hash: 'BMVuKQVUh2hxdgAf7mnXUQuf82BcMxuZjoLNxCi7YSJ4Mzvk7Qe',
-                network_hash: 'NetXdQprcVkpaWU',
-                type: {
-                  kind: 'manager',
-                  source: {
-                    tz: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'
-                  },
-                  operations: [
-                    {
-                      kind: 'transaction',
-                      src: {
-                        tz: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'
-                      },
-                      amount: 1000000,
-                      destination: {
-                        tz: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'
-                      },
-                      failed: false,
-                      internal: false,
-                      burn: 0,
-                      counter: 917316,
-                      fee: 1420,
-                      gas_limit: '10100',
-                      storage_limit: '0',
-                      op_level: 261513,
-                      timestamp: '2019-01-08T10:02:15Z'
-                    }
-                  ]
-                }
-              }
-            ]
-          })
-        )
+      // getStub
+      //   .withArgs(
+      //     `${tezosLib.options.network.extras.indexerClient.baseUrl}/v3/operations/${tezosProtocolSpec.wallet.addresses[0]}?type=Transaction&p=0&number=20`
+      //   )
+      //   .returns(
+      //     Promise.resolve({
+      //       data: [
+      //         {
+      //           hash: 'ooNNmftGhsUriHVWYgHGq6AE3F2sHZFYaCq41NQZSeUdm1UZEAP',
+      //           block_hash: 'BMVuKQVUh2hxdgAf7mnXUQuf82BcMxuZjoLNxCi7YSJ4Mzvk7Qe',
+      //           network_hash: 'NetXdQprcVkpaWU',
+      //           type: {
+      //             kind: 'manager',
+      //             source: {
+      //               tz: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'
+      //             },
+      //             operations: [
+      //               {
+      //                 kind: 'transaction',
+      //                 src: {
+      //                   tz: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'
+      //                 },
+      //                 amount: 1000000,
+      //                 destination: {
+      //                   tz: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'
+      //                 },
+      //                 failed: false,
+      //                 internal: false,
+      //                 burn: 0,
+      //                 counter: 917316,
+      //                 fee: 1420,
+      //                 gas_limit: '10100',
+      //                 storage_limit: '0',
+      //                 op_level: 261513,
+      //                 timestamp: '2019-01-08T10:02:15Z'
+      //               }
+      //             ]
+      //           }
+      //         },
+      //         {
+      //           hash: 'ooNNmftGhsUriHVWYgHGq6AE3F2sHZFYaCq41NQZSeUdm1UZEAP',
+      //           block_hash: 'BMVuKQVUh2hxdgAf7mnXUQuf82BcMxuZjoLNxCi7YSJ4Mzvk7Qe',
+      //           network_hash: 'NetXdQprcVkpaWU',
+      //           type: {
+      //             kind: 'manager',
+      //             source: {
+      //               tz: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'
+      //             },
+      //             operations: [
+      //               {
+      //                 kind: 'transaction',
+      //                 src: {
+      //                   tz: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'
+      //                 },
+      //                 amount: 1000000,
+      //                 destination: {
+      //                   tz: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'
+      //                 },
+      //                 failed: false,
+      //                 internal: false,
+      //                 burn: 0,
+      //                 counter: 917316,
+      //                 fee: 1420,
+      //                 gas_limit: '10100',
+      //                 storage_limit: '0',
+      //                 op_level: 261513,
+      //                 timestamp: '2019-01-08T10:02:15Z'
+      //               }
+      //             ]
+      //           }
+      //         }
+      //       ]
+      //     })
+      //   )
     })
 
     it('will parse various operations', async () => {
@@ -273,37 +273,56 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
 
     it('can unforge a delegation TX', async () => {})
 
-    it('can give a list of transactions from Conseil API', async () => {
-      postStub.withArgs(`${tezosLib.baseApiUrl}/v2/data/tezos/mainnet/operations`).returns(
-        Promise.resolve({
-          data: [
-            {
-              source: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L',
-              timestamp: 1561035943000,
-              block_level: 261513,
-              operation_group_hash: 'ooNNmftGhsUriHVWYgHGq6AE3F2sHZFYaCq41NQZSeUdm1UZEAP',
-              amount: 1000000,
-              destination: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L',
-              fee: 1420,
-              status: 'applied'
-            }
-          ]
-        })
-      )
+    it('can give a list of transactions from indexer API', async () => {
+      getStub
+        .withArgs(
+          `${tezosLib.options.network.extras.indexerClient.baseUrl}/v1/accounts/${tezosProtocolSpec.wallet.addresses[0]}/operations?type=transaction&limit=20`
+        )
+        .returns(
+          Promise.resolve({
+            data: [
+              {
+                type: 'transaction',
+                id: 53053483,
+                level: 1484998,
+                timestamp: '2021-05-24T06:21:18Z',
+                block: 'BMNYPofzKU7JGq5HCqGz5XfqobGc6d7uPUcdzAn83Mx93F1qvM6',
+                hash: 'ooSLLkH5KoCbVdrS7HwDNRRSxr3e6ZM7FZi2JDuPca1PnU568sD',
+                counter: 917359,
+                sender: {
+                  address: 'tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'
+                },
+                gasLimit: 1507,
+                gasUsed: 1427,
+                storageLimit: 0,
+                storageUsed: 0,
+                bakerFee: 413,
+                storageFee: 0,
+                allocationFee: 0,
+                target: {
+                  address: 'tz1M4axJezHXX5my1uQEXYXmeVPp5vXnK8bH'
+                },
+                amount: 5000,
+                status: 'applied',
+                hasInternals: false
+              }
+            ]
+          })
+        )
       const transactions = await (await tezosLib.getTransactionsFromAddresses(tezosProtocolSpec.wallet.addresses, 20)).transactions
 
       expect(transactions.map((transaction) => ({ ...transaction, network: undefined }))).to.deep.eq([
         {
-          amount: new BigNumber(1000000),
-          fee: new BigNumber(1420),
+          amount: '5000',
+          fee: '413',
           from: ['tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'],
-          isInbound: true,
+          isInbound: false,
           network: undefined,
-          timestamp: 1561035943,
+          timestamp: new Date('2021-05-24T06:21:18Z').getTime() / 1000,
           protocolIdentifier: tezosLib.identifier,
-          to: ['tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'],
-          hash: 'ooNNmftGhsUriHVWYgHGq6AE3F2sHZFYaCq41NQZSeUdm1UZEAP',
-          blockHeight: 261513,
+          to: ['tz1M4axJezHXX5my1uQEXYXmeVPp5vXnK8bH'],
+          hash: 'ooSLLkH5KoCbVdrS7HwDNRRSxr3e6ZM7FZi2JDuPca1PnU568sD',
+          blockHeight: 1484998,
           status: AirGapTransactionStatus.APPLIED
         }
       ])
@@ -360,7 +379,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
                   operation_result: {
                     status: 'applied',
                     balance_updates: [],
-                    consumed_gas: '15385',
+                    consumed_milligas: '15385000',
                     paid_storage_size_diff: '0'
                   },
                   internal_operation_results: []
@@ -449,7 +468,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
                     operation_result: {
                       status: 'applied',
                       balance_updates: [],
-                      consumed_gas: '10300',
+                      consumed_milligas: '10300000',
                       paid_storage_size_diff: '300'
                     },
                     internal_operation_results: []
@@ -494,7 +513,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
                     operation_result: {
                       status: 'applied',
                       balance_updates: [],
-                      consumed_gas: '10300',
+                      consumed_milligas: '10300000',
                       paid_storage_size_diff: '300'
                     },
                     internal_operation_results: []
@@ -690,7 +709,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
           operation_result: {
             status: 'applied',
             balance_updates: [],
-            consumed_gas: '10300',
+            consumed_milligas: '10300000',
             paid_storage_size_diff: '0'
           },
           internal_operation_results: []
@@ -733,7 +752,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
           operation_result: {
             status: 'applied',
             balance_updates: [],
-            consumed_gas: '10300',
+            consumed_milligas: '10300000',
             paid_storage_size_diff: '0'
           },
           internal_operation_results: []
@@ -769,7 +788,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
           operation_result: {
             status: 'applied',
             balance_updates: [],
-            consumed_gas: '10300',
+            consumed_milligas: '10300000',
             paid_storage_size_diff: '0'
           },
           internal_operation_results: []
@@ -810,7 +829,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
           operation_result: {
             status: 'applied',
             balance_updates: [],
-            consumed_gas: '10300',
+            consumed_milligas: '10300000',
             paid_storage_size_diff: '0'
           },
           internal_operation_results: []
@@ -851,7 +870,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
           operation_result: {
             status: 'applied',
             balance_updates: [],
-            consumed_gas: '10300',
+            consumed_milligas: '10300000',
             paid_storage_size_diff: '0'
           },
           internal_operation_results: []
@@ -962,7 +981,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
               },
               voting_period_kind: 'proposal',
               nonce_hash: null,
-              consumed_gas: '0',
+              consumed_milligas: '0',
               deactivated: [],
               balance_updates: []
             },
@@ -1047,7 +1066,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         operation_result: {
           status: 'applied',
           balance_updates: [],
-          consumed_gas: '350000'
+          consumed_milligas: '350000000'
         }
       }
 
@@ -1150,7 +1169,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
               },
               voting_period_kind: 'proposal',
               nonce_hash: null,
-              consumed_gas: '0',
+              consumed_milligas: '0',
               deactivated: [],
               balance_updates: []
             },
@@ -1226,7 +1245,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         operation_result: {
           status: 'applied',
           balance_updates: [],
-          consumed_gas: '350000'
+          consumed_milligas: '350000000'
         }
       }
 
@@ -1325,7 +1344,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
               },
               voting_period_kind: 'proposal',
               nonce_hash: null,
-              consumed_gas: '0',
+              consumed_milligas: '0',
               deactivated: [],
               balance_updates: []
             },
@@ -1401,7 +1420,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         operation_result: {
           status: 'applied',
           balance_updates: [],
-          consumed_gas: '350000'
+          consumed_milligas: '350000000'
         }
       }
 
@@ -1529,7 +1548,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
               },
               voting_period_kind: 'proposal',
               nonce_hash: null,
-              consumed_gas: '0',
+              consumed_milligas: '0',
               deactivated: [],
               balance_updates: []
             },
@@ -1619,7 +1638,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         operation_result: {
           status: 'applied',
           balance_updates: [],
-          consumed_gas: '350000'
+          consumed_milligas: '350000000'
         }
       }
 
@@ -1733,7 +1752,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
               },
               voting_period_kind: 'proposal',
               nonce_hash: null,
-              consumed_gas: '0',
+              consumed_milligas: '0',
               deactivated: [],
               balance_updates: []
             },
@@ -1825,7 +1844,7 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         operation_result: {
           status: 'applied',
           balance_updates: [],
-          consumed_gas: '350000'
+          consumed_milligas: '350000000'
         },
         internal_operation_results: [
           {
@@ -1929,14 +1948,11 @@ describe(`ICoinProtocol Tezos - Custom Tests`, () => {
         .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy/balance`)
         .returns(Promise.resolve({ data: 0 }))
 
-      return prepareSpend(
-        ['KT1X6SSqro2zUo1Wa7X5BnDWBvfBxZ6feUnc', 'KT1QLtQ54dKzcfwxMHmEM6PC8tooUg6MxDZ3'],
-        ['12345'],
-        '111'
-      ).catch((error: Error) =>
-        expect(error)
-          .to.be.an('error')
-          .with.property('message', new ConditionViolationError(Domain.TEZOS, 'length of recipients and values does not match!').message)
+      return prepareSpend(['KT1X6SSqro2zUo1Wa7X5BnDWBvfBxZ6feUnc', 'KT1QLtQ54dKzcfwxMHmEM6PC8tooUg6MxDZ3'], ['12345'], '111').catch(
+        (error: Error) =>
+          expect(error)
+            .to.be.an('error')
+            .with.property('message', new ConditionViolationError(Domain.TEZOS, 'length of recipients and values does not match!').message)
       )
     })
   })

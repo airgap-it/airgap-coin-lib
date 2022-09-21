@@ -104,7 +104,7 @@ export class TezosTestProtocolSpec extends TestProtocolSpec {
             operation_result: {
               status: 'applied',
               balance_updates: [],
-              consumed_gas: '10300',
+              consumed_milligas: '10300000',
               paid_storage_size_diff: '0'
             },
             internal_operation_results: []
@@ -127,7 +127,6 @@ export class TezosTestProtocolSpec extends TestProtocolSpec {
             balance_updates: [],
             operation_result: {
               status: 'applied',
-              consumed_gas: '1000',
               consumed_milligas: '1000000'
             }
           }
@@ -139,7 +138,7 @@ export class TezosTestProtocolSpec extends TestProtocolSpec {
             operation_result: {
               status: 'applied',
               balance_updates: [],
-              consumed_gas: '10300',
+              consumed_milligas: '10300000',
               paid_storage_size_diff: '0'
             },
             internal_operation_results: []
@@ -289,7 +288,7 @@ export class TezosTestProtocolSpec extends TestProtocolSpec {
           name: 'Mainnet',
           type: 'MAINNET',
           rpcUrl: 'https://tezos-node.prod.gke.papers.tech',
-          blockExplorer: { blockExplorer: 'https://tezblock.io' },
+          blockExplorer: { blockExplorer: 'https://tzkt.io' },
           extras: {
             network: 'mainnet',
             conseilUrl: 'https://tezos-mainnet-conseil.prod.gke.papers.tech',
@@ -312,7 +311,7 @@ export class TezosTestProtocolSpec extends TestProtocolSpec {
           name: 'Mainnet',
           type: 'MAINNET',
           rpcUrl: 'https://tezos-node.prod.gke.papers.tech',
-          blockExplorer: { blockExplorer: 'https://tezblock.io' },
+          blockExplorer: { blockExplorer: 'https://tzkt.io' },
           extras: {
             network: 'mainnet',
             conseilUrl: 'https://tezos-mainnet-conseil.prod.gke.papers.tech',
@@ -341,7 +340,7 @@ export class TezosTestProtocolSpec extends TestProtocolSpec {
           name: 'Mainnet',
           type: 'MAINNET',
           rpcUrl: 'https://tezos-node.prod.gke.papers.tech',
-          blockExplorer: { blockExplorer: 'https://tezblock.io' },
+          blockExplorer: { blockExplorer: 'https://tzkt.io' },
           extras: {
             network: 'mainnet',
             conseilUrl: 'https://tezos-mainnet-conseil.prod.gke.papers.tech',
@@ -364,7 +363,7 @@ export class TezosTestProtocolSpec extends TestProtocolSpec {
           name: 'Mainnet',
           type: 'MAINNET',
           rpcUrl: 'https://tezos-node.prod.gke.papers.tech',
-          blockExplorer: { blockExplorer: 'https://tezblock.io' },
+          blockExplorer: { blockExplorer: 'https://tzkt.io' },
           extras: {
             network: 'mainnet',
             conseilUrl: 'https://tezos-mainnet-conseil.prod.gke.papers.tech',

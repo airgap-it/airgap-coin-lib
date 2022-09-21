@@ -15,7 +15,7 @@ export interface RawTezosSaplingTransaction {
   contractAddress: string
   chainId: string
   stateDiff: TezosSaplingStateDiff
-  callParameters: string
+  unshieldTarget?: string
 }
 
 export interface RawEthereumTransaction {

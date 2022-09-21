@@ -1,4 +1,6 @@
 import { MichelineNode, MichelinePrimitive, MichelinePrimitiveApplication } from './micheline/MichelineNode'
+import { MichelsonGrammarData } from './michelson/grammar/MichelsonGrammarData'
+import { MichelsonGrammarType } from './michelson/grammar/MichelsonGrammarType'
 
 export function isMichelineNode(node: unknown): node is MichelineNode {
   return isMichelineNodeRecursive(node, 0)
@@ -9,7 +11,7 @@ function isMichelineNodeRecursive(node: unknown, recursionLevel: number): node i
     isMichelinePrimitive('int', node) ||
     isMichelinePrimitive('string', node) ||
     isMichelinePrimitive('bytes', node) ||
-    isMichelinePrimitiveApplication(node) ||
+    isAnyMichelinePrimitiveApplication(node) ||
     isMichelineSequenceRecursive(node, recursionLevel)
   )
 }
@@ -18,8 +20,15 @@ export function isMichelinePrimitive<T extends 'int' | 'string' | 'bytes'>(type:
   return node instanceof Object && type in node
 }
 
-export function isMichelinePrimitiveApplication(node: unknown): node is MichelinePrimitiveApplication<any> {
+export function isAnyMichelinePrimitiveApplication(node: unknown): node is MichelinePrimitiveApplication<any> {
   return node instanceof Object && 'prim' in node
+}
+
+export function isMichelinePrimitiveApplication<T extends MichelsonGrammarType | MichelsonGrammarData>(
+  type: T,
+  node: unknown
+): node is MichelinePrimitiveApplication<T> {
+  return isAnyMichelinePrimitiveApplication(node) && node.prim === type
 }
 
 const MICHELINE_MAX_CHECK_RECURSION_DEPTH: number = 1

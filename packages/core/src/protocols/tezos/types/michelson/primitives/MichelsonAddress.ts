@@ -44,7 +44,7 @@ export class MichelsonAddress extends MichelsonType {
     return new MichelsonAddress(value, name)
   }
 
-  public encode(): string {
+  public encode(): Buffer {
     return this.address.encode()
   }
 

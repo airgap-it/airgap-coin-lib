@@ -1,10 +1,11 @@
 import { toUnicode } from '../../../dependencies/src/idna-uts46-hx-3.4.0/uts46'
 import { Cache } from '../../../utils/cache'
-import { addHexPrefix, isHex, stripHexPrefix } from '../../../utils/hex'
+import { isHex, stripHexPrefix } from '../../../utils/hex'
 import { TezosContract } from '../contract/TezosContract'
 import { TezosProtocolNetwork } from '../TezosProtocolOptions'
 import { TezosUtils } from '../TezosUtils'
-import { BigMapResponse } from '../types/contract/BigMapResult'
+import { BigMap } from '../types/contract/BigMap'
+import { BigMapEntry } from '../types/contract/BigMapEntry'
 import { TezosDomainsRecord } from '../types/domains/TezosDomainsRecord'
 import { TezosDomainsReverseRecord } from '../types/domains/TezosDomainsReverseRecord'
 import { MichelsonOption } from '../types/michelson/generics/MichelsonOption'
@@ -13,6 +14,7 @@ import { MichelsonAddress } from '../types/michelson/primitives/MichelsonAddress
 import { MichelsonBytes } from '../types/michelson/primitives/MichelsonBytes'
 import { MichelsonInt } from '../types/michelson/primitives/MichelsonInt'
 import { MichelsonString } from '../types/michelson/primitives/MichelsonString'
+import { isMichelinePrimitive } from '../types/utils'
 
 const CACHE_DEFAULT_EXPIRATION_TIME = 5 * 60 * 1000 // 5 min
 
@@ -20,12 +22,12 @@ export class TezosDomains {
   private readonly contract: TezosContract
   private readonly cache: Cache
 
-  private bigMapIDs?: {
-    expiryMap: number
-    records: number
-    reverseRecords: number
+  private bigMaps?: {
+    expiryMap: BigMap
+    records: BigMap
+    reverseRecords: BigMap
   }
-  private bigMapIDsPromise?: Promise<void>
+  private bigMapsPromise?: Promise<void>
 
   constructor(network: TezosProtocolNetwork, contractAddress: string) {
     this.contract = new TezosContract(contractAddress, network)
@@ -70,13 +72,13 @@ export class TezosDomains {
       return undefined
     }
 
-    const records: BigMapResponse[] = await this.contract.conseilBigMapValues({
-      bigMapID: this.bigMapIDs?.records,
-      predicates: [
+    const records: BigMapEntry[] = await this.contract.getBigMapValues({
+      bigMap: this.bigMaps?.records,
+      filters: [
         {
           field: 'key',
           operation: 'eq',
-          set: [addHexPrefix(Buffer.from(normalizedName).toString('hex'))]
+          value: Buffer.from(normalizedName).toString('hex')
         }
       ]
     })
@@ -96,13 +98,13 @@ export class TezosDomains {
       return undefined
     }
 
-    const expiryTimestamps: BigMapResponse[] = await this.contract.conseilBigMapValues({
-      bigMapID: this.bigMapIDs?.expiryMap,
-      predicates: [
+    const expiryTimestamps: BigMapEntry[] = await this.contract.getBigMapValues({
+      bigMap: this.bigMaps?.expiryMap,
+      filters: [
         {
           field: 'key',
           operation: 'eq',
-          set: [addHexPrefix(Buffer.from(record.expiryKey).toString('hex'))]
+          value: Buffer.from(record.expiryKey).toString('hex')
         }
       ]
     })
@@ -123,13 +125,13 @@ export class TezosDomains {
   private async resolveAddress(address: string): Promise<TezosDomainsReverseRecord | undefined> {
     await this.waitForBigMapIDs()
 
-    const reverseRecords: BigMapResponse[] = await this.contract.conseilBigMapValues({
-      bigMapID: this.bigMapIDs?.reverseRecords,
-      predicates: [
+    const reverseRecords: BigMapEntry[] = await this.contract.getBigMapValues({
+      bigMap: this.bigMaps?.reverseRecords,
+      filters: [
         {
           field: 'key',
           operation: 'eq',
-          set: [addHexPrefix(TezosUtils.encodeAddress(address).toString('hex'))]
+          value: address
         }
       ]
     })
@@ -161,31 +163,41 @@ export class TezosDomains {
   }
 
   private async waitForBigMapIDs(): Promise<void> {
-    if (this.bigMapIDs !== undefined) {
+    if (this.bigMaps !== undefined) {
       return
     }
 
-    if (this.bigMapIDsPromise === undefined) {
-      this.bigMapIDsPromise = this.contract
-        .readStorage()
-        .then((content) => {
-          const parsed = content?.asRawValue()
-          if (parsed === undefined || Array.isArray(parsed)) {
-            throw new Error('Failed to parse contract storage')
+    if (this.bigMapsPromise === undefined) {
+      this.bigMapsPromise = this.contract
+        .getBigMaps()
+        .then((bigMaps) => {
+          const expiryMap = bigMaps.find((bigMap) => bigMap.path === 'store.expiry_map')
+          if (expiryMap === undefined) {
+            throw new Error('Failed to retrieve store.expiry_map big map')
           }
 
-          this.bigMapIDs = {
-            expiryMap: parsed.store.expiry_map.toNumber(),
-            records: parsed.store.records.toNumber(),
-            reverseRecords: parsed.store.reverse_records.toNumber()
+          const records = bigMaps.find((bigMap) => bigMap.path === 'store.records')
+          if (records === undefined) {
+            throw new Error('Failed to retrieve store.records big map')
+          }
+
+          const reverseRecords = bigMaps.find((bigMap) => bigMap.path === 'store.reverse_records')
+          if (reverseRecords === undefined) {
+            throw new Error('Failed to retrieve store.reverse_records big map')
+          }
+
+          this.bigMaps = {
+            expiryMap,
+            records,
+            reverseRecords
           }
         })
         .finally(() => {
-          this.bigMapIDsPromise = undefined
+          this.bigMapsPromise = undefined
         })
     }
 
-    return this.bigMapIDsPromise
+    return this.bigMapsPromise
   }
 
   private normalizeDomainName(name: string): string {
@@ -196,7 +208,7 @@ export class TezosDomains {
     return record.expiryTimestamp === undefined || record.expiryTimestamp <= new Date().getTime() / 1000
   }
 
-  private parseRecord(record: BigMapResponse): TezosDomainsRecord {
+  private parseRecord(record: BigMapEntry): TezosDomainsRecord {
     const parsed = MichelsonPair.from(
       record.value,
       undefined,
@@ -247,7 +259,7 @@ export class TezosDomains {
     }
   }
 
-  private parseReverseRecord(reverseRecord: BigMapResponse): TezosDomainsReverseRecord {
+  private parseReverseRecord(reverseRecord: BigMapEntry): TezosDomainsReverseRecord {
     const parsed = MichelsonPair.from(
       reverseRecord.value,
       undefined,
@@ -271,8 +283,8 @@ export class TezosDomains {
     }
   }
 
-  private parseExpiryTimestamp(expiryKey: BigMapResponse): number | undefined {
-    const timestamp = expiryKey.value !== null ? parseInt(expiryKey.value) : undefined
+  private parseExpiryTimestamp(expiryKey: BigMapEntry): number | undefined {
+    const timestamp = expiryKey.value !== null && isMichelinePrimitive('int', expiryKey.value) ? parseInt(expiryKey.value.int) : undefined
 
     return timestamp !== undefined && !isNaN(timestamp) ? timestamp * 1000 /* value returned by the query is in seconds */ : undefined
   }

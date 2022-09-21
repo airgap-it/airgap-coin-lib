@@ -33,8 +33,7 @@ export class TezosFA1Protocol extends TezosFAProtocol {
     super(options)
     this.defaultCallbackContractMap = {
       [TezosNetwork.MAINNET]: 'KT19ptNzn4MVAN45KUUNpyL5AdLVhujk815u',
-      [TezosNetwork.ITHACANET]: 'KT1NtKL39nDUitmG3XzFcf8ByRnGZC4PPn3d',
-      [TezosNetwork.JAKARTANET]: ''
+      [TezosNetwork.GHOSTNET]: 'KT1DuHhkizpAqJJxScGzVAXTT4uh3oh4mCeE'
     }
   }
 
