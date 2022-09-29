@@ -84,6 +84,7 @@ import {
   UnsignedCosmosTransaction
 } from './serializer/types'
 import { isCoinlibReady } from './utils/coinlibReady'
+import { createProtocolByIdentifier } from './utils/createProtocol'
 import { isNetworkEqual } from './utils/Network'
 import { getProtocolByIdentifier } from './utils/protocolsByIdentifier'
 import { addSubProtocol, getSubProtocolsByIdentifier } from './utils/subProtocols'
@@ -526,6 +527,7 @@ export {
   isNetworkEqual,
   getProtocolOptionsByIdentifier,
   addSupportedProtocol,
+  createProtocolByIdentifier,
   getProtocolByIdentifier,
   getSubProtocolsByIdentifier,
   supportedProtocols,
