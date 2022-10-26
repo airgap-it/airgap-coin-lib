@@ -1,5 +1,4 @@
 import BigNumber from '../dependencies/src/bignumber.js-9.0.0/bignumber'
-import { TezosSaplingProtocol } from '../protocols/tezos/sapling/TezosSaplingProtocol'
 import { NetworkType } from '../utils/ProtocolNetwork'
 import { MainProtocolSymbols } from '../utils/ProtocolSymbols'
 
@@ -28,14 +27,14 @@ export class AirGapCoinWallet extends AirGapMarketWallet {
     return this.currentMarketPrice
   }
 
-  public setCurrentMarketPrice(marketPrice: BigNumber | undefined): void {
-    this.currentMarketPrice = this.protocol.options.network.type === NetworkType.MAINNET ? marketPrice : new BigNumber(0)
+  public async setCurrentMarketPrice(marketPrice: BigNumber | undefined): Promise<void> {
+    this.currentMarketPrice = (await this.protocol.getOptions()).network.type === NetworkType.MAINNET ? marketPrice : new BigNumber(0)
   }
 
   protected async _synchronize(): Promise<void> {
     const [balance, marketPrice] = await Promise.all([this.balanceOf(), this.fetchCurrentMarketPrice()])
     this.setCurrentBalance(balance)
-    this.setCurrentMarketPrice(marketPrice)
+    await this.setCurrentMarketPrice(marketPrice)
   }
 
   protected reset(): void {
@@ -45,17 +44,19 @@ export class AirGapCoinWallet extends AirGapMarketWallet {
 
   public async fetchCurrentMarketPrice(baseSymbol = 'USD'): Promise<BigNumber> {
     const marketPrice = await this.priceService.getCurrentMarketPrice(this.protocol, baseSymbol)
-    this.setCurrentMarketPrice(marketPrice)
+    await this.setCurrentMarketPrice(marketPrice)
 
     return marketPrice
   }
 
   public async balanceOf(): Promise<BigNumber> {
+    const protocolIdentifier = await this.protocol.getIdentifier()
+
     let result: BigNumber
     if (
-      (this.protocol.identifier === MainProtocolSymbols.BTC ||
-        this.protocol.identifier === MainProtocolSymbols.BTC_SEGWIT ||
-        this.protocol.identifier === MainProtocolSymbols.GRS) &&
+      (protocolIdentifier === MainProtocolSymbols.BTC ||
+        protocolIdentifier === MainProtocolSymbols.BTC_SEGWIT ||
+        protocolIdentifier === MainProtocolSymbols.GRS) &&
       this.isExtendedPublicKey
     ) {
       // TODO: Remove and test
@@ -69,7 +70,7 @@ export class AirGapCoinWallet extends AirGapMarketWallet {
       BTC as well, which results in the addresses being derived again, which causes massive lags in the apps.
       */
       result = new BigNumber(await this.protocol.getBalanceOfExtendedPublicKey(this.publicKey, 0))
-    } else if (this.protocol instanceof TezosSaplingProtocol) {
+    } else if (protocolIdentifier === MainProtocolSymbols.XTZ_SHIELDED /* TODO: cover ALL sapling protocols */) {
       result = new BigNumber(await this.protocol.getBalanceOfPublicKey(this.publicKey))
     } else if (this.addresses.length > 0) {
       result = new BigNumber(await this.protocol.getBalanceOfAddresses(this.addressesToCheck()))

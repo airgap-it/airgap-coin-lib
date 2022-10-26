@@ -1,0 +1,35 @@
+{
+  "$ref": "#/definitions/UnsignedTypedEthereumTransaction",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "UnsignedTypedEthereumTransaction": {
+      "additionalProperties": false,
+      "properties": {
+        "callbackURL": {
+          "type": "string"
+        },
+        "publicKey": {
+          "type": "string"
+        },
+        "transaction": {
+          "additionalProperties": false,
+          "properties": {
+            "derivationPath": {
+              "type": "string"
+            },
+            "masterFingerprint": {
+              "type": "string"
+            },
+            "serialized": {
+              "type": "string"
+            }
+          },
+          "required": ["serialized", "derivationPath", "masterFingerprint"],
+          "type": "object"
+        }
+      },
+      "required": ["publicKey", "transaction"],
+      "type": "object"
+    }
+  }
+}

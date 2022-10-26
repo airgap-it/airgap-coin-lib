@@ -1,7 +1,7 @@
-import { IProtocolTransactionCursor } from '../interfaces/IAirGapTransaction'
+import { IAirGapAddressResult } from '../interfaces/IAirGapAddress'
+import { IAirGapTransactionResult, IProtocolTransactionCursor } from '../interfaces/IAirGapTransaction'
 
-import { FeeDefaults, CoinAddress } from './ICoinProtocol'
-import { TezosTransactionResult } from './tezos/types/TezosTransactionResult'
+import { FeeDefaults } from './ICoinProtocol'
 
 export abstract class NonExtendedProtocol {
   public getExtendedPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
@@ -24,8 +24,11 @@ export abstract class NonExtendedProtocol {
     extendedPublicKey: string,
     visibilityDerivationIndex: number,
     addressDerivationIndex: number
-  ): Promise<CoinAddress> {
-    return Promise.resolve({ getValue: () => '' })
+  ): Promise<IAirGapAddressResult> {
+    return Promise.resolve({
+      address: '',
+      cursor: { hasNext: false }
+    })
   }
 
   public getAddressesFromExtendedPublicKey(
@@ -33,7 +36,7 @@ export abstract class NonExtendedProtocol {
     visibilityDerivationIndex: number,
     addressCount: number,
     offset: number
-  ): Promise<CoinAddress[]> {
+  ): Promise<IAirGapAddressResult[]> {
     return Promise.resolve([])
   }
 
@@ -54,7 +57,7 @@ export abstract class NonExtendedProtocol {
     extendedPublicKey: string,
     limit: number,
     cursor: IProtocolTransactionCursor
-  ): Promise<TezosTransactionResult> {
+  ): Promise<IAirGapTransactionResult> {
     return Promise.reject('fetching txs using extended public key not implemented')
   }
 

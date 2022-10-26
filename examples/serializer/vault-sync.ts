@@ -1,4 +1,4 @@
-import { Serializer } from '../../packages/core/src/serializer/serializer'
+import { Serializer } from '../../packages/serializer/src'
 
 const json = {
   type: 0,

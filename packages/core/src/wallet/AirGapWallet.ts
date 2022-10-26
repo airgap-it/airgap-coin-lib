@@ -1,7 +1,8 @@
 import { ConditionViolationError } from '../errors'
 import { Domain } from '../errors/coinlib-error'
+import { IAirGapAddressResult } from '../interfaces/IAirGapAddress'
 import { IAirGapWallet } from '../interfaces/IAirGapWallet'
-import { ICoinProtocol, CoinAddress } from '../protocols/ICoinProtocol'
+import { ICoinProtocol } from '../protocols/ICoinProtocol'
 import { ProtocolSymbols } from '../utils/ProtocolSymbols'
 
 export enum AirGapWalletStatus {
@@ -41,14 +42,14 @@ export class AirGapWallet implements IAirGapWallet {
   }
 
   public async setProtocol(protocol: ICoinProtocol): Promise<void> {
-    if (this.protocol.identifier !== protocol.identifier) {
+    if ((await this.protocol.getIdentifier()) !== (await protocol.getIdentifier())) {
       throw new ConditionViolationError(Domain.WALLET, 'Can only set same protocol with a different network')
     }
     this.protocol = protocol
   }
 
   public async deriveAddresses(amount: number = 50): Promise<string[]> {
-    let addresses: CoinAddress[]
+    let addresses: IAirGapAddressResult[]
     if (this.isExtendedPublicKey) {
       const parts: string[] = this.derivationPath.split('/')
       let offset: number = 0
@@ -67,13 +68,13 @@ export class AirGapWallet implements IAirGapWallet {
       addresses = await this.protocol.getAddressesFromPublicKey(this.publicKey)
     }
 
-    return addresses.map((address: CoinAddress) => address.getValue())
+    return addresses.map((address: IAirGapAddressResult) => address.address)
   }
 
-  public toJSON(): SerializedAirGapWallet {
+  public async toJSON(): Promise<SerializedAirGapWallet> {
     return {
-      protocolIdentifier: this.protocol.identifier,
-      networkIdentifier: this.protocol.options.network.identifier,
+      protocolIdentifier: await this.protocol.getIdentifier(),
+      networkIdentifier: (await this.protocol.getOptions()).network.identifier,
       publicKey: this.publicKey,
       isExtendedPublicKey: this.isExtendedPublicKey,
       derivationPath: this.derivationPath,

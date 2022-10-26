@@ -3,17 +3,17 @@ import chaiAsPromised = require('chai-as-promised')
 import 'mocha'
 import sinon = require('sinon')
 import axios from '../../src/dependencies/src/axios-0.19.0/index'
-import { AirGapWallet, BitcoinProtocol, EthereumProtocol } from '../../src/index'
-import { EthereumProtocolOptions } from '../../src/protocols/ethereum/EthereumProtocolOptions'
-import { MainProtocolSymbols } from '../../src/utils/ProtocolSymbols'
+import { AirGapWallet } from '../../src/index'
 import { AirGapWalletStatus } from '../../src/wallet/AirGapWallet'
+import { MockProtocol } from './mock/MockProtocol'
+import { MockProtocolOptions } from './mock/MockProtocolOptions'
 
 // use chai-as-promised plugin
 chai.use(chaiAsPromised)
 const expect = chai.expect
 
-const protocol = new EthereumProtocol()
-const xPubProtocol = new BitcoinProtocol()
+const protocol = new MockProtocol(new MockProtocolOptions(undefined, { standardDerivationPath: `m/44'/60'/0'` }))
+const xPubProtocol = new MockProtocol(new MockProtocolOptions(undefined, { supportsHD: true, standardDerivationPath: `m/44'/0'/0'` }))
 
 describe(`AirGapWallet`, () => {
   const sampleResponse: Readonly<any> = Object.freeze({
@@ -48,7 +48,7 @@ describe(`AirGapWallet`, () => {
       protocol,
       '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       false,
-      protocol.standardDerivationPath,
+      await protocol.getStandardDerivationPath(),
       '',
       AirGapWalletStatus.ACTIVE
     )
@@ -62,13 +62,13 @@ describe(`AirGapWallet`, () => {
       protocol,
       '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       false,
-      protocol.standardDerivationPath,
+      await protocol.getStandardDerivationPath(),
       '',
       AirGapWalletStatus.ACTIVE
     )
 
     const [address] = await wallet.deriveAddresses(1)
-    expect(address).to.equal('0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e')
+    expect(address).to.equal('0xdd6ab26c81da7428142275263e6b56955d6761e98683e3972578314585ca3d8f')
   })
 
   it('should derive address from public key and save it in wallet', async () => {
@@ -76,7 +76,7 @@ describe(`AirGapWallet`, () => {
       protocol,
       '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       false,
-      protocol.standardDerivationPath,
+      await protocol.getStandardDerivationPath(),
       '',
       AirGapWalletStatus.ACTIVE
     )
@@ -84,7 +84,7 @@ describe(`AirGapWallet`, () => {
     const [address] = await wallet.deriveAddresses(1)
     wallet.addresses = [address]
     const storedAddress = wallet.receivingPublicAddress
-    expect(storedAddress).to.equal('0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e')
+    expect(storedAddress).to.equal('0xdd6ab26c81da7428142275263e6b56955d6761e98683e3972578314585ca3d8f')
   })
 
   it('should derive address from extended public key and save it in wallet', async () => {
@@ -92,7 +92,7 @@ describe(`AirGapWallet`, () => {
       xPubProtocol,
       'xpub6CzH93BB4aueZX2bP88tvsvE8Cz2bHeGVAZSD5fmnk8roYBZCGbwwSA7ChiRr65jncuPH8qBQA9nBwi2Qtz1Uqt8wuHvof9SAcPpFxpe1GV',
       true,
-      xPubProtocol.standardDerivationPath,
+      await xPubProtocol.getStandardDerivationPath(),
       '',
       AirGapWalletStatus.ACTIVE
     )
@@ -100,7 +100,7 @@ describe(`AirGapWallet`, () => {
     const [address] = await wallet.deriveAddresses(1)
     wallet.addresses = [address]
     const storedAddress = wallet.receivingPublicAddress
-    expect(storedAddress).to.equal('15B2gX2x1eqFKgR44nCe1i33ursGKP4Qpi')
+    expect(storedAddress).to.equal('0x6c9d0bc4aebc2482eaee234ad34c4cf216b890b6fdace224db13059596a7744a')
   })
 
   it('should derive address from extended public key with offset and save it in wallet', async () => {
@@ -108,7 +108,7 @@ describe(`AirGapWallet`, () => {
       xPubProtocol,
       'xpub6CzH93BB4aueZX2bP88tvsvE8Cz2bHeGVAZSD5fmnk8roYBZCGbwwSA7ChiRr65jncuPH8qBQA9nBwi2Qtz1Uqt8wuHvof9SAcPpFxpe1GV',
       true,
-      xPubProtocol.standardDerivationPath.substring(0, xPubProtocol.standardDerivationPath.length - 1),
+      (await xPubProtocol.getStandardDerivationPath()).substring(0, (await xPubProtocol.getStandardDerivationPath()).length - 1),
       '',
       AirGapWalletStatus.ACTIVE
     )
@@ -116,7 +116,7 @@ describe(`AirGapWallet`, () => {
     const [address] = await wallet.deriveAddresses(1)
     wallet.addresses = [address]
     const storedAddress = wallet.receivingPublicAddress
-    expect(storedAddress).to.equal('15B2gX2x1eqFKgR44nCe1i33ursGKP4Qpi')
+    expect(storedAddress).to.equal('0x6c9d0bc4aebc2482eaee234ad34c4cf216b890b6fdace224db13059596a7744a')
   })
 
   it('serialize to JSON without circular dependencies (HD)', async () => {
@@ -124,15 +124,15 @@ describe(`AirGapWallet`, () => {
       protocol,
       '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       true,
-      protocol.standardDerivationPath,
+      await protocol.getStandardDerivationPath(),
       'f4e222fd',
       AirGapWalletStatus.ACTIVE
     )
 
-    const json = wallet.toJSON()
+    const json = await wallet.toJSON()
     expect(json).to.deep.equal({
-      protocolIdentifier: MainProtocolSymbols.ETH,
-      networkIdentifier: new EthereumProtocolOptions().network.identifier,
+      protocolIdentifier: protocol.identifier,
+      networkIdentifier: protocol.options.network.identifier,
       publicKey: '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       isExtendedPublicKey: true,
       derivationPath: "m/44'/60'/0'",
@@ -148,15 +148,15 @@ describe(`AirGapWallet`, () => {
       protocol,
       '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       false,
-      `${protocol.standardDerivationPath}/0/0`,
+      `${await protocol.getStandardDerivationPath()}/0/0`,
       'f4e222fd',
       AirGapWalletStatus.ACTIVE
     )
 
-    const json = wallet.toJSON()
+    const json = await wallet.toJSON()
     expect(json).to.deep.equal({
-      protocolIdentifier: MainProtocolSymbols.ETH,
-      networkIdentifier: new EthereumProtocolOptions().network.identifier,
+      protocolIdentifier: protocol.identifier,
+      networkIdentifier: protocol.options.network.identifier,
       publicKey: '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       isExtendedPublicKey: false,
       derivationPath: "m/44'/60'/0'/0/0",
