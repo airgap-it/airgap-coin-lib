@@ -4,36 +4,23 @@ import 'mocha'
 import sinon = require('sinon')
 import axios from '../../src/dependencies/src/axios-0.19.0/index'
 import BigNumber from '../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
-import {
-  addSupportedProtocol,
-  AeternityProtocol,
-  AirGapCoinWallet,
-  AirGapMarketWallet,
-  BitcoinProtocol,
-  CosmosProtocol,
-  EthereumProtocol,
-  GroestlcoinProtocol,
-  ICoinProtocol,
-  MainProtocolSymbols,
-  TezosProtocol
-} from '../../src/index'
-import { EthereumProtocolOptions } from '../../src/protocols/ethereum/EthereumProtocolOptions'
+import { AirGapCoinWallet, AirGapMarketWallet, ICoinProtocol } from '../../src/index'
 import { AirGapWalletPriceService } from '../../src/wallet/AirGapMarketWallet'
 import { AirGapWalletStatus } from '../../src/wallet/AirGapWallet'
+import { MockProtocol } from './mock/MockProtocol'
+import { MockProtocolOptions } from './mock/MockProtocolOptions'
 
-addSupportedProtocol(new AeternityProtocol())
-addSupportedProtocol(new BitcoinProtocol())
-addSupportedProtocol(new EthereumProtocol())
-addSupportedProtocol(new GroestlcoinProtocol())
-addSupportedProtocol(new TezosProtocol())
-addSupportedProtocol(new CosmosProtocol())
+const mockProtocol = new MockProtocol(new MockProtocolOptions(undefined, { standardDerivationPath: `m/44'/60'/0'` }))
+const mockExtendedProtocol = new MockProtocol(
+  new MockProtocolOptions(undefined, { supportsHD: true, standardDerivationPath: `m/44'/0'/0'` })
+)
 
 // use chai-as-promised plugin
 chai.use(chaiAsPromised)
 const expect = chai.expect
 
-const protocol = new EthereumProtocol()
-const xPubProtocol = new BitcoinProtocol()
+const protocol = mockProtocol
+const xPubProtocol = mockExtendedProtocol
 
 class AirGapPriceService implements AirGapWalletPriceService {
   public async getCurrentMarketPrice(protocol: ICoinProtocol, baseSymbol: string): Promise<BigNumber> {
@@ -48,26 +35,26 @@ describe(`AirGapCoinWallet`, () => {
 
   const txList = { transactions: [] }
 
-  const getWalletWithAddresses = () => {
+  const getWalletWithAddresses = async () => {
     const wallet = new AirGapCoinWallet(
       protocol,
       '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       false,
-      protocol.standardDerivationPath,
+      await protocol.getStandardDerivationPath(),
       '',
       AirGapWalletStatus.ACTIVE,
       new AirGapPriceService()
     )
-    wallet.addresses = ['0x742d35Cc6634C0532925a3b844Bc454e4438f44e']
+    wallet.addresses = ['0xdd6ab26c81da7428142275263e6b56955d6761e98683e3972578314585ca3d8f']
     return wallet
   }
 
-  const getWalletWithPublicKey = () => {
+  const getWalletWithPublicKey = async () => {
     return new AirGapCoinWallet(
       protocol,
       '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       false,
-      protocol.standardDerivationPath,
+      await protocol.getStandardDerivationPath(),
       '',
       AirGapWalletStatus.ACTIVE,
       new AirGapPriceService()
@@ -99,8 +86,8 @@ describe(`AirGapCoinWallet`, () => {
     sinon.restore()
   })
 
-  it('should fetch transactions of ETH (addresses)', async () => {
-    const wallet = getWalletWithAddresses()
+  it('should fetch transactions of addresses', async () => {
+    const wallet = await getWalletWithAddresses()
 
     stubCoinlibOfWallet(wallet)
 
@@ -112,11 +99,11 @@ describe(`AirGapCoinWallet`, () => {
     expect(transactions).to.deep.equal(txList.transactions)
     expect(txFromPubKeyStub.callCount).to.equal(0)
     expect(txFromAddressesStub.callCount).to.equal(1)
-    expect(txFromAddressesStub.calledOnceWith(['0x742d35Cc6634C0532925a3b844Bc454e4438f44e'], 1)).to.be.true
+    expect(txFromAddressesStub.calledOnceWith(['0xdd6ab26c81da7428142275263e6b56955d6761e98683e3972578314585ca3d8f'], 1)).to.be.true
   })
 
-  it('should fetch transactions of ETH (public key)', async () => {
-    const wallet = getWalletWithPublicKey()
+  it('should fetch transactions of public key', async () => {
+    const wallet = await getWalletWithPublicKey()
     stubCoinlibOfWallet(wallet)
 
     const transactions = await (await wallet.fetchTransactions(0)).transactions
@@ -128,12 +115,12 @@ describe(`AirGapCoinWallet`, () => {
     expect(stub.calledOnceWith('02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932', 0)).to.be.true
   })
 
-  it('should fetch transactions of BTC (extended public key)', async () => {
+  it('should fetch transactions of an extended public key', async () => {
     const wallet = new AirGapCoinWallet(
       xPubProtocol,
       'xpub6CzH93BB4aueZX2bP88tvsvE8Cz2bHeGVAZSD5fmnk8roYBZCGbwwSA7ChiRr65jncuPH8qBQA9nBwi2Qtz1Uqt8wuHvof9SAcPpFxpe1GV',
       true,
-      xPubProtocol.standardDerivationPath,
+      await xPubProtocol.getStandardDerivationPath(),
       '',
       AirGapWalletStatus.ACTIVE,
       new AirGapPriceService()
@@ -165,7 +152,7 @@ describe(`AirGapCoinWallet`, () => {
       protocol,
       '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       false,
-      protocol.standardDerivationPath,
+      await protocol.getStandardDerivationPath(),
       '',
       AirGapWalletStatus.ACTIVE,
       new AirGapPriceService()
@@ -180,14 +167,14 @@ describe(`AirGapCoinWallet`, () => {
       protocol,
       '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       false,
-      protocol.standardDerivationPath,
+      await protocol.getStandardDerivationPath(),
       '',
       AirGapWalletStatus.ACTIVE,
       new AirGapPriceService()
     )
 
     const [address] = await wallet.deriveAddresses(1)
-    expect(address).to.equal('0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e')
+    expect(address).to.equal('0xdd6ab26c81da7428142275263e6b56955d6761e98683e3972578314585ca3d8f')
   })
 
   it('should derive address from public key and save it in wallet', async () => {
@@ -195,7 +182,7 @@ describe(`AirGapCoinWallet`, () => {
       protocol,
       '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       false,
-      protocol.standardDerivationPath,
+      await protocol.getStandardDerivationPath(),
       '',
       AirGapWalletStatus.ACTIVE,
       new AirGapPriceService()
@@ -204,7 +191,7 @@ describe(`AirGapCoinWallet`, () => {
     const [address] = await wallet.deriveAddresses(1)
     wallet.addresses = [address]
     const storedAddress = wallet.receivingPublicAddress
-    expect(storedAddress).to.equal('0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e')
+    expect(storedAddress).to.equal('0xdd6ab26c81da7428142275263e6b56955d6761e98683e3972578314585ca3d8f')
   })
 
   it('should derive address from extended public key and save it in wallet', async () => {
@@ -212,7 +199,7 @@ describe(`AirGapCoinWallet`, () => {
       xPubProtocol,
       'xpub6CzH93BB4aueZX2bP88tvsvE8Cz2bHeGVAZSD5fmnk8roYBZCGbwwSA7ChiRr65jncuPH8qBQA9nBwi2Qtz1Uqt8wuHvof9SAcPpFxpe1GV',
       true,
-      xPubProtocol.standardDerivationPath,
+      await xPubProtocol.getStandardDerivationPath(),
       '',
       AirGapWalletStatus.ACTIVE,
       new AirGapPriceService()
@@ -221,7 +208,7 @@ describe(`AirGapCoinWallet`, () => {
     const [address] = await wallet.deriveAddresses(1)
     wallet.addresses = [address]
     const storedAddress = wallet.receivingPublicAddress
-    expect(storedAddress).to.equal('15B2gX2x1eqFKgR44nCe1i33ursGKP4Qpi')
+    expect(storedAddress).to.equal('0x6c9d0bc4aebc2482eaee234ad34c4cf216b890b6fdace224db13059596a7744a')
   })
 
   it('should derive address from extended public key with offset and save it in wallet', async () => {
@@ -229,7 +216,7 @@ describe(`AirGapCoinWallet`, () => {
       xPubProtocol,
       'xpub6CzH93BB4aueZX2bP88tvsvE8Cz2bHeGVAZSD5fmnk8roYBZCGbwwSA7ChiRr65jncuPH8qBQA9nBwi2Qtz1Uqt8wuHvof9SAcPpFxpe1GV',
       true,
-      xPubProtocol.standardDerivationPath.substring(0, xPubProtocol.standardDerivationPath.length - 1),
+      (await xPubProtocol.getStandardDerivationPath()).substring(0, (await xPubProtocol.getStandardDerivationPath()).length - 1),
       '',
       AirGapWalletStatus.ACTIVE,
       new AirGapPriceService()
@@ -238,7 +225,7 @@ describe(`AirGapCoinWallet`, () => {
     const [address] = await wallet.deriveAddresses(1)
     wallet.addresses = [address]
     const storedAddress = wallet.receivingPublicAddress
-    expect(storedAddress).to.equal('15B2gX2x1eqFKgR44nCe1i33ursGKP4Qpi')
+    expect(storedAddress).to.equal('0x6c9d0bc4aebc2482eaee234ad34c4cf216b890b6fdace224db13059596a7744a')
   })
 
   it('serialize to JSON without circular dependencies (HD)', async () => {
@@ -246,16 +233,16 @@ describe(`AirGapCoinWallet`, () => {
       protocol,
       '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       true,
-      protocol.standardDerivationPath,
+      await protocol.getStandardDerivationPath(),
       '',
       AirGapWalletStatus.ACTIVE,
       new AirGapPriceService()
     )
 
-    const json = wallet.toJSON()
+    const json = await wallet.toJSON()
     expect({ ...json, priceService: undefined }).to.deep.include({
-      protocolIdentifier: MainProtocolSymbols.ETH,
-      networkIdentifier: new EthereumProtocolOptions().network.identifier,
+      protocolIdentifier: protocol.identifier,
+      networkIdentifier: protocol.options.network.identifier,
       publicKey: '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       isExtendedPublicKey: true,
       derivationPath: "m/44'/60'/0'",
@@ -269,16 +256,16 @@ describe(`AirGapCoinWallet`, () => {
       protocol,
       '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       false,
-      `${protocol.standardDerivationPath}/0/0`,
+      `${await protocol.getStandardDerivationPath()}/0/0`,
       '',
       AirGapWalletStatus.ACTIVE,
       new AirGapPriceService()
     )
 
-    const json = wallet.toJSON()
+    const json = await wallet.toJSON()
     expect({ ...json, priceService: undefined }).to.deep.include({
-      protocolIdentifier: MainProtocolSymbols.ETH,
-      networkIdentifier: new EthereumProtocolOptions().network.identifier,
+      protocolIdentifier: protocol.identifier,
+      networkIdentifier: protocol.options.network.identifier,
       publicKey: '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932',
       isExtendedPublicKey: false,
       derivationPath: "m/44'/60'/0'/0/0",

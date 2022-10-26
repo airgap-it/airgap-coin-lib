@@ -1,6 +1,7 @@
 // tslint:disable:no-console
 
-import { ICoinProtocol, TezosProtocol } from '../../packages/core/src'
+import { ICoinProtocol } from '../../packages/core/src'
+import { TezosProtocol } from '../../packages/tezos/src'
 
 import { all } from './functions/all'
 import { decryptAES } from './functions/decrypt-aes'

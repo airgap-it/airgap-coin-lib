@@ -1,4 +1,4 @@
-import { IACMessageDefinitionObject, IACMessageType, Serializer } from '../../../../packages/core/src'
+import { IACMessageDefinitionObject, IACMessageType, Serializer } from '../../../../packages/serializer/src'
 import Axios from '../../../../packages/core/src/dependencies/src/axios-0.19.0'
 import * as bs58check from '../../../../packages/core/src/dependencies/src/bs58check-2.1.2'
 import { MainProtocolSymbols } from '../../../../packages/core/src/utils/ProtocolSymbols'

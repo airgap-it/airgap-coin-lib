@@ -1,6 +1,4 @@
-import { IACMessageType } from '../../packages/core/src/serializer/interfaces'
-import { IACMessageDefinitionObject } from '../../packages/core/src/serializer/message'
-import { Serializer } from '../../packages/core/src/serializer/serializer'
+import { IACMessageDefinitionObject, IACMessageType, Serializer } from '../../packages/serializer/src'
 import { MainProtocolSymbols } from '../../packages/core/src/utils/ProtocolSymbols'
 
 const serializeAndDeserialize = async (messages: IACMessageDefinitionObject[], size: number) => {

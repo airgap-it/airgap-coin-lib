@@ -1,7 +1,7 @@
 import { ICoinOfflineProtocol } from './ICoinOfflineProtocol'
 import { ICoinOnlineProtocol } from './ICoinOnlineProtocol'
 
-export { CoinAddress, FeeDefaults } from './ICoinBaseProtocol'
+export { FeeDefaults } from './ICoinBaseProtocol'
 
 export interface CurrencyUnit {
   unitSymbol: string

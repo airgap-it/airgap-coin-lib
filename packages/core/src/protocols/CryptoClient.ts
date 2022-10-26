@@ -3,20 +3,20 @@ import { Domain } from '../errors/coinlib-error'
 import { AES } from '../utils/AES'
 
 export abstract class CryptoClient {
-  public abstract signMessage(message: string, keypair: { publicKey?: string; privateKey: Buffer }): Promise<string>
+  public abstract signMessage(message: string, keypair: { publicKey?: string; privateKey: string }): Promise<string>
   public abstract verifyMessage(message: string, signature: string, publicKey: string): Promise<boolean>
 
-  public async encryptAES(payload: string, privateKey: Buffer): Promise<string> {
+  public async encryptAES(payload: string, privateKey: string): Promise<string> {
     return new AES().encryptString(payload, privateKey)
   }
-  public async decryptAES(encryptedPayload: string, privateKey: Buffer): Promise<string> {
+  public async decryptAES(encryptedPayload: string, privateKey: string): Promise<string> {
     return new AES().decryptString(encryptedPayload, privateKey)
   }
 
   public async encryptAsymmetric(payload: string, publicKey: string): Promise<string> {
     throw new NotImplementedError(Domain.UTILS, `encryptAsymmetric() not Implemented`)
   }
-  public async decryptAsymmetric(encryptedPayload: string, keypair: { publicKey?: string; privateKey: Buffer }): Promise<string> {
+  public async decryptAsymmetric(encryptedPayload: string, keypair: { publicKey?: string; privateKey: string }): Promise<string> {
     throw new NotImplementedError(Domain.UTILS, `decryptAsymmetric() not Implemented`)
   }
 

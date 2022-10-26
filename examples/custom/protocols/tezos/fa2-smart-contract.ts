@@ -1,12 +1,5 @@
-import {
-  TezosFA2Protocol,
-  TezosProtocolNetwork,
-  TezosFA2ProtocolConfig,
-  SubProtocolSymbols,
-  TezosFA2ProtocolOptions,
-  NetworkType
-} from '../../../../packages/core/src'
-
+import { NetworkType, SubProtocolSymbols } from '../../../../packages/core/src'
+import { TezosFA2Protocol, TezosProtocolNetwork, TezosFA2ProtocolConfig, TezosFA2ProtocolOptions } from '../../../../packages/tezos/src'
 ;(async () => {
   const network = new TezosProtocolNetwork('edonet', NetworkType.TESTNET, 'https://tezos-edonet-node.qa.gke.papers.tech')
   const config = new TezosFA2ProtocolConfig(

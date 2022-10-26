@@ -5,6 +5,8 @@ import { padStart } from './padStart'
 const HEX_PREFIX = '0x'
 const HEX_REGEX = new RegExp(`^(${HEX_PREFIX})?[0-9a-fA-F]*$`)
 
+export type NumberBytesEncoding = 'default' | '2sComplement'
+
 function hasPrefix(value: string): boolean {
   return value.startsWith(HEX_PREFIX)
 }
@@ -21,20 +23,20 @@ export function isHex(value: string): boolean {
   return HEX_REGEX.test(value)
 }
 
-export function toHexBuffer(value: number | BigNumber, bitLength: number = 8): Buffer {
-  return Buffer.from(toHexStringRaw(value, bitLength), 'hex')
+export function toHexBuffer(value: number | BigNumber, bitLength: number = 8, encoding: NumberBytesEncoding = 'default'): Buffer {
+  return Buffer.from(toHexStringRaw(value, bitLength, encoding), 'hex')
 }
 
-export function toHexStringRaw(value: number | BigNumber, bitLength: number = 8): string {
+export function toHexStringRaw(value: number | BigNumber, bitLength: number = 8, encoding: NumberBytesEncoding = '2sComplement'): string {
   if (new BigNumber(value).isPositive()) {
     return toHexStringRawPositive(value, bitLength)
   } else {
-    return toHexStringRawNegative(value, bitLength)
+    return toHexStringRawNegative(value, bitLength, encoding)
   }
 }
 
-export function toHexString(value: number | BigNumber, bitLength: number = 8): string {
-  return addHexPrefix(toHexStringRaw(value, bitLength))
+export function toHexString(value: number | BigNumber, bitLength: number = 8, encoding: NumberBytesEncoding = 'default'): string {
+  return addHexPrefix(toHexStringRaw(value, bitLength, encoding))
 }
 
 export function hexToBytes(hex: string | Uint8Array | Buffer, bitLength?: number): Buffer {
@@ -75,7 +77,7 @@ export function bytesToHex(bytes: Uint8Array | Buffer | string, config?: { withP
 
 export function changeEndianness(hex: string): string {
   let _hex = stripHexPrefix(hex)
-  _hex = _hex.length % 2 != 0 ? '0' + _hex : _hex
+  _hex = _hex.length % 2 !== 0 ? '0' + _hex : _hex
 
   const bytes = _hex.match(/.{2}/g) || []
 
@@ -83,17 +85,30 @@ export function changeEndianness(hex: string): string {
 }
 
 function toHexStringRawPositive(value: number | BigNumber, bitLength: number): string {
-  const nibbleLength: number = Math.ceil(bitLength / 4)
   const hexString: string = value.toString(16)
 
-  let targetLength: number = hexString.length >= nibbleLength ? hexString.length : nibbleLength
-  targetLength = targetLength % 2 == 0 ? targetLength : targetLength + 1
-
-  return padStart(hexString, targetLength, '0')
+  return fillToTargetLength(hexString, bitLength)
 }
 
-function toHexStringRawNegative(value: number | BigNumber, bitLength: number): string {
-  const value2sComplement: BigNumber = new BigNumber(2).pow(bitLength).minus(new BigNumber(value).abs())
+function toHexStringRawNegative(value: number | BigNumber, bitLength: number, encoding: NumberBytesEncoding): string {
+  // tslint:disable-next-line: switch-default
+  switch (encoding) {
+    case 'default':
+      const hexString: string = value.toString(16)
 
-  return value2sComplement.toString(16)
+      return hexString.startsWith('-') ? `-${fillToTargetLength(hexString.substr(1), bitLength)}` : fillToTargetLength(hexString, bitLength)
+    case '2sComplement':
+      const value2sComplement: BigNumber = new BigNumber(2).pow(bitLength).minus(new BigNumber(value).abs())
+
+      return value2sComplement.toString(16)
+  }
+}
+
+function fillToTargetLength(hexString: string, bitLength: number): string {
+  const nibbleLength: number = Math.ceil(bitLength / 4)
+
+  let targetLength: number = hexString.length >= nibbleLength ? hexString.length : nibbleLength
+  targetLength = targetLength % 2 === 0 ? targetLength : targetLength + 1
+
+  return padStart(hexString, targetLength, '0')
 }

@@ -8,7 +8,7 @@ export abstract class Sr25519CryptoClient extends CryptoClient {
     throw new NotImplementedError(Domain.UTILS, `encryptAsymmetric() not implemented.`)
   }
 
-  public async decryptAsymmetric(encryptedPayload: string, keypair: { publicKey: string; privateKey: Buffer }): Promise<string> {
+  public async decryptAsymmetric(encryptedPayload: string, keypair: { publicKey: string; privateKey: string }): Promise<string> {
     // Currently not supported: https://github.com/polkadot-js/common/issues/633
     throw new NotImplementedError(Domain.UTILS, `decryptAsymmetric() not implemented.`)
   }

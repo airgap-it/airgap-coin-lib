@@ -1,4 +1,4 @@
-import { TezosProtocol } from '../../../../packages/core/src'
+import { TezosProtocol } from '../../../../packages/tezos/src'
 import { getTransactionDetailsFromSigned } from '../../../generic/functions/get-transaction-details'
 import { send } from '../../../generic/functions/send-transaction'
 

@@ -1,9 +1,9 @@
 // tslint:disable:no-console
 // tslint:disable:no-any
 
-import { IACMessageDefinitionObject, IACMessageType, ICoinProtocol, Serializer } from '../../../packages/core/src'
-import { generateId } from '../../../packages/core/src/serializer/utils/generateId'
+import { IACMessageDefinitionObject, IACMessageType, Serializer, generateId } from '../../../packages/serializer/src'
 import { MainProtocolSymbols } from '../../../packages/core/src/utils/ProtocolSymbols'
+import { ICoinProtocol } from '../../../packages/core/src'
 
 export const generateIACCode: (
   protocol: ICoinProtocol,

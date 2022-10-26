@@ -1,8 +1,8 @@
-// import { TezosFAProtocol } from '../../../../packages/core/src'
-// import { TezosKolibriUSD } from '../../../../packages/core/src'
-import { TezosBTC } from '../../../../packages/core/src'
-// import { TezosUSD } from '../../../../packages/core/src'
-// import { TezosStaker } from '../../../../packages/core/src'
+// import { TezosFAProtocol } from '../../../../packages/tezos/src'
+// import { TezosKolibriUSD } from '../../../../packages/tezos/src'
+import { TezosBTC } from '../../../../packages/tezos/src'
+// import { TezosUSD } from '../../../../packages/tezos/src'
+// import { TezosStaker } from '../../../../packages/tezos/src'
 
 const contract = new TezosBTC()
 // const contract = new TezosKolibriUSD()
