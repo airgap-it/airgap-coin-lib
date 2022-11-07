@@ -16,14 +16,16 @@ export enum CosmosMessageTypeIndex {
   SEND = 0,
   DELEGATE = 1,
   UNDELEGATE = 2,
-  WITHDRAW_DELEGATION_REWARD = 3
+  WITHDRAW_DELEGATION_REWARD = 3,
+  REDELEGATE = 4
 }
 
 export enum CosmosMessageTypeValue {
   SEND = '/cosmos.bank.v1beta1.MsgSend',
   DELEGATE = '/cosmos.staking.v1beta1.MsgDelegate',
   UNDELEGATE = '/cosmos.staking.v1beta1.MsgUndelegate',
-  WITHDRAW_DELEGATION_REWARD = '/cosmos.distribution.v1beta1.MsgWithdrawDelegatorReward'
+  WITHDRAW_DELEGATION_REWARD = '/cosmos.distribution.v1beta1.MsgWithdrawDelegatorReward',
+  REDELEGATE = '/cosmos.staking.v1beta1.MsgBeginRedelegate'
 }
 
 export class CosmosMessageType {
@@ -31,6 +33,7 @@ export class CosmosMessageType {
   public static Delegate: CosmosMessageType = new CosmosMessageType(CosmosMessageTypeIndex.DELEGATE)
   public static Undelegate: CosmosMessageType = new CosmosMessageType(CosmosMessageTypeIndex.UNDELEGATE)
   public static WithdrawDelegationReward: CosmosMessageType = new CosmosMessageType(CosmosMessageTypeIndex.WITHDRAW_DELEGATION_REWARD)
+  public static Redelegate: CosmosMessageType = new CosmosMessageType(CosmosMessageTypeIndex.REDELEGATE)
 
   public readonly index: CosmosMessageTypeIndex
   public readonly value: string
@@ -49,6 +52,9 @@ export class CosmosMessageType {
         break
       case CosmosMessageTypeIndex.WITHDRAW_DELEGATION_REWARD:
         this.value = CosmosMessageTypeValue.WITHDRAW_DELEGATION_REWARD
+        break
+      case CosmosMessageTypeIndex.REDELEGATE:
+        this.value = CosmosMessageTypeValue.REDELEGATE
         break
       default:
         throw new InvalidValueError(Domain.COSMOS, 'Unknown message')
