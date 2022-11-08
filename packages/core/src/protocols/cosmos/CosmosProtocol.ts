@@ -39,6 +39,7 @@ import {
 import { CosmosProtocolOptions } from './CosmosProtocolOptions'
 import { CosmosTransaction } from './CosmosTransaction'
 import { CosmosTransactionCursor, CosmosTransactionResult } from './CosmosTypes'
+import { CosmosRedelegateMessage } from './cosmos-message/CosmosRedelegateMessage'
 
 export enum CosmosDelegationActionType {
   DELEGATE = 'delegate',
@@ -374,6 +375,10 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
             const withdrawMessage = CosmosWithdrawDelegationRewardMessage.fromEncodeObject(message)
 
             return withdrawMessage.toAirGapTransaction(this, fee)
+          case CosmosMessageType.Redelegate.value:
+            const redelegateMessage = CosmosRedelegateMessage.fromEncodeObject(message)
+
+            return redelegateMessage.toAirGapTransaction(this, fee)
           default:
             throw new InvalidValueError(Domain.COSMOS, 'Unknown transaction')
         }
