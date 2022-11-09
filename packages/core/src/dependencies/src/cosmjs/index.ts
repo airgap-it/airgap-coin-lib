@@ -638,8 +638,6 @@ const MsgDelegate = {
   }
 }
 
-const baseMsgRedelegate: object = { delegatorAddress: '', validatorSrcAddress: '', validatorDestAddress: '' }
-
 const MsgRedelegate = {
   encode(message: MsgRedelegate, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.delegatorAddress !== '') {
@@ -998,6 +996,7 @@ const baseAuthInfo: object = {}
 const baseAny: object = { typeUrl: '' }
 const baseTxBody: object = { memo: '', timeoutHeight: Long.UZERO }
 const baseCoin: object = { denom: '', amount: '' }
+const baseMsgRedelegate: object = { delegatorAddress: '', validatorSrcAddress: '', validatorDestAddress: '' }
 
 const ModeInfo = {
   encode(message: ModeInfo, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
