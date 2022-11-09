@@ -56,9 +56,7 @@ export class CosmosRedelegateMessage implements CosmosMessage {
 
   public static fromJSON(json: CosmosMessageJSON): CosmosRedelegateMessage {
     // toAddress is a concatentation of two strings: (1) srcValidator, (2) destValidator
-    // TODO: I'm not sure what the format of the addresses is (cosmos1... b58check, hex, otherwise). Rather than guess,
-    //       use the length of the fromAddress to slice them up.
-    const addressLength = json.fromAddress.length
+    const addressLength = 52 // cosmosvaloper...
     const validatorSrcAddress = json.toAddress.slice(0, addressLength)
     const validatorDestAddress = json.toAddress.slice(addressLength)
 
