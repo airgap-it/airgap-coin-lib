@@ -7,6 +7,7 @@ import { SerializableUnsignedCosmosTransaction } from '../../serializer/schemas/
 
 import { CosmosDelegateMessage } from './cosmos-message/CosmosDelegateMessage'
 import { CosmosMessage, CosmosMessageType, CosmosMessageTypeIndex } from './cosmos-message/CosmosMessage'
+import { CosmosRedelegateMessage } from './cosmos-message/CosmosRedelegateMessage'
 import { CosmosSendMessage } from './cosmos-message/CosmosSendMessage'
 import { CosmosWithdrawDelegationRewardMessage } from './cosmos-message/CosmosWithdrawDelegationRewardMessage'
 import { CosmosFee } from './CosmosFee'
@@ -102,6 +103,8 @@ export class CosmosTransaction implements JSONConvertible, RPCConvertible, Encod
           return CosmosDelegateMessage.fromJSON(value)
         case CosmosMessageType.WithdrawDelegationReward.index:
           return CosmosWithdrawDelegationRewardMessage.fromJSON(value)
+        case CosmosMessageType.Redelegate.index:
+          return CosmosRedelegateMessage.fromJSON(value)
         default:
           throw new InvalidValueError(Domain.COSMOS, 'Unknown message')
       }
@@ -128,6 +131,8 @@ export class CosmosTransaction implements JSONConvertible, RPCConvertible, Encod
           return CosmosDelegateMessage.fromRPCBody(value)
         case CosmosMessageType.WithdrawDelegationReward.value:
           return CosmosWithdrawDelegationRewardMessage.fromRPCBody(value)
+        case CosmosMessageType.Redelegate.value:
+          return CosmosRedelegateMessage.fromRPCBody(value)
         default:
           throw new InvalidValueError(Domain.COSMOS, 'Unknown message')
       }

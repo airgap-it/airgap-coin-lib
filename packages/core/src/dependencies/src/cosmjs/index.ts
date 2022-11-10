@@ -148,6 +148,13 @@ interface MsgDelegate {
   amount?: Coin
 }
 
+interface MsgRedelegate {
+  delegatorAddress: string
+  validatorSrcAddress: string
+  validatorDestAddress: string
+  amount?: Coin
+}
+
 interface MsgWithdrawDelegatorReward {
   delegatorAddress: string
   validatorAddress: string
@@ -631,11 +638,89 @@ const MsgDelegate = {
   }
 }
 
+const MsgRedelegate = {
+  encode(message: MsgRedelegate, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.delegatorAddress !== '') {
+      writer.uint32(10).string(message.delegatorAddress)
+    }
+    if (message.validatorSrcAddress !== '') {
+      writer.uint32(18).string(message.validatorSrcAddress)
+    }
+    if (message.validatorDestAddress !== '') {
+      writer.uint32(26).string(message.validatorDestAddress)
+    }
+    if (message.amount !== undefined) {
+      Coin.encode(message.amount, writer.uint32(34).fork()).ldelim()
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): MsgRedelegate {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = { ...baseMsgRedelegate } as MsgRedelegate
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1:
+          message.delegatorAddress = reader.string()
+          break
+        case 2:
+          message.validatorSrcAddress = reader.string()
+          break
+        case 3:
+          message.validatorDestAddress = reader.string()
+          break
+        case 4:
+          message.amount = Coin.decode(reader, reader.uint32())
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): MsgRedelegate {
+    const message = { ...baseMsgRedelegate } as MsgRedelegate
+    message.delegatorAddress =
+      object.delegatorAddress !== undefined && object.delegatorAddress !== null ? String(object.delegatorAddress) : ''
+
+    message.validatorSrcAddress =
+      object.validatorSrcAddress !== undefined && object.validatorSrcAddress !== null ? String(object.validatorSrcAddress) : ''
+    message.validatorDestAddress =
+      object.validatorDestAddress !== undefined && object.validatorDestAddress !== null ? String(object.validatorDestAddress) : ''
+
+    message.amount = object.amount !== undefined && object.amount !== null ? Coin.fromJSON(object.amount) : undefined
+    return message
+  },
+
+  toJSON(message: MsgRedelegate): unknown {
+    const obj: any = {}
+    message.delegatorAddress !== undefined && (obj.delegatorAddress = message.delegatorAddress)
+    message.validatorSrcAddress !== undefined && (obj.validatorSrcAddress = message.validatorSrcAddress)
+    message.validatorDestAddress !== undefined && (obj.validatorDestAddress = message.validatorDestAddress)
+    message.amount !== undefined && (obj.amount = message.amount ? Coin.toJSON(message.amount) : undefined)
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<MsgRedelegate>, I>>(object: I): MsgRedelegate {
+    const message = { ...baseMsgRedelegate } as MsgRedelegate
+    message.delegatorAddress = object.delegatorAddress ?? ''
+    message.validatorSrcAddress = object.validatorSrcAddress ?? ''
+    message.validatorDestAddress = object.validatorDestAddress ?? ''
+    message.amount = object.amount !== undefined && object.amount !== null ? Coin.fromPartial(object.amount) : undefined
+    return message
+  }
+}
+
 const defaultRegistryTypes: ReadonlyArray<[string, GeneratedType]> = [
   ['/cosmos.bank.v1beta1.MsgSend', MsgSend],
   ['/cosmos.distribution.v1beta1.MsgWithdrawDelegatorReward', MsgWithdrawDelegatorReward],
   ['/cosmos.staking.v1beta1.MsgUndelegate', MsgUndelegate],
-  ['/cosmos.staking.v1beta1.MsgDelegate', MsgDelegate]
+  ['/cosmos.staking.v1beta1.MsgDelegate', MsgDelegate],
+  ['/cosmos.staking.v1beta1.MsgBeginRedelegate', MsgRedelegate]
 ]
 
 function isTxBodyEncodeObject(encodeObject: EncodeObject): encodeObject is TxBodyEncodeObject {
@@ -911,6 +996,7 @@ const baseAuthInfo: object = {}
 const baseAny: object = { typeUrl: '' }
 const baseTxBody: object = { memo: '', timeoutHeight: Long.UZERO }
 const baseCoin: object = { denom: '', amount: '' }
+const baseMsgRedelegate: object = { delegatorAddress: '', validatorSrcAddress: '', validatorDestAddress: '' }
 
 const ModeInfo = {
   encode(message: ModeInfo, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
