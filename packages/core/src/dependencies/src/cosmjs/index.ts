@@ -646,7 +646,7 @@ const MsgRedelegate = {
     if (message.validatorSrcAddress !== '') {
       writer.uint32(18).string(message.validatorSrcAddress)
     }
-    if (message.validatorSrcAddress !== '') {
+    if (message.validatorDestAddress !== '') {
       writer.uint32(18).string(message.validatorDestAddress)
     }
     if (message.amount !== undefined) {
