@@ -647,10 +647,10 @@ const MsgRedelegate = {
       writer.uint32(18).string(message.validatorSrcAddress)
     }
     if (message.validatorDestAddress !== '') {
-      writer.uint32(18).string(message.validatorDestAddress)
+      writer.uint32(26).string(message.validatorDestAddress)
     }
     if (message.amount !== undefined) {
-      Coin.encode(message.amount, writer.uint32(26).fork()).ldelim()
+      Coin.encode(message.amount, writer.uint32(34).fork()).ldelim()
     }
     return writer
   },
