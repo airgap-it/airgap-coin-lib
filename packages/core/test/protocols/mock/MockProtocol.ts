@@ -266,8 +266,6 @@ export class MockProtocol implements ICoinProtocol {
     visibilityDerivationIndex: number,
     addressDerivationIndex: number
   ): Promise<IAirGapAddressResult> {
-    console.log('xpub', extendedPublicKey, 'vdi', visibilityDerivationIndex, 'adi', addressDerivationIndex)
-
     const extendedPublicKeyBuffer = Buffer.from(extendedPublicKey, isHex(extendedPublicKey) ? 'hex' : 'utf-8')
     const visibilityDerivationIndexBuffer = toHexBuffer(visibilityDerivationIndex)
     const addressDerivationIndexBuffer = toHexBuffer(addressDerivationIndex)

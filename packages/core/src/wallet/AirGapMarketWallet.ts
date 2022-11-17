@@ -98,7 +98,7 @@ export abstract class AirGapMarketWallet extends AirGapWallet {
     recipients: string[],
     values: string[],
     fee: string,
-    data?: { [key: string]: unknown }
+    data: { [key: string]: unknown } = {}
   ): Promise<IAirGapTransaction> {
     if (this.isExtendedPublicKey) {
       return this.protocol.prepareTransactionFromExtendedPublicKey(this.publicKey, 0, recipients, values, fee, data)
@@ -111,7 +111,7 @@ export abstract class AirGapMarketWallet extends AirGapWallet {
     }
   }
 
-  public async getMaxTransferValue(recipients: string[], fee?: string, data?: { [key: string]: unknown }): Promise<BigNumber> {
+  public async getMaxTransferValue(recipients: string[], fee?: string, data: { [key: string]: unknown } = {}): Promise<BigNumber> {
     if (this.isExtendedPublicKey) {
       return new BigNumber(await this.protocol.estimateMaxTransactionValueFromExtendedPublicKey(this.publicKey, recipients, fee, data))
     } else {
@@ -123,7 +123,7 @@ export abstract class AirGapMarketWallet extends AirGapWallet {
     }
   }
 
-  public async estimateFees(recipients: string[], values: string[], data?: { [key: string]: unknown }): Promise<FeeDefaults> {
+  public async estimateFees(recipients: string[], values: string[], data: { [key: string]: unknown } = {}): Promise<FeeDefaults> {
     if (this.isExtendedPublicKey) {
       return this.protocol.estimateFeeDefaultsFromExtendedPublicKey(this.publicKey, recipients, values, data)
     } else {

@@ -10,7 +10,7 @@
   },
   "private": true,
   "scripts": {
-    "build": "lerna run build --stream --scope @airgap/coinlib-core && lerna run build --stream --scope @airgap/bitcoin --scope @airgap/substrate --ignore @airgap/coinlib-core && lerna run build --stream --ignore @airgap/coinlib-core --ignore @airgap/bitcoin --ignore @airgap/substrate --ignore @airgap/serializer && lerna run build --stream --scope @airgap/serializer",
+    "build": "lerna run build --stream --scope @airgap/coinlib-core && lerna run build --stream --scope @airgap/module-kit && lerna run build --stream --scope @airgap/bitcoin --scope @airgap/substrate && lerna run build --stream --ignore @airgap/coinlib-core --ignore @airgap/module-kit --ignore @airgap/bitcoin --ignore @airgap/substrate --ignore @airgap/serializer && lerna run build --stream --scope @airgap/serializer",
     "build-scripts": "tsc scripts/*.ts && lerna run build-scripts --stream",
     "lint": "lerna run lint --stream",
     "lint:prettier": "lerna run lint:prettier --stream",
@@ -40,6 +40,7 @@
     "@airgap/cosmos": "file:packages/cosmos/dist",
     "@airgap/ethereum": "file:packages/ethereum/dist",
     "@airgap/groestlcoin": "file:packages/groestlcoin/dist",
+    "@airgap/module-kit": "file:packages/module-kit/dist",
     "@airgap/moonbeam": "file:packages/moonbeam/dist",
     "@airgap/polkadot": "file:packages/polkadot/dist",
     "@airgap/substrate": "file:packages/substrate/dist",
@@ -52,7 +53,7 @@
     "lerna": "3.22.1",
     "realpathify": "^1.0.1",
     "sonarqube-scanner": "2.8.0",
-    "typescript": "4.1.3"
+    "typescript": "4.8.4"
   },
   "buildDependencies": {
     "@types/node": "14.14.14",
@@ -61,7 +62,7 @@
     "lerna": "3.22.1",
     "realpathify": "^1.0.1",
     "sonarqube-scanner": "2.8.0",
-    "typescript": "4.1.3"
+    "typescript": "4.8.4"
   },
   "testDependencies": {
     "@types/assert": "0.0.31",

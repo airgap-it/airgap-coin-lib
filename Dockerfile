@@ -39,6 +39,10 @@ COPY packages/groestlcoin/package.json /app/packages/groestlcoin/
 COPY packages/groestlcoin/package-lock.json /app/packages/groestlcoin/
 COPY packages/groestlcoin/scripts /app/packages/groestlcoin/scripts
 
+COPY packages/module-kit/package.json /app/packages/module-kit/
+COPY packages/module-kit/package-lock.json /app/packages/module-kit/
+COPY packages/module-kit/scripts /app/packages/module-kit/scripts
+
 COPY packages/moonbeam/package.json /app/packages/moonbeam/
 COPY packages/moonbeam/package-lock.json /app/packages/moonbeam/
 COPY packages/moonbeam/scripts /app/packages/moonbeam/scripts
