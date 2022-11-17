@@ -1,7 +1,8 @@
-import { FeeDefaults, ICoinProtocol, ICoinSubProtocol } from '@airgap/coinlib-core'
+import { FeeDefaults, HasConfigurableContract, ICoinProtocol, ICoinSubProtocol } from '@airgap/coinlib-core'
+import { AxiosError } from '@airgap/coinlib-core/dependencies/src/axios-0.19.0'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import { mnemonicToSeed } from '@airgap/coinlib-core/dependencies/src/bip39-2.5.0'
-import { BalanceError, ProtocolErrorType } from '@airgap/coinlib-core/errors'
+import { BalanceError, NetworkError, PropertyUndefinedError, ProtocolErrorType } from '@airgap/coinlib-core/errors'
 import { Domain } from '@airgap/coinlib-core/errors/coinlib-error'
 import { AirGapTransactionStatus, IAirGapTransaction } from '@airgap/coinlib-core/interfaces/IAirGapTransaction'
 import { CurrencyUnit } from '@airgap/coinlib-core/protocols/ICoinProtocol'
@@ -36,6 +37,7 @@ import { TezosSaplingTransactionCursor } from '../types/sapling/TezosSaplingTran
 import { TezosSaplingTransactionResult } from '../types/sapling/TezosSaplingTransactionResult'
 import { TezosOperationType } from '../types/TezosOperationType'
 import { TezosWrappedOperation } from '../types/TezosWrappedOperation'
+import { TezosSaplingInjectorClient } from './injector/TezosSaplingInjectorClient'
 
 import { TezosSaplingNodeClient } from './node/TezosSaplingNodeClient'
 import { TezosSaplingAddress } from './TezosSaplingAddress'
@@ -46,7 +48,7 @@ import { TezosSaplingEncoder } from './utils/TezosSaplingEncoder'
 import { TezosSaplingForger } from './utils/TezosSaplingForger'
 import { TezosSaplingState } from './utils/TezosSaplingState'
 
-export abstract class TezosSaplingProtocol extends NonExtendedProtocol implements ICoinProtocol {
+export abstract class TezosSaplingProtocol extends NonExtendedProtocol implements ICoinProtocol, HasConfigurableContract {
   public readonly symbol: string
   public readonly name: string
   public readonly marketSymbol: string
@@ -68,8 +70,9 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
   public readonly addressPlaceholder: string = 'zet1...'
 
   public readonly cryptoClient: TezosSaplingCryptoClient
-  public readonly nodeClient: TezosSaplingNodeClient
-  public readonly contract: TezosContract
+  public nodeClient?: TezosSaplingNodeClient
+  public contract?: TezosContract
+  public injectorClient?: TezosSaplingInjectorClient
 
   public readonly bookkeeper: TezosSaplingBookkeeper
   public readonly encoder: TezosSaplingEncoder
@@ -99,9 +102,18 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
     this.standardDerivationPath = this.tezosProtocol.standardDerivationPath
 
     this.cryptoClient = new TezosSaplingCryptoClient(this.tezosProtocol.cryptoClient)
-    this.nodeClient = new TezosSaplingNodeClient(this.options.network.rpcUrl, this.options.config.contractAddress)
+    this.nodeClient = this.options.config.contractAddress
+      ? new TezosSaplingNodeClient(this.options.network.rpcUrl, this.options.config.contractAddress)
+      : undefined
 
-    this.contract = new TezosContract(this.options.config.contractAddress, this.options.network)
+    this.contract = this.options.config.contractAddress
+      ? new TezosContract(this.options.config.contractAddress, this.options.network)
+      : undefined
+
+    this.injectorClient =
+      this.options.config.injectorUrl && this.options.config.contractAddress
+        ? new TezosSaplingInjectorClient(this.options.config.injectorUrl, this.options.config.contractAddress)
+        : undefined
 
     this.state = new TezosSaplingState(this.options.config.merkleTreeHeight)
     this.encoder = new TezosSaplingEncoder()
@@ -109,6 +121,7 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
     this.bookkeeper = new TezosSaplingBookkeeper(this.identifier, this.options.network, this.cryptoClient, this.encoder)
   }
 
+  public abstract isContractValid(address: string): Promise<boolean>
   public abstract prepareContractCalls(transactions: string[]): Promise<TezosContractCall[]>
   public abstract parseParameters(parameters: TezosTransactionParameters): Promise<string[]>
 
@@ -170,6 +183,19 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
 
   public async getOptions(): Promise<TezosSaplingProtocolOptions> {
     return this.options
+  }
+
+  public async getContractAddress(): Promise<string | undefined> {
+    return this.contract?.address
+  }
+
+  public async setContractAddress(address: string, configuration?: any): Promise<void> {
+    this.options.config.contractAddress = address
+    this.nodeClient = new TezosSaplingNodeClient(this.options.network.rpcUrl, address)
+    this.contract = new TezosContract(address, this.options.network)
+
+    this.options.config.injectorUrl = configuration?.injectorUrl
+    this.injectorClient = new TezosSaplingInjectorClient(configuration?.injectorUrl, address)
   }
 
   public async initParameters(spendParams: Buffer, outputParams: Buffer): Promise<void> {
@@ -259,6 +285,13 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
     limit: number,
     cursor?: TezosSaplingTransactionCursor
   ): Promise<TezosSaplingTransactionResult> {
+    if (this.nodeClient === undefined) {
+      return {
+        transactions: [],
+        cursor: { page: 0 }
+      }
+    }
+
     const saplingStateDiff: TezosSaplingStateDiff = await this.nodeClient.getSaplingStateDiff()
 
     const incoming: TezosSaplingInput[] = []
@@ -391,7 +424,7 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
       network: this.options.network
     }
 
-    if (this.contract.areValidParameters(tx)) {
+    if (this.contract?.areValidParameters(tx)) {
       const partialDetails: Partial<IAirGapTransaction>[] = await this.getPartialDetailsFromContractParameters(tx, data?.knownViewingKeys)
 
       airGapTxs.push(
@@ -461,6 +494,10 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
     rawOrParsed: string | TezosTransactionParameters,
     knownViewingKeys: string[] = []
   ): Promise<Partial<IAirGapTransaction>[]> {
+    if (this.contract === undefined) {
+      throw new PropertyUndefinedError(Domain.TEZOS, 'Contract address not set.')
+    }
+
     const parameters: TezosTransactionParameters =
       typeof rawOrParsed === 'string' ? this.contract.parseParameters(rawOrParsed) : rawOrParsed
 
@@ -485,6 +522,10 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
   }
 
   public async getBalanceOfPublicKey(publicKey: string): Promise<string> {
+    if (this.nodeClient === undefined) {
+      return '0'
+    }
+
     const saplingStateDiff: TezosSaplingStateDiff = await this.nodeClient.getSaplingStateDiff()
     const unspends: TezosSaplingInput[] = await this.bookkeeper.getUnspends(
       publicKey,
@@ -542,6 +583,10 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
     fee: string,
     overrideFees: boolean = false
   ): Promise<RawTezosTransaction> {
+    if (this.contract === undefined) {
+      throw new PropertyUndefinedError(Domain.TEZOS, 'Contract address not set.')
+    }
+
     let operations: TezosOperation[]
     if (typeof transactionsOrString === 'string' && this.contract.areValidParameters(transactionsOrString)) {
       const parameters = this.contract.parseParameters(transactionsOrString)
@@ -626,6 +671,10 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
     value: string,
     data?: any
   ): Promise<RawTezosSaplingTransaction> {
+    if (this.nodeClient === undefined || this.options.config.contractAddress === undefined) {
+      throw new PropertyUndefinedError(Domain.TEZOS, 'Contract address not set.')
+    }
+
     if (!TezosSaplingAddress.isZetAddress(recipient)) {
       return Promise.reject(`Invalid recpient, expected a 'zet' address, got ${recipient}`)
     }
@@ -668,6 +717,10 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
   }
 
   private async mint(recipient: string, value: string): Promise<string> {
+    if (this.nodeClient === undefined || this.options.config.contractAddress === undefined) {
+      throw new PropertyUndefinedError(Domain.TEZOS, 'Contract address not set.')
+    }
+
     if (!TezosSaplingAddress.isZetAddress(recipient)) {
       return Promise.reject(`Invalid recipient, expected a 'zet' address, got ${recipient}`)
     }
@@ -690,13 +743,17 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
       [],
       [output],
       stateTree,
-      this.getAntiReplay(chainId)
+      this.getAntiReplay(chainId, this.options.config.contractAddress)
     )
 
     return this.encoder.encodeTransaction(forgedTransaction).toString('hex')
   }
 
   private async burn(viewingKey: string, value: string): Promise<RawTezosSaplingTransaction> {
+    if (this.nodeClient === undefined || this.options.config.contractAddress === undefined) {
+      throw new PropertyUndefinedError(Domain.TEZOS, 'Contract address not set.')
+    }
+
     const [stateDiff, chainId]: [TezosSaplingStateDiff, string] = await Promise.all([
       this.nodeClient.getSaplingStateDiff(),
       this.nodeClient.getChainId()
@@ -821,12 +878,25 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
     return TezosUtils.packMichelsonType(michelson)
   }
 
-  private getAntiReplay(chainId: string, contractAddress?: string): string {
-    return (contractAddress ?? this.options.config.contractAddress) + chainId
+  private getAntiReplay(chainId: string, contractAddress: string): string {
+    return contractAddress + chainId
   }
 
   public async broadcastTransaction(rawTransaction: any): Promise<string> {
-    return this.tezosProtocol.broadcastTransaction(rawTransaction)
+    if (!this.injectorClient) {
+      throw new PropertyUndefinedError(
+        Domain.TEZOS,
+        "Can't broadcast a sapling transaction, an injector service URL or contract address has not be set."
+      )
+    }
+
+    try {
+      const hash: string = await this.injectorClient.injectTransaction(rawTransaction)
+
+      return hash
+    } catch (error) {
+      throw new NetworkError(Domain.TEZOS, error as AxiosError)
+    }
   }
 
   public async signMessage(message: string, keypair: { publicKey?: string | undefined; privateKey: string }): Promise<string> {

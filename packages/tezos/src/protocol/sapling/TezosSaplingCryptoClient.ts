@@ -121,7 +121,8 @@ export class TezosSaplingCryptoClient extends Ed25519CryptoClient {
     const diversifier: Buffer = decrypted.slice(0, 11)
     const amount: BigNumber = new BigNumber(decrypted.slice(11, 19).toString('hex'), 16)
     const rcm: Buffer = decrypted.slice(19, 51)
-    const memo: Buffer = decrypted.slice(51)
+    const memoLength: BigNumber = new BigNumber(decrypted.slice(51, 55).toString('hex'), 16)
+    const memo: Buffer = decrypted.slice(55, 55 + memoLength.toNumber())
 
     return {
       diversifier,

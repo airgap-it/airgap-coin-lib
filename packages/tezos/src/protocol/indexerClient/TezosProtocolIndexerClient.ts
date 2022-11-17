@@ -23,6 +23,7 @@ export interface TezosProtocolIndexerClient {
   getTokenTransactions(token: Token, limit?: number, offset?: number): Promise<Omit<IAirGapTransaction, 'protocolIdentifier' | 'network'>[]>
   getTokenBalances(token: Token, limit?: number, offset?: number): Promise<{ address: string; amount: string }[]>
 
+  getContractCodeHash(contractAddress: string): Promise<{ typeHash: string; codeHash: string }>
   getContractBigMaps(contractAddress: string, limit?: number, offset?: number): Promise<BigMap[]>
   getContractBigMapValues(
     contractAddress: string,

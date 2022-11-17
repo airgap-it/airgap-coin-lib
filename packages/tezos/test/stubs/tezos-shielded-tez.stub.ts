@@ -62,7 +62,7 @@ export class TezosShieldedTezProtocolStub implements ProtocolHTTPStub {
 
     postStub
       .withArgs(
-        `${protocolOptions.network.rpcUrl}/chains/main/blocks/head/context/contracts/${protocol.contract.address}/script/normalized`
+        `${protocolOptions.network.rpcUrl}/chains/main/blocks/head/context/contracts/${protocol.contract?.address}/script/normalized`
       )
       .returns(
         Promise.resolve<Record<'data', Record<'code', TezosContractCode[]>>>({
@@ -88,7 +88,7 @@ export class TezosShieldedTezProtocolStub implements ProtocolHTTPStub {
       )
 
     getStub
-      .withArgs(`${protocolOptions.network.rpcUrl}/chains/main/blocks/head/context/contracts/${protocol.contract.address}/entrypoints`)
+      .withArgs(`${protocolOptions.network.rpcUrl}/chains/main/blocks/head/context/contracts/${protocol.contract?.address}/entrypoints`)
       .returns(
         Promise.resolve<Record<'data', Record<'entrypoints', any>>>({
           data: { entrypoints: {} }
@@ -97,7 +97,7 @@ export class TezosShieldedTezProtocolStub implements ProtocolHTTPStub {
 
     getStub
       .withArgs(
-        `${protocolOptions.network.rpcUrl}/chains/main/blocks/head/context/contracts/${protocol.contract.address}/single_sapling_get_diff`
+        `${protocolOptions.network.rpcUrl}/chains/main/blocks/head/context/contracts/${protocol.contract?.address}/single_sapling_get_diff`
       )
       .returns(
         Promise.resolve({

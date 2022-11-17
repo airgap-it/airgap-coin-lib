@@ -98,6 +98,15 @@ export class TezosIndexerClient implements TezosProtocolIndexerClient {
     }))
   }
 
+  public async getContractCodeHash(contractAddress: string): Promise<{ typeHash: string; codeHash: string }> {
+    const url = this.url(`/contracts/${contractAddress}`)
+    const result = (await axios.get<any>(url)).data
+    return {
+      typeHash: result.typeHash.toString(),
+      codeHash: result.codeHash.toString()
+    }
+  }
+
   public async getContractBigMaps(contractAddress: string, limit?: number, offset?: number): Promise<BigMap[]> {
     const url = this.url(`/contracts/${contractAddress}/bigmaps`, 'micheline=2', limit, offset)
     const result = (await axios.get<any[]>(url)).data

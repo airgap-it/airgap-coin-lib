@@ -38,15 +38,16 @@ export class TezosSaplingProtocolConfig extends TezosProtocolConfig {
   constructor(
     public readonly name: string,
     public readonly identifier: ProtocolSymbols,
-    public readonly contractAddress: string,
     public readonly memoSize: number,
     public readonly merkleTreeHeight: number = 32,
+    public contractAddress?: string,
     public readonly symbol?: string,
     public readonly marketSymbol?: string,
     public readonly feeDefaults?: FeeDefaults,
     public readonly decimals?: number,
     public readonly units?: CurrencyUnit[],
-    public readonly externalProvider?: TezosSaplingExternalMethodProvider
+    public readonly externalProvider?: TezosSaplingExternalMethodProvider,
+    public injectorUrl?: string
   ) {
     super()
   }
@@ -56,23 +57,25 @@ export class TezosShieldedTezProtocolConfig extends TezosSaplingProtocolConfig {
   constructor(
     public readonly name: string = 'Shielded Tez',
     public readonly identifier: ProtocolSymbols = MainProtocolSymbols.XTZ_SHIELDED,
-    public readonly contractAddress: string = 'KT1Wr1z3CwrZamPsazpVXefpEjXUBScUPuHZ',
+    public readonly contractAddress?: string,
     public readonly externalProvider?: TezosSaplingExternalMethodProvider,
+    public readonly injectorUrl?: string,
     public readonly memoSize: number = 8,
     public readonly merkleTreeHeight: number = 32
   ) {
     super(
       name,
       identifier,
-      contractAddress,
       memoSize,
       merkleTreeHeight,
+      contractAddress,
       undefined,
       undefined,
       undefined,
       undefined,
       undefined,
-      externalProvider
+      externalProvider,
+      injectorUrl
     )
   }
 }

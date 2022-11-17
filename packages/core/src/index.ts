@@ -17,6 +17,7 @@ import { IAirGapSignedTransaction } from './interfaces/IAirGapSignedTransaction'
 import { IAirGapTransaction, IAirGapTransactionResult, IProtocolTransactionCursor } from './interfaces/IAirGapTransaction'
 import { IAirGapWallet } from './interfaces/IAirGapWallet'
 import { CryptoClient } from './protocols/CryptoClient'
+import { HasConfigurableContract } from './protocols/HasConfigurableContract'
 import {
   DelegateeDetails,
   DelegatorAction,
@@ -30,6 +31,7 @@ import { SignedTransaction } from './types/signed-transaction'
 import { UnsignedTransaction } from './types/unsigned-transaction'
 import { assertNever } from './utils/assert'
 import { bufferFrom } from './utils/buffer'
+import { hasConfigurableContract, implementsInterface } from './utils/interfaces'
 import { isNetworkEqual } from './utils/Network'
 import { ProtocolBlockExplorer } from './utils/ProtocolBlockExplorer'
 import { NetworkType, ProtocolNetwork } from './utils/ProtocolNetwork'
@@ -53,6 +55,7 @@ export {
   AirGapCoinWallet,
   AirGapWalletStatus,
   AirGapNFTWallet,
+  HasConfigurableContract,
   IAirGapWallet,
   IAirGapTransaction,
   ICoinProtocol,
@@ -104,7 +107,9 @@ export {
   AirGapWalletPriceService,
   IProtocolTransactionCursor,
   SubProtocolType,
-  assertNever
+  assertNever,
+  implementsInterface,
+  hasConfigurableContract
 }
 
 export { bufferFrom } // TODO: Helper method for angular component lib
