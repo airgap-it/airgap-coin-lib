@@ -1,7 +1,7 @@
 import { AirGapWalletStatus } from '@airgap/coinlib-core'
 import { mnemonicToSeed } from '@airgap/coinlib-core/dependencies/src/bip39-2.5.0'
 
-import { TezosShieldedTezProtocol } from '../../src'
+import { TezosSaplingProtocolOptions, TezosShieldedTezProtocol, TezosShieldedTezProtocolConfig } from '../../src'
 import { TestProtocolSpec } from '../implementations'
 import { TezosShieldedTezProtocolStub } from '../stubs/tezos-shielded-tez.stub'
 
@@ -13,7 +13,12 @@ import { TezosTestProtocolSpec } from './tezos'
 
 export class TezosShieldedTezTestProtocolSpec extends TestProtocolSpec {
   public name = 'ShieldedTez'
-  public lib = new TezosShieldedTezProtocol()
+  public lib = new TezosShieldedTezProtocol(
+    new TezosSaplingProtocolOptions(
+      undefined,
+      new TezosShieldedTezProtocolConfig(undefined, undefined, 'KT1Wr1z3CwrZamPsazpVXefpEjXUBScUPuHZ')
+    )
+  )
   public tezos = new TezosTestProtocolSpec()
 
   public stub = new TezosShieldedTezProtocolStub()

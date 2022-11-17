@@ -141,7 +141,7 @@ describe('ICoinProtocol TezosShieldedTez - Custom Tests', () => {
               kind: TezosOperationType.TRANSACTION,
               fee: '1000',
               amount: '0',
-              destination: protocol.lib.contract.address,
+              destination: protocol.lib.contract?.address,
               source: protocol.tezos.wallet.addresses[0],
               counter: '917316',
               gas_limit: '10300',
