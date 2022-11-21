@@ -196,21 +196,30 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
     limit: number,
     cursor?: AeternityTransactionCursor
   ): Promise<AeternityTransactionResult> {
-    const allTransactions = await Promise.all(
-      addresses.map((address) => {
-        const url = cursor
-          ? `${this.options.network.rpcUrl}/mdw/txs/backward?account=${address}&page=${cursor.page}&limit=${limit}`
-          : `${this.options.network.rpcUrl}/mdw/txs/backward?account=${address}&page=1&limit=${limit}`
-        return axios.get(url)
+    const groupedTransactions = await Promise.all(
+      addresses.map(async (address) => {
+        const endpoint = cursor === undefined ? `/txs/backward?account=${address}&limit=${limit}` : cursor.next[address]
+        const url = endpoint !== undefined ? `${this.options.network.rpcUrl}/mdw/${endpoint.replace(/^\/+/, '')}` : undefined
+        const response = url !== undefined ? await axios.get(url) : undefined
+
+        return {
+          address,
+          data: response?.data
+        }
       })
     )
 
-    let transactions: any[] = [].concat(
-      ...allTransactions.map((axiosData) => {
-        return axiosData.data.data || []
-      })
+    const [next, allTransactions] = groupedTransactions.reduce(
+      (acc, curr) => {
+        const nextAcc = curr.data?.next ? Object.assign(acc[0], { [curr.address]: curr.data.next }) : acc[0]
+        const transactionsAcc = acc[1].concat(curr.data?.data || [])
+
+        return [nextAcc, transactionsAcc]
+      },
+      [{}, [] as any[]]
     )
-    transactions = transactions.map((obj) => {
+
+    const transactions = allTransactions.map((obj) => {
       const parsedTimestamp = parseInt(obj.micro_time, 10)
       const airGapTx: IAirGapTransaction = {
         amount: new BigNumber(obj.tx.amount).toString(10),
@@ -235,7 +244,7 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
       return airGapTx
     })
 
-    return { transactions, cursor: { page: cursor ? cursor.page + 1 : 2 } }
+    return { transactions, cursor: { next } }
   }
 
   protected getPageNumber(limit: number, offset: number): number {

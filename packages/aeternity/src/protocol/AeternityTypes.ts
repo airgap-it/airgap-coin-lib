@@ -2,7 +2,7 @@ import { IAirGapAddressResult, IProtocolAddressCursor } from '@airgap/coinlib-co
 import { IAirGapTransaction } from '@airgap/coinlib-core/interfaces/IAirGapTransaction'
 
 export interface AeternityTransactionCursor {
-  page: number
+  next: { [address: string]: string | undefined }
 }
 
 export interface AeternityTransactionResult {
