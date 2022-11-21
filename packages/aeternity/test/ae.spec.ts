@@ -62,7 +62,7 @@ describe(`ICoinProtocol Aeternity - Custom Tests`, () => {
     sinon
       .stub(axios, 'get')
       .withArgs(
-        `${(await aeLib.getOptions()).network.rpcUrl}/mdw/txs/backward?account=${aeProtocolSpec.wallet.addresses[0]}&page=1&limit=${limit}`
+        `${(await aeLib.getOptions()).network.rpcUrl}/mdw/txs/backward?account=${aeProtocolSpec.wallet.addresses[0]}&limit=${limit}`
       )
       .returns(Promise.resolve({ data: responseWithTimestamp }))
 
@@ -103,7 +103,7 @@ describe(`ICoinProtocol Aeternity - Custom Tests`, () => {
     sinon
       .stub(axios, 'get')
       .withArgs(
-        `${(await aeLib.getOptions()).network.rpcUrl}/mdw/txs/backward?account=${aeProtocolSpec.wallet.addresses[0]}&page=1&limit=${limit}`
+        `${(await aeLib.getOptions()).network.rpcUrl}/mdw/txs/backward?account=${aeProtocolSpec.wallet.addresses[0]}&limit=${limit}`
       )
       .returns(Promise.resolve({ data: responseWithTimestamp }))
 
