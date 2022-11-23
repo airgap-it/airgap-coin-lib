@@ -1,5 +1,4 @@
-import { RawAeternityTransaction } from '@airgap/aeternity'
-import { SignedAeternityTransaction, UnsignedAeternityTransaction } from '@airgap/aeternity'
+import { RawAeternityTransaction, SignedAeternityTransaction, UnsignedAeternityTransaction } from '@airgap/aeternity'
 import { async } from '@airgap/coinlib-core/dependencies/src/validate.js-0.13.1/validate'
 
 import { TransactionValidator } from '../validators/transactions.validator'

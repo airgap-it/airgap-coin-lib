@@ -2,8 +2,9 @@ import { Address, AddressCursor, AddressWithCursor } from '../types/address'
 import { Amount } from '../types/amount'
 import { Balance } from '../types/balance'
 import { FeeEstimation } from '../types/fee'
-import { ExtendedKeyPair, ExtendedPrivateKey, ExtendedPublicKey, KeyPair, PrivateKey, PublicKey } from '../types/key'
+import { ExtendedKeyPair, ExtendedSecretKey, ExtendedPublicKey, KeyPair, SecretKey, PublicKey } from '../types/key'
 import { Complement } from '../types/meta/utility-types'
+import { ProtocolNetwork } from '../types/protocol'
 import { Secret } from '../types/secret'
 import { Signature } from '../types/signature'
 import {
@@ -35,12 +36,13 @@ interface OfflineExtendedGeneric<
 
 interface OnlineExtendedGeneric<
   _AddressCursor extends AddressCursor = AddressCursor,
+  _ProtocolNetwork extends ProtocolNetwork = ProtocolNetwork,
   _SignedTransaction extends SignedTransaction = SignedTransaction,
   _TransactionCursor extends TransactionCursor = TransactionCursor,
   _Units extends string = string,
   _UnsignedTransaction extends UnsignedTransaction = UnsignedTransaction
 > extends BaseExtendedGeneric<_AddressCursor, _SignedTransaction, _Units, _UnsignedTransaction>,
-    OnlineGeneric<_AddressCursor, _SignedTransaction, _TransactionCursor, _Units, _UnsignedTransaction> {}
+    OnlineGeneric<_AddressCursor, _ProtocolNetwork, _SignedTransaction, _TransactionCursor, _Units, _UnsignedTransaction> {}
 
 type TypedAddressCursor<G extends Partial<BaseGeneric>> = Complement<BaseGeneric, G>['AddressCursor']
 type TypedSignedTransaction<G extends Partial<BaseExtendedGeneric>> = Complement<BaseExtendedGeneric, G>['SignedTransaction']
@@ -53,10 +55,10 @@ type TypedUnits<G extends Partial<BaseExtendedGeneric>> = Complement<BaseExtende
 export interface BaseExtendedProtocol<G extends Partial<BaseExtendedGeneric> = {}> extends BaseProtocol<G> {
   deriveFromExtendedPublicKey(publicKey: ExtendedPublicKey, visibilityIndex: number, addressIndex: number): Promise<PublicKey>
 
-  convertKeyFormat<K extends PrivateKey | ExtendedPrivateKey | PublicKey | ExtendedPublicKey, F extends K['format']>(
+  convertKeyFormat<K extends SecretKey | ExtendedSecretKey | PublicKey | ExtendedPublicKey>(
     key: K,
-    targetFormat: F
-  ): Promise<(Omit<K, 'format'> & { format: F }) | undefined>
+    targetFormat: K['format']
+  ): Promise<K | undefined>
 
   getNextAddressFromPublicKey(
     publicKey: ExtendedPublicKey,
@@ -72,18 +74,15 @@ export interface AirGapOfflineExtendedProtocol<G extends Partial<OfflineExtended
     Omit<AirGapOfflineProtocol<G>, keyof BaseExtendedProtocol<G>> {
   getExtendedKeyPairFromSecret(secret: Secret, derivationPath?: string, password?: string): Promise<ExtendedKeyPair>
 
-  signTransactionWithPrivateKey(
+  signTransactionWithSecretKey(
     transaction: TypedUnsignedTransaction<G>,
-    privateKey: PrivateKey | ExtendedPrivateKey
+    secretKey: SecretKey | ExtendedSecretKey
   ): Promise<TypedSignedTransaction<G>>
 
   signMessageWithKeyPair(message: string, keyPair: KeyPair | ExtendedKeyPair): Promise<Signature>
-
-  decryptAsymmetricWithPrivateKey(payload: string, privateKey: PrivateKey | ExtendedPrivateKey): Promise<string>
-
-  encryptAESWithPrivateKey(payload: string, privateKey: PrivateKey | ExtendedPrivateKey): Promise<string>
-
-  decryptAESWithPrivateKey(payload: string, privateKey: PrivateKey | ExtendedPrivateKey): Promise<string>
+  decryptAsymmetricWithKeyPair(payload: string, keyPair: KeyPair | ExtendedKeyPair): Promise<string>
+  encryptAESWithSecretKey(payload: string, secretKey: SecretKey | ExtendedSecretKey): Promise<string>
+  decryptAESWithSecretKey(payload: string, secretKey: SecretKey | ExtendedSecretKey): Promise<string>
 }
 
 export interface AirGapOnlineExtendedProtocol<G extends Partial<OnlineExtendedGeneric> = {}>
@@ -104,11 +103,11 @@ export interface AirGapOnlineExtendedProtocol<G extends Partial<OnlineExtendedGe
   ): Promise<Amount<TypedUnits<G>>> // how should it be calulated? value distributed amongst addresses passed in in `to` or should we limit it to only one recipient?
   getTransactionFeeWithPublicKey(
     publicKey: PublicKey | ExtendedPublicKey,
-    details: TransactionDetails[]
+    details: TransactionDetails<TypedUnits<G>>[]
   ): Promise<FeeEstimation<TypedUnits<G>>>
   prepareTransactionWithPublicKey(
     publicKey: PublicKey | ExtendedPublicKey,
-    details: TransactionDetails[],
+    details: TransactionDetails<TypedUnits<G>>[],
     fee?: Amount<TypedUnits<G>>
   ): Promise<TypedUnsignedTransaction<G>>
 }

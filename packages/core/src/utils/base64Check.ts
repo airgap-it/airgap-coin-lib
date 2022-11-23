@@ -24,7 +24,7 @@ const bs64check = {
 
     return payloadWithChecksum.toString('base64')
   },
-  decode(input: Buffer | string): any {
+  decode(input: Buffer | string): Buffer {
     if (!Buffer.isBuffer(input)) {
       input = Buffer.from(input, 'base64')
     }

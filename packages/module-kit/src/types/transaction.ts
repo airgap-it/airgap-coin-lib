@@ -4,6 +4,7 @@ import { BaseCursor } from './base/cursor'
 import { Sealed } from './base/sealed'
 import { ProtocolNetwork } from './protocol'
 import { AirGapUIAlert } from './ui/alert'
+import { AirGapUIText } from './ui/text'
 
 // ##### Transaction #####
 
@@ -28,6 +29,8 @@ export interface AirGapTransaction<_Units extends string = string> {
   status?: AirGapTransactionStatus
 
   uiAlerts?: AirGapUIAlert[]
+
+  details?: [AirGapUIText, string]
 }
 
 export interface TransactionCursor extends BaseCursor {}
@@ -42,6 +45,7 @@ export interface AirGapTransactionsWithCursor<_Units extends string = string, _C
 export interface TransactionDetails<_Units extends string = string> {
   to: Address
   amount: Amount<_Units>
+  arbitraryData?: string
 }
 
 // ##### TransactionStatus #####
@@ -53,8 +57,13 @@ interface BaseTransactionStatus<_Type extends string> extends Sealed<_Type> {
 
 interface AppliedTransactionStatus extends BaseTransactionStatus<'applied'> {}
 interface FailedTransactionStatus extends BaseTransactionStatus<'failed'> {}
+interface UnknownTransactionStatus extends BaseTransactionStatus<'unknown'> {}
 interface CustomTransactionStatus extends BaseTransactionStatus<'custom'> {
   name: string
 }
 
-export type AirGapTransactionStatus = AppliedTransactionStatus | FailedTransactionStatus | CustomTransactionStatus
+export type AirGapTransactionStatus =
+  | AppliedTransactionStatus
+  | FailedTransactionStatus
+  | UnknownTransactionStatus
+  | CustomTransactionStatus

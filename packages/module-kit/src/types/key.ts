@@ -1,23 +1,20 @@
 import { Sealed } from './base/sealed'
+import { BytesString } from './bytes'
 
 export type KeyType = 'priv' | 'xpriv' | 'pub' | 'xpub'
-export type KeyFormat = 'hex' | 'encoded'
 
-interface BaseKey<_Type extends KeyType> extends Sealed<_Type> {
-  format: KeyFormat
-  value: string
-}
+interface BaseKey<_Type extends KeyType> extends Sealed<_Type>, BytesString {}
 
-export interface PrivateKey extends BaseKey<'priv'> {}
-export interface ExtendedPrivateKey extends BaseKey<'xpriv'> {}
+export interface SecretKey extends BaseKey<'priv'> {}
+export interface ExtendedSecretKey extends BaseKey<'xpriv'> {}
 
 export interface PublicKey extends BaseKey<'pub'> {}
 export interface ExtendedPublicKey extends BaseKey<'xpub'> {}
 
-interface BaseKeyPair<_PrivateKey extends PrivateKey | ExtendedPrivateKey, _PublicKey extends PublicKey | ExtendedPublicKey> {
-  privateKey: _PrivateKey
+interface BaseKeyPair<_SecretKey extends SecretKey | ExtendedSecretKey, _PublicKey extends PublicKey | ExtendedPublicKey> {
+  secretKey: _SecretKey
   publicKey: _PublicKey
 }
 
-export type KeyPair = BaseKeyPair<PrivateKey, PublicKey>
-export type ExtendedKeyPair = BaseKeyPair<ExtendedPrivateKey, ExtendedPublicKey>
+export type KeyPair = BaseKeyPair<SecretKey, PublicKey>
+export type ExtendedKeyPair = BaseKeyPair<ExtendedSecretKey, ExtendedPublicKey>

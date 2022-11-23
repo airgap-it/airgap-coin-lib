@@ -1,6 +1,6 @@
 import { MainProtocolSymbols } from '@airgap/coinlib-core'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
-import { AirGapOnlineExtendedProtocol, AirGapOnlineProtocol, isOnlineExtendedProtocol } from '@airgap/module-kit'
+import { AirGapOnlineExtendedProtocol, AirGapOnlineProtocol, amount, Balance, isOnlineExtendedProtocol } from '@airgap/module-kit'
 
 import { AirGapOnlineWallet } from './AirGapOnlineWallet'
 
@@ -53,9 +53,10 @@ export class AirGapCoinWallet<
   }
 
   public async balanceOf(): Promise<BigNumber> {
-    const protocolIdentifier = (await this.protocol.getMetadata()).identifier
+    const protocolMetadata = await this.protocol.getMetadata()
+    const protocolIdentifier = protocolMetadata.identifier
 
-    let result: BigNumber
+    let balance: Balance<string>
     if (
       (protocolIdentifier === MainProtocolSymbols.BTC ||
         protocolIdentifier === MainProtocolSymbols.BTC_SEGWIT ||
@@ -73,12 +74,12 @@ export class AirGapCoinWallet<
       We can also not simply change the order of the following if/else, because then it would use the xPub method for
       BTC as well, which results in the addresses being derived again, which causes massive lags in the apps.
       */
-      result = new BigNumber(await this.protocol.getBalanceOfPublicKey(this.publicKey))
+      balance = await this.protocol.getBalanceOfPublicKey(this.publicKey)
     } else if (
       this.addresses.length > 0 &&
       protocolIdentifier !== MainProtocolSymbols.XTZ_SHIELDED /* TODO: cover ALL sapling protocols */
     ) {
-      result = new BigNumber(await this.protocol.getBalanceOfAddresses(this.addressesToCheck()))
+      balance = await this.protocol.getBalanceOfAddresses(this.addressesToCheck())
     } else if (this.publicKey.type === 'xpub') {
       if (!isOnlineExtendedProtocol(this.protocol)) {
         // This *should* never happen because of how the constructor is typed, but the compiler doesn't know it.
@@ -86,10 +87,12 @@ export class AirGapCoinWallet<
         throw this.xpubRequiresExtendedProtocolError()
       }
 
-      result = new BigNumber(await this.protocol.getBalanceOfPublicKey(this.publicKey))
+      balance = await this.protocol.getBalanceOfPublicKey(this.publicKey)
     } else {
-      result = new BigNumber(await this.protocol.getBalanceOfPublicKey(this.publicKey))
+      balance = await this.protocol.getBalanceOfPublicKey(this.publicKey)
     }
+
+    const result: BigNumber = new BigNumber(amount(balance.total).blockchain(protocolMetadata.units).value)
 
     this.setCurrentBalance(result)
 

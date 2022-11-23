@@ -1,6 +1,3 @@
-export type SignatureFormat = 'hex' | 'encoded'
+import { BytesString } from './bytes'
 
-export interface Signature {
-  format: SignatureFormat
-  value: string
-}
+export interface Signature extends BytesString {}

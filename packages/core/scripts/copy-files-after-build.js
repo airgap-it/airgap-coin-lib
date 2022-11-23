@@ -148,7 +148,7 @@ var findFilesOnLevel = function (base) {
           _b.apply(_a, _c.concat([_d.sent()]))
           return [3 /*break*/, 4]
         case 3:
-          if (file.endsWith('json') || file.endsWith('js')) {
+          if (file.endsWith('json') || file.endsWith('js') || file.endsWith('.d.ts')) {
             files.push(path)
             path_1
               .dirname(path)

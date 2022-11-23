@@ -8,13 +8,19 @@ import {
   ExtendedPublicKey,
   FeeEstimation,
   isOnlineExtendedProtocol,
+  protocolNetworkIdentifier,
   PublicKey,
   TransactionCursor,
   TransactionDetails,
   UnsignedTransaction
 } from '@airgap/module-kit'
 
-import { AirGapWallet, AirGapWalletStatus } from '../AirGapWallet'
+import { AirGapWallet, AirGapWalletStatus, SerializedAirGapWallet } from '../AirGapWallet'
+
+// TODO: we'll have to migrate serialized legacy wallets
+export interface SerializedAirGapOnlineWallet extends SerializedAirGapWallet {
+  networkIdentifier: string
+}
 
 export interface AirGapWalletPriceService {
   getCurrentMarketPrice(protocol: AirGapOnlineProtocol, baseSymbol: string): Promise<BigNumber>
@@ -136,7 +142,7 @@ export abstract class AirGapOnlineWallet<
     }
   }
 
-  public async getMaxTransferValue(recipients: string[], fee?: Amount, data: { [key: string]: unknown } = {}): Promise<BigNumber> {
+  public async getMaxTransferValue(recipients: string[], fee?: Amount, data: { [key: string]: unknown } = {}): Promise<Amount> {
     if (this.publicKey.type === 'xpub') {
       if (!isOnlineExtendedProtocol(this.protocol)) {
         // This *should* never happen because of how the constructor is typed, but the compiler doesn't know it.
@@ -144,14 +150,14 @@ export abstract class AirGapOnlineWallet<
         throw this.xpubRequiresExtendedProtocolError()
       }
 
-      return new BigNumber(await this.protocol.getTransactionMaxAmountWithPublicKey(this.publicKey, recipients, fee))
+      return this.protocol.getTransactionMaxAmountWithPublicKey(this.publicKey, recipients, fee)
     } else {
       if (this.addressIndex) {
         // TODO: what should we do with addressIndex?
         data = Object.assign(data, { addressIndex: this.addressIndex })
       }
 
-      return new BigNumber(await this.protocol.getTransactionMaxAmountWithPublicKey(this.publicKey, recipients, fee))
+      return this.protocol.getTransactionMaxAmountWithPublicKey(this.publicKey, recipients, fee)
     }
   }
 
@@ -171,6 +177,18 @@ export abstract class AirGapOnlineWallet<
       }
 
       return this.protocol.getTransactionFeeWithPublicKey(this.publicKey, details)
+    }
+  }
+
+  public async toJSON(): Promise<SerializedAirGapOnlineWallet> {
+    const [base, networkIdentifier] = await Promise.all([
+      super.toJSON(),
+      this.protocol.getNetwork().then((network) => protocolNetworkIdentifier(network))
+    ])
+
+    return {
+      ...base,
+      networkIdentifier
     }
   }
 }

@@ -4,16 +4,19 @@ export interface ProtocolMetadata<_Units extends string> {
   name: string
   identifier: string // TODO: we should help developers generate unique identifiers somehow
 
-  units: { [key in _Units]: ProtocolUnit }
+  units: ProtocolUnitsMetadata<_Units>
   mainUnit: _Units
 
-  fee: ProtocolFeeMetadata<_Units>
+  fee?: ProtocolFeeMetadata<_Units>
   account?: ProtocolAccountMetadata
+  transaction?: ProtocolTransactionMetadata
 }
 
-export interface ProtocolUnit {
-  symbol: ProtocolSymbol
-  decimals: number
+export type ProtocolUnitsMetadata<_Units extends string> = {
+  [key in _Units]: {
+    symbol: ProtocolSymbol
+    decimals: number
+  }
 }
 
 export interface ProtocolSymbol {
@@ -22,22 +25,30 @@ export interface ProtocolSymbol {
 }
 
 export interface ProtocolFeeMetadata<_Units extends string> {
-  symbol: ProtocolSymbol
   defaults?: FeeDefaults<_Units>
 }
 
 export interface ProtocolAccountMetadata {
   standardDerivationPath?: string
 
-  addressIsCaseSensitive?: boolean // where do we use this?
-  addressPlaceholder?: string
-  addressRegex?: string
+  address?: {
+    isCaseSensitive?: boolean // where do we use this?
+    placeholder?: string
+    regex?: string
+  }
+}
+
+export interface ProtocolTransactionMetadata {
+  arbitraryData?: {
+    name: string // e.g. 'payload', 'memo'
+    maxLength?: number
+    regex?: string
+  }
 }
 
 export type ProtocolNetworkType = 'mainnet' | 'testnet' | 'custom'
 
 export interface ProtocolNetwork {
-  identifier: string
   name: string
   type: ProtocolNetworkType
   rpcUrl: string

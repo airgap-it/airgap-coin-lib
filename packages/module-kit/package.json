@@ -17,7 +17,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "rm -rf ./dist && tsc && node scripts/copy-files-after-build.js",
+    "build": "rm -rf ./dist && tsc && node scripts/copy-files-after-build.js && node scripts/make-ts-declaration-files-backwards-compatible.js",
     "build-scripts": "tsc scripts/*.ts",
     "lint": "tslint -c ./tslint.json --project ./tsconfig.json --format stylish --fix",
     "lint:prettier": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",

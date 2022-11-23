@@ -7,7 +7,7 @@ import axios from '@airgap/coinlib-core/dependencies/src/axios-0.19.0/index'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 
 import { AETestProtocolSpec } from './specs/ae'
-import { RawAeternityTransaction } from '../src'
+import { RawAeternityTransaction } from '../../src/v0'
 
 // use chai-as-promised plugin
 chai.use(chaiAsPromised)
@@ -16,7 +16,7 @@ const expect = chai.expect
 const aeProtocolSpec = new AETestProtocolSpec()
 const aeLib = aeProtocolSpec.lib
 
-describe(`ICoinProtocol Aeternity - Custom Tests`, () => {
+describe(`ICoinProtocol Aeternity (v0) - Custom Tests`, () => {
   const sampleAccountResponse: Readonly<any> = Object.freeze({
     data: [
       {
