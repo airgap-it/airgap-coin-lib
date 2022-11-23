@@ -1,5 +1,5 @@
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
-import { AirGapOnlineExtendedProtocol, AirGapOnlineProtocol, isOnlineExtendedProtocol } from '@airgap/module-kit'
+import { AirGapOnlineExtendedProtocol, AirGapOnlineProtocol, amount, Balance, isOnlineExtendedProtocol } from '@airgap/module-kit'
 
 import { AirGapOnlineWallet } from './AirGapOnlineWallet'
 
@@ -55,7 +55,9 @@ export class AirGapNFTWallet<
   }
 
   public async balanceOf(assetID: string): Promise<BigNumber> {
-    let result: BigNumber
+    const protocolMetadata = await this.protocol.getMetadata()
+
+    let balance: Balance<string>
     if (this.publicKey.type === 'xpub') {
       if (!isOnlineExtendedProtocol(this.protocol)) {
         // This *should* never happen because of how the constructor is typed, but the compiler doesn't know it.
@@ -64,10 +66,12 @@ export class AirGapNFTWallet<
       }
 
       // TODO: handle assetID
-      result = new BigNumber(await this.protocol.getBalanceOfPublicKey(this.publicKey /* { assetID } */))
+      balance = await this.protocol.getBalanceOfPublicKey(this.publicKey /* { assetID } */)
     } else {
-      result = new BigNumber(await this.protocol.getBalanceOfPublicKey(this.publicKey /* { addressIndex: this.addressIndex, assetID } */))
+      balance = await this.protocol.getBalanceOfPublicKey(this.publicKey /* { addressIndex: this.addressIndex, assetID } */)
     }
+
+    const result = new BigNumber(amount(balance.total).blockchain(protocolMetadata.units).value)
 
     this.setCurrentBalance(result, assetID)
 

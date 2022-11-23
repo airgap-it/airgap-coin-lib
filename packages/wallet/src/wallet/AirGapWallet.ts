@@ -21,7 +21,6 @@ export enum AirGapWalletStatus {
 // TODO: we'll have to migrate serialized legacy wallets
 export interface SerializedAirGapWallet {
   protocolIdentifier: string
-  networkIdentifier: string
   publicKey: PublicKey | ExtendedPublicKey
   derivationPath: string
   addresses: string[]
@@ -93,14 +92,10 @@ export abstract class AirGapWallet<
   }
 
   public async toJSON(): Promise<SerializedAirGapWallet> {
-    const [protocolIdentifier, networkIdentifier] = await Promise.all([
-      this.protocol.getMetadata().then((metadata) => metadata.identifier),
-      this.protocol.getNetwork().then((network) => network.identifier)
-    ])
+    const protocolIdentifier = (await this.protocol.getMetadata()).identifier
 
     return {
       protocolIdentifier,
-      networkIdentifier,
       publicKey: this.publicKey,
       derivationPath: this.derivationPath,
       addresses: this.addresses,

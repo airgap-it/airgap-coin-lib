@@ -1,3 +1,5 @@
+import createHash = require('@airgap/coinlib-core/dependencies/src/create-hash-1.2.0/index')
+
 import {
   AirGapAnyExtendedProtocol,
   AirGapExtendedProtocol,
@@ -6,16 +8,8 @@ import {
   BaseExtendedProtocol
 } from '../protocol/AirGapExtendedProtocol'
 import { AirGapAnyProtocol, AirGapOfflineProtocol, AirGapOnlineProtocol, AirGapProtocol, BaseProtocol } from '../protocol/AirGapProtocol'
-
-// TODO: replace with version from coinlib, once it's merged
-type Schema<T> = Record<keyof T, 'required' | 'optional'>
-function implementsInterface<T>(object: unknown, schema: Schema<T>): object is T {
-  if (typeof object !== 'object' || !object) {
-    return false
-  }
-
-  return Object.keys(schema).every((key) => schema[key] === 'optional' || object[key] !== undefined)
-}
+import { ProtocolNetwork } from '../types/protocol'
+import { implementsInterface, Schema } from './interface'
 
 const baseProtocolSchema: Schema<BaseProtocol> = {
   convertKeyFormat: 'required',
@@ -23,18 +17,17 @@ const baseProtocolSchema: Schema<BaseProtocol> = {
   getAddressFromPublicKey: 'required',
   getDetailsFromTransaction: 'required',
   getMetadata: 'required',
-  getNetwork: 'required',
   verifyMessageWithPublicKey: 'required'
 }
 
 const offlineProtocolSchema: Schema<AirGapOfflineProtocol> = {
   ...baseProtocolSchema,
-  decryptAESWithPrivateKey: 'required',
-  decryptAsymmetricWithPrivateKey: 'required',
-  encryptAESWithPrivateKey: 'required',
+  decryptAESWithSecretKey: 'required',
+  decryptAsymmetricWithKeyPair: 'required',
+  encryptAESWithSecretKey: 'required',
   getKeyPairFromSecret: 'required',
   signMessageWithKeyPair: 'required',
-  signTransactionWithPrivateKey: 'required'
+  signTransactionWithSecretKey: 'required'
 }
 
 const onlineProtocolSchema: Schema<AirGapOnlineProtocol> = {
@@ -42,9 +35,10 @@ const onlineProtocolSchema: Schema<AirGapOnlineProtocol> = {
   broadcastTransaction: 'required',
   getBalanceOfAddresses: 'required',
   getBalanceOfPublicKey: 'required',
+  getNetwork: 'required',
   getTransactionFeeWithPublicKey: 'required',
   getTransactionMaxAmountWithPublicKey: 'required',
-  getTransactionStatus: 'required',
+  getTransactionStatus: 'optional',
   getTransactionsForAddresses: 'required',
   getTransactionsForPublicKey: 'required',
   prepareTransactionWithPublicKey: 'required'
@@ -81,4 +75,17 @@ export function isExtendedProtocol(protocol: AirGapProtocol): protocol is AirGap
 
 export function isAnyExtendedProtocol(protocol: AirGapAnyProtocol): protocol is AirGapAnyExtendedProtocol {
   return isOfflineExtendedProtocol(protocol as AirGapOfflineProtocol) || isOnlineExtendedProtocol(protocol as AirGapOnlineProtocol)
+}
+
+const sha256hashShort: (input: string) => string = (input: string): string => {
+  const hash = createHash('sha256')
+  hash.update(input)
+
+  return hash.digest('base64').slice(0, 10)
+}
+
+export function protocolNetworkIdentifier(network: ProtocolNetwork): string {
+  const hashed: string = sha256hashShort(`${network.name}-${network.rpcUrl}`)
+
+  return `${network.type}-${hashed}`
 }

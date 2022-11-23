@@ -1,8 +1,7 @@
 import { AirGapWalletStatus } from '@airgap/coinlib-core/wallet/AirGapWallet'
-import { AeternityTransactionValidator } from '../../../serializer/src/v3/unsigned-transactions/aeternity-transactions.validator'
-import { RawAeternityTransaction, SignedAeternityTransaction } from '../../src'
+import { AeternityTransactionValidator } from '../../../../serializer/src/v3/unsigned-transactions/aeternity-transactions.validator'
+import { AeternityProtocol, RawAeternityTransaction, SignedAeternityTransaction } from '../../../src/v0'
 
-import { AeternityProtocol } from '../../src/protocol/AeternityProtocol'
 import { TestProtocolSpec } from '../implementations'
 import { AeternityProtocolStub } from '../stubs/ae.stub'
 

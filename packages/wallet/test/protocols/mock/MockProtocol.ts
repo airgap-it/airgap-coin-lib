@@ -10,7 +10,7 @@ import {
   Balance,
   FeeEstimation,
   KeyPair,
-  PrivateKey,
+  SecretKey,
   ProtocolMetadata,
   ProtocolNetwork,
   PublicKey,
@@ -32,7 +32,7 @@ export class MockProtocol implements AirGapProtocol {
     throw new Error('Method not implemented.')
   }
 
-  public async signTransactionWithPrivateKey(transaction: UnsignedTransaction, privateKey: PrivateKey): Promise<SignedTransaction> {
+  public async signTransactionWithSecretKey(transaction: UnsignedTransaction, secretKey: SecretKey): Promise<SignedTransaction> {
     throw new Error('Method not implemented.')
   }
 
@@ -40,15 +40,15 @@ export class MockProtocol implements AirGapProtocol {
     throw new Error('Method not implemented.')
   }
 
-  public async decryptAsymmetricWithPrivateKey(payload: string, privateKey: PrivateKey): Promise<string> {
+  public async decryptAsymmetricWithKeyPair(payload: string, keyPair: KeyPair): Promise<string> {
     throw new Error('Method not implemented.')
   }
 
-  public async encryptAESWithPrivateKey(payload: string, privateKey: PrivateKey): Promise<string> {
+  public async encryptAESWithSecretKey(payload: string, secretKey: SecretKey): Promise<string> {
     throw new Error('Method not implemented.')
   }
 
-  public async decryptAESWithPrivateKey(payload: string, privateKey: PrivateKey): Promise<string> {
+  public async decryptAESWithSecretKey(payload: string, secretKey: SecretKey): Promise<string> {
     throw new Error('Method not implemented.')
   }
 
@@ -63,9 +63,6 @@ export class MockProtocol implements AirGapProtocol {
         }
       },
       mainUnit: this.options.config.mainUnit ?? 'DEV',
-      fee: {
-        symbol: { value: 'DEV' }
-      },
       account: {
         standardDerivationPath: this.options.config.standardDerivationPath ?? 'm/'
       }
@@ -86,14 +83,11 @@ export class MockProtocol implements AirGapProtocol {
     }
   }
 
-  public async convertKeyFormat<K extends PublicKey | PrivateKey, F extends K['format']>(
-    key: K,
-    targetFormat: F
-  ): Promise<(Omit<K, 'format'> & { format: F }) | undefined> {
+  public async convertKeyFormat<K extends SecretKey | PublicKey>(key: K, targetFormat: K['format']): Promise<K | undefined> {
     throw new Error('Method not implemented.')
   }
 
-  public async getDetailsFromTransaction(transaction: SignedTransaction | UnsignedTransaction): Promise<AirGapTransaction<string>> {
+  public async getDetailsFromTransaction(transaction: SignedTransaction | UnsignedTransaction): Promise<AirGapTransaction<string>[]> {
     throw new Error('Method not implemented.')
   }
 
@@ -127,7 +121,7 @@ export class MockProtocol implements AirGapProtocol {
     }
   }
 
-  public async getTransactionStatus(transactionIds: string[]): Promise<AirGapTransactionStatus> {
+  public async getTransactionStatus(transactionIds: string[]): Promise<Record<string, AirGapTransactionStatus>> {
     throw new Error('Method not implemented.')
   }
 

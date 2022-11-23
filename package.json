@@ -44,7 +44,8 @@
     "@airgap/moonbeam": "file:packages/moonbeam/dist",
     "@airgap/polkadot": "file:packages/polkadot/dist",
     "@airgap/substrate": "file:packages/substrate/dist",
-    "@airgap/tezos": "file:packages/tezos/dist"
+    "@airgap/tezos": "file:packages/tezos/dist",
+    "@airgap/wallet": "file:packages/wallet/dist"
   },
   "devDependencies": {
     "@types/node": "14.14.14",

@@ -9,11 +9,11 @@ import {
   Amount,
   Balance,
   ExtendedKeyPair,
-  ExtendedPrivateKey,
+  ExtendedSecretKey,
   ExtendedPublicKey,
   FeeEstimation,
   KeyPair,
-  PrivateKey,
+  SecretKey,
   ProtocolMetadata,
   ProtocolNetwork,
   PublicKey,
@@ -41,44 +41,44 @@ export class MockExtendedProtocol implements AirGapExtendedProtocol {
     throw new Error('Method not implemented.')
   }
 
-  public async signTransactionWithPrivateKey(
+  public async signTransactionWithSecretKey(
     transaction: UnsignedTransaction,
-    privateKey: PrivateKey | ExtendedPrivateKey
+    secretKey: SecretKey | ExtendedSecretKey
   ): Promise<SignedTransaction> {
-    if (privateKey.type === 'priv') {
-      return this.nonExtendedProtocol.signTransactionWithPrivateKey(transaction, privateKey)
+    if (secretKey.type === 'priv') {
+      return this.nonExtendedProtocol.signTransactionWithSecretKey(transaction, secretKey)
     }
 
     throw new Error('Method not implemented.')
   }
 
   public async signMessageWithKeyPair(message: string, keyPair: KeyPair | ExtendedKeyPair): Promise<Signature> {
-    if (keyPair.privateKey.type === 'priv' && keyPair.publicKey.type === 'pub') {
+    if (keyPair.secretKey.type === 'priv' && keyPair.publicKey.type === 'pub') {
       return this.nonExtendedProtocol.signMessageWithKeyPair(message, keyPair as KeyPair)
     }
 
     throw new Error('Method not implemented.')
   }
 
-  public async decryptAsymmetricWithPrivateKey(payload: string, privateKey: PrivateKey | ExtendedPrivateKey): Promise<string> {
-    if (privateKey.type === 'priv') {
-      return this.nonExtendedProtocol.decryptAsymmetricWithPrivateKey(payload, privateKey)
+  public async decryptAsymmetricWithKeyPair(payload: string, keyPair: KeyPair | ExtendedKeyPair): Promise<string> {
+    if (keyPair.secretKey.type === 'priv' && keyPair.publicKey.type === 'pub') {
+      return this.nonExtendedProtocol.decryptAsymmetricWithKeyPair(payload, keyPair as KeyPair)
     }
 
     throw new Error('Method not implemented.')
   }
 
-  public async encryptAESWithPrivateKey(payload: string, privateKey: PrivateKey | ExtendedPrivateKey): Promise<string> {
-    if (privateKey.type === 'priv') {
-      return this.nonExtendedProtocol.encryptAESWithPrivateKey(payload, privateKey)
+  public async encryptAESWithSecretKey(payload: string, secretKey: SecretKey | ExtendedSecretKey): Promise<string> {
+    if (secretKey.type === 'priv') {
+      return this.nonExtendedProtocol.encryptAESWithSecretKey(payload, secretKey)
     }
 
     throw new Error('Method not implemented.')
   }
 
-  public async decryptAESWithPrivateKey(payload: string, privateKey: PrivateKey | ExtendedPrivateKey): Promise<string> {
-    if (privateKey.type === 'priv') {
-      return this.nonExtendedProtocol.decryptAESWithPrivateKey(payload, privateKey)
+  public async decryptAESWithSecretKey(payload: string, secretKey: SecretKey | ExtendedSecretKey): Promise<string> {
+    if (secretKey.type === 'priv') {
+      return this.nonExtendedProtocol.decryptAESWithSecretKey(payload, secretKey)
     }
 
     throw new Error('Method not implemented.')
@@ -100,10 +100,10 @@ export class MockExtendedProtocol implements AirGapExtendedProtocol {
     }
   }
 
-  public async convertKeyFormat<K extends PublicKey | ExtendedPublicKey | PrivateKey | ExtendedPrivateKey, F extends K['format']>(
+  public async convertKeyFormat<K extends SecretKey | ExtendedSecretKey | PublicKey | ExtendedPublicKey>(
     key: K,
-    targetFormat: F
-  ): Promise<(Omit<K, 'format'> & { format: F }) | undefined> {
+    targetFormat: K['format']
+  ): Promise<K | undefined> {
     if (key.type === 'priv' || key.type === 'pub') {
       return this.nonExtendedProtocol.convertKeyFormat(key, targetFormat) as any
     }
@@ -150,7 +150,7 @@ export class MockExtendedProtocol implements AirGapExtendedProtocol {
     return this.nonExtendedProtocol.getAddressFromPublicKey(publicKey)
   }
 
-  public async getDetailsFromTransaction(transaction: SignedTransaction | UnsignedTransaction): Promise<AirGapTransaction<string>> {
+  public async getDetailsFromTransaction(transaction: SignedTransaction | UnsignedTransaction): Promise<AirGapTransaction<string>[]> {
     return this.nonExtendedProtocol.getDetailsFromTransaction(transaction)
   }
 
@@ -221,7 +221,7 @@ export class MockExtendedProtocol implements AirGapExtendedProtocol {
     return this.nonExtendedProtocol.getTransactionsForAddresses(addresses, limit, cursor)
   }
 
-  public async getTransactionStatus(transactionIds: string[]): Promise<AirGapTransactionStatus> {
+  public async getTransactionStatus(transactionIds: string[]): Promise<Record<string, AirGapTransactionStatus>> {
     return this.nonExtendedProtocol.getTransactionStatus(transactionIds)
   }
 

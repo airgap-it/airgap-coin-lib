@@ -1,4 +1,5 @@
 import axios from '@airgap/coinlib-core/dependencies/src/axios-0.19.0/index'
+import { protocolNetworkIdentifier } from '@airgap/module-kit'
 import chai = require('chai')
 import chaiAsPromised = require('chai-as-promised')
 import 'mocha'
@@ -140,7 +141,7 @@ describe(`AirGapWallet`, () => {
     const json = await wallet.toJSON()
     expect(json).to.deep.equal({
       protocolIdentifier: protocolMetadata.identifier,
-      networkIdentifier: protocolNetwork.identifier,
+      networkIdentifier: protocolNetworkIdentifier(protocolNetwork),
       publicKey: {
         type: 'pub',
         format: 'hex',
@@ -172,7 +173,7 @@ describe(`AirGapWallet`, () => {
     const json = await wallet.toJSON()
     expect(json).to.deep.equal({
       protocolIdentifier: protocolMetadata.identifier,
-      networkIdentifier: protocolNetwork.identifier,
+      networkIdentifier: protocolNetworkIdentifier(protocolNetwork),
       publicKey: {
         type: 'pub',
         format: 'hex',

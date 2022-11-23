@@ -1,7 +1,8 @@
 import { AirGapBlockExplorer } from './block-explorer/AirGapBlockExplorer'
-import { extendedPrivateKey, extendedPublicKey, privateKey, publicKey } from './factories/key'
+import { extendedSecretKey, extendedPublicKey, secretKey, publicKey } from './factories/key'
 import { signature } from './factories/signature'
 import { signedTransaction, unsignedTransaction } from './factories/transaction'
+import { plainUIText } from './factories/ui/text'
 import { AirGapModule } from './module/AirGapModule'
 import {
   AirGapAnyExtendedProtocol,
@@ -13,8 +14,10 @@ import { AirGapAnyProtocol, AirGapOfflineProtocol, AirGapOnlineProtocol, AirGapP
 import { Address, AddressCursor, AddressWithCursor } from './types/address'
 import { Amount } from './types/amount'
 import { Balance } from './types/balance'
+import { BytesString, BytesStringFormat } from './types/bytes'
 import { FeeDefaults, FeeEstimation } from './types/fee'
-import { ExtendedKeyPair, ExtendedPrivateKey, ExtendedPublicKey, KeyFormat, KeyPair, KeyType, PrivateKey, PublicKey } from './types/key'
+import { ExtendedKeyPair, ExtendedSecretKey, ExtendedPublicKey, KeyPair, KeyType, SecretKey, PublicKey } from './types/key'
+import { RecursivePartial } from './types/meta/utility-types'
 import {
   ProtocolAccountMetadata,
   ProtocolFeeMetadata,
@@ -22,7 +25,7 @@ import {
   ProtocolNetwork,
   ProtocolNetworkType,
   ProtocolSymbol,
-  ProtocolUnit
+  ProtocolUnitsMetadata
 } from './types/protocol'
 import { HexSecret, MnemonicSecret, Secret, SecretType } from './types/secret'
 import { Signature } from './types/signature'
@@ -39,7 +42,14 @@ import {
 import { AirGapUIAction } from './types/ui/action'
 import { AirGapUIAlert } from './types/ui/alert'
 import { AirGapUIText } from './types/ui/text'
-import { isAnyExtendedProtocol, isExtendedProtocol, isOfflineExtendedProtocol, isOnlineExtendedProtocol } from './utils/protocol'
+import { amount, isAmount } from './utils/amount'
+import {
+  isAnyExtendedProtocol,
+  isExtendedProtocol,
+  isOfflineExtendedProtocol,
+  isOnlineExtendedProtocol,
+  protocolNetworkIdentifier
+} from './utils/protocol'
 
 // Block Explorer
 
@@ -47,7 +57,7 @@ export { AirGapBlockExplorer }
 
 // Factories
 
-export { privateKey, extendedPrivateKey, publicKey, extendedPublicKey, signature, unsignedTransaction, signedTransaction }
+export { plainUIText, secretKey, extendedSecretKey, publicKey, extendedPublicKey, signature, unsignedTransaction, signedTransaction }
 
 // Module
 
@@ -77,18 +87,19 @@ export {
   AddressWithCursor,
   Amount,
   Balance,
+  BytesStringFormat,
+  BytesString,
   FeeDefaults,
   FeeEstimation,
   KeyType,
-  KeyFormat,
-  PrivateKey,
-  ExtendedPrivateKey,
+  SecretKey,
+  ExtendedSecretKey,
   PublicKey,
   ExtendedPublicKey,
   KeyPair,
   ExtendedKeyPair,
   ProtocolMetadata,
-  ProtocolUnit,
+  ProtocolUnitsMetadata,
   ProtocolSymbol,
   ProtocolFeeMetadata,
   ProtocolAccountMetadata,
@@ -106,9 +117,18 @@ export {
   TransactionCursor,
   AirGapTransactionsWithCursor,
   TransactionDetails,
-  AirGapTransactionStatus
+  AirGapTransactionStatus,
+  RecursivePartial
 }
 
 // Utils
 
-export { isOfflineExtendedProtocol, isOnlineExtendedProtocol, isExtendedProtocol, isAnyExtendedProtocol }
+export {
+  amount,
+  isAmount,
+  isOfflineExtendedProtocol,
+  isOnlineExtendedProtocol,
+  isExtendedProtocol,
+  isAnyExtendedProtocol,
+  protocolNetworkIdentifier
+}
