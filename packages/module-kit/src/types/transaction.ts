@@ -27,10 +27,11 @@ export interface AirGapTransaction<_Units extends string = string> {
 
   timestamp?: number
   status?: AirGapTransactionStatus
+  type?: string
 
   uiAlerts?: AirGapUIAlert[]
 
-  details?: [AirGapUIText, string]
+  arbitraryData?: string | [AirGapUIText, string]
   json?: any
 }
 
@@ -51,6 +52,7 @@ export interface TransactionDetails<_Units extends string = string> {
 
 export interface TransactionConfiguration<_Units extends string = string> {
   fee?: Amount<_Units>
+  arbitraryData?: string
 }
 
 // ##### TransactionStatus #####

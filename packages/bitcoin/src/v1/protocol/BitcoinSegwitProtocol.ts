@@ -4,7 +4,6 @@ import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/
 import { mnemonicToSeed } from '@airgap/coinlib-core/dependencies/src/bip39-2.5.0/index'
 import { BalanceError, ConditionViolationError, UnsupportedError } from '@airgap/coinlib-core/errors'
 import {
-  AddressWithCursor,
   AirGapTransaction,
   AirGapTransactionsWithCursor,
   AirGapUIAlert,
@@ -34,7 +33,7 @@ import {
 } from '@airgap/module-kit'
 import * as bitcoin from 'bitcoinjs-lib'
 
-import { BitcoinAddressCursor, BitcoinSegwitAddress } from '../types/address'
+import { BitcoinSegwitAddress } from '../data/BitcoinSegwitAddress'
 import { BitcoinSegwitJS } from '../types/bitcoinjs'
 import { UTXOResponse } from '../types/indexer'
 import { BitcoinSegwitExtendedPublicKeyEncoding } from '../types/key'
@@ -112,7 +111,7 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
     return this.metadata
   }
 
-  public async getAddressFromPublicKey(publicKey: PublicKey | ExtendedPublicKey): Promise<AddressWithCursor<BitcoinAddressCursor>> {
+  public async getAddressFromPublicKey(publicKey: PublicKey | ExtendedPublicKey): Promise<string> {
     switch (publicKey.type) {
       case 'pub':
         return this.getAddressFromNonExtendedPublicKey(publicKey)
@@ -124,31 +123,18 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
     }
   }
 
-  private async getAddressFromNonExtendedPublicKey(publicKey: PublicKey): Promise<AddressWithCursor<BitcoinAddressCursor>> {
+  private async getAddressFromNonExtendedPublicKey(publicKey: PublicKey): Promise<string> {
     const hexPublicKey: PublicKey = convertPublicKey(publicKey, 'hex')
     const payment: bitcoin.Payment = this.bitcoinJS.lib.payments.p2wpkh({ pubkey: Buffer.from(hexPublicKey.value, 'hex') })
 
-    return {
-      address: BitcoinSegwitAddress.fromPayment(payment).asString(),
-      cursor: { hasNext: false }
-    }
+    return BitcoinSegwitAddress.fromPayment(payment).asString()
   }
 
-  private async getAddressFromExtendedPublicKey(extendedPublicKey: ExtendedPublicKey): Promise<AddressWithCursor<BitcoinAddressCursor>> {
+  private async getAddressFromExtendedPublicKey(extendedPublicKey: ExtendedPublicKey): Promise<string> {
     const encodedExtendedPublicKey: ExtendedPublicKey = convertExtendedPublicKey(extendedPublicKey, { format: 'encoded', type: 'xpub' })
     const bip32: bitcoin.BIP32Interface = this.bitcoinJS.lib.bip32.fromBase58(encodedExtendedPublicKey.value, this.bitcoinJS.config.network)
 
-    return {
-      address: BitcoinSegwitAddress.fromBip32(bip32).asString(),
-      cursor: { hasNext: false }
-    }
-  }
-
-  public async getNextAddressFromPublicKey(
-    publicKey: ExtendedPublicKey,
-    cursor: BitcoinAddressCursor
-  ): Promise<AddressWithCursor<BitcoinAddressCursor> | undefined> {
-    return undefined
+    return BitcoinSegwitAddress.fromBip32(bip32).asString()
   }
 
   public async deriveFromExtendedPublicKey(
@@ -571,7 +557,7 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
       const indexes: [number, number] = getPathIndexes(utxo.path)
 
       const derivedPublicKey: PublicKey = await this.deriveFromExtendedPublicKey(extendedPublicKey, indexes[0], indexes[1])
-      const derivedAddress: string = (await this.getAddressFromPublicKey(derivedPublicKey)).address
+      const derivedAddress: string = await this.getAddressFromPublicKey(derivedPublicKey)
       if (derivedAddress === utxo.address) {
         transaction.ins.push({
           txId: utxo.txid,
@@ -619,7 +605,7 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
     if (changeValue.isGreaterThan(new BigNumber(DUST_AMOUNT))) {
       const changeAddressIndex: number = lastUsedInternalAddress + 1
       const derivedPublicKey: PublicKey = await this.deriveFromExtendedPublicKey(extendedPublicKey, 1, changeAddressIndex)
-      const derivedAddress: string = (await this.getAddressFromPublicKey(derivedPublicKey)).address
+      const derivedAddress: string = await this.getAddressFromPublicKey(derivedPublicKey)
       transaction.outs.push({
         recipient: derivedAddress,
         isChange: true,

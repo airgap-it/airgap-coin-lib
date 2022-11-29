@@ -1,5 +1,7 @@
 import { AddressWithCursor, AirGapAnyExtendedProtocol, ExtendedPublicKey } from '@airgap/module-kit'
 
+import { normalizeAddress } from './address'
+
 export async function deriveAddresses(
   protocol: AirGapAnyExtendedProtocol,
   publicKey: ExtendedPublicKey,
@@ -13,7 +15,7 @@ export async function deriveAddresses(
     generatorArray.map(async (x) => {
       const derivedKey = await protocol.deriveFromExtendedPublicKey(publicKey, visibilityIndex, x)
 
-      return protocol.getAddressFromPublicKey(derivedKey)
+      return normalizeAddress(await protocol.getAddressFromPublicKey(derivedKey))
     })
   )
 }

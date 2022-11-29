@@ -1,7 +1,7 @@
 import { SerializerError, SerializerErrorType } from '@airgap/coinlib-core/errors'
 import { MainProtocolSymbols, ProtocolSymbols, SubProtocolSymbols } from '@airgap/coinlib-core/utils/ProtocolSymbols'
 import { CosmosTransaction } from '@airgap/cosmos'
-import { SerializableUnsignedCosmosTransaction } from '@airgap/cosmos/types/unsigned-transaction-cosmos'
+import { SerializableUnsignedCosmosTransaction } from '@airgap/cosmos/v0/types/unsigned-transaction-cosmos'
 
 import { IACMessageWrapper } from './iac-message-wrapper'
 import { IACMessageType } from './interfaces'

@@ -4,7 +4,6 @@ import { BitcoinSegwitModule } from './module/BitcoinSegwitModule'
 import { BitcoinProtocol, createBitcoinProtocol, createBitcoinProtocolOptions } from './protocol/BitcoinProtocol'
 import { BitcoinSegwitProtocol, createBitcoinSegwitProtocol } from './protocol/BitcoinSegwitProtocol'
 import { BitcoinTestnetProtocol, createBitcoinTestnetProtocol } from './protocol/BitcoinTestnetProtocol'
-import { BitcoinAddressCursor } from './types/address'
 import { BitcoinProtocolNetwork, BitcoinProtocolOptions, BitcoinUnits } from './types/protocol'
 import {
   BitcoinInTransaction,
@@ -12,6 +11,7 @@ import {
   BitcoinSegwitSignedTransaction,
   BitcoinSegwitUnsignedTransaction,
   BitcoinSignedTransaction,
+  BitcoinTransactionCursor,
   BitcoinUnsignedTransaction
 } from './types/transaction'
 
@@ -38,7 +38,6 @@ export { BlockCypherBlockExplorer }
 // Types
 
 export {
-  BitcoinAddressCursor,
   BitcoinUnits,
   BitcoinProtocolNetwork,
   BitcoinProtocolOptions,
@@ -47,5 +46,6 @@ export {
   BitcoinSegwitUnsignedTransaction,
   BitcoinSegwitSignedTransaction,
   BitcoinInTransaction,
-  BitcoinOutTransaction
+  BitcoinOutTransaction,
+  BitcoinTransactionCursor
 }

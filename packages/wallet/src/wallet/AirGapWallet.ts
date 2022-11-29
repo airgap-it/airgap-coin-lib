@@ -8,6 +8,7 @@ import {
   isAnyExtendedProtocol,
   PublicKey
 } from '@airgap/module-kit'
+import { normalizeAddress } from '../utils/address'
 
 import { deriveAddresses } from '../utils/protocol'
 
@@ -85,7 +86,7 @@ export abstract class AirGapWallet<
         ])
       ).reduce((flatten, next) => flatten.concat(next), [])
     } else {
-      addresses = [await this.protocol.getAddressFromPublicKey(this.publicKey)]
+      addresses = [normalizeAddress(await this.protocol.getAddressFromPublicKey(this.publicKey))]
     }
 
     return addresses.map((address: AddressWithCursor) => address.address)

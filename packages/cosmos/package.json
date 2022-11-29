@@ -31,7 +31,8 @@
   },
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
   "peerDependencies": {
-    "@airgap/coinlib-core": "^0.13.7-beta.0"
+    "@airgap/coinlib-core": "^0.13.7-beta.0",
+    "@airgap/module-kit": "^0.13.7-beta.0"
   },
   "localDependencies": {},
   "nyc": {

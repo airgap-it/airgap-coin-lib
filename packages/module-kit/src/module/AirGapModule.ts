@@ -1,12 +1,12 @@
 import { AirGapBlockExplorer } from '../block-explorer/AirGapBlockExplorer'
 import { AirGapOfflineProtocol, AirGapOnlineProtocol } from '../protocol/AirGapProtocol'
-import { ProtocolNetworkType } from '../types/protocol'
+import { ProtocolNetwork } from '../types/protocol'
 
 export interface AirGapModule {
-  supportedNetworks: ProtocolNetworkType[]
+  supportedNetworks: Record<string, ProtocolNetwork>
 
   createOfflineProtocol(): Promise<AirGapOfflineProtocol | undefined>
-  createOnlineProtocol(network: ProtocolNetworkType): Promise<AirGapOnlineProtocol | undefined>
+  createOnlineProtocol(networkId?: string): Promise<AirGapOnlineProtocol | undefined>
 
-  createBlockExplorer(network: ProtocolNetworkType): Promise<AirGapBlockExplorer | undefined>
+  createBlockExplorer(networkId?: string): Promise<AirGapBlockExplorer | undefined>
 }
