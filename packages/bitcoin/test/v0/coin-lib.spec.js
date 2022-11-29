@@ -6,9 +6,9 @@ const bitcoinJS = require('@airgap/coinlib-core/dependencies/src/bitgo-utxo-lib-
 const mnemonicPhrase = 'spell device they juice trial skirt amazing boat badge steak usage february virus art survey' // this is what the user writes down and what is saved by secure storage?
 const masterSeed = BIP39.mnemonicToSeed(mnemonicPhrase)
 
-const CoinLib = require('../dist/index')
+const CoinLib = require('../../dist/index')
 
-describe('Extended Public Derivation Logic', function () {
+describe('Extended Public Derivation Logic (v0)', function () {
   it('should return the correct bitcoin address from extended public key', function (done) {
     const bitcoinHdNode = bitcoinJS.HDNode.fromSeedBuffer(masterSeed, bitcoinJS.networks.bitcoin)
     const extendedPublicKey = bitcoinHdNode.derivePath("m/44'/0'/0'").neutered().toBase58()

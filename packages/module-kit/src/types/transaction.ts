@@ -31,6 +31,7 @@ export interface AirGapTransaction<_Units extends string = string> {
   uiAlerts?: AirGapUIAlert[]
 
   details?: [AirGapUIText, string]
+  json?: any
 }
 
 export interface TransactionCursor extends BaseCursor {}
@@ -46,6 +47,10 @@ export interface TransactionDetails<_Units extends string = string> {
   to: Address
   amount: Amount<_Units>
   arbitraryData?: string
+}
+
+export interface TransactionConfiguration<_Units extends string = string> {
+  fee?: Amount<_Units>
 }
 
 // ##### TransactionStatus #####

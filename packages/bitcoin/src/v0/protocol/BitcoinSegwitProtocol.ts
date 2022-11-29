@@ -162,22 +162,24 @@ export class BitcoinSegwitProtocol extends BitcoinProtocol {
     const generatorArray = Array.from(new Array(addressCount), (x, i) => i + offset)
 
     return Promise.all(
-      generatorArray.map((x): BitcoinAddressResult => {
-        const keyPair = node.derive(visibilityDerivationIndex).derive(x)
+      generatorArray.map(
+        (x): BitcoinAddressResult => {
+          const keyPair = node.derive(visibilityDerivationIndex).derive(x)
 
-        const { address: addressRaw } = bitcoinJS.payments.p2wpkh({ pubkey: keyPair.publicKey })
+          const { address: addressRaw } = bitcoinJS.payments.p2wpkh({ pubkey: keyPair.publicKey })
 
-        if (!addressRaw) {
-          throw new Error('could not generate address')
+          if (!addressRaw) {
+            throw new Error('could not generate address')
+          }
+
+          const address: BitcoinSegwitAddress = BitcoinSegwitAddress.fromAddress(addressRaw)
+
+          return {
+            address: address.asString(),
+            cursor: { hasNext: false }
+          }
         }
-
-        const address: BitcoinSegwitAddress = BitcoinSegwitAddress.fromAddress(addressRaw)
-
-        return {
-          address: address.asString(),
-          cursor: { hasNext: false }
-        }
-      })
+      )
     )
   }
 

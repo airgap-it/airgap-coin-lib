@@ -1,9 +1,9 @@
+// tslint:disable no-floating-promises
+import { IAirGapTransaction } from '@airgap/coinlib-core/interfaces/IAirGapTransaction'
 import chai = require('chai')
 import chaiAsPromised = require('chai-as-promised')
 import 'mocha'
 import sinon = require('sinon')
-
-import { IAirGapTransaction } from '@airgap/coinlib-core/interfaces/IAirGapTransaction'
 
 import { TestProtocolSpec } from './implementations'
 import { BitcoinProtocolSpec } from './specs/bitcoin'
@@ -35,7 +35,7 @@ Promise.all(
   protocols.map(async (protocol: TestProtocolSpec) => {
     const protocolSupportsHD = await protocol.lib.getSupportsHD()
 
-    describe(`ICoinProtocol ${protocol.name}`, () => {
+    describe(`ICoinProtocol ${protocol.name} (v0)`, () => {
       describe(`Blockexplorer`, async () => {
         const address = 'dummyAddress'
         const txId = 'dummyTxId'

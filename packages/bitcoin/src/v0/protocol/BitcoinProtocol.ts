@@ -302,14 +302,16 @@ export class BitcoinProtocol implements ICoinProtocol {
     const generatorArray = Array.from(new Array(addressCount), (_, i) => i + offset)
 
     return Promise.all(
-      generatorArray.map((x): BitcoinAddressResult => {
-        const address: BitcoinAddress = BitcoinAddress.from(node, visibilityDerivationIndex, x)
+      generatorArray.map(
+        (x): BitcoinAddressResult => {
+          const address: BitcoinAddress = BitcoinAddress.from(node, visibilityDerivationIndex, x)
 
-        return {
-          address: address.asString(),
-          cursor: { hasNext: false }
+          return {
+            address: address.asString(),
+            cursor: { hasNext: false }
+          }
         }
-      })
+      )
     )
   }
 
@@ -322,6 +324,7 @@ export class BitcoinProtocol implements ICoinProtocol {
 
     for (const output of transaction.outs) {
       if (output.isChange) {
+        // 1. `getAddressFromPublicKey` expects a base58 encoded key
         const generatedChangeAddress: string = (await this.getAddressFromPublicKey(privateKey)).address
         if (generatedChangeAddress !== output.recipient) {
           throw new ConditionViolationError(Domain.BITCOIN, 'Change address could not be verified.')
@@ -332,8 +335,11 @@ export class BitcoinProtocol implements ICoinProtocol {
     }
 
     for (let i = 0; i < transaction.ins.length; i++) {
+      // 2. `privateKey` is used as a hex string
       transactionBuilder.sign(i, Buffer.from(privateKey, 'hex'))
     }
+
+    // TODO: given 1 & 2, check if it works
 
     return transactionBuilder.build().toHex()
   }

@@ -1,8 +1,9 @@
 import { AirGapBlockExplorer } from './block-explorer/AirGapBlockExplorer'
-import { extendedSecretKey, extendedPublicKey, secretKey, publicKey } from './factories/key'
-import { signature } from './factories/signature'
-import { signedTransaction, unsignedTransaction } from './factories/transaction'
-import { plainUIText } from './factories/ui/text'
+import { newAmount } from './factories/amount'
+import { newExtendedPublicKey, newExtendedSecretKey, newPublicKey, newSecretKey } from './factories/key'
+import { newSignature } from './factories/signature'
+import { newSignedTransaction, newUnsignedTransaction } from './factories/transaction'
+import { newPlainUIText } from './factories/ui/text'
 import { AirGapModule } from './module/AirGapModule'
 import {
   AirGapAnyExtendedProtocol,
@@ -14,9 +15,10 @@ import { AirGapAnyProtocol, AirGapOfflineProtocol, AirGapOnlineProtocol, AirGapP
 import { Address, AddressCursor, AddressWithCursor } from './types/address'
 import { Amount } from './types/amount'
 import { Balance } from './types/balance'
-import { BytesString, BytesStringFormat } from './types/bytes'
+import { BlockExplorerMetadata } from './types/block-explorer'
+import { BytesString, BytesStringFormat, HexString } from './types/bytes'
 import { FeeDefaults, FeeEstimation } from './types/fee'
-import { ExtendedKeyPair, ExtendedSecretKey, ExtendedPublicKey, KeyPair, KeyType, SecretKey, PublicKey } from './types/key'
+import { ExtendedKeyPair, ExtendedPublicKey, ExtendedSecretKey, KeyPair, KeyType, PublicKey, SecretKey } from './types/key'
 import { RecursivePartial } from './types/meta/utility-types'
 import {
   ProtocolAccountMetadata,
@@ -34,6 +36,7 @@ import {
   AirGapTransactionStatus,
   AirGapTransactionsWithCursor,
   SignedTransaction,
+  TransactionConfiguration,
   TransactionCursor,
   TransactionDetails,
   TransactionType,
@@ -42,7 +45,7 @@ import {
 import { AirGapUIAction } from './types/ui/action'
 import { AirGapUIAlert } from './types/ui/alert'
 import { AirGapUIText } from './types/ui/text'
-import { amount, isAmount } from './utils/amount'
+import { isAmount } from './utils/amount'
 import {
   isAnyExtendedProtocol,
   isExtendedProtocol,
@@ -57,7 +60,17 @@ export { AirGapBlockExplorer }
 
 // Factories
 
-export { plainUIText, secretKey, extendedSecretKey, publicKey, extendedPublicKey, signature, unsignedTransaction, signedTransaction }
+export {
+  newPlainUIText,
+  newAmount,
+  newSecretKey,
+  newExtendedSecretKey,
+  newPublicKey,
+  newExtendedPublicKey,
+  newSignature,
+  newUnsignedTransaction,
+  newSignedTransaction
+}
 
 // Module
 
@@ -87,8 +100,10 @@ export {
   AddressWithCursor,
   Amount,
   Balance,
+  BlockExplorerMetadata,
   BytesStringFormat,
   BytesString,
+  HexString,
   FeeDefaults,
   FeeEstimation,
   KeyType,
@@ -117,6 +132,7 @@ export {
   TransactionCursor,
   AirGapTransactionsWithCursor,
   TransactionDetails,
+  TransactionConfiguration,
   AirGapTransactionStatus,
   RecursivePartial
 }
@@ -124,7 +140,6 @@ export {
 // Utils
 
 export {
-  amount,
   isAmount,
   isOfflineExtendedProtocol,
   isOnlineExtendedProtocol,

@@ -1,17 +1,23 @@
-import { signature, Signature } from '@airgap/module-kit'
+import { assertNever, Domain } from '@airgap/coinlib-core'
+import { UnsupportedError } from '@airgap/coinlib-core/errors'
+import { newSignature, Signature } from '@airgap/module-kit'
+
 import { convertEncodedBytesString, convertHexBytesString } from './convert'
 
-const SIG_PREFIX = 'sg_'
+const SIG_PREFIX: string = 'sg_'
 
-export function convertSignature(sig: Signature, targetFormat: Signature['format']): Signature {
-  if (sig.format === targetFormat) {
-    return sig
+export function convertSignature(signature: Signature, targetFormat: Signature['format']): Signature {
+  if (signature.format === targetFormat) {
+    return signature
   }
 
-  switch (sig.format) {
+  switch (signature.format) {
     case 'encoded':
-      return signature(convertEncodedBytesString(SIG_PREFIX, sig.value, targetFormat), targetFormat)
+      return newSignature(convertEncodedBytesString(SIG_PREFIX, signature.value, targetFormat), targetFormat)
     case 'hex':
-      return signature(convertHexBytesString(SIG_PREFIX, sig.value, targetFormat), targetFormat)
+      return newSignature(convertHexBytesString(SIG_PREFIX, signature.value, targetFormat), targetFormat)
+    default:
+      assertNever(signature.format)
+      throw new UnsupportedError(Domain.AETERNITY, 'Unsupported signature format.')
   }
 }

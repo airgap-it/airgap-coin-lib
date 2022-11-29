@@ -1,6 +1,7 @@
-import { Amount, SecretKey, PublicKey, Signature } from '@airgap/module-kit'
-import { AeternitySignedTransaction, AeternityUnits, AeternityUnsignedTransaction, createAeternityProtocol } from '../../../src/v1'
+// tslint:disable: no-object-literal-type-assertion
+import { Amount, PublicKey, SecretKey, Signature } from '@airgap/module-kit'
 
+import { AeternitySignedTransaction, AeternityUnits, AeternityUnsignedTransaction, createAeternityProtocol } from '../../../src/v1'
 import { TestProtocolSpec } from '../implementations'
 import { AeternityProtocolStub } from '../stubs/ae.stub'
 

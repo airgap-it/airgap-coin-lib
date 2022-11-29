@@ -1,7 +1,7 @@
+import axios from '@airgap/coinlib-core/dependencies/src/axios-0.19.0/index'
 import * as sinon from 'sinon'
 
-import { BitcoinProtocol } from '../../src'
-import axios from '@airgap/coinlib-core/dependencies/src/axios-0.19.0/index'
+import { BitcoinProtocol } from '../../../src'
 import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
 
 export class BitcoinProtocolStub implements ProtocolHTTPStub {

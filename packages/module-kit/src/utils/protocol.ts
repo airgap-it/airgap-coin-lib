@@ -9,6 +9,7 @@ import {
 } from '../protocol/AirGapExtendedProtocol'
 import { AirGapAnyProtocol, AirGapOfflineProtocol, AirGapOnlineProtocol, AirGapProtocol, BaseProtocol } from '../protocol/AirGapProtocol'
 import { ProtocolNetwork } from '../types/protocol'
+
 import { implementsInterface, Schema } from './interface'
 
 const baseProtocolSchema: Schema<BaseProtocol> = {

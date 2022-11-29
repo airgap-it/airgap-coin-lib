@@ -1,5 +1,5 @@
 import * as BIP39 from '@airgap/coinlib-core/dependencies/src/bip39-2.5.0/index'
-import { Amount, SecretKey, PublicKey, Signature } from '@airgap/module-kit'
+import { Amount, PublicKey, SecretKey, Signature } from '@airgap/module-kit'
 
 import { AeternityProtocol, AeternitySignedTransaction, AeternityUnits, AeternityUnsignedTransaction } from '../../src/v1'
 
@@ -13,10 +13,8 @@ interface ProtocolHTTPStub {
 
 abstract class TestProtocolSpec {
   public name: string = 'TEST'
-  // tslint:disable:no-object-literal-type-assertion
   public abstract lib: AeternityProtocol
   public abstract stub: ProtocolHTTPStub
-  // tslint:enable:no-object-literal-type-assertion
   public abstract validAddresses: string[]
   public abstract wallet: {
     secretKey: SecretKey

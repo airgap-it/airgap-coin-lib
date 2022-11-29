@@ -8,18 +8,20 @@ import {
   AirGapTransactionsWithCursor,
   Amount,
   Balance,
+  BytesStringFormat,
   ExtendedKeyPair,
-  ExtendedSecretKey,
   ExtendedPublicKey,
+  ExtendedSecretKey,
   FeeEstimation,
   KeyPair,
-  SecretKey,
   ProtocolMetadata,
   ProtocolNetwork,
   PublicKey,
   Secret,
+  SecretKey,
   Signature,
   SignedTransaction,
+  TransactionConfiguration,
   TransactionCursor,
   TransactionDetails,
   UnsignedTransaction
@@ -102,19 +104,16 @@ export class MockExtendedProtocol implements AirGapExtendedProtocol {
 
   public async convertKeyFormat<K extends SecretKey | ExtendedSecretKey | PublicKey | ExtendedPublicKey>(
     key: K,
-    targetFormat: K['format']
+    target: { format: BytesStringFormat }
   ): Promise<K | undefined> {
     if (key.type === 'priv' || key.type === 'pub') {
-      return this.nonExtendedProtocol.convertKeyFormat(key, targetFormat) as any
+      return this.nonExtendedProtocol.convertKeyFormat(key, target) as any
     }
 
     throw new Error('Method not implemented.')
   }
 
-  public async getNextAddressFromPublicKey(
-    publicKey: ExtendedPublicKey,
-    cursor: AddressCursor
-  ): Promise<AddressWithCursor<AddressCursor> | undefined> {
+  public async getNextAddressFromPublicKey(publicKey: ExtendedPublicKey, cursor: AddressCursor): Promise<AddressWithCursor | undefined> {
     throw new Error('Method not implemented.')
   }
 
@@ -146,11 +145,11 @@ export class MockExtendedProtocol implements AirGapExtendedProtocol {
     return this.nonExtendedProtocol.getNetwork()
   }
 
-  public async getAddressFromPublicKey(publicKey: PublicKey): Promise<AddressWithCursor<AddressCursor>> {
+  public async getAddressFromPublicKey(publicKey: PublicKey): Promise<AddressWithCursor> {
     return this.nonExtendedProtocol.getAddressFromPublicKey(publicKey)
   }
 
-  public async getDetailsFromTransaction(transaction: SignedTransaction | UnsignedTransaction): Promise<AirGapTransaction<string>[]> {
+  public async getDetailsFromTransaction(transaction: SignedTransaction | UnsignedTransaction): Promise<AirGapTransaction[]> {
     return this.nonExtendedProtocol.getDetailsFromTransaction(transaction)
   }
 
@@ -162,7 +161,7 @@ export class MockExtendedProtocol implements AirGapExtendedProtocol {
     publicKey: PublicKey | ExtendedPublicKey,
     limit: number,
     cursor?: TransactionCursor | undefined
-  ): Promise<AirGapTransactionsWithCursor<string, TransactionCursor>> {
+  ): Promise<AirGapTransactionsWithCursor> {
     if (publicKey.type === 'pub') {
       return this.nonExtendedProtocol.getTransactionsForPublicKey(publicKey, limit, cursor)
     }
@@ -181,8 +180,8 @@ export class MockExtendedProtocol implements AirGapExtendedProtocol {
   public async getTransactionMaxAmountWithPublicKey(
     publicKey: PublicKey | ExtendedPublicKey,
     to: string[],
-    fee?: Amount<string> | undefined
-  ): Promise<Amount<string>> {
+    fee?: Amount | undefined
+  ): Promise<Amount> {
     if (publicKey.type === 'pub') {
       return this.nonExtendedProtocol.getTransactionMaxAmountWithPublicKey(publicKey, to, fee)
     }
@@ -192,8 +191,8 @@ export class MockExtendedProtocol implements AirGapExtendedProtocol {
 
   public async getTransactionFeeWithPublicKey(
     publicKey: PublicKey | ExtendedPublicKey,
-    details: TransactionDetails<string>[]
-  ): Promise<FeeEstimation<string>> {
+    details: TransactionDetails[]
+  ): Promise<FeeEstimation> {
     if (publicKey.type === 'pub') {
       return this.nonExtendedProtocol.getTransactionFeeWithPublicKey(publicKey, details)
     }
@@ -203,11 +202,11 @@ export class MockExtendedProtocol implements AirGapExtendedProtocol {
 
   public async prepareTransactionWithPublicKey(
     publicKey: PublicKey | ExtendedPublicKey,
-    details: TransactionDetails<string>[],
-    fee?: Amount<string> | undefined
+    details: TransactionDetails[],
+    configuration?: TransactionConfiguration
   ): Promise<UnsignedTransaction> {
     if (publicKey.type === 'pub') {
-      return this.nonExtendedProtocol.prepareTransactionWithPublicKey(publicKey, details, fee)
+      return this.nonExtendedProtocol.prepareTransactionWithPublicKey(publicKey, details, configuration)
     }
 
     throw new Error('Method not implemented.')
@@ -217,7 +216,7 @@ export class MockExtendedProtocol implements AirGapExtendedProtocol {
     addresses: string[],
     limit: number,
     cursor?: TransactionCursor | undefined
-  ): Promise<AirGapTransactionsWithCursor<string, TransactionCursor>> {
+  ): Promise<AirGapTransactionsWithCursor> {
     return this.nonExtendedProtocol.getTransactionsForAddresses(addresses, limit, cursor)
   }
 

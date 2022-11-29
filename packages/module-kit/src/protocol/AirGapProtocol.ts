@@ -1,8 +1,9 @@
 import { Address, AddressCursor, AddressWithCursor } from '../types/address'
 import { Amount } from '../types/amount'
 import { Balance } from '../types/balance'
+import { BytesStringFormat } from '../types/bytes'
 import { FeeEstimation } from '../types/fee'
-import { KeyPair, SecretKey, PublicKey } from '../types/key'
+import { KeyPair, PublicKey, SecretKey } from '../types/key'
 import { Complement } from '../types/meta/utility-types'
 import { ProtocolMetadata, ProtocolNetwork } from '../types/protocol'
 import { Secret } from '../types/secret'
@@ -12,6 +13,7 @@ import {
   AirGapTransactionStatus,
   AirGapTransactionsWithCursor,
   SignedTransaction,
+  TransactionConfiguration,
   TransactionCursor,
   TransactionDetails,
   UnsignedTransaction
@@ -64,7 +66,7 @@ export interface BaseProtocol<G extends Partial<BaseGeneric> = {}> {
 
   getAddressFromPublicKey(publicKey: PublicKey): Promise<AddressWithCursor<TypedAddressCursor<G>>>
 
-  convertKeyFormat<K extends SecretKey | PublicKey>(key: K, targetFormat: K['format']): Promise<K | undefined>
+  convertKeyFormat<K extends SecretKey | PublicKey>(key: K, target: { format: BytesStringFormat }): Promise<K | undefined>
 
   getDetailsFromTransaction(
     transaction: TypedUnsignedTransaction<G> | TypedSignedTransaction<G>
@@ -109,7 +111,7 @@ export interface AirGapOnlineProtocol<G extends Partial<OnlineGeneric> = {}> ext
   prepareTransactionWithPublicKey(
     publicKey: PublicKey,
     details: TransactionDetails<TypedUnits<G>>[],
-    fee?: Amount<TypedUnits<G>>
+    configuration?: TransactionConfiguration<TypedUnits<G>>
   ): Promise<TypedUnsignedTransaction<G>>
 
   broadcastTransaction(transaction: TypedSignedTransaction<G>): Promise<string>

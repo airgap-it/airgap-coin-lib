@@ -1,30 +1,34 @@
-import { Domain } from '@airgap/coinlib-core'
-import { ConditionViolationError } from '@airgap/coinlib-core/errors'
+import { assertNever, Domain } from '@airgap/coinlib-core'
+import { ConditionViolationError, UnsupportedError } from '@airgap/coinlib-core/errors'
 import { isHex } from '@airgap/coinlib-core/utils/hex'
-import { publicKey, PublicKey } from '@airgap/module-kit'
+import { newPublicKey, PublicKey } from '@airgap/module-kit'
+
 import { convertEncodedBytesString, convertHexBytesString } from './convert'
 
-const PK_PREFIX = 'ak_'
+const PK_PREFIX: string = 'ak_'
 
-export function aePublicKey(pk: string): PublicKey {
-  const format: PublicKey['format'] | undefined = isHex(pk) ? 'hex' : pk.startsWith(PK_PREFIX) ? 'encoded' : undefined
+export function aePublicKey(publicKey: string): PublicKey {
+  const format: PublicKey['format'] | undefined = isHex(publicKey) ? 'hex' : publicKey.startsWith(PK_PREFIX) ? 'encoded' : undefined
 
   if (format === undefined) {
     throw new ConditionViolationError(Domain.AETERNITY, 'Invalid public key.')
   }
 
-  return publicKey(pk, format)
+  return newPublicKey(publicKey, format)
 }
 
-export function convertPublicKey(pk: PublicKey, targetFormat: PublicKey['format']): PublicKey {
-  if (pk.format === targetFormat) {
-    return pk
+export function convertPublicKey(publicKey: PublicKey, targetFormat: PublicKey['format']): PublicKey {
+  if (publicKey.format === targetFormat) {
+    return publicKey
   }
 
-  switch (pk.format) {
+  switch (publicKey.format) {
     case 'encoded':
-      return publicKey(convertEncodedBytesString(PK_PREFIX, pk.value, targetFormat), targetFormat)
+      return newPublicKey(convertEncodedBytesString(PK_PREFIX, publicKey.value, targetFormat), targetFormat)
     case 'hex':
-      return publicKey(convertHexBytesString(PK_PREFIX, pk.value, targetFormat), targetFormat)
+      return newPublicKey(convertHexBytesString(PK_PREFIX, publicKey.value, targetFormat), targetFormat)
+    default:
+      assertNever(publicKey.format)
+      throw new UnsupportedError(Domain.AETERNITY, 'Unsupported public key format.')
   }
 }

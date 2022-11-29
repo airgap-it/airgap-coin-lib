@@ -29,6 +29,9 @@
     "browserify": "browserify ./dist/index.js -s airgapModuleKit > ./dist/airgap-module-kit.min.js"
   },
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
+  "peerDependencies": {
+    "@airgap/coinlib-core": "^0.13.7-beta.0"
+  },
   "dependencies": {},
   "nyc": {
     "include": [

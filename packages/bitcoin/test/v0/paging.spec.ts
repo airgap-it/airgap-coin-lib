@@ -1,7 +1,9 @@
+// tslint:disable no-floating-promises
 import chai = require('chai')
 import chaiAsPromised = require('chai-as-promised')
 import 'mocha'
 import sinon = require('sinon')
+
 import { TestProtocolSpec } from './implementations'
 import { BitcoinProtocolSpec } from './specs/bitcoin'
 
@@ -13,7 +15,7 @@ const protocols = [new BitcoinProtocolSpec()]
 
 Promise.all(
   protocols.map(async (protocol: TestProtocolSpec) => {
-    describe(`Transaction Paging`, () => {
+    describe(`Transaction Paging (v0)`, () => {
       beforeEach(async () => {
         sinon
           .stub(protocol.lib, 'getTransactionsFromAddresses')

@@ -1,8 +1,7 @@
 import { AeternityBlockExplorer } from './block-explorer/AeternityBlockExplorer'
 import { AeternityModule } from './module/AeternityModule'
-import { AeternityProtocol, createAeternityProtocol } from './protocol/AeternityProtocol'
-import { AeternityProtocolNetwork, AeternityProtocolOptions, createAeternityProtocolOptions } from './protocol/AeternityProtocolOptions'
-import { AeternityUnits } from './types/protocol'
+import { AeternityProtocol, createAeternityProtocol, createAeternityProtocolOptions } from './protocol/AeternityProtocol'
+import { AeternityProtocolNetwork, AeternityProtocolOptions, AeternityUnits } from './types/protocol'
 import { AeternitySignedTransaction, AeternityUnsignedTransaction } from './types/transaction'
 
 // Module
@@ -11,7 +10,7 @@ export { AeternityModule }
 
 // Protocol
 
-export { AeternityProtocol, AeternityProtocolOptions, AeternityProtocolNetwork, createAeternityProtocol, createAeternityProtocolOptions }
+export { AeternityProtocol, createAeternityProtocol, createAeternityProtocolOptions }
 
 // Block Explorer
 
@@ -19,4 +18,4 @@ export { AeternityBlockExplorer }
 
 // Types
 
-export { AeternityUnits, AeternityUnsignedTransaction, AeternitySignedTransaction }
+export { AeternityUnits, AeternityProtocolOptions, AeternityProtocolNetwork, AeternityUnsignedTransaction, AeternitySignedTransaction }

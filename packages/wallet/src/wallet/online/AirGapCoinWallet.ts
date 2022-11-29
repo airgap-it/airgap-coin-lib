@@ -1,6 +1,6 @@
 import { MainProtocolSymbols } from '@airgap/coinlib-core'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
-import { AirGapOnlineExtendedProtocol, AirGapOnlineProtocol, amount, Balance, isOnlineExtendedProtocol } from '@airgap/module-kit'
+import { AirGapOnlineExtendedProtocol, AirGapOnlineProtocol, Balance, isOnlineExtendedProtocol, newAmount } from '@airgap/module-kit'
 
 import { AirGapOnlineWallet } from './AirGapOnlineWallet'
 
@@ -92,7 +92,7 @@ export class AirGapCoinWallet<
       balance = await this.protocol.getBalanceOfPublicKey(this.publicKey)
     }
 
-    const result: BigNumber = new BigNumber(amount(balance.total).blockchain(protocolMetadata.units).value)
+    const result: BigNumber = new BigNumber(newAmount(balance.total).blockchain(protocolMetadata.units).value)
 
     this.setCurrentBalance(result)
 

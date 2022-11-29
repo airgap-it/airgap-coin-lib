@@ -3,3 +3,7 @@ export interface BytesString {
   format: BytesStringFormat
   value: string
 }
+
+export interface HexString extends BytesString {
+  format: 'hex'
+}

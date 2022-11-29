@@ -1,6 +1,7 @@
 import { Domain } from '@airgap/coinlib-core'
 import { ConditionViolationError } from '@airgap/coinlib-core/errors'
 import { AirGapBlockExplorer, AirGapModule, AirGapOfflineProtocol, AirGapOnlineProtocol, ProtocolNetworkType } from '@airgap/module-kit'
+
 import { AeternityBlockExplorer } from '../block-explorer/AeternityBlockExplorer'
 import { createAeternityProtocol } from '../protocol/AeternityProtocol'
 

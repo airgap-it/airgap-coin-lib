@@ -1,8 +1,9 @@
 import { Address, AddressCursor, AddressWithCursor } from '../types/address'
 import { Amount } from '../types/amount'
 import { Balance } from '../types/balance'
+import { BytesStringFormat } from '../types/bytes'
 import { FeeEstimation } from '../types/fee'
-import { ExtendedKeyPair, ExtendedSecretKey, ExtendedPublicKey, KeyPair, SecretKey, PublicKey } from '../types/key'
+import { ExtendedKeyPair, ExtendedPublicKey, ExtendedSecretKey, KeyPair, PublicKey, SecretKey } from '../types/key'
 import { Complement } from '../types/meta/utility-types'
 import { ProtocolNetwork } from '../types/protocol'
 import { Secret } from '../types/secret'
@@ -10,6 +11,7 @@ import { Signature } from '../types/signature'
 import {
   AirGapTransactionsWithCursor,
   SignedTransaction,
+  TransactionConfiguration,
   TransactionCursor,
   TransactionDetails,
   UnsignedTransaction
@@ -53,17 +55,18 @@ type TypedUnits<G extends Partial<BaseExtendedGeneric>> = Complement<BaseExtende
 // ##### Protocol #####
 
 export interface BaseExtendedProtocol<G extends Partial<BaseExtendedGeneric> = {}> extends BaseProtocol<G> {
-  deriveFromExtendedPublicKey(publicKey: ExtendedPublicKey, visibilityIndex: number, addressIndex: number): Promise<PublicKey>
-
-  convertKeyFormat<K extends SecretKey | ExtendedSecretKey | PublicKey | ExtendedPublicKey>(
-    key: K,
-    targetFormat: K['format']
-  ): Promise<K | undefined>
-
+  getAddressFromPublicKey(publicKey: PublicKey | ExtendedPublicKey): Promise<AddressWithCursor<TypedAddressCursor<G>>>
   getNextAddressFromPublicKey(
     publicKey: ExtendedPublicKey,
     cursor: TypedAddressCursor<G>
   ): Promise<AddressWithCursor<TypedAddressCursor<G>> | undefined>
+
+  deriveFromExtendedPublicKey(extendedPublicKey: ExtendedPublicKey, visibilityIndex: number, addressIndex: number): Promise<PublicKey>
+
+  convertKeyFormat<K extends SecretKey | ExtendedSecretKey | PublicKey | ExtendedPublicKey>(
+    key: K,
+    target: { format: BytesStringFormat }
+  ): Promise<K | undefined>
 
   verifyMessageWithPublicKey(message: string, signature: Signature, publicKey: PublicKey | ExtendedPublicKey): Promise<boolean>
   encryptAsymmetricWithPublicKey(payload: string, publicKey: PublicKey | ExtendedPublicKey): Promise<string>
@@ -108,7 +111,7 @@ export interface AirGapOnlineExtendedProtocol<G extends Partial<OnlineExtendedGe
   prepareTransactionWithPublicKey(
     publicKey: PublicKey | ExtendedPublicKey,
     details: TransactionDetails<TypedUnits<G>>[],
-    fee?: Amount<TypedUnits<G>>
+    configuration?: TransactionConfiguration<TypedUnits<G>>
   ): Promise<TypedUnsignedTransaction<G>>
 }
 

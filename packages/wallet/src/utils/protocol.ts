@@ -7,7 +7,7 @@ export async function deriveAddresses(
   amount: number,
   offset: number
 ): Promise<AddressWithCursor[]> {
-  const generatorArray = [amount].map((_, i) => i + offset)
+  const generatorArray = Array.from(new Array(amount), (_, i) => i + offset)
 
   return Promise.all(
     generatorArray.map(async (x) => {
