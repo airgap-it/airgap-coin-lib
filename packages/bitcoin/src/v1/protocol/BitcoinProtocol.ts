@@ -7,7 +7,7 @@ import * as bitcoinMessage from '@airgap/coinlib-core/dependencies/src/bitcoinjs
 import * as BitGo from '@airgap/coinlib-core/dependencies/src/bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac/src/index'
 import { BalanceError, ConditionViolationError, InvalidValueError, NetworkError, UnsupportedError } from '@airgap/coinlib-core/errors'
 import {
-  AddressWithCursor,
+  Address,
   AirGapExtendedProtocol,
   AirGapTransaction,
   AirGapTransactionsWithCursor,
@@ -42,7 +42,7 @@ import {
   UnsignedTransaction
 } from '@airgap/module-kit'
 
-import { BitcoinAddress, BitcoinAddressCursor } from '../types/address'
+import { BitcoinAddress } from '../data/BitcoinAddress'
 import { BitcoinJS } from '../types/bitcoinjs'
 import { AddressResponse, UTXOResponse, XPubResponse } from '../types/indexer'
 import { BitcoinExtendedPublicKeyEncoding } from '../types/key'
@@ -61,7 +61,7 @@ export interface BitcoinProtocol<
   _SignedTransaction extends SignedTransaction = BitcoinSignedTransaction,
   _UnsignedTransaction extends UnsignedTransaction = BitcoinUnsignedTransaction
 > extends AirGapExtendedProtocol<{
-    AddressCursor: BitcoinAddressCursor
+    AddressResult: Address
     ProtocolNetwork: BitcoinProtocolNetwork
     SignedTransaction: _SignedTransaction
     TransactionCursor: BitcoinTransactionCursor
@@ -139,7 +139,7 @@ export class BitcoinProtocolImpl implements BitcoinProtocol {
     return this.metadata
   }
 
-  public async getAddressFromPublicKey(publicKey: PublicKey | ExtendedPublicKey): Promise<AddressWithCursor<BitcoinAddressCursor>> {
+  public async getAddressFromPublicKey(publicKey: PublicKey | ExtendedPublicKey): Promise<string> {
     switch (publicKey.type) {
       case 'pub':
         return this.getAddressFromNonExtendedPublicKey(publicKey)
@@ -151,31 +151,18 @@ export class BitcoinProtocolImpl implements BitcoinProtocol {
     }
   }
 
-  private async getAddressFromNonExtendedPublicKey(publicKey: PublicKey): Promise<AddressWithCursor<BitcoinAddressCursor>> {
+  private async getAddressFromNonExtendedPublicKey(publicKey: PublicKey): Promise<string> {
     const hexPublicKey: PublicKey = convertPublicKey(publicKey, 'hex')
     const keyPair = this.bitcoinJS.lib.ECPair.fromPublicKeyBuffer(Buffer.from(hexPublicKey.value, 'hex'), this.bitcoinJS.config.network)
 
-    return {
-      address: BitcoinAddress.fromECPair(keyPair).asString(),
-      cursor: { hasNext: false }
-    }
+    return BitcoinAddress.fromECPair(keyPair).asString()
   }
 
-  private async getAddressFromExtendedPublicKey(extendedPublicKey: ExtendedPublicKey): Promise<AddressWithCursor<BitcoinAddressCursor>> {
+  private async getAddressFromExtendedPublicKey(extendedPublicKey: ExtendedPublicKey): Promise<string> {
     const encodedExtendedPublicKey: ExtendedPublicKey = this.convertExtendedPublicKey(extendedPublicKey, 'encoded')
     const node = this.bitcoinJS.lib.HDNode.fromBase58(encodedExtendedPublicKey.value, this.bitcoinJS.config.network)
 
-    return {
-      address: BitcoinAddress.fromHDNode(node).asString(),
-      cursor: { hasNext: false }
-    }
-  }
-
-  public async getNextAddressFromPublicKey(
-    publicKey: ExtendedPublicKey,
-    cursor: BitcoinAddressCursor
-  ): Promise<AddressWithCursor<BitcoinAddressCursor> | undefined> {
-    return undefined
+    return BitcoinAddress.fromHDNode(node).asString()
   }
 
   public async deriveFromExtendedPublicKey(
@@ -389,7 +376,7 @@ export class BitcoinProtocolImpl implements BitcoinProtocol {
           network: this.bitcoinJS.config.network
         })
         const publicKey: PublicKey = newPublicKey(keyPair.getPublicKeyBuffer().toString('hex'), 'hex')
-        const generatedChangeAddress: string = (await this.getAddressFromPublicKey(publicKey)).address
+        const generatedChangeAddress: string = await this.getAddressFromPublicKey(publicKey)
         if (generatedChangeAddress !== output.recipient) {
           throw new ConditionViolationError(Domain.BITCOIN, 'Change address could not be verified.')
         }
@@ -429,7 +416,7 @@ export class BitcoinProtocolImpl implements BitcoinProtocol {
             1,
             parseInt(output.derivationPath, 10)
           )
-          const generatedChangeAddress: string = (await this.getAddressFromPublicKey(derivedPublicKey)).address
+          const generatedChangeAddress: string = await this.getAddressFromPublicKey(derivedPublicKey)
           changeAddressIsValid = generatedChangeAddress === output.recipient
         } else {
           for (let x = 0; x < changeAddressMaxAddresses; x += changeAddressBatchSize) {
@@ -439,8 +426,8 @@ export class BitcoinProtocolImpl implements BitcoinProtocol {
               })
             )
             const addresses: string[] = await Promise.all(
-              derivedPublicKeys.map(async (publicKey: PublicKey) => {
-                return (await this.getAddressFromPublicKey(publicKey)).address
+              derivedPublicKeys.map((publicKey: PublicKey) => {
+                return this.getAddressFromPublicKey(publicKey)
               })
             )
             if (addresses.indexOf(output.recipient) >= 0) {
@@ -543,9 +530,9 @@ export class BitcoinProtocolImpl implements BitcoinProtocol {
     limit: number,
     cursor?: BitcoinTransactionCursor
   ): Promise<AirGapTransactionsWithCursor<BitcoinUnits, BitcoinTransactionCursor>> {
-    const address: AddressWithCursor = await this.getAddressFromPublicKey(publicKey)
+    const address: string = await this.getAddressFromPublicKey(publicKey)
 
-    return this.getTransactionsForAddresses([address.address], limit, cursor)
+    return this.getTransactionsForAddresses([address], limit, cursor)
   }
 
   private async getTransactionsFromExtendedPublicKey(
@@ -723,9 +710,9 @@ export class BitcoinProtocolImpl implements BitcoinProtocol {
   }
 
   private async getBalanceOfNonExtendedPublicKey(publicKey: PublicKey): Promise<Balance<BitcoinUnits>> {
-    const address: AddressWithCursor = await this.getAddressFromPublicKey(publicKey)
+    const address: string = await this.getAddressFromPublicKey(publicKey)
 
-    return this.getBalanceOfAddresses([address.address])
+    return this.getBalanceOfAddresses([address])
   }
 
   private async getBalanceOfExtendedPublicKey(extendedPublicKey: ExtendedPublicKey): Promise<Balance<BitcoinUnits>> {
@@ -824,7 +811,7 @@ export class BitcoinProtocolImpl implements BitcoinProtocol {
       outs: []
     })
 
-    const address = (await this.getAddressFromPublicKey(publicKey)).address
+    const address = await this.getAddressFromPublicKey(publicKey)
 
     const { data: utxos } = await axios.get<UTXOResponse[]>(`${this.options.network.indexerApi}/api/v2/utxo/${address}`, {
       responseType: 'json'
@@ -940,8 +927,8 @@ export class BitcoinProtocolImpl implements BitcoinProtocol {
       const indexes: [number, number] = getPathIndexes(utxo.path)
 
       const derivedPublicKey: PublicKey = await this.deriveFromExtendedPublicKey(extendedPublicKey, indexes[0], indexes[1])
-      const derivedAddress: AddressWithCursor = await this.getAddressFromPublicKey(derivedPublicKey)
-      if (derivedAddress.address === utxo.address) {
+      const derivedAddress: string = await this.getAddressFromPublicKey(derivedPublicKey)
+      if (derivedAddress === utxo.address) {
         transaction.ins.push({
           txId: utxo.txid,
           value: new BigNumber(utxo.value).toString(10),
@@ -989,9 +976,9 @@ export class BitcoinProtocolImpl implements BitcoinProtocol {
     if (changeValue.isGreaterThan(new BigNumber(DUST_AMOUNT))) {
       const changeAddressIndex: number = lastUsedInternalAddress + 1
       const derivedPublicKey: PublicKey = await this.deriveFromExtendedPublicKey(extendedPublicKey, 1, changeAddressIndex)
-      const derivedAddress: AddressWithCursor = await this.getAddressFromPublicKey(derivedPublicKey)
+      const derivedAddress: string = await this.getAddressFromPublicKey(derivedPublicKey)
       transaction.outs.push({
-        recipient: derivedAddress.address,
+        recipient: derivedAddress,
         isChange: true,
         value: changeValue.toString(10),
         derivationPath: changeAddressIndex.toString()
@@ -1026,13 +1013,14 @@ export function createBitcoinProtocol(options: RecursivePartial<BitcoinProtocolO
 const MAINNET_NAME: string = 'Mainnet'
 const NODE_URL: string = ''
 const INDEXER_API: string = 'https://bitcoin.prod.gke.papers.tech'
-
-const DEFAULT_BITCOIN_PROTOCOL_NETWORK: BitcoinStandardProtocolNetwork = {
+export const BITCOIN_MAINNET_PROTOCOL_NETWORK: BitcoinStandardProtocolNetwork = {
   name: MAINNET_NAME,
   type: 'mainnet',
   rpcUrl: NODE_URL,
   indexerApi: INDEXER_API
 }
+
+const DEFAULT_BITCOIN_PROTOCOL_NETWORK: BitcoinStandardProtocolNetwork = BITCOIN_MAINNET_PROTOCOL_NETWORK
 
 export function createBitcoinProtocolOptions(network: Partial<BitcoinProtocolNetwork> = {}): BitcoinProtocolOptions {
   return {

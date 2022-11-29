@@ -1,9 +1,10 @@
-import { CosmosProtocol, SignedCosmosTransaction } from '../../src'
-import { CosmosSendMessage } from '../../src/protocol/cosmos-message/CosmosSendMessage'
-import { CosmosCoin } from '../../src/protocol/CosmosCoin'
-import { CosmosFee } from '../../src/protocol/CosmosFee'
-import { CosmosTransaction } from '../../src/protocol/CosmosTransaction'
 import { AirGapWalletStatus } from '@airgap/coinlib-core/wallet/AirGapWallet'
+
+import { CosmosProtocol, SignedCosmosTransaction } from '../../../src'
+import { CosmosSendMessage } from '../../../src/v0/protocol/cosmos-message/CosmosSendMessage'
+import { CosmosCoin } from '../../../src/v0/protocol/CosmosCoin'
+import { CosmosFee } from '../../../src/v0/protocol/CosmosFee'
+import { CosmosTransaction } from '../../../src/v0/protocol/CosmosTransaction'
 import { TestProtocolSpec } from '../implementations'
 import { CosmosProtocolStub } from '../stubs/cosmos.stub'
 

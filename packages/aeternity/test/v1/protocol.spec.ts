@@ -23,7 +23,7 @@ Promise.all(
     const protocolMetadata = await protocol.lib.getMetadata()
 
     describe(`Protocol ${protocol.name}`, () => {
-      describe(`Public/Private KeyPair`, () => {
+      describe(`KeyPair`, () => {
         beforeEach(async () => {
           await protocol.stub.registerStub(protocol)
         })
@@ -51,11 +51,11 @@ Promise.all(
 
           // check if address format matches
           if (protocolMetadata.account?.address?.regex) {
-            expect(address.address.match(new RegExp(protocolMetadata.account.address.regex))).not.to.equal(null)
+            expect(address.match(new RegExp(protocolMetadata.account.address.regex))).not.to.equal(null)
           }
 
           // check if address matches to supplied one
-          expect(address.address).to.equal(protocol.wallet.addresses[0], 'address does not match')
+          expect(address).to.equal(protocol.wallet.addresses[0], 'address does not match')
         })
       })
 
@@ -173,7 +173,7 @@ Promise.all(
             expect(airgapTx.amount, 'amount does not match').to.deep.equal(protocol.txs[0].amount)
             expect(airgapTx.fee, 'fee does not match').to.deep.equal(protocol.txs[0].fee)
 
-            expect(airgapTx.details, 'extra details should exist').to.not.be.undefined
+            expect(airgapTx.arbitraryData, 'arbitraryDetails should exist').to.not.be.undefined
           }
         })
 
@@ -196,7 +196,7 @@ Promise.all(
             ).to.deep.equal(tx.from.sort().map((obj) => obj.toLowerCase()))
             expect(airgapTx.amount).to.deep.equal(protocol.txs[0].amount)
             expect(airgapTx.fee).to.deep.equal(protocol.txs[0].fee)
-            expect(airgapTx.details, 'extras details should exist').to.not.be.undefined
+            expect(airgapTx.arbitraryData, 'arbitraryDetails should exist').to.not.be.undefined
           }
         })
 

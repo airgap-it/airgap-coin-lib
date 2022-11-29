@@ -9,7 +9,7 @@ import { BalanceError, ConditionViolationError, NetworkError, UnsupportedError }
 import bs64check from '@airgap/coinlib-core/utils/base64Check'
 import { toHexBuffer } from '@airgap/coinlib-core/utils/hex'
 import {
-  AddressWithCursor,
+  Address,
   AirGapProtocol,
   AirGapTransaction,
   AirGapTransactionsWithCursor,
@@ -39,7 +39,7 @@ import {
 } from '@airgap/module-kit'
 import { sign } from '@stablelib/ed25519'
 
-import { AeternityAddress, AeternityAddressCursor } from '../types/address'
+import { AeternityAddress } from '../data/AeternityAddress'
 import { AeternityProtocolNetwork, AeternityProtocolOptions, AeternityUnits } from '../types/protocol'
 import { AeternitySignedTransaction, AeternityTransactionCursor, AeternityUnsignedTransaction } from '../types/transaction'
 import { convertPublicKey } from '../utils/key'
@@ -52,7 +52,7 @@ import { AeternityCryptoClient } from './AeternityCryptoClient'
 
 export interface AeternityProtocol
   extends AirGapProtocol<{
-    AddressCursor: AeternityAddressCursor
+    AddressResult: Address
     ProtocolNetwork: AeternityProtocolNetwork
     SignedTransaction: AeternitySignedTransaction
     TransactionCursor: AeternityTransactionCursor
@@ -110,7 +110,7 @@ export class AeternityProtocolImpl implements AeternityProtocol {
 
     transaction: {
       arbitraryData: {
-        name: 'payload'
+        inner: { name: 'payload' }
       }
     }
   }
@@ -119,11 +119,8 @@ export class AeternityProtocolImpl implements AeternityProtocol {
     return this.metadata
   }
 
-  public async getAddressFromPublicKey(publicKey: PublicKey): Promise<AddressWithCursor<AeternityAddressCursor>> {
-    return {
-      address: AeternityAddress.from(publicKey).asString(),
-      cursor: { hasNext: false }
-    }
+  public async getAddressFromPublicKey(publicKey: PublicKey): Promise<string> {
+    return AeternityAddress.from(publicKey).asString()
   }
 
   public async convertKeyFormat<K extends SecretKey | PublicKey>(key: K, target: { format: BytesStringFormat }): Promise<K | undefined> {
@@ -160,12 +157,12 @@ export class AeternityProtocolImpl implements AeternityProtocol {
     const rlpEncodedTx = decodeTx(tx)
     const rlpDecodedTx = rlp.decode(rlpEncodedTx, false)
 
-    const from: AddressWithCursor = await this.getAddressFromPublicKey(newPublicKey(rlpDecodedTx[2].slice(1).toString('hex'), 'hex'))
-    const to: AddressWithCursor = await this.getAddressFromPublicKey(newPublicKey(rlpDecodedTx[3].slice(1).toString('hex'), 'hex'))
+    const from: string = await this.getAddressFromPublicKey(newPublicKey(rlpDecodedTx[2].slice(1).toString('hex'), 'hex'))
+    const to: string = await this.getAddressFromPublicKey(newPublicKey(rlpDecodedTx[3].slice(1).toString('hex'), 'hex'))
 
     const airgapTx: AirGapTransaction<AeternityUnits> = {
-      from: [from.address],
-      to: [to.address],
+      from: [from],
+      to: [to],
       isInbound: false,
 
       amount: newAmount(parseInt(rlpDecodedTx[4].toString('hex'), 16), 'blockchain'),
@@ -173,7 +170,7 @@ export class AeternityProtocolImpl implements AeternityProtocol {
 
       network: this.options.network,
 
-      details: [newPlainUIText('payload'), (rlpDecodedTx[8] || '').toString('utf8')]
+      arbitraryData: (rlpDecodedTx[8] || '').toString('utf8')
     }
 
     return [airgapTx]
@@ -291,9 +288,9 @@ export class AeternityProtocolImpl implements AeternityProtocol {
     limit: number,
     cursor?: AeternityTransactionCursor
   ): Promise<AirGapTransactionsWithCursor<'AE', AeternityTransactionCursor>> {
-    const addressWithCursor: AddressWithCursor<AeternityAddressCursor> = await this.getAddressFromPublicKey(publicKey)
+    const address: string = await this.getAddressFromPublicKey(publicKey)
 
-    return this.getTransactionsForAddresses([addressWithCursor.address], limit, cursor)
+    return this.getTransactionsForAddresses([address], limit, cursor)
   }
 
   public async getTransactionsForAddresses(
@@ -358,9 +355,9 @@ export class AeternityProtocolImpl implements AeternityProtocol {
   }
 
   public async getBalanceOfPublicKey(publicKey: PublicKey): Promise<Balance<AeternityUnits>> {
-    const address: AddressWithCursor<AeternityAddressCursor> = await this.getAddressFromPublicKey(publicKey)
+    const address: string = await this.getAddressFromPublicKey(publicKey)
 
-    return this.getBalanceOfAddresses([address.address])
+    return this.getBalanceOfAddresses([address])
   }
 
   public async getBalanceOfAddresses(addresses: string[]): Promise<Balance<AeternityUnits>> {
@@ -435,10 +432,10 @@ export class AeternityProtocolImpl implements AeternityProtocol {
 
     let nonce = 1
 
-    const address: AddressWithCursor<AeternityAddressCursor> = await this.getAddressFromPublicKey(publicKey)
+    const address: string = await this.getAddressFromPublicKey(publicKey)
 
     try {
-      const { data: accountResponse } = await axios.get(`${this.options.network.rpcUrl}/v2/accounts/${address.address}`)
+      const { data: accountResponse } = await axios.get(`${this.options.network.rpcUrl}/v2/accounts/${address}`)
       nonce = accountResponse.nonce + 1
     } catch (error) {
       // if node returns 404 (which means 'no account found'), go with nonce 0
@@ -523,21 +520,17 @@ export function createAeternityProtocol(options: RecursivePartial<AeternityProto
 const MAINNET_NAME: string = 'Mainnet'
 const NODE_URL: string = 'https://mainnet.aeternity.io'
 const FEES_URL: string = 'https://api-airgap.gke.papers.tech/fees'
-
-const DEFAULT_AETERNITY_PROTOCOL_NETWORK: AeternityProtocolNetwork = {
+export const AETERNITY_MAINNET_PROTOCOL_NETWORK: AeternityProtocolNetwork = {
   name: MAINNET_NAME,
   type: 'mainnet',
   rpcUrl: NODE_URL,
   feesUrl: FEES_URL
 }
 
+const DEFAULT_AETERNITY_PROTOCOL_NETWORK: AeternityProtocolNetwork = AETERNITY_MAINNET_PROTOCOL_NETWORK
+
 export function createAeternityProtocolOptions(network: Partial<AeternityProtocolNetwork> = {}): AeternityProtocolOptions {
   return {
-    network: {
-      name: network.name ?? DEFAULT_AETERNITY_PROTOCOL_NETWORK.name,
-      type: network.type ?? DEFAULT_AETERNITY_PROTOCOL_NETWORK.type,
-      rpcUrl: network.rpcUrl ?? DEFAULT_AETERNITY_PROTOCOL_NETWORK.rpcUrl,
-      feesUrl: network.feesUrl ?? DEFAULT_AETERNITY_PROTOCOL_NETWORK.feesUrl
-    }
+    network: { ...DEFAULT_AETERNITY_PROTOCOL_NETWORK, ...network }
   }
 }

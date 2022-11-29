@@ -39,11 +39,19 @@ export interface ProtocolAccountMetadata {
 }
 
 export interface ProtocolTransactionMetadata {
-  arbitraryData?: {
-    name: string // e.g. 'payload', 'memo'
-    maxLength?: number
-    regex?: string
-  }
+  arbitraryData?:
+    | ProtocolTransactionArbitraryDataMetadata
+    | {
+        // TODO: better names?
+        root?: ProtocolTransactionArbitraryDataMetadata
+        inner?: ProtocolTransactionArbitraryDataMetadata
+      }
+}
+
+export interface ProtocolTransactionArbitraryDataMetadata {
+  name: string // e.g. 'payload', 'memo'
+  maxLength?: number
+  regex?: string
 }
 
 export type ProtocolNetworkType = 'mainnet' | 'testnet' | 'custom'

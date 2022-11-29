@@ -244,7 +244,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
 
       senderLimit = calculateTransactionLimit(limit, senderTotal, recipientTotal, senderOffset, recipientOffset)
 
-      if (senderOffset + senderLimit < senderTotal) {
+      if (senderOffset <= Math.floor(senderTotal / senderLimit) * senderLimit) {
         promises.push(this.nodeClient.fetchSendTransactionsFor(address, senderLimit, senderOffset, true))
       } else {
         promises.push(
@@ -256,7 +256,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
 
       recipientLimit = calculateTransactionLimit(limit, recipientTotal, senderTotal, recipientOffset, senderOffset)
 
-      if (recipientOffset + recipientLimit < recipientTotal) {
+      if (recipientOffset <= Math.floor(recipientTotal / recipientLimit) * recipientLimit) {
         promises.push(this.nodeClient.fetchSendTransactionsFor(address, recipientLimit, recipientOffset, false))
       } else {
         promises.push(
@@ -268,10 +268,10 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
     } else {
       ;[senderTotal, recipientTotal] = await Promise.all([
         this.nodeClient
-          .fetchSendTransactionsFor(address, 1, 1, true)
+          .fetchSendTransactionsFor(address, 1, 0, true)
           .then((response) => new BigNumber(response.pagination.total).toNumber()),
         this.nodeClient
-          .fetchSendTransactionsFor(address, 1, 1, false)
+          .fetchSendTransactionsFor(address, 1, 0, false)
           .then((response) => new BigNumber(response.pagination.total).toNumber())
       ])
 

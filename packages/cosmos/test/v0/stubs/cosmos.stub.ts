@@ -1,9 +1,9 @@
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import * as sinon from 'sinon'
 
+import { CosmosProtocol } from '../../../src'
+import { CosmosNodeClient } from '../../../src/v0/protocol/CosmosNodeClient'
 import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
-import { CosmosProtocol } from '../../src'
-import { CosmosNodeClient } from '../../src/protocol/CosmosNodeClient'
 
 export class CosmosProtocolStub implements ProtocolHTTPStub {
   public async registerStub(testProtocolSpec: TestProtocolSpec, protocol: CosmosProtocol) {

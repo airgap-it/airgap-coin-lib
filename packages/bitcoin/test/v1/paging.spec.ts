@@ -27,7 +27,7 @@ Promise.all(
         await protocol.stub.transactionListStub(protocol, publicKey.value)
 
         const firstTransactions = await protocol.lib.getTransactionsForPublicKey(publicKey, mockTransactions.first.itemsOnPage)
-        const secondTransactions = await protocol.lib.getTransactionsForPublicKey(
+        const nextTransactions = await protocol.lib.getTransactionsForPublicKey(
           publicKey,
           mockTransactions.next.itemsOnPage,
           firstTransactions.cursor
@@ -37,9 +37,9 @@ Promise.all(
         expect(firstTransactions.cursor.hasNext).to.be.true
         expect(firstTransactions.cursor.page).to.eq(2)
 
-        expect(secondTransactions.transactions.length).to.be.eq(mockTransactions.next.transactions?.length ?? 0)
-        expect(secondTransactions.cursor.hasNext).to.be.false
-        expect(secondTransactions.cursor.page).to.be.undefined
+        expect(nextTransactions.transactions.length).to.be.eq(mockTransactions.next.transactions?.length ?? 0)
+        expect(nextTransactions.cursor.hasNext).to.be.false
+        expect(nextTransactions.cursor.page).to.be.undefined
       })
     })
   })

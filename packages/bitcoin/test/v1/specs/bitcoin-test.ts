@@ -1,15 +1,14 @@
 // tslint:disable: no-object-literal-type-assertion
 import { Amount, ExtendedPublicKey, ExtendedSecretKey } from '@airgap/module-kit'
 
-import { BitcoinSignedTransaction, BitcoinUnits, BitcoinUnsignedTransaction } from '../../../src/v1'
-import { BitcoinTestnetProtocolImpl } from '../../../src/v1/protocol/BitcoinTestnetProtocol'
+import { BitcoinSignedTransaction, BitcoinUnits, BitcoinUnsignedTransaction, createBitcoinTestnetProtocol } from '../../../src/v1'
 import { XPubResponse } from '../../../src/v1/types/indexer'
 import { TestProtocolSpec } from '../implementations'
 import { BitcoinTestnetProtocolStub } from '../stubs/bitcoin-test.stub'
 
 export class BitcoinTestProtocolSpec extends TestProtocolSpec {
   public name = 'Bitcoin Testnet'
-  public lib = new BitcoinTestnetProtocolImpl()
+  public lib = createBitcoinTestnetProtocol()
   public stub = new BitcoinTestnetProtocolStub()
   public validAddresses = []
   public wallet = {

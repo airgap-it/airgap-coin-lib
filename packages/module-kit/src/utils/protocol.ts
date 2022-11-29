@@ -18,6 +18,7 @@ const baseProtocolSchema: Schema<BaseProtocol> = {
   getAddressFromPublicKey: 'required',
   getDetailsFromTransaction: 'required',
   getMetadata: 'required',
+  getNextAddressFromPublicKey: 'optional',
   verifyMessageWithPublicKey: 'required'
 }
 
@@ -48,7 +49,7 @@ const onlineProtocolSchema: Schema<AirGapOnlineProtocol> = {
 const extendedBaseProtocolSchema: Schema<BaseExtendedProtocol> = {
   ...baseProtocolSchema,
   deriveFromExtendedPublicKey: 'required',
-  getNextAddressFromPublicKey: 'required'
+  getNextAddressFromPublicKey: 'optional'
 }
 
 const extendedOfflineProtocolSchema: Schema<AirGapOfflineExtendedProtocol> = {

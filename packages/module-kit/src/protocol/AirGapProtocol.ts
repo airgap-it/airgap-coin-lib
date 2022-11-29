@@ -23,11 +23,13 @@ import {
 
 export interface BaseGeneric<
   _AddressCursor extends AddressCursor = AddressCursor,
+  _AddressResult extends Address | AddressWithCursor<_AddressCursor> = Address | AddressWithCursor<_AddressCursor>,
   _SignedTransaction extends SignedTransaction = SignedTransaction,
   _Units extends string = string,
   _UnsignedTransaction extends UnsignedTransaction = UnsignedTransaction
 > {
   AddressCursor: _AddressCursor
+  AddressResult: _AddressResult
   SignedTransaction: _SignedTransaction
   Units: _Units
   UnsignedTransaction: _UnsignedTransaction
@@ -35,24 +37,27 @@ export interface BaseGeneric<
 
 export interface OfflineGeneric<
   _AddressCursor extends AddressCursor = AddressCursor,
+  _AddressResult extends Address | AddressWithCursor<_AddressCursor> = Address | AddressWithCursor<_AddressCursor>,
   _SignedTransaction extends SignedTransaction = SignedTransaction,
   _Units extends string = string,
   _UnsignedTransaction extends UnsignedTransaction = UnsignedTransaction
-> extends BaseGeneric<_AddressCursor, _SignedTransaction, _Units, _UnsignedTransaction> {}
+> extends BaseGeneric<_AddressCursor, _AddressResult, _SignedTransaction, _Units, _UnsignedTransaction> {}
 
 export interface OnlineGeneric<
   _AddressCursor extends AddressCursor = AddressCursor,
+  _AddressResult extends Address | AddressWithCursor<_AddressCursor> = Address | AddressWithCursor<_AddressCursor>,
   _ProtocolNetwork extends ProtocolNetwork = ProtocolNetwork,
   _SignedTransaction extends SignedTransaction = SignedTransaction,
   _TransactionCursor extends TransactionCursor = TransactionCursor,
   _Units extends string = string,
   _UnsignedTransaction extends UnsignedTransaction = UnsignedTransaction
-> extends BaseGeneric<_AddressCursor, _SignedTransaction, _Units, _UnsignedTransaction> {
+> extends BaseGeneric<_AddressCursor, _AddressResult, _SignedTransaction, _Units, _UnsignedTransaction> {
   ProtocolNetwork: _ProtocolNetwork
   TransactionCursor: _TransactionCursor
 }
 
 type TypedAddressCursor<G extends Partial<BaseGeneric>> = Complement<BaseGeneric, G>['AddressCursor']
+type TypedAddressResult<G extends Partial<BaseGeneric>> = Complement<BaseGeneric, G>['AddressResult']
 type TypedProtocolNetwork<G extends Partial<OnlineGeneric>> = Complement<OnlineGeneric, G>['ProtocolNetwork']
 type TypedSignedTransaction<G extends Partial<BaseGeneric>> = Complement<BaseGeneric, G>['SignedTransaction']
 type TypedTransactionCursor<G extends Partial<OnlineGeneric>> = Complement<OnlineGeneric, G>['TransactionCursor']
@@ -64,7 +69,11 @@ type TypedUnits<G extends Partial<BaseGeneric>> = Complement<BaseGeneric, G>['Un
 export interface BaseProtocol<G extends Partial<BaseGeneric> = {}> {
   getMetadata(): Promise<ProtocolMetadata<TypedUnits<G>>>
 
-  getAddressFromPublicKey(publicKey: PublicKey): Promise<AddressWithCursor<TypedAddressCursor<G>>>
+  getAddressFromPublicKey(publicKey: PublicKey): Promise<TypedAddressResult<G>>
+  getNextAddressFromPublicKey?(
+    publicKey: PublicKey,
+    cursor: TypedAddressCursor<G>
+  ): Promise<AddressWithCursor<TypedAddressCursor<G>> | undefined>
 
   convertKeyFormat<K extends SecretKey | PublicKey>(key: K, target: { format: BytesStringFormat }): Promise<K | undefined>
 

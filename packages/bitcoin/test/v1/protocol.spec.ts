@@ -24,7 +24,7 @@ Promise.all(
     const protocolMetadata = await protocol.lib.getMetadata()
 
     describe(`Protocol ${protocol.name}`, () => {
-      describe(`Public/Private KeyPair`, () => {
+      describe(`KeyPair`, () => {
         beforeEach(async () => {
           await protocol.stub.registerStub(protocol)
         })
@@ -63,11 +63,11 @@ Promise.all(
 
           if (protocolMetadata.account?.address?.regex !== undefined) {
             // check if address format matches
-            expect(address.address.match(new RegExp(protocolMetadata.account.address.regex))).not.to.equal(null)
+            expect(address.match(new RegExp(protocolMetadata.account.address.regex))).not.to.equal(null)
           }
 
           // check if address matches to supplied one
-          expect(address.address).to.equal(protocol.wallet.addresses[0], 'address does not match')
+          expect(address).to.equal(protocol.wallet.addresses[0], 'address does not match')
         })
       })
 

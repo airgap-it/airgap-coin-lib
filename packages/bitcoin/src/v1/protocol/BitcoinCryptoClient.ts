@@ -1,6 +1,6 @@
 import { Secp256k1CryptoClient } from '@airgap/coinlib-core/protocols/Secp256k1CryptoClient'
 import { isHex } from '@airgap/coinlib-core/utils/hex'
-import { AirGapAnyExtendedProtocol, ExtendedPublicKey, newExtendedPublicKey, PublicKey, newPublicKey } from '@airgap/module-kit'
+import { AirGapAnyExtendedProtocol, ExtendedPublicKey, newExtendedPublicKey, newPublicKey, PublicKey } from '@airgap/module-kit'
 
 import { BitcoinJS } from '../types/bitcoinjs'
 
@@ -25,6 +25,6 @@ export class BitcoinCryptoClient extends Secp256k1CryptoClient {
 
     const address = await this.protocol.getAddressFromPublicKey(_publicKey)
 
-    return this.bitcoinjs.message.verify(message, address.address, rawSignature)
+    return this.bitcoinjs.message.verify(message, address, rawSignature)
   }
 }
