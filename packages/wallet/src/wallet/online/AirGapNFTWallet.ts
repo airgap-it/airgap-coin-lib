@@ -1,5 +1,5 @@
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
-import { AirGapOnlineExtendedProtocol, AirGapOnlineProtocol, amount, Balance, isOnlineExtendedProtocol } from '@airgap/module-kit'
+import { AirGapOnlineExtendedProtocol, AirGapOnlineProtocol, Balance, isOnlineExtendedProtocol, newAmount } from '@airgap/module-kit'
 
 import { AirGapOnlineWallet } from './AirGapOnlineWallet'
 
@@ -71,7 +71,7 @@ export class AirGapNFTWallet<
       balance = await this.protocol.getBalanceOfPublicKey(this.publicKey /* { addressIndex: this.addressIndex, assetID } */)
     }
 
-    const result = new BigNumber(amount(balance.total).blockchain(protocolMetadata.units).value)
+    const result = new BigNumber(newAmount(balance.total).blockchain(protocolMetadata.units).value)
 
     this.setCurrentBalance(result, assetID)
 

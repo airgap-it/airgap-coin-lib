@@ -1,11 +1,13 @@
-import { Domain, MainProtocolSymbols } from '@airgap/coinlib-core'
+import { assertNever, Domain, MainProtocolSymbols } from '@airgap/coinlib-core'
 import axios, { AxiosError } from '@airgap/coinlib-core/dependencies/src/axios-0.19.0/index'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import { mnemonicToSeed } from '@airgap/coinlib-core/dependencies/src/bip39-2.5.0/index'
 import * as bs58check from '@airgap/coinlib-core/dependencies/src/bs58check-2.1.2/index'
-import * as rlp from '@airgap/coinlib-core/dependencies/src/rlp-2.2.3/index'
 import { generateWalletUsingDerivationPath } from '@airgap/coinlib-core/dependencies/src/hd-wallet-js-b216450e56954a6e82ace0aade9474673de5d9d5/src/index'
+import * as rlp from '@airgap/coinlib-core/dependencies/src/rlp-2.2.3/index'
+import { BalanceError, ConditionViolationError, NetworkError, UnsupportedError } from '@airgap/coinlib-core/errors'
 import bs64check from '@airgap/coinlib-core/utils/base64Check'
+import { toHexBuffer } from '@airgap/coinlib-core/utils/hex'
 import {
   AddressWithCursor,
   AirGapProtocol,
@@ -13,38 +15,38 @@ import {
   AirGapTransactionsWithCursor,
   Amount,
   Balance,
+  BytesStringFormat,
   FeeDefaults,
   FeeEstimation,
+  isAmount,
   KeyPair,
-  SecretKey,
+  newAmount,
+  newPlainUIText,
+  newPublicKey,
+  newSecretKey,
+  newSignature,
+  newSignedTransaction,
+  newUnsignedTransaction,
   ProtocolMetadata,
   ProtocolUnitsMetadata,
   PublicKey,
-  Secret,
-  Signature,
-  TransactionDetails,
   RecursivePartial,
-  amount,
-  publicKey,
-  secretKey,
-  signedTransaction,
-  signature,
-  plainUIText,
-  isAmount,
-  unsignedTransaction
+  Secret,
+  SecretKey,
+  Signature,
+  TransactionConfiguration,
+  TransactionDetails
 } from '@airgap/module-kit'
 import { sign } from '@stablelib/ed25519'
 
 import { AeternityAddress, AeternityAddressCursor } from '../types/address'
-import { AeternityUnits } from '../types/protocol'
+import { AeternityProtocolNetwork, AeternityProtocolOptions, AeternityUnits } from '../types/protocol'
 import { AeternitySignedTransaction, AeternityTransactionCursor, AeternityUnsignedTransaction } from '../types/transaction'
 import { convertPublicKey } from '../utils/key'
-import { decodeTx, encodeTx } from '../utils/transaction'
-import { AeternityProtocolNetwork, createAeternityProtocolOptions, AeternityProtocolOptions } from './AeternityProtocolOptions'
-import { AeternityCryptoClient } from './AeternityCryptoClient'
 import { convertSignature } from '../utils/signature'
-import { BalanceError, ConditionViolationError, NetworkError } from '@airgap/coinlib-core/errors'
-import { toHexBuffer } from '@airgap/coinlib-core/utils/hex'
+import { decodeTx, encodeTx } from '../utils/transaction'
+
+import { AeternityCryptoClient } from './AeternityCryptoClient'
 
 // Interface
 
@@ -81,9 +83,9 @@ export class AeternityProtocolImpl implements AeternityProtocol {
   }
 
   private readonly feeDefaults: FeeDefaults<AeternityUnits> = {
-    low: amount(0.00021, 'AE').blockchain(this.units),
-    medium: amount(0.000315, 'AE').blockchain(this.units),
-    high: amount(0.00084, 'AE').blockchain(this.units)
+    low: newAmount(0.00021, 'AE').blockchain(this.units),
+    medium: newAmount(0.000315, 'AE').blockchain(this.units),
+    high: newAmount(0.00084, 'AE').blockchain(this.units)
   }
 
   private readonly metadata: ProtocolMetadata<AeternityUnits> = {
@@ -124,13 +126,13 @@ export class AeternityProtocolImpl implements AeternityProtocol {
     }
   }
 
-  public async convertKeyFormat<K extends SecretKey | PublicKey>(key: K, targetFormat: K['format']): Promise<K | undefined> {
-    if (key.format === targetFormat) {
+  public async convertKeyFormat<K extends SecretKey | PublicKey>(key: K, target: { format: BytesStringFormat }): Promise<K | undefined> {
+    if (key.format === target.format) {
       return key
     }
 
     if (key.type === 'pub') {
-      return Object.assign(key, convertPublicKey(key, targetFormat))
+      return Object.assign(key, convertPublicKey(key, target.format))
     }
 
     /* private keys are not supported */
@@ -148,6 +150,9 @@ export class AeternityProtocolImpl implements AeternityProtocol {
         return this.getDetailsFromEncodedTransaction(`tx_${bs64check.encode(rlpDecodedTx[3])}`)
       case 'unsigned':
         return this.getDetailsFromEncodedTransaction(transaction.transaction)
+      default:
+        assertNever(transaction)
+        throw new UnsupportedError(Domain.AETERNITY, 'Unsupported transaction type.')
     }
   }
 
@@ -155,20 +160,20 @@ export class AeternityProtocolImpl implements AeternityProtocol {
     const rlpEncodedTx = decodeTx(tx)
     const rlpDecodedTx = rlp.decode(rlpEncodedTx, false)
 
-    const from: AddressWithCursor = await this.getAddressFromPublicKey(publicKey(rlpDecodedTx[2].slice(1).toString('hex'), 'hex'))
-    const to: AddressWithCursor = await this.getAddressFromPublicKey(publicKey(rlpDecodedTx[3].slice(1).toString('hex'), 'hex'))
+    const from: AddressWithCursor = await this.getAddressFromPublicKey(newPublicKey(rlpDecodedTx[2].slice(1).toString('hex'), 'hex'))
+    const to: AddressWithCursor = await this.getAddressFromPublicKey(newPublicKey(rlpDecodedTx[3].slice(1).toString('hex'), 'hex'))
 
     const airgapTx: AirGapTransaction<AeternityUnits> = {
       from: [from.address],
       to: [to.address],
       isInbound: false,
 
-      amount: amount(parseInt(rlpDecodedTx[4].toString('hex'), 16), 'blockchain'),
-      fee: amount(parseInt(rlpDecodedTx[5].toString('hex'), 16), 'blockchain'),
+      amount: newAmount(parseInt(rlpDecodedTx[4].toString('hex'), 16), 'blockchain'),
+      fee: newAmount(parseInt(rlpDecodedTx[5].toString('hex'), 16), 'blockchain'),
 
       network: this.options.network,
 
-      details: [plainUIText('payload'), (rlpDecodedTx[8] || '').toString('utf8')]
+      details: [newPlainUIText('payload'), (rlpDecodedTx[8] || '').toString('utf8')]
     }
 
     return [airgapTx]
@@ -195,6 +200,9 @@ export class AeternityProtocolImpl implements AeternityProtocol {
         return this.getKeyPairFromHexSecret(secret.value, derivationPath)
       case 'mnemonic':
         return this.getKeyPairFromMnemonic(secret.value, derivationPath, password)
+      default:
+        assertNever(secret)
+        throw new UnsupportedError(Domain.AETERNITY, 'Unsupported secret type.')
     }
   }
 
@@ -202,8 +210,8 @@ export class AeternityProtocolImpl implements AeternityProtocol {
     const keyPair = generateWalletUsingDerivationPath(Buffer.from(secret, 'hex'), derivationPath)
 
     return {
-      secretKey: secretKey(Buffer.from(keyPair.secretKey).toString('hex'), 'hex'),
-      publicKey: publicKey(Buffer.from(keyPair.publicKey).toString('hex'), 'hex')
+      secretKey: newSecretKey(Buffer.from(keyPair.secretKey).toString('hex'), 'hex'),
+      publicKey: newPublicKey(Buffer.from(keyPair.publicKey).toString('hex'), 'hex')
     }
   }
 
@@ -235,7 +243,7 @@ export class AeternityProtocolImpl implements AeternityProtocol {
     const rlpEncodedTx = rlp.encode(txArray)
     const signedEncodedTx = `tx_${bs64check.encode(rlpEncodedTx)}`
 
-    return signedTransaction<AeternitySignedTransaction>({ transaction: signedEncodedTx })
+    return newSignedTransaction<AeternitySignedTransaction>({ transaction: signedEncodedTx })
   }
 
   public async signMessageWithKeyPair(message: string, keyPair: KeyPair): Promise<Signature> {
@@ -243,7 +251,7 @@ export class AeternityProtocolImpl implements AeternityProtocol {
       throw new ConditionViolationError(Domain.AETERNITY, 'Secret key is of an unexpected format.')
     }
 
-    return signature(await this.cryptoClient.signMessage(message, { privateKey: keyPair.secretKey.value }), 'hex')
+    return newSignature(await this.cryptoClient.signMessage(message, { privateKey: keyPair.secretKey.value }), 'hex')
   }
 
   public async decryptAsymmetricWithKeyPair(payload: string, keyPair: KeyPair): Promise<string> {
@@ -324,8 +332,8 @@ export class AeternityProtocolImpl implements AeternityProtocol {
         to: [obj.tx.recipient_id],
         isInbound: addresses.indexOf(obj.tx.recipient_id) !== -1,
 
-        amount: amount(obj.tx.amount, 'blockchain'),
-        fee: amount(obj.tx.fee, 'blockchain'),
+        amount: newAmount(obj.tx.amount, 'blockchain'),
+        fee: newAmount(obj.tx.fee, 'blockchain'),
 
         network: this.options.network,
 
@@ -336,7 +344,7 @@ export class AeternityProtocolImpl implements AeternityProtocol {
           block: obj.block_height
         },
 
-        details: obj.tx.payload ? [plainUIText('Payload'), obj.tx.payload] : undefined
+        details: obj.tx.payload ? [newPlainUIText('Payload'), obj.tx.payload] : undefined
       }
     })
 
@@ -370,7 +378,7 @@ export class AeternityProtocolImpl implements AeternityProtocol {
       }
     }
 
-    return { total: amount(balance.toString(10), 'blockchain') }
+    return { total: newAmount(balance.toString(10), 'blockchain') }
   }
 
   public async getTransactionMaxAmountWithPublicKey(
@@ -379,19 +387,19 @@ export class AeternityProtocolImpl implements AeternityProtocol {
     fee?: Amount<AeternityUnits>
   ): Promise<Amount<AeternityUnits>> {
     const balance = await this.getBalanceOfPublicKey(publicKey)
-    const balanceBn = new BigNumber(amount(balance.total).blockchain(this.units).value)
+    const balanceBn = new BigNumber(newAmount(balance.total).blockchain(this.units).value)
 
     let maxFee: BigNumber
     if (fee !== undefined) {
-      maxFee = new BigNumber(amount(fee).blockchain(this.units).value)
+      maxFee = new BigNumber(newAmount(fee).blockchain(this.units).value)
     } else {
       const transactionDetails: TransactionDetails<AeternityUnits>[] = to.map((address) => ({
         to: address,
-        amount: amount(balanceBn.div(to.length).toString(), 'blockchain')
+        amount: newAmount(balanceBn.div(to.length).toString(), 'blockchain')
       }))
       const feeEstimation: FeeEstimation<AeternityUnits> = await this.getTransactionFeeWithPublicKey(publicKey, transactionDetails)
       const mediumFee: Amount<AeternityUnits> = isAmount(feeEstimation) ? feeEstimation : feeEstimation.medium
-      maxFee = new BigNumber(amount(mediumFee).blockchain(this.units).value)
+      maxFee = new BigNumber(newAmount(mediumFee).blockchain(this.units).value)
       if (maxFee.gte(balanceBn)) {
         maxFee = new BigNumber(0)
       }
@@ -402,7 +410,7 @@ export class AeternityProtocolImpl implements AeternityProtocol {
       amountWithoutFees = new BigNumber(0)
     }
 
-    return amount(amountWithoutFees.toFixed(), 'blockchain')
+    return newAmount(amountWithoutFees.toFixed(), 'blockchain')
   }
 
   public async getTransactionFeeWithPublicKey(
@@ -412,16 +420,16 @@ export class AeternityProtocolImpl implements AeternityProtocol {
     const feeDetaults = (await axios.get(this.options.network.feesUrl)).data
 
     return {
-      low: amount(feeDetaults.low, 'AE').blockchain(this.units),
-      medium: amount(feeDetaults.medium, 'AE').blockchain(this.units),
-      high: amount(feeDetaults.high, 'AE').blockchain(this.units)
+      low: newAmount(feeDetaults.low, 'AE').blockchain(this.units),
+      medium: newAmount(feeDetaults.medium, 'AE').blockchain(this.units),
+      high: newAmount(feeDetaults.high, 'AE').blockchain(this.units)
     }
   }
 
   public async prepareTransactionWithPublicKey(
     publicKey: PublicKey,
     details: TransactionDetails<AeternityUnits>[],
-    fee?: Amount<AeternityUnits>
+    configuration?: TransactionConfiguration<AeternityUnits>
   ): Promise<AeternityUnsignedTransaction> {
     // should we support multiple transactions here?
 
@@ -439,12 +447,12 @@ export class AeternityProtocolImpl implements AeternityProtocol {
       }
     }
 
-    const balance: Amount<AeternityUnits> = amount((await this.getBalanceOfPublicKey(publicKey)).total).blockchain(this.units)
+    const balance: Amount<AeternityUnits> = newAmount((await this.getBalanceOfPublicKey(publicKey)).total).blockchain(this.units)
     const balanceBn: BigNumber = new BigNumber(balance.value)
     const feeBn: BigNumber =
-      fee !== undefined
-        ? new BigNumber(amount(fee).blockchain(this.units).value)
-        : new BigNumber(amount(this.feeDefaults.medium).blockchain(this.units).value)
+      configuration?.fee !== undefined
+        ? new BigNumber(newAmount(configuration.fee).blockchain(this.units).value)
+        : new BigNumber(newAmount(this.feeDefaults.medium).blockchain(this.units).value)
 
     if (balanceBn.isLessThan(feeBn)) {
       throw new BalanceError(Domain.AETERNITY, 'not enough balance')
@@ -452,7 +460,7 @@ export class AeternityProtocolImpl implements AeternityProtocol {
 
     const sender: string = convertPublicKey(publicKey, 'hex').value
     const recipient: string = convertPublicKey(AeternityAddress.from(details[0].to).toPublicKey(), 'hex').value
-    const value: BigNumber = new BigNumber(amount(details[0].amount).blockchain(this.units).value)
+    const value: BigNumber = new BigNumber(newAmount(details[0].amount).blockchain(this.units).value)
     const payload: string = details[0].arbitraryData || ''
 
     const txObj = {
@@ -471,7 +479,7 @@ export class AeternityProtocolImpl implements AeternityProtocol {
     const rlpEncodedTx = rlp.encode(txArray)
     const preparedTx = encodeTx(rlpEncodedTx)
 
-    return unsignedTransaction<AeternityUnsignedTransaction>({
+    return newUnsignedTransaction<AeternityUnsignedTransaction>({
       transaction: preparedTx,
       networkId: this.networkId()
     })
@@ -499,7 +507,7 @@ export class AeternityProtocolImpl implements AeternityProtocol {
   // Custom
 
   public async convertTransactionToBase58(preparedTx: AeternityUnsignedTransaction): Promise<AeternityUnsignedTransaction> {
-    return unsignedTransaction<AeternityUnsignedTransaction>({
+    return newUnsignedTransaction<AeternityUnsignedTransaction>({
       transaction: bs58check.encode(bs64check.decode(preparedTx.transaction)),
       networkId: preparedTx.networkId
     })
@@ -510,4 +518,26 @@ export class AeternityProtocolImpl implements AeternityProtocol {
 
 export function createAeternityProtocol(options: RecursivePartial<AeternityProtocolOptions> = {}): AeternityProtocol {
   return new AeternityProtocolImpl(options)
+}
+
+const MAINNET_NAME: string = 'Mainnet'
+const NODE_URL: string = 'https://mainnet.aeternity.io'
+const FEES_URL: string = 'https://api-airgap.gke.papers.tech/fees'
+
+const DEFAULT_AETERNITY_PROTOCOL_NETWORK: AeternityProtocolNetwork = {
+  name: MAINNET_NAME,
+  type: 'mainnet',
+  rpcUrl: NODE_URL,
+  feesUrl: FEES_URL
+}
+
+export function createAeternityProtocolOptions(network: Partial<AeternityProtocolNetwork> = {}): AeternityProtocolOptions {
+  return {
+    network: {
+      name: network.name ?? DEFAULT_AETERNITY_PROTOCOL_NETWORK.name,
+      type: network.type ?? DEFAULT_AETERNITY_PROTOCOL_NETWORK.type,
+      rpcUrl: network.rpcUrl ?? DEFAULT_AETERNITY_PROTOCOL_NETWORK.rpcUrl,
+      feesUrl: network.feesUrl ?? DEFAULT_AETERNITY_PROTOCOL_NETWORK.feesUrl
+    }
+  }
 }

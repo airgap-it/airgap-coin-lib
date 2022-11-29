@@ -1,5 +1,4 @@
 // tslint:disable no-floating-promises
-
 import { AirGapBlockExplorer } from '@airgap/module-kit'
 import chai = require('chai')
 import chaiAsPromised = require('chai-as-promised')
@@ -17,13 +16,13 @@ Promise.all(
   blockExplorers.map(async (blockExplorer: AirGapBlockExplorer) => {
     const blockExplorerMetadata = await blockExplorer.getMetadata()
 
-    describe(`Block Explorer ${blockExplorerMetadata.name}`, async () => {
-      const address = 'dummyAddress'
-      const txId = 'dummyTxId'
+    const address = 'dummyAddress'
+    const txId = 'dummyTxId'
 
-      const addressUrl = await blockExplorer.createAddressUrl(address)
-      const transactionUrl = await blockExplorer.createTransactionUrl(txId)
+    const addressUrl = await blockExplorer.createAddressUrl(address)
+    const transactionUrl = await blockExplorer.createTransactionUrl(txId)
 
+    describe(`Block Explorer ${blockExplorerMetadata.name}`, () => {
       it('should replace address', async () => {
         expect(addressUrl).to.contain(address)
       })

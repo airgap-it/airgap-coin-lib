@@ -1,4 +1,5 @@
-import { AddressCursor, publicKey, PublicKey } from '@airgap/module-kit'
+import { AddressCursor, newPublicKey, PublicKey } from '@airgap/module-kit'
+
 import { aePublicKey, convertPublicKey } from '../utils/key'
 
 export interface AeternityAddressCursor extends AddressCursor {}
@@ -17,6 +18,6 @@ export class AeternityAddress {
   }
 
   public toPublicKey(): PublicKey {
-    return publicKey(this.value, 'encoded')
+    return newPublicKey(this.value, 'encoded')
   }
 }

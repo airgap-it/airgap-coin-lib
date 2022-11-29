@@ -1,8 +1,9 @@
-import { BitcoinTestnetProtocol, SignedBitcoinTransaction } from '../../src'
 import { AirGapWalletStatus } from '@airgap/coinlib-core/wallet/AirGapWallet'
+
+import { IACMessageDefinitionObject } from '../../../../serializer/src'
+import { BitcoinTestnetProtocol, SignedBitcoinTransaction } from '../../../src'
 import { TestProtocolSpec } from '../implementations'
 import { BitcoinTestnetProtocolStub } from '../stubs/bitcoin-test.stub'
-import { IACMessageDefinitionObject } from '../../../serializer/src'
 
 export class BitcoinTestProtocolSpec extends TestProtocolSpec {
   public name = 'Bitcoin Testnet'

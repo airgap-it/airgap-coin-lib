@@ -1,6 +1,5 @@
 import { bytesToHex } from '@airgap/coinlib-core/utils/hex'
 import {
-  AddressCursor,
   AddressWithCursor,
   AirGapProtocol,
   AirGapTransaction,
@@ -8,15 +7,17 @@ import {
   AirGapTransactionsWithCursor,
   Amount,
   Balance,
+  BytesStringFormat,
   FeeEstimation,
   KeyPair,
-  SecretKey,
   ProtocolMetadata,
   ProtocolNetwork,
   PublicKey,
   Secret,
+  SecretKey,
   Signature,
   SignedTransaction,
+  TransactionConfiguration,
   TransactionCursor,
   TransactionDetails,
   UnsignedTransaction
@@ -73,7 +74,7 @@ export class MockProtocol implements AirGapProtocol {
     return this.options.network
   }
 
-  public async getAddressFromPublicKey(publicKey: PublicKey): Promise<AddressWithCursor<AddressCursor>> {
+  public async getAddressFromPublicKey(publicKey: PublicKey): Promise<AddressWithCursor> {
     const publicKeyBuffer: Buffer = Buffer.from(publicKey.value, publicKey.format === 'hex' ? 'hex' : 'utf-8')
     const address: Uint8Array = hash(publicKeyBuffer, 32)
 
@@ -83,11 +84,11 @@ export class MockProtocol implements AirGapProtocol {
     }
   }
 
-  public async convertKeyFormat<K extends SecretKey | PublicKey>(key: K, targetFormat: K['format']): Promise<K | undefined> {
+  public async convertKeyFormat<K extends SecretKey | PublicKey>(key: K, target: { format: BytesStringFormat }): Promise<K | undefined> {
     throw new Error('Method not implemented.')
   }
 
-  public async getDetailsFromTransaction(transaction: SignedTransaction | UnsignedTransaction): Promise<AirGapTransaction<string>[]> {
+  public async getDetailsFromTransaction(transaction: SignedTransaction | UnsignedTransaction): Promise<AirGapTransaction[]> {
     throw new Error('Method not implemented.')
   }
 
@@ -103,7 +104,7 @@ export class MockProtocol implements AirGapProtocol {
     publicKey: PublicKey,
     limit: number,
     cursor?: TransactionCursor | undefined
-  ): Promise<AirGapTransactionsWithCursor<string, TransactionCursor>> {
+  ): Promise<AirGapTransactionsWithCursor> {
     return {
       transactions: [],
       cursor: { hasNext: false }
@@ -114,7 +115,7 @@ export class MockProtocol implements AirGapProtocol {
     addresses: string[],
     limit: number,
     cursor?: TransactionCursor | undefined
-  ): Promise<AirGapTransactionsWithCursor<string, TransactionCursor>> {
+  ): Promise<AirGapTransactionsWithCursor> {
     return {
       transactions: [],
       cursor: { hasNext: false }
@@ -133,22 +134,18 @@ export class MockProtocol implements AirGapProtocol {
     throw new Error('Method not implemented.')
   }
 
-  public async getTransactionMaxAmountWithPublicKey(
-    publicKey: PublicKey,
-    to: string[],
-    fee?: Amount<string> | undefined
-  ): Promise<Amount<string>> {
+  public async getTransactionMaxAmountWithPublicKey(publicKey: PublicKey, to: string[], fee?: Amount): Promise<Amount> {
     throw new Error('Method not implemented.')
   }
 
-  public async getTransactionFeeWithPublicKey(publicKey: PublicKey, details: TransactionDetails<string>[]): Promise<FeeEstimation<string>> {
+  public async getTransactionFeeWithPublicKey(publicKey: PublicKey, details: TransactionDetails[]): Promise<FeeEstimation> {
     throw new Error('Method not implemented.')
   }
 
   public async prepareTransactionWithPublicKey(
     publicKey: PublicKey,
-    details: TransactionDetails<string>[],
-    fee?: Amount<string> | undefined
+    details: TransactionDetails[],
+    configuration?: TransactionConfiguration
   ): Promise<UnsignedTransaction> {
     throw new Error('Method not implemented.')
   }

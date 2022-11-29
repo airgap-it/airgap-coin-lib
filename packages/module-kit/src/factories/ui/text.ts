@@ -1,5 +1,5 @@
 import { AirGapUIText } from '../../types/ui/text'
 
-export function plainUIText(text: string): AirGapUIText {
+export function newPlainUIText(text: string): AirGapUIText {
   return { type: 'plain', value: text }
 }

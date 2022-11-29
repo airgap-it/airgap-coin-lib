@@ -2,7 +2,8 @@ import { ICoinProtocol } from '@airgap/coinlib-core'
 import * as BIP39 from '@airgap/coinlib-core/dependencies/src/bip39-2.5.0/index'
 import { AirGapTransactionStatus } from '@airgap/coinlib-core/interfaces/IAirGapTransaction'
 import { AirGapWalletStatus } from '@airgap/coinlib-core/wallet/AirGapWallet'
-import { IACMessageDefinitionObject, IACMessageType } from '../../serializer/src'
+
+import { IACMessageDefinitionObject, IACMessageType } from '../../../serializer/src'
 
 const mnemonic: string = 'spell device they juice trial skirt amazing boat badge steak usage february virus art survey'
 

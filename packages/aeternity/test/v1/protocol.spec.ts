@@ -32,7 +32,7 @@ Promise.all(
           sinon.restore()
         })
 
-        it('getKeyPairFromSecret - should be able to create a public key from a secret (mnemonic)', async () => {
+        it('getKeyPairFromSecret - should be able to create a key pair from a secret (mnemonic)', async () => {
           const { secretKey, publicKey } = await protocol.lib.getKeyPairFromSecret(
             { type: 'mnemonic', value: protocol.mnemonic() },
             protocolMetadata.account?.standardDerivationPath
@@ -77,7 +77,7 @@ Promise.all(
                 amount: protocol.txs[0].amount
               }
             ],
-            protocol.txs[0].fee
+            { fee: protocol.txs[0].fee }
           )
 
           protocol.txs.forEach((tx) => {
@@ -101,7 +101,7 @@ Promise.all(
                   amount: { value: '0', unit: 'blockchain' }
                 }
               ],
-              protocol.txs[0].fee
+              { fee: protocol.txs[0].fee }
             )
           } catch (error) {
             throw error
@@ -120,7 +120,7 @@ Promise.all(
                   amount: { value: '0', unit: 'blockchain' }
                 }
               ],
-              protocol.txs[0].fee
+              { fee: protocol.txs[0].fee }
             )
             throw new Error(`should have failed`)
           } catch (error) {
@@ -214,7 +214,7 @@ Promise.all(
           sinon.restore()
         })
 
-        itIf(protocol.messages.length > 0, 'signMessage - Is able to sign a message using a key pair', async () => {
+        itIf(protocol.messages.length > 0, 'signMessageWithKeyPair - Is able to sign a message using a key pair', async () => {
           const { secretKey, publicKey } = await protocol.lib.getKeyPairFromSecret(
             { type: 'mnemonic', value: protocol.mnemonic() },
             protocolMetadata.account?.standardDerivationPath
@@ -233,7 +233,7 @@ Promise.all(
           }
         })
 
-        itIf(protocol.messages.length > 0, 'verifyMessage - Is able to verify a message using a PublicKey', async () => {
+        itIf(protocol.messages.length > 0, 'verifyMessageWithPublicKey - Is able to verify a message using a PublicKey', async () => {
           const { publicKey } = await protocol.lib.getKeyPairFromSecret(
             { type: 'mnemonic', value: protocol.mnemonic() },
             protocolMetadata.account?.standardDerivationPath
@@ -254,33 +254,37 @@ Promise.all(
           }
         })
 
-        itIf(protocol.messages.length > 0, 'signMessage and verifyMessage - Is able to sign and verify a message', async () => {
-          const { secretKey, publicKey } = await protocol.lib.getKeyPairFromSecret(
-            { type: 'mnemonic', value: protocol.mnemonic() },
-            protocolMetadata.account?.standardDerivationPath
-          )
+        itIf(
+          protocol.messages.length > 0,
+          'signMessageWithKeyPair and verifyMessageWithPublicKey - Is able to sign and verify a message',
+          async () => {
+            const { secretKey, publicKey } = await protocol.lib.getKeyPairFromSecret(
+              { type: 'mnemonic', value: protocol.mnemonic() },
+              protocolMetadata.account?.standardDerivationPath
+            )
 
-          for (const messageObject of protocol.messages) {
-            try {
-              const signature = await protocol.lib.signMessageWithKeyPair(messageObject.message, {
-                publicKey,
-                secretKey
-              })
-              const signatureIsValid = await protocol.lib.verifyMessageWithPublicKey(messageObject.message, signature, publicKey)
+            for (const messageObject of protocol.messages) {
+              try {
+                const signature = await protocol.lib.signMessageWithKeyPair(messageObject.message, {
+                  publicKey,
+                  secretKey
+                })
+                const signatureIsValid = await protocol.lib.verifyMessageWithPublicKey(messageObject.message, signature, publicKey)
 
-              expect(signatureIsValid, 'first signature is invalid').to.be.true
+                expect(signatureIsValid, 'first signature is invalid').to.be.true
 
-              const signature2IsValid = await protocol.lib.verifyMessageWithPublicKey(
-                `different-message-${messageObject.message}`,
-                signature,
-                publicKey
-              )
-              expect(signature2IsValid, 'second signature is invalid').to.be.false
-            } catch (e) {
-              expect(e.message).to.equal('Method not implemented.')
+                const signature2IsValid = await protocol.lib.verifyMessageWithPublicKey(
+                  `different-message-${messageObject.message}`,
+                  signature,
+                  publicKey
+                )
+                expect(signature2IsValid, 'second signature is invalid').to.be.false
+              } catch (e) {
+                expect(e.message).to.equal('Method not implemented.')
+              }
             }
           }
-        })
+        )
       })
 
       describe(`Encrypt Message Asymmetric`, () => {
@@ -288,45 +292,53 @@ Promise.all(
           sinon.restore()
         })
 
-        itIf(protocol.encryptAsymmetric.length > 0, 'encryptAsymmetric - Is able to encrypt a message using a PublicKey', async () => {
-          // This test probably doesn't serve much of a purpose
-          const { publicKey } = await protocol.lib.getKeyPairFromSecret(
-            { type: 'mnemonic', value: protocol.mnemonic() },
-            protocolMetadata.account?.standardDerivationPath
-          )
+        itIf(
+          protocol.encryptAsymmetric.length > 0,
+          'encryptAsymmetricWithPublicKey - Is able to encrypt a message using a PublicKey',
+          async () => {
+            // This test probably doesn't serve much of a purpose
+            const { publicKey } = await protocol.lib.getKeyPairFromSecret(
+              { type: 'mnemonic', value: protocol.mnemonic() },
+              protocolMetadata.account?.standardDerivationPath
+            )
 
-          for (const messageObject of protocol.encryptAsymmetric) {
-            try {
-              const encryptedPayload = await protocol.lib.encryptAsymmetricWithPublicKey(messageObject.message, publicKey)
-              expect(encryptedPayload.length).to.equal(messageObject.encrypted.length)
-            } catch (e) {
-              expect(e.message).to.equal('Method not implemented.')
+            for (const messageObject of protocol.encryptAsymmetric) {
+              try {
+                const encryptedPayload = await protocol.lib.encryptAsymmetricWithPublicKey(messageObject.message, publicKey)
+                expect(encryptedPayload.length).to.equal(messageObject.encrypted.length)
+              } catch (e) {
+                expect(e.message).to.equal('Method not implemented.')
+              }
             }
           }
-        })
-
-        itIf(protocol.encryptAsymmetric.length > 0, 'decryptAsymmetric - Is able to decrypt a message using a SecretKey', async () => {
-          const { secretKey, publicKey } = await protocol.lib.getKeyPairFromSecret(
-            { type: 'mnemonic', value: protocol.mnemonic() },
-            protocolMetadata.account?.standardDerivationPath
-          )
-
-          for (const messageObject of protocol.encryptAsymmetric) {
-            try {
-              const decryptedPayload = await protocol.lib.decryptAsymmetricWithKeyPair(messageObject.encrypted, {
-                publicKey,
-                secretKey
-              } as any)
-              expect(decryptedPayload).to.equal(messageObject.message)
-            } catch (e) {
-              expect(e.message).to.equal('Method not implemented.')
-            }
-          }
-        })
+        )
 
         itIf(
           protocol.encryptAsymmetric.length > 0,
-          'encryptAsymmetric and decryptAsymmetric - Is able to encrypt and decrypt a message',
+          'decryptAsymmetricWithKeyPair - Is able to decrypt a message using a SecretKey',
+          async () => {
+            const { secretKey, publicKey } = await protocol.lib.getKeyPairFromSecret(
+              { type: 'mnemonic', value: protocol.mnemonic() },
+              protocolMetadata.account?.standardDerivationPath
+            )
+
+            for (const messageObject of protocol.encryptAsymmetric) {
+              try {
+                const decryptedPayload = await protocol.lib.decryptAsymmetricWithKeyPair(messageObject.encrypted, {
+                  publicKey,
+                  secretKey
+                } as any)
+                expect(decryptedPayload).to.equal(messageObject.message)
+              } catch (e) {
+                expect(e.message).to.equal('Method not implemented.')
+              }
+            }
+          }
+        )
+
+        itIf(
+          protocol.encryptAsymmetric.length > 0,
+          'encryptAsymmetricWithPublicKey and decryptAsymmetricWithKeyPair - Is able to encrypt and decrypt a message',
           async () => {
             const { secretKey, publicKey } = await protocol.lib.getKeyPairFromSecret(
               { type: 'mnemonic', value: protocol.mnemonic() },
@@ -356,7 +368,7 @@ Promise.all(
           sinon.restore()
         })
 
-        itIf(protocol.encryptAES.length > 0, 'decryptAES - Is able to encrypt a message using a SecretKey', async () => {
+        itIf(protocol.encryptAES.length > 0, 'decryptAESWithSecretKey - Is able to encrypt a message using a SecretKey', async () => {
           const { secretKey } = await protocol.lib.getKeyPairFromSecret(
             { type: 'mnemonic', value: protocol.mnemonic() },
             protocolMetadata.account?.standardDerivationPath
@@ -372,24 +384,28 @@ Promise.all(
           }
         })
 
-        itIf(protocol.encryptAES.length > 0, 'encryptAES and decryptAES - Is able to encrypt and decrypt a message', async () => {
-          const { secretKey } = await protocol.lib.getKeyPairFromSecret(
-            { type: 'mnemonic', value: protocol.mnemonic() },
-            protocolMetadata.account?.standardDerivationPath
-          )
+        itIf(
+          protocol.encryptAES.length > 0,
+          'encryptAESWithSecretKey and decryptAESWithSecretKey - Is able to encrypt and decrypt a message',
+          async () => {
+            const { secretKey } = await protocol.lib.getKeyPairFromSecret(
+              { type: 'mnemonic', value: protocol.mnemonic() },
+              protocolMetadata.account?.standardDerivationPath
+            )
 
-          for (const messageObject of protocol.encryptAES) {
-            const encryptedPayload = await protocol.lib.encryptAESWithSecretKey(messageObject.message, secretKey)
+            for (const messageObject of protocol.encryptAES) {
+              const encryptedPayload = await protocol.lib.encryptAESWithSecretKey(messageObject.message, secretKey)
 
-            try {
-              const decryptedPayload = await protocol.lib.decryptAESWithSecretKey(encryptedPayload, secretKey)
+              try {
+                const decryptedPayload = await protocol.lib.decryptAESWithSecretKey(encryptedPayload, secretKey)
 
-              expect(decryptedPayload).to.equal(messageObject.message)
-            } catch (e) {
-              expect(e.message).to.equal('Method not implemented.')
+                expect(decryptedPayload).to.equal(messageObject.message)
+              } catch (e) {
+                expect(e.message).to.equal('Method not implemented.')
+              }
             }
           }
-        })
+        )
       })
     })
   })

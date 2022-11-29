@@ -1,9 +1,10 @@
-import { BitcoinProtocol, RawBitcoinTransaction, SignedBitcoinTransaction } from '../../src'
 import { AirGapWalletStatus } from '@airgap/coinlib-core/wallet/AirGapWallet'
+
+import { IACMessageDefinitionObject } from '../../../../serializer/src'
+import { BitcoinTransactionValidator } from '../../../../serializer/src/v3/unsigned-transactions/bitcoin-transactions.validator'
+import { BitcoinProtocol, RawBitcoinTransaction, SignedBitcoinTransaction } from '../../../src'
 import { TestProtocolSpec } from '../implementations'
 import { BitcoinProtocolStub } from '../stubs/bitcoin.stub'
-import { BitcoinTransactionValidator } from '../../../serializer/src/v3/unsigned-transactions/bitcoin-transactions.validator'
-import { IACMessageDefinitionObject } from '../../../serializer/src'
 
 export class BitcoinProtocolSpec extends TestProtocolSpec {
   public name = 'Bitcoin'

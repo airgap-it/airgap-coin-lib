@@ -131,14 +131,14 @@ export abstract class AirGapOnlineWallet<
         throw this.xpubRequiresExtendedProtocolError()
       }
 
-      return this.protocol.prepareTransactionWithPublicKey(this.publicKey, details, fee)
+      return this.protocol.prepareTransactionWithPublicKey(this.publicKey, details, { fee })
     } else {
       if (this.addressIndex) {
         // TODO: what should we do with addressIndex?
         data = Object.assign(data, { addressIndex: this.addressIndex })
       }
 
-      return this.protocol.prepareTransactionWithPublicKey(this.publicKey, details, fee)
+      return this.protocol.prepareTransactionWithPublicKey(this.publicKey, details, { fee })
     }
   }
 
