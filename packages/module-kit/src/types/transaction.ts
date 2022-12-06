@@ -15,13 +15,13 @@ interface BaseTransaction<_Type extends TransactionType> extends Sealed<_Type> {
 export interface UnsignedTransaction extends BaseTransaction<'unsigned'> {}
 export interface SignedTransaction extends BaseTransaction<'signed'> {}
 
-export interface AirGapTransaction<_Units extends string = string> {
+export interface AirGapTransaction<_Units extends string = string, _FeeUnits extends string = _Units> {
   from: string[]
   to: string[]
   isInbound: boolean
 
   amount: Amount<_Units>
-  fee: Amount<_Units>
+  fee: Amount<_FeeUnits>
 
   network: ProtocolNetwork
 
@@ -37,8 +37,12 @@ export interface AirGapTransaction<_Units extends string = string> {
 
 export interface TransactionCursor extends BaseCursor {}
 
-export interface AirGapTransactionsWithCursor<_Units extends string = string, _Cursor extends TransactionCursor = TransactionCursor> {
-  transactions: AirGapTransaction<_Units>[]
+export interface AirGapTransactionsWithCursor<
+  _Cursor extends TransactionCursor = TransactionCursor,
+  _Units extends string = string,
+  _FeeUnits extends string = _Units
+> {
+  transactions: AirGapTransaction<_Units, _FeeUnits>[]
   cursor: _Cursor
 }
 
@@ -50,8 +54,8 @@ export interface TransactionDetails<_Units extends string = string> {
   arbitraryData?: string
 }
 
-export interface TransactionConfiguration<_Units extends string = string> {
-  fee?: Amount<_Units>
+export interface TransactionConfiguration<_FeeUnits extends string = string> {
+  fee?: Amount<_FeeUnits>
   arbitraryData?: string
 }
 

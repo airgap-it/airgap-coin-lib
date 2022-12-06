@@ -18,7 +18,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "rm -rf ./dist && node scripts/node-module-es-module-interop.js && tsc && node scripts/copy-files-after-build.js && node scripts/make-ts-declaration-files-backwards-compatible.js",
+    "build": "rm -rf ./dist && node scripts/node-module-es-module-interop.js && tsc && node scripts/copy-files-after-build.js",
     "build-scripts": "tsc scripts/*.ts",
     "lint": "tslint -c ./tslint.json --project ./tsconfig.json --format stylish --fix",
     "lint:prettier": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -36,7 +36,8 @@
     "@metamask/eth-sig-util": "4.0.0"
   },
   "peerDependencies": {
-    "@airgap/coinlib-core": "^0.13.7-beta.0"
+    "@airgap/coinlib-core": "^0.13.7-beta.0",
+    "@airgap/module-kit": "^0.13.7-beta.0"
   },
   "localDependencies": {
     "ethereumjs-tx": "1.3.7",

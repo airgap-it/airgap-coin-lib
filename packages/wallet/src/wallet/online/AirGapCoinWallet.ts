@@ -1,6 +1,13 @@
 import { MainProtocolSymbols } from '@airgap/coinlib-core'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
-import { AirGapOnlineExtendedProtocol, AirGapOnlineProtocol, Balance, isOnlineExtendedProtocol, newAmount } from '@airgap/module-kit'
+import {
+  AirGapOnlineProtocol,
+  Balance,
+  Bip32OverridingExtension,
+  hasMultiAddressAccounts,
+  isBip32Protocol,
+  newAmount
+} from '@airgap/module-kit'
 
 import { AirGapOnlineWallet } from './AirGapOnlineWallet'
 
@@ -11,7 +18,9 @@ export enum TimeInterval {
 }
 
 export class AirGapCoinWallet<
-  T extends AirGapOnlineProtocol | AirGapOnlineExtendedProtocol = AirGapOnlineProtocol | AirGapOnlineExtendedProtocol
+  T extends AirGapOnlineProtocol | Bip32OverridingExtension<AirGapOnlineProtocol> =
+    | AirGapOnlineProtocol
+    | Bip32OverridingExtension<AirGapOnlineProtocol>
 > extends AirGapOnlineWallet<T> {
   private currentBalance: BigNumber | undefined
 
@@ -62,7 +71,7 @@ export class AirGapCoinWallet<
         protocolIdentifier === MainProtocolSymbols.BTC_SEGWIT ||
         protocolIdentifier === MainProtocolSymbols.GRS) &&
       this.publicKey.type === 'xpub' &&
-      isOnlineExtendedProtocol(this.protocol)
+      isBip32Protocol(this.protocol)
     ) {
       // TODO: Remove and test
       /* 
@@ -79,9 +88,11 @@ export class AirGapCoinWallet<
       this.addresses.length > 0 &&
       protocolIdentifier !== MainProtocolSymbols.XTZ_SHIELDED /* TODO: cover ALL sapling protocols */
     ) {
-      balance = await this.protocol.getBalanceOfAddresses(this.addressesToCheck())
+      balance = hasMultiAddressAccounts(this.protocol)
+        ? await this.protocol.getBalanceOfAddresses(this.addressesToCheck())
+        : await this.protocol.getBalanceOfAddress(this.addressesToCheck()[0])
     } else if (this.publicKey.type === 'xpub') {
-      if (!isOnlineExtendedProtocol(this.protocol)) {
+      if (!isBip32Protocol(this.protocol)) {
         // This *should* never happen because of how the constructor is typed, but the compiler doesn't know it.
         // TODO: check if there's a way to tell the compiler here that `publicKey: ExtendedPublicKey => protocol: AirGapOnlineExtendedProtocol`
         throw this.xpubRequiresExtendedProtocolError()

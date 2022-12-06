@@ -112,7 +112,7 @@ Promise.all(
           sinon.restore()
         })
 
-        it('signTransactionWithSecretKey - Is able to sign a transaction using a PrivateKey', async () => {
+        it('signTransactionWithSecretKey - Is able to sign a transaction using an ExtendedSecretKey', async () => {
           const { secretKey } = await protocol.lib.getExtendedKeyPairFromSecret(
             { type: 'mnemonic', value: protocol.mnemonic() },
             protocolMetadata.account?.standardDerivationPath
@@ -133,7 +133,10 @@ Promise.all(
       describe(`Extract TX`, () => {
         it('getDetailsFromTransaction - Is able to extract all necessary properties from an unsigned TX', async () => {
           for (const tx of protocol.txs) {
-            const airgapTxs: AirGapTransaction[] = await protocol.lib.getDetailsFromTransaction(tx.unsignedTx)
+            const airgapTxs: AirGapTransaction[] = await protocol.lib.getDetailsFromTransaction(
+              tx.unsignedTx,
+              protocol.wallet.extendedPublicKey
+            )
 
             if (airgapTxs.length !== 1) {
               throw new Error('Unexpected number of transactions')
@@ -151,7 +154,10 @@ Promise.all(
 
         it('getDetailsFromTransaction - Is able to extract all necessary properties from a signed TX', async () => {
           for (const tx of protocol.txs) {
-            const airgapTxs: AirGapTransaction[] = await protocol.lib.getDetailsFromTransaction(tx.signedTx)
+            const airgapTxs: AirGapTransaction[] = await protocol.lib.getDetailsFromTransaction(
+              tx.signedTx,
+              protocol.wallet.extendedPublicKey
+            )
 
             if (airgapTxs.length !== 1) {
               throw new Error('Unexpected number of transactions')

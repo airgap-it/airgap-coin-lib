@@ -1,11 +1,12 @@
 import { Secp256k1CryptoClient } from '@airgap/coinlib-core/protocols/Secp256k1CryptoClient'
 import { isHex } from '@airgap/coinlib-core/utils/hex'
-import { AirGapAnyExtendedProtocol, ExtendedPublicKey, newExtendedPublicKey, newPublicKey, PublicKey } from '@airgap/module-kit'
+import { ExtendedPublicKey, newExtendedPublicKey, newPublicKey, PublicKey } from '@airgap/module-kit'
 
+import { BitcoinProtocol } from '../../v1'
 import { BitcoinJS } from '../types/bitcoinjs'
 
 export class BitcoinCryptoClient extends Secp256k1CryptoClient {
-  constructor(private readonly protocol: AirGapAnyExtendedProtocol, private readonly bitcoinjs: BitcoinJS) {
+  constructor(private readonly protocol: BitcoinProtocol, private readonly bitcoinjs: BitcoinJS) {
     super()
   }
 

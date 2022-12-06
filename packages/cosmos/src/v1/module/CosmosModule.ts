@@ -30,7 +30,7 @@ export class CosmosModule implements AirGapModule {
       throw new ConditionViolationError(Domain.COSMOS, 'Protocol network type not supported.')
     }
 
-    return createCosmosProtocol()
+    return createCosmosProtocol({ network })
   }
 
   public async createBlockExplorer(networkId?: string): Promise<AirGapBlockExplorer | undefined> {

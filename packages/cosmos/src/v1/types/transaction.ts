@@ -38,7 +38,6 @@ export interface CosmosUnsignedTransaction extends UnsignedTransaction {
 }
 
 export interface CosmosTransactionCursor extends TransactionCursor {
-  address: string
   limit: number
   sender: {
     total: number

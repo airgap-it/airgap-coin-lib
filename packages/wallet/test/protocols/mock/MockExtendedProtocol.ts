@@ -2,13 +2,12 @@ import { toHexBuffer } from '@airgap/coinlib-core/utils/hex'
 import {
   AddressCursor,
   AddressWithCursor,
-  AirGapExtendedProtocol,
+  AirGapProtocol,
   AirGapTransaction,
   AirGapTransactionStatus,
   AirGapTransactionsWithCursor,
   Amount,
   Balance,
-  BytesStringFormat,
   ExtendedKeyPair,
   ExtendedPublicKey,
   ExtendedSecretKey,
@@ -30,7 +29,7 @@ import {
 import { MockProtocol } from './MockProtocol'
 import { MockProtocolOptions } from './MockProtocolOptions'
 
-export class MockExtendedProtocol implements AirGapExtendedProtocol {
+export class MockExtendedProtocol implements AirGapProtocol<{}, 'Bip32OverridingExtension'> {
   private nonExtendedProtocol = new MockProtocol(this.options)
 
   constructor(private readonly options: MockProtocolOptions = new MockProtocolOptions()) {}
@@ -100,17 +99,6 @@ export class MockExtendedProtocol implements AirGapExtendedProtocol {
       format: 'hex',
       value: Buffer.concat([publicKeyBuffer, visibilityIndexBuffer, addressIndexBuffer]).toString('hex')
     }
-  }
-
-  public async convertKeyFormat<K extends SecretKey | ExtendedSecretKey | PublicKey | ExtendedPublicKey>(
-    key: K,
-    target: { format: BytesStringFormat }
-  ): Promise<K | undefined> {
-    if (key.type === 'priv' || key.type === 'pub') {
-      return this.nonExtendedProtocol.convertKeyFormat(key, target) as any
-    }
-
-    throw new Error('Method not implemented.')
   }
 
   public async getNextAddressFromPublicKey(publicKey: ExtendedPublicKey, cursor: AddressCursor): Promise<AddressWithCursor | undefined> {
@@ -212,20 +200,20 @@ export class MockExtendedProtocol implements AirGapExtendedProtocol {
     throw new Error('Method not implemented.')
   }
 
-  public async getTransactionsForAddresses(
-    addresses: string[],
+  public async getTransactionsForAddress(
+    address: string,
     limit: number,
     cursor?: TransactionCursor | undefined
   ): Promise<AirGapTransactionsWithCursor> {
-    return this.nonExtendedProtocol.getTransactionsForAddresses(addresses, limit, cursor)
+    return this.nonExtendedProtocol.getTransactionsForAddress(address, limit, cursor)
   }
 
   public async getTransactionStatus(transactionIds: string[]): Promise<Record<string, AirGapTransactionStatus>> {
     return this.nonExtendedProtocol.getTransactionStatus(transactionIds)
   }
 
-  public async getBalanceOfAddresses(addresses: string[]): Promise<Balance<string>> {
-    return this.nonExtendedProtocol.getBalanceOfAddresses(addresses)
+  public async getBalanceOfAddress(address: string): Promise<Balance<string>> {
+    return this.nonExtendedProtocol.getBalanceOfAddress(address)
   }
 
   public async broadcastTransaction(transaction: SignedTransaction): Promise<string> {

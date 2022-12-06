@@ -7,7 +7,6 @@ import {
   AirGapTransactionsWithCursor,
   Amount,
   Balance,
-  BytesStringFormat,
   FeeEstimation,
   KeyPair,
   ProtocolMetadata,
@@ -84,10 +83,6 @@ export class MockProtocol implements AirGapProtocol {
     }
   }
 
-  public async convertKeyFormat<K extends SecretKey | PublicKey>(key: K, target: { format: BytesStringFormat }): Promise<K | undefined> {
-    throw new Error('Method not implemented.')
-  }
-
   public async getDetailsFromTransaction(transaction: SignedTransaction | UnsignedTransaction): Promise<AirGapTransaction[]> {
     throw new Error('Method not implemented.')
   }
@@ -111,8 +106,8 @@ export class MockProtocol implements AirGapProtocol {
     }
   }
 
-  public async getTransactionsForAddresses(
-    addresses: string[],
+  public async getTransactionsForAddress(
+    address: string,
     limit: number,
     cursor?: TransactionCursor | undefined
   ): Promise<AirGapTransactionsWithCursor> {
@@ -130,7 +125,7 @@ export class MockProtocol implements AirGapProtocol {
     throw new Error('Method not implemented.')
   }
 
-  public async getBalanceOfAddresses(addresses: string[]): Promise<Balance<string>> {
+  public async getBalanceOfAddress(address: string): Promise<Balance<string>> {
     throw new Error('Method not implemented.')
   }
 

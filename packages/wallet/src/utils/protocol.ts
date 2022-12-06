@@ -1,9 +1,9 @@
-import { AddressWithCursor, AirGapAnyExtendedProtocol, ExtendedPublicKey } from '@airgap/module-kit'
+import { AddressWithCursor, ExtendedPublicKey, OfflineBip32Protocol, OnlineBip32Protocol } from '@airgap/module-kit'
 
 import { normalizeAddress } from './address'
 
 export async function deriveAddresses(
-  protocol: AirGapAnyExtendedProtocol,
+  protocol: OfflineBip32Protocol | OnlineBip32Protocol,
   publicKey: ExtendedPublicKey,
   visibilityIndex: number,
   amount: number,

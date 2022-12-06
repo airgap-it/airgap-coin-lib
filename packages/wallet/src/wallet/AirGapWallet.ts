@@ -2,14 +2,14 @@ import { ConditionViolationError } from '@airgap/coinlib-core/errors'
 import { Domain } from '@airgap/coinlib-core/errors/coinlib-error'
 import {
   AddressWithCursor,
-  AirGapAnyExtendedProtocol,
   AirGapAnyProtocol,
+  Bip32OverridingExtension,
   ExtendedPublicKey,
-  isAnyExtendedProtocol,
+  isBip32Protocol,
   PublicKey
 } from '@airgap/module-kit'
-import { normalizeAddress } from '../utils/address'
 
+import { normalizeAddress } from '../utils/address'
 import { deriveAddresses } from '../utils/protocol'
 
 export enum AirGapWalletStatus {
@@ -32,14 +32,17 @@ export interface SerializedAirGapWallet {
 
 export abstract class AirGapWallet<
   Protocol extends AirGapAnyProtocol = AirGapAnyProtocol,
-  ExtendedProtocol extends AirGapAnyExtendedProtocol = AirGapAnyExtendedProtocol,
-  T extends Protocol | ExtendedProtocol = Protocol | ExtendedProtocol
+  T extends Protocol | Bip32OverridingExtension<Protocol> = Protocol | Bip32OverridingExtension<Protocol>
 > {
   public addresses: string[] = [] // used for cache
 
   public constructor(
     public protocol: T,
-    public readonly publicKey: T extends ExtendedProtocol ? PublicKey | ExtendedPublicKey : T extends Protocol ? PublicKey : never,
+    public readonly publicKey: T extends Bip32OverridingExtension<Protocol>
+      ? PublicKey | ExtendedPublicKey
+      : T extends Protocol
+      ? PublicKey
+      : never,
     public readonly derivationPath: string,
     public readonly masterFingerprint: string,
     public status: AirGapWalletStatus,
@@ -66,7 +69,7 @@ export abstract class AirGapWallet<
   public async deriveAddresses(amount: number = 50): Promise<string[]> {
     let addresses: AddressWithCursor[]
     if (this.publicKey.type === 'xpub') {
-      if (!isAnyExtendedProtocol(this.protocol)) {
+      if (!isBip32Protocol(this.protocol)) {
         // This *should* never happen because of how the constructor is typed, but the compiler doesn't know it.
         // TODO: check if there's a way to tell the compiler here that `publicKey: ExtendedPublicKey => protocol: AirGapAnyExtendedProtocol`
         throw this.xpubRequiresExtendedProtocolError()

@@ -89,12 +89,12 @@ describe(`AirGapCoinWallet`, () => {
     const transactions = await (await wallet.fetchTransactions(1)).transactions
 
     const txFromPubKeyStub = wallet.protocol.getTransactionsForPublicKey as any
-    const txFromAddressesStub = wallet.protocol.getTransactionsForAddresses as any
+    const txFromAddressStub = wallet.protocol.getTransactionsForAddress as any
 
     expect(transactions).to.deep.equal(txList.transactions)
     expect(txFromPubKeyStub.callCount).to.equal(0)
-    expect(txFromAddressesStub.callCount).to.equal(1)
-    expect(txFromAddressesStub.calledOnceWith(['0xdd6ab26c81da7428142275263e6b56955d6761e98683e3972578314585ca3d8f'], 1)).to.be.true
+    expect(txFromAddressStub.callCount).to.equal(1)
+    expect(txFromAddressStub.calledOnceWith('0xdd6ab26c81da7428142275263e6b56955d6761e98683e3972578314585ca3d8f', 1)).to.be.true
   })
 
   it('should fetch transactions of public key', async () => {

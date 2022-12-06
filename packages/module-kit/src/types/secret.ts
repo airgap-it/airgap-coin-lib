@@ -6,7 +6,9 @@ interface BaseSecret<_Type extends SecretType> extends Sealed<_Type> {
   value: string
 }
 
-export interface MnemonicSecret extends BaseSecret<'mnemonic'> {}
+export interface MnemonicSecret extends BaseSecret<'mnemonic'> {
+  password?: string
+}
 export interface HexSecret extends BaseSecret<'hex'> {}
 
 export type Secret = MnemonicSecret | HexSecret

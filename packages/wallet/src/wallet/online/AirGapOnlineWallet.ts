@@ -1,13 +1,14 @@
 import { MainProtocolSymbols } from '@airgap/coinlib-core'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import {
-  AirGapOnlineExtendedProtocol,
   AirGapOnlineProtocol,
   AirGapTransactionsWithCursor,
   Amount,
+  Bip32OverridingExtension,
   ExtendedPublicKey,
   FeeEstimation,
-  isOnlineExtendedProtocol,
+  hasMultiAddressAccounts,
+  isBip32Protocol,
   protocolNetworkIdentifier,
   PublicKey,
   TransactionCursor,
@@ -27,13 +28,19 @@ export interface AirGapWalletPriceService {
 }
 
 export abstract class AirGapOnlineWallet<
-  T extends AirGapOnlineProtocol | AirGapOnlineExtendedProtocol = AirGapOnlineProtocol | AirGapOnlineExtendedProtocol
-> extends AirGapWallet<AirGapOnlineProtocol, AirGapOnlineExtendedProtocol, T> {
+  T extends AirGapOnlineProtocol | Bip32OverridingExtension<AirGapOnlineProtocol> =
+    | AirGapOnlineProtocol
+    | Bip32OverridingExtension<AirGapOnlineProtocol>
+> extends AirGapWallet<AirGapOnlineProtocol, T> {
   private synchronizePromise?: Promise<void>
 
   public constructor(
     protocol: T,
-    publicKey: T extends AirGapOnlineExtendedProtocol ? PublicKey | ExtendedPublicKey : T extends AirGapOnlineProtocol ? PublicKey : never,
+    publicKey: T extends Bip32OverridingExtension<AirGapOnlineProtocol>
+      ? PublicKey | ExtendedPublicKey
+      : T extends AirGapOnlineProtocol
+      ? PublicKey
+      : never,
     derivationPath: string,
     masterFingerprint: string,
     status: AirGapWalletStatus,
@@ -86,7 +93,7 @@ export abstract class AirGapOnlineWallet<
         protocolIdentifier === MainProtocolSymbols.BTC_SEGWIT ||
         protocolIdentifier === MainProtocolSymbols.GRS) &&
       this.publicKey.type === 'xpub' &&
-      isOnlineExtendedProtocol(this.protocol)
+      isBip32Protocol(this.protocol)
     ) {
       // TODO: Remove and test
       /* 
@@ -103,9 +110,11 @@ export abstract class AirGapOnlineWallet<
       this.addresses.length > 0 &&
       protocolIdentifier !== MainProtocolSymbols.XTZ_SHIELDED /* TODO: cover ALL sapling protocols */
     ) {
-      transactions = await this.protocol.getTransactionsForAddresses(this.addressesToCheck(), limit, cursor)
+      transactions = hasMultiAddressAccounts(this.protocol)
+        ? await this.protocol.getTransactionsForAddresses(this.addressesToCheck(), limit, cursor)
+        : await this.protocol.getTransactionsForAddress(this.addressesToCheck()[0], limit, cursor)
     } else if (this.publicKey.type === 'xpub') {
-      if (!isOnlineExtendedProtocol(this.protocol)) {
+      if (!isBip32Protocol(this.protocol)) {
         // This *should* never happen because of how the constructor is typed, but the compiler doesn't know it.
         // TODO: check if there's a way to tell the compiler here that `publicKey: ExtendedPublicKey => protocol: AirGapOnlineExtendedProtocol`
         throw this.xpubRequiresExtendedProtocolError()
@@ -125,7 +134,7 @@ export abstract class AirGapOnlineWallet<
     data: { [key: string]: unknown } = {}
   ): Promise<UnsignedTransaction> {
     if (this.publicKey.type === 'xpub') {
-      if (!isOnlineExtendedProtocol(this.protocol)) {
+      if (!isBip32Protocol(this.protocol)) {
         // This *should* never happen because of how the constructor is typed, but the compiler doesn't know it.
         // TODO: check if there's a way to tell the compiler here that `publicKey: ExtendedPublicKey => protocol: AirGapOnlineExtendedProtocol`
         throw this.xpubRequiresExtendedProtocolError()
@@ -144,7 +153,7 @@ export abstract class AirGapOnlineWallet<
 
   public async getMaxTransferValue(recipients: string[], fee?: Amount, data: { [key: string]: unknown } = {}): Promise<Amount> {
     if (this.publicKey.type === 'xpub') {
-      if (!isOnlineExtendedProtocol(this.protocol)) {
+      if (!isBip32Protocol(this.protocol)) {
         // This *should* never happen because of how the constructor is typed, but the compiler doesn't know it.
         // TODO: check if there's a way to tell the compiler here that `publicKey: ExtendedPublicKey => protocol: AirGapOnlineExtendedProtocol`
         throw this.xpubRequiresExtendedProtocolError()
@@ -163,7 +172,7 @@ export abstract class AirGapOnlineWallet<
 
   public async estimateFees(details: TransactionDetails[], data: { [key: string]: unknown } = {}): Promise<FeeEstimation> {
     if (this.publicKey.type === 'xpub') {
-      if (!isOnlineExtendedProtocol(this.protocol)) {
+      if (!isBip32Protocol(this.protocol)) {
         // This *should* never happen because of how the constructor is typed, but the compiler doesn't know it.
         // TODO: check if there's a way to tell the compiler here that `publicKey: ExtendedPublicKey => protocol: AirGapOnlineExtendedProtocol`
         throw this.xpubRequiresExtendedProtocolError()

@@ -10,5 +10,5 @@ export interface AeternitySignedTransaction extends SignedTransaction {
 }
 
 export interface AeternityTransactionCursor extends TransactionCursor {
-  next: { [address: string]: string }
+  next: string
 }
