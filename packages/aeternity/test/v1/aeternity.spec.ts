@@ -54,7 +54,7 @@ describe(`AirGapProtocol Aeternity - Custom Tests`, () => {
       .returns(Promise.resolve({ data: responseWithTimestamp }))
 
     const transactions: AirGapTransaction[] = (
-      await aeternityLib.getTransactionsForAddresses(aeternityProtocolSpec.wallet.addresses, limit)
+      await aeternityLib.getTransactionsForAddress(aeternityProtocolSpec.wallet.addresses[0], limit)
     ).transactions
 
     expect(JSON.parse(JSON.stringify(transactions))).to.deep.eq([
@@ -92,7 +92,7 @@ describe(`AirGapProtocol Aeternity - Custom Tests`, () => {
       .withArgs(`${protocolNetwork.rpcUrl}/mdw/txs/backward?account=${aeternityProtocolSpec.wallet.addresses[0]}&limit=${limit}`)
       .returns(Promise.resolve({ data: transactionsResponse }))
 
-    const transactions = (await aeternityLib.getTransactionsForAddresses(aeternityProtocolSpec.wallet.addresses, limit)).transactions
+    const transactions = (await aeternityLib.getTransactionsForAddress(aeternityProtocolSpec.wallet.addresses[0], limit)).transactions
 
     expect(JSON.parse(JSON.stringify(transactions))).to.deep.eq([
       {

@@ -159,10 +159,13 @@ Promise.all(
       describe(`Extract TX`, () => {
         it('getDetailsFromTransaction - Is able to extract all necessary properties from an unsigned TX', async () => {
           for (const tx of protocol.txs) {
-            const airgapTxs: AirGapTransaction[] = await protocol.lib.getDetailsFromTransaction({
-              ...tx.unsignedTx,
-              memo: 'memo'
-            })
+            const airgapTxs: AirGapTransaction[] = await protocol.lib.getDetailsFromTransaction(
+              {
+                ...tx.unsignedTx,
+                memo: 'memo'
+              },
+              protocol.wallet.publicKey
+            )
 
             if (airgapTxs.length !== 1) {
               throw new Error('Unexpected number of transactions')
@@ -182,10 +185,13 @@ Promise.all(
 
         it('getDetailsFromTransaction - Is able to extract all necessary properties from a signed TX', async () => {
           for (const tx of protocol.txs) {
-            const airgapTxs: AirGapTransaction[] = await protocol.lib.getDetailsFromTransaction({
-              ...tx.unsignedTx,
-              memo: 'memo'
-            })
+            const airgapTxs: AirGapTransaction[] = await protocol.lib.getDetailsFromTransaction(
+              {
+                ...tx.unsignedTx,
+                memo: 'memo'
+              },
+              protocol.wallet.publicKey
+            )
 
             if (airgapTxs.length !== 1) {
               throw new Error('Unexpected number of transactions')

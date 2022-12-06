@@ -15,7 +15,7 @@ export class MintscanBlockExplorer implements AirGapBlockExplorer {
   }
 
   public async createAddressUrl(address: string): Promise<string> {
-    return `${this.url}/cosmos/account/${address}/`
+    return `${this.url}/cosmos/account/${address}`
   }
 
   public async createTransactionUrl(transactionId: string): Promise<string> {

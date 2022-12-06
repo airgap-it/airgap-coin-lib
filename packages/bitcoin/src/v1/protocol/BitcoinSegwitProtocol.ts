@@ -9,7 +9,6 @@ import {
   AirGapUIAlert,
   Amount,
   Balance,
-  BytesStringFormat,
   ExtendedKeyPair,
   ExtendedPublicKey,
   ExtendedSecretKey,
@@ -36,7 +35,6 @@ import * as bitcoin from 'bitcoinjs-lib'
 import { BitcoinSegwitAddress } from '../data/BitcoinSegwitAddress'
 import { BitcoinSegwitJS } from '../types/bitcoinjs'
 import { UTXOResponse } from '../types/indexer'
-import { BitcoinSegwitExtendedPublicKeyEncoding } from '../types/key'
 import { BitcoinProtocolNetwork, BitcoinProtocolOptions, BitcoinUnits } from '../types/protocol'
 import {
   BitcoinSegwitSignedTransaction,
@@ -54,13 +52,6 @@ import { BitcoinProtocol, BitcoinProtocolImpl, createBitcoinProtocolOptions } fr
 // Interface
 
 export interface BitcoinSegwitProtocol extends BitcoinProtocol<BitcoinSegwitSignedTransaction, BitcoinSegwitUnsignedTransaction> {
-  convertKeyFormat<K extends SecretKey | ExtendedSecretKey | PublicKey | ExtendedPublicKey>(
-    key: K,
-    target:
-      | { format: Exclude<BytesStringFormat, 'encoded'> }
-      | { format: Extract<BytesStringFormat, 'encoded'>; type?: BitcoinSegwitExtendedPublicKeyEncoding }
-  ): Promise<K | undefined>
-
   prepareTransactionWithPublicKey(
     publicKey: PublicKey | ExtendedPublicKey,
     details: TransactionDetails<BitcoinUnits>[],
@@ -151,24 +142,9 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
     return newPublicKey(derivedBip32.publicKey.toString('hex'), 'hex')
   }
 
-  public async convertKeyFormat<K extends SecretKey | ExtendedSecretKey | PublicKey | ExtendedPublicKey>(
-    key: K,
-    target:
-      | { format: Exclude<BytesStringFormat, 'encoded'> }
-      | { format: Extract<BytesStringFormat, 'encoded'>; type?: BitcoinSegwitExtendedPublicKeyEncoding }
-  ): Promise<K | undefined> {
-    if (key.type === 'xpub' && target.format === 'encoded') {
-      return {
-        ...key,
-        ...convertExtendedPublicKey(key, { format: 'encoded', type: target.type ?? 'xpub' })
-      }
-    } else {
-      return this.legacy.convertKeyFormat(key, target)
-    }
-  }
-
   public async getDetailsFromTransaction(
-    transaction: BitcoinSegwitSignedTransaction | BitcoinSegwitUnsignedTransaction
+    transaction: BitcoinSegwitSignedTransaction | BitcoinSegwitUnsignedTransaction,
+    _publicKey: PublicKey | ExtendedPublicKey
   ): Promise<AirGapTransaction<BitcoinUnits>[]> {
     return this.getDetailsFromPSBT(transaction.psbt)
   }
@@ -296,12 +272,12 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
 
   // Offline
 
-  public async getKeyPairFromSecret(secret: Secret, derivationPath?: string, password?: string): Promise<KeyPair> {
+  public async getKeyPairFromSecret(secret: Secret, derivationPath?: string): Promise<KeyPair> {
     switch (secret.type) {
       case 'hex':
         return this.getKeyPairFromHexSecret(secret.value, derivationPath)
       case 'mnemonic':
-        return this.getKeyPairFromMnemonic(secret.value, derivationPath, password)
+        return this.getKeyPairFromMnemonic(secret.value, derivationPath, secret.password)
       default:
         assertNever(secret)
         throw new UnsupportedError(Domain.BITCOIN, 'Unsupported secret type.')
@@ -310,7 +286,7 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
 
   private async getKeyPairFromHexSecret(secret: string, derivationPath?: string): Promise<KeyPair> {
     const bip32: bitcoin.BIP32Interface = this.bitcoinJS.lib.bip32.fromSeed(Buffer.from(secret, 'hex'), this.bitcoinJS.config.network)
-    const derivedBip32: bitcoin.BIP32Interface = bip32.derivePath(derivationPath ?? 'm/')
+    const derivedBip32: bitcoin.BIP32Interface = derivationPath ? bip32.derivePath(derivationPath) : bip32
 
     const privateKey: Buffer | undefined = derivedBip32.privateKey
     if (privateKey === undefined) {
@@ -331,12 +307,12 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
     return this.getKeyPairFromHexSecret(secret.toString('hex'), derivationPath)
   }
 
-  public async getExtendedKeyPairFromSecret(secret: Secret, derivationPath?: string, password?: string): Promise<ExtendedKeyPair> {
+  public async getExtendedKeyPairFromSecret(secret: Secret, derivationPath?: string): Promise<ExtendedKeyPair> {
     switch (secret.type) {
       case 'hex':
         return this.getExtendedKeyPairFromHexSecret(secret.value, derivationPath)
       case 'mnemonic':
-        return this.getExtendedKeyPairFromMnemonic(secret.value, derivationPath, password)
+        return this.getExtendedKeyPairFromMnemonic(secret.value, derivationPath, secret.password)
       default:
         assertNever(secret)
         throw new UnsupportedError(Domain.BITCOIN, 'Unsupported secret type.')
@@ -345,7 +321,7 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
 
   private async getExtendedKeyPairFromHexSecret(secret: string, derivationPath?: string): Promise<ExtendedKeyPair> {
     const bip32: bitcoin.BIP32Interface = this.bitcoinJS.lib.bip32.fromSeed(Buffer.from(secret, 'hex'), this.bitcoinJS.config.network)
-    const derivedBip32: bitcoin.BIP32Interface = bip32.derivePath(derivationPath ?? 'm/')
+    const derivedBip32: bitcoin.BIP32Interface = derivationPath ? bip32.derivePath(derivationPath) : bip32
 
     return {
       secretKey: newExtendedSecretKey(derivedBip32.toBase58(), 'encoded'),
@@ -437,20 +413,32 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
     publicKey: PublicKey | ExtendedPublicKey,
     limit: number,
     cursor?: BitcoinTransactionCursor
-  ): Promise<AirGapTransactionsWithCursor<BitcoinUnits, BitcoinTransactionCursor>> {
+  ): Promise<AirGapTransactionsWithCursor<BitcoinTransactionCursor, BitcoinUnits>> {
     return this.legacy.getTransactionsForPublicKey(publicKey, limit, cursor)
+  }
+
+  public async getTransactionsForAddress(
+    address: string,
+    limit: number,
+    cursor?: BitcoinTransactionCursor
+  ): Promise<AirGapTransactionsWithCursor<BitcoinTransactionCursor, BitcoinUnits>> {
+    return this.legacy.getTransactionsForAddress(address, limit, cursor)
   }
 
   public async getTransactionsForAddresses(
     addresses: string[],
     limit: number,
     cursor?: BitcoinTransactionCursor
-  ): Promise<AirGapTransactionsWithCursor<BitcoinUnits, BitcoinTransactionCursor>> {
+  ): Promise<AirGapTransactionsWithCursor<BitcoinTransactionCursor, BitcoinUnits>> {
     return this.legacy.getTransactionsForAddresses(addresses, limit, cursor)
   }
 
   public async getBalanceOfPublicKey(publicKey: PublicKey | ExtendedPublicKey): Promise<Balance<BitcoinUnits>> {
     return this.legacy.getBalanceOfPublicKey(publicKey)
+  }
+
+  public async getBalanceOfAddress(address: string): Promise<Balance<BitcoinUnits>> {
+    return this.legacy.getBalanceOfAddress(address)
   }
 
   public async getBalanceOfAddresses(addresses: string[]): Promise<Balance<BitcoinUnits>> {

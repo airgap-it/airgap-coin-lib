@@ -1,5 +1,5 @@
 import { GenericERC20 } from '@airgap/ethereum'
-import { ERC20Token } from '@airgap/ethereum/protocol/erc20/ERC20'
+import { ERC20Token } from '@airgap/ethereum/v0/protocol/erc20/ERC20'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import { AirGapWalletStatus } from '@airgap/coinlib-core'
 

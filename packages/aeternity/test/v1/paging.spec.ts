@@ -25,20 +25,20 @@ protocols.map((protocol: TestProtocolSpec) => {
 
       await protocol.stub.transactionListStub(protocol, address)
 
-      const firstTransactions = await protocol.lib.getTransactionsForAddresses([address], mockTransactions.first.data.length)
-      const nextTransactions = await protocol.lib.getTransactionsForAddresses(
-        [address],
+      const firstTransactions = await protocol.lib.getTransactionsForAddress(address, mockTransactions.first.data.length)
+      const nextTransactions = await protocol.lib.getTransactionsForAddress(
+        address,
         mockTransactions.next.data.length,
         firstTransactions.cursor
       )
 
       expect(firstTransactions.transactions.length).to.be.eq(mockTransactions.first.data.length)
       expect(firstTransactions.cursor.hasNext).to.be.true
-      expect(firstTransactions.cursor.next[address]).to.be.eq(mockTransactions.first.next)
+      expect(firstTransactions.cursor.next).to.be.eq(mockTransactions.first.next)
 
       expect(nextTransactions.transactions.length).to.be.eq(mockTransactions.next.data.length)
       expect(nextTransactions.cursor.hasNext).to.be.false
-      expect(nextTransactions.cursor.next[address]).to.be.undefined
+      expect(nextTransactions.cursor.next).to.be.undefined
     })
   })
 })

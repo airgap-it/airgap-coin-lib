@@ -1,28 +1,37 @@
 import createHash = require('@airgap/coinlib-core/dependencies/src/create-hash-1.2.0/index')
 
+import { MultiAddressAccountExtension, MultiAddressAccountProtocol } from '../protocol/extensions/address/MultiAddressAccountExtension'
 import {
-  AirGapAnyExtendedProtocol,
-  AirGapExtendedProtocol,
-  AirGapOfflineExtendedProtocol,
-  AirGapOnlineExtendedProtocol,
-  BaseExtendedProtocol
-} from '../protocol/AirGapExtendedProtocol'
-import { AirGapAnyProtocol, AirGapOfflineProtocol, AirGapOnlineProtocol, AirGapProtocol, BaseProtocol } from '../protocol/AirGapProtocol'
+  MultiAddressExtendedPublicKeyProtocol,
+  MultiAddressNonExtendedPublicKeyProtocol,
+  MultiAddressPublicKeyExtension
+} from '../protocol/extensions/address/MultiAddressPublicKeyExtension'
+import {
+  BaseBip32Protocol,
+  Bip32OverridingExtension,
+  OfflineBip32Protocol,
+  OnlineBip32Protocol
+} from '../protocol/extensions/bip/Bip32OverridingExtension'
+import {
+  TransactionStatusChecker,
+  TransactionStatusCheckerExtension
+} from '../protocol/extensions/transaction/TransactionStatusCheckerExtension'
+import { AnyProtocol, BaseProtocol, OfflineProtocol, OnlineProtocol } from '../protocol/protocol'
 import { ProtocolNetwork } from '../types/protocol'
 
 import { implementsInterface, Schema } from './interface'
 
+// Schemas
+
 const baseProtocolSchema: Schema<BaseProtocol> = {
-  convertKeyFormat: 'required',
   encryptAsymmetricWithPublicKey: 'required',
   getAddressFromPublicKey: 'required',
   getDetailsFromTransaction: 'required',
   getMetadata: 'required',
-  getNextAddressFromPublicKey: 'optional',
   verifyMessageWithPublicKey: 'required'
 }
 
-const offlineProtocolSchema: Schema<AirGapOfflineProtocol> = {
+const offlineProtocolSchema: Schema<OfflineProtocol> = {
   ...baseProtocolSchema,
   decryptAESWithSecretKey: 'required',
   decryptAsymmetricWithKeyPair: 'required',
@@ -32,52 +41,96 @@ const offlineProtocolSchema: Schema<AirGapOfflineProtocol> = {
   signTransactionWithSecretKey: 'required'
 }
 
-const onlineProtocolSchema: Schema<AirGapOnlineProtocol> = {
+const onlineProtocolSchema: Schema<OnlineProtocol> = {
   ...baseProtocolSchema,
   broadcastTransaction: 'required',
-  getBalanceOfAddresses: 'required',
+  getBalanceOfAddress: 'required',
   getBalanceOfPublicKey: 'required',
   getNetwork: 'required',
   getTransactionFeeWithPublicKey: 'required',
   getTransactionMaxAmountWithPublicKey: 'required',
-  getTransactionStatus: 'optional',
-  getTransactionsForAddresses: 'required',
+  getTransactionsForAddress: 'required',
   getTransactionsForPublicKey: 'required',
   prepareTransactionWithPublicKey: 'required'
 }
 
-const extendedBaseProtocolSchema: Schema<BaseExtendedProtocol> = {
+const bip32BaseProtocolSchema: Schema<BaseBip32Protocol> = {
   ...baseProtocolSchema,
-  deriveFromExtendedPublicKey: 'required',
-  getNextAddressFromPublicKey: 'optional'
+  deriveFromExtendedPublicKey: 'required'
 }
 
-const extendedOfflineProtocolSchema: Schema<AirGapOfflineExtendedProtocol> = {
+const bip32OfflineProtocolSchema: Schema<OfflineBip32Protocol> = {
+  ...bip32BaseProtocolSchema,
   ...offlineProtocolSchema,
-  ...extendedBaseProtocolSchema,
   getExtendedKeyPairFromSecret: 'required'
 }
 
-const extendedOnlineProtocolSchema: Schema<AirGapOnlineExtendedProtocol> = {
-  ...onlineProtocolSchema,
-  ...extendedBaseProtocolSchema
+const bip32OnlineProtocolSchema: Schema<OnlineBip32Protocol> = {
+  ...bip32BaseProtocolSchema,
+  ...onlineProtocolSchema
 }
 
-export function isOfflineExtendedProtocol(protocol: AirGapOfflineProtocol): protocol is AirGapOfflineExtendedProtocol {
-  return implementsInterface<AirGapOfflineExtendedProtocol>(protocol, extendedOfflineProtocolSchema)
+const multiAddressAccountProtocolSchema: Schema<MultiAddressAccountProtocol> = {
+  getBalanceOfAddresses: 'required',
+  getTransactionsForAddresses: 'required'
 }
 
-export function isOnlineExtendedProtocol(protocol: AirGapOnlineProtocol): protocol is AirGapOnlineExtendedProtocol {
-  return implementsInterface<AirGapOnlineExtendedProtocol>(protocol, extendedOnlineProtocolSchema)
+const multiAddressPublicKeyProtocolSchema: Schema<MultiAddressNonExtendedPublicKeyProtocol & MultiAddressExtendedPublicKeyProtocol> = {
+  getNextAddressFromPublicKey: 'required'
 }
 
-export function isExtendedProtocol(protocol: AirGapProtocol): protocol is AirGapExtendedProtocol {
-  return implementsInterface<AirGapExtendedProtocol>(protocol, { ...extendedOfflineProtocolSchema, ...extendedOnlineProtocolSchema })
+const transactionStatusCheckerSchema: Schema<TransactionStatusChecker> = {
+  getTransactionStatus: 'required'
 }
 
-export function isAnyExtendedProtocol(protocol: AirGapAnyProtocol): protocol is AirGapAnyExtendedProtocol {
-  return isOfflineExtendedProtocol(protocol as AirGapOfflineProtocol) || isOnlineExtendedProtocol(protocol as AirGapOnlineProtocol)
+// Implementation Checks
+
+function isOfflineProtocol(object: unknown): object is OfflineProtocol {
+  return implementsInterface<OfflineProtocol>(object, offlineProtocolSchema)
 }
+
+function isOnlineProtocol(object: unknown): object is OnlineProtocol {
+  return implementsInterface<OnlineProtocol>(object, onlineProtocolSchema)
+}
+
+function isOfflineBip32Protocol(protocol: OfflineProtocol): protocol is OfflineProtocol & OfflineBip32Protocol {
+  return implementsInterface<OfflineBip32Protocol>(protocol, bip32OfflineProtocolSchema)
+}
+
+function isOnlineBip32Protocol(protocol: OnlineProtocol): protocol is OnlineProtocol & OnlineBip32Protocol {
+  return implementsInterface<OnlineBip32Protocol>(protocol, bip32OnlineProtocolSchema)
+}
+
+export function isBip32Protocol<T extends AnyProtocol>(protocol: T): protocol is T & Bip32OverridingExtension<T> {
+  let extendedWithBip32: boolean = false
+
+  if (isOfflineProtocol(protocol)) {
+    extendedWithBip32 = isOfflineBip32Protocol(protocol)
+  }
+
+  if (isOnlineProtocol(protocol)) {
+    extendedWithBip32 &&= isOnlineBip32Protocol(protocol)
+  }
+
+  return extendedWithBip32
+}
+
+export function hasMultiAddressAccounts<T extends OnlineProtocol>(protocol: T): protocol is T & MultiAddressAccountExtension<T> {
+  return implementsInterface<MultiAddressAccountProtocol>(protocol, multiAddressAccountProtocolSchema)
+}
+
+export function hasMultiAddressPublicKeys<T extends AnyProtocol>(protocol: T): protocol is T & MultiAddressPublicKeyExtension<T> {
+  return implementsInterface<MultiAddressNonExtendedPublicKeyProtocol & MultiAddressExtendedPublicKeyProtocol>(
+    protocol,
+    multiAddressPublicKeyProtocolSchema
+  )
+}
+
+export function isTransactionStatusChecker<T extends OnlineProtocol>(protocol: T): protocol is T & TransactionStatusCheckerExtension<T> {
+  return implementsInterface<TransactionStatusChecker>(protocol, transactionStatusCheckerSchema)
+}
+
+// Identifier
 
 const sha256hashShort: (input: string) => string = (input: string): string => {
   const hash = createHash('sha256')

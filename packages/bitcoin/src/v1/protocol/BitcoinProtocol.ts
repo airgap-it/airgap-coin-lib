@@ -8,12 +8,11 @@ import * as BitGo from '@airgap/coinlib-core/dependencies/src/bitgo-utxo-lib-5d9
 import { BalanceError, ConditionViolationError, InvalidValueError, NetworkError, UnsupportedError } from '@airgap/coinlib-core/errors'
 import {
   Address,
-  AirGapExtendedProtocol,
+  AirGapProtocol,
   AirGapTransaction,
   AirGapTransactionsWithCursor,
   Amount,
   Balance,
-  BytesStringFormat,
   ExtendedKeyPair,
   ExtendedPublicKey,
   ExtendedSecretKey,
@@ -60,14 +59,18 @@ import { BitcoinCryptoClient } from './BitcoinCryptoClient'
 export interface BitcoinProtocol<
   _SignedTransaction extends SignedTransaction = BitcoinSignedTransaction,
   _UnsignedTransaction extends UnsignedTransaction = BitcoinUnsignedTransaction
-> extends AirGapExtendedProtocol<{
-    AddressResult: Address
-    ProtocolNetwork: BitcoinProtocolNetwork
-    SignedTransaction: _SignedTransaction
-    TransactionCursor: BitcoinTransactionCursor
-    Units: BitcoinUnits
-    UnsignedTransaction: _UnsignedTransaction
-  }> {}
+> extends AirGapProtocol<
+    {
+      AddressResult: Address
+      ProtocolNetwork: BitcoinProtocolNetwork
+      SignedTransaction: _SignedTransaction
+      TransactionCursor: BitcoinTransactionCursor
+      Units: BitcoinUnits
+      UnsignedTransaction: _UnsignedTransaction
+    },
+    'Bip32OverridingExtension',
+    'MultiAddressAccountExtension'
+  > {}
 
 // Implementation
 
@@ -179,27 +182,9 @@ export class BitcoinProtocolImpl implements BitcoinProtocol {
     return newPublicKey(childPublicKey.toString('hex'), 'hex')
   }
 
-  public async convertKeyFormat<K extends SecretKey | ExtendedSecretKey | ExtendedPublicKey | PublicKey>(
-    key: K,
-    target: { format: BytesStringFormat }
-  ): Promise<K | undefined> {
-    if (key.type === 'xpub') {
-      return {
-        ...key,
-        ...this.convertExtendedPublicKey(key, target.format)
-      }
-    }
-
-    if (key.format === target.format) {
-      return key
-    }
-
-    /* not supported */
-    return undefined
-  }
-
   public async getDetailsFromTransaction(
-    transaction: BitcoinSignedTransaction | BitcoinUnsignedTransaction
+    transaction: BitcoinSignedTransaction | BitcoinUnsignedTransaction,
+    _publicKey: PublicKey | ExtendedPublicKey
   ): Promise<AirGapTransaction<BitcoinUnits>[]> {
     switch (transaction.type) {
       case 'signed':
@@ -287,12 +272,12 @@ export class BitcoinProtocolImpl implements BitcoinProtocol {
 
   // Offline
 
-  public async getKeyPairFromSecret(secret: Secret, derivationPath?: string, password?: string): Promise<KeyPair> {
+  public async getKeyPairFromSecret(secret: Secret, derivationPath?: string): Promise<KeyPair> {
     switch (secret.type) {
       case 'hex':
         return this.getKeyPairFromHexSecret(secret.value, derivationPath)
       case 'mnemonic':
-        return this.getKeyPairFromMnemonic(secret.value, derivationPath, password)
+        return this.getKeyPairFromMnemonic(secret.value, derivationPath, secret.password)
       default:
         assertNever(secret)
         throw new UnsupportedError(Domain.BITCOIN, 'Unsupported secret type.')
@@ -301,7 +286,7 @@ export class BitcoinProtocolImpl implements BitcoinProtocol {
 
   private async getKeyPairFromHexSecret(secret: string, derivationPath?: string): Promise<KeyPair> {
     const node = this.bitcoinJS.lib.HDNode.fromSeedHex(secret, this.bitcoinJS.config.network)
-    const derivedNode = node.derivePath(derivationPath ?? 'm/')
+    const derivedNode = derivationPath ? node.derivePath(derivationPath) : node
 
     return {
       secretKey: newSecretKey(derivedNode.keyPair.getPrivateKeyBuffer().toString('hex'), 'hex'),
@@ -315,12 +300,12 @@ export class BitcoinProtocolImpl implements BitcoinProtocol {
     return this.getKeyPairFromHexSecret(secret.toString('hex'), derivationPath)
   }
 
-  public async getExtendedKeyPairFromSecret(secret: Secret, derivationPath?: string, password?: string): Promise<ExtendedKeyPair> {
+  public async getExtendedKeyPairFromSecret(secret: Secret, derivationPath?: string): Promise<ExtendedKeyPair> {
     switch (secret.type) {
       case 'hex':
         return this.getExtendedKeyPairFromHexSecret(secret.value, derivationPath)
       case 'mnemonic':
-        return this.getExtendedKeyPairFromMnemonic(secret.value, derivationPath, password)
+        return this.getExtendedKeyPairFromMnemonic(secret.value, derivationPath, secret.password)
       default:
         assertNever(secret)
         throw new UnsupportedError(Domain.BITCOIN, 'Unsupported secret type.')
@@ -329,7 +314,7 @@ export class BitcoinProtocolImpl implements BitcoinProtocol {
 
   private async getExtendedKeyPairFromHexSecret(secret: string, derivationPath?: string): Promise<ExtendedKeyPair> {
     const node = this.bitcoinJS.lib.HDNode.fromSeedHex(secret, this.bitcoinJS.config.network)
-    const derivedNode = node.derivePath(derivationPath ?? 'm/')
+    const derivedNode = derivationPath ? node.derivePath(derivationPath) : undefined
 
     return {
       secretKey: newExtendedSecretKey(derivedNode.toBase58(), 'encoded'),
@@ -513,7 +498,7 @@ export class BitcoinProtocolImpl implements BitcoinProtocol {
     publicKey: ExtendedPublicKey | PublicKey,
     limit: number,
     cursor?: BitcoinTransactionCursor
-  ): Promise<AirGapTransactionsWithCursor<BitcoinUnits, BitcoinTransactionCursor>> {
+  ): Promise<AirGapTransactionsWithCursor<BitcoinTransactionCursor, BitcoinUnits>> {
     switch (publicKey.type) {
       case 'pub':
         return this.getTransactionsFromNonExtendedPublicKey(publicKey, limit, cursor)
@@ -529,7 +514,7 @@ export class BitcoinProtocolImpl implements BitcoinProtocol {
     publicKey: PublicKey,
     limit: number,
     cursor?: BitcoinTransactionCursor
-  ): Promise<AirGapTransactionsWithCursor<BitcoinUnits, BitcoinTransactionCursor>> {
+  ): Promise<AirGapTransactionsWithCursor<BitcoinTransactionCursor, BitcoinUnits>> {
     const address: string = await this.getAddressFromPublicKey(publicKey)
 
     return this.getTransactionsForAddresses([address], limit, cursor)
@@ -539,7 +524,7 @@ export class BitcoinProtocolImpl implements BitcoinProtocol {
     extendedPublicKey: ExtendedPublicKey,
     limit: number,
     cursor?: BitcoinTransactionCursor
-  ): Promise<AirGapTransactionsWithCursor<BitcoinUnits, BitcoinTransactionCursor>> {
+  ): Promise<AirGapTransactionsWithCursor<BitcoinTransactionCursor, BitcoinUnits>> {
     const encodedExtendedPublicKey: ExtendedPublicKey = this.convertExtendedPublicKey(extendedPublicKey, 'encoded')
     const page: number = cursor?.page ?? 1
     const url: string = `${this.options.network.indexerApi}/api/v2/xpub/${encodedExtendedPublicKey.value}?details=txs&tokens=used&pageSize=${limit}&page=${page}`
@@ -618,11 +603,19 @@ export class BitcoinProtocolImpl implements BitcoinProtocol {
     }
   }
 
+  public async getTransactionsForAddress(
+    address: string,
+    limit: number,
+    cursor?: BitcoinTransactionCursor
+  ): Promise<AirGapTransactionsWithCursor<BitcoinTransactionCursor, BitcoinUnits>> {
+    return this.getTransactionsForAddresses([address], limit, cursor)
+  }
+
   public async getTransactionsForAddresses(
     addresses: string[],
     limit: number,
     cursor?: BitcoinTransactionCursor
-  ): Promise<AirGapTransactionsWithCursor<BitcoinUnits, BitcoinTransactionCursor>> {
+  ): Promise<AirGapTransactionsWithCursor<BitcoinTransactionCursor, BitcoinUnits>> {
     const airGapTransactions: AirGapTransaction<BitcoinUnits>[] = []
     const page = cursor?.page ?? 1
     const url = `${this.options.network.indexerApi}/api/v2/address/${addresses[0]}?page=${page}&pageSize=${limit}&details=txs`
@@ -727,6 +720,10 @@ export class BitcoinProtocolImpl implements BitcoinProtocol {
     return {
       total: newAmount(data.balance, 'blockchain')
     }
+  }
+
+  public async getBalanceOfAddress(address: string): Promise<Balance<BitcoinUnits>> {
+    return this.getBalanceOfAddresses([address])
   }
 
   public async getBalanceOfAddresses(addresses: string[]): Promise<Balance<BitcoinUnits>> {

@@ -1,10 +1,12 @@
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
-import { AirGapOnlineExtendedProtocol, AirGapOnlineProtocol, Balance, isOnlineExtendedProtocol, newAmount } from '@airgap/module-kit'
+import { AirGapOnlineProtocol, Balance, Bip32OverridingExtension, isBip32Protocol, newAmount } from '@airgap/module-kit'
 
 import { AirGapOnlineWallet } from './AirGapOnlineWallet'
 
 export class AirGapNFTWallet<
-  T extends AirGapOnlineProtocol | AirGapOnlineExtendedProtocol = AirGapOnlineProtocol | AirGapOnlineExtendedProtocol
+  T extends AirGapOnlineProtocol | Bip32OverridingExtension<AirGapOnlineProtocol> =
+    | AirGapOnlineProtocol
+    | Bip32OverridingExtension<AirGapOnlineProtocol>
 > extends AirGapOnlineWallet<T> {
   private currentBalance: Record<string, BigNumber | undefined> = {}
 
@@ -59,7 +61,7 @@ export class AirGapNFTWallet<
 
     let balance: Balance<string>
     if (this.publicKey.type === 'xpub') {
-      if (!isOnlineExtendedProtocol(this.protocol)) {
+      if (!isBip32Protocol(this.protocol)) {
         // This *should* never happen because of how the constructor is typed, but the compiler doesn't know it.
         // TODO: check if there's a way to tell the compiler here that `publicKey: ExtendedPublicKey => protocol: AirGapOnlineExtendedProtocol`
         throw this.xpubRequiresExtendedProtocolError()

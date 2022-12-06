@@ -31,7 +31,7 @@ export class CosmosProtocolStub implements ProtocolHTTPStub {
 
   public async noBalanceStub(testProtocolSpec: TestProtocolSpec) {
     sinon
-      .stub(testProtocolSpec.lib, 'getBalanceOfAddresses')
+      .stub(testProtocolSpec.lib, 'getBalanceOfAddress')
       .withArgs(sinon.match.any)
       .returns(Promise.resolve({ total: { value: '0', unit: 'blockchain' } } as Balance<CosmosUnits>))
 

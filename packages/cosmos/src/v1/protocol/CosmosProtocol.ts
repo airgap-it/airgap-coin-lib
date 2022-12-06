@@ -13,7 +13,6 @@ import {
   AirGapTransactionsWithCursor,
   Amount,
   Balance,
-  BytesStringFormat,
   FeeDefaults,
   FeeEstimation,
   isAmount,
@@ -138,17 +137,9 @@ export class CosmosProtocolImpl implements CosmosProtocol {
     return CosmosAddress.from(publicKey).asString()
   }
 
-  public async convertKeyFormat<K extends SecretKey | PublicKey>(key: K, target: { format: BytesStringFormat }): Promise<K | undefined> {
-    if (key.format === target.format) {
-      return key
-    }
-
-    /* conversion not supported */
-    return undefined
-  }
-
   public async getDetailsFromTransaction(
-    transaction: CosmosSignedTransaction | CosmosUnsignedTransaction
+    transaction: CosmosSignedTransaction | CosmosUnsignedTransaction,
+    _publicKey: PublicKey
   ): Promise<AirGapTransaction<CosmosUnits>[]> {
     switch (transaction.type) {
       case 'signed':
@@ -226,7 +217,7 @@ export class CosmosProtocolImpl implements CosmosProtocol {
 
   // Offline
 
-  public async getKeyPairFromSecret(secret: Secret, derivationPath?: string, password?: string): Promise<KeyPair> {
+  public async getKeyPairFromSecret(secret: Secret, derivationPath?: string): Promise<KeyPair> {
     switch (secret.type) {
       case 'hex':
         const nodeFromHex: BIP32Interface = fromSeed(Buffer.from(secret.value, 'hex'))
@@ -234,7 +225,7 @@ export class CosmosProtocolImpl implements CosmosProtocol {
         return this.getKeyPairFromNode(nodeFromHex, derivationPath)
       case 'mnemonic':
         validateMnemonic(secret.value)
-        const seed = mnemonicToSeed(secret.value, password)
+        const seed = mnemonicToSeed(secret.value, secret.password)
         const nodeFromMnemonic = fromSeed(seed)
 
         return this.getKeyPairFromNode(nodeFromMnemonic, derivationPath)
@@ -343,19 +334,18 @@ export class CosmosProtocolImpl implements CosmosProtocol {
   public async getTransactionsForPublicKey(
     publicKey: PublicKey,
     limit: number,
-    cursor?: CosmosTransactionCursor | undefined
-  ): Promise<AirGapTransactionsWithCursor<CosmosUnits, CosmosTransactionCursor>> {
+    cursor?: CosmosTransactionCursor
+  ): Promise<AirGapTransactionsWithCursor<CosmosTransactionCursor, CosmosUnits>> {
     const address: string = await this.getAddressFromPublicKey(publicKey)
 
-    return this.getTransactionsForAddresses([address], limit, cursor)
+    return this.getTransactionsForAddress(address, limit, cursor)
   }
 
-  public async getTransactionsForAddresses(
-    addresses: string[],
+  public async getTransactionsForAddress(
+    address: string,
     limit: number,
-    cursor?: CosmosTransactionCursor | undefined
-  ): Promise<AirGapTransactionsWithCursor<CosmosUnits, CosmosTransactionCursor>> {
-    const address = cursor?.address ?? addresses[0]
+    cursor?: CosmosTransactionCursor
+  ): Promise<AirGapTransactionsWithCursor<CosmosTransactionCursor, CosmosUnits>> {
     const promises: Promise<CosmosPagedSendTxsResponse>[] = []
     let senderOffset = 0
     let recipientOffset = 0
@@ -478,7 +468,6 @@ export class CosmosProtocolImpl implements CosmosProtocol {
       transactions: result,
       cursor: {
         hasNext: senderOffset + senderLimit < senderTotal || recipientOffset + recipientLimit < recipientTotal,
-        address,
         limit,
         sender: {
           total: senderTotal,
@@ -495,27 +484,15 @@ export class CosmosProtocolImpl implements CosmosProtocol {
   public async getBalanceOfPublicKey(publicKey: PublicKey): Promise<Balance<CosmosUnits>> {
     const address: string = await this.getAddressFromPublicKey(publicKey)
 
-    return this.getBalanceOfAddresses([address])
+    return this.getBalanceOfAddress(address)
   }
 
-  public async getBalanceOfAddresses(addresses: string[]): Promise<Balance<CosmosUnits>> {
-    const promises: Promise<{ total: BigNumber; available: BigNumber }>[] = []
-    for (const address of addresses) {
-      promises.push(this.nodeClient.fetchBalance(address))
-    }
-
-    const sum: { total: BigNumber; available: BigNumber } = await Promise.all(promises).then((balances) => {
-      return balances.reduce((acc, next) => {
-        return {
-          total: acc.total.plus(next.total),
-          available: acc.available.plus(next.available)
-        }
-      })
-    })
+  public async getBalanceOfAddress(address: string): Promise<Balance<CosmosUnits>> {
+    const balance: { total: BigNumber; available: BigNumber } = await this.nodeClient.fetchBalance(address)
 
     return {
-      total: newAmount(sum.total, 'blockchain'),
-      transferable: newAmount(sum.available, 'blockchain')
+      total: newAmount(balance.total, 'blockchain'),
+      transferable: newAmount(balance.available, 'blockchain')
     }
   }
 

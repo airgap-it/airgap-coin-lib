@@ -15,7 +15,6 @@ import {
   AirGapTransactionsWithCursor,
   Amount,
   Balance,
-  BytesStringFormat,
   FeeDefaults,
   FeeEstimation,
   isAmount,
@@ -27,6 +26,7 @@ import {
   newSignature,
   newSignedTransaction,
   newUnsignedTransaction,
+  normalizeToUndefined,
   ProtocolMetadata,
   ProtocolUnitsMetadata,
   PublicKey,
@@ -123,21 +123,9 @@ export class AeternityProtocolImpl implements AeternityProtocol {
     return AeternityAddress.from(publicKey).asString()
   }
 
-  public async convertKeyFormat<K extends SecretKey | PublicKey>(key: K, target: { format: BytesStringFormat }): Promise<K | undefined> {
-    if (key.format === target.format) {
-      return key
-    }
-
-    if (key.type === 'pub') {
-      return Object.assign(key, convertPublicKey(key, target.format))
-    }
-
-    /* private keys are not supported */
-    return undefined
-  }
-
   public async getDetailsFromTransaction(
-    transaction: AeternitySignedTransaction | AeternityUnsignedTransaction
+    transaction: AeternitySignedTransaction | AeternityUnsignedTransaction,
+    _publicKey: PublicKey
   ): Promise<AirGapTransaction<AeternityUnits>[]> {
     switch (transaction.type) {
       case 'signed':
@@ -191,12 +179,12 @@ export class AeternityProtocolImpl implements AeternityProtocol {
 
   // Offline
 
-  public async getKeyPairFromSecret(secret: Secret, derivationPath?: string, password?: string): Promise<KeyPair> {
+  public async getKeyPairFromSecret(secret: Secret, derivationPath?: string): Promise<KeyPair> {
     switch (secret.type) {
       case 'hex':
         return this.getKeyPairFromHexSecret(secret.value, derivationPath)
       case 'mnemonic':
-        return this.getKeyPairFromMnemonic(secret.value, derivationPath, password)
+        return this.getKeyPairFromMnemonic(secret.value, derivationPath, secret.password)
       default:
         assertNever(secret)
         throw new UnsupportedError(Domain.AETERNITY, 'Unsupported secret type.')
@@ -287,47 +275,31 @@ export class AeternityProtocolImpl implements AeternityProtocol {
     publicKey: PublicKey,
     limit: number,
     cursor?: AeternityTransactionCursor
-  ): Promise<AirGapTransactionsWithCursor<'AE', AeternityTransactionCursor>> {
+  ): Promise<AirGapTransactionsWithCursor<AeternityTransactionCursor, AeternityUnits>> {
     const address: string = await this.getAddressFromPublicKey(publicKey)
 
-    return this.getTransactionsForAddresses([address], limit, cursor)
+    return this.getTransactionsForAddress(address, limit, cursor)
   }
 
-  public async getTransactionsForAddresses(
-    addresses: string[],
+  public async getTransactionsForAddress(
+    address: string,
     limit: number,
     cursor?: AeternityTransactionCursor
-  ): Promise<AirGapTransactionsWithCursor<'AE', AeternityTransactionCursor>> {
-    const groupedTransactions = await Promise.all(
-      addresses.map(async (address) => {
-        const endpoint = cursor === undefined ? `/txs/backward?account=${address}&limit=${limit}` : cursor.next[address]
-        const url = endpoint !== undefined ? `${this.options.network.rpcUrl}/mdw/${endpoint.replace(/^\/+/, '')}` : undefined
-        const response = url !== undefined ? await axios.get(url) : undefined
+  ): Promise<AirGapTransactionsWithCursor<AeternityTransactionCursor, AeternityUnits>> {
+    const endpoint = cursor === undefined ? `/txs/backward?account=${address}&limit=${limit}` : cursor.next
+    const url = endpoint !== undefined ? `${this.options.network.rpcUrl}/mdw/${endpoint.replace(/^\/+/, '')}` : undefined
+    const response = url !== undefined ? await axios.get(url) : undefined
 
-        return {
-          address,
-          data: response?.data
-        }
-      })
-    )
+    const nodeTransactions = response?.data?.data || []
+    const next = normalizeToUndefined(response?.data?.next)
 
-    const [next, allTransactions] = groupedTransactions.reduce(
-      (acc, curr) => {
-        const nextAcc = curr.data?.next ? Object.assign(acc[0], { [curr.address]: curr.data.next }) : acc[0]
-        const transactionsAcc = acc[1].concat(curr.data?.data || [])
-
-        return [nextAcc, transactionsAcc]
-      },
-      [{}, [] as any[]]
-    )
-
-    const transactions: AirGapTransaction<AeternityUnits>[] = allTransactions.map((obj) => {
+    const transactions: AirGapTransaction<AeternityUnits>[] = nodeTransactions.map((obj) => {
       const parsedTimestamp = parseInt(obj.micro_time, 10)
 
       return {
         from: [obj.tx.sender_id],
         to: [obj.tx.recipient_id],
-        isInbound: addresses.indexOf(obj.tx.recipient_id) !== -1,
+        isInbound: address === obj.tx.recipient_id,
 
         amount: newAmount(obj.tx.amount, 'blockchain'),
         fee: newAmount(obj.tx.fee, 'blockchain'),
@@ -348,7 +320,7 @@ export class AeternityProtocolImpl implements AeternityProtocol {
     return {
       transactions,
       cursor: {
-        hasNext: Object.values(next).some((value) => value !== undefined),
+        hasNext: next !== undefined,
         next
       }
     }
@@ -357,22 +329,21 @@ export class AeternityProtocolImpl implements AeternityProtocol {
   public async getBalanceOfPublicKey(publicKey: PublicKey): Promise<Balance<AeternityUnits>> {
     const address: string = await this.getAddressFromPublicKey(publicKey)
 
-    return this.getBalanceOfAddresses([address])
+    return this.getBalanceOfAddress(address)
   }
 
-  public async getBalanceOfAddresses(addresses: string[]): Promise<Balance<AeternityUnits>> {
-    let balance = new BigNumber(0)
+  public async getBalanceOfAddress(address: string): Promise<Balance<AeternityUnits>> {
+    let balance: BigNumber
 
-    for (const address of addresses) {
-      try {
-        const { data } = await axios.get(`${this.options.network.rpcUrl}/v2/accounts/${address}`)
-        balance = balance.plus(new BigNumber(data.balance))
-      } catch (error) {
-        // if node returns 404 (which means 'no account found'), go with 0 balance
-        if (error.response && error.response.status !== 404) {
-          throw new NetworkError(Domain.AETERNITY, error as AxiosError)
-        }
+    try {
+      const { data } = await axios.get(`${this.options.network.rpcUrl}/v2/accounts/${address}`)
+      balance = new BigNumber(data.balance)
+    } catch (error) {
+      // if node returns 404 (which means 'no account found'), go with 0 balance
+      if (error.response && error.response.status !== 404) {
+        throw new NetworkError(Domain.AETERNITY, error as AxiosError)
       }
+      balance = new BigNumber(0)
     }
 
     return { total: newAmount(balance.toString(10), 'blockchain') }

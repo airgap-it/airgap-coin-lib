@@ -35,16 +35,15 @@ Promise.all(
 
         await protocol.stub.transactionListStub(protocol, address)
 
-        const firstTransactions = await protocol.lib.getTransactionsForAddresses([address], limitFromResponseSet(mockTransactions.first))
-        const nextTransactions = await protocol.lib.getTransactionsForAddresses(
-          [address],
+        const firstTransactions = await protocol.lib.getTransactionsForAddress(address, limitFromResponseSet(mockTransactions.first))
+        const nextTransactions = await protocol.lib.getTransactionsForAddress(
+          address,
           limitFromResponseSet(mockTransactions.next),
           firstTransactions.cursor
         )
 
         expect(firstTransactions.transactions.length).to.be.eq(limitFromResponseSet(mockTransactions.first))
         expect(firstTransactions.cursor.hasNext, 'expected first transaction cursor to have `hasNext: true`').to.be.true
-        expect(firstTransactions.cursor.address).to.eq(address)
         expect(firstTransactions.cursor.sender.total).to.eq(parseInt(mockTransactions.first.sender.pagination.total, 10))
         expect(firstTransactions.cursor.sender.offset).to.eq(mockTransactions.first.sender.txs.length)
         expect(firstTransactions.cursor.recipient.total).to.eq(parseInt(mockTransactions.first.recipient.pagination.total, 10))
@@ -52,7 +51,6 @@ Promise.all(
 
         expect(nextTransactions.transactions.length).to.be.eq(limitFromResponseSet(mockTransactions.next))
         expect(nextTransactions.cursor.hasNext, 'expected next transaction cursor to have `hasNext: false`').to.be.false
-        expect(nextTransactions.cursor.address).to.eq(address)
         expect(nextTransactions.cursor.sender.total).to.eq(parseInt(mockTransactions.next.sender.pagination.total, 10))
         expect(nextTransactions.cursor.sender.offset).to.eq(
           mockTransactions.first.sender.txs.length + mockTransactions.next.sender.txs.length
