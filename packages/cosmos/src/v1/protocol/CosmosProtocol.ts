@@ -619,12 +619,10 @@ export function createCosmosProtocol(options: RecursivePartial<CosmosProtocolOpt
   return new CosmosProtocolImpl(options)
 }
 
-const MAINNET_NAME: string = 'Mainnet'
-const NODE_URL: string = 'https://cosmos-node.prod.gke.papers.tech'
 export const COSMOS_MAINNET_PROTOCOL_NETWORK: CosmosProtocolNetwork = {
-  name: MAINNET_NAME,
+  name: 'Mainnet',
   type: 'mainnet',
-  rpcUrl: NODE_URL
+  rpcUrl: 'https://cosmos-node.prod.gke.papers.tech'
 }
 
 const DEFAULT_COSMOS_PROTOCOL_NETWORK: CosmosProtocolNetwork = COSMOS_MAINNET_PROTOCOL_NETWORK

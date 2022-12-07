@@ -33,8 +33,9 @@ const itIf = (condition, title, test) => {
 Promise.all(
   protocols.map(async (protocol: TestProtocolSpec) => {
     const protocolSupportsHD = await protocol.lib.getSupportsHD()
+    const protocolIdentifier = await protocol.lib.getIdentifier()
 
-    describe(`ICoinProtocol ${protocol.name}`, () => {
+    describe(`ICoinProtocol ${protocol.name} (v0)`, () => {
       describe(`Blockexplorer`, async () => {
         const address = 'dummyAddress'
         const txId = 'dummyTxId'
@@ -291,7 +292,7 @@ Promise.all(
             expect(airgapTx.amount, 'amount does not match').to.deep.equal(protocol.txs[0].amount)
             expect(airgapTx.fee, 'fee does not match').to.deep.equal(protocol.txs[0].fee)
 
-            expect(airgapTx.protocolIdentifier, 'protocol-identifier does not match').to.equal(await protocol.lib.getIdentifier())
+            expect(airgapTx.protocolIdentifier, 'protocol-identifier does not match').to.equal(protocolIdentifier)
 
             expect(airgapTx.transactionDetails, 'extras should exist').to.not.be.undefined
           }
@@ -323,7 +324,7 @@ Promise.all(
             ).to.deep.equal(tx.from.sort().map((obj) => obj.toLowerCase()))
             expect(airgapTx.amount).to.deep.equal(protocol.txs[0].amount)
             expect(airgapTx.fee).to.deep.equal(protocol.txs[0].fee)
-            expect(airgapTx.protocolIdentifier).to.equal(await protocol.lib.getIdentifier())
+            expect(airgapTx.protocolIdentifier).to.equal(protocolIdentifier)
             expect(airgapTx.transactionDetails, 'extras should exist').to.not.be.undefined
           }
         })
@@ -347,15 +348,13 @@ Promise.all(
         })
       })
 
-      describe(`Sign Message`, async () => {
+      describe(`Sign Message`, () => {
         afterEach(async () => {
           sinon.restore()
         })
 
         itIf(
-          protocol.messages.length > 0 &&
-            (await protocol.lib.getIdentifier()) !== 'kusama' &&
-            (await protocol.lib.getIdentifier()) !== 'polkadot',
+          protocol.messages.length > 0 && protocolIdentifier !== 'kusama' && protocolIdentifier !== 'polkadot',
           'signMessage - Is able to sign a message using a PrivateKey',
           async () => {
             const publicKey = await protocol.lib.getPublicKeyFromMnemonic(
@@ -443,7 +442,7 @@ Promise.all(
         itIf(protocol.encryptAsymmetric.length > 0, 'decryptAsymmetric - Is able to decrypt a message using a PrivateKey', async () => {
           const publicKey = await protocol.lib.getPublicKeyFromMnemonic(protocol.mnemonic(), await protocol.lib.getStandardDerivationPath())
           const privateKey =
-            (await protocol.lib.getIdentifier()) === 'btc' || (await protocol.lib.getIdentifier()) === 'grs'
+            protocolIdentifier === 'btc' || protocolIdentifier === 'grs'
               ? await protocol.lib.getExtendedPrivateKeyFromMnemonic(protocol.mnemonic(), await protocol.lib.getStandardDerivationPath())
               : await protocol.lib.getPrivateKeyFromMnemonic(protocol.mnemonic(), await protocol.lib.getStandardDerivationPath())
 
@@ -469,7 +468,7 @@ Promise.all(
               await protocol.lib.getStandardDerivationPath()
             )
             const privateKey =
-              (await protocol.lib.getIdentifier()) === 'btc' || (await protocol.lib.getIdentifier()) === 'grs'
+              protocolIdentifier === 'btc' || protocolIdentifier === 'grs'
                 ? await protocol.lib.getExtendedPrivateKeyFromMnemonic(protocol.mnemonic(), await protocol.lib.getStandardDerivationPath())
                 : await protocol.lib.getPrivateKeyFromMnemonic(protocol.mnemonic(), await protocol.lib.getStandardDerivationPath())
 
@@ -498,7 +497,7 @@ Promise.all(
 
         itIf(protocol.encryptAES.length > 0, 'decryptAES - Is able to encrypt a message using a PrivateKey', async () => {
           const privateKey =
-            (await protocol.lib.getIdentifier()) === 'btc' || (await protocol.lib.getIdentifier()) === 'grs'
+            protocolIdentifier === 'btc' || protocolIdentifier === 'grs'
               ? await protocol.lib.getExtendedPrivateKeyFromMnemonic(protocol.mnemonic(), await protocol.lib.getStandardDerivationPath())
               : await protocol.lib.getPrivateKeyFromMnemonic(protocol.mnemonic(), await protocol.lib.getStandardDerivationPath())
 
@@ -514,7 +513,7 @@ Promise.all(
 
         itIf(protocol.encryptAES.length > 0, 'encryptAES and decryptAES - Is able to encrypt and decrypt a message', async () => {
           const privateKey =
-            (await protocol.lib.getIdentifier()) === 'btc' || (await protocol.lib.getIdentifier()) === 'grs'
+            protocolIdentifier === 'btc' || protocolIdentifier === 'grs'
               ? await protocol.lib.getExtendedPrivateKeyFromMnemonic(protocol.mnemonic(), await protocol.lib.getStandardDerivationPath())
               : await protocol.lib.getPrivateKeyFromMnemonic(protocol.mnemonic(), await protocol.lib.getStandardDerivationPath())
 

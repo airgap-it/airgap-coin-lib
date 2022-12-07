@@ -488,14 +488,11 @@ export function createAeternityProtocol(options: RecursivePartial<AeternityProto
   return new AeternityProtocolImpl(options)
 }
 
-const MAINNET_NAME: string = 'Mainnet'
-const NODE_URL: string = 'https://mainnet.aeternity.io'
-const FEES_URL: string = 'https://api-airgap.gke.papers.tech/fees'
 export const AETERNITY_MAINNET_PROTOCOL_NETWORK: AeternityProtocolNetwork = {
-  name: MAINNET_NAME,
+  name: 'Mainnet',
   type: 'mainnet',
-  rpcUrl: NODE_URL,
-  feesUrl: FEES_URL
+  rpcUrl: 'https://mainnet.aeternity.io',
+  feesUrl: 'https://api-airgap.gke.papers.tech/fees'
 }
 
 const DEFAULT_AETERNITY_PROTOCOL_NETWORK: AeternityProtocolNetwork = AETERNITY_MAINNET_PROTOCOL_NETWORK

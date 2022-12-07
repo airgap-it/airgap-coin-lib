@@ -60,12 +60,12 @@ export interface OnlineGeneric<
 }
 
 type TypedAddressCursor<G extends Partial<BaseGeneric>> = Complement<BaseGeneric, G>['AddressCursor']
-type TypedAddressResult<G extends Partial<BaseGeneric>> = Complement<BaseGeneric, G>['AddressResult']
+type TypedAddressResult<G extends Partial<BaseGeneric>> = Complement<BaseGeneric<TypedAddressCursor<G>>, G>['AddressResult']
 
 type TypedProtocolNetwork<G extends Partial<OnlineGeneric>> = Complement<OnlineGeneric, G>['ProtocolNetwork']
 
 type TypedUnits<G extends Partial<BaseGeneric>> = Complement<BaseGeneric, G>['Units']
-type TypedFeeUnits<G extends Partial<BaseGeneric>> = Complement<BaseGeneric, G>['FeeUnits']
+type TypedFeeUnits<G extends Partial<BaseGeneric>> = Complement<BaseGeneric<any, any, TypedUnits<G>>, G>['FeeUnits']
 
 type TypedSignedTransaction<G extends Partial<BaseGeneric>> = Complement<BaseGeneric, G>['SignedTransaction']
 type TypedUnsignedTransaction<G extends Partial<BaseGeneric>> = Complement<BaseGeneric, G>['UnsignedTransaction']
