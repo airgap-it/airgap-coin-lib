@@ -501,16 +501,16 @@ export class BitcoinProtocolImpl implements BitcoinProtocol {
   ): Promise<AirGapTransactionsWithCursor<BitcoinTransactionCursor, BitcoinUnits>> {
     switch (publicKey.type) {
       case 'pub':
-        return this.getTransactionsFromNonExtendedPublicKey(publicKey, limit, cursor)
+        return this.getTransactionsForNonExtendedPublicKey(publicKey, limit, cursor)
       case 'xpub':
-        return this.getTransactionsFromExtendedPublicKey(publicKey, limit, cursor)
+        return this.getTransactionsForExtendedPublicKey(publicKey, limit, cursor)
       default:
         assertNever(publicKey)
         throw new UnsupportedError(Domain.BITCOIN, 'Public key type not supported')
     }
   }
 
-  private async getTransactionsFromNonExtendedPublicKey(
+  private async getTransactionsForNonExtendedPublicKey(
     publicKey: PublicKey,
     limit: number,
     cursor?: BitcoinTransactionCursor
@@ -520,7 +520,7 @@ export class BitcoinProtocolImpl implements BitcoinProtocol {
     return this.getTransactionsForAddresses([address], limit, cursor)
   }
 
-  private async getTransactionsFromExtendedPublicKey(
+  private async getTransactionsForExtendedPublicKey(
     extendedPublicKey: ExtendedPublicKey,
     limit: number,
     cursor?: BitcoinTransactionCursor
@@ -1007,14 +1007,11 @@ export function createBitcoinProtocol(options: RecursivePartial<BitcoinProtocolO
   return new BitcoinProtocolImpl(options)
 }
 
-const MAINNET_NAME: string = 'Mainnet'
-const NODE_URL: string = ''
-const INDEXER_API: string = 'https://bitcoin.prod.gke.papers.tech'
 export const BITCOIN_MAINNET_PROTOCOL_NETWORK: BitcoinStandardProtocolNetwork = {
-  name: MAINNET_NAME,
+  name: 'Mainnet',
   type: 'mainnet',
-  rpcUrl: NODE_URL,
-  indexerApi: INDEXER_API
+  rpcUrl: '',
+  indexerApi: 'https://bitcoin.prod.gke.papers.tech'
 }
 
 const DEFAULT_BITCOIN_PROTOCOL_NETWORK: BitcoinStandardProtocolNetwork = BITCOIN_MAINNET_PROTOCOL_NETWORK

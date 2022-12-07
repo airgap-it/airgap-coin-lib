@@ -13,7 +13,7 @@ const protocols = [new GroestlcoinProtocolSpec()]
 
 Promise.all(
   protocols.map(async (protocol: TestProtocolSpec) => {
-    describe(`Transaction Paging`, () => {
+    describe(`Transaction Paging (v0)`, () => {
       beforeEach(async () => {
         sinon
           .stub(protocol.lib, 'getTransactionsFromAddresses')

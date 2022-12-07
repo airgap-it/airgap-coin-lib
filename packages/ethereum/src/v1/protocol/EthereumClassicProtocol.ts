@@ -30,16 +30,12 @@ export function createEthereumClassicProtocol(options: RecursivePartial<Ethereum
   return new EthereumClassicProtocolImpl(options)
 }
 
-const MAINNET_NAME: string = 'Mainnet'
-const NODE_URL: string = 'https://mew.epool.io'
-const CHAIN_ID: number = 61
-const BLOCK_EXPLORER_API: string = 'https://classic.trustwalletapp.com'
 export const ETHEREUM_CLASSIC_MAINNET_PROTOCOL_NETWORK: EthereumProtocolNetwork = {
-  name: MAINNET_NAME,
+  name: 'Mainnet',
   type: 'mainnet',
-  rpcUrl: NODE_URL,
-  chainId: CHAIN_ID,
-  blockExplorerApi: BLOCK_EXPLORER_API
+  rpcUrl: 'https://mew.epool.io',
+  chainId: 61,
+  blockExplorerApi: 'https://classic.trustwalletapp.com'
 }
 
 const DEFAULT_ETHEREUM_CLASSIC_PROTOCOL_NETWORK: EthereumProtocolNetwork = ETHEREUM_CLASSIC_MAINNET_PROTOCOL_NETWORK

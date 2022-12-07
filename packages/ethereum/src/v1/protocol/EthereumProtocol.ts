@@ -252,16 +252,12 @@ export function createEthereumProtocol(options: RecursivePartial<EthereumProtoco
   return new EthereumProtocolImpl(options)
 }
 
-const MAINNET_NAME: string = 'Mainnet'
-const NODE_URL: string = 'https://eth-rpc-proxy.airgap.prod.gke.papers.tech'
-const CHAIN_ID: number = 1
-const BLOCK_EXPLORER_API: string = 'https://api.etherscan.io'
 export const ETHEREUM_MAINNET_PROTOCOL_NETWORK: EthereumProtocolNetwork = {
-  name: MAINNET_NAME,
+  name: 'Mainnet',
   type: 'mainnet',
-  rpcUrl: NODE_URL,
-  chainId: CHAIN_ID,
-  blockExplorerApi: BLOCK_EXPLORER_API
+  rpcUrl: 'https://eth-rpc-proxy.airgap.prod.gke.papers.tech',
+  chainId: 1,
+  blockExplorerApi: 'https://api.etherscan.io'
 }
 
 const DEFAULT_ETHEREUM_PROTOCOL_NETWORK: EthereumProtocolNetwork = ETHEREUM_MAINNET_PROTOCOL_NETWORK

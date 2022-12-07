@@ -30,16 +30,12 @@ export function createEthereumRopstenProtocol(options: RecursivePartial<Ethereum
   return new EthereumRopstenProtocolImpl(options)
 }
 
-const MAINNET_NAME: string = 'Mainnet'
-const NODE_URL: string = 'https://ropsten.infura.io'
-const CHAIN_ID: number = 3
-const BLOCK_EXPLORER_API: string = 'https://api-ropsten.etherscan.io/'
 export const ETHEREUM_ROPSTEN_MAINNET_PROTOCOL_NETWORK: EthereumProtocolNetwork = {
-  name: MAINNET_NAME,
+  name: 'Mainnet',
   type: 'mainnet',
-  rpcUrl: NODE_URL,
-  chainId: CHAIN_ID,
-  blockExplorerApi: BLOCK_EXPLORER_API
+  rpcUrl: 'https://ropsten.infura.io',
+  chainId: 3,
+  blockExplorerApi: 'https://api-ropsten.etherscan.io/'
 }
 
 const DEFAULT_ETHEREUM_ROPSTEN_PROTOCOL_NETWORK: EthereumProtocolNetwork = ETHEREUM_ROPSTEN_MAINNET_PROTOCOL_NETWORK

@@ -6,6 +6,7 @@ import { newSignedTransaction, newUnsignedTransaction } from './factories/transa
 import { newErrorUIAlert, newInfoUIAlert, newSuccessUIAlert, newWarningUIAlert } from './factories/ui/alert'
 import { newPlainUIText } from './factories/ui/text'
 import { AirGapModule } from './module/module'
+import { ModuleNetworkRegistry } from './module/module-network-registry'
 import { MultiAddressAccountExtension, MultiAddressAccountProtocol } from './protocol/extensions/address/MultiAddressAccountExtension'
 import {
   MultiAddressExtendedPublicKeyProtocol,
@@ -86,7 +87,7 @@ export {
 
 // Module
 
-export { AirGapModule }
+export { AirGapModule, ModuleNetworkRegistry }
 
 // Protocol
 
