@@ -242,7 +242,11 @@ class ERC20TokenImpl extends EthereumBaseProtocolImpl<string> implements ERC20To
     return { total: newAmount(totalBalance, 'blockchain') }
   }
 
-  public async getTransactionMaxAmountWithPublicKey(publicKey: PublicKey, to: string[], fee?: Amount<EthereumUnits>): Promise<Amount> {
+  public async getTransactionMaxAmountWithPublicKey(
+    publicKey: PublicKey,
+    to: string[],
+    configuration?: TransactionConfiguration<EthereumUnits>
+  ): Promise<Amount> {
     const balance: Balance = await this.getBalanceOfPublicKey(publicKey)
 
     return balance.transferable ?? balance.total
@@ -257,15 +261,15 @@ class ERC20TokenImpl extends EthereumBaseProtocolImpl<string> implements ERC20To
       throw new ConditionViolationError(Domain.ETHEREUM, 'you cannot have 0 transaction details')
     }
 
-    let targetFee: Amount<EthereumUnits>
+    let fee: Amount<EthereumUnits>
     if (configuration?.fee !== undefined) {
-      targetFee = configuration.fee
+      fee = configuration.fee
     } else {
       const estimatedFee: FeeEstimation<EthereumUnits> = await this.getTransactionFeeWithPublicKey(publicKey, details)
-      targetFee = isAmount(estimatedFee) ? estimatedFee : estimatedFee.medium
+      fee = isAmount(estimatedFee) ? estimatedFee : estimatedFee.medium
     }
 
-    const wrappedFee: BigNumber = new BigNumber(newAmount(targetFee).blockchain(this.feeUnits).value)
+    const wrappedFee: BigNumber = new BigNumber(newAmount(fee).blockchain(this.feeUnits).value)
     const wrappedAmount: BigNumber = new BigNumber(newAmount(details[0].amount).blockchain(this.units).value)
 
     const balance: Balance = await this.getBalanceOfPublicKey(publicKey)

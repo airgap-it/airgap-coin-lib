@@ -1,7 +1,7 @@
 import { CurrencyUnit } from '@airgap/coinlib-core/protocols/ICoinProtocol'
 import { MainProtocolSymbols, ProtocolSymbols } from '@airgap/coinlib-core/utils/ProtocolSymbols'
-import { SubstrateNetwork } from '@airgap/substrate/protocol/SubstrateNetwork'
-import { SubstrateProtocolOptions } from '@airgap/substrate/protocol/SubstrateProtocolOptions'
+import { SubstrateNetwork } from '@airgap/substrate/v0/protocol/SubstrateNetwork'
+import { SubstrateProtocolOptions } from '@airgap/substrate/v0/protocol/SubstrateProtocolOptions'
 
 import { AstarProtocol } from '../astar/AstarProtocol'
 

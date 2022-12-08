@@ -120,7 +120,7 @@ export interface OnlineBip32Protocol<
   getTransactionMaxAmountWithPublicKey(
     publicKey: PublicKey | ExtendedPublicKey,
     to: Address[],
-    fee?: Amount<_FeeUnits>
+    configuration?: TransactionConfiguration<_Units>
   ): Promise<Amount<_Units>> // how should it be calulated? value distributed amongst addresses passed in in `to` or should we limit it to only one recipient?
   getTransactionFeeWithPublicKey(
     publicKey: PublicKey | ExtendedPublicKey,

@@ -352,14 +352,14 @@ export class AeternityProtocolImpl implements AeternityProtocol {
   public async getTransactionMaxAmountWithPublicKey(
     publicKey: PublicKey,
     to: string[],
-    fee?: Amount<AeternityUnits>
+    configuration?: TransactionConfiguration<AeternityUnits>
   ): Promise<Amount<AeternityUnits>> {
     const balance = await this.getBalanceOfPublicKey(publicKey)
     const balanceBn = new BigNumber(newAmount(balance.total).blockchain(this.units).value)
 
-    let maxFee: BigNumber
-    if (fee !== undefined) {
-      maxFee = new BigNumber(newAmount(fee).blockchain(this.units).value)
+    let fee: BigNumber
+    if (configuration?.fee !== undefined) {
+      fee = new BigNumber(newAmount(configuration.fee).blockchain(this.units).value)
     } else {
       const transactionDetails: TransactionDetails<AeternityUnits>[] = to.map((address) => ({
         to: address,
@@ -367,13 +367,13 @@ export class AeternityProtocolImpl implements AeternityProtocol {
       }))
       const feeEstimation: FeeEstimation<AeternityUnits> = await this.getTransactionFeeWithPublicKey(publicKey, transactionDetails)
       const mediumFee: Amount<AeternityUnits> = isAmount(feeEstimation) ? feeEstimation : feeEstimation.medium
-      maxFee = new BigNumber(newAmount(mediumFee).blockchain(this.units).value)
-      if (maxFee.gte(balanceBn)) {
-        maxFee = new BigNumber(0)
+      fee = new BigNumber(newAmount(mediumFee).blockchain(this.units).value)
+      if (fee.gte(balanceBn)) {
+        fee = new BigNumber(0)
       }
     }
 
-    let amountWithoutFees = balanceBn.minus(maxFee)
+    let amountWithoutFees = balanceBn.minus(fee)
     if (amountWithoutFees.isNegative()) {
       amountWithoutFees = new BigNumber(0)
     }

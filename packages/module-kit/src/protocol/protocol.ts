@@ -154,7 +154,11 @@ export interface _OnlineProtocol<
   getBalanceOfPublicKey(publicKey: PublicKey): Promise<Balance<_Units>>
   getBalanceOfAddress(address: Address): Promise<Balance<_Units>>
 
-  getTransactionMaxAmountWithPublicKey(publicKey: PublicKey, to: Address[], fee?: Amount<_FeeUnits>): Promise<Amount<_Units>> // how should it be calulated? value distributed amongst addresses passed in in `to` or should we limit it to only one recipient?
+  getTransactionMaxAmountWithPublicKey(
+    publicKey: PublicKey,
+    to: Address[],
+    configuration?: TransactionConfiguration<_FeeUnits>
+  ): Promise<Amount<_Units>>
   getTransactionFeeWithPublicKey(publicKey: PublicKey, details: TransactionDetails<_Units>[]): Promise<FeeEstimation<_FeeUnits>>
   prepareTransactionWithPublicKey(
     publicKey: PublicKey,

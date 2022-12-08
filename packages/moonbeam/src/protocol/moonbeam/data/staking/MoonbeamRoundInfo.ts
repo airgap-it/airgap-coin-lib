@@ -1,6 +1,6 @@
-import { SCALEDecoder } from '@airgap/substrate/protocol/common/data/scale/SCALEDecoder'
-import { SCALEInt } from '@airgap/substrate/protocol/common/data/scale/type/SCALEInt'
-import { SubstrateNetwork } from '@airgap/substrate/protocol/SubstrateNetwork'
+import { SCALEDecoder } from '@airgap/substrate/v0/protocol/common/data/scale/SCALEDecoder'
+import { SCALEInt } from '@airgap/substrate/v0/protocol/common/data/scale/type/SCALEInt'
+import { SubstrateNetwork } from '@airgap/substrate/v0/protocol/SubstrateNetwork'
 
 export class MoonbeamRoundInfo {
   public static decode(runtimeVersion: number | undefined, raw: string): MoonbeamRoundInfo {

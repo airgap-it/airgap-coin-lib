@@ -141,14 +141,14 @@ export class MockExtendedProtocol implements AirGapProtocol<{}, 'Bip32Overriding
     return this.nonExtendedProtocol.getDetailsFromTransaction(transaction)
   }
 
-  public async getKeyPairFromSecret(secret: Secret, derivationPath?: string | undefined, password?: string | undefined): Promise<KeyPair> {
+  public async getKeyPairFromSecret(secret: Secret, derivationPath?: string, password?: string): Promise<KeyPair> {
     return this.nonExtendedProtocol.getKeyPairFromSecret(secret, derivationPath, password)
   }
 
   public async getTransactionsForPublicKey(
     publicKey: PublicKey | ExtendedPublicKey,
     limit: number,
-    cursor?: TransactionCursor | undefined
+    cursor?: TransactionCursor
   ): Promise<AirGapTransactionsWithCursor> {
     if (publicKey.type === 'pub') {
       return this.nonExtendedProtocol.getTransactionsForPublicKey(publicKey, limit, cursor)
@@ -168,10 +168,10 @@ export class MockExtendedProtocol implements AirGapProtocol<{}, 'Bip32Overriding
   public async getTransactionMaxAmountWithPublicKey(
     publicKey: PublicKey | ExtendedPublicKey,
     to: string[],
-    fee?: Amount | undefined
+    configuration?: TransactionConfiguration
   ): Promise<Amount> {
     if (publicKey.type === 'pub') {
-      return this.nonExtendedProtocol.getTransactionMaxAmountWithPublicKey(publicKey, to, fee)
+      return this.nonExtendedProtocol.getTransactionMaxAmountWithPublicKey(publicKey, to, configuration)
     }
 
     throw new Error('Method not implemented.')

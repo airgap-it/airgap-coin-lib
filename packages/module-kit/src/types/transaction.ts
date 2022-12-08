@@ -57,6 +57,7 @@ export interface TransactionDetails<_Units extends string = string> {
 export interface TransactionConfiguration<_FeeUnits extends string = string> {
   fee?: Amount<_FeeUnits>
   arbitraryData?: string
+  keepMinBalance?: boolean
 }
 
 // ##### TransactionStatus #####

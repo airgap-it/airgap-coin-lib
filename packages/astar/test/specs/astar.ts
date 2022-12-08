@@ -1,6 +1,6 @@
 import { sr25519Verify, waitReady } from '@polkadot/wasm-crypto'
 import { AirGapWalletStatus } from '@airgap/coinlib-core'
-import { SubstrateNetwork } from '@airgap/substrate/protocol/SubstrateNetwork'
+import { SubstrateNetwork } from '@airgap/substrate/v0/protocol/SubstrateNetwork'
 
 import { AstarProtocol } from '../../src'
 import { TestProtocolSpec } from '../implementations'

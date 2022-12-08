@@ -37,7 +37,8 @@
     "@polkadot/wasm-crypto": "0.20.1"
   },
   "peerDependencies": {
-    "@airgap/coinlib-core": "^0.13.7-beta.0"
+    "@airgap/coinlib-core": "^0.13.7-beta.0",
+    "@airgap/module-kit": "^0.13.7-beta.0"
   },
   "localDependencies": {},
   "nyc": {

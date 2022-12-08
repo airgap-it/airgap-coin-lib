@@ -1,7 +1,7 @@
 // tslint:disable: max-classes-per-file
 import { ProtocolBlockExplorer } from '@airgap/coinlib-core/utils/ProtocolBlockExplorer'
 import { NetworkType } from '@airgap/coinlib-core/utils/ProtocolNetwork'
-import { SubscanBlockExplorer } from '@airgap/substrate/protocol/SubstrateProtocolOptions'
+import { SubscanBlockExplorer } from '@airgap/substrate/v0/protocol/SubstrateProtocolOptions'
 
 import {
   BaseMoonbeamProtocolNetwork,

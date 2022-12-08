@@ -129,7 +129,11 @@ export class MockProtocol implements AirGapProtocol {
     throw new Error('Method not implemented.')
   }
 
-  public async getTransactionMaxAmountWithPublicKey(publicKey: PublicKey, to: string[], fee?: Amount): Promise<Amount> {
+  public async getTransactionMaxAmountWithPublicKey(
+    publicKey: PublicKey,
+    to: string[],
+    configuration?: TransactionConfiguration
+  ): Promise<Amount> {
     throw new Error('Method not implemented.')
   }
 

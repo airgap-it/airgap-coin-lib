@@ -28,6 +28,7 @@ import {
   Secret,
   SecretKey,
   Signature,
+  TransactionConfiguration,
   TransactionDetails
 } from '@airgap/module-kit'
 import * as bitcoin from 'bitcoinjs-lib'
@@ -448,9 +449,9 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
   public async getTransactionMaxAmountWithPublicKey(
     publicKey: PublicKey | ExtendedPublicKey,
     to: string[],
-    fee?: Amount<BitcoinUnits>
+    configuration?: TransactionConfiguration<BitcoinUnits>
   ): Promise<Amount<BitcoinUnits>> {
-    return this.legacy.getTransactionMaxAmountWithPublicKey(publicKey, to, fee)
+    return this.legacy.getTransactionMaxAmountWithPublicKey(publicKey, to, configuration)
   }
 
   public async getTransactionFeeWithPublicKey(

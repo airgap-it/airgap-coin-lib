@@ -1,13 +1,13 @@
 // tslint:disable: max-classes-per-file
 import { ProtocolBlockExplorer } from '@airgap/coinlib-core/utils/ProtocolBlockExplorer'
 import { NetworkType, ProtocolNetwork } from '@airgap/coinlib-core/utils/ProtocolNetwork'
-import { SubstrateNetwork } from '@airgap/substrate/protocol/SubstrateNetwork'
+import { SubstrateNetwork } from '@airgap/substrate/v0/protocol/SubstrateNetwork'
 import {
   SubscanBlockExplorer,
   SubstrateProtocolConfig,
   SubstrateProtocolNetworkExtras,
   SubstrateProtocolOptions
-} from '@airgap/substrate/protocol/SubstrateProtocolOptions'
+} from '@airgap/substrate/v0/protocol/SubstrateProtocolOptions'
 
 import { MoonbeamAccountController } from './controllers/MoonbeamAccountController'
 import { MoonbeamTransactionController } from './controllers/MoonbeamTransactionController'
