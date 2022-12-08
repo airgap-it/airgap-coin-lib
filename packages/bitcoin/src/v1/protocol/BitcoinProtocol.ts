@@ -746,7 +746,7 @@ export class BitcoinProtocolImpl implements BitcoinProtocol {
   public async getTransactionMaxAmountWithPublicKey(
     publicKey: ExtendedPublicKey | PublicKey,
     to: string[],
-    fee?: Amount<BitcoinUnits>
+    configuration?: TransactionConfiguration<BitcoinUnits>
   ): Promise<Amount<BitcoinUnits>> {
     return (await this.getBalanceOfPublicKey(publicKey)).total
   }
@@ -793,15 +793,15 @@ export class BitcoinProtocolImpl implements BitcoinProtocol {
     details: TransactionDetails<BitcoinUnits>[],
     configuration?: TransactionConfiguration<BitcoinUnits>
   ): Promise<BitcoinUnsignedTransaction> {
-    let targetFee: Amount<BitcoinUnits>
+    let fee: Amount<BitcoinUnits>
     if (configuration?.fee !== undefined) {
-      targetFee = configuration.fee
+      fee = configuration.fee
     } else {
       const estimatedFee: FeeEstimation<BitcoinUnits> = await this.getTransactionFeeWithPublicKey(publicKey, details)
-      targetFee = isAmount(estimatedFee) ? estimatedFee : estimatedFee.medium
+      fee = isAmount(estimatedFee) ? estimatedFee : estimatedFee.medium
     }
 
-    const wrappedFee: BigNumber = new BigNumber(newAmount(targetFee).blockchain(this.units).value)
+    const wrappedFee: BigNumber = new BigNumber(newAmount(fee).blockchain(this.units).value)
 
     const transaction: BitcoinUnsignedTransaction = newUnsignedTransaction({
       ins: [],

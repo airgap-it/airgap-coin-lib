@@ -2,16 +2,16 @@
 
 import { ProtocolBlockExplorer } from '@airgap/coinlib-core/utils/ProtocolBlockExplorer'
 import { NetworkType, ProtocolNetwork } from '@airgap/coinlib-core/utils/ProtocolNetwork'
-import { SubstrateNodeClient } from '@airgap/substrate/protocol/common/node/SubstrateNodeClient'
-import { SubstrateAccountController } from '@airgap/substrate/protocol/common/SubstrateAccountController'
-import { SubstrateTransactionController } from '@airgap/substrate/protocol/common/SubstrateTransactionController'
-import { SubstrateNetwork } from '@airgap/substrate/protocol/SubstrateNetwork'
+import { SubstrateNodeClient } from '@airgap/substrate/v0/protocol/common/node/SubstrateNodeClient'
+import { SubstrateAccountController } from '@airgap/substrate/v0/protocol/common/SubstrateAccountController'
+import { SubstrateTransactionController } from '@airgap/substrate/v0/protocol/common/SubstrateTransactionController'
+import { SubstrateNetwork } from '@airgap/substrate/v0/protocol/SubstrateNetwork'
 import {
   SubscanBlockExplorer,
   SubstrateProtocolConfig,
   SubstrateProtocolNetworkExtras,
   SubstrateProtocolOptions
-} from '@airgap/substrate/protocol/SubstrateProtocolOptions'
+} from '@airgap/substrate/v0/protocol/SubstrateProtocolOptions'
 
 const MAINNET_NAME: string = 'Mainnet'
 

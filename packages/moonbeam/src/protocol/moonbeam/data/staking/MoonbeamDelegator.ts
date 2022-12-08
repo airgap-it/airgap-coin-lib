@@ -1,14 +1,14 @@
 // tslint:disable: max-classes-per-file
 import { InvalidValueError } from '@airgap/coinlib-core/errors'
 import { Domain } from '@airgap/coinlib-core/errors/coinlib-error'
-import { DecoderMethod, SCALEDecoder, SCALEDecodeResult } from '@airgap/substrate/protocol/common/data/scale/SCALEDecoder'
-import { SCALEAccountId } from '@airgap/substrate/protocol/common/data/scale/type/SCALEAccountId'
-import { SCALEArray } from '@airgap/substrate/protocol/common/data/scale/type/SCALEArray'
-import { SCALEClass } from '@airgap/substrate/protocol/common/data/scale/type/SCALEClass'
-import { SCALEEnum } from '@airgap/substrate/protocol/common/data/scale/type/SCALEEnum'
-import { SCALEInt } from '@airgap/substrate/protocol/common/data/scale/type/SCALEInt'
-import { SCALEType } from '@airgap/substrate/protocol/common/data/scale/type/SCALEType'
-import { SubstrateNetwork } from '@airgap/substrate/protocol/SubstrateNetwork'
+import { DecoderMethod, SCALEDecoder, SCALEDecodeResult } from '@airgap/substrate/v0/protocol/common/data/scale/SCALEDecoder'
+import { SCALEAccountId } from '@airgap/substrate/v0/protocol/common/data/scale/type/SCALEAccountId'
+import { SCALEArray } from '@airgap/substrate/v0/protocol/common/data/scale/type/SCALEArray'
+import { SCALEClass } from '@airgap/substrate/v0/protocol/common/data/scale/type/SCALEClass'
+import { SCALEEnum } from '@airgap/substrate/v0/protocol/common/data/scale/type/SCALEEnum'
+import { SCALEInt } from '@airgap/substrate/v0/protocol/common/data/scale/type/SCALEInt'
+import { SCALEType } from '@airgap/substrate/v0/protocol/common/data/scale/type/SCALEType'
+import { SubstrateNetwork } from '@airgap/substrate/v0/protocol/SubstrateNetwork'
 
 import { MoonbeamBond } from './MoonbeamBond'
 

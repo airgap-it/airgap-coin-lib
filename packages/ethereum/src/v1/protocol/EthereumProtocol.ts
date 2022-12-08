@@ -186,9 +186,9 @@ class EthereumProtocolImpl extends DefaultEthereumBaseProtocolImpl implements Et
   public async getTransactionMaxAmountWithPublicKey(
     publicKey: PublicKey | ExtendedPublicKey,
     to: string[],
-    fee?: Amount<EthereumUnits>
+    configuration?: TransactionConfiguration<EthereumUnits>
   ): Promise<Amount<EthereumUnits>> {
-    return super.getTransactionMaxAmountWithPublicKey(this.nonExtendedPublicKey(publicKey), to, fee)
+    return super.getTransactionMaxAmountWithPublicKey(this.nonExtendedPublicKey(publicKey), to, configuration)
   }
 
   public async getTransactionFeeWithPublicKey(

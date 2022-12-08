@@ -159,14 +159,14 @@ export abstract class AirGapOnlineWallet<
         throw this.xpubRequiresExtendedProtocolError()
       }
 
-      return this.protocol.getTransactionMaxAmountWithPublicKey(this.publicKey, recipients, fee)
+      return this.protocol.getTransactionMaxAmountWithPublicKey(this.publicKey, recipients, { fee })
     } else {
       if (this.addressIndex) {
         // TODO: what should we do with addressIndex?
         data = Object.assign(data, { addressIndex: this.addressIndex })
       }
 
-      return this.protocol.getTransactionMaxAmountWithPublicKey(this.publicKey, recipients, fee)
+      return this.protocol.getTransactionMaxAmountWithPublicKey(this.publicKey, recipients, { fee })
     }
   }
 

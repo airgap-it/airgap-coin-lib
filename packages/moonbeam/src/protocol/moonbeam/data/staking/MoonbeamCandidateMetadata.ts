@@ -1,8 +1,8 @@
-import { SCALEDecoder } from '@airgap/substrate/protocol/common/data/scale/SCALEDecoder'
-import { SCALEEnum } from '@airgap/substrate/protocol/common/data/scale/type/SCALEEnum'
-import { SCALEInt } from '@airgap/substrate/protocol/common/data/scale/type/SCALEInt'
-import { SCALEOptional } from '@airgap/substrate/protocol/common/data/scale/type/SCALEOptional'
-import { SubstrateNetwork } from '@airgap/substrate/protocol/SubstrateNetwork'
+import { SCALEDecoder } from '@airgap/substrate/v0/protocol/common/data/scale/SCALEDecoder'
+import { SCALEEnum } from '@airgap/substrate/v0/protocol/common/data/scale/type/SCALEEnum'
+import { SCALEInt } from '@airgap/substrate/v0/protocol/common/data/scale/type/SCALEInt'
+import { SCALEOptional } from '@airgap/substrate/v0/protocol/common/data/scale/type/SCALEOptional'
+import { SubstrateNetwork } from '@airgap/substrate/v0/protocol/SubstrateNetwork'
 
 import { MoonbeamCandidateBondLessRequest } from './MoonbeamCandidateBondLessRequest'
 

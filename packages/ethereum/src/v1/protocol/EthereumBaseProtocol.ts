@@ -535,14 +535,14 @@ export abstract class EthereumBaseProtocolImpl<_Units extends string = EthereumU
   public async getTransactionMaxAmountWithPublicKey(
     publicKey: PublicKey,
     to: string[],
-    fee?: Amount<EthereumUnits>
+    configuration?: TransactionConfiguration<EthereumUnits>
   ): Promise<Amount<_Units>> {
     const { total, transferable }: Balance<_Units> = await this.getBalanceOfPublicKey(publicKey)
     const balance = new BigNumber(newAmount(transferable ?? total).blockchain(this.units).value)
 
-    let maxFee: Amount<EthereumUnits>
-    if (fee !== undefined) {
-      maxFee = fee
+    let fee: Amount<EthereumUnits>
+    if (configuration?.fee !== undefined) {
+      fee = configuration.fee
     } else {
       const estimatedFee: FeeEstimation<EthereumUnits> = await this.getTransactionFeeWithPublicKey(
         publicKey,
@@ -551,13 +551,13 @@ export abstract class EthereumBaseProtocolImpl<_Units extends string = EthereumU
           amount: newAmount(balance.div(to.length).decimalPlaces(0, BigNumber.ROUND_CEIL), 'blockchain')
         }))
       )
-      maxFee = newAmount(isAmount(estimatedFee) ? estimatedFee : estimatedFee.medium).blockchain(this.feeUnits)
-      if (balance.lte(maxFee.value)) {
-        maxFee = newAmount(0, 'blockchain')
+      fee = newAmount(isAmount(estimatedFee) ? estimatedFee : estimatedFee.medium).blockchain(this.feeUnits)
+      if (balance.lte(fee.value)) {
+        fee = newAmount(0, 'blockchain')
       }
     }
 
-    let amountWithoutFees: BigNumber = balance.minus(maxFee.value)
+    let amountWithoutFees: BigNumber = balance.minus(fee.value)
     if (amountWithoutFees.isNegative()) {
       amountWithoutFees = new BigNumber(0)
     }

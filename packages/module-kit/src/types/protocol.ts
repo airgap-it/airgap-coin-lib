@@ -1,3 +1,4 @@
+import { Amount } from './amount'
 import { FeeDefaults } from './fee'
 
 export interface ProtocolMetadata<_Units extends string, _FeeUnits extends string = _Units> {
@@ -9,7 +10,7 @@ export interface ProtocolMetadata<_Units extends string, _FeeUnits extends strin
 
   fee?: ProtocolFeeMetadata<_FeeUnits>
   account?: ProtocolAccountMetadata
-  transaction?: ProtocolTransactionMetadata
+  transaction?: ProtocolTransactionMetadata<_Units>
 }
 
 export type ProtocolUnitsMetadata<_Units extends string> = {
@@ -48,7 +49,7 @@ export interface ProtocolAccountMetadata {
   }
 }
 
-export interface ProtocolTransactionMetadata {
+export interface ProtocolTransactionMetadata<_Units extends string> {
   arbitraryData?:
     | ProtocolTransactionArbitraryDataMetadata
     | {
@@ -56,6 +57,11 @@ export interface ProtocolTransactionMetadata {
         root?: ProtocolTransactionArbitraryDataMetadata
         inner?: ProtocolTransactionArbitraryDataMetadata
       }
+
+  minBalance?: {
+    amount: Amount<_Units>
+    name?: string
+  }
 }
 
 export interface ProtocolTransactionArbitraryDataMetadata {

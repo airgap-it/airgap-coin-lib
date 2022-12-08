@@ -54,6 +54,8 @@ import { AirGapUIAction } from './types/ui/action'
 import { AirGapUIAlert } from './types/ui/alert'
 import { AirGapUIText } from './types/ui/text'
 import { isAmount } from './utils/amount'
+import { implementsInterface, Schema } from './utils/interface'
+import { isAnyKey, isExtendedPublicKey, isExtendedSecretKey, isPublicKey, isSecretKey } from './utils/key'
 import { normalizeToUndefined } from './utils/normalize'
 import {
   hasMultiAddressAccounts,
@@ -167,6 +169,13 @@ export {
 
 export {
   isAmount,
+  Schema,
+  implementsInterface,
+  isAnyKey,
+  isSecretKey,
+  isExtendedSecretKey,
+  isPublicKey,
+  isExtendedPublicKey,
   isBip32Protocol,
   hasMultiAddressAccounts,
   hasMultiAddressPublicKeys,

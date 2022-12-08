@@ -499,14 +499,14 @@ export class CosmosProtocolImpl implements CosmosProtocol {
   public async getTransactionMaxAmountWithPublicKey(
     publicKey: PublicKey,
     to: string[],
-    fee?: Amount<CosmosUnits>
+    configuration?: TransactionConfiguration<CosmosUnits>
   ): Promise<Amount<CosmosUnits>> {
     const { total, transferable }: Balance<CosmosUnits> = await this.getBalanceOfPublicKey(publicKey)
     const balance = new BigNumber(newAmount(transferable ?? total).blockchain(this.units).value)
 
-    let maxFee: Amount<CosmosUnits>
-    if (fee !== undefined) {
-      maxFee = fee
+    let fee: Amount<CosmosUnits>
+    if (configuration?.fee !== undefined) {
+      fee = configuration.fee
     } else {
       const estimatedFee: FeeEstimation<CosmosUnits> = await this.getTransactionFeeWithPublicKey(
         publicKey,
@@ -515,14 +515,14 @@ export class CosmosProtocolImpl implements CosmosProtocol {
           amount: newAmount(balance.div(to.length).decimalPlaces(0, BigNumber.ROUND_CEIL), 'blockchain')
         }))
       )
-      maxFee = newAmount(isAmount(estimatedFee) ? estimatedFee : estimatedFee.medium).blockchain(this.units)
-      if (balance.lte(maxFee.value)) {
-        maxFee = newAmount(0, 'blockchain')
+      fee = newAmount(isAmount(estimatedFee) ? estimatedFee : estimatedFee.medium).blockchain(this.units)
+      if (balance.lte(fee.value)) {
+        fee = newAmount(0, 'blockchain')
       }
     }
-    maxFee = newAmount(maxFee).blockchain(this.units)
+    fee = newAmount(fee).blockchain(this.units)
 
-    let amountWithoutFees: BigNumber = balance.minus(maxFee.value)
+    let amountWithoutFees: BigNumber = balance.minus(fee.value)
     if (amountWithoutFees.isNegative()) {
       amountWithoutFees = new BigNumber(0)
     }
@@ -542,15 +542,15 @@ export class CosmosProtocolImpl implements CosmosProtocol {
     details: TransactionDetails<CosmosUnits>[],
     configuration?: TransactionConfiguration<CosmosUnits>
   ): Promise<CosmosUnsignedTransaction> {
-    let targetFee: Amount<CosmosUnits>
+    let fee: Amount<CosmosUnits>
     if (configuration?.fee !== undefined) {
-      targetFee = configuration.fee
+      fee = configuration.fee
     } else {
       const estimatedFee: FeeEstimation<CosmosUnits> = await this.getTransactionFeeWithPublicKey(publicKey, details)
-      targetFee = isAmount(estimatedFee) ? estimatedFee : estimatedFee.medium
+      fee = isAmount(estimatedFee) ? estimatedFee : estimatedFee.medium
     }
 
-    const wrappedFee: BigNumber = new BigNumber(newAmount(targetFee).blockchain(this.units).value)
+    const wrappedFee: BigNumber = new BigNumber(newAmount(fee).blockchain(this.units).value)
 
     const address: string = await this.getAddressFromPublicKey(publicKey)
     const nodeInfo: CosmosNodeInfo = await this.nodeClient.fetchNodeInfo()

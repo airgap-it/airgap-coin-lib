@@ -1,8 +1,8 @@
-import { SCALEDecoder, SCALEDecodeResult } from '@airgap/substrate/protocol/common/data/scale/SCALEDecoder'
-import { SCALEClass } from '@airgap/substrate/protocol/common/data/scale/type/SCALEClass'
-import { SCALEInt } from '@airgap/substrate/protocol/common/data/scale/type/SCALEInt'
-import { SCALEType } from '@airgap/substrate/protocol/common/data/scale/type/SCALEType'
-import { SubstrateNetwork } from '@airgap/substrate/protocol/SubstrateNetwork'
+import { SCALEDecoder, SCALEDecodeResult } from '@airgap/substrate/v0/protocol/common/data/scale/SCALEDecoder'
+import { SCALEClass } from '@airgap/substrate/v0/protocol/common/data/scale/type/SCALEClass'
+import { SCALEInt } from '@airgap/substrate/v0/protocol/common/data/scale/type/SCALEInt'
+import { SCALEType } from '@airgap/substrate/v0/protocol/common/data/scale/type/SCALEType'
+import { SubstrateNetwork } from '@airgap/substrate/v0/protocol/SubstrateNetwork'
 
 export class MoonbeamCandidateBondLessRequest extends SCALEClass {
   public static decode(runtimeVersion: number | undefined, raw: string): SCALEDecodeResult<MoonbeamCandidateBondLessRequest> {
