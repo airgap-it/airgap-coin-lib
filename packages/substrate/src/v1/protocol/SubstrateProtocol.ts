@@ -23,7 +23,7 @@ import {
   TransactionConfiguration,
   TransactionDetails
 } from '@airgap/module-kit'
-import { SubstrateBlockExplorer } from '../block-explorer/SubstrateBlockExplorer'
+import { SubstrateBlockExplorerClient } from '../block-explorer/SubstrateBlockExplorerClient'
 import { SubstrateAccountController } from '../controller/account/SubstrateAccountController'
 import { SubstrateTransactionController, SubstrateTransactionParameters } from '../controller/transaction/SubstrateTransactionController'
 import { SubstrateCryptoClient } from '../crypto/SubstrateCryptoClient'
@@ -40,10 +40,10 @@ import { convertSignature } from '../utils/signature'
 
 // Interface
 
-export interface SubstrateProtocol<_Units extends string>
+export interface SubstrateProtocol<_Units extends string, _ProtocolNetwork extends SubstrateProtocolNetwork>
   extends AirGapProtocol<{
     AddressResult: Address
-    ProtocolNetwork: SubstrateProtocolNetwork
+    ProtocolNetwork: _ProtocolNetwork
     Units: _Units
     UnsignedTransaction: SubstrateUnsignedTransaction
     SignedTransaction: SubstrateSignedTransaction
@@ -55,27 +55,27 @@ export interface SubstrateProtocol<_Units extends string>
 export abstract class SubstrateProtocolImpl<
   _Units extends string,
   _ProtocolConfiguration extends SubstrateProtocolConfiguration,
+  _ProtocolNetwork extends SubstrateProtocolNetwork = SubstrateProtocolNetwork,
   _NodeClient extends SubstrateNodeClient<_ProtocolConfiguration> = SubstrateNodeClient<_ProtocolConfiguration>,
   _AccountController extends SubstrateAccountController<_ProtocolConfiguration> = SubstrateAccountController<_ProtocolConfiguration>,
   _TransactionController extends SubstrateTransactionController<_ProtocolConfiguration> = SubstrateTransactionController<_ProtocolConfiguration>
-> implements SubstrateProtocol<_Units>
-{
+> implements SubstrateProtocol<_Units, _ProtocolNetwork> {
   protected readonly configuration: _ProtocolConfiguration
 
-  private readonly accountController: _AccountController
-  private readonly transactionController: _TransactionController
+  public readonly accountController: _AccountController
+  public readonly transactionController: _TransactionController
 
-  private readonly nodeClient: _NodeClient
-  private readonly blockExplorer: SubstrateBlockExplorer
+  public readonly nodeClient: _NodeClient
+  public readonly blockExplorer: SubstrateBlockExplorerClient
 
   private readonly cryptoClient: SubstrateCryptoClient
 
   protected constructor(
-    options: SubstrateProtocolOptions<_Units, _ProtocolConfiguration>,
+    options: SubstrateProtocolOptions<_Units, _ProtocolConfiguration, _ProtocolNetwork>,
     nodeClient: _NodeClient,
     accountController: _AccountController,
     transactionController: _TransactionController,
-    blockExplorer: SubstrateBlockExplorer
+    blockExplorer: SubstrateBlockExplorerClient
   ) {
     this.metadata = options.metadata
     this.network = options.network
@@ -166,20 +166,28 @@ export abstract class SubstrateProtocolImpl<
   public async encryptAESWithSecretKey(payload: string, secretKey: SecretKey): Promise<string> {
     const hexSecretKey: SecretKey = convertSecretKey(secretKey, 'hex')
 
-    return this.cryptoClient.encryptAES(payload, hexSecretKey.value)
+    // https://github.com/w3f/schnorrkel/blob/master/src/keys.rs
+    // https://github.com/polkadot-js/wasm/blob/master/packages/wasm-crypto/src/sr25519.rs
+    const bufferSecretKey: Buffer = Buffer.from(hexSecretKey.value, 'hex').slice(0, 32) // Substrate key is 32 bytes key + 32 bytes nonce
+
+    return this.cryptoClient.encryptAES(payload, bufferSecretKey.toString('hex'))
   }
 
   public async decryptAESWithSecretKey(payload: string, secretKey: SecretKey): Promise<string> {
     const hexSecretKey: SecretKey = convertSecretKey(secretKey, 'hex')
 
-    return this.cryptoClient.decryptAES(payload, hexSecretKey.value)
+    // https://github.com/w3f/schnorrkel/blob/master/src/keys.rs
+    // https://github.com/polkadot-js/wasm/blob/master/packages/wasm-crypto/src/sr25519.rs
+    const bufferSecretKey: Buffer = Buffer.from(hexSecretKey.value, 'hex').slice(0, 32) // Substrate key is 32 bytes key + 32 bytes nonce
+
+    return this.cryptoClient.decryptAES(payload, bufferSecretKey.toString('hex'))
   }
 
   // Online
 
-  protected readonly network: SubstrateProtocolNetwork
+  protected readonly network: _ProtocolNetwork
 
-  public async getNetwork(): Promise<SubstrateProtocolNetwork> {
+  public async getNetwork(): Promise<_ProtocolNetwork> {
     return this.network
   }
 
@@ -215,11 +223,14 @@ export abstract class SubstrateProtocolImpl<
       fee: tx.fee ? tx.fee : newAmount('', 'blockchain')
     }))
 
+    // TODO: use `count` in API response to determine if there's more
+    const hasNext = transactions.length >= limit
+
     return {
       transactions,
       cursor: {
         hasNext: transactions.length >= limit,
-        page: cursor?.page ? cursor.page + 1 : 1
+        page: hasNext ? (cursor?.page ?? 0) + 1 : undefined
       }
     }
   }
@@ -244,8 +255,10 @@ export abstract class SubstrateProtocolImpl<
     to: string[],
     configuration?: TransactionConfiguration<_Units>
   ): Promise<Amount<_Units>> {
-    const [balance, futureRequiredTransactions]: [SubstrateAccountBalance, [SubstrateTransactionType<_ProtocolConfiguration>, any][]] =
-      await Promise.all([this.accountController.getBalance(publicKey), this.getFutureRequiredTransactions(publicKey, 'transfer')])
+    const [balance, futureRequiredTransactions]: [
+      SubstrateAccountBalance,
+      [SubstrateTransactionType<_ProtocolConfiguration>, any][]
+    ] = await Promise.all([this.accountController.getBalance(publicKey), this.getFutureRequiredTransactions(publicKey, 'transfer')])
 
     const fee: BigNumber | undefined = await this.transactionController.estimateTransactionFees(publicKey, futureRequiredTransactions)
 

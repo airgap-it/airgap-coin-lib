@@ -1,16 +1,18 @@
-import { SubscanBlockExplorer } from './block-explorer/SubscanBlockExplorer'
-import { SubstrateBlockExplorer } from './block-explorer/SubstrateBlockExplorer'
+import { SubscanBlockExplorer } from './block-explorer/subscan/SubscanBlockExplorer'
+import { SubscanBlockExplorerClient } from './block-explorer/subscan/SubscanBlockExplorerClient'
+import { SubstrateBlockExplorerClient } from './block-explorer/SubstrateBlockExplorerClient'
 import { SubstrateAccountController } from './controller/account/SubstrateAccountController'
 import { SubstrateCommonAccountController } from './controller/account/SubstrateCommonAccountController'
 import { SubstrateCommonTransactionController } from './controller/transaction/SubstrateCommonTransactionController'
-import { SubstrateTransactionController } from './controller/transaction/SubstrateTransactionController'
-import { SubstrateAddress } from './data/account/address/SubstrateAddress'
+import { SubstrateTransactionController, SubstrateTransactionParameters } from './controller/transaction/SubstrateTransactionController'
+import { SubstrateAccountId, SubstrateAddress } from './data/account/address/SubstrateAddress'
+import { scaleAddressFactory, substrateAddressFactory, TypedSubstrateAddress } from './data/account/address/SubstrateAddressFactory'
 import { SubstrateEthAddress } from './data/account/address/SubstrateEthAddress'
 import { SubstrateSS58Address } from './data/account/address/SubstrateSS58Address'
 import { SubstrateAccountBalance } from './data/account/SubstrateAccountBalance'
 import { SubstrateAccountInfo } from './data/account/SubstrateAccountInfo'
 import { SubstrateRegistration } from './data/account/SubstrateRegistration'
-import { SCALEDecoder } from './data/scale/SCALEDecoder'
+import { SCALEDecoder, SCALEDecodeResult } from './data/scale/SCALEDecoder'
 import { SCALEAccountId } from './data/scale/type/SCALEAccountId'
 import { SCALEArray } from './data/scale/type/SCALEArray'
 import { SCALEBoolean } from './data/scale/type/SCALEBoolean'
@@ -31,15 +33,17 @@ import { SubstrateRuntimeVersion } from './data/state/SubstrateRuntimeVersion'
 import { SubstrateTransactionMethod } from './data/transaction/method/SubstrateTransactionMethod'
 import { TransactionMethodArgsDecoder, TransactionMethodArgsFactory } from './data/transaction/method/SubstrateTransactionMethodArgs'
 import { SubstrateSignature } from './data/transaction/SubstrateSignature'
-import { SubstrateTransaction } from './data/transaction/SubstrateTransaction'
+import { SubstrateTransaction, SubstrateTransactionType } from './data/transaction/SubstrateTransaction'
 import { SubstrateTransactionPayload } from './data/transaction/SubstrateTransactionPayload'
 import { SubstrateCommonNodeClient } from './node/SubstrateCommonNodeClient'
 import { SubstrateNodeClient } from './node/SubstrateNodeClient'
 import { SubstrateProtocol, SubstrateProtocolImpl } from './protocol/SubstrateProtocol'
 import {
   SubstrateAccountConfiguration,
+  SubstrateEthAccountConfiguration,
   SubstrateProtocolConfiguration,
   SubstrateRpcConfiguration,
+  SubstrateSS58AccountConfiguration,
   SubstrateTransactionConfiguration
 } from './types/configuration'
 import { SubstrateProtocolNetwork, SubstrateProtocolOptions } from './types/protocol'
@@ -51,7 +55,7 @@ export { SubstrateProtocol, SubstrateProtocolImpl }
 
 // Block Explorer
 
-export { SubstrateBlockExplorer, SubscanBlockExplorer }
+export { SubstrateBlockExplorerClient, SubscanBlockExplorerClient, SubscanBlockExplorer }
 
 // Controller
 
@@ -59,6 +63,7 @@ export {
   SubstrateAccountController,
   SubstrateCommonAccountController,
   SubstrateTransactionController,
+  SubstrateTransactionParameters,
   SubstrateCommonTransactionController
 }
 
@@ -72,6 +77,10 @@ export {
   SubstrateAddress,
   SubstrateEthAddress,
   SubstrateSS58Address,
+  substrateAddressFactory,
+  scaleAddressFactory,
+  TypedSubstrateAddress,
+  SubstrateAccountId,
   SubstrateAccountBalance,
   SubstrateAccountInfo,
   SubstrateRegistration,
@@ -92,12 +101,14 @@ export {
   SCALETuple,
   SCALEType,
   SCALEDecoder,
+  SCALEDecodeResult,
   SubstrateRuntimeVersion,
   SubstrateTransactionMethod,
   TransactionMethodArgsFactory as SubstrateTransactionMethodArgsFactory,
   TransactionMethodArgsDecoder as SubstrateTransactionMethodArgsDecoder,
   SubstrateSignature,
   SubstrateTransaction,
+  SubstrateTransactionType,
   SubstrateTransactionPayload
 }
 
@@ -106,6 +117,8 @@ export {
 export {
   SubstrateProtocolConfiguration,
   SubstrateAccountConfiguration,
+  SubstrateSS58AccountConfiguration,
+  SubstrateEthAccountConfiguration,
   SubstrateTransactionConfiguration,
   SubstrateRpcConfiguration,
   SubstrateProtocolNetwork,

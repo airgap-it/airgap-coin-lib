@@ -1,6 +1,7 @@
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import { stripHexPrefix } from '@airgap/coinlib-core/utils/hex'
 import { AirGapTransaction } from '@airgap/module-kit'
+
 import { SubstrateProtocolConfiguration } from '../../types/configuration'
 import { SubstrateAccountId } from '../account/address/SubstrateAddress'
 import { scaleAddressFactory, TypedSCALEAddress, TypedSubstrateAddress } from '../account/address/SubstrateAddressFactory'
@@ -49,7 +50,9 @@ function areParametersWithSignature<C extends SubstrateProtocolConfiguration>(
   return (config as SubstrateTransactionParametersWithSignature<C>).signature !== undefined
 }
 
-export type SubstrateTransactionType<C extends SubstrateProtocolConfiguration> = 'transfer' | C['transaction']['types']
+export type SubstrateTransactionType<C extends SubstrateProtocolConfiguration> =
+  | 'transfer'
+  | (keyof C['transaction']['types'] extends string ? keyof C['transaction']['types'] : never)
 
 export class SubstrateTransaction<C extends SubstrateProtocolConfiguration> extends SCALEClass {
   public static create<C extends SubstrateProtocolConfiguration>(

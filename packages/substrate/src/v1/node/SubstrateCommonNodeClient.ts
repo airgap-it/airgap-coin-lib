@@ -5,6 +5,7 @@ import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/
 import { Cache } from '@airgap/coinlib-core/utils/cache'
 import { addHexPrefix, bytesToHex, stripHexPrefix, toHexString } from '@airgap/coinlib-core/utils/hex'
 import { normalizeToUndefined } from '@airgap/module-kit'
+
 import { TypedSubstrateAddress } from '../data/account/address/SubstrateAddressFactory'
 import { SubstrateAccountInfo } from '../data/account/SubstrateAccountInfo'
 import { SubstrateCall } from '../data/metadata/decorator/call/SubstrateCall'
@@ -16,6 +17,7 @@ import { SCALEType } from '../data/scale/type/SCALEType'
 import { SubstrateRuntimeVersion } from '../data/state/SubstrateRuntimeVersion'
 import { SubstrateTransactionType } from '../data/transaction/SubstrateTransaction'
 import { SubstrateProtocolConfiguration, SubstrateRpcConfiguration } from '../types/configuration'
+
 import { SubstrateNodeClient } from './SubstrateNodeClient'
 
 interface ConnectionConfig {
@@ -41,10 +43,10 @@ export class SubstrateCommonNodeClient<C extends SubstrateProtocolConfiguration>
   protected readonly cache: Cache = new Cache(CACHE_DEFAULT_EXPIRATION_TIME)
 
   public constructor(protected readonly configuration: C, protected readonly url: string) {
-    this.storageEntries = mergeSupportedCalls(configuration.rpc?.storageEntries ?? {}, commonStorageEntries)
-    this.calls = mergeSupportedCalls(configuration.rpc?.calls ?? {}, commonCalls)
-    this.constants = mergeSupportedCalls(configuration.rpc?.constants ?? {}, commonConstants)
-    this.callEndpoints = new Map([createCallEndpointEntry(this.configuration, 'transfer', 'Balances', 'transfer')])
+    this.storageEntries = this.mergeSupportedCalls(configuration.rpc?.storageEntries ?? {}, commonStorageEntries)
+    this.calls = this.mergeSupportedCalls(configuration.rpc?.calls ?? {}, commonCalls)
+    this.constants = this.mergeSupportedCalls(configuration.rpc?.constants ?? {}, commonConstants)
+    this.callEndpoints = new Map([this.createCallEndpointEntry('transfer', 'Balances', 'transfer')])
   }
 
   public async getAccountInfo(address: TypedSubstrateAddress<C>): Promise<SubstrateAccountInfo | undefined> {
@@ -241,6 +243,35 @@ export class SubstrateCommonNodeClient<C extends SubstrateProtocolConfiguration>
       .then(handleResponse)
       .catch(handleError)
   }
+
+  protected registerCallEntrypointEntries(
+    entries: [SubstrateTransactionType<C>, [SubstrateCallModuleName<C>, SubstrateCallName<C, any>]][]
+  ) {
+    entries.forEach(([transactionType, entry]) => {
+      this.callEndpoints.set(transactionType, entry)
+    })
+  }
+
+  protected createCallEndpointEntry<Module extends SubstrateCallModuleName<C>, Call extends SubstrateCallName<C, Module>>(
+    transactionType: SubstrateTransactionType<C>,
+    moduleName: Module,
+    callName: Call
+  ): [SubstrateTransactionType<C>, [SubstrateCallModuleName<C>, SubstrateCallName<C, any>]] {
+    return [transactionType, [moduleName, callName]]
+  }
+
+  protected mergeSupportedCalls(
+    configured: Record<string, Readonly<string[]>>,
+    common: Record<string, Readonly<string[]>>
+  ): Record<string, string[]> {
+    return Object.entries(configured as Record<string, string[]>)
+      .concat(Object.entries(common as Record<string, string[]>))
+      .reduce(
+        (obj: Record<string, string[]>, next: [string, string[]]) =>
+          Object.assign(obj, { [next[0]]: (obj[next[0]] ?? []).concat(next[1]) }),
+        {}
+      )
+  }
 }
 
 // Supported Calls
@@ -272,7 +303,7 @@ type SubstrateStorageEntryName<C extends SubstrateProtocolConfiguration, T exten
   T
 >
 
-export const commonCalls = {
+const commonCalls = {
   Balances: ['transfer'] as const
 }
 
@@ -284,7 +315,7 @@ type SubstrateCallName<C extends SubstrateProtocolConfiguration, T extends Subst
   T
 >
 
-export const commonConstants = {
+const commonConstants = {
   Balances: ['ExistentialDeposit'] as const
 }
 
@@ -301,31 +332,6 @@ type SubstrateCallEndpoints<C extends SubstrateProtocolConfiguration> = Map<
   [SubstrateCallModuleName<C>, SubstrateCallName<C, any>]
 >
 
-function createCallEndpointEntry<
-  C extends SubstrateProtocolConfiguration,
-  Module extends SubstrateCallModuleName<C>,
-  Call extends SubstrateCallName<C, Module>
->(
-  _configuration: C,
-  transactionType: SubstrateTransactionType<C>,
-  moduleName: Module,
-  callName: Call
-): [SubstrateTransactionType<C>, [SubstrateCallModuleName<C>, SubstrateCallName<C, any>]] {
-  return [transactionType, [moduleName, callName]]
-}
-
-function mergeSupportedCalls(
-  configured: Record<string, Readonly<string[]>>,
-  common: Record<string, Readonly<string[]>>
-): Record<string, string[]> {
-  return Object.entries(configured as Record<string, string[]>)
-    .concat(Object.entries(common as Record<string, string[]>))
-    .reduce(
-      (obj: Record<string, string[]>, next: [string, string[]]) => Object.assign(obj, { [next[0]]: (obj[next[0]] ?? []).concat(next[1]) }),
-      {}
-    )
-}
-
 type ModuleName<C extends SubstrateProtocolConfiguration, Type extends keyof SubstrateRpcConfiguration, Defaults extends Object> =
   | keyof Defaults
   | (C['rpc'] extends Object ? (keyof C['rpc'][Type] extends string ? keyof C['rpc'][Type] : never) : never)
@@ -333,12 +339,8 @@ type ModuleName<C extends SubstrateProtocolConfiguration, Type extends keyof Sub
 type ModuleEntry<
   C extends SubstrateProtocolConfiguration,
   Type extends keyof SubstrateRpcConfiguration,
-  Defaults extends { [key: string]: readonly string[] },
+  Defaults extends Record<string, Readonly<string[]>>,
   T extends ModuleName<C, Type, Defaults>
-> = T extends keyof Defaults
-  ? { [S in T]: Defaults[S][number] }[T]
-  : C['rpc'] extends Object
-  ? T extends keyof C['rpc'][Type]
-    ? { [S in T]: C['rpc'][Type][S] extends Readonly<Array<string>> ? C['rpc'][Type][S][number] : never }[T]
-    : never
-  : never
+> = ReadonlyEntries<T, Defaults> | (C['rpc'] extends Object ? ReadonlyEntries<T, C['rpc'][Type]> : never)
+
+type ReadonlyEntries<T, C> = T extends keyof C ? { [S in T]: C[S] extends Readonly<string[]> ? C[S][number] : never }[T] : never

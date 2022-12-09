@@ -9,7 +9,7 @@ export interface SubstrateProtocolConfiguration<
   _RpcConfiguration extends SubstrateRpcConfiguration = SubstrateRpcConfiguration
 > {
   account: _AccountConfiguration
-  signature: SubstrateSignatureConfiguration
+  signature?: SubstrateSignatureConfiguration
   transaction: SubstrateTransactionConfiguration<this, _TransactionType>
   rpc?: _RpcConfiguration
 }
@@ -41,18 +41,14 @@ export interface SubstrateTransactionConfiguration<
   _ProtocolConfiguration extends SubstrateProtocolConfiguration,
   _Types extends string = string
 > {
-  types: _Types
-
-  createTransactionMethodArgsFactory(
-    configuration: _ProtocolConfiguration,
-    type: _Types,
-    args: any
-  ): TransactionMethodArgsFactory<any, _ProtocolConfiguration>
-
-  createTransactionMethodArgsDecoder(
-    configuration: _ProtocolConfiguration,
-    type: _Types
-  ): TransactionMethodArgsDecoder<any, _ProtocolConfiguration>
+  types: Record<
+    _Types,
+    {
+      index?: number // for legacy reasons, transaction types used to be gathered in one enum
+      createArgsFactory(configuration: _ProtocolConfiguration, args: any): TransactionMethodArgsFactory<any, _ProtocolConfiguration>
+      createArgsDecoder(configuration: _ProtocolConfiguration): TransactionMethodArgsDecoder<any, _ProtocolConfiguration>
+    }
+  >
 }
 
 // RPC
