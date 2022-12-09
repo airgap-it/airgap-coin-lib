@@ -1,11 +1,7 @@
 import { assertNever, Domain } from '@airgap/coinlib-core'
 import { UnsupportedError } from '@airgap/coinlib-core/errors'
 import { isPublicKey, PublicKey } from '@airgap/module-kit'
-import {
-  SubstrateAccountConfiguration,
-  SubstrateEthAccountConfiguration,
-  SubstrateSS58AccountConfiguration
-} from '../../../types/configuration'
+import { SubstrateAccountConfiguration } from '../../../types/configuration'
 import { SubstrateProtocolConfiguration } from '../../../types/configuration'
 import { convertPublicKey } from '../../../utils/keys'
 import { SCALEDecodeResult } from '../../scale/SCALEDecoder'
@@ -32,10 +28,10 @@ interface SubstrateAddressType extends Record<SubstrateAccountConfiguration['typ
   eth: SubstrateEthAddress
 }
 
-export type TypedSCALEAddress<C extends SubstrateProtocolConfiguration> = SCALEAddressRecord[C['account']['type']]
-interface SCALEAddressRecord extends Record<SubstrateAccountConfiguration['type'], SCALEType> {
-  ss58: SCALEMultiAddress<SCALEMultiAddressType.Id, SubstrateProtocolConfiguration<SubstrateSS58AccountConfiguration>>
-  eth: SCALEAccountId<SubstrateProtocolConfiguration<SubstrateEthAccountConfiguration>>
+export type TypedSCALEAddress<C extends SubstrateProtocolConfiguration> = SCALEAddressRecord<C>[C['account']['type']]
+interface SCALEAddressRecord<C extends SubstrateProtocolConfiguration> extends Record<SubstrateAccountConfiguration['type'], SCALEType> {
+  ss58: SCALEMultiAddress<SCALEMultiAddressType.Id, C>
+  eth: SCALEAccountId<C>
 }
 
 export function substrateAddressFactory<C extends SubstrateProtocolConfiguration>(configuration: C): SubstrateAddressFactory<C> {

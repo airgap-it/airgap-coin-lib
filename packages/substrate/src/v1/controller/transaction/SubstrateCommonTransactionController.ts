@@ -2,18 +2,21 @@ import { BalanceError, Domain } from '@airgap/coinlib-core'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import keccak = require('@airgap/coinlib-core/dependencies/src/keccak-1.0.2/js')
 import * as secp256k1 from '@airgap/coinlib-core/dependencies/src/secp256k1-4.0.2/elliptic'
+import { UnsupportedError } from '@airgap/coinlib-core/errors'
 import { blake2bAsBytes } from '@airgap/coinlib-core/utils/blake2b'
 import { SecretKey } from '@airgap/module-kit'
 import { sr25519Sign, waitReady } from '@polkadot/wasm-crypto'
 import { SubstrateAccountId } from '../../data/account/address/SubstrateAddress'
 import { substrateAddressFactory, TypedSubstrateAddress } from '../../data/account/address/SubstrateAddressFactory'
-import { SCALEDecoder } from '../../data/scale/SCALEDecoder'
+import { SCALEDecoder, SCALEDecodeResult } from '../../data/scale/SCALEDecoder'
 import { SCALEArray } from '../../data/scale/type/SCALEArray'
 import { SCALEBytes } from '../../data/scale/type/SCALEBytes'
 import { SCALECompactInt } from '../../data/scale/type/SCALECompactInt'
+import { SCALEEnum } from '../../data/scale/type/SCALEEnum'
 import { SCALEInt } from '../../data/scale/type/SCALEInt'
 import { SCALEOptional } from '../../data/scale/type/SCALEOptional'
 import { SCALEString } from '../../data/scale/type/SCALEString'
+import { SCALEType } from '../../data/scale/type/SCALEType'
 import { SubstrateSignature, SubstrateSignatureType } from '../../data/transaction/SubstrateSignature'
 import { SubstrateTransactionType, SubstrateTransaction } from '../../data/transaction/SubstrateTransaction'
 import { SubstrateTransactionPayload } from '../../data/transaction/SubstrateTransactionPayload'
@@ -26,8 +29,9 @@ import {
   SubstrateTransactionParameters
 } from './SubstrateTransactionController'
 
-export class SubstrateCommonTransactionController<C extends SubstrateProtocolConfiguration> implements SubstrateTransactionController<C> {
-  public constructor(protected readonly configuration: C, protected readonly nodeClient: SubstrateNodeClient<C>) {}
+export class SubstrateCommonTransactionController<C extends SubstrateProtocolConfiguration, NodeClient extends SubstrateNodeClient<C>>
+  implements SubstrateTransactionController<C> {
+  public constructor(protected readonly configuration: C, protected readonly nodeClient: NodeClient) {}
 
   public async prepareSubmittableTransactions(
     accountId: SubstrateAccountId<TypedSubstrateAddress<C>>,
@@ -189,12 +193,15 @@ export class SubstrateCommonTransactionController<C extends SubstrateProtocolCon
     const bytesEncoded = txs.map((tx) => {
       const scaleRuntimeVersion =
         tx.runtimeVersion !== undefined ? SCALEOptional.from(SCALEInt.from(tx.runtimeVersion, 32)) : SCALEOptional.empty()
-      const scaleType = SCALEString.from(tx.transaction.type)
+      const scaleType = this.encodeTransactionType(tx.transaction.type)
       const scaleFee = SCALECompactInt.from(tx.fee)
 
       return SCALEBytes.from(
         scaleRuntimeVersion.encode() +
-          scaleType.encode({ configuration: this.configuration, runtimeVersion: tx.runtimeVersion }) +
+          scaleType.reduce(
+            (hex: string, next: SCALEType) => hex + next.encode({ configuration: this.configuration, runtimeVersion: tx.runtimeVersion }),
+            ''
+          ) +
           scaleFee.encode({ configuration: this.configuration, runtimeVersion: tx.runtimeVersion }) +
           tx.transaction.encode({ configuration: this.configuration, runtimeVersion: tx.runtimeVersion }) +
           SCALEString.from(tx.payload).encode({ configuration: this.configuration, runtimeVersion: tx.runtimeVersion })
@@ -202,6 +209,16 @@ export class SubstrateCommonTransactionController<C extends SubstrateProtocolCon
     })
 
     return SCALEArray.from(bytesEncoded).encode()
+  }
+
+  private encodeTransactionType(type: SubstrateTransactionType<C>): SCALEType[] {
+    const enumType: number | undefined = transactionTypeAsEnum(this.configuration, type)
+    if (enumType !== undefined) {
+      // legacy
+      return [SCALEEnum.from(transactionTypeAsEnum(this.configuration, type))]
+    }
+
+    return [SCALEEnum.from(255), SCALEString.from(type)]
   }
 
   public decodeDetails(serialized: string): SubstrateTransactionDetails<C>[] {
@@ -224,10 +241,10 @@ export class SubstrateCommonTransactionController<C extends SubstrateProtocolCon
 
       const txDecoder = new SCALEDecoder(this.configuration, runtimeVersion, _encodedTx)
 
-      const type = txDecoder.decodeNextString()
+      const type = this.decodeTransactionType(txDecoder)
       const fee = txDecoder.decodeNextCompactInt()
       const transaction = txDecoder.decodeNextObject((configuration, runtimeVersion, hex) =>
-        SubstrateTransaction.decode(configuration, runtimeVersion, type.decoded.value, hex)
+        SubstrateTransaction.decode(configuration, runtimeVersion, type.decoded, hex)
       )
       const payload = txDecoder.decodeNextString()
 
@@ -238,6 +255,29 @@ export class SubstrateCommonTransactionController<C extends SubstrateProtocolCon
         payload: payload.decoded.value
       }
     })
+  }
+
+  private decodeTransactionType(decoder: SCALEDecoder<C>): SCALEDecodeResult<SubstrateTransactionType<C>> {
+    const enumValue: SCALEDecodeResult<SCALEEnum<number>> = decoder.decodeNextEnum((value) => value)
+    if (enumValue.decoded.value === 255) {
+      const type = decoder.decodeNextString()
+      return {
+        bytesDecoded: enumValue.bytesDecoded + type.bytesDecoded,
+        decoded: type.decoded.value as SubstrateTransactionType<C>
+      }
+    }
+
+    const type: SubstrateTransactionType<C> | undefined = Object.entries(transactionTypeIndices(this.configuration)).find(
+      ([_, index]) => index === enumValue.decoded.value
+    )?.[0] as SubstrateTransactionType<C> | undefined
+    if (type === undefined) {
+      throw new UnsupportedError(Domain.SUBSTRATE, 'Unknown substrate transaction type')
+    }
+
+    return {
+      bytesDecoded: enumValue.bytesDecoded,
+      decoded: type
+    }
   }
 
   public async calculateTransactionFee(transaction: SubstrateTransaction<C>): Promise<BigNumber | undefined> {
@@ -277,5 +317,25 @@ export class SubstrateCommonTransactionController<C extends SubstrateProtocolCon
 
   protected substrateAddressFrom(accountId: SubstrateAccountId<TypedSubstrateAddress<C>>): TypedSubstrateAddress<C> {
     return substrateAddressFactory(this.configuration).from(accountId)
+  }
+}
+
+function transactionTypeAsEnum<C extends SubstrateProtocolConfiguration>(
+  configuration: C,
+  type: SubstrateTransactionType<C>
+): number | undefined {
+  return transactionTypeIndices(configuration)[type]
+}
+
+function transactionTypeIndices<C extends SubstrateProtocolConfiguration>(
+  configuration: C
+): Record<SubstrateTransactionType<C>, number | undefined> {
+  const configuredIndices: Record<keyof C['transaction']['types'], number | undefined> = Object.entries(
+    configuration.transaction.types
+  ).reduce((obj, [type, metadata]) => Object.assign(obj, { [type]: metadata.index }), {} as Record<keyof C['transaction']['types'], number>)
+
+  return {
+    ...configuredIndices,
+    transfer: 0
   }
 }

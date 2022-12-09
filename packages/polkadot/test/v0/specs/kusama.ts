@@ -3,7 +3,7 @@ import { sr25519Verify, waitReady } from '@polkadot/wasm-crypto'
 import { AirGapWalletStatus } from '@airgap/coinlib-core'
 import { SubstrateNetwork } from '@airgap/substrate/v0/protocol/SubstrateNetwork'
 
-import { KusamaProtocol } from '../../src'
+import { KusamaProtocol } from '../../../src'
 import { TestProtocolSpec } from '../implementations'
 import { KusamaProtocolStub } from '../stubs/kusama.stub'
 

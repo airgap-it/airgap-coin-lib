@@ -2,6 +2,7 @@
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import { assertFields } from '@airgap/coinlib-core/utils/assert'
 import { AirGapTransaction, newAmount } from '@airgap/module-kit'
+
 import { SubstrateProtocolConfiguration } from '../../../types/configuration'
 import { SubstrateAccountId } from '../../account/address/SubstrateAddress'
 import { scaleAddressFactory, substrateAddressFactory, TypedSubstrateAddress } from '../../account/address/SubstrateAddressFactory'
@@ -23,15 +24,15 @@ export abstract class TransactionMethodArgsFactory<T, C extends SubstrateProtoco
   ): TransactionMethodArgsFactory<any, C> {
     switch (type) {
       case 'transfer':
-        assertFields('transfer', args, 'to', 'value')
+        assertFields(type, args, 'to', 'value')
 
         return new TransferArgsFactory(configuration, args)
       default:
-        return configuration.transaction.createTransactionMethodArgsFactory(configuration, type, args)
+        return configuration.transaction.types[type].createArgsFactory(configuration, args)
     }
   }
 
-  protected constructor(protected readonly configuration: C, protected readonly args: T) {}
+  public constructor(protected readonly configuration: C, protected readonly args: T) {}
 
   public abstract createFields(): [string, SCALEType][]
   public abstract createToAirGapTransactionParts(): () => Partial<AirGapTransaction>[]
@@ -46,7 +47,7 @@ export abstract class TransactionMethodArgsDecoder<T, C extends SubstrateProtoco
       case 'transfer':
         return new TransferArgsDecoder()
       default:
-        return configuration.transaction.createTransactionMethodArgsDecoder(configuration, type)
+        return configuration.transaction.types[type].createArgsDecoder(configuration)
     }
   }
 

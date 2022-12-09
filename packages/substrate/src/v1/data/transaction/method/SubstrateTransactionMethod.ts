@@ -1,16 +1,18 @@
 import { AirGapTransaction } from '@airgap/module-kit'
+
 import { SubstrateProtocolConfiguration } from '../../../types/configuration'
 import { SCALEDecoder, SCALEDecodeResult } from '../../scale/SCALEDecoder'
 import { SCALEClass } from '../../scale/type/SCALEClass'
 import { SCALEInt } from '../../scale/type/SCALEInt'
 import { SCALEType } from '../../scale/type/SCALEType'
+import { SubstrateTransactionType } from '../SubstrateTransaction'
 
 import { TransactionMethodArgsDecoder, TransactionMethodArgsFactory } from './SubstrateTransactionMethodArgs'
 
 export class SubstrateTransactionMethod extends SCALEClass {
   public static create<C extends SubstrateProtocolConfiguration>(
     configuration: C,
-    type: C['transaction']['types'],
+    type: SubstrateTransactionType<C>,
     moduleIndex: number,
     callIndex: number,
     args: any
@@ -28,7 +30,7 @@ export class SubstrateTransactionMethod extends SCALEClass {
   public static decode<C extends SubstrateProtocolConfiguration>(
     configuration: C,
     runtimeVersion: number | undefined,
-    type: C['transaction']['types'],
+    type: SubstrateTransactionType<C>,
     raw: string
   ): SCALEDecodeResult<SubstrateTransactionMethod> {
     const decoder = new SCALEDecoder(configuration, runtimeVersion, raw)

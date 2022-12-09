@@ -32,7 +32,7 @@ export class SubstrateSignature extends SCALEClass {
   ): SCALEDecodeResult<SubstrateSignature> {
     const decoder = new SCALEDecoder(configuration, runtimeVersion, raw)
 
-    const type = configuration.signature.fixedType
+    const type = configuration.signature?.fixedType
       ? { bytesDecoded: 0, decoded: SCALEEnum.from(configuration.signature.fixedType) }
       : decoder.decodeNextEnum((value) => SubstrateSignatureType[SubstrateSignatureType[value]])
 

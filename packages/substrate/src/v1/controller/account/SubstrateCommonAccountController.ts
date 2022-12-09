@@ -6,7 +6,7 @@ import * as bitcoinJS from '@airgap/coinlib-core/dependencies/src/bitgo-utxo-lib
 import { UnsupportedError } from '@airgap/coinlib-core/errors'
 import { Secret, KeyPair, PublicKey, newSecretKey, newPublicKey } from '@airgap/module-kit'
 import { bip39ToMiniSecret, waitReady } from '@polkadot/wasm-crypto'
-import { createSr25519KeyPair } from '../../../v0/utils/sr25519'
+import { createSr25519KeyPair } from '../../utils/sr25519'
 import { SubstrateAccountId } from '../../data/account/address/SubstrateAddress'
 import { substrateAddressFactory, TypedSubstrateAddress } from '../../data/account/address/SubstrateAddressFactory'
 import { SubstrateAccountBalance } from '../../data/account/SubstrateAccountBalance'
@@ -15,8 +15,9 @@ import { SubstrateNodeClient } from '../../node/SubstrateNodeClient'
 import { SubstrateProtocolConfiguration } from '../../types/configuration'
 import { SubstrateAccountController } from './SubstrateAccountController'
 
-export class SubstrateCommonAccountController<C extends SubstrateProtocolConfiguration> implements SubstrateAccountController<C> {
-  public constructor(protected readonly configuration: C, protected readonly nodeClient: SubstrateNodeClient<C>) {}
+export class SubstrateCommonAccountController<C extends SubstrateProtocolConfiguration, NodeClient extends SubstrateNodeClient<C>>
+  implements SubstrateAccountController<C> {
+  public constructor(protected readonly configuration: C, protected readonly nodeClient: NodeClient) {}
 
   public async createKeyPairFromSecret(secret: Secret, derivationPath?: string | undefined): Promise<KeyPair> {
     switch (secret.type) {
