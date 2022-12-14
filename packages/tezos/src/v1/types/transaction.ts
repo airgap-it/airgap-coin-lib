@@ -10,3 +10,7 @@ export interface TezosSignedTransaction extends SignedTransaction {
 export interface TezosTransactionCursor extends TransactionCursor {
   offset: number
 }
+
+export interface TezosKtTransactionCursor extends TransactionCursor {
+  offsets: Record<string, number>
+}

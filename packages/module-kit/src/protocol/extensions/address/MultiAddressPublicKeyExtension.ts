@@ -3,10 +3,20 @@ import { ExtendedPublicKey, PublicKey } from '../../../types/key'
 import { _BaseProtocol, AnyProtocol, BaseGeneric } from '../../protocol'
 import { BaseBip32Protocol } from '../bip/Bip32OverridingExtension'
 
-export type MultiAddressPublicKeyExtension<T extends AnyProtocol> = T extends BaseBip32Protocol<infer _AddressCursor, any, any, any, any>
-  ? MultiAddressExtendedPublicKeyProtocol<_AddressCursor>
-  : T extends _BaseProtocol<infer _AddressCursor, any, any, any, any, any>
-  ? MultiAddressNonExtendedPublicKeyProtocol<_AddressCursor>
+export type MultiAddressPublicKeyExtension<T extends AnyProtocol> = T extends BaseBip32Protocol<
+  infer _AddressCursor,
+  infer _AddressResult,
+  any,
+  any,
+  any
+>
+  ? _AddressResult extends AddressWithCursor<_AddressCursor> // otherwise the type won't get inferred
+    ? MultiAddressExtendedPublicKeyProtocol<_AddressCursor>
+    : MultiAddressExtendedPublicKeyProtocol<_AddressCursor>
+  : T extends _BaseProtocol<infer _AddressCursor, infer _AddressResult, any, any, any, any>
+  ? _AddressResult extends AddressWithCursor<_AddressCursor> // otherwise the type won't get inferred
+    ? MultiAddressNonExtendedPublicKeyProtocol<_AddressCursor>
+    : MultiAddressNonExtendedPublicKeyProtocol<_AddressCursor>
   : never
 
 export interface MultiAddressNonExtendedPublicKeyProtocol<
