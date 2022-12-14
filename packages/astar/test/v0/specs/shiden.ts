@@ -2,7 +2,7 @@ import { sr25519Verify, waitReady } from '@polkadot/wasm-crypto'
 import { AirGapWalletStatus } from '@airgap/coinlib-core'
 import { SubstrateNetwork } from '@airgap/substrate/v0/protocol/SubstrateNetwork'
 
-import { ShidenProtocol } from '../../src'
+import { ShidenProtocol } from '../../../src'
 import { TestProtocolSpec } from '../implementations'
 import { ShidenProtocolStub } from '../stubs/shiden.stub'
 
