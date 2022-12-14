@@ -18,7 +18,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "rm -rf ./dist && tsc && node scripts/copy-files-after-build.js && node scripts/make-ts-declaration-files-backwards-compatible.js",
+    "build": "rm -rf ./dist && tsc && node scripts/copy-files-after-build.js",
     "build-scripts": "tsc scripts/*.ts",
     "lint": "tslint -c ./tslint.json --project ./tsconfig.json --format stylish --fix",
     "lint:prettier": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -40,7 +40,8 @@
     "@taquito/local-forging": "14.0.0"
   },
   "peerDependencies": {
-    "@airgap/coinlib-core": "^0.13.7-beta.0"
+    "@airgap/coinlib-core": "^0.13.7-beta.0",
+    "@airgap/module-kit": "^0.13.7-beta.0"
   },
   "localDependencies": {
     "@taquito/local-forging": "8.0.1-beta.1"

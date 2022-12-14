@@ -1,7 +1,7 @@
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import { async } from '@airgap/coinlib-core/dependencies/src/validate.js-0.13.1/validate'
 import { RawTezosTransaction, SignedTezosTransaction, TezosBTC, UnsignedTezosTransaction } from '@airgap/tezos'
-import { TezosTransactionOperation } from '@airgap/tezos/protocol/types/operations/Transaction'
+import { TezosTransactionOperation } from '@airgap/tezos/v0/protocol/types/operations/Transaction'
 
 import { TransactionValidator } from '../validators/transactions.validator'
 import { validateSyncScheme } from '../validators/validators'
