@@ -160,7 +160,7 @@ class BondArgsFactory<C extends PolkadotProtocolConfiguration> extends Substrate
     return () => [
       {
         to: [substrateAddressFactory(this.configuration).from(this.args.controller).asString()],
-        amount: newAmount(this.args.value.toString(), 'blockchain')
+        amount: newAmount(this.args.value, 'blockchain')
       }
     ]
   }
@@ -190,7 +190,7 @@ class UnbondArgsFactory<C extends PolkadotProtocolConfiguration> extends Substra
   public createToAirGapTransactionParts(): () => Partial<AirGapTransaction>[] {
     return () => [
       {
-        amount: newAmount(this.args.value.toString(), 'blockchain')
+        amount: newAmount(this.args.value, 'blockchain')
       }
     ]
   }
@@ -216,7 +216,7 @@ class RebondArgsFactory<C extends PolkadotProtocolConfiguration> extends Substra
   public createToAirGapTransactionParts(): () => Partial<AirGapTransaction>[] {
     return () => [
       {
-        amount: newAmount(this.args.value.toString(), 'blockchain')
+        amount: newAmount(this.args.value, 'blockchain')
       }
     ]
   }
@@ -242,7 +242,7 @@ class BondExtraArgsFactory<C extends PolkadotProtocolConfiguration> extends Subs
   public createToAirGapTransactionParts(): () => Partial<AirGapTransaction>[] {
     return () => [
       {
-        amount: newAmount(this.args.value.toString(), 'blockchain')
+        amount: newAmount(this.args.value, 'blockchain')
       }
     ]
   }

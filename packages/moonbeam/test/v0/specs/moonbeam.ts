@@ -3,7 +3,7 @@ import keccak = require('@airgap/coinlib-core/dependencies/src/keccak-1.0.2/js')
 import * as secp256k1 from '@airgap/coinlib-core/dependencies/src/secp256k1-4.0.2/elliptic'
 import { SubstrateNetwork } from '@airgap/substrate/v0/protocol/SubstrateNetwork'
 
-import { MoonbeamProtocol } from '../../src'
+import { MoonbeamProtocol } from '../../../src'
 import { TestProtocolSpec } from '../implementations'
 import { MoonbeamProtocolStub } from '../stubs/moonbeam.stub'
 

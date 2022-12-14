@@ -57,7 +57,7 @@ export function substrateAddressFactory<C extends SubstrateProtocolConfiguration
 export function scaleAddressFactory<C extends SubstrateProtocolConfiguration>(configuration: C): SCALEAddressFactory<C> {
   switch (configuration.account.type) {
     case 'ss58':
-      return {
+      return ({
         from: (value: string | PublicKey | Uint8Array | Buffer | TypedSubstrateAddress<C>, configuration: C) =>
           SCALEMultiAddress.from(
             isPublicKey(value) ? convertPublicKey(value, 'hex').value : value,
@@ -66,12 +66,13 @@ export function scaleAddressFactory<C extends SubstrateProtocolConfiguration>(co
           ),
         decode: (configuration: C, runtimeVersion: number | undefined, hex: string) =>
           SCALEMultiAddress.decode(configuration, hex, SCALEMultiAddressType.Id, runtimeVersion)
-      } as unknown as SCALEAddressFactory<C>
+      } as unknown) as SCALEAddressFactory<C>
     case 'eth':
-      return {
-        from: SCALEAccountId.from,
+      return ({
+        from: (value: string | PublicKey | Uint8Array | Buffer | TypedSubstrateAddress<C>, configuration: C) =>
+          SCALEAccountId.from(isPublicKey(value) ? convertPublicKey(value, 'hex').value : value, configuration),
         decode: (configuration: C, _: number | undefined, hex: string) => SCALEAccountId.decode(configuration, hex, 20)
-      } as unknown as SCALEAddressFactory<C>
+      } as unknown) as SCALEAddressFactory<C>
     default:
       throw new UnsupportedError(Domain.SUBSTRATE, 'Unknown account configuration')
   }
