@@ -1,6 +1,8 @@
 import { createTezosBlockExplorer } from './block-explorer/factory'
 import { TzKTBlockExplorer } from './block-explorer/TzKTBlockExplorer'
+import { TezosKtModule } from './module/TezosKtModule'
 import { TezosModule } from './module/TezosModule'
+import { createTezosKtProtocol, TezosKtProtocol } from './protocol/TezosKtProtocol'
 import { createTezosProtocol, createTezosProtocolOptions, TezosProtocol } from './protocol/TezosProtocol'
 import { TezosBlockExplorer } from './types/block-explorer'
 import { TezosIndexer } from './types/indexer'
@@ -20,15 +22,15 @@ import { TezosTransactionOperation } from './types/operations/kinds/Transaction'
 import { TezosOperationType } from './types/operations/TezosOperationType'
 import { TezosWrappedOperation } from './types/operations/TezosWrappedOperation'
 import { TezosProtocolNetwork, TezosProtocolOptions, TezosUnits } from './types/protocol'
-import { TezosSignedTransaction, TezosTransactionCursor, TezosUnsignedTransaction } from './types/transaction'
+import { TezosKtTransactionCursor, TezosSignedTransaction, TezosTransactionCursor, TezosUnsignedTransaction } from './types/transaction'
 
 // Module
 
-export { TezosModule }
+export { TezosModule, TezosKtModule }
 
 // Protocol
 
-export { TezosProtocol, createTezosProtocol, createTezosProtocolOptions }
+export { TezosProtocol, createTezosProtocol, createTezosProtocolOptions, TezosKtProtocol, createTezosKtProtocol }
 
 // Block Explorer
 
@@ -46,6 +48,7 @@ export {
   TezosUnsignedTransaction,
   TezosSignedTransaction,
   TezosTransactionCursor,
+  TezosKtTransactionCursor,
   TezosOperation,
   TezosOperationType,
   TezosWrappedOperation,
