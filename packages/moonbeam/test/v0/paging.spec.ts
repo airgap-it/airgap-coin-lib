@@ -13,7 +13,7 @@ const expect = chai.expect
 const protocols = [new MoonbeamTestProtocolSpec(), new MoonriverTestProtocolSpec()]
 
 protocols.forEach(async (protocol: TestProtocolSpec) => {
-  describe(`Transaction Paging`, () => {
+  describe(`Transaction Paging (v0)`, () => {
     beforeEach(async () => {
       sinon
         .stub(protocol.lib, 'getTransactionsFromAddresses')

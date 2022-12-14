@@ -32,7 +32,7 @@ import { SCALEType } from './data/scale/type/SCALEType'
 import { SubstrateRuntimeVersion } from './data/state/SubstrateRuntimeVersion'
 import { SubstrateTransactionMethod } from './data/transaction/method/SubstrateTransactionMethod'
 import { TransactionMethodArgsDecoder, TransactionMethodArgsFactory } from './data/transaction/method/SubstrateTransactionMethodArgs'
-import { SubstrateSignature } from './data/transaction/SubstrateSignature'
+import { SubstrateSignature, SubstrateSignatureType } from './data/transaction/SubstrateSignature'
 import { SubstrateTransaction, SubstrateTransactionType } from './data/transaction/SubstrateTransaction'
 import { SubstrateTransactionPayload } from './data/transaction/SubstrateTransactionPayload'
 import { SubstrateCommonNodeClient } from './node/SubstrateCommonNodeClient'
@@ -107,6 +107,7 @@ export {
   TransactionMethodArgsFactory as SubstrateTransactionMethodArgsFactory,
   TransactionMethodArgsDecoder as SubstrateTransactionMethodArgsDecoder,
   SubstrateSignature,
+  SubstrateSignatureType,
   SubstrateTransaction,
   SubstrateTransactionType,
   SubstrateTransactionPayload
