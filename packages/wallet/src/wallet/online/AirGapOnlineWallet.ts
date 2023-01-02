@@ -4,7 +4,7 @@ import {
   AirGapOnlineProtocol,
   AirGapTransactionsWithCursor,
   Amount,
-  Bip32OverridingExtension,
+  Bip32Extension,
   ExtendedPublicKey,
   FeeEstimation,
   isBip32Protocol,
@@ -28,15 +28,13 @@ export interface AirGapWalletPriceService {
 }
 
 export abstract class AirGapOnlineWallet<
-  T extends AirGapOnlineProtocol | Bip32OverridingExtension<AirGapOnlineProtocol> =
-    | AirGapOnlineProtocol
-    | Bip32OverridingExtension<AirGapOnlineProtocol>
+  T extends AirGapOnlineProtocol | Bip32Extension<AirGapOnlineProtocol> = AirGapOnlineProtocol | Bip32Extension<AirGapOnlineProtocol>
 > extends AirGapWallet<AirGapOnlineProtocol, T> {
   private synchronizePromise?: Promise<void>
 
   public constructor(
     protocol: T,
-    publicKey: T extends Bip32OverridingExtension<AirGapOnlineProtocol>
+    publicKey: T extends Bip32Extension<AirGapOnlineProtocol>
       ? PublicKey | ExtendedPublicKey
       : T extends AirGapOnlineProtocol
       ? PublicKey

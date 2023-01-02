@@ -1,6 +1,6 @@
 import { RemoteDataFactory, RemoteDataFactoryExtra } from '@airgap/coinlib-core/utils/remote-data/RemoteDataFactory'
-import { TezosProtocolNetworkResolver } from '../../types/protocol'
 
+import { TezosProtocolNetworkResolver } from '../../types/protocol'
 import { TezosContract } from '../TezosContract'
 
 import { TezosStorageRemoteData } from './TezosStorageRemoteData'

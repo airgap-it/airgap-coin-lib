@@ -1,19 +1,11 @@
 import { ExtendedSecretKey, SecretKey } from '../../../types/key'
-import { OfflineProtocol } from '../../protocol'
-import { OfflineBip32Protocol } from '../bip/Bip32OverridingExtension'
+import { _OfflineProtocol } from '../../protocol'
 
-export type AESExtension<T extends OfflineProtocol> = T extends OfflineBip32Protocol<any, any, any, any, any, any>
-  ? AESWithExtendedKeyPair
-  : T extends OfflineProtocol<any>
-  ? AESWithNonExtendedKeyPair
+export type AESExtension<T extends _OfflineProtocol> = T extends _OfflineProtocol<any, any, any, any, any, any, any, infer _SecretKey>
+  ? AES<_SecretKey>
   : never
 
-export interface AESWithNonExtendedKeyPair {
-  encryptAESWithSecretKey(payload: string, secretKey: SecretKey): Promise<string>
-  decryptAESWithSecretKey(payload: string, secretKey: SecretKey): Promise<string>
-}
-
-export interface AESWithExtendedKeyPair {
-  encryptAESWithSecretKey(payload: string, secretKey: SecretKey | ExtendedSecretKey): Promise<string>
-  decryptAESWithSecretKey(payload: string, secretKey: SecretKey | ExtendedSecretKey): Promise<string>
+export interface AES<_SecretKey extends SecretKey | ExtendedSecretKey = SecretKey> {
+  encryptAESWithSecretKey(payload: string, secretKey: _SecretKey): Promise<string>
+  decryptAESWithSecretKey(payload: string, secretKey: _SecretKey): Promise<string>
 }

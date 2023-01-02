@@ -29,7 +29,7 @@ import {
 import { MockProtocol } from './MockProtocol'
 import { MockProtocolOptions } from './MockProtocolOptions'
 
-export class MockExtendedProtocol implements AirGapProtocol<{}, 'Bip32OverridingExtension'> {
+export class MockExtendedProtocol implements AirGapProtocol<{}, 'Bip32'> {
   private nonExtendedProtocol = new MockProtocol(this.options)
 
   constructor(private readonly options: MockProtocolOptions = new MockProtocolOptions()) {}

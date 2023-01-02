@@ -1,30 +1,30 @@
 import { ExtendedKeyPair, ExtendedPublicKey, KeyPair, PublicKey } from '../../../types/key'
 import { Signature } from '../../../types/signature'
-import { AnyProtocol, BaseProtocol, OfflineProtocol } from '../../protocol'
-import { BaseBip32Protocol, OfflineBip32Protocol } from '../bip/Bip32OverridingExtension'
+import { _AnyProtocol, _BaseProtocol, _OfflineProtocol } from '../../protocol'
 
-export type SignMessageExtension<T extends AnyProtocol> = T extends OfflineBip32Protocol<any, any, any, any, any, any>
-  ? OfflineSignMessageWithExtendedKeyPair
-  : T extends BaseBip32Protocol<any, any, any, any, any, any>
-  ? BaseSignMessageWithExtendedKeyPair
-  : T extends OfflineProtocol<any>
-  ? OfflineSignMessageWithNonExtendedKeyPair
-  : T extends BaseProtocol<any>
-  ? BaseSignMessageWithNonExtendedKeyPair
+export type SignMessageExtension<T extends _AnyProtocol> = T extends _OfflineProtocol<
+  any,
+  any,
+  any,
+  any,
+  any,
+  any,
+  infer _PublicKey,
+  any,
+  infer _KeyPair
+>
+  ? OfflineSignMessage<_PublicKey, _KeyPair>
+  : T extends _BaseProtocol<any, any, any, any, any, any, infer _PublicKey>
+  ? BaseSignMessage<_PublicKey>
   : never
 
-export interface BaseSignMessageWithNonExtendedKeyPair {
-  verifyMessageWithPublicKey(message: string, signature: Signature, publicKey: PublicKey): Promise<boolean>
+export interface BaseSignMessage<_PublicKey extends PublicKey | ExtendedPublicKey = PublicKey> {
+  verifyMessageWithPublicKey(message: string, signature: Signature, publicKey: _PublicKey): Promise<boolean>
 }
 
-export interface OfflineSignMessageWithNonExtendedKeyPair extends BaseSignMessageWithNonExtendedKeyPair {
-  signMessageWithKeyPair(message: string, keyPair: KeyPair): Promise<Signature>
-}
-
-export interface BaseSignMessageWithExtendedKeyPair {
-  verifyMessageWithPublicKey(message: string, signature: Signature, publicKey: PublicKey | ExtendedPublicKey): Promise<boolean>
-}
-
-export interface OfflineSignMessageWithExtendedKeyPair extends BaseSignMessageWithExtendedKeyPair {
-  signMessageWithKeyPair(message: string, keyPair: KeyPair | ExtendedKeyPair): Promise<Signature>
+export interface OfflineSignMessage<
+  _PublicKey extends PublicKey | ExtendedPublicKey = PublicKey,
+  _KeyPair extends KeyPair | ExtendedKeyPair = KeyPair
+> extends BaseSignMessage<_PublicKey> {
+  signMessageWithKeyPair(message: string, keyPair: _KeyPair): Promise<Signature>
 }

@@ -3,7 +3,7 @@ import { BlockExplorerExtensions } from '../block-explorer/extensions/extensions
 import { ModuleExtensions } from '../module/extensions/extensions'
 import { Module } from '../module/module'
 import { ProtocolExtensions } from '../protocol/extensions/extensions'
-import { AnyProtocol } from '../protocol/protocol'
+import { _AnyProtocol } from '../protocol/protocol'
 
 import { Override } from './meta/utility-types'
 
@@ -44,6 +44,6 @@ type AirGapExtensions<T> = T extends BlockExplorer
   ? BlockExplorerExtensions<T>
   : T extends Module
   ? ModuleExtensions<T>
-  : T extends AnyProtocol<any>
+  : T extends _AnyProtocol
   ? ProtocolExtensions<T>
   : never

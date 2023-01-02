@@ -1,28 +1,22 @@
-import { Address } from '../../../types/address'
-import { Amount } from '../../../types/amount'
-import { Balance } from '../../../types/balance'
-import { ExtendedKeyPair, ExtendedPublicKey, ExtendedSecretKey, PublicKey, SecretKey } from '../../../types/key'
-import { Override } from '../../../types/meta/utility-types'
+import { ExtendedKeyPair, ExtendedPublicKey, ExtendedSecretKey, KeyPair, PublicKey, SecretKey } from '../../../types/key'
 import { Secret } from '../../../types/secret'
-import { AirGapTransaction, AirGapTransactionsWithCursor, TransactionConfiguration, TransactionDetails } from '../../../types/transaction'
 import {
+  _AnyProtocol,
+  _BaseProtocol,
   _OfflineProtocol,
   _OnlineProtocol,
-  AnyProtocol,
+  _Protocol,
   BaseGeneric,
   OfflineGeneric,
-  OfflineProtocol,
-  OnlineGeneric,
-  OnlineProtocol,
-  Protocol
+  OnlineGeneric
 } from '../../protocol'
 
-export type Bip32OverridingExtension<T extends AnyProtocol> = T extends Protocol<any>
-  ? Override<T, InferredOfflineBip32Protocol<T> & InferredOnlineBip32Protocol<T>>
-  : T extends OfflineProtocol<any>
-  ? Override<T, InferredOfflineBip32Protocol<T>>
-  : T extends OnlineProtocol<any>
-  ? Override<T, InferredOnlineBip32Protocol<T>>
+export type Bip32Extension<T extends _AnyProtocol> = T extends _Protocol
+  ? InferredOfflineBip32Protocol<T> & InferredOnlineBip32Protocol<T>
+  : T extends _OfflineProtocol
+  ? InferredOfflineBip32Protocol<T>
+  : T extends _OnlineProtocol
+  ? InferredOnlineBip32Protocol<T>
   : never
 
 type InferredOfflineBip32Protocol<T> = T extends _OfflineProtocol<
@@ -45,7 +39,9 @@ type InferredOnlineBip32Protocol<T> = T extends _OnlineProtocol<
   infer _FeeEstimation,
   infer _SignedTransaction,
   infer _UnsignedTransaction,
-  infer _TransactionCursor
+  infer _TransactionCursor,
+  any,
+  infer _BalanceConfiguration
 >
   ? OnlineBip32Protocol<
       _AddressCursor,
@@ -56,7 +52,8 @@ type InferredOnlineBip32Protocol<T> = T extends _OnlineProtocol<
       _FeeEstimation,
       _SignedTransaction,
       _UnsignedTransaction,
-      _TransactionCursor
+      _TransactionCursor,
+      _BalanceConfiguration
     >
   : never
 
@@ -67,15 +64,16 @@ export interface BaseBip32Protocol<
   _FeeUnits extends BaseGeneric['FeeUnits'] = BaseGeneric['FeeUnits'],
   _SignedTransaction extends BaseGeneric['SignedTransaction'] = BaseGeneric['SignedTransaction'],
   _UnsignedTransaction extends BaseGeneric['UnsignedTransaction'] = BaseGeneric['UnsignedTransaction']
-> {
-  getAddressFromPublicKey(publicKey: PublicKey | ExtendedPublicKey): Promise<_AddressResult>
-
+> extends _BaseProtocol<
+    _AddressCursor,
+    _AddressResult,
+    _Units,
+    _FeeUnits,
+    _SignedTransaction,
+    _UnsignedTransaction,
+    PublicKey | ExtendedPublicKey
+  > {
   deriveFromExtendedPublicKey(extendedPublicKey: ExtendedPublicKey, visibilityIndex: number, addressIndex: number): Promise<PublicKey>
-
-  getDetailsFromTransaction(
-    transaction: _UnsignedTransaction | _SignedTransaction,
-    publicKey: PublicKey | ExtendedPublicKey
-  ): Promise<AirGapTransaction<_Units, _FeeUnits>[]>
 }
 
 export interface OfflineBip32Protocol<
@@ -85,10 +83,19 @@ export interface OfflineBip32Protocol<
   _FeeUnits extends OfflineGeneric['FeeUnits'] = OfflineGeneric['FeeUnits'],
   _SignedTransaction extends OfflineGeneric['SignedTransaction'] = OfflineGeneric['SignedTransaction'],
   _UnsignedTransaction extends OfflineGeneric['UnsignedTransaction'] = OfflineGeneric['UnsignedTransaction']
-> extends BaseBip32Protocol<_AddressCursor, _AddressResult, _Units, _FeeUnits, _SignedTransaction, _UnsignedTransaction> {
+> extends BaseBip32Protocol<_AddressCursor, _AddressResult, _Units, _FeeUnits, _SignedTransaction, _UnsignedTransaction>,
+    _OfflineProtocol<
+      _AddressCursor,
+      _AddressResult,
+      _Units,
+      _FeeUnits,
+      _SignedTransaction,
+      _UnsignedTransaction,
+      PublicKey | ExtendedPublicKey,
+      SecretKey | ExtendedSecretKey,
+      KeyPair | ExtendedKeyPair
+    > {
   getExtendedKeyPairFromSecret(secret: Secret, derivationPath?: string): Promise<ExtendedKeyPair>
-
-  signTransactionWithSecretKey(transaction: _UnsignedTransaction, secretKey: SecretKey | ExtendedSecretKey): Promise<_SignedTransaction>
 }
 
 export interface OnlineBip32Protocol<
@@ -100,25 +107,19 @@ export interface OnlineBip32Protocol<
   _FeeEstimation extends OnlineGeneric['FeeEstimation'] = OnlineGeneric['FeeEstimation'],
   _SignedTransaction extends OnlineGeneric['SignedTransaction'] = OnlineGeneric['SignedTransaction'],
   _UnsignedTransaction extends OnlineGeneric['UnsignedTransaction'] = OnlineGeneric['UnsignedTransaction'],
-  _TransactionCursor extends OnlineGeneric['TransactionCursor'] = OnlineGeneric['TransactionCursor']
-> extends BaseBip32Protocol<_AddressCursor, _AddressResult, _Units, _FeeUnits, _SignedTransaction, _UnsignedTransaction> {
-  getTransactionsForPublicKey(
-    publicKey: PublicKey | ExtendedPublicKey,
-    limit: number,
-    cursor?: _TransactionCursor
-  ): Promise<AirGapTransactionsWithCursor<_TransactionCursor, _Units, _FeeUnits>>
-
-  getBalanceOfPublicKey(publicKey: PublicKey | ExtendedPublicKey): Promise<Balance<_Units>>
-
-  getTransactionMaxAmountWithPublicKey(
-    publicKey: PublicKey | ExtendedPublicKey,
-    to: Address[],
-    configuration?: TransactionConfiguration<_Units>
-  ): Promise<Amount<_Units>> // how should it be calulated? value distributed amongst addresses passed in in `to` or should we limit it to only one recipient?
-  getTransactionFeeWithPublicKey(publicKey: PublicKey | ExtendedPublicKey, details: TransactionDetails<_Units>[]): Promise<_FeeEstimation>
-  prepareTransactionWithPublicKey(
-    publicKey: PublicKey | ExtendedPublicKey,
-    details: TransactionDetails<_Units>[],
-    configuration?: TransactionConfiguration<_FeeUnits>
-  ): Promise<_UnsignedTransaction>
-}
+  _TransactionCursor extends OnlineGeneric['TransactionCursor'] = OnlineGeneric['TransactionCursor'],
+  _BalanceConfiguration extends Object | undefined = undefined
+> extends BaseBip32Protocol<_AddressCursor, _AddressResult, _Units, _FeeUnits, _SignedTransaction, _UnsignedTransaction>,
+    _OnlineProtocol<
+      _AddressCursor,
+      _AddressResult,
+      _ProtocolNetwork,
+      _Units,
+      _FeeUnits,
+      _FeeEstimation,
+      _SignedTransaction,
+      _UnsignedTransaction,
+      _TransactionCursor,
+      PublicKey | ExtendedPublicKey,
+      _BalanceConfiguration
+    > {}

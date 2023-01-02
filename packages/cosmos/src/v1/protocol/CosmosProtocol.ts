@@ -63,8 +63,8 @@ export interface CosmosProtocol
       FeeEstimation: FeeDefaults<CosmosUnits>
       UnsignedTransaction: CosmosUnsignedTransaction
     },
-    'CryptoExtension',
-    'FetchDataForAddressExtension'
+    'Crypto',
+    'FetchDataForAddress'
   > {
   getKeyPairFromSecretKey(secretKey: SecretKey): Promise<KeyPair>
 }

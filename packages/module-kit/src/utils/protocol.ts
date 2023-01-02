@@ -6,33 +6,27 @@ import {
   FetchDataForMultipleAddressesProtocol
 } from '../protocol/extensions/address/FetchDataForMultipleAddressesExtension'
 import {
-  MultiAddressExtendedPublicKeyProtocol,
-  MultiAddressNonExtendedPublicKeyProtocol,
-  MultiAddressPublicKeyExtension
+  MultiAddressPublicKeyExtension,
+  MultiAddressPublicKeyProtocol
 } from '../protocol/extensions/address/MultiAddressPublicKeyExtension'
-import {
-  BaseBip32Protocol,
-  Bip32OverridingExtension,
-  OfflineBip32Protocol,
-  OnlineBip32Protocol
-} from '../protocol/extensions/bip/Bip32OverridingExtension'
+import { BaseBip32Protocol, Bip32Extension, OfflineBip32Protocol, OnlineBip32Protocol } from '../protocol/extensions/bip/Bip32Extension'
 import { ConfigurableContractProtocol } from '../protocol/extensions/contract/ConfigurableContractExtension'
-import { AESExtension, AESWithExtendedKeyPair, AESWithNonExtendedKeyPair } from '../protocol/extensions/crypto/AESExtension'
+import { AES, AESExtension } from '../protocol/extensions/crypto/AESExtension'
 import {
   AsymmetricEncryptionExtension,
-  BaseAsymmetricEncryptionWithExtendedKeyPair,
-  BaseAsymmetricEncryptionWithNonExtendedKeyPair,
-  OfflineAsymmetricEncryptionWithExtendedKeyPair,
-  OfflineAsymmetricEncryptionWithNonExtendedKeyPair
+  BaseAsymmetricEncryption,
+  OfflineAsymmetricEncryption
 } from '../protocol/extensions/crypto/AsymmetricEncryptionExtension'
+import { BaseSignMessage, OfflineSignMessage, SignMessageExtension } from '../protocol/extensions/crypto/SignMessageExtension'
 import {
-  BaseSignMessageWithExtendedKeyPair,
-  BaseSignMessageWithNonExtendedKeyPair,
-  OfflineSignMessageWithExtendedKeyPair,
-  OfflineSignMessageWithNonExtendedKeyPair,
-  SignMessageExtension
-} from '../protocol/extensions/crypto/SignMessageExtension'
-import { ContractSubProtocol } from '../protocol/extensions/sub-protocol/ContractSubProtocolExtension'
+  BaseMultiTokenSubProtocol,
+  MultiTokenSubProtocolExtension,
+  OnlineMultiTokenSubProtocol
+} from '../protocol/extensions/sub-protocol/MultiTokenSubProtocolExtension'
+import {
+  SingleTokenSubProtocol,
+  SingleTokenSubProtocolExtension
+} from '../protocol/extensions/sub-protocol/SingleTokenSubProtocolExtension'
 import { SubProtocol } from '../protocol/extensions/sub-protocol/SubProtocolExtension'
 import { ConfigurableTransactionInjectorProtocol } from '../protocol/extensions/transaction/ConfigurableTransactionInjectorExtension'
 import {
@@ -89,9 +83,15 @@ const subProtocolSchema: Schema<SubProtocol> = {
   getType: 'required'
 }
 
-const contractSubProtocolSchema: Schema<ContractSubProtocol> = {
+const singleTokenSubProtocolSchema: Schema<SingleTokenSubProtocol> = {
   ...subProtocolSchema,
   getContractAddress: 'required'
+}
+
+const multiTokenSubProtocolBaseSchema: Schema<BaseMultiTokenSubProtocol> = singleTokenSubProtocolSchema
+const multiTokenSubProtocolOnlineSchema: Schema<OnlineMultiTokenSubProtocol> = {
+  ...multiTokenSubProtocolBaseSchema,
+  ...onlineProtocolSchema
 }
 
 const fetchDataForAddressProtocolSchema: Schema<FetchDataForAddressProtocol> = {
@@ -104,7 +104,7 @@ const fetchDataForMultipleAddressesProtocolSchema: Schema<FetchDataForMultipleAd
   getTransactionsForAddresses: 'required'
 }
 
-const multiAddressPublicKeyProtocolSchema: Schema<MultiAddressNonExtendedPublicKeyProtocol & MultiAddressExtendedPublicKeyProtocol> = {
+const multiAddressPublicKeyProtocolSchema: Schema<MultiAddressPublicKeyProtocol> = {
   getNextAddressFromPublicKey: 'required'
 }
 
@@ -114,29 +114,25 @@ const configurableContractProtocolSchema: Schema<ConfigurableContractProtocol> =
   setContractAddress: 'required'
 }
 
-const aesEncryptionSchema: Schema<AESWithNonExtendedKeyPair & AESWithExtendedKeyPair> = {
+const aesEncryptionSchema: Schema<AES> = {
   decryptAESWithSecretKey: 'required',
   encryptAESWithSecretKey: 'required'
 }
 
-const asymmetricEncryptionBaseSchema: Schema<
-  BaseAsymmetricEncryptionWithNonExtendedKeyPair | BaseAsymmetricEncryptionWithExtendedKeyPair
-> = {
+const asymmetricEncryptionBaseSchema: Schema<BaseAsymmetricEncryption> = {
   encryptAsymmetricWithPublicKey: 'required'
 }
 
-const asymmetricEncryptionOfflineSchema: Schema<
-  OfflineAsymmetricEncryptionWithNonExtendedKeyPair | OfflineAsymmetricEncryptionWithExtendedKeyPair
-> = {
+const asymmetricEncryptionOfflineSchema: Schema<OfflineAsymmetricEncryption> = {
   ...asymmetricEncryptionBaseSchema,
   decryptAsymmetricWithKeyPair: 'required'
 }
 
-const signMessageBaseSchema: Schema<BaseSignMessageWithNonExtendedKeyPair | BaseSignMessageWithExtendedKeyPair> = {
+const signMessageBaseSchema: Schema<BaseSignMessage> = {
   verifyMessageWithPublicKey: 'required'
 }
 
-const signMessageOfflineSchema: Schema<OfflineSignMessageWithNonExtendedKeyPair | OfflineSignMessageWithExtendedKeyPair> = {
+const signMessageOfflineSchema: Schema<OfflineSignMessage> = {
   ...signMessageBaseSchema,
   signMessageWithKeyPair: 'required'
 }
@@ -168,7 +164,7 @@ function isOnlineBip32Protocol(protocol: OnlineProtocol): protocol is OnlineProt
   return implementsInterface<OnlineBip32Protocol>(protocol, bip32OnlineProtocolSchema)
 }
 
-export function isBip32Protocol<T extends AnyProtocol>(protocol: T): protocol is T & Bip32OverridingExtension<T> {
+export function isBip32Protocol<T extends AnyProtocol>(protocol: T): protocol is T & Bip32Extension<T> {
   let extendedWithBip32: boolean = false
 
   if (isOfflineProtocol(protocol)) {
@@ -186,8 +182,18 @@ export function isSubProtocol<T extends AnyProtocol>(protocol: T): protocol is T
   return implementsInterface<SubProtocol>(protocol, subProtocolSchema)
 }
 
-export function isContractSubProtocol<T extends AnyProtocol>(protocol: T): protocol is T & ContractSubProtocol {
-  return implementsInterface<ContractSubProtocol>(protocol, contractSubProtocolSchema)
+export function isSingleTokenSubProtocol<T extends AnyProtocol>(protocol: T): protocol is T & SingleTokenSubProtocolExtension<T> {
+  return implementsInterface<SingleTokenSubProtocol>(protocol, singleTokenSubProtocolSchema)
+}
+
+export function isMultiTokenSubProtocol<T extends AnyProtocol>(protocol: T): protocol is T & MultiTokenSubProtocolExtension<T> {
+  let extendedWithMultiTokenSubProtocol: boolean = implementsInterface<BaseMultiTokenSubProtocol>(protocol, multiTokenSubProtocolBaseSchema)
+
+  if (isOnlineProtocol(protocol)) {
+    extendedWithMultiTokenSubProtocol &&= implementsInterface<OnlineMultiTokenSubProtocol>(protocol, multiTokenSubProtocolOnlineSchema)
+  }
+
+  return extendedWithMultiTokenSubProtocol
 }
 
 export function canFetchDataForAddress<T extends OnlineProtocol>(protocol: T): protocol is T & FetchDataForAddressExtension<T> {
@@ -201,10 +207,7 @@ export function canFetchDataForMultipleAddresses<T extends OnlineProtocol>(
 }
 
 export function hasMultiAddressPublicKeys<T extends AnyProtocol>(protocol: T): protocol is T & MultiAddressPublicKeyExtension<T> {
-  return implementsInterface<MultiAddressNonExtendedPublicKeyProtocol & MultiAddressExtendedPublicKeyProtocol>(
-    protocol,
-    multiAddressPublicKeyProtocolSchema
-  )
+  return implementsInterface<MultiAddressPublicKeyProtocol>(protocol, multiAddressPublicKeyProtocolSchema)
 }
 
 export function hasConfigurableContract<T extends AnyProtocol>(protocol: T): protocol is T & ConfigurableContractProtocol {
@@ -212,34 +215,24 @@ export function hasConfigurableContract<T extends AnyProtocol>(protocol: T): pro
 }
 
 export function canEncryptAES<T extends OfflineProtocol>(protocol: T): protocol is T & AESExtension<T> {
-  return implementsInterface<AESWithNonExtendedKeyPair & AESWithExtendedKeyPair>(protocol, aesEncryptionSchema)
+  return implementsInterface<AES>(protocol, aesEncryptionSchema)
 }
 
 export function canEncryptAsymmetric<T extends AnyProtocol>(protocol: T): protocol is T & AsymmetricEncryptionExtension<T> {
-  let extendedWithAsymmetricEncryption: boolean = implementsInterface<
-    BaseAsymmetricEncryptionWithNonExtendedKeyPair & BaseAsymmetricEncryptionWithExtendedKeyPair
-  >(protocol, asymmetricEncryptionBaseSchema)
+  let extendedWithAsymmetricEncryption: boolean = implementsInterface<BaseAsymmetricEncryption>(protocol, asymmetricEncryptionBaseSchema)
 
   if (isOfflineProtocol(protocol)) {
-    extendedWithAsymmetricEncryption &&= implementsInterface<
-      OfflineAsymmetricEncryptionWithNonExtendedKeyPair & OfflineAsymmetricEncryptionWithExtendedKeyPair
-    >(protocol, asymmetricEncryptionOfflineSchema)
+    extendedWithAsymmetricEncryption &&= implementsInterface<OfflineAsymmetricEncryption>(protocol, asymmetricEncryptionOfflineSchema)
   }
 
   return extendedWithAsymmetricEncryption
 }
 
 export function canSignMessage<T extends AnyProtocol>(protocol: T): protocol is T & SignMessageExtension<T> {
-  let extendedWithSignMessage: boolean = implementsInterface<BaseSignMessageWithNonExtendedKeyPair & BaseSignMessageWithExtendedKeyPair>(
-    protocol,
-    signMessageBaseSchema
-  )
+  let extendedWithSignMessage: boolean = implementsInterface<BaseSignMessage>(protocol, signMessageBaseSchema)
 
   if (isOfflineProtocol(protocol)) {
-    extendedWithSignMessage &&= implementsInterface<OfflineSignMessageWithNonExtendedKeyPair & OfflineSignMessageWithExtendedKeyPair>(
-      protocol,
-      signMessageOfflineSchema
-    )
+    extendedWithSignMessage &&= implementsInterface<OfflineSignMessage>(protocol, signMessageOfflineSchema)
   }
 
   return extendedWithSignMessage

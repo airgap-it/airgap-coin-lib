@@ -1,5 +1,5 @@
 import axios from '@airgap/coinlib-core/dependencies/src/axios-0.19.0'
-import { AirGapTransaction, newAmount } from '@airgap/module-kit'
+import { AirGapTransaction, Amount, newAmount } from '@airgap/module-kit'
 
 import { BigMap } from '../types/contract/bigmap/BigMap'
 import { BigMapEntryFilter } from '../types/contract/bigmap/BigMapEnrtyFilter'
@@ -55,7 +55,7 @@ export class TzKTIndexerClient implements TezosIndexerClient {
     address: string,
     limit?: number,
     offset?: number
-  ): Promise<Omit<AirGapTransaction<string, TezosUnits>, 'network'>[]> {
+  ): Promise<Omit<AirGapTransaction<never, TezosUnits>, 'network'>[]> {
     const url = this.url(
       `/tokens/transfers`,
       `anyof.from.to.eq=${address}&token.contract=${token.contractAddress}&token.tokenId=${token.id}`,
@@ -65,7 +65,7 @@ export class TzKTIndexerClient implements TezosIndexerClient {
     const result = (await axios.get<any[]>(url)).data
 
     return result.map(
-      (transaction): Omit<AirGapTransaction<string, TezosUnits>, 'network'> => ({
+      (transaction): Omit<AirGapTransaction<never, TezosUnits>, 'network'> => ({
         from: [transaction.from?.address ?? ''],
         to: [transaction.to?.address ?? ''],
         isInbound: transaction.to.address === address,
@@ -86,12 +86,12 @@ export class TzKTIndexerClient implements TezosIndexerClient {
     token: Token,
     limit?: number,
     offset?: number
-  ): Promise<Omit<AirGapTransaction<string, TezosUnits>, 'network'>[]> {
+  ): Promise<Omit<AirGapTransaction<never, TezosUnits>, 'network'>[]> {
     const url = this.url(`/tokens/transfers`, `token.contract=${token.contractAddress}&token.tokenId=${token.id}`, limit, offset)
     const result = (await axios.get<any[]>(url)).data
 
     return result.map(
-      (transaction): Omit<AirGapTransaction<string, TezosUnits>, 'network'> => ({
+      (transaction): Omit<AirGapTransaction<never, TezosUnits>, 'network'> => ({
         from: [transaction.from?.address ?? ''],
         to: [transaction.to?.address ?? ''],
         isInbound: false,
@@ -108,7 +108,7 @@ export class TzKTIndexerClient implements TezosIndexerClient {
     )
   }
 
-  public async getTokenBalances(token: Token, limit?: number, offset?: number): Promise<{ address: string; amount: string }[]> {
+  public async getTokenBalances(token: Token, limit?: number, offset?: number): Promise<{ address: string; amount: Amount<never> }[]> {
     const url = this.url(
       `/tokens/balances`,
       `token.contract=${token.contractAddress}&token.tokenId=${token.id}&balance.gt=0`,
@@ -118,7 +118,7 @@ export class TzKTIndexerClient implements TezosIndexerClient {
     const result = (await axios.get<any[]>(url)).data
     return result.map((item) => ({
       address: item.account.address,
-      amount: item.balance
+      amount: newAmount(item.balance, 'blockchain')
     }))
   }
 

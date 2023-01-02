@@ -5,9 +5,9 @@ import { Domain } from '@airgap/coinlib-core/errors/coinlib-error'
 import { recursivelyFind } from '@airgap/coinlib-core/utils/object'
 import { RemoteData } from '@airgap/coinlib-core/utils/remote-data/RemoteData'
 import { trimStart } from '@airgap/coinlib-core/utils/string'
+
 import { createTezosIndexerClient } from '../indexer/factory'
 import { TezosIndexerClient } from '../indexer/TezosIndexerClient'
-
 import { BigMap } from '../types/contract/bigmap/BigMap'
 import { BigMapEntry } from '../types/contract/bigmap/BigMapEntry'
 import { BigMapRequest } from '../types/contract/bigmap/BigMapRequest'
@@ -30,12 +30,12 @@ import { encodeExpr } from '../utils/pack'
 
 import { TezosContractRemoteDataFactory } from './remote-data/TezosContractRemoteDataFactory'
 import { TezosContractCall } from './TezosContractCall'
-import { TezosContractEntrypoint } from './TezosContractEntrypoint'
+import { TezosContractEntrypoint, TezosContractEntrypointType } from './TezosContractEntrypoint'
 import { TezosContractStorage } from './TezosContractStorage'
 
-export class TezosContract {
-  private static readonly DEFAULT_ENTRYPOINT = 'default'
+const DEFAULT_ENTRYPOINT: TezosContractEntrypointType = 'default'
 
+export class TezosContract<Entrypoint extends string = string> {
   public entrypoints?: Map<string, TezosContractEntrypoint>
   public storage?: TezosContractStorage
   private codePromise?: Promise<void>
@@ -153,7 +153,11 @@ export class TezosContract {
     return this.contractRequest('/balance')
   }
 
-  public async createContractCall(entrypointName: string, value: unknown, amount?: BigNumber): Promise<TezosContractCall> {
+  public async createContractCall(
+    entrypointName: TezosContractEntrypointType | Entrypoint,
+    value: unknown,
+    amount?: BigNumber
+  ): Promise<TezosContractCall> {
     await this.waitForContractCode()
 
     const entrypoint: TezosContractEntrypoint | undefined = this.entrypoints?.get(entrypointName)
@@ -200,7 +204,7 @@ export class TezosContract {
     const entrypoint: string | undefined = 'entrypoint' in json ? json.entrypoint : undefined
     const value: MichelineNode = 'value' in json ? json.value : json
 
-    if (entrypoint !== undefined && entrypoint !== TezosContract.DEFAULT_ENTRYPOINT) {
+    if (entrypoint !== undefined && entrypoint !== DEFAULT_ENTRYPOINT) {
       return {
         entrypoint,
         value
@@ -209,14 +213,14 @@ export class TezosContract {
 
     if (!MichelsonOr.isOr(value)) {
       return {
-        entrypoint: fallbackEntrypoint ?? TezosContract.DEFAULT_ENTRYPOINT,
+        entrypoint: fallbackEntrypoint ?? DEFAULT_ENTRYPOINT,
         value
       }
     }
 
     await this.waitForContractCode()
 
-    const defaultEntrypoint: TezosContractEntrypoint | undefined = this.entrypoints?.get(TezosContract.DEFAULT_ENTRYPOINT)
+    const defaultEntrypoint: TezosContractEntrypoint | undefined = this.entrypoints?.get(DEFAULT_ENTRYPOINT)
     if (!defaultEntrypoint) {
       throw new InvalidValueError(Domain.TEZOS, 'Could not fetch default entrypoint.')
     }
@@ -244,7 +248,7 @@ export class TezosContract {
   }
 
   private createDefaultContractCall(value: unknown, amount?: BigNumber): TezosContractCall {
-    return new TezosContractCall(TezosContract.DEFAULT_ENTRYPOINT, value instanceof MichelsonType ? value : undefined, amount)
+    return new TezosContractCall(DEFAULT_ENTRYPOINT, value instanceof MichelsonType ? value : undefined, amount)
   }
 
   private createEntrypointContractCall(
@@ -315,13 +319,11 @@ export class TezosContract {
 
       this.codePromise = Promise.all([scriptPromise, entrypointsPromise])
         .then(([scriptResponse, entrypointsResponse]) => {
-          if (entrypointsResponse.entrypoints[TezosContract.DEFAULT_ENTRYPOINT] === undefined) {
+          if (entrypointsResponse.entrypoints[DEFAULT_ENTRYPOINT] === undefined) {
             const parameter = scriptResponse.code.find((primitiveApplication) => primitiveApplication.prim === 'parameter')
             if (parameter) {
               const normalizedParameter = parameter ? this.normalizeContractCode(parameter) : undefined
-              entrypointsResponse.entrypoints[TezosContract.DEFAULT_ENTRYPOINT] = normalizedParameter?.args
-                ? normalizedParameter.args[0]
-                : []
+              entrypointsResponse.entrypoints[DEFAULT_ENTRYPOINT] = normalizedParameter?.args ? normalizedParameter.args[0] : []
             }
           }
 

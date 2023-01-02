@@ -67,10 +67,10 @@ export interface BitcoinProtocol<
       FeeEstimation: FeeDefaults<BitcoinUnits>
       UnsignedTransaction: _UnsignedTransaction
     },
-    'Bip32OverridingExtension',
-    'CryptoExtension',
-    'FetchDataForAddressExtension',
-    'FetchDataForMultipleAddressesExtension'
+    'Bip32',
+    'Crypto',
+    'FetchDataForAddress',
+    'FetchDataForMultipleAddresses'
   > {}
 
 // Implementation

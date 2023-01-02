@@ -1,4 +1,4 @@
-import { AirGapTransaction } from '@airgap/module-kit'
+import { AirGapTransaction, Amount } from '@airgap/module-kit'
 
 import { BigMap } from '../types/contract/bigmap/BigMap'
 import { BigMapEntryFilter } from '../types/contract/bigmap/BigMapEnrtyFilter'
@@ -20,9 +20,9 @@ export interface TezosIndexerClient {
     address: string,
     limit?: number,
     offset?: number
-  ): Promise<Omit<AirGapTransaction<string, TezosUnits>, 'network'>[]>
-  getTokenTransactions(token: Token, limit?: number, offset?: number): Promise<Omit<AirGapTransaction<string, TezosUnits>, 'network'>[]>
-  getTokenBalances(token: Token, limit?: number, offset?: number): Promise<{ address: string; amount: string }[]>
+  ): Promise<Omit<AirGapTransaction<never, TezosUnits>, 'network'>[]>
+  getTokenTransactions(token: Token, limit?: number, offset?: number): Promise<Omit<AirGapTransaction<never, TezosUnits>, 'network'>[]>
+  getTokenBalances(token: Token, limit?: number, offset?: number): Promise<{ address: string; amount: Amount<never> }[]>
 
   getContractCodeHash(contractAddress: string): Promise<{ typeHash: string; codeHash: string }>
   getContractBigMaps(contractAddress: string, limit?: number, offset?: number): Promise<BigMap[]>

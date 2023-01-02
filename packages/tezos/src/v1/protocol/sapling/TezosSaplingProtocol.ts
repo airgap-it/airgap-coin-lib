@@ -66,13 +66,12 @@ import {
 import { getSeedFromMnemonic } from '../../utils/bip'
 import { convertPublicKey, convertSecretKey } from '../../utils/key'
 import { encodeTzAddress, packMichelsonType } from '../../utils/pack'
+import { TezosSaplingAccountant } from '../../utils/protocol/sapling/TezosSaplingAccountant'
+import { TezosSaplingEncoder } from '../../utils/protocol/sapling/TezosSaplingEncoder'
+import { TezosSaplingForger } from '../../utils/protocol/sapling/TezosSaplingForger'
+import { TezosSaplingState } from '../../utils/protocol/sapling/TezosSaplingState'
 import { isUnsignedSaplingTransaction } from '../../utils/transaction'
 import { createTezosProtocol, TEZOS_DERIVATION_PATH, TezosProtocol } from '../TezosProtocol'
-
-import { TezosSaplingBookkeeper } from './utils/TezosSaplingBookkeeper'
-import { TezosSaplingEncoder } from './utils/TezosSaplingEncoder'
-import { TezosSaplingForger } from './utils/TezosSaplingForger'
-import { TezosSaplingState } from './utils/TezosSaplingState'
 
 // Interface
 
@@ -88,9 +87,9 @@ export interface TezosSaplingProtocol<_Units extends string>
       SignedTransaction: TezosSaplingSignedTransaction
       TransactionCursor: TezosSaplingTransactionCursor
     },
-    'MultiAddressPublicKeyExtension',
-    'ConfigurableContractExtension',
-    'ConfigurableTransactionInjectorExtension'
+    'MultiAddressPublicKey',
+    'ConfigurableContract',
+    'ConfigurableTransactionInjector'
   > {
   initParameters(spendParams: Buffer, outputParams: Buffer): Promise<void>
 
@@ -132,7 +131,7 @@ export interface TezosSaplingProtocol<_Units extends string>
 export abstract class TezosSaplingProtocolImpl<_Units extends string> implements TezosSaplingProtocol<_Units> {
   protected readonly tezos: TezosProtocol
 
-  protected readonly bookkeeper: TezosSaplingBookkeeper<_Units>
+  protected readonly accountant: TezosSaplingAccountant<_Units>
   protected readonly encoder: TezosSaplingEncoder
   protected readonly forger: TezosSaplingForger
   protected readonly state: TezosSaplingState
@@ -172,7 +171,7 @@ export abstract class TezosSaplingProtocolImpl<_Units extends string> implements
     this.state = new TezosSaplingState(options.merkleTreeHeight)
     this.encoder = new TezosSaplingEncoder()
     this.forger = new TezosSaplingForger(this.cryptoClient, this.state, this.encoder, this.externalProvider)
-    this.bookkeeper = new TezosSaplingBookkeeper(this.network, this.cryptoClient, this.encoder)
+    this.accountant = new TezosSaplingAccountant(this.network, this.cryptoClient, this.encoder)
 
     this.nodeClient = this.network.contractAddress
       ? new TezosSaplingNodeClient(this.network.rpcUrl, this.network.contractAddress)
@@ -291,7 +290,7 @@ export abstract class TezosSaplingProtocolImpl<_Units extends string> implements
 
         airGapTxs.push(...(await this.getDetailsFromWrappedOperation(wrappedOperation, knownViewingKeys)))
       } catch {
-        const partialDetails: Partial<AirGapTransaction<_Units, TezosUnits>>[] = await this.bookkeeper.getTransactionsPartialDetails(
+        const partialDetails: Partial<AirGapTransaction<_Units, TezosUnits>>[] = await this.accountant.getTransactionsPartialDetails(
           [binary],
           knownViewingKeys
         )
@@ -320,7 +319,7 @@ export abstract class TezosSaplingProtocolImpl<_Units extends string> implements
         TezosSaplingAddress.fromValue(address.address, address.cursor.diversifierIndex)
       )
 
-      const details: AirGapTransaction<_Units, TezosUnits>[] = this.bookkeeper
+      const details: AirGapTransaction<_Units, TezosUnits>[] = this.accountant
         .getUnsignedTransactionDetails(from, transaction.ins, transaction.outs, unshieldTarget)
         .map((details: AirGapTransaction<_Units, TezosUnits>) => ({
           ...details,
@@ -382,7 +381,7 @@ export abstract class TezosSaplingProtocolImpl<_Units extends string> implements
 
     const txs: string[] = await this.parseParameters(parameters)
 
-    return this.bookkeeper.getTransactionsPartialDetails(txs, knownViewingKeys)
+    return this.accountant.getTransactionsPartialDetails(txs, knownViewingKeys)
   }
 
   private filterOutPaybacks(airGapTxs: AirGapTransaction<_Units, TezosUnits>[]): AirGapTransaction<_Units, TezosUnits>[] {
@@ -499,8 +498,8 @@ export abstract class TezosSaplingProtocolImpl<_Units extends string> implements
         .slice(pageStart, pageEnd)
 
       const inputs: [TezosSaplingInput[], TezosSaplingInput[]] = await Promise.all([
-        this.bookkeeper.getIncomingInputs(hexPublicKey.value, commitmentsAndCiphertexts),
-        this.bookkeeper.getOutgoingInputs(hexPublicKey.value, commitmentsAndCiphertexts)
+        this.accountant.getIncomingInputs(hexPublicKey.value, commitmentsAndCiphertexts),
+        this.accountant.getOutgoingInputs(hexPublicKey.value, commitmentsAndCiphertexts)
       ])
 
       incoming.push(...inputs[0])
@@ -551,7 +550,7 @@ export abstract class TezosSaplingProtocolImpl<_Units extends string> implements
 
     const hexPublicKey: PublicKey = convertPublicKey(publicKey, 'hex', 'saplingViewingKey')
     const saplingStateDiff: TezosSaplingStateDiff = await this.nodeClient.getSaplingStateDiff()
-    const unspends: TezosSaplingInput[] = await this.bookkeeper.getUnspends(
+    const unspends: TezosSaplingInput[] = await this.accountant.getUnspends(
       hexPublicKey.value,
       saplingStateDiff.commitments_and_ciphertexts,
       saplingStateDiff.nullifiers
@@ -872,8 +871,8 @@ export abstract class TezosSaplingProtocolImpl<_Units extends string> implements
     nullifiers: string[],
     value: string | number | BigNumber
   ): Promise<[TezosSaplingInput[], BigNumber]> {
-    const unspends: TezosSaplingInput[] = await this.bookkeeper.getUnspends(viewingKey, commitmentsWithCiphertext, nullifiers)
-    const balance: BigNumber = this.bookkeeper.sumNotes(unspends)
+    const unspends: TezosSaplingInput[] = await this.accountant.getUnspends(viewingKey, commitmentsWithCiphertext, nullifiers)
+    const balance: BigNumber = this.accountant.sumNotes(unspends)
 
     if (balance.lt(value)) {
       return Promise.reject('Not enough balance')

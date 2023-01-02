@@ -1,6 +1,4 @@
 import { assertNever, CoinlibError, Domain, MainProtocolSymbols } from '@airgap/coinlib-core'
-import { localForger } from '@airgap/coinlib-core/dependencies/src/@taquito/local-forging-8.0.1-beta.1/packages/taquito-local-forging/src/taquito-local-forging'
-import { ForgeParams } from '@airgap/coinlib-core/dependencies/src/@taquito/local-forging-8.0.1-beta.1/packages/taquito/src/forger/interface'
 import axios, { AxiosError, AxiosResponse } from '@airgap/coinlib-core/dependencies/src/axios-0.19.0/index'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import { mnemonicToSeed } from '@airgap/coinlib-core/dependencies/src/bip39-2.5.0/index'
@@ -9,7 +7,6 @@ import {
   BalanceError,
   ConditionViolationError,
   NetworkError,
-  NotFoundError,
   PropertyUndefinedError,
   ProtocolErrorType,
   TransactionError,
@@ -30,6 +27,7 @@ import {
   newSignature,
   newSignedTransaction,
   newUnsignedTransaction,
+  ProtocolAccountMetadata,
   ProtocolMetadata,
   ProtocolUnitsMetadata,
   PublicKey,
@@ -58,6 +56,8 @@ import { TezosProtocolNetwork, TezosProtocolOptions, TezosUnits } from '../types
 import { TezosSignedTransaction, TezosTransactionCursor, TezosUnsignedTransaction } from '../types/transaction'
 import { convertPublicKey, convertSecretKey } from '../utils/key'
 import { ACTIVATION_BURN, createRevealOperation, getAmountUsedByPreviousOperations, REVEAL_FEE } from '../utils/operations'
+import { TezosAccountant } from '../utils/protocol/tezos/TezosAccountant'
+import { TezosForger } from '../utils/protocol/tezos/TezosForger'
 import { convertSignature } from '../utils/signature'
 
 // Interface
@@ -73,11 +73,12 @@ export interface TezosProtocol
       SignedTransaction: TezosSignedTransaction
       TransactionCursor: TezosTransactionCursor
     },
-    'CryptoExtension',
-    'FetchDataForAddressExtension'
+    'Crypto',
+    'FetchDataForAddress'
   > {
   forgeOperation(wrappedOperation: TezosWrappedOperation): Promise<string>
-  unforgeOperation(forged: string, type?: 'signed' | 'unsigned'): Promise<TezosWrappedOperation>
+  unforgeOperation(forged: string, type?: (TezosSignedTransaction | TezosUnsignedTransaction)['type']): Promise<TezosWrappedOperation>
+  getOperationFeeDefaults(publicKey: PublicKey, operations: TezosOperation[]): Promise<FeeDefaults<TezosUnits>>
   prepareOperations(publicKey: PublicKey, operationRequests: TezosOperation[], overrideParameters?: boolean): Promise<TezosWrappedOperation>
   prepareTransactionsWithPublicKey(
     publicKey: PublicKey,
@@ -115,15 +116,29 @@ export const TEZOS_UNITS: ProtocolUnitsMetadata<TezosUnits> = {
 }
 
 export const TEZOS_DERIVATION_PATH: string = `m/44h/1729h/0h/0h`
+export const TEZOS_ACCOUNT_METADATA: ProtocolAccountMetadata = {
+  standardDerivationPath: TEZOS_DERIVATION_PATH,
+  address: {
+    isCaseSensitive: true,
+    placeholder: 'tz1...',
+    regex: '^((tz1|tz2|tz3|KT1)[1-9A-Za-z]{33}|zet1[1-9A-Za-z]{65})$'
+  }
+}
 
-class TezosProtocolImpl implements TezosProtocol {
+export class TezosProtocolImpl implements TezosProtocol {
   private readonly options: TezosProtocolOptions
+
+  private readonly forger: TezosForger
+  private readonly accountant: TezosAccountant<TezosUnits>
 
   private readonly indexerClient: TezosIndexerClient
   private readonly cryptoClient: TezosCryptoClient
 
   public constructor(options: RecursivePartial<TezosProtocolOptions>) {
     this.options = createTezosProtocolOptions(options.network)
+
+    this.forger = new TezosForger()
+    this.accountant = new TezosAccountant(this.forger, this.options.network)
 
     this.indexerClient = createTezosIndexerClient(this.options.network.indexer)
     this.cryptoClient = new TezosCryptoClient()
@@ -150,14 +165,7 @@ class TezosProtocolImpl implements TezosProtocol {
       defaults: this.feeDefaults
     },
 
-    account: {
-      standardDerivationPath: TEZOS_DERIVATION_PATH,
-      address: {
-        isCaseSensitive: true,
-        placeholder: 'tz1...',
-        regex: '^((tz1|tz2|tz3|KT1)[1-9A-Za-z]{33}|zet1[1-9A-Za-z]{65})$'
-      }
-    }
+    account: TEZOS_ACCOUNT_METADATA
   }
 
   public async getMetadata(): Promise<ProtocolMetadata<TezosUnits>> {
@@ -172,9 +180,7 @@ class TezosProtocolImpl implements TezosProtocol {
     transaction: TezosUnsignedTransaction | TezosSignedTransaction,
     _publicKey: PublicKey
   ): Promise<AirGapTransaction<TezosUnits>[]> {
-    const wrappedOperation: TezosWrappedOperation = await this.unforgeOperation(transaction.binary, transaction.type)
-
-    return this.getAirGapTransactionsFromWrappedOperation(wrappedOperation)
+    return this.accountant.getDetailsFromTransaction(transaction)
   }
 
   public async verifyMessageWithPublicKey(message: string, signature: Signature, publicKey: PublicKey): Promise<boolean> {
@@ -402,7 +408,7 @@ class TezosProtocolImpl implements TezosProtocol {
     return this.getOperationFeeDefaults(publicKey, operations)
   }
 
-  private async getOperationFeeDefaults(publicKey: PublicKey, operations: TezosOperation[]): Promise<FeeDefaults<TezosUnits>> {
+  public async getOperationFeeDefaults(publicKey: PublicKey, operations: TezosOperation[]): Promise<FeeDefaults<TezosUnits>> {
     const estimated = await this.prepareOperations(publicKey, operations)
     const hasReveal = estimated.contents.some((op) => op.kind === TezosOperationType.REVEAL)
     const estimatedFee = estimated.contents
@@ -467,27 +473,14 @@ class TezosProtocolImpl implements TezosProtocol {
   // Custom
 
   public async forgeOperation(wrappedOperation: TezosWrappedOperation): Promise<string> {
-    return localForger.forge(wrappedOperation as any)
+    return this.forger.forgeOperation(wrappedOperation)
   }
 
-  public async unforgeOperation(forged: string, type: 'signed' | 'unsigned' = 'unsigned'): Promise<TezosWrappedOperation> {
-    const minForgedLength: number =
-      type === 'signed'
-        ? 64 + 128 // branch + signature
-        : 64 // branch
-
-    if (forged.length < minForgedLength) {
-      throw new ConditionViolationError(Domain.TEZOS, 'Not a valid signed transaction')
-    }
-
-    const binaryWithoutSignature: string = type === 'signed' ? forged.substring(0, forged.length - 128) : forged
-
-    const unforged: ForgeParams = await localForger.parse(binaryWithoutSignature)
-
-    return {
-      branch: unforged.branch,
-      contents: unforged.contents as any // as in v0, but maybe we should consider either converting between the types properly or just using operation types from `@taquito`?
-    }
+  public async unforgeOperation(
+    forged: string,
+    type: (TezosSignedTransaction | TezosUnsignedTransaction)['type'] = 'unsigned'
+  ): Promise<TezosWrappedOperation> {
+    return this.forger.unforgeOperation(forged, type)
   }
 
   public async prepareTransactionsWithPublicKey(
@@ -560,95 +553,6 @@ class TezosProtocolImpl implements TezosProtocol {
     }
 
     return transactions
-  }
-
-  private async getAirGapTransactionsFromWrappedOperation(
-    wrappedOperation: TezosWrappedOperation
-  ): Promise<AirGapTransaction<TezosUnits>[]> {
-    return Promise.all(
-      wrappedOperation.contents.map(async (content: TezosOperation) => {
-        let operation: TezosRevealOperation | TezosTransactionOperation | TezosOriginationOperation | TezosDelegationOperation | undefined
-
-        let partialTxs: Partial<AirGapTransaction<TezosUnits>>[] = []
-
-        switch (content.kind) {
-          case TezosOperationType.REVEAL:
-            operation = content as TezosRevealOperation
-            partialTxs = [
-              {
-                from: [operation.source],
-                to: ['Reveal']
-              }
-            ]
-            break
-          case TezosOperationType.TRANSACTION:
-            const tezosSpendOperation: TezosTransactionOperation = content as TezosTransactionOperation
-            operation = tezosSpendOperation
-            partialTxs = [
-              {
-                from: [tezosSpendOperation.source],
-                to: [tezosSpendOperation.destination],
-                amount: newAmount(tezosSpendOperation.amount, 'blockchain')
-              }
-            ]
-            break
-          case TezosOperationType.ORIGINATION:
-            {
-              const tezosOriginationOperation: TezosOriginationOperation = content as TezosOriginationOperation
-              operation = tezosOriginationOperation
-              const delegate: string | undefined = tezosOriginationOperation.delegate
-              partialTxs = [
-                {
-                  from: [operation.source],
-                  amount: newAmount(tezosOriginationOperation.balance, 'blockchain'),
-                  to: [delegate ? `Delegate: ${delegate}` : 'Origination']
-                }
-              ]
-            }
-            break
-          case TezosOperationType.DELEGATION:
-            {
-              operation = content as TezosDelegationOperation
-              const delegate: string | undefined = operation.delegate
-              partialTxs = [
-                {
-                  from: [operation.source],
-                  to: [delegate ? delegate : 'Undelegate']
-                }
-              ]
-            }
-            break
-          case TezosOperationType.ENDORSEMENT:
-          case TezosOperationType.SEED_NONCE_REVELATION:
-          case TezosOperationType.DOUBLE_ENDORSEMENT_EVIDENCE:
-          case TezosOperationType.DOUBLE_BAKING_EVIDENCE:
-          case TezosOperationType.ACTIVATE_ACCOUNT:
-          case TezosOperationType.PROPOSALS:
-          case TezosOperationType.BALLOT:
-            throw new UnsupportedError(Domain.TEZOS, 'operation not supported: ' + JSON.stringify(content.kind))
-          default:
-            // Exhaustive switch
-            assertNever(content.kind)
-            throw new NotFoundError(Domain.TEZOS, 'no operation to unforge found')
-        }
-
-        return partialTxs.map((partialTx: Partial<AirGapTransaction<TezosUnits>>) => {
-          return {
-            from: [],
-            to: [],
-            isInbound: false,
-
-            amount: newAmount('0', 'blockchain'),
-            fee: newAmount(operation !== undefined ? operation.fee : '0', 'blockchain'),
-            network: this.options.network,
-            json: content,
-            ...partialTx
-          }
-        })
-      })
-    ).then((airGapTxs: AirGapTransaction<TezosUnits>[][]) =>
-      airGapTxs.reduce((flatten: AirGapTransaction<TezosUnits>[], next: AirGapTransaction<TezosUnits>[]) => flatten.concat(next), [])
-    )
   }
 
   public async prepareOperations(

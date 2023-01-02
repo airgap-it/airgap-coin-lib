@@ -59,8 +59,8 @@ export interface AeternityProtocol
       FeeEstimation: FeeDefaults<AeternityUnits>
       UnsignedTransaction: AeternityUnsignedTransaction
     },
-    'CryptoExtension',
-    'FetchDataForAddressExtension'
+    'Crypto',
+    'FetchDataForAddress'
   > {
   convertTransactionToBase58(preparedTx: AeternityUnsignedTransaction): Promise<AeternityUnsignedTransaction>
 }

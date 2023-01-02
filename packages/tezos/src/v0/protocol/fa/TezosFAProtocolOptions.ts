@@ -120,7 +120,7 @@ export class TezosStakerProtocolConfig extends TezosFAProtocolConfig {
     symbol: string = 'STKR',
     name: string = 'Staker',
     marketSymbol: string = 'stkr',
-    identifier: ProtocolSymbols = SubProtocolSymbols.XTZ_BTC,
+    identifier: ProtocolSymbols = SubProtocolSymbols.XTZ_STKR,
     contractAddress: string = 'KT1EctCuorV2NfVb1XTQgvzJ88MQtWP8cMMv',
     feeDefaults: FeeDefaults = {
       low: '0.100',

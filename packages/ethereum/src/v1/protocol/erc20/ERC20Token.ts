@@ -40,7 +40,7 @@ const EthereumTransaction = require('@airgap/coinlib-core/dependencies/src/ether
 
 // Interface
 
-export interface ERC20Token extends AirGapInterface<EthereumBaseProtocol<string>, 'ContractSubProtocolExtension'> {}
+export interface ERC20Token extends AirGapInterface<EthereumBaseProtocol<string>, 'SingleTokenSubProtocol'> {}
 
 // Implementation
 

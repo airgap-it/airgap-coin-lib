@@ -1,7 +1,7 @@
 import { AirGapTransactionStatus } from '../../../types/transaction'
-import { OnlineProtocol } from '../../protocol'
+import { _OnlineProtocol } from '../../protocol'
 
-export type TransactionStatusCheckerExtension<T extends OnlineProtocol> = TransactionStatusChecker
+export type TransactionStatusCheckerExtension<T extends _OnlineProtocol> = TransactionStatusChecker
 export interface TransactionStatusChecker {
   getTransactionStatus(transactionIds: string[]): Promise<Record<string, AirGapTransactionStatus>>
 }

@@ -1,12 +1,12 @@
 import { Address } from '../../../types/address'
 import { SubProtocolType } from '../../../types/sub-protocol'
-import { AnyProtocol } from '../../protocol'
+import { _AnyProtocol } from '../../protocol'
 
 import { SubProtocol } from './SubProtocolExtension'
 
-export type ContractSubProtocolExtension<T extends AnyProtocol> = ContractSubProtocol
+export type SingleTokenSubProtocolExtension<T extends _AnyProtocol> = SingleTokenSubProtocol
 
-export interface ContractSubProtocol extends SubProtocol {
+export interface SingleTokenSubProtocol extends SubProtocol {
   getType(): Promise<Extract<SubProtocolType, 'token'>>
   getContractAddress(): Promise<Address>
 }

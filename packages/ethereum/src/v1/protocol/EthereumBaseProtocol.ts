@@ -69,10 +69,10 @@ export interface EthereumBaseProtocol<_Units extends string = EthereumUnits>
       UnsignedTransaction: EthereumUnsignedTransaction
       TransactionCursor: EthereumTransactionCursor
     },
-    'CryptoExtension',
-    'FetchDataForAddressExtension',
-    'FetchDataForMultipleAddressesExtension',
-    'TransactionStatusCheckerExtension'
+    'Crypto',
+    'FetchDataForAddress',
+    'FetchDataForMultipleAddresses',
+    'TransactionStatusChecker'
   > {}
 
 // Implementation

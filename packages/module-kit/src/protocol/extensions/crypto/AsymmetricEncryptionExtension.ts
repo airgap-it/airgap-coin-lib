@@ -1,29 +1,29 @@
 import { ExtendedKeyPair, ExtendedPublicKey, KeyPair, PublicKey } from '../../../types/key'
-import { AnyProtocol, BaseProtocol, OfflineProtocol } from '../../protocol'
-import { BaseBip32Protocol, OfflineBip32Protocol } from '../bip/Bip32OverridingExtension'
+import { _AnyProtocol, _BaseProtocol, _OfflineProtocol } from '../../protocol'
 
-export type AsymmetricEncryptionExtension<T extends AnyProtocol> = T extends OfflineBip32Protocol<any, any, any, any, any, any>
-  ? OfflineAsymmetricEncryptionWithExtendedKeyPair
-  : T extends BaseBip32Protocol<any, any, any, any, any, any>
-  ? BaseAsymmetricEncryptionWithExtendedKeyPair
-  : T extends OfflineProtocol<any>
-  ? OfflineAsymmetricEncryptionWithNonExtendedKeyPair
-  : T extends BaseProtocol<any>
-  ? BaseAsymmetricEncryptionWithNonExtendedKeyPair
+export type AsymmetricEncryptionExtension<T extends _AnyProtocol> = T extends _OfflineProtocol<
+  any,
+  any,
+  any,
+  any,
+  any,
+  any,
+  infer _PublicKey,
+  any,
+  infer _KeyPair
+>
+  ? OfflineAsymmetricEncryption<_PublicKey, _KeyPair>
+  : T extends _BaseProtocol<any, any, any, any, any, any, infer _PublicKey>
+  ? BaseAsymmetricEncryption<_PublicKey>
   : never
 
-export interface BaseAsymmetricEncryptionWithNonExtendedKeyPair {
-  encryptAsymmetricWithPublicKey(payload: string, publicKey: PublicKey): Promise<string>
+export interface BaseAsymmetricEncryption<_PublicKey extends PublicKey | ExtendedPublicKey = PublicKey> {
+  encryptAsymmetricWithPublicKey(payload: string, publicKey: _PublicKey): Promise<string>
 }
 
-export interface OfflineAsymmetricEncryptionWithNonExtendedKeyPair extends BaseAsymmetricEncryptionWithNonExtendedKeyPair {
-  decryptAsymmetricWithKeyPair(payload: string, keyPair: KeyPair): Promise<string>
-}
-
-export interface BaseAsymmetricEncryptionWithExtendedKeyPair {
-  encryptAsymmetricWithPublicKey(payload: string, publicKey: PublicKey | ExtendedPublicKey): Promise<string>
-}
-
-export interface OfflineAsymmetricEncryptionWithExtendedKeyPair extends BaseAsymmetricEncryptionWithExtendedKeyPair {
-  decryptAsymmetricWithKeyPair(payload: string, keyPair: KeyPair | ExtendedKeyPair): Promise<string>
+export interface OfflineAsymmetricEncryption<
+  _PublicKey extends PublicKey | ExtendedPublicKey = PublicKey,
+  _KeyPair extends KeyPair | ExtendedKeyPair = KeyPair
+> extends BaseAsymmetricEncryption<_PublicKey> {
+  decryptAsymmetricWithKeyPair(payload: string, keyPair: _KeyPair): Promise<string>
 }
