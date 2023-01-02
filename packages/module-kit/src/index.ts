@@ -11,17 +11,19 @@ import {
   FetchDataForMultipleAddressesExtension,
   FetchDataForMultipleAddressesProtocol
 } from './protocol/extensions/address/FetchDataForMultipleAddressesExtension'
-import {
-  MultiAddressExtendedPublicKeyProtocol,
-  MultiAddressNonExtendedPublicKeyProtocol,
-  MultiAddressPublicKeyExtension
-} from './protocol/extensions/address/MultiAddressPublicKeyExtension'
-import { Bip32OverridingExtension, OfflineBip32Protocol, OnlineBip32Protocol } from './protocol/extensions/bip/Bip32OverridingExtension'
+import { MultiAddressPublicKeyExtension, MultiAddressPublicKeyProtocol } from './protocol/extensions/address/MultiAddressPublicKeyExtension'
+import { Bip32Extension, OfflineBip32Protocol, OnlineBip32Protocol } from './protocol/extensions/bip/Bip32Extension'
 import { AESExtension } from './protocol/extensions/crypto/AESExtension'
 import { AsymmetricEncryptionExtension } from './protocol/extensions/crypto/AsymmetricEncryptionExtension'
 import { CryptoExtension } from './protocol/extensions/crypto/CryptoExtension'
 import { SignMessageExtension } from './protocol/extensions/crypto/SignMessageExtension'
-import { ContractSubProtocol, ContractSubProtocolExtension } from './protocol/extensions/sub-protocol/ContractSubProtocolExtension'
+import {
+  BaseMultiTokenSubProtocol,
+  MultiTokenBalanceConfiguration,
+  MultiTokenSubProtocolExtension,
+  OnlineMultiTokenSubProtocol
+} from './protocol/extensions/sub-protocol/MultiTokenSubProtocolExtension'
+import { SingleTokenSubProtocol, SingleTokenSubProtocolExtension } from './protocol/extensions/sub-protocol/SingleTokenSubProtocolExtension'
 import { SubProtocol, SubProtocolExtension } from './protocol/extensions/sub-protocol/SubProtocolExtension'
 import { TransactionStatusCheckerExtension } from './protocol/extensions/transaction/TransactionStatusCheckerExtension'
 import { AirGapAnyProtocol, AirGapOfflineProtocol, AirGapOnlineProtocol, AirGapProtocol } from './protocol/protocol'
@@ -73,6 +75,9 @@ import {
   hasConfigurableTransactionInjector,
   hasMultiAddressPublicKeys,
   isBip32Protocol,
+  isMultiTokenSubProtocol,
+  isSingleTokenSubProtocol,
+  isSubProtocol,
   isTransactionStatusChecker,
   protocolNetworkIdentifier
 } from './utils/protocol'
@@ -113,17 +118,19 @@ export {
   FetchDataForMultipleAddressesExtension,
   FetchDataForMultipleAddressesProtocol,
   MultiAddressPublicKeyExtension,
-  MultiAddressNonExtendedPublicKeyProtocol,
-  MultiAddressExtendedPublicKeyProtocol,
-  Bip32OverridingExtension,
+  MultiAddressPublicKeyProtocol,
+  Bip32Extension,
   OfflineBip32Protocol,
   OnlineBip32Protocol,
   SubProtocolExtension,
   SubProtocol,
-  ContractSubProtocolExtension,
-  ContractSubProtocol,
+  SingleTokenSubProtocolExtension,
+  SingleTokenSubProtocol,
+  MultiTokenSubProtocolExtension,
+  BaseMultiTokenSubProtocol,
+  OnlineMultiTokenSubProtocol,
   CryptoExtension,
-  AESExtension as AESEncryptionExtension,
+  AESExtension,
   AsymmetricEncryptionExtension,
   SignMessageExtension,
   TransactionStatusCheckerExtension,
@@ -152,6 +159,7 @@ export {
   AddressWithCursor,
   Amount,
   Balance,
+  MultiTokenBalanceConfiguration,
   BytesStringFormat,
   BytesString,
   HexString,
@@ -193,6 +201,9 @@ export {
   isPublicKey,
   isExtendedPublicKey,
   isBip32Protocol,
+  isSubProtocol,
+  isSingleTokenSubProtocol,
+  isMultiTokenSubProtocol,
   canFetchDataForMultipleAddresses,
   hasMultiAddressPublicKeys,
   hasConfigurableContract,

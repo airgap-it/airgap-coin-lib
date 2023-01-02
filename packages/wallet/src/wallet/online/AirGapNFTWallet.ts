@@ -1,12 +1,10 @@
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
-import { AirGapOnlineProtocol, Balance, Bip32OverridingExtension, isBip32Protocol, newAmount } from '@airgap/module-kit'
+import { AirGapOnlineProtocol, Balance, Bip32Extension, isBip32Protocol, newAmount } from '@airgap/module-kit'
 
 import { AirGapOnlineWallet } from './AirGapOnlineWallet'
 
 export class AirGapNFTWallet<
-  T extends AirGapOnlineProtocol | Bip32OverridingExtension<AirGapOnlineProtocol> =
-    | AirGapOnlineProtocol
-    | Bip32OverridingExtension<AirGapOnlineProtocol>
+  T extends AirGapOnlineProtocol | Bip32Extension<AirGapOnlineProtocol> = AirGapOnlineProtocol | Bip32Extension<AirGapOnlineProtocol>
 > extends AirGapOnlineWallet<T> {
   private currentBalance: Record<string, BigNumber | undefined> = {}
 

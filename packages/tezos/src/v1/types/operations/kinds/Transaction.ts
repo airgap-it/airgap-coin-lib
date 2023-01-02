@@ -1,14 +1,16 @@
+import { TezosContractEntrypointType } from '../../../contract/TezosContractEntrypoint'
 import { MichelineNode } from '../../micheline/MichelineNode'
 import { TezosOperationType } from '../TezosOperationType'
+import { TezosWrappedOperation } from '../TezosWrappedOperation'
 
 import { TezosOperation } from './TezosOperation'
 
-export interface TezosTransactionParameters {
-  entrypoint: 'default' | 'root' | 'do' | 'set_delegate' | 'remove_delegate' | string
+export interface TezosTransactionParameters<Entrypoint extends string = string> {
+  entrypoint: TezosContractEntrypointType | Entrypoint
   value: MichelineNode
 }
 
-export interface TezosWrappedTransactionOperation extends TezosOperation {
+export interface TezosWrappedTransactionOperation extends TezosWrappedOperation {
   contents: TezosTransactionOperation[]
   signature: string
 }

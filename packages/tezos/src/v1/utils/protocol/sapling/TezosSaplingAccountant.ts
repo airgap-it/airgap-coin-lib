@@ -14,11 +14,11 @@ import { TezosSaplingCiphertext } from '../../../types/sapling/TezosSaplingCiphe
 import { TezosSaplingInput } from '../../../types/sapling/TezosSaplingInput'
 import { TezosSaplingOutput } from '../../../types/sapling/TezosSaplingOutput'
 import { TezosSaplingOutputDescription, TezosSaplingTransaction } from '../../../types/sapling/TezosSaplingTransaction'
-import { parseTzAddress, unpackMichelsonType } from '../../../utils/pack'
+import { parseTzAddress, unpackMichelsonType } from '../../pack'
 
 import { TezosSaplingEncoder } from './TezosSaplingEncoder'
 
-export class TezosSaplingBookkeeper<_Units extends string> {
+export class TezosSaplingAccountant<_Units extends string> {
   constructor(
     private readonly network: TezosSaplingProtocolNetwork,
     private readonly cryptoClient: TezosSaplingCryptoClient,

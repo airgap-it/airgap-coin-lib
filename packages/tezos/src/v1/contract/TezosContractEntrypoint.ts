@@ -2,6 +2,8 @@ import { MichelineTypeNode } from '../types/micheline/MichelineNode'
 import { MichelsonTypeMeta } from '../types/michelson/MichelsonTypeMeta'
 import { isAnyMichelinePrimitiveApplication } from '../utils/micheline'
 
+export type TezosContractEntrypointType = 'default' | 'root' | 'do' | 'set_delegate' | 'remove_delegate'
+
 export class TezosContractEntrypoint {
   public static fromJSON(entrypoints: Record<string, MichelineTypeNode>): TezosContractEntrypoint[] {
     return Object.entries(entrypoints)
@@ -14,5 +16,5 @@ export class TezosContractEntrypoint {
       .filter((entrypoint: TezosContractEntrypoint | undefined) => entrypoint !== undefined) as TezosContractEntrypoint[]
   }
 
-  constructor(readonly name: string, readonly type: MichelsonTypeMeta) {}
+  constructor(readonly name: TezosContractEntrypointType | string, readonly type: MichelsonTypeMeta) {}
 }

@@ -1,33 +1,24 @@
 import { AddressWithCursor } from '../../../types/address'
 import { ExtendedPublicKey, PublicKey } from '../../../types/key'
-import { _BaseProtocol, AnyProtocol, BaseGeneric } from '../../protocol'
-import { BaseBip32Protocol } from '../bip/Bip32OverridingExtension'
+import { _AnyProtocol, _BaseProtocol, BaseGeneric } from '../../protocol'
 
-export type MultiAddressPublicKeyExtension<T extends AnyProtocol> = T extends BaseBip32Protocol<
+export type MultiAddressPublicKeyExtension<T extends _AnyProtocol> = T extends _BaseProtocol<
   infer _BaseAddressCursor,
   infer _AddressResult,
   any,
   any,
-  any
+  any,
+  any,
+  infer _PublicKey
 >
   ? _AddressResult extends AddressWithCursor<infer _AddressCursor> // otherwise the type won't get inferred
-    ? MultiAddressExtendedPublicKeyProtocol<_AddressCursor>
-    : MultiAddressExtendedPublicKeyProtocol<_BaseAddressCursor>
-  : T extends _BaseProtocol<infer _BaseAddressCursor, infer _AddressResult, any, any, any, any>
-  ? _AddressResult extends AddressWithCursor<infer _AddressCursor> // otherwise the type won't get inferred
-    ? MultiAddressNonExtendedPublicKeyProtocol<_AddressCursor>
-    : MultiAddressNonExtendedPublicKeyProtocol<_BaseAddressCursor>
+    ? MultiAddressPublicKeyProtocol<_AddressCursor, _PublicKey>
+    : MultiAddressPublicKeyProtocol<_BaseAddressCursor, _PublicKey>
   : never
 
-export interface MultiAddressNonExtendedPublicKeyProtocol<
-  _AddressCursor extends BaseGeneric['AddressCursor'] = BaseGeneric['AddressCursor']
+export interface MultiAddressPublicKeyProtocol<
+  _AddressCursor extends BaseGeneric['AddressCursor'] = BaseGeneric['AddressCursor'],
+  _PublicKey extends PublicKey | ExtendedPublicKey = PublicKey
 > {
-  getNextAddressFromPublicKey(publicKey: PublicKey, cursor: _AddressCursor): Promise<AddressWithCursor<_AddressCursor> | undefined>
-}
-
-export interface MultiAddressExtendedPublicKeyProtocol<_AddressCursor extends BaseGeneric['AddressCursor'] = BaseGeneric['AddressCursor']> {
-  getNextAddressFromPublicKey(
-    publicKey: PublicKey | ExtendedPublicKey,
-    cursor: _AddressCursor
-  ): Promise<AddressWithCursor<_AddressCursor> | undefined>
+  getNextAddressFromPublicKey(publicKey: _PublicKey, cursor: _AddressCursor): Promise<AddressWithCursor<_AddressCursor> | undefined>
 }

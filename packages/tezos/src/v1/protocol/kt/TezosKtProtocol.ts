@@ -1,4 +1,4 @@
-import { Domain } from '@airgap/coinlib-core'
+import { Domain, SubProtocolSymbols } from '@airgap/coinlib-core'
 import axios, { AxiosError, AxiosResponse } from '@airgap/coinlib-core/dependencies/src/axios-0.19.0'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import {
@@ -30,19 +30,19 @@ import {
   TransactionDetails
 } from '@airgap/module-kit'
 
-import { createTezosIndexerClient } from '../indexer/factory'
-import { TezosIndexerClient } from '../indexer/TezosIndexerClient'
-import { TezosKtAddressCursor } from '../types/address'
-import { TezosOperation } from '../types/operations/kinds/TezosOperation'
-import { TezosTransactionOperation } from '../types/operations/kinds/Transaction'
-import { TezosOperationType } from '../types/operations/TezosOperationType'
-import { TezosWrappedOperation } from '../types/operations/TezosWrappedOperation'
-import { TezosProtocolNetwork, TezosProtocolOptions, TezosUnits } from '../types/protocol'
-import { TezosKtTransactionCursor, TezosSignedTransaction, TezosTransactionCursor, TezosUnsignedTransaction } from '../types/transaction'
-import { decodeBase58 } from '../utils/encoding'
-import { createRevealOperation } from '../utils/operations'
+import { createTezosIndexerClient } from '../../indexer/factory'
+import { TezosIndexerClient } from '../../indexer/TezosIndexerClient'
+import { TezosKtAddressCursor } from '../../types/address'
+import { TezosOperation } from '../../types/operations/kinds/TezosOperation'
+import { TezosTransactionOperation } from '../../types/operations/kinds/Transaction'
+import { TezosOperationType } from '../../types/operations/TezosOperationType'
+import { TezosWrappedOperation } from '../../types/operations/TezosWrappedOperation'
+import { TezosProtocolNetwork, TezosProtocolOptions, TezosUnits } from '../../types/protocol'
+import { TezosKtTransactionCursor, TezosSignedTransaction, TezosTransactionCursor, TezosUnsignedTransaction } from '../../types/transaction'
+import { decodeBase58 } from '../../utils/encoding'
+import { createRevealOperation } from '../../utils/operations'
 
-import { createTezosProtocol, createTezosProtocolOptions, TezosProtocol } from './TezosProtocol'
+import { createTezosProtocol, createTezosProtocolOptions, TezosProtocol } from '../TezosProtocol'
 
 // Interface
 
@@ -58,11 +58,11 @@ export interface TezosKtProtocol
       SignedTransaction: TezosSignedTransaction
       TransactionCursor: TezosKtTransactionCursor
     },
-    'SubProtocolExtension',
-    'CryptoExtension',
-    'MultiAddressPublicKeyExtension',
-    'FetchDataForAddressExtension',
-    'FetchDataForMultipleAddressesExtension'
+    'SubProtocol',
+    'Crypto',
+    'MultiAddressPublicKey',
+    'FetchDataForAddress',
+    'FetchDataForMultipleAddresses'
   > {
   migrateKtContract(publicKey: PublicKey, destinationContract: string): Promise<TezosUnsignedTransaction>
 }
@@ -97,6 +97,7 @@ class TezosKtProtocolImpl implements TezosKtProtocol {
 
     return {
       ...tezosMetadata,
+      identifier: SubProtocolSymbols.XTZ_KT,
       account: {
         ...(tezosMetadata.account ?? {}),
         address: {

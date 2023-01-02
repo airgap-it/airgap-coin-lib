@@ -1,13 +1,6 @@
 import { ConditionViolationError } from '@airgap/coinlib-core/errors'
 import { Domain } from '@airgap/coinlib-core/errors/coinlib-error'
-import {
-  AddressWithCursor,
-  AirGapAnyProtocol,
-  Bip32OverridingExtension,
-  ExtendedPublicKey,
-  isBip32Protocol,
-  PublicKey
-} from '@airgap/module-kit'
+import { AddressWithCursor, AirGapAnyProtocol, Bip32Extension, ExtendedPublicKey, isBip32Protocol, PublicKey } from '@airgap/module-kit'
 
 import { normalizeAddress } from '../utils/address'
 import { deriveAddresses } from '../utils/protocol'
@@ -32,17 +25,13 @@ export interface SerializedAirGapWallet {
 
 export abstract class AirGapWallet<
   Protocol extends AirGapAnyProtocol = AirGapAnyProtocol,
-  T extends Protocol | Bip32OverridingExtension<Protocol> = Protocol | Bip32OverridingExtension<Protocol>
+  T extends Protocol | Bip32Extension<Protocol> = Protocol | Bip32Extension<Protocol>
 > {
   public addresses: string[] = [] // used for cache
 
   public constructor(
     public protocol: T,
-    public readonly publicKey: T extends Bip32OverridingExtension<Protocol>
-      ? PublicKey | ExtendedPublicKey
-      : T extends Protocol
-      ? PublicKey
-      : never,
+    public readonly publicKey: T extends Bip32Extension<Protocol> ? PublicKey | ExtendedPublicKey : T extends Protocol ? PublicKey : never,
     public readonly derivationPath: string,
     public readonly masterFingerprint: string,
     public status: AirGapWalletStatus,

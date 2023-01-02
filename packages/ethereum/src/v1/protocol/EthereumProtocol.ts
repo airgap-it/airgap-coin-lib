@@ -36,7 +36,7 @@ import { DefaultEthereumBaseProtocolImpl, EthereumBaseProtocol } from './Ethereu
 
 // Interface
 
-export interface EthereumProtocol extends AirGapInterface<EthereumBaseProtocol, 'Bip32OverridingExtension'> {}
+export interface EthereumProtocol extends AirGapInterface<EthereumBaseProtocol, 'Bip32'> {}
 
 // Implementation
 

@@ -10,7 +10,7 @@ import {
 } from '@airgap/module-kit'
 
 import { createTezosBlockExplorer } from '../block-explorer/factory'
-import { createTezosKtProtocol } from '../protocol/TezosKtProtocol'
+import { createTezosKtProtocol } from '../protocol/kt/TezosKtProtocol'
 import { TEZOS_MAINNET_PROTOCOL_NETWORK } from '../protocol/TezosProtocol'
 import { TezosProtocolNetwork } from '../types/protocol'
 

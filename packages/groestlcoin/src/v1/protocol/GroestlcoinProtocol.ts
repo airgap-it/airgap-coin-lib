@@ -48,10 +48,10 @@ export interface GroestlcoinProtocol
       FeeEstimation: FeeDefaults<GroestlcoinUnits>
       UnsignedTransaction: GroestlcoinUnsignedTransaction
     },
-    'Bip32OverridingExtension',
-    'CryptoExtension',
-    'FetchDataForAddressExtension',
-    'FetchDataForMultipleAddressesExtension'
+    'Bip32',
+    'Crypto',
+    'FetchDataForAddress',
+    'FetchDataForMultipleAddresses'
   > {}
 
 // Implementation

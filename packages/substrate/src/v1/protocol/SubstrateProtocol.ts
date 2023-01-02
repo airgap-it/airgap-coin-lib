@@ -22,6 +22,7 @@ import {
   TransactionConfiguration,
   TransactionDetails
 } from '@airgap/module-kit'
+
 import { SubstrateBlockExplorerClient } from '../block-explorer/SubstrateBlockExplorerClient'
 import { SubstrateAccountController } from '../controller/account/SubstrateAccountController'
 import { SubstrateTransactionController, SubstrateTransactionParameters } from '../controller/transaction/SubstrateTransactionController'
@@ -50,8 +51,8 @@ export interface SubstrateProtocol<_Units extends string, _ProtocolNetwork exten
       SignedTransaction: SubstrateSignedTransaction
       TransactionCursor: SubstrateTransactionCursor
     },
-    'CryptoExtension',
-    'FetchDataForAddressExtension'
+    'Crypto',
+    'FetchDataForAddress'
   > {}
 
 // Implementation

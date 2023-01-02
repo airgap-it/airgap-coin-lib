@@ -27,7 +27,7 @@ export interface AirGapTransaction<_Units extends string = string, _FeeUnits ext
 
   timestamp?: number
   status?: AirGapTransactionStatus
-  type?: string
+  type?: string | { name: string; [key: string]: string }
 
   uiAlerts?: AirGapUIAlert[]
 
@@ -58,6 +58,7 @@ export interface TransactionConfiguration<_FeeUnits extends string = string> {
   fee?: Amount<_FeeUnits>
   arbitraryData?: string
   keepMinBalance?: boolean
+  assetId?: number // TODO: move it to an extension?
 }
 
 // ##### TransactionStatus #####

@@ -3,7 +3,7 @@ import { AirGapInterface, ApplicableProtocolExtension } from '../types/airgap'
 import { Amount } from '../types/amount'
 import { Balance } from '../types/balance'
 import { FeeEstimation } from '../types/fee'
-import { KeyPair, PublicKey, SecretKey } from '../types/key'
+import { ExtendedKeyPair, ExtendedPublicKey, ExtendedSecretKey, KeyPair, PublicKey, SecretKey } from '../types/key'
 import { Complement } from '../types/meta/utility-types'
 import { ProtocolMetadata, ProtocolNetwork } from '../types/protocol'
 import { Secret } from '../types/secret'
@@ -80,20 +80,21 @@ type TypedTransactionCursor<G extends Partial<OnlineGeneric>> = Complement<Onlin
 // ##### Protocol #####
 
 export interface _BaseProtocol<
-  _AddressCursor extends BaseGeneric['AddressCursor'],
-  _AddressResult extends BaseGeneric['AddressResult'],
-  _Units extends BaseGeneric['Units'],
-  _FeeUnits extends BaseGeneric['FeeUnits'],
-  _SignedTransaction extends BaseGeneric['SignedTransaction'],
-  _UnsignedTransaction extends BaseGeneric['UnsignedTransaction']
+  _AddressCursor extends BaseGeneric['AddressCursor'] = any,
+  _AddressResult extends BaseGeneric['AddressResult'] = any,
+  _Units extends BaseGeneric['Units'] = any,
+  _FeeUnits extends BaseGeneric['FeeUnits'] = any,
+  _SignedTransaction extends BaseGeneric['SignedTransaction'] = any,
+  _UnsignedTransaction extends BaseGeneric['UnsignedTransaction'] = any,
+  _PublicKey extends PublicKey | ExtendedPublicKey = any
 > {
   getMetadata(): Promise<ProtocolMetadata<_Units, _FeeUnits>>
 
-  getAddressFromPublicKey(publicKey: PublicKey): Promise<_AddressResult>
+  getAddressFromPublicKey(publicKey: _PublicKey): Promise<_AddressResult>
 
   getDetailsFromTransaction(
     transaction: _UnsignedTransaction | _SignedTransaction,
-    publicKey: PublicKey
+    publicKey: _PublicKey
   ): Promise<AirGapTransaction<_Units, _FeeUnits>[]>
 }
 export type BaseProtocol<G extends Partial<BaseGeneric> = {}> = _BaseProtocol<
@@ -102,20 +103,24 @@ export type BaseProtocol<G extends Partial<BaseGeneric> = {}> = _BaseProtocol<
   TypedUnits<G>,
   TypedFeeUnits<G>,
   TypedSignedTransaction<G>,
-  TypedUnsignedTransaction<G>
+  TypedUnsignedTransaction<G>,
+  PublicKey
 >
 
 export interface _OfflineProtocol<
-  _AddressCursor extends OfflineGeneric['AddressCursor'],
-  _AddressResult extends OfflineGeneric['AddressResult'],
-  _Units extends BaseGeneric['Units'],
-  _FeeUnits extends BaseGeneric['FeeUnits'],
-  _SignedTransaction extends BaseGeneric['SignedTransaction'],
-  _UnsignedTransaction extends BaseGeneric['UnsignedTransaction']
-> extends _BaseProtocol<_AddressCursor, _AddressResult, _Units, _FeeUnits, _SignedTransaction, _UnsignedTransaction> {
+  _AddressCursor extends OfflineGeneric['AddressCursor'] = any,
+  _AddressResult extends OfflineGeneric['AddressResult'] = any,
+  _Units extends BaseGeneric['Units'] = any,
+  _FeeUnits extends BaseGeneric['FeeUnits'] = any,
+  _SignedTransaction extends BaseGeneric['SignedTransaction'] = any,
+  _UnsignedTransaction extends BaseGeneric['UnsignedTransaction'] = any,
+  _PublicKey extends PublicKey | ExtendedPublicKey = any,
+  _SecretKey extends SecretKey | ExtendedSecretKey = any,
+  _KeyPair extends KeyPair | ExtendedKeyPair = any
+> extends _BaseProtocol<_AddressCursor, _AddressResult, _Units, _FeeUnits, _SignedTransaction, _UnsignedTransaction, _PublicKey> {
   getKeyPairFromSecret(secret: Secret, derivationPath?: string): Promise<KeyPair>
 
-  signTransactionWithSecretKey(transaction: _UnsignedTransaction, secretKey: SecretKey): Promise<_SignedTransaction>
+  signTransactionWithSecretKey(transaction: _UnsignedTransaction, secretKey: _SecretKey): Promise<_SignedTransaction>
 }
 export type OfflineProtocol<G extends Partial<OfflineGeneric> = {}> = _OfflineProtocol<
   TypedAddressCursor<G>,
@@ -123,44 +128,51 @@ export type OfflineProtocol<G extends Partial<OfflineGeneric> = {}> = _OfflinePr
   TypedUnits<G>,
   TypedFeeUnits<G>,
   TypedSignedTransaction<G>,
-  TypedUnsignedTransaction<G>
+  TypedUnsignedTransaction<G>,
+  PublicKey,
+  SecretKey,
+  KeyPair
 >
 
 export interface _OnlineProtocol<
-  _AddressCursor extends OnlineGeneric['AddressCursor'],
-  _AddressResult extends OnlineGeneric['AddressResult'],
-  _ProtocolNetwork extends OnlineGeneric['ProtocolNetwork'],
-  _Units extends OnlineGeneric['Units'],
-  _FeeUnits extends OnlineGeneric['FeeUnits'],
-  _FeeEstimation extends OnlineGeneric['FeeEstimation'],
-  _SignedTransaction extends OnlineGeneric['SignedTransaction'],
-  _UnsignedTransaction extends OnlineGeneric['UnsignedTransaction'],
-  _TransactionCursor extends OnlineGeneric['TransactionCursor']
-> extends _BaseProtocol<_AddressCursor, _AddressResult, _Units, _FeeUnits, _SignedTransaction, _UnsignedTransaction> {
+  _AddressCursor extends OnlineGeneric['AddressCursor'] = any,
+  _AddressResult extends OnlineGeneric['AddressResult'] = any,
+  _ProtocolNetwork extends OnlineGeneric['ProtocolNetwork'] = any,
+  _Units extends OnlineGeneric['Units'] = any,
+  _FeeUnits extends OnlineGeneric['FeeUnits'] = any,
+  _FeeEstimation extends OnlineGeneric['FeeEstimation'] = any,
+  _SignedTransaction extends OnlineGeneric['SignedTransaction'] = any,
+  _UnsignedTransaction extends OnlineGeneric['UnsignedTransaction'] = any,
+  _TransactionCursor extends OnlineGeneric['TransactionCursor'] = any,
+  _PublicKey extends PublicKey | ExtendedPublicKey = any,
+  _BalanceConfiguration extends Object | undefined = any
+> extends _BaseProtocol<_AddressCursor, _AddressResult, _Units, _FeeUnits, _SignedTransaction, _UnsignedTransaction, _PublicKey> {
   getNetwork(): Promise<_ProtocolNetwork>
 
   getTransactionsForPublicKey(
-    publicKey: PublicKey,
+    publicKey: _PublicKey,
     limit: number,
     cursor?: _TransactionCursor
   ): Promise<AirGapTransactionsWithCursor<_TransactionCursor, _Units, _FeeUnits>>
 
-  getBalanceOfPublicKey(publicKey: PublicKey): Promise<Balance<_Units>>
+  // TODO: check if there's a better way to do multi token extension
+  getBalanceOfPublicKey(publicKey: _PublicKey, configuration?: _BalanceConfiguration): Promise<Balance<_Units>>
 
   getTransactionMaxAmountWithPublicKey(
-    publicKey: PublicKey,
+    publicKey: _PublicKey,
     to: Address[],
     configuration?: TransactionConfiguration<_FeeUnits>
   ): Promise<Amount<_Units>>
-  getTransactionFeeWithPublicKey(publicKey: PublicKey, details: TransactionDetails<_Units>[]): Promise<_FeeEstimation>
+  getTransactionFeeWithPublicKey(publicKey: _PublicKey, details: TransactionDetails<_Units>[]): Promise<_FeeEstimation>
   prepareTransactionWithPublicKey(
-    publicKey: PublicKey,
+    publicKey: _PublicKey,
     details: TransactionDetails<_Units>[],
     configuration?: TransactionConfiguration<_FeeUnits>
   ): Promise<_UnsignedTransaction>
 
   broadcastTransaction(transaction: _SignedTransaction): Promise<string>
 }
+
 export type OnlineProtocol<G extends Partial<OnlineGeneric> = {}> = _OnlineProtocol<
   TypedAddressCursor<G>,
   TypedAddressResult<G>,
@@ -170,66 +182,71 @@ export type OnlineProtocol<G extends Partial<OnlineGeneric> = {}> = _OnlineProto
   TypedFeeEstimation<G>,
   TypedSignedTransaction<G>,
   TypedUnsignedTransaction<G>,
-  TypedTransactionCursor<G>
+  TypedTransactionCursor<G>,
+  PublicKey,
+  undefined
 >
 
+export type _Protocol = _OfflineProtocol & _OnlineProtocol
 export interface Protocol<G extends Partial<OfflineGeneric & OnlineGeneric> = {}> extends OfflineProtocol<G>, OnlineProtocol<G> {}
+
+export type _AnyProtocol = _OfflineProtocol | _OnlineProtocol
 export type AnyProtocol<G extends Partial<OfflineGeneric & OnlineGeneric> = {}> = OfflineProtocol<G> | OnlineProtocol<G>
 
 // Convinience Types
 
 export type AirGapOfflineProtocol<
   G extends Partial<OfflineGeneric> = {},
-  E0 extends ApplicableProtocolExtension<OfflineProtocol<any>> = undefined,
-  E1 extends ApplicableProtocolExtension<OfflineProtocol<any>> = undefined,
-  E2 extends ApplicableProtocolExtension<OfflineProtocol<any>> = undefined,
-  E3 extends ApplicableProtocolExtension<OfflineProtocol<any>> = undefined,
-  E4 extends ApplicableProtocolExtension<OfflineProtocol<any>> = undefined,
-  E5 extends ApplicableProtocolExtension<OfflineProtocol<any>> = undefined,
-  E6 extends ApplicableProtocolExtension<OfflineProtocol<any>> = undefined,
-  E7 extends ApplicableProtocolExtension<OfflineProtocol<any>> = undefined,
-  E8 extends ApplicableProtocolExtension<OfflineProtocol<any>> = undefined,
-  E9 extends ApplicableProtocolExtension<OfflineProtocol<any>> = undefined
+  E0 extends ApplicableProtocolExtension<_OfflineProtocol> = undefined,
+  E1 extends ApplicableProtocolExtension<_OfflineProtocol> = undefined,
+  E2 extends ApplicableProtocolExtension<_OfflineProtocol> = undefined,
+  E3 extends ApplicableProtocolExtension<_OfflineProtocol> = undefined,
+  E4 extends ApplicableProtocolExtension<_OfflineProtocol> = undefined,
+  E5 extends ApplicableProtocolExtension<_OfflineProtocol> = undefined,
+  E6 extends ApplicableProtocolExtension<_OfflineProtocol> = undefined,
+  E7 extends ApplicableProtocolExtension<_OfflineProtocol> = undefined,
+  E8 extends ApplicableProtocolExtension<_OfflineProtocol> = undefined,
+  E9 extends ApplicableProtocolExtension<_OfflineProtocol> = undefined
 > = AirGapInterface<OfflineProtocol<G>, E0, E1, E2, E3, E4, E5, E6, E7, E8, E9>
 
 export type AirGapOnlineProtocol<
   G extends Partial<OnlineGeneric> = {},
-  E0 extends ApplicableProtocolExtension<OnlineProtocol<any>> = undefined,
-  E1 extends ApplicableProtocolExtension<OnlineProtocol<any>> = undefined,
-  E2 extends ApplicableProtocolExtension<OnlineProtocol<any>> = undefined,
-  E3 extends ApplicableProtocolExtension<OnlineProtocol<any>> = undefined,
-  E4 extends ApplicableProtocolExtension<OnlineProtocol<any>> = undefined,
-  E5 extends ApplicableProtocolExtension<OnlineProtocol<any>> = undefined,
-  E6 extends ApplicableProtocolExtension<OnlineProtocol<any>> = undefined,
-  E7 extends ApplicableProtocolExtension<OnlineProtocol<any>> = undefined,
-  E8 extends ApplicableProtocolExtension<OnlineProtocol<any>> = undefined,
-  E9 extends ApplicableProtocolExtension<OnlineProtocol<any>> = undefined
+  E0 extends ApplicableProtocolExtension<_OnlineProtocol> = undefined,
+  E1 extends ApplicableProtocolExtension<_OnlineProtocol> = undefined,
+  E2 extends ApplicableProtocolExtension<_OnlineProtocol> = undefined,
+  E3 extends ApplicableProtocolExtension<_OnlineProtocol> = undefined,
+  E4 extends ApplicableProtocolExtension<_OnlineProtocol> = undefined,
+  E5 extends ApplicableProtocolExtension<_OnlineProtocol> = undefined,
+  E6 extends ApplicableProtocolExtension<_OnlineProtocol> = undefined,
+  E7 extends ApplicableProtocolExtension<_OnlineProtocol> = undefined,
+  E8 extends ApplicableProtocolExtension<_OnlineProtocol> = undefined,
+  E9 extends ApplicableProtocolExtension<_OnlineProtocol> = undefined
 > = AirGapInterface<OnlineProtocol<G>, E0, E1, E2, E3, E4, E5, E6, E7, E8, E9>
 
 export type AirGapProtocol<
   G extends Partial<OfflineGeneric & OnlineGeneric> = {},
-  E0 extends ApplicableProtocolExtension<OfflineProtocol<any> & OnlineProtocol<any>> = undefined,
-  E1 extends ApplicableProtocolExtension<OfflineProtocol<any> & OnlineProtocol<any>> = undefined,
-  E2 extends ApplicableProtocolExtension<OfflineProtocol<any> & OnlineProtocol<any>> = undefined,
-  E3 extends ApplicableProtocolExtension<OfflineProtocol<any> & OnlineProtocol<any>> = undefined,
-  E4 extends ApplicableProtocolExtension<OfflineProtocol<any> & OnlineProtocol<any>> = undefined,
-  E5 extends ApplicableProtocolExtension<OfflineProtocol<any> & OnlineProtocol<any>> = undefined,
-  E6 extends ApplicableProtocolExtension<OfflineProtocol<any> & OnlineProtocol<any>> = undefined,
-  E7 extends ApplicableProtocolExtension<OfflineProtocol<any> & OnlineProtocol<any>> = undefined,
-  E8 extends ApplicableProtocolExtension<OfflineProtocol<any> & OnlineProtocol<any>> = undefined,
-  E9 extends ApplicableProtocolExtension<OfflineProtocol<any> & OnlineProtocol<any>> = undefined
+  E0 extends ApplicableProtocolExtension<_OfflineProtocol & _OnlineProtocol> = undefined,
+  E1 extends ApplicableProtocolExtension<_OfflineProtocol & _OnlineProtocol> = undefined,
+  E2 extends ApplicableProtocolExtension<_OfflineProtocol & _OnlineProtocol> = undefined,
+  E3 extends ApplicableProtocolExtension<_OfflineProtocol & _OnlineProtocol> = undefined,
+  E4 extends ApplicableProtocolExtension<_OfflineProtocol & _OnlineProtocol> = undefined,
+  E5 extends ApplicableProtocolExtension<_OfflineProtocol & _OnlineProtocol> = undefined,
+  E6 extends ApplicableProtocolExtension<_OfflineProtocol & _OnlineProtocol> = undefined,
+  E7 extends ApplicableProtocolExtension<_OfflineProtocol & _OnlineProtocol> = undefined,
+  E8 extends ApplicableProtocolExtension<_OfflineProtocol & _OnlineProtocol> = undefined,
+  E9 extends ApplicableProtocolExtension<_OfflineProtocol & _OnlineProtocol> = undefined
 > = AirGapInterface<Protocol<G>, E0, E1, E2, E3, E4, E5, E6, E7, E8, E9>
 
 export type AirGapAnyProtocol<
   G extends Partial<OfflineGeneric & OnlineGeneric> = {},
-  E0 extends ApplicableProtocolExtension<OfflineProtocol<any> | OnlineProtocol<any>> = undefined,
-  E1 extends ApplicableProtocolExtension<OfflineProtocol<any> | OnlineProtocol<any>> = undefined,
-  E2 extends ApplicableProtocolExtension<OfflineProtocol<any> | OnlineProtocol<any>> = undefined,
-  E3 extends ApplicableProtocolExtension<OfflineProtocol<any> | OnlineProtocol<any>> = undefined,
-  E4 extends ApplicableProtocolExtension<OfflineProtocol<any> | OnlineProtocol<any>> = undefined,
-  E5 extends ApplicableProtocolExtension<OfflineProtocol<any> | OnlineProtocol<any>> = undefined,
-  E6 extends ApplicableProtocolExtension<OfflineProtocol<any> | OnlineProtocol<any>> = undefined,
-  E7 extends ApplicableProtocolExtension<OfflineProtocol<any> | OnlineProtocol<any>> = undefined,
-  E8 extends ApplicableProtocolExtension<OfflineProtocol<any> | OnlineProtocol<any>> = undefined,
-  E9 extends ApplicableProtocolExtension<OfflineProtocol<any> | OnlineProtocol<any>> = undefined
+  E0 extends ApplicableProtocolExtension<_OfflineProtocol | _OnlineProtocol> = undefined,
+  E1 extends ApplicableProtocolExtension<_OfflineProtocol | _OnlineProtocol> = undefined,
+  E2 extends ApplicableProtocolExtension<_OfflineProtocol | _OnlineProtocol> = undefined,
+  E3 extends ApplicableProtocolExtension<_OfflineProtocol | _OnlineProtocol> = undefined,
+  E4 extends ApplicableProtocolExtension<_OfflineProtocol | _OnlineProtocol> = undefined,
+  E5 extends ApplicableProtocolExtension<_OfflineProtocol | _OnlineProtocol> = undefined,
+  E6 extends ApplicableProtocolExtension<_OfflineProtocol | _OnlineProtocol> = undefined,
+  E7 extends ApplicableProtocolExtension<_OfflineProtocol | _OnlineProtocol> = undefined,
+  E8 extends ApplicableProtocolExtension<_OfflineProtocol | _OnlineProtocol> = undefined,
+  E9 extends ApplicableProtocolExtension<_OfflineProtocol | _OnlineProtocol> = undefined
 > = AirGapInterface<AnyProtocol<G>, E0, E1, E2, E3, E4, E5, E6, E7, E8, E9>
