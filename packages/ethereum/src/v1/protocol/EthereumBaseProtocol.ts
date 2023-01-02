@@ -14,7 +14,6 @@ import {
   Amount,
   Balance,
   FeeDefaults,
-  FeeEstimation,
   isAmount,
   KeyPair,
   newAmount,
@@ -65,11 +64,14 @@ export interface EthereumBaseProtocol<_Units extends string = EthereumUnits>
       ProtocolNetwork: EthereumProtocolNetwork
       Units: _Units
       FeeUnits: EthereumUnits
+      FeeEstimation: FeeDefaults<EthereumUnits>
       SignedTransaction: EthereumSignedTransaction
       UnsignedTransaction: EthereumUnsignedTransaction
       TransactionCursor: EthereumTransactionCursor
     },
-    'MultiAddressAccountExtension',
+    'CryptoExtension',
+    'FetchDataForAddressExtension',
+    'FetchDataForMultipleAddressesExtension',
     'TransactionStatusCheckerExtension'
   > {}
 
@@ -544,14 +546,14 @@ export abstract class EthereumBaseProtocolImpl<_Units extends string = EthereumU
     if (configuration?.fee !== undefined) {
       fee = configuration.fee
     } else {
-      const estimatedFee: FeeEstimation<EthereumUnits> = await this.getTransactionFeeWithPublicKey(
+      const estimatedFee: FeeDefaults<EthereumUnits> = await this.getTransactionFeeWithPublicKey(
         publicKey,
         to.map((recipient: string) => ({
           to: recipient,
           amount: newAmount(balance.div(to.length).decimalPlaces(0, BigNumber.ROUND_CEIL), 'blockchain')
         }))
       )
-      fee = newAmount(isAmount(estimatedFee) ? estimatedFee : estimatedFee.medium).blockchain(this.feeUnits)
+      fee = newAmount(estimatedFee.medium).blockchain(this.feeUnits)
       if (balance.lte(fee.value)) {
         fee = newAmount(0, 'blockchain')
       }
@@ -568,7 +570,7 @@ export abstract class EthereumBaseProtocolImpl<_Units extends string = EthereumU
   public async getTransactionFeeWithPublicKey(
     publicKey: PublicKey,
     details: TransactionDetails<_Units>[]
-  ): Promise<FeeEstimation<EthereumUnits>> {
+  ): Promise<FeeDefaults<EthereumUnits>> {
     if (details.length !== 1) {
       throw new ConditionViolationError(Domain.ETHEREUM, 'you cannot have 0 transaction details')
     }
@@ -597,15 +599,15 @@ export abstract class EthereumBaseProtocolImpl<_Units extends string = EthereumU
       throw new ConditionViolationError(Domain.ETHEREUM, 'you cannot have 0 transaction details')
     }
 
-    let targetFee: Amount<EthereumUnits>
+    let fee: Amount<EthereumUnits>
     if (configuration?.fee !== undefined) {
-      targetFee = configuration.fee
+      fee = configuration.fee
     } else {
-      const estimatedFee: FeeEstimation<EthereumUnits> = await this.getTransactionFeeWithPublicKey(publicKey, details)
-      targetFee = isAmount(estimatedFee) ? estimatedFee : estimatedFee.medium
+      const estimatedFee: FeeDefaults<EthereumUnits> = await this.getTransactionFeeWithPublicKey(publicKey, details)
+      fee = estimatedFee.medium
     }
 
-    const wrappedFee: BigNumber = new BigNumber(newAmount(targetFee).blockchain(this.feeUnits).value)
+    const wrappedFee: BigNumber = new BigNumber(newAmount(fee).blockchain(this.feeUnits).value)
     const wrappedAmount: BigNumber = new BigNumber(newAmount(details[0].amount).blockchain(this.units).value)
 
     const address: string = await this.getAddressFromPublicKey(publicKey)

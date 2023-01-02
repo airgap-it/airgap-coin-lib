@@ -16,8 +16,6 @@ import {
   Amount,
   Balance,
   FeeDefaults,
-  FeeEstimation,
-  isAmount,
   KeyPair,
   newAmount,
   newPlainUIText,
@@ -51,14 +49,19 @@ import { AeternityCryptoClient } from './AeternityCryptoClient'
 // Interface
 
 export interface AeternityProtocol
-  extends AirGapProtocol<{
-    AddressResult: Address
-    ProtocolNetwork: AeternityProtocolNetwork
-    SignedTransaction: AeternitySignedTransaction
-    TransactionCursor: AeternityTransactionCursor
-    Units: AeternityUnits
-    UnsignedTransaction: AeternityUnsignedTransaction
-  }> {
+  extends AirGapProtocol<
+    {
+      AddressResult: Address
+      ProtocolNetwork: AeternityProtocolNetwork
+      SignedTransaction: AeternitySignedTransaction
+      TransactionCursor: AeternityTransactionCursor
+      Units: AeternityUnits
+      FeeEstimation: FeeDefaults<AeternityUnits>
+      UnsignedTransaction: AeternityUnsignedTransaction
+    },
+    'CryptoExtension',
+    'FetchDataForAddressExtension'
+  > {
   convertTransactionToBase58(preparedTx: AeternityUnsignedTransaction): Promise<AeternityUnsignedTransaction>
 }
 
@@ -365,9 +368,8 @@ export class AeternityProtocolImpl implements AeternityProtocol {
         to: address,
         amount: newAmount(balanceBn.div(to.length).toString(), 'blockchain')
       }))
-      const feeEstimation: FeeEstimation<AeternityUnits> = await this.getTransactionFeeWithPublicKey(publicKey, transactionDetails)
-      const mediumFee: Amount<AeternityUnits> = isAmount(feeEstimation) ? feeEstimation : feeEstimation.medium
-      fee = new BigNumber(newAmount(mediumFee).blockchain(this.units).value)
+      const feeEstimation: FeeDefaults<AeternityUnits> = await this.getTransactionFeeWithPublicKey(publicKey, transactionDetails)
+      fee = new BigNumber(newAmount(feeEstimation.medium).blockchain(this.units).value)
       if (fee.gte(balanceBn)) {
         fee = new BigNumber(0)
       }
@@ -384,7 +386,7 @@ export class AeternityProtocolImpl implements AeternityProtocol {
   public async getTransactionFeeWithPublicKey(
     _publicKey: PublicKey,
     _details: TransactionDetails<AeternityUnits>[]
-  ): Promise<FeeEstimation<AeternityUnits>> {
+  ): Promise<FeeDefaults<AeternityUnits>> {
     const feeDetaults = (await axios.get(this.options.network.feesUrl)).data
 
     return {

@@ -7,7 +7,6 @@ import {
   Bip32OverridingExtension,
   ExtendedPublicKey,
   FeeEstimation,
-  hasMultiAddressAccounts,
   isBip32Protocol,
   protocolNetworkIdentifier,
   PublicKey,
@@ -15,6 +14,7 @@ import {
   TransactionDetails,
   UnsignedTransaction
 } from '@airgap/module-kit'
+import { canFetchDataForAddress, canFetchDataForMultipleAddresses } from '@airgap/module-kit/utils/protocol'
 
 import { AirGapWallet, AirGapWalletStatus, SerializedAirGapWallet } from '../AirGapWallet'
 
@@ -106,11 +106,8 @@ export abstract class AirGapOnlineWallet<
       BTC as well, which results in the addresses being derived again, which causes massive lags in the apps.
       */
       transactions = await this.protocol.getTransactionsForPublicKey(this.publicKey, limit, cursor)
-    } else if (
-      this.addresses.length > 0 &&
-      protocolIdentifier !== MainProtocolSymbols.XTZ_SHIELDED /* TODO: cover ALL sapling protocols */
-    ) {
-      transactions = hasMultiAddressAccounts(this.protocol)
+    } else if ((this.addresses.length > 0 && canFetchDataForAddress(this.protocol)) || canFetchDataForMultipleAddresses(this.protocol)) {
+      transactions = canFetchDataForMultipleAddresses(this.protocol)
         ? await this.protocol.getTransactionsForAddresses(this.addressesToCheck(), limit, cursor)
         : await this.protocol.getTransactionsForAddress(this.addressesToCheck()[0], limit, cursor)
     } else if (this.publicKey.type === 'xpub') {
@@ -170,7 +167,7 @@ export abstract class AirGapOnlineWallet<
     }
   }
 
-  public async estimateFees(details: TransactionDetails[], data: { [key: string]: unknown } = {}): Promise<FeeEstimation> {
+  public async estimateFees(details: TransactionDetails[], data: { [key: string]: unknown } = {}): Promise<FeeEstimation | undefined> {
     if (this.publicKey.type === 'xpub') {
       if (!isBip32Protocol(this.protocol)) {
         // This *should* never happen because of how the constructor is typed, but the compiler doesn't know it.

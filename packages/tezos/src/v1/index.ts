@@ -2,6 +2,12 @@ import { createTezosBlockExplorer } from './block-explorer/factory'
 import { TzKTBlockExplorer } from './block-explorer/TzKTBlockExplorer'
 import { TezosKtModule } from './module/TezosKtModule'
 import { TezosModule } from './module/TezosModule'
+import { TezosSaplingProtocol } from './protocol/sapling/TezosSaplingProtocol'
+import {
+  createTezosShieldedTezProtocol,
+  createTezosShieldedTezProtocolOptions,
+  TezosShieldedTezProtocol
+} from './protocol/sapling/TezosShieldedTezProtocol'
 import { createTezosKtProtocol, TezosKtProtocol } from './protocol/TezosKtProtocol'
 import { createTezosProtocol, createTezosProtocolOptions, TezosProtocol } from './protocol/TezosProtocol'
 import { TezosBlockExplorer } from './types/block-explorer'
@@ -21,7 +27,14 @@ import { TezosOperation } from './types/operations/kinds/TezosOperation'
 import { TezosTransactionOperation } from './types/operations/kinds/Transaction'
 import { TezosOperationType } from './types/operations/TezosOperationType'
 import { TezosWrappedOperation } from './types/operations/TezosWrappedOperation'
-import { TezosProtocolNetwork, TezosProtocolOptions, TezosUnits } from './types/protocol'
+import {
+  TezosProtocolNetwork,
+  TezosProtocolOptions,
+  TezosSaplingProtocolNetwork,
+  TezosSaplingProtocolOptions,
+  TezosShieldedTezProtocolOptions,
+  TezosUnits
+} from './types/protocol'
 import { TezosKtTransactionCursor, TezosSignedTransaction, TezosTransactionCursor, TezosUnsignedTransaction } from './types/transaction'
 
 // Module
@@ -30,7 +43,17 @@ export { TezosModule, TezosKtModule }
 
 // Protocol
 
-export { TezosProtocol, createTezosProtocol, createTezosProtocolOptions, TezosKtProtocol, createTezosKtProtocol }
+export {
+  TezosProtocol,
+  createTezosProtocol,
+  createTezosProtocolOptions,
+  TezosKtProtocol,
+  createTezosKtProtocol,
+  TezosSaplingProtocol,
+  TezosShieldedTezProtocol,
+  createTezosShieldedTezProtocol,
+  createTezosShieldedTezProtocolOptions
+}
 
 // Block Explorer
 
@@ -41,7 +64,10 @@ export { TzKTBlockExplorer, createTezosBlockExplorer }
 export {
   TezosUnits,
   TezosProtocolNetwork,
+  TezosSaplingProtocolNetwork,
   TezosProtocolOptions,
+  TezosSaplingProtocolOptions,
+  TezosShieldedTezProtocolOptions,
   TezosNetwork,
   TezosBlockExplorer,
   TezosIndexer,

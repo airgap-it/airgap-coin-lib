@@ -9,7 +9,6 @@ import {
   AirGapTransactionsWithCursor,
   Amount,
   Balance,
-  FeeEstimation,
   KeyPair,
   newAmount,
   newSignature,
@@ -41,14 +40,19 @@ import { convertSignature } from '../utils/signature'
 // Interface
 
 export interface SubstrateProtocol<_Units extends string, _ProtocolNetwork extends SubstrateProtocolNetwork>
-  extends AirGapProtocol<{
-    AddressResult: Address
-    ProtocolNetwork: _ProtocolNetwork
-    Units: _Units
-    UnsignedTransaction: SubstrateUnsignedTransaction
-    SignedTransaction: SubstrateSignedTransaction
-    TransactionCursor: SubstrateTransactionCursor
-  }> {}
+  extends AirGapProtocol<
+    {
+      AddressResult: Address
+      ProtocolNetwork: _ProtocolNetwork
+      Units: _Units
+      FeeEstimation: Amount<_Units>
+      UnsignedTransaction: SubstrateUnsignedTransaction
+      SignedTransaction: SubstrateSignedTransaction
+      TransactionCursor: SubstrateTransactionCursor
+    },
+    'CryptoExtension',
+    'FetchDataForAddressExtension'
+  > {}
 
 // Implementation
 
@@ -275,7 +279,7 @@ export abstract class SubstrateProtocolImpl<
     return newAmount(maxAmount, 'blockchain')
   }
 
-  public async getTransactionFeeWithPublicKey(publicKey: PublicKey, details: TransactionDetails<_Units>[]): Promise<FeeEstimation<_Units>> {
+  public async getTransactionFeeWithPublicKey(publicKey: PublicKey, details: TransactionDetails<_Units>[]): Promise<Amount<_Units>> {
     const fees: BigNumber[] = await Promise.all(
       details.map(async (details: TransactionDetails<_Units>) => {
         const transaction: SubstrateTransaction<_ProtocolConfiguration> = await this.transactionController.createTransaction(

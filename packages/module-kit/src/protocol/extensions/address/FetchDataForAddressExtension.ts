@@ -3,7 +3,7 @@ import { Balance } from '../../../types/balance'
 import { AirGapTransactionsWithCursor } from '../../../types/transaction'
 import { _OnlineProtocol, OnlineGeneric, OnlineProtocol } from '../../protocol'
 
-export type MultiAddressAccountExtension<T extends OnlineProtocol> = T extends _OnlineProtocol<
+export type FetchDataForAddressExtension<T extends OnlineProtocol> = T extends _OnlineProtocol<
   any,
   any,
   any,
@@ -11,21 +11,22 @@ export type MultiAddressAccountExtension<T extends OnlineProtocol> = T extends _
   infer _FeeUnits,
   any,
   any,
+  any,
   infer _TransactionCursor
 >
-  ? MultiAddressAccountProtocol<_Units, _FeeUnits, _TransactionCursor>
+  ? FetchDataForAddressProtocol<_Units, _FeeUnits, _TransactionCursor>
   : never
 
-export interface MultiAddressAccountProtocol<
+export interface FetchDataForAddressProtocol<
   _Units extends OnlineGeneric['Units'] = OnlineGeneric['Units'],
   _FeeUnits extends OnlineGeneric['FeeUnits'] = OnlineGeneric['FeeUnits'],
   _TransactionCursor extends OnlineGeneric['TransactionCursor'] = OnlineGeneric['TransactionCursor']
 > {
-  getTransactionsForAddresses(
-    addresses: Address[],
+  getTransactionsForAddress(
+    address: Address,
     limit: number,
     cursor?: _TransactionCursor
   ): Promise<AirGapTransactionsWithCursor<_TransactionCursor, _Units, _FeeUnits>>
 
-  getBalanceOfAddresses(addresses: Address[]): Promise<Balance<_Units>>
+  getBalanceOfAddress(address: Address): Promise<Balance<_Units>>
 }

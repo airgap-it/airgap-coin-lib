@@ -1,9 +1,17 @@
 // tslint:disable no-floating-promises
-import { AirGapTransaction, AirGapTransactionStatus, isBip32Protocol } from '@airgap/module-kit'
+import {
+  AirGapTransaction,
+  AirGapTransactionStatus,
+  canEncryptAES,
+  canEncryptAsymmetric,
+  canSignMessage,
+  isBip32Protocol
+} from '@airgap/module-kit'
 import chai = require('chai')
 import chaiAsPromised = require('chai-as-promised')
 import 'mocha'
 import sinon = require('sinon')
+
 import { AirGapNodeClient } from '../../src/v1/clients/node/AirGapNodeClient'
 import { isRawUnsignedTransaction } from '../../src/v1/utils/transaction'
 
@@ -486,10 +494,10 @@ Promise.all(
         )
 
         itIf(
-          isBip32Protocol(protocol.lib) && protocol.messages.length > 0,
+          isBip32Protocol(protocol.lib) && canSignMessage(protocol.lib) && protocol.messages.length > 0,
           'signMessageWithKeyPair - Is able to sign a message using an extended key pair',
           async () => {
-            if (!isBip32Protocol(protocol.lib)) {
+            if (!isBip32Protocol(protocol.lib) || !canSignMessage(protocol.lib)) {
               // check in `itIf` doesn't trigger autocasting
               return
             }
@@ -539,10 +547,10 @@ Promise.all(
         )
 
         itIf(
-          isBip32Protocol(protocol.lib) && protocol.messages.length > 0,
+          isBip32Protocol(protocol.lib) && canSignMessage(protocol.lib) && protocol.messages.length > 0,
           'verifyMessageWithPublicKey - Is able to verify a message using an ExtendedPublicKey',
           async () => {
-            if (!isBip32Protocol(protocol.lib)) {
+            if (!isBip32Protocol(protocol.lib) || !canSignMessage(protocol.lib)) {
               // check in `itIf` doesn't trigger autocasting
               return
             }
@@ -601,10 +609,10 @@ Promise.all(
         )
 
         itIf(
-          isBip32Protocol(protocol.lib) && protocol.messages.length > 0,
+          isBip32Protocol(protocol.lib) && canSignMessage(protocol.lib) && protocol.messages.length > 0,
           'signMessageWithKeyPair and verifyMessageWithPublicKey - Is able to sign and verify a message (with an extended key pair)',
           async () => {
-            if (!isBip32Protocol(protocol.lib)) {
+            if (!isBip32Protocol(protocol.lib) || !canSignMessage(protocol.lib)) {
               // check in `itIf` doesn't trigger autocasting
               return
             }
@@ -665,10 +673,10 @@ Promise.all(
         )
 
         itIf(
-          isBip32Protocol(protocol.lib) && protocol.encryptAsymmetric.length > 0,
+          isBip32Protocol(protocol.lib) && canEncryptAsymmetric(protocol.lib) && protocol.encryptAsymmetric.length > 0,
           'encryptAsymmetricWithPublicKey - Is able to encrypt a message using an ExtendedPublicKey',
           async () => {
-            if (!isBip32Protocol(protocol.lib)) {
+            if (!isBip32Protocol(protocol.lib) || !canEncryptAsymmetric(protocol.lib)) {
               // check in `itIf` doesn't trigger autocasting
               return
             }
@@ -768,10 +776,10 @@ Promise.all(
         )
 
         itIf(
-          isBip32Protocol(protocol.lib) && protocol.encryptAsymmetric.length > 0,
+          isBip32Protocol(protocol.lib) && canEncryptAsymmetric(protocol.lib) && protocol.encryptAsymmetric.length > 0,
           'encryptAsymmetricWithPublicKey and decryptAsymmetricWithKeyPair - Is able to encrypt and decrypt a message (with an extended key pair)',
           async () => {
-            if (!isBip32Protocol(protocol.lib)) {
+            if (!isBip32Protocol(protocol.lib) || !canEncryptAsymmetric(protocol.lib)) {
               // check in `itIf` doesn't trigger autocasting
               return
             }
@@ -825,10 +833,10 @@ Promise.all(
         )
 
         itIf(
-          isBip32Protocol(protocol.lib) && protocol.encryptAES.length > 0,
+          isBip32Protocol(protocol.lib) && canEncryptAES(protocol.lib) && protocol.encryptAES.length > 0,
           'decryptAESWithSecretKey - Is able to encrypt a message using an ExtendedSecretKey',
           async () => {
-            if (!isBip32Protocol(protocol.lib)) {
+            if (!isBip32Protocol(protocol.lib) || !canEncryptAES(protocol.lib)) {
               // check in `itIf` doesn't trigger autocasting
               return
             }
@@ -850,10 +858,10 @@ Promise.all(
         )
 
         itIf(
-          !isBip32Protocol(protocol.lib) && protocol.encryptAES.length > 0,
+          !isBip32Protocol(protocol.lib) && canEncryptAES(protocol.lib) && protocol.encryptAES.length > 0,
           'encryptAESWithSecretKey and decryptAESWithSecretKey - Is able to encrypt and decrypt a message',
           async () => {
-            if (!isBip32Protocol(protocol.lib)) {
+            if (!isBip32Protocol(protocol.lib) || !canEncryptAES(protocol.lib)) {
               // check in `itIf` doesn't trigger autocasting
               return
             }
@@ -878,10 +886,10 @@ Promise.all(
         )
 
         itIf(
-          isBip32Protocol(protocol.lib) && protocol.encryptAES.length > 0,
+          isBip32Protocol(protocol.lib) && canEncryptAES(protocol.lib) && protocol.encryptAES.length > 0,
           'encryptAESWithSecretKey and decryptAESWithSecretKey - Is able to encrypt and decrypt a message (with an extended secret key)',
           async () => {
-            if (!isBip32Protocol(protocol.lib)) {
+            if (!isBip32Protocol(protocol.lib) || !canEncryptAES(protocol.lib)) {
               // check in `itIf` doesn't trigger autocasting
               return
             }

@@ -23,8 +23,6 @@ import {
   Amount,
   Balance,
   FeeDefaults,
-  FeeEstimation,
-  isAmount,
   KeyPair,
   newAmount,
   newPublicKey,
@@ -65,14 +63,19 @@ import { convertSignature } from '../utils/signature'
 // Interface
 
 export interface TezosProtocol
-  extends AirGapProtocol<{
-    AddressResult: Address
-    ProtocolNetwork: TezosProtocolNetwork
-    Units: TezosUnits
-    UnsignedTransaction: TezosUnsignedTransaction
-    SignedTransaction: TezosSignedTransaction
-    TransactionCursor: TezosTransactionCursor
-  }> {
+  extends AirGapProtocol<
+    {
+      AddressResult: Address
+      ProtocolNetwork: TezosProtocolNetwork
+      Units: TezosUnits
+      FeeEstimation: FeeDefaults<TezosUnits>
+      UnsignedTransaction: TezosUnsignedTransaction
+      SignedTransaction: TezosSignedTransaction
+      TransactionCursor: TezosTransactionCursor
+    },
+    'CryptoExtension',
+    'FetchDataForAddressExtension'
+  > {
   forgeOperation(wrappedOperation: TezosWrappedOperation): Promise<string>
   unforgeOperation(forged: string, type?: 'signed' | 'unsigned'): Promise<TezosWrappedOperation>
   prepareOperations(publicKey: PublicKey, operationRequests: TezosOperation[], overrideParameters?: boolean): Promise<TezosWrappedOperation>
@@ -96,6 +99,23 @@ const MINIMAL_FEE: number = 100
 const MINIMAL_FEE_PER_GAS_UNIT: number = 0.1
 const MINIMAL_FEE_PER_BYTE: number = 1
 
+export const TEZOS_UNITS: ProtocolUnitsMetadata<TezosUnits> = {
+  tez: {
+    symbol: { value: 'XTZ', market: 'xtz' },
+    decimals: 6
+  },
+  mutez: {
+    symbol: { value: 'mutez' },
+    decimals: 0
+  },
+  nanotez: {
+    symbol: { value: 'nanotez' },
+    decimals: -3
+  }
+}
+
+export const TEZOS_DERIVATION_PATH: string = `m/44h/1729h/0h/0h`
+
 class TezosProtocolImpl implements TezosProtocol {
   private readonly options: TezosProtocolOptions
 
@@ -111,20 +131,7 @@ class TezosProtocolImpl implements TezosProtocol {
 
   // Common
 
-  private readonly units: ProtocolUnitsMetadata<TezosUnits> = {
-    tez: {
-      symbol: { value: 'XTZ', market: 'xtz' },
-      decimals: 6
-    },
-    mutez: {
-      symbol: { value: 'mutez' },
-      decimals: 0
-    },
-    nanotez: {
-      symbol: { value: 'nanotez' },
-      decimals: -3
-    }
-  }
+  private readonly units: ProtocolUnitsMetadata<TezosUnits> = TEZOS_UNITS
 
   private readonly feeDefaults: FeeDefaults<TezosUnits> = {
     low: newAmount(0.00142, 'tez').blockchain(this.units),
@@ -144,7 +151,7 @@ class TezosProtocolImpl implements TezosProtocol {
     },
 
     account: {
-      standardDerivationPath: `m/44h/1729h/0h/0h`,
+      standardDerivationPath: TEZOS_DERIVATION_PATH,
       address: {
         isCaseSensitive: true,
         placeholder: 'tz1...',
@@ -334,7 +341,7 @@ class TezosProtocolImpl implements TezosProtocol {
       maxFee = fee
     } else {
       try {
-        const estimatedFee: FeeEstimation<TezosUnits> = await this.getTransactionFeeWithPublicKey(
+        const estimatedFee: FeeDefaults<TezosUnits> = await this.getTransactionFeeWithPublicKey(
           publicKey,
           to.map((recipient: string) => ({
             to: recipient,
@@ -342,7 +349,7 @@ class TezosProtocolImpl implements TezosProtocol {
           }))
         )
 
-        maxFee = newAmount(isAmount(estimatedFee) ? estimatedFee : estimatedFee.medium).blockchain(this.units)
+        maxFee = newAmount(estimatedFee.medium).blockchain(this.units)
         if (balance.lte(maxFee.value)) {
           maxFee = newAmount(0, 'blockchain')
         }
@@ -375,7 +382,7 @@ class TezosProtocolImpl implements TezosProtocol {
   public async getTransactionFeeWithPublicKey(
     publicKey: PublicKey,
     details: TransactionDetails<TezosUnits>[]
-  ): Promise<FeeEstimation<TezosUnits>> {
+  ): Promise<FeeDefaults<TezosUnits>> {
     if (details.length === 0) {
       return this.feeDefaults
     }
@@ -494,8 +501,8 @@ class TezosProtocolImpl implements TezosProtocol {
     if (configuration?.fee !== undefined) {
       fee = configuration.fee
     } else {
-      const estimatedFee: FeeEstimation<TezosUnits> = await this.getTransactionFeeWithPublicKey(publicKey, details)
-      fee = isAmount(estimatedFee) ? estimatedFee : estimatedFee.medium
+      const estimatedFee: FeeDefaults<TezosUnits> = await this.getTransactionFeeWithPublicKey(publicKey, details)
+      fee = estimatedFee.medium
     }
 
     const wrappedFee: BigNumber = new BigNumber(newAmount(fee).blockchain(this.units).value)

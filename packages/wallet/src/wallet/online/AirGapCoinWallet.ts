@@ -1,13 +1,7 @@
 import { MainProtocolSymbols } from '@airgap/coinlib-core'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
-import {
-  AirGapOnlineProtocol,
-  Balance,
-  Bip32OverridingExtension,
-  hasMultiAddressAccounts,
-  isBip32Protocol,
-  newAmount
-} from '@airgap/module-kit'
+import { AirGapOnlineProtocol, Balance, Bip32OverridingExtension, isBip32Protocol, newAmount } from '@airgap/module-kit'
+import { canFetchDataForAddress, canFetchDataForMultipleAddresses } from '@airgap/module-kit/utils/protocol'
 
 import { AirGapOnlineWallet } from './AirGapOnlineWallet'
 
@@ -84,11 +78,8 @@ export class AirGapCoinWallet<
       BTC as well, which results in the addresses being derived again, which causes massive lags in the apps.
       */
       balance = await this.protocol.getBalanceOfPublicKey(this.publicKey)
-    } else if (
-      this.addresses.length > 0 &&
-      protocolIdentifier !== MainProtocolSymbols.XTZ_SHIELDED /* TODO: cover ALL sapling protocols */
-    ) {
-      balance = hasMultiAddressAccounts(this.protocol)
+    } else if ((this.addresses.length > 0 && canFetchDataForAddress(this.protocol)) || canFetchDataForMultipleAddresses(this.protocol)) {
+      balance = canFetchDataForMultipleAddresses(this.protocol)
         ? await this.protocol.getBalanceOfAddresses(this.addressesToCheck())
         : await this.protocol.getBalanceOfAddress(this.addressesToCheck()[0])
     } else if (this.publicKey.type === 'xpub') {
