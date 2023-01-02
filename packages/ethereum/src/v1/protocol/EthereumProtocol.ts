@@ -10,7 +10,7 @@ import {
   ExtendedKeyPair,
   ExtendedPublicKey,
   ExtendedSecretKey,
-  FeeEstimation,
+  FeeDefaults,
   KeyPair,
   newExtendedPublicKey,
   newExtendedSecretKey,
@@ -194,7 +194,7 @@ class EthereumProtocolImpl extends DefaultEthereumBaseProtocolImpl implements Et
   public async getTransactionFeeWithPublicKey(
     publicKey: PublicKey | ExtendedPublicKey,
     details: TransactionDetails<EthereumUnits>[]
-  ): Promise<FeeEstimation<EthereumUnits>> {
+  ): Promise<FeeDefaults<EthereumUnits>> {
     return super.getTransactionFeeWithPublicKey(this.nonExtendedPublicKey(publicKey), details)
   }
 

@@ -26,19 +26,21 @@ abstract class TestProtocolSpec<
     publicKey: PublicKey
     addresses: string[]
   }
-  public abstract txs: {
+  public txs: {
     to: string[]
     from: string[]
     amount: Amount<_Units>
     fee: Amount<_Units>
     unsignedTx: _UnsignedTransaction
     signedTx: _SignedTransaction
-  }[]
+  }[] = []
   public messages: { message: string; signature: Signature }[] = []
   public encryptAsymmetric: { message: string; encrypted: string }[] = []
   public encryptAES: { message: string; encrypted: string }[] = []
 
-  public abstract transactionList(address: string): { first: any[]; next: any[] }
+  public transactionList(address: string): { first: any[]; next: any[] } {
+    return { first: [], next: [] }
+  }
 
   public seed(): string {
     return BIP39.mnemonicToSeedHex(mnemonic)

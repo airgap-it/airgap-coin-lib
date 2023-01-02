@@ -1,6 +1,8 @@
+import { BitcoinProtocol, BitcoinTransactionCursor, BitcoinUnits } from '@airgap/bitcoin/v1'
+import { BitcoinProtocolImpl } from '@airgap/bitcoin/v1/protocol/BitcoinProtocol'
+import { MainProtocolSymbols } from '@airgap/coinlib-core'
 import * as bitGoUTXO from '@airgap/coinlib-core/dependencies/src/bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac/src/index'
 import * as groestlcoinJSMessage from '@airgap/coinlib-core/dependencies/src/groestlcoinjs-message-2.1.0/index'
-import { BitcoinProtocol, BitcoinTransactionCursor, BitcoinUnits } from '@airgap/bitcoin/v1'
 import {
   Address,
   AirGapProtocol,
@@ -12,8 +14,6 @@ import {
   ExtendedPublicKey,
   ExtendedSecretKey,
   FeeDefaults,
-  FeeEstimation,
-  isAmount,
   KeyPair,
   newAmount,
   ProtocolMetadata,
@@ -26,6 +26,7 @@ import {
   TransactionConfiguration,
   TransactionDetails
 } from '@airgap/module-kit'
+
 import {
   GroestlcoinProtocolNetwork,
   GroestlcoinProtocolOptions,
@@ -33,8 +34,6 @@ import {
   GroestlcoinUnits
 } from '../types/protocol'
 import { GroestlcoinSignedTransaction, GroestlcoinTransactionCursor, GroestlcoinUnsignedTransaction } from '../types/transaction'
-import { BitcoinProtocolImpl } from '@airgap/bitcoin/v1/protocol/BitcoinProtocol'
-import { MainProtocolSymbols } from '@airgap/coinlib-core'
 
 // Interface
 
@@ -46,10 +45,13 @@ export interface GroestlcoinProtocol
       SignedTransaction: GroestlcoinSignedTransaction
       TransactionCursor: GroestlcoinTransactionCursor
       Units: GroestlcoinUnits
+      FeeEstimation: FeeDefaults<GroestlcoinUnits>
       UnsignedTransaction: GroestlcoinUnsignedTransaction
     },
     'Bip32OverridingExtension',
-    'MultiAddressAccountExtension'
+    'CryptoExtension',
+    'FetchDataForAddressExtension',
+    'FetchDataForMultipleAddressesExtension'
   > {}
 
 // Implementation
@@ -206,8 +208,10 @@ export class GroestlcoinProtocolImpl implements GroestlcoinProtocol {
     limit: number,
     cursor?: GroestlcoinTransactionCursor
   ): Promise<AirGapTransactionsWithCursor<GroestlcoinTransactionCursor, GroestlcoinUnits>> {
-    const bitcoinTransactions: AirGapTransactionsWithCursor<BitcoinTransactionCursor, BitcoinUnits> =
-      await this.bitcoinProtocol.getTransactionsForPublicKey(publicKey, limit, cursor)
+    const bitcoinTransactions: AirGapTransactionsWithCursor<
+      BitcoinTransactionCursor,
+      BitcoinUnits
+    > = await this.bitcoinProtocol.getTransactionsForPublicKey(publicKey, limit, cursor)
 
     return this.fromBitcoinAirGapTransactionWithCursor(bitcoinTransactions)
   }
@@ -217,8 +221,10 @@ export class GroestlcoinProtocolImpl implements GroestlcoinProtocol {
     limit: number,
     cursor?: GroestlcoinTransactionCursor
   ): Promise<AirGapTransactionsWithCursor<GroestlcoinTransactionCursor, GroestlcoinUnits>> {
-    const bitcoinTransactions: AirGapTransactionsWithCursor<BitcoinTransactionCursor, BitcoinUnits> =
-      await this.bitcoinProtocol.getTransactionsForAddress(address, limit, cursor)
+    const bitcoinTransactions: AirGapTransactionsWithCursor<
+      BitcoinTransactionCursor,
+      BitcoinUnits
+    > = await this.bitcoinProtocol.getTransactionsForAddress(address, limit, cursor)
 
     return this.fromBitcoinAirGapTransactionWithCursor(bitcoinTransactions)
   }
@@ -228,8 +234,10 @@ export class GroestlcoinProtocolImpl implements GroestlcoinProtocol {
     limit: number,
     cursor?: GroestlcoinTransactionCursor
   ): Promise<AirGapTransactionsWithCursor<GroestlcoinTransactionCursor, GroestlcoinUnits>> {
-    const bitcoinTransactions: AirGapTransactionsWithCursor<BitcoinTransactionCursor, BitcoinUnits> =
-      await this.bitcoinProtocol.getTransactionsForAddresses(addresses, limit, cursor)
+    const bitcoinTransactions: AirGapTransactionsWithCursor<
+      BitcoinTransactionCursor,
+      BitcoinUnits
+    > = await this.bitcoinProtocol.getTransactionsForAddresses(addresses, limit, cursor)
 
     return this.fromBitcoinAirGapTransactionWithCursor(bitcoinTransactions)
   }
@@ -269,11 +277,11 @@ export class GroestlcoinProtocolImpl implements GroestlcoinProtocol {
   public async getTransactionFeeWithPublicKey(
     publicKey: PublicKey | ExtendedPublicKey,
     details: TransactionDetails<GroestlcoinUnits>[]
-  ): Promise<FeeEstimation<GroestlcoinUnits>> {
+  ): Promise<FeeDefaults<GroestlcoinUnits>> {
     const bitcoinDetails: TransactionDetails<BitcoinUnits>[] = details.map((details: TransactionDetails<GroestlcoinUnits>) =>
       this.toBitcoinTransactionDetails(details)
     )
-    const bitcoinFeeEstimation: FeeEstimation<BitcoinUnits> = await this.bitcoinProtocol.getTransactionFeeWithPublicKey(
+    const bitcoinFeeEstimation: FeeDefaults<BitcoinUnits> = await this.bitcoinProtocol.getTransactionFeeWithPublicKey(
       publicKey,
       bitcoinDetails
     )
@@ -341,18 +349,14 @@ export class GroestlcoinProtocolImpl implements GroestlcoinProtocol {
     return { total, transferable }
   }
 
-  private async fromBitcoinFeeEstimation(feeEstimation: FeeEstimation<BitcoinUnits>): Promise<FeeEstimation<GroestlcoinUnits>> {
-    if (isAmount(feeEstimation)) {
-      return this.fromBitcoinAmount(feeEstimation)
-    } else {
-      const [low, medium, high]: [Amount<GroestlcoinUnits>, Amount<GroestlcoinUnits>, Amount<GroestlcoinUnits>] = await Promise.all([
-        this.fromBitcoinAmount(feeEstimation.low),
-        this.fromBitcoinAmount(feeEstimation.medium),
-        this.fromBitcoinAmount(feeEstimation.high)
-      ])
+  private async fromBitcoinFeeEstimation(feeEstimation: FeeDefaults<BitcoinUnits>): Promise<FeeDefaults<GroestlcoinUnits>> {
+    const [low, medium, high]: [Amount<GroestlcoinUnits>, Amount<GroestlcoinUnits>, Amount<GroestlcoinUnits>] = await Promise.all([
+      this.fromBitcoinAmount(feeEstimation.low),
+      this.fromBitcoinAmount(feeEstimation.medium),
+      this.fromBitcoinAmount(feeEstimation.high)
+    ])
 
-      return { low, medium, high }
-    }
+    return { low, medium, high }
   }
 
   private async fromBitcoinAmount(amount: Amount<BitcoinUnits>): Promise<Amount<GroestlcoinUnits>> {

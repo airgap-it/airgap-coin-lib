@@ -16,7 +16,6 @@ import {
   AirGapTransactionsWithCursor,
   Amount,
   Balance,
-  FeeEstimation,
   KeyPair,
   newAmount,
   newUnsignedTransaction,
@@ -54,13 +53,16 @@ export interface TezosKtProtocol
       AddressResult: AddressWithCursor<TezosKtAddressCursor>
       ProtocolNetwork: TezosProtocolNetwork
       Units: TezosUnits
+      FeeEstimation: Amount<TezosUnits>
       UnsignedTransaction: TezosUnsignedTransaction
       SignedTransaction: TezosSignedTransaction
       TransactionCursor: TezosKtTransactionCursor
     },
     'SubProtocolExtension',
+    'CryptoExtension',
     'MultiAddressPublicKeyExtension',
-    'MultiAddressAccountExtension'
+    'FetchDataForAddressExtension',
+    'FetchDataForMultipleAddressesExtension'
   > {
   migrateKtContract(publicKey: PublicKey, destinationContract: string): Promise<TezosUnsignedTransaction>
 }
@@ -298,7 +300,7 @@ class TezosKtProtocolImpl implements TezosKtProtocol {
   public async getTransactionFeeWithPublicKey(
     _publicKey: PublicKey,
     _details: TransactionDetails<TezosUnits>[]
-  ): Promise<FeeEstimation<TezosUnits>> {
+  ): Promise<Amount<TezosUnits>> {
     return newAmount(MIGRATION_FEE, 'blockchain')
   }
 

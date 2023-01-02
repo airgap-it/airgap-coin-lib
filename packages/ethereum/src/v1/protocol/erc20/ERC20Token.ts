@@ -9,7 +9,7 @@ import {
   AirGapTransactionsWithCursor,
   Amount,
   Balance,
-  FeeEstimation,
+  FeeDefaults,
   isAmount,
   newAmount,
   newUnsignedTransaction,
@@ -40,7 +40,7 @@ const EthereumTransaction = require('@airgap/coinlib-core/dependencies/src/ether
 
 // Interface
 
-export interface ERC20Token extends AirGapInterface<EthereumBaseProtocol<string>, 'ContractProtocolExtension'> {}
+export interface ERC20Token extends AirGapInterface<EthereumBaseProtocol<string>, 'ContractSubProtocolExtension'> {}
 
 // Implementation
 
@@ -265,8 +265,8 @@ class ERC20TokenImpl extends EthereumBaseProtocolImpl<string> implements ERC20To
     if (configuration?.fee !== undefined) {
       fee = configuration.fee
     } else {
-      const estimatedFee: FeeEstimation<EthereumUnits> = await this.getTransactionFeeWithPublicKey(publicKey, details)
-      fee = isAmount(estimatedFee) ? estimatedFee : estimatedFee.medium
+      const estimatedFee: FeeDefaults<EthereumUnits> = await this.getTransactionFeeWithPublicKey(publicKey, details)
+      fee = estimatedFee.medium
     }
 
     const wrappedFee: BigNumber = new BigNumber(newAmount(fee).blockchain(this.feeUnits).value)

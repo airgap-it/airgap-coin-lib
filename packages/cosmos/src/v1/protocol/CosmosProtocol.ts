@@ -14,8 +14,6 @@ import {
   Amount,
   Balance,
   FeeDefaults,
-  FeeEstimation,
-  isAmount,
   KeyPair,
   newAmount,
   newPublicKey,
@@ -55,14 +53,19 @@ import { CosmosCryptoClient } from './CosmosCryptoClient'
 // Interface
 
 export interface CosmosProtocol
-  extends AirGapProtocol<{
-    AddressResult: Address
-    ProtocolNetwork: CosmosProtocolNetwork
-    SignedTransaction: CosmosSignedTransaction
-    TransactionCursor: CosmosTransactionCursor
-    Units: CosmosUnits
-    UnsignedTransaction: CosmosUnsignedTransaction
-  }> {
+  extends AirGapProtocol<
+    {
+      AddressResult: Address
+      ProtocolNetwork: CosmosProtocolNetwork
+      SignedTransaction: CosmosSignedTransaction
+      TransactionCursor: CosmosTransactionCursor
+      Units: CosmosUnits
+      FeeEstimation: FeeDefaults<CosmosUnits>
+      UnsignedTransaction: CosmosUnsignedTransaction
+    },
+    'CryptoExtension',
+    'FetchDataForAddressExtension'
+  > {
   getKeyPairFromSecretKey(secretKey: SecretKey): Promise<KeyPair>
 }
 
@@ -508,14 +511,14 @@ export class CosmosProtocolImpl implements CosmosProtocol {
     if (configuration?.fee !== undefined) {
       fee = configuration.fee
     } else {
-      const estimatedFee: FeeEstimation<CosmosUnits> = await this.getTransactionFeeWithPublicKey(
+      const estimatedFee: FeeDefaults<CosmosUnits> = await this.getTransactionFeeWithPublicKey(
         publicKey,
         to.map((recipient: string) => ({
           to: recipient,
           amount: newAmount(balance.div(to.length).decimalPlaces(0, BigNumber.ROUND_CEIL), 'blockchain')
         }))
       )
-      fee = newAmount(isAmount(estimatedFee) ? estimatedFee : estimatedFee.medium).blockchain(this.units)
+      fee = newAmount(estimatedFee.medium).blockchain(this.units)
       if (balance.lte(fee.value)) {
         fee = newAmount(0, 'blockchain')
       }
@@ -533,7 +536,7 @@ export class CosmosProtocolImpl implements CosmosProtocol {
   public async getTransactionFeeWithPublicKey(
     _publicKey: PublicKey,
     _details: TransactionDetails<CosmosUnits>[]
-  ): Promise<FeeEstimation<CosmosUnits>> {
+  ): Promise<FeeDefaults<CosmosUnits>> {
     return this.feeDefaults
   }
 
@@ -546,8 +549,8 @@ export class CosmosProtocolImpl implements CosmosProtocol {
     if (configuration?.fee !== undefined) {
       fee = configuration.fee
     } else {
-      const estimatedFee: FeeEstimation<CosmosUnits> = await this.getTransactionFeeWithPublicKey(publicKey, details)
-      fee = isAmount(estimatedFee) ? estimatedFee : estimatedFee.medium
+      const estimatedFee: FeeDefaults<CosmosUnits> = await this.getTransactionFeeWithPublicKey(publicKey, details)
+      fee = estimatedFee.medium
     }
 
     const wrappedFee: BigNumber = new BigNumber(newAmount(fee).blockchain(this.units).value)

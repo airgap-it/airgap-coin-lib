@@ -1,11 +1,9 @@
 import { Address } from '../../../types/address'
 import { Amount } from '../../../types/amount'
 import { Balance } from '../../../types/balance'
-import { FeeEstimation } from '../../../types/fee'
-import { ExtendedKeyPair, ExtendedPublicKey, ExtendedSecretKey, KeyPair, PublicKey, SecretKey } from '../../../types/key'
+import { ExtendedKeyPair, ExtendedPublicKey, ExtendedSecretKey, PublicKey, SecretKey } from '../../../types/key'
 import { Override } from '../../../types/meta/utility-types'
 import { Secret } from '../../../types/secret'
-import { Signature } from '../../../types/signature'
 import { AirGapTransaction, AirGapTransactionsWithCursor, TransactionConfiguration, TransactionDetails } from '../../../types/transaction'
 import {
   _OfflineProtocol,
@@ -44,6 +42,7 @@ type InferredOnlineBip32Protocol<T> = T extends _OnlineProtocol<
   infer _ProtocolNetwork,
   infer _Units,
   infer _FeeUnits,
+  infer _FeeEstimation,
   infer _SignedTransaction,
   infer _UnsignedTransaction,
   infer _TransactionCursor
@@ -54,6 +53,7 @@ type InferredOnlineBip32Protocol<T> = T extends _OnlineProtocol<
       _ProtocolNetwork,
       _Units,
       _FeeUnits,
+      _FeeEstimation,
       _SignedTransaction,
       _UnsignedTransaction,
       _TransactionCursor
@@ -76,9 +76,6 @@ export interface BaseBip32Protocol<
     transaction: _UnsignedTransaction | _SignedTransaction,
     publicKey: PublicKey | ExtendedPublicKey
   ): Promise<AirGapTransaction<_Units, _FeeUnits>[]>
-
-  verifyMessageWithPublicKey(message: string, signature: Signature, publicKey: PublicKey | ExtendedPublicKey): Promise<boolean>
-  encryptAsymmetricWithPublicKey(payload: string, publicKey: PublicKey | ExtendedPublicKey): Promise<string>
 }
 
 export interface OfflineBip32Protocol<
@@ -92,11 +89,6 @@ export interface OfflineBip32Protocol<
   getExtendedKeyPairFromSecret(secret: Secret, derivationPath?: string): Promise<ExtendedKeyPair>
 
   signTransactionWithSecretKey(transaction: _UnsignedTransaction, secretKey: SecretKey | ExtendedSecretKey): Promise<_SignedTransaction>
-
-  signMessageWithKeyPair(message: string, keyPair: KeyPair | ExtendedKeyPair): Promise<Signature>
-  decryptAsymmetricWithKeyPair(payload: string, keyPair: KeyPair | ExtendedKeyPair): Promise<string>
-  encryptAESWithSecretKey(payload: string, secretKey: SecretKey | ExtendedSecretKey): Promise<string>
-  decryptAESWithSecretKey(payload: string, secretKey: SecretKey | ExtendedSecretKey): Promise<string>
 }
 
 export interface OnlineBip32Protocol<
@@ -105,6 +97,7 @@ export interface OnlineBip32Protocol<
   _ProtocolNetwork extends OnlineGeneric['ProtocolNetwork'] = OnlineGeneric['ProtocolNetwork'],
   _Units extends OnlineGeneric['Units'] = OnlineGeneric['Units'],
   _FeeUnits extends OnlineGeneric['FeeUnits'] = OnlineGeneric['FeeUnits'],
+  _FeeEstimation extends OnlineGeneric['FeeEstimation'] = OnlineGeneric['FeeEstimation'],
   _SignedTransaction extends OnlineGeneric['SignedTransaction'] = OnlineGeneric['SignedTransaction'],
   _UnsignedTransaction extends OnlineGeneric['UnsignedTransaction'] = OnlineGeneric['UnsignedTransaction'],
   _TransactionCursor extends OnlineGeneric['TransactionCursor'] = OnlineGeneric['TransactionCursor']
@@ -122,10 +115,7 @@ export interface OnlineBip32Protocol<
     to: Address[],
     configuration?: TransactionConfiguration<_Units>
   ): Promise<Amount<_Units>> // how should it be calulated? value distributed amongst addresses passed in in `to` or should we limit it to only one recipient?
-  getTransactionFeeWithPublicKey(
-    publicKey: PublicKey | ExtendedPublicKey,
-    details: TransactionDetails<_Units>[]
-  ): Promise<FeeEstimation<_FeeUnits>>
+  getTransactionFeeWithPublicKey(publicKey: PublicKey | ExtendedPublicKey, details: TransactionDetails<_Units>[]): Promise<_FeeEstimation>
   prepareTransactionWithPublicKey(
     publicKey: PublicKey | ExtendedPublicKey,
     details: TransactionDetails<_Units>[],

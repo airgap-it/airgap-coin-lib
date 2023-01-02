@@ -1,6 +1,10 @@
 import createHash = require('@airgap/coinlib-core/dependencies/src/create-hash-1.2.0/index')
 
-import { MultiAddressAccountExtension, MultiAddressAccountProtocol } from '../protocol/extensions/address/MultiAddressAccountExtension'
+import { FetchDataForAddressExtension, FetchDataForAddressProtocol } from '../protocol/extensions/address/FetchDataForAddressExtension'
+import {
+  FetchDataForMultipleAddressesExtension,
+  FetchDataForMultipleAddressesProtocol
+} from '../protocol/extensions/address/FetchDataForMultipleAddressesExtension'
 import {
   MultiAddressExtendedPublicKeyProtocol,
   MultiAddressNonExtendedPublicKeyProtocol,
@@ -12,6 +16,25 @@ import {
   OfflineBip32Protocol,
   OnlineBip32Protocol
 } from '../protocol/extensions/bip/Bip32OverridingExtension'
+import { ConfigurableContractProtocol } from '../protocol/extensions/contract/ConfigurableContractExtension'
+import { AESExtension, AESWithExtendedKeyPair, AESWithNonExtendedKeyPair } from '../protocol/extensions/crypto/AESExtension'
+import {
+  AsymmetricEncryptionExtension,
+  BaseAsymmetricEncryptionWithExtendedKeyPair,
+  BaseAsymmetricEncryptionWithNonExtendedKeyPair,
+  OfflineAsymmetricEncryptionWithExtendedKeyPair,
+  OfflineAsymmetricEncryptionWithNonExtendedKeyPair
+} from '../protocol/extensions/crypto/AsymmetricEncryptionExtension'
+import {
+  BaseSignMessageWithExtendedKeyPair,
+  BaseSignMessageWithNonExtendedKeyPair,
+  OfflineSignMessageWithExtendedKeyPair,
+  OfflineSignMessageWithNonExtendedKeyPair,
+  SignMessageExtension
+} from '../protocol/extensions/crypto/SignMessageExtension'
+import { ContractSubProtocol } from '../protocol/extensions/sub-protocol/ContractSubProtocolExtension'
+import { SubProtocol } from '../protocol/extensions/sub-protocol/SubProtocolExtension'
+import { ConfigurableTransactionInjectorProtocol } from '../protocol/extensions/transaction/ConfigurableTransactionInjectorExtension'
 import {
   TransactionStatusChecker,
   TransactionStatusCheckerExtension
@@ -24,32 +47,24 @@ import { implementsInterface, Schema } from './interface'
 // Schemas
 
 const baseProtocolSchema: Schema<BaseProtocol> = {
-  encryptAsymmetricWithPublicKey: 'required',
   getAddressFromPublicKey: 'required',
   getDetailsFromTransaction: 'required',
-  getMetadata: 'required',
-  verifyMessageWithPublicKey: 'required'
+  getMetadata: 'required'
 }
 
 const offlineProtocolSchema: Schema<OfflineProtocol> = {
   ...baseProtocolSchema,
-  decryptAESWithSecretKey: 'required',
-  decryptAsymmetricWithKeyPair: 'required',
-  encryptAESWithSecretKey: 'required',
   getKeyPairFromSecret: 'required',
-  signMessageWithKeyPair: 'required',
   signTransactionWithSecretKey: 'required'
 }
 
 const onlineProtocolSchema: Schema<OnlineProtocol> = {
   ...baseProtocolSchema,
   broadcastTransaction: 'required',
-  getBalanceOfAddress: 'required',
   getBalanceOfPublicKey: 'required',
   getNetwork: 'required',
   getTransactionFeeWithPublicKey: 'required',
   getTransactionMaxAmountWithPublicKey: 'required',
-  getTransactionsForAddress: 'required',
   getTransactionsForPublicKey: 'required',
   prepareTransactionWithPublicKey: 'required'
 }
@@ -70,13 +85,65 @@ const bip32OnlineProtocolSchema: Schema<OnlineBip32Protocol> = {
   ...onlineProtocolSchema
 }
 
-const multiAddressAccountProtocolSchema: Schema<MultiAddressAccountProtocol> = {
+const subProtocolSchema: Schema<SubProtocol> = {
+  getType: 'required'
+}
+
+const contractSubProtocolSchema: Schema<ContractSubProtocol> = {
+  ...subProtocolSchema,
+  getContractAddress: 'required'
+}
+
+const fetchDataForAddressProtocolSchema: Schema<FetchDataForAddressProtocol> = {
+  getBalanceOfAddress: 'required',
+  getTransactionsForAddress: 'required'
+}
+
+const fetchDataForMultipleAddressesProtocolSchema: Schema<FetchDataForMultipleAddressesProtocol> = {
   getBalanceOfAddresses: 'required',
   getTransactionsForAddresses: 'required'
 }
 
 const multiAddressPublicKeyProtocolSchema: Schema<MultiAddressNonExtendedPublicKeyProtocol & MultiAddressExtendedPublicKeyProtocol> = {
   getNextAddressFromPublicKey: 'required'
+}
+
+const configurableContractProtocolSchema: Schema<ConfigurableContractProtocol> = {
+  isContractValid: 'required',
+  getContractAddress: 'required',
+  setContractAddress: 'required'
+}
+
+const aesEncryptionSchema: Schema<AESWithNonExtendedKeyPair & AESWithExtendedKeyPair> = {
+  decryptAESWithSecretKey: 'required',
+  encryptAESWithSecretKey: 'required'
+}
+
+const asymmetricEncryptionBaseSchema: Schema<
+  BaseAsymmetricEncryptionWithNonExtendedKeyPair | BaseAsymmetricEncryptionWithExtendedKeyPair
+> = {
+  encryptAsymmetricWithPublicKey: 'required'
+}
+
+const asymmetricEncryptionOfflineSchema: Schema<
+  OfflineAsymmetricEncryptionWithNonExtendedKeyPair | OfflineAsymmetricEncryptionWithExtendedKeyPair
+> = {
+  ...asymmetricEncryptionBaseSchema,
+  decryptAsymmetricWithKeyPair: 'required'
+}
+
+const signMessageBaseSchema: Schema<BaseSignMessageWithNonExtendedKeyPair | BaseSignMessageWithExtendedKeyPair> = {
+  verifyMessageWithPublicKey: 'required'
+}
+
+const signMessageOfflineSchema: Schema<OfflineSignMessageWithNonExtendedKeyPair | OfflineSignMessageWithExtendedKeyPair> = {
+  ...signMessageBaseSchema,
+  signMessageWithKeyPair: 'required'
+}
+
+const configurableTransactionInjectorSchema: Schema<ConfigurableTransactionInjectorProtocol> = {
+  getInjectorUrl: 'required',
+  setInjectorUrl: 'required'
 }
 
 const transactionStatusCheckerSchema: Schema<TransactionStatusChecker> = {
@@ -115,8 +182,22 @@ export function isBip32Protocol<T extends AnyProtocol>(protocol: T): protocol is
   return extendedWithBip32
 }
 
-export function hasMultiAddressAccounts<T extends OnlineProtocol>(protocol: T): protocol is T & MultiAddressAccountExtension<T> {
-  return implementsInterface<MultiAddressAccountProtocol>(protocol, multiAddressAccountProtocolSchema)
+export function isSubProtocol<T extends AnyProtocol>(protocol: T): protocol is T & SubProtocol {
+  return implementsInterface<SubProtocol>(protocol, subProtocolSchema)
+}
+
+export function isContractSubProtocol<T extends AnyProtocol>(protocol: T): protocol is T & ContractSubProtocol {
+  return implementsInterface<ContractSubProtocol>(protocol, contractSubProtocolSchema)
+}
+
+export function canFetchDataForAddress<T extends OnlineProtocol>(protocol: T): protocol is T & FetchDataForAddressExtension<T> {
+  return implementsInterface<FetchDataForAddressProtocol>(protocol, fetchDataForAddressProtocolSchema)
+}
+
+export function canFetchDataForMultipleAddresses<T extends OnlineProtocol>(
+  protocol: T
+): protocol is T & FetchDataForMultipleAddressesExtension<T> {
+  return implementsInterface<FetchDataForMultipleAddressesProtocol>(protocol, fetchDataForMultipleAddressesProtocolSchema)
 }
 
 export function hasMultiAddressPublicKeys<T extends AnyProtocol>(protocol: T): protocol is T & MultiAddressPublicKeyExtension<T> {
@@ -124,6 +205,50 @@ export function hasMultiAddressPublicKeys<T extends AnyProtocol>(protocol: T): p
     protocol,
     multiAddressPublicKeyProtocolSchema
   )
+}
+
+export function hasConfigurableContract<T extends AnyProtocol>(protocol: T): protocol is T & ConfigurableContractProtocol {
+  return implementsInterface<ConfigurableContractProtocol>(protocol, configurableContractProtocolSchema)
+}
+
+export function canEncryptAES<T extends OfflineProtocol>(protocol: T): protocol is T & AESExtension<T> {
+  return implementsInterface<AESWithNonExtendedKeyPair & AESWithExtendedKeyPair>(protocol, aesEncryptionSchema)
+}
+
+export function canEncryptAsymmetric<T extends AnyProtocol>(protocol: T): protocol is T & AsymmetricEncryptionExtension<T> {
+  let extendedWithAsymmetricEncryption: boolean = implementsInterface<
+    BaseAsymmetricEncryptionWithNonExtendedKeyPair & BaseAsymmetricEncryptionWithExtendedKeyPair
+  >(protocol, asymmetricEncryptionBaseSchema)
+
+  if (isOfflineProtocol(protocol)) {
+    extendedWithAsymmetricEncryption &&= implementsInterface<
+      OfflineAsymmetricEncryptionWithNonExtendedKeyPair & OfflineAsymmetricEncryptionWithExtendedKeyPair
+    >(protocol, asymmetricEncryptionOfflineSchema)
+  }
+
+  return extendedWithAsymmetricEncryption
+}
+
+export function canSignMessage<T extends AnyProtocol>(protocol: T): protocol is T & SignMessageExtension<T> {
+  let extendedWithSignMessage: boolean = implementsInterface<BaseSignMessageWithNonExtendedKeyPair & BaseSignMessageWithExtendedKeyPair>(
+    protocol,
+    signMessageBaseSchema
+  )
+
+  if (isOfflineProtocol(protocol)) {
+    extendedWithSignMessage &&= implementsInterface<OfflineSignMessageWithNonExtendedKeyPair & OfflineSignMessageWithExtendedKeyPair>(
+      protocol,
+      signMessageOfflineSchema
+    )
+  }
+
+  return extendedWithSignMessage
+}
+
+export function hasConfigurableTransactionInjector<T extends OnlineProtocol>(
+  protocol: T
+): protocol is T & ConfigurableTransactionInjectorProtocol {
+  return implementsInterface<ConfigurableTransactionInjectorProtocol>(protocol, configurableTransactionInjectorSchema)
 }
 
 export function isTransactionStatusChecker<T extends OnlineProtocol>(protocol: T): protocol is T & TransactionStatusCheckerExtension<T> {

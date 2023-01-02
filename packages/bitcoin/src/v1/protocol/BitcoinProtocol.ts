@@ -17,8 +17,6 @@ import {
   ExtendedPublicKey,
   ExtendedSecretKey,
   FeeDefaults,
-  FeeEstimation,
-  isAmount,
   KeyPair,
   newAmount,
   newExtendedPublicKey,
@@ -66,10 +64,13 @@ export interface BitcoinProtocol<
       SignedTransaction: _SignedTransaction
       TransactionCursor: BitcoinTransactionCursor
       Units: BitcoinUnits
+      FeeEstimation: FeeDefaults<BitcoinUnits>
       UnsignedTransaction: _UnsignedTransaction
     },
     'Bip32OverridingExtension',
-    'MultiAddressAccountExtension'
+    'CryptoExtension',
+    'FetchDataForAddressExtension',
+    'FetchDataForMultipleAddressesExtension'
   > {}
 
 // Implementation
@@ -754,7 +755,7 @@ export class BitcoinProtocolImpl implements BitcoinProtocol {
   public async getTransactionFeeWithPublicKey(
     publicKey: ExtendedPublicKey | PublicKey,
     details: TransactionDetails<BitcoinUnits>[]
-  ): Promise<FeeEstimation<BitcoinUnits>> {
+  ): Promise<FeeDefaults<BitcoinUnits>> {
     const result = (await axios.get(`${this.options.network.indexerApi}/api/v2/estimatefee/5`)).data.result
     const estimatedFee: BigNumber = new BigNumber(newAmount<BitcoinUnits>(result, 'BTC').blockchain(this.units).value)
     if (estimatedFee.isZero()) {
@@ -797,8 +798,8 @@ export class BitcoinProtocolImpl implements BitcoinProtocol {
     if (configuration?.fee !== undefined) {
       fee = configuration.fee
     } else {
-      const estimatedFee: FeeEstimation<BitcoinUnits> = await this.getTransactionFeeWithPublicKey(publicKey, details)
-      fee = isAmount(estimatedFee) ? estimatedFee : estimatedFee.medium
+      const estimatedFee: FeeDefaults<BitcoinUnits> = await this.getTransactionFeeWithPublicKey(publicKey, details)
+      fee = estimatedFee.medium
     }
 
     const wrappedFee: BigNumber = new BigNumber(newAmount(fee).blockchain(this.units).value)
@@ -876,8 +877,8 @@ export class BitcoinProtocolImpl implements BitcoinProtocol {
     if (configuration?.fee !== undefined) {
       targetFee = configuration.fee
     } else {
-      const estimatedFee: FeeEstimation<BitcoinUnits> = await this.getTransactionFeeWithPublicKey(extendedPublicKey, details)
-      targetFee = isAmount(estimatedFee) ? estimatedFee : estimatedFee.medium
+      const estimatedFee: FeeDefaults<BitcoinUnits> = await this.getTransactionFeeWithPublicKey(extendedPublicKey, details)
+      targetFee = estimatedFee.medium
     }
 
     const wrappedFee: BigNumber = new BigNumber(newAmount(targetFee).blockchain(this.units).value)

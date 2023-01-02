@@ -12,8 +12,7 @@ import {
   ExtendedKeyPair,
   ExtendedPublicKey,
   ExtendedSecretKey,
-  FeeEstimation,
-  isAmount,
+  FeeDefaults,
   KeyPair,
   newAmount,
   newExtendedPublicKey,
@@ -457,7 +456,7 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
   public async getTransactionFeeWithPublicKey(
     publicKey: PublicKey | ExtendedPublicKey,
     details: TransactionDetails<BitcoinUnits>[]
-  ): Promise<FeeEstimation<BitcoinUnits>> {
+  ): Promise<FeeDefaults<BitcoinUnits>> {
     return this.getTransactionFeeWithPublicKey(publicKey, details)
   }
 
@@ -495,15 +494,15 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
       throw new ConditionViolationError(Domain.BITCOIN, 'Master fingerprint not set.')
     }
 
-    let targetFee: Amount<BitcoinUnits>
+    let fee: Amount<BitcoinUnits>
     if (configuration?.fee !== undefined) {
-      targetFee = configuration.fee
+      fee = configuration.fee
     } else {
-      const estimatedFee: FeeEstimation<BitcoinUnits> = await this.getTransactionFeeWithPublicKey(extendedPublicKey, details)
-      targetFee = isAmount(estimatedFee) ? estimatedFee : estimatedFee.medium
+      const estimatedFee: FeeDefaults<BitcoinUnits> = await this.getTransactionFeeWithPublicKey(extendedPublicKey, details)
+      fee = estimatedFee.medium
     }
 
-    const wrappedFee: BigNumber = new BigNumber(newAmount(targetFee).blockchain(this.legacy.units).value)
+    const wrappedFee: BigNumber = new BigNumber(newAmount(fee).blockchain(this.legacy.units).value)
 
     const transaction: BitcoinUnsignedTransaction = newUnsignedTransaction({
       ins: [],

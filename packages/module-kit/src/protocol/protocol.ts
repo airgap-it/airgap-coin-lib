@@ -7,7 +7,6 @@ import { KeyPair, PublicKey, SecretKey } from '../types/key'
 import { Complement } from '../types/meta/utility-types'
 import { ProtocolMetadata, ProtocolNetwork } from '../types/protocol'
 import { Secret } from '../types/secret'
-import { Signature } from '../types/signature'
 import {
   AirGapTransaction,
   AirGapTransactionsWithCursor,
@@ -51,11 +50,13 @@ export interface OnlineGeneric<
   _ProtocolNetwork extends ProtocolNetwork = ProtocolNetwork,
   _Units extends string = string,
   _FeeUnits extends string = _Units,
+  _FeeEstimation extends FeeEstimation<_FeeUnits> | undefined = FeeEstimation<_FeeUnits> | undefined,
   _SignedTransaction extends SignedTransaction = SignedTransaction,
   _UnsignedTransaction extends UnsignedTransaction = UnsignedTransaction,
   _TransactionCursor extends TransactionCursor = TransactionCursor
 > extends BaseGeneric<_AddressCursor, _AddressResult, _Units, _FeeUnits, _SignedTransaction, _UnsignedTransaction> {
   ProtocolNetwork: _ProtocolNetwork
+  FeeEstimation: _FeeEstimation
   TransactionCursor: _TransactionCursor
 }
 
@@ -66,6 +67,11 @@ type TypedProtocolNetwork<G extends Partial<OnlineGeneric>> = Complement<OnlineG
 
 type TypedUnits<G extends Partial<BaseGeneric>> = Complement<BaseGeneric, G>['Units']
 type TypedFeeUnits<G extends Partial<BaseGeneric>> = Complement<BaseGeneric<any, any, TypedUnits<G>>, G>['FeeUnits']
+
+type TypedFeeEstimation<G extends Partial<OnlineGeneric>> = Complement<
+  OnlineGeneric<any, any, any, any, TypedFeeUnits<G>>,
+  G
+>['FeeEstimation']
 
 type TypedSignedTransaction<G extends Partial<BaseGeneric>> = Complement<BaseGeneric, G>['SignedTransaction']
 type TypedUnsignedTransaction<G extends Partial<BaseGeneric>> = Complement<BaseGeneric, G>['UnsignedTransaction']
@@ -89,9 +95,6 @@ export interface _BaseProtocol<
     transaction: _UnsignedTransaction | _SignedTransaction,
     publicKey: PublicKey
   ): Promise<AirGapTransaction<_Units, _FeeUnits>[]>
-
-  verifyMessageWithPublicKey(message: string, signature: Signature, publicKey: PublicKey): Promise<boolean>
-  encryptAsymmetricWithPublicKey(payload: string, publicKey: PublicKey): Promise<string>
 }
 export type BaseProtocol<G extends Partial<BaseGeneric> = {}> = _BaseProtocol<
   TypedAddressCursor<G>,
@@ -113,11 +116,6 @@ export interface _OfflineProtocol<
   getKeyPairFromSecret(secret: Secret, derivationPath?: string): Promise<KeyPair>
 
   signTransactionWithSecretKey(transaction: _UnsignedTransaction, secretKey: SecretKey): Promise<_SignedTransaction>
-
-  signMessageWithKeyPair(message: string, keyPair: KeyPair): Promise<Signature>
-  decryptAsymmetricWithKeyPair(payload: string, keyPair: KeyPair): Promise<string>
-  encryptAESWithSecretKey(payload: string, secretKey: SecretKey): Promise<string>
-  decryptAESWithSecretKey(payload: string, secretKey: SecretKey): Promise<string>
 }
 export type OfflineProtocol<G extends Partial<OfflineGeneric> = {}> = _OfflineProtocol<
   TypedAddressCursor<G>,
@@ -134,6 +132,7 @@ export interface _OnlineProtocol<
   _ProtocolNetwork extends OnlineGeneric['ProtocolNetwork'],
   _Units extends OnlineGeneric['Units'],
   _FeeUnits extends OnlineGeneric['FeeUnits'],
+  _FeeEstimation extends OnlineGeneric['FeeEstimation'],
   _SignedTransaction extends OnlineGeneric['SignedTransaction'],
   _UnsignedTransaction extends OnlineGeneric['UnsignedTransaction'],
   _TransactionCursor extends OnlineGeneric['TransactionCursor']
@@ -145,21 +144,15 @@ export interface _OnlineProtocol<
     limit: number,
     cursor?: _TransactionCursor
   ): Promise<AirGapTransactionsWithCursor<_TransactionCursor, _Units, _FeeUnits>>
-  getTransactionsForAddress(
-    address: Address,
-    limit: number,
-    cursor?: _TransactionCursor
-  ): Promise<AirGapTransactionsWithCursor<_TransactionCursor, _Units, _FeeUnits>>
 
   getBalanceOfPublicKey(publicKey: PublicKey): Promise<Balance<_Units>>
-  getBalanceOfAddress(address: Address): Promise<Balance<_Units>>
 
   getTransactionMaxAmountWithPublicKey(
     publicKey: PublicKey,
     to: Address[],
     configuration?: TransactionConfiguration<_FeeUnits>
   ): Promise<Amount<_Units>>
-  getTransactionFeeWithPublicKey(publicKey: PublicKey, details: TransactionDetails<_Units>[]): Promise<FeeEstimation<_FeeUnits>>
+  getTransactionFeeWithPublicKey(publicKey: PublicKey, details: TransactionDetails<_Units>[]): Promise<_FeeEstimation>
   prepareTransactionWithPublicKey(
     publicKey: PublicKey,
     details: TransactionDetails<_Units>[],
@@ -174,6 +167,7 @@ export type OnlineProtocol<G extends Partial<OnlineGeneric> = {}> = _OnlineProto
   TypedProtocolNetwork<G>,
   TypedUnits<G>,
   TypedFeeUnits<G>,
+  TypedFeeEstimation<G>,
   TypedSignedTransaction<G>,
   TypedUnsignedTransaction<G>,
   TypedTransactionCursor<G>

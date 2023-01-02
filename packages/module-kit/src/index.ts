@@ -7,14 +7,21 @@ import { newErrorUIAlert, newInfoUIAlert, newSuccessUIAlert, newWarningUIAlert }
 import { newPlainUIText } from './factories/ui/text'
 import { AirGapModule } from './module/module'
 import { ModuleNetworkRegistry } from './module/module-network-registry'
-import { MultiAddressAccountExtension, MultiAddressAccountProtocol } from './protocol/extensions/address/MultiAddressAccountExtension'
+import {
+  FetchDataForMultipleAddressesExtension,
+  FetchDataForMultipleAddressesProtocol
+} from './protocol/extensions/address/FetchDataForMultipleAddressesExtension'
 import {
   MultiAddressExtendedPublicKeyProtocol,
   MultiAddressNonExtendedPublicKeyProtocol,
   MultiAddressPublicKeyExtension
 } from './protocol/extensions/address/MultiAddressPublicKeyExtension'
 import { Bip32OverridingExtension, OfflineBip32Protocol, OnlineBip32Protocol } from './protocol/extensions/bip/Bip32OverridingExtension'
-import { ContractProtocol, ContractProtocolExtension } from './protocol/extensions/sub-protocol/ContractProtocolExtension'
+import { AESExtension } from './protocol/extensions/crypto/AESExtension'
+import { AsymmetricEncryptionExtension } from './protocol/extensions/crypto/AsymmetricEncryptionExtension'
+import { CryptoExtension } from './protocol/extensions/crypto/CryptoExtension'
+import { SignMessageExtension } from './protocol/extensions/crypto/SignMessageExtension'
+import { ContractSubProtocol, ContractSubProtocolExtension } from './protocol/extensions/sub-protocol/ContractSubProtocolExtension'
 import { SubProtocol, SubProtocolExtension } from './protocol/extensions/sub-protocol/SubProtocolExtension'
 import { TransactionStatusCheckerExtension } from './protocol/extensions/transaction/TransactionStatusCheckerExtension'
 import { AirGapAnyProtocol, AirGapOfflineProtocol, AirGapOnlineProtocol, AirGapProtocol } from './protocol/protocol'
@@ -58,7 +65,12 @@ import { implementsInterface, Schema } from './utils/interface'
 import { isAnyKey, isExtendedPublicKey, isExtendedSecretKey, isPublicKey, isSecretKey } from './utils/key'
 import { normalizeToUndefined } from './utils/normalize'
 import {
-  hasMultiAddressAccounts,
+  canEncryptAES,
+  canEncryptAsymmetric,
+  canFetchDataForMultipleAddresses,
+  canSignMessage,
+  hasConfigurableContract,
+  hasConfigurableTransactionInjector,
   hasMultiAddressPublicKeys,
   isBip32Protocol,
   isTransactionStatusChecker,
@@ -98,8 +110,8 @@ export {
   AirGapOnlineProtocol,
   AirGapProtocol,
   AirGapAnyProtocol,
-  MultiAddressAccountExtension,
-  MultiAddressAccountProtocol,
+  FetchDataForMultipleAddressesExtension,
+  FetchDataForMultipleAddressesProtocol,
   MultiAddressPublicKeyExtension,
   MultiAddressNonExtendedPublicKeyProtocol,
   MultiAddressExtendedPublicKeyProtocol,
@@ -108,8 +120,12 @@ export {
   OnlineBip32Protocol,
   SubProtocolExtension,
   SubProtocol,
-  ContractProtocolExtension,
-  ContractProtocol,
+  ContractSubProtocolExtension,
+  ContractSubProtocol,
+  CryptoExtension,
+  AESExtension as AESEncryptionExtension,
+  AsymmetricEncryptionExtension,
+  SignMessageExtension,
   TransactionStatusCheckerExtension,
   ProtocolMetadata,
   ProtocolUnitsMetadata,
@@ -177,8 +193,13 @@ export {
   isPublicKey,
   isExtendedPublicKey,
   isBip32Protocol,
-  hasMultiAddressAccounts,
+  canFetchDataForMultipleAddresses,
   hasMultiAddressPublicKeys,
+  hasConfigurableContract,
+  canEncryptAES,
+  canEncryptAsymmetric,
+  canSignMessage,
+  hasConfigurableTransactionInjector,
   isTransactionStatusChecker,
   protocolNetworkIdentifier,
   normalizeToUndefined
