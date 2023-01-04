@@ -11,3 +11,5 @@ dist
 node_modules
 npm-ci-publish-beta-only.sh
 npm-ci-publish.sh
+
+packages/core/src/dependencies

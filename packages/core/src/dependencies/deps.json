@@ -980,27 +980,36 @@
     "files": ["index.js"],
     "deps": ["bech32-1.1.3", "bs58check-2.1.2", "buffer-equals-1.0.4", "create-hash-1.2.0", "secp256k1-3.7.1", "varuint-bitcoin-1.1.2"]
   },
-  "@taquito/local-forging-8.0.1-beta.1": {
+  "@taquito/local-forging-15.0.1": {
     "name": "@taquito/local-forging",
     "entrypoint": "packages/taquito-local-forging/src/taquito-local-forging",
-    "version": "8.0.1-beta.1",
+    "version": "15.0.1",
     "repository": "ecadlabs/taquito",
-    "commitHash": "7476a279b438d0c836899d5dcc18b88a0b518689",
+    "commitHash": "f8a1a9931f1ea51c749e888c3a11bdcadb79ef77",
     "files": [
-      "packages/taquito/src/forger/interface.ts",
+      "packages/taquito-local-forging/src/taquito-local-forging.ts",
       "packages/taquito-rpc/src/types.ts",
       "packages/taquito-rpc/src/opkind.ts",
-      "packages/taquito-local-forging/src/michelson/codec.ts",
-      "packages/taquito-local-forging/src/schema/operation.ts",
-      "packages/taquito-local-forging/src/codec.ts",
+      "packages/taquito-local-forging/src/interface.ts",
+      "packages/taquito-local-forging/src/version.ts",
       "packages/taquito-local-forging/src/constants.ts",
       "packages/taquito-local-forging/src/decoder.ts",
       "packages/taquito-local-forging/src/encoder.ts",
-      "packages/taquito-local-forging/src/taquito-local-forging.ts",
       "packages/taquito-local-forging/src/uint8array-consumer.ts",
+      "packages/taquito-local-forging/src/error.ts",
+      "packages/taquito-local-forging/src/validator.ts",
+      "packages/taquito-local-forging/src/protocols.ts",
+      "packages/taquito-local-forging/src/proto14-kathmandu/decoder-proto14.ts",
+      "packages/taquito-local-forging/src/proto14-kathmandu/encoder-proto14.ts",
+      "packages/taquito-local-forging/src/proto14-kathmandu/codec-proto14.ts",
+      "packages/taquito-local-forging/src/proto14-kathmandu/michelson/codec-proto14.ts",
+      "packages/taquito-local-forging/src/proto14-kathmandu/constants-proto14.ts",
+      "packages/taquito-local-forging/src/schema/operation.ts",
+      "packages/taquito-local-forging/src/codec.ts",
+      "packages/taquito-local-forging/src/michelson/codec.ts",
       "packages/taquito-local-forging/src/utils.ts"
     ],
-    "deps": ["@taquito/utils-8.0.1-beta.1", "bignumber.js-9.0.0"],
+    "deps": ["@taquito/utils-15.0.1", "bignumber.js-9.0.0"],
     "replaceInFiles": [
       {
         "filename": "packages/taquito-local-forging/src/codec.ts",
@@ -1018,6 +1027,16 @@
           {
             "from": "const byte = [];",
             "to": "const byte: number[] = [];",
+            "expectedReplacements": 2
+          },
+          {
+            "from": "export const entrypointDecoder = (value: Uint8ArrayConsumer) => {",
+            "to": "export const entrypointDecoder = (value: Uint8ArrayConsumer): any => {",
+            "expectedReplacements": 1
+          },
+          {
+            "from": "export const burnLimitDecoder = (value: Uint8ArrayConsumer) => {",
+            "to": "export const burnLimitDecoder = (value: Uint8ArrayConsumer): any => {",
             "expectedReplacements": 1
           }
         ]
@@ -1028,6 +1047,26 @@
           {
             "from": "const results = [];",
             "to": "const results: any[] = [];",
+            "expectedReplacements": 1
+          },
+          {
+            "from": "const args = [];",
+            "to": "const args: any[] = [];",
+            "expectedReplacements": 1
+          }
+        ]
+      },
+      {
+        "filename": "packages/taquito-local-forging/src/proto14-kathmandu/michelson/codec-proto14.ts",
+        "replacements": [
+          {
+            "from": "const results = [];",
+            "to": "const results: any[] = [];",
+            "expectedReplacements": 1
+          },
+          {
+            "from": "const args = [];",
+            "to": "const args: any[] = [];",
             "expectedReplacements": 1
           }
         ]
@@ -1043,39 +1082,56 @@
         ]
       },
       {
-        "filename": "packages/taquito-local-forging/src/taquito-local-forging.ts",
+        "filename": "packages/taquito-local-forging/src/interface.ts",
         "replacements": [
           {
-            "from": "import { ForgeParams, Forger } from '@taquito/taquito';",
-            "to": "import { ForgeParams, Forger } from '../../taquito/src/forger/interface';",
+            "from": "import { OperationContents } from '@taquito/rpc';",
+            "to": "import { OperationContents } from '../../taquito-rpc/src/types';",
             "expectedReplacements": 1
           }
         ]
       },
       {
-        "filename": "packages/taquito/src/forger/interface.ts",
+        "filename": "packages/taquito-local-forging/src/validator.ts",
         "replacements": [
           {
+            "from": "import { OpKind } from '@taquito/rpc';",
+            "to": "import { OpKind } from '../../taquito-rpc/src/opkind';",
+            "expectedReplacements": 1
+          },
+          {
             "from": "import { OperationContents } from '@taquito/rpc';",
-            "to": "import { OperationContents } from '../../../taquito-rpc/src/types';",
+            "to": "import { OperationContents } from '../../taquito-rpc/src/types';",
             "expectedReplacements": 1
           }
         ]
       }
     ]
   },
-  "@taquito/utils-8.0.1-beta.1": {
+  "@taquito/utils-15.0.1": {
     "name": "@taquito/utils",
     "entrypoint": "packages/taquito-utils/src/taquito-utils",
-    "version": "8.0.1-beta.1",
+    "version": "15.0.1",
     "repository": "ecadlabs/taquito",
-    "commitHash": "7476a279b438d0c836899d5dcc18b88a0b518689",
+    "commitHash": "f8a1a9931f1ea51c749e888c3a11bdcadb79ef77",
     "files": [
       "packages/taquito-utils/src/constants.ts",
+      "packages/taquito-utils/src/errors.ts",
+      "packages/taquito-utils/src/version.ts",
+      "packages/taquito-utils/src/verify-signature.ts",
+      "packages/taquito-utils/src/format.ts",
       "packages/taquito-utils/src/taquito-utils.ts",
       "packages/taquito-utils/src/validators.ts"
     ],
-    "deps": ["blakejs-1.1.0", "bs58check-2.1.2", "buffer-5.6.0"]
+    "deps": [
+      "@stablelib/blake2b-1.0.1",
+      "@stablelib/ed25519-1.0.3",
+      "blakejs-1.1.0", 
+      "bs58check-2.1.2", 
+      "buffer-5.6.0", 
+      "typedarray-to-buffer-4.0.0", 
+      "bignumber.js-9.0.0"
+    ]
   },
   "blakejs-1.1.0": {
     "name": "blakejs",
@@ -1244,5 +1300,88 @@
     "repository": "bestiejs/punycode.js",
     "commitHash": "68df855dc42d1086ada161331b3074468e8d848d",
     "files": ["punycode.js"]
+  },
+  "typedarray-to-buffer-4.0.0": {
+    "name": "typedarray-to-buffer",
+    "entrypoint": "index",
+    "version": "4.0.0",
+    "repository": "feross/typedarray-to-buffer",
+    "commitHash": "5436613585dac060da849f39ff56b159a10b8ba1",
+    "files": ["index.js"]
+  },
+  "@stablelib/blake2b-1.0.1": {
+    "name": "@stablelib/blake2b",
+    "entrypoint": "packages/blake2b/blake2b",
+    "version": "1.0.1",
+    "repository": "StableLib/stablelib",
+    "commitHash": "a89a438fcbf855de6b2e9faa2630f03c3f3b3a54",
+    "files": ["packages/blake2b/blake2b.ts"],
+    "deps": ["@stablelib/hash-1.0.1", "@stablelib/binary-1.0.1", "@stablelib/wipe-1.0.1"]
+  },
+  "@stablelib/ed25519-1.0.3": {
+    "name": "@stablelib/ed25519",
+    "entrypoint": "packages/ed25519/ed25519",
+    "version": "1.0.3",
+    "repository": "StableLib/stablelib",
+    "commitHash": "a89a438fcbf855de6b2e9faa2630f03c3f3b3a54",
+    "files": ["packages/ed25519/ed25519.ts"],
+    "deps": ["@stablelib/random-1.0.2", "@stablelib/sha512-1.0.1", "@stablelib/wipe-1.0.1"]
+  },
+  "@stablelib/random-1.0.2": {
+    "name": "@stablelib/random",
+    "entrypoint": "packages/random/random",
+    "version": "1.0.2",
+    "repository": "StableLib/stablelib",
+    "commitHash": "a89a438fcbf855de6b2e9faa2630f03c3f3b3a54",
+    "files": [
+      "packages/random/random.ts",
+      "packages/random/source/index.ts",
+      "packages/random/source/system.ts",
+      "packages/random/source/browser.ts",
+      "packages/random/source/node.ts"
+    ],
+    "deps": ["@stablelib/binary-1.0.1", "@stablelib/wipe-1.0.1"]
+  },
+  "@stablelib/sha512-1.0.1": {
+    "name": "@stablelib/sha512",
+    "entrypoint": "packages/sha512/sha512",
+    "version": "1.0.1",
+    "repository": "StableLib/stablelib",
+    "commitHash": "a89a438fcbf855de6b2e9faa2630f03c3f3b3a54",
+    "files": ["packages/sha512/sha512.ts"],
+    "deps": ["@stablelib/hash-1.0.1", "@stablelib/binary-1.0.1", "@stablelib/wipe-1.0.1"]
+  },
+  "@stablelib/wipe-1.0.1": {
+    "name": "@stablelib/wipe",
+    "entrypoint": "packages/wipe/wipe",
+    "version": "1.0.1",
+    "repository": "StableLib/stablelib",
+    "commitHash": "a89a438fcbf855de6b2e9faa2630f03c3f3b3a54",
+    "files": ["packages/wipe/wipe.ts"]
+  },
+  "@stablelib/hash-1.0.1": {
+    "name": "@stablelib/hash",
+    "entrypoint": "packages/hash/hash",
+    "version": "1.0.1",
+    "repository": "StableLib/stablelib",
+    "commitHash": "a89a438fcbf855de6b2e9faa2630f03c3f3b3a54",
+    "files": ["packages/hash/hash.ts"]
+  },
+  "@stablelib/binary-1.0.1": {
+    "name": "@stablelib/binary",
+    "entrypoint": "packages/binary/binary",
+    "version": "1.0.1",
+    "repository": "StableLib/stablelib",
+    "commitHash": "a89a438fcbf855de6b2e9faa2630f03c3f3b3a54",
+    "files": ["packages/binary/binary.ts"],
+    "deps": ["@stablelib/int-1.0.1"]
+  },
+  "@stablelib/int-1.0.1": {
+    "name": "@stablelib/int",
+    "entrypoint": "packages/int/int",
+    "version": "1.0.1",
+    "repository": "StableLib/stablelib",
+    "commitHash": "a89a438fcbf855de6b2e9faa2630f03c3f3b3a54",
+    "files": ["packages/int/int.ts"]
   }
 }
