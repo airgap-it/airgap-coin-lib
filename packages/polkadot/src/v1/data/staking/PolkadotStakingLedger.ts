@@ -1,12 +1,13 @@
-import { SCALEDecoder, SCALETuple, SCALECompactInt, SCALEInt, SCALEAccountId, SCALEArray } from '@airgap/substrate/v1'
+import { SCALEAccountId, SCALEArray, SCALECompactInt, SCALEDecoder, SCALEInt, SCALETuple } from '@airgap/substrate/v1'
+
 import { PolkadotProtocolConfiguration } from '../../types/configuration'
 
-export class SubstrateStakingLedger<C extends PolkadotProtocolConfiguration = PolkadotProtocolConfiguration> {
+export class PolkadotStakingLedger<C extends PolkadotProtocolConfiguration = PolkadotProtocolConfiguration> {
   public static decode<C extends PolkadotProtocolConfiguration>(
     configuration: C,
     runtimeVersion: number | undefined,
     raw: string
-  ): SubstrateStakingLedger<C> {
+  ): PolkadotStakingLedger<C> {
     const decoder = new SCALEDecoder(configuration, runtimeVersion, raw)
 
     const stash = decoder.decodeNextAccountId()
@@ -23,7 +24,7 @@ export class SubstrateStakingLedger<C extends PolkadotProtocolConfiguration = Po
     )
     const claimedRewards = decoder.decodeNextArray((_configuration, _runtimeVersion, hex) => SCALEInt.decode(hex, 32))
 
-    return new SubstrateStakingLedger(stash.decoded, total.decoded, active.decoded, unlocking.decoded, claimedRewards.decoded)
+    return new PolkadotStakingLedger(stash.decoded, total.decoded, active.decoded, unlocking.decoded, claimedRewards.decoded)
   }
 
   private constructor(

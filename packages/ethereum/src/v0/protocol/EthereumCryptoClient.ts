@@ -1,9 +1,9 @@
-import { signTypedData, SignTypedDataVersion, TypedDataV1, TypedMessage } from '@metamask/eth-sig-util'
-
+// @ts-ignore
 import * as EthereumJSUtils from '@airgap/coinlib-core/dependencies/src/ethereumjs-util-5.2.0'
 import { NotFoundError } from '@airgap/coinlib-core/errors'
 import { Domain } from '@airgap/coinlib-core/errors/coinlib-error'
 import { Secp256k1CryptoClient } from '@airgap/coinlib-core/protocols/Secp256k1CryptoClient'
+import { signTypedData, SignTypedDataVersion, TypedDataV1, TypedMessage } from '@metamask/eth-sig-util'
 
 import { BaseEthereumProtocol } from './BaseEthereumProtocol'
 import { EthereumInfoClient } from './clients/info-clients/InfoClient'

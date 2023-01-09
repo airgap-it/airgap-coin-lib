@@ -1,3 +1,4 @@
+// @ts-ignore
 import { toUnicode } from '@airgap/coinlib-core/dependencies/src/idna-uts46-hx-3.4.0/uts46'
 import { Cache } from '@airgap/coinlib-core/utils/cache'
 import { isHex, stripHexPrefix } from '@airgap/coinlib-core/utils/hex'

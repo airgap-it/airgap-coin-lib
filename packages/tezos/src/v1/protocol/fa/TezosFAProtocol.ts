@@ -480,7 +480,7 @@ export abstract class TezosFAProtocolImpl<
       const binaryTx: string = await this.tezos.forgeOperation(tezosWrappedOperation)
 
       return newUnsignedTransaction<TezosUnsignedTransaction>({ binary: binaryTx })
-    } catch (error) {
+    } catch (error: any) {
       console.error(error.message)
       throw new OperationFailedError(Domain.TEZOSFA, 'Forging Tezos TX failed.')
     }

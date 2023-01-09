@@ -1,1 +1,1 @@
-export interface BlockExplorerExtensions<T> {}
+export interface BlockExplorerExtensions<_T> {}

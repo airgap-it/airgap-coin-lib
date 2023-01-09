@@ -11,15 +11,16 @@ import {
   SubstrateRegistration,
   SubstrateSS58Address
 } from '@airgap/substrate/v1'
-import { SubstrateActiveEraInfo } from '../data/staking/SubstrateActiveEraInfo'
-import { SubstrateEraElectionStatus } from '../data/staking/SubstrateEraElectionStatus'
-import { SubstrateEraRewardPoints } from '../data/staking/SubstrateEraRewardPoints'
-import { SubstrateExposure } from '../data/staking/SubstrateExposure'
-import { SubstrateNominations } from '../data/staking/SubstrateNominations'
-import { SubstratePayee } from '../data/staking/SubstratePayee'
-import { SubstrateSlashingSpans } from '../data/staking/SubstrateSlashingSpans'
-import { SubstrateStakingLedger } from '../data/staking/SubstrateStakingLedger'
-import { SubstrateValidatorPrefs } from '../data/staking/SubstrateValidatorPrefs'
+
+import { PolkadotActiveEraInfo } from '../data/staking/PolkadotActiveEraInfo'
+import { PolkadotEraElectionStatus } from '../data/staking/PolkadotEraElectionStatus'
+import { PolkadotEraRewardPoints } from '../data/staking/PolkadotEraRewardPoints'
+import { PolkadotExposure } from '../data/staking/PolkadotExposure'
+import { PolkadotNominations } from '../data/staking/PolkadotNominations'
+import { PolkadotPayee } from '../data/staking/PolkadotPayee'
+import { PolkadotSlashingSpans } from '../data/staking/PolkadotSlashingSpans'
+import { PolkadotStakingLedger } from '../data/staking/PolkadotStakingLedger'
+import { PolkadotValidatorPrefs } from '../data/staking/PolkadotValidatorPrefs'
 import { PolkadotProtocolConfiguration } from '../types/configuration'
 
 export class PolkadotNodeClient extends SubstrateCommonNodeClient<PolkadotProtocolConfiguration> {
@@ -53,15 +54,15 @@ export class PolkadotNodeClient extends SubstrateCommonNodeClient<PolkadotProtoc
     )
   }
 
-  public async getNominations(address: SubstrateSS58Address): Promise<SubstrateNominations | undefined> {
+  public async getNominations(address: SubstrateSS58Address): Promise<PolkadotNominations | undefined> {
     return this.fromStorage('Staking', 'Nominators', SCALEAccountId.from(address, this.configuration)).then((item) =>
-      item ? SubstrateNominations.decode(this.configuration, this.runtimeVersion, item) : undefined
+      item ? PolkadotNominations.decode(this.configuration, this.runtimeVersion, item) : undefined
     )
   }
 
-  public async getRewardPoints(eraIndex: number): Promise<SubstrateEraRewardPoints | undefined> {
+  public async getRewardPoints(eraIndex: number): Promise<PolkadotEraRewardPoints | undefined> {
     return this.fromStorage('Staking', 'ErasRewardPoints', SCALEInt.from(eraIndex, 32)).then((item) =>
-      item ? SubstrateEraRewardPoints.decode(this.configuration, this.runtimeVersion, item) : undefined
+      item ? PolkadotEraRewardPoints.decode(this.configuration, this.runtimeVersion, item) : undefined
     )
   }
 
@@ -71,24 +72,24 @@ export class PolkadotNodeClient extends SubstrateCommonNodeClient<PolkadotProtoc
     )
   }
 
-  public async getStakersClipped(eraIndex: number, validator: SubstrateSS58Address): Promise<SubstrateExposure | undefined> {
+  public async getStakersClipped(eraIndex: number, validator: SubstrateSS58Address): Promise<PolkadotExposure | undefined> {
     return this.fromStorage(
       'Staking',
       'ErasStakersClipped',
       SCALEInt.from(eraIndex, 32),
       SCALEAccountId.from(validator, this.configuration)
-    ).then((item) => (item ? SubstrateExposure.decode(this.configuration, this.runtimeVersion, item) : undefined))
+    ).then((item) => (item ? PolkadotExposure.decode(this.configuration, this.runtimeVersion, item) : undefined))
   }
 
-  public async getRewardDestination(address: SubstrateSS58Address): Promise<SubstratePayee | undefined> {
+  public async getRewardDestination(address: SubstrateSS58Address): Promise<PolkadotPayee | undefined> {
     return this.fromStorage('Staking', 'Payee', SCALEAccountId.from(address, this.configuration)).then((item) =>
-      item ? SCALEEnum.decode(item, (hex) => SubstratePayee[SubstratePayee[hex]]).decoded.value : undefined
+      item ? SCALEEnum.decode(item, (hex) => PolkadotPayee[PolkadotPayee[hex] as keyof typeof PolkadotPayee]).decoded.value : undefined
     )
   }
 
-  public async getStakingLedger(address: SubstrateSS58Address): Promise<SubstrateStakingLedger | undefined> {
+  public async getStakingLedger(address: SubstrateSS58Address): Promise<PolkadotStakingLedger | undefined> {
     return this.fromStorage('Staking', 'Ledger', SCALEAccountId.from(address, this.configuration)).then((item) =>
-      item ? SubstrateStakingLedger.decode(this.configuration, this.runtimeVersion, item) : undefined
+      item ? PolkadotStakingLedger.decode(this.configuration, this.runtimeVersion, item) : undefined
     )
   }
 
@@ -102,18 +103,18 @@ export class PolkadotNodeClient extends SubstrateCommonNodeClient<PolkadotProtoc
     )
   }
 
-  public async getValidatorExposure(eraIndex: number, address: SubstrateSS58Address): Promise<SubstrateExposure | undefined> {
+  public async getValidatorExposure(eraIndex: number, address: SubstrateSS58Address): Promise<PolkadotExposure | undefined> {
     return this.fromStorage(
       'Staking',
       'ErasStakers',
       SCALEInt.from(eraIndex, 32),
       SCALEAccountId.from(address, this.configuration)
-    ).then((item) => (item ? SubstrateExposure.decode(this.configuration, this.runtimeVersion, item) : undefined))
+    ).then((item) => (item ? PolkadotExposure.decode(this.configuration, this.runtimeVersion, item) : undefined))
   }
 
-  public async getElectionStatus(): Promise<SubstrateEraElectionStatus | undefined> {
+  public async getElectionStatus(): Promise<PolkadotEraElectionStatus | undefined> {
     return this.fromStorage('Staking', 'EraElectionStatus').then((item) =>
-      item ? SubstrateEraElectionStatus.decode(this.configuration, this.runtimeVersion, item) : undefined
+      item ? PolkadotEraElectionStatus.decode(this.configuration, this.runtimeVersion, item) : undefined
     )
   }
 
@@ -156,13 +157,13 @@ export class PolkadotNodeClient extends SubstrateCommonNodeClient<PolkadotProtoc
     )
   }
 
-  public async getValidatorPrefs(eraIndex: number, address: SubstrateSS58Address): Promise<SubstrateValidatorPrefs | undefined> {
+  public async getValidatorPrefs(eraIndex: number, address: SubstrateSS58Address): Promise<PolkadotValidatorPrefs | undefined> {
     return this.fromStorage(
       'Staking',
       'ErasValidatorPrefs',
       SCALEInt.from(eraIndex, 32),
       SCALEAccountId.from(address, this.configuration)
-    ).then((item) => (item ? SubstrateValidatorPrefs.decode(this.configuration, this.runtimeVersion, item) : undefined))
+    ).then((item) => (item ? PolkadotValidatorPrefs.decode(this.configuration, this.runtimeVersion, item) : undefined))
   }
 
   public async getExpectedEraDuration(): Promise<BigNumber | undefined> {
@@ -183,15 +184,15 @@ export class PolkadotNodeClient extends SubstrateCommonNodeClient<PolkadotProtoc
     return expectedBlockTime.multipliedBy(epochDuration).multipliedBy(sessionsPerEra)
   }
 
-  public async getActiveEraInfo(): Promise<SubstrateActiveEraInfo | undefined> {
+  public async getActiveEraInfo(): Promise<PolkadotActiveEraInfo | undefined> {
     return this.fromStorage('Staking', 'ActiveEra').then((item) =>
-      item ? SubstrateActiveEraInfo.decode(this.configuration, this.runtimeVersion, item) : undefined
+      item ? PolkadotActiveEraInfo.decode(this.configuration, this.runtimeVersion, item) : undefined
     )
   }
 
-  public async getSlashingSpan(address: SubstrateSS58Address): Promise<SubstrateSlashingSpans | undefined> {
+  public async getSlashingSpan(address: SubstrateSS58Address): Promise<PolkadotSlashingSpans | undefined> {
     return this.fromStorage('Staking', 'SlashingSpans', SCALEAccountId.from(address, this.configuration)).then((item) =>
-      item ? SubstrateSlashingSpans.decode(this.configuration, this.runtimeVersion, item) : undefined
+      item ? PolkadotSlashingSpans.decode(this.configuration, this.runtimeVersion, item) : undefined
     )
   }
 }

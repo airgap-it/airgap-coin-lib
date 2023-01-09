@@ -1,4 +1,4 @@
-export enum SubstrateNominationStatus {
+export enum PolkadotNominationStatus {
   ACTIVE,
   INACTIVE,
   OVERSUBSCRIBED

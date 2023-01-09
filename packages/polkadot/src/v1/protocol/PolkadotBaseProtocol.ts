@@ -10,9 +10,10 @@ import {
   SubstrateTransactionType,
   SubstrateUnsignedTransaction
 } from '@airgap/substrate/v1'
+
 import { PolkadotAccountController } from '../controller/PolkadotAccountController'
 import { PolkadotTransactionController } from '../controller/PolkadotTransactionController'
-import { SubstratePayee } from '../data/staking/SubstratePayee'
+import { PolkadotPayee } from '../data/staking/PolkadotPayee'
 import { PolkadotNodeClient } from '../node/PolkadotNodeClient'
 import { PolkadotProtocolConfiguration } from '../types/configuration'
 import { PolkadotBaseProtocolOptions, PolkadotProtocolNetwork } from '../types/protocol'
@@ -32,8 +33,7 @@ export abstract class PolkadotBaseProtocolImpl<_Units extends string>
     PolkadotAccountController,
     PolkadotTransactionController
   >
-  implements PolkadotBaseProtocol<_Units>
-{
+  implements PolkadotBaseProtocol<_Units> {
   public constructor(options: PolkadotBaseProtocolOptions<_Units>) {
     const nodeClient: PolkadotNodeClient = new PolkadotNodeClient(options.configuration, options.network.rpcUrl)
 
@@ -51,7 +51,7 @@ export abstract class PolkadotBaseProtocolImpl<_Units extends string>
     targets: string[] | string,
     controller?: string,
     value?: string | number | BigNumber,
-    payee?: string | SubstratePayee
+    payee?: string | PolkadotPayee
   ): Promise<SubstrateUnsignedTransaction> {
     const balance = await this.accountController.getBalance(publicKey)
     const available = new BigNumber(balance.transferableCoveringFees).minus(value || 0)
@@ -61,13 +61,14 @@ export abstract class PolkadotBaseProtocolImpl<_Units extends string>
     const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, available, [
       ...(bondFirst
         ? [
+            // tslint:disable-next-line: no-object-literal-type-assertion
             {
               type: 'bond',
               tip,
               args: {
                 controller,
                 value: BigNumber.isBigNumber(value) ? value : new BigNumber(value!),
-                payee: typeof payee === 'string' ? SubstratePayee[payee] : payee
+                payee: typeof payee === 'string' ? PolkadotPayee[payee as keyof typeof PolkadotPayee] : payee
               }
             } as SubstrateTransactionParameters<PolkadotProtocolConfiguration>
           ]

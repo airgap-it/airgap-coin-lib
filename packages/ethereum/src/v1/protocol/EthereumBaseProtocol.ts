@@ -1,7 +1,9 @@
 // tslint:disable: max-classes-per-file
 import { assertNever, Domain, MainProtocolSymbols } from '@airgap/coinlib-core'
 import { BigNumber } from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
+// @ts-ignore
 import { mnemonicToSeed } from '@airgap/coinlib-core/dependencies/src/bip39-2.5.0'
+// @ts-ignore
 import * as BitGo from '@airgap/coinlib-core/dependencies/src/bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac/src'
 import { BalanceError, ConditionViolationError, UnsupportedError } from '@airgap/coinlib-core/errors'
 import { isHex } from '@airgap/coinlib-core/utils/hex'

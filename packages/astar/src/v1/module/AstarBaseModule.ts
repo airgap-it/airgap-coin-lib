@@ -3,6 +3,7 @@ import { ConditionViolationError } from '@airgap/coinlib-core/errors'
 import { AirGapModule, ModuleNetworkRegistry, ProtocolNetwork } from '@airgap/module-kit'
 import { AirGapBlockExplorer, BlockExplorer } from '@airgap/module-kit/block-explorer/block-explorer'
 import { OfflineProtocol, OnlineProtocol } from '@airgap/module-kit/protocol/protocol'
+
 import { AstarBaseProtocol } from '../protocol/AstarBaseProtocol'
 
 export abstract class AstarBaseModule implements AirGapModule {

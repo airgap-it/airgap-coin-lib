@@ -144,36 +144,36 @@ export class MoonbeamProtocol extends SubstrateDelegateProtocol<SubstrateNetwork
 
     switch (type) {
       case MoonbeamStakingActionType.DELEGATE:
-        assertFields(`${MoonbeamStakingActionType[type]} action`, data, 'candidate', 'amount')
+        assertFields(`${type} action`, data, 'candidate', 'amount')
 
         return this.prepareDelegation(publicKey, data.tip ?? 0, data.candidate, data.amount)
       case MoonbeamStakingActionType.BOND_MORE:
-        assertFields(`${MoonbeamStakingActionType[type]} action`, data, 'candidate', 'more')
+        assertFields(`${type} action`, data, 'candidate', 'more')
 
         return this.prepareDelegatorBondMore(publicKey, data.tip ?? 0, data.candidate, data.more)
 
       case MoonbeamStakingActionType.SCHEDULE_BOND_LESS:
-        assertFields(`${MoonbeamStakingActionType[type]} action`, data, 'candidate', 'less')
+        assertFields(`${type} action`, data, 'candidate', 'less')
 
         return this.prepareScheduleDelegatorBondLess(publicKey, data.tip ?? 0, data.candidate, data.less)
       case MoonbeamStakingActionType.EXECUTE_BOND_LESS:
-        assertFields(`${MoonbeamStakingActionType[type]} action`, data, 'candidate')
+        assertFields(`${type} action`, data, 'candidate')
 
         return this.prepareExecuteDelegatorBondLess(publicKey, data.tip ?? 0, data.candidate)
       case MoonbeamStakingActionType.CANCEL_BOND_LESS:
-        assertFields(`${MoonbeamStakingActionType[type]} action`, data, 'candidate')
+        assertFields(`${type} action`, data, 'candidate')
 
         return this.prepareCancelDelegatorBondLess(publicKey, data.tip ?? 0, data.candidate)
       case MoonbeamStakingActionType.SCHEDULE_UNDELEGATE:
-        assertFields(`${MoonbeamStakingActionType[type]} action`, data, 'collator')
+        assertFields(`${type} action`, data, 'collator')
 
         return this.prepareScheduleUndelegate(publicKey, data.tip ?? 0, data.collator)
       case MoonbeamStakingActionType.EXECUTE_UNDELEGATE:
-        assertFields(`${MoonbeamStakingActionType[type]} action`, data, 'candidate')
+        assertFields(`${type} action`, data, 'candidate')
 
         return this.prepareExecuteUndelegate(publicKey, data.tip ?? 0, data.candidate)
       case MoonbeamStakingActionType.CANCEL_UNDELEGATE:
-        assertFields(`${MoonbeamStakingActionType[type]} action`, data, 'candidate')
+        assertFields(`${type} action`, data, 'candidate')
 
         return this.prepareCancelUndelegate(publicKey, data.tip ?? 0, data.candidate)
       case MoonbeamStakingActionType.SCHEDULE_UNDELEGATE_ALL:

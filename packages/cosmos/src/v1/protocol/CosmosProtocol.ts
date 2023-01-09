@@ -1,9 +1,13 @@
 import { assertNever, Domain, MainProtocolSymbols } from '@airgap/coinlib-core'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
+// @ts-ignore
 import { BIP32Interface, fromSeed } from '@airgap/coinlib-core/dependencies/src/bip32-2.0.4/src/index'
+// @ts-ignore
 import { mnemonicToSeed, validateMnemonic } from '@airgap/coinlib-core/dependencies/src/bip39-2.5.0/index'
 import { decodeTxBytes, encodeTxBytes, prepareSignBytes } from '@airgap/coinlib-core/dependencies/src/cosmjs'
+// @ts-ignore
 import SECP256K1 = require('@airgap/coinlib-core/dependencies/src/secp256k1-3.7.1/elliptic')
+// @ts-ignore
 import sha = require('@airgap/coinlib-core/dependencies/src/sha.js-2.4.11/index')
 import { BalanceError, InvalidValueError, UnsupportedError } from '@airgap/coinlib-core/errors'
 import {
@@ -422,7 +426,7 @@ export class CosmosProtocolImpl implements CosmosProtocol {
         .reduce((current, next) => current.plus(next))
 
       result = result.concat(
-        transaction.tx.body.messages.map((msg) => {
+        transaction.tx.body.messages.map((msg: any) => {
           const tx: Partial<AirGapTransaction<CosmosUnits>> = {
             isInbound: false,
             amount: newAmount('0', 'blockchain'),

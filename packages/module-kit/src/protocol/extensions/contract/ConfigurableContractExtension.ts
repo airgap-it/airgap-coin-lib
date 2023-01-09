@@ -1,6 +1,6 @@
 import { _AnyProtocol } from '../../protocol'
 
-export type ConfigurableContractExtension<T extends _AnyProtocol> = ConfigurableContractProtocol
+export type ConfigurableContractExtension<_T extends _AnyProtocol> = ConfigurableContractProtocol
 
 export interface ConfigurableContractProtocol {
   isContractValid(address: string): Promise<boolean>

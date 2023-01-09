@@ -31,7 +31,9 @@ export class SubstrateSignature extends SCALEClass {
   ): SCALEDecodeResult<SubstrateSignature> {
     const decoder = new SCALEDecoder(network, runtimeVersion, raw)
 
-    const type = decoder.decodeNextEnum((value) => SubstrateSignatureType[SubstrateSignatureType[value]])
+    const type = decoder.decodeNextEnum(
+      (value) => SubstrateSignatureType[SubstrateSignatureType[value] as keyof typeof SubstrateSignatureType]
+    )
     const signature = decoder.decodeNextHash(SUBSTRATE_SIGNATURE_SIZE[type.decoded.value])
 
     return {

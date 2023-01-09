@@ -1,3 +1,4 @@
+// @ts-ignore
 import * as EthereumJSUtils from '@airgap/coinlib-core/dependencies/src/ethereumjs-util-5.2.0'
 import { NotFoundError } from '@airgap/coinlib-core/errors'
 import { Domain } from '@airgap/coinlib-core/errors/coinlib-error'

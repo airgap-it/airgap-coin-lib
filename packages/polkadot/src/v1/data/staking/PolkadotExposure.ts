@@ -1,12 +1,13 @@
 import { SCALEAccountId, SCALEArray, SCALECompactInt, SCALEDecoder, SCALETuple } from '@airgap/substrate/v1'
+
 import { PolkadotProtocolConfiguration } from '../../types/configuration'
 
-export class SubstrateExposure<C extends PolkadotProtocolConfiguration = PolkadotProtocolConfiguration> {
+export class PolkadotExposure<C extends PolkadotProtocolConfiguration = PolkadotProtocolConfiguration> {
   public static decode<C extends PolkadotProtocolConfiguration>(
     configuration: C,
     runtimeVersion: number | undefined,
     raw: string
-  ): SubstrateExposure<C> {
+  ): PolkadotExposure<C> {
     const decoder = new SCALEDecoder(configuration, runtimeVersion, raw)
 
     const total = decoder.decodeNextCompactInt()
@@ -21,7 +22,7 @@ export class SubstrateExposure<C extends PolkadotProtocolConfiguration = Polkado
       )
     )
 
-    return new SubstrateExposure(total.decoded, own.decoded, others.decoded)
+    return new PolkadotExposure(total.decoded, own.decoded, others.decoded)
   }
 
   private constructor(

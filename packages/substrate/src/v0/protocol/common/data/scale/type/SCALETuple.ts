@@ -11,7 +11,9 @@ export class SCALETuple<T extends SCALEType, R extends SCALEType> extends SCALET
     if (secondParam !== undefined) {
       return new SCALETuple(firstParam as T, secondParam)
     } else {
-      return new SCALETuple(firstParam[0], firstParam[1])
+      const tuple = firstParam as [T, R]
+
+      return new SCALETuple(tuple[0], tuple[1])
     }
   }
 

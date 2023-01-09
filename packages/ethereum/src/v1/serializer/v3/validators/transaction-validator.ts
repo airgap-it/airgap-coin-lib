@@ -56,7 +56,7 @@ const signedTransactionConstraints = {
   }
 }
 const success = () => undefined
-const error = (errors) => errors
+const error = (errors: any) => errors
 
 export class EthereumTransactionValidator implements TransactionValidator, TransactionValidatorV2 {
   public validateUnsignedTransaction(request: EthereumTransactionSignRequest): Promise<any> {

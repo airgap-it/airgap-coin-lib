@@ -780,7 +780,7 @@ export abstract class TezosSaplingProtocolImpl<_Units extends string> implements
       const binaryTx: string = await this.tezos.forgeOperation(tezosWrappedOperation)
 
       return newUnsignedTransaction<TezosUnsignedTransaction>({ binary: binaryTx })
-    } catch (error) {
+    } catch (error: any) {
       console.error(error)
       if (error.code !== undefined && error.code === ProtocolErrorType.TRANSACTION_FAILED) {
         const rpcErrors = error.data as { id: string; kind: string; amount?: string; balance?: string; contract?: string }[]

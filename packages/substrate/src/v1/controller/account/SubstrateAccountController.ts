@@ -1,4 +1,5 @@
 import { KeyPair, PublicKey, Secret } from '@airgap/module-kit'
+
 import { SubstrateAccountId } from '../../data/account/address/SubstrateAddress'
 import { TypedSubstrateAddress } from '../../data/account/address/SubstrateAddressFactory'
 import { SubstrateAccountBalance } from '../../data/account/SubstrateAccountBalance'

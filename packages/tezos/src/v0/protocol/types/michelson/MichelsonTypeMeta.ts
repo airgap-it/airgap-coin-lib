@@ -111,7 +111,7 @@ export class MichelsonTypeMeta {
   protected getRawValue(value: unknown): unknown {
     const argName: string | undefined = this.getAnnotation(MichelsonAnnotationPrefix.TYPE, MichelsonAnnotationPrefix.FIELD)
 
-    return value instanceof Object && argName && argName in value ? value[argName] : value
+    return value instanceof Object && argName && argName in value ? value[argName as keyof typeof value] : value
   }
 }
 

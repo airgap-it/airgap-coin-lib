@@ -1,7 +1,9 @@
 import { BitcoinProtocol, BitcoinTransactionCursor, BitcoinUnits } from '@airgap/bitcoin/v1'
 import { BitcoinProtocolImpl } from '@airgap/bitcoin/v1/protocol/BitcoinProtocol'
 import { MainProtocolSymbols } from '@airgap/coinlib-core'
+// @ts-ignore
 import * as bitGoUTXO from '@airgap/coinlib-core/dependencies/src/bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac/src/index'
+// @ts-ignore
 import * as groestlcoinJSMessage from '@airgap/coinlib-core/dependencies/src/groestlcoinjs-message-2.1.0/index'
 import {
   Address,

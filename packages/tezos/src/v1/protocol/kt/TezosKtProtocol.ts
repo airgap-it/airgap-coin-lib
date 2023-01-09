@@ -340,7 +340,7 @@ class TezosKtProtocolImpl implements TezosKtProtocol {
     const wrappedAmount: BigNumber = new BigNumber(newAmount(amount.total).blockchain(metadata.units).value)
 
     const network: TezosProtocolNetwork = await this.tezos.getNetwork()
-    const results: AxiosResponse[] | void = await Promise.all([
+    const results: AxiosResponse[] | void = (await Promise.all([
       axios.get(`${network.rpcUrl}/chains/main/blocks/head/context/contracts/${tzAddress}/counter`),
       axios.get(`${network.rpcUrl}/chains/main/blocks/head~2/hash`),
       axios.get(`${network.rpcUrl}/chains/main/blocks/head/context/contracts/${tzAddress}/manager_key`)
@@ -348,7 +348,7 @@ class TezosKtProtocolImpl implements TezosKtProtocol {
       if (error.response && error.response.status !== 404) {
         throw new NetworkError(Domain.TEZOS, error as AxiosError)
       }
-    })
+    })) as AxiosResponse[]
 
     counter = new BigNumber(results[0].data).plus(1)
     branch = results[1].data
@@ -420,7 +420,7 @@ class TezosKtProtocolImpl implements TezosKtProtocol {
       const binaryTx: string = await this.tezos.forgeOperation(tezosWrappedOperation)
 
       return newUnsignedTransaction<TezosUnsignedTransaction>({ binary: binaryTx })
-    } catch (error) {
+    } catch (error: any) {
       console.warn(error.message)
       throw new OperationFailedError(Domain.TEZOS, 'Forging Tezos TX failed.')
     }

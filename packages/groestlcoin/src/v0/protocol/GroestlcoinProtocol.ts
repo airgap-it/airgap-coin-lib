@@ -1,5 +1,6 @@
 import { BitcoinCryptoClient, BitcoinProtocol } from '@airgap/bitcoin'
 import { FeeDefaults } from '@airgap/coinlib-core'
+// @ts-ignore
 import * as groestlcoinJSMessage from '@airgap/coinlib-core/dependencies/src/groestlcoinjs-message-2.1.0/index'
 import { CurrencyUnit } from '@airgap/coinlib-core/protocols/ICoinProtocol'
 import { MainProtocolSymbols, ProtocolSymbols } from '@airgap/coinlib-core/utils/ProtocolSymbols'

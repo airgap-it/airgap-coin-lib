@@ -1,3 +1,4 @@
+// @ts-ignore
 import * as ethUtil from '@airgap/coinlib-core/dependencies/src/ethereumjs-util-5.2.0'
 import { ExtendedPublicKey, PublicKey } from '@airgap/module-kit'
 

@@ -1,6 +1,7 @@
 import { FeeDefaults, HasConfigurableContract, ICoinProtocol, ICoinSubProtocol } from '@airgap/coinlib-core'
 import { AxiosError } from '@airgap/coinlib-core/dependencies/src/axios-0.19.0'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
+// @ts-ignore
 import { mnemonicToSeed } from '@airgap/coinlib-core/dependencies/src/bip39-2.5.0'
 import { BalanceError, NetworkError, PropertyUndefinedError, ProtocolErrorType } from '@airgap/coinlib-core/errors'
 import { Domain } from '@airgap/coinlib-core/errors/coinlib-error'
@@ -382,9 +383,9 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
     const airGapTxs: IAirGapTransaction[] = []
     if (this.isRawTezosSaplingTransaction(tx)) {
       const unshieldTarget = tx.unshieldTarget.length > 0 ? tx.unshieldTarget : undefined
-      const from: TezosSaplingAddress = await this.getAddressFromPublicKey(transaction.publicKey).then(
-        (address: TezosSaplingAddressResult) => TezosSaplingAddress.fromValue(address.address, address.cursor.diversifierIndex)
-      )
+      const from: TezosSaplingAddress = await this.getAddressFromPublicKey(
+        transaction.publicKey
+      ).then((address: TezosSaplingAddressResult) => TezosSaplingAddress.fromValue(address.address, address.cursor.diversifierIndex))
 
       const details: IAirGapTransaction[] = this.bookkeeper
         .getUnsignedTransactionDetails(from, tx.ins, tx.outs, unshieldTarget)
@@ -605,7 +606,7 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
       const binaryTx: string = await this.tezosProtocol.forgeTezosOperation(tezosWrappedOperation)
 
       return { binaryTransaction: binaryTx }
-    } catch (error) {
+    } catch (error: any) {
       console.error(error)
       if (error.code !== undefined && error.code === ProtocolErrorType.TRANSACTION_FAILED) {
         const rpcErrors = error.data as { id: string; kind: string; amount?: string; balance?: string; contract?: string }[]

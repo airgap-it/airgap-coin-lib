@@ -1,4 +1,5 @@
 import { stripHexPrefix } from '@airgap/coinlib-core/utils/hex'
+
 import { SubstrateProtocolConfiguration } from '../../../types/configuration'
 import { DecoderMethod, SCALEDecodeResult } from '../SCALEDecoder'
 
@@ -7,12 +8,10 @@ import { SCALEEncodeConfig, SCALEType } from './SCALEType'
 export class SCALETuple<T extends SCALEType, R extends SCALEType> extends SCALEType {
   public static from<T extends SCALEType, R extends SCALEType>(first: T, second: R): SCALETuple<T, R>
   public static from<T extends SCALEType, R extends SCALEType>(tuple: [T, R]): SCALETuple<T, R>
-  public static from<T extends SCALEType, R extends SCALEType>(firstParam: T | [T, R], secondParam?: R): SCALETuple<T, R> {
-    if (secondParam !== undefined) {
-      return new SCALETuple(firstParam as T, secondParam)
-    } else {
-      return new SCALETuple(firstParam[0], firstParam[1])
-    }
+  public static from<T extends SCALEType, R extends SCALEType>(firstParamOrTuple: T | [T, R], secondParam?: R): SCALETuple<T, R> {
+    const tuple: [T, R] = secondParam !== undefined ? [firstParamOrTuple as T, secondParam] : (firstParamOrTuple as [T, R])
+
+    return new SCALETuple(tuple[0], tuple[1])
   }
 
   public static decode<T extends SCALEType, R extends SCALEType, C extends SubstrateProtocolConfiguration>(

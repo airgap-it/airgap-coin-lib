@@ -26,7 +26,7 @@ const signedTransactionConstraints = {
 }
 
 const success = () => undefined
-const error = (errors) => errors
+const error = (errors: any) => errors
 
 export class SubstrateTransactionValidator implements TransactionValidator {
   public async validateUnsignedTransaction(request: SubstrateTransactionSignRequest): Promise<any> {

@@ -341,7 +341,7 @@ class BondArgsDecoder<Network extends SubstrateNetwork> extends SubstrateTransac
   protected _decode(decoder: SCALEDecoder<Network>): SCALEDecodeResult<BondArgs<Network>> {
     const controller = decoder.decodeNextAccount()
     const value = decoder.decodeNextCompactInt()
-    const payee = decoder.decodeNextEnum((value) => SubstratePayee[SubstratePayee[value]])
+    const payee = decoder.decodeNextEnum((value) => SubstratePayee[SubstratePayee[value] as keyof typeof SubstratePayee])
 
     return {
       bytesDecoded: controller.bytesDecoded + value.bytesDecoded + payee.bytesDecoded,
@@ -556,7 +556,7 @@ class SetPayeeArgsFactory<Network extends SubstrateNetwork> extends SubstrateTra
 
 class SetPayeeArgsDecoder<Network extends SubstrateNetwork> extends SubstrateTransactionMethodArgsDecoder<SetPayeeArgs, Network> {
   protected _decode(decoder: SCALEDecoder<Network>): SCALEDecodeResult<SetPayeeArgs> {
-    const payee = decoder.decodeNextEnum((value) => SubstratePayee[SubstratePayee[value]])
+    const payee = decoder.decodeNextEnum((value) => SubstratePayee[SubstratePayee[value] as keyof typeof SubstratePayee])
 
     return {
       bytesDecoded: payee.bytesDecoded,

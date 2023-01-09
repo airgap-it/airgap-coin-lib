@@ -1,3 +1,4 @@
+// @ts-ignore
 import createHash = require('@airgap/coinlib-core/dependencies/src/create-hash-1.2.0/index')
 
 import { FetchDataForAddressExtension, FetchDataForAddressProtocol } from '../protocol/extensions/address/FetchDataForAddressExtension'

@@ -1,9 +1,13 @@
 import { KeyPair } from '@airgap/coinlib-core/data/KeyPair'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
+// @ts-ignore
 import { BIP32Interface, fromSeed } from '@airgap/coinlib-core/dependencies/src/bip32-2.0.4/src/index'
+// @ts-ignore
 import { mnemonicToSeed, validateMnemonic } from '@airgap/coinlib-core/dependencies/src/bip39-2.5.0/index'
 import { decodeTxBytes, encodeTxBytes, prepareSignBytes } from '@airgap/coinlib-core/dependencies/src/cosmjs'
+// @ts-ignore
 import SECP256K1 = require('@airgap/coinlib-core/dependencies/src/secp256k1-3.7.1/elliptic')
+// @ts-ignore
 import sha = require('@airgap/coinlib-core/dependencies/src/sha.js-2.4.11/index')
 import { BalanceError, InvalidValueError } from '@airgap/coinlib-core/errors'
 import { Domain } from '@airgap/coinlib-core/errors/coinlib-error'
@@ -299,7 +303,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
         .reduce((current, next) => current.plus(next))
 
       result = result.concat(
-        transaction.tx.body.messages.map((msg) => {
+        transaction.tx.body.messages.map((msg: any) => {
           const tx: Partial<IAirGapTransaction> = {
             fee: fee.toFixed(),
             protocolIdentifier: this.identifier,
@@ -577,7 +581,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
 
   public async getDelegateeDetails(address: string): Promise<DelegateeDetails> {
     const validator = await this.nodeClient.fetchValidator(address)
-    const statusCodes = { 0: 'jailed', 1: 'inactive', 2: 'active' }
+    const statusCodes: Record<number, string> = { 0: 'jailed', 1: 'inactive', 2: 'active' }
 
     return {
       name: validator.description.moniker,
@@ -638,17 +642,17 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
   ): Promise<CosmosTransaction[]> {
     switch (type) {
       case CosmosDelegationActionType.DELEGATE:
-        assertFields(`${CosmosDelegationActionType[type]} action`, data, 'validator', 'amount')
+        assertFields(`${type} action`, data, 'validator', 'amount')
 
         return [await this.delegate(publicKey, data.validator, data.amount)]
       case CosmosDelegationActionType.UNDELEGATE:
-        assertFields(`${CosmosDelegationActionType[type]} action`, data, 'validator', 'amount')
+        assertFields(`${type} action`, data, 'validator', 'amount')
 
         return [await this.undelegate(publicKey, data.validator, data.amount)]
       case CosmosDelegationActionType.WITHDRAW_ALL_REWARDS:
         return [await this.withdrawDelegationRewards(publicKey)]
       case CosmosDelegationActionType.WITHDRAW_VALIDATOR_REWARDS:
-        assertFields(`${CosmosDelegationActionType[type]} action`, data, 'validator')
+        assertFields(`${type} action`, data, 'validator')
 
         return [await this.withdrawDelegationRewards(publicKey, [data.validator])]
       default:

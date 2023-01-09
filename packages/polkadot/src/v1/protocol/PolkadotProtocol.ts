@@ -1,9 +1,11 @@
 import { MainProtocolSymbols } from '@airgap/coinlib-core'
 import { ProtocolMetadata, RecursivePartial } from '@airgap/module-kit'
+
 import { TRANSACTION_TYPES } from '../data/transaction/transaction'
 import { CALLS, CONSTANTS, STORAGE_ENTRIES } from '../node/PolkadotNodeClient'
 import { PolkadotProtocolConfiguration } from '../types/configuration'
 import { PolkadotProtocolNetwork, PolkadotProtocolOptions, PolkadotUnits } from '../types/protocol'
+
 import { PolkadotBaseProtocol, PolkadotBaseProtocolImpl } from './PolkadotBaseProtocol'
 
 // Interface

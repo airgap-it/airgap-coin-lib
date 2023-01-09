@@ -1,5 +1,6 @@
 import bigInt = require('@airgap/coinlib-core/dependencies/src/big-integer-1.6.45/BigInteger')
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
+// @ts-ignore
 import * as bs58check from '@airgap/coinlib-core/dependencies/src/bs58check-2.1.2/index'
 import { ConditionViolationError, OperationFailedError, UnsupportedError } from '@airgap/coinlib-core/errors'
 import { Domain } from '@airgap/coinlib-core/errors/coinlib-error'

@@ -1,5 +1,8 @@
+// tslint:disable: max-classes-per-file
+import { Domain } from '@airgap/coinlib-core'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
-import { assertFields } from '@airgap/coinlib-core/utils/assert'
+import { UnsupportedError } from '@airgap/coinlib-core/errors'
+import { assertFields, assertNever } from '@airgap/coinlib-core/utils/assert'
 import { AirGapTransaction, newAmount } from '@airgap/module-kit'
 import {
   scaleAddressFactory,
@@ -16,8 +19,9 @@ import {
   SubstrateTransactionMethodArgsDecoder,
   SubstrateTransactionMethodArgsFactory
 } from '@airgap/substrate/v1'
+
 import { PolkadotProtocolConfiguration, PolkadotTransactionType } from '../../../types/configuration'
-import { SubstratePayee } from '../../staking/SubstratePayee'
+import { PolkadotPayee } from '../../staking/PolkadotPayee'
 
 export function factories<T extends PolkadotTransactionType>(
   type: T
@@ -76,6 +80,9 @@ function createArgsFactory<C extends PolkadotProtocolConfiguration>(
       assertFields(type, args, 'controller')
 
       return new SetControllerArgsFactory(configuration, args)
+    default:
+      assertNever(type)
+      throw new UnsupportedError(Domain.SUBSTRATE, `Unsupported Polkadot transaction type ${type}`)
   }
 }
 
@@ -104,13 +111,16 @@ function createArgsDecoder<C extends PolkadotProtocolConfiguration>(
       return new SetPayeeArgsDecoder()
     case 'set_controller':
       return new SetControllerArgsDecoder()
+    default:
+      assertNever(type)
+      throw new UnsupportedError(Domain.SUBSTRATE, `Unsupported Polkadot transaction type ${type}`)
   }
 }
 
 interface BondArgs {
   controller: SubstrateAccountId<SubstrateSS58Address>
   value: number | BigNumber
-  payee: SubstratePayee
+  payee: PolkadotPayee
 }
 
 interface UnbondArgs {
@@ -141,7 +151,7 @@ interface PayoutStakersArgs {
 }
 
 interface SetPayeeArgs {
-  payee: SubstratePayee
+  payee: PolkadotPayee
 }
 
 interface SetControllerArgs {
@@ -170,7 +180,7 @@ class BondArgsDecoder<C extends PolkadotProtocolConfiguration> extends Substrate
   protected _decode(decoder: SCALEDecoder<C>): SCALEDecodeResult<BondArgs> {
     const controller = decoder.decodeNextAccount()
     const value = decoder.decodeNextCompactInt()
-    const payee = decoder.decodeNextEnum((value) => SubstratePayee[SubstratePayee[value]])
+    const payee = decoder.decodeNextEnum((value) => PolkadotPayee[PolkadotPayee[value] as keyof typeof PolkadotPayee])
 
     return {
       bytesDecoded: controller.bytesDecoded + value.bytesDecoded + payee.bytesDecoded,
@@ -390,7 +400,7 @@ class SetPayeeArgsFactory<C extends PolkadotProtocolConfiguration> extends Subst
 
 class SetPayeeArgsDecoder<C extends PolkadotProtocolConfiguration> extends SubstrateTransactionMethodArgsDecoder<SetPayeeArgs, C> {
   protected _decode(decoder: SCALEDecoder<C>): SCALEDecodeResult<SetPayeeArgs> {
-    const payee = decoder.decodeNextEnum((value) => SubstratePayee[SubstratePayee[value]])
+    const payee = decoder.decodeNextEnum((value) => PolkadotPayee[PolkadotPayee[value] as keyof typeof PolkadotPayee])
 
     return {
       bytesDecoded: payee.bytesDecoded,

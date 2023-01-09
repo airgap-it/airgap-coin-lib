@@ -1,7 +1,9 @@
 import { MainProtocolSymbols } from '@airgap/coinlib-core'
 import { ProtocolMetadata, RecursivePartial } from '@airgap/module-kit'
+
 import { AstarProtocolConfiguration } from '../types/configuration'
 import { AstarProtocolNetwork, AstarProtocolOptions, AstarUnits } from '../types/protocol'
+
 import { AstarBaseProtocol, AstarBaseProtocolImpl } from './AstarBaseProtocol'
 
 // Interface

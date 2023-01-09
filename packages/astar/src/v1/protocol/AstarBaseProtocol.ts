@@ -6,6 +6,7 @@ import {
   SubstrateSS58Address,
   SubstrateTransactionType
 } from '@airgap/substrate/v1'
+
 import { AstarAccountController } from '../controller/AstarAccountController'
 import { AstarTransactionController } from '../controller/AstarTransactionController'
 import { AstarNodeClient } from '../node/AstarNodeClient'
@@ -27,8 +28,7 @@ export abstract class AstarBaseProtocolImpl<_Units extends string>
     AstarAccountController,
     AstarTransactionController
   >
-  implements AstarBaseProtocol<_Units>
-{
+  implements AstarBaseProtocol<_Units> {
   public constructor(options: AstarBaseProtocolOptions<_Units>) {
     const nodeClient: AstarNodeClient = new AstarNodeClient(options.configuration, options.network.rpcUrl)
 

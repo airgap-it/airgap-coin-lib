@@ -89,7 +89,10 @@ export class SubstrateRegistration {
         hex,
         (_network, _runtimeVersion, first) => SCALEInt.decode(first, 32),
         (_network, _runtimeVersion, second) => {
-          const value = SCALEEnum.decode(second, (value) => SubstrateJudgement[SubstrateJudgement[value]])
+          const value = SCALEEnum.decode(
+            second,
+            (value) => SubstrateJudgement[SubstrateJudgement[value] as keyof typeof SubstrateJudgement]
+          )
           let bytesDecoded = value.bytesDecoded
           if (value.decoded.value === SubstrateJudgement.FEE_PAID) {
             const balance = SCALEInt.decode(second.slice(0, bytesDecoded * 2), 128)

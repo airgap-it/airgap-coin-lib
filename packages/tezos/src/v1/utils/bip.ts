@@ -1,3 +1,4 @@
+// @ts-ignore
 import { mnemonicToSeed } from '@airgap/coinlib-core/dependencies/src/bip39-2.5.0'
 
 export function getSeedFromMnemonic(mnemonic: string, password?: string): Buffer {

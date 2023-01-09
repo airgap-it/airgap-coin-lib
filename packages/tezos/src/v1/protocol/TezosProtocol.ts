@@ -1,6 +1,7 @@
 import { assertNever, CoinlibError, Domain, MainProtocolSymbols } from '@airgap/coinlib-core'
 import axios, { AxiosError, AxiosResponse } from '@airgap/coinlib-core/dependencies/src/axios-0.19.0/index'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
+// @ts-ignore
 import { mnemonicToSeed } from '@airgap/coinlib-core/dependencies/src/bip39-2.5.0/index'
 import { generateWalletUsingDerivationPath } from '@airgap/coinlib-core/dependencies/src/hd-wallet-js-b216450e56954a6e82ace0aade9474673de5d9d5/src'
 import {
@@ -315,7 +316,7 @@ export class TezosProtocolImpl implements TezosProtocol {
         `${this.options.network.rpcUrl}/chains/main/blocks/head/context/contracts/${address}/balance`
       )
       balance = new BigNumber(data)
-    } catch (error) {
+    } catch (error: any) {
       // if node returns 404 (which means 'no account found'), go with 0 balance
       if (error.response && error.response.status !== 404) {
         throw new NetworkError(Domain.TEZOS, error as AxiosError)
@@ -359,7 +360,7 @@ export class TezosProtocolImpl implements TezosProtocol {
         if (balance.lte(maxFee.value)) {
           maxFee = newAmount(0, 'blockchain')
         }
-      } catch (error) {
+      } catch (error: any) {
         if (error.code !== undefined && error.code === ProtocolErrorType.TRANSACTION_FAILED && Array.isArray(error.data)) {
           const rpcErrors = error.data as { id: string; kind: string; amount?: string; balance?: string; contract?: string }[]
           const balanceTooLowError = rpcErrors.find((error) => error.id.endsWith('.contract.balance_too_low'))

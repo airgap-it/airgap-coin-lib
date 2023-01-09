@@ -35,7 +35,7 @@ export class CosmosSendMessage implements CosmosMessage {
     return new CosmosSendMessage(
       encodeObject.value.fromAddress,
       encodeObject.value.toAddress,
-      encodeObject.value.amount.map((amount) => new CosmosCoin(amount.denom, amount.amount))
+      encodeObject.value.amount.map((amount: any) => new CosmosCoin(amount.denom, amount.amount))
     )
   }
 
@@ -90,7 +90,7 @@ export class CosmosSendMessage implements CosmosMessage {
     return new CosmosSendMessage(
       json.value.from_address,
       json.value.to_address,
-      json.value.amount.map((value) => CosmosCoin.fromRPCBody(value))
+      json.value.amount.map((value: any) => CosmosCoin.fromRPCBody(value))
     )
   }
 }

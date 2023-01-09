@@ -1,4 +1,5 @@
 import { assertNever, Domain } from '@airgap/coinlib-core'
+// @ts-ignore
 import * as bs58check from '@airgap/coinlib-core/dependencies/src/bs58check-2.1.2'
 import { UnsupportedError } from '@airgap/coinlib-core/errors'
 import { ExtendedPublicKey, ExtendedSecretKey, newExtendedPublicKey, PublicKey, SecretKey } from '@airgap/module-kit'

@@ -1,5 +1,6 @@
 import axios from '@airgap/coinlib-core/dependencies/src/axios-0.19.0'
 import { AirGapTransaction, newAmount } from '@airgap/module-kit'
+
 import { SubstrateTransactionCursor } from '../../types/transaction'
 import { SubstrateBlockExplorerClient } from '../SubstrateBlockExplorerClient'
 
@@ -23,9 +24,9 @@ export class SubscanBlockExplorerClient implements SubstrateBlockExplorerClient 
 
     const airGapTransfers: Partial<AirGapTransaction<_Units>>[] = transfers
       ? transfers
-          .filter((tx) => tx.module === 'balances')
+          .filter((tx: any) => tx.module === 'balances')
           .map(
-            (tx): Partial<AirGapTransaction<_Units>> => {
+            (tx: any): Partial<AirGapTransaction<_Units>> => {
               return {
                 from: [tx.from],
                 to: [tx.to],
@@ -47,9 +48,9 @@ export class SubscanBlockExplorerClient implements SubstrateBlockExplorerClient 
 
     const airGapPayouts: Partial<AirGapTransaction<_Units>>[] = rewardSlash
       ? rewardSlash
-          .filter((tx) => tx.event_id === 'Reward')
+          .filter((tx: any) => tx.event_id === 'Reward')
           .map(
-            (tx): Partial<AirGapTransaction<_Units>> => {
+            (tx: any): Partial<AirGapTransaction<_Units>> => {
               return {
                 from: ['Staking Reward'],
                 to: [address],

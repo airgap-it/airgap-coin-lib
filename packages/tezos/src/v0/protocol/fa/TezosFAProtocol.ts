@@ -358,7 +358,7 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
       const binaryTx: string = await this.forgeTezosOperation(tezosWrappedOperation)
 
       return { binaryTransaction: binaryTx }
-    } catch (error) {
+    } catch (error: any) {
       console.error(error.message)
       throw new OperationFailedError(Domain.TEZOSFA, 'Forging Tezos TX failed.')
     }

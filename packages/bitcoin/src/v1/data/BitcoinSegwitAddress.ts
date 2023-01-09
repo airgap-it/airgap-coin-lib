@@ -1,4 +1,3 @@
-// tslint:disable: max-classes-per-file
 import { Domain } from '@airgap/coinlib-core'
 import { UnsupportedError } from '@airgap/coinlib-core/errors'
 import type * as bitcoin from 'bitcoinjs-lib'

@@ -4,7 +4,7 @@ import { _AnyProtocol } from '../../protocol'
 
 import { SubProtocol } from './SubProtocolExtension'
 
-export type SingleTokenSubProtocolExtension<T extends _AnyProtocol> = SingleTokenSubProtocol
+export type SingleTokenSubProtocolExtension<_T extends _AnyProtocol> = SingleTokenSubProtocol
 
 export interface SingleTokenSubProtocol extends SubProtocol {
   getType(): Promise<Extract<SubProtocolType, 'token'>>

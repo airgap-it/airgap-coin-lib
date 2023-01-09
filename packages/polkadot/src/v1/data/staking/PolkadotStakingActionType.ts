@@ -1,4 +1,4 @@
-export enum SubstrateStakingActionType {
+export enum PolkadotStakingActionType {
   BOND_NOMINATE = 'bond_nominate',
   REBOND_NOMINATE = 'rebond_nominate',
   NOMINATE = 'nominate',

@@ -5,5 +5,5 @@ export function implementsInterface<T>(object: unknown, schema: Schema<T>): obje
     return false
   }
 
-  return Object.keys(schema).every((key) => schema[key] === 'optional' || object[key] !== undefined)
+  return Object.keys(schema).every((key: string) => schema[key as keyof Schema<T>] === 'optional' || key in object)
 }

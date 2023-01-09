@@ -16,7 +16,9 @@ export class SubstrateEraElectionStatus {
   ): SubstrateEraElectionStatus {
     const decoder = new SCALEDecoder(network, runtimeVersion, raw)
 
-    const status = decoder.decodeNextEnum((value) => SubstrateElectionStatus[SubstrateElectionStatus[value]])
+    const status = decoder.decodeNextEnum(
+      (value) => SubstrateElectionStatus[SubstrateElectionStatus[value] as keyof typeof SubstrateElectionStatus]
+    )
 
     let blockNumber: SCALEDecodeResult<SCALEInt> | undefined
     if (status.decoded.value === SubstrateElectionStatus.OPEN) {

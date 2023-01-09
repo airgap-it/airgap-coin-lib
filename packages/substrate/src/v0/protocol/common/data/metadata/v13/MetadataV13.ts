@@ -76,9 +76,12 @@ export class MetadataV13 extends MetadataVersioned {
     supportedStorageEntries: Object
   ): SubstrateStorageEntry[] | undefined {
     if (storage) {
-      return storage.storageEntries.elements
-        .filter((entry: MetadataV13StorageEntry) => supportedStorageEntries[storage.prefix.value].includes(entry.name.value))
-        .map((entry: MetadataV13StorageEntry) => entry.type.decorate(storage.prefix.value, entry.name.value))
+      return (
+        storage.storageEntries.elements
+          // @ts-ignore
+          .filter((entry: MetadataV13StorageEntry) => supportedStorageEntries[storage.prefix.value].includes(entry.name.value))
+          .map((entry: MetadataV13StorageEntry) => entry.type.decorate(storage.prefix.value, entry.name.value))
+      )
     }
 
     return undefined

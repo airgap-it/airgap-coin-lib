@@ -179,7 +179,10 @@ export class MetadataV13StorageEntryNMap extends MetadataV13StorageEntryType {
 
     const keyVec = decoder.decodeNextArray((_network, _runtimeVersion, hex) => SCALEString.decode(hex))
     const hashers = decoder.decodeNextArray((_network, _runtimeVersion, hex) =>
-      SCALEEnum.decode(hex, (value) => SubstrateStorageEntryHasher[SubstrateStorageEntryHasher[value]])
+      SCALEEnum.decode(
+        hex,
+        (value) => SubstrateStorageEntryHasher[SubstrateStorageEntryHasher[value] as keyof typeof SubstrateStorageEntryHasher]
+      )
     )
     const value = decoder.decodeNextString()
 
