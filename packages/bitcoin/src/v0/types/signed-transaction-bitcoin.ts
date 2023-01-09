@@ -1,6 +1,6 @@
-import { SignedTransaction } from '@airgap/coinlib-core/types/signed-transaction'
+import { TransactionSignResponse, TransactionSignResponseV2 } from '@airgap/serializer'
 
-export interface SignedBitcoinTransaction extends SignedTransaction {
+export interface SignedBitcoinTransaction extends TransactionSignResponse, TransactionSignResponseV2 {
   from: string[]
   to: string[]
   amount: string

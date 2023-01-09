@@ -1,4 +1,4 @@
-import { UnsignedTransaction } from '@airgap/coinlib-core/types/unsigned-transaction'
+import { TransactionSignRequest, TransactionSignRequestV2 } from '@airgap/serializer'
 
 interface TezosSaplingInput {
   rcm: string
@@ -38,6 +38,6 @@ interface RawTezosSaplingTransaction {
   unshieldTarget: string
 }
 
-export interface UnsignedTezosSaplingTransaction extends UnsignedTransaction {
+export interface UnsignedTezosSaplingTransaction extends TransactionSignRequest, TransactionSignRequestV2 {
   transaction: RawTezosSaplingTransaction
 }

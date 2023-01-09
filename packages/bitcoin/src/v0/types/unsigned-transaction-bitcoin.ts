@@ -1,4 +1,4 @@
-import { UnsignedTransaction } from '@airgap/coinlib-core/types/unsigned-transaction'
+import { TransactionSignRequest, TransactionSignRequestV2 } from '@airgap/serializer'
 
 interface IInTransaction {
   txId: string
@@ -20,6 +20,6 @@ interface RawBitcoinTransaction {
   outs: IOutTransaction[]
 }
 
-export interface UnsignedBitcoinTransaction extends UnsignedTransaction {
+export interface UnsignedBitcoinTransaction extends TransactionSignRequest, TransactionSignRequestV2 {
   transaction: RawBitcoinTransaction
 }

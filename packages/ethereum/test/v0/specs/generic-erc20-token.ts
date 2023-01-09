@@ -5,6 +5,11 @@ import { GenericERC20 } from '../../../src'
 import { ERC20Token } from '../../../src/v0/protocol/erc20/ERC20'
 import { TestProtocolSpec } from '../implementations'
 import { GenericERC20ProtocolStub } from '../stubs/generic-erc20.stub'
+import { IACMessageType } from '@airgap/serializer'
+import { SchemaInfo as SchemaInfoV2, SchemaRoot } from '@airgap/serializer/v2/schemas/schema'
+
+const unsignedTransactionV2: SchemaRoot = require('../../../src/v0/serializer/schemas/v2/transaction-sign-request-ethereum.json')
+const signedTransactionV2: SchemaRoot = require('../../../src/v0/serializer/schemas/v2/transaction-sign-response-ethereum.json')
 
 const protocol = ERC20Token
 
@@ -131,4 +136,9 @@ export class GenericERC20TokenTestProtocolSpec extends TestProtocolSpec {
     this.lib = lib
     this.validAddresses = validAddresses
   }
+
+  public schemasV2: { type: IACMessageType; info: SchemaInfoV2 }[] = [
+    { type: IACMessageType.TransactionSignRequest, info: { schema: unsignedTransactionV2 } },
+    { type: IACMessageType.TransactionSignResponse, info: { schema: signedTransactionV2 } }
+  ]
 }

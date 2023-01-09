@@ -1,9 +1,9 @@
-import { UnsignedTransaction } from '@airgap/coinlib-core/types/unsigned-transaction'
+import { TransactionSignRequest, TransactionSignRequestV2 } from '@airgap/serializer'
 
 interface RawSubstrateTransaction {
   encoded: string
 }
 
-export interface UnsignedSubstrateTransaction extends UnsignedTransaction {
+export interface UnsignedSubstrateTransaction extends TransactionSignRequest, TransactionSignRequestV2 {
   transaction: RawSubstrateTransaction
 }

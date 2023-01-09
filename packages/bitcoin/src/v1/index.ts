@@ -4,6 +4,18 @@ import { BitcoinSegwitModule } from './module/BitcoinSegwitModule'
 import { BitcoinProtocol, createBitcoinProtocol, createBitcoinProtocolOptions } from './protocol/BitcoinProtocol'
 import { BitcoinSegwitProtocol, createBitcoinSegwitProtocol } from './protocol/BitcoinSegwitProtocol'
 import { BitcoinTestnetProtocol, createBitcoinTestnetProtocol } from './protocol/BitcoinTestnetProtocol'
+import {
+  bitcoinSignedTransactionToResponse,
+  bitcoinTransactionSignRequestToUnsigned,
+  bitcoinTransactionSignResponseToSigned,
+  bitcoinUnsignedTransactionToRequest
+} from './serializer/v3/schemas/converter/transaction-converter'
+import { BitcoinTransactionSignRequest } from './serializer/v3/schemas/definitions/transaction-sign-request-bitcoin'
+import { BitcoinSegwitTransactionSignRequest } from './serializer/v3/schemas/definitions/transaction-sign-request-bitcoin-segwit'
+import { BitcoinTransactionSignResponse } from './serializer/v3/schemas/definitions/transaction-sign-response-bitcoin'
+import { BitcoinSegwitTransactionSignResponse } from './serializer/v3/schemas/definitions/transaction-sign-response-bitcoin-segwit'
+import { BitcoinTransactionValidator } from './serializer/v3/validators/transaction-validators'
+import { bitcoinValidators } from './serializer/v3/validators/validators'
 import { BitcoinProtocolNetwork, BitcoinProtocolOptions, BitcoinUnits } from './types/protocol'
 import {
   BitcoinInTransaction,
@@ -48,4 +60,19 @@ export {
   BitcoinInTransaction,
   BitcoinOutTransaction,
   BitcoinTransactionCursor
+}
+
+// Serializer
+
+export {
+  BitcoinTransactionSignRequest,
+  BitcoinTransactionSignResponse,
+  BitcoinSegwitTransactionSignRequest,
+  BitcoinSegwitTransactionSignResponse,
+  BitcoinTransactionValidator,
+  bitcoinValidators,
+  bitcoinUnsignedTransactionToRequest,
+  bitcoinSignedTransactionToResponse,
+  bitcoinTransactionSignRequestToUnsigned,
+  bitcoinTransactionSignResponseToSigned
 }

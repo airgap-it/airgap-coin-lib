@@ -1,7 +1,8 @@
 import { AirGapTransactionStatus } from '@airgap/coinlib-core/interfaces/IAirGapTransaction'
 import { ProtocolSymbols } from '@airgap/coinlib-core/utils/ProtocolSymbols'
 import { AirGapWalletStatus } from '@airgap/coinlib-core/wallet/AirGapWallet'
-import { TezosTransactionValidator } from '../../../../serializer/src/v3/unsigned-transactions/tezos-transactions.validator'
+import { IACMessageType } from '@airgap/serializer'
+import { SchemaInfo as SchemaInfoV2, SchemaRoot } from '@airgap/serializer/v2/schemas/schema'
 
 import {
   RawTezosTransaction,
@@ -16,12 +17,16 @@ import {
   TezosProtocol,
   TezosProtocolNetwork
 } from '../../../src'
+import { TezosTransactionValidator } from '../../../src/v0/serializer/validators/transaction-validator'
 import { TestProtocolSpec } from '../implementations'
 import { TezosProtocolStub } from '../stubs/tezos.stub'
 
 // Test Mnemonic from using Ledger, 44'/1729'/0'/0'
 // leopard crouch simple blind castle they elder enact slow rate mad blanket saddle tail silk fury quarter obscure interest exact veteran volcano fabric cherry
 // Address: tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L
+
+const unsignedTransactionV2: SchemaRoot = require('../../../src/v0/serializer/schemas/v2/transaction-sign-request-tezos.json')
+const signedTransactionV2: SchemaRoot = require('../../../src/v0/serializer/schemas/v2/transaction-sign-response-tezos.json')
 
 export class TezosTestProtocolSpec extends TestProtocolSpec {
   public name = 'Tezos'
@@ -259,7 +264,14 @@ export class TezosTestProtocolSpec extends TestProtocolSpec {
     }
   ]
 
-  public validator = new TezosTransactionValidator()
+  public schemasV2: { type: IACMessageType; info: SchemaInfoV2 }[] = [
+    { type: IACMessageType.TransactionSignRequest, info: { schema: unsignedTransactionV2 } },
+    { type: IACMessageType.TransactionSignResponse, info: { schema: signedTransactionV2 } }
+  ]
+
+  public validator(version: 'v2' | 'v3'): TezosTransactionValidator {
+    return new TezosTransactionValidator()
+  }
 
   public messages = [
     {

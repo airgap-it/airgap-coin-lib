@@ -1,11 +1,12 @@
-import { UnsignedTransaction } from '@airgap/coinlib-core/types/unsigned-transaction'
+import { TransactionSignRequest, TransactionSignRequestV2 } from '@airgap/serializer'
+import { HexString } from '@airgap/serializer/v3/schemas/definitions/hex-string'
 
 interface RawTypedEthereumTransaction {
-  serialized: string /* : HexString */
+  serialized: HexString
   derivationPath: string
   masterFingerprint: string
 }
 
-export interface UnsignedTypedEthereumTransaction extends UnsignedTransaction {
+export interface UnsignedTypedEthereumTransaction extends TransactionSignRequest, TransactionSignRequestV2 {
   transaction: RawTypedEthereumTransaction
 }

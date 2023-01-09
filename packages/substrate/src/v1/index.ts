@@ -39,6 +39,16 @@ import { SubstrateCommonNodeClient } from './node/SubstrateCommonNodeClient'
 import { SubstrateNodeClient } from './node/SubstrateNodeClient'
 import { SubstrateProtocol, SubstrateProtocolImpl } from './protocol/SubstrateProtocol'
 import {
+  substrateSignedTransactionToResponse,
+  substrateTransactionSignRequestToUnsigned,
+  substrateTransactionSignResponseToSigned,
+  substrateUnsignedTransactionToRequest
+} from './serializer/v3/schemas/converter/transaction-converter'
+import { SubstrateTransactionSignRequest } from './serializer/v3/schemas/definitions/transaction-sign-request-substrate'
+import { SubstrateTransactionSignResponse } from './serializer/v3/schemas/definitions/transaction-sign-response-substrate'
+import { SubstrateTransactionValidator } from './serializer/v3/validators/transaction-validator'
+import { substrateValidators } from './serializer/v3/validators/validators'
+import {
   SubstrateAccountConfiguration,
   SubstrateEthAccountConfiguration,
   SubstrateProtocolConfiguration,
@@ -127,4 +137,17 @@ export {
   SubstrateUnsignedTransaction,
   SubstrateSignedTransaction,
   SubstrateTransactionCursor
+}
+
+// Serializer
+
+export {
+  SubstrateTransactionSignRequest,
+  SubstrateTransactionSignResponse,
+  SubstrateTransactionValidator,
+  substrateValidators,
+  substrateUnsignedTransactionToRequest,
+  substrateSignedTransactionToResponse,
+  substrateTransactionSignRequestToUnsigned,
+  substrateTransactionSignResponseToSigned
 }

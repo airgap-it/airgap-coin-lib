@@ -5,6 +5,7 @@ import { IACMessageDefinitionObject, Message } from '../message'
 import { RLPData } from '../utils/toBuffer'
 
 import { Payload } from './payload'
+import { Serializer } from '../serializer'
 
 export class FullPayload implements Payload {
   private readonly messages: IACMessageDefinitionObject[]
@@ -16,8 +17,8 @@ export class FullPayload implements Payload {
   public static fromDecoded(object: IACMessageDefinitionObject[]): FullPayload {
     return new FullPayload(object)
   }
-  public static fromEncoded(buf: Buffer[]): FullPayload {
-    const messages: IACMessageDefinitionObject[] = buf.map((buffer) => Message.fromEncoded(buffer as any).asJson())
+  public static fromEncoded(buf: Buffer[], serializer: Serializer = Serializer.getInstance()): FullPayload {
+    const messages: IACMessageDefinitionObject[] = buf.map((buffer) => Message.fromEncoded(buffer as any, serializer).asJson())
 
     return new FullPayload(messages)
   }
@@ -26,15 +27,15 @@ export class FullPayload implements Payload {
     return this.messages
   }
 
-  public asArray(): RLPData /* TODO: Fix type */ {
-    return this.messages.map((message: IACMessageDefinitionObject) => Message.fromDecoded(message).asArray())
+  public asArray(serializer: Serializer = Serializer.getInstance()): RLPData /* TODO: Fix type */ {
+    return this.messages.map((message: IACMessageDefinitionObject) => Message.fromDecoded(message, serializer).asArray())
   }
 
-  public asBuffer(): Buffer {
-    return rlp.encode(this.asArray())
+  public asBuffer(serializer: Serializer = Serializer.getInstance()): Buffer {
+    return rlp.encode(this.asArray(serializer))
   }
 
-  public asString(): string {
-    return bs58check.encode(this.asBuffer())
+  public asString(serializer: Serializer = Serializer.getInstance()): string {
+    return bs58check.encode(this.asBuffer(serializer))
   }
 }

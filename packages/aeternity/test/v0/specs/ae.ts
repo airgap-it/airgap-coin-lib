@@ -1,9 +1,14 @@
 import { AirGapWalletStatus } from '@airgap/coinlib-core/wallet/AirGapWallet'
-import { AeternityTransactionValidator } from '../../../../serializer/src/v3/unsigned-transactions/aeternity-transactions.validator'
-import { AeternityProtocol, RawAeternityTransaction, SignedAeternityTransaction } from '../../../src/v0'
+import { IACMessageType } from '@airgap/serializer'
+import { SchemaInfo as SchemaInfoV2, SchemaRoot } from '@airgap/serializer/v2/schemas/schema'
 
+import { AeternityProtocol, RawAeternityTransaction, SignedAeternityTransaction } from '../../../src/v0'
+import { AeternityTransactionValidator } from '../../../src/v0/serializer/validators/transaction-validator'
 import { TestProtocolSpec } from '../implementations'
 import { AeternityProtocolStub } from '../stubs/ae.stub'
+
+const unsignedTransactionV2: SchemaRoot = require('../../../src/v0/serializer/schemas/v2/transaction-sign-request-aeternity.json')
+const signedTransactionV2: SchemaRoot = require('../../../src/v0/serializer/schemas/v2/transaction-sign-response-aeternity.json')
 
 // Test Mnemonic:
 // mango club state husband keen fiber float jelly major include horse infant square spike equip caught version must pen swim setup right poem economy
@@ -61,6 +66,11 @@ export class AETestProtocolSpec extends TestProtocolSpec {
       signedTx:
         'tx_+KULAfhCuEBokDCnOXkU2G+pwrNXVQetMO1+2fQsnOeJKGcRl1S5toQAJRldCQb1VSkmF2yumQl11kmF2H6LpAH1npP71i0OuF34WwwBoQHWT2HsVlGefxDzWQjED3syiPs+vcD2xQSqlex4Djx/+aEB1k9h7FZRnn8Q81kIxA97Moj7Pr3A9sUEqpXseA48f/mIiscjBInoAACIDeC2s6dkAAAAAIAxkWE6'
     }
+  ]
+
+  public schemasV2: { type: IACMessageType; info: SchemaInfoV2 }[] = [
+    { type: IACMessageType.TransactionSignRequest, info: { schema: unsignedTransactionV2 } },
+    { type: IACMessageType.TransactionSignResponse, info: { schema: signedTransactionV2 } }
   ]
 
   public seed(): string {
@@ -194,7 +204,9 @@ export class AETestProtocolSpec extends TestProtocolSpec {
     }
   ]
 
-  public validator: AeternityTransactionValidator = new AeternityTransactionValidator()
+  public validator(version: 'v2' | 'v3'): AeternityTransactionValidator {
+    return new AeternityTransactionValidator(version)
+  }
 
   public messages = [
     {

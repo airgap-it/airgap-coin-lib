@@ -1,0 +1,109 @@
+{
+  "$ref": "#/definitions/GroestlcoinTransactionSignRequest",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "BitcoinInTransaction": {
+      "additionalProperties": false,
+      "properties": {
+        "address": {
+          "type": "string"
+        },
+        "derivationPath": {
+          "type": "string"
+        },
+        "txId": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        },
+        "vout": {
+          "type": "number"
+        }
+      },
+      "required": ["txId", "value", "vout", "address"],
+      "type": "object"
+    },
+    "BitcoinOutTransaction": {
+      "additionalProperties": false,
+      "properties": {
+        "derivationPath": {
+          "type": "string"
+        },
+        "isChange": {
+          "type": "boolean"
+        },
+        "recipient": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": ["recipient", "isChange", "value"],
+      "type": "object"
+    },
+    "BitcoinUnsignedTransaction": {
+      "additionalProperties": false,
+      "properties": {
+        "ins": {
+          "items": {
+            "$ref": "#/definitions/BitcoinInTransaction"
+          },
+          "type": "array"
+        },
+        "outs": {
+          "items": {
+            "$ref": "#/definitions/BitcoinOutTransaction"
+          },
+          "type": "array"
+        },
+        "type": {
+          "enum": ["unsigned"],
+          "type": "string"
+        }
+      },
+      "required": ["ins", "outs", "type"],
+      "type": "object"
+    },
+    "GroestlcoinTransactionSignRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "callbackURL": {
+          "type": "string"
+        },
+        "publicKey": {
+          "type": "string"
+        },
+        "transaction": {
+          "$ref": "#/definitions/GroestlcoinUnsignedTransaction"
+        }
+      },
+      "required": ["publicKey", "transaction"],
+      "type": "object"
+    },
+    "GroestlcoinUnsignedTransaction": {
+      "additionalProperties": false,
+      "properties": {
+        "ins": {
+          "items": {
+            "$ref": "#/definitions/BitcoinInTransaction"
+          },
+          "type": "array"
+        },
+        "outs": {
+          "items": {
+            "$ref": "#/definitions/BitcoinOutTransaction"
+          },
+          "type": "array"
+        },
+        "type": {
+          "enum": ["unsigned"],
+          "type": "string"
+        }
+      },
+      "required": ["ins", "outs", "type"],
+      "type": "object"
+    }
+  }
+}

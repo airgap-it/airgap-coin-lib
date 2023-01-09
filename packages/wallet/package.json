@@ -1,6 +1,6 @@
 {
   "name": "@airgap/wallet",
-  "version": "0.13.7-beta.12",
+  "version": "0.13.7-beta.26",
   "description": "TODO",
   "keywords": [
     "airgap"
@@ -31,7 +31,6 @@
     "@airgap/coinlib-core": "^0.13.7-beta.0",
     "@airgap/module-kit": "^0.13.7-beta.0"
   },
-  "dependencies": {},
   "nyc": {
     "include": [
       "src/**/*.ts"

@@ -176,5 +176,11 @@ var findFilesOnLevel = function (base) {
     })
   })
 }
+findFilesOnLevel('./src/v0/serializer/schemas/v2')
+  .then(function () {})
+  ['catch'](console.error)
+findFilesOnLevel('./src/v0/serializer/schemas/v3')
+  .then(function () {})
+  ['catch'](console.error)
 fs_1.copyFileSync('./package.json', './dist/package.json')
 fs_1.copyFileSync('./readme.md', './dist/readme.md')

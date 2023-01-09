@@ -1,0 +1,36 @@
+{
+  "$ref": "#/definitions/TezosTransactionSignRequest",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "TezosTransactionSignRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "callbackURL": {
+          "type": "string"
+        },
+        "publicKey": {
+          "type": "string"
+        },
+        "transaction": {
+          "$ref": "#/definitions/TezosUnsignedTransaction"
+        }
+      },
+      "required": ["publicKey", "transaction"],
+      "type": "object"
+    },
+    "TezosUnsignedTransaction": {
+      "additionalProperties": false,
+      "properties": {
+        "binary": {
+          "type": "string"
+        },
+        "type": {
+          "enum": ["unsigned"],
+          "type": "string"
+        }
+      },
+      "required": ["binary", "type"],
+      "type": "object"
+    }
+  }
+}

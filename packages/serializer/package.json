@@ -1,6 +1,6 @@
 {
   "name": "@airgap/serializer",
-  "version": "0.13.7-beta.22",
+  "version": "0.13.7-beta.26",
   "description": "The @airgap/serializer provides serializers used in AirGap applications.",
   "keywords": [
     "airgap",
@@ -38,17 +38,7 @@
   },
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
   "peerDependencies": {
-    "@airgap/aeternity": "^0.13.7-beta.0",
-    "@airgap/astar": "^0.13.7-beta.0",
-    "@airgap/bitcoin": "^0.13.7-beta.0",
-    "@airgap/coinlib-core": "^0.13.7-beta.0",
-    "@airgap/cosmos": "^0.13.7-beta.0",
-    "@airgap/ethereum": "^0.13.7-beta.0",
-    "@airgap/groestlcoin": "^0.13.7-beta.0",
-    "@airgap/moonbeam": "^0.13.7-beta.0",
-    "@airgap/polkadot": "^0.13.7-beta.0",
-    "@airgap/substrate": "^0.13.7-beta.0",
-    "@airgap/tezos": "^0.13.7-beta.0"
+    "@airgap/coinlib-core": "^0.13.7-beta.0"
   },
   "localDependencies": {},
   "nyc": {

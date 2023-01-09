@@ -6,7 +6,7 @@ import { IACMessageDefinitionObject } from './message'
 import { ChunkedPayload } from './payloads/chunked-payload'
 import { FullPayload } from './payloads/full-payload'
 import { Payload } from './payloads/payload'
-import { IACPayloadType } from './serializer'
+import { IACPayloadType, Serializer } from './serializer'
 
 export type IACProtocolVersion = number
 export type IACProtocolType = [IACProtocolVersion, IACPayloadType, Payload]
@@ -37,13 +37,20 @@ export class IACProtocol {
     return [this.version, this.payloadType, this.payload]
   }
 
-  public encoded(): string {
-    return bs58check.encode(rlp.encode([this.version.toString(), this.payloadType.toString(), this.payload.asArray() as any]) as any)
+  public encoded(serializer: Serializer = Serializer.getInstance()): string {
+    return bs58check.encode(
+      rlp.encode([this.version.toString(), this.payloadType.toString(), this.payload.asArray(serializer) as any]) as any
+    )
   }
 
-  public static fromDecoded(data: IACMessageDefinitionObject[], singleChunkSize: number = 0, multiChunkSize: number = 0): IACProtocol[] {
+  public static fromDecoded(
+    data: IACMessageDefinitionObject[],
+    singleChunkSize: number = 0,
+    multiChunkSize: number = 0,
+    serializer: Serializer = Serializer.getInstance()
+  ): IACProtocol[] {
     const payload: FullPayload = FullPayload.fromDecoded(data)
-    const rawPayload: Buffer = payload.asBuffer()
+    const rawPayload: Buffer = payload.asBuffer(serializer)
     if (singleChunkSize > 0 && rawPayload.length > singleChunkSize) {
       const chunks: Buffer[] = []
       const nodeBuffer: Buffer = rawPayload
@@ -63,7 +70,7 @@ export class IACProtocol {
     }
   }
 
-  public static fromEncoded(data: string[]): IACProtocol[] {
+  public static fromEncoded(data: string[], serializer: Serializer = Serializer.getInstance()): IACProtocol[] {
     const chunked: ChunkedPayload[] = []
     let finalPayload: Payload | undefined
 
@@ -80,10 +87,10 @@ export class IACProtocol {
       }
 
       if (type === IACPayloadType.FULL) {
-        const payload: Buffer[] = decoded[2] as any as Buffer[]
-        finalPayload = FullPayload.fromEncoded(payload)
+        const payload: Buffer[] = (decoded[2] as any) as Buffer[]
+        finalPayload = FullPayload.fromEncoded(payload, serializer)
       } else if (type === IACPayloadType.CHUNKED) {
-        const payload: [Buffer, Buffer, Buffer] = decoded[2] as any as [Buffer, Buffer, Buffer]
+        const payload: [Buffer, Buffer, Buffer] = (decoded[2] as any) as [Buffer, Buffer, Buffer]
         chunked.push(ChunkedPayload.fromEncoded(payload))
       } else {
         throw new SerializerError(SerializerErrorType.PAYLOAD_TYPE_NOT_SUPPORTED, `Type "${type}" is unknown.`)
@@ -103,7 +110,7 @@ export class IACProtocol {
         throw result
       }
 
-      finalPayload = FullPayload.fromEncoded(rlp.decode(Buffer.concat(arr)))
+      finalPayload = FullPayload.fromEncoded(rlp.decode(Buffer.concat(arr)), serializer)
     }
 
     return [new IACProtocol(finalPayload)]
