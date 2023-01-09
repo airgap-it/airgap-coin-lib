@@ -1,3 +1,6 @@
+import { MainProtocolSymbols } from '@airgap/coinlib-core'
+import { IACMessageType, Serializer, SerializerV3 } from '@airgap/serializer'
+
 import { AstarProtocol } from './protocol/astar/AstarProtocol'
 import {
   AstarProtocolConfig,
@@ -29,3 +32,49 @@ export {
   ShidenProtocolNetwork,
   ShidenProtocolOptions
 }
+
+// Serializer
+
+Serializer.addSchema(
+  IACMessageType.TransactionSignRequest,
+  { schema: require('@airgap/substrate/v0/serializer/schemas/v2/transaction-sign-request-substrate.json') },
+  MainProtocolSymbols.ASTAR
+)
+Serializer.addSchema(
+  IACMessageType.TransactionSignResponse,
+  { schema: require('@airgap/substrate/v0/serializer/schemas/v2/transaction-sign-response-substrate.json') },
+  MainProtocolSymbols.ASTAR
+)
+
+SerializerV3.addSchema(
+  IACMessageType.TransactionSignRequest,
+  { schema: require('@airgap/substrate/v0/serializer/schemas/v3/transaction-sign-request-substrate.json') },
+  MainProtocolSymbols.ASTAR
+)
+SerializerV3.addSchema(
+  IACMessageType.TransactionSignResponse,
+  { schema: require('@airgap/substrate/v0/serializer/schemas/v3/transaction-sign-response-substrate.json') },
+  MainProtocolSymbols.ASTAR
+)
+
+Serializer.addSchema(
+  IACMessageType.TransactionSignRequest,
+  { schema: require('@airgap/substrate/v0/serializer/schemas/v2/transaction-sign-request-substrate.json') },
+  MainProtocolSymbols.SHIDEN
+)
+Serializer.addSchema(
+  IACMessageType.TransactionSignResponse,
+  { schema: require('@airgap/substrate/v0/serializer/schemas/v2/transaction-sign-response-substrate.json') },
+  MainProtocolSymbols.SHIDEN
+)
+
+SerializerV3.addSchema(
+  IACMessageType.TransactionSignRequest,
+  { schema: require('@airgap/substrate/v0/serializer/schemas/v3/transaction-sign-request-substrate.json') },
+  MainProtocolSymbols.SHIDEN
+)
+SerializerV3.addSchema(
+  IACMessageType.TransactionSignResponse,
+  { schema: require('@airgap/substrate/v0/serializer/schemas/v3/transaction-sign-response-substrate.json') },
+  MainProtocolSymbols.SHIDEN
+)

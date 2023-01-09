@@ -1,7 +1,8 @@
-import { UnsignedTransaction } from '@airgap/coinlib-core/types/unsigned-transaction'
+import { TransactionSignRequest, TransactionSignRequestV2 } from '@airgap/serializer'
+
 import { RawBitcoinSegwitTransaction } from './transaction-bitcoin'
 
-export interface UnsignedBitcoinSegwitTransaction extends UnsignedTransaction {
+export interface UnsignedBitcoinSegwitTransaction extends TransactionSignRequest, TransactionSignRequestV2 {
   transaction: RawBitcoinSegwitTransaction // PSBT
   publicKey: string
   callbackURL?: string // eg. https://airgap.it/?data={{data}}

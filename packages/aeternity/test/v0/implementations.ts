@@ -2,6 +2,9 @@ import { ICoinProtocol } from '@airgap/coinlib-core'
 import * as BIP39 from '@airgap/coinlib-core/dependencies/src/bip39-2.5.0/index'
 import { AirGapTransactionStatus } from '@airgap/coinlib-core/interfaces/IAirGapTransaction'
 import { AirGapWalletStatus } from '@airgap/coinlib-core/wallet/AirGapWallet'
+import { SchemaInfo as SchemaInfoV2 } from '@airgap/serializer/v2/schemas/schema'
+import { SchemaInfo } from '@airgap/serializer/v3/schemas/schema'
+
 import { IACMessageDefinitionObject, IACMessageType } from '../../../serializer/src'
 
 const mnemonic: string = 'spell device they juice trial skirt amazing boat badge steak usage february virus art survey'
@@ -82,6 +85,9 @@ abstract class TestProtocolSpec {
     transactions: [{ to: [''], from: [''], amount: '', fee: '', protocolIdentifier: '', isInbound: true, network: {}, hash: '' }],
     cursor: ''
   }
+
+  public schemasV2: { type: IACMessageType; info: SchemaInfoV2 }[] = []
+  public schemasV3: { type: IACMessageType; info: SchemaInfo }[] = []
 
   public verifySignature?: (publicKey: string, tx: any) => Promise<boolean>
 

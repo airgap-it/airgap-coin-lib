@@ -1,10 +1,15 @@
 import { AirGapWalletStatus } from '@airgap/coinlib-core'
 import { AirGapTransactionStatus } from '@airgap/coinlib-core/interfaces/IAirGapTransaction'
+import { IACMessageType } from '@airgap/serializer'
+import { SchemaInfo as SchemaInfoV2, SchemaRoot } from '@airgap/serializer/v2/schemas/schema'
 
-import { EthereumTransactionValidator } from '../../../../serializer/src/v3/unsigned-transactions/ethereum-transactions.validator'
 import { EthereumProtocol, RawEthereumTransaction, SignedEthereumTransaction } from '../../../src'
+import { EthereumTransactionValidator } from '../../../src/v0/serializer/validators/transaction-validator'
 import { TestProtocolSpec } from '../implementations'
 import { EthereumProtocolStub } from '../stubs/ethereum.stub'
+
+const unsignedTransactionV2: SchemaRoot = require('../../../src/v0/serializer/schemas/v2/transaction-sign-request-ethereum.json')
+const signedTransactionV2: SchemaRoot = require('../../../src/v0/serializer/schemas/v2/transaction-sign-response-ethereum.json')
 
 export class EthereumTestProtocolSpec extends TestProtocolSpec {
   public name = 'Ethereum'
@@ -194,7 +199,14 @@ export class EthereumTestProtocolSpec extends TestProtocolSpec {
     }
   ]
 
-  public validator = new EthereumTransactionValidator()
+  public schemasV2: { type: IACMessageType; info: SchemaInfoV2 }[] = [
+    { type: IACMessageType.TransactionSignRequest, info: { schema: unsignedTransactionV2 } },
+    { type: IACMessageType.TransactionSignResponse, info: { schema: signedTransactionV2 } }
+  ]
+
+  public validator(version: 'v2' | 'v3'): EthereumTransactionValidator {
+    return new EthereumTransactionValidator(version)
+  }
 
   public messages = [
     {

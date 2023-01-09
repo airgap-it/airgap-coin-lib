@@ -1,10 +1,15 @@
 import { AirGapWalletStatus } from '@airgap/coinlib-core/wallet/AirGapWallet'
 
 import { IACMessageDefinitionObject } from '../../../../serializer/src'
-import { BitcoinTransactionValidator } from '../../../../serializer/src/v3/unsigned-transactions/bitcoin-transactions.validator'
 import { BitcoinProtocol, RawBitcoinTransaction, SignedBitcoinTransaction } from '../../../src'
+import { BitcoinTransactionValidator } from '../../../src/v0/serializer/validators/transaction-validator'
 import { TestProtocolSpec } from '../implementations'
 import { BitcoinProtocolStub } from '../stubs/bitcoin.stub'
+import { IACMessageType } from '@airgap/serializer'
+import { SchemaInfo as SchemaInfoV2, SchemaRoot } from '@airgap/serializer/v2/schemas/schema'
+
+const unsignedTransactionV2: SchemaRoot = require('../../../src/v0/serializer/schemas/v2/transaction-sign-request-bitcoin.json')
+const signedTransactionV2: SchemaRoot = require('../../../src/v0/serializer/schemas/v2/transaction-sign-response-bitcoin.json')
 
 export class BitcoinProtocolSpec extends TestProtocolSpec {
   public name = 'Bitcoin'
@@ -804,7 +809,15 @@ export class BitcoinProtocolSpec extends TestProtocolSpec {
       ]
     }
   ]
-  public validator: BitcoinTransactionValidator = new BitcoinTransactionValidator()
+
+  public schemasV2: { type: IACMessageType; info: SchemaInfoV2 }[] = [
+    { type: IACMessageType.TransactionSignRequest, info: { schema: unsignedTransactionV2 } },
+    { type: IACMessageType.TransactionSignResponse, info: { schema: signedTransactionV2 } }
+  ]
+
+  public validator(version: 'v2' | 'v3'): BitcoinTransactionValidator {
+    return new BitcoinTransactionValidator(version)
+  }
 
   public async signedTransaction(tx: any): Promise<IACMessageDefinitionObject[]> {
     const protocol: IACMessageDefinitionObject[] = await super.signedTransaction(tx)

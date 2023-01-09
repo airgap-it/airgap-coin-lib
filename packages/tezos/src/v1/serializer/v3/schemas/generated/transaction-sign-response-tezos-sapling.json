@@ -1,0 +1,19 @@
+{
+  "$ref": "#/definitions/TezosSaplingTransactionSignResponse",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "TezosSaplingTransactionSignResponse": {
+      "additionalProperties": false,
+      "properties": {
+        "accountIdentifier": {
+          "type": "string"
+        },
+        "transaction": {
+          "type": "string"
+        }
+      },
+      "required": ["accountIdentifier", "transaction"],
+      "type": "object"
+    }
+  }
+}

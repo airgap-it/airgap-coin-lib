@@ -10,7 +10,7 @@
   },
   "private": true,
   "scripts": {
-    "build": "lerna run build --stream --scope @airgap/coinlib-core && lerna run build --stream --scope @airgap/module-kit && lerna run build --stream --scope @airgap/bitcoin --scope @airgap/substrate && lerna run build --stream --ignore @airgap/coinlib-core --ignore @airgap/module-kit --ignore @airgap/bitcoin --ignore @airgap/substrate --ignore @airgap/serializer && lerna run build --stream --scope @airgap/serializer",
+    "build": "lerna run build --stream --scope @airgap/coinlib-core && lerna run build --stream --scope @airgap/module-kit --scope @airgap/serializer && lerna run build --stream --scope @airgap/bitcoin --scope @airgap/substrate && lerna run build --stream --ignore @airgap/coinlib-core --ignore @airgap/module-kit --ignore @airgap/bitcoin --ignore @airgap/substrate --ignore @airgap/serializer",
     "build-scripts": "tsc scripts/*.ts && lerna run build-scripts --stream",
     "lint": "lerna run lint --stream",
     "lint:prettier": "lerna run lint:prettier --stream",
@@ -43,6 +43,7 @@
     "@airgap/module-kit": "file:packages/module-kit/dist",
     "@airgap/moonbeam": "file:packages/moonbeam/dist",
     "@airgap/polkadot": "file:packages/polkadot/dist",
+    "@airgap/serializer": "file:packages/serializer/dist",
     "@airgap/substrate": "file:packages/substrate/dist",
     "@airgap/tezos": "file:packages/tezos/dist",
     "@airgap/wallet": "file:packages/wallet/dist"

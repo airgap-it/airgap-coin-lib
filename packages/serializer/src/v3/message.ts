@@ -1,21 +1,5 @@
-import { SignedAeternityTransaction, UnsignedAeternityTransaction } from '@airgap/aeternity'
-import {
-  SignedBitcoinSegwitTransaction,
-  SignedBitcoinTransaction,
-  UnsignedBitcoinSegwitTransaction,
-  UnsignedBitcoinTransaction
-} from '@airgap/bitcoin'
 import { SerializerError, SerializerErrorType } from '@airgap/coinlib-core/errors'
 import { MainProtocolSymbols, ProtocolSymbols } from '@airgap/coinlib-core/utils/ProtocolSymbols'
-import { SignedCosmosTransaction, UnsignedCosmosTransaction } from '@airgap/cosmos'
-import { SignedEthereumTransaction, UnsignedEthereumTransaction, UnsignedTypedEthereumTransaction } from '@airgap/ethereum'
-import { SignedSubstrateTransaction, UnsignedSubstrateTransaction } from '@airgap/substrate'
-import {
-  SignedTezosSaplingTransaction,
-  SignedTezosTransaction,
-  UnsignedTezosSaplingTransaction,
-  UnsignedTezosTransaction
-} from '@airgap/tezos'
 
 import { IACMessageType } from './interfaces'
 import { AccountShareResponse } from './schemas/definitions/account-share-response'
@@ -23,31 +7,13 @@ import { MessageSignRequest } from './schemas/definitions/message-sign-request'
 import { MessageSignResponse } from './schemas/definitions/message-sign-response'
 import { SchemaInfo, SchemaItem, SchemaTransformer } from './schemas/schema'
 import { SerializerV3 } from './serializer'
+import { TransactionSignRequest } from './transactions/transaction-sign-request'
+import { TransactionSignResponse } from './transactions/transaction-sign-response'
 import { generateId, ID_LENGTH } from './utils/generateId'
 import { jsonToArray, rlpArrayToJson, unwrapSchema } from './utils/json-to-rlp'
 import { CBORData } from './utils/toBuffer'
 
-export type IACMessages =
-  | AccountShareResponse
-  | MessageSignRequest
-  | MessageSignResponse
-  | UnsignedTezosTransaction
-  | UnsignedTezosSaplingTransaction
-  | UnsignedAeternityTransaction
-  | UnsignedBitcoinTransaction
-  | UnsignedBitcoinSegwitTransaction
-  | UnsignedCosmosTransaction
-  | UnsignedEthereumTransaction
-  | UnsignedTypedEthereumTransaction
-  | UnsignedSubstrateTransaction
-  | SignedTezosTransaction
-  | SignedTezosSaplingTransaction
-  | SignedAeternityTransaction
-  | SignedBitcoinTransaction
-  | SignedBitcoinSegwitTransaction
-  | SignedCosmosTransaction
-  | SignedEthereumTransaction
-  | SignedSubstrateTransaction
+export type IACMessages = AccountShareResponse | MessageSignRequest | MessageSignResponse | TransactionSignRequest | TransactionSignResponse
 
 // tslint:disable-next-line:interface-name
 export interface IACMessageDefinitionObjectV3 {
@@ -108,8 +74,8 @@ export class Message implements IACMessageDefinitionObjectV3 {
     }
   }
 
-  public asArray(): MessageDefinitionArray {
-    const schemaInfos: SchemaInfo[] = SerializerV3.getSchemas(this.type, this.protocol)
+  public asArray(serializer: SerializerV3 = SerializerV3.getInstance()): MessageDefinitionArray {
+    const schemaInfos: SchemaInfo[] = serializer.getSchemas(this.type, this.protocol)
     let lastError
     for (let schemaInfo of schemaInfos) {
       try {
@@ -132,20 +98,20 @@ export class Message implements IACMessageDefinitionObjectV3 {
     return new Message(object.type, object.protocol, object.payload, object.id)
   }
 
-  public static fromEncoded(buf: MessageDefinitionArray): Message {
+  public static fromEncoded(buf: MessageDefinitionArray, serializer: SerializerV3 = SerializerV3.getInstance()): Message {
     const version: number = this.validateVersion(buf[0])
     const protocol: ProtocolSymbols = this.validateProtocol(buf[2])
-    const type: IACMessageType = this.validateType(buf[1], protocol)
+    const type: IACMessageType = this.validateType(buf[1], protocol, serializer)
 
     const id: number = this.validateId(buf[3])
     const encodedPayload: CBORData = this.validatePayload(buf[4])
 
-    const schemaInfos: SchemaInfo[] = SerializerV3.getSchemas(type, protocol)
+    const schemaInfos: SchemaInfo[] = serializer.getSchemas(type, protocol)
     for (let schemaInfo of schemaInfos) {
       try {
         const schema: SchemaItem = unwrapSchema(schemaInfo.schema)
         const schemaTransformer: SchemaTransformer | undefined = schemaInfo.transformer
-        const json: IACMessages = rlpArrayToJson(schema, encodedPayload) as any as IACMessages
+        const json: IACMessages = (rlpArrayToJson(schema, encodedPayload) as any) as IACMessages
 
         const payload: IACMessages = schemaTransformer ? schemaTransformer(json) : json
         return new Message(type, protocol, payload, id, version)
@@ -159,10 +125,14 @@ export class Message implements IACMessageDefinitionObjectV3 {
     return this.validateProperty<number, number>('Version', version, (val: number) => val === 0 || val === 1)
   }
 
-  private static validateType(value: number, protocol: ProtocolSymbols): IACMessageType {
+  private static validateType(
+    value: number,
+    protocol: ProtocolSymbols,
+    serializer: SerializerV3 = SerializerV3.getInstance()
+  ): IACMessageType {
     return this.validateProperty<IACMessageType, number>('Type', value, (val: number) => {
       try {
-        SerializerV3.getSchemas(val, protocol)
+        serializer.getSchemas(val, protocol)
 
         return true
       } catch (error) {
@@ -193,7 +163,7 @@ export class Message implements IACMessageDefinitionObjectV3 {
     }
 
     if (validate(value)) {
-      return value as unknown as T // TODO: Use type guard?
+      return (value as unknown) as T // TODO: Use type guard?
     }
 
     throw new SerializerError(SerializerErrorType.PROPERTY_IS_EMPTY, `${property} is invalid: "${value}"`)

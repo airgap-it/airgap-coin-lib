@@ -1,3 +1,5 @@
+import { MainProtocolSymbols, SubProtocolSymbols } from '@airgap/coinlib-core'
+import { IACMessageType, Serializer, SerializerV3 } from '@airgap/serializer'
 import { ImportAccountAction, ImportAccoutActionContext } from './actions/GetKtAccountsAction'
 import { TezosDomains } from './protocol/domains/TezosDomains'
 import { TezosBTC } from './protocol/fa/TezosBTC'
@@ -156,3 +158,225 @@ export {
 }
 
 export { ImportAccountAction, ImportAccoutActionContext }
+
+// Serializer
+
+Serializer.addSchema(
+  IACMessageType.TransactionSignRequest,
+  { schema: require('./serializer/schemas/v2/transaction-sign-request-tezos.json') },
+  MainProtocolSymbols.XTZ
+)
+Serializer.addSchema(
+  IACMessageType.TransactionSignResponse,
+  { schema: require('./serializer/schemas/v2/transaction-sign-response-tezos.json') },
+  MainProtocolSymbols.XTZ
+)
+
+SerializerV3.addSchema(
+  IACMessageType.TransactionSignRequest,
+  { schema: require('./serializer/schemas/v3/transaction-sign-request-tezos.json') },
+  MainProtocolSymbols.XTZ
+)
+SerializerV3.addSchema(
+  IACMessageType.TransactionSignResponse,
+  { schema: require('./serializer/schemas/v3/transaction-sign-response-tezos.json') },
+  MainProtocolSymbols.XTZ
+)
+
+Serializer.addSchema(
+  IACMessageType.TransactionSignRequest,
+  { schema: require('./serializer/schemas/v2/transaction-sign-request-tezos-sapling.json') },
+  MainProtocolSymbols.XTZ_SHIELDED
+)
+Serializer.addSchema(
+  IACMessageType.TransactionSignResponse,
+  { schema: require('./serializer/schemas/v2/transaction-sign-response-tezos-sapling.json') },
+  MainProtocolSymbols.XTZ_SHIELDED
+)
+
+SerializerV3.addSchema(
+  IACMessageType.TransactionSignRequest,
+  { schema: require('./serializer/schemas/v3/transaction-sign-request-tezos-sapling.json') },
+  MainProtocolSymbols.XTZ_SHIELDED
+)
+SerializerV3.addSchema(
+  IACMessageType.TransactionSignResponse,
+  { schema: require('./serializer/schemas/v3/transaction-sign-response-tezos-sapling.json') },
+  MainProtocolSymbols.XTZ_SHIELDED
+)
+
+Serializer.addSchema(
+  IACMessageType.TransactionSignRequest,
+  { schema: require('./serializer/schemas/v2/transaction-sign-request-tezos.json') },
+  SubProtocolSymbols.XTZ_BTC
+)
+Serializer.addSchema(
+  IACMessageType.TransactionSignResponse,
+  { schema: require('./serializer/schemas/v2/transaction-sign-response-tezos.json') },
+  SubProtocolSymbols.XTZ_BTC
+)
+
+SerializerV3.addSchema(
+  IACMessageType.TransactionSignRequest,
+  { schema: require('./serializer/schemas/v3/transaction-sign-request-tezos.json') },
+  SubProtocolSymbols.XTZ_BTC
+)
+SerializerV3.addSchema(
+  IACMessageType.TransactionSignResponse,
+  { schema: require('./serializer/schemas/v3/transaction-sign-response-tezos.json') },
+  SubProtocolSymbols.XTZ_BTC
+)
+
+Serializer.addSchema(
+  IACMessageType.TransactionSignRequest,
+  { schema: require('./serializer/schemas/v2/transaction-sign-request-tezos.json') },
+  SubProtocolSymbols.XTZ_ETHTZ
+)
+Serializer.addSchema(
+  IACMessageType.TransactionSignResponse,
+  { schema: require('./serializer/schemas/v2/transaction-sign-response-tezos.json') },
+  SubProtocolSymbols.XTZ_ETHTZ
+)
+
+SerializerV3.addSchema(
+  IACMessageType.TransactionSignRequest,
+  { schema: require('./serializer/schemas/v3/transaction-sign-request-tezos.json') },
+  SubProtocolSymbols.XTZ_ETHTZ
+)
+SerializerV3.addSchema(
+  IACMessageType.TransactionSignResponse,
+  { schema: require('./serializer/schemas/v3/transaction-sign-response-tezos.json') },
+  SubProtocolSymbols.XTZ_ETHTZ
+)
+
+Serializer.addSchema(
+  IACMessageType.TransactionSignRequest,
+  { schema: require('./serializer/schemas/v2/transaction-sign-request-tezos.json') },
+  SubProtocolSymbols.XTZ_KUSD
+)
+Serializer.addSchema(
+  IACMessageType.TransactionSignResponse,
+  { schema: require('./serializer/schemas/v2/transaction-sign-response-tezos.json') },
+  SubProtocolSymbols.XTZ_KUSD
+)
+
+SerializerV3.addSchema(
+  IACMessageType.TransactionSignRequest,
+  { schema: require('./serializer/schemas/v3/transaction-sign-request-tezos.json') },
+  SubProtocolSymbols.XTZ_KUSD
+)
+SerializerV3.addSchema(
+  IACMessageType.TransactionSignResponse,
+  { schema: require('./serializer/schemas/v3/transaction-sign-response-tezos.json') },
+  SubProtocolSymbols.XTZ_KUSD
+)
+
+Serializer.addSchema(
+  IACMessageType.TransactionSignRequest,
+  { schema: require('./serializer/schemas/v2/transaction-sign-request-tezos.json') },
+  SubProtocolSymbols.XTZ_KT
+)
+Serializer.addSchema(
+  IACMessageType.TransactionSignResponse,
+  { schema: require('./serializer/schemas/v2/transaction-sign-response-tezos.json') },
+  SubProtocolSymbols.XTZ_KT
+)
+
+SerializerV3.addSchema(
+  IACMessageType.TransactionSignRequest,
+  { schema: require('./serializer/schemas/v3/transaction-sign-request-tezos.json') },
+  SubProtocolSymbols.XTZ_KT
+)
+SerializerV3.addSchema(
+  IACMessageType.TransactionSignResponse,
+  { schema: require('./serializer/schemas/v3/transaction-sign-response-tezos.json') },
+  SubProtocolSymbols.XTZ_KT
+)
+
+Serializer.addSchema(
+  IACMessageType.TransactionSignRequest,
+  { schema: require('./serializer/schemas/v2/transaction-sign-request-tezos.json') },
+  SubProtocolSymbols.XTZ_USD
+)
+Serializer.addSchema(
+  IACMessageType.TransactionSignResponse,
+  { schema: require('./serializer/schemas/v2/transaction-sign-response-tezos.json') },
+  SubProtocolSymbols.XTZ_USD
+)
+
+SerializerV3.addSchema(
+  IACMessageType.TransactionSignRequest,
+  { schema: require('./serializer/schemas/v3/transaction-sign-request-tezos.json') },
+  SubProtocolSymbols.XTZ_USD
+)
+SerializerV3.addSchema(
+  IACMessageType.TransactionSignResponse,
+  { schema: require('./serializer/schemas/v3/transaction-sign-response-tezos.json') },
+  SubProtocolSymbols.XTZ_USD
+)
+
+Serializer.addSchema(
+  IACMessageType.TransactionSignRequest,
+  { schema: require('./serializer/schemas/v2/transaction-sign-request-tezos.json') },
+  SubProtocolSymbols.XTZ_USDT
+)
+Serializer.addSchema(
+  IACMessageType.TransactionSignResponse,
+  { schema: require('./serializer/schemas/v2/transaction-sign-response-tezos.json') },
+  SubProtocolSymbols.XTZ_USDT
+)
+
+SerializerV3.addSchema(
+  IACMessageType.TransactionSignRequest,
+  { schema: require('./serializer/schemas/v3/transaction-sign-request-tezos.json') },
+  SubProtocolSymbols.XTZ_USDT
+)
+SerializerV3.addSchema(
+  IACMessageType.TransactionSignResponse,
+  { schema: require('./serializer/schemas/v3/transaction-sign-response-tezos.json') },
+  SubProtocolSymbols.XTZ_USDT
+)
+
+Serializer.addSchema(
+  IACMessageType.TransactionSignRequest,
+  { schema: require('./serializer/schemas/v2/transaction-sign-request-tezos.json') },
+  SubProtocolSymbols.XTZ_UUSD
+)
+Serializer.addSchema(
+  IACMessageType.TransactionSignResponse,
+  { schema: require('./serializer/schemas/v2/transaction-sign-response-tezos.json') },
+  SubProtocolSymbols.XTZ_UUSD
+)
+
+SerializerV3.addSchema(
+  IACMessageType.TransactionSignRequest,
+  { schema: require('./serializer/schemas/v3/transaction-sign-request-tezos.json') },
+  SubProtocolSymbols.XTZ_UUSD
+)
+SerializerV3.addSchema(
+  IACMessageType.TransactionSignResponse,
+  { schema: require('./serializer/schemas/v3/transaction-sign-response-tezos.json') },
+  SubProtocolSymbols.XTZ_UUSD
+)
+
+Serializer.addSchema(
+  IACMessageType.TransactionSignRequest,
+  { schema: require('./serializer/schemas/v2/transaction-sign-request-tezos.json') },
+  SubProtocolSymbols.XTZ_YOU
+)
+Serializer.addSchema(
+  IACMessageType.TransactionSignResponse,
+  { schema: require('./serializer/schemas/v2/transaction-sign-response-tezos.json') },
+  SubProtocolSymbols.XTZ_YOU
+)
+
+SerializerV3.addSchema(
+  IACMessageType.TransactionSignRequest,
+  { schema: require('./serializer/schemas/v3/transaction-sign-request-tezos.json') },
+  SubProtocolSymbols.XTZ_YOU
+)
+SerializerV3.addSchema(
+  IACMessageType.TransactionSignResponse,
+  { schema: require('./serializer/schemas/v3/transaction-sign-response-tezos.json') },
+  SubProtocolSymbols.XTZ_YOU
+)

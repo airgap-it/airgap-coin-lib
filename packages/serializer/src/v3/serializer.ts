@@ -1,55 +1,41 @@
 import { SerializerError, SerializerErrorType } from '@airgap/coinlib-core/errors'
 import { MainProtocolSymbols, ProtocolSymbols, SubProtocolSymbols } from '@airgap/coinlib-core/utils/ProtocolSymbols'
-import { CosmosTransaction } from '@airgap/cosmos'
-import { SerializableUnsignedCosmosTransaction } from '@airgap/cosmos/v0/types/unsigned-transaction-cosmos'
 
 import { IACMessageWrapper } from './iac-message-wrapper'
 import { IACMessageType } from './interfaces'
 import { IACMessageDefinitionObjectV3 } from './message'
 import { SchemaInfo, SchemaRoot } from './schemas/schema'
-import { AeternityTransactionValidator } from './unsigned-transactions/aeternity-transactions.validator'
-import { BitcoinTransactionValidator } from './unsigned-transactions/bitcoin-transactions.validator'
-import { CosmosTransactionValidator } from './unsigned-transactions/cosmos-transactions.validator'
-import { EthereumTransactionValidator } from './unsigned-transactions/ethereum-transactions.validator'
-import { SubstrateTransactionValidator } from './unsigned-transactions/substrate-transactions.validator'
-import { TezosTransactionValidator } from './unsigned-transactions/tezos-transactions.validator'
-import { TezosBTCTransactionValidator } from './unsigned-transactions/xtz-btc-transactions.validator'
-import { TransactionValidator } from './validators/transactions.validator'
+import { TransactionValidator, TransactionValidatorFactory } from './validators/transactions.validator'
 
 const accountShareResponse: SchemaRoot = require('./schemas/generated/account-share-response.json')
 
 const messageSignRequest: SchemaRoot = require('./schemas/generated/message-sign-request.json')
 const messageSignResponse: SchemaRoot = require('./schemas/generated/message-sign-response.json')
 
-const unsignedTransactionAeternity: SchemaRoot = require('./schemas/generated/transaction-sign-request-aeternity.json')
-const unsignedTransactionBitcoinSegwit: SchemaRoot = require('./schemas/generated/transaction-sign-request-bitcoin-segwit.json')
-const unsignedTransactionBitcoin: SchemaRoot = require('./schemas/generated/transaction-sign-request-bitcoin.json')
-const unsignedTransactionCosmos: SchemaRoot = require('./schemas/generated/transaction-sign-request-cosmos.json')
-const unsignedTransactionEthereum: SchemaRoot = require('./schemas/generated/transaction-sign-request-ethereum.json')
-const unsignedTransactionEthereumTyped: SchemaRoot = require('./schemas/generated/transaction-sign-request-ethereum-typed.json')
-const unsignedTransactionTezos: SchemaRoot = require('./schemas/generated/transaction-sign-request-tezos.json')
-const unsignedTransactionTezosSapling: SchemaRoot = require('./schemas/generated/transaction-sign-request-tezos-sapling.json')
-const unsignedTransactionSubstrate: SchemaRoot = require('./schemas/generated/transaction-sign-request-substrate.json')
-
-const signedTransactionAeternity: SchemaRoot = require('./schemas/generated/transaction-sign-response-aeternity.json')
-const signedTransactionBitcoinSegwit: SchemaRoot = require('./schemas/generated/transaction-sign-response-bitcoin-segwit.json')
-const signedTransactionBitcoin: SchemaRoot = require('./schemas/generated/transaction-sign-response-bitcoin.json')
-const signedTransactionCosmos: SchemaRoot = require('./schemas/generated/transaction-sign-response-cosmos.json')
-const signedTransactionEthereum: SchemaRoot = require('./schemas/generated/transaction-sign-response-ethereum.json')
-const signedTransactionTezos: SchemaRoot = require('./schemas/generated/transaction-sign-response-tezos.json')
-const signedTransactionTezosSapling: SchemaRoot = require('./schemas/generated/transaction-sign-response-tezos-sapling.json')
-const signedTransactionSubstrate: SchemaRoot = require('./schemas/generated/transaction-sign-response-substrate.json')
-
-function unsignedTransactionTransformerCosmos(value: SerializableUnsignedCosmosTransaction): SerializableUnsignedCosmosTransaction {
-  value.transaction = CosmosTransaction.fromJSON(value) as any
-
-  return value
-}
-
 export class SerializerV3 {
-  private static readonly schemas: Map<string, SchemaInfo[]> = new Map()
+  private readonly schemas: Map<string, SchemaInfo[]> = new Map()
+  private readonly validators: Map<ProtocolSymbols, TransactionValidatorFactory> = new Map()
+
+  private static instance: SerializerV3 | undefined = undefined
+  public static getInstance(): SerializerV3 {
+    if (SerializerV3.instance === undefined) {
+      SerializerV3.instance = new SerializerV3()
+    }
+
+    return SerializerV3.instance
+  }
+
+  private constructor() {
+    this.addSchema(IACMessageType.AccountShareResponse, { schema: accountShareResponse })
+    this.addSchema(IACMessageType.MessageSignRequest, { schema: messageSignRequest })
+    this.addSchema(IACMessageType.MessageSignResponse, { schema: messageSignResponse })
+  }
 
   public static addSchema(schemaId: number, schema: SchemaInfo, protocol?: ProtocolSymbols): void {
+    SerializerV3.getInstance().addSchema(schemaId, schema, protocol)
+  }
+
+  public addSchema(schemaId: number, schema: SchemaInfo, protocol?: ProtocolSymbols): void {
     const protocolSpecificSchemaName: string = SerializerV3.getSchemaName(schemaId, protocol)
 
     const schemas = this.schemas.get(protocolSpecificSchemaName) ?? []
@@ -61,6 +47,10 @@ export class SerializerV3 {
   }
 
   public static getSchemas(schemaId: number, protocol?: ProtocolSymbols): SchemaInfo[] {
+    return SerializerV3.getInstance().getSchemas(schemaId, protocol)
+  }
+
+  public getSchemas(schemaId: number, protocol?: ProtocolSymbols): SchemaInfo[] {
     const protocolSpecificSchemaName: string = SerializerV3.getSchemaName(schemaId, protocol)
 
     let schemas: SchemaInfo[] | undefined
@@ -99,15 +89,23 @@ export class SerializerV3 {
     return protocol ? `${schemaId}-${protocol}` : schemaId.toString()
   }
 
+  public static addValidator(protocol: ProtocolSymbols, validator: TransactionValidatorFactory): void {
+    SerializerV3.getInstance().addValidator(protocol, validator)
+  }
+
+  public addValidator(protocol: ProtocolSymbols, validator: TransactionValidatorFactory): void {
+    this.validators.set(protocol, validator)
+  }
+
   public async serialize(messages: IACMessageDefinitionObjectV3[]): Promise<string> {
     if (
       messages.every((message: IACMessageDefinitionObjectV3) => {
-        return SerializerV3.getSchemas(message.type, message.protocol).length > 0
+        return this.getSchemas(message.type, message.protocol).length > 0
       })
     ) {
       const iacps: IACMessageWrapper = IACMessageWrapper.fromDecoded(JSON.parse(JSON.stringify(messages)))
 
-      return iacps.encoded()
+      return iacps.encoded(this)
     } else {
       throw new SerializerError(SerializerErrorType.SCHEMA_DOES_NOT_EXISTS, `Unknown schema`)
     }
@@ -116,7 +114,7 @@ export class SerializerV3 {
   public async deserialize(data: string): Promise<IACMessageDefinitionObjectV3[]> {
     let result: IACMessageWrapper
     try {
-      result = IACMessageWrapper.fromEncoded(data)
+      result = IACMessageWrapper.fromEncoded(data, this)
     } catch {
       throw new Error('Cannot decode data')
     }
@@ -126,92 +124,19 @@ export class SerializerV3 {
   }
 
   public serializationValidatorByProtocolIdentifier(protocolIdentifier: ProtocolSymbols): TransactionValidator {
-    const validators: { [key in ProtocolSymbols]?: any } = {
-      // TODO: Exhaustive list?
-      eth: EthereumTransactionValidator,
-      btc: BitcoinTransactionValidator,
-      grs: BitcoinTransactionValidator,
-      ae: AeternityTransactionValidator,
-      xtz: TezosTransactionValidator,
-      cosmos: CosmosTransactionValidator,
-      polkadot: SubstrateTransactionValidator,
-      kusama: SubstrateTransactionValidator,
-      'xtz-btc': TezosBTCTransactionValidator
+    const validatorsKeys: ProtocolSymbols[] = Array.from(this.validators.keys())
+
+    const exactMatch: ProtocolSymbols | undefined = validatorsKeys.find((protocol) => protocolIdentifier === protocol)
+    const startsWith: ProtocolSymbols | undefined = validatorsKeys.find((protocol) => protocolIdentifier.startsWith(protocol))
+    // TODO: Only use validator if it's a transaction
+    const validatorFactory: TransactionValidatorFactory | undefined = this.validators.get(
+      exactMatch ?? startsWith ?? MainProtocolSymbols.ETH
+    )
+
+    if (!validatorFactory) {
+      throw Error(`Validator not registered for ${protocolIdentifier}, ${exactMatch}, ${startsWith}, ${validatorFactory}`)
     }
 
-    const exactMatch = Object.keys(validators).find((protocol) => protocolIdentifier === protocol)
-    const startsWith = Object.keys(validators).find((protocol) => protocolIdentifier.startsWith(protocol))
-    const validator = exactMatch ? exactMatch : startsWith
-    // TODO: Only use validator if it's a transaction
-    // if (!validator) {
-    //   throw Error(`Validator not implemented for ${protocolIdentifier}, ${exactMatch}, ${startsWith}, ${validator}`)
-    // }
-
-    return new validators[validator ?? 'eth']()
+    return validatorFactory.create()
   }
 }
-
-// SerializerV3.addSchema(IACMessageType.MetadataRequest, '')
-// SerializerV3.addSchema(IACMessageType.MetadataResponse, '')
-
-// SerializerV3.addSchema(IACMessageType.AccountShareRequest, accountShareRequest)
-SerializerV3.addSchema(IACMessageType.AccountShareResponse, { schema: accountShareResponse })
-
-SerializerV3.addSchema(IACMessageType.MessageSignRequest, { schema: messageSignRequest })
-SerializerV3.addSchema(IACMessageType.MessageSignResponse, { schema: messageSignResponse })
-
-// TODO: Make sure that we have a schema for every protocol we support
-SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionAeternity }, MainProtocolSymbols.AE)
-SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionBitcoinSegwit }, MainProtocolSymbols.BTC_SEGWIT)
-SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionBitcoin }, MainProtocolSymbols.BTC)
-SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionBitcoin }, MainProtocolSymbols.GRS)
-SerializerV3.addSchema(
-  IACMessageType.TransactionSignRequest,
-  { schema: unsignedTransactionCosmos, transformer: unsignedTransactionTransformerCosmos },
-  MainProtocolSymbols.COSMOS
-)
-SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionEthereum }, MainProtocolSymbols.ETH)
-SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionEthereumTyped }, MainProtocolSymbols.ETH)
-SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionEthereum }, SubProtocolSymbols.ETH_ERC20)
-SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionTezos }, MainProtocolSymbols.XTZ)
-SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionTezosSapling }, MainProtocolSymbols.XTZ_SHIELDED)
-SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionTezos }, SubProtocolSymbols.XTZ_BTC)
-SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionTezos }, SubProtocolSymbols.XTZ_ETHTZ)
-SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionTezos }, SubProtocolSymbols.XTZ_KUSD)
-SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionTezos }, SubProtocolSymbols.XTZ_KT)
-SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionTezos }, SubProtocolSymbols.XTZ_USD)
-SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionTezos }, SubProtocolSymbols.XTZ_USDT)
-SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionTezos }, SubProtocolSymbols.XTZ_UUSD)
-SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionTezos }, SubProtocolSymbols.XTZ_YOU)
-SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionSubstrate }, MainProtocolSymbols.POLKADOT)
-SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionSubstrate }, MainProtocolSymbols.KUSAMA)
-SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionSubstrate }, MainProtocolSymbols.MOONBASE)
-SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionSubstrate }, MainProtocolSymbols.MOONRIVER)
-SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionSubstrate }, MainProtocolSymbols.MOONBEAM)
-SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionSubstrate }, MainProtocolSymbols.ASTAR)
-SerializerV3.addSchema(IACMessageType.TransactionSignRequest, { schema: unsignedTransactionSubstrate }, MainProtocolSymbols.SHIDEN)
-
-SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionAeternity }, MainProtocolSymbols.AE)
-SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionBitcoinSegwit }, MainProtocolSymbols.BTC_SEGWIT)
-SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionBitcoin }, MainProtocolSymbols.BTC)
-SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionBitcoin }, MainProtocolSymbols.GRS)
-SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionCosmos }, MainProtocolSymbols.COSMOS)
-SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionEthereum }, MainProtocolSymbols.ETH)
-SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionEthereum }, SubProtocolSymbols.ETH_ERC20)
-SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionTezos }, MainProtocolSymbols.XTZ)
-SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionTezosSapling }, MainProtocolSymbols.XTZ_SHIELDED)
-SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionTezos }, SubProtocolSymbols.XTZ_BTC)
-SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionTezos }, SubProtocolSymbols.XTZ_ETHTZ)
-SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionTezos }, SubProtocolSymbols.XTZ_KUSD)
-SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionTezos }, SubProtocolSymbols.XTZ_KT)
-SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionTezos }, SubProtocolSymbols.XTZ_USD)
-SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionTezos }, SubProtocolSymbols.XTZ_USDT)
-SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionTezos }, SubProtocolSymbols.XTZ_UUSD)
-SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionTezos }, SubProtocolSymbols.XTZ_YOU)
-SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionSubstrate }, MainProtocolSymbols.POLKADOT)
-SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionSubstrate }, MainProtocolSymbols.KUSAMA)
-SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionSubstrate }, MainProtocolSymbols.MOONBASE)
-SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionSubstrate }, MainProtocolSymbols.MOONRIVER)
-SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionSubstrate }, MainProtocolSymbols.MOONBEAM)
-SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionSubstrate }, MainProtocolSymbols.ASTAR)
-SerializerV3.addSchema(IACMessageType.TransactionSignResponse, { schema: signedTransactionSubstrate }, MainProtocolSymbols.SHIDEN)

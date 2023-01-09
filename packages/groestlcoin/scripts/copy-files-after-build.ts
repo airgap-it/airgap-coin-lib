@@ -33,6 +33,9 @@ const findFilesOnLevel = async (base: string) => {
   }
   return files
 }
+findFilesOnLevel('./src/v1/serializer/v3/schemas/generated')
+  .then(() => {})
+  .catch(console.error)
 
 copyFileSync('./package.json', './dist/package.json')
 copyFileSync('./readme.md', './dist/readme.md')

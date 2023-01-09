@@ -80,7 +80,7 @@ const DUST_AMOUNT: number = 50
 export class BitcoinProtocolImpl implements BitcoinProtocol {
   private readonly options: BitcoinProtocolOptions
   private readonly cryptoClient: BitcoinCryptoClient
-  private readonly bitcoinJS: BitcoinJS
+  public readonly bitcoinJS: BitcoinJS
 
   constructor(options: RecursivePartial<BitcoinProtocolOptions> = {}, bitcoinJS: any = BitGo, bitcoinJSMessage: any = bitcoinMessage) {
     this.options = createBitcoinProtocolOptions(options.network)

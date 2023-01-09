@@ -1,4 +1,5 @@
 import { IACMessageDefinitionObjectV3, Message, MessageDefinitionArray } from './message'
+import { SerializerV3 } from './serializer'
 
 export class Payload {
   private readonly messages: IACMessageDefinitionObjectV3[]
@@ -10,8 +11,8 @@ export class Payload {
   public static fromDecoded(object: IACMessageDefinitionObjectV3[]): Payload {
     return new Payload(object)
   }
-  public static fromEncoded(encoded: MessageDefinitionArray[]): Payload {
-    const messages: IACMessageDefinitionObjectV3[] = encoded.map((message) => Message.fromEncoded(message).asJson())
+  public static fromEncoded(encoded: MessageDefinitionArray[], serializer: SerializerV3 = SerializerV3.getInstance()): Payload {
+    const messages: IACMessageDefinitionObjectV3[] = encoded.map((message) => Message.fromEncoded(message, serializer).asJson())
 
     return new Payload(messages)
   }
@@ -20,7 +21,7 @@ export class Payload {
     return this.messages
   }
 
-  public asArray(): MessageDefinitionArray[] {
-    return this.messages.map((message: IACMessageDefinitionObjectV3) => Message.fromDecoded(message).asArray())
+  public asArray(serializer: SerializerV3 = SerializerV3.getInstance()): MessageDefinitionArray[] {
+    return this.messages.map((message: IACMessageDefinitionObjectV3) => Message.fromDecoded(message).asArray(serializer))
   }
 }

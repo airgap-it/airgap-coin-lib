@@ -1,5 +1,6 @@
+import { Serializer } from '../serializer'
 import { RLPData } from '../utils/toBuffer'
 
 export interface Payload {
-  asArray(): RLPData
+  asArray(serializer?: Serializer): RLPData
 }

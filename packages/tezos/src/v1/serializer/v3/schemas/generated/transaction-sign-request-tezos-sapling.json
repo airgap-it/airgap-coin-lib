@@ -1,0 +1,152 @@
+{
+  "$ref": "#/definitions/TezosSaplingTransactionSignRequest",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "TezosSaplingCiphertext": {
+      "additionalProperties": false,
+      "properties": {
+        "cv": {
+          "type": "string"
+        },
+        "epk": {
+          "type": "string"
+        },
+        "nonce_enc": {
+          "type": "string"
+        },
+        "nonce_out": {
+          "type": "string"
+        },
+        "payload_enc": {
+          "type": "string"
+        },
+        "payload_out": {
+          "type": "string"
+        }
+      },
+      "required": ["cv", "epk", "payload_enc", "nonce_enc", "payload_out", "nonce_out"],
+      "type": "object"
+    },
+    "TezosSaplingInput": {
+      "additionalProperties": false,
+      "properties": {
+        "address": {
+          "type": "string"
+        },
+        "pos": {
+          "type": "string"
+        },
+        "rcm": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": ["rcm", "pos", "value", "address"],
+      "type": "object"
+    },
+    "TezosSaplingOutput": {
+      "additionalProperties": false,
+      "properties": {
+        "address": {
+          "type": "string"
+        },
+        "browsable": {
+          "type": "boolean"
+        },
+        "memo": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": ["address", "value", "memo", "browsable"],
+      "type": "object"
+    },
+    "TezosSaplingStateDiff": {
+      "additionalProperties": false,
+      "properties": {
+        "commitments_and_ciphertexts": {
+          "items": {
+            "items": [
+              {
+                "type": "string"
+              },
+              {
+                "$ref": "#/definitions/TezosSaplingCiphertext"
+              }
+            ],
+            "maxItems": 2,
+            "minItems": 2,
+            "type": "array"
+          },
+          "type": "array"
+        },
+        "nullifiers": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "root": {
+          "type": "string"
+        }
+      },
+      "required": ["root", "commitments_and_ciphertexts", "nullifiers"],
+      "type": "object"
+    },
+    "TezosSaplingTransactionSignRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "callbackURL": {
+          "type": "string"
+        },
+        "publicKey": {
+          "type": "string"
+        },
+        "transaction": {
+          "$ref": "#/definitions/TezosSaplingUnsignedTransaction"
+        }
+      },
+      "required": ["publicKey", "transaction"],
+      "type": "object"
+    },
+    "TezosSaplingUnsignedTransaction": {
+      "additionalProperties": false,
+      "properties": {
+        "chainId": {
+          "type": "string"
+        },
+        "contractAddress": {
+          "type": "string"
+        },
+        "ins": {
+          "items": {
+            "$ref": "#/definitions/TezosSaplingInput"
+          },
+          "type": "array"
+        },
+        "outs": {
+          "items": {
+            "$ref": "#/definitions/TezosSaplingOutput"
+          },
+          "type": "array"
+        },
+        "stateDiff": {
+          "$ref": "#/definitions/TezosSaplingStateDiff"
+        },
+        "type": {
+          "enum": ["unsigned"],
+          "type": "string"
+        },
+        "unshieldTarget": {
+          "type": "string"
+        }
+      },
+      "required": ["chainId", "contractAddress", "ins", "outs", "stateDiff", "type", "unshieldTarget"],
+      "type": "object"
+    }
+  }
+}

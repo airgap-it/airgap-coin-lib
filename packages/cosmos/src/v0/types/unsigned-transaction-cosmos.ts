@@ -1,4 +1,4 @@
-import { UnsignedTransaction } from '@airgap/coinlib-core/types/unsigned-transaction'
+import { TransactionSignRequest, TransactionSignRequestV2 } from '@airgap/serializer'
 
 interface CosmosCoin {
   denom: string
@@ -33,6 +33,6 @@ interface CosmosTransaction {
   sequence: string
 }
 
-export interface SerializableUnsignedCosmosTransaction extends UnsignedTransaction {
+export interface SerializableUnsignedCosmosTransaction extends TransactionSignRequest, TransactionSignRequestV2 {
   transaction: CosmosTransaction
 }

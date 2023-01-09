@@ -4,6 +4,7 @@ import { gzip, ungzip } from '@airgap/coinlib-core/dependencies/src/pako-2.0.3'
 
 import { IACMessageDefinitionObjectV3, isMessageDefinitionArray, MessageDefinitionArray } from './message'
 import { Payload } from './payload'
+import { SerializerV3 } from './serializer'
 
 export type IACMessageWrapperVersion = number
 export type IACMessageWrapperArray = [IACMessageWrapperVersion, Payload]
@@ -23,8 +24,8 @@ export class IACMessageWrapper {
     return [this.version, this.payload]
   }
 
-  public encoded(): string {
-    const arr: IACMessageWrapperArrayEncoded = [this.version, this.payload.asArray()]
+  public encoded(serializer: SerializerV3 = SerializerV3.getInstance()): string {
+    const arr: IACMessageWrapperArrayEncoded = [this.version, this.payload.asArray(serializer)]
 
     const buffer: Buffer = encode(arr)
 
@@ -41,7 +42,7 @@ export class IACMessageWrapper {
     return new IACMessageWrapper(payload)
   }
 
-  public static fromEncoded(data: string): IACMessageWrapper {
+  public static fromEncoded(data: string, serializer: SerializerV3 = SerializerV3.getInstance()): IACMessageWrapper {
     const buffer: Buffer = bs58check.decode(data)
 
     const inflated: Uint8Array = ungzip(buffer)
@@ -58,7 +59,7 @@ export class IACMessageWrapper {
 
     const payload: MessageDefinitionArray[] = decoded[1]
 
-    const finalPayload: Payload = Payload.fromEncoded(payload)
+    const finalPayload: Payload = Payload.fromEncoded(payload, serializer)
 
     return new IACMessageWrapper(finalPayload)
   }

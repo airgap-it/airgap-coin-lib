@@ -1,9 +1,9 @@
-import { UnsignedTransaction } from '@airgap/coinlib-core/types/unsigned-transaction'
+import { TransactionSignRequest, TransactionSignRequestV2 } from '@airgap/serializer'
 
 interface RawTezosTransaction {
   binaryTransaction: string
 }
 
-export interface UnsignedTezosTransaction extends UnsignedTransaction {
+export interface UnsignedTezosTransaction extends TransactionSignRequest, TransactionSignRequestV2 {
   transaction: RawTezosTransaction
 }
