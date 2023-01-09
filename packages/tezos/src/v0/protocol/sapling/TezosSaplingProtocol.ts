@@ -494,12 +494,8 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
     rawOrParsed: string | TezosTransactionParameters,
     knownViewingKeys: string[] = []
   ): Promise<Partial<IAirGapTransaction>[]> {
-    if (this.contract === undefined) {
-      throw new PropertyUndefinedError(Domain.TEZOS, 'Contract address not set.')
-    }
-
     const parameters: TezosTransactionParameters =
-      typeof rawOrParsed === 'string' ? this.contract.parseParameters(rawOrParsed) : rawOrParsed
+      typeof rawOrParsed === 'string' ? (this.contract ? this.contract.parseParameters(rawOrParsed) : JSON.parse(rawOrParsed)) : rawOrParsed
 
     const txs: string[] = await this.parseParameters(parameters)
 
