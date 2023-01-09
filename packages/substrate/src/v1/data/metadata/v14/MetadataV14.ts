@@ -48,7 +48,11 @@ export class MetadataV14 extends MetadataVersioned {
     super()
   }
 
-  public decorate(supportedStorageEntries: Object, supportedCalls: Object, supportedConstants: Object): MetadataDecorator {
+  public decorate(
+    supportedStorageEntries: Record<string, string[]>,
+    supportedCalls: Object,
+    supportedConstants: Object
+  ): MetadataDecorator {
     const storageEntries: SubstrateStorageEntry[][] = []
     const calls: SubstrateCall[][] = []
     const constants: SubstrateConstant[][] = []
@@ -87,7 +91,7 @@ export class MetadataV14 extends MetadataVersioned {
 
   private createDecoratedStorageEntries(
     storage: MetadataV14Storage | undefined,
-    supportedStorageEntries: Object
+    supportedStorageEntries: Record<string, string[]>
   ): SubstrateStorageEntry[] | undefined {
     if (storage) {
       return storage.storageEntries.elements

@@ -1,13 +1,14 @@
 import { assertNever, Domain } from '@airgap/coinlib-core'
 import { UnsupportedError } from '@airgap/coinlib-core/errors'
 import { isPublicKey, PublicKey } from '@airgap/module-kit'
-import { SubstrateAccountConfiguration } from '../../../types/configuration'
-import { SubstrateProtocolConfiguration } from '../../../types/configuration'
+
+import { SubstrateAccountConfiguration, SubstrateProtocolConfiguration } from '../../../types/configuration'
 import { convertPublicKey } from '../../../utils/keys'
 import { SCALEDecodeResult } from '../../scale/SCALEDecoder'
 import { SCALEAccountId } from '../../scale/type/SCALEAccountId'
 import { SCALEMultiAddress, SCALEMultiAddressType } from '../../scale/type/SCALEMultiAddress'
 import { SCALEType } from '../../scale/type/SCALEType'
+
 import { SubstrateAccountId, SubstrateAddress } from './SubstrateAddress'
 import { SubstrateEthAddress } from './SubstrateEthAddress'
 import { SubstrateSS58Address } from './SubstrateSS58Address'

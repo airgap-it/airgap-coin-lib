@@ -57,7 +57,9 @@ export class TezosShieldedTezProtocol extends TezosSaplingProtocol {
   public async parseParameters(parameters: TezosTransactionParameters): Promise<string[]> {
     if (parameters.entrypoint === 'default') {
       try {
-        const callArgumentsList = MichelsonList.from(parameters.value, (bytesJSON) => MichelsonBytes.from(bytesJSON, 'tx')).asRawValue()
+        const callArgumentsList = MichelsonList.from(parameters.value, (bytesJSON: unknown) =>
+          MichelsonBytes.from(bytesJSON, 'tx')
+        ).asRawValue()
 
         return Array.isArray(callArgumentsList) ? callArgumentsList.map((args) => args.tx) : []
       } catch (error) {

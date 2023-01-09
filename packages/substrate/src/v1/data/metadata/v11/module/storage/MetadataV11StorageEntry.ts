@@ -22,7 +22,9 @@ export class MetadataV11StorageEntry extends SCALEClass {
     const decoder = new SCALEDecoder(configuration, runtimeVersion, raw)
 
     const name = decoder.decodeNextString()
-    const modifier = decoder.decodeNextEnum((value) => StorageEntryModifier[StorageEntryModifier[value]])
+    const modifier = decoder.decodeNextEnum(
+      (value) => StorageEntryModifier[StorageEntryModifier[value] as keyof typeof StorageEntryModifier]
+    )
     const type = decoder.decodeNextObject(MetadataV11StorageEntryType.decode)
     const defaultValue = decoder.decodeNextBytes()
     const docs = decoder.decodeNextArray((_configuration, _runtimeVersion, hex) => SCALEString.decode(hex))

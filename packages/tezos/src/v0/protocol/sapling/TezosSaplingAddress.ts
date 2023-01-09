@@ -1,3 +1,4 @@
+// @ts-ignore
 import * as bs58check from '@airgap/coinlib-core/dependencies/src/bs58check-2.1.2/index'
 import { getNextPaymentAddressFromViewingKey, getPaymentAddressFromViewingKey, SaplingPaymentAddress } from '@airgap/sapling-wasm'
 

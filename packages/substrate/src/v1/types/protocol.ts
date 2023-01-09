@@ -1,4 +1,5 @@
 import { ProtocolMetadata, ProtocolNetwork } from '@airgap/module-kit'
+
 import { SubstrateProtocolConfiguration } from './configuration'
 
 export interface SubstrateProtocolNetwork extends ProtocolNetwork {}

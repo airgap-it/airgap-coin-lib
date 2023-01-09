@@ -1,4 +1,3 @@
-// tslint:disable: max-classes-per-file
 export class BitcoinAddress {
   private constructor(protected readonly value: string) {}
 

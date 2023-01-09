@@ -1,4 +1,5 @@
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
+
 import { SubstrateProtocolConfiguration } from '../../types/configuration'
 import { SCALEDecoder, SCALEDecodeResult } from '../scale/SCALEDecoder'
 import { SCALEClass } from '../scale/type/SCALEClass'

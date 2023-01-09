@@ -1,7 +1,9 @@
 import { sr25519Sign, waitReady } from '@polkadot/wasm-crypto'
 
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
+// @ts-ignore
 import keccak = require('@airgap/coinlib-core/dependencies/src/keccak-1.0.2/js')
+// @ts-ignore
 import * as secp256k1 from '@airgap/coinlib-core/dependencies/src/secp256k1-4.0.2/elliptic'
 import { BalanceError } from '@airgap/coinlib-core/errors'
 import { Domain } from '@airgap/coinlib-core/errors/coinlib-error'
@@ -142,7 +144,9 @@ export class SubstrateTransactionController<Network extends SubstrateNetwork> {
 
       const txDecoder = new SCALEDecoder(this.network, runtimeVersion, _encodedTx)
 
-      const type = txDecoder.decodeNextEnum((hex) => SubstrateTransactionType[SubstrateTransactionType[hex]])
+      const type = txDecoder.decodeNextEnum(
+        (hex) => SubstrateTransactionType[SubstrateTransactionType[hex] as keyof typeof SubstrateTransactionType]
+      )
       const fee = txDecoder.decodeNextCompactInt()
       const transaction = txDecoder.decodeNextObject((network, runtimeVersion, hex) =>
         SubstrateTransaction.decode(network, runtimeVersion, type.decoded.value, hex)
@@ -256,11 +260,11 @@ export class SubstrateTransactionController<Network extends SubstrateNetwork> {
   ): Promise<SubstrateCompatSignatureType[Network]> {
     switch (signatureType) {
       case SubstrateSignatureType.Ed25519:
-        return this.signEd25519Payload(privateKey, publicKey, payload) as unknown as SubstrateCompatSignatureType[Network]
+        return (this.signEd25519Payload(privateKey, publicKey, payload) as unknown) as SubstrateCompatSignatureType[Network]
       case SubstrateSignatureType.Sr25519:
-        return this.signSr25519Payload(privateKey, publicKey, payload) as unknown as SubstrateCompatSignatureType[Network]
+        return (this.signSr25519Payload(privateKey, publicKey, payload) as unknown) as SubstrateCompatSignatureType[Network]
       case SubstrateSignatureType.Ecdsa:
-        return this.signEcdsaPayload(privateKey, payload) as unknown as SubstrateCompatSignatureType[Network]
+        return (this.signEcdsaPayload(privateKey, payload) as unknown) as SubstrateCompatSignatureType[Network]
       default:
         return Promise.reject('Signature type not supported.')
     }

@@ -17,8 +17,7 @@ import { SubstrateProtocol } from './SubstrateProtocol'
 
 export abstract class SubstrateDelegateProtocol<Network extends SubstrateNetwork>
   extends SubstrateProtocol<Network>
-  implements ICoinDelegateProtocol
-{
+  implements ICoinDelegateProtocol {
   protected defaultValidator?: string
 
   public async getDefaultDelegatee(): Promise<string> {
@@ -106,37 +105,37 @@ export abstract class SubstrateDelegateProtocol<Network extends SubstrateNetwork
 
     switch (type) {
       case SubstrateStakingActionType.BOND_NOMINATE:
-        assertFields(`${SubstrateStakingActionType[type]} action`, data, 'targets', 'value', 'payee')
+        assertFields(`${type} action`, data, 'targets', 'value', 'payee')
 
         return this.prepareNomination(publicKey, data.tip || 0, data.targets, data.controller || publicKey, data.value, data.payee)
       case SubstrateStakingActionType.REBOND_NOMINATE:
-        assertFields(`${SubstrateStakingActionType[type]} action`, data, 'targets', 'value')
+        assertFields(`${type} action`, data, 'targets', 'value')
 
         return this.prepareRebondNominate(publicKey, data.tip || 0, data.targets, data.value)
       case SubstrateStakingActionType.NOMINATE:
-        assertFields(`${SubstrateStakingActionType[type]} action`, data, 'targets')
+        assertFields(`${type} action`, data, 'targets')
 
         return this.prepareNomination(publicKey, data.tip || 0, data.targets)
       case SubstrateStakingActionType.CANCEL_NOMINATION:
         return this.prepareScheduleUndelegate(publicKey, data.tip || 0, data.value)
       case SubstrateStakingActionType.CHANGE_NOMINATION:
-        assertFields(`${SubstrateStakingActionType[type]} action`, data, 'targets')
+        assertFields(`${type} action`, data, 'targets')
 
         return this.prepareChangeValidator(publicKey, data.tip || 0, data.targets)
       case SubstrateStakingActionType.UNBOND:
-        assertFields(`${SubstrateStakingActionType[type]} action`, data, 'value')
+        assertFields(`${type} action`, data, 'value')
 
         return this.prepareUnbond(publicKey, data.tip || 0, data.value)
       case SubstrateStakingActionType.REBOND:
-        assertFields(`${SubstrateStakingActionType[type]} action`, data, 'value')
+        assertFields(`${type} action`, data, 'value')
 
         return this.prepareRebond(publicKey, data.tip || 0, data.value)
       case SubstrateStakingActionType.BOND_EXTRA:
-        assertFields(`${SubstrateStakingActionType[type]} action`, data, 'value')
+        assertFields(`${type} action`, data, 'value')
 
         return this.prepareBondExtra(publicKey, data.tip || 0, data.value)
       case SubstrateStakingActionType.REBOND_EXTRA:
-        assertFields(`${SubstrateStakingActionType[type]} action`, data, 'value')
+        assertFields(`${type} action`, data, 'value')
 
         return this.prepareRebondExtra(publicKey, data.tip || 0, data.value)
       case SubstrateStakingActionType.WITHDRAW_UNBONDED:
@@ -172,7 +171,7 @@ export abstract class SubstrateDelegateProtocol<Network extends SubstrateNetwork
               args: {
                 controller,
                 value: BigNumber.isBigNumber(value) ? value : new BigNumber(value!),
-                payee: typeof payee === 'string' ? SubstratePayee[payee] : payee
+                payee: typeof payee === 'string' ? SubstratePayee[payee as keyof typeof SubstratePayee] : payee
               }
             }
           ]

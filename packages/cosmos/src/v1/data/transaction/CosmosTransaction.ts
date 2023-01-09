@@ -108,7 +108,7 @@ export class CosmosTransaction implements JSONConvertible, RPCConvertible, Encod
   }
 
   public static fromRPCBody(json: any): CosmosTransaction {
-    const messages: CosmosMessage[] = json.msgs.map((value) => {
+    const messages: CosmosMessage[] = json.msgs.map((value: any) => {
       const type: string = value.type
       switch (type) {
         case CosmosMessageType.Send.value:

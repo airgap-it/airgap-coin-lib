@@ -1,1 +1,1 @@
-export interface ModuleExtensions<T> {}
+export interface ModuleExtensions<_T> {}

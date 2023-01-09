@@ -170,7 +170,7 @@ export class SubstrateNodeClient<Network extends SubstrateNetwork> {
 
   public async getRewardDestination(address: SubstrateCompatAddressType[Network]): Promise<SubstratePayee | null> {
     return this.fromStorage('Staking', 'Payee', SCALEAccountId.from(address, this.network)).then((item) =>
-      item ? SCALEEnum.decode(item, (hex) => SubstratePayee[SubstratePayee[hex]]).decoded.value : null
+      item ? SCALEEnum.decode(item, (hex) => SubstratePayee[SubstratePayee[hex] as keyof typeof SubstratePayee]).decoded.value : null
     )
   }
 
@@ -194,9 +194,12 @@ export class SubstrateNodeClient<Network extends SubstrateNetwork> {
     eraIndex: number,
     address: SubstrateCompatAddressType[Network]
   ): Promise<SubstrateExposure<Network> | null> {
-    return this.fromStorage('Staking', 'ErasStakers', SCALEInt.from(eraIndex, 32), SCALEAccountId.from(address, this.network)).then(
-      (item) => (item ? SubstrateExposure.decode(this.network, this.runtimeVersion, item) : null)
-    )
+    return this.fromStorage(
+      'Staking',
+      'ErasStakers',
+      SCALEInt.from(eraIndex, 32),
+      SCALEAccountId.from(address, this.network)
+    ).then((item) => (item ? SubstrateExposure.decode(this.network, this.runtimeVersion, item) : null))
   }
 
   public async getElectionStatus(): Promise<SubstrateEraElectionStatus | null> {
@@ -243,9 +246,12 @@ export class SubstrateNodeClient<Network extends SubstrateNetwork> {
   }
 
   public async getValidatorPrefs(eraIndex: number, address: SubstrateCompatAddressType[Network]): Promise<SubstrateValidatorPrefs | null> {
-    return this.fromStorage('Staking', 'ErasValidatorPrefs', SCALEInt.from(eraIndex, 32), SCALEAccountId.from(address, this.network)).then(
-      (item) => (item ? SubstrateValidatorPrefs.decode(this.network, this.runtimeVersion, item) : null)
-    )
+    return this.fromStorage(
+      'Staking',
+      'ErasValidatorPrefs',
+      SCALEInt.from(eraIndex, 32),
+      SCALEAccountId.from(address, this.network)
+    ).then((item) => (item ? SubstrateValidatorPrefs.decode(this.network, this.runtimeVersion, item) : null))
   }
 
   public async getExpectedEraDuration(): Promise<BigNumber | null> {

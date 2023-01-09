@@ -2,26 +2,23 @@ import { DelegatorAction } from '@airgap/coinlib-core'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import { SCALEAccountId, SubstrateAccountId, SubstrateCommonAccountController, SubstrateSS58Address } from '@airgap/substrate/v1'
 import { SubstrateIdentityInfo } from '@airgap/substrate/v1/data/account/SubstrateRegistration'
-import { SubstrateActiveEraInfo } from '../data/staking/SubstrateActiveEraInfo'
-import { SubstrateElectionStatus } from '../data/staking/SubstrateEraElectionStatus'
-import { SubstrateExposure } from '../data/staking/SubstrateExposure'
-import { SubstrateNominations } from '../data/staking/SubstrateNominations'
-import { SubstrateNominationStatus } from '../data/staking/SubstrateNominationStatus'
+
+import { PolkadotActiveEraInfo } from '../data/staking/PolkadotActiveEraInfo'
+import { PolkadotElectionStatus } from '../data/staking/PolkadotEraElectionStatus'
+import { PolkadotExposure } from '../data/staking/PolkadotExposure'
+import { PolkadotNominations } from '../data/staking/PolkadotNominations'
+import { PolkadotNominationStatus } from '../data/staking/PolkadotNominationStatus'
 import {
-  SubstrateLockedDetails,
-  SubstrateNominatorDetails,
-  SubstrateNominatorRewardDetails,
-  SubstrateStakingDetails,
-  SubstrateStakingStatus
-} from '../data/staking/SubstrateNominatorDetails'
-import { SubstrateStakingActionType } from '../data/staking/SubstrateStakingActionType'
-import { SubstrateStakingLedger } from '../data/staking/SubstrateStakingLedger'
-import {
-  SubstrateValidatorDetails,
-  SubstrateValidatorRewardDetails,
-  SubstrateValidatorStatus
-} from '../data/staking/SubstrateValidatorDetails'
-import { SubstrateValidatorPrefs } from '../data/staking/SubstrateValidatorPrefs'
+  PolkadotLockedDetails,
+  PolkadotNominatorDetails,
+  PolkadotNominatorRewardDetails,
+  PolkadotStakingDetails,
+  PolkadotStakingStatus
+} from '../data/staking/PolkadotNominatorDetails'
+import { PolkadotStakingActionType } from '../data/staking/PolkadotStakingActionType'
+import { PolkadotStakingLedger } from '../data/staking/PolkadotStakingLedger'
+import { PolkadotValidatorDetails, PolkadotValidatorRewardDetails, PolkadotValidatorStatus } from '../data/staking/PolkadotValidatorDetails'
+import { PolkadotValidatorPrefs } from '../data/staking/PolkadotValidatorPrefs'
 import { PolkadotNodeClient } from '../node/PolkadotNodeClient'
 import { PolkadotProtocolConfiguration } from '../types/configuration'
 
@@ -56,15 +53,15 @@ export class PolkadotAccountController extends SubstrateCommonAccountController<
     return []
   }
 
-  public async getValidatorDetails(accountId: SubstrateAccountId<SubstrateSS58Address>): Promise<SubstrateValidatorDetails> {
+  public async getValidatorDetails(accountId: SubstrateAccountId<SubstrateSS58Address>): Promise<PolkadotValidatorDetails> {
     const address = this.substrateAddressFrom(accountId)
     const activeEra = await this.nodeClient.getActiveEraInfo()
 
     let identity: SubstrateIdentityInfo | undefined
-    let status: SubstrateValidatorStatus | undefined
-    let exposure: SubstrateExposure | undefined
-    let validatorPrefs: SubstrateValidatorPrefs | undefined
-    let lastEraReward: SubstrateValidatorRewardDetails | undefined
+    let status: PolkadotValidatorStatus | undefined
+    let exposure: PolkadotExposure | undefined
+    let validatorPrefs: PolkadotValidatorPrefs | undefined
+    let lastEraReward: PolkadotValidatorRewardDetails | undefined
     if (activeEra) {
       const activeEraIndex = activeEra.index.toNumber()
       const results = await Promise.all([
@@ -105,7 +102,7 @@ export class PolkadotAccountController extends SubstrateCommonAccountController<
   public async getNominatorDetails(
     accountId: SubstrateAccountId<SubstrateSS58Address>,
     validatorIds?: SubstrateAccountId<SubstrateSS58Address>[]
-  ): Promise<SubstrateNominatorDetails> {
+  ): Promise<PolkadotNominatorDetails> {
     const address = this.substrateAddressFrom(accountId)
 
     const results = await Promise.all([
@@ -150,7 +147,7 @@ export class PolkadotAccountController extends SubstrateCommonAccountController<
     nominator: SubstrateAccountId<SubstrateSS58Address>,
     validator: SubstrateAccountId<SubstrateSS58Address>,
     era?: number
-  ): Promise<SubstrateNominationStatus | undefined> {
+  ): Promise<PolkadotNominationStatus | undefined> {
     const eraIndex: number | undefined = era !== undefined ? era : (await this.nodeClient.getActiveEraInfo())?.index.toNumber()
 
     if (eraIndex === undefined) {
@@ -165,18 +162,18 @@ export class PolkadotAccountController extends SubstrateCommonAccountController<
       return undefined
     }
 
-    const exposure: SubstrateExposure | undefined = await this.nodeClient.getValidatorExposure(
+    const exposure: PolkadotExposure | undefined = await this.nodeClient.getValidatorExposure(
       eraIndex,
       this.substrateAddressFrom(validator)
     )
 
     if (!exposure) {
-      return SubstrateNominationStatus.INACTIVE
+      return PolkadotNominationStatus.INACTIVE
     }
 
     const isActive: boolean = exposure.others.elements.some((element) => element.first.asAddress() === nominator.toString())
     if (!isActive) {
-      return SubstrateNominationStatus.INACTIVE
+      return PolkadotNominationStatus.INACTIVE
     }
 
     const isOversubscribed: boolean = exposure.others.elements.length > 256
@@ -187,11 +184,11 @@ export class PolkadotAccountController extends SubstrateCommonAccountController<
         .indexOf(nominator.toString())
 
       if (position > 256) {
-        return SubstrateNominationStatus.OVERSUBSCRIBED
+        return PolkadotNominationStatus.OVERSUBSCRIBED
       }
     }
 
-    return SubstrateNominationStatus.ACTIVE
+    return PolkadotNominationStatus.ACTIVE
   }
 
   public async getSlashingSpansNumber(accountId: SubstrateAccountId<SubstrateSS58Address>): Promise<number> {
@@ -202,11 +199,11 @@ export class PolkadotAccountController extends SubstrateCommonAccountController<
 
   private async getStakingDetails(
     accountId: SubstrateAccountId<SubstrateSS58Address>,
-    stakingLedger: SubstrateStakingLedger | undefined,
-    nominations: SubstrateNominations | undefined,
-    activeEra: SubstrateActiveEraInfo,
+    stakingLedger: PolkadotStakingLedger | undefined,
+    nominations: PolkadotNominations | undefined,
+    activeEra: PolkadotActiveEraInfo,
     expectedEraDuration: BigNumber
-  ): Promise<SubstrateStakingDetails | undefined> {
+  ): Promise<PolkadotStakingDetails | undefined> {
     if (!stakingLedger) {
       return undefined
     }
@@ -245,9 +242,9 @@ export class PolkadotAccountController extends SubstrateCommonAccountController<
 
   private getUnlockingDetails(
     unlocking: [BigNumber, BigNumber][],
-    activeEra: SubstrateActiveEraInfo,
+    activeEra: PolkadotActiveEraInfo,
     expectedEraDuration: BigNumber
-  ): { locked: SubstrateLockedDetails[]; unlocked: string } {
+  ): { locked: PolkadotLockedDetails[]; unlocked: string } {
     const [locked, unlocked] = this.partitionArray(unlocking, ([_, era]) => activeEra.index.lt(era))
 
     const lockedDetails = locked.map(([value, era]: [BigNumber, BigNumber]) => {
@@ -271,9 +268,9 @@ export class PolkadotAccountController extends SubstrateCommonAccountController<
 
   private async getStakingStatus(
     nominator: SubstrateAccountId<SubstrateSS58Address>,
-    nominations: SubstrateNominations | undefined,
+    nominations: PolkadotNominations | undefined,
     eraIndex: number
-  ): Promise<SubstrateStakingStatus> {
+  ): Promise<PolkadotStakingStatus> {
     const isWaitingForNomination: boolean = nominations?.submittedIn.gte(eraIndex) ?? false
 
     let hasActiveNominations: boolean = false
@@ -284,7 +281,7 @@ export class PolkadotAccountController extends SubstrateCommonAccountController<
             this.getNominationStatus(nominator, target.asAddress(), eraIndex)
           )
         )
-      ).some((status: SubstrateNominationStatus | undefined) => status === SubstrateNominationStatus.ACTIVE)
+      ).some((status: PolkadotNominationStatus | undefined) => status === PolkadotNominationStatus.ACTIVE)
     }
 
     if (nominations === undefined) {
@@ -301,7 +298,7 @@ export class PolkadotAccountController extends SubstrateCommonAccountController<
   private async getEraValidatorReward(
     accountId: SubstrateAccountId<SubstrateSS58Address>,
     eraIndex: number
-  ): Promise<SubstrateValidatorRewardDetails | undefined> {
+  ): Promise<PolkadotValidatorRewardDetails | undefined> {
     const address = this.substrateAddressFrom(accountId)
 
     const results = await Promise.all([
@@ -341,9 +338,9 @@ export class PolkadotAccountController extends SubstrateCommonAccountController<
   private async getNominatorRewards(
     accountId: SubstrateAccountId<SubstrateSS58Address>,
     validators: SubstrateAccountId<SubstrateSS58Address>[],
-    activeEra: SubstrateActiveEraInfo,
+    activeEra: PolkadotActiveEraInfo,
     eras: number | number[]
-  ): Promise<SubstrateNominatorRewardDetails[]> {
+  ): Promise<PolkadotNominatorRewardDetails[]> {
     const address = this.substrateAddressFrom(accountId)
     const expectedEraDuration = await this.nodeClient.getExpectedEraDuration()
 
@@ -369,7 +366,7 @@ export class PolkadotAccountController extends SubstrateCommonAccountController<
               : 0
           }
 
-          return partial as SubstrateNominatorRewardDetails
+          return partial as PolkadotNominatorRewardDetails
         })
       )
     )
@@ -381,7 +378,7 @@ export class PolkadotAccountController extends SubstrateCommonAccountController<
     accountId: SubstrateAccountId<SubstrateSS58Address>,
     validators: SubstrateAccountId<SubstrateSS58Address>[],
     eraIndex: number
-  ): Promise<Partial<SubstrateNominatorRewardDetails> | undefined> {
+  ): Promise<Partial<PolkadotNominatorRewardDetails> | undefined> {
     const results = await Promise.all([
       this.nodeClient.getValidatorReward(eraIndex),
       this.nodeClient.getRewardPoints(eraIndex),
@@ -394,7 +391,7 @@ export class PolkadotAccountController extends SubstrateCommonAccountController<
                 .getValidatorPrefs(eraIndex, this.substrateAddressFrom(validator))
                 .then((prefs) => prefs?.commission?.value),
               await this.nodeClient.getStakersClipped(eraIndex, this.substrateAddressFrom(validator))
-            ] as [SubstrateSS58Address, BigNumber | undefined, SubstrateExposure | undefined]
+            ] as [SubstrateSS58Address, BigNumber | undefined, PolkadotExposure | undefined]
         )
       )
     ])
@@ -456,8 +453,8 @@ export class PolkadotAccountController extends SubstrateCommonAccountController<
 
   // tslint:disable-next-line: cyclomatic-complexity
   private async getAvailableStakingActions(
-    stakingDetails: SubstrateStakingDetails | undefined,
-    nominations: SubstrateNominations | undefined,
+    stakingDetails: PolkadotStakingDetails | undefined,
+    nominations: PolkadotNominations | undefined,
     validatorIds: SubstrateAccountId<SubstrateSS58Address>[],
     maxDelegationValue: BigNumber
   ): Promise<DelegatorAction[]> {
@@ -474,20 +471,20 @@ export class PolkadotAccountController extends SubstrateCommonAccountController<
     const minDelegationValue = new BigNumber(1)
 
     const electionStatus = await this.nodeClient.getElectionStatus().then((eraElectionStatus) => eraElectionStatus?.status.value)
-    const isElectionClosed = electionStatus !== SubstrateElectionStatus.OPEN
+    const isElectionClosed = electionStatus !== PolkadotElectionStatus.OPEN
 
     const hasFundsToWithdraw = new BigNumber(stakingDetails?.unlocked ?? 0).gt(0)
 
     if (maxDelegationValue.gt(minBondingValue ?? 0) && !isBonded && !isUnbonding && isElectionClosed) {
       availableActions.push({
-        type: SubstrateStakingActionType.BOND_NOMINATE,
+        type: PolkadotStakingActionType.BOND_NOMINATE,
         args: ['targets', 'controller', 'value', 'payee']
       })
     }
 
     if (maxDelegationValue.gt(minDelegationValue) && isBonded && !isUnbonding && isElectionClosed) {
       availableActions.push({
-        type: SubstrateStakingActionType.BOND_EXTRA,
+        type: PolkadotStakingActionType.BOND_EXTRA,
         args: ['value']
       })
     }
@@ -495,11 +492,11 @@ export class PolkadotAccountController extends SubstrateCommonAccountController<
     if (isBonded && !isDelegating && !isUnbonding && isElectionClosed) {
       availableActions.push(
         {
-          type: SubstrateStakingActionType.NOMINATE,
+          type: PolkadotStakingActionType.NOMINATE,
           args: ['targets']
         },
         {
-          type: SubstrateStakingActionType.UNBOND,
+          type: PolkadotStakingActionType.UNBOND,
           args: ['value']
         }
       )
@@ -507,14 +504,14 @@ export class PolkadotAccountController extends SubstrateCommonAccountController<
 
     if (isUnbonding && !isDelegating && isElectionClosed) {
       availableActions.push({
-        type: SubstrateStakingActionType.REBOND_NOMINATE,
+        type: PolkadotStakingActionType.REBOND_NOMINATE,
         args: ['targets', 'value']
       })
     }
 
     if (isUnbonding && isDelegating && isElectionClosed) {
       availableActions.push({
-        type: SubstrateStakingActionType.REBOND_EXTRA,
+        type: PolkadotStakingActionType.REBOND_EXTRA,
         args: ['value']
       })
     }
@@ -525,12 +522,12 @@ export class PolkadotAccountController extends SubstrateCommonAccountController<
         validatorAddresses.length === currentValidators.length
       ) {
         availableActions.push({
-          type: SubstrateStakingActionType.CANCEL_NOMINATION,
+          type: PolkadotStakingActionType.CANCEL_NOMINATION,
           args: ['value']
         })
       } else if (validatorAddresses.length > 0) {
         availableActions.push({
-          type: SubstrateStakingActionType.CHANGE_NOMINATION,
+          type: PolkadotStakingActionType.CHANGE_NOMINATION,
           args: ['targets']
         })
       }
@@ -538,7 +535,7 @@ export class PolkadotAccountController extends SubstrateCommonAccountController<
 
     if (hasFundsToWithdraw && isElectionClosed) {
       availableActions.push({
-        type: SubstrateStakingActionType.WITHDRAW_UNBONDED,
+        type: PolkadotStakingActionType.WITHDRAW_UNBONDED,
         args: []
       })
     }

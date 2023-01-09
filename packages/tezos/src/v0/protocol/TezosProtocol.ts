@@ -2,7 +2,9 @@ import { ICoinSubProtocol } from '@airgap/coinlib-core'
 import { localForger } from '@airgap/coinlib-core/dependencies/src/@taquito/local-forging-8.0.1-beta.1/packages/taquito-local-forging/src/taquito-local-forging'
 import axios, { AxiosError, AxiosResponse } from '@airgap/coinlib-core/dependencies/src/axios-0.19.0/index'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
+// @ts-ignore
 import { mnemonicToSeed } from '@airgap/coinlib-core/dependencies/src/bip39-2.5.0/index'
+// @ts-ignore
 import * as bs58check from '@airgap/coinlib-core/dependencies/src/bs58check-2.1.2/index'
 import { generateWalletUsingDerivationPath } from '@airgap/coinlib-core/dependencies/src/hd-wallet-js-b216450e56954a6e82ace0aade9474673de5d9d5/src/index'
 import { CoinlibError, Domain } from '@airgap/coinlib-core/errors/coinlib-error'
@@ -488,7 +490,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
           `${this.options.network.rpcUrl}/chains/main/blocks/head/context/contracts/${address}/balance`
         )
         balance = balance.plus(new BigNumber(data))
-      } catch (error) {
+      } catch (error: any) {
         // if node returns 404 (which means 'no account found'), go with 0 balance
         if (error.response && error.response.status !== 404) {
           throw new NetworkError(Domain.TEZOS, error as AxiosError)
@@ -536,7 +538,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
         if (maxFee.gte(balance)) {
           maxFee = new BigNumber(0)
         }
-      } catch (error) {
+      } catch (error: any) {
         if (error.code !== undefined && error.code === ProtocolErrorType.TRANSACTION_FAILED && Array.isArray(error.data)) {
           const rpcErrors = error.data as { id: string; kind: string; amount?: string; balance?: string; contract?: string }[]
           const balanceTooLowError = rpcErrors.find((error) => error.id.endsWith('.contract.balance_too_low'))
@@ -796,7 +798,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       const binaryTx: string = await this.forgeTezosOperation(tezosWrappedOperation)
 
       return { binaryTransaction: binaryTx }
-    } catch (error) {
+    } catch (error: any) {
       throw new OperationFailedError(Domain.TEZOS, `Forging Tezos TX failed with ${JSON.stringify(error.message)}`)
     }
   }
@@ -1392,7 +1394,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       const binaryTx: string = await this.forgeTezosOperation(tezosWrappedOperation)
 
       return { binaryTransaction: binaryTx }
-    } catch (error) {
+    } catch (error: any) {
       throw new OperationFailedError(Domain.TEZOS, `Forging Tezos TX failed with ${JSON.stringify(error.message)}`)
     }
   }

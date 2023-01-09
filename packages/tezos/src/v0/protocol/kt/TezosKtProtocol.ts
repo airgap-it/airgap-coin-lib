@@ -150,7 +150,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
 
     const amount: BigNumber = new BigNumber(await this.getBalanceOfAddresses([destinationContract]))
 
-    const results: AxiosResponse[] | void = await Promise.all([
+    const results: AxiosResponse[] = (await Promise.all([
       axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/counter`),
       axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head~2/hash`),
       axios.get(`${this.jsonRPCAPI}/chains/main/blocks/head/context/contracts/${address}/manager_key`)
@@ -158,7 +158,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
       if (error.response && error.response.status !== 404) {
         throw new NetworkError(Domain.TEZOS, error as AxiosError)
       }
-    })
+    })) as AxiosResponse[]
 
     counter = new BigNumber(results[0].data).plus(1)
     branch = results[1].data
@@ -230,7 +230,7 @@ export class TezosKtProtocol extends TezosProtocol implements ICoinSubProtocol {
       const binaryTx: string = await this.forgeTezosOperation(tezosWrappedOperation)
 
       return { binaryTransaction: binaryTx }
-    } catch (error) {
+    } catch (error: any) {
       console.warn(error.message)
       throw new OperationFailedError(Domain.TEZOS, 'Forging Tezos TX failed.')
     }

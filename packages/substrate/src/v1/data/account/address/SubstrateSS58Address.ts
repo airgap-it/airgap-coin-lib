@@ -1,8 +1,11 @@
+// @ts-ignore
 import bs58 = require('@airgap/coinlib-core/dependencies/src/bs58-4.0.1')
 import { blake2bAsBytes } from '@airgap/coinlib-core/utils/blake2b'
 import { hexToBytes, isHex } from '@airgap/coinlib-core/utils/hex'
 import { isPublicKey, PublicKey } from '@airgap/module-kit'
+
 import { convertPublicKey } from '../../../utils/keys'
+
 import { SubstrateAccountId, SubstrateAddress } from './SubstrateAddress'
 
 const SS58_PREFIX = 'SS58PRE'

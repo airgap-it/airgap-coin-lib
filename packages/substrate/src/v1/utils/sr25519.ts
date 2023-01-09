@@ -1,8 +1,8 @@
-import { sr25519DeriveKeypairHard, sr25519DeriveKeypairSoft, sr25519KeypairFromSeed, waitReady } from '@polkadot/wasm-crypto'
 import { KeyPair } from '@airgap/coinlib-core/data/KeyPair'
 import { InvalidValueError } from '@airgap/coinlib-core/errors'
 import { Domain } from '@airgap/coinlib-core/errors/coinlib-error'
 import { changeEndianness, stripHexPrefix, toHexStringRaw } from '@airgap/coinlib-core/utils/hex'
+import { sr25519DeriveKeypairHard, sr25519DeriveKeypairSoft, sr25519KeypairFromSeed, waitReady } from '@polkadot/wasm-crypto'
 
 interface DeriveJunction {
   chainCode: Uint8Array

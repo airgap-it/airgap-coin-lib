@@ -1,11 +1,14 @@
 import { BalanceError, Domain } from '@airgap/coinlib-core'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
+// @ts-ignore
 import keccak = require('@airgap/coinlib-core/dependencies/src/keccak-1.0.2/js')
+// @ts-ignore
 import * as secp256k1 from '@airgap/coinlib-core/dependencies/src/secp256k1-4.0.2/elliptic'
 import { UnsupportedError } from '@airgap/coinlib-core/errors'
 import { blake2bAsBytes } from '@airgap/coinlib-core/utils/blake2b'
 import { SecretKey } from '@airgap/module-kit'
 import { sr25519Sign, waitReady } from '@polkadot/wasm-crypto'
+
 import { SubstrateAccountId } from '../../data/account/address/SubstrateAddress'
 import { substrateAddressFactory, TypedSubstrateAddress } from '../../data/account/address/SubstrateAddressFactory'
 import { SCALEDecoder, SCALEDecodeResult } from '../../data/scale/SCALEDecoder'
@@ -18,11 +21,12 @@ import { SCALEOptional } from '../../data/scale/type/SCALEOptional'
 import { SCALEString } from '../../data/scale/type/SCALEString'
 import { SCALEType } from '../../data/scale/type/SCALEType'
 import { SubstrateSignature, SubstrateSignatureType } from '../../data/transaction/SubstrateSignature'
-import { SubstrateTransactionType, SubstrateTransaction } from '../../data/transaction/SubstrateTransaction'
+import { SubstrateTransaction, SubstrateTransactionType } from '../../data/transaction/SubstrateTransaction'
 import { SubstrateTransactionPayload } from '../../data/transaction/SubstrateTransactionPayload'
 import { SubstrateNodeClient } from '../../node/SubstrateNodeClient'
 import { SubstrateProtocolConfiguration } from '../../types/configuration'
 import { convertSecretKey } from '../../utils/keys'
+
 import {
   SubstrateTransactionController,
   SubstrateTransactionDetails,

@@ -1,4 +1,5 @@
 import { SubstrateProtocolNetwork, SubstrateProtocolOptions } from '@airgap/substrate/v1'
+
 import { AstarProtocolConfiguration } from './configuration'
 
 export type AstarUnits = 'ASTR' | 'mASTR' | 'uASTR' | 'nASTR' | 'pASTR' | 'fASTR' | 'aASTR'

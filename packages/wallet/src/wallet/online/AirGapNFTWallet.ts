@@ -24,7 +24,7 @@ export class AirGapNFTWallet<
 
   public async setCurrentMarketPrice(marketPrice: BigNumber | undefined, assetID: string): Promise<void> {
     const networkType = (await this.protocol.getNetwork()).type
-    this.getCurrentMarketPrice[assetID] = networkType === 'mainnet' ? marketPrice : new BigNumber(0)
+    this.currentMarketPrice[assetID] = networkType === 'mainnet' ? marketPrice : new BigNumber(0)
   }
 
   public async synchronize(assetsID: string[] = []): Promise<void> {

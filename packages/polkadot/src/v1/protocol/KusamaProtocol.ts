@@ -1,7 +1,9 @@
 import { MainProtocolSymbols } from '@airgap/coinlib-core'
 import { ProtocolMetadata, RecursivePartial } from '@airgap/module-kit'
+
 import { PolkadotProtocolConfiguration } from '../types/configuration'
 import { KusamaUnits, PolkadotProtocolNetwork, PolkadotProtocolOptions } from '../types/protocol'
+
 import { PolkadotBaseProtocol, PolkadotBaseProtocolImpl } from './PolkadotBaseProtocol'
 import { POLKADOT_CONFIGURATION } from './PolkadotProtocol'
 

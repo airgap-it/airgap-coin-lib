@@ -45,7 +45,7 @@ export class SCALEData extends SCALEType {
       type = SCALEDataType.Raw
     } else if (indicator >= 34 && indicator <= 37) {
       bytesDecoded = 32 + 1
-      type = SCALEDataType[SCALEDataType[indicator - 32]]
+      type = SCALEDataType[SCALEDataType[indicator - 32] as keyof typeof SCALEDataType]
     } else {
       throw new InvalidValueError(Domain.SUBSTRATE, 'SCALEData#decode: Unknown data type')
     }

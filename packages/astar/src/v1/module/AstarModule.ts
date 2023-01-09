@@ -1,8 +1,10 @@
 import { ProtocolNetwork } from '@airgap/module-kit'
 import { BlockExplorer } from '@airgap/module-kit/block-explorer/block-explorer'
+
 import { createAstarSubscanBlockExplorer } from '../block-explorer/SubscanBlockExplorer'
 import { AstarBaseProtocol } from '../protocol/AstarBaseProtocol'
 import { ASTAR_MAINNET_PROTOCOL_NETWORK, createAstarProtocol } from '../protocol/AstarProtocol'
+
 import { AstarBaseModule } from './AstarBaseModule'
 
 export class AstarModule extends AstarBaseModule {

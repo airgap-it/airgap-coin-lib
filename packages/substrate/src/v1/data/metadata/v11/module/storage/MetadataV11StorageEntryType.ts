@@ -99,7 +99,9 @@ export class MetadataV11StorageEntryMap extends MetadataV11StorageEntryType {
   ): SCALEDecodeResult<MetadataV11StorageEntryMap> {
     const decoder = new SCALEDecoder(configuration, runtimeVersion, raw)
 
-    const hasher = decoder.decodeNextEnum((value) => SubstrateStorageEntryHasher[SubstrateStorageEntryHasher[value]])
+    const hasher = decoder.decodeNextEnum(
+      (value) => SubstrateStorageEntryHasher[SubstrateStorageEntryHasher[value] as keyof typeof SubstrateStorageEntryHasher]
+    )
     const key = decoder.decodeNextString()
     const value = decoder.decodeNextString()
     const unused = decoder.decodeNextBoolean()
@@ -135,11 +137,15 @@ export class MetadataV11StorageEntryDoubleMap extends MetadataV11StorageEntryTyp
   ): SCALEDecodeResult<MetadataV11StorageEntryDoubleMap> {
     const decoder = new SCALEDecoder(configuration, runtimeVersion, raw)
 
-    const hasher1 = decoder.decodeNextEnum((value) => SubstrateStorageEntryHasher[SubstrateStorageEntryHasher[value]])
+    const hasher1 = decoder.decodeNextEnum(
+      (value) => SubstrateStorageEntryHasher[SubstrateStorageEntryHasher[value] as keyof typeof SubstrateStorageEntryHasher]
+    )
     const key1 = decoder.decodeNextString()
     const key2 = decoder.decodeNextString()
     const value = decoder.decodeNextString()
-    const hasher2 = decoder.decodeNextEnum((value) => SubstrateStorageEntryHasher[SubstrateStorageEntryHasher[value]])
+    const hasher2 = decoder.decodeNextEnum(
+      (value) => SubstrateStorageEntryHasher[SubstrateStorageEntryHasher[value] as keyof typeof SubstrateStorageEntryHasher]
+    )
 
     return {
       bytesDecoded: hasher1.bytesDecoded + key1.bytesDecoded + key2.bytesDecoded + value.bytesDecoded + hasher2.bytesDecoded,

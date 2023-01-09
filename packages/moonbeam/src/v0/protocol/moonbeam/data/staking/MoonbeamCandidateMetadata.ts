@@ -28,10 +28,16 @@ export class MoonbeamCandidateMetadata {
     const lowestTopDelegationAmount = decoder.decodeNextInt(128)
     const highestBottomDelegationAmount = decoder.decodeNextInt(128)
     const lowestBottomDelegationAmount = decoder.decodeNextInt(128)
-    const topCapacity = decoder.decodeNextEnum((value) => MoonbeamCapacityStatus[MoonbeamCapacityStatus[value]])
-    const bottomCapacity = decoder.decodeNextEnum((value) => MoonbeamCapacityStatus[MoonbeamCapacityStatus[value]])
+    const topCapacity = decoder.decodeNextEnum(
+      (value) => MoonbeamCapacityStatus[MoonbeamCapacityStatus[value] as keyof typeof MoonbeamCapacityStatus]
+    )
+    const bottomCapacity = decoder.decodeNextEnum(
+      (value) => MoonbeamCapacityStatus[MoonbeamCapacityStatus[value] as keyof typeof MoonbeamCapacityStatus]
+    )
     const request = decoder.decodeNextOptional((_, runtimeVersion, hex) => MoonbeamCandidateBondLessRequest.decode(runtimeVersion, hex))
-    const status = decoder.decodeNextEnum((value) => MoonbeamCollatorStatus[MoonbeamCollatorStatus[value]])
+    const status = decoder.decodeNextEnum(
+      (value) => MoonbeamCollatorStatus[MoonbeamCollatorStatus[value] as keyof typeof MoonbeamCollatorStatus]
+    )
 
     return new MoonbeamCandidateMetadata(
       bond.decoded,

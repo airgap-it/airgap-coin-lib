@@ -1,18 +1,22 @@
 import { assertNever, Domain } from '@airgap/coinlib-core'
 import { KeyPair as RawKeyPair } from '@airgap/coinlib-core/data/KeyPair'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
+// @ts-ignore
 import { mnemonicToSeed } from '@airgap/coinlib-core/dependencies/src/bip39-2.5.0'
+// @ts-ignore
 import * as bitcoinJS from '@airgap/coinlib-core/dependencies/src/bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac/src'
 import { UnsupportedError } from '@airgap/coinlib-core/errors'
-import { Secret, KeyPair, PublicKey, newSecretKey, newPublicKey } from '@airgap/module-kit'
+import { KeyPair, newPublicKey, newSecretKey, PublicKey, Secret } from '@airgap/module-kit'
 import { bip39ToMiniSecret, waitReady } from '@polkadot/wasm-crypto'
-import { createSr25519KeyPair } from '../../utils/sr25519'
+
 import { SubstrateAccountId } from '../../data/account/address/SubstrateAddress'
 import { substrateAddressFactory, TypedSubstrateAddress } from '../../data/account/address/SubstrateAddressFactory'
 import { SubstrateAccountBalance } from '../../data/account/SubstrateAccountBalance'
 import { SubstrateAccountInfo } from '../../data/account/SubstrateAccountInfo'
 import { SubstrateNodeClient } from '../../node/SubstrateNodeClient'
 import { SubstrateProtocolConfiguration } from '../../types/configuration'
+import { createSr25519KeyPair } from '../../utils/sr25519'
+
 import { SubstrateAccountController } from './SubstrateAccountController'
 
 export class SubstrateCommonAccountController<C extends SubstrateProtocolConfiguration, NodeClient extends SubstrateNodeClient<C>>

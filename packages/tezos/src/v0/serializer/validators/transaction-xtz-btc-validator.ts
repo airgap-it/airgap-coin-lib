@@ -24,7 +24,7 @@ const unsignedTransactionConstraints = {
   }
 }
 const success = () => undefined
-const error = (errors) => errors
+const error = (errors: any) => errors
 
 const signedTransactionConstraints = {
   transaction: {

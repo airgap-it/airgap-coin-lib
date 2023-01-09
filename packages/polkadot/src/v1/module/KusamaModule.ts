@@ -1,8 +1,9 @@
-import { ProtocolNetwork } from '@airgap/module-kit'
-import { BlockExplorer } from '@airgap/module-kit/block-explorer/block-explorer'
+import { AirGapBlockExplorer, ProtocolNetwork } from '@airgap/module-kit'
+
 import { createKusamaSubscanBlockExplorer } from '../block-explorer/SubscanBlockExplorer'
 import { createKusamaProtocol, KUSAMA_MAINNET_PROTOCOL_NETWORK } from '../protocol/KusamaProtocol'
 import { PolkadotBaseProtocol } from '../protocol/PolkadotBaseProtocol'
+
 import { PolkadotBaseModule } from './PolkadotBaseModule'
 
 export class KusamaModule extends PolkadotBaseModule {
@@ -16,7 +17,7 @@ export class KusamaModule extends PolkadotBaseModule {
     return createKusamaProtocol({ network })
   }
 
-  public createPolkadotBlockExplorer(network: ProtocolNetwork): BlockExplorer {
+  public createPolkadotBlockExplorer(network: ProtocolNetwork): AirGapBlockExplorer {
     return createKusamaSubscanBlockExplorer()
   }
 }

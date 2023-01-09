@@ -213,7 +213,7 @@ export class MetadataV14SiPrimitiveTypeDef extends MetadataV14SiTypeDef {
   ): SCALEDecodeResult<MetadataV14SiPrimitiveTypeDef> {
     const decoder = new SCALEDecoder(configuration, runtimeVersion, raw)
 
-    const value = decoder.decodeNextEnum((value) => TypeDefPrimitive[TypeDefPrimitive[value]])
+    const value = decoder.decodeNextEnum((value) => TypeDefPrimitive[TypeDefPrimitive[value] as keyof typeof TypeDefPrimitive])
 
     return {
       bytesDecoded: value.bytesDecoded,

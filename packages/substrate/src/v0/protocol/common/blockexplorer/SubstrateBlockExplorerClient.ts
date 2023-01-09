@@ -25,8 +25,8 @@ export class SubstrateBlockExplorerClient {
 
     const airGapTransfers: IAirGapTransaction[] = transfers
       ? transfers
-          .filter((tx) => tx.module === 'balances')
-          .map((tx) => {
+          .filter((tx: any) => tx.module === 'balances')
+          .map((tx: any) => {
             return {
               from: [tx.from],
               to: [tx.to],
@@ -43,8 +43,8 @@ export class SubstrateBlockExplorerClient {
 
     const airGapPayouts: IAirGapTransaction[] = rewardSlash
       ? rewardSlash
-          .filter((tx) => tx.event_id === 'Reward')
-          .map((tx) => {
+          .filter((tx: any) => tx.event_id === 'Reward')
+          .map((tx: any) => {
             return {
               from: ['Staking Reward'],
               to: [address],
