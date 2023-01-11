@@ -23,7 +23,7 @@ export class TezosSIRSProtocolConfig extends TezosFA2ProtocolConfig {
       medium: '0.200',
       high: '0.300'
     },
-    decimals: number = 8
+    decimals: number = 0
   ) {
     super(contractAddress, identifier, symbol, name, marketSymbol, feeDefaults, decimals)
   }
