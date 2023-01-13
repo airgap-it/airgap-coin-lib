@@ -1,6 +1,6 @@
 import { Domain } from '@airgap/coinlib-core'
-import { localForger } from '@airgap/coinlib-core/dependencies/src/@taquito/local-forging-8.0.1-beta.1/packages/taquito-local-forging/src/taquito-local-forging'
-import { ForgeParams } from '@airgap/coinlib-core/dependencies/src/@taquito/local-forging-8.0.1-beta.1/packages/taquito/src/forger/interface'
+import { localForger } from '@airgap/coinlib-core/dependencies/src/@taquito/local-forging-15.0.1/packages/taquito-local-forging/src/taquito-local-forging'
+import { ForgeParams } from '@airgap/coinlib-core/dependencies/src/@taquito/local-forging-15.0.1/packages/taquito-local-forging/src/interface'
 import { ConditionViolationError } from '@airgap/coinlib-core/errors'
 
 import { TezosWrappedOperation } from '../../../types/operations/TezosWrappedOperation'

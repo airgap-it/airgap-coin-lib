@@ -47,6 +47,7 @@
     "protobufjs": "^6.11.2"
   },
   "localDependencies": {
+    "@taquito/local-forging": "15.0.1",
     "hd-wallet-js": "b216450e56954a6e82ace0aade9474673de5d9d5",
     "axios": "0.19.0",
     "bech32": "1.1.3",
