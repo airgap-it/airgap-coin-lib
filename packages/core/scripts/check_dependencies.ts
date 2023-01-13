@@ -6,7 +6,7 @@ import * as semver from './check_dependencies_semver'
 
 function httpGet(params) {
   return new Promise((resolve, reject) => {
-    const req = request(params, res => {
+    const req = request(params, (res) => {
       // reject on bad status
       if (res.statusCode && (res.statusCode < 200 || res.statusCode >= 300)) {
         return reject(new Error('statusCode=' + res.statusCode))
@@ -14,7 +14,7 @@ function httpGet(params) {
 
       // cumulate data
       let body: any[] = []
-      res.on('data', chunk => {
+      res.on('data', (chunk) => {
         body.push(chunk)
       })
       // resolve on end
@@ -28,7 +28,7 @@ function httpGet(params) {
       })
     })
     // reject on request error
-    req.on('error', err => {
+    req.on('error', (err) => {
       // This is not a "Second reject", just a different sort of failure
       reject(err)
     })
@@ -41,7 +41,7 @@ const cliCommand: string = process.argv[2]
 
 const validCommands = [undefined, 'check']
 
-if (!validCommands.some(validCommand => validCommand === cliCommand)) {
+if (!validCommands.some((validCommand) => validCommand === cliCommand)) {
   throw new Error('invalid command')
 }
 
@@ -123,8 +123,8 @@ export const validateDepsJson = async (depsFile: DepsFile) => {
 
   const packageJson = JSON.parse(readFileSync(`./package.json`, 'utf-8'))
 
-  const topLevelPackages = Object.keys(packageJson.localDependencies).map(tlp => `${tlp}-${packageJson.localDependencies[tlp]}`)
-  topLevelPackages.forEach(pkgName => {
+  const topLevelPackages = Object.keys(packageJson.localDependencies).map((tlp) => `${tlp}-${packageJson.localDependencies[tlp]}`)
+  topLevelPackages.forEach((pkgName) => {
     if (depsFile[pkgName]) {
       log('green', `${pkgName} is in deps file`)
     } else {
@@ -155,10 +155,10 @@ export const validateDepsJson = async (depsFile: DepsFile) => {
     if (pkg.dependencies) {
       const dependencyKeys = Object.keys(pkg.dependencies)
       for (const dependency of dependencyKeys) {
-        const key = keys.find(key => key.startsWith(dependency + '-')) // TODO: Handle packages that start with the same name
+        const key = keys.find((key) => key.startsWith(dependency + '-')) // TODO: Handle packages that start with the same name
         if (!key) {
           if (depsFile[prop].ignoredDeps) {
-            const x = depsFile[prop].ignoredDeps.find(ignoredDep => ignoredDep.module === dependency)
+            const x = depsFile[prop].ignoredDeps.find((ignoredDep) => ignoredDep.module === dependency)
             if (x) {
               log('green', `Ignored "${dependency}" because ${x.reason}`)
             } else {
@@ -169,7 +169,7 @@ export const validateDepsJson = async (depsFile: DepsFile) => {
           }
         } else {
           const packageDeps = depsFile[prop].deps
-          if (!(packageDeps && packageDeps.some(dep => dep.startsWith(dependency + '-')))) {
+          if (!(packageDeps && packageDeps.some((dep) => dep.startsWith(dependency + '-')))) {
             isValid = isValid && verificationFailed(dependency, `is not in deps!`)
           } else {
             const keyVersion = key.substr(key.lastIndexOf('-') + 1) // TODO: Handle multiple versions
@@ -185,7 +185,7 @@ export const validateDepsJson = async (depsFile: DepsFile) => {
 
     const deps = depsFile[prop].deps
     if (deps) {
-      deps.forEach(dep => {
+      deps.forEach((dep) => {
         if (!depsFile[dep]) {
           isValid = isValid && verificationFailed(prop, `dependency ${dep} doesn't exist`)
         }
@@ -201,7 +201,7 @@ export const validateDepsJson = async (depsFile: DepsFile) => {
       })
     }
 
-    const parentPackages = keys.filter(key => {
+    const parentPackages = keys.filter((key) => {
       const deps = depsFile[key].deps
       if (deps) {
         return deps.includes(prop)
@@ -234,10 +234,7 @@ const simpleHash = (s: string): string => {
   const code = (h ^ (h >>> 16)) >>> 0
   const buff = Buffer.from(code.toString())
 
-  return buff
-    .toString('base64')
-    .split('=')
-    .join('')
+  return buff.toString('base64').split('=').join('')
 }
 
 const downloadFile = async (url: string) => {
@@ -332,7 +329,7 @@ export const getFilesForDepsFile = async (depsFile: DepsFile) => {
       let renamedFile = file
       const renamedFiles = depsFile[prop].renameFiles
       if (renamedFiles) {
-        const replaceArray = renamedFiles.find(replace => replace[0] === file)
+        const replaceArray = renamedFiles.find((replace) => replace[0] === file)
         if (replaceArray) {
           renamedFile = replaceArray[1]
         }
@@ -404,7 +401,7 @@ const replaceImports = async (depsFile: DepsFile) => {
       let renamedFile = file
       const renamedFiles = depsFile[prop].renameFiles
       if (renamedFiles) {
-        const replaceArray = renamedFiles.find(replace => replace[0] === file)
+        const replaceArray = renamedFiles.find((replace) => replace[0] === file)
         if (replaceArray) {
           renamedFile = replaceArray[1]
         }
@@ -416,14 +413,17 @@ const replaceImports = async (depsFile: DepsFile) => {
 
       // INCLUDE DEFINED REPLACEMENTS
       if (predefinedReplacements) {
-        const replacements = predefinedReplacements.find(predefinedReplacement => predefinedReplacement.filename === renamedFile)
+        const replacements = predefinedReplacements.find((predefinedReplacement) => predefinedReplacement.filename === renamedFile)
         if (replacements) {
-          replacements.replacements.forEach(replacement => {
+          replacements.replacements.forEach((replacement) => {
             const count = (fileContent.match(new RegExp(escapeRegExp(replacement.from), 'g')) || []).length
             if (count === replacement.expectedReplacements) {
               fileContent = fileContent.split(replacement.from).join(replacement.to)
             } else {
-              log('red', `EXPECTED ${replacement.expectedReplacements} MATCHES BUT HAVE ${count}`)
+              log(
+                'red',
+                `${renamedFile}: EXPECTED ${replacement.expectedReplacements} MATCHES BUT HAVE ${count}. Searching for: ${replacement.from}`
+              )
             }
           })
         }
@@ -445,7 +445,7 @@ const replaceImports = async (depsFile: DepsFile) => {
             }
             const relativePath = `${levelUpString.repeat(levels + 1)}${dependencyDefinition.name}-${dependencyDefinition.version}/${
               dependencyDefinition.entrypoint
-              }`
+            }`
 
             fileContent = replaceWithinContainer(fileContent, dependencyDefinition.name, relativePath)
           }
