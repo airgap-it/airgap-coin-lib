@@ -74,7 +74,7 @@ export class TezosDomains {
       return undefined
     }
 
-    const records: BigMapEntry[] = await this.contract.getBigMapValues({
+    const records: BigMapEntry<'micheline'>[] = await this.contract.getBigMapValues({
       bigMap: this.bigMaps?.records,
       filters: [
         {
@@ -82,7 +82,8 @@ export class TezosDomains {
           operation: 'eq',
           value: Buffer.from(normalizedName).toString('hex')
         }
-      ]
+      ],
+      resultType: 'micheline'
     })
 
     if (records.length > 1) {
@@ -100,7 +101,7 @@ export class TezosDomains {
       return undefined
     }
 
-    const expiryTimestamps: BigMapEntry[] = await this.contract.getBigMapValues({
+    const expiryTimestamps: BigMapEntry<'micheline'>[] = await this.contract.getBigMapValues({
       bigMap: this.bigMaps?.expiryMap,
       filters: [
         {
@@ -108,7 +109,8 @@ export class TezosDomains {
           operation: 'eq',
           value: Buffer.from(record.expiryKey).toString('hex')
         }
-      ]
+      ],
+      resultType: 'micheline'
     })
 
     if (expiryTimestamps.length > 1) {
@@ -127,7 +129,7 @@ export class TezosDomains {
   private async resolveAddress(address: string): Promise<TezosDomainsReverseRecord | undefined> {
     await this.waitForBigMapIDs()
 
-    const reverseRecords: BigMapEntry[] = await this.contract.getBigMapValues({
+    const reverseRecords: BigMapEntry<'micheline'>[] = await this.contract.getBigMapValues({
       bigMap: this.bigMaps?.reverseRecords,
       filters: [
         {
@@ -135,7 +137,8 @@ export class TezosDomains {
           operation: 'eq',
           value: address
         }
-      ]
+      ],
+      resultType: 'micheline'
     })
 
     if (reverseRecords.length > 1) {
@@ -210,7 +213,7 @@ export class TezosDomains {
     return record.expiryTimestamp === undefined || record.expiryTimestamp <= new Date().getTime() / 1000
   }
 
-  private parseRecord(record: BigMapEntry): TezosDomainsRecord {
+  private parseRecord(record: BigMapEntry<'micheline'>): TezosDomainsRecord {
     const parsed = MichelsonPair.from(
       record.value,
       undefined,
@@ -261,7 +264,7 @@ export class TezosDomains {
     }
   }
 
-  private parseReverseRecord(reverseRecord: BigMapEntry): TezosDomainsReverseRecord {
+  private parseReverseRecord(reverseRecord: BigMapEntry<'micheline'>): TezosDomainsReverseRecord {
     const parsed = MichelsonPair.from(
       reverseRecord.value,
       undefined,
@@ -285,7 +288,7 @@ export class TezosDomains {
     }
   }
 
-  private parseExpiryTimestamp(expiryKey: BigMapEntry): number | undefined {
+  private parseExpiryTimestamp(expiryKey: BigMapEntry<'micheline'>): number | undefined {
     const timestamp = expiryKey.value !== null && isMichelinePrimitive('int', expiryKey.value) ? parseInt(expiryKey.value.int) : undefined
 
     return timestamp !== undefined && !isNaN(timestamp) ? timestamp * 1000 /* value returned by the query is in seconds */ : undefined

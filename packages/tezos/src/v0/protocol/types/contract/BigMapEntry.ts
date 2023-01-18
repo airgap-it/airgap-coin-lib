@@ -1,8 +1,10 @@
 import { MichelineDataNode } from '../micheline/MichelineNode'
 
-export interface BigMapEntry {
+export type BigMapEntryType = 'micheline' | 'json'
+
+export interface BigMapEntry<T extends BigMapEntryType> {
   bigMapId: number
   key: MichelineDataNode
   keyHash: string
-  value: MichelineDataNode
+  value: T extends 'micheline' ? MichelineDataNode : Record<string, any>
 }

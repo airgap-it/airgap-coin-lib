@@ -9,7 +9,7 @@ import { trimStart } from '@airgap/coinlib-core/utils/string'
 import { createTezosIndexerClient } from '../indexer/factory'
 import { TezosIndexerClient } from '../indexer/TezosIndexerClient'
 import { BigMap } from '../types/contract/bigmap/BigMap'
-import { BigMapEntry } from '../types/contract/bigmap/BigMapEntry'
+import { BigMapEntry, BigMapEntryType } from '../types/contract/bigmap/BigMapEntry'
 import { BigMapRequest } from '../types/contract/bigmap/BigMapRequest'
 import { TezosContractCode } from '../types/contract/TezosContractCode'
 import { TezosContractMetadata } from '../types/contract/TezosContractMetadata'
@@ -116,17 +116,17 @@ export class TezosContract<Entrypoint extends string = string> {
     return this.bigMaps ?? []
   }
 
-  public async getBigMapValues(request: BigMapRequest = {}): Promise<BigMapEntry[]> {
+  public async getBigMapValues<T extends BigMapEntryType>(request: BigMapRequest<T>): Promise<BigMapEntry<T>[]> {
     const bigMap = request?.bigMap ?? (await this.getBigMap(request.bigMap?.path))
-    return this.indexerClient.getContractBigMapValues(this.address, bigMap, request.filters, request.limit ?? 10000)
+    return this.indexerClient.getContractBigMapValues(this.address, bigMap, request.resultType, request.filters, request.limit ?? 10000)
   }
 
-  public async getBigMapValue(request: BigMapRequest = {}): Promise<BigMapEntry | undefined> {
+  public async getBigMapValue<T extends BigMapEntryType>(request: BigMapRequest<T>): Promise<BigMapEntry<T> | undefined> {
     const bigMap = request?.bigMap ?? (await this.getBigMap(request.bigMap?.path))
     if (request.key === undefined) {
       return undefined
     }
-    return this.indexerClient.getContractBigMapValue(this.address, bigMap, request.key, request.limit ?? 10000)
+    return this.indexerClient.getContractBigMapValue(this.address, bigMap, request.key, request.resultType, request.limit ?? 10000)
   }
 
   public async readStorage(): Promise<MichelsonType | undefined> {

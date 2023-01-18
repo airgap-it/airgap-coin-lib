@@ -3,8 +3,8 @@ import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/
 import { IAirGapTransaction } from '@airgap/coinlib-core/interfaces/IAirGapTransaction'
 
 import { BigMap } from '../types/contract/BigMap'
-import { BigMapEntryFilter } from '../types/contract/BigMapEnrtyFilter'
-import { BigMapEntry } from '../types/contract/BigMapEntry'
+import { BigMapEntryFilter } from '../types/contract/BigMapEntryFilter'
+import { BigMapEntry, BigMapEntryType } from '../types/contract/BigMapEntry'
 
 import { TezosProtocolIndexerClient, Token } from './TezosProtocolIndexerClient'
 
@@ -118,14 +118,20 @@ export class TezosIndexerClient implements TezosProtocolIndexerClient {
     }))
   }
 
-  public async getContractBigMapValues(
+  public async getContractBigMapValues<T extends BigMapEntryType>(
     contractAddress: string,
     bigMap: Omit<BigMap, 'keyType' | 'valueType'>,
+    entryType: T,
     filters?: BigMapEntryFilter[],
     limit?: number,
     offset?: number
-  ): Promise<BigMapEntry[]> {
-    let url = this.url(`/contracts/${contractAddress}/bigmaps/${bigMap.path}/keys`, 'micheline=2', limit, offset)
+  ): Promise<BigMapEntry<T>[]> {
+    let url = this.url(
+      `/contracts/${contractAddress}/bigmaps/${bigMap.path}/keys`,
+      entryType === 'micheline' ? 'micheline=2' : undefined,
+      limit,
+      offset
+    )
     if (filters !== undefined) {
       for (const filter of filters) {
         url = `${url}&${filter.field}.${filter.operation}=${filter.value}`
@@ -140,14 +146,20 @@ export class TezosIndexerClient implements TezosProtocolIndexerClient {
     }))
   }
 
-  public async getContractBigMapValue(
+  public async getContractBigMapValue<T extends BigMapEntryType>(
     contractAddress: string,
     bigMap: Omit<BigMap, 'keyType' | 'valueType'>,
     key: string,
+    entryType: T,
     limit?: number,
     offset?: number
-  ): Promise<BigMapEntry> {
-    let url = this.url(`/contracts/${contractAddress}/bigmaps/${bigMap.path}/keys/${key}`, 'micheline=2', limit, offset)
+  ): Promise<BigMapEntry<T>> {
+    let url = this.url(
+      `/contracts/${contractAddress}/bigmaps/${bigMap.path}/keys/${key}`,
+      entryType === 'micheline' ? 'micheline=2' : undefined,
+      limit,
+      offset
+    )
     const entry = (await axios.get(url)).data
     return {
       bigMapId: bigMap.id,

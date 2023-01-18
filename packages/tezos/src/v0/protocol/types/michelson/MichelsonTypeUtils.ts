@@ -67,7 +67,7 @@ export class MichelsonTypeUtils {
     bytes: (...args: unknown[]): MichelsonType => MichelsonBytes.from(args[0]),
     mutez: (...args: unknown[]): MichelsonType => MichelsonInt.from(args[0]),
     bool: (...args: unknown[]): MichelsonType => MichelsonBool.from(args[0]),
-    key_hash: (...args: unknown[]): MichelsonType => MichelsonString.from(args[0]),
+    key_hash: (...args: unknown[]): MichelsonType => MichelsonAddress.from(args[0]),
     timestamp: (...args: unknown[]): MichelsonType => notSupported('timestamp', args),
     address: (...args: unknown[]): MichelsonType => MichelsonAddress.from(args[0]),
     key: (...args: unknown[]): MichelsonType => notSupported('key', args),

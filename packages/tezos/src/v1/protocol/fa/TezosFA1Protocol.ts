@@ -12,7 +12,7 @@ import { isMichelinePrimitive } from '../../utils/micheline'
 import { TezosFA1Accountant } from '../../utils/protocol/fa/TezosFA1Accountant'
 import { TezosForger } from '../../utils/protocol/tezos/TezosForger'
 
-import { TezosFAProtocol, TezosFAProtocolImpl } from './TezosFAProtocol'
+import { TEZOS_FA_MAINNET_PROTOCOL_NETWORK, TezosFAProtocol, TezosFAProtocolImpl } from './TezosFAProtocol'
 
 // Interface
 
@@ -31,11 +31,10 @@ export interface TezosFA1Protocol<_Units extends string = string> extends TezosF
 
 // Implementation
 
-export const FA1_MAINNET_CALLBACK_CONTRACT: string = 'KT19ptNzn4MVAN45KUUNpyL5AdLVhujk815u'
-
 export class TezosFA1ProtocolImpl<_Units extends string, _Entrypoints extends string = string>
   extends TezosFAProtocolImpl<_Entrypoints | TezosFA1ContractEntrypoint, _Units, TezosFA1ProtocolNetwork>
-  implements TezosFA1Protocol<_Units> {
+  implements TezosFA1Protocol<_Units>
+{
   public constructor(options: TezosFA1ProtocolOptions<_Units>) {
     const forger: TezosForger = new TezosForger()
     const accountant: TezosFA1Accountant<_Units> = new TezosFA1Accountant(forger, options.network)
@@ -126,4 +125,9 @@ export class TezosFA1ProtocolImpl<_Units extends string, _Entrypoints extends st
 
 export function createTezosFA1Protocol<_Units extends string>(options: TezosFA1ProtocolOptions<_Units>): TezosFA1Protocol<_Units> {
   return new TezosFA1ProtocolImpl(options)
+}
+
+export const TEZOS_FA1_MAINNET_PROTOCOL_NETWORK: Omit<TezosFA1ProtocolNetwork, 'contractAddress'> = {
+  ...TEZOS_FA_MAINNET_PROTOCOL_NETWORK,
+  defaultCallbackContract: 'KT19ptNzn4MVAN45KUUNpyL5AdLVhujk815u'
 }

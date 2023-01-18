@@ -2,9 +2,7 @@ import { SubProtocolSymbols } from '@airgap/coinlib-core'
 import { newAmount, RecursivePartial } from '@airgap/module-kit'
 
 import { TezosFA2ProtocolNetwork, TezosFA2ProtocolOptions } from '../../../types/protocol'
-import { TEZOS_MAINNET_PROTOCOL_NETWORK } from '../../TezosProtocol'
-import { TezosFA2Protocol, TezosFA2ProtocolImpl } from '../TezosFA2Protocol'
-import { FA_MAINNET_SOURCE_ADDRESS } from '../TezosFAProtocol'
+import { TezosFA2Protocol, TezosFA2ProtocolImpl, TEZOS_FA2_MAINNET_PROTOCOL_NETWORK } from '../TezosFA2Protocol'
 
 // Interface
 
@@ -51,9 +49,8 @@ export function createTetherUSDProtocol(options: RecursivePartial<TetherUSDProto
 }
 
 export const TETHERUSD_MAINNET_PROTOCOL_NETWORK: TezosFA2ProtocolNetwork = {
-  ...TEZOS_MAINNET_PROTOCOL_NETWORK,
+  ...TEZOS_FA2_MAINNET_PROTOCOL_NETWORK,
   contractAddress: 'KT1XnTn74bUtxHfDtBmm2bGZAQfhPbvKWR8o',
-  defaultSourceAddress: FA_MAINNET_SOURCE_ADDRESS,
   tokenId: 0,
   tokenMetadataBigMapId: 198034,
   ledgerBigMapId: 198031

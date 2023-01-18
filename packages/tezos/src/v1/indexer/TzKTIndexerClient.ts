@@ -3,7 +3,7 @@ import { AirGapTransaction, Amount, newAmount } from '@airgap/module-kit'
 
 import { BigMap } from '../types/contract/bigmap/BigMap'
 import { BigMapEntryFilter } from '../types/contract/bigmap/BigMapEnrtyFilter'
-import { BigMapEntry } from '../types/contract/bigmap/BigMapEntry'
+import { BigMapEntry, BigMapEntryType } from '../types/contract/bigmap/BigMapEntry'
 import { TezosUnits } from '../types/protocol'
 
 import { TezosIndexerClient, Token } from './TezosIndexerClient'
@@ -142,14 +142,15 @@ export class TzKTIndexerClient implements TezosIndexerClient {
     }))
   }
 
-  public async getContractBigMapValues(
+  public async getContractBigMapValues<T extends BigMapEntryType>(
     contractAddress: string,
     bigMap: Omit<BigMap, 'keyType' | 'valueType'>,
+    entryType: T,
     filters?: BigMapEntryFilter[],
     limit?: number,
     offset?: number
-  ): Promise<BigMapEntry[]> {
-    let url = this.url(`/contracts/${contractAddress}/bigmaps/${bigMap.path}/keys`, 'micheline=2', limit, offset)
+  ): Promise<BigMapEntry<T>[]> {
+    let url = this.url(`/contracts/${contractAddress}/bigmaps/${bigMap.path}/keys`, this.bigMapQuery(entryType), limit, offset)
     if (filters !== undefined) {
       for (const filter of filters) {
         url = `${url}&${filter.field}.${filter.operation}=${filter.value}`
@@ -164,14 +165,15 @@ export class TzKTIndexerClient implements TezosIndexerClient {
     }))
   }
 
-  public async getContractBigMapValue(
+  public async getContractBigMapValue<T extends BigMapEntryType>(
     contractAddress: string,
     bigMap: Omit<BigMap, 'keyType' | 'valueType'>,
     key: string,
+    entryType: T,
     limit?: number,
     offset?: number
-  ): Promise<BigMapEntry> {
-    let url = this.url(`/contracts/${contractAddress}/bigmaps/${bigMap.path}/keys/${key}`, 'micheline=2', limit, offset)
+  ): Promise<BigMapEntry<T>> {
+    let url = this.url(`/contracts/${contractAddress}/bigmaps/${bigMap.path}/keys/${key}`, this.bigMapQuery(entryType), limit, offset)
     const entry = (await axios.get(url)).data
     return {
       bigMapId: bigMap.id,
@@ -185,6 +187,14 @@ export class TzKTIndexerClient implements TezosIndexerClient {
     const url = this.url('/operations/originations', `contractManager=${address}&status=applied&select=originatedContract`)
     const result = (await axios.get<any[]>(url)).data
     return result.filter((contract) => contract.kind === 'delegator_contract').map((contract) => contract.address)
+  }
+
+  private bigMapQuery(entryType: BigMapEntryType, params?: string): string | undefined {
+    if (entryType === 'json' && params === undefined) {
+      return undefined
+    }
+
+    return 'micheline=2' + params ? '&params' : ''
   }
 
   private url(path: string, query?: string, limit?: number, offset?: number): string {

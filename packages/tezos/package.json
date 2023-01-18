@@ -1,6 +1,6 @@
 {
   "name": "@airgap/tezos",
-  "version": "0.13.8-beta.3",
+  "version": "0.13.8-beta.14",
   "description": "The @airgap/tezos is a Tezos implementation of the ICoinProtocol interface from @airgap/coinlib-core.",
   "keywords": [
     "airgap",
@@ -37,12 +37,14 @@
     "@stablelib/nacl": "^1.0.4",
     "@stablelib/random": "^1.0.2",
     "@stablelib/utf8": "^1.0.1",
-    "@taquito/local-forging": "14.0.0"
+    "@taquito/local-forging": "14.0.0",
+    "graphql": "^16.6.0",
+    "graphql-request": "^5.1.0"
   },
   "peerDependencies": {
-    "@airgap/coinlib-core": "^0.13.7-beta.0",
-    "@airgap/module-kit": "^0.13.7-beta.0",
-    "@airgap/serializer": "^0.13.7-beta.0"
+    "@airgap/coinlib-core": "^0.13.8-beta.14",
+    "@airgap/module-kit": "^0.13.8-beta.14",
+    "@airgap/serializer": "^0.13.8-beta.14"
   },
   "localDependencies": {
     "@taquito/local-forging": "8.0.1-beta.1"

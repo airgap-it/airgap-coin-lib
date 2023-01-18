@@ -321,7 +321,8 @@ export class TezosFA2Protocol extends TezosFAProtocol {
     }
     const result = await this.contract.getBigMapValue({
       bigMap,
-      key: `${tokenID ?? this.tokenID ?? 0}`
+      key: `${tokenID ?? this.tokenID ?? 0}`,
+      resultType: 'micheline'
     })
     if (result !== undefined && isMichelinePrimitive('int', result.value)) {
       return result.value.int

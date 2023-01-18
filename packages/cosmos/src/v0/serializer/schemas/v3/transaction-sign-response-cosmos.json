@@ -2,6 +2,9 @@
   "$ref": "#/definitions/SignedCosmosTransaction",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
+    "IAirGapSignedTransaction": {
+      "type": "string"
+    },
     "SignedCosmosTransaction": {
       "additionalProperties": false,
       "properties": {
@@ -9,6 +12,7 @@
           "type": "string"
         },
         "transaction": {
+          "$ref": "#/definitions/IAirGapSignedTransaction",
           "type": "string"
         }
       },

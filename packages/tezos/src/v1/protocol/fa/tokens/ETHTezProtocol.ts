@@ -2,10 +2,7 @@ import { SubProtocolSymbols } from '@airgap/coinlib-core'
 import { Amount, newAmount, RecursivePartial } from '@airgap/module-kit'
 
 import { TezosFA1p2ProtocolNetwork, TezosFA1p2ProtocolOptions } from '../../../types/protocol'
-import { TEZOS_MAINNET_PROTOCOL_NETWORK } from '../../TezosProtocol'
-import { TezosFA1p2Protocol, TezosFA1p2ProtocolImpl } from '../TezosFA1p2Protocol'
-import { FA1_MAINNET_CALLBACK_CONTRACT } from '../TezosFA1Protocol'
-import { FA_MAINNET_SOURCE_ADDRESS } from '../TezosFAProtocol'
+import { TezosFA1p2Protocol, TezosFA1p2ProtocolImpl, TEZOS_FA1P2_MAINNET_PROTOCOL_NETWORK } from '../TezosFA1p2Protocol'
 
 // Interface
 
@@ -56,10 +53,8 @@ export function createETHTezProtocol(options: RecursivePartial<ETHTezProtocolOpt
 }
 
 export const ETHTEZ_MAINNET_PROTOCOL_NETWORK: TezosFA1p2ProtocolNetwork = {
-  ...TEZOS_MAINNET_PROTOCOL_NETWORK,
-  contractAddress: 'KT19at7rQUvyjxnZ2fBv7D9zc8rkyG7gAoU8',
-  defaultSourceAddress: FA_MAINNET_SOURCE_ADDRESS,
-  defaultCallbackContract: FA1_MAINNET_CALLBACK_CONTRACT
+  ...TEZOS_FA1P2_MAINNET_PROTOCOL_NETWORK,
+  contractAddress: 'KT19at7rQUvyjxnZ2fBv7D9zc8rkyG7gAoU8'
 }
 
 const DEFAULT_ETHTEZ_PROTOCOL_NETWORK: TezosFA1p2ProtocolNetwork = ETHTEZ_MAINNET_PROTOCOL_NETWORK
