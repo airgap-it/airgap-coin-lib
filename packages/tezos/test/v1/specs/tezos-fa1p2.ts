@@ -2,8 +2,7 @@
 import { PublicKey, SecretKey } from '@airgap/module-kit'
 
 import { createTezosFA1p2Protocol, createTezosProtocolOptions, TezosFA1p2Protocol } from '../../../src/v1'
-import { FA1_MAINNET_CALLBACK_CONTRACT } from '../../../src/v1/protocol/fa/TezosFA1Protocol'
-import { FA_MAINNET_SOURCE_ADDRESS } from '../../../src/v1/protocol/fa/TezosFAProtocol'
+import { TEZOS_FA1P2_MAINNET_PROTOCOL_NETWORK } from '../../../src/v1/protocol/fa/TezosFA1p2Protocol'
 import { TestProtocolSpec } from '../implementations'
 import { TezosFA1p2ProtocolStub } from '../stubs/tezos-fa1p2.stub'
 
@@ -16,9 +15,8 @@ export class TezosFA1p2TestProtocolSpec extends TestProtocolSpec<TezosFA1p2Proto
   public lib = createTezosFA1p2Protocol({
     network: {
       ...createTezosProtocolOptions().network,
-      contractAddress: 'KT1SjXiUX63QvdNMcM2m492f7kuf8JxXRLp4',
-      defaultSourceAddress: FA_MAINNET_SOURCE_ADDRESS,
-      defaultCallbackContract: FA1_MAINNET_CALLBACK_CONTRACT
+      ...TEZOS_FA1P2_MAINNET_PROTOCOL_NETWORK,
+      contractAddress: 'KT1SjXiUX63QvdNMcM2m492f7kuf8JxXRLp4'
     },
 
     identifier: 'xtz-fa1p2_mock',

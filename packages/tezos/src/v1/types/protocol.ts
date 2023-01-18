@@ -49,6 +49,7 @@ export interface TezosFAProtocolNetwork extends TezosProtocolNetwork {
   contractAddress: string
   defaultSourceAddress: string
 
+  objktApiUrl: string
   tokenMetadataBigMapId?: number
 }
 

@@ -2,7 +2,7 @@ import { AirGapTransaction, Amount } from '@airgap/module-kit'
 
 import { BigMap } from '../types/contract/bigmap/BigMap'
 import { BigMapEntryFilter } from '../types/contract/bigmap/BigMapEnrtyFilter'
-import { BigMapEntry } from '../types/contract/bigmap/BigMapEntry'
+import { BigMapEntry, BigMapEntryType } from '../types/contract/bigmap/BigMapEntry'
 import { TezosUnits } from '../types/protocol'
 
 export interface Token {
@@ -26,19 +26,21 @@ export interface TezosIndexerClient {
 
   getContractCodeHash(contractAddress: string): Promise<{ typeHash: string; codeHash: string }>
   getContractBigMaps(contractAddress: string, limit?: number, offset?: number): Promise<BigMap[]>
-  getContractBigMapValues(
+  getContractBigMapValues<T extends BigMapEntryType>(
     contractAddress: string,
     bigMap: Omit<BigMap, 'keyType' | 'valueType'>,
+    entryType: T,
     filters?: BigMapEntryFilter[],
     limit?: number,
     offset?: number
-  ): Promise<BigMapEntry[]>
-  getContractBigMapValue(
+  ): Promise<BigMapEntry<T>[]>
+  getContractBigMapValue<T extends BigMapEntryType>(
     contractAddress: string,
     bigMap: Omit<BigMap, 'keyType' | 'valueType'>,
     key: string,
+    entryType: T,
     limit?: number,
     offset?: number
-  ): Promise<BigMapEntry>
+  ): Promise<BigMapEntry<T>>
   getDelegatorContracts(address: string, limit?: number, offset?: number): Promise<string[]>
 }

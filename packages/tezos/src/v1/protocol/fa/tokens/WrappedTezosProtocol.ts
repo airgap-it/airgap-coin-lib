@@ -2,10 +2,7 @@ import { SubProtocolSymbols } from '@airgap/coinlib-core'
 import { newAmount, RecursivePartial } from '@airgap/module-kit'
 
 import { TezosFA1p2ProtocolNetwork, TezosFA1p2ProtocolOptions } from '../../../types/protocol'
-import { TEZOS_MAINNET_PROTOCOL_NETWORK } from '../../TezosProtocol'
-import { TezosFA1p2Protocol, TezosFA1p2ProtocolImpl } from '../TezosFA1p2Protocol'
-import { FA1_MAINNET_CALLBACK_CONTRACT } from '../TezosFA1Protocol'
-import { FA_MAINNET_SOURCE_ADDRESS } from '../TezosFAProtocol'
+import { TezosFA1p2Protocol, TezosFA1p2ProtocolImpl, TEZOS_FA1P2_MAINNET_PROTOCOL_NETWORK } from '../TezosFA1p2Protocol'
 
 // Interface
 
@@ -52,10 +49,8 @@ export function createWrappedTezosProtocol(options: RecursivePartial<WrappedTezo
 }
 
 export const WRAPPED_TEZOS_MAINNET_PROTOCOL_NETWORK: TezosFA1p2ProtocolNetwork = {
-  ...TEZOS_MAINNET_PROTOCOL_NETWORK,
-  contractAddress: 'KT1VYsVfmobT7rsMVivvZ4J8i3bPiqz12NaH',
-  defaultSourceAddress: FA_MAINNET_SOURCE_ADDRESS,
-  defaultCallbackContract: FA1_MAINNET_CALLBACK_CONTRACT
+  ...TEZOS_FA1P2_MAINNET_PROTOCOL_NETWORK,
+  contractAddress: 'KT1VYsVfmobT7rsMVivvZ4J8i3bPiqz12NaH'
 }
 
 const DEFAULT_WRAPPED_TEZOS_PROTOCOL_NETWORK: TezosFA1p2ProtocolNetwork = WRAPPED_TEZOS_MAINNET_PROTOCOL_NETWORK

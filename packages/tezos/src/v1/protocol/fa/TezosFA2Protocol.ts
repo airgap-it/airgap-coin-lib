@@ -30,7 +30,7 @@ import { parseAddress } from '../../utils/pack'
 import { TezosFA2Accountant } from '../../utils/protocol/fa/TezosFA2Accountant'
 import { TezosForger } from '../../utils/protocol/tezos/TezosForger'
 
-import { TezosFAProtocol, TezosFAProtocolImpl } from './TezosFAProtocol'
+import { TezosFAProtocol, TezosFAProtocolImpl, TEZOS_FA_MAINNET_PROTOCOL_NETWORK } from './TezosFAProtocol'
 
 // Interface
 
@@ -54,7 +54,8 @@ export interface TezosFA2Protocol<_Units extends string = string>
 
 export class TezosFA2ProtocolImpl<_Units extends string, _Entrypoints extends string = string>
   extends TezosFAProtocolImpl<_Entrypoints | TezosFA2ContractEntrypoint, _Units, TezosFA2ProtocolNetwork>
-  implements TezosFA2Protocol<_Units> {
+  implements TezosFA2Protocol<_Units>
+{
   private readonly tokenId?: number
 
   public constructor(options: TezosFA2ProtocolOptions<_Units>) {
@@ -202,7 +203,8 @@ export class TezosFA2ProtocolImpl<_Units extends string, _Entrypoints extends st
     }
     const result = await this.contract.getBigMapValue({
       bigMap,
-      key: `${tokenID ?? this.tokenId ?? 0}`
+      key: `${tokenID ?? this.tokenId ?? 0}`,
+      resultType: 'micheline'
     })
     if (result !== undefined && isMichelinePrimitive('int', result.value)) {
       return result.value.int
@@ -248,3 +250,5 @@ export class TezosFA2ProtocolImpl<_Units extends string, _Entrypoints extends st
 export function createTezosFA2Protocol<_Units extends string>(options: TezosFA2ProtocolOptions<_Units>): TezosFA2Protocol<_Units> {
   return new TezosFA2ProtocolImpl(options)
 }
+
+export const TEZOS_FA2_MAINNET_PROTOCOL_NETWORK: Omit<TezosFA2ProtocolNetwork, 'contractAddress'> = TEZOS_FA_MAINNET_PROTOCOL_NETWORK

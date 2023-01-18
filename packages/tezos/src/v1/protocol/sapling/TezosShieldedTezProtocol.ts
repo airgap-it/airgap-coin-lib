@@ -31,7 +31,7 @@ const SHIELDED_TEZ_METADATA: ProtocolMetadata<TezosUnits> = {
 }
 
 const TYPE_HASH: string = '1724054251'
-const CODE_HASH: string = '522589455'
+const CODE_HASH: string = '926964708'
 
 export class TezosShieldedTezProtocolImpl extends TezosSaplingProtocolImpl<TezosUnits> implements TezosShieldedTezProtocol {
   private readonly indexerClient: TezosIndexerClient

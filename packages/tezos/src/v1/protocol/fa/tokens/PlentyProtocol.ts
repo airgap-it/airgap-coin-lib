@@ -2,10 +2,7 @@ import { SubProtocolSymbols } from '@airgap/coinlib-core'
 import { Amount, newAmount, RecursivePartial } from '@airgap/module-kit'
 
 import { TezosFA1p2ProtocolNetwork, TezosFA1p2ProtocolOptions } from '../../../types/protocol'
-import { TEZOS_MAINNET_PROTOCOL_NETWORK } from '../../TezosProtocol'
-import { TezosFA1p2Protocol, TezosFA1p2ProtocolImpl } from '../TezosFA1p2Protocol'
-import { FA1_MAINNET_CALLBACK_CONTRACT } from '../TezosFA1Protocol'
-import { FA_MAINNET_SOURCE_ADDRESS } from '../TezosFAProtocol'
+import { TezosFA1p2Protocol, TezosFA1p2ProtocolImpl, TEZOS_FA1P2_MAINNET_PROTOCOL_NETWORK } from '../TezosFA1p2Protocol'
 
 // Interface
 
@@ -56,10 +53,8 @@ export function createPlentyProtocol(options: RecursivePartial<PlentyProtocolOpt
 }
 
 export const PLENTY_MAINNET_PROTOCOL_NETWORK: TezosFA1p2ProtocolNetwork = {
-  ...TEZOS_MAINNET_PROTOCOL_NETWORK,
-  contractAddress: 'KT1GRSvLoikDsXujKgZPsGLX8k8VvR2Tq95b',
-  defaultSourceAddress: FA_MAINNET_SOURCE_ADDRESS,
-  defaultCallbackContract: FA1_MAINNET_CALLBACK_CONTRACT
+  ...TEZOS_FA1P2_MAINNET_PROTOCOL_NETWORK,
+  contractAddress: 'KT1GRSvLoikDsXujKgZPsGLX8k8VvR2Tq95b'
 }
 
 const DEFAULT_PLENTY_PROTOCOL_NETWORK: TezosFA1p2ProtocolNetwork = PLENTY_MAINNET_PROTOCOL_NETWORK

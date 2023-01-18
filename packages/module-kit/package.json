@@ -1,6 +1,6 @@
 {
   "name": "@airgap/module-kit",
-  "version": "0.13.8-beta.3",
+  "version": "0.13.8-beta.14",
   "description": "TODO",
   "keywords": [
     "airgap",
@@ -30,7 +30,7 @@
   },
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
   "peerDependencies": {
-    "@airgap/coinlib-core": "^0.13.7-beta.0"
+    "@airgap/coinlib-core": "^0.13.8-beta.14"
   },
   "nyc": {
     "include": [

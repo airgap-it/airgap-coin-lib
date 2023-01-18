@@ -4,10 +4,10 @@ import { Amount, newAmount, PublicKey } from '@airgap/module-kit'
 import { TezosContractCall } from '../../contract/TezosContractCall'
 import { TezosFA1p2ContractEntrypoint } from '../../types/fa/TezosFA1p2ContractEntrypoint'
 import { TezosFATokenMetadata } from '../../types/fa/TezosFATokenMetadata'
-import { TezosFA1p2ProtocolOptions, TezosUnits } from '../../types/protocol'
+import { TezosFA1p2ProtocolNetwork, TezosFA1p2ProtocolOptions, TezosUnits } from '../../types/protocol'
 import { TezosUnsignedTransaction } from '../../types/transaction'
 
-import { TezosFA1Protocol, TezosFA1ProtocolImpl } from './TezosFA1Protocol'
+import { TezosFA1Protocol, TezosFA1ProtocolImpl, TEZOS_FA1_MAINNET_PROTOCOL_NETWORK } from './TezosFA1Protocol'
 
 // Interface
 
@@ -22,7 +22,8 @@ export interface TezosFA1p2Protocol<_Units extends string = string> extends Tezo
 
 export class TezosFA1p2ProtocolImpl<_Units extends string, _Entrypoints extends string = string>
   extends TezosFA1ProtocolImpl<_Units, _Entrypoints | TezosFA1p2ContractEntrypoint>
-  implements TezosFA1p2Protocol<_Units> {
+  implements TezosFA1p2Protocol<_Units>
+{
   public constructor(options: TezosFA1p2ProtocolOptions<_Units>) {
     super(options)
   }
@@ -70,3 +71,5 @@ export class TezosFA1p2ProtocolImpl<_Units extends string, _Entrypoints extends 
 export function createTezosFA1p2Protocol<_Units extends string>(options: TezosFA1p2ProtocolOptions<_Units>): TezosFA1p2Protocol<_Units> {
   return new TezosFA1p2ProtocolImpl(options)
 }
+
+export const TEZOS_FA1P2_MAINNET_PROTOCOL_NETWORK: Omit<TezosFA1p2ProtocolNetwork, 'contractAddress'> = TEZOS_FA1_MAINNET_PROTOCOL_NETWORK

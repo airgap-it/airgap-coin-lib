@@ -13,7 +13,7 @@ import { TezosSaplingProtocolOptions } from './TezosSaplingProtocolOptions'
 
 export class TezosShieldedTezProtocol extends TezosSaplingProtocol {
   private static readonly typeHash: string = '1724054251'
-  private static readonly codeHash: string = '522589455'
+  private static readonly codeHash: string = '926964708'
 
   constructor(options: TezosSaplingProtocolOptions = new TezosSaplingProtocolOptions()) {
     super(options)

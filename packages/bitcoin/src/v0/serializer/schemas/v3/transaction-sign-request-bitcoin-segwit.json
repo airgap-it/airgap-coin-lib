@@ -2,16 +2,6 @@
   "$ref": "#/definitions/UnsignedBitcoinSegwitTransaction",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
-    "RawBitcoinSegwitTransaction": {
-      "additionalProperties": false,
-      "properties": {
-        "psbt": {
-          "type": "string"
-        }
-      },
-      "required": ["psbt"],
-      "type": "object"
-    },
     "UnsignedBitcoinSegwitTransaction": {
       "additionalProperties": false,
       "properties": {
@@ -22,7 +12,14 @@
           "type": "string"
         },
         "transaction": {
-          "$ref": "#/definitions/RawBitcoinSegwitTransaction"
+          "additionalProperties": false,
+          "properties": {
+            "psbt": {
+              "type": "string"
+            }
+          },
+          "required": ["psbt"],
+          "type": "object"
         }
       },
       "required": ["publicKey", "transaction"],

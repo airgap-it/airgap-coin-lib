@@ -703,9 +703,11 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
       const rewards = await this.nodeClient.fetchRewardDetails(address)
       const filteredRewards = rewards.filter((reward) =>
         reward.reward
-          .reduce((total, next) => total.plus(new BigNumber(next.amount)), new BigNumber(0))
-          .decimalPlaces(0, BigNumber.ROUND_FLOOR)
-          .gt(0)
+          ? reward.reward
+              .reduce((total, next) => total.plus(new BigNumber(next.amount)), new BigNumber(0))
+              .decimalPlaces(0, BigNumber.ROUND_FLOOR)
+              .gt(0)
+          : false
       )
       validatorAddresses = filteredRewards.map((reward) => reward.validator_address)
     }

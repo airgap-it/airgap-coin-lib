@@ -2,9 +2,6 @@ import { Domain } from '@airgap/coinlib-core'
 import axios, { AxiosError, AxiosResponse } from '@airgap/coinlib-core/dependencies/src/axios-0.19.0'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import { InvalidValueError, NetworkError, OperationFailedError } from '@airgap/coinlib-core/errors'
-import { hexToBytes, isHex } from '@airgap/coinlib-core/utils/hex'
-import { RemoteData } from '@airgap/coinlib-core/utils/remote-data/RemoteData'
-import { RemoteDataFactory } from '@airgap/coinlib-core/utils/remote-data/RemoteDataFactory'
 import {
   Address,
   AirGapProtocol,
@@ -25,35 +22,31 @@ import {
   TransactionDetails
 } from '@airgap/module-kit'
 
-import { TezosContractRemoteDataFactory } from '../../contract/remote-data/TezosContractRemoteDataFactory'
 import { TezosContract } from '../../contract/TezosContract'
 import { TezosContractCall } from '../../contract/TezosContractCall'
 import { createTezosIndexerClient } from '../../indexer/factory'
 import { TezosIndexerClient } from '../../indexer/TezosIndexerClient'
+import { BigMapTokenMetadataIndexerClient } from '../../indexer/token-metadata/BigMapTokenMetadataIndexerClient'
+import { ObjktTokenMetadataIndexerClient } from '../../indexer/token-metadata/ObjktTokenMetadataIndexerClient'
 import { BigMap } from '../../types/contract/bigmap/BigMap'
 import { BigMapEntry } from '../../types/contract/bigmap/BigMapEntry'
 import { TezosContractMetadata } from '../../types/contract/TezosContractMetadata'
 import { TezosFATokenMetadata } from '../../types/fa/TezosFATokenMetadata'
 import { MichelineDataNode, MichelineNode } from '../../types/micheline/MichelineNode'
-import { MichelsonType } from '../../types/michelson/MichelsonType'
 import { TezosOperation } from '../../types/operations/kinds/TezosOperation'
 import { TezosTransactionParameters, TezosWrappedTransactionOperation } from '../../types/operations/kinds/Transaction'
 import { TezosOperationType } from '../../types/operations/TezosOperationType'
 import { TezosWrappedOperation } from '../../types/operations/TezosWrappedOperation'
 import { TezosFAProtocolNetwork, TezosFAProtocolOptions, TezosProtocolNetworkResolver, TezosUnits } from '../../types/protocol'
 import { TezosSignedTransaction, TezosTransactionCursor, TezosUnsignedTransaction } from '../../types/transaction'
-import { isFATokenMetadata } from '../../utils/fa'
 import { isMichelineNode } from '../../utils/micheline'
-import { parseHex } from '../../utils/pack'
 import { TezosFAAccountant } from '../../utils/protocol/fa/TezosFAAccountant'
-import { TEZOS_ACCOUNT_METADATA, TezosProtocol, TezosProtocolImpl } from '../TezosProtocol'
+import { TEZOS_ACCOUNT_METADATA, TezosProtocol, TezosProtocolImpl, TEZOS_MAINNET_PROTOCOL_NETWORK } from '../TezosProtocol'
 
 // Interface
 
-export interface TezosFAProtocol<
-  _Units extends string = string,
-  _ProtocolNetwork extends TezosFAProtocolNetwork = TezosFAProtocolNetwork
-> extends AirGapProtocol<
+export interface TezosFAProtocol<_Units extends string = string, _ProtocolNetwork extends TezosFAProtocolNetwork = TezosFAProtocolNetwork>
+  extends AirGapProtocol<
     {
       AddressResult: Address
       ProtocolNetwork: _ProtocolNetwork
@@ -83,13 +76,12 @@ export interface TezosFAProtocol<
 
 // Implementation
 
-export const FA_MAINNET_SOURCE_ADDRESS: string = 'tz1Mj7RzPmMAqDUNFBn5t5VbXmWW4cSUAdtT'
-
 export abstract class TezosFAProtocolImpl<
   _Entrypoints extends string,
   _Units extends string,
   _ProtocolNetwork extends TezosFAProtocolNetwork
-> implements TezosFAProtocol<_Units, _ProtocolNetwork> {
+> implements TezosFAProtocol<_Units, _ProtocolNetwork>
+{
   protected readonly options: TezosFAProtocolOptions<_Units, _ProtocolNetwork>
 
   protected readonly tezos: TezosProtocol
@@ -98,7 +90,9 @@ export abstract class TezosFAProtocolImpl<
   protected readonly indexer: TezosIndexerClient
 
   protected readonly contract: TezosContract<_Entrypoints>
-  protected readonly remoteDataFactory: RemoteDataFactory
+
+  private readonly objktTokenMetadataIndexerClient: ObjktTokenMetadataIndexerClient
+  private readonly bigMapTokenMetadataIndexerClient: BigMapTokenMetadataIndexerClient
 
   protected constructor(options: TezosFAProtocolOptions<_Units, _ProtocolNetwork>, accountant: TezosFAAccountant<_Units>) {
     this.options = options
@@ -108,7 +102,12 @@ export abstract class TezosFAProtocolImpl<
     this.indexer = createTezosIndexerClient(options.network.indexer)
 
     this.contract = new TezosContract(options.network.contractAddress, options.network)
-    this.remoteDataFactory = new TezosContractRemoteDataFactory()
+
+    this.objktTokenMetadataIndexerClient = new ObjktTokenMetadataIndexerClient(
+      this.options.network.contractAddress,
+      this.options.network.objktApiUrl
+    )
+    this.bigMapTokenMetadataIndexerClient = new BigMapTokenMetadataIndexerClient(this.contract, this.options.network.tokenMetadataBigMapId)
 
     this.metadata = {
       identifier: options.identifier,
@@ -291,90 +290,38 @@ export abstract class TezosFAProtocolImpl<
   }
 
   public async allTokenMetadata(): Promise<Record<number, TezosFATokenMetadata> | undefined> {
-    const tokenMetadataBigMapId: number | undefined =
-      this.options.network.tokenMetadataBigMapId ?? (await this.contract.findBigMap('token_metadata'))
-    if (tokenMetadataBigMapId === undefined) {
+    const objktMetadata: Record<number, Partial<TezosFATokenMetadata>> | undefined =
+      await this.objktTokenMetadataIndexerClient.getTokenMetadata()
+    const missingTokenIDs: Set<number> | undefined =
+      objktMetadata !== undefined
+        ? new Set(
+            Object.entries(objktMetadata)
+              .filter(([_, metadata]) => !metadata.symbol && !metadata.name && !metadata.decimals)
+              .map(([tokenID, _]) => parseInt(tokenID, 10))
+          )
+        : undefined
+
+    const bigMapMetadata: Record<number, Partial<TezosFATokenMetadata>> | undefined =
+      missingTokenIDs === undefined || missingTokenIDs.size > 0
+        ? await this.bigMapTokenMetadataIndexerClient.getTokenMetadata(missingTokenIDs ? Array.from(missingTokenIDs) : undefined)
+        : undefined
+
+    if (objktMetadata === undefined && bigMapMetadata === undefined) {
       return undefined
     }
 
-    const value: MichelsonType | undefined = await this.contract.bigMapValue(tokenMetadataBigMapId, {
-      prim: 'list',
-      args: [
-        {
-          prim: 'pair',
-          args: [
-            {
-              prim: 'nat',
-              annots: ['%token_id']
-            },
-            {
-              prim: 'map',
-              args: [{ prim: 'string' }, { prim: 'bytes' }],
-              annots: ['%token_info']
-            }
-          ]
-        }
-      ]
-    })
-    const rawValue: any = value?.asRawValue()
-    const values: any[] = Array.isArray(rawValue) ? rawValue : [rawValue]
-    const tokenMetadata: ([number, TezosFATokenMetadata] | undefined)[] = await Promise.all(
-      values.map(async (value) => {
-        const tokenID: number | undefined = value?.token_id?.toNumber()
-        const tokenInfo: Map<string, string> = value?.token_info as Map<string, string>
-        if (tokenID === undefined || tokenInfo === undefined) {
-          return undefined
-        }
-
-        if (tokenInfo.has('')) {
-          const uriEncoded: string = tokenInfo.get('')!
-          const remoteData: RemoteData<unknown> | undefined = this.createRemoteData(uriEncoded)
-          const tokenMetdata: unknown = await remoteData?.get()
-          if (isFATokenMetadata(tokenMetdata)) {
-            return [tokenID, tokenMetdata]
+    return Object.entries(objktMetadata ?? {})
+      .filter(([tokenID, _]) => !(missingTokenIDs?.has(parseInt(tokenID, 10)) ?? false))
+      .concat(Object.entries(bigMapMetadata ?? {}))
+      .reduce((obj: Record<number, TezosFATokenMetadata>, [tokenID, metadata]: [string, Partial<TezosFATokenMetadata>]) => {
+        return Object.assign(obj, {
+          [parseInt(tokenID, 10)]: {
+            symbol: metadata.symbol ?? '',
+            name: metadata.name ?? '',
+            decimals: metadata.decimals ?? 0
           }
-        }
-
-        const name: string | undefined = tokenInfo.get('name')
-        const symbol: string | undefined = tokenInfo.get('symbol')
-        const decimals: string | undefined = tokenInfo.get('decimals')
-
-        if (!name || !symbol || !decimals) {
-          return undefined
-        }
-
-        return [
-          tokenID,
-          {
-            ...Array.from(tokenInfo.entries()).reduce((obj: Record<string, string | number | boolean>, next: [string, string]) => {
-              const key: string = next[0]
-              let value: string | number | boolean =
-                typeof next[1] === 'string' && isHex(next[1]) ? hexToBytes(next[1]).toString() : next[1]
-              if (value === 'true') {
-                value = true
-              } else if (value === 'false') {
-                value = false
-              } else if (!isNaN(parseInt(value, 10))) {
-                value = parseInt(value, 10)
-              }
-
-              return Object.assign(obj, {
-                [key]: value
-              })
-            }, {}),
-            name: hexToBytes(name).toString(),
-            symbol: hexToBytes(symbol).toString(),
-            decimals: parseInt(hexToBytes(decimals).toString(), 10)
-          }
-        ]
-      })
-    )
-
-    return tokenMetadata.reduce(
-      (obj: Record<number, TezosFATokenMetadata>, next: [number, TezosFATokenMetadata] | undefined) =>
-        next ? Object.assign(obj, { [next[0]]: next[1] }) : obj,
-      {}
-    )
+        })
+      }, {})
   }
 
   protected async getTokenMetadataForTokenId(tokenId: number): Promise<TezosFATokenMetadata | undefined> {
@@ -383,28 +330,16 @@ export abstract class TezosFAProtocolImpl<
     return tokenMetadata ? tokenMetadata[tokenId] : undefined
   }
 
-  private createRemoteData(uriEncoded: string): RemoteData<unknown> | undefined {
-    // unless otherwise-specified, the encoding of the values must be the direct stream of bytes of the data being stored.
-    let remoteData: RemoteData<unknown> | undefined = this.remoteDataFactory.create(hexToBytes(uriEncoded).toString().trim(), {
-      contract: this.contract
-    })
-    if (!remoteData && uriEncoded.startsWith('05')) {
-      // however, sometimes the URI is a packed value
-      remoteData = this.remoteDataFactory.create(parseHex(uriEncoded).asRawValue(), { contract: this.contract })
-    }
-
-    return remoteData
-  }
-
   public async bigMapValue(key: string, isKeyHash: boolean = false, bigMapId?: number): Promise<MichelineNode | undefined> {
     const bigMaps: BigMap[] = await this.contract.getBigMaps()
     const bigMap: BigMap | undefined = bigMapId !== undefined ? bigMaps.find((bigMap: BigMap) => bigMap.id === bigMapId) : bigMaps[0]
     if (!bigMap) {
       return undefined
     }
-    const result: BigMapEntry | undefined = await this.contract.getBigMapValue({
+    const result: BigMapEntry<'micheline'> | undefined = await this.contract.getBigMapValue({
       bigMap,
-      key
+      key,
+      resultType: 'micheline'
     })
 
     return result?.value
@@ -554,4 +489,12 @@ export abstract class TezosFAProtocolImpl<
   private url(path: string): string {
     return `${this.options.network.rpcUrl}${path}`
   }
+}
+
+// Factory
+
+export const TEZOS_FA_MAINNET_PROTOCOL_NETWORK: Omit<TezosFAProtocolNetwork, 'contractAddress'> = {
+  ...TEZOS_MAINNET_PROTOCOL_NETWORK,
+  defaultSourceAddress: 'tz1Mj7RzPmMAqDUNFBn5t5VbXmWW4cSUAdtT',
+  objktApiUrl: 'https://data.objkt.com/v2/graphql'
 }

@@ -1,14 +1,10 @@
 // tslint:disable: max-classes-per-file
 import { FeeDefaults } from '@airgap/coinlib-core'
 import { CurrencyUnit } from '@airgap/coinlib-core/protocols/ICoinProtocol'
-import { NetworkType } from '@airgap/coinlib-core/utils/ProtocolNetwork'
 import { ProtocolOptions } from '@airgap/coinlib-core/utils/ProtocolOptions'
 import { MainProtocolSymbols, ProtocolSymbols } from '@airgap/coinlib-core/utils/ProtocolSymbols'
 import { SaplingPartialOutputDescription, SaplingUnsignedSpendDescription } from '@airgap/sapling-wasm'
-
-import { TezosIndexerClient } from '../indexerClient/TezosIndexerClient'
-import { TezosNetwork } from '../TezosProtocol'
-import { TezosBlockExplorer, TezosProtocolConfig, TezosProtocolNetwork } from '../TezosProtocolOptions'
+import { TezosProtocolConfig, TezosProtocolNetwork } from '../TezosProtocolOptions'
 import { TezosSaplingTransaction } from '../types/sapling/TezosSaplingTransaction'
 
 export interface TezosSaplingExternalMethodProvider {
@@ -82,17 +78,7 @@ export class TezosShieldedTezProtocolConfig extends TezosSaplingProtocolConfig {
 
 export class TezosSaplingProtocolOptions implements ProtocolOptions<TezosSaplingProtocolConfig> {
   constructor(
-    // public network: TezosProtocolNetwork = new TezosProtocolNetwork(),
-    public network: TezosProtocolNetwork = new TezosProtocolNetwork(
-      'Ghostnet',
-      NetworkType.TESTNET,
-      'https://tezos-ghostnet-node.prod.gke.papers.tech',
-      new TezosBlockExplorer('https//ghostnet.tzkt.io'),
-      {
-        network: TezosNetwork.GHOSTNET,
-        indexerClient: new TezosIndexerClient('https://tezos-ghostnet-indexer.prod.gke.papers.tech')
-      }
-    ),
+    public network: TezosProtocolNetwork = new TezosProtocolNetwork(),
     public config: TezosSaplingProtocolConfig = new TezosShieldedTezProtocolConfig()
   ) {}
 }

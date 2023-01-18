@@ -9,7 +9,7 @@ import { trimStart } from '@airgap/coinlib-core/utils/string'
 import { TezosProtocolNetwork, TezosProtocolNetworkResolver } from '../TezosProtocolOptions'
 import { TezosUtils } from '../TezosUtils'
 import { BigMap } from '../types/contract/BigMap'
-import { BigMapEntry } from '../types/contract/BigMapEntry'
+import { BigMapEntry, BigMapEntryType } from '../types/contract/BigMapEntry'
 import { BigMapRequest } from '../types/contract/BigMapRequest'
 import { TezosContractMetadata } from '../types/contract/TezosContractMetadata'
 import { MichelineNode, MichelineTypeNode } from '../types/micheline/MichelineNode'
@@ -110,17 +110,29 @@ export class TezosContract {
     return this.bigMaps ?? []
   }
 
-  public async getBigMapValues(request: BigMapRequest = {}): Promise<BigMapEntry[]> {
+  public async getBigMapValues<T extends BigMapEntryType>(request: BigMapRequest<T>): Promise<BigMapEntry<T>[]> {
     const bigMap = request?.bigMap ?? (await this.getBigMap(request.bigMap?.path))
-    return this.network.extras.indexerClient.getContractBigMapValues(this.address, bigMap, request.filters, request.limit ?? 10000)
+    return this.network.extras.indexerClient.getContractBigMapValues(
+      this.address,
+      bigMap,
+      request.resultType,
+      request.filters,
+      request.limit ?? 10000
+    )
   }
 
-  public async getBigMapValue(request: BigMapRequest = {}): Promise<BigMapEntry | undefined> {
+  public async getBigMapValue<T extends BigMapEntryType>(request: BigMapRequest<T>): Promise<BigMapEntry<T> | undefined> {
     const bigMap = request?.bigMap ?? (await this.getBigMap(request.bigMap?.path))
     if (request.key === undefined) {
       return undefined
     }
-    return this.network.extras.indexerClient.getContractBigMapValue(this.address, bigMap, request.key, request.limit ?? 10000)
+    return this.network.extras.indexerClient.getContractBigMapValue(
+      this.address,
+      bigMap,
+      request.key,
+      request.resultType,
+      request.limit ?? 10000
+    )
   }
 
   public async readStorage(): Promise<MichelsonType | undefined> {
