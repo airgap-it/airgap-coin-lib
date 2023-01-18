@@ -7,7 +7,7 @@ export abstract class Secp256k1CryptoClient extends CryptoClient {
     return encrypt(publicKey, Buffer.from(payload)).toString('hex')
   }
 
-  public async decryptAsymmetric(encryptedPayload: string, keypair: { publicKey: string; privateKey: Buffer }): Promise<string> {
-    return decrypt(keypair.privateKey.toString('hex'), Buffer.from(encryptedPayload, 'hex')).toString()
+  public async decryptAsymmetric(encryptedPayload: string, keypair: { publicKey: string; privateKey: string }): Promise<string> {
+    return decrypt(keypair.privateKey, Buffer.from(encryptedPayload, 'hex')).toString()
   }
 }

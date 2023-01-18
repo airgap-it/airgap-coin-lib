@@ -9,7 +9,7 @@ const findFilesOnLevel = async (base: string) => {
     const isDirectory = lstatSync(path).isDirectory()
     if (isDirectory) {
       files.push(...(await findFilesOnLevel(path)))
-    } else if ((file as any).endsWith('json') || (file as any).endsWith('js')) {
+    } else if ((file as any).endsWith('json') || (file as any).endsWith('js') || (file as any).endsWith('.d.ts')) {
       files.push(path)
       dirname(path)
         .split(sep)
@@ -35,12 +35,6 @@ const findFilesOnLevel = async (base: string) => {
 }
 
 findFilesOnLevel('./src/dependencies/src')
-  .then(() => {})
-  .catch(console.error)
-findFilesOnLevel('./src/serializer/schemas')
-  .then(() => {})
-  .catch(console.error)
-findFilesOnLevel('./src/serializer-v3/schemas')
   .then(() => {})
   .catch(console.error)
 

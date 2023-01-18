@@ -1,0 +1,74 @@
+{
+  "name": "@airgap/tezos",
+  "version": "0.13.8",
+  "description": "The @airgap/tezos is a Tezos implementation of the ICoinProtocol interface from @airgap/coinlib-core.",
+  "keywords": [
+    "airgap",
+    "blockchain",
+    "crypto",
+    "tezos"
+  ],
+  "license": "MIT",
+  "homepage": "https://www.airgap.it",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/airgap-it/airgap-coin-lib"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "rm -rf ./dist && tsc && node scripts/copy-files-after-build.js",
+    "build-scripts": "tsc scripts/*.ts",
+    "lint": "tslint -c ./tslint.json --project ./tsconfig.json --format stylish --fix",
+    "lint:prettier": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "lint-ci": "tslint -t json -o ../../lint-reports/tezos.json --project . || true",
+    "lint-ci:prettier": "prettier \"src/**/*.ts\" \"test/**/*.ts\" --list-different",
+    "test": "TS_NODE_PROJECT='./test/tsconfig.json' nyc mocha --bail --require ts-node/register --require source-map-support/register --full-trace --delay --timeout 40000 ./test/**/**.spec.ts",
+    "test-ci": "nyc --reporter=lcov npm test",
+    "test-legacy": "",
+    "browserify": "browserify ./dist/index.js -p realpathify -s airgapCoinLibTezos > ./dist/airgap-coinlib-tezos.min.js"
+  },
+  "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
+  "dependencies": {
+    "@airgap/sapling-wasm": "0.0.7",
+    "@stablelib/blake2b": "^1.0.1",
+    "@stablelib/ed25519": "^1.0.3",
+    "@stablelib/nacl": "^1.0.4",
+    "@stablelib/random": "^1.0.2",
+    "@stablelib/utf8": "^1.0.1",
+    "@taquito/local-forging": "14.0.0",
+    "graphql": "^16.6.0",
+    "graphql-request": "^5.1.0"
+  },
+  "peerDependencies": {
+    "@airgap/coinlib-core": "^0.13.8",
+    "@airgap/module-kit": "^0.13.8",
+    "@airgap/serializer": "^0.13.8"
+  },
+  "localDependencies": {
+    "@taquito/local-forging": "8.0.1-beta.1"
+  },
+  "nyc": {
+    "include": [
+      "src/**/*.ts"
+    ],
+    "exclude": [
+      "test/**/*.spec.ts"
+    ],
+    "extension": [
+      ".ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ],
+    "reporter": [
+      "text",
+      "text-summary"
+    ],
+    "report-dir": "../../coverage/tezos",
+    "sourceMap": true,
+    "instrument": true
+  },
+  "gitHead": "8e8feb6788204501b7173aa825f5456c2a5f185b"
+}

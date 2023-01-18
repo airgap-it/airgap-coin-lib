@@ -1,6 +1,7 @@
 import * as crypto from 'crypto'
 import { InvalidValueError, ConditionViolationError } from '../errors'
 import { Domain } from '../errors/coinlib-error'
+import { isHex } from './hex'
 
 // https://github.com/microsoft/botbuilder-js/blob/master/libraries/botframework-config/src/encrypt.ts#L20
 export class AES {
@@ -11,7 +12,7 @@ export class AES {
     public readonly encoding: 'base64' | 'hex' = 'hex'
   ) {}
 
-  public async encryptString(plainText: string, privateKey: Buffer): Promise<string> {
+  public async encryptString(plainText: string, privateKey: string): Promise<string> {
     if (!plainText || plainText.length === 0) {
       throw new ConditionViolationError(Domain.UTILS, 'you must pass an input message')
     }
@@ -37,7 +38,7 @@ export class AES {
     return `${ivText}!${encryptedValue}!${authTagText}`
   }
 
-  public async decryptString(encryptedValue: string, privateKey: Buffer): Promise<string> {
+  public async decryptString(encryptedValue: string, privateKey: string): Promise<string> {
     if (!encryptedValue || encryptedValue.length === 0) {
       return encryptedValue
     }
@@ -81,9 +82,11 @@ export class AES {
     return value
   }
 
-  private deriveKeyFromPrivateKey(privateKey: Buffer): Promise<Buffer> {
+  private deriveKeyFromPrivateKey(privateKey: string): Promise<Buffer> {
+    const password = isHex(privateKey) ? Buffer.from(privateKey, 'hex') : privateKey
+
     return new Promise((resolve: (value: Buffer | PromiseLike<Buffer>) => void, reject: (reason?: unknown) => void): void => {
-      crypto.pbkdf2(privateKey, '', this.KEY_DERIVATION_ITERATION_COUNT, 32, 'sha512', (pbkdf2Error: Error | null, key: Buffer) => {
+      crypto.pbkdf2(password, '', this.KEY_DERIVATION_ITERATION_COUNT, 32, 'sha512', (pbkdf2Error: Error | null, key: Buffer) => {
         if (pbkdf2Error) {
           reject(pbkdf2Error)
         }

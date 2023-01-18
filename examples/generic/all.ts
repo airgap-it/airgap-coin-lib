@@ -1,17 +1,14 @@
 const mnemonic: string =
   'move fit muffin gauge initial supreme one language grace keep myth trick sun eyebrow radio movie marriage height water sad faint inherit end try'
 
+import { AeternityProtocol } from '../../packages/aeternity/src'
+import { BitcoinProtocol } from '../../packages/bitcoin/src'
+import { CosmosProtocol } from '../../packages/cosmos/src'
+import { EthereumProtocol } from '../../packages/ethereum/src'
+import { GroestlcoinProtocol } from '../../packages/groestlcoin/src'
+import { KusamaProtocol, PolkadotProtocol } from '../../packages/polkadot/src'
+import { TezosProtocol } from '../../packages/tezos/src'
 // import { writeFile } from 'fs'
-import {
-  AeternityProtocol,
-  BitcoinProtocol,
-  CosmosProtocol,
-  EthereumProtocol,
-  GroestlcoinProtocol,
-  KusamaProtocol,
-  PolkadotProtocol,
-  TezosProtocol
-} from '../../packages/core/src'
 
 import { generateIACCode } from './functions/generate-iac-code'
 

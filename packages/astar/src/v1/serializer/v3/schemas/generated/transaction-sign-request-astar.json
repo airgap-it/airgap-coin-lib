@@ -1,0 +1,36 @@
+{
+  "$ref": "#/definitions/AstarTransactionSignRequest",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "AstarTransactionSignRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "callbackURL": {
+          "type": "string"
+        },
+        "publicKey": {
+          "type": "string"
+        },
+        "transaction": {
+          "$ref": "#/definitions/SubstrateUnsignedTransaction"
+        }
+      },
+      "required": ["publicKey", "transaction"],
+      "type": "object"
+    },
+    "SubstrateUnsignedTransaction": {
+      "additionalProperties": false,
+      "properties": {
+        "encoded": {
+          "type": "string"
+        },
+        "type": {
+          "enum": ["unsigned"],
+          "type": "string"
+        }
+      },
+      "required": ["encoded", "type"],
+      "type": "object"
+    }
+  }
+}

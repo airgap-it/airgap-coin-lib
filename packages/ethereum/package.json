@@ -1,0 +1,69 @@
+{
+  "name": "@airgap/ethereum",
+  "version": "0.13.8",
+  "description": "The @airgap/ethereum is an Ethereum implementation of the ICoinProtocol interface from @airgap/coinlib-core.",
+  "keywords": [
+    "airgap",
+    "blockchain",
+    "crypto",
+    "ethereum"
+  ],
+  "license": "MIT",
+  "homepage": "https://www.airgap.it",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/airgap-it/airgap-coin-lib"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "rm -rf ./dist && node scripts/node-module-es-module-interop.js && tsc && node scripts/copy-files-after-build.js",
+    "build-scripts": "tsc scripts/*.ts",
+    "lint": "tslint -c ./tslint.json --project ./tsconfig.json --format stylish --fix",
+    "lint:prettier": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "lint-ci": "tslint -t json -o ../../lint-reports/ethereum.json --project . || true",
+    "lint-ci:prettier": "prettier \"src/**/*.ts\" \"test/**/*.ts\" --list-different",
+    "test": "TS_NODE_PROJECT='./test/tsconfig.json' nyc mocha --bail --require ts-node/register --require source-map-support/register --full-trace --delay --timeout 40000 ./test/**/**.spec.ts",
+    "test-ci": "nyc --reporter=lcov npm test",
+    "test-legacy": "npm run build && mocha --full-trace --timeout 40000 ./test/**/**.spec.js",
+    "browserify": "browserify ./dist/index.js -p realpathify -s airgapCoinLibEthereum > ./dist/airgap-coinlib-ethereum.min.js"
+  },
+  "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
+  "dependencies": {
+    "@ethereumjs/common": "2.6.0",
+    "@ethereumjs/tx": "3.4.0",
+    "@metamask/eth-sig-util": "4.0.0"
+  },
+  "peerDependencies": {
+    "@airgap/coinlib-core": "^0.13.8",
+    "@airgap/module-kit": "^0.13.8",
+    "@airgap/serializer": "^0.13.8"
+  },
+  "localDependencies": {
+    "ethereumjs-tx": "1.3.7",
+    "ethereumjs-util": "5.2.0"
+  },
+  "nyc": {
+    "include": [
+      "src/**/*.ts"
+    ],
+    "exclude": [
+      "test/**/*.spec.ts"
+    ],
+    "extension": [
+      ".ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ],
+    "reporter": [
+      "text",
+      "text-summary"
+    ],
+    "report-dir": "../../coverage/ethereum",
+    "sourceMap": true,
+    "instrument": true
+  },
+  "gitHead": "8e8feb6788204501b7173aa825f5456c2a5f185b"
+}

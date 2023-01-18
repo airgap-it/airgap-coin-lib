@@ -1,8 +1,6 @@
 import BigNumber from '../dependencies/src/bignumber.js-9.0.0/bignumber'
 import { IAirGapTransaction, IAirGapTransactionResult, IProtocolTransactionCursor } from '../interfaces/IAirGapTransaction'
 import { FeeDefaults, ICoinProtocol } from '../protocols/ICoinProtocol'
-import { TezosSaplingProtocol } from '../protocols/tezos/sapling/TezosSaplingProtocol'
-import { TezosSaplingTransactionCursor } from '../protocols/tezos/types/sapling/TezosSaplingTransactionCursor'
 import { MainProtocolSymbols } from '../utils/ProtocolSymbols'
 
 import { AirGapWallet, AirGapWalletStatus } from './AirGapWallet'
@@ -62,12 +60,14 @@ export abstract class AirGapMarketWallet extends AirGapWallet {
   }
 
   public async fetchTransactions(limit: number, cursor?: IProtocolTransactionCursor): Promise<IAirGapTransactionResult> {
+    const protocolIdentifier = await this.protocol.getIdentifier()
+
     // let transactions: IAirGapTransaction[] = []
     let transactionResult: IAirGapTransactionResult
     if (
-      (this.protocol.identifier === MainProtocolSymbols.BTC ||
-        this.protocol.identifier === MainProtocolSymbols.BTC_SEGWIT ||
-        this.protocol.identifier === MainProtocolSymbols.GRS) &&
+      (protocolIdentifier === MainProtocolSymbols.BTC ||
+        protocolIdentifier === MainProtocolSymbols.BTC_SEGWIT ||
+        protocolIdentifier === MainProtocolSymbols.GRS) &&
       this.isExtendedPublicKey
     ) {
       // TODO: Remove and test
@@ -81,8 +81,8 @@ export abstract class AirGapMarketWallet extends AirGapWallet {
       BTC as well, which results in the addresses being derived again, which causes massive lags in the apps.
       */
       transactionResult = await this.protocol.getTransactionsFromExtendedPublicKey(this.publicKey, limit, cursor)
-    } else if (this.protocol instanceof TezosSaplingProtocol) {
-      transactionResult = await this.protocol.getTransactionsFromPublicKey(this.publicKey, limit, cursor as TezosSaplingTransactionCursor)
+    } else if (protocolIdentifier === MainProtocolSymbols.XTZ_SHIELDED /* TODO: cover ALL sapling protocols */) {
+      transactionResult = await this.protocol.getTransactionsFromPublicKey(this.publicKey, limit, cursor)
     } else if (this.addresses.length > 0) {
       transactionResult = await this.protocol.getTransactionsFromAddresses(this.addressesToCheck(), limit, cursor)
     } else if (this.isExtendedPublicKey) {
@@ -98,7 +98,7 @@ export abstract class AirGapMarketWallet extends AirGapWallet {
     recipients: string[],
     values: string[],
     fee: string,
-    data?: { [key: string]: unknown }
+    data: { [key: string]: unknown } = {}
   ): Promise<IAirGapTransaction> {
     if (this.isExtendedPublicKey) {
       return this.protocol.prepareTransactionFromExtendedPublicKey(this.publicKey, 0, recipients, values, fee, data)
@@ -111,7 +111,7 @@ export abstract class AirGapMarketWallet extends AirGapWallet {
     }
   }
 
-  public async getMaxTransferValue(recipients: string[], fee?: string, data?: { [key: string]: unknown }): Promise<BigNumber> {
+  public async getMaxTransferValue(recipients: string[], fee?: string, data: { [key: string]: unknown } = {}): Promise<BigNumber> {
     if (this.isExtendedPublicKey) {
       return new BigNumber(await this.protocol.estimateMaxTransactionValueFromExtendedPublicKey(this.publicKey, recipients, fee, data))
     } else {
@@ -123,7 +123,7 @@ export abstract class AirGapMarketWallet extends AirGapWallet {
     }
   }
 
-  public async estimateFees(recipients: string[], values: string[], data?: { [key: string]: unknown }): Promise<FeeDefaults> {
+  public async estimateFees(recipients: string[], values: string[], data: { [key: string]: unknown } = {}): Promise<FeeDefaults> {
     if (this.isExtendedPublicKey) {
       return this.protocol.estimateFeeDefaultsFromExtendedPublicKey(this.publicKey, recipients, values, data)
     } else {

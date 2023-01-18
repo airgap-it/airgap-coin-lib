@@ -148,7 +148,7 @@ var findFilesOnLevel = function (base) {
           _b.apply(_a, _c.concat([_d.sent()]))
           return [3 /*break*/, 4]
         case 3:
-          if (file.endsWith('json') || file.endsWith('js')) {
+          if (file.endsWith('json') || file.endsWith('js') || file.endsWith('.d.ts')) {
             files.push(path)
             path_1
               .dirname(path)
@@ -177,12 +177,6 @@ var findFilesOnLevel = function (base) {
   })
 }
 findFilesOnLevel('./src/dependencies/src')
-  .then(function () {})
-  ['catch'](console.error)
-findFilesOnLevel('./src/serializer/schemas')
-  .then(function () {})
-  ['catch'](console.error)
-findFilesOnLevel('./src/serializer-v3/schemas')
   .then(function () {})
   ['catch'](console.error)
 fs_1.copyFileSync('./package.json', './dist/package.json')

@@ -1,6 +1,5 @@
-import { generateId, IACMessageDefinitionObject, IACMessageType, Serializer } from '../../../../packages/core/src'
-import { SubstrateAddress } from '../../../../packages/core/src/protocols/substrate/helpers/data/account/SubstrateAddress'
-import { SubstrateNetwork } from '../../../../packages/core/src/protocols/substrate/SubstrateNetwork'
+import { generateId, IACMessageDefinitionObject, IACMessageType, Serializer } from '../../../../packages/serializer/src'
+import { SubstrateAddress, SubstrateNetwork } from '../../../../packages/substrate/src'
 import { MainProtocolSymbols } from '../../../../packages/core/src/utils/ProtocolSymbols'
 
 const address: string = '12QceCDMHcK6qgnxLJsMBQPLAA6iX8WCuSx7dChcsNNnBtKg'

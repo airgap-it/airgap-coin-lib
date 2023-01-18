@@ -1,8 +1,5 @@
-import { IACMessageType } from '../../packages/core/src/serializer-v3/interfaces'
-import { IACMessageDefinitionObject } from '../../packages/core/src/serializer-v3/message'
-import { SerializerV3 } from '../../packages/core/src/serializer-v3/serializer'
-import { generateId } from '../../packages/core/src/serializer-v3/utils/generateId'
 import { MainProtocolSymbols } from '../../packages/core/src/utils/ProtocolSymbols'
+import { generateId, IACMessageDefinitionObject, IACMessageType, SerializerV3 } from '../../packages/serializer/src'
 
 const json: IACMessageDefinitionObject = {
   type: IACMessageType.TransactionSignRequest,

@@ -20,8 +20,9 @@ export class AirGapNFTWallet extends AirGapMarketWallet {
     return this.currentMarketPrice[assetID]
   }
 
-  public setCurrentMarketPrice(marketPrice: BigNumber | undefined, assetID: string): void {
-    this.getCurrentMarketPrice[assetID] = this.protocol.options.network.type === NetworkType.MAINNET ? marketPrice : new BigNumber(0)
+  public async setCurrentMarketPrice(marketPrice: BigNumber | undefined, assetID: string): Promise<void> {
+    this.getCurrentMarketPrice[assetID] =
+      (await this.protocol.getOptions()).network.type === NetworkType.MAINNET ? marketPrice : new BigNumber(0)
   }
 
   public async synchronize(assetsID: string[] = []): Promise<void> {
@@ -34,7 +35,7 @@ export class AirGapNFTWallet extends AirGapMarketWallet {
         const [balance, marketPrice] = await Promise.all([this.balanceOf(assetID), this.fetchCurrentMarketPrice(assetID)])
 
         this.setCurrentBalance(balance, assetID)
-        this.setCurrentMarketPrice(marketPrice, assetID)
+        await this.setCurrentMarketPrice(marketPrice, assetID)
       })
     )
   }
@@ -47,7 +48,7 @@ export class AirGapNFTWallet extends AirGapMarketWallet {
   public async fetchCurrentMarketPrice(assetID: string, _baseSymbol: string = 'USD'): Promise<BigNumber> {
     // TODO
     const result = new BigNumber(0)
-    this.setCurrentMarketPrice(result, assetID)
+    await this.setCurrentMarketPrice(result, assetID)
     return result
   }
 
