@@ -164,11 +164,11 @@ export class SubstrateTransaction<C extends SubstrateProtocolConfiguration> exte
   }
 
   public toAirGapTransactions(): Partial<AirGapTransaction>[] {
-    const airGapTransaction = {
+    const airGapTransaction: Partial<AirGapTransaction> = {
       from: [this.signer.asAddress()],
       to: [this.signer.asAddress()],
-      extra: this.type !== 'transfer' ? { type: this.type } : undefined,
-      transactionDetails: JSON.parse(this.toString())
+      type: this.type !== 'transfer' ? this.type : undefined,
+      json: JSON.parse(this.toString())
     }
     const parts = this.method.toAirGapTransactionParts()
 

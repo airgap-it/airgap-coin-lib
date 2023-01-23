@@ -193,7 +193,7 @@ export interface Protocol<G extends Partial<OfflineGeneric & OnlineGeneric> = {}
 export type _AnyProtocol = _OfflineProtocol | _OnlineProtocol
 export type AnyProtocol<G extends Partial<OfflineGeneric & OnlineGeneric> = {}> = OfflineProtocol<G> | OnlineProtocol<G>
 
-// Convinience Types
+// ##### Convinience Types #####
 
 export type AirGapOfflineProtocol<
   G extends Partial<OfflineGeneric> = {},

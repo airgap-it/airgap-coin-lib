@@ -1,8 +1,7 @@
 // tslint:disable: max-classes-per-file
 import { async } from '@airgap/coinlib-core/dependencies/src/validate.js-0.13.1/validate'
-import { TransactionValidator, TransactionValidatorFactory, validateSyncScheme } from '@airgap/serializer'
+import { TransactionValidator, validateSyncScheme } from '@airgap/serializer'
 
-import { BitcoinUnsignedTransaction } from '../../../types/transaction'
 import { BitcoinTransactionSignRequest } from '../schemas/definitions/transaction-sign-request-bitcoin'
 import { BitcoinTransactionSignResponse } from '../schemas/definitions/transaction-sign-response-bitcoin'
 
@@ -45,18 +44,12 @@ const error = (errors) => errors
 
 export class BitcoinTransactionValidator implements TransactionValidator {
   public validateUnsignedTransaction(request: BitcoinTransactionSignRequest): Promise<any> {
-    const transaction: BitcoinUnsignedTransaction = request.transaction
+    const transaction = request.transaction
     validateSyncScheme({})
 
     return async(transaction, unsignedTransactionConstraints).then(success, error)
   }
   public validateSignedTransaction(response: BitcoinTransactionSignResponse): Promise<any> {
     return async(response, signedTransactionConstraints).then(success, error)
-  }
-}
-
-export class BitcoinTransactionValidatorFactory implements TransactionValidatorFactory<BitcoinTransactionValidator> {
-  public create(): BitcoinTransactionValidator {
-    return new BitcoinTransactionValidator()
   }
 }

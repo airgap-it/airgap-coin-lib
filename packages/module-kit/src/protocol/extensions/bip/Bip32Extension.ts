@@ -96,6 +96,7 @@ export interface OfflineBip32Protocol<
       KeyPair | ExtendedKeyPair
     > {
   getExtendedKeyPairFromSecret(secret: Secret, derivationPath?: string): Promise<ExtendedKeyPair>
+  deriveFromExtendedSecretKey(extendedSecretKey: ExtendedSecretKey, visibilityIndex: number, addressIndex: number): Promise<SecretKey>
 }
 
 export interface OnlineBip32Protocol<

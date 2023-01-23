@@ -3,6 +3,7 @@ import { IACMessageDefinitionObject, IACMessages as IACMessagesV2, Message } fro
 import { AccountShareResponse as AccountShareResponseV2 } from './v2/schemas/definitions/account-share-response'
 import { MessageSignRequest } from './v2/schemas/definitions/message-sign-request'
 import { MessageSignResponse } from './v2/schemas/definitions/message-sign-response'
+import { SchemaInfo as SchemaInfoV2, SchemaRoot as SchemaRootV2 } from './v2/schemas/schema'
 import { Serializer } from './v2/serializer'
 import { TransactionSignRequest as TransactionSignRequestV2 } from './v2/transactions/transaction-sign-request'
 import { TransactionSignResponse as TransactionSignResponseV2 } from './v2/transactions/transaction-sign-response'
@@ -14,6 +15,7 @@ import {
 import { validateSyncScheme as validateSyncSchemeV2 } from './v2/validators/validators'
 import { IACMessageDefinitionObjectV3, IACMessages } from './v3/message'
 import { AccountShareResponse } from './v3/schemas/definitions/account-share-response'
+import { SchemaInfo, SchemaRoot } from './v3/schemas/schema'
 import { SerializerV3 } from './v3/serializer'
 import { TransactionSignRequest } from './v3/transactions/transaction-sign-request'
 import { TransactionSignResponse } from './v3/transactions/transaction-sign-response'
@@ -34,7 +36,11 @@ export {
   SerializerV3,
   Message,
   TransactionValidator,
-  TransactionValidatorFactory
+  TransactionValidatorFactory,
+  SchemaInfoV2,
+  SchemaInfo,
+  SchemaRootV2,
+  SchemaRoot
 }
 
 export { generateId, generateIdV2, validateSyncScheme, validateSyncSchemeV2 }

@@ -89,6 +89,7 @@ export class CosmosTransaction implements JSONConvertible, RPCConvertible, Encod
   }
 
   public static fromJSON(json: CosmosUnsignedTransaction): CosmosTransaction {
+    json = JSON.parse(JSON.stringify(json))
     const messages: CosmosMessage[] = json.messages.map((value) => {
       const type: CosmosMessageTypeIndex = value.type
       switch (type) {
@@ -108,6 +109,7 @@ export class CosmosTransaction implements JSONConvertible, RPCConvertible, Encod
   }
 
   public static fromRPCBody(json: any): CosmosTransaction {
+    json = JSON.parse(JSON.stringify(json))
     const messages: CosmosMessage[] = json.msgs.map((value: any) => {
       const type: string = value.type
       switch (type) {

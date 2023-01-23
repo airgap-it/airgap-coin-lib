@@ -72,7 +72,8 @@ const bip32BaseProtocolSchema: Schema<BaseBip32Protocol> = {
 const bip32OfflineProtocolSchema: Schema<OfflineBip32Protocol> = {
   ...bip32BaseProtocolSchema,
   ...offlineProtocolSchema,
-  getExtendedKeyPairFromSecret: 'required'
+  getExtendedKeyPairFromSecret: 'required',
+  deriveFromExtendedSecretKey: 'required'
 }
 
 const bip32OnlineProtocolSchema: Schema<OnlineBip32Protocol> = {
@@ -81,7 +82,8 @@ const bip32OnlineProtocolSchema: Schema<OnlineBip32Protocol> = {
 }
 
 const subProtocolSchema: Schema<SubProtocol> = {
-  getType: 'required'
+  getType: 'required',
+  mainProtocol: 'required'
 }
 
 const singleTokenSubProtocolSchema: Schema<SingleTokenSubProtocol> = {
@@ -149,11 +151,11 @@ const transactionStatusCheckerSchema: Schema<TransactionStatusChecker> = {
 
 // Implementation Checks
 
-function isOfflineProtocol(object: unknown): object is OfflineProtocol {
+export function isOfflineProtocol(object: AnyProtocol): object is OfflineProtocol {
   return implementsInterface<OfflineProtocol>(object, offlineProtocolSchema)
 }
 
-function isOnlineProtocol(object: unknown): object is OnlineProtocol {
+export function isOnlineProtocol(object: AnyProtocol): object is OnlineProtocol {
   return implementsInterface<OnlineProtocol>(object, onlineProtocolSchema)
 }
 

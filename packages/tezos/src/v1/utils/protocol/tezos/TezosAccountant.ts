@@ -45,7 +45,17 @@ export class TezosAccountant<_Units extends string> {
           case TezosOperationType.TRANSACTION:
             const tezosSpendOperation: TezosTransactionOperation = content as TezosTransactionOperation
             operation = tezosSpendOperation
-            partialTxs = await this.getDetailsFromTransactionOperation(tezosSpendOperation)
+            partialTxs = (await this.getDetailsFromTransactionOperation(tezosSpendOperation)).map(
+              (tx: Partial<AirGapTransaction<_Units, TezosUnits>>): Partial<AirGapTransaction<_Units, TezosUnits>> => ({
+                ...tx,
+                extra: tezosSpendOperation.parameters
+                  ? {
+                      ...(tx.extra ?? {}),
+                      parameters: tezosSpendOperation.parameters
+                    }
+                  : undefined
+              })
+            )
             break
           case TezosOperationType.ORIGINATION:
             {

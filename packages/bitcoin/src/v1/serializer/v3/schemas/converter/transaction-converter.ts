@@ -1,4 +1,4 @@
-import { newSignedTransaction } from '@airgap/module-kit'
+import { newSignedTransaction, newUnsignedTransaction } from '@airgap/module-kit'
 import {
   BitcoinSegwitSignedTransaction,
   BitcoinSegwitUnsignedTransaction,
@@ -15,7 +15,13 @@ export function bitcoinUnsignedTransactionToRequest(
   publicKey: string,
   callbackUrl?: string
 ): BitcoinTransactionSignRequest {
-  return { transaction: unsigned, publicKey, callbackURL: callbackUrl }
+  const { type: _, ...rest } = unsigned
+
+  return {
+    transaction: rest,
+    publicKey,
+    callbackURL: callbackUrl
+  }
 }
 
 export function bitcoinSignedTransactionToResponse(
@@ -30,7 +36,13 @@ export function bitcoinSegwitUnsignedTransactionToRequest(
   publicKey: string,
   callbackUrl?: string
 ): BitcoinSegwitTransactionSignRequest {
-  return { transaction: unsigned, publicKey, callbackURL: callbackUrl }
+  const { type: _, ...rest } = unsigned
+
+  return {
+    transaction: rest,
+    publicKey,
+    callbackURL: callbackUrl
+  }
 }
 
 export function bitcoinSegwitSignedTransactionToResponse(
@@ -41,7 +53,7 @@ export function bitcoinSegwitSignedTransactionToResponse(
 }
 
 export function bitcoinTransactionSignRequestToUnsigned(request: BitcoinTransactionSignRequest): BitcoinUnsignedTransaction {
-  return request.transaction
+  return newUnsignedTransaction<BitcoinUnsignedTransaction>(request.transaction)
 }
 
 export function bitcoinTransactionSignResponseToSigned(response: BitcoinTransactionSignResponse): BitcoinSignedTransaction {
@@ -57,7 +69,7 @@ export function bitcoinTransactionSignResponseToSigned(response: BitcoinTransact
 export function bitcoinSegwitTransactionSignRequestToUnsigned(
   request: BitcoinSegwitTransactionSignRequest
 ): BitcoinSegwitUnsignedTransaction {
-  return request.transaction
+  return newUnsignedTransaction(request.transaction)
 }
 
 export function bitcoinSegwitTransactionSignResponseToSigned(

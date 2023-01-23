@@ -1,7 +1,7 @@
 import { Amount } from './amount'
 import { FeeDefaults } from './fee'
 
-export interface ProtocolMetadata<_Units extends string, _FeeUnits extends string = _Units> {
+export interface ProtocolMetadata<_Units extends string = string, _FeeUnits extends string = _Units> {
   name: string
   identifier: string // TODO: we should help developers generate unique identifiers somehow
 
@@ -13,7 +13,7 @@ export interface ProtocolMetadata<_Units extends string, _FeeUnits extends strin
   transaction?: ProtocolTransactionMetadata<_Units>
 }
 
-export type ProtocolUnitsMetadata<_Units extends string> = {
+export type ProtocolUnitsMetadata<_Units extends string = string> = {
   [key in _Units]: {
     symbol: ProtocolSymbol
     decimals: number
@@ -25,19 +25,11 @@ export interface ProtocolSymbol {
   market?: string
 }
 
-interface ProtocolFeeMetadataWithUnits<_FeeUnits extends string> {
-  units: ProtocolUnitsMetadata<_FeeUnits>
-  mainUnit: _FeeUnits
+export interface ProtocolFeeMetadata<_FeeUnits extends string = string> {
   defaults?: FeeDefaults<_FeeUnits>
+  units?: ProtocolUnitsMetadata<_FeeUnits>
+  mainUnit?: _FeeUnits
 }
-
-interface ProtocolFeeMetadataWithoutUnits<_FeeUnits extends string> {
-  defaults?: FeeDefaults<_FeeUnits>
-}
-
-export type ProtocolFeeMetadata<_FeeUnits extends string> =
-  | ProtocolFeeMetadataWithoutUnits<_FeeUnits>
-  | ProtocolFeeMetadataWithUnits<_FeeUnits>
 
 export interface ProtocolAccountMetadata {
   standardDerivationPath?: string
@@ -49,7 +41,7 @@ export interface ProtocolAccountMetadata {
   }
 }
 
-export interface ProtocolTransactionMetadata<_Units extends string> {
+export interface ProtocolTransactionMetadata<_Units extends string = string> {
   arbitraryData?:
     | ProtocolTransactionArbitraryDataMetadata
     | {

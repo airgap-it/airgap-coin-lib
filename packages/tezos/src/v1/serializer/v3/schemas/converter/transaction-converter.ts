@@ -1,4 +1,4 @@
-import { newSignedTransaction } from '@airgap/module-kit'
+import { newSignedTransaction, newUnsignedTransaction } from '@airgap/module-kit'
 
 import {
   TezosSaplingSignedTransaction,
@@ -16,7 +16,13 @@ export function tezosUnsignedTransactionToRequest(
   publicKey: string,
   callbackUrl?: string
 ): TezosTransactionSignRequest {
-  return { transaction: unsigned, publicKey, callbackURL: callbackUrl }
+  return {
+    transaction: {
+      binaryTransaction: unsigned.binary
+    },
+    publicKey,
+    callbackURL: callbackUrl
+  }
 }
 
 export function tezosSignedTransactionToResponse(signed: TezosSignedTransaction, accountIdentifier: string): TezosTransactionSignResponse {
@@ -24,7 +30,7 @@ export function tezosSignedTransactionToResponse(signed: TezosSignedTransaction,
 }
 
 export function tezosTransactionSignRequestToUnsigned(request: TezosTransactionSignRequest): TezosUnsignedTransaction {
-  return request.transaction
+  return newUnsignedTransaction<TezosUnsignedTransaction>({ binary: request.transaction.binaryTransaction })
 }
 
 export function tezosTransactionSignResponseToSigned(response: TezosTransactionSignResponse): TezosSignedTransaction {
@@ -36,7 +42,13 @@ export function tezosSaplingUnsignedTransactionToRequest(
   publicKey: string,
   callbackUrl?: string
 ): TezosSaplingTransactionSignRequest {
-  return { transaction: unsigned, publicKey, callbackURL: callbackUrl }
+  const { type: _, ...rest } = unsigned
+
+  return {
+    transaction: rest,
+    publicKey,
+    callbackURL: callbackUrl
+  }
 }
 
 export function tezosSaplingSignedTransactionToResponse(
@@ -47,7 +59,7 @@ export function tezosSaplingSignedTransactionToResponse(
 }
 
 export function tezosSaplingTransactionSignRequestToUnsigned(request: TezosSaplingTransactionSignRequest): TezosSaplingUnsignedTransaction {
-  return request.transaction
+  return newUnsignedTransaction<TezosSaplingUnsignedTransaction>(request.transaction)
 }
 
 export function tezosSaplingTransactionSignResponseToSigned(response: TezosSaplingTransactionSignResponse): TezosSaplingSignedTransaction {

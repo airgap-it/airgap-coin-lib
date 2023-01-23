@@ -10,7 +10,7 @@
   },
   "private": true,
   "scripts": {
-    "build": "lerna run build --stream --scope @airgap/coinlib-core && lerna run build --stream --scope @airgap/module-kit --scope @airgap/serializer && lerna run build --stream --scope @airgap/bitcoin --scope @airgap/substrate && lerna run build --stream --ignore @airgap/coinlib-core --ignore @airgap/module-kit --ignore @airgap/bitcoin --ignore @airgap/substrate --ignore @airgap/serializer",
+    "build": "lerna run build --stream --scope @airgap/coinlib-core && lerna run build --stream --scope @airgap/serializer && lerna run build --stream --scope @airgap/module-kit && lerna run build --stream --scope @airgap/bitcoin --scope @airgap/substrate && lerna run build --stream --ignore @airgap/coinlib-core --ignore @airgap/module-kit --ignore @airgap/bitcoin --ignore @airgap/substrate --ignore @airgap/serializer",
     "build-scripts": "tsc scripts/*.ts && lerna run build-scripts --stream",
     "lint": "lerna run lint --stream",
     "lint:prettier": "lerna run lint:prettier --stream",

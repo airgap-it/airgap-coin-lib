@@ -1,6 +1,5 @@
 import { createTezosBlockExplorer } from './block-explorer/factory'
 import { TzKTBlockExplorer } from './block-explorer/TzKTBlockExplorer'
-import { TezosKtModule } from './module/TezosKtModule'
 import { TezosModule } from './module/TezosModule'
 import { createTezosFA1p2Protocol, TezosFA1p2Protocol } from './protocol/fa/TezosFA1p2Protocol'
 import { createTezosFA1Protocol, TezosFA1Protocol } from './protocol/fa/TezosFA1Protocol'
@@ -73,7 +72,7 @@ import { TezosKtTransactionCursor, TezosSignedTransaction, TezosTransactionCurso
 
 // Module
 
-export { TezosModule, TezosKtModule }
+export { TezosModule }
 
 // Protocol
 

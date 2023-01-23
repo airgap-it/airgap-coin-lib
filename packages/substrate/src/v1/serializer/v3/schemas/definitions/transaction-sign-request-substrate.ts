@@ -2,4 +2,4 @@ import { TransactionSignRequest } from '@airgap/serializer'
 
 import { SubstrateUnsignedTransaction } from '../../../../types/transaction'
 
-export interface SubstrateTransactionSignRequest extends TransactionSignRequest<SubstrateUnsignedTransaction> {}
+export interface SubstrateTransactionSignRequest extends TransactionSignRequest<Omit<SubstrateUnsignedTransaction, 'type'>> {}

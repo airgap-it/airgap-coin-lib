@@ -32,13 +32,9 @@
         "serialized": {
           "$ref": "#/definitions/HexString",
           "type": "string"
-        },
-        "type": {
-          "enum": ["unsigned"],
-          "type": "string"
         }
       },
-      "required": ["derivationPath", "masterFingerprint", "serialized", "type"],
+      "required": ["derivationPath", "masterFingerprint", "serialized"],
       "type": "object"
     }
   }

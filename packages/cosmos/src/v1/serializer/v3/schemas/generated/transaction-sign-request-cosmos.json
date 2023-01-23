@@ -12,95 +12,88 @@
           "type": "string"
         },
         "transaction": {
-          "$ref": "#/definitions/CosmosUnsignedTransaction"
-        }
-      },
-      "required": ["publicKey", "transaction"],
-      "type": "object"
-    },
-    "CosmosUnsignedTransaction": {
-      "additionalProperties": false,
-      "properties": {
-        "accountNumber": {
-          "type": "string"
-        },
-        "chainID": {
-          "type": "string"
-        },
-        "fee": {
           "additionalProperties": false,
           "properties": {
-            "amount": {
+            "accountNumber": {
+              "type": "string"
+            },
+            "chainID": {
+              "type": "string"
+            },
+            "fee": {
+              "additionalProperties": false,
+              "properties": {
+                "amount": {
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "amount": {
+                        "type": "string"
+                      },
+                      "denom": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["denom", "amount"],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "gas": {
+                  "type": "string"
+                }
+              },
+              "required": ["amount", "gas"],
+              "type": "object"
+            },
+            "memo": {
+              "type": "string"
+            },
+            "messages": {
               "items": {
                 "additionalProperties": false,
                 "properties": {
                   "amount": {
+                    "items": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "amount": {
+                          "type": "string"
+                        },
+                        "denom": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["denom", "amount"],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "fromAddress": {
                     "type": "string"
                   },
-                  "denom": {
+                  "toAddress": {
                     "type": "string"
+                  },
+                  "type": {
+                    "enum": [0, 1, 2, 3],
+                    "type": "number"
                   }
                 },
-                "required": ["denom", "amount"],
+                "required": ["type", "amount", "fromAddress", "toAddress"],
                 "type": "object"
               },
               "type": "array"
             },
-            "gas": {
+            "sequence": {
               "type": "string"
             }
           },
-          "required": ["amount", "gas"],
+          "required": ["messages", "fee", "memo", "chainID", "accountNumber", "sequence"],
           "type": "object"
-        },
-        "memo": {
-          "type": "string"
-        },
-        "messages": {
-          "items": {
-            "additionalProperties": false,
-            "properties": {
-              "amount": {
-                "items": {
-                  "additionalProperties": false,
-                  "properties": {
-                    "amount": {
-                      "type": "string"
-                    },
-                    "denom": {
-                      "type": "string"
-                    }
-                  },
-                  "required": ["denom", "amount"],
-                  "type": "object"
-                },
-                "type": "array"
-              },
-              "fromAddress": {
-                "type": "string"
-              },
-              "toAddress": {
-                "type": "string"
-              },
-              "type": {
-                "enum": [0, 1, 2, 3],
-                "type": "number"
-              }
-            },
-            "required": ["type", "amount", "fromAddress", "toAddress"],
-            "type": "object"
-          },
-          "type": "array"
-        },
-        "sequence": {
-          "type": "string"
-        },
-        "type": {
-          "enum": ["unsigned"],
-          "type": "string"
         }
       },
-      "required": ["accountNumber", "chainID", "fee", "memo", "messages", "sequence", "type"],
+      "required": ["publicKey", "transaction"],
       "type": "object"
     }
   }

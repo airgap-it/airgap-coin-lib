@@ -1,6 +1,5 @@
 import { BlockCypherBlockExplorer } from './block-explorer/BlockCypherBlockExplorer'
 import { BitcoinModule } from './module/BitcoinModule'
-import { BitcoinSegwitModule } from './module/BitcoinSegwitModule'
 import { BitcoinProtocol, createBitcoinProtocol, createBitcoinProtocolOptions } from './protocol/BitcoinProtocol'
 import { BitcoinSegwitProtocol, createBitcoinSegwitProtocol } from './protocol/BitcoinSegwitProtocol'
 import { BitcoinTestnetProtocol, createBitcoinTestnetProtocol } from './protocol/BitcoinTestnetProtocol'
@@ -14,7 +13,7 @@ import { BitcoinTransactionSignRequest } from './serializer/v3/schemas/definitio
 import { BitcoinSegwitTransactionSignRequest } from './serializer/v3/schemas/definitions/transaction-sign-request-bitcoin-segwit'
 import { BitcoinTransactionSignResponse } from './serializer/v3/schemas/definitions/transaction-sign-response-bitcoin'
 import { BitcoinSegwitTransactionSignResponse } from './serializer/v3/schemas/definitions/transaction-sign-response-bitcoin-segwit'
-import { BitcoinTransactionValidator } from './serializer/v3/validators/transaction-validators'
+import { BitcoinTransactionValidator } from './serializer/v3/validators/transaction-validator'
 import { bitcoinValidators } from './serializer/v3/validators/validators'
 import { BitcoinProtocolNetwork, BitcoinProtocolOptions, BitcoinUnits } from './types/protocol'
 import {
@@ -29,7 +28,7 @@ import {
 
 // Module
 
-export { BitcoinModule, BitcoinSegwitModule }
+export { BitcoinModule }
 
 // Protocol
 

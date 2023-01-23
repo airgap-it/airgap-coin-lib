@@ -329,6 +329,20 @@ export class BitcoinProtocolImpl implements BitcoinProtocol {
     return this.getExtendedKeyPairFromHexSecret(secret.toString('hex'), derivationPath)
   }
 
+  public async deriveFromExtendedSecretKey(
+    extendedSecretKey: ExtendedSecretKey,
+    visibilityIndex: number,
+    addressIndex: number
+  ): Promise<SecretKey> {
+    const encodedExtendedSecretKey: ExtendedSecretKey = convertExtendedSecretKey(extendedSecretKey, 'encoded')
+    const childSecretKey: Buffer = this.bitcoinJS.lib.HDNode.fromBase58(encodedExtendedSecretKey.value, this.bitcoinJS.config.network)
+      .derive(visibilityIndex)
+      .derive(addressIndex)
+      .getPrivateKeyBuffer()
+
+    return newSecretKey(childSecretKey.toString('hex'), 'hex')
+  }
+
   public async signTransactionWithSecretKey(
     transaction: BitcoinUnsignedTransaction,
     secretKey: SecretKey | ExtendedSecretKey

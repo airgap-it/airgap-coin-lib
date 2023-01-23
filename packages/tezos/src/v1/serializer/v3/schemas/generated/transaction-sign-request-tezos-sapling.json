@@ -107,45 +107,38 @@
           "type": "string"
         },
         "transaction": {
-          "$ref": "#/definitions/TezosSaplingUnsignedTransaction"
+          "additionalProperties": false,
+          "properties": {
+            "chainId": {
+              "type": "string"
+            },
+            "contractAddress": {
+              "type": "string"
+            },
+            "ins": {
+              "items": {
+                "$ref": "#/definitions/TezosSaplingInput"
+              },
+              "type": "array"
+            },
+            "outs": {
+              "items": {
+                "$ref": "#/definitions/TezosSaplingOutput"
+              },
+              "type": "array"
+            },
+            "stateDiff": {
+              "$ref": "#/definitions/TezosSaplingStateDiff"
+            },
+            "unshieldTarget": {
+              "type": "string"
+            }
+          },
+          "required": ["ins", "outs", "contractAddress", "chainId", "stateDiff", "unshieldTarget"],
+          "type": "object"
         }
       },
       "required": ["publicKey", "transaction"],
-      "type": "object"
-    },
-    "TezosSaplingUnsignedTransaction": {
-      "additionalProperties": false,
-      "properties": {
-        "chainId": {
-          "type": "string"
-        },
-        "contractAddress": {
-          "type": "string"
-        },
-        "ins": {
-          "items": {
-            "$ref": "#/definitions/TezosSaplingInput"
-          },
-          "type": "array"
-        },
-        "outs": {
-          "items": {
-            "$ref": "#/definitions/TezosSaplingOutput"
-          },
-          "type": "array"
-        },
-        "stateDiff": {
-          "$ref": "#/definitions/TezosSaplingStateDiff"
-        },
-        "type": {
-          "enum": ["unsigned"],
-          "type": "string"
-        },
-        "unshieldTarget": {
-          "type": "string"
-        }
-      },
-      "required": ["chainId", "contractAddress", "ins", "outs", "stateDiff", "type", "unshieldTarget"],
       "type": "object"
     }
   }

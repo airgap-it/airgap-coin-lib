@@ -1,8 +1,7 @@
 // tslint:disable: max-classes-per-file
 import { async } from '@airgap/coinlib-core/dependencies/src/validate.js-0.13.1/validate'
-import { TransactionValidator, TransactionValidatorFactory, TransactionValidatorV2, validateSyncScheme } from '@airgap/serializer'
+import { TransactionValidator, TransactionValidatorV2, validateSyncScheme } from '@airgap/serializer'
 
-import { EthereumUnsignedTransaction } from '../../../types/transaction'
 import { EthereumTransactionSignRequest } from '../schemas/definitions/transaction-sign-request-ethereum'
 import { EthereumTransactionSignResponse } from '../schemas/definitions/transaction-sign-response-ethereum'
 
@@ -60,18 +59,12 @@ const error = (errors: any) => errors
 
 export class EthereumTransactionValidator implements TransactionValidator, TransactionValidatorV2 {
   public validateUnsignedTransaction(request: EthereumTransactionSignRequest): Promise<any> {
-    const transaction: EthereumUnsignedTransaction = request.transaction
+    const transaction = request.transaction
     validateSyncScheme({})
 
     return async(transaction, unsignedTransactionConstraints).then(success, error)
   }
   public validateSignedTransaction(signedTx: EthereumTransactionSignResponse): any {
     return async(signedTx, signedTransactionConstraints).then(success, error)
-  }
-}
-
-export class EthereumTransactionValidatorFactory implements TransactionValidatorFactory<EthereumTransactionValidator> {
-  public create(): EthereumTransactionValidator {
-    return new EthereumTransactionValidator()
   }
 }

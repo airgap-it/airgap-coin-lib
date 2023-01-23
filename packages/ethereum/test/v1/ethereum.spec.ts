@@ -11,6 +11,7 @@ const ethProtocolSpec = new EthereumTestProtocolSpec()
 const unsignedTxs: EthereumUnsignedTransaction[] = [
   {
     type: 'unsigned',
+    ethereumType: 'raw',
     nonce: '0x0',
     gasPrice: '0x4a817c800',
     gasLimit: '0x5208',
@@ -21,6 +22,7 @@ const unsignedTxs: EthereumUnsignedTransaction[] = [
   },
   {
     type: 'unsigned',
+    ethereumType: 'raw',
     nonce: '0x0',
     gasPrice: '0x4a817c800',
     gasLimit: '0x5208',

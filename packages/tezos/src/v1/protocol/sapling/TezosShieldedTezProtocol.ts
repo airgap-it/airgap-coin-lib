@@ -10,9 +10,9 @@ import { TezosIndexerClient } from '../../indexer/TezosIndexerClient'
 import { MichelsonList } from '../../types/michelson/generics/MichelsonList'
 import { MichelsonBytes } from '../../types/michelson/primitives/MichelsonBytes'
 import { TezosTransactionParameters } from '../../types/operations/kinds/Transaction'
-import { TezosSaplingProtocolNetwork, TezosShieldedTezProtocolOptions, TezosUnits } from '../../types/protocol'
+import { TezosProtocolOptions, TezosSaplingProtocolNetwork, TezosShieldedTezProtocolOptions, TezosUnits } from '../../types/protocol'
 import { TezosSaplingExternalMethodProvider } from '../../types/sapling/TezosSaplingExternalMethodProvider'
-import { TEZOS_GHOSTNET_PROTOCOL_NETWORK, TEZOS_MAINNET_PROTOCOL_NETWORK, TEZOS_UNITS } from '../TezosProtocol'
+import { createTezosProtocolOptions, TEZOS_UNITS } from '../TezosProtocol'
 
 import { TezosSaplingProtocol, TezosSaplingProtocolImpl } from './TezosSaplingProtocol'
 
@@ -105,12 +105,6 @@ export function createTezosShieldedTezProtocol(options: RecursivePartial<TezosSh
   return new TezosShieldedTezProtocolImpl(options)
 }
 
-export const SHIELDED_TEZ_MAINNET_PROTOCOL_NETWORK: TezosSaplingProtocolNetwork = TEZOS_MAINNET_PROTOCOL_NETWORK
-
-export const SHIELDED_TEZ_GHOSTNET_PROTOCOL_NETWORK: TezosSaplingProtocolNetwork = TEZOS_GHOSTNET_PROTOCOL_NETWORK
-
-const DEFAULT_SHIELDED_TEZ_PROTOCOL_NETWORK: TezosSaplingProtocolNetwork = SHIELDED_TEZ_MAINNET_PROTOCOL_NETWORK
-
 const DEFAULT_MEMO_SIZE: number = 8
 const DEFAULT_MERKLE_TREE_HEIGHT: number = 32
 
@@ -120,18 +114,11 @@ export function createTezosShieldedTezProtocolOptions(
   merkleTreeHeight?: number,
   externalProvider?: TezosSaplingExternalMethodProvider
 ): TezosShieldedTezProtocolOptions {
+  const tezosProtocolOptions: TezosProtocolOptions = createTezosProtocolOptions(network)
+
   return {
     network: {
-      ...DEFAULT_SHIELDED_TEZ_PROTOCOL_NETWORK,
-      ...network,
-      blockExplorer: {
-        ...DEFAULT_SHIELDED_TEZ_PROTOCOL_NETWORK.blockExplorer,
-        ...network.blockExplorer
-      },
-      indexer: {
-        ...DEFAULT_SHIELDED_TEZ_PROTOCOL_NETWORK.indexer,
-        ...network.indexer
-      }
+      ...tezosProtocolOptions.network
     },
     memoSize: memoSize ?? DEFAULT_MEMO_SIZE,
     merkleTreeHeight: merkleTreeHeight ?? DEFAULT_MERKLE_TREE_HEIGHT,

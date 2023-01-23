@@ -12,24 +12,17 @@
           "type": "string"
         },
         "transaction": {
-          "$ref": "#/definitions/BitcoinSegwitUnsignedTransaction"
+          "additionalProperties": false,
+          "properties": {
+            "psbt": {
+              "type": "string"
+            }
+          },
+          "required": ["psbt"],
+          "type": "object"
         }
       },
       "required": ["publicKey", "transaction"],
-      "type": "object"
-    },
-    "BitcoinSegwitUnsignedTransaction": {
-      "additionalProperties": false,
-      "properties": {
-        "psbt": {
-          "type": "string"
-        },
-        "type": {
-          "enum": ["unsigned"],
-          "type": "string"
-        }
-      },
-      "required": ["psbt", "type"],
       "type": "object"
     }
   }
