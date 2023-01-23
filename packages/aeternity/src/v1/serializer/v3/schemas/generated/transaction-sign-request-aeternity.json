@@ -12,27 +12,20 @@
           "type": "string"
         },
         "transaction": {
-          "$ref": "#/definitions/AeternityUnsignedTransaction"
+          "additionalProperties": false,
+          "properties": {
+            "networkId": {
+              "type": "string"
+            },
+            "transaction": {
+              "type": "string"
+            }
+          },
+          "required": ["networkId", "transaction"],
+          "type": "object"
         }
       },
       "required": ["publicKey", "transaction"],
-      "type": "object"
-    },
-    "AeternityUnsignedTransaction": {
-      "additionalProperties": false,
-      "properties": {
-        "networkId": {
-          "type": "string"
-        },
-        "transaction": {
-          "type": "string"
-        },
-        "type": {
-          "enum": ["unsigned"],
-          "type": "string"
-        }
-      },
-      "required": ["networkId", "transaction", "type"],
       "type": "object"
     }
   }

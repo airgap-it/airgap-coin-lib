@@ -3,7 +3,7 @@ import { HexString } from '@airgap/serializer/v3/schemas/definitions/hex-string'
 
 import { EthereumRawUnsignedTransaction } from '../../../../types/transaction'
 
-export interface SerializableEthereumRawUnsignedTransaction extends EthereumRawUnsignedTransaction {
+export interface SerializableEthereumRawUnsignedTransaction extends Omit<EthereumRawUnsignedTransaction, 'type' | 'ethereumType'> {
   nonce: HexString
   gasPrice: HexString
   gasLimit: HexString

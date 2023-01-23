@@ -1,4 +1,4 @@
-import { newSignedTransaction } from '@airgap/module-kit'
+import { newSignedTransaction, newUnsignedTransaction } from '@airgap/module-kit'
 
 import { CosmosSignedTransaction, CosmosUnsignedTransaction } from '../../../../types/transaction'
 import { CosmosTransactionSignRequest } from '../definitions/transaction-sign-request-cosmos'
@@ -9,7 +9,13 @@ export function cosmosUnsignedTransactionToRequest(
   publicKey: string,
   callbackUrl?: string
 ): CosmosTransactionSignRequest {
-  return { transaction: unsigned, publicKey, callbackURL: callbackUrl }
+  const { type: _, ...rest } = unsigned
+
+  return {
+    transaction: rest,
+    publicKey,
+    callbackURL: callbackUrl
+  }
 }
 
 export function cosmosSignedTransactionToResponse(
@@ -20,7 +26,7 @@ export function cosmosSignedTransactionToResponse(
 }
 
 export function cosmosTransactionSignRequestToUnsigned(request: CosmosTransactionSignRequest): CosmosUnsignedTransaction {
-  return request.transaction
+  return newUnsignedTransaction<CosmosUnsignedTransaction>(request.transaction)
 }
 
 export function cosmosTransactionSignResponseToSigned(response: CosmosTransactionSignResponse): CosmosSignedTransaction {

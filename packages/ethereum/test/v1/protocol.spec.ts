@@ -13,24 +13,16 @@ import 'mocha'
 import sinon = require('sinon')
 
 import { AirGapNodeClient } from '../../src/v1/clients/node/AirGapNodeClient'
-import { isRawUnsignedTransaction } from '../../src/v1/utils/transaction'
 
 import { TestProtocolSpec } from './implementations'
 import { ERC20TokenTestProtocolSpec } from './specs/erc20-token'
 import { EthereumTestProtocolSpec } from './specs/ethereum'
-import { EthereumClassicTestProtocolSpec } from './specs/ethereum-classic'
-import { EthereumRopstenTestProtocolSpec } from './specs/ethereum-ropsten'
 
 // use chai-as-promised plugin
 chai.use(chaiAsPromised)
 const expect = chai.expect
 
-const protocols: TestProtocolSpec<string>[] = [
-  new EthereumTestProtocolSpec(),
-  new EthereumClassicTestProtocolSpec(),
-  new EthereumRopstenTestProtocolSpec(),
-  new ERC20TokenTestProtocolSpec()
-]
+const protocols: TestProtocolSpec<string>[] = [new EthereumTestProtocolSpec(), new ERC20TokenTestProtocolSpec()]
 
 const itIf = (condition, title, test) => {
   return condition ? it(title, test) : it.skip(title, test)
@@ -347,7 +339,7 @@ Promise.all(
               expect(airgapTx.amount, 'amount does not match').to.deep.equal(protocol.txs[0].amount)
               expect(airgapTx.fee, 'fee does not match').to.deep.equal(protocol.txs[0].fee)
 
-              if (isRawUnsignedTransaction(protocol.txs[0].unsignedTx) && protocol.txs[0].unsignedTx.data)
+              if (protocol.txs[0].unsignedTx.ethereumType === 'raw' && protocol.txs[0].unsignedTx.data)
                 expect(airgapTx.arbitraryData, 'arbitraryDetails should exist').to.not.be.undefined
             }
           }

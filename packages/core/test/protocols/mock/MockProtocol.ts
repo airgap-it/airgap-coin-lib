@@ -321,6 +321,10 @@ export class MockProtocol implements ICoinProtocol {
     throw new Error('Method not implemented.')
   }
 
+  public async getExtendedPublicKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
+    throw new Error('Method not implemented.')
+  }
+
   public async getExtendedPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
     throw new Error('Method not implemented.')
   }
@@ -333,15 +337,19 @@ export class MockProtocol implements ICoinProtocol {
     throw new Error('Method not implemented.')
   }
 
+  public async getExtendedPublicKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
+    throw new Error('Method not implemented.')
+  }
+
+  public async getExtendedPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
+    throw new Error('Method not implemented.')
+  }
+
   public async signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: any, childDerivationPath?: string): Promise<string> {
     throw new Error('Method not implemented.')
   }
 
   public async signWithPrivateKey(privateKey: string, transaction: any): Promise<string> {
-    throw new Error('Method not implemented.')
-  }
-
-  public async getExtendedPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
     throw new Error('Method not implemented.')
   }
 

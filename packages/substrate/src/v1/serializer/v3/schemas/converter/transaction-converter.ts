@@ -1,4 +1,4 @@
-import { newSignedTransaction } from '@airgap/module-kit'
+import { newSignedTransaction, newUnsignedTransaction } from '@airgap/module-kit'
 
 import { SubstrateSignedTransaction, SubstrateUnsignedTransaction } from '../../../../types/transaction'
 import { SubstrateTransactionSignRequest } from '../definitions/transaction-sign-request-substrate'
@@ -9,7 +9,13 @@ export function substrateUnsignedTransactionToRequest(
   publicKey: string,
   callbackUrl?: string
 ): SubstrateTransactionSignRequest {
-  return { transaction: unsigned, publicKey, callbackURL: callbackUrl }
+  const { type: _, ...rest } = unsigned
+
+  return {
+    transaction: rest,
+    publicKey,
+    callbackURL: callbackUrl
+  }
 }
 
 export function substrateSignedTransactionToResponse(
@@ -20,7 +26,7 @@ export function substrateSignedTransactionToResponse(
 }
 
 export function substrateTransactionSignRequestToUnsigned(request: SubstrateTransactionSignRequest): SubstrateUnsignedTransaction {
-  return request.transaction
+  return newUnsignedTransaction<SubstrateUnsignedTransaction>(request.transaction)
 }
 
 export function substrateTransactionSignResponseToSigned(response: SubstrateTransactionSignResponse): SubstrateSignedTransaction {

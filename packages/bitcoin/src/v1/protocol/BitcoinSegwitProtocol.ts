@@ -338,6 +338,25 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
     return this.getExtendedKeyPairFromHexSecret(secret.toString('hex'), derivationPath)
   }
 
+  public async deriveFromExtendedSecretKey(
+    extendedSecretKey: ExtendedSecretKey,
+    visibilityIndex: number,
+    addressIndex: number
+  ): Promise<SecretKey> {
+    const encodedSecretKey: ExtendedSecretKey = convertExtendedSecretKey(extendedSecretKey, 'encoded')
+    const derivedBip32: bitcoin.BIP32Interface = this.bitcoinJS.lib.bip32
+      .fromBase58(encodedSecretKey.value, this.bitcoinJS.config.network)
+      .derive(visibilityIndex)
+      .derive(addressIndex)
+
+    const privateKey: Buffer | undefined = derivedBip32.privateKey
+    if (privateKey === undefined) {
+      throw new Error('No private key!')
+    }
+
+    return newSecretKey(privateKey.toString('hex'), 'hex')
+  }
+
   public async signTransactionWithSecretKey(
     transaction: BitcoinSegwitUnsignedTransaction,
     secretKey: SecretKey | ExtendedSecretKey

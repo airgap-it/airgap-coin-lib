@@ -5,4 +5,5 @@ export type SubProtocolExtension<_T extends _AnyProtocol> = SubProtocol
 
 export interface SubProtocol {
   getType(): Promise<SubProtocolType>
+  mainProtocol(): Promise<string>
 }

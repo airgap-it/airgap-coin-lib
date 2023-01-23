@@ -1,4 +1,4 @@
-import { assertNever, Domain } from '@airgap/coinlib-core'
+import { assertNever, Domain, MainProtocolSymbols } from '@airgap/coinlib-core'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 // @ts-ignore
 import * as ethUtil from '@airgap/coinlib-core/dependencies/src/ethereumjs-util-5.2.0'
@@ -25,7 +25,13 @@ import { EthereumInfoClient, EthereumInfoClientTransactionsResult } from '../../
 import { EtherscanInfoClient } from '../../clients/info/EtherscanInfoClient'
 import { AirGapNodeClient, EthereumRPCDataTransfer } from '../../clients/node/AirGapNodeClient'
 import { EthereumNodeClient } from '../../clients/node/EthereumNodeClient'
-import { ERC20TokenMetadata, ERC20TokenOptions, EthereumProtocolOptions, EthereumUnits } from '../../types/protocol'
+import {
+  ERC20TokenMetadata,
+  ERC20TokenOptions,
+  EthereumProtocolNetwork,
+  EthereumProtocolOptions,
+  EthereumUnits
+} from '../../types/protocol'
 import {
   EthereumRawUnsignedTransaction,
   EthereumSignedTransaction,
@@ -33,9 +39,8 @@ import {
   EthereumUnsignedTransaction
 } from '../../types/transaction'
 import { EthereumUtils } from '../../utils/EthereumUtils'
-import { isRawUnsignedTransaction } from '../../utils/transaction'
 import { EthereumBaseProtocol, EthereumBaseProtocolImpl } from '../EthereumBaseProtocol'
-import { createEthereumRopstenProtocolOptions } from '../EthereumRopstenProtocol'
+import { ETHEREUM_MAINNET_PROTOCOL_NETWORK } from '../EthereumProtocol'
 
 const EthereumTransaction = require('@airgap/coinlib-core/dependencies/src/ethereumjs-tx-1.3.7/index')
 
@@ -65,6 +70,10 @@ class ERC20TokenImpl extends EthereumBaseProtocolImpl<string> implements ERC20To
 
   public async getType(): Promise<'token'> {
     return 'token'
+  }
+
+  public async mainProtocol(): Promise<string> {
+    return MainProtocolSymbols.ETH
   }
 
   public async getContractAddress(): Promise<string> {
@@ -119,7 +128,7 @@ class ERC20TokenImpl extends EthereumBaseProtocolImpl<string> implements ERC20To
     }
 
     let data: string
-    if (isRawUnsignedTransaction(transaction)) {
+    if (transaction.ethereumType === 'raw') {
       data = transaction.data
     } else {
       const typedTransaction: FeeMarketEIP1559Transaction = TransactionFactory.fromSerializedData(
@@ -146,7 +155,7 @@ class ERC20TokenImpl extends EthereumBaseProtocolImpl<string> implements ERC20To
     transaction: EthereumUnsignedTransaction,
     secretKey: SecretKey
   ): Promise<EthereumSignedTransaction> {
-    if (!isRawUnsignedTransaction(transaction)) {
+    if (transaction.ethereumType !== 'raw') {
       // no v0 implementation
       throw new ConditionViolationError(Domain.ERC20, 'Unsupported unsigned transaction type.')
     }
@@ -289,6 +298,7 @@ class ERC20TokenImpl extends EthereumBaseProtocolImpl<string> implements ERC20To
           ? new BigNumber(0)
           : wrappedFee.div(estimatedGas).integerValue(BigNumber.ROUND_CEIL)
         const transaction: EthereumRawUnsignedTransaction = newUnsignedTransaction({
+          ethereumType: 'raw',
           nonce: EthereumUtils.toHex(txCount),
           gasLimit: EthereumUtils.toHex(estimatedGas.toFixed()),
           gasPrice: EthereumUtils.toHex(gasPrice.toFixed()),
@@ -331,7 +341,7 @@ class ERC20TokenImpl extends EthereumBaseProtocolImpl<string> implements ERC20To
 // Factory
 
 export function createERC20Token(metadata: ERC20TokenMetadata): ERC20Token {
-  const protocolOptions: EthereumProtocolOptions = createEthereumRopstenProtocolOptions()
+  const protocolOptions: EthereumProtocolOptions = createERC20TokenOptions()
   const tokenOptions: ERC20TokenOptions = {
     ...protocolOptions,
     name: metadata.name,
@@ -353,4 +363,17 @@ export function createERC20Token(metadata: ERC20TokenMetadata): ERC20Token {
     new EtherscanInfoClient(protocolOptions.network.blockExplorerApi),
     tokenOptions
   )
+}
+
+export const ETHEREUM_ERC20_MAINNET_PROTOCOL_NETWORK: EthereumProtocolNetwork = {
+  ...ETHEREUM_MAINNET_PROTOCOL_NETWORK,
+  chainId: 3
+}
+
+const DEFAULT_ERC20_PROTOCOL_NETWORK: EthereumProtocolNetwork = ETHEREUM_ERC20_MAINNET_PROTOCOL_NETWORK
+
+export function createERC20TokenOptions(network: Partial<EthereumProtocolNetwork> = {}): EthereumProtocolOptions {
+  return {
+    network: { ...DEFAULT_ERC20_PROTOCOL_NETWORK, ...network }
+  }
 }

@@ -64,6 +64,7 @@ export class EthereumTestProtocolSpec extends TestProtocolSpec {
       } as Amount<EthereumUnits>,
       unsignedTx: {
         type: 'unsigned',
+        ethereumType: 'raw',
         nonce: '0x0',
         gasPrice: '0x4a817c800',
         gasLimit: '0x5208',
@@ -94,6 +95,7 @@ export class EthereumTestProtocolSpec extends TestProtocolSpec {
   public validRawTransactions: EthereumRawUnsignedTransaction[] = [
     {
       type: 'unsigned',
+      ethereumType: 'raw',
       nonce: '0x0',
       gasPrice: '0x4a817c800',
       gasLimit: '0x5208',

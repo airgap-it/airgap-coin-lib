@@ -1,6 +1,5 @@
 import { toHexBuffer } from '@airgap/coinlib-core/utils/hex'
 import {
-  AddressCursor,
   AddressWithCursor,
   AirGapProtocol,
   AirGapTransaction,
@@ -40,6 +39,22 @@ export class MockExtendedProtocol implements AirGapProtocol<{}, 'Bip32'> {
     password?: string | undefined
   ): Promise<ExtendedKeyPair> {
     throw new Error('Method not implemented.')
+  }
+
+  public async deriveFromExtendedSecretKey(
+    extendedSecretKey: ExtendedSecretKey,
+    visibilityIndex: number,
+    addressIndex: number
+  ): Promise<SecretKey> {
+    const extendedSecretKeyBuffer = Buffer.from(extendedSecretKey.value, extendedSecretKey.format === 'hex' ? 'hex' : 'utf-8')
+    const visibilityIndexBuffer = toHexBuffer(visibilityIndex)
+    const addressIndexBuffer = toHexBuffer(addressIndex)
+
+    return {
+      type: 'priv',
+      format: 'hex',
+      value: Buffer.concat([extendedSecretKeyBuffer, visibilityIndexBuffer, addressIndexBuffer]).toString('hex')
+    }
   }
 
   public async signTransactionWithSecretKey(
@@ -86,23 +101,19 @@ export class MockExtendedProtocol implements AirGapProtocol<{}, 'Bip32'> {
   }
 
   public async deriveFromExtendedPublicKey(
-    publicKey: ExtendedPublicKey,
+    extendedPublicKey: ExtendedPublicKey,
     visibilityIndex: number,
     addressIndex: number
   ): Promise<PublicKey> {
-    const publicKeyBuffer = Buffer.from(publicKey.value, publicKey.format === 'hex' ? 'hex' : 'utf-8')
+    const extendedPublicKeyBuffer = Buffer.from(extendedPublicKey.value, extendedPublicKey.format === 'hex' ? 'hex' : 'utf-8')
     const visibilityIndexBuffer = toHexBuffer(visibilityIndex)
     const addressIndexBuffer = toHexBuffer(addressIndex)
 
     return {
       type: 'pub',
       format: 'hex',
-      value: Buffer.concat([publicKeyBuffer, visibilityIndexBuffer, addressIndexBuffer]).toString('hex')
+      value: Buffer.concat([extendedPublicKeyBuffer, visibilityIndexBuffer, addressIndexBuffer]).toString('hex')
     }
-  }
-
-  public async getNextAddressFromPublicKey(publicKey: ExtendedPublicKey, cursor: AddressCursor): Promise<AddressWithCursor | undefined> {
-    throw new Error('Method not implemented.')
   }
 
   public async verifyMessageWithPublicKey(
