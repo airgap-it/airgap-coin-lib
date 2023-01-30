@@ -20,6 +20,8 @@ import { TezosSaplingExternalMethodProvider } from '../TezosSaplingProtocolOptio
 import { TezosSaplingEncoder } from './TezosSaplingEncoder'
 import { TezosSaplingState } from './TezosSaplingState'
 
+type OmitFirstParameter<F extends Function> = F extends (_: any, ...args: infer P) => infer R ? (...args: P) => R : never
+
 export class TezosSaplingForger {
   constructor(
     private readonly cryptoClient: TezosSaplingCryptoClient,
@@ -36,7 +38,7 @@ export class TezosSaplingForger {
     boundData: string = '',
     spendingKey?: Buffer
   ): Promise<TezosSaplingTransaction> {
-    return this.withProvingContext(async (context: number) => {
+    return this.withProvingContext(async (context: number | string) => {
       const viewingKey: Buffer | undefined =
         spendingKey !== undefined ? await sapling.getExtendedFullViewingKeyFromSpendingKey(spendingKey) : undefined
 
@@ -61,7 +63,7 @@ export class TezosSaplingForger {
   }
 
   private async forgeSaplingInputs(
-    context: number,
+    context: number | string,
     spendingKey: Buffer,
     inputs: TezosSaplingInput[],
     merkleTree: TezosSaplingStateTree,
@@ -109,7 +111,7 @@ export class TezosSaplingForger {
   }
 
   private async forgeSaplingOutputs(
-    context: number,
+    context: number | string,
     viewingKey: Buffer | undefined,
     outputs: TezosSaplingOutput[]
   ): Promise<TezosSaplingOutputDescription[]> {
@@ -177,14 +179,16 @@ export class TezosSaplingForger {
     return spendBalance.minus(outBalance)
   }
 
-  private async withProvingContext(action: (context: number) => Promise<TezosSaplingTransaction>): Promise<TezosSaplingTransaction> {
+  private async withProvingContext(
+    action: (context: number | string) => Promise<TezosSaplingTransaction>
+  ): Promise<TezosSaplingTransaction> {
     const method = this.externalProvider?.withProvingContext ?? sapling.withProvingContext
 
     return method(action)
   }
 
   private async prepareSpendDescription(
-    context: number,
+    context: number | string,
     spendingKey: Buffer,
     address: Buffer,
     rcm: string,
@@ -193,26 +197,37 @@ export class TezosSaplingForger {
     root: string,
     merklePath: string
   ): Promise<SaplingUnsignedSpendDescription> {
-    const method = this.externalProvider?.prepareSpendDescription ?? sapling.prepareSpendDescription
-
-    return method(context, spendingKey, address, rcm, ar, value, root, merklePath)
+    return this.resolveContextualMethod('prepareSpendDescription', context)(spendingKey, address, rcm, ar, value, root, merklePath)
   }
 
   private async preparePartialOutputDescription(
-    context: number,
+    context: number | string,
     address: Buffer,
     rcm: Buffer,
     esk: Buffer,
     value: string
   ): Promise<SaplingPartialOutputDescription> {
-    const method = this.externalProvider?.preparePartialOutputDescription ?? sapling.preparePartialOutputDescription
-
-    return method(context, address, rcm, esk, value)
+    return this.resolveContextualMethod('preparePartialOutputDescription', context)(address, rcm, esk, value)
   }
 
-  private async createBindingSignature(context: number, balance: string, sighash: Buffer): Promise<Buffer> {
-    const method = this.externalProvider?.createBindingSignature ?? sapling.createBindingSignature
+  private async createBindingSignature(context: number | string, balance: string, sighash: Buffer): Promise<Buffer> {
+    return this.resolveContextualMethod('createBindingSignature', context)(balance, sighash)
+  }
 
-    return method(context, balance, sighash)
+  private resolveContextualMethod<
+    K extends keyof Omit<TezosSaplingExternalMethodProvider | typeof sapling, 'initParameters' | 'withProvingContext'>,
+    ExternalMethod extends Required<TezosSaplingExternalMethodProvider>[K],
+    SaplingMethod extends (typeof sapling)[K]
+  >(name: K, context: number | string): OmitFirstParameter<ExternalMethod & SaplingMethod> {
+    const externalMethod = this.externalProvider ? (this.externalProvider[name] as any) /* as ExternalMethod */ : undefined
+    const saplingMethod = sapling[name] as any /* as SaplingMethod */
+
+    const method = externalMethod
+      ? (...args: Parameters<OmitFirstParameter<ExternalMethod>>) =>
+          externalMethod(typeof context === 'string' ? context : context.toString(), ...args)
+      : (...args: Parameters<OmitFirstParameter<SaplingMethod>>) =>
+          saplingMethod(typeof context === 'number' ? context : parseInt(context), ...args)
+
+    return method as OmitFirstParameter<ExternalMethod & SaplingMethod>
   }
 }
