@@ -9,9 +9,9 @@ import { TezosSaplingTransaction } from '../types/sapling/TezosSaplingTransactio
 
 export interface TezosSaplingExternalMethodProvider {
   initParameters?: (spendParams: Buffer, outputParams: Buffer) => Promise<void>
-  withProvingContext?: (action: (context: number) => Promise<TezosSaplingTransaction>) => Promise<TezosSaplingTransaction>
+  withProvingContext?: (action: (context: string) => Promise<TezosSaplingTransaction>) => Promise<TezosSaplingTransaction>
   prepareSpendDescription?: (
-    context: number,
+    context: string,
     spendingKey: Buffer,
     address: Buffer,
     rcm: string,
@@ -21,13 +21,13 @@ export interface TezosSaplingExternalMethodProvider {
     merklePath: string
   ) => Promise<SaplingUnsignedSpendDescription>
   preparePartialOutputDescription?: (
-    context: number,
+    context: string,
     address: Buffer,
     rcm: Buffer,
     esk: Buffer,
     value: string
   ) => Promise<SaplingPartialOutputDescription>
-  createBindingSignature?: (context: number, balance: string, sighash: Buffer) => Promise<Buffer>
+  createBindingSignature?: (context: string, balance: string, sighash: Buffer) => Promise<Buffer>
 }
 
 export class TezosSaplingProtocolConfig extends TezosProtocolConfig {
