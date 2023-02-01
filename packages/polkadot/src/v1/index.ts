@@ -1,5 +1,4 @@
 import { createKusamaSubscanBlockExplorer, createPolkadotSubscanBlockExplorer } from './block-explorer/SubscanBlockExplorer'
-import { KusamaModule } from './module/KusamaModule'
 import { PolkadotModule } from './module/PolkadotModule'
 import { createKusamaProtocol, KusamaProtocol } from './protocol/KusamaProtocol'
 import { createPolkadotProtocol, PolkadotProtocol } from './protocol/PolkadotProtocol'
@@ -8,7 +7,7 @@ import { KusamaUnits, PolkadotProtocolNetwork, PolkadotProtocolOptions, Polkadot
 
 // Module
 
-export { PolkadotModule, KusamaModule }
+export { PolkadotModule }
 
 // Protocol
 

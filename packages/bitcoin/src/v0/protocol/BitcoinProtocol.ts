@@ -235,6 +235,12 @@ export class BitcoinProtocol implements ICoinProtocol {
     return this.getPrivateKeyFromHexSecret(secret, derivationPath)
   }
 
+  public async getExtendedPublicKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string | undefined): Promise<string> {
+    const secret = mnemonicToSeed(mnemonic, password)
+
+    return this.getExtendedPublicKeyFromHexSecret(secret, derivationPath)
+  }
+
   public async getExtendedPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
     const secret = mnemonicToSeed(mnemonic, password)
 
@@ -251,6 +257,10 @@ export class BitcoinProtocol implements ICoinProtocol {
     const bitcoinNode = this.options.config.bitcoinJSLib.HDNode.fromSeedHex(secret, this.options.network.extras.network)
 
     return bitcoinNode.derivePath(derivationPath).keyPair.d.toBuffer(32).toString('hex')
+  }
+
+  public async getExtendedPublicKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
+    return this.getPublicKeyFromHexSecret(secret, derivationPath)
   }
 
   public async getExtendedPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {

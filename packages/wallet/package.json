@@ -1,6 +1,6 @@
 {
   "name": "@airgap/wallet",
-  "version": "0.13.8",
+  "version": "0.13.9",
   "description": "TODO",
   "keywords": [
     "airgap"
@@ -28,8 +28,8 @@
   },
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
   "peerDependencies": {
-    "@airgap/coinlib-core": "^0.13.8",
-    "@airgap/module-kit": "^0.13.8"
+    "@airgap/coinlib-core": "^0.13.9",
+    "@airgap/module-kit": "^0.13.9"
   },
   "nyc": {
     "include": [

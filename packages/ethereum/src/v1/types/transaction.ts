@@ -1,6 +1,7 @@
 import { SignedTransaction, TransactionCursor, UnsignedTransaction } from '@airgap/module-kit'
 
 export interface EthereumRawUnsignedTransaction extends UnsignedTransaction {
+  ethereumType: 'raw'
   nonce: string
   gasPrice: string
   gasLimit: string
@@ -11,6 +12,7 @@ export interface EthereumRawUnsignedTransaction extends UnsignedTransaction {
 }
 
 export interface EthereumTypedUnsignedTransaction extends UnsignedTransaction {
+  ethereumType: 'typed'
   serialized: string
   derivationPath: string
   masterFingerprint: string

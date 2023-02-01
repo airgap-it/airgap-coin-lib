@@ -2,4 +2,8 @@ import { TransactionSignRequest } from '@airgap/serializer'
 
 import { TezosUnsignedTransaction } from '../../../../types/transaction'
 
-export interface TezosTransactionSignRequest extends TransactionSignRequest<TezosUnsignedTransaction> {}
+interface SerializableTezosUnsignedTransaction {
+  binaryTransaction: TezosUnsignedTransaction['binary']
+}
+
+export interface TezosTransactionSignRequest extends TransactionSignRequest<SerializableTezosUnsignedTransaction> {}

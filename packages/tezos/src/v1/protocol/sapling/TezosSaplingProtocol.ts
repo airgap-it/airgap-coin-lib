@@ -71,7 +71,7 @@ import { TezosSaplingEncoder } from '../../utils/protocol/sapling/TezosSaplingEn
 import { TezosSaplingForger } from '../../utils/protocol/sapling/TezosSaplingForger'
 import { TezosSaplingState } from '../../utils/protocol/sapling/TezosSaplingState'
 import { isUnsignedSaplingTransaction } from '../../utils/transaction'
-import { createTezosProtocol, TEZOS_DERIVATION_PATH, TezosProtocol } from '../TezosProtocol'
+import { createTezosProtocol, TEZOS_DERIVATION_PATH, TEZOS_UNITS, TezosProtocol } from '../TezosProtocol'
 
 // Interface
 
@@ -150,6 +150,11 @@ export abstract class TezosSaplingProtocolImpl<_Units extends string> implements
   protected constructor(options: TezosSaplingProtocolOptions<_Units>) {
     this.metadata = {
       ...options.metadata,
+      fee: {
+        ...(options.metadata.fee ?? {}),
+        units: TEZOS_UNITS,
+        mainUnit: 'tez'
+      },
       account: {
         standardDerivationPath: TEZOS_DERIVATION_PATH,
         address: {
@@ -321,10 +326,16 @@ export abstract class TezosSaplingProtocolImpl<_Units extends string> implements
 
       const details: AirGapTransaction<_Units, TezosUnits>[] = this.accountant
         .getUnsignedTransactionDetails(from, transaction.ins, transaction.outs, unshieldTarget)
-        .map((details: AirGapTransaction<_Units, TezosUnits>) => ({
-          ...details,
-          json: transaction
-        }))
+        .map(
+          (details: AirGapTransaction<_Units, TezosUnits>): AirGapTransaction<_Units, TezosUnits> => ({
+            ...details,
+            extra: {
+              ...(details.extra ?? {}),
+              destination: transaction.contractAddress,
+              chainId: transaction.chainId
+            }
+          })
+        )
 
       airGapTxs.push(...details)
     } else {

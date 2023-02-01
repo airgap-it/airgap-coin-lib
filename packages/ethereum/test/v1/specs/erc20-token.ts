@@ -1,6 +1,6 @@
 // tslint:disable: no-object-literal-type-assertion
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
-import { Amount, PublicKey, SecretKey } from '@airgap/module-kit'
+import { Amount, ExtendedPublicKey, ExtendedSecretKey, PublicKey, SecretKey } from '@airgap/module-kit'
 
 import { createERC20Token, ERC20Token, EthereumSignedTransaction, EthereumUnits, EthereumUnsignedTransaction } from '../../../src/v1'
 import { TestProtocolSpec } from '../implementations'
@@ -24,13 +24,23 @@ export class ERC20TokenTestProtocolSpec extends TestProtocolSpec<string, ERC20To
     secretKey: {
       type: 'priv',
       format: 'hex',
-      value: '832d58a77ad222b8d9b75322e66d97e46b7dcfab3f25f6c1dd79ec13e046c7bc'
+      value: '439fd4b07a55c50497d3a7cb9de505744476a44d1ab4da98beef3597351d1d7d'
     } as SecretKey,
+    extendedSecretKey: {
+      type: 'xpriv',
+      format: 'encoded',
+      value: 'xprv9y4dapcmTWDkwWHNXuYVGL11XTKac4tFZr3ybCCSyipvQxYimtY1qm27tFqMEHGUbEg929WqXfCbbimqMq7ASzNHTS9KFnoBZZiw44FMLkY'
+    } as ExtendedSecretKey,
     publicKey: {
       type: 'pub',
       format: 'hex',
-      value: '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932'
+      value: '02cb897303c2bcbae35a4ccd7f70f7ed7f1b856a852be945cfd17393681e55333f'
     } as PublicKey,
+    extendedPublicKey: {
+      type: 'xpub',
+      format: 'encoded',
+      value: 'xpub6C3yzL9fHsn49zMqdw5VdTwk5VA51Xc6w4yaPac4Y4MuHkssKRrGPZLbjXtyNmNtN9YLum1GJ6hQmnePAe6HZ7b1aAm3mKNLLtfW4GSnsPk'
+    } as ExtendedPublicKey,
     addresses: ['0x4A1E1D37462a422873BFCCb1e705B05CC4bd922e']
   }
   public txs = [
@@ -47,6 +57,7 @@ export class ERC20TokenTestProtocolSpec extends TestProtocolSpec<string, ERC20To
       } as Amount<EthereumUnits>,
       unsignedTx: {
         type: 'unsigned',
+        ethereumType: 'raw',
         nonce: '0x50',
         gasLimit: '0x7bd9', // 31705
         gasPrice: '0x3b9aca00', // 1 gwei

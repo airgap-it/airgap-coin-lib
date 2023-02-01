@@ -1,4 +1,4 @@
-import { Domain } from '@airgap/coinlib-core'
+import { Domain, MainProtocolSymbols } from '@airgap/coinlib-core'
 import axios, { AxiosError, AxiosResponse } from '@airgap/coinlib-core/dependencies/src/axios-0.19.0'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import { InvalidValueError, NetworkError, OperationFailedError } from '@airgap/coinlib-core/errors'
@@ -41,7 +41,7 @@ import { TezosFAProtocolNetwork, TezosFAProtocolOptions, TezosProtocolNetworkRes
 import { TezosSignedTransaction, TezosTransactionCursor, TezosUnsignedTransaction } from '../../types/transaction'
 import { isMichelineNode } from '../../utils/micheline'
 import { TezosFAAccountant } from '../../utils/protocol/fa/TezosFAAccountant'
-import { TEZOS_ACCOUNT_METADATA, TezosProtocol, TezosProtocolImpl, TEZOS_MAINNET_PROTOCOL_NETWORK } from '../TezosProtocol'
+import { TEZOS_ACCOUNT_METADATA, TEZOS_MAINNET_PROTOCOL_NETWORK, TEZOS_UNITS, TezosProtocol, TezosProtocolImpl } from '../TezosProtocol'
 
 // Interface
 
@@ -117,11 +117,27 @@ export abstract class TezosFAProtocolImpl<
       mainUnit: options.mainUnit,
 
       fee: {
-        defaults: options.feeDefaults
+        defaults: options.feeDefaults,
+        units: TEZOS_UNITS,
+        mainUnit: 'tez'
       },
 
       account: TEZOS_ACCOUNT_METADATA
     }
+  }
+
+  // SubProtocol
+
+  public async getType(): Promise<'token'> {
+    return 'token'
+  }
+
+  public async mainProtocol(): Promise<string> {
+    return MainProtocolSymbols.XTZ
+  }
+
+  public async getContractAddress(): Promise<string> {
+    return this.options.network.contractAddress
   }
 
   // Common
@@ -141,14 +157,6 @@ export abstract class TezosFAProtocolImpl<
     publicKey: PublicKey
   ): Promise<AirGapTransaction<_Units, TezosUnits>[]> {
     return this.accountant.getDetailsFromTransaction(transaction)
-  }
-
-  public async getType(): Promise<'token'> {
-    return 'token'
-  }
-
-  public async getContractAddress(): Promise<string> {
-    return this.options.network.contractAddress
   }
 
   public async verifyMessageWithPublicKey(message: string, signature: Signature, publicKey: PublicKey): Promise<boolean> {

@@ -176,6 +176,14 @@ export class GroestlcoinProtocolImpl implements GroestlcoinProtocol {
     return this.bitcoinProtocol.getExtendedKeyPairFromSecret(secret, derivationPath)
   }
 
+  public async deriveFromExtendedSecretKey(
+    extendedSecretKey: ExtendedSecretKey,
+    visibilityIndex: number,
+    addressIndex: number
+  ): Promise<SecretKey> {
+    return this.bitcoinProtocol.deriveFromExtendedSecretKey(extendedSecretKey, visibilityIndex, addressIndex)
+  }
+
   public async signTransactionWithSecretKey(
     transaction: GroestlcoinUnsignedTransaction,
     secretKey: SecretKey | ExtendedSecretKey

@@ -1,6 +1,6 @@
 {
   "name": "@airgap/astar",
-  "version": "0.13.8",
+  "version": "0.13.9",
   "description": "The @airgap/astar is an Astar implementation of the ICoinProtocol interface from @airgap/coinlib-core.",
   "keywords": [
     "airgap",
@@ -37,10 +37,10 @@
     "@polkadot/wasm-crypto": "0.20.1"
   },
   "peerDependencies": {
-    "@airgap/coinlib-core": "^0.13.8",
-    "@airgap/module-kit": "^0.13.8",
-    "@airgap/serializer": "^0.13.8",
-    "@airgap/substrate": "^0.13.8"
+    "@airgap/coinlib-core": "^0.13.9",
+    "@airgap/module-kit": "^0.13.9",
+    "@airgap/serializer": "^0.13.9",
+    "@airgap/substrate": "^0.13.9"
   },
   "localDependencies": {},
   "nyc": {

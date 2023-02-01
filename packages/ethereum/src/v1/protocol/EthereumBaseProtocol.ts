@@ -15,10 +15,15 @@ import {
   AirGapTransactionsWithCursor,
   Amount,
   Balance,
+  ExtendedKeyPair,
+  ExtendedPublicKey,
+  ExtendedSecretKey,
   FeeDefaults,
   isAmount,
   KeyPair,
   newAmount,
+  newExtendedPublicKey,
+  newExtendedSecretKey,
   newPlainUIText,
   newPublicKey,
   newSecretKey,
@@ -52,8 +57,7 @@ import {
   EthereumUnsignedTransaction
 } from '../types/transaction'
 import { EthereumUtils } from '../utils/EthereumUtils'
-import { convertPublicKey, convertSecretKey } from '../utils/key'
-import { isTypedUnsignedTransaction } from '../utils/transaction'
+import { convertExtendedPublicKey, convertExtendedSecretKey, convertPublicKey, convertSecretKey } from '../utils/key'
 
 import { ETHEREUM_CHAIN_IDS } from './EthereumChainIds'
 
@@ -71,6 +75,7 @@ export interface EthereumBaseProtocol<_Units extends string = EthereumUnits>
       UnsignedTransaction: EthereumUnsignedTransaction
       TransactionCursor: EthereumTransactionCursor
     },
+    'Bip32',
     'Crypto',
     'FetchDataForAddress',
     'FetchDataForMultipleAddresses',
@@ -136,11 +141,13 @@ export abstract class EthereumBaseProtocolImpl<_Units extends string = EthereumU
       mainUnit: options.mainUnit,
 
       fee: {
-        defaults: this.feeDefaults
+        defaults: this.feeDefaults,
+        units: this.feeUnits,
+        mainUnit: 'ETH'
       },
 
       account: {
-        standardDerivationPath: options.standardDerivationPath ?? `m/44'/60'/0'/0/0`,
+        standardDerivationPath: options.standardDerivationPath ?? `m/44'/60'/0'`,
         address: {
           isCaseSensitive: false,
           placeholder: '0xabc...',
@@ -168,11 +175,28 @@ export abstract class EthereumBaseProtocolImpl<_Units extends string = EthereumU
     return this.metadata
   }
 
-  public async getAddressFromPublicKey(publicKey: PublicKey): Promise<string> {
-    return EthereumAddress.from(publicKey).asString()
+  public async getAddressFromPublicKey(publicKey: PublicKey | ExtendedPublicKey): Promise<string> {
+    return EthereumAddress.from(this.nonExtendedPublicKey(publicKey)).asString()
+  }
+
+  public async deriveFromExtendedPublicKey(
+    extendedPublicKey: ExtendedPublicKey,
+    visibilityIndex: number,
+    addressIndex: number
+  ): Promise<PublicKey> {
+    return this.getPublicKeyFromExtendedPublicKey(extendedPublicKey, visibilityIndex, addressIndex)
   }
 
   public async getDetailsFromTransaction(
+    transaction: EthereumSignedTransaction | EthereumUnsignedTransaction,
+    publicKey: PublicKey | ExtendedPublicKey
+  ): Promise<AirGapTransaction<_Units, EthereumUnits>[]> {
+    return publicKey.type === 'pub'
+      ? this.getDetailsFromTransactionWithPublicKey(transaction, publicKey)
+      : this.getDetailsFromTransactionWithExtendedPublicKey(transaction, publicKey)
+  }
+
+  private async getDetailsFromTransactionWithPublicKey(
     transaction: EthereumSignedTransaction | EthereumUnsignedTransaction,
     publicKey: PublicKey
   ): Promise<AirGapTransaction<_Units, EthereumUnits>[]> {
@@ -181,9 +205,39 @@ export abstract class EthereumBaseProtocolImpl<_Units extends string = EthereumU
         return this.getDetailsFromSignedTransaction(transaction)
       case 'unsigned':
         const ownAddress: string = await this.getAddressFromPublicKey(publicKey)
-        if (isTypedUnsignedTransaction(transaction)) {
+        if (transaction.ethereumType === 'typed') {
           return this.getDetailsFromTypedUnsignedTransaction(transaction, ownAddress)
         } else {
+          return this.getDetailsFromRawUnsignedTransaction(transaction, ownAddress)
+        }
+      default:
+        assertNever(transaction)
+        throw new UnsupportedError(Domain.ETHEREUM, 'Unsupported transaction type.')
+    }
+  }
+
+  private async getDetailsFromTransactionWithExtendedPublicKey(
+    transaction: EthereumSignedTransaction | EthereumUnsignedTransaction,
+    extendedPublicKey: ExtendedPublicKey
+  ): Promise<AirGapTransaction<_Units, EthereumUnits>[]> {
+    switch (transaction.type) {
+      case 'signed':
+        return this.getDetailsFromSignedTransaction(transaction)
+      case 'unsigned':
+        if (transaction.ethereumType === 'typed') {
+          const dps: string[] = transaction.derivationPath.split('/')
+          const derivedPublicKey: PublicKey = this.getPublicKeyFromExtendedPublicKey(
+            extendedPublicKey,
+            Number(dps[dps.length - 2]),
+            Number(dps[dps.length - 1])
+          )
+          const ownAddress: string = await this.getAddressFromPublicKey(derivedPublicKey)
+
+          return this.getDetailsFromTypedUnsignedTransaction(transaction, ownAddress)
+        } else {
+          const derivedPublicKey: PublicKey = this.getPublicKeyFromExtendedPublicKey(extendedPublicKey, 0, 0)
+          const ownAddress: string = await this.getAddressFromPublicKey(derivedPublicKey)
+
           return this.getDetailsFromRawUnsignedTransaction(transaction, ownAddress)
         }
       default:
@@ -226,7 +280,7 @@ export abstract class EthereumBaseProtocolImpl<_Units extends string = EthereumU
             hash: `0x${tx.hash().toString('hex')}`
           },
           arbitraryData: `0x${tx.data.toString('hex')}`,
-          json: {
+          extra: {
             chainId,
             nonce: parseInt(hexNonce, 16)
           }
@@ -248,7 +302,7 @@ export abstract class EthereumBaseProtocolImpl<_Units extends string = EthereumU
 
           network: this.options.network,
           arbitraryData: feeTx.data.toString('hex'),
-          json: {
+          extra: {
             chainId: feeTx.chainId.toNumber(),
             nonce: feeTx.nonce.toNumber()
           }
@@ -317,15 +371,19 @@ export abstract class EthereumBaseProtocolImpl<_Units extends string = EthereumU
     ]
   }
 
-  public async verifyMessageWithPublicKey(message: string, signature: Signature, publicKey: PublicKey): Promise<boolean> {
+  public async verifyMessageWithPublicKey(
+    message: string,
+    signature: Signature,
+    publicKey: PublicKey | ExtendedPublicKey
+  ): Promise<boolean> {
     const hexSignature: Signature = signature
-    const hexPublicKey: PublicKey = convertPublicKey(publicKey, 'hex')
+    const hexPublicKey: PublicKey = convertPublicKey(this.nonExtendedPublicKey(publicKey), 'hex')
 
     return this.cryptoClient.verifyMessage(message, hexSignature.value, hexPublicKey.value)
   }
 
-  public async encryptAsymmetricWithPublicKey(payload: string, publicKey: PublicKey): Promise<string> {
-    const hexPublicKey: PublicKey = convertPublicKey(publicKey, 'hex')
+  public async encryptAsymmetricWithPublicKey(payload: string, publicKey: PublicKey | ExtendedPublicKey): Promise<string> {
+    const hexPublicKey: PublicKey = convertPublicKey(this.nonExtendedPublicKey(publicKey), 'hex')
 
     return this.cryptoClient.encryptAsymmetric(payload, hexPublicKey.value)
   }
@@ -360,13 +418,49 @@ export abstract class EthereumBaseProtocolImpl<_Units extends string = EthereumU
     return this.getKeyPairFromHexSecret(secret.toString('hex'), derivationPath)
   }
 
+  public async getExtendedKeyPairFromSecret(secret: Secret, derivationPath?: string): Promise<ExtendedKeyPair> {
+    switch (secret.type) {
+      case 'hex':
+        return this.getExtendedKeyPairFromHexSecret(secret.value, derivationPath)
+      case 'mnemonic':
+        return this.getExtendedKeyPairFromMnemonic(secret.value, derivationPath, secret.password)
+      default:
+        assertNever(secret)
+        throw new UnsupportedError(Domain.BITCOIN, 'Unsupported secret type.')
+    }
+  }
+
+  private async getExtendedKeyPairFromHexSecret(secret: string, derivationPath?: string): Promise<ExtendedKeyPair> {
+    const node = this.bitcoinJS.lib.HDNode.fromSeedHex(secret, this.bitcoinJS.config.network)
+    const derivedNode = derivationPath ? node.derivePath(derivationPath) : node
+
+    return {
+      secretKey: newExtendedSecretKey(derivedNode.toBase58(), 'encoded'),
+      publicKey: newExtendedPublicKey(derivedNode.neutered().toBase58(), 'encoded')
+    }
+  }
+
+  private async getExtendedKeyPairFromMnemonic(mnemonic: string, derivationPath?: string, password?: string): Promise<ExtendedKeyPair> {
+    const secret: Buffer = mnemonicToSeed(mnemonic, password)
+
+    return this.getExtendedKeyPairFromHexSecret(secret.toString('hex'), derivationPath)
+  }
+
+  public async deriveFromExtendedSecretKey(
+    extendedSecretKey: ExtendedSecretKey,
+    visibilityIndex: number,
+    addressIndex: number
+  ): Promise<SecretKey> {
+    return this.getSecretKeyFromExtendedSecretKey(extendedSecretKey, visibilityIndex, addressIndex)
+  }
+
   public async signTransactionWithSecretKey(
     transaction: EthereumUnsignedTransaction,
-    secretKey: SecretKey
+    secretKey: SecretKey | ExtendedSecretKey
   ): Promise<EthereumSignedTransaction> {
-    return isTypedUnsignedTransaction(transaction)
-      ? this.signTypedUnsignedTransactionWithSecretKey(transaction, secretKey)
-      : this.signRawUnsignedTransactionWithSecretKey(transaction, secretKey)
+    return transaction.ethereumType === 'typed'
+      ? this.signTypedUnsignedTransactionWithSecretKey(transaction, this.nonExtendedSecretKey(secretKey))
+      : this.signRawUnsignedTransactionWithSecretKey(transaction, this.nonExtendedSecretKey(secretKey))
   }
 
   private async signTypedUnsignedTransactionWithSecretKey(
@@ -412,28 +506,28 @@ export abstract class EthereumBaseProtocolImpl<_Units extends string = EthereumU
     })
   }
 
-  public async signMessageWithKeyPair(message: string, keyPair: KeyPair): Promise<Signature> {
-    const hexSecretKey: SecretKey = convertSecretKey(keyPair.secretKey, 'hex')
+  public async signMessageWithKeyPair(message: string, keyPair: KeyPair | ExtendedKeyPair): Promise<Signature> {
+    const hexSecretKey: SecretKey = convertSecretKey(this.nonExtendedSecretKey(keyPair.secretKey), 'hex')
     const signature: string = await this.cryptoClient.signMessage(message, { privateKey: hexSecretKey.value })
 
     return newSignature(signature, 'hex')
   }
 
-  public async decryptAsymmetricWithKeyPair(payload: string, keyPair: KeyPair): Promise<string> {
-    const hexSecretKey: SecretKey = convertSecretKey(keyPair.secretKey, 'hex')
-    const hexPublicKey: PublicKey = convertPublicKey(keyPair.publicKey, 'hex')
+  public async decryptAsymmetricWithKeyPair(payload: string, keyPair: KeyPair | ExtendedKeyPair): Promise<string> {
+    const hexSecretKey: SecretKey = convertSecretKey(this.nonExtendedSecretKey(keyPair.secretKey), 'hex')
+    const hexPublicKey: PublicKey = convertPublicKey(this.nonExtendedPublicKey(keyPair.publicKey), 'hex')
 
     return this.cryptoClient.decryptAsymmetric(payload, { privateKey: hexSecretKey.value, publicKey: hexPublicKey.value })
   }
 
-  public async encryptAESWithSecretKey(payload: string, secretKey: SecretKey): Promise<string> {
-    const hexSecretKey: SecretKey = convertSecretKey(secretKey, 'hex')
+  public async encryptAESWithSecretKey(payload: string, secretKey: SecretKey | ExtendedSecretKey): Promise<string> {
+    const hexSecretKey: SecretKey = convertSecretKey(this.nonExtendedSecretKey(secretKey), 'hex')
 
     return this.cryptoClient.encryptAES(payload, hexSecretKey.value)
   }
 
-  public async decryptAESWithSecretKey(payload: string, secretKey: SecretKey): Promise<string> {
-    const hexSecretKey: SecretKey = convertSecretKey(secretKey, 'hex')
+  public async decryptAESWithSecretKey(payload: string, secretKey: SecretKey | ExtendedSecretKey): Promise<string> {
+    const hexSecretKey: SecretKey = convertSecretKey(this.nonExtendedSecretKey(secretKey), 'hex')
 
     return this.cryptoClient.decryptAES(payload, hexSecretKey.value)
   }
@@ -445,7 +539,7 @@ export abstract class EthereumBaseProtocolImpl<_Units extends string = EthereumU
   }
 
   public async getTransactionsForPublicKey(
-    publicKey: PublicKey,
+    publicKey: PublicKey | ExtendedPublicKey,
     limit: number,
     cursor?: EthereumTransactionCursor
   ): Promise<AirGapTransactionsWithCursor<EthereumTransactionCursor, _Units, EthereumUnits>> {
@@ -511,7 +605,7 @@ export abstract class EthereumBaseProtocolImpl<_Units extends string = EthereumU
     return statuses.reduce((obj, next) => Object.assign(obj, { [next[0]]: next[1] }), {})
   }
 
-  public async getBalanceOfPublicKey(publicKey: PublicKey): Promise<Balance<_Units>> {
+  public async getBalanceOfPublicKey(publicKey: PublicKey | ExtendedPublicKey): Promise<Balance<_Units>> {
     const address: string = await this.getAddressFromPublicKey(publicKey)
 
     return this.getBalanceOfAddress(address)
@@ -537,7 +631,7 @@ export abstract class EthereumBaseProtocolImpl<_Units extends string = EthereumU
   }
 
   public async getTransactionMaxAmountWithPublicKey(
-    publicKey: PublicKey,
+    publicKey: PublicKey | ExtendedPublicKey,
     to: string[],
     configuration?: TransactionConfiguration<EthereumUnits>
   ): Promise<Amount<_Units>> {
@@ -570,7 +664,7 @@ export abstract class EthereumBaseProtocolImpl<_Units extends string = EthereumU
   }
 
   public async getTransactionFeeWithPublicKey(
-    publicKey: PublicKey,
+    publicKey: PublicKey | ExtendedPublicKey,
     details: TransactionDetails<_Units>[]
   ): Promise<FeeDefaults<EthereumUnits>> {
     if (details.length !== 1) {
@@ -593,7 +687,7 @@ export abstract class EthereumBaseProtocolImpl<_Units extends string = EthereumU
   }
 
   public async prepareTransactionWithPublicKey(
-    publicKey: PublicKey,
+    publicKey: PublicKey | ExtendedPublicKey,
     details: TransactionDetails<_Units>[],
     configuration?: TransactionConfiguration<EthereumUnits>
   ): Promise<EthereumUnsignedTransaction> {
@@ -622,6 +716,7 @@ export abstract class EthereumBaseProtocolImpl<_Units extends string = EthereumU
     if (new BigNumber(availableBalance.value).gte(wrappedAmount.plus(wrappedFee))) {
       const txCount = await this.nodeClient.fetchTransactionCount(address)
       const transaction: EthereumRawUnsignedTransaction = newUnsignedTransaction({
+        ethereumType: 'raw',
         nonce: EthereumUtils.toHex(txCount),
         gasLimit: EthereumUtils.toHex(gasLimit.toFixed()),
         gasPrice: EthereumUtils.toHex(gasPrice.toFixed()), // 10 Gwei
@@ -642,6 +737,43 @@ export abstract class EthereumBaseProtocolImpl<_Units extends string = EthereumU
   }
 
   // Custom
+
+  private nonExtendedPublicKey(publicKey: PublicKey | ExtendedPublicKey): PublicKey {
+    return publicKey.type === 'pub' ? publicKey : this.getPublicKeyFromExtendedPublicKey(publicKey)
+  }
+
+  private nonExtendedSecretKey(secretKey: SecretKey | ExtendedSecretKey): SecretKey {
+    return secretKey.type === 'priv' ? secretKey : this.getSecretKeyFromExtendedSecretKey(secretKey)
+  }
+
+  private getPublicKeyFromExtendedPublicKey(
+    extendedPublicKey: ExtendedPublicKey,
+    visibilityIndex: number = 0,
+    addressIndex: number = 0
+  ): PublicKey {
+    const encodedExtendedPublicKey: ExtendedPublicKey = convertExtendedPublicKey(extendedPublicKey, 'encoded')
+    const derivedNode = this.deriveNode(encodedExtendedPublicKey.value, visibilityIndex, addressIndex)
+
+    return newPublicKey(derivedNode.neutered().keyPair.getPublicKeyBuffer().toString('hex'), 'hex')
+  }
+
+  private getSecretKeyFromExtendedSecretKey(
+    extendedSecretKey: ExtendedSecretKey,
+    visibilityIndex: number = 0,
+    addressIndex: number = 0
+  ): SecretKey {
+    const encodedExtendedSecretKey: ExtendedSecretKey = convertExtendedSecretKey(extendedSecretKey, 'encoded')
+    const derivedNode = this.deriveNode(encodedExtendedSecretKey.value, visibilityIndex, addressIndex)
+
+    return newSecretKey(derivedNode.keyPair.getPrivateKeyBuffer().toString('hex'), 'hex')
+  }
+
+  private deriveNode(base58: string, visibilityIndex?: number, addressIndex?: number): any {
+    return [visibilityIndex, addressIndex].reduce(
+      (node, index) => node.derive(index),
+      this.bitcoinJS.lib.HDNode.fromBase58(base58, this.bitcoinJS.config.network)
+    )
+  }
 
   protected async estimateGas(
     fromAddress: string,

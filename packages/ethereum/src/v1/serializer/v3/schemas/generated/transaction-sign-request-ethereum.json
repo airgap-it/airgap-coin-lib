@@ -46,16 +46,12 @@
           "$ref": "#/definitions/HexString",
           "type": "string"
         },
-        "type": {
-          "enum": ["unsigned"],
-          "type": "string"
-        },
         "value": {
           "$ref": "#/definitions/HexString",
           "type": "string"
         }
       },
-      "required": ["chainId", "data", "gasLimit", "gasPrice", "nonce", "to", "type", "value"],
+      "required": ["chainId", "data", "gasLimit", "gasPrice", "nonce", "to", "value"],
       "type": "object"
     }
   }

@@ -27,6 +27,7 @@ import { SingleTokenSubProtocol, SingleTokenSubProtocolExtension } from './proto
 import { SubProtocol, SubProtocolExtension } from './protocol/extensions/sub-protocol/SubProtocolExtension'
 import { TransactionStatusCheckerExtension } from './protocol/extensions/transaction/TransactionStatusCheckerExtension'
 import { AirGapAnyProtocol, AirGapOfflineProtocol, AirGapOnlineProtocol, AirGapProtocol } from './protocol/protocol'
+import { AirGapV3SerializerCompanion } from './serializer/serializer'
 import { Address, AddressCursor, AddressWithCursor } from './types/address'
 import { AirGapInterface } from './types/airgap'
 import { Amount } from './types/amount'
@@ -36,6 +37,7 @@ import { BytesString, BytesStringFormat, HexString } from './types/bytes'
 import { FeeDefaults, FeeEstimation } from './types/fee'
 import { ExtendedKeyPair, ExtendedPublicKey, ExtendedSecretKey, KeyPair, KeyType, PublicKey, SecretKey } from './types/key'
 import { RecursivePartial } from './types/meta/utility-types'
+import { FullProtocolConfiguration, OfflineProtocolConfiguration, OnlineProtocolConfiguration, ProtocolConfiguration } from './types/module'
 import {
   ProtocolAccountMetadata,
   ProtocolFeeMetadata,
@@ -46,6 +48,7 @@ import {
   ProtocolUnitsMetadata
 } from './types/protocol'
 import { HexSecret, MnemonicSecret, Secret, SecretType } from './types/secret'
+import { V3SchemaConfiguration } from './types/serializer'
 import { Signature } from './types/signature'
 import { SubProtocolType } from './types/sub-protocol'
 import {
@@ -65,10 +68,12 @@ import { AirGapUIText } from './types/ui/text'
 import { isAmount } from './utils/amount'
 import { implementsInterface, Schema } from './utils/interface'
 import { isAnyKey, isExtendedPublicKey, isExtendedSecretKey, isPublicKey, isSecretKey } from './utils/key'
+import { createSupportedProtocols } from './utils/module'
 import { normalizeToUndefined } from './utils/normalize'
 import {
   canEncryptAES,
   canEncryptAsymmetric,
+  canFetchDataForAddress,
   canFetchDataForMultipleAddresses,
   canSignMessage,
   hasConfigurableContract,
@@ -76,6 +81,8 @@ import {
   hasMultiAddressPublicKeys,
   isBip32Protocol,
   isMultiTokenSubProtocol,
+  isOfflineProtocol,
+  isOnlineProtocol,
   isSingleTokenSubProtocol,
   isSubProtocol,
   isTransactionStatusChecker,
@@ -106,7 +113,14 @@ export {
 
 // Module
 
-export { AirGapModule, ModuleNetworkRegistry }
+export {
+  AirGapModule,
+  ModuleNetworkRegistry,
+  ProtocolConfiguration,
+  OfflineProtocolConfiguration,
+  OnlineProtocolConfiguration,
+  FullProtocolConfiguration
+}
 
 // Protocol
 
@@ -143,6 +157,10 @@ export {
   ProtocolNetwork,
   SubProtocolType
 }
+
+// Serializer
+
+export { AirGapV3SerializerCompanion, V3SchemaConfiguration }
 
 // AirGap Types
 
@@ -200,10 +218,14 @@ export {
   isExtendedSecretKey,
   isPublicKey,
   isExtendedPublicKey,
+  createSupportedProtocols,
+  isOfflineProtocol,
+  isOnlineProtocol,
   isBip32Protocol,
   isSubProtocol,
   isSingleTokenSubProtocol,
   isMultiTokenSubProtocol,
+  canFetchDataForAddress,
   canFetchDataForMultipleAddresses,
   hasMultiAddressPublicKeys,
   hasConfigurableContract,

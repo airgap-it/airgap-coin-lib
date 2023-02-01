@@ -1,12 +1,11 @@
 // tslint:disable: max-classes-per-file
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import { async } from '@airgap/coinlib-core/dependencies/src/validate.js-0.13.1/validate'
-import { TransactionValidator, TransactionValidatorFactory, validateSyncScheme } from '@airgap/serializer'
+import { TransactionValidator, validateSyncScheme } from '@airgap/serializer'
+
 import { createTzBTCProtocol, TzBTCProtocol } from '../../../protocol/fa/tokens/TzBTCProtocol'
 import { createTezosProtocol } from '../../../protocol/TezosProtocol'
 import { TezosTransactionOperation } from '../../../types/operations/kinds/Transaction'
-
-import { TezosUnsignedTransaction } from '../../../types/transaction'
 import { TezosTransactionSignRequest } from '../schemas/definitions/transaction-sign-request-tezos'
 import { TezosTransactionSignResponse } from '../schemas/definitions/transaction-sign-response-tezos'
 
@@ -34,7 +33,7 @@ const signedTransactionConstraints = {
 
 export class TezosTransactionValidator implements TransactionValidator {
   public async validateUnsignedTransaction(request: TezosTransactionSignRequest): Promise<any> {
-    const transaction: TezosUnsignedTransaction = request.transaction
+    const transaction = request.transaction
     validateSyncScheme({})
 
     return async(transaction, unsignedTransactionConstraints).then(success, error)
@@ -44,19 +43,13 @@ export class TezosTransactionValidator implements TransactionValidator {
   }
 }
 
-export class TezosTransactionValidatorFactory implements TransactionValidatorFactory<TezosTransactionValidator> {
-  public create(): TezosTransactionValidator {
-    return new TezosTransactionValidator()
-  }
-}
-
 export class TezosBTCTransactionValidator implements TransactionValidator {
   public async validateUnsignedTransaction(request: TezosTransactionSignRequest): Promise<any> {
     return new Promise(async (resolve, reject) => {
       const tezosProtocol = createTezosProtocol()
       const tzBTCProtocol = createTzBTCProtocol()
-      const unforged = await tezosProtocol.unforgeOperation(request.transaction.binary)
-      const transaction: TezosUnsignedTransaction = request.transaction
+      const unforged = await tezosProtocol.unforgeOperation(request.transaction.binaryTransaction)
+      const transaction = request.transaction
 
       validateSyncScheme({})
 
@@ -99,11 +92,5 @@ export class TezosBTCTransactionValidator implements TransactionValidator {
     if (!new BigNumber(transaction.amount).eq(0)) {
       throw new Error('a contract call cannot have the specified amount other than 0')
     }
-  }
-}
-
-export class TezosBTCTransactionValidatorFactory implements TransactionValidatorFactory<TezosBTCTransactionValidator> {
-  public create(): TezosBTCTransactionValidator {
-    return new TezosBTCTransactionValidator()
   }
 }

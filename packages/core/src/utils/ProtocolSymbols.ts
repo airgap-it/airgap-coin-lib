@@ -13,7 +13,8 @@ export enum MainProtocolSymbols {
   MOONRIVER = 'moonriver',
   MOONBEAM = 'moonbeam',
   ASTAR = 'astar',
-  SHIDEN = 'shiden'
+  SHIDEN = 'shiden',
+  ICP = 'icp'
 }
 
 export enum SubProtocolSymbols {

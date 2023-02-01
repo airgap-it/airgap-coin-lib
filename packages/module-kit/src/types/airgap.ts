@@ -19,21 +19,17 @@ export type AirGapInterface<
   E7 extends ApplicableExtension<T> = undefined,
   E8 extends ApplicableExtension<T> = undefined,
   E9 extends ApplicableExtension<T> = undefined
-> = _Interface<T, E0, E1, E2, E3, E4, E5, E6, E7, E8, E9>
+> = _Interface<T, [E0, E1, E2, E3, E4, E5, E6, E7, E8, E9]>
 
-type _Interface<
-  T,
-  E0 = undefined,
-  E1 = undefined,
-  E2 = undefined,
-  E3 = undefined,
-  E4 = undefined,
-  E5 = undefined,
-  E6 = undefined,
-  E7 = undefined,
-  E8 = undefined,
-  E9 = undefined
-> = E0 extends keyof AirGapExtensions<T> ? _Interface<Override<T, AirGapExtensions<T>[E0]>, E1, E2, E3, E4, E5, E6, E7, E8, E9> : T
+type _Interface<T, E extends readonly any[]> = E extends [infer Head, ...infer Tail]
+  ? Head extends undefined
+    ? T
+    : Head extends keyof AirGapExtensions<T>
+    ? _Interface<Override<T, AirGapExtensions<T>[Head]>, [...Tail]> extends infer I
+      ? I
+      : never
+    : never
+  : never
 
 export type ApplicableExtension<T> = keyof AirGapExtensions<T> | undefined
 export type ApplicableBlockExplorerExtension<T> = keyof BlockExplorerExtensions<T> | undefined

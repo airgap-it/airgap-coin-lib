@@ -3,9 +3,7 @@ import {
   createMoonbeamSubscanBlockExplorer,
   createMoonriverSubscanBlockExplorer
 } from './block-explorer/SubscanBlockExplorer'
-import { MoonbaseModule } from './module/MoonbaseModule'
 import { MoonbeamModule } from './module/MoonbeamModule'
-import { MoonriverModule } from './module/MoonriverModule'
 import { createMoonbaseProtocol, MoonbaseProtocol } from './protocol/MoonbaseProtocol'
 import { createMoonbeamProtocol, MoonbeamProtocol } from './protocol/MoonbeamProtocol'
 import { createMoonriverProtocol, MoonriverProtocol } from './protocol/MoonriverProtocol'
@@ -14,7 +12,7 @@ import { MoonbaseUnits, MoonbeamProtocolNetwork, MoonbeamProtocolOptions, Moonbe
 
 // Module
 
-export { MoonbeamModule, MoonriverModule, MoonbaseModule }
+export { MoonbeamModule }
 
 // Protocol
 

@@ -12,24 +12,17 @@
           "type": "string"
         },
         "transaction": {
-          "$ref": "#/definitions/TezosUnsignedTransaction"
+          "additionalProperties": false,
+          "properties": {
+            "binaryTransaction": {
+              "type": "string"
+            }
+          },
+          "required": ["binaryTransaction"],
+          "type": "object"
         }
       },
       "required": ["publicKey", "transaction"],
-      "type": "object"
-    },
-    "TezosUnsignedTransaction": {
-      "additionalProperties": false,
-      "properties": {
-        "binary": {
-          "type": "string"
-        },
-        "type": {
-          "enum": ["unsigned"],
-          "type": "string"
-        }
-      },
-      "required": ["binary", "type"],
       "type": "object"
     }
   }

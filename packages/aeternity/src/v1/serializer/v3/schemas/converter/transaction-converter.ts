@@ -1,4 +1,4 @@
-import { newSignedTransaction } from '@airgap/module-kit'
+import { newSignedTransaction, newUnsignedTransaction } from '@airgap/module-kit'
 import { AeternitySignedTransaction, AeternityUnsignedTransaction } from '../../../../types/transaction'
 import { AeternityTransactionSignRequest } from '../definitions/transaction-sign-request-aeternity'
 import { AeternityTransactionSignResponse } from '../definitions/transaction-sign-response-aeternity'
@@ -8,7 +8,13 @@ export function aeternityUnsignedTransactionToRequest(
   publicKey: string,
   callbackUrl?: string
 ): AeternityTransactionSignRequest {
-  return { transaction: unsigned, publicKey, callbackURL: callbackUrl }
+  const { type: _, ...rest } = unsigned
+
+  return {
+    transaction: rest,
+    publicKey,
+    callbackURL: callbackUrl
+  }
 }
 
 export function aeternitySignedTransactionToResponse(
@@ -19,7 +25,7 @@ export function aeternitySignedTransactionToResponse(
 }
 
 export function aeternityTransactionSignRequestToUnsigned(request: AeternityTransactionSignRequest): AeternityUnsignedTransaction {
-  return request.transaction
+  return newUnsignedTransaction<AeternityUnsignedTransaction>(request.transaction)
 }
 
 export function aeternityTransactionSignResponseToSigned(response: AeternityTransactionSignResponse): AeternitySignedTransaction {

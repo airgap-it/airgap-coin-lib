@@ -1,4 +1,4 @@
-import { Domain, SubProtocolSymbols } from '@airgap/coinlib-core'
+import { Domain, MainProtocolSymbols, SubProtocolSymbols } from '@airgap/coinlib-core'
 import axios, { AxiosError, AxiosResponse } from '@airgap/coinlib-core/dependencies/src/axios-0.19.0'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import {
@@ -88,6 +88,10 @@ class TezosKtProtocolImpl implements TezosKtProtocol {
 
   public async getType(): Promise<SubProtocolType> {
     return 'account'
+  }
+
+  public async mainProtocol(): Promise<string> {
+    return MainProtocolSymbols.XTZ
   }
 
   // Common

@@ -4,6 +4,14 @@ import { IAirGapTransactionResult, IProtocolTransactionCursor } from '../interfa
 import { FeeDefaults } from './ICoinProtocol'
 
 export abstract class NonExtendedProtocol {
+  public getExtendedPublicKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
+    throw Promise.reject('extended public key support not implemented')
+  }
+
+  public getExtendedPublicKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
+    throw Promise.reject('extended public key support not implemented')
+  }
+
   public getExtendedPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
     throw Promise.reject('extended private key support not implemented')
   }

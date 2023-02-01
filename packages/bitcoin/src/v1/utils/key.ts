@@ -155,7 +155,8 @@ function convertEncodedExtendedPublicKey<Encoding extends string>(
       if (prefix === undefined) {
         throw new ConditionViolationError(Domain.BITCOIN, 'Unsupported encoded extended public key.')
       }
-      const prefixBytes: number = Buffer.from(prefix, 'hex').length
+      const encoding: ExtendedPublicKeyEncoding<Encoding> = recognizeExtendedPublicKeyEncoding(prefix)
+      const prefixBytes: number = Buffer.from(encoding[prefix], 'hex').length
 
       return bs58check.decode(extendedPublicKey).slice(prefixBytes).toString('hex')
     default:

@@ -33,6 +33,7 @@ export interface AirGapTransaction<_Units extends string = string, _FeeUnits ext
 
   arbitraryData?: string | [AirGapUIText, string]
   json?: any
+  extra?: any
 }
 
 export interface TransactionCursor extends BaseCursor {}

@@ -53,33 +53,26 @@
           "type": "string"
         },
         "transaction": {
-          "$ref": "#/definitions/BitcoinUnsignedTransaction"
+          "additionalProperties": false,
+          "properties": {
+            "ins": {
+              "items": {
+                "$ref": "#/definitions/BitcoinInTransaction"
+              },
+              "type": "array"
+            },
+            "outs": {
+              "items": {
+                "$ref": "#/definitions/BitcoinOutTransaction"
+              },
+              "type": "array"
+            }
+          },
+          "required": ["ins", "outs"],
+          "type": "object"
         }
       },
       "required": ["publicKey", "transaction"],
-      "type": "object"
-    },
-    "BitcoinUnsignedTransaction": {
-      "additionalProperties": false,
-      "properties": {
-        "ins": {
-          "items": {
-            "$ref": "#/definitions/BitcoinInTransaction"
-          },
-          "type": "array"
-        },
-        "outs": {
-          "items": {
-            "$ref": "#/definitions/BitcoinOutTransaction"
-          },
-          "type": "array"
-        },
-        "type": {
-          "enum": ["unsigned"],
-          "type": "string"
-        }
-      },
-      "required": ["ins", "outs", "type"],
       "type": "object"
     }
   }
