@@ -69,6 +69,11 @@
 # node_modules/.bin/ts-json-schema-generator --path 'packages/tezos/src/v1/serializer/v3/schemas/definitions/transaction-sign-request-tezos.ts' --tsconfig 'tsconfig.json' -c > packages/tezos/src/v1/serializer/v3/schemas/generated/transaction-sign-request-tezos.json
 # node_modules/.bin/ts-json-schema-generator --path 'packages/tezos/src/v1/serializer/v3/schemas/definitions/transaction-sign-request-tezos-sapling.ts' --tsconfig 'tsconfig.json' -c > packages/tezos/src/v1/serializer/v3/schemas/generated/transaction-sign-request-tezos-sapling.json
 
+# ICP
+# node_modules/.bin/ts-json-schema-generator --path 'packages/icp/src/v1/serializer/v3/schemas/definitions/transaction-sign-response-icp.ts' --tsconfig 'tsconfig.json' -c > packages/icp/src/v1/serializer/v3/schemas/generated/transaction-sign-response-icp.json
+# node_modules/.bin/ts-json-schema-generator --path 'packages/icp/src/v1/serializer/v3/schemas/definitions/transaction-sign-request-icp.ts' --tsconfig 'tsconfig.json' -c > packages/icp/src/v1/serializer/v3/schemas/generated/transaction-sign-request-icp.json
+
+
 # Tests
 # node_modules/.bin/ts-json-schema-generator --path 'packages/serializer/test/schemas/definitions/AnyMessage.ts' --tsconfig 'tsconfig.json' > packages/serializer/test/schemas/generated/any-message.json
 # node_modules/.bin/ts-json-schema-generator --path 'packages/serializer/test/schemas/definitions/ArrayMessage.ts' --tsconfig 'tsconfig.json' > packages/serializer/test/schemas/generated/array-message.json
