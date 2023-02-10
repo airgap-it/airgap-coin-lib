@@ -15,7 +15,7 @@ interface TokenResponse {
   token: Token[]
 }
 
-const OBJKT_API_URL = 'https://data.objkt.com/v2/graphql'
+const OBJKT_API_URL = 'https://data.objkt.com/v3/graphql'
 
 export class ObjktTokenMetadataIndexer implements TokenMetadataIndexer {
   public constructor(private readonly contractAddress: string, private readonly apiUrl: string = OBJKT_API_URL) {}

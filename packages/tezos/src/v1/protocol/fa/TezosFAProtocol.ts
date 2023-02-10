@@ -504,5 +504,5 @@ export abstract class TezosFAProtocolImpl<
 export const TEZOS_FA_MAINNET_PROTOCOL_NETWORK: Omit<TezosFAProtocolNetwork, 'contractAddress'> = {
   ...TEZOS_MAINNET_PROTOCOL_NETWORK,
   defaultSourceAddress: 'tz1Mj7RzPmMAqDUNFBn5t5VbXmWW4cSUAdtT',
-  objktApiUrl: 'https://data.objkt.com/v2/graphql'
+  objktApiUrl: 'https://data.objkt.com/v3/graphql'
 }
