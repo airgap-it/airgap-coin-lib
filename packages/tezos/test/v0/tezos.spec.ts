@@ -277,9 +277,9 @@ describe(`ICoinProtocol Tezos - Custom Tests (v0)`, () => {
     it('can give a list of transactions from indexer API', async () => {
       getStub
         .withArgs(
-          `${(await tezosLib.getOptions()).network.extras.indexerClient.baseUrl}/v1/accounts/${
+          `${(await tezosLib.getOptions()).network.extras.indexerClient.baseUrl}/v1/operations/transactions?anyof.target.sender=${
             tezosProtocolSpec.wallet.addresses[0]
-          }/operations?type=transaction&limit=20`
+          }&sort.desc=level&limit=20`
         )
         .returns(
           Promise.resolve({
@@ -1968,14 +1968,11 @@ describe(`ICoinProtocol Tezos - Custom Tests (v0)`, () => {
         .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy/balance`)
         .returns(Promise.resolve({ data: 0 }))
 
-      return prepareSpend(
-        ['KT1X6SSqro2zUo1Wa7X5BnDWBvfBxZ6feUnc', 'KT1QLtQ54dKzcfwxMHmEM6PC8tooUg6MxDZ3'],
-        ['12345'],
-        '111'
-      ).catch((error: Error) =>
-        expect(error)
-          .to.be.an('error')
-          .with.property('message', new ConditionViolationError(Domain.TEZOS, 'length of recipients and values does not match!').message)
+      return prepareSpend(['KT1X6SSqro2zUo1Wa7X5BnDWBvfBxZ6feUnc', 'KT1QLtQ54dKzcfwxMHmEM6PC8tooUg6MxDZ3'], ['12345'], '111').catch(
+        (error: Error) =>
+          expect(error)
+            .to.be.an('error')
+            .with.property('message', new ConditionViolationError(Domain.TEZOS, 'length of recipients and values does not match!').message)
       )
     })
   })
