@@ -1,6 +1,6 @@
 {
   "name": "@airgap/serializer",
-  "version": "0.13.10-beta.3",
+  "version": "0.13.10",
   "description": "The @airgap/serializer provides serializers used in AirGap applications.",
   "keywords": [
     "airgap",
@@ -38,7 +38,7 @@
   },
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
   "peerDependencies": {
-    "@airgap/coinlib-core": "^0.13.9"
+    "@airgap/coinlib-core": "^0.13.10"
   },
   "localDependencies": {},
   "nyc": {

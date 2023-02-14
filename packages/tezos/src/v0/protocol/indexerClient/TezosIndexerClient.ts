@@ -16,7 +16,7 @@ export class TezosIndexerClient implements TezosProtocolIndexerClient {
     limit?: number,
     offset?: number
   ): Promise<Omit<IAirGapTransaction, 'protocolIdentifier' | 'network'>[]> {
-    const url = this.url(`/accounts/${address}/operations`, 'type=transaction', limit, offset)
+    const url = this.url('/operations/transactions', `anyof.target.sender=${address}&sort.desc=level`, limit, offset)
     const result = (await axios.get<any[]>(url)).data
     return result.map((transaction) => ({
       amount: new BigNumber(transaction.amount).toFixed(),

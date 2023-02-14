@@ -16,7 +16,7 @@ export class TzKTIndexerClient implements TezosIndexerClient {
     limit?: number,
     offset?: number
   ): Promise<Omit<AirGapTransaction<TezosUnits>, 'network'>[]> {
-    const url = this.url(`/accounts/${address}/operations`, 'type=transaction', limit, offset)
+    const url = this.url('/operations/transactions', `anyof.target.sender=${address}&sort.desc=level`, limit, offset)
     const result = (await axios.get<any[]>(url)).data
 
     return result.map(

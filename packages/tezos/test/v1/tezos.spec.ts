@@ -213,7 +213,7 @@ describe(`TezosProtocol - Custom Tests`, () => {
 
       getStub
         .withArgs(
-          `${protocolNetwork.indexer.apiUrl}/v1/accounts/${tezosProtocolSpec.wallet.addresses[0]}/operations?type=transaction&limit=20`
+          `${protocolNetwork.indexer.apiUrl}/v1/operations/transactions?anyof.target.sender=${tezosProtocolSpec.wallet.addresses[0]}&sort.desc=level&limit=20`
         )
         .returns(
           Promise.resolve({
@@ -254,7 +254,7 @@ describe(`TezosProtocol - Custom Tests`, () => {
           fee: newAmount<TezosUnits>('413', 'blockchain').toJSON(),
           from: ['tz1YvE7Sfo92ueEPEdZceNWd5MWNeMNSt16L'],
           isInbound: false,
-          network: (undefined as any) as ProtocolNetwork,
+          network: undefined as any as ProtocolNetwork,
           timestamp: new Date('2021-05-24T06:21:18Z').getTime() / 1000,
           to: ['tz1M4axJezHXX5my1uQEXYXmeVPp5vXnK8bH'],
           status: {
