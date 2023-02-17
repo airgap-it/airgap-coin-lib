@@ -1,6 +1,6 @@
 {
   "name": "@airgap/groestlcoin",
-  "version": "0.13.10",
+  "version": "0.13.11-beta.0",
   "description": "The @airgap/groestlcoin is a Groestlcoin implementation of the ICoinProtocol interface from @airgap/coinlib-core.",
   "keywords": [
     "airgap",
