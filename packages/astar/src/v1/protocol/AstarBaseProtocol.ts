@@ -11,11 +11,13 @@ import { AstarAccountController } from '../controller/AstarAccountController'
 import { AstarTransactionController } from '../controller/AstarTransactionController'
 import { AstarNodeClient } from '../node/AstarNodeClient'
 import { AstarProtocolConfiguration } from '../types/configuration'
+import { AstarCryptoConfiguration } from '../types/crypto'
 import { AstarBaseProtocolOptions, AstarProtocolNetwork } from '../types/protocol'
 
 // Interface
 
-export interface AstarBaseProtocol<_Units extends string = string> extends SubstrateProtocol<_Units, AstarProtocolNetwork> {}
+export interface AstarBaseProtocol<_Units extends string = string>
+  extends SubstrateProtocol<_Units, AstarProtocolNetwork, AstarCryptoConfiguration> {}
 
 // Implemenation
 

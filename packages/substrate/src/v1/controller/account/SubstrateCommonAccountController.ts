@@ -1,13 +1,10 @@
 import { assertNever, Domain } from '@airgap/coinlib-core'
-import { KeyPair as RawKeyPair } from '@airgap/coinlib-core/data/KeyPair'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 // @ts-ignore
-import { mnemonicToSeed } from '@airgap/coinlib-core/dependencies/src/bip39-2.5.0'
-// @ts-ignore
-import * as bitcoinJS from '@airgap/coinlib-core/dependencies/src/bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac/src'
-import { UnsupportedError } from '@airgap/coinlib-core/errors'
-import { KeyPair, newPublicKey, newSecretKey, PublicKey, Secret } from '@airgap/module-kit'
-import { bip39ToMiniSecret, waitReady } from '@polkadot/wasm-crypto'
+import { fromBase58 } from '@airgap/coinlib-core/dependencies/src/bip32-2.0.4/src/index'
+import { InvalidValueError, UnsupportedError } from '@airgap/coinlib-core/errors'
+import { encodeDerivative } from '@airgap/crypto'
+import { CryptoDerivative, KeyPair, newPublicKey, newSecretKey, PublicKey } from '@airgap/module-kit'
 
 import { SubstrateAccountId } from '../../data/account/address/SubstrateAddress'
 import { substrateAddressFactory, TypedSubstrateAddress } from '../../data/account/address/SubstrateAddressFactory'
@@ -15,7 +12,6 @@ import { SubstrateAccountBalance } from '../../data/account/SubstrateAccountBala
 import { SubstrateAccountInfo } from '../../data/account/SubstrateAccountInfo'
 import { SubstrateNodeClient } from '../../node/SubstrateNodeClient'
 import { SubstrateProtocolConfiguration } from '../../types/configuration'
-import { createSr25519KeyPair } from '../../utils/sr25519'
 
 import { SubstrateAccountController } from './SubstrateAccountController'
 
@@ -23,71 +19,38 @@ export class SubstrateCommonAccountController<C extends SubstrateProtocolConfigu
   implements SubstrateAccountController<C> {
   public constructor(protected readonly configuration: C, protected readonly nodeClient: NodeClient) {}
 
-  public async createKeyPairFromSecret(secret: Secret, derivationPath?: string | undefined): Promise<KeyPair> {
-    switch (secret.type) {
-      case 'hex':
-        return this.createKeyPairFromHexSecret(secret.value, derivationPath)
-      case 'mnemonic':
-        return this.createKeyPairFromMnemonic(secret.value, secret.password, derivationPath)
-      default:
-        assertNever(secret)
-        throw new UnsupportedError(Domain.SUBSTRATE, 'Unknown secret type')
-    }
-  }
-
-  private async createKeyPairFromMnemonic(mnemonic: string, password?: string, derivationPath?: string): Promise<KeyPair> {
+  public async createKeyPairFromDerivative(derivative: CryptoDerivative): Promise<KeyPair> {
     switch (this.configuration.account.type) {
       case 'eth':
-        return this.createEthKeyPairFromMnemonic(mnemonic, password, derivationPath)
+        return this.createEthKeyPairFromDerivative(derivative)
       case 'ss58':
-        return this.createSS58KeyPairFromMnemonic(mnemonic, password, derivationPath)
+        return this.createSS58KeyPairFromDerivative(derivative)
       default:
         assertNever(this.configuration.account)
         throw new UnsupportedError(Domain.SUBSTRATE, 'Unknown account configuration type')
     }
   }
 
-  private createEthKeyPairFromMnemonic(mnemonic: string, password?: string, derivationPath?: string): KeyPair {
-    const secret = mnemonicToSeed(mnemonic || '', password)
-
-    return this.createEthKeyPairFromHexSecret(Buffer.from(secret).toString('hex'), derivationPath)
-  }
-
-  private async createSS58KeyPairFromMnemonic(mnemonic: string, password?: string, derivationPath?: string): Promise<KeyPair> {
-    await waitReady()
-    const secret = bip39ToMiniSecret(mnemonic, password || '')
-
-    return this.createSS58KeyPairFromHexSecret(Buffer.from(secret).toString('hex'), derivationPath)
-  }
-
-  private async createKeyPairFromHexSecret(secret: string, derivationPath?: string): Promise<KeyPair> {
-    switch (this.configuration.account.type) {
-      case 'eth':
-        return this.createEthKeyPairFromHexSecret(secret, derivationPath)
-      case 'ss58':
-        return this.createSS58KeyPairFromHexSecret(secret, derivationPath)
-      default:
-        assertNever(this.configuration.account)
-        throw new UnsupportedError(Domain.SUBSTRATE, 'Unknown account configuration type')
+  private async createEthKeyPairFromDerivative(derivative: CryptoDerivative): Promise<KeyPair> {
+    const bip32Node = encodeDerivative('bip32', derivative)
+    const ethNode = fromBase58(bip32Node.secretKey)
+    const secretKey = ethNode.privateKey
+    if (secretKey === undefined) {
+      throw new InvalidValueError(Domain.SUBSTRATE, 'Cannot generate secret key')
     }
-  }
 
-  private createEthKeyPairFromHexSecret(secret: string, derivationPath?: string): KeyPair {
-    const ethereumNode = bitcoinJS.HDNode.fromSeedHex(secret, bitcoinJS.networks.bitcoin)
-    const hdNode = ethereumNode.derivePath(derivationPath)
-
-    return {
-      secretKey: newSecretKey(hdNode.keyPair.getPrivateKeyBuffer().toString('hex'), 'hex'),
-      publicKey: newPublicKey(hdNode.neutered().getPublicKeyBuffer().toString('hex'), 'hex')
-    }
-  }
-
-  private async createSS58KeyPairFromHexSecret(secret: string, derivationPath?: string): Promise<KeyPair> {
-    const { privateKey: secretKey, publicKey }: RawKeyPair = await createSr25519KeyPair(secret, derivationPath)
+    const publicKey = ethNode.publicKey
 
     return {
       secretKey: newSecretKey(secretKey.toString('hex'), 'hex'),
       publicKey: newPublicKey(publicKey.toString('hex'), 'hex')
+    }
+  }
+
+  private async createSS58KeyPairFromDerivative(derivative: CryptoDerivative): Promise<KeyPair> {
+    return {
+      secretKey: newSecretKey(derivative.secretKey, 'hex'),
+      publicKey: newPublicKey(derivative.publicKey, 'hex')
     }
   }
 

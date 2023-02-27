@@ -1,14 +1,15 @@
 import { assertNever, Domain, MainProtocolSymbols } from '@airgap/coinlib-core'
 import axios from '@airgap/coinlib-core/dependencies/src/axios-0.19.0/index'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
-import { mnemonicToSeed } from '@airgap/coinlib-core/dependencies/src/bip39-2.5.0/index'
 import { BalanceError, ConditionViolationError, UnsupportedError } from '@airgap/coinlib-core/errors'
+import { encodeDerivative } from '@airgap/crypto'
 import {
   AirGapTransaction,
   AirGapTransactionsWithCursor,
   AirGapUIAlert,
   Amount,
   Balance,
+  CryptoDerivative,
   ExtendedKeyPair,
   ExtendedPublicKey,
   ExtendedSecretKey,
@@ -24,7 +25,6 @@ import {
   ProtocolMetadata,
   PublicKey,
   RecursivePartial,
-  Secret,
   SecretKey,
   Signature,
   TransactionConfiguration,
@@ -34,6 +34,7 @@ import * as bitcoin from 'bitcoinjs-lib'
 
 import { BitcoinSegwitAddress } from '../data/BitcoinSegwitAddress'
 import { BitcoinSegwitJS } from '../types/bitcoinjs'
+import { BitcoinCryptoConfiguration } from '../types/crypto'
 import { UTXOResponse } from '../types/indexer'
 import { BitcoinProtocolNetwork, BitcoinProtocolOptions, BitcoinUnits } from '../types/protocol'
 import {
@@ -272,28 +273,18 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
 
   // Offline
 
-  public async getKeyPairFromSecret(secret: Secret, derivationPath?: string): Promise<KeyPair> {
-    switch (secret.type) {
-      case 'hex':
-        return this.getKeyPairFromHexSecret(secret.value, derivationPath)
-      case 'mnemonic':
-        return this.getKeyPairFromMnemonic(secret.value, derivationPath, secret.password)
-      default:
-        assertNever(secret)
-        throw new UnsupportedError(Domain.BITCOIN, 'Unsupported secret type.')
-    }
+  public async getCryptoConfiguration(): Promise<BitcoinCryptoConfiguration> {
+    return this.legacy.getCryptoConfiguration()
   }
 
-  private async getKeyPairFromHexSecret(secret: string, derivationPath?: string): Promise<KeyPair> {
-    const bip32: bitcoin.BIP32Interface = this.bitcoinJS.lib.bip32.fromSeed(Buffer.from(secret, 'hex'), this.bitcoinJS.config.network)
-    const derivedBip32: bitcoin.BIP32Interface = derivationPath ? bip32.derivePath(derivationPath) : bip32
-
-    const privateKey: Buffer | undefined = derivedBip32.privateKey
+  public async getKeyPairFromDerivative(derivative: CryptoDerivative): Promise<KeyPair> {
+    const bip32: bitcoin.BIP32Interface = this.derivativeToBip32Node(derivative)
+    const privateKey: Buffer | undefined = bip32.privateKey
     if (privateKey === undefined) {
       throw new Error('No private key!')
     }
 
-    const publicKey: Buffer = derivedBip32.publicKey
+    const publicKey: Buffer = bip32.publicKey
 
     return {
       secretKey: newSecretKey(privateKey.toString('hex'), 'hex'),
@@ -301,41 +292,16 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
     }
   }
 
-  private async getKeyPairFromMnemonic(mnemonic: string, derivationPath?: string, password?: string): Promise<KeyPair> {
-    const secret: Buffer = mnemonicToSeed(mnemonic, password)
-
-    return this.getKeyPairFromHexSecret(secret.toString('hex'), derivationPath)
-  }
-
-  public async getExtendedKeyPairFromSecret(secret: Secret, derivationPath?: string): Promise<ExtendedKeyPair> {
-    switch (secret.type) {
-      case 'hex':
-        return this.getExtendedKeyPairFromHexSecret(secret.value, derivationPath)
-      case 'mnemonic':
-        return this.getExtendedKeyPairFromMnemonic(secret.value, derivationPath, secret.password)
-      default:
-        assertNever(secret)
-        throw new UnsupportedError(Domain.BITCOIN, 'Unsupported secret type.')
-    }
-  }
-
-  private async getExtendedKeyPairFromHexSecret(secret: string, derivationPath?: string): Promise<ExtendedKeyPair> {
-    const bip32: bitcoin.BIP32Interface = this.bitcoinJS.lib.bip32.fromSeed(Buffer.from(secret, 'hex'), this.bitcoinJS.config.network)
-    const derivedBip32: bitcoin.BIP32Interface = derivationPath ? bip32.derivePath(derivationPath) : bip32
+  public async getExtendedKeyPairFromDerivative(derivative: CryptoDerivative): Promise<ExtendedKeyPair> {
+    const bip32: bitcoin.BIP32Interface = this.derivativeToBip32Node(derivative)
 
     return {
-      secretKey: newExtendedSecretKey(derivedBip32.toBase58(), 'encoded'),
-      publicKey: convertExtendedPublicKey(newExtendedPublicKey(derivedBip32.neutered().toBase58(), 'encoded'), {
+      secretKey: newExtendedSecretKey(bip32.toBase58(), 'encoded'),
+      publicKey: convertExtendedPublicKey(newExtendedPublicKey(bip32.neutered().toBase58(), 'encoded'), {
         format: 'encoded',
         type: 'zpub'
       })
     }
-  }
-
-  private async getExtendedKeyPairFromMnemonic(mnemonic: string, derivationPath?: string, password?: string): Promise<ExtendedKeyPair> {
-    const secret: Buffer = mnemonicToSeed(mnemonic, password)
-
-    return this.getExtendedKeyPairFromHexSecret(secret.toString('hex'), derivationPath)
   }
 
   public async deriveFromExtendedSecretKey(
@@ -343,7 +309,7 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
     visibilityIndex: number,
     addressIndex: number
   ): Promise<SecretKey> {
-    const encodedSecretKey: ExtendedSecretKey = convertExtendedSecretKey(extendedSecretKey, 'encoded')
+    const encodedSecretKey: ExtendedSecretKey = convertExtendedSecretKey(extendedSecretKey, { format: 'encoded', type: 'xprv' })
     const derivedBip32: bitcoin.BIP32Interface = this.bitcoinJS.lib.bip32
       .fromBase58(encodedSecretKey.value, this.bitcoinJS.config.network)
       .derive(visibilityIndex)
@@ -384,7 +350,7 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
     transaction: BitcoinSegwitUnsignedTransaction,
     extendedSecretKey: ExtendedSecretKey
   ): Promise<BitcoinSegwitSignedTransaction> {
-    const encodedExtendedSecretKey: ExtendedSecretKey = convertExtendedSecretKey(extendedSecretKey, 'encoded')
+    const encodedExtendedSecretKey: ExtendedSecretKey = convertExtendedSecretKey(extendedSecretKey, { format: 'encoded', type: 'xprv' })
     const bip32: bitcoin.BIP32Interface = this.bitcoinJS.lib.bip32.fromBase58(encodedExtendedSecretKey.value)
 
     const decodedPSBT: bitcoin.Psbt = this.bitcoinJS.lib.Psbt.fromHex(transaction.psbt)
@@ -692,6 +658,29 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
     const { data } = await axios.post(`${this.options.network.indexerApi}/api/v2/sendtx/`, hexTransaction)
 
     return data.result
+  }
+
+  // Custom
+
+  private convertCryptoDerivative(derivative: CryptoDerivative): ExtendedSecretKey {
+    const hexNode = encodeDerivative('hex', {
+      ...derivative,
+      secretKey: `00${derivative.secretKey}`
+    })
+
+    const extendedSecretKey: ExtendedSecretKey = {
+      type: 'xpriv',
+      format: 'hex',
+      value: hexNode.secretKey
+    }
+
+    return convertExtendedSecretKey(extendedSecretKey, { format: 'encoded', type: 'xprv' })
+  }
+
+  private derivativeToBip32Node(derivative: CryptoDerivative) {
+    const extendedSecretKey: ExtendedSecretKey = this.convertCryptoDerivative(derivative)
+
+    return this.bitcoinJS.lib.bip32.fromBase58(extendedSecretKey.value, this.bitcoinJS.config.network)
   }
 }
 

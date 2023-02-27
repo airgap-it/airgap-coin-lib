@@ -9,6 +9,7 @@ export type SignMessageExtension<T extends _AnyProtocol> = T extends _OfflinePro
   any,
   any,
   any,
+  any,
   infer _PublicKey,
   any,
   infer _KeyPair

@@ -1,6 +1,6 @@
 {
   "name": "@airgap/tezos",
-  "version": "0.13.11-beta.0",
+  "version": "0.13.11-beta.3",
   "description": "The @airgap/tezos is a Tezos implementation of the ICoinProtocol interface from @airgap/coinlib-core.",
   "keywords": [
     "airgap",
@@ -24,14 +24,17 @@
     "lint:prettier": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint-ci": "tslint -t json -o ../../lint-reports/tezos.json --project . || true",
     "lint-ci:prettier": "prettier \"src/**/*.ts\" \"test/**/*.ts\" --list-different",
-    "test": "TS_NODE_PROJECT='./test/tsconfig.json' nyc mocha --bail --require ts-node/register --require source-map-support/register --full-trace --delay --timeout 40000 ./test/**/**.spec.ts",
+    "test": "TS_NODE_PROJECT='./test/tsconfig.json' nyc mocha --bail --require ts-node/register --require tsconfig-paths/register --require source-map-support/register --full-trace --delay --timeout 40000 ./test/**/**.spec.ts",
     "test-ci": "nyc --reporter=lcov npm test",
-    "test-legacy": "",
-    "browserify": "browserify ./dist/index.js -p realpathify -s airgapCoinLibTezos > ./dist/airgap-coinlib-tezos.min.js"
+    "browserify": "browserify ./dist/index.js -s airgapCoinLibTezos > ./dist/airgap-coinlib-tezos.min.js"
   },
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
+    "@airgap/coinlib-core": "*",
+    "@airgap/crypto": "*",
+    "@airgap/module-kit": "*",
     "@airgap/sapling-wasm": "0.0.7",
+    "@airgap/serializer": "*",
     "@stablelib/blake2b": "^1.0.1",
     "@stablelib/ed25519": "^1.0.3",
     "@stablelib/nacl": "^1.0.4",
@@ -40,11 +43,6 @@
     "@taquito/local-forging": "14.0.0",
     "graphql": "^16.6.0",
     "graphql-request": "^5.1.0"
-  },
-  "peerDependencies": {
-    "@airgap/coinlib-core": "^0.13.10",
-    "@airgap/module-kit": "^0.13.10",
-    "@airgap/serializer": "^0.13.10"
   },
   "localDependencies": {
     "@taquito/local-forging": "8.0.1-beta.1"

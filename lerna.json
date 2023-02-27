@@ -1,6 +1,6 @@
 {
-  "packages": ["packages/*"],
-  "version": "0.13.11-beta.0",
+  "version": "0.13.11-beta.3",
+  "useWorkspaces": true,
   "command": {
     "publish": {
       "ignoreChanges": ["*.sh", "*.md", "*.yml", ".*", "tsconfig.json", "tslint.json"]

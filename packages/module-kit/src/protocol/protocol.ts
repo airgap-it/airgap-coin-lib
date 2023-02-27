@@ -2,11 +2,11 @@ import { Address, AddressCursor, AddressWithCursor } from '../types/address'
 import { AirGapInterface, ApplicableProtocolExtension } from '../types/airgap'
 import { Amount } from '../types/amount'
 import { Balance } from '../types/balance'
+import { CryptoConfiguration, CryptoDerivative } from '../types/crypto'
 import { FeeEstimation } from '../types/fee'
 import { ExtendedKeyPair, ExtendedPublicKey, ExtendedSecretKey, KeyPair, PublicKey, SecretKey } from '../types/key'
 import { Complement } from '../types/meta/utility-types'
 import { ProtocolMetadata, ProtocolNetwork } from '../types/protocol'
-import { Secret } from '../types/secret'
 import {
   AirGapTransaction,
   AirGapTransactionsWithCursor,
@@ -38,11 +38,14 @@ export interface BaseGeneric<
 export interface OfflineGeneric<
   _AddressCursor extends AddressCursor = AddressCursor,
   _AddressResult extends Address | AddressWithCursor<_AddressCursor> = Address | AddressWithCursor<_AddressCursor>,
+  _CryptoConfiguration extends CryptoConfiguration = CryptoConfiguration,
   _Units extends string = string,
   _FeeUnits extends string = _Units,
   _SignedTransaction extends SignedTransaction = SignedTransaction,
   _UnsignedTransaction extends UnsignedTransaction = UnsignedTransaction
-> extends BaseGeneric<_AddressCursor, _AddressResult, _Units, _FeeUnits, _SignedTransaction, _UnsignedTransaction> {}
+> extends BaseGeneric<_AddressCursor, _AddressResult, _Units, _FeeUnits, _SignedTransaction, _UnsignedTransaction> {
+  CryptoConfiguration: _CryptoConfiguration
+}
 
 export interface OnlineGeneric<
   _AddressCursor extends AddressCursor = AddressCursor,
@@ -64,6 +67,8 @@ type TypedAddressCursor<G extends Partial<BaseGeneric>> = Complement<BaseGeneric
 type TypedAddressResult<G extends Partial<BaseGeneric>> = Complement<BaseGeneric<TypedAddressCursor<G>>, G>['AddressResult']
 
 type TypedProtocolNetwork<G extends Partial<OnlineGeneric>> = Complement<OnlineGeneric, G>['ProtocolNetwork']
+
+type TypedCryptoConfiguration<G extends Partial<OfflineGeneric>> = Complement<OfflineGeneric, G>['CryptoConfiguration']
 
 type TypedUnits<G extends Partial<BaseGeneric>> = Complement<BaseGeneric, G>['Units']
 type TypedFeeUnits<G extends Partial<BaseGeneric>> = Complement<BaseGeneric<any, any, TypedUnits<G>>, G>['FeeUnits']
@@ -110,6 +115,7 @@ export type BaseProtocol<G extends Partial<BaseGeneric> = {}> = _BaseProtocol<
 export interface _OfflineProtocol<
   _AddressCursor extends OfflineGeneric['AddressCursor'] = any,
   _AddressResult extends OfflineGeneric['AddressResult'] = any,
+  _CryptoConfiguration extends OfflineGeneric['CryptoConfiguration'] = any,
   _Units extends BaseGeneric['Units'] = any,
   _FeeUnits extends BaseGeneric['FeeUnits'] = any,
   _SignedTransaction extends BaseGeneric['SignedTransaction'] = any,
@@ -118,13 +124,15 @@ export interface _OfflineProtocol<
   _SecretKey extends SecretKey | ExtendedSecretKey = any,
   _KeyPair extends KeyPair | ExtendedKeyPair = any
 > extends _BaseProtocol<_AddressCursor, _AddressResult, _Units, _FeeUnits, _SignedTransaction, _UnsignedTransaction, _PublicKey> {
-  getKeyPairFromSecret(secret: Secret, derivationPath?: string): Promise<KeyPair>
+  getCryptoConfiguration(): Promise<_CryptoConfiguration>
 
+  getKeyPairFromDerivative(derivative: CryptoDerivative): Promise<KeyPair>
   signTransactionWithSecretKey(transaction: _UnsignedTransaction, secretKey: _SecretKey): Promise<_SignedTransaction>
 }
 export type OfflineProtocol<G extends Partial<OfflineGeneric> = {}> = _OfflineProtocol<
   TypedAddressCursor<G>,
   TypedAddressResult<G>,
+  TypedCryptoConfiguration<G>,
   TypedUnits<G>,
   TypedFeeUnits<G>,
   TypedSignedTransaction<G>,

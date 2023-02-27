@@ -10,6 +10,7 @@ import {
   UnsupportedError
 } from '@airgap/coinlib-core/errors'
 import { flattenArray } from '@airgap/coinlib-core/utils/array'
+import { encodeDerivative } from '@airgap/crypto'
 import {
   AddressWithCursor,
   AirGapProtocol,
@@ -17,6 +18,7 @@ import {
   AirGapTransactionsWithCursor,
   Amount,
   Balance,
+  CryptoDerivative,
   FeeEstimation,
   KeyPair,
   newAmount,
@@ -26,7 +28,6 @@ import {
   newUnsignedTransaction,
   ProtocolMetadata,
   PublicKey,
-  Secret,
   SecretKey,
   TransactionConfiguration,
   TransactionDetails
@@ -43,6 +44,7 @@ import { TezosSaplingAddress } from '../../data/TezosSaplingAddress'
 import { TezosSaplingInjectorClient } from '../../injector/TezosSaplingInjectorClient'
 import { TezosSaplingNodeClient } from '../../node/TezosSaplingNodeClient'
 import { TezosSaplingAddressCursor } from '../../types/address'
+import { TezosSaplingCryptoConfiguration } from '../../types/crypto'
 import { MichelsonAddress } from '../../types/michelson/primitives/MichelsonAddress'
 import { TezosOperation } from '../../types/operations/kinds/TezosOperation'
 import { TezosTransactionOperation, TezosTransactionParameters } from '../../types/operations/kinds/Transaction'
@@ -63,7 +65,6 @@ import {
   TezosSignedTransaction,
   TezosUnsignedTransaction
 } from '../../types/transaction'
-import { getSeedFromMnemonic } from '../../utils/bip'
 import { convertPublicKey, convertSecretKey } from '../../utils/key'
 import { encodeTzAddress, packMichelsonType } from '../../utils/pack'
 import { TezosSaplingAccountant } from '../../utils/protocol/sapling/TezosSaplingAccountant'
@@ -71,7 +72,7 @@ import { TezosSaplingEncoder } from '../../utils/protocol/sapling/TezosSaplingEn
 import { TezosSaplingForger } from '../../utils/protocol/sapling/TezosSaplingForger'
 import { TezosSaplingState } from '../../utils/protocol/sapling/TezosSaplingState'
 import { isUnsignedSaplingTransaction } from '../../utils/transaction'
-import { createTezosProtocol, TEZOS_DERIVATION_PATH, TEZOS_UNITS, TezosProtocol } from '../TezosProtocol'
+import { createTezosProtocol, TEZOS_UNITS, TezosProtocol } from '../TezosProtocol'
 
 // Interface
 
@@ -81,6 +82,7 @@ export interface TezosSaplingProtocol<_Units extends string>
       AddressCursor: TezosSaplingAddressCursor
       AddressResult: AddressWithCursor<TezosSaplingAddressCursor>
       ProtocolNetwork: TezosSaplingProtocolNetwork
+      CryptoConfiguration: TezosSaplingCryptoConfiguration
       Units: _Units
       FeeUnits: TezosUnits
       UnsignedTransaction: TezosSaplingUnsignedTransaction
@@ -156,7 +158,7 @@ export abstract class TezosSaplingProtocolImpl<_Units extends string> implements
         mainUnit: 'tez'
       },
       account: {
-        standardDerivationPath: TEZOS_DERIVATION_PATH,
+        standardDerivationPath: options.metadata.account.standardDerivationPath,
         address: {
           isCaseSensitive: true,
           placeholder: 'zet1...',
@@ -408,32 +410,22 @@ export abstract class TezosSaplingProtocolImpl<_Units extends string> implements
 
   // Offline
 
-  public async getKeyPairFromSecret(secret: Secret, derivationPath?: string): Promise<KeyPair> {
-    switch (secret.type) {
-      case 'hex':
-        return this.getKeyPairFromHexSecret(secret.value, derivationPath)
-      case 'mnemonic':
-        return this.getKeyPairFromMnemonic(secret.value, secret.password, derivationPath)
-      default:
-        assertNever(secret)
-        throw new UnsupportedError(Domain.TEZOS, 'Unsupported secret type.')
-    }
+  private readonly cryptoConfiguration: TezosSaplingCryptoConfiguration = {
+    algorithm: 'sapling',
+    secretType: 'miniSecretXor'
   }
 
-  private async getKeyPairFromHexSecret(secret: string, derivationPath: string = 'm/'): Promise<KeyPair> {
-    const xsk: Buffer = await sapling.getExtendedSpendingKey(secret, derivationPath)
-    const xfvk: Buffer = await sapling.getExtendedFullViewingKey(secret, derivationPath)
+  public async getCryptoConfiguration(): Promise<TezosSaplingCryptoConfiguration> {
+    return this.cryptoConfiguration
+  }
+
+  public async getKeyPairFromDerivative(derivative: CryptoDerivative): Promise<KeyPair> {
+    const zip32Node = encodeDerivative('zip32', derivative)
 
     return {
-      secretKey: newSecretKey(xsk.toString('hex'), 'hex'),
-      publicKey: newPublicKey(xfvk.toString('hex'), 'hex')
+      secretKey: newSecretKey(zip32Node.secretKey, 'hex'),
+      publicKey: newPublicKey(zip32Node.publicKey, 'hex')
     }
-  }
-
-  private async getKeyPairFromMnemonic(mnemonic: string, password?: string, derivationPath?: string): Promise<KeyPair> {
-    const seed: Buffer = getSeedFromMnemonic(mnemonic, password)
-
-    return this.getKeyPairFromHexSecret(seed.toString('hex'), derivationPath)
   }
 
   public async signTransactionWithSecretKey(
@@ -769,7 +761,7 @@ export abstract class TezosSaplingProtocolImpl<_Units extends string> implements
     const fee = configuration?.fee ? newAmount(configuration.fee).blockchain(tezosMetadata.units).value : '0'
     const overrideFees = configuration?.fee === undefined
 
-    let operations: TezosOperation[]
+    let operations: TezosOperation[] = []
     if (typeof transactions === 'string' && this.contract.areValidParameters(transactions)) {
       const parameters = this.contract.parseParameters(transactions)
       operations = [this.prepareTezosOperation(parameters, fee) as TezosOperation]
@@ -956,10 +948,8 @@ export abstract class TezosSaplingProtocolImpl<_Units extends string> implements
 
   private async getDummyAddress(): Promise<TezosSaplingAddressResult> {
     const seed: Uint8Array = randomBytes(32)
-    const { publicKey }: KeyPair = await this.getKeyPairFromHexSecret(
-      Buffer.from(seed).toString('hex'),
-      this.metadata.account?.standardDerivationPath
-    )
+    const xfvk: Buffer = await sapling.getExtendedFullViewingKey(seed, this.metadata.account.standardDerivationPath)
+    const publicKey: PublicKey = newPublicKey(xfvk.toString('hex'), 'hex')
 
     return this.getAddressFromPublicKey(publicKey)
   }

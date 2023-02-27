@@ -1,6 +1,6 @@
 {
   "name": "@airgap/icp",
-  "version": "0.13.11-beta.0",
+  "version": "0.13.11-beta.3",
   "description": "The @airgap/icp is an ICP implementation of the ICoinProtocol interface from @airgap/coinlib-core.",
   "keywords": [
     "airgap",
@@ -26,25 +26,23 @@
     "lint-ci:prettier": "prettier \"src/**/*.ts\" \"test/**/*.ts\" --list-different",
     "test": "",
     "test-ci": "nyc --reporter=lcov npm test",
-    "test-legacy": "",
-    "browserify": "browserify ./dist/index.js -p realpathify -s airgapCoinLibICP > ./dist/airgap-coinlib-icp.min.js"
+    "browserify": "browserify ./dist/index.js -s airgapCoinLibICP > ./dist/airgap-coinlib-icp.min.js"
   },
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
-  "peerDependencies": {
-    "@airgap/coinlib-core": "^0.13.10",
-    "@airgap/module-kit": "^0.13.10",
-    "@airgap/serializer": "^0.13.10",
-    "@stablelib/ed25519": "1.0.3"
-  },
   "dependencies": {
-    "@dfinity/candid": "^0.15.1",
-    "@dfinity/identity-secp256k1": "^0.15.1",
-    "@dfinity/nns": "^0.10.0",
-    "@dfinity/principal": "^0.15.1",
-    "@dfinity/utils": "^0.0.6",
+    "@airgap/coinlib-core": "*",
+    "@airgap/crypto": "*",
+    "@airgap/module-kit": "*",
+    "@airgap/serializer": "*",
+    "@stablelib/ed25519": "^1.0.3",
+    "base64-arraybuffer": "^1.0.2",
+    "bip39": "^3.0.4",
+    "borc": "^3.0.0",
+    "crc-32": "1.2.2",
     "isomorphic-fetch": "^3.0.0",
     "js-sha256": "^0.9.0",
-    "secp256k1": "^5.0.0"
+    "secp256k1": "^5.0.0",
+    "simple-cbor": "^0.4.1"
   },
   "nyc": {
     "include": [

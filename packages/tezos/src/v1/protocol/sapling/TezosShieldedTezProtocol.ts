@@ -12,7 +12,7 @@ import { MichelsonBytes } from '../../types/michelson/primitives/MichelsonBytes'
 import { TezosTransactionParameters } from '../../types/operations/kinds/Transaction'
 import { TezosProtocolOptions, TezosSaplingProtocolNetwork, TezosShieldedTezProtocolOptions, TezosUnits } from '../../types/protocol'
 import { TezosSaplingExternalMethodProvider } from '../../types/sapling/TezosSaplingExternalMethodProvider'
-import { createTezosProtocolOptions, TEZOS_UNITS } from '../TezosProtocol'
+import { createTezosProtocolOptions, TEZOS_DERIVATION_PATH, TEZOS_UNITS } from '../TezosProtocol'
 
 import { TezosSaplingProtocol, TezosSaplingProtocolImpl } from './TezosSaplingProtocol'
 
@@ -27,7 +27,11 @@ const SHIELDED_TEZ_METADATA: ProtocolMetadata<TezosUnits> = {
   name: 'Shielded Tez',
 
   units: TEZOS_UNITS,
-  mainUnit: 'tez'
+  mainUnit: 'tez',
+
+  account: {
+    standardDerivationPath: TEZOS_DERIVATION_PATH
+  }
 }
 
 const TYPE_HASH: string = '1724054251'

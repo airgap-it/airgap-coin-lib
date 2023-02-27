@@ -1,6 +1,6 @@
 {
   "name": "@airgap/module-kit",
-  "version": "0.13.11-beta.0",
+  "version": "0.13.11-beta.3",
   "description": "TODO",
   "keywords": [
     "airgap",
@@ -25,12 +25,12 @@
     "lint-ci:prettier": "prettier \"src/**/*.ts\" \"test/**/*.ts\" --list-different",
     "test": "",
     "test-ci": "",
-    "test-legacy": "",
     "browserify": "browserify ./dist/index.js -s airgapModuleKit > ./dist/airgap-module-kit.min.js"
   },
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
-  "peerDependencies": {
-    "@airgap/coinlib-core": "^0.13.10"
+  "dependencies": {
+    "@airgap/coinlib-core": "*",
+    "@airgap/serializer": "*"
   },
   "nyc": {
     "include": [

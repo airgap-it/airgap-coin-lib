@@ -1,7 +1,7 @@
 import { assertNever, Domain, MainProtocolSymbols } from '@airgap/coinlib-core'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 // @ts-ignore
-import { BIP32Interface, fromSeed } from '@airgap/coinlib-core/dependencies/src/bip32-2.0.4/src/index'
+import { BIP32Interface, fromBase58 } from '@airgap/coinlib-core/dependencies/src/bip32-2.0.4/src/index'
 // @ts-ignore
 import { mnemonicToSeed, validateMnemonic } from '@airgap/coinlib-core/dependencies/src/bip39-2.5.0/index'
 import { decodeTxBytes, encodeTxBytes, prepareSignBytes } from '@airgap/coinlib-core/dependencies/src/cosmjs'
@@ -10,6 +10,7 @@ import SECP256K1 = require('@airgap/coinlib-core/dependencies/src/secp256k1-3.7.
 // @ts-ignore
 import sha = require('@airgap/coinlib-core/dependencies/src/sha.js-2.4.11/index')
 import { BalanceError, InvalidValueError, UnsupportedError } from '@airgap/coinlib-core/errors'
+import { encodeDerivative } from '@airgap/crypto'
 import {
   Address,
   AirGapProtocol,
@@ -17,6 +18,7 @@ import {
   AirGapTransactionsWithCursor,
   Amount,
   Balance,
+  CryptoDerivative,
   FeeDefaults,
   KeyPair,
   newAmount,
@@ -29,7 +31,6 @@ import {
   ProtocolUnitsMetadata,
   PublicKey,
   RecursivePartial,
-  Secret,
   SecretKey,
   Signature,
   TransactionConfiguration,
@@ -45,6 +46,7 @@ import { CosmosMessageType, CosmosMessageTypeValue } from '../data/transaction/m
 import { CosmosSendMessage } from '../data/transaction/message/CosmosSendMessage'
 import { CosmosWithdrawDelegationRewardMessage } from '../data/transaction/message/CosmosWithdrawDelegationRewardMessage'
 import { CosmosNodeClient } from '../node/CosmosNodeClient'
+import { CosmosCryptoConfiguration } from '../types/crypto'
 import { CosmosProtocolNetwork, CosmosProtocolOptions, CosmosUnits } from '../types/protocol'
 import { CosmosAccount, CosmosNodeInfo, CosmosPagedSendTxsResponse } from '../types/rpc'
 import { CosmosSignedTransaction, CosmosTransactionCursor, CosmosUnsignedTransaction } from '../types/transaction'
@@ -61,6 +63,7 @@ export interface CosmosProtocol
     {
       AddressResult: Address
       ProtocolNetwork: CosmosProtocolNetwork
+      CryptoConfiguration: CosmosCryptoConfiguration
       SignedTransaction: CosmosSignedTransaction
       TransactionCursor: CosmosTransactionCursor
       Units: CosmosUnits
@@ -224,31 +227,23 @@ export class CosmosProtocolImpl implements CosmosProtocol {
 
   // Offline
 
-  public async getKeyPairFromSecret(secret: Secret, derivationPath?: string): Promise<KeyPair> {
-    switch (secret.type) {
-      case 'hex':
-        const nodeFromHex: BIP32Interface = fromSeed(Buffer.from(secret.value, 'hex'))
-
-        return this.getKeyPairFromNode(nodeFromHex, derivationPath)
-      case 'mnemonic':
-        validateMnemonic(secret.value)
-        const seed = mnemonicToSeed(secret.value, secret.password)
-        const nodeFromMnemonic = fromSeed(seed)
-
-        return this.getKeyPairFromNode(nodeFromMnemonic, derivationPath)
-      default:
-        assertNever(secret)
-        throw new UnsupportedError(Domain.COSMOS, 'Unsupported secret type.')
-    }
+  private readonly cryptoConfiguration: CosmosCryptoConfiguration = {
+    algorithm: 'secp256k1'
   }
 
-  private async getKeyPairFromNode(node: BIP32Interface, derivationPath?: string): Promise<KeyPair> {
-    const keyPair = node.derivePath(derivationPath ?? 'm/')
-    const secretKey = keyPair.privateKey
+  public async getCryptoConfiguration(): Promise<CosmosCryptoConfiguration> {
+    return this.cryptoConfiguration
+  }
+
+  public async getKeyPairFromDerivative(derivative: CryptoDerivative): Promise<KeyPair> {
+    const bip32Node = encodeDerivative('bip32', derivative)
+    const bip32: BIP32Interface = fromBase58(bip32Node.secretKey)
+    const secretKey = bip32.privateKey
     if (secretKey === undefined) {
-      throw new InvalidValueError(Domain.COSMOS, 'Cannot generate private key')
+      throw new InvalidValueError(Domain.COSMOS, 'Cannot generate secret key')
     }
-    const publicKey = keyPair.publicKey
+
+    const publicKey = bip32.publicKey
 
     return {
       secretKey: newSecretKey(secretKey.toString('hex'), 'hex'),

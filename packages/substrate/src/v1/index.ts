@@ -56,6 +56,7 @@ import {
   SubstrateSS58AccountConfiguration,
   SubstrateTransactionConfiguration
 } from './types/configuration'
+import { SubstrateCryptoConfiguration } from './types/crypto'
 import { SubstrateProtocolNetwork, SubstrateProtocolOptions } from './types/protocol'
 import { SubstrateSignedTransaction, SubstrateTransactionCursor, SubstrateUnsignedTransaction } from './types/transaction'
 
@@ -126,6 +127,7 @@ export {
 // Types
 
 export {
+  SubstrateCryptoConfiguration,
   SubstrateProtocolConfiguration,
   SubstrateAccountConfiguration,
   SubstrateSS58AccountConfiguration,

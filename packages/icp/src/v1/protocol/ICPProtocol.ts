@@ -2,6 +2,7 @@ import { assertNever, Domain, MainProtocolSymbols } from '@airgap/coinlib-core'
 import axios from '@airgap/coinlib-core/dependencies/src/axios-0.19.0/index'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import { BalanceError, ConditionViolationError, UnsupportedError } from '@airgap/coinlib-core/errors'
+import { encodeDerivative } from '@airgap/crypto'
 import {
   Address,
   AirGapProtocol,
@@ -9,6 +10,7 @@ import {
   AirGapTransactionsWithCursor,
   Amount,
   Balance,
+  CryptoDerivative,
   FeeDefaults,
   KeyPair,
   newAmount,
@@ -20,15 +22,16 @@ import {
   ProtocolUnitsMetadata,
   PublicKey,
   RecursivePartial,
-  Secret,
   SecretKey,
   TransactionConfiguration,
   TransactionDetails
 } from '@airgap/module-kit'
 
+import { ICPCryptoConfiguration } from '../types/crypto'
 import { ICPProtocolNetwork, ICPProtocolOptions, ICPUnits } from '../types/protocol'
 import { ICPSignedTransaction, ICPTransactionCursor, ICPUnsignedTransaction } from '../types/transaction'
 import { uint8ArrayToHexString } from '../utils/convert'
+
 import {
   broadcastTransaction,
   createUnsignedTransaction,
@@ -37,7 +40,7 @@ import {
   getBalanceFromAddress,
   getInfoFromSignedTransaction,
   getInfoFromUnsignedTransaction,
-  getKeyPairFromMnemonic,
+  getKeyPairFromExtendedSecretKey,
   signTransaction
 } from './ICPImplementation'
 
@@ -48,6 +51,7 @@ export interface ICPProtocol
     {
       AddressResult: Address
       ProtocolNetwork: ICPProtocolNetwork
+      CryptoConfiguration: ICPCryptoConfiguration
       SignedTransaction: ICPSignedTransaction
       TransactionCursor: ICPTransactionCursor
       Units: ICPUnits
@@ -153,20 +157,21 @@ export class ICPProtocolImpl implements ICPProtocol {
 
   // Offline
 
-  // TODO : hex
-  public async getKeyPairFromSecret(secret: Secret, derivationPath?: string): Promise<KeyPair> {
-    switch (secret.type) {
-      case 'hex':
-        throw new Error('Method not implemented.')
-      case 'mnemonic':
-        const { publicKey, privateKey } = getKeyPairFromMnemonic(secret.value, derivationPath)
-        return {
-          secretKey: newSecretKey(privateKey, 'hex'),
-          publicKey: newPublicKey(publicKey, 'hex')
-        }
-      default:
-        assertNever(secret)
-        throw new UnsupportedError(Domain.ICP, 'Unsupported secret type.')
+  private readonly cryptoConfiguration: ICPCryptoConfiguration = {
+    algorithm: 'secp256k1'
+  }
+
+  public async getCryptoConfiguration(): Promise<ICPCryptoConfiguration> {
+    return this.cryptoConfiguration
+  }
+
+  public async getKeyPairFromDerivative(derivative: CryptoDerivative): Promise<KeyPair> {
+    const bip32Node = encodeDerivative('bip32', derivative)
+    const { publicKey, privateKey } = getKeyPairFromExtendedSecretKey(bip32Node.secretKey)
+
+    return {
+      secretKey: newSecretKey(privateKey, 'hex'),
+      publicKey: newPublicKey(publicKey, 'hex')
     }
   }
 

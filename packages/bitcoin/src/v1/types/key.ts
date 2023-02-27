@@ -1,6 +1,6 @@
-export type BitcoinExtendedSecretKeyEncoding = 'xpriv'
-export type BitcoinTestnetExtendedSecretKeyEncoding = 'tpriv'
-export type BitcoinSegwitSecretKeyEncoding = BitcoinExtendedSecretKeyEncoding | 'ypriv' | 'zpriv'
+export type BitcoinExtendedSecretKeyEncoding = 'xprv'
+export type BitcoinTestnetExtendedSecretKeyEncoding = 'tprv'
+export type BitcoinSegwitExtendedSecretKeyEncoding = BitcoinExtendedSecretKeyEncoding | 'yprv' | 'zprv'
 
 export type BitcoinExtendedPublicKeyEncoding = 'xpub'
 export type BitcoinTestnetExtendedPublicKeyEncoding = 'tpub'

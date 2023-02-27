@@ -1,7 +1,7 @@
 import { ExtendedSecretKey, SecretKey } from '../../../types/key'
 import { _OfflineProtocol } from '../../protocol'
 
-export type AESExtension<T extends _OfflineProtocol> = T extends _OfflineProtocol<any, any, any, any, any, any, any, infer _SecretKey>
+export type AESExtension<T extends _OfflineProtocol> = T extends _OfflineProtocol<any, any, any, any, any, any, any, any, infer _SecretKey>
   ? AES<_SecretKey>
   : never
 

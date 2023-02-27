@@ -16,13 +16,13 @@ import {
   AirGapTransactionsWithCursor,
   Amount,
   Balance,
+  CryptoDerivative,
   KeyPair,
   newAmount,
   newUnsignedTransaction,
   ProtocolMetadata,
   PublicKey,
   RecursivePartial,
-  Secret,
   SecretKey,
   Signature,
   SubProtocolType,
@@ -33,6 +33,7 @@ import {
 import { createTezosIndexerClient } from '../../indexer/factory'
 import { TezosIndexerClient } from '../../indexer/TezosIndexerClient'
 import { TezosKtAddressCursor } from '../../types/address'
+import { TezosCryptoConfiguration } from '../../types/crypto'
 import { TezosOperation } from '../../types/operations/kinds/TezosOperation'
 import { TezosTransactionOperation } from '../../types/operations/kinds/Transaction'
 import { TezosOperationType } from '../../types/operations/TezosOperationType'
@@ -41,7 +42,6 @@ import { TezosProtocolNetwork, TezosProtocolOptions, TezosUnits } from '../../ty
 import { TezosKtTransactionCursor, TezosSignedTransaction, TezosTransactionCursor, TezosUnsignedTransaction } from '../../types/transaction'
 import { decodeBase58 } from '../../utils/encoding'
 import { createRevealOperation } from '../../utils/operations'
-
 import { createTezosProtocol, createTezosProtocolOptions, TezosProtocol } from '../TezosProtocol'
 
 // Interface
@@ -52,6 +52,7 @@ export interface TezosKtProtocol
       AddressCursor: TezosKtAddressCursor
       AddressResult: AddressWithCursor<TezosKtAddressCursor>
       ProtocolNetwork: TezosProtocolNetwork
+      CryptoConfiguration: TezosCryptoConfiguration
       Units: TezosUnits
       FeeEstimation: Amount<TezosUnits>
       UnsignedTransaction: TezosUnsignedTransaction
@@ -164,8 +165,12 @@ class TezosKtProtocolImpl implements TezosKtProtocol {
 
   // Offline
 
-  public async getKeyPairFromSecret(secret: Secret, derivationPath?: string): Promise<KeyPair> {
-    return this.tezos.getKeyPairFromSecret(secret, derivationPath)
+  public async getCryptoConfiguration(): Promise<TezosCryptoConfiguration> {
+    return this.tezos.getCryptoConfiguration()
+  }
+
+  public async getKeyPairFromDerivative(derivative: CryptoDerivative): Promise<KeyPair> {
+    return this.tezos.getKeyPairFromDerivative(derivative)
   }
 
   public async signTransactionWithSecretKey(transaction: TezosUnsignedTransaction, secretKey: SecretKey): Promise<TezosSignedTransaction> {

@@ -3,6 +3,7 @@ import { PolkadotModule } from './module/PolkadotModule'
 import { createKusamaProtocol, KusamaProtocol } from './protocol/KusamaProtocol'
 import { createPolkadotProtocol, PolkadotProtocol } from './protocol/PolkadotProtocol'
 import { PolkadotProtocolConfiguration } from './types/configuration'
+import { PolkadotCryptoConfiguration } from './types/crypto'
 import { KusamaUnits, PolkadotProtocolNetwork, PolkadotProtocolOptions, PolkadotUnits } from './types/protocol'
 
 // Module
@@ -19,4 +20,11 @@ export { createPolkadotSubscanBlockExplorer, createKusamaSubscanBlockExplorer }
 
 // Types
 
-export { PolkadotUnits, KusamaUnits, PolkadotProtocolNetwork, PolkadotProtocolOptions, PolkadotProtocolConfiguration }
+export {
+  PolkadotCryptoConfiguration,
+  PolkadotUnits,
+  KusamaUnits,
+  PolkadotProtocolNetwork,
+  PolkadotProtocolOptions,
+  PolkadotProtocolConfiguration
+}

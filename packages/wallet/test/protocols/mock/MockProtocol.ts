@@ -1,3 +1,4 @@
+import { hash } from '@airgap/coinlib-core/dependencies/src/@stablelib/blake2b-1.0.1/packages/blake2b/blake2b'
 import { bytesToHex } from '@airgap/coinlib-core/utils/hex'
 import {
   AddressWithCursor,
@@ -7,12 +8,13 @@ import {
   AirGapTransactionsWithCursor,
   Amount,
   Balance,
+  CryptoConfiguration,
+  CryptoDerivative,
   FeeEstimation,
   KeyPair,
   ProtocolMetadata,
   ProtocolNetwork,
   PublicKey,
-  Secret,
   SecretKey,
   Signature,
   SignedTransaction,
@@ -21,14 +23,21 @@ import {
   TransactionDetails,
   UnsignedTransaction
 } from '@airgap/module-kit'
-import { hash } from '@stablelib/blake2b'
 
 import { MockProtocolOptions } from './MockProtocolOptions'
 
 export class MockProtocol implements AirGapProtocol {
   constructor(private readonly options: MockProtocolOptions = new MockProtocolOptions()) {}
 
-  public async getKeyPairFromSecret(secret: Secret, derivationPath?: string | undefined, password?: string | undefined): Promise<KeyPair> {
+  public async getCryptoConfiguration(): Promise<CryptoConfiguration> {
+    if (this.options.config.crypto) {
+      return this.options.config.crypto
+    }
+
+    throw new Error('Method not implemented.')
+  }
+
+  public async getKeyPairFromDerivative(derivative: CryptoDerivative): Promise<KeyPair> {
     throw new Error('Method not implemented.')
   }
 

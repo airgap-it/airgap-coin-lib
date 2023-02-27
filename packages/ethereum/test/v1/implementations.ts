@@ -1,5 +1,15 @@
 import * as BIP39 from '@airgap/coinlib-core/dependencies/src/bip39-2.5.0'
-import { AirGapTransactionStatus, Amount, ExtendedPublicKey, ExtendedSecretKey, PublicKey, SecretKey, Signature } from '@airgap/module-kit'
+import { derive, mnemonicToSeed } from '@airgap/crypto'
+import {
+  AirGapTransactionStatus,
+  Amount,
+  CryptoDerivative,
+  ExtendedPublicKey,
+  ExtendedSecretKey,
+  PublicKey,
+  SecretKey,
+  Signature
+} from '@airgap/module-kit'
 
 import { EthereumSignedTransaction, EthereumUnsignedTransaction } from '../../src/v1'
 import { EthereumBaseProtocol } from '../../src/v1/protocol/EthereumBaseProtocol'
@@ -56,6 +66,12 @@ abstract class TestProtocolSpec<
 
   public mnemonic(): string {
     return mnemonic
+  }
+
+  public async derivative(): Promise<CryptoDerivative> {
+    const [metadata, cryptoConfiguration] = await Promise.all([this.lib.getMetadata(), this.lib.getCryptoConfiguration()])
+
+    return derive(cryptoConfiguration, await mnemonicToSeed(cryptoConfiguration, this.mnemonic()), metadata.account.standardDerivationPath)
   }
 
   public transactionList(

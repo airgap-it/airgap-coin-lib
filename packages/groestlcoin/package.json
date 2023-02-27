@@ -1,6 +1,6 @@
 {
   "name": "@airgap/groestlcoin",
-  "version": "0.13.11-beta.0",
+  "version": "0.13.11-beta.3",
   "description": "The @airgap/groestlcoin is a Groestlcoin implementation of the ICoinProtocol interface from @airgap/coinlib-core.",
   "keywords": [
     "airgap",
@@ -24,17 +24,16 @@
     "lint:prettier": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint-ci": "tslint -t json -o ../../lint-reports/groestlcoin.json --project . || true",
     "lint-ci:prettier": "prettier \"src/**/*.ts\" \"test/**/*.ts\" --list-different",
-    "test": "TS_NODE_PROJECT='./test/tsconfig.json' nyc mocha --bail --require ts-node/register --require source-map-support/register --full-trace --delay --timeout 40000 ./test/**/**.spec.ts",
+    "test": "TS_NODE_PROJECT='./test/tsconfig.json' nyc mocha --bail --require ts-node/register --require tsconfig-paths/register --require source-map-support/register --full-trace --delay --timeout 40000 ./test/**/**.spec.ts",
     "test-ci": "nyc --reporter=lcov npm test",
-    "test-legacy": "",
-    "browserify": "browserify ./dist/index.js -p realpathify -s airgapCoinLibGroestlcoin > ./dist/airgap-coinlib-groestlcoin.min.js"
+    "browserify": "browserify ./dist/index.js -s airgapCoinLibGroestlcoin > ./dist/airgap-coinlib-groestlcoin.min.js"
   },
   "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
-  "peerDependencies": {
-    "@airgap/bitcoin": "^0.13.10",
-    "@airgap/coinlib-core": "^0.13.10",
-    "@airgap/module-kit": "^0.13.10",
-    "@airgap/serializer": "^0.13.10"
+  "dependencies": {
+    "@airgap/bitcoin": "*",
+    "@airgap/coinlib-core": "*",
+    "@airgap/module-kit": "*",
+    "@airgap/serializer": "*"
   },
   "localDependencies": {
     "groestlcoinjs-message": "2.1.0"
