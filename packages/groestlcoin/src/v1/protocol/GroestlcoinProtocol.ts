@@ -12,6 +12,7 @@ import {
   AirGapTransactionsWithCursor,
   Amount,
   Balance,
+  CryptoDerivative,
   ExtendedKeyPair,
   ExtendedPublicKey,
   ExtendedSecretKey,
@@ -22,13 +23,13 @@ import {
   ProtocolUnitsMetadata,
   PublicKey,
   RecursivePartial,
-  Secret,
   SecretKey,
   Signature,
   TransactionConfiguration,
   TransactionDetails
 } from '@airgap/module-kit'
 
+import { GroestlcoinCryptoConfiguration } from '../types/crypto'
 import {
   GroestlcoinProtocolNetwork,
   GroestlcoinProtocolOptions,
@@ -44,6 +45,7 @@ export interface GroestlcoinProtocol
     {
       AddressResult: Address
       ProtocolNetwork: GroestlcoinProtocolNetwork
+      CryptoConfiguration: GroestlcoinCryptoConfiguration
       SignedTransaction: GroestlcoinSignedTransaction
       TransactionCursor: GroestlcoinTransactionCursor
       Units: GroestlcoinUnits
@@ -168,12 +170,16 @@ export class GroestlcoinProtocolImpl implements GroestlcoinProtocol {
 
   // Offline
 
-  public async getKeyPairFromSecret(secret: Secret, derivationPath?: string): Promise<KeyPair> {
-    return this.bitcoinProtocol.getKeyPairFromSecret(secret, derivationPath)
+  public async getCryptoConfiguration(): Promise<GroestlcoinCryptoConfiguration> {
+    return this.bitcoinProtocol.getCryptoConfiguration()
   }
 
-  public async getExtendedKeyPairFromSecret(secret: Secret, derivationPath?: string | undefined): Promise<ExtendedKeyPair> {
-    return this.bitcoinProtocol.getExtendedKeyPairFromSecret(secret, derivationPath)
+  public async getKeyPairFromDerivative(derivative: CryptoDerivative): Promise<KeyPair> {
+    return this.bitcoinProtocol.getKeyPairFromDerivative(derivative)
+  }
+
+  public async getExtendedKeyPairFromDerivative(derivative: CryptoDerivative): Promise<ExtendedKeyPair> {
+    return this.bitcoinProtocol.getExtendedKeyPairFromDerivative(derivative)
   }
 
   public async deriveFromExtendedSecretKey(

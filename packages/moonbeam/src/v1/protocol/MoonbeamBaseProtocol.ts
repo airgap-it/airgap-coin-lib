@@ -16,11 +16,13 @@ import { MoonbeamAccountController } from '../controller/MoonbeamAccountControll
 import { MoonbeamTransactionController } from '../controller/MoonbeamTransactionController'
 import { MoonbeamNodeClient } from '../node/MoonbeamNodeClient'
 import { MoonbeamProtocolConfiguration } from '../types/configuration'
+import { MoonbeamCryptoConfiguration } from '../types/crypto'
 import { MoonbeamBaseProtocolOptions, MoonbeamProtocolNetwork } from '../types/protocol'
 
 // Interface
 
-export interface MoonbeamBaseProtocol<_Units extends string = string> extends SubstrateProtocol<_Units, MoonbeamProtocolNetwork> {}
+export interface MoonbeamBaseProtocol<_Units extends string = string>
+  extends SubstrateProtocol<_Units, MoonbeamProtocolNetwork, MoonbeamCryptoConfiguration> {}
 
 // Implementation
 

@@ -5,3 +5,6 @@ export type RecursivePartial<T> = {
 }
 
 export type Override<T, U> = Omit<T, keyof U> & U
+
+export type ExtractTyped<T, K extends T> = Extract<T, K>
+export type ExcludeTyped<T, K extends T> = Exclude<T, K>

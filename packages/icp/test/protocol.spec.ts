@@ -33,21 +33,15 @@ Promise.all(
           sinon.restore()
         })
 
-        it('getKeyPairFromSecret - should be able to create a key pair from a secret (mnemonic)', async () => {
-          const { secretKey, publicKey } = await protocol.lib.getKeyPairFromSecret(
-            { type: 'mnemonic', value: protocol.mnemonic() },
-            protocolMetadata.account?.standardDerivationPath
-          )
+        it('getKeyPairFromDerivative - should be able to create a key pair from a derivative (extended keys)', async () => {
+          const { secretKey, publicKey } = await protocol.lib.getKeyPairFromDerivative(await protocol.derivative())
 
           expect(secretKey).to.deep.equal(protocol.wallet.secretKey)
           expect(publicKey).to.deep.equal(protocol.wallet.publicKey)
         })
 
         it('getAddressFromPublicKey - should be able to create a valid address from a supplied publicKey', async () => {
-          const { publicKey } = await protocol.lib.getKeyPairFromSecret(
-            { type: 'mnemonic', value: protocol.mnemonic() },
-            protocolMetadata.account?.standardDerivationPath
-          )
+          const { publicKey } = await protocol.lib.getKeyPairFromDerivative(await protocol.derivative())
 
           const address = await protocol.lib.getAddressFromPublicKey(publicKey)
 
@@ -142,10 +136,8 @@ Promise.all(
         })
 
         it('signTransactionWithSecretKey - Is able to sign a transaction using a SecretKey', async () => {
-          const { secretKey } = await protocol.lib.getKeyPairFromSecret(
-            { type: 'mnemonic', value: protocol.mnemonic() },
-            protocolMetadata.account?.standardDerivationPath
-          )
+          const { secretKey } = await protocol.lib.getKeyPairFromDerivative(await protocol.derivative())
+
           const txs: any[] = []
 
           for (const { unsignedTx } of protocol.txs) {
@@ -414,19 +406,14 @@ Promise.all(
 
       describe(`Transactions`, () => {
         it('getTransactionFeeWithPublicKey - Is able to get default transaction fee from chain', async () => {
-          const { publicKey } = await protocol.lib.getKeyPairFromSecret(
-            { type: 'mnemonic', value: protocol.mnemonic() },
-            protocolMetadata.account?.standardDerivationPath
-          )
+          const { publicKey } = await protocol.lib.getKeyPairFromDerivative(await protocol.derivative())
+
           const transactionFee = await protocol.lib.getTransactionFeeWithPublicKey(publicKey, [])
           expect(transactionFee).to.deep.equal(protocol.feeDefaults)
         })
 
         it('getTransactionMaxAmountWithPublicKey - Is able to get default transaction fee from chain', async () => {
-          const { publicKey } = await protocol.lib.getKeyPairFromSecret(
-            { type: 'mnemonic', value: protocol.mnemonic() },
-            protocolMetadata.account?.standardDerivationPath
-          )
+          const { publicKey } = await protocol.lib.getKeyPairFromDerivative(await protocol.derivative())
 
           const balance = await protocol.lib.getBalanceOfPublicKey(publicKey)
           const maxAmount = await protocol.lib.getTransactionMaxAmountWithPublicKey(publicKey, [])

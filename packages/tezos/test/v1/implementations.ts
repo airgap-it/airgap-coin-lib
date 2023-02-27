@@ -1,5 +1,15 @@
+import { derive, mnemonicToSeed } from '@airgap/crypto'
 import * as BIP39 from '@airgap/coinlib-core/dependencies/src/bip39-2.5.0/index'
-import { AirGapProtocol, Amount, PublicKey, SecretKey, Signature, SignedTransaction, UnsignedTransaction } from '@airgap/module-kit'
+import {
+  AirGapProtocol,
+  Amount,
+  CryptoDerivative,
+  PublicKey,
+  SecretKey,
+  Signature,
+  SignedTransaction,
+  UnsignedTransaction
+} from '@airgap/module-kit'
 
 const mnemonic: string = 'spell device they juice trial skirt amazing boat badge steak usage february virus art survey'
 
@@ -48,6 +58,16 @@ abstract class TestProtocolSpec<
 
   public mnemonic(): string {
     return mnemonic
+  }
+
+  public async derivative(derivationPath?: string): Promise<CryptoDerivative> {
+    const [metadata, cryptoConfiguration] = await Promise.all([this.lib.getMetadata(), this.lib.getCryptoConfiguration()])
+
+    return derive(
+      cryptoConfiguration,
+      await mnemonicToSeed(cryptoConfiguration, this.mnemonic()),
+      derivationPath ?? metadata.account.standardDerivationPath
+    )
   }
 }
 

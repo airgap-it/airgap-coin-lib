@@ -1,5 +1,5 @@
+import { CryptoDerivative } from '../../../types/crypto'
 import { ExtendedKeyPair, ExtendedPublicKey, ExtendedSecretKey, KeyPair, PublicKey, SecretKey } from '../../../types/key'
-import { Secret } from '../../../types/secret'
 import {
   _AnyProtocol,
   _BaseProtocol,
@@ -79,6 +79,7 @@ export interface BaseBip32Protocol<
 export interface OfflineBip32Protocol<
   _AddressCursor extends OfflineGeneric['AddressCursor'] = OfflineGeneric['AddressCursor'],
   _AddressResult extends OfflineGeneric['AddressResult'] = OfflineGeneric['AddressResult'],
+  _CryptoConfiguration extends OfflineGeneric['CryptoConfiguration'] = OfflineGeneric['CryptoConfiguration'],
   _Units extends OfflineGeneric['Units'] = OfflineGeneric['Units'],
   _FeeUnits extends OfflineGeneric['FeeUnits'] = OfflineGeneric['FeeUnits'],
   _SignedTransaction extends OfflineGeneric['SignedTransaction'] = OfflineGeneric['SignedTransaction'],
@@ -87,6 +88,7 @@ export interface OfflineBip32Protocol<
     _OfflineProtocol<
       _AddressCursor,
       _AddressResult,
+      _CryptoConfiguration,
       _Units,
       _FeeUnits,
       _SignedTransaction,
@@ -95,7 +97,7 @@ export interface OfflineBip32Protocol<
       SecretKey | ExtendedSecretKey,
       KeyPair | ExtendedKeyPair
     > {
-  getExtendedKeyPairFromSecret(secret: Secret, derivationPath?: string): Promise<ExtendedKeyPair>
+  getExtendedKeyPairFromDerivative(derivative: CryptoDerivative): Promise<ExtendedKeyPair>
   deriveFromExtendedSecretKey(extendedSecretKey: ExtendedSecretKey, visibilityIndex: number, addressIndex: number): Promise<SecretKey>
 }
 

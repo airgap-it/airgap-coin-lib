@@ -2,6 +2,7 @@ import { EtherscanBlockExplorer } from './block-explorer/EtherscanBlockExplorer'
 import { EthereumModule } from './module/EthereumModule'
 import { createERC20Token, ERC20Token } from './protocol/erc20/ERC20Token'
 import { createEthereumProtocol, createEthereumProtocolOptions, EthereumProtocol } from './protocol/EthereumProtocol'
+import { EthereumCryptoConfiguration } from './types/crypto'
 import { ERC20TokenMetadata, EthereumProtocolNetwork, EthereumProtocolOptions, EthereumUnits } from './types/protocol'
 import {
   EthereumRawUnsignedTransaction,
@@ -26,6 +27,7 @@ export { EtherscanBlockExplorer }
 // Types
 
 export {
+  EthereumCryptoConfiguration,
   EthereumUnits,
   EthereumProtocolNetwork,
   EthereumProtocolOptions,

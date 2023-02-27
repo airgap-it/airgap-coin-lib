@@ -29,7 +29,10 @@ class GenericSubstrateProtocol extends SubstrateProtocolImpl<string, SubstratePr
       name: 'Substrate',
       identifier: 'substrate',
       units: {},
-      mainUnit: ''
+      mainUnit: '',
+      account: {
+        standardDerivationPath: 'm/'
+      }
     }
     const network: SubstrateProtocolNetwork = {
       name: '',

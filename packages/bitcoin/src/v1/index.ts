@@ -15,6 +15,7 @@ import { BitcoinTransactionSignResponse } from './serializer/v3/schemas/definiti
 import { BitcoinSegwitTransactionSignResponse } from './serializer/v3/schemas/definitions/transaction-sign-response-bitcoin-segwit'
 import { BitcoinTransactionValidator } from './serializer/v3/validators/transaction-validator'
 import { bitcoinValidators } from './serializer/v3/validators/validators'
+import { BitcoinCryptoConfiguration } from './types/crypto'
 import { BitcoinProtocolNetwork, BitcoinProtocolOptions, BitcoinUnits } from './types/protocol'
 import {
   BitcoinInTransaction,
@@ -49,6 +50,7 @@ export { BlockCypherBlockExplorer }
 // Types
 
 export {
+  BitcoinCryptoConfiguration,
   BitcoinUnits,
   BitcoinProtocolNetwork,
   BitcoinProtocolOptions,

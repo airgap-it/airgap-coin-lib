@@ -9,6 +9,7 @@ import {
   AirGapTransactionsWithCursor,
   Amount,
   Balance,
+  CryptoDerivative,
   KeyPair,
   newAmount,
   newSignature,
@@ -16,7 +17,6 @@ import {
   newUnsignedTransaction,
   ProtocolMetadata,
   PublicKey,
-  Secret,
   SecretKey,
   Signature,
   TransactionConfiguration,
@@ -33,6 +33,7 @@ import { SubstrateAccountBalance } from '../data/account/SubstrateAccountBalance
 import { SubstrateTransaction, SubstrateTransactionType } from '../data/transaction/SubstrateTransaction'
 import { SubstrateNodeClient } from '../node/SubstrateNodeClient'
 import { SubstrateProtocolConfiguration } from '../types/configuration'
+import { SubstrateCryptoConfiguration } from '../types/crypto'
 import { SubstrateProtocolNetwork, SubstrateProtocolOptions } from '../types/protocol'
 import { SubstrateSignedTransaction, SubstrateTransactionCursor, SubstrateUnsignedTransaction } from '../types/transaction'
 import { convertPublicKey, convertSecretKey } from '../utils/keys'
@@ -40,11 +41,15 @@ import { convertSignature } from '../utils/signature'
 
 // Interface
 
-export interface SubstrateProtocol<_Units extends string, _ProtocolNetwork extends SubstrateProtocolNetwork>
-  extends AirGapProtocol<
+export interface SubstrateProtocol<
+  _Units extends string,
+  _ProtocolNetwork extends SubstrateProtocolNetwork,
+  _CryptoConfiguration extends SubstrateCryptoConfiguration
+> extends AirGapProtocol<
     {
       AddressResult: Address
       ProtocolNetwork: _ProtocolNetwork
+      CryptoConfiguration: _CryptoConfiguration
       Units: _Units
       FeeEstimation: Amount<_Units>
       UnsignedTransaction: SubstrateUnsignedTransaction
@@ -64,8 +69,9 @@ export abstract class SubstrateProtocolImpl<
   _NodeClient extends SubstrateNodeClient<_ProtocolConfiguration> = SubstrateNodeClient<_ProtocolConfiguration>,
   _AccountController extends SubstrateAccountController<_ProtocolConfiguration> = SubstrateAccountController<_ProtocolConfiguration>,
   _TransactionController extends SubstrateTransactionController<_ProtocolConfiguration> = SubstrateTransactionController<_ProtocolConfiguration>
-> implements SubstrateProtocol<_Units, _ProtocolNetwork> {
+> implements SubstrateProtocol<_Units, _ProtocolNetwork, SubstrateCryptoConfiguration<_ProtocolConfiguration>> {
   protected readonly configuration: _ProtocolConfiguration
+  protected readonly cryptoConfiguration: SubstrateCryptoConfiguration<_ProtocolConfiguration>
 
   public readonly accountController: _AccountController
   public readonly transactionController: _TransactionController
@@ -85,6 +91,14 @@ export abstract class SubstrateProtocolImpl<
     this.metadata = options.metadata
     this.network = options.network
     this.configuration = options.configuration
+    this.cryptoConfiguration = (this.configuration.account.type === 'ss58'
+      ? {
+          algorithm: 'sr25519',
+          compatibility: 'substrate'
+        }
+      : {
+          algorithm: 'secp256k1'
+        }) as SubstrateCryptoConfiguration<_ProtocolConfiguration>
 
     this.accountController = accountController
     this.transactionController = transactionController
@@ -131,8 +145,12 @@ export abstract class SubstrateProtocolImpl<
 
   // Offline
 
-  public async getKeyPairFromSecret(secret: Secret, derivationPath?: string): Promise<KeyPair> {
-    return this.accountController.createKeyPairFromSecret(secret, derivationPath)
+  public async getCryptoConfiguration(): Promise<SubstrateCryptoConfiguration<_ProtocolConfiguration>> {
+    return this.cryptoConfiguration
+  }
+
+  public async getKeyPairFromDerivative(derivative: CryptoDerivative): Promise<KeyPair> {
+    return this.accountController.createKeyPairFromDerivative(derivative)
   }
 
   public async signTransactionWithSecretKey(

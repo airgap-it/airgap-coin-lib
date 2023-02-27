@@ -8,6 +8,7 @@ export type AsymmetricEncryptionExtension<T extends _AnyProtocol> = T extends _O
   any,
   any,
   any,
+  any,
   infer _PublicKey,
   any,
   infer _KeyPair

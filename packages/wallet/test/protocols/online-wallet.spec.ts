@@ -43,7 +43,7 @@ describe(`AirGapCoinWallet`, () => {
         format: 'hex',
         value: '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932'
       },
-      (await protocol.getMetadata()).account?.standardDerivationPath ?? 'm/',
+      (await protocol.getMetadata()).account.standardDerivationPath,
       '',
       AirGapWalletStatus.ACTIVE,
       new AirGapPriceService()
@@ -60,7 +60,7 @@ describe(`AirGapCoinWallet`, () => {
         format: 'hex',
         value: '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932'
       },
-      (await protocol.getMetadata()).account?.standardDerivationPath ?? 'm/',
+      (await protocol.getMetadata()).account.standardDerivationPath,
       '',
       AirGapWalletStatus.ACTIVE,
       new AirGapPriceService()
@@ -118,7 +118,7 @@ describe(`AirGapCoinWallet`, () => {
         format: 'encoded',
         value: 'xpub6CzH93BB4aueZX2bP88tvsvE8Cz2bHeGVAZSD5fmnk8roYBZCGbwwSA7ChiRr65jncuPH8qBQA9nBwi2Qtz1Uqt8wuHvof9SAcPpFxpe1GV'
       },
-      (await protocol.getMetadata()).account?.standardDerivationPath ?? 'm/',
+      (await protocol.getMetadata()).account.standardDerivationPath,
       '',
       AirGapWalletStatus.ACTIVE,
       new AirGapPriceService()
@@ -138,7 +138,7 @@ describe(`AirGapCoinWallet`, () => {
         format: 'hex',
         value: '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932'
       },
-      (await protocol.getMetadata()).account?.standardDerivationPath ?? 'm/',
+      (await protocol.getMetadata()).account.standardDerivationPath,
       '',
       AirGapWalletStatus.ACTIVE,
       new AirGapPriceService()
@@ -156,7 +156,7 @@ describe(`AirGapCoinWallet`, () => {
         format: 'hex',
         value: '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932'
       },
-      (await protocol.getMetadata()).account?.standardDerivationPath ?? 'm/',
+      (await protocol.getMetadata()).account.standardDerivationPath,
       '',
       AirGapWalletStatus.ACTIVE,
       new AirGapPriceService()
@@ -174,7 +174,7 @@ describe(`AirGapCoinWallet`, () => {
         format: 'hex',
         value: '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932'
       },
-      (await protocol.getMetadata()).account?.standardDerivationPath ?? 'm/',
+      (await protocol.getMetadata()).account.standardDerivationPath,
       '',
       AirGapWalletStatus.ACTIVE,
       new AirGapPriceService()
@@ -194,7 +194,7 @@ describe(`AirGapCoinWallet`, () => {
         format: 'encoded',
         value: 'xpub6CzH93BB4aueZX2bP88tvsvE8Cz2bHeGVAZSD5fmnk8roYBZCGbwwSA7ChiRr65jncuPH8qBQA9nBwi2Qtz1Uqt8wuHvof9SAcPpFxpe1GV'
       },
-      (await protocol.getMetadata()).account?.standardDerivationPath ?? 'm/',
+      (await protocol.getMetadata()).account.standardDerivationPath,
       '',
       AirGapWalletStatus.ACTIVE,
       new AirGapPriceService()
@@ -207,7 +207,7 @@ describe(`AirGapCoinWallet`, () => {
   })
 
   it('should derive address from extended public key with offset and save it in wallet', async () => {
-    const derivationPath = (await protocol.getMetadata()).account?.standardDerivationPath ?? 'm/'
+    const derivationPath = (await protocol.getMetadata()).account.standardDerivationPath
     const wallet = new AirGapCoinWallet(
       xPubProtocol,
       {
@@ -237,7 +237,7 @@ describe(`AirGapCoinWallet`, () => {
         format: 'hex',
         value: '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932'
       },
-      protocolMetadata.account?.standardDerivationPath ?? 'm/',
+      protocolMetadata.account.standardDerivationPath,
       '',
       AirGapWalletStatus.ACTIVE,
       new AirGapPriceService()
@@ -268,7 +268,7 @@ describe(`AirGapCoinWallet`, () => {
         format: 'hex',
         value: '02e3188bc0c05ccfd6938cb3f5474a70927b5580ffb2ca5ac425ed6a9b2a9e9932'
       },
-      `${protocolMetadata.account?.standardDerivationPath ?? 'm/'}/0/0`,
+      `${protocolMetadata.account.standardDerivationPath}/0/0`,
       '',
       AirGapWalletStatus.ACTIVE,
       new AirGapPriceService()

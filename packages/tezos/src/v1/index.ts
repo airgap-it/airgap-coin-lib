@@ -36,6 +36,7 @@ import {
 } from './protocol/sapling/TezosShieldedTezProtocol'
 import { createTezosProtocol, createTezosProtocolOptions, TezosProtocol } from './protocol/TezosProtocol'
 import { TezosBlockExplorer } from './types/block-explorer'
+import { TezosCryptoConfiguration } from './types/crypto'
 import { TezosIndexer } from './types/indexer'
 import { TezosNetwork } from './types/network'
 import { TezosActivateAccountOperation } from './types/operations/kinds/ActivateAccount'
@@ -156,6 +157,7 @@ export { TzKTBlockExplorer, createTezosBlockExplorer }
 // Types
 
 export {
+  TezosCryptoConfiguration,
   TezosUnits,
   TezosProtocolNetwork,
   TezosSaplingProtocolNetwork,

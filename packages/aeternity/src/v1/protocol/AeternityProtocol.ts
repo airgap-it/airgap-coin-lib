@@ -1,9 +1,7 @@
 import { assertNever, Domain, MainProtocolSymbols } from '@airgap/coinlib-core'
 import axios, { AxiosError } from '@airgap/coinlib-core/dependencies/src/axios-0.19.0/index'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
-import { mnemonicToSeed } from '@airgap/coinlib-core/dependencies/src/bip39-2.5.0/index'
 import * as bs58check from '@airgap/coinlib-core/dependencies/src/bs58check-2.1.2/index'
-import { generateWalletUsingDerivationPath } from '@airgap/coinlib-core/dependencies/src/hd-wallet-js-b216450e56954a6e82ace0aade9474673de5d9d5/src/index'
 import * as rlp from '@airgap/coinlib-core/dependencies/src/rlp-2.2.3/index'
 import { BalanceError, ConditionViolationError, NetworkError, UnsupportedError } from '@airgap/coinlib-core/errors'
 import bs64check from '@airgap/coinlib-core/utils/base64Check'
@@ -15,6 +13,7 @@ import {
   AirGapTransactionsWithCursor,
   Amount,
   Balance,
+  CryptoDerivative,
   FeeDefaults,
   KeyPair,
   newAmount,
@@ -29,7 +28,6 @@ import {
   ProtocolUnitsMetadata,
   PublicKey,
   RecursivePartial,
-  Secret,
   SecretKey,
   Signature,
   TransactionConfiguration,
@@ -38,6 +36,7 @@ import {
 import { sign } from '@stablelib/ed25519'
 
 import { AeternityAddress } from '../data/AeternityAddress'
+import { AeternityCryptoConfiguration } from '../types/crypto'
 import { AeternityProtocolNetwork, AeternityProtocolOptions, AeternityUnits } from '../types/protocol'
 import { AeternitySignedTransaction, AeternityTransactionCursor, AeternityUnsignedTransaction } from '../types/transaction'
 import { convertPublicKey } from '../utils/key'
@@ -53,6 +52,7 @@ export interface AeternityProtocol
     {
       AddressResult: Address
       ProtocolNetwork: AeternityProtocolNetwork
+      CryptoConfiguration: AeternityCryptoConfiguration
       SignedTransaction: AeternitySignedTransaction
       TransactionCursor: AeternityTransactionCursor
       Units: AeternityUnits
@@ -182,31 +182,22 @@ export class AeternityProtocolImpl implements AeternityProtocol {
 
   // Offline
 
-  public async getKeyPairFromSecret(secret: Secret, derivationPath?: string): Promise<KeyPair> {
-    switch (secret.type) {
-      case 'hex':
-        return this.getKeyPairFromHexSecret(secret.value, derivationPath)
-      case 'mnemonic':
-        return this.getKeyPairFromMnemonic(secret.value, derivationPath, secret.password)
-      default:
-        assertNever(secret)
-        throw new UnsupportedError(Domain.AETERNITY, 'Unsupported secret type.')
-    }
+  private readonly cryptoConfiguration: AeternityCryptoConfiguration = {
+    algorithm: 'ed25519'
   }
 
-  private async getKeyPairFromHexSecret(secret: string, derivationPath?: string): Promise<KeyPair> {
-    const keyPair = generateWalletUsingDerivationPath(Buffer.from(secret, 'hex'), derivationPath)
+  public async getCryptoConfiguration(): Promise<AeternityCryptoConfiguration> {
+    return this.cryptoConfiguration
+  }
 
+  public async getKeyPairFromDerivative(derivative: CryptoDerivative): Promise<KeyPair> {
     return {
-      secretKey: newSecretKey(Buffer.from(keyPair.secretKey).toString('hex'), 'hex'),
-      publicKey: newPublicKey(Buffer.from(keyPair.publicKey).toString('hex'), 'hex')
+      secretKey: newSecretKey(
+        Buffer.concat([Buffer.from(derivative.secretKey, 'hex'), Buffer.from(derivative.publicKey, 'hex')]).toString('hex'),
+        'hex'
+      ),
+      publicKey: newPublicKey(derivative.publicKey, 'hex')
     }
-  }
-
-  private async getKeyPairFromMnemonic(mnemonic: string, derivationPath?: string, password?: string): Promise<KeyPair> {
-    const secret = mnemonicToSeed(mnemonic, password)
-
-    return this.getKeyPairFromHexSecret(secret.toString('hex'), derivationPath)
   }
 
   public async signTransactionWithSecretKey(

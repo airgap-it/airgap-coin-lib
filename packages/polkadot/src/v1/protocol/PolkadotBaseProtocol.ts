@@ -16,11 +16,13 @@ import { PolkadotTransactionController } from '../controller/PolkadotTransaction
 import { PolkadotPayee } from '../data/staking/PolkadotPayee'
 import { PolkadotNodeClient } from '../node/PolkadotNodeClient'
 import { PolkadotProtocolConfiguration } from '../types/configuration'
+import { PolkadotCryptoConfiguration } from '../types/crypto'
 import { PolkadotBaseProtocolOptions, PolkadotProtocolNetwork } from '../types/protocol'
 
 // Interface
 
-export interface PolkadotBaseProtocol<_Units extends string = string> extends SubstrateProtocol<_Units, PolkadotProtocolNetwork> {}
+export interface PolkadotBaseProtocol<_Units extends string = string>
+  extends SubstrateProtocol<_Units, PolkadotProtocolNetwork, PolkadotCryptoConfiguration> {}
 
 // Implementation
 

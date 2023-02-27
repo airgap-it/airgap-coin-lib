@@ -3,7 +3,6 @@ import axios, { AxiosError, AxiosResponse } from '@airgap/coinlib-core/dependenc
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 // @ts-ignore
 import { mnemonicToSeed } from '@airgap/coinlib-core/dependencies/src/bip39-2.5.0/index'
-import { generateWalletUsingDerivationPath } from '@airgap/coinlib-core/dependencies/src/hd-wallet-js-b216450e56954a6e82ace0aade9474673de5d9d5/src'
 import {
   BalanceError,
   ConditionViolationError,
@@ -20,6 +19,7 @@ import {
   AirGapTransactionsWithCursor,
   Amount,
   Balance,
+  CryptoDerivative,
   FeeDefaults,
   KeyPair,
   newAmount,
@@ -33,7 +33,6 @@ import {
   ProtocolUnitsMetadata,
   PublicKey,
   RecursivePartial,
-  Secret,
   SecretKey,
   Signature,
   TransactionConfiguration,
@@ -44,6 +43,7 @@ import { TezosCryptoClient } from '../crypto/TezosCryptoClient'
 import { TezosAddress } from '../data/TezosAddress'
 import { createTezosIndexerClient } from '../indexer/factory'
 import { TezosIndexerClient } from '../indexer/TezosIndexerClient'
+import { TezosCryptoConfiguration } from '../types/crypto'
 import { TezosNetwork } from '../types/network'
 import { RunOperationInternalOperationResult, RunOperationMetadata, RunOperationOperationResult, RunOperationResponse } from '../types/node'
 import { TezosDelegationOperation } from '../types/operations/kinds/Delegation'
@@ -68,6 +68,7 @@ export interface TezosProtocol
     {
       AddressResult: Address
       ProtocolNetwork: TezosProtocolNetwork
+      CryptoConfiguration: TezosCryptoConfiguration
       Units: TezosUnits
       FeeEstimation: FeeDefaults<TezosUnits>
       UnsignedTransaction: TezosUnsignedTransaction
@@ -199,33 +200,23 @@ export class TezosProtocolImpl implements TezosProtocol {
 
   // Offline
 
-  public async getKeyPairFromSecret(secret: Secret, derivationPath?: string): Promise<KeyPair> {
-    switch (secret.type) {
-      case 'hex':
-        return this.getKeyPairFromHexSecret(secret.value, derivationPath)
-      case 'mnemonic':
-        return this.getKeyPairFromMnemonic(secret.value, secret.password, derivationPath)
-      default:
-        assertNever(secret)
-        throw new UnsupportedError(Domain.TEZOS, 'Unsupported secret type.')
-    }
+  private readonly cryptoConfiguration: TezosCryptoConfiguration = {
+    algorithm: 'ed25519'
   }
 
-  private async getKeyPairFromHexSecret(secret: string, derivationPath?: string): Promise<KeyPair> {
-    // both AE and Tezos use the same ECC curves (ed25519)
-    const keyPair = generateWalletUsingDerivationPath(Buffer.from(secret, 'hex'), derivationPath)
+  public async getCryptoConfiguration(): Promise<TezosCryptoConfiguration> {
+    return this.cryptoConfiguration
+  }
 
+  public async getKeyPairFromDerivative(derivative: CryptoDerivative): Promise<KeyPair> {
     // should we maybe return encoded keys, i.e. edsk... and edpk... strings?
     return {
-      secretKey: newSecretKey(Buffer.from(keyPair.secretKey).toString('hex'), 'hex'),
-      publicKey: newPublicKey(Buffer.from(keyPair.publicKey).toString('hex'), 'hex')
+      secretKey: newSecretKey(
+        Buffer.concat([Buffer.from(derivative.secretKey, 'hex'), Buffer.from(derivative.publicKey, 'hex')]).toString('hex'),
+        'hex'
+      ),
+      publicKey: newPublicKey(derivative.publicKey, 'hex')
     }
-  }
-
-  private async getKeyPairFromMnemonic(mnemonic: string, password?: string, derivationPath?: string): Promise<KeyPair> {
-    const secret: Buffer = mnemonicToSeed(mnemonic, password)
-
-    return this.getKeyPairFromHexSecret(secret.toString('hex'), derivationPath)
   }
 
   public async signTransactionWithSecretKey(transaction: TezosUnsignedTransaction, secretKey: SecretKey): Promise<TezosSignedTransaction> {

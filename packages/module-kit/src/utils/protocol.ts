@@ -49,7 +49,8 @@ const baseProtocolSchema: Schema<BaseProtocol> = {
 
 const offlineProtocolSchema: Schema<OfflineProtocol> = {
   ...baseProtocolSchema,
-  getKeyPairFromSecret: 'required',
+  getCryptoConfiguration: 'required',
+  getKeyPairFromDerivative: 'required',
   signTransactionWithSecretKey: 'required'
 }
 
@@ -72,7 +73,7 @@ const bip32BaseProtocolSchema: Schema<BaseBip32Protocol> = {
 const bip32OfflineProtocolSchema: Schema<OfflineBip32Protocol> = {
   ...bip32BaseProtocolSchema,
   ...offlineProtocolSchema,
-  getExtendedKeyPairFromSecret: 'required',
+  getExtendedKeyPairFromDerivative: 'required',
   deriveFromExtendedSecretKey: 'required'
 }
 

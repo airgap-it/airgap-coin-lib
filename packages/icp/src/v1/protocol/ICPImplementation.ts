@@ -29,6 +29,7 @@ import { AccountIdentifier } from '../utils/account'
 // import { requestIdOf } from '../utils/auth'
 import { Actor } from '../utils/actor'
 import * as Cbor from '../utils/cbor'
+import HDKey from '../utils/hdkey'
 
 interface Transaction {
   to: string
@@ -37,8 +38,9 @@ interface Transaction {
 }
 
 // MNEMONIC -> KEY PAIR
-export function getKeyPairFromMnemonic(mnemonic: string, derivationPath?: string): { publicKey: string; privateKey: string } {
-  const identity = Secp256k1KeyIdentity.fromSeedPhrase(mnemonic, undefined, derivationPath)
+export function getKeyPairFromExtendedSecretKey(extendedSecretKey: string): { publicKey: string; privateKey: string } {
+  const hdKey = HDKey.fromExtendedKey(extendedSecretKey)
+  const identity = Secp256k1KeyIdentity.fromSecretKey(hdKey.privateKey)
 
   const publicKey = new Uint8Array(identity.getPublicKey().toDer())
   const privateKey = new Uint8Array(identity.getKeyPair().secretKey)

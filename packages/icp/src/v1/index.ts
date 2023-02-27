@@ -3,6 +3,7 @@ import { ICPModule } from './module/ICPModule'
 import { ICPProtocol, createICPProtocol, createICPProtocolOptions } from './protocol/ICPProtocol'
 import { ICPTransactionSignRequest } from './serializer/v3/schemas/definitions/transaction-sign-request-icp'
 import { ICPTransactionSignResponse } from './serializer/v3/schemas/definitions/transaction-sign-response-icp'
+import { ICPCryptoConfiguration } from './types/crypto'
 import { ICPProtocolNetwork, ICPProtocolOptions, ICPUnits } from './types/protocol'
 import { ICPSignedTransaction, ICPUnsignedTransaction } from './types/transaction'
 
@@ -20,7 +21,7 @@ export { ICPBlockExplorer }
 
 // Types
 
-export { ICPUnits, ICPProtocolOptions, ICPProtocolNetwork, ICPUnsignedTransaction, ICPSignedTransaction }
+export { ICPCryptoConfiguration, ICPUnits, ICPProtocolOptions, ICPProtocolNetwork, ICPUnsignedTransaction, ICPSignedTransaction }
 
 // Serializer
 

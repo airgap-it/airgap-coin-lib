@@ -1,12 +1,14 @@
 /* eslint-disable no-underscore-dangle */
-import Secp256k1 from 'secp256k1'
-import { sha256 } from 'js-sha256'
-import { randomBytes } from 'tweetnacl'
-import hdkey from './hdkey'
+// tslint:disable: max-classes-per-file
+import * as nacl from '@airgap/coinlib-core/dependencies/src/tweetnacl-1.0.1/nacl'
 import { mnemonicToSeedSync } from 'bip39'
+import { sha256 } from 'js-sha256'
+import Secp256k1 from 'secp256k1'
+
+import { DerEncodedPublicKey, KeyPair, PublicKey, Signature, SignIdentity } from './auth'
 import { fromHexString, toHexString } from './buffer'
 import { SECP256K1_OID, unwrapDER, wrapDER } from './der'
-import { DerEncodedPublicKey, KeyPair, PublicKey, Signature, SignIdentity } from './auth'
+import hdkey from './hdkey'
 
 declare type PublicKeyHex = string
 declare type SecretKeyHex = string
@@ -81,9 +83,9 @@ export class Secp256k1KeyIdentity extends SignIdentity {
         throw new Error('The seed is invalid.')
       }
     } else {
-      privateKey = new Uint8Array(randomBytes(32))
+      privateKey = new Uint8Array(nacl.randomBytes(32))
       while (!Secp256k1.privateKeyVerify(privateKey)) {
-        privateKey = new Uint8Array(randomBytes(32))
+        privateKey = new Uint8Array(nacl.randomBytes(32))
       }
     }
 

@@ -49,17 +49,6 @@ export const bitcoinValidators = {
           return 'not a valid bitcoin address'
         }
       }
-      if (!value.hasOwnProperty('derivationPath')) {
-        return "doesn't have property derivationPath"
-      } else {
-        const protocol = createBitcoinProtocol()
-        try {
-          const mnemonic = 'spell device they juice trial skirt amazing boat badge steak usage february virus art survey'
-          await protocol.getKeyPairFromSecret({ type: 'mnemonic', value: mnemonic }, value.derivationPath)
-        } catch (error) {
-          return 'invalid derivation path'
-        }
-      }
     }
 
     return null
