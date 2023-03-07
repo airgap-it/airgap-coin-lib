@@ -18,7 +18,9 @@ import {
   newSecretKey,
   newSignedTransaction,
   newUnsignedTransaction,
+  ProtocolAccountMetadata,
   ProtocolMetadata,
+  ProtocolTransactionMetadata,
   ProtocolUnitsMetadata,
   PublicKey,
   RecursivePartial,
@@ -41,8 +43,10 @@ import {
   getInfoFromSignedTransaction,
   getInfoFromUnsignedTransaction,
   getKeyPairFromExtendedSecretKey,
-  signTransaction
+  signICPTransaction
 } from './ICPImplementation'
+
+// TODO: Refactor this module, the ICP token implements now the ICRC-1 standard and this protocol should extend the ICRC1Protocol interface
 
 // Interface
 
@@ -62,6 +66,24 @@ export interface ICPProtocol
   > {}
 
 // Implementation
+
+export const ICP_DERIVATION_PATH: string = `m/44'/223'/0'/0/0`
+export const ICP_ACCOUNT_METADATA: ProtocolAccountMetadata = {
+  standardDerivationPath: ICP_DERIVATION_PATH,
+  address: {
+    isCaseSensitive: true,
+    placeholder: '',
+    regex: '^[a-f0-9]{64}$'
+  }
+}
+
+export function ICP_TRANSACTION_METADATA<_Units extends string = ICPUnits>(): ProtocolTransactionMetadata<_Units> {
+  return {
+    arbitraryData: {
+      inner: { name: 'payload' }
+    }
+  }
+}
 
 export class ICPProtocolImpl implements ICPProtocol {
   private readonly options: ICPProtocolOptions
@@ -95,20 +117,8 @@ export class ICPProtocolImpl implements ICPProtocol {
       defaults: this.feeDefaults
     },
 
-    account: {
-      standardDerivationPath: `m/44'/223'/0'/0/0`,
-      address: {
-        isCaseSensitive: true,
-        placeholder: '',
-        regex: '^[a-f0-9]{64}$'
-      }
-    },
-
-    transaction: {
-      arbitraryData: {
-        inner: { name: 'payload' }
-      }
-    }
+    account: ICP_ACCOUNT_METADATA,
+    transaction: ICP_TRANSACTION_METADATA()
   }
 
   public async getMetadata(): Promise<ProtocolMetadata<ICPUnits>> {
@@ -179,7 +189,7 @@ export class ICPProtocolImpl implements ICPProtocol {
     if (secretKey.format !== 'hex') {
       throw new ConditionViolationError(Domain.ICP, 'Secret key is of an unexpected format.')
     }
-    const signedTransaction = await signTransaction(transaction.transaction, secretKey.value)
+    const signedTransaction = await signICPTransaction(transaction.transaction, secretKey.value, this.options.network.ledgerCanisterId)
 
     return newSignedTransaction<ICPSignedTransaction>({ transaction: signedTransaction })
   }
@@ -250,7 +260,7 @@ export class ICPProtocolImpl implements ICPProtocol {
 
   public async getBalanceOfAddress(address: string): Promise<Balance<ICPUnits>> {
     if (!address) return { total: newAmount(0, 'blockchain') }
-    const balance = await getBalanceFromAddress(address, this.options.network.rpcUrl)
+    const balance = await getBalanceFromAddress(address, this.options.network.rpcUrl, this.options.network.ledgerCanisterId)
     return { total: newAmount(balance.toString(10), 'blockchain') }
   }
 
@@ -347,7 +357,7 @@ export class ICPProtocolImpl implements ICPProtocol {
   // https://github.com/dfinity/ic-js/tree/main/packages/nns
   // Search for : Transfer ICP from the caller to the destination accountIdentifier. Returns the index of the block containing the tx if it was successful.
   public async broadcastTransaction(transaction: ICPSignedTransaction): Promise<string> {
-    return await broadcastTransaction(transaction.transaction, this.options.network.rpcUrl)
+    return await broadcastTransaction(transaction.transaction, this.options.network.rpcUrl, this.options.network.ledgerCanisterId)
   }
 }
 
@@ -361,6 +371,7 @@ export const ICP_MAINNET_PROTOCOL_NETWORK: ICPProtocolNetwork = {
   name: 'Mainnet',
   type: 'mainnet',
   rpcUrl: 'https://boundary.ic0.app/',
+  ledgerCanisterId: 'ryjl3-tyaaa-aaaaa-aaaba-cai',
   explorerUrl: 'https://ledger-api.internetcomputer.org'
 }
 

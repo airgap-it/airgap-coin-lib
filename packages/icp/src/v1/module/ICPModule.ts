@@ -5,7 +5,6 @@ import {
   AirGapModule,
   AirGapOfflineProtocol,
   AirGapOnlineProtocol,
-  AirGapProtocol,
   AirGapV3SerializerCompanion,
   createSupportedProtocols,
   ModuleNetworkRegistry,
@@ -14,15 +13,19 @@ import {
 } from '@airgap/module-kit'
 
 import { ICPBlockExplorer } from '../block-explorer/ICPBlockExplorer'
-import { ICP_MAINNET_PROTOCOL_NETWORK, createICPProtocol } from '../protocol/ICPProtocol'
+import { createICPProtocol, ICP_MAINNET_PROTOCOL_NETWORK } from '../protocol/ICPProtocol'
+import { CKBTC_MAINNET_PROTOCOL_NETWORK, createCkBTCOfflineProtocol, createCkBTCOnlineProtocol } from '../protocol/icrc/CkBTCProtocol'
 import { ICPV3SerializerCompanion } from '../serializer/v3/serializer-companion'
 
-type SupportedProtocols = MainProtocolSymbols.ICP
+type SupportedProtocols = MainProtocolSymbols.ICP | MainProtocolSymbols.ICP_CKBTC
 
 export class ICPModule implements AirGapModule<{ Protocols: SupportedProtocols }> {
   private readonly networkRegistries: Record<SupportedProtocols, ModuleNetworkRegistry> = {
     [MainProtocolSymbols.ICP]: new ModuleNetworkRegistry({
       supportedNetworks: [ICP_MAINNET_PROTOCOL_NETWORK]
+    }),
+    [MainProtocolSymbols.ICP_CKBTC]: new ModuleNetworkRegistry({
+      supportedNetworks: [CKBTC_MAINNET_PROTOCOL_NETWORK]
     })
   }
   public readonly supportedProtocols: Record<SupportedProtocols, ProtocolConfiguration> = createSupportedProtocols(this.networkRegistries)
@@ -32,7 +35,14 @@ export class ICPModule implements AirGapModule<{ Protocols: SupportedProtocols }
   }
 
   public async createOfflineProtocol(identifier: SupportedProtocols): Promise<AirGapOfflineProtocol | undefined> {
-    return this.createProtocol(identifier)
+    switch (identifier) {
+      case MainProtocolSymbols.ICP:
+        return createICPProtocol()
+      case MainProtocolSymbols.ICP_CKBTC:
+        return createCkBTCOfflineProtocol()
+      default:
+        throw new ConditionViolationError(Domain.ICP, `Protocol ${identifier} not supported.`)
+    }
   }
 
   public async createOnlineProtocol(identifier: SupportedProtocols, networkId?: string): Promise<AirGapOnlineProtocol | undefined> {
@@ -41,7 +51,14 @@ export class ICPModule implements AirGapModule<{ Protocols: SupportedProtocols }
       throw new ConditionViolationError(Domain.ICP, 'Protocol network not supported.')
     }
 
-    return this.createProtocol(identifier, network)
+    switch (identifier) {
+      case MainProtocolSymbols.ICP:
+        return createICPProtocol({ network })
+      case MainProtocolSymbols.ICP_CKBTC:
+        return createCkBTCOnlineProtocol({ network })
+      default:
+        throw new ConditionViolationError(Domain.ICP, `Protocol ${identifier} not supported.`)
+    }
   }
 
   public async createBlockExplorer(identifier: SupportedProtocols, networkId?: string): Promise<AirGapBlockExplorer | undefined> {
@@ -51,14 +68,5 @@ export class ICPModule implements AirGapModule<{ Protocols: SupportedProtocols }
     }
 
     return new ICPBlockExplorer()
-  }
-
-  private createProtocol(identifier: SupportedProtocols, network?: ProtocolNetwork): AirGapProtocol {
-    switch (identifier) {
-      case MainProtocolSymbols.ICP:
-        return createICPProtocol({ network })
-      default:
-        throw new ConditionViolationError(Domain.ICP, `Protocol ${identifier} not supported.`)
-    }
   }
 }

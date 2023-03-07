@@ -1,4 +1,6 @@
+import { crc16 } from 'crc'
 import { buf as crc32Buffer } from 'crc-32'
+
 import { Tokens } from '../types/ledger'
 
 export function uint8ArrayToHexString(arr: Uint8Array): string {
@@ -43,10 +45,17 @@ export function hexStringToArrayBuffer(hex: string): ArrayBuffer {
   return new Uint8Array(buffer).buffer
 }
 
-export const calculateCrc32 = (bytes: Uint8Array): Uint8Array => {
+export const calculateCrc32 = (bytes: Uint8Array): Buffer => {
   const checksumArrayBuf = new ArrayBuffer(4)
   const view = new DataView(checksumArrayBuf)
   view.setUint32(0, crc32Buffer(Buffer.from(bytes)), false)
+  return Buffer.from(checksumArrayBuf)
+}
+
+export const calculateCrc16 = (bytes: Uint8Array): Buffer => {
+  const checksumArrayBuf = new ArrayBuffer(4)
+  const view = new DataView(checksumArrayBuf)
+  view.setUint16(0, crc16(Buffer.from(bytes)), false)
   return Buffer.from(checksumArrayBuf)
 }
 

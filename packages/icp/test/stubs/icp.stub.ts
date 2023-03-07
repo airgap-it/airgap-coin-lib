@@ -1,15 +1,16 @@
 import axios from '@airgap/coinlib-core/dependencies/src/axios-0.19.0/index'
 import * as sinon from 'sinon'
 
+import { ICPProtocol } from '../../src/v1'
 import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
 
-export class ICPProtocolStub implements ProtocolHTTPStub {
-  public async registerStub(testProtocolSpec: TestProtocolSpec) {
+export class ICPProtocolStub implements ProtocolHTTPStub<ICPProtocol, ICPProtocol> {
+  public async registerStub(testProtocolSpec: TestProtocolSpec<ICPProtocol, ICPProtocol>) {
     sinon.restore()
 
     sinon
       .stub(axios, 'get')
-      .withArgs(`${(await testProtocolSpec.lib.getNetwork()).rpcUrl}/v2/accounts/${testProtocolSpec.wallet.addresses[0]}`)
+      .withArgs(`${(await testProtocolSpec.onlineLib.getNetwork()).rpcUrl}/v2/accounts/${testProtocolSpec.wallet.addresses[0]}`)
       .returns(Promise.resolve({ data: { balance: 10000000000000000000, nonce: -1 } }))
     sinon
       .stub(axios, 'post')
@@ -17,16 +18,16 @@ export class ICPProtocolStub implements ProtocolHTTPStub {
       .returns(Promise.resolve({ tx_hash: 'tx_hash' }))
   }
 
-  public async noBalanceStub(testProtocolSpec: TestProtocolSpec) {
+  public async noBalanceStub(testProtocolSpec: TestProtocolSpec<ICPProtocol, ICPProtocol>) {
     sinon.restore()
 
     sinon
       .stub(axios, 'get')
-      .withArgs(`${(await testProtocolSpec.lib.getNetwork()).rpcUrl}/v2/accounts/${testProtocolSpec.wallet.addresses[0]}`)
+      .withArgs(`${(await testProtocolSpec.onlineLib.getNetwork()).rpcUrl}/v2/accounts/${testProtocolSpec.wallet.addresses[0]}`)
       .returns(Promise.resolve({ data: { balance: 0, nonce: -1 } }))
   }
 
-  public async transactionListStub(testProtocolSpec: TestProtocolSpec, address: string): Promise<any> {
+  public async transactionListStub(testProtocolSpec: TestProtocolSpec<ICPProtocol, ICPProtocol>, address: string): Promise<any> {
     sinon.restore()
 
     const transactions = testProtocolSpec.transactionList(address)
@@ -34,19 +35,19 @@ export class ICPProtocolStub implements ProtocolHTTPStub {
     sinon
       .stub(axios, 'get')
       .withArgs(
-        `${(await testProtocolSpec.lib.getNetwork()).explorerUrl}/accounts/${address}/transactions?limit=${
+        `${(await testProtocolSpec.onlineLib.getNetwork()).explorerUrl}/accounts/${address}/transactions?limit=${
           transactions.first.blocks.length
         }`
       )
       .returns(Promise.resolve({ data: transactions.first }))
       .withArgs(
-        `${(await testProtocolSpec.lib.getNetwork()).explorerUrl}/accounts/${address}/transactions?limit=${
+        `${(await testProtocolSpec.onlineLib.getNetwork()).explorerUrl}/accounts/${address}/transactions?limit=${
           transactions.first.blocks.length
         }&offset=${0}`
       )
       .returns(Promise.resolve({ data: transactions.first }))
       .withArgs(
-        `${(await testProtocolSpec.lib.getNetwork()).explorerUrl}/accounts/${address}/transactions?limit=${
+        `${(await testProtocolSpec.onlineLib.getNetwork()).explorerUrl}/accounts/${address}/transactions?limit=${
           transactions.next.blocks.length
         }&offset=${transactions.first.blocks.length}`
       )

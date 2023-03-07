@@ -223,5 +223,3 @@ export const idlFactory = ({ IDL }: { IDL: any }) => {
     transfer: IDL.Func([TransferArgs], [TransferResult], [])
   })
 }
-
-export const canisterId = 'ryjl3-tyaaa-aaaaa-aaaba-cai'
