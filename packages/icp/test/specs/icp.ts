@@ -1,7 +1,7 @@
 // tslint:disable: no-object-literal-type-assertion
-import { Amount, FeeDefaults, newAmount, ProtocolUnitsMetadata, PublicKey, SecretKey, Signature } from '@airgap/module-kit'
+import { Amount, PublicKey, SecretKey, Signature } from '@airgap/module-kit'
 
-import { ICPSignedTransaction, ICPUnits, ICPUnsignedTransaction, createICPProtocol } from '../../src/v1'
+import { createICPProtocol, ICPProtocol, ICPSignedTransaction, ICPUnits, ICPUnsignedTransaction } from '../../src/v1'
 import { TestProtocolSpec } from '../implementations'
 import { ICPProtocolStub } from '../stubs/icp.stub'
 
@@ -10,9 +10,10 @@ import { ICPProtocolStub } from '../stubs/icp.stub'
 // private key             :  24a69f5168a28adfbd2a612289095a935dd2b34c6a7661e5667c6663945debf5
 // address                 :  78a47d34778a0bb211f649b54379e6be6286ddd6f459826352ee2819564343de
 
-export class ICPTestProtocolSpec extends TestProtocolSpec {
+export class ICPTestProtocolSpec extends TestProtocolSpec<ICPProtocol, ICPProtocol> {
   public name = 'ICP'
-  public lib = createICPProtocol()
+  public offlineLib = createICPProtocol()
+  public onlineLib = createICPProtocol()
   public stub = new ICPProtocolStub()
 
   public mnemonic(): string {
@@ -147,19 +148,6 @@ export class ICPTestProtocolSpec extends TestProtocolSpec {
       prev: `/accounts/${address}/transactions?limit=2&offset=0`
     }
     return { first, next }
-  }
-
-  public units: ProtocolUnitsMetadata<ICPUnits> = {
-    ICP: {
-      symbol: { value: 'ICP', market: 'icp' },
-      decimals: 8
-    }
-  }
-
-  public feeDefaults: FeeDefaults<ICPUnits> = {
-    low: newAmount(0.0001, 'ICP'),
-    medium: newAmount(0.0001, 'ICP'),
-    high: newAmount(0.0001, 'ICP')
   }
 
   // TODO : check the rest below

@@ -14,7 +14,8 @@ export enum MainProtocolSymbols {
   MOONBEAM = 'moonbeam',
   ASTAR = 'astar',
   SHIDEN = 'shiden',
-  ICP = 'icp'
+  ICP = 'icp',
+  ICP_CKBTC = 'icp_ckbtc'
 }
 
 export enum SubProtocolSymbols {

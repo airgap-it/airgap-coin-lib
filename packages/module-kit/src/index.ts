@@ -55,6 +55,7 @@ import {
   ProtocolNetwork,
   ProtocolNetworkType,
   ProtocolSymbol,
+  ProtocolTransactionMetadata,
   ProtocolUnitsMetadata
 } from './types/protocol'
 import { V3SchemaConfiguration } from './types/serializer'
@@ -162,6 +163,7 @@ export {
   ProtocolSymbol,
   ProtocolFeeMetadata,
   ProtocolAccountMetadata,
+  ProtocolTransactionMetadata,
   ProtocolNetworkType,
   ProtocolNetwork,
   SubProtocolType
