@@ -1,6 +1,6 @@
 {
   "name": "@airgap/crypto",
-  "version": "0.13.11-beta.13",
+  "version": "0.13.11-beta.22",
   "description": "TODO",
   "keywords": [
     "airgap",
@@ -28,7 +28,7 @@
     "test-legacy": "",
     "browserify": "browserify ./dist/index.js -s airgapCrypto > ./dist/airgap-crypto.min.js"
   },
-  "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
+  "author": "Papers AG <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
     "@airgap/coinlib-core": "*",
     "@airgap/module-kit": "*",

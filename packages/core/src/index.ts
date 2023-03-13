@@ -20,6 +20,7 @@ import { CryptoClient } from './protocols/CryptoClient'
 import { HasConfigurableContract } from './protocols/HasConfigurableContract'
 import {
   DelegateeDetails,
+  DelegationDetails,
   DelegatorAction,
   DelegatorDetails,
   DelegatorReward,
@@ -101,6 +102,7 @@ export {
   DelegateeDetails,
   DelegatorAction,
   DelegatorDetails,
+  DelegationDetails,
   DelegatorReward,
   IAirGapSignedTransaction,
   IAirGapTransactionResult,

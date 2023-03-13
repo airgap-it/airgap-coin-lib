@@ -4,7 +4,7 @@ import { JSONConvertible } from '@airgap/coinlib-core/interfaces/JSONConvertible
 import { RPCConvertible } from '@airgap/coinlib-core/interfaces/RPCConvertible'
 import { AirGapTransaction } from '@airgap/module-kit'
 
-import { CosmosProtocolNetwork, CosmosUnits } from '../../../types/protocol'
+import { CosmosProtocolNetwork } from '../../../../types/protocol'
 import { CosmosCoinJSON } from '../../CosmosCoin'
 import { Encodable } from '../CosmosTransaction'
 
@@ -62,7 +62,7 @@ export class CosmosMessageType {
 export interface CosmosMessage extends JSONConvertible, RPCConvertible, Encodable {
   type: CosmosMessageType
 
-  toAirGapTransaction(network: CosmosProtocolNetwork, fee: string): AirGapTransaction<CosmosUnits>
+  toAirGapTransaction<_Units extends string>(network: CosmosProtocolNetwork, fee: string): AirGapTransaction<_Units>
 
   toJSON(): CosmosMessageJSON
 }

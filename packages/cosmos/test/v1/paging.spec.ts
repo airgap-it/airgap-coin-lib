@@ -1,9 +1,10 @@
+import { CosmosPagedSendTxsResponse } from '@airgap/cosmos-core'
+
 // tslint:disable no-floating-promises
 import chai = require('chai')
 import chaiAsPromised = require('chai-as-promised')
 import 'mocha'
 import sinon = require('sinon')
-import { CosmosPagedSendTxsResponse } from '../../src/v1/types/rpc'
 
 import { TestProtocolSpec } from './implementations'
 import { CosmosTestProtocolSpec } from './specs/cosmos'

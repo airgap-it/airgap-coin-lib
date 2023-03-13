@@ -1,7 +1,7 @@
 {
   "name": "airgap-coin-lib",
   "version": "0.0.0",
-  "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
+  "author": "Papers AG <contact@papers.ch> (https://papers.ch)",
   "license": "MIT",
   "homepage": "https://www.airgap.it",
   "repository": {
@@ -61,6 +61,7 @@
     "@types/pako": "1.0.1",
     "@types/semver": "6.0.2",
     "@types/underscore": "1.8.9",
+    "@polkadot/util": "2.0.1",
     "ajv": "6.10.2",
     "axios": "0.20.0",
     "axios-mock-adapter": "^1.18.2",

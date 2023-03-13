@@ -6,8 +6,8 @@ import { JSONConvertible } from '@airgap/coinlib-core/interfaces/JSONConvertible
 import { RPCConvertible } from '@airgap/coinlib-core/interfaces/RPCConvertible'
 import { AirGapTransaction } from '@airgap/module-kit'
 
-import { CosmosProtocolNetwork, CosmosUnits } from '../../types/protocol'
-import { CosmosUnsignedTransaction } from '../../types/transaction'
+import { CosmosProtocolNetwork } from '../../../types/protocol'
+import { CosmosUnsignedTransaction } from '../../../types/transaction'
 import { CosmosFee } from '../CosmosFee'
 
 import { CosmosDelegateMessage } from './message/CosmosDelegateMessage'
@@ -68,12 +68,12 @@ export class CosmosTransaction implements JSONConvertible, RPCConvertible, Encod
     }
   }
 
-  public toAirGapTransactions(network: CosmosProtocolNetwork): AirGapTransaction<CosmosUnits>[] {
+  public toAirGapTransactions<_Units extends string>(network: CosmosProtocolNetwork): AirGapTransaction<_Units>[] {
     const fee = this.fee.amount.map((value) => new BigNumber(value.amount)).reduce((prev, next) => prev.plus(next))
 
     return this.messages
-      .map((message: CosmosMessage) => message.toAirGapTransaction(network, fee.toString(10)))
-      .map((tx: AirGapTransaction<CosmosUnits>) => {
+      .map((message: CosmosMessage) => message.toAirGapTransaction<_Units>(network, fee.toString(10)))
+      .map((tx: AirGapTransaction<_Units>) => {
         if (!tx.json) {
           tx.json = {}
         }

@@ -1,6 +1,6 @@
 {
   "name": "@airgap/coinlib-core",
-  "version": "0.13.11-beta.13",
+  "version": "0.13.11-beta.22",
   "description": "The @airgap/coinlib-core is a protocol agnostic library to prepare, sign and broadcast cryptocurrency transactions.",
   "keywords": [
     "airgap",
@@ -35,7 +35,7 @@
     "test-ci": "nyc --reporter=lcov npm test",
     "browserify": "browserify ./dist/index.js -s airgapCoinLib > ./dist/airgap-coinlib-core.min.js"
   },
-  "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
+  "author": "Papers AG <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
     "@stablelib/blake2b": "^1.0.1",
     "@stablelib/bytes": "^1.0.1",

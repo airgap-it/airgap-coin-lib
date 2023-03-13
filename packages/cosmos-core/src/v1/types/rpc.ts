@@ -1,4 +1,4 @@
-import { CosmosCoinJSON } from '../data/CosmosCoin'
+import { CosmosCoinJSON } from './data/CosmosCoin'
 
 export interface CosmosNodeInfo {
   protocol_version: {
