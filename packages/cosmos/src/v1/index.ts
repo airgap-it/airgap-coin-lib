@@ -1,9 +1,6 @@
 import { MintscanBlockExplorer } from './block-explorer/MintscanBlockExplorer'
 import { CosmosModule } from './module/CosmosModule'
-import { CosmosProtocol, createCosmosProtocol, createCosmosProtocolOptions } from './protocol/CosmosProtocol'
-import { CosmosCryptoConfiguration } from './types/crypto'
-import { CosmosProtocolNetwork, CosmosProtocolOptions, CosmosUnits } from './types/protocol'
-import { CosmosSignedTransaction, CosmosTransactionCursor, CosmosUnsignedTransaction } from './types/transaction'
+import { CosmosProtocol, createCosmosProtocol, createCosmosProtocolOptions, CosmosDenom } from './protocol/CosmosProtocol'
 
 // Module
 
@@ -11,20 +8,8 @@ export { CosmosModule }
 
 // Protocol
 
-export { CosmosProtocol, createCosmosProtocol, createCosmosProtocolOptions }
+export { CosmosProtocol, createCosmosProtocol, createCosmosProtocolOptions, CosmosDenom }
 
 // Block Explorer
 
 export { MintscanBlockExplorer }
-
-// Types
-
-export {
-  CosmosCryptoConfiguration,
-  CosmosUnits,
-  CosmosProtocolNetwork,
-  CosmosProtocolOptions,
-  CosmosUnsignedTransaction,
-  CosmosSignedTransaction,
-  CosmosTransactionCursor
-}

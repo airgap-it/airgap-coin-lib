@@ -1,8 +1,8 @@
 import { Balance } from '@airgap/module-kit'
+import { CosmosNodeClient } from '@airgap/cosmos-core'
 import * as sinon from 'sinon'
 
-import { CosmosUnits } from '../../../src/v1'
-import { CosmosNodeClient } from '../../../src/v1/node/CosmosNodeClient'
+import { CosmosDenom } from '../../../src/v1'
 import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
 
 export class CosmosProtocolStub implements ProtocolHTTPStub {
@@ -10,7 +10,12 @@ export class CosmosProtocolStub implements ProtocolHTTPStub {
     sinon
       .stub(CosmosNodeClient.prototype, 'fetchBalance')
       .withArgs(testProtocolSpec.wallet.addresses[0])
-      .returns(Promise.resolve('100000000000000000000'))
+      .returns(
+        Promise.resolve({
+          total: { value: '100000000000000000000', unit: 'blockchain' },
+          available: { value: '100000000000000000000', unit: 'blockchain' }
+        })
+      )
 
     sinon.stub(CosmosNodeClient.prototype, 'fetchNodeInfo').returns({
       protocol_version: { p2p: '7', block: '10', app: '0' },
@@ -33,7 +38,7 @@ export class CosmosProtocolStub implements ProtocolHTTPStub {
     sinon
       .stub(testProtocolSpec.lib, 'getBalanceOfAddress')
       .withArgs(sinon.match.any)
-      .returns(Promise.resolve({ total: { value: '0', unit: 'blockchain' } } as Balance<CosmosUnits>))
+      .returns(Promise.resolve({ total: { value: '0', unit: 'blockchain' } } as Balance<CosmosDenom>))
 
     sinon.stub(CosmosNodeClient.prototype, 'fetchNodeInfo').returns({
       protocol_version: { p2p: '7', block: '10', app: '0' },

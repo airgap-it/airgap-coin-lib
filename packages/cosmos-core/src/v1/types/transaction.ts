@@ -7,6 +7,13 @@ enum CosmosMessageTypeIndex {
   WITHDRAW_DELEGATION_REWARD = 3
 }
 
+export enum CosmosDelegationActionType {
+  DELEGATE = 'delegate',
+  UNDELEGATE = 'undelegate',
+  WITHDRAW_ALL_REWARDS = 'withdraw_all_rewards',
+  WITHDRAW_VALIDATOR_REWARDS = 'withdraw_validator_rewards'
+}
+
 interface CosmosCoin {
   denom: string
   amount: string

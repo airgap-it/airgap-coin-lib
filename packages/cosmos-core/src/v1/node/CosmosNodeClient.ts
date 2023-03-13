@@ -1,7 +1,8 @@
 import Axios, { AxiosResponse } from '@airgap/coinlib-core/dependencies/src/axios-0.19.0/index'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
+import { Amount, newAmount } from '@airgap/module-kit'
 
-import { CosmosCoin } from '../data/CosmosCoin'
+import { CosmosCoin } from '../types/data/CosmosCoin'
 import {
   CosmosAccount,
   CosmosAccountCoin,
@@ -14,28 +15,28 @@ import {
   CosmosValidator
 } from '../types/rpc'
 
-export class CosmosNodeClient {
+export class CosmosNodeClient<Units extends string> {
   constructor(public readonly baseURL: string, public useCORSProxy: boolean = false) {}
 
-  public async fetchBalance(address: string): Promise<{ total: BigNumber; available: BigNumber }> {
+  public async fetchBalance(address: string, denom: Units): Promise<{ total: Amount<Units>; available: Amount<Units> }> {
     const response = await Axios.get(this.url(`/bank/balances/${address}`))
     const data: CosmosAccountCoin[] = response.data.result
     if (data.length > 0) {
-      const availableBalance = CosmosCoin.sum(CosmosCoin.fromCoins(data))
+      const availableBalance = CosmosCoin.sum(CosmosCoin.fromCoins(data), denom)
       const totalBalance = (
         await Promise.all([
-          this.fetchTotalReward(address),
-          this.fetchTotalUnbondingAmount(address),
-          this.fetchTotalDelegatedAmount(address)
+          this.fetchTotalReward(address, denom),
+          this.fetchTotalUnbondingAmount(address, denom),
+          this.fetchTotalDelegatedAmount(address, denom)
         ])
-      ).reduce((current, next) => current.plus(next), new BigNumber(availableBalance))
+      ).reduce((current, next) => current.plus(next.value), new BigNumber(availableBalance))
 
       return {
-        total: totalBalance.decimalPlaces(0, BigNumber.ROUND_FLOOR),
-        available: availableBalance.decimalPlaces(0, BigNumber.ROUND_FLOOR)
+        total: newAmount(totalBalance.decimalPlaces(0, BigNumber.ROUND_FLOOR), denom),
+        available: newAmount(availableBalance.decimalPlaces(0, BigNumber.ROUND_FLOOR), denom)
       }
     } else {
-      return { total: new BigNumber(0), available: new BigNumber(0) }
+      return { total: newAmount(new BigNumber(0), denom), available: newAmount(new BigNumber(0), denom) }
     }
   }
 
@@ -97,10 +98,10 @@ export class CosmosNodeClient {
     return filterEmpty ? delegations.filter((delegation: CosmosDelegation) => new BigNumber(delegation.balance.amount).gt(0)) : delegations
   }
 
-  public async fetchTotalDelegatedAmount(address: string): Promise<BigNumber> {
+  public async fetchTotalDelegatedAmount(address: string, denom: Units): Promise<Amount<Units>> {
     const delegations = await this.fetchDelegations(address)
     const balances = delegations.map((delegation) => delegation.balance)
-    return CosmosCoin.sum(CosmosCoin.fromCoins(balances)).decimalPlaces(0, BigNumber.ROUND_FLOOR)
+    return newAmount(CosmosCoin.sum(CosmosCoin.fromCoins(balances), denom).decimalPlaces(0, BigNumber.ROUND_FLOOR), denom)
   }
 
   public async fetchValidator(address: string): Promise<CosmosValidator> {
@@ -133,17 +134,18 @@ export class CosmosNodeClient {
     return unbondingDelegations
   }
 
-  public async fetchTotalUnbondingAmount(address: string): Promise<BigNumber> {
+  public async fetchTotalUnbondingAmount(address: string, denom: Units): Promise<Amount<Units>> {
     const unbondingDelegations: CosmosUnbondingDelegation[] = await this.fetchUnbondingDelegations(address)
     if (unbondingDelegations) {
       const unbondings = unbondingDelegations.map((delegation) => delegation.entries).reduce((current, next) => current.concat(next), [])
 
-      return unbondings
+      const total = unbondings
         .reduce((current, next) => current.plus(new BigNumber(next.balance)), new BigNumber(0))
         .decimalPlaces(0, BigNumber.ROUND_FLOOR)
+      return newAmount(total, denom)
     }
 
-    return new BigNumber(0)
+    return newAmount(new BigNumber(0), denom)
   }
 
   public async fetchRewardDetails(delegatorAddress: string): Promise<CosmosRewardDetails[]> {
@@ -152,27 +154,27 @@ export class CosmosNodeClient {
       .catch(() => [])
   }
 
-  public async fetchTotalReward(delegatorAddress: string): Promise<BigNumber> {
+  public async fetchTotalReward(delegatorAddress: string, denom: Units): Promise<Amount<Units>> {
     const totalRewards = await Axios.get(this.url(`/distribution/delegators/${delegatorAddress}/rewards`))
       .then((response) => response.data.result.total as { denom: string; amount: string }[])
       .catch(() => [])
 
     if (totalRewards?.length > 0) {
-      return CosmosCoin.sum(CosmosCoin.fromCoins(totalRewards)).decimalPlaces(0, BigNumber.ROUND_FLOOR)
+      return newAmount(CosmosCoin.sum(CosmosCoin.fromCoins(totalRewards), denom).decimalPlaces(0, BigNumber.ROUND_FLOOR), denom)
     }
 
-    return new BigNumber(0)
+    return newAmount(new BigNumber(0), denom)
   }
 
-  public async fetchRewardForDelegation(delegatorAddress: string, validatorAddress: string): Promise<BigNumber> {
+  public async fetchRewardForDelegation(delegatorAddress: string, validatorAddress: string, denom: Units): Promise<Amount<Units>> {
     const totalRewards = await Axios.get(this.url(`/distribution/delegators/${delegatorAddress}/rewards/${validatorAddress}`))
       .then((response) => response.data.result as { denom: string; amount: string }[])
       .catch(() => [])
     if (totalRewards?.length > 0) {
-      return CosmosCoin.sum(CosmosCoin.fromCoins(totalRewards)).decimalPlaces(0, BigNumber.ROUND_FLOOR)
+      return newAmount(CosmosCoin.sum(CosmosCoin.fromCoins(totalRewards), denom).decimalPlaces(0, BigNumber.ROUND_FLOOR), denom)
     }
 
-    return new BigNumber(0)
+    return newAmount(new BigNumber(0), denom)
   }
 
   public async withdrawAllDelegationRewards(

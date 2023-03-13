@@ -1,6 +1,6 @@
 {
   "name": "@airgap/wallet",
-  "version": "0.13.11-beta.13",
+  "version": "0.13.11-beta.22",
   "description": "TODO",
   "keywords": [
     "airgap"
@@ -25,7 +25,7 @@
     "test-ci": "nyc --reporter=lcov npm test",
     "browserify": "browserify ./dist/index.js -s airgapCoinLibWallet > ./dist/airgap-coinlib-wallet.min.js"
   },
-  "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
+  "author": "Papers AG <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
     "@airgap/coinlib-core": "*",
     "@airgap/module-kit": "*"

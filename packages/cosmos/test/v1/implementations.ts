@@ -1,9 +1,9 @@
 import * as BIP39 from '@airgap/coinlib-core/dependencies/src/bip39-2.5.0/index'
+import { CosmosPagedSendTxsResponse, CosmosSignedTransaction, CosmosUnsignedTransaction } from '@airgap/cosmos-core'
 import { derive, mnemonicToSeed } from '@airgap/crypto'
 import { Amount, CryptoDerivative, PublicKey, SecretKey, Signature } from '@airgap/module-kit'
 
-import { CosmosProtocol, CosmosSignedTransaction, CosmosUnits, CosmosUnsignedTransaction } from '../../src/v1'
-import { CosmosPagedSendTxsResponse } from '../../src/v1/types/rpc'
+import { CosmosDenom, CosmosProtocol } from '../../src/v1'
 
 const mnemonic: string = 'spell device they juice trial skirt amazing boat badge steak usage february virus art survey'
 
@@ -28,8 +28,8 @@ abstract class TestProtocolSpec {
   public abstract txs: {
     to: string[]
     from: string[]
-    amount: Amount<CosmosUnits>
-    fee: Amount<CosmosUnits>
+    amount: Amount<CosmosDenom>
+    fee: Amount<CosmosDenom>
     properties?: string[]
     unsignedTx: CosmosUnsignedTransaction
     signedTx: CosmosSignedTransaction
@@ -38,9 +38,7 @@ abstract class TestProtocolSpec {
   public encryptAsymmetric: { message: string; encrypted: string }[] = []
   public encryptAES: { message: string; encrypted: string }[] = []
 
-  public abstract transactionList(
-    address: string
-  ): {
+  public abstract transactionList(address: string): {
     first: { sender: CosmosPagedSendTxsResponse; recipient: CosmosPagedSendTxsResponse }
     next: { sender: CosmosPagedSendTxsResponse; recipient: CosmosPagedSendTxsResponse }
   }

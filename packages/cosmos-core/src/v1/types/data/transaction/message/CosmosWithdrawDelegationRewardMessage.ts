@@ -1,7 +1,7 @@
 import { EncodeObject } from '@airgap/coinlib-core/dependencies/src/cosmjs'
 import { AirGapTransaction, newAmount } from '@airgap/module-kit'
 
-import { CosmosProtocolNetwork, CosmosUnits } from '../../../types/protocol'
+import { CosmosProtocolNetwork } from '../../../../types/protocol'
 
 import { CosmosMessage, CosmosMessageJSON, CosmosMessageType } from './CosmosMessage'
 
@@ -29,7 +29,7 @@ export class CosmosWithdrawDelegationRewardMessage implements CosmosMessage {
     return new CosmosWithdrawDelegationRewardMessage(encodeObject.value.delegatorAddress, encodeObject.value.validatorAddress)
   }
 
-  public toAirGapTransaction(network: CosmosProtocolNetwork, fee: string): AirGapTransaction<CosmosUnits> {
+  public toAirGapTransaction<_Units extends string>(network: CosmosProtocolNetwork, fee: string): AirGapTransaction<_Units> {
     return {
       from: [this.delegatorAddress],
       to: [this.validatorAddress],
