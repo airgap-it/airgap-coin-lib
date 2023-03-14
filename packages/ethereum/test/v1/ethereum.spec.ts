@@ -35,13 +35,8 @@ const unsignedTxs: EthereumUnsignedTransaction[] = [
 
 describe(`Proper error handling`, () => {
   it('should return the correct error type ', async () => {
-    const protocolMetadata = await ethProtocolSpec.lib.getMetadata()
-
     try {
-      const { secretKey, publicKey } = await ethProtocolSpec.lib.getKeyPairFromSecret(
-        { type: 'mnemonic', value: ethProtocolSpec.mnemonic() },
-        protocolMetadata.account?.standardDerivationPath
-      )
+      const { secretKey, publicKey } = await ethProtocolSpec.lib.getKeyPairFromDerivative(await ethProtocolSpec.derivative())
 
       for (const unsignedTx of unsignedTxs) {
         const signedTx: EthereumSignedTransaction = await ethProtocolSpec.lib.signTransactionWithSecretKey(unsignedTx, secretKey)

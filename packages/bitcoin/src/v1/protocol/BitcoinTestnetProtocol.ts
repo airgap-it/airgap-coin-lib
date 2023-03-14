@@ -1,9 +1,8 @@
 import { MainProtocolSymbols } from '@airgap/coinlib-core'
-import { ExtendedPublicKey, ProtocolMetadata } from '@airgap/module-kit'
+import { ExtendedPublicKey, ExtendedSecretKey, ProtocolMetadata } from '@airgap/module-kit'
 
-import { BitcoinTestnetExtendedPublicKeyEncoding } from '../types/key'
 import { BitcoinUnits } from '../types/protocol'
-import { convertExtendedPublicKey } from '../utils/key'
+import { convertExtendedPublicKey, convertExtendedSecretKey } from '../utils/key'
 
 import { BitcoinProtocol, BitcoinProtocolImpl } from './BitcoinProtocol'
 
@@ -46,8 +45,15 @@ export class BitcoinTestnetProtocolImpl extends BitcoinProtocolImpl implements B
     })
   }
 
+  protected convertExtendedSecretKey(extendedSecretKey: ExtendedSecretKey, targetFormat: ExtendedSecretKey['format']): ExtendedSecretKey {
+    return convertExtendedSecretKey(extendedSecretKey, {
+      format: targetFormat,
+      type: 'tprv'
+    })
+  }
+
   protected convertExtendedPublicKey(extendedPublicKey: ExtendedPublicKey, targetFormat: ExtendedPublicKey['format']): ExtendedPublicKey {
-    return convertExtendedPublicKey<BitcoinTestnetExtendedPublicKeyEncoding>(extendedPublicKey, {
+    return convertExtendedPublicKey(extendedPublicKey, {
       format: targetFormat,
       type: 'tpub'
     })

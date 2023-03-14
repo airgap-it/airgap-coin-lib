@@ -30,6 +30,16 @@ export class ICPV3SerializerCompanion implements AirGapV3SerializerCompanion {
       type: IACMessageType.TransactionSignResponse,
       schema: { schema: icpTransactionSignResponse },
       protocolIdentifier: MainProtocolSymbols.ICP
+    },
+    {
+      type: IACMessageType.TransactionSignRequest,
+      schema: { schema: icpTransactionSignRequest },
+      protocolIdentifier: MainProtocolSymbols.ICP_CKBTC
+    },
+    {
+      type: IACMessageType.TransactionSignResponse,
+      schema: { schema: icpTransactionSignResponse },
+      protocolIdentifier: MainProtocolSymbols.ICP_CKBTC
     }
   ]
 
@@ -50,6 +60,7 @@ export class ICPV3SerializerCompanion implements AirGapV3SerializerCompanion {
     console.log('toTransactionSignRequest : identifier', identifier)
     switch (identifier) {
       case MainProtocolSymbols.ICP:
+      case MainProtocolSymbols.ICP_CKBTC:
         return icpUnsignedTransactionToRequest(unsignedTransaction as ICPUnsignedTransaction, publicKey, callbackUrl)
       default:
         throw new UnsupportedError(Domain.ICP, `Protocol ${identifier} not supported`)
@@ -62,6 +73,7 @@ export class ICPV3SerializerCompanion implements AirGapV3SerializerCompanion {
   ): Promise<UnsignedTransaction> {
     switch (identifier) {
       case MainProtocolSymbols.ICP:
+      case MainProtocolSymbols.ICP_CKBTC:
         return icpTransactionSignRequestToUnsigned(transactionSignRequest)
       default:
         throw new UnsupportedError(Domain.ICP, `Protocol ${identifier} not supported`)
@@ -71,6 +83,7 @@ export class ICPV3SerializerCompanion implements AirGapV3SerializerCompanion {
   public async validateTransactionSignRequest(identifier: string, transactionSignRequest: TransactionSignRequest): Promise<boolean> {
     switch (identifier) {
       case MainProtocolSymbols.ICP:
+      case MainProtocolSymbols.ICP_CKBTC:
         try {
           await this.icpTransactionValidator.validateUnsignedTransaction(transactionSignRequest)
 
@@ -90,6 +103,7 @@ export class ICPV3SerializerCompanion implements AirGapV3SerializerCompanion {
   ): Promise<TransactionSignResponse> {
     switch (identifier) {
       case MainProtocolSymbols.ICP:
+      case MainProtocolSymbols.ICP_CKBTC:
         return icpSignedTransactionToResponse(signedTransaction as ICPSignedTransaction, accountIdentifier)
       default:
         throw new UnsupportedError(Domain.ICP, `Protocol ${identifier} not supported`)
@@ -102,6 +116,7 @@ export class ICPV3SerializerCompanion implements AirGapV3SerializerCompanion {
   ): Promise<SignedTransaction> {
     switch (identifier) {
       case MainProtocolSymbols.ICP:
+      case MainProtocolSymbols.ICP_CKBTC:
         return icpTransactionSignResponseToSigned(transactionSignResponse)
       default:
         throw new UnsupportedError(Domain.ICP, `Protocol ${identifier} not supported`)
@@ -111,6 +126,7 @@ export class ICPV3SerializerCompanion implements AirGapV3SerializerCompanion {
   public async validateTransactionSignResponse(identifier: string, transactionSignResponse: TransactionSignResponse): Promise<boolean> {
     switch (identifier) {
       case MainProtocolSymbols.ICP:
+      case MainProtocolSymbols.ICP_CKBTC:
         try {
           await this.icpTransactionValidator.validateSignedTransaction(transactionSignResponse)
 

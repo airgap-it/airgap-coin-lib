@@ -2,11 +2,11 @@
 // Package adapted from https://www.npmjs.com/package/hdkey
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-this-alias */
+import * as bs58check from '@airgap/coinlib-core/dependencies/src/bs58check-2.1.2/index'
 import assert from 'assert'
 import { Buffer } from 'buffer'
-import bs58check from 'bs58check'
+import { createHash, createHmac, randomBytes } from 'crypto'
 import secp256k1 from 'secp256k1'
-import { createHmac, createHash, randomBytes } from 'crypto'
 
 const MASTER_SECRET = Buffer.from('Bitcoin seed', 'utf8')
 const HARDENED_OFFSET = 0x80000000

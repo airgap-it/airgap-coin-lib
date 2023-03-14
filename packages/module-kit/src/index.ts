@@ -34,6 +34,16 @@ import { Amount } from './types/amount'
 import { Balance } from './types/balance'
 import { BlockExplorerMetadata } from './types/block-explorer'
 import { BytesString, BytesStringFormat, HexString } from './types/bytes'
+import {
+  CryptoAlgorithm,
+  CryptoConfiguration,
+  CryptoDerivative,
+  CryptoSecretType,
+  Ed25519CryptoConfiguration,
+  SaplingCryptoConfiguration,
+  Secp256K1CryptoConfiguration,
+  Sr25519CryptoConfiguration
+} from './types/crypto'
 import { FeeDefaults, FeeEstimation } from './types/fee'
 import { ExtendedKeyPair, ExtendedPublicKey, ExtendedSecretKey, KeyPair, KeyType, PublicKey, SecretKey } from './types/key'
 import { RecursivePartial } from './types/meta/utility-types'
@@ -45,9 +55,9 @@ import {
   ProtocolNetwork,
   ProtocolNetworkType,
   ProtocolSymbol,
+  ProtocolTransactionMetadata,
   ProtocolUnitsMetadata
 } from './types/protocol'
-import { HexSecret, MnemonicSecret, Secret, SecretType } from './types/secret'
 import { V3SchemaConfiguration } from './types/serializer'
 import { Signature } from './types/signature'
 import { SubProtocolType } from './types/sub-protocol'
@@ -153,6 +163,7 @@ export {
   ProtocolSymbol,
   ProtocolFeeMetadata,
   ProtocolAccountMetadata,
+  ProtocolTransactionMetadata,
   ProtocolNetworkType,
   ProtocolNetwork,
   SubProtocolType
@@ -181,6 +192,14 @@ export {
   BytesStringFormat,
   BytesString,
   HexString,
+  CryptoAlgorithm,
+  CryptoSecretType,
+  Ed25519CryptoConfiguration,
+  Sr25519CryptoConfiguration,
+  Secp256K1CryptoConfiguration,
+  SaplingCryptoConfiguration,
+  CryptoConfiguration,
+  CryptoDerivative,
   FeeDefaults,
   FeeEstimation,
   KeyType,
@@ -190,10 +209,6 @@ export {
   ExtendedPublicKey,
   KeyPair,
   ExtendedKeyPair,
-  SecretType,
-  MnemonicSecret,
-  HexSecret,
-  Secret,
   Signature,
   TransactionType,
   UnsignedTransaction,

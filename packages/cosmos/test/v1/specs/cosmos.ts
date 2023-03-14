@@ -1,12 +1,15 @@
 // tslint:disable: no-object-literal-type-assertion
 import { Amount, PublicKey, SecretKey, Signature } from '@airgap/module-kit'
-
-import { CosmosSignedTransaction, CosmosUnits, CosmosUnsignedTransaction, createCosmosProtocol } from '../../../src/v1'
-import { CosmosCoin } from '../../../src/v1/data/CosmosCoin'
-import { CosmosFee } from '../../../src/v1/data/CosmosFee'
-import { CosmosTransaction } from '../../../src/v1/data/transaction/CosmosTransaction'
-import { CosmosSendMessage } from '../../../src/v1/data/transaction/message/CosmosSendMessage'
-import { CosmosPagedSendTxsResponse } from '../../../src/v1/types/rpc'
+import {
+  CosmosCoin,
+  CosmosSendMessage,
+  CosmosPagedSendTxsResponse,
+  CosmosFee,
+  CosmosUnsignedTransaction,
+  CosmosSignedTransaction,
+  CosmosTransaction
+} from '@airgap/cosmos-core'
+import { CosmosDenom, createCosmosProtocol } from '../../../src/v1'
 import { TestProtocolSpec } from '../implementations'
 import { CosmosProtocolStub } from '../stubs/cosmos.stub'
 
@@ -52,11 +55,11 @@ export class CosmosTestProtocolSpec extends TestProtocolSpec {
       amount: {
         value: '2',
         unit: 'blockchain'
-      } as Amount<CosmosUnits>,
+      } as Amount<CosmosDenom>,
       fee: {
         value: '1',
         unit: 'blockchain'
-      } as Amount<CosmosUnits>,
+      } as Amount<CosmosDenom>,
       unsignedTx: {
         type: 'unsigned',
         ...new CosmosTransaction(
@@ -121,9 +124,7 @@ export class CosmosTestProtocolSpec extends TestProtocolSpec {
     }
   ]
 
-  public transactionList(
-    address: string
-  ): {
+  public transactionList(address: string): {
     first: { sender: CosmosPagedSendTxsResponse; recipient: CosmosPagedSendTxsResponse }
     next: { sender: CosmosPagedSendTxsResponse; recipient: CosmosPagedSendTxsResponse }
   } {

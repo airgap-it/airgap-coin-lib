@@ -9,13 +9,13 @@ import {
   AirGapTransactionsWithCursor,
   Amount,
   Balance,
+  CryptoDerivative,
   FeeDefaults,
   KeyPair,
   newAmount,
   newUnsignedTransaction,
   ProtocolMetadata,
   PublicKey,
-  Secret,
   SecretKey,
   Signature,
   TransactionConfiguration,
@@ -31,6 +31,7 @@ import { ObjktTokenMetadataIndexerClient } from '../../indexer/token-metadata/Ob
 import { BigMap } from '../../types/contract/bigmap/BigMap'
 import { BigMapEntry } from '../../types/contract/bigmap/BigMapEntry'
 import { TezosContractMetadata } from '../../types/contract/TezosContractMetadata'
+import { TezosCryptoConfiguration } from '../../types/crypto'
 import { TezosFATokenMetadata } from '../../types/fa/TezosFATokenMetadata'
 import { MichelineDataNode, MichelineNode } from '../../types/micheline/MichelineNode'
 import { TezosOperation } from '../../types/operations/kinds/TezosOperation'
@@ -45,11 +46,14 @@ import { TEZOS_ACCOUNT_METADATA, TEZOS_MAINNET_PROTOCOL_NETWORK, TEZOS_UNITS, Te
 
 // Interface
 
-export interface TezosFAProtocol<_Units extends string = string, _ProtocolNetwork extends TezosFAProtocolNetwork = TezosFAProtocolNetwork>
-  extends AirGapProtocol<
+export interface TezosFAProtocol<
+  _Units extends string = string,
+  _ProtocolNetwork extends TezosFAProtocolNetwork = TezosFAProtocolNetwork
+> extends AirGapProtocol<
     {
       AddressResult: Address
       ProtocolNetwork: _ProtocolNetwork
+      CryptoConfiguration: TezosCryptoConfiguration
       Units: _Units
       FeeUnits: TezosUnits
       FeeEstimation: FeeDefaults<TezosUnits>
@@ -80,8 +84,7 @@ export abstract class TezosFAProtocolImpl<
   _Entrypoints extends string,
   _Units extends string,
   _ProtocolNetwork extends TezosFAProtocolNetwork
-> implements TezosFAProtocol<_Units, _ProtocolNetwork>
-{
+> implements TezosFAProtocol<_Units, _ProtocolNetwork> {
   protected readonly options: TezosFAProtocolOptions<_Units, _ProtocolNetwork>
 
   protected readonly tezos: TezosProtocol
@@ -169,8 +172,12 @@ export abstract class TezosFAProtocolImpl<
 
   // Offline
 
-  public async getKeyPairFromSecret(secret: Secret, derivationPath?: string): Promise<KeyPair> {
-    return this.tezos.getKeyPairFromSecret(secret, derivationPath)
+  public async getCryptoConfiguration(): Promise<TezosCryptoConfiguration> {
+    return this.tezos.getCryptoConfiguration()
+  }
+
+  public async getKeyPairFromDerivative(derivative: CryptoDerivative): Promise<KeyPair> {
+    return this.tezos.getKeyPairFromDerivative(derivative)
   }
 
   public async signTransactionWithSecretKey(transaction: TezosUnsignedTransaction, secretKey: SecretKey): Promise<TezosSignedTransaction> {
@@ -298,8 +305,9 @@ export abstract class TezosFAProtocolImpl<
   }
 
   public async allTokenMetadata(): Promise<Record<number, TezosFATokenMetadata> | undefined> {
-    const objktMetadata: Record<number, Partial<TezosFATokenMetadata>> | undefined =
-      await this.objktTokenMetadataIndexerClient.getTokenMetadata()
+    const objktMetadata:
+      | Record<number, Partial<TezosFATokenMetadata>>
+      | undefined = await this.objktTokenMetadataIndexerClient.getTokenMetadata()
     const missingTokenIDs: Set<number> | undefined =
       objktMetadata !== undefined
         ? new Set(

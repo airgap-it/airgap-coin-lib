@@ -13,7 +13,8 @@ export enum Domain {
   TEZOSFA = 'TEZOSFA',
   UTILS = 'UTILS',
   ACTIONS = 'ACTIONS',
-  ICP = 'ICP'
+  ICP = 'ICP',
+  COREUM = 'COREUM'
 }
 
 export class CoinlibError extends Error {

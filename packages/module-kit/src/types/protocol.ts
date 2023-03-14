@@ -9,7 +9,7 @@ export interface ProtocolMetadata<_Units extends string = string, _FeeUnits exte
   mainUnit: _Units
 
   fee?: ProtocolFeeMetadata<_FeeUnits>
-  account?: ProtocolAccountMetadata
+  account: ProtocolAccountMetadata
   transaction?: ProtocolTransactionMetadata<_Units>
 }
 
@@ -32,7 +32,7 @@ export interface ProtocolFeeMetadata<_FeeUnits extends string = string> {
 }
 
 export interface ProtocolAccountMetadata {
-  standardDerivationPath?: string
+  standardDerivationPath: string
 
   address?: {
     isCaseSensitive?: boolean // where do we use this?

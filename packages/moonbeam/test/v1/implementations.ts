@@ -1,4 +1,5 @@
-import { Amount, PublicKey, SecretKey, Signature } from '@airgap/module-kit'
+import { derive, mnemonicToSeed } from '@airgap/crypto'
+import { Amount, CryptoDerivative, PublicKey, SecretKey, Signature } from '@airgap/module-kit'
 import { SubstrateSignedTransaction, SubstrateUnsignedTransaction } from '@airgap/substrate/v1'
 
 import { MoonbeamBaseProtocolImpl } from '../../src/v1/protocol/MoonbeamBaseProtocol'
@@ -37,6 +38,12 @@ abstract class TestProtocolSpec<_Units extends string = string> {
 
   public abstract seed(): string
   public abstract mnemonic(): string
+
+  public async derivative(): Promise<CryptoDerivative> {
+    const [metadata, cryptoConfiguration] = await Promise.all([this.lib.getMetadata(), this.lib.getCryptoConfiguration()])
+
+    return derive(cryptoConfiguration, await mnemonicToSeed(cryptoConfiguration, this.mnemonic()), metadata.account.standardDerivationPath)
+  }
 
   public transactionList(
     address: string

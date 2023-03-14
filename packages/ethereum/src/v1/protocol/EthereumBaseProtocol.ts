@@ -7,6 +7,7 @@ import { mnemonicToSeed } from '@airgap/coinlib-core/dependencies/src/bip39-2.5.
 import * as BitGo from '@airgap/coinlib-core/dependencies/src/bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac/src'
 import { BalanceError, ConditionViolationError, UnsupportedError } from '@airgap/coinlib-core/errors'
 import { isHex } from '@airgap/coinlib-core/utils/hex'
+import { encodeDerivative } from '@airgap/crypto'
 import {
   Address,
   AirGapProtocol,
@@ -15,6 +16,7 @@ import {
   AirGapTransactionsWithCursor,
   Amount,
   Balance,
+  CryptoDerivative,
   ExtendedKeyPair,
   ExtendedPublicKey,
   ExtendedSecretKey,
@@ -34,7 +36,6 @@ import {
   ProtocolMetadata,
   ProtocolUnitsMetadata,
   PublicKey,
-  Secret,
   SecretKey,
   Signature,
   TransactionConfiguration,
@@ -48,6 +49,7 @@ import { EthereumCryptoClient } from '../clients/crypto/EthereumCryptoClient'
 import { EthereumInfoClient, EthereumInfoClientTransactionsResult } from '../clients/info/EthereumInfoClient'
 import { EthereumNodeClient } from '../clients/node/EthereumNodeClient'
 import { EthereumAddress } from '../data/EthereumAddress'
+import { EthereumCryptoConfiguration } from '../types/crypto'
 import { EthereumBaseProtocolOptions, EthereumProtocolNetwork, EthereumProtocolOptions, EthereumUnits } from '../types/protocol'
 import {
   EthereumRawUnsignedTransaction,
@@ -68,6 +70,7 @@ export interface EthereumBaseProtocol<_Units extends string = EthereumUnits>
     {
       AddressResult: Address
       ProtocolNetwork: EthereumProtocolNetwork
+      CryptoConfiguration: EthereumCryptoConfiguration
       Units: _Units
       FeeUnits: EthereumUnits
       FeeEstimation: FeeDefaults<EthereumUnits>
@@ -390,60 +393,30 @@ export abstract class EthereumBaseProtocolImpl<_Units extends string = EthereumU
 
   // Offline
 
-  public async getKeyPairFromSecret(secret: Secret, derivationPath?: string): Promise<KeyPair> {
-    switch (secret.type) {
-      case 'hex':
-        return this.getKeyPairFromHexSecret(secret.value, derivationPath)
-      case 'mnemonic':
-        return this.getKeyPairFromMnemonic(secret.value, derivationPath, secret.password)
-      default:
-        assertNever(secret)
-        throw new UnsupportedError(Domain.BITCOIN, 'Unsupported secret type.')
-    }
+  private readonly cryptoConfiguration: EthereumCryptoConfiguration = {
+    algorithm: 'secp256k1'
   }
 
-  private async getKeyPairFromHexSecret(secret: string, derivationPath?: string): Promise<KeyPair> {
-    const node = this.bitcoinJS.lib.HDNode.fromSeedHex(secret, this.bitcoinJS.config.network)
-    const derivedNode = derivationPath ? node.derivePath(derivationPath) : node
+  public async getCryptoConfiguration(): Promise<EthereumCryptoConfiguration> {
+    return this.cryptoConfiguration
+  }
+
+  public async getKeyPairFromDerivative(derivative: CryptoDerivative): Promise<KeyPair> {
+    const node = this.derivativeToBip32Node(derivative)
 
     return {
-      secretKey: newSecretKey(derivedNode.keyPair.getPrivateKeyBuffer().toString('hex'), 'hex'),
-      publicKey: newPublicKey(derivedNode.neutered().keyPair.getPublicKeyBuffer().toString('hex'), 'hex')
+      secretKey: newSecretKey(node.keyPair.getPrivateKeyBuffer().toString('hex'), 'hex'),
+      publicKey: newPublicKey(node.neutered().keyPair.getPublicKeyBuffer().toString('hex'), 'hex')
     }
   }
 
-  private async getKeyPairFromMnemonic(mnemonic: string, derivationPath?: string, password?: string): Promise<KeyPair> {
-    const secret: Buffer = mnemonicToSeed(mnemonic, password)
-
-    return this.getKeyPairFromHexSecret(secret.toString('hex'), derivationPath)
-  }
-
-  public async getExtendedKeyPairFromSecret(secret: Secret, derivationPath?: string): Promise<ExtendedKeyPair> {
-    switch (secret.type) {
-      case 'hex':
-        return this.getExtendedKeyPairFromHexSecret(secret.value, derivationPath)
-      case 'mnemonic':
-        return this.getExtendedKeyPairFromMnemonic(secret.value, derivationPath, secret.password)
-      default:
-        assertNever(secret)
-        throw new UnsupportedError(Domain.BITCOIN, 'Unsupported secret type.')
-    }
-  }
-
-  private async getExtendedKeyPairFromHexSecret(secret: string, derivationPath?: string): Promise<ExtendedKeyPair> {
-    const node = this.bitcoinJS.lib.HDNode.fromSeedHex(secret, this.bitcoinJS.config.network)
-    const derivedNode = derivationPath ? node.derivePath(derivationPath) : node
+  public async getExtendedKeyPairFromDerivative(derivative: CryptoDerivative): Promise<ExtendedKeyPair> {
+    const node = this.derivativeToBip32Node(derivative)
 
     return {
-      secretKey: newExtendedSecretKey(derivedNode.toBase58(), 'encoded'),
-      publicKey: newExtendedPublicKey(derivedNode.neutered().toBase58(), 'encoded')
+      secretKey: newExtendedSecretKey(node.toBase58(), 'encoded'),
+      publicKey: newExtendedPublicKey(node.neutered().toBase58(), 'encoded')
     }
-  }
-
-  private async getExtendedKeyPairFromMnemonic(mnemonic: string, derivationPath?: string, password?: string): Promise<ExtendedKeyPair> {
-    const secret: Buffer = mnemonicToSeed(mnemonic, password)
-
-    return this.getExtendedKeyPairFromHexSecret(secret.toString('hex'), derivationPath)
   }
 
   public async deriveFromExtendedSecretKey(
@@ -791,6 +764,12 @@ export abstract class EthereumBaseProtocolImpl<_Units extends string = EthereumU
     }
 
     return this.nodeClient.estimateTransactionGas(fromAddress, toAddress, hexAmount, data, EthereumUtils.toHex(MAX_GAS_ESTIMATE))
+  }
+
+  private derivativeToBip32Node(derivative: CryptoDerivative) {
+    const bip32Node = encodeDerivative('bip32', derivative)
+
+    return this.bitcoinJS.lib.HDNode.fromBase58(bip32Node.secretKey, this.bitcoinJS.config.network)
   }
 }
 

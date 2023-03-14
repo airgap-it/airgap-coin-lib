@@ -8,6 +8,7 @@ import { createMoonbaseProtocol, MoonbaseProtocol } from './protocol/MoonbasePro
 import { createMoonbeamProtocol, MoonbeamProtocol } from './protocol/MoonbeamProtocol'
 import { createMoonriverProtocol, MoonriverProtocol } from './protocol/MoonriverProtocol'
 import { MoonbeamProtocolConfiguration } from './types/configuration'
+import { MoonbeamCryptoConfiguration } from './types/crypto'
 import { MoonbaseUnits, MoonbeamProtocolNetwork, MoonbeamProtocolOptions, MoonbeamUnits, MoonriverUnits } from './types/protocol'
 
 // Module
@@ -24,4 +25,12 @@ export { createMoonbeamSubscanBlockExplorer, createMoonriverSubscanBlockExplorer
 
 // Types
 
-export { MoonbeamUnits, MoonriverUnits, MoonbaseUnits, MoonbeamProtocolNetwork, MoonbeamProtocolOptions, MoonbeamProtocolConfiguration }
+export {
+  MoonbeamCryptoConfiguration,
+  MoonbeamUnits,
+  MoonriverUnits,
+  MoonbaseUnits,
+  MoonbeamProtocolNetwork,
+  MoonbeamProtocolOptions,
+  MoonbeamProtocolConfiguration
+}

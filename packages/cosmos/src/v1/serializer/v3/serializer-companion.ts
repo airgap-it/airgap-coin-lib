@@ -1,20 +1,19 @@
 import { Domain, MainProtocolSymbols } from '@airgap/coinlib-core'
 import { UnsupportedError } from '@airgap/coinlib-core/errors'
-import { AirGapV3SerializerCompanion, SignedTransaction, UnsignedTransaction } from '@airgap/module-kit'
-import { V3SchemaConfiguration } from '@airgap/module-kit/types/serializer'
-import { IACMessageType, SchemaRoot, TransactionSignRequest, TransactionSignResponse } from '@airgap/serializer'
-
-import { CosmosSignedTransaction, CosmosUnsignedTransaction } from '../../types/transaction'
-
 import {
+  CosmosSignedTransaction,
+  CosmosUnsignedTransaction,
   cosmosSignedTransactionToResponse,
   cosmosTransactionSignRequestToUnsigned,
   cosmosTransactionSignResponseToSigned,
   cosmosUnsignedTransactionToRequest
-} from './schemas/converter/transaction-converter'
+} from '@airgap/cosmos-core'
+import { AirGapV3SerializerCompanion, SignedTransaction, UnsignedTransaction } from '@airgap/module-kit'
+import { V3SchemaConfiguration } from '@airgap/module-kit/types/serializer'
+import { IACMessageType, SchemaRoot, TransactionSignRequest, TransactionSignResponse } from '@airgap/serializer'
 
-const cosmosTransactionSignRequest: SchemaRoot = require('./schemas/generated/transaction-sign-request-cosmos.json')
-const cosmosTransactionSignResponse: SchemaRoot = require('./schemas/generated/transaction-sign-response-cosmos.json')
+const cosmosTransactionSignRequest: SchemaRoot = require('@airgap/cosmos-core/v1/serializer/v3/schemas/generated/transaction-sign-request-cosmos.json')
+const cosmosTransactionSignResponse: SchemaRoot = require('@airgap/cosmos-core/v1/serializer/v3/schemas/generated/transaction-sign-response-cosmos.json')
 
 export class CosmosV3SerializerCompanion implements AirGapV3SerializerCompanion {
   public readonly schemas: V3SchemaConfiguration[] = [

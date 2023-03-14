@@ -24,17 +24,14 @@ describe('TezosShieldedTezProtocol - Custom Tests', () => {
 
   describe('Account', () => {
     it('should create a key pair from the mnemonic', async () => {
-      const { secretKey, publicKey }: KeyPair = await protocol.lib.getKeyPairFromSecret(
-        { type: 'mnemonic', value: protocol.mnemonic() },
-        'm/'
-      )
+      const { secretKey, publicKey }: KeyPair = await protocol.lib.getKeyPairFromDerivative(await protocol.derivative('m/'))
 
       expect(secretKey).to.deep.equal(protocol.wallet.secretKey)
       expect(publicKey).to.deep.equal(protocol.wallet.publicKey)
     })
 
     it('should create a key pair from the hex secret', async () => {
-      const { secretKey, publicKey }: KeyPair = await protocol.lib.getKeyPairFromSecret({ type: 'hex', value: protocol.seed() }, 'm/')
+      const { secretKey, publicKey }: KeyPair = await protocol.lib.getKeyPairFromDerivative(await protocol.derivative('m/'))
 
       expect(secretKey).to.deep.equal(protocol.wallet.secretKey)
       expect(publicKey).to.deep.equal(protocol.wallet.publicKey)

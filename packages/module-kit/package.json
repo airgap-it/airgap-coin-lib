@@ -1,7 +1,7 @@
 {
   "name": "@airgap/module-kit",
-  "version": "0.13.10",
-  "description": "TODO",
+  "version": "0.13.11",
+  "description": "The @airgap/module-kit package provides the common interfaces and functionalities to implement AirGap modules.",
   "keywords": [
     "airgap",
     "blockchain",
@@ -25,12 +25,12 @@
     "lint-ci:prettier": "prettier \"src/**/*.ts\" \"test/**/*.ts\" --list-different",
     "test": "",
     "test-ci": "",
-    "test-legacy": "",
     "browserify": "browserify ./dist/index.js -s airgapModuleKit > ./dist/airgap-module-kit.min.js"
   },
-  "author": "Papers GmbH <contact@papers.ch> (https://papers.ch)",
-  "peerDependencies": {
-    "@airgap/coinlib-core": "^0.13.10"
+  "author": "Papers AG <contact@papers.ch> (https://papers.ch)",
+  "dependencies": {
+    "@airgap/coinlib-core": "*",
+    "@airgap/serializer": "*"
   },
   "nyc": {
     "include": [

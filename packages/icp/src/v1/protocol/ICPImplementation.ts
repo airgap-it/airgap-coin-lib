@@ -1,5 +1,14 @@
+import axios from '@airgap/coinlib-core/dependencies/src/axios-0.19.0/index'
+import { isHex } from '@airgap/coinlib-core/utils/hex'
 import 'isomorphic-fetch'
+import { sha224 } from 'js-sha256'
 
+import { idlFactory as ledgerIdlFactory, TransferFn } from '../types/ledger'
+import { AccountIdentifier } from '../utils/account'
+// import { requestIdOf } from '../utils/auth'
+import { Actor } from '../utils/actor'
+import { AnonymousIdentity, Identity } from '../utils/auth'
+import * as Cbor from '../utils/cbor'
 import {
   arrayBufferToHexString,
   asciiStringToByteArray,
@@ -9,12 +18,7 @@ import {
   hexStringToUint8Array,
   uint8ArrayToHexString
 } from '../utils/convert'
-import { sha224 } from 'js-sha256'
-import { TransferFn, canisterId as ledgerCanisterId, idlFactory as ledgerIdlFactory } from '../types/ledger'
-import axios from '@airgap/coinlib-core/dependencies/src/axios-0.19.0/index'
-import * as IDL from '../utils/idl'
-import { Principal } from '../utils/principal'
-import Secp256k1KeyIdentity from '../utils/secp256k1'
+import HDKey from '../utils/hdkey'
 import {
   CallRequest,
   Endpoint,
@@ -25,10 +29,9 @@ import {
   SubmitRequestType,
   TransferRequest
 } from '../utils/http'
-import { AccountIdentifier } from '../utils/account'
-// import { requestIdOf } from '../utils/auth'
-import { Actor } from '../utils/actor'
-import * as Cbor from '../utils/cbor'
+import * as IDL from '../utils/idl'
+import { Principal } from '../utils/principal'
+import Secp256k1KeyIdentity from '../utils/secp256k1'
 
 interface Transaction {
   to: string
@@ -36,9 +39,19 @@ interface Transaction {
   fee: bigint
 }
 
+// Agent
+
+export function createHttpAgent(rpcUrl: string, identity: Identity = new AnonymousIdentity()): HttpAgent {
+  return new HttpAgent({
+    identity,
+    host: rpcUrl
+  })
+}
+
 // MNEMONIC -> KEY PAIR
-export function getKeyPairFromMnemonic(mnemonic: string, derivationPath?: string): { publicKey: string; privateKey: string } {
-  const identity = Secp256k1KeyIdentity.fromSeedPhrase(mnemonic, undefined, derivationPath)
+export function getKeyPairFromExtendedSecretKey(extendedSecretKey: string): { publicKey: string; privateKey: string } {
+  const hdKey = HDKey.fromExtendedKey(extendedSecretKey)
+  const identity = Secp256k1KeyIdentity.fromSecretKey(hdKey.privateKey)
 
   const publicKey = new Uint8Array(identity.getPublicKey().toDer())
   const privateKey = new Uint8Array(identity.getKeyPair().secretKey)
@@ -50,14 +63,36 @@ export function getKeyPairFromMnemonic(mnemonic: string, derivationPath?: string
 }
 
 // PUBLIC KEY -> ADDRESS
-export function getAddressFromPublicKey(publicKey: string, subAccount?: Uint8Array): string {
+export function getPrincipalFromPublicKey(publicKey: string): Principal {
+  return Principal.selfAuthenticating(hexStringToUint8Array(publicKey))
+}
+
+export function getAddressFromPublicKey(publicKey: string, subAccount?: string | Buffer | Uint8Array): string {
   // Get principal from public key
-  const principal = Principal.selfAuthenticating(hexStringToUint8Array(publicKey))
+  const principal = getPrincipalFromPublicKey(publicKey)
+
+  return getAddressFromPrincipal(principal, subAccount)
+}
+
+export function getAddressFromPrincipal(principalOrText: Principal | string, subAccountOrUndefined?: string | Buffer | Uint8Array): string {
+  const principal =
+    typeof principalOrText === 'string'
+      ? isHex(principalOrText)
+        ? Principal.fromHex(principalOrText)
+        : Principal.from(principalOrText)
+      : principalOrText
+
+  const subAccount: Uint8Array =
+    typeof subAccountOrUndefined === 'string'
+      ? Buffer.from(subAccountOrUndefined, 'hex')
+      : typeof subAccountOrUndefined === 'undefined' || subAccountOrUndefined.length === 0
+      ? Buffer.alloc(32, 0)
+      : subAccountOrUndefined
 
   // Hash (sha224) the principal, the subAccount and some padding
   const padding = asciiStringToByteArray('\x0Aaccount-id')
   const shaObj = sha224.create()
-  shaObj.update([...padding, ...principal.toUint8Array(), ...(subAccount ?? Array(32).fill(0))])
+  shaObj.update([...padding, ...principal.toUint8Array(), ...subAccount])
   const hash = new Uint8Array(shaObj.array())
 
   // Prepend the checksum of the hash and convert to a hex string
@@ -89,7 +124,9 @@ export function createUnsignedTransaction(transaction: Transaction): string {
 }
 
 // UNSIGNED TRANSACTION -> TRANSACTION DETAILS
-export function getInfoFromUnsignedTransaction(unsignedTransaction: string): {
+export function getInfoFromUnsignedTransaction(
+  unsignedTransaction: string
+): {
   to: string
   fee: bigint
   memo: bigint
@@ -110,9 +147,8 @@ export function getInfoFromUnsignedTransaction(unsignedTransaction: string): {
 }
 
 // UNSIGNED TRANSACTION, PRIVATE KEY -> SIGNED TRANSACTION
-export async function signTransaction(unsignedTransaction: string, privateKey: string): Promise<string> {
+export async function signICPTransaction(unsignedTransaction: string, privateKey: string, canisterId: string): Promise<string> {
   // TODO : REFACTOR
-  const identity = Secp256k1KeyIdentity.fromSecretKey(hexStringToArrayBuffer(privateKey))
   const transactionDetails = getInfoFromUnsignedTransaction(unsignedTransaction)
 
   const Address = IDL.Vec(IDL.Nat8)
@@ -150,13 +186,17 @@ export async function signTransaction(unsignedTransaction: string, privateKey: s
 
   const args = IDL.encode([TransferArgs], [rawRequestBody])
 
+  return signTransaction(privateKey, canisterId, args, 'transfer')
+}
+
+export async function signTransaction(privateKey: string, canisterId: string, arg: any, methodName: string): Promise<string> {
+  const identity = Secp256k1KeyIdentity.fromSecretKey(hexStringToArrayBuffer(privateKey))
+
   const submit: CallRequest = {
     request_type: SubmitRequestType.Call,
-    //@ts-ignore
-    canister_id: Principal.from(ledgerCanisterId),
-    method_name: 'transfer',
-    arg: args,
-    //@ts-ignore
+    canister_id: Principal.from(canisterId),
+    method_name: methodName,
+    arg,
     sender: identity.getPrincipal(),
     ingress_expiry: new Expiry(5 * 60 * 1000)
   }
@@ -209,17 +249,12 @@ export function decodeArguments(args: ArrayBuffer): any {
 }
 
 // ADDRESS -> BALANCE
-export async function getBalanceFromAddress(address: string, host: string): Promise<bigint> {
-  const identity = Secp256k1KeyIdentity.generate()
-
-  const agent = new HttpAgent({
-    identity: identity,
-    host: host
-  })
+export async function getBalanceFromAddress(address: string, host: string, canisterId: string): Promise<bigint> {
+  const agent = createHttpAgent(host, Secp256k1KeyIdentity.generate())
 
   const actor = Actor.createActor(ledgerIdlFactory, {
-    agent: agent,
-    canisterId: ledgerCanisterId
+    agent,
+    canisterId
   })
 
   let acc = Uint8Array.from(Buffer.from(address, 'hex'))
@@ -229,8 +264,8 @@ export async function getBalanceFromAddress(address: string, host: string): Prom
   return b.e8s
 }
 
-export async function broadcastTransaction(signedTransaction: string, host: string): Promise<string> {
-  const canister = Principal.from(ledgerCanisterId)
+export async function broadcastTransaction(signedTransaction: string, host: string, canisterId: string): Promise<string> {
+  const canister = Principal.from(canisterId)
 
   const body = hexStringToArrayBuffer(signedTransaction)
   // const signedTransactionInfo = getInfoFromSignedTransaction(signedTransaction)

@@ -1,6 +1,6 @@
 // tslint:disable: max-classes-per-file
 import createHash = require('@airgap/coinlib-core/dependencies/src/create-hash-1.2.0/index')
-import { ProtocolMetadata, ProtocolNetwork, ProtocolNetworkType } from '@airgap/module-kit'
+import { CryptoConfiguration, ProtocolMetadata, ProtocolNetwork, ProtocolNetworkType } from '@airgap/module-kit'
 
 const sha256hashShort: (input: string) => string = (input: string): string => {
   const hash = createHash('sha256')
@@ -29,6 +29,7 @@ export class MockProtocolOptions {
       mainUnit?: string
       fee?: ProtocolMetadata<string>['fee']
       standardDerivationPath?: string
+      crypto?: CryptoConfiguration
     } = {}
   ) {}
 }

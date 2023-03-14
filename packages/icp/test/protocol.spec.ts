@@ -1,19 +1,20 @@
 // tslint:disable no-floating-promises
 // import { AirGapTransaction } from '@airgap/module-kit'
-import { AirGapTransaction } from '@airgap/module-kit'
+import { AirGapTransaction, isAmount } from '@airgap/module-kit'
 import chai = require('chai')
 import chaiAsPromised = require('chai-as-promised')
 import 'mocha'
 import sinon = require('sinon')
 
 import { TestProtocolSpec } from './implementations'
+import { CkBTCTestProtocolSpec } from './specs/ckbtc'
 import { ICPTestProtocolSpec } from './specs/icp'
 
 // use chai-as-promised plugin
 chai.use(chaiAsPromised)
 const expect = chai.expect
 
-const protocols: TestProtocolSpec[] = [new ICPTestProtocolSpec()]
+const protocols: TestProtocolSpec[] = [new ICPTestProtocolSpec(), new CkBTCTestProtocolSpec()]
 
 // const itIf = (condition, title, test) => {
 //   return condition ? it(title, test) : it.skip(title, test)
@@ -21,7 +22,7 @@ const protocols: TestProtocolSpec[] = [new ICPTestProtocolSpec()]
 
 Promise.all(
   protocols.map(async (protocol: TestProtocolSpec) => {
-    const protocolMetadata = await protocol.lib.getMetadata()
+    const protocolMetadata = await protocol.offlineLib.getMetadata()
 
     describe(`Protocol ${protocol.name}`, () => {
       describe(`KeyPair`, () => {
@@ -33,23 +34,19 @@ Promise.all(
           sinon.restore()
         })
 
-        it('getKeyPairFromSecret - should be able to create a key pair from a secret (mnemonic)', async () => {
-          const { secretKey, publicKey } = await protocol.lib.getKeyPairFromSecret(
-            { type: 'mnemonic', value: protocol.mnemonic() },
-            protocolMetadata.account?.standardDerivationPath
-          )
+        it('getKeyPairFromDerivative - should be able to create a key pair from a derivative (extended keys)', async () => {
+          const { secretKey, publicKey } = await protocol.offlineLib.getKeyPairFromDerivative(await protocol.derivative())
 
           expect(secretKey).to.deep.equal(protocol.wallet.secretKey)
           expect(publicKey).to.deep.equal(protocol.wallet.publicKey)
         })
 
         it('getAddressFromPublicKey - should be able to create a valid address from a supplied publicKey', async () => {
-          const { publicKey } = await protocol.lib.getKeyPairFromSecret(
-            { type: 'mnemonic', value: protocol.mnemonic() },
-            protocolMetadata.account?.standardDerivationPath
-          )
+          const { publicKey } = await protocol.offlineLib.getKeyPairFromDerivative(await protocol.derivative())
 
-          const address = await protocol.lib.getAddressFromPublicKey(publicKey)
+          const address = await protocol.onlineLib
+            .getAddressFromPublicKey(publicKey)
+            .then((value) => (typeof value === 'string' ? value : value.address))
 
           // check if address format matches
           if (protocolMetadata.account?.address?.regex) {
@@ -71,7 +68,7 @@ Promise.all(
         })
 
         it('prepareTransactionWithPublicKey - Is able to prepare a tx using its public key', async () => {
-          const preparedTx = await protocol.lib.prepareTransactionWithPublicKey(
+          const preparedTx = await protocol.onlineLib.prepareTransactionWithPublicKey(
             protocol.wallet.publicKey,
             [
               {
@@ -95,7 +92,7 @@ Promise.all(
         it('prepareTransactionWithPublicKey - Is able to prepare a transaction with amount 0', async () => {
           // should not throw an exception when trying to create a 0 TX, given enough funds are available for the gas
           try {
-            await protocol.lib.prepareTransactionWithPublicKey(
+            await protocol.onlineLib.prepareTransactionWithPublicKey(
               protocol.wallet.publicKey,
               [
                 {
@@ -142,14 +139,12 @@ Promise.all(
         })
 
         it('signTransactionWithSecretKey - Is able to sign a transaction using a SecretKey', async () => {
-          const { secretKey } = await protocol.lib.getKeyPairFromSecret(
-            { type: 'mnemonic', value: protocol.mnemonic() },
-            protocolMetadata.account?.standardDerivationPath
-          )
+          const { secretKey } = await protocol.offlineLib.getKeyPairFromDerivative(await protocol.derivative())
+
           const txs: any[] = []
 
           for (const { unsignedTx } of protocol.txs) {
-            const tx = await protocol.lib.signTransactionWithSecretKey(unsignedTx, secretKey)
+            const tx = await protocol.offlineLib.signTransactionWithSecretKey(unsignedTx, secretKey)
             txs.push(tx)
           }
 
@@ -165,41 +160,77 @@ Promise.all(
       describe(`Extract TX`, () => {
         it('getDetailsFromTransaction - Is able to extract all necessary properties from an unsigned TX', async () => {
           for (const tx of protocol.txs) {
-            const airgapTxs: AirGapTransaction[] = await protocol.lib.getDetailsFromTransaction(tx.unsignedTx, protocol.wallet.publicKey)
+            const offlineAirgapTxs: AirGapTransaction[] = await protocol.offlineLib.getDetailsFromTransaction(
+              tx.unsignedTx,
+              protocol.wallet.publicKey
+            )
+            const onlineAirgapTxs: AirGapTransaction[] = await protocol.onlineLib.getDetailsFromTransaction(
+              tx.unsignedTx,
+              protocol.wallet.publicKey
+            )
 
-            if (airgapTxs.length !== 1) {
+            if (offlineAirgapTxs.length !== 1 || onlineAirgapTxs.length !== 1) {
               throw new Error('Unexpected number of transactions')
             }
 
-            const airgapTx: AirGapTransaction = JSON.parse(JSON.stringify(airgapTxs[0]))
+            const offlineAirgapTx: AirGapTransaction = JSON.parse(JSON.stringify(offlineAirgapTxs[0]))
+            const onlineAirgapTx: AirGapTransaction = JSON.parse(JSON.stringify(onlineAirgapTxs[0]))
 
-            expect(airgapTx.to, 'to property does not match').to.deep.equal(tx.to)
-            expect(airgapTx.from, 'from property does not match').to.deep.equal(tx.from)
+            expect(offlineAirgapTx.to, 'to property does not match').to.deep.equal(tx.to)
+            expect(onlineAirgapTx.to, 'to property does not match').to.deep.equal(tx.to)
 
-            expect(airgapTx.amount, 'amount does not match').to.deep.equal(protocol.txs[0].amount)
-            expect(airgapTx.fee, 'fee does not match').to.deep.equal(protocol.txs[0].fee)
+            expect(offlineAirgapTx.from, 'from property does not match').to.deep.equal(tx.from)
+            expect(onlineAirgapTx.from, 'from property does not match').to.deep.equal(tx.from)
+
+            expect(offlineAirgapTx.amount, 'amount does not match').to.deep.equal(protocol.txs[0].amount)
+            expect(onlineAirgapTx.amount, 'amount does not match').to.deep.equal(protocol.txs[0].amount)
+
+            expect(offlineAirgapTx.fee, 'fee does not match').to.deep.equal(protocol.txs[0].fee)
+            expect(onlineAirgapTx.fee, 'fee does not match').to.deep.equal(protocol.txs[0].fee)
           }
         })
 
         it('getDetailsFromTransaction - Is able to extract all necessary properties from a signed TX', async () => {
           for (const tx of protocol.txs) {
-            const airgapTxs: AirGapTransaction[] = await protocol.lib.getDetailsFromTransaction(tx.signedTx, protocol.wallet.publicKey)
+            const offlineAirgapTxs: AirGapTransaction[] = await protocol.offlineLib.getDetailsFromTransaction(
+              tx.signedTx,
+              protocol.wallet.publicKey
+            )
+            const onlineAirgapTxs: AirGapTransaction[] = await protocol.offlineLib.getDetailsFromTransaction(
+              tx.signedTx,
+              protocol.wallet.publicKey
+            )
 
-            if (airgapTxs.length !== 1) {
+            if (offlineAirgapTxs.length !== 1 || onlineAirgapTxs.length !== 1) {
               throw new Error('Unexpected number of transactions')
             }
 
-            const airgapTx: AirGapTransaction = JSON.parse(JSON.stringify(airgapTxs[0]))
+            const offlineAirgapTx: AirGapTransaction = JSON.parse(JSON.stringify(offlineAirgapTxs[0]))
+            const onlineAirgapTx: AirGapTransaction = JSON.parse(JSON.stringify(onlineAirgapTxs[0]))
+
             expect(
-              airgapTx.to.map((obj) => obj.toLowerCase()),
+              offlineAirgapTx.to.map((obj) => obj.toLowerCase()),
               'from'
             ).to.deep.equal(tx.to.map((obj) => obj.toLowerCase()))
             expect(
-              airgapTx.from.sort().map((obj) => obj.toLowerCase()),
+              onlineAirgapTx.to.map((obj) => obj.toLowerCase()),
+              'from'
+            ).to.deep.equal(tx.to.map((obj) => obj.toLowerCase()))
+
+            expect(
+              offlineAirgapTx.from.sort().map((obj) => obj.toLowerCase()),
               'to'
             ).to.deep.equal(tx.from.sort().map((obj) => obj.toLowerCase()))
-            expect(airgapTx.amount).to.deep.equal(protocol.txs[0].amount)
-            expect(airgapTx.fee).to.deep.equal(protocol.txs[0].fee)
+            expect(
+              onlineAirgapTx.from.sort().map((obj) => obj.toLowerCase()),
+              'to'
+            ).to.deep.equal(tx.from.sort().map((obj) => obj.toLowerCase()))
+
+            expect(offlineAirgapTx.amount).to.deep.equal(protocol.txs[0].amount)
+            expect(onlineAirgapTx.amount).to.deep.equal(protocol.txs[0].amount)
+
+            expect(offlineAirgapTx.fee).to.deep.equal(protocol.txs[0].fee)
+            expect(onlineAirgapTx.fee).to.deep.equal(protocol.txs[0].fee)
           }
         })
 
@@ -414,22 +445,21 @@ Promise.all(
 
       describe(`Transactions`, () => {
         it('getTransactionFeeWithPublicKey - Is able to get default transaction fee from chain', async () => {
-          const { publicKey } = await protocol.lib.getKeyPairFromSecret(
-            { type: 'mnemonic', value: protocol.mnemonic() },
-            protocolMetadata.account?.standardDerivationPath
-          )
-          const transactionFee = await protocol.lib.getTransactionFeeWithPublicKey(publicKey, [])
-          expect(transactionFee).to.deep.equal(protocol.feeDefaults)
+          const { publicKey } = await protocol.offlineLib.getKeyPairFromDerivative(await protocol.derivative())
+
+          const transactionFee = JSON.parse(JSON.stringify(await protocol.onlineLib.getTransactionFeeWithPublicKey(publicKey, [])))
+          if (isAmount(transactionFee)) {
+            expect(transactionFee).to.deep.equal(JSON.parse(JSON.stringify(protocolMetadata.fee?.defaults)).medium)
+          } else {
+            expect(transactionFee).to.deep.equal(JSON.parse(JSON.stringify(protocolMetadata.fee?.defaults)))
+          }
         })
 
         it('getTransactionMaxAmountWithPublicKey - Is able to get default transaction fee from chain', async () => {
-          const { publicKey } = await protocol.lib.getKeyPairFromSecret(
-            { type: 'mnemonic', value: protocol.mnemonic() },
-            protocolMetadata.account?.standardDerivationPath
-          )
+          const { publicKey } = await protocol.offlineLib.getKeyPairFromDerivative(await protocol.derivative())
 
-          const balance = await protocol.lib.getBalanceOfPublicKey(publicKey)
-          const maxAmount = await protocol.lib.getTransactionMaxAmountWithPublicKey(publicKey, [])
+          const balance = await protocol.onlineLib.getBalanceOfPublicKey(publicKey)
+          const maxAmount = await protocol.onlineLib.getTransactionMaxAmountWithPublicKey(publicKey, [])
 
           // TODO : expect -> maxAmount <= balance - fee
           console.log('balance', balance.total.value)

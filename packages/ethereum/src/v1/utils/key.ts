@@ -2,8 +2,9 @@ import { assertNever, Domain } from '@airgap/coinlib-core'
 // @ts-ignore
 import * as bs58check from '@airgap/coinlib-core/dependencies/src/bs58check-2.1.2'
 import { UnsupportedError } from '@airgap/coinlib-core/errors'
-import { ExtendedPublicKey, ExtendedSecretKey, newExtendedPublicKey, PublicKey, SecretKey } from '@airgap/module-kit'
+import { ExtendedPublicKey, ExtendedSecretKey, newExtendedPublicKey, newExtendedSecretKey, PublicKey, SecretKey } from '@airgap/module-kit'
 
+const EXT_SK_PREFIX: string = '0488b21e' // xpriv
 const EXT_PK_PREFIX: string = '0488b21e' // xpub
 
 export function convertSecretKey(secretKey: SecretKey, targetFormat: SecretKey['format']): SecretKey {
@@ -24,9 +25,23 @@ export function convertExtendedSecretKey(
     return extendedSecretKey
   }
 
-  // 'encoded' -> 'hex'
-  // 'hex'     -> 'encoded'
-  throw new UnsupportedError(Domain.ETHEREUM, 'Unsupported secret key format.')
+  switch (extendedSecretKey.format) {
+    case 'encoded':
+      if (targetFormat === 'encoded') {
+        return extendedSecretKey
+      }
+
+      return newExtendedSecretKey(decodeEncodedKey(EXT_SK_PREFIX, extendedSecretKey.value))
+    case 'hex':
+      if (targetFormat === 'hex') {
+        return extendedSecretKey
+      }
+
+      return newExtendedSecretKey(encodeHexKey(EXT_SK_PREFIX, extendedSecretKey.value))
+    default:
+      assertNever(extendedSecretKey.format)
+      throw new UnsupportedError(Domain.ETHEREUM, 'Unuspported extended secret key format.')
+  }
 }
 
 export function convertPublicKey(publicKey: PublicKey, targetFormat: PublicKey['format']): PublicKey {
@@ -49,29 +64,29 @@ export function convertExtendedPublicKey(
 
   switch (extendedPublicKey.format) {
     case 'encoded':
-      return newExtendedPublicKey(convertEncodedExtendedPublicKey(extendedPublicKey.value, targetFormat))
+      if (targetFormat === 'encoded') {
+        return extendedPublicKey
+      }
+
+      return newExtendedPublicKey(decodeEncodedKey(EXT_PK_PREFIX, extendedPublicKey.value))
     case 'hex':
-      return newExtendedPublicKey(convertHexExtendedPublicKey(extendedPublicKey.value, targetFormat))
+      if (targetFormat === 'hex') {
+        return extendedPublicKey
+      }
+
+      return newExtendedPublicKey(encodeHexKey(EXT_PK_PREFIX, extendedPublicKey.value))
     default:
       assertNever(extendedPublicKey.format)
       throw new UnsupportedError(Domain.ETHEREUM, 'Unuspported extended public key format.')
   }
 }
 
-function convertEncodedExtendedPublicKey(extendedPublicKey: string, targetFormat: ExtendedPublicKey['format']): string {
-  if (targetFormat === 'encoded') {
-    return extendedPublicKey
-  }
+function decodeEncodedKey(prefix: string, key: string): string {
+  const prefixBytes: number = Buffer.from(prefix, 'hex').length
 
-  const prefixBytes: number = Buffer.from(EXT_PK_PREFIX, 'hex').length
-
-  return bs58check.decode(extendedPublicKey).slice(prefixBytes).toString('hex')
+  return bs58check.decode(key).slice(prefixBytes).toString('hex')
 }
 
-function convertHexExtendedPublicKey(extendedPublicKey: string, targetFormat: ExtendedPublicKey['format']): string {
-  if (targetFormat === 'hex') {
-    return extendedPublicKey
-  }
-
-  return bs58check.encode(Buffer.concat([Buffer.from(EXT_PK_PREFIX, 'hex'), Buffer.from(extendedPublicKey, 'hex')]))
+function encodeHexKey(prefix: string, key: string): string {
+  return bs58check.encode(Buffer.concat([Buffer.from(prefix, 'hex'), Buffer.from(key, 'hex')]))
 }

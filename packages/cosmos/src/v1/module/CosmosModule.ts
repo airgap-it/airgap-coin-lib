@@ -58,7 +58,7 @@ export class CosmosModule implements AirGapModule<{ Protocols: SupportedProtocol
       case MainProtocolSymbols.COSMOS:
         return createCosmosProtocol({ network })
       default:
-        throw new ConditionViolationError(Domain.AETERNITY, `Protocol ${identifier} not supported.`)
+        throw new ConditionViolationError(Domain.COSMOS, `Protocol ${identifier} not supported.`)
     }
   }
 }

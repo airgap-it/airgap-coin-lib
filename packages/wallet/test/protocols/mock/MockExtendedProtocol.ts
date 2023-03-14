@@ -7,6 +7,8 @@ import {
   AirGapTransactionsWithCursor,
   Amount,
   Balance,
+  CryptoConfiguration,
+  CryptoDerivative,
   ExtendedKeyPair,
   ExtendedPublicKey,
   ExtendedSecretKey,
@@ -15,7 +17,6 @@ import {
   ProtocolMetadata,
   ProtocolNetwork,
   PublicKey,
-  Secret,
   SecretKey,
   Signature,
   SignedTransaction,
@@ -33,11 +34,15 @@ export class MockExtendedProtocol implements AirGapProtocol<{}, 'Bip32'> {
 
   constructor(private readonly options: MockProtocolOptions = new MockProtocolOptions()) {}
 
-  public async getExtendedKeyPairFromSecret(
-    secret: Secret,
-    derivationPath?: string | undefined,
-    password?: string | undefined
-  ): Promise<ExtendedKeyPair> {
+  public async getCryptoConfiguration(): Promise<CryptoConfiguration> {
+    if (this.options.config.crypto) {
+      return this.options.config.crypto
+    }
+
+    throw new Error('Method not implemented.')
+  }
+
+  public async getExtendedKeyPairFromDerivative(derivative: CryptoDerivative): Promise<ExtendedKeyPair> {
     throw new Error('Method not implemented.')
   }
 
@@ -152,8 +157,8 @@ export class MockExtendedProtocol implements AirGapProtocol<{}, 'Bip32'> {
     return this.nonExtendedProtocol.getDetailsFromTransaction(transaction)
   }
 
-  public async getKeyPairFromSecret(secret: Secret, derivationPath?: string, password?: string): Promise<KeyPair> {
-    return this.nonExtendedProtocol.getKeyPairFromSecret(secret, derivationPath, password)
+  public async getKeyPairFromDerivative(derivative: CryptoDerivative): Promise<KeyPair> {
+    return this.nonExtendedProtocol.getKeyPairFromDerivative(derivative)
   }
 
   public async getTransactionsForPublicKey(

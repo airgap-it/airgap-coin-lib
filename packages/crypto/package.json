@@ -1,0 +1,60 @@
+{
+  "name": "@airgap/crypto",
+  "version": "0.13.11",
+  "description": "The @airgap/crypto packages provides common crypto functionalities.",
+  "keywords": [
+    "airgap",
+    "blockchain",
+    "crypto"
+  ],
+  "license": "MIT",
+  "homepage": "https://www.airgap.it",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/airgap-it/airgap-coin-lib"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "rm -rf ./dist && tsc && node scripts/copy-files-after-build.js",
+    "build-scripts": "tsc scripts/*.ts",
+    "lint": "tslint -c ./tslint.json --project ./tsconfig.json --format stylish --fix",
+    "lint:prettier": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "lint-ci": "tslint -t json -o ../../lint-reports/crypto.json --project . || true",
+    "lint-ci:prettier": "prettier \"src/**/*.ts\" \"test/**/*.ts\" --list-different",
+    "test": "",
+    "test-ci": "",
+    "test-legacy": "",
+    "browserify": "browserify ./dist/index.js -s airgapCrypto > ./dist/airgap-crypto.min.js"
+  },
+  "author": "Papers AG <contact@papers.ch> (https://papers.ch)",
+  "dependencies": {
+    "@airgap/coinlib-core": "*",
+    "@airgap/module-kit": "*",
+    "@airgap/sapling-wasm": "^0.0.9",
+    "@polkadot/wasm-crypto": "0.20.1",
+    "@stablelib/hmac": "^1.0.1"
+  },
+  "nyc": {
+    "include": [
+      "src/**/*.ts"
+    ],
+    "exclude": [
+      "test/**/*.spec.ts"
+    ],
+    "extension": [
+      ".ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ],
+    "reporter": [
+      "text",
+      "text-summary"
+    ],
+    "report-dir": "../../coverage/crypto",
+    "sourceMap": true,
+    "instrument": true
+  }
+}

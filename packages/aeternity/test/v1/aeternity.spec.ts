@@ -133,12 +133,7 @@ describe(`AirGapProtocol Aeternity - Custom Tests`, () => {
   })
 
   it('can sign both, b58 and b64 of a supplied TX', async () => {
-    const protocolMetadata = await aeternityLib.getMetadata()
-
-    const { secretKey } = await aeternityLib.getKeyPairFromSecret(
-      { type: 'mnemonic', value: aeternityProtocolSpec.mnemonic() },
-      protocolMetadata.account?.standardDerivationPath
-    )
+    const { secretKey } = await aeternityLib.getKeyPairFromDerivative(await aeternityProtocolSpec.derivative())
 
     const unsignedTxBase58: AeternityUnsignedTransaction = {
       type: 'unsigned',
@@ -164,12 +159,7 @@ describe(`AirGapProtocol Aeternity - Custom Tests`, () => {
   })
 
   it('can sign neither invalid TXs', async () => {
-    const protocolMetadata = await aeternityLib.getMetadata()
-
-    const { secretKey } = await aeternityLib.getKeyPairFromSecret(
-      { type: 'mnemonic', value: aeternityProtocolSpec.mnemonic() },
-      protocolMetadata.account?.standardDerivationPath
-    )
+    const { secretKey } = await aeternityLib.getKeyPairFromDerivative(await aeternityProtocolSpec.derivative())
 
     const unsignedTxBase58: AeternityUnsignedTransaction = {
       type: 'unsigned',
