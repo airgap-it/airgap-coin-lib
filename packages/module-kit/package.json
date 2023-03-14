@@ -1,7 +1,7 @@
 {
   "name": "@airgap/module-kit",
-  "version": "0.13.11-beta.22",
-  "description": "TODO",
+  "version": "0.13.11",
+  "description": "The @airgap/module-kit package provides the common interfaces and functionalities to implement AirGap modules.",
   "keywords": [
     "airgap",
     "blockchain",

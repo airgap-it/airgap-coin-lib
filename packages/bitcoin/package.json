@@ -1,6 +1,6 @@
 {
   "name": "@airgap/bitcoin",
-  "version": "0.13.11-beta.22",
+  "version": "0.13.11",
   "description": "The @airgap/bitcoin is a Bitcoin implementation of the ICoinProtocol interface from @airgap/coinlib-core.",
   "keywords": [
     "airgap",
