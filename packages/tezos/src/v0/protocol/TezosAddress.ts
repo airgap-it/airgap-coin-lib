@@ -28,7 +28,7 @@ export class TezosAddress implements IAirGapAddress {
   }
 
   public static isTzAddress(address: string): boolean {
-    return address.startsWith('tz1') || address.startsWith('tz2') || address.startsWith('tz3')
+    return address.startsWith('tz1') || address.startsWith('tz2') || address.startsWith('tz3') || address.startsWith('tz4')
   }
 
   public asString(): string {

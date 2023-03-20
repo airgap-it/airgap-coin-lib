@@ -197,7 +197,7 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   public standardDerivationPath: string = `m/44h/1729h/0h/0h`
 
   public addressIsCaseSensitive: boolean = true
-  public addressValidationPattern: string = '^((tz1|tz2|tz3|KT1)[1-9A-Za-z]{33}|zet1[1-9A-Za-z]{65})$'
+  public addressValidationPattern: string = '^((tz1|tz2|tz3|tz4|KT1)[1-9A-Za-z]{33}|zet1[1-9A-Za-z]{65})$'
   public addressPlaceholder: string = 'tz1...'
 
   // https://gitlab.com/tezos/tezos/-/blob/master/docs/whitedoc/proof_of_stake.rst
@@ -880,13 +880,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   }
 
   private async getDelegatorDetails(address: string, bakerAddress?: string): Promise<DelegatorDetails> {
-    const results = await Promise.all([
-      axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/contracts/${address}`)
-      // this.getDelegationRewardsForAddress(address).catch(() => [] as DelegationRewardInfo[])
-    ])
+    const results = await Promise.all([axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/contracts/${address}`)])
 
     const accountDetails = results[0].data
-    // const rewardInfo = results[1]
 
     const balance = accountDetails.balance
     const isDelegating = !!accountDetails.delegate
@@ -908,21 +904,11 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       })
     }
 
-    // const rewards = isDelegating
-    //   ? rewardInfo.map((reward) => ({
-    //       index: reward.cycle,
-    //       amount: reward.reward.toFixed(),
-    //       collected: reward.payout < new Date(),
-    //       timestamp: reward.payout.getTime()
-    //     }))
-    //   : []
-
     return {
       address,
       balance,
       delegatees: [accountDetails.delegate],
       availableActions
-      // rewards
     }
   }
 
@@ -1282,59 +1268,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     return bakerInfo
   }
 
-  public async getDelegationRewardsForAddress(address: string): Promise<DelegationRewardInfo[]> {
-    const status: DelegationInfo = await this.getDelegationInfo(address)
-
-    if (!status.isDelegated || !status.value) {
-      throw new ConditionViolationError(Domain.TEZOS, 'address not delegated')
-    }
-
-    return this.getDelegationRewards(status.value, address)
-  }
-
-  public async getDelegationRewards(bakerAddress: string, delegatorAddress?: string): Promise<DelegationRewardInfo[]> {
-    // TODO: use the adapt logic for ithaca upgrade
-    return []
-    // const { data: frozenBalance }: AxiosResponse<TezosFrozenBalance[]> = await axios.get(
-    //   `${this.options.network.rpcUrl}/chains/main/blocks/head/context/delegates/${bakerAddress}/frozen_balance_by_cycle`
-    // )
-
-    // const lastConfirmedCycle: number = frozenBalance[0].cycle - 1
-    // const mostRecentCycle: number = frozenBalance[frozenBalance.length - 1].cycle
-
-    // const { data: mostRecentBlock } = await axios.get(
-    //   `${this.options.network.rpcUrl}/chains/main/blocks/${this.cycleToBlockLevel(mostRecentCycle)}`
-    // )
-
-    // const timestamp: Date = new Date(mostRecentBlock.header.timestamp)
-    // const address = delegatorAddress ?? bakerAddress
-    // const delegationInfo: DelegationRewardInfo[] = await Promise.all(
-    //   frozenBalance.slice(0, 5).map(async (obj) => {
-    //     const rewards = await this.calculateRewards(bakerAddress, obj.cycle, mostRecentCycle, false)
-    //     let delegatedBalance = '0'
-    //     let payoutAmount = '0'
-    //     if (rewards.delegatedContracts.includes(address)) {
-    //       const payout = await this.calculatePayout(address, rewards)
-    //       delegatedBalance = payout.balance
-    //       payoutAmount = payout.payout
-    //     }
-
-    //     return {
-    //       cycle: obj.cycle,
-    //       totalRewards: new BigNumber(obj.rewards),
-    //       totalFees: new BigNumber(obj.fees),
-    //       deposit: new BigNumber(obj.deposit ?? obj.deposits),
-    //       delegatedBalance: new BigNumber(delegatedBalance),
-    //       stakingBalance: new BigNumber(rewards.stakingBalance),
-    //       reward: new BigNumber(payoutAmount),
-    //       payout: new Date(timestamp.getTime() + this.timeIntervalBetweenCycles(lastConfirmedCycle, obj.cycle))
-    //     }
-    //   })
-    // )
-
-    // return delegationInfo
-  }
-
   public async undelegate(publicKey: string): Promise<RawTezosTransaction> {
     return this.delegate(publicKey)
   }
@@ -1511,64 +1444,6 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     const currentCycle: number = headMetadata.level_info.cycle
 
     return currentCycle
-  }
-
-  private static readonly FIRST_010_CYCLE: number = 388
-
-  private static readonly BLOCKS_PER_CYCLE: { [key in TezosNetwork]: number[] } = {
-    [TezosNetwork.MAINNET]: [4096, 8192],
-    [TezosNetwork.GHOSTNET]: [4096]
-  }
-
-  private static readonly TIME_BETWEEN_BLOCKS: { [key in TezosNetwork]: number[] } = {
-    [TezosNetwork.MAINNET]: [60, 30],
-    [TezosNetwork.GHOSTNET]: [30]
-  }
-
-  public timeIntervalBetweenCycles(fromCycle: number, toCycle: number): number {
-    const cycle1 = Math.min(fromCycle, toCycle)
-    const cycle2 = Math.max(fromCycle, toCycle)
-    const timeBetweenBlocks = TezosProtocol.TIME_BETWEEN_BLOCKS[this.options.network.extras.network]
-    const blocksPerCycle = TezosProtocol.BLOCKS_PER_CYCLE[this.options.network.extras.network]
-    if (this.options.network.extras.network === TezosNetwork.MAINNET && cycle2 > TezosProtocol.FIRST_010_CYCLE) {
-      if (cycle1 < TezosProtocol.FIRST_010_CYCLE) {
-        return (
-          ((TezosProtocol.FIRST_010_CYCLE - cycle1) * blocksPerCycle[0] * timeBetweenBlocks[0] +
-            (cycle2 - TezosProtocol.FIRST_010_CYCLE) * blocksPerCycle[1] * timeBetweenBlocks[1]) *
-          1000
-        )
-      }
-      return (cycle2 - cycle1) * blocksPerCycle[1] * timeBetweenBlocks[1] * 1000
-    }
-    return (cycle2 - cycle1) * blocksPerCycle[0] * timeBetweenBlocks[0] * 1000
-  }
-
-  public cycleToBlockLevel(cycle: number): number {
-    const blocksPerCycle = TezosProtocol.BLOCKS_PER_CYCLE[this.options.network.extras.network]
-    if (this.options.network.extras.network === TezosNetwork.MAINNET && cycle > TezosProtocol.FIRST_010_CYCLE) {
-      return TezosProtocol.FIRST_010_CYCLE * blocksPerCycle[0] + (cycle - TezosProtocol.FIRST_010_CYCLE) * blocksPerCycle[1] + 1
-    }
-    return cycle * blocksPerCycle[0] + 1
-  }
-
-  public blockLevelToCycle(blockLevel: number): number {
-    const blocksPerCycle = TezosProtocol.BLOCKS_PER_CYCLE[this.options.network.extras.network]
-    if (this.options.network.extras.network === TezosNetwork.MAINNET) {
-      const last009BlockLevel = TezosProtocol.FIRST_010_CYCLE * blocksPerCycle[0]
-      if (blockLevel > last009BlockLevel) {
-        const deltaLevels = blockLevel - last009BlockLevel
-        let deltaCycles = Math.floor(deltaLevels / blocksPerCycle[1])
-        if (deltaLevels % blocksPerCycle[1] === 0) {
-          deltaCycles -= 1
-        }
-        return TezosProtocol.FIRST_010_CYCLE + deltaCycles
-      }
-    }
-    let cycle = Math.floor(blockLevel / blocksPerCycle[0])
-    if (blockLevel % blocksPerCycle[0] === 0) {
-      cycle -= 1
-    }
-    return cycle
   }
 
   private async fetchBlockMetadata(block: number | 'head'): Promise<any> {
