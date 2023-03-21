@@ -36,7 +36,7 @@ export class CoreumModule implements AirGapModule<{ Protocols: SupportedProtocol
   ): Promise<AirGapOnlineProtocol<{}> | undefined> {
     const network: ProtocolNetwork | undefined = this.networkRegistries[identifier]?.findNetwork(networkId)
     if (network === undefined) {
-      throw new ConditionViolationError(Domain.COSMOS, 'Protocol network type not supported.')
+      throw new ConditionViolationError(Domain.COREUM, 'Protocol network type not supported.')
     }
 
     return this.createProtocol(identifier, network)
