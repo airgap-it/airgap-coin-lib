@@ -1,6 +1,6 @@
 {
   "name": "@airgap/module-kit",
-  "version": "0.13.11",
+  "version": "0.13.12",
   "description": "The @airgap/module-kit package provides the common interfaces and functionalities to implement AirGap modules.",
   "keywords": [
     "airgap",
