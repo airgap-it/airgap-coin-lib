@@ -11,7 +11,7 @@ import {
   TransactionDetails
 } from '@airgap/module-kit'
 
-export type CoreumDenom = 'testcore' | 'utestcore'
+export type CoreumDenom = 'core' | 'ucore'
 
 const DEFAULT_GAS: Amount<CoreumDenom> = newAmount('200000', 'blockchain')
 
@@ -25,20 +25,20 @@ export class CoreumProtocolImpl extends CosmosBaseProtocolImpl<CoreumDenom> impl
   }
 
   private readonly units: ProtocolUnitsMetadata<CoreumDenom> = {
-    testcore: {
-      symbol: { value: 'TESTCORE', market: 'testcore' },
+    core: {
+      symbol: { value: 'CORE', market: 'CORE' },
       decimals: 6
     },
-    utestcore: {
-      symbol: { value: 'uTESTCORE' },
+    ucore: {
+      symbol: { value: 'uCORE' },
       decimals: 0
     }
   }
 
   private readonly feeDefaults: FeeDefaults<CoreumDenom> = {
-    low: newAmount(0.007, 'testcore').blockchain(this.units),
-    medium: newAmount(0.0085, 'testcore').blockchain(this.units),
-    high: newAmount(0.01, 'testcore').blockchain(this.units)
+    low: newAmount(0.007, 'core').blockchain(this.units),
+    medium: newAmount(0.0085, 'core').blockchain(this.units),
+    high: newAmount(0.01, 'core').blockchain(this.units)
   }
 
   private readonly metadata: ProtocolMetadata<CoreumDenom> = {
@@ -46,7 +46,7 @@ export class CoreumProtocolImpl extends CosmosBaseProtocolImpl<CoreumDenom> impl
     name: 'Coreum',
 
     units: this.units,
-    mainUnit: 'testcore',
+    mainUnit: 'core',
 
     fee: {
       defaults: this.feeDefaults
@@ -56,8 +56,8 @@ export class CoreumProtocolImpl extends CosmosBaseProtocolImpl<CoreumDenom> impl
       standardDerivationPath: `m/44'/990'/0'/0/0`,
       address: {
         isCaseSensitive: false,
-        placeholder: 'testcore...',
-        regex: '^(testcore|testcorevaloper)[a-zA-Z0-9]{39}$'
+        placeholder: 'core...',
+        regex: '^(core|corevaloper)[a-zA-Z0-9]{39}$'
       }
     },
 
@@ -87,9 +87,9 @@ export function createCoreumProtocol(options: RecursivePartial<CosmosProtocolOpt
 }
 
 export const COREUM_PROTOCOL_NETWORK: CosmosProtocolNetwork = {
-  name: 'Testnet',
-  type: 'testnet',
-  rpcUrl: 'https://full-node.testnet-1.coreum.dev:1317',
+  name: 'Mainnet',
+  type: 'mainnet',
+  rpcUrl: 'https://coreum-node.prod.gke.papers.tech',
   useCORSProxy: true
 }
 
@@ -100,8 +100,8 @@ export function createCoreumProtocolOptions(
 ): CosmosProtocolOptions<CoreumDenom> {
   return {
     network: { ...DEFAULT_COREUM_PROTOCOL_NETWORK, ...partialOptions.network },
-    addressPrefix: partialOptions.addressPrefix ?? 'testcore',
-    baseUnit: partialOptions.baseUnit ?? 'utestcore',
+    addressPrefix: partialOptions.addressPrefix ?? 'core',
+    baseUnit: partialOptions.baseUnit ?? 'ucore',
     defaultGas: {
       value: partialOptions.defaultGas?.value ?? DEFAULT_GAS.value,
       unit: partialOptions.defaultGas?.unit ?? DEFAULT_GAS.unit
