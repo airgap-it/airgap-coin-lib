@@ -123,7 +123,7 @@ export const TEZOS_ACCOUNT_METADATA: ProtocolAccountMetadata = {
   address: {
     isCaseSensitive: true,
     placeholder: 'tz1...',
-    regex: '^((tz1|tz2|tz3|KT1)[1-9A-Za-z]{33}|zet1[1-9A-Za-z]{65})$'
+    regex: '^((tz1|tz2|tz3|tz4|KT1)[1-9A-Za-z]{33}|zet1[1-9A-Za-z]{65})$'
   }
 }
 
