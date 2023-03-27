@@ -1,6 +1,6 @@
 {
   "name": "@airgap/icp",
-  "version": "0.13.12",
+  "version": "0.13.13",
   "description": "The @airgap/icp is an ICP implementation of the ICoinProtocol interface from @airgap/coinlib-core.",
   "keywords": [
     "airgap",

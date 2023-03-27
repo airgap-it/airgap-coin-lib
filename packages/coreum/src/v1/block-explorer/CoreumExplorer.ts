@@ -1,6 +1,6 @@
 import { AirGapBlockExplorer, BlockExplorerMetadata } from '@airgap/module-kit'
 
-const BLOCK_EXPLORER_URL: string = 'https://explorer.mainnet-1.coreum.dev'
+const BLOCK_EXPLORER_URL: string = 'https://explorer.coreum.com/coreum'
 
 export class CoreumBlockExplorer implements AirGapBlockExplorer {
   private readonly metadata: BlockExplorerMetadata = {
