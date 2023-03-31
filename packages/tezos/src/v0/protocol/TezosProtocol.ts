@@ -54,7 +54,7 @@ import { TezosTransactionResult } from './types/TezosTransactionResult'
 import { TezosWrappedOperation } from './types/TezosWrappedOperation'
 
 const MAX_OPERATIONS_PER_GROUP: number = 200
-const MAX_GAS_PER_BLOCK: number = 5200000
+const MAX_GAS_PER_BLOCK: number = 2600000
 const GAS_LIMIT_PLACEHOLDER: string = '1040000'
 const STORAGE_LIMIT_PLACEHOLDER: string = '60000'
 const FEE_PLACEHOLDER: string = '0'
