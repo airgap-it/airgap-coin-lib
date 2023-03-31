@@ -1,6 +1,6 @@
 {
   "name": "@airgap/moonbeam",
-  "version": "0.13.13",
+  "version": "0.13.14",
   "description": "The @airgap/moonbeam is a Moonbeam implementation of the ICoinProtocol interface from @airgap/coinlib-core.",
   "keywords": [
     "airgap",
