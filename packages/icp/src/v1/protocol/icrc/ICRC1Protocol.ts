@@ -2,6 +2,7 @@
 import { assertNever, Domain, TransactionError } from '@airgap/coinlib-core'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import { UnsupportedError } from '@airgap/coinlib-core/errors'
+import { flattenArray } from '@airgap/coinlib-core/utils/array'
 import {
   Address,
   AirGapOfflineProtocol,
@@ -33,7 +34,7 @@ import { icrcIDLFactory, icrcIDLTypes } from '../../types/icrc/ledger'
 import { ICRC1Metadata } from '../../types/icrc/metadata'
 import { ICRC1TransferArgs } from '../../types/icrc/transfer'
 import { ICRC1OfflineProtocolOptions, ICRC1OnlineProtocolOptions, ICRC1ProtocolNetwork } from '../../types/protocol'
-import { ICPSignedTransaction, ICPTransactionCursor, ICPUnsignedTransaction } from '../../types/transaction'
+import { ICPActionType, ICPSignedTransaction, ICPTransaction, ICPTransactionCursor, ICPUnsignedTransaction } from '../../types/transaction'
 import { Actor, ActorSubclass } from '../../utils/actor'
 import { AnonymousIdentity, Identity } from '../../utils/auth'
 import * as Cbor from '../../utils/cbor'
@@ -142,10 +143,19 @@ class ICRC1CommonProtocolImpl<_Units extends string> {
     network: ICRC1ProtocolNetwork,
     defaultFee: Amount<_Units>
   ): AirGapTransaction<_Units>[] {
-    const decoded: any = Cbor.decode(hexStringToArrayBuffer(transaction.transaction))
-    const transferArgs: ICRC1TransferArgs = decodeICRC1TransferArgs(decoded.content.arg)
+    const transactions: AirGapTransaction<_Units>[][] = transaction.transactions.map(({ encoded, actionType }) => {
+      switch (actionType) {
+        case ICPActionType.TRANSFER:
+          const decoded: any = Cbor.decode(hexStringToArrayBuffer(encoded))
+          const transferArgs: ICRC1TransferArgs = decodeICRC1TransferArgs(decoded.content.arg)
 
-    return getDetailsFromTransferArgs(transferArgs, publicKey.value, network, defaultFee)
+          return getDetailsFromTransferArgs(transferArgs, publicKey.value, network, defaultFee)
+        default:
+          throw new UnsupportedError(Domain.ICP, `Unsupported ICRC1 action type ${actionType}.`)
+      }
+    })
+
+    return flattenArray(transactions)
   }
 
   private getDetailsFromUnsignedTransaction(
@@ -154,9 +164,18 @@ class ICRC1CommonProtocolImpl<_Units extends string> {
     network: ICRC1ProtocolNetwork,
     defaultFee: Amount<_Units>
   ): AirGapTransaction<_Units>[] {
-    const transferArgs: ICRC1TransferArgs = decodeICRC1TransferArgs(Buffer.from(transaction.transaction, 'hex'))
+    const transactions: AirGapTransaction<_Units>[][] = transaction.transactions.map(({ encoded, actionType }) => {
+      switch (actionType) {
+        case ICPActionType.TRANSFER:
+          const transferArgs: ICRC1TransferArgs = decodeICRC1TransferArgs(Buffer.from(encoded, 'hex'))
 
-    return getDetailsFromTransferArgs(transferArgs, publicKey.value, network, defaultFee)
+          return getDetailsFromTransferArgs(transferArgs, publicKey.value, network, defaultFee)
+        default:
+          throw new UnsupportedError(Domain.ICP, `Unsupported ICRC1 ${actionType} action type.`)
+      }
+    })
+
+    return flattenArray(transactions)
   }
 }
 
@@ -220,14 +239,27 @@ export abstract class ICRC1OfflineProtocolImpl<_Units extends string = string> i
   }
 
   public async signTransactionWithSecretKey(transaction: ICPUnsignedTransaction, secretKey: SecretKey): Promise<ICPSignedTransaction> {
-    const signedTransaction = await signTransaction(
-      secretKey.value,
-      this.options.ledgerCanisterId,
-      Buffer.from(transaction.transaction, 'hex'),
-      'icrc1_transfer'
+    const transactions: ICPTransaction[] = await Promise.all(
+      transaction.transactions.map(async ({ encoded, actionType }) => {
+        switch (actionType) {
+          case ICPActionType.TRANSFER:
+            return {
+              actionType,
+              encoded: await signTransaction(
+                secretKey.value,
+                this.options.ledgerCanisterId,
+                Buffer.from(encoded, 'hex'),
+                'icrc1_transfer',
+                'call'
+              )
+            }
+          default:
+            throw new UnsupportedError(Domain.ICP, `Unsupported ICRC1 action type ${actionType}.`)
+        }
+      })
     )
 
-    return newSignedTransaction<ICPSignedTransaction>({ transaction: signedTransaction })
+    return newSignedTransaction<ICPSignedTransaction>({ transactions })
   }
 }
 
@@ -235,7 +267,8 @@ export abstract class ICRC1OnlineProtocolImpl<
   _Units extends string = string,
   _ICRC1Metadata extends ICRC1Metadata = ICRC1Metadata,
   _ProtocolNetwork extends ICRC1ProtocolNetwork = ICRC1ProtocolNetwork
-> implements ICRC1OnlineProtocol<_Units, _ICRC1Metadata, _ProtocolNetwork> {
+> implements ICRC1OnlineProtocol<_Units, _ICRC1Metadata, _ProtocolNetwork>
+{
   private readonly commonImpl: ICRC1CommonProtocolImpl<_Units>
   protected readonly icp: ICPProtocol
 
@@ -439,8 +472,12 @@ export abstract class ICRC1OnlineProtocolImpl<
     const encodedTransferArg: Buffer = Buffer.from(IDL.encode([TransferArg], [transferArg]))
 
     return newUnsignedTransaction<ICPUnsignedTransaction>({
-      transaction: encodedTransferArg.toString('hex'),
-      networkId: '' // TODO: do we need this?
+      transactions: [
+        {
+          actionType: ICPActionType.TRANSFER,
+          encoded: encodedTransferArg.toString('hex')
+        }
+      ]
     })
   }
 

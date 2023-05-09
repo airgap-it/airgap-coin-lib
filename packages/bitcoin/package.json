@@ -1,6 +1,6 @@
 {
   "name": "@airgap/bitcoin",
-  "version": "0.13.15-beta.0",
+  "version": "0.13.15-beta.9",
   "description": "The @airgap/bitcoin is a Bitcoin implementation of the ICoinProtocol interface from @airgap/coinlib-core.",
   "keywords": [
     "airgap",
@@ -30,10 +30,10 @@
   },
   "author": "Papers AG <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
-    "@airgap/coinlib-core": "^0.13.15-beta.0",
-    "@airgap/crypto": "^0.13.15-beta.0",
-    "@airgap/module-kit": "^0.13.15-beta.0",
-    "@airgap/serializer": "^0.13.15-beta.0",
+    "@airgap/coinlib-core": "^0.13.15-beta.9",
+    "@airgap/crypto": "^0.13.15-beta.9",
+    "@airgap/module-kit": "^0.13.15-beta.9",
+    "@airgap/serializer": "^0.13.15-beta.9",
     "bitcoinjs-lib": "5.2.0"
   },
   "localDependencies": {

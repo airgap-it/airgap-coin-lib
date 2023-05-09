@@ -4,7 +4,8 @@
     "outDir": "dist/",
     "typeRoots": ["../../node_modules/@types", "./node_modules/@types"],
     "strict": false,
-    "downlevelIteration": true
+    "downlevelIteration": true,
+    "target": "es2016"
   },
   "include": ["src/**/*.ts"],
   "exclude": ["src/dependencies/cache/**/*", "src/dependencies/github/**/*"]

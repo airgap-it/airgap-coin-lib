@@ -221,7 +221,6 @@ export function readUIntLE(pipe: Pipe, byteLength: number): bigint {
 export function readIntLE(pipe: Pipe, byteLength: number): bigint {
   let val = readUIntLE(pipe, byteLength)
 
-  //@ts-ignore
   const mul = BigInt(2) ** (BigInt(8) * BigInt(byteLength - 1) + BigInt(7))
   if (val >= mul) {
     val -= mul * BigInt(2)

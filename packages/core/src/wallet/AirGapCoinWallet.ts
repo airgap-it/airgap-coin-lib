@@ -70,7 +70,10 @@ export class AirGapCoinWallet extends AirGapMarketWallet {
       BTC as well, which results in the addresses being derived again, which causes massive lags in the apps.
       */
       result = new BigNumber(await this.protocol.getBalanceOfExtendedPublicKey(this.publicKey, 0))
-    } else if (protocolIdentifier === MainProtocolSymbols.XTZ_SHIELDED /* TODO: cover ALL sapling protocols */) {
+    } else if (
+      protocolIdentifier === MainProtocolSymbols.XTZ_SHIELDED /* TODO: cover ALL sapling protocols */ ||
+      protocolIdentifier === MainProtocolSymbols.ICP
+    ) {
       result = new BigNumber(await this.protocol.getBalanceOfPublicKey(this.publicKey))
     } else if (this.addresses.length > 0) {
       result = new BigNumber(await this.protocol.getBalanceOfAddresses(this.addressesToCheck()))

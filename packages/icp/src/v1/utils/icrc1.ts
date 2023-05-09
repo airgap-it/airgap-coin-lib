@@ -1,4 +1,5 @@
 import { isHex } from '@airgap/coinlib-core/utils/hex'
+import { padStart } from '@airgap/coinlib-core/utils/padStart'
 import { AirGapTransaction, Amount, newAmount } from '@airgap/module-kit'
 
 import { getPrincipalFromPublicKey } from '../protocol/ICPImplementation'
@@ -9,8 +10,8 @@ import { ICRC1TransferArgs } from '../types/icrc/transfer'
 import { ICRC1ProtocolNetwork } from '../types/protocol'
 import * as IDL from '../utils/idl'
 
-import { calculateCrc16 } from './convert'
-import { Principal } from './principal'
+import { calculateCrc32 } from './convert'
+import { encode, Principal } from './principal'
 
 export function encodeICRC1Account(account: ICRC1Account): { owner: Principal; subaccount: [] | [Uint8Array] } {
   return {
@@ -126,10 +127,9 @@ export function getICRC1AddressFromPrincipal(
     return principal.toText()
   }
 
-  // It's not specified yet how the checksum should be calculated, we should treat the below as a placeholder
-  const checksum: Buffer = calculateCrc16(Buffer.concat([Buffer.from(principal.toUint8Array()), subAccount]))
+  const checksum: Buffer = calculateCrc32(Buffer.concat([Buffer.from(principal.toUint8Array()), subAccount]))
 
-  return `${principal.toText()}-${checksum.slice(0, 2).toString('hex')}.${subAccount.toString('hex').replace(/^(00)+/, '')}`
+  return `${principal.toText()}-${encode(checksum)}.${subAccount.toString('hex').replace(/^0+/, '')}`
 }
 
 export function getICRC1AddressFromAccount(account: ICRC1Account): string {
@@ -150,6 +150,6 @@ export function getICRC1AccountFromAddress(address: string): ICRC1Account {
 
   return {
     owner: principal,
-    subaccount
+    subaccount: padStart(subaccount, 64, '0')
   }
 }

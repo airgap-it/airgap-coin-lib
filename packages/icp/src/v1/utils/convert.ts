@@ -1,4 +1,3 @@
-import { crc16 } from 'crc'
 import { buf as crc32Buffer } from 'crc-32'
 
 import { Tokens } from '../types/ledger'
@@ -52,13 +51,18 @@ export const calculateCrc32 = (bytes: Uint8Array): Buffer => {
   return Buffer.from(checksumArrayBuf)
 }
 
-export const calculateCrc16 = (bytes: Uint8Array): Buffer => {
-  const checksumArrayBuf = new ArrayBuffer(4)
-  const view = new DataView(checksumArrayBuf)
-  view.setUint16(0, crc16(Buffer.from(bytes)), false)
-  return Buffer.from(checksumArrayBuf)
-}
-
 export const e8sToTokens = (e8s: bigint): Tokens => ({ e8s })
 
 export const asciiStringToByteArray = (text: string): Array<number> => Array.from(text).map((c) => c.charCodeAt(0))
+
+export const uint8ArrayToBigInt = (array: Uint8Array): bigint => {
+  const view = new DataView(array.buffer, array.byteOffset, array.byteLength)
+  if (typeof view.getBigUint64 === 'function') {
+    return view.getBigUint64(0)
+  } else {
+    const high = BigInt(view.getUint32(0))
+    const low = BigInt(view.getUint32(4))
+
+    return (high << BigInt(32)) + low
+  }
+}

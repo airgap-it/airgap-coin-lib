@@ -65,7 +65,8 @@ class CkBTCOfflineProtocolImpl extends ICRC1OfflineProtocolImpl<CkBTCUnits> impl
 
 class CkBTCOnlineProtocolImpl
   extends ICRC1OnlineProtocolImpl<CkBTCUnits, CkBTCMetadata, CkBTCProtocolNetwork>
-  implements CkBTCOnlineProtocol {
+  implements CkBTCOnlineProtocol
+{
   public constructor(options: RecursivePartial<CkBTCOnlineProtocolOptions>) {
     const completeOptions: CkBTCOnlineProtocolOptions = createCkBTCOnlineProtocolOptions(options.network)
 
@@ -297,6 +298,7 @@ export const CKBTC_MAINNET_PROTOCOL_NETWORK: CkBTCProtocolNetwork = {
   rpcUrl: 'https://boundary.ic0.app/',
   ledgerCanisterId: 'mxzaz-hqaaa-aaaar-qaada-cai',
   indexerCanisterId: 'n5wcd-faaaa-aaaar-qaaea-cai',
+  governanceCanisterId: 'rrkah-fqaaa-aaaaa-aaaaq-cai',
   explorerUrl: 'https://ledger-api.internetcomputer.org'
 }
 

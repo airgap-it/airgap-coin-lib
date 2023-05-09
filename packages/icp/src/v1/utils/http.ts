@@ -142,7 +142,7 @@ export interface CallRequest extends Record<string, any> {
   canister_id: Principal
   method_name: string
   arg: ArrayBuffer
-  sender: Uint8Array | Principal
+  sender: Principal
   ingress_expiry: Expiry
 }
 // tslint:enable:camel-case
