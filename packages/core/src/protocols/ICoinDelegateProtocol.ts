@@ -33,19 +33,19 @@ export interface DelegationDetails {
 
 export interface ICoinDelegateProtocol extends ICoinProtocol {
   getDefaultDelegatee(): Promise<string>
-  getCurrentDelegateesForPublicKey(publicKey: string): Promise<string[]>
-  getCurrentDelegateesForAddress(address: string): Promise<string[]>
+  getCurrentDelegateesForPublicKey(publicKey: string, data?: any): Promise<string[]>
+  getCurrentDelegateesForAddress(address: string, data?: any): Promise<string[]>
 
-  getDelegateeDetails(address: string): Promise<DelegateeDetails>
+  getDelegateeDetails(address: string, data?: any): Promise<DelegateeDetails>
 
-  isPublicKeyDelegating(publicKey: string): Promise<boolean>
-  isAddressDelegating(address: string): Promise<boolean>
+  isPublicKeyDelegating(publicKey: string, data?: any): Promise<boolean>
+  isAddressDelegating(address: string, data?: any): Promise<boolean>
 
-  getDelegatorDetailsFromPublicKey(publicKey: string): Promise<DelegatorDetails>
-  getDelegatorDetailsFromAddress(address: string): Promise<DelegatorDetails>
+  getDelegatorDetailsFromPublicKey(publicKey: string, data?: any): Promise<DelegatorDetails>
+  getDelegatorDetailsFromAddress(address: string, data?: any): Promise<DelegatorDetails>
 
-  getDelegationDetailsFromPublicKey(publicKey: string, delegatees: string[]): Promise<DelegationDetails>
-  getDelegationDetailsFromAddress(address: string, delegatees: string[]): Promise<DelegationDetails>
+  getDelegationDetailsFromPublicKey(publicKey: string, delegatees: string[], data?: any): Promise<DelegationDetails>
+  getDelegationDetailsFromAddress(address: string, delegatees: string[], data?: any): Promise<DelegationDetails>
 
   prepareDelegatorActionFromPublicKey(publicKey: string, type: any, data?: any): Promise<any[]>
 }

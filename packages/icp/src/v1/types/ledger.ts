@@ -64,7 +64,7 @@ const QueryBlocksResponse = IDL.Record({
   )
 })
 const SubAccount = IDL.Vec(IDL.Nat8)
-const TransferArgs = IDL.Record({
+export const TransferArgs = IDL.Record({
   to: AccountIdentifier,
   fee: Tokens,
   memo: Memo,

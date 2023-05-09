@@ -1,5 +1,6 @@
 import { newSignedTransaction, newUnsignedTransaction } from '@airgap/module-kit'
-import { ICPSignedTransaction, ICPUnsignedTransaction } from '../../../../types/transaction'
+
+import { ICPActionType, ICPSignedTransaction, ICPUnsignedTransaction } from '../../../../types/transaction'
 import { ICPTransactionSignRequest } from '../definitions/transaction-sign-request-icp'
 import { ICPTransactionSignResponse } from '../definitions/transaction-sign-response-icp'
 
@@ -8,17 +9,52 @@ export function icpUnsignedTransactionToRequest(
   publicKey: string,
   callbackUrl?: string
 ): ICPTransactionSignRequest {
-  return { transaction: unsigned, publicKey, callbackURL: callbackUrl }
+  if (unsigned.transactions.length === 1 && unsigned.transactions[0].actionType === ICPActionType.TRANSFER /* legacy */) {
+    const transaction: ICPTransactionSignRequest['transaction'] = {
+      networkId: '',
+      transaction: unsigned.transactions[0].encoded,
+      transactions: []
+    }
+
+    return { transaction, publicKey, callbackURL: callbackUrl }
+  }
+
+  const { transactions } = unsigned
+  const transaction: ICPTransactionSignRequest['transaction'] = {
+    networkId: '',
+    transaction: '',
+    transactions
+  }
+
+  return { transaction, publicKey, callbackURL: callbackUrl }
 }
 
 export function icpSignedTransactionToResponse(signed: ICPSignedTransaction, accountIdentifier: string): ICPTransactionSignResponse {
-  return { transaction: signed.transaction, accountIdentifier }
+  const { type: _, ...rest } = signed
+
+  return { transaction: JSON.stringify(rest), accountIdentifier }
 }
 
 export function icpTransactionSignRequestToUnsigned(request: ICPTransactionSignRequest): ICPUnsignedTransaction {
-  return newUnsignedTransaction<ICPUnsignedTransaction>(request.transaction)
+  if (request.transaction.transaction /* legacy */) {
+    return newUnsignedTransaction<ICPUnsignedTransaction>({
+      transactions: [{ actionType: ICPActionType.TRANSFER, encoded: request.transaction.transaction }]
+    })
+  }
+
+  return newUnsignedTransaction<ICPUnsignedTransaction>({
+    transactions: request.transaction.transactions ?? []
+  })
 }
 
 export function icpTransactionSignResponseToSigned(response: ICPTransactionSignResponse): ICPSignedTransaction {
-  return newSignedTransaction<ICPSignedTransaction>({ transaction: response.transaction })
+  try {
+    const content = JSON.parse(response.transaction)
+
+    return newSignedTransaction<ICPSignedTransaction>(content)
+  } catch /* legacy */ {
+    return newSignedTransaction<ICPSignedTransaction>({
+      transactions: [{ actionType: ICPActionType.TRANSFER, encoded: response.transaction }]
+    })
+  }
 }

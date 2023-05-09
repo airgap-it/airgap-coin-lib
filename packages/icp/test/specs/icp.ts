@@ -1,7 +1,7 @@
 // tslint:disable: no-object-literal-type-assertion
-import { Amount, PublicKey, SecretKey, Signature } from '@airgap/module-kit'
+import { Amount, PublicKey, SecretKey } from '@airgap/module-kit'
 
-import { createICPProtocol, ICPProtocol, ICPSignedTransaction, ICPUnits, ICPUnsignedTransaction } from '../../src/v1'
+import { createICPProtocol, ICPActionType, ICPProtocol, ICPSignedTransaction, ICPUnits, ICPUnsignedTransaction } from '../../src/v1'
 import { TestProtocolSpec } from '../implementations'
 import { ICPProtocolStub } from '../stubs/icp.stub'
 
@@ -62,14 +62,23 @@ export class ICPTestProtocolSpec extends TestProtocolSpec<ICPProtocol, ICPProtoc
       fee: { value: '10000', unit: 'blockchain' } as Amount<ICPUnits>,
       unsignedTx: {
         type: 'unsigned',
-        transaction:
-          '4449444c066d7b6c01e0a9b302786e006c01d6f68e8001786e036c06fbca0100c6fcb60201ba89e5c20478a2de94eb060282f3f3910c04d8a38ca80d01010520dcca81c1e64562935cd2a89404be2dfaaeaf80e69bd623e97ee6f75ec3277eb01027000000000000000000000000000000001027000000000000',
-        networkId: 'icp_mainnet'
+        transactions: [
+          {
+            actionType: ICPActionType.TRANSFER,
+            encoded:
+              '4449444c066d7b6c01e0a9b302786e006c01d6f68e8001786e036c06fbca0100c6fcb60201ba89e5c20478a2de94eb060282f3f3910c04d8a38ca80d01010520dcca81c1e64562935cd2a89404be2dfaaeaf80e69bd623e97ee6f75ec3277eb01027000000000000000000000000000000001027000000000000'
+          }
+        ]
       } as ICPUnsignedTransaction,
       signedTx: {
         type: 'signed',
-        transaction:
-          'd9d9f7a367636f6e74656e74a663617267587a4449444c066d7b6c01e0a9b302786e006c01d6f68e8001786e036c06fbca0100c6fcb60201ba89e5c20478a2de94eb060282f3f3910c04d8a38ca80d01010520dcca81c1e64562935cd2a89404be2dfaaeaf80e69bd623e97ee6f75ec3277eb010270000000000000000000000000000000010270000000000006b63616e69737465725f69644a000000000000000201016e696e67726573735f6578706972791b173ce5fba7ef1f006b6d6574686f645f6e616d65687472616e736665726c726571756573745f747970656463616c6c6673656e646572581dff201eb43d68ff776ea1d47a847167551ab6068ac352227328ded8b2026d73656e6465725f7075626b657958583056301006072a8648ce3d020106052b8104000a034200041bdf9a8840883856e977bb0411cdf24bc2214f4acb457c597b11e0ee8990acee9dd89412abc2d8566ef2d71dacbe95b449907edf8989d7002c779a97aebf0ca16a73656e6465725f7369675840cd2571915ad2f804980e8e68184b6fdab272379dd0670e2a91eb18d337f32cda32e1073d3b525638c5f912c5a270ff6801576c272fbf5f43118943f076196ef7'
+        transactions: [
+          {
+            actionType: ICPActionType.TRANSFER,
+            encoded:
+              'd9d9f7a367636f6e74656e74a663617267587a4449444c066d7b6c01e0a9b302786e006c01d6f68e8001786e036c06fbca0100c6fcb60201ba89e5c20478a2de94eb060282f3f3910c04d8a38ca80d01010520dcca81c1e64562935cd2a89404be2dfaaeaf80e69bd623e97ee6f75ec3277eb010270000000000000000000000000000000010270000000000006b63616e69737465725f69644a000000000000000201016e696e67726573735f6578706972791b173ce5fba7ef1f006b6d6574686f645f6e616d65687472616e736665726c726571756573745f747970656463616c6c6673656e646572581dff201eb43d68ff776ea1d47a847167551ab6068ac352227328ded8b2026d73656e6465725f7075626b657958583056301006072a8648ce3d020106052b8104000a034200041bdf9a8840883856e977bb0411cdf24bc2214f4acb457c597b11e0ee8990acee9dd89412abc2d8566ef2d71dacbe95b449907edf8989d7002c779a97aebf0ca16a73656e6465725f7369675840cd2571915ad2f804980e8e68184b6fdab272379dd0670e2a91eb18d337f32cda32e1073d3b525638c5f912c5a270ff6801576c272fbf5f43118943f076196ef7'
+          }
+        ]
       } as ICPSignedTransaction
     }
   ]
@@ -256,49 +265,6 @@ export class ICPTestProtocolSpec extends TestProtocolSpec<ICPProtocol, ICPProtoc
           expectedError: [" can't be blank"]
         }
       ]
-    }
-  ]
-
-  public validRawTransactions: ICPUnsignedTransaction[] = [
-    {
-      type: 'unsigned',
-      transaction:
-        'tx_+FsMAaEB1k9h7FZRnn8Q81kIxA97Moj7Pr3A9sUEqpXseA48f/mhAdZPYexWUZ5/EPNZCMQPezKI+z69wPbFBKqV7HgOPH/5iIrHIwSJ6AAAiA3gtrOnZAAAAACAQCdXaA==',
-      networkId: 'ae_mainnet'
-    }
-  ]
-
-  public validSignedTransactions: ICPSignedTransaction[] = [
-    {
-      type: 'signed',
-      transaction:
-        'tx_+KULAfhCuEBokDCnOXkU2G+pwrNXVQetMO1+2fQsnOeJKGcRl1S5toQAJRldCQb1VSkmF2yumQl11kmF2H6LpAH1npP71i0OuF34WwwBoQHWT2HsVlGefxDzWQjED3syiPs+vcD2xQSqlex4Djx/+aEB1k9h7FZRnn8Q81kIxA97Moj7Pr3A9sUEqpXseA48f/mIiscjBInoAACIDeC2s6dkAAAAAIAxkWE6'
-    }
-  ]
-
-  public messages = [
-    {
-      message: 'example message',
-      signature: {
-        format: 'hex',
-        value:
-          '8f1c4ab15b7e26a602e711fe58d55636423790ffbeb50bfbd48d9277ddac918d9941f731c0b537d8c126686a64a93c54b32001158951e981de33b7431798860b'
-      } as Signature
-    }
-  ]
-
-  public encryptAsymmetric = [
-    {
-      message: 'example message',
-      encrypted:
-        '82dd0e57687055051fd37f23e3258ffadcf6d11852d73ed4bfd424042ef0de354cd258753716009226f97105902debf679726ebd4e4dfa6a3b24384f69db8b'
-    }
-  ]
-
-  public encryptAES = [
-    {
-      message: 'example message',
-      encrypted: '2a879823564ba9fad11c244490460b3a!01485f7509c725c7ba037b01227cb0!aa2e42f1d02675091659a0735f2a1dea'
     }
   ]
 }

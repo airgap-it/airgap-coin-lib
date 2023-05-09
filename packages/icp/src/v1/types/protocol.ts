@@ -6,6 +6,7 @@ export type CkBTCUnits = 'ckBTC'
 
 export interface ICPProtocolNetwork extends ProtocolNetwork {
   ledgerCanisterId: string
+  governanceCanisterId: string
   explorerUrl: string
 }
 

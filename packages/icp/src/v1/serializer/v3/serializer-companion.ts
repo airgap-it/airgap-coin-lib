@@ -57,7 +57,6 @@ export class ICPV3SerializerCompanion implements AirGapV3SerializerCompanion {
     publicKey: string,
     callbackUrl?: string
   ): Promise<TransactionSignRequest> {
-    console.log('toTransactionSignRequest : identifier', identifier)
     switch (identifier) {
       case MainProtocolSymbols.ICP:
       case MainProtocolSymbols.ICP_CKBTC:

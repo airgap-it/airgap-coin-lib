@@ -1,11 +1,16 @@
-import axios from '@airgap/coinlib-core/dependencies/src/axios-0.19.0/index'
+import { Domain, NetworkError } from '@airgap/coinlib-core'
+import axios, { AxiosError } from '@airgap/coinlib-core/dependencies/src/axios-0.19.0/index'
 import { isHex } from '@airgap/coinlib-core/utils/hex'
+import { AirGapTransaction, newAmount } from '@airgap/module-kit'
 import 'isomorphic-fetch'
-import { sha224 } from 'js-sha256'
+import { sha224, sha256 } from 'js-sha256'
 
-import { idlFactory as ledgerIdlFactory, TransferFn } from '../types/ledger'
-import { AccountIdentifier } from '../utils/account'
-// import { requestIdOf } from '../utils/auth'
+import { ICPProtocolNetwork, ICPUnits } from '../module'
+import { KnownNeuron, ListKnownNeuronsResponse, NeuronInfo } from '../types/governance'
+import { idlFactory as governanceIdlFactory } from '../types/governance'
+import { idlFactory as ledgerIdlFactory, TransferArgs, TransferFn } from '../types/ledger'
+import { ICPRequestType } from '../types/transaction'
+import { AccountIdentifier, SubAccount } from '../utils/account'
 import { Actor } from '../utils/actor'
 import { AnonymousIdentity, Identity } from '../utils/auth'
 import * as Cbor from '../utils/cbor'
@@ -16,6 +21,7 @@ import {
   e8sToTokens,
   hexStringToArrayBuffer,
   hexStringToUint8Array,
+  uint8ArrayToBigInt,
   uint8ArrayToHexString
 } from '../utils/convert'
 import HDKey from '../utils/hdkey'
@@ -26,10 +32,13 @@ import {
   HttpAgent,
   HttpAgentRequest,
   HttpAgentSubmitRequest,
+  QueryRequest,
+  ReadRequestType,
   SubmitRequestType,
   TransferRequest
 } from '../utils/http'
 import * as IDL from '../utils/idl'
+import { idlDecodedToJsonStringifiable } from '../utils/json'
 import { Principal } from '../utils/principal'
 import Secp256k1KeyIdentity from '../utils/secp256k1'
 
@@ -37,6 +46,8 @@ interface Transaction {
   to: string
   amount: bigint
   fee: bigint
+  memo?: bigint
+  fromSubAccount?: SubAccount
 }
 
 // Agent
@@ -111,9 +122,9 @@ export function createUnsignedTransaction(transaction: Transaction): string {
     fee: e8sToTokens(transaction.fee),
     amount: e8sToTokens(transaction.amount),
     // Always explicitly set the memo for compatibility with ledger wallet - hardware wallet
-    memo: BigInt(0),
+    memo: transaction.memo || BigInt(0),
     created_at_time: [],
-    from_subaccount: []
+    from_subaccount: transaction.fromSubAccount ? [transaction.fromSubAccount.toUint8Array()] : []
   }
 
   // Encode raw request
@@ -133,6 +144,7 @@ export function getInfoFromUnsignedTransaction(
   from_subaccount: string[]
   created_at_time: any[]
   amount: bigint
+  json: IDL.JsonValue
 } {
   //@ts-ignore
   const transaction = IDL.decode(TransferFn.argTypes, Buffer.from(unsignedTransaction, 'hex'))[0] as any
@@ -142,12 +154,33 @@ export function getInfoFromUnsignedTransaction(
     memo: transaction.memo,
     from_subaccount: transaction.from_subaccount,
     created_at_time: transaction.created_at_time,
-    amount: transaction.amount.e8s
+    amount: transaction.amount.e8s,
+    json: transaction
   }
 }
 
+export function getDetailsFromUnsignedTransactionTransfer(
+  unsignedTransaction: string,
+  publicKey: string,
+  network: ICPProtocolNetwork
+): AirGapTransaction<ICPUnits>[] {
+  const transactionDetails = getInfoFromUnsignedTransaction(unsignedTransaction)
+
+  return [
+    {
+      from: [getAddressFromPublicKey(publicKey)],
+      to: [transactionDetails.to],
+      isInbound: false,
+      amount: newAmount(transactionDetails.amount.toString(), 'blockchain'),
+      fee: newAmount(transactionDetails.fee.toString(), 'blockchain'),
+      network,
+      json: idlDecodedToJsonStringifiable(transactionDetails.json)
+    }
+  ]
+}
+
 // UNSIGNED TRANSACTION, PRIVATE KEY -> SIGNED TRANSACTION
-export async function signICPTransaction(unsignedTransaction: string, privateKey: string, canisterId: string): Promise<string> {
+export async function signTransactionTransfer(unsignedTransaction: string, privateKey: string, canisterId: string): Promise<string> {
   // TODO : REFACTOR
   const transactionDetails = getInfoFromUnsignedTransaction(unsignedTransaction)
 
@@ -186,19 +219,37 @@ export async function signICPTransaction(unsignedTransaction: string, privateKey
 
   const args = IDL.encode([TransferArgs], [rawRequestBody])
 
-  return signTransaction(privateKey, canisterId, args, 'transfer')
+  return signTransaction(privateKey, canisterId, args, 'transfer', 'call')
 }
 
-export async function signTransaction(privateKey: string, canisterId: string, arg: any, methodName: string): Promise<string> {
+export async function signTransaction(
+  privateKey: string,
+  canisterId: string,
+  arg: any,
+  methodName: string,
+  callType: 'query' | 'call'
+): Promise<string> {
   const identity = Secp256k1KeyIdentity.fromSecretKey(hexStringToArrayBuffer(privateKey))
 
-  const submit: CallRequest = {
-    request_type: SubmitRequestType.Call,
-    canister_id: Principal.from(canisterId),
-    method_name: methodName,
-    arg,
-    sender: identity.getPrincipal(),
-    ingress_expiry: new Expiry(5 * 60 * 1000)
+  let submit: any
+  if (callType === 'query') {
+    submit = {
+      request_type: ReadRequestType.Query,
+      canister_id: Principal.from(canisterId),
+      method_name: methodName,
+      arg,
+      sender: identity.getPrincipal(),
+      ingress_expiry: new Expiry(5 * 60 * 1000)
+    } as QueryRequest
+  } else {
+    submit = {
+      request_type: SubmitRequestType.Call,
+      canister_id: Principal.from(canisterId),
+      method_name: methodName,
+      arg,
+      sender: identity.getPrincipal(),
+      ingress_expiry: new Expiry(5 * 60 * 1000)
+    } as CallRequest
   }
 
   const transform = async (request: HttpAgentRequest): Promise<HttpAgentRequest> => {
@@ -206,17 +257,32 @@ export async function signTransaction(privateKey: string, canisterId: string, ar
     return p
   }
 
-  const request: any = (await transform({
-    request: {
-      body: null,
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/cbor'
-      }
-    },
-    endpoint: Endpoint.Call,
-    body: submit
-  })) as HttpAgentSubmitRequest
+  let request: any
+  if (callType === 'query') {
+    request = (await transform({
+      request: {
+        body: null,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/cbor'
+        }
+      },
+      endpoint: Endpoint.Query,
+      body: submit
+    })) as HttpAgentSubmitRequest
+  } else {
+    request = (await transform({
+      request: {
+        body: null,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/cbor'
+        }
+      },
+      endpoint: Endpoint.Call,
+      body: submit
+    })) as HttpAgentSubmitRequest
+  }
 
   // Apply transform for identity.
   const transformedRequest = (await identity.transformRequest(request)) as any
@@ -226,26 +292,29 @@ export async function signTransaction(privateKey: string, canisterId: string, ar
 }
 
 // SIGNED TRANSACTION -> TRANSACTION DETAILS
-export function getInfoFromSignedTransaction(signedTransaction: string): any {
-  return Cbor.decode(hexStringToArrayBuffer(signedTransaction))
+export function getDetailsFromSignedTransactionTransfer(
+  signedTransaction: string,
+  publicKey: string,
+  network: ICPProtocolNetwork
+): AirGapTransaction<ICPUnits>[] {
+  const transactionInfo: any = Cbor.decode(hexStringToArrayBuffer(signedTransaction))
+  const args = decodeArguments(TransferArgs, transactionInfo.content.arg)
+
+  return [
+    {
+      from: [getAddressFromPublicKey(publicKey)],
+      to: [uint8ArrayToHexString(args.to)],
+      isInbound: false,
+      amount: newAmount(args.amount.e8s.toString(), 'blockchain'),
+      fee: newAmount(args.fee.e8s.toString(), 'blockchain'),
+      network,
+      json: idlDecodedToJsonStringifiable(args)
+    }
+  ]
 }
 
-export function decodeArguments(args: ArrayBuffer): any {
-  const Address = IDL.Vec(IDL.Nat8)
-  const ICP = IDL.Record({ e8s: IDL.Nat64 })
-  const Memo = IDL.Nat64
-  const SubAccount = IDL.Vec(IDL.Nat8)
-  const TimeStamp = IDL.Record({ timestamp_nanos: IDL.Nat64 })
-  const TransferArgs = IDL.Record({
-    to: Address,
-    fee: ICP,
-    memo: Memo,
-    from_subaccount: IDL.Opt(SubAccount),
-    created_at_time: IDL.Opt(TimeStamp),
-    amount: ICP
-  })
-
-  return IDL.decode([TransferArgs], args)
+export function decodeArguments(idlInterface: any, args: ArrayBuffer): any {
+  return IDL.decode([idlInterface], args)[0]
 }
 
 // ADDRESS -> BALANCE
@@ -264,29 +333,168 @@ export async function getBalanceFromAddress(address: string, host: string, canis
   return b.e8s
 }
 
-export async function broadcastTransaction(signedTransaction: string, host: string, canisterId: string): Promise<string> {
+export async function broadcastTransaction(
+  signedTransaction: string,
+  host: string,
+  canisterId: string,
+  requestType: ICPRequestType
+): Promise<ArrayBuffer> {
   const canister = Principal.from(canisterId)
-
   const body = hexStringToArrayBuffer(signedTransaction)
-  // const signedTransactionInfo = getInfoFromSignedTransaction(signedTransaction)
 
   try {
-    /*const request = */ await axios.post('' + new URL(`/api/v2/canister/${canister.toText()}/call`, host), body, {
+    const response = await axios.post('' + new URL(`/api/v2/canister/${canister.toText()}/${requestType}`, host), body, {
+      responseType: 'arraybuffer',
       headers: {
         'Content-Type': 'application/cbor'
       }
     })
 
-    // const submit: CallRequest = {
-    //   ...signedTransactionInfo.content,
-    //   ingress_expiry: new Expiry(1000)
-    // }
-
-    // await Promise.all([request, requestIdOf(submit)])
-
-    return ''
+    return response.data
   } catch (error: any) {
-    console.error('Error: ', error)
-    return ''
+    console.error(error)
+    throw new NetworkError(Domain.ICP, error as AxiosError)
   }
+}
+
+// STAKING
+
+export function getFixedSubaccountFromPrivateKey(privateKey: string): { subAccount: SubAccount; nonce: bigint } {
+  const identity = Secp256k1KeyIdentity.fromSecretKey(Buffer.from(privateKey, 'hex'))
+  const publicKey = Buffer.from(identity.getPublicKey().toDer())
+
+  return getFixedSubaccountFromPublicKey(publicKey.toString('hex'))
+}
+
+export function getFixedSubaccountFromPublicKey(publicKey: string): { subAccount: SubAccount; nonce: bigint } {
+  // Create subaccount from publicKey
+  const principal = getPrincipalFromPublicKey(publicKey)
+  const padding = asciiStringToByteArray('neuron-stake')
+  const shaObj = sha256.create()
+
+  // Should be random?
+  //const nonceBytes = new Uint8Array(randomBytes(8))
+
+  // TODO: const arr = hexStringToUint8Array(publicKey)
+  const arr = principal.toUint8Array()
+  const nonceBytes = new Uint8Array(arr.buffer, arr.byteLength - 8)
+
+  const nonce = uint8ArrayToBigInt(nonceBytes)
+  shaObj.update([0x0c, ...padding, ...principal.toUint8Array(), ...nonceBytes])
+  const toSubAccount = SubAccount.fromBytes(new Uint8Array(shaObj.array())) as SubAccount
+
+  return {
+    subAccount: toSubAccount,
+    nonce
+  }
+}
+
+export function createStakeUnsignedTransactions(amount: bigint, fee: bigint, publicKey: string, canisterId: string): string[] {
+  const { subAccount, nonce } = getFixedSubaccountFromPublicKey(publicKey)
+  const accountIdentifier = AccountIdentifier.fromPrincipal({
+    principal: Principal.from(canisterId),
+    subAccount: subAccount
+  })
+
+  // Send amount to the ledger.
+  const unsignedTransfer = createUnsignedTransaction({
+    memo: nonce,
+    amount: amount,
+    to: accountIdentifier.toHex(),
+    fee: fee
+  })
+
+  // Notify the governance of the transaction so that the neuron is created.
+  // const unsignedClaim = createClaimOrRefreshNeuronFromAccountUnsignedTransaction(principal, nonce)
+
+  return [unsignedTransfer]
+}
+
+export function createClaimOrRefreshNeuronFromAccountUnsignedTransaction(principal: Principal, memo: bigint): string {
+  const ClaimOrRefreshNeuronFromAccount = IDL.Record({
+    controller: IDL.Opt(IDL.Principal),
+    memo: IDL.Nat64
+  })
+
+  const unsignedTransaction = IDL.encode([ClaimOrRefreshNeuronFromAccount], [{ controller: [principal], memo: memo }])
+
+  return arrayBufferToHexString(unsignedTransaction)
+}
+
+export function createManageNeuronUnsignedTransaction(principal: Principal, memo: bigint): string {
+  const NeuronId = IDL.Record({ id: IDL.Nat64 })
+  const NeuronIdOrSubaccount = IDL.Variant({
+    Subaccount: IDL.Vec(IDL.Nat8),
+    NeuronId: NeuronId
+  })
+  const Follow = IDL.Record({
+    topic: IDL.Int32,
+    followees: IDL.Vec(NeuronId)
+  })
+  const Command = IDL.Variant({
+    Follow: Follow
+  })
+  const ManageNeuron = IDL.Record({
+    id: IDL.Opt(NeuronId),
+    command: IDL.Opt(Command),
+    neuron_id_or_subaccount: IDL.Opt(NeuronIdOrSubaccount)
+  })
+
+  const unsignedTransaction = IDL.encode([ManageNeuron], [{ controller: [principal], memo: memo }])
+
+  return arrayBufferToHexString(unsignedTransaction)
+}
+
+export async function signListNeurons(privateKey: string, canisterId: string): Promise<string> {
+  const ListNeurons = IDL.Record({
+    neuron_ids: IDL.Vec(IDL.Nat64),
+    include_neurons_readable_by_caller: IDL.Bool
+  })
+
+  const args = IDL.encode([ListNeurons], [{ neuron_ids: [], include_neurons_readable_by_caller: true }])
+
+  const signedTransaction = signTransaction(privateKey, canisterId, args, 'list_neurons', 'query')
+  return signedTransaction
+}
+
+export async function listKnownNeurons(host: string, canisterId: string): Promise<KnownNeuron[]> {
+  const agent = createHttpAgent(host, Secp256k1KeyIdentity.generate())
+
+  const actor = Actor.createActor(governanceIdlFactory, {
+    agent,
+    canisterId
+  })
+
+  const result = (await actor.list_known_neurons()) as ListKnownNeuronsResponse
+  return result.known_neurons
+}
+
+export async function getNeuronInfo(neuronId: string, host: string, canisterId: string): Promise<NeuronInfo | undefined> {
+  const agent = createHttpAgent(host, Secp256k1KeyIdentity.generate())
+
+  const actor = Actor.createActor(governanceIdlFactory, {
+    agent,
+    canisterId
+  })
+
+  const result = (await actor.get_neuron_info(BigInt(neuronId))) as any
+
+  return result.Ok ? (result.Ok as NeuronInfo) : undefined
+}
+
+export async function getNeuronInfoBySubAccount(publicKey: string, host: string, canisterId: string): Promise<NeuronInfo | undefined> {
+  // Create subaccount from publicKey
+  const { subAccount } = getFixedSubaccountFromPublicKey(publicKey)
+
+  const agent = createHttpAgent(host, Secp256k1KeyIdentity.generate())
+
+  const actor = Actor.createActor(governanceIdlFactory, {
+    agent,
+    canisterId
+  })
+
+  const array = subAccount.toUint8Array()
+  const result = (await actor.get_neuron_info_by_id_or_subaccount({ Subaccount: array })) as any
+
+  return result.Ok ? (result.Ok as NeuronInfo) : undefined
 }
