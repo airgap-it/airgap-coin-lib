@@ -1,6 +1,6 @@
 {
   "name": "@airgap/cosmos-core",
-  "version": "0.13.15-beta.10",
+  "version": "0.13.15-beta.13",
   "description": "The @airgap/cosmos-core is a Cosmos base implementation of the ICoinProtocol interface from @airgap/coinlib-core.",
   "keywords": [
     "airgap",
