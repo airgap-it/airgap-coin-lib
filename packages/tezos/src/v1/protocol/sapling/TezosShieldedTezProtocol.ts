@@ -41,7 +41,12 @@ export class TezosShieldedTezProtocolImpl extends TezosSaplingProtocolImpl<Tezos
   private readonly indexerClient: TezosIndexerClient
 
   public constructor(options: RecursivePartial<TezosShieldedTezProtocolOptions>) {
-    const completeOptions: TezosShieldedTezProtocolOptions = createTezosShieldedTezProtocolOptions(options.network)
+    const completeOptions: TezosShieldedTezProtocolOptions = createTezosShieldedTezProtocolOptions(
+      options.network,
+      options.memoSize,
+      options.merkleTreeHeight,
+      options.externalProvider
+    )
     super({
       ...completeOptions,
       metadata: SHIELDED_TEZ_METADATA

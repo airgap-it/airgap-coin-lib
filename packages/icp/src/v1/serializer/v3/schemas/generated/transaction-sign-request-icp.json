@@ -2,6 +2,21 @@
   "$ref": "#/definitions/ICPTransactionSignRequest",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
+    "ICPActionType": {
+      "enum": [
+        "TRANSFER",
+        "GET_NEURON_INFO",
+        "TRANSFER_TO_SUBACCOUNT",
+        "CLAIM_GOVERNANCE",
+        "FOLLOW_NEURON",
+        "DISBURSE",
+        "INCREASE_DISSOLVE_DELAY",
+        "START_DISSOLVING",
+        "STOP_DISSOLVING",
+        "AUTO_STAKE_MATURITY"
+      ],
+      "type": "string"
+    },
     "ICPTransactionSignRequest": {
       "additionalProperties": false,
       "properties": {
@@ -19,9 +34,24 @@
             },
             "transaction": {
               "type": "string"
+            },
+            "transactions": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "actionType": {
+                    "$ref": "#/definitions/ICPActionType"
+                  },
+                  "encoded": {
+                    "type": "string"
+                  }
+                },
+                "required": ["actionType", "encoded"],
+                "type": "object"
+              },
+              "type": "array"
             }
           },
-          "required": ["networkId", "transaction"],
           "type": "object"
         }
       },

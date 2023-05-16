@@ -9,19 +9,19 @@ import { PublicKey } from '../types/key'
  */
 export interface AirGapDelegateProtocol {
   getDefaultDelegatee(): Promise<Address>
-  getCurrentDelegateesForPublicKey(publicKey: PublicKey): Promise<Address[]>
-  getCurrentDelegateesForAddress(address: Address): Promise<Address[]>
+  getCurrentDelegateesForPublicKey(publicKey: PublicKey, data?: any): Promise<Address[]>
+  getCurrentDelegateesForAddress(address: Address, data?: any): Promise<Address[]>
 
-  getDelegateeDetails(address: Address): Promise<DelegateeDetails>
+  getDelegateeDetails(address: Address, data?: any): Promise<DelegateeDetails>
 
-  isPublicKeyDelegating(publicKey: PublicKey): Promise<boolean>
-  isAddressDelegating(address: Address): Promise<boolean>
+  isPublicKeyDelegating(publicKey: PublicKey, data?: any): Promise<boolean>
+  isAddressDelegating(address: Address, data?: any): Promise<boolean>
 
-  getDelegatorDetailsFromPublicKey(publicKey: PublicKey): Promise<DelegatorDetails>
-  getDelegatorDetailsFromAddress(address: Address): Promise<DelegatorDetails>
+  getDelegatorDetailsFromPublicKey(publicKey: PublicKey, data?: any): Promise<DelegatorDetails>
+  getDelegatorDetailsFromAddress(address: Address, data?: any): Promise<DelegatorDetails>
 
-  getDelegationDetailsFromPublicKey(publicKey: PublicKey, delegatees: Address[]): Promise<DelegationDetails>
-  getDelegationDetailsFromAddress(address: Address, delegatees: Address[]): Promise<DelegationDetails>
+  getDelegationDetailsFromPublicKey(publicKey: PublicKey, delegatees: Address[], data?: any): Promise<DelegationDetails>
+  getDelegationDetailsFromAddress(address: Address, delegatees: Address[], data?: any): Promise<DelegationDetails>
 
   prepareDelegatorActionFromPublicKey(publicKey: PublicKey, type: any, data?: any): Promise<any[]>
 }

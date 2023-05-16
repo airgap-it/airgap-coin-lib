@@ -1,5 +1,11 @@
 import { TransactionSignRequest } from '@airgap/serializer'
 
-import { ICPUnsignedTransaction } from '../../../../types/transaction'
+import { ICPTransaction } from '../../../../types/transaction'
 
-export interface ICPTransactionSignRequest extends TransactionSignRequest<Omit<ICPUnsignedTransaction, 'type'>> {}
+interface SerializableICPUnsignedTransaction {
+  networkId?: string
+  transaction?: string
+  transactions?: ICPTransaction[]
+}
+
+export interface ICPTransactionSignRequest extends TransactionSignRequest<SerializableICPUnsignedTransaction> {}

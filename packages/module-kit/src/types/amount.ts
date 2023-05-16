@@ -35,6 +35,12 @@ export class AmountEnhanced<_Units extends string = string> implements Amount<_U
     return new AmountEnhanced<_Units>(blockchainValue, 'blockchain')
   }
 
+  // Different representations
+
+  public toBigNumber(): BigNumber {
+    return new BigNumber(this.value)
+  }
+
   // Serialization
 
   public toJSON(): Amount<_Units> {

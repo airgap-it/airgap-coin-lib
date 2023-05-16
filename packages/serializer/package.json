@@ -1,6 +1,6 @@
 {
   "name": "@airgap/serializer",
-  "version": "0.13.14",
+  "version": "0.13.15",
   "description": "The @airgap/serializer provides serializers used in AirGap applications.",
   "keywords": [
     "airgap",

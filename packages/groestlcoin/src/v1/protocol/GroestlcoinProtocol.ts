@@ -224,10 +224,8 @@ export class GroestlcoinProtocolImpl implements GroestlcoinProtocol {
     limit: number,
     cursor?: GroestlcoinTransactionCursor
   ): Promise<AirGapTransactionsWithCursor<GroestlcoinTransactionCursor, GroestlcoinUnits>> {
-    const bitcoinTransactions: AirGapTransactionsWithCursor<
-      BitcoinTransactionCursor,
-      BitcoinUnits
-    > = await this.bitcoinProtocol.getTransactionsForPublicKey(publicKey, limit, cursor)
+    const bitcoinTransactions: AirGapTransactionsWithCursor<BitcoinTransactionCursor, BitcoinUnits> =
+      await this.bitcoinProtocol.getTransactionsForPublicKey(publicKey, limit, cursor)
 
     return this.fromBitcoinAirGapTransactionWithCursor(bitcoinTransactions)
   }
@@ -237,10 +235,8 @@ export class GroestlcoinProtocolImpl implements GroestlcoinProtocol {
     limit: number,
     cursor?: GroestlcoinTransactionCursor
   ): Promise<AirGapTransactionsWithCursor<GroestlcoinTransactionCursor, GroestlcoinUnits>> {
-    const bitcoinTransactions: AirGapTransactionsWithCursor<
-      BitcoinTransactionCursor,
-      BitcoinUnits
-    > = await this.bitcoinProtocol.getTransactionsForAddress(address, limit, cursor)
+    const bitcoinTransactions: AirGapTransactionsWithCursor<BitcoinTransactionCursor, BitcoinUnits> =
+      await this.bitcoinProtocol.getTransactionsForAddress(address, limit, cursor)
 
     return this.fromBitcoinAirGapTransactionWithCursor(bitcoinTransactions)
   }
@@ -250,10 +246,8 @@ export class GroestlcoinProtocolImpl implements GroestlcoinProtocol {
     limit: number,
     cursor?: GroestlcoinTransactionCursor
   ): Promise<AirGapTransactionsWithCursor<GroestlcoinTransactionCursor, GroestlcoinUnits>> {
-    const bitcoinTransactions: AirGapTransactionsWithCursor<
-      BitcoinTransactionCursor,
-      BitcoinUnits
-    > = await this.bitcoinProtocol.getTransactionsForAddresses(addresses, limit, cursor)
+    const bitcoinTransactions: AirGapTransactionsWithCursor<BitcoinTransactionCursor, BitcoinUnits> =
+      await this.bitcoinProtocol.getTransactionsForAddresses(addresses, limit, cursor)
 
     return this.fromBitcoinAirGapTransactionWithCursor(bitcoinTransactions)
   }
@@ -418,7 +412,7 @@ export const GROESTLCOIN_MAINNET_PROTOCOL_NETWORK: GroestlcoinStandardProtocolNe
   name: 'Mainnet',
   type: 'mainnet',
   rpcUrl: '',
-  indexerApi: `https://cors-proxy.airgap.prod.gke.papers.tech/proxy?url='https://blockbook.groestlcoin.org'`
+  indexerApi: `https://cors-proxy.airgap.prod.gke.papers.tech/proxy?url=${'https://blockbook.groestlcoin.org'}`
 }
 
 export const GROESTLCOIN_TESTNET_PROTOCOL_NETWORK: GroestlcoinStandardProtocolNetwork = {

@@ -1,6 +1,6 @@
 {
   "name": "@airgap/substrate",
-  "version": "0.13.14",
+  "version": "0.13.15",
   "description": "The @airgap/substrate is a Substrate base implementation of the ICoinProtocol interface from @airgap/coinlib-core.",
   "keywords": [
     "airgap",
@@ -20,7 +20,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "rm -rf ./dist && node scripts/node-module-es-module-interop.js && tsc && node scripts/copy-files-after-build.js && node scripts/make-ts-declaration-files-backwards-compatible.js",
+    "build": "rm -rf ./dist && tsc && node scripts/copy-files-after-build.js && node scripts/make-ts-declaration-files-backwards-compatible.js",
     "build-scripts": "tsc scripts/*.ts",
     "lint": "tslint -c ./tslint.json --project ./tsconfig.json --format stylish --fix",
     "lint:prettier": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
