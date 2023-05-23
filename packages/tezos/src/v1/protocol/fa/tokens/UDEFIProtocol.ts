@@ -70,6 +70,10 @@ export function createUDEFIProtocolOptions(network: RecursivePartial<TezosFA2Pro
       indexer: {
         ...DEFAULT_UDEFI_PROTOCOL_NETWORK.indexer,
         ...network.indexer
+      },
+      defaultCallbackContracts: {
+        ...DEFAULT_UDEFI_PROTOCOL_NETWORK.defaultCallbackContracts,
+        ...network.defaultCallbackContracts
       }
     }
   }

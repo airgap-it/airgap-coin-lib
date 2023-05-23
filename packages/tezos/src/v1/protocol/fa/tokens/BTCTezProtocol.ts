@@ -70,6 +70,10 @@ export function createBTCTezProtocolOptions(network: RecursivePartial<TezosFA2Pr
       indexer: {
         ...DEFAULT_BTCTEZ_PROTOCOL_NETWORK.indexer,
         ...network.indexer
+      },
+      defaultCallbackContracts: {
+        ...DEFAULT_BTCTEZ_PROTOCOL_NETWORK.defaultCallbackContracts,
+        ...network.defaultCallbackContracts
       }
     }
   }

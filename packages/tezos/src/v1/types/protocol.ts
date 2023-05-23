@@ -1,6 +1,7 @@
 import { FeeDefaults, ProtocolMetadata, ProtocolNetwork, ProtocolUnitsMetadata } from '@airgap/module-kit'
 
 import { TezosBlockExplorer } from './block-explorer'
+import { TezosFA2ContractEntrypoint } from './fa/TezosFA2ContractEntrypoint'
 import { TezosIndexer } from './indexer'
 import { TezosNetwork } from './network'
 import { TezosSaplingExternalMethodProvider } from './sapling/TezosSaplingExternalMethodProvider'
@@ -78,5 +79,7 @@ export interface TezosFA2ProtocolNetwork extends TezosFAProtocolNetwork {
 
   totalSupplyBigMapId?: number
   ledgerBigMapId?: number
+
+  defaultCallbackContracts: Record<Extract<TezosFA2ContractEntrypoint, 'balance_of'>, string>
 }
 export interface TezosFA2ProtocolOptions<_Units extends string> extends TezosFAProtocolOptions<_Units, TezosFA2ProtocolNetwork> {}

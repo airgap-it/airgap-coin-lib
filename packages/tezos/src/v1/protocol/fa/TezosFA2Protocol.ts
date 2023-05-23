@@ -30,7 +30,7 @@ import { parseAddress } from '../../utils/pack'
 import { TezosFA2Accountant } from '../../utils/protocol/fa/TezosFA2Accountant'
 import { TezosForger } from '../../utils/protocol/tezos/TezosForger'
 
-import { TezosFAProtocol, TezosFAProtocolImpl, TEZOS_FA_MAINNET_PROTOCOL_NETWORK } from './TezosFAProtocol'
+import { TEZOS_FA_MAINNET_PROTOCOL_NETWORK, TezosFAProtocol, TezosFAProtocolImpl } from './TezosFAProtocol'
 
 // Interface
 
@@ -93,7 +93,7 @@ export class TezosFA2ProtocolImpl<_Units extends string, _Entrypoints extends st
   public async balanceOf(
     balanceRequests: TezosFA2BalanceOfRequest[],
     source?: string,
-    callbackContract?: string
+    callbackContract: string = this.options.network.defaultCallbackContracts.balance_of
   ): Promise<TezosFA2BalanceOfResponse[]> {
     const balanceOfCall: TezosContractCall = await this.contract.createContractCall('balance_of', {
       requests: balanceRequests.map((request: TezosFA2BalanceOfRequest) => {
@@ -251,4 +251,9 @@ export function createTezosFA2Protocol<_Units extends string>(options: TezosFA2P
   return new TezosFA2ProtocolImpl(options)
 }
 
-export const TEZOS_FA2_MAINNET_PROTOCOL_NETWORK: Omit<TezosFA2ProtocolNetwork, 'contractAddress'> = TEZOS_FA_MAINNET_PROTOCOL_NETWORK
+export const TEZOS_FA2_MAINNET_PROTOCOL_NETWORK: Omit<TezosFA2ProtocolNetwork, 'contractAddress'> = {
+  ...TEZOS_FA_MAINNET_PROTOCOL_NETWORK,
+  defaultCallbackContracts: {
+    balance_of: 'KT1LyHDYnML5eCuTEVCTynUpivwG6ns6khiG'
+  }
+}

@@ -70,6 +70,10 @@ export function createTetherUSDProtocolOptions(network: RecursivePartial<TezosFA
       indexer: {
         ...DEFAULT_TETHERUSD_PROTOCOL_NETWORK.indexer,
         ...network.indexer
+      },
+      defaultCallbackContracts: {
+        ...DEFAULT_TETHERUSD_PROTOCOL_NETWORK.defaultCallbackContracts,
+        ...network.defaultCallbackContracts
       }
     }
   }

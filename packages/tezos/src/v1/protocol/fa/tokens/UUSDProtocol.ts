@@ -70,6 +70,10 @@ export function createUUSDProtocolOptions(network: RecursivePartial<TezosFA2Prot
       indexer: {
         ...DEFAULT_UUSD_PROTOCOL_NETWORK.indexer,
         ...network.indexer
+      },
+      defaultCallbackContracts: {
+        ...DEFAULT_UUSD_PROTOCOL_NETWORK.defaultCallbackContracts,
+        ...network.defaultCallbackContracts
       }
     }
   }
