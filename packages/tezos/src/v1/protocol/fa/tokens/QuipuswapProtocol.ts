@@ -70,6 +70,10 @@ export function createQuipuswapProtocolOptions(network: RecursivePartial<TezosFA
       indexer: {
         ...DEFAULT_QUIPUSWAP_PROTOCOL_NETWORK.indexer,
         ...network.indexer
+      },
+      defaultCallbackContracts: {
+        ...DEFAULT_QUIPUSWAP_PROTOCOL_NETWORK.defaultCallbackContracts,
+        ...network.defaultCallbackContracts
       }
     }
   }

@@ -70,6 +70,10 @@ export function createWrapProtocolOptions(network: RecursivePartial<TezosFA2Prot
       indexer: {
         ...DEFAULT_WRAP_PROTOCOL_NETWORK.indexer,
         ...network.indexer
+      },
+      defaultCallbackContracts: {
+        ...DEFAULT_WRAP_PROTOCOL_NETWORK.defaultCallbackContracts,
+        ...network.defaultCallbackContracts
       }
     }
   }

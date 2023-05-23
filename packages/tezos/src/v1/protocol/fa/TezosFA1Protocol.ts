@@ -61,7 +61,7 @@ export class TezosFA1ProtocolImpl<_Units extends string, _Entrypoints extends st
     return { total: newAmount(balance, 'blockchain') }
   }
 
-  public async getTotalSupply(source?: string, callbackContract?: string): Promise<string> {
+  public async getTotalSupply(source?: string, callbackContract: string = this.options.network.defaultCallbackContract): Promise<string> {
     const getTotalSupplyCall: TezosContractCall = await this.contract.createContractCall('getTotalSupply', [[], callbackContract])
 
     return this.getContractCallIntResult(getTotalSupplyCall, this.requireSource(source))
