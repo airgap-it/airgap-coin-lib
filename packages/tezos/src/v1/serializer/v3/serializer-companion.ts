@@ -262,30 +262,12 @@ export class TezosV3SerializerCompanion implements AirGapV3SerializerCompanion {
     callbackUrl?: string
   ): Promise<TransactionSignRequest> {
     switch (identifier) {
-      case MainProtocolSymbols.XTZ:
-      case SubProtocolSymbols.XTZ_BTC:
-      case SubProtocolSymbols.XTZ_BTC_TEZ:
-      case SubProtocolSymbols.XTZ_CTEZ:
-      case SubProtocolSymbols.XTZ_DOGA:
-      case SubProtocolSymbols.XTZ_ETHTZ:
-      case SubProtocolSymbols.XTZ_KUSD:
-      case SubProtocolSymbols.XTZ_KT:
-      case SubProtocolSymbols.XTZ_PLENTY:
-      case SubProtocolSymbols.XTZ_QUIPU:
-      case SubProtocolSymbols.XTZ_SIRS:
-      case SubProtocolSymbols.XTZ_STKR:
-      case SubProtocolSymbols.XTZ_UBTC:
-      case SubProtocolSymbols.XTZ_UDEFI:
-      case SubProtocolSymbols.XTZ_USD:
-      case SubProtocolSymbols.XTZ_USDT:
-      case SubProtocolSymbols.XTZ_UUSD:
-      case SubProtocolSymbols.XTZ_W:
-      case SubProtocolSymbols.XTZ_WRAP:
-      case SubProtocolSymbols.XTZ_YOU:
-        return tezosUnsignedTransactionToRequest(unsignedTransaction as TezosUnsignedTransaction, publicKey, callbackUrl)
       case MainProtocolSymbols.XTZ_SHIELDED:
         return tezosSaplingUnsignedTransactionToRequest(unsignedTransaction as TezosSaplingUnsignedTransaction, publicKey, callbackUrl)
       default:
+        if (identifier.startsWith(MainProtocolSymbols.XTZ)) {
+          return tezosUnsignedTransactionToRequest(unsignedTransaction as TezosUnsignedTransaction, publicKey, callbackUrl)
+        }
         throw new UnsupportedError(Domain.TEZOS, `Protocol ${identifier} not supported`)
     }
   }
@@ -295,62 +277,19 @@ export class TezosV3SerializerCompanion implements AirGapV3SerializerCompanion {
     transactionSignRequest: TransactionSignRequest
   ): Promise<UnsignedTransaction> {
     switch (identifier) {
-      case MainProtocolSymbols.XTZ:
-      case SubProtocolSymbols.XTZ_BTC:
-      case SubProtocolSymbols.XTZ_BTC_TEZ:
-      case SubProtocolSymbols.XTZ_CTEZ:
-      case SubProtocolSymbols.XTZ_DOGA:
-      case SubProtocolSymbols.XTZ_ETHTZ:
-      case SubProtocolSymbols.XTZ_KUSD:
-      case SubProtocolSymbols.XTZ_KT:
-      case SubProtocolSymbols.XTZ_PLENTY:
-      case SubProtocolSymbols.XTZ_QUIPU:
-      case SubProtocolSymbols.XTZ_SIRS:
-      case SubProtocolSymbols.XTZ_STKR:
-      case SubProtocolSymbols.XTZ_UBTC:
-      case SubProtocolSymbols.XTZ_UDEFI:
-      case SubProtocolSymbols.XTZ_USD:
-      case SubProtocolSymbols.XTZ_USDT:
-      case SubProtocolSymbols.XTZ_UUSD:
-      case SubProtocolSymbols.XTZ_W:
-      case SubProtocolSymbols.XTZ_WRAP:
-      case SubProtocolSymbols.XTZ_YOU:
-        return tezosTransactionSignRequestToUnsigned(transactionSignRequest)
       case MainProtocolSymbols.XTZ_SHIELDED:
         return tezosSaplingTransactionSignRequestToUnsigned(transactionSignRequest)
       default:
+        if (identifier.startsWith(MainProtocolSymbols.XTZ)) {
+          return tezosTransactionSignRequestToUnsigned(transactionSignRequest)
+        }
+
         throw new UnsupportedError(Domain.TEZOS, `Protocol ${identifier} not supported`)
     }
   }
 
   public async validateTransactionSignRequest(identifier: string, transactionSignRequest: TransactionSignRequest): Promise<boolean> {
     switch (identifier) {
-      case MainProtocolSymbols.XTZ:
-      case SubProtocolSymbols.XTZ_BTC_TEZ:
-      case SubProtocolSymbols.XTZ_CTEZ:
-      case SubProtocolSymbols.XTZ_DOGA:
-      case SubProtocolSymbols.XTZ_ETHTZ:
-      case SubProtocolSymbols.XTZ_KUSD:
-      case SubProtocolSymbols.XTZ_KT:
-      case SubProtocolSymbols.XTZ_PLENTY:
-      case SubProtocolSymbols.XTZ_QUIPU:
-      case SubProtocolSymbols.XTZ_SIRS:
-      case SubProtocolSymbols.XTZ_STKR:
-      case SubProtocolSymbols.XTZ_UBTC:
-      case SubProtocolSymbols.XTZ_UDEFI:
-      case SubProtocolSymbols.XTZ_USD:
-      case SubProtocolSymbols.XTZ_USDT:
-      case SubProtocolSymbols.XTZ_UUSD:
-      case SubProtocolSymbols.XTZ_W:
-      case SubProtocolSymbols.XTZ_WRAP:
-      case SubProtocolSymbols.XTZ_YOU:
-        try {
-          await this.tezosTransactionValidator.validateUnsignedTransaction(transactionSignRequest)
-
-          return true
-        } catch {
-          return false
-        }
       case MainProtocolSymbols.XTZ_SHIELDED:
         return true
       case SubProtocolSymbols.XTZ_BTC:
@@ -362,6 +301,16 @@ export class TezosV3SerializerCompanion implements AirGapV3SerializerCompanion {
           return false
         }
       default:
+        if (identifier.startsWith(MainProtocolSymbols.XTZ)) {
+          try {
+            await this.tezosTransactionValidator.validateUnsignedTransaction(transactionSignRequest)
+
+            return true
+          } catch {
+            return false
+          }
+        }
+
         throw new UnsupportedError(Domain.TEZOS, `Protocol ${identifier} not supported`)
     }
   }
@@ -372,30 +321,13 @@ export class TezosV3SerializerCompanion implements AirGapV3SerializerCompanion {
     accountIdentifier: string
   ): Promise<TransactionSignResponse> {
     switch (identifier) {
-      case MainProtocolSymbols.XTZ:
-      case SubProtocolSymbols.XTZ_BTC:
-      case SubProtocolSymbols.XTZ_BTC_TEZ:
-      case SubProtocolSymbols.XTZ_CTEZ:
-      case SubProtocolSymbols.XTZ_DOGA:
-      case SubProtocolSymbols.XTZ_ETHTZ:
-      case SubProtocolSymbols.XTZ_KUSD:
-      case SubProtocolSymbols.XTZ_KT:
-      case SubProtocolSymbols.XTZ_PLENTY:
-      case SubProtocolSymbols.XTZ_QUIPU:
-      case SubProtocolSymbols.XTZ_SIRS:
-      case SubProtocolSymbols.XTZ_STKR:
-      case SubProtocolSymbols.XTZ_UBTC:
-      case SubProtocolSymbols.XTZ_UDEFI:
-      case SubProtocolSymbols.XTZ_USD:
-      case SubProtocolSymbols.XTZ_USDT:
-      case SubProtocolSymbols.XTZ_UUSD:
-      case SubProtocolSymbols.XTZ_W:
-      case SubProtocolSymbols.XTZ_WRAP:
-      case SubProtocolSymbols.XTZ_YOU:
-        return tezosSignedTransactionToResponse(signedTransaction as TezosSignedTransaction, accountIdentifier)
       case MainProtocolSymbols.XTZ_SHIELDED:
         return tezosSaplingSignedTransactionToResponse(signedTransaction as TezosSaplingSignedTransaction, accountIdentifier)
       default:
+        if (identifier.startsWith(MainProtocolSymbols.XTZ)) {
+          return tezosSignedTransactionToResponse(signedTransaction as TezosSignedTransaction, accountIdentifier)
+        }
+
         throw new UnsupportedError(Domain.TEZOS, `Protocol ${identifier} not supported`)
     }
   }
@@ -405,62 +337,19 @@ export class TezosV3SerializerCompanion implements AirGapV3SerializerCompanion {
     transactionSignResponse: TransactionSignResponse
   ): Promise<SignedTransaction> {
     switch (identifier) {
-      case MainProtocolSymbols.XTZ:
-      case SubProtocolSymbols.XTZ_BTC:
-      case SubProtocolSymbols.XTZ_BTC_TEZ:
-      case SubProtocolSymbols.XTZ_CTEZ:
-      case SubProtocolSymbols.XTZ_DOGA:
-      case SubProtocolSymbols.XTZ_ETHTZ:
-      case SubProtocolSymbols.XTZ_KUSD:
-      case SubProtocolSymbols.XTZ_KT:
-      case SubProtocolSymbols.XTZ_PLENTY:
-      case SubProtocolSymbols.XTZ_QUIPU:
-      case SubProtocolSymbols.XTZ_SIRS:
-      case SubProtocolSymbols.XTZ_STKR:
-      case SubProtocolSymbols.XTZ_UBTC:
-      case SubProtocolSymbols.XTZ_UDEFI:
-      case SubProtocolSymbols.XTZ_USD:
-      case SubProtocolSymbols.XTZ_USDT:
-      case SubProtocolSymbols.XTZ_UUSD:
-      case SubProtocolSymbols.XTZ_W:
-      case SubProtocolSymbols.XTZ_WRAP:
-      case SubProtocolSymbols.XTZ_YOU:
-        return tezosTransactionSignResponseToSigned(transactionSignResponse)
       case MainProtocolSymbols.XTZ_SHIELDED:
         return tezosSaplingTransactionSignResponseToSigned(transactionSignResponse)
       default:
+        if (identifier.startsWith(MainProtocolSymbols.XTZ)) {
+          return tezosTransactionSignResponseToSigned(transactionSignResponse)
+        }
+
         throw new UnsupportedError(Domain.TEZOS, `Protocol ${identifier} not supported`)
     }
   }
 
   public async validateTransactionSignResponse(identifier: string, transactionSignResponse: TransactionSignResponse): Promise<boolean> {
     switch (identifier) {
-      case MainProtocolSymbols.XTZ:
-      case SubProtocolSymbols.XTZ_BTC_TEZ:
-      case SubProtocolSymbols.XTZ_CTEZ:
-      case SubProtocolSymbols.XTZ_DOGA:
-      case SubProtocolSymbols.XTZ_ETHTZ:
-      case SubProtocolSymbols.XTZ_KUSD:
-      case SubProtocolSymbols.XTZ_KT:
-      case SubProtocolSymbols.XTZ_PLENTY:
-      case SubProtocolSymbols.XTZ_QUIPU:
-      case SubProtocolSymbols.XTZ_SIRS:
-      case SubProtocolSymbols.XTZ_STKR:
-      case SubProtocolSymbols.XTZ_UBTC:
-      case SubProtocolSymbols.XTZ_UDEFI:
-      case SubProtocolSymbols.XTZ_USD:
-      case SubProtocolSymbols.XTZ_USDT:
-      case SubProtocolSymbols.XTZ_UUSD:
-      case SubProtocolSymbols.XTZ_W:
-      case SubProtocolSymbols.XTZ_WRAP:
-      case SubProtocolSymbols.XTZ_YOU:
-        try {
-          await this.tezosTransactionValidator.validateSignedTransaction(transactionSignResponse)
-
-          return true
-        } catch {
-          return false
-        }
       case MainProtocolSymbols.XTZ_SHIELDED:
         return true
       case SubProtocolSymbols.XTZ_BTC:
@@ -472,6 +361,16 @@ export class TezosV3SerializerCompanion implements AirGapV3SerializerCompanion {
           return false
         }
       default:
+        if (identifier.startsWith(MainProtocolSymbols.XTZ)) {
+          try {
+            await this.tezosTransactionValidator.validateSignedTransaction(transactionSignResponse)
+
+            return true
+          } catch {
+            return false
+          }
+        }
+
         throw new UnsupportedError(Domain.TEZOS, `Protocol ${identifier} not supported`)
     }
   }

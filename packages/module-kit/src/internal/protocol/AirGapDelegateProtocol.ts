@@ -1,7 +1,7 @@
 import { DelegateeDetails, DelegationDetails, DelegatorDetails } from '@airgap/coinlib-core'
 
-import { Address } from '../types/address'
-import { PublicKey } from '../types/key'
+import { Address } from '../../types/address'
+import { PublicKey } from '../../types/key'
 
 /**
  * DO NOT USE!

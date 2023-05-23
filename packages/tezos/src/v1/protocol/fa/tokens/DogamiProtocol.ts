@@ -60,13 +60,9 @@ export function createDogamiProtocolOptions(network: RecursivePartial<TezosFA1p2
     network: {
       ...DEFAULT_DOGAMI_PROTOCOL_NETWORK,
       ...network,
-      blockExplorer: {
-        ...DEFAULT_DOGAMI_PROTOCOL_NETWORK.blockExplorer,
-        ...network.blockExplorer
-      },
-      indexer: {
-        ...DEFAULT_DOGAMI_PROTOCOL_NETWORK.indexer,
-        ...network.indexer
+      callbackContracts: {
+        ...DEFAULT_DOGAMI_PROTOCOL_NETWORK.callbackContracts,
+        ...network.callbackContracts
       }
     }
   }

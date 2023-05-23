@@ -10,7 +10,7 @@ import {
   EthereumProtocolNetwork,
   EthereumProtocolNetworkExtras,
   GenericERC20
-} from '../../src'
+} from '../../src/v0'
 
 import { TestProtocolSpec } from './implementations'
 import { EthereumTestProtocolSpec } from './specs/ethereum'

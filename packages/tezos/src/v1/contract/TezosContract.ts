@@ -48,7 +48,7 @@ export class TezosContract<Entrypoint extends string = string> {
   private readonly indexerClient: TezosIndexerClient
 
   constructor(public readonly address: string, public readonly network: TezosProtocolNetwork) {
-    this.indexerClient = createTezosIndexerClient(this.network.indexer)
+    this.indexerClient = createTezosIndexerClient(this.network.indexerType, this.network.indexerApi)
   }
 
   public copy(

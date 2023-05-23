@@ -83,9 +83,7 @@ export class ICPTestProtocolSpec extends TestProtocolSpec<ICPProtocol, ICPProtoc
     }
   ]
 
-  public transactionList(
-    address: string
-  ): {
+  public transactionList(address: string): {
     first: { total: number; blocks: any[]; next: string; prev: null }
     next: { total: number; blocks: any[]; next: null; prev: string }
   } {

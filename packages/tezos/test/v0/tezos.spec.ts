@@ -7,7 +7,7 @@ import { expect } from 'chai'
 import 'mocha'
 import * as sinon from 'sinon'
 
-import { RawTezosTransaction } from '../../src'
+import { RawTezosTransaction } from '../../src/v0'
 import { RunOperationMetadata, TezosProtocol } from '../../src/v0/protocol/TezosProtocol'
 import { TezosOriginationOperation } from '../../src/v0/protocol/types/operations/Origination'
 import { TezosRevealOperation } from '../../src/v0/protocol/types/operations/Reveal'
@@ -1968,11 +1968,14 @@ describe(`ICoinProtocol Tezos - Custom Tests (v0)`, () => {
         .withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/context/contracts/KT1RZsEGgjQV5iSdpdY3MHKKHqNPuL9rn6wy/balance`)
         .returns(Promise.resolve({ data: 0 }))
 
-      return prepareSpend(['KT1X6SSqro2zUo1Wa7X5BnDWBvfBxZ6feUnc', 'KT1QLtQ54dKzcfwxMHmEM6PC8tooUg6MxDZ3'], ['12345'], '111').catch(
-        (error: Error) =>
-          expect(error)
-            .to.be.an('error')
-            .with.property('message', new ConditionViolationError(Domain.TEZOS, 'length of recipients and values does not match!').message)
+      return prepareSpend(
+        ['KT1X6SSqro2zUo1Wa7X5BnDWBvfBxZ6feUnc', 'KT1QLtQ54dKzcfwxMHmEM6PC8tooUg6MxDZ3'],
+        ['12345'],
+        '111'
+      ).catch((error: Error) =>
+        expect(error)
+          .to.be.an('error')
+          .with.property('message', new ConditionViolationError(Domain.TEZOS, 'length of recipients and values does not match!').message)
       )
     })
   })

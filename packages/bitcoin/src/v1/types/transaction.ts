@@ -1,4 +1,4 @@
-import { HexString, SignedTransaction, TransactionConfiguration, TransactionCursor, UnsignedTransaction } from '@airgap/module-kit'
+import { HexString, SignedTransaction, TransactionFullConfiguration, TransactionCursor, UnsignedTransaction } from '@airgap/module-kit'
 
 import { BitcoinUnits } from './protocol'
 
@@ -42,7 +42,7 @@ export interface BitcoinTransactionCursor extends TransactionCursor {
   page?: number
 }
 
-export type SegwitTransactionConfiguration<_Units extends BitcoinUnits> = TransactionConfiguration<_Units> & {
+export type SegwitTransactionFullConfiguration<_Units extends BitcoinUnits> = TransactionFullConfiguration<_Units> & {
   masterFingerprint: HexString
   replaceByFee?: boolean
 }

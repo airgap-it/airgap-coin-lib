@@ -55,12 +55,10 @@ export class EthereumV3SerializerCompanion implements AirGapV3SerializerCompanio
     publicKey: string,
     callbackUrl?: string
   ): Promise<TransactionSignRequest> {
-    switch (identifier) {
-      case MainProtocolSymbols.ETH:
-      case SubProtocolSymbols.ETH_ERC20:
-        return ethereumUnsignedTransactionToRequest(unsignedTransaction as EthereumUnsignedTransaction, publicKey, callbackUrl)
-      default:
-        throw new UnsupportedError(Domain.ETHEREUM, `Protocol ${identifier} not supported`)
+    if (identifier === MainProtocolSymbols.ETH || identifier.startsWith(SubProtocolSymbols.ETH_ERC20)) {
+      return ethereumUnsignedTransactionToRequest(unsignedTransaction as EthereumUnsignedTransaction, publicKey, callbackUrl)
+    } else {
+      throw new UnsupportedError(Domain.ETHEREUM, `Protocol ${identifier} not supported`)
     }
   }
 
@@ -68,28 +66,24 @@ export class EthereumV3SerializerCompanion implements AirGapV3SerializerCompanio
     identifier: string,
     transactionSignRequest: TransactionSignRequest
   ): Promise<UnsignedTransaction> {
-    switch (identifier) {
-      case MainProtocolSymbols.ETH:
-      case SubProtocolSymbols.ETH_ERC20:
-        return ethereumTransactionSignRequestToUnsigned(transactionSignRequest)
-      default:
-        throw new UnsupportedError(Domain.ETHEREUM, `Protocol ${identifier} not supported`)
+    if (identifier === MainProtocolSymbols.ETH || identifier.startsWith(SubProtocolSymbols.ETH_ERC20)) {
+      return ethereumTransactionSignRequestToUnsigned(transactionSignRequest)
+    } else {
+      throw new UnsupportedError(Domain.ETHEREUM, `Protocol ${identifier} not supported`)
     }
   }
 
   public async validateTransactionSignRequest(identifier: string, transactionSignRequest: TransactionSignRequest): Promise<boolean> {
-    switch (identifier) {
-      case MainProtocolSymbols.ETH:
-      case SubProtocolSymbols.ETH_ERC20:
-        try {
-          await this.ethereumTransactionValidator.validateUnsignedTransaction(transactionSignRequest)
+    if (identifier === MainProtocolSymbols.ETH || identifier.startsWith(SubProtocolSymbols.ETH_ERC20)) {
+      try {
+        await this.ethereumTransactionValidator.validateUnsignedTransaction(transactionSignRequest)
 
-          return true
-        } catch {
-          return false
-        }
-      default:
-        throw new UnsupportedError(Domain.ETHEREUM, `Protocol ${identifier} not supported`)
+        return true
+      } catch {
+        return false
+      }
+    } else {
+      throw new UnsupportedError(Domain.ETHEREUM, `Protocol ${identifier} not supported`)
     }
   }
 
@@ -98,12 +92,10 @@ export class EthereumV3SerializerCompanion implements AirGapV3SerializerCompanio
     signedTransaction: SignedTransaction,
     accountIdentifier: string
   ): Promise<TransactionSignResponse> {
-    switch (identifier) {
-      case MainProtocolSymbols.ETH:
-      case SubProtocolSymbols.ETH_ERC20:
-        return ethereumSignedTransactionToResponse(signedTransaction as EthereumSignedTransaction, accountIdentifier)
-      default:
-        throw new UnsupportedError(Domain.ETHEREUM, `Protocol ${identifier} not supported`)
+    if (identifier === MainProtocolSymbols.ETH || identifier.startsWith(SubProtocolSymbols.ETH_ERC20)) {
+      return ethereumSignedTransactionToResponse(signedTransaction as EthereumSignedTransaction, accountIdentifier)
+    } else {
+      throw new UnsupportedError(Domain.ETHEREUM, `Protocol ${identifier} not supported`)
     }
   }
 
@@ -111,28 +103,24 @@ export class EthereumV3SerializerCompanion implements AirGapV3SerializerCompanio
     identifier: string,
     transactionSignResponse: TransactionSignResponse
   ): Promise<SignedTransaction> {
-    switch (identifier) {
-      case MainProtocolSymbols.ETH:
-      case SubProtocolSymbols.ETH_ERC20:
-        return ethereumTransactionSignResponseToSigned(transactionSignResponse)
-      default:
-        throw new UnsupportedError(Domain.ETHEREUM, `Protocol ${identifier} not supported`)
+    if (identifier === MainProtocolSymbols.ETH || identifier.startsWith(SubProtocolSymbols.ETH_ERC20)) {
+      return ethereumTransactionSignResponseToSigned(transactionSignResponse)
+    } else {
+      throw new UnsupportedError(Domain.ETHEREUM, `Protocol ${identifier} not supported`)
     }
   }
 
   public async validateTransactionSignResponse(identifier: string, transactionSignResponse: TransactionSignResponse): Promise<boolean> {
-    switch (identifier) {
-      case MainProtocolSymbols.ETH:
-      case SubProtocolSymbols.ETH_ERC20:
-        try {
-          await this.ethereumTransactionValidator.validateSignedTransaction(transactionSignResponse)
+    if (identifier === MainProtocolSymbols.ETH || identifier.startsWith(SubProtocolSymbols.ETH_ERC20)) {
+      try {
+        await this.ethereumTransactionValidator.validateSignedTransaction(transactionSignResponse)
 
-          return true
-        } catch {
-          return false
-        }
-      default:
-        throw new UnsupportedError(Domain.ETHEREUM, `Protocol ${identifier} not supported`)
+        return true
+      } catch {
+        return false
+      }
+    } else {
+      throw new UnsupportedError(Domain.ETHEREUM, `Protocol ${identifier} not supported`)
     }
   }
 }

@@ -26,8 +26,9 @@ import {
   SecretKey,
   Signature,
   SubProtocolType,
-  TransactionConfiguration,
-  TransactionDetails
+  TransactionFullConfiguration,
+  TransactionDetails,
+  TransactionSimpleConfiguration
 } from '@airgap/module-kit'
 
 import { createTezosIndexerClient } from '../../indexer/factory'
@@ -82,7 +83,7 @@ class TezosKtProtocolImpl implements TezosKtProtocol {
     const completeOptions = createTezosProtocolOptions(options.network)
 
     this.tezos = createTezosProtocol(completeOptions)
-    this.indexerClient = createTezosIndexerClient(completeOptions.network.indexer)
+    this.indexerClient = createTezosIndexerClient(completeOptions.network.indexerType, completeOptions.network.indexerApi)
   }
 
   // SubProtocol
@@ -125,6 +126,21 @@ class TezosKtProtocolImpl implements TezosKtProtocol {
     }
   }
 
+  public async getInitialAddressesFromPublicKey(publicKey: PublicKey): Promise<AddressWithCursor<TezosKtAddressCursor>[]> {
+    const tzAddress: string = await this.tezos.getAddressFromPublicKey(publicKey)
+    const ktAddresses: string[] = await this.indexerClient.getDelegatorContracts(tzAddress, INDEX_LIMIT)
+
+    const addresses: string[] = [tzAddress, ...ktAddresses]
+
+    return addresses.map((address: string, index: number) => ({
+      address,
+      cursor: {
+        hasNext: index < addresses.length - 1,
+        index
+      }
+    }))
+  }
+
   public async getNextAddressFromPublicKey(
     publicKey: PublicKey,
     cursor: TezosKtAddressCursor
@@ -133,19 +149,10 @@ class TezosKtProtocolImpl implements TezosKtProtocol {
       return undefined
     }
 
-    const tzAddress: string = await this.tezos.getAddressFromPublicKey(publicKey)
-    const ktAddresses: string[] = await this.indexerClient.getDelegatorContracts(tzAddress, INDEX_LIMIT)
+    const addresses: AddressWithCursor<TezosKtAddressCursor>[] = await this.getInitialAddressesFromPublicKey(publicKey)
+    const index: number = cursor.index + 1
 
-    const index = cursor.index + 1
-    const address: string = [tzAddress, ...ktAddresses.reverse()][index]
-
-    return {
-      address,
-      cursor: {
-        hasNext: index < INDEX_LIMIT + 1 /* tzAddress + INDEX_LIMIT * ktAddresses */,
-        index
-      }
-    }
+    return addresses[index]
   }
 
   public async getDetailsFromTransaction(
@@ -300,7 +307,7 @@ class TezosKtProtocolImpl implements TezosKtProtocol {
   public async getTransactionMaxAmountWithPublicKey(
     publicKey: PublicKey,
     _to: string[],
-    _configuration?: TransactionConfiguration<TezosUnits>
+    _configuration?: TransactionFullConfiguration<TezosUnits>
   ): Promise<Amount<TezosUnits>> {
     const balance: Balance<TezosUnits> = await this.getBalanceOfPublicKey(publicKey)
 
@@ -309,7 +316,8 @@ class TezosKtProtocolImpl implements TezosKtProtocol {
 
   public async getTransactionFeeWithPublicKey(
     _publicKey: PublicKey,
-    _details: TransactionDetails<TezosUnits>[]
+    _details: TransactionDetails<TezosUnits>[],
+    _configuration?: TransactionSimpleConfiguration
   ): Promise<Amount<TezosUnits>> {
     return newAmount(MIGRATION_FEE, 'blockchain')
   }
@@ -317,7 +325,7 @@ class TezosKtProtocolImpl implements TezosKtProtocol {
   public async prepareTransactionWithPublicKey(
     _publicKey: PublicKey,
     _details: TransactionDetails<TezosUnits>[],
-    _configuration?: TransactionConfiguration<TezosUnits>
+    _configuration?: TransactionFullConfiguration<TezosUnits>
   ): Promise<TezosUnsignedTransaction> {
     throw new UnsupportedError(Domain.TEZOS, 'sending funds from KT addresses is not supported. Please use the migration feature.')
   }

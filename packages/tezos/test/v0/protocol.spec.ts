@@ -5,7 +5,7 @@ import sinon = require('sinon')
 
 import { IAirGapTransaction } from '@airgap/coinlib-core/interfaces/IAirGapTransaction'
 
-import { TezosProtocol } from '../../src'
+import { TezosProtocol } from '../../src/v0'
 
 import { TestProtocolSpec } from './implementations'
 import { TezosTestProtocolSpec } from './specs/tezos'

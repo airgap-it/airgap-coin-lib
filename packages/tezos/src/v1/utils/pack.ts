@@ -48,14 +48,13 @@ export function encodeAddress(address: string): Buffer {
 }
 
 export function packMichelsonType(type: MichelsonType): string {
-  return `${WATERMARK.message}${type.encode().toString('hex')}`
+  return `${WATERMARK.message.toString('hex')}${type.encode().toString('hex')}`
 }
 
 export function unpackMichelsonType(encoded: string): MichelsonType {
   const bytes: Buffer = hexToBytes(encoded)
-  const watermarkBytes: Buffer = hexToBytes(WATERMARK.message)
-  const prefix: Buffer = bytes.slice(0, watermarkBytes.length)
-  if (!prefix.equals(watermarkBytes)) {
+  const prefix: Buffer = bytes.slice(0, WATERMARK.message.length)
+  if (!prefix.equals(WATERMARK.message)) {
     throw new ConditionViolationError(Domain.TEZOS, 'Invalid packed MichelsonType.')
   }
 

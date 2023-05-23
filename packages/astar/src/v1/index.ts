@@ -1,4 +1,3 @@
-import { createAstarSubscanBlockExplorer, createShidenSubscanBlockExplorer } from './block-explorer/SubscanBlockExplorer'
 import { AstarModule } from './module/AstarModule'
 import { AstarProtocol, createAstarProtocol } from './protocol/AstarProtocol'
 import { createShidenProtocol, ShidenProtocol } from './protocol/ShidenProtocol'
@@ -13,10 +12,6 @@ export { AstarModule }
 // Protocol
 
 export { AstarProtocol, createAstarProtocol, ShidenProtocol, createShidenProtocol }
-
-// Block Explorer
-
-export { createAstarSubscanBlockExplorer, createShidenSubscanBlockExplorer }
 
 // Types
 

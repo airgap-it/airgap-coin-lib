@@ -10,15 +10,16 @@ import {
 } from '@airgap/module-kit'
 import { BlockExplorer } from '@airgap/module-kit/block-explorer/block-explorer'
 import { AirGapProtocol, OfflineProtocol, OnlineProtocol } from '@airgap/module-kit/protocol/protocol'
+import { SubscanBlockExplorer } from '@airgap/substrate'
 
-import { createAstarSubscanBlockExplorer, createShidenSubscanBlockExplorer } from '../block-explorer/SubscanBlockExplorer'
 import { ASTAR_MAINNET_PROTOCOL_NETWORK, createAstarProtocol } from '../protocol/AstarProtocol'
 import { createShidenProtocol, SHIDEN_MAINNET_PROTOCOL_NETWORK } from '../protocol/ShidenProtocol'
 import { AstarV3SerializerCompanion } from '../serializer/v3/serializer-companion'
+import { AstarProtocolNetwork } from '../types/protocol'
 
 type SupportedProtocols = MainProtocolSymbols.ASTAR | MainProtocolSymbols.SHIDEN
 
-export class AstarModule implements AirGapModule<{ Protocols: SupportedProtocols }> {
+export class AstarModule implements AirGapModule<{ Protocols: SupportedProtocols; ProtocolNetwork: AstarProtocolNetwork }> {
   private readonly networkRegistries: Record<SupportedProtocols, ModuleNetworkRegistry> = {
     [MainProtocolSymbols.ASTAR]: new ModuleNetworkRegistry({
       supportedNetworks: [ASTAR_MAINNET_PROTOCOL_NETWORK]
@@ -33,8 +34,13 @@ export class AstarModule implements AirGapModule<{ Protocols: SupportedProtocols
     return this.createProtocol(identifier)
   }
 
-  public async createOnlineProtocol(identifier: SupportedProtocols, networkId?: string): Promise<OnlineProtocol | undefined> {
-    const network: ProtocolNetwork | undefined = this.networkRegistries[identifier]?.findNetwork(networkId)
+  public async createOnlineProtocol(
+    identifier: SupportedProtocols,
+    networkOrId?: AstarProtocolNetwork | string
+  ): Promise<OnlineProtocol | undefined> {
+    const network: ProtocolNetwork | undefined =
+      typeof networkOrId === 'object' ? networkOrId : this.networkRegistries[identifier]?.findNetwork(networkOrId)
+
     if (network === undefined) {
       throw new ConditionViolationError(Domain.SUBSTRATE, `Protocol network type not supported. (Astar)`)
     }
@@ -42,20 +48,18 @@ export class AstarModule implements AirGapModule<{ Protocols: SupportedProtocols
     return this.createProtocol(identifier, network)
   }
 
-  public async createBlockExplorer(identifier: SupportedProtocols, networkId?: string): Promise<BlockExplorer | undefined> {
-    const network: ProtocolNetwork | undefined = this.networkRegistries[identifier]?.findNetwork(networkId)
-    if (network?.type !== 'mainnet') {
+  public async createBlockExplorer(
+    identifier: SupportedProtocols,
+    networkOrId?: AstarProtocolNetwork | string
+  ): Promise<BlockExplorer | undefined> {
+    const network: ProtocolNetwork | undefined =
+      typeof networkOrId === 'object' ? networkOrId : this.networkRegistries[identifier]?.findNetwork(networkOrId)
+
+    if (network === undefined) {
       throw new ConditionViolationError(Domain.SUBSTRATE, `Block Explorer network type not supported. (Astar)`)
     }
 
-    switch (identifier) {
-      case MainProtocolSymbols.ASTAR:
-        return createAstarSubscanBlockExplorer()
-      case MainProtocolSymbols.SHIDEN:
-        return createShidenSubscanBlockExplorer()
-      default:
-        throw new ConditionViolationError(Domain.SUBSTRATE, `Protocol ${identifier} not supported. (Astar)`)
-    }
+    return new SubscanBlockExplorer(network.blockExplorerUrl)
   }
 
   public async createV3SerializerCompanion(): Promise<AirGapV3SerializerCompanion> {

@@ -1,9 +1,7 @@
 import { AirGapBlockExplorer, BlockExplorerMetadata } from '@airgap/module-kit'
 
-const BLOCK_EXPLORER_MAINNET_URL: string = 'https://live.blockcypher.com/btc'
-
 export class BlockCypherBlockExplorer implements AirGapBlockExplorer {
-  public constructor(public readonly url: string = BLOCK_EXPLORER_MAINNET_URL) {}
+  public constructor(public readonly url: string) {}
 
   private readonly metadata: BlockExplorerMetadata = {
     name: 'BlockCypher',

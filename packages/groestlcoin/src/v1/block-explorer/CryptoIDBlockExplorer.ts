@@ -1,10 +1,7 @@
 import { AirGapBlockExplorer, BlockExplorerMetadata } from '@airgap/module-kit'
 
-export const CRYPTOID_MAINNET_URL = 'https://chainz.cryptoid.info/grs'
-export const CRYPTOID_TESTNET_URL = 'https://chainz.cryptoid.info/grs-test'
-
 export class CryptoIDBlockExplorer implements AirGapBlockExplorer {
-  public constructor(public readonly url: string = CRYPTOID_MAINNET_URL) {}
+  public constructor(public readonly url: string) {}
 
   private readonly metadata: BlockExplorerMetadata = {
     name: 'cryptoID',

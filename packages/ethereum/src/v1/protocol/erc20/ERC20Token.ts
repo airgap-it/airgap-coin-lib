@@ -15,8 +15,9 @@ import {
   newAmount,
   newUnsignedTransaction,
   PublicKey,
+  RecursivePartial,
   SecretKey,
-  TransactionConfiguration,
+  TransactionFullConfiguration,
   TransactionDetails
 } from '@airgap/module-kit'
 import { FeeMarketEIP1559Transaction, TransactionFactory } from '@ethereumjs/tx'
@@ -255,7 +256,7 @@ class ERC20TokenImpl extends EthereumBaseProtocolImpl<string> implements ERC20To
   public async getTransactionMaxAmountWithPublicKey(
     publicKey: PublicKey,
     to: string[],
-    configuration?: TransactionConfiguration<EthereumUnits>
+    configuration?: TransactionFullConfiguration<EthereumUnits>
   ): Promise<Amount> {
     const balance: Balance = await this.getBalanceOfPublicKey(publicKey)
 
@@ -265,7 +266,7 @@ class ERC20TokenImpl extends EthereumBaseProtocolImpl<string> implements ERC20To
   public async prepareTransactionWithPublicKey(
     publicKey: PublicKey,
     details: TransactionDetails[],
-    configuration?: TransactionConfiguration<EthereumUnits>
+    configuration?: TransactionFullConfiguration<EthereumUnits>
   ): Promise<EthereumUnsignedTransaction> {
     if (details.length !== 1) {
       throw new ConditionViolationError(Domain.ETHEREUM, 'you cannot have 0 transaction details')
@@ -340,8 +341,8 @@ class ERC20TokenImpl extends EthereumBaseProtocolImpl<string> implements ERC20To
 
 // Factory
 
-export function createERC20Token(metadata: ERC20TokenMetadata): ERC20Token {
-  const protocolOptions: EthereumProtocolOptions = createERC20TokenOptions()
+export function createERC20Token(metadata: ERC20TokenMetadata, options?: RecursivePartial<EthereumProtocolOptions>): ERC20Token {
+  const protocolOptions: EthereumProtocolOptions = createERC20TokenOptions(options?.network)
   const tokenOptions: ERC20TokenOptions = {
     ...protocolOptions,
     name: metadata.name,

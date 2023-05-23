@@ -5,7 +5,7 @@ import { DelegateeDetails, DelegationDetails, DelegatorDetails } from '@airgap/c
 import { CurrencyUnit, FeeDefaults } from '@airgap/coinlib-core/protocols/ICoinProtocol'
 import { assertFields } from '@airgap/coinlib-core/utils/assert'
 import { MainProtocolSymbols, ProtocolSymbols } from '@airgap/coinlib-core/utils/ProtocolSymbols'
-import { RawSubstrateTransaction } from '@airgap/substrate'
+import { RawSubstrateTransaction } from '@airgap/substrate/v0'
 import { SubstrateTransactionType } from '@airgap/substrate/v0/protocol/common/data/transaction/SubstrateTransaction'
 import { SubstrateAccountId } from '@airgap/substrate/v0/protocol/compat/SubstrateCompatAddress'
 import { MoonbeamAddress } from '@airgap/substrate/v0/protocol/moonbeam/MoonbeamAddress'

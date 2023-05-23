@@ -1,11 +1,14 @@
+import { DelegateeDetails, DelegationDetails, DelegatorDetails } from '@airgap/coinlib-core'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
-import { newUnsignedTransaction, PublicKey } from '@airgap/module-kit'
+import { assertFields } from '@airgap/coinlib-core/utils/assert'
+import { Amount, newAmount, newUnsignedTransaction, PublicKey } from '@airgap/module-kit'
+import { AirGapDelegateProtocol } from '@airgap/module-kit/internal'
 import {
   SubscanBlockExplorerClient,
   SubstrateAccountId,
-  SubstrateProtocol,
-  SubstrateProtocolImpl,
   SubstrateSS58Address,
+  SubstrateStakingProtocol,
+  SubstrateStakingProtocolImpl,
   SubstrateTransactionParameters,
   SubstrateTransactionType,
   SubstrateUnsignedTransaction
@@ -13,7 +16,12 @@ import {
 
 import { PolkadotAccountController } from '../controller/PolkadotAccountController'
 import { PolkadotTransactionController } from '../controller/PolkadotTransactionController'
+import { PolkadotElectionStatus, PolkadotEraElectionStatus } from '../data/staking/PolkadotEraElectionStatus'
+import { PolkadotNominationStatus } from '../data/staking/PolkadotNominationStatus'
+import { PolkadotNominatorDetails } from '../data/staking/PolkadotNominatorDetails'
 import { PolkadotPayee } from '../data/staking/PolkadotPayee'
+import { PolkadotStakingActionType } from '../data/staking/PolkadotStakingActionType'
+import { PolkadotValidatorDetails } from '../data/staking/PolkadotValidatorDetails'
 import { PolkadotNodeClient } from '../node/PolkadotNodeClient'
 import { PolkadotProtocolConfiguration } from '../types/configuration'
 import { PolkadotCryptoConfiguration } from '../types/crypto'
@@ -22,12 +30,24 @@ import { PolkadotBaseProtocolOptions, PolkadotProtocolNetwork } from '../types/p
 // Interface
 
 export interface PolkadotBaseProtocol<_Units extends string = string>
-  extends SubstrateProtocol<_Units, PolkadotProtocolNetwork, PolkadotCryptoConfiguration> {}
+  extends SubstrateStakingProtocol<PolkadotProtocolConfiguration, _Units, PolkadotProtocolNetwork, PolkadotCryptoConfiguration>,
+    AirGapDelegateProtocol {
+  getNominatorDetails(address: string, validators?: string[]): Promise<PolkadotNominatorDetails>
+  getValidatorDetails(address: string): Promise<PolkadotValidatorDetails>
+  getNominationStatus(address: string, validator: string, era?: number): Promise<PolkadotNominationStatus | undefined>
+
+  getUnlockingBalance(address: string): Promise<Amount<_Units>>
+
+  getElectionStatus(): Promise<PolkadotElectionStatus>
+  getExistentialDeposit(): Promise<Amount<_Units>>
+
+  getFutureStakingTransactionsFee(address: string): Promise<Amount<_Units>>
+}
 
 // Implementation
 
 export abstract class PolkadotBaseProtocolImpl<_Units extends string>
-  extends SubstrateProtocolImpl<
+  extends SubstrateStakingProtocolImpl<
     _Units,
     PolkadotProtocolConfiguration,
     PolkadotProtocolNetwork,
@@ -36,6 +56,8 @@ export abstract class PolkadotBaseProtocolImpl<_Units extends string>
     PolkadotTransactionController
   >
   implements PolkadotBaseProtocol<_Units> {
+  protected readonly defaultValidator?: string
+
   public constructor(options: PolkadotBaseProtocolOptions<_Units>) {
     const nodeClient: PolkadotNodeClient = new PolkadotNodeClient(options.configuration, options.network.rpcUrl)
 
@@ -45,6 +67,135 @@ export abstract class PolkadotBaseProtocolImpl<_Units extends string>
     const blockExplorer: SubscanBlockExplorerClient = new SubscanBlockExplorerClient(options.network.blockExplorerApi)
 
     super(options, nodeClient, accountController, transactionController, blockExplorer)
+
+    this.defaultValidator = options.network.defaultValidator
+  }
+
+  // Staking
+
+  public async getDefaultDelegatee(): Promise<string> {
+    if (this.defaultValidator) {
+      return this.defaultValidator
+    }
+
+    const validators = await this.nodeClient.getValidators()
+
+    return validators ? validators[0].asString() : ''
+  }
+
+  public async getCurrentDelegateesForPublicKey(publicKey: PublicKey): Promise<string[]> {
+    return this.accountController.getCurrentValidators(publicKey)
+  }
+
+  public async getCurrentDelegateesForAddress(address: string): Promise<string[]> {
+    return this.accountController.getCurrentValidators(address)
+  }
+
+  public async getDelegateeDetails(address: string): Promise<DelegateeDetails> {
+    const validatorDetails = await this.accountController.getValidatorDetails(address)
+
+    return {
+      name: validatorDetails.name || '',
+      status: validatorDetails.status || '',
+      address
+    }
+  }
+
+  public async isPublicKeyDelegating(publicKey: PublicKey): Promise<boolean> {
+    return this.accountController.isDelegating(publicKey)
+  }
+
+  public async isAddressDelegating(address: string): Promise<boolean> {
+    return this.accountController.isDelegating(address)
+  }
+
+  public async getDelegatorDetailsFromPublicKey(publicKey: PublicKey): Promise<DelegatorDetails> {
+    const address: string = await this.getAddressFromPublicKey(publicKey)
+
+    return this.getDelegatorDetailsFromAddress(address)
+  }
+
+  public async getDelegatorDetailsFromAddress(address: string): Promise<DelegatorDetails> {
+    return this.accountController.getNominatorDetails(address)
+  }
+
+  public async getDelegationDetailsFromPublicKey(publicKey: PublicKey, delegatees: string[]): Promise<DelegationDetails> {
+    const address = await this.getAddressFromPublicKey(publicKey)
+
+    return this.getDelegationDetailsFromAddress(address, delegatees)
+  }
+
+  public async getDelegationDetailsFromAddress(address: string, delegatees: string[]): Promise<DelegationDetails> {
+    const [nominatorDetails, validatorsDetails] = await Promise.all([
+      this.accountController.getNominatorDetails(address, delegatees),
+      Promise.all(delegatees.map((validator) => this.accountController.getValidatorDetails(validator)))
+    ])
+
+    nominatorDetails.rewards =
+      nominatorDetails.delegatees.length > 0 && nominatorDetails.stakingDetails
+        ? nominatorDetails.stakingDetails.rewards.map((reward) => ({
+            index: reward.eraIndex,
+            amount: reward.amount,
+            timestamp: reward.timestamp
+          }))
+        : []
+
+    return {
+      delegator: nominatorDetails,
+      delegatees: validatorsDetails
+    }
+  }
+
+  // tslint:disable-next-line: cyclomatic-complexity
+  public async prepareDelegatorActionFromPublicKey(publicKey: PublicKey, type: any, data?: any): Promise<any[]> {
+    if (!data) {
+      data = {}
+    }
+
+    switch (type) {
+      case PolkadotStakingActionType.BOND_NOMINATE:
+        assertFields(`${type} action`, data, 'targets', 'value', 'payee')
+
+        return this.prepareNomination(publicKey, data.tip || 0, data.targets, data.controller || publicKey, data.value, data.payee)
+      case PolkadotStakingActionType.REBOND_NOMINATE:
+        assertFields(`${type} action`, data, 'targets', 'value')
+
+        return this.prepareRebondNominate(publicKey, data.tip || 0, data.targets, data.value)
+      case PolkadotStakingActionType.NOMINATE:
+        assertFields(`${type} action`, data, 'targets')
+
+        return this.prepareNomination(publicKey, data.tip || 0, data.targets)
+      case PolkadotStakingActionType.CANCEL_NOMINATION:
+        return this.prepareScheduleUndelegate(publicKey, data.tip || 0, data.value)
+      case PolkadotStakingActionType.CHANGE_NOMINATION:
+        assertFields(`${type} action`, data, 'targets')
+
+        return this.prepareChangeValidator(publicKey, data.tip || 0, data.targets)
+      case PolkadotStakingActionType.UNBOND:
+        assertFields(`${type} action`, data, 'value')
+
+        return this.prepareUnbond(publicKey, data.tip || 0, data.value)
+      case PolkadotStakingActionType.REBOND:
+        assertFields(`${type} action`, data, 'value')
+
+        return this.prepareRebond(publicKey, data.tip || 0, data.value)
+      case PolkadotStakingActionType.BOND_EXTRA:
+        assertFields(`${type} action`, data, 'value')
+
+        return this.prepareBondExtra(publicKey, data.tip || 0, data.value)
+      case PolkadotStakingActionType.REBOND_EXTRA:
+        assertFields(`${type} action`, data, 'value')
+
+        return this.prepareRebondExtra(publicKey, data.tip || 0, data.value)
+      case PolkadotStakingActionType.WITHDRAW_UNBONDED:
+        return this.prepareWithdrawUnbonded(publicKey, data.tip || 0)
+      case PolkadotStakingActionType.CHANGE_REWARD_DESTINATION:
+        return Promise.reject('Unsupported delegator action.')
+      case PolkadotStakingActionType.CHANGE_CONTROLLER:
+        return Promise.reject('Unsupported delegator action.')
+      default:
+        return Promise.reject('Unsupported delegator action.')
+    }
   }
 
   public async prepareNomination(
@@ -54,7 +205,7 @@ export abstract class PolkadotBaseProtocolImpl<_Units extends string>
     controller?: string,
     value?: string | number | BigNumber,
     payee?: string | PolkadotPayee
-  ): Promise<SubstrateUnsignedTransaction> {
+  ): Promise<SubstrateUnsignedTransaction[]> {
     const balance = await this.accountController.getBalance(publicKey)
     const available = new BigNumber(balance.transferableCoveringFees).minus(value || 0)
 
@@ -84,7 +235,7 @@ export abstract class PolkadotBaseProtocolImpl<_Units extends string>
       }
     ])
 
-    return newUnsignedTransaction<SubstrateUnsignedTransaction>({ encoded })
+    return [newUnsignedTransaction<SubstrateUnsignedTransaction>({ encoded })]
   }
 
   public async prepareRebondNominate(
@@ -92,7 +243,7 @@ export abstract class PolkadotBaseProtocolImpl<_Units extends string>
     tip: string | number | BigNumber,
     targets: string[] | string,
     value: string | number | BigNumber
-  ): Promise<SubstrateUnsignedTransaction> {
+  ): Promise<SubstrateUnsignedTransaction[]> {
     const [balance, lockedBalance] = await Promise.all([
       this.accountController.getBalance(publicKey),
       this.accountController.getUnlockingBalance(publicKey)
@@ -137,14 +288,14 @@ export abstract class PolkadotBaseProtocolImpl<_Units extends string>
 
     const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, balance.transferableCoveringFees, params)
 
-    return newUnsignedTransaction<SubstrateUnsignedTransaction>({ encoded })
+    return [newUnsignedTransaction<SubstrateUnsignedTransaction>({ encoded })]
   }
 
   public async prepareScheduleUndelegate(
     publicKey: PublicKey,
     tip: string | number | BigNumber,
     value?: string | number | BigNumber
-  ): Promise<SubstrateUnsignedTransaction> {
+  ): Promise<SubstrateUnsignedTransaction[]> {
     const balance = await this.accountController.getBalance(publicKey)
     const keepController = value === undefined
 
@@ -167,14 +318,14 @@ export abstract class PolkadotBaseProtocolImpl<_Units extends string>
           ])
     ])
 
-    return newUnsignedTransaction<SubstrateUnsignedTransaction>({ encoded })
+    return [newUnsignedTransaction<SubstrateUnsignedTransaction>({ encoded })]
   }
 
   public async prepareChangeValidator(
-    publicKey: string,
+    publicKey: PublicKey,
     tip: string | number | BigNumber,
     targets: string[] | string
-  ): Promise<SubstrateUnsignedTransaction> {
+  ): Promise<SubstrateUnsignedTransaction[]> {
     const balance = await this.accountController.getBalance(publicKey)
 
     const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, balance.transferableCoveringFees, [
@@ -187,14 +338,14 @@ export abstract class PolkadotBaseProtocolImpl<_Units extends string>
       }
     ])
 
-    return newUnsignedTransaction<SubstrateUnsignedTransaction>({ encoded })
+    return [newUnsignedTransaction<SubstrateUnsignedTransaction>({ encoded })]
   }
 
   public async prepareUnbond(
     publicKey: PublicKey,
     tip: string | number | BigNumber,
     value: string | number | BigNumber
-  ): Promise<SubstrateUnsignedTransaction> {
+  ): Promise<SubstrateUnsignedTransaction[]> {
     const balance = await this.accountController.getBalance(publicKey)
 
     const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, balance.transferableCoveringFees, [
@@ -207,14 +358,14 @@ export abstract class PolkadotBaseProtocolImpl<_Units extends string>
       }
     ])
 
-    return newUnsignedTransaction<SubstrateUnsignedTransaction>({ encoded })
+    return [newUnsignedTransaction<SubstrateUnsignedTransaction>({ encoded })]
   }
 
   public async prepareRebond(
     publicKey: PublicKey,
     tip: string | number | BigNumber,
     value: string | number | BigNumber
-  ): Promise<SubstrateUnsignedTransaction> {
+  ): Promise<SubstrateUnsignedTransaction[]> {
     const balance = await this.accountController.getBalance(publicKey)
 
     const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, balance.transferableCoveringFees, [
@@ -227,14 +378,14 @@ export abstract class PolkadotBaseProtocolImpl<_Units extends string>
       }
     ])
 
-    return newUnsignedTransaction<SubstrateUnsignedTransaction>({ encoded })
+    return [newUnsignedTransaction<SubstrateUnsignedTransaction>({ encoded })]
   }
 
   public async prepareBondExtra(
     publicKey: PublicKey,
     tip: string | number | BigNumber,
     value: string | number | BigNumber
-  ): Promise<SubstrateUnsignedTransaction> {
+  ): Promise<SubstrateUnsignedTransaction[]> {
     const balance = await this.accountController.getBalance(publicKey)
 
     const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, balance.transferableCoveringFees, [
@@ -247,14 +398,14 @@ export abstract class PolkadotBaseProtocolImpl<_Units extends string>
       }
     ])
 
-    return newUnsignedTransaction<SubstrateUnsignedTransaction>({ encoded })
+    return [newUnsignedTransaction<SubstrateUnsignedTransaction>({ encoded })]
   }
 
   public async prepareRebondExtra(
     publicKey: PublicKey,
     tip: string | number | BigNumber,
     value: string | number | BigNumber
-  ): Promise<SubstrateUnsignedTransaction> {
+  ): Promise<SubstrateUnsignedTransaction[]> {
     const [balance, lockedBalance] = await Promise.all([
       this.accountController.getBalance(publicKey),
       this.accountController.getUnlockingBalance(publicKey)
@@ -291,10 +442,10 @@ export abstract class PolkadotBaseProtocolImpl<_Units extends string>
 
     const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, balance.transferableCoveringFees, configs)
 
-    return newUnsignedTransaction<SubstrateUnsignedTransaction>({ encoded })
+    return [newUnsignedTransaction<SubstrateUnsignedTransaction>({ encoded })]
   }
 
-  public async prepareWithdrawUnbonded(publicKey: string, tip: string | number | BigNumber): Promise<SubstrateUnsignedTransaction> {
+  public async prepareWithdrawUnbonded(publicKey: PublicKey, tip: string | number | BigNumber): Promise<SubstrateUnsignedTransaction[]> {
     const [balance, slashingSpansNumber] = await Promise.all([
       this.accountController.getBalance(publicKey),
       this.accountController.getSlashingSpansNumber(publicKey)
@@ -308,7 +459,46 @@ export abstract class PolkadotBaseProtocolImpl<_Units extends string>
       }
     ])
 
-    return newUnsignedTransaction<SubstrateUnsignedTransaction>({ encoded })
+    return [newUnsignedTransaction<SubstrateUnsignedTransaction>({ encoded })]
+  }
+
+  // Custom
+
+  public async getNominatorDetails(address: string, validators?: string[]): Promise<PolkadotNominatorDetails> {
+    return this.accountController.getNominatorDetails(address, validators)
+  }
+
+  public async getValidatorDetails(address: string): Promise<PolkadotValidatorDetails> {
+    return this.accountController.getValidatorDetails(address)
+  }
+
+  public async getNominationStatus(address: string, validator: string, era?: number): Promise<PolkadotNominationStatus | undefined> {
+    return this.accountController.getNominationStatus(address, validator, era)
+  }
+
+  public async getUnlockingBalance(address: string): Promise<Amount<_Units>> {
+    const balance: BigNumber = await this.accountController.getUnlockingBalance(address)
+
+    return newAmount(balance, 'blockchain')
+  }
+
+  public async getElectionStatus(): Promise<PolkadotElectionStatus> {
+    const status: PolkadotEraElectionStatus | undefined = await this.nodeClient.getElectionStatus()
+
+    return status?.status.value ?? PolkadotElectionStatus.CLOSED
+  }
+
+  public async getExistentialDeposit(): Promise<Amount<_Units>> {
+    const existentialDeposit: BigNumber | undefined = await this.nodeClient.getExistentialDeposit()
+
+    return newAmount(existentialDeposit ?? 0, 'blockchain')
+  }
+
+  public async getFutureStakingTransactionsFee(address: string): Promise<Amount<_Units>> {
+    const futureTransactions = await this.getFutureRequiredTransactions(address, 'delegate')
+    const feeEstimation: BigNumber = await this.transactionController.estimateTransactionFees(address, futureTransactions)
+
+    return newAmount(feeEstimation, 'blockchain')
   }
 
   protected async getFutureRequiredTransactions(

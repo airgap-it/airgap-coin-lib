@@ -1,7 +1,7 @@
 import { AirGapWalletStatus } from '@airgap/coinlib-core/wallet/AirGapWallet'
 
 import { IACMessageDefinitionObject } from '../../../../serializer/src'
-import { BitcoinTestnetProtocol, SignedBitcoinTransaction } from '../../../src'
+import { BitcoinTestnetProtocol, SignedBitcoinTransaction } from '../../../src/v0'
 import { TestProtocolSpec } from '../implementations'
 import { BitcoinTestnetProtocolStub } from '../stubs/bitcoin-test.stub'
 

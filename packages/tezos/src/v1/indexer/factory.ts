@@ -1,17 +1,17 @@
 import { assertNever, Domain } from '@airgap/coinlib-core'
 import { UnsupportedError } from '@airgap/coinlib-core/errors'
 
-import { TezosIndexer } from '../types/indexer'
+import { TezosIndexerType } from '../types/indexer'
 
 import { TezosIndexerClient } from './TezosIndexerClient'
 import { TzKTIndexerClient } from './TzKTIndexerClient'
 
-export function createTezosIndexerClient(indexer: TezosIndexer): TezosIndexerClient {
-  switch (indexer.type) {
+export function createTezosIndexerClient(type: TezosIndexerType, apiUrl: string): TezosIndexerClient {
+  switch (type) {
     case 'tzkt':
-      return new TzKTIndexerClient(indexer.apiUrl)
+      return new TzKTIndexerClient(apiUrl)
     default:
-      assertNever(indexer.type)
+      assertNever(type)
       throw new UnsupportedError(Domain.TEZOS, 'Unknown indexer type.')
   }
 }

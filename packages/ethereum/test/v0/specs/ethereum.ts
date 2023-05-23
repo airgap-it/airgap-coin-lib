@@ -3,7 +3,7 @@ import { AirGapTransactionStatus } from '@airgap/coinlib-core/interfaces/IAirGap
 import { IACMessageType } from '@airgap/serializer'
 import { SchemaInfo as SchemaInfoV2, SchemaRoot } from '@airgap/serializer/v2/schemas/schema'
 
-import { EthereumProtocol, RawEthereumTransaction, SignedEthereumTransaction } from '../../../src'
+import { EthereumProtocol, RawEthereumTransaction, SignedEthereumTransaction } from '../../../src/v0'
 import { EthereumTransactionValidator } from '../../../src/v0/serializer/validators/transaction-validator'
 import { TestProtocolSpec } from '../implementations'
 import { EthereumProtocolStub } from '../stubs/ethereum.stub'

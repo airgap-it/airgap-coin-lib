@@ -18,8 +18,9 @@ import {
   PublicKey,
   SecretKey,
   Signature,
-  TransactionConfiguration,
-  TransactionDetails
+  TransactionFullConfiguration,
+  TransactionDetails,
+  TransactionSimpleConfiguration
 } from '@airgap/module-kit'
 
 import { TezosContract } from '../../contract/TezosContract'
@@ -46,10 +47,8 @@ import { TEZOS_ACCOUNT_METADATA, TEZOS_MAINNET_PROTOCOL_NETWORK, TEZOS_UNITS, Te
 
 // Interface
 
-export interface TezosFAProtocol<
-  _Units extends string = string,
-  _ProtocolNetwork extends TezosFAProtocolNetwork = TezosFAProtocolNetwork
-> extends AirGapProtocol<
+export interface TezosFAProtocol<_Units extends string = string, _ProtocolNetwork extends TezosFAProtocolNetwork = TezosFAProtocolNetwork>
+  extends AirGapProtocol<
     {
       AddressResult: Address
       ProtocolNetwork: _ProtocolNetwork
@@ -65,8 +64,10 @@ export interface TezosFAProtocol<
     'Crypto',
     'FetchDataForAddress'
   > {
+  isTezosFAProtocol: true
+
   contractMetadata(networkResolver?: TezosProtocolNetworkResolver): Promise<TezosContractMetadata | undefined>
-  allTokenMetadata(): Promise<Record<number, TezosFATokenMetadata> | undefined>
+  getAllTokenMetadata(): Promise<Record<number, TezosFATokenMetadata> | undefined>
 
   bigMapValue(key: string, isKeyHash?: boolean, bigMapId?: number): Promise<MichelineNode | undefined>
 
@@ -84,7 +85,10 @@ export abstract class TezosFAProtocolImpl<
   _Entrypoints extends string,
   _Units extends string,
   _ProtocolNetwork extends TezosFAProtocolNetwork
-> implements TezosFAProtocol<_Units, _ProtocolNetwork> {
+> implements TezosFAProtocol<_Units, _ProtocolNetwork>
+{
+  public readonly isTezosFAProtocol: true = true
+
   protected readonly options: TezosFAProtocolOptions<_Units, _ProtocolNetwork>
 
   protected readonly tezos: TezosProtocol
@@ -102,7 +106,7 @@ export abstract class TezosFAProtocolImpl<
 
     this.tezos = new TezosProtocolImpl({ network: options.network })
     this.accountant = accountant
-    this.indexer = createTezosIndexerClient(options.network.indexer)
+    this.indexer = createTezosIndexerClient(options.network.indexerType, options.network.indexerApi)
 
     this.contract = new TezosContract(options.network.contractAddress, options.network)
 
@@ -250,8 +254,8 @@ export abstract class TezosFAProtocolImpl<
 
   public async getTransactionMaxAmountWithPublicKey(
     publicKey: PublicKey,
-    to: string[],
-    configuration?: TransactionConfiguration<TezosUnits>
+    _to: string[],
+    _configuration?: TransactionFullConfiguration<TezosUnits>
   ): Promise<Amount<_Units>> {
     const balance: Balance<_Units> = await this.getBalanceOfPublicKey(publicKey)
 
@@ -260,9 +264,10 @@ export abstract class TezosFAProtocolImpl<
 
   public async getTransactionFeeWithPublicKey(
     publicKey: PublicKey,
-    details: TransactionDetails<_Units>[]
+    details: TransactionDetails<_Units>[],
+    configuration?: TransactionSimpleConfiguration
   ): Promise<FeeDefaults<TezosUnits>> {
-    const transferCalls: TezosContractCall[] = await this.createTransferCalls(publicKey, details)
+    const transferCalls: TezosContractCall[] = await this.createTransferCalls(publicKey, details, configuration)
     const operations: TezosOperation[] = transferCalls.map((transferCall: TezosContractCall) => {
       return {
         kind: TezosOperationType.TRANSACTION,
@@ -279,7 +284,7 @@ export abstract class TezosFAProtocolImpl<
   public async prepareTransactionWithPublicKey(
     publicKey: PublicKey,
     details: TransactionDetails<_Units>[],
-    configuration?: TransactionConfiguration<TezosUnits>
+    configuration?: TransactionFullConfiguration<TezosUnits>
   ): Promise<TezosUnsignedTransaction> {
     let fee: Amount<TezosUnits>
     if (configuration?.fee !== undefined) {
@@ -304,10 +309,9 @@ export abstract class TezosFAProtocolImpl<
     return this.contract.metadata(networkResolver)
   }
 
-  public async allTokenMetadata(): Promise<Record<number, TezosFATokenMetadata> | undefined> {
-    const objktMetadata:
-      | Record<number, Partial<TezosFATokenMetadata>>
-      | undefined = await this.objktTokenMetadataIndexerClient.getTokenMetadata()
+  public async getAllTokenMetadata(): Promise<Record<number, TezosFATokenMetadata> | undefined> {
+    const objktMetadata: Record<number, Partial<TezosFATokenMetadata>> | undefined =
+      await this.objktTokenMetadataIndexerClient.getTokenMetadata()
     const missingTokenIDs: Set<number> | undefined =
       objktMetadata !== undefined
         ? new Set(
@@ -341,7 +345,7 @@ export abstract class TezosFAProtocolImpl<
   }
 
   protected async getTokenMetadataForTokenId(tokenId: number): Promise<TezosFATokenMetadata | undefined> {
-    const tokenMetadata: Record<number, TezosFATokenMetadata> | undefined = await this.allTokenMetadata()
+    const tokenMetadata: Record<number, TezosFATokenMetadata> | undefined = await this.getAllTokenMetadata()
 
     return tokenMetadata ? tokenMetadata[tokenId] : undefined
   }
@@ -405,7 +409,7 @@ export abstract class TezosFAProtocolImpl<
   protected abstract createTransferCalls(
     publicKey: PublicKey,
     details: TransactionDetails<_Units>[],
-    configuration?: TransactionConfiguration<TezosUnits>
+    configuration?: TransactionFullConfiguration<TezosUnits>
   ): Promise<TezosContractCall[]>
 
   protected async prepareContractCall(
@@ -513,4 +517,26 @@ export const TEZOS_FA_MAINNET_PROTOCOL_NETWORK: Omit<TezosFAProtocolNetwork, 'co
   ...TEZOS_MAINNET_PROTOCOL_NETWORK,
   defaultSourceAddress: 'tz1Mj7RzPmMAqDUNFBn5t5VbXmWW4cSUAdtT',
   objktApiUrl: 'https://data.objkt.com/v3/graphql'
+}
+
+export function createTezosFAProtocolOptions<_Units extends string, _ProtocolNetwork extends TezosFAProtocolNetwork>(
+  network: _ProtocolNetwork,
+  identifier: TezosFAProtocolOptions<_Units, _ProtocolNetwork>['identifier'],
+  name?: TezosFAProtocolOptions<_Units, _ProtocolNetwork>['name'],
+  units?: TezosFAProtocolOptions<_Units, _ProtocolNetwork>['units'],
+  mainUnit?: TezosFAProtocolOptions<_Units, _ProtocolNetwork>['mainUnit'],
+  feeDefaults?: TezosFAProtocolOptions<_Units, _ProtocolNetwork>['feeDefaults']
+): TezosFAProtocolOptions<_Units, _ProtocolNetwork> {
+  return {
+    network,
+    identifier,
+    name: name ?? 'Generic FA2',
+    units:
+      units ??
+      ({
+        tez: TEZOS_UNITS.tez
+      } as TezosFAProtocolOptions<_Units, _ProtocolNetwork>['units']),
+    mainUnit: mainUnit ?? ('tez' as TezosFAProtocolOptions<_Units, _ProtocolNetwork>['mainUnit']),
+    feeDefaults
+  }
 }

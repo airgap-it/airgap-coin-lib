@@ -55,11 +55,14 @@ export interface TransactionDetails<_Units extends string = string> {
   arbitraryData?: string
 }
 
-export interface TransactionConfiguration<_FeeUnits extends string = string> {
-  fee?: Amount<_FeeUnits>
+export interface TransactionSimpleConfiguration {
   arbitraryData?: string
   keepMinBalance?: boolean
   assetId?: number // TODO: move it to an extension?
+}
+
+export interface TransactionFullConfiguration<_FeeUnits extends string = string> extends TransactionSimpleConfiguration {
+  fee?: Amount<_FeeUnits>
 }
 
 // ##### TransactionStatus #####

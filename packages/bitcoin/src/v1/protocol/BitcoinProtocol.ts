@@ -34,9 +34,10 @@ import {
   SecretKey,
   Signature,
   SignedTransaction,
-  TransactionConfiguration,
+  TransactionFullConfiguration,
   TransactionDetails,
-  UnsignedTransaction
+  UnsignedTransaction,
+  TransactionSimpleConfiguration
 } from '@airgap/module-kit'
 
 import { BitcoinAddress } from '../data/BitcoinAddress'
@@ -734,14 +735,15 @@ export class BitcoinProtocolImpl implements BitcoinProtocol {
   public async getTransactionMaxAmountWithPublicKey(
     publicKey: ExtendedPublicKey | PublicKey,
     to: string[],
-    configuration?: TransactionConfiguration<BitcoinUnits>
+    configuration?: TransactionFullConfiguration<BitcoinUnits>
   ): Promise<Amount<BitcoinUnits>> {
     return (await this.getBalanceOfPublicKey(publicKey)).total
   }
 
   public async getTransactionFeeWithPublicKey(
-    publicKey: ExtendedPublicKey | PublicKey,
-    details: TransactionDetails<BitcoinUnits>[]
+    _publicKey: ExtendedPublicKey | PublicKey,
+    _details: TransactionDetails<BitcoinUnits>[],
+    _configuration?: TransactionSimpleConfiguration
   ): Promise<FeeDefaults<BitcoinUnits>> {
     const result = (await axios.get(`${this.options.network.indexerApi}/api/v2/estimatefee/5`)).data.result
     const estimatedFee: BigNumber = new BigNumber(newAmount<BitcoinUnits>(result, 'BTC').blockchain(this.units).value)
@@ -763,7 +765,7 @@ export class BitcoinProtocolImpl implements BitcoinProtocol {
   public async prepareTransactionWithPublicKey(
     publicKey: ExtendedPublicKey | PublicKey,
     details: TransactionDetails<BitcoinUnits>[],
-    configuration?: TransactionConfiguration<BitcoinUnits>
+    configuration?: TransactionFullConfiguration<BitcoinUnits>
   ): Promise<BitcoinUnsignedTransaction> {
     switch (publicKey.type) {
       case 'pub':
@@ -779,7 +781,7 @@ export class BitcoinProtocolImpl implements BitcoinProtocol {
   private async prepareTransactionWithNonExtendedPublicKey(
     publicKey: PublicKey,
     details: TransactionDetails<BitcoinUnits>[],
-    configuration?: TransactionConfiguration<BitcoinUnits>
+    configuration?: TransactionFullConfiguration<BitcoinUnits>
   ): Promise<BitcoinUnsignedTransaction> {
     let fee: Amount<BitcoinUnits>
     if (configuration?.fee !== undefined) {
@@ -858,7 +860,7 @@ export class BitcoinProtocolImpl implements BitcoinProtocol {
   private async prepareTransactionWithExtendedPublicKey(
     extendedPublicKey: ExtendedPublicKey,
     details: TransactionDetails<BitcoinUnits>[],
-    configuration?: TransactionConfiguration<BitcoinUnits>
+    configuration?: TransactionFullConfiguration<BitcoinUnits>
   ): Promise<BitcoinUnsignedTransaction> {
     let targetFee: Amount<BitcoinUnits>
     if (configuration?.fee !== undefined) {
@@ -1029,6 +1031,7 @@ export const BITCOIN_MAINNET_PROTOCOL_NETWORK: BitcoinStandardProtocolNetwork = 
   name: 'Mainnet',
   type: 'mainnet',
   rpcUrl: '',
+  blockExplorerUrl: 'https://live.blockcypher.com/btc',
   indexerApi: 'https://bitcoin.prod.gke.papers.tech'
 }
 

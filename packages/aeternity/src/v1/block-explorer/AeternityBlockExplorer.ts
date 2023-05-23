@@ -1,9 +1,7 @@
 import { AirGapBlockExplorer, BlockExplorerMetadata } from '@airgap/module-kit'
 
-const BLOCK_EXPLORER_URL: string = 'https://explorer.aeternity.io'
-
 export class AeternityBlockExplorer implements AirGapBlockExplorer {
-  public constructor(public readonly url: string = BLOCK_EXPLORER_URL) {}
+  public constructor(public readonly url: string) {}
 
   private readonly metadata: BlockExplorerMetadata = {
     name: 'æternity Explorer',

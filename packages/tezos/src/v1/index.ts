@@ -1,5 +1,11 @@
 import { createTezosBlockExplorer } from './block-explorer/factory'
 import { TzKTBlockExplorer } from './block-explorer/TzKTBlockExplorer'
+import { TezosContractRemoteDataFactory } from './contract/remote-data/TezosContractRemoteDataFactory'
+import { TezosContract } from './contract/TezosContract'
+import { TezosCryptoClient } from './crypto/TezosCryptoClient'
+import { TezosAddress } from './data/TezosAddress'
+import { TezosSaplingAddress } from './data/TezosSaplingAddress'
+import { TezosDomains } from './domains/TezosDomains'
 import { TezosModule } from './module/TezosModule'
 import { createTezosFA1p2Protocol, TezosFA1p2Protocol } from './protocol/fa/TezosFA1p2Protocol'
 import { createTezosFA1Protocol, TezosFA1Protocol } from './protocol/fa/TezosFA1Protocol'
@@ -35,9 +41,13 @@ import {
   TezosShieldedTezProtocol
 } from './protocol/sapling/TezosShieldedTezProtocol'
 import { createTezosProtocol, createTezosProtocolOptions, TezosProtocol } from './protocol/TezosProtocol'
-import { TezosBlockExplorer } from './types/block-explorer'
+import { TezosTransactionSignRequest } from './serializer/v3/schemas/definitions/transaction-sign-request-tezos'
+import { TezosSaplingTransactionSignRequest } from './serializer/v3/schemas/definitions/transaction-sign-request-tezos-sapling'
+import { TezosTransactionSignResponse } from './serializer/v3/schemas/definitions/transaction-sign-response-tezos'
+import { TezosSaplingTransactionSignResponse } from './serializer/v3/schemas/definitions/transaction-sign-response-tezos-sapling'
+import { TezosContractMetadata } from './types/contract/TezosContractMetadata'
 import { TezosCryptoConfiguration } from './types/crypto'
-import { TezosIndexer } from './types/indexer'
+import { TezosFATokenMetadata } from './types/fa/TezosFATokenMetadata'
 import { TezosNetwork } from './types/network'
 import { TezosActivateAccountOperation } from './types/operations/kinds/ActivateAccount'
 import { TezosBallotOperation } from './types/operations/kinds/Ballot'
@@ -50,7 +60,7 @@ import { TezosProposalOperation } from './types/operations/kinds/Proposal'
 import { TezosRevealOperation } from './types/operations/kinds/Reveal'
 import { TezosSeedNonceRevelationOperation } from './types/operations/kinds/SeedNonceRevelation'
 import { TezosOperation } from './types/operations/kinds/TezosOperation'
-import { TezosTransactionOperation } from './types/operations/kinds/Transaction'
+import { TezosTransactionOperation, TezosTransactionParameters } from './types/operations/kinds/Transaction'
 import { TezosOperationType } from './types/operations/TezosOperationType'
 import { TezosWrappedOperation } from './types/operations/TezosWrappedOperation'
 import {
@@ -69,7 +79,18 @@ import {
   TezosShieldedTezProtocolOptions,
   TezosUnits
 } from './types/protocol'
+import { TezosSaplingExternalMethodProvider } from './types/sapling/TezosSaplingExternalMethodProvider'
+import { TezosSaplingTransaction } from './types/sapling/TezosSaplingTransaction'
+import { TezosDelegatorAction } from './types/staking/TezosDelegatorAction'
 import { TezosKtTransactionCursor, TezosSignedTransaction, TezosTransactionCursor, TezosUnsignedTransaction } from './types/transaction'
+import {
+  isTezosFA1p2Protocol,
+  isTezosFA1Protocol,
+  isTezosFA2Protocol,
+  isTezosFAProtocol,
+  isTezosProtocol,
+  isTezosSaplingProtocol
+} from './utils/protocol/instance'
 
 // Module
 
@@ -154,6 +175,22 @@ export {
 
 export { TzKTBlockExplorer, createTezosBlockExplorer }
 
+// Contract
+
+export { TezosContract, TezosContractRemoteDataFactory }
+
+// Domains
+
+export { TezosDomains }
+
+// Crypto
+
+export { TezosCryptoClient }
+
+// Address
+
+export { TezosAddress, TezosSaplingAddress }
+
 // Types
 
 export {
@@ -164,6 +201,8 @@ export {
   TezosProtocolOptions,
   TezosSaplingProtocolOptions,
   TezosShieldedTezProtocolOptions,
+  TezosSaplingExternalMethodProvider,
+  TezosSaplingTransaction,
   TezosFAProtocolNetwork,
   TezosFAProtocolOptions,
   TezosFA1ProtocolNetwork,
@@ -173,8 +212,6 @@ export {
   TezosFA2ProtocolNetwork,
   TezosFA2ProtocolOptions,
   TezosNetwork,
-  TezosBlockExplorer,
-  TezosIndexer,
   TezosUnsignedTransaction,
   TezosSignedTransaction,
   TezosTransactionCursor,
@@ -192,5 +229,17 @@ export {
   TezosProposalOperation,
   TezosRevealOperation,
   TezosSeedNonceRevelationOperation,
-  TezosTransactionOperation
+  TezosTransactionOperation,
+  TezosTransactionSignRequest,
+  TezosTransactionSignResponse,
+  TezosSaplingTransactionSignRequest,
+  TezosSaplingTransactionSignResponse,
+  TezosDelegatorAction,
+  TezosContractMetadata,
+  TezosFATokenMetadata,
+  TezosTransactionParameters
 }
+
+// Utils
+
+export { isTezosProtocol, isTezosFAProtocol, isTezosFA1Protocol, isTezosFA1p2Protocol, isTezosFA2Protocol, isTezosSaplingProtocol }

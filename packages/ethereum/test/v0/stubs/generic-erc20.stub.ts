@@ -1,7 +1,7 @@
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import * as sinon from 'sinon'
 
-import { EthereumProtocol, GenericERC20 } from '../../../src'
+import { EthereumProtocol, GenericERC20 } from '../../../src/v0'
 import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
 
 export class GenericERC20ProtocolStub implements ProtocolHTTPStub {

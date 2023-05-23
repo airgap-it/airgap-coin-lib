@@ -45,7 +45,7 @@ async function deriveSubstrate(masterNode: DerivationNode, derivationPath: strin
   const derivationIndices: DerivationIndex[] = splitDerivationPath(derivationPath)
 
   return derivationIndices.reduce((derivedKey: DerivationNode, next: DerivationIndex) => {
-    const parentFingerprint: number = hash160(derivedKey.publicKey).readUInt32BE()
+    const parentFingerprint: number = hash160(derivedKey.publicKey).readUInt32BE(0)
 
     const deriveKeyPair = next.isHardened ? sr25519DeriveKeypairHard : sr25519DeriveKeypairSoft
     const keyPair = Buffer.concat([derivedKey.secretKey, derivedKey.publicKey])

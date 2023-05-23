@@ -135,9 +135,7 @@ export function createUnsignedTransaction(transaction: Transaction): string {
 }
 
 // UNSIGNED TRANSACTION -> TRANSACTION DETAILS
-export function getInfoFromUnsignedTransaction(
-  unsignedTransaction: string
-): {
+export function getInfoFromUnsignedTransaction(unsignedTransaction: string): {
   to: string
   fee: bigint
   memo: bigint

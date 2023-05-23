@@ -5,19 +5,7 @@ import { SubstrateAccountId } from '../../data/account/address/SubstrateAddress'
 import { TypedSubstrateAddress } from '../../data/account/address/SubstrateAddressFactory'
 import { SubstrateTransaction, SubstrateTransactionType } from '../../data/transaction/SubstrateTransaction'
 import { SubstrateProtocolConfiguration } from '../../types/configuration'
-
-export interface SubstrateTransactionDetails<C extends SubstrateProtocolConfiguration> {
-  runtimeVersion: number | undefined
-  fee: BigNumber
-  transaction: SubstrateTransaction<C>
-  payload: string
-}
-
-export interface SubstrateTransactionParameters<C extends SubstrateProtocolConfiguration> {
-  type: SubstrateTransactionType<C>
-  tip: string | number | BigNumber
-  args: any
-}
+import { SubstrateTransactionDetails, SubstrateTransactionParameters } from '../../types/transaction'
 
 export interface SubstrateTransactionController<C extends SubstrateProtocolConfiguration> {
   prepareSubmittableTransactions(

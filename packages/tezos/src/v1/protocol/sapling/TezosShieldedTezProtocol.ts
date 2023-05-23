@@ -52,7 +52,7 @@ export class TezosShieldedTezProtocolImpl extends TezosSaplingProtocolImpl<Tezos
       metadata: SHIELDED_TEZ_METADATA
     })
 
-    this.indexerClient = createTezosIndexerClient(this.network.indexer)
+    this.indexerClient = createTezosIndexerClient(this.network.indexerType, this.network.indexerApi)
   }
 
   public async isContractValid(address: string): Promise<boolean> {
@@ -127,7 +127,8 @@ export function createTezosShieldedTezProtocolOptions(
 
   return {
     network: {
-      ...tezosProtocolOptions.network
+      ...tezosProtocolOptions.network,
+      ...network
     },
     memoSize: memoSize ?? DEFAULT_MEMO_SIZE,
     merkleTreeHeight: merkleTreeHeight ?? DEFAULT_MERKLE_TREE_HEIGHT,

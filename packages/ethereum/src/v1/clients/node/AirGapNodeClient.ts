@@ -229,7 +229,7 @@ export class AirGapNodeClient extends EthereumNodeClient {
 
   private async send(body: EthereumRPCBody): Promise<EthereumRPCResponse> {
     const response = await axios.post(this.baseURL, body.toRPCBody()).catch((error) => {
-      throw new NetworkError(Domain.TEZOS, error as AxiosError)
+      throw new NetworkError(Domain.ETHEREUM, error as AxiosError)
     })
 
     return response.data

@@ -38,8 +38,9 @@ import {
   PublicKey,
   SecretKey,
   Signature,
-  TransactionConfiguration,
-  TransactionDetails
+  TransactionFullConfiguration,
+  TransactionDetails,
+  TransactionSimpleConfiguration
 } from '@airgap/module-kit'
 import Common from '@ethereumjs/common'
 // TODO: ETH TX and ethereumjs-util-5.2.0 removed
@@ -606,7 +607,7 @@ export abstract class EthereumBaseProtocolImpl<_Units extends string = EthereumU
   public async getTransactionMaxAmountWithPublicKey(
     publicKey: PublicKey | ExtendedPublicKey,
     to: string[],
-    configuration?: TransactionConfiguration<EthereumUnits>
+    configuration?: TransactionFullConfiguration<EthereumUnits>
   ): Promise<Amount<_Units>> {
     const { total, transferable }: Balance<_Units> = await this.getBalanceOfPublicKey(publicKey)
     const balance = new BigNumber(newAmount(transferable ?? total).blockchain(this.units).value)
@@ -638,7 +639,8 @@ export abstract class EthereumBaseProtocolImpl<_Units extends string = EthereumU
 
   public async getTransactionFeeWithPublicKey(
     publicKey: PublicKey | ExtendedPublicKey,
-    details: TransactionDetails<_Units>[]
+    details: TransactionDetails<_Units>[],
+    configuration?: TransactionSimpleConfiguration
   ): Promise<FeeDefaults<EthereumUnits>> {
     if (details.length !== 1) {
       throw new ConditionViolationError(Domain.ETHEREUM, 'you cannot have 0 transaction details')
@@ -662,7 +664,7 @@ export abstract class EthereumBaseProtocolImpl<_Units extends string = EthereumU
   public async prepareTransactionWithPublicKey(
     publicKey: PublicKey | ExtendedPublicKey,
     details: TransactionDetails<_Units>[],
-    configuration?: TransactionConfiguration<EthereumUnits>
+    configuration?: TransactionFullConfiguration<EthereumUnits>
   ): Promise<EthereumUnsignedTransaction> {
     if (details.length !== 1) {
       throw new ConditionViolationError(Domain.ETHEREUM, 'you cannot have 0 transaction details')
