@@ -60,13 +60,9 @@ export function createCTezProtocolOptions(network: RecursivePartial<TezosFA1p2Pr
     network: {
       ...DEFAULT_CTEZ_PROTOCOL_NETWORK,
       ...network,
-      blockExplorer: {
-        ...DEFAULT_CTEZ_PROTOCOL_NETWORK.blockExplorer,
-        ...network.blockExplorer
-      },
-      indexer: {
-        ...DEFAULT_CTEZ_PROTOCOL_NETWORK.indexer,
-        ...network.indexer
+      callbackContracts: {
+        ...DEFAULT_CTEZ_PROTOCOL_NETWORK.callbackContracts,
+        ...network.callbackContracts
       }
     }
   }

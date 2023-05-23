@@ -1,6 +1,6 @@
 import { AirGapWalletStatus } from '@airgap/coinlib-core'
 
-import { TezosKtProtocol } from '../../../src'
+import { TezosKtProtocol } from '../../../src/v0'
 import { TestProtocolSpec } from '../implementations'
 import { KtTezosProtocolStub } from '../stubs/kt-tezos.stub'
 

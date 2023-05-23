@@ -1,9 +1,7 @@
 import { AirGapBlockExplorer, BlockExplorerMetadata } from '@airgap/module-kit'
 
-const BLOCK_EXPLORER_URL: string = 'https://dashboard.internetcomputer.org/'
-
 export class ICPBlockExplorer implements AirGapBlockExplorer {
-  public constructor(public readonly url: string = BLOCK_EXPLORER_URL) {}
+  public constructor(public readonly url: string) {}
 
   private readonly metadata: BlockExplorerMetadata = {
     name: 'ICP Explorer',

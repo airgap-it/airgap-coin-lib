@@ -5,12 +5,13 @@ import chaiAsPromised = require('chai-as-promised')
 import 'mocha'
 
 import { CryptoIDBlockExplorer } from '../../src/v1'
+import { GROESTLCOIN_MAINNET_PROTOCOL_NETWORK } from '../../src/v1/protocol/GroestlcoinProtocol'
 
 // use chai-as-promised plugin
 chai.use(chaiAsPromised)
 const expect = chai.expect
 
-const blockExplorers: AirGapBlockExplorer[] = [new CryptoIDBlockExplorer()]
+const blockExplorers: AirGapBlockExplorer[] = [new CryptoIDBlockExplorer(GROESTLCOIN_MAINNET_PROTOCOL_NETWORK.blockExplorerUrl)]
 
 Promise.all(
   blockExplorers.map(async (blockExplorer: AirGapBlockExplorer) => {

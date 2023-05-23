@@ -6,7 +6,8 @@ import {
   MultiTokenBalanceConfiguration,
   newAmount,
   PublicKey,
-  TransactionConfiguration,
+  RecursivePartial,
+  TransactionFullConfiguration,
   TransactionDetails
 } from '@airgap/module-kit'
 
@@ -30,12 +31,16 @@ import { parseAddress } from '../../utils/pack'
 import { TezosFA2Accountant } from '../../utils/protocol/fa/TezosFA2Accountant'
 import { TezosForger } from '../../utils/protocol/tezos/TezosForger'
 
-import { TEZOS_FA_MAINNET_PROTOCOL_NETWORK, TezosFAProtocol, TezosFAProtocolImpl } from './TezosFAProtocol'
+import { createTezosFAProtocolOptions, TEZOS_FA_MAINNET_PROTOCOL_NETWORK, TezosFAProtocol, TezosFAProtocolImpl } from './TezosFAProtocol'
 
 // Interface
 
 export interface TezosFA2Protocol<_Units extends string = string>
   extends AirGapInterface<TezosFAProtocol<_Units, TezosFA2ProtocolNetwork>, 'MultiTokenSubProtocol'> {
+  isTezosFA2Protocol: true
+
+  getTokenId(): Promise<number | undefined>
+
   getTokenMetadata(tokenID?: number): Promise<TezosFATokenMetadata | undefined>
 
   balanceOf(balanceRequests: TezosFA2BalanceOfRequest[], source?: string, callbackContract?: string): Promise<TezosFA2BalanceOfResponse[]>
@@ -45,7 +50,8 @@ export interface TezosFA2Protocol<_Units extends string = string>
     fee: Amount<TezosUnits>,
     publicKey: PublicKey
   ): Promise<TezosUnsignedTransaction>
-  getTotalSupply(tokenID?: number): Promise<string>
+
+  getTotalSupply(tokenId?: number): Promise<string>
 
   fetchTokenHolders(tokenId?: number): Promise<{ address: string; amount: Amount<_Units> }[]>
 }
@@ -56,7 +62,9 @@ export class TezosFA2ProtocolImpl<_Units extends string, _Entrypoints extends st
   extends TezosFAProtocolImpl<_Entrypoints | TezosFA2ContractEntrypoint, _Units, TezosFA2ProtocolNetwork>
   implements TezosFA2Protocol<_Units>
 {
-  private readonly tokenId?: number
+  public isTezosFA2Protocol: true = true
+
+  protected readonly tokenId?: number
 
   public constructor(options: TezosFA2ProtocolOptions<_Units>) {
     const forger: TezosForger = new TezosForger()
@@ -86,6 +94,10 @@ export class TezosFA2ProtocolImpl<_Units extends string, _Entrypoints extends st
     return { total: newAmount(total, 'blockchain') }
   }
 
+  public async getTokenId(): Promise<number | undefined> {
+    return this.tokenId
+  }
+
   public async getTokenMetadata(tokenID?: number | undefined): Promise<TezosFATokenMetadata | undefined> {
     return this.getTokenMetadataForTokenId(tokenID ?? this.tokenId ?? 0)
   }
@@ -93,7 +105,7 @@ export class TezosFA2ProtocolImpl<_Units extends string, _Entrypoints extends st
   public async balanceOf(
     balanceRequests: TezosFA2BalanceOfRequest[],
     source?: string,
-    callbackContract: string = this.options.network.defaultCallbackContracts.balance_of
+    callbackContract: string = this.options.network.callbackContracts.balance_of
   ): Promise<TezosFA2BalanceOfResponse[]> {
     const balanceOfCall: TezosContractCall = await this.contract.createContractCall('balance_of', {
       requests: balanceRequests.map((request: TezosFA2BalanceOfRequest) => {
@@ -187,7 +199,7 @@ export class TezosFA2ProtocolImpl<_Units extends string, _Entrypoints extends st
     return this.prepareContractCall([updateCall], fee, publicKey)
   }
 
-  public async getTotalSupply(tokenID?: number | undefined): Promise<string> {
+  public async getTotalSupply(tokenId?: number | undefined): Promise<string> {
     const bigMaps = await this.contract.getBigMaps()
     const bigMapIndex = this.options.network.totalSupplyBigMapId
     let bigMap: BigMap | undefined = undefined
@@ -203,7 +215,7 @@ export class TezosFA2ProtocolImpl<_Units extends string, _Entrypoints extends st
     }
     const result = await this.contract.getBigMapValue({
       bigMap,
-      key: `${tokenID ?? this.tokenId ?? 0}`,
+      key: `${tokenId ?? this.tokenId ?? 0}`,
       resultType: 'micheline'
     })
     if (result !== undefined && isMichelinePrimitive('int', result.value)) {
@@ -223,7 +235,7 @@ export class TezosFA2ProtocolImpl<_Units extends string, _Entrypoints extends st
   protected async createTransferCalls(
     publicKey: PublicKey,
     details: TransactionDetails<_Units>[],
-    configuration?: TransactionConfiguration<TezosUnits>
+    configuration?: TransactionFullConfiguration<TezosUnits>
   ): Promise<TezosContractCall[]> {
     const tokenID: number = configuration?.assetId ?? this.tokenId ?? 0
 
@@ -247,13 +259,55 @@ export class TezosFA2ProtocolImpl<_Units extends string, _Entrypoints extends st
 
 // Factory
 
-export function createTezosFA2Protocol<_Units extends string>(options: TezosFA2ProtocolOptions<_Units>): TezosFA2Protocol<_Units> {
-  return new TezosFA2ProtocolImpl(options)
+interface PartialTezosFA2ProtocolNetwork extends RecursivePartial<TezosFA2ProtocolNetwork> {
+  contractAddress: TezosFA2ProtocolNetwork['contractAddress']
+}
+interface PartialTezosFA2ProtocolOptions<_Units extends string>
+  extends RecursivePartial<Omit<TezosFA2ProtocolOptions<_Units>, 'units' | 'mainUnit'>> {
+  network: PartialTezosFA2ProtocolNetwork
+  identifier: TezosFA2ProtocolOptions<_Units>['identifier']
+  units?: TezosFA2ProtocolOptions<_Units>['units']
+  mainUnit?: TezosFA2ProtocolOptions<_Units>['mainUnit']
+}
+
+export function createTezosFA2Protocol<_Units extends string>(options: PartialTezosFA2ProtocolOptions<_Units>): TezosFA2Protocol<_Units> {
+  const completeOptions: TezosFA2ProtocolOptions<_Units> = createTezosFA2ProtocolOptions(
+    options.network,
+    options.identifier,
+    options.name,
+    options.units,
+    options.mainUnit,
+    options.feeDefaults
+  )
+
+  return new TezosFA2ProtocolImpl(completeOptions)
 }
 
 export const TEZOS_FA2_MAINNET_PROTOCOL_NETWORK: Omit<TezosFA2ProtocolNetwork, 'contractAddress'> = {
   ...TEZOS_FA_MAINNET_PROTOCOL_NETWORK,
-  defaultCallbackContracts: {
+  callbackContracts: {
     balance_of: 'KT1LyHDYnML5eCuTEVCTynUpivwG6ns6khiG'
   }
+}
+
+const DEFAULT_TEZOS_FA2_PROTOCOL_NETWORK: Omit<TezosFA2ProtocolNetwork, 'contractAddress'> = TEZOS_FA2_MAINNET_PROTOCOL_NETWORK
+
+export function createTezosFA2ProtocolOptions<_Units extends string>(
+  network: PartialTezosFA2ProtocolNetwork,
+  identifier: TezosFA2ProtocolOptions<_Units>['identifier'],
+  name?: TezosFA2ProtocolOptions<_Units>['name'],
+  units?: TezosFA2ProtocolOptions<_Units>['units'],
+  mainUnit?: TezosFA2ProtocolOptions<_Units>['mainUnit'],
+  feeDefaults?: TezosFA2ProtocolOptions<_Units>['feeDefaults']
+): TezosFA2ProtocolOptions<_Units> {
+  const completeNetwork: TezosFA2ProtocolNetwork = {
+    ...DEFAULT_TEZOS_FA2_PROTOCOL_NETWORK,
+    ...network,
+    callbackContracts: {
+      ...DEFAULT_TEZOS_FA2_PROTOCOL_NETWORK.callbackContracts,
+      ...network.callbackContracts
+    }
+  }
+
+  return createTezosFAProtocolOptions(completeNetwork, identifier, name, units, mainUnit, feeDefaults)
 }

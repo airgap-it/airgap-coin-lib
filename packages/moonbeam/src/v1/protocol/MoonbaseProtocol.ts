@@ -82,6 +82,7 @@ export const MOONBASE_MAINNET_PROTOCOL_NETWORK: MoonbeamProtocolNetwork = {
   name: 'Mainnet',
   type: 'mainnet',
   rpcUrl: 'https://moonbeam-alpha.api.onfinality.io/public',
+  blockExplorerUrl: 'https://moonbase.subscan.io',
   blockExplorerApi: 'https://moonbase.subscan.io/api/scan'
 }
 

@@ -82,11 +82,11 @@ export class TezosFA2ProtocolStub implements ProtocolHTTPStub<TezosFA2Protocol> 
 
     getStub
       .withArgs(
-        `${protocolNetwork.indexer.apiUrl}/v1/operations/transactions?anyof.target.sender=${address}&sort.desc=level&limit=${transactions.first.length}`
+        `${protocolNetwork.indexerApi}/v1/operations/transactions?anyof.target.sender=${address}&sort.desc=level&limit=${transactions.first.length}`
       )
       .returns(Promise.resolve({ data: transactions.first }))
       .withArgs(
-        `${protocolNetwork.indexer.apiUrl}/v1/operations/transactions?anyof.target.sender=${address}&sort.desc=level&limit=${
+        `${protocolNetwork.indexerApi}/v1/operations/transactions?anyof.target.sender=${address}&sort.desc=level&limit=${
           transactions.next.length + 1
         }&offset=${transactions.first.length}`
       )

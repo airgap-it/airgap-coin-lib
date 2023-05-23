@@ -1,6 +1,6 @@
 import { AirGapWalletStatus } from '@airgap/coinlib-core'
 
-import { EthereumRopstenProtocol } from '../../../src'
+import { EthereumRopstenProtocol } from '../../../src/v0'
 import { TestProtocolSpec } from '../implementations'
 import { EthereumRopstenProtocolStub } from '../stubs/ethereum-ropsten.stub'
 

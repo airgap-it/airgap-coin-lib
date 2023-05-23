@@ -17,10 +17,11 @@ import { BlockCypherBlockExplorer } from '../block-explorer/BlockCypherBlockExpl
 import { BITCOIN_MAINNET_PROTOCOL_NETWORK, createBitcoinProtocol } from '../protocol/BitcoinProtocol'
 import { createBitcoinSegwitProtocol } from '../protocol/BitcoinSegwitProtocol'
 import { BitcoinV3SerializerCompanion } from '../serializer/v3/serializer-companion'
+import { BitcoinProtocolNetwork } from '../types/protocol'
 
 type SupportedProtocols = MainProtocolSymbols.BTC | MainProtocolSymbols.BTC_SEGWIT
 
-export class BitcoinModule implements AirGapModule<{ Protocols: SupportedProtocols }> {
+export class BitcoinModule implements AirGapModule<{ Protocols: SupportedProtocols; ProtocolNetwork: BitcoinProtocolNetwork }> {
   private readonly networkRegistries: Record<SupportedProtocols, ModuleNetworkRegistry>
   public readonly supportedProtocols: Record<SupportedProtocols, ProtocolConfiguration>
 
@@ -39,22 +40,32 @@ export class BitcoinModule implements AirGapModule<{ Protocols: SupportedProtoco
     return this.createProtocol(identifier)
   }
 
-  public async createOnlineProtocol(identifier: SupportedProtocols, networkId?: string): Promise<AirGapOnlineProtocol | undefined> {
-    const network: ProtocolNetwork | undefined = this.networkRegistries[identifier]?.findNetwork(networkId)
+  public async createOnlineProtocol(
+    identifier: SupportedProtocols,
+    networkOrId?: BitcoinProtocolNetwork | string
+  ): Promise<AirGapOnlineProtocol | undefined> {
+    const network: ProtocolNetwork | undefined =
+      typeof networkOrId === 'object' ? networkOrId : this.networkRegistries[identifier]?.findNetwork(networkOrId)
+
     if (network === undefined) {
       throw new ConditionViolationError(Domain.BITCOIN, 'Protocol network not supported.')
     }
 
-    return createBitcoinProtocol({ network })
+    return this.createProtocol(identifier, network)
   }
 
-  public async createBlockExplorer(identifier: SupportedProtocols, networkId?: string): Promise<AirGapBlockExplorer | undefined> {
-    const network: ProtocolNetwork | undefined = this.networkRegistries[identifier]?.findNetwork(networkId)
-    if (network?.type !== 'mainnet') {
+  public async createBlockExplorer(
+    identifier: SupportedProtocols,
+    networkOrId?: BitcoinProtocolNetwork | string
+  ): Promise<AirGapBlockExplorer | undefined> {
+    const network: ProtocolNetwork | undefined =
+      typeof networkOrId === 'object' ? networkOrId : this.networkRegistries[identifier]?.findNetwork(networkOrId)
+
+    if (network === undefined) {
       throw new ConditionViolationError(Domain.BITCOIN, 'Block Explorer network not supported.')
     }
 
-    return new BlockCypherBlockExplorer()
+    return new BlockCypherBlockExplorer(network.blockExplorerUrl)
   }
 
   public async createV3SerializerCompanion(): Promise<AirGapV3SerializerCompanion> {
@@ -64,9 +75,9 @@ export class BitcoinModule implements AirGapModule<{ Protocols: SupportedProtoco
   private createProtocol(identifier: SupportedProtocols, network?: ProtocolNetwork): AirGapProtocol {
     switch (identifier) {
       case MainProtocolSymbols.BTC:
-        return createBitcoinProtocol()
+        return createBitcoinProtocol({ network })
       case MainProtocolSymbols.BTC_SEGWIT:
-        return createBitcoinSegwitProtocol()
+        return createBitcoinSegwitProtocol({ network })
       default:
         throw new ConditionViolationError(Domain.BITCOIN, `Protocol ${identifier} not supported.`)
     }

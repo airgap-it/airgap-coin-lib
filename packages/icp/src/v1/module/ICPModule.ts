@@ -16,10 +16,11 @@ import { ICPBlockExplorer } from '../block-explorer/ICPBlockExplorer'
 import { createICPProtocol, ICP_MAINNET_PROTOCOL_NETWORK } from '../protocol/ICPProtocol'
 import { CKBTC_MAINNET_PROTOCOL_NETWORK, createCkBTCOfflineProtocol, createCkBTCOnlineProtocol } from '../protocol/icrc/CkBTCProtocol'
 import { ICPV3SerializerCompanion } from '../serializer/v3/serializer-companion'
+import { ICPProtocolNetwork } from '../types/protocol'
 
 type SupportedProtocols = MainProtocolSymbols.ICP | MainProtocolSymbols.ICP_CKBTC
 
-export class ICPModule implements AirGapModule<{ Protocols: SupportedProtocols }> {
+export class ICPModule implements AirGapModule<{ Protocols: SupportedProtocols; ProtocolNetwork: ICPProtocolNetwork }> {
   private readonly networkRegistries: Record<SupportedProtocols, ModuleNetworkRegistry> = {
     [MainProtocolSymbols.ICP]: new ModuleNetworkRegistry({
       supportedNetworks: [ICP_MAINNET_PROTOCOL_NETWORK]
@@ -45,8 +46,13 @@ export class ICPModule implements AirGapModule<{ Protocols: SupportedProtocols }
     }
   }
 
-  public async createOnlineProtocol(identifier: SupportedProtocols, networkId?: string): Promise<AirGapOnlineProtocol | undefined> {
-    const network: ProtocolNetwork | undefined = this.networkRegistries[identifier]?.findNetwork(networkId)
+  public async createOnlineProtocol(
+    identifier: SupportedProtocols,
+    networkOrId?: ICPProtocolNetwork | string
+  ): Promise<AirGapOnlineProtocol | undefined> {
+    const network: ProtocolNetwork | undefined =
+      typeof networkOrId === 'object' ? networkOrId : this.networkRegistries[identifier]?.findNetwork(networkOrId)
+
     if (network === undefined) {
       throw new ConditionViolationError(Domain.ICP, 'Protocol network not supported.')
     }
@@ -61,12 +67,17 @@ export class ICPModule implements AirGapModule<{ Protocols: SupportedProtocols }
     }
   }
 
-  public async createBlockExplorer(identifier: SupportedProtocols, networkId?: string): Promise<AirGapBlockExplorer | undefined> {
-    const network: ProtocolNetwork | undefined = this.networkRegistries[identifier]?.findNetwork(networkId)
-    if (network?.type !== 'mainnet') {
+  public async createBlockExplorer(
+    identifier: SupportedProtocols,
+    networkOrId?: ICPProtocolNetwork | string
+  ): Promise<AirGapBlockExplorer | undefined> {
+    const network: ProtocolNetwork | undefined =
+      typeof networkOrId === 'object' ? networkOrId : this.networkRegistries[identifier]?.findNetwork(networkOrId)
+
+    if (network === undefined) {
       throw new ConditionViolationError(Domain.ICP, 'Block Explorer network not supported.')
     }
 
-    return new ICPBlockExplorer()
+    return new ICPBlockExplorer(network.blockExplorerUrl)
   }
 }

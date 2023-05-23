@@ -41,20 +41,20 @@ import { implementsInterface, Schema } from './interface'
 
 // Schemas
 
-const baseProtocolSchema: Schema<BaseProtocol> = {
+export const baseProtocolSchema: Schema<BaseProtocol> = {
   getAddressFromPublicKey: 'required',
   getDetailsFromTransaction: 'required',
   getMetadata: 'required'
 }
 
-const offlineProtocolSchema: Schema<OfflineProtocol> = {
+export const offlineProtocolSchema: Schema<OfflineProtocol> = {
   ...baseProtocolSchema,
   getCryptoConfiguration: 'required',
   getKeyPairFromDerivative: 'required',
   signTransactionWithSecretKey: 'required'
 }
 
-const onlineProtocolSchema: Schema<OnlineProtocol> = {
+export const onlineProtocolSchema: Schema<OnlineProtocol> = {
   ...baseProtocolSchema,
   broadcastTransaction: 'required',
   getBalanceOfPublicKey: 'required',
@@ -65,98 +65,103 @@ const onlineProtocolSchema: Schema<OnlineProtocol> = {
   prepareTransactionWithPublicKey: 'required'
 }
 
-const bip32BaseProtocolSchema: Schema<BaseBip32Protocol> = {
+export const bip32BaseProtocolSchema: Schema<BaseBip32Protocol> = {
   ...baseProtocolSchema,
   deriveFromExtendedPublicKey: 'required'
 }
 
-const bip32OfflineProtocolSchema: Schema<OfflineBip32Protocol> = {
+export const bip32OfflineProtocolSchema: Schema<OfflineBip32Protocol> = {
   ...bip32BaseProtocolSchema,
   ...offlineProtocolSchema,
   getExtendedKeyPairFromDerivative: 'required',
   deriveFromExtendedSecretKey: 'required'
 }
 
-const bip32OnlineProtocolSchema: Schema<OnlineBip32Protocol> = {
+export const bip32OnlineProtocolSchema: Schema<OnlineBip32Protocol> = {
   ...bip32BaseProtocolSchema,
   ...onlineProtocolSchema
 }
 
-const subProtocolSchema: Schema<SubProtocol> = {
+export const subProtocolSchema: Schema<SubProtocol> = {
   getType: 'required',
   mainProtocol: 'required'
 }
 
-const singleTokenSubProtocolSchema: Schema<SingleTokenSubProtocol> = {
+export const singleTokenSubProtocolSchema: Schema<SingleTokenSubProtocol> = {
   ...subProtocolSchema,
   getContractAddress: 'required'
 }
 
-const multiTokenSubProtocolBaseSchema: Schema<BaseMultiTokenSubProtocol> = singleTokenSubProtocolSchema
-const multiTokenSubProtocolOnlineSchema: Schema<OnlineMultiTokenSubProtocol> = {
+export const multiTokenSubProtocolBaseSchema: Schema<BaseMultiTokenSubProtocol> = singleTokenSubProtocolSchema
+export const multiTokenSubProtocolOnlineSchema: Schema<OnlineMultiTokenSubProtocol> = {
   ...multiTokenSubProtocolBaseSchema,
   ...onlineProtocolSchema
 }
 
-const fetchDataForAddressProtocolSchema: Schema<FetchDataForAddressProtocol> = {
+export const fetchDataForAddressProtocolSchema: Schema<FetchDataForAddressProtocol> = {
   getBalanceOfAddress: 'required',
   getTransactionsForAddress: 'required'
 }
 
-const fetchDataForMultipleAddressesProtocolSchema: Schema<FetchDataForMultipleAddressesProtocol> = {
+export const fetchDataForMultipleAddressesProtocolSchema: Schema<FetchDataForMultipleAddressesProtocol> = {
   getBalanceOfAddresses: 'required',
   getTransactionsForAddresses: 'required'
 }
 
-const multiAddressPublicKeyProtocolSchema: Schema<MultiAddressPublicKeyProtocol> = {
+export const multiAddressPublicKeyProtocolSchema: Schema<MultiAddressPublicKeyProtocol> = {
+  getInitialAddressesFromPublicKey: 'required',
   getNextAddressFromPublicKey: 'required'
 }
 
-const configurableContractProtocolSchema: Schema<ConfigurableContractProtocol> = {
+export const configurableContractProtocolSchema: Schema<ConfigurableContractProtocol> = {
   isContractValid: 'required',
   getContractAddress: 'required',
   setContractAddress: 'required'
 }
 
-const aesEncryptionSchema: Schema<AES> = {
+export const aesEncryptionSchema: Schema<AES> = {
   decryptAESWithSecretKey: 'required',
   encryptAESWithSecretKey: 'required'
 }
 
-const asymmetricEncryptionBaseSchema: Schema<BaseAsymmetricEncryption> = {
+export const asymmetricEncryptionBaseSchema: Schema<BaseAsymmetricEncryption> = {
   encryptAsymmetricWithPublicKey: 'required'
 }
 
-const asymmetricEncryptionOfflineSchema: Schema<OfflineAsymmetricEncryption> = {
+export const asymmetricEncryptionOfflineSchema: Schema<OfflineAsymmetricEncryption> = {
   ...asymmetricEncryptionBaseSchema,
   decryptAsymmetricWithKeyPair: 'required'
 }
 
-const signMessageBaseSchema: Schema<BaseSignMessage> = {
+export const signMessageBaseSchema: Schema<BaseSignMessage> = {
   verifyMessageWithPublicKey: 'required'
 }
 
-const signMessageOfflineSchema: Schema<OfflineSignMessage> = {
+export const signMessageOfflineSchema: Schema<OfflineSignMessage> = {
   ...signMessageBaseSchema,
   signMessageWithKeyPair: 'required'
 }
 
-const configurableTransactionInjectorSchema: Schema<ConfigurableTransactionInjectorProtocol> = {
+export const configurableTransactionInjectorSchema: Schema<ConfigurableTransactionInjectorProtocol> = {
   getInjectorUrl: 'required',
   setInjectorUrl: 'required'
 }
 
-const transactionStatusCheckerSchema: Schema<TransactionStatusChecker> = {
+export const transactionStatusCheckerSchema: Schema<TransactionStatusChecker> = {
   getTransactionStatus: 'required'
 }
 
 // Implementation Checks
 
-export function isOfflineProtocol(object: AnyProtocol): object is OfflineProtocol {
+export function isAnyProtocol(object: unknown): object is AnyProtocol {
+  return isOfflineProtocol(object) || isOnlineProtocol(object)
+}
+
+export function isOfflineProtocol(object: unknown): object is OfflineProtocol {
   return implementsInterface<OfflineProtocol>(object, offlineProtocolSchema)
 }
 
-export function isOnlineProtocol(object: AnyProtocol): object is OnlineProtocol {
+export function isOnlineProtocol(object: unknown): object is OnlineProtocol {
   return implementsInterface<OnlineProtocol>(object, onlineProtocolSchema)
 }
 

@@ -1228,7 +1228,12 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   public async bakerInfo(tzAddress: string | undefined): Promise<BakerInfo> {
     if (
       !tzAddress ||
-      !(tzAddress.toLowerCase().startsWith('tz1') || tzAddress.toLowerCase().startsWith('tz2') || tzAddress.toLowerCase().startsWith('tz3'))
+      !(
+        tzAddress.toLowerCase().startsWith('tz1') ||
+        tzAddress.toLowerCase().startsWith('tz2') ||
+        tzAddress.toLowerCase().startsWith('tz3') ||
+        tzAddress.toLowerCase().startsWith('tz4')
+      )
     ) {
       throw new ConditionViolationError(Domain.TEZOS, 'non tz-address supplied')
     }

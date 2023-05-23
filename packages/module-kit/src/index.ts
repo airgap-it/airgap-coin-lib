@@ -66,11 +66,12 @@ import {
   AirGapTransactionStatus,
   AirGapTransactionsWithCursor,
   SignedTransaction,
-  TransactionConfiguration,
+  TransactionSimpleConfiguration,
   TransactionCursor,
   TransactionDetails,
   TransactionType,
-  UnsignedTransaction
+  UnsignedTransaction,
+  TransactionFullConfiguration
 } from './types/transaction'
 import { AirGapUIAction } from './types/ui/action'
 import { AirGapUIAlert } from './types/ui/alert'
@@ -81,14 +82,26 @@ import { isAnyKey, isExtendedPublicKey, isExtendedSecretKey, isPublicKey, isSecr
 import { createSupportedProtocols } from './utils/module'
 import { normalizeToUndefined } from './utils/normalize'
 import {
+  aesEncryptionSchema,
+  asymmetricEncryptionBaseSchema,
+  asymmetricEncryptionOfflineSchema,
+  baseProtocolSchema,
+  bip32BaseProtocolSchema,
+  bip32OfflineProtocolSchema,
+  bip32OnlineProtocolSchema,
   canEncryptAES,
   canEncryptAsymmetric,
   canFetchDataForAddress,
   canFetchDataForMultipleAddresses,
   canSignMessage,
+  configurableContractProtocolSchema,
+  configurableTransactionInjectorSchema,
+  fetchDataForAddressProtocolSchema,
+  fetchDataForMultipleAddressesProtocolSchema,
   hasConfigurableContract,
   hasConfigurableTransactionInjector,
   hasMultiAddressPublicKeys,
+  isAnyProtocol,
   isBip32Protocol,
   isMultiTokenSubProtocol,
   isOfflineProtocol,
@@ -96,7 +109,16 @@ import {
   isSingleTokenSubProtocol,
   isSubProtocol,
   isTransactionStatusChecker,
-  protocolNetworkIdentifier
+  multiAddressPublicKeyProtocolSchema,
+  multiTokenSubProtocolBaseSchema,
+  offlineProtocolSchema,
+  onlineProtocolSchema,
+  protocolNetworkIdentifier,
+  signMessageBaseSchema,
+  signMessageOfflineSchema,
+  singleTokenSubProtocolSchema,
+  subProtocolSchema,
+  transactionStatusCheckerSchema
 } from './utils/protocol'
 
 // Block Explorer
@@ -217,7 +239,8 @@ export {
   TransactionCursor,
   AirGapTransactionsWithCursor,
   TransactionDetails,
-  TransactionConfiguration,
+  TransactionSimpleConfiguration,
+  TransactionFullConfiguration,
   AirGapTransactionStatus,
   RecursivePartial
 }
@@ -234,6 +257,7 @@ export {
   isPublicKey,
   isExtendedPublicKey,
   createSupportedProtocols,
+  isAnyProtocol,
   isOfflineProtocol,
   isOnlineProtocol,
   isBip32Protocol,
@@ -251,4 +275,29 @@ export {
   isTransactionStatusChecker,
   protocolNetworkIdentifier,
   normalizeToUndefined
+}
+
+// Schema
+
+export {
+  baseProtocolSchema,
+  offlineProtocolSchema,
+  onlineProtocolSchema,
+  bip32BaseProtocolSchema,
+  bip32OfflineProtocolSchema,
+  bip32OnlineProtocolSchema,
+  subProtocolSchema,
+  singleTokenSubProtocolSchema,
+  multiTokenSubProtocolBaseSchema,
+  fetchDataForAddressProtocolSchema,
+  fetchDataForMultipleAddressesProtocolSchema,
+  multiAddressPublicKeyProtocolSchema,
+  configurableContractProtocolSchema,
+  aesEncryptionSchema,
+  asymmetricEncryptionBaseSchema,
+  asymmetricEncryptionOfflineSchema,
+  signMessageBaseSchema,
+  signMessageOfflineSchema,
+  configurableTransactionInjectorSchema,
+  transactionStatusCheckerSchema
 }

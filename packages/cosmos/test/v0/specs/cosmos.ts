@@ -1,6 +1,6 @@
 import { AirGapWalletStatus } from '@airgap/coinlib-core/wallet/AirGapWallet'
 
-import { CosmosProtocol, SignedCosmosTransaction } from '../../../src'
+import { CosmosProtocol, SignedCosmosTransaction } from '../../../src/v0'
 import { CosmosSendMessage } from '../../../src/v0/protocol/cosmos-message/CosmosSendMessage'
 import { CosmosCoin } from '../../../src/v0/protocol/CosmosCoin'
 import { CosmosFee } from '../../../src/v0/protocol/CosmosFee'

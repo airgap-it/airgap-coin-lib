@@ -25,8 +25,9 @@ import {
   RecursivePartial,
   SecretKey,
   Signature,
-  TransactionConfiguration,
-  TransactionDetails
+  TransactionFullConfiguration,
+  TransactionDetails,
+  TransactionSimpleConfiguration
 } from '@airgap/module-kit'
 
 import { GroestlcoinCryptoConfiguration } from '../types/crypto'
@@ -273,7 +274,7 @@ export class GroestlcoinProtocolImpl implements GroestlcoinProtocol {
   public async getTransactionMaxAmountWithPublicKey(
     publicKey: PublicKey | ExtendedPublicKey,
     to: string[],
-    configuration?: TransactionConfiguration<GroestlcoinUnits>
+    configuration?: TransactionFullConfiguration<GroestlcoinUnits>
   ): Promise<Amount<GroestlcoinUnits>> {
     const bitcoinFee: Amount<BitcoinUnits> | undefined = configuration?.fee ? this.toBitcoinAmount(configuration.fee) : undefined
     const bitcoinMax: Amount<BitcoinUnits> = await this.bitcoinProtocol.getTransactionMaxAmountWithPublicKey(publicKey, to, {
@@ -286,14 +287,16 @@ export class GroestlcoinProtocolImpl implements GroestlcoinProtocol {
 
   public async getTransactionFeeWithPublicKey(
     publicKey: PublicKey | ExtendedPublicKey,
-    details: TransactionDetails<GroestlcoinUnits>[]
+    details: TransactionDetails<GroestlcoinUnits>[],
+    configuration?: TransactionSimpleConfiguration
   ): Promise<FeeDefaults<GroestlcoinUnits>> {
     const bitcoinDetails: TransactionDetails<BitcoinUnits>[] = details.map((details: TransactionDetails<GroestlcoinUnits>) =>
       this.toBitcoinTransactionDetails(details)
     )
     const bitcoinFeeEstimation: FeeDefaults<BitcoinUnits> = await this.bitcoinProtocol.getTransactionFeeWithPublicKey(
       publicKey,
-      bitcoinDetails
+      bitcoinDetails,
+      configuration
     )
 
     return this.fromBitcoinFeeEstimation(bitcoinFeeEstimation)
@@ -302,7 +305,7 @@ export class GroestlcoinProtocolImpl implements GroestlcoinProtocol {
   public async prepareTransactionWithPublicKey(
     publicKey: PublicKey | ExtendedPublicKey,
     details: TransactionDetails<GroestlcoinUnits>[],
-    configuration?: TransactionConfiguration<GroestlcoinUnits>
+    configuration?: TransactionFullConfiguration<GroestlcoinUnits>
   ): Promise<GroestlcoinUnsignedTransaction> {
     const bitcoinDetails: TransactionDetails<BitcoinUnits>[] = details.map((details: TransactionDetails<GroestlcoinUnits>) =>
       this.toBitcoinTransactionDetails(details)
@@ -412,6 +415,7 @@ export const GROESTLCOIN_MAINNET_PROTOCOL_NETWORK: GroestlcoinStandardProtocolNe
   name: 'Mainnet',
   type: 'mainnet',
   rpcUrl: '',
+  blockExplorerUrl: 'https://chainz.cryptoid.info/grs',
   indexerApi: `https://cors-proxy.airgap.prod.gke.papers.tech/proxy?url=${'https://blockbook.groestlcoin.org'}`
 }
 
@@ -419,6 +423,7 @@ export const GROESTLCOIN_TESTNET_PROTOCOL_NETWORK: GroestlcoinStandardProtocolNe
   name: 'Testnet',
   type: 'testnet',
   rpcUrl: '',
+  blockExplorerUrl: 'https://chainz.cryptoid.info/grs-test',
   indexerApi: 'https://blockbook-test.groestlcoin.org/'
 }
 

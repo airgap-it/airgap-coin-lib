@@ -14,6 +14,7 @@ import {
 } from '@airgap/module-kit'
 
 import { createTezosBlockExplorer } from '../block-explorer/factory'
+import { createTetherUSDProtocol } from '../module'
 import { createBTCTezProtocol } from '../protocol/fa/tokens/BTCTezProtocol'
 import { createCTezProtocol } from '../protocol/fa/tokens/CTezProtocol'
 import { createDogamiProtocol } from '../protocol/fa/tokens/DogamiProtocol'
@@ -37,7 +38,7 @@ import { createTezosProtocol, TEZOS_GHOSTNET_PROTOCOL_NETWORK, TEZOS_MAINNET_PRO
 import { TezosV3SerializerCompanion } from '../serializer/v3/serializer-companion'
 import { TezosProtocolNetwork } from '../types/protocol'
 
-export class TezosModule implements AirGapModule {
+export class TezosModule implements AirGapModule<{ ProtocolNetwork: TezosProtocolNetwork }> {
   private readonly networkRegistries: Record<string, ModuleNetworkRegistry<TezosProtocolNetwork>>
   public readonly supportedProtocols: Record<string, ProtocolConfiguration>
 
@@ -85,8 +86,13 @@ export class TezosModule implements AirGapModule {
     return this.createProtocol(identifier)
   }
 
-  public async createOnlineProtocol(identifier: string, networkId?: string): Promise<AirGapOnlineProtocol | undefined> {
-    const network: TezosProtocolNetwork | undefined = this.networkRegistries[identifier]?.findNetwork(networkId)
+  public async createOnlineProtocol(
+    identifier: string,
+    networkOrId?: TezosProtocolNetwork | string
+  ): Promise<AirGapOnlineProtocol | undefined> {
+    const network: TezosProtocolNetwork | undefined =
+      typeof networkOrId === 'object' ? networkOrId : this.networkRegistries[identifier]?.findNetwork(networkOrId)
+
     if (network === undefined) {
       throw new ConditionViolationError(Domain.TEZOS, 'Protocol network type not supported.')
     }
@@ -94,13 +100,18 @@ export class TezosModule implements AirGapModule {
     return this.createProtocol(identifier, network)
   }
 
-  public async createBlockExplorer(identifier: string, networkId?: string): Promise<AirGapBlockExplorer | undefined> {
-    const network: TezosProtocolNetwork | undefined = this.networkRegistries[identifier].findNetwork(networkId)
+  public async createBlockExplorer(
+    identifier: string,
+    networkOrId?: TezosProtocolNetwork | string
+  ): Promise<AirGapBlockExplorer | undefined> {
+    const network: TezosProtocolNetwork | undefined =
+      typeof networkOrId === 'object' ? networkOrId : this.networkRegistries[identifier]?.findNetwork(networkOrId)
+
     if (network === undefined) {
       throw new ConditionViolationError(Domain.TEZOS, 'Block Explorer network type not supported.')
     }
 
-    return createTezosBlockExplorer(network.blockExplorer)
+    return createTezosBlockExplorer(network.blockExplorerType, network.blockExplorerUrl)
   }
 
   public async createV3SerializerCompanion(): Promise<AirGapV3SerializerCompanion> {
@@ -123,6 +134,8 @@ export class TezosModule implements AirGapModule {
         return createUSDTezProtocol({ network })
       case SubProtocolSymbols.XTZ_KUSD:
         return createKolibriUSDProtocol({ network })
+      case SubProtocolSymbols.XTZ_USDT:
+        return createTetherUSDProtocol({ network })
       case SubProtocolSymbols.XTZ_STKR:
         return createStakerProtocol({ network })
       case SubProtocolSymbols.XTZ_ETHTZ:

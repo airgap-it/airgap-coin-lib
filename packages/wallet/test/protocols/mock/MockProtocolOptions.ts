@@ -16,7 +16,12 @@ export class MockProtocolNetwork implements ProtocolNetwork {
     return `${this.type}-${hashed}`
   }
 
-  constructor(public name: string = 'mainnet', public type: ProtocolNetworkType = 'mainnet', public rpcUrl: string = '') {}
+  constructor(
+    public name: string = 'mainnet',
+    public type: ProtocolNetworkType = 'mainnet',
+    public rpcUrl: string = '',
+    public blockExplorerUrl: string = ''
+  ) {}
 }
 
 export class MockProtocolOptions {

@@ -19,13 +19,14 @@ import {
   PublicKey,
   SecretKey,
   Signature,
-  TransactionConfiguration,
-  TransactionDetails
+  TransactionFullConfiguration,
+  TransactionDetails,
+  TransactionSimpleConfiguration
 } from '@airgap/module-kit'
 
 import { SubstrateBlockExplorerClient } from '../block-explorer/SubstrateBlockExplorerClient'
 import { SubstrateAccountController } from '../controller/account/SubstrateAccountController'
-import { SubstrateTransactionController, SubstrateTransactionParameters } from '../controller/transaction/SubstrateTransactionController'
+import { SubstrateTransactionController } from '../controller/transaction/SubstrateTransactionController'
 import { SubstrateCryptoClient } from '../crypto/SubstrateCryptoClient'
 import { SubstrateAccountId } from '../data/account/address/SubstrateAddress'
 import { TypedSubstrateAddress } from '../data/account/address/SubstrateAddressFactory'
@@ -35,16 +36,23 @@ import { SubstrateNodeClient } from '../node/SubstrateNodeClient'
 import { SubstrateProtocolConfiguration } from '../types/configuration'
 import { SubstrateCryptoConfiguration } from '../types/crypto'
 import { SubstrateProtocolNetwork, SubstrateProtocolOptions } from '../types/protocol'
-import { SubstrateSignedTransaction, SubstrateTransactionCursor, SubstrateUnsignedTransaction } from '../types/transaction'
+import {
+  SubstrateSignedTransaction,
+  SubstrateTransactionCursor,
+  SubstrateTransactionDetails,
+  SubstrateTransactionParameters,
+  SubstrateUnsignedTransaction
+} from '../types/transaction'
 import { convertPublicKey, convertSecretKey } from '../utils/keys'
 import { convertSignature } from '../utils/signature'
 
 // Interface
 
 export interface SubstrateProtocol<
-  _Units extends string,
-  _ProtocolNetwork extends SubstrateProtocolNetwork,
-  _CryptoConfiguration extends SubstrateCryptoConfiguration
+  _ProtocolConfiguration extends SubstrateProtocolConfiguration = SubstrateProtocolConfiguration,
+  _Units extends string = string,
+  _ProtocolNetwork extends SubstrateProtocolNetwork = SubstrateProtocolNetwork,
+  _CryptoConfiguration extends SubstrateCryptoConfiguration = SubstrateCryptoConfiguration
 > extends AirGapProtocol<
     {
       AddressResult: Address
@@ -58,7 +66,12 @@ export interface SubstrateProtocol<
     },
     'Crypto',
     'FetchDataForAddress'
-  > {}
+  > {
+  isSubstrateProtocol: true
+
+  encodeDetails(txs: SubstrateTransactionDetails<_ProtocolConfiguration>[]): Promise<string>
+  decodeDetails(serialized: string): Promise<SubstrateTransactionDetails<_ProtocolConfiguration>[]>
+}
 
 // Implementation
 
@@ -69,7 +82,10 @@ export abstract class SubstrateProtocolImpl<
   _NodeClient extends SubstrateNodeClient<_ProtocolConfiguration> = SubstrateNodeClient<_ProtocolConfiguration>,
   _AccountController extends SubstrateAccountController<_ProtocolConfiguration> = SubstrateAccountController<_ProtocolConfiguration>,
   _TransactionController extends SubstrateTransactionController<_ProtocolConfiguration> = SubstrateTransactionController<_ProtocolConfiguration>
-> implements SubstrateProtocol<_Units, _ProtocolNetwork, SubstrateCryptoConfiguration<_ProtocolConfiguration>> {
+> implements SubstrateProtocol<_ProtocolConfiguration, _Units, _ProtocolNetwork, SubstrateCryptoConfiguration<_ProtocolConfiguration>>
+{
+  public readonly isSubstrateProtocol: true = true
+
   protected readonly configuration: _ProtocolConfiguration
   protected readonly cryptoConfiguration: SubstrateCryptoConfiguration<_ProtocolConfiguration>
 
@@ -91,14 +107,16 @@ export abstract class SubstrateProtocolImpl<
     this.metadata = options.metadata
     this.network = options.network
     this.configuration = options.configuration
-    this.cryptoConfiguration = (this.configuration.account.type === 'ss58'
-      ? {
-          algorithm: 'sr25519',
-          compatibility: 'substrate'
-        }
-      : {
-          algorithm: 'secp256k1'
-        }) as SubstrateCryptoConfiguration<_ProtocolConfiguration>
+    this.cryptoConfiguration = (
+      this.configuration.account.type === 'ss58'
+        ? {
+            algorithm: 'sr25519',
+            compatibility: 'substrate'
+          }
+        : {
+            algorithm: 'secp256k1'
+          }
+    ) as SubstrateCryptoConfiguration<_ProtocolConfiguration>
 
     this.accountController = accountController
     this.transactionController = transactionController
@@ -276,12 +294,10 @@ export abstract class SubstrateProtocolImpl<
   public async getTransactionMaxAmountWithPublicKey(
     publicKey: PublicKey,
     to: string[],
-    configuration?: TransactionConfiguration<_Units>
+    configuration?: TransactionFullConfiguration<_Units>
   ): Promise<Amount<_Units>> {
-    const [balance, futureRequiredTransactions]: [
-      SubstrateAccountBalance,
-      [SubstrateTransactionType<_ProtocolConfiguration>, any][]
-    ] = await Promise.all([this.accountController.getBalance(publicKey), this.getFutureRequiredTransactions(publicKey, 'transfer')])
+    const [balance, futureRequiredTransactions]: [SubstrateAccountBalance, [SubstrateTransactionType<_ProtocolConfiguration>, any][]] =
+      await Promise.all([this.accountController.getBalance(publicKey), this.getFutureRequiredTransactions(publicKey, 'transfer')])
 
     const fee: BigNumber | undefined = await this.transactionController.estimateTransactionFees(publicKey, futureRequiredTransactions)
 
@@ -298,7 +314,11 @@ export abstract class SubstrateProtocolImpl<
     return newAmount(maxAmount, 'blockchain')
   }
 
-  public async getTransactionFeeWithPublicKey(publicKey: PublicKey, details: TransactionDetails<_Units>[]): Promise<Amount<_Units>> {
+  public async getTransactionFeeWithPublicKey(
+    publicKey: PublicKey,
+    details: TransactionDetails<_Units>[],
+    _configuration?: TransactionSimpleConfiguration
+  ): Promise<Amount<_Units>> {
     const fees: BigNumber[] = await Promise.all(
       details.map(async (details: TransactionDetails<_Units>) => {
         const transaction: SubstrateTransaction<_ProtocolConfiguration> = await this.transactionController.createTransaction(
@@ -330,7 +350,7 @@ export abstract class SubstrateProtocolImpl<
   public async prepareTransactionWithPublicKey(
     publicKey: PublicKey,
     details: TransactionDetails<_Units>[],
-    configuration?: TransactionConfiguration<_Units>
+    configuration?: TransactionFullConfiguration<_Units>
   ): Promise<SubstrateUnsignedTransaction> {
     const balance = await this.accountController.getBalance(publicKey)
     const transferableBalance: BigNumber = balance.transferable.minus(configuration?.keepMinBalance ? balance.existentialDeposit : 0)
@@ -374,6 +394,14 @@ export abstract class SubstrateProtocolImpl<
   }
 
   // Custom
+
+  public async encodeDetails(txs: SubstrateTransactionDetails<_ProtocolConfiguration>[]): Promise<string> {
+    return this.transactionController.encodeDetails(txs)
+  }
+
+  public async decodeDetails(serialized: string): Promise<SubstrateTransactionDetails<_ProtocolConfiguration>[]> {
+    return this.decodeDetails(serialized)
+  }
 
   private getDetailsFromEncodedTransaction(encoded: string): AirGapTransaction<_Units>[] {
     const txs = this.transactionController.decodeDetails(encoded)

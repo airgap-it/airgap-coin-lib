@@ -64,13 +64,9 @@ export function createStakerProtocolOptions(network: RecursivePartial<TezosFA1p2
     network: {
       ...DEFAULT_STAKER_PROTOCOL_NETWORK,
       ...network,
-      blockExplorer: {
-        ...DEFAULT_STAKER_PROTOCOL_NETWORK.blockExplorer,
-        ...network.blockExplorer
-      },
-      indexer: {
-        ...DEFAULT_STAKER_PROTOCOL_NETWORK.indexer,
-        ...network.indexer
+      callbackContracts: {
+        ...DEFAULT_STAKER_PROTOCOL_NETWORK.callbackContracts,
+        ...network.callbackContracts
       }
     }
   }

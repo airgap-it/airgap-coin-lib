@@ -68,4 +68,5 @@ export interface ProtocolNetwork {
   name: string
   type: ProtocolNetworkType
   rpcUrl: string
+  blockExplorerUrl: string
 }

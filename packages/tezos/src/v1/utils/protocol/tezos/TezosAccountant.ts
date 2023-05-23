@@ -25,7 +25,7 @@ export class TezosAccountant<_Units extends string> {
     return this.getDetailsFromWrappedOperation(wrappedOperation)
   }
 
-  private async getDetailsFromWrappedOperation(wrappedOperation: TezosWrappedOperation): Promise<AirGapTransaction<_Units, TezosUnits>[]> {
+  public async getDetailsFromWrappedOperation(wrappedOperation: TezosWrappedOperation): Promise<AirGapTransaction<_Units, TezosUnits>[]> {
     return Promise.all(
       wrappedOperation.contents.map(async (content: TezosOperation) => {
         let operation: TezosRevealOperation | TezosTransactionOperation | TezosOriginationOperation | TezosDelegationOperation | undefined

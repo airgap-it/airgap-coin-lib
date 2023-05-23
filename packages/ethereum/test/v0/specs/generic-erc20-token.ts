@@ -1,7 +1,7 @@
 import { AirGapWalletStatus } from '@airgap/coinlib-core'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 
-import { GenericERC20 } from '../../../src'
+import { GenericERC20 } from '../../../src/v0'
 import { ERC20Token } from '../../../src/v0/protocol/erc20/ERC20'
 import { TestProtocolSpec } from '../implementations'
 import { GenericERC20ProtocolStub } from '../stubs/generic-erc20.stub'

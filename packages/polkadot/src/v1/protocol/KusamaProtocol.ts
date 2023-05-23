@@ -80,6 +80,7 @@ export const KUSAMA_MAINNET_PROTOCOL_NETWORK: PolkadotProtocolNetwork = {
   name: 'Mainnet',
   type: 'mainnet',
   rpcUrl: 'https://polkadot-kusama-node.prod.gke.papers.tech',
+  blockExplorerUrl: 'https://kusama.subscan.io',
   blockExplorerApi: 'https://kusama.subscan.prod.gke.papers.tech/api/scan'
 }
 

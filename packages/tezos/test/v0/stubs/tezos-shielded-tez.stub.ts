@@ -2,7 +2,7 @@ import axios from '@airgap/coinlib-core/dependencies/src/axios-0.19.0/index'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import * as sinon from 'sinon'
 
-import { TezosShieldedTezProtocol } from '../../../src'
+import { TezosShieldedTezProtocol } from '../../../src/v0'
 import { TezosContractCode } from '../../../src/v0/protocol/types/TezosContractCode'
 import { ProtocolHTTPStub } from '../implementations'
 import { TezosShieldedTezTestProtocolSpec } from '../specs/tezos-shielded-tez'

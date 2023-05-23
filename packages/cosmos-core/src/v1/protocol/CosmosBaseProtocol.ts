@@ -30,7 +30,7 @@ import {
   PublicKey,
   SecretKey,
   Signature,
-  TransactionConfiguration,
+  TransactionFullConfiguration,
   TransactionDetails
 } from '@airgap/module-kit'
 import { AirGapDelegateProtocol } from '@airgap/module-kit/internal'
@@ -301,7 +301,7 @@ export abstract class CosmosBaseProtocolImpl<_Units extends string> implements C
   public async getTransactionMaxAmountWithPublicKey(
     publicKey: PublicKey,
     to: string[],
-    configuration?: TransactionConfiguration<_Units> | undefined
+    configuration?: TransactionFullConfiguration<_Units> | undefined
   ): Promise<Amount<_Units>> {
     const units = (await this.getMetadata()).units
     const { total, transferable }: Balance<_Units> = await this.getBalanceOfPublicKey(publicKey)
@@ -338,7 +338,7 @@ export abstract class CosmosBaseProtocolImpl<_Units extends string> implements C
   public async prepareTransactionWithPublicKey(
     publicKey: PublicKey,
     details: TransactionDetails<_Units>[],
-    configuration?: TransactionConfiguration<_Units> | undefined
+    configuration?: TransactionFullConfiguration<_Units> | undefined
   ): Promise<CosmosUnsignedTransaction> {
     let fee: Amount<_Units>
     if (configuration?.fee !== undefined) {

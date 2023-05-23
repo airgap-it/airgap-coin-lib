@@ -20,10 +20,11 @@ import {
   SecretKey,
   Signature,
   SignedTransaction,
-  TransactionConfiguration,
+  TransactionFullConfiguration,
   TransactionCursor,
   TransactionDetails,
-  UnsignedTransaction
+  UnsignedTransaction,
+  TransactionSimpleConfiguration
 } from '@airgap/module-kit'
 
 import { MockProtocol } from './MockProtocol'
@@ -184,7 +185,7 @@ export class MockExtendedProtocol implements AirGapProtocol<{}, 'Bip32'> {
   public async getTransactionMaxAmountWithPublicKey(
     publicKey: PublicKey | ExtendedPublicKey,
     to: string[],
-    configuration?: TransactionConfiguration
+    configuration?: TransactionFullConfiguration
   ): Promise<Amount> {
     if (publicKey.type === 'pub') {
       return this.nonExtendedProtocol.getTransactionMaxAmountWithPublicKey(publicKey, to, configuration)
@@ -195,10 +196,11 @@ export class MockExtendedProtocol implements AirGapProtocol<{}, 'Bip32'> {
 
   public async getTransactionFeeWithPublicKey(
     publicKey: PublicKey | ExtendedPublicKey,
-    details: TransactionDetails[]
+    details: TransactionDetails[],
+    configuration?: TransactionSimpleConfiguration
   ): Promise<FeeEstimation> {
     if (publicKey.type === 'pub') {
-      return this.nonExtendedProtocol.getTransactionFeeWithPublicKey(publicKey, details)
+      return this.nonExtendedProtocol.getTransactionFeeWithPublicKey(publicKey, details, configuration)
     }
 
     throw new Error('Method not implemented.')
@@ -207,7 +209,7 @@ export class MockExtendedProtocol implements AirGapProtocol<{}, 'Bip32'> {
   public async prepareTransactionWithPublicKey(
     publicKey: PublicKey | ExtendedPublicKey,
     details: TransactionDetails[],
-    configuration?: TransactionConfiguration
+    configuration?: TransactionFullConfiguration
   ): Promise<UnsignedTransaction> {
     if (publicKey.type === 'pub') {
       return this.nonExtendedProtocol.prepareTransactionWithPublicKey(publicKey, details, configuration)

@@ -16,7 +16,7 @@ import {
   TezosFAProtocolOptions,
   TezosProtocol,
   TezosProtocolNetwork
-} from '../../../src'
+} from '../../../src/v0'
 import { TezosTransactionValidator } from '../../../src/v0/serializer/validators/transaction-validator'
 import { TestProtocolSpec } from '../implementations'
 import { TezosProtocolStub } from '../stubs/tezos.stub'
