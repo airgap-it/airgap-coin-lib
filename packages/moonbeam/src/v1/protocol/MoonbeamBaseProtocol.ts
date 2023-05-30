@@ -50,7 +50,8 @@ export abstract class MoonbeamBaseProtocolImpl<_Units extends string>
     MoonbeamAccountController,
     MoonbeamTransactionController
   >
-  implements MoonbeamBaseProtocol<_Units> {
+  implements MoonbeamBaseProtocol<_Units>
+{
   protected readonly defaultValidator?: string
 
   public constructor(options: MoonbeamBaseProtocolOptions<_Units>) {

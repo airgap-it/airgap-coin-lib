@@ -55,7 +55,8 @@ export abstract class PolkadotBaseProtocolImpl<_Units extends string>
     PolkadotAccountController,
     PolkadotTransactionController
   >
-  implements PolkadotBaseProtocol<_Units> {
+  implements PolkadotBaseProtocol<_Units>
+{
   protected readonly defaultValidator?: string
 
   public constructor(options: PolkadotBaseProtocolOptions<_Units>) {

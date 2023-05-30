@@ -50,13 +50,13 @@ export class EthereumProtocolStub implements ProtocolHTTPStub {
     sinon
       .stub(axios, 'get')
       .withArgs(
-        `${protocolNetwork.blockExplorerApi}/api?module=account&action=txlist&address=${address}&page=1&offset=${transactions.first.result.length}&sort=desc&apiKey=P63MEHEYBM5BGEG5WFN76VPNCET8B2MAP7`
+        `${protocolNetwork.blockExplorerApi}?module=account&action=txlist&address=${address}&page=1&offset=${transactions.first.result.length}&sort=desc`
       )
       .returns(Promise.resolve({ data: transactions.first }))
       .withArgs(
-        `${protocolNetwork.blockExplorerApi}/api?module=account&action=txlist&address=${address}&page=2&offset=${
+        `${protocolNetwork.blockExplorerApi}?module=account&action=txlist&address=${address}&page=2&offset=${
           transactions.next.result.length + 1
-        }&sort=desc&apiKey=P63MEHEYBM5BGEG5WFN76VPNCET8B2MAP7`
+        }&sort=desc`
       )
       .returns(Promise.resolve({ data: transactions.next }))
   }

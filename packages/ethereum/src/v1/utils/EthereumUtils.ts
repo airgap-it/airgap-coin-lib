@@ -54,6 +54,18 @@ export class EthereumUtils {
     }
   }
 
+  public static hexToNumber(value: string): BigNumber {
+    if (value.startsWith('0x')) {
+      value = value.slice(2)
+    }
+
+    if (value.startsWith('-0x')) {
+      value = `-${value.slice(3)}`
+    }
+
+    return new BigNumber(value, 16)
+  }
+
   private static numberToHex(value: string | number): string {
     if (value === null || value === undefined) {
       return value
@@ -131,6 +143,14 @@ export class EthereumUtils {
     } else {
       return BigNumber.isBigNumber(value)
     }
+  }
+
+  public static hexToUtf8(value: string): string {
+    if (value.startsWith('0x')) {
+      value = value.slice(2)
+    }
+
+    return Buffer.from(value, 'hex').toString('utf-8')
   }
 
   private static utf8ToHex(value: string): string {

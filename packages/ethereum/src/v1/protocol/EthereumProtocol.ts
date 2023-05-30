@@ -53,7 +53,7 @@ export const ETHEREUM_MAINNET_PROTOCOL_NETWORK: EthereumProtocolNetwork = {
   rpcUrl: 'https://eth-rpc-proxy.airgap.prod.gke.papers.tech',
   blockExplorerUrl: 'https://etherscan.io',
   chainId: 1,
-  blockExplorerApi: 'https://api.etherscan.io'
+  blockExplorerApi: 'https://eth-indexer.prod.gke.papers.tech'
 }
 
 const DEFAULT_ETHEREUM_PROTOCOL_NETWORK: EthereumProtocolNetwork = ETHEREUM_MAINNET_PROTOCOL_NETWORK

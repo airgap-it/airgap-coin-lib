@@ -2,16 +2,17 @@
 import { RPCBody } from '@airgap/coinlib-core/data/RPCBody'
 import axios, { AxiosError } from '@airgap/coinlib-core/dependencies/src/axios-0.19.0'
 import { BigNumber } from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
-import { InvalidValueError, NetworkError } from '@airgap/coinlib-core/errors'
+import { InvalidValueError, NetworkError, UnsupportedError } from '@airgap/coinlib-core/errors'
 import { Domain } from '@airgap/coinlib-core/errors/coinlib-error'
 import { RPCConvertible } from '@airgap/coinlib-core/interfaces/RPCConvertible'
+import { assertNever } from '@airgap/coinlib-core'
 import { AirGapTransactionStatus } from '@airgap/module-kit'
 
 import { EthereumUtils } from '../../utils/EthereumUtils'
 
 import { EthereumNodeClient } from './EthereumNodeClient'
 
-class EthereumRPCBody extends RPCBody implements RPCConvertible {
+export class EthereumRPCBody extends RPCBody implements RPCConvertible {
   public static blockEarliest: string = 'earliest'
   public static blockLatest: string = 'latest'
   public static blockPending: string = 'pending'
@@ -30,7 +31,7 @@ class EthereumRPCBody extends RPCBody implements RPCConvertible {
   }
 }
 
-interface EthereumRPCResponse {
+export interface EthereumRPCResponse {
   id: number
   jsonrpc: string
   result?: any
@@ -74,6 +75,24 @@ export class EthereumRPCData {
     }
 
     return result
+  }
+
+  public static abiDecoded(value: string, encodedType: 'bytes'): string {
+    switch (encodedType) {
+      case 'bytes':
+        if (value.startsWith('0x')) {
+          value = value.slice(2)
+        }
+
+        const buffer = Buffer.from(value, 'hex')
+        const offset = new BigNumber(buffer.slice(0, 32).toString('hex'), 16).toNumber()
+        const length = new BigNumber(buffer.slice(offset, offset + 32).toString('hex'), 16).toNumber()
+
+        return buffer.slice(offset + 32, offset + 32 + length).toString('hex')
+      default:
+        assertNever(encodedType)
+        throw new UnsupportedError(Domain.ETHEREUM, 'Unsupported ABI encoded type')
+    }
   }
 }
 
@@ -195,7 +214,7 @@ export class AirGapNodeClient extends EthereumNodeClient {
   private balanceOfBody(contractAddress: string, address: string, id: number = 0): EthereumRPCBody {
     const data = new EthereumRPCDataBalanceOf(address)
 
-    return new EthereumRPCBody('eth_call', [{ to: contractAddress, data: data.abiEncoded() }, EthereumRPCBody.blockLatest], id)
+    return this.contractCallBody(contractAddress, data, [EthereumRPCBody.blockLatest], id)
   }
 
   public async estimateTransactionGas(
@@ -225,6 +244,56 @@ export class AirGapNodeClient extends EthereumNodeClient {
     const response = await this.send(body)
 
     return new BigNumber(response.result)
+  }
+
+  public async getContractName(contractAddress: string): Promise<string | undefined> {
+    const data = new EthereumRPCData('name()')
+    const body = this.contractCallBody(contractAddress, data)
+
+    const response = await this.send(body)
+    if (!response.result) {
+      return undefined
+    }
+
+    const result = EthereumRPCData.abiDecoded(response.result, 'bytes')
+
+    return EthereumUtils.hexToUtf8(result)
+  }
+
+  public async getContractSymbol(contractAddress: string): Promise<string | undefined> {
+    const data = new EthereumRPCData('symbol()')
+    const body = this.contractCallBody(contractAddress, data)
+
+    const response = await this.send(body)
+    if (!response.result) {
+      return undefined
+    }
+
+    const result = EthereumRPCData.abiDecoded(response.result, 'bytes')
+
+    return EthereumUtils.hexToUtf8(result)
+  }
+
+  public async getContractDecimals(contractAddress: string): Promise<number | undefined> {
+    const data = new EthereumRPCData('decimals()')
+    const body = this.contractCallBody(contractAddress, data)
+
+    const response = await this.send(body)
+    if (!response.result) {
+      return undefined
+    }
+
+    return EthereumUtils.hexToNumber(response.result).toNumber()
+  }
+
+  private contractCallBody(
+    contractAddress: string,
+    data: EthereumRPCData,
+    extraParams: any[] = [],
+    id?: number,
+    jsonrpc?: string
+  ): EthereumRPCBody {
+    return new EthereumRPCBody('eth_call', [{ to: contractAddress, data: data.abiEncoded() }, ...extraParams], id, jsonrpc)
   }
 
   private async send(body: EthereumRPCBody): Promise<EthereumRPCResponse> {

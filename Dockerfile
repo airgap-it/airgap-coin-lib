@@ -41,6 +41,9 @@ COPY packages/module-kit/scripts /app/packages/module-kit/scripts
 COPY packages/moonbeam/package.json /app/packages/moonbeam/
 COPY packages/moonbeam/scripts /app/packages/moonbeam/scripts
 
+COPY packages/optimism/package.json /app/packages/optimism/
+COPY packages/optimism/scripts /app/packages/optimism/scripts
+
 COPY packages/polkadot/package.json /app/packages/polkadot/
 COPY packages/polkadot/scripts /app/packages/polkadot/scripts
 

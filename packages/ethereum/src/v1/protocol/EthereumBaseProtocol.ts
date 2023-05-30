@@ -66,11 +66,13 @@ import { ETHEREUM_CHAIN_IDS } from './EthereumChainIds'
 
 // Interface
 
-export interface EthereumBaseProtocol<_Units extends string = EthereumUnits>
-  extends AirGapProtocol<
+export interface EthereumBaseProtocol<
+  _Units extends string = EthereumUnits,
+  _ProtocolNetwork extends EthereumProtocolNetwork = EthereumProtocolNetwork
+> extends AirGapProtocol<
     {
       AddressResult: Address
-      ProtocolNetwork: EthereumProtocolNetwork
+      ProtocolNetwork: _ProtocolNetwork
       CryptoConfiguration: EthereumCryptoConfiguration
       Units: _Units
       FeeUnits: EthereumUnits
@@ -105,8 +107,12 @@ export const DEFAULT_ETHEREUM_UNITS_METADATA: ProtocolUnitsMetadata<EthereumUnit
 
 const MAX_GAS_ESTIMATE: number = 300000
 
-export abstract class EthereumBaseProtocolImpl<_Units extends string = EthereumUnits> implements EthereumBaseProtocol<_Units> {
-  protected readonly options: EthereumProtocolOptions
+export class EthereumBaseProtocolImpl<
+  _Units extends string = EthereumUnits,
+  _ProtocolNetwork extends EthereumProtocolNetwork = EthereumProtocolNetwork
+> implements EthereumBaseProtocol<_Units, _ProtocolNetwork>
+{
+  protected readonly options: EthereumProtocolOptions<_ProtocolNetwork>
 
   protected readonly nodeClient: EthereumNodeClient
   protected readonly infoClient: EthereumInfoClient
@@ -122,7 +128,11 @@ export abstract class EthereumBaseProtocolImpl<_Units extends string = EthereumU
     config: { network: BitGo.networks.bitcoin }
   }
 
-  protected constructor(nodeClient: EthereumNodeClient, infoClient: EthereumInfoClient, options: EthereumBaseProtocolOptions<_Units>) {
+  constructor(
+    nodeClient: EthereumNodeClient,
+    infoClient: EthereumInfoClient,
+    options: EthereumBaseProtocolOptions<_Units, _ProtocolNetwork>
+  ) {
     this.options = options
 
     this.nodeClient = nodeClient
@@ -169,8 +179,8 @@ export abstract class EthereumBaseProtocolImpl<_Units extends string = EthereumU
 
   // Common
 
-  protected readonly units: ProtocolUnitsMetadata<_Units>
-  protected readonly feeUnits: ProtocolUnitsMetadata<EthereumUnits> = DEFAULT_ETHEREUM_UNITS_METADATA
+  public readonly units: ProtocolUnitsMetadata<_Units>
+  public readonly feeUnits: ProtocolUnitsMetadata<EthereumUnits> = DEFAULT_ETHEREUM_UNITS_METADATA
   protected readonly feeDefaults: FeeDefaults<EthereumUnits>
 
   protected readonly metadata: ProtocolMetadata<_Units, EthereumUnits>
@@ -508,7 +518,7 @@ export abstract class EthereumBaseProtocolImpl<_Units extends string = EthereumU
 
   // Online
 
-  public async getNetwork(): Promise<EthereumProtocolNetwork> {
+  public async getNetwork(): Promise<_ProtocolNetwork> {
     return this.options.network
   }
 

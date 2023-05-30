@@ -1,6 +1,6 @@
 {
   "name": "@airgap/ethereum",
-  "version": "0.13.16-beta.3",
+  "version": "0.13.16-beta.8",
   "description": "The @airgap/ethereum is an Ethereum implementation of the ICoinProtocol interface from @airgap/coinlib-core.",
   "keywords": [
     "airgap",
@@ -34,7 +34,7 @@
     "@airgap/crypto": "*",
     "@airgap/module-kit": "*",
     "@airgap/serializer": "*",
-    "@ethereumjs/common": "2.6.0",
+    "@ethereumjs/common": "2.6.5",
     "@ethereumjs/tx": "3.4.0",
     "@metamask/eth-sig-util": "4.0.0"
   },

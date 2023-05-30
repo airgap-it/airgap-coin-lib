@@ -51,7 +51,11 @@ export class AirGapWallet implements IAirGapWallet {
   public async deriveAddresses(amount: number = 50): Promise<string[]> {
     let addresses: IAirGapAddressResult[]
     if (this.isExtendedPublicKey) {
-      const isEthereum: boolean = (await this.protocol.getIdentifier()).startsWith(MainProtocolSymbols.ETH)
+      const protocolIdentifier = await this.protocol.getIdentifier()
+      const singleDerivationProtocols = [MainProtocolSymbols.ETH, MainProtocolSymbols.OPTIMISM]
+      const singleDerivation = singleDerivationProtocols.map((protocolSymbol: ProtocolSymbols) =>
+        protocolIdentifier.startsWith(protocolSymbol)
+      )
 
       const parts: string[] = this.derivationPath.split('/')
       let offset: number = 0
@@ -61,7 +65,7 @@ export class AirGapWallet implements IAirGapWallet {
       }
 
       addresses = (
-        isEthereum
+        singleDerivation
           ? [await this.protocol.getAddressesFromExtendedPublicKey(this.publicKey, 0, 1, offset)]
           : await Promise.all([
               this.protocol.getAddressesFromExtendedPublicKey(this.publicKey, 0, amount, offset),
