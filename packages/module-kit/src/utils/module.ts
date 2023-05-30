@@ -1,6 +1,10 @@
+import { ProtocolSerializerExtension, ProtocolSerializerModule } from '../module/extensions/serialization/ProtocolSerializer'
+import { Module } from '../module/module'
 import { ModuleNetworkRegistry } from '../module/module-network-registry'
 import { OfflineProtocolConfiguration, OnlineProtocolConfiguration, ProtocolConfiguration } from '../types/module'
 import { ProtocolNetwork } from '../types/protocol'
+
+import { implementsInterface, Schema } from './interface'
 
 export function createSupportedProtocols<P extends string = string>(
   online: Record<P, ModuleNetworkRegistry> | Record<P, Record<string, ProtocolNetwork>>,
@@ -32,4 +36,19 @@ function createOnlineProtocolConfiguration(networks: ModuleNetworkRegistry | Rec
     type: 'online',
     networks: (networks as ModuleNetworkRegistry).supportedNetworks ?? networks
   }
+}
+
+// Schemas
+
+export const protocolSerializerSchema: Schema<ProtocolSerializerModule> = {
+  serializeOfflineProtocol: 'required',
+  deserializeOfflineProtocol: 'required',
+  serializeOnlineProtocol: 'required',
+  deserializeOnlineProtocol: 'required'
+}
+
+// Implementation Checks
+
+export function canSerializeProtocols<T extends Module>(module: T): module is T & ProtocolSerializerExtension<T> {
+  return implementsInterface<ProtocolSerializerModule>(module, protocolSerializerSchema)
 }

@@ -30,4 +30,8 @@ export abstract class EthereumNodeClient {
   public abstract getGasPrice(): Promise<BigNumber>
 
   public abstract callBalanceOfOnContracts(contractAddresses: string[], address: string): Promise<{ [contractAddress: string]: BigNumber }>
+
+  public abstract getContractName(contractAddress: string): Promise<string | undefined>
+  public abstract getContractSymbol(contractAddress: string): Promise<string | undefined>
+  public abstract getContractDecimals(contractAddress: string): Promise<number | undefined>
 }

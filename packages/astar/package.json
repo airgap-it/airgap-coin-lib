@@ -1,6 +1,6 @@
 {
   "name": "@airgap/astar",
-  "version": "0.13.16-beta.3",
+  "version": "0.13.16-beta.8",
   "description": "The @airgap/astar is an Astar implementation of the ICoinProtocol interface from @airgap/coinlib-core.",
   "keywords": [
     "airgap",

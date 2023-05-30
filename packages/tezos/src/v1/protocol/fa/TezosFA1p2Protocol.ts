@@ -29,7 +29,8 @@ export interface TezosFA1p2Protocol<_Units extends string = string> extends Tezo
 
 export class TezosFA1p2ProtocolImpl<_Units extends string, _Entrypoints extends string = string>
   extends TezosFA1ProtocolImpl<_Units, _Entrypoints | TezosFA1p2ContractEntrypoint>
-  implements TezosFA1p2Protocol<_Units> {
+  implements TezosFA1p2Protocol<_Units>
+{
   public readonly isTezosFA1p2Protocol: true = true
 
   public constructor(options: TezosFA1p2ProtocolOptions<_Units>) {

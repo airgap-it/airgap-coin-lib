@@ -35,7 +35,8 @@ export abstract class SubstrateStakingProtocolImpl<
   >
   extends SubstrateProtocolImpl<_Units, _ProtocolConfiguration, _ProtocolNetwork, _NodeClient, _AccountController, _TransactionController>
   implements
-    SubstrateStakingProtocol<_ProtocolConfiguration, _Units, _ProtocolNetwork, SubstrateCryptoConfiguration<_ProtocolConfiguration>> {
+    SubstrateStakingProtocol<_ProtocolConfiguration, _Units, _ProtocolNetwork, SubstrateCryptoConfiguration<_ProtocolConfiguration>>
+{
   public async getMaxDelegationValueWithAddress(address: string): Promise<string> {
     const [balance, futureTransactions] = await Promise.all([
       this.accountController.getBalance(address),

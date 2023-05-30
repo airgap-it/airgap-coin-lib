@@ -63,11 +63,11 @@ export class ERC20TokenProtocolStub implements ProtocolHTTPStub<string, ERC20Tok
     sinon
       .stub(axios, 'get')
       .withArgs(
-        `${protocolNetwork.blockExplorerApi}/api?module=account&action=tokentx&address=${address}&contractAddress=${contractAddress}&page=1&offset=${transactions.first.result.length}&sort=desc&apiKey=P63MEHEYBM5BGEG5WFN76VPNCET8B2MAP7`
+        `${protocolNetwork.blockExplorerApi}?module=account&action=tokentx&address=${address}&contractAddress=${contractAddress}&page=1&offset=${transactions.first.result.length}&sort=desc`
       )
       .returns(Promise.resolve({ data: transactions.first }))
       .withArgs(
-        `${protocolNetwork.blockExplorerApi}/api?module=account&action=tokentx&address=${address}&contractAddress=${contractAddress}&page=2&offset=${transactions.first.result.length}&sort=desc&apiKey=P63MEHEYBM5BGEG5WFN76VPNCET8B2MAP7`
+        `${protocolNetwork.blockExplorerApi}?module=account&action=tokentx&address=${address}&contractAddress=${contractAddress}&page=2&offset=${transactions.first.result.length}&sort=desc`
       )
       .returns(Promise.resolve({ data: transactions.next }))
   }

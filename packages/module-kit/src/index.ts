@@ -1,3 +1,4 @@
+// tslint:disable: max-file-line-count
 import { AirGapBlockExplorer } from './block-explorer/block-explorer'
 import { newAmount } from './factories/amount'
 import { newExtendedPublicKey, newExtendedSecretKey, newPublicKey, newSecretKey } from './factories/key'
@@ -5,6 +6,13 @@ import { newSignature } from './factories/signature'
 import { newSignedTransaction, newUnsignedTransaction } from './factories/transaction'
 import { newErrorUIAlert, newInfoUIAlert, newSuccessUIAlert, newWarningUIAlert } from './factories/ui/alert'
 import { newPlainUIText } from './factories/ui/text'
+import {
+  AirGapSerializedAnyProtocol,
+  AirGapSerializedOfflineProtocol,
+  AirGapSerializedOnlineProtocol,
+  ProtocolSerializerExtension,
+  ProtocolSerializerModule
+} from './module/extensions/serialization/ProtocolSerializer'
 import { AirGapModule } from './module/module'
 import { ModuleNetworkRegistry } from './module/module-network-registry'
 import {
@@ -66,12 +74,12 @@ import {
   AirGapTransactionStatus,
   AirGapTransactionsWithCursor,
   SignedTransaction,
-  TransactionSimpleConfiguration,
   TransactionCursor,
   TransactionDetails,
+  TransactionFullConfiguration,
+  TransactionSimpleConfiguration,
   TransactionType,
-  UnsignedTransaction,
-  TransactionFullConfiguration
+  UnsignedTransaction
 } from './types/transaction'
 import { AirGapUIAction } from './types/ui/action'
 import { AirGapUIAlert } from './types/ui/alert'
@@ -79,7 +87,7 @@ import { AirGapUIText } from './types/ui/text'
 import { isAmount } from './utils/amount'
 import { implementsInterface, Schema } from './utils/interface'
 import { isAnyKey, isExtendedPublicKey, isExtendedSecretKey, isPublicKey, isSecretKey } from './utils/key'
-import { createSupportedProtocols } from './utils/module'
+import { canSerializeProtocols, createSupportedProtocols, protocolSerializerSchema } from './utils/module'
 import { normalizeToUndefined } from './utils/normalize'
 import {
   aesEncryptionSchema,
@@ -151,7 +159,12 @@ export {
   ProtocolConfiguration,
   OfflineProtocolConfiguration,
   OnlineProtocolConfiguration,
-  FullProtocolConfiguration
+  FullProtocolConfiguration,
+  ProtocolSerializerExtension,
+  ProtocolSerializerModule,
+  AirGapSerializedOfflineProtocol,
+  AirGapSerializedOnlineProtocol,
+  AirGapSerializedAnyProtocol
 }
 
 // Protocol
@@ -257,6 +270,7 @@ export {
   isPublicKey,
   isExtendedPublicKey,
   createSupportedProtocols,
+  canSerializeProtocols,
   isAnyProtocol,
   isOfflineProtocol,
   isOnlineProtocol,
@@ -280,6 +294,7 @@ export {
 // Schema
 
 export {
+  protocolSerializerSchema,
   baseProtocolSchema,
   offlineProtocolSchema,
   onlineProtocolSchema,
