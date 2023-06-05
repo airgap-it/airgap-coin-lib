@@ -1097,7 +1097,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       return { ...operation, gas_limit, counter }
     })
 
-    const { data: block }: AxiosResponse<{ chain_id: string }> = await axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head`)
+    const { data: block }: AxiosResponse<{ chain_id: string }> = await axios.get(
+      `${this.options.network.rpcUrl}/chains/main/blocks/head/header`
+    )
     const body = {
       chain_id: block.chain_id,
       operation: {

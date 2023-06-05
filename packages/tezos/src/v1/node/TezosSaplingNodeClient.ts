@@ -14,7 +14,7 @@ export class TezosSaplingNodeClient {
   }
 
   public async getChainId(): Promise<string> {
-    const response: AxiosResponse<{ chain_id: string }> = await axios.get(`${this.rpcUrl}/chains/main/blocks/head/`)
+    const response: AxiosResponse<{ chain_id: string }> = await axios.get(`${this.rpcUrl}/chains/main/blocks/head/header`)
 
     return response.data.chain_id
   }
