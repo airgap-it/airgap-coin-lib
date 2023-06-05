@@ -13,7 +13,7 @@ export class TezosProtocolStub implements ProtocolHTTPStub {
     const protocolOptions = await protocol.getOptions()
 
     getStub
-      .withArgs(`${protocolOptions.network.rpcUrl}/chains/main/blocks/head`)
+      .withArgs(`${protocolOptions.network.rpcUrl}/chains/main/blocks/head/header`)
       .returns(Promise.resolve({ data: { chain_id: 'NetXdQprcVkpaWU' } }))
 
     postStub.withArgs(`${protocolOptions.network.rpcUrl}/chains/main/blocks/head/helpers/scripts/run_operation`).returns(

@@ -444,7 +444,7 @@ export abstract class TezosFAProtocolImpl<
   protected async runContractCall(contractCall: TezosContractCall, source: string): Promise<MichelineDataNode> {
     const results: AxiosResponse[] = await Promise.all([
       axios.get(this.url(`/chains/main/blocks/head/context/contracts/${source}/counter`)),
-      axios.get(this.url('/chains/main/blocks/head/'))
+      axios.get(this.url('/chains/main/blocks/head/header'))
     ]).catch((error) => {
       throw new NetworkError(Domain.TEZOS, error as AxiosError)
     })
