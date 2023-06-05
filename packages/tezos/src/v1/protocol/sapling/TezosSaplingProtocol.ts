@@ -302,7 +302,7 @@ export abstract class TezosSaplingProtocolImpl<_Units extends string> implements
       )
     } else {
       try {
-        const wrappedOperation: TezosWrappedOperation = await this.tezos.unforgeOperation(binary)
+        const wrappedOperation: TezosWrappedOperation = await this.tezos.unforgeOperation(binary, 'signed')
 
         airGapTxs.push(...(await this.getDetailsFromWrappedOperation(wrappedOperation, knownViewingKeys)))
       } catch {
@@ -350,7 +350,7 @@ export abstract class TezosSaplingProtocolImpl<_Units extends string> implements
 
       airGapTxs.push(...details)
     } else {
-      const wrappedOperation: TezosWrappedOperation = await this.tezos.unforgeOperation(transaction.binary)
+      const wrappedOperation: TezosWrappedOperation = await this.tezos.unforgeOperation(transaction.binary, 'unsigned')
       airGapTxs.push(...(await this.getDetailsFromWrappedOperation(wrappedOperation, knownViewingKeys)))
     }
 
