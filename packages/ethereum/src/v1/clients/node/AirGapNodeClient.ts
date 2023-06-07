@@ -248,7 +248,7 @@ export class AirGapNodeClient extends EthereumNodeClient {
 
   public async getContractName(contractAddress: string): Promise<string | undefined> {
     const data = new EthereumRPCData('name()')
-    const body = this.contractCallBody(contractAddress, data)
+    const body = this.contractCallBody(contractAddress, data, [EthereumRPCBody.blockLatest])
 
     const response = await this.send(body)
     if (!response.result) {
@@ -262,7 +262,7 @@ export class AirGapNodeClient extends EthereumNodeClient {
 
   public async getContractSymbol(contractAddress: string): Promise<string | undefined> {
     const data = new EthereumRPCData('symbol()')
-    const body = this.contractCallBody(contractAddress, data)
+    const body = this.contractCallBody(contractAddress, data, [EthereumRPCBody.blockLatest])
 
     const response = await this.send(body)
     if (!response.result) {
@@ -276,7 +276,7 @@ export class AirGapNodeClient extends EthereumNodeClient {
 
   public async getContractDecimals(contractAddress: string): Promise<number | undefined> {
     const data = new EthereumRPCData('decimals()')
-    const body = this.contractCallBody(contractAddress, data)
+    const body = this.contractCallBody(contractAddress, data, [EthereumRPCBody.blockLatest])
 
     const response = await this.send(body)
     if (!response.result) {
