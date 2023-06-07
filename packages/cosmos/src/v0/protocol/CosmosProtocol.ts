@@ -109,6 +109,9 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
   public async getMarketSymbol(): Promise<string> {
     return this.marketSymbol
   }
+  public async getAssetSymbol(): Promise<string | undefined> {
+    return undefined
+  }
   public async getFeeSymbol(): Promise<string> {
     return this.feeSymbol
   }

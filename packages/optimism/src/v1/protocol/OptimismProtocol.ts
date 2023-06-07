@@ -32,7 +32,13 @@ class OptimismProtocolImpl extends OptimismBaseProtocolImpl implements OptimismP
       identifier: MainProtocolSymbols.OPTIMISM,
       name: 'Optimism',
 
-      units: DEFAULT_ETHEREUM_UNITS_METADATA,
+      units: {
+        ...DEFAULT_ETHEREUM_UNITS_METADATA,
+        ETH: {
+          symbol: { ...DEFAULT_ETHEREUM_UNITS_METADATA.ETH.symbol, asset: 'OP' },
+          decimals: DEFAULT_ETHEREUM_UNITS_METADATA.ETH.decimals
+        }
+      },
       mainUnit: 'ETH',
 
       // The layer 2 gas price is normally 0.001 gwei, but it increases when experiencing heavy congestion

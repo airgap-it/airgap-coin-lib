@@ -33,7 +33,8 @@ import { EthereumAddressCursor, EthereumAddressResult, EthereumTransactionCursor
 import { EthereumUtils } from './utils/utils'
 
 export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient, InfoClient extends EthereumInfoClient>
-  implements ICoinProtocol {
+  implements ICoinProtocol
+{
   public symbol: string = 'ETH'
   public name: string = 'Ethereum'
   public marketSymbol: string = 'eth'
@@ -90,6 +91,10 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
 
   public async getMarketSymbol(): Promise<string> {
     return this.marketSymbol
+  }
+
+  public async getAssetSymbol(): Promise<string | undefined> {
+    return undefined
   }
 
   public async getFeeSymbol(): Promise<string> {

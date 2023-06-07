@@ -23,6 +23,7 @@ export type ProtocolUnitsMetadata<_Units extends string = string> = {
 export interface ProtocolSymbol {
   value: string
   market?: string
+  asset?: string
 }
 
 export interface ProtocolFeeMetadata<_FeeUnits extends string = string> {
