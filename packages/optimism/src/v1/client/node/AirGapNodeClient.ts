@@ -55,7 +55,7 @@ export class AirGapNodeClient extends OptimismNodeClient {
 
   public async getL1Fee(contractAddress: string, tx: EthereumUnsignedTransaction): Promise<BigNumber> {
     const data = new OptimismRPCDataGetL1Fee(tx)
-    const body = new EthereumRPCBody('eth_call', [{ to: contractAddress, data: data.abiEncoded() }])
+    const body = new EthereumRPCBody('eth_call', [{ to: contractAddress, data: data.abiEncoded() }, EthereumRPCBody.blockLatest])
 
     const response = await this.send(body)
     const fee = new BigNumber(response.result)

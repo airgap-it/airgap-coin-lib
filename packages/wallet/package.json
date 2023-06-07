@@ -1,6 +1,6 @@
 {
   "name": "@airgap/wallet",
-  "version": "0.13.16-beta.11",
+  "version": "0.13.16-beta.12",
   "description": "The @airgap/wallet package provides interfaces for offline/online wallet functionalities.",
   "keywords": [
     "airgap"

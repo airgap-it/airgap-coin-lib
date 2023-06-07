@@ -1,6 +1,6 @@
 {
   "name": "@airgap/coreum",
-  "version": "0.13.16-beta.11",
+  "version": "0.13.16-beta.12",
   "description": "The @airgap/coreum is a Coreum implementation of the ICoinProtocol interface from @airgap/coinlib-core.",
   "keywords": [
     "airgap",
