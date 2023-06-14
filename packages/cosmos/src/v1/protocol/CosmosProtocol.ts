@@ -7,7 +7,8 @@ import {
   ProtocolUnitsMetadata,
   PublicKey,
   RecursivePartial,
-  TransactionDetails
+  TransactionDetails,
+  TransactionSimpleConfiguration
 } from '@airgap/module-kit'
 
 import { CosmosBaseProtocolImpl, CosmosProtocolNetwork, CosmosProtocolOptions, CosmosBaseStakingProtocol } from '@airgap/cosmos-core'
@@ -78,7 +79,8 @@ export class CosmosProtocolImpl extends CosmosBaseProtocolImpl<CosmosDenom> impl
 
   public async getTransactionFeeWithPublicKey(
     _publicKey: PublicKey,
-    _details: TransactionDetails<CosmosDenom>[]
+    _details: TransactionDetails<CosmosDenom>[],
+    _configuration?: TransactionSimpleConfiguration
   ): Promise<FeeDefaults<CosmosDenom>> {
     return this.feeDefaults
   }
@@ -93,7 +95,8 @@ export function createCosmosProtocol(options: RecursivePartial<CosmosProtocolOpt
 export const COSMOS_MAINNET_PROTOCOL_NETWORK: CosmosProtocolNetwork = {
   name: 'Mainnet',
   type: 'mainnet',
-  rpcUrl: 'https://cosmos-node.prod.gke.papers.tech'
+  rpcUrl: 'https://cosmos-node.prod.gke.papers.tech',
+  blockExplorerUrl: 'https://www.mintscan.io'
 }
 
 const DEFAULT_COSMOS_PROTOCOL_NETWORK: CosmosProtocolNetwork = COSMOS_MAINNET_PROTOCOL_NETWORK

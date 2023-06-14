@@ -1,6 +1,6 @@
 import { AirGapWalletStatus } from '@airgap/coinlib-core'
 
-import { EthereumClassicProtocol } from '../../../src'
+import { EthereumClassicProtocol } from '../../../src/v0'
 import { TestProtocolSpec } from '../implementations'
 import { EthereumProtocolStub } from '../stubs/ethereum.stub'
 

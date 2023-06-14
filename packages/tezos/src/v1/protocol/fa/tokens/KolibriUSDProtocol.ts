@@ -64,13 +64,9 @@ export function createKolibriUSDProtocolOptions(network: RecursivePartial<TezosF
     network: {
       ...DEFAULT_KOLIBRIUSD_PROTOCOL_NETWORK,
       ...network,
-      blockExplorer: {
-        ...DEFAULT_KOLIBRIUSD_PROTOCOL_NETWORK.blockExplorer,
-        ...network.blockExplorer
-      },
-      indexer: {
-        ...DEFAULT_KOLIBRIUSD_PROTOCOL_NETWORK.indexer,
-        ...network.indexer
+      callbackContracts: {
+        ...DEFAULT_KOLIBRIUSD_PROTOCOL_NETWORK.callbackContracts,
+        ...network.callbackContracts
       }
     }
   }

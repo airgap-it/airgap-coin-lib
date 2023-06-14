@@ -24,8 +24,9 @@ import {
   ProtocolUnitsMetadata,
   PublicKey,
   SecretKey,
-  TransactionConfiguration,
-  TransactionDetails
+  TransactionFullConfiguration,
+  TransactionDetails,
+  TransactionSimpleConfiguration
 } from '@airgap/module-kit'
 
 import { ICPCryptoConfiguration } from '../../types/crypto'
@@ -406,7 +407,7 @@ export abstract class ICRC1OnlineProtocolImpl<
   public async getTransactionMaxAmountWithPublicKey(
     publicKey: PublicKey,
     to: string[],
-    configuration?: TransactionConfiguration<_Units>
+    configuration?: TransactionFullConfiguration<_Units>
   ): Promise<Amount<_Units>> {
     const balance = await this.getBalanceOfPublicKey(publicKey)
     const balanceBn = new BigNumber(newAmount(balance.total).value)
@@ -430,7 +431,11 @@ export abstract class ICRC1OnlineProtocolImpl<
     return newAmount(amountWithoutFees.toFixed(), 'blockchain')
   }
 
-  public async getTransactionFeeWithPublicKey(publicKey: PublicKey, details: TransactionDetails<_Units>[]): Promise<Amount<_Units>> {
+  public async getTransactionFeeWithPublicKey(
+    publicKey: PublicKey,
+    details: TransactionDetails<_Units>[],
+    _configuration?: TransactionSimpleConfiguration
+  ): Promise<Amount<_Units>> {
     const metadata: ProtocolMetadata<_Units> = await this.getMetadata()
     if (metadata.fee?.defaults) {
       return newAmount(metadata.fee.defaults.medium).blockchain(metadata.units)
@@ -444,7 +449,7 @@ export abstract class ICRC1OnlineProtocolImpl<
   public async prepareTransactionWithPublicKey(
     publicKey: PublicKey,
     details: TransactionDetails<_Units>[],
-    configuration?: TransactionConfiguration<_Units>
+    configuration?: TransactionFullConfiguration<_Units>
   ): Promise<ICPUnsignedTransaction> {
     const { TransferArg } = icrcIDLTypes(IDL)
     const metadata: ProtocolMetadata<_Units> = await this.getMetadata()

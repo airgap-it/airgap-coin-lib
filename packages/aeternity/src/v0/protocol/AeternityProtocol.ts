@@ -78,6 +78,10 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
     return this.marketSymbol
   }
 
+  public async getAssetSymbol(): Promise<string | undefined> {
+    return undefined
+  }
+
   public async getFeeSymbol(): Promise<string> {
     return this.feeSymbol
   }

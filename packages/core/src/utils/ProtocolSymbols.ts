@@ -16,7 +16,8 @@ export enum MainProtocolSymbols {
   SHIDEN = 'shiden',
   ICP = 'icp',
   ICP_CKBTC = 'icp_ckbtc',
-  COREUM = 'coreum'
+  COREUM = 'coreum',
+  OPTIMISM = 'optimism'
 }
 
 export enum SubProtocolSymbols {
@@ -40,7 +41,8 @@ export enum SubProtocolSymbols {
   XTZ_USDT = 'xtz-usdt',
   XTZ_SIRS = 'xtz-sirs',
   ETH_ERC20 = 'eth-erc20',
-  ETH_ERC20_XCHF = 'eth-erc20-xchf'
+  ETH_ERC20_XCHF = 'eth-erc20-xchf',
+  OPTIMISM_ERC20 = 'optimism-erc20'
 }
 
 export type ProtocolSymbols = MainProtocolSymbols | SubProtocolSymbols

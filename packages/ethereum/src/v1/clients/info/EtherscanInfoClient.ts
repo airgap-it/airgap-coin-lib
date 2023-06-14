@@ -10,7 +10,7 @@ import { EthereumTransactionCursor } from '../../types/transaction'
 import { EthereumInfoClient, EthereumInfoClientTransaction, EthereumInfoClientTransactionsResult } from './EthereumInfoClient'
 
 export class EtherscanInfoClient extends EthereumInfoClient {
-  constructor(baseURL: string) {
+  constructor(baseURL: string, private readonly apiKey?: string) {
     super(baseURL)
   }
 
@@ -22,7 +22,10 @@ export class EtherscanInfoClient extends EthereumInfoClient {
     const airGapTransactions: EthereumInfoClientTransaction[] = []
 
     const page: number = cursor?.page ?? 1
-    const url: string = `${this.baseURL}/api?module=account&action=txlist&address=${address}&page=${page}&offset=${limit}&sort=desc&apiKey=P63MEHEYBM5BGEG5WFN76VPNCET8B2MAP7`
+    let url: string = `${this.baseURL}?module=account&action=txlist&address=${address}&page=${page}&offset=${limit}&sort=desc`
+    if (this.apiKey) {
+      url += `&apiKey=${this.apiKey}`
+    }
 
     const response = await Axios.get(url)
     const transactionResponse = response.data
@@ -68,7 +71,10 @@ export class EtherscanInfoClient extends EthereumInfoClient {
     const airGapTransactions: EthereumInfoClientTransaction[] = []
 
     const page: number = cursor?.page ?? 1
-    const url = `${this.baseURL}/api?module=account&action=tokentx&address=${address}&contractAddress=${contractAddress}&page=${page}&offset=${limit}&sort=desc&apiKey=P63MEHEYBM5BGEG5WFN76VPNCET8B2MAP7`
+    let url = `${this.baseURL}?module=account&action=tokentx&address=${address}&contractAddress=${contractAddress}&page=${page}&offset=${limit}&sort=desc`
+    if (this.apiKey) {
+      url += `&apiKey=${this.apiKey}`
+    }
 
     const response = await Axios.get(url)
     const transactionResponse = response.data

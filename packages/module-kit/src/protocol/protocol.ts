@@ -11,10 +11,11 @@ import {
   AirGapTransaction,
   AirGapTransactionsWithCursor,
   SignedTransaction,
-  TransactionConfiguration,
+  TransactionSimpleConfiguration,
   TransactionCursor,
   TransactionDetails,
-  UnsignedTransaction
+  UnsignedTransaction,
+  TransactionFullConfiguration
 } from '../types/transaction'
 
 // ##### Type #####
@@ -169,13 +170,17 @@ export interface _OnlineProtocol<
   getTransactionMaxAmountWithPublicKey(
     publicKey: _PublicKey,
     to: Address[],
-    configuration?: TransactionConfiguration<_FeeUnits>
+    configuration?: TransactionFullConfiguration<_FeeUnits>
   ): Promise<Amount<_Units>>
-  getTransactionFeeWithPublicKey(publicKey: _PublicKey, details: TransactionDetails<_Units>[]): Promise<_FeeEstimation>
+  getTransactionFeeWithPublicKey(
+    publicKey: _PublicKey,
+    details: TransactionDetails<_Units>[],
+    configuration?: TransactionSimpleConfiguration
+  ): Promise<_FeeEstimation>
   prepareTransactionWithPublicKey(
     publicKey: _PublicKey,
     details: TransactionDetails<_Units>[],
-    configuration?: TransactionConfiguration<_FeeUnits>
+    configuration?: TransactionFullConfiguration<_FeeUnits>
   ): Promise<_UnsignedTransaction>
 
   broadcastTransaction(transaction: _SignedTransaction): Promise<string>

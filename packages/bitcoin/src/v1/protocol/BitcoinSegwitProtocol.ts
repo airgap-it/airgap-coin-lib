@@ -27,8 +27,9 @@ import {
   RecursivePartial,
   SecretKey,
   Signature,
-  TransactionConfiguration,
-  TransactionDetails
+  TransactionFullConfiguration,
+  TransactionDetails,
+  TransactionSimpleConfiguration
 } from '@airgap/module-kit'
 import * as bitcoin from 'bitcoinjs-lib'
 
@@ -42,7 +43,7 @@ import {
   BitcoinSegwitUnsignedTransaction,
   BitcoinTransactionCursor,
   BitcoinUnsignedTransaction,
-  SegwitTransactionConfiguration
+  SegwitTransactionFullConfiguration
 } from '../types/transaction'
 import { eachRecursive } from '../utils/common'
 import { convertExtendedPublicKey, convertExtendedSecretKey, convertPublicKey } from '../utils/key'
@@ -56,7 +57,7 @@ export interface BitcoinSegwitProtocol extends BitcoinProtocol<BitcoinSegwitSign
   prepareTransactionWithPublicKey(
     publicKey: PublicKey | ExtendedPublicKey,
     details: TransactionDetails<BitcoinUnits>[],
-    configuration: SegwitTransactionConfiguration<BitcoinUnits>
+    configuration: SegwitTransactionFullConfiguration<BitcoinUnits>
   ): Promise<BitcoinSegwitUnsignedTransaction>
 }
 
@@ -433,22 +434,23 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
   public async getTransactionMaxAmountWithPublicKey(
     publicKey: PublicKey | ExtendedPublicKey,
     to: string[],
-    configuration?: TransactionConfiguration<BitcoinUnits>
+    configuration?: TransactionFullConfiguration<BitcoinUnits>
   ): Promise<Amount<BitcoinUnits>> {
     return this.legacy.getTransactionMaxAmountWithPublicKey(publicKey, to, configuration)
   }
 
   public async getTransactionFeeWithPublicKey(
     publicKey: PublicKey | ExtendedPublicKey,
-    details: TransactionDetails<BitcoinUnits>[]
+    details: TransactionDetails<BitcoinUnits>[],
+    configuration?: TransactionSimpleConfiguration
   ): Promise<FeeDefaults<BitcoinUnits>> {
-    return this.getTransactionFeeWithPublicKey(publicKey, details)
+    return this.getTransactionFeeWithPublicKey(publicKey, details, configuration)
   }
 
   public async prepareTransactionWithPublicKey(
     publicKey: PublicKey | ExtendedPublicKey,
     details: TransactionDetails<BitcoinUnits>[],
-    configuration?: SegwitTransactionConfiguration<BitcoinUnits>
+    configuration?: SegwitTransactionFullConfiguration<BitcoinUnits>
   ): Promise<BitcoinSegwitUnsignedTransaction> {
     switch (publicKey.type) {
       case 'pub':
@@ -464,7 +466,7 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
   private async prepareTransactionWithNonExtendedPublicKey(
     publicKey: PublicKey,
     details: TransactionDetails<BitcoinUnits>[],
-    configuration?: SegwitTransactionConfiguration<BitcoinUnits>
+    configuration?: SegwitTransactionFullConfiguration<BitcoinUnits>
   ): Promise<BitcoinSegwitUnsignedTransaction> {
     // No reference implementation in v0
     throw new UnsupportedError(Domain.BITCOIN, 'Prepare transaction with non extended public key not supported (Segwit).')
@@ -473,7 +475,7 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
   private async prepareTransactionWithExtendedPublicKey(
     extendedPublicKey: ExtendedPublicKey,
     details: TransactionDetails<BitcoinUnits>[],
-    configuration?: SegwitTransactionConfiguration<BitcoinUnits>
+    configuration?: SegwitTransactionFullConfiguration<BitcoinUnits>
   ): Promise<BitcoinSegwitUnsignedTransaction> {
     if (configuration?.masterFingerprint === undefined) {
       throw new ConditionViolationError(Domain.BITCOIN, 'Master fingerprint not set.')

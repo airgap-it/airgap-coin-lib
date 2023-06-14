@@ -5,12 +5,13 @@ import chaiAsPromised = require('chai-as-promised')
 import 'mocha'
 
 import { EtherscanBlockExplorer } from '../../src/v1'
+import { ETHEREUM_MAINNET_PROTOCOL_NETWORK } from '../../src/v1/protocol/EthereumProtocol'
 
 // use chai-as-promised plugin
 chai.use(chaiAsPromised)
 const expect = chai.expect
 
-const blockExplorers: AirGapBlockExplorer[] = [new EtherscanBlockExplorer()]
+const blockExplorers: AirGapBlockExplorer[] = [new EtherscanBlockExplorer(ETHEREUM_MAINNET_PROTOCOL_NETWORK.blockExplorerApi)]
 
 Promise.all(
   blockExplorers.map(async (blockExplorer: AirGapBlockExplorer) => {

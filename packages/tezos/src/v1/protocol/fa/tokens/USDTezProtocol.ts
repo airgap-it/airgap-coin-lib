@@ -60,13 +60,9 @@ export function createUSDTezProtocolOptions(network: RecursivePartial<TezosFA1p2
     network: {
       ...DEFAULT_USDTEZ_PROTOCOL_NETWORK,
       ...network,
-      blockExplorer: {
-        ...DEFAULT_USDTEZ_PROTOCOL_NETWORK.blockExplorer,
-        ...network.blockExplorer
-      },
-      indexer: {
-        ...DEFAULT_USDTEZ_PROTOCOL_NETWORK.indexer,
-        ...network.indexer
+      callbackContracts: {
+        ...DEFAULT_USDTEZ_PROTOCOL_NETWORK.callbackContracts,
+        ...network.callbackContracts
       }
     }
   }

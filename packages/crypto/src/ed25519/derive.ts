@@ -31,7 +31,7 @@ function derive(masterNode: DerivationNode, derivationPath: string): DerivationN
   const derivationIndices: DerivationIndex[] = splitDerivationPath(derivationPath)
 
   return derivationIndices.reduce((derivedNode: DerivationNode, next: DerivationIndex) => {
-    const parentFingerprint: number = hash160(derivedNode.publicKey).readUInt32BE()
+    const parentFingerprint: number = hash160(derivedNode.publicKey).readUInt32BE(0)
 
     const index: number = next.masked
     const indexBuffer: Buffer = Buffer.alloc(4)

@@ -2,7 +2,7 @@ import axios from '@airgap/coinlib-core/dependencies/src/axios-0.19.0/index'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import * as sinon from 'sinon'
 
-import { TezosProtocol } from '../../../src'
+import { TezosProtocol } from '../../../src/v0'
 import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
 
 export class TezosProtocolStub implements ProtocolHTTPStub {
@@ -13,7 +13,7 @@ export class TezosProtocolStub implements ProtocolHTTPStub {
     const protocolOptions = await protocol.getOptions()
 
     getStub
-      .withArgs(`${protocolOptions.network.rpcUrl}/chains/main/blocks/head`)
+      .withArgs(`${protocolOptions.network.rpcUrl}/chains/main/blocks/head/header`)
       .returns(Promise.resolve({ data: { chain_id: 'NetXdQprcVkpaWU' } }))
 
     postStub.withArgs(`${protocolOptions.network.rpcUrl}/chains/main/blocks/head/helpers/scripts/run_operation`).returns(

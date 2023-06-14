@@ -1,3 +1,4 @@
+// tslint:disable: max-file-line-count
 import { AirGapBlockExplorer } from './block-explorer/block-explorer'
 import { newAmount } from './factories/amount'
 import { newExtendedPublicKey, newExtendedSecretKey, newPublicKey, newSecretKey } from './factories/key'
@@ -5,6 +6,13 @@ import { newSignature } from './factories/signature'
 import { newSignedTransaction, newUnsignedTransaction } from './factories/transaction'
 import { newErrorUIAlert, newInfoUIAlert, newSuccessUIAlert, newWarningUIAlert } from './factories/ui/alert'
 import { newPlainUIText } from './factories/ui/text'
+import {
+  AirGapSerializedAnyProtocol,
+  AirGapSerializedOfflineProtocol,
+  AirGapSerializedOnlineProtocol,
+  ProtocolSerializerExtension,
+  ProtocolSerializerModule
+} from './module/extensions/serialization/ProtocolSerializer'
 import { AirGapModule } from './module/module'
 import { ModuleNetworkRegistry } from './module/module-network-registry'
 import {
@@ -66,9 +74,10 @@ import {
   AirGapTransactionStatus,
   AirGapTransactionsWithCursor,
   SignedTransaction,
-  TransactionConfiguration,
   TransactionCursor,
   TransactionDetails,
+  TransactionFullConfiguration,
+  TransactionSimpleConfiguration,
   TransactionType,
   UnsignedTransaction
 } from './types/transaction'
@@ -78,17 +87,29 @@ import { AirGapUIText } from './types/ui/text'
 import { isAmount } from './utils/amount'
 import { implementsInterface, Schema } from './utils/interface'
 import { isAnyKey, isExtendedPublicKey, isExtendedSecretKey, isPublicKey, isSecretKey } from './utils/key'
-import { createSupportedProtocols } from './utils/module'
+import { canSerializeProtocols, createSupportedProtocols, protocolSerializerSchema } from './utils/module'
 import { normalizeToUndefined } from './utils/normalize'
 import {
+  aesEncryptionSchema,
+  asymmetricEncryptionBaseSchema,
+  asymmetricEncryptionOfflineSchema,
+  baseProtocolSchema,
+  bip32BaseProtocolSchema,
+  bip32OfflineProtocolSchema,
+  bip32OnlineProtocolSchema,
   canEncryptAES,
   canEncryptAsymmetric,
   canFetchDataForAddress,
   canFetchDataForMultipleAddresses,
   canSignMessage,
+  configurableContractProtocolSchema,
+  configurableTransactionInjectorSchema,
+  fetchDataForAddressProtocolSchema,
+  fetchDataForMultipleAddressesProtocolSchema,
   hasConfigurableContract,
   hasConfigurableTransactionInjector,
   hasMultiAddressPublicKeys,
+  isAnyProtocol,
   isBip32Protocol,
   isMultiTokenSubProtocol,
   isOfflineProtocol,
@@ -96,7 +117,16 @@ import {
   isSingleTokenSubProtocol,
   isSubProtocol,
   isTransactionStatusChecker,
-  protocolNetworkIdentifier
+  multiAddressPublicKeyProtocolSchema,
+  multiTokenSubProtocolBaseSchema,
+  offlineProtocolSchema,
+  onlineProtocolSchema,
+  protocolNetworkIdentifier,
+  signMessageBaseSchema,
+  signMessageOfflineSchema,
+  singleTokenSubProtocolSchema,
+  subProtocolSchema,
+  transactionStatusCheckerSchema
 } from './utils/protocol'
 
 // Block Explorer
@@ -129,7 +159,12 @@ export {
   ProtocolConfiguration,
   OfflineProtocolConfiguration,
   OnlineProtocolConfiguration,
-  FullProtocolConfiguration
+  FullProtocolConfiguration,
+  ProtocolSerializerExtension,
+  ProtocolSerializerModule,
+  AirGapSerializedOfflineProtocol,
+  AirGapSerializedOnlineProtocol,
+  AirGapSerializedAnyProtocol
 }
 
 // Protocol
@@ -217,7 +252,8 @@ export {
   TransactionCursor,
   AirGapTransactionsWithCursor,
   TransactionDetails,
-  TransactionConfiguration,
+  TransactionSimpleConfiguration,
+  TransactionFullConfiguration,
   AirGapTransactionStatus,
   RecursivePartial
 }
@@ -234,6 +270,8 @@ export {
   isPublicKey,
   isExtendedPublicKey,
   createSupportedProtocols,
+  canSerializeProtocols,
+  isAnyProtocol,
   isOfflineProtocol,
   isOnlineProtocol,
   isBip32Protocol,
@@ -251,4 +289,30 @@ export {
   isTransactionStatusChecker,
   protocolNetworkIdentifier,
   normalizeToUndefined
+}
+
+// Schema
+
+export {
+  protocolSerializerSchema,
+  baseProtocolSchema,
+  offlineProtocolSchema,
+  onlineProtocolSchema,
+  bip32BaseProtocolSchema,
+  bip32OfflineProtocolSchema,
+  bip32OnlineProtocolSchema,
+  subProtocolSchema,
+  singleTokenSubProtocolSchema,
+  multiTokenSubProtocolBaseSchema,
+  fetchDataForAddressProtocolSchema,
+  fetchDataForMultipleAddressesProtocolSchema,
+  multiAddressPublicKeyProtocolSchema,
+  configurableContractProtocolSchema,
+  aesEncryptionSchema,
+  asymmetricEncryptionBaseSchema,
+  asymmetricEncryptionOfflineSchema,
+  signMessageBaseSchema,
+  signMessageOfflineSchema,
+  configurableTransactionInjectorSchema,
+  transactionStatusCheckerSchema
 }

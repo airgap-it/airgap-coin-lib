@@ -138,6 +138,10 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
     return this.marketSymbol
   }
 
+  public async getAssetSymbol(): Promise<string | undefined> {
+    return undefined
+  }
+
   public async getFeeSymbol(): Promise<string> {
     return this.feeSymbol
   }
@@ -383,9 +387,9 @@ export abstract class TezosSaplingProtocol extends NonExtendedProtocol implement
     const airGapTxs: IAirGapTransaction[] = []
     if (this.isRawTezosSaplingTransaction(tx)) {
       const unshieldTarget = tx.unshieldTarget.length > 0 ? tx.unshieldTarget : undefined
-      const from: TezosSaplingAddress = await this.getAddressFromPublicKey(
-        transaction.publicKey
-      ).then((address: TezosSaplingAddressResult) => TezosSaplingAddress.fromValue(address.address, address.cursor.diversifierIndex))
+      const from: TezosSaplingAddress = await this.getAddressFromPublicKey(transaction.publicKey).then(
+        (address: TezosSaplingAddressResult) => TezosSaplingAddress.fromValue(address.address, address.cursor.diversifierIndex)
+      )
 
       const details: IAirGapTransaction[] = this.bookkeeper
         .getUnsignedTransactionDetails(from, tx.ins, tx.outs, unshieldTarget)

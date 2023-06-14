@@ -1,5 +1,13 @@
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
-import { Amount, Balance, newAmount, PublicKey, TransactionConfiguration, TransactionDetails } from '@airgap/module-kit'
+import {
+  Amount,
+  Balance,
+  newAmount,
+  PublicKey,
+  RecursivePartial,
+  TransactionFullConfiguration,
+  TransactionDetails
+} from '@airgap/module-kit'
 
 import { TezosContractCall } from '../../contract/TezosContractCall'
 import { TezosFA1ContractEntrypoint } from '../../types/fa/TezosFA1ContractEntrypoint'
@@ -12,11 +20,13 @@ import { isMichelinePrimitive } from '../../utils/micheline'
 import { TezosFA1Accountant } from '../../utils/protocol/fa/TezosFA1Accountant'
 import { TezosForger } from '../../utils/protocol/tezos/TezosForger'
 
-import { TEZOS_FA_MAINNET_PROTOCOL_NETWORK, TezosFAProtocol, TezosFAProtocolImpl } from './TezosFAProtocol'
+import { TEZOS_FA_MAINNET_PROTOCOL_NETWORK, TezosFAProtocol, TezosFAProtocolImpl, createTezosFAProtocolOptions } from './TezosFAProtocol'
 
 // Interface
 
 export interface TezosFA1Protocol<_Units extends string = string> extends TezosFAProtocol<_Units, TezosFA1ProtocolNetwork> {
+  isTezosFA1Protocol: true
+
   getBalance(address: string, source?: string, callbackContract?: string): Promise<Balance<_Units>>
   getTotalSupply(source?: string, callbackContract?: string): Promise<string>
   transfer(
@@ -35,6 +45,8 @@ export class TezosFA1ProtocolImpl<_Units extends string, _Entrypoints extends st
   extends TezosFAProtocolImpl<_Entrypoints | TezosFA1ContractEntrypoint, _Units, TezosFA1ProtocolNetwork>
   implements TezosFA1Protocol<_Units>
 {
+  public readonly isTezosFA1Protocol: true = true
+
   public constructor(options: TezosFA1ProtocolOptions<_Units>) {
     const forger: TezosForger = new TezosForger()
     const accountant: TezosFA1Accountant<_Units> = new TezosFA1Accountant(forger, options.network)
@@ -49,7 +61,7 @@ export class TezosFA1ProtocolImpl<_Units extends string, _Entrypoints extends st
   public async getBalance(
     address: string,
     source?: string,
-    callbackContract: string = this.options.network.defaultCallbackContract
+    callbackContract: string = this.options.network.callbackContracts.getBalance
   ): Promise<Balance<_Units>> {
     const getBalanceCall: TezosContractCall = await this.contract.createContractCall('getBalance', [
       new MichelsonAddress(new MichelsonString(address)),
@@ -61,7 +73,10 @@ export class TezosFA1ProtocolImpl<_Units extends string, _Entrypoints extends st
     return { total: newAmount(balance, 'blockchain') }
   }
 
-  public async getTotalSupply(source?: string, callbackContract?: string): Promise<string> {
+  public async getTotalSupply(
+    source?: string,
+    callbackContract: string = this.options.network.callbackContracts.getTotalSupply
+  ): Promise<string> {
     const getTotalSupplyCall: TezosContractCall = await this.contract.createContractCall('getTotalSupply', [[], callbackContract])
 
     return this.getContractCallIntResult(getTotalSupplyCall, this.requireSource(source))
@@ -91,7 +106,7 @@ export class TezosFA1ProtocolImpl<_Units extends string, _Entrypoints extends st
   protected async createTransferCalls(
     publicKey: PublicKey,
     details: TransactionDetails<_Units>[],
-    configuration?: TransactionConfiguration<TezosUnits>
+    configuration?: TransactionFullConfiguration<TezosUnits>
   ): Promise<TezosContractCall[]> {
     const from: string = await this.getAddressFromPublicKey(publicKey)
 
@@ -123,11 +138,56 @@ export class TezosFA1ProtocolImpl<_Units extends string, _Entrypoints extends st
 
 // Factory
 
-export function createTezosFA1Protocol<_Units extends string>(options: TezosFA1ProtocolOptions<_Units>): TezosFA1Protocol<_Units> {
-  return new TezosFA1ProtocolImpl(options)
+interface PartialTezosFA1ProtocolNetwork extends RecursivePartial<TezosFA1ProtocolNetwork> {
+  contractAddress: TezosFA1ProtocolNetwork['contractAddress']
+}
+interface PartialTezosFA1ProtocolOptions<_Units extends string>
+  extends RecursivePartial<Omit<TezosFA1ProtocolOptions<_Units>, 'units' | 'mainUnit'>> {
+  network: PartialTezosFA1ProtocolNetwork
+  identifier: TezosFA1ProtocolOptions<_Units>['identifier']
+  units?: TezosFA1ProtocolOptions<_Units>['units']
+  mainUnit?: TezosFA1ProtocolOptions<_Units>['mainUnit']
+}
+
+export function createTezosFA1Protocol<_Units extends string>(options: PartialTezosFA1ProtocolOptions<_Units>): TezosFA1Protocol<_Units> {
+  const completeOptions: TezosFA1ProtocolOptions<_Units> = createTezosFA1ProtocolOptions(
+    options.network,
+    options.identifier,
+    options.name,
+    options.units,
+    options.mainUnit,
+    options.feeDefaults
+  )
+
+  return new TezosFA1ProtocolImpl(completeOptions)
 }
 
 export const TEZOS_FA1_MAINNET_PROTOCOL_NETWORK: Omit<TezosFA1ProtocolNetwork, 'contractAddress'> = {
   ...TEZOS_FA_MAINNET_PROTOCOL_NETWORK,
-  defaultCallbackContract: 'KT19ptNzn4MVAN45KUUNpyL5AdLVhujk815u'
+  callbackContracts: {
+    getBalance: 'KT19ptNzn4MVAN45KUUNpyL5AdLVhujk815u',
+    getTotalSupply: 'KT19ptNzn4MVAN45KUUNpyL5AdLVhujk815u'
+  }
+}
+
+const DEFAULT_TEZOS_FA1_PROTOCOL_NETWORK: Omit<TezosFA1ProtocolNetwork, 'contractAddress'> = TEZOS_FA1_MAINNET_PROTOCOL_NETWORK
+
+export function createTezosFA1ProtocolOptions<_Units extends string>(
+  network: PartialTezosFA1ProtocolNetwork,
+  identifier: TezosFA1ProtocolOptions<_Units>['identifier'],
+  name?: TezosFA1ProtocolOptions<_Units>['name'],
+  units?: TezosFA1ProtocolOptions<_Units>['units'],
+  mainUnit?: TezosFA1ProtocolOptions<_Units>['mainUnit'],
+  feeDefaults?: TezosFA1ProtocolOptions<_Units>['feeDefaults']
+): TezosFA1ProtocolOptions<_Units> {
+  const completeNetwork: TezosFA1ProtocolNetwork = {
+    ...DEFAULT_TEZOS_FA1_PROTOCOL_NETWORK,
+    ...network,
+    callbackContracts: {
+      ...DEFAULT_TEZOS_FA1_PROTOCOL_NETWORK.callbackContracts,
+      ...network.callbackContracts
+    }
+  }
+
+  return createTezosFAProtocolOptions(completeNetwork, identifier, name, units, mainUnit, feeDefaults)
 }

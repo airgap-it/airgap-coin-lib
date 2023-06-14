@@ -29,8 +29,9 @@ import {
   ProtocolMetadata,
   PublicKey,
   SecretKey,
-  TransactionConfiguration,
-  TransactionDetails
+  TransactionFullConfiguration,
+  TransactionDetails,
+  TransactionSimpleConfiguration
 } from '@airgap/module-kit'
 import * as sapling from '@airgap/sapling-wasm'
 import { randomBytes } from '@stablelib/random'
@@ -76,7 +77,7 @@ import { createTezosProtocol, TEZOS_UNITS, TezosProtocol } from '../TezosProtoco
 
 // Interface
 
-export interface TezosSaplingProtocol<_Units extends string>
+export interface TezosSaplingProtocol<_Units extends string = string>
   extends AirGapProtocol<
     {
       AddressCursor: TezosSaplingAddressCursor
@@ -93,6 +94,8 @@ export interface TezosSaplingProtocol<_Units extends string>
     'ConfigurableContract',
     'ConfigurableTransactionInjector'
   > {
+  isTezosSaplingProtocol: true
+
   initParameters(spendParams: Buffer, outputParams: Buffer): Promise<void>
 
   getAddressFromViewingKey(viewingKey: PublicKey, index: string): Promise<AddressWithCursor<TezosSaplingAddressCursor>>
@@ -106,22 +109,22 @@ export interface TezosSaplingProtocol<_Units extends string>
   prepareShieldTransaction(
     publicKey: PublicKey,
     details: TransactionDetails<_Units>[],
-    configuration?: TransactionConfiguration<TezosUnits>
+    configuration?: TransactionFullConfiguration<TezosUnits>
   ): Promise<TezosUnsignedTransaction>
   prepareSaplingTransaction(
     viewingKey: PublicKey,
     details: TransactionDetails<_Units>[],
-    configuration?: TransactionConfiguration<TezosUnits> & { dummyInputs?: number; dummyOutputs?: number }
+    configuration?: TransactionFullConfiguration<TezosUnits> & { dummyInputs?: number; dummyOutputs?: number }
   ): Promise<TezosSaplingUnsignedTransaction>
   prepareUnshieldTransaction(
     viewingKey: PublicKey,
     details: TransactionDetails<_Units>[],
-    configuration?: TransactionConfiguration<TezosUnits>
+    configuration?: TransactionFullConfiguration<TezosUnits>
   ): Promise<TezosSaplingUnsignedTransaction>
   wrapSaplingTransactions(
     publicKey: PublicKey,
     transactions: string[] | string,
-    configuration?: TransactionConfiguration<TezosUnits>
+    configuration?: TransactionFullConfiguration<TezosUnits>
   ): Promise<TezosUnsignedTransaction>
 
   prepareContractCalls(transactions: string[]): Promise<TezosContractCall[]>
@@ -131,6 +134,8 @@ export interface TezosSaplingProtocol<_Units extends string>
 // Implementation
 
 export abstract class TezosSaplingProtocolImpl<_Units extends string> implements TezosSaplingProtocol<_Units> {
+  public readonly isTezosSaplingProtocol: true = true
+
   protected readonly tezos: TezosProtocol
 
   protected readonly accountant: TezosSaplingAccountant<_Units>
@@ -210,6 +215,10 @@ export abstract class TezosSaplingProtocolImpl<_Units extends string> implements
         diversifierIndex: address.diversifierIndex
       }
     }
+  }
+
+  public async getInitialAddressesFromPublicKey(publicKey: PublicKey): Promise<AddressWithCursor<TezosSaplingAddressCursor>[]> {
+    return [await this.getAddressFromPublicKey(publicKey)]
   }
 
   public async getNextAddressFromPublicKey(
@@ -293,7 +302,7 @@ export abstract class TezosSaplingProtocolImpl<_Units extends string> implements
       )
     } else {
       try {
-        const wrappedOperation: TezosWrappedOperation = await this.tezos.unforgeOperation(binary)
+        const wrappedOperation: TezosWrappedOperation = await this.tezos.unforgeOperation(binary, 'signed')
 
         airGapTxs.push(...(await this.getDetailsFromWrappedOperation(wrappedOperation, knownViewingKeys)))
       } catch {
@@ -341,7 +350,7 @@ export abstract class TezosSaplingProtocolImpl<_Units extends string> implements
 
       airGapTxs.push(...details)
     } else {
-      const wrappedOperation: TezosWrappedOperation = await this.tezos.unforgeOperation(transaction.binary)
+      const wrappedOperation: TezosWrappedOperation = await this.tezos.unforgeOperation(transaction.binary, 'unsigned')
       airGapTxs.push(...(await this.getDetailsFromWrappedOperation(wrappedOperation, knownViewingKeys)))
     }
 
@@ -563,7 +572,7 @@ export abstract class TezosSaplingProtocolImpl<_Units extends string> implements
   public async getTransactionMaxAmountWithPublicKey(
     publicKey: PublicKey,
     _to: string[],
-    _configuration?: TransactionConfiguration<TezosUnits>
+    _configuration?: TransactionFullConfiguration<TezosUnits>
   ): Promise<Amount<_Units>> {
     const balance: Balance<_Units> = await this.getBalanceOfPublicKey(publicKey)
 
@@ -572,7 +581,8 @@ export abstract class TezosSaplingProtocolImpl<_Units extends string> implements
 
   public async getTransactionFeeWithPublicKey(
     _publicKey: PublicKey,
-    _details: TransactionDetails<_Units>[]
+    _details: TransactionDetails<_Units>[],
+    _configuration?: TransactionSimpleConfiguration
   ): Promise<FeeEstimation<TezosUnits> | undefined> {
     return undefined
   }
@@ -580,7 +590,7 @@ export abstract class TezosSaplingProtocolImpl<_Units extends string> implements
   public async prepareTransactionWithPublicKey(
     publicKey: PublicKey,
     details: TransactionDetails<_Units>[],
-    configuration?: TransactionConfiguration<TezosUnits>
+    configuration?: TransactionFullConfiguration<TezosUnits>
   ): Promise<TezosSaplingUnsignedTransaction> {
     if (details.length > 1) {
       throw new UnsupportedError(Domain.TEZOS, 'Multiple sapling transactions are not supported yet')
@@ -656,7 +666,7 @@ export abstract class TezosSaplingProtocolImpl<_Units extends string> implements
   public async prepareShieldTransaction(
     publicKey: PublicKey,
     details: TransactionDetails<_Units>[],
-    configuration?: TransactionConfiguration<TezosUnits>
+    configuration?: TransactionFullConfiguration<TezosUnits>
   ): Promise<TezosUnsignedTransaction> {
     if (details.length > 1) {
       throw new UnsupportedError(Domain.TEZOS, 'Multiple sapling transactions are not supported yet')
@@ -673,7 +683,7 @@ export abstract class TezosSaplingProtocolImpl<_Units extends string> implements
   public async prepareSaplingTransaction(
     viewingKey: PublicKey,
     details: TransactionDetails<_Units>[],
-    configuration?: TransactionConfiguration<TezosUnits> & { dummyInputs?: number; dummyOutputs?: number }
+    configuration?: TransactionFullConfiguration<TezosUnits> & { dummyInputs?: number; dummyOutputs?: number }
   ): Promise<TezosSaplingUnsignedTransaction> {
     if (details.length > 1) {
       throw new UnsupportedError(Domain.TEZOS, 'Multiple sapling transactions are not supported yet')
@@ -731,7 +741,7 @@ export abstract class TezosSaplingProtocolImpl<_Units extends string> implements
   public async prepareUnshieldTransaction(
     viewingKey: PublicKey,
     details: TransactionDetails<_Units>[],
-    _configuration?: TransactionConfiguration<TezosUnits>
+    _configuration?: TransactionFullConfiguration<TezosUnits>
   ): Promise<TezosSaplingUnsignedTransaction> {
     if (details.length > 1) {
       throw new UnsupportedError(Domain.TEZOS, 'Multiple sapling transactions are not supported yet')
@@ -751,7 +761,7 @@ export abstract class TezosSaplingProtocolImpl<_Units extends string> implements
   public async wrapSaplingTransactions(
     publicKey: PublicKey,
     transactions: string | string[],
-    configuration?: TransactionConfiguration<TezosUnits>
+    configuration?: TransactionFullConfiguration<TezosUnits>
   ): Promise<TezosUnsignedTransaction> {
     if (this.contract === undefined) {
       throw new PropertyUndefinedError(Domain.TEZOS, 'Contract address not set.')

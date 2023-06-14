@@ -10,15 +10,16 @@ import {
 } from '@airgap/module-kit'
 import { BlockExplorer } from '@airgap/module-kit/block-explorer/block-explorer'
 import { AirGapProtocol, OfflineProtocol, OnlineProtocol } from '@airgap/module-kit/protocol/protocol'
+import { SubscanBlockExplorer } from '@airgap/substrate'
 
-import { createKusamaSubscanBlockExplorer, createPolkadotSubscanBlockExplorer } from '../block-explorer/SubscanBlockExplorer'
 import { createKusamaProtocol, KUSAMA_MAINNET_PROTOCOL_NETWORK } from '../protocol/KusamaProtocol'
 import { createPolkadotProtocol, POLKADOT_MAINNET_PROTOCOL_NETWORK } from '../protocol/PolkadotProtocol'
 import { PolkadotV3SerializerCompanion } from '../serializer/v3/serializer-companion'
+import { PolkadotProtocolNetwork } from '../types/protocol'
 
 type SupportedProtocols = MainProtocolSymbols.POLKADOT | MainProtocolSymbols.KUSAMA
 
-export class PolkadotModule implements AirGapModule<{ Protocols: SupportedProtocols }> {
+export class PolkadotModule implements AirGapModule<{ Protocols: SupportedProtocols; ProtocolNetwork: PolkadotProtocolNetwork }> {
   private readonly networkRegistries: Record<SupportedProtocols, ModuleNetworkRegistry> = {
     [MainProtocolSymbols.POLKADOT]: new ModuleNetworkRegistry({
       supportedNetworks: [POLKADOT_MAINNET_PROTOCOL_NETWORK]
@@ -33,8 +34,13 @@ export class PolkadotModule implements AirGapModule<{ Protocols: SupportedProtoc
     return this.createProtocol(identifier)
   }
 
-  public async createOnlineProtocol(identifier: SupportedProtocols, networkId?: string): Promise<OnlineProtocol | undefined> {
-    const network: ProtocolNetwork | undefined = this.networkRegistries[identifier]?.findNetwork(networkId)
+  public async createOnlineProtocol(
+    identifier: SupportedProtocols,
+    networkOrId?: PolkadotProtocolNetwork | string
+  ): Promise<OnlineProtocol | undefined> {
+    const network: ProtocolNetwork | undefined =
+      typeof networkOrId === 'object' ? networkOrId : this.networkRegistries[identifier]?.findNetwork(networkOrId)
+
     if (network === undefined) {
       throw new ConditionViolationError(Domain.SUBSTRATE, `Protocol network type not supported. (Polkadot)`)
     }
@@ -42,20 +48,18 @@ export class PolkadotModule implements AirGapModule<{ Protocols: SupportedProtoc
     return this.createProtocol(identifier, network)
   }
 
-  public async createBlockExplorer(identifier: SupportedProtocols, networkId?: string): Promise<BlockExplorer | undefined> {
-    const network: ProtocolNetwork | undefined = this.networkRegistries[identifier]?.findNetwork(networkId)
-    if (network?.type !== 'mainnet') {
+  public async createBlockExplorer(
+    identifier: SupportedProtocols,
+    networkOrId?: PolkadotProtocolNetwork | string
+  ): Promise<BlockExplorer | undefined> {
+    const network: ProtocolNetwork | undefined =
+      typeof networkOrId === 'object' ? networkOrId : this.networkRegistries[identifier]?.findNetwork(networkOrId)
+
+    if (network === undefined) {
       throw new ConditionViolationError(Domain.SUBSTRATE, `Block Explorer network type not supported. (Polkadot)`)
     }
 
-    switch (identifier) {
-      case MainProtocolSymbols.POLKADOT:
-        return createPolkadotSubscanBlockExplorer()
-      case MainProtocolSymbols.KUSAMA:
-        return createKusamaSubscanBlockExplorer()
-      default:
-        throw new ConditionViolationError(Domain.SUBSTRATE, `Protocol ${identifier} not supported. (Polkadot)`)
-    }
+    return new SubscanBlockExplorer(network.blockExplorerUrl)
   }
 
   public async createV3SerializerCompanion(): Promise<AirGapV3SerializerCompanion> {

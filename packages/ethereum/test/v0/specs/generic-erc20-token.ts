@@ -1,7 +1,7 @@
 import { AirGapWalletStatus } from '@airgap/coinlib-core'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 
-import { GenericERC20 } from '../../../src'
+import { GenericERC20 } from '../../../src/v0'
 import { ERC20Token } from '../../../src/v0/protocol/erc20/ERC20'
 import { TestProtocolSpec } from '../implementations'
 import { GenericERC20ProtocolStub } from '../stubs/generic-erc20.stub'
@@ -39,8 +39,7 @@ export class GenericERC20TokenTestProtocolSpec extends TestProtocolSpec {
         to: '0x2dd847af80418D280B7078888B6A6133083001C9', // contract address
         value: '0x0',
         chainId: 3,
-        data:
-          '0xa9059cbb0000000000000000000000004a1e1d37462a422873bfccb1e705b05cc4bd922e0000000000000000000000000000000000000000000000000000048c27395000'
+        data: '0xa9059cbb0000000000000000000000004a1e1d37462a422873bfccb1e705b05cc4bd922e0000000000000000000000000000000000000000000000000000048c27395000'
       },
       signedTx:
         'f8a850843b9aca00827bd9942dd847af80418d280b7078888b6a6133083001c980b844a9059cbb0000000000000000000000004a1e1d37462a422873bfccb1e705b05cc4bd922e0000000000000000000000000000000000000000000000000000048c2739500029a055e262544c878642967939e9dc83fff796125a1c1ddff385d0f4371031a9ce74a02e2535e1b889fb2bb68f0b5a87f6273ff6736c8b5659f904751c976297165054'

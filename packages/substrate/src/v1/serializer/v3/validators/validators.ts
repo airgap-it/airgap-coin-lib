@@ -1,6 +1,6 @@
 import { newPublicKey, newSignedTransaction, newUnsignedTransaction, ProtocolMetadata } from '@airgap/module-kit'
-import { SubscanBlockExplorerClient } from '../../../block-explorer/subscan/SubscanBlockExplorerClient'
 
+import { SubscanBlockExplorerClient } from '../../../block-explorer/subscan/SubscanBlockExplorerClient'
 import { SubstrateAccountController } from '../../../controller/account/SubstrateAccountController'
 import { SubstrateCommonAccountController } from '../../../controller/account/SubstrateCommonAccountController'
 import { SubstrateCommonTransactionController } from '../../../controller/transaction/SubstrateCommonTransactionController'
@@ -37,7 +37,8 @@ class GenericSubstrateProtocol extends SubstrateProtocolImpl<string, SubstratePr
     const network: SubstrateProtocolNetwork = {
       name: '',
       type: 'mainnet',
-      rpcUrl: ''
+      rpcUrl: '',
+      blockExplorerUrl: ''
     }
 
     const nodeClient: SubstrateNodeClient<SubstrateProtocolConfiguration> = new SubstrateCommonNodeClient(configuration, '')

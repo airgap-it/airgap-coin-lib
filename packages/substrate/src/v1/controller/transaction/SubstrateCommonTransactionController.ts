@@ -25,16 +25,14 @@ import { SubstrateTransaction, SubstrateTransactionType } from '../../data/trans
 import { SubstrateTransactionPayload } from '../../data/transaction/SubstrateTransactionPayload'
 import { SubstrateNodeClient } from '../../node/SubstrateNodeClient'
 import { SubstrateProtocolConfiguration } from '../../types/configuration'
+import { SubstrateTransactionDetails, SubstrateTransactionParameters } from '../../types/transaction'
 import { convertSecretKey } from '../../utils/keys'
 
-import {
-  SubstrateTransactionController,
-  SubstrateTransactionDetails,
-  SubstrateTransactionParameters
-} from './SubstrateTransactionController'
+import { SubstrateTransactionController } from './SubstrateTransactionController'
 
 export class SubstrateCommonTransactionController<C extends SubstrateProtocolConfiguration, NodeClient extends SubstrateNodeClient<C>>
-  implements SubstrateTransactionController<C> {
+  implements SubstrateTransactionController<C>
+{
   public constructor(protected readonly configuration: C, protected readonly nodeClient: NodeClient) {}
 
   public async prepareSubmittableTransactions(
@@ -299,7 +297,7 @@ export class SubstrateCommonTransactionController<C extends SubstrateProtocolCon
   public async estimateTransactionFees(
     accountId: SubstrateAccountId<TypedSubstrateAddress<C>>,
     transationTypes: [SubstrateTransactionType<C>, any][]
-  ): Promise<BigNumber | undefined> {
+  ): Promise<BigNumber> {
     const fees = await Promise.all(
       transationTypes
         .map(

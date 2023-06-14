@@ -213,7 +213,7 @@ describe(`TezosProtocol - Custom Tests`, () => {
 
       getStub
         .withArgs(
-          `${protocolNetwork.indexer.apiUrl}/v1/operations/transactions?anyof.target.sender=${tezosProtocolSpec.wallet.addresses[0]}&sort.desc=level&limit=20`
+          `${protocolNetwork.indexerApi}/v1/operations/transactions?anyof.target.sender=${tezosProtocolSpec.wallet.addresses[0]}&sort.desc=level&limit=20`
         )
         .returns(
           Promise.resolve({

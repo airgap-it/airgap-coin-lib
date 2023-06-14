@@ -1,4 +1,4 @@
-import { _OfflineProtocol, _OnlineProtocol, _AnyProtocol, _Protocol } from '../protocol'
+import { _AnyProtocol, _OfflineProtocol, _OnlineProtocol, _Protocol } from '../protocol'
 
 import { FetchDataForAddressExtension } from './address/FetchDataForAddressExtension'
 import { FetchDataForMultipleAddressesExtension } from './address/FetchDataForMultipleAddressesExtension'

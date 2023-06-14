@@ -1,8 +1,8 @@
-import { SignedBitcoinTransaction } from '@airgap/bitcoin'
+import { SignedBitcoinTransaction } from '@airgap/bitcoin/v0'
 import { AirGapWalletStatus } from '@airgap/coinlib-core/wallet/AirGapWallet'
 
 import { IACMessageDefinitionObject } from '../../../../serializer/src'
-import { GroestlcoinProtocol } from '../../../src'
+import { GroestlcoinProtocol } from '../../../src/v0'
 import { TestProtocolSpec } from '../implementations'
 import { GroestlcoinProtocolStub } from '../stubs/groestlcoin.stub'
 

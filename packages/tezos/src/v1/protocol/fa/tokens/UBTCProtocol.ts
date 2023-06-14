@@ -63,13 +63,9 @@ export function createUBTCProtocolOptions(network: RecursivePartial<TezosFA2Prot
     network: {
       ...DEFAULT_UBTC_PROTOCOL_NETWORK,
       ...network,
-      blockExplorer: {
-        ...DEFAULT_UBTC_PROTOCOL_NETWORK.blockExplorer,
-        ...network.blockExplorer
-      },
-      indexer: {
-        ...DEFAULT_UBTC_PROTOCOL_NETWORK.indexer,
-        ...network.indexer
+      callbackContracts: {
+        ...DEFAULT_UBTC_PROTOCOL_NETWORK.callbackContracts,
+        ...network.callbackContracts
       }
     }
   }

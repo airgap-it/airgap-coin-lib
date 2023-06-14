@@ -63,13 +63,9 @@ export function createTetherUSDProtocolOptions(network: RecursivePartial<TezosFA
     network: {
       ...DEFAULT_TETHERUSD_PROTOCOL_NETWORK,
       ...network,
-      blockExplorer: {
-        ...DEFAULT_TETHERUSD_PROTOCOL_NETWORK.blockExplorer,
-        ...network.blockExplorer
-      },
-      indexer: {
-        ...DEFAULT_TETHERUSD_PROTOCOL_NETWORK.indexer,
-        ...network.indexer
+      callbackContracts: {
+        ...DEFAULT_TETHERUSD_PROTOCOL_NETWORK.callbackContracts,
+        ...network.callbackContracts
       }
     }
   }

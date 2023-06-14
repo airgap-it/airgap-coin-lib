@@ -5,12 +5,13 @@ import chaiAsPromised = require('chai-as-promised')
 import 'mocha'
 
 import { AeternityBlockExplorer } from '../../src/v1'
+import { AETERNITY_MAINNET_PROTOCOL_NETWORK } from '../../src/v1/protocol/AeternityProtocol'
 
 // use chai-as-promised plugin
 chai.use(chaiAsPromised)
 const expect = chai.expect
 
-const blockExplorers: AirGapBlockExplorer[] = [new AeternityBlockExplorer()]
+const blockExplorers: AirGapBlockExplorer[] = [new AeternityBlockExplorer(AETERNITY_MAINNET_PROTOCOL_NETWORK.blockExplorerUrl)]
 
 Promise.all(
   blockExplorers.map(async (blockExplorer: AirGapBlockExplorer) => {

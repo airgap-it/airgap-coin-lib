@@ -1,7 +1,10 @@
 import { FeeDefaults, ProtocolMetadata, ProtocolNetwork, ProtocolUnitsMetadata } from '@airgap/module-kit'
 
-import { TezosBlockExplorer } from './block-explorer'
-import { TezosIndexer } from './indexer'
+import { TezosBlockExplorerType } from './block-explorer'
+import { TezosFA1ContractEntrypoint } from './fa/TezosFA1ContractEntrypoint'
+import { TezosFA1p2ContractEntrypoint } from './fa/TezosFA1p2ContractEntrypoint'
+import { TezosFA2ContractEntrypoint } from './fa/TezosFA2ContractEntrypoint'
+import { TezosIndexerType } from './indexer'
 import { TezosNetwork } from './network'
 import { TezosSaplingExternalMethodProvider } from './sapling/TezosSaplingExternalMethodProvider'
 
@@ -11,8 +14,9 @@ export type TezosProtocolNetworkResolver = (network: string) => TezosProtocolNet
 
 export interface TezosProtocolNetwork extends ProtocolNetwork {
   network: TezosNetwork
-  blockExplorer: TezosBlockExplorer
-  indexer: TezosIndexer
+  blockExplorerType: TezosBlockExplorerType
+  indexerType: TezosIndexerType
+  indexerApi: string
 }
 
 export interface TezosProtocolOptions {
@@ -66,11 +70,13 @@ export interface TezosFAProtocolOptions<_Units extends string, _ProtocolNetwork 
 }
 
 export interface TezosFA1ProtocolNetwork extends TezosFAProtocolNetwork {
-  defaultCallbackContract: string
+  callbackContracts: Record<Extract<TezosFA1ContractEntrypoint, 'getBalance' | 'getTotalSupply'>, string>
 }
 export interface TezosFA1ProtocolOptions<_Units extends string> extends TezosFAProtocolOptions<_Units, TezosFA1ProtocolNetwork> {}
 
-export interface TezosFA1p2ProtocolNetwork extends TezosFA1ProtocolNetwork {}
+export interface TezosFA1p2ProtocolNetwork extends TezosFA1ProtocolNetwork {
+  callbackContracts: Record<Extract<TezosFA1p2ContractEntrypoint, 'getBalance' | 'getTotalSupply'>, string>
+}
 export interface TezosFA1p2ProtocolOptions<_Units extends string> extends TezosFA1ProtocolOptions<_Units> {}
 
 export interface TezosFA2ProtocolNetwork extends TezosFAProtocolNetwork {
@@ -78,5 +84,7 @@ export interface TezosFA2ProtocolNetwork extends TezosFAProtocolNetwork {
 
   totalSupplyBigMapId?: number
   ledgerBigMapId?: number
+
+  callbackContracts: Record<Extract<TezosFA2ContractEntrypoint, 'balance_of'>, string>
 }
 export interface TezosFA2ProtocolOptions<_Units extends string> extends TezosFAProtocolOptions<_Units, TezosFA2ProtocolNetwork> {}

@@ -2,7 +2,7 @@ import { SubProtocolSymbols } from '@airgap/coinlib-core'
 import { newAmount, RecursivePartial } from '@airgap/module-kit'
 
 import { TezosFA2ProtocolNetwork, TezosFA2ProtocolOptions } from '../../../types/protocol'
-import { TezosFA2Protocol, TezosFA2ProtocolImpl, TEZOS_FA2_MAINNET_PROTOCOL_NETWORK } from '../TezosFA2Protocol'
+import { TEZOS_FA2_MAINNET_PROTOCOL_NETWORK, TezosFA2Protocol, TezosFA2ProtocolImpl } from '../TezosFA2Protocol'
 
 // Interface
 
@@ -63,13 +63,9 @@ export function createBTCTezProtocolOptions(network: RecursivePartial<TezosFA2Pr
     network: {
       ...DEFAULT_BTCTEZ_PROTOCOL_NETWORK,
       ...network,
-      blockExplorer: {
-        ...DEFAULT_BTCTEZ_PROTOCOL_NETWORK.blockExplorer,
-        ...network.blockExplorer
-      },
-      indexer: {
-        ...DEFAULT_BTCTEZ_PROTOCOL_NETWORK.indexer,
-        ...network.indexer
+      callbackContracts: {
+        ...DEFAULT_BTCTEZ_PROTOCOL_NETWORK.callbackContracts,
+        ...network.callbackContracts
       }
     }
   }

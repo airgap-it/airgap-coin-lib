@@ -2,7 +2,7 @@ import * as sinon from 'sinon'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import { SubstrateTransactionType } from '@airgap/substrate/v0/protocol/common/data/transaction/SubstrateTransaction'
 
-import { MoonbeamProtocol } from '../../../src'
+import { MoonbeamProtocol } from '../../../src/v0'
 import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
 
 export class MoonbeamProtocolStub implements ProtocolHTTPStub {

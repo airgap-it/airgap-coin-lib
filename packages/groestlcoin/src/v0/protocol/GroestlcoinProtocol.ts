@@ -1,4 +1,4 @@
-import { BitcoinCryptoClient, BitcoinProtocol } from '@airgap/bitcoin'
+import { BitcoinCryptoClient, BitcoinProtocol } from '@airgap/bitcoin/v0'
 import { FeeDefaults } from '@airgap/coinlib-core'
 // @ts-ignore
 import * as groestlcoinJSMessage from '@airgap/coinlib-core/dependencies/src/groestlcoinjs-message-2.1.0/index'

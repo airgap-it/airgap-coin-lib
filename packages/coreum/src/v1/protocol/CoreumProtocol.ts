@@ -8,7 +8,8 @@ import {
   ProtocolUnitsMetadata,
   PublicKey,
   RecursivePartial,
-  TransactionDetails
+  TransactionDetails,
+  TransactionSimpleConfiguration
 } from '@airgap/module-kit'
 
 export type CoreumDenom = 'core' | 'ucore'
@@ -74,7 +75,8 @@ export class CoreumProtocolImpl extends CosmosBaseProtocolImpl<CoreumDenom> impl
 
   public async getTransactionFeeWithPublicKey(
     _publicKey: PublicKey,
-    _details: TransactionDetails<CoreumDenom>[]
+    _details: TransactionDetails<CoreumDenom>[],
+    _configuration?: TransactionSimpleConfiguration
   ): Promise<FeeDefaults<CoreumDenom>> {
     return this.feeDefaults
   }
@@ -90,6 +92,7 @@ export const COREUM_PROTOCOL_NETWORK: CosmosProtocolNetwork = {
   name: 'Mainnet',
   type: 'mainnet',
   rpcUrl: 'https://coreum-node.prod.gke.papers.tech',
+  blockExplorerUrl: 'https://explorer.coreum.com/coreum',
   useCORSProxy: true
 }
 

@@ -50,7 +50,7 @@ export function createSiriusProtocol(options: RecursivePartial<SiriusProtocolOpt
 
 export const SIRIUS_MAINNET_PROTOCOL_NETWORK: TezosFA1p2ProtocolNetwork = {
   ...TEZOS_FA1P2_MAINNET_PROTOCOL_NETWORK,
-  contractAddress: 'KT1GRSvLoikDsXujKgZPsGLX8k8VvR2Tq95b'
+  contractAddress: 'KT1AafHA1C1vk959wvHWBispY9Y2f3fxBUUo'
 }
 
 const DEFAULT_SIRIUS_PROTOCOL_NETWORK: TezosFA1p2ProtocolNetwork = SIRIUS_MAINNET_PROTOCOL_NETWORK
@@ -60,13 +60,9 @@ export function createSiriusProtocolOptions(network: RecursivePartial<TezosFA1p2
     network: {
       ...DEFAULT_SIRIUS_PROTOCOL_NETWORK,
       ...network,
-      blockExplorer: {
-        ...DEFAULT_SIRIUS_PROTOCOL_NETWORK.blockExplorer,
-        ...network.blockExplorer
-      },
-      indexer: {
-        ...DEFAULT_SIRIUS_PROTOCOL_NETWORK.indexer,
-        ...network.indexer
+      callbackContracts: {
+        ...DEFAULT_SIRIUS_PROTOCOL_NETWORK.callbackContracts,
+        ...network.callbackContracts
       }
     }
   }

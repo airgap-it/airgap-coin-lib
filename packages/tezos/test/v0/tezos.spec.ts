@@ -7,7 +7,7 @@ import { expect } from 'chai'
 import 'mocha'
 import * as sinon from 'sinon'
 
-import { RawTezosTransaction } from '../../src'
+import { RawTezosTransaction } from '../../src/v0'
 import { RunOperationMetadata, TezosProtocol } from '../../src/v0/protocol/TezosProtocol'
 import { TezosOriginationOperation } from '../../src/v0/protocol/types/operations/Origination'
 import { TezosRevealOperation } from '../../src/v0/protocol/types/operations/Reveal'
@@ -931,7 +931,7 @@ describe(`ICoinProtocol Tezos - Custom Tests (v0)`, () => {
     // TODO: add test to test the add reveal to spend transactions
 
     it('will prepare an FA 1.2 transaction', async () => {
-      getStub.withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/`).returns(
+      getStub.withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/header`).returns(
         Promise.resolve({
           data: {
             protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
@@ -949,43 +949,7 @@ describe(`ICoinProtocol Tezos - Custom Tests (v0)`, () => {
               priority: 0,
               proof_of_work_nonce: '0639894462090000',
               signature: 'sigjnLFcgqv8QC1QwNhPgg4WomUGtL4nQ68u3GavKXLLWyFcf8g2ceaT6FeuRRVGcdDY7qj7MBo2iUo83L1rtroQKMhqZbw2'
-            },
-            metadata: {
-              protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
-              next_protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
-              test_chain_status: { status: 'not_running' },
-              max_operations_ttl: 60,
-              max_operation_data_length: 16384,
-              max_block_header_length: 238,
-              max_operation_list_length: [
-                {
-                  max_size: 32768,
-                  max_op: 32
-                },
-                { max_size: 32768 },
-                {
-                  max_size: 135168,
-                  max_op: 132
-                },
-                { max_size: 524288 }
-              ],
-              baker: 'tz1Kt4P8BCaP93AEV4eA7gmpRryWt5hznjCP',
-              level: {
-                level: 940455,
-                level_position: 940454,
-                cycle: 229,
-                cycle_position: 2470,
-                voting_period: 28,
-                voting_period_position: 22950,
-                expected_commitment: false
-              },
-              voting_period_kind: 'proposal',
-              nonce_hash: null,
-              consumed_milligas: '0',
-              deactivated: [],
-              balance_updates: []
-            },
-            operations: [[], [], [], []]
+            }
           }
         })
       )
@@ -1123,7 +1087,7 @@ describe(`ICoinProtocol Tezos - Custom Tests (v0)`, () => {
     })
 
     it('will prepare an FA2 transaction from public key', async () => {
-      getStub.withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/`).returns(
+      getStub.withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/header`).returns(
         Promise.resolve({
           data: {
             protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
@@ -1141,43 +1105,7 @@ describe(`ICoinProtocol Tezos - Custom Tests (v0)`, () => {
               priority: 0,
               proof_of_work_nonce: '0639894462090000',
               signature: 'sigjnLFcgqv8QC1QwNhPgg4WomUGtL4nQ68u3GavKXLLWyFcf8g2ceaT6FeuRRVGcdDY7qj7MBo2iUo83L1rtroQKMhqZbw2'
-            },
-            metadata: {
-              protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
-              next_protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
-              test_chain_status: { status: 'not_running' },
-              max_operations_ttl: 60,
-              max_operation_data_length: 16384,
-              max_block_header_length: 238,
-              max_operation_list_length: [
-                {
-                  max_size: 32768,
-                  max_op: 32
-                },
-                { max_size: 32768 },
-                {
-                  max_size: 135168,
-                  max_op: 132
-                },
-                { max_size: 524288 }
-              ],
-              baker: 'tz1Kt4P8BCaP93AEV4eA7gmpRryWt5hznjCP',
-              level: {
-                level: 940455,
-                level_position: 940454,
-                cycle: 229,
-                cycle_position: 2470,
-                voting_period: 28,
-                voting_period_position: 22950,
-                expected_commitment: false
-              },
-              voting_period_kind: 'proposal',
-              nonce_hash: null,
-              consumed_milligas: '0',
-              deactivated: [],
-              balance_updates: []
-            },
-            operations: [[], [], [], []]
+            }
           }
         })
       )
@@ -1302,7 +1230,7 @@ describe(`ICoinProtocol Tezos - Custom Tests (v0)`, () => {
     })
 
     it('will prepare an FA2 transfer transaction', async () => {
-      getStub.withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/`).returns(
+      getStub.withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/header`).returns(
         Promise.resolve({
           data: {
             protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
@@ -1320,43 +1248,7 @@ describe(`ICoinProtocol Tezos - Custom Tests (v0)`, () => {
               priority: 0,
               proof_of_work_nonce: '0639894462090000',
               signature: 'sigjnLFcgqv8QC1QwNhPgg4WomUGtL4nQ68u3GavKXLLWyFcf8g2ceaT6FeuRRVGcdDY7qj7MBo2iUo83L1rtroQKMhqZbw2'
-            },
-            metadata: {
-              protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
-              next_protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
-              test_chain_status: { status: 'not_running' },
-              max_operations_ttl: 60,
-              max_operation_data_length: 16384,
-              max_block_header_length: 238,
-              max_operation_list_length: [
-                {
-                  max_size: 32768,
-                  max_op: 32
-                },
-                { max_size: 32768 },
-                {
-                  max_size: 135168,
-                  max_op: 132
-                },
-                { max_size: 524288 }
-              ],
-              baker: 'tz1Kt4P8BCaP93AEV4eA7gmpRryWt5hznjCP',
-              level: {
-                level: 940455,
-                level_position: 940454,
-                cycle: 229,
-                cycle_position: 2470,
-                voting_period: 28,
-                voting_period_position: 22950,
-                expected_commitment: false
-              },
-              voting_period_kind: 'proposal',
-              nonce_hash: null,
-              consumed_milligas: '0',
-              deactivated: [],
-              balance_updates: []
-            },
-            operations: [[], [], [], []]
+            }
           }
         })
       )
@@ -1510,7 +1402,7 @@ describe(`ICoinProtocol Tezos - Custom Tests (v0)`, () => {
     })
 
     it('will prepare an FA2 update operators transaction', async () => {
-      getStub.withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/`).returns(
+      getStub.withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/header`).returns(
         Promise.resolve({
           data: {
             protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
@@ -1528,43 +1420,7 @@ describe(`ICoinProtocol Tezos - Custom Tests (v0)`, () => {
               priority: 0,
               proof_of_work_nonce: '0639894462090000',
               signature: 'sigjnLFcgqv8QC1QwNhPgg4WomUGtL4nQ68u3GavKXLLWyFcf8g2ceaT6FeuRRVGcdDY7qj7MBo2iUo83L1rtroQKMhqZbw2'
-            },
-            metadata: {
-              protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
-              next_protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
-              test_chain_status: { status: 'not_running' },
-              max_operations_ttl: 60,
-              max_operation_data_length: 16384,
-              max_block_header_length: 238,
-              max_operation_list_length: [
-                {
-                  max_size: 32768,
-                  max_op: 32
-                },
-                { max_size: 32768 },
-                {
-                  max_size: 135168,
-                  max_op: 132
-                },
-                { max_size: 524288 }
-              ],
-              baker: 'tz1Kt4P8BCaP93AEV4eA7gmpRryWt5hznjCP',
-              level: {
-                level: 940455,
-                level_position: 940454,
-                cycle: 229,
-                cycle_position: 2470,
-                voting_period: 28,
-                voting_period_position: 22950,
-                expected_commitment: false
-              },
-              voting_period_kind: 'proposal',
-              nonce_hash: null,
-              consumed_milligas: '0',
-              deactivated: [],
-              balance_updates: []
-            },
-            operations: [[], [], [], []]
+            }
           }
         })
       )
@@ -1718,7 +1574,7 @@ describe(`ICoinProtocol Tezos - Custom Tests (v0)`, () => {
     })
 
     it('will check FA2 balance', async () => {
-      getStub.withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/`).returns(
+      getStub.withArgs(`${tezosLib.jsonRPCAPI}/chains/main/blocks/head/header`).returns(
         Promise.resolve({
           data: {
             protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
@@ -1736,43 +1592,7 @@ describe(`ICoinProtocol Tezos - Custom Tests (v0)`, () => {
               priority: 0,
               proof_of_work_nonce: '0639894462090000',
               signature: 'sigjnLFcgqv8QC1QwNhPgg4WomUGtL4nQ68u3GavKXLLWyFcf8g2ceaT6FeuRRVGcdDY7qj7MBo2iUo83L1rtroQKMhqZbw2'
-            },
-            metadata: {
-              protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
-              next_protocol: 'PsCARTHAGazKbHtnKfLzQg3kms52kSRpgnDY982a9oYsSXRLQEb',
-              test_chain_status: { status: 'not_running' },
-              max_operations_ttl: 60,
-              max_operation_data_length: 16384,
-              max_block_header_length: 238,
-              max_operation_list_length: [
-                {
-                  max_size: 32768,
-                  max_op: 32
-                },
-                { max_size: 32768 },
-                {
-                  max_size: 135168,
-                  max_op: 132
-                },
-                { max_size: 524288 }
-              ],
-              baker: 'tz1Kt4P8BCaP93AEV4eA7gmpRryWt5hznjCP',
-              level: {
-                level: 940455,
-                level_position: 940454,
-                cycle: 229,
-                cycle_position: 2470,
-                voting_period: 28,
-                voting_period_position: 22950,
-                expected_commitment: false
-              },
-              voting_period_kind: 'proposal',
-              nonce_hash: null,
-              consumed_milligas: '0',
-              deactivated: [],
-              balance_updates: []
-            },
-            operations: [[], [], [], []]
+            }
           }
         })
       )

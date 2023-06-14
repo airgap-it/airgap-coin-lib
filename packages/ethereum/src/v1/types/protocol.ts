@@ -7,11 +7,14 @@ export interface EthereumProtocolNetwork extends ProtocolNetwork {
   blockExplorerApi: string
 }
 
-export interface EthereumProtocolOptions {
-  network: EthereumProtocolNetwork
+export interface EthereumProtocolOptions<_ProtocolNetwork extends EthereumProtocolNetwork = EthereumProtocolNetwork> {
+  network: _ProtocolNetwork
 }
 
-export interface EthereumBaseProtocolOptions<_Units extends string = EthereumUnits> extends EthereumProtocolOptions {
+export interface EthereumBaseProtocolOptions<
+  _Units extends string = EthereumUnits,
+  _ProtocolNetwork extends EthereumProtocolNetwork = EthereumProtocolNetwork
+> extends EthereumProtocolOptions<_ProtocolNetwork> {
   identifier: string
   name: string
 
@@ -23,14 +26,20 @@ export interface EthereumBaseProtocolOptions<_Units extends string = EthereumUni
   standardDerivationPath?: string
 }
 
-export interface ERC20TokenOptions extends EthereumProtocolOptions {
+export interface ERC20ProtocolOptions<_Units extends string, _ProtocolNetwork extends EthereumProtocolNetwork = EthereumProtocolNetwork>
+  extends EthereumProtocolOptions<_ProtocolNetwork> {
   name: string
   identifier: string
 
   contractAddress: string
 
-  units: ProtocolUnitsMetadata<string>
-  mainUnit: string
+  units: ProtocolUnitsMetadata<_Units>
+  mainUnit: _Units
+}
+
+export interface ERC20TokenOptions<_ProtocolNetwork extends EthereumProtocolNetwork = EthereumProtocolNetwork>
+  extends ERC20ProtocolOptions<string, _ProtocolNetwork> {
+  mainIdentifier: string
 }
 
 export interface ERC20TokenMetadata {

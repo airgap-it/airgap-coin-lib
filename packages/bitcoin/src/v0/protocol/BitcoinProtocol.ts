@@ -167,6 +167,10 @@ export class BitcoinProtocol implements ICoinProtocol {
     return this.marketSymbol
   }
 
+  public async getAssetSymbol(): Promise<string | undefined> {
+    return undefined
+  }
+
   public async getFeeSymbol(): Promise<string> {
     return this.feeSymbol
   }
@@ -312,16 +316,14 @@ export class BitcoinProtocol implements ICoinProtocol {
     const generatorArray = Array.from(new Array(addressCount), (_, i) => i + offset)
 
     return Promise.all(
-      generatorArray.map(
-        (x): BitcoinAddressResult => {
-          const address: BitcoinAddress = BitcoinAddress.from(node, visibilityDerivationIndex, x)
+      generatorArray.map((x): BitcoinAddressResult => {
+        const address: BitcoinAddress = BitcoinAddress.from(node, visibilityDerivationIndex, x)
 
-          return {
-            address: address.asString(),
-            cursor: { hasNext: false }
-          }
+        return {
+          address: address.asString(),
+          cursor: { hasNext: false }
         }
-      )
+      })
     )
   }
 

@@ -17,7 +17,7 @@ import { AstarBaseProtocolOptions, AstarProtocolNetwork } from '../types/protoco
 // Interface
 
 export interface AstarBaseProtocol<_Units extends string = string>
-  extends SubstrateProtocol<_Units, AstarProtocolNetwork, AstarCryptoConfiguration> {}
+  extends SubstrateProtocol<AstarProtocolConfiguration, _Units, AstarProtocolNetwork, AstarCryptoConfiguration> {}
 
 // Implemenation
 
@@ -30,7 +30,8 @@ export abstract class AstarBaseProtocolImpl<_Units extends string>
     AstarAccountController,
     AstarTransactionController
   >
-  implements AstarBaseProtocol<_Units> {
+  implements AstarBaseProtocol<_Units>
+{
   public constructor(options: AstarBaseProtocolOptions<_Units>) {
     const nodeClient: AstarNodeClient = new AstarNodeClient(options.configuration, options.network.rpcUrl)
 

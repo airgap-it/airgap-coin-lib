@@ -1,7 +1,11 @@
 import { Domain, MainProtocolSymbols } from '@airgap/coinlib-core'
 import { ConditionViolationError } from '@airgap/coinlib-core/errors'
+import { CosmosProtocolNetwork } from '@airgap/cosmos-core'
 import {
+  AirGapBlockExplorer,
   AirGapModule,
+  AirGapOfflineProtocol,
+  AirGapOnlineProtocol,
   AirGapProtocol,
   AirGapV3SerializerCompanion,
   createSupportedProtocols,
@@ -9,14 +13,14 @@ import {
   ProtocolConfiguration,
   ProtocolNetwork
 } from '@airgap/module-kit'
-import { AirGapBlockExplorer, AirGapOfflineProtocol, AirGapOnlineProtocol } from '@airgap/module-kit'
+
 import { CoreumBlockExplorer } from '../block-explorer/CoreumExplorer'
 import { COREUM_PROTOCOL_NETWORK, createCoreumProtocol } from '../protocol/CoreumProtocol'
 import { CoreumV3SerializerCompanion } from '../serializer/v3/serializer-companion'
 
 type SupportedProtocols = MainProtocolSymbols.COREUM
 
-export class CoreumModule implements AirGapModule<{ Protocols: SupportedProtocols }> {
+export class CoreumModule implements AirGapModule<{ Protocols: SupportedProtocols; ProtocolNetwork: CosmosProtocolNetwork }> {
   private readonly networkRegistries: Record<SupportedProtocols, ModuleNetworkRegistry> = {
     [MainProtocolSymbols.COREUM]: new ModuleNetworkRegistry({
       supportedNetworks: [COREUM_PROTOCOL_NETWORK]
@@ -26,15 +30,17 @@ export class CoreumModule implements AirGapModule<{ Protocols: SupportedProtocol
     this.networkRegistries
   )
 
-  public async createOfflineProtocol(identifier: MainProtocolSymbols.COREUM): Promise<AirGapOfflineProtocol<{}> | undefined> {
+  public async createOfflineProtocol(identifier: MainProtocolSymbols.COREUM): Promise<AirGapOfflineProtocol | undefined> {
     return this.createProtocol(identifier)
   }
 
   public async createOnlineProtocol(
     identifier: MainProtocolSymbols.COREUM,
-    networkId?: string | undefined
-  ): Promise<AirGapOnlineProtocol<{}> | undefined> {
-    const network: ProtocolNetwork | undefined = this.networkRegistries[identifier]?.findNetwork(networkId)
+    networkOrId?: CosmosProtocolNetwork | string
+  ): Promise<AirGapOnlineProtocol | undefined> {
+    const network: ProtocolNetwork | undefined =
+      typeof networkOrId === 'object' ? networkOrId : this.networkRegistries[identifier]?.findNetwork(networkOrId)
+
     if (network === undefined) {
       throw new ConditionViolationError(Domain.COREUM, 'Protocol network type not supported.')
     }
@@ -44,14 +50,16 @@ export class CoreumModule implements AirGapModule<{ Protocols: SupportedProtocol
 
   public async createBlockExplorer(
     identifier: MainProtocolSymbols.COREUM,
-    networkId?: string | undefined
+    networkOrId?: CosmosProtocolNetwork | string
   ): Promise<AirGapBlockExplorer | undefined> {
-    const network: ProtocolNetwork | undefined = this.networkRegistries[identifier]?.findNetwork(networkId)
+    const network: ProtocolNetwork | undefined =
+      typeof networkOrId === 'object' ? networkOrId : this.networkRegistries[identifier]?.findNetwork(networkOrId)
+
     if (network === undefined) {
       throw new ConditionViolationError(Domain.COSMOS, 'Block Explorer network type not supported.')
     }
 
-    return new CoreumBlockExplorer()
+    return new CoreumBlockExplorer(network.blockExplorerUrl)
   }
 
   public async createV3SerializerCompanion(): Promise<AirGapV3SerializerCompanion> {

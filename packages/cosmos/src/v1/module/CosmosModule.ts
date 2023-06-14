@@ -1,5 +1,6 @@
 import { Domain, MainProtocolSymbols } from '@airgap/coinlib-core'
 import { ConditionViolationError } from '@airgap/coinlib-core/errors'
+import { CosmosProtocolNetwork } from '@airgap/cosmos-core'
 import {
   AirGapBlockExplorer,
   AirGapModule,
@@ -19,7 +20,7 @@ import { CosmosV3SerializerCompanion } from '../serializer/v3/serializer-compani
 
 type SupportedProtocols = MainProtocolSymbols.COSMOS
 
-export class CosmosModule implements AirGapModule<{ Protocols: SupportedProtocols }> {
+export class CosmosModule implements AirGapModule<{ Protocols: SupportedProtocols; ProtocolNetwork: CosmosProtocolNetwork }> {
   private readonly networkRegistries: Record<SupportedProtocols, ModuleNetworkRegistry> = {
     [MainProtocolSymbols.COSMOS]: new ModuleNetworkRegistry({
       supportedNetworks: [COSMOS_MAINNET_PROTOCOL_NETWORK]
@@ -31,8 +32,13 @@ export class CosmosModule implements AirGapModule<{ Protocols: SupportedProtocol
     return this.createProtocol(identifier)
   }
 
-  public async createOnlineProtocol(identifier: SupportedProtocols, networkId?: string): Promise<AirGapOnlineProtocol | undefined> {
-    const network: ProtocolNetwork | undefined = this.networkRegistries[identifier]?.findNetwork(networkId)
+  public async createOnlineProtocol(
+    identifier: SupportedProtocols,
+    networkOrId?: CosmosProtocolNetwork | string
+  ): Promise<AirGapOnlineProtocol | undefined> {
+    const network: ProtocolNetwork | undefined =
+      typeof networkOrId === 'object' ? networkOrId : this.networkRegistries[identifier]?.findNetwork(networkOrId)
+
     if (network === undefined) {
       throw new ConditionViolationError(Domain.COSMOS, 'Protocol network type not supported.')
     }
@@ -40,13 +46,18 @@ export class CosmosModule implements AirGapModule<{ Protocols: SupportedProtocol
     return this.createProtocol(identifier, network)
   }
 
-  public async createBlockExplorer(identifier: SupportedProtocols, networkId?: string): Promise<AirGapBlockExplorer | undefined> {
-    const network: ProtocolNetwork | undefined = this.networkRegistries[identifier]?.findNetwork(networkId)
-    if (network?.type !== 'mainnet') {
+  public async createBlockExplorer(
+    identifier: SupportedProtocols,
+    networkOrId?: CosmosProtocolNetwork | string
+  ): Promise<AirGapBlockExplorer | undefined> {
+    const network: ProtocolNetwork | undefined =
+      typeof networkOrId === 'object' ? networkOrId : this.networkRegistries[identifier]?.findNetwork(networkOrId)
+
+    if (network === undefined) {
       throw new ConditionViolationError(Domain.COSMOS, 'Block Explorer network type not supported.')
     }
 
-    return new MintscanBlockExplorer()
+    return new MintscanBlockExplorer(network.blockExplorerUrl)
   }
 
   public async createV3SerializerCompanion(): Promise<AirGapV3SerializerCompanion> {

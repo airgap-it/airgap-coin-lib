@@ -88,7 +88,9 @@ export const POLKADOT_MAINNET_PROTOCOL_NETWORK: PolkadotProtocolNetwork = {
   name: 'Mainnet',
   type: 'mainnet',
   rpcUrl: 'https://polkadot-node.prod.gke.papers.tech',
-  blockExplorerApi: 'https://polkadot.subscan.prod.gke.papers.tech/api/scan'
+  blockExplorerUrl: 'https://polkadot.subscan.io',
+  blockExplorerApi: 'https://polkadot.subscan.prod.gke.papers.tech/api/scan',
+  defaultValidator: '12C9U6zSSoZ6pgwR2ksFyBLgQH6v7dkqqPCRyHceoP8MJRo2'
 }
 
 const DEFAULT_POLKADOT_PROTOCOL_NETWORK: PolkadotProtocolNetwork = POLKADOT_MAINNET_PROTOCOL_NETWORK

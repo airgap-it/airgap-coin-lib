@@ -1,10 +1,10 @@
-import {
-  createMoonbaseSubscanBlockExplorer,
-  createMoonbeamSubscanBlockExplorer,
-  createMoonriverSubscanBlockExplorer
-} from './block-explorer/SubscanBlockExplorer'
+import { MoonbeamCollatorDetails } from './data/staking/MoonbeamCollatorDetails'
+import { MoonbeamDelegationDetails } from './data/staking/MoonbeamDelegationDetails'
+import { MoonbeamDelegatorDetails } from './data/staking/MoonbeamDelegatorDetails'
+import { MoonbeamStakingActionType } from './data/staking/MoonbeamStakingActionType'
 import { MoonbeamModule } from './module/MoonbeamModule'
 import { createMoonbaseProtocol, MoonbaseProtocol } from './protocol/MoonbaseProtocol'
+import { MoonbeamBaseProtocol } from './protocol/MoonbeamBaseProtocol'
 import { createMoonbeamProtocol, MoonbeamProtocol } from './protocol/MoonbeamProtocol'
 import { createMoonriverProtocol, MoonriverProtocol } from './protocol/MoonriverProtocol'
 import { MoonbeamProtocolConfiguration } from './types/configuration'
@@ -17,11 +17,15 @@ export { MoonbeamModule }
 
 // Protocol
 
-export { MoonbeamProtocol, createMoonbeamProtocol, MoonriverProtocol, createMoonriverProtocol, MoonbaseProtocol, createMoonbaseProtocol }
-
-// Block Explorer
-
-export { createMoonbeamSubscanBlockExplorer, createMoonriverSubscanBlockExplorer, createMoonbaseSubscanBlockExplorer }
+export {
+  MoonbeamProtocol,
+  createMoonbeamProtocol,
+  MoonriverProtocol,
+  createMoonriverProtocol,
+  MoonbaseProtocol,
+  createMoonbaseProtocol,
+  MoonbeamBaseProtocol
+}
 
 // Types
 
@@ -32,5 +36,9 @@ export {
   MoonbaseUnits,
   MoonbeamProtocolNetwork,
   MoonbeamProtocolOptions,
-  MoonbeamProtocolConfiguration
+  MoonbeamProtocolConfiguration,
+  MoonbeamDelegationDetails,
+  MoonbeamDelegatorDetails,
+  MoonbeamCollatorDetails,
+  MoonbeamStakingActionType
 }

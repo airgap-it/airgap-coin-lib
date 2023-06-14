@@ -2,7 +2,7 @@ import { expect } from 'chai'
 import { it } from 'mocha'
 import * as sinon from 'sinon'
 
-import { RawTezosTransaction } from '../../src'
+import { RawTezosTransaction } from '../../src/v0'
 import { TezosContractCall } from '../../src/v0/protocol/contract/TezosContractCall'
 import { TezosTransactionOperation, TezosTransactionParameters } from '../../src/v0/protocol/types/operations/Transaction'
 import { TezosSaplingAddressResult } from '../../src/v0/protocol/types/sapling/TezosSaplingAddressResult'

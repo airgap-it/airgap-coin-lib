@@ -8,6 +8,7 @@ export type MoonbaseUnits = 'DEV' | 'mDEV' | 'uDEV' | 'nDEV' | 'pDEV' | 'fDEV' |
 
 export interface MoonbeamProtocolNetwork extends SubstrateProtocolNetwork {
   blockExplorerApi: string
+  defaultValidator?: string
 }
 
 export interface MoonbeamProtocolOptions {

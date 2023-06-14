@@ -1,16 +1,21 @@
 // tslint:disable no-floating-promises
 import { AirGapBlockExplorer } from '@airgap/module-kit'
+import { SubscanBlockExplorer } from '@airgap/substrate'
 import chai = require('chai')
 import chaiAsPromised = require('chai-as-promised')
 import 'mocha'
 
-import { createAstarSubscanBlockExplorer, createShidenSubscanBlockExplorer } from '../../src/v1'
+import { ASTAR_MAINNET_PROTOCOL_NETWORK } from '../../src/v1/protocol/AstarProtocol'
+import { SHIDEN_MAINNET_PROTOCOL_NETWORK } from '../../src/v1/protocol/ShidenProtocol'
 
 // use chai-as-promised plugin
 chai.use(chaiAsPromised)
 const expect = chai.expect
 
-const blockExplorers: AirGapBlockExplorer[] = [createAstarSubscanBlockExplorer(), createShidenSubscanBlockExplorer()]
+const blockExplorers: AirGapBlockExplorer[] = [
+  new SubscanBlockExplorer(ASTAR_MAINNET_PROTOCOL_NETWORK.blockExplorerUrl),
+  new SubscanBlockExplorer(SHIDEN_MAINNET_PROTOCOL_NETWORK.blockExplorerUrl)
+]
 
 Promise.all(
   blockExplorers.map(async (blockExplorer: AirGapBlockExplorer) => {

@@ -235,6 +235,10 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
     return this.marketSymbol
   }
 
+  public async getAssetSymbol(): Promise<string | undefined> {
+    return undefined
+  }
+
   public async getFeeSymbol(): Promise<string> {
     return this.feeSymbol
   }
@@ -1097,7 +1101,9 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
       return { ...operation, gas_limit, counter }
     })
 
-    const { data: block }: AxiosResponse<{ chain_id: string }> = await axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head`)
+    const { data: block }: AxiosResponse<{ chain_id: string }> = await axios.get(
+      `${this.options.network.rpcUrl}/chains/main/blocks/head/header`
+    )
     const body = {
       chain_id: block.chain_id,
       operation: {
@@ -1228,7 +1234,12 @@ export class TezosProtocol extends NonExtendedProtocol implements ICoinDelegateP
   public async bakerInfo(tzAddress: string | undefined): Promise<BakerInfo> {
     if (
       !tzAddress ||
-      !(tzAddress.toLowerCase().startsWith('tz1') || tzAddress.toLowerCase().startsWith('tz2') || tzAddress.toLowerCase().startsWith('tz3'))
+      !(
+        tzAddress.toLowerCase().startsWith('tz1') ||
+        tzAddress.toLowerCase().startsWith('tz2') ||
+        tzAddress.toLowerCase().startsWith('tz3') ||
+        tzAddress.toLowerCase().startsWith('tz4')
+      )
     ) {
       throw new ConditionViolationError(Domain.TEZOS, 'non tz-address supplied')
     }

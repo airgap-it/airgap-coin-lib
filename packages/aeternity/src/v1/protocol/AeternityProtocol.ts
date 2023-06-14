@@ -30,8 +30,9 @@ import {
   RecursivePartial,
   SecretKey,
   Signature,
-  TransactionConfiguration,
-  TransactionDetails
+  TransactionFullConfiguration,
+  TransactionDetails,
+  TransactionSimpleConfiguration
 } from '@airgap/module-kit'
 import { sign } from '@stablelib/ed25519'
 
@@ -346,7 +347,7 @@ export class AeternityProtocolImpl implements AeternityProtocol {
   public async getTransactionMaxAmountWithPublicKey(
     publicKey: PublicKey,
     to: string[],
-    configuration?: TransactionConfiguration<AeternityUnits>
+    configuration?: TransactionFullConfiguration<AeternityUnits>
   ): Promise<Amount<AeternityUnits>> {
     const balance = await this.getBalanceOfPublicKey(publicKey)
     const balanceBn = new BigNumber(newAmount(balance.total).blockchain(this.units).value)
@@ -376,7 +377,8 @@ export class AeternityProtocolImpl implements AeternityProtocol {
 
   public async getTransactionFeeWithPublicKey(
     _publicKey: PublicKey,
-    _details: TransactionDetails<AeternityUnits>[]
+    _details: TransactionDetails<AeternityUnits>[],
+    _configuration?: TransactionSimpleConfiguration
   ): Promise<FeeDefaults<AeternityUnits>> {
     const feeDetaults = (await axios.get(this.options.network.feesUrl)).data
 
@@ -390,7 +392,7 @@ export class AeternityProtocolImpl implements AeternityProtocol {
   public async prepareTransactionWithPublicKey(
     publicKey: PublicKey,
     details: TransactionDetails<AeternityUnits>[],
-    configuration?: TransactionConfiguration<AeternityUnits>
+    configuration?: TransactionFullConfiguration<AeternityUnits>
   ): Promise<AeternityUnsignedTransaction> {
     // should we support multiple transactions here?
 
@@ -485,6 +487,7 @@ export const AETERNITY_MAINNET_PROTOCOL_NETWORK: AeternityProtocolNetwork = {
   name: 'Mainnet',
   type: 'mainnet',
   rpcUrl: 'https://mainnet.aeternity.io',
+  blockExplorerUrl: 'https://explorer.aeternity.io',
   feesUrl: 'https://api-airgap.gke.papers.tech/fees'
 }
 

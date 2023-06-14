@@ -82,6 +82,7 @@ export const SHIDEN_MAINNET_PROTOCOL_NETWORK: AstarProtocolNetwork = {
   name: 'Mainnet',
   type: 'mainnet',
   rpcUrl: 'https://shiden-node.prod.gke.papers.tech',
+  blockExplorerUrl: 'https://shiden.subscan.io',
   blockExplorerApi: 'https://shiden.subscan.prod.gke.papers.tech/api/scan'
 }
 

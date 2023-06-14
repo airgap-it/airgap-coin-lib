@@ -63,13 +63,9 @@ export function createYouProtocolOptions(network: RecursivePartial<TezosFA2Proto
     network: {
       ...DEFAULT_YOU_PROTOCOL_NETWORK,
       ...network,
-      blockExplorer: {
-        ...DEFAULT_YOU_PROTOCOL_NETWORK.blockExplorer,
-        ...network.blockExplorer
-      },
-      indexer: {
-        ...DEFAULT_YOU_PROTOCOL_NETWORK.indexer,
-        ...network.indexer
+      callbackContracts: {
+        ...DEFAULT_YOU_PROTOCOL_NETWORK.callbackContracts,
+        ...network.callbackContracts
       }
     }
   }

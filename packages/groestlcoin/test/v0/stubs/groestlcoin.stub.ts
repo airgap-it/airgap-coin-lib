@@ -1,7 +1,7 @@
 import axios from '@airgap/coinlib-core/dependencies/src/axios-0.19.0/index'
 import * as sinon from 'sinon'
 
-import { GroestlcoinProtocol } from '../../../src'
+import { GroestlcoinProtocol } from '../../../src/v0'
 import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
 
 export class GroestlcoinProtocolStub implements ProtocolHTTPStub {

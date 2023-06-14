@@ -60,13 +60,9 @@ export function createWrappedTezosProtocolOptions(network: RecursivePartial<Tezo
     network: {
       ...DEFAULT_WRAPPED_TEZOS_PROTOCOL_NETWORK,
       ...network,
-      blockExplorer: {
-        ...DEFAULT_WRAPPED_TEZOS_PROTOCOL_NETWORK.blockExplorer,
-        ...network.blockExplorer
-      },
-      indexer: {
-        ...DEFAULT_WRAPPED_TEZOS_PROTOCOL_NETWORK.indexer,
-        ...network.indexer
+      callbackContracts: {
+        ...DEFAULT_WRAPPED_TEZOS_PROTOCOL_NETWORK.callbackContracts,
+        ...network.callbackContracts
       }
     }
   }

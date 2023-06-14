@@ -60,13 +60,9 @@ export function createTzBTCProtocolOptions(network: RecursivePartial<TezosFA1p2P
     network: {
       ...DEFAULT_TZBTC_PROTOCOL_NETWORK,
       ...network,
-      blockExplorer: {
-        ...DEFAULT_TZBTC_PROTOCOL_NETWORK.blockExplorer,
-        ...network.blockExplorer
-      },
-      indexer: {
-        ...DEFAULT_TZBTC_PROTOCOL_NETWORK.indexer,
-        ...network.indexer
+      callbackContracts: {
+        ...DEFAULT_TZBTC_PROTOCOL_NETWORK.callbackContracts,
+        ...network.callbackContracts
       }
     }
   }

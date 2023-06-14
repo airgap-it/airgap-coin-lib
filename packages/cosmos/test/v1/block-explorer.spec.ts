@@ -5,12 +5,13 @@ import chaiAsPromised = require('chai-as-promised')
 import 'mocha'
 
 import { MintscanBlockExplorer } from '../../src/v1'
+import { COSMOS_MAINNET_PROTOCOL_NETWORK } from '../../src/v1/protocol/CosmosProtocol'
 
 // use chai-as-promised plugin
 chai.use(chaiAsPromised)
 const expect = chai.expect
 
-const blockExplorers: AirGapBlockExplorer[] = [new MintscanBlockExplorer()]
+const blockExplorers: AirGapBlockExplorer[] = [new MintscanBlockExplorer(COSMOS_MAINNET_PROTOCOL_NETWORK.blockExplorerUrl)]
 
 Promise.all(
   blockExplorers.map(async (blockExplorer: AirGapBlockExplorer) => {

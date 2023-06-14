@@ -4,7 +4,7 @@ import { SubstrateBlockExplorerClient } from './block-explorer/SubstrateBlockExp
 import { SubstrateAccountController } from './controller/account/SubstrateAccountController'
 import { SubstrateCommonAccountController } from './controller/account/SubstrateCommonAccountController'
 import { SubstrateCommonTransactionController } from './controller/transaction/SubstrateCommonTransactionController'
-import { SubstrateTransactionController, SubstrateTransactionParameters } from './controller/transaction/SubstrateTransactionController'
+import { SubstrateTransactionController } from './controller/transaction/SubstrateTransactionController'
 import { SubstrateAccountId, SubstrateAddress } from './data/account/address/SubstrateAddress'
 import { scaleAddressFactory, substrateAddressFactory, TypedSubstrateAddress } from './data/account/address/SubstrateAddressFactory'
 import { SubstrateEthAddress } from './data/account/address/SubstrateEthAddress'
@@ -38,6 +38,7 @@ import { SubstrateTransactionPayload } from './data/transaction/SubstrateTransac
 import { SubstrateCommonNodeClient } from './node/SubstrateCommonNodeClient'
 import { SubstrateNodeClient } from './node/SubstrateNodeClient'
 import { SubstrateProtocol, SubstrateProtocolImpl } from './protocol/SubstrateProtocol'
+import { SubstrateStakingProtocol, SubstrateStakingProtocolImpl } from './protocol/SubstrateStakingProtocol'
 import {
   substrateSignedTransactionToResponse,
   substrateTransactionSignRequestToUnsigned,
@@ -58,11 +59,18 @@ import {
 } from './types/configuration'
 import { SubstrateCryptoConfiguration } from './types/crypto'
 import { SubstrateProtocolNetwork, SubstrateProtocolOptions } from './types/protocol'
-import { SubstrateSignedTransaction, SubstrateTransactionCursor, SubstrateUnsignedTransaction } from './types/transaction'
+import {
+  SubstrateSignedTransaction,
+  SubstrateTransactionCursor,
+  SubstrateTransactionDetails,
+  SubstrateTransactionParameters,
+  SubstrateUnsignedTransaction
+} from './types/transaction'
+import { isSubstrateProtocol } from './utils/protocol'
 
 // Protocol
 
-export { SubstrateProtocol, SubstrateProtocolImpl }
+export { SubstrateProtocol, SubstrateProtocolImpl, SubstrateStakingProtocol, SubstrateStakingProtocolImpl }
 
 // Block Explorer
 
@@ -74,7 +82,6 @@ export {
   SubstrateAccountController,
   SubstrateCommonAccountController,
   SubstrateTransactionController,
-  SubstrateTransactionParameters,
   SubstrateCommonTransactionController
 }
 
@@ -133,6 +140,8 @@ export {
   SubstrateSS58AccountConfiguration,
   SubstrateEthAccountConfiguration,
   SubstrateTransactionConfiguration,
+  SubstrateTransactionDetails,
+  SubstrateTransactionParameters,
   SubstrateRpcConfiguration,
   SubstrateProtocolNetwork,
   SubstrateProtocolOptions,
@@ -153,3 +162,7 @@ export {
   substrateTransactionSignRequestToUnsigned,
   substrateTransactionSignResponseToSigned
 }
+
+// Utils
+
+export { isSubstrateProtocol }

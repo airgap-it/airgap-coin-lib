@@ -35,7 +35,7 @@ function derive(masterNode: DerivationNode, derivationPath: string): DerivationN
 }
 
 function deriveChild(node: DerivationNode, derivationIndex: DerivationIndex): DerivationNode {
-  const parentFingerprint: number = hash160(node.publicKey).readUInt32BE()
+  const parentFingerprint: number = hash160(node.publicKey).readUInt32BE(0)
 
   const index: number = derivationIndex.masked
   const indexBuffer: Buffer = Buffer.alloc(4)

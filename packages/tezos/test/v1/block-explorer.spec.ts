@@ -5,12 +5,13 @@ import chaiAsPromised = require('chai-as-promised')
 import 'mocha'
 
 import { TzKTBlockExplorer } from '../../src/v1'
+import { TEZOS_MAINNET_PROTOCOL_NETWORK } from '../../src/v1/protocol/TezosProtocol'
 
 // use chai-as-promised plugin
 chai.use(chaiAsPromised)
 const expect = chai.expect
 
-const blockExplorers: AirGapBlockExplorer[] = [new TzKTBlockExplorer('https://tzkt.io')]
+const blockExplorers: AirGapBlockExplorer[] = [new TzKTBlockExplorer(TEZOS_MAINNET_PROTOCOL_NETWORK.blockExplorerUrl)]
 
 Promise.all(
   blockExplorers.map(async (blockExplorer: AirGapBlockExplorer) => {

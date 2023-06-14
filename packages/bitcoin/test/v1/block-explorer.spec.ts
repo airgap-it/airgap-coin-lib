@@ -5,12 +5,13 @@ import chaiAsPromised = require('chai-as-promised')
 import 'mocha'
 
 import { BlockCypherBlockExplorer } from '../../src/v1'
+import { BITCOIN_MAINNET_PROTOCOL_NETWORK } from '../../src/v1/protocol/BitcoinProtocol'
 
 // use chai-as-promised plugin
 chai.use(chaiAsPromised)
 const expect = chai.expect
 
-const blockExplorers: AirGapBlockExplorer[] = [new BlockCypherBlockExplorer()]
+const blockExplorers: AirGapBlockExplorer[] = [new BlockCypherBlockExplorer(BITCOIN_MAINNET_PROTOCOL_NETWORK.blockExplorerUrl)]
 
 Promise.all(
   blockExplorers.map(async (blockExplorer: AirGapBlockExplorer) => {

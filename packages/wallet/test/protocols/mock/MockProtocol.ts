@@ -18,9 +18,10 @@ import {
   SecretKey,
   Signature,
   SignedTransaction,
-  TransactionConfiguration,
+  TransactionFullConfiguration,
   TransactionCursor,
   TransactionDetails,
+  TransactionSimpleConfiguration,
   UnsignedTransaction
 } from '@airgap/module-kit'
 
@@ -141,19 +142,23 @@ export class MockProtocol implements AirGapProtocol {
   public async getTransactionMaxAmountWithPublicKey(
     publicKey: PublicKey,
     to: string[],
-    configuration?: TransactionConfiguration
+    configuration?: TransactionFullConfiguration
   ): Promise<Amount> {
     throw new Error('Method not implemented.')
   }
 
-  public async getTransactionFeeWithPublicKey(publicKey: PublicKey, details: TransactionDetails[]): Promise<FeeEstimation> {
+  public async getTransactionFeeWithPublicKey(
+    publicKey: PublicKey,
+    details: TransactionDetails[],
+    configuration?: TransactionSimpleConfiguration
+  ): Promise<FeeEstimation> {
     throw new Error('Method not implemented.')
   }
 
   public async prepareTransactionWithPublicKey(
     publicKey: PublicKey,
     details: TransactionDetails[],
-    configuration?: TransactionConfiguration
+    configuration?: TransactionFullConfiguration
   ): Promise<UnsignedTransaction> {
     throw new Error('Method not implemented.')
   }

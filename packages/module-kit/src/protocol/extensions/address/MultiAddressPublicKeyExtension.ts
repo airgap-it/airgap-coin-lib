@@ -20,5 +20,6 @@ export interface MultiAddressPublicKeyProtocol<
   _AddressCursor extends BaseGeneric['AddressCursor'] = BaseGeneric['AddressCursor'],
   _PublicKey extends PublicKey | ExtendedPublicKey = PublicKey
 > {
+  getInitialAddressesFromPublicKey(publicKey: _PublicKey): Promise<AddressWithCursor<_AddressCursor>[]>
   getNextAddressFromPublicKey(publicKey: _PublicKey, cursor: _AddressCursor): Promise<AddressWithCursor<_AddressCursor> | undefined>
 }

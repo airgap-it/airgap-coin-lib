@@ -15,7 +15,7 @@ export class TezosShieldedTezProtocolStub implements ProtocolHTTPStub<TezosShiel
     const postStub = sinon.stub(axios, 'post')
 
     getStub
-      .withArgs(`${protocolNetwork.rpcUrl}/chains/main/blocks/head`)
+      .withArgs(`${protocolNetwork.rpcUrl}/chains/main/blocks/head/header`)
       .returns(Promise.resolve({ data: { chain_id: 'NetXdQprcVkpaWU' } }))
 
     postStub.withArgs(`${protocolNetwork.rpcUrl}/chains/main/blocks/head/helpers/scripts/run_operation`).returns(

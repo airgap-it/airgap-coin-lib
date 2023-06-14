@@ -1,19 +1,22 @@
 // tslint:disable no-floating-promises
 import { AirGapBlockExplorer } from '@airgap/module-kit'
+import { SubscanBlockExplorer } from '@airgap/substrate'
 import chai = require('chai')
 import chaiAsPromised = require('chai-as-promised')
 import 'mocha'
 
-import { createMoonbaseSubscanBlockExplorer, createMoonbeamSubscanBlockExplorer, createMoonriverSubscanBlockExplorer } from '../../src/v1'
+import { MOONBASE_MAINNET_PROTOCOL_NETWORK } from '../../src/v1/protocol/MoonbaseProtocol'
+import { MOONBEAM_MAINNET_PROTOCOL_NETWORK } from '../../src/v1/protocol/MoonbeamProtocol'
+import { MOONRIVER_MAINNET_PROTOCOL_NETWORK } from '../../src/v1/protocol/MoonriverProtocol'
 
 // use chai-as-promised plugin
 chai.use(chaiAsPromised)
 const expect = chai.expect
 
 const blockExplorers: AirGapBlockExplorer[] = [
-  createMoonbeamSubscanBlockExplorer(),
-  createMoonriverSubscanBlockExplorer(),
-  createMoonbaseSubscanBlockExplorer()
+  new SubscanBlockExplorer(MOONBEAM_MAINNET_PROTOCOL_NETWORK.blockExplorerUrl),
+  new SubscanBlockExplorer(MOONRIVER_MAINNET_PROTOCOL_NETWORK.blockExplorerUrl),
+  new SubscanBlockExplorer(MOONBASE_MAINNET_PROTOCOL_NETWORK.blockExplorerUrl)
 ]
 
 Promise.all(

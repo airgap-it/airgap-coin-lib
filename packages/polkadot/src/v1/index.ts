@@ -1,4 +1,9 @@
-import { createKusamaSubscanBlockExplorer, createPolkadotSubscanBlockExplorer } from './block-explorer/SubscanBlockExplorer'
+import { PolkadotElectionStatus } from './data/staking/PolkadotEraElectionStatus'
+import { PolkadotNominationStatus } from './data/staking/PolkadotNominationStatus'
+import { PolkadotNominatorDetails, PolkadotStakingDetails } from './data/staking/PolkadotNominatorDetails'
+import { PolkadotPayee } from './data/staking/PolkadotPayee'
+import { PolkadotStakingActionType } from './data/staking/PolkadotStakingActionType'
+import { PolkadotValidatorDetails } from './data/staking/PolkadotValidatorDetails'
 import { PolkadotModule } from './module/PolkadotModule'
 import { createKusamaProtocol, KusamaProtocol } from './protocol/KusamaProtocol'
 import { createPolkadotProtocol, PolkadotProtocol } from './protocol/PolkadotProtocol'
@@ -14,10 +19,6 @@ export { PolkadotModule }
 
 export { PolkadotProtocol, createPolkadotProtocol, KusamaProtocol, createKusamaProtocol }
 
-// Block Explorer
-
-export { createPolkadotSubscanBlockExplorer, createKusamaSubscanBlockExplorer }
-
 // Types
 
 export {
@@ -26,5 +27,12 @@ export {
   KusamaUnits,
   PolkadotProtocolNetwork,
   PolkadotProtocolOptions,
-  PolkadotProtocolConfiguration
+  PolkadotProtocolConfiguration,
+  PolkadotStakingActionType,
+  PolkadotStakingDetails,
+  PolkadotNominatorDetails,
+  PolkadotValidatorDetails,
+  PolkadotElectionStatus,
+  PolkadotNominationStatus,
+  PolkadotPayee
 }

@@ -54,6 +54,11 @@
 # node_modules/.bin/ts-json-schema-generator --path 'packages/moonbeam/src/v1/serializer/v3/schemas/definitions/transaction-sign-response-moonbeam.ts' --tsconfig 'tsconfig.json' -c > packages/moonbeam/src/v1/serializer/v3/schemas/generated/transaction-sign-response-moonbeam.json
 # node_modules/.bin/ts-json-schema-generator --path 'packages/moonbeam/src/v1/serializer/v3/schemas/definitions/transaction-sign-request-moonbeam.ts' --tsconfig 'tsconfig.json' -c > packages/moonbeam/src/v1/serializer/v3/schemas/generated/transaction-sign-request-moonbeam.json
 
+# Optimism
+# node_modules/.bin/ts-json-schema-generator --path 'packages/optimism/src/v1/serializer/v3/schemas/definitions/transaction-sign-response-optimism.ts' --tsconfig 'tsconfig.json' -c > packages/optimism/src/v1/serializer/v3/schemas/generated/transaction-sign-response-optimism.json
+# node_modules/.bin/ts-json-schema-generator --path 'packages/optimism/src/v1/serializer/v3/schemas/definitions/transaction-sign-request-optimism.ts' --tsconfig 'tsconfig.json' -c > packages/optimism/src/v1/serializer/v3/schemas/generated/transaction-sign-request-optimism.json
+# node_modules/.bin/ts-json-schema-generator --path 'packages/optimism/src/v1/serializer/v3/schemas/definitions/transaction-sign-request-optimism-typed.ts' --tsconfig 'tsconfig.json' -c > packages/optimism/src/v1/serializer/v3/schemas/generated/transaction-sign-request-optimism-typed.json
+
 # Polkadot
 # node_modules/.bin/ts-json-schema-generator --path 'packages/polkadot/src/v1/serializer/v3/schemas/definitions/transaction-sign-response-polkadot.ts' --tsconfig 'tsconfig.json' -c > packages/polkadot/src/v1/serializer/v3/schemas/generated/transaction-sign-response-polkadot.json
 # node_modules/.bin/ts-json-schema-generator --path 'packages/polkadot/src/v1/serializer/v3/schemas/definitions/transaction-sign-request-polkadot.ts' --tsconfig 'tsconfig.json' -c > packages/polkadot/src/v1/serializer/v3/schemas/generated/transaction-sign-request-polkadot.json

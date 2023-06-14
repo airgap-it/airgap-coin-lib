@@ -296,10 +296,11 @@ export const CKBTC_MAINNET_PROTOCOL_NETWORK: CkBTCProtocolNetwork = {
   name: 'Mainnet',
   type: 'mainnet',
   rpcUrl: 'https://boundary.ic0.app/',
+  blockExplorerUrl: 'https://dashboard.internetcomputer.org/',
+  blockExplorerApi: 'https://ledger-api.internetcomputer.org',
   ledgerCanisterId: 'mxzaz-hqaaa-aaaar-qaada-cai',
-  indexerCanisterId: 'n5wcd-faaaa-aaaar-qaaea-cai',
   governanceCanisterId: 'rrkah-fqaaa-aaaaa-aaaaq-cai',
-  explorerUrl: 'https://ledger-api.internetcomputer.org'
+  indexerCanisterId: 'n5wcd-faaaa-aaaar-qaaea-cai'
 }
 
 const DEFAULT_CKBTC_PROTOCOL_NETWORK: CkBTCProtocolNetwork = CKBTC_MAINNET_PROTOCOL_NETWORK

@@ -3,7 +3,7 @@ import { Domain } from '../errors/coinlib-error'
 import { IAirGapAddressResult } from '../interfaces/IAirGapAddress'
 import { IAirGapWallet } from '../interfaces/IAirGapWallet'
 import { ICoinProtocol } from '../protocols/ICoinProtocol'
-import { ProtocolSymbols } from '../utils/ProtocolSymbols'
+import { MainProtocolSymbols, ProtocolSymbols } from '../utils/ProtocolSymbols'
 
 export enum AirGapWalletStatus {
   ACTIVE = 'active',
@@ -51,6 +51,12 @@ export class AirGapWallet implements IAirGapWallet {
   public async deriveAddresses(amount: number = 50): Promise<string[]> {
     let addresses: IAirGapAddressResult[]
     if (this.isExtendedPublicKey) {
+      const protocolIdentifier = await this.protocol.getIdentifier()
+      const singleDerivationProtocols = [MainProtocolSymbols.ETH, MainProtocolSymbols.OPTIMISM]
+      const singleDerivation = singleDerivationProtocols.map((protocolSymbol: ProtocolSymbols) =>
+        protocolIdentifier.startsWith(protocolSymbol)
+      )
+
       const parts: string[] = this.derivationPath.split('/')
       let offset: number = 0
 
@@ -59,10 +65,12 @@ export class AirGapWallet implements IAirGapWallet {
       }
 
       addresses = (
-        await Promise.all([
-          this.protocol.getAddressesFromExtendedPublicKey(this.publicKey, 0, amount, offset),
-          this.protocol.getAddressesFromExtendedPublicKey(this.publicKey, 1, amount, offset)
-        ])
+        singleDerivation
+          ? [await this.protocol.getAddressesFromExtendedPublicKey(this.publicKey, 0, 1, offset)]
+          : await Promise.all([
+              this.protocol.getAddressesFromExtendedPublicKey(this.publicKey, 0, amount, offset),
+              this.protocol.getAddressesFromExtendedPublicKey(this.publicKey, 1, amount, offset)
+            ])
       ).reduce((flatten, next) => flatten.concat(next), [])
     } else {
       addresses = await this.protocol.getAddressesFromPublicKey(this.publicKey)

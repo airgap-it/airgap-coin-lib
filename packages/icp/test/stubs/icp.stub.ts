@@ -35,19 +35,19 @@ export class ICPProtocolStub implements ProtocolHTTPStub<ICPProtocol, ICPProtoco
     sinon
       .stub(axios, 'get')
       .withArgs(
-        `${(await testProtocolSpec.onlineLib.getNetwork()).explorerUrl}/accounts/${address}/transactions?limit=${
+        `${(await testProtocolSpec.onlineLib.getNetwork()).blockExplorerApi}/accounts/${address}/transactions?limit=${
           transactions.first.blocks.length
         }`
       )
       .returns(Promise.resolve({ data: transactions.first }))
       .withArgs(
-        `${(await testProtocolSpec.onlineLib.getNetwork()).explorerUrl}/accounts/${address}/transactions?limit=${
+        `${(await testProtocolSpec.onlineLib.getNetwork()).blockExplorerApi}/accounts/${address}/transactions?limit=${
           transactions.first.blocks.length
         }&offset=${0}`
       )
       .returns(Promise.resolve({ data: transactions.first }))
       .withArgs(
-        `${(await testProtocolSpec.onlineLib.getNetwork()).explorerUrl}/accounts/${address}/transactions?limit=${
+        `${(await testProtocolSpec.onlineLib.getNetwork()).blockExplorerApi}/accounts/${address}/transactions?limit=${
           transactions.next.blocks.length
         }&offset=${transactions.first.blocks.length}`
       )

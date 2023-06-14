@@ -73,6 +73,7 @@ export abstract class AirGapWallet<
 
       addresses = (
         await Promise.all([
+          // TODO: this is not a desired behavior for ETH, maybe add UTXO protocol extension that BTC can implement and use it here?
           deriveAddresses(this.protocol, this.publicKey, 0, amount, offset),
           deriveAddresses(this.protocol, this.publicKey, 1, amount, offset)
         ])

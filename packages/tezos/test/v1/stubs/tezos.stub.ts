@@ -12,7 +12,7 @@ export class TezosProtocolStub implements ProtocolHTTPStub<TezosProtocol> {
     const protocolNetwork = await testProtocolSpec.lib.getNetwork()
 
     getStub
-      .withArgs(`${protocolNetwork.rpcUrl}/chains/main/blocks/head`)
+      .withArgs(`${protocolNetwork.rpcUrl}/chains/main/blocks/head/header`)
       .returns(Promise.resolve({ data: { chain_id: 'NetXdQprcVkpaWU' } }))
 
     postStub.withArgs(`${protocolNetwork.rpcUrl}/chains/main/blocks/head/helpers/scripts/run_operation`).returns(
@@ -82,11 +82,11 @@ export class TezosProtocolStub implements ProtocolHTTPStub<TezosProtocol> {
 
     getStub
       .withArgs(
-        `${protocolNetwork.indexer.apiUrl}/v1/operations/transactions?anyof.target.sender=${address}&sort.desc=level&limit=${transactions.first.length}`
+        `${protocolNetwork.indexerApi}/v1/operations/transactions?anyof.target.sender=${address}&sort.desc=level&limit=${transactions.first.length}`
       )
       .returns(Promise.resolve({ data: transactions.first }))
       .withArgs(
-        `${protocolNetwork.indexer.apiUrl}/v1/operations/transactions?anyof.target.sender=${address}&sort.desc=level&limit=${
+        `${protocolNetwork.indexerApi}/v1/operations/transactions?anyof.target.sender=${address}&sort.desc=level&limit=${
           transactions.next.length + 1
         }&offset=${transactions.first.length}`
       )

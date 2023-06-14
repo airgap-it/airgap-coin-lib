@@ -27,8 +27,9 @@ import {
   PublicKey,
   RecursivePartial,
   SecretKey,
-  TransactionConfiguration,
-  TransactionDetails
+  TransactionFullConfiguration,
+  TransactionDetails,
+  TransactionSimpleConfiguration
 } from '@airgap/module-kit'
 import { AirGapDelegateProtocol } from '@airgap/module-kit/internal'
 
@@ -400,7 +401,7 @@ export class ICPProtocolImpl implements ICPProtocol {
     cursor?: ICPTransactionCursor
   ): Promise<AirGapTransactionsWithCursor<ICPTransactionCursor, ICPUnits>> {
     const endpoint = cursor === undefined ? `/accounts/${address}/transactions?limit=${limit}&offset=0` : cursor.next
-    const url = endpoint !== undefined ? `${this.options.network.explorerUrl}${endpoint}` : undefined
+    const url = endpoint !== undefined ? `${this.options.network.blockExplorerApi}${endpoint}` : undefined
     const response = url !== undefined ? await axios.get(url) : undefined
 
     const nodeTransactions = response?.data?.blocks || []
@@ -463,7 +464,7 @@ export class ICPProtocolImpl implements ICPProtocol {
   public async getTransactionMaxAmountWithPublicKey(
     publicKey: PublicKey,
     to: string[],
-    configuration?: TransactionConfiguration<ICPUnits>
+    configuration?: TransactionFullConfiguration<ICPUnits>
   ): Promise<Amount<ICPUnits>> {
     const balance = await this.getBalanceOfPublicKey(publicKey)
     const balanceBn = new BigNumber(newAmount(balance.total).value)
@@ -488,7 +489,11 @@ export class ICPProtocolImpl implements ICPProtocol {
   }
 
   // TODO : Get default from chain
-  public async getTransactionFeeWithPublicKey(_publicKey: PublicKey, _details: TransactionDetails<ICPUnits>[]): Promise<Amount<ICPUnits>> {
+  public async getTransactionFeeWithPublicKey(
+    _publicKey: PublicKey,
+    _details: TransactionDetails<ICPUnits>[],
+    _configuration?: TransactionSimpleConfiguration
+  ): Promise<Amount<ICPUnits>> {
     // const ledger = LedgerCanister.create()
     // const feeDefault = await ledger.transactionFee()
     // return {
@@ -503,7 +508,7 @@ export class ICPProtocolImpl implements ICPProtocol {
   public async prepareTransactionWithPublicKey(
     publicKey: PublicKey,
     details: TransactionDetails<ICPUnits>[],
-    configuration?: TransactionConfiguration<ICPUnits>
+    configuration?: TransactionFullConfiguration<ICPUnits>
   ): Promise<ICPUnsignedTransaction> {
     // Check balance
     const balance: Amount<ICPUnits> = newAmount((await this.getBalanceOfPublicKey(publicKey)).total).blockchain(this.units)
@@ -1040,10 +1045,11 @@ export function createICPProtocol(options: RecursivePartial<ICPProtocolOptions> 
 export const ICP_MAINNET_PROTOCOL_NETWORK: ICPProtocolNetwork = {
   name: 'Mainnet',
   type: 'mainnet',
-  rpcUrl: 'https://ic0.app/',
+  rpcUrl: 'https://boundary.ic0.app/',
+  blockExplorerUrl: 'https://dashboard.internetcomputer.org/',
+  blockExplorerApi: 'https://ledger-api.internetcomputer.org',
   ledgerCanisterId: 'ryjl3-tyaaa-aaaaa-aaaba-cai',
-  governanceCanisterId: 'rrkah-fqaaa-aaaaa-aaaaq-cai',
-  explorerUrl: 'https://ledger-api.internetcomputer.org'
+  governanceCanisterId: 'rrkah-fqaaa-aaaaa-aaaaq-cai'
 }
 
 const DEFAULT_ICP_PROTOCOL_NETWORK: ICPProtocolNetwork = ICP_MAINNET_PROTOCOL_NETWORK

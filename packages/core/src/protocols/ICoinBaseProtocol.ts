@@ -92,6 +92,7 @@ export interface ICoinBaseProtocol {
   getSymbol(): Promise<string> // This will be used in the UI, eg. "ETH", "BTC", "AE"
   getName(): Promise<string> // Name of the currency, eg. "Bitcoin", "Aeternity"
   getMarketSymbol(): Promise<string> // Symbol that is most commonly used by other services such as coinmarketcap or cryptocompare.
+  getAssetSymbol(): Promise<string | undefined>
 
   getFeeSymbol(): Promise<string>
   getFeeDefaults(): Promise<FeeDefaults>

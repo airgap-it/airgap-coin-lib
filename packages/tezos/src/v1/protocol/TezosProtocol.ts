@@ -1,4 +1,13 @@
-import { assertNever, CoinlibError, Domain, MainProtocolSymbols } from '@airgap/coinlib-core'
+import {
+  assertNever,
+  CoinlibError,
+  DelegateeDetails,
+  DelegationDetails,
+  DelegatorAction,
+  DelegatorDetails,
+  Domain,
+  MainProtocolSymbols
+} from '@airgap/coinlib-core'
 import axios, { AxiosError, AxiosResponse } from '@airgap/coinlib-core/dependencies/src/axios-0.19.0/index'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 // @ts-ignore
@@ -7,6 +16,7 @@ import {
   BalanceError,
   ConditionViolationError,
   NetworkError,
+  OperationFailedError,
   PropertyUndefinedError,
   ProtocolErrorType,
   TransactionError,
@@ -35,9 +45,11 @@ import {
   RecursivePartial,
   SecretKey,
   Signature,
-  TransactionConfiguration,
-  TransactionDetails
+  TransactionFullConfiguration,
+  TransactionDetails,
+  TransactionSimpleConfiguration
 } from '@airgap/module-kit'
+import { AirGapDelegateProtocol } from '@airgap/module-kit/internal'
 
 import { TezosCryptoClient } from '../crypto/TezosCryptoClient'
 import { TezosAddress } from '../data/TezosAddress'
@@ -54,6 +66,8 @@ import { TezosTransactionOperation } from '../types/operations/kinds/Transaction
 import { TezosOperationType } from '../types/operations/TezosOperationType'
 import { TezosWrappedOperation } from '../types/operations/TezosWrappedOperation'
 import { TezosProtocolNetwork, TezosProtocolOptions, TezosUnits } from '../types/protocol'
+import { BakerDetails } from '../types/staking/BakerDetails'
+import { TezosDelegatorAction } from '../types/staking/TezosDelegatorAction'
 import { TezosSignedTransaction, TezosTransactionCursor, TezosUnsignedTransaction } from '../types/transaction'
 import { convertPublicKey, convertSecretKey } from '../utils/key'
 import { ACTIVATION_BURN, createRevealOperation, getAmountUsedByPreviousOperations, REVEAL_FEE } from '../utils/operations'
@@ -65,19 +79,26 @@ import { convertSignature } from '../utils/signature'
 
 export interface TezosProtocol
   extends AirGapProtocol<
-    {
-      AddressResult: Address
-      ProtocolNetwork: TezosProtocolNetwork
-      CryptoConfiguration: TezosCryptoConfiguration
-      Units: TezosUnits
-      FeeEstimation: FeeDefaults<TezosUnits>
-      UnsignedTransaction: TezosUnsignedTransaction
-      SignedTransaction: TezosSignedTransaction
-      TransactionCursor: TezosTransactionCursor
-    },
-    'Crypto',
-    'FetchDataForAddress'
-  > {
+      {
+        AddressResult: Address
+        ProtocolNetwork: TezosProtocolNetwork
+        CryptoConfiguration: TezosCryptoConfiguration
+        Units: TezosUnits
+        FeeEstimation: FeeDefaults<TezosUnits>
+        UnsignedTransaction: TezosUnsignedTransaction
+        SignedTransaction: TezosSignedTransaction
+        TransactionCursor: TezosTransactionCursor
+      },
+      'Crypto',
+      'FetchDataForAddress'
+    >,
+    AirGapDelegateProtocol {
+  isTezosProtocol: true
+
+  getMinCycleDuration(): Promise<number>
+
+  getDetailsFromWrappedOperation(wrappedOperation: TezosWrappedOperation): Promise<AirGapTransaction<TezosUnits, TezosUnits>[]>
+
   forgeOperation(wrappedOperation: TezosWrappedOperation): Promise<string>
   unforgeOperation(forged: string, type?: (TezosSignedTransaction | TezosUnsignedTransaction)['type']): Promise<TezosWrappedOperation>
   getOperationFeeDefaults(publicKey: PublicKey, operations: TezosOperation[]): Promise<FeeDefaults<TezosUnits>>
@@ -85,14 +106,17 @@ export interface TezosProtocol
   prepareTransactionsWithPublicKey(
     publicKey: PublicKey,
     details: TransactionDetails<TezosUnits>[],
-    configuration?: TransactionConfiguration<TezosUnits> & { operationsPerGroup?: number }
+    configuration?: TransactionFullConfiguration<TezosUnits> & { operationsPerGroup?: number }
   ): Promise<TezosUnsignedTransaction[]>
+
+  bakerDetails(address: string | undefined): Promise<BakerDetails>
 }
 
 // Implementation
 
 const MAX_OPERATIONS_PER_GROUP: number = 200
-const MAX_GAS_PER_BLOCK: number = 5200000
+const MIN_CYCLE_DURATION: number = 4096 * 60 * 1000 // ms
+const MAX_GAS_PER_BLOCK: number = 2600000
 
 const GAS_LIMIT_PLACEHOLDER: string = '1040000'
 const STORAGE_LIMIT_PLACEHOLDER: string = '60000'
@@ -101,6 +125,8 @@ const FEE_PLACEHOLDER: string = '0'
 const MINIMAL_FEE: number = 100
 const MINIMAL_FEE_PER_GAS_UNIT: number = 0.1
 const MINIMAL_FEE_PER_BYTE: number = 1
+
+const SELF_BOND_REQUIREMENT: number = 0.0825 // 8.25%
 
 export const TEZOS_UNITS: ProtocolUnitsMetadata<TezosUnits> = {
   tez: {
@@ -128,6 +154,8 @@ export const TEZOS_ACCOUNT_METADATA: ProtocolAccountMetadata = {
 }
 
 export class TezosProtocolImpl implements TezosProtocol {
+  public readonly isTezosProtocol: true = true
+
   private readonly options: TezosProtocolOptions
 
   private readonly forger: TezosForger
@@ -142,7 +170,7 @@ export class TezosProtocolImpl implements TezosProtocol {
     this.forger = new TezosForger()
     this.accountant = new TezosAccountant(this.forger, this.options.network)
 
-    this.indexerClient = createTezosIndexerClient(this.options.network.indexer)
+    this.indexerClient = createTezosIndexerClient(this.options.network.indexerType, this.options.network.indexerApi)
     this.cryptoClient = new TezosCryptoClient()
   }
 
@@ -320,7 +348,7 @@ export class TezosProtocolImpl implements TezosProtocol {
   public async getTransactionMaxAmountWithPublicKey(
     publicKey: PublicKey,
     to: string[],
-    configuration?: TransactionConfiguration<TezosUnits>
+    configuration?: TransactionFullConfiguration<TezosUnits>
   ): Promise<Amount<TezosUnits>> {
     const { total } = await this.getBalanceOfPublicKey(publicKey)
     const adjustedTotal = new BigNumber(newAmount(total).convert('mutez', this.units).value).minus(1) // Tezos accounts can never be empty. We must leave at least 1 mutez behind.
@@ -379,7 +407,8 @@ export class TezosProtocolImpl implements TezosProtocol {
 
   public async getTransactionFeeWithPublicKey(
     publicKey: PublicKey,
-    details: TransactionDetails<TezosUnits>[]
+    details: TransactionDetails<TezosUnits>[],
+    _configuration?: TransactionSimpleConfiguration
   ): Promise<FeeDefaults<TezosUnits>> {
     if (details.length === 0) {
       return this.feeDefaults
@@ -429,7 +458,7 @@ export class TezosProtocolImpl implements TezosProtocol {
   public async prepareTransactionWithPublicKey(
     publicKey: PublicKey,
     details: TransactionDetails<TezosUnits>[],
-    configuration?: TransactionConfiguration<TezosUnits>
+    configuration?: TransactionFullConfiguration<TezosUnits>
   ): Promise<TezosUnsignedTransaction> {
     if (details.length > MAX_OPERATIONS_PER_GROUP) {
       throw new ConditionViolationError(
@@ -462,7 +491,209 @@ export class TezosProtocolImpl implements TezosProtocol {
     return injectionResponse
   }
 
+  // Staking
+
+  public async getDefaultDelegatee(): Promise<string> {
+    const { data: activeBakers } = await axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/delegates?active`)
+
+    return activeBakers[0] || ''
+  }
+
+  public async getCurrentDelegateesForPublicKey(publicKey: PublicKey): Promise<string[]> {
+    const address: string = await this.getAddressFromPublicKey(publicKey)
+
+    return this.getCurrentDelegateesForAddress(address)
+  }
+
+  public async getCurrentDelegateesForAddress(address: string): Promise<string[]> {
+    const { data } = await axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/contracts/${address}`)
+
+    return data.delegate ? [data.delegate] : []
+  }
+
+  public async getDelegateeDetails(address: string): Promise<DelegateeDetails> {
+    const response: AxiosResponse = await axios.get(
+      `${this.options.network.rpcUrl}/chains/main/blocks/head/context/delegates/${address}/deactivated`
+    )
+    const isBakingActive: boolean = !response.data
+
+    return {
+      status: isBakingActive ? 'Active' : 'Inactive',
+      address
+    }
+  }
+
+  public async isPublicKeyDelegating(publicKey: PublicKey): Promise<boolean> {
+    const address: string = await this.getAddressFromPublicKey(publicKey)
+
+    return this.isAddressDelegating(address)
+  }
+
+  public async isAddressDelegating(address: string): Promise<boolean> {
+    const { data } = await axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/contracts/${address}`)
+
+    return !!data.delegate
+  }
+
+  public async getDelegatorDetailsFromPublicKey(publicKey: PublicKey): Promise<DelegatorDetails> {
+    const address: string = await this.getAddressFromPublicKey(publicKey)
+
+    return this.getDelegatorDetailsFromAddress(address)
+  }
+
+  public async getDelegatorDetailsFromAddress(address: string): Promise<DelegatorDetails> {
+    return this.getDelegatorDetails(address)
+  }
+
+  public async getDelegationDetailsFromPublicKey(publicKey: PublicKey, delegatees: string[]): Promise<DelegationDetails> {
+    const address: string = await this.getAddressFromPublicKey(publicKey)
+
+    return this.getDelegationDetailsFromAddress(address, delegatees)
+  }
+
+  public async getDelegationDetailsFromAddress(address: string, delegatees: string[]): Promise<DelegationDetails> {
+    if (delegatees.length > 1) {
+      return Promise.reject('Multiple delegation is not supported.')
+    }
+
+    const bakerAddress = delegatees[0]
+
+    const results = await Promise.all([this.getDelegatorDetails(address, bakerAddress), this.getDelegateeDetails(bakerAddress)])
+
+    const delegatorDetails = results[0]
+    const bakerDetails = results[1]
+
+    return {
+      delegator: delegatorDetails,
+      delegatees: [bakerDetails]
+    }
+  }
+
+  private async getDelegatorDetails(address: string, bakerAddress?: string): Promise<DelegatorDetails> {
+    const results = await Promise.all([axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/contracts/${address}`)])
+
+    const accountDetails = results[0].data
+
+    const balance = accountDetails.balance
+    const isDelegating = !!accountDetails.delegate
+    const availableActions: DelegatorAction[] = []
+
+    if (!isDelegating) {
+      availableActions.push({
+        type: TezosDelegatorAction.DELEGATE,
+        args: ['delegate']
+      })
+    } else if (!bakerAddress || accountDetails.delegate === bakerAddress) {
+      availableActions.push({
+        type: TezosDelegatorAction.UNDELEGATE
+      })
+    } else {
+      availableActions.push({
+        type: TezosDelegatorAction.CHANGE_BAKER,
+        args: ['delegate']
+      })
+    }
+
+    return {
+      address,
+      balance,
+      delegatees: [accountDetails.delegate],
+      availableActions
+    }
+  }
+
+  public async prepareDelegatorActionFromPublicKey(publicKey: PublicKey, type: any, data?: any): Promise<any[]> {
+    switch (type) {
+      case TezosDelegatorAction.DELEGATE:
+      case TezosDelegatorAction.CHANGE_BAKER:
+        if (!data || !data.delegate) {
+          return Promise.reject(`Invalid arguments passed for ${type} action, delegate is missing.`)
+        }
+
+        return [await this.delegate(publicKey, data.delegate)]
+      case TezosDelegatorAction.UNDELEGATE:
+        return [await this.undelegate(publicKey)]
+      default:
+        return Promise.reject('Unsupported delegator action.')
+    }
+  }
+
+  public async undelegate(publicKey: PublicKey): Promise<TezosUnsignedTransaction> {
+    return this.delegate(publicKey)
+  }
+
+  public async delegate(publicKey: PublicKey, delegate?: string | string[]): Promise<TezosUnsignedTransaction> {
+    let counter: BigNumber = new BigNumber(1)
+    let branch: string = ''
+
+    const operations: TezosOperation[] = []
+    const tzAddress: string = await this.getAddressFromPublicKey(publicKey)
+
+    const results: AxiosResponse[] = await Promise.all([
+      axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/contracts/${tzAddress}/counter`),
+      axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head~2/hash`),
+      axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/contracts/${tzAddress}/manager_key`)
+    ]).catch((error) => {
+      throw new NetworkError(Domain.TEZOS, error as AxiosError)
+    })
+
+    counter = new BigNumber(results[0].data).plus(1)
+    branch = results[1].data
+
+    const accountManager: string = results[2].data
+
+    // check if we have revealed the address already
+    if (!accountManager) {
+      operations.push(createRevealOperation(counter, publicKey, tzAddress))
+      counter = counter.plus(1)
+    }
+
+    const balance: Balance<TezosUnits> = await this.getBalanceOfAddress(tzAddress)
+    const totalBalance: BigNumber = new BigNumber(newAmount(balance.total).blockchain(this.units).value)
+
+    const fee: BigNumber = new BigNumber(1420)
+
+    if (totalBalance.isLessThan(fee)) {
+      throw new BalanceError(Domain.TEZOS, 'not enough balance')
+    }
+
+    const delegationOperation: TezosDelegationOperation = {
+      kind: TezosOperationType.DELEGATION,
+      source: tzAddress,
+      fee: fee.toFixed(),
+      counter: counter.toFixed(),
+      gas_limit: '10000', // taken from eztz
+      storage_limit: '0', // taken from eztz
+      delegate: Array.isArray(delegate) ? delegate[0] : delegate
+    }
+
+    operations.push(delegationOperation)
+
+    try {
+      const tezosWrappedOperation: TezosWrappedOperation = {
+        branch,
+        contents: operations
+      }
+
+      const binary: string = await this.forgeOperation(tezosWrappedOperation)
+
+      return newUnsignedTransaction<TezosUnsignedTransaction>({ binary })
+    } catch (error: any) {
+      throw new OperationFailedError(Domain.TEZOS, `Forging Tezos TX failed with ${JSON.stringify(error.message)}`)
+    }
+  }
+
   // Custom
+
+  public async getMinCycleDuration(): Promise<number> {
+    return MIN_CYCLE_DURATION
+  }
+
+  public async getDetailsFromWrappedOperation(
+    wrappedOperation: TezosWrappedOperation
+  ): Promise<AirGapTransaction<TezosUnits, TezosUnits>[]> {
+    return this.accountant.getDetailsFromWrappedOperation(wrappedOperation)
+  }
 
   public async forgeOperation(wrappedOperation: TezosWrappedOperation): Promise<string> {
     return this.forger.forgeOperation(wrappedOperation)
@@ -478,7 +709,7 @@ export class TezosProtocolImpl implements TezosProtocol {
   public async prepareTransactionsWithPublicKey(
     publicKey: PublicKey,
     details: TransactionDetails<TezosUnits>[],
-    configuration?: TransactionConfiguration<TezosUnits> & { operationsPerGroup?: number }
+    configuration?: TransactionFullConfiguration<TezosUnits> & { operationsPerGroup?: number }
   ): Promise<TezosUnsignedTransaction[]> {
     const operationsPerGroup: number = configuration?.operationsPerGroup ?? MAX_OPERATIONS_PER_GROUP
 
@@ -713,7 +944,9 @@ export class TezosProtocolImpl implements TezosProtocol {
       return { ...operation, gas_limit, counter }
     })
 
-    const { data: block }: AxiosResponse<{ chain_id: string }> = await axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head`)
+    const { data: block }: AxiosResponse<{ chain_id: string }> = await axios.get(
+      `${this.options.network.rpcUrl}/chains/main/blocks/head/header`
+    )
     const body = {
       chain_id: block.chain_id,
       operation: {
@@ -884,6 +1117,52 @@ export class TezosProtocolImpl implements TezosProtocol {
 
     return operations
   }
+
+  public async bakerDetails(address: string | undefined): Promise<BakerDetails> {
+    if (
+      !address ||
+      !(
+        address.toLowerCase().startsWith('tz1') ||
+        address.toLowerCase().startsWith('tz2') ||
+        address.toLowerCase().startsWith('tz3') ||
+        address.toLowerCase().startsWith('tz4')
+      )
+    ) {
+      throw new ConditionViolationError(Domain.TEZOS, 'non tz-address supplied')
+    }
+
+    const results: (AxiosResponse | undefined)[] = await Promise.all([
+      axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/delegates/${address}/balance`).catch((_error) => undefined),
+      axios
+        .get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/delegates/${address}/full_balance`)
+        .catch((_error) => undefined),
+      axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/delegates/${address}/delegated_balance`),
+      axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/delegates/${address}/staking_balance`)
+    ]).catch((error) => {
+      throw new NetworkError(Domain.TEZOS, error as AxiosError)
+    })
+
+    const tzBalance: BigNumber = new BigNumber((results[0] ?? results[1])?.data)
+    const delegatedBalance: BigNumber = new BigNumber(results[2]?.data)
+    const stakingBalance: BigNumber = new BigNumber(results[3]?.data)
+
+    // calculate the self bond of the baker
+    const selfBond: BigNumber = stakingBalance.minus(delegatedBalance)
+
+    // check what capacity is staked relatively to the self-bond
+    const stakingCapacity: BigNumber = stakingBalance.div(selfBond.div(SELF_BOND_REQUIREMENT))
+
+    const bakerDetails: BakerDetails = {
+      balance: newAmount(tzBalance, 'blockchain'),
+      delegatedBalance: newAmount(delegatedBalance, 'blockchain'),
+      stakingBalance: newAmount(stakingBalance, 'blockchain'),
+      selfBond: newAmount(selfBond, 'blockchain'),
+      bakerCapacity: stakingBalance.div(stakingCapacity).toString(),
+      bakerUsage: stakingCapacity.toString()
+    }
+
+    return bakerDetails
+  }
 }
 
 // Factory
@@ -897,14 +1176,10 @@ export const TEZOS_MAINNET_PROTOCOL_NETWORK: TezosProtocolNetwork = {
   type: 'mainnet',
   rpcUrl: 'https://tezos-node.prod.gke.papers.tech',
   network: TezosNetwork.MAINNET,
-  blockExplorer: {
-    type: 'tzkt',
-    url: 'https://tzkt.io'
-  },
-  indexer: {
-    type: 'tzkt',
-    apiUrl: 'https://tezos-mainnet-indexer.prod.gke.papers.tech'
-  }
+  blockExplorerUrl: 'https://tzkt.io',
+  blockExplorerType: 'tzkt',
+  indexerApi: 'https://tezos-mainnet-indexer.prod.gke.papers.tech',
+  indexerType: 'tzkt'
 }
 
 export const TEZOS_GHOSTNET_PROTOCOL_NETWORK: TezosProtocolNetwork = {
@@ -912,31 +1187,16 @@ export const TEZOS_GHOSTNET_PROTOCOL_NETWORK: TezosProtocolNetwork = {
   type: 'testnet',
   rpcUrl: 'https://tezos-ghostnet-node.prod.gke.papers.tech',
   network: TezosNetwork.GHOSTNET,
-  blockExplorer: {
-    type: 'tzkt',
-    url: 'https://ghostnet.tzkt.io'
-  },
-  indexer: {
-    type: 'tzkt',
-    apiUrl: 'https://tezos-ghostnet-indexer.prod.gke.papers.tech'
-  }
+  blockExplorerUrl: 'https://ghostnet.tzkt.io',
+  blockExplorerType: 'tzkt',
+  indexerApi: 'https://tezos-ghostnet-indexer.prod.gke.papers.tech',
+  indexerType: 'tzkt'
 }
 
 const DEFAULT_TEZOS_PROTOCOL_NETWORK: TezosProtocolNetwork = TEZOS_MAINNET_PROTOCOL_NETWORK
 
 export function createTezosProtocolOptions(network: RecursivePartial<TezosProtocolNetwork> = {}): TezosProtocolOptions {
   return {
-    network: {
-      ...DEFAULT_TEZOS_PROTOCOL_NETWORK,
-      ...network,
-      blockExplorer: {
-        ...DEFAULT_TEZOS_PROTOCOL_NETWORK.blockExplorer,
-        ...network.blockExplorer
-      },
-      indexer: {
-        ...DEFAULT_TEZOS_PROTOCOL_NETWORK.indexer,
-        ...network.indexer
-      }
-    }
+    network: { ...DEFAULT_TEZOS_PROTOCOL_NETWORK, ...network }
   }
 }

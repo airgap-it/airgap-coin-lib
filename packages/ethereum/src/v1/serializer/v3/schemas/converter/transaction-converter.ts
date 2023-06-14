@@ -33,7 +33,7 @@ export function ethereumUnsignedTransactionToRequest(
     : ethereumTypedUnsignedTransactionToRequest(unsigned, publicKey, callbackUrl)
 }
 
-export function ethereumRawUnsignedTransactionToRequest(
+function ethereumRawUnsignedTransactionToRequest(
   unsigned: EthereumRawUnsignedTransaction,
   publicKey: string,
   callbackUrl?: string
@@ -47,7 +47,7 @@ export function ethereumRawUnsignedTransactionToRequest(
   }
 }
 
-export function ethereumTypedUnsignedTransactionToRequest(
+function ethereumTypedUnsignedTransactionToRequest(
   unsigned: EthereumTypedUnsignedTransaction,
   publicKey: string,
   callbackUrl?: string
@@ -76,13 +76,11 @@ export function ethereumTransactionSignRequestToUnsigned(
     : ethereumTransactionSignRequestToRawUnsigned(request)
 }
 
-export function ethereumTransactionSignRequestToRawUnsigned(request: EthereumTransactionSignRequest): EthereumRawUnsignedTransaction {
+function ethereumTransactionSignRequestToRawUnsigned(request: EthereumTransactionSignRequest): EthereumRawUnsignedTransaction {
   return newUnsignedTransaction<EthereumRawUnsignedTransaction>({ ethereumType: 'raw', ...request.transaction })
 }
 
-export function ethereumTransactionSignRequestToTypedUnsigned(
-  request: EthereumTypedTransactionSignRequest
-): EthereumTypedUnsignedTransaction {
+function ethereumTransactionSignRequestToTypedUnsigned(request: EthereumTypedTransactionSignRequest): EthereumTypedUnsignedTransaction {
   return newUnsignedTransaction<EthereumTypedUnsignedTransaction>({ ethereumType: 'typed', ...request.transaction })
 }
 
