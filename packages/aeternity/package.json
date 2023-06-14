@@ -1,6 +1,6 @@
 {
   "name": "@airgap/aeternity",
-  "version": "0.13.16-beta.12",
+  "version": "0.13.16",
   "description": "The @airgap/aeternity is an Aeternity implementation of the ICoinProtocol interface from @airgap/coinlib-core.",
   "keywords": [
     "airgap",
