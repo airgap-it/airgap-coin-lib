@@ -12,7 +12,8 @@ import {
   Schema,
   signMessageOfflineSchema,
   singleTokenSubProtocolSchema,
-  transactionStatusCheckerSchema
+  transactionStatusCheckerSchema,
+  walletConnectProtocolSchema
 } from '@airgap/module-kit'
 
 import { ERC20Protocol } from '../protocol/erc20/ERC20Protocol'
@@ -32,13 +33,12 @@ export const ethereumBaseProtocolSchema: Schema<EthereumBaseProtocol> = {
   ...signMessageOfflineSchema,
   ...fetchDataForAddressProtocolSchema,
   ...fetchDataForMultipleAddressesProtocolSchema,
-  ...transactionStatusCheckerSchema
+  ...transactionStatusCheckerSchema,
+  ...walletConnectProtocolSchema
 }
 
 export const ethereumProtocolSchema: Schema<EthereumProtocol> = {
-  ...ethereumBaseProtocolSchema,
-  fetchTransactionCountForAddress: 'required',
-  getGasPrice: 'required'
+  ...ethereumBaseProtocolSchema
 }
 
 export const ethereumERC20ProtocolSchema: Schema<ERC20Protocol<string>> = {

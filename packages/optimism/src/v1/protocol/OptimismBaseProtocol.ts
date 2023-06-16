@@ -23,7 +23,8 @@ import {
   SecretKey,
   Signature,
   TransactionFullConfiguration,
-  TransactionDetails
+  TransactionDetails,
+  WalletConnectRequest
 } from '@airgap/module-kit'
 
 import { OptimismInfoClient } from '../client/info/OptimismInfoClient'
@@ -56,7 +57,8 @@ export interface OptimismBaseProtocol<_Units extends string = EthereumUnits>
     'Crypto',
     'FetchDataForAddress',
     'FetchDataForMultipleAddresses',
-    'TransactionStatusChecker'
+    'TransactionStatusChecker',
+    'WalletConnect'
   > {}
 
 // Implementation
@@ -68,7 +70,8 @@ export abstract class OptimismBaseProtocolImpl<
     OptimismProtocolNetwork
   >,
   _Options extends OptimismProtocolOptions = OptimismProtocolOptions
-> implements OptimismBaseProtocol<_Units> {
+> implements OptimismBaseProtocol<_Units>
+{
   protected constructor(
     protected readonly ethereumProtocol: _EthereumProtocol,
     protected readonly nodeClient: OptimismNodeClient,
@@ -307,6 +310,28 @@ export abstract class OptimismBaseProtocolImpl<
     return newUnsignedTransaction<OptimismRawUnsignedTransaction>({
       ...ethereumTransaction,
       gasPrice: EthereumUtils.toHex(newGasPrice.toFixed()),
+      l1DataFee: l1Gas.toFixed()
+    })
+  }
+
+  public async getWalletConnectChainId(): Promise<number> {
+    return this.ethereumProtocol.getWalletConnectChainId()
+  }
+
+  public async prepareWalletConnectTransactionWithPublicKey(
+    publicKey: PublicKey | ExtendedPublicKey,
+    request: WalletConnectRequest
+  ): Promise<OptimismUnsignedTransaction> {
+    const ethereumTransaction = await this.ethereumProtocol.prepareWalletConnectTransactionWithPublicKey(publicKey, request)
+
+    if (ethereumTransaction.ethereumType === 'typed') {
+      return ethereumTransaction
+    }
+
+    const l1Gas = await this.nodeClient.getL1Fee(this.options.network.gasPriceOracleAddress, ethereumTransaction)
+
+    return newUnsignedTransaction<OptimismRawUnsignedTransaction>({
+      ...ethereumTransaction,
       l1DataFee: l1Gas.toFixed()
     })
   }

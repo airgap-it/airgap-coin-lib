@@ -46,7 +46,7 @@ export class EtherscanInfoClient extends EthereumInfoClient {
         timestamp: parseInt(transaction.timeStamp, 10),
         status: {
           type: transaction.txreceipt_status === undefined || transaction.txreceipt_status === '1' ? 'applied' : 'failed',
-          hash: new BigNumber(transaction.hash).toString(10),
+          hash: transaction.hash,
           block: new BigNumber(transaction.blockNumber).toString(10)
         }
       }
