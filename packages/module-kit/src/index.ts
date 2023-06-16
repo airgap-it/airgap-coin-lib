@@ -25,6 +25,7 @@ import { AESExtension } from './protocol/extensions/crypto/AESExtension'
 import { AsymmetricEncryptionExtension } from './protocol/extensions/crypto/AsymmetricEncryptionExtension'
 import { CryptoExtension } from './protocol/extensions/crypto/CryptoExtension'
 import { SignMessageExtension } from './protocol/extensions/crypto/SignMessageExtension'
+import { WalletConnectExtension, WalletConnectProtocol, WalletConnectRequest } from './protocol/extensions/dapp/WalletConnectProtocol'
 import {
   BaseMultiTokenSubProtocol,
   MultiTokenBalanceConfiguration,
@@ -126,7 +127,9 @@ import {
   signMessageOfflineSchema,
   singleTokenSubProtocolSchema,
   subProtocolSchema,
-  transactionStatusCheckerSchema
+  supportsWalletConnect,
+  transactionStatusCheckerSchema,
+  walletConnectProtocolSchema
 } from './utils/protocol'
 
 // Block Explorer
@@ -160,12 +163,14 @@ export {
   OfflineProtocolConfiguration,
   OnlineProtocolConfiguration,
   FullProtocolConfiguration,
-  ProtocolSerializerExtension,
-  ProtocolSerializerModule,
   AirGapSerializedOfflineProtocol,
   AirGapSerializedOnlineProtocol,
   AirGapSerializedAnyProtocol
 }
+
+// Module Extensions
+
+export { ProtocolSerializerExtension, ProtocolSerializerModule }
 
 // Protocol
 
@@ -174,6 +179,20 @@ export {
   AirGapOnlineProtocol,
   AirGapProtocol,
   AirGapAnyProtocol,
+  ProtocolMetadata,
+  ProtocolUnitsMetadata,
+  ProtocolSymbol,
+  ProtocolFeeMetadata,
+  ProtocolAccountMetadata,
+  ProtocolTransactionMetadata,
+  ProtocolNetworkType,
+  ProtocolNetwork,
+  SubProtocolType
+}
+
+// Protocol Extensions
+
+export {
   FetchDataForMultipleAddressesExtension,
   FetchDataForMultipleAddressesProtocol,
   MultiAddressPublicKeyExtension,
@@ -193,15 +212,9 @@ export {
   AsymmetricEncryptionExtension,
   SignMessageExtension,
   TransactionStatusCheckerExtension,
-  ProtocolMetadata,
-  ProtocolUnitsMetadata,
-  ProtocolSymbol,
-  ProtocolFeeMetadata,
-  ProtocolAccountMetadata,
-  ProtocolTransactionMetadata,
-  ProtocolNetworkType,
-  ProtocolNetwork,
-  SubProtocolType
+  WalletConnectRequest,
+  WalletConnectExtension,
+  WalletConnectProtocol
 }
 
 // Serializer
@@ -287,6 +300,7 @@ export {
   canSignMessage,
   hasConfigurableTransactionInjector,
   isTransactionStatusChecker,
+  supportsWalletConnect,
   protocolNetworkIdentifier,
   normalizeToUndefined
 }
@@ -314,5 +328,6 @@ export {
   signMessageBaseSchema,
   signMessageOfflineSchema,
   configurableTransactionInjectorSchema,
-  transactionStatusCheckerSchema
+  transactionStatusCheckerSchema,
+  walletConnectProtocolSchema
 }

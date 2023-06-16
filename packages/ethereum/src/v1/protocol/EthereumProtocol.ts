@@ -1,19 +1,15 @@
-import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
-import { Amount, newAmount, RecursivePartial } from '@airgap/module-kit'
+import { RecursivePartial } from '@airgap/module-kit'
 
 import { EtherscanInfoClient } from '../clients/info/EtherscanInfoClient'
 import { AirGapNodeClient } from '../clients/node/AirGapNodeClient'
-import { EthereumProtocolNetwork, EthereumProtocolOptions, EthereumUnits } from '../types/protocol'
+import { EthereumProtocolNetwork, EthereumProtocolOptions } from '../types/protocol'
 
 import { DefaultEthereumBaseProtocolImpl, EthereumBaseProtocol } from './EthereumBaseProtocol'
 
 // Interface
 
 // TODO: move Bip32 implementation to EthereumBaseProtocol
-export interface EthereumProtocol extends EthereumBaseProtocol {
-  getGasPrice(): Promise<Amount<EthereumUnits>>
-  fetchTransactionCountForAddress(address: string): Promise<number>
-}
+export interface EthereumProtocol extends EthereumBaseProtocol {}
 
 // Implementation
 
@@ -26,18 +22,6 @@ class EthereumProtocolImpl extends DefaultEthereumBaseProtocolImpl implements Et
       new EtherscanInfoClient(completeOptions.network.blockExplorerApi),
       completeOptions
     )
-  }
-
-  // Custom
-
-  public async getGasPrice(): Promise<Amount<EthereumUnits>> {
-    const gasPrice: BigNumber = await this.nodeClient.getGasPrice()
-
-    return newAmount(gasPrice, 'blockchain')
-  }
-
-  public async fetchTransactionCountForAddress(address: string): Promise<number> {
-    return this.nodeClient.fetchTransactionCount(address)
   }
 }
 

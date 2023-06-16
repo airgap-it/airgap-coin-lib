@@ -9,6 +9,7 @@ import { AESExtension } from './crypto/AESExtension'
 import { AsymmetricEncryptionExtension } from './crypto/AsymmetricEncryptionExtension'
 import { CryptoExtension } from './crypto/CryptoExtension'
 import { SignMessageExtension } from './crypto/SignMessageExtension'
+import { WalletConnectExtension } from './dapp/WalletConnectProtocol'
 import { MultiTokenSubProtocolExtension } from './sub-protocol/MultiTokenSubProtocolExtension'
 import { SingleTokenSubProtocolExtension } from './sub-protocol/SingleTokenSubProtocolExtension'
 import { SubProtocolExtension } from './sub-protocol/SubProtocolExtension'
@@ -49,4 +50,6 @@ interface OnlineExtensions<T extends _OnlineProtocol> extends OfflineAndOnlineEx
 
   ConfigurableTransactionInjector: ConfigurableTransactionInjectorExtension<T>
   TransactionStatusChecker: TransactionStatusCheckerExtension<T>
+
+  WalletConnect: WalletConnectExtension<T>
 }
