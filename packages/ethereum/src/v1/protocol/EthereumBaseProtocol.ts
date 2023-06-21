@@ -109,6 +109,8 @@ export const DEFAULT_ETHEREUM_UNITS_METADATA: ProtocolUnitsMetadata<EthereumUnit
 
 const MAX_GAS_ESTIMATE: number = 300000
 
+const WALLET_CONNECT_NAMESPACE = 'eip155'
+
 export class EthereumBaseProtocolImpl<
   _Units extends string = EthereumUnits,
   _ProtocolNetwork extends EthereumProtocolNetwork = EthereumProtocolNetwork
@@ -719,8 +721,8 @@ export class EthereumBaseProtocolImpl<
     }
   }
 
-  public async getWalletConnectChainId(): Promise<number> {
-    return this.options.network.chainId
+  public async getWalletConnectChain(): Promise<string> {
+    return `${WALLET_CONNECT_NAMESPACE}:${this.options.network.chainId}`
   }
 
   public async prepareWalletConnectTransactionWithPublicKey(

@@ -31,6 +31,6 @@ export interface WalletConnectProtocol<
   _UnsignedTransaction extends UnsignedTransaction = UnsignedTransaction,
   _PublicKey extends PublicKey | ExtendedPublicKey = PublicKey | ExtendedPublicKey
 > {
-  getWalletConnectChainId(): Promise<number>
+  getWalletConnectChain(): Promise<string>
   prepareWalletConnectTransactionWithPublicKey(publicKey: _PublicKey, request: WalletConnectRequest): Promise<_UnsignedTransaction>
 }

@@ -314,8 +314,8 @@ export abstract class OptimismBaseProtocolImpl<
     })
   }
 
-  public async getWalletConnectChainId(): Promise<number> {
-    return this.ethereumProtocol.getWalletConnectChainId()
+  public async getWalletConnectChain(): Promise<string> {
+    return this.ethereumProtocol.getWalletConnectChain()
   }
 
   public async prepareWalletConnectTransactionWithPublicKey(
