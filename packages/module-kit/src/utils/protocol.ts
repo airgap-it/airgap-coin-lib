@@ -153,7 +153,7 @@ export const transactionStatusCheckerSchema: Schema<TransactionStatusChecker> = 
 }
 
 export const walletConnectProtocolSchema: Schema<WalletConnectProtocol> = {
-  getWalletConnectChainId: 'required',
+  getWalletConnectChain: 'required',
   prepareWalletConnectTransactionWithPublicKey: 'required'
 }
 
