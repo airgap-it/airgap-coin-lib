@@ -37,7 +37,7 @@ const EXT_SK_SEGWIT_PREFIX: Record<BitcoinSegwitExtendedSecretKeyEncoding, strin
   zprv: '04b2430c'
 }
 
-type ExtendedSecretKeyEncoding = keyof typeof EXT_SK_PREFIX | keyof typeof EXT_SK_TESTNET_PREFIX | keyof typeof EXT_SK_SEGWIT_PREFIX
+export type ExtendedSecretKeyEncoding = keyof typeof EXT_SK_PREFIX | keyof typeof EXT_SK_TESTNET_PREFIX | keyof typeof EXT_SK_SEGWIT_PREFIX
 const extendedSecretKeyPrefixes: Record<string, string>[] = [EXT_SK_PREFIX, EXT_SK_TESTNET_PREFIX, EXT_SK_SEGWIT_PREFIX]
 const extendedSecretKeyEncodings: string[] = createEncodings(extendedSecretKeyPrefixes)
 
@@ -55,7 +55,7 @@ const EXT_PK_SEGWIT_PREFIX: Record<BitcoinSegwitExtendedPublicKeyEncoding, strin
   zpub: '04b24746'
 }
 
-type ExtendedPublicKeyEncoding = keyof typeof EXT_PK_PREFIX | keyof typeof EXT_PK_TESTNET_PREFIX | keyof typeof EXT_PK_SEGWIT_PREFIX
+export type ExtendedPublicKeyEncoding = keyof typeof EXT_PK_PREFIX | keyof typeof EXT_PK_TESTNET_PREFIX | keyof typeof EXT_PK_SEGWIT_PREFIX
 const extendedPublicKeyPrefixes: Record<string, string>[] = [EXT_PK_PREFIX, EXT_PK_TESTNET_PREFIX, EXT_PK_SEGWIT_PREFIX]
 const extendedPublicKeyEncodings: string[] = createEncodings(extendedPublicKeyPrefixes)
 

@@ -78,6 +78,7 @@ export class GroestlcoinProtocolImpl implements GroestlcoinProtocol {
           bitcoinjsNetworkName: BITCOINJS_MAINNET_NETWORK
         }
       },
+      undefined,
       bitGoUTXO,
       groestlcoinJSMessage
     )
