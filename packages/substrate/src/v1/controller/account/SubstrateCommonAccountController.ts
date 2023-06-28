@@ -16,7 +16,8 @@ import { SubstrateProtocolConfiguration } from '../../types/configuration'
 import { SubstrateAccountController } from './SubstrateAccountController'
 
 export class SubstrateCommonAccountController<C extends SubstrateProtocolConfiguration, NodeClient extends SubstrateNodeClient<C>>
-  implements SubstrateAccountController<C> {
+  implements SubstrateAccountController<C>
+{
   public constructor(protected readonly configuration: C, protected readonly nodeClient: NodeClient) {}
 
   public async createKeyPairFromDerivative(derivative: CryptoDerivative): Promise<KeyPair> {
@@ -67,19 +68,20 @@ export class SubstrateCommonAccountController<C extends SubstrateProtocolConfigu
     const balance: SubstrateAccountBalance = {
       total: new BigNumber(0),
       existentialDeposit: existentialDeposit ?? new BigNumber(0),
-      transferable: new BigNumber(0),
-      transferableCoveringFees: new BigNumber(0)
+      transferable: new BigNumber(0)
     }
 
     if (accountInfo === undefined) {
       return balance
     }
 
+    const totalBalance = accountInfo.data.free.value.plus(accountInfo.data.reserved.value)
+    const transferableBalance = BigNumber.min(accountInfo.data.free.value, totalBalance.minus(accountInfo.data.frozen.value))
+
     return {
       ...balance,
-      total: accountInfo.data.free.value.plus(accountInfo.data.reserved.value),
-      transferable: accountInfo.data.free.value.minus(accountInfo.data.miscFrozen.value),
-      transferableCoveringFees: accountInfo.data.free.value.minus(accountInfo.data.feeFrozen.value)
+      total: totalBalance,
+      transferable: transferableBalance
     }
   }
 

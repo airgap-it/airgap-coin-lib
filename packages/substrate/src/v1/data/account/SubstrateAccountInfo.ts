@@ -13,16 +13,16 @@ class SubstrateAccountData {
 
     const free = decoder.decodeNextInt(128)
     const reserved = decoder.decodeNextInt(128)
-    const miscFrozen = decoder.decodeNextInt(128)
-    const feeFrozen = decoder.decodeNextInt(128)
+    const frozen = decoder.decodeNextInt(128)
+    const flags = decoder.decodeNextInt(128)
 
     return {
-      bytesDecoded: free.bytesDecoded + reserved.bytesDecoded + miscFrozen.bytesDecoded + feeFrozen.bytesDecoded,
-      decoded: new SubstrateAccountData(free.decoded, reserved.decoded, miscFrozen.decoded, feeFrozen.decoded)
+      bytesDecoded: free.bytesDecoded + reserved.bytesDecoded + frozen.bytesDecoded + flags.bytesDecoded,
+      decoded: new SubstrateAccountData(free.decoded, reserved.decoded, frozen.decoded, flags.decoded)
     }
   }
 
-  private constructor(readonly free: SCALEInt, readonly reserved: SCALEInt, readonly miscFrozen: SCALEInt, readonly feeFrozen: SCALEInt) {}
+  private constructor(readonly free: SCALEInt, readonly reserved: SCALEInt, readonly frozen: SCALEInt, readonly flags: unknown) {}
 }
 
 export class SubstrateAccountInfo {

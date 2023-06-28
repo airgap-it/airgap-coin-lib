@@ -4,7 +4,6 @@ import { SCALEAccountId, SubstrateAccountId, SubstrateCommonAccountController, S
 import { SubstrateIdentityInfo } from '@airgap/substrate/v1/data/account/SubstrateRegistration'
 
 import { PolkadotActiveEraInfo } from '../data/staking/PolkadotActiveEraInfo'
-import { PolkadotElectionStatus } from '../data/staking/PolkadotEraElectionStatus'
 import { PolkadotExposure } from '../data/staking/PolkadotExposure'
 import { PolkadotNominations } from '../data/staking/PolkadotNominations'
 import { PolkadotNominationStatus } from '../data/staking/PolkadotNominationStatus'
@@ -16,6 +15,7 @@ import {
   PolkadotStakingStatus
 } from '../data/staking/PolkadotNominatorDetails'
 import { PolkadotStakingActionType } from '../data/staking/PolkadotStakingActionType'
+import { PolkadotStakingBalance } from '../data/staking/PolkadotStakingBalance'
 import { PolkadotStakingLedger } from '../data/staking/PolkadotStakingLedger'
 import { PolkadotValidatorDetails, PolkadotValidatorRewardDetails, PolkadotValidatorStatus } from '../data/staking/PolkadotValidatorDetails'
 import { PolkadotValidatorPrefs } from '../data/staking/PolkadotValidatorPrefs'
@@ -23,13 +23,24 @@ import { PolkadotNodeClient } from '../node/PolkadotNodeClient'
 import { PolkadotProtocolConfiguration } from '../types/configuration'
 
 export class PolkadotAccountController extends SubstrateCommonAccountController<PolkadotProtocolConfiguration, PolkadotNodeClient> {
-  public async getUnlockingBalance(accountId: SubstrateAccountId<SubstrateSS58Address>): Promise<BigNumber> {
+  public async getStakingBalance(accountId: SubstrateAccountId<SubstrateSS58Address>): Promise<PolkadotStakingBalance | undefined> {
     const stakingDetails = await this.nodeClient.getStakingLedger(this.substrateAddressFrom(accountId))
+    if (stakingDetails === undefined) {
+      return undefined
+    }
 
-    return (
-      stakingDetails?.unlocking.elements.map((entry) => entry.first.value).reduce((sum, next) => sum.plus(next), new BigNumber(0)) ??
-      new BigNumber(0)
-    )
+    const bonded = stakingDetails.active.value
+    const unlocking = stakingDetails.unlocking.elements
+      .map((entry) => entry.first.value)
+      .reduce((sum, next) => sum.plus(next), new BigNumber(0))
+
+    return { bonded, unlocking }
+  }
+
+  public async getUnlockingBalance(accountId: SubstrateAccountId<SubstrateSS58Address>): Promise<BigNumber> {
+    const stakingBalance = await this.getStakingBalance(accountId)
+
+    return stakingBalance?.unlocking ?? new BigNumber(0)
   }
 
   public async isBonded(accountId: SubstrateAccountId<SubstrateSS58Address>): Promise<boolean> {
@@ -131,12 +142,12 @@ export class PolkadotAccountController extends SubstrateCommonAccountController<
       stakingDetails,
       nominations,
       validatorIds ?? validators,
-      balance.transferableCoveringFees
+      balance.transferable
     )
 
     return {
       address: address.asString(),
-      balance: balance.toString(),
+      balance: balance.total.toString(),
       delegatees: validators,
       availableActions,
       stakingDetails
@@ -463,60 +474,59 @@ export class PolkadotAccountController extends SubstrateCommonAccountController<
     const currentValidators = nominations?.targets?.elements?.map((target) => target.asAddress()) || []
     const validatorAddresses = validatorIds.map((id) => this.substrateAddressFrom(id).asString())
 
-    const isBonded = new BigNumber(stakingDetails?.active ?? 0).gt(0)
+    const bondedValue = new BigNumber(stakingDetails?.active ?? 0)
+    const minDelegationValue = await this.nodeClient.getMinNominatorBond()
+
+    const isBonded = bondedValue.gt(0)
+    const hasEnoughBond = bondedValue.gte(minDelegationValue ?? 0)
     const isDelegating = nominations !== undefined
     const isUnbonding = stakingDetails && stakingDetails.locked.length > 0
 
-    const minBondingValue = await this.nodeClient.getExistentialDeposit()
-    const minDelegationValue = new BigNumber(1)
-
-    const electionStatus = await this.nodeClient.getElectionStatus().then((eraElectionStatus) => eraElectionStatus?.status.value)
-    const isElectionClosed = electionStatus !== PolkadotElectionStatus.OPEN
-
     const hasFundsToWithdraw = new BigNumber(stakingDetails?.unlocked ?? 0).gt(0)
 
-    if (maxDelegationValue.gt(minBondingValue ?? 0) && !isBonded && !isUnbonding && isElectionClosed) {
+    if (maxDelegationValue.gt(0) && !isBonded && !isUnbonding) {
       availableActions.push({
         type: PolkadotStakingActionType.BOND_NOMINATE,
         args: ['targets', 'controller', 'value', 'payee']
       })
     }
 
-    if (maxDelegationValue.gt(minDelegationValue) && isBonded && !isUnbonding && isElectionClosed) {
+    if (isBonded && !isDelegating && hasEnoughBond && !isUnbonding) {
+      availableActions.push({
+        type: PolkadotStakingActionType.NOMINATE,
+        args: ['targets']
+      })
+    }
+
+    if (maxDelegationValue.gt(0) && isBonded && !isUnbonding) {
       availableActions.push({
         type: PolkadotStakingActionType.BOND_EXTRA,
         args: ['value']
       })
     }
 
-    if (isBonded && !isDelegating && !isUnbonding && isElectionClosed) {
-      availableActions.push(
-        {
-          type: PolkadotStakingActionType.NOMINATE,
-          args: ['targets']
-        },
-        {
-          type: PolkadotStakingActionType.UNBOND,
-          args: ['value']
-        }
-      )
+    if (isBonded && !isDelegating && !isUnbonding) {
+      availableActions.push({
+        type: PolkadotStakingActionType.UNBOND,
+        args: ['value']
+      })
     }
 
-    if (isUnbonding && !isDelegating && isElectionClosed) {
+    if (isUnbonding && !isDelegating) {
       availableActions.push({
         type: PolkadotStakingActionType.REBOND_NOMINATE,
         args: ['targets', 'value']
       })
     }
 
-    if (isUnbonding && isDelegating && isElectionClosed) {
+    if (isUnbonding && isDelegating) {
       availableActions.push({
         type: PolkadotStakingActionType.REBOND_EXTRA,
         args: ['value']
       })
     }
 
-    if (isDelegating && isElectionClosed) {
+    if (isDelegating) {
       if (
         validatorAddresses.every((validator) => currentValidators.includes(validator)) &&
         validatorAddresses.length === currentValidators.length
@@ -533,7 +543,7 @@ export class PolkadotAccountController extends SubstrateCommonAccountController<
       }
     }
 
-    if (hasFundsToWithdraw && isElectionClosed) {
+    if (hasFundsToWithdraw) {
       availableActions.push({
         type: PolkadotStakingActionType.WITHDRAW_UNBONDED,
         args: []
