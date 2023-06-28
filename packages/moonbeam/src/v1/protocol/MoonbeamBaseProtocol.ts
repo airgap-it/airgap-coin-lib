@@ -500,7 +500,7 @@ export abstract class MoonbeamBaseProtocolImpl<_Units extends string>
     const balance = results[1]
 
     const transferableBalance = balance.transferable.minus(balance.existentialDeposit)
-    const stakingBalance = balance.transferableCoveringFees
+    const stakingBalance = balance.transferable
 
     const requiredTransactions: [SubstrateTransactionType<MoonbeamProtocolConfiguration>, any][] = []
 

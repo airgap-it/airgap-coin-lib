@@ -13,7 +13,6 @@ import {
 } from '@airgap/substrate/v1'
 
 import { PolkadotActiveEraInfo } from '../data/staking/PolkadotActiveEraInfo'
-import { PolkadotEraElectionStatus } from '../data/staking/PolkadotEraElectionStatus'
 import { PolkadotEraRewardPoints } from '../data/staking/PolkadotEraRewardPoints'
 import { PolkadotExposure } from '../data/staking/PolkadotExposure'
 import { PolkadotNominations } from '../data/staking/PolkadotNominations'
@@ -104,17 +103,8 @@ export class PolkadotNodeClient extends SubstrateCommonNodeClient<PolkadotProtoc
   }
 
   public async getValidatorExposure(eraIndex: number, address: SubstrateSS58Address): Promise<PolkadotExposure | undefined> {
-    return this.fromStorage(
-      'Staking',
-      'ErasStakers',
-      SCALEInt.from(eraIndex, 32),
-      SCALEAccountId.from(address, this.configuration)
-    ).then((item) => (item ? PolkadotExposure.decode(this.configuration, this.runtimeVersion, item) : undefined))
-  }
-
-  public async getElectionStatus(): Promise<PolkadotEraElectionStatus | undefined> {
-    return this.fromStorage('Staking', 'EraElectionStatus').then((item) =>
-      item ? PolkadotEraElectionStatus.decode(this.configuration, this.runtimeVersion, item) : undefined
+    return this.fromStorage('Staking', 'ErasStakers', SCALEInt.from(eraIndex, 32), SCALEAccountId.from(address, this.configuration)).then(
+      (item) => (item ? PolkadotExposure.decode(this.configuration, this.runtimeVersion, item) : undefined)
     )
   }
 
@@ -195,6 +185,10 @@ export class PolkadotNodeClient extends SubstrateCommonNodeClient<PolkadotProtoc
       item ? PolkadotSlashingSpans.decode(this.configuration, this.runtimeVersion, item) : undefined
     )
   }
+
+  public async getMinNominatorBond(): Promise<BigNumber | undefined> {
+    return this.fromStorage('Staking', 'MinNominatorBond').then((value) => (value ? SCALEInt.decode(value).decoded.value : undefined))
+  }
 }
 
 // Supported Calls
@@ -208,13 +202,13 @@ export const STORAGE_ENTRIES = {
     'Nominators',
     'CurrentEra',
     'ActiveEra',
-    'EraElectionStatus',
     'ErasStakers',
     'ErasStakersClipped',
     'ErasValidatorPrefs',
     'ErasValidatorReward',
     'ErasRewardPoints',
-    'SlashingSpans'
+    'SlashingSpans',
+    'MinNominatorBond'
   ] as const,
   Session: ['Validators'] as const
 }

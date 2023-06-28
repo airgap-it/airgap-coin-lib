@@ -414,7 +414,7 @@ export abstract class SubstrateProtocolImpl<
           network: this.network,
           isInbound: false,
           ...part,
-          amount: newAmount<_Units>(part.amount ? part.amount?.value : '', 'blockchain'),
+          amount: newAmount<_Units>(part.amount ? part.amount?.value : '0', 'blockchain'),
           fee: newAmount<_Units>(part.fee ? part.fee.value : tx.fee.toString(), 'blockchain')
         }))
       })
