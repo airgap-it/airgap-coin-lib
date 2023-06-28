@@ -49,7 +49,7 @@ import { eachRecursive } from '../utils/common'
 import { convertExtendedPublicKey, convertExtendedSecretKey, convertPublicKey } from '../utils/key'
 import { getBitcoinJSNetwork } from '../utils/network'
 
-import { BitcoinProtocol, BitcoinProtocolImpl, createBitcoinProtocolOptions } from './BitcoinProtocol'
+import { BitcoinKeyConfiguration, BitcoinProtocol, BitcoinProtocolImpl, createBitcoinProtocolOptions } from './BitcoinProtocol'
 
 // Interface
 
@@ -71,7 +71,6 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
   private readonly bitcoinJS: BitcoinSegwitJS
 
   public constructor(options: RecursivePartial<BitcoinProtocolOptions> = {}, bitcoinJS: typeof bitcoin = bitcoin) {
-    this.legacy = new BitcoinProtocolImpl(options)
     this.options = createBitcoinProtocolOptions(options.network)
 
     this.bitcoinJS = {
@@ -80,6 +79,16 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
         network: getBitcoinJSNetwork(this.options.network, bitcoinJS)
       }
     }
+
+    const keyConfiguration: BitcoinKeyConfiguration = {
+      xpriv: {
+        type: 'zprv'
+      },
+      xpub: {
+        type: 'zpub'
+      }
+    }
+    this.legacy = new BitcoinProtocolImpl(options, keyConfiguration)
 
     this.metadata = {
       ...this.legacy.metadata,
