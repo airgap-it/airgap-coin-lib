@@ -49,7 +49,7 @@ export abstract class SubstrateStakingProtocolImpl<
       return Promise.reject('Could not estimate max value.')
     }
 
-    const maxValue = balance.transferableCoveringFees.minus(feeEstimate)
+    const maxValue = balance.transferable.minus(feeEstimate)
 
     return (maxValue.gte(0) ? maxValue : new BigNumber(0)).toString(10)
   }

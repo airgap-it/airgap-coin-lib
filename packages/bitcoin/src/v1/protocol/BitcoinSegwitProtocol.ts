@@ -49,11 +49,13 @@ import { eachRecursive } from '../utils/common'
 import { convertExtendedPublicKey, convertExtendedSecretKey, convertPublicKey } from '../utils/key'
 import { getBitcoinJSNetwork } from '../utils/network'
 
-import { BitcoinProtocol, BitcoinProtocolImpl, createBitcoinProtocolOptions } from './BitcoinProtocol'
+import { BitcoinKeyConfiguration, BitcoinProtocol, BitcoinProtocolImpl, createBitcoinProtocolOptions } from './BitcoinProtocol'
 
 // Interface
 
 export interface BitcoinSegwitProtocol extends BitcoinProtocol<BitcoinSegwitSignedTransaction, BitcoinSegwitUnsignedTransaction> {
+  _isBitcoinSegwitProtocol: true
+
   prepareTransactionWithPublicKey(
     publicKey: PublicKey | ExtendedPublicKey,
     details: TransactionDetails<BitcoinUnits>[],
@@ -66,12 +68,14 @@ export interface BitcoinSegwitProtocol extends BitcoinProtocol<BitcoinSegwitSign
 const DUST_AMOUNT: number = 50
 
 export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
+  public readonly _isBitcoinProtocol: true = true
+  public readonly _isBitcoinSegwitProtocol: true = true
+
   private readonly legacy: BitcoinProtocolImpl
   private readonly options: BitcoinProtocolOptions
   private readonly bitcoinJS: BitcoinSegwitJS
 
   public constructor(options: RecursivePartial<BitcoinProtocolOptions> = {}, bitcoinJS: typeof bitcoin = bitcoin) {
-    this.legacy = new BitcoinProtocolImpl(options)
     this.options = createBitcoinProtocolOptions(options.network)
 
     this.bitcoinJS = {
@@ -80,6 +84,16 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
         network: getBitcoinJSNetwork(this.options.network, bitcoinJS)
       }
     }
+
+    const keyConfiguration: BitcoinKeyConfiguration = {
+      xpriv: {
+        type: 'zprv'
+      },
+      xpub: {
+        type: 'zpub'
+      }
+    }
+    this.legacy = new BitcoinProtocolImpl(options, keyConfiguration)
 
     this.metadata = {
       ...this.legacy.metadata,
@@ -444,7 +458,7 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
     details: TransactionDetails<BitcoinUnits>[],
     configuration?: TransactionSimpleConfiguration
   ): Promise<FeeDefaults<BitcoinUnits>> {
-    return this.getTransactionFeeWithPublicKey(publicKey, details, configuration)
+    return this.legacy.getTransactionFeeWithPublicKey(publicKey, details, configuration)
   }
 
   public async prepareTransactionWithPublicKey(

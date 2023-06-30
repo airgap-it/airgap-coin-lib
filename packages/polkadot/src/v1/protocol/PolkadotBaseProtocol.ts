@@ -16,11 +16,11 @@ import {
 
 import { PolkadotAccountController } from '../controller/PolkadotAccountController'
 import { PolkadotTransactionController } from '../controller/PolkadotTransactionController'
-import { PolkadotElectionStatus, PolkadotEraElectionStatus } from '../data/staking/PolkadotEraElectionStatus'
 import { PolkadotNominationStatus } from '../data/staking/PolkadotNominationStatus'
 import { PolkadotNominatorDetails } from '../data/staking/PolkadotNominatorDetails'
 import { PolkadotPayee } from '../data/staking/PolkadotPayee'
 import { PolkadotStakingActionType } from '../data/staking/PolkadotStakingActionType'
+import { PolkadotStakingBalance } from '../data/staking/PolkadotStakingBalance'
 import { PolkadotValidatorDetails } from '../data/staking/PolkadotValidatorDetails'
 import { PolkadotNodeClient } from '../node/PolkadotNodeClient'
 import { PolkadotProtocolConfiguration } from '../types/configuration'
@@ -36,9 +36,9 @@ export interface PolkadotBaseProtocol<_Units extends string = string>
   getValidatorDetails(address: string): Promise<PolkadotValidatorDetails>
   getNominationStatus(address: string, validator: string, era?: number): Promise<PolkadotNominationStatus | undefined>
 
-  getUnlockingBalance(address: string): Promise<Amount<_Units>>
+  getStakingBalance(address: string): Promise<PolkadotStakingBalance<Amount<_Units>> | undefined>
+  getMinNominatorBond(): Promise<Amount<_Units>>
 
-  getElectionStatus(): Promise<PolkadotElectionStatus>
   getExistentialDeposit(): Promise<Amount<_Units>>
 
   getFutureStakingTransactionsFee(address: string): Promise<Amount<_Units>>
@@ -208,7 +208,7 @@ export abstract class PolkadotBaseProtocolImpl<_Units extends string>
     payee?: string | PolkadotPayee
   ): Promise<SubstrateUnsignedTransaction[]> {
     const balance = await this.accountController.getBalance(publicKey)
-    const available = new BigNumber(balance.transferableCoveringFees).minus(value || 0)
+    const available = new BigNumber(balance.transferable).minus(value || 0)
 
     const bondFirst = controller !== undefined && value !== undefined && payee !== undefined
 
@@ -287,7 +287,7 @@ export abstract class PolkadotBaseProtocolImpl<_Units extends string>
       }
     })
 
-    const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, balance.transferableCoveringFees, params)
+    const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, balance.transferable, params)
 
     return [newUnsignedTransaction<SubstrateUnsignedTransaction>({ encoded })]
   }
@@ -300,7 +300,7 @@ export abstract class PolkadotBaseProtocolImpl<_Units extends string>
     const balance = await this.accountController.getBalance(publicKey)
     const keepController = value === undefined
 
-    const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, balance.transferableCoveringFees, [
+    const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, balance.transferable, [
       {
         type: 'cancel_nomination',
         tip,
@@ -329,7 +329,7 @@ export abstract class PolkadotBaseProtocolImpl<_Units extends string>
   ): Promise<SubstrateUnsignedTransaction[]> {
     const balance = await this.accountController.getBalance(publicKey)
 
-    const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, balance.transferableCoveringFees, [
+    const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, balance.transferable, [
       {
         type: 'nominate',
         tip,
@@ -349,7 +349,7 @@ export abstract class PolkadotBaseProtocolImpl<_Units extends string>
   ): Promise<SubstrateUnsignedTransaction[]> {
     const balance = await this.accountController.getBalance(publicKey)
 
-    const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, balance.transferableCoveringFees, [
+    const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, balance.transferable, [
       {
         type: 'unbond',
         tip,
@@ -369,7 +369,7 @@ export abstract class PolkadotBaseProtocolImpl<_Units extends string>
   ): Promise<SubstrateUnsignedTransaction[]> {
     const balance = await this.accountController.getBalance(publicKey)
 
-    const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, balance.transferableCoveringFees, [
+    const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, balance.transferable, [
       {
         type: 'rebond',
         tip,
@@ -389,7 +389,7 @@ export abstract class PolkadotBaseProtocolImpl<_Units extends string>
   ): Promise<SubstrateUnsignedTransaction[]> {
     const balance = await this.accountController.getBalance(publicKey)
 
-    const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, balance.transferableCoveringFees, [
+    const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, balance.transferable, [
       {
         type: 'bond_extra',
         tip,
@@ -441,7 +441,7 @@ export abstract class PolkadotBaseProtocolImpl<_Units extends string>
           }
         ]
 
-    const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, balance.transferableCoveringFees, configs)
+    const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, balance.transferable, configs)
 
     return [newUnsignedTransaction<SubstrateUnsignedTransaction>({ encoded })]
   }
@@ -452,7 +452,7 @@ export abstract class PolkadotBaseProtocolImpl<_Units extends string>
       this.accountController.getSlashingSpansNumber(publicKey)
     ])
 
-    const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, balance.transferableCoveringFees, [
+    const encoded = await this.transactionController.prepareSubmittableTransactions(publicKey, balance.transferable, [
       {
         type: 'withdraw_unbonded',
         tip,
@@ -477,16 +477,22 @@ export abstract class PolkadotBaseProtocolImpl<_Units extends string>
     return this.accountController.getNominationStatus(address, validator, era)
   }
 
-  public async getUnlockingBalance(address: string): Promise<Amount<_Units>> {
-    const balance: BigNumber = await this.accountController.getUnlockingBalance(address)
+  public async getStakingBalance(address: string): Promise<PolkadotStakingBalance<Amount<_Units>> | undefined> {
+    const stakingBalance: PolkadotStakingBalance | undefined = await this.accountController.getStakingBalance(address)
+    if (stakingBalance === undefined) {
+      return undefined
+    }
 
-    return newAmount(balance, 'blockchain')
+    return {
+      bonded: newAmount(stakingBalance.bonded, 'blockchain'),
+      unlocking: newAmount(stakingBalance.unlocking, 'blockchain')
+    }
   }
 
-  public async getElectionStatus(): Promise<PolkadotElectionStatus> {
-    const status: PolkadotEraElectionStatus | undefined = await this.nodeClient.getElectionStatus()
+  public async getMinNominatorBond(): Promise<Amount<_Units>> {
+    const minNominatorBond: BigNumber | undefined = await this.nodeClient.getMinNominatorBond()
 
-    return status?.status.value ?? PolkadotElectionStatus.CLOSED
+    return newAmount(minNominatorBond ?? 0, 'blockchain')
   }
 
   public async getExistentialDeposit(): Promise<Amount<_Units>> {
@@ -519,7 +525,7 @@ export abstract class PolkadotBaseProtocolImpl<_Units extends string>
     const unlockingBalance = results[3]
 
     const transferableBalance = balance.transferable.minus(balance.existentialDeposit)
-    const stakingBalance = balance.transferableCoveringFees
+    const stakingBalance = balance.transferable
 
     const isUnbonding = unlockingBalance.gt(0)
 

@@ -61,7 +61,7 @@ export class EthereumRPCData {
 
   public static addLeadingZeroPadding(value: string, targetLength: number = EthereumRPCData.parametersLength): string {
     let result = value
-    while (result.length < targetLength) {
+    while (result.length < targetLength || result.length % 2 !== 0) {
       result = '0' + result
     }
 

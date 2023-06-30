@@ -47,7 +47,14 @@ import { AddressResponse, UTXOResponse, XPubResponse } from '../types/indexer'
 import { BitcoinProtocolNetwork, BitcoinProtocolOptions, BitcoinStandardProtocolNetwork, BitcoinUnits } from '../types/protocol'
 import { BitcoinSignedTransaction, BitcoinTransactionCursor, BitcoinUnsignedTransaction } from '../types/transaction'
 import { containsSome } from '../utils/common'
-import { convertExtendedPublicKey, convertExtendedSecretKey, convertPublicKey, convertSecretKey } from '../utils/key'
+import {
+  convertExtendedPublicKey,
+  convertExtendedSecretKey,
+  convertPublicKey,
+  convertSecretKey,
+  ExtendedPublicKeyEncoding,
+  ExtendedSecretKeyEncoding
+} from '../utils/key'
 import { getBitcoinJSNetwork } from '../utils/network'
 import { convertSignature } from '../utils/signature'
 
@@ -73,18 +80,37 @@ export interface BitcoinProtocol<
     'Crypto',
     'FetchDataForAddress',
     'FetchDataForMultipleAddresses'
-  > {}
+  > {
+  _isBitcoinProtocol: true
+}
 
 // Implementation
 
 const DUST_AMOUNT: number = 50
 
+export interface BitcoinKeyConfiguration {
+  xpriv: {
+    type: ExtendedSecretKeyEncoding
+  }
+  xpub: {
+    type: ExtendedPublicKeyEncoding
+  }
+}
+
 export class BitcoinProtocolImpl implements BitcoinProtocol {
+  public readonly _isBitcoinProtocol: true = true
+
   private readonly options: BitcoinProtocolOptions
+  private readonly keyConfiguration: BitcoinKeyConfiguration
   private readonly cryptoClient: BitcoinCryptoClient
   public readonly bitcoinJS: BitcoinJS
 
-  constructor(options: RecursivePartial<BitcoinProtocolOptions> = {}, bitcoinJS: any = BitGo, bitcoinJSMessage: any = bitcoinMessage) {
+  constructor(
+    options: RecursivePartial<BitcoinProtocolOptions> = {},
+    keyConfiguration?: BitcoinKeyConfiguration,
+    bitcoinJS: any = BitGo,
+    bitcoinJSMessage: any = bitcoinMessage
+  ) {
     this.options = createBitcoinProtocolOptions(options.network)
     this.bitcoinJS = {
       lib: bitcoinJS,
@@ -95,6 +121,14 @@ export class BitcoinProtocolImpl implements BitcoinProtocol {
     }
 
     this.cryptoClient = new BitcoinCryptoClient(this, this.bitcoinJS)
+    this.keyConfiguration = keyConfiguration ?? {
+      xpriv: {
+        type: 'xprv'
+      },
+      xpub: {
+        type: 'xpub'
+      }
+    }
   }
 
   // Common
@@ -983,18 +1017,18 @@ export class BitcoinProtocolImpl implements BitcoinProtocol {
 
   // Custom
 
-  protected convertExtendedSecretKey(extendedSecretKey: ExtendedSecretKey, targetFormat: ExtendedSecretKey['format']): ExtendedSecretKey {
+  private convertExtendedSecretKey(extendedSecretKey: ExtendedSecretKey, targetFormat: ExtendedSecretKey['format']): ExtendedSecretKey {
     return convertExtendedSecretKey(extendedSecretKey, {
       format: targetFormat,
-      type: 'xprv',
+      type: this.keyConfiguration.xpriv.type,
       hashFunction: this.bitcoinJS.config.network.hashFunctions.address
     })
   }
 
-  protected convertExtendedPublicKey(extendedPublicKey: ExtendedPublicKey, targetFormat: ExtendedPublicKey['format']): ExtendedPublicKey {
+  private convertExtendedPublicKey(extendedPublicKey: ExtendedPublicKey, targetFormat: ExtendedPublicKey['format']): ExtendedPublicKey {
     return convertExtendedPublicKey(extendedPublicKey, {
       format: targetFormat,
-      type: 'xpub',
+      type: this.keyConfiguration.xpub.type,
       hashFunction: this.bitcoinJS.config.network.hashFunctions.address
     })
   }

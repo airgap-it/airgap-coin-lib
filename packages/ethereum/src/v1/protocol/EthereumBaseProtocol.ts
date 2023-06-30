@@ -40,7 +40,8 @@ import {
   Signature,
   TransactionFullConfiguration,
   TransactionDetails,
-  TransactionSimpleConfiguration
+  TransactionSimpleConfiguration,
+  WalletConnectRequest
 } from '@airgap/module-kit'
 import Common from '@ethereumjs/common'
 // TODO: ETH TX and ethereumjs-util-5.2.0 removed
@@ -85,7 +86,8 @@ export interface EthereumBaseProtocol<
     'Crypto',
     'FetchDataForAddress',
     'FetchDataForMultipleAddresses',
-    'TransactionStatusChecker'
+    'TransactionStatusChecker',
+    'WalletConnect'
   > {}
 
 // Implementation
@@ -106,6 +108,8 @@ export const DEFAULT_ETHEREUM_UNITS_METADATA: ProtocolUnitsMetadata<EthereumUnit
 }
 
 const MAX_GAS_ESTIMATE: number = 300000
+
+const WALLET_CONNECT_NAMESPACE = 'eip155'
 
 export class EthereumBaseProtocolImpl<
   _Units extends string = EthereumUnits,
@@ -715,6 +719,38 @@ export class EthereumBaseProtocolImpl<
     } else {
       throw new BalanceError(Domain.ETHEREUM, 'not enough balance')
     }
+  }
+
+  public async getWalletConnectChain(): Promise<string> {
+    return `${WALLET_CONNECT_NAMESPACE}:${this.options.network.chainId}`
+  }
+
+  public async prepareWalletConnectTransactionWithPublicKey(
+    publicKey: PublicKey | ExtendedPublicKey,
+    request: WalletConnectRequest
+  ): Promise<EthereumUnsignedTransaction> {
+    const gasPricePromise: Promise<string> = request.gasPrice
+      ? Promise.resolve(request.gasPrice)
+      : this.nodeClient.getGasPrice().then((gasPrice: BigNumber) => `0x${gasPrice.toString(16)}`)
+
+    const noncePromise: Promise<string> = request.nonce
+      ? Promise.resolve(request.nonce)
+      : this.getAddressFromPublicKey(publicKey)
+          .then((address: string) => this.nodeClient.fetchTransactionCount(address))
+          .then((transactionCount: number) => `0x${new BigNumber(transactionCount).toString(16)}`)
+
+    const [gasPrice, nonce]: [string, string] = await Promise.all([gasPricePromise, noncePromise])
+
+    return newUnsignedTransaction<EthereumRawUnsignedTransaction>({
+      ethereumType: 'raw',
+      nonce,
+      gasLimit: `0x${(300000).toString(16)}`,
+      gasPrice,
+      to: request.to ?? '',
+      value: request.value ?? '0x00',
+      chainId: this.options.network.chainId,
+      data: request.data ?? '0x'
+    })
   }
 
   public async broadcastTransaction(transaction: EthereumSignedTransaction): Promise<string> {

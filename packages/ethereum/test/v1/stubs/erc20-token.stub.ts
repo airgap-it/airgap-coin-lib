@@ -2,13 +2,23 @@ import axios from '@airgap/coinlib-core/dependencies/src/axios-0.19.0/index'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import { Balance } from '@airgap/module-kit'
 import * as sinon from 'sinon'
-import { ERC20Token } from '../../../src/v1'
+import { ERC20Token, EthereumBaseProtocolImpl } from '../../../src/v1'
 
 import { AirGapNodeClient } from '../../../src/v1/clients/node/AirGapNodeClient'
 import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
 
 export class ERC20TokenProtocolStub implements ProtocolHTTPStub<string, ERC20Token> {
   public async registerStub(testProtocolSpec: TestProtocolSpec<string, ERC20Token>) {
+    sinon
+      .stub(EthereumBaseProtocolImpl.prototype, 'getBalanceOfPublicKey')
+      .withArgs(sinon.match.any)
+      .returns(Promise.resolve({ total: { value: '100000000000000000000', unit: 'blockchain' } } as Balance))
+
+    sinon
+      .stub(EthereumBaseProtocolImpl.prototype, 'getBalanceOfAddresses')
+      .withArgs(sinon.match.any)
+      .returns(Promise.resolve({ total: { value: '100000000000000000000', unit: 'blockchain' } } as Balance))
+
     sinon
       .stub(testProtocolSpec.lib, 'getBalanceOfPublicKey')
       .withArgs(sinon.match.any)
@@ -36,6 +46,16 @@ export class ERC20TokenProtocolStub implements ProtocolHTTPStub<string, ERC20Tok
   }
 
   public async noBalanceStub(testProtocolSpec: TestProtocolSpec<string, ERC20Token>) {
+    sinon
+      .stub(EthereumBaseProtocolImpl.prototype, 'getBalanceOfPublicKey')
+      .withArgs(sinon.match.any)
+      .returns(Promise.resolve({ total: { value: '0', unit: 'blockchain' } } as Balance))
+
+    sinon
+      .stub(EthereumBaseProtocolImpl.prototype, 'getBalanceOfAddresses')
+      .withArgs(sinon.match.any)
+      .returns(Promise.resolve({ total: { value: '0', unit: 'blockchain' } } as Balance))
+
     sinon
       .stub(testProtocolSpec.lib, 'getBalanceOfPublicKey')
       .withArgs(sinon.match.any)

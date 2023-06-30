@@ -19,6 +19,7 @@ import {
   OfflineAsymmetricEncryption
 } from '../protocol/extensions/crypto/AsymmetricEncryptionExtension'
 import { BaseSignMessage, OfflineSignMessage, SignMessageExtension } from '../protocol/extensions/crypto/SignMessageExtension'
+import { WalletConnectExtension, WalletConnectProtocol } from '../protocol/extensions/dapp/WalletConnectProtocol'
 import {
   BaseMultiTokenSubProtocol,
   MultiTokenSubProtocolExtension,
@@ -151,6 +152,11 @@ export const transactionStatusCheckerSchema: Schema<TransactionStatusChecker> = 
   getTransactionStatus: 'required'
 }
 
+export const walletConnectProtocolSchema: Schema<WalletConnectProtocol> = {
+  getWalletConnectChain: 'required',
+  prepareWalletConnectTransactionWithPublicKey: 'required'
+}
+
 // Implementation Checks
 
 export function isAnyProtocol(object: unknown): object is AnyProtocol {
@@ -255,6 +261,10 @@ export function hasConfigurableTransactionInjector<T extends OnlineProtocol>(
 
 export function isTransactionStatusChecker<T extends OnlineProtocol>(protocol: T): protocol is T & TransactionStatusCheckerExtension<T> {
   return implementsInterface<TransactionStatusChecker>(protocol, transactionStatusCheckerSchema)
+}
+
+export function supportsWalletConnect<T extends OnlineProtocol>(protocol: T): protocol is T & WalletConnectExtension<T> {
+  return implementsInterface<WalletConnectProtocol>(protocol, walletConnectProtocolSchema)
 }
 
 // Identifier

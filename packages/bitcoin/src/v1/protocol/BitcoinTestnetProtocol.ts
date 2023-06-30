@@ -1,10 +1,9 @@
 import { MainProtocolSymbols } from '@airgap/coinlib-core'
-import { ExtendedPublicKey, ExtendedSecretKey, ProtocolMetadata } from '@airgap/module-kit'
+import { ProtocolMetadata, RecursivePartial } from '@airgap/module-kit'
 
-import { BitcoinUnits } from '../types/protocol'
-import { convertExtendedPublicKey, convertExtendedSecretKey } from '../utils/key'
+import { BitcoinProtocolOptions, BitcoinUnits } from '../types/protocol'
 
-import { BitcoinProtocol, BitcoinProtocolImpl } from './BitcoinProtocol'
+import { BitcoinKeyConfiguration, BitcoinProtocol, BitcoinProtocolImpl } from './BitcoinProtocol'
 
 // Interface
 
@@ -35,28 +34,24 @@ export class BitcoinTestnetProtocolImpl extends BitcoinProtocolImpl implements B
   }
 
   public constructor() {
-    super({
+    const options: RecursivePartial<BitcoinProtocolOptions> = {
       network: {
         name: 'Testnet',
         type: 'testnet',
         rpcUrl: '',
         indexerApi: 'https://bitcoin.prod.gke.papers.tech'
       }
-    })
-  }
+    }
+    const keyConfiguration: BitcoinKeyConfiguration = {
+      xpriv: {
+        type: 'tprv'
+      },
+      xpub: {
+        type: 'tpub'
+      }
+    }
 
-  protected convertExtendedSecretKey(extendedSecretKey: ExtendedSecretKey, targetFormat: ExtendedSecretKey['format']): ExtendedSecretKey {
-    return convertExtendedSecretKey(extendedSecretKey, {
-      format: targetFormat,
-      type: 'tprv'
-    })
-  }
-
-  protected convertExtendedPublicKey(extendedPublicKey: ExtendedPublicKey, targetFormat: ExtendedPublicKey['format']): ExtendedPublicKey {
-    return convertExtendedPublicKey(extendedPublicKey, {
-      format: targetFormat,
-      type: 'tpub'
-    })
+    super(options, keyConfiguration)
   }
 }
 

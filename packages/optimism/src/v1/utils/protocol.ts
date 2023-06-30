@@ -12,7 +12,8 @@ import {
   Schema,
   signMessageOfflineSchema,
   singleTokenSubProtocolSchema,
-  transactionStatusCheckerSchema
+  transactionStatusCheckerSchema,
+  walletConnectProtocolSchema
 } from '@airgap/module-kit'
 
 import { ERC20Token } from '../protocol/erc20/ERC20Token'
@@ -31,7 +32,8 @@ export const optimismBaseProtocolSchema: Schema<OptimismBaseProtocol> = {
   ...signMessageOfflineSchema,
   ...fetchDataForAddressProtocolSchema,
   ...fetchDataForMultipleAddressesProtocolSchema,
-  ...transactionStatusCheckerSchema
+  ...transactionStatusCheckerSchema,
+  ...walletConnectProtocolSchema
 }
 
 export const optimismProtocolSchema: Schema<OptimismProtocol> = {
