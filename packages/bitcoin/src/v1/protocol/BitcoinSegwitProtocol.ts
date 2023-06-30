@@ -54,6 +54,8 @@ import { BitcoinKeyConfiguration, BitcoinProtocol, BitcoinProtocolImpl, createBi
 // Interface
 
 export interface BitcoinSegwitProtocol extends BitcoinProtocol<BitcoinSegwitSignedTransaction, BitcoinSegwitUnsignedTransaction> {
+  _isBitcoinSegwitProtocol: true
+
   prepareTransactionWithPublicKey(
     publicKey: PublicKey | ExtendedPublicKey,
     details: TransactionDetails<BitcoinUnits>[],
@@ -66,6 +68,9 @@ export interface BitcoinSegwitProtocol extends BitcoinProtocol<BitcoinSegwitSign
 const DUST_AMOUNT: number = 50
 
 export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
+  public readonly _isBitcoinProtocol: true = true
+  public readonly _isBitcoinSegwitProtocol: true = true
+
   private readonly legacy: BitcoinProtocolImpl
   private readonly options: BitcoinProtocolOptions
   private readonly bitcoinJS: BitcoinSegwitJS
@@ -453,7 +458,7 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
     details: TransactionDetails<BitcoinUnits>[],
     configuration?: TransactionSimpleConfiguration
   ): Promise<FeeDefaults<BitcoinUnits>> {
-    return this.getTransactionFeeWithPublicKey(publicKey, details, configuration)
+    return this.legacy.getTransactionFeeWithPublicKey(publicKey, details, configuration)
   }
 
   public async prepareTransactionWithPublicKey(

@@ -64,6 +64,7 @@ import {
   ProtocolNetwork,
   ProtocolNetworkType,
   ProtocolSymbol,
+  ProtocolTransactionArbitraryDataMetadata,
   ProtocolTransactionMetadata,
   ProtocolUnitsMetadata
 } from './types/protocol'
@@ -185,6 +186,7 @@ export {
   ProtocolFeeMetadata,
   ProtocolAccountMetadata,
   ProtocolTransactionMetadata,
+  ProtocolTransactionArbitraryDataMetadata,
   ProtocolNetworkType,
   ProtocolNetwork,
   SubProtocolType

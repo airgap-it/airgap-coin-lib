@@ -67,7 +67,7 @@ export interface SubstrateProtocol<
     'Crypto',
     'FetchDataForAddress'
   > {
-  isSubstrateProtocol: true
+  _isSubstrateProtocol: true
 
   encodeDetails(txs: SubstrateTransactionDetails<_ProtocolConfiguration>[]): Promise<string>
   decodeDetails(serialized: string): Promise<SubstrateTransactionDetails<_ProtocolConfiguration>[]>
@@ -84,7 +84,7 @@ export abstract class SubstrateProtocolImpl<
   _TransactionController extends SubstrateTransactionController<_ProtocolConfiguration> = SubstrateTransactionController<_ProtocolConfiguration>
 > implements SubstrateProtocol<_ProtocolConfiguration, _Units, _ProtocolNetwork, SubstrateCryptoConfiguration<_ProtocolConfiguration>>
 {
-  public readonly isSubstrateProtocol: true = true
+  public readonly _isSubstrateProtocol: true = true
 
   protected readonly configuration: _ProtocolConfiguration
   protected readonly cryptoConfiguration: SubstrateCryptoConfiguration<_ProtocolConfiguration>

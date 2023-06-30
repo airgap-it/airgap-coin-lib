@@ -277,7 +277,7 @@ export abstract class ERC20ProtocolImpl<_Units extends string, _ProtocolNetwork 
 
     if (wrappedBalance.isGreaterThanOrEqualTo(wrappedAmount)) {
       const address: string = await this.getAddressFromPublicKey(publicKey)
-      const ethBalance: Balance = await super.getBalanceOfAddress(address)
+      const ethBalance: Balance = await super.getBalanceOfAddresses([address])
       const wrappedEthBalance: BigNumber = new BigNumber(newAmount(ethBalance.total).blockchain(this.units).value)
 
       const estimatedGas: BigNumber = await this.estimateGas(address, details[0].to, wrappedAmount)
