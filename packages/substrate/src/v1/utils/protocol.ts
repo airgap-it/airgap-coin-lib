@@ -21,7 +21,7 @@ export const substrateProtocolSchema: Schema<SubstrateProtocol> = {
   ...asymmetricEncryptionOfflineSchema,
   ...signMessageOfflineSchema,
   ...fetchDataForAddressProtocolSchema,
-  isSubstrateProtocol: 'required',
+  _isSubstrateProtocol: 'required',
   encodeDetails: 'required',
   decodeDetails: 'required'
 }

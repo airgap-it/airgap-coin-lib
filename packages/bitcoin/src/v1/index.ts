@@ -26,6 +26,7 @@ import {
   BitcoinTransactionCursor,
   BitcoinUnsignedTransaction
 } from './types/transaction'
+import { isBitcoinProtocol, isBitcoinSegwitProtocol } from './utils/protocol'
 
 // Module
 
@@ -77,3 +78,7 @@ export {
   bitcoinTransactionSignRequestToUnsigned,
   bitcoinTransactionSignResponseToSigned
 }
+
+// Utils
+
+export { isBitcoinProtocol, isBitcoinSegwitProtocol }

@@ -80,7 +80,9 @@ export interface BitcoinProtocol<
     'Crypto',
     'FetchDataForAddress',
     'FetchDataForMultipleAddresses'
-  > {}
+  > {
+  _isBitcoinProtocol: true
+}
 
 // Implementation
 
@@ -96,6 +98,8 @@ export interface BitcoinKeyConfiguration {
 }
 
 export class BitcoinProtocolImpl implements BitcoinProtocol {
+  public readonly _isBitcoinProtocol: true = true
+
   private readonly options: BitcoinProtocolOptions
   private readonly keyConfiguration: BitcoinKeyConfiguration
   private readonly cryptoClient: BitcoinCryptoClient
