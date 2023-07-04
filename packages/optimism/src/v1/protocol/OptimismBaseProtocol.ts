@@ -24,7 +24,8 @@ import {
   Signature,
   TransactionFullConfiguration,
   TransactionDetails,
-  WalletConnectRequest
+  WalletConnectRequest,
+  TokenDetails
 } from '@airgap/module-kit'
 
 import { OptimismInfoClient } from '../client/info/OptimismInfoClient'
@@ -57,6 +58,7 @@ export interface OptimismBaseProtocol<_Units extends string = EthereumUnits>
     'Crypto',
     'FetchDataForAddress',
     'FetchDataForMultipleAddresses',
+    'GetTokenBalances',
     'TransactionStatusChecker',
     'WalletConnect'
   > {}
@@ -239,6 +241,13 @@ export abstract class OptimismBaseProtocolImpl<
 
   public async getBalanceOfAddresses(addresses: string[]): Promise<Balance<_Units>> {
     return this.ethereumProtocol.getBalanceOfAddresses(addresses)
+  }
+
+  public async getTokenBalancesOfPublicKey(
+    publicKey: PublicKey | ExtendedPublicKey,
+    tokens: TokenDetails[]
+  ): Promise<Record<string, Amount>> {
+    return this.ethereumProtocol.getTokenBalancesOfPublicKey(publicKey, tokens)
   }
 
   public async getTransactionMaxAmountWithPublicKey(

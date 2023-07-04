@@ -26,6 +26,7 @@ import { AsymmetricEncryptionExtension } from './protocol/extensions/crypto/Asym
 import { CryptoExtension } from './protocol/extensions/crypto/CryptoExtension'
 import { SignMessageExtension } from './protocol/extensions/crypto/SignMessageExtension'
 import { WalletConnectExtension, WalletConnectProtocol, WalletConnectRequest } from './protocol/extensions/dapp/WalletConnectProtocol'
+import { GetTokenBalances, GetTokenBalancesExtension, TokenDetails } from './protocol/extensions/sub-protocol/GetTokenBalancesExtension'
 import {
   BaseMultiTokenSubProtocol,
   MultiTokenBalanceConfiguration,
@@ -103,11 +104,13 @@ import {
   canEncryptAsymmetric,
   canFetchDataForAddress,
   canFetchDataForMultipleAddresses,
+  canGetTokenBalances,
   canSignMessage,
   configurableContractProtocolSchema,
   configurableTransactionInjectorSchema,
   fetchDataForAddressProtocolSchema,
   fetchDataForMultipleAddressesProtocolSchema,
+  getTokenBalancesSchema,
   hasConfigurableContract,
   hasConfigurableTransactionInjector,
   hasMultiAddressPublicKeys,
@@ -209,6 +212,9 @@ export {
   MultiTokenSubProtocolExtension,
   BaseMultiTokenSubProtocol,
   OnlineMultiTokenSubProtocol,
+  TokenDetails,
+  GetTokenBalancesExtension,
+  GetTokenBalances,
   CryptoExtension,
   AESExtension,
   AsymmetricEncryptionExtension,
@@ -293,6 +299,7 @@ export {
   isSubProtocol,
   isSingleTokenSubProtocol,
   isMultiTokenSubProtocol,
+  canGetTokenBalances,
   canFetchDataForAddress,
   canFetchDataForMultipleAddresses,
   hasMultiAddressPublicKeys,
@@ -320,6 +327,7 @@ export {
   subProtocolSchema,
   singleTokenSubProtocolSchema,
   multiTokenSubProtocolBaseSchema,
+  getTokenBalancesSchema,
   fetchDataForAddressProtocolSchema,
   fetchDataForMultipleAddressesProtocolSchema,
   multiAddressPublicKeyProtocolSchema,

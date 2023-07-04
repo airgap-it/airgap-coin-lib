@@ -10,6 +10,7 @@ import { AsymmetricEncryptionExtension } from './crypto/AsymmetricEncryptionExte
 import { CryptoExtension } from './crypto/CryptoExtension'
 import { SignMessageExtension } from './crypto/SignMessageExtension'
 import { WalletConnectExtension } from './dapp/WalletConnectProtocol'
+import { GetTokenBalancesExtension } from './sub-protocol/GetTokenBalancesExtension'
 import { MultiTokenSubProtocolExtension } from './sub-protocol/MultiTokenSubProtocolExtension'
 import { SingleTokenSubProtocolExtension } from './sub-protocol/SingleTokenSubProtocolExtension'
 import { SubProtocolExtension } from './sub-protocol/SubProtocolExtension'
@@ -47,6 +48,8 @@ interface OfflineExtensions<T extends _OfflineProtocol> extends OfflineAndOnline
 interface OnlineExtensions<T extends _OnlineProtocol> extends OfflineAndOnlineExtensions<T> {
   FetchDataForAddress: FetchDataForAddressExtension<T>
   FetchDataForMultipleAddresses: FetchDataForMultipleAddressesExtension<T>
+
+  GetTokenBalances: GetTokenBalancesExtension<T>
 
   ConfigurableTransactionInjector: ConfigurableTransactionInjectorExtension<T>
   TransactionStatusChecker: TransactionStatusCheckerExtension<T>
