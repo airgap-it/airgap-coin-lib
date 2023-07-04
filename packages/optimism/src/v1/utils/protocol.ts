@@ -6,6 +6,7 @@ import {
   bip32OnlineProtocolSchema,
   fetchDataForAddressProtocolSchema,
   fetchDataForMultipleAddressesProtocolSchema,
+  getTokenBalancesSchema,
   implementsInterface,
   offlineProtocolSchema,
   onlineProtocolSchema,
@@ -32,6 +33,7 @@ export const optimismBaseProtocolSchema: Schema<OptimismBaseProtocol> = {
   ...signMessageOfflineSchema,
   ...fetchDataForAddressProtocolSchema,
   ...fetchDataForMultipleAddressesProtocolSchema,
+  ...getTokenBalancesSchema,
   ...transactionStatusCheckerSchema,
   ...walletConnectProtocolSchema
 }
