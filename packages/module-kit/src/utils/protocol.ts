@@ -20,6 +20,7 @@ import {
 } from '../protocol/extensions/crypto/AsymmetricEncryptionExtension'
 import { BaseSignMessage, OfflineSignMessage, SignMessageExtension } from '../protocol/extensions/crypto/SignMessageExtension'
 import { WalletConnectExtension, WalletConnectProtocol } from '../protocol/extensions/dapp/WalletConnectProtocol'
+import { GetTokenBalances, GetTokenBalancesExtension } from '../protocol/extensions/sub-protocol/GetTokenBalancesExtension'
 import {
   BaseMultiTokenSubProtocol,
   MultiTokenSubProtocolExtension,
@@ -97,6 +98,10 @@ export const multiTokenSubProtocolBaseSchema: Schema<BaseMultiTokenSubProtocol> 
 export const multiTokenSubProtocolOnlineSchema: Schema<OnlineMultiTokenSubProtocol> = {
   ...multiTokenSubProtocolBaseSchema,
   ...onlineProtocolSchema
+}
+
+export const getTokenBalancesSchema: Schema<GetTokenBalances> = {
+  getTokenBalancesOfPublicKey: 'required'
 }
 
 export const fetchDataForAddressProtocolSchema: Schema<FetchDataForAddressProtocol> = {
@@ -209,6 +214,10 @@ export function isMultiTokenSubProtocol<T extends AnyProtocol>(protocol: T): pro
   }
 
   return extendedWithMultiTokenSubProtocol
+}
+
+export function canGetTokenBalances<T extends OnlineProtocol>(protocol: T): protocol is T & GetTokenBalancesExtension<T> {
+  return implementsInterface<GetTokenBalances>(protocol, getTokenBalancesSchema)
 }
 
 export function canFetchDataForAddress<T extends OnlineProtocol>(protocol: T): protocol is T & FetchDataForAddressExtension<T> {

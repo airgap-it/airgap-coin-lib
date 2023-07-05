@@ -6,14 +6,21 @@ import { createERC20Token, ERC20Token, EthereumSignedTransaction, EthereumUnits,
 import { TestProtocolSpec } from '../implementations'
 import { ERC20TokenProtocolStub } from '../stubs/erc20-token.stub'
 
-const MockERC20Token: ERC20Token = createERC20Token({
-  name: 'Mock ERC20',
-  identifier: 'eth-erc20-mock',
-  symbol: 'ETH',
-  marketSymbol: 'eth',
-  contractAddress: '0x2dd847af80418D280B7078888B6A6133083001C9',
-  decimals: 18
-})
+const MockERC20Token: ERC20Token = createERC20Token(
+  {
+    name: 'Mock ERC20',
+    identifier: 'eth-erc20-mock',
+    symbol: 'ETH',
+    marketSymbol: 'eth',
+    contractAddress: '0x2dd847af80418D280B7078888B6A6133083001C9',
+    decimals: 18
+  },
+  {
+    network: {
+      chainId: 3
+    }
+  }
+)
 
 export class ERC20TokenTestProtocolSpec extends TestProtocolSpec<string, ERC20Token> {
   public name = 'Generic ERC20 Token'
@@ -64,8 +71,7 @@ export class ERC20TokenTestProtocolSpec extends TestProtocolSpec<string, ERC20To
         to: '0x2dd847af80418D280B7078888B6A6133083001C9', // contract address
         value: '0x0',
         chainId: 3,
-        data:
-          '0xa9059cbb0000000000000000000000004a1e1d37462a422873bfccb1e705b05cc4bd922e0000000000000000000000000000000000000000000000000000048c27395000'
+        data: '0xa9059cbb0000000000000000000000004a1e1d37462a422873bfccb1e705b05cc4bd922e0000000000000000000000000000000000000000000000000000048c27395000'
       } as EthereumUnsignedTransaction,
       signedTx: {
         type: 'signed',

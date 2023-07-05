@@ -38,6 +38,7 @@ import {
   PublicKey,
   SecretKey,
   Signature,
+  TokenDetails,
   TransactionFullConfiguration,
   TransactionDetails,
   TransactionSimpleConfiguration,
@@ -86,6 +87,7 @@ export interface EthereumBaseProtocol<
     'Crypto',
     'FetchDataForAddress',
     'FetchDataForMultipleAddresses',
+    'GetTokenBalances',
     'TransactionStatusChecker',
     'WalletConnect'
   > {}
@@ -616,6 +618,24 @@ export class EthereumBaseProtocolImpl<
         'blockchain'
       )
     }
+  }
+
+  public async getTokenBalancesOfPublicKey(
+    publicKey: PublicKey | ExtendedPublicKey,
+    tokens: TokenDetails[]
+  ): Promise<Record<string, Amount>> {
+    const address: string = await this.getAddressFromPublicKey(publicKey)
+    const contractAddresses: string[] = tokens.map((token: TokenDetails) => token.contractAddress)
+    const balances: Record<string, BigNumber> = await this.nodeClient.callBalanceOfOnContracts(contractAddresses, address)
+
+    return tokens.reduce((obj: Record<string, Amount>, next: TokenDetails) => {
+      const balance: BigNumber | undefined = balances[next.contractAddress]
+      if (balance === undefined) {
+        return obj
+      }
+
+      return Object.assign(obj, { [next.identifier]: newAmount(balance, 'blockchain') })
+    }, {})
   }
 
   public async getTransactionMaxAmountWithPublicKey(

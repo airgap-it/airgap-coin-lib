@@ -6,6 +6,7 @@ import {
   bip32OnlineProtocolSchema,
   fetchDataForAddressProtocolSchema,
   fetchDataForMultipleAddressesProtocolSchema,
+  getTokenBalancesSchema,
   implementsInterface,
   offlineProtocolSchema,
   onlineProtocolSchema,
@@ -33,6 +34,7 @@ export const ethereumBaseProtocolSchema: Schema<EthereumBaseProtocol> = {
   ...signMessageOfflineSchema,
   ...fetchDataForAddressProtocolSchema,
   ...fetchDataForMultipleAddressesProtocolSchema,
+  ...getTokenBalancesSchema,
   ...transactionStatusCheckerSchema,
   ...walletConnectProtocolSchema
 }
