@@ -15,7 +15,8 @@ export enum Domain {
   ACTIONS = 'ACTIONS',
   ICP = 'ICP',
   COREUM = 'COREUM',
-  OPTIMISM = 'OPTIMISM'
+  OPTIMISM = 'OPTIMISM',
+  MINA = 'MINA'
 }
 
 export class CoinlibError extends Error {

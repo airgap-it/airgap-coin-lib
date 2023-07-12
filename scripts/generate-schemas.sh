@@ -50,6 +50,10 @@
 # node_modules/.bin/ts-json-schema-generator --path 'packages/groestlcoin/src/v1/serializer/v3/schemas/definitions/transaction-sign-response-groestlcoin.ts' --tsconfig 'tsconfig.json' -c > packages/groestlcoin/src/v1/serializer/v3/schemas/generated/transaction-sign-response-groestlcoin.json
 # node_modules/.bin/ts-json-schema-generator --path 'packages/groestlcoin/src/v1/serializer/v3/schemas/definitions/transaction-sign-request-groestlcoin.ts' --tsconfig 'tsconfig.json' -c > packages/groestlcoin/src/v1/serializer/v3/schemas/generated/transaction-sign-request-groestlcoin.json
 
+# Mina
+# node_modules/.bin/ts-json-schema-generator --path 'packages/mina/src/v1/serializer/v3/schemas/definitions/transaction-sign-response-mina.ts' --tsconfig 'tsconfig.json' -c > packages/mina/src/v1/serializer/v3/schemas/generated/transaction-sign-response-mina.json
+# node_modules/.bin/ts-json-schema-generator --path 'packages/mina/src/v1/serializer/v3/schemas/definitions/transaction-sign-request-mina.ts' --tsconfig 'tsconfig.json' -c > packages/mina/src/v1/serializer/v3/schemas/generated/transaction-sign-request-mina.json
+
 # Moonbeam
 # node_modules/.bin/ts-json-schema-generator --path 'packages/moonbeam/src/v1/serializer/v3/schemas/definitions/transaction-sign-response-moonbeam.ts' --tsconfig 'tsconfig.json' -c > packages/moonbeam/src/v1/serializer/v3/schemas/generated/transaction-sign-response-moonbeam.json
 # node_modules/.bin/ts-json-schema-generator --path 'packages/moonbeam/src/v1/serializer/v3/schemas/definitions/transaction-sign-request-moonbeam.ts' --tsconfig 'tsconfig.json' -c > packages/moonbeam/src/v1/serializer/v3/schemas/generated/transaction-sign-request-moonbeam.json
