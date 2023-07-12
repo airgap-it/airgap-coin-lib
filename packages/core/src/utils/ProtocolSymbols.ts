@@ -17,7 +17,8 @@ export enum MainProtocolSymbols {
   ICP = 'icp',
   ICP_CKBTC = 'icp_ckbtc',
   COREUM = 'coreum',
-  OPTIMISM = 'optimism'
+  OPTIMISM = 'optimism',
+  MINA = 'mina'
 }
 
 export enum SubProtocolSymbols {
