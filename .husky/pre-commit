@@ -1,6 +1,6 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-npm i --no-save prettier pretty-quick
+npm i --no-save prettier@2.8.8 pretty-quick
 
 npx pretty-quick --staged

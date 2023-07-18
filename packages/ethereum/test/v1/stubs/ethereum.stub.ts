@@ -4,25 +4,25 @@ import { Balance } from '@airgap/module-kit'
 import * as sinon from 'sinon'
 
 import { EthereumUnits } from '../../../src/v1'
-import { AirGapNodeClient } from '../../../src/v1/clients/node/AirGapNodeClient'
+import { HttpEthereumNodeClient } from '../../../src/v1/clients/node/HttpEthereumNodeClient'
 import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
 
 export class EthereumProtocolStub implements ProtocolHTTPStub {
   public async registerStub(testProtocolSpec: TestProtocolSpec) {
     sinon
-      .stub(AirGapNodeClient.prototype, 'fetchTransactionCount')
+      .stub(HttpEthereumNodeClient.prototype, 'fetchTransactionCount')
       .withArgs(testProtocolSpec.wallet.addresses[0])
       .returns(Promise.resolve(0))
     sinon
-      .stub(AirGapNodeClient.prototype, 'fetchBalance')
+      .stub(HttpEthereumNodeClient.prototype, 'fetchBalance')
       .withArgs(testProtocolSpec.wallet.addresses[0])
       .returns(Promise.resolve('100000000000000000000'))
     sinon
-      .stub(AirGapNodeClient.prototype, 'estimateTransactionGas')
+      .stub(HttpEthereumNodeClient.prototype, 'estimateTransactionGas')
       .withArgs(testProtocolSpec.wallet.addresses[0])
       .returns(Promise.resolve(new BigNumber('0x5208')))
     sinon
-      .stub(AirGapNodeClient.prototype, 'getGasPrice')
+      .stub(HttpEthereumNodeClient.prototype, 'getGasPrice')
       .withArgs(testProtocolSpec.wallet.addresses[0])
       .returns(Promise.resolve(new BigNumber('0x4a817c800')))
   }
@@ -33,11 +33,11 @@ export class EthereumProtocolStub implements ProtocolHTTPStub {
       .withArgs(sinon.match.any)
       .returns(Promise.resolve({ total: { value: '0', unit: 'blockchain' } } as Balance<EthereumUnits>))
     sinon
-      .stub(AirGapNodeClient.prototype, 'estimateTransactionGas')
+      .stub(HttpEthereumNodeClient.prototype, 'estimateTransactionGas')
       .withArgs(testProtocolSpec.wallet.addresses[0])
       .returns(Promise.resolve(new BigNumber('0x5208')))
     sinon
-      .stub(AirGapNodeClient.prototype, 'getGasPrice')
+      .stub(HttpEthereumNodeClient.prototype, 'getGasPrice')
       .withArgs(testProtocolSpec.wallet.addresses[0])
       .returns(Promise.resolve(new BigNumber('0x4a817c800')))
   }

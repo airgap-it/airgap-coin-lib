@@ -1,7 +1,7 @@
 import { EtherscanBlockExplorer } from './block-explorer/EtherscanBlockExplorer'
 import { EthereumInfoClient } from './clients/info/EthereumInfoClient'
 import { EtherscanInfoClient } from './clients/info/EtherscanInfoClient'
-import { AirGapNodeClient, EthereumRPCBody, EthereumRPCData, EthereumRPCResponse } from './clients/node/AirGapNodeClient'
+import { HttpEthereumNodeClient, EthereumRPCBody, EthereumRPCData, EthereumRPCResponse } from './clients/node/HttpEthereumNodeClient'
 import { EthereumNodeClient } from './clients/node/EthereumNodeClient'
 import { erc20Tokens } from './module/ERC20Tokens'
 import { EthereumModule } from './module/EthereumModule'
@@ -67,7 +67,7 @@ export { DEFAULT_ETHEREUM_UNITS_METADATA }
 
 // Clients
 
-export { EthereumNodeClient, AirGapNodeClient, EthereumInfoClient, EtherscanInfoClient }
+export { EthereumNodeClient, HttpEthereumNodeClient, EthereumInfoClient, EtherscanInfoClient }
 
 // Types
 

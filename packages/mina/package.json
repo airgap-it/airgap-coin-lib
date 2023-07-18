@@ -1,6 +1,6 @@
 {
   "name": "@airgap/mina",
-  "version": "0.13.19-beta.6",
+  "version": "0.13.19-beta.7",
   "description": "The @airgap/mina is a Mina implementation of the ICoinProtocol interface from @airgap/coinlib-core.",
   "keywords": [
     "airgap",
@@ -30,10 +30,10 @@
   },
   "author": "Papers AG <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
-    "@airgap/coinlib-core": "^0.13.19-beta.6",
-    "@airgap/crypto": "^0.13.19-beta.6",
-    "@airgap/module-kit": "^0.13.19-beta.6",
-    "@airgap/serializer": "^0.13.19-beta.6",
+    "@airgap/coinlib-core": "^0.13.19-beta.7",
+    "@airgap/crypto": "^0.13.19-beta.7",
+    "@airgap/module-kit": "^0.13.19-beta.7",
+    "@airgap/serializer": "^0.13.19-beta.7",
     "graphql": "^16.7.1",
     "graphql-request": "^6.1.0",
     "mina-signer": "^2.0.3"

@@ -8,7 +8,7 @@ import {
 } from '@airgap/ethereum/v1'
 import { newAmount, RecursivePartial } from '@airgap/module-kit'
 
-import { AirGapNodeClient } from '../client/node/AirGapNodeClient'
+import { HttpOptimismNodeClient } from '../client/node/HttpOptimismNodeClient'
 import { OptimismProtocolNetwork, OptimismProtocolOptions } from '../types/protocol'
 
 import { OptimismBaseProtocol, OptimismBaseProtocolImpl } from './OptimismBaseProtocol'
@@ -23,7 +23,7 @@ class OptimismProtocolImpl extends OptimismBaseProtocolImpl implements OptimismP
   constructor(options: RecursivePartial<OptimismProtocolOptions>) {
     const completeOptions = createOptimismProtocolOptions(options.network)
 
-    const nodeClient = new AirGapNodeClient(completeOptions.network.rpcUrl)
+    const nodeClient = new HttpOptimismNodeClient(completeOptions.network.rpcUrl)
     const infoClient = new EtherscanInfoClient(completeOptions.network.blockExplorerApi)
 
     const baseProtocolOptions: EthereumBaseProtocolOptions<EthereumUnits, OptimismProtocolNetwork> = {
