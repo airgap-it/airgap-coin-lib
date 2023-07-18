@@ -1,7 +1,7 @@
 import { RecursivePartial } from '@airgap/module-kit'
 
 import { EtherscanInfoClient } from '../clients/info/EtherscanInfoClient'
-import { AirGapNodeClient } from '../clients/node/AirGapNodeClient'
+import { HttpEthereumNodeClient } from '../clients/node/HttpEthereumNodeClient'
 import { EthereumProtocolNetwork, EthereumProtocolOptions } from '../types/protocol'
 
 import { DefaultEthereumBaseProtocolImpl, EthereumBaseProtocol } from './EthereumBaseProtocol'
@@ -18,7 +18,7 @@ class EthereumProtocolImpl extends DefaultEthereumBaseProtocolImpl implements Et
     const completeOptions: EthereumProtocolOptions = createEthereumProtocolOptions(options.network)
 
     super(
-      new AirGapNodeClient(completeOptions.network.rpcUrl),
+      new HttpEthereumNodeClient(completeOptions.network.rpcUrl),
       new EtherscanInfoClient(completeOptions.network.blockExplorerApi),
       completeOptions
     )

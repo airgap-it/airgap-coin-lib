@@ -10,7 +10,7 @@ import {
 } from '@airgap/ethereum/v1'
 import { AirGapInterface, implementsInterface, RecursivePartial } from '@airgap/module-kit'
 
-import { AirGapNodeClient } from '../../client/node/AirGapNodeClient'
+import { HttpOptimismNodeClient } from '../../client/node/HttpOptimismNodeClient'
 import { OptimismProtocolNetwork, OptimismProtocolOptions } from '../../types/protocol'
 import { OptimismBaseProtocol, OptimismBaseProtocolImpl } from '../OptimismBaseProtocol'
 import { OPTIMISM_MAINNET_PROTOCOL_NETWORK } from '../OptimismProtocol'
@@ -29,10 +29,9 @@ export interface ERC20Token extends AirGapInterface<OptimismBaseProtocol<string>
 
 class ERC20TokenImpl
   extends OptimismBaseProtocolImpl<string, EthereumERC20TokenImpl<OptimismProtocolNetwork>, ERC20TokenOptions<OptimismProtocolNetwork>>
-  implements ERC20Token
-{
+  implements ERC20Token {
   constructor(options: ERC20TokenOptions<OptimismProtocolNetwork>) {
-    const nodeClient = new AirGapNodeClient(options.network.rpcUrl)
+    const nodeClient = new HttpOptimismNodeClient(options.network.rpcUrl)
     const infoClient = new EtherscanInfoClient(options.network.blockExplorerApi)
 
     const ethereumProtocol = new EthereumERC20TokenImpl(nodeClient, infoClient, options)

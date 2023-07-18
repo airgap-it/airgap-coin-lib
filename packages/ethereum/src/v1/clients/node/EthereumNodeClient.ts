@@ -1,37 +1,20 @@
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import { AirGapTransactionStatus } from '@airgap/module-kit'
 
-export abstract class EthereumNodeClient {
-  public baseURL: string
+export interface EthereumNodeClient {
+  fetchBalance(address: string): Promise<BigNumber>
+  fetchTransactionCount(address: string): Promise<number>
+  sendSignedTransaction(transaction: string): Promise<string>
+  callBalanceOf(contractAddress: string, address: string): Promise<BigNumber>
+  getTransactionStatus(transactionHash: string): Promise<AirGapTransactionStatus>
+  estimateTransferGas(contractAddress: string, fromAddress: string, toAddress: string, hexAmount: string): Promise<BigNumber>
 
-  constructor(baseURL: string) {
-    this.baseURL = baseURL
-  }
+  estimateTransactionGas(fromAddress: string, toAddress: string, amount?: string, data?: string, gas?: string): Promise<BigNumber>
+  getGasPrice(): Promise<BigNumber>
 
-  public abstract fetchBalance(address: string): Promise<BigNumber>
-  public abstract fetchTransactionCount(address: string): Promise<number>
-  public abstract sendSignedTransaction(transaction: string): Promise<string>
-  public abstract callBalanceOf(contractAddress: string, address: string): Promise<BigNumber>
-  public abstract getTransactionStatus(transactionHash: string): Promise<AirGapTransactionStatus>
-  public abstract estimateTransferGas(
-    contractAddress: string,
-    fromAddress: string,
-    toAddress: string,
-    hexAmount: string
-  ): Promise<BigNumber>
+  callBalanceOfOnContracts(contractAddresses: string[], address: string): Promise<{ [contractAddress: string]: BigNumber }>
 
-  public abstract estimateTransactionGas(
-    fromAddress: string,
-    toAddress: string,
-    amount?: string,
-    data?: string,
-    gas?: string
-  ): Promise<BigNumber>
-  public abstract getGasPrice(): Promise<BigNumber>
-
-  public abstract callBalanceOfOnContracts(contractAddresses: string[], address: string): Promise<{ [contractAddress: string]: BigNumber }>
-
-  public abstract getContractName(contractAddress: string): Promise<string | undefined>
-  public abstract getContractSymbol(contractAddress: string): Promise<string | undefined>
-  public abstract getContractDecimals(contractAddress: string): Promise<number | undefined>
+  getContractName(contractAddress: string): Promise<string | undefined>
+  getContractSymbol(contractAddress: string): Promise<string | undefined>
+  getContractDecimals(contractAddress: string): Promise<number | undefined>
 }

@@ -4,7 +4,7 @@ import { Balance } from '@airgap/module-kit'
 import * as sinon from 'sinon'
 import { ERC20Token, EthereumBaseProtocolImpl } from '../../../src/v1'
 
-import { AirGapNodeClient } from '../../../src/v1/clients/node/AirGapNodeClient'
+import { HttpEthereumNodeClient } from '../../../src/v1/clients/node/HttpEthereumNodeClient'
 import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
 
 export class ERC20TokenProtocolStub implements ProtocolHTTPStub<string, ERC20Token> {
@@ -30,12 +30,12 @@ export class ERC20TokenProtocolStub implements ProtocolHTTPStub<string, ERC20Tok
       .returns(Promise.resolve({ total: { value: '100000000000000000000', unit: 'blockchain' } } as Balance))
 
     sinon
-      .stub(AirGapNodeClient.prototype, 'fetchTransactionCount')
+      .stub(HttpEthereumNodeClient.prototype, 'fetchTransactionCount')
       .withArgs(testProtocolSpec.wallet.addresses[0])
       .returns(Promise.resolve(80))
 
     sinon
-      .stub(AirGapNodeClient.prototype, 'fetchBalance')
+      .stub(HttpEthereumNodeClient.prototype, 'fetchBalance')
       .withArgs(testProtocolSpec.wallet.addresses[0])
       .returns(Promise.resolve('100000000000000000000'))
 
