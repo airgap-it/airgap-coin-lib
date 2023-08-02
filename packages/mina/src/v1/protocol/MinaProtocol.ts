@@ -198,7 +198,7 @@ export class MinaProtocolImpl implements MinaProtocol {
   ): Promise<AirGapTransactionsWithCursor<MinaTransactionCursor, MinaUnits>> {
     const transactions: AccountTransaction[] = await this.indexer.getTransactions(publicKey.value, limit, cursor?.lastDateTime)
 
-    const lastDateTime: string | undefined = transactions[transactions.length - 1].dateTime
+    const lastDateTime: string | undefined = transactions[transactions.length - 1]?.dateTime
     const hasNext: boolean = transactions.length >= limit
 
     const airGapTransactions: AirGapTransaction<MinaUnits>[] = transactions.map((transaction: AccountTransaction) => ({
