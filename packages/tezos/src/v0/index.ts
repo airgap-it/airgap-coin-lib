@@ -31,6 +31,7 @@ import { TezosQUIPU, TezosQUIPUProtocolConfig } from './protocol/fa/TezosQUIPU'
 import { TezosSIRS, TezosSIRSProtocolConfig } from './protocol/fa/TezosSIRS'
 import { TezosStaker } from './protocol/fa/TezosStaker'
 import { TezosUBTC, TezosUBTCProtocolConfig } from './protocol/fa/TezosUBTC'
+import { TezosUXTZ } from './protocol/fa/TezosUXTZ'
 import { TezosUDEFI, TezosUDEFIProtocolConfig } from './protocol/fa/TezosUDEFI'
 import { TezosUSD } from './protocol/fa/TezosUSD'
 import { TezosUSDT, TezosUSDTProtocolConfig } from './protocol/fa/TezosUSDT'
@@ -93,6 +94,7 @@ export {
   TezosYOU,
   TezosUDEFI,
   TezosUBTC,
+  TezosUXTZ,
   TezosWrapped,
   TezosWRAP,
   TezosKolibriUSD,
