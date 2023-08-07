@@ -88,7 +88,7 @@ export class CosmosProtocol extends NonExtendedProtocol implements ICoinDelegate
   public addressValidationPattern: string = '^(cosmos|cosmosvaloper)[a-zA-Z0-9]{39}$'
   public addressPlaceholder: string = 'cosmos...'
 
-  private readonly defaultGas: BigNumber = new BigNumber('200000')
+  private readonly defaultGas: BigNumber = new BigNumber('310000')
 
   public readonly cryptoClient: CosmosCryptoClient = new CosmosCryptoClient()
 
