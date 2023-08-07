@@ -809,6 +809,22 @@ export const erc20Tokens: Record<string, ERC20TokenMetadata> = {
     identifier: 'eth-erc20-aoa',
     contractAddress: '0x9ab165D795019b6d8B3e971DdA91071421305e5a',
     decimals: 18
+  },
+  'eth-erc20-weth': {
+    symbol: 'WETH',
+    name: 'Wrapped Ether',
+    marketSymbol: 'weth',
+    identifier: 'eth-erc20-weth',
+    contractAddress: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+    decimals: 18
+  },
+  'eth-erc20-verse': {
+    symbol: 'VERSE',
+    name: 'Verse',
+    marketSymbol: 'verse',
+    identifier: 'eth-erc20-verse',
+    contractAddress: '0x249ca82617ec3dfb2589c4c17ab7ec9765350a18',
+    decimals: 18
   }
 }
 
