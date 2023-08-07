@@ -1,6 +1,6 @@
 {
   "name": "@airgap/cosmos",
-  "version": "0.13.19-beta.9",
+  "version": "0.13.19-beta.14",
   "description": "The @airgap/cosmos is a Cosmos implementation of the ICoinProtocol interface from @airgap/coinlib-core.",
   "keywords": [
     "airgap",
@@ -30,11 +30,11 @@
   },
   "author": "Papers AG <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
-    "@airgap/coinlib-core": "^0.13.19-beta.9",
-    "@airgap/cosmos-core": "^0.13.19-beta.9",
-    "@airgap/crypto": "^0.13.19-beta.9",
-    "@airgap/module-kit": "^0.13.19-beta.9",
-    "@airgap/serializer": "^0.13.19-beta.9"
+    "@airgap/coinlib-core": "^0.13.19-beta.14",
+    "@airgap/cosmos-core": "^0.13.19-beta.14",
+    "@airgap/crypto": "^0.13.19-beta.14",
+    "@airgap/module-kit": "^0.13.19-beta.14",
+    "@airgap/serializer": "^0.13.19-beta.14"
   },
   "localDependencies": {},
   "nyc": {
