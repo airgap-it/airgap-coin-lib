@@ -69,7 +69,7 @@ export class MoonbeamAccountController extends SubstrateCommonAccountController<
 
     return {
       address: address.asString(),
-      balance: balance.toString(),
+      balance: balance.total.toString(),
       totalBond: totalBond.toString(),
       delegatees: delegatorState?.delegations.elements.map((bond) => bond.owner.asAddress()) ?? [],
       availableActions: await this.getStakingActions(delegatorState),
@@ -152,7 +152,7 @@ export class MoonbeamAccountController extends SubstrateCommonAccountController<
 
     const delegatorDetails = {
       address: delegatorAddress.asString(),
-      balance: balance.toString(),
+      balance: balance.total.toString(),
       totalBond: totalBond.toString(),
       delegatees: delegatorState?.delegations.elements.map((bond) => bond.owner.asAddress()) ?? [],
       availableActions: await this.getStakingActions(delegatorState, collatorDetails, delegationScheduledRequests),

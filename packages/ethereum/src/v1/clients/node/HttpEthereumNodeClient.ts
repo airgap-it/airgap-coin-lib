@@ -158,10 +158,8 @@ export class EthereumRPCDataTransfer extends EthereumRPCData {
   }
 }
 
-export class AirGapNodeClient extends EthereumNodeClient {
-  constructor(baseURL: string) {
-    super(baseURL)
-  }
+export class HttpEthereumNodeClient implements EthereumNodeClient {
+  constructor(protected readonly baseURL: string, protected readonly headers?: any) {}
 
   public async fetchBalance(address: string): Promise<BigNumber> {
     const body = new EthereumRPCBody('eth_getBalance', [address, EthereumRPCBody.blockLatest])
@@ -286,7 +284,7 @@ export class AirGapNodeClient extends EthereumNodeClient {
     return EthereumUtils.hexToNumber(response.result).toNumber()
   }
 
-  private contractCallBody(
+  protected contractCallBody(
     contractAddress: string,
     data: EthereumRPCData,
     extraParams: any[] = [],
@@ -296,17 +294,21 @@ export class AirGapNodeClient extends EthereumNodeClient {
     return new EthereumRPCBody('eth_call', [{ to: contractAddress, data: data.abiEncoded() }, ...extraParams], id, jsonrpc)
   }
 
-  private async send(body: EthereumRPCBody): Promise<EthereumRPCResponse> {
-    const response = await axios.post(this.baseURL, body.toRPCBody()).catch((error) => {
+  protected async send(body: EthereumRPCBody): Promise<EthereumRPCResponse> {
+    const response = await axios.post(this.baseURL, body.toRPCBody(), { headers: this.headers }).catch((error) => {
       throw new NetworkError(Domain.ETHEREUM, error as AxiosError)
     })
 
     return response.data
   }
 
-  private async batchSend(bodies: EthereumRPCBody[]): Promise<EthereumRPCResponse[]> {
-    const data = (await axios.post(this.baseURL, JSON.stringify(bodies.map((body) => body.toJSON())))).data
+  protected async batchSend(bodies: EthereumRPCBody[]): Promise<EthereumRPCResponse[]> {
+    const response = await axios
+      .post(this.baseURL, JSON.stringify(bodies.map((body) => body.toJSON())), { headers: this.headers })
+      .catch((error) => {
+        throw new NetworkError(Domain.ETHEREUM, error as AxiosError)
+      })
 
-    return data
+    return response.data
   }
 }

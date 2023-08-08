@@ -1045,7 +1045,7 @@ export function createICPProtocol(options: RecursivePartial<ICPProtocolOptions> 
 export const ICP_MAINNET_PROTOCOL_NETWORK: ICPProtocolNetwork = {
   name: 'Mainnet',
   type: 'mainnet',
-  rpcUrl: 'https://boundary.ic0.app/',
+  rpcUrl: 'https://icp-api.io/',
   blockExplorerUrl: 'https://dashboard.internetcomputer.org/',
   blockExplorerApi: 'https://ledger-api.internetcomputer.org',
   ledgerCanisterId: 'ryjl3-tyaaa-aaaaa-aaaba-cai',

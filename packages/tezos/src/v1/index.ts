@@ -23,6 +23,7 @@ import { createStakerProtocol, createStakerProtocolOptions, StakerProtocol } fro
 import { createTetherUSDProtocol, createTetherUSDProtocolOptions, TetherUSDProtocol } from './protocol/fa/tokens/TetherUSDProtocol'
 import { createTzBTCProtocol, createTzBTCProtocolOptions, TzBTCProtocol } from './protocol/fa/tokens/TzBTCProtocol'
 import { createUBTCProtocol, createUBTCProtocolOptions, UBTCProtocol } from './protocol/fa/tokens/UBTCProtocol'
+import { createUXTZProtocol, createUXTZProtocolOptions, UXTZProtocol } from './protocol/fa/tokens/UXTZProtocol'
 import { createUDEFIProtocol, createUDEFIProtocolOptions, UDEFIProtocol } from './protocol/fa/tokens/UDEFIProtocol'
 import { createUSDTezProtocol, createUSDTezProtocolOptions, USDTezProtocol } from './protocol/fa/tokens/USDTezProtocol'
 import { createUUSDProtocol, createUUSDProtocolOptions, UUSDProtocol } from './protocol/fa/tokens/UUSDProtocol'
@@ -151,6 +152,9 @@ export {
   UBTCProtocol,
   createUBTCProtocol,
   createUBTCProtocolOptions,
+  UXTZProtocol,
+  createUXTZProtocol,
+  createUXTZProtocolOptions,
   UDEFIProtocol,
   createUDEFIProtocol,
   createUDEFIProtocolOptions,

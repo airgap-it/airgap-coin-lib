@@ -35,6 +35,12 @@ COPY packages/ethereum/scripts /app/packages/ethereum/scripts
 COPY packages/groestlcoin/package.json /app/packages/groestlcoin/
 COPY packages/groestlcoin/scripts /app/packages/groestlcoin/scripts
 
+COPY packages/icp/package.json /app/packages/icp/
+COPY packages/icp/scripts /app/packages/icp/scripts
+
+COPY packages/mina/package.json /app/packages/mina/
+COPY packages/mina/scripts /app/packages/mina/scripts
+
 COPY packages/module-kit/package.json /app/packages/module-kit/
 COPY packages/module-kit/scripts /app/packages/module-kit/scripts
 
@@ -55,9 +61,6 @@ COPY packages/tezos/scripts /app/packages/tezos/scripts
 
 COPY packages/serializer/package.json /app/packages/serializer/
 COPY packages/serializer/scripts /app/packages/serializer/scripts
-
-COPY packages/icp/package.json /app/packages/icp/
-COPY packages/icp/scripts /app/packages/icp/scripts
 
 COPY lerna.json /app
 

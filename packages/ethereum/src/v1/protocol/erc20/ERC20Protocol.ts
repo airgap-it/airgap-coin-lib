@@ -22,7 +22,7 @@ import {
 import { FeeMarketEIP1559Transaction, TransactionFactory } from '@ethereumjs/tx'
 
 import { EthereumInfoClient, EthereumInfoClientTransactionsResult } from '../../clients/info/EthereumInfoClient'
-import { EthereumRPCDataTransfer } from '../../clients/node/AirGapNodeClient'
+import { EthereumRPCDataTransfer } from '../../clients/node/HttpEthereumNodeClient'
 import { EthereumNodeClient } from '../../clients/node/EthereumNodeClient'
 import { ERC20ProtocolOptions, EthereumProtocolNetwork, EthereumUnits } from '../../types/protocol'
 import {
@@ -49,8 +49,7 @@ export interface ERC20Protocol<_Units extends string, _ProtocolNetwork extends E
 
 export abstract class ERC20ProtocolImpl<_Units extends string, _ProtocolNetwork extends EthereumProtocolNetwork = EthereumProtocolNetwork>
   extends EthereumBaseProtocolImpl<_Units, _ProtocolNetwork>
-  implements ERC20Protocol<_Units, _ProtocolNetwork>
-{
+  implements ERC20Protocol<_Units, _ProtocolNetwork> {
   protected readonly contractAddress: string
 
   public constructor(

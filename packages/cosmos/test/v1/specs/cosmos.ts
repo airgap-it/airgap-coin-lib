@@ -64,7 +64,7 @@ export class CosmosTestProtocolSpec extends TestProtocolSpec {
         type: 'unsigned',
         ...new CosmosTransaction(
           [cosmosMessage],
-          new CosmosFee([new CosmosCoin('uatom', '1')], '200000'),
+          new CosmosFee([new CosmosCoin('uatom', '1')], '310000'),
           '',
           'cosmoshub-3',
           '0',
@@ -74,7 +74,7 @@ export class CosmosTestProtocolSpec extends TestProtocolSpec {
       signedTx: {
         type: 'signed',
         encoded:
-          'Co0BCooBChwvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kEmoKLWNvc21vczF3M21lYTlnaGZkYzNyN2F4NDVtZWhsMnRjcXc5cDB2bmxobDBwNhItY29zbW9zMXczbWVhOWdoZmRjM3I3YXg0NW1laGwydGNxdzlwMHZubGhsMHA2GgoKBXVhdG9tEgEyEmIKTgpGCh8vY29zbW9zLmNyeXB0by5zZWNwMjU2azEuUHViS2V5EiMKIQPfff5bQ1+WAnM35SNBfgfM5hqkufUbuTqsvftUpwooqhIECgIIARIQCgoKBXVhdG9tEgExEMCaDBpAqMbDSuzDmyX/7MqXfUYsZUNmlbiXPNUdbTAd7rGn7sld/SqV2LzAXPVtsqYptNYfCYtNVpnhIVQSUp33UD/L1g=='
+          'Co0BCooBChwvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kEmoKLWNvc21vczF3M21lYTlnaGZkYzNyN2F4NDVtZWhsMnRjcXc5cDB2bmxobDBwNhItY29zbW9zMXczbWVhOWdoZmRjM3I3YXg0NW1laGwydGNxdzlwMHZubGhsMHA2GgoKBXVhdG9tEgEyEmIKTgpGCh8vY29zbW9zLmNyeXB0by5zZWNwMjU2azEuUHViS2V5EiMKIQPfff5bQ1+WAnM35SNBfgfM5hqkufUbuTqsvftUpwooqhIECgIIARIQCgoKBXVhdG9tEgExEPD1EhpAVZB7sqYkqBNne0OpaJZ9ylXOCulitm3VwYu5D+6ZPslEWkarEYUxPp3xFlUMA+rwD0n6zzo5D/bxoGvezMs0NQ=='
       } as CosmosSignedTransaction
     }
   ]
@@ -85,7 +85,7 @@ export class CosmosTestProtocolSpec extends TestProtocolSpec {
           new CosmosCoin('uatom', '2')
         ])
       ],
-      new CosmosFee([new CosmosCoin('uatom', '1')], '200000'),
+      new CosmosFee([new CosmosCoin('uatom', '1')], '310000'),
       '',
       'cosmoshub-3',
       '0',
@@ -161,7 +161,7 @@ export class CosmosTestProtocolSpec extends TestProtocolSpec {
                   amount: '500'
                 }
               ],
-              gas_limit: '200000',
+              gas_limit: '310000',
               payer: '',
               granter: ''
             }
@@ -201,7 +201,7 @@ export class CosmosTestProtocolSpec extends TestProtocolSpec {
                   amount: '500'
                 }
               ],
-              gas_limit: '200000',
+              gas_limit: '310000',
               payer: '',
               granter: ''
             }
@@ -223,7 +223,7 @@ export class CosmosTestProtocolSpec extends TestProtocolSpec {
             /* not relevant */
           ],
           info: '',
-          gas_wanted: '200000',
+          gas_wanted: '310000',
           gas_used: '61473',
           tx: {
             '@type': '/cosmos.tx.v1beta1.Tx',
@@ -257,7 +257,7 @@ export class CosmosTestProtocolSpec extends TestProtocolSpec {
                     amount: '5000'
                   }
                 ],
-                gas_limit: '200000',
+                gas_limit: '310000',
                 payer: '',
                 granter: ''
               }
@@ -282,7 +282,7 @@ export class CosmosTestProtocolSpec extends TestProtocolSpec {
             /* not relevant */
           ],
           info: '',
-          gas_wanted: '200000',
+          gas_wanted: '310000',
           gas_used: '61483',
           tx: {
             '@type': '/cosmos.tx.v1beta1.Tx',
@@ -316,7 +316,7 @@ export class CosmosTestProtocolSpec extends TestProtocolSpec {
                     amount: '500'
                   }
                 ],
-                gas_limit: '200000',
+                gas_limit: '310000',
                 payer: '',
                 granter: ''
               }
@@ -364,7 +364,7 @@ export class CosmosTestProtocolSpec extends TestProtocolSpec {
                   amount: '500'
                 }
               ],
-              gas_limit: '200000',
+              gas_limit: '310000',
               payer: '',
               granter: ''
             }
@@ -404,7 +404,7 @@ export class CosmosTestProtocolSpec extends TestProtocolSpec {
                   amount: '200'
                 }
               ],
-              gas_limit: '200000',
+              gas_limit: '310000',
               payer: '',
               granter: ''
             }
@@ -426,7 +426,7 @@ export class CosmosTestProtocolSpec extends TestProtocolSpec {
             /* not relevant */
           ],
           info: '',
-          gas_wanted: '200000',
+          gas_wanted: '310000',
           gas_used: '103678',
           tx: {
             '@type': '/cosmos.tx.v1beta1.Tx',
@@ -454,7 +454,7 @@ export class CosmosTestProtocolSpec extends TestProtocolSpec {
                     amount: '500'
                   }
                 ],
-                gas_limit: '200000',
+                gas_limit: '310000',
                 payer: '',
                 granter: ''
               }
@@ -479,7 +479,7 @@ export class CosmosTestProtocolSpec extends TestProtocolSpec {
             /* not relevant */
           ],
           info: '',
-          gas_wanted: '200000',
+          gas_wanted: '310000',
           gas_used: '61684',
           tx: {
             '@type': '/cosmos.tx.v1beta1.Tx',
@@ -513,7 +513,7 @@ export class CosmosTestProtocolSpec extends TestProtocolSpec {
                     amount: '200'
                   }
                 ],
-                gas_limit: '200000',
+                gas_limit: '310000',
                 payer: '',
                 granter: ''
               }
@@ -567,7 +567,7 @@ export class CosmosTestProtocolSpec extends TestProtocolSpec {
                   amount: '500'
                 }
               ],
-              gas_limit: '200000',
+              gas_limit: '310000',
               payer: '',
               granter: ''
             }
@@ -607,7 +607,7 @@ export class CosmosTestProtocolSpec extends TestProtocolSpec {
                   amount: '500'
                 }
               ],
-              gas_limit: '200000',
+              gas_limit: '310000',
               payer: '',
               granter: ''
             }
@@ -629,7 +629,7 @@ export class CosmosTestProtocolSpec extends TestProtocolSpec {
             /* not relevant */
           ],
           info: '',
-          gas_wanted: '200000',
+          gas_wanted: '310000',
           gas_used: '61473',
           tx: {
             '@type': '/cosmos.tx.v1beta1.Tx',
@@ -663,7 +663,7 @@ export class CosmosTestProtocolSpec extends TestProtocolSpec {
                     amount: '5000'
                   }
                 ],
-                gas_limit: '200000',
+                gas_limit: '310000',
                 payer: '',
                 granter: ''
               }
@@ -688,7 +688,7 @@ export class CosmosTestProtocolSpec extends TestProtocolSpec {
             /* not relevant */
           ],
           info: '',
-          gas_wanted: '200000',
+          gas_wanted: '310000',
           gas_used: '61483',
           tx: {
             '@type': '/cosmos.tx.v1beta1.Tx',
@@ -722,7 +722,7 @@ export class CosmosTestProtocolSpec extends TestProtocolSpec {
                     amount: '500'
                   }
                 ],
-                gas_limit: '200000',
+                gas_limit: '310000',
                 payer: '',
                 granter: ''
               }
@@ -770,7 +770,7 @@ export class CosmosTestProtocolSpec extends TestProtocolSpec {
                   amount: '500'
                 }
               ],
-              gas_limit: '200000',
+              gas_limit: '310000',
               payer: '',
               granter: ''
             }
@@ -810,7 +810,7 @@ export class CosmosTestProtocolSpec extends TestProtocolSpec {
                   amount: '200'
                 }
               ],
-              gas_limit: '200000',
+              gas_limit: '310000',
               payer: '',
               granter: ''
             }
@@ -832,7 +832,7 @@ export class CosmosTestProtocolSpec extends TestProtocolSpec {
             /* not relevant */
           ],
           info: '',
-          gas_wanted: '200000',
+          gas_wanted: '310000',
           gas_used: '103678',
           tx: {
             '@type': '/cosmos.tx.v1beta1.Tx',
@@ -860,7 +860,7 @@ export class CosmosTestProtocolSpec extends TestProtocolSpec {
                     amount: '500'
                   }
                 ],
-                gas_limit: '200000',
+                gas_limit: '310000',
                 payer: '',
                 granter: ''
               }
@@ -885,7 +885,7 @@ export class CosmosTestProtocolSpec extends TestProtocolSpec {
             /* not relevant */
           ],
           info: '',
-          gas_wanted: '200000',
+          gas_wanted: '310000',
           gas_used: '61684',
           tx: {
             '@type': '/cosmos.tx.v1beta1.Tx',
@@ -919,7 +919,7 @@ export class CosmosTestProtocolSpec extends TestProtocolSpec {
                     amount: '200'
                   }
                 ],
-                gas_limit: '200000',
+                gas_limit: '310000',
                 payer: '',
                 granter: ''
               }

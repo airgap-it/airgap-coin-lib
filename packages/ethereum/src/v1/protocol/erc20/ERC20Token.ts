@@ -5,7 +5,7 @@ import { AirGapInterface, RecursivePartial } from '@airgap/module-kit'
 
 import { EthereumInfoClient } from '../../clients/info/EthereumInfoClient'
 import { EtherscanInfoClient } from '../../clients/info/EtherscanInfoClient'
-import { AirGapNodeClient } from '../../clients/node/AirGapNodeClient'
+import { HttpEthereumNodeClient } from '../../clients/node/HttpEthereumNodeClient'
 import { EthereumNodeClient } from '../../clients/node/EthereumNodeClient'
 import { ERC20TokenMetadata, ERC20TokenOptions, EthereumProtocolNetwork } from '../../types/protocol'
 import { ETHEREUM_MAINNET_PROTOCOL_NETWORK } from '../EthereumProtocol'
@@ -21,8 +21,7 @@ export interface ERC20Token<_ProtocolNetwork extends EthereumProtocolNetwork = E
 
 export class ERC20TokenImpl<_ProtocolNetwork extends EthereumProtocolNetwork = EthereumProtocolNetwork>
   extends ERC20ProtocolImpl<string, _ProtocolNetwork>
-  implements ERC20Token<_ProtocolNetwork>
-{
+  implements ERC20Token<_ProtocolNetwork> {
   public constructor(nodeClient: EthereumNodeClient, infoClient: EthereumInfoClient, options: ERC20TokenOptions<_ProtocolNetwork>) {
     super(nodeClient, infoClient, options)
 
@@ -59,7 +58,7 @@ export function createERC20Token(
   const completeOptions: ERC20TokenOptions = createERC20TokenOptions(metadata, options.network, options.mainIdentifier)
 
   return new ERC20TokenImpl(
-    new AirGapNodeClient(completeOptions.network.rpcUrl),
+    new HttpEthereumNodeClient(completeOptions.network.rpcUrl),
     new EtherscanInfoClient(completeOptions.network.blockExplorerApi),
     completeOptions
   )

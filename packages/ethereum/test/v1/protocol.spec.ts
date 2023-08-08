@@ -12,7 +12,7 @@ import chaiAsPromised = require('chai-as-promised')
 import 'mocha'
 import sinon = require('sinon')
 
-import { AirGapNodeClient } from '../../src/v1/clients/node/AirGapNodeClient'
+import { HttpEthereumNodeClient } from '../../src/v1/clients/node/HttpEthereumNodeClient'
 
 import { TestProtocolSpec } from './implementations'
 import { ERC20TokenTestProtocolSpec } from './specs/erc20-token'
@@ -430,7 +430,7 @@ Promise.all(
 
           for (let i = 0; i < tests.length; i++) {
             // Stub specific hashes
-            const getTransactionStub = sinon.stub(AirGapNodeClient.prototype, 'getTransactionStatus')
+            const getTransactionStub = sinon.stub(HttpEthereumNodeClient.prototype, 'getTransactionStatus')
             Object.entries(tests[i]).forEach(([hash, expectedResult]) => {
               getTransactionStub.withArgs(hash).returns(expectedResult)
             })

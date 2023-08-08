@@ -295,7 +295,7 @@ export function createCkBTCOnlineProtocol(options: RecursivePartial<CkBTCOnlineP
 export const CKBTC_MAINNET_PROTOCOL_NETWORK: CkBTCProtocolNetwork = {
   name: 'Mainnet',
   type: 'mainnet',
-  rpcUrl: 'https://boundary.ic0.app/',
+  rpcUrl: 'https://icp-api.io/',
   blockExplorerUrl: 'https://dashboard.internetcomputer.org/',
   blockExplorerApi: 'https://ledger-api.internetcomputer.org',
   ledgerCanisterId: 'mxzaz-hqaaa-aaaar-qaada-cai',

@@ -17,7 +17,8 @@ export enum MainProtocolSymbols {
   ICP = 'icp',
   ICP_CKBTC = 'icp_ckbtc',
   COREUM = 'coreum',
-  OPTIMISM = 'optimism'
+  OPTIMISM = 'optimism',
+  MINA = 'mina'
 }
 
 export enum SubProtocolSymbols {
@@ -32,6 +33,7 @@ export enum SubProtocolSymbols {
   XTZ_W = 'xtz-w',
   XTZ_UDEFI = 'xtz-udefi',
   XTZ_UBTC = 'xtz-ubtc',
+  XTZ_UXTZ = 'xtz-uxtz',
   XTZ_CTEZ = 'xtz-ctez',
   XTZ_PLENTY = 'xtz-plenty',
   XTZ_WRAP = 'xtz-wrap',

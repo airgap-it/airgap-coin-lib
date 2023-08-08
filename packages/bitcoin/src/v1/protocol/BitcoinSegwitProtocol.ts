@@ -104,7 +104,7 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
         standardDerivationPath: `m/84'/0'/0'`,
         address: {
           ...(this.legacy.metadata.account?.address ?? {}),
-          regex: 'bc1...'
+          regex: '^(?:[13]{1}[a-km-zA-HJ-NP-Z1-9]{25,34}|bc1[a-z0-9]{39,59})$'
         }
       }
     }

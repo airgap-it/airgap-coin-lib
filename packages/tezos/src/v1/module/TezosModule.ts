@@ -26,6 +26,7 @@ import { createSiriusProtocol } from '../protocol/fa/tokens/SiriusProtocol'
 import { createStakerProtocol } from '../protocol/fa/tokens/StakerProtocol'
 import { createTzBTCProtocol } from '../protocol/fa/tokens/TzBTCProtocol'
 import { createUBTCProtocol } from '../protocol/fa/tokens/UBTCProtocol'
+import { createUXTZProtocol } from '../protocol/fa/tokens/UXTZProtocol'
 import { createUDEFIProtocol } from '../protocol/fa/tokens/UDEFIProtocol'
 import { createUSDTezProtocol } from '../protocol/fa/tokens/USDTezProtocol'
 import { createUUSDProtocol } from '../protocol/fa/tokens/UUSDProtocol'
@@ -54,6 +55,7 @@ export class TezosModule implements AirGapModule<{ ProtocolNetwork: TezosProtoco
       SubProtocolSymbols.XTZ_W,
       SubProtocolSymbols.XTZ_UDEFI,
       SubProtocolSymbols.XTZ_UBTC,
+      SubProtocolSymbols.XTZ_UXTZ,
       SubProtocolSymbols.XTZ_CTEZ,
       SubProtocolSymbols.XTZ_PLENTY,
       SubProtocolSymbols.XTZ_WRAP,
@@ -150,6 +152,8 @@ export class TezosModule implements AirGapModule<{ ProtocolNetwork: TezosProtoco
         return createUDEFIProtocol({ network })
       case SubProtocolSymbols.XTZ_UBTC:
         return createUBTCProtocol({ network })
+      case SubProtocolSymbols.XTZ_UXTZ:
+        return createUXTZProtocol({ network })
       case SubProtocolSymbols.XTZ_CTEZ:
         return createCTezProtocol({ network })
       case SubProtocolSymbols.XTZ_PLENTY:
