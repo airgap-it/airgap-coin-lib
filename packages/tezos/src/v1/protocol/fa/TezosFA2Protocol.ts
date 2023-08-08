@@ -8,7 +8,9 @@ import {
   PublicKey,
   RecursivePartial,
   TransactionFullConfiguration,
-  TransactionDetails
+  TransactionDetails,
+  AirGapTransactionsWithCursor,
+  AirGapTransaction
 } from '@airgap/module-kit'
 
 import { TezosContractCall } from '../../contract/TezosContractCall'
@@ -25,7 +27,7 @@ import { MichelsonAddress } from '../../types/michelson/primitives/MichelsonAddr
 import { MichelsonInt } from '../../types/michelson/primitives/MichelsonInt'
 import { MichelsonString } from '../../types/michelson/primitives/MichelsonString'
 import { TezosFA2ProtocolNetwork, TezosFA2ProtocolOptions, TezosUnits } from '../../types/protocol'
-import { TezosUnsignedTransaction } from '../../types/transaction'
+import { TezosTransactionCursor, TezosUnsignedTransaction } from '../../types/transaction'
 import { isMichelinePrimitive, isMichelinePrimitiveApplication, isMichelineSequence } from '../../utils/micheline'
 import { parseAddress } from '../../utils/pack'
 import { TezosFA2Accountant } from '../../utils/protocol/fa/TezosFA2Accountant'
@@ -230,6 +232,30 @@ export class TezosFA2ProtocolImpl<_Units extends string, _Entrypoints extends st
       contractAddress: this.options.network.contractAddress,
       id: tokenId ?? this.tokenId ?? 0
     })
+  }
+
+  public override async getTransactionsForAddress(
+    address: string,
+    limit: number,
+    cursor?: TezosTransactionCursor
+  ): Promise<AirGapTransactionsWithCursor<TezosTransactionCursor, _Units, TezosUnits>> {
+    const transactions: Omit<AirGapTransaction<never, TezosUnits>, 'network'>[] = await this.indexer.getTokenTransactionsForAddress(
+      { contractAddress: this.contract.address, id: this.tokenId ?? 0 },
+      address,
+      limit,
+      cursor?.offset
+    )
+
+    return {
+      transactions: transactions.map((transaction: Omit<AirGapTransaction<never, TezosUnits>, 'network'>) => ({
+        ...transaction,
+        network: this.options.network
+      })),
+      cursor: {
+        hasNext: transactions.length >= limit,
+        offset: (cursor?.offset ?? 0) + transactions.length
+      }
+    }
   }
 
   protected async createTransferCalls(
