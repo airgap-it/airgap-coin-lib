@@ -3,10 +3,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
     "MinaNetworkType": {
-      "enum": [
-        "mainnet",
-        "testnet"
-      ],
+      "enum": ["mainnet", "testnet"],
       "type": "string"
     },
     "MinaTransactionSignRequest": {
@@ -46,30 +43,18 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "to",
-                "from",
-                "amount",
-                "fee",
-                "nonce"
-              ],
+              "required": ["to", "from", "amount", "fee", "nonce"],
               "type": "object"
             },
             "networkType": {
               "$ref": "#/definitions/MinaNetworkType"
             }
           },
-          "required": [
-            "networkType",
-            "data"
-          ],
+          "required": ["networkType", "data"],
           "type": "object"
         }
       },
-      "required": [
-        "publicKey",
-        "transaction"
-      ],
+      "required": ["publicKey", "transaction"],
       "type": "object"
     }
   }

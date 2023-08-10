@@ -15,6 +15,7 @@ const messageSignResponse: SchemaRoot = require('./schemas/generated/message-sig
 export class SerializerV3 {
   private readonly schemas: Map<string, SchemaInfo[]> = new Map()
   private readonly validators: Map<ProtocolSymbols, TransactionValidatorFactory> = new Map()
+  private readonly supportedProtocols: Set<string> = new Set()
 
   private static instance: SerializerV3 | undefined = undefined
   public static getInstance(): SerializerV3 {
@@ -44,6 +45,9 @@ export class SerializerV3 {
     }
     schemas.push(schema)
     this.schemas.set(protocolSpecificSchemaName, schemas)
+    if (protocol) {
+      this.supportedProtocols.add(protocol)
+    }
   }
 
   public static getSchemas(schemaId: number, protocol?: ProtocolSymbols): SchemaInfo[] {
@@ -95,6 +99,10 @@ export class SerializerV3 {
 
   public addValidator(protocol: ProtocolSymbols, validator: TransactionValidatorFactory): void {
     this.validators.set(protocol, validator)
+  }
+
+  public getSupportedProtocols(): Set<string> {
+    return this.supportedProtocols
   }
 
   public async serialize(messages: IACMessageDefinitionObjectV3[]): Promise<string> {

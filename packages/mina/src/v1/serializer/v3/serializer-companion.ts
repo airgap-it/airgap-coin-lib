@@ -6,7 +6,12 @@ import { IACMessageType, SchemaRoot, TransactionSignRequest, TransactionSignResp
 
 import { MinaSignedTransaction, MinaUnsignedTransaction } from '../../types/transaction'
 
-import { minaSignedTransactionToResponse, minaTransactionSignRequestToUnsigned, minaTransactionSignResponseToSigned, minaUnsignedTransactionToRequest } from './schemas/converter/transaction-converter'
+import {
+  minaSignedTransactionToResponse,
+  minaTransactionSignRequestToUnsigned,
+  minaTransactionSignResponseToSigned,
+  minaUnsignedTransactionToRequest
+} from './schemas/converter/transaction-converter'
 import { MinaTransactionValidator } from './validators/transaction-validator'
 import { minaValidators } from './validators/validators'
 
@@ -71,8 +76,8 @@ export class MinaV3SerializerCompanion implements AirGapV3SerializerCompanion {
         } catch {
           return false
         }
-        default:
-          throw new UnsupportedError(Domain.MINA, `Protocol ${identifier} not supported`)
+      default:
+        throw new UnsupportedError(Domain.MINA, `Protocol ${identifier} not supported`)
     }
   }
 

@@ -4,7 +4,11 @@ import { MinaSignedTransaction, MinaUnsignedTransaction } from '../../../../type
 import { MinaTransactionSignRequest } from '../definitions/transaction-sign-request-mina'
 import { MinaTransactionSignResponse } from '../definitions/transaction-sign-response-mina'
 
-export function minaUnsignedTransactionToRequest(unsigned: MinaUnsignedTransaction, publicKey: string, callbackUrl?: string): MinaTransactionSignRequest {
+export function minaUnsignedTransactionToRequest(
+  unsigned: MinaUnsignedTransaction,
+  publicKey: string,
+  callbackUrl?: string
+): MinaTransactionSignRequest {
   const { type: _, ...rest } = unsigned
 
   return {
