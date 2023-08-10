@@ -49,7 +49,8 @@ export interface ERC20Protocol<_Units extends string, _ProtocolNetwork extends E
 
 export abstract class ERC20ProtocolImpl<_Units extends string, _ProtocolNetwork extends EthereumProtocolNetwork = EthereumProtocolNetwork>
   extends EthereumBaseProtocolImpl<_Units, _ProtocolNetwork>
-  implements ERC20Protocol<_Units, _ProtocolNetwork> {
+  implements ERC20Protocol<_Units, _ProtocolNetwork>
+{
   protected readonly contractAddress: string
 
   public constructor(

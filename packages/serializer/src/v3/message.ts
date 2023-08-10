@@ -1,5 +1,5 @@
 import { SerializerError, SerializerErrorType } from '@airgap/coinlib-core/errors'
-import { MainProtocolSymbols, ProtocolSymbols } from '@airgap/coinlib-core/utils/ProtocolSymbols'
+import { ProtocolSymbols } from '@airgap/coinlib-core/utils/ProtocolSymbols'
 
 import { IACMessageType } from './interfaces'
 import { AccountShareResponse } from './schemas/definitions/account-share-response'
@@ -100,7 +100,7 @@ export class Message implements IACMessageDefinitionObjectV3 {
 
   public static fromEncoded(buf: MessageDefinitionArray, serializer: SerializerV3 = SerializerV3.getInstance()): Message {
     const version: number = this.validateVersion(buf[0])
-    const protocol: ProtocolSymbols = this.validateProtocol(buf[2])
+    const protocol: ProtocolSymbols = this.validateProtocol(buf[2], Array.from(serializer.getSupportedProtocols()))
     const type: IACMessageType = this.validateType(buf[1], protocol, serializer)
 
     const id: number = this.validateId(buf[3])
@@ -141,11 +141,11 @@ export class Message implements IACMessageDefinitionObjectV3 {
     })
   }
 
-  private static validateProtocol(protocol: string): ProtocolSymbols {
+  private static validateProtocol(protocol: string, supportedProtocols: string[]): ProtocolSymbols {
     return this.validateProperty<ProtocolSymbols, string>(
       'Protocol',
       protocol,
-      (val: string) => val.length === 0 || Object.values(MainProtocolSymbols).some((value: string) => val.split('-')[0] === value)
+      (val: string) => val.length === 0 || supportedProtocols.some((value: string) => val === value || val.split('-')[0] === value)
     )
   }
 
