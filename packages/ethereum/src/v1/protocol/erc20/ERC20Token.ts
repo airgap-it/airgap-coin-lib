@@ -21,7 +21,8 @@ export interface ERC20Token<_ProtocolNetwork extends EthereumProtocolNetwork = E
 
 export class ERC20TokenImpl<_ProtocolNetwork extends EthereumProtocolNetwork = EthereumProtocolNetwork>
   extends ERC20ProtocolImpl<string, _ProtocolNetwork>
-  implements ERC20Token<_ProtocolNetwork> {
+  implements ERC20Token<_ProtocolNetwork>
+{
   public constructor(nodeClient: EthereumNodeClient, infoClient: EthereumInfoClient, options: ERC20TokenOptions<_ProtocolNetwork>) {
     super(nodeClient, infoClient, options)
 

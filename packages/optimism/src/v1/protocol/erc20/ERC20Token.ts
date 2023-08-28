@@ -29,7 +29,8 @@ export interface ERC20Token extends AirGapInterface<OptimismBaseProtocol<string>
 
 class ERC20TokenImpl
   extends OptimismBaseProtocolImpl<string, EthereumERC20TokenImpl<OptimismProtocolNetwork>, ERC20TokenOptions<OptimismProtocolNetwork>>
-  implements ERC20Token {
+  implements ERC20Token
+{
   constructor(options: ERC20TokenOptions<OptimismProtocolNetwork>) {
     const nodeClient = new HttpOptimismNodeClient(options.network.rpcUrl)
     const infoClient = new EtherscanInfoClient(options.network.blockExplorerApi)

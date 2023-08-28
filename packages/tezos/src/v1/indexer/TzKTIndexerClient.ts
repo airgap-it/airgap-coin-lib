@@ -194,7 +194,7 @@ export class TzKTIndexerClient implements TezosIndexerClient {
       return undefined
     }
 
-    return 'micheline=2' + params ? '&params' : ''
+    return `micheline=2${params ? `&params=${params}` : ''}`
   }
 
   private url(path: string, query?: string, limit?: number, offset?: number): string {

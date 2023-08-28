@@ -271,7 +271,7 @@ export class TezosDomains {
         MichelsonPair.from(
           value1,
           undefined,
-          (value2: unknown) => MichelsonString.from(value2, 'internalData') /* ignoring unused map */,
+          (_value2: unknown) => new MichelsonString('', 'internalData') /* ignoring unused map */,
           (value2: unknown) => MichelsonOption.from(value2, MichelsonBytes.from, 'name')
         ),
       (value1: unknown) => MichelsonAddress.from(value1, 'owner')

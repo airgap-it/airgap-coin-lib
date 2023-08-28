@@ -714,9 +714,17 @@ export const erc20Tokens: Record<string, ERC20TokenMetadata> = {
     contractAddress: '0xec67005c4E498Ec7f55E092bd1d35cbC47C91892',
     decimals: 18
   },
+  'eth-erc20-fet-new': {
+    symbol: 'FET',
+    name: 'Fetch (erc20)',
+    marketSymbol: 'fet',
+    identifier: 'eth-erc20-fet-new',
+    contractAddress: '0xaea46a60368a7bd060eec7df8cba43b7ef41ad85',
+    decimals: 18
+  },
   'eth-erc20-fet': {
     symbol: 'FET',
-    name: 'Fetch',
+    name: 'Fetch (erc20, old)',
     marketSymbol: 'fet',
     identifier: 'eth-erc20-fet',
     contractAddress: '0x1d287cc25dad7ccaf76a26bc660c5f7c8e2a05bd',

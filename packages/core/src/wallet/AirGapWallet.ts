@@ -52,8 +52,9 @@ export class AirGapWallet implements IAirGapWallet {
     let addresses: IAirGapAddressResult[]
     if (this.isExtendedPublicKey) {
       const protocolIdentifier = await this.protocol.getIdentifier()
-      const singleDerivationProtocols = [MainProtocolSymbols.ETH, MainProtocolSymbols.OPTIMISM]
-      const singleDerivation = singleDerivationProtocols.map((protocolSymbol: ProtocolSymbols) =>
+      // TODO: configure it on the protocol level
+      const multipleDerivationProtocols = [MainProtocolSymbols.BTC, MainProtocolSymbols.BTC_SEGWIT, MainProtocolSymbols.GRS]
+      const multipleDerivation = multipleDerivationProtocols.some((protocolSymbol: ProtocolSymbols) =>
         protocolIdentifier.startsWith(protocolSymbol)
       )
 
@@ -65,12 +66,12 @@ export class AirGapWallet implements IAirGapWallet {
       }
 
       addresses = (
-        singleDerivation
-          ? [await this.protocol.getAddressesFromExtendedPublicKey(this.publicKey, 0, 1, offset)]
-          : await Promise.all([
+        multipleDerivation
+          ? await Promise.all([
               this.protocol.getAddressesFromExtendedPublicKey(this.publicKey, 0, amount, offset),
               this.protocol.getAddressesFromExtendedPublicKey(this.publicKey, 1, amount, offset)
             ])
+          : [await this.protocol.getAddressesFromExtendedPublicKey(this.publicKey, 0, 1, offset)]
       ).reduce((flatten, next) => flatten.concat(next), [])
     } else {
       addresses = await this.protocol.getAddressesFromPublicKey(this.publicKey)

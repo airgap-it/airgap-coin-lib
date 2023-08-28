@@ -10,7 +10,7 @@ export const minaValidators = {
     const protocol = createMinaProtocol()
     const metadata = await protocol.getMetadata()
     const addressPattern = RegExp(metadata.account?.address?.regex ?? '.*')
-    const amountPattern = RegExp('\d+')
+    const amountPattern = RegExp('d+')
 
     const payment = value as Partial<MinaPayment>
     if (typeof payment.to !== 'string' || !addressPattern.test(payment.to)) {
