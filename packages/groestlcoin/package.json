@@ -1,6 +1,6 @@
 {
   "name": "@airgap/groestlcoin",
-  "version": "0.13.20-beta.0",
+  "version": "0.13.20",
   "description": "The @airgap/groestlcoin is a Groestlcoin implementation of the ICoinProtocol interface from @airgap/coinlib-core.",
   "keywords": [
     "airgap",
@@ -30,10 +30,10 @@
   },
   "author": "Papers AG <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
-    "@airgap/bitcoin": "^0.13.20-beta.0",
-    "@airgap/coinlib-core": "^0.13.20-beta.0",
-    "@airgap/module-kit": "^0.13.20-beta.0",
-    "@airgap/serializer": "^0.13.20-beta.0"
+    "@airgap/bitcoin": "^0.13.20",
+    "@airgap/coinlib-core": "^0.13.20",
+    "@airgap/module-kit": "^0.13.20",
+    "@airgap/serializer": "^0.13.20"
   },
   "localDependencies": {
     "groestlcoinjs-message": "2.1.0"

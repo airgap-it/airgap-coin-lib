@@ -1,6 +1,6 @@
 {
   "name": "@airgap/ethereum",
-  "version": "0.13.20-beta.0",
+  "version": "0.13.20",
   "description": "The @airgap/ethereum is an Ethereum implementation of the ICoinProtocol interface from @airgap/coinlib-core.",
   "keywords": [
     "airgap",
@@ -30,10 +30,10 @@
   },
   "author": "Papers AG <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
-    "@airgap/coinlib-core": "^0.13.20-beta.0",
-    "@airgap/crypto": "^0.13.20-beta.0",
-    "@airgap/module-kit": "^0.13.20-beta.0",
-    "@airgap/serializer": "^0.13.20-beta.0",
+    "@airgap/coinlib-core": "^0.13.20",
+    "@airgap/crypto": "^0.13.20",
+    "@airgap/module-kit": "^0.13.20",
+    "@airgap/serializer": "^0.13.20",
     "@ethereumjs/common": "2.6.5",
     "@ethereumjs/tx": "3.4.0",
     "@metamask/eth-sig-util": "4.0.0"

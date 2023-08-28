@@ -25,7 +25,7 @@ export class USDTezProtocolImpl extends TezosFA1p2ProtocolImpl<USDTezUnits> impl
       units: {
         USDtz: {
           symbol: { value: 'USDtz' },
-          decimals: 8
+          decimals: 6
         }
       },
       mainUnit: 'USDtz',
