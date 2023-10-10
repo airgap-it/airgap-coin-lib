@@ -699,7 +699,7 @@ export abstract class CosmosBaseProtocolImpl<_Units extends string> implements C
   ): Promise<DelegatorAction[]> {
     const actions: DelegatorAction[] = []
     const metadata = await this.getMetadata()
-    const requiredFee = new BigNumber(metadata.fee?.defaults?.low.value ?? '0')
+    const requiredFee = new BigNumber(metadata.fee?.defaults?.medium.value ?? '0')
     const hasSufficientBalance = availableBalance.gt(requiredFee)
 
     if (hasSufficientBalance) {
@@ -810,7 +810,7 @@ export abstract class CosmosBaseProtocolImpl<_Units extends string> implements C
     return new CosmosTransaction(
       [message],
       new CosmosFee(
-        [new CosmosCoin(this.options.baseUnit, newAmount(metadata.fee!.defaults!.low).blockchain(metadata.units).value)],
+        [new CosmosCoin(this.options.baseUnit, newAmount(metadata.fee!.defaults!.medium).blockchain(metadata.units).value)],
         newAmount(this.options.defaultGas).blockchain(metadata.units).value
       ),
       memo !== undefined ? memo : '',
@@ -853,8 +853,8 @@ export abstract class CosmosBaseProtocolImpl<_Units extends string> implements C
     return new CosmosTransaction(
       messages,
       new CosmosFee(
-        [new CosmosCoin(this.options.baseUnit, newAmount(metadata.fee!.defaults!.low).blockchain(metadata.units).value)],
-        newAmount(this.options.defaultGas).blockchain(metadata.units).value
+        [new CosmosCoin(this.options.baseUnit, newAmount(metadata.fee!.defaults!.medium).blockchain(metadata.units).value)],
+        newAmount(this.options.defaultGas).blockchain(metadata.units).toBigNumber().times(messages.length).toFixed()
       ),
       memo !== undefined ? memo : '',
       nodeInfo.network,

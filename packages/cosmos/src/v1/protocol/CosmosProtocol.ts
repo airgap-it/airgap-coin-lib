@@ -16,7 +16,7 @@ import { CosmosBaseProtocolImpl, CosmosProtocolNetwork, CosmosProtocolOptions, C
 export type CosmosDenom = 'atom' | 'uatom'
 
 // Implementation
-const DEFAULT_GAS: Amount<CosmosDenom> = newAmount('310000', 'blockchain')
+const DEFAULT_GAS: Amount<CosmosDenom> = newAmount('500000', 'blockchain')
 
 export interface CosmosProtocol extends CosmosBaseStakingProtocol<CosmosDenom> {}
 
@@ -41,7 +41,7 @@ export class CosmosProtocolImpl extends CosmosBaseProtocolImpl<CosmosDenom> impl
   }
 
   private readonly feeDefaults: FeeDefaults<CosmosDenom> = {
-    low: newAmount(0.0005, 'atom').blockchain(this.units),
+    low: newAmount(0.0025, 'atom').blockchain(this.units),
     medium: newAmount(0.005, 'atom').blockchain(this.units),
     high: newAmount(0.0072, 'atom').blockchain(this.units)
   }
