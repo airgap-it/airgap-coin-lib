@@ -21,7 +21,7 @@ const cosmosMessage = new CosmosSendMessage(
 
 export class CosmosTestProtocolSpec extends TestProtocolSpec {
   public name = 'Cosmos'
-  public lib = createCosmosProtocol()
+  public lib = createCosmosProtocol({ defaultGas: { value: '310000', unit: 'blockchain' } })
   public stub = new CosmosProtocolStub()
   public validAddresses = [
     'cosmos14nzyt8wmx4g6zkeluelukamgsh5v4xgnmeq9y4',
