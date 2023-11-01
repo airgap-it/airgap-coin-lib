@@ -52,7 +52,7 @@ export class AeternityProtocol extends NonExtendedProtocol implements ICoinProto
   public standardDerivationPath: string = `m/44h/457h/0h/0h/0h`
 
   public addressIsCaseSensitive: boolean = true
-  public addressValidationPattern: string = '^ak_+[1-9A-Za-z]{49,50}$'
+  public addressValidationPattern: string = '^ak_+[1-9A-Za-z]{38,50}$'
   public addressPlaceholder: string = 'ak_abc...'
 
   // ae specifics
