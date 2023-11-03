@@ -49,6 +49,7 @@ export interface IAirGapTransaction {
   warnings?: AirGapTransactionWarning[]
 
   transactionDetails?: any
+  changeAddressInfo?: any
 }
 
 export interface IProtocolTransactionCursor {}

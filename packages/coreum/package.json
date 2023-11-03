@@ -1,6 +1,6 @@
 {
   "name": "@airgap/coreum",
-  "version": "0.13.21",
+  "version": "0.13.22-beta.3",
   "description": "The @airgap/coreum is a Coreum implementation of the ICoinProtocol interface from @airgap/coinlib-core.",
   "keywords": [
     "airgap",
@@ -30,11 +30,11 @@
   },
   "author": "Papers AG <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
-    "@airgap/coinlib-core": "^0.13.21",
-    "@airgap/cosmos-core": "^0.13.21",
-    "@airgap/crypto": "^0.13.21",
-    "@airgap/module-kit": "^0.13.21",
-    "@airgap/serializer": "^0.13.21"
+    "@airgap/coinlib-core": "^0.13.22-beta.3",
+    "@airgap/cosmos-core": "^0.13.22-beta.3",
+    "@airgap/crypto": "^0.13.22-beta.3",
+    "@airgap/module-kit": "^0.13.22-beta.3",
+    "@airgap/serializer": "^0.13.22-beta.3"
   },
   "nyc": {
     "include": [

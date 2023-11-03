@@ -1,6 +1,6 @@
 {
   "name": "@airgap/wallet",
-  "version": "0.13.21",
+  "version": "0.13.22-beta.3",
   "description": "The @airgap/wallet package provides interfaces for offline/online wallet functionalities.",
   "keywords": [
     "airgap"
@@ -27,8 +27,8 @@
   },
   "author": "Papers AG <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
-    "@airgap/coinlib-core": "^0.13.21",
-    "@airgap/module-kit": "^0.13.21"
+    "@airgap/coinlib-core": "^0.13.22-beta.3",
+    "@airgap/module-kit": "^0.13.22-beta.3"
   },
   "nyc": {
     "include": [
