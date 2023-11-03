@@ -37,7 +37,8 @@ import {
   TransactionFullConfiguration,
   TransactionDetails,
   UnsignedTransaction,
-  TransactionSimpleConfiguration
+  TransactionSimpleConfiguration,
+  AirGapUIAlert
 } from '@airgap/module-kit'
 
 import { BitcoinAddress } from '../data/BitcoinAddress'
@@ -227,7 +228,7 @@ export class BitcoinProtocolImpl implements BitcoinProtocol {
       case 'signed':
         return this.getDetailsFromSignedTransaction(transaction)
       case 'unsigned':
-        return this.getDetailsFromUnsignedTransaction(transaction)
+        return this.getDetailsFromUnsignedTransaction(transaction, _publicKey)
       default:
         assertNever(transaction)
         throw new UnsupportedError(Domain.BITCOIN, 'Unsupported transaction type.')
@@ -250,15 +251,18 @@ export class BitcoinProtocolImpl implements BitcoinProtocol {
     bitcoinTx.outs.forEach((output) => {
       const address = this.bitcoinJS.lib.address.fromOutputScript(output.script, this.bitcoinJS.config.network)
       // only works if one output is target and rest is change, but this way we can filter out change addresses
-      if (new BigNumber(output.value).isEqualTo(transaction.amount)) {
-        tx.to.push(address)
-      }
+      // if (new BigNumber(output.value).isEqualTo(transaction.amount)) {
+      tx.to.push(address)
+      // }
     })
 
     return [tx]
   }
 
-  private async getDetailsFromUnsignedTransaction(transaction: BitcoinUnsignedTransaction): Promise<AirGapTransaction<BitcoinUnits>[]> {
+  private async getDetailsFromUnsignedTransaction(
+    transaction: BitcoinUnsignedTransaction,
+    publickey: PublicKey | ExtendedPublicKey
+  ): Promise<AirGapTransaction<BitcoinUnits>[]> {
     let fee: BigNumber = new BigNumber(0)
 
     for (const txIn of transaction.ins) {
@@ -269,22 +273,109 @@ export class BitcoinProtocolImpl implements BitcoinProtocol {
       fee = fee.minus(new BigNumber(txOut.value))
     }
 
+    const uiAlerts: AirGapUIAlert[] = []
+
+    const changeAddressDatas = await Promise.all(
+      transaction.outs.map(async (obj) => {
+        let isChangeAddress = obj.isChange ? obj.isChange : false
+        let isOwned = false
+        let addressIndex = 0
+
+        const address = obj.recipient
+        const amount = obj.value
+        let ourGeneratedAddress: string
+
+        if (isChangeAddress) {
+          const splitPath = obj.derivationPath!.split('/')
+
+          addressIndex = +splitPath[splitPath.length - 1]
+
+          if (publickey.type === 'xpub') {
+            const ourPublickey = await this.deriveFromExtendedPublicKey(publickey, 1, addressIndex)
+            ourGeneratedAddress = await this.getAddressFromPublicKey(ourPublickey)
+          } else {
+            ourGeneratedAddress = await this.getAddressFromNonExtendedPublicKey(publickey)
+          }
+
+          if (ourGeneratedAddress === address) {
+            isOwned = true
+          } else {
+            for (let x = 0; x < 1000; x++) {
+              const ourPublickey = await this.deriveFromExtendedPublicKey(publickey as ExtendedPublicKey, 1, x)
+              ourGeneratedAddress = await this.getAddressFromPublicKey(ourPublickey)
+
+              if (ourGeneratedAddress === address) {
+                isOwned = true
+                addressIndex = x
+                break
+              }
+            }
+          }
+        }
+
+        if (isChangeAddress && isOwned) {
+          uiAlerts.push({
+            type: 'success',
+            title: {
+              type: 'plain',
+              value: ''
+            },
+            description: {
+              type: 'plain',
+              value: 'Note: your change address has been verified'
+            },
+            icon: undefined,
+            actions: undefined
+          })
+        } else if (isChangeAddress && !isOwned) {
+          uiAlerts.push({
+            type: 'warning',
+            title: {
+              type: 'plain',
+              value: ''
+            },
+            description: {
+              type: 'plain',
+              value: 'Note: your change address has not been verified'
+            },
+            icon: undefined,
+            actions: undefined
+          })
+        }
+
+        return [
+          address as string,
+          {
+            isChangeAddress: isChangeAddress,
+            isOwned: isOwned,
+            path: addressIndex === 0 ? '' : `m/84'/0'/0'/1/${addressIndex}`,
+            amount
+          }
+        ]
+      })
+    )
+
+    const changeAddressInfo = {}
+
+    changeAddressDatas.forEach((changeAddressData) => {
+      changeAddressInfo[changeAddressData[0] as string] = changeAddressData[1]
+    })
+
     return [
       {
         from: transaction.ins.map((obj) => obj.address),
-        to: transaction.outs.filter((obj) => !obj.isChange).map((obj) => obj.recipient),
+        to: transaction.outs.map((obj) => obj.recipient),
         isInbound: false,
 
         amount: newAmount(
-          transaction.outs
-            .filter((obj) => !obj.isChange)
-            .map((obj) => new BigNumber(obj.value))
-            .reduce((accumulator, currentValue) => accumulator.plus(currentValue)),
+          transaction.outs.map((obj) => new BigNumber(obj.value)).reduce((accumulator, currentValue) => accumulator.plus(currentValue)),
           'blockchain'
         ),
         fee: newAmount(fee, 'blockchain'),
 
-        network: this.options.network
+        network: this.options.network,
+        changeAddressInfo,
+        uiAlerts
       }
     ]
   }
@@ -467,9 +558,8 @@ export class BitcoinProtocolImpl implements BitcoinProtocol {
 
     return newSignedTransaction<BitcoinSignedTransaction>({
       from: unsignedTransaction.ins.map((obj) => obj.address),
-      to: unsignedTransaction.outs.filter((obj) => !obj.isChange).map((obj) => obj.recipient),
+      to: unsignedTransaction.outs.map((obj) => obj.recipient),
       amount: unsignedTransaction.outs
-        .filter((obj) => !obj.isChange)
         .map((obj) => new BigNumber(obj.value))
         .reduce((accumulator, currentValue) => accumulator.plus(currentValue))
         .toString(10),

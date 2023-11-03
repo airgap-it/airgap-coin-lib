@@ -30,6 +30,7 @@ export interface AirGapTransaction<_Units extends string = string, _FeeUnits ext
   type?: string | { name: string; [key: string]: string }
 
   uiAlerts?: AirGapUIAlert[]
+  changeAddressInfo?: any
 
   arbitraryData?: string | [AirGapUIText, string]
   json?: any

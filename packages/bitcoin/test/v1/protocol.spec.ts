@@ -1,5 +1,5 @@
 // tslint:disable no-floating-promises
-import { AirGapTransaction } from '@airgap/module-kit'
+import { AirGapTransaction, Amount } from '@airgap/module-kit'
 import chai = require('chai')
 import chaiAsPromised = require('chai-as-promised')
 import 'mocha'
@@ -8,6 +8,7 @@ import sinon = require('sinon')
 import { TestProtocolSpec } from './implementations'
 import { BitcoinProtocolSpec } from './specs/bitcoin'
 import { BitcoinTestProtocolSpec } from './specs/bitcoin-test'
+import { BitcoinUnits } from 'packages/bitcoin/src/v1'
 
 // use chai-as-promised plugin
 chai.use(chaiAsPromised)
@@ -75,12 +76,14 @@ Promise.all(
         })
 
         it('prepareTransactionWithPublicKey - Is able to prepare a tx using its extended public key', async () => {
+          const amount = { value: protocol.txs[0].unsignedTx.outs[0].value, unit: 'blockchain' } as Amount<BitcoinUnits>
+
           const preparedTx = await protocol.lib.prepareTransactionWithPublicKey(
             protocol.wallet.extendedPublicKey,
             [
               {
                 to: protocol.txs[0].to[0],
-                amount: protocol.txs[0].amount
+                amount: amount
               }
             ],
             { fee: protocol.txs[0].fee }
