@@ -108,7 +108,7 @@ export class AeternityProtocolImpl implements AeternityProtocol {
       address: {
         isCaseSensitive: true,
         placeholder: 'ak_abc...',
-        regex: '^ak_+[1-9A-Za-z]{49,50}$'
+        regex: '^ak_+[1-9A-Za-z]{38,50}$'
       }
     },
 

@@ -162,10 +162,10 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
     transaction: BitcoinSegwitSignedTransaction | BitcoinSegwitUnsignedTransaction,
     _publicKey: PublicKey | ExtendedPublicKey
   ): Promise<AirGapTransaction<BitcoinUnits>[]> {
-    return this.getDetailsFromPSBT(transaction.psbt)
+    return this.getDetailsFromPSBT(transaction.psbt, _publicKey)
   }
 
-  private async getDetailsFromPSBT(psbt: string): Promise<AirGapTransaction<BitcoinUnits>[]> {
+  private async getDetailsFromPSBT(psbt: string, publickey: PublicKey | ExtendedPublicKey): Promise<AirGapTransaction<BitcoinUnits>[]> {
     const decodedPSBT: bitcoin.Psbt = this.bitcoinJS.lib.Psbt.fromHex(psbt)
 
     let fee: BigNumber = new BigNumber(0)
@@ -233,6 +233,104 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
         .reduce((accumulator, currentValue) => accumulator.plus(currentValue))
     })()
 
+    const changeAddressDatas = await Promise.all(
+      decodedPSBT.data.outputs.map(async (obj, index) => {
+        let isChangeAddress = false
+        let isOwned = false
+        let addressIndex = 0
+
+        const address = decodedPSBT.txOutputs[index].address
+        const amount = decodedPSBT.txOutputs[index].value
+        let ourGeneratedAddress: string
+
+        if (obj.bip32Derivation) {
+          isChangeAddress = true
+          const getIndexes = obj.bip32Derivation[0].path.split('/')
+
+          if (publickey.type === 'xpub') {
+            const ourPublickey = await this.deriveFromExtendedPublicKey(publickey, 1, +getIndexes[getIndexes.length - 1])
+            ourGeneratedAddress = await this.getAddressFromPublicKey(ourPublickey)
+          } else {
+            ourGeneratedAddress = await this.getAddressFromNonExtendedPublicKey(publickey)
+          }
+
+          if (ourGeneratedAddress === address) {
+            isOwned = true
+            addressIndex = +getIndexes[getIndexes.length - 1]
+          }
+          for (let x = 0; x < 1000; x++) {
+            const ourPublickey = await this.deriveFromExtendedPublicKey(publickey as ExtendedPublicKey, 1, x)
+            ourGeneratedAddress = await this.getAddressFromPublicKey(ourPublickey)
+
+            if (ourGeneratedAddress === address) {
+              isOwned = true
+              addressIndex = x
+              break
+            }
+          }
+        } else if (obj.unknownKeyVals) {
+          for (let x = 0; x < 1000; x++) {
+            isChangeAddress = true
+
+            const ourPublickey = await this.deriveFromExtendedPublicKey(publickey as ExtendedPublicKey, 1, x)
+            ourGeneratedAddress = await this.getAddressFromPublicKey(ourPublickey)
+
+            if (ourGeneratedAddress === address) {
+              isOwned = true
+              addressIndex = x
+              break
+            }
+          }
+        }
+
+        if (isChangeAddress && isOwned) {
+          alerts.push({
+            type: 'success',
+            title: {
+              type: 'plain',
+              value: ''
+            },
+            description: {
+              type: 'plain',
+              value: 'Note: your change address has been verified'
+            },
+            icon: undefined,
+            actions: undefined
+          })
+        } else if (isChangeAddress && !isOwned) {
+          alerts.push({
+            type: 'warning',
+            title: {
+              type: 'plain',
+              value: ''
+            },
+            description: {
+              type: 'plain',
+              value: 'Note: your change address has not been verified'
+            },
+            icon: undefined,
+            actions: undefined
+          })
+        }
+
+        return [
+          address as string,
+          {
+            isChangeAddress: isChangeAddress,
+            isOwned: isOwned,
+            path: addressIndex === 0 ? '' : `m/84'/0'/0'/1/${addressIndex}`,
+            amount
+          }
+        ]
+      })
+    )
+
+    const changeAddressInfo = {}
+
+    changeAddressDatas.forEach((changeAddressData) => {
+      changeAddressInfo[changeAddressData[0] as string] = changeAddressData[1]
+    })
+
     return [
       {
         from: decodedPSBT.data.inputs.map(
@@ -250,12 +348,15 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
         to: decodedPSBT.txOutputs.map((obj) => {
           return obj.address || `Script: ${obj.script.toString('hex')}` || 'unknown'
         }),
+
         isInbound: false,
 
         amount: newAmount(amount, 'blockchain'),
         fee: newAmount(fee, 'blockchain'),
 
         network: this.options.network,
+
+        changeAddressInfo,
 
         uiAlerts: alerts,
 

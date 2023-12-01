@@ -1,6 +1,6 @@
 {
   "name": "@airgap/optimism",
-  "version": "0.13.21",
+  "version": "0.13.22",
   "description": "The @airgap/optimism is an Optimism implementation of the ICoinProtocol interface from @airgap/coinlib-core.",
   "keywords": [
     "airgap",
@@ -31,11 +31,11 @@
   },
   "author": "Papers AG <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
-    "@airgap/coinlib-core": "^0.13.21",
-    "@airgap/crypto": "^0.13.21",
-    "@airgap/ethereum": "^0.13.21",
-    "@airgap/module-kit": "^0.13.21",
-    "@airgap/serializer": "^0.13.21",
+    "@airgap/coinlib-core": "^0.13.22",
+    "@airgap/crypto": "^0.13.22",
+    "@airgap/ethereum": "^0.13.22",
+    "@airgap/module-kit": "^0.13.22",
+    "@airgap/serializer": "^0.13.22",
     "@ethereumjs/tx": "3.4.0"
   },
   "nyc": {
