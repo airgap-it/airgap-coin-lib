@@ -19,8 +19,10 @@ export class CosmosNodeClient<Units extends string> {
   constructor(public readonly baseURL: string, public useCORSProxy: boolean = false) {}
 
   public async fetchBalance(address: string, denom: Units): Promise<{ total: Amount<Units>; available: Amount<Units> }> {
-    const response = await Axios.get(this.url(`/bank/balances/${address}`))
-    const data: CosmosAccountCoin[] = response.data.result
+    const response = await Axios.get(this.url(`/cosmos/bank/v1beta1/balances/${address}`))
+
+    const data: CosmosAccountCoin[] = response.data.balances
+
     if (data.length > 0) {
       const availableBalance = CosmosCoin.sum(CosmosCoin.fromCoins(data), denom)
       const totalBalance = (
@@ -89,11 +91,11 @@ export class CosmosNodeClient<Units extends string> {
   }
 
   public async fetchDelegations(address: string, filterEmpty: boolean = true): Promise<CosmosDelegation[]> {
-    const response = await Axios.get(this.url(`/staking/delegators/${address}/delegations`))
+    const response = await Axios.get(this.url(`/cosmos/staking/v1beta1/delegations/${address}`))
     if (response.data === null) {
       return []
     }
-    const delegations = response.data.result as CosmosDelegation[]
+    const delegations = response.data.delegation_responses as CosmosDelegation[]
 
     return filterEmpty ? delegations.filter((delegation: CosmosDelegation) => new BigNumber(delegation.balance.amount).gt(0)) : delegations
   }
@@ -128,8 +130,8 @@ export class CosmosNodeClient<Units extends string> {
   }
 
   public async fetchUnbondingDelegations(delegatorAddress: string): Promise<CosmosUnbondingDelegation[]> {
-    const response = await Axios.get(this.url(`/staking/delegators/${delegatorAddress}/unbonding_delegations`))
-    const unbondingDelegations = response.data.result as CosmosUnbondingDelegation[]
+    const response = await Axios.get(this.url(`/cosmos/staking/v1beta1/delegators/${delegatorAddress}/unbonding_delegations`))
+    const unbondingDelegations = response.data.unbonding_responses as CosmosUnbondingDelegation[]
 
     return unbondingDelegations
   }
@@ -149,14 +151,14 @@ export class CosmosNodeClient<Units extends string> {
   }
 
   public async fetchRewardDetails(delegatorAddress: string): Promise<CosmosRewardDetails[]> {
-    return Axios.get(this.url(`/distribution/delegators/${delegatorAddress}/rewards`))
-      .then((response) => (response.data.result.rewards ?? []) as CosmosRewardDetails[])
+    return Axios.get(this.url(`/cosmos/distribution/v1beta1/delegators/${delegatorAddress}/rewards`))
+      .then((response) => (response.data.rewards ?? []) as CosmosRewardDetails[])
       .catch(() => [])
   }
 
   public async fetchTotalReward(delegatorAddress: string, denom: Units): Promise<Amount<Units>> {
-    const totalRewards = await Axios.get(this.url(`/distribution/delegators/${delegatorAddress}/rewards`))
-      .then((response) => response.data.result.total as { denom: string; amount: string }[])
+    const totalRewards = await Axios.get(this.url(`/cosmos/distribution/v1beta1/delegators/${delegatorAddress}/rewards`))
+      .then((response) => response.data.total as { denom: string; amount: string }[])
       .catch(() => [])
 
     if (totalRewards?.length > 0) {
