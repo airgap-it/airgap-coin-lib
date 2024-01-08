@@ -853,7 +853,7 @@ export abstract class CosmosBaseProtocolImpl<_Units extends string> implements C
     return new CosmosTransaction(
       messages,
       new CosmosFee(
-        [new CosmosCoin(this.options.baseUnit, newAmount(metadata.fee!.defaults!.medium).blockchain(metadata.units).value)],
+        [new CosmosCoin(this.options.baseUnit, newAmount(metadata.fee!.defaults!.high).blockchain(metadata.units).value)],
         newAmount(this.options.defaultGas).blockchain(metadata.units).toBigNumber().times(messages.length).toFixed()
       ),
       memo !== undefined ? memo : '',
@@ -873,7 +873,7 @@ export abstract class CosmosBaseProtocolImpl<_Units extends string> implements C
       nodeInfo.network,
       account.value.account_number,
       account.value.sequence ?? '0',
-      new BigNumber(newAmount(this.options.defaultGas).blockchain(metadata.units).value),
+      new BigNumber(newAmount(metadata.fee!.defaults!.high).blockchain(metadata.units).value),
       new BigNumber(newAmount(fee).blockchain(metadata.units).value),
       memo !== undefined ? memo : ''
     )
