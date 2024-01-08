@@ -706,6 +706,14 @@ export const erc20Tokens: Record<string, ERC20TokenMetadata> = {
     contractAddress: '0x8eb24319393716668d768dcec29356ae9cffe285',
     decimals: 8
   },
+  'eth-erc20-agix': {
+    symbol: 'AGIX',
+    name: 'SingularityNET',
+    marketSymbol: 'agix',
+    identifier: 'eth-erc20-agix',
+    contractAddress: '0x5B7533812759B45C2B44C19e320ba2cD2681b542',
+    decimals: 8
+  },
   'eth-erc20-mln': {
     symbol: 'MLN',
     name: 'Melonport',
