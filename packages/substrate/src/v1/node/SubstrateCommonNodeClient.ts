@@ -46,7 +46,7 @@ export class SubstrateCommonNodeClient<C extends SubstrateProtocolConfiguration>
     this.storageEntries = this.mergeSupportedCalls(configuration.rpc?.storageEntries ?? {}, commonStorageEntries)
     this.calls = this.mergeSupportedCalls(configuration.rpc?.calls ?? {}, commonCalls)
     this.constants = this.mergeSupportedCalls(configuration.rpc?.constants ?? {}, commonConstants)
-    this.callEndpoints = new Map([this.createCallEndpointEntry('transfer', 'Balances', 'transfer')])
+    this.callEndpoints = new Map([this.createCallEndpointEntry('transfer', 'Balances', 'transfer_allow_death')])
   }
 
   public async getAccountInfo(address: TypedSubstrateAddress<C>): Promise<SubstrateAccountInfo | undefined> {
@@ -304,7 +304,7 @@ type SubstrateStorageEntryName<C extends SubstrateProtocolConfiguration, T exten
 >
 
 const commonCalls = {
-  Balances: ['transfer'] as const
+  Balances: ['transfer_allow_death'] as const
 }
 
 type SubstrateCallModuleName<C extends SubstrateProtocolConfiguration> = ModuleName<C, 'calls', typeof commonCalls>
