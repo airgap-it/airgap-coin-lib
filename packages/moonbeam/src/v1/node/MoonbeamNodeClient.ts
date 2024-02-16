@@ -88,7 +88,7 @@ export class MoonbeamNodeClient extends SubstrateCommonNodeClient<MoonbeamProtoc
   }
 
   public async getMinDelegatorStake(): Promise<BigNumber | undefined> {
-    return this.getConstant('ParachainStaking', 'MinDelegatorStk').then((item) => (item ? SCALEInt.decode(item).decoded.value : undefined))
+    return this.getConstant('ParachainStaking', 'MinDelegation').then((item) => (item ? SCALEInt.decode(item).decoded.value : undefined))
   }
 
   public async getCandidateBondLessDelay(): Promise<BigNumber | undefined> {
