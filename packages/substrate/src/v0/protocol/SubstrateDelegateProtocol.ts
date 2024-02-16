@@ -17,7 +17,8 @@ import { SubstrateProtocol } from './SubstrateProtocol'
 
 export abstract class SubstrateDelegateProtocol<Network extends SubstrateNetwork>
   extends SubstrateProtocol<Network>
-  implements ICoinDelegateProtocol {
+  implements ICoinDelegateProtocol
+{
   protected defaultValidator?: string
 
   public async getDefaultDelegatee(): Promise<string> {

@@ -42,7 +42,10 @@ export class SubstrateCommonNodeClient<C extends SubstrateProtocolConfiguration>
 
   protected readonly cache: Cache = new Cache(CACHE_DEFAULT_EXPIRATION_TIME)
 
-  public constructor(protected readonly configuration: C, protected readonly url: string) {
+  public constructor(
+    protected readonly configuration: C,
+    protected readonly url: string
+  ) {
     this.storageEntries = this.mergeSupportedCalls(configuration.rpc?.storageEntries ?? {}, commonStorageEntries)
     this.calls = this.mergeSupportedCalls(configuration.rpc?.calls ?? {}, commonCalls)
     this.constants = this.mergeSupportedCalls(configuration.rpc?.constants ?? {}, commonConstants)

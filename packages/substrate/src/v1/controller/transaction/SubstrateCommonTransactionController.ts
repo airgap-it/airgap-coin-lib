@@ -33,7 +33,10 @@ import { SubstrateTransactionController } from './SubstrateTransactionController
 export class SubstrateCommonTransactionController<C extends SubstrateProtocolConfiguration, NodeClient extends SubstrateNodeClient<C>>
   implements SubstrateTransactionController<C>
 {
-  public constructor(protected readonly configuration: C, protected readonly nodeClient: NodeClient) {}
+  public constructor(
+    protected readonly configuration: C,
+    protected readonly nodeClient: NodeClient
+  ) {}
 
   public async prepareSubmittableTransactions(
     accountId: SubstrateAccountId<TypedSubstrateAddress<C>>,
