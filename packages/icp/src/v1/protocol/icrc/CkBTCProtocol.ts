@@ -114,7 +114,8 @@ class CkBTCOnlineProtocolImpl
 
     const airGapTransactions: AirGapTransaction<CkBTCUnits>[] = transactions
       .map((transactionWithId) => {
-        const transaction = transactionWithId.transaction
+        const { id, transaction } = transactionWithId
+
         const timestamp: number = Number(transaction.timestamp) / 1_000_000_000 // ns to s
 
         if (transaction.kind === 'transfer' && transaction.transfer[0]) {
@@ -136,7 +137,8 @@ class CkBTCOnlineProtocolImpl
 
             network: this.options.network,
             status: {
-              type: 'applied'
+              type: 'applied',
+              hash: Number(id)
             },
             timestamp,
 
@@ -296,7 +298,7 @@ export const CKBTC_MAINNET_PROTOCOL_NETWORK: CkBTCProtocolNetwork = {
   name: 'Mainnet',
   type: 'mainnet',
   rpcUrl: 'https://icp-api.io/',
-  blockExplorerUrl: 'https://dashboard.internetcomputer.org/',
+  blockExplorerUrl: 'https://dashboard.internetcomputer.org/bitcoin/',
   blockExplorerApi: 'https://ledger-api.internetcomputer.org',
   ledgerCanisterId: 'mxzaz-hqaaa-aaaar-qaada-cai',
   governanceCanisterId: 'rrkah-fqaaa-aaaaa-aaaaq-cai',
