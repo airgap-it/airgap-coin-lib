@@ -384,8 +384,8 @@ export abstract class CosmosBaseProtocolImpl<_Units extends string> implements C
       ),
       memo,
       nodeInfo.network,
-      account.value.account_number,
-      account.value.sequence ?? '0'
+      account.account_number,
+      account.sequence ?? '0'
     )
 
     return newUnsignedTransaction<CosmosUnsignedTransaction>({
@@ -472,7 +472,7 @@ export abstract class CosmosBaseProtocolImpl<_Units extends string> implements C
       } else {
         promises.push(
           new Promise((resolve) => {
-            resolve({ txs: [], tx_responses: [], pagination: { total: String(senderTotal) } })
+            resolve({ txs: [], tx_responses: [], pagination: null, total: String(senderTotal) })
           })
         )
       }
@@ -484,18 +484,14 @@ export abstract class CosmosBaseProtocolImpl<_Units extends string> implements C
       } else {
         promises.push(
           new Promise((resolve) => {
-            resolve({ txs: [], tx_responses: [], pagination: { total: String(recipientTotal) } })
+            resolve({ txs: [], tx_responses: [], pagination: null, total: String(senderTotal) })
           })
         )
       }
     } else {
       ;[senderTotal, recipientTotal] = await Promise.all([
-        this.nodeClient
-          .fetchSendTransactionsFor(address, 1, 0, true)
-          .then((response) => new BigNumber(response.pagination.total).toNumber()),
-        this.nodeClient
-          .fetchSendTransactionsFor(address, 1, 0, false)
-          .then((response) => new BigNumber(response.pagination.total).toNumber())
+        this.nodeClient.fetchSendTransactionsFor(address, 1, 0, true).then((response) => new BigNumber(response.total).toNumber()),
+        this.nodeClient.fetchSendTransactionsFor(address, 1, 0, false).then((response) => new BigNumber(response.total).toNumber())
       ])
 
       senderLimit = calculateTransactionLimit(limit, senderTotal, recipientTotal, senderOffset, recipientOffset)
@@ -522,51 +518,51 @@ export abstract class CosmosBaseProtocolImpl<_Units extends string> implements C
       )
 
       result = result.concat(
-        transaction.tx.body.messages.map((msg: any) => {
-          const tx: Partial<AirGapTransaction<_Units>> = {
-            isInbound: false,
-            amount: newAmount('0', 'blockchain'),
-            fee: newAmount(fee, 'blockchain'),
-            network: this.options.network,
-            status: {
-              type: 'unknown',
-              hash: transaction.txhash
-            },
-            timestamp
-          }
-          switch (msg['@type']) {
-            case CosmosMessageTypeValue.UNDELEGATE:
-              return {
-                ...tx,
-                from: [msg.validator_address],
-                to: [msg.delegator_address]
-              }
-            case CosmosMessageTypeValue.WITHDRAW_DELEGATION_REWARD:
-              return {
-                ...tx,
-                from: [msg.delegator_address],
-                to: [msg.validator_address]
-              }
-            case CosmosMessageTypeValue.DELEGATE:
-              return {
-                ...tx,
-                from: [msg.delegator_address],
-                to: [msg.validator_address]
-              }
-
-            default:
-              return {
-                ...tx,
-                from: [msg.from_address],
-                to: [msg.to_address],
-                isInbound: msg.to_address === address,
-                amount: newAmount(msg.amount[0].amount, 'blockchain')
-              }
-          }
-        })
+        transaction.tx.body.messages
+          .filter((msg: any) => msg['@type'] !== CosmosMessageTypeValue.MSGMULTISEND)
+          .map((msg: any) => {
+            const tx: Partial<AirGapTransaction<_Units>> = {
+              isInbound: false,
+              amount: newAmount('0', 'blockchain'),
+              fee: newAmount(fee, 'blockchain'),
+              network: this.options.network,
+              status: {
+                type: 'unknown',
+                hash: transaction.txhash
+              },
+              timestamp
+            }
+            switch (msg['@type']) {
+              case CosmosMessageTypeValue.UNDELEGATE:
+                return {
+                  ...tx,
+                  from: [msg.validator_address],
+                  to: [msg.delegator_address]
+                }
+              case CosmosMessageTypeValue.WITHDRAW_DELEGATION_REWARD:
+                return {
+                  ...tx,
+                  from: [msg.delegator_address],
+                  to: [msg.validator_address]
+                }
+              case CosmosMessageTypeValue.DELEGATE:
+                return {
+                  ...tx,
+                  from: [msg.delegator_address],
+                  to: [msg.validator_address]
+                }
+              default:
+                return {
+                  ...tx,
+                  from: [msg.from_address],
+                  to: [msg.to_address],
+                  isInbound: msg.to_address === address,
+                  amount: newAmount(msg.amount[0].amount, 'blockchain')
+                }
+            }
+          })
       )
     }
-
     return {
       transactions: result,
       cursor: {
@@ -815,8 +811,8 @@ export abstract class CosmosBaseProtocolImpl<_Units extends string> implements C
       ),
       memo !== undefined ? memo : '',
       nodeInfo.network,
-      account.value.account_number,
-      account.value.sequence ?? '0'
+      account.account_number,
+      account.sequence ?? '0'
     )
   }
 
@@ -858,8 +854,8 @@ export abstract class CosmosBaseProtocolImpl<_Units extends string> implements C
       ),
       memo !== undefined ? memo : '',
       nodeInfo.network,
-      account.value.account_number,
-      account.value.sequence ?? '0'
+      account.account_number,
+      account.sequence ?? '0'
     )
   }
 
@@ -871,8 +867,8 @@ export abstract class CosmosBaseProtocolImpl<_Units extends string> implements C
     return this.nodeClient.withdrawAllDelegationRewards(
       delegatorAddress,
       nodeInfo.network,
-      account.value.account_number,
-      account.value.sequence ?? '0',
+      account.account_number,
+      account.sequence ?? '0',
       new BigNumber(newAmount(metadata.fee!.defaults!.high).blockchain(metadata.units).value),
       new BigNumber(newAmount(fee).blockchain(metadata.units).value),
       memo !== undefined ? memo : ''

@@ -26,7 +26,8 @@ export enum CosmosMessageTypeValue {
   SEND = '/cosmos.bank.v1beta1.MsgSend',
   DELEGATE = '/cosmos.staking.v1beta1.MsgDelegate',
   UNDELEGATE = '/cosmos.staking.v1beta1.MsgUndelegate',
-  WITHDRAW_DELEGATION_REWARD = '/cosmos.distribution.v1beta1.MsgWithdrawDelegatorReward'
+  WITHDRAW_DELEGATION_REWARD = '/cosmos.distribution.v1beta1.MsgWithdrawDelegatorReward',
+  MSGMULTISEND = '/cosmos.bank.v1beta1.MsgMultiSend'
 }
 
 export class CosmosMessageType {

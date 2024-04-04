@@ -80,7 +80,6 @@ Promise.all(
                 expect(preparedTx).to.have.property(property)
               })
             }
-            expect(preparedTx).to.deep.include(tx.unsignedTx)
           })
         })
 

@@ -45,18 +45,18 @@ Promise.all(
 
         expect(firstTransactions.transactions.length).to.be.eq(limitFromResponseSet(mockTransactions.first))
         expect(firstTransactions.cursor.hasNext, 'expected first transaction cursor to have `hasNext: true`').to.be.true
-        expect(firstTransactions.cursor.sender.total).to.eq(parseInt(mockTransactions.first.sender.pagination.total, 10))
+        expect(firstTransactions.cursor.sender.total).to.eq(parseInt(mockTransactions.first.sender.total, 10))
         expect(firstTransactions.cursor.sender.offset).to.eq(mockTransactions.first.sender.txs.length)
-        expect(firstTransactions.cursor.recipient.total).to.eq(parseInt(mockTransactions.first.recipient.pagination.total, 10))
+        expect(firstTransactions.cursor.recipient.total).to.eq(parseInt(mockTransactions.first.recipient.total, 10))
         expect(firstTransactions.cursor.recipient.offset).to.eq(mockTransactions.first.recipient.txs.length)
 
         expect(nextTransactions.transactions.length).to.be.eq(limitFromResponseSet(mockTransactions.next))
         expect(nextTransactions.cursor.hasNext, 'expected next transaction cursor to have `hasNext: false`').to.be.false
-        expect(nextTransactions.cursor.sender.total).to.eq(parseInt(mockTransactions.next.sender.pagination.total, 10))
+        expect(nextTransactions.cursor.sender.total).to.eq(parseInt(mockTransactions.next.sender.total, 10))
         expect(nextTransactions.cursor.sender.offset).to.eq(
           mockTransactions.first.sender.txs.length + mockTransactions.next.sender.txs.length
         )
-        expect(nextTransactions.cursor.recipient.total).to.eq(parseInt(mockTransactions.next.recipient.pagination.total, 10))
+        expect(nextTransactions.cursor.recipient.total).to.eq(parseInt(mockTransactions.next.recipient.total, 10))
         expect(nextTransactions.cursor.recipient.offset).to.eq(
           mockTransactions.first.recipient.txs.length + mockTransactions.next.recipient.txs.length
         )
