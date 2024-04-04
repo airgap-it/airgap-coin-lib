@@ -6,7 +6,7 @@ export interface CosmosNodeInfo {
     block: string
     app: string
   }
-  id: string
+  default_node_id: string
   listen_addr: string
   network: string
   version: string
@@ -19,8 +19,14 @@ export interface CosmosNodeInfo {
 }
 
 export interface CosmosAccount {
-  type: string
-  value: CosmosAccountValue
+  '@type': string
+  address: string
+  pub_key: {
+    '@type': string
+    key: string
+  }
+  account_number: string
+  sequence: string
 }
 
 export interface CosmosAccountValue {
@@ -320,11 +326,11 @@ export interface TxResponse {
 
 export interface Pagination {
   next_key?: any
-  total: string
 }
 
 export interface CosmosPagedSendTxsResponse {
   txs: Tx[]
   tx_responses: TxResponse[]
-  pagination: Pagination
+  pagination: Pagination | null
+  total: string
 }

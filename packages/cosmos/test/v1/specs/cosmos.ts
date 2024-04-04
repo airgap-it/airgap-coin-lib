@@ -332,9 +332,9 @@ export class CosmosTestProtocolSpec extends TestProtocolSpec {
         }
       ],
       pagination: {
-        next_key: null,
-        total: '4'
-      }
+        next_key: null
+      },
+      total: '4'
     }
 
     const firstRecipient: CosmosPagedSendTxsResponse = {
@@ -529,9 +529,9 @@ export class CosmosTestProtocolSpec extends TestProtocolSpec {
         }
       ],
       pagination: {
-        next_key: null,
-        total: '4'
-      }
+        next_key: null
+      },
+      total: '4'
     }
 
     const nextSender: CosmosPagedSendTxsResponse = {
@@ -738,9 +738,9 @@ export class CosmosTestProtocolSpec extends TestProtocolSpec {
         }
       ],
       pagination: {
-        next_key: null,
-        total: '4'
-      }
+        next_key: null
+      },
+      total: '4'
     }
 
     const nextRecipient: CosmosPagedSendTxsResponse = {
@@ -935,9 +935,9 @@ export class CosmosTestProtocolSpec extends TestProtocolSpec {
         }
       ],
       pagination: {
-        next_key: null,
-        total: '4'
-      }
+        next_key: null
+      },
+      total: '4'
     }
 
     return {
