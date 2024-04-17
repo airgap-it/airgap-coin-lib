@@ -90,7 +90,7 @@ export const ASTAR_MAINNET_PROTOCOL_NETWORK: AstarProtocolNetwork = {
   type: 'mainnet',
   rpcUrl: 'https://astar-node.prod.gke.papers.tech',
   blockExplorerUrl: 'https://astar.subscan.io',
-  blockExplorerApi: 'https://astar.subscan.prod.gke.papers.tech/api/scan'
+  blockExplorerApi: 'https://astar.subscan.prod.gke.papers.tech/api/v2/scan'
 }
 
 const DEFAULT_ASTAR_PROTOCOL_NETWORK: AstarProtocolNetwork = ASTAR_MAINNET_PROTOCOL_NETWORK

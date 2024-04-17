@@ -81,7 +81,8 @@ export abstract class SubstrateProtocolImpl<
   _ProtocolNetwork extends SubstrateProtocolNetwork = SubstrateProtocolNetwork,
   _NodeClient extends SubstrateNodeClient<_ProtocolConfiguration> = SubstrateNodeClient<_ProtocolConfiguration>,
   _AccountController extends SubstrateAccountController<_ProtocolConfiguration> = SubstrateAccountController<_ProtocolConfiguration>,
-  _TransactionController extends SubstrateTransactionController<_ProtocolConfiguration> = SubstrateTransactionController<_ProtocolConfiguration>
+  _TransactionController extends
+    SubstrateTransactionController<_ProtocolConfiguration> = SubstrateTransactionController<_ProtocolConfiguration>
 > implements SubstrateProtocol<_ProtocolConfiguration, _Units, _ProtocolNetwork, SubstrateCryptoConfiguration<_ProtocolConfiguration>>
 {
   public readonly _isSubstrateProtocol: true = true
