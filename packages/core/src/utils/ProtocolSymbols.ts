@@ -1,4 +1,5 @@
 export enum MainProtocolSymbols {
+  ACURAST = 'acurast',
   AE = 'ae',
   BTC = 'btc',
   BTC_SEGWIT = 'btc_segwit',

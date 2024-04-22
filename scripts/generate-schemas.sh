@@ -19,6 +19,10 @@
 # node_modules/.bin/ts-json-schema-generator --path 'packages/astar/src/v1/serializer/v3/schemas/definitions/transaction-sign-response-astar.ts' --tsconfig 'tsconfig.json' -c > packages/astar/src/v1/serializer/v3/schemas/generated/transaction-sign-response-astar.json
 # node_modules/.bin/ts-json-schema-generator --path 'packages/astar/src/v1/serializer/v3/schemas/definitions/transaction-sign-request-astar.ts' --tsconfig 'tsconfig.json' -c > packages/astar/src/v1/serializer/v3/schemas/generated/transaction-sign-request-astar.json
 
+# Acurast
+# node_modules/.bin/ts-json-schema-generator --path 'packages/acurast/src/v1/serializer/v3/schemas/definitions/transaction-sign-response-acurast.ts' --tsconfig 'tsconfig.json' -c > packages/acurast/src/v1/serializer/v3/schemas/generated/transaction-sign-response-acurast.json
+# node_modules/.bin/ts-json-schema-generator --path 'packages/acurast/src/v1/serializer/v3/schemas/definitions/transaction-sign-request-acurast.ts' --tsconfig 'tsconfig.json' -c > packages/acurast/src/v1/serializer/v3/schemas/generated/transaction-sign-request-acurast.json
+
 # Bitcoin
 # node_modules/.bin/ts-json-schema-generator --path 'packages/bitcoin/src/v0/types/signed-transaction-bitcoin-segwit.ts' --tsconfig 'tsconfig.json' > packages/bitcoin/src/v0/serializer/schemas/v3/transaction-sign-response-bitcoin-segwit.json
 # node_modules/.bin/ts-json-schema-generator --path 'packages/bitcoin/src/v0/types/signed-transaction-bitcoin.ts' --tsconfig 'tsconfig.json' > packages/bitcoin/src/v0/serializer/schemas/v3/transaction-sign-response-bitcoin.json
