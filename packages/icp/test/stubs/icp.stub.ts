@@ -18,7 +18,6 @@ export class ICPProtocolStub implements ProtocolHTTPStub<ICPProtocol, ICPProtoco
           transferable: newAmount<ICPUnits>(10000000000000000000, 'blockchain')
         } as Balance<ICPUnits>)
       )
-
     sinon
       .stub(axios, 'post')
       .withArgs(`/v2/transactions`)

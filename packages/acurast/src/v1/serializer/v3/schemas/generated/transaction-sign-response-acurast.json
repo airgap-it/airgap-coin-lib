@@ -1,0 +1,19 @@
+{
+  "$ref": "#/definitions/AcurastTransactionSignResponse",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "AcurastTransactionSignResponse": {
+      "additionalProperties": false,
+      "properties": {
+        "accountIdentifier": {
+          "type": "string"
+        },
+        "transaction": {
+          "type": "string"
+        }
+      },
+      "required": ["accountIdentifier", "transaction"],
+      "type": "object"
+    }
+  }
+}
