@@ -55,7 +55,7 @@ export class CosmosNodeClient<Units extends string> {
       this.url(
         `/cosmos/tx/v1beta1/txs?events=${
           isSender ? 'transfer.sender' : 'transfer.recipient'
-        }='${address}'&pagination.limit=${limit}&pagination.offset=${offset}&orderBy=2`
+        }='${address}'&events=tx.height=0&pagination.limit=${limit}&pagination.offset=${offset}&orderBy=2`
       )
     )
 
