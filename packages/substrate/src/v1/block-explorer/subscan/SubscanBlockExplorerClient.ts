@@ -25,49 +25,45 @@ export class SubscanBlockExplorerClient implements SubstrateBlockExplorerClient 
     const airGapTransfers: Partial<AirGapTransaction<_Units>>[] = transfers
       ? transfers
           .filter((tx: any) => tx.module === 'balances')
-          .map(
-            (tx: any): Partial<AirGapTransaction<_Units>> => {
-              return {
-                from: [tx.from],
-                to: [tx.to],
-                isInbound: address.includes(tx.to),
+          .map((tx: any): Partial<AirGapTransaction<_Units>> => {
+            return {
+              from: [tx.from],
+              to: [tx.to],
+              isInbound: address.includes(tx.to),
 
-                amount: newAmount(tx.amount, protocolUnit),
-                fee: newAmount(tx.fee, 'blockchain'),
+              amount: newAmount(tx.amount, protocolUnit),
+              fee: newAmount(tx.fee, 'blockchain'),
 
-                timestamp: tx.block_timestamp,
-                status: {
-                  type: tx.success !== undefined ? (tx.success ? 'applied' : 'failed') : 'unknown',
-                  hash: tx.hash,
-                  block: tx.block_num
-                }
+              timestamp: tx.block_timestamp,
+              status: {
+                type: tx.success !== undefined ? (tx.success ? 'applied' : 'failed') : 'unknown',
+                hash: tx.hash,
+                block: tx.block_num
               }
             }
-          )
+          })
       : []
 
     const airGapPayouts: Partial<AirGapTransaction<_Units>>[] = rewardSlash
       ? rewardSlash
           .filter((tx: any) => tx.event_id === 'Reward')
-          .map(
-            (tx: any): Partial<AirGapTransaction<_Units>> => {
-              return {
-                from: ['Staking Reward'],
-                to: [address],
-                isInbound: true,
+          .map((tx: any): Partial<AirGapTransaction<_Units>> => {
+            return {
+              from: ['Staking Reward'],
+              to: [address],
+              isInbound: true,
 
-                amount: newAmount(tx.amount, 'blockchain'),
-                fee: newAmount('0', 'blockchain'),
+              amount: newAmount(tx.amount, 'blockchain'),
+              fee: newAmount('0', 'blockchain'),
 
-                timestamp: tx.block_timestamp,
-                status: {
-                  type: 'applied',
-                  hash: tx.extrinsic_hash,
-                  block: tx.block_num
-                }
+              timestamp: tx.block_timestamp,
+              status: {
+                type: 'applied',
+                hash: tx.extrinsic_hash,
+                block: tx.block_num
               }
             }
-          )
+          })
       : []
 
     return airGapTransfers

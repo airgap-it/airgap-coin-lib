@@ -1,17 +1,23 @@
 import axios from '@airgap/coinlib-core/dependencies/src/axios-0.19.0/index'
 import * as sinon from 'sinon'
 
-import { ICPProtocol } from '../../src/v1'
+import { ICPProtocol, ICPUnits } from '../../src/v1'
 import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
+import { Balance, newAmount } from '@airgap/module-kit'
 
 export class ICPProtocolStub implements ProtocolHTTPStub<ICPProtocol, ICPProtocol> {
   public async registerStub(testProtocolSpec: TestProtocolSpec<ICPProtocol, ICPProtocol>) {
     sinon.restore()
 
     sinon
-      .stub(axios, 'get')
-      .withArgs(`${(await testProtocolSpec.onlineLib.getNetwork()).rpcUrl}/v2/accounts/${testProtocolSpec.wallet.addresses[0]}`)
-      .returns(Promise.resolve({ data: { balance: 10000000000000000000, nonce: -1 } }))
+      .stub(testProtocolSpec.onlineLib, 'getBalanceOfPublicKey')
+      .withArgs(testProtocolSpec.wallet.publicKey)
+      .returns(
+        Promise.resolve({
+          total: newAmount<ICPUnits>(10000000000000000000, 'blockchain'),
+          transferable: newAmount<ICPUnits>(10000000000000000000, 'blockchain')
+        } as Balance<ICPUnits>)
+      )
     sinon
       .stub(axios, 'post')
       .withArgs(`/v2/transactions`)

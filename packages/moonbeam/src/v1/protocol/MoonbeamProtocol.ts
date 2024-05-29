@@ -98,7 +98,7 @@ export const MOONBEAM_MAINNET_PROTOCOL_NETWORK: MoonbeamProtocolNetwork = {
   type: 'mainnet',
   rpcUrl: 'https://moonbeam-proxy.airgap.prod.gke.papers.tech',
   blockExplorerUrl: 'https://moonbeam.subscan.io',
-  blockExplorerApi: 'https://moonbeam.subscan.prod.gke.papers.tech/api/scan'
+  blockExplorerApi: 'https://moonbeam.subscan.prod.gke.papers.tech/api/v2/scan'
 }
 
 const DEFAULT_MOONBEAM_PROTOCOL_NETWORK: MoonbeamProtocolNetwork = MOONBEAM_MAINNET_PROTOCOL_NETWORK

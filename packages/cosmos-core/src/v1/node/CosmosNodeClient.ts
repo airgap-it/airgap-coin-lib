@@ -16,7 +16,10 @@ import {
 } from '../types/rpc'
 
 export class CosmosNodeClient<Units extends string> {
-  constructor(public readonly baseURL: string, public useCORSProxy: boolean = false) {}
+  constructor(
+    public readonly baseURL: string,
+    public useCORSProxy: boolean = false
+  ) {}
 
   public async fetchBalance(address: string, denom: Units): Promise<{ total: Amount<Units>; available: Amount<Units> }> {
     const response = await Axios.get(this.url(`/cosmos/bank/v1beta1/balances/${address}`))
@@ -52,7 +55,7 @@ export class CosmosNodeClient<Units extends string> {
       this.url(
         `/cosmos/tx/v1beta1/txs?events=${
           isSender ? 'transfer.sender' : 'transfer.recipient'
-        }='${address}'&pagination.limit=${limit}&pagination.offset=${offset}&orderBy=ORDER_BY_DESC`
+        }='${address}'&events=tx.height=0&pagination.limit=${limit}&pagination.offset=${offset}&orderBy=2`
       )
     )
 
@@ -60,8 +63,8 @@ export class CosmosNodeClient<Units extends string> {
   }
 
   public async fetchNodeInfo(): Promise<CosmosNodeInfo> {
-    const response = await Axios.get(this.url(`/node_info`))
-    const nodeInfo = response.data.node_info as CosmosNodeInfo
+    const response = await Axios.get(this.url(`/cosmos/base/tendermint/v1beta1/node_info`))
+    const nodeInfo = response.data.default_node_info as CosmosNodeInfo
 
     return nodeInfo
   }
@@ -84,8 +87,8 @@ export class CosmosNodeClient<Units extends string> {
   }
 
   public async fetchAccount(address: string): Promise<CosmosAccount> {
-    const response = await Axios.get(this.url(`/auth/accounts/${address}`))
-    const account = response.data.result as CosmosAccount
+    const response = await Axios.get(this.url(`/cosmos/auth/v1beta1/accounts/${address}`))
+    const account = response.data.account as CosmosAccount
 
     return account
   }
@@ -107,24 +110,25 @@ export class CosmosNodeClient<Units extends string> {
   }
 
   public async fetchValidator(address: string): Promise<CosmosValidator> {
-    const response = await Axios.get(this.url(`/staking/validators/${address}`))
-    const validator = response.data.result as CosmosValidator
+    const response = await Axios.get(this.url(`/cosmos/staking/v1beta1/validators/${address}`))
+
+    const validator = response.data.validator as CosmosValidator
 
     return validator
   }
 
   public async fetchValidators(): Promise<CosmosValidator[]> {
-    const response = await Axios.get(this.url('/staking/validators'))
-    const validators = response.data.result as CosmosValidator[]
+    const response = await Axios.get(this.url('/cosmos/staking/v1beta1/validators'))
+    const validators = response.data.validators as CosmosValidator[]
 
     return validators
   }
 
   public async fetchSelfDelegation(validatorAddress: string): Promise<CosmosDelegation> {
-    const validatorInfo = await Axios.get(this.url(`/distribution/validators/${validatorAddress}`))
-    const operatorAddress = validatorInfo.data.result.operator_address
-    const response = await Axios.get(this.url(`/staking/delegators/${operatorAddress}/delegations/${validatorAddress}`))
-    const delegation = response.data.result as CosmosDelegation
+    const validatorInfo = await Axios.get(this.url(`/cosmos/distribution/v1beta1/validators/${validatorAddress}`))
+    const operatorAddress = validatorInfo.data.operator_address
+    const response = await Axios.get(this.url(`/cosmos/staking/v1beta1/validators/${validatorAddress}/delegations/${operatorAddress}`))
+    const delegation = response.data.delegation_response as CosmosDelegation
 
     return delegation
   }
@@ -169,8 +173,10 @@ export class CosmosNodeClient<Units extends string> {
   }
 
   public async fetchRewardForDelegation(delegatorAddress: string, validatorAddress: string, denom: Units): Promise<Amount<Units>> {
-    const totalRewards = await Axios.get(this.url(`/distribution/delegators/${delegatorAddress}/rewards/${validatorAddress}`))
-      .then((response) => response.data.result as { denom: string; amount: string }[])
+    const totalRewards = await Axios.get(
+      this.url(`/cosmos/distribution/v1beta1/delegators/${delegatorAddress}/rewards/${validatorAddress}`)
+    )
+      .then((response) => response.data.rewards as { denom: string; amount: string }[])
       .catch(() => [])
     if (totalRewards?.length > 0) {
       return newAmount(CosmosCoin.sum(CosmosCoin.fromCoins(totalRewards), denom).decimalPlaces(0, BigNumber.ROUND_FLOOR), denom)
