@@ -116,7 +116,9 @@ export interface TezosProtocol
 
 const MAX_OPERATIONS_PER_GROUP: number = 200
 const MIN_CYCLE_DURATION: number = 4096 * 60 * 1000 // ms
-const MAX_GAS_PER_BLOCK: number = 2600000
+// const MAX_GAS_PER_BLOCK: number = 2600000
+
+const MAX_GAS_PER_BLOCK: number = 1733333
 
 const GAS_LIMIT_PLACEHOLDER: string = '1040000'
 const STORAGE_LIMIT_PLACEHOLDER: string = '60000'
