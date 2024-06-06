@@ -272,6 +272,7 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
     const branch = results[1].data.hash
     const chainID = results[1].data.chain_id
     const body = this.prepareMockContractCall(contractCall, chainID, branch, counter, source, this.contractAddress)
+
     try {
       const response = await axios.post(this.url('/chains/main/blocks/head/helpers/scripts/run_operation'), body, {
         headers: { 'Content-Type': 'application/json' }
