@@ -452,6 +452,7 @@ export abstract class TezosFAProtocolImpl<
     const branch: string = results[1].data.hash
     const chainId: string = results[1].data.chain_id
     const body = this.prepareMockContractCall(contractCall, chainId, branch, counter, source, this.options.network.contractAddress)
+
     try {
       const response = await axios.post(this.url('/chains/main/blocks/head/helpers/scripts/run_operation'), body, {
         headers: { 'Content-Type': 'application/json' }
