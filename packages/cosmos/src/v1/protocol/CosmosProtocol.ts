@@ -16,7 +16,7 @@ import { CosmosBaseProtocolImpl, CosmosProtocolNetwork, CosmosProtocolOptions, C
 export type CosmosDenom = 'atom' | 'uatom'
 
 // Implementation
-const DEFAULT_GAS: Amount<CosmosDenom> = newAmount('500000', 'blockchain')
+const DEFAULT_GAS: Amount<CosmosDenom> = newAmount('600000', 'blockchain')
 
 export interface CosmosProtocol extends CosmosBaseStakingProtocol<CosmosDenom> {}
 
