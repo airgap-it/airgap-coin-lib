@@ -15,7 +15,10 @@ import { TezosSignedTransaction, TezosUnsignedTransaction } from '../../../types
 import { TezosForger } from './TezosForger'
 
 export class TezosAccountant<_Units extends string> {
-  public constructor(protected readonly forger: TezosForger, protected readonly network: TezosProtocolNetwork) {}
+  public constructor(
+    protected readonly forger: TezosForger,
+    protected readonly network: TezosProtocolNetwork
+  ) {}
 
   public async getDetailsFromTransaction(
     transaction: TezosUnsignedTransaction | TezosSignedTransaction

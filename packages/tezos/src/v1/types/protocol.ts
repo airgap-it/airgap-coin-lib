@@ -12,6 +12,16 @@ export type TezosUnits = 'tez' | 'mutez' | 'nanotez'
 
 export type TezosProtocolNetworkResolver = (network: string) => TezosProtocolNetwork
 
+export type TezosUnstakeRequest = {
+  delegate: string
+  requests: [
+    {
+      cycle: number
+      amount: string
+    }
+  ]
+}
+
 export interface TezosProtocolNetwork extends ProtocolNetwork {
   network: TezosNetwork
   blockExplorerType: TezosBlockExplorerType
