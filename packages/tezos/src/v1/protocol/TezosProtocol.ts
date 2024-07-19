@@ -62,10 +62,10 @@ import { TezosDelegationOperation } from '../types/operations/kinds/Delegation'
 import { TezosOriginationOperation } from '../types/operations/kinds/Origination'
 import { TezosRevealOperation } from '../types/operations/kinds/Reveal'
 import { TezosOperation } from '../types/operations/kinds/TezosOperation'
-import { TezosTransactionOperation } from '../types/operations/kinds/Transaction'
+import { TezosTransactionOperation, TezosTransactionParameters } from '../types/operations/kinds/Transaction'
 import { TezosOperationType } from '../types/operations/TezosOperationType'
 import { TezosWrappedOperation } from '../types/operations/TezosWrappedOperation'
-import { TezosProtocolNetwork, TezosProtocolOptions, TezosUnits } from '../types/protocol'
+import { TezosProtocolNetwork, TezosProtocolOptions, TezosUnits, TezosUnstakeRequest } from '../types/protocol'
 import { BakerDetails } from '../types/staking/BakerDetails'
 import { TezosDelegatorAction } from '../types/staking/TezosDelegatorAction'
 import { TezosSignedTransaction, TezosTransactionCursor, TezosUnsignedTransaction } from '../types/transaction'
@@ -96,6 +96,7 @@ export interface TezosProtocol
   isTezosProtocol: true
 
   getMinCycleDuration(): Promise<number>
+  getstakeBalance(address: string): Promise<Balance<TezosUnits>>
 
   getDetailsFromWrappedOperation(wrappedOperation: TezosWrappedOperation): Promise<AirGapTransaction<TezosUnits, TezosUnits>[]>
 
@@ -110,6 +111,8 @@ export interface TezosProtocol
   ): Promise<TezosUnsignedTransaction[]>
 
   bakerDetails(address: string | undefined): Promise<BakerDetails>
+  getUnfinalizeRequest(address: string): Promise<TezosUnstakeRequest>
+  getFinalizeableBalance(address: string): Promise<Balance<TezosUnits>>
 }
 
 // Implementation
@@ -329,6 +332,40 @@ export class TezosProtocolImpl implements TezosProtocol {
     return this.getBalanceOfAddress(address)
   }
 
+  public async getstakeBalance(address: string): Promise<Balance<TezosUnits>> {
+    let stakeBalance: BigNumber = new BigNumber(0)
+
+    const { data }: AxiosResponse = await axios.get(
+      `${this.options.network.rpcUrl}/chains/main/blocks/head/context/contracts/${address}/staked_balance`
+    )
+
+    stakeBalance = new BigNumber(data)
+
+    return { total: newAmount(stakeBalance, 'blockchain') }
+  }
+
+  public async getUnfinalizeRequest(address: string): Promise<TezosUnstakeRequest> {
+    const { data }: AxiosResponse = await axios.get(
+      `${this.options.network.rpcUrl}/chains/main/blocks/head/context/contracts/${address}/unstake_requests`
+    )
+
+    const unfinalizable: TezosUnstakeRequest = data.unfinalizable
+
+    return unfinalizable
+  }
+
+  public async getFinalizeableBalance(address: string): Promise<Balance<TezosUnits>> {
+    let stakeBalance: BigNumber = new BigNumber(0)
+
+    const { data }: AxiosResponse = await axios.get(
+      `${this.options.network.rpcUrl}/chains/main/blocks/head/context/contracts/${address}/unstaked_finalizable_balance`
+    )
+
+    stakeBalance = new BigNumber(data)
+
+    return { total: newAmount(stakeBalance, 'blockchain') }
+  }
+
   public async getBalanceOfAddress(address: string): Promise<Balance<TezosUnits>> {
     let balance: BigNumber = new BigNumber(0)
 
@@ -412,6 +449,14 @@ export class TezosProtocolImpl implements TezosProtocol {
     details: TransactionDetails<TezosUnits>[],
     _configuration?: TransactionSimpleConfiguration
   ): Promise<FeeDefaults<TezosUnits>> {
+    return await this.getTransactionFee(publicKey, details)
+  }
+
+  private async getTransactionFee(
+    publicKey: PublicKey,
+    details: TransactionDetails<TezosUnits>[],
+    parameters?: TezosTransactionParameters
+  ): Promise<FeeDefaults<TezosUnits>> {
     if (details.length === 0) {
       return this.feeDefaults
     }
@@ -423,11 +468,11 @@ export class TezosProtocolImpl implements TezosProtocol {
         kind: TezosOperationType.TRANSACTION,
         amount: newAmount(details[i].amount).blockchain(this.units).value,
         destination: recipient,
-        fee: '0'
+        fee: '0',
+        parameters
       }
       operations.push(transaction as TezosOperation)
     }
-
     return this.getOperationFeeDefaults(publicKey, operations)
   }
 
@@ -572,9 +617,17 @@ export class TezosProtocolImpl implements TezosProtocol {
   }
 
   private async getDelegatorDetails(address: string, bakerAddress?: string): Promise<DelegatorDetails> {
-    const results = await Promise.all([axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/contracts/${address}`)])
+    const results = await Promise.all([
+      axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/contracts/${address}`),
+      axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/contracts/${address}/staked_balance`),
+      axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/contracts/${address}/unstaked_finalizable_balance`)
+      // axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/contracts/${address}/unstaked_frozen_balance`)
+    ])
 
     const accountDetails = results[0].data
+    const stakeBalance: BigNumber = new BigNumber(results[1].data ?? 0)
+    const unstakedFinalizableBalance = new BigNumber(results[2].data ?? 0)
+    // const unstakedFrozenBalance = new BigNumber(results[3].data ?? 0)
 
     const balance = accountDetails.balance
     const isDelegating = !!accountDetails.delegate
@@ -586,9 +639,28 @@ export class TezosProtocolImpl implements TezosProtocol {
         args: ['delegate']
       })
     } else if (!bakerAddress || accountDetails.delegate === bakerAddress) {
-      availableActions.push({
-        type: TezosDelegatorAction.UNDELEGATE
-      })
+      availableActions.push(
+        {
+          type: TezosDelegatorAction.UNDELEGATE
+        },
+        {
+          type: TezosDelegatorAction.STAKE,
+          args: ['stake']
+        }
+      )
+
+      if (stakeBalance.gt(0)) {
+        availableActions.push({
+          type: TezosDelegatorAction.UNSTAKE,
+          args: ['stake']
+        })
+      }
+
+      if (unstakedFinalizableBalance.gt(0)) {
+        availableActions.push({
+          type: TezosDelegatorAction.UNSTAKEFINALIZABLEBALANCE
+        })
+      }
     } else {
       availableActions.push({
         type: TezosDelegatorAction.CHANGE_BAKER,
@@ -604,6 +676,128 @@ export class TezosProtocolImpl implements TezosProtocol {
     }
   }
 
+  private async prepareTransactions(
+    publicKey: PublicKey,
+    details: TransactionDetails<TezosUnits>[],
+    fee?: Amount<TezosUnits>,
+    parameters?: TezosTransactionParameters,
+    operationsPerGroup?: number
+  ): Promise<TezosUnsignedTransaction[]> {
+    if (fee === undefined) {
+      const estimatedFee: FeeDefaults<TezosUnits> = await this.getTransactionFee(publicKey, details, parameters)
+      fee = estimatedFee.medium
+    }
+
+    const wrappedFee: BigNumber = new BigNumber(newAmount(fee).blockchain(this.units).value)
+    const address: string = await this.getAddressFromPublicKey(publicKey)
+
+    const operations: TezosOperation[] = []
+
+    const results = await Promise.all([
+      axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/contracts/${address}/counter`),
+      axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head~2/hash`),
+      axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/contracts/${address}/manager_key`)
+    ]).catch((error) => {
+      throw new NetworkError(Domain.TEZOS, error as AxiosError)
+    })
+
+    const currentCounter = new BigNumber(results[0].data)
+    let counter = currentCounter.plus(1)
+    const branch = results[1].data
+    const accountManager: { key: string } = results[2].data
+
+    // check if we have revealed the address already
+    if (!accountManager) {
+      operations.push(createRevealOperation(counter, publicKey, address))
+      counter = counter.plus(1)
+    }
+
+    const { total, transferable }: Balance<TezosUnits> = await this.getBalanceOfPublicKey(publicKey)
+    const balance: BigNumber = new BigNumber(newAmount(transferable ?? total).blockchain(this.units).value)
+
+    const transactions: TezosUnsignedTransaction[] = []
+
+    let allOperations = await this.createTransactionOperations(operations, details, wrappedFee, address, counter, balance, parameters)
+    allOperations = operations.concat(allOperations) // if we have a reveal in operations, we need to make sure it is present in the allOperations array
+
+    operationsPerGroup = operationsPerGroup ?? MAX_OPERATIONS_PER_GROUP
+
+    const numberOfGroups: number = Math.ceil(allOperations.length / operationsPerGroup)
+    const startingCounter = numberOfGroups > 1 ? currentCounter.plus(1) : undefined
+    for (let i = 0; i < numberOfGroups; i++) {
+      const start = i * operationsPerGroup
+      const end = start + operationsPerGroup
+
+      const operationsGroup = allOperations.slice(start, end)
+
+      const wrappedOperationWithEstimatedGas: TezosWrappedOperation = await this.estimateAndReplaceLimitsAndFee(
+        {
+          branch,
+          contents: operationsGroup
+        },
+        false,
+        startingCounter
+      )
+
+      const forged: string = await this.forgeOperation(wrappedOperationWithEstimatedGas)
+
+      transactions.push(newUnsignedTransaction({ binary: forged }))
+    }
+
+    return transactions
+  }
+
+  private async stake(publicKey: PublicKey, amount: string): Promise<TezosUnsignedTransaction> {
+    const address = await this.getAddressFromPublicKey(publicKey)
+
+    const details: TransactionDetails<TezosUnits> = {
+      to: address,
+      amount: newAmount(amount, 'blockchain')
+    }
+
+    const parameters: TezosTransactionParameters = {
+      entrypoint: 'stake',
+      value: {
+        prim: 'Unit'
+      }
+    }
+
+    return (await this.prepareTransactions(publicKey, [details], undefined, parameters))[0]
+  }
+
+  private async unstake(publicKey: PublicKey, amount: string): Promise<TezosUnsignedTransaction> {
+    const address = await this.getAddressFromPublicKey(publicKey)
+    const details: TransactionDetails<TezosUnits> = {
+      to: address,
+      amount: newAmount(amount, 'blockchain')
+    }
+    const parameters: TezosTransactionParameters = {
+      entrypoint: 'unstake',
+      value: {
+        prim: 'Unit'
+      }
+    }
+
+    return (await this.prepareTransactions(publicKey, [details], undefined, parameters))[0]
+  }
+
+  private async finalizeUnstake(publicKey: PublicKey): Promise<TezosUnsignedTransaction> {
+    const address = await this.getAddressFromPublicKey(publicKey)
+    const details: TransactionDetails<TezosUnits> = {
+      to: address,
+      amount: newAmount('0', 'blockchain')
+    }
+
+    const parameters: TezosTransactionParameters = {
+      entrypoint: 'finalize_unstake',
+      value: {
+        prim: 'Unit'
+      }
+    }
+
+    return (await this.prepareTransactions(publicKey, [details], undefined, parameters))[0]
+  }
+
   public async prepareDelegatorActionFromPublicKey(publicKey: PublicKey, type: any, data?: any): Promise<any[]> {
     switch (type) {
       case TezosDelegatorAction.DELEGATE:
@@ -615,6 +809,12 @@ export class TezosProtocolImpl implements TezosProtocol {
         return [await this.delegate(publicKey, data.delegate)]
       case TezosDelegatorAction.UNDELEGATE:
         return [await this.undelegate(publicKey)]
+      case TezosDelegatorAction.STAKE:
+        return [await this.stake(publicKey, data.stake)]
+      case TezosDelegatorAction.UNSTAKE:
+        return [await this.unstake(publicKey, data.stake)]
+      case TezosDelegatorAction.UNSTAKEFINALIZABLEBALANCE:
+        return [await this.finalizeUnstake(publicKey)]
       default:
         return Promise.reject('Unsupported delegator action.')
     }
@@ -713,71 +913,7 @@ export class TezosProtocolImpl implements TezosProtocol {
     details: TransactionDetails<TezosUnits>[],
     configuration?: TransactionFullConfiguration<TezosUnits> & { operationsPerGroup?: number }
   ): Promise<TezosUnsignedTransaction[]> {
-    const operationsPerGroup: number = configuration?.operationsPerGroup ?? MAX_OPERATIONS_PER_GROUP
-
-    let fee: Amount<TezosUnits>
-    if (configuration?.fee !== undefined) {
-      fee = configuration.fee
-    } else {
-      const estimatedFee: FeeDefaults<TezosUnits> = await this.getTransactionFeeWithPublicKey(publicKey, details)
-      fee = estimatedFee.medium
-    }
-
-    const wrappedFee: BigNumber = new BigNumber(newAmount(fee).blockchain(this.units).value)
-    const address: string = await this.getAddressFromPublicKey(publicKey)
-
-    const operations: TezosOperation[] = []
-
-    const results = await Promise.all([
-      axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/contracts/${address}/counter`),
-      axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head~2/hash`),
-      axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/contracts/${address}/manager_key`)
-    ]).catch((error) => {
-      throw new NetworkError(Domain.TEZOS, error as AxiosError)
-    })
-
-    const currentCounter = new BigNumber(results[0].data)
-    let counter = currentCounter.plus(1)
-    const branch = results[1].data
-    const accountManager: { key: string } = results[2].data
-
-    // check if we have revealed the address already
-    if (!accountManager) {
-      operations.push(createRevealOperation(counter, publicKey, address))
-      counter = counter.plus(1)
-    }
-
-    const { total, transferable }: Balance<TezosUnits> = await this.getBalanceOfPublicKey(publicKey)
-    const balance: BigNumber = new BigNumber(newAmount(transferable ?? total).blockchain(this.units).value)
-
-    const transactions: TezosUnsignedTransaction[] = []
-
-    let allOperations = await this.createTransactionOperations(operations, details, wrappedFee, address, counter, balance)
-    allOperations = operations.concat(allOperations) // if we have a reveal in operations, we need to make sure it is present in the allOperations array
-
-    const numberOfGroups: number = Math.ceil(allOperations.length / operationsPerGroup)
-    const startingCounter = numberOfGroups > 1 ? currentCounter.plus(1) : undefined
-    for (let i = 0; i < numberOfGroups; i++) {
-      const start = i * operationsPerGroup
-      const end = start + operationsPerGroup
-
-      const operationsGroup = allOperations.slice(start, end)
-
-      const wrappedOperationWithEstimatedGas: TezosWrappedOperation = await this.estimateAndReplaceLimitsAndFee(
-        {
-          branch,
-          contents: operationsGroup
-        },
-        false,
-        startingCounter
-      )
-
-      const forged: string = await this.forgeOperation(wrappedOperationWithEstimatedGas)
-
-      transactions.push(newUnsignedTransaction({ binary: forged }))
-    }
-
-    return transactions
+    return await this.prepareTransactions(publicKey, details, configuration?.fee, undefined, configuration?.operationsPerGroup)
   }
 
   public async prepareOperations(
@@ -1058,7 +1194,8 @@ export class TezosProtocolImpl implements TezosProtocol {
     fee: BigNumber,
     address: string,
     counter: BigNumber,
-    balance: BigNumber
+    balance: BigNumber,
+    parameters?: TezosTransactionParameters
   ): Promise<TezosOperation[]> {
     const amountUsedByPreviousOperations: BigNumber = getAmountUsedByPreviousOperations(previousOperations)
 
@@ -1099,7 +1236,7 @@ export class TezosProtocolImpl implements TezosProtocol {
       if (balance.isEqualTo(value.plus(fee))) {
         // Tezos accounts can never be empty. If user tries to send everything, we must leave 1 mutez behind.
         value = value.minus(1)
-      } else if (balance.isLessThan(value.plus(fee))) {
+      } else if (parameters === undefined && balance.isLessThan(value.plus(fee))) {
         throw new BalanceError(Domain.TEZOS, 'not enough balance')
       }
 
@@ -1111,7 +1248,8 @@ export class TezosProtocolImpl implements TezosProtocol {
         amount: value.toFixed(),
         counter: counter.plus(i).toFixed(),
         destination: recipient,
-        source: address
+        source: address,
+        parameters
       }
 
       operations.push(spendOperation)
