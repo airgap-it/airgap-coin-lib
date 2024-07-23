@@ -13,7 +13,7 @@ export type TezosUnits = 'tez' | 'mutez' | 'nanotez'
 export type TezosProtocolNetworkResolver = (network: string) => TezosProtocolNetwork
 
 export type TezosUnstakeRequest = {
-  delegate: string
+  delegate?: string
   requests: [
     {
       cycle: number

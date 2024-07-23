@@ -349,7 +349,11 @@ export class TezosProtocolImpl implements TezosProtocol {
       `${this.options.network.rpcUrl}/chains/main/blocks/head/context/contracts/${address}/unstake_requests`
     )
 
-    const unfinalizable: TezosUnstakeRequest = data.unfinalizable
+    const unfinalizable: TezosUnstakeRequest = data
+      ? data.unfinalizable
+      : {
+          requests: []
+        }
 
     return unfinalizable
   }
