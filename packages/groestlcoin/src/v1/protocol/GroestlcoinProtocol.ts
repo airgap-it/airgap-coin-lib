@@ -364,13 +364,13 @@ export class GroestlcoinProtocolImpl implements GroestlcoinProtocol {
   }
 
   private async fromBitcoinFeeEstimation(feeEstimation: FeeDefaults<BitcoinUnits>): Promise<FeeDefaults<GroestlcoinUnits>> {
-    const [low, medium, high]: [Amount<GroestlcoinUnits>, Amount<GroestlcoinUnits>, Amount<GroestlcoinUnits>] = await Promise.all([
-      this.fromBitcoinAmount(feeEstimation.low),
-      this.fromBitcoinAmount(feeEstimation.medium),
-      this.fromBitcoinAmount(feeEstimation.high)
-    ])
+    // const [low, medium, high]: [Amount<GroestlcoinUnits>, Amount<GroestlcoinUnits>, Amount<GroestlcoinUnits>] = await Promise.all([
+    //   this.fromBitcoinAmount(feeEstimation.low),
+    //   this.fromBitcoinAmount(feeEstimation.medium),
+    //   this.fromBitcoinAmount(feeEstimation.high)
+    // ])
 
-    return { low, medium, high }
+    return { ...this.feeDefaults }
   }
 
   private async fromBitcoinAmount(amount: Amount<BitcoinUnits>): Promise<Amount<GroestlcoinUnits>> {
