@@ -66,13 +66,13 @@ export class KusamaTestProtocolSpec extends TestProtocolSpec<KusamaUnits> {
         encoded:
           // tslint:disable-next-line: prefer-template
           '04' + // number of txs
-          '2106' + // tx length
+          '3506' + // tx length
           '01' + // optional type (specVersion)
           'ee070000' + // specVersion
           '00' + // type
           '02286bee' + // fee
           // transaction
-          '4102' + // length
+          '4502' + // length
           '84' + // signed flag (not signed)
           '00' + // MultiAddress type
           '52e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10' + // AccountId signer
@@ -82,12 +82,13 @@ export class KusamaTestProtocolSpec extends TestProtocolSpec<KusamaUnits> {
           '8503' + // era
           '04' + // nonce
           '00' + // tip
+          '00' + //mode
           '0400' + // moduleId + callId
           '00' + // MultiAddress type
           '52e1d70619678f95a0806fa5eb818fc938cd5f885a19c3fb242d0b0d0620ee10' + // AccountId destination
           '070010a5d4e8' + // value
           // payload
-          'a903' + // payload length
+          'b903' + // payload length
           Buffer.from(
             '0400' + // moduleId + callId
               '00' + // MultiAddress type
@@ -96,10 +97,12 @@ export class KusamaTestProtocolSpec extends TestProtocolSpec<KusamaUnits> {
               '8503' + // era
               '04' + // nonce
               '00' + // tip
+              '00' + //mode
               'ee070000' + // specVersion
               '01000000' + // transactionVersion
               'd51522c9ef7ba4e0990f7a4527de79afcac992ab97abbbc36722f8a27189b170' + // genesis hash
-              '33a7a745849347ce3008c07268be63d8cefd3ef61de0c7318e88a577fb7d26a9' // block hash
+              '33a7a745849347ce3008c07268be63d8cefd3ef61de0c7318e88a577fb7d26a9' + // block hash
+              '00' //metadatahash
           ).toString('hex') // payload
       } as SubstrateUnsignedTransaction,
       signedTx: {
