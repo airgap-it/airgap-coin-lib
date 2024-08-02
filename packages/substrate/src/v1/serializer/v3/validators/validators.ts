@@ -22,6 +22,7 @@ class GenericSubstrateProtocol extends SubstrateProtocolImpl<string, SubstratePr
         format: 42
       },
       transaction: {
+        version: 0,
         types: {}
       }
     }

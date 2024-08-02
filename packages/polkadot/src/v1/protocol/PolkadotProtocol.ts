@@ -58,6 +58,7 @@ export const POLKADOT_CONFIGURATION: PolkadotProtocolConfiguration = {
     format: 0
   },
   transaction: {
+    version: 4,
     types: TRANSACTION_TYPES
   },
   rpc: {
