@@ -235,7 +235,7 @@ export abstract class TezosFAProtocol extends TezosProtocol implements ICoinSubP
   protected async getTransactionOperationDetails(transactionOperation: TezosTransactionOperation): Promise<Partial<IAirGapTransaction>[]> {
     let partials: Partial<IAirGapTransaction>[] = []
     try {
-      partials = transactionOperation.parameters ? this.transactionDetailsFromParameters(transactionOperation.parameters) ?? [] : []
+      partials = transactionOperation.parameters ? (this.transactionDetailsFromParameters(transactionOperation.parameters) ?? []) : []
     } catch {}
 
     if (partials.length === 0) {
