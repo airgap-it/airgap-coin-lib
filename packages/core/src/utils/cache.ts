@@ -30,14 +30,21 @@ export class Cache {
   }
 
   public async save<T>(key: string, promise: Promise<T>, config: CacheConfig<T> = { cacheValue: true }): Promise<T> {
+    console.log('in save')
     const newPromise = promise
       .then((value) => {
+        console.log('in newPromise')
+
         if (value !== undefined && value !== null && config.cacheValue) {
+          console.log('in if newpromise')
+
           this.cachedValues.set(key, {
             value,
             timestamp: new Date().getTime()
           })
         }
+
+        console.log('outside if newpromise')
 
         return value
       })

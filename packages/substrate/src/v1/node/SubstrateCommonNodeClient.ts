@@ -208,6 +208,7 @@ export class SubstrateCommonNodeClient<C extends SubstrateProtocolConfiguration>
 
     const result = await this.cache.get(key).catch(() => {
       const promise = this.sendRepeat(endpoint, params)
+
       return this.cache.save(key, promise, { cacheValue: config.allowCache })
     })
 
