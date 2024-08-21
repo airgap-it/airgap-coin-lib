@@ -43,7 +43,7 @@ function createArgsFactory<C extends PolkadotProtocolConfiguration>(
 ): SubstrateTransactionMethodArgsFactory<any, C> {
   switch (type) {
     case 'bond':
-      assertFields(type, args, 'controller', 'value', 'payee')
+      assertFields(type, args, 'value', 'payee')
 
       return new BondArgsFactory(configuration, args)
     case 'unbond':
@@ -118,7 +118,7 @@ function createArgsDecoder<C extends PolkadotProtocolConfiguration>(
 }
 
 interface BondArgs {
-  controller: SubstrateAccountId<SubstrateSS58Address>
+  // controller: SubstrateAccountId<SubstrateSS58Address>
   value: number | BigNumber
   payee: PolkadotPayee
 }
@@ -161,7 +161,7 @@ interface SetControllerArgs {
 class BondArgsFactory<C extends PolkadotProtocolConfiguration> extends SubstrateTransactionMethodArgsFactory<BondArgs, C> {
   public createFields(): [string, SCALEType][] {
     return [
-      ['controller', scaleAddressFactory(this.configuration).from(this.args.controller, this.configuration)],
+      // ['controller', scaleAddressFactory(this.configuration).from(this.args.controller, this.configuration)],
       ['value', SCALECompactInt.from(this.args.value)],
       ['payee', SCALEEnum.from(this.args.payee)]
     ]
@@ -169,7 +169,11 @@ class BondArgsFactory<C extends PolkadotProtocolConfiguration> extends Substrate
   public createToAirGapTransactionParts(): () => Partial<AirGapTransaction>[] {
     return () => [
       {
-        to: [substrateAddressFactory(this.configuration).from(this.args.controller).asString()],
+        // to: [
+        //   substrateAddressFactory(this.configuration)
+        //     .from(this.args.controller)
+        //     .asString()
+        // ],
         amount: newAmount(this.args.value, 'blockchain')
       }
     ]
@@ -178,14 +182,12 @@ class BondArgsFactory<C extends PolkadotProtocolConfiguration> extends Substrate
 
 class BondArgsDecoder<C extends PolkadotProtocolConfiguration> extends SubstrateTransactionMethodArgsDecoder<BondArgs, C> {
   protected _decode(decoder: SCALEDecoder<C>): SCALEDecodeResult<BondArgs> {
-    const controller = decoder.decodeNextAccount()
     const value = decoder.decodeNextCompactInt()
     const payee = decoder.decodeNextEnum((value) => PolkadotPayee[PolkadotPayee[value] as keyof typeof PolkadotPayee])
 
     return {
-      bytesDecoded: controller.bytesDecoded + value.bytesDecoded + payee.bytesDecoded,
+      bytesDecoded: value.bytesDecoded + payee.bytesDecoded,
       decoded: {
-        controller: controller.decoded.toString(),
         value: value.decoded.value,
         payee: payee.decoded.value
       }

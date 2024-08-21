@@ -38,6 +38,7 @@ export const ACURAST_CONFIGURATION: AcurastProtocolConfiguration = {
     format: 42
   },
   transaction: {
+    version: 3,
     types: {}
   }
 }

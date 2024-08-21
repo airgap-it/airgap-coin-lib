@@ -546,7 +546,7 @@ export abstract class PolkadotBaseProtocolImpl<_Units extends string>
         [
           'bond',
           {
-            controller: SubstrateSS58Address.createPlaceholder(),
+            // controller: SubstrateSS58Address.createPlaceholder(),
             value: stakingBalance,
             payee: 0
           }

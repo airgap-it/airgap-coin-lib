@@ -41,6 +41,7 @@ export interface SubstrateTransactionConfiguration<
   _ProtocolConfiguration extends SubstrateProtocolConfiguration,
   _Types extends string = string
 > {
+  version: number
   types: Record<
     _Types,
     {

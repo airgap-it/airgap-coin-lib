@@ -64,6 +64,7 @@ export const ASTAR_CONFIGURATION: AstarProtocolConfiguration = {
     format: 5
   },
   transaction: {
+    version: 4,
     types: {}
   }
 }
