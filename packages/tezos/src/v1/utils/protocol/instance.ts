@@ -43,7 +43,8 @@ export const tezosProtocolSchema: Schema<TezosProtocol> = {
   unforgeOperation: 'required',
   getstakeBalance: 'required',
   getUnfinalizeRequest: 'required',
-  getFinalizeableBalance: 'required'
+  getFinalizeableBalance: 'required',
+  getTransactionFee: 'required'
 }
 
 export const tezosFAProtocolSchema: Schema<TezosFAProtocol> = {
