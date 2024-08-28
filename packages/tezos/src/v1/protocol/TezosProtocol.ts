@@ -113,6 +113,11 @@ export interface TezosProtocol
   bakerDetails(address: string | undefined): Promise<BakerDetails>
   getUnfinalizeRequest(address: string): Promise<TezosUnstakeRequest>
   getFinalizeableBalance(address: string): Promise<Balance<TezosUnits>>
+  getTransactionFee(
+    publicKey: PublicKey,
+    details: TransactionDetails<TezosUnits>[],
+    parameters?: TezosTransactionParameters
+  ): Promise<FeeDefaults<TezosUnits>>
 }
 
 // Implementation
@@ -456,7 +461,7 @@ export class TezosProtocolImpl implements TezosProtocol {
     return await this.getTransactionFee(publicKey, details)
   }
 
-  private async getTransactionFee(
+  public async getTransactionFee(
     publicKey: PublicKey,
     details: TransactionDetails<TezosUnits>[],
     parameters?: TezosTransactionParameters
