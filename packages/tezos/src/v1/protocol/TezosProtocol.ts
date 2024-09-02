@@ -410,7 +410,7 @@ export class TezosProtocolImpl implements TezosProtocol {
           .plus(finalizeableBalance.total.value)
       } catch (error) {
         transferableBalance = new BigNumber(data)
-        totalBalance = transferableBalance.plus(0).plus(0).plus(0)
+        totalBalance = transferableBalance
       }
     } catch (error: any) {
       // if node returns 404 (which means 'no account found'), go with 0 balance
