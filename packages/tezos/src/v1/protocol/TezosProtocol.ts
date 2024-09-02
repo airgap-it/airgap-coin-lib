@@ -97,7 +97,7 @@ export interface TezosProtocol
 
   getMinCycleDuration(): Promise<number>
   getstakeBalance(address: string): Promise<Balance<TezosUnits>>
-
+  getUnstakeBalance(address: string): Promise<Balance<TezosUnits>>
   getDetailsFromWrappedOperation(wrappedOperation: TezosWrappedOperation): Promise<AirGapTransaction<TezosUnits, TezosUnits>[]>
 
   forgeOperation(wrappedOperation: TezosWrappedOperation): Promise<string>
@@ -349,6 +349,18 @@ export class TezosProtocolImpl implements TezosProtocol {
     return { total: newAmount(stakeBalance, 'blockchain') }
   }
 
+  public async getUnstakeBalance(address: string): Promise<Balance<TezosUnits>> {
+    let unstakeBalance: BigNumber = new BigNumber(0)
+
+    const { data }: AxiosResponse = await axios.get(
+      `${this.options.network.rpcUrl}/chains/main/blocks/head/context/contracts/${address}/unstaked_frozen_balance`
+    )
+
+    unstakeBalance = new BigNumber(data)
+
+    return { total: newAmount(unstakeBalance, 'blockchain') }
+  }
+
   public async getUnfinalizeRequest(address: string): Promise<TezosUnstakeRequest> {
     const { data }: AxiosResponse = await axios.get(
       `${this.options.network.rpcUrl}/chains/main/blocks/head/context/contracts/${address}/unstake_requests`
@@ -376,13 +388,25 @@ export class TezosProtocolImpl implements TezosProtocol {
   }
 
   public async getBalanceOfAddress(address: string): Promise<Balance<TezosUnits>> {
-    let balance: BigNumber = new BigNumber(0)
+    let transferableBalance: BigNumber = new BigNumber(0)
+    let totalBalance: BigNumber = new BigNumber(0)
 
     try {
       const { data }: AxiosResponse = await axios.get(
         `${this.options.network.rpcUrl}/chains/main/blocks/head/context/contracts/${address}/balance`
       )
-      balance = new BigNumber(data)
+
+      const [stakeBalance, unstakeBalance, finalizeableBalance] = await Promise.all([
+        this.getstakeBalance(address),
+        this.getUnstakeBalance(address),
+        this.getFinalizeableBalance(address)
+      ])
+
+      transferableBalance = new BigNumber(data)
+      totalBalance = transferableBalance
+        .plus(stakeBalance.total.value)
+        .plus(unstakeBalance.total.value)
+        .plus(finalizeableBalance.total.value)
     } catch (error: any) {
       // if node returns 404 (which means 'no account found'), go with 0 balance
       if (error.response && error.response.status !== 404) {
@@ -390,7 +414,7 @@ export class TezosProtocolImpl implements TezosProtocol {
       }
     }
 
-    return { total: newAmount(balance, 'blockchain') }
+    return { total: newAmount(totalBalance, 'blockchain'), transferable: newAmount(transferableBalance, 'blockchain') }
   }
 
   public async getTransactionMaxAmountWithPublicKey(
