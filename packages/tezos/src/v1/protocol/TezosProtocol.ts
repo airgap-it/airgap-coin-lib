@@ -396,17 +396,22 @@ export class TezosProtocolImpl implements TezosProtocol {
         `${this.options.network.rpcUrl}/chains/main/blocks/head/context/contracts/${address}/balance`
       )
 
-      const [stakeBalance, unstakeBalance, finalizeableBalance] = await Promise.all([
-        this.getstakeBalance(address),
-        this.getUnstakeBalance(address),
-        this.getFinalizeableBalance(address)
-      ])
+      try {
+        const [stakeBalance, unstakeBalance, finalizeableBalance] = await Promise.all([
+          this.getstakeBalance(address),
+          this.getUnstakeBalance(address),
+          this.getFinalizeableBalance(address)
+        ])
 
-      transferableBalance = new BigNumber(data)
-      totalBalance = transferableBalance
-        .plus(stakeBalance.total.value)
-        .plus(unstakeBalance.total.value)
-        .plus(finalizeableBalance.total.value)
+        transferableBalance = new BigNumber(data)
+        totalBalance = transferableBalance
+          .plus(stakeBalance.total.value)
+          .plus(unstakeBalance.total.value)
+          .plus(finalizeableBalance.total.value)
+      } catch (error) {
+        transferableBalance = new BigNumber(data)
+        totalBalance = transferableBalance.plus(0).plus(0).plus(0)
+      }
     } catch (error: any) {
       // if node returns 404 (which means 'no account found'), go with 0 balance
       if (error.response && error.response.status !== 404) {
@@ -1265,6 +1270,7 @@ export class TezosProtocolImpl implements TezosProtocol {
           value = value.minus(ACTIVATION_BURN) // deduct fee from balance
         }
       }
+      console.log('createTransactionOperations', balance.toString())
 
       if (balance.isEqualTo(value.plus(fee))) {
         // Tezos accounts can never be empty. If user tries to send everything, we must leave 1 mutez behind.
