@@ -656,32 +656,33 @@ export class BitcoinProtocolImpl implements BitcoinProtocol {
         let tempAirGapTransactionIsInbound: boolean = true
 
         let amount = new BigNumber(0)
-
         for (const vin of transaction.vin) {
           if (containsSome(vin.addresses, ourAddresses)) {
             tempAirGapTransactionIsInbound = false
           }
           tempAirGapTransactionFrom.push(...vin.addresses)
-          amount = amount.plus(vin.value)
+          // amount = amount.plus(vin.value)
         }
 
         for (const vout of transaction.vout) {
           if (vout.addresses) {
             tempAirGapTransactionTo.push(...vout.addresses)
             // If receiving address is our address, and transaction is outbound => our change
-            if (containsSome(vout.addresses, ourAddresses) && !tempAirGapTransactionIsInbound) {
-              // remove only if related to this address
-              amount = amount.minus(vout.value)
-            }
+            // if (containsSome(vout.addresses, ourAddresses) && !tempAirGapTransactionIsInbound) {
+            // remove only if related to this address
+            // amount = amount.minus(vout.value)
+            // }
             // If receiving address is not ours, and transaction isbound => senders change
-            if (!containsSome(vout.addresses, ourAddresses) && tempAirGapTransactionIsInbound) {
-              amount = amount.minus(vout.value)
-            }
+            // if (!containsSome(vout.addresses, ourAddresses) && tempAirGapTransactionIsInbound) {
+            // amount = amount.minus(vout.value)
+            // }
           }
         }
 
         // deduct fee from amount
-        amount = amount.minus(transaction.fees)
+        //amount = amount.minus(transaction.fees)
+
+        amount = amount.plus(transaction.vout[0].value)
 
         const airGapTransaction: AirGapTransaction<BitcoinUnits> = {
           from: tempAirGapTransactionFrom,
