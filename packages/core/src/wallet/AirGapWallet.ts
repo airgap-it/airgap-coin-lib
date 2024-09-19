@@ -26,6 +26,7 @@ export interface SerializedAirGapWallet {
 
 export class AirGapWallet implements IAirGapWallet {
   public addresses: string[] = [] // used for cache
+  public label: string | undefined
 
   constructor(
     public protocol: ICoinProtocol,
