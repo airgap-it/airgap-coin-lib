@@ -654,8 +654,9 @@ export class BitcoinProtocolImpl implements BitcoinProtocol {
         const tempAirGapTransactionFrom: string[] = []
         const tempAirGapTransactionTo: string[] = []
         let tempAirGapTransactionIsInbound: boolean = true
-
+        let amountNotAdded = true
         let amount = new BigNumber(0)
+
         for (const vin of transaction.vin) {
           if (containsSome(vin.addresses, ourAddresses)) {
             tempAirGapTransactionIsInbound = false
@@ -677,12 +678,19 @@ export class BitcoinProtocolImpl implements BitcoinProtocol {
             // amount = amount.minus(vout.value)
             // }
           }
+
+          if (containsSome(vout.addresses, ourAddresses) && transaction.vout.length > 2) {
+            amount = amount.plus(vout.value)
+            amountNotAdded = false
+          }
         }
 
         // deduct fee from amount
         //amount = amount.minus(transaction.fees)
 
-        amount = amount.plus(transaction.vout[0].value)
+        if (amountNotAdded) {
+          amount = amount.plus(transaction.vout[0].value)
+        }
 
         const airGapTransaction: AirGapTransaction<BitcoinUnits> = {
           from: tempAirGapTransactionFrom,
