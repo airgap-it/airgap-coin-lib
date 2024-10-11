@@ -1,6 +1,6 @@
 {
   "name": "@airgap/crypto",
-  "version": "0.13.34",
+  "version": "0.13.35",
   "description": "The @airgap/crypto packages provides common crypto functionalities.",
   "keywords": [
     "airgap",
@@ -30,8 +30,8 @@
   },
   "author": "Papers AG <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
-    "@airgap/coinlib-core": "^0.13.34",
-    "@airgap/module-kit": "^0.13.34",
+    "@airgap/coinlib-core": "^0.13.35",
+    "@airgap/module-kit": "^0.13.35",
     "@airgap/sapling-wasm": "^0.0.9",
     "@polkadot/wasm-crypto": "0.20.1",
     "@stablelib/hmac": "^1.0.1"
