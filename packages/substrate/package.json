@@ -1,6 +1,6 @@
 {
   "name": "@airgap/substrate",
-  "version": "0.13.33",
+  "version": "0.13.34",
   "description": "The @airgap/substrate is a Substrate base implementation of the ICoinProtocol interface from @airgap/coinlib-core.",
   "keywords": [
     "airgap",
@@ -32,10 +32,10 @@
   },
   "author": "Papers AG <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
-    "@airgap/coinlib-core": "^0.13.33",
-    "@airgap/crypto": "^0.13.33",
-    "@airgap/module-kit": "^0.13.33",
-    "@airgap/serializer": "^0.13.33",
+    "@airgap/coinlib-core": "^0.13.34",
+    "@airgap/crypto": "^0.13.34",
+    "@airgap/module-kit": "^0.13.34",
+    "@airgap/serializer": "^0.13.34",
     "@polkadot/util": "2.0.1",
     "@polkadot/wasm-crypto": "0.20.1"
   },
