@@ -338,25 +338,21 @@ export class TezosProtocolImpl implements TezosProtocol {
   }
 
   public async getstakeBalance(address: string): Promise<Balance<TezosUnits>> {
-    let stakeBalance: BigNumber = new BigNumber(0)
-
     const { data }: AxiosResponse = await axios.get(
       `${this.options.network.rpcUrl}/chains/main/blocks/head/context/contracts/${address}/staked_balance`
     )
 
-    stakeBalance = new BigNumber(data)
+    const stakeBalance = new BigNumber(data ? data : '0')
 
     return { total: newAmount(stakeBalance, 'blockchain') }
   }
 
   public async getUnstakeBalance(address: string): Promise<Balance<TezosUnits>> {
-    let unstakeBalance: BigNumber = new BigNumber(0)
-
     const { data }: AxiosResponse = await axios.get(
       `${this.options.network.rpcUrl}/chains/main/blocks/head/context/contracts/${address}/unstaked_frozen_balance`
     )
 
-    unstakeBalance = new BigNumber(data)
+    const unstakeBalance = new BigNumber(data ? data : '0')
 
     return { total: newAmount(unstakeBalance, 'blockchain') }
   }
@@ -376,13 +372,11 @@ export class TezosProtocolImpl implements TezosProtocol {
   }
 
   public async getFinalizeableBalance(address: string): Promise<Balance<TezosUnits>> {
-    let stakeBalance: BigNumber = new BigNumber(0)
-
     const { data }: AxiosResponse = await axios.get(
       `${this.options.network.rpcUrl}/chains/main/blocks/head/context/contracts/${address}/unstaked_finalizable_balance`
     )
 
-    stakeBalance = new BigNumber(data)
+    const stakeBalance = new BigNumber(data ? data : '0')
 
     return { total: newAmount(stakeBalance, 'blockchain') }
   }
