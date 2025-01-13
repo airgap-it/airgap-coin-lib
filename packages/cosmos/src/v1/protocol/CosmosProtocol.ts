@@ -43,7 +43,7 @@ export class CosmosProtocolImpl extends CosmosBaseProtocolImpl<CosmosDenom> impl
   private readonly feeDefaults: FeeDefaults<CosmosDenom> = {
     low: newAmount(0.0025, 'atom').blockchain(this.units),
     medium: newAmount(0.005, 'atom').blockchain(this.units),
-    high: newAmount(0.0072, 'atom').blockchain(this.units)
+    high: newAmount(0.01, 'atom').blockchain(this.units)
   }
 
   private readonly metadata: ProtocolMetadata<CosmosDenom> = {
