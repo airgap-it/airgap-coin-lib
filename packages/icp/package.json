@@ -1,6 +1,6 @@
 {
   "name": "@airgap/icp",
-  "version": "0.13.35",
+  "version": "0.13.36",
   "description": "The @airgap/icp is an ICP implementation of the ICoinProtocol interface from @airgap/coinlib-core.",
   "keywords": [
     "airgap",
@@ -30,10 +30,10 @@
   },
   "author": "Papers AG <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
-    "@airgap/coinlib-core": "^0.13.35",
-    "@airgap/crypto": "^0.13.35",
-    "@airgap/module-kit": "^0.13.35",
-    "@airgap/serializer": "^0.13.35",
+    "@airgap/coinlib-core": "^0.13.36",
+    "@airgap/crypto": "^0.13.36",
+    "@airgap/module-kit": "^0.13.36",
+    "@airgap/serializer": "^0.13.36",
     "@dfinity/agent": "^0.15.4",
     "@dfinity/identity-secp256k1": "^0.15.4",
     "@dfinity/nns": "^0.14.0",
