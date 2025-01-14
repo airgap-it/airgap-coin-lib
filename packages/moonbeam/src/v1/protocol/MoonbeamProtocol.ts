@@ -64,7 +64,7 @@ export const MOONBEAM_METADATA: ProtocolMetadata<MoonbeamUnits> = {
 export const MOONBEAM_CONFIGURATION: MoonbeamProtocolConfiguration = {
   account: { type: 'eth' },
   transaction: {
-    version: 3,
+    version: 4,
     types: TRANSACTION_TYPES
   },
   signature: {

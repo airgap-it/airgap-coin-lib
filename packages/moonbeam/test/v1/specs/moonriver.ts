@@ -66,13 +66,13 @@ export class MoonriverTestProtocolSpec extends TestProtocolSpec<MoonriverUnits> 
         encoded:
           // tslint:disable-next-line: prefer-template
           '04' + // number of txs
-          '5105' + // tx length
+          '6505' + // tx length
           '01' + // optional type (specVersion)
           '1e000000' + // specVersion
           '00' + // type
           '02286bee' + // fee
           // transaction
-          'd901' + // length
+          'dd01' + // length
           '84' + // signed flag (not signed)
           'B6bC7946dFd3B9128777414c02296273ee6bBd0e'.toLowerCase() + // AccountId signer
           '00000000000000000000000000000000000000000000000000000000000000000' + // signature
@@ -80,11 +80,12 @@ export class MoonriverTestProtocolSpec extends TestProtocolSpec<MoonriverUnits> 
           '8503' + // era
           '04' + // nonce
           '00' + // tip
+          '00' + //mode
           '0300' + // moduleId + callId
           'B6bC7946dFd3B9128777414c02296273ee6bBd0e'.toLowerCase() + // AccountId destination
           '070010a5d4e8' + // value
           // payload
-          '4103' + // payload length
+          '5103' + // payload length
           Buffer.from(
             '0300' + // moduleId + callId
               'B6bC7946dFd3B9128777414c02296273ee6bBd0e' + // AccountId destination
@@ -92,10 +93,12 @@ export class MoonriverTestProtocolSpec extends TestProtocolSpec<MoonriverUnits> 
               '8503' + // era
               '04' + // nonce
               '00' + // tip
+              '00' + //mode
               '1e000000' + // specVersion
               '01000000' + // transactionVersion
               'd51522c9ef7ba4e0990f7a4527de79afcac992ab97abbbc36722f8a27189b170' + // genesis hash
-              '33a7a745849347ce3008c07268be63d8cefd3ef61de0c7318e88a577fb7d26a9' // block hash
+              '33a7a745849347ce3008c07268be63d8cefd3ef61de0c7318e88a577fb7d26a9' + // block hash
+              '00' //metadatahash
           ).toString('hex') // payload
       } as SubstrateUnsignedTransaction,
       signedTx: {
