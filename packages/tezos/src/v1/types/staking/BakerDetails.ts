@@ -9,4 +9,5 @@ export interface BakerDetails {
   selfBond: Amount<TezosUnits>
   bakerCapacity: string
   bakerUsage: string
+  totalDelegatedStake: Amount<TezosUnits>
 }
