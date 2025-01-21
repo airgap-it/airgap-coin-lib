@@ -1310,7 +1310,8 @@ export class TezosProtocolImpl implements TezosProtocol {
         .get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/delegates/${address}/full_balance`)
         .catch((_error) => undefined),
       axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/delegates/${address}/delegated_balance`),
-      axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/delegates/${address}/staking_balance`)
+      axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/delegates/${address}/staking_balance`),
+      axios.get(`${this.options.network.rpcUrl}/chains/main/blocks/head/context/delegates/${address}/total_delegated_stake`)
     ]).catch((error) => {
       throw new NetworkError(Domain.TEZOS, error as AxiosError)
     })
@@ -1318,6 +1319,7 @@ export class TezosProtocolImpl implements TezosProtocol {
     const tzBalance: BigNumber = new BigNumber((results[0] ?? results[1])?.data)
     const delegatedBalance: BigNumber = new BigNumber(results[2]?.data)
     const stakingBalance: BigNumber = new BigNumber(results[3]?.data)
+    const totalDelegatedStake: BigNumber = new BigNumber(results[4]?.data)
 
     // calculate the self bond of the baker
     const selfBond: BigNumber = stakingBalance.minus(delegatedBalance)
@@ -1331,7 +1333,8 @@ export class TezosProtocolImpl implements TezosProtocol {
       stakingBalance: newAmount(stakingBalance, 'blockchain'),
       selfBond: newAmount(selfBond, 'blockchain'),
       bakerCapacity: stakingBalance.div(stakingCapacity).toString(),
-      bakerUsage: stakingCapacity.toString()
+      bakerUsage: stakingCapacity.toString(),
+      totalDelegatedStake: newAmount(totalDelegatedStake, 'blockchain')
     }
 
     return bakerDetails
