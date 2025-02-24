@@ -670,6 +670,12 @@ export class TezosProtocolImpl implements TezosProtocol {
         type: TezosDelegatorAction.DELEGATE,
         args: ['delegate']
       })
+
+      if (unstakedFinalizableBalance.gt(0)) {
+        availableActions.push({
+          type: TezosDelegatorAction.UNSTAKEFINALIZABLEBALANCE
+        })
+      }
     } else if (!bakerAddress || accountDetails.delegate === bakerAddress) {
       availableActions.push(
         {
