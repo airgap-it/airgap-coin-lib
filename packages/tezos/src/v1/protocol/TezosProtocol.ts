@@ -670,6 +670,12 @@ export class TezosProtocolImpl implements TezosProtocol {
         type: TezosDelegatorAction.DELEGATE,
         args: ['delegate']
       })
+
+      if (unstakedFinalizableBalance.gt(0)) {
+        availableActions.push({
+          type: TezosDelegatorAction.UNSTAKEFINALIZABLEBALANCE
+        })
+      }
     } else if (!bakerAddress || accountDetails.delegate === bakerAddress) {
       availableActions.push(
         {
@@ -1354,7 +1360,7 @@ export const TEZOS_MAINNET_PROTOCOL_NETWORK: TezosProtocolNetwork = {
   network: TezosNetwork.MAINNET,
   blockExplorerUrl: 'https://tzkt.io',
   blockExplorerType: 'tzkt',
-  indexerApi: 'https://tezos-mainnet-indexer.prod.gke.papers.tech',
+  indexerApi: 'https://api.tzkt.io',
   indexerType: 'tzkt'
 }
 
@@ -1365,7 +1371,7 @@ export const TEZOS_GHOSTNET_PROTOCOL_NETWORK: TezosProtocolNetwork = {
   network: TezosNetwork.GHOSTNET,
   blockExplorerUrl: 'https://ghostnet.tzkt.io',
   blockExplorerType: 'tzkt',
-  indexerApi: 'https://tezos-ghostnet-indexer.prod.gke.papers.tech',
+  indexerApi: 'https://api.ghostnet.tzkt.io',
   indexerType: 'tzkt'
 }
 
