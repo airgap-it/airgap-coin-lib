@@ -1,5 +1,5 @@
 {
-  "version": "0.13.39",
+  "version": "0.13.40",
   "useWorkspaces": true,
   "command": {
     "publish": {
