@@ -95,7 +95,7 @@ export function createCosmosProtocol(options: RecursivePartial<CosmosProtocolOpt
 export const COSMOS_MAINNET_PROTOCOL_NETWORK: CosmosProtocolNetwork = {
   name: 'Mainnet',
   type: 'mainnet',
-  rpcUrl: 'https://cosmos-node.prod.gke.papers.tech',
+  rpcUrl: 'https://cosmos-rest.publicnode.com',
   blockExplorerUrl: 'https://www.mintscan.io'
 }
 
