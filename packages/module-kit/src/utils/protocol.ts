@@ -40,8 +40,16 @@ import { AnyProtocol, BaseProtocol, OfflineProtocol, OnlineProtocol } from '../p
 import { ProtocolNetwork } from '../types/protocol'
 
 import { implementsInterface, Schema } from './interface'
+import { MultisigProtocol, MultisigExtension } from '../protocol/extensions/multisig/multisig'
 
 // Schemas
+
+export const multisigSchema: Schema<MultisigProtocol> = {
+  getMultisigStatus: 'required'
+  // getSigners: 'required',
+  // addSigner: 'required',
+  // removeSigner: 'required'
+}
 
 export const baseProtocolSchema: Schema<BaseProtocol> = {
   getAddressFromPublicKey: 'required',
@@ -163,6 +171,10 @@ export const walletConnectProtocolSchema: Schema<WalletConnectProtocol> = {
 }
 
 // Implementation Checks
+
+export function isMultisig<T extends AnyProtocol>(protocol: T): protocol is T & MultisigExtension<T> {
+  return implementsInterface<MultisigProtocol>(protocol, multisigSchema)
+}
 
 export function isAnyProtocol(object: unknown): object is AnyProtocol {
   return isOfflineProtocol(object) || isOnlineProtocol(object)

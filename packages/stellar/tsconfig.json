@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist/",
+    "typeRoots": ["../../node_modules/@types", "./node_modules/@types"],
+    "strict": false
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/dependencies/cache/**/*", "src/dependencies/github/**/*"]
+}

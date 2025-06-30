@@ -86,6 +86,10 @@
 # node_modules/.bin/ts-json-schema-generator --path 'packages/icp/src/v1/serializer/v3/schemas/definitions/transaction-sign-response-icp.ts' --tsconfig 'tsconfig.json' -c > packages/icp/src/v1/serializer/v3/schemas/generated/transaction-sign-response-icp.json
 # node_modules/.bin/ts-json-schema-generator --path 'packages/icp/src/v1/serializer/v3/schemas/definitions/transaction-sign-request-icp.ts' --tsconfig 'tsconfig.json' -c > packages/icp/src/v1/serializer/v3/schemas/generated/transaction-sign-request-icp.json
 
+# XLM
+# node_modules/.bin/ts-json-schema-generator --path 'packages/stellar/src/v1/serializer/v3/schemas/definitions/transaction-sign-response-stellar.ts' --tsconfig 'tsconfig.json' -c > packages/stellar/src/v1/serializer/v3/schemas/generated/transaction-sign-response-stellar.json
+# node_modules/.bin/ts-json-schema-generator --path 'packages/stellar/src/v1/serializer/v3/schemas/definitions/transaction-sign-request-stellar.ts' --tsconfig 'tsconfig.json' -c > packages/stellar/src/v1/serializer/v3/schemas/generated/transaction-sign-request-stellar.json
+
 
 # Tests
 # node_modules/.bin/ts-json-schema-generator --path 'packages/serializer/test/schemas/definitions/AnyMessage.ts' --tsconfig 'tsconfig.json' > packages/serializer/test/schemas/generated/any-message.json

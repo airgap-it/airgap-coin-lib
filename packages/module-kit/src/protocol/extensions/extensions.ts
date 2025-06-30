@@ -10,6 +10,7 @@ import { AsymmetricEncryptionExtension } from './crypto/AsymmetricEncryptionExte
 import { CryptoExtension } from './crypto/CryptoExtension'
 import { SignMessageExtension } from './crypto/SignMessageExtension'
 import { WalletConnectExtension } from './dapp/WalletConnectProtocol'
+import { MultisigExtension } from './multisig/multisig'
 import { GetTokenBalancesExtension } from './sub-protocol/GetTokenBalancesExtension'
 import { MultiTokenSubProtocolExtension } from './sub-protocol/MultiTokenSubProtocolExtension'
 import { SingleTokenSubProtocolExtension } from './sub-protocol/SingleTokenSubProtocolExtension'
@@ -20,10 +21,10 @@ import { TransactionStatusCheckerExtension } from './transaction/TransactionStat
 export type ProtocolExtensions<T> = T extends _Protocol
   ? OfflineExtensions<T> & OnlineExtensions<T>
   : T extends _OfflineProtocol
-  ? OfflineExtensions<T>
-  : T extends _OnlineProtocol
-  ? OnlineExtensions<T>
-  : never
+    ? OfflineExtensions<T>
+    : T extends _OnlineProtocol
+      ? OnlineExtensions<T>
+      : never
 
 interface OfflineAndOnlineExtensions<T extends _AnyProtocol> {
   Bip32: Bip32Extension<T>
@@ -55,4 +56,6 @@ interface OnlineExtensions<T extends _OnlineProtocol> extends OfflineAndOnlineEx
   TransactionStatusChecker: TransactionStatusCheckerExtension<T>
 
   WalletConnect: WalletConnectExtension<T>
+
+  Multisig: MultisigExtension<T>
 }

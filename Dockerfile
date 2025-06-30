@@ -59,6 +59,9 @@ COPY packages/substrate/scripts /app/packages/substrate/scripts
 COPY packages/tezos/package.json /app/packages/tezos/
 COPY packages/tezos/scripts /app/packages/tezos/scripts
 
+COPY packages/stellar/package.json /app/packages/stellar/
+COPY packages/stellar/scripts /app/packages/stellar/scripts
+
 COPY packages/serializer/package.json /app/packages/serializer/
 COPY packages/serializer/scripts /app/packages/serializer/scripts
 
