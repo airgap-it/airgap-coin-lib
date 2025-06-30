@@ -1,5 +1,4 @@
 {
-  "$ref": "#/definitions/OptimismTransactionSignRequest",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
     "HexString": {
@@ -15,44 +14,47 @@
           "type": "string"
         },
         "transaction": {
-          "additionalProperties": false,
-          "properties": {
-            "chainId": {
-              "type": "number"
-            },
-            "data": {
-              "$ref": "#/definitions/HexString",
-              "type": "string"
-            },
-            "gasLimit": {
-              "$ref": "#/definitions/HexString",
-              "type": "string"
-            },
-            "gasPrice": {
-              "$ref": "#/definitions/HexString",
-              "type": "string"
-            },
-            "l1DataFee": {
-              "type": "string"
-            },
-            "nonce": {
-              "$ref": "#/definitions/HexString",
-              "type": "string"
-            },
-            "to": {
-              "$ref": "#/definitions/HexString",
-              "type": "string"
-            },
-            "value": {
-              "$ref": "#/definitions/HexString",
-              "type": "string"
-            }
-          },
-          "required": ["chainId", "data", "gasLimit", "gasPrice", "l1DataFee", "nonce", "to", "value"],
-          "type": "object"
+          "$ref": "#/definitions/SerializableOptimismRawUnsignedTransaction"
         }
       },
       "required": ["publicKey", "transaction"],
+      "type": "object"
+    },
+    "SerializableOptimismRawUnsignedTransaction": {
+      "additionalProperties": false,
+      "properties": {
+        "chainId": {
+          "type": "number"
+        },
+        "data": {
+          "$ref": "#/definitions/HexString",
+          "type": "string"
+        },
+        "gasLimit": {
+          "$ref": "#/definitions/HexString",
+          "type": "string"
+        },
+        "gasPrice": {
+          "$ref": "#/definitions/HexString",
+          "type": "string"
+        },
+        "l1DataFee": {
+          "type": "string"
+        },
+        "nonce": {
+          "$ref": "#/definitions/HexString",
+          "type": "string"
+        },
+        "to": {
+          "$ref": "#/definitions/HexString",
+          "type": "string"
+        },
+        "value": {
+          "$ref": "#/definitions/HexString",
+          "type": "string"
+        }
+      },
+      "required": ["chainId", "data", "gasLimit", "gasPrice", "l1DataFee", "nonce", "to", "value"],
       "type": "object"
     }
   }
