@@ -26,6 +26,7 @@ import { AsymmetricEncryptionExtension } from './protocol/extensions/crypto/Asym
 import { CryptoExtension } from './protocol/extensions/crypto/CryptoExtension'
 import { SignMessageExtension } from './protocol/extensions/crypto/SignMessageExtension'
 import { WalletConnectExtension, WalletConnectProtocol, WalletConnectRequest } from './protocol/extensions/dapp/WalletConnectProtocol'
+import { MultisigExtension, MultisigProtocol } from './protocol/extensions/multisig/multisig'
 import { GetTokenBalances, GetTokenBalancesExtension, TokenDetails } from './protocol/extensions/sub-protocol/GetTokenBalancesExtension'
 import {
   BaseMultiTokenSubProtocol,
@@ -116,6 +117,7 @@ import {
   hasMultiAddressPublicKeys,
   isAnyProtocol,
   isBip32Protocol,
+  isMultisig,
   isMultiTokenSubProtocol,
   isOfflineProtocol,
   isOnlineProtocol,
@@ -222,7 +224,9 @@ export {
   TransactionStatusCheckerExtension,
   WalletConnectRequest,
   WalletConnectExtension,
-  WalletConnectProtocol
+  WalletConnectProtocol,
+  MultisigProtocol,
+  MultisigExtension
 }
 
 // Serializer
@@ -298,6 +302,7 @@ export {
   isBip32Protocol,
   isSubProtocol,
   isSingleTokenSubProtocol,
+  isMultisig,
   isMultiTokenSubProtocol,
   canGetTokenBalances,
   canFetchDataForAddress,

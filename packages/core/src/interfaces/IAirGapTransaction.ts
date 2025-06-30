@@ -50,6 +50,7 @@ export interface IAirGapTransaction {
 
   transactionDetails?: any
   changeAddressInfo?: any
+  displayFromTo?: boolean
 }
 
 export interface IProtocolTransactionCursor {}

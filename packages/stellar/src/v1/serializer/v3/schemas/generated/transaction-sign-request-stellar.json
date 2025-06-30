@@ -1,0 +1,29 @@
+{
+  "$ref": "#/definitions/StellarTransactionSignRequest",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "StellarTransactionSignRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "callbackURL": {
+          "type": "string"
+        },
+        "publicKey": {
+          "type": "string"
+        },
+        "transaction": {
+          "additionalProperties": false,
+          "properties": {
+            "transaction": {
+              "type": "string"
+            }
+          },
+          "required": ["transaction"],
+          "type": "object"
+        }
+      },
+      "required": ["publicKey", "transaction"],
+      "type": "object"
+    }
+  }
+}

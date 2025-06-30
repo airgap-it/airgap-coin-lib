@@ -1,0 +1,65 @@
+{
+  "name": "@airgap/stellar",
+  "version": "0.13.41",
+  "description": "The @airgap/aeternity is an Aeternity implementation of the ICoinProtocol interface from @airgap/coinlib-core.",
+  "keywords": [
+    "airgap",
+    "blockchain",
+    "crypto",
+    "aeternity"
+  ],
+  "license": "MIT",
+  "homepage": "https://www.airgap.it",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/airgap-it/airgap-coin-lib"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "rm -rf ./dist && tsc && node scripts/copy-files-after-build.js",
+    "build-scripts": "tsc scripts/*.ts",
+    "lint": "tslint -c ./tslint.json --project ./tsconfig.json --format stylish --fix",
+    "lint:prettier": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "lint-ci": "tslint -t json -o ../../lint-reports/aeternity.json --project . || true",
+    "lint-ci:prettier": "prettier \"src/**/*.ts\" \"test/**/*.ts\" --list-different",
+    "test": "TS_NODE_PROJECT='./test/tsconfig.json' nyc mocha --bail --require ts-node/register --require tsconfig-paths/register --require source-map-support/register --full-trace --delay --timeout 40000 ./test/**/**.spec.ts",
+    "test-ci": "nyc --reporter=lcov npm test",
+    "browserify": "browserify ./dist/index.js -s airgapCoinLibAeternity > ./dist/airgap-coinlib-aeternity.min.js"
+  },
+  "author": "Papers AG <contact@papers.ch> (https://papers.ch)",
+  "dependencies": {
+    "@airgap/coinlib-core": "^0.13.41",
+    "@airgap/module-kit": "^0.13.41",
+    "@airgap/serializer": "^0.13.41",
+    "@stellar/stellar-sdk": "^13.3.0"
+  },
+  "localDependencies": {},
+  "nyc": {
+    "include": [
+      "src/**/*.ts"
+    ],
+    "exclude": [
+      "test/**/*.spec.ts"
+    ],
+    "extension": [
+      ".ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ],
+    "reporter": [
+      "text",
+      "text-summary"
+    ],
+    "report-dir": "../../coverage/stellar",
+    "sourceMap": true,
+    "instrument": true
+  },
+  "gitHead": "8e8feb6788204501b7173aa825f5456c2a5f185b",
+  "devDependencies": {
+    "@types/json-schema": "^7.0.15",
+    "@types/urijs": "^1.19.25"
+  }
+}
