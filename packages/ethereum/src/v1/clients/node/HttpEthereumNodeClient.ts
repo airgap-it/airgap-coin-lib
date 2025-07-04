@@ -68,12 +68,16 @@ export class EthereumRPCData {
     return result
   }
 
-  public static removeLeadingZeroPadding(value: string): string {
+  public static removeLeadingZeroPadding(value: string, isAddress: boolean = false): string {
     let result = value
-    while (result.startsWith('0')) {
-      result = result.slice(1) // this can probably be done much more efficiently with a regex
+    if (isAddress) {
+      return value.slice(-40)
+    } else {
+      while (result.startsWith('0')) {
+        result = result.slice(1)
+      }
+      return result
     }
-
     return result
   }
 
@@ -133,7 +137,7 @@ export class EthereumRPCDataTransfer extends EthereumRPCData {
         throw new InvalidValueError(Domain.ETHEREUM, 'unexpected method ID')
       }
       const params = data.slice(methodID.length)
-      const recipient = EthereumRPCData.removeLeadingZeroPadding(params.slice(0, EthereumRPCData.parametersLength))
+      const recipient = EthereumRPCData.removeLeadingZeroPadding(params.slice(0, EthereumRPCData.parametersLength), true)
       const parsedAmount = EthereumRPCData.removeLeadingZeroPadding(params.slice(EthereumRPCData.parametersLength))
       this.recipient = `0x${recipient}`
       this.amount = `0x${parsedAmount}`
@@ -159,7 +163,10 @@ export class EthereumRPCDataTransfer extends EthereumRPCData {
 }
 
 export class HttpEthereumNodeClient implements EthereumNodeClient {
-  constructor(protected readonly baseURL: string, protected readonly headers?: any) {}
+  constructor(
+    protected readonly baseURL: string,
+    protected readonly headers?: any
+  ) {}
 
   public async fetchBalance(address: string): Promise<BigNumber> {
     const body = new EthereumRPCBody('eth_getBalance', [address, EthereumRPCBody.blockLatest])
