@@ -19,7 +19,8 @@ export enum MainProtocolSymbols {
   ICP_CKBTC = 'icp_ckbtc',
   COREUM = 'coreum',
   OPTIMISM = 'optimism',
-  MINA = 'mina'
+  MINA = 'mina',
+  STELLAR = 'stellar'
 }
 
 export enum SubProtocolSymbols {
@@ -45,7 +46,8 @@ export enum SubProtocolSymbols {
   XTZ_SIRS = 'xtz-sirs',
   ETH_ERC20 = 'eth-erc20',
   ETH_ERC20_XCHF = 'eth-erc20-xchf',
-  OPTIMISM_ERC20 = 'optimism-erc20'
+  OPTIMISM_ERC20 = 'optimism-erc20',
+  STELLAR_ASSET = 'stellar-asset'
 }
 
 export type ProtocolSymbols = MainProtocolSymbols | SubProtocolSymbols

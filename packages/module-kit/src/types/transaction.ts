@@ -31,7 +31,7 @@ export interface AirGapTransaction<_Units extends string = string, _FeeUnits ext
 
   uiAlerts?: AirGapUIAlert[]
   changeAddressInfo?: any
-
+  displayFromTo?: boolean
   arbitraryData?: string | [AirGapUIText, string]
   json?: any
   extra?: any

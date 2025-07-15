@@ -16,17 +16,27 @@ export enum Domain {
   ICP = 'ICP',
   COREUM = 'COREUM',
   OPTIMISM = 'OPTIMISM',
-  MINA = 'MINA'
+  MINA = 'MINA',
+  STELLAR = 'STELLAR'
 }
 
 export class CoinlibError extends Error {
-  constructor(public domain: Domain, public code: string, public description?: string) {
+  constructor(
+    public domain: Domain,
+    public code: string,
+    public description?: string
+  ) {
     super(description ? `${domain}(${code}): ${description}` : `${domain}(${code})`)
   }
 }
 
 export class CoinlibAssertionError extends Error {
-  constructor(public domain: Domain, public code: string, public expected: string, public actual) {
+  constructor(
+    public domain: Domain,
+    public code: string,
+    public expected: string,
+    public actual
+  ) {
     super(`${domain}(${code}): expected ${expected} but got ${actual}.`)
   }
 }

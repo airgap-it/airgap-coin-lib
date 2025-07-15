@@ -38,10 +38,17 @@ function ethereumRawUnsignedTransactionToRequest(
   publicKey: string,
   callbackUrl?: string
 ): EthereumTransactionSignRequest {
-  const { type: _, ...rest } = unsigned
+  const { type: _, to, ...rest } = unsigned
+
+  const toHEX = Buffer.from(to, 'utf-8').toString('hex')
+
+  const transaction = {
+    ...rest,
+    to: toHEX
+  }
 
   return {
-    transaction: rest,
+    transaction,
     publicKey,
     callbackURL: callbackUrl
   }
@@ -77,7 +84,16 @@ export function ethereumTransactionSignRequestToUnsigned(
 }
 
 function ethereumTransactionSignRequestToRawUnsigned(request: EthereumTransactionSignRequest): EthereumRawUnsignedTransaction {
-  return newUnsignedTransaction<EthereumRawUnsignedTransaction>({ ethereumType: 'raw', ...request.transaction })
+  const { to, ...rest } = request.transaction
+
+  const toUTF8 = Buffer.from(to, 'hex').toString('utf-8')
+
+  const transaction = {
+    ...rest,
+    to: toUTF8
+  }
+
+  return newUnsignedTransaction<EthereumRawUnsignedTransaction>({ ethereumType: 'raw', ...transaction })
 }
 
 function ethereumTransactionSignRequestToTypedUnsigned(request: EthereumTypedTransactionSignRequest): EthereumTypedUnsignedTransaction {

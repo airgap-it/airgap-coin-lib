@@ -15,24 +15,27 @@
           "type": "string"
         },
         "transaction": {
-          "additionalProperties": false,
-          "properties": {
-            "derivationPath": {
-              "type": "string"
-            },
-            "masterFingerprint": {
-              "type": "string"
-            },
-            "serialized": {
-              "$ref": "#/definitions/HexString",
-              "type": "string"
-            }
-          },
-          "required": ["derivationPath", "masterFingerprint", "serialized"],
-          "type": "object"
+          "$ref": "#/definitions/SerializableEthereumTypedUnsignedTransaction"
         }
       },
       "required": ["publicKey", "transaction"],
+      "type": "object"
+    },
+    "SerializableEthereumTypedUnsignedTransaction": {
+      "additionalProperties": false,
+      "properties": {
+        "derivationPath": {
+          "type": "string"
+        },
+        "masterFingerprint": {
+          "type": "string"
+        },
+        "serialized": {
+          "$ref": "#/definitions/HexString",
+          "type": "string"
+        }
+      },
+      "required": ["derivationPath", "masterFingerprint", "serialized"],
       "type": "object"
     }
   }
