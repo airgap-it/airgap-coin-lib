@@ -79,7 +79,7 @@ export function createKusamaProtocol(options: RecursivePartial<PolkadotProtocolO
 export const KUSAMA_MAINNET_PROTOCOL_NETWORK: PolkadotProtocolNetwork = {
   name: 'Mainnet',
   type: 'mainnet',
-  rpcUrl: 'https://kusama-rpc.publicnode.com',
+  rpcUrl: 'https://polkadot-kusama-node.prod.gke.papers.tech',
   blockExplorerUrl: 'https://kusama.subscan.io',
   blockExplorerApi: 'https://kusama.subscan.prod.gke.papers.tech/api/v2/scan'
 }
