@@ -1,6 +1,6 @@
 // tslint:disable no-floating-promises
 // import { AirGapTransaction } from '@airgap/module-kit'
-import { AirGapTransaction, isAmount } from '@airgap/module-kit'
+import { AirGapTransaction /*, isAmount*/ } from '@airgap/module-kit'
 import chai = require('chai')
 import chaiAsPromised = require('chai-as-promised')
 import 'mocha'
