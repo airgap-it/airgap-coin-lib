@@ -1,6 +1,6 @@
-FROM node:16.13.1
+FROM node:20
 
-RUN apt-get update && apt-get install -yq git python build-essential
+RUN apt-get update && apt-get install -yq git python3 build-essential
 
 # create app directory
 RUN mkdir /app

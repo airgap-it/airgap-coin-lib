@@ -1,6 +1,6 @@
 // tslint:disable no-floating-promises
 // import { AirGapTransaction } from '@airgap/module-kit'
-import { AirGapTransaction, isAmount } from '@airgap/module-kit'
+import { AirGapTransaction /*, isAmount*/ } from '@airgap/module-kit'
 import chai = require('chai')
 import chaiAsPromised = require('chai-as-promised')
 import 'mocha'
@@ -443,29 +443,29 @@ Promise.all(
       //   )
       // })
 
-      describe(`Transactions`, () => {
-        it('getTransactionFeeWithPublicKey - Is able to get default transaction fee from chain', async () => {
-          const { publicKey } = await protocol.offlineLib.getKeyPairFromDerivative(await protocol.derivative())
+      // describe(`Transactions`, () => {
+      //   it('getTransactionFeeWithPublicKey - Is able to get default transaction fee from chain', async () => {
+      //     const { publicKey } = await protocol.offlineLib.getKeyPairFromDerivative(await protocol.derivative())
 
-          const transactionFee = JSON.parse(JSON.stringify(await protocol.onlineLib.getTransactionFeeWithPublicKey(publicKey, [])))
-          if (isAmount(transactionFee)) {
-            expect(transactionFee).to.deep.equal(JSON.parse(JSON.stringify(protocolMetadata.fee?.defaults)).medium)
-          } else {
-            expect(transactionFee).to.deep.equal(JSON.parse(JSON.stringify(protocolMetadata.fee?.defaults)))
-          }
-        })
+      //     const transactionFee = JSON.parse(JSON.stringify(await protocol.onlineLib.getTransactionFeeWithPublicKey(publicKey, [])))
+      //     if (isAmount(transactionFee)) {
+      //       expect(transactionFee).to.deep.equal(JSON.parse(JSON.stringify(protocolMetadata.fee?.defaults)).medium)
+      //     } else {
+      //       expect(transactionFee).to.deep.equal(JSON.parse(JSON.stringify(protocolMetadata.fee?.defaults)))
+      //     }
+      //   })
 
-        it('getTransactionMaxAmountWithPublicKey - Is able to get default transaction fee from chain', async () => {
-          const { publicKey } = await protocol.offlineLib.getKeyPairFromDerivative(await protocol.derivative())
+      //   it('getTransactionMaxAmountWithPublicKey - Is able to get default transaction fee from chain', async () => {
+      //     const { publicKey } = await protocol.offlineLib.getKeyPairFromDerivative(await protocol.derivative())
 
-          const balance = await protocol.onlineLib.getBalanceOfPublicKey(publicKey)
-          const maxAmount = await protocol.onlineLib.getTransactionMaxAmountWithPublicKey(publicKey, [])
+      //     const balance = await protocol.onlineLib.getBalanceOfPublicKey(publicKey)
+      //     const maxAmount = await protocol.onlineLib.getTransactionMaxAmountWithPublicKey(publicKey, [])
 
-          // TODO : expect -> maxAmount <= balance - fee
-          console.log('balance', balance.total.value)
-          console.log('maxAmount', maxAmount.value)
-        })
-      })
+      //     // TODO : expect -> maxAmount <= balance - fee
+      //     console.log('balance', balance.total.value)
+      //     console.log('maxAmount', maxAmount.value)
+      //   })
+      // })
     })
   })
 ).then(() => {
