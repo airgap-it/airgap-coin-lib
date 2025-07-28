@@ -44,6 +44,7 @@ export enum SubProtocolSymbols {
   XTZ_BTC_TEZ = 'xtz-btc-tez',
   XTZ_USDT = 'xtz-usdt',
   XTZ_SIRS = 'xtz-sirs',
+  XTZ_STXTZ = 'xtz-stxtz',
   ETH_ERC20 = 'eth-erc20',
   ETH_ERC20_XCHF = 'eth-erc20-xchf',
   OPTIMISM_ERC20 = 'optimism-erc20',

@@ -253,6 +253,16 @@ export class TezosV3SerializerCompanion implements AirGapV3SerializerCompanion {
       type: IACMessageType.TransactionSignResponse,
       schema: { schema: tezosTransactionSignResponse },
       protocolIdentifier: SubProtocolSymbols.XTZ_YOU
+    },
+    {
+      type: IACMessageType.TransactionSignResponse,
+      schema: { schema: tezosTransactionSignResponse },
+      protocolIdentifier: SubProtocolSymbols.XTZ_STXTZ
+    },
+    {
+      type: IACMessageType.TransactionSignRequest,
+      schema: { schema: tezosTransactionSignRequest },
+      protocolIdentifier: SubProtocolSymbols.XTZ_STXTZ
     }
   ]
 

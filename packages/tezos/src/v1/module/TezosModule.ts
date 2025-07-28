@@ -16,6 +16,7 @@ import {
 import { createTezosBlockExplorer } from '../block-explorer/factory'
 import { createTetherUSDProtocol } from '../module'
 import { createBTCTezProtocol } from '../protocol/fa/tokens/BTCTezProtocol'
+import { createstXTZProtocol } from '../protocol/fa/tokens/stXTZProtocol'
 import { createCTezProtocol } from '../protocol/fa/tokens/CTezProtocol'
 import { createDogamiProtocol } from '../protocol/fa/tokens/DogamiProtocol'
 import { createETHTezProtocol } from '../protocol/fa/tokens/ETHTezProtocol'
@@ -63,7 +64,8 @@ export class TezosModule implements AirGapModule<{ ProtocolNetwork: TezosProtoco
       SubProtocolSymbols.XTZ_DOGA,
       SubProtocolSymbols.XTZ_BTC_TEZ,
       SubProtocolSymbols.XTZ_USDT,
-      SubProtocolSymbols.XTZ_SIRS
+      SubProtocolSymbols.XTZ_SIRS,
+      SubProtocolSymbols.XTZ_STXTZ
     ]
 
     const tezosNetworkRegistry: ModuleNetworkRegistry<TezosProtocolNetwork> = new ModuleNetworkRegistry({
@@ -170,6 +172,8 @@ export class TezosModule implements AirGapModule<{ ProtocolNetwork: TezosProtoco
         return createUSDTezProtocol({ network })
       case SubProtocolSymbols.XTZ_SIRS:
         return createSiriusProtocol({ network })
+      case SubProtocolSymbols.XTZ_STXTZ:
+        return createstXTZProtocol({ network })
       default:
         throw new ConditionViolationError(Domain.TEZOS, `Protocol ${identifier} not supported.`)
     }
