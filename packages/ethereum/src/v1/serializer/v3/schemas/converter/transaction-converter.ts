@@ -86,11 +86,13 @@ export function ethereumTransactionSignRequestToUnsigned(
 function ethereumTransactionSignRequestToRawUnsigned(request: EthereumTransactionSignRequest): EthereumRawUnsignedTransaction {
   const { to, ...rest } = request.transaction
 
+  const isStringAddress = /^0x[0-9a-fA-F]{40}$/.test(to)
+
   const toUTF8 = Buffer.from(to, 'hex').toString('utf-8')
 
   const transaction = {
     ...rest,
-    to: toUTF8
+    to: isStringAddress ? to : toUTF8
   }
 
   return newUnsignedTransaction<EthereumRawUnsignedTransaction>({ ethereumType: 'raw', ...transaction })
