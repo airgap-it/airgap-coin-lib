@@ -115,7 +115,8 @@ class StellarAssetProtocolImpl implements StellarAssetProtocol {
 
       if (txDetails.type === StellarTransactionType.PAYMENT) {
         op = txDetails as Operation.Payment
-        amount = new BigNumber(op.amount).multipliedBy(this.metadata.decimals).toString()
+        const multiply = new BigNumber(10).exponentiatedBy(Number(this.metadata.decimals))
+        amount = new BigNumber(op.amount).multipliedBy(multiply).toString()
         fee = tx.fee
         to = op.destination
         type = StellarTransactionType.PAYMENT

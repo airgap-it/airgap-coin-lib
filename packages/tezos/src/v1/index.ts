@@ -12,6 +12,7 @@ import { createTezosFA1Protocol, TezosFA1Protocol } from './protocol/fa/TezosFA1
 import { createTezosFA2Protocol, TezosFA2Protocol } from './protocol/fa/TezosFA2Protocol'
 import { TezosFAProtocol } from './protocol/fa/TezosFAProtocol'
 import { BTCTezProtocol, createBTCTezProtocol, createBTCTezProtocolOptions } from './protocol/fa/tokens/BTCTezProtocol'
+import { createstXTZProtocol, createstXTZProtocolOptions, STXTZProtocol } from './protocol/fa/tokens/stXTZProtocol'
 import { createCTezProtocol, createCTezProtocolOptions, CTezProtocol } from './protocol/fa/tokens/CTezProtocol'
 import { createDogamiProtocol, createDogamiProtocolOptions, DogamiProtocol } from './protocol/fa/tokens/DogamiProtocol'
 import { createETHTezProtocol, createETHTezProtocolOptions, ETHTezProtocol } from './protocol/fa/tokens/ETHTezProtocol'
@@ -172,7 +173,10 @@ export {
   createWrapProtocolOptions,
   YouProtocol,
   createYouProtocol,
-  createYouProtocolOptions
+  createYouProtocolOptions,
+  STXTZProtocol,
+  createstXTZProtocol,
+  createstXTZProtocolOptions
 }
 
 // Block Explorer
