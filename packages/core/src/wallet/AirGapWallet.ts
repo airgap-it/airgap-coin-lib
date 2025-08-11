@@ -54,7 +54,12 @@ export class AirGapWallet implements IAirGapWallet {
     if (this.isExtendedPublicKey) {
       const protocolIdentifier = await this.protocol.getIdentifier()
       // TODO: configure it on the protocol level
-      const multipleDerivationProtocols = [MainProtocolSymbols.BTC, MainProtocolSymbols.BTC_SEGWIT, MainProtocolSymbols.GRS]
+      const multipleDerivationProtocols = [
+        MainProtocolSymbols.BTC,
+        MainProtocolSymbols.BTC_SEGWIT,
+        MainProtocolSymbols.BTC_TAPROOT,
+        MainProtocolSymbols.GRS
+      ]
       const multipleDerivation = multipleDerivationProtocols.some((protocolSymbol: ProtocolSymbols) =>
         protocolIdentifier.startsWith(protocolSymbol)
       )

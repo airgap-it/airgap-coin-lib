@@ -14,6 +14,7 @@ import {
 } from '@airgap/module-kit'
 import { BitcoinProtocol } from '../protocol/BitcoinProtocol'
 import { BitcoinSegwitProtocol } from '../protocol/BitcoinSegwitProtocol'
+import { BitcoinTaprootProtocol } from '../protocol/BitcoinTaprootProtocol'
 
 // Schemas
 
@@ -35,6 +36,11 @@ export const bitcoinSegwitProtocolSchema: Schema<BitcoinSegwitProtocol> = {
   _isBitcoinSegwitProtocol: 'required'
 }
 
+export const bitcoinTaprootProtocolSchema: Schema<BitcoinTaprootProtocol> = {
+  ...bitcoinProtocolSchema,
+  _isBitcoinTaprootProtocol: 'required'
+}
+
 // Implementation Checks
 
 export function isBitcoinProtocol(protocol: AirGapAnyProtocol): protocol is BitcoinProtocol {
@@ -43,4 +49,8 @@ export function isBitcoinProtocol(protocol: AirGapAnyProtocol): protocol is Bitc
 
 export function isBitcoinSegwitProtocol(protocol: AirGapAnyProtocol): protocol is BitcoinSegwitProtocol {
   return implementsInterface<BitcoinSegwitProtocol>(protocol, bitcoinSegwitProtocolSchema)
+}
+
+export function isBitcoinTaprootProtocol(protocol: AirGapAnyProtocol): protocol is BitcoinSegwitProtocol {
+  return implementsInterface<BitcoinTaprootProtocol>(protocol, bitcoinTaprootProtocolSchema)
 }

@@ -2,6 +2,7 @@ import { BlockCypherBlockExplorer } from './block-explorer/BlockCypherBlockExplo
 import { BitcoinModule } from './module/BitcoinModule'
 import { BitcoinProtocol, createBitcoinProtocol, createBitcoinProtocolOptions } from './protocol/BitcoinProtocol'
 import { BitcoinSegwitProtocol, createBitcoinSegwitProtocol } from './protocol/BitcoinSegwitProtocol'
+import { BitcoinTaprootProtocol, createBitcoinTaprootProtocol } from './protocol/BitcoinTaprootProtocol'
 import { BitcoinTestnetProtocol, createBitcoinTestnetProtocol } from './protocol/BitcoinTestnetProtocol'
 import {
   bitcoinSignedTransactionToResponse,
@@ -11,8 +12,10 @@ import {
 } from './serializer/v3/schemas/converter/transaction-converter'
 import { BitcoinTransactionSignRequest } from './serializer/v3/schemas/definitions/transaction-sign-request-bitcoin'
 import { BitcoinSegwitTransactionSignRequest } from './serializer/v3/schemas/definitions/transaction-sign-request-bitcoin-segwit'
+import { BitcoinTaprootTransactionSignRequest } from './serializer/v3/schemas/definitions/transaction-sign-request-bitcoin-taproot'
 import { BitcoinTransactionSignResponse } from './serializer/v3/schemas/definitions/transaction-sign-response-bitcoin'
 import { BitcoinSegwitTransactionSignResponse } from './serializer/v3/schemas/definitions/transaction-sign-response-bitcoin-segwit'
+import { BitcoinTaprootTransactionSignResponse } from './serializer/v3/schemas/definitions/transaction-sign-response-bitcoin-taproot'
 import { BitcoinTransactionValidator } from './serializer/v3/validators/transaction-validator'
 import { bitcoinValidators } from './serializer/v3/validators/validators'
 import { BitcoinCryptoConfiguration } from './types/crypto'
@@ -22,11 +25,13 @@ import {
   BitcoinOutTransaction,
   BitcoinSegwitSignedTransaction,
   BitcoinSegwitUnsignedTransaction,
+  BitcoinTaprootSignedTransaction,
+  BitcoinTaprootUnsignedTransaction,
   BitcoinSignedTransaction,
   BitcoinTransactionCursor,
   BitcoinUnsignedTransaction
 } from './types/transaction'
-import { isBitcoinProtocol, isBitcoinSegwitProtocol } from './utils/protocol'
+import { isBitcoinProtocol, isBitcoinSegwitProtocol, isBitcoinTaprootProtocol } from './utils/protocol'
 
 // Module
 
@@ -38,9 +43,11 @@ export {
   BitcoinProtocol,
   BitcoinTestnetProtocol,
   BitcoinSegwitProtocol,
+  BitcoinTaprootProtocol,
   createBitcoinProtocol,
   createBitcoinTestnetProtocol,
   createBitcoinSegwitProtocol,
+  createBitcoinTaprootProtocol,
   createBitcoinProtocolOptions
 }
 
@@ -59,6 +66,8 @@ export {
   BitcoinSignedTransaction,
   BitcoinSegwitUnsignedTransaction,
   BitcoinSegwitSignedTransaction,
+  BitcoinTaprootUnsignedTransaction,
+  BitcoinTaprootSignedTransaction,
   BitcoinInTransaction,
   BitcoinOutTransaction,
   BitcoinTransactionCursor
@@ -70,7 +79,9 @@ export {
   BitcoinTransactionSignRequest,
   BitcoinTransactionSignResponse,
   BitcoinSegwitTransactionSignRequest,
+  BitcoinTaprootTransactionSignRequest,
   BitcoinSegwitTransactionSignResponse,
+  BitcoinTaprootTransactionSignResponse,
   BitcoinTransactionValidator,
   bitcoinValidators,
   bitcoinUnsignedTransactionToRequest,
@@ -81,4 +92,4 @@ export {
 
 // Utils
 
-export { isBitcoinProtocol, isBitcoinSegwitProtocol }
+export { isBitcoinProtocol, isBitcoinSegwitProtocol, isBitcoinTaprootProtocol }

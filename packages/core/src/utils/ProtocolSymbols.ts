@@ -3,6 +3,7 @@ export enum MainProtocolSymbols {
   AE = 'ae',
   BTC = 'btc',
   BTC_SEGWIT = 'btc_segwit',
+  BTC_TAPROOT = 'btc_taproot',
   ETH = 'eth',
   XTZ = 'xtz',
   XTZ_SHIELDED = 'xtz_shielded',
