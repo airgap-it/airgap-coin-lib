@@ -56,6 +56,7 @@ export class AirGapCoinWallet extends AirGapMarketWallet {
     if (
       (protocolIdentifier === MainProtocolSymbols.BTC ||
         protocolIdentifier === MainProtocolSymbols.BTC_SEGWIT ||
+        protocolIdentifier === MainProtocolSymbols.BTC_TAPROOT ||
         protocolIdentifier === MainProtocolSymbols.GRS) &&
       this.isExtendedPublicKey
     ) {

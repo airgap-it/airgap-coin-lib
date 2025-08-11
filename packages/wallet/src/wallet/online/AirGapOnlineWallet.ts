@@ -37,8 +37,8 @@ export abstract class AirGapOnlineWallet<
     publicKey: T extends Bip32Extension<AirGapOnlineProtocol>
       ? PublicKey | ExtendedPublicKey
       : T extends AirGapOnlineProtocol
-      ? PublicKey
-      : never,
+        ? PublicKey
+        : never,
     derivationPath: string,
     masterFingerprint: string,
     status: AirGapWalletStatus,
@@ -89,6 +89,7 @@ export abstract class AirGapOnlineWallet<
     if (
       (protocolIdentifier === MainProtocolSymbols.BTC ||
         protocolIdentifier === MainProtocolSymbols.BTC_SEGWIT ||
+        protocolIdentifier === MainProtocolSymbols.BTC_TAPROOT ||
         protocolIdentifier === MainProtocolSymbols.GRS) &&
       this.publicKey.type === 'xpub' &&
       isBip32Protocol(this.protocol)

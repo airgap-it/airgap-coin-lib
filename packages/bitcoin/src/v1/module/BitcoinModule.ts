@@ -16,10 +16,11 @@ import {
 import { BlockCypherBlockExplorer } from '../block-explorer/BlockCypherBlockExplorer'
 import { BITCOIN_MAINNET_PROTOCOL_NETWORK, createBitcoinProtocol } from '../protocol/BitcoinProtocol'
 import { createBitcoinSegwitProtocol } from '../protocol/BitcoinSegwitProtocol'
+import { createBitcoinTaprootProtocol } from '../protocol/BitcoinTaprootProtocol'
 import { BitcoinV3SerializerCompanion } from '../serializer/v3/serializer-companion'
 import { BitcoinProtocolNetwork } from '../types/protocol'
 
-type SupportedProtocols = MainProtocolSymbols.BTC | MainProtocolSymbols.BTC_SEGWIT
+type SupportedProtocols = MainProtocolSymbols.BTC | MainProtocolSymbols.BTC_SEGWIT | MainProtocolSymbols.BTC_TAPROOT
 
 export class BitcoinModule implements AirGapModule<{ Protocols: SupportedProtocols; ProtocolNetwork: BitcoinProtocolNetwork }> {
   private readonly networkRegistries: Record<SupportedProtocols, ModuleNetworkRegistry>
@@ -31,7 +32,8 @@ export class BitcoinModule implements AirGapModule<{ Protocols: SupportedProtoco
     })
     this.networkRegistries = {
       [MainProtocolSymbols.BTC]: networkRegistry,
-      [MainProtocolSymbols.BTC_SEGWIT]: networkRegistry
+      [MainProtocolSymbols.BTC_SEGWIT]: networkRegistry,
+      [MainProtocolSymbols.BTC_TAPROOT]: networkRegistry
     }
     this.supportedProtocols = createSupportedProtocols(this.networkRegistries)
   }
@@ -78,6 +80,8 @@ export class BitcoinModule implements AirGapModule<{ Protocols: SupportedProtoco
         return createBitcoinProtocol({ network })
       case MainProtocolSymbols.BTC_SEGWIT:
         return createBitcoinSegwitProtocol({ network })
+      case MainProtocolSymbols.BTC_TAPROOT:
+        return createBitcoinTaprootProtocol({ network })
       default:
         throw new ConditionViolationError(Domain.BITCOIN, `Protocol ${identifier} not supported.`)
     }

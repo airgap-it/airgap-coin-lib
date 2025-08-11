@@ -38,11 +38,24 @@ export interface BitcoinSegwitSignedTransaction extends SignedTransaction {
   psbt: string
 }
 
+export interface BitcoinTaprootSignedTransaction extends SignedTransaction {
+  psbt: string
+}
+
+export interface BitcoinTaprootUnsignedTransaction extends UnsignedTransaction {
+  psbt: string
+}
+
 export interface BitcoinTransactionCursor extends TransactionCursor {
   page?: number
 }
 
 export type SegwitTransactionFullConfiguration<_Units extends BitcoinUnits> = TransactionFullConfiguration<_Units> & {
+  masterFingerprint: HexString
+  replaceByFee?: boolean
+}
+
+export type TaprootTransactionFullConfiguration<_Units extends BitcoinUnits> = TransactionFullConfiguration<_Units> & {
   masterFingerprint: HexString
   replaceByFee?: boolean
 }

@@ -15,6 +15,8 @@ import { BitcoinProtocol, UTXOResponse } from './BitcoinProtocol'
 import { BitcoinProtocolOptions } from './BitcoinProtocolOptions'
 import { BitcoinSegwitAddress } from './BitcoinSegwitAddress'
 import { BitcoinAddressCursor, BitcoinAddressResult } from './BitcoinTypes'
+import { BIP32Factory } from 'bip32'
+import ecc from '@bitcoinerlab/secp256k1'
 
 const DUST_AMOUNT = 50
 
@@ -62,13 +64,14 @@ export class BitcoinSegwitProtocol extends BitcoinProtocol {
 
   public standardDerivationPath: string = `m/84'/0'/0'`
   public addressPlaceholder: string = 'bc1...'
+  private readonly bip32 = BIP32Factory(ecc)
 
   constructor(options: BitcoinProtocolOptions = new BitcoinProtocolOptions()) {
     super(options)
   }
 
   public async getPublicKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
-    const bitcoinNode = bitcoinJS.bip32.fromSeed(Buffer.from(secret, 'hex'), this.options.network.extras.network)
+    const bitcoinNode = this.bip32.fromSeed(Buffer.from(secret, 'hex'), this.options.network.extras.network)
 
     const neutered = bitcoinNode.derivePath(derivationPath).neutered()
 
@@ -79,10 +82,10 @@ export class BitcoinSegwitProtocol extends BitcoinProtocol {
 
   public async getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
     if (!derivationPath) {
-      return bitcoinJS.bip32.fromSeed(Buffer.from(secret, 'hex'), this.options.network.extras.network) as any
+      return this.bip32.fromSeed(Buffer.from(secret, 'hex'), this.options.network.extras.network) as any
     }
 
-    const bitcoinNode = bitcoinJS.bip32.fromSeed(Buffer.from(secret, 'hex'), this.options.network.extras.network)
+    const bitcoinNode = this.bip32.fromSeed(Buffer.from(secret, 'hex'), this.options.network.extras.network)
 
     const privateKey = bitcoinNode.derivePath(derivationPath).privateKey
 
@@ -90,7 +93,7 @@ export class BitcoinSegwitProtocol extends BitcoinProtocol {
       throw new Error('No privatekey!')
     }
 
-    return privateKey.toString('hex')
+    return Buffer.from(privateKey).toString('hex')
   }
 
   public async getExtendedPrivateKeyFromMnemonic(mnemonic: string, derivationPath: string, password?: string): Promise<string> {
@@ -100,7 +103,7 @@ export class BitcoinSegwitProtocol extends BitcoinProtocol {
   }
 
   public async getExtendedPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
-    const bitcoinNode = bitcoinJS.bip32.fromSeed(Buffer.from(secret, 'hex'), this.options.network.extras.network)
+    const bitcoinNode = this.bip32.fromSeed(Buffer.from(secret, 'hex'), this.options.network.extras.network)
 
     return bitcoinNode.derivePath(derivationPath).toBase58()
   }
@@ -109,7 +112,7 @@ export class BitcoinSegwitProtocol extends BitcoinProtocol {
     // broadcaster knows this (both broadcaster and signer)
 
     const address: BitcoinSegwitAddress = BitcoinSegwitAddress.fromAddress(
-      bitcoinJS.bip32.fromBase58(publicKey, this.options.network.extras.network).toBase58()
+      this.bip32.fromBase58(publicKey, this.options.network.extras.network).toBase58()
     )
 
     return {
@@ -130,12 +133,12 @@ export class BitcoinSegwitProtocol extends BitcoinProtocol {
     const xpub = new ExtendedPublicKey(extendedPublicKey).toXpub()
 
     // broadcaster knows this (both broadcaster and signer)
-    const keyPair = bitcoinJS.bip32
+    const keyPair = this.bip32
       .fromBase58(xpub, this.options.network.extras.network)
       .derive(visibilityDerivationIndex)
       .derive(addressDerivationIndex)
 
-    const obj = bitcoinJS.payments.p2wpkh({ pubkey: keyPair.publicKey })
+    const obj = bitcoinJS.payments.p2wpkh({ pubkey: Buffer.from(keyPair.publicKey) })
 
     const { address: addressRaw } = obj
 
@@ -158,28 +161,26 @@ export class BitcoinSegwitProtocol extends BitcoinProtocol {
     offset: number
   ): Promise<BitcoinAddressResult[]> {
     // broadcaster knows this (both broadcaster and signer)
-    const node = bitcoinJS.bip32.fromBase58(new ExtendedPublicKey(extendedPublicKey).toXpub(), this.options.network.extras.network)
+    const node = this.bip32.fromBase58(new ExtendedPublicKey(extendedPublicKey).toXpub(), this.options.network.extras.network)
     const generatorArray = Array.from(new Array(addressCount), (x, i) => i + offset)
 
     return Promise.all(
-      generatorArray.map(
-        (x): BitcoinAddressResult => {
-          const keyPair = node.derive(visibilityDerivationIndex).derive(x)
+      generatorArray.map((x): BitcoinAddressResult => {
+        const keyPair = node.derive(visibilityDerivationIndex).derive(x)
 
-          const { address: addressRaw } = bitcoinJS.payments.p2wpkh({ pubkey: keyPair.publicKey })
+        const { address: addressRaw } = bitcoinJS.payments.p2wpkh({ pubkey: Buffer.from(keyPair.publicKey) })
 
-          if (!addressRaw) {
-            throw new Error('could not generate address')
-          }
-
-          const address: BitcoinSegwitAddress = BitcoinSegwitAddress.fromAddress(addressRaw)
-
-          return {
-            address: address.asString(),
-            cursor: { hasNext: false }
-          }
+        if (!addressRaw) {
+          throw new Error('could not generate address')
         }
-      )
+
+        const address: BitcoinSegwitAddress = BitcoinSegwitAddress.fromAddress(addressRaw)
+
+        return {
+          address: address.asString(),
+          cursor: { hasNext: false }
+        }
+      })
     )
   }
 
@@ -421,7 +422,7 @@ export class BitcoinSegwitProtocol extends BitcoinProtocol {
       )
     })
 
-    const keyPair = bitcoinJS.bip32.fromBase58(new ExtendedPublicKey(extendedPublicKey).toXpub())
+    const keyPair = this.bip32.fromBase58(new ExtendedPublicKey(extendedPublicKey).toXpub())
 
     const replaceByFee: boolean = extras.replaceByFee ? true : false
     transaction.ins.forEach((tx) => {
@@ -429,7 +430,7 @@ export class BitcoinSegwitProtocol extends BitcoinProtocol {
 
       const childNode = keyPair.derivePath(indexes.join('/'))
 
-      const p2wpkh = bitcoinJS.payments.p2wpkh({ pubkey: childNode.publicKey, network: this.options.network.extras.network })
+      const p2wpkh = bitcoinJS.payments.p2wpkh({ pubkey: Buffer.from(childNode.publicKey), network: this.options.network.extras.network })
 
       const p2shOutput = p2wpkh.output
 
@@ -448,7 +449,7 @@ export class BitcoinSegwitProtocol extends BitcoinProtocol {
         bip32Derivation: [
           {
             masterFingerprint: Buffer.from(extras.masterFingerprint, 'hex'),
-            pubkey: childNode.publicKey,
+            pubkey: Buffer.from(childNode.publicKey),
             path: tx.derivationPath!
           }
         ]
@@ -476,7 +477,7 @@ export class BitcoinSegwitProtocol extends BitcoinProtocol {
   public async signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: any /* RawBitcoinSegwitTransaction */): Promise<string> {
     const rawBitcoinSegwitTx: RawBitcoinSegwitTransaction = transaction
 
-    const bip32PK = bitcoinJS.bip32.fromBase58(extendedPrivateKey)
+    const bip32PK = this.bip32.fromBase58(extendedPrivateKey)
 
     const decodedPSBT = bitcoinJS.Psbt.fromHex(rawBitcoinSegwitTx.psbt)
 
@@ -486,7 +487,11 @@ export class BitcoinSegwitProtocol extends BitcoinProtocol {
           // This uses the same logic to find child key as the "findWalletByFingerprintDerivationPathAndProtocolIdentifier" method in the Vault
           const cutoffFrom = deriv.path.lastIndexOf("'") || deriv.path.lastIndexOf('h')
           const childPath = deriv.path.substr(cutoffFrom + 2)
-          decodedPSBT.signInput(index, bip32PK.derivePath(childPath))
+          const childNode = bip32PK.derivePath(childPath)
+          decodedPSBT.signInput(index, {
+            publicKey: Buffer.from(childNode.publicKey),
+            sign: (hash: Buffer, lowR?: boolean) => Buffer.from(childNode.sign(hash, lowR))
+          })
           console.log(`Signed input ${index} with path ${deriv.path}`)
         } catch (e) {
           console.log(`Error signing input ${index}`, e)
