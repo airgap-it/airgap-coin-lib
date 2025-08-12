@@ -14,3 +14,10 @@ export interface BitcoinSegwitJS {
     network: bitcoin.Network
   }
 }
+
+export interface BitcoinTaprootJS {
+  lib: typeof bitcoin
+  config: {
+    network: bitcoin.Network
+  }
+}

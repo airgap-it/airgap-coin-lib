@@ -50,6 +50,9 @@ import { convertExtendedPublicKey, convertExtendedSecretKey, convertPublicKey } 
 import { getBitcoinJSNetwork } from '../utils/network'
 
 import { BitcoinKeyConfiguration, BitcoinProtocol, BitcoinProtocolImpl, createBitcoinProtocolOptions } from './BitcoinProtocol'
+import { BIP32Factory, BIP32Interface } from 'bip32'
+
+import ecc from '@bitcoinerlab/secp256k1'
 
 // Interface
 
@@ -71,7 +74,7 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
   public readonly _isBitcoinProtocol: true = true
   public readonly _isBitcoinSegwitProtocol: true = true
 
-  private readonly legacy: BitcoinProtocolImpl
+  public readonly legacy: BitcoinProtocolImpl
   private readonly options: BitcoinProtocolOptions
   private readonly bitcoinJS: BitcoinSegwitJS
 
@@ -110,6 +113,8 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
     }
   }
 
+  private readonly bip32 = BIP32Factory(ecc)
+
   // Common
 
   private readonly metadata: ProtocolMetadata<BitcoinUnits>
@@ -139,7 +144,7 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
 
   private async getAddressFromExtendedPublicKey(extendedPublicKey: ExtendedPublicKey): Promise<string> {
     const encodedExtendedPublicKey: ExtendedPublicKey = convertExtendedPublicKey(extendedPublicKey, { format: 'encoded', type: 'xpub' })
-    const bip32: bitcoin.BIP32Interface = this.bitcoinJS.lib.bip32.fromBase58(encodedExtendedPublicKey.value, this.bitcoinJS.config.network)
+    const bip32: BIP32Interface = this.bip32.fromBase58(encodedExtendedPublicKey.value, this.bitcoinJS.config.network)
 
     return BitcoinSegwitAddress.fromBip32(bip32).asString()
   }
@@ -150,12 +155,12 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
     addressIndex: number
   ): Promise<PublicKey> {
     const encodedPublicKey: ExtendedPublicKey = convertExtendedPublicKey(publicKey, { format: 'encoded', type: 'xpub' })
-    const derivedBip32: bitcoin.BIP32Interface = this.bitcoinJS.lib.bip32
+    const derivedBip32: BIP32Interface = this.bip32
       .fromBase58(encodedPublicKey.value, this.bitcoinJS.config.network)
       .derive(visibilityIndex)
       .derive(addressIndex)
 
-    return newPublicKey(derivedBip32.publicKey.toString('hex'), 'hex')
+    return newPublicKey(Buffer.from(derivedBip32.publicKey).toString('hex'), 'hex')
   }
 
   public async getDetailsFromTransaction(
@@ -394,13 +399,15 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
   }
 
   public async getKeyPairFromDerivative(derivative: CryptoDerivative): Promise<KeyPair> {
-    const bip32: bitcoin.BIP32Interface = this.derivativeToBip32Node(derivative)
-    const privateKey: Buffer | undefined = bip32.privateKey
-    if (privateKey === undefined) {
+    const bip32: BIP32Interface = this.derivativeToBip32Node(derivative)
+    const privateKeyUint8: Uint8Array | undefined = bip32.privateKey
+    if (privateKeyUint8 === undefined) {
       throw new Error('No private key!')
     }
+    const privateKey: Buffer = Buffer.from(privateKeyUint8)
 
-    const publicKey: Buffer = bip32.publicKey
+    const publicKeyUint8: Uint8Array = bip32.publicKey
+    const publicKey: Buffer = Buffer.from(publicKeyUint8)
 
     return {
       secretKey: newSecretKey(privateKey.toString('hex'), 'hex'),
@@ -409,7 +416,7 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
   }
 
   public async getExtendedKeyPairFromDerivative(derivative: CryptoDerivative): Promise<ExtendedKeyPair> {
-    const bip32: bitcoin.BIP32Interface = this.derivativeToBip32Node(derivative)
+    const bip32: BIP32Interface = this.derivativeToBip32Node(derivative)
 
     return {
       secretKey: newExtendedSecretKey(bip32.toBase58(), 'encoded'),
@@ -426,15 +433,16 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
     addressIndex: number
   ): Promise<SecretKey> {
     const encodedSecretKey: ExtendedSecretKey = convertExtendedSecretKey(extendedSecretKey, { format: 'encoded', type: 'xprv' })
-    const derivedBip32: bitcoin.BIP32Interface = this.bitcoinJS.lib.bip32
+    const derivedBip32: BIP32Interface = this.bip32
       .fromBase58(encodedSecretKey.value, this.bitcoinJS.config.network)
       .derive(visibilityIndex)
       .derive(addressIndex)
 
-    const privateKey: Buffer | undefined = derivedBip32.privateKey
-    if (privateKey === undefined) {
+    const privateKeyUint8: Uint8Array | undefined = derivedBip32.privateKey
+    if (privateKeyUint8 === undefined) {
       throw new Error('No private key!')
     }
+    const privateKey: Buffer = Buffer.from(privateKeyUint8)
 
     return newSecretKey(privateKey.toString('hex'), 'hex')
   }
@@ -467,7 +475,7 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
     extendedSecretKey: ExtendedSecretKey
   ): Promise<BitcoinSegwitSignedTransaction> {
     const encodedExtendedSecretKey: ExtendedSecretKey = convertExtendedSecretKey(extendedSecretKey, { format: 'encoded', type: 'xprv' })
-    const bip32: bitcoin.BIP32Interface = this.bitcoinJS.lib.bip32.fromBase58(encodedExtendedSecretKey.value)
+    const bip32: BIP32Interface = this.bip32.fromBase58(encodedExtendedSecretKey.value)
 
     const decodedPSBT: bitcoin.Psbt = this.bitcoinJS.lib.Psbt.fromHex(transaction.psbt)
 
@@ -477,11 +485,13 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
           // This uses the same logic to find child key as the "findWalletByFingerprintDerivationPathAndProtocolIdentifier" method in the Vault
           const cutoffFrom = deriv.path.lastIndexOf("'") || deriv.path.lastIndexOf('h')
           const childPath = deriv.path.substr(cutoffFrom + 2)
-          decodedPSBT.signInput(index, bip32.derivePath(childPath))
-          console.log(`Signed input ${index} with path ${deriv.path}`)
-        } catch (e) {
-          console.log(`Error signing input ${index}`, e)
-        }
+          const childNode = bip32.derivePath(childPath)
+          // Wrap publicKey as Buffer to match Signer interface
+          decodedPSBT.signInput(index, {
+            publicKey: Buffer.from(childNode.publicKey),
+            sign: (hash: Buffer, lowR?: boolean) => Buffer.from(childNode.sign(hash, lowR))
+          })
+        } catch (e) {}
       })
     })
 
@@ -719,20 +729,21 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
     })
 
     const xpubExtendedPublicKey: ExtendedPublicKey = convertExtendedPublicKey(extendedPublicKey, { format: 'encoded', type: 'xpub' })
-    const keyPair: bitcoin.BIP32Interface = this.bitcoinJS.lib.bip32.fromBase58(xpubExtendedPublicKey.value)
+    const keyPair: BIP32Interface = this.bip32.fromBase58(xpubExtendedPublicKey.value)
 
     const replaceByFee: boolean = configuration?.replaceByFee ? true : false
+
     transaction.ins.forEach((tx) => {
       const indexes: [number, number] = getPathIndexes(tx.derivationPath!)
 
-      const childNode: bitcoin.BIP32Interface = keyPair.derivePath(indexes.join('/'))
+      const childNode: BIP32Interface = keyPair.derivePath(indexes.join('/'))
 
-      const p2wpkh: bitcoin.Payment = this.bitcoinJS.lib.payments.p2wpkh({
-        pubkey: childNode.publicKey,
+      const payment: bitcoin.Payment = this.bitcoinJS.lib.payments.p2wpkh({
+        pubkey: Buffer.from(childNode.publicKey),
         network: this.bitcoinJS.config.network
       })
 
-      const p2shOutput: Buffer | undefined = p2wpkh.output
+      const p2shOutput: Buffer | undefined = payment.output
 
       if (!p2shOutput) {
         throw new Error('no p2shOutput')
@@ -749,7 +760,7 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
         bip32Derivation: [
           {
             masterFingerprint: Buffer.from(configuration.masterFingerprint.value, 'hex'),
-            pubkey: childNode.publicKey,
+            pubkey: Buffer.from(childNode.publicKey),
             path: tx.derivationPath!
           }
         ]
@@ -772,6 +783,7 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
 
   public async broadcastTransaction(transaction: BitcoinSegwitSignedTransaction): Promise<string> {
     const hexTransaction: string = this.bitcoinJS.lib.Psbt.fromHex(transaction.psbt).finalizeAllInputs().extractTransaction().toHex()
+
     const { data } = await axios.post(`${this.options.network.indexerApi}/api/v2/sendtx/`, hexTransaction)
 
     return data.result
@@ -797,7 +809,7 @@ export class BitcoinSegwitProtocolImpl implements BitcoinSegwitProtocol {
   private derivativeToBip32Node(derivative: CryptoDerivative) {
     const extendedSecretKey: ExtendedSecretKey = this.convertCryptoDerivative(derivative)
 
-    return this.bitcoinJS.lib.bip32.fromBase58(extendedSecretKey.value, this.bitcoinJS.config.network)
+    return this.bip32.fromBase58(extendedSecretKey.value, this.bitcoinJS.config.network)
   }
 }
 

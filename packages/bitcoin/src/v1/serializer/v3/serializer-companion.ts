@@ -18,6 +18,10 @@ import {
   bitcoinSegwitTransactionSignResponseToSigned,
   bitcoinSegwitUnsignedTransactionToRequest,
   bitcoinSignedTransactionToResponse,
+  bitcoinTaprootSignedTransactionToResponse,
+  bitcoinTaprootTransactionSignRequestToUnsigned,
+  bitcoinTaprootTransactionSignResponseToSigned,
+  bitcoinTaprootUnsignedTransactionToRequest,
   bitcoinTransactionSignRequestToUnsigned,
   bitcoinTransactionSignResponseToSigned,
   bitcoinUnsignedTransactionToRequest
@@ -53,6 +57,16 @@ export class BitcoinV3SerializerCompanion implements AirGapV3SerializerCompanion
       type: IACMessageType.TransactionSignResponse,
       schema: { schema: bitcoinSegwitTransactionSignResponse },
       protocolIdentifier: MainProtocolSymbols.BTC_SEGWIT
+    },
+    {
+      type: IACMessageType.TransactionSignRequest,
+      schema: { schema: bitcoinSegwitTransactionSignRequest },
+      protocolIdentifier: MainProtocolSymbols.BTC_TAPROOT
+    },
+    {
+      type: IACMessageType.TransactionSignResponse,
+      schema: { schema: bitcoinSegwitTransactionSignResponse },
+      protocolIdentifier: MainProtocolSymbols.BTC_TAPROOT
     }
   ]
 
@@ -75,6 +89,8 @@ export class BitcoinV3SerializerCompanion implements AirGapV3SerializerCompanion
         return bitcoinUnsignedTransactionToRequest(unsignedTransaction as BitcoinUnsignedTransaction, publicKey, callbackUrl)
       case MainProtocolSymbols.BTC_SEGWIT:
         return bitcoinSegwitUnsignedTransactionToRequest(unsignedTransaction as BitcoinSegwitUnsignedTransaction, publicKey, callbackUrl)
+      case MainProtocolSymbols.BTC_TAPROOT:
+        return bitcoinTaprootUnsignedTransactionToRequest(unsignedTransaction as BitcoinSegwitUnsignedTransaction, publicKey, callbackUrl)
       default:
         throw new UnsupportedError(Domain.BITCOIN, `Protocol ${identifier} not supported`)
     }
@@ -89,6 +105,8 @@ export class BitcoinV3SerializerCompanion implements AirGapV3SerializerCompanion
         return bitcoinTransactionSignRequestToUnsigned(transactionSignRequest)
       case MainProtocolSymbols.BTC_SEGWIT:
         return bitcoinSegwitTransactionSignRequestToUnsigned(transactionSignRequest)
+      case MainProtocolSymbols.BTC_TAPROOT:
+        return bitcoinTaprootTransactionSignRequestToUnsigned(transactionSignRequest)
       default:
         throw new UnsupportedError(Domain.BITCOIN, `Protocol ${identifier} not supported`)
     }
@@ -106,6 +124,8 @@ export class BitcoinV3SerializerCompanion implements AirGapV3SerializerCompanion
         }
       case MainProtocolSymbols.BTC_SEGWIT:
         return true
+      case MainProtocolSymbols.BTC_TAPROOT:
+        return true
       default:
         throw new UnsupportedError(Domain.BITCOIN, `Protocol ${identifier} not supported`)
     }
@@ -121,6 +141,9 @@ export class BitcoinV3SerializerCompanion implements AirGapV3SerializerCompanion
         return bitcoinSignedTransactionToResponse(signedTransaction as BitcoinSignedTransaction, accountIdentifier)
       case MainProtocolSymbols.BTC_SEGWIT:
         return bitcoinSegwitSignedTransactionToResponse(signedTransaction as BitcoinSegwitSignedTransaction, accountIdentifier)
+      case MainProtocolSymbols.BTC_TAPROOT:
+        return bitcoinTaprootSignedTransactionToResponse(signedTransaction as BitcoinSegwitSignedTransaction, accountIdentifier)
+
       default:
         throw new UnsupportedError(Domain.BITCOIN, `Protocol ${identifier} not supported`)
     }
@@ -135,6 +158,9 @@ export class BitcoinV3SerializerCompanion implements AirGapV3SerializerCompanion
         return bitcoinTransactionSignResponseToSigned(transactionSignResponse as BitcoinTransactionSignResponse)
       case MainProtocolSymbols.BTC_SEGWIT:
         return bitcoinSegwitTransactionSignResponseToSigned(transactionSignResponse as BitcoinTransactionSignResponse)
+      case MainProtocolSymbols.BTC_TAPROOT:
+        return bitcoinTaprootTransactionSignResponseToSigned(transactionSignResponse as BitcoinTransactionSignResponse)
+
       default:
         throw new UnsupportedError(Domain.BITCOIN, `Protocol ${identifier} not supported`)
     }
@@ -151,6 +177,8 @@ export class BitcoinV3SerializerCompanion implements AirGapV3SerializerCompanion
           return false
         }
       case MainProtocolSymbols.BTC_SEGWIT:
+        return true
+      case MainProtocolSymbols.BTC_TAPROOT:
         return true
       default:
         throw new UnsupportedError(Domain.BITCOIN, `Protocol ${identifier} not supported`)
