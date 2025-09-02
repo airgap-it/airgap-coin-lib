@@ -846,10 +846,52 @@ export abstract class CosmosBaseProtocolImpl<_Units extends string> implements C
     )
     const metadata = await this.getMetadata()
 
-    return new CosmosTransaction(
+    const cosmosSimulateTx = new CosmosTransaction(
       messages,
       new CosmosFee(
         [new CosmosCoin(this.options.baseUnit, newAmount(metadata.fee!.defaults!.high).blockchain(metadata.units).value)],
+        newAmount(this.options.defaultGas).blockchain(metadata.units).toBigNumber().times(messages.length).toFixed()
+      ),
+      memo !== undefined ? memo : '',
+      nodeInfo.network,
+      account.account_number,
+      account.sequence ?? '0'
+    )
+
+    let fee: string
+
+    try {
+      const hexPublicKey = convertPublicKey(publicKey, 'hex')
+      const publicKeyBuffer = Buffer.from(hexPublicKey.value, 'hex')
+      const dummySigB64 = Buffer.alloc(64, 0).toString('base64')
+
+      const txBytes = await encodeTxBytes(
+        cosmosSimulateTx.toEncodeObject(),
+        cosmosSimulateTx.fee,
+        Uint8Array.from(publicKeyBuffer),
+        new BigNumber(cosmosSimulateTx.sequence).toNumber(),
+        {
+          signature: dummySigB64,
+          pub_key: {
+            type: 'tendermint/PubKeySecp256k1',
+            value: publicKeyBuffer.toString('base64')
+          }
+        },
+        cosmosSimulateTx.chainID,
+        new BigNumber(cosmosSimulateTx.accountNumber).toNumber()
+      )
+
+      const calcullatedFee = await this.nodeClient.simulateTx(Buffer.from(txBytes).toString('base64'))
+
+      fee = calcullatedFee.gas_used.toString()
+    } catch (error) {
+      fee = newAmount(metadata.fee!.defaults!.high).blockchain(metadata.units).value
+    }
+
+    return new CosmosTransaction(
+      messages,
+      new CosmosFee(
+        [new CosmosCoin(this.options.baseUnit, fee)],
         newAmount(this.options.defaultGas).blockchain(metadata.units).toBigNumber().times(messages.length).toFixed()
       ),
       memo !== undefined ? memo : '',
