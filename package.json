@@ -22,7 +22,6 @@
     "test": "lerna run test --stream",
     "test:icp": "lerna run test --stream --scope @airgap/icp",
     "test-ci": "lerna run test-ci --stream",
-    "sonar-scanner": "sonar-scanner",
     "prepare": "husky install",
     "install-test-dependencies": "node scripts/install-test-deps.js && npm install",
     "install-build-dependencies": "node scripts/install-build-deps.js && npm install",
@@ -40,7 +39,6 @@
     "browserify": "17.0.0",
     "husky": "5.1.3",
     "lerna": "6.4.1",
-    "sonarqube-scanner": "2.8.0",
     "typescript": "4.8.4"
   },
   "buildDependencies": {
@@ -48,7 +46,6 @@
     "browserify": "17.0.0",
     "husky": "5.1.3",
     "lerna": "6.4.1",
-    "sonarqube-scanner": "2.8.0",
     "typescript": "4.8.4"
   },
   "testDependencies": {
