@@ -37,7 +37,6 @@ unit:
       - coverage
       - lint-reports
 
-
 publish_beta:
   stage: publish
   when: manual
