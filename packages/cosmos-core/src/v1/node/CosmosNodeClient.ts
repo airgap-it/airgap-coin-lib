@@ -58,7 +58,6 @@ export class CosmosNodeClient<Units extends string> {
         }='${address}'&events=tx.height=0&pagination.limit=${limit}&pagination.offset=${offset}&orderBy=2`
       )
     )
-
     return response.data
   }
 

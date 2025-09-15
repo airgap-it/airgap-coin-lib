@@ -5,6 +5,7 @@ import { gzip, ungzip } from '@airgap/coinlib-core/dependencies/src/pako-2.0.3'
 import { IACMessageDefinitionObjectV3, isMessageDefinitionArray, MessageDefinitionArray } from './message'
 import { Payload } from './payload'
 import { SerializerV3 } from './serializer'
+import { Result, success, Success } from './interfaces'
 
 export type IACMessageWrapperVersion = number
 export type IACMessageWrapperArray = [IACMessageWrapperVersion, Payload]
@@ -25,11 +26,14 @@ export class IACMessageWrapper {
   }
 
   public encoded(serializer: SerializerV3 = SerializerV3.getInstance()): string {
-    const arr: IACMessageWrapperArrayEncoded = [this.version, this.payload.asArray(serializer)]
+    const messageDefinition = this.payload
+      .asArray(serializer)
+      .filter((md) => md.ok)
+      .map((md) => (md as Success<MessageDefinitionArray>).value)
+
+    const arr: IACMessageWrapperArrayEncoded = [this.version, messageDefinition]
 
     const buffer: Buffer = encode(arr)
-
-    console.log(buffer.toString('hex'))
 
     const deflated: Uint8Array = gzip(buffer)
 
@@ -37,12 +41,15 @@ export class IACMessageWrapper {
   }
 
   public static fromDecoded(data: IACMessageDefinitionObjectV3[]): IACMessageWrapper {
-    const payload: Payload = Payload.fromDecoded(data)
+    const payload: Payload = Payload.fromDecoded(data.map((item) => success(item)))
 
     return new IACMessageWrapper(payload)
   }
 
-  public static fromEncoded(data: string, serializer: SerializerV3 = SerializerV3.getInstance()): IACMessageWrapper {
+  public static fromEncoded(
+    data: string,
+    serializer: SerializerV3 = SerializerV3.getInstance()
+  ): { iACMessageWrapper: IACMessageWrapper; skippedPayload: Result<IACMessageDefinitionObjectV3, Error>[] } {
     const buffer: Buffer = bs58check.decode(data)
 
     const inflated: Uint8Array = ungzip(buffer)
@@ -57,10 +64,10 @@ export class IACMessageWrapper {
       throw new Error('Decoded message has wrong format')
     }
 
-    const payload: MessageDefinitionArray[] = decoded[1]
+    const pay_load: MessageDefinitionArray[] = decoded[1]
 
-    const finalPayload: Payload = Payload.fromEncoded(payload, serializer)
+    const { payload, skippedPayload } = Payload.fromEncoded(pay_load, serializer)
 
-    return new IACMessageWrapper(finalPayload)
+    return { iACMessageWrapper: new IACMessageWrapper(payload), skippedPayload }
   }
 }

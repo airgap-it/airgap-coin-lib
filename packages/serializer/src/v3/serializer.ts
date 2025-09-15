@@ -2,7 +2,7 @@ import { SerializerError, SerializerErrorType } from '@airgap/coinlib-core/error
 import { MainProtocolSymbols, ProtocolSymbols, SubProtocolSymbols } from '@airgap/coinlib-core/utils/ProtocolSymbols'
 
 import { IACMessageWrapper } from './iac-message-wrapper'
-import { IACMessageType } from './interfaces'
+import { IACMessageType, Result } from './interfaces'
 import { IACMessageDefinitionObjectV3 } from './message'
 import { SchemaInfo, SchemaRoot } from './schemas/schema'
 import { TransactionValidator, TransactionValidatorFactory } from './validators/transactions.validator'
@@ -119,16 +119,15 @@ export class SerializerV3 {
     }
   }
 
-  public async deserialize(data: string): Promise<IACMessageDefinitionObjectV3[]> {
-    let result: IACMessageWrapper
-    try {
-      result = IACMessageWrapper.fromEncoded(data, this)
-    } catch {
-      throw new Error('Cannot decode data')
-    }
-    const deserializedIACMessageDefinitionObjects: IACMessageDefinitionObjectV3[] = result.payload.asJson()
+  public async deserialize(data: string): Promise<{
+    deserialize: Result<IACMessageDefinitionObjectV3, Error>[]
+    skippedPayload: Result<IACMessageDefinitionObjectV3, Error>[]
+  }> {
+    const { iACMessageWrapper, skippedPayload } = IACMessageWrapper.fromEncoded(data, this)
 
-    return deserializedIACMessageDefinitionObjects
+    const deserializedIACMessageDefinitionObjects: Result<IACMessageDefinitionObjectV3, Error>[] = iACMessageWrapper.payload.asJson()
+
+    return { deserialize: deserializedIACMessageDefinitionObjects, skippedPayload }
   }
 
   public serializationValidatorByProtocolIdentifier(protocolIdentifier: ProtocolSymbols): TransactionValidator {
