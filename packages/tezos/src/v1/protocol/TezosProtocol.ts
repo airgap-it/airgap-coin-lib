@@ -189,9 +189,9 @@ export class TezosProtocolImpl implements TezosProtocol {
   private readonly units: ProtocolUnitsMetadata<TezosUnits> = TEZOS_UNITS
 
   private readonly feeDefaults: FeeDefaults<TezosUnits> = {
-    low: newAmount(0.00142, 'tez').blockchain(this.units),
-    medium: newAmount(0.00152, 'tez').blockchain(this.units),
-    high: newAmount(0.003, 'tez').blockchain(this.units)
+    low: newAmount(0.008, 'tez').blockchain(this.units),
+    medium: newAmount(0.015, 'tez').blockchain(this.units),
+    high: newAmount(0.03, 'tez').blockchain(this.units)
   }
 
   private readonly metadata: ProtocolMetadata<TezosUnits> = {
