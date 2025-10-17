@@ -36,6 +36,9 @@
 # node_modules/.bin/ts-json-schema-generator --path 'packages/bitcoin/src/v1/serializer/v3/schemas/definitions/transaction-sign-response-bitcoin-taproot.ts' --tsconfig 'tsconfig.json' -c > packages/bitcoin/src/v1/serializer/v3/schemas/generated/transaction-sign-response-bitcoin-taproot.json
 # node_modules/.bin/ts-json-schema-generator --path 'packages/bitcoin/src/v1/serializer/v3/schemas/definitions/transaction-sign-request-bitcoin-taproot.ts' --tsconfig 'tsconfig.json' -c > packages/bitcoin/src/v1/serializer/v3/schemas/generated/transaction-sign-request-bitcoin-taproot.json
 
+# node_modules/.bin/ts-json-schema-generator --path 'packages/bitcoin/src/v1/serializer/v3/schemas/definitions/transaction-sign-response-bitcoin-legacy.ts' --tsconfig 'tsconfig.json' -c > packages/bitcoin/src/v1/serializer/v3/schemas/generated/transaction-sign-response-bitcoin-legacy.json
+# node_modules/.bin/ts-json-schema-generator --path 'packages/bitcoin/src/v1/serializer/v3/schemas/definitions/transaction-sign-request-bitcoin-legacy.ts' --tsconfig 'tsconfig.json' -c > packages/bitcoin/src/v1/serializer/v3/schemas/generated/transaction-sign-request-bitcoin-legacy.json
+
 # Cosmos
 # node_modules/.bin/ts-json-schema-generator --path 'packages/cosmos/src/v0/types/signed-transaction-cosmos.ts' --tsconfig 'tsconfig.json' > packages/cosmos/src/v0/serializer/schemas/v3/transaction-sign-response-cosmos.json
 # node_modules/.bin/ts-json-schema-generator --path 'packages/cosmos/src/v0/types/unsigned-transaction-cosmos.ts' --tsconfig 'tsconfig.json' > packages/cosmos/src/v0/serializer/schemas/v3/transaction-sign-request-cosmos.json

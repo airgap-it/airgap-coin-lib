@@ -8,6 +8,13 @@ export interface BitcoinJS {
   }
 }
 
+export interface BitcoinLegacyJS {
+  lib: typeof bitcoin
+  config: {
+    network: any
+  }
+}
+
 export interface BitcoinSegwitJS {
   lib: typeof bitcoin
   config: {
