@@ -1,5 +1,6 @@
 import { newSignedTransaction, newUnsignedTransaction } from '@airgap/module-kit'
 import {
+  BitcoinLegacySignedTransaction,
   BitcoinSegwitSignedTransaction,
   BitcoinSegwitUnsignedTransaction,
   BitcoinSignedTransaction,
@@ -13,6 +14,8 @@ import { BitcoinTransactionSignResponse } from '../definitions/transaction-sign-
 import { BitcoinSegwitTransactionSignResponse } from '../definitions/transaction-sign-response-bitcoin-segwit'
 import { BitcoinTaprootTransactionSignRequest } from '../definitions/transaction-sign-request-bitcoin-taproot'
 import { BitcoinTaprootTransactionSignResponse } from '../definitions/transaction-sign-response-bitcoin-taproot'
+import { BitcoinLegacyTransactionSignRequest } from '../definitions/transaction-sign-request-bitcoin-legacy'
+import { BitcoinLegacyTransactionSignResponse } from '../definitions/transaction-sign-response-bitcoin-legacy'
 
 export function bitcoinUnsignedTransactionToRequest(
   unsigned: BitcoinUnsignedTransaction,
@@ -33,6 +36,27 @@ export function bitcoinSignedTransactionToResponse(
   accountIdentifier: string
 ): BitcoinTransactionSignResponse {
   return { ...signed, accountIdentifier }
+}
+
+export function bitcoinLegacyUnsignedTransactionToRequest(
+  unsigned: BitcoinSegwitUnsignedTransaction,
+  publicKey: string,
+  callbackUrl?: string
+): BitcoinLegacyTransactionSignRequest {
+  const { type: _, ...rest } = unsigned
+
+  return {
+    transaction: rest,
+    publicKey,
+    callbackURL: callbackUrl
+  }
+}
+
+export function bitcoinLegacySignedTransactionToResponse(
+  signed: BitcoinSegwitSignedTransaction,
+  accountIdentifier: string
+): BitcoinLegacyTransactionSignResponse {
+  return { transaction: signed.psbt, accountIdentifier }
 }
 
 export function bitcoinSegwitUnsignedTransactionToRequest(
@@ -89,6 +113,18 @@ export function bitcoinTransactionSignResponseToSigned(response: BitcoinTransact
     fee: response.fee,
     transaction: response.transaction
   })
+}
+
+export function bitcoinLegacyTransactionSignRequestToUnsigned(
+  request: BitcoinLegacyTransactionSignRequest
+): BitcoinSegwitUnsignedTransaction {
+  return newUnsignedTransaction(request.transaction)
+}
+
+export function bitcoinLegacyTransactionSignResponseToSigned(
+  response: BitcoinLegacyTransactionSignResponse
+): BitcoinSegwitSignedTransaction {
+  return newSignedTransaction<BitcoinLegacySignedTransaction>({ psbt: response.transaction })
 }
 
 export function bitcoinSegwitTransactionSignRequestToUnsigned(

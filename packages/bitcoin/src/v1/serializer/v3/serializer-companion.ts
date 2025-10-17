@@ -6,35 +6,48 @@ import { V3SchemaConfiguration } from '@airgap/module-kit/types/serializer'
 import { IACMessageType, SchemaRoot, TransactionSignRequest, TransactionSignResponse } from '@airgap/serializer'
 
 import {
+  BitcoinLegacySignedTransaction,
+  BitcoinLegacyUnsignedTransaction,
   BitcoinSegwitSignedTransaction,
   BitcoinSegwitUnsignedTransaction,
-  BitcoinSignedTransaction,
-  BitcoinUnsignedTransaction
+  // BitcoinSignedTransaction,
+  BitcoinTaprootSignedTransaction,
+  BitcoinTaprootUnsignedTransaction
+  // BitcoinUnsignedTransaction
 } from '../../types/transaction'
 
 import {
+  bitcoinLegacySignedTransactionToResponse,
+  bitcoinLegacyTransactionSignRequestToUnsigned,
+  bitcoinLegacyTransactionSignResponseToSigned,
+  bitcoinLegacyUnsignedTransactionToRequest,
   bitcoinSegwitSignedTransactionToResponse,
   bitcoinSegwitTransactionSignRequestToUnsigned,
   bitcoinSegwitTransactionSignResponseToSigned,
   bitcoinSegwitUnsignedTransactionToRequest,
-  bitcoinSignedTransactionToResponse,
+  // bitcoinSignedTransactionToResponse,
   bitcoinTaprootSignedTransactionToResponse,
   bitcoinTaprootTransactionSignRequestToUnsigned,
   bitcoinTaprootTransactionSignResponseToSigned,
-  bitcoinTaprootUnsignedTransactionToRequest,
-  bitcoinTransactionSignRequestToUnsigned,
-  bitcoinTransactionSignResponseToSigned,
-  bitcoinUnsignedTransactionToRequest
+  bitcoinTaprootUnsignedTransactionToRequest
+  // bitcoinTransactionSignRequestToUnsigned,
+  // bitcoinTransactionSignResponseToSigned,
+  // bitcoinUnsignedTransactionToRequest
 } from './schemas/converter/transaction-converter'
 import { BitcoinTransactionSignResponse } from './schemas/definitions/transaction-sign-response-bitcoin'
-import { BitcoinTransactionValidator } from './validators/transaction-validator'
+// import { BitcoinTransactionValidator } from './validators/transaction-validator'
 import { bitcoinValidators } from './validators/validators'
+import { BitcoinLegacyTransactionSignResponse } from './schemas/definitions/transaction-sign-response-bitcoin-legacy'
+import { BitcoinTaprootTransactionSignResponse } from './schemas/definitions/transaction-sign-response-bitcoin-taproot'
 
 const bitcoinTransactionSignRequest: SchemaRoot = require('./schemas/generated/transaction-sign-request-bitcoin.json')
 const bitcoinTransactionSignResponse: SchemaRoot = require('./schemas/generated/transaction-sign-response-bitcoin.json')
 
 const bitcoinSegwitTransactionSignRequest: SchemaRoot = require('./schemas/generated/transaction-sign-request-bitcoin-segwit.json')
 const bitcoinSegwitTransactionSignResponse: SchemaRoot = require('./schemas/generated/transaction-sign-response-bitcoin-segwit.json')
+
+const bitcoinLegacyTransactionSignRequest: SchemaRoot = require('./schemas/generated/transaction-sign-request-bitcoin-legacy.json')
+const bitcoinLegacyTransactionSignResponse: SchemaRoot = require('./schemas/generated/transaction-sign-response-bitcoin-legacy.json')
 
 export class BitcoinV3SerializerCompanion implements AirGapV3SerializerCompanion {
   public readonly schemas: V3SchemaConfiguration[] = [
@@ -46,6 +59,16 @@ export class BitcoinV3SerializerCompanion implements AirGapV3SerializerCompanion
     {
       type: IACMessageType.TransactionSignResponse,
       schema: { schema: bitcoinTransactionSignResponse },
+      protocolIdentifier: MainProtocolSymbols.BTC
+    },
+    {
+      type: IACMessageType.TransactionSignRequest,
+      schema: { schema: bitcoinLegacyTransactionSignRequest },
+      protocolIdentifier: MainProtocolSymbols.BTC
+    },
+    {
+      type: IACMessageType.TransactionSignResponse,
+      schema: { schema: bitcoinLegacyTransactionSignResponse },
       protocolIdentifier: MainProtocolSymbols.BTC
     },
     {
@@ -70,7 +93,7 @@ export class BitcoinV3SerializerCompanion implements AirGapV3SerializerCompanion
     }
   ]
 
-  private readonly bitcoinTransactionValidator: BitcoinTransactionValidator = new BitcoinTransactionValidator()
+  // private readonly bitcoinTransactionValidator: BitcoinTransactionValidator = new BitcoinTransactionValidator()
 
   public constructor() {
     Object.keys(bitcoinValidators).forEach((key: string) => {
@@ -86,11 +109,11 @@ export class BitcoinV3SerializerCompanion implements AirGapV3SerializerCompanion
   ): Promise<TransactionSignRequest> {
     switch (identifier) {
       case MainProtocolSymbols.BTC:
-        return bitcoinUnsignedTransactionToRequest(unsignedTransaction as BitcoinUnsignedTransaction, publicKey, callbackUrl)
+        return bitcoinLegacyUnsignedTransactionToRequest(unsignedTransaction as BitcoinLegacyUnsignedTransaction, publicKey, callbackUrl)
       case MainProtocolSymbols.BTC_SEGWIT:
         return bitcoinSegwitUnsignedTransactionToRequest(unsignedTransaction as BitcoinSegwitUnsignedTransaction, publicKey, callbackUrl)
       case MainProtocolSymbols.BTC_TAPROOT:
-        return bitcoinTaprootUnsignedTransactionToRequest(unsignedTransaction as BitcoinSegwitUnsignedTransaction, publicKey, callbackUrl)
+        return bitcoinTaprootUnsignedTransactionToRequest(unsignedTransaction as BitcoinTaprootUnsignedTransaction, publicKey, callbackUrl)
       default:
         throw new UnsupportedError(Domain.BITCOIN, `Protocol ${identifier} not supported`)
     }
@@ -102,7 +125,7 @@ export class BitcoinV3SerializerCompanion implements AirGapV3SerializerCompanion
   ): Promise<UnsignedTransaction> {
     switch (identifier) {
       case MainProtocolSymbols.BTC:
-        return bitcoinTransactionSignRequestToUnsigned(transactionSignRequest)
+        return bitcoinLegacyTransactionSignRequestToUnsigned(transactionSignRequest)
       case MainProtocolSymbols.BTC_SEGWIT:
         return bitcoinSegwitTransactionSignRequestToUnsigned(transactionSignRequest)
       case MainProtocolSymbols.BTC_TAPROOT:
@@ -115,13 +138,14 @@ export class BitcoinV3SerializerCompanion implements AirGapV3SerializerCompanion
   public async validateTransactionSignRequest(identifier: string, transactionSignRequest: TransactionSignRequest): Promise<boolean> {
     switch (identifier) {
       case MainProtocolSymbols.BTC:
-        try {
-          await this.bitcoinTransactionValidator.validateUnsignedTransaction(transactionSignRequest)
+        // try {
+        //   await this.bitcoinTransactionValidator.validateUnsignedTransaction(transactionSignRequest)
 
-          return true
-        } catch {
-          return false
-        }
+        //   return true
+        // } catch {
+        //   return false
+        // }
+        return true
       case MainProtocolSymbols.BTC_SEGWIT:
         return true
       case MainProtocolSymbols.BTC_TAPROOT:
@@ -138,12 +162,11 @@ export class BitcoinV3SerializerCompanion implements AirGapV3SerializerCompanion
   ): Promise<TransactionSignResponse> {
     switch (identifier) {
       case MainProtocolSymbols.BTC:
-        return bitcoinSignedTransactionToResponse(signedTransaction as BitcoinSignedTransaction, accountIdentifier)
+        return bitcoinLegacySignedTransactionToResponse(signedTransaction as BitcoinLegacySignedTransaction, accountIdentifier)
       case MainProtocolSymbols.BTC_SEGWIT:
         return bitcoinSegwitSignedTransactionToResponse(signedTransaction as BitcoinSegwitSignedTransaction, accountIdentifier)
       case MainProtocolSymbols.BTC_TAPROOT:
-        return bitcoinTaprootSignedTransactionToResponse(signedTransaction as BitcoinSegwitSignedTransaction, accountIdentifier)
-
+        return bitcoinTaprootSignedTransactionToResponse(signedTransaction as BitcoinTaprootSignedTransaction, accountIdentifier)
       default:
         throw new UnsupportedError(Domain.BITCOIN, `Protocol ${identifier} not supported`)
     }
@@ -155,11 +178,11 @@ export class BitcoinV3SerializerCompanion implements AirGapV3SerializerCompanion
   ): Promise<SignedTransaction> {
     switch (identifier) {
       case MainProtocolSymbols.BTC:
-        return bitcoinTransactionSignResponseToSigned(transactionSignResponse as BitcoinTransactionSignResponse)
+        return bitcoinLegacyTransactionSignResponseToSigned(transactionSignResponse as BitcoinLegacyTransactionSignResponse)
       case MainProtocolSymbols.BTC_SEGWIT:
         return bitcoinSegwitTransactionSignResponseToSigned(transactionSignResponse as BitcoinTransactionSignResponse)
       case MainProtocolSymbols.BTC_TAPROOT:
-        return bitcoinTaprootTransactionSignResponseToSigned(transactionSignResponse as BitcoinTransactionSignResponse)
+        return bitcoinTaprootTransactionSignResponseToSigned(transactionSignResponse as BitcoinTaprootTransactionSignResponse)
 
       default:
         throw new UnsupportedError(Domain.BITCOIN, `Protocol ${identifier} not supported`)
@@ -169,13 +192,15 @@ export class BitcoinV3SerializerCompanion implements AirGapV3SerializerCompanion
   public async validateTransactionSignResponse(identifier: string, transactionSignResponse: TransactionSignResponse): Promise<boolean> {
     switch (identifier) {
       case MainProtocolSymbols.BTC:
-        try {
-          await this.bitcoinTransactionValidator.validateSignedTransaction(transactionSignResponse as BitcoinTransactionSignResponse)
+        // try {
+        //   await this.bitcoinTransactionValidator.validateSignedTransaction(transactionSignResponse as BitcoinTransactionSignResponse)
 
-          return true
-        } catch {
-          return false
-        }
+        //   return true
+        // } catch {
+        //   return false
+        // }
+
+        return true
       case MainProtocolSymbols.BTC_SEGWIT:
         return true
       case MainProtocolSymbols.BTC_TAPROOT:

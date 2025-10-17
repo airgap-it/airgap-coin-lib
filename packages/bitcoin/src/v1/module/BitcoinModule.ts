@@ -14,11 +14,13 @@ import {
 } from '@airgap/module-kit'
 
 import { BlockCypherBlockExplorer } from '../block-explorer/BlockCypherBlockExplorer'
-import { BITCOIN_MAINNET_PROTOCOL_NETWORK, createBitcoinProtocol } from '../protocol/BitcoinProtocol'
+// import { BITCOIN_MAINNET_PROTOCOL_NETWORK, createBitcoinProtocol } from '../protocol/BitcoinProtocol'
+import { BITCOIN_MAINNET_PROTOCOL_NETWORK } from '../protocol/BitcoinProtocol'
 import { createBitcoinSegwitProtocol } from '../protocol/BitcoinSegwitProtocol'
 import { createBitcoinTaprootProtocol } from '../protocol/BitcoinTaprootProtocol'
 import { BitcoinV3SerializerCompanion } from '../serializer/v3/serializer-companion'
 import { BitcoinProtocolNetwork } from '../types/protocol'
+import { createBitcoinLegacyProtocol } from '../protocol/BitcoinLegacyProtocol'
 
 type SupportedProtocols = MainProtocolSymbols.BTC | MainProtocolSymbols.BTC_SEGWIT | MainProtocolSymbols.BTC_TAPROOT
 
@@ -77,7 +79,7 @@ export class BitcoinModule implements AirGapModule<{ Protocols: SupportedProtoco
   private createProtocol(identifier: SupportedProtocols, network?: ProtocolNetwork): AirGapProtocol {
     switch (identifier) {
       case MainProtocolSymbols.BTC:
-        return createBitcoinProtocol({ network })
+        return createBitcoinLegacyProtocol({ network })
       case MainProtocolSymbols.BTC_SEGWIT:
         return createBitcoinSegwitProtocol({ network })
       case MainProtocolSymbols.BTC_TAPROOT:

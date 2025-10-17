@@ -30,6 +30,14 @@ export interface BitcoinSignedTransaction extends SignedTransaction {
   transaction: string
 }
 
+export interface BitcoinLegacyUnsignedTransaction extends UnsignedTransaction {
+  psbt: string
+}
+
+export interface BitcoinLegacySignedTransaction extends SignedTransaction {
+  psbt: string
+}
+
 export interface BitcoinSegwitUnsignedTransaction extends UnsignedTransaction {
   psbt: string
 }
@@ -48,6 +56,11 @@ export interface BitcoinTaprootUnsignedTransaction extends UnsignedTransaction {
 
 export interface BitcoinTransactionCursor extends TransactionCursor {
   page?: number
+}
+
+export type LegacyTransactionFullConfiguration<_Units extends BitcoinUnits> = TransactionFullConfiguration<_Units> & {
+  masterFingerprint: HexString
+  replaceByFee?: boolean
 }
 
 export type SegwitTransactionFullConfiguration<_Units extends BitcoinUnits> = TransactionFullConfiguration<_Units> & {
