@@ -32,6 +32,7 @@ export class SubstrateTransactionPayload extends SCALEClass {
       transaction.nonce,
       transaction.tip,
       SCALEInt.from(config.metadataHash ? 1 : 0),
+      SCALEInt.from(config.metadataHash ? 1 : 0),
       SCALEInt.from(config.specVersion, 32),
       SCALEInt.from(config.transactionVersion, 32),
       SCALEHash.from(config.genesisHash),
@@ -56,6 +57,7 @@ export class SubstrateTransactionPayload extends SCALEClass {
     const era = decoder.decodeNextEra()
     const nonce = decoder.decodeNextCompactInt()
     const tip = decoder.decodeNextCompactInt()
+    const assetid = versionCheck ? decoder.decodeNextInt(8) : { bytesDecoded: 0, decoded: SCALEInt.from(0) }
     const mode = versionCheck ? decoder.decodeNextInt(8) : { bytesDecoded: 0, decoded: SCALEInt.from(0) }
     const specVersion = decoder.decodeNextInt(32)
     const transactionVersion = decoder.decodeNextInt(32)
@@ -71,6 +73,7 @@ export class SubstrateTransactionPayload extends SCALEClass {
         era.bytesDecoded +
         nonce.bytesDecoded +
         tip.bytesDecoded +
+        assetid.bytesDecoded +
         mode.bytesDecoded +
         specVersion.bytesDecoded +
         transactionVersion.bytesDecoded +
@@ -82,6 +85,7 @@ export class SubstrateTransactionPayload extends SCALEClass {
         era.decoded,
         nonce.decoded,
         tip.decoded,
+        assetid.decoded,
         mode.decoded,
         specVersion.decoded,
         transactionVersion.decoded,
@@ -116,11 +120,26 @@ export class SubstrateTransactionPayload extends SCALEClass {
     this.blockHash
   ]
 
+  protected readonly scaleFieldsHub = [
+    this.method,
+    this.era,
+    this.nonce,
+    this.tip,
+    this.assetid,
+    this.mode,
+    this.specVersion,
+    this.transactionVersion,
+    this.genesisHash,
+    this.blockHash,
+    this.metadataHash
+  ]
+
   private constructor(
     readonly method: SubstrateTransactionMethod,
     readonly era: SCALEEra,
     readonly nonce: SCALECompactInt,
     readonly tip: SCALECompactInt,
+    readonly assetid: SCALEInt,
     readonly mode: SCALEInt,
     readonly specVersion: SCALEInt,
     readonly transactionVersion: SCALEInt,
@@ -134,14 +153,19 @@ export class SubstrateTransactionPayload extends SCALEClass {
   protected _encode(config?: SCALEEncodeConfig): string {
     const version = config?.configuration?.transaction.version
 
-    return version !== undefined && version >= 4
-      ? this.scaleFields.reduce(
+    return version !== undefined && version >= 5
+      ? this.scaleFieldsHub.reduce(
           (encoded: string, current: SCALEType) => encoded + current.encode({ runtimeVersion: this.specVersion.toNumber(), ...config }),
           ''
         )
-      : this.scaleFieldsv3.reduce(
-          (encoded: string, current: SCALEType) => encoded + current.encode({ runtimeVersion: this.specVersion.toNumber(), ...config }),
-          ''
-        )
+      : version !== undefined && version >= 4
+        ? this.scaleFields.reduce(
+            (encoded: string, current: SCALEType) => encoded + current.encode({ runtimeVersion: this.specVersion.toNumber(), ...config }),
+            ''
+          )
+        : this.scaleFieldsv3.reduce(
+            (encoded: string, current: SCALEType) => encoded + current.encode({ runtimeVersion: this.specVersion.toNumber(), ...config }),
+            ''
+          )
   }
 }

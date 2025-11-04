@@ -46,8 +46,6 @@ import {
 import { convertPublicKey, convertSecretKey } from '../utils/keys'
 import { convertSignature } from '../utils/signature'
 
-// Interface
-
 export interface SubstrateProtocol<
   _ProtocolConfiguration extends SubstrateProtocolConfiguration = SubstrateProtocolConfiguration,
   _Units extends string = string,
@@ -177,6 +175,7 @@ export abstract class SubstrateProtocolImpl<
     secretKey: SecretKey
   ): Promise<SubstrateSignedTransaction> {
     const txs = this.transactionController.decodeDetails(transaction.encoded)
+
     const signed = await Promise.all(txs.map((tx) => this.transactionController.signTransaction(secretKey, tx.transaction, tx.payload)))
 
     txs.forEach((tx, index) => (tx.transaction = signed[index]))
