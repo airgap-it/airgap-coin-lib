@@ -16,6 +16,7 @@ export type PolkadotTransactionType =
 export interface PolkadotProtocolConfiguration
   extends SubstrateProtocolConfiguration<SubstrateSS58AccountConfiguration, PolkadotTransactionType, PolkadotRpcConfiguration> {
   rpc: PolkadotRpcConfiguration
+  epochDuration: string
 }
 
 export interface PolkadotRpcConfiguration extends SubstrateRpcConfiguration {

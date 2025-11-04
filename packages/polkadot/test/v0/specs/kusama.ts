@@ -168,7 +168,7 @@ export class KusamaTestProtocolSpec extends TestProtocolSpec {
         network: {
           name: 'Mainnet',
           type: 'MAINNET',
-          rpcUrl: 'https://polkadot-kusama-node.prod.gke.papers.tech',
+          rpcUrl: 'https://assethub-kusama.api.onfinality.io/public',
           blockExplorer: { blockExplorer: 'https://polkascan.io/kusama' },
           extras: { apiUrl: 'https://kusama.subscan.io/api/scan', network: SubstrateNetwork.KUSAMA }
         },
@@ -187,7 +187,7 @@ export class KusamaTestProtocolSpec extends TestProtocolSpec {
         network: {
           name: 'Mainnet',
           type: 'MAINNET',
-          rpcUrl: 'https://polkadot-kusama-node.prod.gke.papers.tech',
+          rpcUrl: 'https://assethub-kusama.api.onfinality.io/public',
           blockExplorer: { blockExplorer: 'https://polkascan.io/kusama' },
           extras: { apiUrl: 'https://kusama.subscan.io/api/scan', network: SubstrateNetwork.KUSAMA }
         },
@@ -211,7 +211,7 @@ export class KusamaTestProtocolSpec extends TestProtocolSpec {
         network: {
           name: 'Mainnet',
           type: 'MAINNET',
-          rpcUrl: 'https://polkadot-kusama-node.prod.gke.papers.tech',
+          rpcUrl: 'https://assethub-kusama.api.onfinality.io/public',
           blockExplorer: { blockExplorer: 'https://polkascan.io/kusama' },
           extras: { apiUrl: 'https://kusama.subscan.io/api/scan', network: SubstrateNetwork.KUSAMA }
         },
@@ -230,7 +230,7 @@ export class KusamaTestProtocolSpec extends TestProtocolSpec {
         network: {
           name: 'Mainnet',
           type: 'MAINNET',
-          rpcUrl: 'https://polkadot-kusama-node.prod.gke.papers.tech',
+          rpcUrl: 'https://assethub-kusama.api.onfinality.io/public',
           blockExplorer: { blockExplorer: 'https://polkascan.io/kusama' },
           extras: { apiUrl: 'https://kusama.subscan.io/api/scan', network: SubstrateNetwork.KUSAMA }
         },

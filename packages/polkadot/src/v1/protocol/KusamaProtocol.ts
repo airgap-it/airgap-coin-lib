@@ -6,6 +6,7 @@ import { KusamaUnits, PolkadotProtocolNetwork, PolkadotProtocolOptions } from '.
 
 import { PolkadotBaseProtocol, PolkadotBaseProtocolImpl } from './PolkadotBaseProtocol'
 import { POLKADOT_CONFIGURATION } from './PolkadotProtocol'
+import { TRANSACTION_TYPES } from '../data/transaction/transaction'
 
 // Interface
 
@@ -53,6 +54,11 @@ export const KUSAMA_METADATA: ProtocolMetadata<KusamaUnits> = {
 
 export const KUSAMA_CONFIGURATION: PolkadotProtocolConfiguration = {
   ...POLKADOT_CONFIGURATION,
+  epochDuration: '60',
+  transaction: {
+    version: 5,
+    types: TRANSACTION_TYPES
+  },
   account: {
     type: 'ss58',
     format: 2
@@ -79,8 +85,8 @@ export function createKusamaProtocol(options: RecursivePartial<PolkadotProtocolO
 export const KUSAMA_MAINNET_PROTOCOL_NETWORK: PolkadotProtocolNetwork = {
   name: 'Mainnet',
   type: 'mainnet',
-  rpcUrl: 'https://polkadot-kusama-node.prod.gke.papers.tech',
-  blockExplorerUrl: 'https://kusama.subscan.io',
+  rpcUrl: 'https://assethub-kusama.api.onfinality.io/public',
+  blockExplorerUrl: 'https://assethub-kusama.subscan.io',
   blockExplorerApi: 'https://kusama.subscan.prod.gke.papers.tech/api/v2/scan'
 }
 
