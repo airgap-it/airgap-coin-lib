@@ -1,6 +1,7 @@
 import { newSignedTransaction, newUnsignedTransaction } from '@airgap/module-kit'
 import {
   BitcoinLegacySignedTransaction,
+  BitcoinLegacyUnsignedTransaction,
   BitcoinSegwitSignedTransaction,
   BitcoinSegwitUnsignedTransaction,
   BitcoinSignedTransaction,
@@ -117,13 +118,13 @@ export function bitcoinTransactionSignResponseToSigned(response: BitcoinTransact
 
 export function bitcoinLegacyTransactionSignRequestToUnsigned(
   request: BitcoinLegacyTransactionSignRequest
-): BitcoinSegwitUnsignedTransaction {
+): BitcoinLegacyUnsignedTransaction {
   return newUnsignedTransaction(request.transaction)
 }
 
 export function bitcoinLegacyTransactionSignResponseToSigned(
   response: BitcoinLegacyTransactionSignResponse
-): BitcoinSegwitSignedTransaction {
+): BitcoinLegacySignedTransaction {
   return newSignedTransaction<BitcoinLegacySignedTransaction>({ psbt: response.transaction })
 }
 

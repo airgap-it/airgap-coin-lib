@@ -65,11 +65,11 @@ Serializer.addSchema(
   MainProtocolSymbols.BTC
 )
 
-SerializerV3.addSchema(
-  IACMessageType.TransactionSignRequest,
-  { schema: require('./serializer/schemas/v3/transaction-sign-request-bitcoin.json') },
-  MainProtocolSymbols.BTC
-)
+// SerializerV3.addSchema(
+//   IACMessageType.TransactionSignRequest,
+//   { schema: require('./serializer/schemas/v3/transaction-sign-request-bitcoin.json') },
+//   MainProtocolSymbols.BTC
+// )
 SerializerV3.addSchema(
   IACMessageType.TransactionSignResponse,
   { schema: require('./serializer/schemas/v3/transaction-sign-response-bitcoin.json') },
