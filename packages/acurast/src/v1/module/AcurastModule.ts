@@ -15,13 +15,17 @@ import { SubscanBlockExplorer } from '@airgap/substrate'
 import { ACURAST_MAINNET_PROTOCOL_NETWORK, createAcurastProtocol } from '../protocol/AcurastProtocol'
 import { AcurastV3SerializerCompanion } from '../serializer/v3/serializer-companion'
 import { AcurastProtocolNetwork } from '../types/protocol'
+import { ACURAST_CANARY_PROTOCOL_NETWORK, createAcurastCanaryProtocol } from '../protocol/AcurastCanaryProtocol'
 
-type SupportedProtocols = MainProtocolSymbols.ACURAST
+type SupportedProtocols = MainProtocolSymbols.ACURAST | MainProtocolSymbols.ACURAST_CANARY
 
 export class AcurastModule implements AirGapModule<{ Protocols: SupportedProtocols; ProtocolNetwork: AcurastProtocolNetwork }> {
   private readonly networkRegistries: Record<SupportedProtocols, ModuleNetworkRegistry> = {
     [MainProtocolSymbols.ACURAST]: new ModuleNetworkRegistry({
       supportedNetworks: [ACURAST_MAINNET_PROTOCOL_NETWORK]
+    }),
+    [MainProtocolSymbols.ACURAST_CANARY]: new ModuleNetworkRegistry({
+      supportedNetworks: [ACURAST_CANARY_PROTOCOL_NETWORK]
     })
   }
   public readonly supportedProtocols: Record<SupportedProtocols, ProtocolConfiguration> = createSupportedProtocols(this.networkRegistries)
@@ -65,6 +69,8 @@ export class AcurastModule implements AirGapModule<{ Protocols: SupportedProtoco
   private createProtocol(identifier: SupportedProtocols, network?: ProtocolNetwork): AirGapProtocol {
     if (identifier === MainProtocolSymbols.ACURAST) {
       return createAcurastProtocol({ network })
+    } else if (identifier === MainProtocolSymbols.ACURAST_CANARY) {
+      return createAcurastCanaryProtocol({ network })
     } else {
       throw new ConditionViolationError(Domain.SUBSTRATE, `Protocol ${identifier} not supported. (Acurast)`)
     }

@@ -15,12 +15,12 @@ export const ACURAST_METADATA: ProtocolMetadata<AcurastUnits> = {
   name: 'Acurast',
 
   units: {
-    cACU: {
-      symbol: { value: 'cACU' },
+    ACU: {
+      symbol: { value: 'ACU' },
       decimals: 12
     }
   },
-  mainUnit: 'cACU',
+  mainUnit: 'ACU',
 
   account: {
     standardDerivationPath: `m/44'/434'/0'/0/0`,
@@ -63,10 +63,8 @@ export function createAcurastProtocol(options: RecursivePartial<AcurastProtocolO
 export const ACURAST_MAINNET_PROTOCOL_NETWORK: AcurastProtocolNetwork = {
   name: 'Mainnet',
   type: 'mainnet',
-  rpcUrl: 'https://acurast-canarynet-node.prod.gke.acurast.com',
-  // rpcUrl: 'https://rpc.collator-1.acurast.papers.tech', //testnet
+  rpcUrl: 'https://public-rpc.mainnet.acurast.com',
   blockExplorerUrl: 'https://polkadot.js.org/apps/?rpc=wss://acurast-canarynet-ws.prod.gke.papers.tech#/explorer',
-  // blockExplorerUrl: 'https://polkadot.js.org/apps/?rpc=wss.collator-1.acurast.papers.tech#/explorer',
   blockExplorerApi: ''
 }
 

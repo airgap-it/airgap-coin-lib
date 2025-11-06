@@ -39,8 +39,12 @@ export class PolkadotNodeClient extends SubstrateCommonNodeClient<PolkadotProtoc
     ])
   }
 
-  public async getBlockTime(): Promise<BigNumber> {
-    return this.getConstant('Babe', 'ExpectedBlockTime').then((constant) => SCALEInt.decode(constant).decoded.value)
+  public async getBlockTimeP(): Promise<string> {
+    return (await super.getBlockTime()).toString()
+  }
+
+  public async getEpochDuration(): Promise<string> {
+    return this.configuration.epochDuration
   }
 
   public async getCurrentEraIndex(): Promise<BigNumber | undefined> {
@@ -158,8 +162,8 @@ export class PolkadotNodeClient extends SubstrateCommonNodeClient<PolkadotProtoc
 
   public async getExpectedEraDuration(): Promise<BigNumber | undefined> {
     const constants = await Promise.all([
-      this.getConstant('Babe', 'ExpectedBlockTime'),
-      this.getConstant('Babe', 'EpochDuration'),
+      this.getBlockTimeP(),
+      this.getEpochDuration(),
       this.getConstant('Staking', 'SessionsPerEra')
     ]).then((constants) => constants.map((constant) => (constant ? SCALEInt.decode(constant).decoded.value : undefined)))
 
@@ -229,6 +233,5 @@ export const CALLS = {
 }
 
 export const CONSTANTS = {
-  Babe: ['EpochDuration', 'ExpectedBlockTime'] as const,
   Staking: ['SessionsPerEra'] as const
 }

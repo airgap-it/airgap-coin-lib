@@ -53,12 +53,13 @@ export const POLKADOT_METADATA: ProtocolMetadata<PolkadotUnits> = {
 }
 
 export const POLKADOT_CONFIGURATION: PolkadotProtocolConfiguration = {
+  epochDuration: '2400',
   account: {
     type: 'ss58',
     format: 0
   },
   transaction: {
-    version: 4,
+    version: 5,
     types: TRANSACTION_TYPES
   },
   rpc: {
@@ -89,7 +90,7 @@ export const POLKADOT_MAINNET_PROTOCOL_NETWORK: PolkadotProtocolNetwork = {
   name: 'Mainnet',
   type: 'mainnet',
   rpcUrl: 'https://polkadot-node.prod.gke.papers.tech',
-  blockExplorerUrl: 'https://polkadot.subscan.io',
+  blockExplorerUrl: 'https://assethub-polkadot.subscan.io',
   blockExplorerApi: 'https://polkadot.subscan.prod.gke.papers.tech/api/v2/scan',
   defaultValidator: '12C9U6zSSoZ6pgwR2ksFyBLgQH6v7dkqqPCRyHceoP8MJRo2'
 }

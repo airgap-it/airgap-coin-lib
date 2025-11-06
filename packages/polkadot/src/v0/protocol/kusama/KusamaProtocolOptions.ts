@@ -15,7 +15,7 @@ import {
 
 const MAINNET_NAME: string = 'Mainnet'
 
-const NODE_URL: string = 'https://polkadot-kusama-node.prod.gke.papers.tech'
+const NODE_URL: string = 'https://assethub-kusama.api.onfinality.io/public'
 
 const BLOCK_EXPLORER_URL: string = 'https://kusama.subscan.io'
 const BLOCK_EXPLORER_API: string = 'https://kusama.subscan.prod.gke.papers.tech/api/scan'
