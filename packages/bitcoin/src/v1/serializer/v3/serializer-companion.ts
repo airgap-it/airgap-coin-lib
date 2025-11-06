@@ -40,9 +40,6 @@ import { bitcoinValidators } from './validators/validators'
 import { BitcoinLegacyTransactionSignResponse } from './schemas/definitions/transaction-sign-response-bitcoin-legacy'
 import { BitcoinTaprootTransactionSignResponse } from './schemas/definitions/transaction-sign-response-bitcoin-taproot'
 
-const bitcoinTransactionSignRequest: SchemaRoot = require('./schemas/generated/transaction-sign-request-bitcoin.json')
-const bitcoinTransactionSignResponse: SchemaRoot = require('./schemas/generated/transaction-sign-response-bitcoin.json')
-
 const bitcoinSegwitTransactionSignRequest: SchemaRoot = require('./schemas/generated/transaction-sign-request-bitcoin-segwit.json')
 const bitcoinSegwitTransactionSignResponse: SchemaRoot = require('./schemas/generated/transaction-sign-response-bitcoin-segwit.json')
 
@@ -51,16 +48,6 @@ const bitcoinLegacyTransactionSignResponse: SchemaRoot = require('./schemas/gene
 
 export class BitcoinV3SerializerCompanion implements AirGapV3SerializerCompanion {
   public readonly schemas: V3SchemaConfiguration[] = [
-    {
-      type: IACMessageType.TransactionSignRequest,
-      schema: { schema: bitcoinTransactionSignRequest },
-      protocolIdentifier: MainProtocolSymbols.BTC
-    },
-    {
-      type: IACMessageType.TransactionSignResponse,
-      schema: { schema: bitcoinTransactionSignResponse },
-      protocolIdentifier: MainProtocolSymbols.BTC
-    },
     {
       type: IACMessageType.TransactionSignRequest,
       schema: { schema: bitcoinLegacyTransactionSignRequest },
