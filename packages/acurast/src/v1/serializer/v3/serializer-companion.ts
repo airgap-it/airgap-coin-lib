@@ -29,6 +29,16 @@ export class AcurastV3SerializerCompanion implements AirGapV3SerializerCompanion
       type: IACMessageType.TransactionSignResponse,
       schema: { schema: acurastTransactionSignResponse },
       protocolIdentifier: MainProtocolSymbols.ACURAST
+    },
+    {
+      type: IACMessageType.TransactionSignRequest,
+      schema: { schema: acurastTransactionSignRequest },
+      protocolIdentifier: MainProtocolSymbols.ACURAST_CANARY
+    },
+    {
+      type: IACMessageType.TransactionSignResponse,
+      schema: { schema: acurastTransactionSignResponse },
+      protocolIdentifier: MainProtocolSymbols.ACURAST_CANARY
     }
   ]
 
@@ -46,7 +56,7 @@ export class AcurastV3SerializerCompanion implements AirGapV3SerializerCompanion
     publicKey: string,
     callbackUrl?: string
   ): Promise<TransactionSignRequest> {
-    if (identifier === MainProtocolSymbols.ACURAST) {
+    if (identifier === MainProtocolSymbols.ACURAST || identifier === MainProtocolSymbols.ACURAST_CANARY) {
       return acurastUnsignedTransactionToRequest(unsignedTransaction as SubstrateUnsignedTransaction, publicKey, callbackUrl)
     } else {
       throw new UnsupportedError(Domain.SUBSTRATE, `Protocol ${identifier} not supported`)
@@ -57,7 +67,7 @@ export class AcurastV3SerializerCompanion implements AirGapV3SerializerCompanion
     identifier: string,
     transactionSignRequest: TransactionSignRequest
   ): Promise<UnsignedTransaction> {
-    if (identifier === MainProtocolSymbols.ACURAST) {
+    if (identifier === MainProtocolSymbols.ACURAST || identifier === MainProtocolSymbols.ACURAST_CANARY) {
       return acurastTransactionSignRequestToUnsigned(transactionSignRequest)
     } else {
       throw new UnsupportedError(Domain.SUBSTRATE, `Protocol ${identifier} not supported`)
@@ -65,7 +75,7 @@ export class AcurastV3SerializerCompanion implements AirGapV3SerializerCompanion
   }
 
   public async validateTransactionSignRequest(identifier: string, transactionSignRequest: TransactionSignRequest): Promise<boolean> {
-    if (identifier === MainProtocolSymbols.ACURAST) {
+    if (identifier === MainProtocolSymbols.ACURAST || identifier === MainProtocolSymbols.ACURAST_CANARY) {
       try {
         await this.acurastTransactionValidator.validateUnsignedTransaction(transactionSignRequest)
 
@@ -83,7 +93,7 @@ export class AcurastV3SerializerCompanion implements AirGapV3SerializerCompanion
     signedTransaction: SignedTransaction,
     accountIdentifier: string
   ): Promise<TransactionSignResponse> {
-    if (identifier === MainProtocolSymbols.ACURAST) {
+    if (identifier === MainProtocolSymbols.ACURAST || identifier === MainProtocolSymbols.ACURAST_CANARY) {
       return acurastSignedTransactionToResponse(signedTransaction as SubstrateSignedTransaction, accountIdentifier)
     } else {
       throw new UnsupportedError(Domain.SUBSTRATE, `Protocol ${identifier} not supported`)
@@ -94,7 +104,7 @@ export class AcurastV3SerializerCompanion implements AirGapV3SerializerCompanion
     identifier: string,
     transactionSignResponse: TransactionSignResponse
   ): Promise<SignedTransaction> {
-    if (identifier === MainProtocolSymbols.ACURAST) {
+    if (identifier === MainProtocolSymbols.ACURAST || identifier === MainProtocolSymbols.ACURAST_CANARY) {
       return acurastTransactionSignResponseToSigned(transactionSignResponse)
     } else {
       throw new UnsupportedError(Domain.SUBSTRATE, `Protocol ${identifier} not supported`)
@@ -102,7 +112,7 @@ export class AcurastV3SerializerCompanion implements AirGapV3SerializerCompanion
   }
 
   public async validateTransactionSignResponse(identifier: string, transactionSignResponse: TransactionSignResponse): Promise<boolean> {
-    if (identifier === MainProtocolSymbols.ACURAST) {
+    if (identifier === MainProtocolSymbols.ACURAST || identifier === MainProtocolSymbols.ACURAST_CANARY) {
       try {
         await this.acurastTransactionValidator.validateSignedTransaction(transactionSignResponse)
 

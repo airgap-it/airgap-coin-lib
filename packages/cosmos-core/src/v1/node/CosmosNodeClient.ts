@@ -58,7 +58,6 @@ export class CosmosNodeClient<Units extends string> {
         }='${address}'&events=tx.height=0&pagination.limit=${limit}&pagination.offset=${offset}&orderBy=2`
       )
     )
-
     return response.data
   }
 
@@ -271,5 +270,23 @@ export class CosmosNodeClient<Units extends string> {
     }
 
     return result
+  }
+
+  public async simulateTx(txBytesBase64: string): Promise<{ gas_used: number }> {
+    const res = await fetch(this.url(`/cosmos/tx/v1beta1/simulate`), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tx_bytes: txBytesBase64 })
+    })
+    if (!res.ok) {
+      throw new Error(`Tx simulate failed: ${res.status} ${await res.text()}`)
+    }
+    const json = await res.json()
+
+    const used = Number(json?.gas_info?.gas_used ?? json?.gas_info?.gas_used?.toString?.() ?? 0)
+    if (!Number.isFinite(used) || used <= 0) {
+      throw new Error(`Invalid gas_used from simulate: ${JSON.stringify(json)}`)
+    }
+    return { gas_used: used }
   }
 }

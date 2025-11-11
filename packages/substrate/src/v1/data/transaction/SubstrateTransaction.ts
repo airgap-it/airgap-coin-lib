@@ -71,6 +71,7 @@ export class SubstrateTransaction<C extends SubstrateProtocolConfiguration> exte
       SCALECompactInt.from(params.nonce),
       SCALECompactInt.from(params.tip),
       SCALEInt.from(params.metadataHash ? 1 : 0),
+      SCALEInt.from(params.metadataHash ? 1 : 0),
       SubstrateTransactionMethod.create(configuration, type, params.methodId.palletIndex, params.methodId.callIndex, params.args)
     )
   }
@@ -89,6 +90,7 @@ export class SubstrateTransaction<C extends SubstrateProtocolConfiguration> exte
       params && params.era ? SCALEEra.Mortal(params.era) : transaction.era,
       params && params.nonce ? SCALECompactInt.from(params.nonce) : transaction.nonce,
       params && params.tip ? SCALECompactInt.from(params.tip) : transaction.tip,
+      params && params.metadataHash ? SCALEInt.from(1) : transaction.assetid,
       params && params.metadataHash ? SCALEInt.from(1) : transaction.mode,
       params && params.args && params.methodId
         ? SubstrateTransactionMethod.create(
@@ -112,12 +114,15 @@ export class SubstrateTransaction<C extends SubstrateProtocolConfiguration> exte
     const decoder = new SCALEDecoder(configuration, runtimeVersion, bytes.decoded.bytes.toString('hex'))
 
     const versionCheck = configuration.transaction.version >= 4
+    const isAssetHub = configuration.transaction.version >= 5
+
     decoder.decodeNextHash(8) // signed byte
     const signer = decoder.decodeNextAccount()
     const signature = decoder.decodeNextObject(SubstrateSignature.decode)
     const era = decoder.decodeNextEra()
     const nonce = decoder.decodeNextCompactInt()
     const tip = decoder.decodeNextCompactInt()
+    const assetid = isAssetHub ? decoder.decodeNextInt(8) : { bytesDecoded: 0, decoded: SCALEInt.from(0) }
     const mode = versionCheck ? decoder.decodeNextInt(8) : { bytesDecoded: 0, decoded: SCALEInt.from(0) }
     const method = decoder.decodeNextObject((configuration, runtimeVersion, hex) =>
       SubstrateTransactionMethod.decode(configuration, runtimeVersion, type, hex)
@@ -133,6 +138,7 @@ export class SubstrateTransaction<C extends SubstrateProtocolConfiguration> exte
         era.decoded,
         nonce.decoded,
         tip.decoded,
+        assetid.decoded,
         mode.decoded,
         method.decoded
       )
@@ -142,6 +148,8 @@ export class SubstrateTransaction<C extends SubstrateProtocolConfiguration> exte
   protected scaleFields = [this.signer, this.signature, this.era, this.nonce, this.tip, this.mode, this.method]
   protected scaleFieldsv3 = [this.signer, this.signature, this.era, this.nonce, this.tip, this.method]
 
+  protected scaleFieldsHub = [this.signer, this.signature, this.era, this.nonce, this.tip, this.assetid, this.mode, this.method]
+
   private constructor(
     readonly configuration: C,
     readonly type: SubstrateTransactionType<C>,
@@ -150,6 +158,7 @@ export class SubstrateTransaction<C extends SubstrateProtocolConfiguration> exte
     readonly era: SCALEEra,
     readonly nonce: SCALECompactInt,
     readonly tip: SCALECompactInt,
+    readonly assetid: SCALEInt,
     readonly mode: SCALEInt,
     readonly method: SubstrateTransactionMethod
   ) {
@@ -190,9 +199,11 @@ export class SubstrateTransaction<C extends SubstrateProtocolConfiguration> exte
     const typeEncoded = SCALEHash.from(new Uint8Array([VERSION | (this.signature.isSigned ? BIT_SIGNED : BIT_UNSIGNED)])).encode(config)
 
     const encodedData =
-      version !== undefined && version >= 4
-        ? this.scaleFields.reduce((encoded: string, struct: SCALEType) => encoded + struct.encode(config), '')
-        : this.scaleFieldsv3.reduce((encoded: string, struct: SCALEType) => encoded + struct.encode(config), '')
+      version !== undefined && version >= 5
+        ? this.scaleFieldsHub.reduce((encoded: string, struct: SCALEType) => encoded + struct.encode(config), '')
+        : version !== undefined && version >= 4
+          ? this.scaleFields.reduce((encoded: string, struct: SCALEType) => encoded + struct.encode(config), '')
+          : this.scaleFieldsv3.reduce((encoded: string, struct: SCALEType) => encoded + struct.encode(config), '')
 
     const bytes = Buffer.from(typeEncoded + encodedData, 'hex')
 

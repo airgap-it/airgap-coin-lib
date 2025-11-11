@@ -168,7 +168,7 @@ export class PolkadotTestProtocolSpec extends TestProtocolSpec {
         network: {
           name: 'Mainnet',
           type: 'MAINNET',
-          rpcUrl: 'https://polkadot-node.prod.gke.papers.tech',
+          rpcUrl: 'https://statemint.api.onfinality.io/public',
           blockExplorer: { blockExplorer: 'https://polkascan.io/polkadot' },
           extras: { apiUrl: 'https://polkadot.subscan.io/api/scan', network: SubstrateNetwork.POLKADOT }
         },
@@ -187,7 +187,7 @@ export class PolkadotTestProtocolSpec extends TestProtocolSpec {
         network: {
           name: 'Mainnet',
           type: 'MAINNET',
-          rpcUrl: 'https://polkadot-node.prod.gke.papers.tech',
+          rpcUrl: 'https://statemint.api.onfinality.io/public',
           blockExplorer: { blockExplorer: 'https://polkascan.io/polkadot' },
           extras: { apiUrl: 'https://polkadot.subscan.io/api/scan', network: SubstrateNetwork.POLKADOT }
         },
@@ -211,7 +211,7 @@ export class PolkadotTestProtocolSpec extends TestProtocolSpec {
         network: {
           name: 'Mainnet',
           type: 'MAINNET',
-          rpcUrl: 'https://polkadot-node.prod.gke.papers.tech',
+          rpcUrl: 'https://statemint.api.onfinality.io/public',
           blockExplorer: { blockExplorer: 'https://polkascan.io/polkadot' },
           extras: { apiUrl: 'https://polkadot.subscan.io/api/scan', network: SubstrateNetwork.POLKADOT }
         },
@@ -230,7 +230,7 @@ export class PolkadotTestProtocolSpec extends TestProtocolSpec {
         network: {
           name: 'Mainnet',
           type: 'MAINNET',
-          rpcUrl: 'https://polkadot-node.prod.gke.papers.tech',
+          rpcUrl: 'https://statemint.api.onfinality.io/public',
           blockExplorer: { blockExplorer: 'https://polkascan.io/polkadot' },
           extras: { apiUrl: 'https://polkadot.subscan.io/api/scan', network: SubstrateNetwork.POLKADOT }
         },

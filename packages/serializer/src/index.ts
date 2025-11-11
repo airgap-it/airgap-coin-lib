@@ -13,6 +13,7 @@ import {
   TransactionValidatorFactory as TransactionValidatorFactoryV2
 } from './v2/validators/transactions.validator'
 import { validateSyncScheme as validateSyncSchemeV2 } from './v2/validators/validators'
+import { Failure, Result, Success } from './v3/interfaces'
 import { IACMessageDefinitionObjectV3, IACMessages } from './v3/message'
 import { AccountShareResponse } from './v3/schemas/definitions/account-share-response'
 import { SchemaInfo, SchemaRoot } from './v3/schemas/schema'
@@ -40,7 +41,10 @@ export {
   SchemaInfoV2,
   SchemaInfo,
   SchemaRootV2,
-  SchemaRoot
+  SchemaRoot,
+  Result,
+  Success,
+  Failure
 }
 
 export { generateId, generateIdV2, validateSyncScheme, validateSyncSchemeV2 }

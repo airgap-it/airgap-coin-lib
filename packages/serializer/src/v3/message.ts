@@ -1,7 +1,7 @@
 import { SerializerError, SerializerErrorType } from '@airgap/coinlib-core/errors'
 import { ProtocolSymbols } from '@airgap/coinlib-core/utils/ProtocolSymbols'
 
-import { IACMessageType } from './interfaces'
+import { failure, IACMessageType, Result, success } from './interfaces'
 import { AccountShareResponse } from './schemas/definitions/account-share-response'
 import { MessageSignRequest } from './schemas/definitions/message-sign-request'
 import { MessageSignResponse } from './schemas/definitions/message-sign-response'
@@ -98,7 +98,7 @@ export class Message implements IACMessageDefinitionObjectV3 {
     return new Message(object.type, object.protocol, object.payload, object.id)
   }
 
-  public static fromEncoded(buf: MessageDefinitionArray, serializer: SerializerV3 = SerializerV3.getInstance()): Message {
+  public static fromEncoded(buf: MessageDefinitionArray, serializer: SerializerV3 = SerializerV3.getInstance()): Result<Message, Error> {
     const version: number = this.validateVersion(buf[0])
     const protocol: ProtocolSymbols = this.validateProtocol(buf[2], Array.from(serializer.getSupportedProtocols()))
     const type: IACMessageType = this.validateType(buf[1], protocol, serializer)
@@ -111,11 +111,13 @@ export class Message implements IACMessageDefinitionObjectV3 {
       try {
         const schema: SchemaItem = unwrapSchema(schemaInfo.schema)
         const schemaTransformer: SchemaTransformer | undefined = schemaInfo.transformer
-        const json: IACMessages = (rlpArrayToJson(schema, encodedPayload) as any) as IACMessages
+        const json: IACMessages = rlpArrayToJson(schema, encodedPayload) as any as IACMessages
 
         const payload: IACMessages = schemaTransformer ? schemaTransformer(json) : json
-        return new Message(type, protocol, payload, id, version)
-      } catch (e) {}
+        return success(new Message(type, protocol, payload, id, version))
+      } catch (e) {
+        return failure(e)
+      }
     }
 
     throw new Error('NO SCHEMA MATCHED')
@@ -163,7 +165,7 @@ export class Message implements IACMessageDefinitionObjectV3 {
     }
 
     if (validate(value)) {
-      return (value as unknown) as T // TODO: Use type guard?
+      return value as unknown as T // TODO: Use type guard?
     }
 
     throw new SerializerError(SerializerErrorType.PROPERTY_IS_EMPTY, `${property} is invalid: "${value}"`)

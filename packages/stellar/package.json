@@ -1,6 +1,6 @@
 {
   "name": "@airgap/stellar",
-  "version": "0.13.42",
+  "version": "0.13.43",
   "description": "The @airgap/aeternity is an Aeternity implementation of the ICoinProtocol interface from @airgap/coinlib-core.",
   "keywords": [
     "airgap",
@@ -30,9 +30,9 @@
   },
   "author": "Papers AG <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
-    "@airgap/coinlib-core": "^0.13.42",
-    "@airgap/module-kit": "^0.13.42",
-    "@airgap/serializer": "^0.13.42",
+    "@airgap/coinlib-core": "^0.13.43",
+    "@airgap/module-kit": "^0.13.43",
+    "@airgap/serializer": "^0.13.43",
     "@stellar/stellar-sdk": "^13.3.0"
   },
   "localDependencies": {},
