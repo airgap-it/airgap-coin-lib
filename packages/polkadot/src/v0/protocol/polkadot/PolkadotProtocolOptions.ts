@@ -15,7 +15,7 @@ import {
 
 const MAINNET_NAME: string = 'Mainnet'
 
-const NODE_URL: string = 'https://polkadot-node.prod.gke.papers.tech'
+const NODE_URL: string = 'https://statemint.api.onfinality.io/public'
 
 const BLOCK_EXPLORER_URL: string = 'https://polkadot.subscan.io'
 const BLOCK_EXPLORER_API: string = 'https://polkadot.subscan.prod.gke.papers.tech/api/scan'
