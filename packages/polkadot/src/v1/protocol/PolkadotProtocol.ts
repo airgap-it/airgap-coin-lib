@@ -89,7 +89,7 @@ export function createPolkadotProtocol(options: RecursivePartial<PolkadotProtoco
 export const POLKADOT_MAINNET_PROTOCOL_NETWORK: PolkadotProtocolNetwork = {
   name: 'Mainnet',
   type: 'mainnet',
-  rpcUrl: 'https://polkadot-node.prod.gke.papers.tech',
+  rpcUrl: 'https://statemint.api.onfinality.io/public',
   blockExplorerUrl: 'https://assethub-polkadot.subscan.io',
   blockExplorerApi: 'https://polkadot.subscan.prod.gke.papers.tech/api/v2/scan',
   defaultValidator: '12C9U6zSSoZ6pgwR2ksFyBLgQH6v7dkqqPCRyHceoP8MJRo2'
