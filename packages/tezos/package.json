@@ -40,8 +40,8 @@
     "@stablelib/nacl": "^1.0.4",
     "@stablelib/random": "^1.0.2",
     "@stablelib/utf8": "^1.0.1",
-    "@taquito/local-forging": "20.0.1",
-    "@taquito/rpc": "20.0.1",
+    "@taquito/local-forging": "23.0.3",
+    "@taquito/rpc": "23.0.3",
     "graphql": "^16.6.0",
     "graphql-request": "^5.1.0"
   },

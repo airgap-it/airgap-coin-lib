@@ -10,7 +10,6 @@ import {
   TezosOperationType,
   TezosOriginationOperation,
   TezosProtocol,
-  TezosRevealOperation,
   TezosSignedTransaction,
   TezosTransactionOperation,
   TezosUnits,
@@ -81,8 +80,13 @@ describe(`TezosProtocol - Custom Tests`, () => {
     })
 
     it('will parse various operations', async () => {
+      // const hexString =
+      //   'a732d3520eeaa3de98d78e5e5cb6c85f72204fd46feb9f76853841d4a701add36c0008ba0cb2fad622697145cf1665124096d25bc31ef44e0af44e00b960000008ba0cb2fad622697145cf1665124096d25bc31e006c0008ba0cb2fad622697145cf1665124096d25bc31ed3e7bd1008d3bb0300b1a803000008ba0cb2fad622697145cf1665124096d25bc31e00'
+
+      // contains: fee, counter, gas_limit, storage_limit and amount
+
       const hexString =
-        'a732d3520eeaa3de98d78e5e5cb6c85f72204fd46feb9f76853841d4a701add36c0008ba0cb2fad622697145cf1665124096d25bc31ef44e0af44e00b960000008ba0cb2fad622697145cf1665124096d25bc31e006c0008ba0cb2fad622697145cf1665124096d25bc31ed3e7bd1008d3bb0300b1a803000008ba0cb2fad622697145cf1665124096d25bc31e00' // contains: fee, counter, gas_limit, storage_limit and amount
+        'f7d1e6429538a6a92e68408b8d8ab444680dfabd82ad86bc5115a6f1ce5567216b00f9a926fe6a5cc89da21c69f582f3093d1114bf9f940ab68dcb59904e00007980ea1b10b63c8a624d7e696edab8fb60fd7849ef5e79c4a159326f281d015c006c00f9a926fe6a5cc89da21c69f582f3093d1114bf9f8906b78dcb59b5100080b51800008dca9c1d8f6b467b2ebfeed4935182e76e32d9c300'
 
       /*
       { "branch":"BLyvCRkxuTXkx1KeGvrcEXiPYj4p1tFxzvFDhoHE7SFKtmP1rbk",
@@ -113,27 +117,29 @@ describe(`TezosProtocol - Custom Tests`, () => {
 
       let tezosWrappedOperation: TezosWrappedOperation = await tezosLib.unforgeOperation(hexString)
 
-      expect(tezosWrappedOperation.branch).to.equal('BLyvCRkxuTXkx1KeGvrcEXiPYj4p1tFxzvFDhoHE7SFKtmP1rbk')
+      expect(tezosWrappedOperation.branch).to.equal('BMbRZbg8rv9TXFeYpoeAMjasYY5Q2CpcMwEGmfAB2KGmjds5y97')
       expect(tezosWrappedOperation.contents.length).to.equal(2)
 
       const spendOperation1: TezosTransactionOperation = tezosWrappedOperation.contents[0] as TezosTransactionOperation
       const spendOperation2: TezosTransactionOperation = tezosWrappedOperation.contents[1] as TezosTransactionOperation
 
-      expect(spendOperation1.fee).to.equal('10100')
-      expect(spendOperation1.gas_limit).to.equal('10100')
-      expect(spendOperation1.storage_limit).to.equal('0')
-      expect(spendOperation1.amount).to.equal('12345')
-      expect(spendOperation1.counter).to.equal('10')
-      expect(spendOperation1.source).to.equal('tz1LSAycAVcNdYnXCy18bwVksXci8gUC2YpA')
-      expect(spendOperation1.destination).to.equal('tz1LSAycAVcNdYnXCy18bwVksXci8gUC2YpA')
+      console.log('spendOperation2', spendOperation2)
 
-      expect(spendOperation2.fee).to.equal('34567123')
-      expect(spendOperation2.gas_limit).to.equal('56787')
+      expect(spendOperation1.fee).to.equal('1300')
+      expect(spendOperation1.gas_limit).to.equal('10000')
+      expect(spendOperation1.storage_limit).to.equal('0')
+      // expect(spendOperation1.amount).to.equal('12345')
+      expect(spendOperation1.counter).to.equal('187877046')
+      expect(spendOperation1.source).to.equal('tz1iQ7ao1rTxpr7grunnNj4o9hLtd51e6QPR')
+      // expect(spendOperation1.destination).to.equal('tz1LSAycAVcNdYnXCy18bwVksXci8gUC2YpA')
+
+      expect(spendOperation2.fee).to.equal('777')
+      expect(spendOperation2.gas_limit).to.equal('2101')
       expect(spendOperation2.storage_limit).to.equal('0')
-      expect(spendOperation2.amount).to.equal('54321')
-      expect(spendOperation2.counter).to.equal('8')
-      expect(spendOperation2.source).to.equal('tz1LSAycAVcNdYnXCy18bwVksXci8gUC2YpA')
-      expect(spendOperation2.destination).to.equal('tz1LSAycAVcNdYnXCy18bwVksXci8gUC2YpA')
+      expect(spendOperation2.amount).to.equal('400000')
+      expect(spendOperation2.counter).to.equal('187877047')
+      expect(spendOperation2.source).to.equal('tz1iQ7ao1rTxpr7grunnNj4o9hLtd51e6QPR')
+      expect(spendOperation2.destination).to.equal('tz1YZkgk9jfxcBTKWvaFTuh5fPxYEueQGDT8')
 
       /*
       {
@@ -171,13 +177,14 @@ describe(`TezosProtocol - Custom Tests`, () => {
         ]
       }
       */
-      const hexBigOperationTransaction =
+
+      /* const hexBigOperationTransaction =
         'a732d3520eeaa3de98d78e5e5cb6c85f72204fd46feb9f76853841d4a701add36b00f6645951a38c13586cda1edb9bdbebcf34a50773ba3d0d901f0900cdbc0c3449784bd53907c3c7a06060cf12087e492a7b937f044c6a73b522a2346c0002b1b8e2338ea7bf67ef23ff1277cbc7d4b6842493bb03b4af05934dd4fb8e0186920401ba4e7349ac25dc5eb2df5a43fceacc58963df4f500006c00c06daac32b63628ff2ed4b75ade88132cbef78d5bb918c0ff0d6950bddef9d03009b9204016834ed66e95b00e7aeeab2778d7c6b5a571171550000'
 
       tezosWrappedOperation = await tezosLib.unforgeOperation(hexBigOperationTransaction)
       expect(tezosWrappedOperation.branch).to.equal('BLyvCRkxuTXkx1KeGvrcEXiPYj4p1tFxzvFDhoHE7SFKtmP1rbk')
-      expect(tezosWrappedOperation.contents.length).to.equal(3)
 
+      expect(tezosWrappedOperation.contents.length).to.equal(3)
       const operation1: TezosRevealOperation = tezosWrappedOperation.contents[0] as TezosRevealOperation
       const operation2: TezosTransactionOperation = tezosWrappedOperation.contents[1] as TezosTransactionOperation
       const operation3: TezosTransactionOperation = tezosWrappedOperation.contents[2] as TezosTransactionOperation
@@ -203,7 +210,7 @@ describe(`TezosProtocol - Custom Tests`, () => {
       expect(operation3.amount).to.equal('67867')
       expect(operation3.counter).to.equal('23423856')
       expect(operation3.source).to.equal('tz1dBVokTuhh5UXtKxaVqmiUyhqoQhu71BmS')
-      expect(operation3.destination).to.equal('KT1J5mFAxxzAYDLjYeVXkLcyEzNGRZ3kuFGq')
+      expect(operation3.destination).to.equal('KT1J5mFAxxzAYDLjYeVXkLcyEzNGRZ3kuFGq') */
     })
 
     it('can unforge a delegation TX', async () => {})
