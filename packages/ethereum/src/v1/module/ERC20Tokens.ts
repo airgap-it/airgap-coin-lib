@@ -2,6 +2,14 @@
 import { ERC20TokenMetadata } from '../types/protocol'
 
 export const erc20Tokens: Record<string, ERC20TokenMetadata> = {
+  'eth-erc20-acu': {
+    symbol: 'ACU',
+    name: 'Acurast',
+    marketSymbol: 'acu',
+    identifier: 'eth-erc20-acu',
+    contractAddress: '0x216b3643ff8b7BB30d8A48E9F1BD550126202AdD',
+    decimals: 12
+  },
   'eth-erc20-xchf': {
     symbol: 'XCHF',
     name: 'CryptoFranc',
