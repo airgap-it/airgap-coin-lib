@@ -1,0 +1,39 @@
+{
+  "$ref": "#/definitions/BaseTypedTransactionSignRequest",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "HexString": {
+      "type": "string"
+    },
+    "BaseTypedTransactionSignRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "callbackURL": {
+          "type": "string"
+        },
+        "publicKey": {
+          "type": "string"
+        },
+        "transaction": {
+          "additionalProperties": false,
+          "properties": {
+            "derivationPath": {
+              "type": "string"
+            },
+            "masterFingerprint": {
+              "type": "string"
+            },
+            "serialized": {
+              "$ref": "#/definitions/HexString",
+              "type": "string"
+            }
+          },
+          "required": ["derivationPath", "masterFingerprint", "serialized"],
+          "type": "object"
+        }
+      },
+      "required": ["publicKey", "transaction"],
+      "type": "object"
+    }
+  }
+}
