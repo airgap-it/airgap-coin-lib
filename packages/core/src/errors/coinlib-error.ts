@@ -18,6 +18,7 @@ export enum Domain {
   OPTIMISM = 'OPTIMISM',
   MINA = 'MINA',
   STELLAR = 'STELLAR',
+  BNB = 'BNB',
   BASE = 'BASE'
 }
 
