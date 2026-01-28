@@ -1,6 +1,6 @@
 {
   "name": "@airgap/base",
-  "version": "0.13.44",
+  "version": "0.13.45",
   "description": "The @airgap/base is an Base implementation of the ICoinProtocol interface from @airgap/coinlib-core.",
   "keywords": [
     "airgap",
@@ -31,11 +31,11 @@
   },
   "author": "Papers AG <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
-    "@airgap/coinlib-core": "^0.13.44",
-    "@airgap/crypto": "^0.13.44",
-    "@airgap/ethereum": "^0.13.44",
-    "@airgap/module-kit": "^0.13.44",
-    "@airgap/serializer": "^0.13.44",
+    "@airgap/coinlib-core": "^0.13.45",
+    "@airgap/crypto": "^0.13.45",
+    "@airgap/ethereum": "^0.13.45",
+    "@airgap/module-kit": "^0.13.45",
+    "@airgap/serializer": "^0.13.45",
     "@ethereumjs/tx": "3.4.0"
   },
   "nyc": {
