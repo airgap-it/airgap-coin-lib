@@ -1,0 +1,63 @@
+{
+  "name": "@airgap/bnb",
+  "version": "0.13.45",
+  "description": "The @airgap/bnb is an Bnb implementation of the ICoinProtocol interface from @airgap/coinlib-core.",
+  "keywords": [
+    "airgap",
+    "blockchain",
+    "crypto",
+    "ethereum",
+    "bnb"
+  ],
+  "license": "MIT",
+  "homepage": "https://www.airgap.it",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/airgap-it/airgap-coin-lib"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "rm -rf ./dist && tsc && node scripts/copy-files-after-build.js",
+    "build-scripts": "tsc scripts/*.ts",
+    "lint": "tslint -c ./tslint.json --project ./tsconfig.json --format stylish --fix",
+    "lint:prettier": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "lint-ci": "tslint -t json -o ../../lint-reports/bnb.json --project . || true",
+    "lint-ci:prettier": "prettier \"src/**/*.ts\" \"test/**/*.ts\" --list-different",
+    "test": "",
+    "test-ci": "",
+    "browserify": "browserify ./dist/index.js -s airgapCoinLibBnb > ./dist/airgap-coinlib-bnb.min.js"
+  },
+  "author": "Papers AG <contact@papers.ch> (https://papers.ch)",
+  "dependencies": {
+    "@airgap/coinlib-core": "^0.13.45",
+    "@airgap/crypto": "^0.13.45",
+    "@airgap/ethereum": "^0.13.45",
+    "@airgap/module-kit": "^0.13.45",
+    "@airgap/serializer": "^0.13.45",
+    "@ethereumjs/tx": "3.4.0"
+  },
+  "nyc": {
+    "include": [
+      "src/**/*.ts"
+    ],
+    "exclude": [
+      "test/**/*.spec.ts"
+    ],
+    "extension": [
+      ".ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ],
+    "reporter": [
+      "text",
+      "text-summary"
+    ],
+    "report-dir": "../../coverage/bnb",
+    "sourceMap": true,
+    "instrument": true
+  },
+  "gitHead": "8e8feb6788204501b7173aa825f5456c2a5f185b"
+}

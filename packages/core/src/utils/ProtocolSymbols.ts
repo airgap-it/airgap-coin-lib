@@ -2,6 +2,7 @@ export enum MainProtocolSymbols {
   ACURAST = 'acurast',
   ACURAST_CANARY = 'acurast_canary',
   AE = 'ae',
+  BASE = 'base',
   BTC = 'btc',
   BTC_SEGWIT = 'btc_segwit',
   BTC_TAPROOT = 'btc_taproot',
@@ -22,7 +23,8 @@ export enum MainProtocolSymbols {
   COREUM = 'coreum',
   OPTIMISM = 'optimism',
   MINA = 'mina',
-  STELLAR = 'stellar'
+  STELLAR = 'stellar',
+  BNB = 'bnb'
 }
 
 export enum SubProtocolSymbols {
@@ -50,7 +52,9 @@ export enum SubProtocolSymbols {
   ETH_ERC20 = 'eth-erc20',
   ETH_ERC20_XCHF = 'eth-erc20-xchf',
   OPTIMISM_ERC20 = 'optimism-erc20',
-  STELLAR_ASSET = 'stellar-asset'
+  STELLAR_ASSET = 'stellar-asset',
+  BNB_ERC20 = 'bnb-erc20',
+  BASE_ERC20 = 'base-erc20'
 }
 
 export type ProtocolSymbols = MainProtocolSymbols | SubProtocolSymbols
