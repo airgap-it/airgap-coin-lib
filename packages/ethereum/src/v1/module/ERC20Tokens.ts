@@ -479,7 +479,7 @@ export const erc20Tokens: Record<string, ERC20TokenMetadata> = {
     name: 'Reserve Rights',
     marketSymbol: 'rsr',
     identifier: 'eth-erc20-rsr',
-    contractAddress: '0x8762db106b2c2a0bccb3a80d1ed41273552616e8',
+    contractAddress: '0x320623b8e4ff03373931769a31fc52a4e78b5d70',
     decimals: 18
   },
   'eth-erc20-srm': {
