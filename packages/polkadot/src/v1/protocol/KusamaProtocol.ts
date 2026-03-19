@@ -87,7 +87,7 @@ export const KUSAMA_MAINNET_PROTOCOL_NETWORK: PolkadotProtocolNetwork = {
   type: 'mainnet',
   rpcUrl: 'https://assethub-kusama.api.onfinality.io/public',
   blockExplorerUrl: 'https://assethub-kusama.subscan.io',
-  blockExplorerApi: 'https://kusama.subscan.prod.gke.papers.tech/api/v2/scan'
+  blockExplorerApi: 'https://assethub-kusama.subscan.prod.gke.papers.tech/api/v2/scan'
 }
 
 const DEFAULT_KUSAMA_PROTOCOL_NETWORK: PolkadotProtocolNetwork = KUSAMA_MAINNET_PROTOCOL_NETWORK

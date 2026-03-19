@@ -27,11 +27,11 @@ export class CoreumProtocolImpl extends CosmosBaseProtocolImpl<CoreumDenom> impl
 
   private readonly units: ProtocolUnitsMetadata<CoreumDenom> = {
     core: {
-      symbol: { value: 'CORE', market: 'CORE' },
+      symbol: { value: 'TX', market: 'CORE' },
       decimals: 6
     },
     ucore: {
-      symbol: { value: 'uCORE' },
+      symbol: { value: 'uTX' },
       decimals: 0
     }
   }
@@ -44,7 +44,7 @@ export class CoreumProtocolImpl extends CosmosBaseProtocolImpl<CoreumDenom> impl
 
   private readonly metadata: ProtocolMetadata<CoreumDenom> = {
     identifier: MainProtocolSymbols.COREUM,
-    name: 'Coreum',
+    name: 'Texture Capital',
 
     units: this.units,
     mainUnit: 'core',
