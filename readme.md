@@ -106,6 +106,32 @@ $ npm run install-test-dependencies
 $ npm test
 ```
 
+### Integration tests
+
+Integration tests exercise the full protocol stack for **balance fetching** and **transaction preparation** — the two online-side operations AirGap Wallet relies on most. Transactions are prepared but never signed or broadcast.
+
+Supported coins: Bitcoin, Ethereum, Polkadot, Acurast.
+
+#### Mocked (default)
+
+Runs offline with sinon stubs. Asserts exact balance values and golden unsigned-transaction fixtures. Suitable for CI and local development.
+
+```
+$ npm run test:integration
+```
+
+#### Live
+
+Hits real mainnet RPCs and indexers. Verifies connectivity, response shape, and (when wallets are funded) that prepare output is stable within the same run.
+
+```
+$ npm run test:integration:live
+```
+
+Live prepare checks are skipped automatically when the fixture wallet has zero transferable balance. Balance checks still run and confirm RPC/indexer connectivity.
+
+See [packages/core/test/integration/fixtures.md](packages/core/test/integration/fixtures.md) for wallet fixtures, assertion details, and how to add a new coin.
+
 To remove the test dependencies and clean up the `package.json` and `package-lock.json`, execute this command
 
 ```

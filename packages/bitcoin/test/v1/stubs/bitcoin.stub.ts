@@ -8,6 +8,13 @@ export class BitcoinProtocolStub implements ProtocolHTTPStub {
     const protocolNetwork = await testProtocolSpec.lib.getNetwork()
 
     const stub = sinon.stub(axios, 'get')
+    stub.withArgs(`${protocolNetwork.indexerApi}/api/v2/xpub/${testProtocolSpec.wallet.extendedPublicKey.value}?pageSize=1`).returns(
+      Promise.resolve({
+        data: {
+          balance: '32418999'
+        }
+      })
+    )
     stub.withArgs(`${protocolNetwork.indexerApi}/api/v2/utxo/${testProtocolSpec.wallet.extendedPublicKey.value}?confirmed=true`).returns(
       Promise.resolve({
         data: [
@@ -32,6 +39,17 @@ export class BitcoinProtocolStub implements ProtocolHTTPStub {
         ]
       })
     )
+
+    const addressBalances: Record<string, string> = {
+      '15B2gX2x1eqFKgR44nCe1i33ursGKP4Qpi': '10',
+      '1QKqr9wjki9K9tF9NxigbwgHeLXHT682sc': '32418989'
+    }
+
+    for (const address of testProtocolSpec.wallet.addresses) {
+      stub
+        .withArgs(`${protocolNetwork.indexerApi}/api/v2/address/${address}?details=basic`)
+        .returns(Promise.resolve({ data: { balance: addressBalances[address] ?? '0' } }))
+    }
   }
   public async noBalanceStub() {
     //

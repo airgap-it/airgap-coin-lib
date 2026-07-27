@@ -20,6 +20,8 @@
     "lint-ci": "lerna run lint-ci --stream",
     "lint-ci:prettier": "lerna run lint-ci:prettier --stream",
     "test": "lerna run test --stream",
+    "test:integration": "lerna run test:integration --stream --scope @airgap/bitcoin --scope @airgap/ethereum --scope @airgap/polkadot --scope @airgap/acurast",
+    "test:integration:live": "lerna run test:integration:live --stream --scope @airgap/bitcoin --scope @airgap/ethereum --scope @airgap/polkadot --scope @airgap/acurast",
     "test:icp": "lerna run test --stream --scope @airgap/icp",
     "test-ci": "lerna run test-ci --stream",
     "prepare": "husky install",
