@@ -34,7 +34,7 @@
     "@airgap/crypto": "^0.13.46",
     "@airgap/module-kit": "^0.13.46",
     "@airgap/serializer": "^0.13.46",
-    "graphql": "^16.7.1",
+    "graphql": "^16.14.2",
     "graphql-request": "^6.1.0",
     "mina-signer": "^2.0.3"
   },
