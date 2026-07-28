@@ -1,5 +1,5 @@
 import { assertNever, Domain } from '@airgap/coinlib-core'
-import { AxiosError } from '@airgap/coinlib-core/dependencies/src/axios-0.19.0'
+import { AxiosError } from '@airgap/coinlib-core/dependencies/src/axios-0.33.0'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import {
   BalanceError,
@@ -77,23 +77,22 @@ import { createTezosProtocol, TEZOS_UNITS, TezosProtocol } from '../TezosProtoco
 
 // Interface
 
-export interface TezosSaplingProtocol<_Units extends string = string>
-  extends AirGapProtocol<
-    {
-      AddressCursor: TezosSaplingAddressCursor
-      AddressResult: AddressWithCursor<TezosSaplingAddressCursor>
-      ProtocolNetwork: TezosSaplingProtocolNetwork
-      CryptoConfiguration: TezosSaplingCryptoConfiguration
-      Units: _Units
-      FeeUnits: TezosUnits
-      UnsignedTransaction: TezosSaplingUnsignedTransaction
-      SignedTransaction: TezosSaplingSignedTransaction
-      TransactionCursor: TezosSaplingTransactionCursor
-    },
-    'MultiAddressPublicKey',
-    'ConfigurableContract',
-    'ConfigurableTransactionInjector'
-  > {
+export interface TezosSaplingProtocol<_Units extends string = string> extends AirGapProtocol<
+  {
+    AddressCursor: TezosSaplingAddressCursor
+    AddressResult: AddressWithCursor<TezosSaplingAddressCursor>
+    ProtocolNetwork: TezosSaplingProtocolNetwork
+    CryptoConfiguration: TezosSaplingCryptoConfiguration
+    Units: _Units
+    FeeUnits: TezosUnits
+    UnsignedTransaction: TezosSaplingUnsignedTransaction
+    SignedTransaction: TezosSaplingSignedTransaction
+    TransactionCursor: TezosSaplingTransactionCursor
+  },
+  'MultiAddressPublicKey',
+  'ConfigurableContract',
+  'ConfigurableTransactionInjector'
+> {
   isTezosSaplingProtocol: true
 
   initParameters(spendParams: Buffer, outputParams: Buffer): Promise<void>
@@ -337,16 +336,14 @@ export abstract class TezosSaplingProtocolImpl<_Units extends string> implements
 
       const details: AirGapTransaction<_Units, TezosUnits>[] = this.accountant
         .getUnsignedTransactionDetails(from, transaction.ins, transaction.outs, unshieldTarget)
-        .map(
-          (details: AirGapTransaction<_Units, TezosUnits>): AirGapTransaction<_Units, TezosUnits> => ({
-            ...details,
-            extra: {
-              ...(details.extra ?? {}),
-              destination: transaction.contractAddress,
-              chainId: transaction.chainId
-            }
-          })
-        )
+        .map((details: AirGapTransaction<_Units, TezosUnits>): AirGapTransaction<_Units, TezosUnits> => ({
+          ...details,
+          extra: {
+            ...(details.extra ?? {}),
+            destination: transaction.contractAddress,
+            chainId: transaction.chainId
+          }
+        }))
 
       airGapTxs.push(...details)
     } else {

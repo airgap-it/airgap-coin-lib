@@ -1,7 +1,7 @@
 import * as sinon from 'sinon'
 
 import { AeternityProtocol } from '../../../src/v0'
-import axios from '@airgap/coinlib-core/dependencies/src/axios-0.19.0/index'
+import axios from '@airgap/coinlib-core/dependencies/src/axios-0.33.0/index'
 import { ProtocolHTTPStub, TestProtocolSpec } from '../implementations'
 
 export class AeternityProtocolStub implements ProtocolHTTPStub {

@@ -31,25 +31,24 @@ import { StellarCryptoConfiguration } from '../../types/crypto'
 import { StellarSignedTransaction, StellarTransactionCursor, StellarUnsignedTransaction } from '../../types/transaction'
 import { createStellarProtocol, createStellarProtocolOptions, StellarProtocol } from '../StellarProtocol'
 import { HorizonApi } from '@stellar/stellar-sdk/lib/horizon'
-import axios from '@airgap/coinlib-core/dependencies/src/axios-0.19.0/index'
+import axios from '@airgap/coinlib-core/dependencies/src/axios-0.33.0/index'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import { UnsupportedError } from '@airgap/coinlib-core/errors'
 import { Asset, BASE_FEE, Memo, Networks, Operation, Transaction, TransactionBuilder } from '@stellar/stellar-sdk'
 
-export interface StellarAssetProtocol
-  extends AirGapProtocol<
-    {
-      AddressResult: Address
-      ProtocolNetwork: StellarProtocolNetwork
-      CryptoConfiguration: StellarCryptoConfiguration
-      SignedTransaction: StellarSignedTransaction
-      TransactionCursor: StellarTransactionCursor
-      FeeEstimation: FeeDefaults<StellarUnits>
-      UnsignedTransaction: StellarUnsignedTransaction
-    },
-    'SubProtocol',
-    'FetchDataForAddress'
-  > {
+export interface StellarAssetProtocol extends AirGapProtocol<
+  {
+    AddressResult: Address
+    ProtocolNetwork: StellarProtocolNetwork
+    CryptoConfiguration: StellarCryptoConfiguration
+    SignedTransaction: StellarSignedTransaction
+    TransactionCursor: StellarTransactionCursor
+    FeeEstimation: FeeDefaults<StellarUnits>
+    UnsignedTransaction: StellarUnsignedTransaction
+  },
+  'SubProtocol',
+  'FetchDataForAddress'
+> {
   metadata: StellarAssetMetadata
   getTrustBalance(publicKey: PublicKey): Promise<Balance<string>>
   setTrustline(publicKey: PublicKey, assetMeta: StellarAssetMetadata, limit?: string): Promise<StellarUnsignedTransaction>

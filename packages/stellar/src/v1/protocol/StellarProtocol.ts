@@ -1,5 +1,5 @@
 import { assertNever, Domain, MainProtocolSymbols } from '@airgap/coinlib-core'
-import axios, { AxiosError } from '@airgap/coinlib-core/dependencies/src/axios-0.19.0/index'
+import axios, { AxiosError } from '@airgap/coinlib-core/dependencies/src/axios-0.33.0/index'
 import { NetworkError, UnsupportedError } from '@airgap/coinlib-core/errors'
 import {
   Address,
@@ -55,22 +55,21 @@ import {
 import { StellarSignedTransaction, StellarTransactionCursor, StellarUnsignedTransaction } from '../types/transaction'
 import { StellarAddress } from '../data/StellarAddress'
 
-export interface StellarProtocol
-  extends AirGapProtocol<
-    {
-      AddressResult: Address
-      ProtocolNetwork: StellarProtocolNetwork
-      CryptoConfiguration: StellarCryptoConfiguration
-      SignedTransaction: StellarSignedTransaction
-      TransactionCursor: StellarTransactionCursor
-      Units: StellarUnits
-      FeeEstimation: FeeDefaults<StellarUnits>
-      UnsignedTransaction: StellarUnsignedTransaction
-    },
-    'FetchDataForAddress',
-    'WalletConnect',
-    'Multisig'
-  > {
+export interface StellarProtocol extends AirGapProtocol<
+  {
+    AddressResult: Address
+    ProtocolNetwork: StellarProtocolNetwork
+    CryptoConfiguration: StellarCryptoConfiguration
+    SignedTransaction: StellarSignedTransaction
+    TransactionCursor: StellarTransactionCursor
+    Units: StellarUnits
+    FeeEstimation: FeeDefaults<StellarUnits>
+    UnsignedTransaction: StellarUnsignedTransaction
+  },
+  'FetchDataForAddress',
+  'WalletConnect',
+  'Multisig'
+> {
   server: Horizon.Server
   options: StellarProtocolOptions
   getDetailsFromEncodedGenericTransaction(transaction: string): Promise<Transaction>

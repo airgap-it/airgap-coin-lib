@@ -1,4 +1,4 @@
-import Axios from '@airgap/coinlib-core/dependencies/src/axios-0.19.0'
+import Axios from '@airgap/coinlib-core/dependencies/src/axios-0.33.0'
 
 const MockAdapter = require('axios-mock-adapter')
 

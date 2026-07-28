@@ -1,4 +1,4 @@
-import axios, { AxiosResponse } from '@airgap/coinlib-core/dependencies/src/axios-0.19.0/index'
+import axios, { AxiosResponse } from '@airgap/coinlib-core/dependencies/src/axios-0.33.0/index'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import { InvalidValueError, NotFoundError } from '@airgap/coinlib-core/errors'
 import { Domain } from '@airgap/coinlib-core/errors/coinlib-error'
@@ -43,7 +43,10 @@ export class TezosContract {
 
   private readonly remoteDataFactory: TezosContractRemoteDataFactory = new TezosContractRemoteDataFactory()
 
-  constructor(public readonly address: string, public readonly network: TezosProtocolNetwork) {}
+  constructor(
+    public readonly address: string,
+    public readonly network: TezosProtocolNetwork
+  ) {}
 
   public copy(
     values: {
@@ -244,7 +247,7 @@ export class TezosContract {
     })
 
     return {
-      entrypoint: normalizedEntrypoint ? normalizedEntrypoint[0] : fallbackEntrypoint ?? defaultEntrypoint.name,
+      entrypoint: normalizedEntrypoint ? normalizedEntrypoint[0] : (fallbackEntrypoint ?? defaultEntrypoint.name),
       value: normalizedEntrypoint ? normalizedEntrypoint[1] : value
     }
   }

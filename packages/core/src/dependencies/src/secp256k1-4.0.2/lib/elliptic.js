@@ -1,4 +1,4 @@
-const EC = require('../../elliptic-6.5.3/lib/elliptic').ec
+const EC = require('../../elliptic-6.6.1/lib/elliptic').ec
 
 const ec = new EC('secp256k1')
 const ecparams = ec.curve

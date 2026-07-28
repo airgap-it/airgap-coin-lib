@@ -1,4 +1,4 @@
-import axios from '@airgap/coinlib-core/dependencies/src/axios-0.19.0'
+import axios from '@airgap/coinlib-core/dependencies/src/axios-0.33.0'
 import { AirGapTransaction, Amount, newAmount } from '@airgap/module-kit'
 
 import { BigMap } from '../types/contract/bigmap/BigMap'
@@ -19,23 +19,21 @@ export class TzKTIndexerClient implements TezosIndexerClient {
     const url = this.url('/operations/transactions', `anyof.target.sender=${address}&sort.desc=level`, limit, offset)
     const result = (await axios.get<any[]>(url)).data
 
-    return result.map(
-      (transaction): Omit<AirGapTransaction<TezosUnits>, 'network'> => ({
-        from: [transaction.sender.address],
-        to: [transaction.target.address],
-        isInbound: transaction.target.address === address,
+    return result.map((transaction): Omit<AirGapTransaction<TezosUnits>, 'network'> => ({
+      from: [transaction.sender.address],
+      to: [transaction.target.address],
+      isInbound: transaction.target.address === address,
 
-        amount: newAmount(transaction.amount, 'blockchain'),
-        fee: newAmount(transaction.bakerFee, 'blockchain'),
+      amount: newAmount(transaction.amount, 'blockchain'),
+      fee: newAmount(transaction.bakerFee, 'blockchain'),
 
-        timestamp: Math.floor(new Date(transaction.timestamp).getTime() / 1000),
-        status: {
-          type: transaction.status === 'applied' ? 'applied' : transaction.status === 'failed' ? 'failed' : 'unknown',
-          hash: transaction.hash,
-          block: transaction.level.toString()
-        }
-      })
-    )
+      timestamp: Math.floor(new Date(transaction.timestamp).getTime() / 1000),
+      status: {
+        type: transaction.status === 'applied' ? 'applied' : transaction.status === 'failed' ? 'failed' : 'unknown',
+        hash: transaction.hash,
+        block: transaction.level.toString()
+      }
+    }))
   }
 
   public async getDelegationInfo(address: string): Promise<{ date: Date; level: number } | undefined> {
@@ -64,22 +62,20 @@ export class TzKTIndexerClient implements TezosIndexerClient {
     )
     const result = (await axios.get<any[]>(url)).data
 
-    return result.map(
-      (transaction): Omit<AirGapTransaction<never, TezosUnits>, 'network'> => ({
-        from: [transaction.from?.address ?? ''],
-        to: [transaction.to?.address ?? ''],
-        isInbound: transaction.to.address === address,
+    return result.map((transaction): Omit<AirGapTransaction<never, TezosUnits>, 'network'> => ({
+      from: [transaction.from?.address ?? ''],
+      to: [transaction.to?.address ?? ''],
+      isInbound: transaction.to.address === address,
 
-        amount: newAmount(transaction.amount, 'blockchain'),
-        fee: newAmount(0, 'blockchain'),
+      amount: newAmount(transaction.amount, 'blockchain'),
+      fee: newAmount(0, 'blockchain'),
 
-        timestamp: Math.floor(new Date(transaction.timestamp).getTime() / 1000),
-        status: {
-          type: 'unknown',
-          block: transaction.level.toString()
-        }
-      })
-    )
+      timestamp: Math.floor(new Date(transaction.timestamp).getTime() / 1000),
+      status: {
+        type: 'unknown',
+        block: transaction.level.toString()
+      }
+    }))
   }
 
   public async getTokenTransactions(
@@ -90,22 +86,20 @@ export class TzKTIndexerClient implements TezosIndexerClient {
     const url = this.url(`/tokens/transfers`, `token.contract=${token.contractAddress}&token.tokenId=${token.id}`, limit, offset)
     const result = (await axios.get<any[]>(url)).data
 
-    return result.map(
-      (transaction): Omit<AirGapTransaction<never, TezosUnits>, 'network'> => ({
-        from: [transaction.from?.address ?? ''],
-        to: [transaction.to?.address ?? ''],
-        isInbound: false,
+    return result.map((transaction): Omit<AirGapTransaction<never, TezosUnits>, 'network'> => ({
+      from: [transaction.from?.address ?? ''],
+      to: [transaction.to?.address ?? ''],
+      isInbound: false,
 
-        amount: newAmount(transaction.amount, 'blockchain'),
-        fee: newAmount(0, 'blockchain'),
+      amount: newAmount(transaction.amount, 'blockchain'),
+      fee: newAmount(0, 'blockchain'),
 
-        timestamp: Math.floor(new Date(transaction.timestamp).getTime() / 1000),
-        status: {
-          type: 'unknown',
-          block: transaction.level
-        }
-      })
-    )
+      timestamp: Math.floor(new Date(transaction.timestamp).getTime() / 1000),
+      status: {
+        type: 'unknown',
+        block: transaction.level
+      }
+    }))
   }
 
   public async getTokenBalances(token: Token, limit?: number, offset?: number): Promise<{ address: string; amount: Amount<never> }[]> {

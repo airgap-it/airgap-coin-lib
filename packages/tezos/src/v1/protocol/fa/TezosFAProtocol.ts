@@ -1,5 +1,5 @@
 import { Domain, MainProtocolSymbols } from '@airgap/coinlib-core'
-import axios, { AxiosError, AxiosResponse } from '@airgap/coinlib-core/dependencies/src/axios-0.19.0'
+import axios, { AxiosError, AxiosResponse } from '@airgap/coinlib-core/dependencies/src/axios-0.33.0'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import { InvalidValueError, NetworkError, OperationFailedError } from '@airgap/coinlib-core/errors'
 import {
@@ -47,23 +47,25 @@ import { TEZOS_ACCOUNT_METADATA, TEZOS_MAINNET_PROTOCOL_NETWORK, TEZOS_UNITS, Te
 
 // Interface
 
-export interface TezosFAProtocol<_Units extends string = string, _ProtocolNetwork extends TezosFAProtocolNetwork = TezosFAProtocolNetwork>
-  extends AirGapProtocol<
-    {
-      AddressResult: Address
-      ProtocolNetwork: _ProtocolNetwork
-      CryptoConfiguration: TezosCryptoConfiguration
-      Units: _Units
-      FeeUnits: TezosUnits
-      FeeEstimation: FeeDefaults<TezosUnits>
-      UnsignedTransaction: TezosUnsignedTransaction
-      SignedTransaction: TezosSignedTransaction
-      TransactionCursor: TezosTransactionCursor
-    },
-    'SingleTokenSubProtocol',
-    'Crypto',
-    'FetchDataForAddress'
-  > {
+export interface TezosFAProtocol<
+  _Units extends string = string,
+  _ProtocolNetwork extends TezosFAProtocolNetwork = TezosFAProtocolNetwork
+> extends AirGapProtocol<
+  {
+    AddressResult: Address
+    ProtocolNetwork: _ProtocolNetwork
+    CryptoConfiguration: TezosCryptoConfiguration
+    Units: _Units
+    FeeUnits: TezosUnits
+    FeeEstimation: FeeDefaults<TezosUnits>
+    UnsignedTransaction: TezosUnsignedTransaction
+    SignedTransaction: TezosSignedTransaction
+    TransactionCursor: TezosTransactionCursor
+  },
+  'SingleTokenSubProtocol',
+  'Crypto',
+  'FetchDataForAddress'
+> {
   isTezosFAProtocol: true
 
   contractMetadata(networkResolver?: TezosProtocolNetworkResolver): Promise<TezosContractMetadata | undefined>
@@ -85,8 +87,7 @@ export abstract class TezosFAProtocolImpl<
   _Entrypoints extends string,
   _Units extends string,
   _ProtocolNetwork extends TezosFAProtocolNetwork
-> implements TezosFAProtocol<_Units, _ProtocolNetwork>
-{
+> implements TezosFAProtocol<_Units, _ProtocolNetwork> {
   public readonly isTezosFAProtocol: true = true
 
   protected readonly options: TezosFAProtocolOptions<_Units, _ProtocolNetwork>

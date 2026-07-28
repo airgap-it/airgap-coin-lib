@@ -1,4 +1,4 @@
-import Axios from '@airgap/coinlib-core/dependencies/src/axios-0.19.0'
+import Axios from '@airgap/coinlib-core/dependencies/src/axios-0.33.0'
 import { BigNumber } from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import { isArray } from '@airgap/coinlib-core/dependencies/src/validate.js-0.13.1/validate'
 import { AirGapTransactionStatus, IAirGapTransaction } from '@airgap/coinlib-core/interfaces/IAirGapTransaction'

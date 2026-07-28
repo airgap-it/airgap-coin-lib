@@ -1,5 +1,5 @@
 import { Domain, NetworkError } from '@airgap/coinlib-core'
-import { AxiosError } from '@airgap/coinlib-core/dependencies/src/axios-0.19.0'
+import { AxiosError } from '@airgap/coinlib-core/dependencies/src/axios-0.33.0'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import { OperationFailedError } from '@airgap/coinlib-core/errors'
 import {
@@ -52,19 +52,19 @@ export interface SubstrateProtocol<
   _ProtocolNetwork extends SubstrateProtocolNetwork = SubstrateProtocolNetwork,
   _CryptoConfiguration extends SubstrateCryptoConfiguration = SubstrateCryptoConfiguration
 > extends AirGapProtocol<
-    {
-      AddressResult: Address
-      ProtocolNetwork: _ProtocolNetwork
-      CryptoConfiguration: _CryptoConfiguration
-      Units: _Units
-      FeeEstimation: Amount<_Units>
-      UnsignedTransaction: SubstrateUnsignedTransaction
-      SignedTransaction: SubstrateSignedTransaction
-      TransactionCursor: SubstrateTransactionCursor
-    },
-    'Crypto',
-    'FetchDataForAddress'
-  > {
+  {
+    AddressResult: Address
+    ProtocolNetwork: _ProtocolNetwork
+    CryptoConfiguration: _CryptoConfiguration
+    Units: _Units
+    FeeEstimation: Amount<_Units>
+    UnsignedTransaction: SubstrateUnsignedTransaction
+    SignedTransaction: SubstrateSignedTransaction
+    TransactionCursor: SubstrateTransactionCursor
+  },
+  'Crypto',
+  'FetchDataForAddress'
+> {
   _isSubstrateProtocol: true
 
   encodeDetails(txs: SubstrateTransactionDetails<_ProtocolConfiguration>[]): Promise<string>
@@ -79,10 +79,9 @@ export abstract class SubstrateProtocolImpl<
   _ProtocolNetwork extends SubstrateProtocolNetwork = SubstrateProtocolNetwork,
   _NodeClient extends SubstrateNodeClient<_ProtocolConfiguration> = SubstrateNodeClient<_ProtocolConfiguration>,
   _AccountController extends SubstrateAccountController<_ProtocolConfiguration> = SubstrateAccountController<_ProtocolConfiguration>,
-  _TransactionController extends
-    SubstrateTransactionController<_ProtocolConfiguration> = SubstrateTransactionController<_ProtocolConfiguration>
-> implements SubstrateProtocol<_ProtocolConfiguration, _Units, _ProtocolNetwork, SubstrateCryptoConfiguration<_ProtocolConfiguration>>
-{
+  _TransactionController extends SubstrateTransactionController<_ProtocolConfiguration> =
+    SubstrateTransactionController<_ProtocolConfiguration>
+> implements SubstrateProtocol<_ProtocolConfiguration, _Units, _ProtocolNetwork, SubstrateCryptoConfiguration<_ProtocolConfiguration>> {
   public readonly _isSubstrateProtocol: true = true
 
   protected readonly configuration: _ProtocolConfiguration
@@ -364,16 +363,14 @@ export abstract class SubstrateProtocolImpl<
     const encoded = await this.transactionController.prepareSubmittableTransactions(
       publicKey,
       available,
-      details.map(
-        ({ to, amount }: TransactionDetails<_Units>): SubstrateTransactionParameters<_ProtocolConfiguration> => ({
-          type: 'transfer',
-          tip: 0, // temporary, until we handle Substrate fee/tip model
-          args: {
-            to,
-            value: new BigNumber(newAmount(amount).blockchain(this.metadata.units).value)
-          }
-        })
-      )
+      details.map(({ to, amount }: TransactionDetails<_Units>): SubstrateTransactionParameters<_ProtocolConfiguration> => ({
+        type: 'transfer',
+        tip: 0, // temporary, until we handle Substrate fee/tip model
+        args: {
+          to,
+          value: new BigNumber(newAmount(amount).blockchain(this.metadata.units).value)
+        }
+      }))
     )
 
     return newUnsignedTransaction<SubstrateUnsignedTransaction>({ encoded })
