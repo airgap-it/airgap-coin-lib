@@ -1,4 +1,4 @@
-import axios from '@airgap/coinlib-core/dependencies/src/axios-0.19.0/index'
+import axios from '@airgap/coinlib-core/dependencies/src/axios-0.33.0/index'
 import * as sinon from 'sinon'
 
 import { GroestlcoinProtocol } from '../../../src/v0'

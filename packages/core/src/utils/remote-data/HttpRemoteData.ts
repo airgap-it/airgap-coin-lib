@@ -1,9 +1,7 @@
-import axios, { AxiosResponse, ResponseType } from '../../dependencies/src/axios-0.19.0/index'
+import { AxiosResponse, ResponseType } from '../../dependencies/src/axios-0.33.0/index'
 
 import { RawData, RemoteData } from './RemoteData'
-
-const HTTP_SCHEME = 'http'
-const HTTPS_SCHEME = 'https'
+import { isPublicHttpUrl, remoteDataGet } from './remoteDataRequest'
 
 export class HttpRemoteData<T> extends RemoteData<T> {
   public static from<T>(uri: string): HttpRemoteData<T> | undefined {
@@ -11,7 +9,7 @@ export class HttpRemoteData<T> extends RemoteData<T> {
   }
 
   public static validate(uri: string): boolean {
-    return uri.startsWith(HTTP_SCHEME) || uri.startsWith(HTTPS_SCHEME)
+    return isPublicHttpUrl(uri)
   }
 
   public async get(): Promise<T | undefined> {
@@ -29,6 +27,6 @@ export class HttpRemoteData<T> extends RemoteData<T> {
       return undefined
     }
 
-    return await axios.get(this.uri, { responseType })
+    return await remoteDataGet<T>(this.uri, responseType)
   }
 }

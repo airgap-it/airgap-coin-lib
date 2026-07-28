@@ -1,5 +1,5 @@
-const BN = require('../bn.js-4.11.8/lib/bn')
-const EC = require('../elliptic-6.5.3/lib/elliptic').ec
+const BN = require('../bn.js-4.11.9/lib/bn')
+const EC = require('../elliptic-6.6.1/lib/elliptic').ec
 const secp256k1 = new EC('secp256k1')
 const deterministicGenerateK = require('./rfc6979')
 

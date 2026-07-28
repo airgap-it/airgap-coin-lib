@@ -1,4 +1,4 @@
-import axios from '@airgap/coinlib-core/dependencies/src/axios-0.19.0'
+import axios from '@airgap/coinlib-core/dependencies/src/axios-0.33.0'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import { AirGapTransactionStatus, IAirGapTransaction } from '@airgap/coinlib-core/interfaces/IAirGapTransaction'
 import { SubstrateNetwork } from '../../SubstrateNetwork'
@@ -6,7 +6,10 @@ import { SubstrateNetwork } from '../../SubstrateNetwork'
 import { SubstrateTransactionCursor } from '../../SubstrateTypes'
 
 export class SubstrateBlockExplorerClient {
-  constructor(readonly network: SubstrateNetwork, readonly apiUrl: string) {}
+  constructor(
+    readonly network: SubstrateNetwork,
+    readonly apiUrl: string
+  ) {}
 
   public async getTransactions(
     address: string,

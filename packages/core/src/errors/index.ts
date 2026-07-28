@@ -1,4 +1,4 @@
-import { AxiosError } from '../dependencies/src/axios-0.19.0'
+import { AxiosError } from '../dependencies/src/axios-0.33.0'
 import { CoinlibError, Domain } from './coinlib-error'
 
 export enum SerializerErrorType {
@@ -46,7 +46,7 @@ export class NetworkError extends CoinlibError {
   public url: string | undefined
   public method: string | undefined
   public requestBody?: unknown
-  constructor(domain: Domain, error: Partial<AxiosError>, description?: string) {
+  constructor(domain: Domain, error: Partial<AxiosError<any>>, description?: string) {
     super(domain, ProtocolErrorType.NETWORK)
     this.data = description ?? error.response?.data
     this.status = error?.response?.status
@@ -93,7 +93,11 @@ export class BalanceError extends CoinlibError {
 }
 
 export class TransactionError extends CoinlibError {
-  constructor(domain: Domain, description?: string, public data?: unknown) {
+  constructor(
+    domain: Domain,
+    description?: string,
+    public data?: unknown
+  ) {
     super(domain, ProtocolErrorType.TRANSACTION_FAILED, description)
   }
 }

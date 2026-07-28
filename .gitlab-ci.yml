@@ -41,7 +41,6 @@ unit:
 integration-live:
   stage: integration-live
   when: manual
-  allow_failure: false
   before_script:
     - docker rm -f integration-live-$CI_COMMIT_SHA || true
   script:

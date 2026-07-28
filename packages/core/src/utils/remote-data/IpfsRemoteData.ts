@@ -1,8 +1,9 @@
 // https://github.com/ipfs/in-web-browsers/blob/master/ADDRESSING.md
 
-import axios, { AxiosResponse, ResponseType } from '../../dependencies/src/axios-0.19.0/index'
+import { AxiosResponse, ResponseType } from '../../dependencies/src/axios-0.33.0/index'
 
 import { RawData, RemoteData } from './RemoteData'
+import { remoteDataGet } from './remoteDataRequest'
 
 const IPFS_SCHEME = 'ipfs'
 const IPFS_HTTP_GATEWAY = 'https://dweb.link/ipfs'
@@ -20,12 +21,22 @@ function http(uri: string): string | undefined {
   }
 }
 
+// the CID and path come from an untrusted source, so they must not be able to escape the gateway
+// prefix (e.g. by injecting a query, fragment or `..` segment)
+function gatewayPath(uri: string, scheme: string): string {
+  return uri
+    .replace(`${scheme}://`, '')
+    .split('/')
+    .map((segment) => encodeURIComponent(segment))
+    .join('/')
+}
+
 function ipfs(uri: string): string {
-  return `${IPFS_HTTP_GATEWAY}/${uri.replace(`${IPFS_SCHEME}://`, '')}`
+  return `${IPFS_HTTP_GATEWAY}/${gatewayPath(uri, IPFS_SCHEME)}`
 }
 
 function ipns(uri: string): string {
-  return `${IPNS_HTTP_GATEWAY}/${uri.replace(`${IPNS_SCHEME}://`, '')}`
+  return `${IPNS_HTTP_GATEWAY}/${gatewayPath(uri, IPNS_SCHEME)}`
 }
 
 export class IpfsRemoteData<T> extends RemoteData<T> {
@@ -57,6 +68,6 @@ export class IpfsRemoteData<T> extends RemoteData<T> {
       return undefined
     }
 
-    return await axios.get(uri, { responseType })
+    return await remoteDataGet<T>(uri, responseType)
   }
 }

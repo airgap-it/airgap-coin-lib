@@ -1,5 +1,5 @@
 import { assertNever, Domain, MainProtocolSymbols } from '@airgap/coinlib-core'
-import axios, { AxiosError } from '@airgap/coinlib-core/dependencies/src/axios-0.19.0/index'
+import axios, { AxiosError } from '@airgap/coinlib-core/dependencies/src/axios-0.33.0/index'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import * as bs58check from '@airgap/coinlib-core/dependencies/src/bs58check-2.1.2/index'
 import * as rlp from '@airgap/coinlib-core/dependencies/src/rlp-2.2.3/index'
@@ -48,21 +48,20 @@ import { AeternityCryptoClient } from './AeternityCryptoClient'
 
 // Interface
 
-export interface AeternityProtocol
-  extends AirGapProtocol<
-    {
-      AddressResult: Address
-      ProtocolNetwork: AeternityProtocolNetwork
-      CryptoConfiguration: AeternityCryptoConfiguration
-      SignedTransaction: AeternitySignedTransaction
-      TransactionCursor: AeternityTransactionCursor
-      Units: AeternityUnits
-      FeeEstimation: FeeDefaults<AeternityUnits>
-      UnsignedTransaction: AeternityUnsignedTransaction
-    },
-    'Crypto',
-    'FetchDataForAddress'
-  > {
+export interface AeternityProtocol extends AirGapProtocol<
+  {
+    AddressResult: Address
+    ProtocolNetwork: AeternityProtocolNetwork
+    CryptoConfiguration: AeternityCryptoConfiguration
+    SignedTransaction: AeternitySignedTransaction
+    TransactionCursor: AeternityTransactionCursor
+    Units: AeternityUnits
+    FeeEstimation: FeeDefaults<AeternityUnits>
+    UnsignedTransaction: AeternityUnsignedTransaction
+  },
+  'Crypto',
+  'FetchDataForAddress'
+> {
   convertTransactionToBase58(preparedTx: AeternityUnsignedTransaction): Promise<AeternityUnsignedTransaction>
 }
 

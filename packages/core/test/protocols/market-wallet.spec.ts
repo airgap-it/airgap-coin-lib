@@ -2,7 +2,7 @@ import chai = require('chai')
 import chaiAsPromised = require('chai-as-promised')
 import 'mocha'
 import sinon = require('sinon')
-import axios from '../../src/dependencies/src/axios-0.19.0/index'
+import axios from '../../src/dependencies/src/axios-0.33.0/index'
 import BigNumber from '../../src/dependencies/src/bignumber.js-9.0.0/bignumber'
 import { AirGapCoinWallet, AirGapMarketWallet, ICoinProtocol } from '../../src/index'
 import { AirGapWalletPriceService } from '../../src/wallet/AirGapMarketWallet'

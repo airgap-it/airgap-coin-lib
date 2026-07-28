@@ -2,7 +2,7 @@ const createKeccakHash = require('../keccak-1.0.2/js')
 const secp256k1 = require('../secp256k1-3.7.1/elliptic')
 const assert = require('assert')
 const rlp = require('../rlp-2.2.3/index')
-const BN = require('../bn.js-4.11.8/lib/bn')
+const BN = require('../bn.js-4.11.9/lib/bn')
 const createHash = require('../create-hash-1.2.0/browser')
 const Buffer = require('../safe-buffer-5.2.0/index').Buffer
 Object.assign(exports, require('../ethjs-util-0.1.4/src/index'))

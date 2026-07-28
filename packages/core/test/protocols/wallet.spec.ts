@@ -2,7 +2,7 @@ import chai = require('chai')
 import chaiAsPromised = require('chai-as-promised')
 import 'mocha'
 import sinon = require('sinon')
-import axios from '../../src/dependencies/src/axios-0.19.0/index'
+import axios from '../../src/dependencies/src/axios-0.33.0/index'
 import { AirGapWallet } from '../../src/index'
 import { AirGapWalletStatus } from '../../src/wallet/AirGapWallet'
 import { MockProtocol } from './mock/MockProtocol'

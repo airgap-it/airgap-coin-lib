@@ -115,61 +115,131 @@
     "commitHash": "7dbaf1eea531751dbf8b8f2cab339cc747904fab",
     "files": ["index.js"]
   },
-  "axios-0.19.0": {
+  "axios-0.33.0": {
     "name": "axios",
     "entrypoint": "index",
-    "version": "0.19.0",
+    "version": "0.33.0",
     "repository": "axios/axios",
-    "commitHash": "8d0b92b2678d96770304dd767cd05a59d37f12cf",
+    "commitHash": "d998cc9a1aa5cc45fbdfbdded6e9ecf8beb61aed",
     "files": [
       "package.json",
       "index.js",
       "index.d.ts",
       "lib/axios.js",
-      "lib/defaults.js",
       "lib/utils.js",
       "lib/adapters/http.js",
       "lib/adapters/xhr.js",
-      "lib/cancel/Cancel.js",
       "lib/cancel/CancelToken.js",
+      "lib/cancel/CanceledError.js",
       "lib/cancel/isCancel.js",
       "lib/core/Axios.js",
+      "lib/core/AxiosError.js",
       "lib/core/InterceptorManager.js",
-      "lib/core/createError.js",
+      "lib/core/buildFullPath.js",
       "lib/core/dispatchRequest.js",
-      "lib/core/enhanceError.js",
       "lib/core/mergeConfig.js",
       "lib/core/settle.js",
       "lib/core/transformData.js",
+      "lib/defaults/index.js",
+      "lib/defaults/transitional.js",
+      "lib/env/classes/FormData.js",
+      "lib/env/data.js",
+      "lib/helpers/AxiosURLSearchParams.js",
       "lib/helpers/bind.js",
       "lib/helpers/buildURL.js",
       "lib/helpers/combineURLs.js",
       "lib/helpers/cookies.js",
+      "lib/helpers/defaultRedactKeys.js",
       "lib/helpers/deprecatedMethod.js",
+      "lib/helpers/estimateDataURLDecodedBytes.js",
+      "lib/helpers/formDataToJSON.js",
+      "lib/helpers/fromDataURI.js",
       "lib/helpers/isAbsoluteURL.js",
+      "lib/helpers/isAxiosError.js",
       "lib/helpers/isURLSameOrigin.js",
       "lib/helpers/normalizeHeaderName.js",
+      "lib/helpers/null.js",
       "lib/helpers/parseHeaders.js",
-      "lib/helpers/spread.js"
+      "lib/helpers/parseProtocol.js",
+      "lib/helpers/sanitizeHeaderValue.js",
+      "lib/helpers/shouldBypassProxy.js",
+      "lib/helpers/spread.js",
+      "lib/helpers/toFormData.js",
+      "lib/helpers/toURLEncodedForm.js",
+      "lib/helpers/validator.js",
+      "lib/platform/index.js",
+      "lib/platform/browser/index.js",
+      "lib/platform/browser/classes/FormData.js",
+      "lib/platform/browser/classes/URLSearchParams.js",
+      "lib/platform/node/index.js",
+      "lib/platform/node/classes/FormData.js",
+      "lib/platform/node/classes/URLSearchParams.js"
     ],
-    "deps": ["follow-redirects-1.5.10", "is-buffer-2.0.3"]
+    "deps": ["follow-redirects-1.16.0", "proxy-from-env-1.1.0"],
+    "ignoredDeps": [
+      {
+        "module": "form-data",
+        "reason": "multipart/form-data is never used in coinlib; the FormData class is stubbed via replaceInFiles"
+      }
+    ],
+    "replaceInFiles": [
+      {
+        "filename": "lib/adapters/http.js",
+        "replacements": [
+          {
+            "from": "require('follow-redirects/http')",
+            "to": "require('follow-redirects').http",
+            "expectedReplacements": 1,
+            "reason": "the generic import rewriter only matches bare specifiers, never subpaths"
+          },
+          {
+            "from": "require('follow-redirects/https')",
+            "to": "require('follow-redirects').https",
+            "expectedReplacements": 1,
+            "reason": "the generic import rewriter only matches bare specifiers, never subpaths"
+          }
+        ]
+      },
+      {
+        "filename": "lib/platform/node/classes/FormData.js",
+        "replacements": [
+          {
+            "from": "module.exports = require('form-data');",
+            "to": "module.exports = function FormDataNotBundled() { throw new Error('form-data is not bundled in @airgap/coinlib-core: multipart/form-data requests are not supported'); };",
+            "expectedReplacements": 1,
+            "reason": "avoid vendoring the form-data dependency tree; coinlib never sends multipart bodies"
+          }
+        ]
+      },
+      {
+        "filename": "lib/env/classes/FormData.js",
+        "replacements": [
+          {
+            "from": "module.exports = require('form-data');",
+            "to": "module.exports = function FormDataNotBundled() { throw new Error('form-data is not bundled in @airgap/coinlib-core: multipart/form-data requests are not supported'); };",
+            "expectedReplacements": 1,
+            "reason": "avoid vendoring the form-data dependency tree; coinlib never sends multipart bodies"
+          }
+        ]
+      }
+    ]
   },
-  "is-buffer-2.0.3": {
-    "name": "is-buffer",
-    "entrypoint": "index",
-    "version": "2.0.3",
-    "repository": "feross/is-buffer",
-    "commitHash": "e05c7852e1a978b81c7eb6d677c861a7dc935ead",
-    "files": ["index.js"]
-  },
-  "follow-redirects-1.5.10": {
+  "follow-redirects-1.16.0": {
     "name": "follow-redirects",
     "entrypoint": "index",
-    "version": "1.5.10",
+    "version": "1.16.0",
     "repository": "follow-redirects/follow-redirects",
-    "commitHash": "91842752013b26ed780f7b04e557c72f02228cde",
-    "files": ["index.js", "http.js", "https.js"],
+    "commitHash": "0c23a223067201c368035e82954c11eb2578a33b",
+    "files": ["package.json", "index.js", "http.js", "https.js", "debug.js"],
     "deps": ["debug-3.1.0"]
+  },
+  "proxy-from-env-1.1.0": {
+    "name": "proxy-from-env",
+    "entrypoint": "index",
+    "version": "1.1.0",
+    "repository": "Rob--W/proxy-from-env",
+    "commitHash": "96d01f8fcfdccfb776735751132930bbf79c4a3a",
+    "files": ["package.json", "index.js"]
   },
   "debug-3.1.0": {
     "name": "debug",
@@ -356,7 +426,7 @@
     "repository": "ethereumjs/rlp",
     "commitHash": "296857a1c1c20a93e1377d221dba0c782d7b65a4",
     "files": ["index.js"],
-    "deps": ["safe-buffer-5.2.0", "bn.js-4.11.8"],
+    "deps": ["safe-buffer-5.2.0", "bn.js-4.11.9"],
     "TODO": ["index.d.ts"]
   },
   "utf8-3.0.0": {
@@ -375,12 +445,12 @@
     "commitHash": "26c36c3ce6cd66d3c5bf7867736cb1f2b49fe6b1",
     "files": ["lib/unorm.js"]
   },
-  "bn.js-4.11.8": {
+  "bn.js-4.11.9": {
     "name": "bn.js",
     "entrypoint": "lib/bn",
-    "version": "4.11.8",
+    "version": "4.11.9",
     "repository": "indutny/bn.js",
-    "commitHash": "c69b4ae8e789e10f7f91811cd4937949ff0d4768",
+    "commitHash": "a8d027601c09793c459fba2aacffd4731c2d8147",
     "files": ["lib/bn.js"]
   },
   "ethereumjs-tx-1.3.7": {
@@ -412,7 +482,7 @@
     "repository": "ethereumjs/ethereumjs-util",
     "commitHash": "7e3be1d97b4e11fbc4924836b8c444e644f643ac",
     "files": ["index.js"],
-    "deps": ["bn.js-4.11.8", "create-hash-1.2.0", "ethjs-util-0.1.4", "keccak-1.0.2", "rlp-2.2.3", "safe-buffer-5.2.0", "secp256k1-3.7.1"]
+    "deps": ["bn.js-4.11.9", "create-hash-1.2.0", "ethjs-util-0.1.4", "keccak-1.0.2", "rlp-2.2.3", "safe-buffer-5.2.0", "secp256k1-3.7.1"]
   },
   "ethjs-util-0.1.4": {
     "name": "ethjs-util",
@@ -766,7 +836,7 @@
     "repository": "cryptocoinjs/secp256k1-node",
     "commitHash": "2f1c956d71c39e5667e6285a6dafc15ce28e86f0",
     "files": ["elliptic.js", "lib/index.js", "lib/assert.js", "lib/der.js", "lib/messages.json", "lib/elliptic/index.js"],
-    "deps": ["bip66-1.1.5", "bn.js-4.11.8", "create-hash-1.2.0", "drbg.js-1.0.1", "elliptic-6.5.3", "nan-2.14.0", "safe-buffer-5.2.0"],
+    "deps": ["bip66-1.1.5", "bn.js-4.11.9", "create-hash-1.2.0", "drbg.js-1.0.1", "elliptic-6.6.1", "nan-2.14.0", "safe-buffer-5.2.0"],
     "ignoredDeps": [
       {
         "module": "bindings",
@@ -789,12 +859,12 @@
       }
     ]
   },
-  "elliptic-6.5.3": {
+  "elliptic-6.6.1": {
     "name": "elliptic",
     "entrypoint": "lib/elliptic",
-    "version": "6.5.3",
+    "version": "6.6.1",
     "repository": "indutny/elliptic",
-    "commitHash": "8647803dc3d90506aa03021737f7b061ba959ae1",
+    "commitHash": "9b77436a59cc35eccf4ffb848259c8762a492ee7",
     "files": [
       "package.json",
       "lib/elliptic.js",
@@ -814,7 +884,7 @@
       "lib/elliptic/precomputed/secp256k1.js"
     ],
     "deps": [
-      "bn.js-4.11.8",
+      "bn.js-4.11.9",
       "brorand-1.1.0",
       "hash.js-1.1.7",
       "hmac-drbg-1.0.1",
@@ -920,7 +990,7 @@
     "repository": "bitcoinjs/tiny-secp256k1",
     "commitHash": "86b15340a11bc5c42329078bd5f4e7fd92566036",
     "files": ["js.js", "rfc6979.js"],
-    "deps": ["bn.js-4.11.8", "create-hmac-1.1.7", "elliptic-6.5.3", "wif-2.0.6", "nan-2.14.0"],
+    "deps": ["bn.js-4.11.9", "create-hmac-1.1.7", "elliptic-6.6.1", "wif-2.0.6", "nan-2.14.0"],
     "ignoredDeps": [
       {
         "module": "bindings",
@@ -1238,7 +1308,7 @@
     "repository": "cryptocoinjs/secp256k1-node",
     "commitHash": "024fbdad3fb64499e8db8b35246c2f0a36afa8c8",
     "files": ["elliptic.js", "lib/index.js", "lib/elliptic.js"],
-    "deps": ["elliptic-6.5.3"],
+    "deps": ["elliptic-6.6.1"],
     "ignoredDeps": [
       {
         "module": "node-addon-api",
