@@ -1,6 +1,6 @@
 // tslint:disable: max-classes-per-file
 import { IAirGapTransaction, ProtocolSymbols, UnsignedTransaction } from '@airgap/coinlib-core'
-import axios from '@airgap/coinlib-core/dependencies/src/axios-0.19.0/index'
+import axios from '@airgap/coinlib-core/dependencies/src/axios-0.33.0/index'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import { mnemonicToSeed } from '@airgap/coinlib-core/dependencies/src/bip39-2.5.0/index'
 import * as bs58check from '@airgap/coinlib-core/dependencies/src/bs58check-2.1.2'

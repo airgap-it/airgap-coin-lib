@@ -1,5 +1,5 @@
 import { Domain, MainProtocolSymbols, SubProtocolSymbols } from '@airgap/coinlib-core'
-import axios, { AxiosError, AxiosResponse } from '@airgap/coinlib-core/dependencies/src/axios-0.19.0'
+import axios, { AxiosError, AxiosResponse } from '@airgap/coinlib-core/dependencies/src/axios-0.33.0'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import {
   BalanceError,
@@ -47,25 +47,24 @@ import { createTezosProtocol, createTezosProtocolOptions, TezosProtocol } from '
 
 // Interface
 
-export interface TezosKtProtocol
-  extends AirGapProtocol<
-    {
-      AddressCursor: TezosKtAddressCursor
-      AddressResult: AddressWithCursor<TezosKtAddressCursor>
-      ProtocolNetwork: TezosProtocolNetwork
-      CryptoConfiguration: TezosCryptoConfiguration
-      Units: TezosUnits
-      FeeEstimation: Amount<TezosUnits>
-      UnsignedTransaction: TezosUnsignedTransaction
-      SignedTransaction: TezosSignedTransaction
-      TransactionCursor: TezosKtTransactionCursor
-    },
-    'SubProtocol',
-    'Crypto',
-    'MultiAddressPublicKey',
-    'FetchDataForAddress',
-    'FetchDataForMultipleAddresses'
-  > {
+export interface TezosKtProtocol extends AirGapProtocol<
+  {
+    AddressCursor: TezosKtAddressCursor
+    AddressResult: AddressWithCursor<TezosKtAddressCursor>
+    ProtocolNetwork: TezosProtocolNetwork
+    CryptoConfiguration: TezosCryptoConfiguration
+    Units: TezosUnits
+    FeeEstimation: Amount<TezosUnits>
+    UnsignedTransaction: TezosUnsignedTransaction
+    SignedTransaction: TezosSignedTransaction
+    TransactionCursor: TezosKtTransactionCursor
+  },
+  'SubProtocol',
+  'Crypto',
+  'MultiAddressPublicKey',
+  'FetchDataForAddress',
+  'FetchDataForMultipleAddresses'
+> {
   migrateKtContract(publicKey: PublicKey, destinationContract: string): Promise<TezosUnsignedTransaction>
 }
 

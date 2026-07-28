@@ -1,8 +1,9 @@
-import axios, { AxiosResponse } from '../../dependencies/src/axios-0.19.0/index'
+import { AxiosResponse } from '../../dependencies/src/axios-0.33.0/index'
 import sha = require('../../dependencies/src/sha.js-2.4.11/index')
 import { stripHexPrefix } from '../hex'
 
 import { RawData, RemoteData } from './RemoteData'
+import { isPublicHttpUrl, remoteDataGet } from './remoteDataRequest'
 
 const SHA256_SCHEME = 'sha256'
 
@@ -13,7 +14,11 @@ function parseUri(uri: string): { hash?: string; path?: string } {
 }
 
 export class Sha256RemoteData<T> extends RemoteData<T> {
-  protected constructor(uri: string, private readonly hash: Buffer, private readonly path: string) {
+  protected constructor(
+    uri: string,
+    private readonly hash: Buffer,
+    private readonly path: string
+  ) {
     super(uri)
   }
 
@@ -38,7 +43,9 @@ export class Sha256RemoteData<T> extends RemoteData<T> {
     const { hash, path } = parseUri(uri)
 
     const validHash = !!hash && hash.startsWith('0x')
-    const validPath = !!path
+    // the path is an arbitrary URL taken from an untrusted source, so it has to clear the same bar
+    // as any other remote data target
+    const validPath = !!path && isPublicHttpUrl(decodeURIComponent(path))
 
     return validHash && validPath
   }
@@ -58,7 +65,7 @@ export class Sha256RemoteData<T> extends RemoteData<T> {
       return undefined
     }
 
-    const response: AxiosResponse<ArrayBuffer> = await axios.get(this.path, { responseType: 'arraybuffer' })
+    const response: AxiosResponse<ArrayBuffer> = await remoteDataGet<ArrayBuffer>(this.path, 'arraybuffer')
     const data: ArrayBuffer = response.data
     const hash: Buffer = sha('sha256').update(data).digest()
     if (!this.hash.equals(hash)) {

@@ -1,8 +1,8 @@
 'use strict'
 var Buffer = require('../../../safe-buffer-5.2.0/index').Buffer
 var createHash = require('../../../create-hash-1.2.0/browser')
-var BN = require('../../../bn.js-4.11.8/lib/bn')
-var EC = require('../../../elliptic-6.5.3/lib/elliptic').ec
+var BN = require('../../../bn.js-4.11.9/lib/bn')
+var EC = require('../../../elliptic-6.6.1/lib/elliptic').ec
 
 var messages = require('../messages.json')
 

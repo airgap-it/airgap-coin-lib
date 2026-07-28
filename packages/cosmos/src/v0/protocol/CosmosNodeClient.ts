@@ -1,4 +1,4 @@
-import Axios, { AxiosResponse } from '@airgap/coinlib-core/dependencies/src/axios-0.19.0/index'
+import Axios, { AxiosResponse } from '@airgap/coinlib-core/dependencies/src/axios-0.33.0/index'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import { CosmosCoin } from './CosmosCoin'
 import {
@@ -14,7 +14,10 @@ import {
 } from './CosmosTypes'
 
 export class CosmosNodeClient {
-  constructor(public readonly baseURL: string, public useCORSProxy: boolean = false) {}
+  constructor(
+    public readonly baseURL: string,
+    public useCORSProxy: boolean = false
+  ) {}
 
   public async fetchBalance(address: string, totalBalance?: boolean): Promise<BigNumber> {
     const response = await Axios.get(this.url(`/bank/balances/${address}`))

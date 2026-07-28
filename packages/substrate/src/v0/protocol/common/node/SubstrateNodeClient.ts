@@ -1,5 +1,5 @@
 import { RPCBody } from '@airgap/coinlib-core/data/RPCBody'
-import axios, { AxiosError, AxiosResponse } from '@airgap/coinlib-core/dependencies/src/axios-0.19.0'
+import axios, { AxiosError, AxiosResponse } from '@airgap/coinlib-core/dependencies/src/axios-0.33.0'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import { Cache } from '@airgap/coinlib-core/utils/cache'
 import { NetworkError } from '@airgap/coinlib-core/errors'
@@ -194,12 +194,9 @@ export class SubstrateNodeClient<Network extends SubstrateNetwork> {
     eraIndex: number,
     address: SubstrateCompatAddressType[Network]
   ): Promise<SubstrateExposure<Network> | null> {
-    return this.fromStorage(
-      'Staking',
-      'ErasStakers',
-      SCALEInt.from(eraIndex, 32),
-      SCALEAccountId.from(address, this.network)
-    ).then((item) => (item ? SubstrateExposure.decode(this.network, this.runtimeVersion, item) : null))
+    return this.fromStorage('Staking', 'ErasStakers', SCALEInt.from(eraIndex, 32), SCALEAccountId.from(address, this.network)).then(
+      (item) => (item ? SubstrateExposure.decode(this.network, this.runtimeVersion, item) : null)
+    )
   }
 
   public async getElectionStatus(): Promise<SubstrateEraElectionStatus | null> {
@@ -246,12 +243,9 @@ export class SubstrateNodeClient<Network extends SubstrateNetwork> {
   }
 
   public async getValidatorPrefs(eraIndex: number, address: SubstrateCompatAddressType[Network]): Promise<SubstrateValidatorPrefs | null> {
-    return this.fromStorage(
-      'Staking',
-      'ErasValidatorPrefs',
-      SCALEInt.from(eraIndex, 32),
-      SCALEAccountId.from(address, this.network)
-    ).then((item) => (item ? SubstrateValidatorPrefs.decode(this.network, this.runtimeVersion, item) : null))
+    return this.fromStorage('Staking', 'ErasValidatorPrefs', SCALEInt.from(eraIndex, 32), SCALEAccountId.from(address, this.network)).then(
+      (item) => (item ? SubstrateValidatorPrefs.decode(this.network, this.runtimeVersion, item) : null)
+    )
   }
 
   public async getExpectedEraDuration(): Promise<BigNumber | null> {

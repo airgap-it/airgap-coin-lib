@@ -1,4 +1,4 @@
-import axios, { AxiosResponse } from '@airgap/coinlib-core/dependencies/src/axios-0.19.0/index'
+import axios, { AxiosResponse } from '@airgap/coinlib-core/dependencies/src/axios-0.33.0/index'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import { InvalidValueError, NotFoundError } from '@airgap/coinlib-core/errors'
 import { Domain } from '@airgap/coinlib-core/errors/coinlib-error'
@@ -47,7 +47,10 @@ export class TezosContract<Entrypoint extends string = string> {
 
   private readonly indexerClient: TezosIndexerClient
 
-  constructor(public readonly address: string, public readonly network: TezosProtocolNetwork) {
+  constructor(
+    public readonly address: string,
+    public readonly network: TezosProtocolNetwork
+  ) {
     this.indexerClient = createTezosIndexerClient(this.network.indexerType, this.network.indexerApi)
   }
 
@@ -242,7 +245,7 @@ export class TezosContract<Entrypoint extends string = string> {
     })
 
     return {
-      entrypoint: normalizedEntrypoint ? normalizedEntrypoint[0] : fallbackEntrypoint ?? defaultEntrypoint.name,
+      entrypoint: normalizedEntrypoint ? normalizedEntrypoint[0] : (fallbackEntrypoint ?? defaultEntrypoint.name),
       value: normalizedEntrypoint ? normalizedEntrypoint[1] : value
     }
   }

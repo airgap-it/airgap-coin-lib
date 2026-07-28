@@ -4,7 +4,7 @@
 // import * as sinon from 'sinon'
 
 // import { isCoinlibReady, TezosKtProtocol } from '../../src'
-// import axios from '../../src/dependencies/src/axios-0.19.0/index'
+// import axios from '../../src/dependencies/src/axios-0.33.0/index'
 // import {
 //   TezosDelegationOperation,
 //   TezosOperationType,

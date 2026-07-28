@@ -1,6 +1,6 @@
 import { Domain, NetworkError } from '@airgap/coinlib-core'
 import { RPCBody } from '@airgap/coinlib-core/data/RPCBody'
-import axios, { AxiosError, AxiosResponse } from '@airgap/coinlib-core/dependencies/src/axios-0.19.0'
+import axios, { AxiosError, AxiosResponse } from '@airgap/coinlib-core/dependencies/src/axios-0.33.0'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import { Cache } from '@airgap/coinlib-core/utils/cache'
 import { addHexPrefix, bytesToHex, stripHexPrefix, toHexString } from '@airgap/coinlib-core/utils/hex'
@@ -337,8 +337,7 @@ type SubstrateCallEndpoints<C extends SubstrateProtocolConfiguration> = Map<
 >
 
 type ModuleName<C extends SubstrateProtocolConfiguration, Type extends keyof SubstrateRpcConfiguration, Defaults extends Object> =
-  | keyof Defaults
-  | (C['rpc'] extends Object ? (keyof C['rpc'][Type] extends string ? keyof C['rpc'][Type] : never) : never)
+  keyof Defaults | (C['rpc'] extends Object ? (keyof C['rpc'][Type] extends string ? keyof C['rpc'][Type] : never) : never)
 
 type ModuleEntry<
   C extends SubstrateProtocolConfiguration,

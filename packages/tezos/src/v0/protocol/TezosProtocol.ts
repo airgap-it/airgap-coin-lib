@@ -1,6 +1,6 @@
 import { ICoinSubProtocol } from '@airgap/coinlib-core'
 import { localForger } from '@airgap/coinlib-core/dependencies/src/@taquito/local-forging-15.0.1/packages/taquito-local-forging/src/taquito-local-forging'
-import axios, { AxiosError, AxiosResponse } from '@airgap/coinlib-core/dependencies/src/axios-0.19.0/index'
+import axios, { AxiosError, AxiosResponse } from '@airgap/coinlib-core/dependencies/src/axios-0.33.0/index'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 // @ts-ignore
 import { mnemonicToSeed } from '@airgap/coinlib-core/dependencies/src/bip39-2.5.0/index'

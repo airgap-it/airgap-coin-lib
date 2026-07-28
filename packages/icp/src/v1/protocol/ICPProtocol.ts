@@ -1,5 +1,5 @@
 import { assertNever, DelegatorAction, Domain, MainProtocolSymbols } from '@airgap/coinlib-core'
-import axios from '@airgap/coinlib-core/dependencies/src/axios-0.19.0/index'
+import axios from '@airgap/coinlib-core/dependencies/src/axios-0.33.0/index'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import { BalanceError, ConditionViolationError, NetworkError, UnsupportedError } from '@airgap/coinlib-core/errors'
 import { flattenArray } from '@airgap/coinlib-core/utils/array'
@@ -118,7 +118,8 @@ import {
 // Interface
 
 export interface ICPProtocol
-  extends AirGapProtocol<
+  extends
+    AirGapProtocol<
       {
         AddressResult: Address
         ProtocolNetwork: ICPProtocolNetwork

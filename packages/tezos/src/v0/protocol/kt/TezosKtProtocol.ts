@@ -1,5 +1,5 @@
 import { FeeDefaults, ICoinSubProtocol, ProtocolSymbols, SubProtocolSymbols, SubProtocolType } from '@airgap/coinlib-core'
-import axios, { AxiosError, AxiosResponse } from '@airgap/coinlib-core/dependencies/src/axios-0.19.0/index'
+import axios, { AxiosError, AxiosResponse } from '@airgap/coinlib-core/dependencies/src/axios-0.33.0/index'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import {
   BalanceError,

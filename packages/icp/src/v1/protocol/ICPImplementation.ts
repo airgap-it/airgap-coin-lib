@@ -1,5 +1,5 @@
 import { Domain, NetworkError } from '@airgap/coinlib-core'
-import axios, { AxiosError } from '@airgap/coinlib-core/dependencies/src/axios-0.19.0/index'
+import axios, { AxiosError } from '@airgap/coinlib-core/dependencies/src/axios-0.33.0/index'
 import { isHex } from '@airgap/coinlib-core/utils/hex'
 import { AirGapTransaction, newAmount } from '@airgap/module-kit'
 import 'isomorphic-fetch'
@@ -97,8 +97,8 @@ export function getAddressFromPrincipal(principalOrText: Principal | string, sub
     typeof subAccountOrUndefined === 'string'
       ? Buffer.from(subAccountOrUndefined, 'hex')
       : typeof subAccountOrUndefined === 'undefined' || subAccountOrUndefined.length === 0
-      ? Buffer.alloc(32, 0)
-      : subAccountOrUndefined
+        ? Buffer.alloc(32, 0)
+        : subAccountOrUndefined
 
   // Hash (sha224) the principal, the subAccount and some padding
   const padding = asciiStringToByteArray('\x0Aaccount-id')
