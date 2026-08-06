@@ -37,7 +37,7 @@
     "@airgap/module-kit": "^0.13.47",
     "@airgap/serializer": "^0.13.47",
     "@bitcoinerlab/secp256k1": "1.2.0",
-    "bip32": "5.0.0-rc.0",
+    "bip32": "5.0.1",
     "bitcoinjs-lib": "6.1.7"
   },
   "localDependencies": {
