@@ -5,7 +5,7 @@ import * as bs58check from '@airgap/coinlib-core/dependencies/src/bs58check-2.1.
 import { ConditionViolationError, OperationFailedError, UnsupportedError } from '@airgap/coinlib-core/errors'
 import { Domain } from '@airgap/coinlib-core/errors/coinlib-error'
 import { hexToBytes, stripHexPrefix } from '@airgap/coinlib-core/utils/hex'
-import { hash } from '@stablelib/blake2b'
+import { hash } from '@airgap/coinlib-core/dependencies/src/@stablelib/blake2b-1.0.1/packages/blake2b/blake2b'
 
 import { MichelsonList } from './types/michelson/generics/MichelsonList'
 import { MichelsonPair } from './types/michelson/generics/MichelsonPair'

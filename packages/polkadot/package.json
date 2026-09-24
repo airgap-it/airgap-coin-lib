@@ -1,6 +1,6 @@
 {
   "name": "@airgap/polkadot",
-  "version": "0.13.47",
+  "version": "0.14.0",
   "description": "The @airgap/polkadot is a Polkadot implementation of the ICoinProtocol interface from @airgap/coinlib-core.",
   "keywords": [
     "airgap",
@@ -34,9 +34,9 @@
   },
   "author": "Papers AG <contact@papers.ch> (https://papers.ch)",
   "dependencies": {
-    "@airgap/coinlib-core": "^0.13.47",
-    "@airgap/module-kit": "^0.13.47",
-    "@airgap/substrate": "^0.13.47"
+    "@airgap/coinlib-core": "^0.14.0",
+    "@airgap/module-kit": "^0.14.0",
+    "@airgap/substrate": "^0.14.0"
   },
   "devDependencies": {
     "@polkadot/wasm-crypto": "0.20.1"

@@ -1,6 +1,6 @@
 var Buffer = require('../safe-buffer-5.2.0/index').Buffer
 var createHash = require('../create-hash-1.2.0/browser')
-var pbkdf2 = require('../pbkdf2-3.0.17/index').pbkdf2Sync
+var pbkdf2 = require('../pbkdf2-3.1.3/index').pbkdf2Sync
 var randomBytes = require('../randombytes-2.1.0/browser')
 
 // use unorm until String.prototype.normalize gets better browser support

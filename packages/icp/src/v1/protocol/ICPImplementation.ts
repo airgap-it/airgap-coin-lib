@@ -3,7 +3,7 @@ import axios, { AxiosError } from '@airgap/coinlib-core/dependencies/src/axios-0
 import { isHex } from '@airgap/coinlib-core/utils/hex'
 import { AirGapTransaction, newAmount } from '@airgap/module-kit'
 import 'isomorphic-fetch'
-import { sha224, sha256 } from 'js-sha256'
+import { sha224, sha256 } from '../utils/sha2'
 
 import { ICPProtocolNetwork, ICPUnits } from '../module'
 import { KnownNeuron, ListKnownNeuronsResponse, NeuronInfo } from '../types/governance'

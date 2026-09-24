@@ -2,7 +2,7 @@
 var inherits = require('../inherits-2.0.4/inherits')
 var Buffer = require('../safe-buffer-5.2.0/index').Buffer
 
-var Base = require('../cipher-base-1.0.4/index')
+var Base = require('../cipher-base-1.0.5/index')
 
 var ZEROS = Buffer.alloc(128)
 var blocksize = 64

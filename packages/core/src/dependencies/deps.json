@@ -5,7 +5,10 @@
     "version": "9.0.0",
     "repository": "MikeMcl/bignumber.js",
     "commitHash": "986fd70e514e58e86d43bc9944547d82658e47ae",
-    "files": ["bignumber.js", "bignumber.d.ts"]
+    "files": [
+      "bignumber.js",
+      "bignumber.d.ts"
+    ]
   },
   "validate.js-0.13.1": {
     "name": "validate.js",
@@ -13,7 +16,10 @@
     "version": "0.13.1",
     "repository": "ansman/validate.js",
     "commitHash": "40e06a1bafd2ce61dba37779ee77e796ad397b81",
-    "files": ["validate.js", "validate.d.ts"]
+    "files": [
+      "validate.js",
+      "validate.d.ts"
+    ]
   },
   "tweetnacl-1.0.1": {
     "name": "tweetnacl",
@@ -21,7 +27,10 @@
     "version": "1.0.1",
     "repository": "dchest/tweetnacl-js",
     "commitHash": "acab4d4883e7a0be0b230df7b42c0bbd25210d39",
-    "files": ["nacl.js", "nacl.d.ts"]
+    "files": [
+      "nacl.js",
+      "nacl.d.ts"
+    ]
   },
   "tweetnacl-auth-1.0.1": {
     "name": "tweetnacl-auth",
@@ -29,8 +38,12 @@
     "version": "1.0.1",
     "repository": "dchest/tweetnacl-auth-js",
     "commitHash": "f7e7b60a017880a1e7c5e1cf68f422a4c6005cf9",
-    "files": ["nacl-auth.js"],
-    "deps": ["tweetnacl-1.0.1"]
+    "files": [
+      "nacl-auth.js"
+    ],
+    "deps": [
+      "tweetnacl-1.0.1"
+    ]
   },
   "bip32-path-0.4.2": {
     "name": "bip32-path",
@@ -38,7 +51,9 @@
     "version": "0.4.2",
     "repository": "axic/bip32-path",
     "commitHash": "d6d14bf9a848c9c28e23a8d68ad0e1bb3432c03c",
-    "files": ["index.js"]
+    "files": [
+      "index.js"
+    ]
   },
   "hd-wallet-js-b216450e56954a6e82ace0aade9474673de5d9d5": {
     "name": "hd-wallet-js",
@@ -46,11 +61,26 @@
     "version": "b216450e56954a6e82ace0aade9474673de5d9d5",
     "repository": "airgap-it/hd-wallet-js",
     "commitHash": "b216450e56954a6e82ace0aade9474673de5d9d5",
-    "files": ["src/hd-key.js", "src/hd-wallet.js", "src/index.js"],
+    "scanAsVersion": "0.2.0",
+    "scanAsName": "@aeternity/hd-wallet",
+    "files": [
+      "src/hd-key.js",
+      "src/hd-wallet.js",
+      "src/index.js"
+    ],
     "renameFiles": [
-      ["src/hd-key.js", "src/hd-key.ts"],
-      ["src/hd-wallet.js", "src/hd-wallet.ts"],
-      ["src/index.js", "src/index.ts"]
+      [
+        "src/hd-key.js",
+        "src/hd-key.ts"
+      ],
+      [
+        "src/hd-wallet.js",
+        "src/hd-wallet.ts"
+      ],
+      [
+        "src/index.js",
+        "src/index.ts"
+      ]
     ],
     "replaceInFiles": [
       {
@@ -95,7 +125,11 @@
         ]
       }
     ],
-    "deps": ["tweetnacl-1.0.1", "tweetnacl-auth-1.0.1", "bip32-path-0.4.2"],
+    "deps": [
+      "tweetnacl-1.0.1",
+      "tweetnacl-auth-1.0.1",
+      "bip32-path-0.4.2"
+    ],
     "ignoredDeps": [
       {
         "module": "@babel/runtime",
@@ -106,14 +140,6 @@
         "reason": "Should be a dev dependency"
       }
     ]
-  },
-  "cryptocompare-0.5.0": {
-    "name": "cryptocompare",
-    "entrypoint": "index",
-    "version": "0.5.0",
-    "repository": "ExodusMovement/cryptocompare",
-    "commitHash": "7dbaf1eea531751dbf8b8f2cab339cc747904fab",
-    "files": ["index.js"]
   },
   "axios-0.33.0": {
     "name": "axios",
@@ -175,7 +201,10 @@
       "lib/platform/node/classes/FormData.js",
       "lib/platform/node/classes/URLSearchParams.js"
     ],
-    "deps": ["follow-redirects-1.16.0", "proxy-from-env-1.1.0"],
+    "deps": [
+      "follow-redirects-1.16.0",
+      "proxy-from-env-1.1.0"
+    ],
     "ignoredDeps": [
       {
         "module": "form-data",
@@ -221,6 +250,17 @@
             "reason": "avoid vendoring the form-data dependency tree; coinlib never sends multipart bodies"
           }
         ]
+      },
+      {
+        "filename": "package.json",
+        "replacements": [
+          {
+            "from": "    \"name\": \"axios\",\n",
+            "to": "",
+            "expectedReplacements": 1,
+            "reason": "Angular CLI's DedupeModuleResolvePlugin merges modules whose package.json name@version matches another copy in node_modules; a nameless package.json keeps the vendored copy isolated (version is kept: some modules read it at runtime)"
+          }
+        ]
       }
     ]
   },
@@ -230,8 +270,29 @@
     "version": "1.16.0",
     "repository": "follow-redirects/follow-redirects",
     "commitHash": "0c23a223067201c368035e82954c11eb2578a33b",
-    "files": ["package.json", "index.js", "http.js", "https.js", "debug.js"],
-    "deps": ["debug-3.1.0"]
+    "files": [
+      "package.json",
+      "index.js",
+      "http.js",
+      "https.js",
+      "debug.js"
+    ],
+    "deps": [
+      "debug-3.1.0"
+    ],
+    "replaceInFiles": [
+      {
+        "filename": "package.json",
+        "replacements": [
+          {
+            "from": "    \"name\": \"follow-redirects\",\n",
+            "to": "",
+            "expectedReplacements": 1,
+            "reason": "Angular CLI's DedupeModuleResolvePlugin merges modules whose package.json name@version matches another copy in node_modules; a nameless package.json keeps the vendored copy isolated (version is kept: some modules read it at runtime)"
+          }
+        ]
+      }
+    ]
   },
   "proxy-from-env-1.1.0": {
     "name": "proxy-from-env",
@@ -239,7 +300,23 @@
     "version": "1.1.0",
     "repository": "Rob--W/proxy-from-env",
     "commitHash": "96d01f8fcfdccfb776735751132930bbf79c4a3a",
-    "files": ["package.json", "index.js"]
+    "files": [
+      "package.json",
+      "index.js"
+    ],
+    "replaceInFiles": [
+      {
+        "filename": "package.json",
+        "replacements": [
+          {
+            "from": "    \"name\": \"proxy-from-env\",\n",
+            "to": "",
+            "expectedReplacements": 1,
+            "reason": "Angular CLI's DedupeModuleResolvePlugin merges modules whose package.json name@version matches another copy in node_modules; a nameless package.json keeps the vendored copy isolated (version is kept: some modules read it at runtime)"
+          }
+        ]
+      }
+    ]
   },
   "debug-3.1.0": {
     "name": "debug",
@@ -247,8 +324,13 @@
     "version": "3.1.0",
     "repository": "visionmedia/debug",
     "commitHash": "f073e056f33efdd5b311381eb6bca2bc850745bf",
-    "files": ["src/browser.js", "src/debug.js"],
-    "deps": ["ms-2.1.2"]
+    "files": [
+      "src/browser.js",
+      "src/debug.js"
+    ],
+    "deps": [
+      "ms-2.1.2"
+    ]
   },
   "ms-2.1.2": {
     "name": "ms",
@@ -256,25 +338,48 @@
     "version": "2.1.2",
     "repository": "zeit/ms",
     "commitHash": "7920885eb232fbe7a5efdab956d3e7c507c92ddf",
-    "files": ["index.js"]
+    "files": [
+      "index.js"
+    ]
   },
   "create-hash-1.2.0": {
     "name": "create-hash",
     "entrypoint": "browser",
     "version": "1.2.0",
-    "repository": "crypto-browserify/createHash",
+    "repository": "browserify/createHash",
     "commitHash": "469f2a62f4010d8df777b0009f05d504b6c4cd27",
-    "files": ["browser.js", "index.js", "md5.js"],
-    "deps": ["cipher-base-1.0.4", "inherits-2.0.4", "ripemd160-2.0.2", "sha.js-2.4.11", "md5.js-1.3.5"]
+    "files": [
+      "browser.js",
+      "index.js",
+      "md5.js"
+    ],
+    "deps": [
+      "cipher-base-1.0.5",
+      "inherits-2.0.4",
+      "ripemd160-2.0.2",
+      "sha.js-2.4.12",
+      "md5.js-1.3.5"
+    ]
   },
-  "cipher-base-1.0.4": {
+  "cipher-base-1.0.5": {
     "name": "cipher-base",
     "entrypoint": "index",
-    "version": "1.0.4",
-    "repository": "crypto-browserify/cipher-base",
-    "commitHash": "bc18dc847050c34f11f7a0472ff13a76b53fedc6",
-    "files": ["index.js"],
-    "deps": ["safe-buffer-5.2.0", "inherits-2.0.4"]
+    "version": "1.0.5",
+    "repository": "browserify/cipher-base",
+    "commitHash": "f03cebfdad1cba1d56614c58affa303b0fa2a43e",
+    "files": [
+      "index.js"
+    ],
+    "deps": [
+      "safe-buffer-5.2.0",
+      "inherits-2.0.4"
+    ],
+    "ignoredDeps": [
+      {
+        "module": "safe-buffer",
+        "reason": "declares ^5.2.1; the vendored 5.2.0 index.js is byte-identical to 5.2.1 (the release only changed typings)."
+      }
+    ]
   },
   "safe-buffer-5.2.0": {
     "name": "safe-buffer",
@@ -282,8 +387,12 @@
     "version": "5.2.0",
     "repository": "feross/safe-buffer",
     "commitHash": "ae53d5b9f06eae8540ca948d14e43ca32692dd8c",
-    "files": ["index.js"],
-    "TODO": ["index.d.ts"]
+    "files": [
+      "index.js"
+    ],
+    "TODO": [
+      "index.d.ts"
+    ]
   },
   "inherits-2.0.4": {
     "name": "inherits",
@@ -291,43 +400,127 @@
     "version": "2.0.4",
     "repository": "isaacs/inherits",
     "commitHash": "9a2c29400c6d491e0b7beefe0c32efa3b462545d",
-    "files": ["inherits.js", "inherits_browser.js"]
+    "files": [
+      "inherits.js",
+      "inherits_browser.js"
+    ]
   },
   "md5.js-1.3.5": {
     "name": "md5.js",
     "entrypoint": "index",
     "version": "1.3.5",
-    "repository": "crypto-browserify/md5.js",
+    "repository": "browserify/md5.js",
     "commitHash": "48df1d6b8c4af2cf52638092d590c528420c61ed",
-    "files": ["index.js"],
-    "deps": ["hash-base-3.0.4", "inherits-2.0.4", "safe-buffer-5.2.0"]
+    "files": [
+      "index.js"
+    ],
+    "deps": [
+      "hash-base-3.0.4",
+      "inherits-2.0.4",
+      "safe-buffer-5.2.0"
+    ]
   },
   "hash-base-3.0.4": {
     "name": "hash-base",
     "entrypoint": "index",
     "version": "3.0.4",
-    "repository": "crypto-browserify/hash-base",
+    "repository": "browserify/hash-base",
     "commitHash": "d36440ed0448a654734ae05464d55d34b189a17a",
-    "files": ["index.js"],
-    "deps": ["inherits-2.0.4", "safe-buffer-5.2.0"]
+    "files": [
+      "index.js"
+    ],
+    "deps": [
+      "inherits-2.0.4",
+      "safe-buffer-5.2.0"
+    ]
   },
   "ripemd160-2.0.2": {
     "name": "ripemd160",
     "entrypoint": "index",
     "version": "2.0.2",
-    "repository": "crypto-browserify/ripemd160",
+    "repository": "browserify/ripemd160",
     "commitHash": "3419c6409799d37e0323a556c94d040154657d9d",
-    "files": ["index.js"],
-    "deps": ["hash-base-3.0.4", "inherits-2.0.4"]
+    "files": [
+      "index.js"
+    ],
+    "deps": [
+      "hash-base-3.0.4",
+      "inherits-2.0.4"
+    ]
   },
-  "sha.js-2.4.11": {
+  "sha.js-2.4.12": {
     "name": "sha.js",
     "entrypoint": "index",
-    "version": "2.4.11",
-    "repository": "crypto-browserify/sha.js",
-    "commitHash": "105bfe57c69e13c83fcf7a6ca660dd984cb291bf",
-    "files": ["index.js", "hash.js", "sha.js", "sha1.js", "sha224.js", "sha256.js", "sha384.js", "sha512.js"],
-    "deps": ["inherits-2.0.4", "safe-buffer-5.2.0"]
+    "version": "2.4.12",
+    "repository": "browserify/sha.js",
+    "commitHash": "eb4ea2fd3da93d41e250f9ac8a1a133ce450e0a2",
+    "files": [
+      "index.js",
+      "hash.js",
+      "sha.js",
+      "sha1.js",
+      "sha224.js",
+      "sha256.js",
+      "sha384.js",
+      "sha512.js"
+    ],
+    "deps": [
+      "inherits-2.0.4",
+      "safe-buffer-5.2.0",
+      "to-buffer-1.2.2"
+    ],
+    "ignoredDeps": [
+      {
+        "module": "safe-buffer",
+        "reason": "declares ^5.2.1; the vendored 5.2.0 index.js is byte-identical to 5.2.1 (the release only changed typings)."
+      }
+    ]
+  },
+  "to-buffer-1.2.2": {
+    "name": "to-buffer",
+    "entrypoint": "index",
+    "version": "1.2.2",
+    "repository": "browserify/to-buffer",
+    "commitHash": "47c574df5d2f45acbc762ce2eaa760b1263a3ae9",
+    "files": [
+      "index.js"
+    ],
+    "deps": [
+      "isarray-2.0.5",
+      "safe-buffer-5.2.0"
+    ],
+    "ignoredDeps": [
+      {
+        "module": "typed-array-buffer",
+        "reason": "Only reached through the ArrayBuffer.isView fallback, which no supported runtime takes; replaced by an inline stand-in (see replaceInFiles) rather than vendoring its ~15 es-abstract transitive helpers."
+      },
+      {
+        "module": "safe-buffer",
+        "reason": "declares ^5.2.1; the vendored 5.2.0 index.js is byte-identical to 5.2.1 (the release only changed typings)."
+      }
+    ],
+    "replaceInFiles": [
+      {
+        "filename": "index.js",
+        "replacements": [
+          {
+            "from": "var typedArrayBuffer = require('typed-array-buffer');",
+            "to": "// Vendoring note: `typed-array-buffer` is only consulted when `ArrayBuffer.isView` is missing, which\n// no supported runtime is. This stand-in keeps the module loadable without vendoring that package and\n// its es-abstract dependency chain; behaviour on every supported engine is unchanged.\nvar typedArrayBuffer = function typedArrayBuffer(x) {\n\tif (!x || typeof x.byteLength !== 'number' || !(x.buffer instanceof ArrayBuffer)) {\n\t\tthrow new TypeError('Not a Typed Array or DataView');\n\t}\n\treturn x.buffer;\n};",
+            "expectedReplacements": 1
+          }
+        ]
+      }
+    ]
+  },
+  "isarray-2.0.5": {
+    "name": "isarray",
+    "entrypoint": "index",
+    "version": "2.0.5",
+    "repository": "juliangruber/isarray",
+    "commitHash": "63ea4ca0a0d6b0574d6a470ebd26880c3026db4a",
+    "files": [
+      "index.js"
+    ]
   },
   "bip39-2.5.0": {
     "name": "bip39",
@@ -346,14 +539,20 @@
       "wordlists/chinese_traditional.json",
       "wordlists/chinese_simplified.json"
     ],
-    "deps": ["safe-buffer-5.2.0", "create-hash-1.2.0", "unorm-1.6.0", "pbkdf2-3.0.17", "randombytes-2.1.0"]
+    "deps": [
+      "safe-buffer-5.2.0",
+      "create-hash-1.2.0",
+      "unorm-1.6.0",
+      "pbkdf2-3.1.3",
+      "randombytes-2.1.0"
+    ]
   },
-  "pbkdf2-3.0.17": {
+  "pbkdf2-3.1.3": {
     "name": "pbkdf2",
     "entrypoint": "index",
-    "version": "3.0.17",
-    "repository": "crypto-browserify/pbkdf2",
-    "commitHash": "dadbcb741111f0ed165951d53028f2358e0e0a1c",
+    "version": "3.1.3",
+    "repository": "browserify/pbkdf2",
+    "commitHash": "3e40827b183f7f5a14946bdb7d57de3d1d8dd581",
     "files": [
       "index.js",
       "browser.js",
@@ -363,18 +562,43 @@
       "lib/default-encoding.js",
       "lib/precondition.js",
       "lib/sync-browser.js",
-      "lib/sync.js"
+      "lib/sync.js",
+      "lib/to-buffer.js"
     ],
-    "deps": ["create-hash-1.2.0", "create-hmac-1.1.4", "ripemd160-2.0.2", "safe-buffer-5.2.0", "sha.js-2.4.11"],
+    "deps": [
+      "create-hash-1.2.0",
+      "create-hmac-1.1.7",
+      "ripemd160-2.0.2",
+      "safe-buffer-5.2.0",
+      "sha.js-2.4.12",
+      "to-buffer-1.2.2"
+    ],
+    "ignoredDeps": [
+      {
+        "module": "create-hash",
+        "reason": "declares ~1.1.3; the vendored 1.2.0 has the same API (only browser.js / md5 subpath additions) and is what every other vendored caller uses."
+      },
+      {
+        "module": "ripemd160",
+        "reason": "declares =2.0.1; the vendored 2.0.2 differs only in its hash-base dependency range."
+      },
+      {
+        "module": "safe-buffer",
+        "reason": "declares ^5.2.1; the vendored 5.2.0 index.js is byte-identical to 5.2.1 (the release only changed typings)."
+      }
+    ],
     "TODO": "Check if we need to use browser version"
   },
   "create-hmac-1.1.4": {
     "name": "create-hmac",
     "entrypoint": "browser",
     "version": "1.1.4",
-    "repository": "crypto-browserify/createHmac",
+    "repository": "browserify/createHmac",
     "commitHash": "3c7dd3047b5ab3e3be44d802241d224f0c9e2325",
-    "files": ["browser.js", "index.js"],
+    "files": [
+      "browser.js",
+      "index.js"
+    ],
     "replaceInFiles": [
       {
         "filename": "browser.js",
@@ -387,16 +611,29 @@
         ]
       }
     ],
-    "deps": ["create-hash-1.2.0", "inherits-2.0.4"]
+    "deps": [
+      "create-hash-1.2.0",
+      "inherits-2.0.4"
+    ]
   },
   "create-hmac-1.1.7": {
     "name": "create-hmac",
     "entrypoint": "browser",
     "version": "1.1.7",
-    "repository": "crypto-browserify/createHmac",
+    "repository": "browserify/createHmac",
     "commitHash": "f6e01bb8151fb53bfdccc3a6037c68e0b07127e5",
-    "files": ["browser.js", "legacy.js"],
-    "deps": ["cipher-base-1.0.4", "create-hash-1.2.0", "inherits-2.0.4", "ripemd160-2.0.2", "safe-buffer-5.2.0", "sha.js-2.4.11"],
+    "files": [
+      "browser.js",
+      "legacy.js"
+    ],
+    "deps": [
+      "cipher-base-1.0.5",
+      "create-hash-1.2.0",
+      "inherits-2.0.4",
+      "ripemd160-2.0.2",
+      "safe-buffer-5.2.0",
+      "sha.js-2.4.12"
+    ],
     "replaceInFiles": [
       {
         "filename": "browser.js",
@@ -414,10 +651,15 @@
     "name": "randombytes",
     "entrypoint": "browser",
     "version": "2.1.0",
-    "repository": "crypto-browserify/randombytes",
+    "repository": "browserify/randombytes",
     "commitHash": "f18ded32b209f0d4c637608a11ae042ae96b4c2e",
-    "files": ["index.js", "browser.js"],
-    "deps": ["safe-buffer-5.2.0"]
+    "files": [
+      "index.js",
+      "browser.js"
+    ],
+    "deps": [
+      "safe-buffer-5.2.0"
+    ]
   },
   "rlp-2.2.3": {
     "name": "rlp",
@@ -425,9 +667,16 @@
     "version": "2.2.3",
     "repository": "ethereumjs/rlp",
     "commitHash": "296857a1c1c20a93e1377d221dba0c782d7b65a4",
-    "files": ["index.js"],
-    "deps": ["safe-buffer-5.2.0", "bn.js-4.11.9"],
-    "TODO": ["index.d.ts"]
+    "files": [
+      "index.js"
+    ],
+    "deps": [
+      "safe-buffer-5.2.0",
+      "bn.js-4.11.9"
+    ],
+    "TODO": [
+      "index.d.ts"
+    ]
   },
   "utf8-3.0.0": {
     "name": "utf8",
@@ -435,7 +684,9 @@
     "version": "3.0.0",
     "repository": "mathiasbynens/utf8.js",
     "commitHash": "2ce09544b62f2a274dbcd249473c0986e3660849",
-    "files": ["utf8.js"]
+    "files": [
+      "utf8.js"
+    ]
   },
   "unorm-1.6.0": {
     "name": "unorm",
@@ -443,7 +694,9 @@
     "version": "1.6.0",
     "repository": "walling/unorm",
     "commitHash": "26c36c3ce6cd66d3c5bf7867736cb1f2b49fe6b1",
-    "files": ["lib/unorm.js"]
+    "files": [
+      "lib/unorm.js"
+    ]
   },
   "bn.js-4.11.9": {
     "name": "bn.js",
@@ -451,7 +704,9 @@
     "version": "4.11.9",
     "repository": "indutny/bn.js",
     "commitHash": "a8d027601c09793c459fba2aacffd4731c2d8147",
-    "files": ["lib/bn.js"]
+    "files": [
+      "lib/bn.js"
+    ]
   },
   "ethereumjs-tx-1.3.7": {
     "name": "ethereumjs-tx",
@@ -459,8 +714,13 @@
     "version": "1.3.7",
     "repository": "ethereumjs/ethereumjs-tx",
     "commitHash": "e3fc21467ecb997090f63f154b1407094f173bf2",
-    "files": ["index.js"],
-    "deps": ["ethereum-common-0.2.1", "ethereumjs-util-5.2.0"],
+    "files": [
+      "index.js"
+    ],
+    "deps": [
+      "ethereum-common-0.2.1",
+      "ethereumjs-util-5.2.0"
+    ],
     "replaceInFiles": [
       {
         "filename": "index.js",
@@ -481,8 +741,18 @@
     "version": "5.2.0",
     "repository": "ethereumjs/ethereumjs-util",
     "commitHash": "7e3be1d97b4e11fbc4924836b8c444e644f643ac",
-    "files": ["index.js"],
-    "deps": ["bn.js-4.11.9", "create-hash-1.2.0", "ethjs-util-0.1.4", "keccak-1.0.2", "rlp-2.2.3", "safe-buffer-5.2.0", "secp256k1-3.7.1"]
+    "files": [
+      "index.js"
+    ],
+    "deps": [
+      "bn.js-4.11.9",
+      "create-hash-1.2.0",
+      "ethjs-util-0.1.4",
+      "keccak-1.0.2",
+      "rlp-2.2.3",
+      "safe-buffer-5.2.0",
+      "secp256k1-3.7.1"
+    ]
   },
   "ethjs-util-0.1.4": {
     "name": "ethjs-util",
@@ -490,8 +760,13 @@
     "version": "0.1.4",
     "repository": "ethjs/ethjs-util",
     "commitHash": "e9aede668177b6d1ea62d741ba1c19402bc337b3",
-    "files": ["src/index.js"],
-    "deps": ["is-hex-prefixed-1.0.0", "strip-hex-prefix-1.0.0"],
+    "files": [
+      "src/index.js"
+    ],
+    "deps": [
+      "is-hex-prefixed-1.0.0",
+      "strip-hex-prefix-1.0.0"
+    ],
     "TODO": "Check if we need dist files."
   },
   "is-hex-prefixed-1.0.0": {
@@ -500,7 +775,9 @@
     "version": "1.0.0",
     "repository": "SilentCicero/is-hex-prefixed",
     "commitHash": "2a5a31481e3f8f7cd3217f50c7950b5de589eaba",
-    "files": ["src/index.js"]
+    "files": [
+      "src/index.js"
+    ]
   },
   "strip-hex-prefix-1.0.0": {
     "name": "strip-hex-prefix",
@@ -508,8 +785,12 @@
     "version": "1.0.0",
     "repository": "SilentCicero/strip-hex-prefix",
     "commitHash": "94058ad57053b4be0c7946b1abcbef0ae6c34cc8",
-    "files": ["src/index.js"],
-    "deps": ["is-hex-prefixed-1.0.0"]
+    "files": [
+      "src/index.js"
+    ],
+    "deps": [
+      "is-hex-prefixed-1.0.0"
+    ]
   },
   "keccak-1.0.2": {
     "name": "keccak",
@@ -517,8 +798,17 @@
     "version": "1.0.2",
     "repository": "cryptocoinjs/keccak",
     "commitHash": "e94fbe0af3879d0d9bca5435f35832dcb93137a6",
-    "files": ["js.js", "lib/keccak.js", "lib/keccak-state.js", "lib/api/index.js", "lib/api/keccak.js", "lib/api/shake.js"],
-    "deps": ["inherits-2.0.4"],
+    "files": [
+      "js.js",
+      "lib/keccak.js",
+      "lib/keccak-state.js",
+      "lib/api/index.js",
+      "lib/api/keccak.js",
+      "lib/api/shake.js"
+    ],
+    "deps": [
+      "inherits-2.0.4"
+    ],
     "ignoredDeps": [
       {
         "module": "bindings",
@@ -540,7 +830,10 @@
     "version": "1.6.45",
     "repository": "peterolson/BigInteger.js",
     "commitHash": "4e99b15b7951338f164728377c906caae5a78202",
-    "files": ["BigInteger.js", "BigInteger.d.ts"]
+    "files": [
+      "BigInteger.js",
+      "BigInteger.d.ts"
+    ]
   },
   "bs58check-2.1.2": {
     "name": "bs58check",
@@ -548,8 +841,15 @@
     "version": "2.1.2",
     "repository": "bitcoinjs/bs58check",
     "commitHash": "7dd2b95a5c44e9b574f224268254a7bbecfac2ed",
-    "files": ["index.js", "base.js"],
-    "deps": ["bs58-4.0.1", "create-hash-1.2.0", "safe-buffer-5.2.0"]
+    "files": [
+      "index.js",
+      "base.js"
+    ],
+    "deps": [
+      "bs58-4.0.1",
+      "create-hash-1.2.0",
+      "safe-buffer-5.2.0"
+    ]
   },
   "bs58-4.0.1": {
     "name": "bs58",
@@ -557,137 +857,32 @@
     "version": "4.0.1",
     "repository": "cryptocoinjs/bs58",
     "commitHash": "a1d5dadc1e3544c6852648776179629f96efd1d6",
-    "files": ["index.js"],
-    "deps": ["base-x-3.0.7", "create-hash-1.2.0"]
-  },
-  "base-x-3.0.7": {
-    "name": "base-x",
-    "entrypoint": "src/index",
-    "version": "3.0.7",
-    "repository": "cryptocoinjs/base-x",
-    "commitHash": "9a8183101079fdb0f70ee70079992ec72a830d05",
-    "files": ["src/index.js", "src/index.d.ts"],
-    "deps": ["safe-buffer-5.2.0"]
-  },
-  "bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac": {
-    "name": "bitgo-utxo-lib",
-    "entrypoint": "src/index",
-    "version": "5d91049fd7a988382df81c8260e244ee56d57aac",
-    "repository": "Groestlcoin/bitgo-utxo-lib",
-    "commitHash": "5d91049fd7a988382df81c8260e244ee56d57aac",
     "files": [
-      "src/address.js",
-      "src/block.js",
-      "src/bufferWriter.js",
-      "src/bufferutils.js",
-      "src/coins.js",
-      "src/crypto.js",
-      "src/ecdsa.js",
-      "src/ecpair.js",
-      "src/ecsignature.js",
-      "src/fastcurve.js",
-      "src/hdnode.js",
-      "src/index.js",
-      "src/networks.js",
-      "src/script.js",
-      "src/script_number.js",
-      "src/transaction.js",
-      "src/transaction_builder.js",
-      "src/types.js",
-      "src/templates/multisig/index.js",
-      "src/templates/multisig/input.js",
-      "src/templates/multisig/output.js",
-      "src/templates/pubkey/index.js",
-      "src/templates/pubkey/input.js",
-      "src/templates/pubkey/output.js",
-      "src/templates/pubkeyhash/index.js",
-      "src/templates/pubkeyhash/input.js",
-      "src/templates/pubkeyhash/output.js",
-      "src/templates/scripthash/index.js",
-      "src/templates/scripthash/input.js",
-      "src/templates/scripthash/output.js",
-      "src/templates/witnesscommitment/index.js",
-      "src/templates/witnesscommitment/output.js",
-      "src/templates/witnesspubkeyhash/index.js",
-      "src/templates/witnesspubkeyhash/input.js",
-      "src/templates/witnesspubkeyhash/output.js",
-      "src/templates/witnessscripthash/index.js",
-      "src/templates/witnessscripthash/input.js",
-      "src/templates/witnessscripthash/output.js",
-      "src/templates/index.js",
-      "src/templates/nulldata.js"
+      "index.js"
     ],
     "deps": [
-      "bech32-0.0.3",
-      "bigi-1.4.2",
-      "bip66-1.1.5",
-      "bitcoin-ops-1.4.1",
-      "blake2b-6268e6dd678661e0acc4359e9171b97eb1ebf8ac",
-      "bs58check-2.1.2",
-      "create-hash-1.2.0",
-      "create-hmac-1.1.4",
-      "debug-3.1.0",
-      "ecurve-1.0.6",
-      "merkle-lib-2.0.10",
-      "pushdata-bitcoin-1.0.1",
-      "randombytes-2.1.0",
-      "safe-buffer-5.2.0",
-      "typeforce-1.18.0",
-      "varuint-bitcoin-1.1.2",
-      "wif-2.0.6",
-      "groestl-hash-js-ef6a04f1c4d2f0448f0882b5f213ef7a0659baee",
-      "secp256k1-3.7.1"
-    ],
-    "replaceInFiles": [
-      {
-        "filename": "src/script.js",
-        "replacements": [
-          {
-            "from": "var REVERSE_OPS = require('bitcoin-ops/map')",
-            "to": "var REVERSE_OPS = require('../../bitcoin-ops-1.4.1/map')",
-            "expectedReplacements": 1
-          }
-        ]
-      },
-      {
-        "filename": "src/block.js",
-        "replacements": [
-          {
-            "from": "var fastMerkleRoot = require('merkle-lib/fastRoot')",
-            "to": "var fastMerkleRoot = require('../../merkle-lib-2.0.10/fastRoot')",
-            "expectedReplacements": 1
-          }
-        ]
-      },
-      {
-        "filename": "src/address.js",
-        "replacements": [
-          {
-            "from": "var bs58checkBase = require('bs58check/base')",
-            "to": "var bs58checkBase = require('../../bs58check-2.1.2/base')",
-            "expectedReplacements": 1
-          }
-        ]
-      },
-      {
-        "filename": "src/hdnode.js",
-        "replacements": [
-          {
-            "from": "var bs58checkBase = require('bs58check/base')",
-            "to": "var bs58checkBase = require('../../bs58check-2.1.2/base')",
-            "expectedReplacements": 1
-          }
-        ]
-      }
+      "base-x-3.0.11",
+      "create-hash-1.2.0"
     ]
   },
-  "bech32-0.0.3": {
-    "name": "bech32",
-    "entrypoint": "index",
-    "version": "0.0.3",
-    "repository": "bitcoinjs/bech32",
-    "commitHash": "b3bc5d82896c45d046b74ae18ee13681f4212462",
-    "files": ["index.js"]
+  "base-x-3.0.11": {
+    "name": "base-x",
+    "entrypoint": "src/index",
+    "version": "3.0.11",
+    "repository": "cryptocoinjs/base-x",
+    "commitHash": "043a888a9bae09bc4b40500e37792e2c6398e9f2",
+    "files": [
+      "ts_src/index.ts"
+    ],
+    "renameFiles": [
+      [
+        "ts_src/index.ts",
+        "src/index.ts"
+      ]
+    ],
+    "deps": [
+      "safe-buffer-5.2.0"
+    ]
   },
   "bech32-1.1.3": {
     "name": "bech32",
@@ -695,15 +890,9 @@
     "version": "1.1.3",
     "repository": "bitcoinjs/bech32",
     "commitHash": "b91129de18826dc17b82ba11c6762b4627fc3d1c",
-    "files": ["index.js"]
-  },
-  "bigi-1.4.2": {
-    "name": "bigi",
-    "entrypoint": "lib/index",
-    "version": "1.4.2",
-    "repository": "cryptocoinjs/bigi",
-    "commitHash": "c25308081c896ff84702303722bf5ecd8b3f78e3",
-    "files": ["lib/bigi.js", "lib/convert.js", "lib/index.js", "package.json"]
+    "files": [
+      "index.js"
+    ]
   },
   "bip66-1.1.5": {
     "name": "bip66",
@@ -711,68 +900,12 @@
     "version": "1.1.5",
     "repository": "bitcoinjs/bip66",
     "commitHash": "9d71107e16878d87605dd2460342119d36d72fb4",
-    "files": ["index.js"],
-    "deps": ["safe-buffer-5.2.0"]
-  },
-  "bitcoin-ops-1.4.1": {
-    "name": "bitcoin-ops",
-    "entrypoint": "index.json",
-    "version": "1.4.1",
-    "repository": "bitcoinjs/bitcoin-ops",
-    "commitHash": "44829aa0450a65c6afd40c62d00a347ae739b9f4",
-    "files": ["index.json", "map.js"]
-  },
-  "blake2b-6268e6dd678661e0acc4359e9171b97eb1ebf8ac": {
-    "name": "blake2b",
-    "entrypoint": "index",
-    "version": "6268e6dd678661e0acc4359e9171b97eb1ebf8ac",
-    "repository": "BitGo/blake2b",
-    "commitHash": "6268e6dd678661e0acc4359e9171b97eb1ebf8ac",
-    "files": ["index.js"],
-    "deps": ["blake2b-wasm-193cdb71656c1a6c7f89b05d0327bb9b758d071b", "nanoassert-1.1.0"]
-  },
-  "blake2b-wasm-193cdb71656c1a6c7f89b05d0327bb9b758d071b": {
-    "name": "blake2b-wasm",
-    "entrypoint": "index",
-    "version": "193cdb71656c1a6c7f89b05d0327bb9b758d071b",
-    "repository": "BitGo/blake2b-wasm",
-    "commitHash": "193cdb71656c1a6c7f89b05d0327bb9b758d071b",
-    "files": ["index.js", "blake2b.js"],
-    "deps": ["nanoassert-1.1.0"]
-  },
-  "nanoassert-1.1.0": {
-    "name": "nanoassert",
-    "entrypoint": "index",
-    "version": "1.1.0",
-    "repository": "emilbayes/nanoassert",
-    "commitHash": "c2e2231aa88fb872f1fbd72fba50cadfe6b97431",
-    "files": ["index.js"]
-  },
-  "ecurve-1.0.6": {
-    "name": "ecurve",
-    "entrypoint": "lib/index",
-    "version": "1.0.6",
-    "repository": "cryptocoinjs/ecurve",
-    "commitHash": "14d72f5f468d53ff33dc13c1c7af350a41d52aab",
-    "files": ["lib/curve.js", "lib/curves.json", "lib/index.js", "lib/names.js", "lib/point.js"],
-    "deps": ["bigi-1.4.2", "safe-buffer-5.2.0"]
-  },
-  "merkle-lib-2.0.10": {
-    "name": "merkle-lib",
-    "entrypoint": "index",
-    "version": "2.0.10",
-    "repository": "bitcoinjs/merkle-lib",
-    "commitHash": "3d2205c0130c664bb19f6aa39fecf6d92e9bd8a8",
-    "files": ["index.js", "fastRoot.js"]
-  },
-  "pushdata-bitcoin-1.0.1": {
-    "name": "pushdata-bitcoin",
-    "entrypoint": "index",
-    "version": "1.0.1",
-    "repository": "bitcoinjs/pushdata-bitcoin",
-    "commitHash": "bfdfcc5f9a57e8728c5d86420bd040d3b1d1689e",
-    "files": ["index.js"],
-    "deps": ["bitcoin-ops-1.4.1"]
+    "files": [
+      "index.js"
+    ],
+    "deps": [
+      "safe-buffer-5.2.0"
+    ]
   },
   "typeforce-1.18.0": {
     "name": "typeforce",
@@ -780,7 +913,12 @@
     "version": "1.18.0",
     "repository": "dcousens/typeforce",
     "commitHash": "29ff3061ba372b0f4eeeda47d5013f13545ea01e",
-    "files": ["errors.js", "extra.js", "index.js", "native.js"]
+    "files": [
+      "errors.js",
+      "extra.js",
+      "index.js",
+      "native.js"
+    ]
   },
   "varuint-bitcoin-1.1.2": {
     "name": "varuint-bitcoin",
@@ -788,8 +926,13 @@
     "version": "1.1.2",
     "repository": "bitcoinjs/varuint-bitcoin",
     "commitHash": "a05cb2cd32be43f6cab477704d60574066e3bb48",
-    "files": ["index.js", "index.d.ts"],
-    "deps": ["safe-buffer-5.2.0"]
+    "files": [
+      "index.js",
+      "index.d.ts"
+    ],
+    "deps": [
+      "safe-buffer-5.2.0"
+    ]
   },
   "wif-2.0.6": {
     "name": "wif",
@@ -797,8 +940,12 @@
     "version": "2.0.6",
     "repository": "bitcoinjs/wif",
     "commitHash": "0330fcaf4d4733a0669ddb7147be9808922cbb3a",
-    "files": ["index.js"],
-    "deps": ["bs58check-2.1.2"]
+    "files": [
+      "index.js"
+    ],
+    "deps": [
+      "bs58check-2.1.2"
+    ]
   },
   "groestl-hash-js-ef6a04f1c4d2f0448f0882b5f213ef7a0659baee": {
     "name": "groestl-hash-js",
@@ -806,8 +953,16 @@
     "version": "ef6a04f1c4d2f0448f0882b5f213ef7a0659baee",
     "repository": "Groestlcoin/groestl-hash-js",
     "commitHash": "ef6a04f1c4d2f0448f0882b5f213ef7a0659baee",
-    "files": ["index.js", "lib/groestl.js", "lib/helper.js", "lib/op.js"],
-    "deps": ["bs58check-2.1.2"],
+    "scanAsVersion": "1.0.0",
+    "files": [
+      "index.js",
+      "lib/groestl.js",
+      "lib/helper.js",
+      "lib/op.js"
+    ],
+    "deps": [
+      "bs58check-2.1.2"
+    ],
     "replaceInFiles": [
       {
         "filename": "lib/groestl.js",
@@ -827,7 +982,12 @@
     "version": "0.2.1",
     "repository": "ethereumjs/common",
     "commitHash": "f1f0a99f6818ab07b6e7704d4defc1b067619552",
-    "files": ["index.js", "params.json", "genesisState.json", "bootstrapNodes.json"]
+    "files": [
+      "index.js",
+      "params.json",
+      "genesisState.json",
+      "bootstrapNodes.json"
+    ]
   },
   "secp256k1-3.7.1": {
     "name": "secp256k1",
@@ -835,8 +995,23 @@
     "version": "3.7.1",
     "repository": "cryptocoinjs/secp256k1-node",
     "commitHash": "2f1c956d71c39e5667e6285a6dafc15ce28e86f0",
-    "files": ["elliptic.js", "lib/index.js", "lib/assert.js", "lib/der.js", "lib/messages.json", "lib/elliptic/index.js"],
-    "deps": ["bip66-1.1.5", "bn.js-4.11.9", "create-hash-1.2.0", "drbg.js-1.0.1", "elliptic-6.6.1", "nan-2.14.0", "safe-buffer-5.2.0"],
+    "files": [
+      "elliptic.js",
+      "lib/index.js",
+      "lib/assert.js",
+      "lib/der.js",
+      "lib/messages.json",
+      "lib/elliptic/index.js"
+    ],
+    "deps": [
+      "bip66-1.1.5",
+      "bn.js-4.11.9",
+      "create-hash-1.2.0",
+      "drbg.js-1.0.1",
+      "elliptic-6.6.1",
+      "nan-2.14.0",
+      "safe-buffer-5.2.0"
+    ],
     "ignoredDeps": [
       {
         "module": "bindings",
@@ -850,8 +1025,17 @@
     "version": "1.0.1",
     "repository": "cryptocoinjs/drbg.js",
     "commitHash": "4dc077f2c87bccaf0092f949d6c8cbfdc33e658d",
-    "files": ["index.js", "hash.js", "hmac.js", "lib/hash-info.json", "lib/util.js"],
-    "deps": ["create-hash-1.2.0", "create-hmac-1.1.4"],
+    "files": [
+      "index.js",
+      "hash.js",
+      "hmac.js",
+      "lib/hash-info.json",
+      "lib/util.js"
+    ],
+    "deps": [
+      "create-hash-1.2.0",
+      "create-hmac-1.1.4"
+    ],
     "ignoredDeps": [
       {
         "module": "browserify-aes",
@@ -900,6 +1084,12 @@
             "from": "\"files\": [\n        \"lib\"\n    ],\n",
             "to": "",
             "expectedReplacements": 1
+          },
+          {
+            "from": "    \"name\": \"elliptic\",\n",
+            "to": "",
+            "expectedReplacements": 1,
+            "reason": "Angular CLI's DedupeModuleResolvePlugin merges modules whose package.json name@version matches another copy in node_modules; a nameless package.json keeps the vendored copy isolated (version is kept: some modules read it at runtime)"
           }
         ]
       }
@@ -911,7 +1101,9 @@
     "version": "1.1.0",
     "repository": "indutny/brorand",
     "commitHash": "ddc4f9344287769d7e2c2ea987d26bbeec5456b4",
-    "files": ["index.js"]
+    "files": [
+      "index.js"
+    ]
   },
   "hash.js-1.1.7": {
     "name": "hash.js",
@@ -933,7 +1125,10 @@
       "lib/hash/sha/512.js",
       "lib/hash/sha/common.js"
     ],
-    "deps": ["inherits-2.0.4", "minimalistic-assert-1.0.1"]
+    "deps": [
+      "inherits-2.0.4",
+      "minimalistic-assert-1.0.1"
+    ]
   },
   "minimalistic-assert-1.0.1": {
     "name": "minimalistic-assert",
@@ -941,7 +1136,9 @@
     "version": "1.0.1",
     "repository": "calvinmetcalf/minimalistic-assert",
     "commitHash": "33113391ad64bea7a3398074a71d0569d4ae038d",
-    "files": ["index.js"]
+    "files": [
+      "index.js"
+    ]
   },
   "hmac-drbg-1.0.1": {
     "name": "hmac-drbg",
@@ -949,8 +1146,14 @@
     "version": "1.0.1",
     "repository": "indutny/hmac-drbg",
     "commitHash": "2592375270a7a689d3752a6ba7235a47eb234d15",
-    "files": ["lib/hmac-drbg.js"],
-    "deps": ["hash.js-1.1.7", "minimalistic-assert-1.0.1", "minimalistic-crypto-utils-1.0.1"]
+    "files": [
+      "lib/hmac-drbg.js"
+    ],
+    "deps": [
+      "hash.js-1.1.7",
+      "minimalistic-assert-1.0.1",
+      "minimalistic-crypto-utils-1.0.1"
+    ]
   },
   "minimalistic-crypto-utils-1.0.1": {
     "name": "minimalistic-crypto-utils",
@@ -958,7 +1161,9 @@
     "version": "1.0.1",
     "repository": "indutny/minimalistic-crypto-utils",
     "commitHash": "f4f2b13a3ac78d8ee6991994bae89ec93304d225",
-    "files": ["lib/utils.js"]
+    "files": [
+      "lib/utils.js"
+    ]
   },
   "nan-2.14.0": {
     "name": "nan",
@@ -966,7 +1171,9 @@
     "version": "2.14.0",
     "repository": "nodejs/nan",
     "commitHash": "1dcc61bd06d84e389bfd5311b2b1492a14c74201",
-    "files": ["include_dirs.js"]
+    "files": [
+      "include_dirs.js"
+    ]
   },
   "bip32-2.0.4": {
     "name": "bip32",
@@ -974,8 +1181,19 @@
     "version": "2.0.4",
     "repository": "bitcoinjs/bip32",
     "commitHash": "52bc5500bd13fe632bcea93cf602f8f80e057895",
-    "files": ["src/index.js", "src/bip32.js", "src/crypto.js"],
-    "deps": ["bs58check-2.1.2", "create-hash-1.2.0", "create-hmac-1.1.7", "tiny-secp256k1-1.1.3", "typeforce-1.18.0", "wif-2.0.6"],
+    "files": [
+      "src/index.js",
+      "src/bip32.js",
+      "src/crypto.js"
+    ],
+    "deps": [
+      "bs58check-2.1.2",
+      "create-hash-1.2.0",
+      "create-hmac-1.1.7",
+      "tiny-secp256k1-1.1.7",
+      "typeforce-1.18.0",
+      "wif-2.0.6"
+    ],
     "ignoredDeps": [
       {
         "module": "@types/node",
@@ -983,14 +1201,23 @@
       }
     ]
   },
-  "tiny-secp256k1-1.1.3": {
+  "tiny-secp256k1-1.1.7": {
     "name": "tiny-secp256k1",
     "entrypoint": "js",
-    "version": "1.1.3",
+    "version": "1.1.7",
     "repository": "bitcoinjs/tiny-secp256k1",
-    "commitHash": "86b15340a11bc5c42329078bd5f4e7fd92566036",
-    "files": ["js.js", "rfc6979.js"],
-    "deps": ["bn.js-4.11.9", "create-hmac-1.1.7", "elliptic-6.6.1", "wif-2.0.6", "nan-2.14.0"],
+    "commitHash": "fc53db79af6e2738661ea3dcaf3c4ecb8541a149",
+    "files": [
+      "js.js",
+      "rfc6979.js"
+    ],
+    "deps": [
+      "bn.js-4.11.9",
+      "create-hmac-1.1.7",
+      "elliptic-6.6.1",
+      "wif-2.0.6",
+      "nan-2.14.0"
+    ],
     "ignoredDeps": [
       {
         "module": "bindings",
@@ -1004,8 +1231,14 @@
     "version": "0.2.2",
     "repository": "pierrec/js-xxhash",
     "commitHash": "267dcd45215e9e33a157cc76e895b366e51185da",
-    "files": ["lib/index.js", "lib/xxhash.js", "lib/xxhash64.js"],
-    "deps": ["cuint-0.2.2"]
+    "files": [
+      "lib/index.js",
+      "lib/xxhash.js",
+      "lib/xxhash64.js"
+    ],
+    "deps": [
+      "cuint-0.2.2"
+    ]
   },
   "cuint-0.2.2": {
     "name": "cuint",
@@ -1013,25 +1246,48 @@
     "version": "0.2.2",
     "repository": "pierrec/js-cuint",
     "commitHash": "c0b4092dace55de831c1254bd8ae965cfcc281f9",
-    "files": ["index.js", "lib/uint32.js", "lib/uint64.js"]
+    "files": [
+      "index.js",
+      "lib/uint32.js",
+      "lib/uint64.js"
+    ]
   },
   "groestlcoinjs-message-2.1.0": {
     "name": "groestlcoinjs-message",
     "entrypoint": "index",
     "version": "2.1.0",
     "repository": "Groestlcoin/groestlcoinjs-message",
+    "forkOf": "bitcoinjs-message",
     "commitHash": "5f705d69370a29be3fa49ae3cdeaf4bcf758c41d",
-    "files": ["index.js"],
-    "deps": ["bech32-1.1.3", "bs58grscheck-2.1.2", "buffer-equals-1.0.4", "create-hash-1.2.0", "secp256k1-3.7.1", "varuint-bitcoin-1.1.2"]
+    "files": [
+      "index.js"
+    ],
+    "deps": [
+      "bech32-1.1.3",
+      "bs58grscheck-2.1.2",
+      "buffer-equals-1.0.4",
+      "create-hash-1.2.0",
+      "secp256k1-3.7.1",
+      "varuint-bitcoin-1.1.2"
+    ]
   },
   "bs58grscheck-2.1.2": {
     "name": "bs58grscheck",
     "entrypoint": "index",
     "version": "2.1.2",
     "repository": "Groestlcoin/bs58grscheck",
+    "forkOf": "bs58check",
     "commitHash": "8ff31333a7626161c1484b461c20710bb9f97b93",
-    "files": ["index.js", "base.js"],
-    "deps": ["bs58-4.0.1", "create-hash-1.2.0", "groestl-hash-js-ef6a04f1c4d2f0448f0882b5f213ef7a0659baee", "safe-buffer-5.2.0"]
+    "files": [
+      "index.js",
+      "base.js"
+    ],
+    "deps": [
+      "bs58-4.0.1",
+      "create-hash-1.2.0",
+      "groestl-hash-js-ef6a04f1c4d2f0448f0882b5f213ef7a0659baee",
+      "safe-buffer-5.2.0"
+    ]
   },
   "buffer-equals-1.0.4": {
     "name": "buffer-equals",
@@ -1039,7 +1295,9 @@
     "version": "1.0.4",
     "repository": "sindresorhus/buffer-equals",
     "commitHash": "b4d25112f5e4700eb5cf083b4dd76c3b04ae2c8d",
-    "files": ["index.js"]
+    "files": [
+      "index.js"
+    ]
   },
   "bitcoinjs-message-2.1.1": {
     "name": "bitcoinjs-message",
@@ -1047,8 +1305,17 @@
     "version": "2.1.1",
     "repository": "bitcoinjs/bitcoinjs-message",
     "commitHash": "6ea1734e7dc5df79e6f88586e62ffe9a1c5ea093",
-    "files": ["index.js"],
-    "deps": ["bech32-1.1.3", "bs58check-2.1.2", "buffer-equals-1.0.4", "create-hash-1.2.0", "secp256k1-3.7.1", "varuint-bitcoin-1.1.2"]
+    "files": [
+      "index.js"
+    ],
+    "deps": [
+      "bech32-1.1.3",
+      "bs58check-2.1.2",
+      "buffer-equals-1.0.4",
+      "create-hash-1.2.0",
+      "secp256k1-3.7.1",
+      "varuint-bitcoin-1.1.2"
+    ]
   },
   "@taquito/local-forging-15.0.1": {
     "name": "@taquito/local-forging",
@@ -1079,7 +1346,10 @@
       "packages/taquito-local-forging/src/michelson/codec.ts",
       "packages/taquito-local-forging/src/utils.ts"
     ],
-    "deps": ["@taquito/utils-15.0.1", "bignumber.js-9.0.0"],
+    "deps": [
+      "@taquito/utils-15.0.1",
+      "bignumber.js-9.0.0"
+    ],
     "replaceInFiles": [
       {
         "filename": "packages/taquito-local-forging/src/codec.ts",
@@ -1196,10 +1466,10 @@
     "deps": [
       "@stablelib/blake2b-1.0.1",
       "@stablelib/ed25519-1.0.3",
-      "blakejs-1.1.0", 
-      "bs58check-2.1.2", 
-      "buffer-5.6.0", 
-      "typedarray-to-buffer-4.0.0", 
+      "blakejs-1.1.0",
+      "bs58check-2.1.2",
+      "buffer-5.6.0",
+      "typedarray-to-buffer-4.0.0",
       "bignumber.js-9.0.0"
     ]
   },
@@ -1209,7 +1479,12 @@
     "version": "1.1.0",
     "repository": "dcposch/blakejs",
     "commitHash": "2e7a6bed9b4b1edff98c014275185fb116428fab",
-    "files": ["index.js", "blake2b.js", "blake2s.js", "util.js"]
+    "files": [
+      "index.js",
+      "blake2b.js",
+      "blake2s.js",
+      "util.js"
+    ]
   },
   "buffer-5.6.0": {
     "name": "buffer",
@@ -1217,8 +1492,14 @@
     "version": "5.6.0",
     "repository": "feross/buffer",
     "commitHash": "d7b15a178294ebc85368aac87b0831dc48d6fba8",
-    "files": ["index.js", "index.d.ts"],
-    "deps": ["base64-js-1.3.1", "ieee754-1.1.13"]
+    "files": [
+      "index.js",
+      "index.d.ts"
+    ],
+    "deps": [
+      "base64-js-1.3.1",
+      "ieee754-1.1.13"
+    ]
   },
   "base64-js-1.3.1": {
     "name": "base64-js",
@@ -1226,7 +1507,9 @@
     "version": "1.3.1",
     "repository": "beatgammit/base64-js",
     "commitHash": "3c7872b37c994e1d8ee91314b5975b0730692ff6",
-    "files": ["index.js"]
+    "files": [
+      "index.js"
+    ]
   },
   "ieee754-1.1.13": {
     "name": "ieee754",
@@ -1234,7 +1517,9 @@
     "version": "1.1.13",
     "repository": "feross/ieee754",
     "commitHash": "4971f0e802c2cbdfad7791bd223c53e37b4ebb85",
-    "files": ["index.js"]
+    "files": [
+      "index.js"
+    ]
   },
   "eciesjs-0.3.9": {
     "name": "eciesjs",
@@ -1242,8 +1527,17 @@
     "version": "0.3.9",
     "repository": "ecies/js",
     "commitHash": "4fe6c81c201b4e1e7414cf9c08440956d35a0677",
-    "files": ["src/index.ts", "src/utils.ts", "src/keys/PrivateKey.ts", "src/keys/PublicKey.ts", "src/keys/index.ts"],
-    "deps": ["futoin-hkdf-1.3.3", "secp256k1-4.0.2"],
+    "files": [
+      "src/index.ts",
+      "src/utils.ts",
+      "src/keys/PrivateKey.ts",
+      "src/keys/PublicKey.ts",
+      "src/keys/index.ts"
+    ],
+    "deps": [
+      "futoin-hkdf-1.3.3",
+      "secp256k1-4.0.2"
+    ],
     "ignoredDeps": [
       {
         "module": "@types/secp256k1",
@@ -1256,7 +1550,7 @@
         "replacements": [
           {
             "from": "import hkdf from \"futoin-hkdf\"",
-            "to": "import * as hkdf from \"futoin-hkdf\"",
+            "to": "import hkdf = require(\"futoin-hkdf\")",
             "expectedReplacements": 1
           },
           {
@@ -1271,7 +1565,7 @@
         "replacements": [
           {
             "from": "import hkdf from \"futoin-hkdf\"",
-            "to": "import * as hkdf from \"futoin-hkdf\"",
+            "to": "import hkdf = require(\"futoin-hkdf\")",
             "expectedReplacements": 1
           },
           {
@@ -1299,7 +1593,10 @@
     "version": "1.3.3",
     "repository": "futoin/util-js-hkdf",
     "commitHash": "8a6a62040dfb1485912d02c3081f7acf922dbe7d",
-    "files": ["hkdf.js", "hkdf.d.ts"]
+    "files": [
+      "hkdf.js",
+      "hkdf.d.ts"
+    ]
   },
   "secp256k1-4.0.2": {
     "name": "secp256k1",
@@ -1307,8 +1604,14 @@
     "version": "4.0.2",
     "repository": "cryptocoinjs/secp256k1-node",
     "commitHash": "024fbdad3fb64499e8db8b35246c2f0a36afa8c8",
-    "files": ["elliptic.js", "lib/index.js", "lib/elliptic.js"],
-    "deps": ["elliptic-6.6.1"],
+    "files": [
+      "elliptic.js",
+      "lib/index.js",
+      "lib/elliptic.js"
+    ],
+    "deps": [
+      "elliptic-6.6.1"
+    ],
     "ignoredDeps": [
       {
         "module": "node-addon-api",
@@ -1326,8 +1629,40 @@
     "version": "1.0.4",
     "repository": "PelionIoT/cbor-sync",
     "commitHash": "35fdf44ce469ec34b7985f8463c806876fdb8d31",
-    "files": ["main.js", "index.d.ts"],
-    "renameFiles": [["main.js", "index.js"]]
+    "files": [
+      "main.js",
+      "index.d.ts"
+    ],
+    "renameFiles": [
+      [
+        "main.js",
+        "index.js"
+      ]
+    ]
+  },
+  "simple-cbor-0.4.1": {
+    "name": "simple-cbor",
+    "entrypoint": "src/index",
+    "version": "0.4.1",
+    "repository": "hansl/simple-cbor",
+    "commitHash": "b89b54cab9b43283935d499a017305486d1d9cb2",
+    "files": [
+      "src/index.ts",
+      "src/serializer.ts",
+      "src/value.ts"
+    ],
+    "replaceInFiles": [
+      {
+        "filename": "src/value.ts",
+        "replacements": [
+          {
+            "from": "  const utf8 = [];",
+            "to": "  const utf8: number[] = []; // annotated: the repo's strictNullChecks infers never[] for an untyped [] literal",
+            "expectedReplacements": 1
+          }
+        ]
+      }
+    ]
   },
   "pako-2.0.3": {
     "name": "pako",
@@ -1360,8 +1695,14 @@
     "version": "3.4.0",
     "repository": "hexonet/idna-uts46",
     "commitHash": "f1892a8ae7e57472a73cee1038de3aa9bcaa1c93",
-    "files": ["index.d.ts", "uts46.js", "idna-map.js"],
-    "deps": ["punycode-2.1.1"]
+    "files": [
+      "index.d.ts",
+      "uts46.js",
+      "idna-map.js"
+    ],
+    "deps": [
+      "punycode-2.1.1"
+    ]
   },
   "punycode-2.1.1": {
     "name": "punycode",
@@ -1369,7 +1710,9 @@
     "version": "2.1.1",
     "repository": "bestiejs/punycode.js",
     "commitHash": "68df855dc42d1086ada161331b3074468e8d848d",
-    "files": ["punycode.js"]
+    "files": [
+      "punycode.js"
+    ]
   },
   "typedarray-to-buffer-4.0.0": {
     "name": "typedarray-to-buffer",
@@ -1377,7 +1720,9 @@
     "version": "4.0.0",
     "repository": "feross/typedarray-to-buffer",
     "commitHash": "5436613585dac060da849f39ff56b159a10b8ba1",
-    "files": ["index.js"]
+    "files": [
+      "index.js"
+    ]
   },
   "@stablelib/blake2b-1.0.1": {
     "name": "@stablelib/blake2b",
@@ -1385,8 +1730,14 @@
     "version": "1.0.1",
     "repository": "StableLib/stablelib",
     "commitHash": "a89a438fcbf855de6b2e9faa2630f03c3f3b3a54",
-    "files": ["packages/blake2b/blake2b.ts"],
-    "deps": ["@stablelib/hash-1.0.1", "@stablelib/binary-1.0.1", "@stablelib/wipe-1.0.1"]
+    "files": [
+      "packages/blake2b/blake2b.ts"
+    ],
+    "deps": [
+      "@stablelib/hash-1.0.1",
+      "@stablelib/binary-1.0.1",
+      "@stablelib/wipe-1.0.1"
+    ]
   },
   "@stablelib/ed25519-1.0.3": {
     "name": "@stablelib/ed25519",
@@ -1394,8 +1745,14 @@
     "version": "1.0.3",
     "repository": "StableLib/stablelib",
     "commitHash": "a89a438fcbf855de6b2e9faa2630f03c3f3b3a54",
-    "files": ["packages/ed25519/ed25519.ts"],
-    "deps": ["@stablelib/random-1.0.2", "@stablelib/sha512-1.0.1", "@stablelib/wipe-1.0.1"]
+    "files": [
+      "packages/ed25519/ed25519.ts"
+    ],
+    "deps": [
+      "@stablelib/random-1.0.2",
+      "@stablelib/sha512-1.0.1",
+      "@stablelib/wipe-1.0.1"
+    ]
   },
   "@stablelib/random-1.0.2": {
     "name": "@stablelib/random",
@@ -1410,7 +1767,10 @@
       "packages/random/source/browser.ts",
       "packages/random/source/node.ts"
     ],
-    "deps": ["@stablelib/binary-1.0.1", "@stablelib/wipe-1.0.1"]
+    "deps": [
+      "@stablelib/binary-1.0.1",
+      "@stablelib/wipe-1.0.1"
+    ]
   },
   "@stablelib/sha512-1.0.1": {
     "name": "@stablelib/sha512",
@@ -1418,8 +1778,14 @@
     "version": "1.0.1",
     "repository": "StableLib/stablelib",
     "commitHash": "a89a438fcbf855de6b2e9faa2630f03c3f3b3a54",
-    "files": ["packages/sha512/sha512.ts"],
-    "deps": ["@stablelib/hash-1.0.1", "@stablelib/binary-1.0.1", "@stablelib/wipe-1.0.1"]
+    "files": [
+      "packages/sha512/sha512.ts"
+    ],
+    "deps": [
+      "@stablelib/hash-1.0.1",
+      "@stablelib/binary-1.0.1",
+      "@stablelib/wipe-1.0.1"
+    ]
   },
   "@stablelib/wipe-1.0.1": {
     "name": "@stablelib/wipe",
@@ -1427,7 +1793,9 @@
     "version": "1.0.1",
     "repository": "StableLib/stablelib",
     "commitHash": "a89a438fcbf855de6b2e9faa2630f03c3f3b3a54",
-    "files": ["packages/wipe/wipe.ts"]
+    "files": [
+      "packages/wipe/wipe.ts"
+    ]
   },
   "@stablelib/hash-1.0.1": {
     "name": "@stablelib/hash",
@@ -1435,7 +1803,9 @@
     "version": "1.0.1",
     "repository": "StableLib/stablelib",
     "commitHash": "a89a438fcbf855de6b2e9faa2630f03c3f3b3a54",
-    "files": ["packages/hash/hash.ts"]
+    "files": [
+      "packages/hash/hash.ts"
+    ]
   },
   "@stablelib/binary-1.0.1": {
     "name": "@stablelib/binary",
@@ -1443,8 +1813,12 @@
     "version": "1.0.1",
     "repository": "StableLib/stablelib",
     "commitHash": "a89a438fcbf855de6b2e9faa2630f03c3f3b3a54",
-    "files": ["packages/binary/binary.ts"],
-    "deps": ["@stablelib/int-1.0.1"]
+    "files": [
+      "packages/binary/binary.ts"
+    ],
+    "deps": [
+      "@stablelib/int-1.0.1"
+    ]
   },
   "@stablelib/int-1.0.1": {
     "name": "@stablelib/int",
@@ -1452,6 +1826,2043 @@
     "version": "1.0.1",
     "repository": "StableLib/stablelib",
     "commitHash": "a89a438fcbf855de6b2e9faa2630f03c3f3b3a54",
-    "files": ["packages/int/int.ts"]
+    "files": [
+      "packages/int/int.ts"
+    ]
+  },
+  "@stablelib/constant-time-1.0.1": {
+    "name": "@stablelib/constant-time",
+    "entrypoint": "packages/constant-time/constant-time",
+    "version": "1.0.1",
+    "repository": "StableLib/stablelib",
+    "commitHash": "a89a438fcbf855de6b2e9faa2630f03c3f3b3a54",
+    "files": [
+      "packages/constant-time/constant-time.ts"
+    ]
+  },
+  "@stablelib/bytes-1.0.1": {
+    "name": "@stablelib/bytes",
+    "entrypoint": "packages/bytes/bytes",
+    "version": "1.0.1",
+    "repository": "StableLib/stablelib",
+    "commitHash": "a89a438fcbf855de6b2e9faa2630f03c3f3b3a54",
+    "files": [
+      "packages/bytes/bytes.ts"
+    ]
+  },
+  "@stablelib/utf8-1.0.1": {
+    "name": "@stablelib/utf8",
+    "entrypoint": "packages/utf8/utf8",
+    "version": "1.0.1",
+    "repository": "StableLib/stablelib",
+    "commitHash": "a89a438fcbf855de6b2e9faa2630f03c3f3b3a54",
+    "files": [
+      "packages/utf8/utf8.ts"
+    ]
+  },
+  "@stablelib/hmac-1.0.1": {
+    "name": "@stablelib/hmac",
+    "entrypoint": "packages/hmac/hmac",
+    "version": "1.0.1",
+    "repository": "StableLib/stablelib",
+    "commitHash": "a89a438fcbf855de6b2e9faa2630f03c3f3b3a54",
+    "files": [
+      "packages/hmac/hmac.ts"
+    ],
+    "deps": [
+      "@stablelib/constant-time-1.0.1",
+      "@stablelib/hash-1.0.1",
+      "@stablelib/wipe-1.0.1"
+    ]
+  },
+  "@stablelib/keyagreement-1.0.1": {
+    "name": "@stablelib/keyagreement",
+    "entrypoint": "packages/keyagreement/keyagreement",
+    "version": "1.0.1",
+    "repository": "StableLib/stablelib",
+    "commitHash": "a89a438fcbf855de6b2e9faa2630f03c3f3b3a54",
+    "files": [
+      "packages/keyagreement/keyagreement.ts",
+      "packages/keyagreement/concat.ts"
+    ],
+    "deps": [
+      "@stablelib/bytes-1.0.1"
+    ]
+  },
+  "@stablelib/x25519-1.0.3": {
+    "name": "@stablelib/x25519",
+    "entrypoint": "packages/x25519/x25519",
+    "version": "1.0.3",
+    "repository": "StableLib/stablelib",
+    "commitHash": "a89a438fcbf855de6b2e9faa2630f03c3f3b3a54",
+    "files": [
+      "packages/x25519/x25519.ts",
+      "packages/x25519/keyagreement.ts"
+    ],
+    "deps": [
+      "@stablelib/keyagreement-1.0.1",
+      "@stablelib/random-1.0.2",
+      "@stablelib/wipe-1.0.1"
+    ]
+  },
+  "@stablelib/salsa20-1.0.2": {
+    "name": "@stablelib/salsa20",
+    "entrypoint": "packages/salsa20/salsa20",
+    "version": "1.0.2",
+    "repository": "StableLib/stablelib",
+    "commitHash": "a89a438fcbf855de6b2e9faa2630f03c3f3b3a54",
+    "files": [
+      "packages/salsa20/salsa20.ts"
+    ],
+    "deps": [
+      "@stablelib/binary-1.0.1",
+      "@stablelib/constant-time-1.0.1",
+      "@stablelib/wipe-1.0.1"
+    ]
+  },
+  "@stablelib/xsalsa20-1.0.2": {
+    "name": "@stablelib/xsalsa20",
+    "entrypoint": "packages/xsalsa20/xsalsa20",
+    "version": "1.0.2",
+    "repository": "StableLib/stablelib",
+    "commitHash": "a89a438fcbf855de6b2e9faa2630f03c3f3b3a54",
+    "files": [
+      "packages/xsalsa20/xsalsa20.ts"
+    ],
+    "deps": [
+      "@stablelib/binary-1.0.1",
+      "@stablelib/salsa20-1.0.2",
+      "@stablelib/wipe-1.0.1"
+    ]
+  },
+  "@stablelib/poly1305-1.0.1": {
+    "name": "@stablelib/poly1305",
+    "entrypoint": "packages/poly1305/poly1305",
+    "version": "1.0.1",
+    "repository": "StableLib/stablelib",
+    "commitHash": "a89a438fcbf855de6b2e9faa2630f03c3f3b3a54",
+    "files": [
+      "packages/poly1305/poly1305.ts"
+    ],
+    "deps": [
+      "@stablelib/constant-time-1.0.1",
+      "@stablelib/wipe-1.0.1"
+    ]
+  },
+  "@stablelib/nacl-1.0.4": {
+    "name": "@stablelib/nacl",
+    "entrypoint": "packages/nacl/nacl",
+    "version": "1.0.4",
+    "repository": "StableLib/stablelib",
+    "commitHash": "a89a438fcbf855de6b2e9faa2630f03c3f3b3a54",
+    "files": [
+      "packages/nacl/nacl.ts",
+      "packages/nacl/box.ts",
+      "packages/nacl/secretbox.ts"
+    ],
+    "deps": [
+      "@stablelib/poly1305-1.0.1",
+      "@stablelib/random-1.0.2",
+      "@stablelib/wipe-1.0.1",
+      "@stablelib/x25519-1.0.3",
+      "@stablelib/xsalsa20-1.0.2"
+    ]
+  },
+  "protobufjs-8.7.1": {
+    "name": "protobufjs",
+    "entrypoint": "minimal",
+    "version": "8.7.1",
+    "repository": "protobufjs/protobuf.js",
+    "commitHash": "bec6a9d6b16c0131362e9998b50a2d274414dafc",
+    "files": [
+      "minimal.js",
+      "minimal.d.ts",
+      "index.d.ts",
+      "src/index-minimal.js",
+      "src/reader.js",
+      "src/reader_buffer.js",
+      "src/roots.js",
+      "src/rpc.js",
+      "src/rpc/service.js",
+      "src/util/aspromise.js",
+      "src/util/base64.js",
+      "src/util/eventemitter.js",
+      "src/util/float.js",
+      "src/util/longbits.js",
+      "src/util/minimal.js",
+      "src/util/pool.js",
+      "src/util/utf8.js",
+      "src/writer.js",
+      "src/writer_buffer.js"
+    ],
+    "ignoredDeps": [
+      {
+        "module": "long",
+        "reason": "Optional at runtime (loaded in a try/catch for 64-bit support) and already a direct npm dependency of @airgap/coinlib-core; its published entrypoint is a build artifact that is not committed to the upstream repository, so it cannot be vendored the same way"
+      }
+    ]
+  },
+  "bitcoinjs-lib-6.1.7": {
+    "name": "bitcoinjs-lib",
+    "entrypoint": "src/index",
+    "version": "6.1.7",
+    "repository": "bitcoinjs/bitcoinjs-lib",
+    "commitHash": "d90fb51308acfb962051ef63606d683d1740d55f",
+    "files": [
+      "ts_src/address.ts",
+      "ts_src/bip66.ts",
+      "ts_src/block.ts",
+      "ts_src/bufferutils.ts",
+      "ts_src/crypto.ts",
+      "ts_src/ecc_lib.ts",
+      "ts_src/index.ts",
+      "ts_src/merkle.ts",
+      "ts_src/networks.ts",
+      "ts_src/ops.ts",
+      "ts_src/payments/bip341.ts",
+      "ts_src/payments/embed.ts",
+      "ts_src/payments/index.ts",
+      "ts_src/payments/lazy.ts",
+      "ts_src/payments/p2ms.ts",
+      "ts_src/payments/p2pk.ts",
+      "ts_src/payments/p2pkh.ts",
+      "ts_src/payments/p2sh.ts",
+      "ts_src/payments/p2tr.ts",
+      "ts_src/payments/p2wpkh.ts",
+      "ts_src/payments/p2wsh.ts",
+      "ts_src/psbt.ts",
+      "ts_src/psbt/bip371.ts",
+      "ts_src/psbt/psbtutils.ts",
+      "ts_src/push_data.ts",
+      "ts_src/script.ts",
+      "ts_src/script_number.ts",
+      "ts_src/script_signature.ts",
+      "ts_src/transaction.ts",
+      "ts_src/types.ts"
+    ],
+    "renameFiles": [
+      [
+        "ts_src/address.ts",
+        "src/address.ts"
+      ],
+      [
+        "ts_src/bip66.ts",
+        "src/bip66.ts"
+      ],
+      [
+        "ts_src/block.ts",
+        "src/block.ts"
+      ],
+      [
+        "ts_src/bufferutils.ts",
+        "src/bufferutils.ts"
+      ],
+      [
+        "ts_src/crypto.ts",
+        "src/crypto.ts"
+      ],
+      [
+        "ts_src/ecc_lib.ts",
+        "src/ecc_lib.ts"
+      ],
+      [
+        "ts_src/index.ts",
+        "src/index.ts"
+      ],
+      [
+        "ts_src/merkle.ts",
+        "src/merkle.ts"
+      ],
+      [
+        "ts_src/networks.ts",
+        "src/networks.ts"
+      ],
+      [
+        "ts_src/ops.ts",
+        "src/ops.ts"
+      ],
+      [
+        "ts_src/payments/bip341.ts",
+        "src/payments/bip341.ts"
+      ],
+      [
+        "ts_src/payments/embed.ts",
+        "src/payments/embed.ts"
+      ],
+      [
+        "ts_src/payments/index.ts",
+        "src/payments/index.ts"
+      ],
+      [
+        "ts_src/payments/lazy.ts",
+        "src/payments/lazy.ts"
+      ],
+      [
+        "ts_src/payments/p2ms.ts",
+        "src/payments/p2ms.ts"
+      ],
+      [
+        "ts_src/payments/p2pk.ts",
+        "src/payments/p2pk.ts"
+      ],
+      [
+        "ts_src/payments/p2pkh.ts",
+        "src/payments/p2pkh.ts"
+      ],
+      [
+        "ts_src/payments/p2sh.ts",
+        "src/payments/p2sh.ts"
+      ],
+      [
+        "ts_src/payments/p2tr.ts",
+        "src/payments/p2tr.ts"
+      ],
+      [
+        "ts_src/payments/p2wpkh.ts",
+        "src/payments/p2wpkh.ts"
+      ],
+      [
+        "ts_src/payments/p2wsh.ts",
+        "src/payments/p2wsh.ts"
+      ],
+      [
+        "ts_src/psbt.ts",
+        "src/psbt.ts"
+      ],
+      [
+        "ts_src/psbt/bip371.ts",
+        "src/psbt/bip371.ts"
+      ],
+      [
+        "ts_src/psbt/psbtutils.ts",
+        "src/psbt/psbtutils.ts"
+      ],
+      [
+        "ts_src/push_data.ts",
+        "src/push_data.ts"
+      ],
+      [
+        "ts_src/script.ts",
+        "src/script.ts"
+      ],
+      [
+        "ts_src/script_number.ts",
+        "src/script_number.ts"
+      ],
+      [
+        "ts_src/script_signature.ts",
+        "src/script_signature.ts"
+      ],
+      [
+        "ts_src/transaction.ts",
+        "src/transaction.ts"
+      ],
+      [
+        "ts_src/types.ts",
+        "src/types.ts"
+      ]
+    ],
+    "replaceInFiles": [
+      {
+        "filename": "src/crypto.ts",
+        "replacements": [
+          {
+            "from": " from '@noble/hashes/sha256'",
+            "to": " from '../../@noble/hashes-1.8.0/src/sha256'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from '@noble/hashes/sha1'",
+            "to": " from '../../@noble/hashes-1.8.0/src/sha1'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from '@noble/hashes/ripemd160'",
+            "to": " from '../../@noble/hashes-1.8.0/src/ripemd160'",
+            "expectedReplacements": 1
+          }
+        ]
+      },
+      {
+        "filename": "src/psbt.ts",
+        "replacements": [
+          {
+            "from": " from 'bip174/src/lib/interfaces'",
+            "to": " from '../../bip174-2.1.1/src/lib/interfaces'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from 'bip174/src/lib/converter/varint'",
+            "to": " from '../../bip174-2.1.1/src/lib/converter/varint'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from 'bip174/src/lib/utils'",
+            "to": " from '../../bip174-2.1.1/src/lib/utils'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": "  const allPublicKeys = [];",
+            "to": "  const allPublicKeys: Buffer[] = [];",
+            "expectedReplacements": 1
+          },
+          {
+            "from": "  const hashes = [];",
+            "to": "  const hashes: any[] = [];",
+            "expectedReplacements": 1
+          }
+        ]
+      },
+      {
+        "filename": "src/psbt/bip371.ts",
+        "replacements": [
+          {
+            "from": " from 'bip174/src/lib/interfaces'",
+            "to": " from '../../../bip174-2.1.1/src/lib/interfaces'",
+            "expectedReplacements": 1
+          }
+        ]
+      },
+      {
+        "filename": "src/psbt/psbtutils.ts",
+        "replacements": [
+          {
+            "from": " from 'bip174/src/lib/interfaces'",
+            "to": " from '../../../bip174-2.1.1/src/lib/interfaces'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from 'bip174/src/lib/converter/varint'",
+            "to": " from '../../../bip174-2.1.1/src/lib/converter/varint'",
+            "expectedReplacements": 1
+          }
+        ]
+      }
+    ],
+    "deps": [
+      "bech32-2.0.0",
+      "bip174-2.1.1",
+      "bs58check-2.1.2",
+      "typeforce-1.18.0",
+      "varuint-bitcoin-1.1.2",
+      "@noble/hashes-1.8.0"
+    ]
+  },
+  "ecpair-2.1.0": {
+    "name": "ecpair",
+    "entrypoint": "src/ecpair",
+    "version": "2.1.0",
+    "repository": "bitcoinjs/ecpair",
+    "commitHash": "d122cbf63a8ef820427086dd61353a64d6823c9a",
+    "files": [
+      "ts_src/ecpair.ts",
+      "ts_src/index.ts",
+      "ts_src/networks.ts",
+      "ts_src/testecc.ts",
+      "ts_src/types.ts"
+    ],
+    "renameFiles": [
+      [
+        "ts_src/ecpair.ts",
+        "src/ecpair.ts"
+      ],
+      [
+        "ts_src/index.ts",
+        "src/index.ts"
+      ],
+      [
+        "ts_src/networks.ts",
+        "src/networks.ts"
+      ],
+      [
+        "ts_src/testecc.ts",
+        "src/testecc.ts"
+      ],
+      [
+        "ts_src/types.ts",
+        "src/types.ts"
+      ]
+    ],
+    "deps": [
+      "randombytes-2.1.0",
+      "typeforce-1.18.0",
+      "wif-2.0.6"
+    ]
+  },
+  "groestlcoinjs-lib-6.1.5": {
+    "name": "groestlcoinjs-lib",
+    "entrypoint": "src/index",
+    "version": "6.1.5",
+    "repository": "Groestlcoin/groestlcoinjs-lib",
+    "forkOf": "bitcoinjs-lib",
+    "commitHash": "7f3b86144f9ee190d6941ddd1d526fbefce1f61c",
+    "files": [
+      "ts_src/address.ts",
+      "ts_src/bip66.ts",
+      "ts_src/block.ts",
+      "ts_src/bufferutils.ts",
+      "ts_src/crypto.ts",
+      "ts_src/ecc_lib.ts",
+      "ts_src/index.ts",
+      "ts_src/merkle.ts",
+      "ts_src/networks.ts",
+      "ts_src/ops.ts",
+      "ts_src/payments/bip341.ts",
+      "ts_src/payments/embed.ts",
+      "ts_src/payments/index.ts",
+      "ts_src/payments/lazy.ts",
+      "ts_src/payments/p2ms.ts",
+      "ts_src/payments/p2pk.ts",
+      "ts_src/payments/p2pkh.ts",
+      "ts_src/payments/p2sh.ts",
+      "ts_src/payments/p2tr.ts",
+      "ts_src/payments/p2wpkh.ts",
+      "ts_src/payments/p2wsh.ts",
+      "ts_src/psbt.ts",
+      "ts_src/psbt/bip371.ts",
+      "ts_src/psbt/psbtutils.ts",
+      "ts_src/push_data.ts",
+      "ts_src/script.ts",
+      "ts_src/script_number.ts",
+      "ts_src/script_signature.ts",
+      "ts_src/transaction.ts",
+      "ts_src/types.ts"
+    ],
+    "renameFiles": [
+      [
+        "ts_src/address.ts",
+        "src/address.ts"
+      ],
+      [
+        "ts_src/bip66.ts",
+        "src/bip66.ts"
+      ],
+      [
+        "ts_src/block.ts",
+        "src/block.ts"
+      ],
+      [
+        "ts_src/bufferutils.ts",
+        "src/bufferutils.ts"
+      ],
+      [
+        "ts_src/crypto.ts",
+        "src/crypto.ts"
+      ],
+      [
+        "ts_src/ecc_lib.ts",
+        "src/ecc_lib.ts"
+      ],
+      [
+        "ts_src/index.ts",
+        "src/index.ts"
+      ],
+      [
+        "ts_src/merkle.ts",
+        "src/merkle.ts"
+      ],
+      [
+        "ts_src/networks.ts",
+        "src/networks.ts"
+      ],
+      [
+        "ts_src/ops.ts",
+        "src/ops.ts"
+      ],
+      [
+        "ts_src/payments/bip341.ts",
+        "src/payments/bip341.ts"
+      ],
+      [
+        "ts_src/payments/embed.ts",
+        "src/payments/embed.ts"
+      ],
+      [
+        "ts_src/payments/index.ts",
+        "src/payments/index.ts"
+      ],
+      [
+        "ts_src/payments/lazy.ts",
+        "src/payments/lazy.ts"
+      ],
+      [
+        "ts_src/payments/p2ms.ts",
+        "src/payments/p2ms.ts"
+      ],
+      [
+        "ts_src/payments/p2pk.ts",
+        "src/payments/p2pk.ts"
+      ],
+      [
+        "ts_src/payments/p2pkh.ts",
+        "src/payments/p2pkh.ts"
+      ],
+      [
+        "ts_src/payments/p2sh.ts",
+        "src/payments/p2sh.ts"
+      ],
+      [
+        "ts_src/payments/p2tr.ts",
+        "src/payments/p2tr.ts"
+      ],
+      [
+        "ts_src/payments/p2wpkh.ts",
+        "src/payments/p2wpkh.ts"
+      ],
+      [
+        "ts_src/payments/p2wsh.ts",
+        "src/payments/p2wsh.ts"
+      ],
+      [
+        "ts_src/psbt.ts",
+        "src/psbt.ts"
+      ],
+      [
+        "ts_src/psbt/bip371.ts",
+        "src/psbt/bip371.ts"
+      ],
+      [
+        "ts_src/psbt/psbtutils.ts",
+        "src/psbt/psbtutils.ts"
+      ],
+      [
+        "ts_src/push_data.ts",
+        "src/push_data.ts"
+      ],
+      [
+        "ts_src/script.ts",
+        "src/script.ts"
+      ],
+      [
+        "ts_src/script_number.ts",
+        "src/script_number.ts"
+      ],
+      [
+        "ts_src/script_signature.ts",
+        "src/script_signature.ts"
+      ],
+      [
+        "ts_src/transaction.ts",
+        "src/transaction.ts"
+      ],
+      [
+        "ts_src/types.ts",
+        "src/types.ts"
+      ]
+    ],
+    "replaceInFiles": [
+      {
+        "filename": "src/crypto.ts",
+        "replacements": [
+          {
+            "from": " from 'hashes-grs/sha256'",
+            "to": " from '../../hashes-grs-1.2.0/src/sha256'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from 'hashes-grs/sha1'",
+            "to": " from '../../hashes-grs-1.2.0/src/sha1'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from 'hashes-grs/ripemd160'",
+            "to": " from '../../hashes-grs-1.2.0/src/ripemd160'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from 'hashes-grs/groestl512'",
+            "to": " from '../../hashes-grs-1.2.0/src/groestl512'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from 'hashes-grs/groestl256'",
+            "to": " from '../../hashes-grs-1.2.0/src/groestl256'",
+            "expectedReplacements": 1
+          }
+        ]
+      },
+      {
+        "filename": "src/psbt.ts",
+        "replacements": [
+          {
+            "from": " from 'bip174/src/lib/interfaces'",
+            "to": " from '../../bip174-2.1.1/src/lib/interfaces'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from 'bip174/src/lib/converter/varint'",
+            "to": " from '../../bip174-2.1.1/src/lib/converter/varint'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from 'bip174/src/lib/utils'",
+            "to": " from '../../bip174-2.1.1/src/lib/utils'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": "  const allPublicKeys = [];",
+            "to": "  const allPublicKeys: Buffer[] = [];",
+            "expectedReplacements": 1
+          },
+          {
+            "from": "  const hashes = [];",
+            "to": "  const hashes: any[] = [];",
+            "expectedReplacements": 1
+          }
+        ]
+      },
+      {
+        "filename": "src/psbt/bip371.ts",
+        "replacements": [
+          {
+            "from": " from 'bip174/src/lib/interfaces'",
+            "to": " from '../../../bip174-2.1.1/src/lib/interfaces'",
+            "expectedReplacements": 1
+          }
+        ]
+      },
+      {
+        "filename": "src/psbt/psbtutils.ts",
+        "replacements": [
+          {
+            "from": " from 'bip174/src/lib/interfaces'",
+            "to": " from '../../../bip174-2.1.1/src/lib/interfaces'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from 'bip174/src/lib/converter/varint'",
+            "to": " from '../../../bip174-2.1.1/src/lib/converter/varint'",
+            "expectedReplacements": 1
+          }
+        ]
+      }
+    ],
+    "deps": [
+      "bech32-2.0.0",
+      "bip174-2.1.1",
+      "bs58grscheck-2.1.2",
+      "typeforce-1.18.0",
+      "varuint-bitcoin-1.1.2",
+      "hashes-grs-1.2.0"
+    ]
+  },
+  "bip174-2.1.1": {
+    "name": "bip174",
+    "entrypoint": "src/lib/psbt",
+    "version": "2.1.1",
+    "repository": "bitcoinjs/bip174",
+    "commitHash": "b22405627d8a0d282dca0937092ac93838d18327",
+    "files": [
+      "ts_src/lib/combiner/index.ts",
+      "ts_src/lib/converter/global/globalXpub.ts",
+      "ts_src/lib/converter/global/unsignedTx.ts",
+      "ts_src/lib/converter/index.ts",
+      "ts_src/lib/converter/input/finalScriptSig.ts",
+      "ts_src/lib/converter/input/finalScriptWitness.ts",
+      "ts_src/lib/converter/input/nonWitnessUtxo.ts",
+      "ts_src/lib/converter/input/partialSig.ts",
+      "ts_src/lib/converter/input/porCommitment.ts",
+      "ts_src/lib/converter/input/sighashType.ts",
+      "ts_src/lib/converter/input/tapKeySig.ts",
+      "ts_src/lib/converter/input/tapLeafScript.ts",
+      "ts_src/lib/converter/input/tapMerkleRoot.ts",
+      "ts_src/lib/converter/input/tapScriptSig.ts",
+      "ts_src/lib/converter/input/witnessUtxo.ts",
+      "ts_src/lib/converter/output/tapTree.ts",
+      "ts_src/lib/converter/shared/bip32Derivation.ts",
+      "ts_src/lib/converter/shared/checkPubkey.ts",
+      "ts_src/lib/converter/shared/redeemScript.ts",
+      "ts_src/lib/converter/shared/tapBip32Derivation.ts",
+      "ts_src/lib/converter/shared/tapInternalKey.ts",
+      "ts_src/lib/converter/shared/witnessScript.ts",
+      "ts_src/lib/converter/tools.ts",
+      "ts_src/lib/converter/varint.ts",
+      "ts_src/lib/interfaces.ts",
+      "ts_src/lib/parser/fromBuffer.ts",
+      "ts_src/lib/parser/index.ts",
+      "ts_src/lib/parser/toBuffer.ts",
+      "ts_src/lib/psbt.ts",
+      "ts_src/lib/typeFields.ts",
+      "ts_src/lib/utils.ts"
+    ],
+    "renameFiles": [
+      [
+        "ts_src/lib/combiner/index.ts",
+        "src/lib/combiner/index.ts"
+      ],
+      [
+        "ts_src/lib/converter/global/globalXpub.ts",
+        "src/lib/converter/global/globalXpub.ts"
+      ],
+      [
+        "ts_src/lib/converter/global/unsignedTx.ts",
+        "src/lib/converter/global/unsignedTx.ts"
+      ],
+      [
+        "ts_src/lib/converter/index.ts",
+        "src/lib/converter/index.ts"
+      ],
+      [
+        "ts_src/lib/converter/input/finalScriptSig.ts",
+        "src/lib/converter/input/finalScriptSig.ts"
+      ],
+      [
+        "ts_src/lib/converter/input/finalScriptWitness.ts",
+        "src/lib/converter/input/finalScriptWitness.ts"
+      ],
+      [
+        "ts_src/lib/converter/input/nonWitnessUtxo.ts",
+        "src/lib/converter/input/nonWitnessUtxo.ts"
+      ],
+      [
+        "ts_src/lib/converter/input/partialSig.ts",
+        "src/lib/converter/input/partialSig.ts"
+      ],
+      [
+        "ts_src/lib/converter/input/porCommitment.ts",
+        "src/lib/converter/input/porCommitment.ts"
+      ],
+      [
+        "ts_src/lib/converter/input/sighashType.ts",
+        "src/lib/converter/input/sighashType.ts"
+      ],
+      [
+        "ts_src/lib/converter/input/tapKeySig.ts",
+        "src/lib/converter/input/tapKeySig.ts"
+      ],
+      [
+        "ts_src/lib/converter/input/tapLeafScript.ts",
+        "src/lib/converter/input/tapLeafScript.ts"
+      ],
+      [
+        "ts_src/lib/converter/input/tapMerkleRoot.ts",
+        "src/lib/converter/input/tapMerkleRoot.ts"
+      ],
+      [
+        "ts_src/lib/converter/input/tapScriptSig.ts",
+        "src/lib/converter/input/tapScriptSig.ts"
+      ],
+      [
+        "ts_src/lib/converter/input/witnessUtxo.ts",
+        "src/lib/converter/input/witnessUtxo.ts"
+      ],
+      [
+        "ts_src/lib/converter/output/tapTree.ts",
+        "src/lib/converter/output/tapTree.ts"
+      ],
+      [
+        "ts_src/lib/converter/shared/bip32Derivation.ts",
+        "src/lib/converter/shared/bip32Derivation.ts"
+      ],
+      [
+        "ts_src/lib/converter/shared/checkPubkey.ts",
+        "src/lib/converter/shared/checkPubkey.ts"
+      ],
+      [
+        "ts_src/lib/converter/shared/redeemScript.ts",
+        "src/lib/converter/shared/redeemScript.ts"
+      ],
+      [
+        "ts_src/lib/converter/shared/tapBip32Derivation.ts",
+        "src/lib/converter/shared/tapBip32Derivation.ts"
+      ],
+      [
+        "ts_src/lib/converter/shared/tapInternalKey.ts",
+        "src/lib/converter/shared/tapInternalKey.ts"
+      ],
+      [
+        "ts_src/lib/converter/shared/witnessScript.ts",
+        "src/lib/converter/shared/witnessScript.ts"
+      ],
+      [
+        "ts_src/lib/converter/tools.ts",
+        "src/lib/converter/tools.ts"
+      ],
+      [
+        "ts_src/lib/converter/varint.ts",
+        "src/lib/converter/varint.ts"
+      ],
+      [
+        "ts_src/lib/interfaces.ts",
+        "src/lib/interfaces.ts"
+      ],
+      [
+        "ts_src/lib/parser/fromBuffer.ts",
+        "src/lib/parser/fromBuffer.ts"
+      ],
+      [
+        "ts_src/lib/parser/index.ts",
+        "src/lib/parser/index.ts"
+      ],
+      [
+        "ts_src/lib/parser/toBuffer.ts",
+        "src/lib/parser/toBuffer.ts"
+      ],
+      [
+        "ts_src/lib/psbt.ts",
+        "src/lib/psbt.ts"
+      ],
+      [
+        "ts_src/lib/typeFields.ts",
+        "src/lib/typeFields.ts"
+      ],
+      [
+        "ts_src/lib/utils.ts",
+        "src/lib/utils.ts"
+      ]
+    ],
+    "replaceInFiles": [
+      {
+        "filename": "src/lib/utils.ts",
+        "replacements": [
+          {
+            "from": "for (const name of Object.keys(updateData)) {",
+            "to": "for (const name of Object.keys(updateData as any)) {",
+            "expectedReplacements": 1
+          }
+        ]
+      }
+    ]
+  },
+  "bech32-2.0.0": {
+    "name": "bech32",
+    "entrypoint": "src/index",
+    "version": "2.0.0",
+    "repository": "bitcoinjs/bech32",
+    "commitHash": "7593fda5a9c40ff10ef9abebc22e246cd6744849",
+    "files": [
+      "src/index.ts"
+    ],
+    "replaceInFiles": [
+      {
+        "filename": "src/index.ts",
+        "replacements": [
+          {
+            "from": "    const words = [];",
+            "to": "    const words: number[] = [];",
+            "expectedReplacements": 1
+          }
+        ]
+      }
+    ]
+  },
+  "@noble/hashes-1.8.0": {
+    "name": "@noble/hashes",
+    "entrypoint": "src/utils",
+    "version": "1.8.0",
+    "repository": "paulmillr/noble-hashes",
+    "commitHash": "32f700f38ec49d7e6b2ab687904d6b2d7d60d80a",
+    "files": [
+      "src/_md.ts",
+      "src/_u64.ts",
+      "src/crypto.ts",
+      "src/hmac.ts",
+      "src/legacy.ts",
+      "src/ripemd160.ts",
+      "src/sha1.ts",
+      "src/sha2.ts",
+      "src/sha256.ts",
+      "src/sha512.ts",
+      "src/utils.ts"
+    ],
+    "replaceInFiles": [
+      {
+        "filename": "src/_md.ts",
+        "replacements": [
+          {
+            "from": " from './utils.ts'",
+            "to": " from './utils'",
+            "expectedReplacements": 1
+          }
+        ]
+      },
+      {
+        "filename": "src/hmac.ts",
+        "replacements": [
+          {
+            "from": " from './utils.ts'",
+            "to": " from './utils'",
+            "expectedReplacements": 1
+          }
+        ]
+      },
+      {
+        "filename": "src/legacy.ts",
+        "replacements": [
+          {
+            "from": " from './_md.ts'",
+            "to": " from './_md'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from './utils.ts'",
+            "to": " from './utils'",
+            "expectedReplacements": 1
+          }
+        ]
+      },
+      {
+        "filename": "src/ripemd160.ts",
+        "replacements": [
+          {
+            "from": " from './legacy.ts'",
+            "to": " from './legacy'",
+            "expectedReplacements": 1
+          }
+        ]
+      },
+      {
+        "filename": "src/sha1.ts",
+        "replacements": [
+          {
+            "from": " from './legacy.ts'",
+            "to": " from './legacy'",
+            "expectedReplacements": 1
+          }
+        ]
+      },
+      {
+        "filename": "src/sha2.ts",
+        "replacements": [
+          {
+            "from": " from './_md.ts'",
+            "to": " from './_md'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from './_u64.ts'",
+            "to": " from './_u64'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from './utils.ts'",
+            "to": " from './utils'",
+            "expectedReplacements": 1
+          }
+        ]
+      },
+      {
+        "filename": "src/sha256.ts",
+        "replacements": [
+          {
+            "from": " from './sha2.ts'",
+            "to": " from './sha2'",
+            "expectedReplacements": 1
+          }
+        ]
+      },
+      {
+        "filename": "src/utils.ts",
+        "replacements": [
+          {
+            "from": "import { crypto } from '@noble/hashes/crypto';",
+            "to": "import { crypto } from './crypto';",
+            "expectedReplacements": 1
+          }
+        ]
+      },
+      {
+        "filename": "src/sha512.ts",
+        "replacements": [
+          {
+            "from": " from './sha2.ts'",
+            "to": " from './sha2'",
+            "expectedReplacements": 1
+          }
+        ]
+      }
+    ]
+  },
+  "@noble/curves-1.9.7": {
+    "name": "@noble/curves",
+    "entrypoint": "src/secp256k1",
+    "version": "1.9.7",
+    "repository": "paulmillr/noble-curves",
+    "commitHash": "a0ac59846ee76c52f7c18886f4963e1211345d48",
+    "files": [
+      "src/secp256k1.ts",
+      "src/_shortw_utils.ts",
+      "src/utils.ts",
+      "src/abstract/weierstrass.ts",
+      "src/abstract/curve.ts",
+      "src/abstract/modular.ts",
+      "src/abstract/utils.ts",
+      "src/abstract/hash-to-curve.ts"
+    ],
+    "replaceInFiles": [
+      {
+        "filename": "src/secp256k1.ts",
+        "replacements": [
+          {
+            "from": " from '@noble/hashes/sha2.js'",
+            "to": " from '../../../@noble/hashes-1.8.0/src/sha2'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from '@noble/hashes/utils.js'",
+            "to": " from '../../../@noble/hashes-1.8.0/src/utils'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from './_shortw_utils.ts'",
+            "to": " from './_shortw_utils'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from './abstract/curve.ts'",
+            "to": " from './abstract/curve'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from './abstract/hash-to-curve.ts'",
+            "to": " from './abstract/hash-to-curve'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from './abstract/modular.ts'",
+            "to": " from './abstract/modular'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from './abstract/weierstrass.ts'",
+            "to": " from './abstract/weierstrass'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from './utils.ts'",
+            "to": " from './utils'",
+            "expectedReplacements": 2
+          }
+        ]
+      },
+      {
+        "filename": "src/_shortw_utils.ts",
+        "replacements": [
+          {
+            "from": " from './abstract/weierstrass.ts'",
+            "to": " from './abstract/weierstrass'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from './utils.ts'",
+            "to": " from './utils'",
+            "expectedReplacements": 1
+          }
+        ]
+      },
+      {
+        "filename": "src/utils.ts",
+        "replacements": [
+          {
+            "from": " from '@noble/hashes/utils.js'",
+            "to": " from '../../../@noble/hashes-1.8.0/src/utils'",
+            "expectedReplacements": 2
+          }
+        ]
+      },
+      {
+        "filename": "src/abstract/weierstrass.ts",
+        "replacements": [
+          {
+            "from": " from '@noble/hashes/utils'",
+            "to": " from '../../../../@noble/hashes-1.8.0/src/utils'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from '@noble/hashes/hmac.js'",
+            "to": " from '../../../../@noble/hashes-1.8.0/src/hmac'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from '../utils.ts'",
+            "to": " from '../utils'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from './curve.ts'",
+            "to": " from './curve'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from './modular.ts'",
+            "to": " from './modular'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": "(((key, ...msgs) => nobleHmac(hash, key, concatBytes(...msgs))) satisfies HmacFnSync);",
+            "to": "(((key, ...msgs) => nobleHmac(hash, key, concatBytes(...msgs))) as HmacFnSync);",
+            "expectedReplacements": 1
+          },
+          {
+            "from": "export class DERErr extends Error {\n  constructor(m = '') {\n    super(m);\n  }\n}",
+            "to": "export class DERErr extends Error {\n  constructor(m = '') {\n    super(m);\n    Object.setPrototypeOf(this, DERErr.prototype); // es5 target: restore instanceof for Error subclass\n  }\n}",
+            "expectedReplacements": 1
+          }
+        ]
+      },
+      {
+        "filename": "src/abstract/curve.ts",
+        "replacements": [
+          {
+            "from": " from '../utils.ts'",
+            "to": " from '../utils'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from './modular.ts'",
+            "to": " from './modular'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": "    const res = [];",
+            "to": "    const res: any[] = [];",
+            "expectedReplacements": 1
+          }
+        ]
+      },
+      {
+        "filename": "src/abstract/modular.ts",
+        "replacements": [
+          {
+            "from": " from '../utils.ts'",
+            "to": " from '../utils'",
+            "expectedReplacements": 1
+          }
+        ]
+      },
+      {
+        "filename": "src/abstract/utils.ts",
+        "replacements": [
+          {
+            "from": " from '../utils.ts'",
+            "to": " from '../utils'",
+            "expectedReplacements": 1
+          }
+        ]
+      },
+      {
+        "filename": "src/abstract/hash-to-curve.ts",
+        "replacements": [
+          {
+            "from": " from '../utils.ts'",
+            "to": " from '../utils'",
+            "expectedReplacements": 2
+          },
+          {
+            "from": " from './curve.ts'",
+            "to": " from './curve'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from './modular.ts'",
+            "to": " from './modular'",
+            "expectedReplacements": 1
+          }
+        ]
+      }
+    ],
+    "deps": [
+      "@noble/hashes-1.8.0"
+    ]
+  },
+  "@bitcoinerlab/secp256k1-1.2.0": {
+    "name": "@bitcoinerlab/secp256k1",
+    "entrypoint": "src/index",
+    "version": "1.2.0",
+    "repository": "bitcoinerlab/secp256k1",
+    "commitHash": "9a0fb52885995923dac4041083e3ae5da6789ffe",
+    "files": [
+      "index.js"
+    ],
+    "renameFiles": [
+      [
+        "index.js",
+        "src/index.ts"
+      ]
+    ],
+    "replaceInFiles": [
+      {
+        "filename": "src/index.ts",
+        "replacements": [
+          {
+            "from": " from \"@noble/curves/secp256k1\"",
+            "to": " from \"../../../@noble/curves-1.9.7/src/secp256k1\"",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from \"@noble/curves/abstract/modular\"",
+            "to": " from \"../../../@noble/curves-1.9.7/src/abstract/modular\"",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from \"@noble/curves/abstract/utils\"",
+            "to": " from \"../../../@noble/curves-1.9.7/src/abstract/utils\"",
+            "expectedReplacements": 1
+          },
+          {
+            "from": "function assumeCompression(compressed, p) {",
+            "to": "function assumeCompression(compressed?, p?) {",
+            "expectedReplacements": 1
+          },
+          {
+            "from": "export function pointFromScalar(sk, compressed) {",
+            "to": "export function pointFromScalar(sk, compressed?) {",
+            "expectedReplacements": 1
+          },
+          {
+            "from": "  return _privateNegate(d);",
+            "to": "  return _privateNegate(d) as Uint8Array; // matches upstream types/index.d.ts (negation of a valid key is always valid)",
+            "expectedReplacements": 1
+          }
+        ]
+      }
+    ],
+    "deps": [
+      "@noble/curves-1.9.7"
+    ]
+  },
+  "hashes-grs-1.2.0": {
+    "name": "hashes-grs",
+    "entrypoint": "src/utils",
+    "version": "1.2.0",
+    "repository": "Groestlcoin/noble-hashes-grs",
+    "forkOf": "@noble/hashes",
+    "commitHash": "32aa60f1da34b7dd1154d9b5877aebb353172c78",
+    "files": [
+      "src/_assert.ts",
+      "src/_groestl512.ts",
+      "src/_sha2.ts",
+      "src/_u64.ts",
+      "src/cryptoBrowser.ts",
+      "src/groestl256.ts",
+      "src/groestl512.ts",
+      "src/hmac.ts",
+      "src/ripemd160.ts",
+      "src/sha1.ts",
+      "src/sha256.ts",
+      "src/sha512.ts",
+      "src/utils.ts"
+    ],
+    "replaceInFiles": [
+      {
+        "filename": "src/_groestl512.ts",
+        "replacements": [
+          {
+            "from": " from './_assert.js'",
+            "to": " from './_assert'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from './utils.js'",
+            "to": " from './utils'",
+            "expectedReplacements": 1
+          }
+        ]
+      },
+      {
+        "filename": "src/_sha2.ts",
+        "replacements": [
+          {
+            "from": " from './_assert.js'",
+            "to": " from './_assert'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from './utils.js'",
+            "to": " from './utils'",
+            "expectedReplacements": 1
+          }
+        ]
+      },
+      {
+        "filename": "src/groestl256.ts",
+        "replacements": [
+          {
+            "from": " from './utils.js'",
+            "to": " from './utils'",
+            "expectedReplacements": 1
+          }
+        ]
+      },
+      {
+        "filename": "src/groestl512.ts",
+        "replacements": [
+          {
+            "from": " from './utils.js'",
+            "to": " from './utils'",
+            "expectedReplacements": 1
+          }
+        ]
+      },
+      {
+        "filename": "src/hmac.ts",
+        "replacements": [
+          {
+            "from": " from './_assert.js'",
+            "to": " from './_assert'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from './utils.js'",
+            "to": " from './utils'",
+            "expectedReplacements": 1
+          }
+        ]
+      },
+      {
+        "filename": "src/ripemd160.ts",
+        "replacements": [
+          {
+            "from": " from './_sha2.js'",
+            "to": " from './_sha2'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from './utils.js'",
+            "to": " from './utils'",
+            "expectedReplacements": 1
+          }
+        ]
+      },
+      {
+        "filename": "src/sha1.ts",
+        "replacements": [
+          {
+            "from": " from './_sha2.js'",
+            "to": " from './_sha2'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from './utils.js'",
+            "to": " from './utils'",
+            "expectedReplacements": 1
+          }
+        ]
+      },
+      {
+        "filename": "src/sha256.ts",
+        "replacements": [
+          {
+            "from": " from './_sha2.js'",
+            "to": " from './_sha2'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from './utils.js'",
+            "to": " from './utils'",
+            "expectedReplacements": 1
+          }
+        ]
+      },
+      {
+        "filename": "src/sha512.ts",
+        "replacements": [
+          {
+            "from": " from './_sha2.js'",
+            "to": " from './_sha2'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from './_u64.js'",
+            "to": " from './_u64'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from './utils.js'",
+            "to": " from './utils'",
+            "expectedReplacements": 1
+          }
+        ]
+      },
+      {
+        "filename": "src/utils.ts",
+        "replacements": [
+          {
+            "from": "import { crypto } from 'hashes-grs/crypto';",
+            "to": "import { crypto } from './cryptoBrowser';",
+            "expectedReplacements": 1
+          }
+        ]
+      },
+      {
+        "filename": "src/cryptoBrowser.ts",
+        "replacements": [
+          {
+            "from": "// Global symbol available in browsers only\ndeclare const self: Record<string, any> | undefined;",
+            "to": "// Upstream ships two shims (`crypto.ts` for Node, `cryptoBrowser.ts` for browsers) and picks one\n// through package.json's `browser` field. Vendoring bypasses that, so this copy resolves\n// WebCrypto via `globalThis` like the sibling @noble/hashes-1.8.0 does - it works in browsers\n// and in Node 19+ (or 18 with the webcrypto global), where `self` does not exist.\ndeclare const globalThis: Record<string, any> | undefined;",
+            "expectedReplacements": 1
+          },
+          {
+            "from": "  web: typeof self === 'object' && 'crypto' in self ? self.crypto : undefined,",
+            "to": "  web: typeof globalThis === 'object' && 'crypto' in globalThis ? globalThis.crypto : undefined,",
+            "expectedReplacements": 1
+          }
+        ]
+      }
+    ]
+  },
+  "bip32grs-4.0.1": {
+    "name": "bip32grs",
+    "entrypoint": "src/index",
+    "version": "4.0.1",
+    "repository": "Groestlcoin/bip32grs",
+    "forkOf": "bip32",
+    "commitHash": "b2676e6cdc3429a5b6a68fe5c45dded2d1398374",
+    "files": [
+      "ts-src/bip32.ts",
+      "ts-src/crypto.ts",
+      "ts-src/index.ts",
+      "ts-src/testecc.ts"
+    ],
+    "renameFiles": [
+      [
+        "ts-src/bip32.ts",
+        "src/bip32.ts"
+      ],
+      [
+        "ts-src/crypto.ts",
+        "src/crypto.ts"
+      ],
+      [
+        "ts-src/index.ts",
+        "src/index.ts"
+      ],
+      [
+        "ts-src/testecc.ts",
+        "src/testecc.ts"
+      ]
+    ],
+    "replaceInFiles": [
+      {
+        "filename": "src/crypto.ts",
+        "replacements": [
+          {
+            "from": " from 'hashes-grs/hmac'",
+            "to": " from '../../hashes-grs-1.2.0/src/hmac'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from 'hashes-grs/ripemd160'",
+            "to": " from '../../hashes-grs-1.2.0/src/ripemd160'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from 'hashes-grs/sha256'",
+            "to": " from '../../hashes-grs-1.2.0/src/sha256'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from 'hashes-grs/sha512'",
+            "to": " from '../../hashes-grs-1.2.0/src/sha512'",
+            "expectedReplacements": 1
+          }
+        ]
+      }
+    ],
+    "deps": [
+      "bs58grscheck-3.0.1",
+      "typeforce-1.18.0",
+      "wifgrs-2.0.6",
+      "hashes-grs-1.2.0"
+    ]
+  },
+  "bs58grscheck-3.0.1": {
+    "name": "bs58grscheck",
+    "entrypoint": "index",
+    "version": "3.0.1",
+    "repository": "Groestlcoin/bs58grscheck",
+    "forkOf": "bs58check",
+    "commitHash": "ab5b5e509f1754cb4764496df89d49bccfd48753",
+    "files": [
+      "index.js",
+      "base.js"
+    ],
+    "replaceInFiles": [
+      {
+        "filename": "index.js",
+        "replacements": [
+          {
+            "from": "require('hashes-grs/groestl256')",
+            "to": "require('../hashes-grs-1.2.0/src/groestl256')",
+            "expectedReplacements": 1
+          },
+          {
+            "from": "require('hashes-grs/groestl512')",
+            "to": "require('../hashes-grs-1.2.0/src/groestl512')",
+            "expectedReplacements": 1
+          }
+        ]
+      }
+    ],
+    "deps": [
+      "bs58-5.0.0",
+      "hashes-grs-1.2.0"
+    ]
+  },
+  "bs58-5.0.0": {
+    "name": "bs58",
+    "entrypoint": "index",
+    "version": "5.0.0",
+    "repository": "cryptocoinjs/bs58",
+    "commitHash": "499611a76c905bfd9e8286da6b755732c05102f5",
+    "files": [
+      "index.js"
+    ],
+    "deps": [
+      "base-x-4.0.1"
+    ]
+  },
+  "base-x-4.0.1": {
+    "name": "base-x",
+    "entrypoint": "src/index",
+    "version": "4.0.1",
+    "repository": "cryptocoinjs/base-x",
+    "commitHash": "7c17e51ed98189224932d49088a5a00262b45455",
+    "files": [
+      "ts_src/index.ts"
+    ],
+    "renameFiles": [
+      [
+        "ts_src/index.ts",
+        "src/index.ts"
+      ]
+    ]
+  },
+  "wifgrs-2.0.6": {
+    "name": "wifgrs",
+    "entrypoint": "index",
+    "version": "2.0.6",
+    "repository": "Groestlcoin/wifgrs",
+    "forkOf": "wif",
+    "commitHash": "6d564cd160d832d9443ccda46ec0b06194db3972",
+    "files": [
+      "index.js"
+    ],
+    "replaceInFiles": [
+      {
+        "filename": "index.js",
+        "replacements": [
+          {
+            "from": "var bs58check = require('bs58check')",
+            "to": "var bs58check = require('../bs58grscheck-3.0.1/index')\nvar Buffer = require('../safe-buffer-5.2.0/index').Buffer",
+            "expectedReplacements": 1
+          },
+          {
+            "from": "  var result = new Uint8Array(compressed ? 34 : 33)\n  var view = new DataView(result.buffer)\n  view.setUint8(0, version)\n  result.set(privateKey, 1)",
+            "to": "  var result = Buffer.alloc(compressed ? 34 : 33)\n  result.writeUInt8(version, 0)\n  privateKey.copy(result, 1)",
+            "expectedReplacements": 1
+          }
+        ]
+      }
+    ],
+    "deps": [
+      "bs58grscheck-3.0.1",
+      "safe-buffer-5.2.0"
+    ]
+  },
+  "bip32-5.0.1": {
+    "name": "bip32",
+    "entrypoint": "src/index",
+    "version": "5.0.1",
+    "repository": "bitcoinjs/bip32",
+    "commitHash": "c8042b82bf85fd4b67e840fb16475dfad2c30edc",
+    "files": [
+      "ts-src/bip32.ts",
+      "ts-src/crypto.ts",
+      "ts-src/index.ts",
+      "ts-src/testecc.ts",
+      "ts-src/types.ts"
+    ],
+    "renameFiles": [
+      [
+        "ts-src/bip32.ts",
+        "src/bip32.ts"
+      ],
+      [
+        "ts-src/crypto.ts",
+        "src/crypto.ts"
+      ],
+      [
+        "ts-src/index.ts",
+        "src/index.ts"
+      ],
+      [
+        "ts-src/testecc.ts",
+        "src/testecc.ts"
+      ],
+      [
+        "ts-src/types.ts",
+        "src/types.ts"
+      ]
+    ],
+    "replaceInFiles": [
+      {
+        "filename": "src/bip32.ts",
+        "replacements": [
+          {
+            "from": " from '@noble/hashes/sha256'",
+            "to": " from '../../@noble/hashes-1.8.0/src/sha256'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from './crypto.js'",
+            "to": " from './crypto'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from './testecc.js'",
+            "to": " from './testecc'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from './types.js'",
+            "to": " from './types'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": "import * as v from 'valibot';",
+            "to": "import { v } from './types';",
+            "expectedReplacements": 1
+          }
+        ]
+      },
+      {
+        "filename": "src/crypto.ts",
+        "replacements": [
+          {
+            "from": " from '@noble/hashes/sha256'",
+            "to": " from '../../@noble/hashes-1.8.0/src/sha256'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from '@noble/hashes/sha512'",
+            "to": " from '../../@noble/hashes-1.8.0/src/sha512'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from '@noble/hashes/hmac'",
+            "to": " from '../../@noble/hashes-1.8.0/src/hmac'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from '@noble/hashes/ripemd160'",
+            "to": " from '../../@noble/hashes-1.8.0/src/ripemd160'",
+            "expectedReplacements": 1
+          }
+        ]
+      },
+      {
+        "filename": "src/index.ts",
+        "replacements": [
+          {
+            "from": " from './bip32.js'",
+            "to": " from './bip32'",
+            "expectedReplacements": 1
+          }
+        ]
+      },
+      {
+        "filename": "src/types.ts",
+        "replacements": [
+          {
+            "from": "import * as v from 'valibot';",
+            "to": "// Minimal inline replacement for the valibot subset used below (see deps.json patch\n// note). valibot's TS-5-only source cannot be vendored under this repo's TS 4.8; this\n// shim reproduces parse/throw-on-invalid semantics for exactly these combinators.\ntype Schema<T> = (input: unknown) => T;\nexport type InferOutput<S> = S extends Schema<infer T> ? T : never;\nfunction fail(msg: string): never {\n  throw new TypeError('Invalid input: ' + msg);\n}\nexport const v = {\n  number(): Schema<number> {\n    return (x) => (typeof x === 'number' && !Number.isNaN(x) ? x : fail('expected number'));\n  },\n  integer(): (x: number) => number {\n    return (x) => (Number.isInteger(x) ? x : fail('expected integer'));\n  },\n  minValue(min: number): (x: number) => number {\n    return (x) => (x >= min ? x : fail('expected >= ' + min));\n  },\n  maxValue(max: number): (x: number) => number {\n    return (x) => (x <= max ? x : fail('expected <= ' + max));\n  },\n  string(): Schema<string> {\n    return (x) => (typeof x === 'string' ? x : fail('expected string'));\n  },\n  regex(re: RegExp): (x: string) => string {\n    return (x) => (re.test(x) ? x : fail('expected pattern ' + re));\n  },\n  length(n: number): (x: { length: number }) => any {\n    return (x) => (x.length === n ? x : fail('expected length ' + n));\n  },\n  instance<C extends new (...args: any[]) => any>(ctor: C): Schema<InstanceType<C>> {\n    return (x) => (x instanceof ctor ? (x as InstanceType<C>) : fail('expected ' + ctor.name));\n  },\n  object<S extends { [key: string]: Schema<any> }>(shape: S): Schema<{ [K in keyof S]: InferOutput<S[K]> }> {\n    return (x) => {\n      if (typeof x !== 'object' || x === null) fail('expected object');\n      const out: any = {};\n      for (const key of Object.keys(shape)) {\n        out[key] = shape[key]((x as any)[key]);\n      }\n      return out;\n    };\n  },\n  pipe<T>(first: Schema<T>, ...rest: Array<(x: T) => T>): Schema<T> {\n    return (x) => rest.reduce((acc, fn) => fn(acc), first(x));\n  },\n  parse<T>(schema: Schema<T>, input: unknown): T {\n    return schema(input);\n  },\n};",
+            "expectedReplacements": 1
+          },
+          {
+            "from": "export type Network = v.InferOutput<typeof NetworkSchema>;",
+            "to": "export type Network = InferOutput<typeof NetworkSchema>;",
+            "expectedReplacements": 1
+          }
+        ]
+      }
+    ],
+    "deps": [
+      "@scure/base-1.2.6",
+      "uint8array-tools-0.0.8",
+      "wif-5.0.0",
+      "@noble/hashes-1.8.0"
+    ]
+  },
+  "@scure/base-1.2.6": {
+    "name": "@scure/base",
+    "entrypoint": "index",
+    "version": "1.2.6",
+    "repository": "paulmillr/scure-base",
+    "commitHash": "ffaad85318b400399965e8d73e1f936d78989308",
+    "files": [
+      "index.ts"
+    ],
+    "replaceInFiles": [
+      {
+        "filename": "index.ts",
+        "replacements": [
+          {
+            "from": "  const res = [];",
+            "to": "  const res: number[] = [];",
+            "expectedReplacements": 1
+          },
+          {
+            "from": "  let res = [];",
+            "to": "  let res: number[] = [];",
+            "expectedReplacements": 1
+          }
+        ]
+      }
+    ]
+  },
+  "uint8array-tools-0.0.8": {
+    "name": "uint8array-tools",
+    "entrypoint": "src/browser",
+    "version": "0.0.8",
+    "repository": "bitcoinjs/uint8array-tools",
+    "commitHash": "8218fc065d43a385be29ad83ef717d4afc40288d",
+    "files": [
+      "ts_src/browser.ts"
+    ],
+    "renameFiles": [
+      [
+        "ts_src/browser.ts",
+        "src/browser.ts"
+      ]
+    ],
+    "replaceInFiles": [
+      {
+        "filename": "src/browser.ts",
+        "replacements": [
+          {
+            "from": "  if (value > 0xffffffffffffffffn) {",
+            "to": "  if (value > (BigInt(1) << BigInt(64)) - BigInt(1)) {",
+            "expectedReplacements": 1
+          },
+          {
+            "from": "      `The value of \"value\" is out of range. It must be >= 0 and <= ${0xffffffffffffffffn}. Received ${value}`",
+            "to": "      `The value of \"value\" is out of range. It must be >= 0 and <= ${(BigInt(1) << BigInt(64)) - BigInt(1)}. Received ${value}`",
+            "expectedReplacements": 1
+          },
+          {
+            "from": "    buffer[offset] = Number(value & 0xffn);",
+            "to": "    buffer[offset] = Number(value & BigInt(0xff));",
+            "expectedReplacements": 1
+          },
+          {
+            "from": "    buffer[offset + 1] = Number((value >> 8n) & 0xffn);",
+            "to": "    buffer[offset + 1] = Number((value >> BigInt(8)) & BigInt(0xff));",
+            "expectedReplacements": 1
+          },
+          {
+            "from": "    buffer[offset + 2] = Number((value >> 16n) & 0xffn);",
+            "to": "    buffer[offset + 2] = Number((value >> BigInt(16)) & BigInt(0xff));",
+            "expectedReplacements": 1
+          },
+          {
+            "from": "    buffer[offset + 3] = Number((value >> 24n) & 0xffn);",
+            "to": "    buffer[offset + 3] = Number((value >> BigInt(24)) & BigInt(0xff));",
+            "expectedReplacements": 1
+          },
+          {
+            "from": "    buffer[offset + 4] = Number((value >> 32n) & 0xffn);",
+            "to": "    buffer[offset + 4] = Number((value >> BigInt(32)) & BigInt(0xff));",
+            "expectedReplacements": 1
+          },
+          {
+            "from": "    buffer[offset + 5] = Number((value >> 40n) & 0xffn);",
+            "to": "    buffer[offset + 5] = Number((value >> BigInt(40)) & BigInt(0xff));",
+            "expectedReplacements": 1
+          },
+          {
+            "from": "    buffer[offset + 6] = Number((value >> 48n) & 0xffn);",
+            "to": "    buffer[offset + 6] = Number((value >> BigInt(48)) & BigInt(0xff));",
+            "expectedReplacements": 1
+          },
+          {
+            "from": "    buffer[offset + 7] = Number((value >> 56n) & 0xffn);",
+            "to": "    buffer[offset + 7] = Number((value >> BigInt(56)) & BigInt(0xff));",
+            "expectedReplacements": 1
+          },
+          {
+            "from": "    buffer[offset] = Number((value >> 56n) & 0xffn);",
+            "to": "    buffer[offset] = Number((value >> BigInt(56)) & BigInt(0xff));",
+            "expectedReplacements": 1
+          },
+          {
+            "from": "    buffer[offset + 1] = Number((value >> 48n) & 0xffn);",
+            "to": "    buffer[offset + 1] = Number((value >> BigInt(48)) & BigInt(0xff));",
+            "expectedReplacements": 1
+          },
+          {
+            "from": "    buffer[offset + 2] = Number((value >> 40n) & 0xffn);",
+            "to": "    buffer[offset + 2] = Number((value >> BigInt(40)) & BigInt(0xff));",
+            "expectedReplacements": 1
+          },
+          {
+            "from": "    buffer[offset + 3] = Number((value >> 32n) & 0xffn);",
+            "to": "    buffer[offset + 3] = Number((value >> BigInt(32)) & BigInt(0xff));",
+            "expectedReplacements": 1
+          },
+          {
+            "from": "    buffer[offset + 4] = Number((value >> 24n) & 0xffn);",
+            "to": "    buffer[offset + 4] = Number((value >> BigInt(24)) & BigInt(0xff));",
+            "expectedReplacements": 1
+          },
+          {
+            "from": "    buffer[offset + 5] = Number((value >> 16n) & 0xffn);",
+            "to": "    buffer[offset + 5] = Number((value >> BigInt(16)) & BigInt(0xff));",
+            "expectedReplacements": 1
+          },
+          {
+            "from": "    buffer[offset + 6] = Number((value >> 8n) & 0xffn);",
+            "to": "    buffer[offset + 6] = Number((value >> BigInt(8)) & BigInt(0xff));",
+            "expectedReplacements": 1
+          },
+          {
+            "from": "    buffer[offset + 7] = Number(value & 0xffn);",
+            "to": "    buffer[offset + 7] = Number(value & BigInt(0xff));",
+            "expectedReplacements": 1
+          },
+          {
+            "from": "    let num = 0n;",
+            "to": "    let num = BigInt(0);",
+            "expectedReplacements": 2
+          },
+          {
+            "from": "    num = (num << 8n) + BigInt(buffer[offset + 7]);",
+            "to": "    num = (num << BigInt(8)) + BigInt(buffer[offset + 7]);",
+            "expectedReplacements": 2
+          },
+          {
+            "from": "    num = (num << 8n) + BigInt(buffer[offset + 6]);",
+            "to": "    num = (num << BigInt(8)) + BigInt(buffer[offset + 6]);",
+            "expectedReplacements": 2
+          },
+          {
+            "from": "    num = (num << 8n) + BigInt(buffer[offset + 5]);",
+            "to": "    num = (num << BigInt(8)) + BigInt(buffer[offset + 5]);",
+            "expectedReplacements": 2
+          },
+          {
+            "from": "    num = (num << 8n) + BigInt(buffer[offset + 4]);",
+            "to": "    num = (num << BigInt(8)) + BigInt(buffer[offset + 4]);",
+            "expectedReplacements": 2
+          },
+          {
+            "from": "    num = (num << 8n) + BigInt(buffer[offset + 3]);",
+            "to": "    num = (num << BigInt(8)) + BigInt(buffer[offset + 3]);",
+            "expectedReplacements": 2
+          },
+          {
+            "from": "    num = (num << 8n) + BigInt(buffer[offset + 2]);",
+            "to": "    num = (num << BigInt(8)) + BigInt(buffer[offset + 2]);",
+            "expectedReplacements": 2
+          },
+          {
+            "from": "    num = (num << 8n) + BigInt(buffer[offset + 1]);",
+            "to": "    num = (num << BigInt(8)) + BigInt(buffer[offset + 1]);",
+            "expectedReplacements": 2
+          },
+          {
+            "from": "    num = (num << 8n) + BigInt(buffer[offset]);",
+            "to": "    num = (num << BigInt(8)) + BigInt(buffer[offset]);",
+            "expectedReplacements": 2
+          }
+        ]
+      }
+    ]
+  },
+  "wif-5.0.0": {
+    "name": "wif",
+    "entrypoint": "src/index",
+    "version": "5.0.0",
+    "repository": "bitcoinjs/wif",
+    "commitHash": "93a373a7ca39ffd6a934a7061dae21929695ae64",
+    "files": [
+      "ts_src/index.ts"
+    ],
+    "renameFiles": [
+      [
+        "ts_src/index.ts",
+        "src/index.ts"
+      ]
+    ],
+    "deps": [
+      "bs58check-4.0.0"
+    ]
+  },
+  "bs58check-4.0.0": {
+    "name": "bs58check",
+    "entrypoint": "src/index",
+    "version": "4.0.0",
+    "repository": "bitcoinjs/bs58check",
+    "commitHash": "3d7c00ec7e4b52f4b8a1aaff7eb8879a4b441132",
+    "files": [
+      "ts_src/index.ts",
+      "ts_src/base.ts"
+    ],
+    "renameFiles": [
+      [
+        "ts_src/index.ts",
+        "src/index.ts"
+      ],
+      [
+        "ts_src/base.ts",
+        "src/base.ts"
+      ]
+    ],
+    "replaceInFiles": [
+      {
+        "filename": "src/index.ts",
+        "replacements": [
+          {
+            "from": " from '@noble/hashes/sha256'",
+            "to": " from '../../@noble/hashes-1.8.0/src/sha256'",
+            "expectedReplacements": 1
+          },
+          {
+            "from": " from './base.js'",
+            "to": " from './base'",
+            "expectedReplacements": 1
+          }
+        ]
+      }
+    ],
+    "deps": [
+      "bs58-6.0.0",
+      "@noble/hashes-1.8.0"
+    ]
+  },
+  "bs58-6.0.0": {
+    "name": "bs58",
+    "entrypoint": "src/index",
+    "version": "6.0.0",
+    "repository": "cryptocoinjs/bs58",
+    "commitHash": "e23aea1ef3fd572169db3cbbfabfd51f72202ac4",
+    "files": [
+      "ts_src/index.ts"
+    ],
+    "renameFiles": [
+      [
+        "ts_src/index.ts",
+        "src/index.ts"
+      ]
+    ],
+    "deps": [
+      "base-x-5.0.1"
+    ]
+  },
+  "base-x-5.0.1": {
+    "name": "base-x",
+    "entrypoint": "src/index",
+    "version": "5.0.1",
+    "repository": "cryptocoinjs/base-x",
+    "commitHash": "b7b0cec52bf60d993957902e8e7c96906ac39c7c",
+    "files": [
+      "ts_src/index.ts"
+    ],
+    "renameFiles": [
+      [
+        "ts_src/index.ts",
+        "src/index.ts"
+      ]
+    ]
   }
 }

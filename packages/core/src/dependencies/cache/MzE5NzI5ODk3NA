@@ -1,0 +1,64 @@
+{
+    "name": "wif",
+    "version": "5.0.0",
+    "description": "Bitcoin Wallet Import Format (WIF) decoding/encoding module",
+    "author": "Daniel Cousens",
+    "type": "module",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/bitcoinjs/wif.git"
+    },
+    "bugs": {
+        "url": "https://github.com/bitcoinjs/wif/issues"
+    },
+    "homepage": "https://github.com/bitcoinjs/wif",
+    "keywords": [
+        "bitcoin",
+        "base58",
+        "base58check",
+        "decode",
+        "decoding",
+        "encoding",
+        "encode",
+        "key",
+        "private",
+        "wif"
+    ],
+    "main": "src/cjs/index.cjs",
+    "module": "src/esm/index.js",
+    "types": "src/cjs/index.d.ts",
+    "exports": {
+        ".": {
+            "require": "./src/cjs/index.cjs",
+            "import": "./src/esm/index.js",
+            "types": "./src/cjs/index.d.ts"
+        }
+    },
+    "files": [
+        "src"
+    ],
+    "scripts": {
+        "build": "npm run clean && tsc -p ./tsconfig.json && tsc -p ./tsconfig.cjs.json; npm run standard -- --fix",
+        "clean": "rimraf src",
+        "postbuild": "find src/cjs -type f -name \"*.js\" -exec bash -c 'mv \"$0\" \"${0%.js}.cjs\"' {} \\;",
+        "gitdiff": "npm run build && git diff --exit-code",
+        "coverage-report": "c8 report --reporter=lcov",
+        "coverage": "c8 --check-coverage --branches 90 --functions 90 npm run unit",
+        "standard": "ts-standard --ignore src --ignore test",
+        "test": "npm run standard && npm run coverage",
+        "unit": "tape test/*.js"
+    },
+    "dependencies": {
+        "bs58check": "^4.0.0"
+    },
+    "devDependencies": {
+        "@types/node": "^20.14.2",
+        "c8": "^10.1.2",
+        "rimraf": "^5.0.7",
+        "tape": "^5.3.0",
+        "ts-standard": "^12.0.2",
+        "typescript": "^5.4.5",
+        "uint8array-tools": "0.0.7"
+    }
+}

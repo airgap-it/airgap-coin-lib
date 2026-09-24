@@ -1,12 +1,13 @@
 // tslint:disable: max-classes-per-file
-import { IAirGapTransaction, ProtocolSymbols, UnsignedTransaction } from '@airgap/coinlib-core'
+import { Domain, IAirGapSignedTransaction, IAirGapTransaction, ProtocolSymbols, UnsignedTransaction } from '@airgap/coinlib-core'
+import { ConditionViolationError, UnsupportedError } from '@airgap/coinlib-core/errors'
 import axios from '@airgap/coinlib-core/dependencies/src/axios-0.33.0/index'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import { mnemonicToSeed } from '@airgap/coinlib-core/dependencies/src/bip39-2.5.0/index'
 import * as bs58check from '@airgap/coinlib-core/dependencies/src/bs58check-2.1.2'
 import { AirGapTransactionWarning } from '@airgap/coinlib-core/interfaces/IAirGapTransaction'
 import { MainProtocolSymbols } from '@airgap/coinlib-core/utils/ProtocolSymbols'
-import * as bitcoinJS from 'bitcoinjs-lib'
+import * as bitcoinJS from '@airgap/coinlib-core/dependencies/src/bitcoinjs-lib-6.1.7/src/index'
 import { SignedBitcoinSegwitTransaction } from '../types/signed-transaction-bitcoin-segwit'
 
 import { RawBitcoinSegwitTransaction, RawBitcoinTransaction } from '../types/transaction-bitcoin'
@@ -15,8 +16,12 @@ import { BitcoinProtocol, UTXOResponse } from './BitcoinProtocol'
 import { BitcoinProtocolOptions } from './BitcoinProtocolOptions'
 import { BitcoinSegwitAddress } from './BitcoinSegwitAddress'
 import { BitcoinAddressCursor, BitcoinAddressResult } from './BitcoinTypes'
-import { BIP32Factory } from 'bip32'
-import ecc from '@bitcoinerlab/secp256k1'
+import { BIP32Factory } from '@airgap/coinlib-core/dependencies/src/bip32-5.0.1/src/index'
+import * as ecc from '@airgap/coinlib-core/dependencies/src/@bitcoinerlab/secp256k1-1.2.0/src/index'
+
+// Constructed once at module load: BIP32Factory runs a full elliptic-curve self-test (testEcc)
+// on every construction, which is far too expensive to repeat per instance.
+const bip32Lib = BIP32Factory(ecc)
 
 const DUST_AMOUNT = 50
 
@@ -64,14 +69,13 @@ export class BitcoinSegwitProtocol extends BitcoinProtocol {
 
   public standardDerivationPath: string = `m/84'/0'/0'`
   public addressPlaceholder: string = 'bc1...'
-  private readonly bip32 = BIP32Factory(ecc)
 
   constructor(options: BitcoinProtocolOptions = new BitcoinProtocolOptions()) {
     super(options)
   }
 
   public async getPublicKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
-    const bitcoinNode = this.bip32.fromSeed(Buffer.from(secret, 'hex'), this.options.network.extras.network)
+    const bitcoinNode = bip32Lib.fromSeed(Buffer.from(secret, 'hex'), this.options.network.extras.network)
 
     const neutered = bitcoinNode.derivePath(derivationPath).neutered()
 
@@ -82,10 +86,10 @@ export class BitcoinSegwitProtocol extends BitcoinProtocol {
 
   public async getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
     if (!derivationPath) {
-      return this.bip32.fromSeed(Buffer.from(secret, 'hex'), this.options.network.extras.network) as any
+      return bip32Lib.fromSeed(Buffer.from(secret, 'hex'), this.options.network.extras.network) as any
     }
 
-    const bitcoinNode = this.bip32.fromSeed(Buffer.from(secret, 'hex'), this.options.network.extras.network)
+    const bitcoinNode = bip32Lib.fromSeed(Buffer.from(secret, 'hex'), this.options.network.extras.network)
 
     const privateKey = bitcoinNode.derivePath(derivationPath).privateKey
 
@@ -103,7 +107,7 @@ export class BitcoinSegwitProtocol extends BitcoinProtocol {
   }
 
   public async getExtendedPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
-    const bitcoinNode = this.bip32.fromSeed(Buffer.from(secret, 'hex'), this.options.network.extras.network)
+    const bitcoinNode = bip32Lib.fromSeed(Buffer.from(secret, 'hex'), this.options.network.extras.network)
 
     return bitcoinNode.derivePath(derivationPath).toBase58()
   }
@@ -112,7 +116,7 @@ export class BitcoinSegwitProtocol extends BitcoinProtocol {
     // broadcaster knows this (both broadcaster and signer)
 
     const address: BitcoinSegwitAddress = BitcoinSegwitAddress.fromAddress(
-      this.bip32.fromBase58(publicKey, this.options.network.extras.network).toBase58()
+      bip32Lib.fromBase58(publicKey, this.options.network.extras.network).toBase58()
     )
 
     return {
@@ -133,7 +137,7 @@ export class BitcoinSegwitProtocol extends BitcoinProtocol {
     const xpub = new ExtendedPublicKey(extendedPublicKey).toXpub()
 
     // broadcaster knows this (both broadcaster and signer)
-    const keyPair = this.bip32
+    const keyPair = bip32Lib
       .fromBase58(xpub, this.options.network.extras.network)
       .derive(visibilityDerivationIndex)
       .derive(addressDerivationIndex)
@@ -161,7 +165,7 @@ export class BitcoinSegwitProtocol extends BitcoinProtocol {
     offset: number
   ): Promise<BitcoinAddressResult[]> {
     // broadcaster knows this (both broadcaster and signer)
-    const node = this.bip32.fromBase58(new ExtendedPublicKey(extendedPublicKey).toXpub(), this.options.network.extras.network)
+    const node = bip32Lib.fromBase58(new ExtendedPublicKey(extendedPublicKey).toXpub(), this.options.network.extras.network)
     const generatorArray = Array.from(new Array(addressCount), (x, i) => i + offset)
 
     return Promise.all(
@@ -422,7 +426,7 @@ export class BitcoinSegwitProtocol extends BitcoinProtocol {
       )
     })
 
-    const keyPair = this.bip32.fromBase58(new ExtendedPublicKey(extendedPublicKey).toXpub())
+    const keyPair = bip32Lib.fromBase58(new ExtendedPublicKey(extendedPublicKey).toXpub())
 
     const replaceByFee: boolean = extras.replaceByFee ? true : false
     transaction.ins.forEach((tx) => {
@@ -474,27 +478,45 @@ export class BitcoinSegwitProtocol extends BitcoinProtocol {
     return tx
   }
 
+  /**
+   * The inherited implementation builds a legacy P2PKH transaction, which is wrong for P2WPKH
+   * inputs: it would compute the sighash over the wrong script and return a "successfully" signed
+   * transaction no node accepts. Segwit signing goes through the PSBT flow with an extended key.
+   */
+  public async signWithPrivateKey(_privateKey: string, _transaction: RawBitcoinTransaction): Promise<IAirGapSignedTransaction> {
+    throw new UnsupportedError(
+      Domain.BITCOIN,
+      'BitcoinSegwitProtocol does not support signing with a non-extended private key; use signWithExtendedPrivateKey.'
+    )
+  }
+
   public async signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: any /* RawBitcoinSegwitTransaction */): Promise<string> {
     const rawBitcoinSegwitTx: RawBitcoinSegwitTransaction = transaction
 
-    const bip32PK = this.bip32.fromBase58(extendedPrivateKey)
+    // Pass the network explicitly: without it bip32 falls back to its built-in mainnet constant and
+    // rejects any other network's extended key version bytes.
+    const bip32PK = bip32Lib.fromBase58(extendedPrivateKey, this.options.network.extras.network)
 
     const decodedPSBT = bitcoinJS.Psbt.fromHex(rawBitcoinSegwitTx.psbt)
 
     decodedPSBT.data.inputs.forEach((input, index) => {
       input.bip32Derivation?.forEach((deriv) => {
+        // This uses the same logic to find child key as the "findWalletByFingerprintDerivationPathAndProtocolIdentifier" method in the Vault
+        const cutoffFrom = deriv.path.lastIndexOf("'") || deriv.path.lastIndexOf('h')
+        const childPath = deriv.path.substr(cutoffFrom + 2)
+        const childNode = bip32PK.derivePath(childPath)
         try {
-          // This uses the same logic to find child key as the "findWalletByFingerprintDerivationPathAndProtocolIdentifier" method in the Vault
-          const cutoffFrom = deriv.path.lastIndexOf("'") || deriv.path.lastIndexOf('h')
-          const childPath = deriv.path.substr(cutoffFrom + 2)
-          const childNode = bip32PK.derivePath(childPath)
           decodedPSBT.signInput(index, {
             publicKey: Buffer.from(childNode.publicKey),
             sign: (hash: Buffer, lowR?: boolean) => Buffer.from(childNode.sign(hash, lowR))
           })
-          console.log(`Signed input ${index} with path ${deriv.path}`)
-        } catch (e) {
-          console.log(`Error signing input ${index}`, e)
+        } catch (error) {
+          // Previously this was logged and swallowed, which returned a partially signed or unsigned
+          // PSBT that was indistinguishable from success to the caller. Fail instead.
+          throw new ConditionViolationError(
+            Domain.BITCOIN,
+            `Failed to sign input ${index} (derivation ${deriv.path}): ${error instanceof Error ? error.message : String(error)}`
+          )
         }
       })
     })

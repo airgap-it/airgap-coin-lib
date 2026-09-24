@@ -1,0 +1,242 @@
+{
+  "bitcoin": {
+    "identifier": "btc",
+    "keyPair": {
+      "secretKey": "be47f4627fd9314a83609c24338aa6dc63990e61ddab8835adb16756fcd0bea3",
+      "publicKey": "034c33b5df1162b52363beb6bdc84a051f04bda51ea8cc9427d296e088128e7986"
+    },
+    "extendedKeyPair": {
+      "secretKey": "xprv9yzvjXeHEDMMM2x8H6btZjyVaB9YBpvR7wdqQhGAEQbsvjrQejHhPdqdMRcAE3MqdZcfrSkCGk96YVqPhFHwJqY7VxgPgmMWMehcmHdQJ5h",
+      "publicKey": "xpub6CzH93BB4aueZX2bP88tvsvE8Cz2bHeGVAZSD5fmnk8roYBZCGbwwSA7ChiRr65jncuPH8qBQA9nBwi2Qtz1Uqt8wuHvof9SAcPpFxpe1GV"
+    },
+    "addressFromPublicKey": "177XH2FybTovE55Wh3fDT4o3LtDBr7mwYz",
+    "derivedAddresses": [
+      {
+        "path": "0/0",
+        "publicKey": "0311a202c95426b8aafdd7b482e53a363935eb6491b8bcd8991f16abc810f68868",
+        "address": "15B2gX2x1eqFKgR44nCe1i33ursGKP4Qpi"
+      },
+      {
+        "path": "0/1",
+        "publicKey": "02c437f45f0cd52d91b8fb3d7608cdcd77791777841bf8fa8f6c88d6647ab27bdd",
+        "address": "15srTWTrucPWSUGFZY2LWaYobwpDLknz49"
+      },
+      {
+        "path": "0/5",
+        "publicKey": "02464b31d69e3720ae10fa641de04b45fa2746414115c7d41b90d03bf3994236ab",
+        "address": "1CHBs1yFdh5UdRPF9qndGY9UJpDXeDfFDh"
+      },
+      {
+        "path": "1/0",
+        "publicKey": "038f848986a8427334087aeeec595d2c20cd82409afc503461cb69edc5f935ed93",
+        "address": "1Kw98timgRcvsQcguq8Ko4A7hA7VD3iKBh"
+      },
+      {
+        "path": "1/3",
+        "publicKey": "039114571129b267e9500fd3fb47336eaba1d235651847ce4797733fa6561c4b4f",
+        "address": "1KVA7HX16cef46Lpsi67v8ZV4y6bAiTmLt"
+      }
+    ],
+    "signedTransactions": [
+      {
+        "index": 0,
+        "signed": "{\"amount\":\"32391999\",\"fee\":\"27000\",\"from\":[\"15B2gX2x1eqFKgR44nCe1i33ursGKP4Qpi\",\"1QKqr9wjki9K9tF9NxigbwgHeLXHT682sc\"],\"to\":[\"15B2gX2x1eqFKgR44nCe1i33ursGKP4Qpi\",\"1KVA7HX16cef46Lpsi67v8ZV4y6bAiTmLt\"],\"transaction\":\"01000000027bcda7b76bc47ab562a79cb36198cefe364b66cf913426b7932e84120822108a000000006a473044022020196ef19bf59e57334f679a725d8e4ead38121d70da56ff3cb09e96fd3eef49022077f11913dc6c4feca173079578729efa814745e7baa6dce8cda668277c15501501210311a202c95426b8aafdd7b482e53a363935eb6491b8bcd8991f16abc810f68868ffffffff9d035485adbb78236f53e79bc02ff8785a3312bd3b65f94ba022d9b632b869cc000000006a4730440220278602b82b439124b2bffe2e7e14ddaf1ab3ab2fc96bafcd91240c5cbffeaf5102207f27fab5172d9159af1f5ad974e73e1b8c5faffffab83ec9211d24f08cece18d012102f5ec5458a1d3ce47e87e606df057e6efdfa4c3190b492b115418376865682cacffffffff020a000000000000001976a9142dc610f6d5bfca59507d0dddb986eacfe5c3ed8b88ac3543ee01000000001976a914cac583a9ff2b5c2ac8ea3d5d0a37cc56e99d16f488ac00000000\",\"type\":\"signed\"}"
+      }
+    ],
+    "signedMessages": [
+      {
+        "message": "example message",
+        "signature": "IBktb5pV1sOtX15/qK8IyocO0i1Bbxf+v+ZqCryg477QVYykBA4U4iXcpgjfJwagHi+OaXXpOStd8v86VVp87j0="
+      }
+    ]
+  },
+  "bitcoin-legacy": {
+    "identifier": "btc",
+    "keyPair": {
+      "secretKey": "be47f4627fd9314a83609c24338aa6dc63990e61ddab8835adb16756fcd0bea3",
+      "publicKey": "034c33b5df1162b52363beb6bdc84a051f04bda51ea8cc9427d296e088128e7986"
+    },
+    "extendedKeyPair": {
+      "secretKey": "xprv9yzvjXeHEDMMM2x8H6btZjyVaB9YBpvR7wdqQhGAEQbsvjrQejHhPdqdMRcAE3MqdZcfrSkCGk96YVqPhFHwJqY7VxgPgmMWMehcmHdQJ5h",
+      "publicKey": "xpub6CzH93BB4aueZX2bP88tvsvE8Cz2bHeGVAZSD5fmnk8roYBZCGbwwSA7ChiRr65jncuPH8qBQA9nBwi2Qtz1Uqt8wuHvof9SAcPpFxpe1GV"
+    },
+    "addressFromPublicKey": "177XH2FybTovE55Wh3fDT4o3LtDBr7mwYz",
+    "derivedAddresses": [
+      {
+        "path": "0/0",
+        "publicKey": "0311a202c95426b8aafdd7b482e53a363935eb6491b8bcd8991f16abc810f68868",
+        "address": "15B2gX2x1eqFKgR44nCe1i33ursGKP4Qpi"
+      },
+      {
+        "path": "0/1",
+        "publicKey": "02c437f45f0cd52d91b8fb3d7608cdcd77791777841bf8fa8f6c88d6647ab27bdd",
+        "address": "15srTWTrucPWSUGFZY2LWaYobwpDLknz49"
+      },
+      {
+        "path": "0/5",
+        "publicKey": "02464b31d69e3720ae10fa641de04b45fa2746414115c7d41b90d03bf3994236ab",
+        "address": "1CHBs1yFdh5UdRPF9qndGY9UJpDXeDfFDh"
+      },
+      {
+        "path": "1/0",
+        "publicKey": "038f848986a8427334087aeeec595d2c20cd82409afc503461cb69edc5f935ed93",
+        "address": "1Kw98timgRcvsQcguq8Ko4A7hA7VD3iKBh"
+      },
+      {
+        "path": "1/3",
+        "publicKey": "039114571129b267e9500fd3fb47336eaba1d235651847ce4797733fa6561c4b4f",
+        "address": "1KVA7HX16cef46Lpsi67v8ZV4y6bAiTmLt"
+      }
+    ],
+    "signedTransactions": [],
+    "signedMessages": [
+      {
+        "message": "example message",
+        "signature": "IBktb5pV1sOtX15/qK8IyocO0i1Bbxf+v+ZqCryg477QVYykBA4U4iXcpgjfJwagHi+OaXXpOStd8v86VVp87j0="
+      }
+    ]
+  },
+  "bitcoin-segwit": {
+    "identifier": "btc_segwit",
+    "keyPair": {
+      "secretKey": "be47f4627fd9314a83609c24338aa6dc63990e61ddab8835adb16756fcd0bea3",
+      "publicKey": "034c33b5df1162b52363beb6bdc84a051f04bda51ea8cc9427d296e088128e7986"
+    },
+    "extendedKeyPair": {
+      "secretKey": "xprv9yzvjXeHEDMMM2x8H6btZjyVaB9YBpvR7wdqQhGAEQbsvjrQejHhPdqdMRcAE3MqdZcfrSkCGk96YVqPhFHwJqY7VxgPgmMWMehcmHdQJ5h",
+      "publicKey": "zpub6reokNX1MwzcG7Qq3qi9M47EU9GvUXdGKPbsmsTYYktcujp1haw5BZUPF7dbquPabu8zn62JKUrsxWw9rHp35KFLgagmyUnQi4X738AhQSG"
+    },
+    "addressFromPublicKey": "bc1qgvxgv9lv8gq2p5fqvurkmrx35y42nd5nz8h23r",
+    "derivedAddresses": [
+      {
+        "path": "0/0",
+        "publicKey": "0311a202c95426b8aafdd7b482e53a363935eb6491b8bcd8991f16abc810f68868",
+        "address": "bc1q9hrppak4hl99j5raphwmnph2elju8mvtnch4yw"
+      },
+      {
+        "path": "0/1",
+        "publicKey": "02c437f45f0cd52d91b8fb3d7608cdcd77791777841bf8fa8f6c88d6647ab27bdd",
+        "address": "bc1qx4lftlq5p9dsv5ln2ua5nswarqqvc556drqxt8"
+      },
+      {
+        "path": "0/5",
+        "publicKey": "02464b31d69e3720ae10fa641de04b45fa2746414115c7d41b90d03bf3994236ab",
+        "address": "bc1q0wu3kszyjmdq7mz0zrlt5zyr4vhzmnmqftmvz6"
+      },
+      {
+        "path": "1/0",
+        "publicKey": "038f848986a8427334087aeeec595d2c20cd82409afc503461cb69edc5f935ed93",
+        "address": "bc1qe7hcfp6y6s8vcpsr6fuglslnym79tt4z0cq3wp"
+      },
+      {
+        "path": "1/3",
+        "publicKey": "039114571129b267e9500fd3fb47336eaba1d235651847ce4797733fa6561c4b4f",
+        "address": "bc1qetzc820l9dwz4j8284ws5d7v2m5e69h56jvk4r"
+      }
+    ],
+    "signedTransactions": [],
+    "signedMessages": [
+      {
+        "message": "example message",
+        "signature": "IBktb5pV1sOtX15/qK8IyocO0i1Bbxf+v+ZqCryg477QVYykBA4U4iXcpgjfJwagHi+OaXXpOStd8v86VVp87j0="
+      }
+    ]
+  },
+  "bitcoin-taproot": {
+    "identifier": "btc_taproot",
+    "keyPair": {
+      "secretKey": "be47f4627fd9314a83609c24338aa6dc63990e61ddab8835adb16756fcd0bea3",
+      "publicKey": "034c33b5df1162b52363beb6bdc84a051f04bda51ea8cc9427d296e088128e7986"
+    },
+    "extendedKeyPair": {
+      "secretKey": "xprv9yzvjXeHEDMMM2x8H6btZjyVaB9YBpvR7wdqQhGAEQbsvjrQejHhPdqdMRcAE3MqdZcfrSkCGk96YVqPhFHwJqY7VxgPgmMWMehcmHdQJ5h",
+      "publicKey": "xpub6CzH93BB4aueZX2bP88tvsvE8Cz2bHeGVAZSD5fmnk8roYBZCGbwwSA7ChiRr65jncuPH8qBQA9nBwi2Qtz1Uqt8wuHvof9SAcPpFxpe1GV"
+    },
+    "addressFromPublicKey": "bc1pcwlyhnh4pawe07eyyeqrskgh7yz7vv9y5a626ckzc0h906x3xcts4un0j9",
+    "derivedAddresses": [
+      {
+        "path": "0/0",
+        "publicKey": "0311a202c95426b8aafdd7b482e53a363935eb6491b8bcd8991f16abc810f68868",
+        "address": "bc1p69va70jzhe97a4pux2gjnew6v4cyhvhrxe9hjmnxxar74k63qt6q58ktmk"
+      },
+      {
+        "path": "0/1",
+        "publicKey": "02c437f45f0cd52d91b8fb3d7608cdcd77791777841bf8fa8f6c88d6647ab27bdd",
+        "address": "bc1p9v8hj9e6fx29d06wv5qdne5uj7ntvxvl9rn6y6szpp9rpttxtsmq5vwa5v"
+      },
+      {
+        "path": "0/5",
+        "publicKey": "02464b31d69e3720ae10fa641de04b45fa2746414115c7d41b90d03bf3994236ab",
+        "address": "bc1pgluyunnlcvmajfmpgxd2w0pw6d650quyhwla36dd43rrhfy2sm8qqp47gt"
+      },
+      {
+        "path": "1/0",
+        "publicKey": "038f848986a8427334087aeeec595d2c20cd82409afc503461cb69edc5f935ed93",
+        "address": "bc1peuxu0z8hy5vc0yaagzxem3seqx660778rrcpdaf7nzqp9mhft75s3xqhr7"
+      },
+      {
+        "path": "1/3",
+        "publicKey": "039114571129b267e9500fd3fb47336eaba1d235651847ce4797733fa6561c4b4f",
+        "address": "bc1pannpjvm85zsj6yrzhmkdu9udvdy236hyhmgt0r3wce7ac9mrkdaslkwz40"
+      }
+    ],
+    "signedTransactions": [],
+    "signedMessages": [
+      {
+        "message": "example message",
+        "signature": "IBktb5pV1sOtX15/qK8IyocO0i1Bbxf+v+ZqCryg477QVYykBA4U4iXcpgjfJwagHi+OaXXpOStd8v86VVp87j0="
+      }
+    ]
+  },
+  "bitcoin-testnet": {
+    "identifier": "btc",
+    "keyPair": {
+      "secretKey": "453893a51c56b880187df91b3439b425848cd483e43a8990b08ba77c757e711e",
+      "publicKey": "03f4b070079064d0f2e2b6ff18edf54dcbda31e03c78deaa3be479e62ffdb610a1"
+    },
+    "extendedKeyPair": {
+      "secretKey": "tprv8fmGMwHA9QVZZzFAR77eLN6bursxXG4Jb59YnZKFyR8WG48s1JbpLuurf7LiRW3NEkkxR1mNmPcY9sWfrYMwFVDQKzJwhirzw8YpmFCYgEq",
+      "publicKey": "tpubDCTJWMKQHnBETTGxJknEjmkiUtPtgbFDANkL55MZPgvu6YPddhRQXQXiqHZdfHwcoVNwTaHmS6DuNjcaYPRqVFkDogJdWSMLpSWSC4pNa3r"
+    },
+    "addressFromPublicKey": "mhvvW2pgQyAm1HUqLQ8kH3jA5Av7VyuQda",
+    "derivedAddresses": [
+      {
+        "path": "0/0",
+        "publicKey": "024fd3380540fcc9ca541259ecbdf1b6c649d2be04f76d17d685ab63a8e75c4b0e",
+        "address": "mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k"
+      },
+      {
+        "path": "0/1",
+        "publicKey": "024df94a3c2490dea2dfe0a4aac0c96d4955d1650e4be4e162c6730bdf5bf0666f",
+        "address": "moK2Ws7YvK3LRppzCuLRVfDkpvZiw7T4cu"
+      },
+      {
+        "path": "0/5",
+        "publicKey": "024292d0c28e24689cd164c57cb98bdb22ce766456f72a8ec934549a217bfbd1ac",
+        "address": "moe8Xi57znqcg1MexYJoB5cuuGvLBz6Bdy"
+      },
+      {
+        "path": "1/0",
+        "publicKey": "02bd8b2248ffd83ec40164dbe21f82cce2d61ff33fa313f4303098b23c0ee029b4",
+        "address": "mfcd7QevgCuUx3PsHZRGewEsn97AhsSCib"
+      },
+      {
+        "path": "1/3",
+        "publicKey": "02f75fcf06cbe5726214e6199dd7720230083fd3c4f5a984c209373684b1e010fe",
+        "address": "mtb2Yx8rPUhYxdqPsH9nzT375QtWZ9XJcX"
+      }
+    ],
+    "signedTransactions": [
+      {
+        "index": 0,
+        "signed": "{\"amount\":\"64973010\",\"fee\":\"27000\",\"from\":[\"mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k\",\"mtb2Yx8rPUhYxdqPsH9nzT375QtWZ9XJcX\"],\"to\":[\"mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k\",\"miiQwEJY9fCG6GD1BFtnVuWRS6zaTnNafq\"],\"transaction\":\"01000000027bcda7b76bc47ab562a79cb36198cefe364b66cf913426b7932e84120822108a000000006b483045022100e5236bea6922b626ad641a4882a5ac22bcd7adac97df014836941f91b3c32fe802203fd012f0d7baade4be83796348c9e5630c1f21f62500019c7eb95805daacdf9d0121024fd3380540fcc9ca541259ecbdf1b6c649d2be04f76d17d685ab63a8e75c4b0effffffffac6e065cabe8932e1accef482ccaebab8947b53e7e4963d4c5c722d26f57abe7000000006a47304402202c3b36a309cab5673996727fcadb7802f6ffb014ffe9e812c66f868ac15f47670220208adb66334813fad3a9995e6f82abc608639e504c03489749bffb3e95be3ba0012102f75fcf06cbe5726214e6199dd7720230083fd3c4f5a984c209373684b1e010feffffffff020a000000000000001976a9141b6d966bb9c605b984151da9bed896145698c44288acc868df03000000001976a91423133112acbd2276071912231a1c08874cfedbd688ac00000000\",\"type\":\"signed\"}"
+      }
+    ],
+    "signedMessages": [
+      {
+        "message": "example message",
+        "signature": "H/kBGmnGxu4LZY3leE0RPQEadr5Cam3vK2e0yCp9KxlHNtV8UvLdcxMWNDH4NhRmOBuB0RkFDakLVwsq1QgL7GQ="
+      }
+    ]
+  }
+}

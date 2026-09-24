@@ -6,7 +6,7 @@ import sinon = require('sinon')
 
 import { TestProtocolSpec } from './implementations'
 import { StellarTestProtocolSpec } from './specs/stellar'
-import { Networks, Operation, Transaction, TransactionBuilder } from '@stellar/stellar-sdk'
+import { Networks, Operation, Transaction, TransactionBuilder } from '@stellar/stellar-base'
 
 chai.use(chaiAsPromised)
 const expect = chai.expect

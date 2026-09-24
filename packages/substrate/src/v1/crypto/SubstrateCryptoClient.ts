@@ -1,5 +1,5 @@
 import { Sr25519CryptoClient } from '@airgap/coinlib-core/protocols/Sr25519CryptoClient'
-import { assert, u8aToU8a } from '@polkadot/util'
+import { assert, u8aToU8a } from '../utils/u8a'
 import { sr25519Sign, sr25519Verify, waitReady } from '@polkadot/wasm-crypto'
 
 export class SubstrateCryptoClient extends Sr25519CryptoClient {

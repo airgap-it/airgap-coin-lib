@@ -1,9 +1,9 @@
 /* eslint-disable no-underscore-dangle */
 // tslint:disable: max-classes-per-file
 import * as nacl from '@airgap/coinlib-core/dependencies/src/tweetnacl-1.0.1/nacl'
-import { mnemonicToSeedSync } from 'bip39'
-import { sha256 } from 'js-sha256'
-import Secp256k1 from 'secp256k1'
+import { mnemonicToSeed } from '@airgap/coinlib-core/dependencies/src/bip39-2.5.0/index'
+import { sha256 } from './sha2'
+import * as Secp256k1 from './secp256k1-lib'
 
 import { DerEncodedPublicKey, KeyPair, PublicKey, Signature, SignIdentity } from './auth'
 import { fromHexString, toHexString } from './buffer'
@@ -150,7 +150,8 @@ export class Secp256k1KeyIdentity extends SignIdentity {
       console.warn('Warning - an unusually formatted seed phrase has been provided. Decoding may not work as expected')
     }
 
-    const seed = mnemonicToSeedSync(phrase, password)
+    // vendored bip39 2.5.0: `mnemonicToSeed` is synchronous and returns a Buffer (3.x renamed it mnemonicToSeedSync)
+    const seed = mnemonicToSeed(phrase, password)
     const root = hdkey.fromMasterSeed(seed)
     const addrnode = root.derive(derivationPath)
 
@@ -159,7 +160,10 @@ export class Secp256k1KeyIdentity extends SignIdentity {
 
   protected _publicKey: Secp256k1PublicKey
 
-  protected constructor(publicKey: Secp256k1PublicKey, protected _privateKey: ArrayBuffer) {
+  protected constructor(
+    publicKey: Secp256k1PublicKey,
+    protected _privateKey: ArrayBuffer
+  ) {
     super()
     this._publicKey = publicKey
   }

@@ -1,4 +1,4 @@
-import { TransactionBuilder, Networks, StrKey } from '@stellar/stellar-sdk'
+import { TransactionBuilder, Networks, StrKey } from '@stellar/stellar-base'
 import { createStellarProtocol } from '../../../protocol/StellarProtocol'
 import { newPublicKey } from '@airgap/module-kit'
 

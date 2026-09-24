@@ -1,6 +1,6 @@
 import { generateKeyPairFromSeed } from '@airgap/coinlib-core/dependencies/src/@stablelib/ed25519-1.0.3/packages/ed25519/ed25519'
 import { SHA512 } from '@airgap/coinlib-core/dependencies/src/@stablelib/sha512-1.0.1/packages/sha512/sha512'
-import { hmac } from '@stablelib/hmac'
+import { hmac } from '@airgap/coinlib-core/dependencies/src/@stablelib/hmac-1.0.1/packages/hmac/hmac'
 
 import { DerivationIndex, DerivationNode } from '../types/derivation'
 import { splitDerivationPath } from '../utils/derivation'

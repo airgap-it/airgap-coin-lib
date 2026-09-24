@@ -2,7 +2,7 @@ import { assertNever, Domain } from '@airgap/coinlib-core'
 import { ConditionViolationError, UnsupportedError } from '@airgap/coinlib-core/errors'
 import { isHex } from '@airgap/coinlib-core/utils/hex'
 import { newPublicKey, PublicKey } from '@airgap/module-kit'
-import { StrKey } from '@stellar/stellar-sdk'
+import { StrKey } from '@stellar/stellar-base'
 
 import { convertEncodedBytesString, convertHexBytesString } from './convert'
 

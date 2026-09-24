@@ -1,7 +1,7 @@
 // @ts-ignore
 import * as bs58check from '@airgap/coinlib-core/dependencies/src/bs58check-2.1.2/index'
 import { IAirGapAddress } from '@airgap/coinlib-core/interfaces/IAirGapAddress'
-import { hash } from '@stablelib/blake2b'
+import { hash } from '@airgap/coinlib-core/dependencies/src/@stablelib/blake2b-1.0.1/packages/blake2b/blake2b'
 
 import { TezosUtils } from './TezosUtils'
 

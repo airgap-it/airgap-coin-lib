@@ -5,7 +5,7 @@ import { BIP32Interface, fromBase58 } from '@airgap/coinlib-core/dependencies/sr
 import { decodeTxBytes, encodeTxBytes, prepareSignBytes } from '@airgap/coinlib-core/dependencies/src/cosmjs'
 import SECP256K1 = require('@airgap/coinlib-core/dependencies/src/secp256k1-3.7.1/elliptic')
 // @ts-ignore
-import sha = require('@airgap/coinlib-core/dependencies/src/sha.js-2.4.11/index')
+import sha = require('@airgap/coinlib-core/dependencies/src/sha.js-2.4.12/index')
 import { InvalidValueError, UnsupportedError } from '@airgap/coinlib-core/errors'
 import { DelegationDetails } from '@airgap/coinlib-core/protocols/ICoinDelegateProtocol'
 import { assertFields } from '@airgap/coinlib-core/utils/assert'
@@ -69,21 +69,20 @@ import { CosmosCryptoClient } from './CosmosCryptoClient'
 
 // @ts-ignore
 
-export interface CosmosBaseProtocol<_Units extends string>
-  extends AirGapProtocol<
-    {
-      AddressResult: Address
-      ProtocolNetwork: CosmosProtocolNetwork
-      CryptoConfiguration: CosmosCryptoConfiguration
-      SignedTransaction: CosmosSignedTransaction
-      TransactionCursor: CosmosTransactionCursor
-      Units: _Units
-      FeeEstimation: FeeDefaults<_Units>
-      UnsignedTransaction: CosmosUnsignedTransaction
-    },
-    'Crypto',
-    'FetchDataForAddress'
-  > {
+export interface CosmosBaseProtocol<_Units extends string> extends AirGapProtocol<
+  {
+    AddressResult: Address
+    ProtocolNetwork: CosmosProtocolNetwork
+    CryptoConfiguration: CosmosCryptoConfiguration
+    SignedTransaction: CosmosSignedTransaction
+    TransactionCursor: CosmosTransactionCursor
+    Units: _Units
+    FeeEstimation: FeeDefaults<_Units>
+    UnsignedTransaction: CosmosUnsignedTransaction
+  },
+  'Crypto',
+  'FetchDataForAddress'
+> {
   getKeyPairFromSecretKey(secretKey: SecretKey): Promise<KeyPair>
 }
 

@@ -8,7 +8,7 @@ import { decodeTxBytes, encodeTxBytes, prepareSignBytes } from '@airgap/coinlib-
 // @ts-ignore
 import SECP256K1 = require('@airgap/coinlib-core/dependencies/src/secp256k1-3.7.1/elliptic')
 // @ts-ignore
-import sha = require('@airgap/coinlib-core/dependencies/src/sha.js-2.4.11/index')
+import sha = require('@airgap/coinlib-core/dependencies/src/sha.js-2.4.12/index')
 import { BalanceError, InvalidValueError } from '@airgap/coinlib-core/errors'
 import { Domain } from '@airgap/coinlib-core/errors/coinlib-error'
 import { AirGapTransactionStatus, IAirGapTransaction } from '@airgap/coinlib-core/interfaces/IAirGapTransaction'

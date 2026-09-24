@@ -30,11 +30,10 @@ import {
 import { StellarCryptoConfiguration } from '../../types/crypto'
 import { StellarSignedTransaction, StellarTransactionCursor, StellarUnsignedTransaction } from '../../types/transaction'
 import { createStellarProtocol, createStellarProtocolOptions, StellarProtocol } from '../StellarProtocol'
-import { HorizonApi } from '@stellar/stellar-sdk/lib/horizon'
 import axios from '@airgap/coinlib-core/dependencies/src/axios-0.33.0/index'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import { UnsupportedError } from '@airgap/coinlib-core/errors'
-import { Asset, BASE_FEE, Memo, Networks, Operation, Transaction, TransactionBuilder } from '@stellar/stellar-sdk'
+import { Asset, BASE_FEE, Memo, Networks, Operation, Transaction, TransactionBuilder } from '@stellar/stellar-base'
 
 export interface StellarAssetProtocol extends AirGapProtocol<
   {
@@ -202,7 +201,7 @@ class StellarAssetProtocolImpl implements StellarAssetProtocol {
   ): Promise<StellarUnsignedTransaction> {
     const address = await this.getAddressFromPublicKey(publicKey)
 
-    const account = await this.stellar.server.loadAccount(address)
+    const account = await this.stellar.loadAccount(address)
 
     const fee = configuration?.fee !== undefined ? configuration?.fee?.value : BASE_FEE
 
@@ -214,7 +213,7 @@ class StellarAssetProtocolImpl implements StellarAssetProtocol {
     for (const detail of details) {
       let destinationExists = true
       try {
-        await this.stellar.server.loadAccount(detail.to)
+        await this.stellar.loadAccount(detail.to)
       } catch (e) {
         if (e.response?.status === 404) {
           destinationExists = false
@@ -322,10 +321,10 @@ class StellarAssetProtocolImpl implements StellarAssetProtocol {
 
   public async getBalanceOfAddress(address: Address, configuration?: undefined): Promise<Balance<StellarUnits>> {
     try {
-      const account = await this.stellar.server.loadAccount(address)
+      const account = await this.stellar.loadAccount(address)
 
       const balanceEntry = account.balances.find(
-        (b): b is HorizonApi.BalanceLineAsset<'credit_alphanum4'> | HorizonApi.BalanceLineAsset<'credit_alphanum12'> =>
+        (b) =>
           (b.asset_type === 'credit_alphanum4' || b.asset_type === 'credit_alphanum12') &&
           b.asset_code === this.metadata.assetCode &&
           b.asset_issuer === this.metadata.issuer
@@ -376,10 +375,10 @@ class StellarAssetProtocolImpl implements StellarAssetProtocol {
     const address = await this.getAddressFromPublicKey(publicKey)
 
     try {
-      const account = await this.stellar.server.loadAccount(address)
+      const account = await this.stellar.loadAccount(address)
 
       const balanceEntry = account.balances.find(
-        (b): b is HorizonApi.BalanceLineAsset<'credit_alphanum4'> | HorizonApi.BalanceLineAsset<'credit_alphanum12'> =>
+        (b) =>
           (b.asset_type === 'credit_alphanum4' || b.asset_type === 'credit_alphanum12') &&
           b.asset_code === this.metadata.assetCode &&
           b.asset_issuer === this.metadata.issuer
@@ -400,7 +399,7 @@ class StellarAssetProtocolImpl implements StellarAssetProtocol {
   public async setTrustline(publicKey: PublicKey, assetMeta: StellarAssetMetadata, limit?: string): Promise<StellarUnsignedTransaction> {
     const address = await this.getAddressFromPublicKey(publicKey)
 
-    const account = await this.stellar.server.loadAccount(address)
+    const account = await this.stellar.loadAccount(address)
 
     const txBuilder = new TransactionBuilder(account, {
       fee: BASE_FEE,

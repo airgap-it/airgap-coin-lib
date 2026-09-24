@@ -15,9 +15,10 @@ export class StellarProtocolStub implements ProtocolHTTPStub {
       .withArgs(`${horizonUrl}/accounts/${address}`)
       .returns(
         Promise.resolve({
-          data: {
-            balances: [{ asset_type: 'native', balance: '0.0000000' }]
-          }
+          // A full Horizon account payload: `StellarAccount` extends stellar-base's `Account`, whose
+          // constructor validates `account_id` and `sequence` and throws otherwise. A partial
+          // payload here would route the test through the error path instead of the parser.
+          data: { ...getAccount(address), balances: [{ asset_type: 'native', balance: '0.0000000' }] }
         })
       )
   }
@@ -39,10 +40,11 @@ export class StellarProtocolStub implements ProtocolHTTPStub {
   }
 
   public async loadAccountStub(testProtocolSpec: TestProtocolSpec, address: string) {
-    sinon
-      .stub(testProtocolSpec.lib.server, 'loadAccount')
-      .withArgs(address)
-      .resolves({ ...getAccount(address) })
+    // `prepareTransactionWithPublicKey` also probes every destination with `loadAccount` to decide
+    // between `payment` and `createAccount`. A `.withArgs(address)`-only stub resolves `undefined`
+    // for those probes, which silently reads as "destination exists". Make it explicit instead:
+    // every address the fixtures touch is a funded account.
+    sinon.stub(testProtocolSpec.lib, 'loadAccount').callsFake(async (requested: string) => ({ ...getAccount(requested) }) as any)
   }
 }
 

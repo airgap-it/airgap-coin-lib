@@ -1,0 +1,143 @@
+{
+  "bitcoin-v0": {
+    "publicKey": "xpub6CzH93BB4aueZX2bP88tvsvE8Cz2bHeGVAZSD5fmnk8roYBZCGbwwSA7ChiRr65jncuPH8qBQA9nBwi2Qtz1Uqt8wuHvof9SAcPpFxpe1GV",
+    "privateKey": "be47f4627fd9314a83609c24338aa6dc63990e61ddab8835adb16756fcd0bea3",
+    "extendedPublicKey": "xpub6CzH93BB4aueZX2bP88tvsvE8Cz2bHeGVAZSD5fmnk8roYBZCGbwwSA7ChiRr65jncuPH8qBQA9nBwi2Qtz1Uqt8wuHvof9SAcPpFxpe1GV",
+    "extendedPrivateKey": "xprv9yzvjXeHEDMMM2x8H6btZjyVaB9YBpvR7wdqQhGAEQbsvjrQejHhPdqdMRcAE3MqdZcfrSkCGk96YVqPhFHwJqY7VxgPgmMWMehcmHdQJ5h",
+    "addressFromPublicKey": {
+      "address": "177XH2FybTovE55Wh3fDT4o3LtDBr7mwYz",
+      "cursor": {
+        "hasNext": false
+      }
+    },
+    "addressFromExtendedPublicKey": {
+      "address": "15B2gX2x1eqFKgR44nCe1i33ursGKP4Qpi",
+      "cursor": {
+        "hasNext": false
+      }
+    },
+    "derivedAddresses": [
+      {
+        "address": "15B2gX2x1eqFKgR44nCe1i33ursGKP4Qpi",
+        "cursor": {
+          "hasNext": false
+        }
+      },
+      {
+        "address": "15srTWTrucPWSUGFZY2LWaYobwpDLknz49",
+        "cursor": {
+          "hasNext": false
+        }
+      },
+      {
+        "address": "1Kw98timgRcvsQcguq8Ko4A7hA7VD3iKBh",
+        "cursor": {
+          "hasNext": false
+        }
+      },
+      {
+        "address": "1KVA7HX16cef46Lpsi67v8ZV4y6bAiTmLt",
+        "cursor": {
+          "hasNext": false
+        }
+      }
+    ],
+    "signedTransactions": [
+      "01000000027bcda7b76bc47ab562a79cb36198cefe364b66cf913426b7932e84120822108a000000006a473044022020196ef19bf59e57334f679a725d8e4ead38121d70da56ff3cb09e96fd3eef49022077f11913dc6c4feca173079578729efa814745e7baa6dce8cda668277c15501501210311a202c95426b8aafdd7b482e53a363935eb6491b8bcd8991f16abc810f68868ffffffff9d035485adbb78236f53e79bc02ff8785a3312bd3b65f94ba022d9b632b869cc000000006a4730440220278602b82b439124b2bffe2e7e14ddaf1ab3ab2fc96bafcd91240c5cbffeaf5102207f27fab5172d9159af1f5ad974e73e1b8c5faffffab83ec9211d24f08cece18d012102f5ec5458a1d3ce47e87e606df057e6efdfa4c3190b492b115418376865682cacffffffff020a000000000000001976a9142dc610f6d5bfca59507d0dddb986eacfe5c3ed8b88ac3543ee01000000001976a914cac583a9ff2b5c2ac8ea3d5d0a37cc56e99d16f488ac00000000"
+    ],
+    "signedWithPrivateKey": [
+      "01000000027bcda7b76bc47ab562a79cb36198cefe364b66cf913426b7932e84120822108a000000006a4730440220421e34d83d124108dfb0b79bd461c2b620362a651c099e93cc65c7aec4c9caeb02200dcd1b0151dcacdc032b261f96717658902a3c85c3853005471ec7d0425169e20121034c33b5df1162b52363beb6bdc84a051f04bda51ea8cc9427d296e088128e7986ffffffff9d035485adbb78236f53e79bc02ff8785a3312bd3b65f94ba022d9b632b869cc000000006b483045022100e680ddd8dc64afeecd3aba6648f75cd12330384890b952a3b84fd84df479df4f0220040f3aea68fcc0f87a72b715e94411ad30ff3070d9c19679a10f79e3c8368f450121034c33b5df1162b52363beb6bdc84a051f04bda51ea8cc9427d296e088128e7986ffffffff010a000000000000001976a9142dc610f6d5bfca59507d0dddb986eacfe5c3ed8b88ac00000000"
+    ]
+  },
+  "bitcoin-testnet-v0": {
+    "publicKey": "tpubDCTJWMKQHnBETTGxJknEjmkiUtPtgbFDANkL55MZPgvu6YPddhRQXQXiqHZdfHwcoVNwTaHmS6DuNjcaYPRqVFkDogJdWSMLpSWSC4pNa3r",
+    "privateKey": "453893a51c56b880187df91b3439b425848cd483e43a8990b08ba77c757e711e",
+    "extendedPublicKey": "tpubDCTJWMKQHnBETTGxJknEjmkiUtPtgbFDANkL55MZPgvu6YPddhRQXQXiqHZdfHwcoVNwTaHmS6DuNjcaYPRqVFkDogJdWSMLpSWSC4pNa3r",
+    "extendedPrivateKey": "tprv8fmGMwHA9QVZZzFAR77eLN6bursxXG4Jb59YnZKFyR8WG48s1JbpLuurf7LiRW3NEkkxR1mNmPcY9sWfrYMwFVDQKzJwhirzw8YpmFCYgEq",
+    "addressFromPublicKey": {
+      "address": "mhvvW2pgQyAm1HUqLQ8kH3jA5Av7VyuQda",
+      "cursor": {
+        "hasNext": false
+      }
+    },
+    "addressFromExtendedPublicKey": {
+      "address": "mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k",
+      "cursor": {
+        "hasNext": false
+      }
+    },
+    "derivedAddresses": [
+      {
+        "address": "mi1ypWeso8oAxBxYZ8e2grCNBhW1hrbK8k",
+        "cursor": {
+          "hasNext": false
+        }
+      },
+      {
+        "address": "moK2Ws7YvK3LRppzCuLRVfDkpvZiw7T4cu",
+        "cursor": {
+          "hasNext": false
+        }
+      },
+      {
+        "address": "mfcd7QevgCuUx3PsHZRGewEsn97AhsSCib",
+        "cursor": {
+          "hasNext": false
+        }
+      },
+      {
+        "address": "mtb2Yx8rPUhYxdqPsH9nzT375QtWZ9XJcX",
+        "cursor": {
+          "hasNext": false
+        }
+      }
+    ],
+    "signedTransactions": [
+      "01000000027bcda7b76bc47ab562a79cb36198cefe364b66cf913426b7932e84120822108a000000006b483045022100e5236bea6922b626ad641a4882a5ac22bcd7adac97df014836941f91b3c32fe802203fd012f0d7baade4be83796348c9e5630c1f21f62500019c7eb95805daacdf9d0121024fd3380540fcc9ca541259ecbdf1b6c649d2be04f76d17d685ab63a8e75c4b0effffffffac6e065cabe8932e1accef482ccaebab8947b53e7e4963d4c5c722d26f57abe7000000006a47304402202c3b36a309cab5673996727fcadb7802f6ffb014ffe9e812c66f868ac15f47670220208adb66334813fad3a9995e6f82abc608639e504c03489749bffb3e95be3ba0012102f75fcf06cbe5726214e6199dd7720230083fd3c4f5a984c209373684b1e010feffffffff020a000000000000001976a9141b6d966bb9c605b984151da9bed896145698c44288acc868df03000000001976a91423133112acbd2276071912231a1c08874cfedbd688ac00000000"
+    ],
+    "signedWithPrivateKey": [
+      "01000000027bcda7b76bc47ab562a79cb36198cefe364b66cf913426b7932e84120822108a000000006b483045022100de448f81fd624638b528853c07fc0a8439b0a0beb3bec29adcd3744a678b4fc702204c8476176a16f27fb95470861e34a62f43b43715ecc14b035f3a1e01a4ad3ad7012103f4b070079064d0f2e2b6ff18edf54dcbda31e03c78deaa3be479e62ffdb610a1ffffffffac6e065cabe8932e1accef482ccaebab8947b53e7e4963d4c5c722d26f57abe7000000006a4730440220431c3db9d79bab1e2d3a2a9315a19e865d1d18646cc903a6513c69e209bc937b0220174730b56526d2e60c9b8ead557f64feded9c42ce895cb5e79379ec2e18169fb012103f4b070079064d0f2e2b6ff18edf54dcbda31e03c78deaa3be479e62ffdb610a1ffffffff010a000000000000001976a9141b6d966bb9c605b984151da9bed896145698c44288ac00000000"
+    ]
+  },
+  "bitcoin-segwit-v0": {
+    "publicKey": "zpub6sADuEXquxtLreBU82UMNLUkTVJDA4BEcYj7k63yas1D5XycPNVYfizMA2FXMDY6a25eFEauP2aB6J24roKVHf1qvaKvz3RGGc2soNfEFsb",
+    "privateKey": "279b266a96a2fdd7d0da5b1d8f2aaf597aea39f875a4e85768f7dfcd2006ce83",
+    "extendedPublicKey": "zpub6sADuEXquxtLreBU82UMNLUkTVJDA4BEcYj7k63yas1D5XycPNVYfizMA2FXMDY6a25eFEauP2aB6J24roKVHf1qvaKvz3RGGc2soNfEFsb",
+    "extendedPrivateKey": "xprv9zWLtPf7nEF5wZimMHN6b2M1ZXApsMUPR6m5NurbGWiU6Y21LWrAsoMbGKvfwcDzzveWtnoyrAXCRfKJn33tQNfEY4CBQgDRVME1g3EiiWf",
+    "addressFromPublicKey": null,
+    "addressFromExtendedPublicKey": {
+      "address": "bc1qd4x4yy968p4zvkm02ltc9yvg6ejh824c9d9wef",
+      "cursor": {
+        "hasNext": false
+      }
+    },
+    "derivedAddresses": [
+      {
+        "address": "bc1qd4x4yy968p4zvkm02ltc9yvg6ejh824c9d9wef",
+        "cursor": {
+          "hasNext": false
+        }
+      },
+      {
+        "address": "bc1qcm6pzp369jd34fqlg7mrmdsg77w672ku0ll2k8",
+        "cursor": {
+          "hasNext": false
+        }
+      },
+      {
+        "address": "bc1qfjmqegkxwp0eleu6w935fdacqk6zzjk9z86p72",
+        "cursor": {
+          "hasNext": false
+        }
+      },
+      {
+        "address": "bc1q2n6vqkupwnfcgckgjspkyvplaf7fu5cnl4mzfx",
+        "cursor": {
+          "hasNext": false
+        }
+      }
+    ],
+    "signedTransactions": [],
+    "signedWithPrivateKey": []
+  }
+}
