@@ -6,7 +6,7 @@ import * as bs58check from '@airgap/coinlib-core/dependencies/src/bs58check-2.1.
 import assert from 'assert'
 import { Buffer } from 'buffer'
 import { createHash, createHmac, randomBytes } from 'crypto'
-import secp256k1 from 'secp256k1'
+import * as secp256k1 from './secp256k1-lib'
 
 const MASTER_SECRET = Buffer.from('Bitcoin seed', 'utf8')
 const HARDENED_OFFSET = 0x80000000

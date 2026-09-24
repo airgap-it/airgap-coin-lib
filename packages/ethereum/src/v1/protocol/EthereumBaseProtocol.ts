@@ -4,7 +4,8 @@ import { BigNumber } from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.
 // @ts-ignore
 import { mnemonicToSeed } from '@airgap/coinlib-core/dependencies/src/bip39-2.5.0'
 // @ts-ignore
-import * as BitGo from '@airgap/coinlib-core/dependencies/src/bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac/src'
+import * as bip32 from '@airgap/coinlib-core/dependencies/src/bip32-2.0.4/src/index'
+import { networks } from '@airgap/coinlib-core/networks'
 import { BalanceError, ConditionViolationError, UnsupportedError } from '@airgap/coinlib-core/errors'
 import { isHex } from '@airgap/coinlib-core/utils/hex'
 import { encodeDerivative } from '@airgap/crypto'
@@ -72,25 +73,25 @@ export interface EthereumBaseProtocol<
   _Units extends string = EthereumUnits,
   _ProtocolNetwork extends EthereumProtocolNetwork = EthereumProtocolNetwork
 > extends AirGapProtocol<
-    {
-      AddressResult: Address
-      ProtocolNetwork: _ProtocolNetwork
-      CryptoConfiguration: EthereumCryptoConfiguration
-      Units: _Units
-      FeeUnits: EthereumUnits
-      FeeEstimation: FeeDefaults<EthereumUnits>
-      SignedTransaction: EthereumSignedTransaction
-      UnsignedTransaction: EthereumUnsignedTransaction
-      TransactionCursor: EthereumTransactionCursor
-    },
-    'Bip32',
-    'Crypto',
-    'FetchDataForAddress',
-    'FetchDataForMultipleAddresses',
-    'GetTokenBalances',
-    'TransactionStatusChecker',
-    'WalletConnect'
-  > {}
+  {
+    AddressResult: Address
+    ProtocolNetwork: _ProtocolNetwork
+    CryptoConfiguration: EthereumCryptoConfiguration
+    Units: _Units
+    FeeUnits: EthereumUnits
+    FeeEstimation: FeeDefaults<EthereumUnits>
+    SignedTransaction: EthereumSignedTransaction
+    UnsignedTransaction: EthereumUnsignedTransaction
+    TransactionCursor: EthereumTransactionCursor
+  },
+  'Bip32',
+  'Crypto',
+  'FetchDataForAddress',
+  'FetchDataForMultipleAddresses',
+  'GetTokenBalances',
+  'TransactionStatusChecker',
+  'WalletConnect'
+> {}
 
 // Implementation
 
@@ -116,8 +117,7 @@ const WALLET_CONNECT_NAMESPACE = 'eip155'
 export class EthereumBaseProtocolImpl<
   _Units extends string = EthereumUnits,
   _ProtocolNetwork extends EthereumProtocolNetwork = EthereumProtocolNetwork
-> implements EthereumBaseProtocol<_Units, _ProtocolNetwork>
-{
+> implements EthereumBaseProtocol<_Units, _ProtocolNetwork> {
   protected readonly options: EthereumProtocolOptions<_ProtocolNetwork>
 
   protected readonly nodeClient: EthereumNodeClient
@@ -130,8 +130,8 @@ export class EthereumBaseProtocolImpl<
       network: any
     }
   } = {
-    lib: BitGo,
-    config: { network: BitGo.networks.bitcoin }
+    lib: bip32,
+    config: { network: networks.bitcoin }
   }
 
   constructor(
@@ -422,8 +422,8 @@ export class EthereumBaseProtocolImpl<
     const node = this.derivativeToBip32Node(derivative)
 
     return {
-      secretKey: newSecretKey(node.keyPair.getPrivateKeyBuffer().toString('hex'), 'hex'),
-      publicKey: newPublicKey(node.neutered().keyPair.getPublicKeyBuffer().toString('hex'), 'hex')
+      secretKey: newSecretKey(node.privateKey.toString('hex'), 'hex'),
+      publicKey: newPublicKey(node.neutered().publicKey.toString('hex'), 'hex')
     }
   }
 
@@ -560,16 +560,19 @@ export class EthereumBaseProtocolImpl<
       Promise.all(promises)
         .then((values) => {
           const page = Math.max(...values.map((txResult) => txResult.cursor.page))
-          const transactions: AirGapTransaction<_Units, EthereumUnits>[] = values.reduce((acc, current) => {
-            return acc.concat(
-              current.transactions.map((tx) => ({
-                ...tx,
-                amount: newAmount<_Units>(tx.amount.value, 'blockchain'),
-                fee: newAmount<EthereumUnits>(tx.fee.value, 'blockchain'),
-                network: this.options.network
-              }))
-            )
-          }, [] as AirGapTransaction<_Units, EthereumUnits>[])
+          const transactions: AirGapTransaction<_Units, EthereumUnits>[] = values.reduce(
+            (acc, current) => {
+              return acc.concat(
+                current.transactions.map((tx) => ({
+                  ...tx,
+                  amount: newAmount<_Units>(tx.amount.value, 'blockchain'),
+                  fee: newAmount<EthereumUnits>(tx.fee.value, 'blockchain'),
+                  network: this.options.network
+                }))
+              )
+            },
+            [] as AirGapTransaction<_Units, EthereumUnits>[]
+          )
 
           const hasNext: boolean = transactions.length >= limit
 
@@ -795,7 +798,7 @@ export class EthereumBaseProtocolImpl<
     const encodedExtendedPublicKey: ExtendedPublicKey = convertExtendedPublicKey(extendedPublicKey, 'encoded')
     const derivedNode = this.deriveNode(encodedExtendedPublicKey.value, visibilityIndex, addressIndex)
 
-    return newPublicKey(derivedNode.neutered().keyPair.getPublicKeyBuffer().toString('hex'), 'hex')
+    return newPublicKey(derivedNode.neutered().publicKey.toString('hex'), 'hex')
   }
 
   private getSecretKeyFromExtendedSecretKey(
@@ -806,13 +809,13 @@ export class EthereumBaseProtocolImpl<
     const encodedExtendedSecretKey: ExtendedSecretKey = convertExtendedSecretKey(extendedSecretKey, 'encoded')
     const derivedNode = this.deriveNode(encodedExtendedSecretKey.value, visibilityIndex, addressIndex)
 
-    return newSecretKey(derivedNode.keyPair.getPrivateKeyBuffer().toString('hex'), 'hex')
+    return newSecretKey(derivedNode.privateKey.toString('hex'), 'hex')
   }
 
   private deriveNode(base58: string, visibilityIndex?: number, addressIndex?: number): any {
     return [visibilityIndex, addressIndex].reduce(
       (node, index) => node.derive(index),
-      this.bitcoinJS.lib.HDNode.fromBase58(base58, this.bitcoinJS.config.network)
+      this.bitcoinJS.lib.fromBase58(base58, this.bitcoinJS.config.network)
     )
   }
 
@@ -837,7 +840,7 @@ export class EthereumBaseProtocolImpl<
   private derivativeToBip32Node(derivative: CryptoDerivative) {
     const bip32Node = encodeDerivative('bip32', derivative)
 
-    return this.bitcoinJS.lib.HDNode.fromBase58(bip32Node.secretKey, this.bitcoinJS.config.network)
+    return this.bitcoinJS.lib.fromBase58(bip32Node.secretKey, this.bitcoinJS.config.network)
   }
 }
 

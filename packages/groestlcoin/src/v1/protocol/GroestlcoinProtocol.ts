@@ -1,8 +1,9 @@
 import { BitcoinProtocol, BitcoinTransactionCursor, BitcoinUnits } from '@airgap/bitcoin/v1'
 import { BitcoinProtocolImpl } from '@airgap/bitcoin/v1/protocol/BitcoinProtocol'
 import { MainProtocolSymbols } from '@airgap/coinlib-core'
-// @ts-ignore
-import * as bitGoUTXO from '@airgap/coinlib-core/dependencies/src/bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac/src/index'
+import * as ecc from '@airgap/coinlib-core/dependencies/src/@bitcoinerlab/secp256k1-1.2.0/src/index'
+import { BIP32Factory as GroestlcoinBIP32Factory } from '@airgap/coinlib-core/dependencies/src/bip32grs-4.0.1/src/index'
+import * as groestlcoinJSLib from '@airgap/coinlib-core/dependencies/src/groestlcoinjs-lib-6.1.5/src/index'
 // @ts-ignore
 import * as groestlcoinJSMessage from '@airgap/coinlib-core/dependencies/src/groestlcoinjs-message-2.1.0/index'
 import {
@@ -41,27 +42,32 @@ import { GroestlcoinSignedTransaction, GroestlcoinTransactionCursor, Groestlcoin
 
 // Interface
 
-export interface GroestlcoinProtocol
-  extends AirGapProtocol<
-    {
-      AddressResult: Address
-      ProtocolNetwork: GroestlcoinProtocolNetwork
-      CryptoConfiguration: GroestlcoinCryptoConfiguration
-      SignedTransaction: GroestlcoinSignedTransaction
-      TransactionCursor: GroestlcoinTransactionCursor
-      Units: GroestlcoinUnits
-      FeeEstimation: FeeDefaults<GroestlcoinUnits>
-      UnsignedTransaction: GroestlcoinUnsignedTransaction
-    },
-    'Bip32',
-    'Crypto',
-    'FetchDataForAddress',
-    'FetchDataForMultipleAddresses'
-  > {}
+export interface GroestlcoinProtocol extends AirGapProtocol<
+  {
+    AddressResult: Address
+    ProtocolNetwork: GroestlcoinProtocolNetwork
+    CryptoConfiguration: GroestlcoinCryptoConfiguration
+    SignedTransaction: GroestlcoinSignedTransaction
+    TransactionCursor: GroestlcoinTransactionCursor
+    Units: GroestlcoinUnits
+    FeeEstimation: FeeDefaults<GroestlcoinUnits>
+    UnsignedTransaction: GroestlcoinUnsignedTransaction
+  },
+  'Bip32',
+  'Crypto',
+  'FetchDataForAddress',
+  'FetchDataForMultipleAddresses'
+> {}
 
 // Implementation
 
-const BITCOINJS_MAINNET_NETWORK: string = 'groestlcoin'
+// groestlcoinjs-lib exposes Groestlcoin's mainnet parameters under `networks.bitcoin`,
+// mirroring bitcoinjs-lib's naming rather than the vendored fork's per-coin table.
+const BITCOINJS_MAINNET_NETWORK: string = 'bitcoin'
+
+// Constructed once at module load: BIP32Factory runs a full elliptic-curve self-test (testEcc) on
+// every construction, which is far too expensive to repeat per protocol instance.
+const groestlcoinBip32 = GroestlcoinBIP32Factory(ecc as any)
 
 export class GroestlcoinProtocolImpl implements GroestlcoinProtocol {
   private readonly options: GroestlcoinProtocolOptions
@@ -79,8 +85,11 @@ export class GroestlcoinProtocolImpl implements GroestlcoinProtocol {
         }
       },
       undefined,
-      bitGoUTXO,
-      groestlcoinJSMessage
+      groestlcoinJSLib,
+      groestlcoinJSMessage,
+      // Groestlcoin base58check-encodes extended keys with groestl rather than SHA256d.
+      groestlcoinJSLib.crypto.groestl,
+      groestlcoinBip32
     )
   }
 

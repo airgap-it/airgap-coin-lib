@@ -3,7 +3,8 @@ import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/
 // @ts-ignore
 import { mnemonicToSeed } from '@airgap/coinlib-core/dependencies/src/bip39-2.5.0'
 // @ts-ignore
-import * as bitcoinJS from '@airgap/coinlib-core/dependencies/src/bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac/src'
+import * as bip32 from '@airgap/coinlib-core/dependencies/src/bip32-2.0.4/src/index'
+import { networks } from '@airgap/coinlib-core/networks'
 import { OperationFailedError } from '@airgap/coinlib-core/errors'
 import { Domain } from '@airgap/coinlib-core/errors/coinlib-error'
 import { DelegatorAction } from '@airgap/coinlib-core/protocols/ICoinDelegateProtocol'
@@ -34,12 +35,13 @@ export class MoonbeamAccountController extends SubstrateAccountController<Substr
   }
 
   public async createKeyPairFromHexSecret(secret: string, derivationPath: string): Promise<KeyPair> {
-    const ethereumNode = bitcoinJS.HDNode.fromSeedHex(secret, bitcoinJS.networks.bitcoin)
+    const ethereumNode = bip32.fromSeed(Buffer.from(secret, 'hex'), networks.bitcoin)
     const hdNode = ethereumNode.derivePath(derivationPath)
 
     return {
-      privateKey: hdNode.keyPair.d.toBuffer(32),
-      publicKey: hdNode.neutered().getPublicKeyBuffer().toString('hex')
+      // Copy: bip32 hands out its internal key buffer by reference.
+      privateKey: Buffer.from(hdNode.privateKey),
+      publicKey: hdNode.neutered().publicKey.toString('hex')
     }
   }
 

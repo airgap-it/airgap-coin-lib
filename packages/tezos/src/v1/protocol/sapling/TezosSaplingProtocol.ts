@@ -34,7 +34,7 @@ import {
   TransactionSimpleConfiguration
 } from '@airgap/module-kit'
 import * as sapling from '@airgap/sapling-wasm'
-import { randomBytes } from '@stablelib/random'
+import { randomBytes } from '@airgap/coinlib-core/dependencies/src/@stablelib/random-1.0.2/packages/random/random'
 
 import { TezosSaplingAddressResult } from '../../../v0/protocol/types/sapling/TezosSaplingAddressResult'
 import { TezosContract } from '../../contract/TezosContract'

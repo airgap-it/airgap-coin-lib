@@ -1,6 +1,6 @@
 import { newPublicKey, PublicKey } from '@airgap/module-kit'
 
-import { StrKey } from '@stellar/stellar-sdk'
+import { StrKey } from '@stellar/stellar-base'
 
 export class StellarAddress {
   private constructor(private readonly value: string) {}

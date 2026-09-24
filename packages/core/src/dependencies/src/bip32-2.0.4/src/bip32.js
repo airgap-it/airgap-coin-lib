@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const crypto = require("./crypto");
 const bs58check = require('../../bs58check-2.1.2/index');
-const ecc = require('../../tiny-secp256k1-1.1.3/js');
+const ecc = require('../../tiny-secp256k1-1.1.7/js');
 const typeforce = require('../../typeforce-1.18.0/index');
 const wif = require('../../wif-2.0.6/index');
 const UINT256_TYPE = typeforce.BufferN(32);

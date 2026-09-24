@@ -1,0 +1,57 @@
+# Triaged vulnerabilities in the npm dependency tree (package-lock.json).
+#
+# This file is only handed to the npm scan (`npm-dependencies` in CI, `npm run scan:npm`). The
+# vendored tree has its own file, `.trivyignore.vendored.yaml`, because the two trees contain
+# different copies of the same packages, reached through different callers: a reachability argument
+# made for a vendored copy with hand-audited first-party callers says nothing about a transitive npm
+# copy used by third-party code.
+#
+# Rule of thumb: if an npm copy has a fixed release, bump it (root `overrides` or the declaring
+# workspace package.json) instead of listing it here. That is how sha.js, cipher-base, pbkdf2,
+# base-x and secp256k1 left this file.
+#
+# `expired_at` forces a re-review rather than letting a suppression live forever.
+
+vulnerabilities:
+  # --- elliptic 6.6.1 (no upstream fix) ------------------------------------------------------
+  # Pulled by secp256k1 (as a JS fallback for the native binding), @taquito/utils and the
+  # ethereumjs-util copies under @metamask/eth-sig-util / ethereumjs-abi. No fixed release exists.
+  - id: CVE-2025-14505
+    statement: 'No fix available upstream. Tracking only; revisit when a fixed elliptic release exists.'
+    expired_at: 2027-02-01
+
+  # --- bn.js 4.12.0 (via elliptic, ethereumjs-util, @polkadot/util, rlp) ---------------------
+  - id: CVE-2026-2739
+    statement: 'Unreachable: maskn() is not called by first-party code, and the affected callers here (elliptic, ethereumjs-util, rlp) only use bn.js for fixed-width arithmetic.'
+    expired_at: 2027-02-01
+
+  # --- @stablelib/ed25519 1.0.3 (no upstream fix, via @taquito/utils only) --------------------
+  # First-party code uses the vendored copy since 2026-09-09; the npm copy remains only as a
+  # transitive dependency of @taquito/utils, whose verify() returns a boolean. Same analysis as the
+  # vendored copy.
+  - id: GHSA-x3ff-w252-2g7j
+    statement: 'No impact in-library: verify() only returns a boolean and signature bytes are never used as an identifier. No upstream fix; consumer-facing caveat is documented.'
+    expired_at: 2027-02-01
+
+  # --- form-data 3.0.1, nested under packages/tezos/node_modules/graphql-request --------------
+  # Both CVEs concern multipart boundary generation and CRLF injection into form fields. This
+  # copy exists only because graphql-request declares form-data ^3.0.0; the hoisted copy is
+  # already 4.0.6. The tezos/mina indexer clients issue GraphQL POSTs with JSON bodies and make
+  # no multipart uploads, so the vulnerable code path is never entered.
+  - id: CVE-2025-7783
+    statement: 'Unreachable: no multipart uploads are made. Nested under graphql-request (^3.0.0); the hoisted copy is already 4.0.6.'
+    expired_at: 2027-02-01
+  - id: CVE-2026-12143
+    statement: 'Unreachable: same as CVE-2025-7783 — form-data is never used to build multipart bodies.'
+    expired_at: 2027-02-01
+
+  # --- @babel/runtime 7.21.5 (via @polkadot/util) ---------------------------------------------
+  - id: CVE-2025-27789
+    statement: 'Not wallet-relevant: inefficient RegExp in transpiled output, requires a named-capture-group .replace over attacker-controlled input. No such path here.'
+    expired_at: 2027-02-01
+
+  # Removed 2026-09-08 (fixed by version bumps, no longer in the tree):
+  #   CVE-2025-9288 sha.js -> 2.4.12; CVE-2025-9287 cipher-base -> 1.0.7;
+  #   CVE-2025-6545 / CVE-2025-6547 pbkdf2 -> 3.1.6; CVE-2025-27611 base-x -> 3.0.11;
+  #   CVE-2024-48930 secp256k1 -> 4.0.5 / 5.0.2 (see root `overrides` and packages/icp);
+  #   CVE-2026-24001 diff — the package left the lockfile with ts-node/@dfinity/agent.

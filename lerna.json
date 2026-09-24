@@ -1,6 +1,5 @@
 {
-  "version": "0.13.47",
-  "useWorkspaces": true,
+  "version": "0.14.0",
   "command": {
     "publish": {
       "ignoreChanges": ["*.sh", "*.md", "*.yml", ".*", "tsconfig.json", "tslint.json"]

@@ -1,5 +1,8 @@
-import Long from 'long'
-import _m0 from 'protobufjs/minimal.js'
+// `long` v5 uses `export =`, so a default import would force consumers to enable
+// `allowSyntheticDefaultImports`. Import in the CommonJS form so the emitted declaration
+// does not impose a compiler flag on anyone consuming this package.
+import Long = require('long')
+import _m0 = require('../protobufjs-8.7.1/minimal')
 import * as base64js from 'base64-js'
 
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined

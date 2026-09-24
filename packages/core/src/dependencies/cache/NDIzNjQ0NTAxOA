@@ -1,0 +1,66 @@
+{
+    "name": "uint8array-tools",
+    "version": "0.0.8",
+    "description": "A library for dealing with Uint8Arrays.",
+    "homepage": "https://github.com/bitcoinjs/uint8array-tools#readme",
+    "bugs": {
+        "url": "https://github.com/bitcoinjs/uint8array-tools/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/bitcoinjs/uint8array-tools.git"
+    },
+    "main": "./src/cjs/index.cjs",
+    "exports": {
+        "node": {
+            "module": "./src/mjs/index.js",
+            "require": "./src/cjs/index.cjs",
+            "import": "./src/mjs/index.js",
+            "types": "./src/cjs/index.d.ts"
+        },
+        "browser": "./src/mjs/browser.js",
+        "default": "./src/mjs/browser.js",
+        "types": "./src/cjs/index.d.ts"
+    },
+    "types": "src/cjs/index.d.ts",
+    "type": "module",
+    "scripts": {
+        "build": "npm run clean && npm run build-ts && npm run convert-cjs && rm -f ./src/cjs/browser.d.ts",
+        "build-ts": "tsc -p tsconfig.json && tsc -p tsconfig-cjs.json",
+        "clean": "rm -rf ./src/* && rm -rf ./coverage && rm -f ./package-lock.json",
+        "convert-cjs": "for f in ./src/cjs/*.js; do mv -- \"$f\" \"${f%.js}.cjs\"; done",
+        "coverage": "npm run unit -- --coverage",
+        "eslint": "eslint ts_src/*.ts",
+        "format": "npm run eslint -- --fix",
+        "gitdiff:ci": "npm run build && git diff --exit-code",
+        "lint": "npm run eslint",
+        "test": "npm run unit",
+        "unit": "jest --config=jest.json --runInBand"
+    },
+    "keywords": [
+        "uint8array",
+        "hex",
+        "tools"
+    ],
+    "files": [
+        "src"
+    ],
+    "author": "Jonathan Underwood (junderwood@bitcoinbank.co.jp)",
+    "license": "MIT",
+    "devDependencies": {
+        "@types/jest": "27.0.2",
+        "@types/node": "16.11.1",
+        "@typescript-eslint/eslint-plugin": "5.0.0",
+        "@typescript-eslint/parser": "5.0.0",
+        "eslint": "8.0.1",
+        "eslint-config-prettier": "8.3.0",
+        "eslint-plugin-prettier": "4.0.0",
+        "jest": "27.2.5",
+        "prettier": "2.4.1",
+        "ts-jest": "27.0.7",
+        "typescript": "4.4.4"
+    },
+    "engines": {
+        "node": ">=14.0.0"
+    }
+}

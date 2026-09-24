@@ -1,7 +1,8 @@
 import { Domain, MainProtocolSymbols } from '@airgap/coinlib-core'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 // @ts-ignore
-import * as BitGo from '@airgap/coinlib-core/dependencies/src/bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac/src'
+import * as bip32 from '@airgap/coinlib-core/dependencies/src/bip32-2.0.4/src/index'
+import { networks } from '@airgap/coinlib-core/networks'
 import { BalanceError, ConditionViolationError } from '@airgap/coinlib-core/errors'
 import { encodeDerivative } from '@airgap/crypto'
 import {
@@ -42,17 +43,16 @@ import { quantile } from '../utils/math'
 
 // Interface
 
-export interface MinaProtocol
-  extends AirGapProtocol<{
-    AddressResult: Address
-    ProtocolNetwork: MinaProtocolNetwork
-    CryptoConfiguration: MinaCryptoConfiguration
-    Units: MinaUnits
-    FeeEstimation: FeeDefaults<MinaUnits>
-    SignedTransaction: MinaSignedTransaction
-    UnsignedTransaction: MinaUnsignedTransaction
-    TransactionCursor: MinaTransactionCursor
-  }> {}
+export interface MinaProtocol extends AirGapProtocol<{
+  AddressResult: Address
+  ProtocolNetwork: MinaProtocolNetwork
+  CryptoConfiguration: MinaCryptoConfiguration
+  Units: MinaUnits
+  FeeEstimation: FeeDefaults<MinaUnits>
+  SignedTransaction: MinaSignedTransaction
+  UnsignedTransaction: MinaUnsignedTransaction
+  TransactionCursor: MinaTransactionCursor
+}> {}
 
 // Implementation
 
@@ -67,8 +67,8 @@ export class MinaProtocolImpl implements MinaProtocol {
       network: any
     }
   } = {
-    lib: BitGo,
-    config: { network: BitGo.networks.bitcoin }
+    lib: bip32,
+    config: { network: networks.bitcoin }
   }
 
   public constructor(options: RecursivePartial<MinaProtocolOptions> = {}, node?: MinaNode, indexer?: MinaIndexer) {
@@ -144,7 +144,9 @@ export class MinaProtocolImpl implements MinaProtocol {
 
   public async getKeyPairFromDerivative(derivative: CryptoDerivative): Promise<KeyPair> {
     const node = this.derivativeToBip32Node(derivative)
-    const secretKey: SecretKey = finalizeSecretKey(node.keyPair.getPrivateKeyBuffer())
+    // bip32's `privateKey` getter returns the node's internal buffer by reference (bitgo's
+    // `getPrivateKeyBuffer()` returned a copy); `finalizeSecretKey` mutates in place, so copy first.
+    const secretKey: SecretKey = finalizeSecretKey(Buffer.from(node.privateKey))
 
     return {
       secretKey,
@@ -317,7 +319,7 @@ export class MinaProtocolImpl implements MinaProtocol {
   private derivativeToBip32Node(derivative: CryptoDerivative) {
     const bip32Node = encodeDerivative('bip32', derivative)
 
-    return this.bitcoinJS.lib.HDNode.fromBase58(bip32Node.secretKey, this.bitcoinJS.config.network)
+    return this.bitcoinJS.lib.fromBase58(bip32Node.secretKey, this.bitcoinJS.config.network)
   }
 }
 

@@ -14,7 +14,7 @@ import { NonExtendedProtocol } from '@airgap/coinlib-core/protocols/NonExtendedP
 import bs64check from '@airgap/coinlib-core/utils/base64Check'
 import { toHexBuffer } from '@airgap/coinlib-core/utils/hex'
 import { MainProtocolSymbols, ProtocolSymbols } from '@airgap/coinlib-core/utils/ProtocolSymbols'
-import { sign } from '@stablelib/ed25519'
+import { sign } from '@airgap/coinlib-core/dependencies/src/@stablelib/ed25519-1.0.3/packages/ed25519/ed25519'
 
 import { SignedAeternityTransaction } from '../types/signed-transaction-aeternity'
 import { RawAeternityTransaction } from '../types/transaction-aeternity'

@@ -14,6 +14,11 @@ import { SignedBitcoinTransaction } from '../types/signed-transaction-bitcoin'
 
 import { RawBitcoinTransaction } from '../types/transaction-bitcoin'
 
+import * as ecc from '@airgap/coinlib-core/dependencies/src/@bitcoinerlab/secp256k1-1.2.0/src/index'
+import { BIP32Factory } from '@airgap/coinlib-core/dependencies/src/bip32-5.0.1/src/index'
+
+import { buildAndSignLegacyTransaction, ecPairSigner, LegacySigner } from '../../v1/utils/legacy-signing'
+
 import { BitcoinAddress } from './BitcoinAddress'
 import { BitcoinCryptoClient } from './BitcoinCryptoClient'
 import { BitcoinProtocolOptions } from './BitcoinProtocolOptions'
@@ -108,6 +113,10 @@ export interface AddressResponse {
 }
 
 const DUST_AMOUNT: number = 50
+
+// Constructed once at module load: BIP32Factory runs a full elliptic-curve self-test (testEcc)
+// on every construction, which is far too expensive to repeat per call.
+const bip32 = BIP32Factory(ecc as any)
 
 export class BitcoinProtocol implements ICoinProtocol {
   public symbol: string = 'BTC'
@@ -252,15 +261,15 @@ export class BitcoinProtocol implements ICoinProtocol {
   }
 
   public async getPublicKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
-    const bitcoinNode = this.options.config.bitcoinJSLib.HDNode.fromSeedHex(secret, this.options.network.extras.network)
+    const bitcoinNode = this.bip32Node().fromSeed(Buffer.from(secret, 'hex'), this.options.network.extras.network)
 
     return bitcoinNode.derivePath(derivationPath).neutered().toBase58()
   }
 
   public async getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
-    const bitcoinNode = this.options.config.bitcoinJSLib.HDNode.fromSeedHex(secret, this.options.network.extras.network)
+    const bitcoinNode = this.bip32Node().fromSeed(Buffer.from(secret, 'hex'), this.options.network.extras.network)
 
-    return bitcoinNode.derivePath(derivationPath).keyPair.d.toBuffer(32).toString('hex')
+    return Buffer.from(bitcoinNode.derivePath(derivationPath).privateKey!).toString('hex')
   }
 
   public async getExtendedPublicKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
@@ -268,16 +277,16 @@ export class BitcoinProtocol implements ICoinProtocol {
   }
 
   public async getExtendedPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
-    const bitcoinNode = this.options.config.bitcoinJSLib.HDNode.fromSeedHex(secret, this.options.network.extras.network)
+    const bitcoinNode = this.bip32Node().fromSeed(Buffer.from(secret, 'hex'), this.options.network.extras.network)
 
     return bitcoinNode.derivePath(derivationPath).toBase58()
   }
 
   public async getAddressFromPublicKey(publicKey: string, cursor?: BitcoinAddressCursor): Promise<BitcoinAddressResult> {
     // broadcaster knows this (both broadcaster and signer)
-    const node = this.options.config.bitcoinJSLib.HDNode.fromBase58(publicKey, this.options.network.extras.network)
+    const node = this.bip32Node().fromBase58(publicKey, this.options.network.extras.network)
 
-    const address: BitcoinAddress = BitcoinAddress.from(node)
+    const address: BitcoinAddress = BitcoinAddress.from(node, this.options.config.bitcoinJSLib, this.options.network.extras.network)
 
     return {
       address: address.asString(),
@@ -295,9 +304,15 @@ export class BitcoinProtocol implements ICoinProtocol {
     addressDerivationIndex: number
   ): Promise<BitcoinAddressResult> {
     // broadcaster knows this (both broadcaster and signer)
-    const node = this.options.config.bitcoinJSLib.HDNode.fromBase58(extendedPublicKey, this.options.network.extras.network)
+    const node = this.bip32Node().fromBase58(extendedPublicKey, this.options.network.extras.network)
 
-    const address: BitcoinAddress = BitcoinAddress.from(node, visibilityDerivationIndex, addressDerivationIndex)
+    const address: BitcoinAddress = BitcoinAddress.from(
+      node,
+      this.options.config.bitcoinJSLib,
+      this.options.network.extras.network,
+      visibilityDerivationIndex,
+      addressDerivationIndex
+    )
 
     return {
       address: address.asString(),
@@ -312,12 +327,18 @@ export class BitcoinProtocol implements ICoinProtocol {
     offset: number
   ): Promise<BitcoinAddressResult[]> {
     // broadcaster knows this (both broadcaster and signer)
-    const node = this.options.config.bitcoinJSLib.HDNode.fromBase58(extendedPublicKey, this.options.network.extras.network)
+    const node = this.bip32Node().fromBase58(extendedPublicKey, this.options.network.extras.network)
     const generatorArray = Array.from(new Array(addressCount), (_, i) => i + offset)
 
     return Promise.all(
       generatorArray.map((x): BitcoinAddressResult => {
-        const address: BitcoinAddress = BitcoinAddress.from(node, visibilityDerivationIndex, x)
+        const address: BitcoinAddress = BitcoinAddress.from(
+          node,
+          this.options.config.bitcoinJSLib,
+          this.options.network.extras.network,
+          visibilityDerivationIndex,
+          x
+        )
 
         return {
           address: address.asString(),
@@ -327,42 +348,52 @@ export class BitcoinProtocol implements ICoinProtocol {
     )
   }
 
-  public async signWithPrivateKey(privateKey: string, transaction: RawBitcoinTransaction): Promise<IAirGapSignedTransaction> {
-    const transactionBuilder = new this.options.config.bitcoinJSLib.TransactionBuilder(this.options.network.extras.network)
+  /**
+   * BIP32 implementation for the configured library. Groestlcoin injects `bip32grs`, whose extended
+   * keys are base58check-encoded with groestl and cannot be read by the standard `bip32`.
+   */
+  private bip32Node(): { fromSeed(seed: Buffer, network?: any): any; fromBase58(key: string, network?: any): any } {
+    return this.options.config.bip32Lib ?? bip32
+  }
 
-    for (const input of transaction.ins) {
-      transactionBuilder.addInput(input.txId, input.vout)
-    }
+  public async signWithPrivateKey(privateKey: string, transaction: RawBitcoinTransaction): Promise<IAirGapSignedTransaction> {
+    const signer: LegacySigner = ecPairSigner(Buffer.from(privateKey, 'hex'), this.options.network.extras.network)
 
     for (const output of transaction.outs) {
       if (output.isChange) {
-        // 1. `getAddressFromPublicKey` expects a base58 encoded key
-        const generatedChangeAddress: string = (await this.getAddressFromPublicKey(privateKey)).address
+        // A non-extended key can only send change back to its own address, so derive it from the
+        // key's public key. (The previous code fed the hex private key to the base58 xpub parser
+        // and threw before ever signing.)
+        const generatedChangeAddress: string = this.options.config.bitcoinJSLib.payments.p2pkh({
+          pubkey: Buffer.from(signer.publicKey),
+          network: this.options.network.extras.network
+        }).address
         if (generatedChangeAddress !== output.recipient) {
           throw new ConditionViolationError(Domain.BITCOIN, 'Change address could not be verified.')
         }
       }
-
-      transactionBuilder.addOutput(output.recipient, new BigNumber(output.value).toNumber())
     }
 
-    for (let i = 0; i < transaction.ins.length; i++) {
-      // 2. `privateKey` is used as a hex string
-      transactionBuilder.sign(i, Buffer.from(privateKey, 'hex'))
-    }
-
-    // TODO: given 1 & 2, check if it works
-
-    return transactionBuilder.build().toHex()
+    return buildAndSignLegacyTransaction(
+      this.options.config.bitcoinJSLib,
+      this.options.network.extras.network,
+      transaction.ins,
+      transaction.outs,
+      () => signer
+    )
   }
 
   public async signWithExtendedPrivateKey(extendedPrivateKey: string, transaction: RawBitcoinTransaction): Promise<string> {
-    const transactionBuilder = new this.options.config.bitcoinJSLib.TransactionBuilder(this.options.network.extras.network)
-    const node = this.options.config.bitcoinJSLib.HDNode.fromBase58(extendedPrivateKey, this.options.network.extras.network)
+    const node = this.bip32Node().fromBase58(extendedPrivateKey, this.options.network.extras.network)
 
-    for (const input of transaction.ins) {
-      transactionBuilder.addInput(input.txId, input.vout)
-    }
+    // The unsigned transaction crosses the air gap as a QR payload; fail with a domain error
+    // instead of letting bip32 crash on `derivePath(undefined)` deep inside signing.
+    transaction.ins.forEach((input, index) => {
+      if (input.derivationPath === undefined) {
+        throw new ConditionViolationError(Domain.BITCOIN, `Transaction input ${index} is missing its derivation path.`)
+      }
+    })
+
     const changeAddressBatchSize: number = 10
     const changeAddressMaxAddresses: number = 500
 
@@ -389,14 +420,15 @@ export class BitcoinProtocol implements ICoinProtocol {
           throw new InvalidValueError(Domain.BITCOIN, 'Change address could not be verified.')
         }
       }
-      transactionBuilder.addOutput(output.recipient, new BigNumber(output.value).toNumber())
     }
 
-    for (let i = 0; i < transaction.ins.length; i++) {
-      transactionBuilder.sign(i, node.derivePath(transaction.ins[i].derivationPath))
-    }
-
-    return transactionBuilder.build().toHex()
+    return buildAndSignLegacyTransaction(
+      this.options.config.bitcoinJSLib,
+      this.options.network.extras.network,
+      transaction.ins,
+      transaction.outs,
+      (index: number) => node.derivePath(transaction.ins[index].derivationPath)
+    )
   }
 
   public async getTransactionDetails(unsignedTx: UnsignedTransaction): Promise<IAirGapTransaction[]> {
@@ -912,22 +944,17 @@ export class BitcoinProtocol implements ICoinProtocol {
   }
 
   public async encryptAsymmetric(message: string, publicKey: string): Promise<string> {
-    const childPublicKey: Buffer = this.options.config.bitcoinJSLib.HDNode.fromBase58(publicKey, this.options.network.extras.network)
-      .derive(0)
-      .derive(0)
-      .getPublicKeyBuffer()
+    const childPublicKey: Buffer = Buffer.from(
+      this.bip32Node().fromBase58(publicKey, this.options.network.extras.network).derive(0).derive(0).publicKey
+    )
 
     return this.cryptoClient.encryptAsymmetric(message, childPublicKey as any)
   }
 
   public async decryptAsymmetric(message: string, keypair: { publicKey: string; privateKey: string }): Promise<string> {
-    const childPrivateKey: Buffer = this.options.config.bitcoinJSLib.HDNode.fromBase58(
-      keypair.privateKey,
-      this.options.network.extras.network
+    const childPrivateKey: Buffer = Buffer.from(
+      this.bip32Node().fromBase58(keypair.privateKey, this.options.network.extras.network).derive(0).derive(0).privateKey!
     )
-      .derive(0)
-      .derive(0)
-      .keyPair.d.toBuffer(32)
 
     return this.cryptoClient.decryptAsymmetric(message, { publicKey: '', privateKey: childPrivateKey.toString('hex') })
   }

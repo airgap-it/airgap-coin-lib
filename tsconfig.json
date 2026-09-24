@@ -1,8 +1,9 @@
 {
   "compilerOptions": {
     "target": "es5",
-    "lib": ["es2015", "es7", "es2017.string", "dom"],
+    "lib": ["es2019", "es2020.bigint", "dom"],
     "module": "commonjs",
+    "downlevelIteration": true,
     "declaration": true,
     "types": ["node"],
     "sourceMap": true,

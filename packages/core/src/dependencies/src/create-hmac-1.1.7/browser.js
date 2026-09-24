@@ -1,12 +1,12 @@
 'use strict'
 var inherits = require('../inherits-2.0.4/inherits')
 var Legacy = require('./legacy')
-var Base = require('../cipher-base-1.0.4/index')
+var Base = require('../cipher-base-1.0.5/index')
 var Buffer = require('../safe-buffer-5.2.0/index').Buffer
 var md5 = require('../create-hash-1.2.0/md5')
 var RIPEMD160 = require('../ripemd160-2.0.2/index')
 
-var sha = require('../sha.js-2.4.11/index')
+var sha = require('../sha.js-2.4.12/index')
 
 var ZEROS = Buffer.alloc(128)
 

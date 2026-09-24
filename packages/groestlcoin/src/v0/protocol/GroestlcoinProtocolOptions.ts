@@ -1,10 +1,15 @@
-// @ts-ignore
-import * as bitGoUTXO from '@airgap/coinlib-core/dependencies/src/bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac/src/index'
+import * as ecc from '@airgap/coinlib-core/dependencies/src/@bitcoinerlab/secp256k1-1.2.0/src/index'
+import { BIP32Factory as GroestlcoinBIP32Factory } from '@airgap/coinlib-core/dependencies/src/bip32grs-4.0.1/src/index'
+import * as bitGoUTXO from '@airgap/coinlib-core/dependencies/src/groestlcoinjs-lib-6.1.5/src/index'
 import { ProtocolBlockExplorer } from '@airgap/coinlib-core/utils/ProtocolBlockExplorer'
 import { NetworkType, ProtocolNetwork } from '@airgap/coinlib-core/utils/ProtocolNetwork'
 import { ProtocolOptions } from '@airgap/coinlib-core/utils/ProtocolOptions'
 
 // tslint:disable:max-classes-per-file
+
+// Constructed once at module load: BIP32Factory runs a full elliptic-curve self-test (testEcc) on
+// every construction, which is far too expensive to repeat per `GroestlcoinProtocolConfig`.
+const groestlcoinBip32 = GroestlcoinBIP32Factory(ecc as any)
 
 const MAINNET_NAME: string = 'Mainnet'
 
@@ -14,7 +19,10 @@ const BLOCK_EXPLORER_URL: string = 'https://chainz.cryptoid.info/grs'
 const INDEXER_API: string = `https://cors-proxy.airgap.prod.gke.papers.tech/proxy?url=${'https://blockbook.groestlcoin.org'}`
 
 export class GroestlcoinProtocolNetworkExtras {
-  constructor(public readonly indexerApi: string = INDEXER_API, public readonly network: any = bitGoUTXO.networks.groestlcoin) {}
+  constructor(
+    public readonly indexerApi: string = INDEXER_API,
+    public readonly network: any = bitGoUTXO.networks.bitcoin
+  ) {}
 }
 
 export class CryptoidBlockExplorer implements ProtocolBlockExplorer {
@@ -41,7 +49,11 @@ export class GroestlcoinProtocolNetwork extends ProtocolNetwork<GroestlcoinProto
 }
 
 export class GroestlcoinProtocolConfig {
-  constructor(public readonly bitcoinJSLib: any = bitGoUTXO) {}
+  constructor(
+    public readonly bitcoinJSLib: any = bitGoUTXO,
+    // Groestlcoin base58check-encodes extended keys with groestl, so it needs its own BIP32.
+    public readonly bip32Lib: any = groestlcoinBip32
+  ) {}
 }
 
 export class GroestlcoinProtocolOptions implements ProtocolOptions<GroestlcoinProtocolConfig> {

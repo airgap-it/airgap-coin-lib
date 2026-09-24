@@ -1,5 +1,3 @@
-import * as base64Arraybuffer from 'base64-arraybuffer'
-
 // This WASM is generated from the miracl BLS Rust code (see
 // https://github.com/dfinity/miracl_core_bls12381/)
 
@@ -9,7 +7,13 @@ export const wasmBytesBase64 = `AGFzbQEAAAABXg9gAn9/AGABfwBgAX8Bf2ADf39/AGACf38B
 /* eslint-disable */
 let wasm: InitOutput
 
-const wasmBytes = base64Arraybuffer.decode(wasmBytesBase64)
+// Decode the inlined WASM module without the `base64-arraybuffer` package; `Buffer` is already a
+// dependency of this package. Slice so the result is a standalone ArrayBuffer, not a pool view.
+const wasmBytesBuffer: Buffer = Buffer.from(wasmBytesBase64, 'base64')
+const wasmBytes: ArrayBuffer = wasmBytesBuffer.buffer.slice(
+  wasmBytesBuffer.byteOffset,
+  wasmBytesBuffer.byteOffset + wasmBytesBuffer.byteLength
+) as ArrayBuffer
 
 /**
  * @returns {number}
@@ -67,7 +71,7 @@ async function init(): Promise<InitOutput> {
   const imports = {}
   const { instance, module } = await load(wasmBytes, imports)
 
-  wasm = (instance.exports as any) as InitOutput
+  wasm = instance.exports as any as InitOutput
   ;(init as any).__wbindgen_wasm_module = module
 
   return wasm

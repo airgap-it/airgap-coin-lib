@@ -1,5 +1,3 @@
-import { buf as crc32Buffer } from 'crc-32'
-
 import { Tokens } from '../types/ledger'
 
 export function uint8ArrayToHexString(arr: Uint8Array): string {
@@ -44,10 +42,35 @@ export function hexStringToArrayBuffer(hex: string): ArrayBuffer {
   return new Uint8Array(buffer).buffer
 }
 
+// Standard CRC-32 (IEEE 802.3, reflected polynomial 0xEDB88320), as used for ICP account
+// identifier checksums. Replaces the `crc-32` npm package; same table-driven algorithm.
+const CRC32_TABLE: Int32Array = (() => {
+  const table: Int32Array = new Int32Array(256)
+  for (let n: number = 0; n < 256; n++) {
+    let c: number = n
+    for (let k: number = 0; k < 8; k++) {
+      c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1
+    }
+    table[n] = c
+  }
+
+  return table
+})()
+
+/** CRC-32 of `bytes` as an unsigned 32-bit integer. */
+export const crc32 = (bytes: Uint8Array): number => {
+  let crc: number = -1
+  for (let i: number = 0; i < bytes.length; i++) {
+    crc = CRC32_TABLE[(crc ^ bytes[i]) & 0xff] ^ (crc >>> 8)
+  }
+
+  return (crc ^ -1) >>> 0
+}
+
 export const calculateCrc32 = (bytes: Uint8Array): Buffer => {
   const checksumArrayBuf = new ArrayBuffer(4)
   const view = new DataView(checksumArrayBuf)
-  view.setUint32(0, crc32Buffer(Buffer.from(bytes)), false)
+  view.setUint32(0, crc32(bytes), false)
   return Buffer.from(checksumArrayBuf)
 }
 

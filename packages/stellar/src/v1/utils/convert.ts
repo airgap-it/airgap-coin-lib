@@ -1,7 +1,7 @@
 import { assertNever, Domain } from '@airgap/coinlib-core'
 import { UnsupportedError } from '@airgap/coinlib-core/errors'
 import { BytesStringFormat } from '@airgap/module-kit'
-import { StrKey } from '@stellar/stellar-sdk'
+import { StrKey } from '@stellar/stellar-base'
 
 export function convertEncodedBytesString(encoded: string, targetFormat: BytesStringFormat): string {
   switch (targetFormat) {

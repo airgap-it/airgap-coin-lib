@@ -4,7 +4,7 @@ import { AnonymousIdentity, Identity, RequestId, requestIdOf } from './auth'
 import { JsonObject } from './idl'
 import { fromHex } from './buffer'
 import * as Cbor from './cbor'
-import * as cbor from 'simple-cbor'
+import * as cbor from '@airgap/coinlib-core/dependencies/src/simple-cbor-0.4.1/src/index'
 import { lebEncode } from './leb128'
 import { AgentError } from './errors'
 

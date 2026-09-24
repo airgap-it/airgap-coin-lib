@@ -3,7 +3,7 @@ import BigInt = require('@airgap/coinlib-core/dependencies/src/big-integer-1.6.4
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 import { ConditionViolationError, OperationFailedError, UnsupportedError } from '@airgap/coinlib-core/errors'
 import { hexToBytes, stripHexPrefix } from '@airgap/coinlib-core/utils/hex'
-import { hash } from '@stablelib/blake2b'
+import { hash } from '@airgap/coinlib-core/dependencies/src/@stablelib/blake2b-1.0.1/packages/blake2b/blake2b'
 
 import { MichelsonList } from '../types/michelson/generics/MichelsonList'
 import { MichelsonPair } from '../types/michelson/generics/MichelsonPair'

@@ -3,8 +3,8 @@
 // tslint:disable-next-line: max-line-length
 // https://github.com/dfinity-lab/dfinity/blob/9bca65f8edd65701ea6bdb00e0752f9186bbc893/docs/spec/public/index.adoc#cbor-encoding-of-requests-and-responses
 import { Decoder } from 'borc'
-import * as cbor from 'simple-cbor'
-import { CborEncoder, SelfDescribeCborSerializer } from 'simple-cbor'
+import * as cbor from '@airgap/coinlib-core/dependencies/src/simple-cbor-0.4.1/src/index'
+import { CborEncoder, SelfDescribeCborSerializer } from '@airgap/coinlib-core/dependencies/src/simple-cbor-0.4.1/src/index'
 import { fromHex } from './buffer'
 import { Principal } from './principal'
 // We are using hansl/simple-cbor for CBOR serialization, to avoid issues with
