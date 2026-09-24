@@ -3,7 +3,8 @@
   "compilerOptions": {
     "outDir": "dist/",
     "typeRoots": ["../../node_modules/@types", "./node_modules/@types"],
-    "strict": false
+    "strict": false,
+    "noImplicitReturns": false /* Relaxed here only: this package compiles core's vendored bitcoinjs-lib sources, which rely on implicit returns. */
   },
   "include": ["src/**/*.ts"],
   "exclude": ["src/dependencies/cache/**/*", "src/dependencies/github/**/*"]

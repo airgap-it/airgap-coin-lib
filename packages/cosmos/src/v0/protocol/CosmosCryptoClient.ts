@@ -1,7 +1,7 @@
 // @ts-ignore
 import SECP256K1 = require('@airgap/coinlib-core/dependencies/src/secp256k1-3.7.1/elliptic')
 // @ts-ignore
-import sha = require('@airgap/coinlib-core/dependencies/src/sha.js-2.4.11/index')
+import sha = require('@airgap/coinlib-core/dependencies/src/sha.js-2.4.12/index')
 import { Secp256k1CryptoClient } from '@airgap/coinlib-core/protocols/Secp256k1CryptoClient'
 
 export class CosmosCryptoClient extends Secp256k1CryptoClient {

@@ -1,6 +1,6 @@
 import { compare, concat, toHex } from './buffer'
 import { HttpAgentRequest } from './http'
-import { sha256 as jsSha256 } from 'js-sha256'
+import { sha256 as jsSha256 } from './sha2'
 import borc from 'borc'
 import { lebEncode } from './leb128'
 import { Principal } from './principal'

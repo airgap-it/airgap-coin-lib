@@ -1,8 +1,12 @@
-import { concat } from '@stablelib/bytes'
-import { BLAKE2b } from '@stablelib/blake2b'
-import { convertPublicKeyToX25519, convertSecretKeyToX25519, KeyPair } from '@stablelib/ed25519'
-import { box, generateKeyPair, openBox } from '@stablelib/nacl'
-import { encode } from '@stablelib/utf8'
+import { concat } from '../dependencies/src/@stablelib/bytes-1.0.1/packages/bytes/bytes'
+import { BLAKE2b } from '../dependencies/src/@stablelib/blake2b-1.0.1/packages/blake2b/blake2b'
+import {
+  convertPublicKeyToX25519,
+  convertSecretKeyToX25519,
+  KeyPair
+} from '../dependencies/src/@stablelib/ed25519-1.0.3/packages/ed25519/ed25519'
+import { box, generateKeyPair, openBox } from '../dependencies/src/@stablelib/nacl-1.0.4/packages/nacl/nacl'
+import { encode } from '../dependencies/src/@stablelib/utf8-1.0.1/packages/utf8/utf8'
 
 import { isHex } from '../utils/hex'
 

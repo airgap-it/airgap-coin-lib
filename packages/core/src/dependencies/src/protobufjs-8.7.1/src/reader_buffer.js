@@ -1,0 +1,77 @@
+"use strict";
+module.exports = BufferReader;
+
+// extends Reader
+var Reader = require("./reader");
+BufferReader.prototype = Object.create(Reader.prototype, {
+    constructor: {
+        value: BufferReader,
+        writable: true,
+        enumerable: false,
+        configurable: true
+    }
+});
+
+var util = require("./util/minimal");
+
+/**
+ * Constructs a new buffer reader instance.
+ * @classdesc Wire format reader using node buffers.
+ * @extends Reader
+ * @constructor
+ * @param {Buffer} buffer Buffer to read from
+ */
+function BufferReader(buffer) {
+    Reader.call(this, buffer);
+
+    /**
+     * Read buffer.
+     * @name BufferReader#buf
+     * @type {Buffer}
+    */
+}
+
+BufferReader._configure = function () {
+    /* istanbul ignore else */
+    if (util.Buffer)
+        BufferReader.prototype._slice = util.Buffer.prototype.slice;
+};
+
+/**
+ * Returns raw bytes from the backing buffer without advancing the reader.
+ * @name BufferReader#raw
+ * @function
+ * @param {number} start Start offset
+ * @param {number} end End offset
+ * @returns {Buffer} Raw bytes
+ */
+BufferReader.prototype.raw = function read_raw_buffer(start, end) {
+    return this._slice.call(this.buf, start, end);
+};
+
+/**
+ * @override
+ */
+BufferReader.prototype.string = function read_string_buffer() {
+    var len = this.uint32(), // modifies pos
+        start = this.pos,
+        end = this.pos + len;
+
+    /* istanbul ignore if */
+    if (end > this.len)
+        throw RangeError("index out of range: " + this.pos + " + " + len + " > " + this.len);
+
+    this.pos = end;
+    return this.buf.utf8Slice
+        ? this.buf.utf8Slice(start, end)
+        : this.buf.toString("utf-8", start, end);
+};
+
+/**
+ * Reads a sequence of bytes preceeded by its length as a varint.
+ * @name BufferReader#bytes
+ * @function
+ * @returns {Buffer} Value read
+ */
+
+BufferReader._configure();

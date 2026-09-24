@@ -1,5 +1,5 @@
 import { PublicKey } from '@airgap/module-kit'
-import { hash } from '@stablelib/blake2b'
+import { hash } from '@airgap/coinlib-core/dependencies/src/@stablelib/blake2b-1.0.1/packages/blake2b/blake2b'
 
 import { encodeBase58 } from './encoding'
 import { convertPublicKey } from './key'

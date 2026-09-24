@@ -155,7 +155,16 @@ export const validateDepsJson = async (depsFile: DepsFile) => {
     if (pkg.dependencies) {
       const dependencyKeys = Object.keys(pkg.dependencies)
       for (const dependency of dependencyKeys) {
-        const key = keys.find((key) => key.startsWith(dependency + '-')) // TODO: Handle packages that start with the same name
+        // Match `<name>-<version-or-hash>` exactly: a plain prefix test resolves e.g. `bip32` to
+        // `bip32-path-0.4.2` or `bs58` to `bs58check-2.1.2`, i.e. to the wrong package.
+        const isKeyFor = (candidate: string, name: string): boolean =>
+          new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&')}-(\\d|[0-9a-f]{40}$)`).test(candidate)
+        // Prefer the copy this entry actually lists in `deps` when several versions are vendored
+        // (create-hmac 1.1.4 and 1.1.7, secp256k1 3.7.1 and 4.0.2, ...); fall back to any matching key.
+        const listedDeps: string[] = depsFile[prop].deps ?? []
+        const key =
+          keys.find((candidate) => isKeyFor(candidate, dependency) && listedDeps.includes(candidate)) ??
+          keys.find((candidate) => isKeyFor(candidate, dependency))
         if (!key) {
           if (depsFile[prop].ignoredDeps) {
             const x = depsFile[prop].ignoredDeps.find((ignoredDep) => ignoredDep.module === dependency)
@@ -169,14 +178,21 @@ export const validateDepsJson = async (depsFile: DepsFile) => {
           }
         } else {
           const packageDeps = depsFile[prop].deps
-          if (!(packageDeps && packageDeps.some((dep) => dep.startsWith(dependency + '-')))) {
+          if (!(packageDeps && packageDeps.some((dep) => isKeyFor(dep, dependency)))) {
             isValid = isValid && verificationFailed(dependency, `is not in deps!`)
           } else {
             const keyVersion = key.substr(key.lastIndexOf('-') + 1) // TODO: Handle multiple versions
             const isSatisfied = semver.satisfies(keyVersion, pkg.dependencies[dependency])
             if (!isSatisfied && pkg.dependencies[dependency].length < 20) {
-              console.log('FAIL', keyVersion, pkg.dependencies[dependency])
-              isValid = isValid && verificationFailed(dependency, `version is not satisfied`)
+              // A vendored copy may deliberately sit outside the declared range (e.g. an upstream `=2.0.1`
+              // pin where the vendored 2.0.2 is equivalent). That is acceptable only with a recorded reason.
+              const accepted = (depsFile[prop].ignoredDeps ?? []).find((ignoredDep) => ignoredDep.module === dependency)
+              if (accepted) {
+                log('green', `Accepted ${dependency}@${keyVersion} for declared ${pkg.dependencies[dependency]} because ${accepted.reason}`)
+              } else {
+                console.log('FAIL', keyVersion, pkg.dependencies[dependency])
+                isValid = isValid && verificationFailed(dependency, `version is not satisfied`)
+              }
             }
           }
         }

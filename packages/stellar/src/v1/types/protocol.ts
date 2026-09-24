@@ -31,6 +31,33 @@ export interface StellarThresholds {
   high_threshold: number
 }
 
+/**
+ * A single entry of the `balances` array returned by Horizon's `GET /accounts/{id}`.
+ *
+ * Replaces `HorizonApi.BalanceLine` from `@stellar/stellar-sdk`, which is not available in
+ * `@stellar/stellar-base`. Only the fields this library reads are declared; `asset_code` and
+ * `asset_issuer` are absent on the `native` entry, and `limit` (the trustline limit) is only
+ * present on non-native entries, hence optional.
+ */
+export interface StellarBalanceLine {
+  balance: string
+  asset_type: 'native' | 'credit_alphanum4' | 'credit_alphanum12' | 'liquidity_pool_shares'
+  asset_code?: string
+  asset_issuer?: string
+  limit?: string
+}
+
+/**
+ * The subset of Horizon's `GET /accounts/{id}` response this library depends on.
+ */
+export interface StellarAccountResponse {
+  account_id: string
+  sequence: string
+  balances: StellarBalanceLine[]
+  signers: StellarSigner[]
+  thresholds: StellarThresholds
+}
+
 export enum StellarAssetType {
   NATIVE = 'native',
   ASSET = 'asset',

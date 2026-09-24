@@ -3,6 +3,7 @@ image: docker:latest
 variables:
   GOOGLE_TAG: eu.gcr.io/papers-kubernetes/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$CI_COMMIT_SHA
   GOOGLE_TAG_LATEST: eu.gcr.io/papers-kubernetes/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:latest
+  TRIVY_IMAGE: aquasec/trivy:0.72.0
 
 stages:
   - build
@@ -37,6 +38,114 @@ unit:
     paths:
       - coverage
       - lint-reports
+
+# Reconstructs a synthetic npm lockfile from the vendored deps.json so a scanner has something to
+# work with. Split from the scan itself because the two need different images: node here, trivy
+# there. The file is handed over as an artifact.
+vendored-lockfile:
+  stage: test
+  image: node:20
+  script:
+    - node scripts/generate-vendored-lockfile.js
+  tags:
+    - docker
+  artifacts:
+    when: always
+    expire_in: 1 day
+    paths:
+      - .vendored-scan
+
+# Scans the vendored dependencies in packages/core/src/dependencies.
+#
+# Those are checked into the repository as source, so they appear in no lockfile and neither
+# `npm audit` nor a plain `trivy fs` run can see them.
+#
+# Findings that were triaged as unreachable are suppressed in .trivyignore.vendored.yaml, with the reason
+# and an expiry date recorded per entry. The job therefore fails on anything NEW, and again once a
+# suppression expires and needs re-triaging.
+#
+# NOTE: this runs *in* the trivy image rather than shelling out to `docker run`. The runner's
+# docker executor talks to a daemon that does not share this job's filesystem, so `-v "$PWD/..."`
+# bind mounts resolve against the daemon host and silently produce empty directories — which makes
+# a scan pass while examining nothing.
+vendored-dependencies:
+  stage: test
+  image:
+    name: $TRIVY_IMAGE
+    entrypoint: ['']
+  needs:
+    - vendored-lockfile
+  variables:
+    TRIVY_CACHE_DIR: .trivycache
+  script:
+    # Fail loudly if the generated lockfile did not arrive, rather than scanning nothing.
+    - test -s .vendored-scan/package-lock.json
+    # Human-readable report, always produced.
+    - >
+      trivy fs --scanners vuln --include-dev-deps
+      --ignorefile .trivyignore.vendored.yaml --show-suppressed .vendored-scan
+    # Gate: any unsuppressed finding fails the job.
+    - mkdir -p vendored-scan-report
+    - >
+      trivy fs --scanners vuln --include-dev-deps
+      --ignorefile .trivyignore.vendored.yaml
+      --severity LOW,MEDIUM,HIGH,CRITICAL --exit-code 1
+      --format json --output vendored-scan-report/vendored-vulnerabilities.json
+      .vendored-scan
+  cache:
+    key: trivy-db
+    paths:
+      - .trivycache
+  tags:
+    - docker
+  artifacts:
+    when: always
+    paths:
+      - vendored-scan-report
+      - .vendored-scan
+
+# Scans the npm dependency tree (package-lock.json).
+#
+# Split in two on purpose. Runtime dependencies ship to consumers and gate the pipeline. Dev and
+# build dependencies only ever run against inputs the maintainers control (own sources, own commit
+# messages, registry tarballs already chosen), so they are reported for visibility but do not fail
+# the build — otherwise the ~70 low-value ReDoS findings in the build toolchain would force a
+# suppression list large enough to hide something that matters.
+npm-dependencies:
+  stage: test
+  image:
+    name: $TRIVY_IMAGE
+    entrypoint: ['']
+  variables:
+    TRIVY_CACHE_DIR: .trivycache
+  script:
+    # Sanity check: scanning a tree without a lockfile would report nothing and pass.
+    - test -s package-lock.json
+    - mkdir -p npm-scan-report
+    # Runtime dependencies - gated.
+    - >
+      trivy fs --scanners vuln
+      --skip-dirs node_modules --skip-dirs .vendored-scan
+      --ignorefile .trivyignore.npm.yaml --show-suppressed
+      --severity LOW,MEDIUM,HIGH,CRITICAL --exit-code 1
+      --format json --output npm-scan-report/npm-runtime-vulnerabilities.json .
+    # Dev and build dependencies - reported, not gated.
+    - >
+      trivy fs --scanners vuln --include-dev-deps
+      --skip-dirs node_modules --skip-dirs .vendored-scan
+      --ignorefile .trivyignore.npm.yaml
+      --severity HIGH,CRITICAL --exit-code 0
+      --format json --output npm-scan-report/npm-dev-vulnerabilities.json .
+  cache:
+    key: trivy-db
+    paths:
+      - .trivycache
+  tags:
+    - docker
+  artifacts:
+    when: always
+    paths:
+      - npm-scan-report
 
 integration-live:
   stage: integration-live

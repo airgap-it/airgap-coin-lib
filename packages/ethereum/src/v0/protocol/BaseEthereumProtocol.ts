@@ -3,7 +3,7 @@ import { BigNumber } from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.
 // @ts-ignore
 import { mnemonicToSeed } from '@airgap/coinlib-core/dependencies/src/bip39-2.5.0'
 // @ts-ignore
-import * as bitcoinJS from '@airgap/coinlib-core/dependencies/src/bitgo-utxo-lib-5d91049fd7a988382df81c8260e244ee56d57aac/src'
+import * as bip32 from '@airgap/coinlib-core/dependencies/src/bip32-2.0.4/src/index'
 import { BalanceError, UnsupportedError } from '@airgap/coinlib-core/errors'
 import { Domain } from '@airgap/coinlib-core/errors/coinlib-error'
 import { IAirGapSignedTransaction } from '@airgap/coinlib-core/interfaces/IAirGapSignedTransaction'
@@ -12,7 +12,7 @@ import {
   AirGapTransactionWarningType,
   IAirGapTransaction
 } from '@airgap/coinlib-core/interfaces/IAirGapTransaction'
-import { Network } from '@airgap/coinlib-core/networks'
+import { Network, networks } from '@airgap/coinlib-core/networks'
 import { CurrencyUnit, FeeDefaults, ICoinProtocol } from '@airgap/coinlib-core/protocols/ICoinProtocol'
 import { ICoinSubProtocol, SubProtocolType } from '@airgap/coinlib-core/protocols/ICoinSubProtocol'
 import { MainProtocolSymbols, ProtocolSymbols } from '@airgap/coinlib-core/utils/ProtocolSymbols'
@@ -32,9 +32,10 @@ import { EthereumProtocolOptions } from './EthereumProtocolOptions'
 import { EthereumAddressCursor, EthereumAddressResult, EthereumTransactionCursor, EthereumTransactionResult } from './EthereumTypes'
 import { EthereumUtils } from './utils/utils'
 
-export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient, InfoClient extends EthereumInfoClient>
-  implements ICoinProtocol
-{
+export abstract class BaseEthereumProtocol<
+  NodeClient extends EthereumNodeClient,
+  InfoClient extends EthereumInfoClient
+> implements ICoinProtocol {
   public symbol: string = 'ETH'
   public name: string = 'Ethereum'
   public marketSymbol: string = 'eth'
@@ -78,7 +79,7 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
 
   constructor(public readonly options: EthereumProtocolOptions = new EthereumProtocolOptions()) {
     this.cryptoClient = new EthereumCryptoClient(this)
-    this.network = bitcoinJS.networks.bitcoin
+    this.network = networks.bitcoin
   }
 
   public async getSymbol(): Promise<string> {
@@ -178,25 +179,25 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
   }
 
   public async getPublicKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
-    const ethereumNode = bitcoinJS.HDNode.fromSeedHex(secret, this.network)
+    const ethereumNode = bip32.fromSeed(Buffer.from(secret, 'hex'), this.network)
 
-    return ethereumNode.derivePath(derivationPath).neutered().getPublicKeyBuffer().toString('hex')
+    return ethereumNode.derivePath(derivationPath).neutered().publicKey.toString('hex')
   }
 
   public async getExtendedPublicKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
-    const ethereumNode = bitcoinJS.HDNode.fromSeedHex(secret, this.network)
+    const ethereumNode = bip32.fromSeed(Buffer.from(secret, 'hex'), this.network)
 
     return ethereumNode.derivePath(derivationPath).neutered().toBase58()
   }
 
   public async getPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
-    const ethereumNode = bitcoinJS.HDNode.fromSeedHex(secret, this.network)
+    const ethereumNode = bip32.fromSeed(Buffer.from(secret, 'hex'), this.network)
 
-    return ethereumNode.derivePath(derivationPath).keyPair.d.toBuffer(32).toString('hex')
+    return ethereumNode.derivePath(derivationPath).privateKey.toString('hex')
   }
 
   public async getExtendedPrivateKeyFromHexSecret(secret: string, derivationPath: string): Promise<string> {
-    const ethereumNode = bitcoinJS.HDNode.fromSeedHex(secret, this.network)
+    const ethereumNode = bip32.fromSeed(Buffer.from(secret, 'hex'), this.network)
 
     return ethereumNode.derivePath(derivationPath).toBase58()
   }
@@ -221,11 +222,11 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     visibilityDerivationIndex: number,
     addressDerivationIndex: number
   ): Promise<string> {
-    return bitcoinJS.HDNode.fromBase58(extendedPublicKey, this.network)
+    return bip32
+      .fromBase58(extendedPublicKey, this.network)
       .derive(visibilityDerivationIndex)
       .derive(addressDerivationIndex)
-      .getPublicKeyBuffer()
-      .toString('hex')
+      .publicKey.toString('hex')
   }
 
   public async getAddressFromExtendedPublicKey(
@@ -244,14 +245,10 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
     addressCount: number,
     offset: number
   ): Promise<EthereumAddressResult[]> {
-    const node = bitcoinJS.HDNode.fromBase58(extendedPublicKey, this.network)
-    const generatorArray = [addressCount].map((x, i) => i + offset)
+    const node = bip32.fromBase58(extendedPublicKey, this.network).derive(visibilityDerivationIndex)
+    const generatorArray = Array.from(new Array(addressCount), (_, i) => i + offset)
 
-    return Promise.all(
-      generatorArray.map((x) =>
-        this.getAddressFromPublicKey(node.derive(visibilityDerivationIndex).derive(x).getPublicKeyBuffer().toString('hex'))
-      )
-    )
+    return Promise.all(generatorArray.map((x) => this.getAddressFromPublicKey(node.derive(x).publicKey.toString('hex'))))
   }
 
   private async getPrivateKeyFromExtendedPrivateKey(extendedPrivateKey: string, childDerivationPath?: string): Promise<Buffer> {
@@ -265,10 +262,10 @@ export abstract class BaseEthereumProtocol<NodeClient extends EthereumNodeClient
       throw new Error('Child derivation path cannot include hardened children')
     }
 
-    return dp
-      .split('/')
-      .reduce((pv: any, cv: string) => pv.derive(Number(cv)), bitcoinJS.HDNode.fromBase58(extendedPrivateKey, this.network))
-      .keyPair.d.toBuffer(32)
+    const node = dp.split('/').reduce((pv: any, cv: string) => pv.derive(Number(cv)), bip32.fromBase58(extendedPrivateKey, this.network))
+
+    // Copy: bip32 hands out its internal key buffer by reference, and callers may mutate it.
+    return Buffer.from(node.privateKey)
   }
 
   public async signWithExtendedPrivateKey(

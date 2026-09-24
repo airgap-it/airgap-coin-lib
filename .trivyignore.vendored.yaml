@@ -1,0 +1,66 @@
+# Triaged vulnerabilities in the vendored dependency tree (packages/core/src/dependencies).
+#
+# This file is only handed to the vendored scan (`vendored-dependencies` in CI, `npm run
+# scan:vendored`). The npm tree has its own file, `.trivyignore.npm.yaml`: the two trees contain
+# different copies of the same packages, reached through different callers, and a reachability
+# argument for a hand-audited vendored copy does not transfer to a transitive npm copy.
+#
+# Every entry here was traced to an actual call site and found unreachable with attacker-influenced
+# input. Reasons are recorded so the judgement can be re-checked rather than taken on trust.
+#
+# `expired_at` forces a re-review rather than letting a suppression live forever. Once a date
+# passes, the finding reappears and the pipeline fails until someone re-triages it.
+#
+# Do NOT add an entry here just to make the build green. If a finding is reachable, fix it. If a
+# fixed upstream release exists, re-vendor it instead of suppressing (as was done for cipher-base
+# 1.0.5, base-x 3.0.11, sha.js 2.4.12 and pbkdf2 3.1.3).
+
+vulnerabilities:
+  # --- secp256k1 3.7.1 and 4.0.2 -------------------------------------------------------------
+  # Private key extraction over ECDH via the elliptic backend's loadCompressedPublicKey, which
+  # omits the on-curve check. The only place a long-term private key meets ECDH is eciesjs
+  # decapsulate() -> publicKeyTweakMul. There the attacker-supplied key arrives as 65 bytes
+  # (eciesjs/src/index.ts reads msg.slice(0, 65)), so publicKeyConvert dispatches to
+  # loadUncompressedPublicKey — the branch that DOES validate — and an invalid-curve point is
+  # rejected before the multiply. The unvalidated compressed path is only reachable via encrypt(),
+  # where the multiply uses a freshly generated ephemeral secret, so recovering it yields nothing.
+  # packages/icp uses publicKeyVerify/publicKeyTweakAdd only on keys derived from its own secret.
+  - id: CVE-2024-48930
+    statement: 'Unreachable: ECDH with a long-term key only happens in eciesjs decapsulate, which parses the attacker key through the validating uncompressed branch.'
+    expired_at: 2027-02-01
+
+  # --- bn.js 4.11.9 --------------------------------------------------------------------------
+  - id: CVE-2026-2739
+    statement: 'Unreachable: maskn() is never called in first-party code.'
+    expired_at: 2027-02-01
+
+  # --- validate.js 0.13.1 (no upstream fix) --------------------------------------------------
+  # ReDoS lives in the URL/email format validators. The serializer uses only type, map, set,
+  # length, keys, presence and custom validators — no url/email validator anywhere.
+  - id: CVE-2020-26308
+    statement: 'Unreachable: ReDoS is in the URL/email validators, which are not used. No upstream fix exists.'
+    expired_at: 2027-02-01
+
+  # --- @stablelib/ed25519 1.0.3 (no upstream fix) --------------------------------------------
+  # Signature malleability from the missing S < L canonicality check. verify() is used in tezos,
+  # aeternity and vendored @taquito/utils, but only ever to return a boolean — nothing treats
+  # signature bytes as an identifier, nonce or dedup key, so a second valid signature buys an
+  # attacker nothing here. The exposure is for consumers who might. Tracked as an open decision:
+  # add an explicit S < L check at the call sites, or migrate to @noble/curves.
+  - id: GHSA-x3ff-w252-2g7j
+    statement: 'No impact in-library: verify() only returns a boolean and signature bytes are never used as an identifier. No upstream fix; consumer-facing caveat is documented.'
+    expired_at: 2027-02-01
+
+  # --- elliptic 6.6.1 (no upstream fix) ------------------------------------------------------
+  - id: CVE-2025-14505
+    statement: 'No fix available upstream; no reachable path distinct from the secp256k1 analysis above. Tracking only.'
+    expired_at: 2027-02-01
+
+  # Removed 2026-09-08, no longer applicable to the vendored tree:
+  #   CVE-2025-9287 cipher-base — vendored copy is 1.0.5 (fixed).
+  #   CVE-2025-27611 base-x — vendored copies are 3.0.11 / 4.0.1 / 5.0.1 (all fixed).
+  #   CVE-2025-9288 sha.js — re-vendored at 2.4.12 (fixed).
+  #   CVE-2025-6545 / CVE-2025-6547 pbkdf2 — re-vendored at 3.1.3 (fixed).
+  #   npm-only entries (form-data, @babel/runtime, diff) moved to .trivyignore.npm.yaml.
+  # valibot suppressions removed 2026-09-03: npm bip32 (its only importer) is now vendored at
+  # 5.0.1 with an inline validation shim, so valibot left the dependency tree entirely.

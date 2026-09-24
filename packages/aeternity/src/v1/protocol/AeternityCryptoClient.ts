@@ -1,7 +1,7 @@
 import { InvalidValueError } from '@airgap/coinlib-core/errors'
 import { Domain } from '@airgap/coinlib-core/errors/coinlib-error'
 import { Ed25519CryptoClient } from '@airgap/coinlib-core/protocols/Ed25519CryptoClient'
-import { sign, verify } from '@stablelib/ed25519'
+import { sign, verify } from '@airgap/coinlib-core/dependencies/src/@stablelib/ed25519-1.0.3/packages/ed25519/ed25519'
 
 const personalMessageToBinary = (message: string): Buffer => {
   const prefix: Buffer = Buffer.from('‎Æternity Signed Message:\n', 'utf8')

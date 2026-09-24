@@ -1,0 +1,69 @@
+{
+    "name": "bs58check",
+    "version": "4.0.0",
+    "description": "A straightforward implementation of base58-check encoding",
+    "type": "module",
+    "keywords": [
+        "base",
+        "base58",
+        "base58check",
+        "bitcoin",
+        "bs58",
+        "check",
+        "checksum",
+        "decode",
+        "decoding",
+        "encode",
+        "encoding",
+        "litecoin"
+    ],
+    "homepage": "https://github.com/bitcoinjs/bs58check",
+    "bugs": {
+        "url": "https://github.com/bitcoinjs/bs58check/issues"
+    },
+    "license": "MIT",
+    "author": "Daniel Cousens",
+    "files": [
+        "src"
+    ],
+    "main": "src/cjs/index.cjs",
+    "module": "src/esm/index.js",
+    "types": "src/cjs/index.d.ts",
+    "exports": {
+        ".": {
+            "require": "./src/cjs/index.cjs",
+            "import": "./src/esm/index.js",
+            "types": "./src/cjs/index.d.ts"
+        }
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/bitcoinjs/bs58check.git"
+    },
+    "scripts": {
+        "build": "npm run clean && tsc -p ./tsconfig.json && tsc -p ./tsconfig.cjs.json",
+        "clean": "rimraf src",
+        "gitdiff": "npm run build && git diff --exit-code",
+        "postbuild": "chmod +x ./fixup.sh && ./fixup.sh",
+        "coverage-report": "c8 report --reporter=lcov",
+        "coverage": "c8 --check-coverage --branches 90 --functions 90 npm run unit",
+        "standard": "ts-standard --ignore test --ignore src",
+        "test": "npm run standard -- --fix && npm run coverage",
+        "unit": "tape test/*.js"
+    },
+    "dependencies": {
+        "@noble/hashes": "^1.2.0",
+        "bs58": "^6.0.0"
+    },
+    "devDependencies": {
+        "@types/node": "^20.14.8",
+        "blake-hash": "^1.0.0",
+        "c8": "^10.1.2",
+        "rimraf": "^5.0.7",
+        "safe-buffer": "^5.1.2",
+        "standard": "^17.1.0",
+        "tape": "^5.3.0",
+        "ts-standard": "^12.0.2",
+        "typescript": "^5.5.2"
+    }
+}

@@ -1,12 +1,16 @@
 export class BitcoinAddress {
   private constructor(protected readonly value: string) {}
 
-  public static fromHDNode(node: any): BitcoinAddress {
-    return new BitcoinAddress(node.getAddress())
-  }
-
-  public static fromECPair(keyPair: any): BitcoinAddress {
-    return new BitcoinAddress(keyPair.getAddress())
+  /**
+   * Derives the P2PKH address for a public key.
+   *
+   * The address hash is whatever the injected library uses: `bitcoinjs-lib` hashes with SHA256d,
+   * `groestlcoinjs-lib` with groestl. Keeping this decision inside the library — rather than
+   * threading a hash function through the protocol — is why Groestlcoin needs its own library
+   * rather than its own parameter.
+   */
+  public static fromPublicKey(publicKey: Uint8Array, lib: { payments: any }, network: any): BitcoinAddress {
+    return new BitcoinAddress(lib.payments.p2pkh({ pubkey: Buffer.from(publicKey), network }).address)
   }
 
   public asString(): string {

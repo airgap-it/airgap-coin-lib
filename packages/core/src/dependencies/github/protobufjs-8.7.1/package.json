@@ -1,0 +1,93 @@
+{
+  "name": "protobufjs",
+  "version": "8.7.1",
+  "description": "Protocol Buffers for JavaScript & TypeScript.",
+  "author": "Daniel Wirtz <dcode+protobufjs@dcode.io>",
+  "license": "BSD-3-Clause",
+  "repository": "protobufjs/protobuf.js",
+  "bugs": "https://github.com/protobufjs/protobuf.js/issues",
+  "engines": {
+    "node": ">=12.0.0"
+  },
+  "keywords": [
+    "protobuf",
+    "protocol-buffers",
+    "serialization",
+    "typescript"
+  ],
+  "main": "index.js",
+  "type": "commonjs",
+  "types": "index.d.ts",
+  "browser": {
+    "fs": false
+  },
+  "scripts": {
+    "bench": "npm --prefix bench run bench",
+    "build": "npm run build:bundle && npm run build:types",
+    "build:bundle": "gulp --gulpfile scripts/gulpfile.js",
+    "build:tests": "node ./scripts/gentests.js",
+    "build:types": "node cli/bin/pbts --main --global protobuf --out index.d.ts src/ && node cli/bin/pbts --main --import \"\\$protobuf=..\" --out ext/descriptor.generated.d.ts ext/descriptor.js && node cli/bin/pbts --main --import \"\\$protobuf=..\" --out ext/textformat.generated.d.ts ext/textformat.js && node cli/bin/pbts --main --import \"\\$protobuf=..\" --out ext/protojson.generated.d.ts ext/protojson.js",
+    "coverage": "npm run coverage:test && npm run coverage:report",
+    "coverage:test": "nyc --silent tape -r ./lib/tape-adapter tests/*.js tests/node/*.js",
+    "coverage:report": "nyc report --reporter=lcov --reporter=text",
+    "docs": "npm run docs:build",
+    "docs:build": "jsdoc -c config/jsdoc.json -R README.md --verbose --pedantic",
+    "docs:publish": "npm run docs:build && node scripts/pages",
+    "lint": "npm run lint:sources && npm run lint:types",
+    "lint:sources": "eslint \"**/*.js\"",
+    "lint:types": "tslint \"**/*.d.ts\" -e \"**/node_modules/**\" -t stylish -c config/tslint.json",
+    "prepublish": "cd cli && npm install && cd .. && npm run build",
+    "prepublishOnly": "cd cli && npm install && cd .. && npm run build",
+    "prof": "node bench/prof",
+    "test": "npm run test:sources && npm run test:types",
+    "test:sources": "tape -r ./lib/tape-adapter tests/*.js tests/node/*.js",
+    "test:types": "tsc tests/comp_typescript.ts --target es2019 --module commonjs --types node --lib es2019 --esModuleInterop --strictNullChecks --experimentalDecorators --emitDecoratorMetadata && tsc -p tsconfig.test-types.json",
+    "make": "npm run lint:sources && npm run build && npm run lint:types && npm run build:tests && npm test"
+  },
+  "dependencies": {
+    "long": "^5.3.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.0",
+    "@types/node": "^18.19.130",
+    "browserify": "^17.0.0",
+    "browserify-wrap": "^1.0.2",
+    "bundle-collapser": "^1.3.0",
+    "escodegen": "^2.0.0",
+    "eslint": "^10.0.0",
+    "eslint-plugin-jsdoc": "^63.0.0",
+    "espree": "^9.0.0",
+    "estraverse": "^5.1.0",
+    "gh-pages": "^6.0.0",
+    "globals": "^17.0.0",
+    "gulp": "^5.0.0",
+    "gulp-header": "^2.0.9",
+    "gulp-if": "^3.0.0",
+    "gulp-sourcemaps": "^3.0.0",
+    "gulp-uglify": "^3.0.2",
+    "jsdoc": "^4.0.0",
+    "minimist": "^1.2.8",
+    "nyc": "^18.0.0",
+    "reflect-metadata": "^0.2.0",
+    "tape": "^5.0.0",
+    "tslint": "^6.0.0",
+    "typescript": "^4.9.5",
+    "vinyl-buffer": "^1.0.1",
+    "vinyl-fs": "^4.0.0",
+    "vinyl-source-stream": "^2.0.0"
+  },
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "light.d.ts",
+    "light.js",
+    "minimal.d.ts",
+    "minimal.js",
+    "package-lock.json",
+    "tsconfig.json",
+    "dist/**",
+    "ext/**",
+    "google/**",
+    "src/**"
+  ]
+}

@@ -1,4 +1,4 @@
-import { sha224 } from 'js-sha256'
+import { sha224 } from './sha2'
 import type { AccountIdentifier as AccountIdentifierCandid } from '../types/governance'
 import { toHexString } from './buffer'
 import { asciiStringToByteArray, calculateCrc32 } from './convert'

@@ -1,5 +1,5 @@
 import { AxiosResponse } from '../../dependencies/src/axios-0.33.0/index'
-import sha = require('../../dependencies/src/sha.js-2.4.11/index')
+import sha = require('../../dependencies/src/sha.js-2.4.12/index')
 import { stripHexPrefix } from '../hex'
 
 import { RawData, RemoteData } from './RemoteData'

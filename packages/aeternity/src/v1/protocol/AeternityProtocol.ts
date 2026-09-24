@@ -34,7 +34,7 @@ import {
   TransactionDetails,
   TransactionSimpleConfiguration
 } from '@airgap/module-kit'
-import { sign } from '@stablelib/ed25519'
+import { sign } from '@airgap/coinlib-core/dependencies/src/@stablelib/ed25519-1.0.3/packages/ed25519/ed25519'
 
 import { AeternityAddress } from '../data/AeternityAddress'
 import { AeternityCryptoConfiguration } from '../types/crypto'

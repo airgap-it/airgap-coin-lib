@@ -31,7 +31,7 @@ import {
   newExtendedSecretKey,
   newExtendedPublicKey
 } from '@airgap/module-kit'
-import * as bitcoin from 'bitcoinjs-lib'
+import * as bitcoin from '@airgap/coinlib-core/dependencies/src/bitcoinjs-lib-6.1.7/src/index'
 
 import { BitcoinTaprootAddress } from '../data/BitcoinTaprootAddress'
 import { BitcoinTaprootJS } from '../types/bitcoinjs'
@@ -50,10 +50,10 @@ import { convertExtendedPublicKey, convertExtendedSecretKey, convertPublicKey } 
 import { getBitcoinJSNetwork } from '../utils/network'
 
 import { BitcoinProtocol, createBitcoinProtocolOptions } from './BitcoinProtocol'
-import { BIP32Factory, BIP32Interface } from 'bip32'
+import { BIP32Factory, BIP32Interface } from '@airgap/coinlib-core/dependencies/src/bip32-5.0.1/src/index'
 import { BitcoinSegwitProtocolImpl } from './BitcoinSegwitProtocol'
 import { encodeDerivative } from '@airgap/crypto'
-import ecc from '@bitcoinerlab/secp256k1'
+import * as ecc from '@airgap/coinlib-core/dependencies/src/@bitcoinerlab/secp256k1-1.2.0/src/index'
 
 // Interface
 
@@ -69,6 +69,10 @@ export interface BitcoinTaprootProtocol extends BitcoinProtocol<BitcoinTaprootSi
 
 // Implementation
 
+// Constructed once at module load: BIP32Factory runs a full elliptic-curve self-test (testEcc)
+// on every construction, which is far too expensive to repeat per instance.
+const bip32Lib = BIP32Factory(ecc)
+
 const DUST_AMOUNT: number = 50
 
 export class BitcoinTaprootProtocolImpl implements BitcoinTaprootProtocol {
@@ -79,7 +83,6 @@ export class BitcoinTaprootProtocolImpl implements BitcoinTaprootProtocol {
 
   private readonly options: BitcoinProtocolOptions
   private readonly bitcoinJS: BitcoinTaprootJS
-  private readonly bip32 = BIP32Factory(ecc)
 
   public constructor(options: RecursivePartial<BitcoinProtocolOptions> = {}, bitcoinJS: typeof bitcoin = bitcoin) {
     this.options = createBitcoinProtocolOptions(options.network)
@@ -164,7 +167,7 @@ export class BitcoinTaprootProtocolImpl implements BitcoinTaprootProtocol {
     secretKey: ExtendedSecretKey
   ): Promise<BitcoinTaprootSignedTransaction> {
     const encodedExtendedSecretKey: ExtendedSecretKey = convertExtendedSecretKey(secretKey, { format: 'encoded', type: 'xprv' })
-    const bip32: BIP32Interface = this.bip32.fromBase58(encodedExtendedSecretKey.value)
+    const bip32: BIP32Interface = bip32Lib.fromBase58(encodedExtendedSecretKey.value)
 
     const decodedPSBT: bitcoin.Psbt = this.bitcoinJS.lib.Psbt.fromHex(transaction.psbt)
 
@@ -721,7 +724,7 @@ export class BitcoinTaprootProtocolImpl implements BitcoinTaprootProtocol {
   private derivativeToBip32Node(derivative: CryptoDerivative): BIP32Interface {
     const extendedSecretKey: ExtendedSecretKey = this.convertCryptoDerivative(derivative)
 
-    return this.bip32.fromBase58(extendedSecretKey.value, this.bitcoinJS.config.network)
+    return bip32Lib.fromBase58(extendedSecretKey.value, this.bitcoinJS.config.network)
   }
 
   private convertCryptoDerivative(derivative: CryptoDerivative): ExtendedSecretKey {
@@ -753,7 +756,7 @@ export class BitcoinTaprootProtocolImpl implements BitcoinTaprootProtocol {
     addressIndex: number
   ): Promise<PublicKey> {
     const encodedPublicKey: ExtendedPublicKey = convertExtendedPublicKey(extendedPublicKey, { format: 'encoded', type: 'xpub' })
-    const derivedBip32: BIP32Interface = this.bip32
+    const derivedBip32: BIP32Interface = bip32Lib
       .fromBase58(encodedPublicKey.value, this.bitcoinJS.config.network)
       .derive(visibilityIndex)
       .derive(addressIndex)
@@ -943,7 +946,7 @@ export class BitcoinTaprootProtocolImpl implements BitcoinTaprootProtocol {
     })
 
     const xpubExtendedPublicKey: ExtendedPublicKey = convertExtendedPublicKey(extendedPublicKey, { format: 'encoded', type: 'xpub' })
-    const keyPair: BIP32Interface = this.bip32.fromBase58(xpubExtendedPublicKey.value)
+    const keyPair: BIP32Interface = bip32Lib.fromBase58(xpubExtendedPublicKey.value)
 
     const replaceByFee: boolean = configuration?.replaceByFee ? true : false
 

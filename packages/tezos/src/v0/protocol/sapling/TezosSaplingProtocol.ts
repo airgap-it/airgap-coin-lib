@@ -11,7 +11,7 @@ import { NonExtendedProtocol } from '@airgap/coinlib-core/protocols/NonExtendedP
 import { flattenArray } from '@airgap/coinlib-core/utils/array'
 import { ProtocolSymbols } from '@airgap/coinlib-core/utils/ProtocolSymbols'
 import * as sapling from '@airgap/sapling-wasm'
-import { randomBytes } from '@stablelib/random'
+import { randomBytes } from '@airgap/coinlib-core/dependencies/src/@stablelib/random-1.0.2/packages/random/random'
 
 import { SignedTezosTransaction } from '../../types/signed-transaction-tezos'
 import { RawTezosSaplingTransaction, RawTezosTransaction } from '../../types/transaction-tezos'

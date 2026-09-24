@@ -1,7 +1,7 @@
 import { SHA512 } from '@airgap/coinlib-core/dependencies/src/@stablelib/sha512-1.0.1/packages/sha512/sha512'
 // @ts-ignore
 import secp256k1 from '@airgap/coinlib-core/dependencies/src/secp256k1-4.0.2/elliptic'
-import { hmac } from '@stablelib/hmac'
+import { hmac } from '@airgap/coinlib-core/dependencies/src/@stablelib/hmac-1.0.1/packages/hmac/hmac'
 
 import { DerivationIndex, DerivationNode } from '../types/derivation'
 import { incIndex, splitDerivationPath } from '../utils/derivation'

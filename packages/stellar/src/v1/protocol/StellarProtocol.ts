@@ -1,6 +1,6 @@
 import { assertNever, Domain, MainProtocolSymbols } from '@airgap/coinlib-core'
 import axios, { AxiosError } from '@airgap/coinlib-core/dependencies/src/axios-0.33.0/index'
-import { NetworkError, UnsupportedError } from '@airgap/coinlib-core/errors'
+import { ConditionViolationError, NetworkError, UnsupportedError } from '@airgap/coinlib-core/errors'
 import {
   Address,
   AirGapProtocol,
@@ -35,11 +35,10 @@ import {
   Networks,
   Transaction,
   Keypair,
-  Horizon,
   Memo,
   StrKey,
   LiquidityPoolAsset
-} from '@stellar/stellar-sdk'
+} from '@stellar/stellar-base'
 import BigNumber from '@airgap/coinlib-core/dependencies/src/bignumber.js-9.0.0/bignumber'
 
 import { StellarCryptoConfiguration } from '../types/crypto'
@@ -54,6 +53,7 @@ import {
 } from '../types/protocol'
 import { StellarSignedTransaction, StellarTransactionCursor, StellarUnsignedTransaction } from '../types/transaction'
 import { StellarAddress } from '../data/StellarAddress'
+import { loadAccount, StellarAccount } from '../utils/account'
 
 export interface StellarProtocol extends AirGapProtocol<
   {
@@ -70,7 +70,7 @@ export interface StellarProtocol extends AirGapProtocol<
   'WalletConnect',
   'Multisig'
 > {
-  server: Horizon.Server
+  loadAccount(address: string): Promise<StellarAccount>
   options: StellarProtocolOptions
   getDetailsFromEncodedGenericTransaction(transaction: string): Promise<Transaction>
   getSigners(publicKey: PublicKey): Promise<StellarSigner[]>
@@ -88,22 +88,32 @@ export interface StellarProtocol extends AirGapProtocol<
 
 export class StellarProtocolImpl implements StellarProtocol {
   public readonly options: StellarProtocolOptions
-  public readonly server: Horizon.Server
 
   public constructor(options: RecursivePartial<StellarProtocolOptions> = {}) {
     this.options = createStellarProtocolOptions(options.network as Partial<StellarProtocolNetwork>)
-    this.server = new Horizon.Server(this.options.network.rpcUrl)
+  }
+
+  public async loadAccount(address: string): Promise<StellarAccount> {
+    return loadAccount(this.options.network.rpcUrl, address)
   }
 
   public async getMultisigStatus(publicKey: PublicKey): Promise<boolean> {
     const address = await this.getAddressFromPublicKey(publicKey)
 
     try {
-      const account = await this.server.loadAccount(address)
+      const account = await this.loadAccount(address)
 
       return account.signers.length > 1
     } catch (error) {
-      return false
+      // An unfunded account has exactly its master key as signer, so "not multisig" is the truthful
+      // answer for a 404. Anything else (network failure, malformed payload) must not be reported
+      // as single-sig: callers gate signing on it and would present an under-signed transaction as
+      // complete.
+      if (isAccountNotFound(error)) {
+        return false
+      }
+
+      throw new NetworkError(Domain.STELLAR, error)
     }
   }
 
@@ -111,7 +121,7 @@ export class StellarProtocolImpl implements StellarProtocol {
     const address = await this.getAddressFromPublicKey(publicKey)
 
     try {
-      const account = await this.server.loadAccount(address)
+      const account = await this.loadAccount(address)
 
       return account.signers
     } catch (error) {
@@ -123,7 +133,7 @@ export class StellarProtocolImpl implements StellarProtocol {
     const address = await this.getAddressFromPublicKey(publicKey)
 
     try {
-      const account = await this.server.loadAccount(address)
+      const account = await this.loadAccount(address)
 
       return account.thresholds
     } catch (error) {
@@ -137,7 +147,7 @@ export class StellarProtocolImpl implements StellarProtocol {
 
       const sourceAccountId = tx.source
 
-      const account = await this.server.loadAccount(sourceAccountId)
+      const account = await this.loadAccount(sourceAccountId)
 
       const signers = account.signers
 
@@ -209,7 +219,7 @@ export class StellarProtocolImpl implements StellarProtocol {
     const masterAddress = await this.getAddressFromPublicKey(masterPublicky)
     const signerAddress = await this.getAddressFromPublicKey(signerPublicKey)
 
-    const account = await this.server.loadAccount(masterAddress)
+    const account = await this.loadAccount(masterAddress)
     const signers = account.signers
 
     const txBuilder = new TransactionBuilder(account, {
@@ -767,16 +777,27 @@ export class StellarProtocolImpl implements StellarProtocol {
   }
 
   public async getBalanceOfAddress(address: string): Promise<Balance<StellarUnits>> {
+    let account: StellarAccount
     try {
-      const { data } = await axios.get(`${this.options.network.rpcUrl}/accounts/${address}`)
-      const balance = data.balances.find((b: any) => b.asset_type === StellarAssetType.NATIVE)
-      const btnBalance = new BigNumber(balance.balance).multipliedBy(1e7).toString()
-
-      return {
-        total: newAmount(btnBalance, 'blockchain')
-      }
+      account = await this.loadAccount(address)
     } catch (error) {
+      // Horizon answers 404 for an account that has never been funded; that genuinely is a zero
+      // balance. Any other failure must surface rather than show a funded account as 0 XLM.
+      if (isAccountNotFound(error)) {
+        return { total: newAmount('0', 'blockchain') }
+      }
+
+      throw new NetworkError(Domain.STELLAR, error)
+    }
+
+    const balance = account.balances.find((b) => b.asset_type === StellarAssetType.NATIVE)
+    if (balance === undefined) {
       return { total: newAmount('0', 'blockchain') }
+    }
+    const btnBalance = new BigNumber(balance.balance).multipliedBy(1e7).toString()
+
+    return {
+      total: newAmount(btnBalance, 'blockchain')
     }
   }
 
@@ -787,7 +808,7 @@ export class StellarProtocolImpl implements StellarProtocol {
   ): Promise<StellarUnsignedTransaction> {
     const address = await this.getAddressFromPublicKey(publicKey)
 
-    const account = await this.server.loadAccount(address)
+    const account = await this.loadAccount(address)
 
     const fee = configuration?.fee !== undefined ? configuration?.fee?.value : BASE_FEE
 
@@ -799,9 +820,9 @@ export class StellarProtocolImpl implements StellarProtocol {
     for (const detail of details) {
       let destinationExists = true
       try {
-        await this.server.loadAccount(detail.to)
+        await this.loadAccount(detail.to)
       } catch (e) {
-        if (e.response?.status === 404) {
+        if (isAccountNotFound(e)) {
           destinationExists = false
         } else {
           throw e
@@ -862,7 +883,7 @@ export class StellarProtocolImpl implements StellarProtocol {
     request: WalletConnectRequest
   ): Promise<StellarUnsignedTransaction> {
     const sourceAddress = await this.getAddressFromPublicKey(publicKey)
-    const sourceAccount = await this.server.loadAccount(sourceAddress)
+    const sourceAccount = await this.loadAccount(sourceAddress)
 
     const destination = request.to ?? ''
     const value = request.value ?? '0'
@@ -894,6 +915,11 @@ export class StellarProtocolImpl implements StellarProtocol {
   }
 }
 
+/** Horizon answers a plain 404 for an account that does not exist (has never been funded). */
+function isAccountNotFound(error: any): boolean {
+  return error?.response?.status === 404
+}
+
 export function createStellarProtocol(options: RecursivePartial<StellarProtocolOptions> = {}): StellarProtocol {
   return new StellarProtocolImpl(options)
 }
@@ -908,7 +934,25 @@ export const STELLAR_MAINNET_PROTOCOL_NETWORK: StellarProtocolNetwork = {
 const DEFAULT_STELLAR_PROTOCOL_NETWORK: StellarProtocolNetwork = STELLAR_MAINNET_PROTOCOL_NETWORK
 
 export function createStellarProtocolOptions(network: Partial<StellarProtocolNetwork> = {}): StellarProtocolOptions {
+  // Spread copies explicitly-undefined keys (`{ rpcUrl: undefined }` would shadow the default), so
+  // drop them before merging.
+  // (No `Object.fromEntries`: the build targets es5 and older WebViews lack it at runtime.)
+  const definedNetwork: Partial<StellarProtocolNetwork> = Object.keys(network).reduce((acc: any, key: string) => {
+    if ((network as any)[key] !== undefined) {
+      acc[key] = (network as any)[key]
+    }
+
+    return acc
+  }, {})
+  const mergedNetwork: StellarProtocolNetwork = { ...DEFAULT_STELLAR_PROTOCOL_NETWORK, ...definedNetwork }
+
+  // `Horizon.Server` used to reject plaintext transport at construction ('Cannot connect to
+  // insecure horizon server'); preserve that guard now that requests go through axios directly.
+  if (typeof mergedNetwork.rpcUrl !== 'string' || !mergedNetwork.rpcUrl.startsWith('https://')) {
+    throw new ConditionViolationError(Domain.STELLAR, 'Cannot connect to insecure horizon server')
+  }
+
   return {
-    network: { ...DEFAULT_STELLAR_PROTOCOL_NETWORK, ...network }
+    network: mergedNetwork
   }
 }

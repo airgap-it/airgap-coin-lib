@@ -1,0 +1,46 @@
+{
+    "name": "@bitcoinerlab/secp256k1",
+    "homepage": "https://bitcoinerlab.com/secp256k1",
+    "version": "1.2.0",
+    "description": "A library for performing elliptic curve operations on the secp256k1 curve. It is designed to integrate into the BitcoinJS & BitcoinerLAB ecosystems and uses the audited noble-secp256k1 library. It is compatible with environments that do not support WASM, such as React Native.",
+    "main": "dist/index.js",
+    "types": "types/index.d.ts",
+    "scripts": {
+        "build": "rollup -c --bundleConfigAsCjs",
+        "prepublishOnly": "npm run build && npm test",
+        "test": "npx babel-node --plugins @babel/plugin-transform-modules-commonjs ./test/index.js | npx tap-summary",
+        "example": "npx babel-node --plugins @babel/plugin-transform-modules-commonjs ./example.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/bitcoinerlab/secp256k1.git"
+    },
+    "keywords": [
+        "secp256k1",
+        "noble",
+        "bitcoinjs",
+        "ecpair",
+        "bip32",
+        "factory",
+        "no-WASM",
+        "pure-Javascript"
+    ],
+    "author": "Jose-Luis Landabaso",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/bitcoinerlab/secp256k1/issues"
+    },
+    "devDependencies": {
+        "@babel/node": "^7.20.7",
+        "@babel/plugin-transform-modules-commonjs": "^7.20.11",
+        "bip32": "^3.1.0",
+        "ecpair": "^2.1.0",
+        "rollup": "^3.9.1",
+        "rollup-plugin-commonjs": "^10.1.0",
+        "tap-summary": "^4.0.0",
+        "tape": "^5.6.1"
+    },
+    "dependencies": {
+        "@noble/curves": "^1.7.0"
+    }
+}
