@@ -96,6 +96,7 @@ export const EthereumChainIDs = new Map<number, string>([
   [127, 'Factory 127 Mainnet'],
   [128, 'Huobi ECO Chain Mainnet'],
   [137, 'Polygon Mainnet'],
+  [138, 'DeFi Oracle Meta Mainnet'],
   [142, 'DAX CHAIN'],
   [162, 'Lightstreams Testnet'],
   [163, 'Lightstreams Mainnet'],
