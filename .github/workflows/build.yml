@@ -33,16 +33,21 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+      # --ignore-scripts: no lifecycle script runs, neither the dependencies' (native keccak and
+      # secp256k1 builds fall back to JS) nor the root prepare (husky install).
       - name: 🔧 Install dependencies
-        run: npm ci --no-audit --no-fund
+        run: npm ci --no-audit --no-fund --ignore-scripts
 
       - name: 🏗️ Build
         run: npm run build
 
       # Same as the GitLab unit job: the test toolchain lives in package.json#testDependencies,
       # which is swapped into devDependencies, so the lockfile cannot be frozen here.
+      # Spelled out instead of `npm run install-test-dependencies` so the install gets --ignore-scripts.
       - name: 🔧 Install test dependencies
-        run: npm run install-test-dependencies
+        run: |
+          node scripts/install-test-deps.js
+          npm install --no-audit --no-fund --ignore-scripts
 
       - name: 🧪 Test
         run: npm run test-ci
