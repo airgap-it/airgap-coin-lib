@@ -99,17 +99,10 @@ $ cd airgap-coin-lib
 $ npm install
 ```
 
-To run the tests, you will have to install the test dependencies
+To run the tests
 
 ```
-$ npm run install-test-dependencies
 $ npm test
-```
-
-To remove the test dependencies and clean up the `package.json` and `package-lock.json`, execute this command
-
-```
-$ npm run install-build-dependencies
 ```
 
 ### Contributing

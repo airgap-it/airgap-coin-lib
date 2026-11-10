@@ -99,10 +99,9 @@ $ cd airgap-coin-lib
 $ npm install
 ```
 
-To run the tests, you will have to install the test dependencies
+To run the tests
 
 ```
-$ npm run install-test-dependencies
 $ npm test
 ```
 
@@ -131,12 +130,6 @@ $ npm run test:integration:live
 Live prepare checks are skipped automatically when the fixture wallet has zero transferable balance. Balance checks still run and confirm RPC/indexer connectivity.
 
 See [packages/core/test/integration/fixtures.md](packages/core/test/integration/fixtures.md) for wallet fixtures, assertion details, and how to add a new coin.
-
-To remove the test dependencies and clean up the `package.json` and `package-lock.json`, execute this command
-
-```
-$ npm run install-build-dependencies
-```
 
 ### Contributing
 

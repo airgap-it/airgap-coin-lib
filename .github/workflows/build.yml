@@ -41,14 +41,6 @@ jobs:
       - name: 🏗️ Build
         run: npm run build
 
-      # Same as the GitLab unit job: the test toolchain lives in package.json#testDependencies,
-      # which is swapped into devDependencies, so the lockfile cannot be frozen here.
-      # Spelled out instead of `npm run install-test-dependencies` so the install gets --ignore-scripts.
-      - name: 🔧 Install test dependencies
-        run: |
-          node scripts/install-test-deps.js
-          npm install --no-audit --no-fund --ignore-scripts
-
       - name: 🧪 Test
         run: npm run test-ci
 
