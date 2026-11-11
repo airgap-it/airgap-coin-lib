@@ -1,4 +1,4 @@
-FROM node:20
+FROM node:24
 
 RUN apt-get update && apt-get install -yq git python3 build-essential
 

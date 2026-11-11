@@ -56,6 +56,35 @@ vulnerabilities:
     statement: 'No fix available upstream; no reachable path distinct from the secp256k1 analysis above. Tracking only.'
     expired_at: 2027-02-01
 
+  # --- Fixed on release/v0.15.0, suppressed here until it is merged back ----------------------
+  # develop only carries CI changes until the 0.15.0 release lands, so these findings are not fixed
+  # on this branch. release/v0.15.0 fixes every one of them by re-vendoring or bumping to the fixed
+  # upstream release. The short expiry makes this branch fail again if that merge does not happen.
+  # Vendored axios 0.33.0 -> 0.34.0, follow-redirects 1.16.0 -> 1.16.2, pbkdf2 3.1.3 -> 3.1.7,
+  # bitcoinjs-lib 6.1.7 -> 6.1.8. The groestlcoinjs-lib 6.1.5 fork (scanned as bitcoinjs-lib@6.1.5)
+  # has no fixed release; release/v0.15.0 triages it separately.
+  - id: CVE-2026-101909
+    statement: 'Fixed on release/v0.15.0 (axios 0.34.0). Suppressed on develop until that release is merged back.'
+    expired_at: 2027-01-31
+  - id: CVE-2026-101902
+    statement: 'Fixed on release/v0.15.0 (axios 0.34.0). Suppressed on develop until that release is merged back.'
+    expired_at: 2027-01-31
+  - id: CVE-2026-111755
+    statement: 'Fixed on release/v0.15.0 (follow-redirects 1.16.2). Suppressed on develop until that release is merged back.'
+    expired_at: 2027-01-31
+  - id: CVE-2026-111756
+    statement: 'Fixed on release/v0.15.0 (follow-redirects 1.16.2). Suppressed on develop until that release is merged back.'
+    expired_at: 2027-01-31
+  - id: CVE-2026-116689
+    statement: 'Fixed on release/v0.15.0 (follow-redirects 1.16.2). Suppressed on develop until that release is merged back.'
+    expired_at: 2027-01-31
+  - id: CVE-2026-102414
+    statement: 'Fixed on release/v0.15.0 (pbkdf2 3.1.7). Suppressed on develop until that release is merged back.'
+    expired_at: 2027-01-31
+  - id: CVE-2026-107846
+    statement: 'Handled on release/v0.15.0 (bitcoinjs-lib 6.1.8; groestlcoinjs-lib fork triaged as unreachable). Suppressed on develop until that release is merged back.'
+    expired_at: 2027-01-31
+
   # Removed 2026-09-08, no longer applicable to the vendored tree:
   #   CVE-2025-9287 cipher-base — vendored copy is 1.0.5 (fixed).
   #   CVE-2025-27611 base-x — vendored copies are 3.0.11 / 4.0.1 / 5.0.1 (all fixed).
