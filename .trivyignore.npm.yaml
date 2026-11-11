@@ -50,6 +50,18 @@ vulnerabilities:
     statement: 'Not wallet-relevant: inefficient RegExp in transpiled output, requires a named-capture-group .replace over attacker-controlled input. No such path here.'
     expired_at: 2027-02-01
 
+  # --- Fixed on release/v0.15.0, suppressed here until it is merged back ----------------------
+  # develop only carries CI changes until the 0.15.0 release lands, so these findings are not fixed
+  # on this branch. release/v0.15.0 fixes every one of them by re-vendoring or bumping to the fixed
+  # upstream release. The short expiry makes this branch fail again if that merge does not happen.
+  # moment 2.29.4 -> 2.31.0 (via @polkadot/util), pbkdf2 3.1.6 -> 3.1.7.
+  - id: CVE-2026-17495
+    statement: 'Fixed on release/v0.15.0 (moment 2.31.0). Suppressed on develop until that release is merged back.'
+    expired_at: 2027-01-31
+  - id: CVE-2026-102414
+    statement: 'Fixed on release/v0.15.0 (pbkdf2 3.1.7). Suppressed on develop until that release is merged back.'
+    expired_at: 2027-01-31
+
   # Removed 2026-09-08 (fixed by version bumps, no longer in the tree):
   #   CVE-2025-9288 sha.js -> 2.4.12; CVE-2025-9287 cipher-base -> 1.0.7;
   #   CVE-2025-6545 / CVE-2025-6547 pbkdf2 -> 3.1.6; CVE-2025-27611 base-x -> 3.0.11;
