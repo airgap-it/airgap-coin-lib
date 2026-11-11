@@ -44,7 +44,7 @@ unit:
 # there. The file is handed over as an artifact.
 vendored-lockfile:
   stage: test
-  image: node:20
+  image: node:24
   script:
     - node scripts/generate-vendored-lockfile.js
   tags:
